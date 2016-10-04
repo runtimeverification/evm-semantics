@@ -1,0 +1,17 @@
+\newcommand{\securityrubric}{
+\begin{table}[t!]
+\begin{tabularx}{\columnwidth}{p{0.3\columnwidth}p{0.6\columnwidth}}
+\toprule
+\textbf{Grade} & \textbf{Description} \\
+\midrule
+\textbf{1} Optimal & The level of security provided with a modern web browser (e.g. Chrome), providing ideal ciphers, forward-secrecy, and application-layer protocol negotiation. \\
+\textbf{2} Sub-optimal & Non-ideal ciphers (i.e. \TK), no forward perfect secrecy. \\
+\textbf{3} Known Attack & Vulnerable to academic attacks, including Logjam, RC4, BEAST, FREAK, etc. \\
+\textbf{4} No Security & Susceptible to trivial MITM attempts due to critical vulnerabilities, such as no certificate validation. \\
+\bottomrule
+\end{tabularx}
+\caption{\textbf{MITM software security levels}}
+\label{table:security-rubric}
+\end{table}
+}
+

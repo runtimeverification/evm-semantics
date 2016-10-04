@@ -1,0 +1,136 @@
+\documentclass{sig-alternate-2015}
+
+\usepackage[T1]{fontenc}
+\usepackage[%
+    breaklinks=true,colorlinks=true,linkcolor=black,%
+    citecolor=black,urlcolor=black,bookmarks=true,bookmarksopen=false,%
+    pdfauthor={},%
+    pdftitle={tls mitm}%
+    ,pdftex]{hyperref}
+%\usepackage{balance}
+\usepackage{wasysym}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{color}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{url}\urlstyle{rm}
+\usepackage{cite}
+\usepackage[skip=8pt]{caption}
+\usepackage[protrusion=true,expansion=true,kerning,tracking]{microtype}
+\SetExtraKerning{encoding=*,font=*}{\textemdash={120,120}} % Add space around emdashes
+\renewcommand{\paragraph}[1]{\smallskip\noindent\textbf{#1}\quad}
+\newcommand{\subpar}[1]{\smallskip\noindent\textsl{#1}\enspace}
+%\usepackage{flushend}
+
+% Fix URL hyphenation (AH 12/2008)
+\def\UrlBreaks{\do-\do\.\do\@\do\\\do\!\do\_\do\|\do\;\do\>\do\]%
+ \do\)\do\,\do\?\do\'\do+\do\=\do\#}
+\def\UrlBigBreaks{\do\:\do\/}%
+
+\newtheorem{theorem}{Theorem}
+\newcommand{\FF}{\ensuremath{\mathbb{F}}}
+\newcommand{\QQ}{\ensuremath{\mathbb{Q}}}
+
+\usepackage{soul}
+\usepackage{xspace}
+\newcommand{\TODO}[1]{\hl{\textbf{TODO:} #1}\xspace}
+\newcommand{\todo}[1]{\TODO{#1}}
+\newcommand{\TK}{\hl{\bf TK}\xspace}
+\newcommand{\tk}{\TK}
+% \newcommand{\comment}[1]{\relax}
+\newcommand{\eg}{e.g.\@\xspace}
+\newcommand{\ie}{i.e.\@\xspace}
+\newcommand{\twolinecell}[2][r]{%
+  \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+
+% Keep extra detail for the extended version
+\newif\ifext\extfalse
+
+\ifext
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\fi
+
+% No ACM copyright box
+%\makeatletter\def\@copyrightspace{\relax}\makeatother
+
+\newfont{\mycrnotice}{ptmr8t at 7pt}
+\newfont{\myconfname}{ptmri8t at 7pt}
+\let\crnotice\mycrnotice%
+\let\confname\myconfname%
+
+%\permission{Permission to make digital or hard copies of part or all of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for third-party components of this work must be honored. For all other uses, contact the Owner/Author(s). Copyright is held by the owner/author(s).}
+%\conferenceinfo{CCS'15,}{October 12--16, 2015, Denver, Colorado, USA.} 
+%\copyrightetc{ACM \the\acmcopyr}
+%\crdata{978-1-4503-3832-5/15/10. \\
+%DOI: http://dx.doi.org/10.1145/2810103.2813707}
+
+\newcommand{\smallish}{}
+
+\begin{document}
+\pagenumbering{arabic}
+\thispagestyle{empty}
+
+\title{Modeling EVM in the K framework}
+
+\newif\ifblind\blindfalse % Blind submission?
+
+\author{\alignauthor\vspace*{-24pt}
+  Deepak Kumar\quad
+  Everett Hildenbrandt\quad
+  Manasvi Saxena\quad
+  Zane Ma\quad
+  \smallskip\\\affaddr{
+      University of Illinois Urbana-Champaign \\
+  }
+}
+
+
+\maketitle
+
+% \input{abstract}
+\input{proposal} % 1 page, including abstract
+\input{related} % 1 page, including abstract
+\input{planned-work} % 1 page, including abstract
+
+% References: 1 page (can only fit 30-some citations, argh!)
+
+%\section*{Acknowledgments}
+%acknowledgemnets
+
+% Yes, all this is just to fix ACM's spacing bug after the References section heading
+\makeatletter
+\def\thebibliography#1{% 
+\ifnum\addauflag=0\addauthorsection\global\addauflag=1\fi
+     \section[References]{%    <=== OPTIONAL ARGUMENT ADDED HERE
+        {References} % was uppercased but this affects pdf bookmarks (SP/GM October 2004)
+%          {\vskip -9pt plus 1pt} % GM Nov. 2006 / GM July 2000 (for somewhat tighter spacing)  <-- the bug
+          {\vskip -3pt plus 3pt } % AH Fix Aug. 2015
+         \@mkboth{{\refname}}{{\refname}}%
+     }%
+     \list{[\arabic{enumi}]}{%
+         \settowidth\labelwidth{[#1]}%
+         \leftmargin\labelwidth
+         \advance\leftmargin\labelsep
+         \advance\leftmargin\bibindent
+         \parsep=0pt\itemsep=1pt % GM July 2000
+         \itemindent -\bibindent
+         \listparindent \itemindent
+         \usecounter{enumi}
+     }%
+     \let\newblock\@empty
+     \raggedright % GM July 2000
+     \sloppy
+     \sfcode`\.=1000\relax
+}
+\makeatother
+
+\clubpenalty=0\widowpenalty=0
+\small\bibliographystyle{abbrv}
+\bibliography{paper}
+\nocite{*}
+
+\end{document}
+
