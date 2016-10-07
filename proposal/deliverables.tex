@@ -1,22 +1,42 @@
 \section{Deliverables and Timeline}
 \begin{enumerate}
-\item Build EVM state model as K cells
-\item Model Oyente subset + Gas
+\item Build EVM state model as K configuration
+\item Model Oyente subset
 	\begin{enumerate}	
-		\item Stop and Arithmetic Operations
-		\item Comparison \& Bitwise Logic Operations
-		\item Push/Pop control flow 
+		\item Stop and arithmetic
+		\item Comparison \& bitwise logic
+		\item Push/pop stack 
+		\item Memory and storage load/store
+		\item Call, return, suicide
+		\item Contract gas checking
+	\end{enumerate}
+\item Verify Oyente Results
+	\begin{enumerate}
+		\item Transaction ordering dependence
+		\item Timestamp dependence
+		\item Mishandled exceptions
+	\end{enumerate}
+\item Formal gas verification
+	\begin{enumerate}
+		\item Gas lower and upper bounds
+		\item Gas input dependence
 	\end{enumerate}
 
-\item Model other blockchain-indeeEVM opcodes
+\item Model additional EVM opcodes
 	\begin{enumerate}
-		\item SHA3 Keccak-256 Hash
-		\item Environmental Information
 		\item Block Information
-		\item Other Stack, Mmemory, Storage, and Flow Operations
+		\item Environmental Information
+		\item System Operations
+		\item Other Stack, Memory, Storage, and Flow Operations
 		\item Duplication Operations
 		\item Exchange Operations
-		\item System Operations
+		\item SHA3 Keccak-256 Hash
 	\end{enumerate}
 
+\item Broader Verification
+	\begin{enumerate}
+		\item Call stack depth 
+		\item Empty terminal balance verification
+		\item \TODO{ONE MORE KILLER USE CASE}
+	\end{enumerate}
 \end{enumerate}
