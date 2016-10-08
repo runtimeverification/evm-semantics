@@ -1,34 +1,146 @@
-fmod EVM-ACCOUNT is
+fmod EVM-WORLD is
     protecting QID .
     protecting NAT .
 
-    sort Account .
-    sort Address AccountState .
-    subsort Qid < Address .
-
-    sort Wei .
+    sorts Nonce Wei Hash .
+    subsort Nat < Nonce .
     subsort Nat < Wei .
-
-    sort Hash .
     subsort Nat < Hash .
 
-    op _|->_ : Address AccountState -> Account .
-
-    op nonce[_] balance[_] storageRoot[_] codeHash[_] : Nat Wei Hash Hash -> AccountState .
-endfm
-
-fmod EVM-WORLD is
-    protecting EVM-ACCOUNT .
-
-    sort Accounts .
+    sorts AccountID AccountField .
+    subsort Qid < AccountID .
+    sorts Account Accounts .
     subsort Account < Accounts .
-    sort World .
+
+    op nonce[_]       : Nonce -> AccountField .
+    op balance[_]     : Wei   -> AccountField .
+    op storageRoot[_] : Hash  -> AccountField .
+    op codeHash[_]    : Hash  -> AccountField .
+
+    op __ : AccountField AccountField -> AccountField [assoc comm] .
+
+    op _|->_ : AccountID AccountField -> Account .
 
     op mt  : -> Accounts .
-    op _;_ : Accounts Accounts -> Accounts [assoc comm id: mt prec 60 format(d n d d)] .
-
-    op {_} : Accounts -> World [format(d n n d)] .
+    op _;_ : Accounts Accounts -> Accounts [assoc comm id: mt prec 60] .
 endfm
+
+fmod EVM-CODE is
+    protecting EVM-WORLD .
+    protecting NAT .
+
+    sorts CodeLabel Constant Value .
+    subsorts CodeLabel Constant AccountID < Value .
+    subsort Nat < Constant .
+
+    sorts OpCode Program .
+
+    --- stack operators
+    ops ADD MUL SUB DIV SDIV MOD SMOD ADDMOD MULMOD EXP SIGNEXTEND LT GT SLT SGT
+        EQ ISZERO AND OR XOR NOT BYTE SHA3 POP
+        : -> OpCode .
+
+    op PUSH[_] : Nat -> OpCode .
+    op DUP[_]  : Nat -> OpCode .
+    op SWAP[_] : Nat -> OpCode .
+    --- PUSH[1-32], DUP[1-16], SWAP[1-16]
+
+    --- accessors
+    ops ADDRESS BALANCE ORIGIN CALLER CALLVALUE CALLDATALOAD CALLDATASIZE
+        CALLDATACOPY CODESIZE CODECOPY GASPRICE EXTCODESIZE EXTCODECOPY
+        MSIZE BLOCKHASH COINBASE TIMESTAMP NUMBER DIFFICULTY GASLIMIT PC GAS
+        : -> OpCode .
+
+    op LOG[_]  : Nat -> OpCode .
+    --- LOG[0-4]
+
+    --- memory operations
+    ops MLOAD MSTORE MSTORES SLOAD SSTORE
+        : -> OpCode .
+
+    --- control flow
+    ops JUMP JUMP1 JUMPDEST CREATE CALL CALLCODE RETURN DELEGATECALL SUICIDE
+        : -> OpCode .
+
+    op skip : -> Program .
+    op _:_  : Nat OpCode -> Program .
+    op _;_  : Program Program -> Program [assoc comm id: skip] .
+endfm
+
+fmod EVM-MEM is
+    protecting EVM-CODE .
+
+    sort Value? .
+    subsort Value < Value? .
+
+    sorts Mem MemAddr MemRange .
+    subsorts Nat < MemAddr .
+
+    sorts ValueStack ValueStack? .
+    subsort ValueStack < ValueStack? .
+
+    op mt : -> Mem .
+    op __ : Value Mem -> Mem [prec 40] .
+
+    op _[_]    : Mem MemAddr -> Value .
+    op _[_:=_] : Mem MemAddr Value -> Mem .
+
+    vars N N' : Nat .
+    vars A A' : MemAddr .
+    vars V V' : Value .
+    var M : Mem .
+
+    eq mt[A]             = 0 .
+    eq (V M)[0]          = V .
+    eq (V M)[s(N)]       = M[N] .
+    eq (V M)[0 := V']    = V' M .
+    eq (V M)[s(N) := V'] = V (M[N := V']) .
+
+    op _:_     : MemAddr MemAddr -> MemRange .
+    op _[_]    : Mem MemRange -> Mem .
+    op _[_:=_] : Mem MemRange Mem -> Mem .
+
+    ceq M[N : N']           = mt if N' <= N .
+    eq  (V M)[s(N) : s(N')] = M[N : N'] .
+    eq  (V M)[0 : s(N')]    = V (M[0 : N']) .
+    eq  mt[0 : s(N')]       = 0 (mt[0 : N']) .
+
+    op .ValueStack : -> ValueStack .
+    op _:_         : Value  ValueStack -> ValueStack .
+    op _[_]        : OpCode ValueStack -> ValueStack? .
+endfm
+
+fmod EVM-STATE is
+    protecting EVM-MEM .
+
+    sorts PC .
+
+    op pc : Nat -> PC .
+
+    var V  : Value .
+    var VS : ValueStack .
+
+    eq POP [ V : VS ] = VS .
+    ---eq ADD [
+
+--- eq pop [ V : S ] = S .
+--- eq bne [ V1 : V2 : S ] | pc(N) = S | pc(if V1 == 0 then s(N) else V2 fi) .
+
+---    op _,_,_,_    : EVMCode PC ValueStack RAM -> CallState .
+---    op _,_        : Nat Address -> CallID .
+---    op <_,_>      : CallID CallState -> CallFrame .
+---
+---    op .CallStack : -> CallStack .
+---    op _:_        : CallFrame CallStack -> CallStack [right id: .CallStack] .
+
+endfm
+
+---(
+fmod EVM-EVM is
+    protecting EVM-WORLD .
+    protecting NAT .
+endfm
+
 
 fmod EVM-TRANSACTION is
     protecting NAT .
@@ -88,7 +200,7 @@ fmod EVM-BLOCK is
     op nonce[_]        : Nat         -> BlockField .
 
     op mt : -> BlockHeader .
-    op __ : BlockHeader BlockHeader -> BlockHeader [assoc comm id: mt] .
+    op __ : BlockHeader BlockHeader -> BlockHeader [assoc comm] .
 
     op {_,_,_}      : BlockHeader OmmerHeaders TransactionList -> [Block] .
     op Block{_,_,_} : BlockHeader OmmerHeaders TransactionList -> Block .
@@ -120,3 +232,4 @@ fmod EVM-BLOCK is
         if true .  --- here we put other block validation properties (instead of true)
 
 endfm
+)---
