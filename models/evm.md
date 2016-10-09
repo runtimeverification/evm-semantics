@@ -12,11 +12,10 @@ Local State
 
 ```maude
 fmod EVM-LOCALSTATE is
-    protecting INT .
-    protecting NAT .
+    including NAT .
 
     sort Word .
-    subsort Int < Word .
+    subsort Word < Nat .
     sorts WordStack WordStack? .
     subsort WordStack < WordStack? .
 
@@ -28,96 +27,145 @@ fmod EVM-LOCALSTATE is
     subsort StackOp < LocalOp .
 ```
 
-### Word Stack Syntax
+Local storage is in terms of words, which are wrapped at $2^256$.
 
 ```maude
-    op sgn : Int -> Int .
-    ---------------------
-    var I : Int .
-    eq sgn(I) = if I < 0 then -1 else 1 fi .
+    var N : Nat .
+    ceq N = N rem (2 ^ 256) if N > (2 ^ 256) .
+    cmb N : Word if N < (2 ^ 256) .
+    --- this seems like an expensive membership check
+```
 
+### Word Stack
+
+The local-stack is a word-addressed byte array, where stack operations happen at
+the size of words. It is not to exceed 1024 in size.
+
+```maude
     op .WordStack : -> WordStack [ctor] .
     op _:_        : Word    WordStack -> WordStack [ctor] .
-    op _[_]       : StackOp WordStack -> WordStack? .
+    op _[_]       : StackOp WordStack -> WordStack .
 
-    --- stack operators (all of these decrease stack size)
+    op stackSize : WordStack -> Nat .
+    var W : Word . var WS : WordStack .
+    -----------------------------------
+    eq stackSize(.WordStack) = 0 .
+    eq stackSize(W : WS)     = s(stackSize(WS)) .
+
+    var WS? : WordStack? .
+    ----------------------
+    cmb WS? : WordStack if stackSize(WS?) <= 1024 .
+```
+
+All of these stack operators decrease the size of the stack, so they are safe
+for the 1024 stack-size limit. Note that anything of sort `StackOp` *must* have
+this property because of the defintion of `_[_] : StackOp WordStack -> WordStack`.
+
+```maude
     ops ADD MUL SUB EXP DIV MOD SDIV SMOD ADDMOD MULMOD SIGNEXTEND LT GT SLT SGT
         EQ ISZERO AND OR XOR NOT BYTE SHA3 POP : -> StackOp .
 ```
 
-### Word Stack Semantics
+Here we define the semantics of these operators over the local word stack.
+Commented out semantic lines are not yet implemented, so we can't handle them.
 
 ```maude
-    vars I0 I1 I2 : Int .
-    vars V V'     : Word .
+    vars V0 V1 V2 : Word .
     var  VS       : WordStack .
 
-    eq ADD [ I0 : I1 : VS ] = (I0 + I1) : VS .
-    eq SUB [ I0 : I1 : VS ] = (I0 - I1) : VS .
-    eq MUL [ I0 : I1 : VS ] = (I0 * I1) : VS .
-    eq EXP [ I0 : I1 : VS ] = (I0 ^ I1) : VS .
-    eq DIV [ I0 : I1 : VS ] = (if I1 == 0 then 0 else (I0 quo I1) fi) : VS .
-    eq MOD [ I0 : I1 : VS ] = (if I1 == 0 then 0 else (I0 rem I1) fi) : VS .
-    eq ADDMOD [ I0 : I1 : I2 : VS ] = (if I2 == 0 then 0 else (I0 + I1) rem I2 fi) : VS .
-    eq MULMOD [ I0 : I1 : I2 : VS ] = (if I2 == 0 then 0 else (I0 * I1) rem I2 fi) : VS .
+    eq ADD [ V0 : V1 : VS ] = (V0 + V1) : VS .
+    --- eq SUB [ V0 : V1 : VS ] = (V0 - V1) : VS .
+    eq MUL [ V0 : V1 : VS ] = (V0 * V1) : VS .
+    eq EXP [ V0 : V1 : VS ] = (V0 ^ V1) : VS .
+    eq DIV [ V0 : V1 : VS ] = (if V1 == 0 then 0 else (V0 quo V1) fi) : VS .
+    eq MOD [ V0 : V1 : VS ] = (if V1 == 0 then 0 else (V0 rem V1) fi) : VS .
+    eq ADDMOD [ V0 : V1 : V2 : VS ] = (if V2 == 0 then 0 else (V0 + V1) rem V2 fi) : VS .
+    eq MULMOD [ V0 : V1 : V2 : VS ] = (if V2 == 0 then 0 else (V0 * V1) rem V2 fi) : VS .
 
-    --- eq SDIV [ I0 : I1 : VS ] = sdiv(I0,I1) : VS .
-    --- eq SMOD [ I0 : I1 : VS ] = smod(I0,I1) : VS .
-    --- eq SIGNEXTEND [ I0 : I1 : VS ] = signextend(I0,I1) : VS .
+    --- eq SDIV [ V0 : V1 : VS ] = sdiv(V0,V1) : VS .
+    --- eq SMOD [ V0 : V1 : VS ] = smod(V0,V1) : VS .
+    --- eq SIGNEXTEND [ V0 : V1 : VS ] = signextend(V0,V1) : VS .
 
-    eq LT     [ I0 : I1 : VS ] = (if I0 < I1 then 1 else 0 fi) : VS .
-    eq GT     [ I0 : I1 : VS ] = (if I0 > I1 then 1 else 0 fi) : VS .
-    --- eq SLT    [ I0 : I1 : VS ] = slt(I0,I1) : VS .
-    --- eq SGT    [ I0 : I1 : VS ] = sgt(I0,I1) : VS .
-    eq EQ     [ I0 : I1 : VS ] = (if I0 == I1 then 1 else 0 fi) : VS .
-    eq ISZERO [ I0 : VS ]      = (if I0 == 0 then 1 else 0 fi) : VS .
+    eq LT     [ V0 : V1 : VS ] = (if V0 < V1 then 1 else 0 fi) : VS .
+    eq GT     [ V0 : V1 : VS ] = (if V0 > V1 then 1 else 0 fi) : VS .
+    --- eq SLT    [ V0 : V1 : VS ] = slt(V0,V1) : VS .
+    --- eq SGT    [ V0 : V1 : VS ] = sgt(V0,V1) : VS .
+    eq EQ     [ V0 : V1 : VS ] = (if V0 == V1 then 1 else 0 fi) : VS .
+    eq ISZERO [ V0 : VS ]      = (if V0 == 0 then 1 else 0 fi) : VS .
 
-    --- eq NOT [ I0 : VS ]      = not(I0)     : VS .
-    --- eq OR  [ I0 : I1 : VS ] = or(I0, I1)  : VS .
-    --- eq AND [ I0 : I1 : VS ] = and(I0, I1) : VS .
-    --- eq XOR [ I0 : I1 : VS ] = xor(I0, I1) : VS .
+    --- eq NOT [ V0 : VS ]      = not(V0)     : VS .
+    --- eq OR  [ V0 : V1 : VS ] = or(V0, V1)  : VS .
+    --- eq AND [ V0 : V1 : VS ] = and(V0, V1) : VS .
+    --- eq XOR [ V0 : V1 : VS ] = xor(V0, V1) : VS .
     --- These are bit-wise operators.
 
-    --- eq BYTE [ I0 : I1 : VS ] = byte(I0, I1) : VS .
-    --- eq SHA3 [ I0 : I1 : VS ] = sha3(I0, I1) : VS .
+    --- eq BYTE [ V0 : V1 : VS ] = byte(V0, V1) : VS .
+    --- eq SHA3 [ V0 : V1 : VS ] = sha3(V0, V1) : VS .
 
-    eq POP [ V : VS ] = VS .
+    eq POP [ V0 : VS ] = VS .
 ```
 
-### Local Memory Syntax
+### Local Memory
+
+The local memory is an array of words. I am using a cons-list of words to
+represent them, and have defined list-update and list-slice operators for
+updating/accessing elements of the memory.
 
 ```maude
-    op mt : -> Mem .
-    op __ : Word Mem -> Mem [prec 40] .
+    op mt   : -> Mem .
+    op __   : Word Mem -> Mem [prec 40] .
+    -------------------------------------
+    vars V V' : Word .
+    vars A A' : Word .
+    vars M M' : Mem .
 
-    op _[_]    : Mem MemAddr -> Word .
-    op _[_:=_] : Mem MemAddr Word -> Mem .
+    op _++_ : Mem Mem  -> Mem [prec 50] .
+    -------------------------------------
+    eq mt ++ M    = M .
+    eq M ++ mt    = M .
+    eq (V M) ++ M = V (M ++ M) .
+```
 
-    op _:_     : MemAddr MemAddr -> MemRange .
+The single-element memory read/update is defined here. Note that accessing a
+single element of memory is linear in the address (ie. expensive).
+
+```maude
+    op _[_]    : Mem Word -> Word .
+    op _[_:=_] : Mem Word Word -> Mem .
+    -----------------------------------
+    eq mt[A]             = 0 .
+    eq (V M)[0]          = V .
+    eq (V M)[s(A)]       = M[A] .
+    eq (V M)[0 := V']    = V' M .
+    eq (V M)[s(A) := V'] = V (M[A := V']) .
+```
+
+The list-slice access will take a chunk of the memory starting at the first
+index (before the colon), and going until the element *before* the second index
+(after the colon). It is linear in the ending address of the list. If the list
+we're slicing from does not have enough elements, it is extended with zeros
+implicitely.
+
+```maude
+    op drop : Word Mem -> Mem .
+    op take : Word Mem -> Mem .
+    ---------------------------
+    eq drop(0, M)      = M .
+    eq drop(A, mt)     = mt .
+    eq drop(s(A), V M) = drop(A,M) .
+    eq take(0, M)      = mt .
+    eq take(s(A), mt)  = 0 take(A, mt) .
+    eq take(s(A), V M) = V take(A, M) .
+
+    op _.._    : Word Word -> MemRange .
     op _[_]    : Mem MemRange -> Mem .
     op _[_:=_] : Mem MemRange Mem -> Mem .
     --------------------------------------
-    vars N N' : Nat .
-    vars A A' : MemAddr .
-    var  M    : Mem .
+    eq M[A .. A']       = if A < A' then take(sd(A,A'), drop(A,M)) else mt fi .
+    eq M[A .. A' := M'] = if A < A' then take(A,M) ++ (take(sd(A,A'), M') ++ drop(A', M)) else M fi .
 ```
 
-### Local Memory Semantics
-
-```maude
-    eq mt[A]             = 0 .
-    eq (V M)[0]          = V .
-    eq (V M)[s(N)]       = M[N] .
-    eq (V M)[0 := V']    = V' M .
-    eq (V M)[s(N) := V'] = V (M[N := V']) .
-
-    ceq M[N : N']           = mt if N' <= N .
-    eq  mt[0 : s(N')]       = 0 (mt[0 : N']) .
-    eq  (V M)[0 : s(N')]    = V (M[0 : N']) .
-    eq  (V M)[s(N) : s(N')] = M[N : N'] .
-```
-
-### Local State
+### Local State (Stack and Memory)
 
 ```maude
     op <_|_> : WordStack Mem -> LocalState .
