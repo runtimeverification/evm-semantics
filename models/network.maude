@@ -1,0 +1,96 @@
+fmod EVM-EVM is
+    protecting EVM-WORLD .
+    protecting NAT .
+endfm
+
+
+fmod EVM-TRANSACTION is
+    protecting NAT .
+    protecting EVM-ACCOUNT .
+
+    sort Gas .
+    subsort Nat < Gas .
+
+    sorts PreTX CreationTX MsgTX Transaction .
+    subsorts CreationTX MsgTX < Transaction .
+    sort Sig .
+    subsort Qid < Sig .
+    sorts EVMCode MsgData .
+    subsorts Qid < EVMCode MsgData .
+
+    op nonce[_] gasPrice[_] gasLimit[_] to[_] value[_] v[_] r[_] s[_]
+        : Nat Gas Gas Address Nat Sig Sig Sig -> PreTX .
+
+    op _ init[_] : PreTX EVMCode -> CreationTX .
+    op _ data[_] : PreTX MsgData -> MsgTX .
+endfm
+
+fmod EVM-BLOCK is
+    protecting NAT .
+    protecting EVM-TRANSACTION .
+
+    sorts Block BlockField BlockHeader .
+    subsort BlockField < BlockHeader .
+
+    sort BlockNumber .
+    subsort Nat < BlockNumber .
+
+    sorts BloomFilter Difficulty Time 32Byte OmmerHeaders .
+
+    sort TransactionList .
+    subsort Transaction < TransactionList .
+
+    op NH : -> BlockNumber .
+
+    op mt  : -> TransactionList .
+    op _,_ : TransactionList TransactionList -> TransactionList [assoc id: mt] .
+
+    op parentHash[_]   : Hash        -> BlockField .
+    op ommersHash[_]   : Hash        -> BlockField .
+    op stateRoot[_]    : Hash        -> BlockField .
+    op txRoot[_]       : Hash        -> BlockField .
+    op receiptsRoot[_] : Hash        -> BlockField .
+    op mixHash[_]      : Hash        -> BlockField .
+    op beneficiary[_]  : Address     -> BlockField .
+    op logsBloom[_]    : BloomFilter -> BlockField .
+    op difficulty[_]   : Difficulty  -> BlockField .
+    op number[_]       : BlockNumber -> BlockField .
+    op gasLimit[_]     : Gas         -> BlockField .
+    op gasUsed[_]      : Gas         -> BlockField .
+    op timeStamp[_]    : Time        -> BlockField .
+    op extraData[_]    : 32Byte      -> BlockField .
+    op nonce[_]        : Nat         -> BlockField .
+
+    op mt : -> BlockHeader .
+    op __ : BlockHeader BlockHeader -> BlockHeader [assoc comm] .
+
+    op {_,_,_}      : BlockHeader OmmerHeaders TransactionList -> [Block] .
+    op Block{_,_,_} : BlockHeader OmmerHeaders TransactionList -> Block .
+
+    vars H1 H2 H3 H4 H5 H6 : Hash .
+    vars G1 G2 : Gas .
+    var Addr : Address .
+    var BF : BloomFilter .
+    var D : Difficulty .
+    var BN : BlockNumber .
+    var t : Time .
+    var d : 32Byte .
+    var N : Nat .
+    var OH : OmmerHeaders .
+    var TL : TransactionList .
+
+    ceq { parentHash[H1] ommersHash[H2] stateRoot[H3] txRoot[H4] receiptsRoot[H5] mixHash[H6]
+          beneficiary[Addr] logsBloom[BF] difficulty[D] number[BN]
+          gasLimit[G1] gasUsed[G2] timeStamp[t] extraData[d] nonce[N]
+        , OH
+        , TL
+        }
+        = Block{ parentHash[H1] ommersHash[H2] stateRoot[H3] txRoot[H4] receiptsRoot[H5] mixHash[H6]
+                 beneficiary[Addr] logsBloom[BF] difficulty[D] number[BN]
+                 gasLimit[G1] gasUsed[G2] timeStamp[t] extraData[d] nonce[N]
+               , OH
+               , TL
+               }
+        if true .  --- here we put other block validation properties (instead of true)
+
+endfm
