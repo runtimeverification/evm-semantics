@@ -169,20 +169,70 @@ implicitely.
 
 ```maude
     op <_|_> : WordStack Mem -> LocalState .
-
-    --- all of these decrease/leave-same stack size
-    ops MLOAD MSTORE MSTORES SLOAD SSTORE
-        : -> LocalOp .
-
-    --- control flow
-    ops JUMP JUMP1 JUMPDEST CREATE CALL CALLCODE RETURN DELEGATECALL SUICIDE
-        : -> LocalOp .
-
     op _[_]  : LocalOp LocalState -> [LocalState] .
-
-    --- Local State Semantics
+    -----------------------------------------------
     var SO : StackOp .
     eq SO [ < VS | M > ] = < SO [ VS ] | M > .
+
+    --- all of these decrease/leave-same stack size
+    ops MLOAD MSTORE MSTORE8 : -> LocalOp .
+    ---------------------------------------
+    eq MLOAD  [ < V0 : VS      | M > ] = < M[V0] : VS | M > .
+    eq MSTORE [ < V0 : V1 : VS | M > ] = < VS         | M[V0 := V1] > .
+    --- eq MSTORE8 [ < VS | M > ]      = mstore8(VS,M) .
+endfm
+```
+
+Global State
+------------
+
+```maude
+fmod EVM-ACCOUNTEXEC-STATE is
+    protecting NAT .
+    protecting EVM-LOCALSTATE .
+    --- protecting EVM-ACCOUNTSTATE .
+
+    sort Address .
+    subsort Nat < Address .
+    sort PC .
+    sort AccountExecState .
+    sort GlobalState .
+
+    sorts StorageOp GlobalOp OpCode Program .
+    subsort StorageOp < GlobalOp .
+    subsorts GlobalOp LocalOp < OpCode < Program .
+
+    sorts CallFrame CallStack .
+
+    op pc : Nat -> PC .
+
+    op skip : -> Program [ctor] .
+    op _:_  : Nat OpCode -> Program .
+    op _;_  : Program Program -> Program [assoc comm id: skip prec 60] .
+
+    op _,_,_     : Program PC LocalState -> AccountExecState .
+    op <_,_|_>   : Nat Address AccountExecState -> CallFrame .
+    op <_,_,_|_> : Nat Address OpCode AccountExecState -> CallFrame .
+
+    var FN : Nat . var ID : Address .
+    var OP : OpCode . var OPA : Nat . var P : Program .
+    var LS : LocalState . var PC : PC . var LOP : LocalOp .
+
+    eq    < FN , ID      | (OPA : OP ; P) , pc(OPA)     , LS >
+        = < FN , ID , OP | (OPA : OP ; P) , pc(OPA + 1) , LS > .
+
+    eq    < FN , ID , LOP | P , PC , LS >
+        = < FN , ID       | P , PC , LOP[LS] > .
+
+    op .CallStack : -> CallStack [ctor] .
+    op _:_        : CallFrame CallStack -> CallStack [ctor] .
+
+    op _[_]       : OpCode CallFrame -> [CallFrame] .
+
+    ops SLOAD SSTORE : -> StorageOp .
+
+    --- control flow
+    ops JUMP JUMP1 JUMPDEST CREATE CALL CALLCODE RETURN DELEGATECALL SUICIDE : -> LocalOp .
 
 
     --- all of these increase stack-size by 1
