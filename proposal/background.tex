@@ -1,4 +1,21 @@
-\section{Background}
-The recent popularity of smart contracts has also increased scrutiny to the smart contract system. Because contracts inherently involve money, bugs in smart contract programs can be devastating to parties involved. A recent example of such a catastrophe is the recent DAO attack~\cite{dao-attack}. Many classes of bugs exist in Ethereum smart contracts, from transaction-ordering dependence to mishandled exceptions and even a contract running out of gas before full completion of a function. In light of this, there is a newfound interest in recent academic work to verify the correctness of smart contracts in Ethereum. Oyente~\cite{luumaking} is an example of very recent work in this area. While Oyente focused on building a symbolic execution tool from the ground up, there has not yet been work done on modeling the full semantics of EVM bytecode using modern program analsysis hammers, and performing a host of program verification techniques to verify properties of smart contracts as they execute. We are implementing our model in the K framework, a semantic framework built by researchers at the University of Illinois, Urbana-Champaign.   
- 
-K is an extensible semantic framework that is used to model programming languages, type systems, and formal analysis tools~\cite{rosu-serbanuta-2010-jlap}. There a number of semantic frameworks to choose from - we are choosing to use K in our formal analysis primarily because of its sipmlicity and extensibility. Adding additional pieces of state is typically as easy as adding in new entires into a configuration and updating the rules to match. In addition, we are working closely with the developers of K (Manasvi and his lab mantain K) so to get more nuanced feedback about the rigor and correctness of our semantic model. 
+\section{Background} The growing popularity of smart contracts has led to
+increased scrutiny of the security of smart contracts. Because contracts
+inherently involve money, bugs in smart contract programs can be devastating to
+parties involved. A example of such a catastrophe is the recent DAO
+attack~\cite{dao-attack}, where \$150 million of ether was stolen, prompting an
+unprecedented hard fork of the Ethereum blockchain. Many classes of bugs exist
+in Ethereum smart contracts, from transaction-ordering dependence to mishandled
+exceptions and even a contract running out of gas before full completion of a
+function. 
+
+Smart contracts are an attractive method for formal program verification, which
+theoretically can provide guarantees on smart contract execution safety,
+liveness, and other forms of application logic. In particular, K is an
+extensible semantic framework that is used to model programming languages, type
+systems, and formal analysis tools~\cite{rosu-serbanuta-2010-jlap}. There a
+number of semantic frameworks to choose from - we are choosing to use K in our
+formal analysis primarily because of its simplicity and extensibility. For
+instance, adding additional pieces of state is typically as easy as adding in
+new entries into a configuration and updating the rules to match. We are also
+working closely with the developers of K (Manasvi and his lab mantain K) to get
+more nuanced feedback about the rigor and correctness of our semantic model. 

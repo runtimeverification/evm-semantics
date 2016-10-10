@@ -69,11 +69,16 @@
 
 \newcommand{\smallish}{}
 
+% remove copyright section
+\makeatletter
+\def\@copyrightspace{\relax}
+\makeatother
+
 \begin{document}
 \pagenumbering{arabic}
 \thispagestyle{empty}
 
-\title{Modeling EVM in the K framework}
+\title{Proposal: Modeling EVM in the K framework}
 
 \newif\ifblind\blindfalse % Blind submission?
 
