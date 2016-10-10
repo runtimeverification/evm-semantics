@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+# Machine Execution
+# -----------------
+
+pandoc-tangle --from markdown --to code-maude --code maude \
+              --section 'EVM Execution' evm.md > evm-exec.k
