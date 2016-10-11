@@ -16,6 +16,9 @@ module WORD-STACK
 
     syntax Word        ::= Int
                          | "bool2Int" "(" Bool ")"
+    rule bool2Int(true)  => 1
+    rule bool2Int(false) => 0
+
     syntax WordStack   ::= ".WordStack"
                          | Word ":" WordStack
                          | StackOp "[" WordStack "]"
@@ -27,8 +30,8 @@ module WORD-STACK
     rule DIV [ V0 : V1 : VS ] => 0          : VS requires V1 ==K 0
     rule EXP [ V0 : V1 : VS ] => V0 ^Int V1 : VS
     rule MOD [ V0 : V1 : VS ] => V0 %Int V1 : VS
-    rule LT  [ V0 : V1 : VS ] => bool2int(V0 <Int V1)
-    rule GT  [ V0 : V1 : VS ] => bool2int(V0 >Int V1)
+    rule LT  [ V0 : V1 : VS ] => bool2int(V0 <Int V1) : VS
+    rule GT  [ V0 : V1 : VS ] => bool2int(V0 >Int V1) : VS
 endmodule
 ```
 
@@ -61,6 +64,15 @@ module EVM-CONFIGURATION
                     </worldState>
                   </T>
 
+    // example rule
+    rule <k> SO:StackOp => . ... </k>
+         <stack> FID ... </stack>
+         <stackFrame>
+             <frameID> FID </frameID>
+             <programCounter> PC => PC + 1 </programCounter>
+             <wordStack> WS => SO [ WS ] </wordStack>
+             ...
+         </stackFrame>
 
     syntax LocalMem    ::= ".LocalMem"
 
