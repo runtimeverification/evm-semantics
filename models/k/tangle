@@ -1,4 +1,7 @@
 #!/usr/bin/env sh
 
 pandoc-tangle --from markdown --to code-k --code k \
-              --section "Word Stack" evm.md > evm-exec.k
+              --section "Primitives|Local Execution State" \
+              evm.md > evm-exec.k
+
+kompile --main-module LOCAL-MEMORY evm-exec.k
