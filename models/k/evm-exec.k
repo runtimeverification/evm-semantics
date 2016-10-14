@@ -1,10 +1,10 @@
-// Primitives
-// ==========
+// Primitive Data
+// ==============
 
 // Words
 // -----
 
-module WORD
+module EVM-WORD
     syntax Word ::= Int
                   | "chop" "(" Int ")"
                   | "bool2Word" "(" Bool ")"  [strict]
@@ -27,37 +27,19 @@ module WORD
 endmodule
 
 
-// Local Execution State
-// =====================
+// Syntax
+// ======
 
-// Word Stack
-// ----------
+// Execution Local
+// ---------------
 
-module WORD-STACK
-    imports WORD
+module EVM-LOCAL-STATE-SYNTAX
+    imports EVM-WORD
 
-    syntax StackOp ::= "ADD" | "MUL" | "SUB" | "EXP" | "DIV"            // arithmetic
-                     | "MOD" | "ADDMOD" | "MULMOD"                      // modular arithmetic
-                     | "SIGNEXTEND" | "SDIV" | "SMOD"                   // signed arithmetic
-                     | "LT" | "GT" | "SLT" | "SGT" | "EQ" | "ISZERO"    // boolean operations
-                     | "AND" | "OR" | "XOR" | "NOT"                     // bitwise operations
-                     | "BYTE" | "SHA3"                                  // other
-                     | "POP"                                            // stack operation
+// ### Word Stack
 
-    syntax WordStack ::= ".WordStack"                           // empty stack
+    syntax WordStack ::= ".WordStack"       // empty stack
                        | Word ":" WordStack
-                       | StackOp "[" WordStack "]" [strict(2)]  // apply a stack operation
-
-    rule ADD [ V0 : V1 : VS ] => V0 +Word V1 : VS                    [structural]
-    rule SUB [ V0 : V1 : VS ] => V0 -Word V1 : VS                    [structural]
-    rule MUL [ V0 : V1 : VS ] => V0 *Word V1 : VS                    [structural]
-    rule DIV [ V0 : V1 : VS ] => V0 /Word V1 : VS requires V1 =/=K 0 [structural]
-    rule DIV [ V0 : V1 : VS ] => 0           : VS requires V1 ==K 0  [structural]
-    //rule EXP [ V0 : V1 : VS ] => V0 ^Word V1 : VS
-    //rule MOD [ V0 : V1 : VS ] => V0 %Word V1 : VS
-    //rule LT  [ V0 : V1 : VS ] => bool2Word(V0 <Word V1) : VS
-    //rule GT  [ V0 : V1 : VS ] => bool2Word(V0 >Word V1) : VS
-    // TODO: define rest of operations need to be defined here
 
     // Compute the size of the word-stack (for checking validity)
     syntax Int ::= "MAX_STACK_SIZE"
@@ -67,22 +49,19 @@ module WORD-STACK
 
     rule stackSize( .WordStack ) => 0                    [structural]
     rule stackSize( W : WS )     => 1 +Int stackSize(WS) [structural]
-endmodule
 
-// Local Memory
-// ------------
-
-module LOCAL-MEMORY
-    imports WORD
+// ### Local Memory
 
     syntax WordList ::= List{Word,","}
 
     // helpers for cutting up/putting together local memories
     syntax LocalMem ::= WordList
+                      | ".LocalMem"
                       | LocalMem "++" LocalMem
                       | "take" "(" Word "," LocalMem ")"    // keep only so many
                       | "drop" "(" Word "," LocalMem ")"    // remove the front of
 
+    rule .LocalMem  => .WordList [macro]
     rule WL1 ++ WL2 => WL1 , WL2 [macro]
 
     rule take(0, LM)        => .WordList                                        [structural]
@@ -107,57 +86,98 @@ module LOCAL-MEMORY
 
     rule LM:LocalMem [ W1 := W2 ]       => (take(W1, LM) ++ (W2  ++ drop(W1 +Int 1, LM))) [structural]
     rule LM:LocalMem [ W1 : W2 := LM2 ] => (take(W1, LM) ++ (LM2 ++ drop(W2, LM)))        [structural]
-endmodule
 
-// Local State
-// -----------
+endmodule // module LOCAL-STATE-SYNTAX
 
-module EVM-LOCAL-STATE
-    imports WORD-STACK
-    imports LOCAL-MEMORY
+// Program Syntax
+// --------------
 
-    // Use "&&&" as separator between the WordStack and the LocalMem
-    syntax LocalState ::= WordStack "&&&" LocalMem
+module EVM-PROGRAM-SYNTAX
+    imports EVM-WORD
+
+    syntax UnStackOp ::= "ISZERO" | "NOT" | "POP"
+    syntax Word ::= UnStackOp Word
+
+    syntax BinStackOp ::= "ADD" | "MUL" | "SUB" | "EXP" | "DIV"
+                        | "MOD" | "SIGNEXTEND" | "SDIV" | "SMOD"
+                        | "LT" | "GT" | "SLT" | "SGT" | "EQ"
+                        | "AND" | "OR" | "XOR"
+                        | "BYTE" | "SHA3"
+    syntax Word ::= BinStackOp Word Word
+
+    syntax TernStackOp ::= "ADDMOD" | "MULMOD"
+    syntax Word ::= TernStackOp Word Word Word
+
+    syntax StackOp ::= UnStackOp | BinStackOp | TernStackOp
 
     syntax LocalOp ::= StackOp
                      | "MLOAD" | "MSTORE" | "MSTORE8"   // memory operations
 
-    syntax LocalState ::= LocalOp "[" LocalState "]"    [strict(2)]
-
-    rule MLOAD  [ V0 : VS      &&& LM ] => LM[V0] : VS &&& LM           [structural]
-    rule MSTORE [ V0 : V1 : VS &&& LM ] => VS          &&& LM[V0 := V1] [structural]
-
-    rule SO:StackOp [ WS:WordStack &&& LM:LocalMem ] => SO [ WS ] &&& LM [structural]
-endmodule
-
-
-// EVM Execution
-// =============
-
-// EVM Programs
-// ------------
-
-module EVM-PROGRAM
-    imports EVM-LOCAL-STATE
-
-    configuration <T>
-                    <k> $PGM:Program </k>
-                    <localState> .WordStack &&& .WordList </localState>
-                  </T>
-
     syntax OpCode ::= LocalOp
+                    | "#push"           // internal stack push operation
+                    | "#checkStackSize" // internal stack-size check
                     | "PUSH" Word
 
     syntax Program ::= "skip"
                      | OpCode ";" Program
+endmodule
 
+
+// Semantics
+// =========
+
+// Stack Operations
+// ----------------
+
+module EVM-STACK-SEMANTICS
+    imports EVM-PROGRAM-SYNTAX
+
+    rule ADD W0 W1 => W0 +Word W1 [structural]
+    rule MUL W0 W1 => W0 *Word W1 [structural]
+    rule SUB W0 W1 => W0 -Word W1 [structural]
+    rule MUL W0 W1 => W0 *Word W1 [structural]
+    rule DIV W0 W1 => W0 /Word W1 [structural]
+    //rule EXP [ V0 : V1 : VS ] => V0 ^Word V1 : VS
+    //rule MOD [ V0 : V1 : VS ] => V0 %Word V1 : VS
+    //rule LT  [ V0 : V1 : VS ] => bool2Word(V0 <Word V1) : VS
+    //rule GT  [ V0 : V1 : VS ] => bool2Word(V0 >Word V1) : VS
+    // TODO: define rest of operations need to be defined here
+endmodule
+
+// Entire Program
+// --------------
+
+module EVM-PROGRAM
+    imports EVM-LOCAL-STATE-SYNTAX
+    imports EVM-PROGRAM-SYNTAX
+    imports EVM-STACK-SEMANTICS
+
+    configuration <T>
+                    <k> $PGM:Program </k>
+                    <wordStack> .WordStack </wordStack>
+                    <localMem> .LocalMem </localMem>
+                  </T>
+
+    // Program in the k-cell, replace `;` with k-sequence `~>`
     rule OPCODE:OpCode ; P:Program => OPCODE ~> P
 
-    rule <k> PUSH W1 => . ... </k>
-         <localState> (WS => W1 : WS) &&& LM </localState>
+    // result is calculated, put back on stack
+    rule <k> (W:Int ~> #push) => . ... </k>
+         <wordStack> WS => W : WS </wordStack>
 
-    rule <k> LO:LocalOp => . ... </k>
-         <localState> LS => LO [ LS ] </localState>
+    // these operations load elements from stack for calculation
+    // notice that they all either leave stack size alone or decrease it
+    rule <k> UOP:UnStackOp => UOP W0 ~> #push ... </k>
+         <wordStack> W0 : WS => WS </wordStack>
+    rule <k> BOP:BinStackOp => BOP W0 W1 ~> #push ... </k>
+         <wordStack> W0 : W1 : WS => WS </wordStack>
+    rule <k> TOP:TernStackOp => TOP W0 W1 W2 ~> #push ... </k>
+         <wordStack> W0 : W1 : W2 : WS => WS </wordStack>
 
-    rule <localState> SO:StackOp [ WS:WordStack &&& LM:LocalMem ] => SO [ WS ] &&& LM </localState>
+    // this can push the stackSize past MAX_STACK_SIZE
+    rule <k> PUSH W => #checkStackSize ... </k>
+         <wordStack> WS => W : WS </wordStack>
+
+    // TODO: Actually check stack size
+    rule #checkStackSize => .
 endmodule

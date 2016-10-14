@@ -1,1 +1,1 @@
-PUSH 3 ; PUSH 5 ; ADD ; PUSH 10 ; MUL ; PUSH 2 ; DIV ; skip
+PUSH 3 ; PUSH 5 ; ADD ; PUSH 10 ; MUL ; PUSH 240 ; DIV ; skip
