@@ -1,7 +1,6 @@
 #!/usr/bin/env sh
 
 pandoc-tangle --from markdown --to code-k --code k \
-              --section "Primitives|Local Execution State" \
               evm.md > evm-exec.k
 
-kompile --main-module LOCAL-MEMORY evm-exec.k
+kompile --debug --main-module EVM-PROGRAM evm-exec.k
