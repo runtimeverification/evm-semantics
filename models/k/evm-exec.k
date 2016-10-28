@@ -89,25 +89,43 @@ endmodule
 module EVM-PROGRAM-SYNTAX
     imports EVM-STACK-SYNTAX
 
+    syntax PID ::= Int | ".PID"
+
     syntax LocalOp ::= StackOp | "MLOAD" | "MSTORE"
                      // | "MLOAD8"
+
+    syntax ProcessOp ::= "CALL"
+                       | "RETURN" | "ACCEPTRETURN" Word Word Word
+    syntax Word ::= "CALL" Word Word Word Word Word Word Word
 
     syntax ExnOp ::= "STACK_OVERFLOW" Int
 
     syntax OpCode ::= LocalOp
                     | ExnOp
+                    | ProcessOp
                     | "#push"           // internal stack push operation
                     | "#checkStackSize" // internal stack-size check
                     | "PUSH" Word
 
-    syntax Program ::= "skip"
+    syntax Program ::= ".Program"
                      | OpCode ";" Program
 
-    rule (I:Int ~> #checkStackSize) => .                requires I <Int MAX_STACK_SIZE
-    rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW I requires I >=Int  MAX_STACK_SIZE
+    rule (I:Int ~> #checkStackSize) => .                requires I <Int  MAX_STACK_SIZE
+    rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW I requires I >=Int MAX_STACK_SIZE
 
     // turn EVM program sequence `;` into k-sequence `~>`
     rule OPCODE:OpCode ; P:Program => OPCODE ~> P
+endmodule
+
+// Call/Return
+// -----------
+
+module EVM-CALL-SYNTAX
+    imports EVM-WORD
+
+    syntax Word ::= "#gatherArgs" Word Word Word
+                  | "#mkCall" Word Map
+                  | "#recieveReturn" Word Word
 endmodule
 
 
@@ -120,11 +138,25 @@ endmodule
 module EVM-CONFIGURATION
     imports EVM-PROGRAM-SYNTAX
 
+    syntax AcctID ::= ".AcctID"
     configuration <T>
-                    <k> $PGM:Program </k>
-                    <wordStack> .WordStack </wordStack>
-                    <localMem> .Map </localMem>
+                    <processes>
+                        <process multiplicity="*">
+                            <pid> .PID </pid>
+                            <k> $PGM:Program </k>
+                            <wordStack> .WordStack </wordStack>
+                            <localMem> .Map </localMem>
+                        </process>
+                    </processes>
+                    <accounts>
+                        <account multiplicity="*">
+                            <acctID> .AcctID </acctID>
+                            <program> .Program </program>
+                            <balance> 0 </balance>
+                        </account>
+                    </accounts>
                   </T>
+
 endmodule
 
 // Entire Program
@@ -133,6 +165,7 @@ endmodule
 module EVM-PROGRAM
     imports EVM-CONFIGURATION
     imports EVM-STACK-SEMANTICS
+    imports EVM-CALL-SYNTAX
 
     // result is calculated, put back on stack
     rule <k> (W:Int ~> #push) => . ... </k>
@@ -171,4 +204,19 @@ module EVM-PROGRAM
          <wordStack> W0 : W1 : WS => WS </wordStack>
          <localMem> Rho:Map (.Map => W0 |-> W1) </localMem>
          requires notBool (W0 in keys(Rho))
+
+    // call another process
+//    rule <k> CALL => #gatherArgs(arg0 , argn , 0 , .Map) ~> #mkCall dest ~> #recieveReturn ret0 retn ... </k>
+//         <wordStack> dest : ether : arg0 : argn : ret0 : retn : WS => WS </wordStack>
+
+    rule <k> #gatherArgs (ARG0 => ARG0 +Word 1) ARGN (N => N +Word 1) ~> #mkCall DEST (RHO:Map (.Map => N |-> M)) ...  </k>
+         <localMem> ... ARG0 |-> M ... </localMem>
+         requires ARG0 <Int ARGN
+
+    rule <k> #gatherArgs (ARG0 => ARG0 +Word 1) ARGN (N => N +Word 1) ~> #mkCall DEST (RHO:Map (.Map => N |-> 0)) ...  </k>
+         <localMem> LM </localMem>
+         requires (ARG0 <Int ARGN) andBool (notBool (N in keys(LM)))
+
+    rule #gatherArgs ARG0 ARGN N => .
+         requires ARG0 >=Int ARGN
 endmodule
