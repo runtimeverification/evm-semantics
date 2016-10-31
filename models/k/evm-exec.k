@@ -30,8 +30,8 @@ module EVM-WORD
     rule W1:Int *Word W2:Int => chop( W1 *Int W2 )
     rule W1:Int /Word W2:Int => chop( W1 /Int W2 )
     rule W1:Int ^Word W2:Int => chop( W1 ^Int W2 )
-    rule W1:Int <Word W2:Int => chop( W1 <Int W2 )
-    rule W2:Int >Word W2:Int => chop( W1 >Int W2 )
+    rule W1:Int <Word W2:Int => bool2Word( W1 <Int W2 )
+    rule W1:Int >Word W2:Int => bool2Word( W1 >Int W2 )
 endmodule
 
 
@@ -81,8 +81,8 @@ module EVM-STACK-SEMANTICS
     rule MUL W0 W1 => W0 *Word W1 [structural]
     rule DIV W0 W1 => W0 /Word W1 [structural]
     rule EXP W0 W1 => W0 ^Word W1 [structural]
-    rule LT  W0 W1 => bool2Word(W0 <Word W1) [structural]
-    rule GT  W0 W1 => bool2Word(W0 >Word W1) [structural]
+    rule LT  W0 W1 => W0 <Word W1 [structural]
+    rule GT  W0 W1 => W0 >Word W1 [structural]
     //rule MOD W0 W1 => W0 %Word W1 [structural]
     //rule LT  W0 W1 => bool2Word(W0 <Word W1) [structural]
     //rule GT  W0 W1 => bool2Word(W0 >Word W1) [structural]
