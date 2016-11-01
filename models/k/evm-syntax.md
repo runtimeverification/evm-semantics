@@ -19,67 +19,61 @@ EVM execution maintains some local state (like a word stack, local memory,
 program counter, etc...). We need to specify the syntax of all this local state
 for storage.
 
-Word Stack
-----------
-
-The `WordStack` is the size-limited (to 1024) stack of words that each local
-execution of an EVM process has acess to.
-
-```k
-module EVM-STACK-SYNTAX
-    imports EVM-WORD
-
-    syntax WordStack ::= ".WordStack"       // empty stack
-                       | Word ":" WordStack
-
-    // Compute the size of the word-stack (for checking validity)
-    syntax Word ::= "stackSize" "(" WordStack ")"
-    syntax Int  ::= "MAX_STACK_SIZE"
-
-    rule MAX_STACK_SIZE => 1024 [macro]
-
-    rule stackSize( .WordStack ) => 0                     [structural]
-    rule stackSize( W : WS )     => 1 +Word stackSize(WS) [structural]
-```
+Stack Operations
+----------------
 
 We break up stack operations into groups by their arity so that we can pull out
 the correct number of arguments for each operation.
 
-```k
-    syntax UnStackOp ::= "ISZERO" | "NOT" | "POP"
-    syntax Word ::= UnStackOp Word
+NOTE: We have to call the opcode `OR` by `EVMOR` instead, because otherwise K
+has trouble parsing it/compiling the definition.
 
-    syntax BinStackOp ::= "ADD" | "MUL" | "SUB" | "EXP" | "DIV"
+```k
+module EVM-STACK-OPERATORS
+    imports EVM-WORD
+
+    syntax UnStackOp ::= "ISZERO" | "NOT" | "POP"
+    syntax KItem ::= UnStackOp Word
+
+    rule ISZERO 0 => bool2Word(true)                    [structural]
+    rule ISZERO N => bool2Word(false) requires N =/=K 0 [structural]
+    rule NOT    N => bitwisenot(N)                      [structural]
+    rule POP    N => .K                                 [structural]
+
+    syntax BinStackOp ::= "ADD" | "MUL" | "SUB" | "DIV" | "EXP"
                         | "MOD" | "SIGNEXTEND" | "SDIV" | "SMOD"
                         | "LT" | "GT" | "SLT" | "SGT" | "EQ"
-                        | "AND" | "OR" | "XOR"
+                        | "AND" | "EVMOR" | "XOR"
                         | "BYTE" | "SHA3"
-    syntax Word ::= BinStackOp Word Word
+    syntax KItem ::= BinStackOp Word Word
+
+    rule ADD        W0 W1 => W0 +Word W1       [structural]
+    rule MUL        W0 W1 => W0 *Word W1       [structural]
+    rule SUB        W0 W1 => W0 -Word W1       [structural]
+    rule DIV        W0 W1 => W0 /Word W1       [structural]
+    rule EXP        W0 W1 => W0 ^Word W1       [structural]
+    rule MOD        W0 W1 => W0 %Word W1       [structural]
+    rule SIGNEXTEND W0 W1 => signextend(W0,W1) [structural]
+    rule SDIV       W0 W1 => sdiv(W0,W1)       [structural]
+    rule SMOD       W0 W1 => smod(W0,W1)       [structural]
+    rule LT         W0 W1 => W0 <Word W1       [structural]
+    rule GT         W0 W1 => W0 >Word W1       [structural]
+    rule SLT        W0 W1 => slt(W0,W1)        [structural]
+    rule SGT        W0 W1 => sgt(W0,W1)        [structural]
+    rule EQ         W0 W1 => W0 ==Word W1      [structural]
+    rule AND        W0 W1 => bitwiseand(W0,W1) [structural]
+    rule EVMOR      W0 W1 => bitwiseor(W0,W1)  [structural]
+    rule XOR        W0 W1 => bitwisexor(W0,W1) [structural]
+    rule BYTE       W0 W1 => getbyte(W0,W1)    [structural]
+    rule SHA3       W0 W1 => sha3(W0,W1)       [structural]
 
     syntax TernStackOp ::= "ADDMOD" | "MULMOD"
-    syntax Word ::= TernStackOp Word Word Word
+    syntax KItem ::= TernStackOp Word Word Word
 
-    syntax StackOp ::= UnStackOp | BinStackOp | TernStackOp
-endmodule
-```
+    rule ADDMOD W0 W1 W2 => addmod(W0,W1,W2) [structural]
+    rule MULMOD W0 W1 W2 => mulmod(W0,W1,W2) [structural]
 
-We assume that the operations will be placed at the top of the k-cell with the
-correct number of arguments supplied. Here we define the relevant operations.
-
-```k
-module EVM-STACK-SEMANTICS
-    imports EVM-STACK-SYNTAX
-
-    rule ADD W0 W1 => W0 +Word W1 [structural]
-    rule MUL W0 W1 => W0 *Word W1 [structural]
-    rule SUB W0 W1 => W0 -Word W1 [structural]
-    rule MUL W0 W1 => W0 *Word W1 [structural]
-    rule DIV W0 W1 => W0 /Word W1 [structural]
-    rule EXP W0 W1 => W0 ^Word W1 [structural]
-    rule LT  W0 W1 => W0 <Word W1 [structural]
-    rule GT  W0 W1 => W0 >Word W1 [structural]
-    rule EQ  W0 W1 => W0 ==Word W1 [structural]
-    // TODO: define rest of operations
+    syntax StackOp ::= UnStackOp | BinStackOp | TernStackOp | "PUSH" Word
 endmodule
 ```
 
@@ -88,67 +82,58 @@ EVM Programs
 
 ```k
 module EVM-PROGRAM-SYNTAX
-    imports EVM-STACK-SYNTAX
+    imports EVM-STACK-OPERATORS
 
-    syntax LocalOp ::= StackOp | "MLOAD" | "MSTORE"
-                     // | "MLOAD8"
+    syntax LocalOp   ::= StackOp | "MLOAD" | "MSTORE" | "MLOAD8"
+    syntax ExnOp     ::= "STACK_OVERFLOW"
+    syntax ProcessOp ::= "CALL" | "RETURN"
+    syntax OpCode    ::= LocalOp | ExnOp | ProcessOp
 
-    syntax ProcessOp ::= "CALL"
-                       | "RETURN" | "ACCEPTRETURN" Word Word Word
-    syntax Word ::= "CALL" Word Word Word Word Word Word Word
-
-    syntax ExnOp ::= "STACK_OVERFLOW" Int
-
-    syntax OpCode ::= LocalOp
-                    | ExnOp
-                    | ProcessOp
-                    | "#push"           // internal stack push operation
-                    | "#checkStackSize" // internal stack-size check
-                    | "PUSH" Word
+    syntax KItem ::= "CALL" Word Word Word Word Word Word Word
 
     syntax Program ::= ".Program"
                      | OpCode ";" Program
-
-    rule (I:Int ~> #checkStackSize) => .                requires I <Int  MAX_STACK_SIZE
-    rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW I requires I >=Int MAX_STACK_SIZE
-
-    // turn EVM program sequence `;` into k-sequence `~>`
-    rule OPCODE:OpCode ; P:Program => OPCODE ~> P
 endmodule
 ```
 
-Process State
--------------
+EVM Process
+-----------
 
-EVM Processes are tuples of their associated `PID`, their `ProgramCounter`,
-their `WordStack`, and their `LocalMem`.
+The `WordStack` is the size-limited (to 1024) stack of words that each local
+execution of an EVM process has acess to. The `LocalMem` is an array of memory
+it has local access to (modeled here as a map from addresses to values). EVM
+Processes are tuples of their associated `PID`, their `ProgramCounter`, their
+`WordStack`, and their `LocalMem`.
 
 ```k
 module EVM-PROCESS-SYNTAX
-    imports EVM-STACK-SYNTAX
+    imports EVM-PROGRAM-SYNTAX
 
-    syntax AcctID ::= Word
-    syntax PID ::= Int "," AcctID   // <stack frame> , <account id>
+    syntax WordStack ::= ".WordStack"       // empty stack
+                       | Word ":" WordStack
 
+    syntax Int ::= "MAX_STACK_SIZE"
+    rule MAX_STACK_SIZE => 1024 [macro]
+
+    syntax KItem ::= "#stackSize" "(" WordStack ")"
+                   | "#checkStackSize"
+
+    rule stackSize( .WordStack ) => 0                    [structural]
+    rule stackSize( W : WS )     => 1 +Int stackSize(WS) [structural]
+
+    rule (I:Int ~> #checkStackSize) => .              requires I <Int  MAX_STACK_SIZE
+    rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW requires I >=Int MAX_STACK_SIZE
+
+    syntax AcctID   ::= Word
     syntax LocalMem ::= Map
+    syntax Process  ::= "{" AcctID "|" Word "|" WordStack "|" LocalMem "}"
 
-    syntax Process ::= "{" PID "|" Word "|" WordStack "|" LocalMem "}"
+    rule I:Int ~> { PID | PC | WS | LM } => { PID | PC | I : WS | LM }
 
-    rule (UOP:UnStackOp   => UOP W0)       ~> { SID , ACCT | PC | (W0 : WS)           => WS | LM }
-    rule (BOP:BinStackOp  => BOP W0 W1)    ~> { SID , ACCT | PC | (W0 : W1 : WS)      => WS | LM }
-    rule (TOP:TernStackOp => TOP W0 W1 W2) ~> { SID , ACCT | PC | (W0 : W1 : W2 : WS) => WS | LM }
-endmodule
-```
+    rule UOP:UnStackOp   ~> { PID | PC | W0 : WS           | LM } => UOP W0       ~> { PID | PC | WS | LM }
+    rule BOP:BinStackOp  ~> { PID | PC | W0 : W1 : WS      | LM } => BOP W0 W1    ~> { PID | PC | WS | LM }
+    rule TOP:TernStackOp ~> { PID | PC | W0 : W1 : W2 : WS | LM } => TOP W0 W1 W2 ~> { PID | PC | WS | LM }
 
-Call/Return
------------
-
-```k
-module EVM-CALL-SYNTAX
-    imports EVM-WORD
-
-    syntax Word ::= "#gatherArgs" Word Word Word
-                  | "#mkCall" Word Map
-                  | "#recieveReturn" Word Word
+    rule PUSH W0 ~> { PID | PC | WS | LM } => #stackSize(W0 : WS) ~> #checkStackSize ~> { PID | PC | W0 : WS | LM }
 endmodule
 ```

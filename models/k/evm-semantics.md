@@ -17,22 +17,13 @@ which span multiple cells.
 
 ```k
 module EVM-CONFIGURATION
-    imports EVM-PROGRAM-SYNTAX
     imports EVM-PROCESS-SYNTAX
 
-    syntax AcctID ::= ".AcctID"
     configuration <T>
                     <k> $PGM:Program </k>
-                    <processes>
-                        <process multiplicity="*">
-                            <pid> . </pid>
-                            <wordStack> .WordStack </wordStack>
-                            <localMem> .Map </localMem>
-                        </process>
-                    </processes>
                     <accounts>
                         <account multiplicity="*">
-                            <acctID> .AcctID </acctID>
+                            <acctID> . </acctID>
                             <program> .Map </program>
                             <balance> 0 </balance>
                         </account>
@@ -40,18 +31,12 @@ module EVM-CONFIGURATION
                   </T>
 
     // operation lookup
-    rule <k> (. => OP) ~> { SID , ACCT | PC | WS | LM } ... </k>
-         <account>
-            <acctID> ACCT </acctID>
-            <program> ... PC |-> OP ... </program>
-            ...
-         </account>
-
-    rule (UOP:UnStackOp   => UOP W0)       ~> { SID , ACCT | PC | (W0 : WS)           => WS | LM }
-    rule (BOP:BinStackOp  => BOP W0 W1)    ~> { SID , ACCT | PC | (W0 : W1 : WS)      => WS | LM }
-    rule (TOP:TernStackOp => TOP W0 W1 W2) ~> { SID , ACCT | PC | (W0 : W1 : W2 : WS) => WS | LM }
-
-
+//    rule <k> (. => OP) ~> { SID , ACCT | PC | WS | LM } ... </k>
+//         <account>
+//            <acctID> ACCT </acctID>
+//            <program> ... PC |-> OP ... </program>
+//            ...
+//         </account>
 endmodule
 ```
 

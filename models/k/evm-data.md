@@ -17,18 +17,30 @@ configuration, they should be standalone and operate at the top of the K cell.
 ```k
 module EVM-WORD
     syntax Word ::= Int
-                  | "chop" "(" Int ")"       [strict]
-                  | "bool2Word" "(" Bool ")" [strict]
-                  | Word "+Word" Word        [strict]
-                  | Word "-Word" Word        [strict]
-                  | Word "*Word" Word        [strict]
-                  | Word "/Word" Word        [strict]
-                  | Word "^Word" Word        [strict]
-                  | Word "<Word" Word        [strict]
-                  | Word ">Word" Word        [strict]
-                  | Word "==Word" Word       [strict]
-
-    syntax KResult ::= Int
+                  | "chop" "(" Int ")"                      [strict]
+                  | "bool2Word" "(" Bool ")"                [strict]
+                  | Word "+Word" Word                       [strict]
+                  | Word "*Word" Word                       [strict]
+                  | Word "-Word" Word                       [strict]
+                  | Word "/Word" Word                       [strict]
+                  | Word "^Word" Word                       [strict]
+                  | Word "%Word" Word                       [strict] // needs implemented
+                  | "signextend" "(" Word "," Word ")"      [strict] // needs implemented
+                  | Word "<Word" Word                       [strict]
+                  | Word ">Word" Word                       [strict]
+                  | Word "==Word" Word                      [strict]
+                  | "bitwisenot" "(" Word ")"               [strict] // needs implemented
+                  | "sdiv" "(" Word "," Word ")"            [strict] // needs implemented
+                  | "smod" "(" Word "," Word ")"            [strict] // needs implemented
+                  | "slt" "(" Word "," Word ")"             [strict] // needs implemented
+                  | "sgt" "(" Word "," Word ")"             [strict] // needs implemented
+                  | "bitwiseand" "(" Word "," Word ")"      [strict] // needs implemented
+                  | "bitwiseor" "(" Word "," Word ")"       [strict] // needs implemented
+                  | "bitwisexor" "(" Word "," Word ")"      [strict] // needs implemented
+                  | "getbyte" "(" Word "," Word ")"         [strict] // needs implemented
+                  | "sha3" "(" Word "," Word ")"            [strict] // needs implemented
+                  | "addmod" "(" Word "," Word "," Word ")" [strict] // needs implemented
+                  | "mulmod" "(" Word "," Word "," Word ")" [strict] // needs implemented
 
     rule chop( I:Int ) => I                           requires I <Int (2 ^Int 256) andBool I >=Int 0
     rule chop( I:Int ) => chop( I +Int (2 ^Int 256) ) requires I <Int 0
@@ -37,13 +49,13 @@ module EVM-WORD
     rule bool2Word(true)  => 1
     rule bool2Word(false) => 0
 
-    rule W1:Int +Word W2:Int => chop( W1 +Int W2 )
-    rule W1:Int -Word W2:Int => chop( W1 -Int W2 )
-    rule W1:Int *Word W2:Int => chop( W1 *Int W2 )
-    rule W1:Int /Word W2:Int => chop( W1 /Int W2 )
-    rule W1:Int ^Word W2:Int => chop( W1 ^Int W2 )
-    rule W1:Int <Word W2:Int => bool2Word( W1 <Int W2 )
-    rule W1:Int >Word W2:Int => bool2Word( W1 >Int W2 )
-    rule W1:Int ==Word W2:Int => bool2Word( W1 ==Int W2)
+    rule W0:Int +Word W1:Int => chop( W0 +Int W1 )
+    rule W0:Int -Word W1:Int => chop( W0 -Int W1 )
+    rule W0:Int *Word W1:Int => chop( W0 *Int W1 )
+    rule W0:Int /Word W1:Int => chop( W0 /Int W1 )
+    rule W0:Int ^Word W1:Int => chop( W0 ^Int W1 )
+    rule W0:Int <Word W1:Int => bool2Word( W0 <Int W1 )
+    rule W0:Int >Word W1:Int => bool2Word( W0 >Int W1 )
+    rule W0:Int ==Word W1:Int => bool2Word( W0 ==Int W1)
 endmodule
 ```
