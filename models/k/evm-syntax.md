@@ -1,48 +1,28 @@
-// Primitive Data
-// ==============
-
-// Words
-// -----
-
-module EVM-WORD
-    syntax Word ::= Int
-                  | "chop" "(" Int ")"       [strict]
-                  | "bool2Word" "(" Bool ")" [strict]
-                  | Word "+Word" Word        [strict]
-                  | Word "-Word" Word        [strict]
-                  | Word "*Word" Word        [strict]
-                  | Word "/Word" Word        [strict]
-                  | Word "^Word" Word        [strict]
-                  | Word "<Word" Word        [strict]
-                  | Word ">Word" Word        [strict]
-                  | Word "==Word" Word       [strict]
-
-    syntax KResult ::= Int
-
-    rule chop( I:Int ) => I                           requires I <Int (2 ^Int 256) andBool I >=Int 0
-    rule chop( I:Int ) => chop( I +Int (2 ^Int 256) ) requires I <Int 0
-    rule chop( I:Int ) => chop( I -Int (2 ^Int 256) ) requires I >=Int (2 ^Int 256)
-
-    rule bool2Word(true)  => 1
-    rule bool2Word(false) => 0
-
-    rule W1:Int +Word W2:Int => chop( W1 +Int W2 )
-    rule W1:Int -Word W2:Int => chop( W1 -Int W2 )
-    rule W1:Int *Word W2:Int => chop( W1 *Int W2 )
-    rule W1:Int /Word W2:Int => chop( W1 /Int W2 )
-    rule W1:Int ^Word W2:Int => chop( W1 ^Int W2 )
-    rule W1:Int <Word W2:Int => bool2Word( W1 <Int W2 )
-    rule W1:Int >Word W2:Int => bool2Word( W1 >Int W2 )
-    rule W1:Int ==Word W2:Int => bool2Word( W1 ==Int W2)
-endmodule
+---
+title: K Model of EVM Execution Environment
+geometry: margin=2.5cm
+...
 
 
-// Local Execution State
-// =====================
+```k
+requires "evm-data.k"
+```
 
-// Word Stack
-// ----------
 
+Local Execution State
+=====================
+
+EVM execution maintains some local state (like a word stack, local memory,
+program counter, etc...). We need to specify the syntax of all this local state
+for storage.
+
+Word Stack
+----------
+
+The `WordStack` is the size-limited (to 1024) stack of words that each local
+execution of an EVM process has acess to.
+
+```k
 module EVM-STACK-SYNTAX
     imports EVM-WORD
 
@@ -57,7 +37,12 @@ module EVM-STACK-SYNTAX
 
     rule stackSize( .WordStack ) => 0                     [structural]
     rule stackSize( W : WS )     => 1 +Word stackSize(WS) [structural]
+```
 
+We break up stack operations into groups by their arity so that we can pull out
+the correct number of arguments for each operation.
+
+```k
     syntax UnStackOp ::= "ISZERO" | "NOT" | "POP"
     syntax Word ::= UnStackOp Word
 
@@ -73,7 +58,12 @@ module EVM-STACK-SYNTAX
 
     syntax StackOp ::= UnStackOp | BinStackOp | TernStackOp
 endmodule
+```
 
+We assume that the operations will be placed at the top of the k-cell with the
+correct number of arguments supplied. Here we define the relevant operations.
+
+```k
 module EVM-STACK-SEMANTICS
     imports EVM-STACK-SYNTAX
 
@@ -88,10 +78,14 @@ module EVM-STACK-SEMANTICS
     rule EQ  W0 W1 => W0 ==Word W1 [structural]
     // TODO: define rest of operations
 endmodule
+```
 
-// Program Syntax
-// --------------
+Program Syntax
+--------------
 
+EVM Programs are sequences of OPCODEs seperated by semicolons.
+
+```k
 module EVM-PROGRAM-SYNTAX
     imports EVM-STACK-SYNTAX
 
@@ -122,10 +116,12 @@ module EVM-PROGRAM-SYNTAX
     // turn EVM program sequence `;` into k-sequence `~>`
     rule OPCODE:OpCode ; P:Program => OPCODE ~> P
 endmodule
+```
 
-// Call/Return
-// -----------
+Call/Return
+-----------
 
+```k
 module EVM-CALL-SYNTAX
     imports EVM-WORD
 
@@ -133,14 +129,19 @@ module EVM-CALL-SYNTAX
                   | "#mkCall" Word Map
                   | "#recieveReturn" Word Word
 endmodule
+```
 
 
-// Semantics
-// =========
+Semantics
+=========
 
-// Configuration
-// -------------
+Configuration
+-------------
 
+We need to define the configuration before defining the semantics of any rules
+which span multiple cells.
+
+```k
 module EVM-CONFIGURATION
     imports EVM-PROGRAM-SYNTAX
 
@@ -164,10 +165,12 @@ module EVM-CONFIGURATION
                   </T>
 
 endmodule
+```
 
-// Entire Program
-// --------------
+Entire Program
+--------------
 
+```k
 module EVM-PROGRAM
     imports EVM-CONFIGURATION
     imports EVM-STACK-SEMANTICS
@@ -226,3 +229,4 @@ module EVM-PROGRAM
     rule #gatherArgs ARG0 ARGN N => .
          requires ARG0 >=Int ARGN
 endmodule
+```

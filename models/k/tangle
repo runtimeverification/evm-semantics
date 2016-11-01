@@ -1,6 +1,13 @@
 #!/usr/bin/env sh
 
-pandoc-tangle --from markdown --to code-k --code k \
-              evm.md > evm-exec.k
 
-kompile --debug --main-module EVM-PROGRAM evm-exec.k
+pandoc-tangle --from markdown --to code-k --code k \
+              evm-data.md > evm-data.k
+
+pandoc-tangle --from markdown --to code-k --code k \
+              evm-syntax.md > evm-syntax.k
+
+pandoc-tangle --from markdown --to code-k --code k \
+              evm-semantics.md > evm-semantics.k
+
+kompile --debug --main-module EVM-PROGRAM evm-semantics.k
