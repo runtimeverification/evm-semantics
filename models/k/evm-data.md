@@ -11,6 +11,9 @@ Words are 256 bit integers. If you want to perform arithmetic on words, make
 sure that you use the corresponding `opWord` operators (eg. `+Word`), which will
 make sure the correct width is produced.
 
+None of the rules defined here should be sensitive to any other parts of the
+configuration, they should be standalone and operate at the top of the K cell.
+
 ```k
 module EVM-WORD
     syntax Word ::= Int

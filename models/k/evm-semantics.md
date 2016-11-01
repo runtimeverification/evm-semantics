@@ -89,8 +89,8 @@ module EVM-PROGRAM
          requires notBool (W0 in keys(Rho))
 
     // call another process
-//    rule <k> CALL => #gatherArgs(arg0 , argn , 0 , .Map) ~> #mkCall dest ~> #recieveReturn ret0 retn ... </k>
-//         <wordStack> dest : ether : arg0 : argn : ret0 : retn : WS => WS </wordStack>
+    rule <k> CALL => #gatherArgs ARG0 ARGN 0 ~> #mkCall DEST .Map ~> #recieveReturn RET0 RETN ... </k>
+         <wordStack> DEST : ETHER : ARG0 : ARGN : RET0 : RETN : WS => WS </wordStack>
 
     rule <k> #gatherArgs (ARG0 => ARG0 +Word 1) ARGN (N => N +Word 1) ~> #mkCall DEST (RHO:Map (.Map => N |-> M)) ...  </k>
          <localMem> ... ARG0 |-> M ... </localMem>
