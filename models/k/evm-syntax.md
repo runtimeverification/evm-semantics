@@ -83,16 +83,12 @@ module EVM-STACK-SEMANTICS
 endmodule
 ```
 
-Program Syntax
---------------
-
-EVM Programs are sequences of OPCODEs seperated by semicolons.
+EVM Programs
+------------
 
 ```k
 module EVM-PROGRAM-SYNTAX
     imports EVM-STACK-SYNTAX
-
-    syntax PID ::= Int | ".PID"
 
     syntax LocalOp ::= StackOp | "MLOAD" | "MSTORE"
                      // | "MLOAD8"
@@ -118,6 +114,29 @@ module EVM-PROGRAM-SYNTAX
 
     // turn EVM program sequence `;` into k-sequence `~>`
     rule OPCODE:OpCode ; P:Program => OPCODE ~> P
+endmodule
+```
+
+Process State
+-------------
+
+EVM Processes are tuples of their associated `PID`, their `ProgramCounter`,
+their `WordStack`, and their `LocalMem`.
+
+```k
+module EVM-PROCESS-SYNTAX
+    imports EVM-STACK-SYNTAX
+
+    syntax AcctID ::= Word
+    syntax PID ::= Int "," AcctID   // <stack frame> , <account id>
+
+    syntax LocalMem ::= Map
+
+    syntax Process ::= "{" PID "|" Word "|" WordStack "|" LocalMem "}"
+
+    rule (UOP:UnStackOp   => UOP W0)       ~> { SID , ACCT | PC | (W0 : WS)           => WS | LM }
+    rule (BOP:BinStackOp  => BOP W0 W1)    ~> { SID , ACCT | PC | (W0 : W1 : WS)      => WS | LM }
+    rule (TOP:TernStackOp => TOP W0 W1 W2) ~> { SID , ACCT | PC | (W0 : W1 : W2 : WS) => WS | LM }
 endmodule
 ```
 

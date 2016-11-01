@@ -18,13 +18,14 @@ which span multiple cells.
 ```k
 module EVM-CONFIGURATION
     imports EVM-PROGRAM-SYNTAX
+    imports EVM-PROCESS-SYNTAX
 
     syntax AcctID ::= ".AcctID"
     configuration <T>
+                    <k> $PGM:Program </k>
                     <processes>
                         <process multiplicity="*">
-                            <pid> .PID </pid>
-                            <k> $PGM:Program </k>
+                            <pid> . </pid>
                             <wordStack> .WordStack </wordStack>
                             <localMem> .Map </localMem>
                         </process>
@@ -32,11 +33,24 @@ module EVM-CONFIGURATION
                     <accounts>
                         <account multiplicity="*">
                             <acctID> .AcctID </acctID>
-                            <program> .Program </program>
+                            <program> .Map </program>
                             <balance> 0 </balance>
                         </account>
                     </accounts>
                   </T>
+
+    // operation lookup
+    rule <k> (. => OP) ~> { SID , ACCT | PC | WS | LM } ... </k>
+         <account>
+            <acctID> ACCT </acctID>
+            <program> ... PC |-> OP ... </program>
+            ...
+         </account>
+
+    rule (UOP:UnStackOp   => UOP W0)       ~> { SID , ACCT | PC | (W0 : WS)           => WS | LM }
+    rule (BOP:BinStackOp  => BOP W0 W1)    ~> { SID , ACCT | PC | (W0 : W1 : WS)      => WS | LM }
+    rule (TOP:TernStackOp => TOP W0 W1 W2) ~> { SID , ACCT | PC | (W0 : W1 : W2 : WS) => WS | LM }
+
 
 endmodule
 ```
@@ -45,6 +59,14 @@ Entire Program
 --------------
 
 ```k
+module EVM-PROGRAM
+    imports EVM-CONFIGURATION
+
+
+endmodule
+```
+
+```
 module EVM-PROGRAM
     imports EVM-CONFIGURATION
     imports EVM-STACK-SEMANTICS
@@ -56,15 +78,6 @@ module EVM-PROGRAM
 
     // these operations load elements from stack for calculation
     // notice that they all either leave stack size alone or decrease it
-    rule <k> UOP:UnStackOp => UOP W0 ~> #push ... </k>
-         <wordStack> W0 : WS => WS </wordStack>
-
-    rule <k> BOP:BinStackOp => BOP W0 W1 ~> #push ... </k>
-         <wordStack> W0 : W1 : WS => WS </wordStack>
-
-    rule <k> TOP:TernStackOp => TOP W0 W1 W2 ~> #push ... </k>
-         <wordStack> W0 : W1 : W2 : WS => WS </wordStack>
-
     // this can push the stackSize past MAX_STACK_SIZE
     rule <k> PUSH W => stackSize(WS) ~> #checkStackSize ~> W ~> #push ... </k>
          <wordStack> WS </wordStack>
