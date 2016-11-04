@@ -17,42 +17,72 @@ which span multiple cells.
 
 ```k
 module EVM-CONFIGURATION
-    imports EVM-SIMULATION
+    imports EVM-SYNTAX
 
     configuration <T>
                     <k> $PGM:EVMSimulation </k>
-                    <accounts> .Map </accounts>
+                    <accounts>
+                        <account multiplicity="*">
+                            <acctID> 0 </acctID>
+                            <program> .Map </program>
+                            <storage> .Map </storage>
+                        </account>
+                    </accounts>
                   </T>
+endmodule
+```
+
+Loading World Definition
+------------------------
+
+This module just takes the parsed world definition (list of accounts and account
+to start with) and loads it all into the correct cells of the configuration.
+
+```k
+module EVM-SEMANTICS
+    imports EVM-CONFIGURATION
+
+    syntax KItem ::= Account | Accounts | EVMSimulation
+
+    rule ACCTS:Accounts START ACCTID => ACCTS ~> ACCTID
+    rule ACCT:Account ACCTS:Accounts => ACCT ~> ACCTS
+    rule .Accounts => .
+
+    syntax KItem ::= "#setStorage" AcctID Int Storage
+                   | "#setProgram" AcctID Int Program
 
     rule <k> account:
              -   id: ACCT
              -   balance: BALANCE
              -   program: PROGRAM
              -   storage: STORAGE
-             ACCTS:Accounts
-             => #setStorage ACCT 0 STORAGE ~> ACCTS
+             => #setStorage ACCT 0 STORAGE ~> #setProgram ACCT 0 PROGRAM
              ...
          </k>
-         <accounts> RHO:Map (. => ACCT |-> ( balance : BALANCE
-                                           , program : PROGRAM
-                                           , storage : .Map
-                                           )
-                            )
-         </accounts>
-         requires notBool (ACCT in keys(RHO))
-
-    syntax KItem ::= "#setStorage" AcctID Word Storage
-
-    rule (#setStorage ACCT N .) => .
-    rule <k> #setStorage ACCT (N => N +Word 1) ((W0:Word => .) , WS) ... </k>
          <accounts>
             ...
-            ACCT |-> ( balance : BALANCE
-                     , program : PROGRAM
-                     , storage : RHO:Map (. => N |-> W0)
-                     )
-            ...
+            (.Bag => <account>
+                    <acctID> ACCT </acctID>
+                    <program> .Map </program>
+                    <storage> .Map </storage>
+                  </account>)
          </accounts>
+
+    rule (#setStorage ACCT N .Storage) => .
+    rule <k> #setStorage ACCT (N => N +Int 1) (W0:Word , WS => WS) ... </k>
+         <account>
+            <acctID> ACCT </acctID>
+            <storage> STORAGE:Map (. => N |-> W0) </storage>
+            ...
+         </account>
+
+    rule (#setProgram ACCT N .Program) => .
+    rule <k> #setProgram ACCT (N => N +Int 1) (OpCode:OpCode ; Program => Program) ... </k>
+         <account>
+            <acctID> ACCT </acctID>
+            <program> STORAGE:Map (. => N |-> OpCode) </program>
+            ...
+         </account>
 
 endmodule
 ```

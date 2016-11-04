@@ -91,8 +91,7 @@ module EVM-PROGRAM-SYNTAX
 
     syntax KItem ::= "CALL" Word Word Word Word Word Word Word
 
-    syntax Program ::= ".Program"
-                     | OpCode ";" Program
+    syntax Program ::= List{OpCode, ";"}
 endmodule
 ```
 
@@ -108,8 +107,8 @@ them, as shown here:
 account:
 -   id: 15
 -   balance: 40
--   program: PUSH 30 ; PUSH 35 ; ADD ; .Program
--   storage: X |-> 50 , Y |-> 70
+-   program: PUSH 30 ; PUSH 35 ; ADD
+-   storage: 50 , 70 , 82
 ```
 
 ```k
@@ -126,7 +125,7 @@ module EVM-ACCOUNT-SYNTAX
                        "-" "storage" ":" Storage
 
     syntax AccountState ::=     "balance" ":" Word
-                            "," "program" ":" Program
+                            "," "program" ":" Map
                             "," "storage" ":" Map
 
 endmodule
@@ -180,13 +179,12 @@ We need a way to specify the current world state. It will be a list of accounts,
 along with which account to call execution on first:
 
 ```k
-module EVM-SIMULATION
+module EVM-SYNTAX
     imports EVM-ACCOUNT-SYNTAX
 
     syntax Accounts ::= ".Accounts"
                       | Account Accounts
 
-    syntax EVMSimulation ::= Accounts
-                             "CALL" AcctID
+    syntax EVMSimulation ::= Accounts "START" AcctID
 endmodule
 ```
