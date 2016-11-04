@@ -17,36 +17,42 @@ which span multiple cells.
 
 ```k
 module EVM-CONFIGURATION
-    imports EVM-PROCESS-SYNTAX
+    imports EVM-SIMULATION
 
     configuration <T>
-                    <k> $PGM:Program </k>
-                    <accounts>
-                        <account multiplicity="*">
-                            <acctID> . </acctID>
-                            <program> .Map </program>
-                            <balance> 0 </balance>
-                        </account>
-                    </accounts>
+                    <k> $PGM:EVMSimulation </k>
+                    <accounts> .Map </accounts>
                   </T>
 
-    // operation lookup
-//    rule <k> (. => OP) ~> { SID , ACCT | PC | WS | LM } ... </k>
-//         <account>
-//            <acctID> ACCT </acctID>
-//            <program> ... PC |-> OP ... </program>
-//            ...
-//         </account>
-endmodule
-```
+    rule <k> account:
+             -   id: ACCT
+             -   balance: BALANCE
+             -   program: PROGRAM
+             -   storage: STORAGE
+             ACCTS:Accounts
+             => #setStorage ACCT 0 STORAGE ~> ACCTS
+             ...
+         </k>
+         <accounts> RHO:Map (. => ACCT |-> ( balance : BALANCE
+                                           , program : PROGRAM
+                                           , storage : .Map
+                                           )
+                            )
+         </accounts>
+         requires notBool (ACCT in keys(RHO))
 
-Entire Program
---------------
+    syntax KItem ::= "#setStorage" AcctID Word Storage
 
-```k
-module EVM-PROGRAM
-    imports EVM-CONFIGURATION
-
+    rule (#setStorage ACCT N .) => .
+    rule <k> #setStorage ACCT (N => N +Word 1) ((W0:Word => .) , WS) ... </k>
+         <accounts>
+            ...
+            ACCT |-> ( balance : BALANCE
+                     , program : PROGRAM
+                     , storage : RHO:Map (. => N |-> W0)
+                     )
+            ...
+         </accounts>
 
 endmodule
 ```

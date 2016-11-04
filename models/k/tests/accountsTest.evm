@@ -1,0 +1,15 @@
+account:
+-   id: 1
+-   balance: 40
+-   program: PUSH 40 ; PUSH 50 ; ADD ; POP ; .Program
+-   storage: 30 , 20 , 25
+
+account:
+-   id: 2
+-   balance: 70
+-   program: PUSH 70 ; PUSH 30 ; SUB ; POP ; .Program
+-   storage: 22 , 50 , 70
+
+.Accounts
+
+CALL 1

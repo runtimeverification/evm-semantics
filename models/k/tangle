@@ -10,4 +10,4 @@ pandoc-tangle --from markdown --to code-k --code k \
 pandoc-tangle --from markdown --to code-k --code k \
               evm-semantics.md > evm-semantics.k
 
-kompile --debug --main-module EVM-PROGRAM evm-semantics.k
+kompile --debug --main-module EVM-CONFIGURATION evm-semantics.k

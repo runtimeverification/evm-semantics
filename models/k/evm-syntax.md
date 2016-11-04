@@ -96,6 +96,42 @@ module EVM-PROGRAM-SYNTAX
 endmodule
 ```
 
+EVM Accounts
+------------
+
+EVM `Account`s contain the `AcctID` (account identifier), the `Balance` (amount
+of ether in the account), the `Storage` (long-term memory of the account), and
+the `Program` (code of the account). We use a YAML-like notation to specify
+them, as shown here:
+
+```evm-account
+account:
+-   id: 15
+-   balance: 40
+-   program: PUSH 30 ; PUSH 35 ; ADD ; .Program
+-   storage: X |-> 50 , Y |-> 70
+```
+
+```k
+module EVM-ACCOUNT-SYNTAX
+    imports EVM-PROGRAM-SYNTAX
+
+    syntax AcctID  ::= Word
+    syntax Storage ::= List{Word,","}
+
+    syntax Account ::= "account" ":"
+                       "-" "id" ":" AcctID
+                       "-" "balance" ":" Word
+                       "-" "program" ":" Program
+                       "-" "storage" ":" Storage
+
+    syntax AccountState ::=     "balance" ":" Word
+                            "," "program" ":" Program
+                            "," "storage" ":" Map
+
+endmodule
+```
+
 EVM Process
 -----------
 
@@ -107,7 +143,7 @@ Processes are tuples of their associated `PID`, their `ProgramCounter`, their
 
 ```k
 module EVM-PROCESS-SYNTAX
-    imports EVM-PROGRAM-SYNTAX
+    imports EVM-ACCOUNT-SYNTAX
 
     syntax WordStack ::= ".WordStack"       // empty stack
                        | Word ":" WordStack
@@ -124,7 +160,6 @@ module EVM-PROCESS-SYNTAX
     rule (I:Int ~> #checkStackSize) => .              requires I <Int  MAX_STACK_SIZE
     rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW requires I >=Int MAX_STACK_SIZE
 
-    syntax AcctID   ::= Word
     syntax LocalMem ::= Map
     syntax Process  ::= "{" AcctID "|" Word "|" WordStack "|" LocalMem "}"
 
@@ -135,5 +170,23 @@ module EVM-PROCESS-SYNTAX
     rule TOP:TernStackOp ~> { PID | PC | W0 : W1 : W2 : WS | LM } => TOP W0 W1 W2 ~> { PID | PC | WS | LM }
 
     rule PUSH W0 ~> { PID | PC | WS | LM } => #stackSize(W0 : WS) ~> #checkStackSize ~> { PID | PC | W0 : WS | LM }
+endmodule
+```
+
+EVM Simulation
+--------------
+
+We need a way to specify the current world state. It will be a list of accounts,
+along with which account to call execution on first:
+
+```k
+module EVM-SIMULATION
+    imports EVM-ACCOUNT-SYNTAX
+
+    syntax Accounts ::= ".Accounts"
+                      | Account Accounts
+
+    syntax EVMSimulation ::= Accounts
+                             "CALL" AcctID
 endmodule
 ```
