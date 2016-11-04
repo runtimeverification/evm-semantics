@@ -26,20 +26,21 @@ module EVM-CONFIGURATION
                             <acctID> 0 </acctID>
                             <program> .Map </program>
                             <storage> .Map </storage>
+                            <balance> 0 </balance>
                         </account>
                     </accounts>
                   </T>
 endmodule
 ```
 
-Loading World Definition
-------------------------
+Machine Initialization
+----------------------
 
 This module just takes the parsed world definition (list of accounts and account
 to start with) and loads it all into the correct cells of the configuration.
 
 ```k
-module EVM-SEMANTICS
+module EVM-INITIALIZATION
     imports EVM-CONFIGURATION
 
     syntax KItem ::= Account | Accounts | EVMSimulation
@@ -56,7 +57,8 @@ module EVM-SEMANTICS
              -   balance: BALANCE
              -   program: PROGRAM
              -   storage: STORAGE
-             => #setStorage ACCT 0 STORAGE ~> #setProgram ACCT 0 PROGRAM
+         =>    #setProgram ACCT 0 PROGRAM
+            ~> #setStorage ACCT 0 STORAGE
              ...
          </k>
          <accounts>
@@ -65,6 +67,7 @@ module EVM-SEMANTICS
                     <acctID> ACCT </acctID>
                     <program> .Map </program>
                     <storage> .Map </storage>
+                    <balance> BALANCE </balance>
                   </account>)
          </accounts>
 
@@ -87,12 +90,14 @@ module EVM-SEMANTICS
 endmodule
 ```
 
-```
-module EVM-PROGRAM
-    imports EVM-CONFIGURATION
-    imports EVM-STACK-SEMANTICS
-    imports EVM-CALL-SYNTAX
+```k
+module EVM-SEMANTICS
+    imports EVM-INITIALIZATION
 
+endmodule
+```
+
+```
     // result is calculated, put back on stack
     rule <k> (W:Int ~> #push) => . ... </k>
          <wordStack> WS => W : WS </wordStack>
