@@ -45,7 +45,9 @@ module EVM-INITIALIZATION
 
     syntax KItem ::= Account | Accounts | EVMSimulation
 
-    rule ACCTS:Accounts START ACCTID => ACCTS ~> ACCTID
+    syntax KItem ::= "#beginSimulation" AcctID
+
+    rule ACCTS:Accounts START ACCTID => ACCTS ~> #beginSimulation ACCTID
     rule ACCT:Account ACCTS:Accounts => ACCT ~> ACCTS
     rule .Accounts => .
 
