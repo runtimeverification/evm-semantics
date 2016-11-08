@@ -16,6 +16,8 @@ configuration, they should be standalone and operate at the top of the K cell.
 
 ```k
 module EVM-WORD
+    syntax KResult ::= Int
+
     syntax Word ::= Int
                   | "chop" "(" Int ")"                      [strict]
                   | "bool2Word" "(" Bool ")"                [strict]
@@ -57,5 +59,6 @@ module EVM-WORD
     rule W0:Int <Word W1:Int => bool2Word( W0 <Int W1 )
     rule W0:Int >Word W1:Int => bool2Word( W0 >Int W1 )
     rule W0:Int ==Word W1:Int => bool2Word( W0 ==Int W1)
+
 endmodule
 ```

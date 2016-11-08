@@ -28,17 +28,31 @@ the correct number of arguments for each operation.
 NOTE: We have to call the opcode `OR` by `EVMOR` instead, because otherwise K
 has trouble parsing it/compiling the definition.
 
+The `Null`, `Un`, `Bin`, and `Tern` refer to the number of elements that each
+operation takes off the stack. These are binned in this way so that we can have
+simpler rules (in the semantics) for pulling items off the stacks.
+
 ```k
 module EVM-STACK-OPERATORS
     imports EVM-WORD
 
+    syntax NullStackOp ::= "#push"
+                         | "PUSH" Word
+                         | "#checkStackSize"
+                         | "STACK_OVERFLOW"
+    syntax KItem ::= NullStackOp
+
+    rule PUSH N => N ~> #push ~> #checkStackSize [structural]
+    rule (I:Int ~> #checkStackSize) => .              requires I <Int  1024
+    rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW requires I >=Int 1024
+
     syntax UnStackOp ::= "ISZERO" | "NOT" | "POP"
     syntax KItem ::= UnStackOp Word
 
-    rule ISZERO 0 => bool2Word(true)                    [structural]
-    rule ISZERO N => bool2Word(false) requires N =/=K 0 [structural]
-    rule NOT    N => bitwisenot(N)                      [structural]
-    rule POP    N => .K                                 [structural]
+    rule ISZERO 0 => bool2Word(true)  ~> #push                   [structural]
+    rule ISZERO N => bool2Word(false) ~> #push requires N =/=K 0 [structural]
+    rule NOT    N => bitwisenot(N)    ~> #push                   [structural]
+    rule POP    N => .                                           [structural]
 
     syntax BinStackOp ::= "ADD" | "MUL" | "SUB" | "DIV" | "EXP"
                         | "MOD" | "SIGNEXTEND" | "SDIV" | "SMOD"
@@ -47,25 +61,25 @@ module EVM-STACK-OPERATORS
                         | "BYTE" | "SHA3"
     syntax KItem ::= BinStackOp Word Word
 
-    rule ADD        W0 W1 => W0 +Word W1       [structural]
-    rule MUL        W0 W1 => W0 *Word W1       [structural]
-    rule SUB        W0 W1 => W0 -Word W1       [structural]
-    rule DIV        W0 W1 => W0 /Word W1       [structural]
-    rule EXP        W0 W1 => W0 ^Word W1       [structural]
-    rule MOD        W0 W1 => W0 %Word W1       [structural]
-    rule SIGNEXTEND W0 W1 => signextend(W0,W1) [structural]
-    rule SDIV       W0 W1 => sdiv(W0,W1)       [structural]
-    rule SMOD       W0 W1 => smod(W0,W1)       [structural]
-    rule LT         W0 W1 => W0 <Word W1       [structural]
-    rule GT         W0 W1 => W0 >Word W1       [structural]
-    rule SLT        W0 W1 => slt(W0,W1)        [structural]
-    rule SGT        W0 W1 => sgt(W0,W1)        [structural]
-    rule EQ         W0 W1 => W0 ==Word W1      [structural]
-    rule AND        W0 W1 => bitwiseand(W0,W1) [structural]
-    rule EVMOR      W0 W1 => bitwiseor(W0,W1)  [structural]
-    rule XOR        W0 W1 => bitwisexor(W0,W1) [structural]
-    rule BYTE       W0 W1 => getbyte(W0,W1)    [structural]
-    rule SHA3       W0 W1 => sha3(W0,W1)       [structural]
+    rule ADD        W0 W1 => W0 +Word W1       ~> #push [structural]
+    rule MUL        W0 W1 => W0 *Word W1       ~> #push [structural]
+    rule SUB        W0 W1 => W0 -Word W1       ~> #push [structural]
+    rule DIV        W0 W1 => W0 /Word W1       ~> #push [structural]
+    rule EXP        W0 W1 => W0 ^Word W1       ~> #push [structural]
+    rule MOD        W0 W1 => W0 %Word W1       ~> #push [structural]
+    rule SIGNEXTEND W0 W1 => signextend(W0,W1) ~> #push [structural]
+    rule SDIV       W0 W1 => sdiv(W0,W1)       ~> #push [structural]
+    rule SMOD       W0 W1 => smod(W0,W1)       ~> #push [structural]
+    rule LT         W0 W1 => W0 <Word W1       ~> #push [structural]
+    rule GT         W0 W1 => W0 >Word W1       ~> #push [structural]
+    rule SLT        W0 W1 => slt(W0,W1)        ~> #push [structural]
+    rule SGT        W0 W1 => sgt(W0,W1)        ~> #push [structural]
+    rule EQ         W0 W1 => W0 ==Word W1      ~> #push [structural]
+    rule AND        W0 W1 => bitwiseand(W0,W1) ~> #push [structural]
+    rule EVMOR      W0 W1 => bitwiseor(W0,W1)  ~> #push [structural]
+    rule XOR        W0 W1 => bitwisexor(W0,W1) ~> #push [structural]
+    rule BYTE       W0 W1 => getbyte(W0,W1)    ~> #push [structural]
+    rule SHA3       W0 W1 => sha3(W0,W1)       ~> #push [structural]
 
     syntax TernStackOp ::= "ADDMOD" | "MULMOD"
     syntax KItem ::= TernStackOp Word Word Word
@@ -73,7 +87,7 @@ module EVM-STACK-OPERATORS
     rule ADDMOD W0 W1 W2 => addmod(W0,W1,W2) [structural]
     rule MULMOD W0 W1 W2 => mulmod(W0,W1,W2) [structural]
 
-    syntax StackOp ::= UnStackOp | BinStackOp | TernStackOp | "PUSH" Word
+    syntax StackOp ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp
 endmodule
 ```
 
@@ -85,9 +99,8 @@ module EVM-PROGRAM-SYNTAX
     imports EVM-STACK-OPERATORS
 
     syntax LocalOp   ::= StackOp | "MLOAD" | "MSTORE" | "MLOAD8"
-    syntax ExnOp     ::= "STACK_OVERFLOW"
     syntax ProcessOp ::= "CALL" | "RETURN"
-    syntax OpCode    ::= LocalOp | ExnOp | ProcessOp
+    syntax OpCode    ::= LocalOp | ProcessOp
 
     syntax KItem ::= "CALL" Word Word Word Word Word Word Word
 
@@ -115,7 +128,7 @@ account:
 module EVM-ACCOUNT-SYNTAX
     imports EVM-PROGRAM-SYNTAX
 
-    syntax AcctID  ::= Word
+    syntax AcctID  ::= Word | ".AcctID"
     syntax Storage ::= List{Word,","}
 
     syntax Account ::= "account" ":"
@@ -144,31 +157,23 @@ Processes are tuples of their associated `PID`, their `ProgramCounter`, their
 module EVM-PROCESS-SYNTAX
     imports EVM-ACCOUNT-SYNTAX
 
-    syntax WordStack ::= ".WordStack"       // empty stack
+    syntax WordStack ::= ".WordStack"
                        | Word ":" WordStack
 
-    syntax Int ::= "MAX_STACK_SIZE"
-    rule MAX_STACK_SIZE => 1024 [macro]
+    syntax KItem ::= "#stackSize" WordStack
+                   | "#stackUnit"
 
-    syntax KItem ::= "#stackSize" "(" WordStack ")"
-                   | "#checkStackSize"
+    rule #stackSize .WordStack => 0                         [structural]
+    rule #stackSize (W : WS) => #stackSize WS ~> #stackUnit [structural]
+    rule I1:Int ~> #stackUnit => I1 +Int 1                  [structural]
 
-    rule stackSize( .WordStack ) => 0                    [structural]
-    rule stackSize( W : WS )     => 1 +Int stackSize(WS) [structural]
+    syntax LocalMem  ::= Map | ".LocalMem"
+    syntax Process   ::= "{" AcctID "|" Word "|" WordStack "|" LocalMem "}"
+    syntax CallStack ::= ".CallStack"
+                       | Process CallStack
 
-    rule (I:Int ~> #checkStackSize) => .              requires I <Int  MAX_STACK_SIZE
-    rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW requires I >=Int MAX_STACK_SIZE
+    rule .LocalMem => .Map [macro]
 
-    syntax LocalMem ::= Map
-    syntax Process  ::= "{" AcctID "|" Word "|" WordStack "|" LocalMem "}"
-
-    rule I:Int ~> { PID | PC | WS | LM } => { PID | PC | I : WS | LM }
-
-    rule UOP:UnStackOp   ~> { PID | PC | W0 : WS           | LM } => UOP W0       ~> { PID | PC | WS | LM }
-    rule BOP:BinStackOp  ~> { PID | PC | W0 : W1 : WS      | LM } => BOP W0 W1    ~> { PID | PC | WS | LM }
-    rule TOP:TernStackOp ~> { PID | PC | W0 : W1 : W2 : WS | LM } => TOP W0 W1 W2 ~> { PID | PC | WS | LM }
-
-    rule PUSH W0 ~> { PID | PC | WS | LM } => #stackSize(W0 : WS) ~> #checkStackSize ~> { PID | PC | W0 : WS | LM }
 endmodule
 ```
 
@@ -181,6 +186,7 @@ along with which account to call execution on first:
 ```k
 module EVM-SYNTAX
     imports EVM-ACCOUNT-SYNTAX
+    imports EVM-PROCESS-SYNTAX
 
     syntax Accounts ::= ".Accounts"
                       | Account Accounts

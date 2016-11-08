@@ -1,7 +1,7 @@
 account:
 -   id: 1
 -   balance: 40
--   program: PUSH 40 ; PUSH 50 ; ADD ; POP
+-   program: PUSH 40 ; PUSH 50 ; ADD
 -   storage: 30 , 20 , 25
 
 account:
