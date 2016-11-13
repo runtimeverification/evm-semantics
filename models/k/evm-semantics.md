@@ -25,7 +25,7 @@ module EVM-CONFIGURATION
                     <accountID> .AcctID </accountID>
                     <programCounter> 0 </programCounter>
                     <wordStack> .WordStack </wordStack>
-                    <localMem> .LocalMem </localMem>
+                    <localMem> .Map </localMem>
                     // suspended processes
                     <callStack> .CallStack </callStack>
                     // account information
@@ -177,6 +177,8 @@ of various operators so that the already defined operations can act on them.
 module EVM-STACK
     imports EVM-CONFIGURATION
 
+    syntax KResult ::= LocalMem | Word
+
     rule <k> . => OP </k>
          <accountID> ACCT </accountID>
          <programCounter> PC => PC +Int 1 </programCounter>
@@ -200,6 +202,23 @@ module EVM-STACK
 
     rule <k> #checkStackSize => #stackSize WS ~> #checkStackSize ... </k>
          <wordStack> WS </wordStack>
+	 
+    rule <k> #gatherLocalMem { Start | End | Current | LocalMem} => #gatherLocalMem { Start +Word 1 | End | Current +Word 1 | LocalMem[Current <- Memval] } ...</k>
+            <localMem>... Start |-> Memval ...</localMem> 
+	 
+    rule #gatherLocalMem { Start | End | Current | LocalMem } => LocalMem requires notBool Start <Int End 
+
+
+   rule <k> CALL => #processCall { AcctId | Ether | #gatherLocalMem { 0 | 0 | 0 | .LocalMem} } ...</k>
+        <accountID> AcctId </accountID>
+	<accounts>
+	...<account> 
+	        <AcctID> AcctId </AcctID>
+		<balance> Ether </balance>
+	    </account>...
+	</accounts>
+	
+
 
 endmodule
 ```
