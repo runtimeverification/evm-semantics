@@ -168,14 +168,17 @@ module EVM-PROCESS-SYNTAX
     rule I1:Int ~> #stackUnit => I1 +Int 1                  [structural]
 
     syntax LocalMem  ::= Map | ".LocalMem"
+    
+    syntax GatherOp ::= "#gatherLocalMem" "{" Word "|" Word "|" Word "|" LocalMem "}"
+    			| LocalMem
+
     syntax Process   ::= "{" AcctID "|" Word "|" WordStack "|" LocalMem "}"
+
     syntax CallStack ::= ".CallStack"
                        | Process CallStack
 
     rule .LocalMem => .Map [macro]
     
-    syntax GatherOp ::= "#gatherLocalMem" "{" Word "|" Word "|" Word "|" LocalMem "}"
-    			| LocalMem
 
     syntax KItem ::= "#processCall" "{" AcctID "|" Word "|" GatherOp "}"    [strict(3)]
 

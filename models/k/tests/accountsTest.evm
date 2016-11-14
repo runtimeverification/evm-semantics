@@ -7,7 +7,7 @@ account:
 account:
 -   id: 2
 -   balance: 70
--   program: PUSH 70 ; PUSH 30 ; SUB ; POP
+-   program: PUSH 30 ; PUSH 70 ; SUB
 -   storage: 22 , 50 , 70
 
 .Accounts
