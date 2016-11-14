@@ -28,7 +28,7 @@ module EVM-WORD
                   | Word "^Word" Word                       [strict]
                   | Word "%Word" Word                       [strict] // needs implemented
                   | "signextend" "(" Word "," Word ")"      [strict] // needs implemented
-                  | Word "<Word" Word                       [strict, function]
+                  | Word "<Word" Word                       [strict]
                   | Word ">Word" Word                       [strict]
                   | Word "==Word" Word                      [strict]
                   | "bitwisenot" "(" Word ")"               [strict] // needs implemented
@@ -56,7 +56,7 @@ module EVM-WORD
     rule W0:Int *Word W1:Int => chop( W0 *Int W1 )
     rule W0:Int /Word W1:Int => chop( W0 /Int W1 )
     rule W0:Int ^Word W1:Int => chop( W0 ^Int W1 )
-    rule W0:Int <Word W1:Int => bool2Word( W0 <Int W1 )			[function]
+    rule W0:Int <Word W1:Int => bool2Word( W0 <Int W1 )
     rule W0:Int >Word W1:Int => bool2Word( W0 >Int W1 )
     rule W0:Int ==Word W1:Int => bool2Word( W0 ==Int W1)
 
