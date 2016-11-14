@@ -209,16 +209,8 @@ module EVM-STACK
     rule #gatherLocalMem { Start | End | Current | LocalMem } => LocalMem requires notBool Start <Int End 
 
 
-   rule <k> CALL => #processCall { AcctId | Ether | #gatherLocalMem { 0 | 0 | 0 | .LocalMem} } ...</k>
-        <accountID> AcctId </accountID>
-	<accounts>
-	...<account> 
-	        <AcctID> AcctId </AcctID>
-		<balance> Ether </balance>
-	    </account>...
-	</accounts>
-	
-
+   rule <k> CALL => #processCall { AcctId | Ether | #gatherLocalMem { Start | Size | 0 | .LocalMem} } ...</k>
+       <wordStack> (AcctId : Ether : Start : Size : WS) => WS </wordStack>
 
 endmodule
 ```
