@@ -19,30 +19,30 @@ module EVM-WORD
     syntax KResult ::= Int
 
     syntax Word ::= Int
-                  | "chop" "(" Int ")"                      [strict]
-                  | "bool2Word" "(" Bool ")"                [strict]
-                  | Word "+Word" Word                       [strict]
-                  | Word "*Word" Word                       [strict]
-                  | Word "-Word" Word                       [strict]
-                  | Word "/Word" Word                       [strict]
-                  | Word "^Word" Word                       [strict]
-                  | Word "%Word" Word                       [strict] // needs implemented
-                  | "signextend" "(" Word "," Word ")"      [strict] // needs implemented
-                  | Word "<Word" Word                       [strict]
-                  | Word ">Word" Word                       [strict]
-                  | Word "==Word" Word                      [strict]
-                  | "bitwisenot" "(" Word ")"               [strict] // needs implemented
-                  | "sdiv" "(" Word "," Word ")"            [strict] // needs implemented
-                  | "smod" "(" Word "," Word ")"            [strict] // needs implemented
-                  | "slt" "(" Word "," Word ")"             [strict] // needs implemented
-                  | "sgt" "(" Word "," Word ")"             [strict] // needs implemented
-                  | "bitwiseand" "(" Word "," Word ")"      [strict] // needs implemented
-                  | "bitwiseor" "(" Word "," Word ")"       [strict] // needs implemented
-                  | "bitwisexor" "(" Word "," Word ")"      [strict] // needs implemented
-                  | "getbyte" "(" Word "," Word ")"         [strict] // needs implemented
-                  | "sha3" "(" Word "," Word ")"            [strict] // needs implemented
-                  | "addmod" "(" Word "," Word "," Word ")" [strict] // needs implemented
-                  | "mulmod" "(" Word "," Word "," Word ")" [strict] // needs implemented
+                  | "chop" "(" Int ")"                      [function]
+                  | "bool2Word" "(" Bool ")"                [function]
+                  | Word "+Word" Word                       [function]
+                  | Word "*Word" Word                       [function]
+                  | Word "-Word" Word                       [function]
+                  | Word "/Word" Word                       [function]
+                  | Word "^Word" Word                       [function]
+                  | Word "%Word" Word                       [function] // needs implemented
+                  | "signextend" "(" Word "," Word ")"      [function] // needs implemented
+                  | Word "<Word" Word                       [function]
+                  | Word ">Word" Word                       [function]
+                  | Word "==Word" Word                      [function]
+                  | "bitwisenot" "(" Word ")"               [function] // needs implemented
+                  | "sdiv" "(" Word "," Word ")"            [function] // needs implemented
+                  | "smod" "(" Word "," Word ")"            [function] // needs implemented
+                  | "slt" "(" Word "," Word ")"             [function] // needs implemented
+                  | "sgt" "(" Word "," Word ")"             [function] // needs implemented
+                  | "bitwiseand" "(" Word "," Word ")"      [function] // needs implemented
+                  | "bitwiseor" "(" Word "," Word ")"       [function] // needs implemented
+                  | "bitwisexor" "(" Word "," Word ")"      [function] // needs implemented
+                  | "getbyte" "(" Word "," Word ")"         [function] // needs implemented
+                  | "sha3" "(" Word "," Word ")"            [function] // needs implemented
+                  | "addmod" "(" Word "," Word "," Word ")" [function] // needs implemented
+                  | "mulmod" "(" Word "," Word "," Word ")" [function] // needs implemented
 
     rule chop( I:Int ) => I                           requires I <Int (2 ^Int 256) andBool I >=Int 0
     rule chop( I:Int ) => chop( I +Int (2 ^Int 256) ) requires I <Int 0

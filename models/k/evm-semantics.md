@@ -34,7 +34,7 @@ module EVM-CONFIGURATION
                             <acctID> .AcctID </acctID>
                             <program> .Map </program>
                             <storage> .Map </storage>
-                            <balance> 0 </balance>
+                            <balance> 0:Word </balance>
                         </account>
                     </accounts>
                   </T>
@@ -92,14 +92,14 @@ state (what the next map key is) when actually running these.
     rule <k> #increaseAcctBalance ACCT Balance => . ... </k>
          <account>
             <acctID> ACCT </acctID>
-            <balance> X => X +Int Balance </balance>
+            <balance> X => X +Word Balance </balance>
             ...
          </account>
 
     rule <k> #decreaseAcctBalance ACCT Balance => . ... </k>
          <account>
             <acctID> ACCT </acctID>
-            <balance> X => X -Int Balance </balance>
+            <balance> X => X -Word Balance </balance>
             ...
          </account>
 ```
