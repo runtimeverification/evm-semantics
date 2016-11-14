@@ -25,7 +25,7 @@ module EVM-CONFIGURATION
                     <accountID> .AcctID </accountID>
                     <programCounter> 0 </programCounter>
                     <wordStack> .WordStack </wordStack>
-                    <localMem> .LocalMem </localMem>
+                    <localMem> .Map </localMem>
                     // suspended processes
                     <callStack> .CallStack </callStack>
                     // account information
@@ -66,6 +66,8 @@ state (what the next map key is) when actually running these.
                    | "#setAcctStorage" AcctID Int Storage
                    | "#setAcctProgram" AcctID Program
                    | "#setAcctStorage" AcctID Storage
+                   | "#increaseAcctBalance" AcctID Word      [strict(2)]
+                   | "#decreaseAcctBalance" AcctID Word      [strict(2)]
 
     rule #setAcctProgram ACCT PROGRAM => #setAcctProgram ACCT 0 PROGRAM [macro]
     rule #setAcctStorage ACCT STORAGE => #setAcctStorage ACCT 0 STORAGE [macro]
@@ -84,6 +86,20 @@ state (what the next map key is) when actually running these.
          <account>
             <acctID> ACCT </acctID>
             <storage> STORAGE:Map (. => N |-> W0) </storage>
+            ...
+         </account>
+
+    rule <k> #increaseAcctBalance ACCT Balance => . ... </k>
+         <account>
+            <acctID> ACCT </acctID>
+            <balance> X => X +Int Balance </balance>
+            ...
+         </account>
+
+    rule <k> #decreaseAcctBalance ACCT Balance => . ... </k>
+         <account>
+            <acctID> ACCT </acctID>
+            <balance> X => X -Int Balance </balance>
             ...
          </account>
 ```
@@ -176,6 +192,9 @@ of various operators so that the already defined operations can act on them.
 ```k
 module EVM-STACK
     imports EVM-CONFIGURATION
+    imports EVM-INITIALIZATION-UTIL
+
+    syntax KResult ::= LocalMem | Word
 
     rule <k> . => OP </k>
          <accountID> ACCT </accountID>
@@ -200,6 +219,23 @@ module EVM-STACK
 
     rule <k> #checkStackSize => #stackSize WS ~> #checkStackSize ... </k>
          <wordStack> WS </wordStack>
+	 
+    rule <k> #gatherLocalMem { Start | End | Current | LocalMem} => #gatherLocalMem { Start +Word 1 | End | Current +Word 1 | LocalMem[Current <- Memval] } ...</k>
+            <localMem>... Start |-> Memval ...</localMem> 
+	 
+    rule #gatherLocalMem { Start | End | Current | LocalMem } => LocalMem requires notBool Start <Int End 
+
+
+   rule <k> CALL => #processCall { AcctId | Ether | #gatherLocalMem { Start | Size | 0 | .LocalMem} } ...</k>
+       <wordStack> (AcctId : Ether : Start : Size : WS) => WS </wordStack>
+    
+  rule <k> #processCall { AcctId | Ether | LM } => #decreaseAcctBalance CurrentId Ether ~> #increaseAcctBalance AcctId Ether ~> #pushCallStack ~> #setProcess { AcctId | 0 | .WordStack | LM } ...</k>
+        <accountID> CurrentId </accountID>
+            <account>
+                <acctID> CurrentID </acctID>
+                <balance> CurrBalance </balance>
+            ...
+            </account>
 
 endmodule
 ```
