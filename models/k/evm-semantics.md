@@ -219,23 +219,40 @@ module EVM-STACK
 
     rule <k> #checkStackSize => #stackSize WS ~> #checkStackSize ... </k>
          <wordStack> WS </wordStack>
-	 
-    rule <k> #gatherLocalMem { Start | End | Current | LocalMem} => #gatherLocalMem { Start +Word 1 | End | Current +Word 1 | LocalMem[Current <- Memval] } ...</k>
-            <localMem>... Start |-> Memval ...</localMem> 
-	 
-    rule #gatherLocalMem { Start | End | Current | LocalMem } => LocalMem requires notBool Start <Int End 
+
+endmodule
+```
 
 
-   rule <k> CALL => #processCall { AcctId | Ether | #gatherLocalMem { Start | Size | 0 | .LocalMem} } ...</k>
-       <wordStack> (AcctId : Ether : Start : Size : WS) => WS </wordStack>
-    
-  rule <k> #processCall { AcctId | Ether | LM } => #decreaseAcctBalance CurrentId Ether ~> #increaseAcctBalance AcctId Ether ~> #pushCallStack ~> #setProcess { AcctId | 0 | .WordStack | LM } ...</k>
-        <accountID> CurrentId </accountID>
-            <account>
-                <acctID> CurrentID </acctID>
-                <balance> CurrBalance </balance>
-            ...
-            </account>
+```k
+module EVM-PROCESS-CALL
+    imports EVM-STACK
+
+    syntax KItem ::= "#gatherArgs" "{" Word "|" Word "|" Word "|" LocalMem "}"
+    syntax KItem ::= "#processCall" "{" AcctID "|" Word "}"
+
+    rule <k> #gatherArgs {N | S | N' | LM}
+          => #gatherArgs {N +Word 1 | S | N' +Word 1 | LM[N <- W]}
+         ... </k>
+         <localMem>... N |-> W ...</localMem>
+
+    rule #gatherArgs {N | SIZE | N' | LM} => LM
+         requires N' >=Int SIZE
+
+    rule <k> CALL
+          =>    #gatherArgs { BEGIN | SIZE | 0 | .LocalMem }
+             ~> #processCall { ACCT | ETHER }
+         ... </k>
+         <wordStack> (ACCT : ETHER : BEGIN : SIZE : WS) => WS </wordStack>
+
+    // TODO: How are we handling refunding unused gas?
+    rule <k> LM:LocalMem ~> #processCall {ACCT | ETHER}
+          =>    #decreaseAcctBalance CURRACCT ETHER
+             ~> #increaseAcctBalance ACCT ETHER
+             ~> #pushCallStack
+             ~> #setProcess {ACCT | 0 | .WordStack | LM}
+         ... </k>
+         <accountID> CURRACCT </accountID>
 
 endmodule
 ```
@@ -243,7 +260,7 @@ endmodule
 ```k
 module EVM
     imports EVM-INITIALIZATION
-    imports EVM-STACK
+    imports EVM-PROCESS-CALL
 
 endmodule
 ```

@@ -102,8 +102,6 @@ module EVM-PROGRAM-SYNTAX
     syntax ProcessOp ::= "CALL" | "RETURN"
     syntax OpCode    ::= LocalOp | ProcessOp
 
-    syntax KItem ::= "CALL" Word Word Word Word Word Word Word
-
     syntax Program ::= List{OpCode, ";"}
 endmodule
 ```
@@ -167,20 +165,13 @@ module EVM-PROCESS-SYNTAX
     rule #stackSize (W : WS) => #stackSize WS ~> #stackUnit [structural]
     rule I1:Int ~> #stackUnit => I1 +Int 1                  [structural]
 
-    syntax LocalMem  ::= Map | ".LocalMem"
-    
-    syntax GatherOp ::= "#gatherLocalMem" "{" Word "|" Word "|" Word "|" LocalMem "}"
-    			| LocalMem
+    syntax LocalMem ::= Map | ".LocalMem"
 
-    syntax Process   ::= "{" AcctID "|" Word "|" WordStack "|" LocalMem "}"
-
+    syntax Process ::= "{" AcctID "|" Word "|" WordStack "|" LocalMem "}"
     syntax CallStack ::= ".CallStack"
                        | Process CallStack
 
     rule .LocalMem => .Map [macro]
-    
-
-    syntax KItem ::= "#processCall" "{" AcctID "|" Word "|" GatherOp "}"    [strict(3)]
 
 endmodule
 ```
