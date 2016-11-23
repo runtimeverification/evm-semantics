@@ -26,7 +26,7 @@ module EVM-WORD
                   | Word "-Word" Word                       [function]
                   | Word "/Word" Word                       [function]
                   | Word "^Word" Word                       [function]
-                  | Word "%Word" Word                       [function] // needs implemented
+                  | Word "%Word" Word                       [function]
                   | "signextend" "(" Word "," Word ")"      [function] // needs implemented
                   | Word "<Word" Word                       [function]
                   | Word ">Word" Word                       [function]
@@ -60,6 +60,9 @@ module EVM-WORD
     rule W0:Int >Word W1:Int => bool2Word( W0 >Int W1 )
     rule W0:Int ==Word W1:Int => bool2Word( W0 ==Int W1)
     rule W0:Int %Word W1:Int => chop( W0 %Int W1 )
+    
+    rule addmod( W0:Int, W1:Int, W2:Int) => chop(0) requires W2 ==Int 0
+    rule addmod( W0:Int, W1:Int, W2:Int) => chop((W0 +Int W1) %Int W2)  
 
 endmodule
 ```
