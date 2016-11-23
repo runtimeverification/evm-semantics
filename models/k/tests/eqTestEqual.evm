@@ -1,1 +1,9 @@
-PUSH 3 ; PUSH 3 ; EQ ; .Program
+account:
+-   id: 1
+-   balance: 40
+-   program: PUSH 3 ; PUSH 3 ; EQ
+-   storage: 
+
+.Accounts
+
+START 1
