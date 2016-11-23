@@ -1,8 +1,8 @@
 account:
 -   id: 1
 -   balance: 40
--   program: PUSH 3 ; PUSH 2 ; LT 
--   storage:
+-   program: PUSH 3 ; PUSH 5 ; MOD
+-   storage: 
 
 .Accounts
 

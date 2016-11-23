@@ -59,6 +59,7 @@ module EVM-WORD
     rule W0:Int <Word W1:Int => bool2Word( W0 <Int W1 )
     rule W0:Int >Word W1:Int => bool2Word( W0 >Int W1 )
     rule W0:Int ==Word W1:Int => bool2Word( W0 ==Int W1)
+    rule W0:Int %Word W1:Int => chop( W0 %Int W1 )
 
 endmodule
 ```
