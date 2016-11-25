@@ -64,5 +64,8 @@ module EVM-WORD
     rule addmod( W0:Int, W1:Int, W2:Int) => chop(0) requires W2 ==Int 0
     rule addmod( W0:Int, W1:Int, W2:Int) => chop((W0 +Int W1) %Int W2)  
 
+    rule mulmod( W0:Int, W1:Int, W2:Int) => chop(0) requires W2 ==Int 0
+    rule mulmod( W0:Int, W1:Int, W2:Int) => chop((W0 *Int W1) %Int W2)
+
 endmodule
 ```
