@@ -41,8 +41,8 @@ module EVM-WORD
                   | "bitwisexor" "(" Word "," Word ")"      [function] // needs implemented
                   | "getbyte" "(" Word "," Word ")"         [function] // needs implemented
                   | "sha3" "(" Word "," Word ")"            [function] // needs implemented
-                  | "addmod" "(" Word "," Word "," Word ")" [function] // needs implemented
-                  | "mulmod" "(" Word "," Word "," Word ")" [function] // needs implemented
+                  | "addmod" "(" Word "," Word "," Word ")" [function] 
+                  | "mulmod" "(" Word "," Word "," Word ")" [function] 
 
     rule chop( I:Int ) => I                           requires I <Int (2 ^Int 256) andBool I >=Int 0
     rule chop( I:Int ) => chop( I +Int (2 ^Int 256) ) requires I <Int 0
