@@ -108,10 +108,15 @@ The next setters allow setting information about the current running process,
 and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
 
 ```k
+
+    syntax MergeMemOp ::= "#mergeMem" "{" Word "|"  Word "|" Size "|" LocalMem "}" [function]
+
     syntax KItem ::= "#setAccountID" AcctID
                    | "#setProgramCounter" Word
                    | "#setWordStack" WordStack
                    | "#setLocalMem" LocalMem
+                   | "#setLocalMem" MergeMemOp  [strict]
+                   | "#addToLocalMem" LocalMem
                    | "#setProcess" Process
                    | "#pushCallStack"
                    | "#popCallStack"
@@ -143,6 +148,9 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
 
     rule <k> #popCallStack => #setProcess P ... </k>
          <callStack> P:Process CS => CS </callStack>
+
+    rule <k> #addToLocalMem LM => #setLocalMem mergeMem {INITIAL, INITIAL , SIZE, LM} ... </k>
+         <wordStack> INITIAL, SIZE, WS => WS </wordStack>
 
 endmodule
 ```
@@ -228,11 +236,13 @@ endmodule
 module EVM-PROCESS-CALL
     imports EVM-STACK
 
-    syntax KItem ::= "#gatherArgs" "{" Word "|" Word "|" Word "|" LocalMem "}"
+    syntax GatherArgs ::= "#gatherArgs" "{" Word "|" Word "|" Word "|" LocalMem "}"  [function]
     syntax KItem ::= "#processCall" "{" AcctID "|" Word "}"
+    syntax KItem ::= "#processReturn" "{" GatherArgs"}"       [strict]
+                     | "#processReturn" "{" LocalMem "}"
 
     rule <k> #gatherArgs {N | S | N' | LM}
-          => #gatherArgs {N +Word 1 | S | N' +Word 1 | LM[N <- W]}
+          => #gatherArgs {N +Word 1 | S | N' +Word 1 | LM[N' <- W]}
          ... </k>
          <localMem>... N |-> W ...</localMem>
 
@@ -244,6 +254,15 @@ module EVM-PROCESS-CALL
              ~> #processCall { ACCT | ETHER }
          ... </k>
          <wordStack> (ACCT : ETHER : BEGIN : SIZE : WS) => WS </wordStack>
+    
+    rule <k> RETURN => #processReturn { #gatherArgs { START | SIZE | 0 | .LocalMem } } ... </k>
+            <wordStack> (START : SIZE : WS) => WS </wordStack>
+
+    rule #processReturn {LM} => #popCallStack ~> #addToLocalMem LM
+
+            
+                    
+
 
     // TODO: How are we handling refunding unused gas?
     rule <k> LM:LocalMem ~> #processCall {ACCT | ETHER}
