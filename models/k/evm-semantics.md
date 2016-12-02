@@ -109,17 +109,17 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
 
 ```k
 
-    syntax MergeMemOp ::= "#mergeMem" "{" Word "|"  Word "|" Size "|" LocalMem "}" [function]
-
     syntax KItem ::= "#setAccountID" AcctID
                    | "#setProgramCounter" Word
                    | "#setWordStack" WordStack
                    | "#setLocalMem" LocalMem
-                   | "#setLocalMem" MergeMemOp  [strict]
+                   | "#setLocalMem" "{" MergeMemOp "}" [strict]
                    | "#addToLocalMem" LocalMem
                    | "#setProcess" Process
                    | "#pushCallStack"
                    | "#popCallStack"
+
+    syntax KResult ::= LocalMem
 
     rule <k> #setAccountID ACCTID => . ... </k>
          <accountID> _ => ACCTID </accountID>
@@ -149,9 +149,16 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
     rule <k> #popCallStack => #setProcess P ... </k>
          <callStack> P:Process CS => CS </callStack>
 
-    rule <k> #addToLocalMem LM => #setLocalMem mergeMem {INITIAL, INITIAL , SIZE, LM} ... </k>
+    rule <k> #addToLocalMem LM => #setLocalMem {#mergeMem {INITIAL, INITIAL , SIZE, LM}} ... </k>
          <wordStack> INITIAL, SIZE, WS => WS </wordStack>
 
+    rule <k> #mergeMem {INITIAL, CURRENT, SIZE, LM} => #mergeMem{INITIAL, CURRENT +Word 1, SIZE, LM} ...</k> 
+         <localMem> L => L[Current <- LM[Current -Word Initial] </localMem>
+         requires andBool ((CURRENT -Word INITIAL <=Word SIZE) ((Current -Word Initial) in keys(LM)))
+
+    rule <k> #mergeMem {INITIAL, CURRENT, SIZE, LM} => L ...</k> 
+         <localMem> L </localMem>
+         requires orBool ((CURRENT -Word INITIAL >Word SIZE) notBool ((Current -Word Initial) in keys(LM)))
 endmodule
 ```
 
@@ -236,10 +243,12 @@ endmodule
 module EVM-PROCESS-CALL
     imports EVM-STACK
 
-    syntax GatherArgs ::= "#gatherArgs" "{" Word "|" Word "|" Word "|" LocalMem "}"  [function]
+    syntax GatherArgs ::= "#gatherArgs" "{" Word "|" Word "|" Word "|" LocalMem "}"
     syntax KItem ::= "#processCall" "{" AcctID "|" Word "}"
     syntax KItem ::= "#processReturn" "{" GatherArgs"}"       [strict]
                      | "#processReturn" "{" LocalMem "}"
+
+    syntax KResult ::= LocalMem
 
     rule <k> #gatherArgs {N | S | N' | LM}
           => #gatherArgs {N +Word 1 | S | N' +Word 1 | LM[N' <- W]}
@@ -255,14 +264,10 @@ module EVM-PROCESS-CALL
          ... </k>
          <wordStack> (ACCT : ETHER : BEGIN : SIZE : WS) => WS </wordStack>
     
-    rule <k> RETURN => #processReturn { #gatherArgs { START | SIZE | 0 | .LocalMem } } ... </k>
-            <wordStack> (START : SIZE : WS) => WS </wordStack>
+    rule <k> RETURN => #processReturn { #gatherArgs { BEGIN | SIZE | 0 | .LocalMem } } ... </k>
+            <wordStack> (BEGIN : SIZE : WS) => WS </wordStack>
 
     rule #processReturn {LM} => #popCallStack ~> #addToLocalMem LM
-
-            
-                    
-
 
     // TODO: How are we handling refunding unused gas?
     rule <k> LM:LocalMem ~> #processCall {ACCT | ETHER}
