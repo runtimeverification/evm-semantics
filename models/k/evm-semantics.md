@@ -112,8 +112,7 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
     syntax KItem ::= "#setAccountID" AcctID
                    | "#setProgramCounter" Word
                    | "#setWordStack" WordStack
-                   | "#setLocalMem" LocalMem
-                   | "#setLocalMem" "{" MergeMemOp "}" [strict]
+                   | "#setLocalMem" MergeMemOp
                    | "#addToLocalMem" LocalMem
                    | "#setProcess" Process
                    | "#pushCallStack"
@@ -149,14 +148,14 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
     rule <k> #popCallStack => #setProcess P ... </k>
          <callStack> P:Process CS => CS </callStack>
 
-    rule <k> #addToLocalMem LM => #setLocalMem {#mergeMem {INITIAL, INITIAL , SIZE, LM}} ... </k>
-         <wordStack> INITIAL, SIZE, WS => WS </wordStack>
+    rule <k> #addToLocalMem LM => #setLocalMem #mergeMem {INITIAL| INITIAL | SIZE | LM} ... </k>
+         <wordStack> (INITIAL, SIZE, WS) => WS </wordStack>
 
-    rule <k> #mergeMem {INITIAL, CURRENT, SIZE, LM} => #mergeMem{INITIAL, CURRENT +Word 1, SIZE, LM} ...</k> 
-         <localMem> L => L[Current <- LM[Current -Word Initial] </localMem>
+    rule <k> #mergeMem {INITIAL | CURRENT |  SIZE | LM} => #mergeMem{INITIAL | CURRENT +Word 1 | SIZE |  LM} ...</k> 
+         <localMem> L[Current <- LM[Current -Word Initial]] </localMem>
          requires andBool ((CURRENT -Word INITIAL <=Word SIZE) ((Current -Word Initial) in keys(LM)))
 
-    rule <k> #mergeMem {INITIAL, CURRENT, SIZE, LM} => L ...</k> 
+    rule <k> #mergeMem {INITIAL | CURRENT | SIZE | LM} => L ...</k> 
          <localMem> L </localMem>
          requires orBool ((CURRENT -Word INITIAL >Word SIZE) notBool ((Current -Word Initial) in keys(LM)))
 endmodule
