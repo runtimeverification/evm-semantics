@@ -149,15 +149,15 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
          <callStack> P:Process CS => CS </callStack>
 
     rule <k> #addToLocalMem LM => #setLocalMem #mergeMem {INITIAL| INITIAL | SIZE | LM} ... </k>
-         <wordStack> (INITIAL, SIZE, WS) => WS </wordStack>
+         <wordStack> (INITIAL : SIZE : WS) => WS </wordStack>
 
     rule <k> #mergeMem {INITIAL | CURRENT |  SIZE | LM} => #mergeMem{INITIAL | CURRENT +Word 1 | SIZE |  LM} ...</k> 
          <localMem> L[Current <- LM[Current -Word Initial]] </localMem>
-         requires andBool ((CURRENT -Word INITIAL <=Word SIZE) ((Current -Word Initial) in keys(LM)))
+         requires ((CURRENT -Int INITIAL) <=Int SIZE) andBool ((CURRENT -Int INITIAL) in keys(LM))
 
     rule <k> #mergeMem {INITIAL | CURRENT | SIZE | LM} => L ...</k> 
          <localMem> L </localMem>
-         requires orBool ((CURRENT -Word INITIAL >Word SIZE) notBool ((Current -Word Initial) in keys(LM)))
+         requires ((CURRENT -Int INITIAL) >Int SIZE) orBool (notBool ((CURRENT -Int INITIAL) in keys(LM)))
 endmodule
 ```
 
