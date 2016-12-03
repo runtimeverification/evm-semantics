@@ -172,6 +172,8 @@ module EVM-PROCESS-SYNTAX
                        | Process CallStack
 
     rule .LocalMem => .Map [macro]
+    syntax MergeMemOp ::= "#mergeMem" "{" Word "|"  Word "|" Word "|" LocalMem "}" [function]
+                          | LocalMem
 
 endmodule
 ```
