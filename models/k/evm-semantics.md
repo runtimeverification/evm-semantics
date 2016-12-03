@@ -268,6 +268,11 @@ module EVM-PROCESS-CALL
 
     rule #processReturn {LM} => #popCallStack ~> #addToLocalMem LM
 
+    rule JUMP W0 => #setProgramCounter W0
+    
+    rule JUMP1 W0 W1 => #setProgramCounter W0 requires notBool W1 ==Int 0
+    rule JUMP1 W0 W1 => . requires W1 ==Int 0
+
     // TODO: How are we handling refunding unused gas?
     rule <k> LM:LocalMem ~> #processCall {ACCT | ETHER}
           =>    #decreaseAcctBalance CURRACCT ETHER
@@ -307,6 +312,8 @@ endmodule
          <wordStack> W0 : W1 : WS => WS </wordStack>
          <localMem> Rho:Map (.Map => W0 |-> W1) </localMem>
          requires notBool (W0 in keys(Rho))
+
+
 
     // call another process
     rule <k> CALL => #gatherArgs ARG0 ARGN 0 ~> #mkCall DEST .Map ~> #recieveReturn RET0 RETN ... </k>

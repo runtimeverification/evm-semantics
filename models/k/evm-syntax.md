@@ -46,7 +46,7 @@ module EVM-STACK-OPERATORS
     rule (I:Int ~> #checkStackSize) => .              requires I <Int  1024
     rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW requires I >=Int 1024
 
-    syntax UnStackOp ::= "ISZERO" | "NOT" | "POP"
+    syntax UnStackOp ::= "ISZERO" | "NOT" | "POP" | "JUMP"
     syntax KItem ::= UnStackOp Word
 
     rule ISZERO 0 => bool2Word(true)  ~> #push                   [structural]
@@ -58,7 +58,7 @@ module EVM-STACK-OPERATORS
                         | "MOD" | "SIGNEXTEND" | "SDIV" | "SMOD"
                         | "LT" | "GT" | "SLT" | "SGT" | "EQ"
                         | "AND" | "EVMOR" | "XOR"
-                        | "BYTE" | "SHA3"
+                        | "BYTE" | "SHA3" | "JUMP1"
     syntax KItem ::= BinStackOp Word Word
 
     rule ADD        W0 W1 => W0 +Word W1       ~> #push [structural]
