@@ -220,6 +220,9 @@ module EVM-STACK
     rule <k> #checkStackSize => #stackSize WS ~> #checkStackSize ... </k>
          <wordStack> WS </wordStack>
 
+    rule <k> DUP1 => . ... </k>
+         <wordStack> W0 : WS => W0 : W0 : WS </wordStack>
+
 endmodule
 ```
 
