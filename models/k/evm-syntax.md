@@ -40,6 +40,7 @@ module EVM-STACK-OPERATORS
                          | "PUSH" Word
                          | "#checkStackSize"
                          | "STACK_OVERFLOW"
+                         | "DUP" Word
     syntax KItem ::= NullStackOp
 
     rule PUSH N => N ~> #push ~> #checkStackSize [structural]

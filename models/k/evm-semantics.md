@@ -234,6 +234,53 @@ module EVM-STACK
     rule <k> #checkStackSize => #stackSize WS ~> #checkStackSize ... </k>
          <wordStack> WS </wordStack>
 
+    rule <k> DUP 1 => . ... </k>
+         <wordStack> W0 : WS => W0 : W0 : WS </wordStack>
+
+    rule <k> DUP 2 => . ... </k>
+         <wordStack> W0 : W1 : WS => W1 : W0 : W1: WS </wordStack>
+
+    rule <k> DUP 3 => . ... </k>
+         <wordStack> W0 : W1 : W2 : WS => W2 : W0 : W1 : W2 : WS </wordStack>
+    
+    rule <k> DUP 4 => . ... </k>
+         <wordStack> W0 : W1 : W2 : W3 : WS => W3 : W0 : W1 : W2 : W3 : WS </wordStack>
+   
+    rule <k> DUP 5 => . ... </k>
+         <wordStack> W0 : W1 : W2 : W3 : W4 : WS => W4 : W0 : W1 : W2 : W3 : W4 : WS </wordStack>
+    
+    rule <k> DUP 6 => . ... </k>
+         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS => W5 : W0 : W1 : W2 : W3 : W4 : W5 : WS </wordStack>
+    
+    rule <k> DUP 7 => . ... </k>
+         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => W6 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS </wordStack>
+    
+    rule <k> DUP 8 => . ... </k>
+         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : WS => W7 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : WS </wordStack>
+    
+    rule <k> DUP 9 => . ... </k>
+         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : WS => W8 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : WS </wordStack>
+    
+    rule <k> DUP 10 => . ... </k>
+         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : WS => W9 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : WS </wordStack>
+
+    rule <k> DUP 11 => . ... </k>
+         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : WS => W10 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : WS </wordStack>
+
+    rule <k> DUP 12 => . ... </k>
+         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : WS => W11 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : WS </wordStack>
+    
+    rule <k> DUP 13 => . ... </k>
+         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : WS => W12 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : WS </wordStack>
+    
+    rule <k> DUP 14 => . ... </k>
+         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : W13 : WS => W13 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : W13 : WS </wordStack>
+    
+    rule <k> DUP 15 => . ... </k>
+         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : W13 : W14 : WS => W14 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : W14 : WS </wordStack>
+    
+    rule <k> DUP 16 => . ... </k>
+         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : W13 : W14 : W15 : WS => W15 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : W14 : W15 : WS </wordStack>
 endmodule
 ```
 
