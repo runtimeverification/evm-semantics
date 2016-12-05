@@ -1,0 +1,10 @@
+
+account:
+-   id: 1
+-   balance: 40
+-   program: PUSH 3 ; PUSH 2 ; LT 
+-   storage:
+
+.Accounts
+
+START 1

@@ -18,7 +18,10 @@ configuration, they should be standalone and operate at the top of the K cell.
 module EVM-WORD
     syntax KResult ::= Int
 
-    syntax Word ::= Int
+    syntax WordVar ::= Id ":" "#Word"
+
+    syntax Word ::= WordVar
+                  | Int
                   | "chop" "(" Int ")"                      [function]
                   | "bool2Word" "(" Bool ")"                [function]
                   | Word "+Word" Word                       [function]
@@ -41,8 +44,8 @@ module EVM-WORD
                   | "bitwisexor" "(" Word "," Word ")"      [function] // needs implemented
                   | "getbyte" "(" Word "," Word ")"         [function] // needs implemented
                   | "sha3" "(" Word "," Word ")"            [function] // needs implemented
-                  | "addmod" "(" Word "," Word "," Word ")" [function] 
-                  | "mulmod" "(" Word "," Word "," Word ")" [function] 
+                  | "addmod" "(" Word "," Word "," Word ")" [function]
+                  | "mulmod" "(" Word "," Word "," Word ")" [function]
 
     rule chop( I:Int ) => I                           requires I <Int (2 ^Int 256) andBool I >=Int 0
     rule chop( I:Int ) => chop( I +Int (2 ^Int 256) ) requires I <Int 0
@@ -60,12 +63,16 @@ module EVM-WORD
     rule W0:Int >Word W1:Int => bool2Word( W0 >Int W1 )
     rule W0:Int ==Word W1:Int => bool2Word( W0 ==Int W1)
     rule W0:Int %Word W1:Int => chop( W0 %Int W1 )
-    
-    rule addmod( W0:Int, W1:Int, W2:Int) => chop(0) requires W2 ==Int 0
-    rule addmod( W0:Int, W1:Int, W2:Int) => chop((W0 +Int W1) %Int W2)  
 
+    // TODO: These rules overlap and are not confluent. Are they correct?
+    rule addmod( W0:Int, W1:Int, W2:Int) => chop(0) requires W2 ==Int 0
+    rule addmod( W0:Int, W1:Int, W2:Int) => chop((W0 +Int W1) %Int W2)
+
+    // TODO: These rules overlap and are not confluent. Are they correct?
     rule mulmod( W0:Int, W1:Int, W2:Int) => chop(0) requires W2 ==Int 0
     rule mulmod( W0:Int, W1:Int, W2:Int) => chop((W0 *Int W1) %Int W2)
+
+    syntax WordList ::= List{Word, ","}
 
 endmodule
 ```
