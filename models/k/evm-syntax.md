@@ -31,15 +31,17 @@ module EVM-STACK-OPERATORS
 
     syntax NullStackOp ::= "#push"
                          | "PUSH" Word
-                         | "PUSH" "(" WordList ")"
+                         | "PUSH" "(" WordList ")" [function]
                          | "#checkStackSize"
                          | "STACK_OVERFLOW"
-                         | "DUP" Word
+                         | "DUP" Int
     syntax KItem ::= NullStackOp
 
+    rule PUSH( .WordList )   => .
+    rule PUSH( N:Word , NS ) => PUSH N ~> PUSH( NS )
+
     rule PUSH N => N ~> #push ~> #checkStackSize     [structural]
-    rule PUSH( .WordList ) => .                      [structural]
-    rule PUSH( N:Word , NS ) => PUSH N ~> PUSH( NS ) [structural]
+
     rule (I:Int ~> #checkStackSize) => .              requires I <Int  1024
     rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW requires I >=Int 1024
 
@@ -81,8 +83,8 @@ module EVM-STACK-OPERATORS
     syntax TernStackOp ::= "ADDMOD" | "MULMOD"
     syntax KItem ::= TernStackOp Word Word Word
 
-    rule ADDMOD W0 W1 W2 => addmod(W0,W1,W2) [structural]
-    rule MULMOD W0 W1 W2 => mulmod(W0,W1,W2) [structural]
+    rule ADDMOD W0 W1 W2 => addmod(W0,W1,W2) ~> #push [structural]
+    rule MULMOD W0 W1 W2 => mulmod(W0,W1,W2) ~> #push [structural]
 
     syntax StackOp ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp
 endmodule
@@ -95,58 +97,38 @@ EVM Programs
 module EVM-PROGRAM-SYNTAX
     imports EVM-STACK-OPERATORS
 
-    syntax ControlFlowOp ::= "JUMP"
-                           | "JUMP1"
-
-    syntax LocalOp   ::= StackOp | ControlFlowOp | "MLOAD" | "MSTORE" | "MLOAD8"
-    syntax ProcessOp ::= "CALL" | "RETURN"
-    syntax OpCode    ::= LocalOp | ProcessOp
+    syntax LocalMemOp    ::= "MLOAD" | "MSTORE" | "MLOAD8"
+    syntax ControlFlowOp ::= "JUMP" | "JUMP1"
+    syntax LocalOp       ::= StackOp | ControlFlowOp | LocalMemOp
+    syntax StateOp       ::= "PC"
+    syntax ProcessOp     ::= "CALL" | "RETURN"
+    syntax OpCode        ::= LocalOp | StateOp | ProcessOp
 
     syntax Program ::= List{OpCode, ";"}
-
-    syntax OpCode ::= Program "[" Int "]" [function]
+    syntax OpCode  ::= Program "[" Int "]"         [function]
+    syntax KItem   ::= Program "[" Int ":" Int "]" [function]
 
     rule (OP:OpCode ; OPS:Program)[0] => OP
     rule (OP:OpCode ; OPS:Program)[N] => OPS[N -Int 1] requires N >Int 0
+
+    rule (PROGRAM:Program)[0:0] => .Program
+    rule (OP:OpCode ; PROGRAM)[0 : M] => OP ; PROGRAM[0 : M -Int 1]   requires M >Int 0
+    rule (OP:OpCode ; PROGRAM)[N : M] => PROGRAM[N -Int 1 : M -Int 1] requires N >Int 0
 
     syntax Int ::= "size" "(" Program ")" [function]
 
     rule size( .Program ) => 0
     rule size( OP:OpCode ; PROGRAM ) => 1 +Int size( PROGRAM )
-
-    syntax KItem ::= Program "[" Int ":" Int "]" [function]
-
-    rule PROGRAM[0:0] => .Program
-    rule (OP:OpCode ; PROGRAM)[0 : M] => OP ~> PROGRAM[0 : M -Int 1]  requires M >Int 0
-    rule (OP:OpCode ; PROGRAM)[N : M] => PROGRAM[N -Int 1 : M -Int 1] requires N >Int 0
-
-endmodule
-```
-
-EVM Accounts
-------------
-
-EVM `Account`s contain the `AcctID` (account identifier), the `Balance` (amount
-of ether in the account), the `Storage` (long-term memory of the account), and
-the `Program` (code of the account). We use a YAML-like notation to specify
-them.
-
-```k
-module EVM-ACCOUNT-SYNTAX
-    imports EVM-PROGRAM-SYNTAX
-
-    syntax AcctID  ::= Word | ".AcctID"
-
-    syntax Account ::= "account" ":"
-                       "-" "id" ":" AcctID
-                       "-" "balance" ":" Word
-                       "-" "program" ":" Program
-                       "-" "storage" ":" WordList
 endmodule
 ```
 
 EVM Process
 -----------
+
+EVM `Account`s contain the `AcctID` (account identifier), the `Balance` (amount
+of ether in the account), the `Storage` (long-term memory of the account), and
+the `Program` (code of the account). We use a YAML-like notation to specify
+them.
 
 The `WordStack` is the size-limited (to 1024) stack of words that each local
 execution of an EVM process has acess to. The `LocalMem` is an array of memory
@@ -156,27 +138,22 @@ Processes are tuples of their associated `PID`, their `ProgramCounter`, their
 
 ```k
 module EVM-PROCESS-SYNTAX
-    imports EVM-ACCOUNT-SYNTAX
+    imports EVM-PROGRAM-SYNTAX
 
-    syntax WordStack ::= ".WordStack"
-                       | Word ":" WordStack
-
-    syntax KItem ::= "#stackSize" WordStack
-                   | "#stackUnit"
-
-    rule #stackSize .WordStack => 0                         [structural]
-    rule #stackSize (W : WS) => #stackSize WS ~> #stackUnit [structural]
-    rule I1:Int ~> #stackUnit => I1 +Int 1                  [structural]
+    syntax AcctID  ::= Word | ".AcctID"
+    syntax Account ::= "account" ":"
+                       "-" "id" ":" AcctID
+                       "-" "balance" ":" Word
+                       "-" "program" ":" Program
+                       "-" "storage" ":" WordList
 
     syntax LocalMem ::= Map | ".LocalMem"
 
-    syntax Process ::= "{" AcctID "|" Word "|" WordStack "|" LocalMem "}"
+    rule .LocalMem => .Map [macro]
+
+    syntax Process ::= "{" AcctID "|" Int "|" WordStack "|" LocalMem "}"
     syntax CallStack ::= ".CallStack"
                        | Process CallStack
-
-    rule .LocalMem => .Map [macro]
-    syntax MergeMemOp ::= "#mergeMem" "{" Word "|"  Word "|" Word "|" LocalMem "}" [function]
-                          | LocalMem
 
 endmodule
 ```
@@ -189,7 +166,6 @@ along with which account to call execution on first:
 
 ```k
 module EVM-SYNTAX
-    imports EVM-ACCOUNT-SYNTAX
     imports EVM-PROCESS-SYNTAX
 
     syntax Accounts ::= ".Accounts"

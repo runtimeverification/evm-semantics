@@ -66,7 +66,44 @@ module EVM-WORD
     rule mulmod( W0:Int, W1:Int, W2:Int) => chop(0) requires W2 ==Int 0
     rule mulmod( W0:Int, W1:Int, W2:Int) => chop((W0 *Int W1) %Int W2)
 
-    syntax WordList ::= List{Word, ","}
+    syntax WordStack ::= ".WordStack"
+                       | Word ":" WordStack
 
+    syntax Word ::= WordStack "[" Int "]" [function]
+
+    rule (W0 : WS)[0] => W0
+    rule (W0 : WS)[N] => WS[N -Int 1] requires N >Int 0
+
+    syntax Int ::= "#stackSize" WordStack [function]
+
+    rule #stackSize .WordStack => 0
+    rule #stackSize (W : WS)   => 1 +Int (#stackSize WS)
+
+    syntax WordList ::= List{Word, ","}
+    syntax LocalMem ::= ".LocalMem"
+                      | WordList
+                      | LocalMem "," LocalMem
+                      | WordList "[" Int ":" Int "]"       [function]
+                      | WordList "[" Int "]" ":=" WordList [function]
+    syntax Word     ::= WordList "[" Int "]" [function]
+
+    rule .LocalMem => .WordList [macro]
+
+    rule (W:Word , WL:WordList)[0] => W
+    rule (W:Word , WL:WordList)[N] => WL[N -Int 1] requires N >Int 0
+
+    rule WL[0:0] => .WordList
+    rule (.WordList)[0 : M]   => 0 , WL[0 : M -Int 1]    requires M >Int 0
+    rule (W:Word , WL)[0 : M] => W , WL[0 : M -Int 1]    requires M >Int 0
+    rule (W:Word , WL)[N : M] => WL[N -Int 1 : M -Int 1] requires N >Int 0
+
+    rule WL[0] := WL' => WL' , WL[size(WL') : size(WL)]
+    rule (W:Word , WL)[N] := WL' => W , (WL[N -Int 1] := WL')          requires N >Int 0
+    rule (.WordList)[N]   := WL' => 0 , ((.WordList)[N -Int 1] := WL') requires N >Int 0
+
+    syntax Int ::= "size" "(" WordList ")"
+
+    rule size( .WordList )   => 0
+    rule size( W:Word , WL ) => 1 +Int size( WL )
 endmodule
 ```

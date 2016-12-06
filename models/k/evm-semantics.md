@@ -18,7 +18,7 @@ module EVM-CONFIGURATION
                     <accountID> .AcctID </accountID>
                     <programCounter> 0 </programCounter>
                     <wordStack> .WordStack </wordStack>
-                    <localMem> .Map </localMem>
+                    <localMem> .LocalMem </localMem>
                     // suspended processes
                     <callStack> .CallStack </callStack>
                     // account information
@@ -69,6 +69,7 @@ state (what the next map key is) when actually running these.
          </account>
 
     rule #setAcctStorage ACCT WS:WordList => #setAcctStorage ACCT 0 WS
+    rule #setAcctStorage ACCT N .WordList => .
     rule <k> #setAcctStorage ACCT (N => N +Int 1) (W0:Word , WS => WS) ... </k>
          <account>
             <acctID> ACCT </acctID>
@@ -95,35 +96,33 @@ The next setters allow setting information about the current running process,
 and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
 
 ```k
-
     syntax KItem ::= "#setAccountID" AcctID
-                   | "#setProgramCounter" Word
+                   | "#setProgramCounter" Int
                    | "#setWordStack" WordStack
-                   | "#setLocalMem" MergeMemOp
-                   | "#addToLocalMem" LocalMem
+                   | "#setLocalMem" LocalMem
+                   | "#setLocalMem" Int LocalMem
                    | "#setProcess" Process
                    | "#pushCallStack"
                    | "#popCallStack"
 
-    syntax KResult ::= LocalMem
-
     rule <k> #setAccountID ACCTID => . ... </k>
          <accountID> _ => ACCTID </accountID>
 
-    rule <k> #setProgramCounter PC => . ... </k>
+    rule <k> #setProgramCounter PC => .K ... </k>
          <programCounter> _ => PC </programCounter>
 
     rule <k> #setWordStack WS => . ... </k>
          <wordStack> _ => WS </wordStack>
 
-    rule <k> #setLocalMem LM => . ... </k>
-         <localMem> _ => LM </localMem>
+    rule #setLocalMem WL => #setLocalMem 0 WL
+    rule <k> #setLocalMem N WL => . ... </k>
+         <localMem> LM => LM[N] := WL </localMem>
 
-    rule #setProcess { ACCT | PC | WS | LM }
+    rule #setProcess { ACCT | PC | WS | WL }
          =>    #setAccountID ACCT
             ~> #setProgramCounter PC
             ~> #setWordStack WS
-            ~> #setLocalMem LM
+            ~> #setLocalMem WL
 
     rule <k> #pushCallStack => . ... </k>
          <accountID> ACCT </accountID>
@@ -134,17 +133,6 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
 
     rule <k> #popCallStack => #setProcess P ... </k>
          <callStack> P:Process CS => CS </callStack>
-
-    rule <k> #addToLocalMem LM => #setLocalMem #mergeMem {INITIAL| INITIAL | SIZE | LM} ... </k>
-         <wordStack> (INITIAL : SIZE : WS) => WS </wordStack>
-
-    rule <k> #mergeMem {INITIAL | CURRENT |  SIZE | LM} => #mergeMem{INITIAL | CURRENT +Word 1 | SIZE |  LM} ...</k>
-         <localMem> L[Current <- LM[Current -Word Initial]] </localMem>
-         requires ((CURRENT -Int INITIAL) <=Int SIZE) andBool ((CURRENT -Int INITIAL) in keys(LM))
-
-    rule <k> #mergeMem {INITIAL | CURRENT | SIZE | LM} => L ...</k> 
-         <localMem> L </localMem>
-         requires ((CURRENT -Int INITIAL) >Int SIZE) orBool (notBool ((CURRENT -Int INITIAL) in keys(LM)))
 endmodule
 ```
 
@@ -160,7 +148,7 @@ module EVM-INITIALIZATION
 
     syntax KItem ::= EVMSimulation
 
-    rule ACCTS:Accounts START ACCT => ACCTS ~> #setProcess { ACCT | 0 | .WordStack | .LocalMem }
+    rule ACCTS:Accounts START ACCT => ACCTS ~> #setProcess { ACCT | 0 | .WordStack | .WordList }
 
     rule .Accounts => .
     rule ACCT:Account ACCTS:Accounts => ACCT ~> ACCTS
@@ -193,7 +181,7 @@ Here we define how to get operands out of the `WordStack` and into the arguments
 of various operators so that the already defined operations can act on them.
 
 ```k
-module EVM-STACK
+module EVM-INTRAPROCEDURAL
     imports EVM-CONFIGURATION
     imports EVM-INITIALIZATION-UTIL
 
@@ -224,147 +212,54 @@ module EVM-STACK
     rule <k> #checkStackSize => #stackSize WS ~> #checkStackSize ... </k>
          <wordStack> WS </wordStack>
 
-    rule <k> DUP 1 => . ... </k>
-         <wordStack> W0 : WS => W0 : W0 : WS </wordStack>
-
-    rule <k> DUP 2 => . ... </k>
-         <wordStack> W0 : W1 : WS => W1 : W0 : W1: WS </wordStack>
-
-    rule <k> DUP 3 => . ... </k>
-         <wordStack> W0 : W1 : W2 : WS => W2 : W0 : W1 : W2 : WS </wordStack>
-    
-    rule <k> DUP 4 => . ... </k>
-         <wordStack> W0 : W1 : W2 : W3 : WS => W3 : W0 : W1 : W2 : W3 : WS </wordStack>
-   
-    rule <k> DUP 5 => . ... </k>
-         <wordStack> W0 : W1 : W2 : W3 : W4 : WS => W4 : W0 : W1 : W2 : W3 : W4 : WS </wordStack>
-    
-    rule <k> DUP 6 => . ... </k>
-         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS => W5 : W0 : W1 : W2 : W3 : W4 : W5 : WS </wordStack>
-    
-    rule <k> DUP 7 => . ... </k>
-         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => W6 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS </wordStack>
-    
-    rule <k> DUP 8 => . ... </k>
-         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : WS => W7 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : WS </wordStack>
-    
-    rule <k> DUP 9 => . ... </k>
-         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : WS => W8 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : WS </wordStack>
-    
-    rule <k> DUP 10 => . ... </k>
-         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : WS => W9 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : WS </wordStack>
-
-    rule <k> DUP 11 => . ... </k>
-         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : WS => W10 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : WS </wordStack>
-
-    rule <k> DUP 12 => . ... </k>
-         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : WS => W11 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : WS </wordStack>
-    
-    rule <k> DUP 13 => . ... </k>
-         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : WS => W12 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : WS </wordStack>
-    
-    rule <k> DUP 14 => . ... </k>
-         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : W13 : WS => W13 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : W13 : WS </wordStack>
-    
-    rule <k> DUP 15 => . ... </k>
-         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : W13 : W14 : WS => W14 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : W14 : WS </wordStack>
-    
-    rule <k> DUP 16 => . ... </k>
-         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : W13 : W14 : W15 : WS => W15 : W0 : W1 : W2 : W3 : W4 : W5 : W6 : W7 : W8 : W9 : W10 : W11 : W12 : W14 : W15 : WS </wordStack>
-endmodule
-```
-
-
-```k
-module EVM-PROCESS-CALL
-    imports EVM-STACK
-
-    syntax GatherArgs ::= "#gatherArgs" "{" Word "|" Word "|" Word "|" LocalMem "}"
-    syntax KItem ::= "#processCall" "{" AcctID "|" Word "}"
-    syntax KItem ::= "#processReturn" "{" GatherArgs"}"       [strict]
-                     | "#processReturn" "{" LocalMem "}"
-
-    syntax KResult ::= LocalMem
-
-    rule <k> #gatherArgs {N | S | N' | LM}
-          => #gatherArgs {N +Word 1 | S | N' +Word 1 | LM[N' <- W]}
-         ... </k>
-         <localMem>... N |-> W ...</localMem>
-
-    rule #gatherArgs {N | SIZE | N' | LM} => LM
-         requires N' >=Int SIZE
-
-    rule <k> CALL
-          =>    #gatherArgs { BEGIN | SIZE | 0 | .LocalMem }
-             ~> #processCall { ACCT | ETHER }
-         ... </k>
-         <wordStack> (ACCT : ETHER : BEGIN : SIZE : WS) => WS </wordStack>
-
-    rule <k> RETURN => #processReturn { #gatherArgs { BEGIN | SIZE | 0 | .LocalMem } } ... </k>
-            <wordStack> (BEGIN : SIZE : WS) => WS </wordStack>
-
-    rule #processReturn {LM} => #popCallStack ~> #addToLocalMem LM
+    rule <k> DUP N => WS[N] ~> #push ~> #checkStackSize </k>
+         <wordStack> WS </wordStack>
+         requires N >Int 0 andBool N <=Int 16
 
     rule <k> JUMP => #setProgramCounter W0 ... </k>
          <wordStack> W0 : WS => WS </wordStack>
     rule <k> JUMP1 => #if (W1 ==Int 0) #then .K #else #setProgramCounter W0 #fi ... </k>
          <wordStack> W0 : W1 : WS => WS </wordStack>
+endmodule
+```
+
+```k
+module EVM-INTERPROCEDURAL
+    imports EVM-INTRAPROCEDURAL
+
+    syntax KItem ::= "#processCall" "{" AcctID "|" Word "|" LocalMem "}"
+                   | "#processReturn" LocalMem [strict]
+
+    rule <k> CALL => #processCall { ACCT | ETHER | LM[INIT : INIT +Int SIZE]} ... </k>
+         <wordStack> ACCT : ETHER : INIT : SIZE : WS => WS </wordStack>
+         <localMem> LM </localMem>
 
     // TODO: How are we handling refunding unused gas?
-    rule <k> LM:LocalMem ~> #processCall {ACCT | ETHER}
+    rule <k> #processCall {ACCT | ETHER | WL}
           =>    #decreaseAcctBalance CURRACCT ETHER
              ~> #increaseAcctBalance ACCT ETHER
              ~> #pushCallStack
-             ~> #setProcess {ACCT | 0 | .WordStack | LM}
+             ~> #setProcess {ACCT | 0 | .WordStack | WL}
          ... </k>
          <accountID> CURRACCT </accountID>
 
+    rule <k> RETURN => #processReturn LM[INIT : INIT +Int SIZE] ... </k>
+         <wordStack> (INIT : SIZE : WS) => WS </wordStack>
+         <localMem> LM </localMem>
+
+    syntax KItem ::= "#returnValues" WordList
+
+    rule #processReturn WL => #popCallStack ~> #returnValues WL
+
+    rule <k> #returnValues WL => #setLocalMem INIT (WL[0:SIZE]) ... </k>
+         <wordStack> INIT : SIZE : WS => WS </wordStack>
 endmodule
 ```
 
 ```k
 module EVM
     imports EVM-INITIALIZATION
-    imports EVM-PROCESS-CALL
+    imports EVM-INTERPROCEDURAL
 
-endmodule
-```
-
-```
-    // load/store elements in memory
-    rule <k> MLOAD => . ... </k>
-         <wordStack> W0 : WS => M : WS </wordStack>
-         <localMem> ... W0 |-> M ... </localMem>
-
-    rule <k> MLOAD => . ... </k>
-         <wordStack> W0 : WS => 0 : WS </wordStack>
-         <localMem> Rho:Map </localMem>
-         requires notBool (W0 in keys(Rho))
-
-    rule <k> MSTORE => . ... </k>
-         <wordStack> W0 : W1 : WS => WS </wordStack>
-         <localMem> ... W0 |-> (_ => W1) ... </localMem>
-
-    rule <k> MSTORE => . ... </k>
-         <wordStack> W0 : W1 : WS => WS </wordStack>
-         <localMem> Rho:Map (.Map => W0 |-> W1) </localMem>
-         requires notBool (W0 in keys(Rho))
-
-
-
-    // call another process
-    rule <k> CALL => #gatherArgs ARG0 ARGN 0 ~> #mkCall DEST .Map ~> #recieveReturn RET0 RETN ... </k>
-         <wordStack> DEST : ETHER : ARG0 : ARGN : RET0 : RETN : WS => WS </wordStack>
-
-    rule <k> #gatherArgs (ARG0 => ARG0 +Word 1) ARGN (N => N +Word 1) ~> #mkCall DEST (RHO:Map (.Map => N |-> M)) ...  </k>
-         <localMem> ... ARG0 |-> M ... </localMem>
-         requires ARG0 <Int ARGN
-
-    rule <k> #gatherArgs (ARG0 => ARG0 +Word 1) ARGN (N => N +Word 1) ~> #mkCall DEST (RHO:Map (.Map => N |-> 0)) ...  </k>
-         <localMem> LM </localMem>
-         requires (ARG0 <Int ARGN) andBool (notBool (N in keys(LM)))
-
-    rule #gatherArgs ARG0 ARGN N => .
-         requires ARG0 >=Int ARGN
 endmodule
 ```
