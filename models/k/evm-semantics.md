@@ -32,7 +32,7 @@ module EVM-CONFIGURATION
                     <accounts>
                         <account multiplicity="*">
                             <acctID> .AcctID </acctID>
-                            <program> .Map </program>
+                            <program> .Program </program>
                             <storage> .Map </storage>
                             <balance> 0:Word </balance>
                         </account>
@@ -62,26 +62,20 @@ account. Because they are stored as maps, we have to keep a little bit of extra
 state (what the next map key is) when actually running these.
 
 ```k
-    syntax KItem ::= "#setAcctProgram" AcctID Int Program
-                   | "#setAcctStorage" AcctID Int Storage
-                   | "#setAcctProgram" AcctID Program
-                   | "#setAcctStorage" AcctID Storage
+    syntax KItem ::= "#setAcctProgram" AcctID Program
+                   | "#setAcctStorage" AcctID WordList
+                   | "#setAcctStorage" AcctID Int WordList
                    | "#increaseAcctBalance" AcctID Word      [strict(2)]
                    | "#decreaseAcctBalance" AcctID Word      [strict(2)]
 
-    rule #setAcctProgram ACCT PROGRAM => #setAcctProgram ACCT 0 PROGRAM [macro]
-    rule #setAcctStorage ACCT STORAGE => #setAcctStorage ACCT 0 STORAGE [macro]
-
-    rule #setAcctProgram ACCT N .Program => .
-    rule #setAcctStorage ACCT N .Storage => .
-
-    rule <k> #setAcctProgram ACCT (N => N +Int 1) (OpCode:OpCode ; Program => Program) ... </k>
+    rule <k> #setAcctProgram ACCT PROGRAM => . ... </k>
          <account>
             <acctID> ACCT </acctID>
-            <program> STORAGE:Map (. => N |-> OpCode) </program>
+            <program> _ => PROGRAM </program>
             ...
          </account>
 
+    rule #setAcctStorage ACCT WS:WordList => #setAcctStorage ACCT 0 WS
     rule <k> #setAcctStorage ACCT (N => N +Int 1) (W0:Word , WS => WS) ... </k>
          <account>
             <acctID> ACCT </acctID>
@@ -151,7 +145,7 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
     rule <k> #addToLocalMem LM => #setLocalMem #mergeMem {INITIAL| INITIAL | SIZE | LM} ... </k>
          <wordStack> (INITIAL : SIZE : WS) => WS </wordStack>
 
-    rule <k> #mergeMem {INITIAL | CURRENT |  SIZE | LM} => #mergeMem{INITIAL | CURRENT +Word 1 | SIZE |  LM} ...</k> 
+    rule <k> #mergeMem {INITIAL | CURRENT |  SIZE | LM} => #mergeMem{INITIAL | CURRENT +Word 1 | SIZE |  LM} ...</k>
          <localMem> L[Current <- LM[Current -Word Initial]] </localMem>
          requires ((CURRENT -Int INITIAL) <=Int SIZE) andBool ((CURRENT -Int INITIAL) in keys(LM))
 
@@ -189,12 +183,14 @@ module EVM-INITIALIZATION
          </k>
          <accounts>
             ...
-            (.Bag => <account>
+            (.Bag
+            => <account>
                     <acctID> ACCT </acctID>
-                    <program> .Map </program>
+                    <program> .Program </program>
                     <storage> .Map </storage>
                     <balance> BALANCE </balance>
-                  </account>)
+               </account>
+            )
          </accounts>
 
 endmodule
@@ -210,14 +206,15 @@ module EVM-STACK
 
     syntax KResult ::= LocalMem | Word
 
-    rule <k> . => OP </k>
+    rule <k> . => PROGRAM[PC] </k>
          <accountID> ACCT </accountID>
          <programCounter> PC => PC +Int 1 </programCounter>
          <account>
             <acctID> ACCT </acctID>
-            <program> ... PC |-> OP ... </program>
+            <program> PROGRAM </program>
             ...
          </account>
+         requires PC <Int size(PROGRAM)
 
     rule <k> UOP:UnStackOp => UOP W0 ... </k>
          <wordStack> W0 : WS => WS </wordStack>
@@ -309,16 +306,16 @@ module EVM-PROCESS-CALL
              ~> #processCall { ACCT | ETHER }
          ... </k>
          <wordStack> (ACCT : ETHER : BEGIN : SIZE : WS) => WS </wordStack>
-    
+
     rule <k> RETURN => #processReturn { #gatherArgs { BEGIN | SIZE | 0 | .LocalMem } } ... </k>
             <wordStack> (BEGIN : SIZE : WS) => WS </wordStack>
 
     rule #processReturn {LM} => #popCallStack ~> #addToLocalMem LM
 
-    rule JUMP W0 => #setProgramCounter W0
-    
-    rule JUMP1 W0 W1 => #setProgramCounter W0 requires notBool W1 ==Int 0
-    rule JUMP1 W0 W1 => . requires W1 ==Int 0
+    rule <k> JUMP => #setProgramCounter W0 ... </k>
+         <wordStack> W0 : WS => WS </wordStack>
+    rule <k> JUMP1 => #if (W1 ==Int 0) #then .K #else #setProgramCounter W0 #fi ... </k>
+         <wordStack> W0 : W1 : WS => WS </wordStack>
 
     // TODO: How are we handling refunding unused gas?
     rule <k> LM:LocalMem ~> #processCall {ACCT | ETHER}

@@ -50,7 +50,7 @@ module EVM-STACK-OPERATORS
     rule (I:Int ~> #checkStackSize) => .              requires I <Int  1024
     rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW requires I >=Int 1024
 
-    syntax UnStackOp ::= "ISZERO" | "NOT" | "POP" | "JUMP"
+    syntax UnStackOp ::= "ISZERO" | "NOT" | "POP"
     syntax KItem ::= UnStackOp Word
 
     rule ISZERO 0 => bool2Word(true)  ~> #push                   [structural]
@@ -62,7 +62,7 @@ module EVM-STACK-OPERATORS
                         | "MOD" | "SIGNEXTEND" | "SDIV" | "SMOD"
                         | "LT" | "GT" | "SLT" | "SGT" | "EQ"
                         | "AND" | "EVMOR" | "XOR"
-                        | "BYTE" | "SHA3" | "JUMP1"
+                        | "BYTE" | "SHA3"
     syntax KItem ::= BinStackOp Word Word
 
     rule ADD        W0 W1 => W0 +Word W1       ~> #push [structural]
@@ -102,11 +102,31 @@ EVM Programs
 module EVM-PROGRAM-SYNTAX
     imports EVM-STACK-OPERATORS
 
-    syntax LocalOp   ::= StackOp | "MLOAD" | "MSTORE" | "MLOAD8"
+    syntax ControlFlowOp ::= "JUMP"
+                           | "JUMP1"
+
+    syntax LocalOp   ::= StackOp | ControlFlowOp | "MLOAD" | "MSTORE" | "MLOAD8"
     syntax ProcessOp ::= "CALL" | "RETURN"
     syntax OpCode    ::= LocalOp | ProcessOp
 
     syntax Program ::= List{OpCode, ";"}
+
+    syntax OpCode ::= Program "[" Int "]" [function]
+
+    rule (OP:OpCode ; OPS:Program)[0] => OP
+    rule (OP:OpCode ; OPS:Program)[N] => OPS[N -Int 1] requires N >Int 0
+
+    syntax Int ::= "size" "(" Program ")" [function]
+
+    rule size( .Program ) => 0
+    rule size( OP:OpCode ; PROGRAM ) => 1 +Int size( PROGRAM )
+
+    syntax KItem ::= Program "[" Int ":" Int "]" [function]
+
+    rule PROGRAM[0:0] => .Program
+    rule (OP:OpCode ; PROGRAM)[0 : M] => OP ~> PROGRAM[0 : M -Int 1]  requires M >Int 0
+    rule (OP:OpCode ; PROGRAM)[N : M] => PROGRAM[N -Int 1 : M -Int 1] requires N >Int 0
+
 endmodule
 ```
 
@@ -131,18 +151,12 @@ module EVM-ACCOUNT-SYNTAX
     imports EVM-PROGRAM-SYNTAX
 
     syntax AcctID  ::= Word | ".AcctID"
-    syntax Storage ::= List{Word,","}
 
     syntax Account ::= "account" ":"
                        "-" "id" ":" AcctID
                        "-" "balance" ":" Word
                        "-" "program" ":" Program
-                       "-" "storage" ":" Storage
-
-    syntax AccountState ::=     "balance" ":" Word
-                            "," "program" ":" Map
-                            "," "storage" ":" Map
-
+                       "-" "storage" ":" WordList
 endmodule
 ```
 
