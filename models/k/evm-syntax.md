@@ -1,16 +1,9 @@
----
-title: K Model of EVM Execution Environment
-geometry: margin=2.5cm
-...
-
+None of the rules defined here should be sensitive to other parts of the
+configuration, they should be standalone.
 
 ```k
 requires "evm-data.k"
 ```
-
-None of the rules defined here should be sensitive to other parts of the
-configuration, they should be standalone.
-
 
 Local Execution State
 =====================
@@ -136,15 +129,7 @@ EVM Accounts
 EVM `Account`s contain the `AcctID` (account identifier), the `Balance` (amount
 of ether in the account), the `Storage` (long-term memory of the account), and
 the `Program` (code of the account). We use a YAML-like notation to specify
-them, as shown here:
-
-```evm-account
-account:
--   id: 15
--   balance: 40
--   program: PUSH 30 ; PUSH 35 ; ADD
--   storage: 50 , 70 , 82
-```
+them.
 
 ```k
 module EVM-ACCOUNT-SYNTAX

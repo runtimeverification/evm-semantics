@@ -1,16 +1,9 @@
----
-title: K Model of EVM Execution Environment
-geometry: margin=2.5cm
-...
-
+Configuration
+=============
 
 ```k
 requires "evm-syntax.k"
 ```
-
-
-Configuration
-=============
 
 We need to define the configuration before defining the semantics of any rules
 which span multiple cells.

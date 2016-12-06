@@ -1,9 +1,3 @@
----
-title: Data Used for EVM Execution
-geometry: margin=2.5cm
-...
-
-
 Words
 =====
 
