@@ -68,7 +68,6 @@ module EVM-WORD
 
     syntax WordStack ::= ".WordStack"
                        | Word ":" WordStack
-
     syntax Word ::= WordStack "[" Int "]" [function]
 
     rule (W0 : WS)[0] => W0
@@ -80,30 +79,26 @@ module EVM-WORD
     rule #stackSize (W : WS)   => 1 +Int (#stackSize WS)
 
     syntax WordList ::= List{Word, ","}
-    syntax LocalMem ::= ".LocalMem"
-                      | WordList
-                      | LocalMem "," LocalMem
-                      | WordList "[" Int ":" Int "]"       [function]
-                      | WordList "[" Int "]" ":=" WordList [function]
-    syntax Word     ::= WordList "[" Int "]" [function]
+                      | "#take" "(" Int "," WordList ")" [function]
+                      | "#range" "(" WordMap "," Int "," Int ")" [function]
 
-    rule .LocalMem => .WordList [macro]
+    syntax WordMap ::= ".WordMap"
+                     | Map
+                     | WordMap "[" Int ":=" WordList "]" [function]
+                     | "#asMap" "(" WordList ")"         [function]
 
-    rule (W:Word , WL:WordList)[0] => W
-    rule (W:Word , WL:WordList)[N] => WL[N -Int 1] requires N >Int 0
+    rule #take(0, WL)            => .WordList
+    rule #take(N, (W:Word , WL)) => W , #take(N -Int 1, WL) requires N >Int 0
 
-    rule WL[0:0] => .WordList
-    rule (.WordList)[0 : M]   => 0 , WL[0 : M -Int 1]    requires M >Int 0
-    rule (W:Word , WL)[0 : M] => W , WL[0 : M -Int 1]    requires M >Int 0
-    rule (W:Word , WL)[N : M] => WL[N -Int 1 : M -Int 1] requires N >Int 0
+    rule #range(LM,         N, M) => .WordList                   requires N >=Int M
+    rule #range(N |-> W LM, N, M) => W , #range(LM, N +Int 1, M) requires N <Int M
 
-    rule WL[0] := WL' => WL' , WL[size(WL') : size(WL)]
-    rule (W:Word , WL)[N] := WL' => W , (WL[N -Int 1] := WL')          requires N >Int 0
-    rule (.WordList)[N]   := WL' => 0 , ((.WordList)[N -Int 1] := WL') requires N >Int 0
+    rule .WordMap => .Map [macro]
+    rule LM[N := .WordList]    => LM
+    rule LM[N := W0:Word , WL] => (LM[N <- W0])[N +Int 1 := WL]
 
-    syntax Int ::= "size" "(" WordList ")"
+    rule #asMap(.WordList) => .Map
+    rule #asMap(WL) => (0 |-> 0)[0 := WL] requires WL =/=K .WordList
 
-    rule size( .WordList )   => 0
-    rule size( W:Word , WL ) => 1 +Int size( WL )
 endmodule
 ```

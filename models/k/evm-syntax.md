@@ -103,22 +103,7 @@ module EVM-PROGRAM-SYNTAX
     syntax StateOp       ::= "PC"
     syntax ProcessOp     ::= "CALL" | "RETURN"
     syntax OpCode        ::= LocalOp | StateOp | ProcessOp
-
-    syntax Program ::= List{OpCode, ";"}
-    syntax OpCode  ::= Program "[" Int "]"         [function]
-    syntax KItem   ::= Program "[" Int ":" Int "]" [function]
-
-    rule (OP:OpCode ; OPS:Program)[0] => OP
-    rule (OP:OpCode ; OPS:Program)[N] => OPS[N -Int 1] requires N >Int 0
-
-    rule (PROGRAM:Program)[0:0] => .Program
-    rule (OP:OpCode ; PROGRAM)[0 : M] => OP ; PROGRAM[0 : M -Int 1]   requires M >Int 0
-    rule (OP:OpCode ; PROGRAM)[N : M] => PROGRAM[N -Int 1 : M -Int 1] requires N >Int 0
-
-    syntax Int ::= "size" "(" Program ")" [function]
-
-    rule size( .Program ) => 0
-    rule size( OP:OpCode ; PROGRAM ) => 1 +Int size( PROGRAM )
+    syntax Program       ::= List{OpCode, ";"}
 endmodule
 ```
 
@@ -131,10 +116,10 @@ the `Program` (code of the account). We use a YAML-like notation to specify
 them.
 
 The `WordStack` is the size-limited (to 1024) stack of words that each local
-execution of an EVM process has acess to. The `LocalMem` is an array of memory
+execution of an EVM process has acess to. The local memory is an array of memory
 it has local access to (modeled here as a map from addresses to values). EVM
 Processes are tuples of their associated `PID`, their `ProgramCounter`, their
-`WordStack`, and their `LocalMem`.
+`WordStack`, and their `WordMap`.
 
 ```k
 module EVM-PROCESS-SYNTAX
@@ -147,11 +132,7 @@ module EVM-PROCESS-SYNTAX
                        "-" "program" ":" Program
                        "-" "storage" ":" WordList
 
-    syntax LocalMem ::= Map | ".LocalMem"
-
-    rule .LocalMem => .Map [macro]
-
-    syntax Process ::= "{" AcctID "|" Int "|" WordStack "|" LocalMem "}"
+    syntax Process ::= "{" AcctID "|" Int "|" WordStack "|" WordMap "}"
     syntax CallStack ::= ".CallStack"
                        | Process CallStack
 
@@ -171,6 +152,7 @@ module EVM-SYNTAX
     syntax Accounts ::= ".Accounts"
                       | Account Accounts
 
-    syntax EVMSimulation ::= Accounts "START" AcctID
+    syntax EVMSimulation ::= Accounts
+                           | Accounts "START" AcctID
 endmodule
 ```

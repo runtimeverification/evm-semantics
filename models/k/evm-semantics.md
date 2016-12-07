@@ -16,16 +16,16 @@ module EVM-CONFIGURATION
                     // local execution
                     <k> $PGM:EVMSimulation </k>
                     <accountID> .AcctID </accountID>
-                    <programCounter> 0 </programCounter>
+                    <pc> 0 </pc>
                     <wordStack> .WordStack </wordStack>
-                    <localMem> .LocalMem </localMem>
+                    <localMem> .WordMap </localMem>
                     // suspended processes
                     <callStack> .CallStack </callStack>
                     // account information
                     <accounts>
                         <account multiplicity="*">
                             <acctID> .AcctID </acctID>
-                            <program> .Program </program>
+                            <program> .Map </program>
                             <storage> .Map </storage>
                             <balance> 0:Word </balance>
                         </account>
@@ -56,24 +56,26 @@ state (what the next map key is) when actually running these.
 
 ```k
     syntax KItem ::= "#setAcctProgram" AcctID Program
-                   | "#setAcctStorage" AcctID WordList
-                   | "#setAcctStorage" AcctID Int WordList
+                   | "#setAcctProgram" AcctID Int Program
+                   | "#setAcctStorage" AcctID WordMap
                    | "#increaseAcctBalance" AcctID Word      [strict(2)]
                    | "#decreaseAcctBalance" AcctID Word      [strict(2)]
 
-    rule <k> #setAcctProgram ACCT PROGRAM => . ... </k>
+    rule #setAcctProgram ACCT PGM => #setAcctProgram ACCT 0 PGM
+    rule #setAcctProgram ACCT N .Program => .
+    rule <k> #setAcctProgram ACCT N (OP:OpCode ; PGM)
+          => #setAcctProgram ACCT (N +Int 1) PGM
+         ... </k>
          <account>
             <acctID> ACCT </acctID>
-            <program> _ => PROGRAM </program>
+            <program> PROGRAM => PROGRAM[N <- OP] </program>
             ...
          </account>
 
-    rule #setAcctStorage ACCT WS:WordList => #setAcctStorage ACCT 0 WS
-    rule #setAcctStorage ACCT N .WordList => .
-    rule <k> #setAcctStorage ACCT (N => N +Int 1) (W0:Word , WS => WS) ... </k>
+    rule <k> #setAcctStorage ACCT WM => . ... </k>
          <account>
             <acctID> ACCT </acctID>
-            <storage> STORAGE:Map (. => N |-> W0) </storage>
+            <storage> _ => WM </storage>
             ...
          </account>
 
@@ -99,8 +101,8 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
     syntax KItem ::= "#setAccountID" AcctID
                    | "#setProgramCounter" Int
                    | "#setWordStack" WordStack
-                   | "#setLocalMem" LocalMem
-                   | "#setLocalMem" Int LocalMem
+                   | "#setLocalMem" WordMap
+                   | "#updateLocalMem" Int WordList
                    | "#setProcess" Process
                    | "#pushCallStack"
                    | "#popCallStack"
@@ -108,28 +110,30 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
     rule <k> #setAccountID ACCTID => . ... </k>
          <accountID> _ => ACCTID </accountID>
 
-    rule <k> #setProgramCounter PC => .K ... </k>
-         <programCounter> _ => PC </programCounter>
+    rule <k> #setProgramCounter PCOUNT => . ... </k>
+         <pc> _ => PCOUNT </pc>
 
     rule <k> #setWordStack WS => . ... </k>
          <wordStack> _ => WS </wordStack>
 
-    rule #setLocalMem WL => #setLocalMem 0 WL
-    rule <k> #setLocalMem N WL => . ... </k>
-         <localMem> LM => LM[N] := WL </localMem>
+    rule <k> #setLocalMem LM => . ... </k>
+         <localMem> _ => LM </localMem>
 
-    rule #setProcess { ACCT | PC | WS | WL }
+    rule <k> #updateLocalMem N WL => . ... </k>
+         <localMem> LM => LM[N := WL] </localMem>
+
+    rule #setProcess { ACCT | PCOUNT | WS | LM }
          =>    #setAccountID ACCT
-            ~> #setProgramCounter PC
+            ~> #setProgramCounter PCOUNT
             ~> #setWordStack WS
-            ~> #setLocalMem WL
+            ~> #setLocalMem LM
 
     rule <k> #pushCallStack => . ... </k>
          <accountID> ACCT </accountID>
-         <programCounter> PC </programCounter>
+         <pc> PCOUNT </pc>
          <wordStack> WS </wordStack>
          <localMem> LM </localMem>
-         <callStack> CS => { ACCT | PC | WS | LM } CS </callStack>
+         <callStack> CS => { ACCT | PCOUNT | WS | LM } CS </callStack>
 
     rule <k> #popCallStack => #setProcess P ... </k>
          <callStack> P:Process CS => CS </callStack>
@@ -148,7 +152,7 @@ module EVM-INITIALIZATION
 
     syntax KItem ::= EVMSimulation
 
-    rule ACCTS:Accounts START ACCT => ACCTS ~> #setProcess { ACCT | 0 | .WordStack | .WordList }
+    rule ACCTS:Accounts START ACCT => ACCTS ~> #setProcess { ACCT | 0 | .WordStack | .WordMap }
 
     rule .Accounts => .
     rule ACCT:Account ACCTS:Accounts => ACCT ~> ACCTS
@@ -158,7 +162,7 @@ module EVM-INITIALIZATION
              -   balance: BALANCE
              -   program: PROGRAM
              -   storage: STORAGE
-         =>    #setAcctStorage ACCT STORAGE
+         =>    #setAcctStorage ACCT #asMap(STORAGE)
             ~> #setAcctProgram ACCT PROGRAM
              ...
          </k>
@@ -167,13 +171,12 @@ module EVM-INITIALIZATION
             (.Bag
             => <account>
                     <acctID> ACCT </acctID>
-                    <program> .Program </program>
+                    <program> .Map </program>
                     <storage> .Map </storage>
                     <balance> BALANCE </balance>
                </account>
             )
          </accounts>
-
 endmodule
 ```
 
@@ -185,17 +188,14 @@ module EVM-INTRAPROCEDURAL
     imports EVM-CONFIGURATION
     imports EVM-INITIALIZATION-UTIL
 
-    syntax KResult ::= LocalMem | Word
-
-    rule <k> . => PROGRAM[PC] </k>
+    rule <k> . => OP </k>
          <accountID> ACCT </accountID>
-         <programCounter> PC => PC +Int 1 </programCounter>
+         <pc> PCOUNT => PCOUNT +Int 1 </pc>
          <account>
             <acctID> ACCT </acctID>
-            <program> PROGRAM </program>
+            <program> PROGRAM:Map PCOUNT |-> OP </program>
             ...
          </account>
-         requires PC <Int size(PROGRAM)
 
     rule <k> UOP:UnStackOp => UOP W0 ... </k>
          <wordStack> W0 : WS => WS </wordStack>
@@ -227,10 +227,10 @@ endmodule
 module EVM-INTERPROCEDURAL
     imports EVM-INTRAPROCEDURAL
 
-    syntax KItem ::= "#processCall" "{" AcctID "|" Word "|" LocalMem "}"
-                   | "#processReturn" LocalMem [strict]
+    syntax KItem ::= "#processCall" "{" AcctID "|" Word "|" WordList "}"
+                   | "#processReturn" WordList [strict]
 
-    rule <k> CALL => #processCall { ACCT | ETHER | LM[INIT : INIT +Int SIZE]} ... </k>
+    rule <k> CALL => #processCall { ACCT | ETHER | #range(LM, INIT, INIT +Int SIZE) } ... </k>
          <wordStack> ACCT : ETHER : INIT : SIZE : WS => WS </wordStack>
          <localMem> LM </localMem>
 
@@ -239,11 +239,11 @@ module EVM-INTERPROCEDURAL
           =>    #decreaseAcctBalance CURRACCT ETHER
              ~> #increaseAcctBalance ACCT ETHER
              ~> #pushCallStack
-             ~> #setProcess {ACCT | 0 | .WordStack | WL}
+             ~> #setProcess {ACCT | 0 | .WordStack | #asMap(WL)}
          ... </k>
          <accountID> CURRACCT </accountID>
 
-    rule <k> RETURN => #processReturn LM[INIT : INIT +Int SIZE] ... </k>
+    rule <k> RETURN => #processReturn #range(LM, INIT, INIT +Int SIZE) ... </k>
          <wordStack> (INIT : SIZE : WS) => WS </wordStack>
          <localMem> LM </localMem>
 
@@ -251,7 +251,7 @@ module EVM-INTERPROCEDURAL
 
     rule #processReturn WL => #popCallStack ~> #returnValues WL
 
-    rule <k> #returnValues WL => #setLocalMem INIT (WL[0:SIZE]) ... </k>
+    rule <k> #returnValues WL => #updateLocalMem INIT #take(SIZE, WL) ... </k>
          <wordStack> INIT : SIZE : WS => WS </wordStack>
 endmodule
 ```
@@ -260,6 +260,5 @@ endmodule
 module EVM
     imports EVM-INITIALIZATION
     imports EVM-INTERPROCEDURAL
-
 endmodule
 ```
