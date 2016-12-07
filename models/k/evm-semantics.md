@@ -193,7 +193,7 @@ module EVM-INTRAPROCEDURAL
          <pc> PCOUNT => PCOUNT +Int 1 </pc>
          <account>
             <acctID> ACCT </acctID>
-            <program> PROGRAM:Map PCOUNT |-> OP </program>
+            <program> ... PCOUNT |-> OP ... </program>
             ...
          </account>
 
