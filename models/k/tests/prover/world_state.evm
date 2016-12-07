@@ -1,4 +1,3 @@
-
 account:
 -   id: 1
 -   balance: 40
@@ -6,5 +5,3 @@ account:
 -   storage:
 
 .Accounts
-
-START 1
