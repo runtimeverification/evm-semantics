@@ -1,0 +1,16 @@
+\section{Related Work} Luu et al.\cite{luumaking} formalized a subset of EVM
+semantics, and used a symbolic execution tool based on their formalized
+semantics to detect problems in 8519 existing smart contracts. Their semantics
+however, are incomplete, and can only be used to detect a limited class of
+problems. For instance, their semantics do not consider the role of gas in
+Ethereum transactions, and cannot be used to prove properties concerning gas on
+smart contracts.
+
+There exists extensive literature on the use of language semantics for program
+verification. Stefanescu et al.
+\cite{stefanescu-park-yuwen-li-rosu-2016-oopsla} in their work presented a
+language independent verification framework for program verification. The
+verification infrastructure presented in their work however, has to be
+initialized with the operational semantics of the language. Hence, having
+complete semantics of EVM in K would allow for using existing infrastructure
+for smart contracts verification.
