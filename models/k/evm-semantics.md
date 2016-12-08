@@ -230,7 +230,7 @@ module EVM-INTERPROCEDURAL
     syntax KItem ::= "#processCall" "{" AcctID "|" Word "|" WordList "}"
                    | "#processReturn" WordList [strict]
 
-    rule <k> CALL => #processCall { ACCT | ETHER | #range(LM, INIT, INIT +Int SIZE) } ... </k>
+    rule <k> CALL => #processCall { ACCT | ETHER | #range(LM, INIT, SIZE) } ... </k>
          <wordStack> ACCT : ETHER : INIT : SIZE : WS => WS </wordStack>
          <localMem> LM </localMem>
 
@@ -243,7 +243,7 @@ module EVM-INTERPROCEDURAL
          ... </k>
          <accountID> CURRACCT </accountID>
 
-    rule <k> RETURN => #processReturn #range(LM, INIT, INIT +Int SIZE) ... </k>
+    rule <k> RETURN => #processReturn #range(LM, INIT, SIZE) ... </k>
          <wordStack> (INIT : SIZE : WS) => WS </wordStack>
          <localMem> LM </localMem>
 
