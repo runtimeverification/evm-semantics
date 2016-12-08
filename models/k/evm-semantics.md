@@ -18,7 +18,7 @@ module EVM-CONFIGURATION
                     <accountID> .AcctID </accountID>
                     <pc> 0 </pc>
                     <wordStack> .WordStack </wordStack>
-                    <localMem> .WordMap </localMem>
+                    <localMem> .Map </localMem>
                     // suspended processes
                     <callStack> .CallStack </callStack>
                     // account information
@@ -119,8 +119,8 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
     rule <k> #setLocalMem LM => . ... </k>
          <localMem> _ => LM </localMem>
 
-    rule <k> #updateLocalMem N WL => . ... </k>
-         <localMem> LM => LM[N := WL] </localMem>
+    rule <k> #updateLocalMem N WL => #setLocalMem (LM[N := WL]) ... </k>
+         <localMem> LM </localMem>
 
     rule #setProcess { ACCT | PCOUNT | WS | LM }
          =>    #setAccountID ACCT
