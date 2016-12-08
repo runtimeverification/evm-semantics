@@ -1,9 +1,3 @@
----
-title: Data Used for EVM Execution
-geometry: margin=2.5cm
-...
-
-
 Words
 =====
 
@@ -18,7 +12,10 @@ configuration, they should be standalone and operate at the top of the K cell.
 module EVM-WORD
     syntax KResult ::= Int
 
-    syntax Word ::= Int
+    syntax WordVar ::= Id ":" "#Word"
+
+    syntax Word ::= WordVar
+                  | Int
                   | "chop" "(" Int ")"                      [function]
                   | "bool2Word" "(" Bool ")"                [function]
                   | Word "+Word" Word                       [function]
@@ -41,8 +38,8 @@ module EVM-WORD
                   | "bitwisexor" "(" Word "," Word ")"      [function] // needs implemented
                   | "getbyte" "(" Word "," Word ")"         [function] // needs implemented
                   | "sha3" "(" Word "," Word ")"            [function] // needs implemented
-                  | "addmod" "(" Word "," Word "," Word ")" [function] 
-                  | "mulmod" "(" Word "," Word "," Word ")" [function] 
+                  | "addmod" "(" Word "," Word "," Word ")" [function]
+                  | "mulmod" "(" Word "," Word "," Word ")" [function]
 
     rule chop( I:Int ) => I                           requires I <Int (2 ^Int 256) andBool I >=Int 0
     rule chop( I:Int ) => chop( I +Int (2 ^Int 256) ) requires I <Int 0
@@ -60,12 +57,49 @@ module EVM-WORD
     rule W0:Int >Word W1:Int => bool2Word( W0 >Int W1 )
     rule W0:Int ==Word W1:Int => bool2Word( W0 ==Int W1)
     rule W0:Int %Word W1:Int => chop( W0 %Int W1 )
-    
-    rule addmod( W0:Int, W1:Int, W2:Int) => chop(0) requires W2 ==Int 0
-    rule addmod( W0:Int, W1:Int, W2:Int) => chop((W0 +Int W1) %Int W2)  
 
+    // TODO: These rules overlap and are not confluent. Are they correct?
+    rule addmod( W0:Int, W1:Int, W2:Int) => chop(0) requires W2 ==Int 0
+    rule addmod( W0:Int, W1:Int, W2:Int) => chop((W0 +Int W1) %Int W2)
+
+    // TODO: These rules overlap and are not confluent. Are they correct?
     rule mulmod( W0:Int, W1:Int, W2:Int) => chop(0) requires W2 ==Int 0
     rule mulmod( W0:Int, W1:Int, W2:Int) => chop((W0 *Int W1) %Int W2)
+
+    syntax WordStack ::= ".WordStack"
+                       | Word ":" WordStack
+    syntax Word ::= WordStack "[" Int "]" [function]
+
+    rule (W0 : WS)[0] => W0
+    rule (W0 : WS)[N] => WS[N -Int 1] requires N >Int 0
+
+    syntax Int ::= "#stackSize" WordStack [function]
+
+    rule #stackSize .WordStack => 0
+    rule #stackSize (W : WS)   => 1 +Int (#stackSize WS)
+
+    syntax WordList ::= List{Word, ","}
+                      | "#take" "(" Int "," WordList ")" [function]
+                      | "#range" "(" WordMap "," Int "," Int ")" [function]
+
+    rule #take(0, WL)            => .WordList
+    rule #take(N, (W:Word , WL)) => W , #take(N -Int 1, WL) requires N >Int 0
+
+    rule #range(LM,         N, M) => .WordList                   requires N >=Int M
+    rule #range(N |-> W LM, N, M) => W , #range(LM, N +Int 1, M) requires N <Int M
+
+    syntax WordMap ::= Map
+                     | ".WordMap"
+                     | WordMap "[" Int ":=" WordList "]" [function]
+                     | "#asMap" "(" WordList ")"         [function]
+
+    rule .WordMap => .Map [macro]
+
+    rule LM[N := .WordList]    => LM
+    rule LM[N := W0:Word , WL] => (LM[N <- W0])[N +Int 1 := WL]
+
+    rule #asMap(.WordList) => .Map
+    rule #asMap(WL) => (0 |-> 0)[0 := WL] requires WL =/=K .WordList
 
 endmodule
 ```

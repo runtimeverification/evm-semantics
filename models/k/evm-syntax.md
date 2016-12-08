@@ -1,16 +1,9 @@
----
-title: K Model of EVM Execution Environment
-geometry: margin=2.5cm
-...
-
+None of the rules defined here should be sensitive to other parts of the
+configuration, they should be standalone.
 
 ```k
 requires "evm-data.k"
 ```
-
-None of the rules defined here should be sensitive to other parts of the
-configuration, they should be standalone.
-
 
 Local Execution State
 =====================
@@ -38,16 +31,21 @@ module EVM-STACK-OPERATORS
 
     syntax NullStackOp ::= "#push"
                          | "PUSH" Word
+                         | "PUSH" "(" WordList ")" [function]
                          | "#checkStackSize"
                          | "STACK_OVERFLOW"
-                         | "DUP" Word
+                         | "DUP" Int
     syntax KItem ::= NullStackOp
 
-    rule PUSH N => N ~> #push ~> #checkStackSize [structural]
+    rule PUSH( .WordList )   => .
+    rule PUSH( N:Word , NS ) => PUSH N ~> PUSH( NS )
+
+    rule PUSH N => N ~> #push ~> #checkStackSize     [structural]
+
     rule (I:Int ~> #checkStackSize) => .              requires I <Int  1024
     rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW requires I >=Int 1024
 
-    syntax UnStackOp ::= "ISZERO" | "NOT" | "POP" | "JUMP"
+    syntax UnStackOp ::= "ISZERO" | "NOT" | "POP"
     syntax KItem ::= UnStackOp Word
 
     rule ISZERO 0 => bool2Word(true)  ~> #push                   [structural]
@@ -59,7 +57,7 @@ module EVM-STACK-OPERATORS
                         | "MOD" | "SIGNEXTEND" | "SDIV" | "SMOD"
                         | "LT" | "GT" | "SLT" | "SGT" | "EQ"
                         | "AND" | "EVMOR" | "XOR"
-                        | "BYTE" | "SHA3" | "JUMP1"
+                        | "BYTE" | "SHA3"
     syntax KItem ::= BinStackOp Word Word
 
     rule ADD        W0 W1 => W0 +Word W1       ~> #push [structural]
@@ -85,8 +83,8 @@ module EVM-STACK-OPERATORS
     syntax TernStackOp ::= "ADDMOD" | "MULMOD"
     syntax KItem ::= TernStackOp Word Word Word
 
-    rule ADDMOD W0 W1 W2 => addmod(W0,W1,W2) [structural]
-    rule MULMOD W0 W1 W2 => mulmod(W0,W1,W2) [structural]
+    rule ADDMOD W0 W1 W2 => addmod(W0,W1,W2) ~> #push [structural]
+    rule MULMOD W0 W1 W2 => mulmod(W0,W1,W2) ~> #push [structural]
 
     syntax StackOp ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp
 endmodule
@@ -99,82 +97,44 @@ EVM Programs
 module EVM-PROGRAM-SYNTAX
     imports EVM-STACK-OPERATORS
 
-    syntax LocalOp   ::= StackOp | "MLOAD" | "MSTORE" | "MLOAD8"
-    syntax ProcessOp ::= "CALL" | "RETURN"
-    syntax OpCode    ::= LocalOp | ProcessOp
-
-    syntax Program ::= List{OpCode, ";"}
-endmodule
-```
-
-EVM Accounts
-------------
-
-EVM `Account`s contain the `AcctID` (account identifier), the `Balance` (amount
-of ether in the account), the `Storage` (long-term memory of the account), and
-the `Program` (code of the account). We use a YAML-like notation to specify
-them, as shown here:
-
-```evm-account
-account:
--   id: 15
--   balance: 40
--   program: PUSH 30 ; PUSH 35 ; ADD
--   storage: 50 , 70 , 82
-```
-
-```k
-module EVM-ACCOUNT-SYNTAX
-    imports EVM-PROGRAM-SYNTAX
-
-    syntax AcctID  ::= Word | ".AcctID"
-    syntax Storage ::= List{Word,","}
-
-    syntax Account ::= "account" ":"
-                       "-" "id" ":" AcctID
-                       "-" "balance" ":" Word
-                       "-" "program" ":" Program
-                       "-" "storage" ":" Storage
-
-    syntax AccountState ::=     "balance" ":" Word
-                            "," "program" ":" Map
-                            "," "storage" ":" Map
-
+    syntax LocalMemOp    ::= "MLOAD" | "MSTORE" | "MLOAD8"
+    syntax ControlFlowOp ::= "JUMP" | "JUMP1"
+    syntax LocalOp       ::= StackOp | ControlFlowOp | LocalMemOp
+    syntax StateOp       ::= "PC"
+    syntax ProcessOp     ::= "CALL" | "RETURN"
+    syntax OpCode        ::= LocalOp | StateOp | ProcessOp
+    syntax Program       ::= List{OpCode, ";"}
 endmodule
 ```
 
 EVM Process
 -----------
 
+EVM `Account`s contain the `AcctID` (account identifier), the `Balance` (amount
+of ether in the account), the `Storage` (long-term memory of the account), and
+the `Program` (code of the account). We use a YAML-like notation to specify
+them.
+
 The `WordStack` is the size-limited (to 1024) stack of words that each local
-execution of an EVM process has acess to. The `LocalMem` is an array of memory
+execution of an EVM process has acess to. The local memory is an array of memory
 it has local access to (modeled here as a map from addresses to values). EVM
 Processes are tuples of their associated `PID`, their `ProgramCounter`, their
-`WordStack`, and their `LocalMem`.
+`WordStack`, and their `WordMap`.
 
 ```k
 module EVM-PROCESS-SYNTAX
-    imports EVM-ACCOUNT-SYNTAX
+    imports EVM-PROGRAM-SYNTAX
 
-    syntax WordStack ::= ".WordStack"
-                       | Word ":" WordStack
+    syntax AcctID  ::= Word | ".AcctID"
+    syntax Account ::= "account" ":"
+                       "-" "id" ":" AcctID
+                       "-" "balance" ":" Word
+                       "-" "program" ":" Program
+                       "-" "storage" ":" WordList
 
-    syntax KItem ::= "#stackSize" WordStack
-                   | "#stackUnit"
-
-    rule #stackSize .WordStack => 0                         [structural]
-    rule #stackSize (W : WS) => #stackSize WS ~> #stackUnit [structural]
-    rule I1:Int ~> #stackUnit => I1 +Int 1                  [structural]
-
-    syntax LocalMem ::= Map | ".LocalMem"
-
-    syntax Process ::= "{" AcctID "|" Word "|" WordStack "|" LocalMem "}"
+    syntax Process ::= "{" AcctID "|" Int "|" WordStack "|" WordMap "}"
     syntax CallStack ::= ".CallStack"
                        | Process CallStack
-
-    rule .LocalMem => .Map [macro]
-    syntax MergeMemOp ::= "#mergeMem" "{" Word "|"  Word "|" Word "|" LocalMem "}" [function]
-                          | LocalMem
 
 endmodule
 ```
@@ -187,12 +147,12 @@ along with which account to call execution on first:
 
 ```k
 module EVM-SYNTAX
-    imports EVM-ACCOUNT-SYNTAX
     imports EVM-PROCESS-SYNTAX
 
     syntax Accounts ::= ".Accounts"
                       | Account Accounts
 
-    syntax EVMSimulation ::= Accounts "START" AcctID
+    syntax EVMSimulation ::= Accounts
+                           | Accounts "START" AcctID
 endmodule
 ```
