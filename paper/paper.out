@@ -1,6 +1,10 @@
 \BOOKMARK [1][-]{section.1}{Introduction}{}% 1
-\BOOKMARK [1][-]{section.2}{Background}{}% 2
-\BOOKMARK [1][-]{section.3}{Methodology}{}% 3
-\BOOKMARK [1][-]{section.4}{Evaluation}{}% 4
-\BOOKMARK [1][-]{section.5}{Related Work}{}% 5
-\BOOKMARK [1][-]{section.6}{References}{}% 6
+\BOOKMARK [1][-]{section.2}{Methodology}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{How K Works}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Our configuration and design}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Implementing Instructions}{section.2}% 5
+\BOOKMARK [1][-]{section.3}{Evaluation}{}% 6
+\BOOKMARK [1][-]{section.4}{Related Work}{}% 7
+\BOOKMARK [1][-]{section.5}{Future Work}{}% 8
+\BOOKMARK [1][-]{section.6}{Conclusion}{}% 9
+\BOOKMARK [1][-]{section.7}{References}{}% 10

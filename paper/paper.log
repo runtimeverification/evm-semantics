@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  7 DEC 2016 00:54
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  8 DEC 2016 16:11
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -655,43 +655,55 @@ Overfull \hbox (10.79999pt too wide) in paragraph at lines 94--94
  [][][] 
  []
 
-(./introduction.tex) (./background.tex) (./methodology.tex) (./evaluation.tex)
-(./related.tex) (./paper.bbl
+(./introduction.tex
+Overfull \hbox (1.91887pt too wide) in paragraph at lines 42--44
+\T1/lmr/m/n/9 (-20) prop-er-ties, for ex-am-ple min-i-mum gas re-quired for pro
+per
+ []
+
+) (./background.tex) (./methodology.tex) (./evaluation.tex) (./related.tex)
+(./future.tex [1{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdft
+ex.map}
+
+
+]) (./conclusion.tex) (./paper.bbl
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <8> on input line 14.
 )
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 143.
- [1{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
-
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 151.
+ [2
 
 ]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 143.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 151.
  (./paper.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 143.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 143.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 151.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 151.
 Package rerunfilecheck Info: File `paper.out' has not changed.
-(rerunfilecheck)             Checksum: 9DD738A612A814100EEB1F0043F12646;275.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 143.
+(rerunfilecheck)             Checksum: C72ECC366CE6ABA3BBF49F1EE4BFF4F9;533.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 151.
  ) 
 Here is how much of TeX's memory you used:
- 10022 strings out of 493014
- 154447 string characters out of 6133351
- 277326 words of memory out of 5000000
- 13288 multiletter control sequences out of 15000+600000
- 70817 words of font info for 94 fonts, out of 8000000 for 9000
+ 10048 strings out of 493014
+ 154752 string characters out of 6133351
+ 278326 words of memory out of 5000000
+ 13294 multiletter control sequences out of 15000+600000
+ 74169 words of font info for 99 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 53i,12n,92p,465b,344s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 53i,12n,92p,465b,346s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2016/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{/usr/local/
-texlive/2016/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/texlive/2016/te
-xmf-dist/fonts/type1/public/lm/lmr8.pfb></usr/local/texlive/2016/texmf-dist/fon
-ts/type1/public/lm/lmr9.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/pub
-lic/lm/lmri8.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/urw/helvetic/u
-hvb8a.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.p
-fb></usr/local/texlive/2016/texmf-dist/fonts/type1/urw/times/utmb8a.pfb>
-Output written on paper.pdf (1 page, 113131 bytes).
+texlive/2016/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/local/texlive/20
+16/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/texlive/2016/texmf-dist/f
+onts/type1/public/lm/lmbx9.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/
+public/lm/lmr8.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/lm/lm
+r9.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/lm/lmri8.pfb></us
+r/local/texlive/2016/texmf-dist/fonts/type1/public/lm/lmsy9.pfb></usr/local/tex
+live/2016/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/local/texlive/20
+16/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/local/texlive/2016/texm
+f-dist/fonts/type1/urw/times/utmb8a.pfb>
+Output written on paper.pdf (2 pages, 149212 bytes).
 PDF statistics:
- 79 PDF objects out of 1000 (max. 8388607)
- 69 compressed objects within 1 object stream
- 13 named destinations out of 1000 (max. 500000)
- 11313 words of extra memory for PDF output out of 12000 (max. 10000000)
+ 108 PDF objects out of 1000 (max. 8388607)
+ 95 compressed objects within 1 object stream
+ 18 named destinations out of 1000 (max. 500000)
+ 12369 words of extra memory for PDF output out of 14400 (max. 10000000)
 
