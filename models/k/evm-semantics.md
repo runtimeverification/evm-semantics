@@ -212,7 +212,7 @@ module EVM-INTRAPROCEDURAL
     rule <k> #checkStackSize => #stackSize WS ~> #checkStackSize ... </k>
          <wordStack> WS </wordStack>
 
-    rule <k> DUP N => WS[N] ~> #push ~> #checkStackSize </k>
+    rule <k> DUP N => WS[N -Int 1] ~> #push ~> #checkStackSize </k>
          <wordStack> WS </wordStack>
          requires N >Int 0 andBool N <=Int 16
 

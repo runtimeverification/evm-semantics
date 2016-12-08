@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2014-2016 K Team. All Rights Reserved. -->
+
+<tests>
+  <test definition="evm-semantics.k" extension="evm" programs="." results=".">
+    <kompile-option name="--main-module" value="EVM" />
+  </test>
+</tests>

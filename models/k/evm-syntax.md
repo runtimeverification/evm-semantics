@@ -31,17 +31,12 @@ module EVM-STACK-OPERATORS
 
     syntax NullStackOp ::= "#push"
                          | "PUSH" Word
-                         | "PUSH" "(" WordList ")" [function]
                          | "#checkStackSize"
                          | "STACK_OVERFLOW"
                          | "DUP" Int
     syntax KItem ::= NullStackOp
 
-    rule PUSH( .WordList )   => .
-    rule PUSH( N:Word , NS ) => PUSH N ~> PUSH( NS )
-
-    rule PUSH N => N ~> #push ~> #checkStackSize     [structural]
-
+    rule PUSH N => N ~> #push ~> #checkStackSize [structural]
     rule (I:Int ~> #checkStackSize) => .              requires I <Int  1024
     rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW requires I >=Int 1024
 
