@@ -212,13 +212,12 @@ module EVM-INTRAPROCEDURAL
     rule <k> #checkStackSize => #stackSize WS ~> #checkStackSize ... </k>
          <wordStack> WS </wordStack>
 
-    rule <k> MSTORE => . ... </k>
+    rule <k> MSTORE =>  #updateLocalMem INDEX VALUE ... </k>
          <wordStack> INDEX : VALUE : WS => WS </wordStack>
-         <localMem> LM => LM[INDEX <- VALUE] </localMem>
 
     rule <k> MLOAD => . ... </k>
          <wordStack> INDEX : WS => VALUE : WS </wordStack>
-         <localMem> INDEX |-> VALUE </localMem>
+         <localMem>... INDEX |-> VALUE ...</localMem>
 
     rule <k> DUP N => WS[N] ~> #push ~> #checkStackSize </k>
          <wordStack> WS </wordStack>
