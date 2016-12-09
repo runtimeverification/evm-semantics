@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  9 DEC 2016 15:23
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  9 DEC 2016 16:08
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -754,14 +754,16 @@ per
 
 LaTeX Warning: Citation `gavwood' on page 1 undefined on input line 2.
 
+[1{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+
+
+]
 LaTeX Font Info:    Try loading font information for TS1+lmr on input line 17.
+
 (/usr/local/texlive/2016/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
-) [1{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
-
-
-])) (./evaluation.tex)
-(./related.tex) (./future.tex) (./conclusion.tex) (./paper.bbl
+))) (./evaluation.tex) (./related.tex) (./future.tex) (./conclusion.tex) (./pap
+er.bbl
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <8> on input line 14.
 )
@@ -775,7 +777,7 @@ Package atveryend Info: Empty hook `AfterLastShipout' on input line 152.
 Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 152.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 152.
 Package rerunfilecheck Info: File `paper.out' has not changed.
-(rerunfilecheck)             Checksum: C72ECC366CE6ABA3BBF49F1EE4BFF4F9;533.
+(rerunfilecheck)             Checksum: 29CCA4F2B4B60E759FE28057D8077FB2;712.
 
 
 LaTeX Warning: There were undefined references.
@@ -783,10 +785,10 @@ LaTeX Warning: There were undefined references.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 152.
  ) 
 Here is how much of TeX's memory you used:
- 10518 strings out of 493014
- 162425 string characters out of 6133351
- 280611 words of memory out of 5000000
- 13739 multiletter control sequences out of 15000+600000
+ 10524 strings out of 493014
+ 162505 string characters out of 6133351
+ 282611 words of memory out of 5000000
+ 13742 multiletter control sequences out of 15000+600000
  79240 words of font info for 105 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  53i,12n,92p,465b,346s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -802,10 +804,10 @@ mf-dist/fonts/type1/public/lm/lmsy9.pfb></usr/local/texlive/2016/texmf-dist/fon
 ts/type1/urw/helvetic/uhvb8a.pfb></usr/local/texlive/2016/texmf-dist/fonts/type
 1/urw/helvetic/uhvr8a.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/urw/t
 imes/utmb8a.pfb>
-Output written on paper.pdf (2 pages, 166682 bytes).
+Output written on paper.pdf (2 pages, 168195 bytes).
 PDF statistics:
- 116 PDF objects out of 1000 (max. 8388607)
- 101 compressed objects within 2 object streams
- 18 named destinations out of 1000 (max. 500000)
- 14929 words of extra memory for PDF output out of 17280 (max. 10000000)
+ 129 PDF objects out of 1000 (max. 8388607)
+ 114 compressed objects within 2 object streams
+ 21 named destinations out of 1000 (max. 500000)
+ 14953 words of extra memory for PDF output out of 17280 (max. 10000000)
 
