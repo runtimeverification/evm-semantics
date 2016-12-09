@@ -14,6 +14,7 @@
 \usepackage{color}
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{textcomp}
 \usepackage{url}\urlstyle{rm}
 \usepackage{cite}
 \usepackage[skip=8pt]{caption}
@@ -92,9 +93,15 @@
 }
 \maketitle
 \begin{abstract}
-Ethereum smart contracts are everywhere. In this work, we model the EVM in K, a
-language built specifically for extensible, formal verification of programming
-languages.
+Ethereum is growing in size and value rapidly, due to the key property that
+ethereum enables a programmatic interface by which users can interact with the
+currency by way of smart contracts. Because contracts inherently handle money, there
+is much scrutiny to the contracts that are placed on the ethereum blockchain.
+Perhaps more worrying, bugs in these contracts can have catastrophic
+consequences, which can jeopardize the integrity of the currency as a whole.
+In this work, we model the Ethereum Virtual Machine (EVM) in K, a language built
+specifically for extensible, formal verification of programming languages, and
+use our tool to verify a set of EVM programs for correctness.
 \end{abstract}
 % \input{abstract}
 \input{introduction}
@@ -102,6 +109,8 @@ languages.
 \input{methodology}
 \input{evaluation}
 \input{related}
+\input{future}
+\input{conclusion}
 
 % References: 1 page (can only fit 30-some citations, argh!)
 

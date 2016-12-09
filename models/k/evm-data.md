@@ -64,12 +64,12 @@ module EVM-WORD
     rule W0:Int %Word W1:Int => chop( W0 %Int W1 )
 
     // TODO: These rules overlap and are not confluent. Are they correct?
-    rule addmod( W0:Int, W1:Int, W2:Int) => chop(0) requires W2 ==Int 0
-    rule addmod( W0:Int, W1:Int, W2:Int) => chop((W0 +Int W1) %Int W2)
+    rule addmod(W0:Int, W1:Int, 0)      => 0
+    rule addmod(W0:Int, W1:Int, W2:Int) => chop((W0 +Int W1) %Int W2) [owise]
 
     // TODO: These rules overlap and are not confluent. Are they correct?
-    rule mulmod( W0:Int, W1:Int, W2:Int) => chop(0) requires W2 ==Int 0
-    rule mulmod( W0:Int, W1:Int, W2:Int) => chop((W0 *Int W1) %Int W2)
+    rule mulmod(W0:Int, W1:Int, 0)      => 0
+    rule mulmod(W0:Int, W1:Int, W2:Int) => chop((W0 *Int W1) %Int W2) [owise]
 
     syntax WordStack ::= ".WordStack"
                        | Word ":" WordStack

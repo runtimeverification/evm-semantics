@@ -1,3 +1,7 @@
 *.k
 models/k/evm-semantics-kompiled/
 *.swp
+*.aux
+*.log
+*.out
+paper/paper.pdf

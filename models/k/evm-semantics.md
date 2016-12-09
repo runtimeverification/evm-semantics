@@ -219,12 +219,13 @@ module EVM-INTRAPROCEDURAL
          <wordStack> INDEX : WS => VALUE : WS </wordStack>
          <localMem>... INDEX |-> VALUE ...</localMem>
 
-    rule <k> DUP N => WS[N] ~> #push ~> #checkStackSize </k>
+    rule <k> DUP N => WS[N -Int 1] ~> #push ~> #checkStackSize </k>
          <wordStack> WS </wordStack>
          requires N >Int 0 andBool N <=Int 16
 
     rule <k> JUMP => #setProgramCounter W0 ... </k>
          <wordStack> W0 : WS => WS </wordStack>
+
     rule <k> JUMP1 => #if (W1 ==Int 0) #then .K #else #setProgramCounter W0 #fi ... </k>
          <wordStack> W0 : W1 : WS => WS </wordStack>
 endmodule

@@ -3,9 +3,10 @@ Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: paper.aux
 The style file: abbrv.bst
 Database file #1: paper.bib
+Warning--I didn't find a database entry for "gavwood"
 You've used 4 entries,
             2118 wiz_defined-function locations,
-            520 strings with 4505 characters,
+            521 strings with 4512 characters,
 and the built_in function-call counts, 1288 in all, are:
 = -- 119
 > -- 76
@@ -44,3 +45,4 @@ warning$ -- 0
 while$ -- 10
 width$ -- 5
 write$ -- 46
+(There was 1 warning)
