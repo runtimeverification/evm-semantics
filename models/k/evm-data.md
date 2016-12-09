@@ -10,9 +10,6 @@ configuration, they should be standalone and operate at the top of the K cell.
 
 ```k
 module EVM-WORD
-//    syntax SymbolicWord ::= "#symbolicWord"
-
- //   syntax Int ::= SymbolicWord
 
     syntax KResult ::= Int 
 
@@ -45,11 +42,10 @@ module EVM-WORD
 
     rule #symbolicWord => ?X:Int
 
-    //rule chop( I:Int ) => I                           requires I <Int (2 ^Int 256) andBool I >=Int 0
+    rule chop( I:Int ) => I                           //requires I <Int (2 ^Int 256) andBool I >=Int 0
     //rule chop( I:Int ) => chop( I +Int (2 ^Int 256) ) requires I <Int 0
     //rule chop( I:Int ) => chop( I -Int (2 ^Int 256) ) requires I >=Int (2 ^Int 256)
 
-    rule chop( I:Int ) => I
     rule bool2Word(true)  => 1
     rule bool2Word(false) => 0
 
