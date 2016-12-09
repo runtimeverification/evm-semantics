@@ -1,0 +1,9 @@
+account:
+-   id: 1
+-   balance: 40
+-   program: PUSH 10; PUSH #symbolicWord; ADD
+-   storage: 30 , 20 , 25
+
+.Accounts
+
+START 1

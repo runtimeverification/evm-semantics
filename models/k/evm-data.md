@@ -10,12 +10,14 @@ configuration, they should be standalone and operate at the top of the K cell.
 
 ```k
 module EVM-WORD
-    syntax KResult ::= Int
+//    syntax SymbolicWord ::= "#symbolicWord"
 
-    syntax WordVar ::= Id ":" "#Word"
+ //   syntax Int ::= SymbolicWord
 
-    syntax Word ::= WordVar
-                  | Int
+    syntax KResult ::= Int 
+
+    syntax Word ::= Int
+                  | "#symbolicWord"
                   | "chop" "(" Int ")"                      [function]
                   | "bool2Word" "(" Bool ")"                [function]
                   | Word "+Word" Word                       [function]
@@ -41,10 +43,13 @@ module EVM-WORD
                   | "addmod" "(" Word "," Word "," Word ")" [function]
                   | "mulmod" "(" Word "," Word "," Word ")" [function]
 
-    rule chop( I:Int ) => I                           requires I <Int (2 ^Int 256) andBool I >=Int 0
-    rule chop( I:Int ) => chop( I +Int (2 ^Int 256) ) requires I <Int 0
-    rule chop( I:Int ) => chop( I -Int (2 ^Int 256) ) requires I >=Int (2 ^Int 256)
+    rule #symbolicWord => ?X:Int
 
+    //rule chop( I:Int ) => I                           requires I <Int (2 ^Int 256) andBool I >=Int 0
+    //rule chop( I:Int ) => chop( I +Int (2 ^Int 256) ) requires I <Int 0
+    //rule chop( I:Int ) => chop( I -Int (2 ^Int 256) ) requires I >=Int (2 ^Int 256)
+
+    rule chop( I:Int ) => I
     rule bool2Word(true)  => 1
     rule bool2Word(false) => 0
 
