@@ -1,0 +1,44 @@
+\section{Introduction}
+The growing popularity of smart contracts has led to an increased scrutiny of
+the security of smart contracts. Contracts inherently involve money, so bugs in
+such programs can often be devastating to the involved parties. An example of
+such a catastrophe is the recent DAO attack~\cite{dao-attack}, where \$150
+million worth of ether was stolen, prompting and unprecedented hard fork of the
+ethereum blockhain. While devastating, the bug that caused such an attack is
+well known as a common bug in ethereum smart contracts. In fact, many such
+classes of bugs exist in smart contracts, ranging from transaction-ordering
+dependence to mishandled exceptions. Even a contract running out of gas before
+the full completion of a function can interfere with the correctness of smart
+contracts, and so it is important to do so in order to protect the integrity of
+ethereum to its many users.
+
+As the smart contract ecosystem grows in complexity, there is an additional
+reliance on code from external sources in order to enhance the development cycle
+for smart contracts. While this code is ostensibly correct, there is in fact no
+mechanism for verifying the correctness of these programs, as implementation
+details can differ drastically from source to source. from For example,
+developers often include code from external libraries or even from sources such as
+StackOverflow to include in their ethereum contracts.
+
+Smart contracts are an attractive method for formal program verification, which
+can theoretically provide guarantees on smart contract execution safety,
+liveness, and other forms of application logic. In particular, K is an
+extensible semantic framework that is used to model programming languages, type
+systems, and formal analysis tools~\cite{rosu-serbanuta-2010-jlap}. While there
+are a number of semantic frameworks to choose from, we are choosing to use K in
+our formal analysis primarily because of its simplicity and extensibility.
+
+In this paper, we build a K~model of the Ethereum Virtual Machine (EVM) for use
+in verifying properties on smart contracts. The need for verification of these
+programs is well motivated, and to our knowledge, no such verification has been
+done using the power of modern verification tools in the academic literature.
+The contributions of this paper are as follows:
+
+\begin{itemize}
+\item{\bf EVM Semantics in K} We implement EVM semantics in the K~framework, and
+cover a large subset of EVM instructions and their properties.
+\item{\bf EVM Program Verification} We create a simple EVM program that sums
+values from 1 to some input N, and verify that the program for correctness. We then show how this can be extended to any given EVM program.
+\item{\bf EVM Property Checking} We show that certain properties, for example
+minimum gas required for proper execution, can be posited by way of our system.
+\end{itemize}
