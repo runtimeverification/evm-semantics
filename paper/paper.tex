@@ -1,5 +1,4 @@
-\documentclass{sig-alternate-2015}
-
+\documentclass{llncs}
 \usepackage[T1]{fontenc}
 \usepackage[%
     breaklinks=true,colorlinks=true,linkcolor=black,% citecolor=black,urlcolor=black,bookmarks=true,bookmarksopen=false,%
@@ -29,7 +28,7 @@
  \do\)\do\,\do\?\do\'\do+\do\=\do\#}
 \def\UrlBigBreaks{\do\:\do\/}%
 
-\newtheorem{theorem}{Theorem}
+%\newtheorem{theorem}{Theorem}
 \newcommand{\FF}{\ensuremath{\mathbb{F}}}
 \newcommand{\QQ}{\ensuremath{\mathbb{Q}}}
 
@@ -82,15 +81,20 @@
 
 %\newif\ifblind\blindfalse % Blind submission?
 
-\author{\alignauthor\vspace*{-24pt}
-  Deepak Kumar\quad
-  Everett Hildenbrandt\quad
-  Manasvi Saxena\quad
-  Zane Ma\quad
-  \smallskip\\\affaddr{
-      University of Illinois Urbana-Champaign \\
-  }
-}
+\author{Everett Hildenbrandt\inst{1} \and Manasvi Saxena \and Deepak
+Kumar \and Zane Ma}
+
+\institute{University of Illinois, Urbana-Champaign}
+
+%\author{\alignauthor\vspace*{-24pt}
+%  Deepak Kumar\quad
+%  Everett Hildenbrandt\quad
+%  Manasvi Saxena\quad
+%  Zane Ma\quad
+%  \smallskip\\\affaddr{
+%      University of Illinois Urbana-Champaign \\
+%  }
+%}
 \maketitle
 \begin{abstract}
 Ethereum is growing in size and value rapidly, due to the key property that
@@ -116,33 +120,6 @@ use our tool to verify a set of EVM programs for correctness.
 
 %\section*{Acknowledgments}
 %acknowledgemnets
-
-% Yes, all this is just to fix ACM's spacing bug after the References section heading
-\makeatletter
-\def\thebibliography#1{%
-\ifnum\addauflag=0\addauthorsection\global\addauflag=1\fi
-     \section[References]{%    <=== OPTIONAL ARGUMENT ADDED HERE
-        {References} % was uppercased but this affects pdf bookmarks (SP/GM October 2004)
-%          {\vskip -9pt plus 1pt} % GM Nov. 2006 / GM July 2000 (for somewhat tighter spacing)  <-- the bug
-          {\vskip -3pt plus 3pt } % AH Fix Aug. 2015
-         \@mkboth{{\refname}}{{\refname}}%
-     }%
-     \list{[\arabic{enumi}]}{%
-         \settowidth\labelwidth{[#1]}%
-         \leftmargin\labelwidth
-         \advance\leftmargin\labelsep
-         \advance\leftmargin\bibindent
-         \parsep=0pt\itemsep=1pt % GM July 2000
-         \itemindent -\bibindent
-         \listparindent \itemindent
-         \usecounter{enumi}
-     }%
-     \let\newblock\@empty
-     \raggedright % GM July 2000
-     \sloppy
-     \sfcode`\.=1000\relax
-}
-\makeatother
 
 \clubpenalty=0\widowpenalty=0
 \small\bibliographystyle{abbrv}
