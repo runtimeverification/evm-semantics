@@ -226,8 +226,14 @@ module EVM-INTRAPROCEDURAL
     rule <k> JUMP => #setProgramCounter W0 ... </k>
          <wordStack> W0 : WS => WS </wordStack>
 
-    rule <k> JUMP1 => #if (W1 ==Int 0) #then .K #else #setProgramCounter W0 #fi ... </k>
-         <wordStack> W0 : W1 : WS => WS </wordStack>
+    rule <k> JUMP1 => . ...</k> 
+         <wordStack> _ : W1 :  WS => WS </wordStack>
+         requires W1 ==Int 0
+
+    rule <k> JUMP1 => #setProgramCounter W0 ...</k>
+         <wordStack> W0 : W1 :  WS => WS </wordStack>
+         requires notBool W1 ==Int 0
+
 endmodule
 ```
 

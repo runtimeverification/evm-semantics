@@ -1,4 +1,5 @@
 *.k
+!*spec.k
 models/k/evm-semantics-kompiled/
 *.swp
 *.aux
