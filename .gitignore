@@ -5,3 +5,5 @@ models/k/evm-semantics-kompiled/
 *.log
 *.out
 paper/paper.pdf
+*.bbl
+*.blg
