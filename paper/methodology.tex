@@ -1,22 +1,55 @@
 \section{Methodology}
+
 We used K and modeled the EVM, to say interesting things about EVM programs.
+
 \subsection{Language Independent Program Verification}
-\todo{Everett}
-\subsection{Our configuration and design}
-\subsubsection{Configuration}
-We closely model the configuration described in the ethereum yellow paper. Our configuration can mainly be thought of consisting of two subconfigurations. The first subconfiguration models a transaction in the network.
+
+Developing new tools for each new language is labor intensive and bug-prone. To
+avoid some of the start-up cost of formal verification in a new language, \K
+defines its tools parametrically over the input language~\cite{inproceedings}.
+From the syntax and operational semantics of a language, parsers, interpreters,
+debuggers, and verifiers are derived. This infrastructure is developed and
+debugged once, and then instantiated to specific languages. The instantiation
+requires describing for \K the way that execution state looks in your language
+(the \textit{configuration}), then describing how simplification in your
+language happens over that state (as transitition \textit{rules}).
+
+\subsection{EVM Execution State}
+
+The state of EVM is broken into two components: the local state of an active
+transaction (smart contract execution), and the state of the network as a whole
+(account information). To mirror this, our configuration consists of two
+subconfigurations.
+
+\subsubsection{Transaction Execution}
+
+Each transation has an associated account, a program counter, a word-stack, and
+a volatile local memory.
+
 \begin{verbatim}
 
-<k> $PGM:EVMSimulation </k>
-<accountID> .AcctID </accountID>
-<pc> 0 </pc>
-<wordStack> .WordStack </wordStack>
-<localMem> .Map </localMem>
-<callStack> .CallStack </callStack>
+<k> ... </k>
+<id> ... </id>
+<pc> ... </pc>
+<wordStack> ... </wordStack>
+<localMem> ... </localMem>
+<callStack> ... </callStack>
 
 \end{verbatim}
 
-The <k> cell holds the instruction of the current EVM program being executed. The <accountID> cell holds the ID of the account the EVM contract belongs to, and the <wordStack> is the simple stack available to the EVM program being executed. The <localMem> cell holds the volatile auxillary memory available to the program, and the <callStack> cell holds the methods calls made across a transaction.
+The \texttt{<k>} cell holds the next execution step of the EVM.  The
+\texttt{<id>} cell holds the ID of the account the EVM contract belongs to and
+the \texttt{<pc>} cell holds the current program counter. The
+\texttt{<wordStack>} is the simple stack available to the EVM program being
+executed, and the \texttt{<localMem>} cell holds the volatile auxillary memory
+available to the program. The \texttt{<callStack>} cell records the calls made
+across a transaction.
+
+\subsubsection{Network State}
+
+The network is modelled as a map from account ids to their associated program,
+cold storage, and current balance. This can be thought of as the blockchain
+state at any given time.
 
 \begin{verbatim}
 
@@ -31,7 +64,10 @@ The <k> cell holds the instruction of the current EVM program being executed. Th
 
 \end{verbatim}
 
-The second subconfiguration models the state of the blockchain at any given time. The <accounts> cell holds information about the accounts on the block chain. Each <account> holds the program associated with it in the <program> cell, its permanent storage in the <storage> cell and the balance associated with the account in the <balance> cell.
+The \texttt{<accounts>} cell holds information about the accounts on the block
+chain. Each \texttt{<account>} holds the program associated with it in the
+\texttt{<program>} cell, its permanent storage in the \texttt{<storage>} cell,
+and the balance associated with the account in the \texttt{<balance>} cell.
 
 \subsection{Implementing Instructions}
 \input{instructions}
