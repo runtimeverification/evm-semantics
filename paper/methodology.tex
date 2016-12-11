@@ -3,7 +3,36 @@ We used K and modeled the EVM, to say interesting things about EVM programs.
 \subsection{Language Independent Program Verification}
 \todo{Everett}
 \subsection{Our configuration and design}
-\todo{Manasvi}
+\subsubsection{Configuration}
+We closely model the configuration described in the ethereum yellow paper. Our configuration can mainly be thought of consisting of two subconfigurations. The first subconfiguration models a transaction in the network.  
+\begin{verbatim}
+
+<k> $PGM:EVMSimulation </k>
+<accountID> .AcctID </accountID>
+<pc> 0 </pc>
+<wordStack> .WordStack </wordStack>
+<localMem> .Map </localMem>
+<callStack> .CallStack </callStack>
+
+\end{verbatim}
+
+The <k> cell holds the instruction of the current EVM program being executed. The <accountID> cell holds the ID of the account the EVM contract belongs to, and the <wordStack> is the simple stack available to the EVM program being executed. The <localMem> cell holds the volatile auxillary memory available to the program, and the <callStack> cell holds the methods calls made across a transaction. 
+
+\begin{verbatim}
+
+<accounts>
+    <account multiplicity="*">
+        <acctID> .AcctID </acctID>
+        <program> .Map </program>
+        <storage> .Map </storage>
+        <balance> 0:Word </balance>
+    </account>
+</accounts>
+
+\end{verbatim}
+
+The second subconfiguration models the state of the blockchain at any given time. The <accounts> cell holds information about the accounts on the block chain. Each <account> holds the program associated with it in the <program> cell, its permanent storage in the <storage> cell and the balance associated with the account in the <balance> cell. 
+
 \subsection{Implementing Instructions}
 \input{instructions}
 \todo{Everett, Manasvi}
