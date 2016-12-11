@@ -92,12 +92,9 @@ EVM Programs
 module EVM-PROGRAM-SYNTAX
     imports EVM-STACK-OPERATORS
 
-    syntax LocalMemOp    ::= "MLOAD" | "MSTORE" | "MLOAD8"
-    syntax ControlFlowOp ::= "JUMP" | "JUMP1"
-    syntax LocalOp       ::= StackOp | ControlFlowOp | LocalMemOp
-    syntax StateOp       ::= "PC"
-    syntax ProcessOp     ::= "CALL" | "RETURN"
-    syntax OpCode        ::= LocalOp | StateOp | ProcessOp
+    syntax ControlFlowOp ::= "JUMP" | "JUMP1" | "CALL" | "RETURN"
+    syntax LocalOp       ::= "MLOAD" | "MSTORE" | "MLOAD8" | "PC"
+    syntax OpCode        ::= StackOp | ControlFlowOp | LocalOp
     syntax Program       ::= List{OpCode, ";"}
 endmodule
 ```

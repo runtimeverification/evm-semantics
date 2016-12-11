@@ -15,7 +15,7 @@ module EVM-CONFIGURATION
     configuration <T>
                     // local execution
                     <k> $PGM:EVMSimulation </k>
-                    <accountID> .AcctID </accountID>
+                    <id> .AcctID </id>
                     <pc> 0 </pc>
                     <wordStack> .WordStack </wordStack>
                     <localMem> .Map </localMem>
@@ -108,7 +108,7 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
                    | "#popCallStack"
 
     rule <k> #setAccountID ACCTID => . ... </k>
-         <accountID> _ => ACCTID </accountID>
+         <id> _ => ACCTID </id>
 
     rule <k> #setProgramCounter PCOUNT => . ... </k>
          <pc> _ => PCOUNT </pc>
@@ -129,7 +129,7 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
             ~> #setLocalMem LM
 
     rule <k> #pushCallStack => . ... </k>
-         <accountID> ACCT </accountID>
+         <id> ACCT </id>
          <pc> PCOUNT </pc>
          <wordStack> WS </wordStack>
          <localMem> LM </localMem>
@@ -189,7 +189,7 @@ module EVM-INTRAPROCEDURAL
     imports EVM-INITIALIZATION-UTIL
 
     rule <k> . => OP </k>
-         <accountID> ACCT </accountID>
+         <id> ACCT </id>
          <pc> PCOUNT => PCOUNT +Int 1 </pc>
          <account>
             <acctID> ACCT </acctID>
@@ -212,7 +212,7 @@ module EVM-INTRAPROCEDURAL
     rule <k> #checkStackSize => #stackSize WS ~> #checkStackSize ... </k>
          <wordStack> WS </wordStack>
 
-    rule <k> MSTORE =>  #updateLocalMem INDEX VALUE ... </k>
+    rule <k> MSTORE => #updateLocalMem INDEX VALUE ... </k>
          <wordStack> INDEX : VALUE : WS => WS </wordStack>
 
     rule <k> MLOAD => . ... </k>
@@ -255,7 +255,7 @@ module EVM-INTERPROCEDURAL
              ~> #pushCallStack
              ~> #setProcess {ACCT | 0 | .WordStack | #asMap(WL)}
          ... </k>
-         <accountID> CURRACCT </accountID>
+         <id> CURRACCT </id>
 
     rule <k> RETURN => #processReturn #range(LM, INIT, SIZE) ... </k>
          <wordStack> (INIT : SIZE : WS) => WS </wordStack>

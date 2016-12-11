@@ -12,7 +12,7 @@ debuggers, and verifiers are derived. This infrastructure is developed and
 debugged once, and then instantiated to specific languages. The instantiation
 requires describing for \K the way that execution state looks in your language
 (the \textit{configuration}), then describing how simplification in your
-language happens over that state (as transitition \textit{rules}).
+language happens over that state (as transition \textit{rules}).
 
 \subsection{EVM Execution State}
 
@@ -27,21 +27,19 @@ Each transation has an associated account, a program counter, a word-stack, and
 a volatile local memory.
 
 \begin{verbatim}
-
 <k> ... </k>
 <id> ... </id>
 <pc> ... </pc>
 <wordStack> ... </wordStack>
 <localMem> ... </localMem>
 <callStack> ... </callStack>
-
 \end{verbatim}
 
 The \texttt{<k>} cell holds the next execution step of the EVM.  The
 \texttt{<id>} cell holds the ID of the account the EVM contract belongs to and
 the \texttt{<pc>} cell holds the current program counter. The
 \texttt{<wordStack>} is the simple stack available to the EVM program being
-executed, and the \texttt{<localMem>} cell holds the volatile auxillary memory
+executed, and the \texttt{<localMem>} cell holds the volatile auxiliary memory
 available to the program. The \texttt{<callStack>} cell records the calls made
 across a transaction.
 
@@ -52,7 +50,6 @@ cold storage, and current balance. This can be thought of as the blockchain
 state at any given time.
 
 \begin{verbatim}
-
 <accounts>
     <account multiplicity="*">
         <acctID> .AcctID </acctID>
@@ -61,7 +58,6 @@ state at any given time.
         <balance> 0:Word </balance>
     </account>
 </accounts>
-
 \end{verbatim}
 
 The \texttt{<accounts>} cell holds information about the accounts on the block
@@ -69,6 +65,79 @@ chain. Each \texttt{<account>} holds the program associated with it in the
 \texttt{<program>} cell, its permanent storage in the \texttt{<storage>} cell,
 and the balance associated with the account in the \texttt{<balance>} cell.
 
-\subsection{Implementing Instructions}
-\input{instructions}
+\subsection{EVM Execution Rules}
+
+EVM smart contracts consist of a sequence of commands for effecting the local
+execution state and the global network state. Commands are grouped using \K's
+sorts; for example we have the \texttt{StackOp} sort for stack operators, the
+\texttt{ControlFlowOp} sort for operations which affect control flow (eg.
+calling other contracts), and the \texttt{LocalOp} sort for other operations
+that may effect the local transaction state. At the point of writing, we have
+implemented almost 60\% of the EVM opcodes.
+
+Semantics of EVM instructions and provided using the Ethereum Yellow Paper as a
+reference~\cite{gavwood}. They are provided as \K rules over the execution
+state. For example, the rules for \texttt{MLOAD} and \texttt{MSTORE}:
+
+\begin{verbatim}
+rule <k> MSTORE => #updateLocalMem INDEX VALUE ... </k>
+     <wordStack> INDEX : VALUE : WS => WS </wordStack>
+
+rule <k> MLOAD => . ... </k>
+     <wordStack> INDEX : WS => VALUE : WS </wordStack>
+     <localMem>... INDEX |-> VALUE ...</localMem>
+\end{verbatim}
+
+The first rule states that if the next instruction is \texttt{MSTORE}, and the
+top two elements of the word stack are \texttt{INDEX} and \texttt{VALUE}, then
+they should be removed from the stack and the next instruction should be
+\texttt{\#updateLocalMem INDEX VALUE} (an auxiliary internal command for working
+with the local memory).
+
+The second rule states that if the next instruction is \texttt{MLOAD}, and the
+top element of the stack is \texttt{INDEX}, and somewhere in the local memory we
+have the binding \texttt{INDEX |-> VALUE}, then \texttt{INDEX} should be
+replaced with \texttt{VALUE} on the stack. Notice that we take advantage of \K's
+\textit{configuration abstraction}, which allows each rule to only specify the
+parts of the state relevant to it.
+
+\subsubsection{Intercontract Execution}
+
+EVM allows contracts to call each other, accounting for the rich dynamics
+possible in the Ethereum network but also providing a wealth of potential bugs
+and pitfalls in contract design. The next two rules model one contract making a
+\texttt{CALL} to another.
+
+\begin{verbatim}
+rule <k> CALL => #processCall { ACCT | ETHER | #range(LM, INIT, SIZE) } ... </k>
+     <wordStack> ACCT : ETHER : INIT : SIZE : WS => WS </wordStack>
+     <localMem> LM </localMem>
+\end{verbatim}
+
+First, we gather the arguments to \texttt{CALL}, which consists of which process
+to call (\texttt{ACCT}), the amount of Ether to transfer (\texttt{ETHER}), and
+the region of locale memory to use as arguments (\texttt{\#range(LM, INIT,
+SIZE)}). \texttt{\#processCall} is used as an internal command which has the
+following effects:
+
+\begin{verbatim}
+rule <k> #processCall {ACCT | ETHER | WL}
+      =>    #decreaseAcctBalance CURRACCT ETHER
+         ~> #increaseAcctBalance ACCT ETHER
+         ~> #pushCallStack
+         ~> #setProcess {ACCT | 0 | .WordStack | #asMap(WL)}
+     ... </k>
+     <id> CURRACCT </id>
+\end{verbatim}
+
+First the current accounts balance is reduced (\texttt{\#decreaseAcctBalance
+CURRACCT ETHER}), then the callee's account balance is increased, the current
+execution state is pushed onto the \texttt{<callStack>} using internal command
+\texttt{\#pushCallStack}, and the callee is set as the current process. The
+operator \texttt{~>} can be read as "followed by", similar to the semicolon in
+many programming languages.
+
+
+\todo{Something about function calls}
+
 \todo{Everett, Manasvi}
