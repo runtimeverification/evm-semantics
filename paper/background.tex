@@ -2,16 +2,6 @@
 \subsection{Ethereum + EVM}
 \todo{Zzzzma}
 \subsection{Formal Analysis using K}
-K is an executable semantics based rewriting framework for defining languages and type systems. Once the the semantics of a language have been defined, K provides the user with a series of tools for the language, such as a parser, interpreter, debugger, bounded model checker, and a deductive program verifier. Language defintions written in K are formal and rigorous, and allow can thus be used for formal program analysis and reasoning.
+K is an executable semantics based rewriting framework for defining languages and type systems. Once the the semantics of a language have been defined, K provides the user with a series of tools for the language, such as a parser, interpreter, debugger, bounded model checker, and a deductive program verifier. Language defintions written in K are formal and rigorous, and thus allow for formal reasoning and verificiation.  
 
-K treats operational semantics of a language as reachability axioms, and
-correctness sepcifications as reachability claims over matching logic patterns.
-Under the hood, K uses a sound and relatively complete reachability logic proof
-system to reason about specifications
-\cite{stefanescu-park-yuwen-li-rosu-2016-oopsla}
-\cite{stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta}. Program
-correctness properties in K are given as reachability theories, and internally,
-K proves theories by making queries to a theorem prover. In our case, we use K
-along with Z3 \cite{de2008z3} to prove reachability claims establishing correctness over EVM programs. K has been used in the past to generate program verifiers for complicated languages, such as C, and Javascript \cite{stefanescu-park-yuwen-li-rosu-2016-oopsla}. K has also been used to generate practical formal analysis tools, such as RV-Match, an undefinedness checker generated that uses K and C's semantics defined in K to find undefined behaviors in large C based codebases \cite{guth-hathhorn-saxena-rosu-2016-cav}. Hence, the semantics of EVM in K lay down the groundwork for rigorous, and practical formal analysis tools. We explore two such tools - the deductive program verifier, and the gas checker in this paper.
-
-\todo{Everett + Manasvi}
+K treats operational semantics of a language as reachability axioms, and correctness sepcifications as reachability claims over matching logic patterns. Under the hood, K uses a sound and relatively complete reachability logic proof system to reason about specifications \cite{stefanescu-park-yuwen-li-rosu-2016-oopsla} \cite{stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta}. Program correctness properties in K are given as reachability theories, and internally, K uses the readchability logic proof system to translate theories into logical queries, which it hands off to an external theorem prover. In our case, we use K along with Z3 \cite{de2008z3} to prove reachabiltiy claims establishing correctness over EVM programs. K has been used in the past to generate program verifiers for complicated languages, such as C, and Javascript \cite{stefanescu-park-yuwen-li-rosu-2016-oopsla}. K has also been used to generate practical formal analysis tools, such as RV-Match - an undefinedness checker that uses K and C's semantics defined in K to find undefined behaviors in large C based codebases \cite{guth-hathhorn-saxena-rosu-2016-cav}. Hence, the semantics of EVM in K lay down the groundwork for rigorous, and practical formal analysis tools. We explore a few such tools - the deductive program verifier, evm debugger, and the gas checker in this paper. We leave the analysis of other tools as future work.
