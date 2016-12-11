@@ -1,7 +1,7 @@
 \section{Methodology}
 
-Developing tools for each new language is labor intensive and bug-prone. \K
-defines its tools parametrically over the input
+Developing tools for each new language is labor intensive and bug-prone. \K{}
+ defines its tools parametrically over the input
 language~\cite{stefanescu-park-yuwen-li-rosu-2016-oopsla}, avoiding some of the
 start-up cost of developing a new language. Parsers, interpreters, debuggers,
 and verifiers are derived directly from the syntax and operational semantics of
@@ -65,7 +65,7 @@ and the balance associated with the account in the \texttt{<balance>} cell.
 \subsection{EVM Execution Rules}
 
 EVM smart contracts consist of a sequence of commands for effecting the local
-execution state and the global network state. Commands are grouped using \K's
+execution state and the global network state. Commands are grouped using \K{}'s
 sorts; for example we have the \texttt{StackOp} sort for stack operators, the
 \texttt{ControlFlowOp} sort for operations which affect control flow (eg.
 calling other contracts), and the \texttt{LocalOp} sort for other operations
@@ -73,7 +73,7 @@ that may effect the local transaction state. At the point of writing, we have
 implemented almost 60\% of the EVM opcodes.
 
 Semantics of EVM instructions and provided using the Ethereum Yellow Paper as a
-reference~\cite{wood2014ethereum}. They are provided as \K rules over the
+reference~\cite{wood2014ethereum}. They are provided as \K{} rules over the
 execution state. For example, below are the rules for \texttt{MLOAD} and
 \texttt{MSTORE}:
 
@@ -95,7 +95,7 @@ with the local memory).
 The second rule states that if the next instruction is \texttt{MLOAD}, and the
 top element of the stack is \texttt{INDEX}, and somewhere in the local memory we
 have the binding \texttt{INDEX |-> VALUE}, then \texttt{INDEX} should be
-replaced with \texttt{VALUE} on the stack. Notice that we take advantage of \K's
+replaced with \texttt{VALUE} on the stack. Notice that we take advantage of \K{}'s
 \textit{configuration abstraction}, which allows each rule to only specify the
 parts of the state relevant to it.
 
@@ -136,7 +136,6 @@ state is pushed onto the \texttt{<callStack>} using internal command
 \texttt{\#pushCallStack}, and the callee is set as the current process. The
 operator \texttt{\textasciitilde >} can be read as "followed by", similar to the semicolon in
 many programming languages.
-
 
 \todo{Something about function calls}
 

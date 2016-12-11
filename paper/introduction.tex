@@ -22,24 +22,24 @@ StackOverflow to include in their ethereum contracts.
 
 Smart contracts are an attractive method for formal program verification, which
 can theoretically provide guarantees on smart contract execution safety,
-liveness, and other forms of application logic. In particular, K is an
+liveness, and other forms of application logic. In particular, \K{} is an
 extensible semantic framework that is used to model programming languages, type
 systems, and formal analysis tools~\cite{rosu-serbanuta-2010-jlap}. While there
-are a number of semantic frameworks to choose from, we are choosing to use K in
+are a number of semantic frameworks to choose from, we are choosing to use \K{} in
 our formal analysis primarily because of its simplicity and extensibility.
 
-In this paper, we build a K~model of the Ethereum Virtual Machine (EVM) for use
+In this paper, we build a \K{}~model of the Ethereum Virtual Machine (EVM) for use
 in verifying properties on smart contracts. The need for verification of these
 programs is well motivated, and to our knowledge, no such verification has been
 done using the power of modern verification tools in the academic literature.
 The contributions of this paper are as follows:
 
 \begin{itemize}
-\item{\bf EVM Semantics in K} We implement EVM semantics in the K~framework, and
+\item{\bf EVM Semantics in \K{}:} We implement EVM semantics in the \K{}~framework, and
 cover a large subset of EVM instructions and their properties.
-\item{\bf EVM Program Verification} We create a simple EVM program that sums
+\item{\bf EVM Program Verification:} We create a simple EVM program that sums
 values from 1 to some input N, and verify that the program for correctness. We then show how this can be extended to any given EVM program.
-\item{\bf EVM Property Checking} We show that certain properties, for example
+\item{\bf EVM Property Checking:} We show that certain properties, for example
 minimum gas required for proper execution, can be determined by use of our system.
 \end{itemize}
 
