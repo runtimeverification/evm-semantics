@@ -1,16 +1,8 @@
 \section{Methodology}
 
-Developing tools for each new language is labor intensive and bug-prone. \K{}
- defines its tools parametrically over the input
-language~\cite{stefanescu-park-yuwen-li-rosu-2016-oopsla}, avoiding some of the
-start-up cost of developing a new language. Parsers, interpreters, debuggers,
-and verifiers are derived directly from the syntax and operational semantics of
-the language. This infrastructure is developed once, then instantiated to
-specific languages.
-
-The instantiation requires describing how execution state looks in your language
-(the \textit{configuration}), and how simplification in your language happens
-over that state (as transition \textit{rules}).
+Instantiation of \K to EVM requires modelling transaction execution state and
+network state using the \textit{configuration}, and how transaction execution
+and network evolution happens as transition \textit{rules}.
 
 \subsection{EVM Execution State}
 
@@ -20,7 +12,7 @@ transaction (smart contract execution), and the state of the network as a whole
 
 \subsubsection{Transaction Execution}
 
-Each transation has an associated account, a program counter, a word-stack, and
+Each transaction has an associated account, a program counter, a word-stack, and
 a volatile local memory.
 
 \begin{verbatim}
@@ -62,7 +54,7 @@ chain. Each \texttt{<account>} holds the program associated with it in the
 \texttt{<program>} cell, its permanent storage in the \texttt{<storage>} cell,
 and the balance associated with the account in the \texttt{<balance>} cell.
 
-\subsection{EVM Execution Rules}
+\subsection{EVM Transitition Rules}
 
 EVM smart contracts consist of a sequence of commands for effecting the local
 execution state and the global network state. Commands are grouped using \K{}'s
@@ -136,7 +128,3 @@ state is pushed onto the \texttt{<callStack>} using internal command
 \texttt{\#pushCallStack}, and the callee is set as the current process. The
 operator \texttt{\textasciitilde >} can be read as "followed by", similar to the semicolon in
 many programming languages.
-
-\todo{Something about function calls}
-
-\todo{Everett, Manasvi}
