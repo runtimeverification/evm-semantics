@@ -1,7 +1,28 @@
 \section{Background}
 \subsection{Ethereum + EVM}
-\todo{Zzzzma}
+Ethereum is a public, distributed ledger based on blockchain technology first
+proposed and popularized by Bitcoin. Whereas Bitcoin's blockchain only store
+transactions that exchange Bitcoin between addresses Ethereum's blockchain
+stores the complete execution state of distributed programs known as Ethereum
+Virtual Machine (EVM) \textit{smart contracts}, which are written in EVM
+bytecode, a Turing-complete set of \TK opcodes~\cite{yellowpaper}. Smart contracts
+consist of a \textit{contract address}, contract \textit{balance}, and 
+private program execution code and state. 
+
+Beyond their ability to evaluate any arbitray logic, smart contracts have two distinct
+features that affect their practical usage. First, smart contracts include operations
+that allow participants to transfer \textit{Ether}, the currency of Ethereum, between
+smart contracts, which include individual user accounts since they are essentially
+a limited type of smart contract. Second, to incentivize Ethereum blockchain
+miners to execute EVM smart contracts, every opcode instruction requires a
+certain amount of \textit{gas}, a special form of Ether, to be paid to the
+miner. Gas requirements for program execution also provide the side benefit of
+deterring resource-exhaustion attacks. These two features provide both an incentive
+and mechanism for creating smart contracts that handle substantial amounts of 
+Ether - and indeed, certain contracts have amassed over \$100~million. 
+
 \subsection{Formal Analysis using K}
 K is an executable semantics based rewriting framework for defining languages and type systems. Once the the semantics of a language have been defined, K provides the user with a series of tools for the language, such as a parser, interpreter, debugger, bounded model checker, and a deductive program verifier. Language defintions written in K are formal and rigorous, and thus allow for formal reasoning and verificiation.  
 
 K treats operational semantics of a language as reachability axioms, and correctness sepcifications as reachability claims over matching logic patterns. Under the hood, K uses a sound and relatively complete reachability logic proof system to reason about specifications \cite{stefanescu-park-yuwen-li-rosu-2016-oopsla} \cite{stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta}. Program correctness properties in K are given as reachability theories, and internally, K uses the readchability logic proof system to translate theories into logical queries, which it hands off to an external theorem prover. In our case, we use K along with Z3 \cite{de2008z3} to prove reachabiltiy claims establishing correctness over EVM programs. K has been used in the past to generate program verifiers for complicated languages, such as C, and Javascript \cite{stefanescu-park-yuwen-li-rosu-2016-oopsla}. K has also been used to generate practical formal analysis tools, such as RV-Match - an undefinedness checker that uses K and C's semantics defined in K to find undefined behaviors in large C based codebases \cite{guth-hathhorn-saxena-rosu-2016-cav}. Hence, the semantics of EVM in K lay down the groundwork for rigorous, and practical formal analysis tools. We explore a few such tools - the deductive program verifier, evm debugger, and the gas checker in this paper. We leave the analysis of other tools as future work.
+
