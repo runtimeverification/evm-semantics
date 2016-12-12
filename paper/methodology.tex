@@ -104,7 +104,9 @@ execution of the current function call and passes some values back to the
 caller, are defined in our semantics.
 
 \begin{verbatim}
-rule <k> CALL => #processCall { ACCT | ETHER | #range(LM, INIT, SIZE) } ... </k>
+rule <k> CALL => #processCall
+        { ACCT | ETHER | #range(LM, INIT, SIZE) } ...
+     </k>
      <wordStack> ACCT : ETHER : INIT : SIZE : WS => WS </wordStack>
      <localMem> LM </localMem>
 \end{verbatim}
