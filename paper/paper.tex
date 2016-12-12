@@ -78,7 +78,7 @@
 \pagenumbering{arabic}
 \thispagestyle{empty}
 
-\title{Towards Formal Verification of Ethereum  Smart Contracts}
+\title{Towards Formal Analysis of Ethereum  Smart Contracts}
 
 \newif\ifblind\blindfalse % Blind submission?
 
@@ -96,16 +96,17 @@ Kumar\inst{1} \and Zane Ma\inst{1}}
 
 \maketitle
 \begin{abstract}
-Ethereum is rapidly growing in size and value, due to the key property that
-Ethereum enables a programmatic interface by which users can interact with the
-currency by way of smart contracts. Because contracts inherently handle money, there
-is much scrutiny to the contracts that are placed on the Ethereum blockchain.
-Perhaps more worrying, bugs in these contracts can have catastrophic
-consequences, which can jeopardize the integrity of the currency as a whole.
-In this work, we model the Ethereum Virtual Machine
+Part of Ethereum\textquotesingle s rapid growth in value and adoption is due to
+its programmatic interface to the currency, smart contracts. Because bugs in
+these contracts can be financially devastating, there is much scrutiny to the contracts that are
+placed and interacted with on the Ethereum blockchain. To mitigate concerns
+regarding malicious or poorly programmed smart contracts, the Ethereum community
+has recently turned to formal verification as a means for verifying properties
+of smart contracts. In this work, we model the Ethereum Virtual Machine
 (EVM)~\cite{wood2014ethereum} in \K{}, a language built
-specifically for extensible, formal verification of programming languages, and
-use our tool to verify a set of EVM programs for correctness.
+specifically for extensible, formal verification of programming languages. We
+then demonstrate verification for program correctness using our tool, and extend
+to model gas in EVM programs.
 \end{abstract}
 % \input{abstract}
 \input{introduction}

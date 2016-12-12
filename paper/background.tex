@@ -3,25 +3,27 @@
 \subsection{Ethereum Virtual Machine (EVM)}
 
 Ethereum is a public, distributed ledger based on blockchain technology first
-proposed and popularized by Bitcoin. Whereas Bitcoin's blockchain only store
-transactions that exchange Bitcoin between addresses Ethereum's blockchain
+proposed and popularized by Bitcoin. Whereas Bitcoin's blockchain only stores
+transactions that exchanges Bitcoin between addresses, Ethereum's blockchain
 stores the complete execution state of distributed programs known as Ethereum
-Virtual Machine (EVM) \textit{smart contracts}, which are written in EVM
-bytecode, a Turing-complete set of \TK opcodes~\cite{yellowpaper}. Smart
+Virtual Machine (EVM) \textit{smart contracts}. Smart contracts, which are often
+written in higher level languages such as Solidity~\cite{solidity} or
+Serpent~\cite{serpent}, are then compiled to EVM
+bytecode, a Turing-complete set of 65 unique opcodes~\cite{wood2014ethereum}. Smart
 contracts consist of a \textit{contract address}, contract \textit{balance}, and
 private program execution code and state.
 
-Beyond their ability to evaluate any arbitray logic, smart contracts have two
-distinct features that affect their practical usage. First, smart contracts
+Beyond their ability to execute arbitrary logic, smart contracts have two
+distinct features that enable their practical usage. First, smart contracts
 include operations that allow participants to transfer \textit{Ether}, the
-currency of Ethereum, between smart contracts, which include individual user
-accounts since they are essentially a limited type of smart contract. Second, to
+currency of Ethereum, between smart contracts. These also include individual user
+accounts because they are essentially a limited type of smart contract. Second, to
 incentivize Ethereum blockchain miners to execute EVM smart contracts, every
 opcode instruction requires a certain amount of \textit{gas}, a special form of
 Ether, to be paid to the miner. Gas requirements for program execution also
 provide the side benefit of deterring resource-exhaustion attacks. These two
-features provide both an incentive and mechanism for creating smart contracts
-that handle substantial amounts of Ether - and indeed, certain contracts have
+features provide both an incentive and a mechanism for creating smart contracts
+that handle substantial amounts of Ether; certain contracts have
 amassed over \$100~million.
 
 \subsection{The \K{} Framework}
@@ -41,28 +43,29 @@ configuration abstraction allows each transition rule to only mention the parts
 of execution state needed for that transition.
 
 Once a language is defined, \K{} can read and execute programs in that language
-both on concrete and symbolic inputs, giving an interpreter and a symbolic
+both on concrete and symbolic inputs, producing an interpreter and a symbolic
 execution engine, respectively. These can be regarded as a reference
-implementation of the language. \K's Reachability Logic prover can also be used
+implementation of the language. \K{}'s Reachability Logic prover can also be used
 to verify functional correctness and safety properties of
 programs.~\cite{stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta}
 Reachability queries are provided to the prover using the same syntax as a \K{}
 rule, and reduced to a query to the SMT solver Z3.~\cite{de2008z3}
 
-\K{} semantics exist for several large languages, most notably C, Java, and
-JavaScript, as well as for many smaller languages. These semantics are
-continuously refined as bugs are found, either in the original language
-specification or in the \K{} implementation. By providing an executable and
-testable specification of a language semantics, language design issues can be
-uncovered and fixed early. Additionally, tools for checking for common bugs and
-program errors can be developed to steer developers away from these pitfalls.
-For example, C has a large amount of undefined and implementation defined
-behavior, which is documented in a \K{} definition so that developers can be
-informed when their program may include such behavior
-\cite{guth-hathhorn-saxena-rosu-2016-cav}.
+%Added this paragraph to related works.
+%\K{} semantics exist for several large languages, most notably C, Java, and
+%JavaScript, as well as for many smaller languages. These semantics are
+%continuously refined as bugs are found, either in the original language
+%specification or in the \K{} implementation. By providing an executable and
+%testable specification of a language semantics, language design issues can be
+%uncovered and fixed early. Additionally, tools for checking for common bugs and
+%program errors can be developed to steer developers away from these pitfalls.
+%For example, C has a large amount of undefined and implementation defined
+%behavior, which is documented in a \K{} definition so that developers can be
+%informed when their program may include such behavior
+%\cite{guth-hathhorn-saxena-rosu-2016-cav}.
 
 The semantics of EVM in \K{} lay the groundwork for rigorous and practical
 debugging and analysis of both EVM smart contracts and the EVM network. Tools
 for checking EVM contracts for common bugs can be developed in a high-level yet
 semantically-rigorous way. This is valuable to users of the EVM network, where
-errors in contracts directly means that value can be lost.
+errors in contracts often directly mean fiscal loss.

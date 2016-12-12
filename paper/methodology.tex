@@ -1,8 +1,10 @@
 \section{Methodology}
 
-Instantiation of \K{} to EVM requires modelling transaction execution state and
-network state using the \textit{configuration}, and how transaction execution
-and network evolution happens as transition \textit{rules}.
+Instantiation of \K{} to EVM requires modeling transaction execution state and
+network evolution using the \textit{configuration}, and detailing
+changes in transaction execution and network evolution using transition
+\textit{rules}. In this section, we outline the design of our \K{} model and the
+design decisions implemented for our tool.
 
 \subsection{EVM Execution State}
 
@@ -19,14 +21,16 @@ a volatile local memory.
 <k> ... </k>
 <id> ... </id>
 <pc> ... </pc>
+<gas> ... </gas>
 <wordStack> ... </wordStack>
 <localMem> ... </localMem>
 <callStack> ... </callStack>
 \end{verbatim}
 
-The \texttt{<k>} cell holds the next execution step of the EVM.  The
+The \texttt{<k>} cell holds the next execution step of the EVM. The
 \texttt{<id>} cell holds the ID of the account the EVM contract belongs to and
-the \texttt{<pc>} cell holds the current program counter. The
+the \texttt{<pc>} cell holds the current program counter. The \texttt{<gas>}
+cell holds the current gas consumption of the executing contract. The
 \texttt{<wordStack>} is the simple stack available to the EVM program being
 executed, and the \texttt{<localMem>} cell holds the volatile auxiliary memory
 available to the program. The \texttt{<callStack>} cell records the calls made
@@ -34,7 +38,7 @@ across a transaction.
 
 \subsubsection{Network State}
 
-The network is modelled as a map from account ids to their associated program,
+The network is modeled as a map from account ids to their associated program,
 cold storage, and current balance. This can be thought of as the blockchain
 state at any given time.
 
@@ -49,22 +53,21 @@ state at any given time.
 </accounts>
 \end{verbatim}
 
-The \texttt{<accounts>} cell holds information about the accounts on the block
-chain. Each \texttt{<account>} holds the program associated with it in the
+The \texttt{<accounts>} cell holds information about the accounts on the blockchain. Each \texttt{<account>} holds the program associated with it in the
 \texttt{<program>} cell, its permanent storage in the \texttt{<storage>} cell,
 and the balance associated with the account in the \texttt{<balance>} cell.
 
-\subsection{EVM Transitition Rules}
+\subsection{EVM Transition Rules}
 
 EVM smart contracts consist of a sequence of commands for effecting the local
 execution state and the global network state. Commands are grouped using \K{}'s
 sorts; for example we have the \texttt{StackOp} sort for stack operators, the
-\texttt{ControlFlowOp} sort for operations which affect control flow (eg.
+\texttt{ControlFlowOp} sort for operations which affect control flow (e.g.
 calling other contracts), and the \texttt{LocalOp} sort for other operations
 that may effect the local transaction state. At the point of writing, we have
 implemented almost 60\% of the EVM opcodes.
 
-Semantics of EVM instructions and provided using the Ethereum Yellow Paper as a
+Semantics of EVM instructions are implemented using the Ethereum Yellow Paper as a
 reference~\cite{wood2014ethereum}. They are provided as \K{} rules over the
 execution state. For example, below are the rules for \texttt{MLOAD} and
 \texttt{MSTORE}:
@@ -91,7 +94,7 @@ replaced with \texttt{VALUE} on the stack. Notice that we take advantage of \K{}
 \textit{configuration abstraction}, which allows each rule to only specify the
 parts of the state relevant to it.
 
-\subsubsection{Intercontract Execution}
+\subsubsection{Inter-contract Execution}
 
 EVM allows contracts to call each other, accounting for the rich dynamics
 possible in the Ethereum network but also providing a wealth of potential bugs
@@ -126,5 +129,4 @@ The current accounts balance is reduced (\texttt{\#decreaseAcctBalance CURRACCT
 ETHER}), then the callee's account balance is increased, the current execution
 state is pushed onto the \texttt{<callStack>} using internal command
 \texttt{\#pushCallStack}, and the callee is set as the current process. The
-operator \texttt{\textasciitilde >} can be read as "followed by", similar to the semicolon in
-many programming languages.
+operator \texttt{\textasciitilde >} can be read as "followed by", similar to the semicolon in many programming languages.
