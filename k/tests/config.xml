@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <tests>
-  <include file="concrete/config.xml" />
+  <include file="simple/config.xml" />
   <include file="prover/config.xml" />
 </tests>
