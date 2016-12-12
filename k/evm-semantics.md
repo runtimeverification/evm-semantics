@@ -17,8 +17,10 @@ module EVM-CONFIGURATION
                     <k> $PGM:EVMSimulation </k>
                     <id> .AcctID </id>
                     <pc> 0 </pc>
+                    <gas> 0 </gas>
                     <wordStack> .WordStack </wordStack>
                     <localMem> .Map </localMem>
+                    <gasPrice> 0 </gasPrice>
                     // suspended processes
                     <callStack> .CallStack </callStack>
                     // account information
@@ -34,11 +36,8 @@ module EVM-CONFIGURATION
 endmodule
 ```
 
-Machine Initialization
-----------------------
-
-This module just takes the parsed world definition (list of accounts and account
-to start with) and loads it all into the correct cells of the configuration.
+Machine Operation
+-----------------
 
 ### Utilities
 
@@ -46,7 +45,7 @@ We'll start with some helpers which do "standard" things to our configuration.
 These will make defining `EVM-INITIALIZATION` easier, and may be useful later.
 
 ```k
-module EVM-INITIALIZATION-UTIL
+module EVM-UTIL
     imports EVM-CONFIGURATION
 ```
 
@@ -100,6 +99,8 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
 ```k
     syntax KItem ::= "#setAccountID" AcctID
                    | "#setProgramCounter" Int
+                   | "#setGasAvail" Int
+                   | "#setGasPrice" Int
                    | "#setWordStack" WordStack
                    | "#setLocalMem" WordMap
                    | "#updateLocalMem" Int WordList
@@ -113,6 +114,12 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
     rule <k> #setProgramCounter PCOUNT => . ... </k>
          <pc> _ => PCOUNT </pc>
 
+    rule <k> #setGasAvail GASAVAIL => . ... </k>
+         <gas> _ => GASAVAIL </gas>
+
+    rule <k> #setGasPrice PRICE => . ... </k>
+         <gasPrice> _ => PRICE </gasPrice>
+
     rule <k> #setWordStack WS => . ... </k>
          <wordStack> _ => WS </wordStack>
 
@@ -122,61 +129,23 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
     rule <k> #updateLocalMem N WL => #setLocalMem (LM[N := WL]) ... </k>
          <localMem> LM </localMem>
 
-    rule #setProcess { ACCT | PCOUNT | WS | LM }
+    rule #setProcess { ACCT | PCOUNT | GASAVAIL | WS | LM }
          =>    #setAccountID ACCT
             ~> #setProgramCounter PCOUNT
+            ~> #setGasAvail GASAVAIL
             ~> #setWordStack WS
             ~> #setLocalMem LM
 
     rule <k> #pushCallStack => . ... </k>
          <id> ACCT </id>
          <pc> PCOUNT </pc>
+         <gas> GASAVAIL </gas>
          <wordStack> WS </wordStack>
          <localMem> LM </localMem>
-         <callStack> CS => { ACCT | PCOUNT | WS | LM } CS </callStack>
+         <callStack> CS => { ACCT | PCOUNT | GASAVAIL | WS | LM } CS </callStack>
 
     rule <k> #popCallStack => #setProcess P ... </k>
          <callStack> P:Process CS => CS </callStack>
-endmodule
-```
-
-### Initialization
-
-Actual initialization is easy now, we just have to desugar the top-level syntax
-into setting up the accounts (using our helpers), then setting the correct
-process (also using the helpers).
-
-```k
-module EVM-INITIALIZATION
-    imports EVM-INITIALIZATION-UTIL
-
-    syntax KItem ::= EVMSimulation
-
-    rule ACCTS:Accounts START ACCT => ACCTS ~> #setProcess { ACCT | 0 | .WordStack | .WordMap }
-
-    rule .Accounts => .
-    rule ACCT:Account ACCTS:Accounts => ACCT ~> ACCTS
-
-    rule <k> account:
-             -   id: ACCT
-             -   balance: BALANCE
-             -   program: PROGRAM
-             -   storage: STORAGE
-         =>    #setAcctStorage ACCT #asMap(STORAGE)
-            ~> #setAcctProgram ACCT PROGRAM
-             ...
-         </k>
-         <accounts>
-            ...
-            (.Bag
-            => <account>
-                    <acctID> ACCT </acctID>
-                    <program> .Map </program>
-                    <storage> .Map </storage>
-                    <balance> BALANCE </balance>
-               </account>
-            )
-         </accounts>
 endmodule
 ```
 
@@ -186,16 +155,18 @@ of various operators so that the already defined operations can act on them.
 ```k
 module EVM-INTRAPROCEDURAL
     imports EVM-CONFIGURATION
-    imports EVM-INITIALIZATION-UTIL
+    imports EVM-UTIL
 
     rule <k> . => OP </k>
          <id> ACCT </id>
          <pc> PCOUNT => PCOUNT +Int 1 </pc>
+         <gas> G => G -Int #gas( OP ) </gas>
          <account>
             <acctID> ACCT </acctID>
             <program> ... PCOUNT |-> OP ... </program>
             ...
          </account>
+         requires G >=Int #gas( OP )
 
     rule <k> UOP:UnStackOp => UOP W0 ... </k>
          <wordStack> W0 : WS => WS </wordStack>
@@ -226,14 +197,13 @@ module EVM-INTRAPROCEDURAL
     rule <k> JUMP => #setProgramCounter W0 ... </k>
          <wordStack> W0 : WS => WS </wordStack>
 
-    rule <k> JUMP1 => . ...</k> 
+    rule <k> JUMP1 => . ...</k>
          <wordStack> _ : W1 :  WS => WS </wordStack>
          requires W1 ==Int 0
 
     rule <k> JUMP1 => #setProgramCounter W0 ...</k>
          <wordStack> W0 : W1 :  WS => WS </wordStack>
          requires notBool W1 ==Int 0
-
 endmodule
 ```
 
@@ -250,10 +220,8 @@ module EVM-INTERPROCEDURAL
 
     // TODO: How are we handling refunding unused gas?
     rule <k> #processCall {ACCT | ETHER | WL}
-          =>    #decreaseAcctBalance CURRACCT ETHER
-             ~> #increaseAcctBalance ACCT ETHER
-             ~> #pushCallStack
-             ~> #setProcess {ACCT | 0 | .WordStack | #asMap(WL)}
+          =>    #pushCallStack
+             ~> #setProcess {ACCT | 0 | ETHER | .WordStack | #asMap(WL)}
          ... </k>
          <id> CURRACCT </id>
 
@@ -270,9 +238,48 @@ module EVM-INTERPROCEDURAL
 endmodule
 ```
 
+### Initialization and Running
+
+Actual initialization is easy now, we just have to desugar the top-level syntax
+into setting up the accounts (using our helpers), then setting the correct
+process (also using the helpers).
+
 ```k
 module EVM
-    imports EVM-INITIALIZATION
+    imports EVM-UTIL
     imports EVM-INTERPROCEDURAL
+
+    rule <k> account:
+             -   id: ACCT
+             -   balance: BALANCE
+             -   program: PROGRAM
+             -   storage: STORAGE
+          =>    #setAcctStorage ACCT #asMap(STORAGE)
+             ~> #setAcctProgram ACCT PROGRAM
+             ...
+         </k>
+         <accounts>
+            ...
+            (.Bag
+            => <account>
+                    <acctID> ACCT </acctID>
+                    <program> .Map </program>
+                    <storage> .Map </storage>
+                    <balance> BALANCE </balance>
+               </account>
+            )
+         </accounts>
+
+    rule transaction:
+         -   to: ACCTTO
+         -   from: ACCTFROM
+         -   data: ARGS
+         -   value: VALUE
+         -   gasPrice: PRICE
+         -   gasLimit: GASAVAIL
+      =>    #decreaseAcctBalance ACCTFROM VALUE
+         ~> #increaseAcctBalance ACCTTO VALUE
+         ~> #setGasPrice PRICE
+         ~> #setProcess {ACCTTO | 0 | GASAVAIL | .WordStack | #asMap(ARGS)}
 endmodule
 ```

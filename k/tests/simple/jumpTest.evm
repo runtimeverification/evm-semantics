@@ -1,0 +1,18 @@
+account:
+-   id: 1
+-   balance: 40
+-   program: PUSH 40 ; PUSH 50 ; ADD ; PUSH 0 ; JUMP
+-   storage: 30 , 20 , 25
+
+.Accounts
+
+
+transaction:
+-   to: 1
+-   from: 1
+-   data:
+-   value: 0
+-   gasPrice: 1
+-   gasLimit: 100
+
+.Transactions

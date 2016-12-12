@@ -1,8 +1,0 @@
-account:
--   id: 1
--   balance: 40 
--   program:
--   storage:
-.Accounts
-
-START 1

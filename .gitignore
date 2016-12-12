@@ -5,6 +5,7 @@ k/evm-semantics-kompiled/
 *.aux
 *.log
 *.out
+!*evm.out
 paper/paper.pdf
 *.bbl
 *.blg

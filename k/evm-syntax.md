@@ -34,6 +34,7 @@ module EVM-STACK-OPERATORS
                          | "#checkStackSize"
                          | "STACK_OVERFLOW"
                          | "DUP" Int
+                         | "SWAP" Int
     syntax KItem ::= NullStackOp
 
     rule PUSH N => N ~> #push ~> #checkStackSize [structural]
@@ -92,10 +93,16 @@ EVM Programs
 module EVM-PROGRAM-SYNTAX
     imports EVM-STACK-OPERATORS
 
-    syntax ControlFlowOp ::= "JUMP" | "JUMP1" | "CALL" | "RETURN"
-    syntax LocalOp       ::= "MLOAD" | "MSTORE" | "MLOAD8" | "PC"
-    syntax OpCode        ::= StackOp | ControlFlowOp | LocalOp
-    syntax Program       ::= List{OpCode, ";"}
+    syntax ControlFlowOp ::= "JUMP" | "JUMP1" | "CALL" | "RETURN" | "STOP"
+    syntax LocalOp       ::= "MLOAD" | "MSTORE" | "MLOAD8"
+    syntax StateOp       ::= "ADDRESS" | "ORIGIN" | "CALLER"
+                           | "CALLVALUE" | "CALLDATASIZE" | "CALLDATALOAD"
+                           | "CODESIZE" | "EXTCODESIZE" | "GASPRICE" | "COINBASE"
+                           | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "GASLIMIT"
+                           | "PC" | "MSIZE" | "GAS"
+
+    syntax OpCode  ::= StackOp | ControlFlowOp | LocalOp | StateOp
+    syntax Program ::= List{OpCode, ";"}
 endmodule
 ```
 
@@ -124,10 +131,96 @@ module EVM-PROCESS-SYNTAX
                        "-" "program" ":" Program
                        "-" "storage" ":" WordList
 
-    syntax Process ::= "{" AcctID "|" Int "|" WordStack "|" WordMap "}"
+    syntax Transaction ::= "transaction" ":"
+                           "-" "to" ":" AcctID
+                           "-" "from" ":" AcctID
+                           "-" "data" ":" WordList
+                           "-" "value" ":" Int
+                           "-" "gasPrice" ":" Int
+                           "-" "gasLimit" ":" Int
+
+    syntax Process ::= "{" AcctID "|" Int "|" Int "|" WordStack "|" WordMap "}"
     syntax CallStack ::= ".CallStack"
                        | Process CallStack
+endmodule
+```
 
+EVM Gas Cost
+------------
+
+Here we define the gas-cost of each instruction in the instruction set. Many of
+the instructions gas cost is fixed and not dependent on any parts of the
+configuration; for those that do have some dependence, their associated cost
+must be defined after the configuration is defined.
+
+```k
+module EVM-GAS
+    imports EVM-PROCESS-SYNTAX
+
+    syntax Int ::= "#gas" "(" OpCode ")" [function]
+
+    // W_{zero}
+    rule #gas( STOP   ) => 0
+    rule #gas( RETURN ) => 0
+
+    // W_{base}
+    rule #gas( ADDRESS      ) => 2
+    rule #gas( ORIGIN       ) => 2
+    rule #gas( CALLER       ) => 2
+    rule #gas( CALLVALUE    ) => 2
+    rule #gas( CALLDATASIZE ) => 2
+    rule #gas( CODESIZE     ) => 2
+    rule #gas( GASPRICE     ) => 2
+    rule #gas( COINBASE     ) => 2
+    rule #gas( TIMESTAMP    ) => 2
+    rule #gas( NUMBER       ) => 2
+    rule #gas( DIFFICULTY   ) => 2
+    rule #gas( GASLIMIT     ) => 2
+    rule #gas( POP          ) => 2
+    rule #gas( PC           ) => 2
+    rule #gas( MSIZE        ) => 2
+    rule #gas( GAS          ) => 2
+
+    // W_{verylow}
+    rule #gas( ADD          ) => 3
+    rule #gas( SUB          ) => 3
+    rule #gas( NOT          ) => 3
+    rule #gas( LT           ) => 3
+    rule #gas( GT           ) => 3
+    rule #gas( SLT          ) => 3
+    rule #gas( SGT          ) => 3
+    rule #gas( EQ           ) => 3
+    rule #gas( ISZERO       ) => 3
+    rule #gas( AND          ) => 3
+    rule #gas( OR           ) => 3
+    rule #gas( XOR          ) => 3
+    rule #gas( BYTE         ) => 3
+    rule #gas( CALLDATALOAD ) => 3
+    rule #gas( MLOAD        ) => 3
+    rule #gas( MSTORE       ) => 3
+    rule #gas( MSTORE8      ) => 3
+    rule #gas( PUSH I       ) => 3
+    rule #gas( DUP I        ) => 3
+    rule #gas( SWAP I       ) => 3
+
+    // W_{low}
+    rule #gas( MUL        ) => 5
+    rule #gas( DIV        ) => 5
+    rule #gas( SDIV       ) => 5
+    rule #gas( MOD        ) => 5
+    rule #gas( SMOD       ) => 5
+    rule #gas( SIGNEXTEND ) => 5
+
+    // W_{mid}
+    rule #gas( ADDMOD ) => 8
+    rule #gas( MULMOD ) => 8
+    rule #gas( JUMP   ) => 8
+
+    // W_{high}
+    rule #gas( JUMPI ) => 10
+
+    // W_{extcode}
+    rule #gas( EXTCODESIZE ) => 700
 endmodule
 ```
 
@@ -139,12 +232,22 @@ along with which account to call execution on first:
 
 ```k
 module EVM-SYNTAX
-    imports EVM-PROCESS-SYNTAX
+    imports EVM-GAS
 
     syntax Accounts ::= ".Accounts"
                       | Account Accounts
 
-    syntax EVMSimulation ::= Accounts
-                           | Accounts "START" AcctID
+    rule .Accounts => .
+    rule ACCT:Account ACCTS:Accounts => ACCT ~> ACCTS
+
+    syntax Transactions ::= ".Transactions"
+                          | Transaction Transactions
+
+    rule .Transactions => .
+    rule TX:Transaction TXS:Transactions => TX ~> TXS
+
+    syntax EVMSimulation ::= Accounts Transactions
+
+    rule ACCTS:Accounts TXS:Transactions => ACCTS ~> TXS
 endmodule
 ```

@@ -7,4 +7,12 @@ account:
 .Accounts
 
 
+transaction:
+-   to: 1
+-   from: 1
+-   data:
+-   value: 0
+-   gasPrice: 1
+-   gasLimit: 100
+
 .Transactions
