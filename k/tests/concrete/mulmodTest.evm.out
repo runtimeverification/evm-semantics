@@ -1,0 +1,1 @@
+<T> <k> . </k> <id> 1 </id> <pc> 4 </pc> <wordStack> 2 : .WordStack </wordStack> <localMem> .Map </localMem> <callStack> .CallStack </callStack> <accounts> <account> <acctID> 1 </acctID> <program> 0 |-> ( PUSH 5 ) 1 |-> ( PUSH 3 ) 2 |-> ( PUSH 4 ) 3 |-> MULMOD </program> <storage> .Map </storage> <balance> 40 </balance> </account> </accounts> </T>
