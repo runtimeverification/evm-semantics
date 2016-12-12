@@ -2,5 +2,5 @@
 
 <tests>
   <include file="concrete/config.xml" />
-  <!-- <include file="prover/config.xml" /> -->
+  <include file="prover/config.xml" />
 </tests>
