@@ -1,9 +1,0 @@
-account:
--   id: 1
--   balance: 40
--   program: PUSH 40 ; PUSH 50 ; ADD ; PUSH 0; JUMP 
--   storage: 30 , 20 , 25
-
-.Accounts
-
-START 1
