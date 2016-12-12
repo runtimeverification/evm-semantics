@@ -1,6 +1,6 @@
 *.k
 !*spec.k
-models/k/evm-semantics-kompiled/
+k/evm-semantics-kompiled/
 *.swp
 *.aux
 *.log
