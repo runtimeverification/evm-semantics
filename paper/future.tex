@@ -3,7 +3,9 @@ While we have made initial efforts towards formal verification of smart
 contracts, there is still much work to be done to verify all of their nuanced
 properties. Our primary goal is to finish implementing the remainder of the
 instructions in EVM, and including more contract properties besides correctness
-and gas in our verification techniques. In addition, we aim to use our full EVM
+and gas in our verification techniques. To this end, we also plan to build
+semantics for mining blocks; without such semantics, we would not be able to
+detect bugs in the class of transaction order dependence. We aim to use our full EVM
 semantics to then model higher level languages, such as Serpent~\cite{serpent}
 and Solidity~\cite{solidity}, which smart contracts are almost ubiquitously
 written in. Doing so will enable verification of the compiler from these higher
