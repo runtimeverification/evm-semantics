@@ -160,12 +160,13 @@ module EVM-INTRAPROCEDURAL
     rule <k> . => OP </k>
          <id> ACCT </id>
          <pc> PCOUNT => PCOUNT +Int 1 </pc>
-         <gas> G => G +Int #gas( OP ) </gas>
+         <gas> G => G -Int #gas( OP ) </gas>
          <account>
             <acctID> ACCT </acctID>
             <program> ... PCOUNT |-> OP ... </program>
             ...
          </account>
+         requires G >=Int #gas( OP )
 
     rule <k> UOP:UnStackOp => UOP W0 ... </k>
          <wordStack> W0 : WS => WS </wordStack>
@@ -196,7 +197,7 @@ module EVM-INTRAPROCEDURAL
     rule <k> JUMP => #setProgramCounter W0 ... </k>
          <wordStack> W0 : WS => WS </wordStack>
 
-    rule <k> JUMP1 => . ...</k> 
+    rule <k> JUMP1 => . ...</k>
          <wordStack> _ : W1 :  WS => WS </wordStack>
          requires W1 ==Int 0
 
@@ -279,6 +280,6 @@ module EVM
       =>    #decreaseAcctBalance ACCTFROM VALUE
          ~> #increaseAcctBalance ACCTTO VALUE
          ~> #setGasPrice PRICE
-         ~> #processCall {ACCTTO | GASAVAIL | ARGS}
+         ~> #setProcess {ACCTTO | 0 | GASAVAIL | .WordStack | #asMap(ARGS)}
 endmodule
 ```
