@@ -1,6 +1,79 @@
 \section{Evaluation}
-We evaluated our model for correctness based on our written tests and by use of
-some contracts written for specific purposes on the Ethereum blockchain.
+In order to explore the generated deductive program verifier, we wrote an EVM
+program that finds the sum of a given number $n \geq 0 $, and verified that the
+output is $ \sum_{i = 0}^{n} i =  \frac{n \times  (n + 1 )}{2}$. The deductive
+prover in \K{} requires a specification file, written over as a reachability
+claim. Our specification file consists of two claims - the first rule claims
+that from a state in our program, in which the memory location $0$, which
+contains the value $n$, passed to the program initially, the program will end in
+a state with location $0$ bound to the number $0$, and location $1$, which is
+the sum, is bound to $ \sum_{i = 0}^{n} i = \frac{n \times  (n + 1 )}{2} $.
 
-Two properties on stuff
-\todo{Some stuff}
+\begin{verbatim}
+    rule
+        <k> JUMP1 => .</k>
+        <pc> 10 => 50 </pc>
+        <localMem> 0 |-> (X:Int => 0) 1 |->
+            (0 => ((X *Int (X +Int 1)) /Int 2))
+        </localMem>
+        <wordStack> 12 : X : .WordStack => .WordStack </wordStack>
+        <accounts>
+            <account>
+	            <acctID> 1 </acctID>
+	            <program>
+                0 |-> (PUSH X) 1 |-> ( PUSH 0 )
+                2 |-> MSTORE 3 |->( PUSH 0 ) 4 |-> ( PUSH 1 )
+                5 |-> MSTORE 6 |-> ( PUSH 0 )
+                7 |-> MLOAD 8 |-> ( PUSH 12 )
+                9 |-> JUMP1 10 |-> ( PUSH 50 )
+                11 |-> JUMP 12 |-> ( PUSH 1 ) 13 |-> MLOAD
+                14 |-> ( PUSH 0 ) 15 |-> MLOAD 16 |-> ADD
+                17 |-> ( PUSH 1 ) 18 |-> MSTORE
+                19 |-> ( PUSH 1 ) 20 |-> ( PUSH 0 )
+                21 |-> MLOAD 22 |-> SUB
+                23 |-> ( PUSH 0 ) 24 |-> MSTORE
+                25 |-> ( PUSH 6 ) 26 |-> JUMP
+                </program>
+	            <balance> 40 </balance>
+	            <storage> _ </storage>
+            </account>
+        </accounts>
+        requires X >=Int 0
+\end{verbatim}
+
+The second reachability rule establishes the circularity, and claims that for
+every loop iteration, the value of the sum in location $1$ is in fact a partial
+sum of the number of iterations at that step in the program. The second
+reachability claim is the equivalent of a loop invariant in reachability logic.
+
+\begin{verbatim}
+
+    rule
+        <k> JUMP1 => . </k>
+        <pc> 10 => 50 </pc>
+        <localMem> 0 |-> (X:Int => 0)
+            1 |-> (Y:Int => Y +Int ((X *Int (X +Int 1)) /Int 2))
+        </localMem>
+        <wordStack> 12 : X : .WordStack => .WordStack </wordStack>
+        <accounts>
+            <account>
+	            <acctID> 1 </acctID>
+	            <program>
+                0 |-> (PUSH _) 1 |-> ( PUSH 0 )
+                2 |-> MSTORE 3 |-> ( PUSH 0 ) 4 |-> ( PUSH 1 )
+                5 |-> MSTORE 6 |-> ( PUSH 0 ) 7 |-> MLOAD
+                8 |-> ( PUSH 12 ) 9 |-> JUMP1 10 |-> ( PUSH 50 )
+                11 |-> JUMP 12 |-> ( PUSH 1 ) 13 |-> MLOAD
+                14 |-> ( PUSH 0 ) 15 |-> MLOAD
+                16 |-> ADD 17 |-> ( PUSH 1 )
+                18 |-> MSTORE 19 |-> ( PUSH 1 )
+                20 |-> ( PUSH 0 ) 21 |-> MLOAD
+                22 |-> SUB 23 |-> ( PUSH 0 )
+                24 |-> MSTORE 25 |-> ( PUSH 6 )
+                26 |-> JUMP </program>
+	            <balance> 40 </balance>
+	            <storage> _ </storage>
+            </account>
+        </accounts>
+        requires X >=Int 0
+\end{verbatim}
