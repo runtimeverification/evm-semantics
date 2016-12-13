@@ -59,11 +59,9 @@ module EVM-WORD
     rule W0:Int ==Word W1:Int => bool2Word( W0 ==Int W1)
     rule W0:Int %Word W1:Int => chop( W0 %Int W1 )
 
-    // TODO: These rules overlap and are not confluent. Are they correct?
     rule addmod(W0:Int, W1:Int, 0)      => 0
     rule addmod(W0:Int, W1:Int, W2:Int) => chop((W0 +Int W1) %Int W2) [owise]
 
-    // TODO: These rules overlap and are not confluent. Are they correct?
     rule mulmod(W0:Int, W1:Int, 0)      => 0
     rule mulmod(W0:Int, W1:Int, W2:Int) => chop((W0 *Int W1) %Int W2) [owise]
 
