@@ -2,7 +2,7 @@ module SUM-ITERATIVE-SPEC
     imports EVM
 
     rule
-        <k> JUMP1 => .</k>
+        <k> JUMP1 => . </k>
         <pc> 10 => 50 </pc>
         <localMem> 0 |-> (X:Int => 0) 1 |-> (0 => ((X *Int (X +Int 1)) /Int 2)) </localMem>
         <wordStack> 12 : X : .WordStack => .WordStack </wordStack>

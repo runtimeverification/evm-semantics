@@ -103,6 +103,13 @@ module EVM-PROGRAM-SYNTAX
 
     syntax OpCode  ::= StackOp | ControlFlowOp | LocalOp | StateOp
     syntax Program ::= List{OpCode, ";"}
+
+    syntax Map ::= "#pgmMap" "(" Program ")"         [function]
+                 | "#pgmMap" "(" Int "," Program ")" [function]
+
+    rule #pgmMap(PGM) => #pgmMap(0, PGM)
+    rule #pgmMap(N, .Program) => .Map
+    rule #pgmMap(N, (OP:OpCode ; PGM)) => N |-> OP #pgmMap(N +Int 1, PGM)
 endmodule
 ```
 

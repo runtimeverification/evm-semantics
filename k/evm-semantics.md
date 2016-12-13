@@ -54,20 +54,16 @@ account. Because they are stored as maps, we have to keep a little bit of extra
 state (what the next map key is) when actually running these.
 
 ```k
-    syntax KItem ::= "#setAcctProgram" AcctID Program
-                   | "#setAcctProgram" AcctID Int Program
+    syntax KItem ::= "#setAcctProgram" AcctID Map
                    | "#setAcctStorage" AcctID WordMap
-                   | "#increaseAcctBalance" AcctID Word      [strict(2)]
-                   | "#decreaseAcctBalance" AcctID Word      [strict(2)]
+                   | "#setAcctBalance" AcctID Int
+                   | "#increaseAcctBalance" AcctID Int [strict(2)]
+                   | "#decreaseAcctBalance" AcctID Int [strict(2)]
 
-    rule #setAcctProgram ACCT PGM => #setAcctProgram ACCT 0 PGM
-    rule #setAcctProgram ACCT N .Program => .
-    rule <k> #setAcctProgram ACCT N (OP:OpCode ; PGM)
-          => #setAcctProgram ACCT (N +Int 1) PGM
-         ... </k>
+    rule <k> #setAcctProgram ACCT PGM => . ... </k>
          <account>
             <acctID> ACCT </acctID>
-            <program> PROGRAM => PROGRAM[N <- OP] </program>
+            <program> _ => PGM </program>
             ...
          </account>
 
@@ -78,17 +74,26 @@ state (what the next map key is) when actually running these.
             ...
          </account>
 
-    rule <k> #increaseAcctBalance ACCT Balance => . ... </k>
+    rule <k> #setAcctBalance ACCT BAL => . ... </k>
          <account>
             <acctID> ACCT </acctID>
-            <balance> X => X +Word Balance </balance>
+            <balance> _ => BAL </balance>
             ...
          </account>
 
-    rule <k> #decreaseAcctBalance ACCT Balance => . ... </k>
+    rule #increaseAcctBalance .AcctID BAL => .
+    rule <k> #increaseAcctBalance ACCT BAL => . ... </k>
          <account>
             <acctID> ACCT </acctID>
-            <balance> X => X -Word Balance </balance>
+            <balance> X => X +Int BAL </balance>
+            ...
+         </account>
+
+    rule #decreaseAcctBalance .AcctID BAL => .
+    rule <k> #decreaseAcctBalance ACCT BAL => . ... </k>
+         <account>
+            <acctID> ACCT </acctID>
+            <balance> X => X -Int BAL </balance>
             ...
          </account>
 ```
@@ -166,7 +171,8 @@ module EVM-INTRAPROCEDURAL
             <program> ... PCOUNT |-> OP ... </program>
             ...
          </account>
-         requires G >=Int #gas( OP )
+         // requires G >=Int #gas( OP )
+         // must write invariants about gas if included
 
     rule <k> UOP:UnStackOp => UOP W0 ... </k>
          <wordStack> W0 : WS => WS </wordStack>
@@ -213,6 +219,7 @@ module EVM-INTERPROCEDURAL
 
     syntax KItem ::= "#processCall" "{" AcctID "|" Word "|" WordList "}"
                    | "#processReturn" WordList [strict]
+                   | "#newAccount" AcctID
 
     rule <k> CALL => #processCall { ACCT | ETHER | #range(LM, INIT, SIZE) } ... </k>
          <wordStack> ACCT : ETHER : INIT : SIZE : WS => WS </wordStack>
@@ -235,6 +242,19 @@ module EVM-INTERPROCEDURAL
 
     rule <k> #returnValues WL => #updateLocalMem INIT #take(SIZE, WL) ... </k>
          <wordStack> INIT : SIZE : WS => WS </wordStack>
+
+    rule <k> #newAccount ACCT => . ... </k>
+         <accounts>
+            ...
+            (.Bag
+            => <account>
+                    <acctID> ACCT </acctID>
+                    <program> .Map </program>
+                    <storage> .Map </storage>
+                    <balance> 0 </balance>
+               </account>
+            )
+         </accounts>
 endmodule
 ```
 
@@ -249,26 +269,15 @@ module EVM
     imports EVM-UTIL
     imports EVM-INTERPROCEDURAL
 
-    rule <k> account:
-             -   id: ACCT
-             -   balance: BALANCE
-             -   program: PROGRAM
-             -   storage: STORAGE
-          =>    #setAcctStorage ACCT #asMap(STORAGE)
-             ~> #setAcctProgram ACCT PROGRAM
-             ...
-         </k>
-         <accounts>
-            ...
-            (.Bag
-            => <account>
-                    <acctID> ACCT </acctID>
-                    <program> .Map </program>
-                    <storage> .Map </storage>
-                    <balance> BALANCE </balance>
-               </account>
-            )
-         </accounts>
+    rule account:
+         -   id: ACCT
+         -   balance: BALANCE
+         -   program: PROGRAM
+         -   storage: STORAGE
+      =>    #newAccount ACCT
+         ~> #setAcctProgram ACCT #pgmMap(PROGRAM)
+         ~> #setAcctStorage ACCT #asMap(STORAGE)
+         ~> #setAcctBalance ACCT BALANCE
 
     rule transaction:
          -   to: ACCTTO
