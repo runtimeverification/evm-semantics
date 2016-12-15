@@ -1,7 +1,7 @@
 account:
 -   id: 1
 -   balance: 40
--   program: PUSH 40 ; PUSH 50 ; ADD ; PUSH 0; PUSH 0; PUSH 15; PUSH 2 ; CALL
+-   program: PUSH 40 ; PUSH 50 ; ADD ; PUSH 0 ; PUSH 0 ; PUSH 15 ; PUSH 2 ; CALL
 -   storage: 30 , 20 , 25
 
 account:
@@ -15,10 +15,10 @@ account:
 
 transaction:
 -   to: 1
--   from: 1
+-   from: .AcctID
 -   data:
 -   value: 0
 -   gasPrice: 1
--   gasLimit: 100
+-   gasLimit: 1000
 
 .Transactions

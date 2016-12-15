@@ -21,12 +21,12 @@ the correct number of arguments for each operation.
 NOTE: We have to call the opcode `OR` by `EVMOR` instead, because otherwise K
 has trouble parsing it/compiling the definition.
 
-The `Null`, `Un`, `Bin`, and `Tern` refer to the number of elements that each
+The `Null`, `Un`, `Bin`, `Tern`, and `Quad`, refer to the number of elements that each
 operation takes off the stack. These are binned in this way so that we can have
 simpler rules (in the semantics) for pulling items off the stacks.
 
 ```k
-module EVM-STACK-OPERATORS
+module EVM-OPCODE
     imports EVM-WORD
 
     syntax NullStackOp ::= "#push"
@@ -35,6 +35,10 @@ module EVM-STACK-OPERATORS
                          | "STACK_OVERFLOW"
                          | "DUP" Int
                          | "SWAP" Int
+                         | "PC" | "MSIZE" | "GAS"
+                         | "STOP" | "ADDRESS" | "ORIGIN" | "CALLER"
+                         | "CALLVALUE" | "CALLDATASIZE" | "GASPRICE" | "CODESIZE"
+                         | "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "GASLIMIT"
     syntax KItem ::= NullStackOp
 
     rule PUSH N => N ~> #push ~> #checkStackSize [structural]
@@ -42,6 +46,8 @@ module EVM-STACK-OPERATORS
     rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW requires I >=Int 1024
 
     syntax UnStackOp ::= "ISZERO" | "NOT" | "POP"
+                       | "JUMP" | "MLOAD"
+                       | "CALLDATALOAD" | "EXTCODESIZE"
     syntax KItem ::= UnStackOp Word
 
     rule ISZERO 0 => bool2Word(true)  ~> #push                   [structural]
@@ -54,6 +60,7 @@ module EVM-STACK-OPERATORS
                         | "LT" | "GT" | "SLT" | "SGT" | "EQ"
                         | "AND" | "EVMOR" | "XOR"
                         | "BYTE" | "SHA3"
+                        | "JUMP1" | "RETURN" | "MSTORE" | "MSTORE8"
     syntax KItem ::= BinStackOp Word Word
 
     rule ADD        W0 W1 => W0 +Word W1       ~> #push [structural]
@@ -82,7 +89,10 @@ module EVM-STACK-OPERATORS
     rule ADDMOD W0 W1 W2 => addmod(W0,W1,W2) ~> #push [structural]
     rule MULMOD W0 W1 W2 => mulmod(W0,W1,W2) ~> #push [structural]
 
-    syntax StackOp ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp
+    syntax QuadStackOp ::= "CALL"
+    syntax KItem ::= QuadStackOp Word Word Word Word
+
+    syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
 endmodule
 ```
 
@@ -90,19 +100,19 @@ EVM Programs
 ------------
 
 ```k
-module EVM-PROGRAM-SYNTAX
-    imports EVM-STACK-OPERATORS
+module EVM-PROGRAM
+    imports EVM-OPCODE
 
-    syntax ControlFlowOp ::= "JUMP" | "JUMP1" | "CALL" | "RETURN" | "STOP"
-    syntax LocalOp       ::= "MLOAD" | "MSTORE" | "MLOAD8"
-    syntax StateOp       ::= "ADDRESS" | "ORIGIN" | "CALLER"
-                           | "CALLVALUE" | "CALLDATASIZE" | "CALLDATALOAD"
-                           | "CODESIZE" | "EXTCODESIZE" | "GASPRICE" | "COINBASE"
-                           | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "GASLIMIT"
-                           | "PC" | "MSIZE" | "GAS"
-
-    syntax OpCode  ::= StackOp | ControlFlowOp | LocalOp | StateOp
     syntax Program ::= List{OpCode, ";"}
+ 
+    syntax KItem ::= OpCode
+
+    syntax Map ::= "#pgmMap" "(" Program ")"         [function]
+                 | "#pgmMap" "(" Int "," Program ")" [function]
+
+    rule #pgmMap(PGM) => #pgmMap(0, PGM)
+    rule #pgmMap(N, .Program) => .Map
+    rule #pgmMap(N, (OP:OpCode ; PGM)) => N |-> OP #pgmMap(N +Int 1, PGM)
 endmodule
 ```
 
@@ -122,7 +132,7 @@ Processes are tuples of their associated `PID`, their `ProgramCounter`, their
 
 ```k
 module EVM-PROCESS-SYNTAX
-    imports EVM-PROGRAM-SYNTAX
+    imports EVM-PROGRAM
 
     syntax AcctID  ::= Word | ".AcctID"
     syntax Account ::= "account" ":"
@@ -192,7 +202,7 @@ module EVM-GAS
     rule #gas( EQ           ) => 3
     rule #gas( ISZERO       ) => 3
     rule #gas( AND          ) => 3
-    rule #gas( OR           ) => 3
+    rule #gas( EVMOR        ) => 3
     rule #gas( XOR          ) => 3
     rule #gas( BYTE         ) => 3
     rule #gas( CALLDATALOAD ) => 3
@@ -217,10 +227,14 @@ module EVM-GAS
     rule #gas( JUMP   ) => 8
 
     // W_{high}
-    rule #gas( JUMPI ) => 10
+    rule #gas( JUMP1 ) => 10
 
     // W_{extcode}
     rule #gas( EXTCODESIZE ) => 700
+    
+    // CALL
+    // TODO: This is not correct!!!
+    rule #gas( CALL ) => 700
 endmodule
 ```
 
@@ -237,17 +251,17 @@ module EVM-SYNTAX
     syntax Accounts ::= ".Accounts"
                       | Account Accounts
 
-    rule .Accounts => .
-    rule ACCT:Account ACCTS:Accounts => ACCT ~> ACCTS
+    rule .Accounts => . [structural]
+    rule ACCT:Account ACCTS:Accounts => ACCT ~> ACCTS [structural]
 
     syntax Transactions ::= ".Transactions"
                           | Transaction Transactions
 
-    rule .Transactions => .
-    rule TX:Transaction TXS:Transactions => TX ~> TXS
+    rule .Transactions => . [structural]
+    rule TX:Transaction TXS:Transactions => TX ~> TXS [structural]
 
     syntax EVMSimulation ::= Accounts Transactions
 
-    rule ACCTS:Accounts TXS:Transactions => ACCTS ~> TXS
+    rule ACCTS:Accounts TXS:Transactions => ACCTS ~> TXS [structural]
 endmodule
 ```
