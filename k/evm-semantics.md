@@ -234,7 +234,7 @@ module EVM-INTERPROCEDURAL
     imports EVM-INTRAPROCEDURAL
 
     syntax KItem ::= "#processCall" "{" AcctID "|" Word "|" WordList "}"
-                   | "#processReturn" WordList [strict]
+                   | "#processReturn" WordList
                    | "#newAccount" AcctID
 
     rule <k> CALL ACCT ETHER INIT SIZE => #processCall { ACCT | ETHER | #lmRange(LM, INIT, SIZE) } ... </k>
@@ -249,8 +249,7 @@ module EVM-INTERPROCEDURAL
          <id> CURRACCT </id>
          [structural]
 
-    rule <k> RETURN => #processReturn #lmRange(LM, INIT, SIZE) ... </k>
-         <wordStack> INIT : SIZE : WS => WS </wordStack>
+    rule <k> RETURN INIT SIZE => #processReturn #lmRange(LM, INIT, SIZE) ... </k>
          <localMem> LM </localMem>
          [structural]
 

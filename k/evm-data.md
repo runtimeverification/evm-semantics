@@ -99,6 +99,5 @@ module EVM-WORD
 
     rule #asMap(.WordList) => .Map
     rule #asMap(WL) => (0 |-> 0)[0 := WL] requires WL =/=K .WordList
-
 endmodule
 ```
