@@ -237,8 +237,7 @@ module EVM-INTERPROCEDURAL
                    | "#processReturn" WordList [strict]
                    | "#newAccount" AcctID
 
-    rule <k> CALL => #processCall { ACCT | ETHER | #range(LM, INIT, SIZE) } ... </k>
-         <wordStack> ACCT : ETHER : INIT : SIZE : WS => WS </wordStack>
+    rule <k> CALL ACCT ETHER INIT SIZE => #processCall { ACCT | ETHER | #lmRange(LM, INIT, SIZE) } ... </k>
          <localMem> LM </localMem>
          [structural]
 
@@ -250,7 +249,7 @@ module EVM-INTERPROCEDURAL
          <id> CURRACCT </id>
          [structural]
 
-    rule <k> RETURN => #processReturn #range(LM, INIT, SIZE) ... </k>
+    rule <k> RETURN => #processReturn #lmRange(LM, INIT, SIZE) ... </k>
          <wordStack> INIT : SIZE : WS => WS </wordStack>
          <localMem> LM </localMem>
          [structural]

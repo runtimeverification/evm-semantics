@@ -9,7 +9,7 @@ account:
 
 transaction:
 -   to: 1
--   from: 1
+-   from: .AcctID
 -   data:
 -   value: 30
 -   gasPrice: 1

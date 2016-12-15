@@ -79,13 +79,13 @@ module EVM-WORD
 
     syntax WordList ::= List{Word, ","}
                       | "#take" "(" Int "," WordList ")" [function]
-                      | "#range" "(" WordMap "," Int "," Int ")" [function]
+                      | "#lmRange" "(" WordMap "," Int "," Int ")" [function]
 
     rule #take(0, WL)            => .WordList
     rule #take(N, (W:Word , WL)) => W , #take(N -Int 1, WL) requires N >Int 0
 
-    rule #range(LM,         N, M) => .WordList                   requires M ==Int 0
-    rule #range(N |-> W LM, N, M) => W , #range(LM, N +Int 1, M -Int 1) requires M >Int 0
+    rule #lmRange(LM,         N, M) => .WordList                            requires M ==Int 0
+    rule #lmRange(N |-> W LM, N, M) => W , #lmRange(LM, N +Int 1, M -Int 1) requires M >Int 0
 
     syntax WordMap ::= Map
                      | ".WordMap"
