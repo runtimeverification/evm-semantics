@@ -73,26 +73,23 @@ execution state. For example, below are the rules for \texttt{MLOAD} and
 \texttt{MSTORE}:
 
 \begin{verbatim}
-rule <k> MSTORE => #updateLocalMem INDEX VALUE ... </k>
-     <wordStack> INDEX : VALUE : WS => WS </wordStack>
+rule MSTORE INDEX VALUE => #updateLocalMem INDEX VALUE
 
-rule <k> MLOAD => . ... </k>
-     <wordStack> INDEX : WS => VALUE : WS </wordStack>
-     <localMem>... INDEX |-> VALUE ...</localMem>
+rule <k> MLOAD INDEX => VALUE ~> #push ... </k>
+     <localMem> ... INDEX |-> VALUE ... </localMem>
 \end{verbatim}
 
-The first rule states that if the next instruction is \texttt{MSTORE}, and the
-top two elements of the word stack are \texttt{INDEX} and \texttt{VALUE}, then
-they should be removed from the stack and the next instruction should be
+The first rule states that if the next instruction is \texttt{MSTORE} with arguments
+\texttt{INDEX} and \texttt{VALUE}, then the next instruction should be
 \texttt{\#updateLocalMem INDEX VALUE} (an auxiliary internal command for working
 with the local memory).
 
-The second rule states that if the next instruction is \texttt{MLOAD}, and the
-top element of the stack is \texttt{INDEX}, and somewhere in the local memory we
-have the binding \texttt{INDEX |-> VALUE}, then \texttt{INDEX} should be
-replaced with \texttt{VALUE} on the stack. Notice that we take advantage of \K{}'s
+The second rule states that if the next instruction is \texttt{MLOAD} with argument
+\texttt{INDEX}, and somewhere in the local memory we
+have the binding \texttt{INDEX |-> VALUE}, then \texttt{VALUE} should be
+pushed onto the top of the word-stack. Notice that we take advantage of \K{}'s
 \textit{configuration abstraction}, which allows each rule to only specify the
-parts of the state relevant to it.
+parts of the configuration (defined above) relevant to it.
 
 \subsubsection{Inter-contract Execution}
 
@@ -104,18 +101,17 @@ execution of the current function call and passes some values back to the
 caller, are defined in our semantics.
 
 \begin{verbatim}
-rule <k> CALL => #processCall
-        { ACCT | ETHER | #range(LM, INIT, SIZE) } ...
-     </k>
-     <wordStack> ACCT : ETHER : INIT : SIZE : WS => WS </wordStack>
+rule <k> CALL ACCT ETHER INIT SIZE
+      => #processCall { ACCT | ETHER | #range(LM, INIT, SIZE) }
+      ... </k>
      <localMem> LM </localMem>
 \end{verbatim}
 
-First, we gather the arguments to \texttt{CALL}, which consists of which process
+\texttt{CALL} takes four arguments: which process
 to call (\texttt{ACCT}), the amount of Ether to transfer (\texttt{ETHER}), and
 the region of local memory to use as arguments (\texttt{\#range(LM, INIT,
-SIZE)}). \texttt{\#processCall} is used as an internal command which has the
-following effects:
+SIZE)}). \texttt{\#processCall} (an internal helper command) is used to complete
+the call:
 
 \begin{verbatim}
 rule <k> #processCall {ACCT | ETHER | WL}
