@@ -180,7 +180,7 @@ module EVM-INTRAPROCEDURAL
     rule <k> . => OP </k>
          <id> ACCT </id>
          <pc> PCOUNT => PCOUNT +Int 1 </pc>
-         <gas> G => G -Int #gas( OP ) </gas>
+         <gas> G => G -Int #gas(OP) </gas>
          <account>
             <acctID> ACCT </acctID>
             <program> ... PCOUNT |-> OP ... </program>
@@ -201,6 +201,10 @@ module EVM-INTRAPROCEDURAL
          <wordStack> W0 : W1 : W2 : WS => WS </wordStack>
          [structural]
 
+    rule <k> QOP:QuadStackOp => QOP W0 W1 W2 W3 ... </k>
+         <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
+         [structural]
+
     rule <k> W0:Int ~> #push => . ... </k>
          <wordStack> WS => W0 : WS </wordStack>
          [structural]
@@ -209,13 +213,9 @@ module EVM-INTRAPROCEDURAL
          <wordStack> WS </wordStack>
          [structural]
 
-    rule <k> MSTORE => #updateLocalMem INDEX VALUE ... </k>
-         <wordStack> INDEX : VALUE : WS => WS </wordStack>
-         [structural]
-
-    rule <k> MLOAD => . ... </k>
-         <wordStack> INDEX : WS => VALUE : WS </wordStack>
-         <localMem>... INDEX |-> VALUE ...</localMem>
+    rule MSTORE INDEX VALUE => #updateLocalMem INDEX VALUE [structural]
+    rule <k> MLOAD INDEX => VALUE ~> #push ... </k>
+         <localMem> ... INDEX |-> VALUE ... </localMem>
          [structural]
 
     rule <k> DUP N => WS[N -Int 1] ~> #push ~> #checkStackSize </k>
@@ -223,19 +223,9 @@ module EVM-INTRAPROCEDURAL
          requires N >Int 0 andBool N <=Int 16
          [structural]
 
-    rule <k> JUMP => #setProgramCounter W0 ... </k>
-         <wordStack> W0 : WS => WS </wordStack>
-         [structural]
-
-    rule <k> JUMP1 => . ...</k>
-         <wordStack> _ : W1 :  WS => WS </wordStack>
-         requires W1 ==Int 0
-         [structural]
-
-    rule <k> JUMP1 => #setProgramCounter W0 ... </k>
-         <wordStack> W0 : W1 :  WS => WS </wordStack>
-         requires notBool W1 ==Int 0
-         [structural]
+    rule JUMP DEST => #setProgramCounter DEST    [structural]
+    rule JUMP1 DEST 0 => .                       [structural]
+    rule JUMP1 DEST N => #setProgramCounter DEST [owise, structural]
 endmodule
 ```
 
@@ -261,7 +251,7 @@ module EVM-INTERPROCEDURAL
          [structural]
 
     rule <k> RETURN => #processReturn #range(LM, INIT, SIZE) ... </k>
-         <wordStack> (INIT : SIZE : WS) => WS </wordStack>
+         <wordStack> INIT : SIZE : WS => WS </wordStack>
          <localMem> LM </localMem>
          [structural]
 
