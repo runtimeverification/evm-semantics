@@ -1,0 +1,16 @@
+Slides
+- Intro slides
+
+Demo
+- What defining syntax looks like
+    - Show the list of opcodes
+- Configuration
+    - Shape of the machine
+- Accounts interaction
+    - One test with multi-account interactions
+- Verification
+    - Program verification correctness
+
+Slides
+- Future Work
+- Questions

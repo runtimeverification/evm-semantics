@@ -9,12 +9,14 @@
 \usepackage{amsfonts}
 \usepackage{wasysym}
 \usepackage{lmodern}
+\usepackage{fancyvrb}
 \usepackage{graphicx}
 \usepackage{multirow}
 \usepackage{color}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{textcomp}
+\usepackage{times}
 \usepackage{url}\urlstyle{rm}
 \usepackage{cite}
 \usepackage[skip=8pt]{caption}
@@ -32,6 +34,11 @@
 %\newtheorem{theorem}{Theorem}
 \newcommand{\FF}{\ensuremath{\mathbb{F}}}
 \newcommand{\QQ}{\ensuremath{\mathbb{Q}}}
+
+%Verbatim small
+\makeatletter
+\def\verbatim{\small\@verbatim \frenchspacing\@vobeyspaces \@xverbatim}
+\makeatother
 
 \usepackage{soul}
 \usepackage{xspace}
