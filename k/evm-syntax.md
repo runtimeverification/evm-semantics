@@ -103,6 +103,8 @@ module EVM-PROGRAM-SYNTAX
 
     syntax OpCode  ::= StackOp | ControlFlowOp | LocalOp | StateOp
     syntax Program ::= List{OpCode, ";"}
+ 
+    syntax KItem ::= OpCode
 
     syntax Map ::= "#pgmMap" "(" Program ")"         [function]
                  | "#pgmMap" "(" Int "," Program ")" [function]
@@ -199,7 +201,7 @@ module EVM-GAS
     rule #gas( EQ           ) => 3
     rule #gas( ISZERO       ) => 3
     rule #gas( AND          ) => 3
-    rule #gas( OR           ) => 3
+    rule #gas( EVMOR        ) => 3
     rule #gas( XOR          ) => 3
     rule #gas( BYTE         ) => 3
     rule #gas( CALLDATALOAD ) => 3
@@ -244,17 +246,17 @@ module EVM-SYNTAX
     syntax Accounts ::= ".Accounts"
                       | Account Accounts
 
-    rule .Accounts => .
-    rule ACCT:Account ACCTS:Accounts => ACCT ~> ACCTS
+    rule .Accounts => . [structural]
+    rule ACCT:Account ACCTS:Accounts => ACCT ~> ACCTS [structural]
 
     syntax Transactions ::= ".Transactions"
                           | Transaction Transactions
 
-    rule .Transactions => .
-    rule TX:Transaction TXS:Transactions => TX ~> TXS
+    rule .Transactions => . [structural]
+    rule TX:Transaction TXS:Transactions => TX ~> TXS [structural]
 
     syntax EVMSimulation ::= Accounts Transactions
 
-    rule ACCTS:Accounts TXS:Transactions => ACCTS ~> TXS
+    rule ACCTS:Accounts TXS:Transactions => ACCTS ~> TXS [structural]
 endmodule
 ```

@@ -2,7 +2,7 @@ Words
 =====
 
 Words are 256 bit integers. If you want to perform arithmetic on words, make
-sure that you use the corresponding `opWord` operators (eg. `+Word`), which will
+sure that you use the corresponding `<op>Word` operators (eg. `+Word`), which will
 make sure the correct width is produced.
 
 None of the rules defined here should be sensitive to any other parts of the
@@ -14,7 +14,7 @@ module EVM-WORD
     syntax KResult ::= Int 
 
     syntax Word ::= Int
-                  | "#symbolicWord"
+                  | "#symbolicWord"                         [function]
                   | "chop" "(" Int ")"                      [function]
                   | "bool2Word" "(" Bool ")"                [function]
                   | Word "+Word" Word                       [function]
