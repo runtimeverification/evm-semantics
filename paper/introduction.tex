@@ -4,20 +4,17 @@ the security of smart contracts. Contracts inherently involve money, so bugs in
 such programs can often be devastating to the involved parties. An example of
 such a catastrophe is the recent DAO attack~\cite{dao-attack}, where \$50
 million worth of Ether was stolen, prompting an unprecedented hard fork of the
-Ethereum blockchain. While devastating, the bug that caused such an attack is
-well known as a common bug in Ethereum smart contracts. In fact, many such
+Ethereum blockchain. In fact, many such
 classes of bugs exist in smart contracts, ranging from transaction-ordering
 dependence to mishandled exceptions. Even a contract running out of gas before
 the full completion of a function can interfere with the correctness of smart
-contracts, and so it is important to identify such problems order to protect the integrity of Ethereum to its many users.
+contracts, and so it is important to identify such problems order to protect the integrity of Ethereum to its users.
 
 As the smart contract ecosystem grows in complexity, there is an additional
 reliance on code from external sources in order to enhance the development cycle
 for smart contracts. While this code is ostensibly correct, there is in fact no
 mechanism for verifying the correctness of these programs, as implementation
-details can differ drastically from source to source. For example,
-developers often include code from external libraries or even from sources such as
-StackOverflow to include in their Ethereum contracts.
+details can differ drastically from source to source.
 
 Smart contracts are an attractive use case for formal program verification, which
 can theoretically provide guarantees on contract execution safety,
@@ -28,16 +25,14 @@ are a number of semantic frameworks to choose from, we are choosing to use \K{} 
 our formal analysis primarily because of its simplicity and extensibility.
 
 In this paper, we build a \K{}~model of the Ethereum Virtual Machine (EVM) for use
-in verifying properties on smart contracts. The need for verification of these
-programs is well motivated, and to our knowledge, no such verification has been
-done using the power of modern verification tools in the academic literature.
-The contributions of this paper are as follows:
+in verifying properties on smart contracts. The contributions of this paper are as follows:
 
 \begin{itemize}
 \item{\bf EVM Semantics in \K{}:} We implement EVM semantics in the \K{}~framework, and
 cover a substantial subset of EVM instructions and their properties.
 \item{\bf EVM Program Verification:} We create a simple EVM program that
-contains inter-contract interaction and verify interaction for correctness.
+contains an inter-contract transaction and verify the transaction for
+program correctness.
 \end{itemize}
 
 We intend to release the source code and open active development to the formal

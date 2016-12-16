@@ -103,7 +103,7 @@ Kumar\inst{1} \and Zane Ma\inst{1}}
 \maketitle
 \begin{abstract}
 Part of Ethereum's rapid growth in value and adoption is due to
-its programmatic interface to the currency, smart contracts. Because bugs in
+smart contract, a  programmatic interface to the currency. Because bugs in
 these contracts can be financially devastating, there is much scrutiny to the contracts that are
 placed and interacted with on the Ethereum blockchain. To mitigate concerns
 regarding malicious or poorly programmed smart contracts, the Ethereum community
@@ -111,8 +111,8 @@ has recently turned to formal verification as a means for verifying properties
 of smart contracts. In this work, we model the Ethereum Virtual Machine
 (EVM)~\cite{wood2014ethereum} in \K{}, a language built
 specifically for extensible, formal verification of programming languages. We
-then demonstrate verification for program correctness using our tool, and extend
-to model gas in EVM programs.
+build formal semantics for EVM in \K{}, and use the semantics to verify an EVM
+program with an inter-contract transaction.
 \end{abstract}
 % \input{abstract}
 \input{introduction}
