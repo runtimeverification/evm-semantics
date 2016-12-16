@@ -9,22 +9,22 @@ stores the complete execution state of distributed programs known as Ethereum
 Virtual Machine (EVM) \textit{smart contracts}. Smart contracts, which are often
 written in higher level languages such as Solidity~\cite{solidity} or
 Serpent~\cite{serpent}, are then compiled to EVM
-bytecode, a Turing-complete set of 65 unique opcodes~\cite{wood2014ethereum}. Smart
+bytecode, a stack based, Turing-complete language, which consists of 65 unique opcodes~\cite{wood2014ethereum}. Smart
 contracts consist of a \textit{contract address}, contract \textit{balance}, and
 private program execution code and state.
 
-Beyond their ability to execute arbitrary logic, smart contracts have two
-distinct features that enable their practical usage. First, smart contracts
-include operations that allow participants to transfer \textit{Ether}, the
-currency of Ethereum, between smart contracts. These also include individual user
-accounts because they are essentially a limited type of smart contract. Second, to
-incentivize Ethereum blockchain miners to execute EVM smart contracts, every
-opcode instruction requires a certain amount of \textit{gas}, a special form of
-Ether, to be paid to the miner. Gas requirements for program execution also
-provide the side benefit of deterring resource-exhaustion attacks. These two
-features provide both an incentive and a mechanism for creating smart contracts
-that handle substantial amounts of Ether; certain contracts have
-amassed over \$100~million.
+%Beyond their ability to execute arbitrary logic, smart contracts have two
+%distinct features that enable their practical usage. First, smart contracts
+%include operations that allow participants to transfer \textit{Ether}, the
+%currency of Ethereum, between smart contracts. These also include individual user
+%accounts because they are essentially a limited type of smart contract. Second, to
+%incentivize Ethereum blockchain miners to execute EVM smart contracts, every
+%opcode instruction requires a certain amount of \textit{gas}, a special form of
+%Ether, to be paid to the miner. Gas requirements for program execution also
+%provide the side benefit of deterring resource-exhaustion attacks. These two
+%features provide both an incentive and a mechanism for creating smart contracts
+%that handle substantial amounts of Ether; certain contracts have
+%amassed over \$100~million.
 
 \subsection{The \K{} Framework}
 
