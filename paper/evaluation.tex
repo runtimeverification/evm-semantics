@@ -1,10 +1,7 @@
 \section{Evaluation}
 In order to explore the generated deductive program verifier, we wrote an EVM
-program that finds the sum of a given number $n \geq 0 $, and that when called, the
-value the program returned was $ \sum_{i = 0}^{n} i =  \frac{n \times  (n + 1 )}{2}$. The deductive
-prover in \K{} requires a specification file, written over as a reachability
-claim. Our specification file consists of two claims - the first rule claims
-that from a state when we call the EVM program to be verified, we end up in a state in which the program return the correct value.  
+program that finds the sum of a given number $n \geq 0 $, and verified that when called from another contract, the
+program returned was $ \sum_{i = 0}^{n} i =  \frac{n \times  (n + 1 )}{2}$. 
 
 \begin{verbatim}
 rule
@@ -39,11 +36,12 @@ rule
 </T>
 \end{verbatim}
 
-The second reachability rule establishes the circularity, and claims that for
-every loop iteration, the value of the sum in location $1$ is in fact a partial
-sum of the number of iterations at that step in the program. The second
-reachability claim is the equivalent of a loop invariant in reachability logic.
 
+
+
+
+
+The second rule establishes our circularity, which is required to complete the proof in reachability logic - the proof system \K{} implements \cite{stefanescu-park-yuwen-li-rosu-2016-oopsla}. 
 \begin{verbatim}
 rule
 <T> 
@@ -81,16 +79,23 @@ rule
 </T>
 
 \end{verbatim}
-\begin{verbatim}
 
+EVM Contract code (processed representation in \K{} \ that calls the sum 0 to n program.
+
+\begin{verbatim}
 Account1Pgm
 
 0 |-> ( PUSH X ) 1 |-> ( PUSH 0 ) 2 |-> MSTORE 
 3 |-> ( PUSH 1 ) 4 |-> ( PUSH 1 ) 5 |-> ( PUSH 1 ) 
 6 |-> ( PUSH 0 ) 7 |-> ( PUSH 4000 ) 8 |-> ( PUSH 2 ) 
 9 |-> CALL 10 |-> STOP 
-
             
+\end{verbatim}
+
+Contract code that we verified using \K{}.
+
+
+\begin{verbatim}
 Account2Pgm
 
 0 |-> ( PUSH 0 ) 1 |-> ( PUSH 1 ) 2 |-> MSTORE 
