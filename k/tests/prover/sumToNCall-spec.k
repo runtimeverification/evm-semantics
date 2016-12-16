@@ -3,9 +3,9 @@ module SUM-ITERATIVE-SPEC
 
 rule
 <T> 
-    <k> CALL => . </k> 
+    <k> CALL => STOP </k> 
     <id> 1 </id> 
-    <pc> 10 => 10 </pc> 
+    <pc> 10 => 11 </pc> 
     <gas> _ => _ </gas>
     <gasPrice> 1 </gasPrice> 
     <callStack> .CallStack </callStack> 
@@ -14,7 +14,7 @@ rule
     <accounts>
         <account>     
             <acctID> 1 </acctID> 
-            <program> 0 |-> ( PUSH X ) 1 |-> ( PUSH 0 ) 2 |-> MSTORE 3 |-> ( PUSH 1 ) 4 |-> ( PUSH 1 ) 5 |-> ( PUSH 1 ) 6 |-> ( PUSH 0 ) 7 |-> ( PUSH 4000 ) 8 |-> ( PUSH 2 ) 9 |-> CALL </program>
+            <program> 0 |-> ( PUSH X ) 1 |-> ( PUSH 0 ) 2 |-> MSTORE 3 |-> ( PUSH 1 ) 4 |-> ( PUSH 1 ) 5 |-> ( PUSH 1 ) 6 |-> ( PUSH 0 ) 7 |-> ( PUSH 4000 ) 8 |-> ( PUSH 2 ) 9 |-> CALL 10 |-> STOP </program>
             <storage> .Map </storage>
             <balance> 40 </balance> 
         </account>
@@ -27,12 +27,12 @@ rule
     </accounts>
 </T>
 
-//circularity (Inductive Hypothesis / Loop Invariant)
+//Circularity (Inductive Hypothesis / Loop Invariant)
 rule
 <T> 
-    <k> JUMP1 => . </k> 
+    <k> JUMP1 => STOP </k> 
     <id> 2 => 1 </id> 
-    <pc> 7 => 10 </pc> 
+    <pc> 7 => 11 </pc> 
     <gas> _ => _ </gas>
     <gasPrice> 1 </gasPrice> 
     <callStack>  { 1 | 10 | _ | 1 : ( 1 : .WordStack ) | 0 |-> X } .CallStack => .CallStack </callStack> 
@@ -41,7 +41,7 @@ rule
     <accounts>
         <account>     
             <acctID> 1 </acctID> 
-            <program> 0 |-> ( PUSH X ) 1 |-> ( PUSH 0 ) 2 |-> MSTORE 3 |-> ( PUSH 1 ) 4 |-> ( PUSH 1 ) 5 |-> ( PUSH 1 ) 6 |-> ( PUSH 0 ) 7 |-> ( PUSH 4000 ) 8 |-> ( PUSH 2 ) 9 |-> CALL 
+            <program> 0 |-> ( PUSH X ) 1 |-> ( PUSH 0 ) 2 |-> MSTORE 3 |-> ( PUSH 1 ) 4 |-> ( PUSH 1 ) 5 |-> ( PUSH 1 ) 6 |-> ( PUSH 0 ) 7 |-> ( PUSH 4000 ) 8 |-> ( PUSH 2 ) 9 |-> CALL 10 |-> STOP
             </program>
             <storage> .Map </storage>
             <balance> 40 </balance> 
