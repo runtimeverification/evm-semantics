@@ -36,7 +36,7 @@ rule
     <gas> _ => _ </gas>
     <gasPrice> 1 </gasPrice> 
     <callStack>  { 1 | 10 | _ | 1 : ( 1 : .WordStack ) | 0 |-> X } .CallStack => .CallStack </callStack> 
-    <wordStack> 10 : ( A : .WordStack ) => 3 : .WordStack </wordStack>
+    <wordStack> 10 : ( A : .WordStack ) => .WordStack </wordStack>
     <localMem> 0 |-> A 1 |-> B => (0 |-> X 1 |-> (B +Int (A *Int (A +Int 1)) /Int 2)) </localMem>
     <accounts>
         <account>     
