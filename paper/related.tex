@@ -17,8 +17,7 @@ informed when their program may include such behavior
 There has been recent effort and interest in formally verifying properties of
 smart contracts. Luu et~al.~\cite{luumaking} formalized a subset of the EVM,
 called EtherLite, and built a symbolic execution tool to check for common bugs
-in smart contracts. Their semantics, however, do not consider the role of gas in
-Ethereum transactions, and cannot be used to prove properties concerning gas on
-smart contracts. Bhargavan et~al.\cite{evmf*} propose a method for formally
+in smart contracts. Why3 is a tool included in the Solidity IDE that supplies
+formal verification of Solidity contracts. Bhargavan et~al.\cite{evmf*} propose a method for formally
 verifying EVM smart contracts by converting Solidity programs or EVM bytecode to
 F*, a functional programming language focused on program verification.

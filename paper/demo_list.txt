@@ -4,8 +4,10 @@ Slides
 Demo
 - What defining syntax looks like
     - Show the list of opcodes
+    - vim evm-syntax.md
 - Configuration
     - Shape of the machine
+    - vim evm-semantics.md
 - Accounts interaction
     - One test with multi-account interactions
 - Verification
