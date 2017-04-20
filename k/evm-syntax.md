@@ -141,6 +141,17 @@ module EVM-PROCESS-SYNTAX
                        "-" "program" ":" Program
                        "-" "storage" ":" WordList
 
+
+    // JSON Format => Pretty Format
+    
+//            "095e7baea6a6c7c4c2dfeb977efac326af552d87" :
+//                "balance" : "0x0de0b6b3a7658689",
+//                "code" : "0x60006000600060006017730f572e5295c57f15886f9b263e2f6d2d6c7b5ec66103e8f1600055",
+//                "nonce" : "0x00",
+//                "storage" : {
+//                    "0x00" : "0x01"
+//                }
+
     syntax Transaction ::= "transaction" ":"
                            "-" "to" ":" AcctID
                            "-" "from" ":" AcctID
@@ -148,6 +159,29 @@ module EVM-PROCESS-SYNTAX
                            "-" "value" ":" Int
                            "-" "gasPrice" ":" Int
                            "-" "gasLimit" ":" Int
+
+    syntax JSONList ::= List{JSON,","}
+    syntax JSON     ::= String
+                      | String ":" JSON
+                      | "{" JSONList "}"
+                      | "[" JSONList "]"
+
+    syntax AcctID   ::= "#parseID" "(" String ")"
+    syntax Word     ::= "#parseBalance" "(" String ")"
+    syntax Program  ::= "#dasmEVM" "(" String ")"
+    syntax WordList ::= "#parseStorage" "(" JSON ")"
+
+    syntax Account ::= JSON
+
+    rule S : { "balance" : BALANCE
+             , "code"    : CODE
+             , "nonce"   : NONCE
+             , "storage" : STORAGE
+             }
+      => account : - id : #parseID(S)
+                   - balance : #parseBalance(BALANCE)
+                   - program : #dasmEVM(CODE)
+                   - storage : #parseStorage(STORAGE)
 
     syntax Process ::= "{" AcctID "|" Int "|" Int "|" WordStack "|" WordMap "}"
     syntax CallStack ::= ".CallStack"
