@@ -14,31 +14,31 @@ module EVM-WORD
     syntax KResult ::= Int 
 
     syntax Word ::= Int
-                  | "#symbolicWord"                         [function]
-                  | "chop" "(" Int ")"                      [function]
-                  | "bool2Word" "(" Bool ")"                [function]
-                  | Word "+Word" Word                       [function]
-                  | Word "*Word" Word                       [function]
-                  | Word "-Word" Word                       [function]
-                  | Word "/Word" Word                       [function]
-                  | Word "^Word" Word                       [function]
-                  | Word "%Word" Word                       [function]
-                  | "signextend" "(" Word "," Word ")"      [function] // needs implemented
-                  | Word "<Word" Word                       [function]
-                  | Word ">Word" Word                       [function]
-                  | Word "==Word" Word                      [function]
-                  | "bitwisenot" "(" Word ")"               [function] // needs implemented
-                  | "sdiv" "(" Word "," Word ")"            [function] // needs implemented
-                  | "smod" "(" Word "," Word ")"            [function] // needs implemented
-                  | "slt" "(" Word "," Word ")"             [function] // needs implemented
-                  | "sgt" "(" Word "," Word ")"             [function] // needs implemented
-                  | "bitwiseand" "(" Word "," Word ")"      [function] // needs implemented
-                  | "bitwiseor" "(" Word "," Word ")"       [function] // needs implemented
-                  | "bitwisexor" "(" Word "," Word ")"      [function] // needs implemented
-                  | "getbyte" "(" Word "," Word ")"         [function] // needs implemented
-                  | "sha3" "(" Word "," Word ")"            [function] // needs implemented
-                  | "addmod" "(" Word "," Word "," Word ")" [function]
-                  | "mulmod" "(" Word "," Word "," Word ")" [function]
+                  | "#symbolicWord"               [function]
+                  | chop ( Int )                  [function]
+                  | bool2Word ( Bool )            [function]
+                  | Word "+Word" Word             [function]
+                  | Word "*Word" Word             [function]
+                  | Word "-Word" Word             [function]
+                  | Word "/Word" Word             [function]
+                  | Word "^Word" Word             [function]
+                  | Word "%Word" Word             [function]
+                  | signextend ( Word , Word )    [function] // needs implemented
+                  | Word "<Word" Word             [function]
+                  | Word ">Word" Word             [function]
+                  | Word "==Word" Word            [function]
+                  | bitwisenot ( Word )           [function] // needs implemented
+                  | sdiv ( Word , Word )          [function] // needs implemented
+                  | smod ( Word , Word )          [function] // needs implemented
+                  | slt ( Word , Word )           [function] // needs implemented
+                  | sgt ( Word , Word )           [function] // needs implemented
+                  | bitwiseand ( Word , Word )    [function] // needs implemented
+                  | bitwiseor ( Word , Word )     [function] // needs implemented
+                  | bitwisexor ( Word , Word )    [function] // needs implemented
+                  | getbyte ( Word , Word )       [function] // needs implemented
+                  | sha3 ( Word , Word )          [function] // needs implemented
+                  | addmod ( Word , Word , Word ) [function]
+                  | mulmod ( Word , Word , Word ) [function]
 
     rule #symbolicWord => ?X:Int
 
@@ -78,8 +78,8 @@ module EVM-WORD
     rule #stackSize (W : WS)   => 1 +Int (#stackSize WS)
 
     syntax WordList ::= List{Word, ","}
-                      | "#take" "(" Int "," WordList ")" [function]
-                      | "#lmRange" "(" WordMap "," Int "," Int ")" [function]
+                      | #take ( Int , WordList ) [function]
+                      | #lmRange ( WordMap , Int , Int ) [function]
 
     rule #take(0, WL)            => .WordList
     rule #take(N, (W:Word , WL)) => W , #take(N -Int 1, WL) requires N >Int 0
@@ -90,7 +90,8 @@ module EVM-WORD
     syntax WordMap ::= Map
                      | ".WordMap"
                      | WordMap "[" Int ":=" WordList "]" [function]
-                     | "#asMap" "(" WordList ")"         [function]
+                     | #asMap ( WordList )               [function]
+                     | #asMap ( Map )                    [function]
 
     rule .WordMap => .Map [macro]
 
@@ -98,6 +99,7 @@ module EVM-WORD
     rule LM[N := W0:Word , WL] => (LM[N <- W0])[N +Int 1 := WL]
 
     rule #asMap(.WordList) => .Map
-    rule #asMap(WL) => (0 |-> 0)[0 := WL] requires WL =/=K .WordList
+    rule #asMap(WL:WordList) => (0 |-> 0)[0 := WL] requires WL =/=K .WordList
+    rule #asMap(WM:Map) => WM
 endmodule
 ```

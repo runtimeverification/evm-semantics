@@ -55,7 +55,7 @@ state (what the next map key is) when actually running these.
 
 ```k
     syntax KItem ::= "#setAcctProgram" AcctID Map
-                   | "#setAcctStorage" AcctID WordMap
+                   | "#setAcctStorage" AcctID Storage
                    | "#setAcctBalance" AcctID Int
                    | "#increaseAcctBalance" AcctID Int [strict(2)]
                    | "#decreaseAcctBalance" AcctID Int [strict(2)]
@@ -68,10 +68,10 @@ state (what the next map key is) when actually running these.
          </account>
          [structural]
 
-    rule <k> #setAcctStorage ACCT WM => . ... </k>
+    rule <k> #setAcctStorage ACCT STORAGE => . ... </k>
          <account>
             <acctID> ACCT </acctID>
-            <storage> _ => WM </storage>
+            <storage> _ => STORAGE </storage>
             ...
          </account>
          [structural]
@@ -218,7 +218,7 @@ module EVM-INTRAPROCEDURAL
          <localMem> ... INDEX |-> VALUE ... </localMem>
          [structural]
 
-    rule <k> DUP N => WS[N -Int 1] ~> #push ~> #checkStackSize </k>
+    rule <k> DUP [ N ] => WS[N -Int 1] ~> #push ~> #checkStackSize </k>
          <wordStack> WS </wordStack>
          requires N >Int 0 andBool N <=Int 16
          [structural]
@@ -290,26 +290,26 @@ module EVM
 
     rule account:
          -   id: ACCT
-         -   balance: BALANCE
+         -   balance: BAL
          -   program: PROGRAM
          -   storage: STORAGE
       =>    #newAccount ACCT
          ~> #setAcctProgram ACCT #pgmMap(PROGRAM)
          ~> #setAcctStorage ACCT #asMap(STORAGE)
-         ~> #setAcctBalance ACCT BALANCE
+         ~> #setAcctBalance ACCT BAL
          [structural]
 
-    rule transaction:
-         -   to: ACCTTO
-         -   from: ACCTFROM
-         -   data: ARGS
-         -   value: VALUE
-         -   gasPrice: PRICE
-         -   gasLimit: GASAVAIL
-      =>    #decreaseAcctBalance ACCTFROM VALUE
-         ~> #increaseAcctBalance ACCTTO VALUE
-         ~> #setGasPrice PRICE
-         ~> #setProcess {ACCTTO | 0 | GASAVAIL | .WordStack | #asMap(ARGS)}
-         [structural]
+//    rule transaction:
+//         -   to: ACCTTO
+//         -   from: ACCTFROM
+//         -   data: ARGS
+//         -   value: VALUE
+//         -   gasPrice: PRICE
+//         -   gasLimit: GASAVAIL
+//      =>    #decreaseAcctBalance ACCTFROM VALUE
+//         ~> #increaseAcctBalance ACCTTO VALUE
+//         ~> #setGasPrice PRICE
+//         ~> #setProcess {ACCTTO | 0 | GASAVAIL | .WordStack | #asMap(ARGS)}
+//         [structural]
 endmodule
 ```
