@@ -1,10 +1,3 @@
-None of the rules defined here should be sensitive to other parts of the
-configuration, they should be standalone.
-
-```k
-requires "evm-data.k"
-```
-
 Local Execution State
 =====================
 
@@ -12,128 +5,8 @@ EVM execution maintains some local state (like a word stack, local memory,
 program counter, etc...). We need to specify the syntax of all this local state
 for storage.
 
-
-EVM Programs
-------------
-
 ```k
-module EVM-PROGRAM
-    imports EVM-OPCODE
-
-
-    syntax JSONList ::= List{JSON,","}
-    syntax JSON     ::= String
-                      | String ":" JSON
-                      | "{" JSONList "}"
-                      | "[" JSONList "]"
-
-
-    syntax Int ::= #parseValue ( JSON )    [function]
-                 | #parseGasPrice ( JSON ) [function]
-                 | #parseGasLimit ( JSON ) [function]
-
-    rule #parseValue( S:String )    => #parseHexWord(S)
-    rule #parseGasPrice( S:String ) => #parseHexWord(S)
-    rule #parseGasLimit( S:String ) => #parseHexWord(S)
-
-    rule #parseStorage( { .JSONList } )                   => .Map
-    rule #parseStorage( { KEY : (VALUE:String) , REST } ) => (#parseHexWord(KEY) |-> #parseHexWord(VALUE)) #parseStorage({ REST })
-
-    syntax Map ::= #parseStorage ( JSON )         [function]
-
-    syntax AcctID ::= #parseID ( JSON ) [function]
-
-    rule #parseID( S:String ) => #parseHexWord(S)
-    syntax OpCodes ::= List{OpCode,";"}
-
-    syntax Program ::= OpCodes | Map
-                     | #program ( Program ) [function]
-
-    rule #program( OPS:OpCodes ) => #pgmMap(0, OPS)
-    rule #program( PGM:Map )     => PGM
-
-    syntax Map ::= #pgmMap( Int , OpCodes ) [function]
-
-    rule #pgmMap(N, .OpCodes)          => .Map
-    rule #pgmMap(N, (OP:OpCode ; PGM)) => N |-> OP #pgmMap(N +Int 1, PGM)
-endmodule
-```
-
-EVM Process
------------
-
-EVM `Account`s contain the `AcctID` (account identifier), the `Balance` (amount
-of ether in the account), the `Storage` (long-term memory of the account), and
-the `Program` (code of the account). We use a YAML-like notation to specify
-them.
-
-The `WordStack` is the size-limited (to 1024) stack of words that each local
-execution of an EVM process has acess to. The local memory is an array of memory
-it has local access to (modeled here as a map from addresses to values). EVM
-Processes are tuples of their associated `PID`, their `ProgramCounter`, their
-`WordStack`, and their `WordMap`.
-
-```k
-module EVM-PROCESS-SYNTAX
-    imports ID
-    imports EVM-PROGRAM
-
-    syntax Storage ::= WordMap | WordList
-                     | #storage ( Storage ) [function]
-
-    rule #storage( WM:Map )      => WM
-    rule #storage( WS:WordList ) => #asMap(WS)
-
-    syntax AcctID  ::= Word | ".AcctID"
-    syntax Account ::= JSON
-                     | "account" ":" "-" "id"      ":" AcctID
-                                     "-" "balance" ":" Word
-                                     "-" "program" ":" Program
-                                     "-" "storage" ":" Storage
-
-    syntax Program ::= #dasmEVM ( JSON )               [function]
-
-    rule #dasmEVM(S:String) => #program(#dasmProgram(replaceAll(S, "0x", "")))
-
-    rule #dasmProgram("") => .OpCodes
-    rule #dasmProgram(S)  => #dasmOpcode(substrString(S, 0, 2), substrString(S, 2, lengthString(S)))
-      requires lengthString(S) >=Int 2
-
-    rule ACCTID : { "balance" : BAL
-                  , "code"    : CODE
-                  , "nonce"   : NONCE
-                  , "storage" : STORAGE
-                  }
-      => account : - id      : #parseID(ACCTID)
-                   - balance : #parseHexWord(BAL)
-                   - program : #dasmEVM(CODE)
-                   - storage : #parseStorage(STORAGE)
-      [structural]
-
-    syntax Transaction ::= JSON
-                         | "transaction" ":" "-" "to"       ":" AcctID
-                                             "-" "from"     ":" AcctID
-                                             "-" "data"     ":" WordList
-                                             "-" "value"    ":" Word
-                                             "-" "gasPrice" ":" Word
-                                             "-" "gasLimit" ":" Word
-
-    rule "transaction" : { "data"      : DATA
-                         , "gasLimit"  : LIMIT
-                         , "gasPrice"  : PRICE
-                         , "nonce"     : NONCE
-                         , "secretKey" : SECRETKEY
-                         , "to"        : ACCTTO
-                         , "value"     : VALUE
-                         }
-      => transaction : - to       : #parseID(ACCTTO)
-                       - from     : .AcctID
-                       - data     : #parseData(DATA)
-                       - value    : #parseValue(VALUE)
-                       - gasPrice : #parseGasPrice(PRICE)
-                       - gasLimit : #parseGasLimit(LIMIT)
-      [structural]
-endmodule
+requires "evm-data.k"
 ```
 
 EVM Gas Cost
@@ -146,9 +19,9 @@ must be defined after the configuration is defined.
 
 ```k
 module EVM-GAS
-    imports EVM-PROCESS-SYNTAX
+    imports EVM-OPCODE
 
-    syntax Int ::= "#gas" "(" OpCode ")" [function]
+    syntax Word ::= "#gas" "(" OpCode ")" [function]
 
     // W_{zero}
     rule #gas( STOP   ) => 0
@@ -212,7 +85,7 @@ module EVM-GAS
 
     // W_{extcode}
     rule #gas( EXTCODESIZE ) => 700
-    
+
     // CALL
     // TODO: This is not correct!!!
     rule #gas( CALL ) => 700
@@ -222,27 +95,116 @@ endmodule
 EVM Simulation
 --------------
 
-We need a way to specify the current world state. It will be a list of accounts,
-along with which account to call execution on first:
+We need a way to specify the current world state. It will be a list of accounts
+and a list of pending transactions. This can come in either the pretty K format,
+or in the default EVM test-set format.
+
+First, we build a JSON parser, then we provide some standard "parsers" which
+will be used to convert the JSON formatted input into the prettier K format.
 
 ```k
 module EVM-SYNTAX
-    imports EVM-GAS
+    imports EVM-OPCODE
 
+    syntax JSONList ::= List{JSON,","}
+    syntax JSON     ::= String
+                      | String ":" JSON
+                      | "{" JSONList "}"
+                      | "[" JSONList "]"
+ // ------------------------------------
+
+    syntax Program ::= OpCodes | OpCodeMap
+                     | #program ( Program ) [function]
+                     | #dasmEVM ( JSON )    [function]
+ // --------------------------------------------------
+    rule #program( OCM:Map )     => OCM
+    rule #program( OCS:OpCodes ) => #asMap(OCS)
+    rule #dasmEVM( S:String ) => #program(#dasmOpCodes(replaceAll(S, "0x", "")))
+
+    syntax Storage ::= WordMap | WordStack
+                     | #storage ( Storage ) [function]
+ // --------------------------------------------------
+    rule #storage( WM:Map )       => WM
+    rule #storage( WS:WordStack ) => #asMap(WS)
+
+    syntax Map ::= #parseStorage ( JSON ) [function]
+ // ------------------------------------------------
+    rule #parseStorage( { .JSONList } )                   => .Map
+    rule #parseStorage( { KEY : (VALUE:String) , REST } ) => (#parseHexWord(KEY) |-> #parseHexWord(VALUE)) #parseStorage({ REST })
+```
+
+Here is the data of an account on the network. It has an id, a balance, a
+program, and storage. Additionally, the translation from the JSON account format
+to the K format is provided.
+
+```k
+    syntax AcctID  ::= Word | ".AcctID"
+    syntax Account ::= JSON
+                     | "account" ":" "-" "id"      ":" AcctID
+                                     "-" "balance" ":" Word
+                                     "-" "program" ":" Program
+                                     "-" "storage" ":" Storage
+ // ----------------------------------------------------------
+    rule ACCTID : { "balance" : (BAL:String)
+                  , "code"    : (CODE:String)
+                  , "nonce"   : (NONCE:String)
+                  , "storage" : STORAGE
+                  }
+      => account : - id      : #parseHexWord(ACCTID)
+                   - balance : #parseHexWord(BAL)
+                   - program : #dasmEVM(CODE)
+                   - storage : #parseStorage(STORAGE)
+      [structural]
+```
+
+Here is the data of a transaction on the network. It has fields for who it's
+directed toward, the data, the value transfered, and the gas-price/gas-limit.
+Similarly, a conversion from the JSON format to the pretty K format is provided.
+
+```k
+    syntax Transaction ::= JSON
+                         | "transaction" ":" "-" "to"       ":" AcctID
+                                             "-" "from"     ":" AcctID
+                                             "-" "data"     ":" WordStack
+                                             "-" "value"    ":" Word
+                                             "-" "gasPrice" ":" Word
+                                             "-" "gasLimit" ":" Word
+ // ----------------------------------------------------------------
+    rule "transaction" : { "data"      : (DATA:String)
+                         , "gasLimit"  : (LIMIT:String)
+                         , "gasPrice"  : (PRICE:String)
+                         , "nonce"     : (NONCE:String)
+                         , "secretKey" : (SECRETKEY:String)
+                         , "to"        : (ACCTTO:String)
+                         , "value"     : (VALUE:String)
+                         }
+      => transaction : - to       : #parseHexWord(ACCTTO)
+                       - from     : .AcctID
+                       - data     : #parseWordStack(DATA)
+                       - value    : #parseHexWord(VALUE)
+                       - gasPrice : #parseHexWord(PRICE)
+                       - gasLimit : #parseHexWord(LIMIT)
+      [structural]
+```
+
+Finally, we have the syntax of an `EVMSimulation`, which consists of a list of
+accounts followed by a list of transactions.
+
+```k
     syntax Accounts ::= ".Accounts"
                       | Account Accounts
-
+ // ------------------------------------
     rule .Accounts => . [structural]
     rule ACCT:Account ACCTS:Accounts => ACCT ~> ACCTS [structural]
 
     syntax Transactions ::= ".Transactions"
                           | Transaction Transactions
-
+ // ------------------------------------------------
     rule .Transactions => . [structural]
     rule TX:Transaction TXS:Transactions => TX ~> TXS [structural]
 
     syntax EVMSimulation ::= Accounts Transactions
-
+ // ----------------------------------------------
     rule ACCTS:Accounts TXS:Transactions => ACCTS ~> TXS [structural]
 
     syntax Process ::= "{" AcctID "|" Word "|" Word "|" WordStack "|" WordMap "}"

@@ -142,6 +142,7 @@ has trouble parsing it/compiling the definition.
 ```k
 module EVM-OPCODE
     imports EVM-WORD
+    imports STRING
 
     syntax InternalOps ::= "#push"
                          | "#checkStackSize"
@@ -205,9 +206,24 @@ module EVM-OPCODE
  // -----------------------------
  
     syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp | InternalOps
-                    | "LOG" "[" Int "]" | "BALANCE" | "BLOCKHASH" | "CALLCODE" | "CALLDATACOPY" | "CODECOPY"
+                    | "LOG" "[" Word "]" | "BALANCE" | "BLOCKHASH" | "CALLCODE" | "CALLDATACOPY" | "CODECOPY"
                     | "CREATE" | "EXTCODECOPY" | "JUMPDEST" | "JUMPI" | "SLOAD" | "SSTORE" | "SUICIDE"
  // --------------------------------------------------------------------------------------------------
+
+    syntax OpCodes ::= ".OpCodes"
+                     | OpCode ";" OpCodes
+ // -------------------------------------
+
+    syntax OpCodeMap ::= ".OpCodeMap"
+                       | Map
+
+    rule .OpCodeMap => .Map [macro]
+
+    syntax Map ::= #asMap ( OpCodes ) [function]
+                 | #asMap ( Int , OpCodes ) [function]
+ // --------------------------------------------------
+    rule #asMap( N , .OpCodes )        => .Map
+    rule #asMap( N , OP:OpCode ; OCS ) => N |-> OP #asMap(N +Int 1, OCS)
 
     syntax KItem ::= OpCode
                    | UnStackOp Word
@@ -222,177 +238,168 @@ pretty format can be read in.
 
 ```k
     syntax Word ::= #parseHexWord ( String ) [function]
+ // ---------------------------------------------------
     rule #parseHexWord("")   => 0
     rule #parseHexWord("0x") => 0
     rule #parseHexWord(S)    => String2Base(replaceAll(S, "0x", ""), 16)
       requires (S =/=String "") andBool (S =/=String "0x")
-      
 
-    syntax OpCodes ::= #dasmProgram ( String )         [function]
-                     | #dasmOpcode ( String , String ) [function]
-                     | #dasmPUSH ( Int , String )      [function]
-                     | #dasmDUP  ( Int , String )      [function]
-                     | #dasmSWAP ( Int , String )      [function]
-                     | #dasmLOG  ( Int , String )      [function]
+    syntax OpCodes ::= #dasmOpCodes ( String ) [function]
+ // -----------------------------------------------------
+    rule #dasmOpCodes( "" ) => .OpCodes
+    rule #dasmOpCodes( S )  => #dasmOpCode(substrString(S, 0, 2), substrString(S, 2, lengthString(S)))
+      requires lengthString(S) >=Int 2
 
+    syntax OpCodes ::= #dasmPUSH ( Word , String ) [function]
+ // ---------------------------------------------------------
     rule #dasmPUSH(N, S) =>   PUSH [ N ] #parseHexWord(substrString(S, 0, N *Int 2))
-                            ; #dasmProgram(substrString(S, N *Int 2, lengthString(S)))
+                            ; #dasmOpCodes(substrString(S, N *Int 2, lengthString(S)))
       requires lengthString(S) >=Int (N *Int 2)
 
+    syntax OpCodes ::= #dasmDUP ( Word , String ) [function]
+ // --------------------------------------------------------
+    syntax OpCodes ::= #dasmSWAP ( Word , String ) [function]
+ // ---------------------------------------------------------
+    syntax OpCodes ::= #dasmLOG ( Word , String ) [function]
+ // --------------------------------------------------------
 
-    syntax Map ::= #parseStorage ( JSON )         [function]
-    syntax WordList ::= #parseData ( JSON )       [function]
-                      | #parseWordList ( String ) [function]
-
-    rule #parseData( S:String ) => #parseWordList(S)
-    rule #parseWordList( S )    => #parseHexWord(substrString(S, 0, 2)) , #parseWordList(substrString(S, 2, lengthString(S)))
+    syntax WordStack ::= #parseWordStack ( String ) [function]
+ // ----------------------------------------------------------
+    rule #parseWordStack( S ) => #parseHexWord(substrString(S, 0, 2)) : #parseWordStack(substrString(S, 2, lengthString(S)))
       requires lengthString(S) >=Int 2
-    rule #parseWordList( S )    => #parseHexWord(S)
+    rule #parseWordStack( S ) => #parseHexWord(S)
       requires lengthString(S) <Int 2
 
-    rule #parseStorage( { .JSONList } )                   => .Map
-    rule #parseStorage( { KEY : (VALUE:String) , REST } ) => (#parseHexWord(KEY) |-> #parseHexWord(VALUE)) #parseStorage({ REST })
-
-    syntax Int ::= #parseValue ( JSON )    [function]
-                 | #parseGasPrice ( JSON ) [function]
-                 | #parseGasLimit ( JSON ) [function]
-
-    rule #parseValue( S:String )    => #parseHexWord(S)
-    rule #parseGasPrice( S:String ) => #parseHexWord(S)
-    rule #parseGasLimit( S:String ) => #parseHexWord(S)
-
-    syntax AcctID ::= #parseID ( JSON ) [function]
-
-    rule #parseID( S:String ) => #parseHexWord(S)
-
-    rule #dasmOpcode("00", S) => STOP         ; #dasmProgram(S)
-    rule #dasmOpcode("01", S) => ADD          ; #dasmProgram(S)
-    rule #dasmOpcode("02", S) => MUL          ; #dasmProgram(S)
-    rule #dasmOpcode("03", S) => SUB          ; #dasmProgram(S)
-    rule #dasmOpcode("04", S) => DIV          ; #dasmProgram(S)
-    rule #dasmOpcode("05", S) => SDIV         ; #dasmProgram(S)
-    rule #dasmOpcode("06", S) => MOD          ; #dasmProgram(S)
-    rule #dasmOpcode("07", S) => SMOD         ; #dasmProgram(S)
-    rule #dasmOpcode("08", S) => ADDMOD       ; #dasmProgram(S)
-    rule #dasmOpcode("09", S) => MULMOD       ; #dasmProgram(S)
-    rule #dasmOpcode("0a", S) => EXP          ; #dasmProgram(S)
-    rule #dasmOpcode("0b", S) => SIGNEXTEND   ; #dasmProgram(S)
-    rule #dasmOpcode("10", S) => LT           ; #dasmProgram(S)
-    rule #dasmOpcode("11", S) => GT           ; #dasmProgram(S)
-    rule #dasmOpcode("12", S) => SLT          ; #dasmProgram(S)
-    rule #dasmOpcode("13", S) => SGT          ; #dasmProgram(S)
-    rule #dasmOpcode("14", S) => EQ           ; #dasmProgram(S)
-    rule #dasmOpcode("15", S) => ISZERO       ; #dasmProgram(S)
-    rule #dasmOpcode("16", S) => AND          ; #dasmProgram(S)
-    rule #dasmOpcode("17", S) => EVMOR        ; #dasmProgram(S)
-    rule #dasmOpcode("18", S) => XOR          ; #dasmProgram(S)
-    rule #dasmOpcode("19", S) => NOT          ; #dasmProgram(S)
-    rule #dasmOpcode("1a", S) => BYTE         ; #dasmProgram(S)
-    rule #dasmOpcode("20", S) => SHA3         ; #dasmProgram(S)
-    rule #dasmOpcode("30", S) => ADDRESS      ; #dasmProgram(S)
-    rule #dasmOpcode("31", S) => BALANCE      ; #dasmProgram(S)
-    rule #dasmOpcode("32", S) => ORIGIN       ; #dasmProgram(S)
-    rule #dasmOpcode("33", S) => CALLER       ; #dasmProgram(S)
-    rule #dasmOpcode("34", S) => CALLVALUE    ; #dasmProgram(S)
-    rule #dasmOpcode("35", S) => CALLDATALOAD ; #dasmProgram(S)
-    rule #dasmOpcode("36", S) => CALLDATASIZE ; #dasmProgram(S)
-    rule #dasmOpcode("37", S) => CALLDATACOPY ; #dasmProgram(S)
-    rule #dasmOpcode("38", S) => CODESIZE     ; #dasmProgram(S)
-    rule #dasmOpcode("39", S) => CODECOPY     ; #dasmProgram(S)
-    rule #dasmOpcode("3a", S) => GASPRICE     ; #dasmProgram(S)
-    rule #dasmOpcode("3b", S) => EXTCODESIZE  ; #dasmProgram(S)
-    rule #dasmOpcode("3c", S) => EXTCODECOPY  ; #dasmProgram(S)
-    rule #dasmOpcode("40", S) => BLOCKHASH    ; #dasmProgram(S)
-    rule #dasmOpcode("41", S) => COINBASE     ; #dasmProgram(S)
-    rule #dasmOpcode("42", S) => TIMESTAMP    ; #dasmProgram(S)
-    rule #dasmOpcode("43", S) => NUMBER       ; #dasmProgram(S)
-    rule #dasmOpcode("44", S) => DIFFICULTY   ; #dasmProgram(S)
-    rule #dasmOpcode("45", S) => GASLIMIT     ; #dasmProgram(S)
-    rule #dasmOpcode("50", S) => POP          ; #dasmProgram(S)
-    rule #dasmOpcode("51", S) => MLOAD        ; #dasmProgram(S)
-    rule #dasmOpcode("52", S) => MSTORE       ; #dasmProgram(S)
-    rule #dasmOpcode("53", S) => MSTORE8      ; #dasmProgram(S)
-    rule #dasmOpcode("54", S) => SLOAD        ; #dasmProgram(S)
-    rule #dasmOpcode("55", S) => SSTORE       ; #dasmProgram(S)
-    rule #dasmOpcode("56", S) => JUMP         ; #dasmProgram(S)
-    rule #dasmOpcode("57", S) => JUMPI        ; #dasmProgram(S)
-    rule #dasmOpcode("58", S) => PC           ; #dasmProgram(S)
-    rule #dasmOpcode("59", S) => MSIZE        ; #dasmProgram(S)
-    rule #dasmOpcode("5a", S) => GAS          ; #dasmProgram(S)
-    rule #dasmOpcode("5b", S) => JUMPDEST     ; #dasmProgram(S)
-    rule #dasmOpcode("60", S) => #dasmPUSH(1, S)
-    rule #dasmOpcode("61", S) => #dasmPUSH(2, S)
-    rule #dasmOpcode("62", S) => #dasmPUSH(3, S)
-    rule #dasmOpcode("63", S) => #dasmPUSH(4, S)
-    rule #dasmOpcode("64", S) => #dasmPUSH(5, S)
-    rule #dasmOpcode("65", S) => #dasmPUSH(6, S)
-    rule #dasmOpcode("66", S) => #dasmPUSH(7, S)
-    rule #dasmOpcode("67", S) => #dasmPUSH(8, S)
-    rule #dasmOpcode("68", S) => #dasmPUSH(9, S)
-    rule #dasmOpcode("69", S) => #dasmPUSH(10, S)
-    rule #dasmOpcode("6a", S) => #dasmPUSH(11, S)
-    rule #dasmOpcode("6b", S) => #dasmPUSH(12, S)
-    rule #dasmOpcode("6c", S) => #dasmPUSH(13, S)
-    rule #dasmOpcode("6d", S) => #dasmPUSH(14, S)
-    rule #dasmOpcode("6e", S) => #dasmPUSH(15, S)
-    rule #dasmOpcode("6f", S) => #dasmPUSH(16, S)
-    rule #dasmOpcode("70", S) => #dasmPUSH(17, S)
-    rule #dasmOpcode("71", S) => #dasmPUSH(18, S)
-    rule #dasmOpcode("72", S) => #dasmPUSH(19, S)
-    rule #dasmOpcode("73", S) => #dasmPUSH(20, S)
-    rule #dasmOpcode("74", S) => #dasmPUSH(21, S)
-    rule #dasmOpcode("75", S) => #dasmPUSH(22, S)
-    rule #dasmOpcode("76", S) => #dasmPUSH(23, S)
-    rule #dasmOpcode("77", S) => #dasmPUSH(24, S)
-    rule #dasmOpcode("78", S) => #dasmPUSH(25, S)
-    rule #dasmOpcode("79", S) => #dasmPUSH(26, S)
-    rule #dasmOpcode("7a", S) => #dasmPUSH(27, S)
-    rule #dasmOpcode("7b", S) => #dasmPUSH(28, S)
-    rule #dasmOpcode("7c", S) => #dasmPUSH(29, S)
-    rule #dasmOpcode("7d", S) => #dasmPUSH(30, S)
-    rule #dasmOpcode("7e", S) => #dasmPUSH(31, S)
-    rule #dasmOpcode("7f", S) => #dasmPUSH(32, S)
-    rule #dasmOpcode("80", S) => #dasmDUP(1, S)
-    rule #dasmOpcode("81", S) => #dasmDUP(2, S)
-    rule #dasmOpcode("82", S) => #dasmDUP(3, S)
-    rule #dasmOpcode("83", S) => #dasmDUP(4, S)
-    rule #dasmOpcode("84", S) => #dasmDUP(5, S)
-    rule #dasmOpcode("85", S) => #dasmDUP(6, S)
-    rule #dasmOpcode("86", S) => #dasmDUP(7, S)
-    rule #dasmOpcode("87", S) => #dasmDUP(8, S)
-    rule #dasmOpcode("88", S) => #dasmDUP(9, S)
-    rule #dasmOpcode("89", S) => #dasmDUP(10, S)
-    rule #dasmOpcode("8a", S) => #dasmDUP(11, S)
-    rule #dasmOpcode("8b", S) => #dasmDUP(12, S)
-    rule #dasmOpcode("8c", S) => #dasmDUP(13, S)
-    rule #dasmOpcode("8d", S) => #dasmDUP(14, S)
-    rule #dasmOpcode("8e", S) => #dasmDUP(15, S)
-    rule #dasmOpcode("8f", S) => #dasmDUP(16, S)
-    rule #dasmOpcode("90", S) => #dasmSWAP(1, S)
-    rule #dasmOpcode("91", S) => #dasmSWAP(2, S)
-    rule #dasmOpcode("92", S) => #dasmSWAP(3, S)
-    rule #dasmOpcode("93", S) => #dasmSWAP(4, S)
-    rule #dasmOpcode("94", S) => #dasmSWAP(5, S)
-    rule #dasmOpcode("95", S) => #dasmSWAP(6, S)
-    rule #dasmOpcode("96", S) => #dasmSWAP(7, S)
-    rule #dasmOpcode("97", S) => #dasmSWAP(8, S)
-    rule #dasmOpcode("98", S) => #dasmSWAP(9, S)
-    rule #dasmOpcode("99", S) => #dasmSWAP(10, S)
-    rule #dasmOpcode("9a", S) => #dasmSWAP(11, S)
-    rule #dasmOpcode("9b", S) => #dasmSWAP(12, S)
-    rule #dasmOpcode("9c", S) => #dasmSWAP(13, S)
-    rule #dasmOpcode("9d", S) => #dasmSWAP(14, S)
-    rule #dasmOpcode("9e", S) => #dasmSWAP(15, S)
-    rule #dasmOpcode("9f", S) => #dasmSWAP(16, S)
-    rule #dasmOpcode("a0", S) => #dasmLOG(0, S)
-    rule #dasmOpcode("a1", S) => #dasmLOG(1, S)
-    rule #dasmOpcode("a2", S) => #dasmLOG(2, S)
-    rule #dasmOpcode("a3", S) => #dasmLOG(3, S)
-    rule #dasmOpcode("a4", S) => #dasmLOG(4, S)
-    rule #dasmOpcode("f0", S) => CREATE   ; #dasmProgram(S)
-    rule #dasmOpcode("f1", S) => CALL     ; #dasmProgram(S)
-    rule #dasmOpcode("f2", S) => CALLCODE ; #dasmProgram(S)
-    rule #dasmOpcode("f3", S) => RETURN   ; #dasmProgram(S)
-    rule #dasmOpcode("ff", S) => SUICIDE  ; #dasmProgram(S)
+    syntax OpCodes ::= #dasmOpCode ( String , String ) [function]
+ // -------------------------------------------------------------
+    rule #dasmOpCode("00", S) => STOP         ; #dasmOpCodes(S)
+    rule #dasmOpCode("01", S) => ADD          ; #dasmOpCodes(S)
+    rule #dasmOpCode("02", S) => MUL          ; #dasmOpCodes(S)
+    rule #dasmOpCode("03", S) => SUB          ; #dasmOpCodes(S)
+    rule #dasmOpCode("04", S) => DIV          ; #dasmOpCodes(S)
+    rule #dasmOpCode("05", S) => SDIV         ; #dasmOpCodes(S)
+    rule #dasmOpCode("06", S) => MOD          ; #dasmOpCodes(S)
+    rule #dasmOpCode("07", S) => SMOD         ; #dasmOpCodes(S)
+    rule #dasmOpCode("08", S) => ADDMOD       ; #dasmOpCodes(S)
+    rule #dasmOpCode("09", S) => MULMOD       ; #dasmOpCodes(S)
+    rule #dasmOpCode("0a", S) => EXP          ; #dasmOpCodes(S)
+    rule #dasmOpCode("0b", S) => SIGNEXTEND   ; #dasmOpCodes(S)
+    rule #dasmOpCode("10", S) => LT           ; #dasmOpCodes(S)
+    rule #dasmOpCode("11", S) => GT           ; #dasmOpCodes(S)
+    rule #dasmOpCode("12", S) => SLT          ; #dasmOpCodes(S)
+    rule #dasmOpCode("13", S) => SGT          ; #dasmOpCodes(S)
+    rule #dasmOpCode("14", S) => EQ           ; #dasmOpCodes(S)
+    rule #dasmOpCode("15", S) => ISZERO       ; #dasmOpCodes(S)
+    rule #dasmOpCode("16", S) => AND          ; #dasmOpCodes(S)
+    rule #dasmOpCode("17", S) => EVMOR        ; #dasmOpCodes(S)
+    rule #dasmOpCode("18", S) => XOR          ; #dasmOpCodes(S)
+    rule #dasmOpCode("19", S) => NOT          ; #dasmOpCodes(S)
+    rule #dasmOpCode("1a", S) => BYTE         ; #dasmOpCodes(S)
+    rule #dasmOpCode("20", S) => SHA3         ; #dasmOpCodes(S)
+    rule #dasmOpCode("30", S) => ADDRESS      ; #dasmOpCodes(S)
+    rule #dasmOpCode("31", S) => BALANCE      ; #dasmOpCodes(S)
+    rule #dasmOpCode("32", S) => ORIGIN       ; #dasmOpCodes(S)
+    rule #dasmOpCode("33", S) => CALLER       ; #dasmOpCodes(S)
+    rule #dasmOpCode("34", S) => CALLVALUE    ; #dasmOpCodes(S)
+    rule #dasmOpCode("35", S) => CALLDATALOAD ; #dasmOpCodes(S)
+    rule #dasmOpCode("36", S) => CALLDATASIZE ; #dasmOpCodes(S)
+    rule #dasmOpCode("37", S) => CALLDATACOPY ; #dasmOpCodes(S)
+    rule #dasmOpCode("38", S) => CODESIZE     ; #dasmOpCodes(S)
+    rule #dasmOpCode("39", S) => CODECOPY     ; #dasmOpCodes(S)
+    rule #dasmOpCode("3a", S) => GASPRICE     ; #dasmOpCodes(S)
+    rule #dasmOpCode("3b", S) => EXTCODESIZE  ; #dasmOpCodes(S)
+    rule #dasmOpCode("3c", S) => EXTCODECOPY  ; #dasmOpCodes(S)
+    rule #dasmOpCode("40", S) => BLOCKHASH    ; #dasmOpCodes(S)
+    rule #dasmOpCode("41", S) => COINBASE     ; #dasmOpCodes(S)
+    rule #dasmOpCode("42", S) => TIMESTAMP    ; #dasmOpCodes(S)
+    rule #dasmOpCode("43", S) => NUMBER       ; #dasmOpCodes(S)
+    rule #dasmOpCode("44", S) => DIFFICULTY   ; #dasmOpCodes(S)
+    rule #dasmOpCode("45", S) => GASLIMIT     ; #dasmOpCodes(S)
+    rule #dasmOpCode("50", S) => POP          ; #dasmOpCodes(S)
+    rule #dasmOpCode("51", S) => MLOAD        ; #dasmOpCodes(S)
+    rule #dasmOpCode("52", S) => MSTORE       ; #dasmOpCodes(S)
+    rule #dasmOpCode("53", S) => MSTORE8      ; #dasmOpCodes(S)
+    rule #dasmOpCode("54", S) => SLOAD        ; #dasmOpCodes(S)
+    rule #dasmOpCode("55", S) => SSTORE       ; #dasmOpCodes(S)
+    rule #dasmOpCode("56", S) => JUMP         ; #dasmOpCodes(S)
+    rule #dasmOpCode("57", S) => JUMPI        ; #dasmOpCodes(S)
+    rule #dasmOpCode("58", S) => PC           ; #dasmOpCodes(S)
+    rule #dasmOpCode("59", S) => MSIZE        ; #dasmOpCodes(S)
+    rule #dasmOpCode("5a", S) => GAS          ; #dasmOpCodes(S)
+    rule #dasmOpCode("5b", S) => JUMPDEST     ; #dasmOpCodes(S)
+    rule #dasmOpCode("60", S) => #dasmPUSH(1, S)
+    rule #dasmOpCode("61", S) => #dasmPUSH(2, S)
+    rule #dasmOpCode("62", S) => #dasmPUSH(3, S)
+    rule #dasmOpCode("63", S) => #dasmPUSH(4, S)
+    rule #dasmOpCode("64", S) => #dasmPUSH(5, S)
+    rule #dasmOpCode("65", S) => #dasmPUSH(6, S)
+    rule #dasmOpCode("66", S) => #dasmPUSH(7, S)
+    rule #dasmOpCode("67", S) => #dasmPUSH(8, S)
+    rule #dasmOpCode("68", S) => #dasmPUSH(9, S)
+    rule #dasmOpCode("69", S) => #dasmPUSH(10, S)
+    rule #dasmOpCode("6a", S) => #dasmPUSH(11, S)
+    rule #dasmOpCode("6b", S) => #dasmPUSH(12, S)
+    rule #dasmOpCode("6c", S) => #dasmPUSH(13, S)
+    rule #dasmOpCode("6d", S) => #dasmPUSH(14, S)
+    rule #dasmOpCode("6e", S) => #dasmPUSH(15, S)
+    rule #dasmOpCode("6f", S) => #dasmPUSH(16, S)
+    rule #dasmOpCode("70", S) => #dasmPUSH(17, S)
+    rule #dasmOpCode("71", S) => #dasmPUSH(18, S)
+    rule #dasmOpCode("72", S) => #dasmPUSH(19, S)
+    rule #dasmOpCode("73", S) => #dasmPUSH(20, S)
+    rule #dasmOpCode("74", S) => #dasmPUSH(21, S)
+    rule #dasmOpCode("75", S) => #dasmPUSH(22, S)
+    rule #dasmOpCode("76", S) => #dasmPUSH(23, S)
+    rule #dasmOpCode("77", S) => #dasmPUSH(24, S)
+    rule #dasmOpCode("78", S) => #dasmPUSH(25, S)
+    rule #dasmOpCode("79", S) => #dasmPUSH(26, S)
+    rule #dasmOpCode("7a", S) => #dasmPUSH(27, S)
+    rule #dasmOpCode("7b", S) => #dasmPUSH(28, S)
+    rule #dasmOpCode("7c", S) => #dasmPUSH(29, S)
+    rule #dasmOpCode("7d", S) => #dasmPUSH(30, S)
+    rule #dasmOpCode("7e", S) => #dasmPUSH(31, S)
+    rule #dasmOpCode("7f", S) => #dasmPUSH(32, S)
+    rule #dasmOpCode("80", S) => #dasmDUP(1, S)
+    rule #dasmOpCode("81", S) => #dasmDUP(2, S)
+    rule #dasmOpCode("82", S) => #dasmDUP(3, S)
+    rule #dasmOpCode("83", S) => #dasmDUP(4, S)
+    rule #dasmOpCode("84", S) => #dasmDUP(5, S)
+    rule #dasmOpCode("85", S) => #dasmDUP(6, S)
+    rule #dasmOpCode("86", S) => #dasmDUP(7, S)
+    rule #dasmOpCode("87", S) => #dasmDUP(8, S)
+    rule #dasmOpCode("88", S) => #dasmDUP(9, S)
+    rule #dasmOpCode("89", S) => #dasmDUP(10, S)
+    rule #dasmOpCode("8a", S) => #dasmDUP(11, S)
+    rule #dasmOpCode("8b", S) => #dasmDUP(12, S)
+    rule #dasmOpCode("8c", S) => #dasmDUP(13, S)
+    rule #dasmOpCode("8d", S) => #dasmDUP(14, S)
+    rule #dasmOpCode("8e", S) => #dasmDUP(15, S)
+    rule #dasmOpCode("8f", S) => #dasmDUP(16, S)
+    rule #dasmOpCode("90", S) => #dasmSWAP(1, S)
+    rule #dasmOpCode("91", S) => #dasmSWAP(2, S)
+    rule #dasmOpCode("92", S) => #dasmSWAP(3, S)
+    rule #dasmOpCode("93", S) => #dasmSWAP(4, S)
+    rule #dasmOpCode("94", S) => #dasmSWAP(5, S)
+    rule #dasmOpCode("95", S) => #dasmSWAP(6, S)
+    rule #dasmOpCode("96", S) => #dasmSWAP(7, S)
+    rule #dasmOpCode("97", S) => #dasmSWAP(8, S)
+    rule #dasmOpCode("98", S) => #dasmSWAP(9, S)
+    rule #dasmOpCode("99", S) => #dasmSWAP(10, S)
+    rule #dasmOpCode("9a", S) => #dasmSWAP(11, S)
+    rule #dasmOpCode("9b", S) => #dasmSWAP(12, S)
+    rule #dasmOpCode("9c", S) => #dasmSWAP(13, S)
+    rule #dasmOpCode("9d", S) => #dasmSWAP(14, S)
+    rule #dasmOpCode("9e", S) => #dasmSWAP(15, S)
+    rule #dasmOpCode("9f", S) => #dasmSWAP(16, S)
+    rule #dasmOpCode("a0", S) => #dasmLOG(0, S)
+    rule #dasmOpCode("a1", S) => #dasmLOG(1, S)
+    rule #dasmOpCode("a2", S) => #dasmLOG(2, S)
+    rule #dasmOpCode("a3", S) => #dasmLOG(3, S)
+    rule #dasmOpCode("a4", S) => #dasmLOG(4, S)
+    rule #dasmOpCode("f0", S) => CREATE   ; #dasmOpCodes(S)
+    rule #dasmOpCode("f1", S) => CALL     ; #dasmOpCodes(S)
+    rule #dasmOpCode("f2", S) => CALLCODE ; #dasmOpCodes(S)
+    rule #dasmOpCode("f3", S) => RETURN   ; #dasmOpCodes(S)
+    rule #dasmOpCode("ff", S) => SUICIDE  ; #dasmOpCodes(S)
 endmodule
 ```

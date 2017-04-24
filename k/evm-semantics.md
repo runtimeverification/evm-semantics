@@ -16,11 +16,11 @@ module EVM-CONFIGURATION
                     // local execution
                     <k> $PGM:EVMSimulation </k>
                     <id> .AcctID </id>
-                    <pc> 0 </pc>
-                    <gas> 0 </gas>
+                    <pc> 0:Word </pc>
+                    <gas> 0:Word </gas>
                     <wordStack> .WordStack </wordStack>
                     <localMem> .Map </localMem>
-                    <gasPrice> 0 </gasPrice>
+                    <gasPrice> 0:Word </gasPrice>
                     // suspended processes
                     <callStack> .CallStack </callStack>
                     // account information
@@ -55,35 +55,37 @@ state (what the next map key is) when actually running these.
 
 ```k
     syntax KItem ::= "#setAcctProgram" AcctID Program
-                   | "#setAcctStorage" AcctID Storage
-                   | "#setAcctBalance" AcctID Int
-                   | "#increaseAcctBalance" AcctID Int [strict(2)]
-                   | "#decreaseAcctBalance" AcctID Int [strict(2)]
-
+ // -------------------------------------------------
     rule <k> #setAcctProgram ACCT PGM => . ... </k>
          <account>
             <acctID> ACCT </acctID>
             <program> _ => PGM </program>
             ...
          </account>
-         [structural]
+      [structural]
 
+    syntax KItem ::= "#setAcctStorage" AcctID Storage
+ // -------------------------------------------------
     rule <k> #setAcctStorage ACCT STORAGE => . ... </k>
          <account>
             <acctID> ACCT </acctID>
             <storage> _ => STORAGE </storage>
             ...
          </account>
-         [structural]
+      [structural]
 
+    syntax KItem ::= "#setAcctBalance" AcctID Int
+ // ---------------------------------------------
     rule <k> #setAcctBalance ACCT BAL => . ... </k>
          <account>
             <acctID> ACCT </acctID>
             <balance> _ => BAL </balance>
             ...
          </account>
-         [structural]
+      [structural]
 
+    syntax KItem ::= "#increaseAcctBalance" AcctID Int [strict(2)]
+ // --------------------------------------------------------------
     rule #increaseAcctBalance .AcctID BAL => . [structural]
     rule <k> #increaseAcctBalance ACCT BAL => . ... </k>
          <account>
@@ -91,8 +93,10 @@ state (what the next map key is) when actually running these.
             <balance> X => X +Int BAL </balance>
             ...
          </account>
-         [structural]
+      [structural]
 
+    syntax KItem ::= "#decreaseAcctBalance" AcctID Int [strict(2)]
+ // --------------------------------------------------------------
     rule #decreaseAcctBalance .AcctID BAL => . [structural]
     rule <k> #decreaseAcctBalance ACCT BAL => . ... </k>
          <account>
@@ -100,7 +104,7 @@ state (what the next map key is) when actually running these.
             <balance> X => X -Int BAL </balance>
             ...
          </account>
-         [structural]
+      [structural]
 ```
 
 The next setters allow setting information about the current running process,
@@ -108,52 +112,59 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
 
 ```k
     syntax KItem ::= "#setAccountID" AcctID
-                   | "#setProgramCounter" Word
-                   | "#setGasAvail" Word
-                   | "#setGasPrice" Word
-                   | "#setWordStack" WordStack
-                   | "#setLocalMem" WordMap
-                   | "#updateLocalMem" Word WordList
-                   | "#setProcess" Process
-                   | "#pushCallStack"
-                   | "#popCallStack"
-
+ // ---------------------------------------
     rule <k> #setAccountID ACCTID => . ... </k>
          <id> _ => ACCTID </id>
-         [structural]
+      [structural]
 
+    syntax KItem ::= "#setProgramCounter" Word
+ // ------------------------------------------
     rule <k> #setProgramCounter PCOUNT => . ... </k>
          <pc> _ => PCOUNT </pc>
-         [structural]
+      [structural]
 
+    syntax KItem ::= "#setGasAvail" Word
+ // ------------------------------------
     rule <k> #setGasAvail GASAVAIL => . ... </k>
          <gas> _ => GASAVAIL </gas>
-         [structural]
+      [structural]
 
+    syntax KItem ::= "#setGasPrice" Word
+ // ------------------------------------
     rule <k> #setGasPrice PRICE => . ... </k>
          <gasPrice> _ => PRICE </gasPrice>
-         [structural]
+      [structural]
 
+    syntax KItem ::= "#setWordStack" WordStack
+ // ------------------------------------------
     rule <k> #setWordStack WS => . ... </k>
          <wordStack> _ => WS </wordStack>
-         [structural]
+      [structural]
 
+    syntax KItem ::= "#setLocalMem" WordMap
+ // ---------------------------------------
     rule <k> #setLocalMem LM => . ... </k>
          <localMem> _ => LM </localMem>
-         [structural]
+      [structural]
 
+    syntax KItem ::= "#updateLocalMem" Word WordStack
+ // -------------------------------------------------
     rule <k> #updateLocalMem N WL => #setLocalMem (LM[N := WL]) ... </k>
          <localMem> LM </localMem>
-         [structural]
+      [structural]
 
+    syntax KItem ::= "#setProcess" Process
+ // --------------------------------------
     rule #setProcess { ACCT | PCOUNT | GASAVAIL | WS | LM }
          =>    #setAccountID ACCT
             ~> #setProgramCounter PCOUNT
             ~> #setGasAvail GASAVAIL
             ~> #setWordStack WS
             ~> #setLocalMem LM
-            [structural]
+      [structural]
 
+    syntax KItem ::= "#pushCallStack"
+ // ---------------------------------
     rule <k> #pushCallStack => . ... </k>
          <id> ACCT </id>
          <pc> PCOUNT </pc>
@@ -161,11 +172,13 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
          <wordStack> WS </wordStack>
          <localMem> LM </localMem>
          <callStack> CS => { ACCT | PCOUNT | GASAVAIL | WS | LM } CS </callStack>
-         [structural]
+      [structural]
 
+    syntax KItem ::= "#popCallStack"
+ // --------------------------------
     rule <k> #popCallStack => #setProcess P ... </k>
          <callStack> P:Process CS => CS </callStack>
-         [structural]
+      [structural]
 endmodule
 ```
 
@@ -176,52 +189,53 @@ of various operators so that the already defined operations can act on them.
 module EVM-INTRAPROCEDURAL
     imports EVM-CONFIGURATION
     imports EVM-UTIL
+    imports EVM-GAS
 
     rule <k> . => OP </k>
          <id> ACCT </id>
          <pc> PCOUNT => PCOUNT +Int 1 </pc>
-         <gas> G => G -Int #gas(OP) </gas>
+         <gas> G => G -Word #gas(OP) </gas>
          <account>
             <acctID> ACCT </acctID>
             <program> ... PCOUNT |-> OP ... </program>
             ...
          </account>
-         // requires G >=Int #gas( OP )
-         // must write invariants about gas if included
+      requires ((G >Word #gas(OP)) ==K bool2Word(true)) orBool ((G ==Word #gas(OP)) ==K bool2Word(true))
 
     rule <k> UOP:UnStackOp => UOP W0 ... </k>
          <wordStack> W0 : WS => WS </wordStack>
-         [structural]
+      [structural]
 
     rule <k> BOP:BinStackOp => BOP W0 W1 ... </k>
          <wordStack> W0 : W1 : WS => WS </wordStack>
-         [structural]
+      [structural]
 
     rule <k> TOP:TernStackOp => TOP W0 W1 W2 ... </k>
          <wordStack> W0 : W1 : W2 : WS => WS </wordStack>
-         [structural]
+      [structural]
 
     rule <k> QOP:QuadStackOp => QOP W0 W1 W2 W3 ... </k>
          <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
-         [structural]
+      [structural]
 
     rule <k> W0:Int ~> #push => . ... </k>
          <wordStack> WS => W0 : WS </wordStack>
-         [structural]
+      [structural]
 
-    rule <k> #checkStackSize => #stackSize WS ~> #checkStackSize ... </k>
+    rule <k> #checkStackSize => #stackSize(WS) ~> #checkStackSize ... </k>
          <wordStack> WS </wordStack>
-         [structural]
+      [structural]
 
-    rule MSTORE INDEX VALUE => #updateLocalMem INDEX (VALUE , .WordList) [structural]
+    rule MSTORE INDEX VALUE => #updateLocalMem INDEX (VALUE : .WordStack)
+      [structural]
     rule <k> MLOAD INDEX => VALUE ~> #push ... </k>
          <localMem> ... INDEX |-> VALUE ... </localMem>
-         [structural]
+      [structural]
 
     rule <k> DUP [ N ] => WS[N -Int 1] ~> #push ~> #checkStackSize </k>
          <wordStack> WS </wordStack>
          requires N >Int 0 andBool N <=Int 16
-         [structural]
+      [structural]
 
     rule JUMP DEST => #setProgramCounter DEST    [structural]
     rule JUMP1 DEST 0 => .                       [structural]
@@ -233,13 +247,11 @@ endmodule
 module EVM-INTERPROCEDURAL
     imports EVM-INTRAPROCEDURAL
 
-    syntax KItem ::= "#processCall" "{" AcctID "|" Word "|" WordList "}"
-                   | "#processReturn" WordList
-                   | "#newAccount" AcctID
-
-    rule <k> CALL ACCT ETHER INIT SIZE => #processCall { ACCT | ETHER | #lmRange(LM, INIT, SIZE) } ... </k>
+    syntax KItem ::= "#processCall" "{" AcctID "|" Word "|" WordStack "}"
+ // ---------------------------------------------------------------------
+    rule <k> CALL ACCT ETHER INIT SIZE => #processCall { ACCT | ETHER | #range(LM, INIT, SIZE) } ... </k>
          <localMem> LM </localMem>
-         [structural]
+      [structural]
 
     // TODO: How are we handling refunding unused gas?
     rule <k> #processCall {ACCT | ETHER | WL}
@@ -247,20 +259,24 @@ module EVM-INTERPROCEDURAL
              ~> #setProcess {ACCT | 0 | ETHER | .WordStack | #asMap(WL)}
          ... </k>
          <id> CURRACCT </id>
-         [structural]
+      [structural]
 
-    rule <k> RETURN INIT SIZE => #processReturn #lmRange(LM, INIT, SIZE) ... </k>
+    syntax KItem ::= "#processReturn" WordStack
+ // -------------------------------------------
+    rule #processReturn WL => #popCallStack ~> #returnValues WL
+      [structural]
+    rule <k> RETURN INIT SIZE => #processReturn #range(LM, INIT, SIZE) ... </k>
          <localMem> LM </localMem>
-         [structural]
+      [structural]
 
-    syntax KItem ::= "#returnValues" WordList
-
-    rule #processReturn WL => #popCallStack ~> #returnValues WL [structural]
-
+    syntax KItem ::= "#returnValues" WordStack
+ // ------------------------------------------
     rule <k> #returnValues WL => #updateLocalMem INIT #take(SIZE, WL) ... </k>
          <wordStack> INIT : SIZE : WS => WS </wordStack>
-         [structural]
+      [structural]
 
+    syntax KItem ::= "#newAccount" AcctID
+ // -------------------------------------
     rule <k> #newAccount ACCT => . ... </k>
          <accounts>
             ...
@@ -269,11 +285,11 @@ module EVM-INTERPROCEDURAL
                     <acctID> ACCT </acctID>
                     <program> .Map </program>
                     <storage> .Map </storage>
-                    <balance> 0 </balance>
+                    <balance> 0:Word </balance>
                </account>
             )
          </accounts>
-         [structural]
+      [structural]
 endmodule
 ```
 
@@ -285,7 +301,6 @@ process (also using the helpers).
 
 ```k
 module EVM
-    imports EVM-UTIL
     imports EVM-INTERPROCEDURAL
 
     rule account: - id      : ACCT
