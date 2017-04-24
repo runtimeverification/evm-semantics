@@ -1,5 +1,7 @@
 !*spec.k
 k/evm-semantics-kompiled/
+tests/ethereum-tests/
+yellowpaper/
 *.swp
 *.aux
 *.log

@@ -1,9 +1,0 @@
-#!/usr/bin/env sh
-
-pandoc-tangle --from markdown --to code-k --code k words.md       > words.k
-pandoc-tangle --from markdown --to code-k --code k opcodes.md     > opcodes.k
-pandoc-tangle --from markdown --to code-k --code k gas.md         > gas.k
-pandoc-tangle --from markdown --to code-k --code k world-state.md > world-state.k
-pandoc-tangle --from markdown --to code-k --code k evm.md         > evm.k
-
-kompile --debug evm.k
