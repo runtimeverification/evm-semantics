@@ -1,4 +1,3 @@
-*.k
 !*spec.k
 k/evm-semantics-kompiled/
 *.swp

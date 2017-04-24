@@ -1,17 +1,17 @@
-EVM Words
-=========
+// EVM Words
+// =========
 
-EVM uses bounded 256 bit integer words. Here we provide the arithmetic of these
-words, as well as some data-structures over them.
+// EVM uses bounded 256 bit integer words. Here we provide the arithmetic of these
+// words, as well as some data-structures over them.
 
-Word Operations
----------------
+// Word Operations
+// ---------------
 
-To perform arithmetic on words, make sure that you use the corresponding
-`<op>Word` operators (eg. `+Word`), which will make sure that the correct
-rounding modes are used when performing the operations.
+// To perform arithmetic on words, make sure that you use the corresponding
+// `<op>Word` operators (eg. `+Word`), which will make sure that the correct
+// rounding modes are used when performing the operations.
 
-```k
+
 module EVM-WORD
 
     syntax KResult ::= Int 
@@ -67,17 +67,17 @@ module EVM-WORD
 
     rule mulmod(W0:Int, W1:Int, 0)      => 0
     rule mulmod(W0:Int, W1:Int, W2:Int) => chop((W0 *Int W1) %Int W2) [owise]
-```
 
-Word Stack
-----------
 
-EVM is a stack machine, and so needs a stack of words to operate on. The stack
-and some standard operations over it are provided here. Note that this stack
-also serves as a cons-list, so we provide some standard cons-list manipulation
-tools over it.
+// Word Stack
+// ----------
 
-```k
+// EVM is a stack machine, and so needs a stack of words to operate on. The stack
+// and some standard operations over it are provided here. Note that this stack
+// also serves as a cons-list, so we provide some standard cons-list manipulation
+// tools over it.
+
+
     syntax WordStack ::= ".WordStack"
                        | Word ":" WordStack
 
@@ -95,17 +95,17 @@ tools over it.
  // -----------------------------------------------
     rule #take(0, WS)            => .WordStack
     rule #take(N, (W:Word : WS)) => W : #take(N -Word 1, WS) requires N >Word 0
-```
 
-Word Map
---------
 
-Most of EVM data is held in finite maps. Here standard maps from `Word` to
-`Word` are provided. A common idiom is to assign a contiguous chunk of a map to
-a list (stack) of words, or to read a contiguous chunk of a map as a list, so
-the functionality for that is provided as well.
+// Word Map
+// --------
 
-```k
+// Most of EVM data is held in finite maps. Here standard maps from `Word` to
+// `Word` are provided. A common idiom is to assign a contiguous chunk of a map to
+// a list (stack) of words, or to read a contiguous chunk of a map as a list, so
+// the functionality for that is provided as well.
+
+
     syntax WordMap ::= Map
                      | ".WordMap"
 
@@ -125,21 +125,21 @@ the functionality for that is provided as well.
     rule #range(WM,         N, M) => .WordStack                           requires M ==Word 0
     rule #range(N |-> W WM, N, M) => W : #range(WM, N +Word 1, M -Word 1) requires M >Word 0
 endmodule
-```
 
-EVM OpCodes
-===========
 
-The EVM opcodes are provided here, as well as a dissasebler for programs in the
-EVM test format.
+// EVM OpCodes
+// ===========
 
-We break up stack operations into groups by their arity so that we can pull out
-the correct number of arguments for each operation.
+// The EVM opcodes are provided here, as well as a dissasebler for programs in the
+// EVM test format.
 
-NOTE: We have to call the opcode `OR` by `EVMOR` instead, because otherwise K
-has trouble parsing it/compiling the definition.
+// We break up stack operations into groups by their arity so that we can pull out
+// the correct number of arguments for each operation.
 
-```k
+// NOTE: We have to call the opcode `OR` by `EVMOR` instead, because otherwise K
+// has trouble parsing it/compiling the definition.
+
+
 module EVM-OPCODE
     imports EVM-WORD
     imports STRING
@@ -231,13 +231,13 @@ module EVM-OPCODE
                    | BinStackOp Word Word
                    | TernStackOp Word Word Word
                    | QuadStackOp Word Word Word Word
-```
 
-The default EVM test-set format is JSON, where the data is hex-encoded. A
-dissassembler is provided here for the basic data so that both the JSON and our
-pretty format can be read in.
 
-```k
+// The default EVM test-set format is JSON, where the data is hex-encoded. A
+// dissassembler is provided here for the basic data so that both the JSON and our
+// pretty format can be read in.
+
+
     syntax Word ::= #parseHexWord ( String ) [function]
  // ---------------------------------------------------
     rule #parseHexWord("")   => 0
@@ -402,4 +402,4 @@ pretty format can be read in.
     rule #dasmOpCode("f3", S) => RETURN   ; #dasmOpCodes(S)
     rule #dasmOpCode("ff", S) => SUICIDE  ; #dasmOpCodes(S)
 endmodule
-```
+
