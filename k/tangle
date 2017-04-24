@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
 
-pandoc-tangle --from markdown --to code-k --code k evm-data.md      > evm-data.k
-pandoc-tangle --from markdown --to code-k --code k evm-syntax.md    > evm-syntax.k
-pandoc-tangle --from markdown --to code-k --code k evm-semantics.md > evm-semantics.k
+pandoc-tangle --from markdown --to code-k --code k words.md       > words.k
+pandoc-tangle --from markdown --to code-k --code k opcodes.md     > opcodes.k
+pandoc-tangle --from markdown --to code-k --code k gas.md         > gas.k
+pandoc-tangle --from markdown --to code-k --code k world-state.md > world-state.k
+pandoc-tangle --from markdown --to code-k --code k evm.md         > evm.k
 
-# kompile --debug --main-module EVM-OPCODE evm-data.k
-# kompile --debug --main-module EVM-SYNTAX evm-syntax.k
-kompile --debug --main-module EVM evm-semantics.k
+kompile --debug evm.k

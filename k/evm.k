@@ -1,16 +1,18 @@
-EVM Semantics
-=============
+// EVM Semantics
+// =============
 
-```k
-requires "evm-syntax.k"
-```
 
-We need to define the configuration before defining the semantics of any rules
-which span multiple cells.
+requires "gas.k"
+requires "world-state.k"
 
-```k
+
+// We need to define the configuration before defining the semantics of any rules
+// which span multiple cells.
+
+
 module EVM-CONFIGURATION
-    imports EVM-SYNTAX
+    imports EVM-WORLD-STATE
+    imports EVM-GAS
 
     configuration <T>
                     // local execution
@@ -35,26 +37,26 @@ module EVM-CONFIGURATION
                     </accounts>
                   </T>
 endmodule
-```
 
-Machine Operation Utilities
----------------------------
 
-### Utilities
+// Machine Operation Utilities
+// ---------------------------
 
-We'll start with some helpers which do "standard" things to our configuration.
-These will make defining `EVM-INITIALIZATION` easier, and may be useful later.
+// ### Utilities
 
-```k
+// We'll start with some helpers which do "standard" things to our configuration.
+// These will make defining `EVM-INITIALIZATION` easier, and may be useful later.
+
+
 module EVM-UTIL
     imports EVM-CONFIGURATION
-```
 
-We start out with setters for the `Program` and `Storage` associated to an
-account. Because they are stored as maps, we have to keep a little bit of extra
-state (what the next map key is) when actually running these.
 
-```k
+// We start out with setters for the `Program` and `Storage` associated to an
+// account. Because they are stored as maps, we have to keep a little bit of extra
+// state (what the next map key is) when actually running these.
+
+
     syntax KItem ::= "#setAcctBalance" AcctID Word
  // ----------------------------------------------
     rule <k> #setAcctBalance ACCT BAL => . ... </k>
@@ -116,12 +118,12 @@ state (what the next map key is) when actually running these.
             ...
          </account>
       [structural]
-```
 
-The next setters allow setting information about the current running process,
-and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
 
-```k
+// The next setters allow setting information about the current running process,
+// and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
+
+
     syntax KItem ::= "#setAccountID" AcctID
  // ---------------------------------------
     rule <k> #setAccountID ACCTID => . ... </k>
@@ -191,15 +193,15 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
          <callStack> P:Process CS => CS </callStack>
       [structural]
 endmodule
-```
 
-Intraprocedural Execution
--------------------------
 
-Here we define how to get operands out of the `WordStack` and into the arguments
-of various operators so that the already defined operations can act on them.
+// Intraprocedural Execution
+// -------------------------
 
-```k
+// Here we define how to get operands out of the `WordStack` and into the arguments
+// of various operators so that the already defined operations can act on them.
+
+
 module EVM-INTRAPROCEDURAL
     imports EVM-CONFIGURATION
     imports EVM-UTIL
@@ -255,15 +257,15 @@ module EVM-INTRAPROCEDURAL
     rule JUMP1 DEST 0 => .                       [structural]
     rule JUMP1 DEST N => #setProgramCounter DEST [owise, structural]
 endmodule
-```
 
-Interprocedural Execution
--------------------------
 
-Here we give the semantics to operations which communicate/call between accounts
-on the network.
+// Interprocedural Execution
+// -------------------------
 
-```k
+// Here we give the semantics to operations which communicate/call between accounts
+// on the network.
+
+
 module EVM-INTERPROCEDURAL
     imports EVM-INTRAPROCEDURAL
 
@@ -312,16 +314,16 @@ module EVM-INTERPROCEDURAL
          </accounts>
       [structural]
 endmodule
-```
 
-Initialization and Running
---------------------------
 
-Actual initialization is easy now, we just have to desugar the top-level syntax
-into setting up the accounts (using our helpers), then setting the correct
-process (also using the helpers).
+// Initialization and Running
+// --------------------------
 
-```k
+// Actual initialization is easy now, we just have to desugar the top-level syntax
+// into setting up the accounts (using our helpers), then setting the correct
+// process (also using the helpers).
+
+
 module EVM
     imports EVM-INTERPROCEDURAL
 
@@ -349,4 +351,4 @@ module EVM
          ~> #setProcess {ACCTTO | 0 | GASAVAIL | .WordStack | #asMap(ARGS)}
       [structural]
 endmodule
-```
+
