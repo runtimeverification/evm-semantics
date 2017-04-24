@@ -207,16 +207,21 @@ module EVM-OPCODE
  
     syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp | InternalOps
                     | "LOG" "[" Word "]" | "BALANCE" | "BLOCKHASH" | "CALLCODE" | "CALLDATACOPY" | "CODECOPY"
-                    | "CREATE" | "EXTCODECOPY" | "JUMPDEST" | "JUMPI" | "SLOAD" | "SSTORE" | "SUICIDE"
- // --------------------------------------------------------------------------------------------------
+                    | "CREATE" | "EXTCODECOPY" | "JUMPDEST" | "JUMPI" | "SLOAD" | "SSTORE" | "DELEGATECALL" | "INVALID" | "SELFDESTRUCT"
+ // ------------------------------------------------------------------------------------------------------------------------------------
 
     syntax OpCodes ::= ".OpCodes"
                      | OpCode ";" OpCodes
  // -------------------------------------
 
-    syntax OpCodeMap ::= ".OpCodeMap"
-                       | Map
+    syntax Bool ::= OpCode "in" OpCodes
+ // -----------------------------------
+    rule OP in .OpCodes    => false
+    rule OP in (OP ; OPS)  => true
+    rule OP in (OP' ; OPS) => OP in OPS requires OP =/=K OP'
 
+    syntax OpCodeMap ::= ".OpCodeMap" | Map
+ // ---------------------------------------
     rule .OpCodeMap => .Map [macro]
 
     syntax Map ::= #asMap ( OpCodes ) [function]
@@ -396,10 +401,12 @@ pretty format can be read in.
     rule #dasmOpCode("a2", S) => #dasmLOG(2, S)
     rule #dasmOpCode("a3", S) => #dasmLOG(3, S)
     rule #dasmOpCode("a4", S) => #dasmLOG(4, S)
-    rule #dasmOpCode("f0", S) => CREATE   ; #dasmOpCodes(S)
-    rule #dasmOpCode("f1", S) => CALL     ; #dasmOpCodes(S)
-    rule #dasmOpCode("f2", S) => CALLCODE ; #dasmOpCodes(S)
-    rule #dasmOpCode("f3", S) => RETURN   ; #dasmOpCodes(S)
-    rule #dasmOpCode("ff", S) => SUICIDE  ; #dasmOpCodes(S)
+    rule #dasmOpCode("f0", S) => CREATE       ; #dasmOpCodes(S)
+    rule #dasmOpCode("f1", S) => CALL         ; #dasmOpCodes(S)
+    rule #dasmOpCode("f2", S) => CALLCODE     ; #dasmOpCodes(S)
+    rule #dasmOpCode("f3", S) => RETURN       ; #dasmOpCodes(S)
+    rule #dasmOpCode("f4", S) => DELEGATECALL ; #dasmOpCodes(S)
+    rule #dasmOpCode("fe", S) => INVALID      ; #dasmOpCodes(S)
+    rule #dasmOpCode("ff", S) => SELFDESTRUCT ; #dasmOpCodes(S)
 endmodule
 ```

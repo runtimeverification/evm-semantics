@@ -27,9 +27,10 @@ module EVM-CONFIGURATION
                     <accounts>
                         <account multiplicity="*">
                             <acctID> .AcctID </acctID>
+                            <nonce> 0:Word </nonce>
+                            <balance> 0:Word </balance>
                             <program> .Map </program>
                             <storage> .Map </storage>
-                            <balance> 0:Word </balance>
                         </account>
                     </accounts>
                   </T>
@@ -54,6 +55,26 @@ module EVM-UTIL
 // state (what the next map key is) when actually running these.
 
 
+    syntax KItem ::= "#setAcctBalance" AcctID Word
+ // ----------------------------------------------
+    rule <k> #setAcctBalance ACCT BAL => . ... </k>
+         <account>
+            <acctID> ACCT </acctID>
+            <balance> _ => BAL </balance>
+            ...
+         </account>
+      [structural]
+
+    syntax KItem ::= "#setAcctNonce" AcctID Word
+ // --------------------------------------------
+    rule <k> #setAcctNonce ACCT NONCE => . ... </k>
+         <account>
+            <acctID> ACCT </acctID>
+            <nonce> _ => NONCE </nonce>
+            ...
+         </account>
+      [structural]
+
     syntax KItem ::= "#setAcctProgram" AcctID Program
  // -------------------------------------------------
     rule <k> #setAcctProgram ACCT PGM => . ... </k>
@@ -70,16 +91,6 @@ module EVM-UTIL
          <account>
             <acctID> ACCT </acctID>
             <storage> _ => STORAGE </storage>
-            ...
-         </account>
-      [structural]
-
-    syntax KItem ::= "#setAcctBalance" AcctID Word
- // ----------------------------------------------
-    rule <k> #setAcctBalance ACCT BAL => . ... </k>
-         <account>
-            <acctID> ACCT </acctID>
-            <balance> _ => BAL </balance>
             ...
          </account>
       [structural]
@@ -292,9 +303,10 @@ module EVM-INTERPROCEDURAL
             (.Bag
             => <account>
                     <acctID> ACCT </acctID>
+                    <nonce> 0:Word </nonce>
+                    <balance> 0:Word </balance>
                     <program> .Map </program>
                     <storage> .Map </storage>
-                    <balance> 0:Word </balance>
                </account>
             )
          </accounts>
@@ -314,10 +326,12 @@ module EVM
     imports EVM-INTERPROCEDURAL
 
     rule account: - id      : ACCT
+                  - nonce   : NONCE
                   - balance : BAL
                   - program : PROGRAM
                   - storage : STORAGE
       =>    #newAccount ACCT
+         ~> #setAcctNonce   ACCT NONCE
          ~> #setAcctProgram ACCT #program(PROGRAM)
          ~> #setAcctStorage ACCT #storage(STORAGE)
          ~> #setAcctBalance ACCT BAL
