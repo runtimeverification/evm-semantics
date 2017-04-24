@@ -54,7 +54,7 @@ account. Because they are stored as maps, we have to keep a little bit of extra
 state (what the next map key is) when actually running these.
 
 ```k
-    syntax KItem ::= "#setAcctProgram" AcctID Map
+    syntax KItem ::= "#setAcctProgram" AcctID Program
                    | "#setAcctStorage" AcctID Storage
                    | "#setAcctBalance" AcctID Int
                    | "#increaseAcctBalance" AcctID Int [strict(2)]
@@ -108,12 +108,12 @@ and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
 
 ```k
     syntax KItem ::= "#setAccountID" AcctID
-                   | "#setProgramCounter" Int
-                   | "#setGasAvail" Int
-                   | "#setGasPrice" Int
+                   | "#setProgramCounter" Word
+                   | "#setGasAvail" Word
+                   | "#setGasPrice" Word
                    | "#setWordStack" WordStack
                    | "#setLocalMem" WordMap
-                   | "#updateLocalMem" Int WordList
+                   | "#updateLocalMem" Word WordList
                    | "#setProcess" Process
                    | "#pushCallStack"
                    | "#popCallStack"
@@ -213,7 +213,7 @@ module EVM-INTRAPROCEDURAL
          <wordStack> WS </wordStack>
          [structural]
 
-    rule MSTORE INDEX VALUE => #updateLocalMem INDEX VALUE [structural]
+    rule MSTORE INDEX VALUE => #updateLocalMem INDEX (VALUE , .WordList) [structural]
     rule <k> MLOAD INDEX => VALUE ~> #push ... </k>
          <localMem> ... INDEX |-> VALUE ... </localMem>
          [structural]
@@ -288,28 +288,26 @@ module EVM
     imports EVM-UTIL
     imports EVM-INTERPROCEDURAL
 
-    rule account:
-         -   id: ACCT
-         -   balance: BAL
-         -   program: PROGRAM
-         -   storage: STORAGE
+    rule account: - id      : ACCT
+                  - balance : BAL
+                  - program : PROGRAM
+                  - storage : STORAGE
       =>    #newAccount ACCT
-         ~> #setAcctProgram ACCT #pgmMap(PROGRAM)
-         ~> #setAcctStorage ACCT #asMap(STORAGE)
+         ~> #setAcctProgram ACCT #program(PROGRAM)
+         ~> #setAcctStorage ACCT #storage(STORAGE)
          ~> #setAcctBalance ACCT BAL
-         [structural]
+      [structural]
 
-//    rule transaction:
-//         -   to: ACCTTO
-//         -   from: ACCTFROM
-//         -   data: ARGS
-//         -   value: VALUE
-//         -   gasPrice: PRICE
-//         -   gasLimit: GASAVAIL
-//      =>    #decreaseAcctBalance ACCTFROM VALUE
-//         ~> #increaseAcctBalance ACCTTO VALUE
-//         ~> #setGasPrice PRICE
-//         ~> #setProcess {ACCTTO | 0 | GASAVAIL | .WordStack | #asMap(ARGS)}
-//         [structural]
+    rule transaction: - to       : ACCTTO
+                      - from     : ACCTFROM
+                      - data     : ARGS
+                      - value    : VALUE
+                      - gasPrice : PRICE
+                      - gasLimit : GASAVAIL
+      =>    #decreaseAcctBalance ACCTFROM VALUE
+         ~> #increaseAcctBalance ACCTTO VALUE
+         ~> #setGasPrice PRICE
+         ~> #setProcess {ACCTTO | 0 | GASAVAIL | .WordStack | #asMap(ARGS)}
+      [structural]
 endmodule
 ```

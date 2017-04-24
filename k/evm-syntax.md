@@ -104,16 +104,17 @@ EVM Programs
 module EVM-PROGRAM
     imports EVM-OPCODE
 
-    syntax Program ::= List{OpCode, ";"}
-                     | Map
-                     | #pgmMap ( Program )       [function]
-                     | #pgmMap ( Int , Program ) [function]
- 
-    syntax KItem ::= OpCode
+    syntax OpCodes ::= List{OpCode,";"}
 
-    rule #pgmMap(PGM:Map)  => PGM
-    rule #pgmMap(PGM:List) => #pgmMap(0, PGM)
-    rule #pgmMap(N, .Program)          => .Map
+    syntax Program ::= OpCodes | Map
+                     | #program ( Program ) [function]
+
+    rule #program( OPS:OpCodes ) => #pgmMap(0, OPS)
+    rule #program( PGM:Map )     => PGM
+
+    syntax Map ::= #pgmMap( Int , OpCodes ) [function]
+
+    rule #pgmMap(N, .OpCodes)          => .Map
     rule #pgmMap(N, (OP:OpCode ; PGM)) => N |-> OP #pgmMap(N +Int 1, PGM)
 endmodule
 ```
@@ -144,9 +145,16 @@ module EVM-PROCESS-SYNTAX
                       | "[" JSONList "]"
 
     syntax Word ::= #parseHexWord ( String ) [function]
-    rule #parseHexWord(S) => String2Base(replaceAll(S, "0x", ""), 16)
+    rule #parseHexWord("")   => 0
+    rule #parseHexWord("0x") => 0
+    rule #parseHexWord(S)    => String2Base(replaceAll(S, "0x", ""), 16)
+      requires (S =/=String "") andBool (S =/=String "0x")
 
-    syntax Storage ::= Map | WordList
+    syntax Storage ::= WordMap | WordList
+                     | #storage ( Storage ) [function]
+
+    rule #storage( WM:Map )      => WM
+    rule #storage( WS:WordList ) => #asMap(WS)
 
     syntax AcctID  ::= Word | ".AcctID"
     syntax Account ::= JSON
@@ -156,14 +164,17 @@ module EVM-PROCESS-SYNTAX
                                      "-" "storage" ":" Storage
 
     syntax Program ::= #dasmEVM ( JSON )               [function]
-                     | #dasmProgram ( String )         [function]
+
+    rule #dasmEVM(S:String) => #program(#dasmProgram(replaceAll(S, "0x", "")))
+
+    syntax OpCodes ::= #dasmProgram ( String )         [function]
                      | #dasmOpcode ( String , String ) [function]
                      | #dasmPUSH ( Int , String )      [function]
                      | #dasmDUP  ( Int , String )      [function]
                      | #dasmSWAP ( Int , String )      [function]
                      | #dasmLOG  ( Int , String )      [function]
 
-    rule #dasmPUSH(N, S) =>   PUSH [ N ] String2Base(substrString(S, 0, N *Int 2), 16)
+    rule #dasmPUSH(N, S) =>   PUSH [ N ] #parseHexWord(substrString(S, 0, N *Int 2))
                             ; #dasmProgram(substrString(S, N *Int 2, lengthString(S)))
       requires lengthString(S) >=Int (N *Int 2)
 
@@ -297,13 +308,19 @@ module EVM-PROCESS-SYNTAX
     rule #dasmOpcode("f3", S) => RETURN   ; #dasmProgram(S)
     rule #dasmOpcode("ff", S) => SUICIDE  ; #dasmProgram(S)
 
-    rule #dasmProgram("") => .Program
+    rule #dasmProgram("") => .OpCodes
     rule #dasmProgram(S)  => #dasmOpcode(substrString(S, 0, 2), substrString(S, 2, lengthString(S)))
       requires lengthString(S) >=Int 2
-    rule #dasmEVM(S:String) => #dasmProgram(replaceAll(S, "0x", ""))
 
-    syntax Map ::= #parseStorage ( JSON ) [function]
-    syntax WordList ::= #parseData ( JSON ) [function]
+    syntax Map ::= #parseStorage ( JSON )         [function]
+    syntax WordList ::= #parseData ( JSON )       [function]
+                      | #parseWordList ( String ) [function]
+
+    rule #parseData( S:String ) => #parseWordList(S)
+    rule #parseWordList( S )    => #parseHexWord(substrString(S, 0, 2)) , #parseWordList(substrString(S, 2, lengthString(S)))
+      requires lengthString(S) >=Int 2
+    rule #parseWordList( S )    => #parseHexWord(S)
+      requires lengthString(S) <Int 2
 
     rule #parseStorage( { .JSONList } )                   => .Map
     rule #parseStorage( { KEY : (VALUE:String) , REST } ) => (#parseHexWord(KEY) |-> #parseHexWord(VALUE)) #parseStorage({ REST })
@@ -312,12 +329,20 @@ module EVM-PROCESS-SYNTAX
                  | #parseGasPrice ( JSON ) [function]
                  | #parseGasLimit ( JSON ) [function]
 
-    rule (ACCTID:String) : { "balance" : BAL
-                           , "code"    : CODE
-                           , "nonce"   : NONCE
-                           , "storage" : STORAGE
-                           }
-      => account : - id      : String2Base(ACCTID, 16)
+    rule #parseValue( S:String )    => #parseHexWord(S)
+    rule #parseGasPrice( S:String ) => #parseHexWord(S)
+    rule #parseGasLimit( S:String ) => #parseHexWord(S)
+
+    syntax AcctID ::= #parseID ( JSON ) [function]
+
+    rule #parseID( S:String ) => #parseHexWord(S)
+
+    rule ACCTID : { "balance" : BAL
+                  , "code"    : CODE
+                  , "nonce"   : NONCE
+                  , "storage" : STORAGE
+                  }
+      => account : - id      : #parseID(ACCTID)
                    - balance : #parseHexWord(BAL)
                    - program : #dasmEVM(CODE)
                    - storage : #parseStorage(STORAGE)

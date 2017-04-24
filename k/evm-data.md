@@ -77,12 +77,13 @@ module EVM-WORD
     rule #stackSize .WordStack => 0
     rule #stackSize (W : WS)   => 1 +Int (#stackSize WS)
 
-    syntax WordList ::= List{Word, ","}
-                      | #take ( Int , WordList ) [function]
-                      | #lmRange ( WordMap , Int , Int ) [function]
+    syntax WordList ::= ".WordList"
+                      | Word "," WordList
+                      | #take ( Int , WordList )        [function]
+                      | #lmRange ( Map , Int , Int ) [function]
 
-    rule #take(0, WL)            => .WordList
-    rule #take(N, (W:Word , WL)) => W , #take(N -Int 1, WL) requires N >Int 0
+    rule #take(0, WS)            => .WordList
+    rule #take(N, (W:Word , WS)) => W , #take(N -Int 1, WS) requires N >Int 0
 
     rule #lmRange(LM,         N, M) => .WordList                            requires M ==Int 0
     rule #lmRange(N |-> W LM, N, M) => W , #lmRange(LM, N +Int 1, M -Int 1) requires M >Int 0
@@ -91,15 +92,13 @@ module EVM-WORD
                      | ".WordMap"
                      | WordMap "[" Int ":=" WordList "]" [function]
                      | #asMap ( WordList )               [function]
-                     | #asMap ( Map )                    [function]
 
     rule .WordMap => .Map [macro]
 
     rule LM[N := .WordList]    => LM
     rule LM[N := W0:Word , WL] => (LM[N <- W0])[N +Int 1 := WL]
 
-    rule #asMap(.WordList) => .Map
-    rule #asMap(WL:WordList) => (0 |-> 0)[0 := WL] requires WL =/=K .WordList
-    rule #asMap(WM:Map) => WM
+    rule #asMap(.WordList)   => .Map
+    rule #asMap(WS:WordList) => (0 |-> 0)[0 := WS] requires WS =/=K .WordList
 endmodule
 ```
