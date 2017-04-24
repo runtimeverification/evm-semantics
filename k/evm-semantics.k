@@ -1,4 +1,4 @@
-// Configuration
+// EVM Semantics
 // =============
 
 
@@ -36,8 +36,8 @@ module EVM-CONFIGURATION
 endmodule
 
 
-// Machine Operation
-// -----------------
+// Machine Operation Utilities
+// ---------------------------
 
 // ### Utilities
 
@@ -182,6 +182,9 @@ module EVM-UTIL
 endmodule
 
 
+// Intraprocedural Execution
+// -------------------------
+
 // Here we define how to get operands out of the `WordStack` and into the arguments
 // of various operators so that the already defined operations can act on them.
 
@@ -243,6 +246,12 @@ module EVM-INTRAPROCEDURAL
 endmodule
 
 
+// Interprocedural Execution
+// -------------------------
+
+// Here we give the semantics to operations which communicate/call between accounts
+// on the network.
+
 
 module EVM-INTERPROCEDURAL
     imports EVM-INTRAPROCEDURAL
@@ -293,7 +302,8 @@ module EVM-INTERPROCEDURAL
 endmodule
 
 
-// ### Initialization and Running
+// Initialization and Running
+// --------------------------
 
 // Actual initialization is easy now, we just have to desugar the top-level syntax
 // into setting up the accounts (using our helpers), then setting the correct
