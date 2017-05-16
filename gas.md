@@ -76,7 +76,7 @@ module EVM-GAS
                   ; DIFFICULTY ; GASLIMIT ; POP ; PC ; MSIZE ; GAS ; .OpCodes
     rule Wverylow =>  ADD ; SUB ; NOT ; LT ; GT ; SLT ; SGT ; EQ ; ISZERO ; AND
                     ; EVMOR ; XOR ; BYTE ; CALLDATALOAD ; MLOAD ; MSTORE ; MSTORE8
-                    ; PUSH [ 0 ] 0 ; DUP [ 0 ] ; SWAP [ 0 ] ; .OpCodes
+                    ; PUSH(0) ; DUP(0) ; SWAP(0) ; .OpCodes
     rule Wlow => MUL ; DIV ; SDIV ; MOD ; SMOD ; SIGNEXTEND ; .OpCodes
     rule Wmid => ADDMOD ; MULMOD ; JUMP ; JUMPI; .OpCodes
     rule Wextcode => EXTCODESIZE ; .OpCodes
@@ -87,7 +87,7 @@ module EVM-GAS
     rule #gas(EXP)          => Gexp                                                 // INCORRECT
     rule #gas(OP)           => Gverylow +Word Gcopy          requires OP in Wcopy   // INCORRECT
     rule #gas(EXTCODECOPY)  => Gextcode +Word Gcopy                                 // INCORRECT
-    rule #gas(LOG [ N ])    => Glog +Word (N *Word Glogdata)                        // INCORRECT
+    rule #gas(LOG(N))       => Glog +Word (N *Word Glogdata)                        // INCORRECT
     rule #gas(OP)           => #gasCALL                      requires OP in Wcall   // INCORRECT
     rule #gas(SELFDESTRUCT) => #gasSELFDESTRUCT                                     // INCORRECT
     rule #gas(CREATE)       => Gcreate

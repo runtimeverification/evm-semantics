@@ -14,6 +14,18 @@ requires "opcodes.k"
 module EVM-WORLD-STATE
     imports EVM-OPCODE
 
+    configuration <worldState>
+                    <accounts>
+                        <account multiplicity="*">
+                            <acctID> .AcctID </acctID>
+                            <nonce> 0:Word </nonce>
+                            <balance> 0:Word </balance>
+                            <program> .Map </program>
+                            <storage> .Map </storage>
+                        </account>
+                    </accounts>
+                  </worldState>
+
     syntax JSONList ::= List{JSON,","}
     syntax JSON     ::= String
                       | String ":" JSON
@@ -21,7 +33,7 @@ module EVM-WORLD-STATE
                       | "[" JSONList "]"
  // ------------------------------------
 
-    syntax Program ::= OpCodes | OpCodeMap
+    syntax Program ::= OpCodes | Map
                      | #program ( Program ) [function]
                      | #dasmEVM ( JSON )    [function]
  // --------------------------------------------------

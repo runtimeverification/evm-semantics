@@ -77,24 +77,37 @@ and some standard operations over it are provided here. Note that this stack
 also serves as a cons-list, so we provide some standard cons-list manipulation
 tools over it.
 
+TODO: Should all operations zero-pad the word-stack when there is an over-flow?
+It's specified in the yellowpaper for `PUSH`, but not for `DUP` and `SWAP`. The
+way `_[_]` and `_[_:=_]` is implemented will do this.
+
 ```k
     syntax WordStack ::= ".WordStack"
                        | Word ":" WordStack
+ // ---------------------------------------
 
     syntax Word ::= WordStack "[" Word "]" [function]
  // -------------------------------------------------
-    rule (W0 : WS)[0] => W0
-    rule (W0 : WS)[N] => WS[N -Word 1] requires N >Word 0
+    rule (W0 : WS)   [0] => W0
+    rule (.WordStack)[N] => 0             requires N >Word 0
+    rule (W0 : WS)   [N] => WS[N -Word 1] requires N >Word 0
+
+    syntax WordStack ::= WordStack "[" Word ":=" Word "]" [function]
+ // ----------------------------------------------------------------
+    rule (W0 : WS)  [ 0 := W ] => W  : WS
+    rule .WordStack [ N := W ] => 0  : (.WordStack [ N +Int 1 := W ]) requires N >Word 0
+    rule (W0 : WS)  [ N := W ] => W0 : (WS [ N +Int 1 := W ])         requires N >Word 0
 
     syntax Word ::= #stackSize ( WordStack ) [function]
  // ---------------------------------------------------
     rule #stackSize ( .WordStack ) => 0
     rule #stackSize ( W : WS )     => 1 +Word #stackSize(WS)
 
-    syntax WordStack ::= #take ( Word , WordStack )
- // -----------------------------------------------
+    syntax WordStack ::= #take ( Word , WordStack ) [function]
+ // ----------------------------------------------------------
     rule #take(0, WS)            => .WordStack
-    rule #take(N, (W:Word : WS)) => W : #take(N -Word 1, WS) requires N >Word 0
+    rule #take(N, .WordStack)    => 0 : #take(N -Word 1, .WordStack) requires N >Word 0
+    rule #take(N, (W:Word : WS)) => W : #take(N -Word 1, WS)         requires N >Word 0
 ```
 
 Word Map
@@ -107,18 +120,14 @@ the functionality for that is provided as well.
 
 ```k
     syntax WordMap ::= Map
-                     | ".WordMap"
-
-    rule .WordMap => .Map [macro]
-
-    syntax WordMap ::= WordMap "[" Word ":=" WordStack "]" [function]
+                     | WordMap "[" Word ":=" WordStack "]" [function]
  // -----------------------------------------------------------------
     rule WM[N := .WordStack]   => WM
     rule WM[N := W0:Word : WS] => (WM[N <- W0])[N +Word 1 := WS]
     
     syntax WordMap ::= #asMap ( WordStack ) [function]
  // --------------------------------------------------
-    rule #asMap(WS) => .WordMap [ 0 := WS ]
+    rule #asMap(WS) => .Map [ 0 := WS ]
 
     syntax WordStack ::= #range ( WordMap , Word , Word ) [function]
  // ----------------------------------------------------------------

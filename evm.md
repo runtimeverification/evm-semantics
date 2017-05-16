@@ -15,7 +15,6 @@ module EVM-CONFIGURATION
     imports EVM-GAS
 
     configuration <T>
-                    // local execution
                     <k> $PGM:EVMSimulation </k>
                     <id> .AcctID </id>
                     <pc> 0:Word </pc>
@@ -23,18 +22,8 @@ module EVM-CONFIGURATION
                     <wordStack> .WordStack </wordStack>
                     <localMem> .Map </localMem>
                     <gasPrice> 0:Word </gasPrice>
-                    // suspended processes
                     <callStack> .CallStack </callStack>
-                    // account information
-                    <accounts>
-                        <account multiplicity="*">
-                            <acctID> .AcctID </acctID>
-                            <nonce> 0:Word </nonce>
-                            <balance> 0:Word </balance>
-                            <program> .Map </program>
-                            <storage> .Map </storage>
-                        </account>
-                    </accounts>
+                    initWorldStateCell
                   </T>
 endmodule
 ```
@@ -203,9 +192,7 @@ of various operators so that the already defined operations can act on them.
 
 ```k
 module EVM-INTRAPROCEDURAL
-    imports EVM-CONFIGURATION
     imports EVM-UTIL
-    imports EVM-GAS
 
     rule <k> . => OP </k>
          <id> ACCT </id>
@@ -220,38 +207,28 @@ module EVM-INTRAPROCEDURAL
 
     rule <k> UOP:UnStackOp => UOP W0 ... </k>
          <wordStack> W0 : WS => WS </wordStack>
-      [structural]
 
     rule <k> BOP:BinStackOp => BOP W0 W1 ... </k>
          <wordStack> W0 : W1 : WS => WS </wordStack>
-      [structural]
 
     rule <k> TOP:TernStackOp => TOP W0 W1 W2 ... </k>
          <wordStack> W0 : W1 : W2 : WS => WS </wordStack>
-      [structural]
 
-    rule <k> QOP:QuadStackOp => QOP W0 W1 W2 W3 ... </k>
-         <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
-      [structural]
+    rule <k> CALL => CALL W0 W1 W2 W3 W4 W5 W6 ... </k>
+         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
 
     rule <k> W0:Word ~> #push => . ... </k>
          <wordStack> WS => W0 : WS </wordStack>
-      [structural]
 
     rule <k> #checkStackSize => #stackSize(WS) ~> #checkStackSize ... </k>
          <wordStack> WS </wordStack>
-      [structural]
 
     rule MSTORE INDEX VALUE => #updateLocalMem INDEX (VALUE : .WordStack)
-      [structural]
     rule <k> MLOAD INDEX => VALUE ~> #push ... </k>
          <localMem> ... INDEX |-> VALUE ... </localMem>
-      [structural]
 
-    rule <k> DUP [ N ] => WS[N -Word 1] ~> #push ~> #checkStackSize </k>
-         <wordStack> WS </wordStack>
-         requires ((N >Word 0) ==K bool2Word(true)) andBool ((N <Word 17) ==K bool2Word(true))
-      [structural]
+    rule <k> SO:StackOp   => SO WS ... </k> <wordStack> WS      </wordStack>
+    rule <k> #setStack WS => .     ... </k> <wordStack> _ => WS </wordStack>
 
     rule JUMP DEST => #setProgramCounter DEST    [structural]
     rule JUMP1 DEST 0 => .                       [structural]
@@ -271,9 +248,11 @@ module EVM-INTERPROCEDURAL
 
     syntax KItem ::= "#processCall" "{" AcctID "|" Word "|" WordStack "}"
  // ---------------------------------------------------------------------
-    rule <k> CALL ACCT ETHER INIT SIZE => #processCall { ACCT | ETHER | #range(LM, INIT, SIZE) } ... </k>
+    rule <k> CALL GASAMT ACCT ETHER INOFFSET INSIZE OUTOFFSET OUTSIZE
+          => #processCall { ACCT | ETHER | #range(LM, INOFFSET, INSIZE) }
+          ...
+         </k>
          <localMem> LM </localMem>
-      [structural]
 
     // TODO: How are we handling refunding unused gas?
     rule <k> #processCall {ACCT | ETHER | WL}
@@ -281,21 +260,17 @@ module EVM-INTERPROCEDURAL
              ~> #setProcess {ACCT | 0 | ETHER | .WordStack | #asMap(WL)}
          ... </k>
          <id> CURRACCT </id>
-      [structural]
 
     syntax KItem ::= "#processReturn" WordStack
  // -------------------------------------------
     rule #processReturn WL => #popCallStack ~> #returnValues WL
-      [structural]
     rule <k> RETURN INIT SIZE => #processReturn #range(LM, INIT, SIZE) ... </k>
          <localMem> LM </localMem>
-      [structural]
 
     syntax KItem ::= "#returnValues" WordStack
  // ------------------------------------------
     rule <k> #returnValues WL => #updateLocalMem INIT #take(SIZE, WL) ... </k>
          <wordStack> INIT : SIZE : WS => WS </wordStack>
-      [structural]
 
     syntax KItem ::= "#newAccount" AcctID
  // -------------------------------------
@@ -312,7 +287,6 @@ module EVM-INTERPROCEDURAL
                </account>
             )
          </accounts>
-      [structural]
 endmodule
 ```
 

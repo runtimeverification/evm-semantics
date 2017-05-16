@@ -1,9 +1,12 @@
-// EVM OpCodes
-// ===========
+// EVM Programs
+// ============
 
 // The EVM opcodes are provided here, as well as a dissasebler for programs in the
 // EVM test format. We break up stack operations into groups by their arity so that
 // we can pull out the correct number of arguments for each operation.
+
+// EVM OpCodes
+// -----------
 
 // NOTE: We have to call the opcode `OR` by `EVMOR` instead, because otherwise K
 // has trouble parsing it/compiling the definition.
@@ -15,17 +18,12 @@ module EVM-OPCODE
     imports EVM-WORD
     imports STRING
 
-    syntax InternalOps ::= "#push"
-                         | "#checkStackSize"
- // ----------------------------------------
-    // rule PUSH N => N ~> #push ~> #checkStackSize [structural]
+    syntax InternalOps ::= "#push" | "#setStack" WordStack | "#checkStackSize"
+ // --------------------------------------------------------------------------
     rule (I:Int ~> #checkStackSize) => .              requires I <Int  1024
     rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW requires I >=Int 1024
 
-    syntax NullStackOp ::= "PUSH" "[" Word "]" Word
-                         | "STACK_OVERFLOW"
-                         | "DUP" "[" Word "]"
-                         | "SWAP" "[" Word "]"
+    syntax NullStackOp ::= "STACK_OVERFLOW"
                          | "PC" | "MSIZE" | "GAS"
                          | "STOP" | "ADDRESS" | "ORIGIN" | "CALLER"
                          | "CALLVALUE" | "CALLDATASIZE" | "GASPRICE" | "CODESIZE"
@@ -73,13 +71,43 @@ module EVM-OPCODE
     rule ADDMOD W0 W1 W2 => addmod(W0,W1,W2) ~> #push [structural]
     rule MULMOD W0 W1 W2 => mulmod(W0,W1,W2) ~> #push [structural]
 
-    syntax QuadStackOp ::= "CALL"
- // -----------------------------
- 
-    syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp | InternalOps
-                    | "LOG" "[" Word "]" | "BALANCE" | "BLOCKHASH" | "CALLCODE" | "CALLDATACOPY" | "CODECOPY"
-                    | "CREATE" | "EXTCODECOPY" | "JUMPDEST" | "JUMPI" | "SLOAD" | "SSTORE" | "DELEGATECALL" | "INVALID" | "SELFDESTRUCT"
- // ------------------------------------------------------------------------------------------------------------------------------------
+    syntax CallOp ::= "CALL"
+    syntax PushOp ::= PUSH ( Word )
+    syntax LogOp  ::= LOG ( Word )
+    syntax SpecialOp ::= "CALL"
+                       | PUSH ( Word )
+                       | LOG ( Word )
+ // ---------------------------------
+
+    syntax StackOp ::= DUP ( Word ) | SWAP ( Word )
+ // -----------------------------------------------
+    rule DUP(N)  WS:WordStack => #pushStack ((WS [ N -Word 1 ]) : WS)
+    rule SWAP(N) (W0 : WS)    => #pushStack ((WS [ N -Word 1 ]) : (WS [ N -Word 1 := W0 ]))
+
+
+// Here, all the operators that have not been binned/implemented are thrown (as
+// well as the subsorts).
+
+
+    syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | SpecialOp | StackOp | InternalOps
+                    | "BALANCE" | "BLOCKHASH" | "CALLCODE" | "CALLDATACOPY" | "CODECOPY" | "CREATE" | "EXTCODECOPY"
+                    | "JUMPDEST" | "JUMPI" | "SLOAD" | "SSTORE" | "DELEGATECALL" | "INVALID" | "SELFDESTRUCT"
+ // ---------------------------------------------------------------------------------------------------------
+    syntax KItem ::= OpCode
+                   | UnStackOp Word
+                   | BinStackOp Word Word
+                   | TernStackOp Word Word Word
+                   | CallOp Word Word Word Word Word Word Word
+                   | StackOp WordStack
+
+
+// EVM Programs {#evm-programs-1}
+// ------------
+
+// Lists of opcodes form programs. Deciding if an opcode is in a list will be
+// useful for modelling gas, and converting a program into a map of program-counter
+// to opcode is useful for execution.
+
 
     syntax OpCodes ::= ".OpCodes"
                      | OpCode ";" OpCodes
@@ -91,28 +119,25 @@ module EVM-OPCODE
     rule OP in (OP ; OPS)  => true
     rule OP in (OP' ; OPS) => OP in OPS requires OP =/=K OP'
 
-    syntax OpCodeMap ::= ".OpCodeMap" | Map
- // ---------------------------------------
-    rule .OpCodeMap => .Map [macro]
-
-    syntax Map ::= #asMap ( OpCodes ) [function]
+    syntax Map ::= #asMap ( OpCodes )       [function]
                  | #asMap ( Int , OpCodes ) [function]
  // --------------------------------------------------
     rule #asMap( OPS:OpCodes )         => #asMap(0, OPS)
     rule #asMap( N , .OpCodes )        => .Map
-    rule #asMap( N , OP:OpCode ; OCS ) => N |-> OP #asMap(N +Int 1, OCS)
+    rule #asMap( N , OP:OpCode ; OCS ) => (N |-> OP) #asMap(N +Int 1, OCS)
+endmodule
 
-    syntax KItem ::= OpCode
-                   | UnStackOp Word
-                   | BinStackOp Word Word
-                   | TernStackOp Word Word Word
-                   | QuadStackOp Word Word Word Word
 
+// EVM Disassembler
+// ================
 
 // The default EVM test-set format is JSON, where the data is hex-encoded. A
 // dissassembler is provided here for the basic data so that both the JSON and our
 // pretty format can be read in.
 
+
+module EVM-DASM
+    imports EVM-OPCODE
 
     syntax Word ::= #parseHexWord ( String ) [function]
  // ---------------------------------------------------
@@ -133,10 +158,6 @@ module EVM-OPCODE
                             ; #dasmOpCodes(substrString(S, N *Int 2, lengthString(S)))
       requires lengthString(S) >=Int (N *Int 2)
 
-    syntax OpCodes ::= #dasmDUP ( Word , String ) [function]
- // --------------------------------------------------------
-    syntax OpCodes ::= #dasmSWAP ( Word , String ) [function]
- // ---------------------------------------------------------
     syntax OpCodes ::= #dasmLOG ( Word , String ) [function]
  // --------------------------------------------------------
 
@@ -235,38 +256,38 @@ module EVM-OPCODE
     rule #dasmOpCode("7d", S) => #dasmPUSH(30, S)
     rule #dasmOpCode("7e", S) => #dasmPUSH(31, S)
     rule #dasmOpCode("7f", S) => #dasmPUSH(32, S)
-    rule #dasmOpCode("80", S) => #dasmDUP(1, S)
-    rule #dasmOpCode("81", S) => #dasmDUP(2, S)
-    rule #dasmOpCode("82", S) => #dasmDUP(3, S)
-    rule #dasmOpCode("83", S) => #dasmDUP(4, S)
-    rule #dasmOpCode("84", S) => #dasmDUP(5, S)
-    rule #dasmOpCode("85", S) => #dasmDUP(6, S)
-    rule #dasmOpCode("86", S) => #dasmDUP(7, S)
-    rule #dasmOpCode("87", S) => #dasmDUP(8, S)
-    rule #dasmOpCode("88", S) => #dasmDUP(9, S)
-    rule #dasmOpCode("89", S) => #dasmDUP(10, S)
-    rule #dasmOpCode("8a", S) => #dasmDUP(11, S)
-    rule #dasmOpCode("8b", S) => #dasmDUP(12, S)
-    rule #dasmOpCode("8c", S) => #dasmDUP(13, S)
-    rule #dasmOpCode("8d", S) => #dasmDUP(14, S)
-    rule #dasmOpCode("8e", S) => #dasmDUP(15, S)
-    rule #dasmOpCode("8f", S) => #dasmDUP(16, S)
-    rule #dasmOpCode("90", S) => #dasmSWAP(1, S)
-    rule #dasmOpCode("91", S) => #dasmSWAP(2, S)
-    rule #dasmOpCode("92", S) => #dasmSWAP(3, S)
-    rule #dasmOpCode("93", S) => #dasmSWAP(4, S)
-    rule #dasmOpCode("94", S) => #dasmSWAP(5, S)
-    rule #dasmOpCode("95", S) => #dasmSWAP(6, S)
-    rule #dasmOpCode("96", S) => #dasmSWAP(7, S)
-    rule #dasmOpCode("97", S) => #dasmSWAP(8, S)
-    rule #dasmOpCode("98", S) => #dasmSWAP(9, S)
-    rule #dasmOpCode("99", S) => #dasmSWAP(10, S)
-    rule #dasmOpCode("9a", S) => #dasmSWAP(11, S)
-    rule #dasmOpCode("9b", S) => #dasmSWAP(12, S)
-    rule #dasmOpCode("9c", S) => #dasmSWAP(13, S)
-    rule #dasmOpCode("9d", S) => #dasmSWAP(14, S)
-    rule #dasmOpCode("9e", S) => #dasmSWAP(15, S)
-    rule #dasmOpCode("9f", S) => #dasmSWAP(16, S)
+    rule #dasmOpCode("80", S) => DUP(1)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("81", S) => DUP(2)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("82", S) => DUP(3)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("83", S) => DUP(4)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("84", S) => DUP(5)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("85", S) => DUP(6)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("86", S) => DUP(7)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("87", S) => DUP(8)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("88", S) => DUP(9)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("89", S) => DUP(10) ; #dasmOpCodes(S)
+    rule #dasmOpCode("8a", S) => DUP(11) ; #dasmOpCodes(S)
+    rule #dasmOpCode("8b", S) => DUP(12) ; #dasmOpCodes(S)
+    rule #dasmOpCode("8c", S) => DUP(13) ; #dasmOpCodes(S)
+    rule #dasmOpCode("8d", S) => DUP(14) ; #dasmOpCodes(S)
+    rule #dasmOpCode("8e", S) => DUP(15) ; #dasmOpCodes(S)
+    rule #dasmOpCode("8f", S) => DUP(16) ; #dasmOpCodes(S)
+    rule #dasmOpCode("90", S) => SWAP(1)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("91", S) => SWAP(2)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("92", S) => SWAP(3)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("93", S) => SWAP(4)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("94", S) => SWAP(5)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("95", S) => SWAP(6)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("96", S) => SWAP(7)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("97", S) => SWAP(8)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("98", S) => SWAP(9)  ; #dasmOpCodes(S)
+    rule #dasmOpCode("99", S) => SWAP(10) ; #dasmOpCodes(S)
+    rule #dasmOpCode("9a", S) => SWAP(11) ; #dasmOpCodes(S)
+    rule #dasmOpCode("9b", S) => SWAP(12) ; #dasmOpCodes(S)
+    rule #dasmOpCode("9c", S) => SWAP(13) ; #dasmOpCodes(S)
+    rule #dasmOpCode("9d", S) => SWAP(14) ; #dasmOpCodes(S)
+    rule #dasmOpCode("9e", S) => SWAP(15) ; #dasmOpCodes(S)
+    rule #dasmOpCode("9f", S) => SWAP(16) ; #dasmOpCodes(S)
     rule #dasmOpCode("a0", S) => #dasmLOG(0, S)
     rule #dasmOpCode("a1", S) => #dasmLOG(1, S)
     rule #dasmOpCode("a2", S) => #dasmLOG(2, S)
