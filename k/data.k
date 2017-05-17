@@ -135,3 +135,123 @@ module EVM-WORD
     rule #range(N |-> W WM, N, M) => W : #range(WM, N +Word 1, M -Word 1) requires M >Word 0
 endmodule
 
+
+// EVM OpCodes
+// ===========
+
+// NOTE: We have to call the opcode `OR` by `EVMOR` instead, because otherwise K
+// has trouble parsing it/compiling the definition.
+
+
+module EVM-OPCODE
+    imports EVM-WORD
+    imports STRING
+
+    syntax InternalOps ::= "#push" | "#setStack" WordStack | "#checkStackSize"
+ // --------------------------------------------------------------------------
+    rule (I:Int ~> #checkStackSize) => .              requires I <Int  1024
+    rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW requires I >=Int 1024
+
+    syntax NullStackOp ::= "STACK_OVERFLOW"
+                         | "PC" | "MSIZE" | "GAS"
+                         | "STOP" | "ADDRESS" | "ORIGIN" | "CALLER"
+                         | "CALLVALUE" | "CALLDATASIZE" | "GASPRICE" | "CODESIZE"
+                         | "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "GASLIMIT"
+ // --------------------------------------------------------------------------------------
+
+    syntax UnStackOp ::= "ISZERO" | "NOT" | "POP"
+                       | "JUMP" | "MLOAD"
+                       | "CALLDATALOAD" | "EXTCODESIZE"
+ // ---------------------------------------------------
+    rule ISZERO 0 => bool2Word(true)  ~> #push
+    rule ISZERO N => bool2Word(false) ~> #push requires N =/=K 0
+    rule NOT    N => bitwisenot(N)    ~> #push
+    rule POP    N => .
+
+    syntax BinStackOp ::= "ADD" | "MUL" | "SUB" | "DIV" | "EXP"
+                        | "MOD" | "SIGNEXTEND" | "SDIV" | "SMOD"
+                        | "LT" | "GT" | "SLT" | "SGT" | "EQ"
+                        | "AND" | "EVMOR" | "XOR"
+                        | "BYTE" | "SHA3"
+                        | "JUMPI" | "RETURN" | "MSTORE" | "MSTORE8"
+ // ---------------------------------------------------------------
+    rule ADD        W0 W1 => W0 +Word W1       ~> #push
+    rule MUL        W0 W1 => W0 *Word W1       ~> #push
+    rule SUB        W0 W1 => W0 -Word W1       ~> #push
+    rule DIV        W0 W1 => W0 /Word W1       ~> #push
+    rule EXP        W0 W1 => W0 ^Word W1       ~> #push
+    rule MOD        W0 W1 => W0 %Word W1       ~> #push
+    rule SIGNEXTEND W0 W1 => signextend(W0,W1) ~> #push
+    rule SDIV       W0 W1 => sdiv(W0,W1)       ~> #push
+    rule SMOD       W0 W1 => smod(W0,W1)       ~> #push
+    rule LT         W0 W1 => W0 <Word W1       ~> #push
+    rule GT         W0 W1 => W0 >Word W1       ~> #push
+    rule SLT        W0 W1 => slt(W0,W1)        ~> #push
+    rule SGT        W0 W1 => sgt(W0,W1)        ~> #push
+    rule EQ         W0 W1 => W0 ==Word W1      ~> #push
+    rule AND        W0 W1 => bitwiseand(W0,W1) ~> #push
+    rule EVMOR      W0 W1 => bitwiseor(W0,W1)  ~> #push
+    rule XOR        W0 W1 => bitwisexor(W0,W1) ~> #push
+    rule BYTE       W0 W1 => getbyte(W0,W1)    ~> #push
+    rule SHA3       W0 W1 => sha3(W0,W1)       ~> #push
+
+    syntax TernStackOp ::= "ADDMOD" | "MULMOD"
+ // ------------------------------------------
+    rule ADDMOD W0 W1 W2 => addmod(W0,W1,W2) ~> #push
+    rule MULMOD W0 W1 W2 => mulmod(W0,W1,W2) ~> #push
+
+    syntax StackOp ::= DUP ( Word ) | SWAP ( Word )
+ // -----------------------------------------------
+    rule DUP(N)  WS:WordStack => #pushStack ((WS [ N -Word 1 ]) : WS)
+    rule SWAP(N) (W0 : WS)    => #pushStack ((WS [ N -Word 1 ]) : (WS [ N -Word 1 := W0 ]))
+
+    syntax CallOp ::= "CALL"
+    syntax PushOp ::= PUSH ( Word )
+    syntax LogOp  ::= LOG ( Word )
+    syntax SpecialOp ::= CallOp | PushOp | LogOp | StackOp
+ // ------------------------------------------------------
+    rule PUSH(W) => W ~> #push
+
+
+// Here, all the operators that have not been binned/implemented are thrown (as
+// well as the subsorts).
+
+
+    syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | SpecialOp | StackOp | InternalOps
+                    | "BALANCE" | "BLOCKHASH" | "CALLCODE" | "CALLDATACOPY" | "CODECOPY" | "CREATE" | "EXTCODECOPY"
+                    | "JUMPDEST" | "SLOAD" | "SSTORE" | "DELEGATECALL" | "INVALID" | "SELFDESTRUCT"
+ // -----------------------------------------------------------------------------------------------
+    syntax KItem ::= OpCode
+                   | UnStackOp Word
+                   | BinStackOp Word Word
+                   | TernStackOp Word Word Word
+                   | CallOp Word Word Word Word Word Word Word
+                   | StackOp WordStack
+
+
+// EVM Programs
+// ------------
+
+// Lists of opcodes form programs. Deciding if an opcode is in a list will be
+// useful for modelling gas, and converting a program into a map of program-counter
+// to opcode is useful for execution.
+
+
+    syntax OpCodes ::= ".OpCodes"
+                     | OpCode ";" OpCodes
+ // -------------------------------------
+
+    syntax Bool ::= OpCode "in" OpCodes
+ // -----------------------------------
+    rule OP in .OpCodes    => false
+    rule OP in (OP ; OPS)  => true
+    rule OP in (OP' ; OPS) => OP in OPS requires OP =/=K OP'
+
+    syntax Map ::= #asMap ( OpCodes )       [function]
+                 | #asMap ( Int , OpCodes ) [function]
+ // --------------------------------------------------
+    rule #asMap( OPS:OpCodes )         => #asMap(0, OPS)
+    rule #asMap( N , .OpCodes )        => .Map
+    rule #asMap( N , OP:OpCode ; OCS ) => (N |-> OP) #asMap(N +Int 1, OCS)
+endmodule
+

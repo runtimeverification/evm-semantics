@@ -184,58 +184,6 @@ module EVM-UTIL
 endmodule
 
 
-// Intraprocedural Execution
-// -------------------------
-
-// Here we define how to get operands out of the `WordStack` and into the arguments
-// of various operators so that the already defined operations can act on them.
-
-
-module EVM-INTRAPROCEDURAL
-    imports EVM-UTIL
-
-    rule <k> . => OP </k>
-         <id> ACCT </id>
-         <pc> PCOUNT => PCOUNT +Word 1 </pc>
-         <gas> G => G -Word #gas(OP) </gas>
-         <account>
-            <acctID> ACCT </acctID>
-            <program> ... PCOUNT |-> OP ... </program>
-            ...
-         </account>
-      requires ((G >Word #gas(OP)) ==K bool2Word(true)) orBool ((G ==Word #gas(OP)) ==K bool2Word(true))
-
-    rule <k> UOP:UnStackOp => UOP W0 ... </k>
-         <wordStack> W0 : WS => WS </wordStack>
-
-    rule <k> BOP:BinStackOp => BOP W0 W1 ... </k>
-         <wordStack> W0 : W1 : WS => WS </wordStack>
-
-    rule <k> TOP:TernStackOp => TOP W0 W1 W2 ... </k>
-         <wordStack> W0 : W1 : W2 : WS => WS </wordStack>
-
-    rule <k> CALL => CALL W0 W1 W2 W3 W4 W5 W6 ... </k>
-         <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
-
-    rule <k> W0:Word ~> #push => . ... </k>
-         <wordStack> WS => W0 : WS </wordStack>
-
-    rule <k> #checkStackSize => #stackSize(WS) ~> #checkStackSize ... </k>
-         <wordStack> WS </wordStack>
-
-    rule MSTORE INDEX VALUE => #updateLocalMem INDEX (VALUE : .WordStack)
-    rule <k> MLOAD INDEX => VALUE ~> #push ... </k>
-         <localMem> ... INDEX |-> VALUE ... </localMem>
-
-    rule <k> SO:StackOp   => SO WS ... </k> <wordStack> WS      </wordStack>
-    rule <k> #setStack WS => .     ... </k> <wordStack> _ => WS </wordStack>
-
-    rule JUMP DEST => #setProgramCounter DEST    [structural]
-    rule JUMP1 DEST 0 => .                       [structural]
-    rule JUMP1 DEST N => #setProgramCounter DEST [owise, structural]
-endmodule
-
-
 // Interprocedural Execution
 // -------------------------
 
@@ -311,7 +259,6 @@ module EVM
          ~> #setAcctProgram ACCT #program(PROGRAM)
          ~> #setAcctStorage ACCT #storage(STORAGE)
          ~> #setAcctBalance ACCT BAL
-      [structural]
 
     rule transaction: - to       : ACCTTO
                       - from     : ACCTFROM
@@ -323,6 +270,5 @@ module EVM
          ~> #increaseAcctBalance ACCTTO VALUE
          ~> #setGasPrice PRICE
          ~> #setProcess {ACCTTO | 0 | GASAVAIL | .WordStack | #asMap(ARGS)}
-      [structural]
 endmodule
 

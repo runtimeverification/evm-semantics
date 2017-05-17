@@ -1,22 +1,63 @@
-// Local Execution State
-// =====================
+Local Execution State
+=====================
 
-// EVM execution maintains some local state (like a word stack, local memory,
-// program counter, etc...). We need to specify the syntax of all this local state
-// for storage.
+EVM execution maintains some local state (like a word stack, local memory,
+program counter, etc...). We need to specify the syntax of all this local state
+for storage.
 
+Intraprocedural Execution
+-------------------------
 
+Here we define how to get operands out of the `WordStack` and into the arguments
+of various operators so that the already defined operations can act on them.
 
+```k
+module EVM-INTRAPROCEDURAL
+    imports EVM-GAS
 
-// EVM Gas Cost
-// ------------
+    configuration <k> . </k>
+                  <pc> 0 </pc>
+                  <gas> 0 </gas>
+                  <program> .Map </program>
+                  <wordStack> .WordStack </wordStack>
+                  <localMem> .Map </localMem>
 
-// Here we define the gas-cost of each instruction in the instruction set. Many of
-// the instructions gas cost is fixed and not dependent on any parts of the
-// configuration; for those that do have some dependence, their associated cost
-// must be defined after the configuration is defined.
+    rule <k> . => OP </k>
+         <pc> PCOUNT => PCOUNT +Word 1 </pc>
+         <gas> G => G -Word #gas(OP) </gas>
+         <program> ... PCOUNT |-> OP ... </program>
+      requires ((G >Word #gas(OP)) ==K bool2Word(true)) orBool ((G ==Word #gas(OP)) ==K bool2Word(true))
 
+    rule <k> UOP:UnStackOp   => UOP W0       ... </k> <wordStack> W0 : WS           => WS </wordStack>
+    rule <k> BOP:BinStackOp  => BOP W0 W1    ... </k> <wordStack> W0 : W1 : WS      => WS </wordStack>
+    rule <k> TOP:TernStackOp => TOP W0 W1 W2 ... </k> <wordStack> W0 : W1 : W2 : WS => WS </wordStack>
 
+    rule <k> W0:Word ~> #push => .                                 ... </k> <wordStack> WS => W0 : WS </wordStack>
+    rule <k> #checkStackSize  => #stackSize(WS) ~> #checkStackSize ... </k> <wordStack> WS            </wordStack>
+
+    rule <k> CALL => CALL W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
+
+    rule <k> SO:StackOp   => SO WS ... </k> <wordStack> WS      </wordStack>
+    rule <k> #setStack WS => .     ... </k> <wordStack> _ => WS </wordStack>
+
+    rule <k> MSTORE INDEX VALUE => .              ... </k> <localMem> LM => LM[INDEX <- VALUE] </localMem>
+    rule <k> MLOAD INDEX        => VALUE ~> #push ... </k> <localMem> ... INDEX |-> VALUE ...  </localMem>
+
+    rule <k> JUMP DEST    => . ... </k> <pc> _ => DEST </pc>
+    rule <k> JUMP1 DEST 0 => . ... </k>
+    rule <k> JUMP1 DEST N => . ... </k> <pc> _ => DEST </pc> requires N =/=K 0
+endmodule
+```
+
+EVM Gas Cost
+------------
+
+Here we define the gas-cost of each instruction in the instruction set. Many of
+the instructions gas cost is fixed and not dependent on any parts of the
+configuration; for those that do have some dependence, their associated cost
+must be defined after the configuration is defined.
+
+```k
 requires "opcodes.k"
 
 module EVM-GAS
@@ -104,4 +145,4 @@ module EVM-GAS
     rule #gas(BALANCE)      => Gbalance
     rule #gas(BLOCKHASH)    => Gblockhash
 endmodule
-
+```
