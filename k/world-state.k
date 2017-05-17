@@ -26,12 +26,8 @@ module EVM-WORLD-STATE
                     </accounts>
                   </worldState>
 
-    syntax JSONList ::= List{JSON,","}
-    syntax JSON     ::= String
-                      | String ":" JSON
-                      | "{" JSONList "}"
-                      | "[" JSONList "]"
- // ------------------------------------
+    syntax AcctID  ::= Word | ".AcctID"
+ // -----------------------------------
 
     syntax Program ::= OpCodes | Map
                      | #program ( Program ) [function]
@@ -58,7 +54,6 @@ module EVM-WORLD-STATE
 // to the K format is provided.
 
 
-    syntax AcctID  ::= Word | ".AcctID"
     syntax Account ::= JSON
                      | "account" ":" "-" "id"      ":" AcctID
                                      "-" "nonce"   ":" Word
@@ -76,7 +71,6 @@ module EVM-WORLD-STATE
                    - balance : #parseHexWord(BAL)
                    - program : #dasmEVM(CODE)
                    - storage : #parseStorage(STORAGE)
-      [structural]
 
 
 // Here is the data of a transaction on the network. It has fields for who it's
@@ -106,7 +100,6 @@ module EVM-WORLD-STATE
                        - value    : #parseHexWord(VALUE)
                        - gasPrice : #parseHexWord(PRICE)
                        - gasLimit : #parseHexWord(LIMIT)
-      [structural]
 
 
 // Finally, we have the syntax of an `EVMSimulation`, which consists of a list of
@@ -116,18 +109,18 @@ module EVM-WORLD-STATE
     syntax Accounts ::= ".Accounts"
                       | Account Accounts
  // ------------------------------------
-    rule .Accounts => . [structural]
-    rule ACCT:Account ACCTS:Accounts => ACCT ~> ACCTS [structural]
+    rule .Accounts => .
+    rule ACCT:Account ACCTS:Accounts => ACCT ~> ACCTS
 
     syntax Transactions ::= ".Transactions"
                           | Transaction Transactions
  // ------------------------------------------------
-    rule .Transactions => . [structural]
-    rule TX:Transaction TXS:Transactions => TX ~> TXS [structural]
+    rule .Transactions => .
+    rule TX:Transaction TXS:Transactions => TX ~> TXS
 
     syntax EVMSimulation ::= Accounts Transactions
  // ----------------------------------------------
-    rule ACCTS:Accounts TXS:Transactions => ACCTS ~> TXS [structural]
+    rule ACCTS:Accounts TXS:Transactions => ACCTS ~> TXS
 
     syntax Process ::= "{" AcctID "|" Word "|" Word "|" WordStack "|" WordMap "}"
     syntax CallStack ::= ".CallStack"
@@ -145,6 +138,14 @@ endmodule
 
 module EVM-DASM
     imports EVM-OPCODE
+    imports STRING
+
+    syntax JSONList ::= List{JSON,","}
+    syntax JSON     ::= String
+                      | String ":" JSON
+                      | "{" JSONList "}"
+                      | "[" JSONList "]"
+ // ------------------------------------
 
     syntax Word ::= #parseHexWord ( String ) [function]
  // ---------------------------------------------------
@@ -161,8 +162,7 @@ module EVM-DASM
 
     syntax OpCodes ::= #dasmPUSH ( Word , String ) [function]
  // ---------------------------------------------------------
-    rule #dasmPUSH(N, S) =>   PUSH [ N ] #parseHexWord(substrString(S, 0, N *Int 2))
-                            ; #dasmOpCodes(substrString(S, N *Int 2, lengthString(S)))
+    rule #dasmPUSH(N, S) => PUSH(#parseHexWord(substrString(S, 0, N *Int 2))) ; #dasmOpCodes(substrString(S, N *Int 2, lengthString(S)))
       requires lengthString(S) >=Int (N *Int 2)
 
     syntax OpCodes ::= #dasmLOG ( Word , String ) [function]

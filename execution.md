@@ -12,20 +12,25 @@ Here we define how to get operands out of the `WordStack` and into the arguments
 of various operators so that the already defined operations can act on them.
 
 ```k
+requires "data.k"
+
 module EVM-INTRAPROCEDURAL
     imports EVM-GAS
 
-    configuration <k> . </k>
-                  <pc> 0 </pc>
-                  <gas> 0 </gas>
-                  <program> .Map </program>
-                  <wordStack> .WordStack </wordStack>
-                  <localMem> .Map </localMem>
+    configuration <evm>
+                    <k> . </k>
+                    <pc> 0:Word </pc>
+                    <gas> 0:Word </gas>
+                    <gasPrice> 0:Word </gasPrice>
+                    <currentProgram> .Map </currentProgram>
+                    <wordStack> .WordStack </wordStack>
+                    <localMem> .Map </localMem>
+                  </evm>
 
     rule <k> . => OP </k>
          <pc> PCOUNT => PCOUNT +Word 1 </pc>
          <gas> G => G -Word #gas(OP) </gas>
-         <program> ... PCOUNT |-> OP ... </program>
+         <currentProgram> ... PCOUNT |-> OP ... </currentProgram>
       requires ((G >Word #gas(OP)) ==K bool2Word(true)) orBool ((G ==Word #gas(OP)) ==K bool2Word(true))
 
     rule <k> UOP:UnStackOp   => UOP W0       ... </k> <wordStack> W0 : WS           => WS </wordStack>
@@ -58,8 +63,6 @@ configuration; for those that do have some dependence, their associated cost
 must be defined after the configuration is defined.
 
 ```k
-requires "opcodes.k"
-
 module EVM-GAS
     imports EVM-OPCODE
 

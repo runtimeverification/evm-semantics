@@ -2,7 +2,7 @@ EVM Semantics
 =============
 
 ```k
-requires "gas.k"
+requires "execution.k"
 requires "world-state.k"
 ```
 
@@ -12,19 +12,12 @@ which span multiple cells.
 ```k
 module EVM-CONFIGURATION
     imports EVM-WORLD-STATE
-    imports EVM-GAS
+    imports EVM-INTRAPROCEDURAL
 
-    configuration <T>
-                    <k> $PGM:EVMSimulation </k>
-                    <id> .AcctID </id>
-                    <pc> 0:Word </pc>
-                    <gas> 0:Word </gas>
-                    <wordStack> .WordStack </wordStack>
-                    <localMem> .Map </localMem>
-                    <gasPrice> 0:Word </gasPrice>
-                    <callStack> .CallStack </callStack>
-                    initWorldStateCell
-                  </T>
+    configuration <id> .AcctID </id>
+                  <callStack> .CallStack </callStack>
+                  initEvmCell
+                  initWorldStateCell
 endmodule
 ```
 
@@ -192,7 +185,7 @@ on the network.
 
 ```k
 module EVM-INTERPROCEDURAL
-    imports EVM-INTRAPROCEDURAL
+    imports EVM-UTIL
 
     syntax KItem ::= "#processCall" "{" AcctID "|" Word "|" WordStack "}"
  // ---------------------------------------------------------------------

@@ -145,7 +145,6 @@ has trouble parsing it/compiling the definition.
 ```k
 module EVM-OPCODE
     imports EVM-WORD
-    imports STRING
 
     syntax InternalOps ::= "#push" | "#setStack" WordStack | "#checkStackSize"
  // --------------------------------------------------------------------------
