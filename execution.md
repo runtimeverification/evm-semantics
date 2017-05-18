@@ -14,7 +14,7 @@ of various operators so that the already defined operations can act on them.
 ```k
 requires "data.k"
 
-module EVM-INTRAPROCEDURAL
+module EVM-EXECUTION
     imports EVM-GAS
 
     configuration <evm>

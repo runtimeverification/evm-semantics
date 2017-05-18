@@ -73,13 +73,12 @@ module EVM-WORD
 // ----------
 
 // EVM is a stack machine, and so needs a stack of words to operate on. The stack
-// and some standard operations over it are provided here. Note that this stack
-// also serves as a cons-list, so we provide some standard cons-list manipulation
-// tools over it.
+// and some standard operations over it are provided here. This stack also serves
+// as a cons-list, so we provide some standard cons-list manipulation tools.
 
 // TODO: Should all operations zero-pad the word-stack when there is an over-flow?
-// It's specified in the yellowpaper for `PUSH`, but not for `DUP` and `SWAP`. The
-// way `_[_]` and `_[_:=_]` is implemented will do this.
+// It's specified in the yellowpaper for `PUSH`, but not for `DUP` and `SWAP`.
+// `_[_]` and `_[_:=_]` should be set to whichever convention is used most often.
 
 
     syntax WordStack ::= ".WordStack"
@@ -113,10 +112,10 @@ module EVM-WORD
 // Word Map
 // --------
 
-// Most of EVM data is held in finite maps. Here standard maps from `Word` to
-// `Word` are provided. A common idiom is to assign a contiguous chunk of a map to
-// a list (stack) of words, or to read a contiguous chunk of a map as a list, so
-// the functionality for that is provided as well.
+// Most of EVM data is held in finite maps. Here, finite maps from `Word` to `Word`
+// are provided. A common idiom is to assign a contiguous chunk of a map to a list
+// (stack) of words, or to read a contiguous chunk of a map as a list, so the
+// functionality for that is provided as well.
 
 
     syntax WordMap ::= Map
@@ -136,23 +135,44 @@ module EVM-WORD
 endmodule
 
 
-// EVM OpCodes
+// EVM Opcodes
 // ===========
 
 // NOTE: We have to call the opcode `OR` by `EVMOR` instead, because otherwise K
 // has trouble parsing it/compiling the definition.
 
+// Opcodes are broken into several different subsorts, to represent the different
+// ways they read data from the environment. Later in the semantics, this sort
+// information is used to load data from the execution context automatically,
+// allowing us to specify the simplification of the operators here.
+
 
 module EVM-OPCODE
     imports EVM-WORD
+    
+    syntax KItem ::= OpCode
+                   | UnStackOp Word
+                   | BinStackOp Word Word
+                   | TernStackOp Word Word Word
+                   | CallOp Word Word Word Word Word Word Word
+                   | StackOp WordStack
 
-    syntax InternalOps ::= "#push" | "#setStack" WordStack | "#checkStackSize"
- // --------------------------------------------------------------------------
+
+// Internal operators are used for assisting in the definition of the actual
+// opcodes.
+
+
+    syntax InternalOp ::= "#push" | "#setStack" WordStack | "#checkStackSize"
+ // -------------------------------------------------------------------------
     rule (I:Int ~> #checkStackSize) => .              requires I <Int  1024
     rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW requires I >=Int 1024
 
+
+// Operators that need a fixed/finite number of arguments from the stack are given
+// their own sorts to specify how many they need (up to `TernStackOp`).
+
+
     syntax NullStackOp ::= "STACK_OVERFLOW"
-                         | "PC" | "MSIZE" | "GAS"
                          | "STOP" | "ADDRESS" | "ORIGIN" | "CALLER"
                          | "CALLVALUE" | "CALLDATASIZE" | "GASPRICE" | "CODESIZE"
                          | "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "GASLIMIT"
@@ -199,10 +219,18 @@ module EVM-OPCODE
     rule ADDMOD W0 W1 W2 => addmod(W0,W1,W2) ~> #push
     rule MULMOD W0 W1 W2 => mulmod(W0,W1,W2) ~> #push
 
+
+// Some operators need the "entire" stack (or at least a large chunk of it).
+
+
     syntax StackOp ::= DUP ( Word ) | SWAP ( Word )
  // -----------------------------------------------
     rule DUP(N)  WS:WordStack => #pushStack ((WS [ N -Word 1 ]) : WS)
     rule SWAP(N) (W0 : WS)    => #pushStack ((WS [ N -Word 1 ]) : (WS [ N -Word 1 := W0 ]))
+
+
+// There are some other operators.
+
 
     syntax CallOp ::= "CALL"
     syntax PushOp ::= PUSH ( Word )
@@ -212,20 +240,44 @@ module EVM-OPCODE
     rule PUSH(W) => W ~> #push
 
 
-// Here, all the operators that have not been binned/implemented are thrown (as
-// well as the subsorts).
+// Some operators are meant to gather information from the world-state. We use the
+// syntax `_<_>` over `EnvOp` to indicate that it has gathered that information (in
+// the form of a word to push onto the stack). Many of these also require
+// information from the stack, so that is indicated using subsorts as well.
+
+// TODO: I'm not sure if it is supposed to *push* a word onto the stack or
+// *replace* the top element of the stack.
 
 
-    syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | SpecialOp | StackOp | InternalOps
-                    | "BALANCE" | "BLOCKHASH" | "CALLCODE" | "CALLDATACOPY" | "CODECOPY" | "CREATE" | "EXTCODECOPY"
-                    | "JUMPDEST" | "SLOAD" | "SSTORE" | "DELEGATECALL" | "INVALID" | "SELFDESTRUCT"
- // -----------------------------------------------------------------------------------------------
-    syntax KItem ::= OpCode
-                   | UnStackOp Word
-                   | BinStackOp Word Word
-                   | TernStackOp Word Word Word
-                   | CallOp Word Word Word Word Word Word Word
-                   | StackOp WordStack
+    syntax EnvNullOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE"
+                       | "CALLDATASIZE" | "CODESIZE" | "GASPRICE" | "COINBASE"
+                       | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "GASLIMIT"
+                       | "PC" | "MSIZE" | "GAS"
+    syntax EnvUnOp   ::= "BALANCE" | "CALLDATALOAD" | "EXTCODESIZE" | "BLOCKHASH"
+    syntax EnvTernOp ::= "CALLDATACOPY" | "CODECOPY"
+    syntax EnvQuadOp ::= "EXTCODECOPY"
+ // ----------------------------------
+
+    syntax EnvOp ::= EnvNullOp
+                   | EnvUnOp "[" Word "]"
+                   | EnvTernOp "[" Word Word Word "]"
+                   | EnvQuadOp "[" Word Word Word Word "]"
+ // ------------------------------------------------------
+
+    syntax KItem ::= EnvOp "<" Word ">"
+ // -----------------------------------
+    rule EO:EnvOp < W > => W ~> #push
+
+
+// Here, all the operators that have not been binned are thrown (as well as the
+// subsorts).
+
+
+    syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | SpecialOp | LogOp | StackOp
+                    | EnvNullOp | EnvUnOp | EnvTernOp | EnvQuadOp | EnvOp | InternalOp
+                    | "CALLCODE" | "CREATE" | "JUMPDEST" | "SLOAD" | "SSTORE" | "DELEGATECALL"
+                    | "INVALID" | "SELFDESTRUCT"
+ // --------------------------------------------
 
 
 // EVM Programs

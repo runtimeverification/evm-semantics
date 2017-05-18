@@ -14,7 +14,7 @@
 
 requires "data.k"
 
-module EVM-INTRAPROCEDURAL
+module EVM-EXECUTION
     imports EVM-GAS
 
     configuration <evm>

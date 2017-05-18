@@ -12,7 +12,7 @@ which span multiple cells.
 ```k
 module EVM-CONFIGURATION
     imports EVM-WORLD-STATE
-    imports EVM-INTRAPROCEDURAL
+    imports EVM-EXECUTION
 
     configuration <id> .AcctID </id>
                   <callStack> .CallStack </callStack>
