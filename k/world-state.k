@@ -15,16 +15,31 @@ module EVM-WORLD-STATE
     imports EVM-DASM
 
     configuration <worldState>
+                    <control> $WORLDSTATE:Control </control>
                     <accounts>
-                        <account multiplicity="*">
-                            <acctID> .AcctID </acctID>
-                            <nonce> 0:Word </nonce>
-                            <balance> 0:Word </balance>
-                            <program> .Map </program>
-                            <storage> .Map </storage>
-                        </account>
+                      <account multiplicity="*">
+                        <acctID> .AcctID </acctID>
+                        <nonce> 0:Word </nonce>
+                        <balance> 0:Word </balance>
+                        <program> .Map </program>
+                        <storage> .Map </storage>
+                      </account>
                     </accounts>
+                    <transactions>
+                      <transaction multiplicity="*">
+                        <to> .AcctID </to>
+                        <from> .AcctID </from>
+                        <data> .WordStack </data>
+                        <value> 0:Word </value>
+                        <txGasPrice> 0:Word </txGasPrice>
+                        <txGasLimit> 0:Word </txGasLimit>
+                      </transaction>
+                    </transactions>
                   </worldState>
+
+    syntax Control ::= ".Control" | "#response" Word
+                     | "accounts" ":" Accounts "transactions" ":" Transactions
+                     | JSON
 
     syntax AcctID  ::= Word | ".AcctID"
  // -----------------------------------
@@ -79,13 +94,14 @@ module EVM-WORLD-STATE
 
 
     syntax Transaction ::= JSON
-                         | "transaction" ":" "-" "to"       ":" AcctID
-                                             "-" "from"     ":" AcctID
-                                             "-" "data"     ":" WordStack
-                                             "-" "value"    ":" Word
-                                             "-" "gasPrice" ":" Word
-                                             "-" "gasLimit" ":" Word
- // ----------------------------------------------------------------
+                         | TransactionCreate | TransactionMessage
+    syntax TransactionCreate ::= "transaction" ":" "-" "to"       ":" AcctID
+                                                   "-" "from"     ":" AcctID
+                                                   "-" "data"     ":" WordStack
+                                                   "-" "value"    ":" Word
+                                                   "-" "gasPrice" ":" Word
+                                                   "-" "gasLimit" ":" Word
+ // ----------------------------------------------------------------------
     rule "transaction" : { "data"      : (DATA:String)
                          , "gasLimit"  : (LIMIT:String)
                          , "gasPrice"  : (PRICE:String)
@@ -125,6 +141,176 @@ module EVM-WORLD-STATE
     syntax Process ::= "{" AcctID "|" Word "|" Word "|" WordStack "|" WordMap "}"
     syntax CallStack ::= ".CallStack"
                        | Process CallStack
+endmodule
+
+
+// State Getters/Setters
+// ---------------------
+
+// We'll make some getters/setters for the world-state. This can be considered the
+// API or "system calls" for the EVM world state.
+
+
+module EVM-WORLD-STATE-INTERFACE
+    imports EVM-WORLD-STATE
+
+    syntax Control ::= Account | Transaction
+ // ----------------------------------------
+    rule <control> account : - id      : ACCT
+                             - nonce   : NONCE
+                             - balance : BAL
+                             - program : PROGRAM
+                             - storage : STORAGE
+                 => . ...
+         </control>
+         <accounts>
+            ( .Bag
+           => <account>
+                <acctID> ACCT </acctID>
+                <nonce> NONCE </nonce>
+                <balance> BAL </balance>
+                <program> #program(PROGRAM) </program>
+                <storage> #storage(STORAGE) </storage>
+              </account>
+            )
+            ...
+         </accounts>
+      requires BAL >Int 0
+
+    rule <control> transaction : - to       : ACCTTO
+                                 - from     : ACCTFROM
+                                 - data     : DATA
+                                 - value    : VALUE
+                                 - gasPrice : PRICE
+                                 - gasLimit : LIMIT
+                 => . ...
+         </control>
+         <transactions>
+           ( .Bag
+          => <transaction>
+               <to> ACCTTO </to>
+               <from> ACCTFROM </from>
+               <data> DATA </data>
+               <value> VALUE </value>
+               <txGasPrice> PRICE </txGasPrice>
+               <txGasLimit> LIMIT </txGasLimit>
+             </transaction>
+           )
+           ...
+         </transactions>
+
+    syntax Control ::= "#transfer" AcctID AcctID Word
+ // -------------------------------------------------
+    rule <control> #transfer ACCTFROM ACCTTO BAL => . ... </control>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BALFROM => BALFROM -Word BAL </balance>
+           ...
+         </account>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <balance> BALTO => BALTO +Word BAL </balance>
+           ...
+         </account>
+      requires BALFROM >Int BAL
+
+    rule <control> #transfer .AcctID ACCTTO BAL => . ... </control>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <balance> BALTO => BALTO +Word BAL </balance>
+           ...
+         </account>
+
+    syntax Control ::= "#setAccountStorage" AcctID Word Word
+                     | "#getAccountStorage" AcctID Word
+ // ---------------------------------------------------
+    rule <control> #setAccountStorage ACCT INDEX VALUE => . ... </control>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> STORAGE => STORAGE[INDEX <- VALUE] </storage>
+           ...
+         </account>
+
+    rule <control> #getAccountStorage ACCT INDEX => #response VALUE ... </control>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> ... INDEX |-> VALUE ... </storage>
+           ...
+         </account>
+
+
+// The next setters allow setting information about the current running process,
+// and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
+
+
+    syntax KItem ::= "#setAccountID" AcctID
+ // ---------------------------------------
+    rule <k> #setAccountID ACCTID => . ... </k>
+         <id> _ => ACCTID </id>
+      [structural]
+
+    syntax KItem ::= "#setProgramCounter" Word
+ // ------------------------------------------
+    rule <k> #setProgramCounter PCOUNT => . ... </k>
+         <pc> _ => PCOUNT </pc>
+      [structural]
+
+    syntax KItem ::= "#setGasAvail" Word
+ // ------------------------------------
+    rule <k> #setGasAvail GASAVAIL => . ... </k>
+         <gas> _ => GASAVAIL </gas>
+      [structural]
+
+    syntax KItem ::= "#setGasPrice" Word
+ // ------------------------------------
+    rule <k> #setGasPrice PRICE => . ... </k>
+         <gasPrice> _ => PRICE </gasPrice>
+      [structural]
+
+    syntax KItem ::= "#setWordStack" WordStack
+ // ------------------------------------------
+    rule <k> #setWordStack WS => . ... </k>
+         <wordStack> _ => WS </wordStack>
+      [structural]
+
+    syntax KItem ::= "#setLocalMem" WordMap
+ // ---------------------------------------
+    rule <k> #setLocalMem LM => . ... </k>
+         <localMem> _ => LM </localMem>
+      [structural]
+
+    syntax KItem ::= "#updateLocalMem" Word WordStack
+ // -------------------------------------------------
+    rule <k> #updateLocalMem N WL => #setLocalMem (LM[N := WL]) ... </k>
+         <localMem> LM </localMem>
+      [structural]
+
+    syntax KItem ::= "#setProcess" Process
+ // --------------------------------------
+    rule #setProcess { ACCT | PCOUNT | GASAVAIL | WS | LM }
+         =>    #setAccountID ACCT
+            ~> #setProgramCounter PCOUNT
+            ~> #setGasAvail GASAVAIL
+            ~> #setWordStack WS
+            ~> #setLocalMem LM
+      [structural]
+
+    syntax KItem ::= "#pushCallStack"
+ // ---------------------------------
+    rule <k> #pushCallStack => . ... </k>
+         <id> ACCT </id>
+         <pc> PCOUNT </pc>
+         <gas> GASAVAIL </gas>
+         <wordStack> WS </wordStack>
+         <localMem> LM </localMem>
+         <callStack> CS => { ACCT | PCOUNT | GASAVAIL | WS | LM } CS </callStack>
+      [structural]
+
+    syntax KItem ::= "#popCallStack"
+ // --------------------------------
+    rule <k> #popCallStack => #setProcess P ... </k>
+         <callStack> P:Process CS => CS </callStack>
+      [structural]
 endmodule
 
 

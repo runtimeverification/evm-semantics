@@ -16,57 +16,72 @@ module EVM-WORD
 
     syntax KResult ::= Int 
 
+
+// We need to do arithmetic modulo `2^256` and need to interperet words as
+// booleans. Here `chop` will move a number back into the correct range and
+// `bool2Word` will interperet
+
+
     syntax Word ::= Int
-                  | "#symbolicWord"               [function]
-                  | chop ( Int )                  [function]
-                  | bool2Word ( Bool )            [function]
-                  | Word "+Word" Word             [function]
-                  | Word "*Word" Word             [function]
-                  | Word "-Word" Word             [function]
-                  | Word "/Word" Word             [function]
-                  | Word "^Word" Word             [function]
-                  | Word "%Word" Word             [function]
-                  | signextend ( Word , Word )    [function] // needs implemented
-                  | Word "<Word" Word             [function]
-                  | Word ">Word" Word             [function]
-                  | Word "==Word" Word            [function]
-                  | bitwisenot ( Word )           [function] // needs implemented
-                  | sdiv ( Word , Word )          [function] // needs implemented
-                  | smod ( Word , Word )          [function] // needs implemented
-                  | slt ( Word , Word )           [function] // needs implemented
-                  | sgt ( Word , Word )           [function] // needs implemented
-                  | bitwiseand ( Word , Word )    [function] // needs implemented
-                  | bitwiseor ( Word , Word )     [function] // needs implemented
-                  | bitwisexor ( Word , Word )    [function] // needs implemented
-                  | getbyte ( Word , Word )       [function] // needs implemented
-                  | sha3 ( Word , Word )          [function] // needs implemented
-                  | addmod ( Word , Word , Word ) [function]
-                  | mulmod ( Word , Word , Word ) [function]
-
-    rule #symbolicWord => ?X:Int
-
-    rule chop( I:Int ) => I                           requires I <Int (2 ^Int 256) andBool I >=Int 0
-    rule chop( I:Int ) => chop( I +Int (2 ^Int 256) ) requires I <Int 0
-    rule chop( I:Int ) => chop( I -Int (2 ^Int 256) ) requires I >=Int (2 ^Int 256)
-
+                  | "#symbolicWord"    [function]
+                  | chop ( Word )      [function]
+                  | bool2Word ( Bool ) [function]
+ // ---------------------------------------------
+    rule #symbolicWord    => ?X:Int
+    rule chop( W:Int )    => W %Int (2 ^Int 256)
     rule bool2Word(true)  => 1
     rule bool2Word(false) => 0
 
-    rule W0:Int +Word W1:Int  => chop( W0 +Int W1 )
-    rule W0:Int -Word W1:Int  => chop( W0 -Int W1 )
-    rule W0:Int *Word W1:Int  => chop( W0 *Int W1 )
-    rule W0:Int /Word W1:Int  => chop( W0 /Int W1 )
-    rule W0:Int ^Word W1:Int  => chop( W0 ^Int W1 )
+    syntax Bool ::= word2Bool ( Word ) [function]
+ // ---------------------------------------------
+    rule word2Bool( 0 ) => false
+    rule word2Bool( W ) => true  requires W =/=K 0
+
+    syntax Word ::= Word "+Word" Word [function]
+                  | Word "*Word" Word [function]
+                  | Word "-Word" Word [function]
+                  | Word "/Word" Word [function]
+                  | Word "^Word" Word [function]
+                  | Word "%Word" Word [function]
+ // --------------------------------------------
+    rule W0:Int +Word W1:Int => chop( W0 +Int W1 )
+    rule W0:Int -Word W1:Int => chop( W0 -Int W1 )
+    rule W0:Int *Word W1:Int => chop( W0 *Int W1 )
+    rule W0:Int /Word W1:Int => chop( W0 /Int W1 )
+    rule W0:Int ^Word W1:Int => chop( W0 ^Int W1 )
+    rule W0:Int %Word 0      => 0 
+    rule W0:Int %Word W1:Int => chop( W0 %Int W1 ) requires W1 =/=K 0
+
+    syntax Word ::= Word "<Word" Word  [function]
+                  | Word ">Word" Word  [function]
+                  | Word "==Word" Word [function]
+ // ---------------------------------------------
     rule W0:Int <Word W1:Int  => bool2Word( W0 <Int W1 )
     rule W0:Int >Word W1:Int  => bool2Word( W0 >Int W1 )
     rule W0:Int ==Word W1:Int => bool2Word( W0 ==Int W1)
-    rule W0:Int %Word W1:Int  => chop( W0 %Int W1 )
 
-    rule addmod(W0:Int, W1:Int, 0)      => 0
-    rule addmod(W0:Int, W1:Int, W2:Int) => chop((W0 +Int W1) %Int W2) [owise]
+    syntax Word ::= "~Word" Word        [function]
+                  | Word "|Word" Word   [function]
+                  | Word "&Word" Word   [function]
+                  | Word "xorWord" Word [function]
+ // ----------------------------------------------
+    rule ~Word W:Int           => chop( W xorInt ((2 ^Int 256) -Int 1) )
+    rule W0:Int |Word   W1:Int => chop( W0 |Int W1 )
+    rule W0:Int &Word   W1:Int => chop( W0 &Int W1 )
+    rule W0:Int xorWord W1:Int => chop( W0 xorInt W1 )
 
-    rule mulmod(W0:Int, W1:Int, 0)      => 0
-    rule mulmod(W0:Int, W1:Int, W2:Int) => chop((W0 *Int W1) %Int W2) [owise]
+
+// TODO: The following are unimplemented.
+
+
+    syntax Word ::= signextend ( Word , Word ) [function]
+                  | sdiv ( Word , Word )       [function]
+                  | smod ( Word , Word )       [function]
+                  | slt ( Word , Word )        [function]
+                  | sgt ( Word , Word )        [function]
+                  | getbyte ( Word , Word )    [function]
+                  | sha3 ( Word , Word )       [function]
+ // -----------------------------------------------------
 
 
 // Word Stack
@@ -149,11 +164,12 @@ endmodule
 
 module EVM-OPCODE
     imports EVM-WORD
-    
+
     syntax KItem ::= OpCode
                    | UnStackOp Word
                    | BinStackOp Word Word
                    | TernStackOp Word Word Word
+                   | QuadStackOp Word Word Word Word
                    | CallOp Word Word Word Word Word Word Word
                    | StackOp WordStack
 
@@ -162,62 +178,72 @@ module EVM-OPCODE
 // opcodes.
 
 
-    syntax InternalOp ::= "#push" | "#setStack" WordStack | "#checkStackSize"
- // -------------------------------------------------------------------------
+    syntax InternalOp ::= "#push" | "#setStack" WordStack | "#checkStackSize" | "#stackOverflow"
+ // --------------------------------------------------------------------------------------------
     rule (I:Int ~> #checkStackSize) => .              requires I <Int  1024
-    rule (I:Int ~> #checkStackSize) => STACK_OVERFLOW requires I >=Int 1024
+    rule (I:Int ~> #checkStackSize) => #stackOverflow requires I >=Int 1024
 
 
 // Operators that need a fixed/finite number of arguments from the stack are given
 // their own sorts to specify how many they need (up to `TernStackOp`).
 
 
-    syntax NullStackOp ::= "STACK_OVERFLOW"
+    syntax NullStackOp ::= "JUMPDEST" | "INVALID"
                          | "STOP" | "ADDRESS" | "ORIGIN" | "CALLER"
                          | "CALLVALUE" | "CALLDATASIZE" | "GASPRICE" | "CODESIZE"
-                         | "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "GASLIMIT"
- // --------------------------------------------------------------------------------------
+                         | "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY"
+                         | "GASLIMIT" | "CALLVALUE" | "PC" | "MSIZE" | "GAS"
+ // ------------------------------------------------------------------------
 
     syntax UnStackOp ::= "ISZERO" | "NOT" | "POP"
-                       | "JUMP" | "MLOAD"
-                       | "CALLDATALOAD" | "EXTCODESIZE"
- // ---------------------------------------------------
+                       | "JUMP" | "MLOAD" | "CALLDATALOAD" | "EXTCODESIZE"
+                       | "BALANCE" | "BLOCKHASH" | "SLOAD" | "SELFDESTRUCT"
+ // -----------------------------------------------------------------------
     rule ISZERO 0 => bool2Word(true)  ~> #push
-    rule ISZERO N => bool2Word(false) ~> #push requires N =/=K 0
-    rule NOT    N => bitwisenot(N)    ~> #push
-    rule POP    N => .
+    rule ISZERO W => bool2Word(false) ~> #push requires W =/=K 0
+    rule NOT    W => ~Word W          ~> #push
+    rule POP    W => .
 
     syntax BinStackOp ::= "ADD" | "MUL" | "SUB" | "DIV" | "EXP"
-                        | "MOD" | "SIGNEXTEND" | "SDIV" | "SMOD"
-                        | "LT" | "GT" | "SLT" | "SGT" | "EQ"
-                        | "AND" | "EVMOR" | "XOR"
+                        | "MOD" | "AND" | "EVMOR" | "XOR"
+                        | "LT" | "GT" | "EQ" | "JUMPI"
+                        | "SLT" | "SGT" | "SDIV" | "SMOD" | "SIGNEXTEND"
                         | "BYTE" | "SHA3"
-                        | "JUMPI" | "RETURN" | "MSTORE" | "MSTORE8"
- // ---------------------------------------------------------------
-    rule ADD        W0 W1 => W0 +Word W1       ~> #push
-    rule MUL        W0 W1 => W0 *Word W1       ~> #push
-    rule SUB        W0 W1 => W0 -Word W1       ~> #push
-    rule DIV        W0 W1 => W0 /Word W1       ~> #push
-    rule EXP        W0 W1 => W0 ^Word W1       ~> #push
-    rule MOD        W0 W1 => W0 %Word W1       ~> #push
-    rule SIGNEXTEND W0 W1 => signextend(W0,W1) ~> #push
-    rule SDIV       W0 W1 => sdiv(W0,W1)       ~> #push
-    rule SMOD       W0 W1 => smod(W0,W1)       ~> #push
-    rule LT         W0 W1 => W0 <Word W1       ~> #push
-    rule GT         W0 W1 => W0 >Word W1       ~> #push
-    rule SLT        W0 W1 => slt(W0,W1)        ~> #push
-    rule SGT        W0 W1 => sgt(W0,W1)        ~> #push
-    rule EQ         W0 W1 => W0 ==Word W1      ~> #push
-    rule AND        W0 W1 => bitwiseand(W0,W1) ~> #push
-    rule EVMOR      W0 W1 => bitwiseor(W0,W1)  ~> #push
-    rule XOR        W0 W1 => bitwisexor(W0,W1) ~> #push
-    rule BYTE       W0 W1 => getbyte(W0,W1)    ~> #push
-    rule SHA3       W0 W1 => sha3(W0,W1)       ~> #push
+                        | "RETURN" | "SSTORE" | "MSTORE" | "MSTORE8"
+ // ----------------------------------------------------------------
+    rule ADD W0 W1 => W0 +Word W1 ~> #push
+    rule MUL W0 W1 => W0 *Word W1 ~> #push
+    rule SUB W0 W1 => W0 -Word W1 ~> #push
+    rule DIV W0 W1 => W0 /Word W1 ~> #push
+    rule EXP W0 W1 => W0 ^Word W1 ~> #push
+    rule MOD W0 W1 => W0 %Word W1 ~> #push
 
-    syntax TernStackOp ::= "ADDMOD" | "MULMOD"
- // ------------------------------------------
-    rule ADDMOD W0 W1 W2 => addmod(W0,W1,W2) ~> #push
-    rule MULMOD W0 W1 W2 => mulmod(W0,W1,W2) ~> #push
+    rule AND   W0 W1 => W0 &Word W1   ~> #push
+    rule EVMOR W0 W1 => W0 |Word W1   ~> #push
+    rule XOR   W0 W1 => W0 xorWord W1 ~> #push
+
+    rule LT W0 W1 => W0 <Word W1  ~> #push
+    rule GT W0 W1 => W0 >Word W1  ~> #push
+    rule EQ W0 W1 => W0 ==Word W1 ~> #push
+
+    rule JUMPI DEST 0 => .
+    rule JUMPI DEST W => JUMP DEST requires W =/=K 0
+
+ // rule SDIV       W0 W1 => ???
+ // rule SMOD       W0 W1 => ???
+ // rule SIGNEXTEND W0 W1 => ???
+ // rule BYTE       W0 W1 => ???
+ // rule SHA3       W0 W1 => ???
+ // rule SLT        W0 W1 => ???
+ // rule SGT        W0 W1 => ???
+
+    syntax TernStackOp ::= "ADDMOD" | "MULMOD" | "CALLDATACOPY" | "CODECOPY" | "CREATE"
+ // -----------------------------------------------------------------------------------
+    rule ADDMOD W0 W1 W2 => (W0 +Word W1) %Word W2 ~> #push
+    rule MULMOD W0 W1 W2 => (W0 *Word W1) %Word W2 ~> #push
+
+    syntax QuadStackOp ::= "EXTCODECOPY"
+ // ------------------------------------
 
 
 // Some operators need the "entire" stack (or at least a large chunk of it).
@@ -231,8 +257,11 @@ module EVM-OPCODE
 
 // There are some other operators.
 
+// TODO: `DELEGATECALL` will get the wrong number of arguments when binned as a
+// `CallOp`, but it seems weird to have a separate sort for it.
 
-    syntax CallOp ::= "CALL"
+
+    syntax CallOp ::= "CALL" | "CALLCODE" | "DELEGATECALL"
     syntax PushOp ::= PUSH ( Word )
     syntax LogOp  ::= LOG ( Word )
     syntax SpecialOp ::= CallOp | PushOp | LogOp | StackOp
@@ -240,44 +269,12 @@ module EVM-OPCODE
     rule PUSH(W) => W ~> #push
 
 
-// Some operators are meant to gather information from the world-state. We use the
-// syntax `_<_>` over `EnvOp` to indicate that it has gathered that information (in
-// the form of a word to push onto the stack). Many of these also require
-// information from the stack, so that is indicated using subsorts as well.
-
-// TODO: I'm not sure if it is supposed to *push* a word onto the stack or
-// *replace* the top element of the stack.
+// Here, all the operators are subsorted into `OpCode`.
 
 
-    syntax EnvNullOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE"
-                       | "CALLDATASIZE" | "CODESIZE" | "GASPRICE" | "COINBASE"
-                       | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "GASLIMIT"
-                       | "PC" | "MSIZE" | "GAS"
-    syntax EnvUnOp   ::= "BALANCE" | "CALLDATALOAD" | "EXTCODESIZE" | "BLOCKHASH"
-    syntax EnvTernOp ::= "CALLDATACOPY" | "CODECOPY"
-    syntax EnvQuadOp ::= "EXTCODECOPY"
- // ----------------------------------
-
-    syntax EnvOp ::= EnvNullOp
-                   | EnvUnOp "[" Word "]"
-                   | EnvTernOp "[" Word Word Word "]"
-                   | EnvQuadOp "[" Word Word Word Word "]"
- // ------------------------------------------------------
-
-    syntax KItem ::= EnvOp "<" Word ">"
- // -----------------------------------
-    rule EO:EnvOp < W > => W ~> #push
-
-
-// Here, all the operators that have not been binned are thrown (as well as the
-// subsorts).
-
-
-    syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | SpecialOp | LogOp | StackOp
-                    | EnvNullOp | EnvUnOp | EnvTernOp | EnvQuadOp | EnvOp | InternalOp
-                    | "CALLCODE" | "CREATE" | "JUMPDEST" | "SLOAD" | "SSTORE" | "DELEGATECALL"
-                    | "INVALID" | "SELFDESTRUCT"
- // --------------------------------------------
+    syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp
+                    | QuadStackOp | StackOp | SpecialOp | InternalOp
+ // ----------------------------------------------------------------
 
 
 // EVM Programs

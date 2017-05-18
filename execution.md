@@ -48,9 +48,7 @@ module EVM-EXECUTION
     rule <k> MSTORE INDEX VALUE => .              ... </k> <localMem> LM => LM[INDEX <- VALUE] </localMem>
     rule <k> MLOAD INDEX        => VALUE ~> #push ... </k> <localMem> ... INDEX |-> VALUE ...  </localMem>
 
-    rule <k> JUMP DEST    => . ... </k> <pc> _ => DEST </pc>
-    rule <k> JUMP1 DEST 0 => . ... </k>
-    rule <k> JUMP1 DEST N => . ... </k> <pc> _ => DEST </pc> requires N =/=K 0
+    rule <k> JUMP DEST => . ... </k> <pc> _ => DEST </pc>
 endmodule
 ```
 
@@ -118,9 +116,8 @@ module EVM-GAS
     rule Wbase =>   ADDRESS ; ORIGIN ; CALLER ; CALLVALUE ; CALLDATASIZE
                   ; CODESIZE ; GASPRICE ; COINBASE ; TIMESTAMP ; NUMBER
                   ; DIFFICULTY ; GASLIMIT ; POP ; PC ; MSIZE ; GAS ; .OpCodes
-    rule Wverylow =>  ADD ; SUB ; NOT ; LT ; GT ; SLT ; SGT ; EQ ; ISZERO ; AND
-                    ; EVMOR ; XOR ; BYTE ; CALLDATALOAD ; MLOAD ; MSTORE ; MSTORE8
-                    ; PUSH(0) ; DUP(0) ; SWAP(0) ; .OpCodes
+    rule Wverylow =>   ADD ; SUB ; NOT ; LT ; GT ; SLT ; SGT ; EQ ; ISZERO ; AND ; EVMOR
+                     ; XOR ; BYTE ; CALLDATALOAD ; MLOAD ; MSTORE ; MSTORE8 ; .OpCodes
     rule Wlow => MUL ; DIV ; SDIV ; MOD ; SMOD ; SIGNEXTEND ; .OpCodes
     rule Wmid => ADDMOD ; MULMOD ; JUMP ; JUMPI; .OpCodes
     rule Wextcode => EXTCODESIZE ; .OpCodes
@@ -141,6 +138,8 @@ module EVM-GAS
     rule #gas(OP)           => Gzero                         requires OP in Wzero
     rule #gas(OP)           => Gbase                         requires OP in Wbase
     rule #gas(OP)           => Gverylow                      requires OP in Wverylow
+    rule #gas(PO:PushOp)    => Gverylow
+    rule #gas(SO:StackOp)   => Gverylow
     rule #gas(OP)           => Glow                          requires OP in Wlow
     rule #gas(OP)           => Gmid                          requires OP in Wmid
     rule #gas(OP)           => Ghigh                         requires OP in Whigh
