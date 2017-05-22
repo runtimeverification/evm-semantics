@@ -147,12 +147,31 @@ and attach a gas cost to it. If there are rules you don't want to provide a gas
 cost to, you could do a proof that those rules can only fire a finite number of
 times before one of the rules with a gas cost must fire.
 
-Fixed Width
------------
+Representation Independence
+---------------------------
 
-Fixed width integer reasoning is hard (or at least harder). Perhaps this can be
-dropped? Gas calculation would have to take into account the extra storage
-requirements, which would make it difficult.
+Many of the operations in EVM are "representation dependent", they depend on
+some exact encoding of the data being worked over. For example, any command
+which specifies the endian-ness of the data is representation dependent. In
+addition, some operations allow using code as data (admittedly a nice thing),
+but then the data can ba hashed or cut up into bytes, making the representation
+of the code important (ie. we have to store it as a bunch of words instead of as
+a sum-type of the command names). Another example is the fixed-width arithmetic
+which restricts the integer representations that can be used.
+
+Many of these things require extra work in the formal semantics because the most
+convenient representation is not the one needed by the representation dependent
+functions. This requires writing and reasoning about converters, or doing
+everything over the chose representation.
+
+In many cases, removing the representation dependencies shouldn't be difficult.
+But for things like Keccak, the representation is crucial. In addition, in the
+case of fixed-width arithmetic, going to unbounded arithmetic would require a
+more nuanced gas scheme to ensure someone isn't just encoding all of their
+memory in a single integer.
+
+I think it would be worth thinking about how to remove data and code
+representation dependencies in future coins.
 
 Proof of Work
 -------------
