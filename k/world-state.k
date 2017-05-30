@@ -15,7 +15,7 @@ module EVM-WORLD-STATE
     imports EVM-DASM
 
     configuration <worldState>
-                    <control> $WORLDSTATE:Control </control>
+                    <control> $WORLDSTATE:K </control>
                     <accounts>
                       <account multiplicity="*">
                         <acctID> .AcctID </acctID>
@@ -27,7 +27,7 @@ module EVM-WORLD-STATE
                     </accounts>
                     <transactions>
                       <transaction multiplicity="*">
-                        <type> TXType </type>
+                        <type> .TXType </type>
                         <to> .AcctID </to>
                         <from> .AcctID </from>
                         <data> .WordStack </data>
@@ -38,7 +38,9 @@ module EVM-WORLD-STATE
                     </transactions>
                   </worldState>
 
-    syntax Control ::= ".Control" | "#response" Word | JSON
+    syntax KItem ::= Control
+    syntax Control ::= "#response" Word
+                     | Account | Accounts | Transaction | Transactions
                      | "accounts" ":" Accounts "transactions" ":" Transactions
  // --------------------------------------------------------------------------
     rule <control> accounts : ACCTS transactions : TXS => ACCTS ~> TXS ... </control>
@@ -46,22 +48,8 @@ module EVM-WORLD-STATE
     syntax AcctID ::= Word | ".AcctID"
  // ----------------------------------
 
-    syntax TXType ::= "message" | "creation"
- // ----------------------------------------
-
-    syntax Program ::= OpCodes | Map
-                     | #program ( Program ) [function]
-                     | #dasmEVM ( JSON )    [function]
- // --------------------------------------------------
-    rule #program( OCM:Map )     => OCM
-    rule #program( OCS:OpCodes ) => #asMap(OCS)
-    rule #dasmEVM( S:String )    => #program(#dasmOpCodes(#parseWordStack(replaceAll(S, "0x", ""))))
-
-    syntax Storage ::= WordMap | WordStack
-                     | #storage ( Storage ) [function]
- // --------------------------------------------------
-    rule #storage( WM:Map )       => WM
-    rule #storage( WS:WordStack ) => #asMap(WS)
+    syntax TXType ::= "message" | "creation" | ".TXType"
+ // ----------------------------------------------------
 
 
 // Here is the data of an account on the network. It has an id, a balance, a
@@ -73,9 +61,9 @@ module EVM-WORLD-STATE
                      | "account" ":" "-" "id"      ":" AcctID
                                      "-" "nonce"   ":" Word
                                      "-" "balance" ":" Word
-                                     "-" "program" ":" Program
-                                     "-" "storage" ":" Storage
- // ----------------------------------------------------------
+                                     "-" "program" ":" OpCodes
+                                     "-" "storage" ":" WordStack
+ // ------------------------------------------------------------
     rule <control> ACCTID : { "balance" : (BAL:String)
                             , "code"    : (CODE:String)
                             , "nonce"   : (NONCE:String)
@@ -84,8 +72,8 @@ module EVM-WORLD-STATE
                 => account : - id      : #parseHexWord(ACCTID)
                              - nonce   : #parseHexWord(NONCE)
                              - balance : #parseHexWord(BAL)
-                             - program : #dasmEVM(CODE)
-                             - storage : #parseStorage(STORAGE)
+                             - program : #dasmOpCodes(#parseWordStack(CODE))
+                             - storage : #parseWordStack(STORAGE)
                 ...
          </control>
 
@@ -142,10 +130,6 @@ module EVM-WORLD-STATE
  // ------------------------------------------------
     rule <control> .Transactions => .                           ... </control>
     rule <control> TX:Transaction TXS:Transactions => TX ~> TXS ... </control>
-
-    syntax Process ::= "{" AcctID "|" Word "|" Word "|" WordStack "|" WordMap "}"
-    syntax CallStack ::= ".CallStack"
-                       | Process CallStack
 endmodule
 
 
@@ -174,8 +158,8 @@ module EVM-WORLD-STATE-INTERFACE
                 <acctID> ACCT </acctID>
                 <nonce> NONCE </nonce>
                 <balance> BAL </balance>
-                <program> #program(PROGRAM) </program>
-                <storage> #storage(STORAGE) </storage>
+                <program> #asMap(PROGRAM) </program>
+                <storage> #asMap(STORAGE) </storage>
               </account>
             )
             ...
@@ -266,80 +250,6 @@ module EVM-WORLD-STATE-INTERFACE
            <storage> ... INDEX |-> VALUE ... </storage>
            ...
          </account>
-
-
-// The next setters allow setting information about the current running process,
-// and are useful at initialization as well as when `CALL` or `RETURN` is invoked.
-
-
-    syntax KItem ::= "#setAccountID" AcctID
- // ---------------------------------------
-    rule <k> #setAccountID ACCTID => . ... </k>
-         <id> _ => ACCTID </id>
-      [structural]
-
-    syntax KItem ::= "#setProgramCounter" Word
- // ------------------------------------------
-    rule <k> #setProgramCounter PCOUNT => . ... </k>
-         <pc> _ => PCOUNT </pc>
-      [structural]
-
-    syntax KItem ::= "#setGasAvail" Word
- // ------------------------------------
-    rule <k> #setGasAvail GASAVAIL => . ... </k>
-         <gas> _ => GASAVAIL </gas>
-      [structural]
-
-    syntax KItem ::= "#setGasPrice" Word
- // ------------------------------------
-    rule <k> #setGasPrice PRICE => . ... </k>
-         <gasPrice> _ => PRICE </gasPrice>
-      [structural]
-
-    syntax KItem ::= "#setWordStack" WordStack
- // ------------------------------------------
-    rule <k> #setWordStack WS => . ... </k>
-         <wordStack> _ => WS </wordStack>
-      [structural]
-
-    syntax KItem ::= "#setLocalMem" WordMap
- // ---------------------------------------
-    rule <k> #setLocalMem LM => . ... </k>
-         <localMem> _ => LM </localMem>
-      [structural]
-
-    syntax KItem ::= "#updateLocalMem" Word WordStack
- // -------------------------------------------------
-    rule <k> #updateLocalMem N WL => #setLocalMem (LM[N := WL]) ... </k>
-         <localMem> LM </localMem>
-      [structural]
-
-    syntax KItem ::= "#setProcess" Process
- // --------------------------------------
-    rule #setProcess { ACCT | PCOUNT | GASAVAIL | WS | LM }
-         =>    #setAccountID ACCT
-            ~> #setProgramCounter PCOUNT
-            ~> #setGasAvail GASAVAIL
-            ~> #setWordStack WS
-            ~> #setLocalMem LM
-      [structural]
-
-    syntax KItem ::= "#pushCallStack"
- // ---------------------------------
-    rule <k> #pushCallStack => . ... </k>
-         <id> ACCT </id>
-         <pc> PCOUNT </pc>
-         <gas> GASAVAIL </gas>
-         <wordStack> WS </wordStack>
-         <localMem> LM </localMem>
-         <callStack> CS => { ACCT | PCOUNT | GASAVAIL | WS | LM } CS </callStack>
-      [structural]
-
-    syntax KItem ::= "#popCallStack"
- // --------------------------------
-    rule <k> #popCallStack => #setProcess P ... </k>
-         <callStack> P:Process CS => CS </callStack>
-      [structural]
 endmodule
 
 
@@ -369,16 +279,13 @@ module EVM-DASM
     rule #parseHexWord(S)    => String2Base(replaceAll(S, "0x", ""), 16)
       requires (S =/=String "") andBool (S =/=String "0x")
 
-    syntax WordStack ::= #parseWordStack ( String ) [function]
+    syntax WordStack ::= #parseHexWords  ( String ) [function]
+                       | #parseWordStack ( String ) [function]
  // ----------------------------------------------------------
-    rule #parseWordStack( "" ) => .WordStack
-    rule #parseWordStack( S )  => #parseHexWord(substrString(S, 0, 2)) : #parseWordStack(substrString(S, 2, lengthString(S)))
+    rule #parseWordStack(S) => #parseHexWords(replaceAll(S, "0x", ""))
+    rule #parseHexWords("") => .WordStack
+    rule #parseHexWords(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexWords(substrString(S, 2, lengthString(S)))
       requires lengthString(S) >=Int 2
-
-    syntax Map ::= #parseStorage ( JSON ) [function]
- // ------------------------------------------------
-    rule #parseStorage( { .JSONList } )                   => .Map
-    rule #parseStorage( { KEY : (VALUE:String) , REST } ) => (#parseHexWord(KEY) |-> #parseHexWord(VALUE)) #parseStorage({ REST })
 
     syntax OpCode ::= #dasmOpCode ( Word ) [function]
  // -------------------------------------------------
@@ -449,15 +356,15 @@ module EVM-DASM
                      | #dasmLOG  ( Word , WordStack ) [function]
     syntax Word ::= #pushArg ( WordStack ) [function]
  // -------------------------------------------------
-    rule #dasmPUSH( W , WS ) => PUSH(#pushArg(#take(W, WS))) : #dasmOpCodes(#drop(W, WS))
+    rule #dasmPUSH( W , WS ) => PUSH(#pushArg(#take(W, WS))) ; #dasmOpCodes(#drop(W, WS))
 
     syntax OpCodes ::= #dasmOpCodes ( WordStack ) [function]
  // --------------------------------------------------------
     rule #dasmOpCodes( .WordStack ) => .OpCodes
-    rule #dasmOpCodes( W : WS )     => #dasmOpCode(W)    : #dasmOpCodes(WS) requires (W >=Word 0   ==K bool2Word(true)) andBool (W <=Word 95  ==K bool2Word(true))
-    rule #dasmOpCodes( W : WS )     => #dasmOpCode(W)    : #dasmOpCodes(WS) requires (W >=Word 240 ==K bool2Word(true)) andBool (W <=Word 255 ==K bool2Word(true))
-    rule #dasmOpCodes( W : WS )     => DUP( W -Word 127) : #dasmOpCodes(WS) requires (W >=Word 128 ==K bool2Word(true)) andBool (W <=Word 143 ==K bool2Word(true))
-    rule #dasmOpCodes( W : WS )     => SWAP(W -Word 143) : #dasmOpCodes(WS) requires (W >=Word 144 ==K bool2Word(true)) andBool (W <=Word 159 ==K bool2Word(true))
+    rule #dasmOpCodes( W : WS )     => #dasmOpCode(W)    ; #dasmOpCodes(WS) requires (W >=Word 0   ==K bool2Word(true)) andBool (W <=Word 95  ==K bool2Word(true))
+    rule #dasmOpCodes( W : WS )     => #dasmOpCode(W)    ; #dasmOpCodes(WS) requires (W >=Word 240 ==K bool2Word(true)) andBool (W <=Word 255 ==K bool2Word(true))
+    rule #dasmOpCodes( W : WS )     => DUP( W -Word 127) ; #dasmOpCodes(WS) requires (W >=Word 128 ==K bool2Word(true)) andBool (W <=Word 143 ==K bool2Word(true))
+    rule #dasmOpCodes( W : WS )     => SWAP(W -Word 143) ; #dasmOpCodes(WS) requires (W >=Word 144 ==K bool2Word(true)) andBool (W <=Word 159 ==K bool2Word(true))
     rule #dasmOpCodes( W : WS )     => #dasmLOG( W -Word 160 , WS )         requires (W >=Word 160 ==K bool2Word(true)) andBool (W <=Word 164 ==K bool2Word(true))
     rule #dasmOpCodes( W : WS )     => #dasmPUSH( W -Word 95 , WS )         requires (W >=Word 96  ==K bool2Word(true)) andBool (W <=Word 127 ==K bool2Word(true))
 endmodule

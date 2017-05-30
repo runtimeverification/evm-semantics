@@ -148,8 +148,8 @@ module EVM-WORD
     rule WM[N := .WordStack]   => WM
     rule WM[N := W0:Word : WS] => (WM[N <- W0])[N +Word 1 := WS]
     
-    syntax WordMap ::= #asMap ( WordStack ) [function]
- // --------------------------------------------------
+    syntax Map ::= #asMap ( WordStack ) [function]
+ // ----------------------------------------------
     rule #asMap(WS) => .Map [ 0 := WS ]
 
     syntax WordStack ::= #range ( WordMap , Word , Word ) [function]

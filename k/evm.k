@@ -10,7 +10,7 @@ requires "world-state.k"
 // which span multiple cells.
 
 
-module EVM-CONFIGURATION
+module EVM
     imports EVM-WORLD-STATE-INTERFACE
     imports EVM-EXECUTION
 
@@ -18,43 +18,31 @@ module EVM-CONFIGURATION
                   <callStack> .CallStack </callStack>
                   initEvmCell
                   initWorldStateCell(Init)
-endmodule
 
+    syntax Process ::= "{" AcctID "|" Word "|" Word "|" Word "|" WordStack "|" Map "}"
+    syntax CallStack ::= ".CallStack"
+                       | Process CallStack
 
-// Interprocedural Execution
-// -------------------------
-
-// Here we give the semantics to operations which communicate/call between accounts
-// on the network.
-
-
-module EVM
-    imports EVM-CONFIGURATION
-
-    syntax KItem ::= "#processCall" "{" AcctID "|" Word "|" WordStack "}"
- // ---------------------------------------------------------------------
-    rule <k> CALL GASAMT ACCT ETHER INOFFSET INSIZE OUTOFFSET OUTSIZE
-          => #processCall { ACCT | ETHER | #range(LM, INOFFSET, INSIZE) }
-          ...
-         </k>
+    syntax KItem ::= "#pushCallStack"
+ // ---------------------------------
+    rule <k> #pushCallStack => . </k>
+         <id> ACCT </id>
+         <pc> PCOUNT </pc>
+         <gas> GAVAIL </gas>
+         <gasPrice> GPRICE </gasPrice>
+         <wordStack> WS </wordStack>
          <localMem> LM </localMem>
+         <callStack> CS => { ACCT | PCOUNT | GAVAIL | GPRICE | WS | LM } CS </callStack>
 
-    // TODO: How are we handling refunding unused gas?
-    rule <k> #processCall {ACCT | ETHER | WL}
-          =>    #pushCallStack
-             ~> #setProcess {ACCT | 0 | ETHER | .WordStack | #asMap(WL)}
-         ... </k>
-         <id> CURRACCT </id>
-
-    syntax KItem ::= "#processReturn" WordStack
- // -------------------------------------------
-    rule #processReturn WL => #popCallStack ~> #returnValues WL
-    rule <k> RETURN INIT SIZE => #processReturn #range(LM, INIT, SIZE) ... </k>
-         <localMem> LM </localMem>
-
-    syntax KItem ::= "#returnValues" WordStack
- // ------------------------------------------
-    rule <k> #returnValues WL => #updateLocalMem INIT #take(SIZE, WL) ... </k>
-         <wordStack> INIT : SIZE : WS => WS </wordStack>
+    syntax KItem ::= "#popCallStack"
+ // --------------------------------
+    rule <k> #popCallStack => . </k>
+         <id> _ => ACCT </id>
+         <pc> _ => PCOUNT </pc>
+         <gas> _ => GAVAIL </gas>
+         <gasPrice> _ => GPRICE </gasPrice>
+         <wordStack> _ => WS </wordStack>
+         <localMem> _ => LM </localMem>
+         <callStack> { ACCT | PCOUNT | GAVAIL | GPRICE | WS | LM } CS => CS </callStack>
 endmodule
 

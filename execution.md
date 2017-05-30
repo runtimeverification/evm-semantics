@@ -43,7 +43,7 @@ module EVM-EXECUTION
     rule <k> W0:Word ~> #push => .                                 ... </k> <wordStack> WS => W0 : WS </wordStack>
     rule <k> #checkStackSize  => #stackSize(WS) ~> #checkStackSize ... </k> <wordStack> WS            </wordStack>
 
-    rule <k> DELEGATECALL => DELEGATECALL W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
+    rule <k> DELEGATECALL => DELEGATECALL W0 W1 W2 W3 W4 W5    ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
     rule <k> CO:CallOp    => CO           W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
       requires CO =/=K DELEGATECALL
 
