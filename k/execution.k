@@ -31,19 +31,21 @@ module EVM-EXECUTION
          <pc> PCOUNT => PCOUNT +Word 1 </pc>
          <gas> G => G -Word #gas(OP) </gas>
          <currentProgram> ... PCOUNT |-> OP ... </currentProgram>
-      requires ((G >Word #gas(OP)) ==K bool2Word(true)) orBool ((G ==Word #gas(OP)) ==K bool2Word(true))
+      requires (G >=Word #gas(OP)) ==K bool2Word(true)
 
     rule <k> UOP:UnStackOp   => UOP W0       ... </k> <wordStack> W0 : WS           => WS </wordStack>
     rule <k> BOP:BinStackOp  => BOP W0 W1    ... </k> <wordStack> W0 : W1 : WS      => WS </wordStack>
     rule <k> TOP:TernStackOp => TOP W0 W1 W2 ... </k> <wordStack> W0 : W1 : W2 : WS => WS </wordStack>
 
+    rule <k> SO:StackOp   => SO WS ... </k> <wordStack> WS      </wordStack>
+    rule <k> #setStack WS => .     ... </k> <wordStack> _ => WS </wordStack>
+
     rule <k> W0:Word ~> #push => .                                 ... </k> <wordStack> WS => W0 : WS </wordStack>
     rule <k> #checkStackSize  => #stackSize(WS) ~> #checkStackSize ... </k> <wordStack> WS            </wordStack>
 
-    rule <k> CALL => CALL W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
-
-    rule <k> SO:StackOp   => SO WS ... </k> <wordStack> WS      </wordStack>
-    rule <k> #setStack WS => .     ... </k> <wordStack> _ => WS </wordStack>
+    rule <k> DELEGATECALL => DELEGATECALL W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
+    rule <k> CO:CallOp    => CO           W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
+      requires CO =/=K DELEGATECALL
 
     rule <k> MSTORE INDEX VALUE => .              ... </k> <localMem> LM => LM[INDEX <- VALUE] </localMem>
     rule <k> MLOAD INDEX        => VALUE ~> #push ... </k> <localMem> ... INDEX |-> VALUE ...  </localMem>
@@ -124,6 +126,11 @@ module EVM-GAS
     rule Wcopy => CALLDATACOPY ; CODECOPY ; .OpCodes
     rule Wcall => CALL ; CALLCODE ; DELEGATECALL ; .OpCodes
 
+
+// TODO: The rules marked as `INCORRECT` below are performing simpler gas
+// calculations than the actual yellowpaper specifies.
+
+
     rule #gas(SSTORE)       => #gasSSTORE                                           // INCORRECT
     rule #gas(EXP)          => Gexp                                                 // INCORRECT
     rule #gas(OP)           => Gverylow +Word Gcopy          requires OP in Wcopy   // INCORRECT
@@ -138,6 +145,13 @@ module EVM-GAS
     rule #gas(OP)           => Gzero                         requires OP in Wzero
     rule #gas(OP)           => Gbase                         requires OP in Wbase
     rule #gas(OP)           => Gverylow                      requires OP in Wverylow
+
+
+// TODO: Right now we have hardcoded `PushOp` and `StackOp` because we can't use
+// the set-inclusion method unless it is made aware that it should ignore the
+// argument given to these operators.
+
+
     rule #gas(PO:PushOp)    => Gverylow
     rule #gas(SO:StackOp)   => Gverylow
     rule #gas(OP)           => Glow                          requires OP in Wlow

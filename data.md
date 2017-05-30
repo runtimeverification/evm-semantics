@@ -51,13 +51,17 @@ booleans. Here `chop` will move a number back into the correct range and `bool2W
     rule W0:Int %Word 0      => 0 
     rule W0:Int %Word W1:Int => chop( W0 %Int W1 ) requires W1 =/=K 0
 
-    syntax Word ::= Word "<Word" Word  [function]
-                  | Word ">Word" Word  [function]
+    syntax Word ::= Word "<Word"  Word [function]
+                  | Word ">Word"  Word [function]
+                  | Word "<=Word" Word [function]
+                  | Word ">=Word" Word [function]
                   | Word "==Word" Word [function]
  // ---------------------------------------------
-    rule W0:Int <Word W1:Int  => bool2Word( W0 <Int W1 )
-    rule W0:Int >Word W1:Int  => bool2Word( W0 >Int W1 )
-    rule W0:Int ==Word W1:Int => bool2Word( W0 ==Int W1)
+    rule W0:Int <Word  W1:Int => bool2Word(W0 <Int  W1)
+    rule W0:Int >Word  W1:Int => bool2Word(W0 >Int  W1)
+    rule W0:Int <=Word W1:Int => bool2Word(W0 <=Int W1)
+    rule W0:Int >=Word W1:Int => bool2Word(W0 >=Int W1)
+    rule W0:Int ==Word W1:Int => bool2Word(W0 ==Int W1)
 
     syntax Word ::= "~Word" Word        [function]
                   | Word "|Word" Word   [function]
@@ -117,10 +121,15 @@ It's specified in the yellowpaper for `PUSH`, but not for `DUP` and `SWAP`.
     rule #stackSize ( W : WS )     => 1 +Word #stackSize(WS)
 
     syntax WordStack ::= #take ( Word , WordStack ) [function]
+                       | #drop ( Word , WordStack ) [function]
  // ----------------------------------------------------------
     rule #take(0, WS)            => .WordStack
     rule #take(N, .WordStack)    => 0 : #take(N -Word 1, .WordStack) requires N >Word 0
     rule #take(N, (W:Word : WS)) => W : #take(N -Word 1, WS)         requires N >Word 0
+
+    rule #drop(0, WS)            => WS
+    rule #drop(N, .WordStack)    => .WordStack
+    rule #drop(N, (W:Word : WS)) => #drop(N -Word 1, WS) requires N >Word 0
 ```
 
 Word Map
@@ -170,6 +179,7 @@ module EVM-OPCODE
                    | TernStackOp Word Word Word
                    | QuadStackOp Word Word Word Word
                    | CallOp Word Word Word Word Word Word Word
+                   | "DELEGATECALL" Word Word Word Word Word Word
                    | StackOp WordStack
 ```
 
@@ -227,7 +237,12 @@ their own sorts to specify how many they need (up to `TernStackOp`).
 
     rule JUMPI DEST 0 => .
     rule JUMPI DEST W => JUMP DEST requires W =/=K 0
+```
 
+TODO: The following need implemented (once the corresponding `WORD` operations
+are implemented above).
+
+```k
  // rule SDIV       W0 W1 => ???
  // rule SMOD       W0 W1 => ???
  // rule SIGNEXTEND W0 W1 => ???
@@ -254,17 +269,15 @@ Some operators need the "entire" stack (or at least a large chunk of it).
     rule SWAP(N) (W0 : WS)    => #pushStack ((WS [ N -Word 1 ]) : (WS [ N -Word 1 := W0 ]))
 ```
 
-There are some other operators.
-
-TODO: `DELEGATECALL` will get the wrong number of arguments when binned as a
-`CallOp`, but it seems weird to have a separate sort for it.
+TODO: `DELEGATECALL` is just binned in with `SpecialOp` because it doesn't take
+the same number of arguments as the rest of the `CallOp`s.
 
 ```k
-    syntax CallOp ::= "CALL" | "CALLCODE" | "DELEGATECALL"
+    syntax CallOp ::= "CALL" | "CALLCODE"
     syntax PushOp ::= PUSH ( Word )
     syntax LogOp  ::= LOG ( Word )
-    syntax SpecialOp ::= CallOp | PushOp | LogOp | StackOp
- // ------------------------------------------------------
+    syntax SpecialOp ::= CallOp | PushOp | LogOp | "DELEGATECALL"
+ // -------------------------------------------------------------
     rule PUSH(W) => W ~> #push
 ```
 
@@ -302,4 +315,3 @@ to opcode is useful for execution.
     rule #asMap( N , OP:OpCode ; OCS ) => (N |-> OP) #asMap(N +Int 1, OCS)
 endmodule
 ```
-
