@@ -36,6 +36,9 @@ module EVM
                   </evm>
 
 
+// Machine Plumbing
+// ----------------
+
 // When the `op` cell becomes empty, it's time to load the next opcode. The gas
 // needed is calculated here.
 
@@ -48,7 +51,8 @@ module EVM
 
 
 // Depending on the sort of the opcode loaded, the correct number of arguments are
-// loaded off the `wordStack` (or the entire stack).
+// loaded off the `wordStack` (or the entire stack is loaded). This allows more
+// "local" definition of each of the corresponding operators.
 
 
     syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
@@ -81,11 +85,19 @@ module EVM
 // The internal operators are provided here. These are just used by the other
 // operators for shuffling local execution state around on the EVM.
 
+// -   `#push` will push an element to the `wordStack` without any checks.
+// -   `#setStack_` will set the current stack to the given one.
+
 
     syntax InternalOp ::= "#push" | "#setStack" WordStack
  // -----------------------------------------------------
     rule <op> W0:Word ~> #push => . ... </op> <wordStack> WS => W0 : WS </wordStack>
     rule <op> #setStack WS     => . ... </op> <wordStack> _  => WS      </wordStack>
+
+
+// -   `#checkStackSize` will ensure that there hasn't been a stack overflow.
+// -   `#stackOverflow` signals that there has been a stack overflow.
+
 
     syntax InternalOp ::= "#checkStackSize" | "#stackOverflow"
  // ----------------------------------------------------------
@@ -93,28 +105,63 @@ module EVM
     rule (I:Int ~> #checkStackSize) => .              requires I <Int  1024
     rule (I:Int ~> #checkStackSize) => #stackOverflow requires I >=Int 1024
 
-    syntax Process ::= "{" Word "|" Word "|" Word "|" Word "|" WordStack "|" Map "}"
+
+// Previous process states must be stored, so a tuple of sort `Process` is supplied
+// for that. The `CallStack` is a cons-list of `Process`.
+
+// -   `#pushCallStack` stores the current state on the `callStack`.
+// -   `#popCallStack` replaces the current state with the top of the `callStack`.
+
+
+    syntax Process ::= "{" Word "|" Word "|" Word "|" Word "|" WordStack "|" Map "|" Map "}"
     syntax CallStack ::= ".CallStack" | Process CallStack
 
     syntax InternalOp ::= "#pushCallStack" | "#popCallStack"
  // --------------------------------------------------------
     rule <op> #pushCallStack => . </op>
-         <callStack> CS => { ACCT | PCOUNT | GAVAIL | GPRICE | WS | LM } CS </callStack>
+         <callStack> CS => { ACCT | PCOUNT | GAVAIL | GPRICE | WS | LM | PGM } CS </callStack>
          <id>        ACCT   </id>
          <pc>        PCOUNT </pc>
          <gas>       GAVAIL </gas>
          <gasPrice>  GPRICE </gasPrice>
          <wordStack> WS     </wordStack>
          <localMem>  LM     </localMem>
+         <program>   PGM    </program>
 
     rule <op> #popCallStack => . </op>
-         <callStack> { ACCT | PCOUNT | GAVAIL | GPRICE | WS | LM } CS => CS </callStack>
+         <callStack> { ACCT | PCOUNT | GAVAIL | GPRICE | WS | LM | PGM } CS => CS </callStack>
          <id>        _ => ACCT   </id>
          <pc>        _ => PCOUNT </pc>
          <gas>       _ => GAVAIL </gas>
          <gasPrice>  _ => GPRICE </gasPrice>
          <wordStack> _ => WS     </wordStack>
          <localMem>  _ => LM     </localMem>
+         <program>   _ => PGM    </program>
+
+
+// EVM Programs
+// ------------
+
+// Lists of opcodes form programs. Deciding if an opcode is in a list will be
+// useful for modelling gas, and converting a program into a map of program-counter
+// to opcode is useful for execution.
+
+
+    syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
+ // --------------------------------------------------
+
+    syntax Bool ::= OpCode "in" OpCodes
+ // -----------------------------------
+    rule OP in .OpCodes    => false
+    rule OP in (OP ; OPS)  => true
+    rule OP in (OP' ; OPS) => OP in OPS requires OP =/=K OP'
+
+    syntax Map ::= #asMap ( OpCodes )       [function]
+                 | #asMap ( Int , OpCodes ) [function]
+ // --------------------------------------------------
+    rule #asMap( OPS:OpCodes )         => #asMap(0, OPS)
+    rule #asMap( N , .OpCodes )        => .Map
+    rule #asMap( N , OP:OpCode ; OCS ) => (N |-> OP) #asMap(N +Int 1, OCS)
 
 
 // EVM Opcodes
@@ -127,7 +174,28 @@ module EVM
 // Implementations immediately follow declarations, so if an operator is declared
 // here but not implemented then it isn't implemented at all.
 
-// ### Expressions
+// Stack Manipulations
+// -------------------
+
+// Some operators don't calculate anything, they just push the stack around a bit.
+
+
+    syntax UnStackOp ::= "POP"
+ // --------------------------
+    rule <op> POP W => . ... </op>
+
+    syntax StackOp ::= DUP ( Word ) | SWAP ( Word )
+ // -----------------------------------------------
+    rule <op> DUP(N)  WS:WordStack => #setStack ((WS [ N -Word 1 ]) : WS) ~> #checkStackSize    ... </op>
+    rule <op> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Word 1 ]) : (WS [ N -Word 1 := W0 ])) ... </op>
+
+    syntax PushOp ::= PUSH ( Word )
+ // -------------------------------
+    rule <op> PUSH(W) => W ~> #push ~> #checkStackSize ... </op>
+
+
+// Expressions
+// -----------
 
 // Expression calculations are simple and don't require anything but the arguments
 // from the `wordStack` to operate. The arguments are loaded automatically based on
@@ -177,26 +245,8 @@ module EVM
  // --------------------------------------------------------------------------------------
 
 
-// ### Stack Manipulations
-
-// Some operators don't calculate anything, they just push the stack around a bit.
-
-
-    syntax UnStackOp ::= "POP"
- // --------------------------
-    rule <op> POP W => . ... </op>
-
-    syntax StackOp ::= DUP ( Word ) | SWAP ( Word )
- // -----------------------------------------------
-    rule <op> DUP(N)  WS:WordStack => #setStack ((WS [ N -Word 1 ]) : WS) ~> #checkStackSize    ... </op>
-    rule <op> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Word 1 ]) : (WS [ N -Word 1 := W0 ])) ... </op>
-
-    syntax PushOp ::= PUSH ( Word )
- // -------------------------------
-    rule <op> PUSH(W) => W ~> #push ~> #checkStackSize ... </op>
-
-
-// ### Control Flow
+// Control Flow
+// ------------
 
 // The `JUMP*` family of operations affect the current program counter.
 
@@ -219,7 +269,8 @@ module EVM
  // -------------------------------------
 
 
-// ### Local State
+// Local State
+// -----------
 
 // These operations are getters/setters of the local execution memory.
 
@@ -227,7 +278,7 @@ module EVM
     syntax UnStackOp  ::= "MLOAD"
     syntax BinStackOp ::= "MSTORE" | "MSTORE8"
  // ------------------------------------------
-    rule <op> MLOAD INDEX        => VALUE ~> #push ... </op> <localMem> ... INDEX |-> VALUE ...  </localMem>
+    rule <op> MLOAD  INDEX       => VALUE ~> #push ... </op> <localMem> ... INDEX |-> VALUE ...  </localMem>
     rule <op> MSTORE INDEX VALUE => .              ... </op> <localMem> LM => LM [ INDEX <- VALUE ] </localMem>
 
 
@@ -247,13 +298,13 @@ module EVM
  // ------------------------------------------------------
     rule <op> ADDRESS => ACCT       ~> #push ... </op> <id> ACCT </id>
     rule <op> ORIGIN  => #origin CS ~> #push ... </op> <callStack> CS </callStack>
-    rule <op> CALLER  => ACCT       ~> #push ... </op> <callStack> { ACCT | _ | _ | _ | _ | _ } CS </callStack>
+    rule <op> CALLER  => ACCT       ~> #push ... </op> <callStack> { ACCT | _ | _ | _ | _ | _ | _ } CS </callStack>
     rule <op> CALLER  => ACCT       ~> #push ... </op> <id> ACCT </id> <callStack> .CallStack </callStack>
 
     syntax KItem ::= "#origin" CallStack
  // ------------------------------------
-    rule <op> #origin ({ ACCT | _ | _ | _ | _ | _ } .CallStack) => ACCT ~> #push ... </op>
-    rule <op> #origin (P1:Process P2:Process CS:CallStack)      => #origin (P2 CS) ... </op>
+    rule <op> #origin ({ ACCT | _ | _ | _ | _ | _ | _ } .CallStack) => ACCT ~> #push   ... </op>
+    rule <op> #origin (P1:Process P2:Process CS:CallStack)          => #origin (P2 CS) ... </op>
 
 
 // TODO: Unimplemented.
@@ -262,30 +313,24 @@ module EVM
     syntax NullStackOp ::= "CALLVALUE" | "CALLDATASIZE" | "CALLDATALOAD"
  // --------------------------------------------------------------------
 
+    syntax LogOp  ::= LOG ( Word )
+ // ------------------------------
 
-// ### Global State
 
-// These operators make queries about the current block.
+// Global State
+// ------------
 
-// TODO: Unimplemented.
+// TODO: All of this section is unimplemented. It requires interaction with the
+// world state.
 
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "GASLIMIT"
     syntax UnStackOp   ::= "BLOCKHASH" | "CALLDATALOAD" | "EXTCODESIZE" | "BALANCE"
  // -------------------------------------------------------------------------------
 
-
-// These operators affect the storage of the current account.
-
-// TODO: Unimplemented.
-
-
     syntax UnStackOp  ::= "SLOAD"
     syntax BinStackOp ::= "SSTORE"
-
-
-// TODO: Unimplemented.
-
+ // ------------------------------
 
     syntax TernStackOp ::= "CALLDATACOPY" | "CODECOPY" | "CREATE"
  // -------------------------------------------------------------
@@ -293,43 +338,12 @@ module EVM
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
 
-
-// TODO: Unimplemented.
-
-
     syntax CallOp ::= "CALL" | "CALLCODE" | "DELEGATECALL"
-    syntax LogOp  ::= LOG ( Word )
- // --------------------------------------------
-
-
-// EVM Programs
-// ------------
-
-// Lists of opcodes form programs. Deciding if an opcode is in a list will be
-// useful for modelling gas, and converting a program into a map of program-counter
-// to opcode is useful for execution.
-
-
-    syntax OpCodes ::= ".OpCodes"
-                     | OpCode ";" OpCodes
- // -------------------------------------
-
-    syntax Bool ::= OpCode "in" OpCodes
- // -----------------------------------
-    rule OP in .OpCodes    => false
-    rule OP in (OP ; OPS)  => true
-    rule OP in (OP' ; OPS) => OP in OPS requires OP =/=K OP'
-
-    syntax Map ::= #asMap ( OpCodes )       [function]
-                 | #asMap ( Int , OpCodes ) [function]
- // --------------------------------------------------
-    rule #asMap( OPS:OpCodes )         => #asMap(0, OPS)
-    rule #asMap( N , .OpCodes )        => .Map
-    rule #asMap( N , OP:OpCode ; OCS ) => (N |-> OP) #asMap(N +Int 1, OCS)
+ // ------------------------------------------------------
 
 
 // EVM Gas Cost
-// ------------
+// ============
 
 // Here we define the gas-cost of each instruction in the instruction set. Many of
 // the instructions gas cost is fixed and not dependent on any parts of the
