@@ -12,7 +12,7 @@ To perform arithmetic on words, make sure that you use the corresponding
 rounding modes are used when performing the operations.
 
 ```k
-module EVM-WORD
+module EVM-DATA
 
     syntax KResult ::= Int 
 ```

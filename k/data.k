@@ -12,7 +12,7 @@
 // rounding modes are used when performing the operations.
 
 
-module EVM-WORD
+module EVM-DATA
 
     syntax KResult ::= Int 
 
