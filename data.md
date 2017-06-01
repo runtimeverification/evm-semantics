@@ -74,7 +74,7 @@ booleans. Here `chop` will move a number back into the correct range and `bool2W
     rule W0:Int xorWord W1:Int => chop( W0 xorInt W1 )
 ```
 
-TODO: The following are unimplemented.
+TODO: The following need implemented.
 
 ```k
     syntax Word ::= signextend ( Word , Word ) [function]
@@ -85,6 +85,13 @@ TODO: The following are unimplemented.
                   | getbyte ( Word , Word )    [function]
                   | sha3 ( Word , Word )       [function]
  // -----------------------------------------------------
+ // rule signextend(W0, W1) => ???
+ // rule sdiv(W0, W1)       => ???
+ // rule smod(W0, W1)       => ???
+ // rule slt(W0, W1)        => ???
+ // rule sgt(W0, W1)        => ???
+ // rule getbyte(W0, W1)    => ???
+ // rule sha3(W0, W1)       => ???
 ```
 
 Word Stack
@@ -146,7 +153,7 @@ functionality for that is provided as well.
  // -----------------------------------------------------------------
     rule WM[N := .WordStack]   => WM
     rule WM[N := W0:Word : WS] => (WM[N <- W0])[N +Word 1 := WS]
-    
+
     syntax Map ::= #asMap ( WordStack ) [function]
  // ----------------------------------------------
     rule #asMap(WS) => .Map [ 0 := WS ]
@@ -165,9 +172,9 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because otherwise K
 has trouble parsing it/compiling the definition.
 
 Opcodes are broken into several different subsorts, to represent the different
-ways they read data from the environment. Later in the semantics, this sort
-information is used to load data from the execution context automatically,
-allowing us to specify the simplification of the operators here.
+ways they read data from the environment. In [`EVM-EXECUTION`](execution.md),
+this sort information is used to load data from the execution context
+automatically, allowing us to specify the simplification of the operators here.
 
 ```k
 module EVM-OPCODE
@@ -216,10 +223,7 @@ their own sorts to specify how many they need (up to `TernStackOp`).
     syntax BinStackOp ::= "ADD" | "MUL" | "SUB" | "DIV" | "EXP"
                         | "MOD" | "AND" | "EVMOR" | "XOR"
                         | "LT" | "GT" | "EQ" | "JUMPI"
-                        | "SLT" | "SGT" | "SDIV" | "SMOD" | "SIGNEXTEND"
-                        | "BYTE" | "SHA3"
-                        | "RETURN" | "SSTORE" | "MSTORE" | "MSTORE8"
- // ----------------------------------------------------------------
+ // --------------------------------------------------
     rule ADD W0 W1 => W0 +Word W1 ~> #push
     rule MUL W0 W1 => W0 *Word W1 ~> #push
     rule SUB W0 W1 => W0 -Word W1 ~> #push
@@ -243,6 +247,9 @@ TODO: The following need implemented (once the corresponding `WORD` operations
 are implemented above).
 
 ```k
+    syntax BinStackOp ::= "SLT" | "SGT" | "SDIV" | "SMOD" | "SIGNEXTEND"
+                        | "BYTE" | "SHA3" | "RETURN" | "SSTORE" | "MSTORE" | "MSTORE8"
+ // ----------------------------------------------------------------------------------
  // rule SDIV       W0 W1 => ???
  // rule SMOD       W0 W1 => ???
  // rule SIGNEXTEND W0 W1 => ???
@@ -251,13 +258,28 @@ are implemented above).
  // rule SLT        W0 W1 => ???
  // rule SGT        W0 W1 => ???
 
-    syntax TernStackOp ::= "ADDMOD" | "MULMOD" | "CALLDATACOPY" | "CODECOPY" | "CREATE"
- // -----------------------------------------------------------------------------------
+    syntax TernStackOp ::= "ADDMOD" | "MULMOD"
+ // ------------------------------------------
     rule ADDMOD W0 W1 W2 => (W0 +Word W1) %Word W2 ~> #push
     rule MULMOD W0 W1 W2 => (W0 *Word W1) %Word W2 ~> #push
+```
 
+TODO: The following need implemented.
+
+```k
+    syntax TernStackOp ::= "CALLDATACOPY" | "CODECOPY" | "CREATE"
+ // -------------------------------------------------------------
+ // rule CALLDATACOPY W0 W1 W2 => ???
+ // rule CODECOPY     W0 W1 W2 => ???
+ // rule CREATE       W0 W1 W2 => ???
+```
+
+TODO: The following need implemented.
+
+```k
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
+ // rule EXTCODECOPY W0 W1 W2 W3 => ???
 ```
 
 Some operators need the "entire" stack (or at least a large chunk of it).
@@ -267,26 +289,30 @@ Some operators need the "entire" stack (or at least a large chunk of it).
  // -----------------------------------------------
     rule DUP(N)  WS:WordStack => #pushStack ((WS [ N -Word 1 ]) : WS)
     rule SWAP(N) (W0 : WS)    => #pushStack ((WS [ N -Word 1 ]) : (WS [ N -Word 1 := W0 ]))
+
+    syntax PushOp ::= PUSH ( Word )
+ // --------------------------------
+    rule PUSH(W) => W ~> #push
 ```
 
-TODO: `DELEGATECALL` is just binned in with `SpecialOp` because it doesn't take
-the same number of arguments as the rest of the `CallOp`s.
+TODO: The following need implemented.
 
 ```k
-    syntax CallOp ::= "CALL" | "CALLCODE"
-    syntax PushOp ::= PUSH ( Word )
+    syntax CallOp ::= "CALL" | "CALLCODE" | "DELEGATECALL"
     syntax LogOp  ::= LOG ( Word )
-    syntax SpecialOp ::= CallOp | PushOp | LogOp | "DELEGATECALL"
- // -------------------------------------------------------------
-    rule PUSH(W) => W ~> #push
+ // --------------------------------------------
+ // rule CALL         W0 W1 W2 W3 W4 W5 W6 => ???
+ // rule CALLCODE     W0 W1 W2 W3 W4 W5 W6 => ???
+ // rule DELEGATECALL W0 W1 W2 W3 W4 W5    => ???
+ // rule LogOp(W) => ???
 ```
 
 Here, all the operators are subsorted into `OpCode`.
 
 ```k
-    syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp
-                    | QuadStackOp | StackOp | SpecialOp | InternalOp
- // ----------------------------------------------------------------
+    syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp | StackOp
+                    | InternalOp | CallOp | PushOp | LogOp
+ // ------------------------------------------------------
 ```
 
 EVM Programs

@@ -33,9 +33,10 @@ module EVM-EXECUTION
          <currentProgram> ... PCOUNT |-> OP ... </currentProgram>
       requires (G >=Word #gas(OP)) ==K bool2Word(true)
 
-    rule <k> UOP:UnStackOp   => UOP W0       ... </k> <wordStack> W0 : WS           => WS </wordStack>
-    rule <k> BOP:BinStackOp  => BOP W0 W1    ... </k> <wordStack> W0 : W1 : WS      => WS </wordStack>
-    rule <k> TOP:TernStackOp => TOP W0 W1 W2 ... </k> <wordStack> W0 : W1 : W2 : WS => WS </wordStack>
+    rule <k> UOP:UnStackOp   => UOP W0          ... </k> <wordStack> W0 : WS                => WS </wordStack>
+    rule <k> BOP:BinStackOp  => BOP W0 W1       ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack>
+    rule <k> TOP:TernStackOp => TOP W0 W1 W2    ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
+    rule <k> QOP:QuadStackOp => QOP W0 W1 W2 W3 ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
 
     rule <k> SO:StackOp   => SO WS ... </k> <wordStack> WS      </wordStack>
     rule <k> #setStack WS => .     ... </k> <wordStack> _ => WS </wordStack>
