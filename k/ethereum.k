@@ -10,11 +10,11 @@ requires "world-state.k"
 
 module ETHEREUM
     imports EVM
-    imports EVM-DASM
     imports WORLD-STATE
+    imports ETHEREUM-SIMULATION
 
     configuration <ethereum>
-                    <k> . </k>
+                    <k> $PGM:EthereumSimulation </k>
                     initEvmCell
                     initWorldStateCell
                   </ethereum>
@@ -28,7 +28,6 @@ module ETHEREUM
     rule <op> #pushResponse => RESPONSE ~> #push ... </op>
          <control> #response RESPONSE => . </control>
 
- // ------------------------------
     rule <op> SLOAD INDEX => #pushResponse ... </op>
          <id> ACCT </id>
          <control> . => #getAccountStorage ACCT INDEX </control>
@@ -36,5 +35,97 @@ module ETHEREUM
     rule <op> SSTORE INDEX VALUE => . ... </op>
          <id> ACCT </id>
          <control> . => #setAccountStorage ACCT INDEX VALUE </control>
+
+
+// Ethereum Simulations
+// ====================
+
+// An Ethereum simulation is a list of Ethereum commands.
+
+
+    syntax EthereumSimulation ::= ".EthereumSimulation"
+                                | EthereumCommand EthereumSimulation
+ // ----------------------------------------------------------------
+    rule .EthereumSimulation => .
+    rule ETC:EthereumCommand ETS:EthereumSimulation => ETC ~> ETS
+
+
+// -   `load_` is used to load an account or transaction into the world state.
+
+
+    syntax EthereumCommand ::= "load" Account | "load" Transaction
+ // --------------------------------------------------------------
+
+    syntax Account ::= "account" ":" "-" "id"      ":" AcctID
+                                     "-" "nonce"   ":" Word
+                                     "-" "balance" ":" Word
+                                     "-" "program" ":" OpCodes
+                                     "-" "storage" ":" WordStack
+ // ------------------------------------------------------------
+    rule <k> ( load ( account : - id      : ACCTID
+                                - nonce   : NONCE
+                                - balance : BALANCE
+                                - code    : CODE
+                                - storage : STORAGE
+                    )
+            =>
+             .
+             )
+             ...
+          </k>
+          <control> . => #addAccount ACCTID BALANCE #asMap(CODE) #asMap(STORAGE) ("nonce" |-> NONCE) </control>
+
+    syntax Transaction ::= "transaction" ":" "-" "msgid"    ":" MsgID
+                                             "-" "to"       ":" AcctID
+                                             "-" "from"     ":" AcctID
+                                             "-" "value"    ":" Word
+                                             "-" "data"     ":" Word
+                                             "-" "gasPrice" ":" Word
+                                             "-" "gasLimit" ":" Word
+ // ----------------------------------------------------------------
+    rule <k> ( load ( transaction : - msgid    : MSGID
+                                    - to       : ACCTTO
+                                    - from     : ACCTFROM
+                                    - value    : VALUE
+                                    - data     : DATA
+                                    - gasPrice : GPRICE
+                                    - gasLimit : GLIMIT
+                    )
+            =>
+             .
+             )
+             ...
+         </k>
+         <control> . => #addMessage MSGID ACCTTO ACCTFROM VALUE ("data" |-> DATA "gasPrice" |-> GPRICE "gasLimit" |-> GLIMIT) </control>
+
+
+// -   `check-account_` is used to check if an account appears in the world-state
+//     with the given information.
+
+
+    syntax EthereumCommand ::= "check-account" Account
+ // --------------------------------------------------
+    rule <k> ( check-account ( account : - id      : ACCT
+                                         - nonce   : NONCE
+                                         - balance : BALANCE
+                                         - program : PROGRAM
+                                         - storage : STORAGE
+                             )
+            => .
+             )
+             ...
+         </k>
+         <account>
+           <acctID>  ACCT              </acctID>
+           <balance> BALANCE           </balance>
+           <code>    CODE              </code>
+           <storage> ACCTSTORAGE       </storage>
+           <acctMap> "nonce" |-> NONCE </acctMap>
+         </account>
+      requires #asMap(PROGRAM) ==K CODE andBool #asMap(STORAGE) ==K ACCTSTORAGE#asMap(PROGRAM) ==K CODE andBool #asMap(STORAGE) ==K ACCTSTORAGE
 endmodule
 
+
+// Here is the data of a transaction on the network. It has fields for who it's
+// directed toward, the data, the value transfered, and the gas-price/gas-limit.
+// Similarly, a conversion from the JSON format to the pretty K format is provided.

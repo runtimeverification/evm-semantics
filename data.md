@@ -74,7 +74,7 @@ booleans. Here `chop` will move a number back into the correct range and `bool2W
     rule W0:Int xorWord W1:Int => chop( W0 xorInt W1 )
 ```
 
-TODO: The following need implemented.
+TODO: Unimplemented.
 
 ```k
     syntax Word ::= signextend ( Word , Word ) [function]
@@ -85,13 +85,6 @@ TODO: The following need implemented.
                   | getbyte ( Word , Word )    [function]
                   | sha3 ( Word , Word )       [function]
  // -----------------------------------------------------
- // rule signextend(W0, W1) => ???
- // rule sdiv(W0, W1)       => ???
- // rule smod(W0, W1)       => ???
- // rule slt(W0, W1)        => ???
- // rule sgt(W0, W1)        => ???
- // rule getbyte(W0, W1)    => ???
- // rule sha3(W0, W1)       => ???
 ```
 
 Word Stack

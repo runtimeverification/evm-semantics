@@ -75,7 +75,7 @@ module EVM-DATA
     rule W0:Int xorWord W1:Int => chop( W0 xorInt W1 )
 
 
-// TODO: The following need implemented.
+// TODO: Unimplemented.
 
 
     syntax Word ::= signextend ( Word , Word ) [function]
@@ -86,13 +86,6 @@ module EVM-DATA
                   | getbyte ( Word , Word )    [function]
                   | sha3 ( Word , Word )       [function]
  // -----------------------------------------------------
- // rule signextend(W0, W1) => ???
- // rule sdiv(W0, W1)       => ???
- // rule smod(W0, W1)       => ???
- // rule slt(W0, W1)        => ???
- // rule sgt(W0, W1)        => ???
- // rule getbyte(W0, W1)    => ???
- // rule sha3(W0, W1)       => ???
 
 
 // Word Stack
