@@ -4,8 +4,8 @@ pandoc-tangle --from markdown --to code-k --code k world-state.md > k/world-stat
 pandoc-tangle --from markdown --to code-k --code k data.md        > k/data.k
 pandoc-tangle --from markdown --to code-k --code k evm.md         > k/evm.k
 pandoc-tangle --from markdown --to code-k --code k dasm.md        > k/dasm.k
-# pandoc-tangle --from markdown --to code-k --code k ethereum.md    > k/ethereum.k
+pandoc-tangle --from markdown --to code-k --code k ethereum.md    > k/ethereum.k
 
 pushd k
-kompile --debug --main-module EVM --syntax-module EVM evm.k
+kompile --debug --main-module ETHEREUM --syntax-module ETHEREUM ethereum.k
 popd
