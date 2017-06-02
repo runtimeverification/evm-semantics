@@ -32,7 +32,7 @@ module EVM
                     <program>   .Map       </program>
 
                     <callStack> .CallStack </callStack>
-                    <substate> .Map </substate>
+                    <substate>  .Map       </substate>
                   </evm>
 
 
@@ -143,7 +143,7 @@ module EVM
 // ------------
 
 // Lists of opcodes form programs. Deciding if an opcode is in a list will be
-// useful for modelling gas, and converting a program into a map of program-counter
+// useful for modeling gas, and converting a program into a map of program-counter
 // to opcode is useful for execution.
 
 
@@ -167,7 +167,7 @@ module EVM
 // EVM Opcodes
 // ===========
 
-// Each subsection has a different class of opcode. Organization is based roughly
+// Each subsection has a different class of opcodes. Organization is based roughly
 // on what parts of the execution state are needed to compute the result of each
 // operator. This sometimes corresponds to the organization in the yellowpaper.
 

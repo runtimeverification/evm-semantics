@@ -1,15 +1,15 @@
-EVM Disassembler
-================
+// EVM Disassembler
+// ================
 
-The default EVM test-set format is JSON, where the data is hex-encoded. A
-dissassembler is provided here for the basic data so that both the JSON and our
-pretty format can be read in.
+// The default EVM test-set format is JSON, where the data is hex-encoded. A
+// dissassembler is provided here for the basic data so that both the JSON and our
+// pretty format can be read in.
 
-```k
-requires "data.k"
+
+requires "evm.k"
 
 module EVM-DASM
-    imports EVM-OPCODE
+    imports EVM
     imports STRING
 
     syntax JSONList ::= List{JSON,","}
@@ -115,88 +115,4 @@ module EVM-DASM
     rule #dasmOpCodes( W : WS )     => #dasmLOG( W -Word 160 , WS )         requires (W >=Word 160 ==K bool2Word(true)) andBool (W <=Word 164 ==K bool2Word(true))
     rule #dasmOpCodes( W : WS )     => #dasmPUSH( W -Word 95 , WS )         requires (W >=Word 96  ==K bool2Word(true)) andBool (W <=Word 127 ==K bool2Word(true))
 endmodule
-```
 
-UNPROCESSED
-===========
-
-Here is the data of an account on the network. It has an id, a balance, a
-program, and storage. Additionally, the translation from the JSON account format
-to the K format is provided.
-
-```
-    syntax Account ::= JSON
-                     | "account" ":" "-" "id"      ":" AcctID
-                                     "-" "nonce"   ":" Word
-                                     "-" "balance" ":" Word
-                                     "-" "program" ":" OpCodes
-                                     "-" "storage" ":" WordStack
- // ------------------------------------------------------------
-    rule <control> ACCTID : { "balance" : (BAL:String)
-                            , "code"    : (CODE:String)
-                            , "nonce"   : (NONCE:String)
-                            , "storage" : STORAGE
-                            }
-                => account : - id      : #parseHexWord(ACCTID)
-                             - nonce   : #parseHexWord(NONCE)
-                             - balance : #parseHexWord(BAL)
-                             - program : #dasmOpCodes(#parseWordStack(CODE))
-                             - storage : #parseWordStack(STORAGE)
-                ...
-         </control>
-```
-
-Here is the data of a transaction on the network. It has fields for who it's
-directed toward, the data, the value transfered, and the gas-price/gas-limit.
-Similarly, a conversion from the JSON format to the pretty K format is provided.
-
-```
-    syntax Transaction ::= JSON
-                         | "transaction" ":" "-" "to"       ":" AcctID
-                                             "-" "from"     ":" AcctID
-                                             "-" "data"     ":" WordStack
-                                             "-" "value"    ":" Word
-                                             "-" "gasPrice" ":" Word
-                                             "-" "gasLimit" ":" Word
-                         | "transaction" ":" "-" "to"       ":" AcctID
-                                             "-" "from"     ":" AcctID
-                                             "-" "init"     ":" WordStack
-                                             "-" "value"    ":" Word
-                                             "-" "gasPrice" ":" Word
-                                             "-" "gasLimit" ":" Word
- // ----------------------------------------------------------------
-    rule <control> "transaction" : { "data"      : (DATA:String)
-                                   , "gasLimit"  : (LIMIT:String)
-                                   , "gasPrice"  : (PRICE:String)
-                                   , "nonce"     : (NONCE:String)
-                                   , "secretKey" : (SECRETKEY:String)
-                                   , "to"        : (ACCTTO:String)
-                                   , "value"     : (VALUE:String)
-                                   }
-                => transaction : - to       : #parseHexWord(ACCTTO)
-                                 - from     : .AcctID
-                                 - data     : #parseWordStack(DATA)
-                                 - value    : #parseHexWord(VALUE)
-                                 - gasPrice : #parseHexWord(PRICE)
-                                 - gasLimit : #parseHexWord(LIMIT)
-                ...
-         </control>
-```
-
-Finally, we have the syntax of an `EVMSimulation`, which consists of a list of
-accounts followed by a list of transactions.
-
-```
-    syntax Accounts ::= ".Accounts"
-                      | Account Accounts
- // ------------------------------------
-    rule <control> .Accounts => .                               ... </control>
-    rule <control> ACCT:Account ACCTS:Accounts => ACCT ~> ACCTS ... </control>
-
-    syntax Transactions ::= ".Transactions"
-                          | Transaction Transactions
- // ------------------------------------------------
-    rule <control> .Transactions => .                           ... </control>
-    rule <control> TX:Transaction TXS:Transactions => TX ~> TXS ... </control>
-endmodule
-```
