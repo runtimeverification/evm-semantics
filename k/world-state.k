@@ -38,7 +38,7 @@ module WORLD-STATE
                     <accounts>
                       <account multiplicity="*">
                         <acctID>  .AcctID  </acctID>
-                        <balance> 0        </balance>
+                        <balance> .Value   </balance>
                         <code>    .Code    </code>
                         <storage> .Map     </storage>
                         <acctMap> .Map     </acctMap>
@@ -50,7 +50,7 @@ module WORLD-STATE
                         <msgID>  .MsgID   </msgID>
                         <to>     .AcctID  </to>
                         <from>   .AcctID  </from>
-                        <amount> 0        </amount>
+                        <amount> .Value   </amount>
                         <data>   .Map     </data>
                       </message>
                     </messages>
@@ -66,12 +66,8 @@ module WORLD-STATE
     syntax AcctID  ::= ".AcctID"
     syntax Code    ::= ".Code"
     syntax MsgID   ::= ".MsgID"
+    syntax Value   ::= ".Value" | "ALL" | Int
 
-
-// TODO: I would prefer to state instead "`Balance` behaves like an abelian group
-// with order" instead of pinning it to `Int`. This isn't such a big deal, but
-// would make this presentation more abstract. The machinery for developing a group
-// with order is too cumbersome/verbose without proper AC matching.
 
 // Primitives
 // ----------
@@ -116,7 +112,7 @@ module WORLD-STATE
     syntax Control ::= "#addAccount" AcctID Int Code Map Map
                      | "#addMessage" MsgID AcctID AcctID Int Map
  // ------------------------------------------------------------
-    rule <control> #addAccount ACCTID BAL CODE STORAGE ACCTMAP => .Control </control>
+    rule <control> #addAccount ACCTID (BAL:Int) CODE STORAGE ACCTMAP => .Control </control>
          <accounts>
             ( .Bag
            => <account>
@@ -131,7 +127,7 @@ module WORLD-STATE
          </accounts>
       requires BAL >=Int 0
 
-    rule <control> #addMessage MSGID ACCTTO ACCTFROM AMT DATA => .Control </control>
+    rule <control> #addMessage MSGID ACCTTO ACCTFROM (AMT:Int) DATA => .Control </control>
          <messages>
             ( .Bag
            => <message>
@@ -144,6 +140,7 @@ module WORLD-STATE
             )
             ...
          </messages>
+      requires AMT >=Int 0
 
 
 // ### Account Actions
@@ -155,9 +152,9 @@ module WORLD-STATE
 //     things like rewarding miners).
 
 
-    syntax Control ::= "#transfer" AcctID AcctID Int
- // ------------------------------------------------
-    rule <control> #transfer ACCTFROM ACCTTO AMT => .Control </control>
+    syntax Control ::= "#transfer" AcctID AcctID Value
+ // --------------------------------------------------
+    rule <control> #transfer ACCTFROM ACCTTO (AMT:Int) => .Control </control>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BALFROM => BALFROM -Int AMT </balance>
@@ -170,10 +167,17 @@ module WORLD-STATE
          </account>
       requires BALFROM >Int AMT
 
-    rule <control> #transfer .AcctID ACCTTO AMT => .Control </control>
+    rule <control> #transfer .AcctID ACCTTO (AMT:Int) => .Control </control>
          <account>
            <acctID> ACCTTO </acctID>
            <balance> BALTO => BALTO +Int AMT </balance>
+           ...
+         </account>
+
+    rule <control> #transfer ACCTFROM ACCTTO ALL => #transfer ACCTFROM ACCTTO BAL </control>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL </balance>
            ...
          </account>
 

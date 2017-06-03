@@ -21,19 +21,27 @@ module ETHEREUM
     syntax AcctID ::= Word
     syntax Code   ::= Map
     syntax MsgID  ::= Word
+    syntax Value  ::= Word
 
     syntax InternalOp ::= "#pushResponse"
  // -------------------------------------
     rule <op> #pushResponse => RESPONSE ~> #push ... </op>
-         <control> #response RESPONSE => . </control>
+         <control> #response RESPONSE => .Control </control>
 
     rule <op> SLOAD INDEX => #pushResponse ... </op>
          <id> ACCT </id>
-         <control> . => #getAccountStorage ACCT INDEX </control>
+         <control> .Control => #getAccountStorage ACCT INDEX </control>
 
     rule <op> SSTORE INDEX VALUE => . ... </op>
          <id> ACCT </id>
-         <control> . => #setAccountStorage ACCT INDEX VALUE </control>
+         <control> .Control => #setAccountStorage ACCT INDEX VALUE </control>
+
+    rule <op> SELFDESTRUCT => . ... </op>
+         <id> ACCT </id>
+         <wordStack> ACCTTO : WS </wordStack>
+         <selfDestruct> SD => ACCT : SD </selfDestruct>
+         <refund> RS => #if (ACCT in SD) #then RS #else Rselfdestruct #fi </else>
+         <control> .Control => #transfer ACCT ACCTTO ALL </control>
 ```
 
 Ethereum Simulations
@@ -70,23 +78,33 @@ An Ethereum simulation is a list of Ethereum commands.
  // ----------------------------------------------------------------
 ```
 
--   `load_` is used to load an account or transaction into the world state.
+-   `clear` clears both the transactions and accounts from the world state.
+
+```k
+    syntax EthereumCommand ::= "clear"
+ // ----------------------------------
+    rule <k> clear => . ... </k>
+         <accounts> _ => .Bag </accounts>
+         <messages> _ => .Bag </messages>
+```
+
+-   `load_` loads an account or transaction into the world state.
 
 ```k
     syntax EthereumCommand ::= "load" Account | "load" Transaction
  // --------------------------------------------------------------
     rule <k> ( load ( account : - id      : ACCTID
-                                - nonce   : NONCE
-                                - balance : BAL
-                                - program : PGM
-                                - storage : STORAGE
-                    )
+                               - nonce   : NONCE
+                               - balance : BAL
+                               - program : PGM
+                               - storage : STORAGE
+                   )
             =>
              .
              )
              ...
-          </k>
-          <control> .Control => #addAccount ACCTID BAL #asMap(PGM) #asMap(STORAGE) ("nonce" |-> NONCE) </control>
+         </k>
+         <control> .Control => #addAccount ACCTID BAL #asMap(PGM) #asMap(STORAGE) ("nonce" |-> NONCE) </control>
 
     rule <k> ( load ( transaction : - id       : TXID
                                     - to       : ACCTTO
@@ -104,7 +122,7 @@ An Ethereum simulation is a list of Ethereum commands.
          <control> .Control => #addMessage TXID ACCTTO ACCTFROM VALUE ("data" |-> DATA "gasPrice" |-> GPRICE "gasLimit" |-> GLIMIT) </control>
 ```
 
--   `check_` is used to check if an account/transaction appears in the world-state as stated.
+-   `check_` checks if an account/transaction appears in the world-state as stated.
 
 ```k
     syntax EthereumCommand ::= "check" Account | "check" Transaction

@@ -32,7 +32,11 @@ module EVM
                     <program>   .Map       </program>
 
                     <callStack> .CallStack </callStack>
-                    <substate>  .Map       </substate>
+                    <substate>
+                      <selfDestruct> .WordStack   </selfDestruct>
+                      <log>          .SubstateLog </log>
+                      <refund>       0:Word       </refund>
+                    </substate>
                   </evm>
 ```
 
@@ -146,6 +150,11 @@ Lists of opcodes form programs. Deciding if an opcode is in a list will be
 useful for modeling gas, and converting a program into a map of program-counter
 to opcode is useful for execution.
 
+TODO: The function `#asMap` just gives each subsequence opcode the next integer.
+In reality, the `PUSH` opcodes take up more than one opcode worth of space in
+the original encoding of programs, so the next instruction should get a higher
+number corresponding to how many opcodes the `PUSH` operation takes up.
+
 ```k
     syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
  // --------------------------------------------------
@@ -162,6 +171,17 @@ to opcode is useful for execution.
     rule #asMap( OPS:OpCodes )         => #asMap(0, OPS)
     rule #asMap( N , .OpCodes )        => .Map
     rule #asMap( N , OP:OpCode ; OCS ) => (N |-> OP) #asMap(N +Int 1, OCS)
+```
+
+EVM Substate Log
+----------------
+
+During execution of a transaction some things are recorded in the substate log.
+This is a right cons-list of `SubstateLogEntry`.
+
+```k
+    syntax SubstateLog      ::= ".SubstateLog" | SubstateLog "." SubstateLogEntry
+    syntax SubstateLogEntry ::= "{" Word "|" WordStack "|" WordStack "}"
 ```
 
 EVM Opcodes
@@ -315,6 +335,12 @@ TODO: Unimplemented.
 
     syntax LogOp  ::= LOG ( Word )
  // ------------------------------
+    rule <op> LOG(N) => . ... </op>
+         <id> ACCT </id>
+         <wordStack> W0 : W1 : WS => #drop(N, WS) </wordStack>
+         <localMem> LM </localMem>
+         <log> CURRLOG => CURRLOG . { ACCT | #take(N, WS) | #range(LM, W0, W1) } </log>
+      requires (#size(WS) >=Word N) ==K bool2Word(true)
 ```
 
 Global State
