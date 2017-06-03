@@ -28,6 +28,19 @@ module ETHEREUM
     rule <op> #pushResponse => RESPONSE ~> #push ... </op>
          <control> #response RESPONSE => .Control </control>
 
+    rule <op> COINBASE   => #pushResponse ... </op> <control> .Control => #getGlobal "coinbase"   </control>
+    rule <op> TIMESTAMP  => #pushResponse ... </op> <control> .Control => #getGlobal "timestamp"  </control>
+    rule <op> NUMBER     => #pushResponse ... </op> <control> .Control => #getGlobal "number"     </control>
+    rule <op> DIFFICULTY => #pushResponse ... </op> <control> .Control => #getGlobal "difficulty" </control>
+    rule <op> GASLIMIT   => #pushResponse ... </op> <control> .Control => #getGlobal "gaslimit"   </control>
+
+    rule <op> BALANCE ACCT => BAL ~> #push ... </op>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
+
     rule <op> SLOAD INDEX => #pushResponse ... </op>
          <id> ACCT </id>
          <control> .Control => #getAccountStorage ACCT INDEX </control>
@@ -35,13 +48,23 @@ module ETHEREUM
     rule <op> SSTORE INDEX VALUE => . ... </op>
          <id> ACCT </id>
          <control> .Control => #setAccountStorage ACCT INDEX VALUE </control>
+```
 
-    rule <op> SELFDESTRUCT => . ... </op>
+TODO: Calculating gas for `SELFDESTRUCT` needs to take into account the cost of creating an account if the recipient address doesn't exist yet. Should it also actually create the recipient address if not? Perhaps `#transfer` can take that into account automatically for us?
+
+```k
+    rule <op> SELFDESTRUCT ACCTTO => . ... </op>
          <id> ACCT </id>
-         <wordStack> ACCTTO : WS </wordStack>
-         <selfDestruct> SD => ACCT : SD </selfDestruct>
-         <refund> RS => #if (ACCT in SD) #then RS #else Rselfdestruct #fi </else>
+         <selfDestruct> SD </selfDestruct>
          <control> .Control => #transfer ACCT ACCTTO ALL </control>
+      requires ACCT in SD
+
+    rule <op> SELFDESTRUCT ACCTTO => . ... </op>
+         <id> ACCT </id>
+         <selfDestruct> SD => ACCT : SD               </selfDestruct>
+         <refund>       RF => RF +Word Rself-destruct </refund>
+         <control> .Control => #transfer ACCT ACCTTO ALL </control>
+      requires notBool (ACCT in SD)
 ```
 
 Ethereum Simulations

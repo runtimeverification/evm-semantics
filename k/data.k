@@ -132,6 +132,11 @@ module EVM-DATA
     rule #drop(N, .WordStack)    => .WordStack
     rule #drop(N, (W:Word : WS)) => #drop(N -Word 1, WS) requires N >Word 0
 
+    syntax Bool ::= Word "in" WordStack [function]
+ // ----------------------------------------------
+    rule W in .WordStack => false
+    rule W in (W' : WS)  => (W ==K W') orElseBool (W in WS)
+
 
 // Word Map
 // --------

@@ -285,8 +285,7 @@ TODO: Unimplemented.
 
 ```k
     syntax NullStackOp ::= "INVALID" | "STOP" | "RETURN"
-    syntax UnStackOp   ::= "SELFDESTRUCT"
- // -------------------------------------
+ // ----------------------------------------------------
 ```
 
 Local State
@@ -327,12 +326,9 @@ about this state or past substates on the callstack).
     rule <op> #origin (P1:Process P2:Process CS:CallStack)          => #origin (P2 CS) ... </op>
 ```
 
-TODO: Unimplemented.
+TODO: Add the extra memory used.
 
 ```k
-    syntax NullStackOp ::= "CALLVALUE" | "CALLDATASIZE" | "CALLDATALOAD"
- // --------------------------------------------------------------------
-
     syntax LogOp  ::= LOG ( Word )
  // ------------------------------
     rule <op> LOG(N) => . ... </op>
@@ -343,20 +339,30 @@ TODO: Unimplemented.
       requires (#size(WS) >=Word N) ==K bool2Word(true)
 ```
 
+TODO: Unimplemented.
+
+```k
+    syntax NullStackOp ::= "CALLVALUE" | "CALLDATASIZE" | "CALLDATALOAD"
+ // --------------------------------------------------------------------
+```
+
 Global State
 ------------
 
-TODO: All of this section is unimplemented. It requires interaction with the
-world state.
+The opcodes are implemented in `ethereum.md` because they require access to the world state.
 
 ```k
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "GASLIMIT"
-    syntax UnStackOp   ::= "BLOCKHASH" | "CALLDATALOAD" | "EXTCODESIZE" | "BALANCE"
- // -------------------------------------------------------------------------------
+    syntax UnStackOp   ::= "SLOAD" | "BALANCE" | "SELFDESTRUCT"
+    syntax BinStackOp  ::= "SSTORE"
+ // -------------------------------
+```
 
-    syntax UnStackOp  ::= "SLOAD"
-    syntax BinStackOp ::= "SSTORE"
- // ------------------------------
+TODO: Unimplemented.
+
+```k
+    syntax UnStackOp   ::= "BLOCKHASH" | "CALLDATALOAD" | "EXTCODESIZE"
+ // -------------------------------------------------------------------
 
     syntax TernStackOp ::= "CALLDATACOPY" | "CODECOPY" | "CREATE"
  // -------------------------------------------------------------
