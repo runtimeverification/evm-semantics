@@ -11,7 +11,6 @@ requires "world-state.k"
 module ETHEREUM
     imports EVM
     imports WORLD-STATE
-    imports ETHEREUM-SIMULATION
 
     configuration <ethereum>
                     <k> $PGM:EthereumSimulation </k>
@@ -50,32 +49,18 @@ An Ethereum simulation is a list of Ethereum commands.
     rule ETC:EthereumCommand ETS:EthereumSimulation => ETC ~> ETS
 ```
 
--   `load_` is used to load an account or transaction into the world state.
+-   Sort `Account` corresponds to the specification of an account on the network.
+-   Sort `Transaction` corresponds to the specification of a transaction on the network.
 
 ```k
-    syntax EthereumCommand ::= "load" Account | "load" Transaction
- // --------------------------------------------------------------
-
     syntax Account ::= "account" ":" "-" "id"      ":" AcctID
                                      "-" "nonce"   ":" Word
                                      "-" "balance" ":" Word
                                      "-" "program" ":" OpCodes
                                      "-" "storage" ":" WordStack
  // ------------------------------------------------------------
-    rule <k> ( load ( account : - id      : ACCTID
-                                - nonce   : NONCE
-                                - balance : BALANCE
-                                - code    : CODE
-                                - storage : STORAGE
-                    )
-            =>
-             .
-             )
-             ...
-          </k>
-          <control> . => #addAccount ACCTID BALANCE #asMap(CODE) #asMap(STORAGE) ("nonce" |-> NONCE) </control>
 
-    syntax Transaction ::= "transaction" ":" "-" "msgid"    ":" MsgID
+    syntax Transaction ::= "transaction" ":" "-" "id"       ":" MsgID
                                              "-" "to"       ":" AcctID
                                              "-" "from"     ":" AcctID
                                              "-" "value"    ":" Word
@@ -83,7 +68,27 @@ An Ethereum simulation is a list of Ethereum commands.
                                              "-" "gasPrice" ":" Word
                                              "-" "gasLimit" ":" Word
  // ----------------------------------------------------------------
-    rule <k> ( load ( transaction : - msgid    : MSGID
+```
+
+-   `load_` is used to load an account or transaction into the world state.
+
+```k
+    syntax EthereumCommand ::= "load" Account | "load" Transaction
+ // --------------------------------------------------------------
+    rule <k> ( load ( account : - id      : ACCTID
+                                - nonce   : NONCE
+                                - balance : BAL
+                                - program : PGM
+                                - storage : STORAGE
+                    )
+            =>
+             .
+             )
+             ...
+          </k>
+          <control> .Control => #addAccount ACCTID BAL #asMap(PGM) #asMap(STORAGE) ("nonce" |-> NONCE) </control>
+
+    rule <k> ( load ( transaction : - id       : TXID
                                     - to       : ACCTTO
                                     - from     : ACCTFROM
                                     - value    : VALUE
@@ -96,34 +101,61 @@ An Ethereum simulation is a list of Ethereum commands.
              )
              ...
          </k>
-         <control> . => #addMessage MSGID ACCTTO ACCTFROM VALUE ("data" |-> DATA "gasPrice" |-> GPRICE "gasLimit" |-> GLIMIT) </control>
+         <control> .Control => #addMessage TXID ACCTTO ACCTFROM VALUE ("data" |-> DATA "gasPrice" |-> GPRICE "gasLimit" |-> GLIMIT) </control>
 ```
 
--   `check-account_` is used to check if an account appears in the world-state with the given information.
+-   `check_` is used to check if an account/transaction appears in the world-state as stated.
 
 ```k
-    syntax EthereumCommand ::= "check-account" Account
- // --------------------------------------------------
-    rule <k> ( check-account ( account : - id      : ACCT
-                                         - nonce   : NONCE
-                                         - balance : BALANCE
-                                         - program : PROGRAM
-                                         - storage : STORAGE
-                             )
+    syntax EthereumCommand ::= "check" Account | "check" Transaction
+ // ----------------------------------------------------------------
+    rule <k> ( check ( account : - id      : ACCT
+                                 - nonce   : NONCE
+                                 - balance : BAL
+                                 - program : PGM
+                                 - storage : STORAGE
+                     )
             => .
              )
              ...
          </k>
          <account>
            <acctID>  ACCT              </acctID>
-           <balance> BALANCE           </balance>
+           <balance> BAL               </balance>
            <code>    CODE              </code>
            <storage> ACCTSTORAGE       </storage>
            <acctMap> "nonce" |-> NONCE </acctMap>
          </account>
-      requires #asMap(PROGRAM) ==K CODE andBool #asMap(STORAGE) ==K ACCTSTORAGE#asMap(PROGRAM) ==K CODE andBool #asMap(STORAGE) ==K ACCTSTORAGE
+      requires #asMap(PGM) ==K CODE andBool #asMap(STORAGE) ==K ACCTSTORAGE
+
+    rule <k> ( check ( transaction : - id       : TXID
+                                     - to       : ACCTTO
+                                     - from     : ACCTFROM
+                                     - value    : VALUE
+                                     - data     : DATA
+                                     - gasPrice : GPRICE
+                                     - gasLimit : GLIMIT
+                     )
+            =>
+             .
+             )
+             ...
+         </k>
+         <message>
+           <msgID>  TXID     </msgID>
+           <to>     ACCTTO   </to>
+           <from>   ACCTFROM </from>
+           <amount> VALUE    </amount>
+           <data>   "data"     |-> DATA
+                    "gasPrice" |-> GPRICE
+                    "gasLimit" |-> GLIMIT
+           </data>
+         </message>
 endmodule
 ```
+
+UNUSED
+======
 
 Here is the data of a transaction on the network. It has fields for who it's
 directed toward, the data, the value transfered, and the gas-price/gas-limit.

@@ -1,11 +1,33 @@
 #!/usr/bin/env sh
 
-pandoc-tangle --from markdown --to code-k --code k world-state.md > k/world-state.k
-pandoc-tangle --from markdown --to code-k --code k data.md        > k/data.k
-pandoc-tangle --from markdown --to code-k --code k evm.md         > k/evm.k
-pandoc-tangle --from markdown --to code-k --code k evm-dasm.md    > k/evm-dasm.k
-pandoc-tangle --from markdown --to code-k --code k ethereum.md    > k/ethereum.k
+tangle_defn() {
+    echo "generating 'k/*' files..."
+    echo "========================="
 
-pushd k
-kompile --debug --main-module ETHEREUM --syntax-module ETHEREUM ethereum.k
-popd
+    pandoc-tangle --from markdown --to code-k --code k world-state.md > k/world-state.k
+    pandoc-tangle --from markdown --to code-k --code k data.md        > k/data.k
+    pandoc-tangle --from markdown --to code-k --code k evm.md         > k/evm.k
+    pandoc-tangle --from markdown --to code-k --code k evm-dasm.md    > k/evm-dasm.k
+    pandoc-tangle --from markdown --to code-k --code k ethereum.md    > k/ethereum.k
+}
+
+tangle_kompile() {
+    echo "kompiling definition..."
+    echo "======================="
+
+    pushd k
+    kompile --debug --main-module ETHEREUM --syntax-module ETHEREUM ethereum.k
+    popd
+}
+
+[[ "$#" == '0' ]] && set all
+
+while [[ "$#" -gt '0' ]]; do
+    tangle_command="$1" && shift
+    case "$tangle_command" in
+        all)      set defn kompile ;;
+        defn)     tangle_defn ;;
+        kompile)  tangle_kompile ;;
+        *)        echo "Unrecognized option: '$tangle_command' ..." ;;
+    esac
+done
