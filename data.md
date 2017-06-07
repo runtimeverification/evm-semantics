@@ -153,8 +153,10 @@ functionality for that is provided as well.
     rule WM[N := W0:Word : WS] => (WM[N <- W0])[N +Word 1 := WS]
 
     syntax Map ::= #asMap ( WordStack ) [function]
+                 | #asMap ( Map       ) [function]
  // ----------------------------------------------
-    rule #asMap(WS) => .Map [ 0 := WS ]
+    rule #asMap(WS:WordStack) => .Map [ 0 := WS ]
+    rule #asMap(M:Map)        => M
 
     syntax WordStack ::= #range ( WordMap , Word , Word ) [function]
  // ----------------------------------------------------------------

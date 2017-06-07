@@ -107,5 +107,17 @@ module EVM-DASM
     rule #dasmOpCodes( W : WS )     => SWAP(W -Word 143) ; #dasmOpCodes(WS) requires (W >=Word 144 ==K bool2Word(true)) andBool (W <=Word 159 ==K bool2Word(true))
     rule #dasmOpCodes( W : WS )     => #dasmLOG( W -Word 160 , WS )         requires (W >=Word 160 ==K bool2Word(true)) andBool (W <=Word 164 ==K bool2Word(true))
     rule #dasmOpCodes( W : WS )     => #dasmPUSH( W -Word 95 , WS )         requires (W >=Word 96  ==K bool2Word(true)) andBool (W <=Word 127 ==K bool2Word(true))
+
+    syntax JSONList ::= List{JSON,","}
+    syntax JSON     ::= String
+                      | String ":" JSON
+                      | "{" JSONList "}"
+                      | "[" JSONList "]"
+ // ------------------------------------
+
+    syntax Map ::= #parseMap ( JSON ) [function]
+ // --------------------------------------------
+    rule #parseWordMap( { .JSONList                   } ) => .Map
+    rule #parseWordMap( { KEY : (VALUE:String) , REST } ) => #parseWordMap(REST) [ #parseHexWord(KEY) <- #parseHexWord(VALUE) ]
 endmodule
 ```

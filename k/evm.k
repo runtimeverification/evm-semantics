@@ -21,16 +21,26 @@ module EVM
     imports EVM-DATA
 
     configuration <evm>
+                    // Mutate during a single transaction
                     <op> . </op>
-
-                    <id>        0:Word     </id>
-                    <pc>        0:Word     </pc>
-                    <gas>       0:Word     </gas>
-                    <gasPrice>  0:Word     </gasPrice>
+                    <id>         0:Word    </id>
                     <wordStack> .WordStack </wordStack>
                     <localMem>  .Map       </localMem>
                     <program>   .Map       </program>
+                    <pc>        0:Word     </pc>
+                    <gas>       0:Word     </gas>
+                    <caller>    0:Word     </caller>
 
+                    // Immutable during a single transaction
+                    <gasPrice>   0:Word </gasPrice>
+                    <gasLimit>   0:Word </gasLimit>
+                    <coinbase>   0:Word </coinbase>
+                    <timestamp>  0:Word </timestamp>
+                    <number>     0:Word </number>
+                    <difficulty> 0:Word </difficulty>
+                    <origin>     0:Word </origin>
+
+                    // Execution state
                     <callStack> .CallStack </callStack>
                     <substate>
                       <selfDestruct> .WordStack   </selfDestruct>
@@ -110,6 +120,9 @@ module EVM
     rule (I:Int ~> #checkStackSize) => #stackOverflow requires I >=Int 1024
 
 
+// Callstack
+// ---------
+
 // Previous process states must be stored, so a tuple of sort `Process` is supplied
 // for that. The `CallStack` is a cons-list of `Process`.
 
@@ -117,30 +130,28 @@ module EVM
 // -   `#popCallStack` replaces the current state with the top of the `callStack`.
 
 
-    syntax Process ::= "{" Word "|" Word "|" Word "|" Word "|" WordStack "|" Map "|" Map "}"
+    syntax Process ::= "{" Word "|" WordStack "|" Map "|" Map "|" Word "|" Word "}"
     syntax CallStack ::= ".CallStack" | Process CallStack
 
     syntax InternalOp ::= "#pushCallStack" | "#popCallStack"
  // --------------------------------------------------------
     rule <op> #pushCallStack => . </op>
-         <callStack> CS => { ACCT | PCOUNT | GAVAIL | GPRICE | WS | LM | PGM } CS </callStack>
+         <callStack> CS => { ACCT | WS | LM | PGM | PCOUNT | GAVAIL } CS </callStack>
          <id>        ACCT   </id>
-         <pc>        PCOUNT </pc>
-         <gas>       GAVAIL </gas>
-         <gasPrice>  GPRICE </gasPrice>
          <wordStack> WS     </wordStack>
          <localMem>  LM     </localMem>
          <program>   PGM    </program>
+         <pc>        PCOUNT </pc>
+         <gas>       GAVAIL </gas>
 
     rule <op> #popCallStack => . </op>
-         <callStack> { ACCT | PCOUNT | GAVAIL | GPRICE | WS | LM | PGM } CS => CS </callStack>
+         <callStack> { ACCT | WS | LM | PGM | PCOUNT | GAVAIL } CS => CS </callStack>
          <id>        _ => ACCT   </id>
-         <pc>        _ => PCOUNT </pc>
-         <gas>       _ => GAVAIL </gas>
-         <gasPrice>  _ => GPRICE </gasPrice>
          <wordStack> _ => WS     </wordStack>
          <localMem>  _ => LM     </localMem>
          <program>   _ => PGM    </program>
+         <pc>        _ => PCOUNT </pc>
+         <gas>       _ => GAVAIL </gas>
 
 
 // EVM Programs
@@ -291,6 +302,31 @@ module EVM
 // Local State
 // -----------
 
+// These operators make queries about the current execution state (whether directly
+// about this state or past substates on the callstack).
+
+
+    syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT"
+ // -------------------------------------------------------------
+    rule <op> PC       => (PCOUNT -Int 1) ~> #push ... </op> <pc> PCOUNT </pc>
+    rule <op> GAS      => GAVAIL          ~> #push ... </op> <gas> GAVAIL </gas>
+    rule <op> GASPRICE => GPRICE          ~> #push ... </op> <gasPrice> GPRICE </gasPrice>
+    rule <op> GASLIMIT => GLIMIT          ~> #push ... </op> <gasLimit> GLIMIT </gasLimit>
+
+    syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY"
+ // -------------------------------------------------------------------------
+    rule <op> COINBASE   => CB              ~> #push ... </op> <coinbase> CB </coinbase>
+    rule <op> TIMESTAMP  => TS              ~> #push ... </op> <timestamp> TS </timestamp>
+    rule <op> NUMBER     => NUMB            ~> #push ... </op> <number> NUMB </number>
+    rule <op> DIFFICULTY => DIFF            ~> #push ... </op> <difficulty> DIFF </difficulty>
+
+    syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER"
+ // ------------------------------------------------------
+    rule <op> ADDRESS => ACCT ~> #push ... </op> <id> ACCT </id>
+    rule <op> ORIGIN  => ORG  ~> #push ... </op> <origin> ORG </origin>
+    rule <op> CALLER  => CL   ~> #push ... </op> <caller> CL </caller>
+
+
 // These operations are getters/setters of the local execution memory.
 
 
@@ -301,28 +337,17 @@ module EVM
     rule <op> MSTORE INDEX VALUE => .              ... </op> <localMem> LM => LM [ INDEX <- VALUE ] </localMem>
 
 
-// These operators make queries about the current execution state (whether directly
-// about this state or past substates on the callstack).
+// These operations require calculations about the current execution state.
 
 
-    syntax NullStackOp ::= "PC" | "MSIZE" | "CODESIZE" | "GAS" | "GASPRICE"
- // -----------------------------------------------------------------------
-    rule <op> PC       => (PCOUNT -Int 1)   ~> #push ... </op> <pc> PCOUNT </pc>
+    syntax NullStackOp ::= "MSIZE" | "CODESIZE"
+ // -------------------------------------------
     rule <op> MSIZE    => 32 *Word size(LM) ~> #push ... </op> <localMem> LM </localMem>
     rule <op> CODESIZE => size(PGM)         ~> #push ... </op> <program> PGM </program>
-    rule <op> GAS      => GAVAIL            ~> #push ... </op> <gas> GAVAIL </gas>
-    rule <op> GASPRICE => GPRICE            ~> #push ... </op> <gasPrice> GPRICE </gasPrice>
-
-    syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER"
- // ------------------------------------------------------
-    rule <op> ADDRESS => ACCT       ~> #push ... </op> <id> ACCT </id>
-    rule <op> ORIGIN  => #origin CS ~> #push ... </op> <callStack> CS </callStack>
-    rule <op> CALLER  => ACCT       ~> #push ... </op> <callStack> { ACCT | _ | _ | _ | _ | _ | _ } CS </callStack>
-    rule <op> CALLER  => ACCT       ~> #push ... </op> <id> ACCT </id> <callStack> .CallStack </callStack>
 
     syntax KItem ::= "#origin" CallStack
  // ------------------------------------
-    rule <op> #origin ({ ACCT | _ | _ | _ | _ | _ | _ } .CallStack) => ACCT ~> #push   ... </op>
+    rule <op> #origin ({ ACCT | _ | _ | _ | _ | _ } .CallStack) => ACCT ~> #push   ... </op>
     rule <op> #origin (P1:Process P2:Process CS:CallStack)          => #origin (P2 CS) ... </op>
 
 
@@ -353,7 +378,6 @@ module EVM
 // world state.
 
 
-    syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "GASLIMIT"
     syntax UnStackOp   ::= "SLOAD" | "BALANCE" | "SELFDESTRUCT"
     syntax BinStackOp  ::= "SSTORE"
  // -------------------------------

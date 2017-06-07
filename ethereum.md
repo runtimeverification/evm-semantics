@@ -11,6 +11,7 @@ requires "world-state.k"
 module ETHEREUM
     imports EVM
     imports WORLD-STATE
+    imports EVM-DASM
 
     configuration <ethereum>
                     <k> $PGM:EthereumSimulation </k>
@@ -27,12 +28,6 @@ module ETHEREUM
  // -------------------------------------
     rule <op> #pushResponse => RESPONSE ~> #push ... </op>
          <control> #response RESPONSE => .Control </control>
-
-    rule <op> COINBASE   => #pushResponse ... </op> <control> .Control => #getGlobal "coinbase"   </control>
-    rule <op> TIMESTAMP  => #pushResponse ... </op> <control> .Control => #getGlobal "timestamp"  </control>
-    rule <op> NUMBER     => #pushResponse ... </op> <control> .Control => #getGlobal "number"     </control>
-    rule <op> DIFFICULTY => #pushResponse ... </op> <control> .Control => #getGlobal "difficulty" </control>
-    rule <op> GASLIMIT   => #pushResponse ... </op> <control> .Control => #getGlobal "gasLimit"   </control>
 
     rule <op> BALANCE ACCT => BAL ~> #push ... </op>
          <account>
@@ -86,12 +81,22 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
 -   `account ...` corresponds to the specification of an account on the network.
 -   `transaction ...` corresponds to the specification of a transaction on the network.
 
+TODO: I don't like how we have to accept both `WordStack` and `Map` in the pretty format, but some tests don't have values for intermediate places in the memory.
+
 ```k
+    syntax Storage ::= WordStack | Map
+
     syntax EthereumSpec ::= "account" ":" "-" "id"      ":" AcctID
                                           "-" "nonce"   ":" Word
                                           "-" "balance" ":" Word
                                           "-" "program" ":" OpCodes
-                                          "-" "storage" ":" WordStack
+                                          "-" "storage" ":" Storage [function]
+ // --------------------------------------------------------------------------
+    rule account : - id      : ACCTID
+                   - nonce   : NONCE
+                   - balance : BAL
+                   - program : CODE
+                   - storage : (STORAGE:WordStack => #asMap(STORAGE))
 
     syntax EthereumSpec ::= "transaction" ":" "-" "id"       ":" MsgID
                                               "-" "to"       ":" AcctID
@@ -122,14 +127,14 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
                                 - nonce   : NONCE
                                 - balance : BAL
                                 - program : PGM
-                                - storage : STORAGE
+                                - storage : (STORAGE:Map)
                     )
             =>
              .
              )
              ...
          </k>
-         <control> .Control => #addAccount ACCTID BAL #asMap(PGM) #asMap(STORAGE) ("nonce" |-> NONCE) </control>
+         <control> .Control => #addAccount ACCTID BAL #asMap(PGM) STORAGE ("nonce" |-> NONCE) </control>
 
     rule <k> ( load ( transaction : - id       : TXID
                                     - to       : ACCTTO
@@ -145,6 +150,9 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
              ...
          </k>
          <control> .Control => #addMessage TXID ACCTTO ACCTFROM VALUE ("data" |-> DATA "gasPrice" |-> GPRICE "gasLimit" |-> GLIMIT) </control>
+
+    rule <k> ( load "gas" : CURRGAS => . ) ... </k>
+         <gas> _ => #parseHexWord(CURRGAS) </gas>
 ```
 
 -   `check_` checks if an account/transaction appears in the world-state as stated.
@@ -156,7 +164,7 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
                                  - nonce   : NONCE
                                  - balance : BAL
                                  - program : PGM
-                                 - storage : STORAGE
+                                 - storage : (STORAGE:Map)
                      )
             => .
              )
@@ -169,7 +177,7 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
            <storage> ACCTSTORAGE       </storage>
            <acctMap> "nonce" |-> NONCE </acctMap>
          </account>
-      requires #asMap(PGM) ==K CODE andBool #asMap(STORAGE) ==K ACCTSTORAGE
+      requires #asMap(PGM) ==K CODE andBool STORAGE ==K ACCTSTORAGE
 
     rule <k> ( check ( transaction : - id       : TXID
                                      - to       : ACCTTO
@@ -205,13 +213,6 @@ TODO: Should JSON enconding stuff be moved to `evm-dasm.md`?
 TODO: Parsing the storage needs to actually happen (not calling `#parseWordStack`).
 
 ```k
-    syntax JSONList ::= List{JSON,","}
-    syntax JSON     ::= String
-                      | String ":" JSON
-                      | "{" JSONList "}"
-                      | "[" JSONList "]"
- // ------------------------------------
-
     syntax EthereumSpec ::= JSON
  // ----------------------------
 ```
@@ -233,7 +234,7 @@ TODO: Parsing the storage needs to actually happen (not calling `#parseWordStack
                    - nonce   : #parseHexWord(NONCE)
                    - balance : #parseHexWord(BAL)
                    - program : #dasmOpCodes(#parseWordStack(CODE))
-                   - storage : #parseWordStack(STORAGE)
+                   - storage : #parseMap(STORAGE)
 ```
 
 Here we define `load_` over the various relevant primitives that appear in the EVM tests.
@@ -251,12 +252,11 @@ Here we define `load_` over the various relevant primitives that appear in the E
              )
              ...
          </k>
-         <global> GM => GM [ "coinbase"   <- #parseHexWord(CB)     ]
-                           [ "difficulty" <- #parseHexWord(DIFF)   ]
-                           [ "gasLimit"   <- #parseHexWord(GLIMIT) ]
-                           [ "number"     <- #parseHexWord(NUM)    ]
-                           [ "timestamp"  <- #parseHexWord(TS)     ]
-         </global>
+         <gasLimit>   _ => #parseHexWord(GLIMIT) </gasLimit>
+         <coinbase>   _ => #parseHexWord(CB)     </coinbase>
+         <timestamp>  _ => #parseHexWord(TS)     </timestamp>
+         <number>     _ => #parseHexWord(NUM)    </number>
+         <difficulty> _ => #parseHexWord(DIFF)   </difficulty>
 
     rule <k> ( load "pre" : { .JSONList } => . ) ... </k>
     rule <k> ( load "pre" : { ACCTID : ACCT
@@ -293,12 +293,14 @@ Here we define `check_` over the "post" part of the EVM test.
     syntax EthereumSpecCommand ::= "run"
  // ------------------------------------
     rule <k> run { .JSONList } => . ... </k>
+    rule <k> run { TESTID : (TEST:JSON) } => #testFromJSON( TESTID : TEST ) ... </k>
     rule <k> ( run { TESTID : (TEST:JSON)
                    , TESTS
                    }
-            => #testFromJSON( TESTID : TEST )
+            => run { TESTID : TEST }
             ~> run { TESTS }
              )
+             ...
          </k>
 ```
 
@@ -322,58 +324,23 @@ Here we define `check_` over the "post" part of the EVM test.
          ~> run   "exec" : EXEC
          ~> check "post" : POST
           )
+
+    rule <k> run "exec" : { "address"  : (ACCTTO:String)
+                          , "caller"   : (ACCTFROM:String)
+                          , "code"     : (CODE:String)
+                          , "data"     : (DATA:String)
+                          , "gas"      : (GAVAIL:String)
+                          , "gasPrice" : (GPRICE:String)
+                          , "origin"   : (ORIGIN:String)
+                          , "value"    : (VAL:String)
+                          }
+          => .
+          ...
+         </k>
+         <id>      _ => #parseHexWord(ACCTTO)                       </id>
+         <caller>  _ => #parseHexWord(ACCTFROM)                     </caller>
+         <origin>  _ => #parseHexWord(ORIGIN)                       </origin>
+         <gas>     _ => #parseHexWord(GAVAIL)                       </gas>
+         <program> _ => #asMap(#dasmOpCodes(#parseWordStack(CODE))) </code>
 endmodule
-```
-
-UNUSED
-======
-
-Here is the data of a transaction on the network. It has fields for who it's
-directed toward, the data, the value transfered, and the gas-price/gas-limit.
-Similarly, a conversion from the JSON format to the pretty K format is provided.
-
-```
-    rule <control> ACCTID : { "balance" : (BAL:String)
-                            , "code"    : (CODE:String)
-                            , "nonce"   : (NONCE:String)
-                            , "storage" : STORAGE
-                            }
-                => account : - id      : #parseHexWord(ACCTID)
-                             - nonce   : #parseHexWord(NONCE)
-                             - balance : #parseHexWord(BAL)
-                             - program : #dasmOpCodes(#parseWordStack(CODE))
-                             - storage : #parseWordStack(STORAGE)
-                ...
-         </control>
-
-    syntax Transaction ::= JSON
-                         | "transaction" ":" "-" "to"       ":" AcctID
-                                             "-" "from"     ":" AcctID
-                                             "-" "data"     ":" WordStack
-                                             "-" "value"    ":" Word
-                                             "-" "gasPrice" ":" Word
-                                             "-" "gasLimit" ":" Word
-                         | "transaction" ":" "-" "to"       ":" AcctID
-                                             "-" "from"     ":" AcctID
-                                             "-" "init"     ":" WordStack
-                                             "-" "value"    ":" Word
-                                             "-" "gasPrice" ":" Word
-                                             "-" "gasLimit" ":" Word
- // ----------------------------------------------------------------
-    rule <control> "transaction" : { "data"      : (DATA:String)
-                                   , "gasLimit"  : (LIMIT:String)
-                                   , "gasPrice"  : (PRICE:String)
-                                   , "nonce"     : (NONCE:String)
-                                   , "secretKey" : (SECRETKEY:String)
-                                   , "to"        : (ACCTTO:String)
-                                   , "value"     : (VALUE:String)
-                                   }
-                => transaction : - to       : #parseHexWord(ACCTTO)
-                                 - from     : .AcctID
-                                 - data     : #parseWordStack(DATA)
-                                 - value    : #parseHexWord(VALUE)
-                                 - gasPrice : #parseHexWord(PRICE)
-                                 - gasLimit : #parseHexWord(LIMIT)
-                ...
-         </control>
 ```

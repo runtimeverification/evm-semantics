@@ -17,7 +17,9 @@ tangle_kompile() {
 
     pushd k
     kompile --debug --main-module ETHEREUM --syntax-module ETHEREUM ethereum.k
+    result="$?"
     popd
+    return "$result"
 }
 
 [[ "$#" == '0' ]] && set all

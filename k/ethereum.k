@@ -11,6 +11,7 @@ requires "world-state.k"
 module ETHEREUM
     imports EVM
     imports WORLD-STATE
+    imports EVM-DASM
 
     configuration <ethereum>
                     <k> $PGM:EthereumSimulation </k>
@@ -27,12 +28,6 @@ module ETHEREUM
  // -------------------------------------
     rule <op> #pushResponse => RESPONSE ~> #push ... </op>
          <control> #response RESPONSE => .Control </control>
-
-    rule <op> COINBASE   => #pushResponse ... </op> <control> .Control => #getGlobal "coinbase"   </control>
-    rule <op> TIMESTAMP  => #pushResponse ... </op> <control> .Control => #getGlobal "timestamp"  </control>
-    rule <op> NUMBER     => #pushResponse ... </op> <control> .Control => #getGlobal "number"     </control>
-    rule <op> DIFFICULTY => #pushResponse ... </op> <control> .Control => #getGlobal "difficulty" </control>
-    rule <op> GASLIMIT   => #pushResponse ... </op> <control> .Control => #getGlobal "gasLimit"   </control>
 
     rule <op> BALANCE ACCT => BAL ~> #push ... </op>
          <account>
@@ -90,12 +85,24 @@ module ETHEREUM
 // -   `transaction ...` corresponds to the specification of a transaction on
 //     the network.
 
+// TODO: I don't like how we have to accept both `WordStack` and `Map` in the
+// pretty format, but some tests don't have values for intermediate places in the
+// memory.
+
+
+    syntax Storage ::= WordStack | Map
 
     syntax EthereumSpec ::= "account" ":" "-" "id"      ":" AcctID
                                           "-" "nonce"   ":" Word
                                           "-" "balance" ":" Word
                                           "-" "program" ":" OpCodes
-                                          "-" "storage" ":" WordStack
+                                          "-" "storage" ":" Storage [function]
+ // --------------------------------------------------------------------------
+    rule account : - id      : ACCTID
+                   - nonce   : NONCE
+                   - balance : BAL
+                   - program : CODE
+                   - storage : (STORAGE:WordStack => #asMap(STORAGE))
 
     syntax EthereumSpec ::= "transaction" ":" "-" "id"       ":" MsgID
                                               "-" "to"       ":" AcctID
@@ -126,14 +133,14 @@ module ETHEREUM
                                 - nonce   : NONCE
                                 - balance : BAL
                                 - program : PGM
-                                - storage : STORAGE
+                                - storage : (STORAGE:Map)
                     )
             =>
              .
              )
              ...
          </k>
-         <control> .Control => #addAccount ACCTID BAL #asMap(PGM) #asMap(STORAGE) ("nonce" |-> NONCE) </control>
+         <control> .Control => #addAccount ACCTID BAL #asMap(PGM) STORAGE ("nonce" |-> NONCE) </control>
 
     rule <k> ( load ( transaction : - id       : TXID
                                     - to       : ACCTTO
@@ -150,6 +157,9 @@ module ETHEREUM
          </k>
          <control> .Control => #addMessage TXID ACCTTO ACCTFROM VALUE ("data" |-> DATA "gasPrice" |-> GPRICE "gasLimit" |-> GLIMIT) </control>
 
+    rule <k> ( load "gas" : CURRGAS => . ) ... </k>
+         <gas> _ => #parseHexWord(CURRGAS) </gas>
+
 
 // -   `check_` checks if an account/transaction appears in the world-state
 //     as stated.
@@ -161,7 +171,7 @@ module ETHEREUM
                                  - nonce   : NONCE
                                  - balance : BAL
                                  - program : PGM
-                                 - storage : STORAGE
+                                 - storage : (STORAGE:Map)
                      )
             => .
              )
@@ -174,7 +184,7 @@ module ETHEREUM
            <storage> ACCTSTORAGE       </storage>
            <acctMap> "nonce" |-> NONCE </acctMap>
          </account>
-      requires #asMap(PGM) ==K CODE andBool #asMap(STORAGE) ==K ACCTSTORAGE
+      requires #asMap(PGM) ==K CODE andBool STORAGE ==K ACCTSTORAGE
 
     rule <k> ( check ( transaction : - id       : TXID
                                      - to       : ACCTTO
@@ -210,13 +220,6 @@ module ETHEREUM
 // storage needs to actually happen (not calling `#parseWordStack`).
 
 
-    syntax JSONList ::= List{JSON,","}
-    syntax JSON     ::= String
-                      | String ":" JSON
-                      | "{" JSONList "}"
-                      | "[" JSONList "]"
- // ------------------------------------
-
     syntax EthereumSpec ::= JSON
  // ----------------------------
 
@@ -239,7 +242,7 @@ module ETHEREUM
                    - nonce   : #parseHexWord(NONCE)
                    - balance : #parseHexWord(BAL)
                    - program : #dasmOpCodes(#parseWordStack(CODE))
-                   - storage : #parseWordStack(STORAGE)
+                   - storage : #parseMap(STORAGE)
 
 
 // Here we define `load_` over the various relevant primitives that appear in the
@@ -258,12 +261,11 @@ module ETHEREUM
              )
              ...
          </k>
-         <global> GM => GM [ "coinbase"   <- #parseHexWord(CB)     ]
-                           [ "difficulty" <- #parseHexWord(DIFF)   ]
-                           [ "gasLimit"   <- #parseHexWord(GLIMIT) ]
-                           [ "number"     <- #parseHexWord(NUM)    ]
-                           [ "timestamp"  <- #parseHexWord(TS)     ]
-         </global>
+         <gasLimit>   _ => #parseHexWord(GLIMIT) </gasLimit>
+         <coinbase>   _ => #parseHexWord(CB)     </coinbase>
+         <timestamp>  _ => #parseHexWord(TS)     </timestamp>
+         <number>     _ => #parseHexWord(NUM)    </number>
+         <difficulty> _ => #parseHexWord(DIFF)   </difficulty>
 
     rule <k> ( load "pre" : { .JSONList } => . ) ... </k>
     rule <k> ( load "pre" : { ACCTID : ACCT
@@ -300,12 +302,14 @@ module ETHEREUM
     syntax EthereumSpecCommand ::= "run"
  // ------------------------------------
     rule <k> run { .JSONList } => . ... </k>
+    rule <k> run { TESTID : (TEST:JSON) } => #testFromJSON( TESTID : TEST ) ... </k>
     rule <k> ( run { TESTID : (TEST:JSON)
                    , TESTS
                    }
-            => #testFromJSON( TESTID : TEST )
+            => run { TESTID : TEST }
             ~> run { TESTS }
              )
+             ...
          </k>
 
 
@@ -330,5 +334,23 @@ module ETHEREUM
          ~> run   "exec" : EXEC
          ~> check "post" : POST
           )
+
+    rule <k> run "exec" : { "address"  : (ACCTTO:String)
+                          , "caller"   : (ACCTFROM:String)
+                          , "code"     : (CODE:String)
+                          , "data"     : (DATA:String)
+                          , "gas"      : (GAVAIL:String)
+                          , "gasPrice" : (GPRICE:String)
+                          , "origin"   : (ORIGIN:String)
+                          , "value"    : (VAL:String)
+                          }
+          => .
+          ...
+         </k>
+         <id>      _ => #parseHexWord(ACCTTO)                       </id>
+         <caller>  _ => #parseHexWord(ACCTFROM)                     </caller>
+         <origin>  _ => #parseHexWord(ORIGIN)                       </origin>
+         <gas>     _ => #parseHexWord(GAVAIL)                       </gas>
+         <program> _ => #asMap(#dasmOpCodes(#parseWordStack(CODE))) </code>
 endmodule
 
