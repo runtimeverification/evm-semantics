@@ -12,13 +12,6 @@ module EVM-DASM
     imports EVM
     imports STRING
 
-    syntax JSONList ::= List{JSON,","}
-    syntax JSON     ::= String
-                      | String ":" JSON
-                      | "{" JSONList "}"
-                      | "[" JSONList "]"
- // ------------------------------------
-
     syntax Word ::= #parseHexWord ( String ) [function]
  // ---------------------------------------------------
     rule #parseHexWord("")   => 0

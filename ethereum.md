@@ -32,7 +32,7 @@ module ETHEREUM
     rule <op> TIMESTAMP  => #pushResponse ... </op> <control> .Control => #getGlobal "timestamp"  </control>
     rule <op> NUMBER     => #pushResponse ... </op> <control> .Control => #getGlobal "number"     </control>
     rule <op> DIFFICULTY => #pushResponse ... </op> <control> .Control => #getGlobal "difficulty" </control>
-    rule <op> GASLIMIT   => #pushResponse ... </op> <control> .Control => #getGlobal "gaslimit"   </control>
+    rule <op> GASLIMIT   => #pushResponse ... </op> <control> .Control => #getGlobal "gasLimit"   </control>
 
     rule <op> BALANCE ACCT => BAL ~> #push ... </op>
          <account>
@@ -71,6 +71,7 @@ Ethereum Simulations
 ====================
 
 An Ethereum simulation is a list of Ethereum commands.
+Some Ethereum commands take an Ethereum specification (eg. for an account or transaction).
 
 ```k
     syntax EthereumSimulation ::= ".EthereumSimulation"
@@ -78,27 +79,28 @@ An Ethereum simulation is a list of Ethereum commands.
  // ----------------------------------------------------------------
     rule .EthereumSimulation => .
     rule ETC:EthereumCommand ETS:EthereumSimulation => ETC ~> ETS
+
+    syntax EthereumCommand ::= EthereumSpecCommand EthereumSpec
 ```
 
--   Sort `Account` corresponds to the specification of an account on the network.
--   Sort `Transaction` corresponds to the specification of a transaction on the network.
+-   `account ...` corresponds to the specification of an account on the network.
+-   `transaction ...` corresponds to the specification of a transaction on the network.
 
 ```k
-    syntax Account ::= "account" ":" "-" "id"      ":" AcctID
-                                     "-" "nonce"   ":" Word
-                                     "-" "balance" ":" Word
-                                     "-" "program" ":" OpCodes
-                                     "-" "storage" ":" WordStack
- // ------------------------------------------------------------
+    syntax EthereumSpec ::= "account" ":" "-" "id"      ":" AcctID
+                                          "-" "nonce"   ":" Word
+                                          "-" "balance" ":" Word
+                                          "-" "program" ":" OpCodes
+                                          "-" "storage" ":" WordStack
 
-    syntax Transaction ::= "transaction" ":" "-" "id"       ":" MsgID
-                                             "-" "to"       ":" AcctID
-                                             "-" "from"     ":" AcctID
-                                             "-" "value"    ":" Word
-                                             "-" "data"     ":" Word
-                                             "-" "gasPrice" ":" Word
-                                             "-" "gasLimit" ":" Word
- // ----------------------------------------------------------------
+    syntax EthereumSpec ::= "transaction" ":" "-" "id"       ":" MsgID
+                                              "-" "to"       ":" AcctID
+                                              "-" "from"     ":" AcctID
+                                              "-" "value"    ":" Word
+                                              "-" "data"     ":" Word
+                                              "-" "gasPrice" ":" Word
+                                              "-" "gasLimit" ":" Word
+ // -----------------------------------------------------------------
 ```
 
 -   `clear` clears both the transactions and accounts from the world state.
@@ -114,14 +116,14 @@ An Ethereum simulation is a list of Ethereum commands.
 -   `load_` loads an account or transaction into the world state.
 
 ```k
-    syntax EthereumCommand ::= "load" Account | "load" Transaction
- // --------------------------------------------------------------
+    syntax EthereumSpecCommand ::= "load"
+ // -------------------------------------
     rule <k> ( load ( account : - id      : ACCTID
-                               - nonce   : NONCE
-                               - balance : BAL
-                               - program : PGM
-                               - storage : STORAGE
-                   )
+                                - nonce   : NONCE
+                                - balance : BAL
+                                - program : PGM
+                                - storage : STORAGE
+                    )
             =>
              .
              )
@@ -148,8 +150,8 @@ An Ethereum simulation is a list of Ethereum commands.
 -   `check_` checks if an account/transaction appears in the world-state as stated.
 
 ```k
-    syntax EthereumCommand ::= "check" Account | "check" Transaction
- // ----------------------------------------------------------------
+    syntax EthereumSpecCommand ::= "check"
+ // --------------------------------------
     rule <k> ( check ( account : - id      : ACCT
                                  - nonce   : NONCE
                                  - balance : BAL
@@ -192,6 +194,134 @@ An Ethereum simulation is a list of Ethereum commands.
                     "gasLimit" |-> GLIMIT
            </data>
          </message>
+```
+
+JSON Encoded
+------------
+
+Most of the test-set is encoded in JSON. Here we provide a decoder for that.
+
+TODO: Should JSON enconding stuff be moved to `evm-dasm.md`?
+TODO: Parsing the storage needs to actually happen (not calling `#parseWordStack`).
+
+```k
+    syntax JSONList ::= List{JSON,","}
+    syntax JSON     ::= String
+                      | String ":" JSON
+                      | "{" JSONList "}"
+                      | "[" JSONList "]"
+ // ------------------------------------
+
+    syntax EthereumSpec ::= JSON
+ // ----------------------------
+```
+
+-   `#acctFromJSON` returns our nice representation of EVM programs given the JSON encoding.
+-   `#txFromJSON` does the same for transactions.
+
+```k
+    syntax EthereumSpec ::= #acctFromJSON ( JSON ) [function]
+                          | #txFromJSON   ( JSON ) [function]
+ // ---------------------------------------------------------
+    rule #acctFromJSON ( ACCTID : { "balance" : (BAL:String)
+                                  , "code"    : (CODE:String)
+                                  , "nonce"   : (NONCE:String)
+                                  , "storage" : (STORAGE:JSON)
+                                  }
+                       )
+      => account : - id      : #parseHexWord(ACCTID)
+                   - nonce   : #parseHexWord(NONCE)
+                   - balance : #parseHexWord(BAL)
+                   - program : #dasmOpCodes(#parseWordStack(CODE))
+                   - storage : #parseWordStack(STORAGE)
+```
+
+Here we define `load_` over the various relevant primitives that appear in the EVM tests.
+
+```k
+    rule <k> ( load ( "env" : { "currentCoinbase"   : (CB:String)
+                              , "currentDifficulty" : (DIFF:String)
+                              , "currentGasLimit"   : (GLIMIT:String)
+                              , "currentNumber"     : (NUM:String)
+                              , "currentTimestamp"  : (TS:String)
+                              }
+                    )
+            =>
+             .
+             )
+             ...
+         </k>
+         <global> GM => GM [ "coinbase"   <- #parseHexWord(CB)     ]
+                           [ "difficulty" <- #parseHexWord(DIFF)   ]
+                           [ "gasLimit"   <- #parseHexWord(GLIMIT) ]
+                           [ "number"     <- #parseHexWord(NUM)    ]
+                           [ "timestamp"  <- #parseHexWord(TS)     ]
+         </global>
+
+    rule <k> ( load "pre" : { .JSONList } => . ) ... </k>
+    rule <k> ( load "pre" : { ACCTID : ACCT
+                            , ACCTS
+                            }
+             )
+            =>
+             ( load #acctFromJSON( ACCTID : ACCT )
+            ~> load "pre" : { ACCTS }
+             )
+             ...
+         </k>
+```
+
+Here we define `check_` over the "post" part of the EVM test.
+
+```k
+    rule <k> ( check "post" : { .JSONList } => . ) ... </k>
+    rule <k> ( check "post" : { ACCTID : ACCT
+                              , ACCTS
+                              }
+             )
+            =>
+             ( check #acctFromJSON( ACCTID : ACCT )
+            ~> check "post" : { ACCTS }
+             )
+             ...
+         </k>
+```
+
+-   `run` runs a given set of Ethereum tests (from the test-set)
+
+```k
+    syntax EthereumSpecCommand ::= "run"
+ // ------------------------------------
+    rule <k> run { .JSONList } => . ... </k>
+    rule <k> ( run { TESTID : (TEST:JSON)
+                   , TESTS
+                   }
+            => #testFromJSON( TESTID : TEST )
+            ~> run { TESTS }
+             )
+         </k>
+```
+
+-   `#testFromJSON` is used to convert a JSON encoded test to the sequence of EVM drivers it corresponds to.
+
+```k
+    syntax KItem ::= #testFromJSON ( JSON ) [function]
+ // --------------------------------------------------
+    rule #testFromJSON ( TESTID : { "callcreates" : (CCREATES:JSON)
+                                  , "env"         : (ENV:JSON)
+                                  , "exec"        : (EXEC:JSON)
+                                  , "gas"         : (CURRGAS:String)
+                                  , "logs"        : (LOGS:JSON)
+                                  , "out"         : (OUTPUT:String)
+                                  , "post"        : (POST:JSON)
+                                  , "pre"         : (PRE:JSON)
+                                  }
+                       )
+      =>  ( load  "env"  : ENV
+         ~> load  "gas"  : CURRGAS
+         ~> run   "exec" : EXEC
+         ~> check "post" : POST
+          )
 endmodule
 ```
 
