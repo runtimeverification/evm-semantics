@@ -129,9 +129,9 @@ TODO: I don't like how we have to accept both `WordStack` and `Map` in the prett
 ```k
     syntax EthereumSpecCommand ::= "load"
  // -------------------------------------
-    rule <k> ( load ( account : - id      : ACCTID
-                                - nonce   : NONCE
-                                - balance : BAL
+    rule <k> ( load ( account : - id      : (ACCTID:Word)
+                                - nonce   : (NONCE:Word)
+                                - balance : (BAL:Word)
                                 - program : (PGM:Map)
                                 - storage : (STORAGE:Map)
                     )
@@ -140,7 +140,18 @@ TODO: I don't like how we have to accept both `WordStack` and `Map` in the prett
              )
              ...
          </k>
-         <control> .Control => #addAccount ACCTID BAL PGM STORAGE ("nonce" |-> NONCE) </control>
+         <accounts>
+           ( .Bag
+          => <account>
+               <acctID>  ACCTID            </acctID>
+               <balance> BAL               </balance>
+               <code>    PGM               </code>
+               <storage> STORAGE           </storage>
+               <acctMap> "nonce" |-> NONCE </acctMap>
+             </account>
+           )
+           ...
+         </accounts>
 
 //    rule <k> ( load ( transaction : - id       : TXID
 //                                    - to       : ACCTTO

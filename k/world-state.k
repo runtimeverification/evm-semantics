@@ -12,8 +12,6 @@
 // -   `worldState` is the top-level cell. Import this sub-configuration into
 //     whatever language will operate over this world-state.
 // 
-// -   `global` is for storing "global" (non-account-specific) world-state for EVM.
-// 
 // -   `accounts` stores the list of accounts as a map from the account ID to each
 //     of the fields in the account (`nonce`, `balance`, `code`, and `storage`).
 // 
@@ -33,7 +31,6 @@ module WORLD-STATE
     configuration <worldState>
 
                     <control> .Control </control>
-                    <global> .Map </global>
 
                     <accounts>
                       <account multiplicity="*">
@@ -83,23 +80,6 @@ module WORLD-STATE
     syntax Control ::= "#response" K
 
 
-// ### Global Actions
-
-// -   `#setGlobal__` will update the global map with the given key/value pair.
-// -   `#getGlobal_` will retrieve the value associated to the supplied key from
-//     the global state map.
-
-
-    syntax Control ::= "#setGlobal" K K
-                     | "#getGlobal" K
- // ---------------------------------
-    rule <control> #setGlobal INDEX VALUE => .Control </control>
-         <global> GLOBAL => GLOBAL [ INDEX <- VALUE ] </global>
-
-    rule <control> #getGlobal INDEX => #response VALUE </control>
-         <global> ... INDEX |-> VALUE ... </global>
-
-
 // ### State Setup
 
 // -   `#addAccount_____` adds an account to the network with the given data.
@@ -109,7 +89,7 @@ module WORLD-STATE
 // exist, which it really should.
 
 
-    syntax Control ::= "#addAccount" AcctID Int Code Map Map
+    syntax Control ::= "#addAccount" AcctID Value Code Map Map
                      | "#addMessage" MsgID AcctID AcctID Int Map
  // ------------------------------------------------------------
     rule <control> #addAccount ACCTID (BAL:Int) CODE STORAGE ACCTMAP => .Control </control>
