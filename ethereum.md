@@ -76,6 +76,7 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
     rule ETC:EthereumCommand ETS:EthereumSimulation => ETC ~> ETS
 
     syntax EthereumCommand ::= EthereumSpecCommand EthereumSpec
+                             | EthereumSpecCommand JSON
 ```
 
 -   `account ...` corresponds to the specification of an account on the network.
@@ -140,33 +141,22 @@ TODO: I don't like how we have to accept both `WordStack` and `Map` in the prett
              )
              ...
          </k>
-         <accounts>
-           ( .Bag
-          => <account>
-               <acctID>  ACCTID            </acctID>
-               <balance> BAL               </balance>
-               <code>    PGM               </code>
-               <storage> STORAGE           </storage>
-               <acctMap> "nonce" |-> NONCE </acctMap>
-             </account>
-           )
-           ...
-         </accounts>
+         <control> .Control => #addAccount ACCTID BAL PGM STORAGE ("nonce" |-> NONCE) </control>
 
-//    rule <k> ( load ( transaction : - id       : TXID
-//                                    - to       : ACCTTO
-//                                    - from     : ACCTFROM
-//                                    - value    : VALUE
-//                                    - data     : DATA
-//                                    - gasPrice : GPRICE
-//                                    - gasLimit : GLIMIT
-//                    )
-//            =>
-//             .
-//             )
-//             ...
-//         </k>
-//         <control> .Control => #addMessage TXID ACCTTO ACCTFROM VALUE ("data" |-> DATA "gasPrice" |-> GPRICE "gasLimit" |-> GLIMIT) </control>
+    rule <k> ( load ( transaction : - id       : TXID
+                                    - to       : ACCTTO
+                                    - from     : ACCTFROM
+                                    - value    : VALUE
+                                    - data     : DATA
+                                    - gasPrice : GPRICE
+                                    - gasLimit : GLIMIT
+                    )
+            =>
+             .
+             )
+             ...
+         </k>
+         <control> .Control => #addMessage TXID ACCTTO ACCTFROM VALUE ("data" |-> DATA "gasPrice" |-> GPRICE "gasLimit" |-> GLIMIT) </control>
 
     rule <k> ( load "gas" : CURRGAS => . ) ... </k>
          <gas> _ => #parseHexWord(CURRGAS) </gas>
@@ -229,17 +219,11 @@ Most of the test-set is encoded in JSON. Here we provide a decoder for that.
 TODO: Should JSON enconding stuff be moved to `evm-dasm.md`?
 TODO: Parsing the storage needs to actually happen (not calling `#parseWordStack`).
 
-```k
-    syntax EthereumSpec ::= JSON
- // ----------------------------
-```
-
 -   `#acctFromJSON` returns our nice representation of EVM programs given the JSON encoding.
 -   `#txFromJSON` does the same for transactions.
 
 ```k
     syntax EthereumSpec ::= #acctFromJSON ( JSON ) [function]
-                          | #txFromJSON   ( JSON ) [function]
  // ---------------------------------------------------------
     rule #acctFromJSON ( ACCTID : { "balance" : (BAL:String)
                                   , "code"    : (CODE:String)
@@ -250,8 +234,8 @@ TODO: Parsing the storage needs to actually happen (not calling `#parseWordStack
       => account : - id      : #parseHexWord(ACCTID)
                    - nonce   : #parseHexWord(NONCE)
                    - balance : #parseHexWord(BAL)
-                   - program : #dasmOpCodes(#parseWordStack(CODE))
-                   - storage : #parseMap(STORAGE)
+                   - program : #asMap(#dasmOpCodes(#parseWordStack(CODE)))
+                   - storage : #asMap(#parseMap(STORAGE))
 ```
 
 Here we define `load_` over the various relevant primitives that appear in the EVM tests.
