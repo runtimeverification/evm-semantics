@@ -6,28 +6,43 @@
 
 requires "evm.k"
 requires "evm-dasm.k"
-requires "world-state.k"
 
 module ETHEREUM
     imports EVM
-    imports WORLD-STATE
     imports EVM-DASM
 
     configuration <ethereum>
+
                     <k> $PGM:EthereumSimulation </k>
+
                     initEvmCell
-                    initWorldStateCell
+
+                    <accounts>
+                      <account multiplicity="*">
+                        <acctID>  .AcctID </acctID>
+                        <balance> .Value  </balance>
+                        <code>    .Code   </code>
+                        <storage> .Map    </storage>
+                        <acctMap> .Map    </acctMap>
+                      </account>
+                    </accounts>
+
+                    <messages>
+                      <message multiplicity="*">
+                        <msgID>  .MsgID   </msgID>
+                        <to>     .AcctID  </to>
+                        <from>   .AcctID  </from>
+                        <amount> .Value   </amount>
+                        <data>   .Map     </data>
+                      </message>
+                    </messages>
+
                   </ethereum>
 
-    syntax AcctID ::= Word
-    syntax Code   ::= Map
-    syntax MsgID  ::= Word
-    syntax Value  ::= Word
-
-    syntax InternalOp ::= "#pushResponse"
- // -------------------------------------
-    rule <op> #pushResponse => RESPONSE ~> #push ... </op>
-         <control> #response RESPONSE => .Control </control>
+    syntax AcctID ::= Word | ".AcctID"
+    syntax Code   ::= Map  | ".Code"
+    syntax MsgID  ::= Word | ".MsgID"
+    syntax Value  ::= Word | ".Value"
 
     rule <op> BALANCE ACCT => BAL ~> #push ... </op>
          <account>
@@ -36,13 +51,21 @@ module ETHEREUM
            ...
          </account>
 
-    rule <op> SLOAD INDEX => #pushResponse ... </op>
+    rule <op> SLOAD INDEX => VALUE ~> #push ... </op>
          <id> ACCT </id>
-         <control> .Control => #getAccountStorage ACCT INDEX </control>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> ... INDEX |-> VALUE ... </storage>
+           ...
+         </account>
 
     rule <op> SSTORE INDEX VALUE => . ... </op>
          <id> ACCT </id>
-         <control> .Control => #setAccountStorage ACCT INDEX VALUE </control>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>
+           ...
+         </account>
 
 
 // TODO: Calculating gas for `SELFDESTRUCT` needs to take into account the cost of
@@ -54,14 +77,32 @@ module ETHEREUM
     rule <op> SELFDESTRUCT ACCTTO => . ... </op>
          <id> ACCT </id>
          <selfDestruct> SD </selfDestruct>
-         <control> .Control => #transfer ACCT ACCTTO ALL </control>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BALFROM => 0 </balance>
+           ...
+         </account>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <balance> BALTO => BALTO +Word BALFROM </balance>
+           ...
+         </account>
       requires ACCT in SD
 
     rule <op> SELFDESTRUCT ACCTTO => . ... </op>
          <id> ACCT </id>
          <selfDestruct> SD => ACCT : SD               </selfDestruct>
          <refund>       RF => RF +Word Rself-destruct </refund>
-         <control> .Control => #transfer ACCT ACCTTO ALL </control>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BALFROM => 0 </balance>
+           ...
+         </account>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <balance> BALTO => BALTO +Word BALFROM </balance>
+           ...
+         </account>
       requires notBool (ACCT in SD)
 
 
@@ -120,14 +161,15 @@ module ETHEREUM
  // -----------------------------------------------------------------
 
 
-// -   `clear` clears both the transactions and accounts from the world state.
+// -   `clear` clears all the execution state of the machine back to empty.
 
 
     syntax EthereumCommand ::= "clear"
  // ----------------------------------
     rule <k> clear => . ... </k>
-         <accounts> _ => .Bag </accounts>
-         <messages> _ => .Bag </messages>
+         <callStack> _ => .CallStack </callStack>
+         <accounts>  _ => .Bag       </accounts>
+         <messages>  _ => .Bag       </messages>
 
 
 // -   `load_` loads an account or transaction into the world state.
@@ -135,17 +177,28 @@ module ETHEREUM
 
     syntax EthereumSpecCommand ::= "load"
  // -------------------------------------
-    rule <k> ( load account : - id      : (ACCTID:Word)
-                              - nonce   : (NONCE:Word)
-                              - balance : (BAL:Word)
+    rule <k> ( load account : - id      : ACCTID
+                              - nonce   : NONCE
+                              - balance : BAL
                               - program : (PGM:Map)
                               - storage : (STORAGE:Map)
-            =>
-             .
+            => .
              )
              ...
          </k>
-         <control> .Control => #addAccount ACCTID BAL PGM STORAGE ("nonce" |-> NONCE) </control>
+         <accounts>
+            ( .Bag
+           => <account>
+                <acctID>  ACCTID            </acctID>
+                <balance> BAL               </balance>
+                <code>    PGM               </code>
+                <storage> STORAGE           </storage>
+                <acctMap> "nonce" |-> NONCE </acctMap>
+              </account>
+            )
+            ...
+         </accounts>
+      requires word2Bool(BAL >=Word 0)
 
     rule <k> ( load transaction : - id       : TXID
                                   - to       : ACCTTO
@@ -154,12 +207,26 @@ module ETHEREUM
                                   - data     : DATA
                                   - gasPrice : GPRICE
                                   - gasLimit : GLIMIT
-            =>
-             .
+            => .
              )
              ...
          </k>
-         <control> .Control => #addMessage TXID ACCTTO ACCTFROM VALUE ("data" |-> DATA "gasPrice" |-> GPRICE "gasLimit" |-> GLIMIT) </control>
+         <messages>
+            ( .Bag
+           => <message>
+                <msgID>  TXID     </msgID>
+                <to>     ACCTTO   </to>
+                <from>   ACCTFROM </from>
+                <amount> VALUE    </amount>
+                <data>   "data"     |-> DATA
+                         "gasPrice" |-> GPRICE
+                         "gasLimit" |-> GLIMIT
+                </data>
+              </message>
+            )
+            ...
+         </messages>
+      requires word2Bool(VALUE >=Word 0)
 
     rule <k> ( load "gas" : CURRGAS => . ) ... </k>
          <gas> _ => #parseHexWord(CURRGAS) </gas>
@@ -171,12 +238,11 @@ module ETHEREUM
 
     syntax EthereumSpecCommand ::= "check"
  // --------------------------------------
-    rule <k> ( check ( account : - id      : ACCT
-                                 - nonce   : NONCE
-                                 - balance : BAL
-                                 - program : (PGM:Map)
-                                 - storage : (STORAGE:Map)
-                     )
+    rule <k> ( check account : - id      : ACCT
+                               - nonce   : NONCE
+                               - balance : BAL
+                               - program : (PGM:Map)
+                               - storage : (STORAGE:Map)
             => .
              )
              ...
@@ -188,7 +254,7 @@ module ETHEREUM
            <storage> ACCTSTORAGE       </storage>
            <acctMap> "nonce" |-> NONCE </acctMap>
          </account>
-      requires #asMap(PGM) ==K CODE andBool STORAGE ==K ACCTSTORAGE
+      requires PGM ==K CODE andBool STORAGE ==K ACCTSTORAGE
 
     rule <k> ( check ( transaction : - id       : TXID
                                      - to       : ACCTTO
@@ -198,8 +264,7 @@ module ETHEREUM
                                      - gasPrice : GPRICE
                                      - gasLimit : GLIMIT
                      )
-            =>
-             .
+            => .
              )
              ...
          </k>
@@ -254,8 +319,7 @@ module ETHEREUM
                               , "currentTimestamp"  : (TS:String)
                               }
                     )
-            =>
-             .
+            => .
              )
              ...
          </k>
@@ -304,6 +368,7 @@ module ETHEREUM
                    , TESTS
                    }
             => #testFromJSON( TESTID : TEST )
+            ~> clear
             ~> run { TESTS }
              )
              ...

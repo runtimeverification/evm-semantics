@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 
 tangle_defn() {
-    echo "generating 'k/*' files..."
-    echo "========================="
+    echo "generating 'k/*' files ..."
+    echo "=========================="
 
     pandoc-tangle --from markdown --to code-k --code k world-state.md > k/world-state.k
     pandoc-tangle --from markdown --to code-k --code k data.md        > k/data.k
@@ -12,14 +12,21 @@ tangle_defn() {
 }
 
 tangle_kompile() {
-    echo "kompiling definition..."
-    echo "======================="
+    echo "kompiling definition ..."
+    echo "========================"
 
     pushd k
     kompile --debug --main-module ETHEREUM --syntax-module ETHEREUM ethereum.k
     result="$?"
     popd
     return "$result"
+}
+
+tangle_test() {
+    echo "running tests ..."
+    echo "================="
+
+    krun --debug --directory k/ tests/simple/testDASM.evm
 }
 
 [[ "$#" == '0' ]] && set all
@@ -30,6 +37,7 @@ while [[ "$#" -gt '0' ]]; do
         all)      set defn kompile ;;
         defn)     tangle_defn ;;
         kompile)  tangle_kompile ;;
+        test)     tangle_test ;;
         *)        echo "Unrecognized option: '$tangle_command' ..." ;;
     esac
 done

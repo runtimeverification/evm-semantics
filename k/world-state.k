@@ -160,29 +160,5 @@ module WORLD-STATE
            <balance> BAL </balance>
            ...
          </account>
-
-
-// -   `#setAccountStorage___` updates the map which holds the storage of
-//     the account.
-// -   `#getAccountStorage__` retrieves a value from the storage of a
-//     specified account.
-
-
-    syntax Control ::= "#setAccountStorage" AcctID K K
-                     | "#getAccountStorage" AcctID K
- // ------------------------------------------------
-    rule <control> #setAccountStorage ACCT INDEX VALUE => .Control </control>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>
-           ...
-         </account>
-
-    rule <control> #getAccountStorage ACCT INDEX => #response VALUE </control>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> ... INDEX |-> VALUE ... </storage>
-           ...
-         </account>
 endmodule
 

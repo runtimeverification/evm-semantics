@@ -120,6 +120,6 @@ module EVM-DASM
     syntax Map ::= #parseMap ( JSON ) [function]
  // --------------------------------------------
     rule #parseMap( { .JSONList                   } ) => .Map
-    rule #parseMap( { KEY : (VALUE:String) , REST } ) => #parseMap(REST) [ #parseHexWord(KEY) <- #parseHexWord(VALUE) ]
+    rule #parseMap( { KEY : (VALUE:String) , REST } ) => #parseMap({ REST }) [ #parseHexWord(KEY) <- #parseHexWord(VALUE) ]
 endmodule
 
