@@ -37,11 +37,11 @@ module WORLD-STATE
 
                     <accounts>
                       <account multiplicity="*">
-                        <acctID>  .AcctID  </acctID>
-                        <balance> .Value   </balance>
-                        <code>    .Code    </code>
-                        <storage> .Map     </storage>
-                        <acctMap> .Map     </acctMap>
+                        <acctID>  .AcctID </acctID>
+                        <balance> .Value  </balance>
+                        <code>    .Code   </code>
+                        <storage> .Map    </storage>
+                        <acctMap> .Map    </acctMap>
                       </account>
                     </accounts>
 

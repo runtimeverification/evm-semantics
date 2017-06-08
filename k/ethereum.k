@@ -91,11 +91,12 @@ module ETHEREUM
 
 
     syntax Storage ::= WordStack | Map
+    syntax Program ::= OpCodes   | Map
 
     syntax EthereumSpec ::= "account" ":" "-" "id"      ":" AcctID
                                           "-" "nonce"   ":" Word
                                           "-" "balance" ":" Word
-                                          "-" "program" ":" OpCodes
+                                          "-" "program" ":" Program
                                           "-" "storage" ":" Storage [function]
  // --------------------------------------------------------------------------
     rule account : - id      : ACCTID
@@ -103,6 +104,11 @@ module ETHEREUM
                    - balance : BAL
                    - program : CODE
                    - storage : (STORAGE:WordStack => #asMap(STORAGE))
+    rule account : - id      : ACCTID
+                   - nonce   : NONCE
+                   - balance : BAL
+                   - program : (CODE:OpCodes => #asMap(CODE))
+                   - storage : STORAGE
 
     syntax EthereumSpec ::= "transaction" ":" "-" "id"       ":" MsgID
                                               "-" "to"       ":" AcctID
@@ -132,7 +138,7 @@ module ETHEREUM
     rule <k> ( load ( account : - id      : ACCTID
                                 - nonce   : NONCE
                                 - balance : BAL
-                                - program : PGM
+                                - program : (PGM:Map)
                                 - storage : (STORAGE:Map)
                     )
             =>
@@ -140,22 +146,22 @@ module ETHEREUM
              )
              ...
          </k>
-         <control> .Control => #addAccount ACCTID BAL #asMap(PGM) STORAGE ("nonce" |-> NONCE) </control>
+         <control> .Control => #addAccount ACCTID BAL PGM STORAGE ("nonce" |-> NONCE) </control>
 
-    rule <k> ( load ( transaction : - id       : TXID
-                                    - to       : ACCTTO
-                                    - from     : ACCTFROM
-                                    - value    : VALUE
-                                    - data     : DATA
-                                    - gasPrice : GPRICE
-                                    - gasLimit : GLIMIT
-                    )
-            =>
-             .
-             )
-             ...
-         </k>
-         <control> .Control => #addMessage TXID ACCTTO ACCTFROM VALUE ("data" |-> DATA "gasPrice" |-> GPRICE "gasLimit" |-> GLIMIT) </control>
+//    rule <k> ( load ( transaction : - id       : TXID
+//                                    - to       : ACCTTO
+//                                    - from     : ACCTFROM
+//                                    - value    : VALUE
+//                                    - data     : DATA
+//                                    - gasPrice : GPRICE
+//                                    - gasLimit : GLIMIT
+//                    )
+//            =>
+//             .
+//             )
+//             ...
+//         </k>
+//         <control> .Control => #addMessage TXID ACCTTO ACCTFROM VALUE ("data" |-> DATA "gasPrice" |-> GPRICE "gasLimit" |-> GLIMIT) </control>
 
     rule <k> ( load "gas" : CURRGAS => . ) ... </k>
          <gas> _ => #parseHexWord(CURRGAS) </gas>
@@ -170,7 +176,7 @@ module ETHEREUM
     rule <k> ( check ( account : - id      : ACCT
                                  - nonce   : NONCE
                                  - balance : BAL
-                                 - program : PGM
+                                 - program : (PGM:Map)
                                  - storage : (STORAGE:Map)
                      )
             => .
@@ -302,11 +308,10 @@ module ETHEREUM
     syntax EthereumSpecCommand ::= "run"
  // ------------------------------------
     rule <k> run { .JSONList } => . ... </k>
-    rule <k> run { TESTID : (TEST:JSON) } => #testFromJSON( TESTID : TEST ) ... </k>
     rule <k> ( run { TESTID : (TEST:JSON)
                    , TESTS
                    }
-            => run { TESTID : TEST }
+            => #testFromJSON( TESTID : TEST )
             ~> run { TESTS }
              )
              ...
@@ -319,17 +324,18 @@ module ETHEREUM
 
     syntax KItem ::= #testFromJSON ( JSON ) [function]
  // --------------------------------------------------
-    rule #testFromJSON ( TESTID : { "callcreates" : (CCREATES:JSON)
+    rule #testFromJSON ( TESTID : { "callcreates" : (CCREATES:JSON)     // unused
                                   , "env"         : (ENV:JSON)
                                   , "exec"        : (EXEC:JSON)
                                   , "gas"         : (CURRGAS:String)
-                                  , "logs"        : (LOGS:JSON)
-                                  , "out"         : (OUTPUT:String)
+                                  , "logs"        : (LOGS:JSON)         // unused
+                                  , "out"         : (OUTPUT:String)     // unused
                                   , "post"        : (POST:JSON)
                                   , "pre"         : (PRE:JSON)
                                   }
                        )
       =>  ( load  "env"  : ENV
+         ~> load  "pre"  : PRE
          ~> load  "gas"  : CURRGAS
          ~> run   "exec" : EXEC
          ~> check "post" : POST
@@ -338,19 +344,20 @@ module ETHEREUM
     rule <k> run "exec" : { "address"  : (ACCTTO:String)
                           , "caller"   : (ACCTFROM:String)
                           , "code"     : (CODE:String)
-                          , "data"     : (DATA:String)
+                          , "data"     : (DATA:String)                  // unused
                           , "gas"      : (GAVAIL:String)
                           , "gasPrice" : (GPRICE:String)
-                          , "origin"   : (ORIGIN:String)
-                          , "value"    : (VAL:String)
+                          , "origin"   : (ORIG:String)
+                          , "value"    : (VAL:String)                   // unused
                           }
           => .
           ...
          </k>
-         <id>      _ => #parseHexWord(ACCTTO)                       </id>
-         <caller>  _ => #parseHexWord(ACCTFROM)                     </caller>
-         <origin>  _ => #parseHexWord(ORIGIN)                       </origin>
-         <gas>     _ => #parseHexWord(GAVAIL)                       </gas>
-         <program> _ => #asMap(#dasmOpCodes(#parseWordStack(CODE))) </code>
+         <id>       _ => #parseHexWord(ACCTTO)                       </id>
+         <caller>   _ => #parseHexWord(ACCTFROM)                     </caller>
+         <origin>   _ => #parseHexWord(ORIG)                         </origin>
+         <gas>      _ => #parseHexWord(GAVAIL)                       </gas>
+         <gasPrice> _ => #parseHexWord(GPRICE)                       </gasPrice>
+         <program>  _ => #asMap(#dasmOpCodes(#parseWordStack(CODE))) </program>
 endmodule
 

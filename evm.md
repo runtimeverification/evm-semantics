@@ -14,39 +14,47 @@ program counter, the current gas, the gas price, the current program, the word
 stack, and the local memory. In addition, there are cells for the callstack and
 execution substate.
 
+I've broken up the configuration into two components; those parts of the state that mutate during execution of a single transaction and those that are static throughout.
+In the comments next to each cell, I've marked which component of the yellowpaper state corresponds to each cell.
+
 ```k
 requires "data.k"
 
 module EVM
     imports EVM-DATA
+    imports KCELLS
 
     configuration <evm>
-                    // Mutate during a single transaction
                     <op> . </op>
-                    <id>         0:Word    </id>
-                    <wordStack> .WordStack </wordStack>
-                    <localMem>  .Map       </localMem>
-                    <program>   .Map       </program>
-                    <pc>        0:Word     </pc>
-                    <gas>       0:Word     </gas>
-                    <caller>    0:Word     </caller>
 
-                    // Immutable during a single transaction
-                    <gasPrice>   0:Word </gasPrice>
-                    <gasLimit>   0:Word </gasLimit>
-                    <coinbase>   0:Word </coinbase>
-                    <timestamp>  0:Word </timestamp>
-                    <number>     0:Word </number>
-                    <difficulty> 0:Word </difficulty>
-                    <origin>     0:Word </origin>
+                    // Mutates during a single transaction
+                    <txExecState>
+                      <id>        0:Word     </id>                  // I_a
+                      <wordStack> .WordStack </wordStack>           // \mu_s
+                      <localMem>  .Map       </localMem>            // \mu_m
+                      <program>   .Map       </program>
+                      <pc>        0:Word     </pc>                  // \mu_pc
+                      <gas>       0:Word     </gas>                 // \mu_g
+                      <caller>    0:Word     </caller>              // I_s
+                    </txExecState>
+                    <callStack> .CallStack </callStack>
 
                     // Execution state
-                    <callStack> .CallStack </callStack>
                     <substate>
-                      <selfDestruct> .WordStack   </selfDestruct>
-                      <log>          .SubstateLog </log>
-                      <refund>       0:Word       </refund>
+                      <selfDestruct> .WordStack   </selfDestruct>   // A_s
+                      <log>          .SubstateLog </log>            // A_l
+                      <refund>       0:Word       </refund>         // A_r
                     </substate>
+
+                    // Immutable during a single transaction
+                    <gasPrice>   0:Word </gasPrice>                 // I_p
+                    <gasLimit>   0:Word </gasLimit>                 // I_Hl
+                    <coinbase>   0:Word </coinbase>                 // I_Hc
+                    <timestamp>  0:Word </timestamp>                // I_Hs
+                    <number>     0:Word </number>                   // I_Hi
+                    <difficulty> 0:Word </difficulty>               // I_Hd
+                    <origin>     0:Word </origin>                   // I_o
+                    <callValue>  0:Word </callValue>                // I_v
                   </evm>
 ```
 
@@ -61,7 +69,7 @@ needed is calculated here.
          <pc> PCOUNT => PCOUNT +Word 1 </pc>
          <gas> G => G -Word #gas(OP) </gas>
          <program> ... PCOUNT |-> OP ... </program>
-      requires (G >=Word #gas(OP)) ==K bool2Word(true)
+      requires word2Bool(G >=Word #gas(OP))
 ```
 
 Depending on the sort of the opcode loaded, the correct number of arguments are
@@ -116,8 +124,8 @@ operators for shuffling local execution state around on the EVM.
     syntax InternalOp ::= "#checkStackSize" | "#stackOverflow"
  // ----------------------------------------------------------
     rule <op> #checkStackSize => #stackSize(WS) ~> #checkStackSize ... </op> <wordStack> WS </wordStack>
-    rule (I:Int ~> #checkStackSize) => .              requires I <Int  1024
-    rule (I:Int ~> #checkStackSize) => #stackOverflow requires I >=Int 1024
+    rule <op> I:Int ~> #checkStackSize => .              ... </op> requires I <Int  1024
+    rule <op> I:Int ~> #checkStackSize => #stackOverflow ... </op> requires I >=Int 1024
 ```
 
 Callstack
@@ -130,28 +138,17 @@ for that. The `CallStack` is a cons-list of `Process`.
 -   `#popCallStack` replaces the current state with the top of the `callStack`.
 
 ```k
-    syntax Process ::= "{" Word "|" WordStack "|" Map "|" Map "|" Word "|" Word "}"
-    syntax CallStack ::= ".CallStack" | Process CallStack
+    syntax CallStack ::= ".CallStack" | Bag CallStack
 
     syntax InternalOp ::= "#pushCallStack" | "#popCallStack"
  // --------------------------------------------------------
     rule <op> #pushCallStack => . </op>
-         <callStack> CS => { ACCT | WS | LM | PGM | PCOUNT | GAVAIL } CS </callStack>
-         <id>        ACCT   </id>
-         <wordStack> WS     </wordStack>
-         <localMem>  LM     </localMem>
-         <program>   PGM    </program>
-         <pc>        PCOUNT </pc>
-         <gas>       GAVAIL </gas>
+         <callStack> CS => TXSTATE CS </callStack>
+         <txExecState> TXSTATE </txExecState>
 
     rule <op> #popCallStack => . </op>
-         <callStack> { ACCT | WS | LM | PGM | PCOUNT | GAVAIL } CS => CS </callStack>
-         <id>        _ => ACCT   </id>
-         <wordStack> _ => WS     </wordStack>
-         <localMem>  _ => LM     </localMem>
-         <program>   _ => PGM    </program>
-         <pc>        _ => PCOUNT </pc>
-         <gas>       _ => GAVAIL </gas>
+         <callStack> TXSTATE CS => CS </callStack>
+         <txExecState> _ => TXSTATE </txExecState>
 ```
 
 EVM Programs
@@ -161,11 +158,6 @@ Lists of opcodes form programs. Deciding if an opcode is in a list will be
 useful for modeling gas, and converting a program into a map of program-counter
 to opcode is useful for execution.
 
-TODO: The function `#asMap` just gives each subsequence opcode the next integer.
-In reality, the `PUSH` opcodes take up more than one opcode worth of space in
-the original encoding of programs, so the next instruction should get a higher
-number corresponding to how many opcodes the `PUSH` operation takes up.
-
 ```k
     syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
  // --------------------------------------------------
@@ -173,15 +165,15 @@ number corresponding to how many opcodes the `PUSH` operation takes up.
     syntax Bool ::= OpCode "in" OpCodes
  // -----------------------------------
     rule OP in .OpCodes    => false
-    rule OP in (OP ; OPS)  => true
-    rule OP in (OP' ; OPS) => OP in OPS requires OP =/=K OP'
+    rule OP in (OP' ; OPS) => (OP ==K OP') orElseBool (OP in OPS)
 
     syntax Map ::= #asMap ( OpCodes )       [function]
                  | #asMap ( Int , OpCodes ) [function]
  // --------------------------------------------------
     rule #asMap( OPS:OpCodes )         => #asMap(0, OPS)
     rule #asMap( N , .OpCodes )        => .Map
-    rule #asMap( N , OP:OpCode ; OCS ) => (N |-> OP) #asMap(N +Int 1, OCS)
+    rule #asMap( N , OP:OpCode ; OCS ) => (N |-> OP) #asMap(N +Int 1, OCS) requires notBool isPushOp(OP)
+    rule #asMap( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #asMap(N +Int 1 +Int M, OCS)
 ```
 
 EVM Substate Log
@@ -220,9 +212,9 @@ Some operators don't calculate anything, they just push the stack around a bit.
     rule <op> DUP(N)  WS:WordStack => #setStack ((WS [ N -Word 1 ]) : WS) ~> #checkStackSize    ... </op>
     rule <op> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Word 1 ]) : (WS [ N -Word 1 := W0 ])) ... </op>
 
-    syntax PushOp ::= PUSH ( Word )
- // -------------------------------
-    rule <op> PUSH(W) => W ~> #push ~> #checkStackSize ... </op>
+    syntax PushOp ::= PUSH ( Word , Word )
+ // --------------------------------------
+    rule <op> PUSH(_, W) => W ~> #push ~> #checkStackSize ... </op>
 ```
 
 Expressions
@@ -315,19 +307,28 @@ about this state or past substates on the callstack).
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY"
  // -------------------------------------------------------------------------
-    rule <op> COINBASE   => CB              ~> #push ... </op> <coinbase> CB </coinbase>
-    rule <op> TIMESTAMP  => TS              ~> #push ... </op> <timestamp> TS </timestamp>
-    rule <op> NUMBER     => NUMB            ~> #push ... </op> <number> NUMB </number>
-    rule <op> DIFFICULTY => DIFF            ~> #push ... </op> <difficulty> DIFF </difficulty>
+    rule <op> COINBASE   => CB   ~> #push ... </op> <coinbase> CB </coinbase>
+    rule <op> TIMESTAMP  => TS   ~> #push ... </op> <timestamp> TS </timestamp>
+    rule <op> NUMBER     => NUMB ~> #push ... </op> <number> NUMB </number>
+    rule <op> DIFFICULTY => DIFF ~> #push ... </op> <difficulty> DIFF </difficulty>
 
-    syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER"
- // ------------------------------------------------------
-    rule <op> ADDRESS => ACCT ~> #push ... </op> <id> ACCT </id>
-    rule <op> ORIGIN  => ORG  ~> #push ... </op> <origin> ORG </origin>
-    rule <op> CALLER  => CL   ~> #push ... </op> <caller> CL </caller>
+    syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE"
+ // --------------------------------------------------------------------
+    rule <op> ADDRESS   => ACCT ~> #push ... </op> <id> ACCT </id>
+    rule <op> ORIGIN    => ORG  ~> #push ... </op> <origin> ORG </origin>
+    rule <op> CALLER    => CL   ~> #push ... </op> <caller> CL </caller>
+    rule <op> CALLVALUE => CV   ~> #push ... </op> <callValue> CV </callValue>
+
+    syntax NullStackOp ::= "MSIZE" | "CODESIZE"
+ // -------------------------------------------
+    rule <op> MSIZE    => 32 *Word size(LM) ~> #push ... </op> <localMem> LM </localMem>
+    rule <op> CODESIZE => size(PGM)         ~> #push ... </op> <program> PGM </program>
 ```
 
 These operations are getters/setters of the local execution memory.
+
+TODO: `MSTORE8` is unimplemented.
+TODO: Should we modify the memory used gas counter when using `MSTORE`?
 
 ```k
     syntax UnStackOp  ::= "MLOAD"
@@ -335,20 +336,6 @@ These operations are getters/setters of the local execution memory.
  // ------------------------------------------
     rule <op> MLOAD  INDEX       => VALUE ~> #push ... </op> <localMem> ... INDEX |-> VALUE ...  </localMem>
     rule <op> MSTORE INDEX VALUE => .              ... </op> <localMem> LM => LM [ INDEX <- VALUE ] </localMem>
-```
-
-These operations require calculations about the current execution state.
-
-```k
-    syntax NullStackOp ::= "MSIZE" | "CODESIZE"
- // -------------------------------------------
-    rule <op> MSIZE    => 32 *Word size(LM) ~> #push ... </op> <localMem> LM </localMem>
-    rule <op> CODESIZE => size(PGM)         ~> #push ... </op> <program> PGM </program>
-
-    syntax KItem ::= "#origin" CallStack
- // ------------------------------------
-    rule <op> #origin ({ ACCT | _ | _ | _ | _ | _ } .CallStack) => ACCT ~> #push   ... </op>
-    rule <op> #origin (P1:Process P2:Process CS:CallStack)          => #origin (P2 CS) ... </op>
 ```
 
 TODO: Add the extra memory used.
@@ -361,14 +348,14 @@ TODO: Add the extra memory used.
          <wordStack> W0 : W1 : WS => #drop(N, WS) </wordStack>
          <localMem> LM </localMem>
          <log> CURRLOG => CURRLOG . { ACCT | #take(N, WS) | #range(LM, W0, W1) } </log>
-      requires (#size(WS) >=Word N) ==K bool2Word(true)
+      requires word2Bool(#size(WS) >=Word N)
 ```
 
 TODO: Unimplemented.
 
 ```k
-    syntax NullStackOp ::= "CALLVALUE" | "CALLDATASIZE" | "CALLDATALOAD"
- // --------------------------------------------------------------------
+    syntax NullStackOp ::= "CALLDATASIZE" | "CALLDATALOAD"
+ // ------------------------------------------------------
 ```
 
 Global State
@@ -387,6 +374,8 @@ TODO: Unimplemented.
 ```k
     syntax UnStackOp   ::= "BLOCKHASH" | "CALLDATALOAD" | "EXTCODESIZE"
  // -------------------------------------------------------------------
+//    syntax Word ::= blockhash ( Word )
+//    rule <op> BLOCKHASH W => blockhash(N -Word W) ~> #push ... </op> <blockhash> N </blockhash>
 
     syntax TernStackOp ::= "CALLDATACOPY" | "CODECOPY" | "CREATE"
  // -------------------------------------------------------------

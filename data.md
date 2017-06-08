@@ -106,14 +106,14 @@ It's specified in the yellowpaper for `PUSH`, but not for `DUP` and `SWAP`.
     syntax Word ::= WordStack "[" Word "]" [function]
  // -------------------------------------------------
     rule (W0 : WS)   [0] => W0
-    rule (.WordStack)[N] => 0             requires N >Word 0
-    rule (W0 : WS)   [N] => WS[N -Word 1] requires N >Word 0
+    rule (.WordStack)[N] => 0             requires word2Bool(N >Word 0)
+    rule (W0 : WS)   [N] => WS[N -Word 1] requires word2Bool(N >Word 0)
 
     syntax WordStack ::= WordStack "[" Word ":=" Word "]" [function]
  // ----------------------------------------------------------------
     rule (W0 : WS)  [ 0 := W ] => W  : WS
-    rule .WordStack [ N := W ] => 0  : (.WordStack [ N +Int 1 := W ]) requires N >Word 0
-    rule (W0 : WS)  [ N := W ] => W0 : (WS [ N +Int 1 := W ])         requires N >Word 0
+    rule .WordStack [ N := W ] => 0  : (.WordStack [ N +Int 1 := W ]) requires word2Bool(N >Word 0)
+    rule (W0 : WS)  [ N := W ] => W0 : (WS [ N +Int 1 := W ])         requires word2Bool(N >Word 0)
 
     syntax Word ::= #stackSize ( WordStack ) [function]
  // ---------------------------------------------------
@@ -123,18 +123,24 @@ It's specified in the yellowpaper for `PUSH`, but not for `DUP` and `SWAP`.
     syntax WordStack ::= #take ( Word , WordStack ) [function]
                        | #drop ( Word , WordStack ) [function]
  // ----------------------------------------------------------
-    rule #take(0, WS)            => .WordStack
-    rule #take(N, .WordStack)    => 0 : #take(N -Word 1, .WordStack) requires N >Word 0
-    rule #take(N, (W:Word : WS)) => W : #take(N -Word 1, WS)         requires N >Word 0
+    rule #take(0, WS)         => .WordStack
+    rule #take(N, .WordStack) => 0 : #take(N -Word 1, .WordStack) requires word2Bool(N >Word 0)
+    rule #take(N, (W : WS))   => W : #take(N -Word 1, WS)         requires word2Bool(N >Word 0)
 
-    rule #drop(0, WS)            => WS
-    rule #drop(N, .WordStack)    => .WordStack
-    rule #drop(N, (W:Word : WS)) => #drop(N -Word 1, WS) requires N >Word 0
+    rule #drop(0, WS)         => WS
+    rule #drop(N, .WordStack) => .WordStack
+    rule #drop(N, (W : WS))   => #drop(N -Word 1, WS) requires word2Bool(N >Word 0)
 
     syntax Bool ::= Word "in" WordStack [function]
  // ----------------------------------------------
     rule W in .WordStack => false
     rule W in (W' : WS)  => (W ==K W') orElseBool (W in WS)
+
+    syntax Word ::= #asWord ( WordStack ) [function]
+ // ------------------------------------------------
+    rule #asWord( .WordStack )    => 0
+    rule #asWord( W : .WordStack) => W
+    rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
 ```
 
 Word Map
@@ -146,9 +152,8 @@ are provided. A common idiom is to assign a contiguous chunk of a map to a list
 functionality for that is provided as well.
 
 ```k
-    syntax WordMap ::= Map
-                     | WordMap "[" Word ":=" WordStack "]" [function]
- // -----------------------------------------------------------------
+    syntax Map ::= Map "[" Word ":=" WordStack "]" [function]
+ // ---------------------------------------------------------
     rule WM[N := .WordStack]   => WM
     rule WM[N := W0:Word : WS] => (WM[N <- W0])[N +Word 1 := WS]
 
@@ -158,8 +163,8 @@ functionality for that is provided as well.
     rule #asMap(WS:WordStack) => .Map [ 0 := WS ]
     rule #asMap(M:Map)        => M
 
-    syntax WordStack ::= #range ( WordMap , Word , Word ) [function]
- // ----------------------------------------------------------------
+    syntax WordStack ::= #range ( Map , Word , Word ) [function]
+ // ------------------------------------------------------------
     rule #range(WM,         N, M) => .WordStack                           requires M ==Word 0
     rule #range(N |-> W WM, N, M) => W : #range(WM, N +Word 1, M -Word 1) requires M >Word 0
 endmodule
