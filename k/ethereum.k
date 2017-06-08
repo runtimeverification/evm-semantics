@@ -86,9 +86,8 @@ module ETHEREUM
 // -   `transaction ...` corresponds to the specification of a transaction on
 //     the network.
 
-// TODO: I don't like how we have to accept both `WordStack` and `Map` in the
-// pretty format, but some tests don't have values for intermediate places in the
-// memory.
+// TODO: These rules for making sure the account is in normal form won't fire, how
+// can we make them?
 
 
     syntax Storage ::= WordStack | Map
@@ -98,8 +97,8 @@ module ETHEREUM
                                           "-" "nonce"   ":" Word
                                           "-" "balance" ":" Word
                                           "-" "program" ":" Program
-                                          "-" "storage" ":" Storage [function]
- // --------------------------------------------------------------------------
+                                          "-" "storage" ":" Storage
+ // ---------------------------------------------------------------
     rule account : - id      : ACCTID
                    - nonce   : NONCE
                    - balance : BAL
@@ -136,12 +135,11 @@ module ETHEREUM
 
     syntax EthereumSpecCommand ::= "load"
  // -------------------------------------
-    rule <k> ( load ( account : - id      : (ACCTID:Word)
-                                - nonce   : (NONCE:Word)
-                                - balance : (BAL:Word)
-                                - program : (PGM:Map)
-                                - storage : (STORAGE:Map)
-                    )
+    rule <k> ( load account : - id      : (ACCTID:Word)
+                              - nonce   : (NONCE:Word)
+                              - balance : (BAL:Word)
+                              - program : (PGM:Map)
+                              - storage : (STORAGE:Map)
             =>
              .
              )
@@ -149,14 +147,13 @@ module ETHEREUM
          </k>
          <control> .Control => #addAccount ACCTID BAL PGM STORAGE ("nonce" |-> NONCE) </control>
 
-    rule <k> ( load ( transaction : - id       : TXID
-                                    - to       : ACCTTO
-                                    - from     : ACCTFROM
-                                    - value    : VALUE
-                                    - data     : DATA
-                                    - gasPrice : GPRICE
-                                    - gasLimit : GLIMIT
-                    )
+    rule <k> ( load transaction : - id       : TXID
+                                  - to       : ACCTTO
+                                  - from     : ACCTFROM
+                                  - value    : VALUE
+                                  - data     : DATA
+                                  - gasPrice : GPRICE
+                                  - gasLimit : GLIMIT
             =>
              .
              )

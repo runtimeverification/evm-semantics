@@ -66,12 +66,22 @@ module EVM
 // When the `op` cell becomes empty, it's time to load the next opcode. The gas
 // needed is calculated here.
 
+// Note that we must treat loading of `PUSH` specially, given that the arguments of
+// `PUSH` are inline with the code itself. Given the several special treatments of
+// `PUSH`, the usefulness of this design for EVM becomes dubious.
+
 
     rule <op> . => OP </op>
          <pc> PCOUNT => PCOUNT +Word 1 </pc>
          <gas> G => G -Word #gas(OP) </gas>
          <program> ... PCOUNT |-> OP ... </program>
-      requires word2Bool(G >=Word #gas(OP))
+      requires word2Bool(G >=Word #gas(OP)) andBool notBool isPushOp(OP)
+
+    rule <op> . => PUSH(N, W) </op>
+         <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
+         <gas> G => G -Word #gas(PUSH(N, W)) </gas>
+         <program> ... PCOUNT |-> PUSH(N, W) ... </program>
+      requires word2Bool(G >=Word #gas(PUSH(N, W)))
 
 
 // Depending on the sort of the opcode loaded, the correct number of arguments are
