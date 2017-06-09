@@ -166,10 +166,40 @@ module ETHEREUM
 
     syntax EthereumCommand ::= "clear"
  // ----------------------------------
+    rule <k> clear ... </k>
+         <currOps> OP ; OPS => OPS </currOps>
+         <prevOps> PREVOPS => OP ; PREVOPS </prevOps>
+      requires notBool (OP in PREVOPS)
+
+    rule <k> clear ... </k>
+         <currOps> OP ; OPS => OPS </currOps>
+         <prevOps> PREVOPS </prevOps>
+      requires OP in PREVOPS
+
     rule <k> clear => . ... </k>
-         <callStack> _ => .CallStack </callStack>
-         <accounts>  _ => .Bag       </accounts>
-         <messages>  _ => .Bag       </messages>
+         <currOps> .OpCodes </currOps>
+         <op>           _ => .            </op>
+         <id>           _ => 0:Word       </id>
+         <wordStack>    _ => .WordStack   </wordStack>
+         <localMem>     _ => .Map         </localMem>
+         <program>      _ => .Map         </program>
+         <pc>           _ => 0:Word       </pc>
+         <gas>          _ => 0:Word       </gas>
+         <caller>       _ => 0:Word       </caller>
+         <callStack>    _ => .CallStack   </callStack>
+         <selfDestruct> _ => .WordStack   </selfDestruct>
+         <log>          _ => .SubstateLog </log>
+         <refund>       _ => 0:Word       </refund>
+         <gasPrice>     _ => 0:Word       </gasPrice>
+         <gasLimit>     _ => 0:Word       </gasLimit>
+         <coinbase>     _ => 0:Word       </coinbase>
+         <timestamp>    _ => 0:Word       </timestamp>
+         <number>       _ => 0:Word       </number>
+         <difficulty>   _ => 0:Word       </difficulty>
+         <origin>       _ => 0:Word       </origin>
+         <callValue>    _ => 0:Word       </callValue>
+         <accounts>     _ => .Bag         </accounts>
+         <messages>     _ => .Bag         </messages>
 
 
 // -   `load_` loads an account or transaction into the world state.
@@ -243,7 +273,8 @@ module ETHEREUM
                                - balance : BAL
                                - program : (PGM:Map)
                                - storage : (STORAGE:Map)
-            => .
+            =>
+             .
              )
              ...
          </k>
@@ -264,7 +295,8 @@ module ETHEREUM
                                      - gasPrice : GPRICE
                                      - gasLimit : GLIMIT
                      )
-            => .
+            =>
+             .
              )
              ...
          </k>
@@ -319,7 +351,8 @@ module ETHEREUM
                               , "currentTimestamp"  : (TS:String)
                               }
                     )
-            => .
+            =>
+             .
              )
              ...
          </k>
@@ -345,7 +378,7 @@ module ETHEREUM
 // Here we define `check_` over the "post" part of the EVM test.
 
 
-    rule <k> ( check "post" : { .JSONList } => . ) ... </k>
+    rule <k> ( check "post" : { .JSONList } ~> failure TESTID => . ) ... </k>
     rule <k> ( check "post" : { ACCTID : ACCT
                               , ACCTS
                               }
@@ -361,18 +394,23 @@ module ETHEREUM
 // -   `run` runs a given set of Ethereum tests (from the test-set)
 
 
-    syntax EthereumSpecCommand ::= "run"
- // ------------------------------------
+    syntax EthereumSpecCommand ::= "run" | "failure" String
+ // -------------------------------------------------------
     rule <k> run { .JSONList } => . ... </k>
     rule <k> ( run { TESTID : (TEST:JSON)
                    , TESTS
                    }
             => #testFromJSON( TESTID : TEST )
+            ~> failure TESTID
             ~> clear
             ~> run { TESTS }
              )
              ...
          </k>
+
+    syntax EthereumSimulation ::= JSON
+ // ----------------------------------
+    rule <k> JSONINPUT:JSON => run JSONINPUT .EthereumSimulation </k>
 
 
 // -   `#testFromJSON` is used to convert a JSON encoded test to the sequence of
@@ -398,7 +436,7 @@ module ETHEREUM
          ~> check "post" : POST
           )
 
-    rule <k> run "exec" : { "address"  : (ACCTTO:String)
+    rule <k> ( run "exec" : { "address"  : (ACCTTO:String)
                           , "caller"   : (ACCTFROM:String)
                           , "code"     : (CODE:String)
                           , "data"     : (DATA:String)                  // unused
@@ -407,7 +445,9 @@ module ETHEREUM
                           , "origin"   : (ORIG:String)
                           , "value"    : (VAL:String)                   // unused
                           }
-          => .
+            =>
+             .
+             )
           ...
          </k>
          <id>       _ => #parseHexWord(ACCTTO)                       </id>

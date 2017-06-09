@@ -39,6 +39,9 @@ module EVM
                     </txExecState>
                     <callStack> .CallStack </callStack>
 
+                    <currOps> .OpCodes </currOps>
+                    <prevOps> .OpCodes </prevOps>
+
                     // Execution state
                     <substate>
                       <selfDestruct> .WordStack   </selfDestruct>   // A_s
@@ -72,12 +75,14 @@ Given the several special treatments of `PUSH`, the usefulness of this design fo
          <pc> PCOUNT => PCOUNT +Word 1 </pc>
          <gas> G => G -Word #gas(OP) </gas>
          <program> ... PCOUNT |-> OP ... </program>
+         <currOps> OPS => OP ; OPS </currOps>
       requires word2Bool(G >=Word #gas(OP)) andBool notBool isPushOp(OP)
 
     rule <op> . => PUSH(N, W) </op>
          <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
          <gas> G => G -Word #gas(PUSH(N, W)) </gas>
          <program> ... PCOUNT |-> PUSH(N, W) ... </program>
+         <currOps> OPS => PUSH(N, W) ; OPS </currOps>
       requires word2Bool(G >=Word #gas(PUSH(N, W)))
 ```
 

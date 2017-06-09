@@ -4,7 +4,6 @@ tangle_defn() {
     echo "generating 'k/*' files ..."
     echo "=========================="
 
-    pandoc-tangle --from markdown --to code-k --code k world-state.md > k/world-state.k
     pandoc-tangle --from markdown --to code-k --code k data.md        > k/data.k
     pandoc-tangle --from markdown --to code-k --code k evm.md         > k/evm.k
     pandoc-tangle --from markdown --to code-k --code k evm-dasm.md    > k/evm-dasm.k
