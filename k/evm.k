@@ -27,9 +27,9 @@ module EVM
     imports KCELLS
 
     configuration <evm>
-                    <op> . </op>
-
                     // Mutates during a single transaction
+                    <op> . </op>
+                    <callStack> .CallStack </callStack>
                     <txExecState>
                       <id>        0:Word     </id>                  // I_a
                       <wordStack> .WordStack </wordStack>           // \mu_s
@@ -39,10 +39,6 @@ module EVM
                       <gas>       0:Word     </gas>                 // \mu_g
                       <caller>    0:Word     </caller>              // I_s
                     </txExecState>
-                    <callStack> .CallStack </callStack>
-
-                    <currOps> .OpCodes </currOps>
-                    <prevOps> .OpCodes </prevOps>
 
                     // Execution state
                     <substate>
@@ -60,6 +56,12 @@ module EVM
                     <difficulty> 0:Word </difficulty>               // I_Hd
                     <origin>     0:Word </origin>                   // I_o
                     <callValue>  0:Word </callValue>                // I_v
+
+                    // Extra data collected for making testing easier
+                    <testInfo>
+                      <currOps> .Set </currOps>
+                      <prevOps> .Set </prevOps>
+                    </testInfo>
                   </evm>
 
 
@@ -78,14 +80,14 @@ module EVM
          <pc> PCOUNT => PCOUNT +Word 1 </pc>
          <gas> G => G -Word #gas(OP) </gas>
          <program> ... PCOUNT |-> OP ... </program>
-         <currOps> OPS => OP ; OPS </currOps>
+         <currOps> ... (.Set => SetItem(OP)) </currOps>
       requires word2Bool(G >=Word #gas(OP)) andBool notBool isPushOp(OP)
 
     rule <op> . => PUSH(N, W) </op>
          <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
          <gas> G => G -Word #gas(PUSH(N, W)) </gas>
          <program> ... PCOUNT |-> PUSH(N, W) ... </program>
-         <currOps> OPS => PUSH(N, W) ; OPS </currOps>
+         <currOps> ... (.Set => SetItem(PUSH(N, W))) </currOps>
       requires word2Bool(G >=Word #gas(PUSH(N, W)))
 
 
@@ -175,14 +177,20 @@ module EVM
 // useful for modeling gas, and converting a program into a map of program-counter
 // to opcode is useful for execution.
 
+// Note that `_in_` ignores the arguments to operators that are parametric.
+
 
     syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
  // --------------------------------------------------
 
-    syntax Bool ::= OpCode "in" OpCodes
- // -----------------------------------
-    rule OP in .OpCodes    => false
-    rule OP in (OP' ; OPS) => (OP ==K OP') orElseBool (OP in OPS)
+    syntax Bool ::= OpCode "in" OpCodes [function]
+ // ----------------------------------------------
+    rule OP         in .OpCodes            => false
+    rule OP         in (OP' ; OPS)         => (OP ==K OP') orElseBool (OP in OPS) requires notBool (isStackOp(OP) orBool isPushOp(OP) orBool isLogOp(OP))
+    rule LOG(_)     in (LOG(_) ; OPS)      => true
+    rule DUP(_)     in (DUP(_) ; OPS)      => true
+    rule SWAP(_)    in (SWAP(_) ; OPS)     => true
+    rule PUSH(_, _) in (PUSH(_, _) ; OPS)  => true
 
     syntax Map ::= #asMap ( OpCodes )       [function]
                  | #asMap ( Int , OpCodes ) [function]
@@ -202,6 +210,29 @@ module EVM
 
     syntax SubstateLog      ::= ".SubstateLog" | SubstateLog "." SubstateLogEntry
     syntax SubstateLogEntry ::= "{" Word "|" WordStack "|" WordStack "}"
+
+
+// Testing Information
+// -------------------
+
+// We need to keep track of some information for making debugging the semantics
+// easier. This won't be needed once we are passing tests, but helps us get there.
+
+// The cell `currOps` stores the operators we've seen during this execution, and
+// `prevOps` store operators we've seen throughout this `krun`. This well help us
+// determine which operators are new in this run so that we can get an idea of how
+// the test failed. We don't care about keeping multiple versions of each
+// parametric operator around though, so here we get rid of duplicates.
+
+
+    rule <currOps> ... SetItem(LOG(_))     (SetItem(LOG(_))     => .Set) </currOps>
+    rule <currOps> ... SetItem(DUP(_))     (SetItem(DUP(_))     => .Set) </currOps>
+    rule <currOps> ... SetItem(SWAP(_))    (SetItem(SWAP(_))    => .Set) </currOps>
+    rule <currOps> ... SetItem(PUSH(_, _)) (SetItem(PUSH(_, _)) => .Set) </currOps>
+    rule <prevOps> ... SetItem(LOG(_))     (SetItem(LOG(_))     => .Set) </prevOps>
+    rule <prevOps> ... SetItem(DUP(_))     (SetItem(DUP(_))     => .Set) </prevOps>
+    rule <prevOps> ... SetItem(SWAP(_))    (SetItem(SWAP(_))    => .Set) </prevOps>
+    rule <prevOps> ... SetItem(PUSH(_, _)) (SetItem(PUSH(_, _)) => .Set) </prevOps>
 
 
 // EVM Opcodes
@@ -464,8 +495,9 @@ module EVM
     rule Wbase    =>   ADDRESS ; ORIGIN ; CALLER ; CALLVALUE ; CALLDATASIZE
                      ; CODESIZE ; GASPRICE ; COINBASE ; TIMESTAMP ; NUMBER
                      ; DIFFICULTY ; GASLIMIT ; POP ; PC ; MSIZE ; GAS ; .OpCodes            [macro]
-    rule Wverylow =>   ADD ; SUB ; NOT ; LT ; GT ; SLT ; SGT ; EQ ; ISZERO ; AND ; EVMOR
-                     ; XOR ; BYTE ; CALLDATALOAD ; MLOAD ; MSTORE ; MSTORE8 ; .OpCodes      [macro]
+    rule Wverylow =>   ADD ; SUB ; NOT ; LT ; GT ; SLT ; SGT ; EQ ; ISZERO ; AND
+                     ; EVMOR ; XOR ; BYTE ; CALLDATALOAD ; MLOAD ; MSTORE ; MSTORE8
+                     ; PUSH(0, 0) ; DUP(0) ; SWAP(0) ; .OpCodes                             [macro]
     rule Wlow     => MUL ; DIV ; SDIV ; MOD ; SMOD ; SIGNEXTEND ; .OpCodes                  [macro]
     rule Wmid     => ADDMOD ; MULMOD ; JUMP ; JUMPI; .OpCodes                               [macro]
     rule Wextcode => EXTCODESIZE ; .OpCodes                                                 [macro]
@@ -493,8 +525,6 @@ module EVM
     rule #gas(OP)           => Gzero                         requires OP in Wzero
     rule #gas(OP)           => Gbase                         requires OP in Wbase
     rule #gas(OP)           => Gverylow                      requires OP in Wverylow
-    rule #gas(PO:PushOp)    => Gverylow
-    rule #gas(SO:StackOp)   => Gverylow
     rule #gas(OP)           => Glow                          requires OP in Wlow
     rule #gas(OP)           => Gmid                          requires OP in Wmid
     rule #gas(OP)           => Ghigh                         requires OP in Whigh

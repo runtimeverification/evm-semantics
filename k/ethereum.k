@@ -166,18 +166,10 @@ module ETHEREUM
 
     syntax EthereumCommand ::= "clear"
  // ----------------------------------
-    rule <k> clear ... </k>
-         <currOps> OP ; OPS => OPS </currOps>
-         <prevOps> PREVOPS => OP ; PREVOPS </prevOps>
-      requires notBool (OP in PREVOPS)
-
-    rule <k> clear ... </k>
-         <currOps> OP ; OPS => OPS </currOps>
-         <prevOps> PREVOPS </prevOps>
-      requires OP in PREVOPS
-
     rule <k> clear => . ... </k>
-         <currOps> .OpCodes </currOps>
+         <currOps> COPS      => .Set  </currOps>
+         <prevOps> ... (.Set => COPS) </prevOps>
+
          <op>           _ => .            </op>
          <id>           _ => 0:Word       </id>
          <wordStack>    _ => .WordStack   </wordStack>
