@@ -291,8 +291,8 @@ Here we define `check_` over the "post" part of the EVM test.
 -   `run` runs a given set of Ethereum tests (from the test-set)
 
 ```k
-    syntax EthereumSpecCommand ::= "run" | "failure" String
- // -------------------------------------------------------
+    syntax EthereumSpecCommand ::= "run"
+ // ------------------------------------
     rule <k> run { .JSONList } => . ... </k>
     rule <k> ( run { TESTID : (TEST:JSON)
                    , TESTS
@@ -306,8 +306,9 @@ Here we define `check_` over the "post" part of the EVM test.
          </k>
 
     syntax EthereumSimulation ::= JSON
- // ----------------------------------
-    rule <k> JSONINPUT:JSON => run JSONINPUT .EthereumSimulation </k>
+    syntax EthereumCommand    ::= "success" | "failure" String
+ // ----------------------------------------------------------
+    rule <k> JSONINPUT:JSON => run JSONINPUT success .EthereumSimulation </k>
 ```
 
 -   `#testFromJSON` is used to convert a JSON encoded test to the sequence of EVM drivers it corresponds to.

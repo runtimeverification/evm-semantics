@@ -295,8 +295,8 @@ module ETHEREUM-SIMULATION
 // -   `run` runs a given set of Ethereum tests (from the test-set)
 
 
-    syntax EthereumSpecCommand ::= "run" | "failure" String
- // -------------------------------------------------------
+    syntax EthereumSpecCommand ::= "run"
+ // ------------------------------------
     rule <k> run { .JSONList } => . ... </k>
     rule <k> ( run { TESTID : (TEST:JSON)
                    , TESTS
@@ -310,8 +310,9 @@ module ETHEREUM-SIMULATION
          </k>
 
     syntax EthereumSimulation ::= JSON
- // ----------------------------------
-    rule <k> JSONINPUT:JSON => run JSONINPUT .EthereumSimulation </k>
+    syntax EthereumCommand    ::= "success" | "failure" String
+ // ----------------------------------------------------------
+    rule <k> JSONINPUT:JSON => run JSONINPUT success .EthereumSimulation </k>
 
 
 // -   `#testFromJSON` is used to convert a JSON encoded test to the sequence of

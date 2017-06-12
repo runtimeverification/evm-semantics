@@ -141,7 +141,7 @@ module ETHEREUM
          <currOps> ... (.Set => SetItem(OP)) </currOps>
       requires notBool isPushOp(OP)
 
-    rule <op> . => #gas(PUSH(N, W)) ~> PUSH(N, W) </op>
+    rule <op> . => #gas(PUSH(N, W)) ~> #deductGas ~> PUSH(N, W) </op>
          <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
          <program> ... PCOUNT |-> PUSH(N, W) ... </program>
          <currOps> ... (.Set => SetItem(PUSH(N, W))) </currOps>
@@ -368,6 +368,15 @@ module ETHEREUM
     rule <op> EXP W0 W1 => W0 ^Word W1 ~> #push ... </op>
     rule <op> MOD W0 W1 => W0 %Word W1 ~> #push ... </op>
 
+    syntax TernStackOp ::= "ADDMOD" | "MULMOD"
+ // ------------------------------------------
+    rule <op> ADDMOD W0 W1 W2 => (W0 +Int W1) %Int W2 ~> #push ... </op>
+    rule <op> MULMOD W0 W1 W2 => (W0 *Int W1) %Int W2 ~> #push ... </op>
+
+    syntax BinStackOp ::= "BYTE"
+ // ----------------------------
+    rule <op> BYTE INDEX W => byte(INDEX, W) ... </op>
+
     syntax BinStackOp ::= "AND" | "EVMOR" | "XOR"
  // ---------------------------------------------
     rule <op> AND   W0 W1 => W0 &Word W1   ~> #push ... </op>
@@ -380,10 +389,14 @@ module ETHEREUM
     rule <op> GT W0 W1 => W0 >Word W1  ~> #push ... </op>
     rule <op> EQ W0 W1 => W0 ==Word W1 ~> #push ... </op>
 
-    syntax TernStackOp ::= "ADDMOD" | "MULMOD"
- // ------------------------------------------
-    rule <op> ADDMOD W0 W1 W2 => (W0 +Word W1) %Word W2 ~> #push ... </op>
-    rule <op> MULMOD W0 W1 W2 => (W0 *Word W1) %Word W2 ~> #push ... </op>
+
+// TODO: Calculate \mu\_i
+
+
+    syntax BinStackOp ::= "SHA3"
+ // ----------------------------
+    rule <op> SHA3 MEMSTART MEMWIDTH => keccak(#range(LM, MEMSTART, MEMWIDTH)) ... </op>
+         <localMem> LM </localMem>
 
 
 // Local State
@@ -633,8 +646,8 @@ module ETHEREUM
 // TODO: We need an assembler to make `CODECOPY` and `EXTCODECOPY` work.
 
 
-    syntax BinStackOp ::= "SLT" | "SGT" | "SDIV" | "SMOD" | "SIGNEXTEND" | "BYTE" | "SHA3"
- // --------------------------------------------------------------------------------------
+    syntax BinStackOp ::= "SLT" | "SGT" | "SDIV" | "SMOD" | "SIGNEXTEND"
+ // --------------------------------------------------------------------
  
     syntax BinStackOp ::= "MSTORE8"
  // -------------------------------

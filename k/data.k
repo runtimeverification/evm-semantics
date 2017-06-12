@@ -58,6 +58,20 @@ module EVM-DATA
     rule maxWord(W0:Int, W1:Int) => maxInt(W0, W1)
     rule minWord(W0:Int, W1:Int) => minInt(W0, W1)
 
+    syntax Word ::= byte ( Word , Word ) [function]
+ // -----------------------------------------------
+    rule byte(N:Int, W:Int) => W &Int (((2 ^Int 9) -Int 1) <<Int (8 *Int (32 -Int N)))
+
+    syntax Word ::= "~Word" Word        [function]
+                  | Word "|Word" Word   [function]
+                  | Word "&Word" Word   [function]
+                  | Word "xorWord" Word [function]
+ // ----------------------------------------------
+    rule ~Word W:Int           => chop( W xorInt ((2 ^Int 256) -Int 1) )
+    rule W0:Int |Word   W1:Int => chop( W0 |Int W1 )
+    rule W0:Int &Word   W1:Int => chop( W0 &Int W1 )
+    rule W0:Int xorWord W1:Int => chop( W0 xorInt W1 )
+
     syntax Word ::= Word "<Word"  Word [function]
                   | Word ">Word"  Word [function]
                   | Word "<=Word" Word [function]
@@ -70,32 +84,13 @@ module EVM-DATA
     rule W0:Int >=Word W1:Int => bool2Word(W0 >=Int W1)
     rule W0:Int ==Word W1:Int => bool2Word(W0 ==Int W1)
 
-    syntax Word ::= "~Word" Word        [function]
-                  | Word "|Word" Word   [function]
-                  | Word "&Word" Word   [function]
-                  | Word "xorWord" Word [function]
- // ----------------------------------------------
-    rule ~Word W:Int           => chop( W xorInt ((2 ^Int 256) -Int 1) )
-    rule W0:Int |Word   W1:Int => chop( W0 |Int W1 )
-    rule W0:Int &Word   W1:Int => chop( W0 &Int W1 )
-    rule W0:Int xorWord W1:Int => chop( W0 xorInt W1 )
+
+// Note that we give "uninterpreted function" semantics to `keccak`, which is
+// fairly close to accurate.
 
 
-// TODO: Unimplemented.
-
-// Note that right now these have "uninterpreted function" semantics, which is an
-// approximation.
-
-
-    syntax Word ::= sha3 ( Word )              [function]
-                  | signextend ( Word , Word ) [function]
-                  | sdiv ( Word , Word )       [function]
-                  | smod ( Word , Word )       [function]
-                  | slt ( Word , Word )        [function]
-                  | sgt ( Word , Word )        [function]
-                  | getbyte ( Word , Word )    [function]
-                  | sha3 ( Word , Word )       [function]
- // -----------------------------------------------------
+    syntax Word ::= keccak ( WordStack ) [function]
+ // -----------------------------------------------
 
 
 // Word Stack

@@ -134,7 +134,7 @@ Given the several special treatments of `PUSH`, the usefulness of this design fo
          <currOps> ... (.Set => SetItem(OP)) </currOps>
       requires notBool isPushOp(OP)
 
-    rule <op> . => #gas(PUSH(N, W)) ~> PUSH(N, W) </op>
+    rule <op> . => #gas(PUSH(N, W)) ~> #deductGas ~> PUSH(N, W) </op>
          <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
          <program> ... PCOUNT |-> PUSH(N, W) ... </program>
          <currOps> ... (.Set => SetItem(PUSH(N, W))) </currOps>
@@ -352,6 +352,15 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
     rule <op> EXP W0 W1 => W0 ^Word W1 ~> #push ... </op>
     rule <op> MOD W0 W1 => W0 %Word W1 ~> #push ... </op>
 
+    syntax TernStackOp ::= "ADDMOD" | "MULMOD"
+ // ------------------------------------------
+    rule <op> ADDMOD W0 W1 W2 => (W0 +Int W1) %Int W2 ~> #push ... </op>
+    rule <op> MULMOD W0 W1 W2 => (W0 *Int W1) %Int W2 ~> #push ... </op>
+
+    syntax BinStackOp ::= "BYTE"
+ // ----------------------------
+    rule <op> BYTE INDEX W => byte(INDEX, W) ... </op>
+
     syntax BinStackOp ::= "AND" | "EVMOR" | "XOR"
  // ---------------------------------------------
     rule <op> AND   W0 W1 => W0 &Word W1   ~> #push ... </op>
@@ -363,11 +372,15 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
     rule <op> LT W0 W1 => W0 <Word W1  ~> #push ... </op>
     rule <op> GT W0 W1 => W0 >Word W1  ~> #push ... </op>
     rule <op> EQ W0 W1 => W0 ==Word W1 ~> #push ... </op>
+```
 
-    syntax TernStackOp ::= "ADDMOD" | "MULMOD"
- // ------------------------------------------
-    rule <op> ADDMOD W0 W1 W2 => (W0 +Word W1) %Word W2 ~> #push ... </op>
-    rule <op> MULMOD W0 W1 W2 => (W0 *Word W1) %Word W2 ~> #push ... </op>
+TODO: Calculate \mu_i
+
+```k
+    syntax BinStackOp ::= "SHA3"
+ // ----------------------------
+    rule <op> SHA3 MEMSTART MEMWIDTH => keccak(#range(LM, MEMSTART, MEMWIDTH)) ... </op>
+         <localMem> LM </localMem>
 ```
 
 Local State
@@ -612,8 +625,8 @@ These operators should be implemented and binned into the correct sections above
 TODO: We need an assembler to make `CODECOPY` and `EXTCODECOPY` work.
 
 ```k
-    syntax BinStackOp ::= "SLT" | "SGT" | "SDIV" | "SMOD" | "SIGNEXTEND" | "BYTE" | "SHA3"
- // --------------------------------------------------------------------------------------
+    syntax BinStackOp ::= "SLT" | "SGT" | "SDIV" | "SMOD" | "SIGNEXTEND"
+ // --------------------------------------------------------------------
  
     syntax BinStackOp ::= "MSTORE8"
  // -------------------------------
