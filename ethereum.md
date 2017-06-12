@@ -2,6 +2,7 @@ Ethereum
 ========
 
 Ethereum is using the EVM to drive updates over the world state.
+Actual execution of the EVM is defined in [the EVM file](evm.md).
 
 ```k
 requires "evm.k"
@@ -213,10 +214,10 @@ TODO: These rules for making sure the account is in normal form won't fire, how 
 JSON Encoded
 ------------
 
-Most of the test-set is encoded in JSON. Here we provide a decoder for that.
+Most of the test-set is encoded in JSON.
+Here we provide a decoder for that.
 
 TODO: Should JSON enconding stuff be moved to `evm-dasm.md`?
-TODO: Parsing the storage needs to actually happen (not calling `#parseWordStack`).
 
 -   `#acctFromJSON` returns our nice representation of EVM programs given the JSON encoding.
 -   `#txFromJSON` does the same for transactions.

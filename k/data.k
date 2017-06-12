@@ -8,8 +8,8 @@
 // ---------------
 
 // To perform arithmetic on words, make sure that you use the corresponding
-// `<op>Word` operators (eg. `+Word`), which will make sure that the correct
-// rounding modes are used when performing the operations.
+// `<op>Word` operators (eg. `+Word`) This makes sure that the correct rounding
+// modes are used when performing the operations.
 
 
 module EVM-DATA
@@ -81,18 +81,14 @@ module EVM-DATA
     rule W0:Int xorWord W1:Int => chop( W0 xorInt W1 )
 
 
-// We're leaving `sha3` as an uninterpreted function.
-
-
-    syntax Word ::= sha3 ( Word )
- // -----------------------------
-    
-
-
 // TODO: Unimplemented.
 
+// Note that right now these have "uninterpreted function" semantics, which is an
+// approximation.
 
-    syntax Word ::= signextend ( Word , Word ) [function]
+
+    syntax Word ::= sha3 ( Word )              [function]
+                  | signextend ( Word , Word ) [function]
                   | sdiv ( Word , Word )       [function]
                   | smod ( Word , Word )       [function]
                   | slt ( Word , Word )        [function]

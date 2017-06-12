@@ -1,15 +1,14 @@
 EVM Words
 =========
 
-EVM uses bounded 256 bit integer words. Here we provide the arithmetic of these
-words, as well as some data-structures over them.
+EVM uses bounded 256 bit integer words.
+Here we provide the arithmetic of these words, as well as some data-structures over them.
 
 Word Operations
 ---------------
 
-To perform arithmetic on words, make sure that you use the corresponding
-`<op>Word` operators (eg. `+Word`), which will make sure that the correct
-rounding modes are used when performing the operations.
+To perform arithmetic on words, make sure that you use the corresponding `<op>Word` operators (eg. `+Word`)
+This makes sure that the correct rounding modes are used when performing the operations.
 
 ```k
 module EVM-DATA
@@ -17,8 +16,8 @@ module EVM-DATA
     syntax KResult ::= Int 
 ```
 
-We need to do arithmetic modulo `2^256` and need to interperet words as
-booleans. Here `chop` will move a number back into the correct range and `bool2Word` will interperet
+We need to do arithmetic modulo `2^256` and need to interperet words as booleans.
+Here `chop` will move a number back into the correct range and `bool2Word` will interperet
 
 ```k
     syntax Word ::= Int
@@ -80,18 +79,13 @@ booleans. Here `chop` will move a number back into the correct range and `bool2W
     rule W0:Int xorWord W1:Int => chop( W0 xorInt W1 )
 ```
 
-We're leaving `sha3` as an uninterpreted function.
-
-```k
-    syntax Word ::= sha3 ( Word )
- // -----------------------------
-    
-```
-
 TODO: Unimplemented.
 
+Note that right now these have "uninterpreted function" semantics, which is an approximation.
+
 ```k
-    syntax Word ::= signextend ( Word , Word ) [function]
+    syntax Word ::= sha3 ( Word )              [function]
+                  | signextend ( Word , Word ) [function]
                   | sdiv ( Word , Word )       [function]
                   | smod ( Word , Word )       [function]
                   | slt ( Word , Word )        [function]
@@ -104,9 +98,9 @@ TODO: Unimplemented.
 Word Stack
 ----------
 
-EVM is a stack machine, and so needs a stack of words to operate on. The stack
-and some standard operations over it are provided here. This stack also serves
-as a cons-list, so we provide some standard cons-list manipulation tools.
+EVM is a stack machine, and so needs a stack of words to operate on.
+The stack and some standard operations over it are provided here.
+This stack also serves as a cons-list, so we provide some standard cons-list manipulation tools.
 
 TODO: Should all operations zero-pad the word-stack when there is an over-flow?
 It's specified in the yellowpaper for `PUSH`, but not for `DUP` and `SWAP`.
@@ -160,10 +154,9 @@ It's specified in the yellowpaper for `PUSH`, but not for `DUP` and `SWAP`.
 Word Map
 --------
 
-Most of EVM data is held in finite maps. Here, finite maps from `Word` to `Word`
-are provided. A common idiom is to assign a contiguous chunk of a map to a list
-(stack) of words, or to read a contiguous chunk of a map as a list, so the
-functionality for that is provided as well.
+Most of EVM data is held in finite maps.
+Here, finite maps from `Word` to `Word` are provided.
+A common idiom is to assign a contiguous chunk of a map to a list (stack) of words, or to read a contiguous chunk of a map as a list, so the functionality for that is provided as well.
 
 ```k
     syntax Map ::= Map "[" Word ":=" WordStack "]" [function]

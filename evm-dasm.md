@@ -1,9 +1,8 @@
 EVM Disassembler
 ================
 
-The default EVM test-set format is JSON, where the data is hex-encoded. A
-dissassembler is provided here for the basic data so that both the JSON and our
-pretty format can be read in.
+The default EVM test-set format is JSON, where the data is hex-encoded.
+A dissassembler is provided here for the basic data so that both the JSON and our pretty format can be read in.
 
 ```k
 requires "evm.k"

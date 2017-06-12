@@ -1,18 +1,15 @@
 EVM Execution
 =============
 
-The EVM is a stack machine over some simple opcodes. Most of the opcodes are
-"local" to the execution state of the machine, but some of them must interact
-with the world state. This file only defines the local execution operations, the
-file `ethereum.md` will define the interactions with the world state.
+The EVM is a stack machine over some simple opcodes.
+Most of the opcodes are "local" to the execution state of the machine, but some of them must interact with the world state.
+This file only defines the local execution operations, the file `ethereum.md` will define the interactions with the world state.
 
 Configuration
 -------------
 
-The configuration has cells for the current account id, the current opcode, the
-program counter, the current gas, the gas price, the current program, the word
-stack, and the local memory. In addition, there are cells for the callstack and
-execution substate.
+The configuration has cells for the current account id, the current opcode, the program counter, the current gas, the gas price, the current program, the word stack, and the local memory.
+In addition, there are cells for the callstack and execution substate.
 
 We've broken up the configuration into two components; those parts of the state that mutate during execution of a single transaction and those that are static throughout.
 In the comments next to each cell, we've marked which component of the yellowpaper state corresponds to each cell.
