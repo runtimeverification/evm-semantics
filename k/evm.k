@@ -42,35 +42,36 @@ module ETHEREUM
                       <callStack> .CallStack </callStack>
                       <op> . </op>
                       <txExecState>
-                        <id>        0:Word     </id>                  // I_a
-                        <wordStack> .WordStack </wordStack>           // \mu_s
-                        <localMem>  .Map       </localMem>            // \mu_m
-                        <program>   .Map       </program>
-                        <pc>        0:Word     </pc>                  // \mu_pc
-                        <gas>       0:Word     </gas>                 // \mu_g
-                        <caller>    0:Word     </caller>              // I_s
+                        <id>        0:Word      </id>                   // I_a
+                        <wordStack> .WordStack  </wordStack>            // \mu_s
+                        <localMem>  .Map        </localMem>             // \mu_m
+                        <program>   .Map        </program>
+                        <pc>        0:Word      </pc>                   // \mu_pc
+                        <gas>       0:Word      </gas>                  // \mu_g
+                        <caller>    0:Word      </caller>               // I_s
+                        <callData>   .WordStack </callData>             // I_d
                       </txExecState>
 
                       // A_* (execution substate)
                       <substate>
-                        <selfDestruct> .WordStack   </selfDestruct>   // A_s
-                        <log>          .SubstateLog </log>            // A_l
-                        <refund>       0:Word       </refund>         // A_r
+                        <selfDestruct> .WordStack   </selfDestruct>     // A_s
+                        <log>          .SubstateLog </log>              // A_l
+                        <refund>       0:Word       </refund>           // A_r
                       </substate>
 
                       // Immutable during a single transaction
                       // -------------------------------------
 
-                      <gasPrice>   0:Word </gasPrice>                 // I_p
-                      <origin>     0:Word </origin>                   // I_o
-                      <callValue>  0:Word </callValue>                // I_v
+                      <gasPrice>   0:Word     </gasPrice>               // I_p
+                      <origin>     0:Word     </origin>                 // I_o
+                      <callValue>  0:Word     </callValue>              // I_v
 
                       // I_H* (block information)
-                      <gasLimit>   0:Word </gasLimit>                 // I_Hl
-                      <coinbase>   0:Word </coinbase>                 // I_Hc
-                      <timestamp>  0:Word </timestamp>                // I_Hs
-                      <number>     0:Word </number>                   // I_Hi
-                      <difficulty> 0:Word </difficulty>               // I_Hd
+                      <gasLimit>   0:Word </gasLimit>                   // I_Hl
+                      <coinbase>   0:Word </coinbase>                   // I_Hc
+                      <timestamp>  0:Word </timestamp>                  // I_Hs
+                      <number>     0:Word </number>                     // I_Hi
+                      <difficulty> 0:Word </difficulty>                 // I_Hd
 
                       // Testing Information
                       // -------------------
@@ -127,26 +128,28 @@ module ETHEREUM
 // ----------------
 
 // When the `op` cell becomes empty, it's time to load the next opcode. The gas
-// needed is calculated here.
+// needed is calculated first (by putting `#gas(_)` at the front of the `op` cell).
 
 // Note that we must treat loading of `PUSH` specially, given that the arguments of
 // `PUSH` are inline with the code itself. Given the several special treatments of
 // `PUSH`, the usefulness of this design for EVM becomes dubious.
 
 
-    rule <op> . => OP </op>
+    rule <op> . => #gas(OP) ~> #deductGas ~> OP </op>
          <pc> PCOUNT => PCOUNT +Word 1 </pc>
-         <gas> G => G -Word #gas(OP) </gas>
          <program> ... PCOUNT |-> OP ... </program>
          <currOps> ... (.Set => SetItem(OP)) </currOps>
-      requires word2Bool(G >=Word #gas(OP)) andBool notBool isPushOp(OP)
+      requires notBool isPushOp(OP)
 
-    rule <op> . => PUSH(N, W) </op>
+    rule <op> . => #gas(PUSH(N, W)) ~> PUSH(N, W) </op>
          <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
-         <gas> G => G -Word #gas(PUSH(N, W)) </gas>
          <program> ... PCOUNT |-> PUSH(N, W) ... </program>
          <currOps> ... (.Set => SetItem(PUSH(N, W))) </currOps>
-      requires word2Bool(G >=Word #gas(PUSH(N, W)))
+
+    syntax InternalOp ::= "#deductGas"
+ // ----------------------------------
+    rule <op> W:Int ~> #deductGas => . ... </op> <gas> GAVAIL => GAVAIL -Word W </gas>
+      requires word2Bool(GAVAIL >=Word W)
 
 
 // Depending on the sort of the opcode loaded, the correct number of arguments are
@@ -285,9 +288,6 @@ module ETHEREUM
     rule <op> I:Int ~> #checkStackSize => #stackOverflow ... </op> requires I >=Int 1024
 
 
-// Callstack
-// ---------
-
 // Previous process states must be stored, so a tuple of sort `Process` is supplied
 // for that. The `CallStack` is a cons-list of `Process`.
 
@@ -326,6 +326,21 @@ module ETHEREUM
     syntax PushOp ::= PUSH ( Word , Word )
  // --------------------------------------
     rule <op> PUSH(_, W) => W ~> #push ~> #checkStackSize ... </op>
+
+
+// Local Memory
+// ------------
+
+// These operations are getters/setters of the local execution memory.
+
+// TODO: Calculate \mu\_i.
+
+
+    syntax UnStackOp  ::= "MLOAD"
+    syntax BinStackOp ::= "MSTORE"
+ // ------------------------------
+    rule <op> MLOAD  INDEX       => VALUE ~> #push ... </op> <localMem> ... INDEX |-> VALUE ...  </localMem>
+    rule <op> MSTORE INDEX VALUE => .              ... </op> <localMem> LM => LM [ INDEX <- VALUE ] </localMem>
 
 
 // Expressions
@@ -371,11 +386,37 @@ module ETHEREUM
     rule <op> MULMOD W0 W1 W2 => (W0 *Word W1) %Word W2 ~> #push ... </op>
 
 
-// TODO: Unimplemented.
+// Local State
+// -----------
+
+// These operators make queries about the current execution state.
 
 
-    syntax BinStackOp ::= "SLT" | "SGT" | "SDIV" | "SMOD" | "SIGNEXTEND" | "BYTE" | "SHA3"
- // --------------------------------------------------------------------------------------
+    syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT"
+ // -------------------------------------------------------------
+    rule <op> PC       => (PCOUNT -Int 1) ~> #push ~> #checkStackSize ... </op> <pc> PCOUNT </pc>
+    rule <op> GAS      => GAVAIL          ~> #push ~> #checkStackSize ... </op> <gas> GAVAIL </gas>
+    rule <op> GASPRICE => GPRICE          ~> #push ~> #checkStackSize ... </op> <gasPrice> GPRICE </gasPrice>
+    rule <op> GASLIMIT => GLIMIT          ~> #push ~> #checkStackSize ... </op> <gasLimit> GLIMIT </gasLimit>
+
+    syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY"
+ // -------------------------------------------------------------------------
+    rule <op> COINBASE   => CB   ~> #push ~> #checkStackSize ... </op> <coinbase> CB </coinbase>
+    rule <op> TIMESTAMP  => TS   ~> #push ~> #checkStackSize ... </op> <timestamp> TS </timestamp>
+    rule <op> NUMBER     => NUMB ~> #push ~> #checkStackSize ... </op> <number> NUMB </number>
+    rule <op> DIFFICULTY => DIFF ~> #push ~> #checkStackSize ... </op> <difficulty> DIFF </difficulty>
+
+    syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE"
+ // --------------------------------------------------------------------
+    rule <op> ADDRESS   => ACCT ~> #push ~> #checkStackSize ... </op> <id> ACCT </id>
+    rule <op> ORIGIN    => ORG  ~> #push ~> #checkStackSize ... </op> <origin> ORG </origin>
+    rule <op> CALLER    => CL   ~> #push ~> #checkStackSize ... </op> <caller> CL </caller>
+    rule <op> CALLVALUE => CV   ~> #push ~> #checkStackSize ... </op> <callValue> CV </callValue>
+
+    syntax NullStackOp ::= "MSIZE" | "CODESIZE"
+ // -------------------------------------------
+    rule <op> MSIZE    => 32 *Word size(LM) ~> #push ~> #checkStackSize ... </op> <localMem> LM </localMem>
+    rule <op> CODESIZE => size(PGM)         ~> #push ~> #checkStackSize ... </op> <program> PGM </program>
 
 
 // `JUMP*`
@@ -394,50 +435,32 @@ module ETHEREUM
     rule <op> JUMPI DEST W => JUMP DEST ... </op> requires W =/=K 0
 
 
-// Local State
-// -----------
+// Call Data
+// ---------
 
-// These operators make queries about the current execution state.
+// These operators query about the current `CALL*` state.
 
-
-    syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT"
- // -------------------------------------------------------------
-    rule <op> PC       => (PCOUNT -Int 1) ~> #push ... </op> <pc> PCOUNT </pc>
-    rule <op> GAS      => GAVAIL          ~> #push ... </op> <gas> GAVAIL </gas>
-    rule <op> GASPRICE => GPRICE          ~> #push ... </op> <gasPrice> GPRICE </gasPrice>
-    rule <op> GASLIMIT => GLIMIT          ~> #push ... </op> <gasLimit> GLIMIT </gasLimit>
-
-    syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY"
- // -------------------------------------------------------------------------
-    rule <op> COINBASE   => CB   ~> #push ... </op> <coinbase> CB </coinbase>
-    rule <op> TIMESTAMP  => TS   ~> #push ... </op> <timestamp> TS </timestamp>
-    rule <op> NUMBER     => NUMB ~> #push ... </op> <number> NUMB </number>
-    rule <op> DIFFICULTY => DIFF ~> #push ... </op> <difficulty> DIFF </difficulty>
-
-    syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE"
- // --------------------------------------------------------------------
-    rule <op> ADDRESS   => ACCT ~> #push ... </op> <id> ACCT </id>
-    rule <op> ORIGIN    => ORG  ~> #push ... </op> <origin> ORG </origin>
-    rule <op> CALLER    => CL   ~> #push ... </op> <caller> CL </caller>
-    rule <op> CALLVALUE => CV   ~> #push ... </op> <callValue> CV </callValue>
-
-    syntax NullStackOp ::= "MSIZE" | "CODESIZE"
- // -------------------------------------------
-    rule <op> MSIZE    => 32 *Word size(LM) ~> #push ... </op> <localMem> LM </localMem>
-    rule <op> CODESIZE => size(PGM)         ~> #push ... </op> <program> PGM </program>
+// TODO: Is the `DATASTART`/`DATAWIDTH` in `CALLDATALOAD`/`CALLDATACOPY` a
+// byte-list width or a word-list width? TODO: Calculate \mu\_i.
 
 
-// These operations are getters/setters of the local execution memory.
+    syntax NullStackOp ::= "CALLDATASIZE"
+    syntax UnStackOp   ::= "CALLDATALOAD"
+    syntax TernStackOp ::= "CALLDATACOPY"
+ // -------------------------------------
+    rule <op> CALLDATASIZE => #size(CD) ~> #push ~> #checkStackSize ... </op>
+         <callData> CD </callData>
 
-// TODO: `MSTORE8` is unimplemented. TODO: Calculate \mu\_i.
+    rule <op> CALLDATALOAD DATAWIDTH => #asWord(#take(DATAWIDTH, CD)) ~> #push ... </op>
+         <callData> CD </callData>
+
+    rule <op> CALLDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </op>
+         <localMem> LM => LM [ MEMSTART := #take(DATAWIDTH, #drop(DATASTART, CD)) ] </localMem>
+         <callData> CD </callData>
 
 
-    syntax UnStackOp  ::= "MLOAD"
-    syntax BinStackOp ::= "MSTORE" | "MSTORE8"
- // ------------------------------------------
-    rule <op> MLOAD  INDEX       => VALUE ~> #push ... </op> <localMem> ... INDEX |-> VALUE ...  </localMem>
-    rule <op> MSTORE INDEX VALUE => .              ... </op> <localMem> LM => LM [ INDEX <- VALUE ] </localMem>
-
+// Log Operations
+// --------------
 
 // TODO: Calculate \mu\_i.
 
@@ -455,9 +478,15 @@ module ETHEREUM
 // Ethereum Network
 // ================
 
+// Operators that require access to the rest of the Ethereum network world-state
+// can be taken as a first draft of a "blockchain generic" language.
 
-    syntax UnStackOp  ::= "BALANCE"
- // -------------------------------
+// Account Queries
+// ---------------
+
+
+    syntax UnStackOp ::= "BALANCE"
+ // ------------------------------
     rule <op> BALANCE ACCT => BAL ~> #push ... </op>
          <account>
            <acctID> ACCT </acctID>
@@ -465,6 +494,19 @@ module ETHEREUM
            ...
          </account>
 
+    syntax UnStackOp ::= "EXTCODESIZE"
+ // ----------------------------------
+    rule <op> EXTCODESIZE ACCTTO => #size(CODE) ~> #push ... </op>
+         <account>
+           <acctID> ACCTTOACT </acctID>
+           <code> CODE </code>
+           ...
+         </account>
+      requires #addr(ACCTTO) ==K ACCTTOACT
+
+
+// Storage Operations
+// ------------------
 
 // TODO: Calculate \mu\_i.
 
@@ -492,30 +534,54 @@ module ETHEREUM
 // Call Operations
 // ---------------
 
-// TODO: (Entire section): Calculate \mu\_i.
+// The various `CALL*` (and other inter-contract control flow) operations will be
+// desugared into these `InternalOp`s.
 
 
-    syntax CallOp ::= "CALL" | "CALLCODE" | "DELEGATECALL"
- // ------------------------------------------------------
-    rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           =>  ( #call ACCTFROM #addr(ACCTTO) #addr(ACCTTO) #range(LM, ARGSTART, ARGWIDTH)
-              ~> #return RETSTART RETWIDTH
-               )
-         </op>
-         <id> ACCTFROM </id>
-         <localMem> LM </localMem>
-
-    syntax InternalOp ::= "#call" Word Word Word WordStack
-                        | "#return" Word Word
+    syntax InternalOp ::= "#return" Word Word
                         | "#return" WordStack
+ // -----------------------------------------
+    rule <op> #return (WS:WordStack) ~> #return RETSTART RETWIDTH => . ... </op>
+         <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #size(WS)), WS) ] </localMem>
+
+    syntax InternalOp ::= "#call" Word Word Word Word WordStack
+ // -----------------------------------------------------------
+
+
+// TODO: The `CALL*` operations are incorrect. TODO: (Entire section): Calculate
+// \mu\_i. TODO: Check the size of the `callStack` before each `CALL*`.
+
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
     rule <op> RETURN RETSTART RETWIDTH => #popCallStack ~> #return #range(LM, RETSTART, RETWIDTH) ... </op>
          <localMem> LM </localMem>
 
-    rule <op> #return (WS:WordStack) ~> #return RETSTART RETWIDTH => . ... </op>
-         <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #size(WS)), WS) ] </localMem>
+    syntax CallOp ::= "CALL" | "CALLCODE" | "DELEGATECALL"
+ // ------------------------------------------------------
+    rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
+           => #call ACCTFROM #addr(ACCTTO) #addr(ACCTTO) VALUE #range(LM, ARGSTART, ARGWIDTH)
+           ~> #return RETSTART RETWIDTH
+           ...
+         </op>
+         <id> ACCTFROM </id>
+         <localMem> LM </localMem>
+
+    rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
+           => #call ACCTFROM ACCTFROM #addr(ACCTTO) VALUE #range(LM, ARGSTART, ARGWIDTH)
+           ~> #return RETSTART RETWIDTH
+           ...
+         </op>
+         <id> ACCTFROM </id>
+         <localMem> LM </localMem>
+
+    rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
+           => #call ACCTFROM ACCTFROM #addr(ACCTTO) 0 #range(LM, ARGSTART, ARGWIDTH)
+           ~> #return RETSTART RETWIDTH
+           ...
+         </op>
+         <id> ACCTFROM </id>
+         <localMem> LM </localMem>
 
 
 // TODO: Calculating gas for `SELFDESTRUCT` needs to take into account the cost of
@@ -558,23 +624,32 @@ module ETHEREUM
       requires notBool (ACCT in SD)
 
 
-// TODO: Unimplemented.
+// Unimplemented
+// =============
 
+// These operators should be implemented and binned into the correct sections
+// above.
+
+// TODO: We need an assembler to make `CODECOPY` and `EXTCODECOPY` work.
+
+
+    syntax BinStackOp ::= "SLT" | "SGT" | "SDIV" | "SMOD" | "SIGNEXTEND" | "BYTE" | "SHA3"
+ // --------------------------------------------------------------------------------------
+ 
+    syntax BinStackOp ::= "MSTORE8"
+ // -------------------------------
 
     syntax NullStackOp ::= "INVALID" | "STOP"
  // -----------------------------------------
 
-    syntax UnStackOp   ::= "BLOCKHASH" | "CALLDATALOAD" | "EXTCODESIZE"
- // -------------------------------------------------------------------
+    syntax UnStackOp   ::= "BLOCKHASH"
+ // ----------------------------------
 
-    syntax TernStackOp ::= "CALLDATACOPY" | "CODECOPY" | "CREATE"
- // -------------------------------------------------------------
+    syntax TernStackOp ::= "CREATE" | "CODECOPY"
+ // --------------------------------------------
 
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
-
-    syntax NullStackOp ::= "CALLDATASIZE"
- // -------------------------------------
 
 
 // Ethereum Gas Calculation
@@ -582,8 +657,8 @@ module ETHEREUM
 
 // Here we define the gas-cost of each instruction in the instruction set. Many of
 // the instructions gas cost is fixed and not dependent on any parts of the
-// configuration; for those that do have some dependence, their associated cost
-// must be defined after the configuration is defined.
+// configuration. Those that do have some dependence must be defined after the
+// configuration is defined.
 
 
     syntax Word ::= "Gzero" | "Gbase" | "Gverylow" | "Glow" | "Gmid" | "Ghigh" | "Gextcode"
