@@ -1,26 +1,26 @@
 EVM Modeling
 ============
 
-In this repository we provide a model of the EVM in K. The model is optimized
-for presentation purposes with the goal of separating the concerns of EVM's
-language and the world-state that execution of the EVM modifies.
+In this repository we provide a model of the EVM in K.
+The model is optimized for presentation purposes with the goal of separating the concerns of EVM's language and the world-state that execution of the EVM modifies.
 
--   `evm.md`: Top-level semantics file. Ties together the execution of the
-    virtual machine and the world-state. Requires `world-state.md` and
-    `execution.md`.
+`ethereum.md`:
+:   Driver for semantics of EVM (for loading tests, running simulations).
 
--   `world-state.md`: Specifies the data-structures for the world state, which
-    maintains the current pool of accounts and transactions.
+`evm.md`:
+:   Top level EVM semantics file (including local execution and network dynamics).
 
--   `execution.md`: Specifies how execution of the underlying stack
-    machine works. Also provides the calculation of gas consumption for
-    each opcode. Requires `data.md`.
+`evm-dasm.md`:
+:   Dissasembler for EVM so that JSON test files can be read directly.
 
--   `data.md`: Specifies the basic data of EVM execution, including the 256 bit
-    words and all the opcodes. Some opcodes (which don't need information from
-    the environment) are immediately desugared into more primitive operations.
+`data.md`:
+:   Specifies the basic data of EVM execution, including the 256 bit words and some datastructures over them.
 
-Unfinished work is documented in each of the files (so that it stays actual).
+Unfinished
+----------
+
+Unfinished/incorrect portions of the semantics are labelled at the place where the problem is so that they stay actual.
+Look for paragraph's beginning with "TODO:".
 
 General Concerns
 ================
@@ -28,47 +28,21 @@ General Concerns
 Program Representation
 ----------------------
 
-EVM programs normally are represented in their hex form, and some operations
-depend on this representation of the program. Instead, I've represented in their
-"pretty" word form (and provided a dissasembler). I think I will have to provide
-an assembler as well to be able to compute operations over it.
+EVM programs normally are represented in their hex form, and some operations depend on this representation of the program.
+Instead, we've represented in their "pretty" word form (and provided a dissasembler).
+For operations `CODECOPY` and `EXTCODECOPY`, we'll need to re-assemble the hex-form of the program.
 
 Structure of Semantics
 ----------------------
 
-Right now the module structure is as follows:
-
--   `EVM` imports `EVM-WORLD-STATE-INTERFACE` and `EVM-EXECUTION`
-
--   `EVM-WORLD-STATE-INTERFACE` imports `EVM-WORLD-STATE`
-    -   `EVM-WORLD-STATE` imports `EVM-DASM`
-    -   `EVM-DASM` imports `EVM-OPCODE` and `STRING`
-
--   `EVM-EXECUTION` imports `EVM-GAS`
-    -   `EVM-GAS` imports `EVM-OPCODE`
-
--   `EVM-OPCODE` imports `EVM-DATA`
-
-I think the module structure should look more like:
-
--   `EVM` imports `EVM-DASM` and `EVM-EXECUTION`
--   `EVM-DASM` imports `EVM-OPCODE` and `EVM-PRIMITIVES`
--   `EVM-EXECUTION` imports `EVM-OPCODE`
--   `EVM-OPCODE` imports `EVM-PRIMITIVES` and `EVM-DATA`
--   `EVM-PRIMITIVES` imports `WORLD-STATE` and `EVM-DATA`
-
-Ideally, `world-state.md` would define a global state with some primitive global
-state update operators. Any languages that want to operate on the global EVM
-state would have to implement those primitive operators. The module
-`EVM-PRIMITIVES` would provide the shim between EVM execution and the
-world-state (which would point out to us exactly where "representation
-dependencies" show up).
+Ideally the world-state semantics (account and transaction states) would be defined completely separately and export a simple API.
+Right now it's tightly integrated with the EVM semantics.
+The commands that would be affected by a switch are isolated to their own section in [the EVM file](evm.md).
 
 Comments
 ========
 
-These are some ideas I've had about EVM while developing the semantics. I'll try
-to update this regularly to reflect new understanding/new research ideas.
+These are some ideas about EVM (which we've had while developing the semantics).
 
 EVM State
 ---------
@@ -87,11 +61,6 @@ calls" which modify the world state you would have it operate over the shared
 state that the network uses. If different cryptocurrencies had their own
 language, but they agreed on the shared-state, it would be fairly simple to
 "cross-compile" programs between them.
-
-In the [Concerns](#Concerns) section above, I mention a different module
-structure that would call out these sub-states better. In particular, it would
-emphasize the fact that EVM is *one particular* language operating over the
-primitive operators of the world-state.
 
 Other Languages
 ---------------
@@ -112,7 +81,7 @@ Representation Independence
 Many of the operations in EVM are "representation dependent"; that is they
 depend on some exact encoding of the data being worked over. For example, any
 command which specifies the endian-ness of the data is representation dependent.
-In addition, some operations allow using code as data and then the data can ba
+In addition, some operations allow using code as data and then the data can be
 hashed or cut up into bytes, making the representation of the code important
 (ie. we have to store it as a bunch of words instead of as a sum-type of the
 command names). Another example is the fixed-width arithmetic which restricts
@@ -129,15 +98,12 @@ case of fixed-width arithmetic, going to unbounded arithmetic would require a
 more nuanced gas scheme to ensure someone isn't just encoding all of their
 memory in a single integer.
 
-I think it would be worth thinking about how to remove data and code
-representation dependencies in future coins.
+It would be worth thinking about how to remove data and code representation dependencies in future coins.
 
 Proof of Work
 -------------
 
-I'm not as experienced in this realm, but it seems to me that the proof-of-work
-scheme could be improved to do more useful work. Here are some ideas I've had
-about that (admittedly not very fleshed out).
+It seems to me that the proof-of-work scheme could be improved to do more useful work.
 
 Instead of specifying programs, specify specifications. Then a miner must supply
 programs that meet the specification, along with a proof that the program does
