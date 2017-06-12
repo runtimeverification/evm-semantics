@@ -727,25 +727,25 @@ module ETHEREUM
 
     syntax Word ::= #gas ( OpCode ) [function]
  // ------------------------------------------
-    rule #gas(SSTORE)       => #gasSSTORE                                           // INCORRECT
-    rule #gas(EXP)          => Gexp                                                 // INCORRECT
-    rule #gas(OP)           => Gverylow +Word Gcopy          requires OP in Wcopy   // INCORRECT
-    rule #gas(EXTCODECOPY)  => Gextcode +Word Gcopy                                 // INCORRECT
-    rule #gas(LOG(N))       => Glog +Word (N *Word Glogdata)                        // INCORRECT
-    rule #gas(OP)           => #gasCALL                      requires OP in Wcall   // INCORRECT
-    rule #gas(SELFDESTRUCT) => #gasSELFDESTRUCT                                     // INCORRECT
-    rule #gas(CREATE)       => Gcreate
-    rule #gas(SHA3)         => Gsha3                                                // INCORRECT
-    rule #gas(JUMPDEST)     => Gjumpdest
-    rule #gas(SLOAD)        => Gsload
-    rule #gas(OP)           => Gzero                         requires OP in Wzero
-    rule #gas(OP)           => Gbase                         requires OP in Wbase
-    rule #gas(OP)           => Gverylow                      requires OP in Wverylow
-    rule #gas(OP)           => Glow                          requires OP in Wlow
-    rule #gas(OP)           => Gmid                          requires OP in Wmid
-    rule #gas(OP)           => Ghigh                         requires OP in Whigh
-    rule #gas(OP)           => Gextcode                      requires OP in Wextcode
-    rule #gas(BALANCE)      => Gbalance
-    rule #gas(BLOCKHASH)    => Gblockhash
+    // rule <op> #gas(SSTORE)       => ???                           ... </op>
+    // rule <op> #gas(OP)           => ???                           ... </op> requires OP in Wcall
+    // rule <op> #gas(SELFDESTRUCT) => ???                           ... </op>
+    rule <op> #gas(EXP)          => Gexp                          ... </op>                        // INCORRECT
+    rule <op> #gas(OP)           => Gverylow +Word Gcopy          ... </op> requires OP in Wcopy   // INCORRECT
+    rule <op> #gas(EXTCODECOPY)  => Gextcode +Word Gcopy          ... </op>                        // INCORRECT
+    rule <op> #gas(LOG(N))       => Glog +Word (N *Word Glogdata) ... </op>                        // INCORRECT
+    rule <op> #gas(CREATE)       => Gcreate                       ... </op>
+    rule <op> #gas(SHA3)         => Gsha3                         ... </op>                        // INCORRECT
+    rule <op> #gas(JUMPDEST)     => Gjumpdest                     ... </op>
+    rule <op> #gas(SLOAD)        => Gsload                        ... </op>
+    rule <op> #gas(OP)           => Gzero                         ... </op> requires OP in Wzero
+    rule <op> #gas(OP)           => Gbase                         ... </op> requires OP in Wbase
+    rule <op> #gas(OP)           => Gverylow                      ... </op> requires OP in Wverylow
+    rule <op> #gas(OP)           => Glow                          ... </op> requires OP in Wlow
+    rule <op> #gas(OP)           => Gmid                          ... </op> requires OP in Wmid
+    rule <op> #gas(OP)           => Ghigh                         ... </op> requires OP in Whigh
+    rule <op> #gas(OP)           => Gextcode                      ... </op> requires OP in Wextcode
+    rule <op> #gas(BALANCE)      => Gbalance                      ... </op>
+    rule <op> #gas(BLOCKHASH)    => Gblockhash                    ... </op>
 endmodule
 
