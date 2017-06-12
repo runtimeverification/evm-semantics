@@ -52,6 +52,12 @@ module EVM-DATA
     rule W0:Int %Word 0      => 0 
     rule W0:Int %Word W1:Int => chop( W0 %Int W1 ) requires W1 =/=K 0
 
+    syntax Word ::= maxWord ( Word , Word ) [function]
+                  | minWord ( Word , Word ) [function]
+ // --------------------------------------------------
+    rule maxWord(W0:Int, W1:Int) => maxInt(W0, W1)
+    rule minWord(W0:Int, W1:Int) => minInt(W0, W1)
+
     syntax Word ::= Word "<Word"  Word [function]
                   | Word ">Word"  Word [function]
                   | Word "<=Word" Word [function]
@@ -73,6 +79,14 @@ module EVM-DATA
     rule W0:Int |Word   W1:Int => chop( W0 |Int W1 )
     rule W0:Int &Word   W1:Int => chop( W0 &Int W1 )
     rule W0:Int xorWord W1:Int => chop( W0 xorInt W1 )
+
+
+// We're leaving `sha3` as an uninterpreted function.
+
+
+    syntax Word ::= sha3 ( Word )
+ // -----------------------------
+    
 
 
 // TODO: Unimplemented.
@@ -168,5 +182,22 @@ module EVM-DATA
  // ------------------------------------------------------------
     rule #range(WM,         N, M) => .WordStack                           requires M ==Word 0
     rule #range(N |-> W WM, N, M) => W : #range(WM, N +Word 1, M -Word 1) requires M >Word 0
+
+
+// Addresses
+// ---------
+
+// Address in Ethereum are only 160 bits, instead of 256.
+
+// -   `#addr` turns an Ethereum word into the corresponding Ethereum address.
+
+// TODO: All places that need an address but just use the word instead should be
+// using this function.
+
+
+    syntax Word ::= #addr ( Word ) [function]
+ // -----------------------------------------
+    rule #addr(W) => W %Word (2 ^Word 160)
+
 endmodule
 

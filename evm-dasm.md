@@ -9,7 +9,7 @@ pretty format can be read in.
 requires "evm.k"
 
 module EVM-DASM
-    imports EVM
+    imports ETHEREUM
     imports STRING
 
     syntax Word ::= #parseHexWord ( String ) [function]
@@ -29,7 +29,7 @@ module EVM-DASM
 
     syntax OpCode ::= #dasmOpCode ( Word ) [function]
  // -------------------------------------------------
-    rule #dasmOpCode(   0 ) => STOP
+    rule #dasmOpCod(   0 ) => STOP
     rule #dasmOpCode(   1 ) => ADD
     rule #dasmOpCode(   2 ) => MUL
     rule #dasmOpCode(   3 ) => SUB
@@ -91,11 +91,7 @@ module EVM-DASM
     rule #dasmOpCode( 244 ) => DELEGATECALL
     rule #dasmOpCode( 254 ) => INVALID
     rule #dasmOpCode( 255 ) => SELFDESTRUCT
-```
 
-TODO: Figure out how `#pushArg` should be working.
-
-```k
     syntax OpCodes ::= #dasmPUSH ( Word , WordStack ) [function]
  // ------------------------------------------------------------
     rule #dasmPUSH( W , WS ) => PUSH(W, #asWord(#take(W, WS))) ; #dasmOpCodes(#drop(W, WS))

@@ -15,7 +15,7 @@ tangle_kompile() {
     echo "========================"
 
     pushd k
-    kompile --debug --main-module ETHEREUM --syntax-module ETHEREUM ethereum.k
+    kompile --debug --main-module ETHEREUM-SIMULATION --syntax-module ETHEREUM-SIMULATION ethereum.k
     result="$?"
     popd
     return "$result"

@@ -14,60 +14,117 @@ program counter, the current gas, the gas price, the current program, the word
 stack, and the local memory. In addition, there are cells for the callstack and
 execution substate.
 
-I've broken up the configuration into two components; those parts of the state that mutate during execution of a single transaction and those that are static throughout.
-In the comments next to each cell, I've marked which component of the yellowpaper state corresponds to each cell.
+We've broken up the configuration into two components; those parts of the state that mutate during execution of a single transaction and those that are static throughout.
+In the comments next to each cell, we've marked which component of the yellowpaper state corresponds to each cell.
+
+TODO: The value \mu_i is not being accounted for (memory consumption gas tracker?).
 
 ```k
 requires "data.k"
 
-module EVM
+module ETHEREUM
     imports EVM-DATA
     imports KCELLS
 
-    configuration <evm>
-                    // Mutates during a single transaction
-                    <op> . </op>
-                    <callStack> .CallStack </callStack>
-                    <txExecState>
-                      <id>        0:Word     </id>                  // I_a
-                      <wordStack> .WordStack </wordStack>           // \mu_s
-                      <localMem>  .Map       </localMem>            // \mu_m
-                      <program>   .Map       </program>
-                      <pc>        0:Word     </pc>                  // \mu_pc
-                      <gas>       0:Word     </gas>                 // \mu_g
-                      <caller>    0:Word     </caller>              // I_s
-                    </txExecState>
+    configuration <ethereum>
 
-                    // Execution state
-                    <substate>
-                      <selfDestruct> .WordStack   </selfDestruct>   // A_s
-                      <log>          .SubstateLog </log>            // A_l
-                      <refund>       0:Word       </refund>         // A_r
-                    </substate>
+                  // EVM Specific
+                  // ============
 
-                    // Immutable during a single transaction
-                    <gasPrice>   0:Word </gasPrice>                 // I_p
-                    <gasLimit>   0:Word </gasLimit>                 // I_Hl
-                    <coinbase>   0:Word </coinbase>                 // I_Hc
-                    <timestamp>  0:Word </timestamp>                // I_Hs
-                    <number>     0:Word </number>                   // I_Hi
-                    <difficulty> 0:Word </difficulty>               // I_Hd
-                    <origin>     0:Word </origin>                   // I_o
-                    <callValue>  0:Word </callValue>                // I_v
+                    <evm>
 
-                    // Extra data collected for making testing easier
-                    <testInfo>
-                      <currOps> .Set </currOps>
-                      <prevOps> .Set </prevOps>
-                    </testInfo>
-                  </evm>
+                      // Mutable during a single transaction
+                      // -----------------------------------
+
+                      <callStack> .CallStack </callStack>
+                      <op> . </op>
+                      <txExecState>
+                        <id>        0:Word     </id>                  // I_a
+                        <wordStack> .WordStack </wordStack>           // \mu_s
+                        <localMem>  .Map       </localMem>            // \mu_m
+                        <program>   .Map       </program>
+                        <pc>        0:Word     </pc>                  // \mu_pc
+                        <gas>       0:Word     </gas>                 // \mu_g
+                        <caller>    0:Word     </caller>              // I_s
+                      </txExecState>
+
+                      // A_* (execution substate)
+                      <substate>
+                        <selfDestruct> .WordStack   </selfDestruct>   // A_s
+                        <log>          .SubstateLog </log>            // A_l
+                        <refund>       0:Word       </refund>         // A_r
+                      </substate>
+
+                      // Immutable during a single transaction
+                      // -------------------------------------
+
+                      <gasPrice>   0:Word </gasPrice>                 // I_p
+                      <origin>     0:Word </origin>                   // I_o
+                      <callValue>  0:Word </callValue>                // I_v
+
+                      // I_H* (block information)
+                      <gasLimit>   0:Word </gasLimit>                 // I_Hl
+                      <coinbase>   0:Word </coinbase>                 // I_Hc
+                      <timestamp>  0:Word </timestamp>                // I_Hs
+                      <number>     0:Word </number>                   // I_Hi
+                      <difficulty> 0:Word </difficulty>               // I_Hd
+
+                      // Testing Information
+                      // -------------------
+
+                      <testInfo>
+                        <currOps> .Set </currOps>
+                        <prevOps> .Set </prevOps>
+                      </testInfo>
+
+                    </evm>
+
+                  // Ethereum Network
+                  // ================
+
+                    <network>
+
+                      // Accounts Record
+                      // ---------------
+
+                      <accounts>
+                        <account multiplicity="*">
+                          <acctID>  .AcctID </acctID>
+                          <balance> .Value  </balance>
+                          <code>    .Code   </code>
+                          <storage> .Map    </storage>
+                          <acctMap> .Map    </acctMap>
+                        </account>
+                      </accounts>
+
+                      // Transactions Record
+                      // -------------------
+
+                      <messages>
+                        <message multiplicity="*">
+                          <msgID>  .MsgID   </msgID>
+                          <to>     .AcctID  </to>
+                          <from>   .AcctID  </from>
+                          <amount> .Value   </amount>
+                          <data>   .Map     </data>
+                        </message>
+                      </messages>
+
+                    </network>
+
+                  </ethereum>
+
+    syntax AcctID ::= Word | ".AcctID"
+    syntax Code   ::= Map  | ".Code"
+    syntax MsgID  ::= Word | ".MsgID"
+    syntax Value  ::= Word | ".Value"
 ```
 
 Machine Plumbing
 ----------------
 
-When the `op` cell becomes empty, it's time to load the next opcode. The gas
-needed is calculated here.
+When the `op` cell becomes empty, it's time to load the next opcode.
+The gas needed is calculated here.
 
 Note that we must treat loading of `PUSH` specially, given that the arguments of `PUSH` are inline with the code itself.
 Given the several special treatments of `PUSH`, the usefulness of this design for EVM becomes dubious.
@@ -88,9 +145,8 @@ Given the several special treatments of `PUSH`, the usefulness of this design fo
       requires word2Bool(G >=Word #gas(PUSH(N, W)))
 ```
 
-Depending on the sort of the opcode loaded, the correct number of arguments are
-loaded off the `wordStack` (or the entire stack is loaded). This allows more
-"local" definition of each of the corresponding operators.
+Depending on the sort of the opcode loaded, the correct number of arguments are loaded off the `wordStack`.
+This allows more "local" definition of each of the corresponding operators.
 
 ```k
     syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
@@ -120,59 +176,44 @@ loaded off the `wordStack` (or the entire stack is loaded). This allows more
     rule <op> SO:StackOp => SO WS ... </op> <wordStack> WS </wordStack>
 ```
 
-The internal operators are provided here. These are just used by the other
-operators for shuffling local execution state around on the EVM.
+EVM Substate Log
+----------------
 
--   `#push` will push an element to the `wordStack` without any checks.
--   `#setStack_` will set the current stack to the given one.
+During execution of a transaction some things are recorded in the substate log.
+This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
 
 ```k
-    syntax InternalOp ::= "#push" | "#setStack" WordStack
- // -----------------------------------------------------
-    rule <op> W0:Word ~> #push => . ... </op> <wordStack> WS => W0 : WS </wordStack>
-    rule <op> #setStack WS     => . ... </op> <wordStack> _  => WS      </wordStack>
+    syntax SubstateLog      ::= ".SubstateLog" | SubstateLog "." SubstateLogEntry
+    syntax SubstateLogEntry ::= "{" Word "|" WordStack "|" WordStack "}"
 ```
 
--   `#checkStackSize` will ensure that there hasn't been a stack overflow.
--   `#stackOverflow` signals that there has been a stack overflow.
+Testing Information
+-------------------
+
+We need to keep track of some information for making debugging the semantics easier.
+This won't be needed once we are passing tests, but helps us get there.
+
+The cell `currOps` stores the operators we've seen during this execution, and `prevOps` store operators we've seen throughout this `krun`.
+This well help us determine which operators are new in this run so that we can get an idea of how the test failed.
+We don't care about keeping multiple versions of each parametric operator around though, so here we get rid of duplicates.
 
 ```k
-    syntax InternalOp ::= "#checkStackSize" | "#stackOverflow"
- // ----------------------------------------------------------
-    rule <op> #checkStackSize => #stackSize(WS) ~> #checkStackSize ... </op> <wordStack> WS </wordStack>
-    rule <op> I:Int ~> #checkStackSize => .              ... </op> requires I <Int  1024
-    rule <op> I:Int ~> #checkStackSize => #stackOverflow ... </op> requires I >=Int 1024
-```
+    rule <currOps> ... SetItem(LOG(_))     (SetItem(LOG(_))     => .Set) </currOps>
+    rule <currOps> ... SetItem(DUP(_))     (SetItem(DUP(_))     => .Set) </currOps>
+    rule <currOps> ... SetItem(SWAP(_))    (SetItem(SWAP(_))    => .Set) </currOps>
+    rule <currOps> ... SetItem(PUSH(_, _)) (SetItem(PUSH(_, _)) => .Set) </currOps>
 
-Callstack
----------
-
-Previous process states must be stored, so a tuple of sort `Process` is supplied
-for that. The `CallStack` is a cons-list of `Process`.
-
--   `#pushCallStack` stores the current state on the `callStack`.
--   `#popCallStack` replaces the current state with the top of the `callStack`.
-
-```k
-    syntax CallStack ::= ".CallStack" | Bag CallStack
-
-    syntax InternalOp ::= "#pushCallStack" | "#popCallStack"
- // --------------------------------------------------------
-    rule <op> #pushCallStack => . </op>
-         <callStack> CS => TXSTATE CS </callStack>
-         <txExecState> TXSTATE </txExecState>
-
-    rule <op> #popCallStack => . </op>
-         <callStack> TXSTATE CS => CS </callStack>
-         <txExecState> _ => TXSTATE </txExecState>
+    rule <prevOps> ... SetItem(LOG(_))     (SetItem(LOG(_))     => .Set) </prevOps>
+    rule <prevOps> ... SetItem(DUP(_))     (SetItem(DUP(_))     => .Set) </prevOps>
+    rule <prevOps> ... SetItem(SWAP(_))    (SetItem(SWAP(_))    => .Set) </prevOps>
+    rule <prevOps> ... SetItem(PUSH(_, _)) (SetItem(PUSH(_, _)) => .Set) </prevOps>
 ```
 
 EVM Programs
 ------------
 
-Lists of opcodes form programs. Deciding if an opcode is in a list will be
-useful for modeling gas, and converting a program into a map of program-counter
-to opcode is useful for execution.
+Lists of opcodes form programs.
+Deciding if an opcode is in a list will be useful for modeling gas, and converting a program into a map of program-counter to opcode is useful for execution.
 
 Note that `_in_` ignores the arguments to operators that are parametric.
 
@@ -198,47 +239,63 @@ Note that `_in_` ignores the arguments to operators that are parametric.
     rule #asMap( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #asMap(N +Int 1 +Int M, OCS)
 ```
 
-EVM Substate Log
-----------------
-
-During execution of a transaction some things are recorded in the substate log.
-This is a right cons-list of `SubstateLogEntry`.
-
-```k
-    syntax SubstateLog      ::= ".SubstateLog" | SubstateLog "." SubstateLogEntry
-    syntax SubstateLogEntry ::= "{" Word "|" WordStack "|" WordStack "}"
-```
-
-Testing Information
--------------------
-
-We need to keep track of some information for making debugging the semantics easier.
-This won't be needed once we are passing tests, but helps us get there.
-
-The cell `currOps` stores the operators we've seen during this execution, and `prevOps` store operators we've seen throughout this `krun`.
-This well help us determine which operators are new in this run so that we can get an idea of how the test failed.
-We don't care about keeping multiple versions of each parametric operator around though, so here we get rid of duplicates.
-
-```k
-    rule <currOps> ... SetItem(LOG(_))     (SetItem(LOG(_))     => .Set) </currOps>
-    rule <currOps> ... SetItem(DUP(_))     (SetItem(DUP(_))     => .Set) </currOps>
-    rule <currOps> ... SetItem(SWAP(_))    (SetItem(SWAP(_))    => .Set) </currOps>
-    rule <currOps> ... SetItem(PUSH(_, _)) (SetItem(PUSH(_, _)) => .Set) </currOps>
-    rule <prevOps> ... SetItem(LOG(_))     (SetItem(LOG(_))     => .Set) </prevOps>
-    rule <prevOps> ... SetItem(DUP(_))     (SetItem(DUP(_))     => .Set) </prevOps>
-    rule <prevOps> ... SetItem(SWAP(_))    (SetItem(SWAP(_))    => .Set) </prevOps>
-    rule <prevOps> ... SetItem(PUSH(_, _)) (SetItem(PUSH(_, _)) => .Set) </prevOps>
-```
-
 EVM Opcodes
 ===========
 
-Each subsection has a different class of opcodes. Organization is based roughly
-on what parts of the execution state are needed to compute the result of each
-operator. This sometimes corresponds to the organization in the yellowpaper.
+Each subsection has a different class of opcodes.
+Organization is based roughly on what parts of the execution state are needed to compute the result of each operator.
+This sometimes corresponds to the organization in the yellowpaper.
 
-Implementations immediately follow declarations, so if an operator is declared
-here but not implemented then it isn't implemented at all.
+Implementations immediately follow declarations, so if an operator is declared here but not implemented then it isn't implemented at all.
+
+Internal Operations
+-------------------
+
+These are just used by the other operators for shuffling local execution state around on the EVM.
+
+-   `#push` will push an element to the `wordStack` without any checks.
+-   `#setStack_` will set the current stack to the given one.
+
+```k
+    syntax InternalOp ::= "#push" | "#setStack" WordStack
+ // -----------------------------------------------------
+    rule <op> W0:Word ~> #push => . ... </op> <wordStack> WS => W0 : WS </wordStack>
+    rule <op> #setStack WS     => . ... </op> <wordStack> _  => WS      </wordStack>
+```
+
+-   `#checkStackSize` will ensure that there hasn't been a stack overflow.
+-   `#stackOverflow` signals that there has been a stack overflow.
+
+```k
+    syntax InternalOp ::= "#checkStackSize" | "#stackOverflow"
+ // ----------------------------------------------------------
+    rule <op> #checkStackSize => #stackSize(WS) ~> #checkStackSize ... </op> <wordStack> WS </wordStack>
+    rule <op> I:Int ~> #checkStackSize => .              ... </op> requires I <Int  1024
+    rule <op> I:Int ~> #checkStackSize => #stackOverflow ... </op> requires I >=Int 1024
+```
+
+Callstack
+---------
+
+Previous process states must be stored, so a tuple of sort `Process` is supplied for that.
+The `CallStack` is a cons-list of `Process`.
+
+-   `#pushCallStack` stores the current state on the `callStack`.
+-   `#popCallStack` replaces the current state with the top of the `callStack`.
+
+```k
+    syntax CallStack ::= ".CallStack" | Bag CallStack
+
+    syntax InternalOp ::= "#pushCallStack" | "#popCallStack"
+ // --------------------------------------------------------
+    rule <op> #pushCallStack => . </op>
+         <callStack> CS => TXSTATE CS </callStack>
+         <txExecState> TXSTATE </txExecState>
+
+    rule <op> #popCallStack => . </op>
+         <callStack> TXSTATE CS => CS </callStack>
+         <txExecState> _ => TXSTATE </txExecState>
+```
 
 Stack Manipulations
 -------------------
@@ -263,12 +320,9 @@ Some operators don't calculate anything, they just push the stack around a bit.
 Expressions
 -----------
 
-Expression calculations are simple and don't require anything but the arguments
-from the `wordStack` to operate. The arguments are loaded automatically based on
-subsort, so we can provide the definition of them locally here.
+Expression calculations are simple and don't require anything but the arguments from the `wordStack` to operate.
 
-NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble
-parsing it/compiling the definition otherwise.
+NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble parsing it/compiling the definition otherwise.
 
 ```k
     syntax UnStackOp ::= "ISZERO" | "NOT"
@@ -311,8 +365,8 @@ TODO: Unimplemented.
  // --------------------------------------------------------------------------------------
 ```
 
-Control Flow
-------------
+`JUMP*`
+-------
 
 The `JUMP*` family of operations affect the current program counter.
 
@@ -327,18 +381,10 @@ The `JUMP*` family of operations affect the current program counter.
     rule <op> JUMPI DEST W => JUMP DEST ... </op> requires W =/=K 0
 ```
 
-TODO: Unimplemented.
-
-```k
-    syntax NullStackOp ::= "INVALID" | "STOP" | "RETURN"
- // ----------------------------------------------------
-```
-
 Local State
 -----------
 
-These operators make queries about the current execution state (whether directly
-about this state or past substates on the callstack).
+These operators make queries about the current execution state.
 
 ```k
     syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT"
@@ -371,7 +417,7 @@ about this state or past substates on the callstack).
 These operations are getters/setters of the local execution memory.
 
 TODO: `MSTORE8` is unimplemented.
-TODO: Should we modify the memory used gas counter when using `MSTORE`?
+TODO: Calculate \mu_i.
 
 ```k
     syntax UnStackOp  ::= "MLOAD"
@@ -381,7 +427,7 @@ TODO: Should we modify the memory used gas counter when using `MSTORE`?
     rule <op> MSTORE INDEX VALUE => .              ... </op> <localMem> LM => LM [ INDEX <- VALUE ] </localMem>
 ```
 
-TODO: Add the extra memory used.
+TODO: Calculate \mu_i.
 
 ```k
     syntax LogOp  ::= LOG ( Word )
@@ -394,31 +440,117 @@ TODO: Add the extra memory used.
       requires word2Bool(#size(WS) >=Word N)
 ```
 
-TODO: Unimplemented.
+Ethereum Network
+================
 
 ```k
-    syntax NullStackOp ::= "CALLDATASIZE"
- // -------------------------------------
-```
-
-Global State
-------------
-
-The opcodes are implemented in `ethereum.md` because they require access to the world state.
-
-```k
-    syntax UnStackOp   ::= "SLOAD" | "BALANCE" | "SELFDESTRUCT"
-    syntax BinStackOp  ::= "SSTORE"
+    syntax UnStackOp  ::= "BALANCE"
  // -------------------------------
+    rule <op> BALANCE ACCT => BAL ~> #push ... </op>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
+```
+
+TODO: Calculate \mu_i.
+
+```k
+    syntax UnStackOp  ::= "SLOAD"
+    syntax BinStackOp ::= "SSTORE"
+ // ------------------------------
+    rule <op> SLOAD INDEX => VALUE ~> #push ... </op>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> ... INDEX |-> VALUE ... </storage>
+           ...
+         </account>
+
+    rule <op> SSTORE INDEX VALUE => . ... </op>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>
+           ...
+         </account>
+```
+
+Call Operations
+---------------
+
+TODO: (Entire section): Calculate \mu_i.
+
+```k
+    syntax CallOp ::= "CALL" | "CALLCODE" | "DELEGATECALL"
+ // ------------------------------------------------------
+    rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
+           =>  ( #call ACCTFROM #addr(ACCTTO) #addr(ACCTTO) #range(LM, ARGSTART, ARGWIDTH)
+              ~> #return RETSTART RETWIDTH
+               )
+         </op>
+         <id> ACCTFROM </id>
+         <localMem> LM </localMem>
+
+    syntax InternalOp ::= "#call" Word Word Word WordStack
+                        | "#return" Word Word
+                        | "#return" WordStack
+
+    syntax BinStackOp ::= "RETURN"
+ // ------------------------------
+    rule <op> RETURN RETSTART RETWIDTH => #popCallStack ~> #return #range(LM, RETSTART, RETWIDTH) ... </op>
+         <localMem> LM </localMem>
+
+    rule <op> #return (WS:WordStack) ~> #return RETSTART RETWIDTH => . ... </op>
+         <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #size(WS)), WS) ] </localMem>
+```
+
+TODO: Calculating gas for `SELFDESTRUCT` needs to take into account the cost of creating an account if the recipient address doesn't exist yet. Should it also actually create the recipient address if not? Perhaps `#transfer` can take that into account automatically for us?
+
+```k
+    syntax UnStackOp ::= "SELFDESTRUCT"
+ // -----------------------------------
+    rule <op> SELFDESTRUCT ACCTTO => . ... </op>
+         <id> ACCT </id>
+         <selfDestruct> SD </selfDestruct>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BALFROM => 0 </balance>
+           ...
+         </account>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <balance> BALTO => BALTO +Word BALFROM </balance>
+           ...
+         </account>
+      requires ACCT in SD
+
+    rule <op> SELFDESTRUCT ACCTTO => . ... </op>
+         <id> ACCT </id>
+         <selfDestruct> SD => ACCT : SD               </selfDestruct>
+         <refund>       RF => RF +Word Rself-destruct </refund>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BALFROM => 0 </balance>
+           ...
+         </account>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <balance> BALTO => BALTO +Word BALFROM </balance>
+           ...
+         </account>
+      requires notBool (ACCT in SD)
 ```
 
 TODO: Unimplemented.
 
 ```k
+    syntax NullStackOp ::= "INVALID" | "STOP"
+ // -----------------------------------------
+
     syntax UnStackOp   ::= "BLOCKHASH" | "CALLDATALOAD" | "EXTCODESIZE"
  // -------------------------------------------------------------------
-//    syntax Word ::= blockhash ( Word )
-//    rule <op> BLOCKHASH W => blockhash(N -Word W) ~> #push ... </op> <blockhash> N </blockhash>
 
     syntax TernStackOp ::= "CALLDATACOPY" | "CODECOPY" | "CREATE"
  // -------------------------------------------------------------
@@ -426,12 +558,12 @@ TODO: Unimplemented.
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
 
-    syntax CallOp ::= "CALL" | "CALLCODE" | "DELEGATECALL"
- // ------------------------------------------------------
+    syntax NullStackOp ::= "CALLDATASIZE"
+ // -------------------------------------
 ```
 
-EVM Gas Cost
-============
+Ethereum Gas Calculation
+========================
 
 Here we define the gas-cost of each instruction in the instruction set. Many of
 the instructions gas cost is fixed and not dependent on any parts of the

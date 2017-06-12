@@ -7,100 +7,12 @@ Ethereum is using the EVM to drive updates over the world state.
 requires "evm.k"
 requires "evm-dasm.k"
 
-module ETHEREUM
-    imports EVM
+module ETHEREUM-SIMULATION
+    imports ETHEREUM
     imports EVM-DASM
 
-    configuration <ethereum>
-
-                    <k> $PGM:EthereumSimulation </k>
-
-                    initEvmCell
-
-                    <accounts>
-                      <account multiplicity="*">
-                        <acctID>  .AcctID </acctID>
-                        <balance> .Value  </balance>
-                        <code>    .Code   </code>
-                        <storage> .Map    </storage>
-                        <acctMap> .Map    </acctMap>
-                      </account>
-                    </accounts>
-
-                    <messages>
-                      <message multiplicity="*">
-                        <msgID>  .MsgID   </msgID>
-                        <to>     .AcctID  </to>
-                        <from>   .AcctID  </from>
-                        <amount> .Value   </amount>
-                        <data>   .Map     </data>
-                      </message>
-                    </messages>
-
-                  </ethereum>
-
-    syntax AcctID ::= Word | ".AcctID"
-    syntax Code   ::= Map  | ".Code"
-    syntax MsgID  ::= Word | ".MsgID"
-    syntax Value  ::= Word | ".Value"
-
-    rule <op> BALANCE ACCT => BAL ~> #push ... </op>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
-
-    rule <op> SLOAD INDEX => VALUE ~> #push ... </op>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> ... INDEX |-> VALUE ... </storage>
-           ...
-         </account>
-
-    rule <op> SSTORE INDEX VALUE => . ... </op>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>
-           ...
-         </account>
-```
-
-TODO: Calculating gas for `SELFDESTRUCT` needs to take into account the cost of creating an account if the recipient address doesn't exist yet. Should it also actually create the recipient address if not? Perhaps `#transfer` can take that into account automatically for us?
-
-```k
-    rule <op> SELFDESTRUCT ACCTTO => . ... </op>
-         <id> ACCT </id>
-         <selfDestruct> SD </selfDestruct>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BALFROM => 0 </balance>
-           ...
-         </account>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <balance> BALTO => BALTO +Word BALFROM </balance>
-           ...
-         </account>
-      requires ACCT in SD
-
-    rule <op> SELFDESTRUCT ACCTTO => . ... </op>
-         <id> ACCT </id>
-         <selfDestruct> SD => ACCT : SD               </selfDestruct>
-         <refund>       RF => RF +Word Rself-destruct </refund>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BALFROM => 0 </balance>
-           ...
-         </account>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <balance> BALTO => BALTO +Word BALFROM </balance>
-           ...
-         </account>
-      requires notBool (ACCT in SD)
+    configuration initEthereumCell
+                  <k> $PGM:EthereumSimulation </k>
 ```
 
 Ethereum Simulations
