@@ -23,14 +23,23 @@ tangle_kompile() {
 
 tangle_generate_tests() {
     echo "generating tests ..."
-    echo "===================="
+    echo "==================================="
 
-    if [[ ! -d  "tests/ethereum-tests" ]]; then 
+    if [[ ! -d  "tests/tests-develop" ]]; then 
         cd tests
         TESTURL=https://github.com/ethereum/tests/archive/develop.zip
         ARCHIVE=develop
         EXTENSION=.zip
+
+
+        echo "downloading and unpacking tests ..."
+        echo "==================================="
+
         curl -OL "$TESTURL" && unzip "$ARCHIVE$EXTENSION" && rm "$ARCHIVE$EXTENSION"
+        echo "==================================="
+        echo "done"
+        echo "==================================="
+        ./desugar
     fi
 }
 

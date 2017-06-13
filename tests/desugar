@@ -2,21 +2,23 @@
 
 desugar_process_json() {
     echo "processing json ..."
-    echo "==================="
+    echo "==================================="
     for jsonfile in `find . -name "*.json"`; do
         dirname=`dirname "$jsonfile"`
         filename=`basename "$jsonfile" .json`
 
         mkdir "$dirname/$filename"
     done
+    echo "done"
+    echo "==================================="
 }
 
+#Temporary
 desugar_cleanup() {
     echo "cleaning up ..."
-    echo "==============="
-    cd ethereum-tests && ls | grep -v "VMTests" | xargs rm -r
-    cd "VMTests"
-    ls | grep -v ".*\.json" | rm -r
+    echo "==================================="
+    cd tests-develop && ls | grep -v "VMTests" | xargs rm -r
+    cd "VMTests" && ls | grep -v ".*\.json" | rm -rf
 }
 
 [[ "$#" == '0' ]] && set all
