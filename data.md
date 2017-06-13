@@ -186,8 +186,8 @@ A common idiom is to assign a contiguous chunk of a map to a list (stack) of wor
 
     syntax WordStack ::= #range ( Map , Word , Word ) [function]
  // ------------------------------------------------------------
-    rule #range(WM,         N, M) => .WordStack                           requires M ==Word 0
-    rule #range(N |-> W WM, N, M) => W : #range(WM, N +Word 1, M -Word 1) requires M >Word 0
+    rule #range(WM,         N, 0) => .WordStack
+    rule #range(N |-> W WM, N, M) => W : #range(WM, N +Word 1, M -Word 1) requires M =/=K 0
 ```
 
 Addresses
