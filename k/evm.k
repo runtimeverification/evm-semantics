@@ -139,23 +139,23 @@ module ETHEREUM
 // `PUSH`, the usefulness of this design for EVM becomes dubious.
 
 
-    rule <op> . => #gas(OP) ~> OP </op>
+    rule <op> . => #gas(OP) ~> #deductGas ~> OP </op>
          <pc> PCOUNT => PCOUNT +Word 1 </pc>
          <program> ... PCOUNT |-> OP:OpCode ... </program>
          <currOps> ... (.Set => SetItem(OP)) </currOps>
       requires notBool isPushOp(OP)
 
-    rule <op> . => #gas(PUSH(N, W)) ~> PUSH(N, W) </op>
+    rule <op> . => #gas(PUSH(N, W)) ~> #deductGas ~> PUSH(N, W) </op>
          <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
          <program> ... PCOUNT |-> PUSH(N, W) ... </program>
          <currOps> ... (.Set => SetItem(PUSH(N, W))) </currOps>
 
-    syntax Exception ::= "#outOfProgramBounds"
+ // syntax Exception ::= "#outOfProgramBounds"
  // ------------------------------------------
-    rule <op> . => #outOfProgramBounds </op>
-         <pc> PCOUNT </pc>
-         <program> CODE </program>
-      requires notBool (PCOUNT in keys(CODE))
+ // rule <op> . => #outOfProgramBounds </op>
+ //      <pc> PCOUNT </pc>
+ //      <program> CODE </program>
+ //   requires notBool (PCOUNT in keys(CODE))
 
 
 // Depending on the sort of the opcode loaded, the correct number of arguments are
@@ -366,9 +366,11 @@ module ETHEREUM
 
     syntax UnStackOp  ::= "MLOAD"
     syntax BinStackOp ::= "MSTORE"
+                        | "MSTORE8"
  // ------------------------------
-    rule <op> MLOAD  INDEX       => VALUE ~> #push ... </op> <localMem> ... INDEX |-> VALUE ...  </localMem>
-    rule <op> MSTORE INDEX VALUE => .              ... </op> <localMem> LM => LM [ INDEX <- VALUE ] </localMem>
+    rule <op> MLOAD   INDEX       => VALUE ~> #push ... </op> <localMem> ... INDEX |-> VALUE ...  </localMem>
+    rule <op> MSTORE  INDEX VALUE => .              ... </op> <localMem> LM => LM [ INDEX <- VALUE ] </localMem>
+    rule <op> MSTORE8 INDEX VALUE => .              ... </op> <localMem> LM => LM [ INDEX <- (VALUE %Int 256) ] </localMem>
 
 
 // Expressions
@@ -718,9 +720,6 @@ module ETHEREUM
 
     syntax BinStackOp ::= "SLT" | "SGT" | "SDIV" | "SMOD" | "SIGNEXTEND"
  // --------------------------------------------------------------------
- 
-    syntax BinStackOp ::= "MSTORE8"
- // -------------------------------
 
     syntax NullStackOp ::= "STOP"
  // -----------------------------
@@ -745,9 +744,10 @@ module ETHEREUM
 
     syntax Exception ::= "#outOfGas"
     syntax KItem     ::= #gas ( Word ) [function]
- // ---------------------------------------------
-    rule <op> #gas(W:Int) => .         ... </op> <gas> GAVAIL => GAVAIL -Word W </gas> requires word2Bool(GAVAIL >=Word W)
-    rule <op> #gas(W:Int) => #outOfGas ... </op> <gas> GAVAIL                   </gas> requires word2Bool(GAVAIL <Word W)
+                       | "#deductGas"
+ // ---------------------------------
+    rule <op> G:Int ~> #deductGas => .         ... </op> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+    rule <op> G:Int ~> #deductGas => #outOfGas ... </op> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
 
 
 // The gas calculation is designed to mirror the style of the yellowpaper.
