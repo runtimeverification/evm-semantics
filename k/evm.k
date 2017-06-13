@@ -400,8 +400,8 @@ module ETHEREUM
 
     syntax TernStackOp ::= "ADDMOD" | "MULMOD"
  // ------------------------------------------
-    rule <op> ADDMOD W0 W1 W2 => (W0 +Int W1) %Int W2 ~> #push ... </op>
-    rule <op> MULMOD W0 W1 W2 => (W0 *Int W1) %Int W2 ~> #push ... </op>
+    rule <op> ADDMOD W0 W1 W2 => (W0 +Int W1) %Word W2 ~> #push ... </op>
+    rule <op> MULMOD W0 W1 W2 => (W0 *Int W1) %Word W2 ~> #push ... </op>
 
     syntax BinStackOp ::= "BYTE"
  // ----------------------------
