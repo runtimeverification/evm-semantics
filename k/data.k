@@ -28,7 +28,9 @@ module EVM-DATA
                   | bool2Word ( Bool ) [function]
  // ---------------------------------------------
     rule #symbolicWord    => ?X:Int
-    rule chop( W:Int )    => W %Int (2 ^Int 256)
+    rule chop( W:Int )    => chop ( W +Int (2 ^Int 256) ) requires W <Int 0
+    rule chop( W:Int )    => chop ( W %Int (2 ^Int 256) ) requires W >=Int (2 ^Int 256)
+    rule chop( W:Int )    => W requires W >=Int 0 andBool W <Int (2 ^Int 256)
     rule bool2Word(true)  => 1
     rule bool2Word(false) => 0
 

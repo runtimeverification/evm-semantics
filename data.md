@@ -26,7 +26,9 @@ Here `chop` will move a number back into the correct range and `bool2Word` will 
                   | bool2Word ( Bool ) [function]
  // ---------------------------------------------
     rule #symbolicWord    => ?X:Int
-    rule chop( W:Int )    => W %Int (2 ^Int 256)
+    rule chop( W:Int )    => chop ( W +Int (2 ^Int 256) ) requires W <Int 0
+    rule chop( W:Int )    => chop ( W %Int (2 ^Int 256) ) requires W >=Int (2 ^Int 256)
+    rule chop( W:Int )    => W requires W >=Int 0 andBool W <Int (2 ^Int 256)
     rule bool2Word(true)  => 1
     rule bool2Word(false) => 0
 
