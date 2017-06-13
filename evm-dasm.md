@@ -1,8 +1,7 @@
-EVM Disassembler
-================
+EVM Program Assembler/Disassembler
+==================================
 
 The default EVM test-set format is JSON, where the data is hex-encoded.
-A dissassembler is provided here for the basic data so that both the JSON and our pretty format can be read in.
 
 ```k
 requires "evm.k"
@@ -10,6 +9,26 @@ requires "evm.k"
 module EVM-DASM
     imports ETHEREUM
     imports STRING
+```
+
+Parsing
+-------
+
+Here a JSON parser is provided, along with parsers for the various data fields in the EVM testsuite.
+These parsers can interperet hex-encoded strings as `Word`s, `WordStack`s, and `Map`s.
+
+-   `#parseHexWord` interperets a string as a single hex-encoded `Word`.
+-   `#parseHexWords` interperets a string as a stack of words (each `Word` being a byte wide).
+-   `#parseWordStack` interperets a string as a stack of words, but makes sure to remove the leading "0x".
+-   `#parseMap` interperets a JSON key/value object as a map from `Word` to `Word`.
+
+```k
+    syntax JSONList ::= List{JSON,","}
+    syntax JSON     ::= String
+                      | String ":" JSON
+                      | "{" JSONList "}"
+                      | "[" JSONList "]"
+ // ------------------------------------
 
     syntax Word ::= #parseHexWord ( String ) [function]
  // ---------------------------------------------------
@@ -25,6 +44,30 @@ module EVM-DASM
     rule #parseHexWords("") => .WordStack
     rule #parseHexWords(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexWords(substrString(S, 2, lengthString(S)))
       requires lengthString(S) >=Int 2
+
+    syntax Map ::= #parseMap ( JSON ) [function]
+ // --------------------------------------------
+    rule #parseMap( { .JSONList                   } ) => .Map
+    rule #parseMap( { KEY : (VALUE:String) , REST } ) => #parseMap({ REST }) [ #parseHexWord(KEY) <- #parseHexWord(VALUE) ]
+```
+
+Disassembler
+------------
+
+After interpreting the strings representing programs as a `WordStack`, it should be changed into an `OpCodes` for use by the EVM semantics.
+
+-   `#dasmOpCodes` is used to interperet a `WordStack` as an `OpCodes`.
+
+```k
+    syntax OpCodes ::= #dasmOpCodes ( WordStack ) [function]
+ // --------------------------------------------------------
+    rule #dasmOpCodes( .WordStack ) => .OpCodes
+    rule #dasmOpCodes( W : WS )     => #dasmOpCode(W)    ; #dasmOpCodes(WS) requires word2Bool(W >=Word 0)   andBool word2Bool(W <=Word 95)
+    rule #dasmOpCodes( W : WS )     => #dasmOpCode(W)    ; #dasmOpCodes(WS) requires word2Bool(W >=Word 240) andBool word2Bool(W <=Word 255)
+    rule #dasmOpCodes( W : WS )     => DUP(W -Word 127)  ; #dasmOpCodes(WS) requires word2Bool(W >=Word 128) andBool word2Bool(W <=Word 143)
+    rule #dasmOpCodes( W : WS )     => SWAP(W -Word 143) ; #dasmOpCodes(WS) requires word2Bool(W >=Word 144) andBool word2Bool(W <=Word 159)
+    rule #dasmOpCodes( W : WS )     => LOG(W -Word 160)  ; #dasmOpCodes(WS) requires word2Bool(W >=Word 160) andBool word2Bool(W <=Word 164)
+    rule #dasmOpCodes( W : WS )     => #dasmPUSH( W -Word 95 , WS )         requires word2Bool(W >=Word 96)  andBool word2Bool(W <=Word 127)
 
     syntax OpCode ::= #dasmOpCode ( Word ) [function]
  // -------------------------------------------------
@@ -91,6 +134,20 @@ module EVM-DASM
     rule #dasmOpCode( 254 ) => INVALID
     rule #dasmOpCode( 255 ) => SELFDESTRUCT
 
+    syntax OpCodes ::= #dasmPUSH ( Word , WordStack ) [function]
+ // ------------------------------------------------------------
+    rule #dasmPUSH( W , WS ) => PUSH(W, #asWord(#take(W, WS))) ; #dasmOpCodes(#drop(W, WS))
+```
+
+Assembler
+---------
+
+Some opcodes (`CODECOPY` and `EXTCODECOPY`) rely on the assembled form of the programs being present.
+For those purposes, we have a re-assembler here.
+
+-   `#asmOpCodes` gives the `WordStack` representation of an `OpCodes`.
+
+```k
     syntax WordStack ::= #asmOpCodes ( OpCodes ) [function]
  // -------------------------------------------------------
     rule #asmOpCodes( STOP         ; OPS ) =>   0 : #asmOpCodes(OPS)
@@ -159,41 +216,5 @@ module EVM-DASM
     rule #asmOpCodes( SWAP(W)      ; OPS ) => W +Word 143 : #asmOpCodes(OPS)
     rule #asmOpCodes( LOG(W)       ; OPS ) => W +Word 160 : #asmOpCodes(OPS)
     rule #asmOpCodes( PUSH(N, W)   ; OPS ) => N +Word 95  : (#asWordStack(W) ++ #asmOpCodes(OPS))
-
-    syntax OpCodes ::= #dasmPUSH ( Word , WordStack ) [function]
- // ------------------------------------------------------------
-    rule #dasmPUSH( W , WS ) => PUSH(W, #asWord(#take(W, WS))) ; #dasmOpCodes(#drop(W, WS))
-
-    syntax OpCodes ::= #dasmOpCodes ( WordStack ) [function]
- // --------------------------------------------------------
-    rule #dasmOpCodes( .WordStack ) => .OpCodes
-    rule #dasmOpCodes( W : WS )     => #dasmOpCode(W)    ; #dasmOpCodes(WS) requires word2Bool(W >=Word 0)   andBool word2Bool(W <=Word 95)
-    rule #dasmOpCodes( W : WS )     => #dasmOpCode(W)    ; #dasmOpCodes(WS) requires word2Bool(W >=Word 240) andBool word2Bool(W <=Word 255)
-    rule #dasmOpCodes( W : WS )     => DUP(W -Word 127)  ; #dasmOpCodes(WS) requires word2Bool(W >=Word 128) andBool word2Bool(W <=Word 143)
-    rule #dasmOpCodes( W : WS )     => SWAP(W -Word 143) ; #dasmOpCodes(WS) requires word2Bool(W >=Word 144) andBool word2Bool(W <=Word 159)
-    rule #dasmOpCodes( W : WS )     => LOG(W -Word 160)  ; #dasmOpCodes(WS) requires word2Bool(W >=Word 160) andBool word2Bool(W <=Word 164)
-    rule #dasmOpCodes( W : WS )     => #dasmPUSH( W -Word 95 , WS )         requires word2Bool(W >=Word 96)  andBool word2Bool(W <=Word 127)
-
-    syntax WordStack ::= #asmOpCodes ( OpCodes ) [function]
- // -------------------------------------------------------
-    rule #asmOpCodes( .OpCodes ) => .WordStack
-    rule #asmOpCodes( OP : OPS ) => #asmOpCode(W)     ; #dasmOpCodes(WS) requires word2Bool(W >=Word 0)   andBool word2Bool(W <=Word 95)
-    rule #asmOpCodes( OP : OPS ) => #asmOpCode(W)     ; #dasmOpCodes(WS) requires word2Bool(W >=Word 240) andBool word2Bool(W <=Word 255)
-    rule #asmOpCodes( OP : OPS ) => DUP(W -Word 127)  ; #dasmOpCodes(WS) requires word2Bool(W >=Word 128) andBool word2Bool(W <=Word 143)
-    rule #asmOpCodes( OP : OPS ) => SWAP(W -Word 143) ; #dasmOpCodes(WS) requires word2Bool(W >=Word 144) andBool word2Bool(W <=Word 159)
-    rule #asmOpCodes( OP : OPS ) => LOG(W -Word 160)  ; #dasmOpCodes(WS) requires word2Bool(W >=Word 160) andBool word2Bool(W <=Word 164)
-    rule #asmOpCodes( OP : OPS ) => #dasmPUSH( W -Word 95 , WS )         requires word2Bool(W >=Word 96)  andBool word2Bool(W <=Word 127)
-
-    syntax JSONList ::= List{JSON,","}
-    syntax JSON     ::= String
-                      | String ":" JSON
-                      | "{" JSONList "}"
-                      | "[" JSONList "]"
- // ------------------------------------
-
-    syntax Map ::= #parseMap ( JSON ) [function]
- // --------------------------------------------
-    rule #parseMap( { .JSONList                   } ) => .Map
-    rule #parseMap( { KEY : (VALUE:String) , REST } ) => #parseMap({ REST }) [ #parseHexWord(KEY) <- #parseHexWord(VALUE) ]
 endmodule
 ```

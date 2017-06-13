@@ -115,10 +115,10 @@ It's specified in the yellowpaper for `PUSH`, but not for `DUP` and `SWAP`.
                        | Word ":" WordStack
  // ---------------------------------------
 
-    syntax WordStack ::= WordStack "++" WordStack
- // ---------------------------------------------
+    syntax WordStack ::= WordStack "++" WordStack [function]
+ // --------------------------------------------------------
     rule .WordStack ++ WS' => WS'
-    rule (W0 : WS)  ++ WS' => W0 : (WS ++ WS')
+    rule (W : WS)   ++ WS' => W : (WS ++ WS')
 
     syntax Word ::= WordStack "[" Word "]" [function]
  // -------------------------------------------------
@@ -159,10 +159,12 @@ It's specified in the yellowpaper for `PUSH`, but not for `DUP` and `SWAP`.
     rule #asWord( W : .WordStack) => W
     rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
 
-    syntax WordStack ::= #asWordStack ( Word ) [function]
- // -----------------------------------------------------
-    rule #asWordStack(0) => .WordStack
-    rule #asWordStack(W) => #asWordStack( W /Int 256 ) ++ ((W %Int 256) : .WordStack)
+    syntax WordStack ::= #asWordStack ( Word )             [function]
+                       | #asWordStack ( Word , WordStack ) [function]
+ // -----------------------------------------------------------------
+    rule #asWordStack( W ) => #asWordStack( W , .WordStack )
+    rule #asWordStack( 0 , WS ) => WS
+    rule #asWordStack( W , WS ) => #asWordStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0
 ```
 
 Word Map
