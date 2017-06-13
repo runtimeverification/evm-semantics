@@ -36,8 +36,6 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
 -   `account ...` corresponds to the specification of an account on the network.
 -   `transaction ...` corresponds to the specification of a transaction on the network.
 
-TODO: These rules for making sure the account is in normal form won't fire, how can we make them?
-
 ```k
     syntax Storage ::= WordStack | Map
     syntax Program ::= OpCodes   | Map
@@ -48,16 +46,20 @@ TODO: These rules for making sure the account is in normal form won't fire, how 
                                           "-" "program" ":" Program
                                           "-" "storage" ":" Storage
  // ---------------------------------------------------------------
-    rule account : - id      : ACCTID
-                   - nonce   : NONCE
-                   - balance : BAL
-                   - program : CODE
-                   - storage : (STORAGE:WordStack => #asMap(STORAGE))
-    rule account : - id      : ACCTID
-                   - nonce   : NONCE
-                   - balance : BAL
-                   - program : (CODE:OpCodes => #asMap(CODE))
-                   - storage : STORAGE
+    rule <k> ESC:EthereumSpecCommand account : - id      : ACCTID
+                                               - nonce   : NONCE
+                                               - balance : BAL
+                                               - program : (PGM:OpCodes => #asMap(PGM))
+                                               - storage : STORAGE
+         ...
+         </k>
+    rule <k> ESC:EthereumSpecCommand account : - id      : ACCTID
+                                               - nonce   : NONCE
+                                               - balance : BAL
+                                               - program : PGM
+                                               - storage : (STORAGE:WordStack => #asMap(STORAGE))
+         ...
+         </k>
 
     syntax EthereumSpec ::= "transaction" ":" "-" "id"       ":" MsgID
                                               "-" "to"       ":" AcctID

@@ -25,7 +25,7 @@ tangle_test() {
     echo "running tests ..."
     echo "================="
 
-    krun --debug --directory k/ tests/simple/testDASM.evm
+    krun --debug --directory k/ tests/ethereum-tests/VMTests/vmArithmeticTest.json
 }
 
 [[ "$#" == '0' ]] && set all
@@ -33,7 +33,7 @@ tangle_test() {
 while [[ "$#" -gt '0' ]]; do
     tangle_command="$1" && shift
     case "$tangle_command" in
-        all)      set defn kompile ;;
+        all)      set defn kompile test ;;
         defn)     tangle_defn ;;
         kompile)  tangle_kompile ;;
         test)     tangle_test ;;
