@@ -118,10 +118,10 @@ It's specified in the yellowpaper for `PUSH`, but not for `DUP` and `SWAP`.
     rule .WordStack [ N := W ] => 0  : (.WordStack [ N +Int 1 := W ]) requires word2Bool(N >Word 0)
     rule (W0 : WS)  [ N := W ] => W0 : (WS [ N +Int 1 := W ])         requires word2Bool(N >Word 0)
 
-    syntax Word ::= #stackSize ( WordStack ) [function]
- // ---------------------------------------------------
-    rule #stackSize ( .WordStack ) => 0
-    rule #stackSize ( W : WS )     => 1 +Word #stackSize(WS)
+    syntax Int ::= #size ( WordStack ) [function]
+ // ---------------------------------------------
+    rule #size ( .WordStack ) => 0
+    rule #size ( W : WS )     => 1 +Int #size(WS)
 
     syntax WordStack ::= #take ( Word , WordStack ) [function]
                        | #drop ( Word , WordStack ) [function]
@@ -160,10 +160,8 @@ A common idiom is to assign a contiguous chunk of a map to a list (stack) of wor
     rule WM[N := W0:Word : WS] => (WM[N <- W0])[N +Word 1 := WS]
 
     syntax Map ::= #asMap ( WordStack ) [function]
-                 | #asMap ( Map       ) [function]
  // ----------------------------------------------
     rule #asMap(WS:WordStack) => .Map [ 0 := WS ]
-    rule #asMap(M:Map)        => M
 
     syntax WordStack ::= #range ( Map , Word , Word ) [function]
  // ------------------------------------------------------------
