@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 tangle_defn() {
     echo "generating 'k/*' files ..."
@@ -21,6 +21,19 @@ tangle_kompile() {
     return "$result"
 }
 
+tangle_generate_tests() {
+    echo "generating tests ..."
+    echo "===================="
+
+    if [[ ! -d  "tests/ethereum-tests" ]]; then 
+        cd tests
+        TESTURL=https://github.com/ethereum/tests/archive/develop.zip
+        ARCHIVE=develop
+        EXTENSION=.zip
+        curl -OL "$TESTURL" && unzip "$ARCHIVE$EXTENSION" && rm "$ARCHIVE$EXTENSION"
+    fi
+}
+
 tangle_test() {
     echo "running tests ..."
     echo "================="
@@ -33,9 +46,10 @@ tangle_test() {
 while [[ "$#" -gt '0' ]]; do
     tangle_command="$1" && shift
     case "$tangle_command" in
-        all)      set defn kompile test ;;
+        all)      set defn kompile gentest test ;;
         defn)     tangle_defn ;;
         kompile)  tangle_kompile ;;
+        testgen)  tangle_generate_tests ;;
         test)     tangle_test ;;
         *)        echo "Unrecognized option: '$tangle_command' ..." ;;
     esac

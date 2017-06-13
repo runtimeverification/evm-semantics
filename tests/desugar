@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+desugar_process_json() {
+    echo "processing json ..."
+    echo "==================="
+    for jsonfile in `find . -name "*.json"`; do
+        dirname=`dirname "$jsonfile"`
+        filename=`basename "$jsonfile" .json`
+
+        mkdir "$dirname/$filename"
+    done
+}
+
+desugar_cleanup() {
+    echo "cleaning up ..."
+    echo "==============="
+    cd ethereum-tests && ls | grep -v "VMTests" | xargs rm -r
+    cd "VMTests"
+    ls | grep -v ".*\.json" | rm -r
+}
+
+[[ "$#" == '0' ]] && set all
+
+while [[ "$#" -gt '0' ]]; do
+    desugar_command="$1" && shift
+    case "$desugar_command" in
+        all)      set clean process ;;
+        clean)    desugar_cleanup ;;
+        process)  desugar_process_json ;;
+        *)        echo "Unrecognized option: '$tangle_command' ..." ;;
+    esac
+done
+
