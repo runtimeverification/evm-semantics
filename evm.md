@@ -39,16 +39,16 @@ module ETHEREUM
                         <program>   .Map        </program>
 
                         // I_*
-                        <id>        0:Word      </id>                   // I_a
-                        <caller>    0:Word      </caller>               // I_s
-                        <callData>   .WordStack </callData>             // I_d
-                        <callValue>  0:Word     </callValue>            // I_v
+                        <id>        0:Word     </id>                    // I_a
+                        <caller>    0:Word     </caller>                // I_s
+                        <callData>  .WordStack </callData>              // I_d
+                        <callValue> 0:Word     </callValue>             // I_v
 
                         // \mu_*
-                        <wordStack> .WordStack  </wordStack>            // \mu_s
-                        <localMem>  .Map        </localMem>             // \mu_m
-                        <pc>        0:Word      </pc>                   // \mu_pc
-                        <gas>       0:Word      </gas>                  // \mu_g
+                        <wordStack> .WordStack </wordStack>             // \mu_s
+                        <localMem>  .Map       </localMem>              // \mu_m
+                        <pc>        0:Word     </pc>                    // \mu_pc
+                        <gas>       0:Word     </gas>                   // \mu_g
                       </txExecState>
 
                       // A_* (execution substate)
@@ -132,13 +132,13 @@ Note that we must treat loading of `PUSH` specially, given that the arguments of
 Given the several special treatments of `PUSH`, the usefulness of this design for EVM becomes dubious.
 
 ```k
-    rule <op> . => #gas(OP) ~> #deductGas ~> OP </op>
+    rule <op> . => #gas(OP) ~> #checkGas ~> OP </op>
          <pc> PCOUNT => PCOUNT +Word 1 </pc>
          <program> ... PCOUNT |-> OP:OpCode ... </program>
          <currOps> ... (.Set => SetItem(OP)) </currOps>
       requires notBool isPushOp(OP)
 
-    rule <op> . => #gas(PUSH(N, W)) ~> #deductGas ~> PUSH(N, W) </op>
+    rule <op> . => #gas(PUSH(N, W)) ~> #checkGas ~> PUSH(N, W) </op>
          <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
          <program> ... PCOUNT |-> PUSH(N, W) ... </program>
          <currOps> ... (.Set => SetItem(PUSH(N, W))) </currOps>
@@ -545,12 +545,11 @@ Account Queries
 Storage Operations
 ------------------
 
-TODO: Calculate \mu_i.
+These operations interact with the account storage.
 
 ```k
     syntax UnStackOp  ::= "SLOAD"
-    syntax BinStackOp ::= "SSTORE"
- // ------------------------------
+ // -----------------------------
     rule <op> SLOAD INDEX => VALUE ~> #push ... </op>
          <id> ACCT </id>
          <account>
@@ -559,13 +558,31 @@ TODO: Calculate \mu_i.
            ...
          </account>
 
+    syntax BinStackOp ::= "SSTORE"
+ // ------------------------------
+    rule <op> SSTORE INDEX 0 => . ... </op>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> ... (INDEX |-> VALUE => .Map) ... </storage>
+           ...
+         </account>
+         <refund> R => R +Word Rsclear </refund>
+
+    rule <op> SSTORE INDEX 0 => . ... </op>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> STORAGE </storage>
+           ...
+         </account>
+      requires notBool (INDEX in keys(STORAGE))
+
     rule <op> SSTORE INDEX VALUE => . ... </op>
-         <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>
            ...
          </account>
+      requires VALUE =/=K 0
 ```
 
 Call Operations
@@ -717,11 +734,11 @@ Ethereum Gas Calculation
 
 ```k
     syntax Exception ::= "#outOfGas"
-    syntax KItem     ::= #gas ( Word ) [function]
-                       | "#deductGas"
- // ---------------------------------
-    rule <op> G:Int ~> #deductGas => .         ... </op> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
-    rule <op> G:Int ~> #deductGas => #outOfGas ... </op> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
+    syntax KItem     ::= "#checkGas"
+                       | #gas ( Word ) [function]
+ // ---------------------------------------------
+    rule <op> G':Int ~> #checkGas => .         ... </op> <gas> G => G -Int G' </gas> requires G' <=Int G
+    rule <op> G':Int ~> #checkGas => #outOfGas ... </op> <gas> G              </gas> requires G' >Int G
 ```
 
 The gas calculation is designed to mirror the style of the yellowpaper.
@@ -792,7 +809,6 @@ TODO: The rules marked as `INCORRECT` below are performing simpler gas calculati
 ```k
     syntax Word ::= #gas ( OpCode ) [function]
  // ------------------------------------------
-    // rule <op> #gas(SSTORE)       => ???                           ... </op>
     // rule <op> #gas(OP)           => ???                           ... </op> requires OP in Wcall
     // rule <op> #gas(SELFDESTRUCT) => ???                           ... </op>
     rule <op> #gas(EXP)          => Gexp                          ... </op>                        // INCORRECT
@@ -802,7 +818,11 @@ TODO: The rules marked as `INCORRECT` below are performing simpler gas calculati
     rule <op> #gas(CREATE)       => Gcreate                       ... </op>
     rule <op> #gas(SHA3)         => Gsha3                         ... </op>                        // INCORRECT
     rule <op> #gas(JUMPDEST)     => Gjumpdest                     ... </op>
-    rule <op> #gas(SLOAD)        => Gsload                        ... </op>
+
+    rule <op> #gas(SLOAD)  => Gsload  ... </op>
+    rule <op> #gas(SSTORE) => #if W1 =/=K 0 andBool notBool W0 in keys(STORAGE) #then Gsset #else Gsreset #fi ... </op>
+         <wordStack> W0 : W1 : WS </wordStack> <storage> STORAGE </storage>
+
     rule <op> #gas(OP)           => Gzero                         ... </op> requires OP in Wzero
     rule <op> #gas(OP)           => Gbase                         ... </op> requires OP in Wbase
     rule <op> #gas(OP)           => Gverylow                      ... </op> requires OP in Wverylow
