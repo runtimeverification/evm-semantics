@@ -31,8 +31,8 @@ module ETHEREUM
 
     configuration <ethereum>
 
-                  // EVM Specific
-                  // ============
+                    // EVM Specific
+                    // ============
 
                     <evm>
 
@@ -40,16 +40,21 @@ module ETHEREUM
                       // -----------------------------------
 
                       <callStack> .CallStack </callStack>
-                      <op> . </op>
+                      <op> .K </op>
                       <txExecState>
-                        <id>        0:Word      </id>                   // I_a
-                        <wordStack> .WordStack  </wordStack>            // \mu_s
-                        <localMem>  .Map        </localMem>             // \mu_m
                         <program>   .Map        </program>
-                        <pc>        0:Word      </pc>                   // \mu_pc
-                        <gas>       0:Word      </gas>                  // \mu_g
+
+                        // I_*
+                        <id>        0:Word      </id>                   // I_a
                         <caller>    0:Word      </caller>               // I_s
                         <callData>   .WordStack </callData>             // I_d
+                        <callValue>  0:Word     </callValue>            // I_v
+
+                        // \mu_*
+                        <wordStack> .WordStack  </wordStack>            // \mu_s
+                        <localMem>  .Map        </localMem>             // \mu_m
+                        <pc>        0:Word      </pc>                   // \mu_pc
+                        <gas>       0:Word      </gas>                  // \mu_g
                       </txExecState>
 
                       // A_* (execution substate)
@@ -64,7 +69,6 @@ module ETHEREUM
 
                       <gasPrice>   0:Word     </gasPrice>               // I_p
                       <origin>     0:Word     </origin>                 // I_o
-                      <callValue>  0:Word     </callValue>              // I_v
 
                       // I_H* (block information)
                       <gasLimit>   0:Word </gasLimit>                   // I_Hl
@@ -83,8 +87,8 @@ module ETHEREUM
 
                     </evm>
 
-                  // Ethereum Network
-                  // ================
+                    // Ethereum Network
+                    // ================
 
                     <network>
 
@@ -135,21 +139,23 @@ module ETHEREUM
 // `PUSH`, the usefulness of this design for EVM becomes dubious.
 
 
-    rule <op> . => #gas(OP) ~> #deductGas ~> OP </op>
+    rule <op> . => #gas(OP) ~> OP </op>
          <pc> PCOUNT => PCOUNT +Word 1 </pc>
-         <program> ... PCOUNT |-> OP ... </program>
+         <program> ... PCOUNT |-> OP:OpCode ... </program>
          <currOps> ... (.Set => SetItem(OP)) </currOps>
       requires notBool isPushOp(OP)
 
-    rule <op> . => #gas(PUSH(N, W)) ~> #deductGas ~> PUSH(N, W) </op>
+    rule <op> . => #gas(PUSH(N, W)) ~> PUSH(N, W) </op>
          <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
          <program> ... PCOUNT |-> PUSH(N, W) ... </program>
          <currOps> ... (.Set => SetItem(PUSH(N, W))) </currOps>
 
-    syntax InternalOp ::= "#deductGas"
- // ----------------------------------
-    rule <op> W:Int ~> #deductGas => . ... </op> <gas> GAVAIL => GAVAIL -Word W </gas>
-      requires word2Bool(GAVAIL >=Word W)
+    syntax Exception ::= "#outOfProgramBounds"
+ // ------------------------------------------
+    rule <op> . => #outOfProgramBounds </op>
+         <pc> PCOUNT </pc>
+         <program> CODE </program>
+      requires notBool (PCOUNT in keys(CODE))
 
 
 // Depending on the sort of the opcode loaded, the correct number of arguments are
@@ -167,6 +173,11 @@ module ETHEREUM
                    | TernStackOp Word Word Word
                    | QuadStackOp Word Word Word Word
  // ------------------------------------------------
+    rule <op> UOP:UnStackOP   => #stackUnderflow ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int 1
+    rule <op> BOP:BinStackOp  => #stackUnderflow ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int 2
+    rule <op> TOP:TernStackOP => #stackUnderflow ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int 3
+    rule <op> QOP:QuadStackOP => #stackUnderflow ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int 4
+
     rule <op> UOP:UnStackOp   => UOP W0          ... </op> <wordStack> W0 : WS                => WS </wordStack>
     rule <op> BOP:BinStackOp  => BOP W0 W1       ... </op> <wordStack> W0 : W1 : WS           => WS </wordStack>
     rule <op> TOP:TernStackOp => TOP W0 W1 W2    ... </op> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
@@ -175,6 +186,9 @@ module ETHEREUM
     syntax KItem ::= CallOp Word Word Word Word Word Word Word
                    | "DELEGATECALL" Word Word Word Word Word Word
  // -------------------------------------------------------------
+    rule <op> DELEGATECALL => #stackUnderflow ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int 6
+    rule <op> CO:CallOp    => #stackUnderflow ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int 7
+
     rule <op> DELEGATECALL => DELEGATECALL W0 W1 W2 W3 W4 W5    ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
     rule <op> CO:CallOp    => CO           W0 W1 W2 W3 W4 W5 W6 ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
       requires CO =/=K DELEGATECALL
@@ -182,6 +196,9 @@ module ETHEREUM
     syntax KItem ::= StackOp WordStack
  // ----------------------------------
     rule <op> SO:StackOp => SO WS ... </op> <wordStack> WS </wordStack>
+
+    syntax KItem ::= Exception
+ // --------------------------
 
 
 // EVM Substate Log
@@ -278,12 +295,14 @@ module ETHEREUM
 
 
 // -   `#checkStackSize` will ensure that there hasn't been a stack overflow.
-// -   `#stackOverflow` signals that there has been a stack overflow.
+// -   `#stackOverflow`/`#stackUnderflow` signals that there has been a
+//     stack over/under-flow.
 
 
-    syntax InternalOp ::= "#checkStackSize" | "#stackOverflow"
- // ----------------------------------------------------------
-    rule <op> #checkStackSize => #stackSize(WS) ~> #checkStackSize ... </op> <wordStack> WS </wordStack>
+    syntax Exception  ::= "#stackOverflow" | "#stackUnderflow"
+    syntax InternalOp ::= "#checkStackSize"
+ // ---------------------------------------
+    rule <op> #checkStackSize => #size(WS) ~> #checkStackSize ... </op> <wordStack> WS </wordStack>
     rule <op> I:Int ~> #checkStackSize => .              ... </op> requires I <Int  1024
     rule <op> I:Int ~> #checkStackSize => #stackOverflow ... </op> requires I >=Int 1024
 
@@ -296,6 +315,12 @@ module ETHEREUM
 
 
     syntax CallStack ::= ".CallStack" | Bag CallStack
+ // -------------------------------------------------
+
+    syntax Int ::= #size ( CallStack ) [function]
+ // ---------------------------------------------
+    rule #size( .CallStack         ) => 0
+    rule #size( B:Bag CS:CallStack ) => 1 +Int #size(CS)
 
     syntax InternalOp ::= "#pushCallStack" | "#popCallStack"
  // --------------------------------------------------------
@@ -320,6 +345,9 @@ module ETHEREUM
 
     syntax StackOp ::= DUP ( Word ) | SWAP ( Word )
  // -----------------------------------------------
+    rule <op> DUP(N)  WS => #stackUnderflow ... </op> requires #size(WS) <Int N
+    rule <op> SWAP(N) WS => #stackUnderflow ... </op> requires #size(WS) <=Int N
+
     rule <op> DUP(N)  WS:WordStack => #setStack ((WS [ N -Word 1 ]) : WS) ~> #checkStackSize    ... </op>
     rule <op> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Word 1 ]) : (WS [ N -Word 1 := W0 ])) ... </op>
 
@@ -438,14 +466,20 @@ module ETHEREUM
 // The `JUMP*` family of operations affect the current program counter.
 
 
+    syntax Exception   ::= "#invalidJumpDest"
+
     syntax NullStackOp ::= "JUMPDEST"
     syntax UnStackOp   ::= "JUMP"
     syntax BinStackOp  ::= "JUMPI"
  // ------------------------------
-    rule <op> JUMPDEST     => .         ... </op>
-    rule <op> JUMP  DEST   => .         ... </op> <pc> _ => DEST </pc>
-    rule <op> JUMPI DEST 0 => .         ... </op>
-    rule <op> JUMPI DEST W => JUMP DEST ... </op> requires W =/=K 0
+    rule <op> JUMPDEST => . ... </op>
+
+    rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
+    rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
+
+    rule <op> JUMP  DEST   => . ... </op> <program> ... DEST |-> JUMPDEST ... </program> <pc> _ => DEST </pc>
+    rule <op> JUMPI DEST 0 => . ... </op> <program> ... DEST |-> JUMPDEST ... </program>
+    rule <op> JUMPI DEST I => . ... </op> <program> ... DEST |-> JUMPDEST ... </program> <pc> _ => DEST </pc> requires I =/=K 0
 
 
 // Call Data
@@ -487,6 +521,11 @@ module ETHEREUM
          <log> CURRLOG => CURRLOG . { ACCT | #take(N, WS) | #range(LM, W0, W1) } </log>
       requires word2Bool(#size(WS) >=Word N)
 
+    syntax Exception   ::= "#invalidInstruction"
+    syntax NullStackOp ::= "INVALID"
+ // --------------------------------
+    rule <op> INVALID => #invalidInstruction ... </op>
+
 
 // Ethereum Network
 // ================
@@ -502,14 +541,15 @@ module ETHEREUM
  // ------------------------------
     rule <op> BALANCE ACCT => BAL ~> #push ... </op>
          <account>
-           <acctID> ACCT </acctID>
+           <acctID> ACCTACT </acctID>
            <balance> BAL </balance>
            ...
          </account>
+      requires #addr(ACCT) ==K ACCTACT
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
-    rule <op> EXTCODESIZE ACCTTO => #size(CODE) ~> #push ... </op>
+    rule <op> EXTCODESIZE ACCTTO => size(CODE) ~> #push ... </op>
          <account>
            <acctID> ACCTTOACT </acctID>
            <code> CODE </code>
@@ -550,19 +590,46 @@ module ETHEREUM
 // The various `CALL*` (and other inter-contract control flow) operations will be
 // desugared into these `InternalOp`s.
 
+// -   `#returnLoc__` is a placeholder for the calling program, specifying where to
+//     place the returned data in memory.
+// -   `#return_` contains the word-stack of returned data.
 
-    syntax InternalOp ::= "#return" Word Word
+
+    syntax InternalOp ::= "#returnLoc" Word Word
                         | "#return" WordStack
  // -----------------------------------------
-    rule <op> #return (WS:WordStack) ~> #return RETSTART RETWIDTH => . ... </op>
+    rule <op> #return (WS:WordStack) ~> #returnLoc RETSTART RETWIDTH => . ... </op>
          <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #size(WS)), WS) ] </localMem>
+
+
+// -   `#call_____` takes the calling account, the account to execute as, the
+//     accounts code to use, the amount to transfer, and the arguments. It actually
+//     performs the code-call.
+
 
     syntax InternalOp ::= "#call" Word Word Word Word WordStack
  // -----------------------------------------------------------
+    rule <op> #call ACCTFROM ACCTTO ACCTEXEC VALUE ARGS => . ... </op>
+         <callStack> CS </callStack>
+         <id>       _ => ACCTTO       </id>
+         <pc>       _ => 0            </pc>
+         <caller>   _ => ACCTFROM     </caller>
+         <localMem> _ => #asMap(ARGS) </localMem>
+         <program>  _ => CODE         </program>
+         <account>
+           <acctID> ACCTEXEC </acctID>
+           <code>   CODE     </code>
+           ...
+         </account>
+         <account>
+           <acctID>  ACCTFROM </acctID>
+           <balance> BAL      </balance>
+           ...
+         </account>
+      requires word2Bool(VALUE <=Word BAL) andBool (#size(CS) <Int 1024)
 
 
-// TODO: The `CALL*` operations are incorrect. TODO: (Entire section): Calculate
-// \mu\_i. TODO: Check the size of the `callStack` before each `CALL*`.
+// TODO: (Entire section): Calculate \mu\_i.
 
 
     syntax BinStackOp ::= "RETURN"
@@ -573,24 +640,27 @@ module ETHEREUM
     syntax CallOp ::= "CALL" | "CALLCODE" | "DELEGATECALL"
  // ------------------------------------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM #addr(ACCTTO) #addr(ACCTTO) VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
+           => #pushCallStack
+           ~> #call ACCTFROM #addr(ACCTTO) #addr(ACCTTO) VALUE #range(LM, ARGSTART, ARGWIDTH)
+           ~> #returnLoc RETSTART RETWIDTH
            ...
          </op>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
 
     rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM #addr(ACCTTO) VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
+           => #pushCallStack
+           ~> #call ACCTFROM ACCTFROM #addr(ACCTTO) VALUE #range(LM, ARGSTART, ARGWIDTH)
+           ~> #returnLoc RETSTART RETWIDTH
            ...
          </op>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
 
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM #addr(ACCTTO) 0 #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
+           => #pushCallStack
+           ~> #call ACCTFROM ACCTFROM #addr(ACCTTO) 0 #range(LM, ARGSTART, ARGWIDTH)
+           ~> #returnLoc RETSTART RETWIDTH
            ...
          </op>
          <id> ACCTFROM </id>
@@ -652,8 +722,8 @@ module ETHEREUM
     syntax BinStackOp ::= "MSTORE8"
  // -------------------------------
 
-    syntax NullStackOp ::= "INVALID" | "STOP"
- // -----------------------------------------
+    syntax NullStackOp ::= "STOP"
+ // -----------------------------
 
     syntax UnStackOp   ::= "BLOCKHASH"
  // ----------------------------------
@@ -668,10 +738,19 @@ module ETHEREUM
 // Ethereum Gas Calculation
 // ========================
 
-// Here we define the gas-cost of each instruction in the instruction set. Many of
-// the instructions gas cost is fixed and not dependent on any parts of the
-// configuration. Those that do have some dependence must be defined after the
-// configuration is defined.
+// -   `#gas` will compute the gas used and then deduct it from the total
+//     gas available.
+// -   `#outOfGas` signals an out-of-gas exception.
+
+
+    syntax Exception ::= "#outOfGas"
+    syntax KItem     ::= #gas ( Word ) [function]
+ // ---------------------------------------------
+    rule <op> #gas(W:Int) => .         ... </op> <gas> GAVAIL => GAVAIL -Word W </gas> requires word2Bool(GAVAIL >=Word W)
+    rule <op> #gas(W:Int) => #outOfGas ... </op> <gas> GAVAIL                   </gas> requires word2Bool(GAVAIL <Word W)
+
+
+// The gas calculation is designed to mirror the style of the yellowpaper.
 
 
     syntax Word ::= "Gzero" | "Gbase" | "Gverylow" | "Glow" | "Gmid" | "Ghigh" | "Gextcode"

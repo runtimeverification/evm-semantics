@@ -183,11 +183,10 @@ module ETHEREUM-SIMULATION
          <account>
            <acctID>  ACCT              </acctID>
            <balance> BAL               </balance>
-           <code>    CODE              </code>
-           <storage> ACCTSTORAGE       </storage>
+           <code>    PGM               </code>
+           <storage> STORAGE           </storage>
            <acctMap> "nonce" |-> NONCE </acctMap>
          </account>
-      requires PGM ==K CODE andBool STORAGE ==K ACCTSTORAGE
 
     rule <k> ( check ( transaction : - id       : TXID
                                      - to       : ACCTTO
@@ -237,8 +236,8 @@ module ETHEREUM-SIMULATION
       => account : - id      : #parseHexWord(ACCTID)
                    - nonce   : #parseHexWord(NONCE)
                    - balance : #parseHexWord(BAL)
-                   - program : #asMap(#dasmOpCodes(#parseWordStack(CODE)))
-                   - storage : #asMap(#parseMap(STORAGE))
+                   - program : #dasmOpCodes(#parseWordStack(CODE))
+                   - storage : #parseMap(STORAGE)
 
 
 // Here we define `load_` over the various relevant primitives that appear in the
@@ -321,12 +320,12 @@ module ETHEREUM-SIMULATION
 
     syntax KItem ::= #testFromJSON ( JSON ) [function]
  // --------------------------------------------------
-    rule #testFromJSON ( TESTID : { "callcreates" : (CCREATES:JSON)     // unused
+    rule #testFromJSON ( TESTID : { "callcreates" : (CCREATES:JSON)     // UNUSED
                                   , "env"         : (ENV:JSON)
                                   , "exec"        : (EXEC:JSON)
                                   , "gas"         : (CURRGAS:String)
-                                  , "logs"        : (LOGS:JSON)         // unused
-                                  , "out"         : (OUTPUT:String)     // unused
+                                  , "logs"        : (LOGS:JSON)         // UNUSED
+                                  , "out"         : (OUTPUT:String)     // UNUSED
                                   , "post"        : (POST:JSON)
                                   , "pre"         : (PRE:JSON)
                                   }
@@ -339,24 +338,26 @@ module ETHEREUM-SIMULATION
           )
 
     rule <k> ( run "exec" : { "address"  : (ACCTTO:String)
-                          , "caller"   : (ACCTFROM:String)
-                          , "code"     : (CODE:String)
-                          , "data"     : (DATA:String)                  // unused
-                          , "gas"      : (GAVAIL:String)
-                          , "gasPrice" : (GPRICE:String)
-                          , "origin"   : (ORIG:String)
-                          , "value"    : (VAL:String)                   // unused
-                          }
+                            , "caller"   : (ACCTFROM:String)
+                            , "code"     : (CODE:String)
+                            , "data"     : (DATA:String)
+                            , "gas"      : (GAVAIL:String)
+                            , "gasPrice" : (GPRICE:String)
+                            , "origin"   : (ORIG:String)
+                            , "value"    : (VALUE:String)
+                            }
             =>
              .
              )
           ...
          </k>
-         <id>       _ => #parseHexWord(ACCTTO)                       </id>
-         <caller>   _ => #parseHexWord(ACCTFROM)                     </caller>
-         <origin>   _ => #parseHexWord(ORIG)                         </origin>
-         <gas>      _ => #parseHexWord(GAVAIL)                       </gas>
-         <gasPrice> _ => #parseHexWord(GPRICE)                       </gasPrice>
-         <program>  _ => #asMap(#dasmOpCodes(#parseWordStack(CODE))) </program>
+         <id>        _ => #parseHexWord(ACCTTO)                       </id>
+         <caller>    _ => #parseHexWord(ACCTFROM)                     </caller>
+         <callData>  _ => #parseWordStack(DATA)                       </callData>
+         <callValue> _ => #parseHexWord(VALUE)                        </callValue>
+         <origin>    _ => #parseHexWord(ORIG)                         </origin>
+         <gas>       _ => #parseHexWord(GAVAIL)                       </gas>
+         <gasPrice>  _ => #parseHexWord(GPRICE)                       </gasPrice>
+         <program>   _ => #asMap(#dasmOpCodes(#parseWordStack(CODE))) </program>
 endmodule
 
