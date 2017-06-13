@@ -28,7 +28,7 @@ module EVM-DASM
 
     syntax OpCode ::= #dasmOpCode ( Word ) [function]
  // -------------------------------------------------
-    rule #dasmOpCod(   0 ) => STOP
+    rule #dasmOpCode(   0 ) => STOP
     rule #dasmOpCode(   1 ) => ADD
     rule #dasmOpCode(   2 ) => MUL
     rule #dasmOpCode(   3 ) => SUB
