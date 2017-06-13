@@ -43,17 +43,23 @@ module EVM-DATA
                   | Word "*Word" Word [function]
                   | Word "-Word" Word [function]
                   | Word "/Word" Word [function]
-                  | Word "^Word" Word [function]
                   | Word "%Word" Word [function]
  // --------------------------------------------
     rule W0:Int +Word W1:Int => chop( W0 +Int W1 )
     rule W0:Int -Word W1:Int => chop( W0 -Int W1 )
     rule W0:Int *Word W1:Int => chop( W0 *Int W1 )
-    rule W0:Int ^Word W1:Int => chop( W0 ^Int W1 )
     rule W0:Int /Word 0      => 0
     rule W0:Int /Word W1:Int => chop( W0 /Int W1 ) requires W1 =/=K 0
     rule W0:Int %Word 0      => 0 
     rule W0:Int %Word W1:Int => chop( W0 %Int W1 ) requires W1 =/=K 0
+
+    syntax Int  ::= "#maxExp"
+    syntax Word ::= Word "^Word" Word [function]
+ // --------------------------------------------
+    rule #maxExp => 2 ^Int 16 [macro]
+    rule W0:Int ^Word W1:Int => (W0 ^Word (W1 /Int 2)) ^Word 2  requires W1 >=Int #maxExp andBool W1 %Int 2 ==Int 0
+    rule W0:Int ^Word W1:Int => (W0 ^Word (W1 -Int 1)) *Word W0 requires W1 >=Int #maxExp andBool W1 %Int 2 ==Int 1
+    rule W0:Int ^Word W1:Int => chop( W0 ^Int W1 )              requires W1 <Int #maxExp
 
     syntax Word ::= maxWord ( Word , Word ) [function]
                   | minWord ( Word , Word ) [function]
