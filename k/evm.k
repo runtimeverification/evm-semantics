@@ -773,8 +773,8 @@ module ETHEREUM
     syntax NullStackOp ::= "STOP"
  // -----------------------------
 
-    syntax UnStackOp   ::= "BLOCKHASH"
- // ----------------------------------
+    syntax UnStackOp ::= "BLOCKHASH"
+ // --------------------------------
 
     syntax TernStackOp ::= "CREATE"
  // -------------------------------

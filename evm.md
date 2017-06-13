@@ -748,8 +748,8 @@ TODO: We need an assembler to make `CODECOPY` and `EXTCODECOPY` work.
     syntax NullStackOp ::= "STOP"
  // -----------------------------
 
-    syntax UnStackOp   ::= "BLOCKHASH"
- // ----------------------------------
+    syntax UnStackOp ::= "BLOCKHASH"
+ // --------------------------------
 
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
