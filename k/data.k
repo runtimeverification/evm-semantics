@@ -140,9 +140,10 @@ module EVM-DATA
     rule #size ( .WordStack ) => 0
     rule #size ( W : WS )     => 1 +Int #size(WS)
 
-    syntax WordStack ::= #take ( Word , WordStack ) [function]
-                       | #drop ( Word , WordStack ) [function]
- // ----------------------------------------------------------
+    syntax WordStack ::= #take ( Word , WordStack )       [function]
+                       | #drop ( Word , WordStack )       [function]
+                       | WordStack "[" Word ".." Word "]" [function]
+ // ----------------------------------------------------------------
     rule #take(0, WS)         => .WordStack
     rule #take(N, .WordStack) => 0 : #take(N -Word 1, .WordStack) requires word2Bool(N >Word 0)
     rule #take(N, (W : WS))   => W : #take(N -Word 1, WS)         requires word2Bool(N >Word 0)
@@ -150,6 +151,8 @@ module EVM-DATA
     rule #drop(0, WS)         => WS
     rule #drop(N, .WordStack) => .WordStack
     rule #drop(N, (W : WS))   => #drop(N -Word 1, WS) requires word2Bool(N >Word 0)
+
+    rule WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
 
     syntax Bool ::= Word "in" WordStack [function]
  // ----------------------------------------------
