@@ -242,13 +242,12 @@ TODO: Should JSON enconding stuff be moved to `evm-dasm.md`?
 Here we define `load_` over the various relevant primitives that appear in the EVM tests.
 
 ```k
-    rule <k> ( load ( "env" : { "currentCoinbase"   : (CB:String)
-                              , "currentDifficulty" : (DIFF:String)
-                              , "currentGasLimit"   : (GLIMIT:String)
-                              , "currentNumber"     : (NUM:String)
-                              , "currentTimestamp"  : (TS:String)
-                              }
-                    )
+    rule <k> ( load "env" : { "currentCoinbase"   : (CB:String)
+                            , "currentDifficulty" : (DIFF:String)
+                            , "currentGasLimit"   : (GLIMIT:String)
+                            , "currentNumber"     : (NUM:String)
+                            , "currentTimestamp"  : (TS:String)
+                            }
             =>
              .
              )

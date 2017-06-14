@@ -245,13 +245,12 @@ module ETHEREUM-SIMULATION
 // EVM tests.
 
 
-    rule <k> ( load ( "env" : { "currentCoinbase"   : (CB:String)
-                              , "currentDifficulty" : (DIFF:String)
-                              , "currentGasLimit"   : (GLIMIT:String)
-                              , "currentNumber"     : (NUM:String)
-                              , "currentTimestamp"  : (TS:String)
-                              }
-                    )
+    rule <k> ( load "env" : { "currentCoinbase"   : (CB:String)
+                            , "currentDifficulty" : (DIFF:String)
+                            , "currentGasLimit"   : (GLIMIT:String)
+                            , "currentNumber"     : (NUM:String)
+                            , "currentTimestamp"  : (TS:String)
+                            }
             =>
              .
              )
