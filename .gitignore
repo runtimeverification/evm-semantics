@@ -1,6 +1,5 @@
 !*spec.k
 /k/*-kompiled/
-tests/ethereum-tests/
 yellowpaper/
 *.swp
 *.aux
