@@ -47,8 +47,11 @@ tangle_generate_tests() {
 tangle_test() {
     echo "running tests ..."
     echo "================="
-    for test in "$@"; do 
-        krun --debug --directory k/ tests/tests-develop/VMTests/$test 
+
+    for exp in "$@"; do
+        find tests/tests-develop/VMTests/ -iname "$exp" -name '*.kson'  \
+            -printf ' - %f\n' \
+            -exec krun --debug --directory k/ {} \;
     done
 }
 
