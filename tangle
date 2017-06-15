@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 tangle_defn() {
     echo "generating 'k/*' files ..."
@@ -50,6 +50,13 @@ tangle_test() {
     krun --debug --directory k/ tests/ethereum-tests/VMTests/vmArithmeticTest.json
 }
 
+tangle_ktest() {
+    echo "running ktest ..."
+    echo "================="
+
+    ktest tests/config.xml
+}
+
 [[ "$#" == '0' ]] && set all
 
 while [[ "$#" -gt '0' ]]; do
@@ -60,6 +67,7 @@ while [[ "$#" -gt '0' ]]; do
         kompile)  tangle_kompile ;;
         testgen)  tangle_generate_tests ;;
         test)     tangle_test ;;
+        ktest)    tangle_ktest ;;
         *)        echo "Unrecognized option: '$tangle_command' ..." ;;
     esac
 done

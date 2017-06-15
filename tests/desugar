@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 desugar_get_jq() {
     if [[ ! -f jq ]]; then
@@ -30,7 +30,6 @@ desugar_process_json() {
         ./testgen.py "$metafile"
 
         rm "$metafile"
-        rm "$jsonfile"
     done
     echo "done"
     echo "==================================="
@@ -41,7 +40,7 @@ desugar_cleanup() {
     echo "cleaning up ..."
     echo "==================================="
     cd tests-develop && ls | grep -v "VMTests" | xargs rm -r
-    cd "VMTests" && ls | grep -v ".*\.json" | rm -rf
+    cd "VMTests" && ls | grep -v "vmArithmeticTest.json" | xargs rm -rf
     cd ../../
 }
 
