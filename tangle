@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 tangle_defn() {
     echo "generating 'k/*' files ..."
@@ -21,11 +21,44 @@ tangle_kompile() {
     return "$result"
 }
 
+tangle_generate_tests() {
+    echo "generating tests ..."
+    echo "==================================="
+
+    if [[ ! -d  "tests/tests-develop" ]]; then 
+        pushd tests
+        TESTURL=https://github.com/ethereum/tests/archive/develop.zip
+        ARCHIVE=develop
+        EXTENSION=.zip
+
+
+        echo "downloading and unpacking tests ..."
+        echo "==================================="
+
+        curl -OL "$TESTURL" && unzip "$ARCHIVE$EXTENSION" && rm "$ARCHIVE$EXTENSION"
+        echo "==================================="
+        echo "done"
+        echo "==================================="
+        ./desugar
+        popd
+    fi
+}
+
 tangle_test() {
     echo "running tests ..."
     echo "================="
+    for test in "$@"; do 
+        krun --debug --directory k/ tests/tests-develop/VMTests/$test 
+    done
+}
 
-    krun --debug --directory k/ tests/ethereum-tests/VMTests/vmArithmeticTest.json
+tangle_ktest() {
+    echo "running ktest ..."
+    echo "================="
+
+    pushd k
+    ktest ../tests/config.xml
+    popd
 }
 
 [[ "$#" == '0' ]] && set all
@@ -36,7 +69,9 @@ while [[ "$#" -gt '0' ]]; do
         all)      set defn kompile test ;;
         defn)     tangle_defn ;;
         kompile)  tangle_kompile ;;
-        test)     tangle_test ;;
+        testgen)  tangle_generate_tests ;;
+        test)     tangle_test "$@" ;;
+        ktest)    tangle_ktest ;;
         *)        echo "Unrecognized option: '$tangle_command' ..." ;;
     esac
 done

@@ -1,0 +1,59 @@
+#!/usr/bin/env bash 
+
+desugar_get_jq() {
+    if [[ ! -f jq ]]; then
+        jqurl="https://github.com/stedolan/jq/releases/download/jq-1.5/"
+        if [[ "$OSTYPE" == "linux-gnu" ]]; then
+            binary="jq-linux64"
+        elif [[ "$OSTYPE" == "darwin"* ]]; then
+            echo "darwin"
+            binary="jq-osx-amd64"
+        fi
+
+        curl -OL  "$jqurl$binary" && mv "$binary" jq && chmod +x jq
+    fi
+}
+
+desugar_process_json() {
+    echo "processing json ..."
+    echo "==================================="
+    for jsonfile in `find . -name "*.json"`; do
+        dirname=`dirname "$jsonfile"`
+        filename=`basename "$jsonfile" .json`
+        directory="$dirname/$filename"
+        if [[ ! -d "$directory" ]]; then
+            mkdir "$directory" 
+        fi
+
+        metafile="$directory/$filename".meta
+        cat "$jsonfile" | ./jq 'to_entries | map_values({filename:(.key) , contents: {(.key): (.value)}}) ' > "$metafile"
+        ./testgen.py "$metafile"
+
+        rm "$metafile"
+    done
+    echo "done"
+    echo "==================================="
+}
+
+#Temporary
+desugar_cleanup() {
+    echo "cleaning up ..."
+    echo "==================================="
+    cd tests-develop && ls | grep -v "VMTests" | xargs rm -r
+    cd "VMTests" && ls | grep -v "vmArithmeticTest.json" | xargs rm -rf
+    cd ../../
+}
+
+[[ "$#" == '0' ]] && set all
+
+while [[ "$#" -gt '0' ]]; do
+    desugar_command="$1" && shift
+    case "$desugar_command" in
+        all)      set clean getjq process ;;
+        clean)    desugar_cleanup ;;
+        getjq)    desugar_get_jq ;;
+        process)  desugar_process_json ;;
+        *)        echo "Unrecognized option: '$tangle_command' ..." ;;
+    esac
+done
+
