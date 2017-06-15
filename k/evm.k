@@ -406,6 +406,11 @@ module ETHEREUM
     rule <op> EXP W0 W1 => W0 ^Word W1 ~> #push ... </op>
     rule <op> MOD W0 W1 => W0 %Word W1 ~> #push ... </op>
 
+    syntax BinStackOp ::= "SDIV" | "SMOD"
+ // -------------------------------------
+    rule <op> SDIV W0 W1 => W0 /sWord W1 ~> #push ... </op>
+    rule <op> SMOD W0 W1 => W0 %sWord W1 ~> #push ... </op>
+
     syntax TernStackOp ::= "ADDMOD" | "MULMOD"
  // ------------------------------------------
     rule <op> ADDMOD W0 W1 W2 => (W0 +Int W1) %Word W2 ~> #push ... </op>
@@ -765,11 +770,9 @@ module ETHEREUM
 // These operators should be implemented and binned into the correct sections
 // above.
 
-// TODO: We need an assembler to make `CODECOPY` and `EXTCODECOPY` work.
 
-
-    syntax BinStackOp ::= "SLT" | "SGT" | "SDIV" | "SMOD" | "SIGNEXTEND"
- // --------------------------------------------------------------------
+    syntax BinStackOp ::= "SLT" | "SGT" | "SIGNEXTEND"
+ // --------------------------------------------------
 
     syntax NullStackOp ::= "STOP"
  // -----------------------------
@@ -846,18 +849,18 @@ module ETHEREUM
 
     syntax OpCodes ::= "Wzero" | "Wbase" | "Wverylow" | "Wlow" | "Wmid" | "Whigh" | "Wextcode" | "Wcopy" | "Wcall"
  // --------------------------------------------------------------------------------------------------------------
-    rule Wzero    => STOP ; RETURN ; .OpCodes                                               [macro]
+    rule Wzero    => STOP ; RETURN ; .OpCodes                                           [macro]
     rule Wbase    =>   ADDRESS ; ORIGIN ; CALLER ; CALLVALUE ; CALLDATASIZE
                      ; CODESIZE ; GASPRICE ; COINBASE ; TIMESTAMP ; NUMBER
-                     ; DIFFICULTY ; GASLIMIT ; POP ; PC ; MSIZE ; GAS ; .OpCodes            [macro]
+                     ; DIFFICULTY ; GASLIMIT ; POP ; PC ; MSIZE ; GAS ; .OpCodes        [macro]
     rule Wverylow =>   ADD ; SUB ; NOT ; LT ; GT ; SLT ; SGT ; EQ ; ISZERO ; AND
                      ; EVMOR ; XOR ; BYTE ; CALLDATALOAD ; MLOAD ; MSTORE ; MSTORE8
-                     ; PUSH(0, 0) ; DUP(0) ; SWAP(0) ; .OpCodes                             [macro]
-    rule Wlow     => MUL ; DIV ; SDIV ; MOD ; SMOD ; SIGNEXTEND ; .OpCodes                  [macro]
-    rule Wmid     => ADDMOD ; MULMOD ; JUMP ; JUMPI; .OpCodes                               [macro]
-    rule Wextcode => EXTCODESIZE ; .OpCodes                                                 [macro]
-    rule Wcopy    => CALLDATACOPY ; CODECOPY ; .OpCodes                                     [macro]
-    rule Wcall    => CALL ; CALLCODE ; DELEGATECALL ; .OpCodes                              [macro]
+                     ; PUSH(0, 0) ; DUP(0) ; SWAP(0) ; .OpCodes                         [macro]
+    rule Wlow     => MUL ; DIV ; SDIV ; MOD ; SMOD ; SIGNEXTEND ; .OpCodes              [macro]
+    rule Wmid     => ADDMOD ; MULMOD ; JUMP ; JUMPI; .OpCodes                           [macro]
+    rule Wextcode => EXTCODESIZE ; .OpCodes                                             [macro]
+    rule Wcopy    => CALLDATACOPY ; CODECOPY ; .OpCodes                                 [macro]
+    rule Wcall    => CALL ; CALLCODE ; DELEGATECALL ; .OpCodes                          [macro]
 
 
 // TODO: The rules marked as `INCORRECT` below are performing simpler gas

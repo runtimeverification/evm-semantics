@@ -53,6 +53,25 @@ module EVM-DATA
     rule W0:Int %Word 0      => 0 
     rule W0:Int %Word W1:Int => chop( W0 %Int W1 ) requires W1 =/=K 0
 
+    syntax Word ::= sgn      ( Word ) [function]
+                  | twosComp ( Word ) [function]
+                  | abs      ( Word ) [function]
+ // --------------------------------------------
+    rule sgn(I:Int) => -1 requires I >=Int (2 ^Int 255)
+    rule sgn(I:Int) => 1  requires I <Int (2 ^Int 255)
+
+    rule twosComp(I:Int) => 0 -Word I requires sgn(I) ==K -1
+    rule twosComp(I:Int) => I         requires sgn(I) ==K 1
+
+    rule abs(I:Int) => 0 -Int I requires I <Int 0
+    rule abs(I:Int) => I        requires I >=Int 0
+
+    syntax Word ::= Word "/sWord" Word [function]
+                  | Word "%sWord" Word [function]
+ // ---------------------------------------------
+    rule W0:Int /sWord W1:Int => twosComp(abs(twosComp(W0)) /Word abs(twosComp(W1))) *Word (sgn(W0) *Word sgn(W1))
+    rule W0:Int %sWord W1:Int => twosComp(abs(twosComp(W0)) %Word abs(twosComp(W1))) *Word sgn(W0)
+
     syntax Int  ::= "#maxExp"
     syntax Word ::= Word "^Word" Word [function]
  // --------------------------------------------
