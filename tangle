@@ -88,7 +88,7 @@ while [[ "$#" -gt '0' ]]; do
         defn)     tangle_defn ;;
         kompile)  tangle_kompile ;;
         testgen)  tangle_generate_tests ;;
-        test)     tangle_test "$@" ;;
+        test)     tangle_test "$@" ; exit ;;
         ktest)    tangle_ktest ;;
         *)        echo "Unrecognized option: '$tangle_command' ..." ;;
     esac
