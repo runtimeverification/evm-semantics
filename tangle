@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 progress() { echo "==== $@"; }
+success()  { echo -e "\e[32m==== success: $@\e[0m"; }
+failure()  { echo -e "\e[31m==== failure: $@\e[0m"; }
 
 tangle_defn() {
     progress "Generating 'k/*' files"
@@ -49,12 +51,22 @@ list_tests() {
 
 tangle_test() {
     progress "Running tests"
+    output_file="tests/templates/output.txt"
 
+    result='0'
     local test_file
     list_tests "$@" |
     while read test_file; do
-        krun --debug --directory k/ "$test_file"
+        progress "running '$test_file'..."
+        diff <(krun --debug --directory k/ "$test_file") "$output_file"
+        if [[ "$?" == '0' ]]; then
+            success "$test_file"
+        else
+            failure "$test_file"
+            result='1'
+        fi
     done
+    exit "$result"
 }
 
 tangle_ktest() {
@@ -74,7 +86,7 @@ while [[ "$#" -gt '0' ]]; do
         defn)     tangle_defn ;;
         kompile)  tangle_kompile ;;
         testgen)  tangle_generate_tests ;;
-        test)     tangle_test "$@" ; exit ;;
+        test)     tangle_test "$@" ;;
         ktest)    tangle_ktest ;;
         *)        echo "Unrecognized option: '$tangle_command' ..." ;;
     esac

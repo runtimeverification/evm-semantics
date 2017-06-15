@@ -27,9 +27,10 @@ desugar_process_json() {
 
         metafile="$directory/$filename".meta
         cat "$jsonfile" | ./jq 'to_entries | map_values({filename:(.key) , contents: {(.key): (.value)}}) ' > "$metafile"
-        ./testgen.py "$metafile"
+        ./testgen.py "$metafile" `pwd`/templates/output.txt
 
         rm "$metafile"
+        cp templates/config.xml "$directory"
     done
     echo "done"
     echo "==================================="
