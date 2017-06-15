@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 
 desugar_get_jq() {
-    jqurl="https://github.com/stedolan/jq/releases/download/jq-1.5/"
-    if [[ "$OSTYPE" == "linux-gnu" ]]; then
-        binary="jq-linux64"
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        echo "darwin"
-        binary="jq-osx-amd64"
-    fi
+    if [[ ! -f jq ]]; then
+        jqurl="https://github.com/stedolan/jq/releases/download/jq-1.5/"
+        if [[ "$OSTYPE" == "linux-gnu" ]]; then
+            binary="jq-linux64"
+        elif [[ "$OSTYPE" == "darwin"* ]]; then
+            echo "darwin"
+            binary="jq-osx-amd64"
+        fi
 
-    curl -OL  "$jqurl$binary" && mv "$binary" jq && chmod +x jq
+        curl -OL  "$jqurl$binary" && mv "$binary" jq && chmod +x jq
+    fi
 }
 
 desugar_process_json() {
@@ -27,6 +29,8 @@ desugar_process_json() {
         cat "$jsonfile" | ./jq 'to_entries | map_values({filename:(.key) , contents: {(.key): (.value)}}) ' > "$metafile"
         ./testgen.py "$metafile"
 
+        rm "$metafile"
+        rm "$jsonfile"
     done
     echo "done"
     echo "==================================="
