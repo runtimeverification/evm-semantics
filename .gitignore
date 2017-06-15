@@ -1,6 +1,5 @@
 !*spec.k
-k/evm-semantics-kompiled/
-tests/ethereum-tests/
+/k/*-kompiled/
 yellowpaper/
 *.swp
 *.aux
