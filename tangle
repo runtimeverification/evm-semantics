@@ -26,7 +26,7 @@ tangle_generate_tests() {
     echo "==================================="
 
     if [[ ! -d  "tests/tests-develop" ]]; then 
-        cd tests
+        pushd tests
         TESTURL=https://github.com/ethereum/tests/archive/develop.zip
         ARCHIVE=develop
         EXTENSION=.zip
@@ -40,6 +40,7 @@ tangle_generate_tests() {
         echo "done"
         echo "==================================="
         ./desugar
+        popd
     fi
 }
 
