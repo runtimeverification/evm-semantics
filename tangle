@@ -37,13 +37,23 @@ tangle_generate_tests() {
     fi
 }
 
+list_tests() {
+    for exp in "$@"; do
+        if [[ -f "$exp" ]]; then
+            echo $exp;
+        else
+            find tests/tests-develop/VMTests/ -iname "$exp" -name '*.kson'
+        fi
+    done
+}
+
 tangle_test() {
     progress "Running tests"
-    [[ $# == 0 ]] && set '*'
-    for exp in "$@"; do
-        find tests/tests-develop/VMTests/ -iname "$exp" -name '*.kson'  \
-            -printf ' - %f\n' \
-            -exec krun --debug --directory k/ {} \;
+
+    local test_file
+    list_tests "$@" |
+    while read test_file; do
+        krun --debug --directory k/ "$test_file"
     done
 }
 
