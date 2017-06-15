@@ -48,6 +48,8 @@ tangle_test() {
     echo "running tests ..."
     echo "================="
 
+    [[ $# == 0 ]] && set '*'
+
     for exp in "$@"; do
         find tests/tests-develop/VMTests/ -iname "$exp" -name '*.kson'  \
             -printf ' - %f\n' \
