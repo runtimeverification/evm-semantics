@@ -44,7 +44,7 @@ list_tests() {
         if [[ -f "$exp" ]]; then
             echo $exp;
         else
-            find tests/tests-develop/VMTests/ -iname "$exp" -name '*.kson'
+            find tests/tests-develop/VMTests/ -iname "$exp" -type f
         fi
     done
 }
