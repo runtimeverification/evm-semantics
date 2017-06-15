@@ -267,12 +267,13 @@ module ETHEREUM
     rule #asMap( N , OP:OpCode ; OCS ) => (N |-> OP) #asMap(N +Int 1, OCS) requires notBool isPushOp(OP)
     rule #asMap( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #asMap(N +Int 1 +Int M, OCS)
 
-    syntax OpCodes ::= #pgmRange ( Map , Word , Word ) [function]
- // -------------------------------------------------------------
-    rule #pgmRange(PGM,                  N, M) => .OpCodes                                  requires word2Bool(M <=Word 0)
-    rule #pgmRange(PGM,                  N, M) => STOP       ; #pgmRange(PGM, N +Int 1, M -Int 1) requires word2Bool(M >Word 0) andBool notBool N in keys(PGM)
-    rule #pgmRange(N |-> OP         PGM, N, M) => OP         ; #pgmRange(PGM, N +Int 1, M -Int 1) requires word2Bool(M >Word 0) andBool notBool isPushOp(OP)
-    rule #pgmRange(N |-> PUSH(S, W) PGM, N, M) => PUSH(S, W) ; #pgmRange(PGM, N +Int S, M -Int S) requires word2Bool(M >Word 0)
+    syntax OpCodes ::= #asOpCodes ( Map )       [function]
+                     | #asOpCodes ( Int , Map ) [function]
+ // ------------------------------------------------------
+    rule #asOpCodes(M) => #asOpCodes(0, M)
+    rule #asOpCodes(N, .Map) => .OpCodes
+    rule #asOpCodes(N, N |-> OP         M) => OP         ; #asOpCodes(N +Int 1,        M) requires notBool isPushOp(OP)
+    rule #asOpCodes(N, N |-> PUSH(S, W) M) => PUSH(S, W) ; #asOpCodes(N +Int 1 +Int S, M)
 
 
 // EVM Opcodes
@@ -405,6 +406,11 @@ module ETHEREUM
     rule <op> EXP W0 W1 => W0 ^Word W1 ~> #push ... </op>
     rule <op> MOD W0 W1 => W0 %Word W1 ~> #push ... </op>
 
+    syntax BinStackOp ::= "SDIV" | "SMOD"
+ // -------------------------------------
+    rule <op> SDIV W0 W1 => W0 /sWord W1 ~> #push ... </op>
+    rule <op> SMOD W0 W1 => W0 %sWord W1 ~> #push ... </op>
+
     syntax TernStackOp ::= "ADDMOD" | "MULMOD"
  // ------------------------------------------
     rule <op> ADDMOD W0 W1 W2 => (W0 +Int W1) %Word W2 ~> #push ... </op>
@@ -425,6 +431,11 @@ module ETHEREUM
     rule <op> LT W0 W1 => W0 <Word W1  ~> #push ... </op>
     rule <op> GT W0 W1 => W0 >Word W1  ~> #push ... </op>
     rule <op> EQ W0 W1 => W0 ==Word W1 ~> #push ... </op>
+
+    syntax BinStackOp ::= "SLT" | "SGT"
+ // -----------------------------------
+    rule <op> SLT W0 W1 => W0 s<Word W1 ~> #push ... </op>
+    rule <op> SGT W0 W1 => W0 s>Word W1 ~> #push ... </op>
 
 
 // TODO: Calculate \mu\_i
@@ -476,7 +487,7 @@ module ETHEREUM
  // ---------------------------------
     rule <op> CODECOPY MEMSTART PGMSTART WIDTH => . ... </op>
          <program> PGM </program>
-         <localMem> LM => LM [ MEMSTART := #asmOpCodes(#pgmRange(PGM, PGMSTART, WIDTH)) ] </localMem>
+         <localMem> LM => LM [ MEMSTART := #asmOpCodes(#asOpCodes(PGM)) [ PGMSTART .. WIDTH ] ] </localMem>
 
 
 // `JUMP*`
@@ -517,11 +528,11 @@ module ETHEREUM
     rule <op> CALLDATASIZE => #size(CD) ~> #push ~> #checkStackSize ... </op>
          <callData> CD </callData>
 
-    rule <op> CALLDATALOAD DATAWIDTH => #asWord(#take(DATAWIDTH, CD)) ~> #push ... </op>
+    rule <op> CALLDATALOAD DATASTART => #asWord(CD [ DATASTART .. 32 ]) ~> #push ... </op>
          <callData> CD </callData>
 
     rule <op> CALLDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </op>
-         <localMem> LM => LM [ MEMSTART := #take(DATAWIDTH, #drop(DATASTART, CD)) ] </localMem>
+         <localMem> LM => LM [ MEMSTART := CD [ DATASTART .. DATAWIDTH ] ] </localMem>
          <callData> CD </callData>
 
 
@@ -583,7 +594,7 @@ module ETHEREUM
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
     rule <op> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </op>
-         <localMem> LM => LM [ MEMSTART := #asmOpCodes(#pgmRange(PGM, PGMSTART, WIDTH)) ] </localMem>
+         <localMem> LM => LM [ MEMSTART := #asmOpCodes(#asOpCodes(PGM)) [ PGMSTART .. WIDTH ] ] </localMem>
          <account>
            <acctID> ACCTACT </acctID>
            <code> PGM </code>
@@ -764,11 +775,10 @@ module ETHEREUM
 // These operators should be implemented and binned into the correct sections
 // above.
 
-// TODO: We need an assembler to make `CODECOPY` and `EXTCODECOPY` work.
 
-
-    syntax BinStackOp ::= "SLT" | "SGT" | "SDIV" | "SMOD" | "SIGNEXTEND"
- // --------------------------------------------------------------------
+    syntax BinStackOp ::= "SIGNEXTEND"
+ // ----------------------------------
+    rule <op> SIGNEXTEND W0 W1 => signextend(W0, W1) ~> #push ... </op>
 
     syntax NullStackOp ::= "STOP"
  // -----------------------------
