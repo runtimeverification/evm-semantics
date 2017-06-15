@@ -1,13 +1,32 @@
 #!/usr/bin/env bash
 
+desugar_get_jq() {
+    jqurl="https://github.com/stedolan/jq/releases/download/jq-1.5/"
+    if [[ "$OSTYPE" == "linux-gnu" ]]; then
+        binary="jq-linux64"
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "darwin"
+        binary="jq-osx-amd64"
+    fi
+
+    curl -OL  "$jqurl$binary" && mv "$binary" jq && chmod +x jq
+}
+
 desugar_process_json() {
     echo "processing json ..."
     echo "==================================="
     for jsonfile in `find . -name "*.json"`; do
         dirname=`dirname "$jsonfile"`
         filename=`basename "$jsonfile" .json`
+        directory="$dirname/$filename"
+        if [[ ! -d "$directory" ]]; then
+            mkdir "$directory" 
+        fi
 
-        mkdir "$dirname/$filename"
+        metafile="$directory/$filename".meta
+        cat "$jsonfile" | ./jq 'to_entries | map_values({filename:(.key) , contents: {(.key): (.value)}}) ' > "$metafile"
+        ./testgen.py "$metafile"
+
     done
     echo "done"
     echo "==================================="
@@ -19,6 +38,7 @@ desugar_cleanup() {
     echo "==================================="
     cd tests-develop && ls | grep -v "VMTests" | xargs rm -r
     cd "VMTests" && ls | grep -v ".*\.json" | rm -rf
+    cd ../../
 }
 
 [[ "$#" == '0' ]] && set all
@@ -26,8 +46,9 @@ desugar_cleanup() {
 while [[ "$#" -gt '0' ]]; do
     desugar_command="$1" && shift
     case "$desugar_command" in
-        all)      set clean process ;;
+        all)      set clean getjq process ;;
         clean)    desugar_cleanup ;;
+        getjq)    desugar_get_jq ;;
         process)  desugar_process_json ;;
         *)        echo "Unrecognized option: '$tangle_command' ..." ;;
     esac
