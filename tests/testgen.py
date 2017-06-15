@@ -9,7 +9,12 @@ if __name__ == "__main__":
         bpath = os.path.dirname(f.name)
         metainfo = json.load(f)
         for metaobj in metainfo:
-           fname = metaobj["filename"] + ".kson"
-           with open(os.path.join(bpath, fname), "w+") as outfile:
-                   json.dump(metaobj["contents"], outfile, indent=4)
-            
+           mfname = metaobj["filename"] + ".kson"
+           rfname = metaobj["filename"] + ".kson.out"
+           with open(os.path.join(bpath, mfname), "w+") as outfile:
+               json.dump(metaobj["contents"], outfile, indent=4)
+           with open(os.path.join(bpath, rfname), "w+") as resfile:
+               #Hack to generate the output files. 
+               with open(sys.argv[2], "r") as template:
+                   resfile.write(template.read())
+

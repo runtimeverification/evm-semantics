@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<tests>
+    <test
+         definition="ethereum.k"
+         extension="kson" 
+         programs="." 
+         results=".">
+        <kompile-option name="--main-module" value="ETHEREUM-SIMULATION" />
+        <kompile-option name="—syntax-module" value="ETHEREUM-SIMULATION" />
+    </test>
+</tests>
