@@ -432,6 +432,11 @@ module ETHEREUM
     rule <op> GT W0 W1 => W0 >Word W1  ~> #push ... </op>
     rule <op> EQ W0 W1 => W0 ==Word W1 ~> #push ... </op>
 
+    syntax BinStackOp ::= "SLT" | "SGT"
+ // -----------------------------------
+    rule <op> SLT W0 W1 => W0 s<Word W1 ~> #push ... </op>
+    rule <op> SGT W0 W1 => W0 s>Word W1 ~> #push ... </op>
+
 
 // TODO: Calculate \mu\_i
 
@@ -771,8 +776,8 @@ module ETHEREUM
 // above.
 
 
-    syntax BinStackOp ::= "SLT" | "SGT" | "SIGNEXTEND"
- // --------------------------------------------------
+    syntax BinStackOp ::= "SIGNEXTEND"
+ // ----------------------------------
 
     syntax NullStackOp ::= "STOP"
  // -----------------------------

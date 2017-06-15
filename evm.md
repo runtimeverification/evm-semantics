@@ -414,6 +414,11 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
     rule <op> LT W0 W1 => W0 <Word W1  ~> #push ... </op>
     rule <op> GT W0 W1 => W0 >Word W1  ~> #push ... </op>
     rule <op> EQ W0 W1 => W0 ==Word W1 ~> #push ... </op>
+
+    syntax BinStackOp ::= "SLT" | "SGT"
+ // -----------------------------------
+    rule <op> SLT W0 W1 => W0 s<Word W1 ~> #push ... </op>
+    rule <op> SGT W0 W1 => W0 s>Word W1 ~> #push ... </op>
 ```
 
 TODO: Calculate \mu_i
@@ -746,8 +751,8 @@ Unimplemented
 These operators should be implemented and binned into the correct sections above.
 
 ```k
-    syntax BinStackOp ::= "SLT" | "SGT" | "SIGNEXTEND"
- // --------------------------------------------------
+    syntax BinStackOp ::= "SIGNEXTEND"
+ // ----------------------------------
 
     syntax NullStackOp ::= "STOP"
  // -----------------------------

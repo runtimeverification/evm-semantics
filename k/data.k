@@ -112,6 +112,12 @@ module EVM-DATA
     rule W0:Int >=Word W1:Int => bool2Word(W0 >=Int W1)
     rule W0:Int ==Word W1:Int => bool2Word(W0 ==Int W1)
 
+    syntax Word ::= Word "s<Word" Word [function]
+                  | Word "s>Word" Word [function]
+ // ---------------------------------------------
+    rule W0:Int s<Word W1:Int => twosComp(W0) <Word twosComp(W1)
+    rule W0:Int s>Word W1:Int => twosComp(W0) >Word twosComp(W1)
+
 
 // Note that we give "uninterpreted function" semantics to `keccak`, which is
 // fairly close to accurate.
