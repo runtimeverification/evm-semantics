@@ -57,7 +57,7 @@ tangle_test() {
     local test_file
     list_tests "$@" |
     while read test_file; do
-        progress "running '$test_file'..."
+        progress "running: $test_file..."
         diff <(krun --debug --directory k/ "$test_file") "$output_file"
         if [[ "$?" == '0' ]]; then
             success "$test_file"
