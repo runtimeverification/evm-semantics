@@ -82,7 +82,7 @@ tangle_ktest() {
 while [[ "$#" -gt '0' ]]; do
     tangle_command="$1" && shift
     case "$tangle_command" in
-        all)      set defn kompile test ;;
+        all)      set defn kompile test "$@" ;;
         defn)     tangle_defn ;;
         kompile)  tangle_kompile ;;
         testgen)  tangle_generate_tests ;;
