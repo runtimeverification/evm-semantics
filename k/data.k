@@ -118,6 +118,11 @@ module EVM-DATA
                        | Word ":" WordStack
  // ---------------------------------------
 
+    syntax WordStack ::= WordStack "++" WordStack [function]
+ // --------------------------------------------------------
+    rule .WordStack ++ WS' => WS'
+    rule (W : WS)   ++ WS' => W : (WS ++ WS')
+
     syntax Word ::= WordStack "[" Word "]" [function]
  // -------------------------------------------------
     rule (W0 : WS)   [0] => W0
@@ -157,6 +162,13 @@ module EVM-DATA
     rule #asWord( W : .WordStack) => W
     rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
 
+    syntax WordStack ::= #asWordStack ( Word )             [function]
+                       | #asWordStack ( Word , WordStack ) [function]
+ // -----------------------------------------------------------------
+    rule #asWordStack( W ) => #asWordStack( W , .WordStack )
+    rule #asWordStack( 0 , WS ) => WS
+    rule #asWordStack( W , WS ) => #asWordStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0
+
 
 // Word Map
 // --------
@@ -178,8 +190,8 @@ module EVM-DATA
 
     syntax WordStack ::= #range ( Map , Word , Word ) [function]
  // ------------------------------------------------------------
-    rule #range(WM,         N, M) => .WordStack                           requires M ==Word 0
-    rule #range(N |-> W WM, N, M) => W : #range(WM, N +Word 1, M -Word 1) requires M >Word 0
+    rule #range(WM,         N, 0) => .WordStack
+    rule #range(N |-> W WM, N, M) => W : #range(WM, N +Word 1, M -Word 1) requires M =/=K 0
 
 
 // Addresses

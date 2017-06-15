@@ -267,6 +267,13 @@ module ETHEREUM
     rule #asMap( N , OP:OpCode ; OCS ) => (N |-> OP) #asMap(N +Int 1, OCS) requires notBool isPushOp(OP)
     rule #asMap( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #asMap(N +Int 1 +Int M, OCS)
 
+    syntax OpCodes ::= #pgmRange ( Map , Word , Word ) [function]
+ // -------------------------------------------------------------
+    rule #pgmRange(PGM,                  N, M) => .OpCodes                                  requires word2Bool(M <=Word 0)
+    rule #pgmRange(PGM,                  N, M) => STOP       ; #pgmRange(PGM, N +Int 1, M -Int 1) requires word2Bool(M >Word 0) andBool notBool N in keys(PGM)
+    rule #pgmRange(N |-> OP         PGM, N, M) => OP         ; #pgmRange(PGM, N +Int 1, M -Int 1) requires word2Bool(M >Word 0) andBool notBool isPushOp(OP)
+    rule #pgmRange(N |-> PUSH(S, W) PGM, N, M) => PUSH(S, W) ; #pgmRange(PGM, N +Int S, M -Int S) requires word2Bool(M >Word 0)
+
 
 // EVM Opcodes
 // ===========
@@ -462,6 +469,16 @@ module ETHEREUM
     rule <op> CODESIZE => size(PGM)         ~> #push ~> #checkStackSize ... </op> <program> PGM </program>
 
 
+// TODO: Calculate \mu\_i
+
+
+    syntax TernStackOp ::= "CODECOPY"
+ // ---------------------------------
+    rule <op> CODECOPY MEMSTART PGMSTART WIDTH => . ... </op>
+         <program> PGM </program>
+         <localMem> LM => LM [ MEMSTART := #asmOpCodes(#pgmRange(PGM, PGMSTART, WIDTH)) ] </localMem>
+
+
 // `JUMP*`
 // -------
 
@@ -558,6 +575,21 @@ module ETHEREUM
            ...
          </account>
       requires #addr(ACCTTO) ==K ACCTTOACT
+
+
+// TODO: Calculate \mu\_i
+
+
+    syntax QuadStackOp ::= "EXTCODECOPY"
+ // ------------------------------------
+    rule <op> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </op>
+         <localMem> LM => LM [ MEMSTART := #asmOpCodes(#pgmRange(PGM, PGMSTART, WIDTH)) ] </localMem>
+         <account>
+           <acctID> ACCTACT </acctID>
+           <code> PGM </code>
+           ...
+         </account>
+      requires #addr(ACCT) ==K ACCTACT
 
 
 // Storage Operations
@@ -741,14 +773,11 @@ module ETHEREUM
     syntax NullStackOp ::= "STOP"
  // -----------------------------
 
-    syntax UnStackOp   ::= "BLOCKHASH"
- // ----------------------------------
+    syntax UnStackOp ::= "BLOCKHASH"
+ // --------------------------------
 
-    syntax TernStackOp ::= "CREATE" | "CODECOPY"
- // --------------------------------------------
-
-    syntax QuadStackOp ::= "EXTCODECOPY"
- // ------------------------------------
+    syntax TernStackOp ::= "CREATE"
+ // -------------------------------
 
 
 // Ethereum Gas Calculation
