@@ -1,6 +1,8 @@
 EVM Modeling
 ============
 
+[ ![Codeship Status for kframework/evm-semantics](https://app.codeship.com/projects/d3ce9a40-343d-0135-d1d4-02553a1f9242/status?branch=master)](https://app.codeship.com/projects/226792)
+
 In this repository we provide a model of the EVM in K.
 The model is optimized for presentation purposes with the goal of separating the concerns of EVM's language and the world-state that execution of the EVM modifies.
 
