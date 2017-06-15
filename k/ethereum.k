@@ -278,6 +278,23 @@ module ETHEREUM-SIMULATION
            </data>
          </message>
 
+    rule <k> check "expect" : { ACCTID : { "storage" : STORAGE } }
+          => check account : - id      : ACCTACT
+                             - nonce   : NONCE
+                             - balance : BAL
+                             - program : CODE
+                             - storage : #parseMap(STORAGE)
+          ...
+         </k>
+         <account>
+           <acctID>  ACCTACT           </acctID>
+           <balance> BAL               </balance>
+           <code>    CODE              </code>
+           <acctMap> "nonce" |-> NONCE </acctMap>
+           ...
+         </account>
+      requires #addr(#parseHexWord(ACCTID)) ==K ACCTACT
+
 
 // Here we define `check_` over the "post" part of the EVM test.
 
@@ -350,6 +367,22 @@ module ETHEREUM-SIMULATION
             exception TESTID
             .EthereumSimulation
           }
+
+
+// GRRR: Yet another format in the test-scripts to account for.
+
+
+    rule run TESTID : { "env"    : (ENV:JSON)
+                      , "exec"   : (EXEC:JSON)
+                      , "expect" : (EXPECT:JSON)
+                      , "pre"    : (PRE:JSON)
+                      }
+      => { load  "env"    : ENV
+           load  "pre"    : PRE
+           run   "exec"   : EXEC
+           check "expect" : EXPECT
+           .EthereumSimulation
+         }
 
     rule <k> run "exec" : { "address"  : (ACCTTO:String)
                           , "caller"   : (ACCTFROM:String)

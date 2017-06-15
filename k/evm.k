@@ -849,18 +849,18 @@ module ETHEREUM
 
     syntax OpCodes ::= "Wzero" | "Wbase" | "Wverylow" | "Wlow" | "Wmid" | "Whigh" | "Wextcode" | "Wcopy" | "Wcall"
  // --------------------------------------------------------------------------------------------------------------
-    rule Wzero    => STOP ; RETURN ; .OpCodes                                           [macro]
+    rule Wzero    => STOP ; RETURN ; .OpCodes                                               [macro]
     rule Wbase    =>   ADDRESS ; ORIGIN ; CALLER ; CALLVALUE ; CALLDATASIZE
                      ; CODESIZE ; GASPRICE ; COINBASE ; TIMESTAMP ; NUMBER
-                     ; DIFFICULTY ; GASLIMIT ; POP ; PC ; MSIZE ; GAS ; .OpCodes        [macro]
+                     ; DIFFICULTY ; GASLIMIT ; POP ; PC ; MSIZE ; GAS ; .OpCodes            [macro]
     rule Wverylow =>   ADD ; SUB ; NOT ; LT ; GT ; SLT ; SGT ; EQ ; ISZERO ; AND
                      ; EVMOR ; XOR ; BYTE ; CALLDATALOAD ; MLOAD ; MSTORE ; MSTORE8
-                     ; PUSH(0, 0) ; DUP(0) ; SWAP(0) ; .OpCodes                         [macro]
-    rule Wlow     => MUL ; DIV ; SDIV ; MOD ; SMOD ; SIGNEXTEND ; .OpCodes              [macro]
-    rule Wmid     => ADDMOD ; MULMOD ; JUMP ; JUMPI; .OpCodes                           [macro]
-    rule Wextcode => EXTCODESIZE ; .OpCodes                                             [macro]
-    rule Wcopy    => CALLDATACOPY ; CODECOPY ; .OpCodes                                 [macro]
-    rule Wcall    => CALL ; CALLCODE ; DELEGATECALL ; .OpCodes                          [macro]
+                     ; PUSH(0, 0) ; DUP(0) ; SWAP(0) ; .OpCodes                             [macro]
+    rule Wlow     => MUL ; DIV ; SDIV ; MOD ; SMOD ; SIGNEXTEND ; .OpCodes                  [macro]
+    rule Wmid     => ADDMOD ; MULMOD ; JUMP ; JUMPI; .OpCodes                               [macro]
+    rule Wextcode => EXTCODESIZE ; .OpCodes                                                 [macro]
+    rule Wcopy    => CALLDATACOPY ; CODECOPY ; .OpCodes                                     [macro]
+    rule Wcall    => CALL ; CALLCODE ; DELEGATECALL ; .OpCodes                              [macro]
 
 
 // TODO: The rules marked as `INCORRECT` below are performing simpler gas
