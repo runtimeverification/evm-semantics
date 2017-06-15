@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
+progress() { echo "==== $@"; }
+
 tangle_defn() {
-    echo "generating 'k/*' files ..."
-    echo "=========================="
+    progress "Generating 'k/*' files"
 
     pandoc-tangle --from markdown --to code-k --code k data.md        > k/data.k
     pandoc-tangle --from markdown --to code-k --code k evm.md         > k/evm.k
@@ -11,9 +12,7 @@ tangle_defn() {
 }
 
 tangle_kompile() {
-    echo "kompiling definition ..."
-    echo "========================"
-
+    progress "kompiling definition"
     pushd k
     kompile --debug --main-module ETHEREUM-SIMULATION --syntax-module ETHEREUM-SIMULATION ethereum.k
     result="$?"
@@ -22,9 +21,7 @@ tangle_kompile() {
 }
 
 tangle_generate_tests() {
-    echo "generating tests ..."
-    echo "==================================="
-
+    progress "Generating tests"
     if [[ ! -d  "tests/tests-develop" ]]; then 
         pushd tests
         TESTURL=https://github.com/ethereum/tests/archive/develop.zip
@@ -32,29 +29,36 @@ tangle_generate_tests() {
         EXTENSION=.zip
 
 
-        echo "downloading and unpacking tests ..."
-        echo "==================================="
-
+        progress "Downloading and unpacking tests ..."
         curl -OL "$TESTURL" && unzip "$ARCHIVE$EXTENSION" && rm "$ARCHIVE$EXTENSION"
-        echo "==================================="
-        echo "done"
-        echo "==================================="
+        progress "Desugaring"
         ./desugar
         popd
     fi
 }
 
+list_tests() {
+    for exp in "$@"; do
+        if [[ -f "$exp" ]]; then
+            echo $exp;
+        else
+            find tests/tests-develop/VMTests/ -iname "$exp" -name '*.kson'
+        fi
+    done
+}
+
 tangle_test() {
-    echo "running tests ..."
-    echo "================="
-    for test in "$@"; do 
-        krun --debug --directory k/ tests/tests-develop/VMTests/$test 
+    progress "Running tests"
+
+    local test_file
+    list_tests "$@" |
+    while read test_file; do
+        krun --debug --directory k/ "$test_file"
     done
 }
 
 tangle_ktest() {
-    echo "running ktest ..."
-    echo "================="
+    progress "running ktest ..."
 
     pushd k
     ktest ../tests/config.xml
@@ -70,7 +74,7 @@ while [[ "$#" -gt '0' ]]; do
         defn)     tangle_defn ;;
         kompile)  tangle_kompile ;;
         testgen)  tangle_generate_tests ;;
-        test)     tangle_test "$@" ;;
+        test)     tangle_test "$@" ; exit ;;
         ktest)    tangle_ktest ;;
         *)        echo "Unrecognized option: '$tangle_command' ..." ;;
     esac
