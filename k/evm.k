@@ -778,6 +778,7 @@ module ETHEREUM
 
     syntax BinStackOp ::= "SIGNEXTEND"
  // ----------------------------------
+    rule <op> SIGNEXTEND W0 W1 => signextend(W0, W1) ~> #push ... </op>
 
     syntax NullStackOp ::= "STOP"
  // -----------------------------
