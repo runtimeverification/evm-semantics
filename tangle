@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 progress() { echo "==== $@"; }
-success()  { echo -e "\e[32m==== $@\e[0m"; }
-failure()  { echo -e "\e[31m==== $@\e[0m"; }
+success()  { echo -e "\e[32m==== success: $@\e[0m"; }
+failure()  { echo -e "\e[31m==== failure: $@\e[0m"; }
 
 tangle_defn() {
     progress "Generating 'k/*' files"
