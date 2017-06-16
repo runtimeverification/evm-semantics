@@ -55,7 +55,7 @@ tangle_test() {
     output_file="tests/templates/output.txt"
 
     local test_file test_fail_count=0
-    list_tests "$@" |
+    list_tests "$@" | sort |
     while read test_file; do
         local output_differs=false
         progress "running: $test_file..."
