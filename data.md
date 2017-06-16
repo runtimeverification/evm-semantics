@@ -164,8 +164,8 @@ It's specified in the yellowpaper for `PUSH`, but not for `DUP` and `SWAP`.
     syntax WordStack ::= WordStack "[" Word ":=" Word "]" [function]
  // ----------------------------------------------------------------
     rule (W0 : WS)  [ 0 := W ] => W  : WS
-    rule .WordStack [ N := W ] => 0  : (.WordStack [ N +Int 1 := W ]) requires word2Bool(N >Word 0)
-    rule (W0 : WS)  [ N := W ] => W0 : (WS [ N +Int 1 := W ])         requires word2Bool(N >Word 0)
+    rule .WordStack [ N := W ] => 0  : (.WordStack [ N -Int 1 := W ]) requires word2Bool(N >Word 0)
+    rule (W0 : WS)  [ N := W ] => W0 : (WS [ N -Int 1 := W ])         requires word2Bool(N >Word 0)
 
     syntax Int ::= #size ( WordStack ) [function]
  // ---------------------------------------------
