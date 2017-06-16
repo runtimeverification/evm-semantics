@@ -1,9 +1,17 @@
 defn_files=k/ethereum.k k/data.k k/evm-dasm.k k/evm.k
 
-all: k/ethereum-kompiled/timestamp
-defn: $(defn_files)
 build: k/ethereum-kompiled/timestamp
-.PHONY: all defn
+all: build split-tests
+defn: $(defn_files)
+split-tests: tests/tests-develop/VMTests/vmArithmeticTest/make.timestamp \
+			 tests/tests-develop/VMTests/vmBitwiseLogicOperationTest/make.timestamp
+.PHONY: all defn build split-tests
+
+tests/tests-develop/%/make.timestamp: tests/ethereum-tests/%.json
+	@echo "==   split: $@"
+	mkdir -p $(dir $@)
+	tests/split-test.py $< $(dir $@)
+	touch $@
 
 k/ethereum-kompiled/timestamp: $(defn_files)
 	@echo "== kompile: $@"
