@@ -15,11 +15,10 @@ tangle_defn() {
 
 tangle_kompile() {
     progress "kompiling definition"
-    pushd k
-    kompile --debug --main-module ETHEREUM-SIMULATION --syntax-module ETHEREUM-SIMULATION ethereum.k
-    result="$?"
-    popd
-    return "$result"
+    ( cd k
+      kompile --debug --main-module ETHEREUM-SIMULATION \
+              --syntax-module ETHEREUM-SIMULATION ethereum.k
+    )
 }
 
 tangle_generate_tests() {
