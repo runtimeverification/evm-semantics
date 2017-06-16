@@ -58,6 +58,7 @@ Primitive Commands
          <gas>          _ => 0:Word       </gas>
          <caller>       _ => 0:Word       </caller>
          <callStack>    _ => .CallStack   </callStack>
+         <callData>     _ => .WordStack   </callData>
          <selfDestruct> _ => .WordStack   </selfDestruct>
          <log>          _ => .SubstateLog </log>
          <refund>       _ => 0:Word       </refund>
