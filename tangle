@@ -6,23 +6,6 @@ progress() { echo "==== $@"; }
 success()  { echo -e "\e[32m==== success: $@\e[0m"; }
 failure()  { echo -e "\e[31m==== failure: $@\e[0m"; }
 
-tangle_defn() {
-    progress "Generating 'k/*' files"
-
-    pandoc-tangle --from markdown --to code-k --code k data.md        > k/data.k
-    pandoc-tangle --from markdown --to code-k --code k evm.md         > k/evm.k
-    pandoc-tangle --from markdown --to code-k --code k evm-dasm.md    > k/evm-dasm.k
-    pandoc-tangle --from markdown --to code-k --code k ethereum.md    > k/ethereum.k
-}
-
-tangle_kompile() {
-    progress "kompiling definition"
-    ( cd k
-      kompile --debug --main-module ETHEREUM-SIMULATION \
-              --syntax-module ETHEREUM-SIMULATION ethereum.k
-    )
-}
-
 tangle_generate_tests() {
     progress "Generating tests"
     if [[ ! -d  "tests/tests-develop" ]]; then 
@@ -84,9 +67,9 @@ tangle_ktest() {
 while [[ "$#" -gt '0' ]]; do
     tangle_command="$1" && shift
     case "$tangle_command" in
-        all)      set defn kompile test "$@" ;;
-        defn)     tangle_defn ;;
-        kompile)  tangle_kompile ;;
+        all)      set kompile test "$@" ;;
+        defn)     make -s defn ;;
+        kompile)  make -s build ;;
         testgen)  tangle_generate_tests ;;
         test)     tangle_test "$@" ; exit ;;
         ktest)    tangle_ktest ;;
