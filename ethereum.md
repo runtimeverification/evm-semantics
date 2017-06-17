@@ -166,6 +166,16 @@ Here we load the environmental information.
     rule <k> load "exec" : { "code"     : (CODE:String)     } => . ... </k> <program>   _ => #asMap(#dasmOpCodes(#parseWordStack(CODE))) </program>
 ```
 
+### Flushing State
+
+-   `flush` simply runs whatever cleanup commands have to be run after a simulation to make sure all things are taken care of.
+
+```k
+    syntax EthereumCommand ::= "flush"
+ // ----------------------------------
+    rule <k> flush => . ... </k> <op> . => #runSubstate </op>
+```
+
 ### Checking State
 
 -   `check_` checks if an account/transaction appears in the world-state as stated.
@@ -257,7 +267,7 @@ Here we pull apart a test into the sequence of `EthereumCommand` to run for it.
     rule run TESTID : { "post"   : (POST:JSON)        , REST } => run TESTID : { REST } ~> check TESTID : { "post" : POST }
     rule run TESTID : { "expect" : (EXPECT:JSON)      , REST } => run TESTID : { REST } ~> check TESTID : { "post" : EXPECT }
 
-    rule run TESTID : { "exec" : (EXEC:JSON) } => run "exec" : EXEC
+    rule run TESTID : { "exec" : (EXEC:JSON) } => run "exec" : EXEC ~> flush
     rule run "exec" : { .JSONList } => .
     rule run "exec" : { KEY    : VALUE             } => load "exec" : { KEY : VALUE }
     rule run "exec" : { KEY    : VALUE , REST      } => load "exec" : { KEY : VALUE } ~> run  "exec" : { REST }          requires REST =/=K .JSONList andBool KEY =/=K "code"
