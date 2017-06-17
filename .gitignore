@@ -1,6 +1,7 @@
 !*spec.k
 /k/*-kompiled/
 yellowpaper/
+tests/tests-develop/
 *.swp
 *.aux
 *.log
