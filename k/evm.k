@@ -95,6 +95,8 @@ module ETHEREUM
                       // Accounts Record
                       // ---------------
 
+                      <activeAccounts> .Set </activeAccounts>
+
                       <accounts>
                         <account multiplicity="*">
                           <acctID>  .AcctID </acctID>
@@ -365,6 +367,7 @@ module ETHEREUM
 
     rule <op> #runSubstate ... </op>
          <selfDestruct> ... (SetItem(ACCT) => .Set) </selfDestruct>
+         <activeAccounts> ... (SetItem(ACCT) => .Set) </activeAccounts>
          <accounts>
            ( <account>
                <acctID> ACCT </acctID>
@@ -786,6 +789,30 @@ module ETHEREUM
            <balance> BALTO => BALTO +Word BALFROM </balance>
            ...
          </account>
+
+    rule <op> SELFDESTRUCT ACCTTO => . ... </op>
+         <id> ACCT </id>
+         <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
+         <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Word Rself-destruct #fi </refund>
+         <activeAccounts> ACCTS (.Set => SetItem(#addr(ACCTTO))) </activeAccounts>
+         <accounts>
+           <account>
+             <acctID> ACCT </acctID>
+             <balance> BALFROM => 0 </balance>
+             ...
+           </account>
+           ( .Bag
+          => <account>
+               <acctID>  #addr(ACCTTO) </acctID>
+               <balance> BALFROM       </balance>
+               <code>    .Map          </code>
+               <storage> .Map          </storage>
+               <acctMap> "nonce" |-> 0 </acctMap>
+             </account>
+           )
+           ...
+         </accounts>
+      requires notBool #addr(ACCTTO) in ACCTS
 
 
 // Unimplemented
