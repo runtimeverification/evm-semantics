@@ -59,7 +59,7 @@ module ETHEREUM
 
                       // A_* (execution substate)
                       <substate>
-                        <selfDestruct> .WordStack   </selfDestruct>     // A_s
+                        <selfDestruct> .Set         </selfDestruct>     // A_s
                         <log>          .SubstateLog </log>              // A_l
                         <refund>       0:Word       </refund>           // A_r
                       </substate>
@@ -739,7 +739,8 @@ module ETHEREUM
  // -----------------------------------
     rule <op> SELFDESTRUCT ACCTTO => . ... </op>
          <id> ACCT </id>
-         <selfDestruct> SD </selfDestruct>
+         <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
+         <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Word Rself-destruct #fi </refund>
          <account>
            <acctID> ACCT </acctID>
            <balance> BALFROM => 0 </balance>
@@ -750,23 +751,6 @@ module ETHEREUM
            <balance> BALTO => BALTO +Word BALFROM </balance>
            ...
          </account>
-      requires ACCT in SD
-
-    rule <op> SELFDESTRUCT ACCTTO => . ... </op>
-         <id> ACCT </id>
-         <selfDestruct> SD => ACCT : SD               </selfDestruct>
-         <refund>       RF => RF +Word Rself-destruct </refund>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BALFROM => 0 </balance>
-           ...
-         </account>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <balance> BALTO => BALTO +Word BALFROM </balance>
-           ...
-         </account>
-      requires notBool (ACCT in SD)
 
 
 // Unimplemented
