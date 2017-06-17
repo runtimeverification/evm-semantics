@@ -193,17 +193,6 @@ This allows more "local" definition of each of the corresponding operators.
  // --------------------------
 ```
 
-EVM Substate Log
-----------------
-
-During execution of a transaction some things are recorded in the substate log.
-This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
-
-```k
-    syntax SubstateLog      ::= ".SubstateLog" | SubstateLog "." SubstateLogEntry
-    syntax SubstateLogEntry ::= "{" Word "|" WordStack "|" WordStack "}"
-```
-
 Testing Information
 -------------------
 
@@ -324,6 +313,51 @@ The `CallStack` is a cons-list of `Process`.
     rule <op> #popCallStack => . </op>
          <callStack> TXSTATE CS => CS </callStack>
          <txExecState> _ => TXSTATE </txExecState>
+```
+
+EVM Substate Log
+----------------
+
+During execution of a transaction some things are recorded in the substate log.
+This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
+
+```k
+    syntax SubstateLog      ::= ".SubstateLog" | SubstateLog "." SubstateLogEntry
+    syntax SubstateLogEntry ::= "{" Word "|" WordStack "|" WordStack "}"
+```
+
+After executing a transaction, it's necessary to have the effect of the substate log recorded.
+
+-   `#runSubstate` makes the substate log actually have an effect on the state.
+
+```k
+    syntax InternalOp ::= "#runSubstate"
+ // ------------------------------------
+    rule <op> #runSubstate => . ... </op>
+         <selfDestruct> .Set </selfDestruct>
+         <refund>       0    </refund>
+
+    rule <op> #runSubstate ... </op>
+         <id> ACCT </id>
+         <refund> BAL => 0 </refund>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> CURRBAL => CURRBAL +Word BAL </balance>
+           ...
+         </account>
+      requires BAL =/=K 0
+
+    rule <op> #runSubstate ... </op>
+         <selfDestruct> ... (SetItem(ACCT) => .Set) </selfDestruct>
+         <accounts>
+           ( <account>
+               <acctID> ACCT </acctID>
+               ...
+             </account>
+          => .Bag
+           )
+           ...
+         </accounts>
 ```
 
 Stack Manipulations
