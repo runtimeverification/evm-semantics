@@ -1,7 +1,11 @@
-!*spec.k
+# Build products
+# Note that we don't ignore "/k/*.k". This is because non-developers may not
+# have `pandoc-tangle` installed.
 /k/*-kompiled/
+/tests/tests-develop
+
+!*spec.k
 yellowpaper/
-tests/tests-develop/
 *.swp
 *.aux
 *.log
