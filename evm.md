@@ -401,7 +401,7 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
 
     syntax BinStackOp ::= "BYTE"
  // ----------------------------
-    rule <op> BYTE INDEX W => byte(INDEX, W) ... </op>
+    rule <op> BYTE INDEX W  => byte(INDEX, W) ~> #push ... </op>
 
     syntax BinStackOp ::= "AND" | "EVMOR" | "XOR"
  // ---------------------------------------------

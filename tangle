@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e      # Exit immediately if any command fails
+
 progress() { echo "==== $@"; }
 success()  { echo -e "\e[32m==== success: $@\e[0m"; }
 failure()  { echo -e "\e[31m==== failure: $@\e[0m"; }
@@ -15,11 +17,10 @@ tangle_defn() {
 
 tangle_kompile() {
     progress "kompiling definition"
-    pushd k
-    kompile --debug --main-module ETHEREUM-SIMULATION --syntax-module ETHEREUM-SIMULATION ethereum.k
-    result="$?"
-    popd
-    return "$result"
+    ( cd k
+      kompile --debug --main-module ETHEREUM-SIMULATION \
+              --syntax-module ETHEREUM-SIMULATION ethereum.k
+    )
 }
 
 tangle_generate_tests() {
@@ -44,7 +45,7 @@ list_tests() {
         if [[ -f "$exp" ]]; then
             echo $exp;
         else
-            find tests/tests-develop/VMTests/ -iname "$exp" -name '*.kson'
+            find tests/tests-develop/VMTests/ -iname "$exp" -type f
         fi
     done
 }
@@ -53,20 +54,21 @@ tangle_test() {
     progress "Running tests"
     output_file="tests/templates/output.txt"
 
-    result='0'
-    local test_file
-    list_tests "$@" |
+    local test_file test_fail_count=0
+    list_tests "$@" | sort |
     while read test_file; do
+        local output_differs=false
         progress "running: $test_file..."
-        diff <(krun --debug --directory k/ "$test_file") "$output_file"
-        if [[ "$?" == '0' ]]; then
-            success "$test_file"
-        else
+        diff <(krun --debug --directory k/ "$test_file") "$output_file" \
+            || output_differs=true
+        if $output_differs; then
             failure "$test_file"
-            result='1'
+            test_fail_count+=1
+        else
+            success "$test_file"
         fi
     done
-    exit "$result"
+    return $test_fail_count
 }
 
 tangle_ktest() {
@@ -82,11 +84,11 @@ tangle_ktest() {
 while [[ "$#" -gt '0' ]]; do
     tangle_command="$1" && shift
     case "$tangle_command" in
-        all)      set defn kompile test ;;
+        all)      set defn kompile test "$@" ;;
         defn)     tangle_defn ;;
         kompile)  tangle_kompile ;;
         testgen)  tangle_generate_tests ;;
-        test)     tangle_test "$@" ;;
+        test)     tangle_test "$@" ; exit ;;
         ktest)    tangle_ktest ;;
         *)        echo "Unrecognized option: '$tangle_command' ..." ;;
     esac

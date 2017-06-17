@@ -418,7 +418,7 @@ module ETHEREUM
 
     syntax BinStackOp ::= "BYTE"
  // ----------------------------
-    rule <op> BYTE INDEX W => byte(INDEX, W) ... </op>
+    rule <op> BYTE INDEX W  => byte(INDEX, W) ~> #push ... </op>
 
     syntax BinStackOp ::= "AND" | "EVMOR" | "XOR"
  // ---------------------------------------------

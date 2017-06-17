@@ -96,7 +96,7 @@ Here `chop` will move a number back into the correct range and `bool2Word` will 
 
     syntax Word ::= byte ( Word , Word ) [function]
  // -----------------------------------------------
-    rule byte(N:Int, W:Int) => (W &Int (((2 ^Int 9) -Int 1) <<Int (8 *Int (31 -Int N)))) <<Int (8 *Int N)
+    rule byte(N:Int, W:Int) => (W &Int (((2 ^Int 9) -Int 1) <<Int (8 *Int (31 -Int N)))) <<Int -8 *Int (31 -Int N)
 
     syntax Int  ::= #nBytes ( Int )           [function]
     syntax Word ::= signextend( Word , Word ) [function]
