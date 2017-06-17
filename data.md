@@ -37,6 +37,11 @@ Here `chop` will move a number back into the correct range and `bool2Word` will 
     rule word2Bool( 0 ) => false
     rule word2Bool( W ) => true  requires W =/=K 0
 
+    syntax Word ::= "#ifWord" Bool "#then" Word "#else" Word "#fi" [function]
+ // -------------------------------------------------------------------------
+    rule #ifWord true  #then W #else _ #fi => W
+    rule #ifWord false #then _ #else W #fi => W
+
     syntax Word ::= Word "+Word" Word [function]
                   | Word "*Word" Word [function]
                   | Word "-Word" Word [function]
