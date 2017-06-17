@@ -59,7 +59,7 @@ module ETHEREUM-SIMULATION
          <caller>       _ => 0:Word       </caller>
          <callStack>    _ => .CallStack   </callStack>
          <callData>     _ => .WordStack   </callData>
-         <selfDestruct> _ => .WordStack   </selfDestruct>
+         <selfDestruct> _ => .Set         </selfDestruct>
          <log>          _ => .SubstateLog </log>
          <refund>       _ => 0:Word       </refund>
          <gasPrice>     _ => 0:Word       </gasPrice>
