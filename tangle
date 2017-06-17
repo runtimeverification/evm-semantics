@@ -34,9 +34,9 @@ list_tests() {
 }
 
 tangle_test() {
-    progress "Running tests"
-    output_file="tests/templates/output.txt"
+    run_make all
 
+    output_file="tests/templates/output.txt"
     local test_file test_fail_count=0
     list_tests "$@" | sort |
     while read test_file; do
@@ -62,14 +62,31 @@ tangle_ktest() {
     popd
 }
 
+have_tangle=true
+check_for_tangle() {
+    type pandoc-tangle >/dev/null 2>&1  || {
+        have_tangle=false
+        echo -e >&2 "Warning: pandoc-tangle not installed."  \
+                   "Ignoring changes in markdown files\n"
+    }
+}
+
+check_for_tangle
+run_make() {
+    local make_opts=
+    $have_tangle || make_opts="--assume-old ethereum.md --assume-old evm.md \
+                               --assume-old data.md --assume-old evm-dasm.md"
+    make -s $make_opts $@
+}
+
 [[ "$#" == '0' ]] && set all
 
 while [[ "$#" -gt '0' ]]; do
     tangle_command="$1" && shift
     case "$tangle_command" in
-        all)      make -s all; set test "$@" ;;
-        defn)     make -s defn ;;
-        kompile)  make -s build ;;
+        all)      set test "$@" ;;
+        defn)     run_make defn ;;
+        kompile)  run_make build ;;
         testgen)  tangle_generate_tests ;;
         test)     tangle_test "$@" ; exit ;;
         ktest)    tangle_ktest ;;
