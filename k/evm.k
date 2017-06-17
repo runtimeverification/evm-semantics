@@ -42,7 +42,7 @@ module ETHEREUM
                       <callStack> .CallStack </callStack>
                       <op> .K </op>
                       <txExecState>
-                        <program>   .Map        </program>
+                        <program>   .Map        </program>              // I_b
 
                         // I_*
                         <id>        0:Word     </id>                    // I_a
@@ -785,10 +785,11 @@ module ETHEREUM
            ...
          </account>
          <account>
-           <acctID> ACCTTO </acctID>
+           <acctID> ACCTTOACT </acctID>
            <balance> BALTO => BALTO +Word BALFROM </balance>
            ...
          </account>
+      requires #addr(ACCTTO) ==K ACCTTOACT
 
     rule <op> SELFDESTRUCT ACCTTO => . ... </op>
          <id> ACCT </id>
