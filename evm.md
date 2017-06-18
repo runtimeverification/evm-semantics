@@ -609,6 +609,31 @@ Account Queries
       requires #addr(ACCTTO) ==K ACCTTOACT
 ```
 
+TODO: According to the test `VMTests/vmEnvironmentalInfoTest/ExtCodeSizeAddresssInputTooBigRightMyAddress.kson`, this should be the semantics of an `EXTCODESIZE` which references an non-existant account.
+The yellowpaper is silent on the issue about what the `*CODESIZE` and `*CODECOPY` commands should do where there is an invalid address.
+It seems that instead we should consider every account inhabited by the empty data.
+Only when an account is updated is its data populated.
+
+```k
+    syntax Exception ::= "#badAddress"
+ // ----------------------------------
+    rule <op> EXTCODESIZE ACCTTO => #badAddress ... </op>
+         <activeAccounts> ACCTS (.Set => SetItem(#addr(ACCTTO))) </activeAccounts>
+         <accounts>
+           ( .Bag
+          => <account>
+               <acctID>  #addr(ACCTTO) </acctID>
+               <balance> 0             </balance>
+               <code>    .Map          </code>
+               <storage> .Map          </storage>
+               <acctMap> "nonce" |-> 0 </acctMap>
+             </account>
+           )
+           ...
+         </accounts>
+      requires notBool #addr(ACCTTO) in ACCTS
+```
+
 TODO: Calculate \mu_i
 
 ```k
