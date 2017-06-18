@@ -535,9 +535,9 @@ The `JUMP*` family of operations affect the current program counter.
 
 
   // --------- Sec 9.4.2 (129) ----------
-    rule <op> JUMP  DEST   => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires DEST in keys(PMAP) andBool PMAP[DEST] ==K JUMPDEST
-    rule <op> JUMPI DEST 0 => . ... </op> <program> PMAP </program>                      requires DEST in keys(PMAP) andBool PMAP[DEST] ==K JUMPDEST
-    rule <op> JUMPI DEST I => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires DEST in keys(PMAP) andBool PMAP[DEST] ==K JUMPDEST andBool I =/=K 0
+    rule <op> JUMP  DEST   => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires PMAP[DEST] ==K JUMPDEST
+    rule <op> JUMPI DEST 0 => . ... </op> <program> PMAP </program>                      requires PMAP[DEST] ==K JUMPDEST
+    rule <op> JUMPI DEST I => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires PMAP[DEST] ==K JUMPDEST andBool I =/=K 0
 ```
 
 Call Data
@@ -635,16 +635,35 @@ Storage Operations
 
 These operations interact with the account storage.
 
+The specs don't describe what happens on loading a non-existent element from 
+storage. This is either undefined behavior, or is exceptional due to the 
+instruction being invalid.  
+
+
 ```k
     syntax UnStackOp  ::= "SLOAD"
- // -----------------------------
-    rule <op> SLOAD INDEX => VALUE ~> #push ... </op>
+    syntax Exception  ::= "#invalidStore"
+
+ // ---------------------------------------------------------------------------------------
+ // ------ Loading from non-existent storage seems like undefined behavior. --------------- 
+
+
+    rule <op> SLOAD INDEX => "#invalidStore" ... </op>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> SMAP  </storage>
+           ...
+         </account> requires notBool INDEX in keys(SMAP)
+
+
+    rule <op> SLOAD INDEX => VALUE  ~> #push ... </op>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> ... INDEX |-> VALUE ... </storage>
            ...
-         </account>
+         </account> 
 
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
