@@ -49,31 +49,36 @@ Primitive Commands
          <currOps> COPS      => .Set  </currOps>
          <prevOps> ... (.Set => COPS) </prevOps>
 
-         <op>             _ => .            </op>
-         <id>             _ => 0:Word       </id>
-         <wordStack>      _ => .WordStack   </wordStack>
-         <localMem>       _ => .Map         </localMem>
-         <program>        _ => .Map         </program>
-         <pc>             _ => 0:Word       </pc>
-         <gas>            _ => 0:Word       </gas>
-         <caller>         _ => 0:Word       </caller>
-         <callStack>      _ => .CallStack   </callStack>
-         <output>         _ => .WordStack   </output>
-         <callData>       _ => .WordStack   </callData>
-         <selfDestruct>   _ => .Set         </selfDestruct>
-         <log>            _ => .SubstateLog </log>
-         <refund>         _ => 0:Word       </refund>
-         <gasPrice>       _ => 0:Word       </gasPrice>
-         <gasLimit>       _ => 0:Word       </gasLimit>
-         <coinbase>       _ => 0:Word       </coinbase>
-         <timestamp>      _ => 0:Word       </timestamp>
-         <number>         _ => 0:Word       </number>
-         <difficulty>     _ => 0:Word       </difficulty>
-         <origin>         _ => 0:Word       </origin>
-         <callValue>      _ => 0:Word       </callValue>
-         <activeAccounts> _ => .Set         </activeAccounts>
-         <accounts>       _ => .Bag         </accounts>
-         <messages>       _ => .Bag         </messages>
+         <op>         _ => .          </op>
+         <output>     _ => .WordStack </output>
+         <memoryUsed> _ => 0:Word     </memoryUsed>
+         <callStack>  _ => .CallStack </callStack>
+
+         <program>   _ => .Map       </program>
+         <id>        _ => 0:Word     </id>
+         <caller>    _ => 0:Word     </caller>
+         <callData>  _ => .WordStack </callData>
+         <callValue> _ => 0:Word     </callValue>
+         <wordStack> _ => .WordStack </wordStack>
+         <localMem>  _ => .Map       </localMem>
+         <pc>        _ => 0:Word     </pc>
+         <gas>       _ => 0:Word     </gas>
+
+         <selfDestruct> _ => .Set         </selfDestruct>
+         <log>          _ => .SubstateLog </log>
+         <refund>       _ => 0:Word       </refund>
+
+         <gasPrice>   _ => 0:Word </gasPrice>
+         <origin>     _ => 0:Word </origin>
+         <gasLimit>   _ => 0:Word </gasLimit>
+         <coinbase>   _ => 0:Word </coinbase>
+         <timestamp>  _ => 0:Word </timestamp>
+         <number>     _ => 0:Word </number>
+         <difficulty> _ => 0:Word </difficulty>
+
+         <activeAccounts> _ => .Set </activeAccounts>
+         <accounts>       _ => .Bag </accounts>
+         <messages>       _ => .Bag </messages>
 ```
 
 ### Loading State
