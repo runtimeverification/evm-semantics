@@ -134,23 +134,25 @@ Note that we must treat loading of `PUSH` specially, given that the arguments of
 Given the several special treatments of `PUSH`, the usefulness of this design for EVM becomes dubious.
 
 ```k
-    rule <op> . => #gas(OP) ~> #checkGas ~> OP </op>
+    syntax InternalOp ::= "#next"
+ // -----------------------------
+    rule <op> #next => #gas(OP) ~> #checkGas ~> OP ~> #next ... </op>
          <pc> PCOUNT => PCOUNT +Word 1 </pc>
          <program> ... PCOUNT |-> OP:OpCode ... </program>
          <currOps> ... (.Set => SetItem(OP)) </currOps>
       requires notBool isPushOp(OP)
 
-    rule <op> . => #gas(PUSH(N, W)) ~> #checkGas ~> PUSH(N, W) </op>
+    rule <op> #next => #gas(PUSH(N, W)) ~> #checkGas ~> PUSH(N, W) ~> #next ... </op>
          <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
          <program> ... PCOUNT |-> PUSH(N, W) ... </program>
          <currOps> ... (.Set => SetItem(PUSH(N, W))) </currOps>
 
- // syntax Exception ::= "#outOfProgramBounds"
- // ------------------------------------------
- // rule <op> . => #outOfProgramBounds </op>
- //      <pc> PCOUNT </pc>
- //      <program> CODE </program>
- //   requires notBool (PCOUNT in keys(CODE))
+    syntax InternalOp ::= "#endOfProgram"
+ // -------------------------------------
+    rule <op> #next => #endOfProgram ... </op>
+         <pc> PCOUNT </pc>
+         <program> CODE </program>
+      requires notBool (PCOUNT in keys(CODE))
 ```
 
 Depending on the sort of the opcode loaded, the correct number of arguments are loaded off the `wordStack`.
@@ -330,16 +332,16 @@ This is a right cons-list of `SubstateLogEntry` (which contains the account ID a
 
 After executing a transaction, it's necessary to have the effect of the substate log recorded.
 
--   `#runSubstate` makes the substate log actually have an effect on the state.
+-   `#finalize` makes the substate log actually have an effect on the state.
 
 ```k
-    syntax InternalOp ::= "#runSubstate"
- // ------------------------------------
-    rule <op> #runSubstate => . ... </op>
+    syntax InternalOp ::= "#finalize"
+ // ---------------------------------
+    rule <op> #finalize => . ... </op>
          <selfDestruct> .Set </selfDestruct>
          <refund>       0    </refund>
 
-    rule <op> #runSubstate ... </op>
+    rule <op> #finalize ... </op>
          <id> ACCT </id>
          <refund> BAL => 0 </refund>
          <account>
@@ -349,7 +351,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          </account>
       requires BAL =/=K 0
 
-    rule <op> #runSubstate ... </op>
+    rule <op> #finalize ... </op>
          <selfDestruct> ... (SetItem(ACCT) => .Set) </selfDestruct>
          <activeAccounts> ... (SetItem(ACCT) => .Set) </activeAccounts>
          <accounts>
