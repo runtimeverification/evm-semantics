@@ -62,16 +62,24 @@ run_make() {
     make -s $make_opts $@
 }
 
-[[ "$#" == '0' ]] && set all
+usage() {
+    echo "
+    usage:
+       $0                  Build the definitions and kompile them
+       $0 defn             Only detangle the definitions
+       $0 test <test.json> krun the test file and check that it succeeds
+       $0 test <expr>      Use find to locate a test file in tests/tests-develop/VMTests/
+"
+}
 
+[[ "$#" == '0' ]] && set build
 while [[ "$#" -gt '0' ]]; do
     tangle_command="$1" && shift
     case "$tangle_command" in
-        all)      set test "$@" ;;
-        defn)     run_make defn ;;
-        kompile)  run_make build ;;
-        test)     tangle_test "$@" ; exit ;;
-        ktest)    tangle_ktest ;;
-        *)        echo "Unrecognized option: '$tangle_command' ..." ;;
+        build)        run_make build ;;
+        defn)         run_make defn ;;
+        test)         tangle_test "$@" ; exit ;;
+        ktest)        tangle_ktest ;;
+        *)            usage; exit 1;;
     esac
 done
