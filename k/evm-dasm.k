@@ -155,6 +155,7 @@ module EVM-DASM
 
     syntax WordStack ::= #asmOpCodes ( OpCodes ) [function]
  // -------------------------------------------------------
+    rule #asmOpCodes( .OpCodes )           => .WordStack
     rule #asmOpCodes( STOP         ; OPS ) =>   0 : #asmOpCodes(OPS)
     rule #asmOpCodes( ADD          ; OPS ) =>   1 : #asmOpCodes(OPS)
     rule #asmOpCodes( MUL          ; OPS ) =>   2 : #asmOpCodes(OPS)

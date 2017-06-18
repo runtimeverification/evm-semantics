@@ -218,7 +218,7 @@ module ETHEREUM
     syntax Word ::= #memoryUsageUpdate ( Word , Word , Word ) [function]
  // --------------------------------------------------------------------
     rule #memoryUsageUpdate(S:Int, F:Int, 0)     => S
-    rule #memoryUsageUpdate(S:Int, F:Int, L:Int) => #maxWord(S, (F +Int L) up/Int 32)
+    rule #memoryUsageUpdate(S:Int, F:Int, L:Int) => maxWord(S, (F +Int L) up/Int 32)
 
 
 // Testing Information
