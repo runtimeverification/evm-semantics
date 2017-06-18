@@ -5,13 +5,10 @@ EVM Modeling
 
 In this repository we provide a model of the EVM in K.
 
-[ethereum.md](ethereum.md): Driver for semantics of EVM (for loading tests, running simulations).
-
-[evm.md](evm.md): Top level EVM semantics file (including local execution and network dynamics).
-
-[evm-dasm.md](evm-dasm.md): Dissasembler (and assembler!) for EVM so that JSON test files can be read directly.
-
-[data.md](data.md): Specifies the basic data of EVM execution, including the 256 bit words and some datastructures over them.
+-   [ethereum.md](ethereum.md): Driver for semantics of EVM (for loading tests, running simulations).
+-   [evm.md](evm.md): Top level EVM semantics file (including local execution and network dynamics).
+-   [evm-dasm.md](evm-dasm.md): Dissasembler (and assembler!) for EVM so that JSON test files can be read directly.
+-   [data.md](data.md): Specifies the basic data of EVM execution, including the 256 bit words and some datastructures over them.
 
 Unfinished
 ----------
