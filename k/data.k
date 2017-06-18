@@ -180,10 +180,9 @@ module EVM-DATA
     rule #size ( .WordStack ) => 0
     rule #size ( W : WS )     => 1 +Int #size(WS)
 
-    syntax WordStack ::= #take ( Word , WordStack )       [function]
-                       | #drop ( Word , WordStack )       [function]
-                       | WordStack "[" Word ".." Word "]" [function]
- // ----------------------------------------------------------------
+    syntax WordStack ::= #take ( Word , WordStack ) [function]
+                       | #drop ( Word , WordStack ) [function]
+ // ----------------------------------------------------------
     rule #take(0, WS)         => .WordStack
     rule #take(N, .WordStack) => 0 : #take(N -Word 1, .WordStack) requires word2Bool(N >Word 0)
     rule #take(N, (W : WS))   => W : #take(N -Word 1, WS)         requires word2Bool(N >Word 0)
@@ -192,25 +191,14 @@ module EVM-DATA
     rule #drop(N, .WordStack) => .WordStack
     rule #drop(N, (W : WS))   => #drop(N -Word 1, WS) requires word2Bool(N >Word 0)
 
+    syntax WordStack ::= WordStack "[" Word ".." Word "]" [function]
+ // ----------------------------------------------------------------
     rule WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
 
     syntax Bool ::= Word "in" WordStack [function]
  // ----------------------------------------------
     rule W in .WordStack => false
     rule W in (W' : WS)  => (W ==K W') orElseBool (W in WS)
-
-    syntax Word ::= #asWord ( WordStack ) [function]
- // ------------------------------------------------
-    rule #asWord( .WordStack )    => 0
-    rule #asWord( W : .WordStack) => W
-    rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
-
-    syntax WordStack ::= #asWordStack ( Word )             [function]
-                       | #asWordStack ( Word , WordStack ) [function]
- // -----------------------------------------------------------------
-    rule #asWordStack( W ) => #asWordStack( W , .WordStack )
-    rule #asWordStack( 0 , WS ) => WS
-    rule #asWordStack( W , WS ) => #asWordStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0
 
 
 // Word Map
@@ -234,7 +222,33 @@ module EVM-DATA
     syntax WordStack ::= #range ( Map , Word , Word ) [function]
  // ------------------------------------------------------------
     rule #range(WM,         N, 0) => .WordStack
+    rule #range(WM,         N, M) => 0 : #range(WM, N +Word 1, M -Word 1) requires M =/=K 0 andBool notBool N in keys(WM)
     rule #range(N |-> W WM, N, M) => W : #range(WM, N +Word 1, M -Word 1) requires M =/=K 0
+
+
+// Byte Arrays
+// -----------
+
+// The local memory of execution is a byte-array (instead of a word-array).
+
+// -   `#asWord` will interperet a stack of bytes as a single word (with
+//     MSB first).
+// -   `#asByteStack` will split a single word up into a `WordStack` where each
+//     word is actually a byte.
+
+
+    syntax Word ::= #asWord ( WordStack ) [function]
+ // ------------------------------------------------
+    rule #asWord( .WordStack )    => 0
+    rule #asWord( W : .WordStack) => W
+    rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
+
+    syntax WordStack ::= #asByteStack ( Word )             [function]
+                       | #asByteStack ( Word , WordStack ) [function]
+ // -----------------------------------------------------------------
+    rule #asByteStack( W ) => #asByteStack( W , .WordStack )
+    rule #asByteStack( 0 , WS ) => WS
+    rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0
 
 
 // Addresses

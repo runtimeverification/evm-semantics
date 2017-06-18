@@ -319,6 +319,34 @@ The `CallStack` is a cons-list of `Process`.
          <txExecState> _ => TXSTATE </txExecState>
 ```
 
+Adding Accounts
+---------------
+
+```k
+    syntax Exception  ::= "#badAccount"
+    syntax InternalOp ::= "#newAccount" Word
+ // ----------------------------------------
+    rule <op> #newAccount ACCT => . ... </op>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires #addr(ACCT) in ACCTS
+
+    rule <op> #newAccount ACCT => . ... </op>
+         <activeAccounts> ACCTS (.Set => SetItem(#addr(ACCT))) </activeAccounts>
+         <accounts>
+           ( .Bag
+          => <account>
+               <acctID>  #addr(ACCT)   </acctID>
+               <balance> 0             </balance>
+               <code>    .Map          </code>
+               <storage> .Map          </storage>
+               <acctMap> "nonce" |-> 0 </acctMap>
+             </account>
+           )
+           ...
+         </accounts>
+      requires notBool #addr(ACCT) in ACCTS
+```
+
 EVM Substate Log
 ----------------
 
@@ -397,12 +425,14 @@ TODO: Calculate \mu_i.
 
 ```k
     syntax UnStackOp  ::= "MLOAD"
+ // -----------------------------
+    rule <op> MLOAD INDEX => #asWord(#range(LM, INDEX, 32)) ~> #push ... </op> <localMem> LM </localMem>
+
     syntax BinStackOp ::= "MSTORE"
                         | "MSTORE8"
- // ------------------------------
-    rule <op> MLOAD   INDEX       => VALUE ~> #push ... </op> <localMem> ... INDEX |-> VALUE ...  </localMem>
-    rule <op> MSTORE  INDEX VALUE => .              ... </op> <localMem> LM => LM [ INDEX <- VALUE ] </localMem>
-    rule <op> MSTORE8 INDEX VALUE => .              ... </op> <localMem> LM => LM [ INDEX <- (VALUE %Int 256) ] </localMem>
+ // -------------------------------
+    rule <op> MSTORE  INDEX VALUE => . ... </op> <localMem> LM => LM [ INDEX := #asByteStack(VALUE) ] </localMem>
+    rule <op> MSTORE8 INDEX VALUE => . ... </op> <localMem> LM => LM [ INDEX <- (VALUE %Int 256) ]    </localMem>
 ```
 
 Expressions
@@ -593,6 +623,10 @@ Operators that require access to the rest of the Ethereum network world-state ca
 Account Queries
 ---------------
 
+TODO: It's unclear what to do in the case of an account not existing for these operators.
+`BALANCE` is specified to push 0 in this case, but the others are not specified.
+For now, I assume that they instantiate an empty account and use the empty data.
+
 ```k
     syntax UnStackOp ::= "BALANCE"
  // ------------------------------
@@ -604,6 +638,10 @@ Account Queries
          </account>
       requires #addr(ACCT) ==K ACCTACT
 
+    rule <op> BALANCE ACCT => #newAccount ACCT ~> 0 ~> #push ... </op>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool #addr(ACCT) in ACCTS
+
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
     rule <op> EXTCODESIZE ACCTTO => size(CODE) ~> #push ... </op>
@@ -613,6 +651,10 @@ Account Queries
            ...
          </account>
       requires #addr(ACCTTO) ==K ACCTTOACT
+
+    rule <op> EXTCODESIZE ACCTTO => #newAccount ACCTTO ~> 0 ~> #push ... </op>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool #addr(ACCTTO) in ACCTS
 ```
 
 TODO: Calculate \mu_i
@@ -628,6 +670,10 @@ TODO: Calculate \mu_i
            ...
          </account>
       requires #addr(ACCT) ==K ACCTACT
+
+    rule <op> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #newAccount ACCT ... </op>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool #addr(ACCT) in ACCTS
 ```
 
 Storage Operations
