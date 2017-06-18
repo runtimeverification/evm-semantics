@@ -553,9 +553,9 @@ module ETHEREUM
 
 
   // --------- Sec 9.4.2 (129) ----------
-    rule <op> JUMP  DEST   => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires DEST in_keys(PMAP) andBool PMAP[DEST] ==K JUMPDEST
-    rule <op> JUMPI DEST 0 => . ... </op> <program> PMAP </program>                      requires DEST in_keys(PMAP) andBool PMAP[DEST] ==K JUMPDEST
-    rule <op> JUMPI DEST I => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires DEST in_keys(PMAP) andBool PMAP[DEST] ==K JUMPDEST andBool I =/=K 0
+    rule <op> JUMP  DEST   => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires DEST in keys(PMAP) andBool PMAP[DEST] ==K JUMPDEST
+    rule <op> JUMPI DEST 0 => . ... </op> <program> PMAP </program>                      requires DEST in keys(PMAP) andBool PMAP[DEST] ==K JUMPDEST
+    rule <op> JUMPI DEST I => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires DEST in keys(PMAP) andBool PMAP[DEST] ==K JUMPDEST andBool I =/=K 0
 
 
 // Call Data
