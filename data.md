@@ -56,6 +56,11 @@ Here `chop` will move a number back into the correct range and `bool2Word` will 
     rule W0:Int %Word 0      => 0 
     rule W0:Int %Word W1:Int => chop( W0 %Int W1 ) requires W1 =/=K 0
 
+    syntax Int ::= Int "up/Int" Int [function]
+ // ------------------------------------------
+    rule I1 up/Int I2 => I1 /Int I2          requires I1 %Int I2 ==K 0
+    rule I1 up/Int I2 => (I1 /Int I2) +Int 1 requires I1 %Int I2 =/=K 0
+
     syntax Word ::= sgn      ( Word ) [function]
                   | twosComp ( Word ) [function]
                   | abs      ( Word ) [function]
