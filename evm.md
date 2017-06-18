@@ -33,8 +33,10 @@ module ETHEREUM
                       // Mutable during a single transaction
                       // -----------------------------------
 
-                      <callStack> .CallStack </callStack>
                       <op> .K </op>
+                      <output> .WordStack </output>                     // H_RETURN
+                      <callStack> .CallStack </callStack>
+
                       <txExecState>
                         <program>   .Map        </program>              // I_b
 
@@ -308,15 +310,18 @@ The `CallStack` is a cons-list of `Process`.
     rule #size( .CallStack         ) => 0
     rule #size( B:Bag CS:CallStack ) => 1 +Int #size(CS)
 
-    syntax InternalOp ::= "#pushCallStack" | "#popCallStack"
- // --------------------------------------------------------
-    rule <op> #pushCallStack => . </op>
+    syntax InternalOp ::= "#pushCallStack" | "#popCallStack" | "#txFinished"
+ // ------------------------------------------------------------------------
+    rule <op> #pushCallStack ~> #next => . ... </op>
          <callStack> CS => TXSTATE CS </callStack>
          <txExecState> TXSTATE </txExecState>
 
-    rule <op> #popCallStack => . </op>
+    rule <op> #popCallStack ~> #next => . ... </op>
          <callStack> TXSTATE CS => CS </callStack>
          <txExecState> _ => TXSTATE </txExecState>
+
+    rule <op> #popCallStack ~> #next => #txFinished ... </op>
+         <callStack> .CallStack </callStack>
 ```
 
 Adding Accounts
@@ -719,18 +724,16 @@ Call Operations
 The various `CALL*` (and other inter-contract control flow) operations will be desugared into these `InternalOp`s.
 
 -   `#returnLoc__` is a placeholder for the calling program, specifying where to place the returned data in memory.
--   `#return_` contains the word-stack of returned data.
 
 ```k
     syntax InternalOp ::= "#returnLoc" Word Word
-                        | "#return" WordStack
- // -----------------------------------------
-    rule <op> #return (WS:WordStack) ~> #returnLoc RETSTART RETWIDTH => . ... </op>
-         <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #size(WS)), WS) ] </localMem>
+ // --------------------------------------------
+    rule <op> #returnLoc RETSTART RETWIDTH => . ... </op>
+         <output> OUT </output>
+         <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #size(OUT)), OUT) ] </localMem>
 ```
 
 -   `#call_____` takes the calling account, the account to execute as, the accounts code to use, the amount to transfer, and the arguments.
-    It actually performs the code-call.
 
 ```k
     syntax InternalOp ::= "#call" Word Word Word Word WordStack
@@ -760,7 +763,8 @@ TODO: (Entire section): Calculate \mu_i.
 ```k
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
-    rule <op> RETURN RETSTART RETWIDTH => #popCallStack ~> #return #range(LM, RETSTART, RETWIDTH) ... </op>
+    rule <op> RETURN RETSTART RETWIDTH => #popCallStack ... </op>
+         <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
 
     syntax CallOp ::= "CALL" | "CALLCODE" | "DELEGATECALL"

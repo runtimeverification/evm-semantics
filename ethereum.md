@@ -58,6 +58,7 @@ Primitive Commands
          <gas>            _ => 0:Word       </gas>
          <caller>         _ => 0:Word       </caller>
          <callStack>      _ => .CallStack   </callStack>
+         <output>         _ => .WordStack   </output>
          <callData>       _ => .WordStack   </callData>
          <selfDestruct>   _ => .Set         </selfDestruct>
          <log>            _ => .SubstateLog </log>
@@ -110,7 +111,7 @@ Here we load the relevant information for accounts.
     rule <k> load "account" : { ACCTID : { "code" : (CODE:String) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <code> _ => #asMap(#dasmOpCodes(#parseWordStack(CODE))) </code>
+           <code> _ => #asMap(#dasmOpCodes(#parseByteStack(CODE))) </code>
            ...
          </account>
       requires #addr(#parseHexWord(ACCTID)) ==K ACCT
@@ -145,12 +146,12 @@ Here we load the environmental information.
 
     rule <k> load "exec" : { "address"  : (ACCTTO:String)   } => . ... </k> <id>        _ => #parseHexWord(ACCTTO)                       </id>
     rule <k> load "exec" : { "caller"   : (ACCTFROM:String) } => . ... </k> <caller>    _ => #parseHexWord(ACCTFROM)                     </caller>
-    rule <k> load "exec" : { "data"     : (DATA:String)     } => . ... </k> <callData>  _ => #parseWordStack(DATA)                       </callData>
+    rule <k> load "exec" : { "data"     : (DATA:String)     } => . ... </k> <callData>  _ => #parseByteStack(DATA)                       </callData>
     rule <k> load "exec" : { "gas"      : (GAVAIL:String)   } => . ... </k> <gas>       _ => #parseHexWord(GAVAIL)                       </gas>
     rule <k> load "exec" : { "gasPrice" : (GPRICE:String)   } => . ... </k> <gasPrice>  _ => #parseHexWord(GPRICE)                       </gasPrice>
     rule <k> load "exec" : { "value"    : (VALUE:String)    } => . ... </k> <callValue> _ => #parseHexWord(VALUE)                        </callValue>
     rule <k> load "exec" : { "origin"   : (ORIG:String)     } => . ... </k> <origin>    _ => #parseHexWord(ORIG)                         </origin>
-    rule <k> load "exec" : { "code"     : (CODE:String)     } => . ... </k> <program>   _ => #asMap(#dasmOpCodes(#parseWordStack(CODE))) </program>
+    rule <k> load "exec" : { "code"     : (CODE:String)     } => . ... </k> <program>   _ => #asMap(#dasmOpCodes(#parseByteStack(CODE))) </program>
 ```
 
 ### Driving Execution
@@ -164,6 +165,7 @@ Here we load the environmental information.
  // --------------------------------------------
     rule <k> start => . ... </k> <op> . => #next </op>
     rule <k> flush => . ... </k> <op> #endOfProgram => #finalize ... </op>
+    rule <k> flush => . ... </k> <op> #txFinished   => #finalize ... </op>
     rule <k> flush => . ... </k> <op> EX:Exception  => .         ... </op>
 ```
 
@@ -174,11 +176,12 @@ Here we load the environmental information.
 ```k
     syntax EthereumSpecCommand ::= "check"
  // --------------------------------------
-    rule check TESTID : { "post" : POST } => check "post" : POST ~> failure TESTID
+    rule check DATA : { .JSONList } => .
+    rule check DATA : { KEY : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST } requires REST =/=K .JSONList
 
-    rule check "post" : { .JSONList } => .
-    rule check "post" : { ACCTID : ACCT , ACCTS } => check ACCTID : ACCT ~> check "post" : { ACCTS }
-    rule check DATA : { KEY : VALUE , REST } => check DATA : { KEY : VALUE } requires REST =/=K .JSONList
+    rule check "post" : { ACCTID : ACCT } => check ACCTID : ACCT
+    rule check TESTID : { "post" : POST } => check "post" : POST ~> failure TESTID
+    rule check TESTID : { "out"  : OUT  } => check "out"  : OUT  ~> failure TESTID
 
     rule <k> check ACCTID : { "balance" : (VAL:String) } => . ... </k>
          <account>
@@ -210,7 +213,11 @@ Here we load the environmental information.
            <code> CODE </code>
            ...
          </account>
-      requires #addr(#parseHexWord(ACCTID)) ==K ACCT andBool #asMap(#dasmOpCodes(#parseWordStack(PGM))) ==K CODE
+      requires #addr(#parseHexWord(ACCTID)) ==K ACCT andBool #asMap(#dasmOpCodes(#parseByteStack(PGM))) ==K CODE
+
+    rule <k> check "out" : (OUT:String) => . ... </k>
+         <output> CURROUT </output>
+      requires #parseByteStack(OUT) ==K CURROUT
 ```
 
 ### Running Tests
@@ -218,8 +225,8 @@ Here we load the environmental information.
 -   `run` runs a given set of Ethereum tests (from the test-set).
 
 ```k
-    syntax EthereumCommand     ::= "success" | "exception" String | "failure" String
- // --------------------------------------------------------------------------------
+    syntax EthereumCommand ::= "success" | "exception" String | "failure" String
+ // ----------------------------------------------------------------------------
     rule <k> success     => . ... </k> <currOps> _ => .Set </currOps> <prevOps> _ => .Set </prevOps>
     rule <k> exception _ => . ... </k> <op> EX:Exception ... </op>
     rule failure _ => .
@@ -240,23 +247,23 @@ Here we load the environmental information.
     rule JSONINPUT:JSON => run JSONINPUT success .EthereumSimulation
 ```
 
-TODO: These fields should be dealt with properly.
+TODO: The fields "callcreates" and "logs" should be dealt with properly.
 
 ```k
     rule run TESTID : { "callcreates" : (CCREATES:JSON) , REST } => run TESTID : { REST }
     rule run TESTID : { "logs"        : (LOGS:JSON)     , REST } => run TESTID : { REST }
-    rule run TESTID : { "out"         : (OUT:JSON)      , REST } => run TESTID : { REST }
+    rule run TESTID : { "out"         : (OUT:JSON)      , REST } => run TESTID : { REST } ~> check TESTID : { "out"  : OUT }
+    rule run TESTID : { "post"        : (POST:JSON)     , REST } => run TESTID : { REST } ~> check TESTID : { "post" : POST }
+    rule run TESTID : { "expect"      : (EXPECT:JSON)   , REST } => run TESTID : { REST } ~> check TESTID : { "post" : EXPECT }
 ```
 
 Here we pull apart a test into the sequence of `EthereumCommand` to run for it.
 
 ```k
-    rule run TESTID : { "env"    : (ENV:JSON)         , REST } => load "env" : ENV      ~> run TESTID : { REST }
-    rule run TESTID : { "gas"    : (CURRGAS:String)   , REST } => load "gas" : CURRGAS  ~> run TESTID : { REST }
-    rule run TESTID : { "pre"    : (PRE:JSON)         , REST } => load "pre" : PRE      ~> run TESTID : { REST }
-    rule run TESTID : { "exec"   : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , "exec" : EXEC , REST }
-    rule run TESTID : { "post"   : (POST:JSON)        , REST } => run TESTID : { REST } ~> check TESTID : { "post" : POST }
-    rule run TESTID : { "expect" : (EXPECT:JSON)      , REST } => run TESTID : { REST } ~> check TESTID : { "post" : EXPECT }
+    rule run TESTID : { "env"  : (ENV:JSON)         , REST } => load "env" : ENV      ~> run TESTID : { REST }
+    rule run TESTID : { "gas"  : (CURRGAS:String)   , REST } => load "gas" : CURRGAS  ~> run TESTID : { REST }
+    rule run TESTID : { "pre"  : (PRE:JSON)         , REST } => load "pre" : PRE      ~> run TESTID : { REST }
+    rule run TESTID : { "exec" : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , "exec" : EXEC , REST }
 
     rule run TESTID : { "exec" : (EXEC:JSON) } => run "exec" : EXEC ~> start ~> flush
     rule run "exec" : { .JSONList } => .
