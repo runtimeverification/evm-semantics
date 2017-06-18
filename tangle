@@ -6,23 +6,6 @@ progress() { echo "== $@"; }
 success()  { echo -e "\e[32m== success: $@\e[0m"; }
 failure()  { echo -e "\e[31m== failure: $@\e[0m"; }
 
-tangle_generate_tests() {
-    progress "Generating tests"
-    if [[ ! -d  "tests/tests-develop" ]]; then 
-        pushd tests
-        TESTURL=https://github.com/ethereum/tests/archive/develop.zip
-        ARCHIVE=develop
-        EXTENSION=.zip
-
-
-        progress "Downloading and unpacking tests ..."
-        curl -OL "$TESTURL" && unzip "$ARCHIVE$EXTENSION" && rm "$ARCHIVE$EXTENSION"
-        progress "Desugaring"
-        ./desugar
-        popd
-    fi
-}
-
 list_tests() {
     for exp in "$@"; do
         if [[ -f "$exp" ]]; then
@@ -87,7 +70,6 @@ while [[ "$#" -gt '0' ]]; do
         all)      set test "$@" ;;
         defn)     run_make defn ;;
         kompile)  run_make build ;;
-        testgen)  tangle_generate_tests ;;
         test)     tangle_test "$@" ; exit ;;
         ktest)    tangle_ktest ;;
         *)        echo "Unrecognized option: '$tangle_command' ..." ;;
