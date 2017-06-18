@@ -540,19 +540,20 @@ module ETHEREUM
     syntax UnStackOp   ::= "JUMP"
     syntax BinStackOp  ::= "JUMPI"
 
- // ------------------------------
+  // --------- Sec 9.4.2 (127) ----------
     rule <op> JUMPDEST => . ... </op>
 
-    rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
-    rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
+    rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> 
+    rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program>
 
     rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> PMAP </program> requires notBool DEST in keys(PMAP)
     rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> PMAP </program> requires notBool DEST in keys(PMAP)
 
 
-    rule <op> JUMP  DEST   => . ... </op> <program> ... DEST |-> JUMPDEST ... </program> <pc> _ => DEST </pc>
-    rule <op> JUMPI DEST 0 => . ... </op> <program> ... DEST |-> JUMPDEST ... </program>
-    rule <op> JUMPI DEST I => . ... </op> <program> ... DEST |-> JUMPDEST ... </program> <pc> _ => DEST </pc> requires I =/=K 0
+  // --------- Sec 9.4.2 (129) ----------
+    rule <op> JUMP  DEST   => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires DEST in_keys(PMAP) andBool PMAP[DEST] ==K JUMPDEST
+    rule <op> JUMPI DEST 0 => . ... </op> <program> PMAP </program>                      requires DEST in_keys(PMAP) andBool PMAP[DEST] ==K JUMPDEST
+    rule <op> JUMPI DEST I => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires DEST in_keys(PMAP) andBool PMAP[DEST] ==K JUMPDEST andBool I =/=K 0
 
 
 // Call Data
