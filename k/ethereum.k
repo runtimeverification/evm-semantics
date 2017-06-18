@@ -166,15 +166,20 @@ module ETHEREUM-SIMULATION
     rule <k> load "exec" : { "code"     : (CODE:String)     } => . ... </k> <program>   _ => #asMap(#dasmOpCodes(#parseWordStack(CODE))) </program>
 
 
-// ### Flushing State
+// ### Driving Execution
 
-// -   `flush` simply runs whatever cleanup commands have to be run after a
-//     simulation to make sure all things are taken care of.
+// -   `start` places `#next` on the `op` cell so that execution of the loaded
+//     state begin.
+// -   `flush` places `#finalize` on the `op` cell once it sees `#endOfProgram` in
+//     the `op` cell. If it sees an exception on the top of the cell, it
+//     simply clears.
 
 
-    syntax EthereumCommand ::= "flush"
- // ----------------------------------
-    rule <k> flush => . ... </k> <op> . => #runSubstate </op>
+    syntax EthereumCommand ::= "start" | "flush"
+ // --------------------------------------------
+    rule <k> start => . ... </k> <op> . => #next </op>
+    rule <k> flush => . ... </k> <op> #endOfProgram => #finalize ... </op>
+    rule <k> flush => . ... </k> <op> EX:Exception  => .         ... </op>
 
 
 // ### Checking State
@@ -269,7 +274,7 @@ module ETHEREUM-SIMULATION
     rule run TESTID : { "post"   : (POST:JSON)        , REST } => run TESTID : { REST } ~> check TESTID : { "post" : POST }
     rule run TESTID : { "expect" : (EXPECT:JSON)      , REST } => run TESTID : { REST } ~> check TESTID : { "post" : EXPECT }
 
-    rule run TESTID : { "exec" : (EXEC:JSON) } => run "exec" : EXEC ~> flush
+    rule run TESTID : { "exec" : (EXEC:JSON) } => run "exec" : EXEC ~> start ~> flush
     rule run "exec" : { .JSONList } => .
     rule run "exec" : { KEY    : VALUE             } => load "exec" : { KEY : VALUE }
     rule run "exec" : { KEY    : VALUE , REST      } => load "exec" : { KEY : VALUE } ~> run  "exec" : { REST }          requires REST =/=K .JSONList andBool KEY =/=K "code"
