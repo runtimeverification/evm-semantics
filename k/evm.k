@@ -333,6 +333,34 @@ module ETHEREUM
          <txExecState> _ => TXSTATE </txExecState>
 
 
+// Adding Accounts
+// ---------------
+
+
+    syntax Exception  ::= "#badAccount"
+    syntax InternalOp ::= "#newAccount" Word
+ // ----------------------------------------
+    rule <op> #newAccount ACCT => . ... </op>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires #addr(ACCT) in ACCTS
+
+    rule <op> #newAccount ACCT => . ... </op>
+         <activeAccounts> ACCTS (.Set => SetItem(#addr(ACCT))) </activeAccounts>
+         <accounts>
+           ( .Bag
+          => <account>
+               <acctID>  #addr(ACCT)   </acctID>
+               <balance> 0             </balance>
+               <code>    .Map          </code>
+               <storage> .Map          </storage>
+               <acctMap> "nonce" |-> 0 </acctMap>
+             </account>
+           )
+           ...
+         </accounts>
+      requires notBool #addr(ACCT) in ACCTS
+
+
 // EVM Substate Log
 // ----------------
 
@@ -606,6 +634,11 @@ module ETHEREUM
 // Account Queries
 // ---------------
 
+// TODO: It's unclear what to do in the case of an account not existing for these
+// operators. `BALANCE` is specified to push 0 in this case, but the others are not
+// specified. For now, I assume that they instantiate an empty account and use the
+// empty data.
+
 
     syntax UnStackOp ::= "BALANCE"
  // ------------------------------
@@ -617,6 +650,10 @@ module ETHEREUM
          </account>
       requires #addr(ACCT) ==K ACCTACT
 
+    rule <op> BALANCE ACCT => #newAccount ACCT ~> 0 ~> #push ... </op>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool #addr(ACCT) in ACCTS
+
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
     rule <op> EXTCODESIZE ACCTTO => size(CODE) ~> #push ... </op>
@@ -627,32 +664,8 @@ module ETHEREUM
          </account>
       requires #addr(ACCTTO) ==K ACCTTOACT
 
-
-// TODO: According to the test
-// `VMTests/vmEnvironmentalInfoTest/ExtCodeSizeAddresssInputTooBigRightMyAddress.kson`,
-// this should be the semantics of an `EXTCODESIZE` which references an
-// non-existant account. The yellowpaper is silent on the issue about what the
-// `*CODESIZE` and `*CODECOPY` commands should do where there is an invalid
-// address. It seems that instead we should consider every account inhabited by the
-// empty data. Only when an account is updated is its data populated.
-
-
-    syntax Exception ::= "#badAddress"
- // ----------------------------------
-    rule <op> EXTCODESIZE ACCTTO => #badAddress ... </op>
-         <activeAccounts> ACCTS (.Set => SetItem(#addr(ACCTTO))) </activeAccounts>
-         <accounts>
-           ( .Bag
-          => <account>
-               <acctID>  #addr(ACCTTO) </acctID>
-               <balance> 0             </balance>
-               <code>    .Map          </code>
-               <storage> .Map          </storage>
-               <acctMap> "nonce" |-> 0 </acctMap>
-             </account>
-           )
-           ...
-         </accounts>
+    rule <op> EXTCODESIZE ACCTTO => #newAccount ACCTTO ~> 0 ~> #push ... </op>
+         <activeAccounts> ACCTS </activeAccounts>
       requires notBool #addr(ACCTTO) in ACCTS
 
 
@@ -669,6 +682,10 @@ module ETHEREUM
            ...
          </account>
       requires #addr(ACCT) ==K ACCTACT
+
+    rule <op> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #newAccount ACCT ... </op>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool #addr(ACCT) in ACCTS
 
 
 // Storage Operations
