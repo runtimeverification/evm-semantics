@@ -83,20 +83,7 @@ Primitive Commands
 ```k
     syntax EthereumSpecCommand ::= "mkAcct"
  // ---------------------------------------
-    rule <k> mkAcct ACCTID => . ... </k>
-         <activeAccounts> ... (.Set => SetItem(#addr(#parseHexWord(ACCTID)))) </activeAccounts>
-         <accounts>
-           ( .Bag
-          => <account>
-               <acctID>  #addr(#parseHexWord(ACCTID)) </acctID>
-               <balance> 0                            </balance>
-               <code>    .Map                         </code>
-               <storage> .Map                         </storage>
-               <acctMap> .Map                         </acctMap>
-             </account>
-           )
-           ...
-         </accounts>
+    rule <k> mkAcct ACCTID => . ... </k> <op> . => #newAccount #parseHexWord(ACCTID) </op>
 
     syntax EthereumSpecCommand ::= "load"
  // -------------------------------------
