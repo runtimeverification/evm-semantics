@@ -441,12 +441,14 @@ module ETHEREUM
 
 
     syntax UnStackOp  ::= "MLOAD"
+ // -----------------------------
+    rule <op> MLOAD INDEX => #asWord(#range(LM, INDEX, 32)) ~> #push ... </op> <localMem> LM </localMem>
+
     syntax BinStackOp ::= "MSTORE"
                         | "MSTORE8"
- // ------------------------------
-    rule <op> MLOAD   INDEX       => VALUE ~> #push ... </op> <localMem> ... INDEX |-> VALUE ...  </localMem>
-    rule <op> MSTORE  INDEX VALUE => .              ... </op> <localMem> LM => LM [ INDEX <- VALUE ] </localMem>
-    rule <op> MSTORE8 INDEX VALUE => .              ... </op> <localMem> LM => LM [ INDEX <- (VALUE %Int 256) ] </localMem>
+ // -------------------------------
+    rule <op> MSTORE  INDEX VALUE => . ... </op> <localMem> LM => LM [ INDEX := #asByteStack(VALUE) ] </localMem>
+    rule <op> MSTORE8 INDEX VALUE => . ... </op> <localMem> LM => LM [ INDEX <- (VALUE %Int 256) ]    </localMem>
 
 
 // Expressions
