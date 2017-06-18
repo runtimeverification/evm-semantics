@@ -707,13 +707,11 @@ module ETHEREUM
 
 
     syntax UnStackOp  ::= "SLOAD"
-    syntax Exception  ::= "#invalidStore"
 
  // ---------------------------------------------------------------------------------------
- // ------ Loading from non-existent storage seems like undefined behavior. --------------- 
 
 
-    rule <op> SLOAD INDEX => "#invalidStore" ... </op>
+    rule <op> SLOAD INDEX => 0 ~> #push ... </op>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
