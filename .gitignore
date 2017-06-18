@@ -4,6 +4,9 @@
 /k/*-kompiled/
 /tests/tests-develop
 
+# Temp folder for scratch data, TODOs etc.
+/tmp
+
 !*spec.k
 yellowpaper/
 *.swp
