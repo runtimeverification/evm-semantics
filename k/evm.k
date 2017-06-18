@@ -283,6 +283,10 @@ module ETHEREUM
     rule #asOpCodes(N, N |-> OP         M) => OP         ; #asOpCodes(N +Int 1,        M) requires notBool isPushOp(OP)
     rule #asOpCodes(N, N |-> PUSH(S, W) M) => PUSH(S, W) ; #asOpCodes(N +Int 1 +Int S, M)
 
+    syntax Word ::= #codeSize ( Map ) [function]
+ // --------------------------------------------
+    rule #codeSize(M) => #size(#asmOpCodes(#asOpCodes(M)))
+
 
 // EVM Opcodes
 // ===========
@@ -567,8 +571,8 @@ module ETHEREUM
 
     syntax NullStackOp ::= "MSIZE" | "CODESIZE"
  // -------------------------------------------
-    rule <op> MSIZE    => 32 *Word MU ~> #push ~> #checkStackSize ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> CODESIZE => size(PGM)   ~> #push ~> #checkStackSize ... </op> <program> PGM </program>
+    rule <op> MSIZE    => 32 *Word MU    ~> #push ~> #checkStackSize ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> CODESIZE => #codeSize(PGM) ~> #push ~> #checkStackSize ... </op> <program> PGM </program>
 
     syntax TernStackOp ::= "CODECOPY"
  // ---------------------------------
@@ -676,7 +680,7 @@ module ETHEREUM
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
-    rule <op> EXTCODESIZE ACCTTO => size(CODE) ~> #push ... </op>
+    rule <op> EXTCODESIZE ACCTTO => #codeSize(CODE) ~> #push ... </op>
          <account>
            <acctID> ACCTTOACT </acctID>
            <code> CODE </code>
