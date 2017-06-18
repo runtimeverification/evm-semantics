@@ -22,3 +22,7 @@ k/%.k: %.md
 	@echo "==  tangle: $@"
 	mkdir -p k
 	pandoc-tangle --from markdown --to code-k --code k $< > $@
+
+tests/ethereum-tests/%.json:
+	@echo "==  git submodule: cloning upstreams test repository"
+	git submodule update --init
