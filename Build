@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+
+set -e      # Exit immediately if any command fails
+
+progress() { echo "== $@"; }
+success()  { echo -e "\e[32m== success: $@\e[0m"; }
+failure()  { echo -e "\e[31m== failure: $@\e[0m"; }
+
+list_tests() {
+    for exp in "$@"; do
+        if [[ -f "$exp" ]]; then
+            echo $exp;
+        else
+            find tests/tests-develop/VMTests/ -iname "$exp" \
+                 \( -name '*.json' -or -name '*.kson' \)
+        fi
+    done
+}
+
+tangle_test() {
+    run_make all
+
+    output_file="tests/templates/output.txt"
+    local test_file test_fail_count=0
+    list_tests "$@" | sort |
+    while read test_file; do
+        local output_differs=false
+        progress "running: $test_file..."
+        diff <(krun --debug --directory k/ "$test_file") "$output_file" \
+            || output_differs=true
+        if $output_differs; then
+            failure "$test_file"
+            test_fail_count+=1
+        else
+            success "$test_file"
+        fi
+    done
+    return $test_fail_count
+}
+
+tangle_ktest() {
+    progress "running ktest ..."
+
+    pushd k
+    ktest ../tests/config.xml
+    popd
+}
+
+have_tangle=true
+check_for_tangle() {
+    type pandoc-tangle >/dev/null 2>&1  || {
+        have_tangle=false
+        echo -e >&2 "Warning: pandoc-tangle not installed."  \
+                   "Ignoring changes in markdown files\n"
+    }
+}
+
+check_for_tangle
+run_make() {
+    local make_opts=
+    $have_tangle || make_opts="--assume-old ethereum.md --assume-old evm.md \
+                               --assume-old data.md --assume-old evm-dasm.md"
+    make -s $make_opts $@
+}
+
+usage() {
+    echo "
+    usage:
+       $0                  Build the definitions and kompile them
+       $0 defn             Only detangle the definitions
+       $0 test <test.json> krun the test file and check that it succeeds
+       $0 test <expr>      Use find to locate a test file in tests/tests-develop/VMTests/
+"
+}
+
+[[ "$#" == '0' ]] && set build
+while [[ "$#" -gt '0' ]]; do
+    tangle_command="$1" && shift
+    case "$tangle_command" in
+        build)        run_make build ;;
+        defn)         run_make defn ;;
+        test)         tangle_test "$@" ; exit ;;
+        ktest)        tangle_ktest ;;
+        *)            usage; exit 1;;
+    esac
+done
