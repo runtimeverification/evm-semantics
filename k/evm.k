@@ -539,11 +539,16 @@ module ETHEREUM
     syntax NullStackOp ::= "JUMPDEST"
     syntax UnStackOp   ::= "JUMP"
     syntax BinStackOp  ::= "JUMPI"
+
  // ------------------------------
     rule <op> JUMPDEST => . ... </op>
 
     rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
     rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
+
+    rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> PMAP </program> requires notBool DEST in keys(PMAP)
+    rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> PMAP </program> requires notBool DEST in keys(PMAP)
+
 
     rule <op> JUMP  DEST   => . ... </op> <program> ... DEST |-> JUMPDEST ... </program> <pc> _ => DEST </pc>
     rule <op> JUMPI DEST 0 => . ... </op> <program> ... DEST |-> JUMPDEST ... </program>
