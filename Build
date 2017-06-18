@@ -11,7 +11,8 @@ list_tests() {
         if [[ -f "$exp" ]]; then
             echo $exp;
         else
-            find tests/tests-develop/VMTests/ -iname "$exp" -type f
+            find tests/tests-develop/VMTests/ -iname "$exp" \
+                 \( -name '*.json' -or -name '*.kson' \)
         fi
     done
 }
