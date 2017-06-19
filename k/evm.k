@@ -437,7 +437,7 @@ module ETHEREUM
                         | "MSTORE8"
  // -------------------------------
     rule <op> MSTORE INDEX VALUE => . ... </op>
-         <localMem> LM => LM [ INDEX := #asByteStack(VALUE) ] </localMem>
+         <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
          <memoryUsed> MU => maxInt(MU, (INDEX +Int 32) up/Int 32) </memoryUsed>
 
     rule <op> MSTORE8 INDEX VALUE => . ... </op>

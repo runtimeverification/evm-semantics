@@ -250,10 +250,10 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #asByteStack( 0 , WS ) => WS
     rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0
 
-    syntax WordStack ::= #padToWidth ( Word , WordStack ) [function]
- // ----------------------------------------------------------------
-    rule #padToWidth(N, WS) => WS                     requires notBool word2Bool(#size(WS) <Word N)
-    rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires word2Bool(#size(WS) <Word N)
+    syntax WordStack ::= #padToWidth ( Int , WordStack ) [function]
+ // ---------------------------------------------------------------
+    rule #padToWidth(N, WS) => WS                     requires notBool #size(WS) <Int N
+    rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires #size(WS) <Int N
 ```
 
 Addresses
