@@ -19,9 +19,8 @@ module EVM-DASM
 // `Word`s, `WordStack`s, and `Map`s.
 
 // -   `#parseHexWord` interperets a string as a single hex-encoded `Word`.
-// -   `#parseHexWords` interperets a string as a stack of words (each `Word` being
-//     a byte wide).
-// -   `#parseWordStack` interperets a string as a stack of words, but makes sure
+// -   `#parseHexBytes` interperets a string as a stack of bytes.
+// -   `#parseByteStack` interperets a string as a stack of bytes, but makes sure
 //     to remove the leading "0x".
 // -   `#parseMap` interperets a JSON key/value object as a map from `Word` to
 //     `Word`.
@@ -41,12 +40,12 @@ module EVM-DASM
     rule #parseHexWord(S)    => String2Base(replaceAll(S, "0x", ""), 16)
       requires (S =/=String "") andBool (S =/=String "0x")
 
-    syntax WordStack ::= #parseHexWords  ( String ) [function]
-                       | #parseWordStack ( String ) [function]
+    syntax WordStack ::= #parseHexBytes  ( String ) [function]
+                       | #parseByteStack ( String ) [function]
  // ----------------------------------------------------------
-    rule #parseWordStack(S) => #parseHexWords(replaceAll(S, "0x", ""))
-    rule #parseHexWords("") => .WordStack
-    rule #parseHexWords(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexWords(substrString(S, 2, lengthString(S)))
+    rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
+    rule #parseHexBytes("") => .WordStack
+    rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytes(substrString(S, 2, lengthString(S)))
       requires lengthString(S) >=Int 2
 
     syntax Map ::= #parseMap ( JSON ) [function]
@@ -156,6 +155,7 @@ module EVM-DASM
 
     syntax WordStack ::= #asmOpCodes ( OpCodes ) [function]
  // -------------------------------------------------------
+    rule #asmOpCodes( .OpCodes )           => .WordStack
     rule #asmOpCodes( STOP         ; OPS ) =>   0 : #asmOpCodes(OPS)
     rule #asmOpCodes( ADD          ; OPS ) =>   1 : #asmOpCodes(OPS)
     rule #asmOpCodes( MUL          ; OPS ) =>   2 : #asmOpCodes(OPS)
@@ -221,6 +221,6 @@ module EVM-DASM
     rule #asmOpCodes( DUP(W)       ; OPS ) => W +Word 127 : #asmOpCodes(OPS)
     rule #asmOpCodes( SWAP(W)      ; OPS ) => W +Word 143 : #asmOpCodes(OPS)
     rule #asmOpCodes( LOG(W)       ; OPS ) => W +Word 160 : #asmOpCodes(OPS)
-    rule #asmOpCodes( PUSH(N, W)   ; OPS ) => N +Word 95  : (#asByteStack(W) ++ #asmOpCodes(OPS))
+    rule #asmOpCodes( PUSH(N, W)   ; OPS ) => N +Word 95  : (#padToWidth(N, #asByteStack(W)) ++ #asmOpCodes(OPS))
 endmodule
 

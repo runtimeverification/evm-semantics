@@ -19,9 +19,6 @@
 // throughout. In the comments next to each cell, we've marked which component of
 // the yellowpaper state corresponds to each cell.
 
-// TODO: The value \mu\_i is not being accounted for (memory consumption gas
-// tracker?).
-
 
 requires "data.k"
 
@@ -39,8 +36,11 @@ module ETHEREUM
                       // Mutable during a single transaction
                       // -----------------------------------
 
-                      <callStack> .CallStack </callStack>
                       <op> .K </op>
+                      <output> .WordStack </output>                     // H_RETURN
+                      <memoryUsed> 0:Word </memoryUsed>                 // \mu_i
+                      <callStack> .CallStack </callStack>
+
                       <txExecState>
                         <program>   .Map        </program>              // I_b
 
@@ -76,14 +76,6 @@ module ETHEREUM
                       <timestamp>  0:Word </timestamp>                  // I_Hs
                       <number>     0:Word </number>                     // I_Hi
                       <difficulty> 0:Word </difficulty>                 // I_Hd
-
-                      // Testing Information
-                      // -------------------
-
-                      <testInfo>
-                        <currOps> .Set </currOps>
-                        <prevOps> .Set </prevOps>
-                      </testInfo>
 
                     </evm>
 
@@ -146,13 +138,11 @@ module ETHEREUM
     rule <op> #next => #gas(OP) ~> #checkGas ~> OP ~> #next ... </op>
          <pc> PCOUNT => PCOUNT +Word 1 </pc>
          <program> ... PCOUNT |-> OP:OpCode ... </program>
-         <currOps> ... (.Set => SetItem(OP)) </currOps>
       requires notBool isPushOp(OP)
 
     rule <op> #next => #gas(PUSH(N, W)) ~> #checkGas ~> PUSH(N, W) ~> #next ... </op>
          <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
          <program> ... PCOUNT |-> PUSH(N, W) ... </program>
-         <currOps> ... (.Set => SetItem(PUSH(N, W))) </currOps>
 
     syntax InternalOp ::= "#endOfProgram"
  // -------------------------------------
@@ -205,28 +195,20 @@ module ETHEREUM
  // --------------------------
 
 
-// Testing Information
-// -------------------
+// Memory Expansion
+// ----------------
 
-// We need to keep track of some information for making debugging the semantics
-// easier. This won't be needed once we are passing tests, but helps us get there.
+// Using memory while executing EVM costs gas, so the amount of memory used is
+// tracked.
 
-// The cell `currOps` stores the operators we've seen during this execution, and
-// `prevOps` store operators we've seen throughout this `krun`. This well help us
-// determine which operators are new in this run so that we can get an idea of how
-// the test failed. We don't care about keeping multiple versions of each
-// parametric operator around though, so here we get rid of duplicates.
+// -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper
+//     which helps track the memory used.
 
 
-    rule <currOps> ... SetItem(LOG(_))     (SetItem(LOG(_))     => .Set) </currOps>
-    rule <currOps> ... SetItem(DUP(_))     (SetItem(DUP(_))     => .Set) </currOps>
-    rule <currOps> ... SetItem(SWAP(_))    (SetItem(SWAP(_))    => .Set) </currOps>
-    rule <currOps> ... SetItem(PUSH(_, _)) (SetItem(PUSH(_, _)) => .Set) </currOps>
-
-    rule <prevOps> ... SetItem(LOG(_))     (SetItem(LOG(_))     => .Set) </prevOps>
-    rule <prevOps> ... SetItem(DUP(_))     (SetItem(DUP(_))     => .Set) </prevOps>
-    rule <prevOps> ... SetItem(SWAP(_))    (SetItem(SWAP(_))    => .Set) </prevOps>
-    rule <prevOps> ... SetItem(PUSH(_, _)) (SetItem(PUSH(_, _)) => .Set) </prevOps>
+    syntax Word ::= #memoryUsageUpdate ( Word , Word , Word ) [function]
+ // --------------------------------------------------------------------
+    rule #memoryUsageUpdate(S:Int, F:Int, 0)     => S
+    rule #memoryUsageUpdate(S:Int, F:Int, L:Int) => maxWord(S, (F +Int L) up/Int 32)
 
 
 // EVM Programs
@@ -266,6 +248,10 @@ module ETHEREUM
     rule #asOpCodes(N, .Map) => .OpCodes
     rule #asOpCodes(N, N |-> OP         M) => OP         ; #asOpCodes(N +Int 1,        M) requires notBool isPushOp(OP)
     rule #asOpCodes(N, N |-> PUSH(S, W) M) => PUSH(S, W) ; #asOpCodes(N +Int 1 +Int S, M)
+
+    syntax Word ::= #codeSize ( Map ) [function]
+ // --------------------------------------------
+    rule #codeSize(M) => #size(#asmOpCodes(#asOpCodes(M)))
 
 
 // EVM Opcodes
@@ -322,18 +308,49 @@ module ETHEREUM
     rule #size( .CallStack         ) => 0
     rule #size( B:Bag CS:CallStack ) => 1 +Int #size(CS)
 
-    syntax InternalOp ::= "#pushCallStack" | "#popCallStack"
- // --------------------------------------------------------
-    rule <op> #pushCallStack => . </op>
+    syntax InternalOp ::= "#pushCallStack" | "#popCallStack" | "#txFinished"
+ // ------------------------------------------------------------------------
+    rule <op> #pushCallStack ~> #next => . ... </op>
          <callStack> CS => TXSTATE CS </callStack>
          <txExecState> TXSTATE </txExecState>
 
-    rule <op> #popCallStack => . </op>
+    rule <op> #popCallStack ~> #next => . ... </op>
          <callStack> TXSTATE CS => CS </callStack>
          <txExecState> _ => TXSTATE </txExecState>
 
+    rule <op> #popCallStack ~> #next => #txFinished ... </op>
+         <callStack> .CallStack </callStack>
+
 
 // Adding Accounts
+// ---------------
+
+
+    syntax Exception  ::= "#badAccount"
+    syntax InternalOp ::= "#newAccount" Word
+ // ----------------------------------------
+    rule <op> #newAccount ACCT => . ... </op>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires #addr(ACCT) in ACCTS
+
+    rule <op> #newAccount ACCT => . ... </op>
+         <activeAccounts> ACCTS (.Set => SetItem(#addr(ACCT))) </activeAccounts>
+         <accounts>
+           ( .Bag
+          => <account>
+               <acctID>  #addr(ACCT)   </acctID>
+               <balance> 0             </balance>
+               <code>    .Map          </code>
+               <storage> .Map          </storage>
+               <acctMap> "nonce" |-> 0 </acctMap>
+             </account>
+           )
+           ...
+         </accounts>
+      requires notBool #addr(ACCT) in ACCTS
+
+
+// Adding Accounts {#adding-accounts-1}
 // ---------------
 
 
@@ -437,18 +454,23 @@ module ETHEREUM
 
 // These operations are getters/setters of the local execution memory.
 
-// TODO: Calculate \mu\_i.
-
 
     syntax UnStackOp  ::= "MLOAD"
  // -----------------------------
-    rule <op> MLOAD INDEX => #asWord(#range(LM, INDEX, 32)) ~> #push ... </op> <localMem> LM </localMem>
+    rule <op> MLOAD INDEX => #asWord(#range(LM, INDEX, 32)) ~> #push ... </op>
+         <localMem> LM </localMem>
+         <memoryUsed> MU => maxInt(MU, (INDEX +Int 32) up/Int 32) </memoryUsed>
 
     syntax BinStackOp ::= "MSTORE"
                         | "MSTORE8"
  // -------------------------------
-    rule <op> MSTORE  INDEX VALUE => . ... </op> <localMem> LM => LM [ INDEX := #asByteStack(VALUE) ] </localMem>
-    rule <op> MSTORE8 INDEX VALUE => . ... </op> <localMem> LM => LM [ INDEX <- (VALUE %Int 256) ]    </localMem>
+    rule <op> MSTORE INDEX VALUE => . ... </op>
+         <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
+         <memoryUsed> MU => maxInt(MU, (INDEX +Int 32) up/Int 32) </memoryUsed>
+
+    rule <op> MSTORE8 INDEX VALUE => . ... </op>
+         <localMem> LM => LM [ INDEX <- (VALUE %Int 256) ]    </localMem>
+         <memoryUsed> MU => maxInt(MU, (INDEX +Int 1) up/Int 32) </memoryUsed>
 
 
 // Expressions
@@ -507,14 +529,11 @@ module ETHEREUM
     rule <op> SLT W0 W1 => W0 s<Word W1 ~> #push ... </op>
     rule <op> SGT W0 W1 => W0 s>Word W1 ~> #push ... </op>
 
-
-// TODO: Calculate \mu\_i
-
-
     syntax BinStackOp ::= "SHA3"
  // ----------------------------
     rule <op> SHA3 MEMSTART MEMWIDTH => keccak(#range(LM, MEMSTART, MEMWIDTH)) ... </op>
          <localMem> LM </localMem>
+         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
 
 
 // Local State
@@ -546,18 +565,15 @@ module ETHEREUM
 
     syntax NullStackOp ::= "MSIZE" | "CODESIZE"
  // -------------------------------------------
-    rule <op> MSIZE    => 32 *Word size(LM) ~> #push ~> #checkStackSize ... </op> <localMem> LM </localMem>
-    rule <op> CODESIZE => size(PGM)         ~> #push ~> #checkStackSize ... </op> <program> PGM </program>
-
-
-// TODO: Calculate \mu\_i
-
+    rule <op> MSIZE    => 32 *Word MU    ~> #push ~> #checkStackSize ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> CODESIZE => #codeSize(PGM) ~> #push ~> #checkStackSize ... </op> <program> PGM </program>
 
     syntax TernStackOp ::= "CODECOPY"
  // ---------------------------------
     rule <op> CODECOPY MEMSTART PGMSTART WIDTH => . ... </op>
          <program> PGM </program>
          <localMem> LM => LM [ MEMSTART := #asmOpCodes(#asOpCodes(PGM)) [ PGMSTART .. WIDTH ] ] </localMem>
+         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, WIDTH) </memoryUsed>
 
 
 // `JUMP*`
@@ -594,7 +610,7 @@ module ETHEREUM
 // These operators query about the current `CALL*` state.
 
 // TODO: Is the `DATASTART`/`DATAWIDTH` in `CALLDATALOAD`/`CALLDATACOPY` a
-// byte-list width or a word-list width? TODO: Calculate \mu\_i.
+// byte-list width or a word-list width?
 
 
     syntax NullStackOp ::= "CALLDATASIZE"
@@ -610,12 +626,11 @@ module ETHEREUM
     rule <op> CALLDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </op>
          <localMem> LM => LM [ MEMSTART := CD [ DATASTART .. DATAWIDTH ] ] </localMem>
          <callData> CD </callData>
+         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, DATAWIDTH) </memoryUsed>
 
 
 // Log Operations
 // --------------
-
-// TODO: Calculate \mu\_i.
 
 
     syntax LogOp  ::= LOG ( Word )
@@ -624,6 +639,7 @@ module ETHEREUM
          <id> ACCT </id>
          <wordStack> W0 : W1 : WS => #drop(N, WS) </wordStack>
          <localMem> LM </localMem>
+         <memoryUsed> MU => #memoryUsageUpdate(MU, W0, W1) </memoryUsed>
          <log> CURRLOG => CURRLOG . { ACCT | #take(N, WS) | #range(LM, W0, W1) } </log>
       requires word2Bool(#size(WS) >=Word N)
 
@@ -664,7 +680,7 @@ module ETHEREUM
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
-    rule <op> EXTCODESIZE ACCTTO => size(CODE) ~> #push ... </op>
+    rule <op> EXTCODESIZE ACCTTO => #codeSize(CODE) ~> #push ... </op>
          <account>
            <acctID> ACCTTOACT </acctID>
            <code> CODE </code>
@@ -672,18 +688,15 @@ module ETHEREUM
          </account>
       requires #addr(ACCTTO) ==K ACCTTOACT
 
-    rule <op> EXTCODESIZE ACCTTO => #newAccount ACCTTO ~> 0 ~> #push ... </op>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool #addr(ACCTTO) in ACCTS
 
-
-// TODO: Calculate \mu\_i
+// \`\`\`
 
 
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
     rule <op> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </op>
          <localMem> LM => LM [ MEMSTART := #asmOpCodes(#asOpCodes(PGM)) [ PGMSTART .. WIDTH ] ] </localMem>
+         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, WIDTH) </memoryUsed>
          <account>
            <acctID> ACCTACT </acctID>
            <code> PGM </code>
@@ -731,6 +744,7 @@ module ETHEREUM
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
     rule <op> SSTORE INDEX 0 => . ... </op>
+         <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> ... (INDEX |-> VALUE => .Map) ... </storage>
@@ -739,6 +753,7 @@ module ETHEREUM
          <refund> R => R +Word Rsclear </refund>
 
     rule <op> SSTORE INDEX 0 => . ... </op>
+         <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
@@ -747,6 +762,7 @@ module ETHEREUM
       requires notBool (INDEX in keys(STORAGE))
 
     rule <op> SSTORE INDEX VALUE => . ... </op>
+         <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>
@@ -763,19 +779,17 @@ module ETHEREUM
 
 // -   `#returnLoc__` is a placeholder for the calling program, specifying where to
 //     place the returned data in memory.
-// -   `#return_` contains the word-stack of returned data.
 
 
     syntax InternalOp ::= "#returnLoc" Word Word
-                        | "#return" WordStack
- // -----------------------------------------
-    rule <op> #return (WS:WordStack) ~> #returnLoc RETSTART RETWIDTH => . ... </op>
-         <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #size(WS)), WS) ] </localMem>
+ // --------------------------------------------
+    rule <op> #returnLoc RETSTART RETWIDTH => . ... </op>
+         <output> OUT </output>
+         <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #size(OUT)), OUT) ] </localMem>
 
 
 // -   `#call_____` takes the calling account, the account to execute as, the
-//     accounts code to use, the amount to transfer, and the arguments. It actually
-//     performs the code-call.
+//     accounts code to use, the amount to transfer, and the arguments.
 
 
     syntax InternalOp ::= "#call" Word Word Word Word WordStack
@@ -800,13 +814,13 @@ module ETHEREUM
       requires word2Bool(VALUE <=Word BAL) andBool (#size(CS) <Int 1024)
 
 
-// TODO: (Entire section): Calculate \mu\_i.
-
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
-    rule <op> RETURN RETSTART RETWIDTH => #popCallStack ~> #return #range(LM, RETSTART, RETWIDTH) ... </op>
+    rule <op> RETURN RETSTART RETWIDTH => #popCallStack ... </op>
+         <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
+         <memoryUsed> MU => #memoryUsageUpdate(MU, RETSTART, RETWIDTH) </memoryUsed>
 
     syntax CallOp ::= "CALL" | "CALLCODE" | "DELEGATECALL"
  // ------------------------------------------------------
@@ -818,6 +832,7 @@ module ETHEREUM
          </op>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
+         <memoryUsed> MU => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) </memoryUsed>
 
     rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
@@ -827,6 +842,7 @@ module ETHEREUM
          </op>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
+         <memoryUsed> MU => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) </memoryUsed>
 
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
@@ -836,6 +852,7 @@ module ETHEREUM
          </op>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
+         <memoryUsed> MU => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) </memoryUsed>
 
 
 // TODO: Calculating gas for `SELFDESTRUCT` needs to take into account the cost of

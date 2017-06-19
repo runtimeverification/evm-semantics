@@ -5,13 +5,10 @@ EVM Modeling
 
 In this repository we provide a model of the EVM in K.
 
-[ethereum.md](ethereum.md): Driver for semantics of EVM (for loading tests, running simulations).
-
-[evm.md](evm.md): Top level EVM semantics file (including local execution and network dynamics).
-
-[evm-dasm.md](evm-dasm.md): Dissasembler (and assembler!) for EVM so that JSON test files can be read directly.
-
-[data.md](data.md): Specifies the basic data of EVM execution, including the 256 bit words and some datastructures over them.
+-   [ethereum.md](ethereum.md): Driver for semantics of EVM (for loading tests, running simulations).
+-   [evm.md](evm.md): Top level EVM semantics file (including local execution and network dynamics).
+-   [evm-dasm.md](evm-dasm.md): Dissasembler (and assembler!) for EVM so that JSON test files can be read directly.
+-   [data.md](data.md): Specifies the basic data of EVM execution, including the 256 bit words and some datastructures over them.
 
 Unfinished
 ----------
@@ -23,16 +20,16 @@ Right now the semantics declares the configuration for both of these components 
 Separating the two subconfigurations and declaring an API for the network dynamics would provide a better understanding of the "necessary ingredients" for a consensus-driven distributed store.
 This would also allow us to experiment with alternative programming languages to EVM for future blockchain systems.
 
+### `CREATE`
+
+Right now the opcode `CREATE` has not been given any semantics.
+It probably should be given some.
+
 ### Gas Semantics
 
 Right now the gas calculation is not in good shape.
 Someone should shape it up.
 It's at the end of the [EVM semantics file](evm.md).
-
-### $\mu_i$ Calculation
-
-Throughout the yellowpaper $\mu_i$ is referred to.
-This has been largely ignored in these semantics, and shouldn't be.
 
 ### Disassembler/Assembler
 
@@ -82,7 +79,7 @@ Even many functional languages, by having evaluation strategies settled ahead of
 On the other hand, what secures many of these blockchain-consensus systems is proof of work.
 Proof of work is the ultimate non-deterministic programming language; the programs are the block (before adding the nonce), and the solutions are the nonce added to the block so that it hashes low enough.
 When using a nonce of size $2^N$, there are exactly $M = 2^N$ next "inference steps", and they all must be searched uniformly to find a solution ($n = 1$).
-If instead the underlying programming language had some nondeterminism, some of the proof of work could be done **just by executing the transactions going into the block**.
+If instead the underlying programming language had some nondeterminism, some of the proof of work could be done *just by executing the transactions going into the block*.
 Perhaps the two can be used to augment each other, allowing for some of the proof of work to be provided via finding a solution to the program and the rest via hashing.
 
 If such a system were implemented, it may be important to incentivize miners to supply solutions to programs/proofs on the blockchain.
@@ -106,7 +103,7 @@ Language Independence
 ---------------------
 
 Language independence is difficult to achieve in a distributed system because everyone must agree on how programs are to be executed.
-Two approaches are the **language-building language** approach and the **consensus-based** approach.
+Two approaches are the *language-building language* approach and the *consensus-based* approach.
 
 In the language-building language approach, the underlying language of the blockchain is a language-building language.
 Thus, contracts are free to introduce new languages simply as specifications (programs) in the underlying language, and other contracts may use those languages by referring to the language definition contract.
@@ -121,7 +118,7 @@ These two techniques could be combined.
 Logical Frameworks
 ------------------
 
-Logical frameworks provide both **language independence** and **nondeterminism**.
+Logical frameworks provide both *language independence* and *nondeterminism*.
 Because logical frameworks are designed to have many other logics and languages map into them, it is easy to both specify other programming languages and programs in other languages directly.
 In addition, because they are logics themselves, logical frameworks will have a nondeterministic calculus based on selecting from a pool of inference rules.
 As such, they are suitable for a proof of work based consensus-driven distributed computer.
@@ -129,5 +126,6 @@ As such, they are suitable for a proof of work based consensus-driven distribute
 Resources
 =========
 
--   [EVM Yellowpaper](???): Original specification of EVM.
--   [Logical Frameworks](???): Discussion of logical frameworks.
+-   [EVM Yellowpaper](https://github.com/ethereum/yellowpaper): Original specification of EVM.
+-   [Logical Frameworks](http://dl.acm.org/citation.cfm?id=208700): Discussion of logical frameworks.
+-   [LEM Semantics of EVM](https://github.com/pirapira/eth-isabelle)

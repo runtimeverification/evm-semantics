@@ -56,6 +56,11 @@ Here `chop` will move a number back into the correct range and `bool2Word` will 
     rule W0:Int %Word 0      => 0 
     rule W0:Int %Word W1:Int => chop( W0 %Int W1 ) requires W1 =/=K 0
 
+    syntax Int ::= Int "up/Int" Int [function]
+ // ------------------------------------------
+    rule I1 up/Int I2 => I1 /Int I2          requires I1 %Int I2 ==K 0
+    rule I1 up/Int I2 => (I1 /Int I2) +Int 1 requires I1 %Int I2 =/=K 0
+
     syntax Word ::= sgn      ( Word ) [function]
                   | twosComp ( Word ) [function]
                   | abs      ( Word ) [function]
@@ -229,6 +234,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 
 -   `#asWord` will interperet a stack of bytes as a single word (with MSB first).
 -   `#asByteStack` will split a single word up into a `WordStack` where each word is actually a byte.
+-   `#padToWidth` makes sure that a `WordStack` is the correct size.
 
 ```k
     syntax Word ::= #asWord ( WordStack ) [function]
@@ -243,6 +249,11 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #asByteStack( W ) => #asByteStack( W , .WordStack )
     rule #asByteStack( 0 , WS ) => WS
     rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0
+
+    syntax WordStack ::= #padToWidth ( Int , WordStack ) [function]
+ // ---------------------------------------------------------------
+    rule #padToWidth(N, WS) => WS                     requires notBool #size(WS) <Int N
+    rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires #size(WS) <Int N
 ```
 
 Addresses
