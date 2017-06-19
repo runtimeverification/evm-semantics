@@ -708,6 +708,7 @@ These operations interact with the account storage.
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
     rule <op> SSTORE INDEX 0 => . ... </op>
+         <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> ... (INDEX |-> VALUE => .Map) ... </storage>
@@ -716,6 +717,7 @@ These operations interact with the account storage.
          <refund> R => R +Word Rsclear </refund>
 
     rule <op> SSTORE INDEX 0 => . ... </op>
+         <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
@@ -724,6 +726,7 @@ These operations interact with the account storage.
       requires notBool (INDEX in keys(STORAGE))
 
     rule <op> SSTORE INDEX VALUE => . ... </op>
+         <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>

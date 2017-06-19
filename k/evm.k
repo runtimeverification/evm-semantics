@@ -730,6 +730,7 @@ module ETHEREUM
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
     rule <op> SSTORE INDEX 0 => . ... </op>
+         <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> ... (INDEX |-> VALUE => .Map) ... </storage>
@@ -738,6 +739,7 @@ module ETHEREUM
          <refund> R => R +Word Rsclear </refund>
 
     rule <op> SSTORE INDEX 0 => . ... </op>
+         <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
@@ -746,6 +748,7 @@ module ETHEREUM
       requires notBool (INDEX in keys(STORAGE))
 
     rule <op> SSTORE INDEX VALUE => . ... </op>
+         <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>
