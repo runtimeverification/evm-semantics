@@ -1,4 +1,5 @@
 defn_files=k/ethereum.k k/data.k k/evm-dasm.k k/evm.k
+ktest_file=tests/config.xml
 
 build: k/ethereum-kompiled/timestamp
 all: build split-tests
@@ -7,12 +8,15 @@ split-tests: tests/tests-develop/VMTests/vmArithmeticTest/make.timestamp \
 			 tests/tests-develop/VMTests/vmBitwiseLogicOperationTest/make.timestamp \
 			 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/make.timestamp
 
-.PHONY: all defn build split-tests
+ktest: defn split-tests 
+
+.PHONY: all defn build split-tests ktest
 
 tests/tests-develop/%/make.timestamp: tests/ethereum-tests/%.json
 	@echo "==   split: $@"
 	mkdir -p $(dir $@)
-	tests/split-test.py $< $(dir $@)
+	tests/split-test.py $< $(dir $@) tests/templates/output.txt
+	cp tests/templates/config.xml $(dir $@)
 	touch $@
 
 k/ethereum-kompiled/timestamp: $(defn_files)
@@ -24,6 +28,9 @@ k/%.k: %.md
 	@echo "==  tangle: $@"
 	mkdir -p k
 	pandoc-tangle --from markdown --to code-k --code k $< > $@
+
+ktest: $(ktest_file)
+	cd k; ktest $(realpath .)/$< 
 
 tests/ethereum-tests/%.json:
 	@echo "==  git submodule: cloning upstreams test repository"
