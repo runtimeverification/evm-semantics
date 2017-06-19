@@ -72,14 +72,6 @@ module ETHEREUM
                       <number>     0:Word </number>                     // I_Hi
                       <difficulty> 0:Word </difficulty>                 // I_Hd
 
-                      // Testing Information
-                      // -------------------
-
-                      <testInfo>
-                        <currOps> .Set </currOps>
-                        <prevOps> .Set </prevOps>
-                      </testInfo>
-
                     </evm>
 
                     // Ethereum Network
@@ -140,13 +132,11 @@ Given the several special treatments of `PUSH`, the usefulness of this design fo
     rule <op> #next => #gas(OP) ~> #checkGas ~> OP ~> #next ... </op>
          <pc> PCOUNT => PCOUNT +Word 1 </pc>
          <program> ... PCOUNT |-> OP:OpCode ... </program>
-         <currOps> ... (.Set => SetItem(OP)) </currOps>
       requires notBool isPushOp(OP)
 
     rule <op> #next => #gas(PUSH(N, W)) ~> #checkGas ~> PUSH(N, W) ~> #next ... </op>
          <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
          <program> ... PCOUNT |-> PUSH(N, W) ... </program>
-         <currOps> ... (.Set => SetItem(PUSH(N, W))) </currOps>
 
     syntax InternalOp ::= "#endOfProgram"
  // -------------------------------------
@@ -210,28 +200,6 @@ Using memory while executing EVM costs gas, so the amount of memory used is trac
  // --------------------------------------------------------------------
     rule #memoryUsageUpdate(S:Int, F:Int, 0)     => S
     rule #memoryUsageUpdate(S:Int, F:Int, L:Int) => maxWord(S, (F +Int L) up/Int 32)
-```
-
-Testing Information
--------------------
-
-We need to keep track of some information for making debugging the semantics easier.
-This won't be needed once we are passing tests, but helps us get there.
-
-The cell `currOps` stores the operators we've seen during this execution, and `prevOps` store operators we've seen throughout this `krun`.
-This well help us determine which operators are new in this run so that we can get an idea of how the test failed.
-We don't care about keeping multiple versions of each parametric operator around though, so here we get rid of duplicates.
-
-```k
-    rule <currOps> ... SetItem(LOG(_))     (SetItem(LOG(_))     => .Set) </currOps>
-    rule <currOps> ... SetItem(DUP(_))     (SetItem(DUP(_))     => .Set) </currOps>
-    rule <currOps> ... SetItem(SWAP(_))    (SetItem(SWAP(_))    => .Set) </currOps>
-    rule <currOps> ... SetItem(PUSH(_, _)) (SetItem(PUSH(_, _)) => .Set) </currOps>
-
-    rule <prevOps> ... SetItem(LOG(_))     (SetItem(LOG(_))     => .Set) </prevOps>
-    rule <prevOps> ... SetItem(DUP(_))     (SetItem(DUP(_))     => .Set) </prevOps>
-    rule <prevOps> ... SetItem(SWAP(_))    (SetItem(SWAP(_))    => .Set) </prevOps>
-    rule <prevOps> ... SetItem(PUSH(_, _)) (SetItem(PUSH(_, _)) => .Set) </prevOps>
 ```
 
 EVM Programs
