@@ -221,6 +221,6 @@ module EVM-DASM
     rule #asmOpCodes( DUP(W)       ; OPS ) => W +Word 127 : #asmOpCodes(OPS)
     rule #asmOpCodes( SWAP(W)      ; OPS ) => W +Word 143 : #asmOpCodes(OPS)
     rule #asmOpCodes( LOG(W)       ; OPS ) => W +Word 160 : #asmOpCodes(OPS)
-    rule #asmOpCodes( PUSH(N, W)   ; OPS ) => N +Word 95  : (#asByteStack(W) ++ #asmOpCodes(OPS))
+    rule #asmOpCodes( PUSH(N, W)   ; OPS ) => N +Word 95  : (#padToWidth(N, #asByteStack(W)) ++ #asmOpCodes(OPS))
 endmodule
 

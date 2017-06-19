@@ -234,6 +234,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 
 -   `#asWord` will interperet a stack of bytes as a single word (with MSB first).
 -   `#asByteStack` will split a single word up into a `WordStack` where each word is actually a byte.
+-   `#padToWidth` makes sure that a `WordStack` is the correct size.
 
 ```k
     syntax Word ::= #asWord ( WordStack ) [function]

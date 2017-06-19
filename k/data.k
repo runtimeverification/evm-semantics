@@ -240,6 +240,7 @@ module EVM-DATA
 //     MSB first).
 // -   `#asByteStack` will split a single word up into a `WordStack` where each
 //     word is actually a byte.
+// -   `#padToWidth` makes sure that a `WordStack` is the correct size.
 
 
     syntax Word ::= #asWord ( WordStack ) [function]
