@@ -17,3 +17,5 @@ yellowpaper/
 paper/paper.pdf
 *.bbl
 *.blg
+
+*.DS_Store

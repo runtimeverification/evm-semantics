@@ -2,5 +2,6 @@
 
 <tests>
     <include file="tests-develop/VMTests/vmArithmeticTest/config.xml" />
+    <include file="tests-develop/VMTests/vmBitwiseLogicOperationTest/config.xml" />
 </tests>
         

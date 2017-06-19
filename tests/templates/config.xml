@@ -3,7 +3,7 @@
 <tests>
     <test
          definition="ethereum.k"
-         extension="kson" 
+         extension="json" 
          programs="." 
          results=".">
         <kompile-option name="--main-module" value="ETHEREUM-SIMULATION" />
