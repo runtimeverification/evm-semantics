@@ -46,8 +46,6 @@ module ETHEREUM-SIMULATION
     syntax EthereumCommand ::= "clear"
  // ----------------------------------
     rule <k> clear => . ... </k>
-         <currOps> COPS      => .Set  </currOps>
-         <prevOps> ... (.Set => COPS) </prevOps>
 
          <op>         _ => .          </op>
          <output>     _ => .WordStack </output>
@@ -235,8 +233,8 @@ module ETHEREUM-SIMULATION
 
     syntax EthereumCommand ::= "success" | "exception" String | "failure" String
  // ----------------------------------------------------------------------------
-    rule <k> success     => . ... </k> <currOps> _ => .Set </currOps> <prevOps> _ => .Set </prevOps>
     rule <k> exception _ => . ... </k> <op> EX:Exception ... </op>
+    rule success   => .
     rule failure _ => .
 
     syntax EthereumSpecCommand ::= "run"
