@@ -152,13 +152,16 @@ module EVM-DATA
     syntax KResult ::= String 
 
     rule X:String +HexString Y:String => X +String Y
-    rule #addPadding(X:String)        => X                                         requires (lengthString(X) %Int 256) ==Int 0
+    rule #addPadding(X:String)        => X                                             requires (lengthString(X) %Int 256) ==Int 0
     rule #addPadding(X:String)        => #addPadding(Base2String(0, 16) +String X)     requires (lengthString(X) %Int 256) =/=Int 0
     rule #wordToHex(X:Int)            => #addPadding(Base2String(X, 16))
     rule #wordStackToHex(.WordStack)  => #addPadding("")
     rule #wordStackToHex(W : WS)      => #wordToHex(W) +HexString #wordStackToHex(WS) 
 
-    syntax Word ::= keccak ( HexString ) 
+    syntax Word ::= keccak ( HexString )
+
+    //rule keccak(X: String) => String2Base(Keccak256(X), 16)
+
  // -----------------------------------------------
 
 
