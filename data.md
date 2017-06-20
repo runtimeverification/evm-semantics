@@ -155,10 +155,16 @@ Note that we give "uninterpreted function" semantics to `keccak`, which is fairl
     rule #wordStackToHex(.WordStack)  => #addPadding("")
     rule #wordStackToHex(W : WS)      => #wordToHex(W) +HexString #wordStackToHex(WS) 
 
-    syntax Word ::= keccak ( HexString )
+    syntax Word ::= "keccak" "(" HexString ")"                    [strict]
 
-    //rule keccak(X: String) => String2Base(Keccak256(X), 16)
+    // rule keccak(X: String) => chop( String2Base( Keccak256(X), 16 ) )
 
+
+    syntax Word ::= "#calcKeccak" "(" String ")"                  [strict]
+
+    rule keccak(X: String) =>  #calcKeccak(Keccak256(X))
+
+    rule #calcKeccak(X: String) => String2Base(X, 16)
  // -----------------------------------------------
 ```
 
