@@ -12,7 +12,10 @@
 // modes are used when performing the operations.
 
 
+requires "domains.k"
+
 module EVM-DATA
+    imports KRYPTO
 
     syntax KResult ::= Int 
 
@@ -163,15 +166,16 @@ module EVM-DATA
     rule X:String +HexString Y:String => X +String Y
 
     // If the content is not a complete byte
-    rule #addPadding(X:String)        => X                                             requires (lengthString(X) %Int 8) ==Int 0
-    rule #addPadding(X:String)        => #addPadding("0" +String X)     requires (lengthString(X) %Int 8) =/=Int 0
+    rule #addPadding(X:String)        => X                              requires lengthString(X) ==Int 2
+    rule #addPadding(X:String)        => #addPadding("0" +String X)     requires lengthString(X)  ==Int 1
     rule #byteToHex(X:Int)            => #addPadding(Base2String(X, 16))
-    rule #byteStackToHex(.WordStack)  => #addPadding("")
+    rule #byteStackToHex(.WordStack)  => "" 
     rule #byteStackToHex(W : WS)      => #byteToHex(W) +HexString #byteStackToHex(WS) 
 
-    syntax Word ::= "keccak" "(" HexString ")"                    [strict]
+    syntax Word ::= "keccak" "(" HexString ")"                    [strict, function]
 
-    // rule keccak(X: String) => chop( String2Base( Keccak256(X), 16 ) )
+    rule keccak(X:String) => Keccak256(X)
+
 
 
     //syntax Word ::= "#calcKeccak" "(" String ")"                  [strict]

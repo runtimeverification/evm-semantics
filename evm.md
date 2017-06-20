@@ -515,7 +515,7 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
     syntax BinStackOp ::= "SHA3"
     
  // ----------------------------
-    rule <op> SHA3 MEMSTART MEMWIDTH => keccak(#byteStackToHex(#range(LM, MEMSTART, MEMWIDTH))) ... </op>
+    rule <op> SHA3 MEMSTART MEMWIDTH => #parseHexWord(keccak(#byteStackToHex(#range(LM, MEMSTART, MEMWIDTH)))) ~> #push ... </op>
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
 ```
