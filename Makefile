@@ -5,7 +5,9 @@ build: k/ethereum-kompiled/timestamp
 all: build split-tests
 defn: $(defn_files)
 split-tests: tests/tests-develop/VMTests/vmArithmeticTest/make.timestamp \
-			 tests/tests-develop/VMTests/vmBitwiseLogicOperationTest/make.timestamp
+			 tests/tests-develop/VMTests/vmBitwiseLogicOperationTest/make.timestamp \
+			 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/make.timestamp
+
 ktest: defn split-tests 
 
 .PHONY: all defn build split-tests ktest

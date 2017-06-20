@@ -350,6 +350,34 @@ module ETHEREUM
       requires notBool #addr(ACCT) in ACCTS
 
 
+// Adding Accounts {#adding-accounts-1}
+// ---------------
+
+
+    syntax Exception  ::= "#badAccount"
+    syntax InternalOp ::= "#newAccount" Word
+ // ----------------------------------------
+    rule <op> #newAccount ACCT => . ... </op>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires #addr(ACCT) in ACCTS
+
+    rule <op> #newAccount ACCT => . ... </op>
+         <activeAccounts> ACCTS (.Set => SetItem(#addr(ACCT))) </activeAccounts>
+         <accounts>
+           ( .Bag
+          => <account>
+               <acctID>  #addr(ACCT)   </acctID>
+               <balance> 0             </balance>
+               <code>    .Map          </code>
+               <storage> .Map          </storage>
+               <acctMap> "nonce" |-> 0 </acctMap>
+             </account>
+           )
+           ...
+         </accounts>
+      requires notBool #addr(ACCT) in ACCTS
+
+
 // EVM Substate Log
 // ----------------
 
@@ -503,8 +531,9 @@ module ETHEREUM
     rule <op> SGT W0 W1 => W0 s>Word W1 ~> #push ... </op>
 
     syntax BinStackOp ::= "SHA3"
+    
  // ----------------------------
-    rule <op> SHA3 MEMSTART MEMWIDTH => keccak(#range(LM, MEMSTART, MEMWIDTH)) ... </op>
+    rule <op> SHA3 MEMSTART MEMWIDTH => #parseHexWord(keccak(#byteStackToHex(#range(LM, MEMSTART, MEMWIDTH)))) ~> #push ... </op>
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
 
@@ -564,15 +593,21 @@ module ETHEREUM
     syntax NullStackOp ::= "JUMPDEST"
     syntax UnStackOp   ::= "JUMP"
     syntax BinStackOp  ::= "JUMPI"
- // ------------------------------
+
+  // --------- Sec 9.4.2 (127) ----------
     rule <op> JUMPDEST => . ... </op>
 
-    rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
-    rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
+    rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> 
+    rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program>
 
-    rule <op> JUMP  DEST   => . ... </op> <program> ... DEST |-> JUMPDEST ... </program> <pc> _ => DEST </pc>
-    rule <op> JUMPI DEST 0 => . ... </op> <program> ... DEST |-> JUMPDEST ... </program>
-    rule <op> JUMPI DEST I => . ... </op> <program> ... DEST |-> JUMPDEST ... </program> <pc> _ => DEST </pc> requires I =/=K 0
+    rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> PMAP </program> requires notBool DEST in keys(PMAP)
+    rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> PMAP </program> requires notBool DEST in keys(PMAP)
+
+
+  // --------- Sec 9.4.2 (129) ----------
+    rule <op> JUMP  DEST   => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires PMAP[DEST] ==K JUMPDEST
+    rule <op> JUMPI DEST 0 => . ... </op> <program> PMAP </program>                      requires PMAP[DEST] ==K JUMPDEST
+    rule <op> JUMPI DEST I => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires PMAP[DEST] ==K JUMPDEST andBool I =/=K 0
 
     syntax NullStackOp ::= "STOP"
  // -----------------------------
@@ -663,10 +698,8 @@ module ETHEREUM
          </account>
       requires #addr(ACCTTO) ==K ACCTTOACT
 
-    rule <op> EXTCODESIZE ACCTTO => #newAccount ACCTTO ~> 0 ~> #push ... </op>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool #addr(ACCTTO) in ACCTS
 
+// \`\`\`
 
 
     syntax QuadStackOp ::= "EXTCODECOPY"
@@ -691,16 +724,32 @@ module ETHEREUM
 
 // These operations interact with the account storage.
 
+// The specs don't describe what happens on loading a non-existent element from
+// storage. This is either undefined behavior, or is exceptional due to the
+// instruction being invalid.
+
 
     syntax UnStackOp  ::= "SLOAD"
- // -----------------------------
-    rule <op> SLOAD INDEX => VALUE ~> #push ... </op>
+
+ // ---------------------------------------------------------------------------------------
+
+
+    rule <op> SLOAD INDEX => 0 ~> #push ... </op>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> SMAP  </storage>
+           ...
+         </account> requires notBool INDEX in keys(SMAP)
+
+
+    rule <op> SLOAD INDEX => VALUE  ~> #push ... </op>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> ... INDEX |-> VALUE ... </storage>
            ...
-         </account>
+         </account> 
 
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
