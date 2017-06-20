@@ -149,29 +149,31 @@ using the contents of any cell in the array as an address - an advantage that EV
 ```k
     syntax HexString ::=   String 
                          | "#addPadding"     "(" HexString ")"    [function]
-                         | "#wordToHex"      "(" Word ")"         [function]
-                         | "#wordStackToHex" "(" WordStack ")"    [function]
+                         | "#byteToHex"      "(" Word ")"         [function]
+                         | "#byteStackToHex" "(" WordStack ")"    [function]
                          | HexString "+HexString" HexString       [function, strict]
 
     syntax KResult ::= String 
 
     rule X:String +HexString Y:String => X +String Y
-    rule #addPadding(X:String)        => X                                             requires (lengthString(X) %Int 256) ==Int 0
-    rule #addPadding(X:String)        => #addPadding(Base2String(0, 16) +String X)     requires (lengthString(X) %Int 256) =/=Int 0
-    rule #wordToHex(X:Int)            => #addPadding(Base2String(X, 16))
-    rule #wordStackToHex(.WordStack)  => #addPadding("")
-    rule #wordStackToHex(W : WS)      => #wordToHex(W) +HexString #wordStackToHex(WS) 
+
+    // If the content is not a complete byte
+    rule #addPadding(X:String)        => X                                             requires (lengthString(X) %Int 8) ==Int 0
+    rule #addPadding(X:String)        => #addPadding("0" +String X)     requires (lengthString(X) %Int 8) =/=Int 0
+    rule #byteToHex(X:Int)            => #addPadding(Base2String(X, 16))
+    rule #byteStackToHex(.WordStack)  => #addPadding("")
+    rule #byteStackToHex(W : WS)      => #byteToHex(W) +HexString #byteStackToHex(WS) 
 
     syntax Word ::= "keccak" "(" HexString ")"                    [strict]
 
     // rule keccak(X: String) => chop( String2Base( Keccak256(X), 16 ) )
 
 
-    syntax Word ::= "#calcKeccak" "(" String ")"                  [strict]
+    //syntax Word ::= "#calcKeccak" "(" String ")"                  [strict]
 
-    rule keccak(X: String) =>  #calcKeccak(Keccak256(X))
+    //rule keccak(X: String) =>  #calcKeccak(Keccak256(X))
 
-    rule #calcKeccak(X: String) => String2Base(X, 16)
+    //rule #calcKeccak(X: String) => String2Base(X, 16)
  // -----------------------------------------------
 ```
 

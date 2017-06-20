@@ -140,34 +140,45 @@ module EVM-DATA
 
 
 // Note that we give "uninterpreted function" semantics to `keccak`, which is
-// fairly close to accurate.
+// fairly close to accurate. For SHA3, it must be noted that the we make accesses
+// to local memory, which is a word addressable byte array. The authors make it
+// clear why the memory has to be word addressable - the word length is the same as
+// length the output of Keccak 256 in SHA3's specifications. However, there seems
+// to be a lack of explanation behind the decision to use a byte array instead of a
+// word array. This goes against usual notions that assembly languages follow,
+// which is word addressable word array (where the length of the word is usually 32
+// or 64 bits). This allows using\
+// using the contents of any cell in the array as an address - an advantage that
+// EVM decided to forego.
 
 
     syntax HexString ::=   String 
                          | "#addPadding"     "(" HexString ")"    [function]
-                         | "#wordToHex"      "(" Word ")"         [function]
-                         | "#wordStackToHex" "(" WordStack ")"    [function]
+                         | "#byteToHex"      "(" Word ")"         [function]
+                         | "#byteStackToHex" "(" WordStack ")"    [function]
                          | HexString "+HexString" HexString       [function, strict]
 
     syntax KResult ::= String 
 
     rule X:String +HexString Y:String => X +String Y
-    rule #addPadding(X:String)        => X                                             requires (lengthString(X) %Int 256) ==Int 0
-    rule #addPadding(X:String)        => #addPadding(Base2String(0, 16) +String X)     requires (lengthString(X) %Int 256) =/=Int 0
-    rule #wordToHex(X:Int)            => #addPadding(Base2String(X, 16))
-    rule #wordStackToHex(.WordStack)  => #addPadding("")
-    rule #wordStackToHex(W : WS)      => #wordToHex(W) +HexString #wordStackToHex(WS) 
+
+    // If the content is not a complete byte
+    rule #addPadding(X:String)        => X                                             requires (lengthString(X) %Int 8) ==Int 0
+    rule #addPadding(X:String)        => #addPadding("0" +String X)     requires (lengthString(X) %Int 8) =/=Int 0
+    rule #byteToHex(X:Int)            => #addPadding(Base2String(X, 16))
+    rule #byteStackToHex(.WordStack)  => #addPadding("")
+    rule #byteStackToHex(W : WS)      => #byteToHex(W) +HexString #byteStackToHex(WS) 
 
     syntax Word ::= "keccak" "(" HexString ")"                    [strict]
 
     // rule keccak(X: String) => chop( String2Base( Keccak256(X), 16 ) )
 
 
-    syntax Word ::= "#calcKeccak" "(" String ")"                  [strict]
+    //syntax Word ::= "#calcKeccak" "(" String ")"                  [strict]
 
-    rule keccak(X: String) =>  #calcKeccak(Keccak256(X))
+    //rule keccak(X: String) =>  #calcKeccak(Keccak256(X))
 
-    rule #calcKeccak(X: String) => String2Base(X, 16)
+    //rule #calcKeccak(X: String) => String2Base(X, 16)
  // -----------------------------------------------
 
 
