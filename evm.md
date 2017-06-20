@@ -463,9 +463,10 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
     rule <op> ADDMOD W0 W1 W2 => (W0 +Int W1) %Word W2 ~> #push ... </op>
     rule <op> MULMOD W0 W1 W2 => (W0 *Int W1) %Word W2 ~> #push ... </op>
 
-    syntax BinStackOp ::= "BYTE"
- // ----------------------------
-    rule <op> BYTE INDEX W  => byte(INDEX, W) ~> #push ... </op>
+    syntax BinStackOp ::= "BYTE" | "SIGNEXTEND"
+ // -------------------------------------------
+    rule <op> BYTE INDEX W     => byte(INDEX, W)     ~> #push ... </op>
+    rule <op> SIGNEXTEND W0 W1 => signextend(W0, W1) ~> #push ... </op>
 
     syntax BinStackOp ::= "AND" | "EVMOR" | "XOR"
  // ---------------------------------------------
@@ -877,10 +878,6 @@ Unimplemented
 These operators should be implemented and binned into the correct sections above.
 
 ```k
-    syntax BinStackOp ::= "SIGNEXTEND"
- // ----------------------------------
-    rule <op> SIGNEXTEND W0 W1 => signextend(W0, W1) ~> #push ... </op>
-
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
 ```
