@@ -579,7 +579,7 @@ module ETHEREUM
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
-    rule <op> BLOCKHASH N => keccak(N : .WordStack) ~> #push ... </op>
+    rule <op> BLOCKHASH N => #parseHexWord(keccak(#byteStackToHex(N : .WordStack))) ~> #push ... </op>
 
 
 // `JUMP*`
