@@ -569,6 +569,10 @@ module ETHEREUM
     rule <op> JUMPI DEST 0 => . ... </op> <program> ... DEST |-> JUMPDEST ... </program>
     rule <op> JUMPI DEST I => . ... </op> <program> ... DEST |-> JUMPDEST ... </program> <pc> _ => DEST </pc> requires I =/=K 0
 
+    syntax NullStackOp ::= "STOP"
+ // -----------------------------
+    rule <op> STOP ~> #next => #endOfProgram ... </op>
+
 
 // Call Data
 // ---------
@@ -866,9 +870,6 @@ module ETHEREUM
     syntax BinStackOp ::= "SIGNEXTEND"
  // ----------------------------------
     rule <op> SIGNEXTEND W0 W1 => signextend(W0, W1) ~> #push ... </op>
-
-    syntax NullStackOp ::= "STOP"
- // -----------------------------
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
