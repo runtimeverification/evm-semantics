@@ -44,6 +44,18 @@ tangle_ktest() {
     popd
 }
 
+tangle_krun() {
+    run_make all
+    list_tests "$@" | sort |
+    while read test_file; do
+        local output_differs=false
+        progress "running: $test_file"
+        krun --debug --directory k/ "$test_file" \
+            | xmllint -format - \
+            | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
+    done
+}
+
 have_tangle=true
 check_for_tangle() {
     type pandoc-tangle >/dev/null 2>&1  || {
@@ -68,6 +80,7 @@ usage() {
        $0 defn             Only detangle the definitions
        $0 test <test.json> krun the test file and check that it succeeds
        $0 test <expr>      Use find to locate a test file in tests/tests-develop/VMTests/
+       $0 krun <arg>       Same as test, but pretty print output instead of checking it
 "
 }
 
@@ -77,8 +90,9 @@ while [[ "$#" -gt '0' ]]; do
     case "$tangle_command" in
         build)        run_make build ;;
         defn)         run_make defn ;;
-        test)         tangle_test "$@" ; exit ;;
+        test)         tangle_test "$@"; exit ;;
         ktest)        tangle_ktest ;;
+        krun)         tangle_krun "$@"; exit ;;
         *)            usage; exit 1;;
     esac
 done
