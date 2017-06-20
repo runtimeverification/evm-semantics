@@ -531,7 +531,7 @@ module ETHEREUM
 
     syntax BinStackOp ::= "SHA3"
  // ----------------------------
-    rule <op> SHA3 MEMSTART MEMWIDTH => keccak(#range(LM, MEMSTART, MEMWIDTH)) ... </op>
+    rule <op> SHA3 MEMSTART MEMWIDTH => keccak(#wordStackToHex(#range(LM, MEMSTART, MEMWIDTH))) ... </op>
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
 
