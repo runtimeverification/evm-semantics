@@ -833,11 +833,6 @@ module ETHEREUM
       requires #addr(ACCTTO) ==K ACCTTOACT
 
 
-// TODO: Calculating gas for `SELFDESTRUCT` needs to take into account the cost of
-// creating an account if the recipient address doesn't exist yet. Should it also
-// actually create the recipient address if not? Perhaps `#transfer` can take that
-// into account automatically for us?
-
 
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
@@ -877,7 +872,7 @@ module ETHEREUM
  // -------------------------------
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
            => #pushCallStack
-           ~> #call ACCT #newAddr(ACCT, NONCE) #range(LM, MEMSTART, MEMWIDTH) VALUE .WordStack
+           ~> #call ACCT #newAddr(ACCT, NONCE) #asMap(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
            ~> #codeDeposit
           ...
          </op>

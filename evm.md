@@ -849,7 +849,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
  // -------------------------------
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
            => #pushCallStack
-           ~> #call ACCT #newAddr(ACCT, NONCE) #range(LM, MEMSTART, MEMWIDTH) VALUE .WordStack
+           ~> #call ACCT #newAddr(ACCT, NONCE) #asMap(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
            ~> #codeDeposit
           ...
          </op>
