@@ -138,6 +138,15 @@ Here `chop` will move a number back into the correct range and `bool2Word` will 
 ```
 
 Note that we give "uninterpreted function" semantics to `keccak`, which is fairly close to accurate.
+For SHA3, it must be noted that the we make access to local memory, which is a word addressable byte array.
+The authors make it clear why the memory has to be word addressable - the word length is the same as length the output
+of Keccak 256 in SHA3's specifications. However, there seems to be a lack of explanation behind the decision to use 
+a byte array instead of a word array for local memory. This goes against usual notions that assembly languages usually
+follow, which is word addressable word array (where the length of the word is usually 32 or 64 bits). This allows storing 
+using the contents of any cell in the array as an address. 
+
+Todo: I believe that the semantics misses out on the reasons for using bytes instead of words - something which 
+should be addressed. 
 
 ```k
     syntax HexString ::=   String 
