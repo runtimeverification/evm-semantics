@@ -597,12 +597,11 @@ module ETHEREUM
   // --------- Sec 9.4.2 (127) ----------
     rule <op> JUMPDEST => . ... </op>
 
-    rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> 
-    rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program>
+    rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
+    rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
 
     rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> PMAP </program> requires notBool DEST in keys(PMAP)
     rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> PMAP </program> requires notBool DEST in keys(PMAP)
-
 
   // --------- Sec 9.4.2 (129) ----------
     rule <op> JUMP  DEST   => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires PMAP[DEST] ==K JUMPDEST
