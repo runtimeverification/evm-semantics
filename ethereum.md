@@ -33,6 +33,18 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
 
     syntax EthereumSimulation ::= JSON
  // ----------------------------------
+    rule JSONINPUT:JSON => run JSONINPUT success .EthereumSimulation
+```
+
+Pretty Ethereum Input
+---------------------
+
+For verification purposes, it's much easier to specify a program in terms of its op-codes and not the hex-encoding that the tests use.
+To do so, we'll extend sort `JSON` with some EVM specific syntax.
+
+```k
+    syntax JSON ::= Word | WordStack | OpCodes | Map
+ // ------------------------------------------------
 ```
 
 Primitive Commands
@@ -87,50 +99,55 @@ Primitive Commands
 ```k
     syntax EthereumSpecCommand ::= "mkAcct"
  // ---------------------------------------
-    rule <k> mkAcct ACCTID => . ... </k> <op> . => #newAccount #parseHexWord(ACCTID) </op>
+    rule <k> mkAcct (ACCTID:String) => . ... </k> <op> . => #newAccount #parseHexWord(ACCTID) </op>
 
     syntax EthereumSpecCommand ::= "load"
  // -------------------------------------
-    rule load DATA : { .JSONList }        => .
-    rule load DATA : { KEY : VAL , REST } => load DATA : { KEY : VAL } ~> load DATA : { REST } requires REST =/=K .JSONList
+    rule load DATA : { .JSONList } => .
+    rule load DATA : { (KEY:String) : VAL , REST } => load DATA : { KEY : VAL } ~> load DATA : { REST } requires REST =/=K .JSONList
 ```
 
 Here we load the relevant information for accounts.
 
 ```k
-    rule load "pre" : { ACCTID : ACCT } => mkAcct ACCTID ~> load "account" : { ACCTID : ACCT }
+    rule load "pre" : { (ACCTID:String) : ACCT } => mkAcct ACCTID ~> load "account" : { ACCTID : ACCT }
 
     rule load "account" : { .JSONList } => .
-    rule load "account" : { ACCTID : { KEY : VAL , REST } } => load "account" : { ACCTID : { KEY : VAL } } ~> load "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
+    rule load "account" : { ACCTID : { (KEY:String) : VAL , REST } } => load "account" : { ACCTID : { KEY : VAL } } ~> load "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
 
-    rule <k> load "account" : { ACCTID : { "balance" : (BAL:String) } } => . ... </k>
+    rule load "account" : { ACCTID : { "balance" : ((BAL:String) => #parseHexWord(BAL)) } }
+    rule <k> load "account" : { ACCTID : { "balance" : (BAL:Word) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <balance> _ => #parseHexWord(BAL) </balance>
+           <balance> _ => BAL </balance>
            ...
          </account>
       requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule <k> load "account" : { ACCTID : { "code" : (CODE:String) } } => . ... </k>
+    rule load "account" : { ACCTID : { "code" : ((CODE:String) => #asMap(#dasmOpCodes(#parseByteStack(CODE)))) } }
+    rule load "account" : { ACCTID : { "code" : ((CODE:OpCodes) => #asMap(CODE)) } }
+    rule <k> load "account" : { ACCTID : { "code" : (CODE:Map) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <code> _ => #asMap(#dasmOpCodes(#parseByteStack(CODE))) </code>
+           <code> _ => CODE </code>
            ...
          </account>
       requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule <k> load "account" : { ACCTID : { "nonce" : (NONCE:String) } } => . ... </k>
+    rule load "account" : { ACCTID : { "nonce" : ((NONCE:String) => #parseHexWord(NONCE)) } }
+    rule <k> load "account" : { ACCTID : { "nonce" : (NONCE:Word) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <acctMap> AM => AM [ "nonce" <- #parseHexWord(NONCE) ] </acctMap>
+           <acctMap> AM => AM [ "nonce" <- NONCE ] </acctMap>
            ...
          </account>
       requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule <k> load "account" : { ACCTID : { "storage" : (STORAGE:JSON) } } => . ... </k>
+    rule load "account" : { ACCTID : { "storage" : ((STORAGE:JSON) => #parseMap(STORAGE)) } } requires notBool isMap(STORAGE)
+    rule <k> load "account" : { ACCTID : { "storage" : (STORAGE:Map) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <storage> _ => #parseMap(STORAGE) </storage>
+           <storage> _ => STORAGE </storage>
            ...
          </account>
       requires #addr(#parseHexWord(ACCTID)) ==K ACCT
@@ -180,47 +197,51 @@ Here we load the environmental information.
     syntax EthereumSpecCommand ::= "check"
  // --------------------------------------
     rule check DATA : { .JSONList } => .
-    rule check DATA : { KEY : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST } requires REST =/=K .JSONList
+    rule check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST } requires REST =/=K .JSONList
 
-    rule check "post" : { ACCTID : ACCT } => check ACCTID : ACCT
+    rule check "post" : { (ACCTID:String) : ACCT } => check ACCTID : ACCT
     rule check TESTID : { "post" : POST } => check "post" : POST ~> failure TESTID
     rule check TESTID : { "out"  : OUT  } => check "out"  : OUT  ~> failure TESTID
 
-    rule <k> check ACCTID : { "balance" : (VAL:String) } => . ... </k>
+    rule check ACCTID : { "balance" : ((BAL:String) => #parseHexWord(BAL)) }
+    rule <k> check ACCTID : { "balance" : (BAL:Word) } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            ...
          </account>
-      requires #addr(#parseHexWord(ACCTID)) ==K ACCT andBool #parseHexWord(VAL) ==K BAL
+      requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule <k> check ACCTID : { "nonce" : (VAL:String) } => . ... </k>
+    rule check ACCTID : { "nonce" : ((NONCE:String) => #parseHexWord(NONCE)) }
+    rule <k> check ACCTID : { "nonce" : (NONCE:Word) } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <acctMap> "nonce" |-> NONCE </acctMap>
            ...
          </account>
-      requires #addr(#parseHexWord(ACCTID)) ==K ACCT andBool #parseHexWord(VAL) ==K NONCE
+      requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule <k> check ACCTID : { "storage" : (STG:JSON) } => . ... </k>
+    rule check ACCTID : { "storage" : ((STORAGE:JSON) => #parseMap(STORAGE)) } requires notBool isMap(STORAGE)
+    rule <k> check ACCTID : { "storage" : (STORAGE:Map) } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
            ...
          </account>
-      requires #addr(#parseHexWord(ACCTID)) ==K ACCT andBool #parseMap(STG) ==K STORAGE
+      requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule <k> check ACCTID : { "code" : (PGM:String) } => . ... </k>
+    rule check ACCTID : { "code" : ((CODE:String) => #dasmOpCodes(#parseByteStack(CODE))) }
+    rule check ACCTID : { "code" : ((CODE:OpCodes) => #asMap(CODE)) }
+    rule <k> check ACCTID : { "code" : (CODE:Map) } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
            ...
          </account>
-      requires #addr(#parseHexWord(ACCTID)) ==K ACCT andBool #asMap(#dasmOpCodes(#parseByteStack(PGM))) ==K CODE
+      requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule <k> check "out" : (OUT:String) => . ... </k>
-         <output> CURROUT </output>
-      requires #parseByteStack(OUT) ==K CURROUT
+    rule check "out" : ((OUT:String) => #parseByteStack(OUT))
+    rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
 ```
 
 ### Running Tests
@@ -240,14 +261,9 @@ Here we load the environmental information.
     rule run { TESTID : (TEST:JSON)
              , TESTS
              }
-      =>
-         { run (TESTID : TEST)
-           clear
-           run { TESTS }
-           .EthereumSimulation
-         }
-
-    rule JSONINPUT:JSON => run JSONINPUT success .EthereumSimulation
+      =>    run (TESTID : TEST)
+         ~> clear
+         ~> run { TESTS }
 ```
 
 TODO: The fields "callcreates" and "logs" should be dealt with properly.
@@ -270,8 +286,8 @@ Here we pull apart a test into the sequence of `EthereumCommand` to run for it.
 
     rule run TESTID : { "exec" : (EXEC:JSON) } => run "exec" : EXEC ~> start ~> flush
     rule run "exec" : { .JSONList } => .
-    rule run "exec" : { KEY    : VALUE             } => load "exec" : { KEY : VALUE }
-    rule run "exec" : { KEY    : VALUE , REST      } => load "exec" : { KEY : VALUE } ~> run  "exec" : { REST }          requires REST =/=K .JSONList andBool KEY =/=K "code"
-    rule run "exec" : { "code" : CODE  , REST      } => run  "exec" : { REST }        ~> load "exec" : { "code" : CODE } requires REST =/=K .JSONList
+    rule run "exec" : { (KEY:String) : VALUE        } => load "exec" : { KEY : VALUE }
+    rule run "exec" : { (KEY:String) : VALUE , REST } => load "exec" : { KEY : VALUE } ~> run  "exec" : { REST }          requires REST =/=K .JSONList andBool KEY =/=K "code"
+    rule run "exec" : { "code"       : CODE  , REST } => run  "exec" : { REST }        ~> load "exec" : { "code" : CODE } requires REST =/=K .JSONList
 endmodule
 ```
