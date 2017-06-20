@@ -604,6 +604,10 @@ module ETHEREUM
     rule <op> JUMPI DEST 0 => . ... </op> <program> PMAP </program>                      requires PMAP[DEST] ==K JUMPDEST
     rule <op> JUMPI DEST I => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires PMAP[DEST] ==K JUMPDEST andBool I =/=K 0
 
+    syntax NullStackOp ::= "STOP"
+ // -----------------------------
+    rule <op> STOP ~> #next => #endOfProgram ... </op>
+
 
 // Call Data
 // ---------
@@ -915,9 +919,6 @@ module ETHEREUM
     syntax BinStackOp ::= "SIGNEXTEND"
  // ----------------------------------
     rule <op> SIGNEXTEND W0 W1 => signextend(W0, W1) ~> #push ... </op>
-
-    syntax NullStackOp ::= "STOP"
- // -----------------------------
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------

@@ -586,6 +586,10 @@ The `JUMP*` family of operations affect the current program counter.
     rule <op> JUMP  DEST   => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires PMAP[DEST] ==K JUMPDEST
     rule <op> JUMPI DEST 0 => . ... </op> <program> PMAP </program>                      requires PMAP[DEST] ==K JUMPDEST
     rule <op> JUMPI DEST I => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires PMAP[DEST] ==K JUMPDEST andBool I =/=K 0
+
+    syntax NullStackOp ::= "STOP"
+ // -----------------------------
+    rule <op> STOP ~> #next => #endOfProgram ... </op>
 ```
 
 Call Data
@@ -892,9 +896,6 @@ These operators should be implemented and binned into the correct sections above
     syntax BinStackOp ::= "SIGNEXTEND"
  // ----------------------------------
     rule <op> SIGNEXTEND W0 W1 => signextend(W0, W1) ~> #push ... </op>
-
-    syntax NullStackOp ::= "STOP"
- // -----------------------------
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
