@@ -575,8 +575,8 @@ The `JUMP*` family of operations affect the current program counter.
   // --------- Sec 9.4.2 (127) ----------
     rule <op> JUMPDEST => . ... </op>
 
-    rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> 
-    rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program>
+    rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program>   requires OP =/=K JUMPDEST
+    rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program>   requires OP =/=K JUMPDEST
 
     rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> PMAP </program> requires notBool DEST in keys(PMAP)
     rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> PMAP </program> requires notBool DEST in keys(PMAP)
