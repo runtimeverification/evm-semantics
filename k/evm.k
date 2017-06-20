@@ -740,13 +740,14 @@ module ETHEREUM
          <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #size(OUT)), OUT) ] </localMem>
 
 
-// -   `#call_____` takes the calling account, the account to execute as, the
-//     accounts code to use, the amount to transfer, and the arguments.
+// -   `#call_____` takes the calling account, the account to execute as, the code
+//     to execute, the amount to transfer, and the arguments.
 
 
-    syntax InternalOp ::= "#call" Word Word Word Word WordStack
- // -----------------------------------------------------------
-    rule <op> #call ACCTFROM ACCTTO ACCTEXEC VALUE ARGS => . ... </op>
+    syntax Exception  ::= "#maxCallDepth" | "#balanceTooLow"
+    syntax InternalOp ::= "#call" Word Word Map Word WordStack
+ // ----------------------------------------------------------
+    rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => . ... </op>
          <callStack> CS </callStack>
          <id>       _ => ACCTTO       </id>
          <pc>       _ => 0            </pc>
@@ -754,16 +755,23 @@ module ETHEREUM
          <localMem> _ => #asMap(ARGS) </localMem>
          <program>  _ => CODE         </program>
          <account>
-           <acctID> ACCTEXEC </acctID>
-           <code>   CODE     </code>
-           ...
-         </account>
-         <account>
            <acctID>  ACCTFROM </acctID>
-           <balance> BAL      </balance>
+           <balance> BAL => BAL -Word VALUE </balance>
            ...
          </account>
       requires word2Bool(VALUE <=Word BAL) andBool (#size(CS) <Int 1024)
+
+    rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #balanceTooLow ... </op>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
+      requires word2Bool(VALUE >Word BAL)
+
+    rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #maxCallDepth ... </op>
+         <callStack> CS </callStack>
+      requires #size(CS) >Int 1024
 
 
 
@@ -778,33 +786,51 @@ module ETHEREUM
  // ------------------------------------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
-           ~> #call ACCTFROM #addr(ACCTTO) #addr(ACCTTO) VALUE #range(LM, ARGSTART, ARGWIDTH)
+           ~> #call ACCTFROM #addr(ACCTTO) CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #returnLoc RETSTART RETWIDTH
            ...
          </op>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) </memoryUsed>
+         <account>
+           <acctID> ACCTTOACT </acctID>
+           <code> CODE </code>
+           ...
+         </account>
+      requires #addr(ACCTTO) ==K ACCTTOACT
 
     rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
-           ~> #call ACCTFROM ACCTFROM #addr(ACCTTO) VALUE #range(LM, ARGSTART, ARGWIDTH)
+           ~> #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #returnLoc RETSTART RETWIDTH
            ...
          </op>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) </memoryUsed>
+         <account>
+           <acctID> ACCTTOACT </acctID>
+           <code> CODE </code>
+           ...
+         </account>
+      requires #addr(ACCTTO) ==K ACCTTOACT
 
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
-           ~> #call ACCTFROM ACCTFROM #addr(ACCTTO) 0 #range(LM, ARGSTART, ARGWIDTH)
+           ~> #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
            ~> #returnLoc RETSTART RETWIDTH
            ...
          </op>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) </memoryUsed>
+         <account>
+           <acctID> ACCTTOACT </acctID>
+           <code> CODE </code>
+           ...
+         </account>
+      requires #addr(ACCTTO) ==K ACCTTOACT
 
 
 // TODO: Calculating gas for `SELFDESTRUCT` needs to take into account the cost of
@@ -831,29 +857,42 @@ module ETHEREUM
          </account>
       requires #addr(ACCTTO) ==K ACCTTOACT
 
-    rule <op> SELFDESTRUCT ACCTTO => . ... </op>
+    rule <op> SELFDESTRUCT ACCTTO => #newAccount #addr(ACCTTO) ... </op>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
          <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Word Rself-destruct #fi </refund>
          <activeAccounts> ACCTS (.Set => SetItem(#addr(ACCTTO))) </activeAccounts>
-         <accounts>
-           <account>
-             <acctID> ACCT </acctID>
-             <balance> BALFROM => 0 </balance>
-             ...
-           </account>
-           ( .Bag
-          => <account>
-               <acctID>  #addr(ACCTTO) </acctID>
-               <balance> BALFROM       </balance>
-               <code>    .Map          </code>
-               <storage> .Map          </storage>
-               <acctMap> "nonce" |-> 0 </acctMap>
-             </account>
-           )
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BALFROM => 0 </balance>
            ...
-         </accounts>
+         </account>
       requires notBool #addr(ACCTTO) in ACCTS
+
+
+
+    syntax Word        ::= #newAddr ( Word , Word )
+    syntax InternalOp  ::= "#codeDeposit"
+    syntax TernStackOp ::= "CREATE"
+ // -------------------------------
+    rule <op> CREATE VALUE MEMSTART MEMWIDTH
+           => #pushCallStack
+           ~> #call ACCT #newAddr(ACCT, NONCE) #range(LM, MEMSTART, MEMWIDTH) VALUE .WordStack
+           ~> #codeDeposit
+          ...
+         </op>
+         <id> ACCT </id>
+         <callStack> CS </callStack>
+         <localMem> LM </localMem>
+         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
+         <activeAccounts> ACCTS </activeAccounts>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL => BAL -Word VALUE </balance>
+           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+           ...
+         </account>
+      requires #size(CS) <Int 1024 andBool word2Bool(BAL >=Word VALUE)
 
 
 // Unimplemented
@@ -872,9 +911,6 @@ module ETHEREUM
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
-
-    syntax TernStackOp ::= "CREATE"
- // -------------------------------
 
 
 // Ethereum Gas Calculation
