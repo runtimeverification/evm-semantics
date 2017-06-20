@@ -530,6 +530,10 @@ These operators make queries about the current execution state.
          <program> PGM </program>
          <localMem> LM => LM [ MEMSTART := #asmOpCodes(#asOpCodes(PGM)) [ PGMSTART .. WIDTH ] ] </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, WIDTH) </memoryUsed>
+
+    syntax UnStackOp ::= "BLOCKHASH"
+ // --------------------------------
+    rule <op> BLOCKHASH N => keccak(N : .WordStack) ~> #push ... </op>
 ```
 
 `JUMP*`
@@ -870,16 +874,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
            ...
          </account>
       requires #size(CS) <Int 1024 andBool word2Bool(BAL >=Word VALUE)
-```
-
-Unimplemented
-=============
-
-These operators should be implemented and binned into the correct sections above.
-
-```k
-    syntax UnStackOp ::= "BLOCKHASH"
- // --------------------------------
 ```
 
 Ethereum Gas Calculation
