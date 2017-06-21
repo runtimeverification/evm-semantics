@@ -126,8 +126,8 @@ The function `#exceptional?` defined below performs this check.
 If it's not exceptional, then the gas is deducted, the operator is run, and the program counter is incremented.
 
 ```k
-    syntax KItem ::= "#catch" | "#exception"
- // ----------------------------------------
+    syntax KItem ::= "#catch" | "#exception" | "#end"
+ // -------------------------------------------------
     rule <op> #exception ~> OP:OpCode => #exception ... </op>
 
     syntax InternalOp ::= "#next"
@@ -160,7 +160,7 @@ It checks, in order:
 
 ```k
     syntax Bool ::= "#exceptional?" "(" OpCode ")" [function]
- // ---------------------------------------------------
+ // ---------------------------------------------------------
     rule <op> #exceptional?(OP)
            =>            isInvalidOp(OP)
               orElseBool #stackNeeded(OP) <Int #size(WS)
@@ -195,9 +195,10 @@ It checks, in order:
     rule #stackNeeded(BOP:BinStackOp)  => 2
     rule #stackNeeded(TOP:TernStackOp) => 3
     rule #stackNeeded(QOP:QuadStackOp) => 4
-    rule #stackNeeded(POP:PushOp)      => 0
+    rule #stackNeeded(PUSH(_, _))      => 0
     rule #stackNeeded(DUP(N))          => N
     rule #stackNeeded(SWAP(N))         => N +Int 1
+    rule #stackNeeded(LOG(N))          => N +Int 2
     rule #stackNeeded(DELEGATECALL)    => 6
     rule #stackNeeded(COP:CallOp)      => 7 requires COP =/=K DELEGATECALL
 
@@ -215,7 +216,7 @@ It checks, in order:
                      ; LOG(0) ; RETURN ; SELFDESTRUCT ; .OpCodes            [macro]
 ```
 
-### Jump Destination Validity
+### Jump Destination
 
 -   `#badJumpDest?` checks that if it's a `JUMP*` operation that it's jumping to a valid destination.
 
@@ -643,7 +644,7 @@ The `JUMP*` family of operations affect the current program counter.
 ```k
     syntax NullStackOp ::= "STOP"
  // -----------------------------
-    rule <op> STOP ~> #next => #endOfProgram ... </op>
+    rule <op> STOP => #end ... </op>
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
@@ -962,13 +963,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 Ethereum Gas Calculation
 ========================
 
--   `#gas` will compute the gas used and then deduct it from the total gas available.
-
-```k
-    syntax Int ::= #gas ( Word ) [function]
- // ---------------------------------------
-```
-
 The gas calculation is designed to mirror the style of the yellowpaper.
 
 ```k
@@ -1035,8 +1029,8 @@ The gas calculation is designed to mirror the style of the yellowpaper.
 TODO: The rules marked as `INCORRECT` below are performing simpler gas calculations than the actual yellowpaper specifies.
 
 ```k
-    syntax Word ::= #gas ( OpCode ) [function]
- // ------------------------------------------
+    syntax Int ::= #gas ( OpCode ) [function]
+ // -----------------------------------------
     // rule <op> #gas(OP)           => ???                           ... </op> requires OP in Wcall
     // rule <op> #gas(SELFDESTRUCT) => ???                           ... </op>
     rule <op> #gas(EXP)          => Gexp                          ... </op>                        // INCORRECT

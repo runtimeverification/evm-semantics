@@ -132,8 +132,8 @@ module ETHEREUM
 // counter is incremented.
 
 
-    syntax KItem ::= "#catch" | "#exception"
- // ----------------------------------------
+    syntax KItem ::= "#catch" | "#exception" | "#end"
+ // -------------------------------------------------
     rule <op> #exception ~> OP:OpCode => #exception ... </op>
 
     syntax InternalOp ::= "#next"
@@ -166,7 +166,7 @@ module ETHEREUM
 
 
     syntax Bool ::= "#exceptional?" "(" OpCode ")" [function]
- // ---------------------------------------------------
+ // ---------------------------------------------------------
     rule <op> #exceptional?(OP)
            =>            isInvalidOp(OP)
               orElseBool #stackNeeded(OP) <Int #size(WS)
@@ -203,9 +203,10 @@ module ETHEREUM
     rule #stackNeeded(BOP:BinStackOp)  => 2
     rule #stackNeeded(TOP:TernStackOp) => 3
     rule #stackNeeded(QOP:QuadStackOp) => 4
-    rule #stackNeeded(POP:PushOp)      => 0
+    rule #stackNeeded(PUSH(_, _))      => 0
     rule #stackNeeded(DUP(N))          => N
     rule #stackNeeded(SWAP(N))         => N +Int 1
+    rule #stackNeeded(LOG(N))          => N +Int 2
     rule #stackNeeded(DELEGATECALL)    => 6
     rule #stackNeeded(COP:CallOp)      => 7 requires COP =/=K DELEGATECALL
 
@@ -223,7 +224,7 @@ module ETHEREUM
                      ; LOG(0) ; RETURN ; SELFDESTRUCT ; .OpCodes            [macro]
 
 
-// ### Jump Destination Validity
+// ### Jump Destination
 
 // -   `#badJumpDest?` checks that if it's a `JUMP*` operation that it's jumping to
 //     a valid destination.
@@ -664,7 +665,7 @@ module ETHEREUM
 
     syntax NullStackOp ::= "STOP"
  // -----------------------------
-    rule <op> STOP ~> #next => #endOfProgram ... </op>
+    rule <op> STOP => #end ... </op>
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
@@ -988,14 +989,6 @@ module ETHEREUM
 // Ethereum Gas Calculation
 // ========================
 
-// -   `#gas` will compute the gas used and then deduct it from the total
-//     gas available.
-
-
-    syntax Int ::= #gas ( Word ) [function]
- // ---------------------------------------
-
-
 // The gas calculation is designed to mirror the style of the yellowpaper.
 
 
@@ -1063,8 +1056,8 @@ module ETHEREUM
 // calculations than the actual yellowpaper specifies.
 
 
-    syntax Word ::= #gas ( OpCode ) [function]
- // ------------------------------------------
+    syntax Int ::= #gas ( OpCode ) [function]
+ // -----------------------------------------
     // rule <op> #gas(OP)           => ???                           ... </op> requires OP in Wcall
     // rule <op> #gas(SELFDESTRUCT) => ???                           ... </op>
     rule <op> #gas(EXP)          => Gexp                          ... </op>                        // INCORRECT

@@ -179,17 +179,16 @@ module ETHEREUM-SIMULATION
 
 // -   `start` places `#next` on the `op` cell so that execution of the loaded
 //     state begin.
-// -   `flush` places `#finalize` on the `op` cell once it sees `#endOfProgram` in
-//     the `op` cell. If it sees an exception on the top of the cell, it
-//     simply clears.
+// -   `flush` places `#finalize` on the `op` cell once it sees `#end` in the `op`
+//     cell. If it sees an exception on the top of the cell, it simply clears.
 
 
     syntax EthereumCommand ::= "start" | "flush"
  // --------------------------------------------
     rule <k> start => . ... </k> <op> . => #next </op>
-    rule <k> flush => . ... </k> <op> #endOfProgram => #finalize ... </op>
-    rule <k> flush => . ... </k> <op> #txFinished   => #finalize ... </op>
-    rule <k> flush => . ... </k> <op> EX:Exception  => .         ... </op>
+    rule <k> flush => . ... </k> <op> #end         => #finalize ... </op>
+    rule <k> flush => . ... </k> <op> #txFinished  => #finalize ... </op>
+    rule <k> flush => . ... </k> <op> EX:Exception => .         ... </op>
 
 
 // ### Checking State
