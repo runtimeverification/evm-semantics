@@ -156,8 +156,6 @@ Here we load the relevant information for accounts.
 Here we load the environmental information.
 
 ```k
-    rule <k> load "gas" : GAVAIL => . ... </k> <gas> _ => #parseHexWord(GAVAIL) </gas>
-
     rule <k> load "env" : { "currentCoinbase"   : (CB:String)     } => . ... </k> <coinbase>   _ => #parseHexWord(CB)     </coinbase>
     rule <k> load "env" : { "currentDifficulty" : (DIFF:String)   } => . ... </k> <difficulty> _ => #parseHexWord(DIFF)   </difficulty>
     rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:String) } => . ... </k> <gasLimit>   _ => #parseHexWord(GLIMIT) </gasLimit>
@@ -202,6 +200,7 @@ Here we load the environmental information.
     rule check "post" : { (ACCTID:String) : ACCT } => check ACCTID : ACCT
     rule check TESTID : { "post" : POST } => check "post" : POST ~> failure TESTID
     rule check TESTID : { "out"  : OUT  } => check "out"  : OUT  ~> failure TESTID
+    rule check TESTID : { "gas"  : GLEFT  } => check "gas"  : GLEFT  ~> failure TESTID
 
     rule check ACCTID : { "balance" : ((BAL:String) => #parseHexWord(BAL)) }
     rule <k> check ACCTID : { "balance" : (BAL:Word) } => . ... </k>
@@ -242,6 +241,9 @@ Here we load the environmental information.
 
     rule check "out" : ((OUT:String) => #parseByteStack(OUT))
     rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
+
+    rule check "gas" : ((GLEFT:String) => #parseHexWord(GLEFT))
+    rule check "gas" : GLEFT => .
 ```
 
 ### Running Tests
@@ -274,13 +276,13 @@ TODO: The fields "callcreates" and "logs" should be dealt with properly.
     rule run TESTID : { "out"         : (OUT:JSON)      , REST } => run TESTID : { REST } ~> check TESTID : { "out"  : OUT }
     rule run TESTID : { "post"        : (POST:JSON)     , REST } => run TESTID : { REST } ~> check TESTID : { "post" : POST }
     rule run TESTID : { "expect"      : (EXPECT:JSON)   , REST } => run TESTID : { REST } ~> check TESTID : { "post" : EXPECT }
+    rule run TESTID : { "gas"         : (GLEFT:String)  , REST } => run TESTID : { REST } ~> check TESTID : { "gas"  : GLEFT }
 ```
 
 Here we pull apart a test into the sequence of `EthereumCommand` to run for it.
 
 ```k
     rule run TESTID : { "env"  : (ENV:JSON)         , REST } => load "env" : ENV      ~> run TESTID : { REST }
-    rule run TESTID : { "gas"  : (CURRGAS:String)   , REST } => load "gas" : CURRGAS  ~> run TESTID : { REST }
     rule run TESTID : { "pre"  : (PRE:JSON)         , REST } => load "pre" : PRE      ~> run TESTID : { REST }
     rule run TESTID : { "exec" : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , "exec" : EXEC , REST }
 
