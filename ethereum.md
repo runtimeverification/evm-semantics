@@ -156,8 +156,8 @@ Here we load the relevant information for accounts.
 Here we load the environmental information.
 
 ```k
-    rule <k> load "gas" : GAVAIL => . ... </k> <gas> _ => #parseHexWord(GAVAIL) </gas>
-
+    rule load "gas" : ((GAVAIL:String) => #parseHexWord(GAVAIL))
+    rule <k> load "gas" : (GAVAIL:Word) => . ... </k> <gas> _ => GAVAIL </gas>
     rule <k> load "env" : { "currentCoinbase"   : (CB:String)     } => . ... </k> <coinbase>   _ => #parseHexWord(CB)     </coinbase>
     rule <k> load "env" : { "currentDifficulty" : (DIFF:String)   } => . ... </k> <difficulty> _ => #parseHexWord(DIFF)   </difficulty>
     rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:String) } => . ... </k> <gasLimit>   _ => #parseHexWord(GLIMIT) </gasLimit>
@@ -168,10 +168,13 @@ Here we load the environmental information.
     rule <k> load "exec" : { "caller"   : (ACCTFROM:String) } => . ... </k> <caller>    _ => #parseHexWord(ACCTFROM)                     </caller>
     rule <k> load "exec" : { "data"     : (DATA:String)     } => . ... </k> <callData>  _ => #parseByteStack(DATA)                       </callData>
     rule <k> load "exec" : { "gas"      : (GAVAIL:String)   } => . ... </k> <gas>       _ => #parseHexWord(GAVAIL)                       </gas>
+    rule <k> load "exec" : { "gas"      : (GAVAIL:Word)   } => . ... </k> <gas>       _ => GAVAIL                                        </gas>
     rule <k> load "exec" : { "gasPrice" : (GPRICE:String)   } => . ... </k> <gasPrice>  _ => #parseHexWord(GPRICE)                       </gasPrice>
+    rule <k> load "exec" : { "gasPrice" : (GPRICE:Word)   } => . ... </k> <gasPrice>  _ =>GPRICE                                         </gasPrice>
     rule <k> load "exec" : { "value"    : (VALUE:String)    } => . ... </k> <callValue> _ => #parseHexWord(VALUE)                        </callValue>
     rule <k> load "exec" : { "origin"   : (ORIG:String)     } => . ... </k> <origin>    _ => #parseHexWord(ORIG)                         </origin>
     rule <k> load "exec" : { "code"     : (CODE:String)     } => . ... </k> <program>   _ => #asMap(#dasmOpCodes(#parseByteStack(CODE))) </program>
+    rule <k> load "exec" : { "code"     : (CODE:OpCodes)     } => . ... </k> <program>   _ => #asMap(CODE) </program>
 ```
 
 ### Driving Execution
@@ -280,7 +283,8 @@ Here we pull apart a test into the sequence of `EthereumCommand` to run for it.
 
 ```k
     rule run TESTID : { "env"  : (ENV:JSON)         , REST } => load "env" : ENV      ~> run TESTID : { REST }
-    rule run TESTID : { "gas"  : (CURRGAS:String)   , REST } => load "gas" : CURRGAS  ~> run TESTID : { REST }
+    rule run TESTID : { "gas"  : (CURRGAS)   , REST } => load "gas" : (CURRGAS)  ~> run TESTID : { REST }
+   // rule run TESTID : { "gas"  : (CURRGAS:word)   , REST } => load "gas" : (CURRGAS)  ~> run TESTID : { REST }
     rule run TESTID : { "pre"  : (PRE:JSON)         , REST } => load "pre" : PRE      ~> run TESTID : { REST }
     rule run TESTID : { "exec" : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , "exec" : EXEC , REST }
 

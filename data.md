@@ -20,6 +20,8 @@ We need to do arithmetic modulo `2^256` and need to interperet words as booleans
 Here `chop` will move a number back into the correct range and `bool2Word` will interperet
 
 ```k
+  //  syntax String ::="#symbolicWord"    [function]
+   // rule #symbolicWord=>?X:String
     syntax Word ::= Int
                   | "#symbolicWord"    [function]
                   | chop ( Word )      [function]

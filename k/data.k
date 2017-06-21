@@ -22,6 +22,8 @@ module EVM-DATA
 // `bool2Word` will interperet
 
 
+  //  syntax String ::="#symbolicWord"    [function]
+   // rule #symbolicWord=>?X:String
     syntax Word ::= Int
                   | "#symbolicWord"    [function]
                   | chop ( Word )      [function]
