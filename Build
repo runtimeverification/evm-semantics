@@ -18,22 +18,23 @@ list_tests() {
 }
 
 tangle_test() {
-    run_make all
-
     output_file="tests/templates/output.txt"
+    local test_count=0
     local test_file test_fail_count=0
     list_tests "$@" | sort |
     while read test_file; do
+        let test_count="$test_count + 1"
         local output_differs=false
         progress "running: $test_file..."
         diff <(krun --debug --directory k/ "$test_file") "$output_file" \
             || output_differs=true
         if $output_differs; then
             failure "$test_file"
-            test_fail_count+=1
+            let test_fail_count="$test_fail_count + 1"
         else
             success "$test_file"
         fi
+        progress "failed: $test_fail_count / $test_count"
     done
     return $test_fail_count
 }
