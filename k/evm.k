@@ -142,13 +142,7 @@ module ETHEREUM
 
     syntax InternalOp ::= "#next"
  // -----------------------------
-    rule <op> #next
-           => #if #exceptional?(OP)
-              #then #exception
-              #else #execOp(OP)
-              #fi
-          ...
-         </op>
+    rule <op> #next => #exceptional?(OP) ~> #execOp(OP) ... </op>
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
 
@@ -169,14 +163,14 @@ module ETHEREUM
 // -   There is enough gas.
 
 
-    syntax Bool ::= "#exceptional?" "(" OpCode ")" [function]
- // ---------------------------------------------------------
+    syntax InternalOp ::= "#exceptional?" "(" OpCode ")"
+ // ----------------------------------------------------
     rule <op> #exceptional?(OP)
-           =>            isInvalidOp(OP)
-              orElseBool #stackNeeded(OP) <Int #size(WS)
-              orElseBool #badJumpDest?(OP)
-              orElseBool (#size(WS) -Int #stackNeeded(OP) +Int #stackAdded(OP)) >Int 1024
-              orElseBool (GAVAIL <Int #gas(OP))
+           => #invalid?(OP)
+           ~> #stackNeeded?(OP)
+           ~> #stackAdded?(OP)
+           ~> #badJumpDest?(OP)
+           ~> #enoughGas?(OP)
           ...
          </op>
          <gas> GAVAIL </gas>
@@ -185,14 +179,36 @@ module ETHEREUM
 
 // ### Invalid Operator
 
-// -   Opcode `INVALID` represents the designated invalid EVM operator.
+// -   OpCode `INVALID` represents the designated invalid EVM operator.
+// -   `#invalid?` checks if the given opcode is indeed `INVALID`.
 
 
     syntax InvalidOp ::= "INVALID"
  // ------------------------------
 
+    syntax InternalOp ::= "#invalid?" "(" OpCode ")"
+ // ------------------------------------------------
+    rule <op> #invalid?(INVALID) => #exception ... </op>
+    rule <op> #invalid?(OP)      => .          ... </op> requires notBool isInvalidOp(OP)
+
 
 // ### Stack Size
+
+// -   `#stackNeeded?` throws an exception if there are not enough arguments on
+//     the stack.
+// -   `#stackAdded?` throws an exception if there will be too many items on the
+//     stack after the opcode completes.
+
+
+    syntax InternalOp ::= "#stackNeeded?" "(" OpCode ")"
+                        | "#stackAdded?" "(" OpCode ")"
+ // ---------------------------------------------------
+    rule <op> #stackNeeded?(OP) => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int #stackNeeded(OP)
+    rule <op> #stackNeeded?(OP) => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) >=Int #stackNeeded(OP)
+
+    rule <op> #stackAdded?(OP) => #exception ... </op> <wordStack> WS </wordStack> requires (#size(WS) -Int #stackNeeded(OP)) +Int #stackAdded(OP) >Int 1024
+    rule <op> #stackAdded?(OP) => .          ... </op> <wordStack> WS </wordStack> requires (#size(WS) -Int #stackNeeded(OP)) +Int #stackAdded(OP) <=Int 1024
+
 
 // -   `#stackNeeded` calculates how many arguments the operator needs from the
 //     stack ($\delta$ in the yellowpaper).
@@ -234,12 +250,24 @@ module ETHEREUM
 //     a valid destination (Section 9.4.3 in yellowpaper).
 
 
-    syntax Bool ::= "#badJumpDest?" "(" OpCode ")" [function]
- // ---------------------------------------------------------
-    rule <op> #badJumpDest?(OP) => false ... </op> requires OP =/=K JUMP andBool OP =/=K JUMPI
-    rule <op> #badJumpDest?(OP) => false ... </op> <wordStack> DEST : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
-    rule <op> #badJumpDest?(OP) => true  ... </op> <wordStack> DEST : WS </wordStack> <program> PGM </program>
+    syntax InternalOp ::= "#badJumpDest?" "(" OpCode ")"
+ // ----------------------------------------------------
+    rule <op> #badJumpDest?(OP) => .          ... </op> requires OP =/=K JUMP andBool OP =/=K JUMPI
+    rule <op> #badJumpDest?(OP) => .          ... </op> <wordStack> DEST : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
+    rule <op> #badJumpDest?(OP) => #exception ... </op> <wordStack> DEST : WS </wordStack> <program> PGM </program>
       requires (OP ==K JUMP orBool OP ==K JUMPI) andBool ((notBool DEST in keys(PGM)) orElseBool PGM[DEST] =/=K JUMPDEST)
+
+
+// ### Gas Check
+
+// -   `#enoughGas?` throws an exception if there isn't enough gas for the opcode.
+
+
+    syntax InternalOp ::= "#enoughGas?" "(" OpCode ")" | "#checkGas"
+ // ----------------------------------------------------------------
+    rule <op> #enoughGas?(OP) => #gas(OP) ~> #checkGas ... </op>
+    rule <op> G:Int ~> #checkGas => #exception ... </op> <gas> GAVAIL </gas> requires word2Bool(G >Word GAVAIL)
+    rule <op> G:Int ~> #checkGas => .          ... </op> <gas> GAVAIL </gas> requires word2Bool(G <=Word GAVAIL)
 
 
 // OpCode Execution
@@ -249,8 +277,8 @@ module ETHEREUM
 // incrementing the program counter.
 
 
-    syntax KItem ::= #execOp ( OpCode )
- // -----------------------------------
+    syntax InternalOp ::= #execOp ( OpCode )
+ // ----------------------------------------
     rule <op> #execOp(OP) => #gas(OP) ~> #deductGas ~> OP ~> #incrementPC(OP) ~> #next ... </op>
 
 
@@ -259,8 +287,8 @@ module ETHEREUM
 // -   `#deductGas` removes the correct amount of gas from the current gas balance.
 
 
-    syntax KItem ::= "#deductGas"
- // -----------------------------
+    syntax InternalOp ::= "#deductGas"
+ // ----------------------------------
     rule <op> G:Int ~> #deductGas => . ... </op> <gas> GAVAIL => GAVAIL -Int G </gas>
 
 
@@ -304,10 +332,14 @@ module ETHEREUM
 // arguments to `PUSH` are inline).
 
 
-    syntax KItem ::= #incrementPC ( OpCode ) 
+    syntax InternalOp ::= #incrementPC ( OpCode ) 
+ // ---------------------------------------------
+    rule <op> #incrementPC(OP) => . ... </op> <pc> PCOUNT => PCOUNT +Word #pc(OP) </pc>
+
+    syntax Word ::= #pc ( OpCode ) [function]
  // -----------------------------------------
-    rule <op> #incrementPC(OP)         => . ... </op> <pc> PCOUNT => PCOUNT +Int 1        </pc> requires notBool isPushOp(OP)
-    rule <op> #incrumentPC(PUSH(N, W)) => . ... </op> <pc> PCOUNT => PCOUNT +Int 1 +Int N </pc>
+    rule #pc(OP)         => 1 requires notBool isPushOp(OP)
+    rule #pc(PUSH(N, _)) => 1 +Word N
 
 
 // Other
@@ -1055,8 +1087,8 @@ module ETHEREUM
 // calculations than the actual yellowpaper specifies.
 
 
-    syntax Int ::= #gas ( OpCode ) [function]
- // -----------------------------------------
+    syntax Word ::= #gas ( OpCode )
+ // -------------------------------
     // rule <op> #gas(OP)           => ???                           ... </op> requires OP in Wcall
     // rule <op> #gas(SELFDESTRUCT) => ???                           ... </op>
     rule <op> #gas(EXP)          => Gexp                          ... </op>                        // INCORRECT
