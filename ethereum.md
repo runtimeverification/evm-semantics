@@ -184,9 +184,9 @@ Here we load the environmental information.
     syntax EthereumCommand ::= "start" | "flush"
  // --------------------------------------------
     rule <k> start => . ... </k> <op> . => #next </op>
-    rule <k> flush => . ... </k> <op> #end         => #finalize ... </op>
-    rule <k> flush => . ... </k> <op> #txFinished  => #finalize ... </op>
-    rule <k> flush => . ... </k> <op> EX:Exception => .         ... </op>
+    rule <k> flush => . ... </k> <op> #end        => #finalize ... </op>
+    rule <k> flush => . ... </k> <op> #txFinished => #finalize ... </op>
+    rule <k> flush => . ... </k> <op> #exception  => .         ... </op>
 ```
 
 ### Checking State
@@ -251,7 +251,7 @@ Here we load the environmental information.
 ```k
     syntax EthereumCommand ::= "success" | "exception" String | "failure" String
  // ----------------------------------------------------------------------------
-    rule <k> exception _ => . ... </k> <op> EX:Exception ... </op>
+    rule <k> exception _ => . ... </k> <op> #exception ... </op>
     rule success   => .
     rule failure _ => .
 

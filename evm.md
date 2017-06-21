@@ -120,16 +120,19 @@ module ETHEREUM
 Execution Cycle
 ---------------
 
-When the `op` cell has `#next` at the top, it's time to load the next opcode.
-Before loading the next opcode, we should check if an exception will be thrown by it.
-The function `#exceptional?` defined below performs this check.
-If it's not exceptional, then the gas is deducted, the operator is run, and the program counter is incremented.
+-   `#catch` is used to catch exceptional states so that the state can be rolled back.
+-   `#exception` is used to indicate exceptional states.
+-   `#end` is used to indicate the (non-exceptional) end of execution.
 
 ```k
     syntax KItem ::= "#catch" | "#exception" | "#end"
  // -------------------------------------------------
     rule <op> #exception ~> OP:OpCode => #exception ... </op>
+```
 
+-   `#next` signals that it's time to begin the next execution cycle, which means check if the next operator is exceptional then execute it if not.
+
+```k
     syntax InternalOp ::= "#next"
  // -----------------------------
     rule <op> #next
@@ -149,7 +152,7 @@ If it's not exceptional, then the gas is deducted, the operator is run, and the 
 Exception Checks
 ----------------
 
-In the yellowpaper the function `#exceptional?` is called `Z`.
+In the yellowpaper the function `#exceptional?` is called `Z` (Section 9.4.2 in yellowpaper).
 It checks, in order:
 
 -   The instruction isn't `INVALID`.
@@ -184,8 +187,8 @@ It checks, in order:
 
 ### Stack Size
 
--   `#stackNeeded` calculates how many arguments the operator needs from the stack.
--   `#stackAdded` calculates how many words will be added to the stack by this operator.
+-   `#stackNeeded` calculates how many arguments the operator needs from the stack ($\delta$ in the yellowpaper).
+-   `#stackAdded` calculates how many words will be added to the stack by this operator ($\alpha$ in the yellowpaper).
 
 ```k
     syntax Int ::= #stackNeeded ( OpCode ) [function]
@@ -202,8 +205,8 @@ It checks, in order:
     rule #stackNeeded(DELEGATECALL)    => 6
     rule #stackNeeded(COP:CallOp)      => 7 requires COP =/=K DELEGATECALL
 
-    syntax Int ::= #stackAdded  ( OpCode ) [function]
- // -------------------------------------------------
+    syntax Int ::= #stackAdded ( OpCode ) [function]
+ // ------------------------------------------------
     rule #stackAdded(OP)      => 0 requires OP in #zeroRet
     rule #stackAdded(DUP(N))  => N +Int 1
     rule #stackAdded(SWAP(N)) => N
@@ -218,7 +221,7 @@ It checks, in order:
 
 ### Jump Destination
 
--   `#badJumpDest?` checks that if it's a `JUMP*` operation that it's jumping to a valid destination.
+-   `#badJumpDest?` checks that if it's a `JUMP*` operation that it's jumping to a valid destination (Section 9.4.3 in yellowpaper).
 
 ```k
     syntax Bool ::= "#badJumpDest?" "(" OpCode ")" [function]
@@ -299,7 +302,7 @@ Other
 
 ### Substate Log
 
-During execution of a transaction some things are recorded in the substate log.
+During execution of a transaction some things are recorded in the substate log (Section 6.1 in yellowpaper).
 This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
 
 ```k
@@ -344,7 +347,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 
 ### Memory Consumption
 
-Using memory while executing EVM costs gas, so the amount of memory used is tracked.
+Using memory while executing EVM costs gas, so the amount of memory used is tracked (Appendix H in yellowpaper).
 
 -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper which helps track the memory used.
 
@@ -397,14 +400,12 @@ Note that `_in_` ignores the arguments to operators that are parametric.
     rule #codeSize(M) => #size(#asmOpCodes(#asOpCodes(M)))
 ```
 
-EVM Opcodes
+EVM OpCodes
 -----------
 
 Each subsection has a different class of opcodes.
 Organization is based roughly on what parts of the execution state are needed to compute the result of each operator.
 This sometimes corresponds to the organization in the yellowpaper.
-
-Implementations immediately follow declarations, so if an operator is declared here but not implemented then it isn't implemented at all.
 
 ### Internal Operations
 
@@ -571,7 +572,6 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
     rule <op> SGT W0 W1 => W0 s>Word W1 ~> #push ... </op>
 
     syntax BinStackOp ::= "SHA3"
-    
  // ----------------------------
     rule <op> SHA3 MEMSTART MEMWIDTH => #parseHexWord(keccak(#byteStackToHex(#range(LM, MEMSTART, MEMWIDTH)))) ~> #push ... </op>
          <localMem> LM </localMem>
@@ -626,17 +626,18 @@ These operators make queries about the current execution state.
 The `JUMP*` family of operations affect the current program counter.
 
 ```k
-    syntax Exception   ::= "#invalidJumpDest"
-
     syntax NullStackOp ::= "JUMPDEST"
-    syntax UnStackOp   ::= "JUMP"
-    syntax BinStackOp  ::= "JUMPI"
  // ------------------------------
     rule <op> JUMPDEST => . ... </op>
 
-    rule <op> JUMP  DEST   => .         ... </op> <pc> _ => DEST </pc>
-    rule <op> JUMPI DEST I => JUMP DEST ... </op> requires I =/=K 0
-    rule <op> JUMPI DEST 0 => .         ... </op>
+    syntax UnStackOp ::= "JUMP"
+ // ---------------------------
+    rule <op> JUMP DEST => . ... </op> <pc> _ => DEST </pc>
+
+    syntax BinStackOp  ::= "JUMPI"
+ // ------------------------------
+    rule <op> JUMPI DEST I => . ... </op> <pc> _ => DEST </pc> requires I =/=K 0
+    rule <op> JUMPI DEST 0 => . ... </op>
 ```
 
 ### `STOP` and `RETURN`
@@ -660,15 +661,17 @@ These operators query about the current `CALL*` state.
 
 ```k
     syntax NullStackOp ::= "CALLDATASIZE"
-    syntax UnStackOp   ::= "CALLDATALOAD"
-    syntax TernStackOp ::= "CALLDATACOPY"
  // -------------------------------------
     rule <op> CALLDATASIZE => #size(CD) ~> #push ... </op>
          <callData> CD </callData>
 
+    syntax UnStackOp ::= "CALLDATALOAD"
+ // -----------------------------------
     rule <op> CALLDATALOAD DATASTART => #asWord(CD [ DATASTART .. 32 ]) ~> #push ... </op>
          <callData> CD </callData>
 
+    syntax TernStackOp ::= "CALLDATACOPY"
+ // -------------------------------------
     rule <op> CALLDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </op>
          <localMem> LM => LM [ MEMSTART := CD [ DATASTART .. DATAWIDTH ] ] </localMem>
          <callData> CD </callData>
@@ -678,8 +681,8 @@ These operators query about the current `CALL*` state.
 ### Log Operations
 
 ```k
-    syntax LogOp  ::= LOG ( Word )
- // ------------------------------
+    syntax LogOp ::= LOG ( Word )
+ // -----------------------------
     rule <op> LOG(N) => . ... </op>
          <id> ACCT </id>
          <wordStack> W0 : W1 : WS => #drop(N, WS) </wordStack>
@@ -687,9 +690,6 @@ These operators query about the current `CALL*` state.
          <memoryUsed> MU => #memoryUsageUpdate(MU, W0, W1) </memoryUsed>
          <log> CURRLOG => CURRLOG . { ACCT | #take(N, WS) | #range(LM, W0, W1) } </log>
       requires word2Bool(#size(WS) >=Word N)
-
-    syntax InvalidOp ::= "INVALID"
- // ------------------------------
 ```
 
 Ethereum Network OpCodes
@@ -731,9 +731,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
     rule <op> EXTCODESIZE ACCTTO => #newAccount ACCTTO ~> 0 ~> #push ... </op>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool #addr(ACCTTO) in ACCTS
-```
 
-```k
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
     rule <op> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </op>
@@ -756,17 +754,17 @@ For now, I assume that they instantiate an empty account and use the empty data.
 These operations interact with the account storage.
 
 ```k
-    syntax UnStackOp  ::= "SLOAD"
- // -----------------------------
+    syntax UnStackOp ::= "SLOAD"
+ // ----------------------------
     rule <op> SLOAD INDEX => 0 ~> #push ... </op>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> STORAGE  </storage>
+           <storage> STORAGE </storage>
            ...
          </account> requires notBool INDEX in keys(STORAGE)
 
-    rule <op> SLOAD INDEX => VALUE  ~> #push ... </op>
+    rule <op> SLOAD INDEX => VALUE ~> #push ... </op>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -852,8 +850,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 ```
 
 ```k
-    syntax CallOp ::= "CALL" | "CALLCODE" | "DELEGATECALL"
- // ------------------------------------------------------
+    syntax CallOp ::= "CALL"
+ // ------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
            ~> #call ACCTFROM #addr(ACCTTO) CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
@@ -870,6 +868,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </account>
       requires #addr(ACCTTO) ==K ACCTTOACT
 
+    syntax CallOp ::= "CALLCODE"
+ // ----------------------------
     rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
            ~> #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
@@ -886,6 +886,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </account>
       requires #addr(ACCTTO) ==K ACCTTOACT
 
+    syntax CallOp ::= "DELEGATECALL"
+ // --------------------------------
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
            ~> #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
@@ -901,9 +903,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
            ...
          </account>
       requires #addr(ACCTTO) ==K ACCTTOACT
-```
 
-```k
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
     rule <op> SELFDESTRUCT ACCTTO => . ... </op>
@@ -933,9 +933,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
            ...
          </account>
       requires notBool #addr(ACCTTO) in ACCTS
-```
 
-```k
     syntax Word        ::= #newAddr ( Word , Word )
     syntax InternalOp  ::= "#codeDeposit"
     syntax TernStackOp ::= "CREATE"

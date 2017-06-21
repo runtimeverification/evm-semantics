@@ -125,16 +125,20 @@ module ETHEREUM
 // Execution Cycle
 // ---------------
 
-// When the `op` cell has `#next` at the top, it's time to load the next opcode.
-// Before loading the next opcode, we should check if an exception will be thrown
-// by it. The function `#exceptional?` defined below performs this check. If it's
-// not exceptional, then the gas is deducted, the operator is run, and the program
-// counter is incremented.
+// -   `#catch` is used to catch exceptional states so that the state can be
+//     rolled back.
+// -   `#exception` is used to indicate exceptional states.
+// -   `#end` is used to indicate the (non-exceptional) end of execution.
 
 
     syntax KItem ::= "#catch" | "#exception" | "#end"
  // -------------------------------------------------
     rule <op> #exception ~> OP:OpCode => #exception ... </op>
+
+
+// -   `#next` signals that it's time to begin the next execution cycle, which
+//     means check if the next operator is exceptional then execute it if not.
+
 
     syntax InternalOp ::= "#next"
  // -----------------------------
@@ -155,8 +159,8 @@ module ETHEREUM
 // Exception Checks
 // ----------------
 
-// In the yellowpaper the function `#exceptional?` is called `Z`. It checks, in
-// order:
+// In the yellowpaper the function `#exceptional?` is called `Z` (Section 9.4.2 in
+// yellowpaper). It checks, in order:
 
 // -   The instruction isn't `INVALID`.
 // -   There are enough elements on the stack to supply the arguments.
@@ -190,10 +194,10 @@ module ETHEREUM
 
 // ### Stack Size
 
-// -   `#stackNeeded` calculates how many arguments the operator needs from
-//     the stack.
-// -   `#stackAdded` calculates how many words will be added to the stack by
-//     this operator.
+// -   `#stackNeeded` calculates how many arguments the operator needs from the
+//     stack ($\delta$ in the yellowpaper).
+// -   `#stackAdded` calculates how many words will be added to the stack by this
+//     operator ($\alpha$ in the yellowpaper).
 
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
@@ -210,8 +214,8 @@ module ETHEREUM
     rule #stackNeeded(DELEGATECALL)    => 6
     rule #stackNeeded(COP:CallOp)      => 7 requires COP =/=K DELEGATECALL
 
-    syntax Int ::= #stackAdded  ( OpCode ) [function]
- // -------------------------------------------------
+    syntax Int ::= #stackAdded ( OpCode ) [function]
+ // ------------------------------------------------
     rule #stackAdded(OP)      => 0 requires OP in #zeroRet
     rule #stackAdded(DUP(N))  => N +Int 1
     rule #stackAdded(SWAP(N)) => N
@@ -227,7 +231,7 @@ module ETHEREUM
 // ### Jump Destination
 
 // -   `#badJumpDest?` checks that if it's a `JUMP*` operation that it's jumping to
-//     a valid destination.
+//     a valid destination (Section 9.4.3 in yellowpaper).
 
 
     syntax Bool ::= "#badJumpDest?" "(" OpCode ")" [function]
@@ -311,9 +315,10 @@ module ETHEREUM
 
 // ### Substate Log
 
-// During execution of a transaction some things are recorded in the substate log.
-// This is a right cons-list of `SubstateLogEntry` (which contains the account ID
-// along with the specified portions of the `wordStack` and `localMem`).
+// During execution of a transaction some things are recorded in the substate log
+// (Section 6.1 in yellowpaper). This is a right cons-list of `SubstateLogEntry`
+// (which contains the account ID along with the specified portions of the
+// `wordStack` and `localMem`).
 
 
     syntax SubstateLog      ::= ".SubstateLog" | SubstateLog "." SubstateLogEntry
@@ -359,7 +364,7 @@ module ETHEREUM
 // ### Memory Consumption
 
 // Using memory while executing EVM costs gas, so the amount of memory used is
-// tracked.
+// tracked (Appendix H in yellowpaper).
 
 // -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper
 //     which helps track the memory used.
@@ -414,15 +419,12 @@ module ETHEREUM
     rule #codeSize(M) => #size(#asmOpCodes(#asOpCodes(M)))
 
 
-// EVM Opcodes
+// EVM OpCodes
 // -----------
 
 // Each subsection has a different class of opcodes. Organization is based roughly
 // on what parts of the execution state are needed to compute the result of each
 // operator. This sometimes corresponds to the organization in the yellowpaper.
-
-// Implementations immediately follow declarations, so if an operator is declared
-// here but not implemented then it isn't implemented at all.
 
 // ### Internal Operations
 
@@ -592,7 +594,6 @@ module ETHEREUM
     rule <op> SGT W0 W1 => W0 s>Word W1 ~> #push ... </op>
 
     syntax BinStackOp ::= "SHA3"
-    
  // ----------------------------
     rule <op> SHA3 MEMSTART MEMWIDTH => #parseHexWord(keccak(#byteStackToHex(#range(LM, MEMSTART, MEMWIDTH)))) ~> #push ... </op>
          <localMem> LM </localMem>
@@ -647,17 +648,18 @@ module ETHEREUM
 // The `JUMP*` family of operations affect the current program counter.
 
 
-    syntax Exception   ::= "#invalidJumpDest"
-
     syntax NullStackOp ::= "JUMPDEST"
-    syntax UnStackOp   ::= "JUMP"
-    syntax BinStackOp  ::= "JUMPI"
  // ------------------------------
     rule <op> JUMPDEST => . ... </op>
 
-    rule <op> JUMP  DEST   => .         ... </op> <pc> _ => DEST </pc>
-    rule <op> JUMPI DEST I => JUMP DEST ... </op> requires I =/=K 0
-    rule <op> JUMPI DEST 0 => .         ... </op>
+    syntax UnStackOp ::= "JUMP"
+ // ---------------------------
+    rule <op> JUMP DEST => . ... </op> <pc> _ => DEST </pc>
+
+    syntax BinStackOp  ::= "JUMPI"
+ // ------------------------------
+    rule <op> JUMPI DEST I => . ... </op> <pc> _ => DEST </pc> requires I =/=K 0
+    rule <op> JUMPI DEST 0 => . ... </op>
 
 
 // ### `STOP` and `RETURN`
@@ -681,15 +683,17 @@ module ETHEREUM
 
 
     syntax NullStackOp ::= "CALLDATASIZE"
-    syntax UnStackOp   ::= "CALLDATALOAD"
-    syntax TernStackOp ::= "CALLDATACOPY"
  // -------------------------------------
     rule <op> CALLDATASIZE => #size(CD) ~> #push ... </op>
          <callData> CD </callData>
 
+    syntax UnStackOp ::= "CALLDATALOAD"
+ // -----------------------------------
     rule <op> CALLDATALOAD DATASTART => #asWord(CD [ DATASTART .. 32 ]) ~> #push ... </op>
          <callData> CD </callData>
 
+    syntax TernStackOp ::= "CALLDATACOPY"
+ // -------------------------------------
     rule <op> CALLDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </op>
          <localMem> LM => LM [ MEMSTART := CD [ DATASTART .. DATAWIDTH ] ] </localMem>
          <callData> CD </callData>
@@ -699,8 +703,8 @@ module ETHEREUM
 // ### Log Operations
 
 
-    syntax LogOp  ::= LOG ( Word )
- // ------------------------------
+    syntax LogOp ::= LOG ( Word )
+ // -----------------------------
     rule <op> LOG(N) => . ... </op>
          <id> ACCT </id>
          <wordStack> W0 : W1 : WS => #drop(N, WS) </wordStack>
@@ -708,9 +712,6 @@ module ETHEREUM
          <memoryUsed> MU => #memoryUsageUpdate(MU, W0, W1) </memoryUsed>
          <log> CURRLOG => CURRLOG . { ACCT | #take(N, WS) | #range(LM, W0, W1) } </log>
       requires word2Bool(#size(WS) >=Word N)
-
-    syntax InvalidOp ::= "INVALID"
- // ------------------------------
 
 
 // Ethereum Network OpCodes
@@ -755,8 +756,6 @@ module ETHEREUM
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool #addr(ACCTTO) in ACCTS
 
-
-
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
     rule <op> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </op>
@@ -779,17 +778,17 @@ module ETHEREUM
 // These operations interact with the account storage.
 
 
-    syntax UnStackOp  ::= "SLOAD"
- // -----------------------------
+    syntax UnStackOp ::= "SLOAD"
+ // ----------------------------
     rule <op> SLOAD INDEX => 0 ~> #push ... </op>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> STORAGE  </storage>
+           <storage> STORAGE </storage>
            ...
          </account> requires notBool INDEX in keys(STORAGE)
 
-    rule <op> SLOAD INDEX => VALUE  ~> #push ... </op>
+    rule <op> SLOAD INDEX => VALUE ~> #push ... </op>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -878,8 +877,8 @@ module ETHEREUM
 
 
 
-    syntax CallOp ::= "CALL" | "CALLCODE" | "DELEGATECALL"
- // ------------------------------------------------------
+    syntax CallOp ::= "CALL"
+ // ------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
            ~> #call ACCTFROM #addr(ACCTTO) CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
@@ -896,6 +895,8 @@ module ETHEREUM
          </account>
       requires #addr(ACCTTO) ==K ACCTTOACT
 
+    syntax CallOp ::= "CALLCODE"
+ // ----------------------------
     rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
            ~> #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
@@ -912,6 +913,8 @@ module ETHEREUM
          </account>
       requires #addr(ACCTTO) ==K ACCTTOACT
 
+    syntax CallOp ::= "DELEGATECALL"
+ // --------------------------------
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
            ~> #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
@@ -927,8 +930,6 @@ module ETHEREUM
            ...
          </account>
       requires #addr(ACCTTO) ==K ACCTTOACT
-
-
 
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
@@ -959,8 +960,6 @@ module ETHEREUM
            ...
          </account>
       requires notBool #addr(ACCTTO) in ACCTS
-
-
 
     syntax Word        ::= #newAddr ( Word , Word )
     syntax InternalOp  ::= "#codeDeposit"
