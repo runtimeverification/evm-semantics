@@ -335,7 +335,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID
  // ------------------------------------------------------------------------------
     rule check "gas" : ((GLEFT:String) => #parseHexWord(GLEFT))
-    rule check "gas" : GLEFT => .
+    rule <k> check "gas" : GLEFT => . ... </k> <gas> GLEFT </gas>
 ```
 
 TODO: `check` on `"callcreates"` ignores the `"gasLimit"` field.
