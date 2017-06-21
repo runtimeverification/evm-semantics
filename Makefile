@@ -6,7 +6,17 @@ all: build split-tests
 defn: $(defn_files)
 split-tests: tests/tests-develop/VMTests/vmArithmeticTest/make.timestamp \
 			 tests/tests-develop/VMTests/vmBitwiseLogicOperationTest/make.timestamp \
-			 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/make.timestamp
+			 tests/tests-develop/VMTests/vmBlockInfoTest/make.timestamp \
+			 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/make.timestamp \
+			 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/make.timestamp \
+			 tests/tests-develop/VMTests/vmInputLimits/make.timestamp \
+			 tests/tests-develop/VMTests/vmInputLimitsLight/make.timestamp \
+			 tests/tests-develop/VMTests/vmLogTest/make.timestamp \
+			 tests/tests-develop/VMTests/vmPerformanceTest/make.timestamp \
+			 tests/tests-develop/VMTests/vmPushDupSwapTest/make.timestamp \
+			 tests/tests-develop/VMTests/vmSha3Test/make.timestamp \
+			 tests/tests-develop/VMTests/vmSystemOperationsTest/make.timestamp \
+			 tests/tests-develop/VMTests/vmtests/make.timestamp
 
 ktest: defn split-tests 
 
