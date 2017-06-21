@@ -122,35 +122,144 @@ module ETHEREUM
     syntax Value  ::= Word | ".Value"
 
 
-// Machine Plumbing
-// ----------------
+// Execution Cycle
+// ---------------
 
-// When the `op` cell becomes empty, it's time to load the next opcode. The gas
-// needed is calculated first (by putting `#gas(_)` at the front of the `op` cell).
+// When the `op` cell has `#next` at the top, it's time to load the next opcode.
+// Before loading the next opcode, we should check if an exception will be thrown
+// by it. The function `#exceptional?` defined below performs this check. If it's
+// not exceptional, then the gas is deducted, the operator is run, and the program
+// counter is incremented.
 
-// Note that we must treat loading of `PUSH` specially, given that the arguments of
-// `PUSH` are inline with the code itself. Given the several special treatments of
-// `PUSH`, the usefulness of this design for EVM becomes dubious.
 
+    syntax KItem ::= "#catch" | "#exception"
+ // ----------------------------------------
+    rule <op> #exception ~> OP:OpCode => #exception ... </op>
 
     syntax InternalOp ::= "#next"
  // -----------------------------
-    rule <op> #next => #gas(OP) ~> #checkGas ~> OP ~> #next ... </op>
-         <pc> PCOUNT => PCOUNT +Word 1 </pc>
-         <program> ... PCOUNT |-> OP:OpCode ... </program>
-      requires notBool isPushOp(OP)
-
-    rule <op> #next => #gas(PUSH(N, W)) ~> #checkGas ~> PUSH(N, W) ~> #next ... </op>
-         <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
-         <program> ... PCOUNT |-> PUSH(N, W) ... </program>
-
-    syntax InternalOp ::= "#endOfProgram"
- // -------------------------------------
-    rule <op> #next => #endOfProgram ... </op>
+    rule <op> #next
+           => #if #exceptional?(OP)
+              #then #exception
+              #else #execOp(OP)
+              #fi
+          ...
+         </op>
          <pc> PCOUNT </pc>
-         <program> CODE </program>
-      requires notBool (PCOUNT in keys(CODE))
+         <program> ... PCOUNT |-> OP ... </program>
 
+    rule <op> #next => #exception ... </op> <pc> PCOUNT </pc> <program> PGM </program>
+      requires notBool PCOUNT in keys(PGM)
+
+
+// Exception Checks
+// ----------------
+
+// In the yellowpaper the function `#exceptional?` is called `Z`. It checks, in
+// order:
+
+// -   The instruction isn't `INVALID`.
+// -   There are enough elements on the stack to supply the arguments.
+// -   If it's a `JUMP*` operation, the destination is a valid `JUMPDEST`.
+// -   Upon placing the results on the stack, there won't be a stack overflow.
+// -   There is enough gas.
+
+
+    syntax Bool ::= "#exceptional?" "(" OpCode ")" [function]
+ // ---------------------------------------------------
+    rule <op> #exceptional?(OP)
+           =>            isInvalidOp(OP)
+              orElseBool #stackNeeded(OP) <Int #size(WS)
+              orElseBool #badJumpDest?(OP)
+              orElseBool (#size(WS) -Int #stackNeeded(OP) +Int #stackAdded(OP)) >Int 1024
+              orElseBool (GAVAIL <Int #gas(OP))
+          ...
+         </op>
+         <gas> GAVAIL </gas>
+         <wordStack> WS </wordStack>
+
+
+// ### Invalid Operator
+
+// -   Opcode `INVALID` represents the designated invalid EVM operator.
+
+
+    syntax InvalidOp ::= "INVALID"
+ // ------------------------------
+
+
+// ### Stack Size
+
+// -   `#stackNeeded` calculates how many arguments the operator needs from
+//     the stack.
+// -   `#stackAdded` calculates how many words will be added to the stack by
+//     this operator.
+
+
+    syntax Int ::= #stackNeeded ( OpCode ) [function]
+ // -------------------------------------------------
+    rule #stackNeeded(NOP:NullStackOp) => 0
+    rule #stackNeeded(UOP:UnStackOp)   => 1
+    rule #stackNeeded(BOP:BinStackOp)  => 2
+    rule #stackNeeded(TOP:TernStackOp) => 3
+    rule #stackNeeded(QOP:QuadStackOp) => 4
+    rule #stackNeeded(POP:PushOp)      => 0
+    rule #stackNeeded(DUP(N))          => N
+    rule #stackNeeded(SWAP(N))         => N +Int 1
+    rule #stackNeeded(DELEGATECALL)    => 6
+    rule #stackNeeded(COP:CallOp)      => 7 requires COP =/=K DELEGATECALL
+
+    syntax Int ::= #stackAdded  ( OpCode ) [function]
+ // -------------------------------------------------
+    rule #stackAdded(OP)      => 0 requires OP in #zeroRet
+    rule #stackAdded(DUP(N))  => N +Int 1
+    rule #stackAdded(SWAP(N)) => N
+    rule #stackAdded(OP)      => 1 requires notBool (OP in #zeroRet orBool isDupOp(OP) orBool isSwapOp(OP))
+
+    syntax OpCodes ::= "#zeroRet"
+ // -----------------------------
+    rule #zeroRet =>   STOP ; CALLDATACOPY ; CODECOPY ; EXTCODECOPY ; POP
+                     ; MSTORE ; MSTORE8 ; SSTORE ; JUMP ; JUMPI ; JUMPDEST
+                     ; LOG(0) ; RETURN ; SELFDESTRUCT ; .OpCodes            [macro]
+
+
+// ### Jump Destination Validity
+
+// -   `#badJumpDest?` checks that if it's a `JUMP*` operation that it's jumping to
+//     a valid destination.
+
+
+    syntax Bool ::= "#badJumpDest?" "(" OpCode ")" [function]
+ // ---------------------------------------------------------
+    rule <op> #badJumpDest?(OP) => false ... </op> requires OP =/=K JUMP andBool OP =/=K JUMPI
+    rule <op> #badJumpDest?(OP) => false ... </op> <wordStack> DEST : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
+    rule <op> #badJumpDest?(OP) => true  ... </op> <wordStack> DEST : WS </wordStack> <program> PGM </program>
+      requires (OP ==K JUMP orBool OP ==K JUMPI) andBool ((notBool DEST in keys(PGM)) orElseBool PGM[DEST] =/=K JUMPDEST)
+
+
+// OpCode Execution
+// ----------------
+
+// Executing an opcode consists of deducting the necessary gas, calling it, then
+// incrementing the program counter.
+
+
+    syntax KItem ::= #execOp ( OpCode )
+ // -----------------------------------
+    rule <op> #execOp(OP) => #gas(OP) ~> #deductGas ~> OP ~> #incrementPC(OP) ~> #next ... </op>
+
+
+// ### Gas Deduction
+
+// -   `#deductGas` removes the correct amount of gas from the current gas balance.
+
+
+    syntax KItem ::= "#deductGas"
+ // -----------------------------
+    rule <op> G:Int ~> #deductGas => . ... </op> <gas> GAVAIL => GAVAIL -Int G </gas>
+
+
+// ### Argument Loading
 
 // Depending on the sort of the opcode loaded, the correct number of arguments are
 // loaded off the `wordStack`. This allows more "local" definition of each of the
@@ -158,8 +267,8 @@ module ETHEREUM
 
 
     syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
-                    | StackOp | InternalOp | CallOp | PushOp | LogOp
- // ----------------------------------------------------------------
+                    | InvalidOp | StackOp | InternalOp | CallOp | PushOp | LogOp
+ // ----------------------------------------------------------------------------
 
     syntax KItem ::= OpCode
                    | UnStackOp Word
@@ -167,11 +276,6 @@ module ETHEREUM
                    | TernStackOp Word Word Word
                    | QuadStackOp Word Word Word Word
  // ------------------------------------------------
-    rule <op> UOP:UnStackOP   => #stackUnderflow ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int 1
-    rule <op> BOP:BinStackOp  => #stackUnderflow ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int 2
-    rule <op> TOP:TernStackOP => #stackUnderflow ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int 3
-    rule <op> QOP:QuadStackOP => #stackUnderflow ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int 4
-
     rule <op> UOP:UnStackOp   => UOP W0          ... </op> <wordStack> W0 : WS                => WS </wordStack>
     rule <op> BOP:BinStackOp  => BOP W0 W1       ... </op> <wordStack> W0 : W1 : WS           => WS </wordStack>
     rule <op> TOP:TernStackOp => TOP W0 W1 W2    ... </op> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
@@ -180,9 +284,6 @@ module ETHEREUM
     syntax KItem ::= CallOp Word Word Word Word Word Word Word
                    | "DELEGATECALL" Word Word Word Word Word Word
  // -------------------------------------------------------------
-    rule <op> DELEGATECALL => #stackUnderflow ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int 6
-    rule <op> CO:CallOp    => #stackUnderflow ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int 7
-
     rule <op> DELEGATECALL => DELEGATECALL W0 W1 W2 W3 W4 W5    ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
     rule <op> CO:CallOp    => CO           W0 W1 W2 W3 W4 W5 W6 ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
       requires CO =/=K DELEGATECALL
@@ -191,195 +292,23 @@ module ETHEREUM
  // ----------------------------------
     rule <op> SO:StackOp => SO WS ... </op> <wordStack> WS </wordStack>
 
-    syntax KItem ::= Exception
- // --------------------------
+
+// ### Increment Program Counter
+
+// All operators except for `PUSH` increment the program counter by 1 (because the
+// arguments to `PUSH` are inline).
 
 
-// Memory Expansion
-// ----------------
-
-// Using memory while executing EVM costs gas, so the amount of memory used is
-// tracked.
-
-// -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper
-//     which helps track the memory used.
+    syntax KItem ::= #incrementPC ( OpCode ) 
+ // -----------------------------------------
+    rule <op> #incrementPC(OP)         => . ... </op> <pc> PCOUNT => PCOUNT +Int 1        </pc> requires notBool isPushOp(OP)
+    rule <op> #incrumentPC(PUSH(N, W)) => . ... </op> <pc> PCOUNT => PCOUNT +Int 1 +Int N </pc>
 
 
-    syntax Word ::= #memoryUsageUpdate ( Word , Word , Word ) [function]
- // --------------------------------------------------------------------
-    rule #memoryUsageUpdate(S:Int, F:Int, 0)     => S
-    rule #memoryUsageUpdate(S:Int, F:Int, L:Int) => maxWord(S, (F +Int L) up/Int 32)
+// Other
+// -----
 
-
-// EVM Programs
-// ------------
-
-// Lists of opcodes form programs. Deciding if an opcode is in a list will be
-// useful for modeling gas, and converting a program into a map of program-counter
-// to opcode is useful for execution.
-
-// Note that `_in_` ignores the arguments to operators that are parametric.
-
-
-    syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
- // --------------------------------------------------
-
-    syntax Bool ::= OpCode "in" OpCodes [function]
- // ----------------------------------------------
-    rule OP         in .OpCodes            => false
-    rule OP         in (OP' ; OPS)         => (OP ==K OP') orElseBool (OP in OPS) requires notBool (isStackOp(OP) orBool isPushOp(OP) orBool isLogOp(OP))
-    rule LOG(_)     in (LOG(_) ; OPS)      => true
-    rule DUP(_)     in (DUP(_) ; OPS)      => true
-    rule SWAP(_)    in (SWAP(_) ; OPS)     => true
-    rule PUSH(_, _) in (PUSH(_, _) ; OPS)  => true
-
-    syntax Map ::= #asMap ( OpCodes )       [function]
-                 | #asMap ( Int , OpCodes ) [function]
- // --------------------------------------------------
-    rule #asMap( OPS:OpCodes )         => #asMap(0, OPS)
-    rule #asMap( N , .OpCodes )        => .Map
-    rule #asMap( N , OP:OpCode ; OCS ) => (N |-> OP) #asMap(N +Int 1, OCS) requires notBool isPushOp(OP)
-    rule #asMap( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #asMap(N +Int 1 +Int M, OCS)
-
-    syntax OpCodes ::= #asOpCodes ( Map )       [function]
-                     | #asOpCodes ( Int , Map ) [function]
- // ------------------------------------------------------
-    rule #asOpCodes(M) => #asOpCodes(0, M)
-    rule #asOpCodes(N, .Map) => .OpCodes
-    rule #asOpCodes(N, N |-> OP         M) => OP         ; #asOpCodes(N +Int 1,        M) requires notBool isPushOp(OP)
-    rule #asOpCodes(N, N |-> PUSH(S, W) M) => PUSH(S, W) ; #asOpCodes(N +Int 1 +Int S, M)
-
-    syntax Word ::= #codeSize ( Map ) [function]
- // --------------------------------------------
-    rule #codeSize(M) => #size(#asmOpCodes(#asOpCodes(M)))
-
-
-// EVM Opcodes
-// ===========
-
-// Each subsection has a different class of opcodes. Organization is based roughly
-// on what parts of the execution state are needed to compute the result of each
-// operator. This sometimes corresponds to the organization in the yellowpaper.
-
-// Implementations immediately follow declarations, so if an operator is declared
-// here but not implemented then it isn't implemented at all.
-
-// Internal Operations
-// -------------------
-
-// These are just used by the other operators for shuffling local execution state
-// around on the EVM.
-
-// -   `#push` will push an element to the `wordStack` without any checks.
-// -   `#setStack_` will set the current stack to the given one.
-
-
-    syntax InternalOp ::= "#push" | "#setStack" WordStack
- // -----------------------------------------------------
-    rule <op> W0:Word ~> #push => . ... </op> <wordStack> WS => W0 : WS </wordStack>
-    rule <op> #setStack WS     => . ... </op> <wordStack> _  => WS      </wordStack>
-
-
-// -   `#checkStackSize` will ensure that there hasn't been a stack overflow.
-// -   `#stackOverflow`/`#stackUnderflow` signals that there has been a
-//     stack over/under-flow.
-
-
-    syntax Exception  ::= "#stackOverflow" | "#stackUnderflow"
-    syntax InternalOp ::= "#checkStackSize"
- // ---------------------------------------
-    rule <op> #checkStackSize => #size(WS) ~> #checkStackSize ... </op> <wordStack> WS </wordStack>
-    rule <op> I:Int ~> #checkStackSize => .              ... </op> requires I <Int  1024
-    rule <op> I:Int ~> #checkStackSize => #stackOverflow ... </op> requires I >=Int 1024
-
-
-// Previous process states must be stored, so a tuple of sort `Process` is supplied
-// for that. The `CallStack` is a cons-list of `Process`.
-
-// -   `#pushCallStack` stores the current state on the `callStack`.
-// -   `#popCallStack` replaces the current state with the top of the `callStack`.
-
-
-    syntax CallStack ::= ".CallStack" | Bag CallStack
- // -------------------------------------------------
-
-    syntax Int ::= #size ( CallStack ) [function]
- // ---------------------------------------------
-    rule #size( .CallStack         ) => 0
-    rule #size( B:Bag CS:CallStack ) => 1 +Int #size(CS)
-
-    syntax InternalOp ::= "#pushCallStack" | "#popCallStack" | "#txFinished"
- // ------------------------------------------------------------------------
-    rule <op> #pushCallStack ~> #next => . ... </op>
-         <callStack> CS => TXSTATE CS </callStack>
-         <txExecState> TXSTATE </txExecState>
-
-    rule <op> #popCallStack ~> #next => . ... </op>
-         <callStack> TXSTATE CS => CS </callStack>
-         <txExecState> _ => TXSTATE </txExecState>
-
-    rule <op> #popCallStack ~> #next => #txFinished ... </op>
-         <callStack> .CallStack </callStack>
-
-
-// Adding Accounts
-// ---------------
-
-
-    syntax Exception  ::= "#badAccount"
-    syntax InternalOp ::= "#newAccount" Word
- // ----------------------------------------
-    rule <op> #newAccount ACCT => . ... </op>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires #addr(ACCT) in ACCTS
-
-    rule <op> #newAccount ACCT => . ... </op>
-         <activeAccounts> ACCTS (.Set => SetItem(#addr(ACCT))) </activeAccounts>
-         <accounts>
-           ( .Bag
-          => <account>
-               <acctID>  #addr(ACCT)   </acctID>
-               <balance> 0             </balance>
-               <code>    .Map          </code>
-               <storage> .Map          </storage>
-               <acctMap> "nonce" |-> 0 </acctMap>
-             </account>
-           )
-           ...
-         </accounts>
-      requires notBool #addr(ACCT) in ACCTS
-
-
-// Adding Accounts {#adding-accounts-1}
-// ---------------
-
-
-    syntax Exception  ::= "#badAccount"
-    syntax InternalOp ::= "#newAccount" Word
- // ----------------------------------------
-    rule <op> #newAccount ACCT => . ... </op>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires #addr(ACCT) in ACCTS
-
-    rule <op> #newAccount ACCT => . ... </op>
-         <activeAccounts> ACCTS (.Set => SetItem(#addr(ACCT))) </activeAccounts>
-         <accounts>
-           ( .Bag
-          => <account>
-               <acctID>  #addr(ACCT)   </acctID>
-               <balance> 0             </balance>
-               <code>    .Map          </code>
-               <storage> .Map          </storage>
-               <acctMap> "nonce" |-> 0 </acctMap>
-             </account>
-           )
-           ...
-         </accounts>
-      requires notBool #addr(ACCT) in ACCTS
-
-
-// EVM Substate Log
-// ----------------
+// ### Substate Log
 
 // During execution of a transaction some things are recorded in the substate log.
 // This is a right cons-list of `SubstateLogEntry` (which contains the account ID
@@ -426,8 +355,145 @@ module ETHEREUM
          </accounts>
 
 
-// Stack Manipulations
-// -------------------
+// ### Memory Consumption
+
+// Using memory while executing EVM costs gas, so the amount of memory used is
+// tracked.
+
+// -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper
+//     which helps track the memory used.
+
+
+    syntax Word ::= #memoryUsageUpdate ( Word , Word , Word ) [function]
+ // --------------------------------------------------------------------
+    rule #memoryUsageUpdate(S:Int, F:Int, 0)     => S
+    rule #memoryUsageUpdate(S:Int, F:Int, L:Int) => maxWord(S, (F +Int L) up/Int 32)
+
+
+// EVM Programs
+// ============
+
+// Lists of opcodes form programs. Deciding if an opcode is in a list will be
+// useful for modeling gas, and converting a program into a map of program-counter
+// to opcode is useful for execution.
+
+// Note that `_in_` ignores the arguments to operators that are parametric.
+
+
+    syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
+ // --------------------------------------------------
+
+    syntax Bool ::= OpCode "in" OpCodes [function]
+ // ----------------------------------------------
+    rule OP         in .OpCodes            => false
+    rule OP         in (OP' ; OPS)         => (OP ==K OP') orElseBool (OP in OPS) requires notBool (isStackOp(OP) orBool isPushOp(OP) orBool isLogOp(OP))
+    rule LOG(_)     in (LOG(_) ; OPS)      => true
+    rule DUP(_)     in (DUP(_) ; OPS)      => true
+    rule SWAP(_)    in (SWAP(_) ; OPS)     => true
+    rule PUSH(_, _) in (PUSH(_, _) ; OPS)  => true
+
+    syntax Map ::= #asMap ( OpCodes )       [function]
+                 | #asMap ( Int , OpCodes ) [function]
+ // --------------------------------------------------
+    rule #asMap( OPS:OpCodes )         => #asMap(0, OPS)
+    rule #asMap( N , .OpCodes )        => .Map
+    rule #asMap( N , OP:OpCode ; OCS ) => (N |-> OP) #asMap(N +Int 1, OCS) requires notBool isPushOp(OP)
+    rule #asMap( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #asMap(N +Int 1 +Int M, OCS)
+
+    syntax OpCodes ::= #asOpCodes ( Map )       [function]
+                     | #asOpCodes ( Int , Map ) [function]
+ // ------------------------------------------------------
+    rule #asOpCodes(M) => #asOpCodes(0, M)
+    rule #asOpCodes(N, .Map) => .OpCodes
+    rule #asOpCodes(N, N |-> OP         M) => OP         ; #asOpCodes(N +Int 1,        M) requires notBool isPushOp(OP)
+    rule #asOpCodes(N, N |-> PUSH(S, W) M) => PUSH(S, W) ; #asOpCodes(N +Int 1 +Int S, M)
+
+    syntax Word ::= #codeSize ( Map ) [function]
+ // --------------------------------------------
+    rule #codeSize(M) => #size(#asmOpCodes(#asOpCodes(M)))
+
+
+// EVM Opcodes
+// -----------
+
+// Each subsection has a different class of opcodes. Organization is based roughly
+// on what parts of the execution state are needed to compute the result of each
+// operator. This sometimes corresponds to the organization in the yellowpaper.
+
+// Implementations immediately follow declarations, so if an operator is declared
+// here but not implemented then it isn't implemented at all.
+
+// ### Internal Operations
+
+// These are just used by the other operators for shuffling local execution state
+// around on the EVM.
+
+// -   `#push` will push an element to the `wordStack` without any checks.
+// -   `#setStack_` will set the current stack to the given one.
+
+
+    syntax InternalOp ::= "#push" | "#setStack" WordStack
+ // -----------------------------------------------------
+    rule <op> W0:Word ~> #push => . ... </op> <wordStack> WS => W0 : WS </wordStack>
+    rule <op> #setStack WS     => . ... </op> <wordStack> _  => WS      </wordStack>
+
+
+// Previous process states must be stored, so a tuple of sort `Process` is supplied
+// for that. The `CallStack` is a cons-list of `Process`.
+
+// -   `#pushCallStack` stores the current state on the `callStack`.
+// -   `#popCallStack` replaces the current state with the top of the `callStack`.
+
+
+    syntax CallStack ::= ".CallStack" | Bag CallStack
+ // -------------------------------------------------
+
+    syntax Int ::= #size ( CallStack ) [function]
+ // ---------------------------------------------
+    rule #size( .CallStack         ) => 0
+    rule #size( B:Bag CS:CallStack ) => 1 +Int #size(CS)
+
+    syntax InternalOp ::= "#pushCallStack" | "#popCallStack" | "#txFinished"
+ // ------------------------------------------------------------------------
+    rule <op> #pushCallStack ~> #next => . ... </op>
+         <callStack> CS => TXSTATE CS </callStack>
+         <txExecState> TXSTATE </txExecState>
+
+    rule <op> #popCallStack ~> #next => . ... </op>
+         <callStack> TXSTATE CS => CS </callStack>
+         <txExecState> _ => TXSTATE </txExecState>
+
+    rule <op> #popCallStack ~> #next => #txFinished ... </op>
+         <callStack> .CallStack </callStack>
+
+
+// -   `#newAccount_` allows declaring a new empty account with the given address.
+
+
+    syntax InternalOp ::= "#newAccount" Word
+ // ----------------------------------------
+    rule <op> #newAccount ACCT => . ... </op>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires #addr(ACCT) in ACCTS
+
+    rule <op> #newAccount ACCT => . ... </op>
+         <activeAccounts> ACCTS (.Set => SetItem(#addr(ACCT))) </activeAccounts>
+         <accounts>
+           ( .Bag
+          => <account>
+               <acctID>  #addr(ACCT)   </acctID>
+               <balance> 0             </balance>
+               <code>    .Map          </code>
+               <storage> .Map          </storage>
+               <acctMap> "nonce" |-> 0 </acctMap>
+             </account>
+           )
+           ...
+         </accounts>
+      requires notBool #addr(ACCT) in ACCTS
+
+
+// ### Stack Manipulations
 
 // Some operators don't calculate anything, they just push the stack around a bit.
 
@@ -438,19 +504,15 @@ module ETHEREUM
 
     syntax StackOp ::= DUP ( Word ) | SWAP ( Word )
  // -----------------------------------------------
-    rule <op> DUP(N)  WS => #stackUnderflow ... </op> requires #size(WS) <Int N
-    rule <op> SWAP(N) WS => #stackUnderflow ... </op> requires #size(WS) <=Int N
-
-    rule <op> DUP(N)  WS:WordStack => #setStack ((WS [ N -Word 1 ]) : WS) ~> #checkStackSize    ... </op>
+    rule <op> DUP(N)  WS:WordStack => #setStack ((WS [ N -Word 1 ]) : WS)                       ... </op>
     rule <op> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Word 1 ]) : (WS [ N -Word 1 := W0 ])) ... </op>
 
     syntax PushOp ::= PUSH ( Word , Word )
  // --------------------------------------
-    rule <op> PUSH(_, W) => W ~> #push ~> #checkStackSize ... </op>
+    rule <op> PUSH(_, W) => W ~> #push ... </op>
 
 
-// Local Memory
-// ------------
+// ### Local Memory
 
 // These operations are getters/setters of the local execution memory.
 
@@ -461,9 +523,8 @@ module ETHEREUM
          <localMem> LM </localMem>
          <memoryUsed> MU => maxInt(MU, (INDEX +Int 32) up/Int 32) </memoryUsed>
 
-    syntax BinStackOp ::= "MSTORE"
-                        | "MSTORE8"
- // -------------------------------
+    syntax BinStackOp ::= "MSTORE" | "MSTORE8"
+ // ------------------------------------------
     rule <op> MSTORE INDEX VALUE => . ... </op>
          <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
          <memoryUsed> MU => maxInt(MU, (INDEX +Int 32) up/Int 32) </memoryUsed>
@@ -473,8 +534,7 @@ module ETHEREUM
          <memoryUsed> MU => maxInt(MU, (INDEX +Int 1) up/Int 32) </memoryUsed>
 
 
-// Expressions
-// -----------
+// ### Expressions
 
 // Expression calculations are simple and don't require anything but the arguments
 // from the `wordStack` to operate.
@@ -538,37 +598,36 @@ module ETHEREUM
          <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
 
 
-// Local State
-// -----------
+// ### Local State
 
 // These operators make queries about the current execution state.
 
 
     syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT"
  // -------------------------------------------------------------
-    rule <op> PC       => (PCOUNT -Int 1) ~> #push ~> #checkStackSize ... </op> <pc> PCOUNT </pc>
-    rule <op> GAS      => GAVAIL          ~> #push ~> #checkStackSize ... </op> <gas> GAVAIL </gas>
-    rule <op> GASPRICE => GPRICE          ~> #push ~> #checkStackSize ... </op> <gasPrice> GPRICE </gasPrice>
-    rule <op> GASLIMIT => GLIMIT          ~> #push ~> #checkStackSize ... </op> <gasLimit> GLIMIT </gasLimit>
+    rule <op> PC       => (PCOUNT -Int 1) ~> #push ... </op> <pc> PCOUNT </pc>
+    rule <op> GAS      => GAVAIL          ~> #push ... </op> <gas> GAVAIL </gas>
+    rule <op> GASPRICE => GPRICE          ~> #push ... </op> <gasPrice> GPRICE </gasPrice>
+    rule <op> GASLIMIT => GLIMIT          ~> #push ... </op> <gasLimit> GLIMIT </gasLimit>
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY"
  // -------------------------------------------------------------------------
-    rule <op> COINBASE   => CB   ~> #push ~> #checkStackSize ... </op> <coinbase> CB </coinbase>
-    rule <op> TIMESTAMP  => TS   ~> #push ~> #checkStackSize ... </op> <timestamp> TS </timestamp>
-    rule <op> NUMBER     => NUMB ~> #push ~> #checkStackSize ... </op> <number> NUMB </number>
-    rule <op> DIFFICULTY => DIFF ~> #push ~> #checkStackSize ... </op> <difficulty> DIFF </difficulty>
+    rule <op> COINBASE   => CB   ~> #push ... </op> <coinbase> CB </coinbase>
+    rule <op> TIMESTAMP  => TS   ~> #push ... </op> <timestamp> TS </timestamp>
+    rule <op> NUMBER     => NUMB ~> #push ... </op> <number> NUMB </number>
+    rule <op> DIFFICULTY => DIFF ~> #push ... </op> <difficulty> DIFF </difficulty>
 
     syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE"
  // --------------------------------------------------------------------
-    rule <op> ADDRESS   => ACCT ~> #push ~> #checkStackSize ... </op> <id> ACCT </id>
-    rule <op> ORIGIN    => ORG  ~> #push ~> #checkStackSize ... </op> <origin> ORG </origin>
-    rule <op> CALLER    => CL   ~> #push ~> #checkStackSize ... </op> <caller> CL </caller>
-    rule <op> CALLVALUE => CV   ~> #push ~> #checkStackSize ... </op> <callValue> CV </callValue>
+    rule <op> ADDRESS   => ACCT ~> #push ... </op> <id> ACCT </id>
+    rule <op> ORIGIN    => ORG  ~> #push ... </op> <origin> ORG </origin>
+    rule <op> CALLER    => CL   ~> #push ... </op> <caller> CL </caller>
+    rule <op> CALLVALUE => CV   ~> #push ... </op> <callValue> CV </callValue>
 
     syntax NullStackOp ::= "MSIZE" | "CODESIZE"
  // -------------------------------------------
-    rule <op> MSIZE    => 32 *Word MU    ~> #push ~> #checkStackSize ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> CODESIZE => #codeSize(PGM) ~> #push ~> #checkStackSize ... </op> <program> PGM </program>
+    rule <op> MSIZE    => 32 *Word MU    ~> #push ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> CODESIZE => #codeSize(PGM) ~> #push ... </op> <program> PGM </program>
 
     syntax TernStackOp ::= "CODECOPY"
  // ---------------------------------
@@ -582,8 +641,7 @@ module ETHEREUM
     rule <op> BLOCKHASH N => #parseHexWord(keccak(#byteStackToHex(N : .WordStack))) ~> #push ... </op>
 
 
-// `JUMP*`
-// -------
+// ### `JUMP*`
 
 // The `JUMP*` family of operations affect the current program counter.
 
@@ -593,40 +651,39 @@ module ETHEREUM
     syntax NullStackOp ::= "JUMPDEST"
     syntax UnStackOp   ::= "JUMP"
     syntax BinStackOp  ::= "JUMPI"
-
-  // --------- Sec 9.4.2 (127) ----------
+ // ------------------------------
     rule <op> JUMPDEST => . ... </op>
 
-    rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
-    rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
+    rule <op> JUMP  DEST   => .         ... </op> <pc> _ => DEST </pc>
+    rule <op> JUMPI DEST I => JUMP DEST ... </op> requires I =/=K 0
+    rule <op> JUMPI DEST 0 => .         ... </op>
 
-    rule <op> JUMP  DEST   => #invalidJumpDest ... </op> <program> PMAP </program> requires notBool DEST in keys(PMAP)
-    rule <op> JUMPI DEST _ => #invalidJumpDest ... </op> <program> PMAP </program> requires notBool DEST in keys(PMAP)
 
-  // --------- Sec 9.4.2 (129) ----------
-    rule <op> JUMP  DEST   => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires PMAP[DEST] ==K JUMPDEST
-    rule <op> JUMPI DEST 0 => . ... </op> <program> PMAP </program>                      requires PMAP[DEST] ==K JUMPDEST
-    rule <op> JUMPI DEST I => . ... </op> <program> PMAP </program> <pc> _ => DEST </pc> requires PMAP[DEST] ==K JUMPDEST andBool I =/=K 0
+// ### `STOP` and `RETURN`
+
 
     syntax NullStackOp ::= "STOP"
  // -----------------------------
     rule <op> STOP ~> #next => #endOfProgram ... </op>
 
+    syntax BinStackOp ::= "RETURN"
+ // ------------------------------
+    rule <op> RETURN RETSTART RETWIDTH => #popCallStack ... </op>
+         <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
+         <localMem> LM </localMem>
+         <memoryUsed> MU => #memoryUsageUpdate(MU, RETSTART, RETWIDTH) </memoryUsed>
 
-// Call Data
-// ---------
+
+// ### Call Data
 
 // These operators query about the current `CALL*` state.
-
-// TODO: Is the `DATASTART`/`DATAWIDTH` in `CALLDATALOAD`/`CALLDATACOPY` a
-// byte-list width or a word-list width?
 
 
     syntax NullStackOp ::= "CALLDATASIZE"
     syntax UnStackOp   ::= "CALLDATALOAD"
     syntax TernStackOp ::= "CALLDATACOPY"
  // -------------------------------------
-    rule <op> CALLDATASIZE => #size(CD) ~> #push ~> #checkStackSize ... </op>
+    rule <op> CALLDATASIZE => #size(CD) ~> #push ... </op>
          <callData> CD </callData>
 
     rule <op> CALLDATALOAD DATASTART => #asWord(CD [ DATASTART .. 32 ]) ~> #push ... </op>
@@ -638,8 +695,7 @@ module ETHEREUM
          <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, DATAWIDTH) </memoryUsed>
 
 
-// Log Operations
-// --------------
+// ### Log Operations
 
 
     syntax LogOp  ::= LOG ( Word )
@@ -652,20 +708,17 @@ module ETHEREUM
          <log> CURRLOG => CURRLOG . { ACCT | #take(N, WS) | #range(LM, W0, W1) } </log>
       requires word2Bool(#size(WS) >=Word N)
 
-    syntax Exception   ::= "#invalidInstruction"
-    syntax NullStackOp ::= "INVALID"
- // --------------------------------
-    rule <op> INVALID => #invalidInstruction ... </op>
+    syntax InvalidOp ::= "INVALID"
+ // ------------------------------
 
 
-// Ethereum Network
-// ================
+// Ethereum Network OpCodes
+// ------------------------
 
 // Operators that require access to the rest of the Ethereum network world-state
 // can be taken as a first draft of a "blockchain generic" language.
 
-// Account Queries
-// ---------------
+// ### Account Queries
 
 // TODO: It's unclear what to do in the case of an account not existing for these
 // operators. `BALANCE` is specified to push 0 in this case, but the others are not
@@ -697,8 +750,10 @@ module ETHEREUM
          </account>
       requires #addr(ACCTTO) ==K ACCTTOACT
 
+    rule <op> EXTCODESIZE ACCTTO => #newAccount ACCTTO ~> 0 ~> #push ... </op>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool #addr(ACCTTO) in ACCTS
 
-// \`\`\`
 
 
     syntax QuadStackOp ::= "EXTCODECOPY"
@@ -718,29 +773,20 @@ module ETHEREUM
       requires notBool #addr(ACCT) in ACCTS
 
 
-// Storage Operations
-// ------------------
+// ### Account Storage Operations
 
 // These operations interact with the account storage.
 
-// The specs don't describe what happens on loading a non-existent element from
-// storage. This is either undefined behavior, or is exceptional due to the
-// instruction being invalid.
-
 
     syntax UnStackOp  ::= "SLOAD"
-
- // ---------------------------------------------------------------------------------------
-
-
+ // -----------------------------
     rule <op> SLOAD INDEX => 0 ~> #push ... </op>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> SMAP  </storage>
+           <storage> STORAGE  </storage>
            ...
-         </account> requires notBool INDEX in keys(SMAP)
-
+         </account> requires notBool INDEX in keys(STORAGE)
 
     rule <op> SLOAD INDEX => VALUE  ~> #push ... </op>
          <id> ACCT </id>
@@ -801,7 +847,6 @@ module ETHEREUM
 //     to execute, the amount to transfer, and the arguments.
 
 
-    syntax Exception  ::= "#maxCallDepth" | "#balanceTooLow"
     syntax InternalOp ::= "#call" Word Word Map Word WordStack
  // ----------------------------------------------------------
     rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => . ... </op>
@@ -818,7 +863,7 @@ module ETHEREUM
          </account>
       requires word2Bool(VALUE <=Word BAL) andBool (#size(CS) <Int 1024)
 
-    rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #balanceTooLow ... </op>
+    rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #exception ... </op>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL </balance>
@@ -826,18 +871,11 @@ module ETHEREUM
          </account>
       requires word2Bool(VALUE >Word BAL)
 
-    rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #maxCallDepth ... </op>
+    rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #exception ... </op>
          <callStack> CS </callStack>
       requires #size(CS) >Int 1024
 
 
-
-    syntax BinStackOp ::= "RETURN"
- // ------------------------------
-    rule <op> RETURN RETSTART RETWIDTH => #popCallStack ... </op>
-         <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
-         <localMem> LM </localMem>
-         <memoryUsed> MU => #memoryUsageUpdate(MU, RETSTART, RETWIDTH) </memoryUsed>
 
     syntax CallOp ::= "CALL" | "CALLCODE" | "DELEGATECALL"
  // ------------------------------------------------------
@@ -952,15 +990,10 @@ module ETHEREUM
 
 // -   `#gas` will compute the gas used and then deduct it from the total
 //     gas available.
-// -   `#outOfGas` signals an out-of-gas exception.
 
 
-    syntax Exception ::= "#outOfGas"
-    syntax KItem     ::= "#checkGas"
-                       | #gas ( Word ) [function]
- // ---------------------------------------------
-    rule <op> G':Int ~> #checkGas => .         ... </op> <gas> G => G -Int G' </gas> requires G' <=Int G
-    rule <op> G':Int ~> #checkGas => #outOfGas ... </op> <gas> G              </gas> requires G' >Int G
+    syntax Int ::= #gas ( Word ) [function]
+ // ---------------------------------------
 
 
 // The gas calculation is designed to mirror the style of the yellowpaper.
