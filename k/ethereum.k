@@ -288,10 +288,8 @@ module ETHEREUM-SIMULATION
     rule run TESTID : { "pre"  : (PRE:JSON)         , REST } => load "pre" : PRE      ~> run TESTID : { REST }
     rule run TESTID : { "exec" : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , "exec" : EXEC , REST }
 
-    rule run TESTID : { "exec" : (EXEC:JSON) } => run "exec" : EXEC ~> start ~> flush
-    rule run "exec" : { .JSONList } => .
-    rule run "exec" : { (KEY:String) : VALUE        } => load "exec" : { KEY : VALUE }
-    rule run "exec" : { (KEY:String) : VALUE , REST } => load "exec" : { KEY : VALUE } ~> run  "exec" : { REST }          requires REST =/=K .JSONList andBool KEY =/=K "code"
-    rule run "exec" : { "code"       : CODE  , REST } => run  "exec" : { REST }        ~> load "exec" : { "code" : CODE } requires REST =/=K .JSONList
+    rule run TESTID : { "exec" : { .JSONList } } =>  .
+    rule run TESTID : { "exec" : { (KEY:String) : VALUE , REST } } => load "exec" : { KEY : VALUE }       ~> run TESTID : { "exec" : { REST } }     requires KEY =/=K "code"
+    rule run TESTID : { "exec" : { "code"       : CODE  , REST } } => run  TESTID : { "exec" : { REST } } ~> load "exec" : { "code" : CODE } ~> start ~> flush
 endmodule
 
