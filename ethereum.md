@@ -243,7 +243,7 @@ Here we load the environmental information.
     rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
 
     rule check "gas" : ((GLEFT:String) => #parseHexWord(GLEFT))
-    rule check "gas" : GLEFT => .
+    rule <k> check "gas" : GLEFT => . ... </k> <gas> GLEFT </gas>
 ```
 
 ### Running Tests
