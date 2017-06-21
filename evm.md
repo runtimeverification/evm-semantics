@@ -599,7 +599,7 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
     syntax BinStackOp ::= "SLT" | "SGT"
  // -----------------------------------
     rule <op> SLT W0 W1 => W0 s<Word W1 ~> #push ... </op>
-    rule <op> SGT W0 W1 => W0 s>Word W1 ~> #push ... </op>
+    rule <op> SGT W0 W1 => W1 s<Word W0 ~> #push ... </op>
 
     syntax BinStackOp ::= "SHA3"
  // ----------------------------
