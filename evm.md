@@ -679,7 +679,7 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
-    rule <op> RETURN RETSTART RETWIDTH => #popCallStack ... </op>
+    rule <op> RETURN RETSTART RETWIDTH => #end ... </op>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, RETSTART, RETWIDTH) </memoryUsed>
