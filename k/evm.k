@@ -254,8 +254,8 @@ module ETHEREUM
  // ----------------------------------------------------
     rule <op> #badJumpDest?(OP) => .          ... </op> requires OP =/=K JUMP andBool OP =/=K JUMPI
     rule <op> #badJumpDest?(OP) => .          ... </op> <wordStack> DEST : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
-    rule <op> #badJumpDest?(OP) => #exception ... </op> <wordStack> DEST : WS </wordStack> <program> PGM </program>
-      requires (OP ==K JUMP orBool OP ==K JUMPI) andBool ((notBool DEST in keys(PGM)) orElseBool PGM[DEST] =/=K JUMPDEST)
+    rule <op> #badJumpDest?(OP) => #exception ... </op> <wordStack> DEST : WS </wordStack> <program> ... DEST |-> OP'      ... </program> requires (OP ==K JUMP orBool OP ==K JUMPI) andBool OP' =/=K JUMPDEST
+    rule <op> #badJumpDest?(OP) => #exception ... </op> <wordStack> DEST : WS </wordStack> <program> PGM </program>                       requires (OP ==K JUMP orBool OP ==K JUMPI) andBool notBool DEST in keys(PGM)
 
 
 // ### Gas Check
