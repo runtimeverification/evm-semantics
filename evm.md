@@ -31,10 +31,11 @@ module ETHEREUM
                       // Mutable during a single transaction
                       // -----------------------------------
 
-                      <op> .K </op>
-                      <output> .WordStack </output>                     // H_RETURN
-                      <memoryUsed> 0:Word </memoryUsed>                 // \mu_i
-                      <callStack> .CallStack </callStack>
+                      <op>         .K          </op>
+                      <output>     .WordStack  </output>                     // H_RETURN
+                      <memoryUsed> 0:Word      </memoryUsed>                 // \mu_i
+                      <callStack>  .CallStack  </callStack>
+                      <callLog>    .CallLog    </callLog>
 
                       <txExecState>
                         <program> .Map </program>                       // I_b
@@ -197,12 +198,13 @@ It checks, in order:
     rule <op> #stackNeeded?(OP) => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int #stackNeeded(OP)
     rule <op> #stackNeeded?(OP) => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) >=Int #stackNeeded(OP)
 
-    rule <op> #stackAdded?(OP) => #exception ... </op> <wordStack> WS </wordStack> requires (#size(WS) -Int #stackNeeded(OP)) +Int #stackAdded(OP) >Int 1024
-    rule <op> #stackAdded?(OP) => .          ... </op> <wordStack> WS </wordStack> requires (#size(WS) -Int #stackNeeded(OP)) +Int #stackAdded(OP) <=Int 1024
+    rule <op> #stackAdded?(OP) => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int #stackDelta(OP) >Int 1024
+    rule <op> #stackAdded?(OP) => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int #stackDelta(OP) <=Int 1024
 ```
 
 -   `#stackNeeded` calculates how many arguments the operator needs from the stack ($\delta$ in the yellowpaper).
 -   `#stackAdded` calculates how many words will be added to the stack by this operator ($\alpha$ in the yellowpaper).
+-   `#stackDelta` calculates the difference in size of the stack after executing the operator.
 
 ```k
     syntax Int ::= #stackNeeded ( OpCode ) [function]
@@ -225,6 +227,10 @@ It checks, in order:
     rule #stackAdded(DUP(N))  => N +Int 1
     rule #stackAdded(SWAP(N)) => N
     rule #stackAdded(OP)      => 1 requires notBool (OP in #zeroRet orBool isDupOp(OP) orBool isSwapOp(OP))
+
+    syntax Int ::= #stackDelta ( OpCode ) [function]
+ // ------------------------------------------------
+    rule #stackDelta(OP) => #stackAdded(OP) -Int #stackNeeded(OP)
 
     syntax OpCodes ::= "#zeroRet"
  // -----------------------------
@@ -402,8 +408,8 @@ Note that `_in_` ignores the arguments to operators that are parametric.
 
     syntax Bool ::= OpCode "in" OpCodes [function]
  // ----------------------------------------------
-    rule OP         in .OpCodes            => false
-    rule OP         in (OP' ; OPS)         => (OP ==K OP') orElseBool (OP in OPS) requires notBool (isStackOp(OP) orBool isPushOp(OP) orBool isLogOp(OP))
+    rule OP:OpCode  in .OpCodes            => false
+    rule OP:OpCode  in (OP' ; OPS)         => (OP ==K OP') orElseBool (OP in OPS) requires notBool (isStackOp(OP) orBool isPushOp(OP) orBool isLogOp(OP))
     rule LOG(_)     in (LOG(_) ; OPS)      => true
     rule DUP(_)     in (DUP(_) ; OPS)      => true
     rule SWAP(_)    in (SWAP(_) ; OPS)     => true
@@ -468,7 +474,7 @@ The `CallStack` is a cons-list of `Process`.
 
     syntax InternalOp ::= "#pushCallStack" | "#popCallStack" | "#txFinished"
  // ------------------------------------------------------------------------
-    rule <op> #pushCallStack ~> #next => . ... </op>
+    rule <op> #pushCallStack => . ... </op>
          <callStack> CS => TXSTATE CS </callStack>
          <txExecState> TXSTATE </txExecState>
 
@@ -530,8 +536,8 @@ Some operators don't calculate anything, they just push the stack around a bit.
 These operations are getters/setters of the local execution memory.
 
 ```k
-    syntax UnStackOp  ::= "MLOAD"
- // -----------------------------
+    syntax UnStackOp ::= "MLOAD"
+ // ----------------------------
     rule <op> MLOAD INDEX => #asWord(#range(LM, INDEX, 32)) ~> #push ... </op>
          <localMem> LM </localMem>
          <memoryUsed> MU => maxInt(MU, (INDEX +Int 32) up/Int 32) </memoryUsed>
@@ -847,13 +853,31 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #size(OUT)), OUT) ] </localMem>
 ```
 
--   `#call_____` takes the calling account, the account to execute as, the code to execute, the amount to transfer, and the arguments.
+-   The `callLog` is used to store the `CALL*`/`CREATE` operations so that we can compare them against the test-set.
+
+TODO: The `Call` sort needs to store the available gas to the `CALL*` as well, but we are not right now because gas calculation isn't finished.
 
 ```k
+    syntax Call ::= "{" Word "|" Word "|" WordStack "}"
+    syntax CallLog ::= ".CallLog" | Call ";" CallLog
+ // ------------------------------------------------
+
+    syntax Bool ::= Call "in" CallLog [function]
+ // --------------------------------------------
+    rule C      in .CallLog       => false
+    rule C:Call in (C':Call ; CL) => C ==K C' orElseBool C in CL
+```
+
+-   `#call_____` takes the calling account, the account to execute as, the code to execute, the amount to transfer, and the arguments.
+
+TODO: `#call` is neutured to make sure that we can pass the VMTests. The following is closer to what it should be.
+
+```
     syntax InternalOp ::= "#call" Word Word Map Word WordStack
  // ----------------------------------------------------------
     rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => . ... </op>
          <callStack> CS </callStack>
+         <callLog> CL => { ACCTTO | VALUE | ARGS } ; CL </callLog>
          <id>       _ => ACCTTO       </id>
          <pc>       _ => 0            </pc>
          <caller>   _ => ACCTFROM     </caller>
@@ -862,6 +886,23 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <account>
            <acctID>  ACCTFROM </acctID>
            <balance> BAL => BAL -Word VALUE </balance>
+           ...
+         </account>
+      requires word2Bool(VALUE <=Word BAL) andBool (#size(CS) <Int 1024)
+```
+
+Here is what we're actually using.
+The test-set isn't clear about whach should happen when `#call` is run, but it seems that it should push `1` onto the stack.
+
+```k
+    syntax InternalOp ::= "#call" Word Word Map Word WordStack
+ // ----------------------------------------------------------
+    rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => 1 ~> #push ... </op>
+         <callStack> CS </callStack>
+         <callLog> CL => { ACCTTO | VALUE | ARGS } ; CL </callLog>
+         <account>
+           <acctID>  ACCTFROM </acctID>
+           <balance> BAL </balance>
            ...
          </account>
       requires word2Bool(VALUE <=Word BAL) andBool (#size(CS) <Int 1024)
@@ -881,8 +922,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #pushCallStack
-           ~> #call ACCTFROM #addr(ACCTTO) CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM #addr(ACCTTO) CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #returnLoc RETSTART RETWIDTH
            ...
          </op>
@@ -899,8 +939,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #pushCallStack
-           ~> #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #returnLoc RETSTART RETWIDTH
            ...
          </op>
@@ -917,8 +956,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax CallOp ::= "DELEGATECALL"
  // --------------------------------
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #pushCallStack
-           ~> #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
            ~> #returnLoc RETSTART RETWIDTH
            ...
          </op>
@@ -967,8 +1005,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
-           => #pushCallStack
-           ~> #call ACCT #newAddr(ACCT, NONCE) #asMap(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
+           => #call ACCT #newAddr(ACCT, NONCE) #asMap(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
            ~> #codeDeposit
           ...
          </op>

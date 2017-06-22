@@ -9,7 +9,7 @@ now_passing="tests/passing.lastrun"
 
 progress() { echo "== $@"; }
 success()  { echo -e "\e[32m== success: $@\e[0m";
-             echo "$@" > "$now_passing"
+             echo "$@" >> "$now_passing"
            }
 failure()  { echo -e "\e[31m== failure: $@\e[0m"; }
 
@@ -33,7 +33,6 @@ run_tests() {
             let test_fail_count="$test_fail_count + 1"
         else
             success "$test_file"
-            rm "$test_file"
         fi
         progress "failed: $test_fail_count / $test_count"
     done
