@@ -610,7 +610,7 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
 
     syntax BinStackOp ::= "SHA3"
  // ----------------------------
-    rule <op> SHA3 MEMSTART MEMWIDTH => #parseHexWord(keccak(#byteStackToHex(#range(LM, MEMSTART, MEMWIDTH)))) ~> #push ... </op>
+    rule <op> SHA3 MEMSTART MEMWIDTH => keccak(#range(LM, MEMSTART, MEMWIDTH)) ~> #push ... </op>
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
 ```
@@ -655,7 +655,7 @@ These operators make queries about the current execution state.
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
-    rule <op> BLOCKHASH N => #parseHexWord(keccak(#byteStackToHex(N : .WordStack))) ~> #push ... </op>
+    rule <op> BLOCKHASH N => keccak(N : .WordStack) ~> #push ... </op>
 ```
 
 ### `JUMP*`
@@ -1133,68 +1133,6 @@ Perhaps the only program representation dependence we should have is the hash of
 -   Program representation independence (different analysis tools on the language don't have to ensure they have a common representation of programs, just a common interperetation of the data-files holding programs).
 -   Programming language independence (we wouldn't even have to commit to a particular language or interperetation of the data-file).
 -   Only depending on the hash allows us to know that we have *exactly* the correct data-file (program), and nothing more.
-
-
-Parsing
--------
-
-Here a JSON parser is provided, along with parsers for the various data fields in the EVM testsuite.
-These parsers can interperet hex-encoded strings as `Word`s, `WordStack`s, and `Map`s.
-
--   `#parseHexWord` interperets a string as a single hex-encoded `Word`.
--   `#parseHexBytes` interperets a string as a stack of bytes.
--   `#parseByteStack` interperets a string as a stack of bytes, but makes sure to remove the leading "0x".
--   `#parseMap` interperets a JSON key/value object as a map from `Word` to `Word`.
-
-```k
-    syntax JSONList ::= List{JSON,","}
-    syntax JSON     ::= String
-                      | String ":" JSON
-                      | "{" JSONList "}"
-                      | "[" JSONList "]"
- // ------------------------------------
-
-    syntax Word ::= #parseHexWord ( String ) [function]
- // ---------------------------------------------------
-    rule #parseHexWord("")   => 0
-    rule #parseHexWord("0x") => 0
-    rule #parseHexWord(S)    => String2Base(replaceAll(S, "0x", ""), 16)
-      requires (S =/=String "") andBool (S =/=String "0x")
-
-    syntax WordStack ::= #parseHexBytes  ( String ) [function]
-                       | #parseByteStack ( String ) [function]
- // ----------------------------------------------------------
-    rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
-    rule #parseHexBytes("") => .WordStack
-    rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytes(substrString(S, 2, lengthString(S)))
-      requires lengthString(S) >=Int 2
-
-    syntax Map ::= #parseMap ( JSON ) [function]
- // --------------------------------------------
-    rule #parseMap( { .JSONList                   } ) => .Map
-    rule #parseMap( { _   : (VALUE:String) , REST } ) => #parseMap({ REST })                                                requires #parseHexWord(VALUE) ==K 0
-    rule #parseMap( { KEY : (VALUE:String) , REST } ) => #parseMap({ REST }) [ #parseHexWord(KEY) <- #parseHexWord(VALUE) ] requires #parseHexWord(VALUE) =/=K 0
-```
-
-Unparsing
----------
-
-We need to interperet a `WordStack` as a `String` again so that we can call `Keccak256` on it from `KRYPTO`.
-
--   `#unparseByteStack` 
--   `#padByte` ensures that the `String` interperetation of a `Word` is wide enough.
-
-```k
-    syntax String ::= #unparseByteStack ( WordStack ) [function]
- // ------------------------------------------------------------
-    rule #unparseByteStack( .WordStack )   => ""
-    rule #unparseByteStack( (W:Int) : WS ) => #padByte(Base2String(16, (W %Int (2 ^Int 8))))
-
-    syntax String ::= #padByte( String ) [function]
- // -----------------------------------------------
-    rule #padByte( S ) => S             requires lengthString(S) ==K 2
-    rule #padByte( S ) => "0" +String S requires lengthString(S) ==K 1
-```
 
 Disassembler
 ------------

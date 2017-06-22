@@ -226,17 +226,9 @@ module EVM-DATA
 // -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 
-    syntax Word ::= keccak ( WordStack )          [function]
-                  | keccak ( String , WordStack ) [function]
- // --------------------------------------------------------
-    rule keccak(WS) => keccak("", WS)
-    rule keccak(S, .WordStack) => Keccak256(S)
-    rule keccak(S, W : WS)     => Keccak256(S +String #padHexByte(Base2String(16, W)))
-
-    syntax String ::= #padHexByte ( String ) [function]
- // ---------------------------------------------------
-    rule #padHexByte(S) => S             requires lengthString(S) ==K 2
-    rule #padHexByte(S) => "0" +String S requires lengthString(S) ==K 2
+    syntax Word ::= keccak ( WordStack ) [function]
+ // -----------------------------------------------
+    rule keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS)))
 
 
 // Data Structures
@@ -390,5 +382,83 @@ module EVM-DATA
     rule #range(WM,         N, 0) => .WordStack
     rule #range(WM,         N, M) => 0 : #range(WM, N +Word 1, M -Word 1) requires M =/=K 0 andBool notBool N in keys(WM)
     rule #range(N |-> W WM, N, M) => W : #range(WM, N +Word 1, M -Word 1) requires M =/=K 0
+
+
+// Parsing/Unparsing
+// =================
+
+// The EVM test-sets are represented in JSON format with hex-encoding of the data
+// and programs. Here we provide some standard parser/unparser functions for that
+// format.
+
+// JSON
+// ----
+
+// Writing a JSON parser in K takes 5 lines.
+
+
+    syntax JSONList ::= List{JSON,","}
+    syntax JSON     ::= String
+                      | String ":" JSON
+                      | "{" JSONList "}"
+                      | "[" JSONList "]"
+ // ------------------------------------
+
+
+// Parsing
+// -------
+
+// These parsers can interperet hex-encoded strings as `Word`s, `WordStack`s, and
+// `Map`s.
+
+// -   `#parseHexWord` interperets a string as a single hex-encoded `Word`.
+// -   `#parseHexBytes` interperets a string as a stack of bytes.
+// -   `#parseByteStack` interperets a string as a stack of bytes, but makes sure
+//     to remove the leading "0x".
+// -   `#parseMap` interperets a JSON key/value object as a map from `Word` to
+//     `Word`.
+
+
+    syntax Word ::= #parseHexWord ( String ) [function]
+ // ---------------------------------------------------
+    rule #parseHexWord("")   => 0
+    rule #parseHexWord("0x") => 0
+    rule #parseHexWord(S)    => String2Base(replaceAll(S, "0x", ""), 16) requires (S =/=String "") andBool (S =/=String "0x")
+
+    syntax WordStack ::= #parseHexBytes  ( String ) [function]
+                       | #parseByteStack ( String ) [function]
+ // ----------------------------------------------------------
+    rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
+    rule #parseHexBytes("") => .WordStack
+    rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytes(substrString(S, 2, lengthString(S))) requires lengthString(S) >=Int 2
+
+    syntax Map ::= #parseMap ( JSON ) [function]
+ // --------------------------------------------
+    rule #parseMap( { .JSONList                   } ) => .Map
+    rule #parseMap( { _   : (VALUE:String) , REST } ) => #parseMap({ REST })                                                requires #parseHexWord(VALUE) ==K 0
+    rule #parseMap( { KEY : (VALUE:String) , REST } ) => #parseMap({ REST }) [ #parseHexWord(KEY) <- #parseHexWord(VALUE) ] requires #parseHexWord(VALUE) =/=K 0
+
+
+// Unparsing
+// ---------
+
+// We need to interperet a `WordStack` as a `String` again so that we can call
+// `Keccak256` on it from `KRYPTO`.
+
+// -   `#unparseByteStack` turns a stack of bytes (as a `WordStack`) into a
+//     `String`.
+// -   `#padByte` ensures that the `String` interperetation of a `Word` is
+//     wide enough.
+
+
+    syntax String ::= #unparseByteStack ( WordStack ) [function]
+ // ------------------------------------------------------------
+    rule #unparseByteStack( .WordStack )   => ""
+    rule #unparseByteStack( (W:Int) : WS ) => #padByte(Base2String(16, (W %Int (2 ^Int 8)))) +String #unparseByteStack(WS)
+
+    syntax String ::= #padByte( String ) [function]
+ // -----------------------------------------------
+    rule #padByte( S ) => S             requires lengthString(S) ==K 2
+    rule #padByte( S ) => "0" +String S requires lengthString(S) ==K 1
 endmodule
 
