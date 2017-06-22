@@ -2,6 +2,9 @@
 
 set -e      # Exit immediately if any command fails
 
+tests_dir="tests/tests-develop/VMTests/"
+output_file="tests/templates/output.txt"
+
 progress() { echo "== $@"; }
 success()  { echo -e "\e[32m== success: $@\e[0m"; }
 failure()  { echo -e "\e[31m== failure: $@\e[0m"; }
@@ -11,7 +14,7 @@ list_tests() {
         if [[ -f "$exp" ]]; then
             echo $exp;
         else
-            find tests/tests-develop/VMTests/ -wholename "*$exp*" -name '*.json'
+            find "$tests_dir" -wholename "*$exp*" -name '*.json'
         fi
     done
 }
@@ -19,7 +22,6 @@ list_tests() {
 run_test() {
     run_make all
 
-    output_file="tests/templates/output.txt"
     local test_file test_fail_count=0
     while read test_file; do
         local output_differs=false
@@ -79,7 +81,7 @@ usage() {
        $0                  Build the definitions and kompile them
        $0 defn             Only detangle the definitions
        $0 test <test.json> krun the test file and check that it succeeds
-       $0 test <expr>      Use find to locate a test file in tests/tests-develop/VMTests/
+       $0 test <expr>      Use find to locate a test file in '$tests_dir'
        $0 krun <arg>       Same as test, but pretty print output instead of checking it
 "
 }
