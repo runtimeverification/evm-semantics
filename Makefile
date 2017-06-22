@@ -9,8 +9,6 @@ split-tests: tests/tests-develop/VMTests/vmArithmeticTest/make.timestamp \
 			 tests/tests-develop/VMTests/vmBlockInfoTest/make.timestamp \
 			 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/make.timestamp \
 			 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/make.timestamp \
-			 tests/tests-develop/VMTests/vmInputLimits/make.timestamp \
-			 tests/tests-develop/VMTests/vmInputLimitsLight/make.timestamp \
 			 tests/tests-develop/VMTests/vmLogTest/make.timestamp \
 			 tests/tests-develop/VMTests/vmPerformanceTest/make.timestamp \
 			 tests/tests-develop/VMTests/vmPushDupSwapTest/make.timestamp \
