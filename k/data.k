@@ -297,14 +297,14 @@ module EVM-DATA
     rule WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
 
 
-// -   `#size` calculates the size of a `WordStack`.
+// -   `#sizeWordStack` calculates the size of a `WordStack`.
 // -   `_in_` determines if a `Word` occurs in a `WordStack`.
 
 
-    syntax Int ::= #size ( WordStack ) [function]
- // ---------------------------------------------
-    rule #size ( .WordStack ) => 0
-    rule #size ( W : WS )     => 1 +Int #size(WS)
+    syntax Int ::= #sizeWordStack ( WordStack ) [function]
+ // ------------------------------------------------------
+    rule #sizeWordStack ( .WordStack ) => 0
+    rule #sizeWordStack ( W : WS )     => 1 +Int #sizeWordStack(WS)
 
     syntax Bool ::= Word "in" WordStack [function]
  // ----------------------------------------------
@@ -317,8 +317,8 @@ module EVM-DATA
 
     syntax WordStack ::= #padToWidth ( Int , WordStack ) [function]
  // ---------------------------------------------------------------
-    rule #padToWidth(N, WS) => WS                     requires notBool #size(WS) <Int N
-    rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires #size(WS) <Int N
+    rule #padToWidth(N, WS) => WS                     requires notBool #sizeWordStack(WS) <Int N
+    rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires #sizeWordStack(WS) <Int N
 
 
 // Byte Arrays
@@ -366,7 +366,7 @@ module EVM-DATA
 
 // -   `WM [ N := WS ]` assigns a contiguous chunk of $WM$ to $WS$ starting at
 //     position $W$.
-// -   `#asMap` converts a `WordStack` to a `Map`.
+// -   `#asMapWordStack` converts a `WordStack` to a `Map`.
 // -   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at
 //     position $START$ (padding with zeros as needed).
 
@@ -376,9 +376,9 @@ module EVM-DATA
     rule WM[ N := .WordStack ] => WM
     rule WM[ N := W : WS     ] => (WM[N <- W])[N +Word 1 := WS]
 
-    syntax Map ::= #asMap ( WordStack ) [function]
- // ----------------------------------------------
-    rule #asMap(WS:WordStack) => .Map [ 0 := WS ]
+    syntax Map ::= #asMapWordStack ( WordStack ) [function]
+ // -------------------------------------------------------
+    rule #asMapWordStack(WS:WordStack) => .Map [ 0 := WS ]
 
     syntax WordStack ::= #range ( Map , Word , Word ) [function]
  // ------------------------------------------------------------
