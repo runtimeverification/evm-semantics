@@ -4,12 +4,14 @@ set -e      # Exit immediately if any command fails
 
 tests_dir="tests/tests-develop/VMTests/"
 output_file="tests/templates/output.txt"
+passing_tests="tests/passing_tests"
 
 progress() { echo "== $@"; }
 success()  { echo -e "\e[32m== success: $@\e[0m"; }
 failure()  { echo -e "\e[31m== failure: $@\e[0m"; }
 
 list_tests() {
+    [[ $# == 0 ]] && { cat "$passing_tests"; return; }
     for exp in "$@"; do
         if [[ -f "$exp" ]]; then
             echo $exp;
