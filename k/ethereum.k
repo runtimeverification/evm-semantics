@@ -124,8 +124,8 @@ module ETHEREUM-SIMULATION
          </account>
       requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule load "account" : { ACCTID : { "code" : ((CODE:String) => #asMap(#dasmOpCodes(#parseByteStack(CODE)))) } }
-    rule load "account" : { ACCTID : { "code" : ((CODE:OpCodes) => #asMap(CODE)) } }
+    rule load "account" : { ACCTID : { "code" : ((CODE:String) => #dasmOpCodes(#parseByteStack(CODE))) } }
+    rule load "account" : { ACCTID : { "code" : ((CODE:OpCodes) => #asMapOpCodes(CODE)) } }
     rule <k> load "account" : { ACCTID : { "code" : (CODE:Map) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
@@ -244,7 +244,7 @@ module ETHEREUM-SIMULATION
       requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
     rule check ACCTID : { "code" : ((CODE:String) => #dasmOpCodes(#parseByteStack(CODE))) }
-    rule check ACCTID : { "code" : ((CODE:OpCodes) => #asMap(CODE)) }
+    rule check ACCTID : { "code" : ((CODE:OpCodes) => #asMapOpCodes(CODE)) }
     rule <k> check ACCTID : { "code" : (CODE:Map) } => . ... </k>
          <account>
            <acctID> ACCT </acctID>

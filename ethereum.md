@@ -123,8 +123,8 @@ Here we load the relevant information for accounts.
          </account>
       requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule load "account" : { ACCTID : { "code" : ((CODE:String) => #asMap(#dasmOpCodes(#parseByteStack(CODE)))) } }
-    rule load "account" : { ACCTID : { "code" : ((CODE:OpCodes) => #asMap(CODE)) } }
+    rule load "account" : { ACCTID : { "code" : ((CODE:String) => #dasmOpCodes(#parseByteStack(CODE))) } }
+    rule load "account" : { ACCTID : { "code" : ((CODE:OpCodes) => #asMapOpCodes(CODE)) } }
     rule <k> load "account" : { ACCTID : { "code" : (CODE:Map) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
@@ -241,7 +241,7 @@ Here we load the environmental information.
       requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
     rule check ACCTID : { "code" : ((CODE:String) => #dasmOpCodes(#parseByteStack(CODE))) }
-    rule check ACCTID : { "code" : ((CODE:OpCodes) => #asMap(CODE)) }
+    rule check ACCTID : { "code" : ((CODE:OpCodes) => #asMapOpCodes(CODE)) }
     rule <k> check ACCTID : { "code" : (CODE:Map) } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
