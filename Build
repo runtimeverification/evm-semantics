@@ -6,34 +6,43 @@ progress() { echo "== $@"; }
 success()  { echo -e "\e[32m== success: $@\e[0m"; }
 failure()  { echo -e "\e[31m== failure: $@\e[0m"; }
 
+tests_dir="tests/tests-develop/VMTests"
+passing_tests="tests/passing_tests"
+output_file="tests/templates/output.txt"
+
 list_tests() {
     for exp in "$@"; do
         if [[ -f "$exp" ]]; then
             echo $exp;
         else
-            find tests/tests-develop/VMTests/ -iname "$exp" \
-                 \( -name '*.json' -or -name '*.kson' \)
+            grep -Fvxf "$passing_tests" <(find "$tests_dir/" -iname "$exp" \
+                            \( -name '*.json' -or -name '*.kson' \))
         fi
     done
 }
 
-tangle_test() {
-    run_make all
-
+run_test() {
+    progress "running: $test_file ..."
+    test_file="$1"
     output_file="tests/templates/output.txt"
-    local test_file test_fail_count=0
-    while read test_file; do
-        local output_differs=false
-        progress "running: $test_file..."
-        diff <(krun --debug --directory k/ "$test_file") "$output_file" \
-            || output_differs=true
-        if $output_differs; then
-            failure "$test_file"
-            test_fail_count+=1
-        else
-            success "$test_file"
-        fi
-    done < <(list_tests "$@" | sort)
+    diff <(krun --debug --directory k/ "$test_file") "$output_file"
+    if [[ "$?" == '0' ]]; then
+        echo "$test_file" >> "$passing_tests"
+        success "$test_file"
+        return 0
+    fi
+    failure "$test_file"
+    return 1
+}
+
+run_tests() {
+    test_count=0
+    test_fail_count=0
+    list_tests "$@" | sort | while read test_file; do
+        let test_count="$test_count + 1"
+        run_test "$test_file" || let test_fail_count="$test_fail_count + 1"
+        progress "failed: $test_fail_count / $test_count"
+    done
     return $test_fail_count
 }
 
@@ -68,7 +77,8 @@ usage() {
        $0                  Build the definitions and kompile them
        $0 defn             Only detangle the definitions
        $0 test <test.json> krun the test file and check that it succeeds
-       $0 test <expr>      Use find to locate a test file in tests/tests-develop/VMTests/
+       $0 test <expr>      Run list of tests output by '$0 list <expr>'
+       $0 list <expr>      Use find to list files in '$tests_dir'
 "
 }
 
@@ -78,8 +88,9 @@ while [[ "$#" -gt '0' ]]; do
     case "$tangle_command" in
         build)        run_make build ;;
         defn)         run_make defn ;;
-        test)         tangle_test "$@" ; exit ;;
+        test)         run_tests "$@" ; exit ;;
         ktest)        tangle_ktest ;;
+        list)         list_tests "$@" ; exit ;;
         *)            usage; exit 1;;
     esac
 done
