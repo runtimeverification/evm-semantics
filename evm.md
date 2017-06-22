@@ -430,13 +430,13 @@ Note that `_in_` ignores the arguments to operators that are parametric.
     rule SWAP(_)    in (SWAP(_) ; OPS)     => true
     rule PUSH(_, _) in (PUSH(_, _) ; OPS)  => true
 
-    syntax Map ::= #asMap ( OpCodes )       [function]
-                 | #asMap ( Int , OpCodes ) [function]
- // --------------------------------------------------
-    rule #asMap( OPS:OpCodes )         => #asMap(0, OPS)
-    rule #asMap( N , .OpCodes )        => .Map
-    rule #asMap( N , OP:OpCode ; OCS ) => (N |-> OP) #asMap(N +Int 1, OCS) requires notBool isPushOp(OP)
-    rule #asMap( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #asMap(N +Int 1 +Int M, OCS)
+    syntax Map ::= #OpCodesAsMap ( OpCodes )       [function]
+                 | #OpCodesAsMap ( Int , OpCodes ) [function]
+ // ---------------------------------------------------------
+    rule #OpCodesAsMap( OPS:OpCodes )         => #OpCodesAsMap(0, OPS)
+    rule #OpCodesAsMap( N , .OpCodes )        => .Map
+    rule #OpCodesAsMap( N , OP:OpCode ; OCS ) => (N |-> OP) #OpCodesAsMap(N +Int 1, OCS) requires notBool isPushOp(OP)
+    rule #OpCodesAsMap( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #OpCodesAsMap(N +Int 1 +Int M, OCS)
 
     syntax OpCodes ::= #asOpCodes ( Map )       [function]
                      | #asOpCodes ( Int , Map ) [function]
@@ -446,9 +446,9 @@ Note that `_in_` ignores the arguments to operators that are parametric.
     rule #asOpCodes(N, N |-> OP         M) => OP         ; #asOpCodes(N +Int 1,        M) requires notBool isPushOp(OP)
     rule #asOpCodes(N, N |-> PUSH(S, W) M) => PUSH(S, W) ; #asOpCodes(N +Int 1 +Int S, M)
 
-    syntax Word ::= #codeSize ( Map ) [function]
- // --------------------------------------------
-    rule #codeSize(M) => #size(#asmOpCodes(#asOpCodes(M)))
+    syntax Word ::= #sizeOpCodeMap ( Map ) [function]
+ // -------------------------------------------------
+    rule #sizeOpCodeMap(M) => #sizeWordStack(#asmOpCodes(#asOpCodes(M)))
 ```
 
 EVM OpCodes
@@ -482,10 +482,10 @@ The `CallStack` is a cons-list of `Process`.
     syntax CallStack ::= ".CallStack" | Bag CallStack
  // -------------------------------------------------
 
-    syntax Int ::= #size ( CallStack ) [function]
- // ---------------------------------------------
-    rule #size( .CallStack         ) => 0
-    rule #size( B:Bag CS:CallStack ) => 1 +Int #size(CS)
+    syntax Int ::= #sizeCallStack ( CallStack ) [function]
+ // ------------------------------------------------------
+    rule #sizeCallStack( .CallStack         ) => 0
+    rule #sizeCallStack( B:Bag CS:CallStack ) => 1 +Int #sizeCallStack(CS)
 
     syntax InternalOp ::= "#pushCallStack" | "#popCallStack" | "#txFinished"
  // ------------------------------------------------------------------------
@@ -658,7 +658,7 @@ These operators make queries about the current execution state.
     syntax NullStackOp ::= "MSIZE" | "CODESIZE"
  // -------------------------------------------
     rule <op> MSIZE    => 32 *Word MU    ~> #push ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> CODESIZE => #codeSize(PGM) ~> #push ... </op> <program> PGM </program>
+    rule <op> CODESIZE => #sizeOpCodeMap(PGM) ~> #push ... </op> <program> PGM </program>
 
     syntax TernStackOp ::= "CODECOPY"
  // ---------------------------------
@@ -713,7 +713,7 @@ These operators query about the current `CALL*` state.
 ```k
     syntax NullStackOp ::= "CALLDATASIZE"
  // -------------------------------------
-    rule <op> CALLDATASIZE => #size(CD) ~> #push ... </op>
+    rule <op> CALLDATASIZE => #sizeWordStack(CD) ~> #push ... </op>
          <callData> CD </callData>
 
     syntax UnStackOp ::= "CALLDATALOAD"
@@ -740,7 +740,7 @@ These operators query about the current `CALL*` state.
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, W0, W1) </memoryUsed>
          <log> CURRLOG => CURRLOG . { ACCT | #take(N, WS) | #range(LM, W0, W1) } </log>
-      requires word2Bool(#size(WS) >=Word N)
+      requires word2Bool(#sizeWordStack(WS) >=Word N)
 ```
 
 Ethereum Network OpCodes
@@ -771,7 +771,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
-    rule <op> EXTCODESIZE ACCTTO => #codeSize(CODE) ~> #push ... </op>
+    rule <op> EXTCODESIZE ACCTTO => #sizeOpCodeMap(CODE) ~> #push ... </op>
          <account>
            <acctID> ACCTTOACT </acctID>
            <code> CODE </code>
@@ -864,7 +864,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
  // -----------------------------------------
     rule <op> #return RETSTART RETWIDTH => . ... </op>
          <output> OUT </output>
-         <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #size(OUT)), OUT) ] </localMem>
+         <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #sizeWordStack(OUT)), OUT) ] </localMem>
 ```
 
 -   The `callLog` is used to store the `CALL*`/`CREATE` operations so that we can compare them against the test-set.
@@ -892,17 +892,17 @@ TODO: `#call` is neutured to make sure that we can pass the VMTests. The followi
     rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => . ... </op>
          <callStack> CS </callStack>
          <callLog> CL => { ACCTTO | VALUE | ARGS } ; CL </callLog>
-         <id>       _ => ACCTTO       </id>
-         <pc>       _ => 0            </pc>
-         <caller>   _ => ACCTFROM     </caller>
-         <localMem> _ => #asMap(ARGS) </localMem>
-         <program>  _ => CODE         </program>
+         <id>       _ => ACCTTO                </id>
+         <pc>       _ => 0                     </pc>
+         <caller>   _ => ACCTFROM              </caller>
+         <localMem> _ => #WordStackAsMap(ARGS) </localMem>
+         <program>  _ => CODE                  </program>
          <account>
            <acctID>  ACCTFROM </acctID>
            <balance> BAL => BAL -Word VALUE </balance>
            ...
          </account>
-      requires word2Bool(VALUE <=Word BAL) andBool (#size(CS) <Int 1024)
+      requires word2Bool(VALUE <=Word BAL) andBool (#sizeCallStack(CS) <Int 1024)
 ```
 
 Here is what we're actually using.
@@ -919,7 +919,7 @@ The test-set isn't clear about whach should happen when `#call` is run, but it s
            <balance> BAL </balance>
            ...
          </account>
-      requires word2Bool(VALUE <=Word BAL) andBool (#size(CS) <Int 1024)
+      requires word2Bool(VALUE <=Word BAL) andBool (#sizeCallStack(CS) <Int 1024)
 
     rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #exception ... </op>
          <account>
@@ -931,7 +931,7 @@ The test-set isn't clear about whach should happen when `#call` is run, but it s
 
     rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #exception ... </op>
          <callStack> CS </callStack>
-      requires #size(CS) >Int 1024
+      requires #sizeCallStack(CS) >Int 1024
 ```
 
 For each `CALL*` operation, we make a corresponding call to `#call` and a state-change to setup the custom parts of the calling environment.
