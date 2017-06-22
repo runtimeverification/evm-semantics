@@ -4,20 +4,23 @@ set -e      # Exit immediately if any command fails
 
 tests_dir="tests/tests-develop/VMTests/"
 output_file="tests/templates/output.txt"
-passing_tests="tests/passing_tests"
+expected_passing="tests/passing.expected"
+now_passing="tests/passing.lastrun"
 
 progress() { echo "== $@"; }
-success()  { echo -e "\e[32m== success: $@\e[0m"; }
+success()  { echo -e "\e[32m== success: $@\e[0m";
+             echo "$@" > "$now_passing"
+           }
 failure()  { echo -e "\e[31m== failure: $@\e[0m"; }
 
 list_tests()   { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
-list_passing() { cat "$passing_tests"; }
-list_failing() { list_tests | grep -Fvxf "$passing_tests" -; }
+list_passing() { cat "$expected_passing"; }
+list_failing() { list_tests | grep -Fvxf "$expected_passing" -; }
 
 # Reads a list of json test files from stdin, and runs them
 run_tests() {
     run_make all
-
+    rm -f "$now_passing"
     local test_file test_fail_count=0
     while read test_file; do
         local output_differs=false
