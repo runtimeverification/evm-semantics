@@ -6,11 +6,9 @@ Actual execution of the EVM is defined in [the EVM file](evm.md).
 
 ```k
 requires "evm.k"
-requires "evm-dasm.k"
 
 module ETHEREUM-SIMULATION
     imports ETHEREUM
-    imports EVM-DASM
 
     configuration initEthereumCell
                   <k> $PGM:EthereumSimulation </k>
