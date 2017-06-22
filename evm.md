@@ -227,7 +227,7 @@ It checks, in order:
     rule #stackAdded(OP)      => 0 requires OP in #zeroRet
     rule #stackAdded(DUP(N))  => N +Int 1
     rule #stackAdded(SWAP(N)) => N
-    rule #stackAdded(OP)      => 1 requires notBool (OP in #zeroRet orBool isDupOp(OP) orBool isSwapOp(OP))
+    rule #stackAdded(OP)      => 1 requires notBool (OP in #zeroRet orBool isStackOp(OP))
 
     syntax Int ::= #stackDelta ( OpCode ) [function]
  // ------------------------------------------------
