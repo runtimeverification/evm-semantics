@@ -82,6 +82,7 @@ usage() {
        $0 defn             Only detangle the definitions
        $0 test <test.json> krun the test file and check that it succeeds
        $0 test <expr>      Use find to locate a test file in '$tests_dir'
+       $0 list-tests <arg> List tests that would be run by test (but don't run them)
        $0 krun <arg>       Same as test, but pretty print output instead of checking it
 "
 }
@@ -95,6 +96,7 @@ while [[ "$#" -gt '0' ]]; do
         test)         run_tests "$@"; exit ;;
         ktest)        run_ktest ;;
         krun)         run_krun "$@"; exit ;;
+        list-tests)   list_tests "$@"; exit ;;
         *)            usage; exit 1;;
     esac
 done
