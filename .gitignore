@@ -3,6 +3,7 @@
 # have `pandoc-tangle` installed.
 /k/*-kompiled/
 /tests/tests-develop
+/tests/passing.lastrun
 
 # Temp folder for scratch data, TODOs etc.
 /tmp

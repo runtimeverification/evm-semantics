@@ -1,7 +1,7 @@
 defn_files=k/ethereum.k k/data.k k/evm-dasm.k k/evm.k
 ktest_file=tests/config.xml
 
-build: k/ethereum-kompiled/timestamp
+build: k/ethereum-kompiled/extras/timestamp
 all: build split-tests
 defn: $(defn_files)
 split-tests: tests/tests-develop/VMTests/vmArithmeticTest/make.timestamp \
@@ -19,7 +19,7 @@ tests/tests-develop/%/make.timestamp: tests/ethereum-tests/%.json
 	cp tests/templates/config.xml $(dir $@)
 	touch $@
 
-k/ethereum-kompiled/timestamp: $(defn_files)
+k/ethereum-kompiled/extras/timestamp: $(defn_files)
 	@echo "== kompile: $@"
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory k

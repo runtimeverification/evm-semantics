@@ -157,8 +157,6 @@ module ETHEREUM-SIMULATION
 // Here we load the environmental information.
 
 
-    rule <k> load "gas" : GAVAIL => . ... </k> <gas> _ => #parseHexWord(GAVAIL) </gas>
-
     rule <k> load "env" : { "currentCoinbase"   : (CB:String)     } => . ... </k> <coinbase>   _ => #parseHexWord(CB)     </coinbase>
     rule <k> load "env" : { "currentDifficulty" : (DIFF:String)   } => . ... </k> <difficulty> _ => #parseHexWord(DIFF)   </difficulty>
     rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:String) } => . ... </k> <gasLimit>   _ => #parseHexWord(GLIMIT) </gasLimit>
@@ -206,6 +204,7 @@ module ETHEREUM-SIMULATION
     rule check "post" : { (ACCTID:String) : ACCT } => check ACCTID : ACCT
     rule check TESTID : { "post" : POST } => check "post" : POST ~> failure TESTID
     rule check TESTID : { "out"  : OUT  } => check "out"  : OUT  ~> failure TESTID
+    rule check TESTID : { "gas"  : GLEFT  } => check "gas"  : GLEFT  ~> failure TESTID
 
     rule check ACCTID : { "balance" : ((BAL:String) => #parseHexWord(BAL)) }
     rule <k> check ACCTID : { "balance" : (BAL:Word) } => . ... </k>
@@ -247,6 +246,9 @@ module ETHEREUM-SIMULATION
     rule check "out" : ((OUT:String) => #parseByteStack(OUT))
     rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
 
+    rule check "gas" : ((GLEFT:String) => #parseHexWord(GLEFT))
+    rule check "gas" : GLEFT => .
+
 
 // ### Running Tests
 
@@ -278,20 +280,18 @@ module ETHEREUM-SIMULATION
     rule run TESTID : { "out"         : (OUT:JSON)      , REST } => run TESTID : { REST } ~> check TESTID : { "out"  : OUT }
     rule run TESTID : { "post"        : (POST:JSON)     , REST } => run TESTID : { REST } ~> check TESTID : { "post" : POST }
     rule run TESTID : { "expect"      : (EXPECT:JSON)   , REST } => run TESTID : { REST } ~> check TESTID : { "post" : EXPECT }
+    rule run TESTID : { "gas"         : (GLEFT:String)  , REST } => run TESTID : { REST } ~> check TESTID : { "gas"  : GLEFT }
 
 
 // Here we pull apart a test into the sequence of `EthereumCommand` to run for it.
 
 
     rule run TESTID : { "env"  : (ENV:JSON)         , REST } => load "env" : ENV      ~> run TESTID : { REST }
-    rule run TESTID : { "gas"  : (CURRGAS:String)   , REST } => load "gas" : CURRGAS  ~> run TESTID : { REST }
     rule run TESTID : { "pre"  : (PRE:JSON)         , REST } => load "pre" : PRE      ~> run TESTID : { REST }
     rule run TESTID : { "exec" : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , "exec" : EXEC , REST }
 
-    rule run TESTID : { "exec" : (EXEC:JSON) } => run "exec" : EXEC ~> start ~> flush
-    rule run "exec" : { .JSONList } => .
-    rule run "exec" : { (KEY:String) : VALUE        } => load "exec" : { KEY : VALUE }
-    rule run "exec" : { (KEY:String) : VALUE , REST } => load "exec" : { KEY : VALUE } ~> run  "exec" : { REST }          requires REST =/=K .JSONList andBool KEY =/=K "code"
-    rule run "exec" : { "code"       : CODE  , REST } => run  "exec" : { REST }        ~> load "exec" : { "code" : CODE } requires REST =/=K .JSONList
+    rule run TESTID : { "exec" : { .JSONList } } => .
+    rule run TESTID : { "exec" : { (KEY:String) : VALUE , REST } } => load "exec" : { KEY : VALUE }       ~> run TESTID : { "exec" : { REST } }     requires KEY =/=K "code"
+    rule run TESTID : { "exec" : { "code"       : CODE  , REST } } => run  TESTID : { "exec" : { REST } } ~> load "exec" : { "code" : CODE } ~> start ~> flush
 endmodule
 

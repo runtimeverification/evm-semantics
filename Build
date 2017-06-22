@@ -2,25 +2,25 @@
 
 set -e      # Exit immediately if any command fails
 
+tests_dir="tests/tests-develop/VMTests/"
+output_file="tests/templates/output.txt"
+expected_passing="tests/passing.expected"
+now_passing="tests/passing.lastrun"
+
 progress() { echo "== $@"; }
-success()  { echo -e "\e[32m== success: $@\e[0m"; }
+success()  { echo -e "\e[32m== success: $@\e[0m";
+             echo "$@" > "$now_passing"
+           }
 failure()  { echo -e "\e[31m== failure: $@\e[0m"; }
 
-list_tests() {
-    for exp in "$@"; do
-        if [[ -f "$exp" ]]; then
-            echo $exp;
-        else
-            find tests/tests-develop/VMTests/ -iname "$exp" \
-                 \( -name '*.json' -or -name '*.kson' \)
-        fi
-    done
-}
+list_tests()   { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
+list_passing() { cat "$expected_passing"; }
+list_failing() { list_tests | grep -Fvxf "$expected_passing" -; }
 
-tangle_test() {
+# Reads a list of json test files from stdin, and runs them
+run_tests() {
     run_make all
-
-    output_file="tests/templates/output.txt"
+    rm -f "$now_passing"
     local test_file test_fail_count=0
     while read test_file; do
         local output_differs=false
@@ -33,16 +33,37 @@ tangle_test() {
         else
             success "$test_file"
         fi
-    done < <(list_tests "$@" | sort)
+    done
     return $test_fail_count
 }
 
-tangle_ktest() {
+filter_tests() {
+    local command=( exit 1 )
+    case $# in
+    0) cat;       return ;;
+    1) grep "$1"; return ;;
+    *) cat > /dev/null;
+       echo >&2 "Too many expressions";
+       ;;
+    esac
+}
+
+run_ktest() {
     progress "running ktest ..."
 
     pushd k
     ktest ../tests/config.xml
     popd
+}
+
+run_krun() {
+    run_make all
+    while read test_file; do
+        progress "running: $test_file"
+        krun --debug --directory k/ "$test_file" \
+            | xmllint -format - \
+            | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
+    done
 }
 
 have_tangle=true
@@ -65,21 +86,42 @@ run_make() {
 usage() {
     echo "
     usage:
-       $0                  Build the definitions and kompile them
-       $0 defn             Only detangle the definitions
-       $0 test <test.json> krun the test file and check that it succeeds
-       $0 test <expr>      Use find to locate a test file in tests/tests-develop/VMTests/
+       $0                       Build the definitions and kompile them
+       $0 defn                  Only detangle the definitions
+
+       $0 passing <regx>        Run known passing tests
+       $0 failing <regx>        Run tests who's results we're not sure of
+       $0 test    <regx>        Run passing and unknown tests
+
+                                These tests are filtered by <regex>
+
+       $0 list-tests   <regx>   Run passing and failing tests
+       $0 list-failing <regx>   Run failing tests
+       $0 list-passing <regx>   Run passing tests
+
+
+       $0 krun <arg>            Same as test, but pretty print output instead of checking it
 "
 }
 
 [[ "$#" == '0' ]] && set build
 while [[ "$#" -gt '0' ]]; do
-    tangle_command="$1" && shift
-    case "$tangle_command" in
+    run_command="$1" && shift
+    case "$run_command" in
         build)        run_make build ;;
         defn)         run_make defn ;;
-        test)         tangle_test "$@" ; exit ;;
-        ktest)        tangle_ktest ;;
+
+        passing)      list_passing | filter_tests "$@" | run_tests; exit;;
+        failing)      list_failing | filter_tests "$@" | run_tests; exit;;
+        test)         list_tests   | filter_tests "$@" | run_tests; exit;;
+
+        krun)         list_tests   | filter_tests "$@" | run_krun "$@"; exit ;;
+
+        list-tests)   list_tests   | filter_tests "$@";  exit ;;
+        list-failing) list_failing | filter_tests "$@";  exit ;;
+        list-passing) list_passing | filter_tests "$@";  exit ;;
+
+        ktest)        run_ktest ;;
         *)            usage; exit 1;;
     esac
 done
