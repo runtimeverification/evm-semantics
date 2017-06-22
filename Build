@@ -52,7 +52,6 @@ run_krun() {
     run_make all
     list_tests "$@" | sort |
     while read test_file; do
-        local output_differs=false
         progress "running: $test_file"
         krun --debug --directory k/ "$test_file" \
             | xmllint -format - \
