@@ -4,6 +4,10 @@ EVM Words
 EVM uses bounded 256 bit integer words.
 Here we provide the arithmetic of these words, as well as some data-structures over them.
 
+EVM also has bytes (8 bit words) for some encodings of data, but only a very light dependence on byte-level manipulation.
+It's doubtful that having two different ways of reading the base data-units (or that limiting yourself to machine-representable units) is beneficial.
+Arguably hardware should evolve to directly support more elegant languages, rather than our languages evolving towards our hardware.
+
 ```k
 requires "domains.k"
 
@@ -13,9 +17,12 @@ module EVM-DATA
     syntax KResult ::= Int 
 ```
 
-Word Operations
----------------
+Primitives
+----------
 
+Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's sort `Word`.
+
+-   `Int` is a subsort of `Word`.
 -   `#symbolicWord` generates a fresh existentially-bound symbolic word.
 -   `chop` interperets an interger module $2^256$.
 
@@ -54,15 +61,6 @@ Word Operations
     rule #ifWord false #then _ #else W #fi => W
 ```
 
--   `up/Int` performs integer division but rounds up instead of down.
-
-```k
-    syntax Int ::= Int "up/Int" Int [function]
- // ------------------------------------------
-    rule I1 up/Int I2 => I1 /Int I2          requires I1 %Int I2 ==K 0
-    rule I1 up/Int I2 => (I1 /Int I2) +Int 1 requires I1 %Int I2 =/=K 0
-```
-
 -   `sgn` gives the twos-complement interperetation of the sign of a `Word`.
 -   `abs` gives the twos-complement interperetation of the magnitude of a `Word`.
 
@@ -86,7 +84,19 @@ Word Operations
     rule minWord(W0:Int, W1:Int) => minInt(W0, W1)
 ```
 
-### Arithmetic
+Arithmetic
+----------
+
+-   `up/Int` performs integer division but rounds up instead of down.
+
+```k
+    syntax Int ::= Int "up/Int" Int [function]
+ // ------------------------------------------
+    rule I1 up/Int I2 => I1 /Int I2          requires I1 %Int I2 ==K 0
+    rule I1 up/Int I2 => (I1 /Int I2) +Int 1 requires I1 %Int I2 =/=K 0
+```
+
+The corresponding `<op>Word` operations automatically perform the correct `Word` modulus.
 
 ```k
     syntax Word ::= Word "+Word" Word [function]
@@ -124,7 +134,10 @@ Care is needed for `^Word` to avoid big exponentiation.
     rule W0:Int %sWord W1:Int => twosComp(twosComp(W0) %Word twosComp(W1)) *Word sgn(W0)
 ```
 
-### Comparison Operators
+Comparison Operators
+--------------------
+
+The `<op>Word` comparison operators automatically interperet the `Bool` as a `Word`.
 
 ```k
     syntax Word ::= Word "<Word"  Word [function]
@@ -140,7 +153,7 @@ Care is needed for `^Word` to avoid big exponentiation.
     rule W0:Int ==Word W1:Int => bool2Word(W0 ==Int W1)
 ```
 
--   `s<Word` implements a less-than for `Word` interpereted as signed.
+-   `s<Word` implements a less-than for `Word` (with signed interperetation).
 
 ```k
     syntax Word ::= Word "s<Word" Word [function]
@@ -151,7 +164,8 @@ Care is needed for `^Word` to avoid big exponentiation.
     rule W0:Int s<Word W1:Int => twosComp(W1) <Word twosComp(W0) requires sgn(W0) ==K -1 andBool sgn(W1) ==K -1
 ```
 
-### Bitwise operators.
+Bitwise operators.
+------------------
 
 Bitwise logical operators are lifted from the integer versions.
 
@@ -169,9 +183,6 @@ Bitwise logical operators are lifted from the integer versions.
 
 -   `bit` gets bit $N$ (0 being MSB).
 -   `byte` gets byte $N$ (0 being the MSB).
--   `#nBits` shifts in $N$ ones from the right.
--   `#nBytes` shifts in $N$ bytes of ones from the right.
--   `_<<Byte_` shifts an integer 8 bits to the left.
 
 ```k
     syntax Word ::= bit  ( Word , Word ) [function]
@@ -179,7 +190,13 @@ Bitwise logical operators are lifted from the integer versions.
  // -----------------------------------------------
     rule bit(N:Int, W:Int)  => (W >>Int (255 -Int N)) %Int 2
     rule byte(N:Int, W:Int) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) %Int (2 ^Int 8)
+```
 
+-   `#nBits` shifts in $N$ ones from the right.
+-   `#nBytes` shifts in $N$ bytes of ones from the right.
+-   `_<<Byte_` shifts an integer 8 bits to the left.
+
+```k
     syntax Int  ::= #nBits  ( Int )  [function]
                   | #nBytes ( Int )  [function]
                   | Int "<<Byte" Int [function]
@@ -198,46 +215,20 @@ Bitwise logical operators are lifted from the integer versions.
     rule signextend(N:Int, W:Int) => chop( #nBytes(N +Int 1)                      &Int W ) requires notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
 ```
 
-
-Note that we give "uninterpreted function" semantics to `keccak`, which is fairly close to accurate.
-For SHA3, it must be noted that the we make accesses to local memory, which is a word addressable byte array.
-The authors make it clear why the memory has to be word addressable - the word length is the same as length the output
-of Keccak 256 in SHA3's specifications. However, there seems to be a lack of explanation behind the decision to use 
-a byte array instead of a word array. This goes against usual notions that assembly languages 
-follow, which is word addressable word array (where the length of the word is usually 32 or 64 bits). This allows using  
-using the contents of any cell in the array as an address - an advantage that EVM decided to forego. 
-
+-   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 ```k
-    syntax HexString ::=   String 
-                         | "#addPadding"     "(" HexString ")"    [function]
-                         | "#byteToHex"      "(" Word ")"         [function]
-                         | "#byteStackToHex" "(" WordStack ")"    [function]
-                         | HexString "+HexString" HexString       [function, strict]
+    syntax Word ::= keccak ( WordStack )          [function]
+                  | keccak ( String , WordStack ) [function]
+ // --------------------------------------------------------
+    rule keccak(WS) => keccak("", WS)
+    rule keccak(S, .WordStack) => Keccak256(S)
+    rule keccak(S, W : WS)     => Keccak256(S +String #padHexByte(Base2String(16, W)))
 
-    syntax KResult ::= String 
-
-    rule X:String +HexString Y:String => X +String Y
-
-    // If the content is not a complete byte
-    rule #addPadding(X:String)        => X                              requires lengthString(X) ==Int 2
-    rule #addPadding(X:String)        => #addPadding("0" +String X)     requires lengthString(X)  ==Int 1
-    rule #byteToHex(X:Int)            => #addPadding(Base2String(X, 16))
-    rule #byteStackToHex(.WordStack)  => "" 
-    rule #byteStackToHex(W : WS)      => #byteToHex(W) +HexString #byteStackToHex(WS) 
-
-    syntax Word ::= "keccak" "(" HexString ")"                    [strict, function]
-
-    rule keccak(X:String) => Keccak256(X)
-
-
-
-    //syntax Word ::= "#calcKeccak" "(" String ")"                  [strict]
-
-    //rule keccak(X: String) =>  #calcKeccak(Keccak256(X))
-
-    //rule #calcKeccak(X: String) => String2Base(X, 16)
- // -----------------------------------------------
+    syntax String ::= #padHexByte ( String ) [function]
+ // ---------------------------------------------------
+    rule #padHexByte(S) => S             requires lengthString(S) ==K 2
+    rule #padHexByte(S) => "0" +String S requires lengthString(S) ==K 2
 ```
 
 Data Structures

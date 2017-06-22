@@ -877,9 +877,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #exception ... </op>
          <callStack> CS </callStack>
       requires #size(CS) >Int 1024
-```
 
-```k
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH

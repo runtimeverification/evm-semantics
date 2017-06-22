@@ -907,8 +907,6 @@ module ETHEREUM
          <callStack> CS </callStack>
       requires #size(CS) >Int 1024
 
-
-
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
