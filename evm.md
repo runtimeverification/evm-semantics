@@ -37,7 +37,7 @@ module ETHEREUM
                       <callStack> .CallStack </callStack>
 
                       <txExecState>
-                        <program>   .Map        </program>              // I_b
+                        <program> .Map </program>                       // I_b
 
                         // I_*
                         <id>        0:Word     </id>                    // I_a
@@ -62,8 +62,8 @@ module ETHEREUM
                       // Immutable during a single transaction
                       // -------------------------------------
 
-                      <gasPrice>   0:Word     </gasPrice>               // I_p
-                      <origin>     0:Word     </origin>                 // I_o
+                      <gasPrice> 0:Word </gasPrice>                     // I_p
+                      <origin>   0:Word </origin>                       // I_o
 
                       // I_H* (block information)
                       <gasLimit>   0:Word </gasLimit>                   // I_Hl
