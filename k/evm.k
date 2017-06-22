@@ -205,11 +205,11 @@ module ETHEREUM
     syntax InternalOp ::= "#stackNeeded?" "(" OpCode ")"
                         | "#stackAdded?" "(" OpCode ")"
  // ---------------------------------------------------
-    rule <op> #stackNeeded?(OP) => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int #stackNeeded(OP)
-    rule <op> #stackNeeded?(OP) => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) >=Int #stackNeeded(OP)
+    rule <op> #stackNeeded?(OP) => #exception ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) <Int #stackNeeded(OP)
+    rule <op> #stackNeeded?(OP) => .          ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) >=Int #stackNeeded(OP)
 
-    rule <op> #stackAdded?(OP) => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int #stackDelta(OP) >Int 1024
-    rule <op> #stackAdded?(OP) => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int #stackDelta(OP) <=Int 1024
+    rule <op> #stackAdded?(OP) => #exception ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
+    rule <op> #stackAdded?(OP) => .          ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) +Int #stackDelta(OP) <=Int 1024
 
 
 // -   `#stackNeeded` calculates how many arguments the operator needs from the
@@ -438,13 +438,13 @@ module ETHEREUM
     rule SWAP(_)    in (SWAP(_) ; OPS)     => true
     rule PUSH(_, _) in (PUSH(_, _) ; OPS)  => true
 
-    syntax Map ::= #asMap ( OpCodes )       [function]
-                 | #asMap ( Int , OpCodes ) [function]
- // --------------------------------------------------
-    rule #asMap( OPS:OpCodes )         => #asMap(0, OPS)
-    rule #asMap( N , .OpCodes )        => .Map
-    rule #asMap( N , OP:OpCode ; OCS ) => (N |-> OP) #asMap(N +Int 1, OCS) requires notBool isPushOp(OP)
-    rule #asMap( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #asMap(N +Int 1 +Int M, OCS)
+    syntax Map ::= #OpCodesAsMap ( OpCodes )       [function]
+                 | #OpCodesAsMap ( Int , OpCodes ) [function]
+ // ---------------------------------------------------------
+    rule #OpCodesAsMap( OPS:OpCodes )         => #OpCodesAsMap(0, OPS)
+    rule #OpCodesAsMap( N , .OpCodes )        => .Map
+    rule #OpCodesAsMap( N , OP:OpCode ; OCS ) => (N |-> OP) #OpCodesAsMap(N +Int 1, OCS) requires notBool isPushOp(OP)
+    rule #OpCodesAsMap( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #OpCodesAsMap(N +Int 1 +Int M, OCS)
 
     syntax OpCodes ::= #asOpCodes ( Map )       [function]
                      | #asOpCodes ( Int , Map ) [function]
@@ -454,9 +454,9 @@ module ETHEREUM
     rule #asOpCodes(N, N |-> OP         M) => OP         ; #asOpCodes(N +Int 1,        M) requires notBool isPushOp(OP)
     rule #asOpCodes(N, N |-> PUSH(S, W) M) => PUSH(S, W) ; #asOpCodes(N +Int 1 +Int S, M)
 
-    syntax Word ::= #codeSize ( Map ) [function]
- // --------------------------------------------
-    rule #codeSize(M) => #size(#asmOpCodes(#asOpCodes(M)))
+    syntax Word ::= #sizeOpCodeMap ( Map ) [function]
+ // -------------------------------------------------
+    rule #sizeOpCodeMap(M) => #sizeWordStack(#asmOpCodes(#asOpCodes(M)))
 
 
 // EVM OpCodes
@@ -491,10 +491,10 @@ module ETHEREUM
     syntax CallStack ::= ".CallStack" | Bag CallStack
  // -------------------------------------------------
 
-    syntax Int ::= #size ( CallStack ) [function]
- // ---------------------------------------------
-    rule #size( .CallStack         ) => 0
-    rule #size( B:Bag CS:CallStack ) => 1 +Int #size(CS)
+    syntax Int ::= #sizeCallStack ( CallStack ) [function]
+ // ------------------------------------------------------
+    rule #sizeCallStack( .CallStack         ) => 0
+    rule #sizeCallStack( B:Bag CS:CallStack ) => 1 +Int #sizeCallStack(CS)
 
     syntax InternalOp ::= "#pushCallStack" | "#popCallStack" | "#txFinished"
  // ------------------------------------------------------------------------
@@ -669,7 +669,7 @@ module ETHEREUM
     syntax NullStackOp ::= "MSIZE" | "CODESIZE"
  // -------------------------------------------
     rule <op> MSIZE    => 32 *Word MU    ~> #push ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> CODESIZE => #codeSize(PGM) ~> #push ... </op> <program> PGM </program>
+    rule <op> CODESIZE => #sizeOpCodeMap(PGM) ~> #push ... </op> <program> PGM </program>
 
     syntax TernStackOp ::= "CODECOPY"
  // ---------------------------------
@@ -724,7 +724,7 @@ module ETHEREUM
 
     syntax NullStackOp ::= "CALLDATASIZE"
  // -------------------------------------
-    rule <op> CALLDATASIZE => #size(CD) ~> #push ... </op>
+    rule <op> CALLDATASIZE => #sizeWordStack(CD) ~> #push ... </op>
          <callData> CD </callData>
 
     syntax UnStackOp ::= "CALLDATALOAD"
@@ -751,7 +751,7 @@ module ETHEREUM
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, W0, W1) </memoryUsed>
          <log> CURRLOG => CURRLOG . { ACCT | #take(N, WS) | #range(LM, W0, W1) } </log>
-      requires word2Bool(#size(WS) >=Word N)
+      requires word2Bool(#sizeWordStack(WS) >=Word N)
 
 
 // Ethereum Network OpCodes
@@ -784,7 +784,7 @@ module ETHEREUM
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
-    rule <op> EXTCODESIZE ACCTTO => #codeSize(CODE) ~> #push ... </op>
+    rule <op> EXTCODESIZE ACCTTO => #sizeOpCodeMap(CODE) ~> #push ... </op>
          <account>
            <acctID> ACCTTOACT </acctID>
            <code> CODE </code>
@@ -880,7 +880,7 @@ module ETHEREUM
  // --------------------------------------------
     rule <op> #returnLoc RETSTART RETWIDTH => . ... </op>
          <output> OUT </output>
-         <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #size(OUT)), OUT) ] </localMem>
+         <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #sizeWordStack(OUT)), OUT) ] </localMem>
 
 
 // -   The `callLog` is used to store the `CALL*`/`CREATE` operations so that we
@@ -920,7 +920,7 @@ module ETHEREUM
            <balance> BAL </balance>
            ...
          </account>
-      requires word2Bool(VALUE <=Word BAL) andBool (#size(CS) <Int 1024)
+      requires word2Bool(VALUE <=Word BAL) andBool (#sizeCallStack(CS) <Int 1024)
 
     rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #exception ... </op>
          <account>
@@ -932,7 +932,7 @@ module ETHEREUM
 
     rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #exception ... </op>
          <callStack> CS </callStack>
-      requires #size(CS) >Int 1024
+      requires #sizeCallStack(CS) >Int 1024
 
     syntax CallOp ::= "CALL"
  // ------------------------
@@ -1020,7 +1020,7 @@ module ETHEREUM
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
-           => #call ACCT #newAddr(ACCT, NONCE) #asMap(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
+           => #call ACCT #newAddr(ACCT, NONCE) #OpCodesAsMap(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
            ~> #codeDeposit
           ...
          </op>
@@ -1035,7 +1035,7 @@ module ETHEREUM
            <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
            ...
          </account>
-      requires #size(CS) <Int 1024 andBool word2Bool(BAL >=Word VALUE)
+      requires #sizeCallStack(CS) <Int 1024 andBool word2Bool(BAL >=Word VALUE)
 
 
 // Ethereum Gas Calculation
