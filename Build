@@ -16,7 +16,7 @@ list_tests() {
     done
 }
 
-tangle_test() {
+run_test() {
     run_make all
 
     output_file="tests/templates/output.txt"
@@ -36,7 +36,7 @@ tangle_test() {
     return $test_fail_count
 }
 
-tangle_ktest() {
+run_ktest() {
     progress "running ktest ..."
 
     pushd k
@@ -44,7 +44,7 @@ tangle_ktest() {
     popd
 }
 
-tangle_krun() {
+run_krun() {
     run_make all
     list_tests "$@" | sort |
     while read test_file; do
@@ -86,13 +86,13 @@ usage() {
 
 [[ "$#" == '0' ]] && set build
 while [[ "$#" -gt '0' ]]; do
-    tangle_command="$1" && shift
-    case "$tangle_command" in
+    run_command="$1" && shift
+    case "$run_command" in
         build)        run_make build ;;
         defn)         run_make defn ;;
-        test)         tangle_test "$@"; exit ;;
-        ktest)        tangle_ktest ;;
-        krun)         tangle_krun "$@"; exit ;;
+        test)         run_test "$@"; exit ;;
+        ktest)        run_ktest ;;
+        krun)         run_krun "$@"; exit ;;
         *)            usage; exit 1;;
     esac
 done
