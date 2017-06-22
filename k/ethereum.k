@@ -6,11 +6,9 @@
 
 
 requires "evm.k"
-requires "evm-dasm.k"
 
 module ETHEREUM-SIMULATION
     imports ETHEREUM
-    imports EVM-DASM
 
     configuration initEthereumCell
                   <k> $PGM:EthereumSimulation </k>
