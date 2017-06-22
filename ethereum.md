@@ -123,8 +123,8 @@ Here we load the relevant information for accounts.
          </account>
       requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule load "account" : { ACCTID : { "code" : ((CODE:String) => #asMap(#dasmOpCodes(#parseByteStack(CODE)))) } }
-    rule load "account" : { ACCTID : { "code" : ((CODE:OpCodes) => #asMap(CODE)) } }
+    rule load "account" : { ACCTID : { "code" : ((CODE:String) => #dasmOpCodes(#parseByteStack(CODE))) } }
+    rule load "account" : { ACCTID : { "code" : ((CODE:OpCodes) => #asMapOpCodes(CODE)) } }
     rule <k> load "account" : { ACCTID : { "code" : (CODE:Map) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
@@ -161,14 +161,14 @@ Here we load the environmental information.
     rule <k> load "env" : { "currentNumber"     : (NUM:String)    } => . ... </k> <number>     _ => #parseHexWord(NUM)    </number>
     rule <k> load "env" : { "currentTimestamp"  : (TS:String)     } => . ... </k> <timestamp>  _ => #parseHexWord(TS)     </timestamp>
 
-    rule <k> load "exec" : { "address"  : (ACCTTO:String)   } => . ... </k> <id>        _ => #parseHexWord(ACCTTO)                       </id>
-    rule <k> load "exec" : { "caller"   : (ACCTFROM:String) } => . ... </k> <caller>    _ => #parseHexWord(ACCTFROM)                     </caller>
-    rule <k> load "exec" : { "data"     : (DATA:String)     } => . ... </k> <callData>  _ => #parseByteStack(DATA)                       </callData>
-    rule <k> load "exec" : { "gas"      : (GAVAIL:String)   } => . ... </k> <gas>       _ => #parseHexWord(GAVAIL)                       </gas>
-    rule <k> load "exec" : { "gasPrice" : (GPRICE:String)   } => . ... </k> <gasPrice>  _ => #parseHexWord(GPRICE)                       </gasPrice>
-    rule <k> load "exec" : { "value"    : (VALUE:String)    } => . ... </k> <callValue> _ => #parseHexWord(VALUE)                        </callValue>
-    rule <k> load "exec" : { "origin"   : (ORIG:String)     } => . ... </k> <origin>    _ => #parseHexWord(ORIG)                         </origin>
-    rule <k> load "exec" : { "code"     : (CODE:String)     } => . ... </k> <program>   _ => #asMap(#dasmOpCodes(#parseByteStack(CODE))) </program>
+    rule <k> load "exec" : { "address"  : (ACCTTO:String)   } => . ... </k> <id>        _ => #parseHexWord(ACCTTO)                              </id>
+    rule <k> load "exec" : { "caller"   : (ACCTFROM:String) } => . ... </k> <caller>    _ => #parseHexWord(ACCTFROM)                            </caller>
+    rule <k> load "exec" : { "data"     : (DATA:String)     } => . ... </k> <callData>  _ => #parseByteStack(DATA)                              </callData>
+    rule <k> load "exec" : { "gas"      : (GAVAIL:String)   } => . ... </k> <gas>       _ => #parseHexWord(GAVAIL)                              </gas>
+    rule <k> load "exec" : { "gasPrice" : (GPRICE:String)   } => . ... </k> <gasPrice>  _ => #parseHexWord(GPRICE)                              </gasPrice>
+    rule <k> load "exec" : { "value"    : (VALUE:String)    } => . ... </k> <callValue> _ => #parseHexWord(VALUE)                               </callValue>
+    rule <k> load "exec" : { "origin"   : (ORIG:String)     } => . ... </k> <origin>    _ => #parseHexWord(ORIG)                                </origin>
+    rule <k> load "exec" : { "code"     : (CODE:String)     } => . ... </k> <program>   _ => #asMapOpCodes(#dasmOpCodes(#parseByteStack(CODE))) </program>
 ```
 
 ### Driving Execution
@@ -230,7 +230,7 @@ Here we load the environmental information.
       requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
     rule check ACCTID : { "code" : ((CODE:String) => #dasmOpCodes(#parseByteStack(CODE))) }
-    rule check ACCTID : { "code" : ((CODE:OpCodes) => #asMap(CODE)) }
+    rule check ACCTID : { "code" : ((CODE:OpCodes) => #asMapOpCodes(CODE)) }
     rule <k> check ACCTID : { "code" : (CODE:Map) } => . ... </k>
          <account>
            <acctID> ACCT </acctID>

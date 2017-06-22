@@ -438,13 +438,13 @@ module ETHEREUM
     rule SWAP(_)    in (SWAP(_) ; OPS)     => true
     rule PUSH(_, _) in (PUSH(_, _) ; OPS)  => true
 
-    syntax Map ::= #OpCodesAsMap ( OpCodes )       [function]
-                 | #OpCodesAsMap ( Int , OpCodes ) [function]
+    syntax Map ::= #asMapOpCodes ( OpCodes )       [function]
+                 | #asMapOpCodes ( Int , OpCodes ) [function]
  // ---------------------------------------------------------
-    rule #OpCodesAsMap( OPS:OpCodes )         => #OpCodesAsMap(0, OPS)
-    rule #OpCodesAsMap( N , .OpCodes )        => .Map
-    rule #OpCodesAsMap( N , OP:OpCode ; OCS ) => (N |-> OP) #OpCodesAsMap(N +Int 1, OCS) requires notBool isPushOp(OP)
-    rule #OpCodesAsMap( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #OpCodesAsMap(N +Int 1 +Int M, OCS)
+    rule #asMapOpCodes( OPS:OpCodes )         => #asMapOpCodes(0, OPS)
+    rule #asMapOpCodes( N , .OpCodes )        => .Map
+    rule #asMapOpCodes( N , OP:OpCode ; OCS ) => (N |-> OP) #asMapOpCodes(N +Int 1, OCS) requires notBool isPushOp(OP)
+    rule #asMapOpCodes( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #asMapOpCodes(N +Int 1 +Int M, OCS)
 
     syntax OpCodes ::= #asOpCodes ( Map )       [function]
                      | #asOpCodes ( Int , Map ) [function]
@@ -1020,7 +1020,7 @@ module ETHEREUM
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
-           => #call ACCT #newAddr(ACCT, NONCE) #OpCodesAsMap(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
+           => #call ACCT #newAddr(ACCT, NONCE) #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
            ~> #codeDeposit
           ...
          </op>
