@@ -19,7 +19,7 @@ list_tests() {
     done
 }
 
-run_test() {
+run_tests() {
     run_make all
 
     local test_file test_fail_count=0
@@ -92,7 +92,7 @@ while [[ "$#" -gt '0' ]]; do
     case "$run_command" in
         build)        run_make build ;;
         defn)         run_make defn ;;
-        test)         run_test "$@"; exit ;;
+        test)         run_tests "$@"; exit ;;
         ktest)        run_ktest ;;
         krun)         run_krun "$@"; exit ;;
         *)            usage; exit 1;;
