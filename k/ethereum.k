@@ -44,8 +44,8 @@ module ETHEREUM-SIMULATION
 // sort `JSON` with some EVM specific syntax.
 
 
-    syntax JSON ::= Word | WordStack | OpCodes | Map
- // ------------------------------------------------
+    syntax JSON ::= Word | WordStack | OpCodes | Map | Call
+ // -------------------------------------------------------
 
 
 // Primitive Commands
@@ -64,6 +64,7 @@ module ETHEREUM-SIMULATION
          <output>     _ => .WordStack </output>
          <memoryUsed> _ => 0:Word     </memoryUsed>
          <callStack>  _ => .CallStack </callStack>
+         <callLog>    _ => .CallLog   </callLog>
 
          <program>   _ => .Map       </program>
          <id>        _ => 0:Word     </id>
@@ -177,17 +178,16 @@ module ETHEREUM-SIMULATION
 
 // -   `start` places `#next` on the `op` cell so that execution of the loaded
 //     state begin.
-// -   `flush` places `#finalize` on the `op` cell once it sees `#endOfProgram` in
-//     the `op` cell. If it sees an exception on the top of the cell, it
-//     simply clears.
+// -   `flush` places `#finalize` on the `op` cell once it sees `#end` in the `op`
+//     cell. If it sees an exception on the top of the cell, it simply clears.
 
 
     syntax EthereumCommand ::= "start" | "flush"
  // --------------------------------------------
     rule <k> start => . ... </k> <op> . => #next </op>
-    rule <k> flush => . ... </k> <op> #endOfProgram => #finalize ... </op>
-    rule <k> flush => . ... </k> <op> #txFinished   => #finalize ... </op>
-    rule <k> flush => . ... </k> <op> EX:Exception  => .         ... </op>
+    rule <k> flush => . ... </k> <op> #end        => #finalize ... </op>
+    rule <k> flush => . ... </k> <op> #txFinished => #finalize ... </op>
+    rule <k> flush => . ... </k> <op> #exception  => .         ... </op>
 
 
 // ### Checking State
@@ -198,14 +198,15 @@ module ETHEREUM-SIMULATION
 
     syntax EthereumSpecCommand ::= "check"
  // --------------------------------------
-    rule check DATA : { .JSONList } => .
+    rule check DATA : { .JSONList }                   => .
     rule check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST } requires REST =/=K .JSONList
 
-    rule check "post" : { (ACCTID:String) : ACCT } => check ACCTID : ACCT
-    rule check TESTID : { "post" : POST } => check "post" : POST ~> failure TESTID
-    rule check TESTID : { "out"  : OUT  } => check "out"  : OUT  ~> failure TESTID
-    rule check TESTID : { "gas"  : GLEFT  } => check "gas"  : GLEFT  ~> failure TESTID
+    rule check DATA : [ .JSONList ]       => .
+    rule check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ]
 
+    rule check TESTID : { "post" : POST  } => check "post" : POST  ~> failure TESTID
+    rule check "post" : { (ACCTID:String) : ACCT } => check ACCTID : ACCT
+ // ---------------------------------------------------------------------
     rule check ACCTID : { "balance" : ((BAL:String) => #parseHexWord(BAL)) }
     rule <k> check ACCTID : { "balance" : (BAL:Word) } => . ... </k>
          <account>
@@ -243,11 +244,29 @@ module ETHEREUM-SIMULATION
          </account>
       requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
+
+// TODO: `check` on `"callcreates"` ignores the `"gasLimit"` field.
+
+
+    rule check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID
+ // ----------------------------------------------------------------------------------------------------
+
+    rule check "callcreates" : { "value" : VAL , "destination" : ACCTTO , "gasLimit" : GLIMIT , "data" : DATA }
+      => check "callcreates" : { #addr(#parseHexWord(ACCTTO)) | #parseHexWord(VAL) | #parseByteStack(DATA) }
+    rule <k> check "callcreates" : C:Call => . ... </k> <callLog> CL </callLog> requires C in CL
+
+    rule check TESTID : { "out" : OUT } => check "out" : OUT ~> failure TESTID
+ // --------------------------------------------------------------------------
     rule check "out" : ((OUT:String) => #parseByteStack(OUT))
     rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
 
+    rule check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID
+ // ------------------------------------------------------------------------------
     rule check "gas" : ((GLEFT:String) => #parseHexWord(GLEFT))
     rule check "gas" : GLEFT => .
+
+    rule check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID
+ // ------------------------------------------------------------------------------
 
 
 // ### Running Tests
@@ -257,7 +276,7 @@ module ETHEREUM-SIMULATION
 
     syntax EthereumCommand ::= "success" | "exception" String | "failure" String
  // ----------------------------------------------------------------------------
-    rule <k> exception _ => . ... </k> <op> EX:Exception ... </op>
+    rule <k> exception _ => . ... </k> <op> #exception ... </op>
     rule success   => .
     rule failure _ => .
 
@@ -275,12 +294,12 @@ module ETHEREUM-SIMULATION
 // TODO: The fields "callcreates" and "logs" should be dealt with properly.
 
 
-    rule run TESTID : { "callcreates" : (CCREATES:JSON) , REST } => run TESTID : { REST }
-    rule run TESTID : { "logs"        : (LOGS:JSON)     , REST } => run TESTID : { REST }
-    rule run TESTID : { "out"         : (OUT:JSON)      , REST } => run TESTID : { REST } ~> check TESTID : { "out"  : OUT }
-    rule run TESTID : { "post"        : (POST:JSON)     , REST } => run TESTID : { REST } ~> check TESTID : { "post" : POST }
-    rule run TESTID : { "expect"      : (EXPECT:JSON)   , REST } => run TESTID : { REST } ~> check TESTID : { "post" : EXPECT }
-    rule run TESTID : { "gas"         : (GLEFT:String)  , REST } => run TESTID : { REST } ~> check TESTID : { "gas"  : GLEFT }
+    rule run TESTID : { "logs"        : (LOGS:JSON)     , REST } => run TESTID : { REST } ~> check TESTID : { "logs"        : LOGS     }
+    rule run TESTID : { "callcreates" : (CCREATES:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { "callcreates" : CCREATES }
+    rule run TESTID : { "out"         : (OUT:JSON)      , REST } => run TESTID : { REST } ~> check TESTID : { "out"         : OUT      }
+    rule run TESTID : { "post"        : (POST:JSON)     , REST } => run TESTID : { REST } ~> check TESTID : { "post"        : POST     }
+    rule run TESTID : { "expect"      : (EXPECT:JSON)   , REST } => run TESTID : { REST } ~> check TESTID : { "post"        : EXPECT   }
+    rule run TESTID : { "gas"         : (GLEFT:String)  , REST } => run TESTID : { REST } ~> check TESTID : { "gas"         : GLEFT    }
 
 
 // Here we pull apart a test into the sequence of `EthereumCommand` to run for it.

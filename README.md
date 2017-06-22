@@ -20,11 +20,6 @@ Right now the semantics declares the configuration for both of these components 
 Separating the two subconfigurations and declaring an API for the network dynamics would provide a better understanding of the "necessary ingredients" for a consensus-driven distributed store.
 This would also allow us to experiment with alternative programming languages to EVM for future blockchain systems.
 
-### `CREATE`
-
-Right now the opcode `CREATE` has not been given any semantics.
-It probably should be given some.
-
 ### Gas Semantics
 
 Right now the gas calculation is not in good shape.
