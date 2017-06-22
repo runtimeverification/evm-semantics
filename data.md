@@ -142,7 +142,7 @@ Care is needed for `^Word` to avoid big exponentiation.
 
 -   `s<Word` implements a less-than for `Word` interpereted as signed.
 
-```
+```k
     syntax Word ::= Word "s<Word" Word [function]
  // ---------------------------------------------
     rule W0:Int s<Word W1:Int => W0 <Word W1                     requires sgn(W0) ==K 1  andBool sgn(W1) ==K 1
@@ -191,7 +191,7 @@ Bitwise logical operators are lifted from the integer versions.
 
 -   `signextend(N, W)` sign-extends from byte $N$ of $W$ (0 being MSB).
 
-```
+```k
     syntax Word ::= signextend( Word , Word ) [function]
  // ----------------------------------------------------
     rule signextend(N:Int, W:Int) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
@@ -241,11 +241,12 @@ using the contents of any cell in the array as an address - an advantage that EV
 ```
 
 Data Structures
----------------
+===============
 
-Several data-structures over `Word` are convenient to have around.
+Several data-structures and operations over `Word` are useful to have around.
 
-### Word Stack
+Word Stack
+----------
 
 EVM is a stack machine, and so needs a stack of words to operate on.
 The stack and some standard operations over it are provided here.
@@ -372,7 +373,7 @@ We are using the polymorphic `Map` sort for these word maps.
     syntax Map ::= Map "[" Word ":=" WordStack "]" [function]
  // ---------------------------------------------------------
     rule WM[ N := .WordStack ] => WM
-    rule WM[ N := W : WS     ] => (WM[N <- W0])[N +Word 1 := WS]
+    rule WM[ N := W : WS     ] => (WM[N <- W])[N +Word 1 := WS]
 
     syntax Map ::= #asMap ( WordStack ) [function]
  // ----------------------------------------------

@@ -144,6 +144,15 @@ module EVM-DATA
 
 // -   `s<Word` implements a less-than for `Word` interpereted as signed.
 
+
+    syntax Word ::= Word "s<Word" Word [function]
+ // ---------------------------------------------
+    rule W0:Int s<Word W1:Int => W0 <Word W1                     requires sgn(W0) ==K 1  andBool sgn(W1) ==K 1
+    rule W0:Int s<Word W1:Int => bool2Word(false)                requires sgn(W0) ==K 1  andBool sgn(W1) ==K -1
+    rule W0:Int s<Word W1:Int => bool2Word(true)                 requires sgn(W0) ==K -1 andBool sgn(W1) ==K 1
+    rule W0:Int s<Word W1:Int => twosComp(W1) <Word twosComp(W0) requires sgn(W0) ==K -1 andBool sgn(W1) ==K -1
+
+
 // ### Bitwise operators.
 
 // Bitwise logical operators are lifted from the integer versions.
@@ -183,6 +192,13 @@ module EVM-DATA
 
 
 // -   `signextend(N, W)` sign-extends from byte $N$ of $W$ (0 being MSB).
+
+
+    syntax Word ::= signextend( Word , Word ) [function]
+ // ----------------------------------------------------
+    rule signextend(N:Int, W:Int) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
+    rule signextend(N:Int, W:Int) => chop( #nBytes(N +Int 1)                      &Int W ) requires notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
+
 
 // Note that we give "uninterpreted function" semantics to `keccak`, which is
 // fairly close to accurate. For SHA3, it must be noted that the we make accesses
@@ -229,11 +245,12 @@ module EVM-DATA
 
 
 // Data Structures
-// ---------------
+// ===============
 
-// Several data-structures over `Word` are convenient to have around.
+// Several data-structures and operations over `Word` are useful to have around.
 
-// ### Word Stack
+// Word Stack
+// ----------
 
 // EVM is a stack machine, and so needs a stack of words to operate on. The stack
 // and some standard operations over it are provided here. This stack also serves
@@ -367,7 +384,7 @@ module EVM-DATA
     syntax Map ::= Map "[" Word ":=" WordStack "]" [function]
  // ---------------------------------------------------------
     rule WM[ N := .WordStack ] => WM
-    rule WM[ N := W : WS     ] => (WM[N <- W0])[N +Word 1 := WS]
+    rule WM[ N := W : WS     ] => (WM[N <- W])[N +Word 1 := WS]
 
     syntax Map ::= #asMap ( WordStack ) [function]
  // ----------------------------------------------
