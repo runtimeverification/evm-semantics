@@ -157,23 +157,31 @@ Here we load the relevant information for accounts.
 Here we load the environmental information.
 
 ```k
-    rule <k> load "env" : { "currentCoinbase"   : (CB:String)     } => . ... </k> <coinbase>   _ => #parseHexWord(CB)     </coinbase>
-    rule <k> load "env" : { "currentDifficulty" : (DIFF:String)   } => . ... </k> <difficulty> _ => #parseHexWord(DIFF)   </difficulty>
-    rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:String) } => . ... </k> <gasLimit>   _ => #parseHexWord(GLIMIT) </gasLimit>
-    rule <k> load "env" : { "currentNumber"     : (NUM:String)    } => . ... </k> <number>     _ => #parseHexWord(NUM)    </number>
-    rule <k> load "env" : { "currentTimestamp"  : (TS:String)     } => . ... </k> <timestamp>  _ => #parseHexWord(TS)     </timestamp>
+    rule load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) }
+ // ----------------------------------------------------------------
+    rule <k> load "env" : { "currentCoinbase"   : (CB:Word)     } => . ... </k> <coinbase>   _ => CB     </coinbase>
+    rule <k> load "env" : { "currentDifficulty" : (DIFF:Word)   } => . ... </k> <difficulty> _ => DIFF   </difficulty>
+    rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:Word) } => . ... </k> <gasLimit>   _ => GLIMIT </gasLimit>
+    rule <k> load "env" : { "currentNumber"     : (NUM:Word)    } => . ... </k> <number>     _ => NUM    </number>
+    rule <k> load "env" : { "currentTimestamp"  : (TS:Word)     } => . ... </k> <timestamp>  _ => TS     </timestamp>
 
-    rule <k> load "exec" : { "address"  : (ACCTTO:String)   } => . ... </k> <id>        _ => #parseHexWord(ACCTTO)                       </id>
-    rule <k> load "exec" : { "caller"   : (ACCTFROM:String) } => . ... </k> <caller>    _ => #parseHexWord(ACCTFROM)                     </caller>
-    rule <k> load "exec" : { "data"     : (DATA:String)     } => . ... </k> <callData>  _ => #parseByteStack(DATA)                       </callData>
-    rule <k> load "exec" : { "gas"      : (GAVAIL:String)   } => . ... </k> <gas>       _ => #parseHexWord(GAVAIL)                       </gas>
-    rule <k> load "exec" : { "gas"      : (GAVAIL:Word)   } => . ... </k> <gas>       _ => GAVAIL                                        </gas>
-    rule <k> load "exec" : { "gasPrice" : (GPRICE:String)   } => . ... </k> <gasPrice>  _ => #parseHexWord(GPRICE)                       </gasPrice>
-    rule <k> load "exec" : { "gasPrice" : (GPRICE:Word)   } => . ... </k> <gasPrice>  _ =>GPRICE                                         </gasPrice>
-    rule <k> load "exec" : { "value"    : (VALUE:String)    } => . ... </k> <callValue> _ => #parseHexWord(VALUE)                        </callValue>
-    rule <k> load "exec" : { "origin"   : (ORIG:String)     } => . ... </k> <origin>    _ => #parseHexWord(ORIG)                         </origin>
-    rule <k> load "exec" : { "code"     : (CODE:String)     } => . ... </k> <program>   _ => #asMap(#dasmOpCodes(#parseByteStack(CODE))) </program>
-    rule <k> load "exec" : { "code"     : (CODE:OpCodes)     } => . ... </k> <program>   _ => #asMap(CODE) </program>
+    rule load "exec" : { KEY : ((VAL:String) => #parseHexWord(VAL)) }
+      requires KEY in (SetItem("address") SetItem("caller") SetItem("gas") SetItem("gasPrice") SetItem("value") SetItem("origin"))
+ // ------------------------------------------------------------------------------------------------------------------------------
+    rule <k> load "exec" : { "gasPrice" : (GPRICE:Word)   } => . ... </k> <gasPrice>  _ => GPRICE   </gasPrice>
+    rule <k> load "exec" : { "gas"      : (GAVAIL:Word)   } => . ... </k> <gas>       _ => GAVAIL   </gas>
+    rule <k> load "exec" : { "address"  : (ACCTTO:Word)   } => . ... </k> <id>        _ => ACCTTO   </id>
+    rule <k> load "exec" : { "caller"   : (ACCTFROM:Word) } => . ... </k> <caller>    _ => ACCTFROM </caller>
+    rule <k> load "exec" : { "gas"      : (GAVAIL:Word)   } => . ... </k> <gas>       _ => GAVAIL   </gas>
+    rule <k> load "exec" : { "value"    : (VALUE:Word)    } => . ... </k> <callValue> _ => VALUE    </callValue>
+    rule <k> load "exec" : { "origin"   : (ORIG:Word)     } => . ... </k> <origin>    _ => ORIG     </origin>
+
+    rule load "exec" : { "data" : ((DATA:String)  => #parseByteStack(DATA)) }
+    rule load "exec" : { "code" : ((CODE:String)  => #dasmOpCodes(#parseByteStack(CODE))) }
+    rule load "exec" : { "code" : ((CODE:OpCodes) => #asMap(CODE)) }
+ // ----------------------------------------------------------------
+    rule <k> load "exec" : { "data" : (DATA:WordStack) } => . ... </k> <callData> _ => DATA </callData>
+    rule <k> load "exec" : { "code" : (CODE:Map)       } => . ... </k> <program>  _ => CODE </program>
 ```
 
 ### Driving Execution
