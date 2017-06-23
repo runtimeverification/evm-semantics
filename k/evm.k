@@ -24,7 +24,6 @@ requires "data.k"
 
 module ETHEREUM
     imports EVM-DATA
-    imports KCELLS
     imports STRING
 
     configuration <ethereum>
@@ -92,7 +91,7 @@ module ETHEREUM
                       <activeAccounts> .Set </activeAccounts>
 
                       <accounts>
-                        <account multiplicity="*">
+                        <account multiplicity="*" type="Set">
                           <acctID>  .AcctID </acctID>
                           <balance> .Value  </balance>
                           <code>    .Code   </code>
@@ -105,7 +104,7 @@ module ETHEREUM
                       // -------------------
 
                       <messages>
-                        <message multiplicity="*">
+                        <message multiplicity="*" type="Map">
                           <msgID>  .MsgID   </msgID>
                           <to>     .AcctID  </to>
                           <from>   .AcctID  </from>
@@ -458,7 +457,7 @@ module ETHEREUM
     rule PUSH(_, _) in (PUSH(_, _) ; OPS)  => true
 
     syntax Map ::= #asMapOpCodes ( OpCodes )       [function]
-                 | #asMapOpCodes ( Int , OpCodes ) [function]
+                 | #asMapOpCodes ( Int , OpCodes ) [function, klabel(asMapOpCodes2)]
  // ---------------------------------------------------------
     rule #asMapOpCodes( OPS:OpCodes )         => #asMapOpCodes(0, OPS)
     rule #asMapOpCodes( N , .OpCodes )        => .Map
@@ -466,7 +465,7 @@ module ETHEREUM
     rule #asMapOpCodes( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #asMapOpCodes(N +Int 1 +Int M, OCS)
 
     syntax OpCodes ::= #asOpCodes ( Map )       [function]
-                     | #asOpCodes ( Int , Map ) [function]
+                     | #asOpCodes ( Int , Map ) [function, klabel(#asOpCodes2)]
  // ------------------------------------------------------
     rule #asOpCodes(M) => #asOpCodes(0, M)
     rule #asOpCodes(N, .Map) => .OpCodes
@@ -506,7 +505,8 @@ module ETHEREUM
 // -   `#pushCallStack` stores the current state on the `callStack`.
 // -   `#popCallStack` replaces the current state with the top of the `callStack`.
 
-
+ 
+    syntax Bag
     syntax CallStack ::= ".CallStack" | Bag CallStack
  // -------------------------------------------------
 
