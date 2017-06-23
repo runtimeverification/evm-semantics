@@ -29,10 +29,8 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 
 ```k
     syntax Word ::= Int
-//                  | "#symbolicWord"    [function]
                   | chop ( Word )      [function]
  // ---------------------------------------------
-    rule #symbolicWord    => ?X:Int
     rule chop( W:Int )    => chop ( W +Int (2 ^Int 256) ) requires W <Int 0
     rule chop( W:Int )    => chop ( W %Int (2 ^Int 256) ) requires W >=Int (2 ^Int 256)
     rule chop( W:Int )    => W requires W >=Int 0 andBool W <Int (2 ^Int 256)
