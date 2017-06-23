@@ -113,7 +113,7 @@ module ETHEREUM-SIMULATION
 
 
     rule load "pre" : { (ACCTID:String) : ACCT } => mkAcct ACCTID ~> load "account" : { ACCTID : ACCT }
-
+ // ---------------------------------------------------------------------------------------------------
     rule load "account" : { .JSONList } => .
     rule load "account" : { ACCTID : { (KEY:String) : VAL , REST } } => load "account" : { ACCTID : { KEY : VAL } } ~> load "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
 
@@ -209,10 +209,10 @@ module ETHEREUM-SIMULATION
 
     syntax EthereumSpecCommand ::= "check"
  // --------------------------------------
-    rule check DATA : { .JSONList }                   => .
+    rule check DATA : { .JSONList } => .
     rule check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST } requires REST =/=K .JSONList
 
-    rule check DATA : [ .JSONList ]       => .
+    rule check DATA : [ .JSONList ] => .
     rule check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ]
 
     rule check TESTID : { "post" : POST  } => check "post" : POST  ~> failure TESTID
@@ -302,26 +302,23 @@ module ETHEREUM-SIMULATION
          ~> run { TESTS }
 
 
-// TODO: The fields "callcreates" and "logs" should be dealt with properly.
+// Here we make sure fields that are pre-conditions are `load`ed first, and
+// post-conditions are `check`ed last.
 
 
-    rule run TESTID : { "logs"        : (LOGS:JSON)     , REST } => run TESTID : { REST } ~> check TESTID : { "logs"        : LOGS     }
-    rule run TESTID : { "callcreates" : (CCREATES:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { "callcreates" : CCREATES }
-    rule run TESTID : { "out"         : (OUT:JSON)      , REST } => run TESTID : { REST } ~> check TESTID : { "out"         : OUT      }
-    rule run TESTID : { "post"        : (POST:JSON)     , REST } => run TESTID : { REST } ~> check TESTID : { "post"        : POST     }
-    rule run TESTID : { "expect"      : (EXPECT:JSON)   , REST } => run TESTID : { REST } ~> check TESTID : { "post"        : EXPECT   }
-    rule run TESTID : { "gas"         : (GLEFT:String)  , REST } => run TESTID : { REST } ~> check TESTID : { "gas"         : GLEFT    }
+    rule run TESTID : { KEY : (VAL:JSON) , REST } => load TESTID : { KEY : VAL } ~> run TESTID : { REST }
+      requires KEY in (SetItem("env") SetItem("pre"))
+
+    rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY : VAL }
+      requires KEY in (SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("post") SetItem("expect") SetItem("gas"))
 
 
-// Here we pull apart a test into the sequence of `EthereumCommand` to run for it.
+// The particular key `"exec"` should be processed last, to ensure that the
+// pre/post-conditions are in place. When it has finished loading it's state, it
+// should `start ~> flush` to perform the execution.
 
 
-    rule run TESTID : { "env"  : (ENV:JSON)         , REST } => load "env" : ENV      ~> run TESTID : { REST }
-    rule run TESTID : { "pre"  : (PRE:JSON)         , REST } => load "pre" : PRE      ~> run TESTID : { REST }
     rule run TESTID : { "exec" : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , "exec" : EXEC , REST }
-
-    rule run TESTID : { "exec" : { .JSONList } } => .
-    rule run TESTID : { "exec" : { (KEY:String) : VALUE , REST } } => load "exec" : { KEY : VALUE }       ~> run TESTID : { "exec" : { REST } }     requires KEY =/=K "code"
-    rule run TESTID : { "exec" : { "code"       : CODE  , REST } } => run  TESTID : { "exec" : { REST } } ~> load "exec" : { "code" : CODE } ~> start ~> flush
+    rule run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush
 endmodule
 
