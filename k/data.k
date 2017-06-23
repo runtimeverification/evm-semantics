@@ -13,9 +13,10 @@
 
 
 requires "domains.k"
+requires "krypto.k"
 
 module EVM-DATA
-//    imports KRYPTO
+    imports KRYPTO
 
     syntax KResult ::= Int 
 
@@ -35,7 +36,7 @@ module EVM-DATA
                   | "#symbolicWord"    [function]
                   | chop ( Word )      [function]
  // ---------------------------------------------
-    rule #symbolicWord    => ?X:Int
+    //rule #symbolicWord    => ?X:Int
     rule chop( W:Int )    => chop ( W +Int (2 ^Int 256) ) requires W <Int 0
     rule chop( W:Int )    => chop ( W %Int (2 ^Int 256) ) requires W >=Int (2 ^Int 256)
     rule chop( W:Int )    => W requires W >=Int 0 andBool W <Int (2 ^Int 256)
@@ -226,7 +227,6 @@ module EVM-DATA
 // -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 
-    syntax String ::= Keccak256( String ) 
     syntax Word ::= keccak ( WordStack ) [function]
  // -----------------------------------------------
     rule keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS)))
@@ -337,7 +337,7 @@ module EVM-DATA
     rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
 
     syntax WordStack ::= #asByteStack ( Word )             [function]
-                       | #asByteStack ( Word , WordStack ) [function]
+                       | #asByteStack ( Word , WordStack ) [function, klabel(#asByteStack2)]
  // -----------------------------------------------------------------
     rule #asByteStack( W ) => #asByteStack( W , .WordStack )
     rule #asByteStack( 0 , WS ) => WS

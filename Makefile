@@ -30,7 +30,16 @@ tests/tests-develop/%/make.timestamp: tests/ethereum-tests/%.json
 k/ethereum-kompiled/extras/timestamp: $(defn_files)
 	@echo "== kompile: $@"
 	kompile --debug --main-module ETHEREUM-SIMULATION \
-					--syntax-module ETHEREUM-SIMULATION $< --directory k
+					--syntax-module ETHEREUM-SIMULATION $< --directory k \
+					--hook-namespaces KRYPTO --gen-ml-only -O2
+	ocamlfind opt -c k/ethereum-kompiled/constants.ml -package gmp -package zarith
+	ocamlfind opt -c -I k/ethereum-kompiled KRYPTO.ml -package cryptokit
+	ocamlfind opt -a -o semantics.cmxa KRYPTO.cmx
+	ocamlfind remove ethereum-semantics-plugin
+	ocamlfind install ethereum-semantics-plugin META semantics.cmxa semantics.a KRYPTO.cmi KRYPTO.cmx
+	kompile --debug --main-module ETHEREUM-SIMULATION \
+					--syntax-module ETHEREUM-SIMULATION $< --directory k \
+					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O2
 
 k/%.k: %.md
 	@echo "==  tangle: $@"
