@@ -112,7 +112,10 @@ module ETHEREUM
                     </network>
 
                   </ethereum>
+                  <k> $PGM:EthereumSimulation </k>
+                  <exit-code exit=""> 0 </exit-code>
 
+    syntax EthereumSimulation
     syntax AcctID ::= Word | ".AcctID"
     syntax Code   ::= Map  | ".Code"
     syntax MsgID  ::= Word | ".MsgID"
