@@ -1,7 +1,22 @@
-// EVM Program Assembler/Disassembler
-// ==================================
+// EVM Program Representations
+// ===========================
 
-// The default EVM test-set format is JSON, where the data is hex-encoded.
+// EVM programs are represented algebraically in K, but programs can load and
+// manipulate program data directly. The opcodes `CODECOPY` and `EXTCODECOPY` rely
+// on the assembled form of the programs being present. The opcode `CREATE` relies
+// on being able to interperet EVM data as a program.
+
+// This is a program representation dependence, which we might want to avoid.
+// Perhaps the only program representation dependence we should have is the hash of
+// the program; doing so achieves:
+
+// -   Program representation independence (different analysis tools on the
+//     language don't have to ensure they have a common representation of programs,
+//     just a common interperetation of the data-files holding programs).
+// -   Programming language independence (we wouldn't even have to commit to a
+//     particular language or interperetation of the data-file).
+// -   Only depending on the hash allows us to know that we have *exactly* the
+//     correct data-file (program), and nothing more.
 
 
 requires "evm.k"
@@ -55,13 +70,37 @@ module EVM-DASM
     rule #parseMap( { KEY : (VALUE:String) , REST } ) => #parseMap({ REST }) [ #parseHexWord(KEY) <- #parseHexWord(VALUE) ] requires #parseHexWord(VALUE) =/=K 0
 
 
+// Unparsing
+// ---------
+
+// We need to interperet a `WordStack` as a `String` again so that we can call
+// `Keccak256` on it from `KRYPTO`.
+
+// -   `#unparseByteStack`
+// -   `#padByte` ensures that the `String` interperetation of a `Word` is
+//     wide enough.
+
+
+    syntax String ::= #unparseByteStack ( WordStack ) [function]
+ // ------------------------------------------------------------
+    rule #unparseByteStack( .WordStack )   => ""
+    rule #unparseByteStack( (W:Int) : WS ) => #padByte(Base2String(16, (W %Int (2 ^Int 8))))
+
+    syntax String ::= #padByte( String ) [function]
+ // -----------------------------------------------
+    rule #padByte( S ) => S             requires lengthString(S) ==K 2
+    rule #padByte( S ) => "0" +String S requires lengthString(S) ==K 1
+
+
 // Disassembler
 // ------------
 
 // After interpreting the strings representing programs as a `WordStack`, it should
 // be changed into an `OpCodes` for use by the EVM semantics.
 
-// -   `#dasmOpCodes` is used to interperet a `WordStack` as an `OpCodes`.
+// -   `#dasmOpCodes` interperets `WordStack` as an `OpCodes`.
+// -   `#dasmPUSH` handles the case of a `PushOp`.
+// -   `#dasmOpCode` interperets a `Word` as an `OpCode`.
 
 
     syntax OpCodes ::= #dasmOpCodes ( WordStack ) [function]
@@ -73,6 +112,10 @@ module EVM-DASM
     rule #dasmOpCodes( W : WS )     => SWAP(W -Word 143) ; #dasmOpCodes(WS) requires word2Bool(W >=Word 144) andBool word2Bool(W <=Word 159)
     rule #dasmOpCodes( W : WS )     => LOG(W -Word 160)  ; #dasmOpCodes(WS) requires word2Bool(W >=Word 160) andBool word2Bool(W <=Word 164)
     rule #dasmOpCodes( W : WS )     => #dasmPUSH( W -Word 95 , WS )         requires word2Bool(W >=Word 96)  andBool word2Bool(W <=Word 127)
+
+    syntax OpCodes ::= #dasmPUSH ( Word , WordStack ) [function]
+ // ------------------------------------------------------------
+    rule #dasmPUSH( W , WS ) => PUSH(W, #asWord(#take(W, WS))) ; #dasmOpCodes(#drop(W, WS))
 
     syntax OpCode ::= #dasmOpCode ( Word ) [function]
  // -------------------------------------------------
@@ -139,16 +182,9 @@ module EVM-DASM
     rule #dasmOpCode( 254 ) => INVALID
     rule #dasmOpCode( 255 ) => SELFDESTRUCT
 
-    syntax OpCodes ::= #dasmPUSH ( Word , WordStack ) [function]
- // ------------------------------------------------------------
-    rule #dasmPUSH( W , WS ) => PUSH(W, #asWord(#take(W, WS))) ; #dasmOpCodes(#drop(W, WS))
-
 
 // Assembler
 // ---------
-
-// Some opcodes (`CODECOPY` and `EXTCODECOPY`) rely on the assembled form of the
-// programs being present. For those purposes, we have a re-assembler here.
 
 // -   `#asmOpCodes` gives the `WordStack` representation of an `OpCodes`.
 
