@@ -258,7 +258,6 @@ TODO: `check` on `"callcreates"` ignores the `"gasLimit"` field.
 ```k
     rule check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID
  // ----------------------------------------------------------------------------------------------------
-
     rule check "callcreates" : { "value" : VAL , "destination" : ACCTTO , "gasLimit" : GLIMIT , "data" : DATA }
       => check "callcreates" : { #addr(#parseHexWord(ACCTTO)) | #parseHexWord(VAL) | #parseByteStack(DATA) }
     rule <k> check "callcreates" : C:Call => . ... </k> <callLog> CL </callLog> requires C in CL
@@ -267,7 +266,11 @@ TODO: `check` on `"callcreates"` ignores the `"gasLimit"` field.
  // --------------------------------------------------------------------------
     rule check "out" : ((OUT:String) => #parseByteStack(OUT))
     rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
+```
 
+TODO: `check` on `"gas"` and `"logs"` is dropped.
+
+```k
     rule check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID
  // ------------------------------------------------------------------------------
     rule check "gas" : ((GLEFT:String) => #parseHexWord(GLEFT))
@@ -275,6 +278,7 @@ TODO: `check` on `"callcreates"` ignores the `"gasLimit"` field.
 
     rule check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID
  // ------------------------------------------------------------------------------
+    rule check "logs" : LOGS => .
 ```
 
 ### Running Tests
