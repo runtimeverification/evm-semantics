@@ -1,12 +1,9 @@
-Analysis of EVM Programs
-========================
+Semantics-Based EVM Program Analysis
+====================================
 
 K allows analysis tools to be developed independently of the programming language.
 This allows programming language experts to provide semantics to their languages and formal methods experts to provide the analysis tools independently.
 This modular approach to formal analysis also ensures that the analysis tools are "kept honest", in that they cannot have special hard-coded hacks for each language.
-
-Semantics-Based Program Verifier [@oopsla-2016].
-------------------------------------------------
 
 One particularly useful formal analysis tool developed for K is the Reachability Logic prover [@oopsla-2016].
 This prover accepts as input a K definition and a set of reachability theorems to be proven.
@@ -23,14 +20,16 @@ As in Hoare Logic, the circularities must be supplied ahead of time (or inferred
 
 [^circularity]: These are called circularities because they are directly related to application of the Circularity inference rule in Reachability Logic.
 
-### Complexity Analysis
+Gas Complexity Analysis
+-----------------------
 
 Many interesting properties can be formed as reachability queries, including functional correctness.
 The query made is $\phi \land C \reaches \psi \land \eps$, which $C$ is the code to be executed (potentially containing symbolic values and subject to the constraint $\phi$), and $\psi$ is a formula stating "the correct answer was computed".
 If it's proven using the Reachability Logic proof system, that means that any terminating execution of $C$ setup in initial state $\phi$ will eventually reach a state in $\psi$.
 
-In K, tracking the complexity of a computation can be done by adding an extra cell to the configuration which increments each time the rule it's tracking is used.
-As an example, we'll provide a rough sketch of tracking the number of integer multiplications in a definition.
+Verifying the complexity of a computation can be done in much the same manner as verifying functional correctness.
+In K, an extra cell is added to the configuration which increments each time the rule it's tracking is used.
+As an example, we'll provide a rough sketch of verifying the number of integer multiplications in a program.
 
 -   First add a cell `numMults` to the configuration tracking the number of multiplications.
 
@@ -60,29 +59,31 @@ Other complexity metricts can be tracked by adding to the associated rules (or w
 
 ### EVM Gas Usage Analysis
 
-In the EVM, we do have one specific quantity people are interested in tracking: the gas consumed during execution.
-The semantics must already track the gas in the `gas` cell because it affects execution.
-In addition, proving that no more than a certain amount of gas will be consumed during execution would allow for confidence that a contract won't fail due to running out of gas.
+The EVM have one specific quantity people are interested in tracking: the gas consumed during execution.
+In fact, the semantics must already track the gas in the `gas` cell because it affects execution.
+Proving that no more than a certain amount of gas will be consumed during execution would allow for confidence that a contract won't fail due to running out of gas.
 
 Here, we prove a reachability claim about the program `PUSH(1, 3) ; PUSH(1, 7) ; ADD ; .OpCodes`.
-We have the pre-condition that the size of the word-stack is initially low enough that there will not be a stack overflow.
-The post-condition states that no more than 9 gas is consumed executing these opcodes.
-The cell `pc` ensures that we only consider the pre-condition in states before execution, and post-conditions in states after executing.
+
+-    The pre-condition is that the program counter is a 0 (about to execute), and the word-stack has few enough elements to avoid a stack overflow.
+-    The post-condition states that the program counter reaches 5 (execution happens), no exception shows on the `op` cell, and less than 10 gas is consumed.
 
 ```{.k, .paper, .spec1}
-module GAS-PROOF
+module GAS-PROOF-SPEC
 
-    rule <k> #next => . </k>
-         <gas> N => M </gas>
-         <pc>  0 => 5 </pc>
+    rule <op>  #next => . </op>
+         <gas>     N => M </gas>
+         <pc>      0 => 5 </pc>
          <program> #asMapOpCodes( PUSH(1, 3) ; PUSH(1, 7) ; ADD ; .OpCodes ) </program>
          <wordStack> WS </wordStack>
-      requires (N -Int M) <=Int 9 andBool #sizeWordStack(WS) <Int 1020
+      requires (N -Int M) <Int 10 andBool #sizeWordStack(WS) <Int 1020
 
 endmodule
 ```
 
-### Standard Token
+Standard Token Contracts
+------------------------
+
 
 ???
 
@@ -90,3 +91,4 @@ Resources
 ---------
 
 -   [Semantics-Based Program verifiers for All Languages](http://fsl.cs.illinois.edu/FSL/papers/2016/stefanescu-park-yuwen-li-rosu-2016-oopsla-public.pdf)
+-   [Matching Logic Paper](???)
