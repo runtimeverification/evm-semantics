@@ -12,7 +12,7 @@ Arguably hardware should evolve to directly support more elegant languages, rath
 requires "domains.k"
 
 module EVM-DATA
-    imports KRYPTO
+//    imports KRYPTO
 
     syntax KResult ::= Int 
 ```
@@ -221,6 +221,7 @@ Bitwise logical operators are lifted from the integer versions.
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 ```k
+    syntax String ::= Keccak256( String ) 
     syntax Word ::= keccak ( WordStack ) [function]
  // -----------------------------------------------
     rule keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS)))

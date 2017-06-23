@@ -43,3 +43,6 @@ ktest: $(ktest_file)
 tests/ethereum-tests/%.json:
 	@echo "==  git submodule: cloning upstreams test repository"
 	git submodule update --init
+
+clean: 
+	rm -r k/*
