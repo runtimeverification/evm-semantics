@@ -431,15 +431,6 @@ module ETHEREUM
     syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
  // --------------------------------------------------
 
-    syntax Bool ::= OpCode "in" OpCodes [function]
- // ----------------------------------------------
-    rule OP:OpCode  in .OpCodes            => false
-    rule OP:OpCode  in (OP' ; OPS)         => (OP ==K OP') orElseBool (OP in OPS) requires notBool (isStackOp(OP) orBool isPushOp(OP) orBool isLogOp(OP))
-    rule LOG(_)     in (LOG(_) ; OPS)      => true
-    rule DUP(_)     in (DUP(_) ; OPS)      => true
-    rule SWAP(_)    in (SWAP(_) ; OPS)     => true
-    rule PUSH(_, _) in (PUSH(_, _) ; OPS)  => true
-
     syntax Map ::= #asMapOpCodes ( OpCodes )       [function]
                  | #asMapOpCodes ( Int , OpCodes ) [function, klabel(asMapOpCodes2)]
  // ---------------------------------------------------------
@@ -1047,95 +1038,119 @@ module ETHEREUM
 // The gas calculation is designed to mirror the style of the yellowpaper.
 
 
-    syntax Word ::= "Gzero" | "Gbase" | "Gverylow" | "Glow" | "Gmid" | "Ghigh" | "Gextcode"
-                  | "Gbalance" | "Gsload" | "Gjumpdest" | "Gsset" | "Gsreset" | "Rsclear"
-                  | "Rself-destruct" | "Gself-destruct" | "Gcreate" | "Gcodedeposit" | "Gcall"
-                  | "Gcallvalue" | "Gcallstipend" | "Gnewaccount" | "Gexp" | "Gexpbyte"
-                  | "Gmemory" | "Gtxcreate" | "Gtxdatazero" | "Gtxdatanonzero" | "Gtransaction"
-                  | "Glog" | "Glogdata" | "Glogtopic" | "Gsha3" | "Gsha3word" | "Gcopy" | "Gblockhash"
-                  | "#gasSSTORE" | "#gasCALL" | "#gasSELFDESTRUCT"
- // --------------------------------------------------------------
-    rule Gzero          => 0        [macro]
-    rule Gbase          => 2        [macro]
-    rule Gverylow       => 3        [macro]
-    rule Glow           => 5        [macro]
-    rule Gmid           => 8        [macro]
-    rule Ghigh          => 10       [macro]
-    rule Gextcode       => 700      [macro]
-    rule Gbalance       => 400      [macro]
-    rule Gsload         => 200      [macro]
-    rule Gjumpdest      => 1        [macro]
-    rule Gsset          => 20000    [macro]
-    rule Gsreset        => 5000     [macro]
-    rule Rsclear        => 15000    [macro]
-    rule Rself-destruct => 24000    [macro]
-    rule Gself-destruct => 5000     [macro]
-    rule Gcreate        => 32000    [macro]
-    rule Gcodedeposit   => 200      [macro]
-    rule Gcall          => 700      [macro]
-    rule Gcallvalue     => 9000     [macro]
-    rule Gcallstipend   => 2300     [macro]
-    rule Gnewaccount    => 25000    [macro]
-    rule Gexp           => 10       [macro]
-    rule Gexpbyte       => 10       [macro]
-    rule Gmemory        => 3        [macro]
-    rule Gtxcreate      => 32000    [macro]
-    rule Gtxdatazero    => 4        [macro]
-    rule Gtxdatanonzero => 68       [macro]
-    rule Gtransaction   => 21000    [macro]
-    rule Glog           => 375      [macro]
-    rule Glogdata       => 8        [macro]
-    rule Glogtopic      => 375      [macro]
-    rule Gsha3          => 30       [macro]
-    rule Gsha3word      => 6        [macro]
-    rule Gcopy          => 3        [macro]
-    rule Gblockhash     => 20       [macro]
-
-    syntax OpCodes ::= "Wzero" | "Wbase" | "Wverylow" | "Wlow" | "Wmid" | "Whigh" | "Wextcode" | "Wcopy" | "Wcall"
- // --------------------------------------------------------------------------------------------------------------
-    rule Wzero    => STOP ; RETURN ; .OpCodes                                               [macro]
-    rule Wbase    =>   ADDRESS ; ORIGIN ; CALLER ; CALLVALUE ; CALLDATASIZE
-                     ; CODESIZE ; GASPRICE ; COINBASE ; TIMESTAMP ; NUMBER
-                     ; DIFFICULTY ; GASLIMIT ; POP ; PC ; MSIZE ; GAS ; .OpCodes            [macro]
-    rule Wverylow =>   ADD ; SUB ; NOT ; LT ; GT ; SLT ; SGT ; EQ ; ISZERO ; AND
-                     ; EVMOR ; XOR ; BYTE ; CALLDATALOAD ; MLOAD ; MSTORE ; MSTORE8
-                     ; PUSH(0, 0) ; DUP(0) ; SWAP(0) ; .OpCodes                             [macro]
-    rule Wlow     => MUL ; DIV ; SDIV ; MOD ; SMOD ; SIGNEXTEND ; .OpCodes                  [macro]
-    rule Wmid     => ADDMOD ; MULMOD ; JUMP ; JUMPI; .OpCodes                               [macro]
-    rule Wextcode => EXTCODESIZE ; .OpCodes                                                 [macro]
-    rule Wcopy    => CALLDATACOPY ; CODECOPY ; .OpCodes                                     [macro]
-    rule Wcall    => CALL ; CALLCODE ; DELEGATECALL ; .OpCodes                              [macro]
-
-
-// TODO: The rules marked as `INCORRECT` below are performing simpler gas
-// calculations than the actual yellowpaper specifies.
-
-
     syntax Word ::= #gas ( OpCode )
  // -------------------------------
-    // rule <op> #gas(OP)           => ???                           ... </op> requires OP in Wcall
-    // rule <op> #gas(SELFDESTRUCT) => ???                           ... </op>
-    rule <op> #gas(EXP)          => Gexp                          ... </op>                        // INCORRECT
-    rule <op> #gas(OP)           => Gverylow +Word Gcopy          ... </op> requires OP in Wcopy   // INCORRECT
-    rule <op> #gas(EXTCODECOPY)  => Gextcode +Word Gcopy          ... </op>                        // INCORRECT
-    rule <op> #gas(LOG(N))       => Glog +Word (N *Word Glogdata) ... </op>                        // INCORRECT
-    rule <op> #gas(CREATE)       => Gcreate                       ... </op>
-    rule <op> #gas(SHA3)         => Gsha3                         ... </op>                        // INCORRECT
-    rule <op> #gas(JUMPDEST)     => Gjumpdest                     ... </op>
+    rule <op> #gas(OP)         => Gzero      ... </op> requires OP in Wzero
+    rule <op> #gas(OP)         => Gbase      ... </op> requires OP in Wbase
+    rule <op> #gas(OP)         => Gverylow   ... </op> requires OP in Wverylow
+    rule <op> #gas(OP)         => Glow       ... </op> requires OP in Wlow
+    rule <op> #gas(OP)         => Gmid       ... </op> requires OP in Wmid
+    rule <op> #gas(OP)         => Ghigh      ... </op> requires OP in Whigh
+    rule <op> #gas(OP)         => Gextcode   ... </op> requires OP in Wextcode
+    rule <op> #gas(BALANCE)    => Gbalance   ... </op>
+    rule <op> #gas(BLOCKHASH)  => Gblockhash ... </op>
+    rule <op> #gas(PUSH(_, _)) => Gverylow   ... </op>
+    rule <op> #gas(DUP(_))     => Gverylow   ... </op>
+    rule <op> #gas(SWAP(_))    => Gverylow   ... </op>
 
     rule <op> #gas(SLOAD)  => Gsload  ... </op>
     rule <op> #gas(SSTORE) => #if W1 =/=K 0 andBool notBool W0 in keys(STORAGE) #then Gsset #else Gsreset #fi ... </op>
-         <wordStack> W0 : W1 : WS </wordStack> <storage> STORAGE </storage>
+         <wordStack> W0 : W1 : WS </wordStack>
+		 <storage> STORAGE </storage>
 
-    rule <op> #gas(OP)           => Gzero                         ... </op> requires OP in Wzero
-    rule <op> #gas(OP)           => Gbase                         ... </op> requires OP in Wbase
-    rule <op> #gas(OP)           => Gverylow                      ... </op> requires OP in Wverylow
-    rule <op> #gas(OP)           => Glow                          ... </op> requires OP in Wlow
-    rule <op> #gas(OP)           => Gmid                          ... </op> requires OP in Wmid
-    rule <op> #gas(OP)           => Ghigh                         ... </op> requires OP in Whigh
-    rule <op> #gas(OP)           => Gextcode                      ... </op> requires OP in Wextcode
-    rule <op> #gas(BALANCE)      => Gbalance                      ... </op>
-    rule <op> #gas(BLOCKHASH)    => Gblockhash                    ... </op>
+
+// TODO: Gas calculation for the following operators is not implemented.
+
+
+    rule <op> #gas(OP)           => Gzero   ... </op> requires OP in Wcall
+    rule <op> #gas(SELFDESTRUCT) => Gzero   ... </op>
+    rule <op> #gas(EXP)          => Gzero   ... </op>
+    rule <op> #gas(OP)           => Gzero   ... </op> requires OP in Wcopy
+    rule <op> #gas(EXTCODECOPY)  => Gzero   ... </op>
+    rule <op> #gas(LOG(N))       => Gzero   ... </op>
+    rule <op> #gas(SHA3)         => Gzero   ... </op>
+    rule <op> #gas(JUMPDEST)     => Gzero   ... </op>
+    rule <op> #gas(CREATE)       => Gcreate ... </op>
+
+
+// Here the lists of gas prices and gas opcodes are provided.
+
+
+    syntax Word ::= "Gzero"          [function] | "Gbase"          [function]
+                  | "Gverylow"       [function] | "Glow"           [function]
+                  | "Gmid"           [function] | "Ghigh"          [function]
+                  | "Gextcode"       [function] | "Gbalance"       [function]
+                  | "Gsload"         [function] | "Gjumpdest"      [function]
+                  | "Gsset"          [function] | "Gsreset"        [function]
+                  | "Rsclear"        [function] | "Rself-destruct" [function]
+                  | "Gself-destruct" [function] | "Gcreate"        [function]
+                  | "Gcodedeposit"   [function] | "Gcall"          [function]
+                  | "Gcallvalue"     [function] | "Gcallstipend"   [function]
+                  | "Gnewaccount"    [function] | "Gexp"           [function]
+                  | "Gexpbyte"       [function] | "Gmemory"        [function]
+                  | "Gtxcreate"      [function] | "Gtxdatazero"    [function]
+                  | "Gtxdatanonzero" [function] | "Gtransaction"   [function]
+                  | "Glog"           [function] | "Glogdata"       [function]
+                  | "Glogtopic"      [function] | "Gsha3"          [function]
+                  | "Gsha3word"      [function] | "Gcopy"          [function]
+                  | "Gblockhash"     [function]
+ // -------------------------------------------
+    rule Gzero          => 0
+    rule Gbase          => 2
+    rule Gverylow       => 3
+    rule Glow           => 5
+    rule Gmid           => 8
+    rule Ghigh          => 10
+    rule Gextcode       => 700
+    rule Gbalance       => 400
+    rule Gsload         => 200
+    rule Gjumpdest      => 1
+    rule Gsset          => 20000
+    rule Gsreset        => 5000
+    rule Rsclear        => 15000
+    rule Rself-destruct => 24000
+    rule Gself-destruct => 5000
+    rule Gcreate        => 32000
+    rule Gcodedeposit   => 200
+    rule Gcall          => 700
+    rule Gcallvalue     => 9000
+    rule Gcallstipend   => 2300
+    rule Gnewaccount    => 25000
+    rule Gexp           => 10
+    rule Gexpbyte       => 10
+    rule Gmemory        => 3
+    rule Gtxcreate      => 32000
+    rule Gtxdatazero    => 4
+    rule Gtxdatanonzero => 68
+    rule Gtransaction   => 21000
+    rule Glog           => 375
+    rule Glogdata       => 8
+    rule Glogtopic      => 375
+    rule Gsha3          => 30
+    rule Gsha3word      => 6
+    rule Gcopy          => 3
+    rule Gblockhash     => 20
+
+    syntax Set ::= "Wzero"    [function] | "Wbase" [function]
+                 | "Wverylow" [function] | "Wlow"  [function]
+                 | "Wmid"     [function] | "Whigh" [function]
+                 | "Wextcode" [function] | "Wcopy" [function]
+                 | "Wcall"    [function]
+ // ------------------------------------
+    rule Wzero    => (SetItem(STOP) SetItem(RETURN))
+    rule Wbase    => ( SetItem(ADDRESS) SetItem(ORIGIN) SetItem(CALLER) SetItem(CALLVALUE) SetItem(CALLDATASIZE)
+                       SetItem(CODESIZE) SetItem(GASPRICE) SetItem(COINBASE) SetItem(TIMESTAMP) SetItem(NUMBER)
+                       SetItem(DIFFICULTY) SetItem(GASLIMIT) SetItem(POP) SetItem(PC) SetItem(MSIZE) SetItem(GAS)
+                     )
+    rule Wverylow => ( SetItem(ADD) SetItem(SUB) SetItem(NOT) SetItem(LT) SetItem(GT) SetItem(SLT) SetItem(SGT)
+                       SetItem(EQ) SetItem(ISZERO) SetItem(AND) SetItem(EVMOR) SetItem(XOR) SetItem(BYTE)
+                       SetItem(CALLDATALOAD) SetItem(MLOAD) SetItem(MSTORE) SetItem(MSTORE8)
+                     )
+    rule Wlow     => (SetItem(MUL) SetItem(DIV) SetItem(SDIV) SetItem(MOD) SetItem(SMOD) SetItem(SIGNEXTEND))
+    rule Wmid     => (SetItem(ADDMOD) SetItem(MULMOD) SetItem(JUMP) SetItem(JUMPI))
+    rule Wextcode => (SetItem(EXTCODESIZE))
+    rule Wcopy    => (SetItem(CALLDATACOPY) SetItem(CODECOPY))
+    rule Wcall    => (SetItem(CALL) SetItem(CALLCODE) SetItem(DELEGATECALL))
 
 
 // EVM Program Representations
