@@ -401,7 +401,7 @@ Some operators don't calculate anything, they just push the stack around a bit.
     rule <op> DUP(N)  WS:WordStack => #setStack ((WS [ N -Word 1 ]) : WS) ~> #checkStackSize    ... </op>
     rule <op> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Word 1 ]) : (WS [ N -Word 1 := W0 ])) ... </op>
 
-    syntax PushOp ::= PUSH ( Word , Word )
+    syntax PushOp ::= PUSH ( Word , Word ) 
  // --------------------------------------
     rule <op> PUSH(_, W) => W ~> #push ~> #checkStackSize ... </op>
 ```

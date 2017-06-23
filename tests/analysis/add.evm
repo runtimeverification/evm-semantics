@@ -11,16 +11,7 @@ run {
             "data": "0x", 
             "gasPrice": "0x5af3107a4000"
         }, 
-      
-        "gas": "0x01730c", 
-        "env": {
-            "currentDifficulty": "0x0100", 
-            "currentCoinbase": "0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba", 
-            "currentNumber": "0x00", 
-            "currentGasLimit": "0x0f4240", 
-            "currentTimestamp": "0x01"
-        }, 
-       
+
 
         "out": "0x"
     }
