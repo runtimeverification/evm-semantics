@@ -10,9 +10,6 @@ requires "evm.k"
 module ETHEREUM-SIMULATION
     imports ETHEREUM
 
-    configuration initEthereumCell
-                  <k> $PGM:EthereumSimulation </k>
-
 
 // An Ethereum simulation is a list of Ethereum commands. Some Ethereum commands
 // take an Ethereum specification (eg. for an account or transaction).
