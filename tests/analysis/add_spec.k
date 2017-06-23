@@ -11,15 +11,15 @@ start~>flush
 =>.
 ...
 </k>
-<op>. => #finalize </op>
 
-<memoryUsed> 0 =>_  </memoryUsed>
+<op> . => . </op>
+<memoryUsed> 0 =>N2:Int  </memoryUsed>
 <localMem> .Map => M1:Map </localMem>
-<gas> N:Int =>_</gas>
-<pc> 0 => _ </pc>
-<program> PROGRAM:Map</program>
+<gas> N:Int =>N1:Int</gas>
+<pc> 0 => N3:Int </pc>
+<wordStack> . => . </wordStack>
+<program>PROGRAM:Map </program>
 
-requires N>=Int 30
-		
+requires N>=Int 15
+
 endmodule
-
