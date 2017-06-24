@@ -31,6 +31,8 @@ module EVM-DATA
 // -   `chop` interperets an interger module $2^256$.
 
 
+  //  syntax String ::="#symbolicWord"    [function]
+   // rule #symbolicWord=>?X:String
     syntax Word ::= Int
                   | "#symbolicWord"    [function]
                   | chop ( Word )      [function]
@@ -75,6 +77,7 @@ module EVM-DATA
  // --------------------------------------
     rule sgn(I:Int) => -1 requires I >=Int (2 ^Int 255)
     rule sgn(I:Int) => 1  requires I <Int (2 ^Int 255)
+
     rule abs(I:Int) => 0 -Word I requires sgn(I) ==K -1
     rule abs(I:Int) => I         requires sgn(I) ==K 1
 
@@ -137,8 +140,8 @@ module EVM-DATA
     syntax Word ::= Word "/sWord" Word [function]
                   | Word "%sWord" Word [function]
  // ---------------------------------------------
-    rule W0:Int /sWord W1:Int => twosComp(twosComp(W0) /Word twosComp(W1)) *Word (sgn(W0) *Int sgn(W1))
-    rule W0:Int %sWord W1:Int => twosComp(twosComp(W0) %Word twosComp(W1)) *Word sgn(W0)
+    rule W0:Int /sWord W1:Int => (abs(W0) /Word abs(W1)) *Word (sgn(W0) *Int sgn(W1))
+    rule W0:Int %sWord W1:Int => (abs(W0) %Word abs(W1)) *Word sgn(W0)
 
 
 // Comparison Operators
@@ -166,10 +169,10 @@ module EVM-DATA
 
     syntax Word ::= Word "s<Word" Word [function]
  // ---------------------------------------------
-    rule W0:Int s<Word W1:Int => W0 <Word W1                     requires sgn(W0) ==K 1  andBool sgn(W1) ==K 1
-    rule W0:Int s<Word W1:Int => bool2Word(false)                requires sgn(W0) ==K 1  andBool sgn(W1) ==K -1
-    rule W0:Int s<Word W1:Int => bool2Word(true)                 requires sgn(W0) ==K -1 andBool sgn(W1) ==K 1
-    rule W0:Int s<Word W1:Int => twosComp(W1) <Word twosComp(W0) requires sgn(W0) ==K -1 andBool sgn(W1) ==K -1
+    rule W0:Int s<Word W1:Int => W0 <Word W1           requires sgn(W0) ==K 1  andBool sgn(W1) ==K 1
+    rule W0:Int s<Word W1:Int => bool2Word(false)      requires sgn(W0) ==K 1  andBool sgn(W1) ==K -1
+    rule W0:Int s<Word W1:Int => bool2Word(true)       requires sgn(W0) ==K -1 andBool sgn(W1) ==K 1
+    rule W0:Int s<Word W1:Int => abs(W1) <Word abs(W0) requires sgn(W0) ==K -1 andBool sgn(W1) ==K -1
 
 
 // Bitwise operators.

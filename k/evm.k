@@ -126,19 +126,10 @@ module ETHEREUM
 // Execution Cycle
 // ---------------
 
-// -   `#catch` is used to catch exceptional states so that the state can be
-//     rolled back.
-// -   `#exception` is used to indicate exceptional states.
-// -   `#end` is used to indicate the (non-exceptional) end of execution.
+// Execution follows a simple cycle where first the state is checked for
+// exceptions, then if no exceptions will be thrown the opcode is run.
 
-
-    syntax KItem ::= "#catch" | "#exception" | "#end"
- // -------------------------------------------------
-    rule <op> #exception ~> OP:OpCode => #exception ... </op>
-
-
-// -   `#next` signals that it's time to begin the next execution cycle, which
-//     means check if the next operator is exceptional then execute it if not.
+// -   `#next` signals that it's time to begin the next execution cycle.
 
 
     syntax InternalOp ::= "#next"
@@ -149,6 +140,31 @@ module ETHEREUM
 
     rule <op> #next => #exception ... </op> <pc> PCOUNT </pc> <program> PGM </program>
       requires notBool PCOUNT in keys(PGM)
+
+
+// -   `#exception` is used to indicate exceptional states (it consumes any
+//     operations to be performed after it).
+
+
+    syntax Exception ::= "#exception" | "#throw" KList
+ // --------------------------------------------------
+    rule <op> EX:Exception ~> (OP:OpCode => .) ... </op>
+    rule <op> EX:Exception ~> (W:Word    => .) ... </op>
+
+
+// -   `#catch_` is used to catch exceptional states so that the state can be
+//     rolled back.
+// -   `#end` is used to indicate the (non-exceptional) end of execution.
+
+// Note: `#catch_` and `#end` are `KItem`, not `OpCode`, so exceptions will not
+// remove them from the `op` cell.
+
+
+    syntax KItem ::= "#catch" KList | "#end"
+ // ----------------------------------------
+    rule <op> #catch _ => . ... </op>
+    rule <op> #exception ~> #catch KL => KL ... </op>
+    rule <op> #throw KL  ~> #catch _  => KL ... </op>
 
 
 // Exception Checks
@@ -168,14 +184,12 @@ module ETHEREUM
  // ----------------------------------------------------
     rule <op> #exceptional?(OP)
            => #invalid?(OP)
-           ~> #stackNeeded?(OP)
-           ~> #stackAdded?(OP)
+           ~> #stackNeeded(OP) ~> #stackNeeded?
+           ~> #stackDelta(OP)  ~> #stackDelta?
            ~> #badJumpDest?(OP)
-           ~> #enoughGas?(OP)
+           ~> #gas(OP)         ~> #enoughGas?
           ...
          </op>
-         <gas> GAVAIL </gas>
-         <wordStack> WS </wordStack>
 
 
 // ### Invalid Operator
@@ -201,14 +215,13 @@ module ETHEREUM
 //     stack after the opcode completes.
 
 
-    syntax InternalOp ::= "#stackNeeded?" "(" OpCode ")"
-                        | "#stackAdded?" "(" OpCode ")"
- // ---------------------------------------------------
-    rule <op> #stackNeeded?(OP) => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int #stackNeeded(OP)
-    rule <op> #stackNeeded?(OP) => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) >=Int #stackNeeded(OP)
+    syntax InternalOp ::= "#stackNeeded?" | "#stackDelta?"
+ // ------------------------------------------------------
+    rule <op> SN:Int ~> #stackNeeded? => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int SN
+    rule <op> SN:Int ~> #stackNeeded? => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) >=Int SN
 
-    rule <op> #stackAdded?(OP) => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int #stackDelta(OP) >Int 1024
-    rule <op> #stackAdded?(OP) => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int #stackDelta(OP) <=Int 1024
+    rule <op> SD:Int ~> #stackDelta? => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int SD >Int 1024
+    rule <op> SD:Int ~> #stackDelta? => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int SD <=Int 1024
 
 
 // -   `#stackNeeded` calculates how many arguments the operator needs from the
@@ -235,20 +248,24 @@ module ETHEREUM
 
     syntax Int ::= #stackAdded ( OpCode ) [function]
  // ------------------------------------------------
-    rule #stackAdded(OP)      => 0 requires OP in #zeroRet
-    rule #stackAdded(DUP(N))  => N +Int 1
-    rule #stackAdded(SWAP(N)) => N
-    rule #stackAdded(OP)      => 1 requires notBool (OP in #zeroRet orBool isDupOp(OP) orBool isSwapOp(OP))
+    rule #stackAdded(OP)        => 0 requires OP in #zeroRet
+    rule #stackAdded(LOG(_))    => 0
+    rule #stackAdded(PUSH(_,_)) => 1
+    rule #stackAdded(SWAP(N))   => N
+    rule #stackAdded(DUP(N))    => N +Int 1
+    rule #stackAdded(OP)        => 1 requires notBool (OP in #zeroRet orBool isPushOp(OP) orBool isLogOp(OP) orBool isStackOp(OP))
 
     syntax Int ::= #stackDelta ( OpCode ) [function]
  // ------------------------------------------------
     rule #stackDelta(OP) => #stackAdded(OP) -Int #stackNeeded(OP)
 
-    syntax OpCodes ::= "#zeroRet"
- // -----------------------------
-    rule #zeroRet =>   STOP ; CALLDATACOPY ; CODECOPY ; EXTCODECOPY ; POP
-                     ; MSTORE ; MSTORE8 ; SSTORE ; JUMP ; JUMPI ; JUMPDEST
-                     ; LOG(0) ; RETURN ; SELFDESTRUCT ; .OpCodes            [macro]
+    syntax Set ::= "#zeroRet" [function]
+ // ------------------------------------
+    rule #zeroRet => ( SetItem(CALLDATACOPY) SetItem(CODECOPY) SetItem(EXTCODECOPY)
+                       SetItem(POP) SetItem(MSTORE) SetItem(MSTORE8) SetItem(SSTORE)
+                       SetItem(JUMP) SetItem(JUMPI) SetItem(JUMPDEST)
+                       SetItem(STOP) SetItem(RETURN) SetItem(SELFDESTRUCT)
+                     )
 
 
 // ### Jump Destination
@@ -270,11 +287,10 @@ module ETHEREUM
 // -   `#enoughGas?` throws an exception if there isn't enough gas for the opcode.
 
 
-    syntax InternalOp ::= "#enoughGas?" "(" OpCode ")" | "#checkGas"
- // ----------------------------------------------------------------
-    rule <op> #enoughGas?(OP) => #gas(OP) ~> #checkGas ... </op>
-    rule <op> G:Int ~> #checkGas => #exception ... </op> <gas> GAVAIL </gas> requires word2Bool(G >Word GAVAIL)
-    rule <op> G:Int ~> #checkGas => .          ... </op> <gas> GAVAIL </gas> requires word2Bool(G <=Word GAVAIL)
+    syntax InternalOp ::= "#enoughGas?"
+ // -----------------------------------
+    rule <op> G:Int ~> #enoughGas? => #exception ... </op> <gas> GAVAIL </gas> requires word2Bool(G >Word GAVAIL)
+    rule <op> G:Int ~> #enoughGas? => .          ... </op> <gas> GAVAIL </gas> requires word2Bool(G <=Word GAVAIL)
 
 
 // OpCode Execution
@@ -646,10 +662,10 @@ module ETHEREUM
 
     syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT"
  // -------------------------------------------------------------
-    rule <op> PC       => (PCOUNT -Int 1) ~> #push ... </op> <pc> PCOUNT </pc>
-    rule <op> GAS      => GAVAIL          ~> #push ... </op> <gas> GAVAIL </gas>
-    rule <op> GASPRICE => GPRICE          ~> #push ... </op> <gasPrice> GPRICE </gasPrice>
-    rule <op> GASLIMIT => GLIMIT          ~> #push ... </op> <gasLimit> GLIMIT </gasLimit>
+    rule <op> PC       => PCOUNT ~> #push ... </op> <pc> PCOUNT </pc>
+    rule <op> GAS      => GAVAIL ~> #push ... </op> <gas> GAVAIL </gas>
+    rule <op> GASPRICE => GPRICE ~> #push ... </op> <gasPrice> GPRICE </gasPrice>
+    rule <op> GASLIMIT => GLIMIT ~> #push ... </op> <gasLimit> GLIMIT </gasLimit>
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY"
  // -------------------------------------------------------------------------
@@ -710,7 +726,7 @@ module ETHEREUM
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
-    rule <op> RETURN RETSTART RETWIDTH => #end ... </op>
+    rule <op> RETURN RETSTART RETWIDTH => . ... </op>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, RETSTART, RETWIDTH) </memoryUsed>
@@ -865,19 +881,18 @@ module ETHEREUM
       requires VALUE =/=K 0
 
 
-// Call Operations
-// ---------------
+// ### Call Operations
 
 // The various `CALL*` (and other inter-contract control flow) operations will be
 // desugared into these `InternalOp`s.
 
-// -   `#returnLoc__` is a placeholder for the calling program, specifying where to
+// -   `#return__` is a placeholder for the calling program, specifying where to
 //     place the returned data in memory.
 
 
-    syntax InternalOp ::= "#returnLoc" Word Word
- // --------------------------------------------
-    rule <op> #returnLoc RETSTART RETWIDTH => . ... </op>
+    syntax InternalOp ::= "#return" Word Word
+ // -----------------------------------------
+    rule <op> #return RETSTART RETWIDTH => . ... </op>
          <output> OUT </output>
          <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #size(OUT)), OUT) ] </localMem>
 
@@ -933,11 +948,20 @@ module ETHEREUM
          <callStack> CS </callStack>
       requires #size(CS) >Int 1024
 
+
+// For each `CALL*` operation, we make a corresponding call to `#call` and a
+// state-change to setup the custom parts of the calling environment.
+
+// TODO: The `#catch` being used in each case needs to be filled in with the actual
+// code to run on exception.
+
+
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM #addr(ACCTTO) CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #returnLoc RETSTART RETWIDTH
+           ~> #return RETSTART RETWIDTH
+           ~> #catch (.K)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -954,7 +978,8 @@ module ETHEREUM
  // ----------------------------
     rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #returnLoc RETSTART RETWIDTH
+           ~> #return RETSTART RETWIDTH
+           ~> #catch (.K)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -971,7 +996,8 @@ module ETHEREUM
  // --------------------------------
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
-           ~> #returnLoc RETSTART RETWIDTH
+           ~> #return RETSTART RETWIDTH
+           ~> #catch (.K)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -983,6 +1009,70 @@ module ETHEREUM
            ...
          </account>
       requires #addr(ACCTTO) ==K ACCTTOACT
+
+
+// ### Account Creation/Deletion
+
+// Code is allowed to create a new contract by using the `CREATE` instruction.
+// First, `#call` is used to execute the "initialization code", which returns the
+// code of the newly created account. On successful initialization, the output is
+// the code to deposit in the account (done with `#codeDeposit`). This process can
+// fail in two places, either in the initialization code or in depositing the
+// output code (so `#catch_` is provided for each).
+
+// TODO: The `#catch_` being used need to be filled in with actual code to run.
+
+
+    syntax TernStackOp ::= "CREATE"
+ // -------------------------------
+    rule <op> CREATE VALUE MEMSTART MEMWIDTH
+           => #call ACCT #newAddr(ACCT, NONCE) #asMap(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
+           ~> #catch (#throw (.K))
+           ~> #codeDeposit
+           ~> #catch (.K)
+          ...
+         </op>
+         <id> ACCT </id>
+         <callStack> CS </callStack>
+         <localMem> LM </localMem>
+         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
+         <activeAccounts> ACCTS </activeAccounts>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL => BAL -Word VALUE </balance>
+           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+           ...
+         </account>
+      requires #size(CS) <Int 1024 andBool word2Bool(BAL >=Word VALUE)
+
+
+// -   `#codeDeposit` attempts to deposit code into the account being called (which
+//     requires gas to be spent).
+// -   `#newAddr` is a placeholder for the new address until we get the actual
+//     calculation setup.
+
+// TODO: Right now `#codeDeposit` isn't performing the correct gas check. We should
+// wait for the `#gas` calculations to be fixed before doing so.
+
+
+    syntax InternalOp  ::= "#codeDeposit"
+ // -------------------------------------
+    rule <op> #codeDeposit => . ... </op>
+         <id> ACCT </id>
+         <output> OUT => .WordStack </output>
+         <account>
+           <acctID> ACCT </acctID>
+           <code>   _ => #asMap(#dasmOpCodes(OUT)) </code>
+           ...
+         </account>
+
+    syntax Word ::= #newAddr ( Word , Word )
+ // ----------------------------------------
+
+
+// `SELFDESTRUCT` marks the current account for deletion and transfers funds out of
+// the current account.
+
 
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
@@ -1013,28 +1103,6 @@ module ETHEREUM
            ...
          </account>
       requires notBool #addr(ACCTTO) in ACCTS
-
-    syntax Word        ::= #newAddr ( Word , Word )
-    syntax InternalOp  ::= "#codeDeposit"
-    syntax TernStackOp ::= "CREATE"
- // -------------------------------
-    rule <op> CREATE VALUE MEMSTART MEMWIDTH
-           => #call ACCT #newAddr(ACCT, NONCE) #asMap(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
-           ~> #codeDeposit
-          ...
-         </op>
-         <id> ACCT </id>
-         <callStack> CS </callStack>
-         <localMem> LM </localMem>
-         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
-         <activeAccounts> ACCTS </activeAccounts>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL => BAL -Word VALUE </balance>
-           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
-           ...
-         </account>
-      requires #size(CS) <Int 1024 andBool word2Bool(BAL >=Word VALUE)
 
 
 // Ethereum Gas Calculation
