@@ -86,7 +86,7 @@ module ETHEREUM
                       <activeAccounts> .Set </activeAccounts>
 
                       <accounts>
-                        <account multiplicity="*" type="Set">
+                        <account multiplicity="*">
                           <acctID>  .AcctID </acctID>
                           <balance> .Value  </balance>
                           <code>    .Code   </code>
@@ -209,11 +209,11 @@ It checks, in order:
 ```k
     syntax InternalOp ::= "#stackNeeded?" | "#stackDelta?"
  // ------------------------------------------------------
-    rule <op> SN:Int ~> #stackNeeded? => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int SN
-    rule <op> SN:Int ~> #stackNeeded? => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) >=Int SN
+    rule <op> SN:Int ~> #stackNeeded? => #exception ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) <Int SN
+    rule <op> SN:Int ~> #stackNeeded? => .          ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) >=Int SN
 
-    rule <op> SD:Int ~> #stackDelta? => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int SD >Int 1024
-    rule <op> SD:Int ~> #stackDelta? => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int SD <=Int 1024
+    rule <op> SD:Int ~> #stackDelta? => #exception ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) +Int SD >Int 1024
+    rule <op> SD:Int ~> #stackDelta? => .          ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) +Int SD <=Int 1024
 ```
 
 -   `#stackNeeded` calculates how many arguments the operator needs from the stack ($\delta$ in the yellowpaper).
@@ -972,7 +972,7 @@ TODO: The `#catch_` being used need to be filled in with actual code to run.
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
-           => #call ACCT #newAddr(ACCT, NONCE) #asMap(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
+           => #call ACCT #newAddr(ACCT, NONCE) #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
            ~> #catch (#throw (.K))
            ~> #codeDeposit
            ~> #catch (.K)
@@ -1003,7 +1003,7 @@ We should wait for the `#gas` calculations to be fixed before doing so.
          <output> OUT => .WordStack </output>
          <account>
            <acctID> ACCT </acctID>
-           <code>   _ => #asMap(#dasmOpCodes(OUT)) </code>
+           <code> _ => #asMapOpCodes(#dasmOpCodes(OUT)) </code>
            ...
          </account>
 

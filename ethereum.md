@@ -174,8 +174,8 @@ Here we load the environmental information.
 
     rule load "exec" : { "data" : ((DATA:String)  => #parseByteStack(DATA)) }
     rule load "exec" : { "code" : ((CODE:String)  => #dasmOpCodes(#parseByteStack(CODE))) }
-    rule load "exec" : { "code" : ((CODE:OpCodes) => #asMap(CODE)) }
- // ----------------------------------------------------------------
+    rule load "exec" : { "code" : ((CODE:OpCodes) => #asMapOpCodes(CODE)) }
+ // -----------------------------------------------------------------------
     rule <k> load "exec" : { "data" : (DATA:WordStack) } => . ... </k> <callData> _ => DATA </callData>
     rule <k> load "exec" : { "code" : (CODE:Map)       } => . ... </k> <program>  _ => CODE </program>
 ```
