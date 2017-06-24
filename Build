@@ -17,6 +17,14 @@ list_tests()   { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
 list_passing() { cat "$expected_passing"; }
 list_failing() { list_tests | grep -Fvxf "$expected_passing" -; }
 
+pretty_diff() {
+    if type colordiff >/dev/null 2>&1; then
+        colordiff -u "$@"
+    else
+        diff -u "$@"
+    fi
+}
+
 # Reads a list of json test files from stdin, and runs them
 run_tests() {
     run_make all
@@ -25,7 +33,9 @@ run_tests() {
         let test_count="$test_count + 1"
         local output_differs=false
         progress "running: $test_file..."
-        diff <(krun --debug --directory k/ "$test_file") <(cat "$output_file") \
+        pretty_diff \
+            --label expected <(cat "$output_file" | lint_krun) \
+            --label actual   <(krun --debug --directory k/ "$test_file" | lint_krun) \
             || output_differs=true
         if $output_differs; then
             failure "$test_file"
@@ -57,13 +67,16 @@ run_ktest() {
     popd
 }
 
+lint_krun() {
+    # Format, &gt; entity > and make each K task start on a new line
+    xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
+}
+
 run_krun() {
     run_make all
     while read test_file; do
         progress "running: $test_file"
-        krun --debug --directory k/ "$test_file" \
-            | xmllint --format - \
-            | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
+        krun --debug --directory k/ "$test_file" | lint_krun
     done
 }
 
