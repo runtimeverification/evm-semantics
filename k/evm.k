@@ -149,6 +149,7 @@ module ETHEREUM
     syntax Exception ::= "#exception" | "#throw" KList
  // --------------------------------------------------
     rule <op> EX:Exception ~> (OP:OpCode => .) ... </op>
+    rule <op> EX:Exception ~> (W:Word    => .) ... </op>
 
 
 // -   `#catch_` is used to catch exceptional states so that the state can be
@@ -183,10 +184,10 @@ module ETHEREUM
  // ----------------------------------------------------
     rule <op> #exceptional?(OP)
            => #invalid?(OP)
-           ~> #stackNeeded?(OP)
-           ~> #stackAdded?(OP)
+           ~> #stackNeeded(OP) ~> #stackNeeded?
+           ~> #stackDelta(OP)  ~> #stackDelta?
            ~> #badJumpDest?(OP)
-           ~> #enoughGas?(OP)
+           ~> #gas(OP)         ~> #enoughGas?
           ...
          </op>
 
@@ -214,14 +215,13 @@ module ETHEREUM
 //     stack after the opcode completes.
 
 
-    syntax InternalOp ::= "#stackNeeded?" "(" OpCode ")"
-                        | "#stackAdded?" "(" OpCode ")"
- // ---------------------------------------------------
-    rule <op> #stackNeeded?(OP) => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int #stackNeeded(OP)
-    rule <op> #stackNeeded?(OP) => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) >=Int #stackNeeded(OP)
+    syntax InternalOp ::= "#stackNeeded?" | "#stackDelta?"
+ // ------------------------------------------------------
+    rule <op> SN:Int ~> #stackNeeded? => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int SN
+    rule <op> SN:Int ~> #stackNeeded? => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) >=Int SN
 
-    rule <op> #stackAdded?(OP) => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int #stackDelta(OP) >Int 1024
-    rule <op> #stackAdded?(OP) => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int #stackDelta(OP) <=Int 1024
+    rule <op> SD:Int ~> #stackDelta? => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int SD >Int 1024
+    rule <op> SD:Int ~> #stackDelta? => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int SD <=Int 1024
 
 
 // -   `#stackNeeded` calculates how many arguments the operator needs from the
@@ -248,20 +248,24 @@ module ETHEREUM
 
     syntax Int ::= #stackAdded ( OpCode ) [function]
  // ------------------------------------------------
-    rule #stackAdded(OP)      => 0 requires OP in #zeroRet
-    rule #stackAdded(DUP(N))  => N +Int 1
-    rule #stackAdded(SWAP(N)) => N
-    rule #stackAdded(OP)      => 1 requires notBool (OP in #zeroRet orBool isDupOp(OP) orBool isSwapOp(OP))
+    rule #stackAdded(OP)        => 0 requires OP in #zeroRet
+    rule #stackAdded(LOG(_))    => 0
+    rule #stackAdded(PUSH(_,_)) => 1
+    rule #stackAdded(SWAP(N))   => N
+    rule #stackAdded(DUP(N))    => N +Int 1
+    rule #stackAdded(OP)        => 1 requires notBool (OP in #zeroRet orBool isPushOp(OP) orBool isLogOp(OP) orBool isStackOp(OP))
 
     syntax Int ::= #stackDelta ( OpCode ) [function]
  // ------------------------------------------------
     rule #stackDelta(OP) => #stackAdded(OP) -Int #stackNeeded(OP)
 
-    syntax OpCodes ::= "#zeroRet"
- // -----------------------------
-    rule #zeroRet =>   STOP ; CALLDATACOPY ; CODECOPY ; EXTCODECOPY ; POP
-                     ; MSTORE ; MSTORE8 ; SSTORE ; JUMP ; JUMPI ; JUMPDEST
-                     ; LOG(0) ; RETURN ; SELFDESTRUCT ; .OpCodes            [macro]
+    syntax Set ::= "#zeroRet" [function]
+ // ------------------------------------
+    rule #zeroRet => ( SetItem(CALLDATACOPY) SetItem(CODECOPY) SetItem(EXTCODECOPY)
+                       SetItem(POP) SetItem(MSTORE) SetItem(MSTORE8) SetItem(SSTORE)
+                       SetItem(JUMP) SetItem(JUMPI) SetItem(JUMPDEST)
+                       SetItem(STOP) SetItem(RETURN) SetItem(SELFDESTRUCT)
+                     )
 
 
 // ### Jump Destination
@@ -283,11 +287,10 @@ module ETHEREUM
 // -   `#enoughGas?` throws an exception if there isn't enough gas for the opcode.
 
 
-    syntax InternalOp ::= "#enoughGas?" "(" OpCode ")" | "#checkGas"
- // ----------------------------------------------------------------
-    rule <op> #enoughGas?(OP) => #gas(OP) ~> #checkGas ... </op>
-    rule <op> G:Int ~> #checkGas => #exception ... </op> <gas> GAVAIL </gas> requires word2Bool(G >Word GAVAIL)
-    rule <op> G:Int ~> #checkGas => .          ... </op> <gas> GAVAIL </gas> requires word2Bool(G <=Word GAVAIL)
+    syntax InternalOp ::= "#enoughGas?"
+ // -----------------------------------
+    rule <op> G:Int ~> #enoughGas? => #exception ... </op> <gas> GAVAIL </gas> requires word2Bool(G >Word GAVAIL)
+    rule <op> G:Int ~> #enoughGas? => .          ... </op> <gas> GAVAIL </gas> requires word2Bool(G <=Word GAVAIL)
 
 
 // OpCode Execution
@@ -723,7 +726,7 @@ module ETHEREUM
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
-    rule <op> RETURN RETSTART RETWIDTH => #end ... </op>
+    rule <op> RETURN RETSTART RETWIDTH => . ... </op>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, RETSTART, RETWIDTH) </memoryUsed>
