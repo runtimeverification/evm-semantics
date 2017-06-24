@@ -32,9 +32,9 @@ module ETHEREUM
                       // -----------------------------------
 
                       <op>         .K          </op>
-                      <output>     .WordStack  </output>                     // H_RETURN
-                      <memoryUsed> 0:Word      </memoryUsed>                 // \mu_i
-                      <callStack>  .CallStack  </callStack>
+                      <output>     .WordStack  </output>                // H_RETURN
+                      <memoryUsed> 0:Word      </memoryUsed>            // \mu_i
+                      <callDepth>  0:Word      </callDepth>
                       <callLog>    .CallLog    </callLog>
 
                       <txExecState>
@@ -99,7 +99,7 @@ module ETHEREUM
                       // -------------------
 
                       <messages>
-                        <message multiplicity="*" type="Map">
+                        <message multiplicity="*" type="Set">
                           <msgID>  .MsgID   </msgID>
                           <to>     .AcctID  </to>
                           <from>   .AcctID  </from>
@@ -424,16 +424,16 @@ Note that `_in_` ignores the arguments to operators that are parametric.
  // --------------------------------------------------
 
     syntax Map ::= #asMapOpCodes ( OpCodes )       [function]
-                 | #asMapOpCodes ( Int , OpCodes ) [function, klabel(asMapOpCodes2)]
- // ---------------------------------------------------------
+                 | #asMapOpCodes ( Int , OpCodes ) [function, klabel(#asMapOpCodesAux)]
+ // -----------------------------------------------------------------------------------
     rule #asMapOpCodes( OPS:OpCodes )         => #asMapOpCodes(0, OPS)
     rule #asMapOpCodes( N , .OpCodes )        => .Map
     rule #asMapOpCodes( N , OP:OpCode ; OCS ) => (N |-> OP) #asMapOpCodes(N +Int 1, OCS) requires notBool isPushOp(OP)
     rule #asMapOpCodes( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #asMapOpCodes(N +Int 1 +Int M, OCS)
 
     syntax OpCodes ::= #asOpCodes ( Map )       [function]
-                     | #asOpCodes ( Int , Map ) [function, klabel(#asOpCodes2)]
- // ------------------------------------------------------
+                     | #asOpCodes ( Int , Map ) [function, klabel(#asOpCodesAux)]
+ // -----------------------------------------------------------------------------
     rule #asOpCodes(M) => #asOpCodes(0, M)
     rule #asOpCodes(N, .Map) => .OpCodes
     rule #asOpCodes(N, N |-> OP         M) => OP         ; #asOpCodes(N +Int 1,        M) requires notBool isPushOp(OP)
@@ -463,36 +463,6 @@ These are just used by the other operators for shuffling local execution state a
  // -----------------------------------------------------
     rule <op> W0:Word ~> #push => . ... </op> <wordStack> WS => W0 : WS </wordStack>
     rule <op> #setStack WS     => . ... </op> <wordStack> _  => WS      </wordStack>
-```
-
-Previous process states must be stored, so a tuple of sort `Process` is supplied for that.
-The `CallStack` is a cons-list of `Process`.
-
--   `#pushCallStack` stores the current state on the `callStack`.
--   `#popCallStack` replaces the current state with the top of the `callStack`.
-
-```k
-    syntax Bag
-    syntax CallStack ::= ".CallStack" | Bag CallStack
- // -------------------------------------------------
-
-    syntax Int ::= #sizeCallStack ( CallStack ) [function]
- // ------------------------------------------------------
-    rule #sizeCallStack( .CallStack         ) => 0
-    rule #sizeCallStack( B:Bag CS:CallStack ) => 1 +Int #sizeCallStack(CS)
-
-    syntax InternalOp ::= "#pushCallStack" | "#popCallStack" | "#txFinished"
- // ------------------------------------------------------------------------
-    rule <op> #pushCallStack => . ... </op>
-         <callStack> CS => TXSTATE CS </callStack>
-         <txExecState> TXSTATE </txExecState>
-
-    rule <op> #popCallStack ~> #next => . ... </op>
-         <callStack> TXSTATE CS => CS </callStack>
-         <txExecState> _ => TXSTATE </txExecState>
-
-    rule <op> #popCallStack ~> #next => #txFinished ... </op>
-         <callStack> .CallStack </callStack>
 ```
 
 -   `#newAccount_` allows declaring a new empty account with the given address.
@@ -884,7 +854,7 @@ TODO: `#call` is neutured to make sure that we can pass the VMTests. The followi
     syntax InternalOp ::= "#call" Word Word Map Word WordStack
  // ----------------------------------------------------------
     rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => . ... </op>
-         <callStack> CS </callStack>
+         <callDepth> CD => CD +Int 1 </callDepth>
          <callLog> CL => { ACCTTO | VALUE | ARGS } ; CL </callLog>
          <id>       _ => ACCTTO                </id>
          <pc>       _ => 0                     </pc>
@@ -894,9 +864,10 @@ TODO: `#call` is neutured to make sure that we can pass the VMTests. The followi
          <account>
            <acctID>  ACCTFROM </acctID>
            <balance> BAL => BAL -Word VALUE </balance>
+           <acctMap> ... "nonce" |-> (NONCE => NONCE +Word 1) ... </acctMap>
            ...
          </account>
-      requires word2Bool(VALUE <=Word BAL) andBool (#sizeCallStack(CS) <Int 1024)
+      requires word2Bool(VALUE <=Word BAL) andBool CD <Int 1024
 ```
 
 Here is what we're actually using.
@@ -906,14 +877,14 @@ The test-set isn't clear about whach should happen when `#call` is run, but it s
     syntax InternalOp ::= "#call" Word Word Map Word WordStack
  // ----------------------------------------------------------
     rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => 1 ~> #push ... </op>
-         <callStack> CS </callStack>
+         <callDepth> CD </callDepth>
          <callLog> CL => { ACCTTO | VALUE | ARGS } ; CL </callLog>
          <account>
            <acctID>  ACCTFROM </acctID>
            <balance> BAL </balance>
            ...
          </account>
-      requires word2Bool(VALUE <=Word BAL) andBool (#sizeCallStack(CS) <Int 1024)
+      requires word2Bool(VALUE <=Word BAL) andBool CD <Int 1024
 
     rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #exception ... </op>
          <account>
@@ -924,8 +895,8 @@ The test-set isn't clear about whach should happen when `#call` is run, but it s
       requires word2Bool(VALUE >Word BAL)
 
     rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #exception ... </op>
-         <callStack> CS </callStack>
-      requires #sizeCallStack(CS) >Int 1024
+         <callDepth> CD </callDepth>
+      requires CD >=Int 1024
 ```
 
 For each `CALL*` operation, we make a corresponding call to `#call` and a state-change to setup the custom parts of the calling environment.
@@ -1008,17 +979,9 @@ TODO: The `#catch_` being used need to be filled in with actual code to run.
           ...
          </op>
          <id> ACCT </id>
-         <callStack> CS </callStack>
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
          <activeAccounts> ACCTS </activeAccounts>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL => BAL -Word VALUE </balance>
-           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
-           ...
-         </account>
-      requires #size(CS) <Int 1024 andBool word2Bool(BAL >=Word VALUE)
 ```
 
 -   `#codeDeposit` attempts to deposit code into the account being called (which requires gas to be spent).
@@ -1176,14 +1139,10 @@ Here the lists of gas prices and gas opcodes are provided.
     rule Gcopy          => 3
     rule Gblockhash     => 20
 
-    syntax Set ::= "Wzero"    [function]
-                 | "Wbase"    [function]
-                 | "Wverylow" [function]
-                 | "Wlow"     [function]
-                 | "Wmid"     [function]
-                 | "Whigh"    [function]
-                 | "Wextcode" [function]
-                 | "Wcall"    [function]
+    syntax Set ::= "Wzero"    [function] | "Wbase" [function]
+                 | "Wverylow" [function] | "Wlow"  [function]
+                 | "Wmid"     [function] | "Whigh" [function]
+                 | "Wextcode" [function] | "Wcall" [function]
                  | "Wcopy"    [function]
  // ------------------------------------
     rule Wzero    => (SetItem(STOP) SetItem(RETURN))
