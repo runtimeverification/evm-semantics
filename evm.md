@@ -121,17 +121,9 @@ module ETHEREUM
 Execution Cycle
 ---------------
 
--   `#catch` is used to catch exceptional states so that the state can be rolled back.
--   `#exception` is used to indicate exceptional states.
--   `#end` is used to indicate the (non-exceptional) end of execution.
+Execution follows a simple cycle where first the state is checked for exceptions, then if no exceptions will be thrown the opcode is run.
 
-```k
-    syntax KItem ::= "#catch" | "#exception" | "#end"
- // -------------------------------------------------
-    rule <op> #exception ~> OP:OpCode => #exception ... </op>
-```
-
--   `#next` signals that it's time to begin the next execution cycle, which means check if the next operator is exceptional then execute it if not.
+-   `#next` signals that it's time to begin the next execution cycle.
 
 ```k
     syntax InternalOp ::= "#next"
@@ -142,6 +134,25 @@ Execution Cycle
 
     rule <op> #next => #exception ... </op> <pc> PCOUNT </pc> <program> PGM </program>
       requires notBool PCOUNT in keys(PGM)
+```
+
+-   `#exception` is used to indicate exceptional states (it consumes any operations to be performed after it).
+
+```k
+    syntax Exception ::= "#exception"
+ // ---------------------------------
+    rule <op> EX:Exception ~> (OP:OpCode => .) ... </op>
+```
+
+-   `#catch_` is used to catch exceptional states so that the state can be rolled back.
+-   `#end` is used to indicate the (non-exceptional) end of execution.
+
+Note: `#catch_` and `#end` are `KItem`, not `OpCode`, so exceptions will not remove them from the `op` cell.
+
+```k
+    syntax KItem ::= "#catch" KList | "#end"
+ // ----------------------------------------
+    rule <op> #exception ~> #catch KL => KL ... </op>
 ```
 
 Exception Checks
