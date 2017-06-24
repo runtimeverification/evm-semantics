@@ -4,9 +4,18 @@
 /k/*-kompiled/
 /tests/tests-develop
 /tests/passing.lastrun
+/.kompile*
+/.krun*
+
+/*.cmi
+/*.cmx
+/*.cmxa
+/*.o
+/*.a
 
 # Temp folder for scratch data, TODOs etc.
 /tmp
+
 
 !*spec.k
 yellowpaper/
