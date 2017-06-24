@@ -1176,11 +1176,15 @@ Here the lists of gas prices and gas opcodes are provided.
     rule Gcopy          => 3
     rule Gblockhash     => 20
 
-    syntax Set ::= "Wzero"    [function] | "Wbase" [function]
-                 | "Wverylow" [function] | "Wlow"  [function]
-                 | "Wmid"     [function] | "Whigh" [function]
-                 | "Wextcode" [function] | "Wcopy" [function]
+    syntax Set ::= "Wzero"    [function]
+                 | "Wbase"    [function]
+                 | "Wverylow" [function]
+                 | "Wlow"     [function]
+                 | "Wmid"     [function]
+                 | "Whigh"    [function]
+                 | "Wextcode" [function]
                  | "Wcall"    [function]
+                 | "Wcopy"    [function]
  // ------------------------------------
     rule Wzero    => (SetItem(STOP) SetItem(RETURN))
     rule Wbase    => ( SetItem(ADDRESS) SetItem(ORIGIN) SetItem(CALLER) SetItem(CALLVALUE) SetItem(CALLDATASIZE)
