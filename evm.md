@@ -235,11 +235,11 @@ It checks, in order:
  // ------------------------------------------------
     rule #stackDelta(OP) => #stackAdded(OP) -Int #stackNeeded(OP)
 
-    syntax OpCodes ::= "#zeroRet"
+    syntax Set ::= "#zeroRet" [function]
  // -----------------------------
-    rule #zeroRet =>   STOP ; CALLDATACOPY ; CODECOPY ; EXTCODECOPY ; POP
-                     ; MSTORE ; MSTORE8 ; SSTORE ; JUMP ; JUMPI ; JUMPDEST
-                     ; LOG(0) ; RETURN ; SELFDESTRUCT ; .OpCodes            [macro]
+    rule #zeroRet => ( SetItem(STOP) SetItem(CALLDATACOPY) SetItem(CODECOPY) SetItem(EXTCODECOPY) SetItem(POP)
+                       SetItem(MSTORE) SetItem(MSTORE8) SetItem(SSTORE) SetItem(JUMP) SetItem(JUMPI) SetItem(JUMPDEST)
+                       SetItem(LOG(0)) SetItem(RETURN) SetItem(SELFDESTRUCT) )
 ```
 
 ### Jump Destination
