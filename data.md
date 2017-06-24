@@ -10,6 +10,7 @@ Arguably hardware should evolve to directly support more elegant languages, rath
 
 ```k
 requires "domains.k"
+requires "krypto.k"
 
 module EVM-DATA
 //    imports KRYPTO
@@ -30,7 +31,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
   //  syntax String ::="#symbolicWord"    [function]
    // rule #symbolicWord=>?X:String
     syntax Word ::= Int
-                  | "#symbolicWord"    [function]
+//                  | "#symbolicWord"    [function]
                   | chop ( Word )      [function]
  // ---------------------------------------------
     rule #symbolicWord    => ?X:Int
@@ -328,7 +329,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
 
     syntax WordStack ::= #asByteStack ( Word )             [function]
-                       | #asByteStack ( Word , WordStack ) [function]
+                       | #asByteStack ( Word , WordStack ) [function, klabel(#asByteStack2)]
  // -----------------------------------------------------------------
     rule #asByteStack( W ) => #asByteStack( W , .WordStack )
     rule #asByteStack( 0 , WS ) => WS

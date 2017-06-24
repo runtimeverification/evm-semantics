@@ -1,4 +1,4 @@
-defn_files=k/ethereum.k k/data.k k/evm.k
+defn_files=k/ethereum.k k/data.k k/evm.k k/krypto.k
 ktest_file=tests/config.xml
 
 build: k/ethereum-kompiled/extras/timestamp

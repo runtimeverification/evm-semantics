@@ -505,7 +505,7 @@ module ETHEREUM
 // -   `#pushCallStack` stores the current state on the `callStack`.
 // -   `#popCallStack` replaces the current state with the top of the `callStack`.
 
- 
+
     syntax Bag
     syntax CallStack ::= ".CallStack" | Bag CallStack
  // -------------------------------------------------
