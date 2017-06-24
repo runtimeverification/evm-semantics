@@ -1,6 +1,5 @@
 defn_files=k/ethereum.k k/data.k k/evm.k k/krypto.k
 ktest_file=tests/config.xml
-
 build: k/ethereum-kompiled/extras/timestamp
 all: build split-tests
 defn: $(defn_files)
@@ -17,6 +16,7 @@ split-tests: tests/tests-develop/VMTests/vmArithmeticTest/make.timestamp \
 			 tests/tests-develop/VMTests/vmtests/make.timestamp
 
 ktest: defn split-tests 
+K:=$(shell krun --version)
 
 .PHONY: all defn build split-tests ktest
 
@@ -29,6 +29,8 @@ tests/tests-develop/%/make.timestamp: tests/ethereum-tests/%.json
 
 k/ethereum-kompiled/extras/timestamp: $(defn_files)
 	@echo "== kompile: $@"
+ifneq (,$(findstring RV-K, $(K)))
+	@echo "== Detected RV-K, kompile will use $(K)"
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory k \
 					--hook-namespaces KRYPTO --gen-ml-only -O2
@@ -40,6 +42,11 @@ k/ethereum-kompiled/extras/timestamp: $(defn_files)
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory k \
 					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O2
+else
+	@echo "== Detected UIUC-K, kompile will use $(K)"
+	kompile --debug --main-module ETHEREUM-SIMULATION \
+					--syntax-module ETHEREUM-SIMULATION $< --directory k
+endif
 
 k/%.k: %.md
 	@echo "==  tangle: $@"
