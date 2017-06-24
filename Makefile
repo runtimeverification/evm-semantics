@@ -18,6 +18,9 @@ split-tests: tests/tests-develop/VMTests/vmArithmeticTest/make.timestamp \
 ktest: defn split-tests 
 K:=$(shell krun --version)
 
+codeship: build split-tests
+	./Build passing
+
 .PHONY: all defn build split-tests ktest
 
 tests/tests-develop/%/make.timestamp: tests/ethereum-tests/%.json
