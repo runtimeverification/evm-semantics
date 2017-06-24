@@ -852,12 +852,12 @@ Call Operations
 
 The various `CALL*` (and other inter-contract control flow) operations will be desugared into these `InternalOp`s.
 
--   `#returnLoc__` is a placeholder for the calling program, specifying where to place the returned data in memory.
+-   `#return__` is a placeholder for the calling program, specifying where to place the returned data in memory.
 
 ```k
-    syntax InternalOp ::= "#returnLoc" Word Word
- // --------------------------------------------
-    rule <op> #returnLoc RETSTART RETWIDTH => . ... </op>
+    syntax InternalOp ::= "#return" Word Word
+ // -----------------------------------------
+    rule <op> #return RETSTART RETWIDTH => . ... </op>
          <output> OUT </output>
          <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #size(OUT)), OUT) ] </localMem>
 ```
@@ -932,7 +932,8 @@ The test-set isn't clear about whach should happen when `#call` is run, but it s
  // ------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM #addr(ACCTTO) CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #returnLoc RETSTART RETWIDTH
+           ~> #return RETSTART RETWIDTH
+           ~> #catch (.K)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -949,7 +950,8 @@ The test-set isn't clear about whach should happen when `#call` is run, but it s
  // ----------------------------
     rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #returnLoc RETSTART RETWIDTH
+           ~> #return RETSTART RETWIDTH
+           ~> #catch (.K)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -966,7 +968,8 @@ The test-set isn't clear about whach should happen when `#call` is run, but it s
  // --------------------------------
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
-           ~> #returnLoc RETSTART RETWIDTH
+           ~> #return RETSTART RETWIDTH
+           ~> #catch (.K)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -1016,6 +1019,7 @@ The test-set isn't clear about whach should happen when `#call` is run, but it s
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
            => #call ACCT #newAddr(ACCT, NONCE) #asMap(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
            ~> #codeDeposit
+           ~> #catch (.K)
           ...
          </op>
          <id> ACCT </id>
