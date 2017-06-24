@@ -91,7 +91,7 @@ module ETHEREUM
                       <activeAccounts> .Set </activeAccounts>
 
                       <accounts>
-                        <account multiplicity="*" type="Set">
+                        <account multiplicity="*">
                           <acctID>  .AcctID </acctID>
                           <balance> .Value  </balance>
                           <code>    .Code   </code>
@@ -220,11 +220,11 @@ module ETHEREUM
 
     syntax InternalOp ::= "#stackNeeded?" | "#stackDelta?"
  // ------------------------------------------------------
-    rule <op> SN:Int ~> #stackNeeded? => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) <Int SN
-    rule <op> SN:Int ~> #stackNeeded? => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) >=Int SN
+    rule <op> SN:Int ~> #stackNeeded? => #exception ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) <Int SN
+    rule <op> SN:Int ~> #stackNeeded? => .          ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) >=Int SN
 
-    rule <op> SD:Int ~> #stackDelta? => #exception ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int SD >Int 1024
-    rule <op> SD:Int ~> #stackDelta? => .          ... </op> <wordStack> WS </wordStack> requires #size(WS) +Int SD <=Int 1024
+    rule <op> SD:Int ~> #stackDelta? => #exception ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) +Int SD >Int 1024
+    rule <op> SD:Int ~> #stackDelta? => .          ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) +Int SD <=Int 1024
 
 
 // -   `#stackNeeded` calculates how many arguments the operator needs from the
@@ -991,7 +991,7 @@ module ETHEREUM
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
-           => #call ACCT #newAddr(ACCT, NONCE) #asMap(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
+           => #call ACCT #newAddr(ACCT, NONCE) #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
            ~> #catch (#throw (.K))
            ~> #codeDeposit
            ~> #catch (.K)
@@ -1024,7 +1024,7 @@ module ETHEREUM
          <output> OUT => .WordStack </output>
          <account>
            <acctID> ACCT </acctID>
-           <code>   _ => #asMap(#dasmOpCodes(OUT)) </code>
+           <code> _ => #asMapOpCodes(#dasmOpCodes(OUT)) </code>
            ...
          </account>
 
