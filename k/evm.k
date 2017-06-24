@@ -146,8 +146,8 @@ module ETHEREUM
 //     operations to be performed after it).
 
 
-    syntax Exception ::= "#exception"
- // ---------------------------------
+    syntax Exception ::= "#exception" | "#throw" KList
+ // --------------------------------------------------
     rule <op> EX:Exception ~> (OP:OpCode => .) ... </op>
 
 
@@ -161,7 +161,9 @@ module ETHEREUM
 
     syntax KItem ::= "#catch" KList | "#end"
  // ----------------------------------------
+    rule <op> #catch _ => . ... </op>
     rule <op> #exception ~> #catch KL => KL ... </op>
+    rule <op> #throw KL  ~> #catch _  => KL ... </op>
 
 
 // Exception Checks
@@ -876,8 +878,7 @@ module ETHEREUM
       requires VALUE =/=K 0
 
 
-// Call Operations
-// ---------------
+// ### Call Operations
 
 // The various `CALL*` (and other inter-contract control flow) operations will be
 // desugared into these `InternalOp`s.
@@ -944,6 +945,14 @@ module ETHEREUM
          <callStack> CS </callStack>
       requires #size(CS) >Int 1024
 
+
+// For each `CALL*` operation, we make a corresponding call to `#call` and a
+// state-change to setup the custom parts of the calling environment.
+
+// TODO: The `#catch` being used in each case needs to be filled in with the actual
+// code to run on exception.
+
+
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
@@ -998,6 +1007,70 @@ module ETHEREUM
          </account>
       requires #addr(ACCTTO) ==K ACCTTOACT
 
+
+// ### Account Creation/Deletion
+
+// Code is allowed to create a new contract by using the `CREATE` instruction.
+// First, `#call` is used to execute the "initialization code", which returns the
+// code of the newly created account. On successful initialization, the output is
+// the code to deposit in the account (done with `#codeDeposit`). This process can
+// fail in two places, either in the initialization code or in depositing the
+// output code (so `#catch_` is provided for each).
+
+// TODO: The `#catch_` being used need to be filled in with actual code to run.
+
+
+    syntax TernStackOp ::= "CREATE"
+ // -------------------------------
+    rule <op> CREATE VALUE MEMSTART MEMWIDTH
+           => #call ACCT #newAddr(ACCT, NONCE) #asMap(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
+           ~> #catch (#throw (.K))
+           ~> #codeDeposit
+           ~> #catch (.K)
+          ...
+         </op>
+         <id> ACCT </id>
+         <callStack> CS </callStack>
+         <localMem> LM </localMem>
+         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
+         <activeAccounts> ACCTS </activeAccounts>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL => BAL -Word VALUE </balance>
+           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+           ...
+         </account>
+      requires #size(CS) <Int 1024 andBool word2Bool(BAL >=Word VALUE)
+
+
+// -   `#codeDeposit` attempts to deposit code into the account being called (which
+//     requires gas to be spent).
+// -   `#newAddr` is a placeholder for the new address until we get the actual
+//     calculation setup.
+
+// TODO: Right now `#codeDeposit` isn't performing the correct gas check. We should
+// wait for the `#gas` calculations to be fixed before doing so.
+
+
+    syntax InternalOp  ::= "#codeDeposit"
+ // -------------------------------------
+    rule <op> #codeDeposit => . ... </op>
+         <id> ACCT </id>
+         <output> OUT => .WordStack </output>
+         <account>
+           <acctID> ACCT </acctID>
+           <code>   _ => #asMap(#dasmOpCodes(OUT)) </code>
+           ...
+         </account>
+
+    syntax Word ::= #newAddr ( Word , Word )
+ // ----------------------------------------
+
+
+// `SELFDESTRUCT` marks the current account for deletion and transfers funds out of
+// the current account.
+
+
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
     rule <op> SELFDESTRUCT ACCTTO => . ... </op>
@@ -1027,29 +1100,6 @@ module ETHEREUM
            ...
          </account>
       requires notBool #addr(ACCTTO) in ACCTS
-
-    syntax Word        ::= #newAddr ( Word , Word )
-    syntax InternalOp  ::= "#codeDeposit"
-    syntax TernStackOp ::= "CREATE"
- // -------------------------------
-    rule <op> CREATE VALUE MEMSTART MEMWIDTH
-           => #call ACCT #newAddr(ACCT, NONCE) #asMap(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
-           ~> #codeDeposit
-           ~> #catch (.K)
-          ...
-         </op>
-         <id> ACCT </id>
-         <callStack> CS </callStack>
-         <localMem> LM </localMem>
-         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
-         <activeAccounts> ACCTS </activeAccounts>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL => BAL -Word VALUE </balance>
-           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
-           ...
-         </account>
-      requires #size(CS) <Int 1024 andBool word2Bool(BAL >=Word VALUE)
 
 
 // Ethereum Gas Calculation
