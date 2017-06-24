@@ -267,14 +267,6 @@ TODO: `check` on `"callcreates"` ignores the `"gasLimit"` field.
  // --------------------------------------------------------------------------
     rule check "out" : ((OUT:String) => #parseByteStack(OUT))
     rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
-
-    rule check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID
- // ------------------------------------------------------------------------------
-    rule check "gas" : ((GLEFT:String) => #parseHexWord(GLEFT))
-    rule check "gas" : GLEFT => .
-
-    rule check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID
- // ------------------------------------------------------------------------------
 ```
 
 TODO: `check` on `"gas"` and `"logs"` is dropped.
