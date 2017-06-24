@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+echo $'\n\n\n=====================' >> /home/njr/co/github.com/kframework/2evm-semantics/ld.args
+echo "$@" >> /home/njr/co/github.com/kframework/2evm-semantics/ld.args
+env >> /home/njr/co/github.com/kframework/2evm-semantics/ld.args
+exec /usr/bin/ld -L /usr/lib/x86_64-linux-gnu/ "$@"
