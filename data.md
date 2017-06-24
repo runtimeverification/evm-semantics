@@ -8,12 +8,15 @@ EVM also has bytes (8 bit words) for some encodings of data, but only a very lig
 It's doubtful that having two different ways of reading the base data-units (or that limiting yourself to machine-representable units) is beneficial.
 Arguably hardware should evolve to directly support more elegant languages, rather than our languages evolving towards our hardware.
 
+```rvk
+requires "krypto.k"
+```
+
 ```k
 requires "domains.k"
-requires "krypto.k"
 
 module EVM-DATA
-//    imports KRYPTO
+    imports KRYPTO
 
     syntax KResult ::= Int 
 ```
@@ -24,18 +27,14 @@ Primitives
 Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's sort `Word`.
 
 -   `Int` is a subsort of `Word`.
--   `#symbolicWord` generates a fresh existentially-bound symbolic word.
 -   `chop` interperets an interger module $2^256$.
 
 ```k
-  //  syntax String ::="#symbolicWord"    [function]
-   // rule #symbolicWord=>?X:String
-    syntax Word ::= Int
-                  | chop ( Word )      [function]
- // ---------------------------------------------
-    rule chop( W:Int )    => chop ( W +Int (2 ^Int 256) ) requires W <Int 0
-    rule chop( W:Int )    => chop ( W %Int (2 ^Int 256) ) requires W >=Int (2 ^Int 256)
-    rule chop( W:Int )    => W requires W >=Int 0 andBool W <Int (2 ^Int 256)
+    syntax Word ::= Int | chop ( Word ) [function]
+ // ----------------------------------------------
+    rule chop( W:Int ) => chop ( W +Int (2 ^Int 256) ) requires W <Int 0
+    rule chop( W:Int ) => chop ( W %Int (2 ^Int 256) ) requires W >=Int (2 ^Int 256)
+    rule chop( W:Int ) => W requires W >=Int 0 andBool W <Int (2 ^Int 256)
 ```
 
 -   `bool2Word` interperets a `Bool` as a `Word`.
@@ -84,6 +83,18 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
  // --------------------------------------------------
     rule maxWord(W0:Int, W1:Int) => maxInt(W0, W1)
     rule minWord(W0:Int, W1:Int) => minInt(W0, W1)
+```
+
+### Symbolic Words
+
+-   `#symbolicWord` generates a fresh existentially-bound symbolic word.
+
+Note: Comment out this block (remove the `k` tag) if using RV K.
+
+```k
+    syntax Word ::= "#symbolicWord" [function]
+ // ------------------------------------------
+    rule #symbolicWord => ?X:Int
 ```
 
 Arithmetic
@@ -327,8 +338,8 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
 
     syntax WordStack ::= #asByteStack ( Word )             [function]
-                       | #asByteStack ( Word , WordStack ) [function, klabel(#asByteStack2)]
- // -----------------------------------------------------------------
+                       | #asByteStack ( Word , WordStack ) [function, klabel(#asByteStackAux)]
+ // ------------------------------------------------------------------------------------------
     rule #asByteStack( W ) => #asByteStack( W , .WordStack )
     rule #asByteStack( 0 , WS ) => WS
     rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0
