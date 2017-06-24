@@ -196,9 +196,9 @@ module ETHEREUM-SIMULATION
     syntax EthereumCommand ::= "start" | "flush"
  // --------------------------------------------
     rule <k> start => . ... </k> <op> . => #next </op>
-    rule <k> flush => . ... </k> <op> #end        => #finalize ... </op>
-    rule <k> flush => . ... </k> <op> #txFinished => #finalize ... </op>
-    rule <k> flush => . ... </k> <op> #exception  => .         ... </op>
+    rule <k> flush => . ... </k> <op> #end        => #finalize </op>
+    rule <k> flush => . ... </k> <op> #txFinished => #finalize </op>
+    rule <k> flush => . ... </k> <op> #exception  => .         </op>
 
 
 // ### Checking State
@@ -318,7 +318,7 @@ module ETHEREUM-SIMULATION
 // post-conditions are `check`ed last.
 
 
-    rule run TESTID : { KEY : (VAL:JSON) , REST } => load TESTID : { KEY : VAL } ~> run TESTID : { REST }
+    rule run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST }
       requires KEY in (SetItem("env") SetItem("pre"))
 
     rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY : VAL }
