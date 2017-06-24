@@ -235,7 +235,6 @@ module EVM-DATA
 // -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 
-    syntax String ::= Keccak256( String ) 
     syntax Word ::= keccak ( WordStack ) [function]
  // -----------------------------------------------
     rule keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS)))

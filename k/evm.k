@@ -1001,6 +1001,11 @@ module ETHEREUM
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
          <activeAccounts> ACCTS </activeAccounts>
+         <account>
+           <acctID> ACCT </acctID>
+           <acctMap> ... "nonce" |-> NONCE ... </acctMap>
+           ...
+         </account>
 
 
 // -   `#codeDeposit` attempts to deposit code into the account being called (which
