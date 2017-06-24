@@ -206,8 +206,14 @@ Here we load the environmental information.
 
     rule check DATA : [ .JSONList ] => .
     rule check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ]
+```
 
-    rule check TESTID : { "post" : POST  } => check "post" : POST  ~> failure TESTID
+There seem to be some typos/inconsistencies in the test set requiring us to handle the cases of `"expect"` and `"export"`.
+
+```k
+    rule check TESTID : { "expect" : POST } => check "post" : POST ~> failure TESTID
+    rule check TESTID : { "export" : POST } => check "post" : POST ~> failure TESTID
+    rule check TESTID : { "post"   : POST } => check "post" : POST ~> failure TESTID
     rule check "post" : { (ACCTID:String) : ACCT } => check ACCTID : ACCT
  // ---------------------------------------------------------------------
     rule check ACCTID : { "balance" : ((BAL:String) => #parseHexWord(BAL)) }

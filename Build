@@ -25,7 +25,7 @@ run_tests() {
         let test_count="$test_count + 1"
         local output_differs=false
         progress "running: $test_file..."
-        diff <(krun --debug --directory k/ "$test_file" | xmllint --format -) <(cat "$output_file" | xmllint --format -) \
+        diff <(krun --debug --directory k/ "$test_file") <(cat "$output_file") \
             || output_differs=true
         if $output_differs; then
             failure "$test_file"
