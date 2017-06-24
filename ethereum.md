@@ -58,7 +58,7 @@ Primitive Commands
          <op>         _ => .          </op>
          <output>     _ => .WordStack </output>
          <memoryUsed> _ => 0:Word     </memoryUsed>
-         <callStack>  _ => .CallStack </callStack>
+         <callDepth>  _ => 0:Word     </callDepth>
          <callLog>    _ => .CallLog   </callLog>
 
          <program>   _ => .Map       </program>
@@ -191,7 +191,6 @@ Here we load the environmental information.
  // --------------------------------------------
     rule <k> start => . ... </k> <op> . => #next </op>
     rule <k> flush => . ... </k> <op> #end        => #finalize </op>
-    rule <k> flush => . ... </k> <op> #txFinished => #finalize </op>
     rule <k> flush => . ... </k> <op> #exception  => .         </op>
 ```
 
