@@ -174,8 +174,6 @@ module ETHEREUM
            ~> #enoughGas?(OP)
           ...
          </op>
-         <gas> GAVAIL </gas>
-         <wordStack> WS </wordStack>
 
 
 // ### Invalid Operator
@@ -646,10 +644,10 @@ module ETHEREUM
 
     syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT"
  // -------------------------------------------------------------
-    rule <op> PC       => (PCOUNT -Int 1) ~> #push ... </op> <pc> PCOUNT </pc>
-    rule <op> GAS      => GAVAIL          ~> #push ... </op> <gas> GAVAIL </gas>
-    rule <op> GASPRICE => GPRICE          ~> #push ... </op> <gasPrice> GPRICE </gasPrice>
-    rule <op> GASLIMIT => GLIMIT          ~> #push ... </op> <gasLimit> GLIMIT </gasLimit>
+    rule <op> PC       => PCOUNT ~> #push ... </op> <pc> PCOUNT </pc>
+    rule <op> GAS      => GAVAIL ~> #push ... </op> <gas> GAVAIL </gas>
+    rule <op> GASPRICE => GPRICE ~> #push ... </op> <gasPrice> GPRICE </gasPrice>
+    rule <op> GASLIMIT => GLIMIT ~> #push ... </op> <gasLimit> GLIMIT </gasLimit>
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY"
  // -------------------------------------------------------------------------
