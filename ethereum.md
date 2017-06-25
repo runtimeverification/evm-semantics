@@ -157,6 +157,7 @@ Here we load the relevant information for accounts.
 Here we load the environmental information.
 
 ```k
+<<<<<<< HEAD
     rule load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) }
  // ----------------------------------------------------------------
     rule <k> load "env" : { "currentCoinbase"   : (CB:Word)     } => . ... </k> <coinbase>   _ => CB     </coinbase>
@@ -182,6 +183,24 @@ Here we load the environmental information.
  // ----------------------------------------------------------------
     rule <k> load "exec" : { "data" : (DATA:WordStack) } => . ... </k> <callData> _ => DATA </callData>
     rule <k> load "exec" : { "code" : (CODE:Map)       } => . ... </k> <program>  _ => CODE </program>
+=======
+    rule <k> load "env" : { "currentCoinbase"   : (CB:String)     } => . ... </k> <coinbase>   _ => #parseHexWord(CB)     </coinbase>
+    rule <k> load "env" : { "currentDifficulty" : (DIFF:String)   } => . ... </k> <difficulty> _ => #parseHexWord(DIFF)   </difficulty>
+    rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:String) } => . ... </k> <gasLimit>   _ => #parseHexWord(GLIMIT) </gasLimit>
+    rule <k> load "env" : { "currentNumber"     : (NUM:String)    } => . ... </k> <number>     _ => #parseHexWord(NUM)    </number>
+    rule <k> load "env" : { "currentTimestamp"  : (TS:String)     } => . ... </k> <timestamp>  _ => #parseHexWord(TS)     </timestamp>
+
+    rule <k> load "exec" : { "address"  : (ACCTTO:String)   } => . ... </k> <id>        _ => #parseHexWord(ACCTTO)                       </id>
+    rule <k> load "exec" : { "caller"   : (ACCTFROM:String) } => . ... </k> <caller>    _ => #parseHexWord(ACCTFROM)                     </caller>
+    rule <k> load "exec" : { "data"     : (DATA:String)     } => . ... </k> <callData>  _ => #parseByteStack(DATA)                       </callData>
+    rule <k> load "exec" : { "gas"      : (GAVAIL:String)   } => . ... </k> <gas>       _ => #parseHexWord(GAVAIL)                       </gas>
+    rule <k> load "exec" : { "gas"      : (GAVAIL:Word)   } => . ... </k> <gas>       _ => GAVAIL                                        </gas>
+    rule <k> load "exec" : { "gasPrice" : (GPRICE:String)   } => . ... </k> <gasPrice>  _ => #parseHexWord(GPRICE)                       </gasPrice>
+    rule <k> load "exec" : { "value"    : (VALUE:String)    } => . ... </k> <callValue> _ => #parseHexWord(VALUE)                        </callValue>
+    rule <k> load "exec" : { "origin"   : (ORIG:String)     } => . ... </k> <origin>    _ => #parseHexWord(ORIG)                         </origin>
+    rule <k> load "exec" : { "code"     : (CODE:String)     } => . ... </k> <program>   _ => #asMap(#dasmOpCodes(#parseByteStack(CODE))) </program>
+    rule <k> load "exec" : { "code"     : (CODE:OpCodes)     } => . ... </k> <program>   _ => #asMap(CODE) </program>
+>>>>>>> da10439d76d9f303afb6d4bc50866a1e596cb985
 ```
 
 ### Driving Execution
@@ -194,9 +213,15 @@ Here we load the environmental information.
     syntax EthereumCommand ::= "start" | "flush"
  // --------------------------------------------
     rule <k> start => . ... </k> <op> . => #next </op>
+<<<<<<< HEAD
     rule <k> flush => . ... </k> <op> #end        => #finalize </op>
     rule <k> flush => . ... </k> <op> #txFinished => #finalize </op>
     rule <k> flush => . ... </k> <op> #exception  => .         </op>
+=======
+    rule <k> flush => . ... </k> <op> #end        => #finalize ... </op>
+    rule <k> flush => . ... </k> <op> #txFinished => #finalize ... </op>
+    rule <k> flush => . ... </k> <op> #exception  => .         ... </op>
+>>>>>>> da10439d76d9f303afb6d4bc50866a1e596cb985
 ```
 
 ### Checking State
@@ -206,10 +231,14 @@ Here we load the environmental information.
 ```k
     syntax EthereumSpecCommand ::= "check"
  // --------------------------------------
-    rule check DATA : { .JSONList } => .
+    rule check DATA : { .JSONList }                   => .
     rule check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST } requires REST =/=K .JSONList
 
+<<<<<<< HEAD
     rule check DATA : [ .JSONList ] => .
+=======
+    rule check DATA : [ .JSONList ]       => .
+>>>>>>> da10439d76d9f303afb6d4bc50866a1e596cb985
     rule check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ]
 
     rule check TESTID : { "post" : POST  } => check "post" : POST  ~> failure TESTID
@@ -258,6 +287,10 @@ TODO: `check` on `"callcreates"` ignores the `"gasLimit"` field.
 ```k
     rule check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID
  // ----------------------------------------------------------------------------------------------------
+<<<<<<< HEAD
+=======
+
+>>>>>>> da10439d76d9f303afb6d4bc50866a1e596cb985
     rule check "callcreates" : { "value" : VAL , "destination" : ACCTTO , "gasLimit" : GLIMIT , "data" : DATA }
       => check "callcreates" : { #addr(#parseHexWord(ACCTTO)) | #parseHexWord(VAL) | #parseByteStack(DATA) }
     rule <k> check "callcreates" : C:Call => . ... </k> <callLog> CL </callLog> requires C in CL
@@ -274,6 +307,7 @@ TODO: `check` on `"callcreates"` ignores the `"gasLimit"` field.
 
     rule check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID
  // ------------------------------------------------------------------------------
+<<<<<<< HEAD
 ```
 
 TODO: `check` on `"gas"` and `"logs"` is dropped.
@@ -287,6 +321,8 @@ TODO: `check` on `"gas"` and `"logs"` is dropped.
     rule check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID
  // ------------------------------------------------------------------------------
     rule check "logs" : LOGS => .
+=======
+>>>>>>> da10439d76d9f303afb6d4bc50866a1e596cb985
 ```
 
 ### Running Tests
@@ -314,18 +350,37 @@ TODO: `check` on `"gas"` and `"logs"` is dropped.
 Here we make sure fields that are pre-conditions are `load`ed first, and post-conditions are `check`ed last.
 
 ```k
+<<<<<<< HEAD
     rule run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST }
       requires KEY in (SetItem("env") SetItem("pre"))
 
     rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY : VAL }
       requires KEY in (SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("post") SetItem("expect") SetItem("gas"))
+=======
+    rule run TESTID : { "logs"        : (LOGS:JSON)     , REST } => run TESTID : { REST } ~> check TESTID : { "logs"        : LOGS     }
+    rule run TESTID : { "callcreates" : (CCREATES:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { "callcreates" : CCREATES }
+    rule run TESTID : { "out"         : (OUT:JSON)      , REST } => run TESTID : { REST } ~> check TESTID : { "out"         : OUT      }
+    rule run TESTID : { "post"        : (POST:JSON)     , REST } => run TESTID : { REST } ~> check TESTID : { "post"        : POST     }
+    rule run TESTID : { "expect"      : (EXPECT:JSON)   , REST } => run TESTID : { REST } ~> check TESTID : { "post"        : EXPECT   }
+    rule run TESTID : { "gas"         : (GLEFT:String)  , REST } => run TESTID : { REST } ~> check TESTID : { "gas"         : GLEFT    }
+>>>>>>> da10439d76d9f303afb6d4bc50866a1e596cb985
 ```
 
 The particular key `"exec"` should be processed last, to ensure that the pre/post-conditions are in place.
 When it has finished loading it's state, it should `start ~> flush` to perform the execution.
 
 ```k
+<<<<<<< HEAD
     rule run TESTID : { "exec" : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , "exec" : EXEC , REST }
     rule run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush
+=======
+    rule run TESTID : { "env"  : (ENV:JSON)         , REST } => load "env" : ENV      ~> run TESTID : { REST }
+    rule run TESTID : { "pre"  : (PRE:JSON)         , REST } => load "pre" : PRE      ~> run TESTID : { REST }
+    rule run TESTID : { "exec" : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , "exec" : EXEC , REST }
+
+    rule run TESTID : { "exec" : { .JSONList } } => .
+    rule run TESTID : { "exec" : { (KEY:String) : VALUE , REST } } => load "exec" : { KEY : VALUE }       ~> run TESTID : { "exec" : { REST } }     requires KEY =/=K "code"
+    rule run TESTID : { "exec" : { "code"       : CODE  , REST } } => run  TESTID : { "exec" : { REST } } ~> load "exec" : { "code" : CODE } ~> start ~> flush
+>>>>>>> da10439d76d9f303afb6d4bc50866a1e596cb985
 endmodule
 ```

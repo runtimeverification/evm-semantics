@@ -1200,6 +1200,6 @@ module ETHEREUM
     rule <op> #gas(OP)           => Gextcode                      ... </op> requires OP in Wextcode
     rule <op> #gas(BALANCE)      => Gbalance                      ... </op>
     rule <op> #gas(BLOCKHASH)    => Gblockhash                    ... </op>*/
-	rule <op> #gas(OP:OpCode)           => Gbase                         ... </op>
+	rule <op> #gas(OP:OpCode)    => Gbase                         ... </op>
 endmodule
 
