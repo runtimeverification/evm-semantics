@@ -93,7 +93,7 @@ check_for_tangle
 run_make() {
     local make_opts=
     $have_tangle || make_opts="--assume-old ethereum.md --assume-old evm.md \
-                               --assume-old data.md --assume-old"
+                               --assume-old data.md --assume-old krypto.md"
     make -s $make_opts $@
 }
 
