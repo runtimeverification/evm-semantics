@@ -96,7 +96,7 @@ Primitive Commands
 ```k
     syntax EthereumSpecCommand ::= "mkAcct"
  // ---------------------------------------
-    rule <k> mkAcct (ACCTID:String) => . ... </k> <op> . => #newAccount #parseHexWord(ACCTID) </op>
+    rule <k> mkAcct (ACCTID:String) => . ... </k> <op> . => #newAccount #addr(#parseHexWord(ACCTID)) </op>
 
     syntax EthereumSpecCommand ::= "load"
  // -------------------------------------
