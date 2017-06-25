@@ -936,7 +936,7 @@ TODO: The rules marked as `INCORRECT` below are performing simpler gas calculati
  // ------------------------------------------
     // rule <op> #gas(OP)           => ???                           ... </op> requires OP in Wcall
     // rule <op> #gas(SELFDESTRUCT) => ???                           ... </op>
-    rule <op> #gas(EXP)          => Gexp                          ... </op>                        // INCORRECT
+   /* rule <op> #gas(EXP)          => Gexp                          ... </op>                        // INCORRECT
     rule <op> #gas(OP)           => Gverylow +Word Gcopy          ... </op> requires OP in Wcopy   // INCORRECT
     rule <op> #gas(EXTCODECOPY)  => Gextcode +Word Gcopy          ... </op>                        // INCORRECT
     rule <op> #gas(LOG(N))       => Glog +Word (N *Word Glogdata) ... </op>                        // INCORRECT
@@ -956,6 +956,7 @@ TODO: The rules marked as `INCORRECT` below are performing simpler gas calculati
     rule <op> #gas(OP)           => Ghigh                         ... </op> requires OP in Whigh
     rule <op> #gas(OP)           => Gextcode                      ... </op> requires OP in Wextcode
     rule <op> #gas(BALANCE)      => Gbalance                      ... </op>
-    rule <op> #gas(BLOCKHASH)    => Gblockhash                    ... </op>
+    rule <op> #gas(BLOCKHASH)    => Gblockhash                    ... </op>*/
+	rule <op> #gas(OP)           => Gbase                         ... </op>
 endmodule
 ```
