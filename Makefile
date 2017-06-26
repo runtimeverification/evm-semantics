@@ -45,6 +45,7 @@ ifneq (,$(findstring RV-K, $(K)))
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory k \
 					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O2
+	cd k/ethereum-kompiled && ocamlfind opt -o interpreter constants.cmx prelude.cmx plugin.cmx parser.cmx lexer.cmx run.cmx interpreter.ml -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -linkpkg -inline 20 -nodynlink -O3
 else
 	@echo "== Detected UIUC-K, kompile will use $(K)"
 	kompile --debug --main-module ETHEREUM-SIMULATION \
