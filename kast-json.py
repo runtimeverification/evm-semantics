@@ -39,6 +39,10 @@ def print_kast(data):
     sys.stdout.write('#token('),
     sys.stdout.write(json.dumps(json.dumps(data)))
     sys.stdout.write(',"String")')
+  elif isinstance(data, long) or isinstance(data, int):
+    sys.stdout.write('#token("'),
+    sys.stdout.write(str(data))
+    sys.stdout.write('","Int")')
   else:
     sys.stdout.write(type(data))
     raise AssertionError

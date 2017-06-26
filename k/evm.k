@@ -91,7 +91,7 @@ module ETHEREUM
                       <activeAccounts> .Set </activeAccounts>
 
                       <accounts>
-                        <account multiplicity="*">
+                        <account multiplicity="*" type="Set">
                           <acctID>  .AcctID </acctID>
                           <balance> .Value  </balance>
                           <code>    .Code   </code>
@@ -117,7 +117,7 @@ module ETHEREUM
 
                   </ethereum>
                   <k> $PGM:EthereumSimulation </k>
-                  <exit-code exit=""> 0 </exit-code>
+                  <exit-code exit=""> 1 </exit-code>
 
     syntax EthereumSimulation
     syntax AcctID ::= Word | ".AcctID"
@@ -149,7 +149,7 @@ module ETHEREUM
 //     operations to be performed after it).
 
 
-    syntax Exception ::= "#exception" | "#throw" KList
+    syntax Exception ::= "#exception" | "#throw" K
  // --------------------------------------------------
     rule <op> EX:Exception ~> (OP:OpCode => .) ... </op>
     rule <op> EX:Exception ~> (W:Word    => .) ... </op>
@@ -163,7 +163,7 @@ module ETHEREUM
 // remove them from the `op` cell.
 
 
-    syntax KItem ::= "#catch" KList | "#end"
+    syntax KItem ::= "#catch" K | "#end"
  // ----------------------------------------
     rule <op> #catch _ => . ... </op>
     rule <op> #exception ~> #catch KL => KL ... </op>
