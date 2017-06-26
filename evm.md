@@ -312,8 +312,8 @@ It checks, in order:
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#enoughGas?"
  // -----------------------------------
-    rule <op> G:Int ~> #enoughGas? => #exception ... </op> <gas> GAVAIL </gas> requires word2Bool(G >Word GAVAIL)
-    rule <op> G:Int ~> #enoughGas? => .          ... </op> <gas> GAVAIL </gas> requires word2Bool(G <=Word GAVAIL)
+    rule <op> G:Int ~> #enoughGas? => #exception ... </op> <gas> GAVAIL </gas> requires G >Int GAVAIL
+    rule <op> G:Int ~> #enoughGas? => .          ... </op> <gas> GAVAIL </gas> requires G <=Int GAVAIL
 ```
 
 OpCode Execution
