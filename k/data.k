@@ -111,6 +111,21 @@ module EVM-DATA
     rule I1 up/Int I2 => (I1 /Int I2) +Int 1 requires I1 %Int I2 =/=K 0
 
 
+// `logNInt` returns the log base N (floored) of an integer.
+
+
+    syntax Int ::= log2Int(Int) [function]
+ // ------------------------------------------
+    // log2Int is the index of the most significant bit of a number
+    // log2Int(0) is undefined
+    rule log2Int(1) => 0
+    rule log2Int(W:Int) => 1 +Int log2Int(W >>Int 1)    requires W >Int 1
+
+    syntax Int ::= log256Int(Int) [function]
+ // ------------------------------------------
+    rule log256Int(N:Int) => log2Int(N) /Int log2Int(256)
+
+
 // The corresponding `<op>Word` operations automatically perform the correct `Word`
 // modulus.
 

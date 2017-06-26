@@ -1053,37 +1053,45 @@ The gas calculation is designed to mirror the style of the yellowpaper.
 ```k
     syntax Word ::= #gas ( OpCode )
  // -------------------------------
+    rule <op> #gas(OP) => #if W1 =/=K 0 andBool notBool W0 in keys(STORAGE)
+                          #then Gsset #else Gsreset #fi ... </op>
+         <wordStack> W0 : W1 : WS </wordStack>
+         <storage> STORAGE </storage>                  requires OP ==K SSTORE
+
+    rule <op> #gas(OP) => Gexp ... </op>
+         <wordStack> W0 : 0 : WS </wordStack>               requires OP ==K EXP
+    rule <op> #gas(OP) => Gexp +Word (Gexpbyte *Word (1 +Word (log256Int(W1)))) ... </op>
+         <wordStack> W0 : W1 : WS </wordStack>         requires OP ==K EXP andBool W1 =/=K 0
+
+    rule <op> #gas(OP)         => Gsload     ... </op> requires OP ==K SLOAD
+
     rule <op> #gas(OP)         => Gzero      ... </op> requires OP in Wzero
     rule <op> #gas(OP)         => Gbase      ... </op> requires OP in Wbase
+    rule <op> #gas(DUP(_))    => Gverylow   ... </op>
+    rule <op> #gas(PUSH(_, _)) => Gverylow   ... </op>
+    rule <op> #gas(SWAP(_))    => Gverylow   ... </op>
     rule <op> #gas(OP)         => Gverylow   ... </op> requires OP in Wverylow
     rule <op> #gas(OP)         => Glow       ... </op> requires OP in Wlow
     rule <op> #gas(OP)         => Gmid       ... </op> requires OP in Wmid
     rule <op> #gas(OP)         => Ghigh      ... </op> requires OP in Whigh
     rule <op> #gas(OP)         => Gextcode   ... </op> requires OP in Wextcode
-    rule <op> #gas(BALANCE)    => Gbalance   ... </op>
-    rule <op> #gas(BLOCKHASH)  => Gblockhash ... </op>
-    rule <op> #gas(PUSH(_, _)) => Gverylow   ... </op>
-    rule <op> #gas(DUP(_))     => Gverylow   ... </op>
-    rule <op> #gas(SWAP(_))    => Gverylow   ... </op>
 
-    rule <op> #gas(SLOAD)  => Gsload  ... </op>
-    rule <op> #gas(SSTORE) => #if W1 =/=K 0 andBool notBool W0 in keys(STORAGE) #then Gsset #else Gsreset #fi ... </op>
-         <wordStack> W0 : W1 : WS </wordStack>
-		 <storage> STORAGE </storage>
+    rule <op> #gas(OP)         => Gbalance   ... </op> requires OP ==K BALANCE
+    rule <op> #gas(OP)         => Gblockhash ... </op> requires OP ==K BLOCKHASH
+
 ```
 
 TODO: Gas calculation for the following operators is not implemented.
 
 ```k
     rule <op> #gas(OP)           => Gzero   ... </op> requires OP in Wcall
-    rule <op> #gas(SELFDESTRUCT) => Gzero   ... </op>
-    rule <op> #gas(EXP)          => Gzero   ... </op>
+    rule <op> #gas(OP)           => Gzero   ... </op> requires OP ==K SELFDESTRUCT
     rule <op> #gas(OP)           => Gzero   ... </op> requires OP in Wcopy
-    rule <op> #gas(EXTCODECOPY)  => Gzero   ... </op>
+    rule <op> #gas(OP)           => Gzero   ... </op> requires OP ==K EXTCODECOPY
     rule <op> #gas(LOG(N))       => Gzero   ... </op>
-    rule <op> #gas(SHA3)         => Gzero   ... </op>
-    rule <op> #gas(JUMPDEST)     => Gzero   ... </op>
-    rule <op> #gas(CREATE)       => Gcreate ... </op>
+    rule <op> #gas(OP)           => Gzero   ... </op> requires OP ==K SHA3
+    rule <op> #gas(OP)           => Gzero   ... </op> requires OP ==K JUMPDEST
+    rule <op> #gas(OP)           => Gcreate ... </op> requires OP ==K CREATE
 ```
 
 Here the lists of gas prices and gas opcodes are provided.
@@ -1160,7 +1168,8 @@ Here the lists of gas prices and gas opcodes are provided.
                        SetItem(CALLDATALOAD) SetItem(MLOAD) SetItem(MSTORE) SetItem(MSTORE8)
                      )
     rule Wlow     => (SetItem(MUL) SetItem(DIV) SetItem(SDIV) SetItem(MOD) SetItem(SMOD) SetItem(SIGNEXTEND))
-    rule Wmid     => (SetItem(ADDMOD) SetItem(MULMOD) SetItem(JUMP) SetItem(JUMPI))
+    rule Wmid     => (SetItem(ADDMOD) SetItem(MULMOD) SetItem(JUMP))
+    rule Whigh    => (SetItem(JUMPI))
     rule Wextcode => (SetItem(EXTCODESIZE))
     rule Wcopy    => (SetItem(CALLDATACOPY) SetItem(CODECOPY))
     rule Wcall    => (SetItem(CALL) SetItem(CALLCODE) SetItem(DELEGATECALL))
