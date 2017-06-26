@@ -58,9 +58,9 @@ module ETHEREUM
 
                       // A_* (execution substate)
                       <substate>
-                        <selfDestruct> .Set         </selfDestruct>     // A_s
-                        <log>          .SubstateLog </log>              // A_l
-                        <refund>       0:Word       </refund>           // A_r
+                        <selfDestruct> .Set   </selfDestruct>           // A_s
+                        <log>          .Set   </log>                    // A_l
+                        <refund>       0:Word </refund>                 // A_r
                       </substate>
 
                       // Immutable during a single transaction
@@ -386,8 +386,8 @@ During execution of a transaction some things are recorded in the substate log (
 This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
 
 ```k
-    syntax SubstateLog      ::= ".SubstateLog" | SubstateLog "." SubstateLogEntry
     syntax SubstateLogEntry ::= "{" Word "|" WordStack "|" WordStack "}"
+ // --------------------------------------------------------------------
 ```
 
 After executing a transaction, it's necessary to have the effect of the substate log recorded.
@@ -730,7 +730,7 @@ These operators query about the current `CALL*` state.
          <wordStack> W0 : W1 : WS => #drop(N, WS) </wordStack>
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, W0, W1) </memoryUsed>
-         <log> CURRLOG => CURRLOG . { ACCT | #take(N, WS) | #range(LM, W0, W1) } </log>
+         <log> ... (.Set => SetItem({ ACCT | #take(N, WS) | #range(LM, W0, W1) })) </log>
       requires word2Bool(#sizeWordStack(WS) >=Word N)
 ```
 

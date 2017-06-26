@@ -63,9 +63,9 @@ module ETHEREUM
 
                       // A_* (execution substate)
                       <substate>
-                        <selfDestruct> .Set         </selfDestruct>     // A_s
-                        <log>          .SubstateLog </log>              // A_l
-                        <refund>       0:Word       </refund>           // A_r
+                        <selfDestruct> .Set   </selfDestruct>           // A_s
+                        <log>          .Set   </log>                    // A_l
+                        <refund>       0:Word </refund>                 // A_r
                       </substate>
 
                       // Immutable during a single transaction
@@ -408,8 +408,8 @@ module ETHEREUM
 // `wordStack` and `localMem`).
 
 
-    syntax SubstateLog      ::= ".SubstateLog" | SubstateLog "." SubstateLogEntry
     syntax SubstateLogEntry ::= "{" Word "|" WordStack "|" WordStack "}"
+ // --------------------------------------------------------------------
 
 
 // After executing a transaction, it's necessary to have the effect of the substate
@@ -760,7 +760,7 @@ module ETHEREUM
          <wordStack> W0 : W1 : WS => #drop(N, WS) </wordStack>
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, W0, W1) </memoryUsed>
-         <log> CURRLOG => CURRLOG . { ACCT | #take(N, WS) | #range(LM, W0, W1) } </log>
+         <log> ... (.Set => SetItem({ ACCT | #take(N, WS) | #range(LM, W0, W1) })) </log>
       requires word2Bool(#sizeWordStack(WS) >=Word N)
 
 
