@@ -86,7 +86,7 @@ module ETHEREUM
                       <activeAccounts> .Set </activeAccounts>
 
                       <accounts>
-                        <account multiplicity="*">
+                        <account multiplicity="*" type="Set">
                           <acctID>  .AcctID </acctID>
                           <balance> .Value  </balance>
                           <code>    .Code   </code>
@@ -142,7 +142,7 @@ Execution follows a simple cycle where first the state is checked for exceptions
 -   `#exception` is used to indicate exceptional states (it consumes any operations to be performed after it).
 
 ```k
-    syntax Exception ::= "#exception" | "#throw" KList
+    syntax Exception ::= "#exception" | "#throw" K
  // --------------------------------------------------
     rule <op> EX:Exception ~> (OP:OpCode => .) ... </op>
     rule <op> EX:Exception ~> (W:Word    => .) ... </op>
@@ -154,7 +154,7 @@ Execution follows a simple cycle where first the state is checked for exceptions
 Note: `#catch_` and `#end` are `KItem`, not `OpCode`, so exceptions will not remove them from the `op` cell.
 
 ```k
-    syntax KItem ::= "#catch" KList | "#end"
+    syntax KItem ::= "#catch" K | "#end"
  // ----------------------------------------
     rule <op> #catch _ => . ... </op>
     rule <op> #exception ~> #catch KL => KL ... </op>

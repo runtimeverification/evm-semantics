@@ -1,0 +1,11 @@
+#!/bin/sh
+interpreter="$(dirname "$0")/k/ethereum-kompiled/interpreter"
+kast="$(mktemp)"
+output="$(mktemp)"
+kast_output="$(mktemp)"
+"$(dirname "$0")/kast-json.py" "$1" > "$kast"
+$interpreter "$(dirname "$0")/k/ethereum-kompiled/realdef.cma" -c PGM "$kast" textfile --output-file "$output"
+k-bin-to-text "$output" "$kast_output"
+cat "$kast_output"
+printf "\n"
+rm -rf "$kast" "$output" "$kast_output"
