@@ -40,16 +40,16 @@ For verification purposes, it's much easier to specify a program in terms of its
 To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a "pretti-fication" to the nicer input form.
 
 ```k
-    syntax JSON ::= Word | WordStack | OpCodes | Map | Call
- // -------------------------------------------------------
+    syntax JSON ::= Word | WordStack | OpCodes | Map | Call | SubstateLogEntry
+ // --------------------------------------------------------------------------
     rule DC:DistCommand "account" : { ACCTID: { KEY : VALUE , REST } } => DC "account" : { ACCTID : { KEY : VALUE } } ~> DC "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
 
-    rule DC:DistCommand "account" : { ((ACCTID:String) => #addr(#parseHexWord(ACCTID))) : ACCT }
-    rule DC:DistCommand "account" : { (ACCT:Word) : { "balance" : ((VAL:String)   => #parseHexWord(VAL)) } }
-    rule DC:DistCommand "account" : { (ACCT:Word) : { "nonce"   : ((VAL:String)   => #parseHexWord(VAL)) } }
-    rule DC:DistCommand "account" : { (ACCT:Word) : { "code"    : ((CODE:String)  => #dasmOpCodes(#parseByteStack(CODE))) } }
-    rule DC:DistCommand "account" : { (ACCT:Word) : { "code"    : ((CODE:OpCodes) => #asMapOpCodes(CODE)) } }
-    rule DC:DistCommand "account" : { (ACCT:Word) : { "storage" : ((STORAGE:JSON) => #parseMap(STORAGE)) } }
+    rule DC:DistCommand "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
+    rule DC:DistCommand "account" : { (ACCT:Word) : { "balance" : ((VAL:String)         => #parseHexWord(VAL)) } }
+    rule DC:DistCommand "account" : { (ACCT:Word) : { "nonce"   : ((VAL:String)         => #parseHexWord(VAL)) } }
+    rule DC:DistCommand "account" : { (ACCT:Word) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
+    rule DC:DistCommand "account" : { (ACCT:Word) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
+    rule DC:DistCommand "account" : { (ACCT:Word) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
 ```
 
 ### Driving Execution
@@ -133,9 +133,9 @@ State Manipulation
          <pc>        _ => 0:Word     </pc>
          <gas>       _ => 0:Word     </gas>
 
-         <selfDestruct> _ => .Set         </selfDestruct>
-         <log>          _ => .SubstateLog </log>
-         <refund>       _ => 0:Word       </refund>
+         <selfDestruct> _ => .Set   </selfDestruct>
+         <log>          _ => .Set   </log>
+         <refund>       _ => 0:Word </refund>
 
          <gasPrice>   _ => 0:Word </gasPrice>
          <origin>     _ => 0:Word </origin>
@@ -165,7 +165,7 @@ State Manipulation
 ```k
     syntax DistCommand ::= "load"
  // -----------------------------
-    rule load "pre" : { (ACCTID:String) : ACCT } => mkAcct #addr(#parseHexWord(ACCTID)) ~> load "account" : { ACCTID : ACCT }
+    rule load "pre" : { (ACCTID:String) : ACCT } => mkAcct #parseAddr(ACCTID) ~> load "account" : { ACCTID : ACCT }
 
     rule <k> load "account" : { ACCT : { "balance" : (BAL:Word) } } => . ... </k>
          <account>
@@ -276,22 +276,22 @@ There seem to be some typos/inconsistencies in the test set requiring us to hand
          </account>
 ```
 
-TODO: `check` on `"callcreates"` ignores the `"gasLimit"` field.
+Here we check the other post-conditions associated with an EVM test.
 
 ```k
-    rule check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID
- // ----------------------------------------------------------------------------------------------------
-    rule check "callcreates" : { "value" : VAL , "destination" : ACCTTO , "gasLimit" : GLIMIT , "data" : DATA }
-      => check "callcreates" : { #addr(#parseHexWord(ACCTTO)) | #parseHexWord(VAL) | #parseByteStack(DATA) }
-    rule <k> check "callcreates" : C:Call => . ... </k> <callLog> CL </callLog> requires C in CL
-
     rule check TESTID : { "out" : OUT } => check "out" : OUT ~> failure TESTID
  // --------------------------------------------------------------------------
     rule check "out" : ((OUT:String) => #parseByteStack(OUT))
     rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
+
+    rule check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID
+ // ------------------------------------------------------------------------------
+    rule check "logs" : { "topics" : (TOPICS:JSON) , "bloom" : (BLOOM:String) , "data" : (DATA:String) , "address" : (ACCT:String) , .JSONList }
+      => check "logs" : { #parseAddr(ACCT) | #parseWordStack(TOPICS) | #parseByteStack(DATA) }
+    rule <k> check "logs" : SLE:SubstateLogEntry => . ... </k> <log> SL </log> requires SLE in SL
 ```
 
-TODO: `check` on `"gas"` and `"logs"` is dropped.
+TODO: `check` on `"gas"` is dropped, `check` on `"callcreates"` ignores the `"gasLimit"` field.
 
 ```k
     rule check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID
@@ -299,8 +299,10 @@ TODO: `check` on `"gas"` and `"logs"` is dropped.
     rule check "gas" : ((GLEFT:String) => #parseHexWord(GLEFT))
     rule check "gas" : GLEFT => .
 
-    rule check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID
- // ------------------------------------------------------------------------------
-    rule check "logs" : LOGS => .
+    rule check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID
+ // ----------------------------------------------------------------------------------------------------
+    rule check "callcreates" : { "value" : VAL , "destination" : ACCTTO , "gasLimit" : GLIMIT , "data" : DATA }
+      => check "callcreates" : { #parseAddr(ACCTTO) | #parseHexWord(VAL) | #parseByteStack(DATA) }
+    rule <k> check "callcreates" : C:Call => . ... </k> <callLog> CL </callLog> requires C in CL
 endmodule
 ```
