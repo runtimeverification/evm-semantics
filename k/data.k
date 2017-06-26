@@ -422,8 +422,9 @@ module EVM-DATA
 
 
     syntax JSONList ::= List{JSON,","}
+    syntax JSONKey  ::= String | Word
     syntax JSON     ::= String
-                      | String ":" JSON
+                      | JSONKey ":" JSON
                       | "{" JSONList "}"
                       | "[" JSONList "]"
  // ------------------------------------
