@@ -112,7 +112,7 @@ module ETHEREUM
 
                   </ethereum>
                   <k> $PGM:EthereumSimulation </k>
-                  <exit-code exit=""> 0 </exit-code>
+                  <exit-code exit=""> 1 </exit-code>
 
     syntax EthereumSimulation
     syntax AcctID ::= Word | ".AcctID"
