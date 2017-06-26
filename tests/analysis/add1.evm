@@ -1,0 +1,21 @@
+run {
+"add" : {
+"exec" : {
+"origin": "0xcd1722f2947def4cf144679da39c4c32bdc35681", 
+            "code": PUSH(0,0); JUMPDEST; PUSH(0,0);PUSH(1, 0); MLOAD; PUSH(1,1); ADD; PUSH(1,0); MSTORE; MLOAD;PUSH(4, 3); GT; JUMP;  .OpCodes,
+           // "balance" : 1000000000000000000,
+            "caller": "0xcd1722f2947def4cf144679da39c4c32bdc35681", 
+            "gas": "0x0186a0",
+            "value": "0x0de0b6b3a7640000", 
+            "address": "0x0f572e5295c57f15886f9b263e2f6d2d6c7b5ec6", 
+            "data": "0x", 
+            "gasPrice": "0x5af3107a4000"
+        }, 
+
+
+        "out": "0x"
+    }
+}
+
+.EthereumSimulation
+
