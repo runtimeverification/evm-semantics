@@ -274,8 +274,10 @@ It checks, in order:
 ```k
     syntax InternalOp ::= "#enoughGas?"
  // -----------------------------------
-    rule <op> G:Int ~> #enoughGas? => #exception ... </op> <gas> GAVAIL </gas> requires word2Bool(G >Word GAVAIL)
-    rule <op> G:Int ~> #enoughGas? => .          ... </op> <gas> GAVAIL </gas> requires word2Bool(G <=Word GAVAIL)
+      //  rule <op> G:Int ~> #enoughGas? => #exception ... </op> <gas> GAVAIL </gas> requires word2Bool(G >Word GAVAIL)
+     //  rule <op> G:Int ~> #enoughGas? => .          ... </op> <gas> GAVAIL </gas> requires word2Bool(G <=Word GAVAIL)
+      rule <op> G:Int ~> #enoughGas? => #exception ... </op> <gas> GAVAIL:Int </gas> requires G >Int GAVAIL
+      rule <op> G:Int ~> #enoughGas? => .          ... </op> <gas> GAVAIL:Int </gas> requires G <=Int GAVAIL
 ```
 
 OpCode Execution
@@ -613,8 +615,10 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
     syntax BinStackOp ::= "LT" | "GT" | "EQ"
  // ----------------------------------------
     rule <op> LT W0 W1 => W0 <Word W1  ~> #push ... </op>
-    rule <op> GT W0 W1 => W0 >Word W1  ~> #push ... </op>
+   // rule <op> GT W0 W1 => W0 >Word W1  ~> #push ... </op>
     rule <op> EQ W0 W1 => W0 ==Word W1 ~> #push ... </op>
+	rule <op> GT W0 W1 => 1  ~> #push ... </op> when W0>Int W1
+    rule <op> GT W0 W1 => 0   ~> #push ... </op> when W0<=Int W1
 
     syntax BinStackOp ::= "SLT" | "SGT"
  // -----------------------------------

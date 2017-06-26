@@ -568,7 +568,7 @@ module ETHEREUM
 
     syntax PushOp ::= PUSH ( Word , Word )
  // --------------------------------------
-    rule <op> PUSH(_, W) => W ~> #push ... </op>
+    rule <op> PUSH(_, W:Int) => W ~> #push ... </op>
 
 
 // ### Local Memory
@@ -641,9 +641,11 @@ module ETHEREUM
     syntax BinStackOp ::= "LT" | "GT" | "EQ"
  // ----------------------------------------
     rule <op> LT W0 W1 => W0 <Word W1  ~> #push ... </op>
-    rule <op> GT W0 W1 => W0 >Word W1  ~> #push ... </op>
+   // rule <op> GT W0 W1 => W0 >Word W1  ~> #push ... </op>
     rule <op> EQ W0 W1 => W0 ==Word W1 ~> #push ... </op>
-
+	rule <op> GT W0 W1 => 1  ~> #push ... </op> when W0>Int W1
+    rule <op> GT W0 W1 => 0   ~> #push ... </op> when W0<=Int W1
+	
     syntax BinStackOp ::= "SLT" | "SGT"
  // -----------------------------------
     rule <op> SLT W0 W1 => W0 s<Word W1 ~> #push ... </op>
