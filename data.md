@@ -8,7 +8,7 @@ EVM also has bytes (8 bit words) for some encodings of data, but only a very lig
 It's doubtful that having two different ways of reading the base data-units (or that limiting yourself to machine-representable units) is beneficial.
 Arguably hardware should evolve to directly support more elegant languages, rather than our languages evolving towards our hardware.
 
-```rvk
+```k
 requires "krypto.k"
 ```
 
@@ -91,7 +91,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 
 Note: Comment out this block (remove the `k` tag) if using RV K.
 
-```k
+```uiuck
     syntax Word ::= "#symbolicWord" [function]
  // ------------------------------------------
     rule #symbolicWord => ?X:Int
