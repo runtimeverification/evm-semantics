@@ -426,7 +426,9 @@ These parsers can interperet hex-encoded strings as `Word`s, `WordStack`s, and `
 -   `#parseHexWord` interperets a string as a single hex-encoded `Word`.
 -   `#parseHexBytes` interperets a string as a stack of bytes.
 -   `#parseByteStack` interperets a string as a stack of bytes, but makes sure to remove the leading "0x".
+-   `#parseWordStack` interperets a JSON list as a stack of `Word`.
 -   `#parseMap` interperets a JSON key/value object as a map from `Word` to `Word`.
+-   `#parseAddr` interperets a string as a 160 bit hex-endcoded address.
 
 ```k
     syntax Word ::= #parseHexWord ( String ) [function]
@@ -442,11 +444,20 @@ These parsers can interperet hex-encoded strings as `Word`s, `WordStack`s, and `
     rule #parseHexBytes("") => .WordStack
     rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytes(substrString(S, 2, lengthString(S))) requires lengthString(S) >=Int 2
 
+    syntax WordStack ::= #parseWordStack ( JSON ) [function]
+ // --------------------------------------------------------
+    rule #parseWordStack( [ .JSONList ] )            => .WordStack
+    rule #parseWordStack( [ (WORD:String) , REST ] ) => #parseHexWord(WORD) : #parseWordStack( [ REST ] )
+
     syntax Map ::= #parseMap ( JSON ) [function]
  // --------------------------------------------
     rule #parseMap( { .JSONList                   } ) => .Map
     rule #parseMap( { _   : (VALUE:String) , REST } ) => #parseMap({ REST })                                                requires #parseHexWord(VALUE) ==K 0
     rule #parseMap( { KEY : (VALUE:String) , REST } ) => #parseMap({ REST }) [ #parseHexWord(KEY) <- #parseHexWord(VALUE) ] requires #parseHexWord(VALUE) =/=K 0
+
+    syntax Word ::= #parseAddr ( String ) [function]
+ // ------------------------------------------------
+    rule #parseAddr(S) => #addr(#parseHexWord(S))
 ```
 
 Unparsing
