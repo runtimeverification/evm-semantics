@@ -144,7 +144,7 @@ Execution follows a simple cycle where first the state is checked for exceptions
 
 ```k
     syntax Exception ::= "#exception" | "#throw" K
- // --------------------------------------------------
+ // ----------------------------------------------
     rule <op> EX:Exception ~> (OP:OpCode => .) ... </op>
     rule <op> EX:Exception ~> (W:Word    => .) ... </op>
 ```
@@ -156,10 +156,10 @@ Note: `#catch_` and `#end` are `KItem`, not `OpCode`, so exceptions will not rem
 
 ```k
     syntax KItem ::= "#catch" K | "#end"
- // ----------------------------------------
+ // ------------------------------------
     rule <op> #catch _ => . ... </op>
-    rule <op> #exception ~> #catch KL => KL ... </op>
-    rule <op> #throw KL  ~> #catch _  => KL ... </op>
+    rule <op> #exception ~> #catch OPS => OPS ... </op>
+    rule <op> #throw OPS ~> #catch _   => OPS ... </op>
 ```
 
 Exception Checks
@@ -938,7 +938,7 @@ TODO: The `#catch` being used in each case needs to be filled in with the actual
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM ACCTTO CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
-           ~> #catch (.K)
+           ~> #catch (.OpCodes)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -955,7 +955,7 @@ TODO: The `#catch` being used in each case needs to be filled in with the actual
     rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
-           ~> #catch (.K)
+           ~> #catch (.OpCodes)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -972,7 +972,7 @@ TODO: The `#catch` being used in each case needs to be filled in with the actual
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
-           ~> #catch (.K)
+           ~> #catch (.OpCodes)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -999,9 +999,9 @@ TODO: The `#catch_` being used need to be filled in with actual code to run.
  // -------------------------------
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
            => #call ACCT #newAddr(ACCT, NONCE) #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
-           ~> #catch (#throw (.K))
+           ~> #catch (#throw (.OpCodes))
            ~> #codeDeposit
-           ~> #catch (.K)
+           ~> #catch (.OpCodes)
           ...
          </op>
          <id> ACCT </id>
