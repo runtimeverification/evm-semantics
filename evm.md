@@ -287,15 +287,18 @@ It checks, in order:
 
 ### Jump Destination
 
--   `#badJumpDest?` checks that if it's a `JUMP*` operation that it's jumping to a valid destination (Section 9.4.3 in yellowpaper).
+-   `#badJumpDest?` checks that if it's a `JUMP*` operation that it's jumping to a valid destination (Section 9.4.3 in yellowpaper). According to the reference implementation, a conditional jump that does not actually jump is not an exception.
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#badJumpDest?" "(" OpCode ")"
  // ----------------------------------------------------
-    rule <op> #badJumpDest?(OP) => .          ... </op> requires notBool isJumpOp(OP)
-    rule <op> #badJumpDest?(OP) => .          ... </op> <wordStack> DEST : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
-    rule <op> #badJumpDest?(OP) => #exception ... </op> <wordStack> DEST : WS </wordStack> <program> ... DEST |-> OP'      ... </program> requires isJumpOp(OP) andBool OP' =/=K JUMPDEST
-    rule <op> #badJumpDest?(OP) => #exception ... </op> <wordStack> DEST : WS </wordStack> <program> PGM </program>                       requires isJumpOp(OP) andBool notBool DEST in keys(PGM)
+    rule <op> #badJumpDest?(OP) => .             ... </op> requires notBool isJumpOp(OP)
+    rule <op> #badJumpDest?(OP) => .             ... </op> <wordStack> DEST        : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
+    rule <op> #badJumpDest?(JUMP)  => #exception ... </op> <wordStack> DEST        : WS </wordStack> <program> ... DEST |-> OP'      ... </program> requires OP' =/=K JUMPDEST
+    rule <op> #badJumpDest?(JUMP)  => #exception ... </op> <wordStack> DEST        : WS </wordStack> <program> PGM </program>                       requires notBool DEST in keys(PGM)
+    rule <op> #badJumpDest?(JUMPI) => #exception ... </op> <wordStack> DEST : COND : WS </wordStack> <program> ... DEST |-> OP'      ... </program> requires OP' =/=K JUMPDEST andBool COND =/=Int 0
+    rule <op> #badJumpDest?(JUMPI) => #exception ... </op> <wordStack> DEST : COND : WS </wordStack> <program> PGM </program>                       requires notBool DEST in keys(PGM) andBool COND =/=Int 0
+    rule <op> #badJumpDest?(JUMPI) => .          ... </op> <wordStack> DEST :    0 : WS </wordStack>
 
     syntax Bool ::= isJumpOp ( OpCode ) [function]
  // ----------------------------------------------
@@ -715,7 +718,7 @@ The `JUMP*` family of operations affect the current program counter.
 ```{.k .uiuck .rvk}
     syntax NullStackOp ::= "STOP"
  // -----------------------------
-    rule <op> STOP => #end ... </op>
+    rule <op> STOP ~> K => #end </op>
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
