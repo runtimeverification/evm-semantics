@@ -36,7 +36,11 @@ codeship: build split-tests
 tests/tests-develop/%/make.timestamp: tests/ethereum-tests/%.json
 	@echo "==   split: $@"
 	mkdir -p $(dir $@)
-	tests/split-test.py $< $(dir $@) tests/templates/output.txt
+ifneq (,$(findstring RV-K, $(K)))
+	tests/split-test.py $< $(dir $@) tests/templates/output-rvk.txt
+else
+	tests/split-test.py $< $(dir $@) tests/templates/output-uiuck.txt
+endif
 	cp tests/templates/config.xml $(dir $@)
 	touch $@
 
