@@ -42,6 +42,7 @@ module ETHEREUM
                       <output>     .WordStack  </output>                // H_RETURN
                       <memoryUsed> 0:Word      </memoryUsed>            // \mu_i
                       <callDepth>  0:Word      </callDepth>
+                      <callStack>  .List       </callStack>
                       <callLog>    .CallLog    </callLog>
 
                       <txExecState>
@@ -159,7 +160,7 @@ Execution follows a simple cycle where first the state is checked for exceptions
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#next"
  // -----------------------------
-    rule <op> #next => #exceptional?(OP) ~> #execOp(OP) ... </op>
+    rule <op> #next => #try #execOp(OP) ... </op>
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
 
@@ -167,27 +168,58 @@ Execution follows a simple cycle where first the state is checked for exceptions
       requires notBool PCOUNT in keys(PGM)
 ```
 
+-   `#pushCallStack` saves a copy of all the relevant state on the `callStack`
+-   `#popCallStack` restores the top element of all the relevant state on the `callStack`
+
+```{.k .uiuck .rvk}
+    syntax KItem ::= "{" Word "|" Map "|" Word "|" WordStack "|" Word "|" WordStack "|" Map "|" Word "|" Word "}"
+ // -------------------------------------------------------------------------------------------------------------
+
+    syntax InternalOp ::= "#pushCallStack" | "#popCallStack" | "#dropCallStack"
+ // ---------------------------------------------------------------------------
+    rule <op> #pushCallStack => . ... </op>
+         <callStack> (.List => ListItem({ ACCT | PGM | CR | CD | CV | WS | LM | PCOUNT | GAVAIL })) ... </callStack>
+         <id>        ACCT   </id>
+         <program>   PGM    </program>
+         <caller>    CR     </caller>
+         <callData>  CD     </callData>
+         <callValue> CV     </callValue>
+         <wordStack> WS     </wordStack>
+         <localMem>  LM     </localMem>
+         <pc>        PCOUNT </pc>
+         <gas>       GAVAIL </gas>
+
+    rule <op> #popCallStack => . ... </op>
+         <callStack> (ListItem({ ACCT | PGM | CR | CD | CV | WS | LM | PCOUNT | GAVAIL }) => .List) ... </callStack>
+         <id>        _ => ACCT   </id>
+         <program>   _ => PGM    </program>
+         <caller>    _ => CR     </caller>
+         <callData>  _ => CD     </callData>
+         <callValue> _ => CV     </callValue>
+         <wordStack> _ => WS     </wordStack>
+         <localMem>  _ => LM     </localMem>
+         <pc>        _ => PCOUNT </pc>
+         <gas>       _ => GAVAIL </gas>
+
+    rule <op> #dropCallStack => . ... </op>
+         <callStack> (ListItem(_) => .List) ... </callStack>
+```
+
+-   `#catch` is used to catch exceptional states so that the state can be rolled back.
+-   `#try` automatically puts the correct `#pushCallStack` and `#catch` in place.
+-   `#end` is used to indicate the (non-exceptional) end of execution.
 -   `#exception` is used to indicate exceptional states (it consumes any operations to be performed after it).
 
 ```{.k .uiuck .rvk}
-    syntax KItem ::= Exception
-    syntax Exception ::= "#exception" | "#throw" K
- // ----------------------------------------------
-    rule <op> EX:Exception ~> (OP:OpCode => .) ... </op>
-    rule <op> EX:Exception ~> (W:Word    => .) ... </op>
-```
+    syntax KItem ::= "#catch" | "#try" K | "#exception" | "#end"
+ // ------------------------------------------------------------
+    rule <op> #catch => #dropCallStack ... </op>
+    rule <op> #try K => #pushCallStack ~> K ~> #catch ... </op>
+    rule <op> #exception ~> #catch => #popCallStack ... </op>
 
--   `#catch_` is used to catch exceptional states so that the state can be rolled back.
--   `#end` is used to indicate the (non-exceptional) end of execution.
-
-Note: `#catch_` and `#end` are `KItem`, not `OpCode`, so exceptions will not remove them from the `op` cell.
-
-```{.k .uiuck .rvk}
-    syntax KItem ::= "#catch" K | "#end"
- // ------------------------------------
-    rule <op> #catch _ => . ... </op>
-    rule <op> #exception ~> #catch OPS => OPS ... </op>
-    rule <op> #throw OPS ~> #catch _   => OPS ... </op>
+    rule <op> #exception ~> (#try _    => .) ... </op>
+    rule <op> #exception ~> (W:Word    => .) ... </op>
+    rule <op> #exception ~> (OP:OpCode => .) ... </op>
 ```
 
 Exception Checks
@@ -213,9 +245,10 @@ stop relying on the wordStack and can make them functions.
            ~> #stackNeeded(OP) ~> #stackNeeded?
            ~> #stackDelta(OP)  ~> #stackDelta?
            ~> #badJumpDest?(OP)
-           ~> #gas(OP) ~> #enoughGas?
-           ~> #memoryForOp(OP) ~> #times(Gmemory) ~> #enoughGas?
-           ~> #memoryForOp(OP) ~> #updateMemory
+           ~> #memory(OP) ~> #enoughMemory?
+           ~> #gas(OP)    ~> #enoughGas?
+//           ~> #memoryForOp(OP) ~> #times(Gmemory) ~> #enoughGas?
+//           ~> #memoryForOp(OP) ~> #updateMemory
           ...
          </op>
 ```
@@ -321,6 +354,14 @@ stop relying on the wordStack and can make them functions.
     rule <op> G:Int ~> #enoughGas? => .          ... </op> <gas> GAVAIL </gas> requires G <=Int GAVAIL
 ```
 
+### Memory Check
+
+-   `#enoughMemory?` throws an exception for any memory related errors.
+
+```k
+    syntax InternalOp ::= "#enoughMemory?"
+```
+
 OpCode Execution
 ----------------
 
@@ -329,7 +370,14 @@ Executing an opcode consists of deducting the necessary gas, calling it, then in
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= #execOp ( OpCode )
  // ----------------------------------------
-    rule <op> #execOp(OP) => #gas(OP) ~> #deductGas ~> OP ~> #incrementPC(OP) ~> #next ... </op>
+    rule <op> #execOp(OP)
+           => #gas(OP)    ~> #deductGas
+           ~> #memory(OP) ~> #addMemory
+           ~> OP
+           ~> #incrementPC(OP)
+           ~> #next
+          ...
+        </op>
 ```
 
 ### Gas Deduction
@@ -340,6 +388,15 @@ Executing an opcode consists of deducting the necessary gas, calling it, then in
     syntax InternalOp ::= "#deductGas"
  // ----------------------------------
     rule <op> G:Int ~> #deductGas => . ... </op> <gas> GAVAIL => GAVAIL -Int G </gas>
+```
+
+### Memory Calculation
+
+-   `#addMemory` actually adds the used memory to the `memoryUsage` cell.
+
+```k
+    syntax InternalOp ::= "#addMemory"
+ // ----------------------------------
 ```
 
 ### Argument Loading
@@ -474,18 +531,19 @@ we track the maximum used so far.
 ```
 
 ```{.k .uiuck .rvk}
-    syntax Set ::= "consumesMem" [function]
-    rule consumesMem => ( SetItem(MSTORE) )
+    syntax Set ::= "#consumesMem" [function]
+    rule #consumesMem => ( SetItem(MSTORE) )
 
     syntax InternalOp ::= #times(Int)
     rule <op> M:Int ~> #times(N:Int) => M *Int N ... </op>
 
-    syntax InternalOp ::= #memoryForOp(OpCode)
-    rule <op> #memoryForOp(OP) => 0 ... </op> requires notBool ( OP in consumesMem )
-    rule <op> #memoryForOp(OP) => (INDEX +Int 32) up/Int 32 ... </op>
-         <wordStack> INDEX : VALUE : WS </wordStack> requires OP ==K MSTORE
-```
+    syntax InternalOp ::= #memoryForOp ( OpCode )
+ // ---------------------------------------------
+    rule <op> #memoryForOp(OP) => 0 ... </op> requires notBool (OP in #consumesMem)
 
+    rule <op> #memoryForOp(MSTORE) => (INDEX +Int 32) up/Int 32 ... </op>
+         <wordStack> INDEX : VALUE : WS </wordStack>
+```
 
 -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper which helps track the memory used.
 
@@ -993,9 +1051,9 @@ TODO: The `#catch` being used in each case needs to be filled in with the actual
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTTO CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
-           ~> #catch (.K)
+           => #try ( #call ACCTFROM #addr(ACCTTO) CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
+                  ~> #return RETSTART RETWIDTH
+                   )
            ...
          </op>
          <id> ACCTFROM </id>
@@ -1010,9 +1068,9 @@ TODO: The `#catch` being used in each case needs to be filled in with the actual
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
-           ~> #catch (.K)
+           => #try ( #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
+                  ~> #return RETSTART RETWIDTH
+                   )
            ...
          </op>
          <id> ACCTFROM </id>
@@ -1027,9 +1085,9 @@ TODO: The `#catch` being used in each case needs to be filled in with the actual
     syntax CallOp ::= "DELEGATECALL"
  // --------------------------------
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
-           ~> #catch (.K)
+           => #try ( #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
+                  ~> #return RETSTART RETWIDTH
+                   )
            ...
          </op>
          <id> ACCTFROM </id>
@@ -1055,10 +1113,9 @@ TODO: The `#catch_` being used need to be filled in with actual code to run.
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
-           => #call ACCT #newAddr(ACCT, NONCE) #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
-           ~> #catch (#throw (.K))
-           ~> #codeDeposit
-           ~> #catch (.K)
+           => #try ( #call ACCT #newAddr(ACCT, NONCE) #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
+                  ~> #try #codeDeposit
+                   )
           ...
          </op>
          <id> ACCT </id>
