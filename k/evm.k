@@ -958,7 +958,7 @@ module ETHEREUM
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM ACCTTO CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
-           ~> #catch (.OpCodes)
+           ~> #catch (.K)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -975,7 +975,7 @@ module ETHEREUM
     rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
-           ~> #catch (.OpCodes)
+           ~> #catch (.K)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -992,7 +992,7 @@ module ETHEREUM
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
-           ~> #catch (.OpCodes)
+           ~> #catch (.K)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -1021,9 +1021,9 @@ module ETHEREUM
  // -------------------------------
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
            => #call ACCT #newAddr(ACCT, NONCE) #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
-           ~> #catch (#throw (.OpCodes))
+           ~> #catch (#throw (.K))
            ~> #codeDeposit
-           ~> #catch (.OpCodes)
+           ~> #catch (.K)
           ...
          </op>
          <id> ACCT </id>
