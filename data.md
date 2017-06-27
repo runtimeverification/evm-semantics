@@ -18,7 +18,7 @@ requires "domains.k"
 module EVM-DATA
     imports KRYPTO
 
-    syntax KResult ::= Int 
+    syntax KResult ::= Int
 ```
 
 Primitives
@@ -138,7 +138,7 @@ The corresponding `<op>Word` operations automatically perform the correct `Word`
     rule W0:Int *Word W1:Int => chop( W0 *Int W1 )
     rule W0:Int /Word 0      => 0
     rule W0:Int /Word W1:Int => chop( W0 /Int W1 ) requires W1 =/=K 0
-    rule W0:Int %Word 0      => 0 
+    rule W0:Int %Word 0      => 0
     rule W0:Int %Word W1:Int => chop( W0 %Int W1 ) requires W1 =/=K 0
 ```
 
@@ -393,8 +393,8 @@ We are using the polymorphic `Map` sort for these word maps.
     syntax WordStack ::= #range ( Map , Word , Word ) [function]
  // ------------------------------------------------------------
     rule #range(WM,         N, 0) => .WordStack
-    rule #range(WM,         N, M) => 0 : #range(WM, N +Word 1, M -Word 1) requires M =/=K 0 andBool notBool N in keys(WM)
-    rule #range(N |-> W WM, N, M) => W : #range(WM, N +Word 1, M -Word 1) requires M =/=K 0
+    rule #range(WM,         N:Int, M:Int) => 0 : #range(WM, N +Int 1, M -Int 1) requires (M >Int 0) andBool notBool N in keys(WM)
+    rule #range(N |-> W WM, N:Int, M:Int) => W : #range(WM, N +Int 1, M -Int 1) requires (M >Int 0)
 ```
 
 Parsing/Unparsing
@@ -460,7 +460,7 @@ We need to interperet a `WordStack` as a `String` again so that we can call `Kec
     syntax String ::= #unparseByteStack ( WordStack ) [function]
  // ------------------------------------------------------------
     rule #unparseByteStack( .WordStack )   => ""
-    rule #unparseByteStack( (W:Int) : WS ) => #padByte(Base2String(16, (W %Int (2 ^Int 8)))) +String #unparseByteStack(WS)
+    rule #unparseByteStack( (W:Int) : WS ) => #padByte(Base2String((W %Int (2 ^Int 8)), 16)) +String #unparseByteStack(WS)
 
     syntax String ::= #padByte( String ) [function]
  // -----------------------------------------------

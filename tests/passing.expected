@@ -107,3 +107,17 @@ tests/tests-develop/VMTests/vmArithmeticTest/smod_i256min2.json
 tests/tests-develop/VMTests/vmArithmeticTest/sub0.json
 tests/tests-develop/VMTests/vmArithmeticTest/sub3.json
 tests/tests-develop/VMTests/vmArithmeticTest/sub4.json
+tests/tests-develop/VMTests/vmSha3Test/sha3_0.json
+tests/tests-develop/VMTests/vmSha3Test/sha3_1.json
+tests/tests-develop/VMTests/vmSha3Test/sha3_2.json
+tests/tests-develop/VMTests/vmSha3Test/sha3_4.json
+tests/tests-develop/VMTests/vmSha3Test/sha3_bigOffset.json
+tests/tests-develop/VMTests/vmSha3Test/sha3_bigOffset2.json
+tests/tests-develop/VMTests/vmSha3Test/sha3_memSizeNoQuadraticCost31.json
+tests/tests-develop/VMTests/vmSha3Test/sha3_memSizeQuadraticCost32.json
+tests/tests-develop/VMTests/vmSha3Test/sha3_memSizeQuadraticCost32_zeroSize.json
+tests/tests-develop/VMTests/vmSha3Test/sha3_memSizeQuadraticCost33.json
+tests/tests-develop/VMTests/vmSha3Test/sha3_memSizeQuadraticCost63.json
+tests/tests-develop/VMTests/vmSha3Test/sha3_memSizeQuadraticCost64.json
+tests/tests-develop/VMTests/vmSha3Test/sha3_memSizeQuadraticCost64_2.json
+tests/tests-develop/VMTests/vmSha3Test/sha3_memSizeQuadraticCost65.json
