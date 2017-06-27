@@ -19,6 +19,7 @@ ktest: defn split-tests
 K:=$(shell krun --version)
 
 passing_test_file=tests/passing.expected
+#passing_tests=$(wildcard tests/tests-develop/VMTests/*/*.json)
 passing_tests=$(shell cat ${passing_test_file})
 passing_targets=${passing_tests:=.test}
 
@@ -41,7 +42,7 @@ tests/tests-develop/%/make.timestamp: tests/ethereum-tests/%.json
 
 ifneq (,$(findstring RV-K, $(K)))
 k/ethereum-kompiled/extras/timestamp: k/ethereum-kompiled/interpreter
-k/ethereum-kompiled/interpreter: $(defn_files)
+k/ethereum-kompiled/interpreter: $(defn_files) KRYPTO.ml
 	@echo "== kompile: $@"
 	@echo "== Detected RV-K, kompile will use $(K)"
 	kompile --debug --main-module ETHEREUM-SIMULATION \

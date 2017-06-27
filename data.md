@@ -460,7 +460,7 @@ We need to interperet a `WordStack` as a `String` again so that we can call `Kec
     syntax String ::= #unparseByteStack ( WordStack ) [function]
  // ------------------------------------------------------------
     rule #unparseByteStack( .WordStack )   => ""
-    rule #unparseByteStack( (W:Int) : WS ) => #padByte(Base2String(16, (W %Int (2 ^Int 8)))) +String #unparseByteStack(WS)
+    rule #unparseByteStack( (W:Int) : WS ) => #padByte(Base2String((W %Int (2 ^Int 8)), 16)) +String #unparseByteStack(WS)
 
     syntax String ::= #padByte( String ) [function]
  // -----------------------------------------------
