@@ -151,7 +151,7 @@ module ETHEREUM
 
 
     syntax Exception ::= "#exception" | "#throw" K
- // --------------------------------------------------
+ // ----------------------------------------------
     rule <op> EX:Exception ~> (OP:OpCode => .) ... </op>
     rule <op> EX:Exception ~> (W:Word    => .) ... </op>
 
@@ -165,10 +165,10 @@ module ETHEREUM
 
 
     syntax KItem ::= "#catch" K | "#end"
- // ----------------------------------------
+ // ------------------------------------
     rule <op> #catch _ => . ... </op>
-    rule <op> #exception ~> #catch KL => KL ... </op>
-    rule <op> #throw KL  ~> #catch _  => KL ... </op>
+    rule <op> #exception ~> #catch OPS => OPS ... </op>
+    rule <op> #throw OPS ~> #catch _   => OPS ... </op>
 
 
 // Exception Checks
@@ -958,7 +958,7 @@ module ETHEREUM
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM ACCTTO CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
-           ~> #catch (.K)
+           ~> #catch (.OpCodes)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -975,7 +975,7 @@ module ETHEREUM
     rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
-           ~> #catch (.K)
+           ~> #catch (.OpCodes)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -992,7 +992,7 @@ module ETHEREUM
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
-           ~> #catch (.K)
+           ~> #catch (.OpCodes)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -1021,9 +1021,9 @@ module ETHEREUM
  // -------------------------------
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
            => #call ACCT #newAddr(ACCT, NONCE) #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
-           ~> #catch (#throw (.K))
+           ~> #catch (#throw (.OpCodes))
            ~> #codeDeposit
-           ~> #catch (.K)
+           ~> #catch (.OpCodes)
           ...
          </op>
          <id> ACCT </id>
