@@ -233,21 +233,17 @@ module ETHEREUM
 // -   Upon placing the results on the stack, there won't be a stack overflow.
 // -   There is enough gas.
 
-// TODO: If we load `#memoryForOp` and `#gas` after argument loading, they stop
-// relying on the wordStack and can make them functions.
+// TODO: If we load `#memory` and `#gas` after argument loading, they stop relying
+// on the wordStack and can make them functions.
 
 
-    syntax InternalOp ::= "#exceptional?" "(" OpCode ")"
- // ----------------------------------------------------
-    rule <op> #exceptional?(OP)
+    syntax InternalOp ::= #execOp ( OpCode )
+ // ----------------------------------------
+    rule <op> #execOp(OP)
            => #invalid?(OP)
-           ~> #stackNeeded(OP) ~> #stackNeeded?
-           ~> #stackDelta(OP)  ~> #stackDelta?
-           ~> #badJumpDest?(OP)
-           ~> #memory(OP) ~> #enoughMemory?
-           ~> #gas(OP)    ~> #enoughGas?
-//           ~> #memoryForOp(OP) ~> #times(Gmemory) ~> #enoughGas?
-//           ~> #memoryForOp(OP) ~> #updateMemory
+           ~> #memory(OP)
+           ~> #gas(OP)
+           ~> OP
           ...
          </op>
 
@@ -361,10 +357,6 @@ module ETHEREUM
     rule <op> G:Int ~> #enoughGas? => .          ... </op> <gas> GAVAIL </gas> requires G <=Int GAVAIL
 
 
-// ### Memory Check
-
-// -   `#enoughMemory?` throws an exception for any memory related errors.
-
 // OpCode Execution
 // ----------------
 
@@ -375,8 +367,8 @@ module ETHEREUM
     syntax InternalOp ::= #execOp ( OpCode )
  // ----------------------------------------
     rule <op> #execOp(OP)
-           => #gas(OP)    ~> #deductGas
-           ~> #memory(OP) ~> #addMemory
+           => #gas(OP)
+           ~> #memory(OP)
            ~> OP
            ~> #incrementPC(OP)
            ~> #next
@@ -393,10 +385,6 @@ module ETHEREUM
  // ----------------------------------
     rule <op> G:Int ~> #deductGas => . ... </op> <gas> GAVAIL => GAVAIL -Int G </gas>
 
-
-// ### Memory Calculation
-
-// -   `#addMemory` actually adds the used memory to the `memoryUsage` cell.
 
 // ### Argument Loading
 
@@ -537,16 +525,18 @@ module ETHEREUM
 
 
 
-    syntax Set ::= "consumesMem" [function]
-    rule consumesMem => ( SetItem(MSTORE) )
+    syntax Set ::= "#consumesMem" [function]
+    rule #consumesMem => ( SetItem(MSTORE) )
 
     syntax InternalOp ::= #times(Int)
     rule <op> M:Int ~> #times(N:Int) => M *Int N ... </op>
 
-    syntax InternalOp ::= #memoryForOp(OpCode)
-    rule <op> #memoryForOp(OP) => 0 ... </op> requires notBool ( OP in consumesMem )
-    rule <op> #memoryForOp(OP) => (INDEX +Int 32) up/Int 32 ... </op>
-         <wordStack> INDEX : VALUE : WS </wordStack> requires OP ==K MSTORE
+    syntax InternalOp ::= #memory ( OpCode )
+ // ----------------------------------------
+    rule <op> #memory(OP) => 0 ... </op> requires notBool (OP in #consumesMem)
+
+    rule <op> #memory(MSTORE) => (INDEX +Int 32) up/Int 32 ... </op>
+         <wordStack> INDEX : VALUE : WS </wordStack>
 
 
 // -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper

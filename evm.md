@@ -235,21 +235,16 @@ It checks, in order:
 -   Upon placing the results on the stack, there won't be a stack overflow.
 -   There is enough gas.
 
-TODO: If we load `#memoryForOp` and `#gas` after argument loading, they
-stop relying on the wordStack and can make them functions.
+TODO: If we load `#memory` and `#gas` after argument loading, they stop relying on the wordStack and can make them functions.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#exceptional?" "(" OpCode ")"
- // ----------------------------------------------------
-    rule <op> #exceptional?(OP)
+    syntax InternalOp ::= #execOp ( OpCode )
+ // ----------------------------------------
+    rule <op> #execOp(OP)
            => #invalid?(OP)
-           ~> #stackNeeded(OP) ~> #stackNeeded?
-           ~> #stackDelta(OP)  ~> #stackDelta?
-           ~> #badJumpDest?(OP)
-           ~> #memory(OP) ~> #enoughMemory?
-           ~> #gas(OP)    ~> #enoughGas?
-//           ~> #memoryForOp(OP) ~> #times(Gmemory) ~> #enoughGas?
-//           ~> #memoryForOp(OP) ~> #updateMemory
+           ~> #memory(OP)
+           ~> #gas(OP)
+           ~> OP
           ...
          </op>
 ```
@@ -355,14 +350,6 @@ stop relying on the wordStack and can make them functions.
     rule <op> G:Int ~> #enoughGas? => .          ... </op> <gas> GAVAIL </gas> requires G <=Int GAVAIL
 ```
 
-### Memory Check
-
--   `#enoughMemory?` throws an exception for any memory related errors.
-
-```k
-    syntax InternalOp ::= "#enoughMemory?"
-```
-
 OpCode Execution
 ----------------
 
@@ -372,8 +359,8 @@ Executing an opcode consists of deducting the necessary gas, calling it, then in
     syntax InternalOp ::= #execOp ( OpCode )
  // ----------------------------------------
     rule <op> #execOp(OP)
-           => #gas(OP)    ~> #deductGas
-           ~> #memory(OP) ~> #addMemory
+           => #gas(OP)
+           ~> #memory(OP)
            ~> OP
            ~> #incrementPC(OP)
            ~> #next
@@ -389,15 +376,6 @@ Executing an opcode consists of deducting the necessary gas, calling it, then in
     syntax InternalOp ::= "#deductGas"
  // ----------------------------------
     rule <op> G:Int ~> #deductGas => . ... </op> <gas> GAVAIL => GAVAIL -Int G </gas>
-```
-
-### Memory Calculation
-
--   `#addMemory` actually adds the used memory to the `memoryUsage` cell.
-
-```k
-    syntax InternalOp ::= "#addMemory"
- // ----------------------------------
 ```
 
 ### Argument Loading
@@ -538,11 +516,11 @@ we track the maximum used so far.
     syntax InternalOp ::= #times(Int)
     rule <op> M:Int ~> #times(N:Int) => M *Int N ... </op>
 
-    syntax InternalOp ::= #memoryForOp ( OpCode )
- // ---------------------------------------------
-    rule <op> #memoryForOp(OP) => 0 ... </op> requires notBool (OP in #consumesMem)
+    syntax InternalOp ::= #memory ( OpCode )
+ // ----------------------------------------
+    rule <op> #memory(OP) => 0 ... </op> requires notBool (OP in #consumesMem)
 
-    rule <op> #memoryForOp(MSTORE) => (INDEX +Int 32) up/Int 32 ... </op>
+    rule <op> #memory(MSTORE) => (INDEX +Int 32) up/Int 32 ... </op>
          <wordStack> INDEX : VALUE : WS </wordStack>
 ```
 
