@@ -20,6 +20,10 @@
 // the yellowpaper state corresponds to each cell.
 
 
+requires "krypto.k"
+
+
+
 requires "data.k"
 
 module ETHEREUM
@@ -98,7 +102,7 @@ module ETHEREUM
 // -   UIUC-K and RV-K have slight differences of opinion here.
 
 
-                        <account multiplicity="*" type="Bag">
+                        <account multiplicity="*" type="Map">
 
 
 
@@ -119,7 +123,7 @@ module ETHEREUM
 // -   UIUC-K and RV-K have slight differences of opinion here.
 
 
-                        <message multiplicity="*" type="Bag">
+                        <message multiplicity="*" type="Map">
 
 
 
@@ -290,19 +294,20 @@ module ETHEREUM
 // ### Jump Destination
 
 // -   `#badJumpDest?` checks that if it's a `JUMP*` operation that it's jumping to
-//     a valid destination (Section 9.4.3 in yellowpaper).
+//     a valid destination (Section 9.4.3 in yellowpaper). According to the
+//     reference implementation, a conditional jump that does not actually jump is
+//     not an exception.
 
 
     syntax InternalOp ::= "#badJumpDest?" "(" OpCode ")"
  // ----------------------------------------------------
-    rule <op> #badJumpDest?(OP) => .          ... </op> requires notBool isJumpOp(OP)
-    rule <op> #badJumpDest?(OP) => .          ... </op> <wordStack> DEST : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
-    rule <op> #badJumpDest?(OP) => #exception ... </op> <wordStack> DEST : WS </wordStack> <program> ... DEST |-> OP'      ... </program> requires isJumpOp(OP) andBool OP' =/=K JUMPDEST
-    rule <op> #badJumpDest?(OP) => #exception ... </op> <wordStack> DEST : WS </wordStack> <program> PGM </program>                       requires isJumpOp(OP) andBool notBool DEST in keys(PGM)
-
-    syntax Bool ::= isJumpOp ( OpCode ) [function]
- // ----------------------------------------------
-    rule isJumpOp(OP) => OP ==K JUMP orBool OP ==K JUMPI
+    rule <op> #badJumpDest?(OP) => .             ... </op> requires notBool isJumpOp(OP)
+    rule <op> #badJumpDest?(OP) => .             ... </op> <wordStack> DEST        : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
+    rule <op> #badJumpDest?(JUMP)  => #exception ... </op> <wordStack> DEST        : WS </wordStack> <program> ... DEST |-> OP'      ... </program> requires OP' =/=K JUMPDEST
+    rule <op> #badJumpDest?(JUMP)  => #exception ... </op> <wordStack> DEST        : WS </wordStack> <program> PGM </program>                       requires notBool DEST in keys(PGM)
+    rule <op> #badJumpDest?(JUMPI) => #exception ... </op> <wordStack> DEST : COND : WS </wordStack> <program> ... DEST |-> OP'      ... </program> requires OP' =/=K JUMPDEST andBool COND =/=Int 0
+    rule <op> #badJumpDest?(JUMPI) => #exception ... </op> <wordStack> DEST : COND : WS </wordStack> <program> PGM </program>                       requires notBool DEST in keys(PGM) andBool COND =/=Int 0
+    rule <op> #badJumpDest?(JUMPI) => .          ... </op> <wordStack> DEST :    0 : WS </wordStack>
 
 
 // ### Gas Check
@@ -733,7 +738,7 @@ module ETHEREUM
 
     syntax NullStackOp ::= "STOP"
  // -----------------------------
-    rule <op> STOP => #end ... </op>
+    rule <op> STOP ~> K => #end </op>
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
