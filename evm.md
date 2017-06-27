@@ -86,7 +86,7 @@ module ETHEREUM
                       <activeAccounts> .Set </activeAccounts>
 
                       <accounts>
-                        <account multiplicity="*" type="Set">
+                        <account multiplicity="*">
                           <acctID>  .AcctID </acctID>
                           <balance> .Value  </balance>
                           <code>    .Code   </code>
