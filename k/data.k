@@ -220,8 +220,11 @@ module EVM-DATA
     syntax Word ::= bit  ( Word , Word ) [function]
                   | byte ( Word , Word ) [function]
  // -----------------------------------------------
-    rule bit(N:Int, W:Int)  => (W >>Int (255 -Int N)) %Int 2
-    rule byte(N:Int, W:Int) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) %Int (2 ^Int 8)
+    rule bit(N:Int, _)  => 0 requires N <Int 0 orBool N >=Int 256
+    rule byte(N:Int, _) => 0 requires N <Int 0 orBool N >=Int 32
+
+    rule bit(N:Int, W:Int)  => (W >>Int (255 -Int N)) %Int 2                            requires N >=Int 0 andBool N <Int 256
+    rule byte(N:Int, W:Int) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) %Int (2 ^Int 8) requires N >=Int 0 andBool N <Int 32
 
 
 // -   `#nBits` shifts in $N$ ones from the right.
@@ -233,8 +236,8 @@ module EVM-DATA
                   | #nBytes ( Int )  [function]
                   | Int "<<Byte" Int [function]
  // -------------------------------------------
-    rule #nBits(N)  => (2 ^Int N) -Int 1
-    rule #nBytes(N) => #nBits(N *Int 8)
+    rule #nBits(N)  => (2 ^Int N) -Int 1  requires N >=Int 0
+    rule #nBytes(N) => #nBits(N *Int 8)   requires N >=Int 0
     rule N <<Byte M => N <<Int (8 *Int M)
 
 
@@ -243,8 +246,9 @@ module EVM-DATA
 
     syntax Word ::= signextend( Word , Word ) [function]
  // ----------------------------------------------------
-    rule signextend(N:Int, W:Int) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
-    rule signextend(N:Int, W:Int) => chop( #nBytes(N +Int 1)                      &Int W ) requires notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
+    rule signextend(N:Int, W:Int) => W requires N >=Int 32 orBool N <Int 0
+    rule signextend(N:Int, W:Int) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
+    rule signextend(N:Int, W:Int) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
 
 
 // -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
