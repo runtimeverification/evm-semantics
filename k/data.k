@@ -12,10 +12,6 @@
 // towards our hardware.
 
 
-requires "krypto.k"
-
-
-
 requires "domains.k"
 
 module EVM-DATA
@@ -96,6 +92,12 @@ module EVM-DATA
 // -   `#symbolicWord` generates a fresh existentially-bound symbolic word.
 
 // Note: Comment out this block (remove the `k` tag) if using RV K.
+
+
+    syntax Word ::= "#symbolicWord" [function]
+ // ------------------------------------------
+    rule #symbolicWord => ?X:Int
+
 
 // Arithmetic
 // ----------

@@ -20,10 +20,6 @@
 // the yellowpaper state corresponds to each cell.
 
 
-requires "krypto.k"
-
-
-
 requires "data.k"
 
 module ETHEREUM
@@ -102,7 +98,7 @@ module ETHEREUM
 // -   UIUC-K and RV-K have slight differences of opinion here.
 
 
-                        <account multiplicity="*" type="Map">
+                        <account multiplicity="*" type="Bag">
 
 
 
@@ -123,7 +119,7 @@ module ETHEREUM
 // -   UIUC-K and RV-K have slight differences of opinion here.
 
 
-                        <message multiplicity="*" type="Map">
+                        <message multiplicity="*" type="Bag">
 
 
 
@@ -308,6 +304,10 @@ module ETHEREUM
     rule <op> #badJumpDest?(JUMPI) => #exception ... </op> <wordStack> DEST : COND : WS </wordStack> <program> ... DEST |-> OP'      ... </program> requires OP' =/=K JUMPDEST andBool COND =/=Int 0
     rule <op> #badJumpDest?(JUMPI) => #exception ... </op> <wordStack> DEST : COND : WS </wordStack> <program> PGM </program>                       requires notBool DEST in keys(PGM) andBool COND =/=Int 0
     rule <op> #badJumpDest?(JUMPI) => .          ... </op> <wordStack> DEST :    0 : WS </wordStack>
+
+    syntax Bool ::= isJumpOp ( OpCode ) [function]
+ // ----------------------------------------------
+    rule isJumpOp(OP) => OP ==K JUMP orBool OP ==K JUMPI
 
 
 // ### Gas Check
