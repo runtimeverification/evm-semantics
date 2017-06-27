@@ -18,6 +18,16 @@ split-tests: tests/tests-develop/VMTests/vmArithmeticTest/make.timestamp \
 ktest: defn split-tests 
 K:=$(shell krun --version)
 
+passing_test_file=tests/passing.expected
+#passing_tests=$(wildcard tests/tests-develop/VMTests/*/*.json)
+passing_tests=$(shell cat ${passing_test_file})
+passing_targets=${passing_tests:=.test}
+
+test: $(passing_targets)
+
+tests/tests-develop/%.test: tests/tests-develop/% build
+	./evm $<
+
 codeship: build split-tests
 	./Build passing
 
@@ -30,9 +40,10 @@ tests/tests-develop/%/make.timestamp: tests/ethereum-tests/%.json
 	cp tests/templates/config.xml $(dir $@)
 	touch $@
 
-k/ethereum-kompiled/extras/timestamp: $(defn_files)
-	@echo "== kompile: $@"
 ifneq (,$(findstring RV-K, $(K)))
+k/ethereum-kompiled/extras/timestamp: k/ethereum-kompiled/interpreter
+k/ethereum-kompiled/interpreter: $(defn_files) KRYPTO.ml
+	@echo "== kompile: $@"
 	@echo "== Detected RV-K, kompile will use $(K)"
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory k \
@@ -45,7 +56,10 @@ ifneq (,$(findstring RV-K, $(K)))
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory k \
 					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O2
+	cd k/ethereum-kompiled && ocamlfind opt -o interpreter constants.cmx prelude.cmx plugin.cmx parser.cmx lexer.cmx run.cmx interpreter.ml -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -linkpkg -inline 20 -nodynlink -O3
 else
+k/ethereum-kompiled/extras/timestamp: $(defn_files)
+	@echo "== kompile: $@"
 	@echo "== Detected UIUC-K, kompile will use $(K)"
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory k

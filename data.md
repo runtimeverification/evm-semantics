@@ -8,7 +8,7 @@ EVM also has bytes (8 bit words) for some encodings of data, but only a very lig
 It's doubtful that having two different ways of reading the base data-units (or that limiting yourself to machine-representable units) is beneficial.
 Arguably hardware should evolve to directly support more elegant languages, rather than our languages evolving towards our hardware.
 
-```rvk
+```k
 requires "krypto.k"
 ```
 
@@ -91,7 +91,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 
 Note: Comment out this block (remove the `k` tag) if using RV K.
 
-```k
+```uiuck
     syntax Word ::= "#symbolicWord" [function]
  // ------------------------------------------
     rule #symbolicWord => ?X:Int
@@ -216,7 +216,7 @@ Bitwise logical operators are lifted from the integer versions.
     syntax Word ::= bit  ( Word , Word ) [function]
                   | byte ( Word , Word ) [function]
  // -----------------------------------------------
-    rule bit(N:Int, W:Int)  => (W >>Int (255 -Int N)) %Int 2
+    rule bit(N:Int, W:Int)  => (W >>Int (253 -Int N)) %Int 2
     rule byte(N:Int, W:Int) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) %Int (2 ^Int 8)
 ```
 
@@ -460,7 +460,7 @@ We need to interperet a `WordStack` as a `String` again so that we can call `Kec
     syntax String ::= #unparseByteStack ( WordStack ) [function]
  // ------------------------------------------------------------
     rule #unparseByteStack( .WordStack )   => ""
-    rule #unparseByteStack( (W:Int) : WS ) => #padByte(Base2String(16, (W %Int (2 ^Int 8)))) +String #unparseByteStack(WS)
+    rule #unparseByteStack( (W:Int) : WS ) => #padByte(Base2String((W %Int (2 ^Int 8)), 16)) +String #unparseByteStack(WS)
 
     syntax String ::= #padByte( String ) [function]
  // -----------------------------------------------

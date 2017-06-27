@@ -12,6 +12,10 @@
 // towards our hardware.
 
 
+requires "krypto.k"
+
+
+
 requires "domains.k"
 
 module EVM-DATA
@@ -92,12 +96,6 @@ module EVM-DATA
 // -   `#symbolicWord` generates a fresh existentially-bound symbolic word.
 
 // Note: Comment out this block (remove the `k` tag) if using RV K.
-
-
-    syntax Word ::= "#symbolicWord" [function]
- // ------------------------------------------
-    rule #symbolicWord => ?X:Int
-
 
 // Arithmetic
 // ----------
@@ -220,8 +218,8 @@ module EVM-DATA
     syntax Word ::= bit  ( Word , Word ) [function]
                   | byte ( Word , Word ) [function]
  // -----------------------------------------------
-    rule bit(N:Int, W:Int)  => (W >>Int (255 -Int N)) %Int 2
-    rule byte(N:Int, W:Int) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) %Int (2 ^Int 8)
+    rule bit(N:Int, W:Int)  => (W >>Int (253 -Int N)) %Int 2 requires N >=Int 0
+    rule byte(N:Int, W:Int) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) %Int (2 ^Int 8) requires N >=Int 0
 
 
 // -   `#nBits` shifts in $N$ ones from the right.
@@ -478,7 +476,7 @@ module EVM-DATA
     syntax String ::= #unparseByteStack ( WordStack ) [function]
  // ------------------------------------------------------------
     rule #unparseByteStack( .WordStack )   => ""
-    rule #unparseByteStack( (W:Int) : WS ) => #padByte(Base2String(16, (W %Int (2 ^Int 8)))) +String #unparseByteStack(WS)
+    rule #unparseByteStack( (W:Int) : WS ) => #padByte(Base2String((W %Int (2 ^Int 8)), 16)) +String #unparseByteStack(WS)
 
     syntax String ::= #padByte( String ) [function]
  // -----------------------------------------------
