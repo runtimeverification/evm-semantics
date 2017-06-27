@@ -4,7 +4,7 @@ Ethereum Simulations
 Ethereum is using the EVM to drive updates over the world state.
 Actual execution of the EVM is defined in [the EVM file](evm.md).
 
-```k
+```{.k .uiuck .rvk}
 requires "evm.k"
 
 module ETHEREUM-SIMULATION
@@ -15,7 +15,7 @@ module ETHEREUM-SIMULATION
 An Ethereum simulation is a list of Ethereum commands.
 Some Ethereum commands take an Ethereum specification (eg. for an account or transaction).
 
-```k
+```{.k .uiuck .rvk}
     syntax EthereumSimulation ::= ".EthereumSimulation"
                                 | EthereumCommand EthereumSimulation
  // ----------------------------------------------------------------
@@ -38,7 +38,7 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
 For verification purposes, it's much easier to specify a program in terms of its op-codes and not the hex-encoding that the tests use.
 To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a "pretti-fication" to the nicer input form.
 
-```k
+```{.k .uiuck .rvk}
     syntax JSON ::= Word | WordStack | OpCodes | Map | Call | SubstateLogEntry
  // --------------------------------------------------------------------------
     rule DC:DistCommand "account" : { ACCTID: { KEY : VALUE , REST } } => DC "account" : { ACCTID : { KEY : VALUE } } ~> DC "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
@@ -56,7 +56,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 -   `start` places `#next` on the `op` cell so that execution of the loaded state begin.
 -   `flush` places `#finalize` on the `op` cell once it sees `#end` in the `op` cell, clearing any exceptions it finds.
 
-```k
+```{.k .uiuck .rvk}
     syntax EthereumCommand ::= "start" | "flush"
  // --------------------------------------------
     rule <k> start => . ... </k> <op> . => #next </op>
@@ -67,7 +67,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 -   `exception` only clears from the `k` cell if there is an exception on the `op` cell.
 -   `failure_` holds the name of a test that failed if a test does fail.
 
-```k
+```{.k .uiuck .rvk}
     syntax EthereumCommand ::= "exception" | "failure" String
  // ---------------------------------------------------------
     rule <k> exception => . ... </k> <op> #exception ... </op>
@@ -78,7 +78,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
 -   `run` runs a given set of Ethereum tests (from the test-set).
 
-```k
+```{.k .uiuck .rvk}
     syntax EthereumCommand ::= "run" JSON
  // -------------------------------------
     rule run { .JSONList } => .
@@ -96,7 +96,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
 Here we make sure fields that are pre-conditions are `load`ed first, and post-conditions are `check`ed last.
 
-```k
+```{.k .uiuck .rvk}
     rule run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST }
       requires KEY in (SetItem("env") SetItem("pre"))
 
@@ -107,7 +107,7 @@ Here we make sure fields that are pre-conditions are `load`ed first, and post-co
 The particular key `"exec"` should be processed last, to ensure that the pre/post-conditions are in place.
 When it has finished loading it's state, it should `start ~> flush` to perform the execution.
 
-```k
+```{.k .uiuck .rvk}
     rule run TESTID : { "exec" : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , "exec" : EXEC , REST }
     rule run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush
 ```
@@ -119,7 +119,7 @@ State Manipulation
 
 -   `clear` clears all the execution state of the machine.
 
-```k
+```{.k .uiuck .rvk}
     syntax EthereumCommand ::= "clear"
  // ----------------------------------
     rule <k> clear => . ... </k>
@@ -161,7 +161,7 @@ State Manipulation
 
 -   `mkAcct_` creates an account with the supplied ID (assuming it's already been chopped to 160 bits).
 
-```k
+```{.k .uiuck .rvk}
     syntax EthereumCommand ::= "mkAcct" Word
  // ----------------------------------------
     rule <k> mkAcct ACCT => . ... </k> <op> . => #newAccount ACCT </op>
@@ -169,7 +169,7 @@ State Manipulation
 
 -   `load` loads an account or transaction into the world state.
 
-```k
+```{.k .uiuck .rvk}
     syntax DistCommand ::= "load"
  // -----------------------------
     rule load "pre" : { (ACCTID:String) : ACCT } => mkAcct #parseAddr(ACCTID) ~> load "account" : { ACCTID : ACCT }
@@ -205,7 +205,7 @@ State Manipulation
 
 Here we load the environmental information.
 
-```k
+```{.k .uiuck .rvk}
     rule load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) }
  // ----------------------------------------------------------------
     rule <k> load "env" : { "currentCoinbase"   : (CB:Word)     } => . ... </k> <coinbase>   _ => CB     </coinbase>
@@ -237,7 +237,7 @@ Here we load the environmental information.
 
 -   `check_` checks if an account/transaction appears in the world-state as stated.
 
-```k
+```{.k .uiuck .rvk}
     syntax DistCommand ::= "check"
  // --------------------------------------
     rule check DATA : { .JSONList } => .
@@ -249,7 +249,7 @@ Here we load the environmental information.
 
 There seem to be some typos/inconsistencies in the test set requiring us to handle the cases of `"expect"` and `"export"`.
 
-```k
+```{.k .uiuck .rvk}
     rule check TESTID : { "expect" : POST } => check "account" : POST ~> failure TESTID
     rule check TESTID : { "export" : POST } => check "account" : POST ~> failure TESTID
     rule check TESTID : { "post"   : POST } => check "account" : POST ~> failure TESTID
@@ -285,7 +285,7 @@ There seem to be some typos/inconsistencies in the test set requiring us to hand
 
 Here we check the other post-conditions associated with an EVM test.
 
-```k
+```{.k .uiuck .rvk}
     rule check TESTID : { "out" : OUT } => check "out" : OUT ~> failure TESTID
  // --------------------------------------------------------------------------
     rule check "out" : ((OUT:String) => #parseByteStack(OUT))
@@ -300,7 +300,7 @@ Here we check the other post-conditions associated with an EVM test.
 
 TODO: `check` on `"gas"` is dropped, `check` on `"callcreates"` ignores the `"gasLimit"` field.
 
-```k
+```{.k .uiuck .rvk}
     rule check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID
  // ------------------------------------------------------------------------------
     rule check "gas" : ((GLEFT:String) => #parseHexWord(GLEFT))

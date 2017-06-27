@@ -68,7 +68,13 @@ endif
 k/%.k: %.md
 	@echo "==  tangle: $@"
 	mkdir -p k
-	pandoc-tangle --from markdown --to code-k --code k $< > $@
+ifneq (,$(findstring RV-K, $(K)))
+	@echo "== Detected RV-K, will select codeblocks marked with 'rvk'"
+	pandoc-tangle --from markdown --to code-k --code rvk $< > $@
+else
+	@echo "== Detected UIUC-K, will select codeblocks marked with 'uiuck'"
+	pandoc-tangle --from markdown --to code-k --code uiuck $< > $@
+endif
 
 ktest: $(ktest_file)
 	cd k; ktest $(realpath .)/$< 
