@@ -18,7 +18,7 @@ requires "domains.k"
 module EVM-DATA
     imports KRYPTO
 
-    syntax KResult ::= Int 
+    syntax KResult ::= Int
 ```
 
 Primitives
@@ -138,7 +138,7 @@ The corresponding `<op>Word` operations automatically perform the correct `Word`
     rule W0:Int *Word W1:Int => chop( W0 *Int W1 )
     rule W0:Int /Word 0      => 0
     rule W0:Int /Word W1:Int => chop( W0 /Int W1 ) requires W1 =/=K 0
-    rule W0:Int %Word 0      => 0 
+    rule W0:Int %Word 0      => 0
     rule W0:Int %Word W1:Int => chop( W0 %Int W1 ) requires W1 =/=K 0
 ```
 
@@ -460,7 +460,7 @@ We need to interperet a `WordStack` as a `String` again so that we can call `Kec
     syntax String ::= #unparseByteStack ( WordStack ) [function]
  // ------------------------------------------------------------
     rule #unparseByteStack( .WordStack )   => ""
-    rule #unparseByteStack( (W:Int) : WS ) => #padByte(Base2String(16, (W %Int (2 ^Int 8)))) +String #unparseByteStack(WS)
+    rule #unparseByteStack( (W:Int) : WS ) => #padByte(Base2String((W %Int (2 ^Int 8)), 16)) +String #unparseByteStack(WS)
 
     syntax String ::= #padByte( String ) [function]
  // -----------------------------------------------
