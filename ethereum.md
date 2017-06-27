@@ -290,22 +290,24 @@ Here we check the other post-conditions associated with an EVM test.
  // --------------------------------------------------------------------------
     rule check "out" : ((OUT:String) => #parseByteStack(OUT))
     rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
+```
 
+```{.k .uiuck .rvk}
     rule check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID
  // ------------------------------------------------------------------------------
     rule check "logs" : { "topics" : (TOPICS:JSON) , "bloom" : (BLOOM:String) , "data" : (DATA:String) , "address" : (ACCT:String) , .JSONList }
       => check "logs" : { #parseAddr(ACCT) | #parseWordStack(TOPICS) | #parseByteStack(DATA) }
     rule <k> check "logs" : SLE:SubstateLogEntry => . ... </k> <log> SL </log> requires SLE in SL
-```
 
-TODO: `check` on `"gas"` is dropped, `check` on `"callcreates"` ignores the `"gasLimit"` field.
-
-```{.k .uiuck .rvk}
     rule check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID
  // ------------------------------------------------------------------------------
     rule check "gas" : ((GLEFT:String) => #parseHexWord(GLEFT))
     rule check "gas" : GLEFT => .
+```
 
+TODO: `check` on `"callcreates"` ignores the `"gasLimit"` field.
+
+```{.k .uiuck .rvk}
     rule check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID
  // ----------------------------------------------------------------------------------------------------
     rule check "callcreates" : { "value" : VAL , "destination" : ACCTTO , "gasLimit" : GLIMIT , "data" : DATA }
