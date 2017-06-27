@@ -33,7 +33,6 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
 
     rule DC:DistCommand DATA : [ .JSONList ] => .
     rule DC:DistCommand DATA : [ { TEST } , REST ] => DC DATA : { TEST } ~> DC DATA : [ REST ]
-
 ```
 
 For verification purposes, it's much easier to specify a program in terms of its op-codes and not the hex-encoding that the tests use.
@@ -55,8 +54,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ### Driving Execution
 
 -   `start` places `#next` on the `op` cell so that execution of the loaded state begin.
--   `flush` places `#finalize` on the `op` cell once it sees `#end` in the `op` cell.
-    If it sees an exception on the top of the cell, it simply clears.
+-   `flush` places `#finalize` on the `op` cell once it sees `#end` in the `op` cell, clearing any exceptions it finds.
 
 ```k
     syntax EthereumCommand ::= "start" | "flush"
