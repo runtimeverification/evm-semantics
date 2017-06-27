@@ -63,8 +63,8 @@ module ETHEREUM-SIMULATION
     syntax EthereumCommand ::= "start" | "flush"
  // --------------------------------------------
     rule <k> start => . ... </k> <op> . => #next </op>
-    rule <k> flush => . ... </k> <op> #end        => #finalize </op>
-    rule <k> flush => . ... </k> <op> #exception  => .         </op>
+    rule <k> flush => . ... </k> <op> #end => #finalize </op>
+    rule <k> flush => . ... </k> <op> (. => #finalize) ~> #exception </op>
 
 
 // -   `exception` only clears from the `k` cell if there is an exception on the
@@ -74,7 +74,7 @@ module ETHEREUM-SIMULATION
 
     syntax EthereumCommand ::= "exception" | "failure" String
  // ---------------------------------------------------------
-    rule <k> exception _ => . ... </k> <op> #exception ... </op>
+    rule <k> exception => . ... </k> <op> #exception ... </op>
     rule failure _ => .
 
 
@@ -86,7 +86,16 @@ module ETHEREUM-SIMULATION
     syntax EthereumCommand ::= "run" JSON
  // -------------------------------------
     rule run { .JSONList } => .
-    rule run { TESTID : (TEST:JSON) , TESTS } => run (TESTID : TEST) ~> clear ~> run { TESTS }
+    rule run { TESTID : (TEST:JSON) , TESTS }
+      => run (TESTID : TEST)
+      ~> #if #hasPost?( TEST ) #then .K #else exception #fi
+      ~> clear
+      ~> run { TESTS }
+
+    syntax Bool ::= "#hasPost?" "(" JSON ")" [function]
+ // ---------------------------------------------------
+    rule #hasPost? ({ .JSONList }) => false
+    rule #hasPost? ({ (KEY:String) : _ , REST }) => KEY ==String "post" orBool #hasPost? ({ REST })
 
 
 // Here we make sure fields that are pre-conditions are `load`ed first, and
