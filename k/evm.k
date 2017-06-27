@@ -154,12 +154,13 @@ module ETHEREUM
 
     syntax InternalOp ::= "#next"
  // -----------------------------
-    rule <op> #next => #try #execOp(OP) ... </op>
+    rule <op> #next => #try #execOp(OP) </op>
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
 
-    rule <op> #next => #exception ... </op> <pc> PCOUNT </pc> <program> PGM </program>
-      requires notBool PCOUNT in keys(PGM)
+    rule <op> #next => #if word2Bool(PCOUNT <Word #sizeOpCodeMap(PGM)) #then #exception #else #end #fi </op>
+         <pc> PCOUNT </pc> <program> PGM </program>
+      requires notBool PCOUNT in_keys(PGM)
 
 
 // -   `#pushCallStack` saves a copy of all the relevant state on the `callStack`
