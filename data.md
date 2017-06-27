@@ -216,7 +216,7 @@ Bitwise logical operators are lifted from the integer versions.
     syntax Word ::= bit  ( Word , Word ) [function]
                   | byte ( Word , Word ) [function]
  // -----------------------------------------------
-    rule bit(N:Int, W:Int)  => (W >>Int (253 -Int N)) %Int 2
+    rule bit(N:Int, W:Int)  => (W >>Int (255 -Int N)) %Int 2
     rule byte(N:Int, W:Int) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) %Int (2 ^Int 8)
 ```
 

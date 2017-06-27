@@ -19,8 +19,8 @@ ktest: defn split-tests
 K:=$(shell krun --version)
 
 passing_test_file=tests/passing.expected
-#passing_tests=$(wildcard tests/tests-develop/VMTests/*/*.json)
-passing_tests=$(shell cat ${passing_test_file})
+passing_tests=$(wildcard tests/tests-develop/VMTests/*/*.json)
+#passing_tests=$(shell cat ${passing_test_file})
 passing_targets=${passing_tests:=.test}
 
 test: $(passing_targets)
