@@ -199,6 +199,9 @@ module ETHEREUM
 // -   Upon placing the results on the stack, there won't be a stack overflow.
 // -   There is enough gas.
 
+// TODO: If we load `#memoryForOp` and `#gas` after argument loading, they stop
+// relying on the wordStack and can make them functions.
+
 
     syntax InternalOp ::= "#exceptional?" "(" OpCode ")"
  // ----------------------------------------------------
@@ -207,7 +210,9 @@ module ETHEREUM
            ~> #stackNeeded(OP) ~> #stackNeeded?
            ~> #stackDelta(OP)  ~> #stackDelta?
            ~> #badJumpDest?(OP)
-           ~> #gas(OP)         ~> #enoughGas?
+           ~> #gas(OP) ~> #enoughGas?
+           ~> #memoryForOp(OP) ~> #times(Gmemory) ~> #enoughGas?
+           ~> #memoryForOp(OP) ~> #updateMemory
           ...
          </op>
 
@@ -471,8 +476,28 @@ module ETHEREUM
 
 // ### Memory Consumption
 
-// Using memory while executing EVM costs gas, so the amount of memory used is
-// tracked (Appendix H in yellowpaper).
+// Gas needs to be deducted when the maximum memory to a program increases, so we
+// track the maximum used so far.
+
+
+    syntax InternalOp ::= "#updateMemory"
+ // -----------------------------------
+    rule <op> NEWMEM:Int ~> #updateMemory => . ... </op>
+         <memoryUsed> MU => maxInt(MU, NEWMEM) </memoryUsed>
+
+
+
+    syntax Set ::= "consumesMem" [function]
+    rule consumesMem => ( SetItem(MSTORE) )
+
+    syntax InternalOp ::= #times(Int)
+    rule <op> M:Int ~> #times(N:Int) => M *Int N ... </op>
+
+    syntax InternalOp ::= #memoryForOp(OpCode)
+    rule <op> #memoryForOp(OP) => 0 ... </op> requires notBool ( OP in consumesMem )
+    rule <op> #memoryForOp(OP) => (INDEX +Int 32) up/Int 32 ... </op>
+         <wordStack> INDEX : VALUE : WS </wordStack> requires OP ==K MSTORE
+
 
 // -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper
 //     which helps track the memory used.
@@ -601,7 +626,6 @@ module ETHEREUM
  // ------------------------------------------
     rule <op> MSTORE INDEX VALUE => . ... </op>
          <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
-         <memoryUsed> MU => maxInt(MU, (INDEX +Int 32) up/Int 32) </memoryUsed>
 
     rule <op> MSTORE8 INDEX VALUE => . ... </op>
          <localMem> LM => LM [ INDEX <- (VALUE %Int 256) ]    </localMem>
@@ -1167,25 +1191,25 @@ module ETHEREUM
 // Here the lists of gas prices and gas opcodes are provided.
 
 
-    syntax Word ::= "Gzero"          [function] | "Gbase"          [function]
-                  | "Gverylow"       [function] | "Glow"           [function]
-                  | "Gmid"           [function] | "Ghigh"          [function]
-                  | "Gextcode"       [function] | "Gbalance"       [function]
-                  | "Gsload"         [function] | "Gjumpdest"      [function]
-                  | "Gsset"          [function] | "Gsreset"        [function]
-                  | "Rsclear"        [function] | "Rself-destruct" [function]
-                  | "Gself-destruct" [function] | "Gcreate"        [function]
-                  | "Gcodedeposit"   [function] | "Gcall"          [function]
-                  | "Gcallvalue"     [function] | "Gcallstipend"   [function]
-                  | "Gnewaccount"    [function] | "Gexp"           [function]
-                  | "Gexpbyte"       [function] | "Gmemory"        [function]
-                  | "Gtxcreate"      [function] | "Gtxdatazero"    [function]
-                  | "Gtxdatanonzero" [function] | "Gtransaction"   [function]
-                  | "Glog"           [function] | "Glogdata"       [function]
-                  | "Glogtopic"      [function] | "Gsha3"          [function]
-                  | "Gsha3word"      [function] | "Gcopy"          [function]
-                  | "Gblockhash"     [function]
- // -------------------------------------------
+    syntax Int ::= "Gzero"          [function] | "Gbase"          [function]
+                 | "Gverylow"       [function] | "Glow"           [function]
+                 | "Gmid"           [function] | "Ghigh"          [function]
+                 | "Gextcode"       [function] | "Gbalance"       [function]
+                 | "Gsload"         [function] | "Gjumpdest"      [function]
+                 | "Gsset"          [function] | "Gsreset"        [function]
+                 | "Rsclear"        [function] | "Rself-destruct" [function]
+                 | "Gself-destruct" [function] | "Gcreate"        [function]
+                 | "Gcodedeposit"   [function] | "Gcall"          [function]
+                 | "Gcallvalue"     [function] | "Gcallstipend"   [function]
+                 | "Gnewaccount"    [function] | "Gexp"           [function]
+                 | "Gexpbyte"       [function] | "Gmemory"        [function]
+                 | "Gtxcreate"      [function] | "Gtxdatazero"    [function]
+                 | "Gtxdatanonzero" [function] | "Gtransaction"   [function]
+                 | "Glog"           [function] | "Glogdata"       [function]
+                 | "Glogtopic"      [function] | "Gsha3"          [function]
+                 | "Gsha3word"      [function] | "Gcopy"          [function]
+                 | "Gblockhash"     [function]
+ // ------------------------------------------
     rule Gzero          => 0
     rule Gbase          => 2
     rule Gverylow       => 3
