@@ -14,7 +14,11 @@ In addition, there are cells for the callstack and execution substate.
 We've broken up the configuration into two components; those parts of the state that mutate during execution of a single transaction and those that are static throughout.
 In the comments next to each cell, we've marked which component of the yellowpaper state corresponds to each cell.
 
-```k
+```{.k .rvk}
+requires "krypto.k"
+```
+
+```{.k .uiuck .rvk}
 requires "data.k"
 
 module ETHEREUM
@@ -87,9 +91,20 @@ module ETHEREUM
                       // ---------------
 
                       <activeAccounts> .Set </activeAccounts>
-
                       <accounts>
-                        <account multiplicity="*">
+```
+
+-   UIUC-K and RV-K have slight differences of opinion here.
+
+```{.k .uiuck}
+                        <account multiplicity="*" type="Bag">
+```
+
+```{.k .rvk}
+                        <account multiplicity="*" type="Map">
+```
+
+```{.k .uiuck .rvk}
                           <acctID>  .AcctID </acctID>
                           <balance> .Value  </balance>
                           <code>    .Code   </code>
@@ -102,7 +117,19 @@ module ETHEREUM
                       // -------------------
 
                       <messages>
-                        <message multiplicity="*" type="Set">
+```
+
+-   UIUC-K and RV-K have slight differences of opinion here.
+
+```{.k .uiuck}
+                        <message multiplicity="*" type="Bag">
+```
+
+```{.k .rvk}
+                        <message multiplicity="*" type="Map">
+```
+
+```{.k .uiuck .rvk}
                           <msgID>  .MsgID   </msgID>
                           <to>     .AcctID  </to>
                           <from>   .AcctID  </from>
@@ -129,7 +156,7 @@ Execution follows a simple cycle where first the state is checked for exceptions
 
 -   `#next` signals that it's time to begin the next execution cycle.
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= "#next"
  // -----------------------------
     rule <op> #next => #exceptional?(OP) ~> #execOp(OP) ... </op>
@@ -142,7 +169,8 @@ Execution follows a simple cycle where first the state is checked for exceptions
 
 -   `#exception` is used to indicate exceptional states (it consumes any operations to be performed after it).
 
-```k
+```{.k .uiuck .rvk}
+    syntax KItem ::= Exception
     syntax Exception ::= "#exception" | "#throw" K
  // ----------------------------------------------
     rule <op> EX:Exception ~> (OP:OpCode => .) ... </op>
@@ -154,7 +182,7 @@ Execution follows a simple cycle where first the state is checked for exceptions
 
 Note: `#catch_` and `#end` are `KItem`, not `OpCode`, so exceptions will not remove them from the `op` cell.
 
-```k
+```{.k .uiuck .rvk}
     syntax KItem ::= "#catch" K | "#end"
  // ------------------------------------
     rule <op> #catch _ => . ... </op>
@@ -174,7 +202,7 @@ It checks, in order:
 -   Upon placing the results on the stack, there won't be a stack overflow.
 -   There is enough gas.
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= "#exceptional?" "(" OpCode ")"
  // ----------------------------------------------------
     rule <op> #exceptional?(OP)
@@ -192,7 +220,7 @@ It checks, in order:
 -   OpCode `INVALID` represents the designated invalid EVM operator.
 -   `#invalid?` checks if the given opcode is indeed `INVALID`.
 
-```k
+```{.k .uiuck .rvk}
     syntax InvalidOp ::= "INVALID"
  // ------------------------------
 
@@ -207,7 +235,7 @@ It checks, in order:
 -   `#stackNeeded?` throws an exception if there are not enough arguments on the stack.
 -   `#stackAdded?` throws an exception if there will be too many items on the stack after the opcode completes.
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= "#stackNeeded?" | "#stackDelta?"
  // ------------------------------------------------------
     rule <op> SN:Int ~> #stackNeeded? => #exception ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) <Int SN
@@ -221,7 +249,7 @@ It checks, in order:
 -   `#stackAdded` calculates how many words will be added to the stack by this operator ($\alpha$ in the yellowpaper).
 -   `#stackDelta` calculates the difference in size of the stack after executing the operator.
 
-```k
+```{.k .uiuck .rvk}
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
     rule #stackNeeded(PUSH(_, _))      => 0
@@ -261,7 +289,7 @@ It checks, in order:
 
 -   `#badJumpDest?` checks that if it's a `JUMP*` operation that it's jumping to a valid destination (Section 9.4.3 in yellowpaper).
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= "#badJumpDest?" "(" OpCode ")"
  // ----------------------------------------------------
     rule <op> #badJumpDest?(OP) => .          ... </op> requires notBool isJumpOp(OP)
@@ -278,7 +306,7 @@ It checks, in order:
 
 -   `#enoughGas?` throws an exception if there isn't enough gas for the opcode.
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= "#enoughGas?"
  // -----------------------------------
     rule <op> G:Int ~> #enoughGas? => #exception ... </op> <gas> GAVAIL </gas> requires word2Bool(G >Word GAVAIL)
@@ -290,7 +318,7 @@ OpCode Execution
 
 Executing an opcode consists of deducting the necessary gas, calling it, then incrementing the program counter.
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= #execOp ( OpCode )
  // ----------------------------------------
     rule <op> #execOp(OP) => #gas(OP) ~> #deductGas ~> OP ~> #incrementPC(OP) ~> #next ... </op>
@@ -300,7 +328,7 @@ Executing an opcode consists of deducting the necessary gas, calling it, then in
 
 -   `#deductGas` removes the correct amount of gas from the current gas balance.
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= "#deductGas"
  // ----------------------------------
     rule <op> G:Int ~> #deductGas => . ... </op> <gas> GAVAIL => GAVAIL -Int G </gas>
@@ -313,7 +341,7 @@ This allows more "local" definition of each of the corresponding operators.
 
 Here all `OpCode`s are considered to be `KItem` (allowing sequentialization), and the various sorts of opcodes are subsorted into `OpCode`.
 
-```k
+```{.k .uiuck .rvk}
     syntax KItem  ::= OpCode
     syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
                     | InvalidOp | StackOp | InternalOp | CallOp | PushOp | LogOp
@@ -323,7 +351,7 @@ Here all `OpCode`s are considered to be `KItem` (allowing sequentialization), an
 Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
 Some of them require the first argument to be interpereted as an address (modulo 160 bits), so the `#addr?` function performs that check.
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= UnStackOp Word
                         | BinStackOp Word Word
                         | TernStackOp Word Word Word
@@ -345,7 +373,7 @@ Some of them require the first argument to be interpereted as an address (modulo
 
 `StackOp` is used for opcodes which require a large portion of the stack.
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= StackOp WordStack
  // ---------------------------------------
     rule <op> SO:StackOp => SO WS ... </op> <wordStack> WS </wordStack>
@@ -353,7 +381,7 @@ Some of them require the first argument to be interpereted as an address (modulo
 
 The `CallOp` opcodes all interperet their second argument as an address.
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= CallOp Word Word Word Word Word Word Word
                         | "DELEGATECALL" Word Word Word Word Word Word
  // --------------------------------------------------------------------------
@@ -366,7 +394,7 @@ The `CallOp` opcodes all interperet their second argument as an address.
 
 All operators except for `PUSH` increment the program counter by 1 (because the arguments to `PUSH` are inline).
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= #incrementPC ( OpCode ) 
  // ---------------------------------------------
     rule <op> #incrementPC(OP) => . ... </op> <pc> PCOUNT => PCOUNT +Word #pc(OP) </pc>
@@ -385,7 +413,7 @@ Other
 During execution of a transaction some things are recorded in the substate log (Section 6.1 in yellowpaper).
 This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
 
-```k
+```{.k .uiuck .rvk}
     syntax SubstateLogEntry ::= "{" Word "|" WordStack "|" WordStack "}"
  // --------------------------------------------------------------------
 ```
@@ -394,7 +422,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 
 -   `#finalize` makes the substate log actually have an effect on the state.
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= "#finalize"
  // ---------------------------------
     rule <op> #finalize => . ... </op>
@@ -431,7 +459,7 @@ Using memory while executing EVM costs gas, so the amount of memory used is trac
 
 -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper which helps track the memory used.
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= #memoryUsageUpdate ( Word , Word , Word ) [function]
  // --------------------------------------------------------------------
     rule #memoryUsageUpdate(S:Int, F:Int, 0)     => S
@@ -446,7 +474,7 @@ Deciding if an opcode is in a list will be useful for modeling gas, and converti
 
 Note that `_in_` ignores the arguments to operators that are parametric.
 
-```k
+```{.k .uiuck .rvk}
     syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
  // --------------------------------------------------
 
@@ -485,7 +513,7 @@ These are just used by the other operators for shuffling local execution state a
 -   `#push` will push an element to the `wordStack` without any checks.
 -   `#setStack_` will set the current stack to the given one.
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= "#push" | "#setStack" WordStack
  // -----------------------------------------------------
     rule <op> W0:Word ~> #push => . ... </op> <wordStack> WS => W0 : WS </wordStack>
@@ -494,7 +522,7 @@ These are just used by the other operators for shuffling local execution state a
 
 -   `#newAccount_` allows declaring a new empty account with the given address (and assumes the rounding to 160 bits has already occured).
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= "#newAccount" Word
  // ----------------------------------------
     rule <op> #newAccount ACCT => . ... </op>
@@ -522,7 +550,7 @@ These are just used by the other operators for shuffling local execution state a
 
 Some operators don't calculate anything, they just push the stack around a bit.
 
-```k
+```{.k .uiuck .rvk}
     syntax UnStackOp ::= "POP"
  // --------------------------
     rule <op> POP W => . ... </op>
@@ -541,7 +569,7 @@ Some operators don't calculate anything, they just push the stack around a bit.
 
 These operations are getters/setters of the local execution memory.
 
-```k
+```{.k .uiuck .rvk}
     syntax UnStackOp ::= "MLOAD"
  // ----------------------------
     rule <op> MLOAD INDEX => #asWord(#range(LM, INDEX, 32)) ~> #push ... </op>
@@ -565,7 +593,7 @@ Expression calculations are simple and don't require anything but the arguments 
 
 NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble parsing it/compiling the definition otherwise.
 
-```k
+```{.k .uiuck .rvk}
     syntax UnStackOp ::= "ISZERO" | "NOT"
  // -------------------------------------
     rule <op> ISZERO 0 => bool2Word(true)  ~> #push ... </op>
@@ -624,7 +652,7 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
 
 These operators make queries about the current execution state.
 
-```k
+```{.k .uiuck .rvk}
     syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT"
  // -------------------------------------------------------------
     rule <op> PC       => PCOUNT ~> #push ... </op> <pc> PCOUNT </pc>
@@ -667,7 +695,7 @@ These operators make queries about the current execution state.
 
 The `JUMP*` family of operations affect the current program counter.
 
-```k
+```{.k .uiuck .rvk}
     syntax NullStackOp ::= "JUMPDEST"
  // ------------------------------
     rule <op> JUMPDEST => . ... </op>
@@ -684,7 +712,7 @@ The `JUMP*` family of operations affect the current program counter.
 
 ### `STOP` and `RETURN`
 
-```k
+```{.k .uiuck .rvk}
     syntax NullStackOp ::= "STOP"
  // -----------------------------
     rule <op> STOP => #end ... </op>
@@ -701,7 +729,7 @@ The `JUMP*` family of operations affect the current program counter.
 
 These operators query about the current `CALL*` state.
 
-```k
+```{.k .uiuck .rvk}
     syntax NullStackOp ::= "CALLDATASIZE"
  // -------------------------------------
     rule <op> CALLDATASIZE => #sizeWordStack(CD) ~> #push ... </op>
@@ -722,7 +750,7 @@ These operators query about the current `CALL*` state.
 
 ### Log Operations
 
-```k
+```{.k .uiuck .rvk}
     syntax LogOp ::= LOG ( Word )
  // -----------------------------
     rule <op> LOG(N) => . ... </op>
@@ -745,7 +773,7 @@ TODO: It's unclear what to do in the case of an account not existing for these o
 `BALANCE` is specified to push 0 in this case, but the others are not specified.
 For now, I assume that they instantiate an empty account and use the empty data.
 
-```k
+```{.k .uiuck .rvk}
     syntax UnStackOp ::= "BALANCE"
  // ------------------------------
     rule <op> BALANCE ACCT => BAL ~> #push ... </op>
@@ -776,7 +804,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
 TODO: What should happen in the case that the account doesn't exist with `EXTCODECOPY`?
 Should we pad zeros (for the copied "program")?
 
-```k
+```{.k .uiuck .rvk}
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
     rule <op> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </op>
@@ -797,7 +825,7 @@ Should we pad zeros (for the copied "program")?
 
 These operations interact with the account storage.
 
-```k
+```{.k .uiuck .rvk}
     syntax UnStackOp ::= "SLOAD"
  // ----------------------------
     rule <op> SLOAD INDEX => 0 ~> #push ... </op>
@@ -852,7 +880,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
 -   `#return__` is a placeholder for the calling program, specifying where to place the returned data in memory.
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= "#return" Word Word
  // -----------------------------------------
     rule <op> #return RETSTART RETWIDTH => . ... </op>
@@ -864,7 +892,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
 TODO: The `Call` sort needs to store the available gas to the `CALL*` as well, but we are not right now because gas calculation isn't finished.
 
-```k
+```{.k .uiuck .rvk}
     syntax Call ::= "{" Word "|" Word "|" WordStack "}"
     syntax CallLog ::= ".CallLog" | Call ";" CallLog
  // ------------------------------------------------
@@ -902,7 +930,7 @@ TODO: `#call` is neutured to make sure that we can pass the VMTests. The followi
 Here is what we're actually using.
 The test-set isn't clear about whach should happen when `#call` is run, but it seems that it should push `1` onto the stack.
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp ::= "#call" Word Word Map Word WordStack
  // ----------------------------------------------------------
     rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => 1 ~> #push ... </op>
@@ -932,7 +960,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
 TODO: The `#catch` being used in each case needs to be filled in with the actual code to run on exception.
 
-```k
+```{.k .uiuck .rvk}
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
@@ -994,7 +1022,7 @@ This process can fail in two places, either in the initialization code or in dep
 
 TODO: The `#catch_` being used need to be filled in with actual code to run.
 
-```k
+```{.k .uiuck .rvk}
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
@@ -1021,7 +1049,7 @@ TODO: The `#catch_` being used need to be filled in with actual code to run.
 TODO: Right now `#codeDeposit` isn't performing the correct gas check.
 We should wait for the `#gas` calculations to be fixed before doing so.
 
-```k
+```{.k .uiuck .rvk}
     syntax InternalOp  ::= "#codeDeposit"
  // -------------------------------------
     rule <op> #codeDeposit => . ... </op>
@@ -1039,7 +1067,7 @@ We should wait for the `#gas` calculations to be fixed before doing so.
 
 `SELFDESTRUCT` marks the current account for deletion and transfers funds out of the current account.
 
-```k
+```{.k .uiuck .rvk}
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
     rule <op> SELFDESTRUCT ACCTTO => . ... </op>
@@ -1075,7 +1103,7 @@ Ethereum Gas Calculation
 
 The gas calculation is designed to mirror the style of the yellowpaper.
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= #gas ( OpCode )
  // -------------------------------
     rule <op> #gas(OP) => #if W1 =/=K 0 andBool notBool W0 in keys(STORAGE)
@@ -1108,7 +1136,7 @@ The gas calculation is designed to mirror the style of the yellowpaper.
 
 TODO: Gas calculation for the following operators is not implemented.
 
-```k
+```{.k .uiuck .rvk}
     rule <op> #gas(OP)           => Gzero   ... </op> requires OP in Wcall
     rule <op> #gas(OP)           => Gzero   ... </op> requires OP ==K SELFDESTRUCT
     rule <op> #gas(OP)           => Gzero   ... </op> requires OP in Wcopy
@@ -1121,7 +1149,7 @@ TODO: Gas calculation for the following operators is not implemented.
 
 Here the lists of gas prices and gas opcodes are provided.
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= "Gzero"          [function] | "Gbase"          [function]
                   | "Gverylow"       [function] | "Glow"           [function]
                   | "Gmid"           [function] | "Ghigh"          [function]
@@ -1223,7 +1251,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
 -   `#dasmPUSH` handles the case of a `PushOp`.
 -   `#dasmOpCode` interperets a `Word` as an `OpCode`.
 
-```k
+```{.k .uiuck .rvk}
     syntax OpCodes ::= #dasmOpCodes ( WordStack ) [function]
  // --------------------------------------------------------
     rule #dasmOpCodes( .WordStack ) => .OpCodes
@@ -1309,7 +1337,7 @@ Assembler
 
 -   `#asmOpCodes` gives the `WordStack` representation of an `OpCodes`.
 
-```k
+```{.k .uiuck .rvk}
     syntax WordStack ::= #asmOpCodes ( OpCodes ) [function]
  // -------------------------------------------------------
     rule #asmOpCodes( .OpCodes )           => .WordStack

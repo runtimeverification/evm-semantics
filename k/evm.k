@@ -92,9 +92,16 @@ module ETHEREUM
                       // ---------------
 
                       <activeAccounts> .Set </activeAccounts>
-
                       <accounts>
-                        <account multiplicity="*">
+
+
+// -   UIUC-K and RV-K have slight differences of opinion here.
+
+
+                        <account multiplicity="*" type="Bag">
+
+
+
                           <acctID>  .AcctID </acctID>
                           <balance> .Value  </balance>
                           <code>    .Code   </code>
@@ -107,7 +114,15 @@ module ETHEREUM
                       // -------------------
 
                       <messages>
-                        <message multiplicity="*" type="Set">
+
+
+// -   UIUC-K and RV-K have slight differences of opinion here.
+
+
+                        <message multiplicity="*" type="Bag">
+
+
+
                           <msgID>  .MsgID   </msgID>
                           <to>     .AcctID  </to>
                           <from>   .AcctID  </from>
@@ -150,6 +165,7 @@ module ETHEREUM
 //     operations to be performed after it).
 
 
+    syntax KItem ::= Exception
     syntax Exception ::= "#exception" | "#throw" K
  // ----------------------------------------------
     rule <op> EX:Exception ~> (OP:OpCode => .) ... </op>
