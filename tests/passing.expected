@@ -370,7 +370,6 @@ tests/tests-develop/VMTests/vmIOandFlowOperationsTest/DynamicJump_valueUnderflow
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/extcodecopyMemExp.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/for_loop1.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/for_loop2.json
-tests/tests-develop/VMTests/vmIOandFlowOperationsTest/gas0.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/gas1.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/gasOverFlow.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/indirect_jump1.json
@@ -425,7 +424,6 @@ tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jumpToUint64maxPlus1.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jumpToUintmaxPlus1.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/kv1.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/log1MemExp.json
-tests/tests-develop/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1020.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/memory1.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/mloadError0.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/mloadError1.json
