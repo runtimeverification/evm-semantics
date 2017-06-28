@@ -494,18 +494,8 @@ module ETHEREUM
 // track the maximum used so far.
 
 
-    syntax InternalOp ::= "#updateMemory"
- // -----------------------------------
-    rule <op> NEWMEM:Int ~> #updateMemory => . ... </op>
-         <memoryUsed> MU => maxInt(MU, NEWMEM) </memoryUsed>
-
-
-
     syntax Set ::= "#consumesMem" [function]
     rule #consumesMem => ( SetItem(MSTORE) )
-
-    syntax InternalOp ::= #times(Int)
-    rule <op> M:Int ~> #times(N:Int) => M *Int N ... </op>
 
     syntax InternalOp ::= #memory ( OpCode )
  // ----------------------------------------
