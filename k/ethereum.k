@@ -262,7 +262,7 @@ module ETHEREUM-SIMULATION
     rule check TESTID : { "expect" : POST } => check "account" : POST ~> failure TESTID
     rule check TESTID : { "export" : POST } => check "account" : POST ~> failure TESTID
     rule check TESTID : { "post"   : POST } => check "account" : POST ~> failure TESTID
- // -------------------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------------
     rule <k> check "account" : { ACCT : { "balance" : (BAL:Word) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
@@ -299,8 +299,6 @@ module ETHEREUM-SIMULATION
  // --------------------------------------------------------------------------
     rule check "out" : ((OUT:String) => #parseByteStack(OUT))
     rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
-
-
 
     rule check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID
  // ------------------------------------------------------------------------------
