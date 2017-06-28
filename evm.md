@@ -1160,34 +1160,33 @@ The gas calculation is designed to mirror the style of the yellowpaper.
     rule <op> #gas(OP) => Gexp +Word (Gexpbyte *Word (1 +Word (log256Int(W1)))) ... </op>
          <wordStack> W0 : W1 : WS </wordStack>         requires OP ==K EXP andBool W1 =/=K 0
 
-    rule <op> #gas(OP)         => Gsload     ... </op> requires OP ==K SLOAD
+    rule <op> #gas(DUP(_))      => Gverylow   ... </op>
+    rule <op> #gas(PUSH(_, _))  => Gverylow   ... </op>
+    rule <op> #gas(SWAP(_))     => Gverylow   ... </op>
+    rule <op> #gas(SLOAD)       => Gsload     ... </op>
+    rule <op> #gas(BALANCE _)   => Gbalance   ... </op>
+    rule <op> #gas(BLOCKHASH _) => Gblockhash ... </op>
 
-    rule <op> #gas(OP)         => Gzero      ... </op> requires OP in Wzero
-    rule <op> #gas(OP)         => Gbase      ... </op> requires OP in Wbase
-    rule <op> #gas(DUP(_))     => Gverylow   ... </op>
-    rule <op> #gas(PUSH(_, _)) => Gverylow   ... </op>
-    rule <op> #gas(SWAP(_))    => Gverylow   ... </op>
-    rule <op> #gas(OP)         => Gverylow   ... </op> requires OP in Wverylow
-    rule <op> #gas(OP)         => Glow       ... </op> requires OP in Wlow
-    rule <op> #gas(OP)         => Gmid       ... </op> requires OP in Wmid
-    rule <op> #gas(OP)         => Ghigh      ... </op> requires OP in Whigh
-    rule <op> #gas(OP)         => Gextcode   ... </op> requires OP in Wextcode
-
-    rule <op> #gas(OP)         => Gbalance   ... </op> requires OP ==K BALANCE
-    rule <op> #gas(OP)         => Gblockhash ... </op> requires OP ==K BLOCKHASH
+    rule <op> #gas(OP) => Gzero    ... </op> requires OP inOps Wzero
+    rule <op> #gas(OP) => Gbase    ... </op> requires OP inOps Wbase
+    rule <op> #gas(OP) => Gverylow ... </op> requires OP inOps Wverylow
+    rule <op> #gas(OP) => Glow     ... </op> requires OP inOps Wlow
+    rule <op> #gas(OP) => Gmid     ... </op> requires OP inOps Wmid
+    rule <op> #gas(OP) => Ghigh    ... </op> requires OP inOps Whigh
+    rule <op> #gas(OP) => Gextcode ... </op> requires OP inOps Wextcode
 ```
 
 TODO: Gas calculation for the following operators is not implemented.
 
 ```{.k .uiuck .rvk}
-    rule <op> #gas(OP)           => Gzero   ... </op> requires OP in Wcall
-    rule <op> #gas(OP)           => Gzero   ... </op> requires OP ==K SELFDESTRUCT
-    rule <op> #gas(OP)           => Gzero   ... </op> requires OP in Wcopy
-    rule <op> #gas(OP)           => Gzero   ... </op> requires OP ==K EXTCODECOPY
-    rule <op> #gas(LOG(N))       => Gzero   ... </op>
-    rule <op> #gas(OP)           => Gzero   ... </op> requires OP ==K SHA3
-    rule <op> #gas(OP)           => Gzero   ... </op> requires OP ==K JUMPDEST
-    rule <op> #gas(OP)           => Gcreate ... </op> requires OP ==K CREATE
+    rule <op> #gas(OP)                  => Gzero   ... </op> requires OP inOps Wcopy
+    rule <op> #gas(OP)                  => Gzero   ... </op> requires OP inOps Wcall
+    rule <op> #gas(SELFDESTRUCT _)      => Gzero   ... </op>
+    rule <op> #gas(EXTCODECOPY _ _ _ _) => Gzero   ... </op>
+    rule <op> #gas(LOG(N) _ _)          => Gzero   ... </op>
+    rule <op> #gas(SHA3 _ _)            => Gzero   ... </op>
+    rule <op> #gas(JUMPDEST)            => Gzero   ... </op>
+    rule <op> #gas(CREATE _ _ _)        => Gcreate ... </op>
 ```
 
 Here the lists of gas prices and gas opcodes are provided.
@@ -1247,6 +1246,16 @@ Here the lists of gas prices and gas opcodes are provided.
     rule Gsha3word      => 6
     rule Gcopy          => 3
     rule Gblockhash     => 20
+
+    syntax Bool ::= OpCode "inOps" Set [function]
+ // ---------------------------------------------
+    rule OP                           inOps S => OP in S requires #zeroArgs?(OP)
+    rule (UOP:UnStackOp _)            inOps S => UOP in S
+    rule (BOP:BinStackOp _ _)         inOps S => BOP in S
+    rule (TOP:TernStackOp _ _ _)      inOps S => TOP in S
+    rule (QOP:QuadStackOp _ _ _ _)    inOps S => QOP in S
+    rule (COP:CallOp _ _ _ _ _ _ _)   inOps S => COP in S
+    rule (CSOP:CallSixOp _ _ _ _ _ _) inOps S => CSOP in S
 
     syntax Set ::= "Wzero"    [function] | "Wbase" [function]
                  | "Wverylow" [function] | "Wlow"  [function]
