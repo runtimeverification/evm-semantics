@@ -246,11 +246,12 @@ module ETHEREUM
 // up front.
 
 // -   `#exceptional?` checks if the operator is invalid and will not cause
-//     `wordStack` size issues.
+//     `wordStack` size issues (this implements the function `Z` in the
+//     yellowpaper, section 9.4.2).
 
 
     syntax InternalOp ::= "#exceptional?" "[" OpCode "]"
- // -----------------------------------
+ // ----------------------------------------------------
     rule <op> #exceptional? [ OP ] => #invalid? [ OP ] ~> #stackNeeded? [ OP ] ~> #badJumpDest? [ OP ] ... </op>
 
 
@@ -258,9 +259,9 @@ module ETHEREUM
 
 
     syntax InternalOp ::= "#invalid?" "[" OpCode "]"
- // -------------------------------
-//    rule <op> #invalid? [ INVALID ] => #exception ... </op>
-//    rule <op> #invalid? [ OP      ] => .          ... </op> requires OP =/=K INVALID
+ // ------------------------------------------------
+    rule <op> #invalid? [ INVALID ] => #exception ... </op>
+    rule <op> #invalid? [ OP      ] => .          ... </op> requires OP =/=K INVALID
 
 
 // -   `#stackNeeded?` checks that the stack will be not be under/overflown.
@@ -269,20 +270,20 @@ module ETHEREUM
 
 
     syntax InternalOp ::= "#stackNeeded?" "[" OpCode "]"
- // -----------------------------------
-//    rule <op> #stackNeeded? [ OP ]
-//           => #if #sizeWordStack(WS) <Int #stackNeeded(OP) orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
-//              #then #exception #else .K #fi
-//          ...
-//         </op>
-//         <wordStack> WS </wordStack>
+ // ----------------------------------------------------
+    rule <op> #stackNeeded? [ OP ]
+           => #if #sizeWordStack(WS) <Int #stackNeeded(OP) orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
+              #then #exception #else .K #fi
+          ...
+         </op>
+         <wordStack> WS </wordStack>
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
     rule #stackNeeded(PUSH(_, _))      => 0
     rule #stackNeeded(NOP:NullStackOp) => 0
     rule #stackNeeded(UOP:UnStackOp)   => 1
-    rule #stackNeeded(BOP:BinStackOp)  => 2
+    rule #stackNeeded(BOP:BinStackOp)  => 2 requires notBool isLogOp(BOP)
     rule #stackNeeded(TOP:TernStackOp) => 3
     rule #stackNeeded(DUP(N))          => N
     rule #stackNeeded(SWAP(N))         => N +Int 1
@@ -317,16 +318,16 @@ module ETHEREUM
 
 
     syntax InternalOp ::= "#badJumpDest?" "[" OpCode "]"
- // -----------------------------------
-//    rule <op> #badJumpDest? [ OP    ] => . ... </op> requires notBool isJumpOp(OP)
-//    rule <op> #badJumpDest? [ OP    ] => . ... </op> <wordStack> DEST  : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
-//    rule <op> #badJumpDest? [ JUMPI ] => . ... </op> <wordStack> _ : 0 : WS </wordStack>
-//
-//    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
-//    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST andBool W =/=K 0
-//
-//    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> PGM </program> requires notBool (DEST in keys(PGM))
-//    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> PGM </program> requires (notBool (DEST in keys(PGM))) andBool W =/=K 0
+ // ----------------------------------------------------
+    rule <op> #badJumpDest? [ OP    ] => . ... </op> requires notBool isJumpOp(OP)
+    rule <op> #badJumpDest? [ OP    ] => . ... </op> <wordStack> DEST  : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
+    rule <op> #badJumpDest? [ JUMPI ] => . ... </op> <wordStack> _ : 0 : WS </wordStack>
+
+    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
+    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST andBool W =/=K 0
+
+    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> PGM </program> requires notBool (DEST in keys(PGM))
+    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> PGM </program> requires (notBool (DEST in keys(PGM))) andBool W =/=K 0
 
 
 // ### Execution Step
@@ -336,7 +337,7 @@ module ETHEREUM
 
 
     syntax InternalOp ::= "#exec" "[" OpCode "]"
- // ---------------------------
+ // --------------------------------------------
     rule <op> #exec [ OP ] => #try (#gas [ OP ] ~> OP) ... </op> requires #zeroArgs?(OP)
 
     syntax Bool ::= "#zeroArgs?" "(" OpCode ")" [function]
@@ -391,7 +392,13 @@ module ETHEREUM
 
 
     syntax InternalOp ::= "#gas" "[" OpCode "]"
- // --------------------------
+ // -------------------------------------------
+    rule <op> #gas [ OP ] => #gas(OP) ~> #deductGas ... </op>
+
+    syntax InternalOp ::= "#deductGas"
+ // ----------------------------------
+    rule <op> G:Int ~> #deductGas => .          ... </op> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+    rule <op> G:Int ~> #deductGas => #exception ... </op> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
 
 
 // ### Program Counter
@@ -404,7 +411,7 @@ module ETHEREUM
 
 
     syntax InternalOp ::= "#pc" "[" OpCode "]"
- // -------------------------
+ // ------------------------------------------
     rule <op> #pc [ OP         ] => . ... </op> <pc> PCOUNT => PCOUNT +Word 1           </pc> requires notBool (isPushOp(OP) orBool isJumpOp(OP))
     rule <op> #pc [ PUSH(N, _) ] => . ... </op> <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
     rule <op> #pc [ OP         ] => . ... </op> requires isJumpOp(OP)
@@ -1159,7 +1166,7 @@ module ETHEREUM
 
     rule <op> #gas(OP)         => Gzero      ... </op> requires OP in Wzero
     rule <op> #gas(OP)         => Gbase      ... </op> requires OP in Wbase
-    rule <op> #gas(DUP(_))    => Gverylow   ... </op>
+    rule <op> #gas(DUP(_))     => Gverylow   ... </op>
     rule <op> #gas(PUSH(_, _)) => Gverylow   ... </op>
     rule <op> #gas(SWAP(_))    => Gverylow   ... </op>
     rule <op> #gas(OP)         => Gverylow   ... </op> requires OP in Wverylow

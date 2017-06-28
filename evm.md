@@ -1,8 +1,6 @@
 YellowPaper
 ===========
 
-In the yellowpaper the function `#exceptional?` is called `Z` (Section 9.4.2 in yellowpaper).
-It checks, in order:
 
 -   The instruction isn't `INVALID`.
 -   There are enough elements on the stack to supply the arguments.
@@ -257,11 +255,11 @@ Execution follows a simple cycle where first the state is checked for exceptions
 
 Some checks if an opcode will throw an exception are relatively quick and done up front.
 
--   `#exceptional?` checks if the operator is invalid and will not cause `wordStack` size issues.
+-   `#exceptional?` checks if the operator is invalid and will not cause `wordStack` size issues (this implements the function `Z` in the yellowpaper, section 9.4.2).
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#exceptional?" "[" OpCode "]"
- // -----------------------------------
+ // ----------------------------------------------------
     rule <op> #exceptional? [ OP ] => #invalid? [ OP ] ~> #stackNeeded? [ OP ] ~> #badJumpDest? [ OP ] ... </op>
 ```
 
@@ -269,9 +267,9 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#invalid?" "[" OpCode "]"
- // -------------------------------
-//    rule <op> #invalid? [ INVALID ] => #exception ... </op>
-//    rule <op> #invalid? [ OP      ] => .          ... </op> requires OP =/=K INVALID
+ // ------------------------------------------------
+    rule <op> #invalid? [ INVALID ] => #exception ... </op>
+    rule <op> #invalid? [ OP      ] => .          ... </op> requires OP =/=K INVALID
 ```
 
 -   `#stackNeeded?` checks that the stack will be not be under/overflown.
@@ -279,20 +277,20 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#stackNeeded?" "[" OpCode "]"
- // -----------------------------------
-//    rule <op> #stackNeeded? [ OP ]
-//           => #if #sizeWordStack(WS) <Int #stackNeeded(OP) orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
-//              #then #exception #else .K #fi
-//          ...
-//         </op>
-//         <wordStack> WS </wordStack>
+ // ----------------------------------------------------
+    rule <op> #stackNeeded? [ OP ]
+           => #if #sizeWordStack(WS) <Int #stackNeeded(OP) orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
+              #then #exception #else .K #fi
+          ...
+         </op>
+         <wordStack> WS </wordStack>
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
     rule #stackNeeded(PUSH(_, _))      => 0
     rule #stackNeeded(NOP:NullStackOp) => 0
     rule #stackNeeded(UOP:UnStackOp)   => 1
-    rule #stackNeeded(BOP:BinStackOp)  => 2
+    rule #stackNeeded(BOP:BinStackOp)  => 2 requires notBool isLogOp(BOP)
     rule #stackNeeded(TOP:TernStackOp) => 3
     rule #stackNeeded(DUP(N))          => N
     rule #stackNeeded(SWAP(N))         => N +Int 1
@@ -326,16 +324,16 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#badJumpDest?" "[" OpCode "]"
- // -----------------------------------
-//    rule <op> #badJumpDest? [ OP    ] => . ... </op> requires notBool isJumpOp(OP)
-//    rule <op> #badJumpDest? [ OP    ] => . ... </op> <wordStack> DEST  : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
-//    rule <op> #badJumpDest? [ JUMPI ] => . ... </op> <wordStack> _ : 0 : WS </wordStack>
-//
-//    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
-//    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST andBool W =/=K 0
-//
-//    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> PGM </program> requires notBool (DEST in keys(PGM))
-//    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> PGM </program> requires (notBool (DEST in keys(PGM))) andBool W =/=K 0
+ // ----------------------------------------------------
+    rule <op> #badJumpDest? [ OP    ] => . ... </op> requires notBool isJumpOp(OP)
+    rule <op> #badJumpDest? [ OP    ] => . ... </op> <wordStack> DEST  : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
+    rule <op> #badJumpDest? [ JUMPI ] => . ... </op> <wordStack> _ : 0 : WS </wordStack>
+
+    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
+    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST andBool W =/=K 0
+
+    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> PGM </program> requires notBool (DEST in keys(PGM))
+    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> PGM </program> requires (notBool (DEST in keys(PGM))) andBool W =/=K 0
 ```
 
 ### Execution Step
@@ -344,7 +342,7 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#exec" "[" OpCode "]"
- // ---------------------------
+ // --------------------------------------------
     rule <op> #exec [ OP ] => #try (#gas [ OP ] ~> OP) ... </op> requires #zeroArgs?(OP)
 
     syntax Bool ::= "#zeroArgs?" "(" OpCode ")" [function]
@@ -397,10 +395,7 @@ The `CallOp` opcodes all interperet their second argument as an address.
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#gas" "[" OpCode "]"
- // --------------------------
-```
-
-```
+ // -------------------------------------------
     rule <op> #gas [ OP ] => #gas(OP) ~> #deductGas ... </op>
 
     syntax InternalOp ::= "#deductGas"
@@ -418,7 +413,7 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#pc" "[" OpCode "]"
- // -------------------------
+ // ------------------------------------------
     rule <op> #pc [ OP         ] => . ... </op> <pc> PCOUNT => PCOUNT +Word 1           </pc> requires notBool (isPushOp(OP) orBool isJumpOp(OP))
     rule <op> #pc [ PUSH(N, _) ] => . ... </op> <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
     rule <op> #pc [ OP         ] => . ... </op> requires isJumpOp(OP)
@@ -1169,7 +1164,7 @@ The gas calculation is designed to mirror the style of the yellowpaper.
 
     rule <op> #gas(OP)         => Gzero      ... </op> requires OP in Wzero
     rule <op> #gas(OP)         => Gbase      ... </op> requires OP in Wbase
-    rule <op> #gas(DUP(_))    => Gverylow   ... </op>
+    rule <op> #gas(DUP(_))     => Gverylow   ... </op>
     rule <op> #gas(PUSH(_, _)) => Gverylow   ... </op>
     rule <op> #gas(SWAP(_))    => Gverylow   ... </op>
     rule <op> #gas(OP)         => Gverylow   ... </op> requires OP in Wverylow
@@ -1180,7 +1175,6 @@ The gas calculation is designed to mirror the style of the yellowpaper.
 
     rule <op> #gas(OP)         => Gbalance   ... </op> requires OP ==K BALANCE
     rule <op> #gas(OP)         => Gblockhash ... </op> requires OP ==K BLOCKHASH
-
 ```
 
 TODO: Gas calculation for the following operators is not implemented.
