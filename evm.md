@@ -296,6 +296,7 @@ Some checks if an opcode will throw an exception are relatively quick and done u
     rule #stackNeeded(DUP(N))          => N
     rule #stackNeeded(SWAP(N))         => N +Int 1
     rule #stackNeeded(LOG(N))          => N +Int 2
+    rule #stackNeeded(EXTCODECOP)      => 4
     rule #stackNeeded(DELEGATECALL)    => 6
     rule #stackNeeded(COP:CallOp)      => 7 requires COP =/=K DELEGATECALL
 
