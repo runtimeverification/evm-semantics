@@ -60,7 +60,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
  // --------------------------------------------
     rule <k> start => . ... </k> <op> . => #next </op>
     rule <k> flush => . ... </k> <op> #end => #finalize </op>
-    rule <k> flush => . ... </k> <op> (. => #finalize) ~> #exception </op>
+    rule <k> flush => . ... </k> <op> (. => #finalize) ~> #signalException ~> #next </op>
 ```
 
 -   `exception` only clears from the `k` cell if there is an exception on the `op` cell.

@@ -64,7 +64,7 @@ module ETHEREUM-SIMULATION
  // --------------------------------------------
     rule <k> start => . ... </k> <op> . => #next </op>
     rule <k> flush => . ... </k> <op> #end => #finalize </op>
-    rule <k> flush => . ... </k> <op> (. => #finalize) ~> #exception </op>
+    rule <k> flush => . ... </k> <op> (. => #finalize) ~> #signalException ~> #next </op>
 
 
 // -   `exception` only clears from the `k` cell if there is an exception on the
