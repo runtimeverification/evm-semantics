@@ -36,7 +36,11 @@ codeship: build split-tests
 tests/tests-develop/%/make.timestamp: tests/ethereum-tests/%.json
 	@echo "==   split: $@"
 	mkdir -p $(dir $@)
-	tests/split-test.py $< $(dir $@) tests/templates/output.txt
+ifneq (,$(findstring RV-K, $(K)))
+	tests/split-test.py $< $(dir $@) tests/templates/output-rvk.txt
+else
+	tests/split-test.py $< $(dir $@) tests/templates/output-uiuck.txt
+endif
 	cp tests/templates/config.xml $(dir $@)
 	touch $@
 
@@ -53,6 +57,7 @@ k/ethereum-kompiled/interpreter: $(defn_files) KRYPTO.ml
 	ocamlfind opt -a -o semantics.cmxa KRYPTO.cmx
 	ocamlfind remove ethereum-semantics-plugin
 	ocamlfind install ethereum-semantics-plugin META semantics.cmxa semantics.a KRYPTO.cmi KRYPTO.cmx
+	cd $(dir $(shell which krun))/../include/ocaml/fakelibs && cp libffi.a libz.a
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory k \
 					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O2
@@ -68,7 +73,13 @@ endif
 k/%.k: %.md
 	@echo "==  tangle: $@"
 	mkdir -p k
-	pandoc-tangle --from markdown --to code-k --code k $< > $@
+ifneq (,$(findstring RV-K, $(K)))
+	@echo "== Detected RV-K, will select codeblocks marked with 'rvk'"
+	pandoc-tangle --from markdown --to code-k --code rvk $< > $@
+else
+	@echo "== Detected UIUC-K, will select codeblocks marked with 'uiuck'"
+	pandoc-tangle --from markdown --to code-k --code uiuck $< > $@
+endif
 
 ktest: $(ktest_file)
 	cd k; ktest $(realpath .)/$< 

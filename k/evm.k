@@ -26,7 +26,10 @@ module ETHEREUM
     imports EVM-DATA
     imports STRING
 
-    configuration <ethereum>
+    configuration <k> $PGM:EthereumSimulation </k>
+                  <exit-code exit=""> 1 </exit-code>
+
+                  <ethereum>
 
                     // EVM Specific
                     // ============
@@ -60,9 +63,9 @@ module ETHEREUM
 
                       // A_* (execution substate)
                       <substate>
-                        <selfDestruct> .Set         </selfDestruct>     // A_s
-                        <log>          .SubstateLog </log>              // A_l
-                        <refund>       0:Word       </refund>           // A_r
+                        <selfDestruct> .Set   </selfDestruct>           // A_s
+                        <log>          .Set   </log>                    // A_l
+                        <refund>       0:Word </refund>                 // A_r
                       </substate>
 
                       // Immutable during a single transaction
@@ -89,9 +92,16 @@ module ETHEREUM
                       // ---------------
 
                       <activeAccounts> .Set </activeAccounts>
-
                       <accounts>
-                        <account multiplicity="*" type="Set">
+
+
+// -   UIUC-K and RV-K have slight differences of opinion here.
+
+
+                        <account multiplicity="*" type="Bag">
+
+
+
                           <acctID>  .AcctID </acctID>
                           <balance> .Value  </balance>
                           <code>    .Code   </code>
@@ -104,7 +114,15 @@ module ETHEREUM
                       // -------------------
 
                       <messages>
-                        <message multiplicity="*" type="Set">
+
+
+// -   UIUC-K and RV-K have slight differences of opinion here.
+
+
+                        <message multiplicity="*" type="Bag">
+
+
+
                           <msgID>  .MsgID   </msgID>
                           <to>     .AcctID  </to>
                           <from>   .AcctID  </from>
@@ -116,8 +134,6 @@ module ETHEREUM
                     </network>
 
                   </ethereum>
-                  <k> $PGM:EthereumSimulation </k>
-                  <exit-code exit=""> 1 </exit-code>
 
     syntax EthereumSimulation
     syntax AcctID ::= Word | ".AcctID"
@@ -149,8 +165,9 @@ module ETHEREUM
 //     operations to be performed after it).
 
 
+    syntax KItem ::= Exception
     syntax Exception ::= "#exception" | "#throw" K
- // --------------------------------------------------
+ // ----------------------------------------------
     rule <op> EX:Exception ~> (OP:OpCode => .) ... </op>
     rule <op> EX:Exception ~> (W:Word    => .) ... </op>
 
@@ -164,10 +181,10 @@ module ETHEREUM
 
 
     syntax KItem ::= "#catch" K | "#end"
- // ----------------------------------------
+ // ------------------------------------
     rule <op> #catch _ => . ... </op>
-    rule <op> #exception ~> #catch KL => KL ... </op>
-    rule <op> #throw KL  ~> #catch _  => KL ... </op>
+    rule <op> #exception ~> #catch OPS => OPS ... </op>
+    rule <op> #throw OPS ~> #catch _   => OPS ... </op>
 
 
 // Exception Checks
@@ -237,23 +254,23 @@ module ETHEREUM
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
+    rule #stackNeeded(PUSH(_, _))      => 0
     rule #stackNeeded(NOP:NullStackOp) => 0
     rule #stackNeeded(UOP:UnStackOp)   => 1
     rule #stackNeeded(BOP:BinStackOp)  => 2
     rule #stackNeeded(TOP:TernStackOp) => 3
-    rule #stackNeeded(QOP:QuadStackOp) => 4
-    rule #stackNeeded(PUSH(_, _))      => 0
     rule #stackNeeded(DUP(N))          => N
     rule #stackNeeded(SWAP(N))         => N +Int 1
     rule #stackNeeded(LOG(N))          => N +Int 2
+    rule #stackNeeded(EXTCODECOP)      => 4
     rule #stackNeeded(DELEGATECALL)    => 6
     rule #stackNeeded(COP:CallOp)      => 7 requires COP =/=K DELEGATECALL
 
     syntax Int ::= #stackAdded ( OpCode ) [function]
  // ------------------------------------------------
     rule #stackAdded(OP)        => 0 requires OP in #zeroRet
-    rule #stackAdded(LOG(_))    => 0
     rule #stackAdded(PUSH(_,_)) => 1
+    rule #stackAdded(LOG(_))    => 0
     rule #stackAdded(SWAP(N))   => N
     rule #stackAdded(DUP(N))    => N +Int 1
     rule #stackAdded(OP)        => 1 requires notBool (OP in #zeroRet orBool isPushOp(OP) orBool isLogOp(OP) orBool isStackOp(OP))
@@ -274,15 +291,24 @@ module ETHEREUM
 // ### Jump Destination
 
 // -   `#badJumpDest?` checks that if it's a `JUMP*` operation that it's jumping to
-//     a valid destination (Section 9.4.3 in yellowpaper).
+//     a valid destination (Section 9.4.3 in yellowpaper). According to the
+//     reference implementation, a conditional jump that does not actually jump is
+//     not an exception.
 
 
     syntax InternalOp ::= "#badJumpDest?" "(" OpCode ")"
  // ----------------------------------------------------
-    rule <op> #badJumpDest?(OP) => .          ... </op> requires OP =/=K JUMP andBool OP =/=K JUMPI
-    rule <op> #badJumpDest?(OP) => .          ... </op> <wordStack> DEST : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
-    rule <op> #badJumpDest?(OP) => #exception ... </op> <wordStack> DEST : WS </wordStack> <program> ... DEST |-> OP'      ... </program> requires (OP ==K JUMP orBool OP ==K JUMPI) andBool OP' =/=K JUMPDEST
-    rule <op> #badJumpDest?(OP) => #exception ... </op> <wordStack> DEST : WS </wordStack> <program> PGM </program>                       requires (OP ==K JUMP orBool OP ==K JUMPI) andBool notBool DEST in keys(PGM)
+    rule <op> #badJumpDest?(OP) => .             ... </op> requires notBool isJumpOp(OP)
+    rule <op> #badJumpDest?(OP) => .             ... </op> <wordStack> DEST        : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
+    rule <op> #badJumpDest?(JUMP)  => #exception ... </op> <wordStack> DEST        : WS </wordStack> <program> ... DEST |-> OP'      ... </program> requires OP' =/=K JUMPDEST
+    rule <op> #badJumpDest?(JUMP)  => #exception ... </op> <wordStack> DEST        : WS </wordStack> <program> PGM </program>                       requires notBool DEST in keys(PGM)
+    rule <op> #badJumpDest?(JUMPI) => #exception ... </op> <wordStack> DEST : COND : WS </wordStack> <program> ... DEST |-> OP'      ... </program> requires OP' =/=K JUMPDEST andBool COND =/=Int 0
+    rule <op> #badJumpDest?(JUMPI) => #exception ... </op> <wordStack> DEST : COND : WS </wordStack> <program> PGM </program>                       requires notBool DEST in keys(PGM) andBool COND =/=Int 0
+    rule <op> #badJumpDest?(JUMPI) => .          ... </op> <wordStack> DEST :    0 : WS </wordStack>
+
+    syntax Bool ::= isJumpOp ( OpCode ) [function]
+ // ----------------------------------------------
+    rule isJumpOp(OP) => OP ==K JUMP orBool OP ==K JUMPI
 
 
 // ### Gas Check
@@ -324,32 +350,57 @@ module ETHEREUM
 // loaded off the `wordStack`. This allows more "local" definition of each of the
 // corresponding operators.
 
+// Here all `OpCode`s are considered to be `KItem` (allowing sequentialization),
+// and the various sorts of opcodes are subsorted into `OpCode`.
 
+
+    syntax KItem  ::= OpCode
     syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
                     | InvalidOp | StackOp | InternalOp | CallOp | PushOp | LogOp
  // ----------------------------------------------------------------------------
 
-    syntax KItem ::= OpCode
-                   | UnStackOp Word
-                   | BinStackOp Word Word
-                   | TernStackOp Word Word Word
-                   | QuadStackOp Word Word Word Word
- // ------------------------------------------------
-    rule <op> UOP:UnStackOp   => UOP W0          ... </op> <wordStack> W0 : WS                => WS </wordStack>
-    rule <op> BOP:BinStackOp  => BOP W0 W1       ... </op> <wordStack> W0 : W1 : WS           => WS </wordStack>
-    rule <op> TOP:TernStackOp => TOP W0 W1 W2    ... </op> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
-    rule <op> QOP:QuadStackOp => QOP W0 W1 W2 W3 ... </op> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
 
-    syntax KItem ::= CallOp Word Word Word Word Word Word Word
-                   | "DELEGATECALL" Word Word Word Word Word Word
- // -------------------------------------------------------------
-    rule <op> DELEGATECALL => DELEGATECALL W0 W1 W2 W3 W4 W5    ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
-    rule <op> CO:CallOp    => CO           W0 W1 W2 W3 W4 W5 W6 ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
-      requires CO =/=K DELEGATECALL
+// Here we load the correct number of arguments from the `wordStack` based on the
+// sort of the opcode. Some of them require the first argument to be interpereted
+// as an address (modulo 160 bits), so the `#addr?` function performs that check.
 
-    syntax KItem ::= StackOp WordStack
- // ----------------------------------
+
+    syntax InternalOp ::= UnStackOp Word
+                        | BinStackOp Word Word
+                        | TernStackOp Word Word Word
+                        | QuadStackOp Word Word Word Word
+ // -----------------------------------------------------
+    rule <op> UOP:UnStackOp   => UOP #addr?(UOP, W0)          ... </op> <wordStack> W0 : WS                => WS </wordStack>
+    rule <op> BOP:BinStackOp  => BOP #addr?(BOP, W0) W1       ... </op> <wordStack> W0 : W1 : WS           => WS </wordStack>
+    rule <op> TOP:TernStackOp => TOP #addr?(TOP, W0) W1 W2    ... </op> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
+    rule <op> QOP:QuadStackOp => QOP #addr?(QOP, W0) W1 W2 W3 ... </op> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
+
+    syntax Word ::= "#addr?" "(" OpCode "," Word ")" [function]
+ // -----------------------------------------------------------
+    rule #addr?(BALANCE,      W) => #addr(W)
+    rule #addr?(EXTCODESIZE,  W) => #addr(W)
+    rule #addr?(EXTCODECOPY,  W) => #addr(W)
+    rule #addr?(SELFDESTRUCT, W) => #addr(W)
+    rule #addr?(OP, W) => W requires notBool OP in (SetItem(BALANCE) SetItem(EXTCODESIZE) SetItem(EXTCODECOPY) SetItem(SELFDESTRUCT))
+
+
+// `StackOp` is used for opcodes which require a large portion of the stack.
+
+
+    syntax InternalOp ::= StackOp WordStack
+ // ---------------------------------------
     rule <op> SO:StackOp => SO WS ... </op> <wordStack> WS </wordStack>
+
+
+// The `CallOp` opcodes all interperet their second argument as an address.
+
+
+    syntax InternalOp ::= CallOp Word Word Word Word Word Word Word
+                        | "DELEGATECALL" Word Word Word Word Word Word
+ // --------------------------------------------------------------------------
+    rule <op> DELEGATECALL => DELEGATECALL W0 #addr(W1) W2 W3 W4 W5    ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
+    rule <op> CO:CallOp    => CO           W0 #addr(W1) W2 W3 W4 W5 W6 ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
+      requires CO =/=K DELEGATECALL
 
 
 // ### Increment Program Counter
@@ -379,8 +430,8 @@ module ETHEREUM
 // `wordStack` and `localMem`).
 
 
-    syntax SubstateLog      ::= ".SubstateLog" | SubstateLog "." SubstateLogEntry
     syntax SubstateLogEntry ::= "{" Word "|" WordStack "|" WordStack "}"
+ // --------------------------------------------------------------------
 
 
 // After executing a transaction, it's necessary to have the effect of the substate
@@ -490,21 +541,22 @@ module ETHEREUM
     rule <op> #setStack WS     => . ... </op> <wordStack> _  => WS      </wordStack>
 
 
-// -   `#newAccount_` allows declaring a new empty account with the given address.
+// -   `#newAccount_` allows declaring a new empty account with the given address
+//     (and assumes the rounding to 160 bits has already occured).
 
 
     syntax InternalOp ::= "#newAccount" Word
  // ----------------------------------------
     rule <op> #newAccount ACCT => . ... </op>
          <activeAccounts> ACCTS </activeAccounts>
-      requires #addr(ACCT) in ACCTS
+      requires ACCT in ACCTS
 
     rule <op> #newAccount ACCT => . ... </op>
-         <activeAccounts> ACCTS (.Set => SetItem(#addr(ACCT))) </activeAccounts>
+         <activeAccounts> ACCTS (.Set => SetItem(ACCT)) </activeAccounts>
          <accounts>
            ( .Bag
           => <account>
-               <acctID>  #addr(ACCT)   </acctID>
+               <acctID>  ACCT          </acctID>
                <balance> 0             </balance>
                <code>    .Map          </code>
                <storage> .Map          </storage>
@@ -513,7 +565,7 @@ module ETHEREUM
            )
            ...
          </accounts>
-      requires notBool #addr(ACCT) in ACCTS
+      requires notBool ACCT in ACCTS
 
 
 // ### Stack Manipulations
@@ -676,8 +728,8 @@ module ETHEREUM
  // ---------------------------
     rule <op> JUMP DEST => . ... </op> <pc> _ => DEST </pc>
 
-    syntax BinStackOp  ::= "JUMPI"
- // ------------------------------
+    syntax BinStackOp ::= "JUMPI"
+ // -----------------------------
     rule <op> JUMPI DEST I => . ... </op> <pc> _ => DEST </pc> requires I =/=K 0
     rule <op> JUMPI DEST 0 => . ... </op>
 
@@ -687,7 +739,7 @@ module ETHEREUM
 
     syntax NullStackOp ::= "STOP"
  // -----------------------------
-    rule <op> STOP => #end ... </op>
+    rule <op> STOP ~> K => #end </op>
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
@@ -730,7 +782,7 @@ module ETHEREUM
          <wordStack> W0 : W1 : WS => #drop(N, WS) </wordStack>
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, W0, W1) </memoryUsed>
-         <log> CURRLOG => CURRLOG . { ACCT | #take(N, WS) | #range(LM, W0, W1) } </log>
+         <log> ... (.Set => SetItem({ ACCT | #take(N, WS) | #range(LM, W0, W1) })) </log>
       requires word2Bool(#sizeWordStack(WS) >=Word N)
 
 
@@ -752,29 +804,32 @@ module ETHEREUM
  // ------------------------------
     rule <op> BALANCE ACCT => BAL ~> #push ... </op>
          <account>
-           <acctID> ACCTACT </acctID>
+           <acctID> ACCT </acctID>
            <balance> BAL </balance>
            ...
          </account>
-      requires #addr(ACCT) ==K ACCTACT
 
     rule <op> BALANCE ACCT => #newAccount ACCT ~> 0 ~> #push ... </op>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool #addr(ACCT) in ACCTS
+      requires notBool ACCT in ACCTS
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
-    rule <op> EXTCODESIZE ACCTTO => #sizeOpCodeMap(CODE) ~> #push ... </op>
+    rule <op> EXTCODESIZE ACCT => #sizeOpCodeMap(CODE) ~> #push ... </op>
          <account>
-           <acctID> ACCTTOACT </acctID>
+           <acctID> ACCT </acctID>
            <code> CODE </code>
            ...
          </account>
-      requires #addr(ACCTTO) ==K ACCTTOACT
 
-    rule <op> EXTCODESIZE ACCTTO => #newAccount ACCTTO ~> 0 ~> #push ... </op>
+    rule <op> EXTCODESIZE ACCT => #newAccount ACCT ~> 0 ~> #push ... </op>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool #addr(ACCTTO) in ACCTS
+      requires notBool ACCT in ACCTS
+
+
+// TODO: What should happen in the case that the account doesn't exist with
+// `EXTCODECOPY`? Should we pad zeros (for the copied "program")?
+
 
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
@@ -782,15 +837,14 @@ module ETHEREUM
          <localMem> LM => LM [ MEMSTART := #asmOpCodes(#asOpCodes(PGM)) [ PGMSTART .. WIDTH ] ] </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, WIDTH) </memoryUsed>
          <account>
-           <acctID> ACCTACT </acctID>
+           <acctID> ACCT </acctID>
            <code> PGM </code>
            ...
          </account>
-      requires #addr(ACCT) ==K ACCTACT
 
     rule <op> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #newAccount ACCT ... </op>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool #addr(ACCT) in ACCTS
+      requires notBool ACCT in ACCTS
 
 
 // ### Account Storage Operations
@@ -924,7 +978,7 @@ module ETHEREUM
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM #addr(ACCTTO) CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTTO CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
            ~> #catch (.K)
            ...
@@ -933,11 +987,10 @@ module ETHEREUM
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) </memoryUsed>
          <account>
-           <acctID> ACCTTOACT </acctID>
+           <acctID> ACCTTO </acctID>
            <code> CODE </code>
            ...
          </account>
-      requires #addr(ACCTTO) ==K ACCTTOACT
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
@@ -951,11 +1004,10 @@ module ETHEREUM
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) </memoryUsed>
          <account>
-           <acctID> ACCTTOACT </acctID>
+           <acctID> ACCTTO </acctID>
            <code> CODE </code>
            ...
          </account>
-      requires #addr(ACCTTO) ==K ACCTTOACT
 
     syntax CallOp ::= "DELEGATECALL"
  // --------------------------------
@@ -969,11 +1021,10 @@ module ETHEREUM
          <localMem> LM </localMem>
          <memoryUsed> MU => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) </memoryUsed>
          <account>
-           <acctID> ACCTTOACT </acctID>
+           <acctID> ACCTTO </acctID>
            <code> CODE </code>
            ...
          </account>
-      requires #addr(ACCTTO) ==K ACCTTOACT
 
 
 // ### Account Creation/Deletion
@@ -1048,23 +1099,22 @@ module ETHEREUM
            ...
          </account>
          <account>
-           <acctID> ACCTTOACT </acctID>
+           <acctID> ACCTTO </acctID>
            <balance> BALTO => BALTO +Word BALFROM </balance>
            ...
          </account>
-      requires #addr(ACCTTO) ==K ACCTTOACT
 
-    rule <op> SELFDESTRUCT ACCTTO => #newAccount #addr(ACCTTO) ... </op>
+    rule <op> SELFDESTRUCT ACCTTO => #newAccount ACCTTO ... </op>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
          <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Word Rself-destruct #fi </refund>
-         <activeAccounts> ACCTS (.Set => SetItem(#addr(ACCTTO))) </activeAccounts>
+         <activeAccounts> ACCTS (.Set => SetItem(ACCTTO)) </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <balance> BALFROM => 0 </balance>
            ...
          </account>
-      requires notBool #addr(ACCTTO) in ACCTS
+      requires notBool ACCTTO in ACCTS
 
 
 // Ethereum Gas Calculation

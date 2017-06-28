@@ -111,19 +111,17 @@ module EVM-DATA
     rule I1 up/Int I2 => (I1 /Int I2) +Int 1 requires I1 %Int I2 =/=K 0
 
 
-// `logNInt` returns the log base N (floored) of an integer.
+// -   `logNInt` returns the log base N (floored) of an integer.
 
 
-    syntax Int ::= log2Int(Int) [function]
- // ------------------------------------------
-    // log2Int is the index of the most significant bit of a number
-    // log2Int(0) is undefined
-    rule log2Int(1) => 0
-    rule log2Int(W:Int) => 1 +Int log2Int(W >>Int 1)    requires W >Int 1
+    syntax Int ::= log2Int ( Int ) [function]
+ // -----------------------------------------
+    rule log2Int(1)     => 0
+    rule log2Int(W:Int) => 1 +Int log2Int(W >>Int 1) requires W >Int 1
 
-    syntax Int ::= log256Int(Int) [function]
- // ------------------------------------------
-    rule log256Int(N:Int) => log2Int(N) /Int log2Int(256)
+    syntax Int ::= log256Int ( Int ) [function]
+ // -------------------------------------------
+    rule log256Int(N:Int) => log2Int(N) /Int 8
 
 
 // The corresponding `<op>Word` operations automatically perform the correct `Word`
@@ -220,8 +218,11 @@ module EVM-DATA
     syntax Word ::= bit  ( Word , Word ) [function]
                   | byte ( Word , Word ) [function]
  // -----------------------------------------------
-    rule bit(N:Int, W:Int)  => (W >>Int (255 -Int N)) %Int 2
-    rule byte(N:Int, W:Int) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) %Int (2 ^Int 8)
+    rule bit(N:Int, _)  => 0 requires N <Int 0 orBool N >=Int 256
+    rule byte(N:Int, _) => 0 requires N <Int 0 orBool N >=Int 32
+
+    rule bit(N:Int, W:Int)  => (W >>Int (255 -Int N)) %Int 2                            requires N >=Int 0 andBool N <Int 256
+    rule byte(N:Int, W:Int) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) %Int (2 ^Int 8) requires N >=Int 0 andBool N <Int 32
 
 
 // -   `#nBits` shifts in $N$ ones from the right.
@@ -233,8 +234,8 @@ module EVM-DATA
                   | #nBytes ( Int )  [function]
                   | Int "<<Byte" Int [function]
  // -------------------------------------------
-    rule #nBits(N)  => (2 ^Int N) -Int 1
-    rule #nBytes(N) => #nBits(N *Int 8)
+    rule #nBits(N)  => (2 ^Int N) -Int 1  requires N >=Int 0
+    rule #nBytes(N) => #nBits(N *Int 8)   requires N >=Int 0
     rule N <<Byte M => N <<Int (8 *Int M)
 
 
@@ -243,8 +244,9 @@ module EVM-DATA
 
     syntax Word ::= signextend( Word , Word ) [function]
  // ----------------------------------------------------
-    rule signextend(N:Int, W:Int) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
-    rule signextend(N:Int, W:Int) => chop( #nBytes(N +Int 1)                      &Int W ) requires notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
+    rule signextend(N:Int, W:Int) => W requires N >=Int 32 orBool N <Int 0
+    rule signextend(N:Int, W:Int) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
+    rule signextend(N:Int, W:Int) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
 
 
 // -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
@@ -422,8 +424,9 @@ module EVM-DATA
 
 
     syntax JSONList ::= List{JSON,","}
+    syntax JSONKey  ::= String | Word
     syntax JSON     ::= String
-                      | String ":" JSON
+                      | JSONKey ":" JSON
                       | "{" JSONList "}"
                       | "[" JSONList "]"
  // ------------------------------------
@@ -439,8 +442,10 @@ module EVM-DATA
 // -   `#parseHexBytes` interperets a string as a stack of bytes.
 // -   `#parseByteStack` interperets a string as a stack of bytes, but makes sure
 //     to remove the leading "0x".
+// -   `#parseWordStack` interperets a JSON list as a stack of `Word`.
 // -   `#parseMap` interperets a JSON key/value object as a map from `Word` to
 //     `Word`.
+// -   `#parseAddr` interperets a string as a 160 bit hex-endcoded address.
 
 
     syntax Word ::= #parseHexWord ( String ) [function]
@@ -456,11 +461,20 @@ module EVM-DATA
     rule #parseHexBytes("") => .WordStack
     rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytes(substrString(S, 2, lengthString(S))) requires lengthString(S) >=Int 2
 
+    syntax WordStack ::= #parseWordStack ( JSON ) [function]
+ // --------------------------------------------------------
+    rule #parseWordStack( [ .JSONList ] )            => .WordStack
+    rule #parseWordStack( [ (WORD:String) , REST ] ) => #parseHexWord(WORD) : #parseWordStack( [ REST ] )
+
     syntax Map ::= #parseMap ( JSON ) [function]
  // --------------------------------------------
     rule #parseMap( { .JSONList                   } ) => .Map
     rule #parseMap( { _   : (VALUE:String) , REST } ) => #parseMap({ REST })                                                requires #parseHexWord(VALUE) ==K 0
     rule #parseMap( { KEY : (VALUE:String) , REST } ) => #parseMap({ REST }) [ #parseHexWord(KEY) <- #parseHexWord(VALUE) ] requires #parseHexWord(VALUE) =/=K 0
+
+    syntax Word ::= #parseAddr ( String ) [function]
+ // ------------------------------------------------
+    rule #parseAddr(S) => #addr(#parseHexWord(S))
 
 
 // Unparsing

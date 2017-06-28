@@ -21,29 +21,105 @@ module ETHEREUM-SIMULATION
     rule .EthereumSimulation => .
     rule ETC:EthereumCommand ETS:EthereumSimulation => ETC ~> ETS
 
-    syntax EthereumCommand ::= EthereumSpecCommand JSON
-                             | "{" EthereumSimulation "}"
- // -----------------------------------------------------
-    rule <k> { ES:EthereumSimulation } => ES ... </k>
-
     syntax EthereumSimulation ::= JSON
  // ----------------------------------
     rule JSONINPUT:JSON => run JSONINPUT success .EthereumSimulation
 
+    syntax EthereumCommand ::= DistCommand JSON
+ // -------------------------------------------
+    rule DC:DistCommand DATA : { .JSONList } => .
+    rule DC:DistCommand DATA : { KEY : VALUE , REST } => DC DATA : { KEY : VALUE } ~> DC DATA : { REST } requires REST =/=K .JSONList
 
-// Pretty Ethereum Input
-// ---------------------
+    rule DC:DistCommand DATA : [ .JSONList ] => .
+    rule DC:DistCommand DATA : [ { TEST } , REST ] => DC DATA : { TEST } ~> DC DATA : [ REST ]
+
 
 // For verification purposes, it's much easier to specify a program in terms of its
 // op-codes and not the hex-encoding that the tests use. To do so, we'll extend
-// sort `JSON` with some EVM specific syntax.
+// sort `JSON` with some EVM specific syntax, and provide a "pretti-fication" to
+// the nicer input form.
 
 
-    syntax JSON ::= Word | WordStack | OpCodes | Map | Call
- // -------------------------------------------------------
+    syntax JSON ::= Word | WordStack | OpCodes | Map | Call | SubstateLogEntry
+ // --------------------------------------------------------------------------
+    rule DC:DistCommand "account" : { ACCTID: { KEY : VALUE , REST } } => DC "account" : { ACCTID : { KEY : VALUE } } ~> DC "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
+
+    rule DC:DistCommand "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
+    rule DC:DistCommand "account" : { (ACCT:Word) : { "balance" : ((VAL:String)         => #parseHexWord(VAL)) } }
+    rule DC:DistCommand "account" : { (ACCT:Word) : { "nonce"   : ((VAL:String)         => #parseHexWord(VAL)) } }
+    rule DC:DistCommand "account" : { (ACCT:Word) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
+    rule DC:DistCommand "account" : { (ACCT:Word) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
+    rule DC:DistCommand "account" : { (ACCT:Word) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
 
 
-// Primitive Commands
+// ### Driving Execution
+
+// -   `start` places `#next` on the `op` cell so that execution of the loaded
+//     state begin.
+// -   `flush` places `#finalize` on the `op` cell once it sees `#end` in the `op`
+//     cell, clearing any exceptions it finds.
+
+
+    syntax EthereumCommand ::= "start" | "flush"
+ // --------------------------------------------
+    rule <k> start => . ... </k> <op> . => #next </op>
+    rule <k> flush => . ... </k> <op> #end => #finalize </op>
+    rule <k> flush => . ... </k> <op> (. => #finalize) ~> #exception </op>
+
+
+// -   `exception` only clears from the `k` cell if there is an exception on the
+//     `op` cell.
+// -   `failure_` holds the name of a test that failed if a test does fail.
+
+
+    syntax EthereumCommand ::= "exception" | "failure" String | "success"
+ // ---------------------------------------------------------
+    rule <k> exception => . ... </k> <op> #exception ... </op>
+    rule <k> success => . ... </k> <exit-code> _ => 0 </exit-code>
+    rule failure _ => .
+
+
+// ### Running Tests
+
+// -   `run` runs a given set of Ethereum tests (from the test-set).
+
+
+    syntax EthereumCommand ::= "run" JSON
+ // -------------------------------------
+    rule run { .JSONList } => .
+    rule run { TESTID : (TEST:JSON) , TESTS }
+      => run (TESTID : TEST)
+      ~> #if #hasPost?( TEST ) #then .K #else exception #fi
+      ~> clear
+      ~> run { TESTS }
+
+    syntax Bool ::= "#hasPost?" "(" JSON ")" [function]
+ // ---------------------------------------------------
+    rule #hasPost? ({ .JSONList }) => false
+    rule #hasPost? ({ (KEY:String) : _ , REST }) => KEY ==String "post" orBool #hasPost? ({ REST })
+
+
+// Here we make sure fields that are pre-conditions are `load`ed first, and
+// post-conditions are `check`ed last.
+
+
+    rule run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST }
+      requires KEY in (SetItem("env") SetItem("pre"))
+
+    rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY : VAL }
+      requires KEY in (SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("post") SetItem("expect") SetItem("gas"))
+
+
+// The particular key `"exec"` should be processed last, to ensure that the
+// pre/post-conditions are in place. When it has finished loading it's state, it
+// should `start ~> flush` to perform the execution.
+
+
+    rule run TESTID : { "exec" : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , "exec" : EXEC , REST }
+    rule run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush
+
+
+// State Manipulation
 // ------------------
 
 // ### Clearing State
@@ -71,9 +147,9 @@ module ETHEREUM-SIMULATION
          <pc>        _ => 0:Word     </pc>
          <gas>       _ => 0:Word     </gas>
 
-         <selfDestruct> _ => .Set         </selfDestruct>
-         <log>          _ => .SubstateLog </log>
-         <refund>       _ => 0:Word       </refund>
+         <selfDestruct> _ => .Set   </selfDestruct>
+         <log>          _ => .Set   </log>
+         <refund>       _ => 0:Word </refund>
 
          <gasPrice>   _ => 0:Word </gasPrice>
          <origin>     _ => 0:Word </origin>
@@ -90,64 +166,49 @@ module ETHEREUM-SIMULATION
 
 // ### Loading State
 
-// -   `mkAcct_` creates an account with the supplied ID.
-// -   `load_` loads an account or transaction into the world state.
+// -   `mkAcct_` creates an account with the supplied ID (assuming it's already
+//     been chopped to 160 bits).
 
 
-    syntax EthereumSpecCommand ::= "mkAcct"
- // ---------------------------------------
-    rule <k> mkAcct (ACCTID:String) => . ... </k> <op> . => #newAccount #parseHexWord(ACCTID) </op>
-
-    syntax EthereumSpecCommand ::= "load"
- // -------------------------------------
-    rule load DATA : { .JSONList } => .
-    rule load DATA : { (KEY:String) : VAL , REST } => load DATA : { KEY : VAL } ~> load DATA : { REST } requires REST =/=K .JSONList
+    syntax EthereumCommand ::= "mkAcct" Word
+ // ----------------------------------------
+    rule <k> mkAcct ACCT => . ... </k> <op> . => #newAccount ACCT </op>
 
 
-// Here we load the relevant information for accounts.
+// -   `load` loads an account or transaction into the world state.
 
 
-    rule load "pre" : { (ACCTID:String) : ACCT } => mkAcct ACCTID ~> load "account" : { ACCTID : ACCT }
- // ---------------------------------------------------------------------------------------------------
-    rule load "account" : { .JSONList } => .
-    rule load "account" : { ACCTID : { (KEY:String) : VAL , REST } } => load "account" : { ACCTID : { KEY : VAL } } ~> load "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
+    syntax DistCommand ::= "load"
+ // -----------------------------
+    rule load "pre" : { (ACCTID:String) : ACCT } => mkAcct #parseAddr(ACCTID) ~> load "account" : { ACCTID : ACCT }
 
-    rule load "account" : { ACCTID : { "balance" : ((BAL:String) => #parseHexWord(BAL)) } }
-    rule <k> load "account" : { ACCTID : { "balance" : (BAL:Word) } } => . ... </k>
+    rule <k> load "account" : { ACCT : { "balance" : (BAL:Word) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <balance> _ => BAL </balance>
            ...
          </account>
-      requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule load "account" : { ACCTID : { "code" : ((CODE:String) => #dasmOpCodes(#parseByteStack(CODE))) } }
-    rule load "account" : { ACCTID : { "code" : ((CODE:OpCodes) => #asMapOpCodes(CODE)) } }
-    rule <k> load "account" : { ACCTID : { "code" : (CODE:Map) } } => . ... </k>
+    rule <k> load "account" : { ACCT : { "code" : (CODE:Map) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> _ => CODE </code>
            ...
          </account>
-      requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule load "account" : { ACCTID : { "nonce" : ((NONCE:String) => #parseHexWord(NONCE)) } }
-    rule <k> load "account" : { ACCTID : { "nonce" : (NONCE:Word) } } => . ... </k>
+    rule <k> load "account" : { ACCT : { "nonce" : (NONCE:Word) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <acctMap> AM => AM [ "nonce" <- NONCE ] </acctMap>
            ...
          </account>
-      requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule load "account" : { ACCTID : { "storage" : ((STORAGE:JSON) => #parseMap(STORAGE)) } } requires notBool isMap(STORAGE)
-    rule <k> load "account" : { ACCTID : { "storage" : (STORAGE:Map) } } => . ... </k>
+    rule <k> load "account" : { ACCT : { "storage" : (STORAGE:Map) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <storage> _ => STORAGE </storage>
            ...
          </account>
-      requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
 
 // Here we load the environmental information.
@@ -180,28 +241,13 @@ module ETHEREUM-SIMULATION
     rule <k> load "exec" : { "code" : (CODE:Map)       } => . ... </k> <program>  _ => CODE </program>
 
 
-// ### Driving Execution
-
-// -   `start` places `#next` on the `op` cell so that execution of the loaded
-//     state begin.
-// -   `flush` places `#finalize` on the `op` cell once it sees `#end` in the `op`
-//     cell. If it sees an exception on the top of the cell, it simply clears.
-
-
-    syntax EthereumCommand ::= "start" | "flush"
- // --------------------------------------------
-    rule <k> start => . ... </k> <op> . => #next </op>
-    rule <k> flush => . ... </k> <op> #end        => #finalize </op>
-    rule <k> flush => . ... </k> <op> #exception  => .         </op>
-
-
 // ### Checking State
 
 // -   `check_` checks if an account/transaction appears in the world-state
 //     as stated.
 
 
-    syntax EthereumSpecCommand ::= "check"
+    syntax DistCommand ::= "check"
  // --------------------------------------
     rule check DATA : { .JSONList } => .
     rule check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST } requires REST =/=K .JSONList
@@ -214,65 +260,56 @@ module ETHEREUM-SIMULATION
 // handle the cases of `"expect"` and `"export"`.
 
 
-    rule check TESTID : { "expect" : POST } => check "post" : POST ~> failure TESTID
-    rule check TESTID : { "export" : POST } => check "post" : POST ~> failure TESTID
-    rule check TESTID : { "post"   : POST } => check "post" : POST ~> failure TESTID
-    rule check "post" : { (ACCTID:String) : ACCT } => check ACCTID : ACCT
- // ---------------------------------------------------------------------
-    rule check ACCTID : { "balance" : ((BAL:String) => #parseHexWord(BAL)) }
-    rule <k> check ACCTID : { "balance" : (BAL:Word) } => . ... </k>
+    rule check TESTID : { "expect" : POST } => check "account" : POST ~> failure TESTID
+    rule check TESTID : { "export" : POST } => check "account" : POST ~> failure TESTID
+    rule check TESTID : { "post"   : POST } => check "account" : POST ~> failure TESTID
+ // -------------------------------------------------------------------------------------
+    rule <k> check "account" : { ACCT : { "balance" : (BAL:Word) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            ...
          </account>
-      requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule check ACCTID : { "nonce" : ((NONCE:String) => #parseHexWord(NONCE)) }
-    rule <k> check ACCTID : { "nonce" : (NONCE:Word) } => . ... </k>
+    rule <k> check "account" : { ACCT : { "nonce" : (NONCE:Word) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <acctMap> "nonce" |-> NONCE </acctMap>
            ...
          </account>
-      requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule check ACCTID : { "storage" : ((STORAGE:JSON) => #parseMap(STORAGE)) } requires notBool isMap(STORAGE)
-    rule <k> check ACCTID : { "storage" : (STORAGE:Map) } => . ... </k>
+    rule <k> check "account" : { ACCT : { "storage" : (STORAGE:Map) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
            ...
          </account>
-      requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
-    rule check ACCTID : { "code" : ((CODE:String) => #dasmOpCodes(#parseByteStack(CODE))) }
-    rule check ACCTID : { "code" : ((CODE:OpCodes) => #asMapOpCodes(CODE)) }
-    rule <k> check ACCTID : { "code" : (CODE:Map) } => . ... </k>
+    rule <k> check "account" : { ACCT : { "code" : (CODE:Map) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
            ...
          </account>
-      requires #addr(#parseHexWord(ACCTID)) ==K ACCT
 
 
-// TODO: `check` on `"callcreates"` ignores the `"gasLimit"` field.
+// Here we check the other post-conditions associated with an EVM test.
 
-
-    rule check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID
- // ----------------------------------------------------------------------------------------------------
-    rule check "callcreates" : { "value" : VAL , "destination" : ACCTTO , "gasLimit" : GLIMIT , "data" : DATA }
-      => check "callcreates" : { #addr(#parseHexWord(ACCTTO)) | #parseHexWord(VAL) | #parseByteStack(DATA) }
-    rule <k> check "callcreates" : C:Call => . ... </k> <callLog> CL </callLog> requires C in CL
 
     rule check TESTID : { "out" : OUT } => check "out" : OUT ~> failure TESTID
  // --------------------------------------------------------------------------
     rule check "out" : ((OUT:String) => #parseByteStack(OUT))
     rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
 
+    rule check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID
+ // ------------------------------------------------------------------------------
+    rule check "logs" : { "topics" : (TOPICS:JSON) , "bloom" : (BLOOM:String) , "data" : (DATA:String) , "address" : (ACCT:String) , .JSONList }
+      => check "logs" : { #parseAddr(ACCT) | #parseWordStack(TOPICS) | #parseByteStack(DATA) }
+    rule <k> check "logs" : SLE:SubstateLogEntry => . ... </k> <log> SL </log> requires SLE in SL
 
-// TODO: `check` on `"gas"` and `"logs"` is dropped.
+
+// TODO: `check` on `"gas"` is dropped, `check` on `"callcreates"` ignores the
+// `"gasLimit"` field.
 
 
     rule check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID
@@ -280,50 +317,10 @@ module ETHEREUM-SIMULATION
     rule check "gas" : ((GLEFT:String) => #parseHexWord(GLEFT))
     rule check "gas" : GLEFT => .
 
-    rule check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID
- // ------------------------------------------------------------------------------
-    rule check "logs" : LOGS => .
-
-
-// ### Running Tests
-
-// -   `run` runs a given set of Ethereum tests (from the test-set).
-
-
-    syntax EthereumCommand ::= "success" | "exception" String | "failure" String
- // ----------------------------------------------------------------------------
-    rule <k> exception _ => . ... </k> <op> #exception ... </op>
-    rule <k> success   => . ... </k> <exit-code> _ => 0 </exit-code>
-    rule failure _ => .
-
-    syntax EthereumSpecCommand ::= "run"
- // ------------------------------------
-    rule run { .JSONList } => .
-    rule run { TESTID : (TEST:JSON)
-             , TESTS
-             }
-      =>    run (TESTID : TEST)
-         ~> clear
-         ~> run { TESTS }
-
-
-// Here we make sure fields that are pre-conditions are `load`ed first, and
-// post-conditions are `check`ed last.
-
-
-    rule run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST }
-      requires KEY in (SetItem("env") SetItem("pre"))
-
-    rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY : VAL }
-      requires KEY in (SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("post") SetItem("expect") SetItem("gas"))
-
-
-// The particular key `"exec"` should be processed last, to ensure that the
-// pre/post-conditions are in place. When it has finished loading it's state, it
-// should `start ~> flush` to perform the execution.
-
-
-    rule run TESTID : { "exec" : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , "exec" : EXEC , REST }
-    rule run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush
+    rule check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID
+ // ----------------------------------------------------------------------------------------------------
+    rule check "callcreates" : { "value" : VAL , "destination" : ACCTTO , "gasLimit" : GLIMIT , "data" : DATA }
+      => check "callcreates" : { #parseAddr(ACCTTO) | #parseHexWord(VAL) | #parseByteStack(DATA) }
+    rule <k> check "callcreates" : C:Call => . ... </k> <callLog> CL </callLog> requires C in CL
 endmodule
 

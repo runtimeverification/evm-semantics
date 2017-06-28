@@ -3,9 +3,13 @@
 set -e      # Exit immediately if any command fails
 
 tests_dir="tests/tests-develop/VMTests/"
-output_file="tests/templates/output.txt"
+output_file="tests/templates/output-uiuck.txt"
 expected_passing="tests/passing.expected"
 now_passing="tests/passing.lastrun"
+
+if krun --version | grep 'RV' >/dev/null 2>&1; then
+    output_file="tests/templates/output-rvk.txt"
+fi
 
 progress() { echo "== $@"; }
 success()  { echo -e "\e[32m== success: $@\e[0m";

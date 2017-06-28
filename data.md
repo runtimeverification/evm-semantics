@@ -8,11 +8,11 @@ EVM also has bytes (8 bit words) for some encodings of data, but only a very lig
 It's doubtful that having two different ways of reading the base data-units (or that limiting yourself to machine-representable units) is beneficial.
 Arguably hardware should evolve to directly support more elegant languages, rather than our languages evolving towards our hardware.
 
-```rvk
+```{.k .rvk}
 requires "krypto.k"
 ```
 
-```k
+```{.k .uiuck .rvk}
 requires "domains.k"
 
 module EVM-DATA
@@ -29,7 +29,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `Int` is a subsort of `Word`.
 -   `chop` interperets an interger module $2^256$.
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= Int | chop ( Word ) [function]
  // ----------------------------------------------
     rule chop( W:Int ) => chop ( W +Int (2 ^Int 256) ) requires W <Int 0
@@ -40,7 +40,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `bool2Word` interperets a `Bool` as a `Word`.
 -   `word2Bool` interperets a `Word` as a `Bool`.
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= bool2Word ( Bool ) [function]
  // ---------------------------------------------
     rule bool2Word(true)  => 1
@@ -54,7 +54,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 
 -   `#ifWord_#then_#else_#fi` provides a conditional in `Word` expressions.
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= "#ifWord" Bool "#then" Word "#else" Word "#fi" [function]
  // -------------------------------------------------------------------------
     rule #ifWord true  #then W #else _ #fi => W
@@ -64,7 +64,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `sgn` gives the twos-complement interperetation of the sign of a `Word`.
 -   `abs` gives the twos-complement interperetation of the magnitude of a `Word`.
 
-```k
+```{.k .uiuck .rvk}
     syntax Int ::= sgn ( Word ) [function]
                  | abs ( Word ) [function]
  // --------------------------------------
@@ -77,7 +77,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 
 -   `maxWord` and `minWord` are the lifting of `maxInt` and `minInt` (through the subsort monad!).
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= maxWord ( Word , Word ) [function]
                   | minWord ( Word , Word ) [function]
  // --------------------------------------------------
@@ -91,7 +91,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 
 Note: Comment out this block (remove the `k` tag) if using RV K.
 
-```k
+```{.k .uiuck}
     syntax Word ::= "#symbolicWord" [function]
  // ------------------------------------------
     rule #symbolicWord => ?X:Int
@@ -102,31 +102,29 @@ Arithmetic
 
 -   `up/Int` performs integer division but rounds up instead of down.
 
-```k
+```{.k .uiuck .rvk}
     syntax Int ::= Int "up/Int" Int [function]
  // ------------------------------------------
     rule I1 up/Int I2 => I1 /Int I2          requires I1 %Int I2 ==K 0
     rule I1 up/Int I2 => (I1 /Int I2) +Int 1 requires I1 %Int I2 =/=K 0
 ```
 
-`logNInt` returns the log base N (floored) of an integer.
+-   `logNInt` returns the log base N (floored) of an integer.
 
-```k
-    syntax Int ::= log2Int(Int) [function]
- // ------------------------------------------
-    // log2Int is the index of the most significant bit of a number
-    // log2Int(0) is undefined
-    rule log2Int(1) => 0
-    rule log2Int(W:Int) => 1 +Int log2Int(W >>Int 1)    requires W >Int 1
+```{.k .uiuck .rvk}
+    syntax Int ::= log2Int ( Int ) [function]
+ // -----------------------------------------
+    rule log2Int(1)     => 0
+    rule log2Int(W:Int) => 1 +Int log2Int(W >>Int 1) requires W >Int 1
 
-    syntax Int ::= log256Int(Int) [function]
- // ------------------------------------------
-    rule log256Int(N:Int) => log2Int(N) /Int log2Int(256)
+    syntax Int ::= log256Int ( Int ) [function]
+ // -------------------------------------------
+    rule log256Int(N:Int) => log2Int(N) /Int 8
 ```
 
 The corresponding `<op>Word` operations automatically perform the correct `Word` modulus.
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= Word "+Word" Word [function]
                   | Word "*Word" Word [function]
                   | Word "-Word" Word [function]
@@ -144,7 +142,7 @@ The corresponding `<op>Word` operations automatically perform the correct `Word`
 
 Care is needed for `^Word` to avoid big exponentiation.
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= Word "^Word" Word [function]
  // --------------------------------------------
     rule W0:Int ^Word W1:Int => (W0 ^Word (W1 /Int 2)) ^Word 2  requires W1 >=Int (2 ^Int 16) andBool W1 %Int 2 ==Int 0
@@ -154,7 +152,7 @@ Care is needed for `^Word` to avoid big exponentiation.
 
 `/sWord` and `%sWord` give the signed interperetations of `/Word` and `%Word`.
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= Word "/sWord" Word [function]
                   | Word "%sWord" Word [function]
  // ---------------------------------------------
@@ -167,7 +165,7 @@ Comparison Operators
 
 The `<op>Word` comparison operators automatically interperet the `Bool` as a `Word`.
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= Word "<Word"  Word [function]
                   | Word ">Word"  Word [function]
                   | Word "<=Word" Word [function]
@@ -183,7 +181,7 @@ The `<op>Word` comparison operators automatically interperet the `Bool` as a `Wo
 
 -   `s<Word` implements a less-than for `Word` (with signed interperetation).
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= Word "s<Word" Word [function]
  // ---------------------------------------------
     rule W0:Int s<Word W1:Int => W0 <Word W1           requires sgn(W0) ==K 1  andBool sgn(W1) ==K 1
@@ -197,7 +195,7 @@ Bitwise operators.
 
 Bitwise logical operators are lifted from the integer versions.
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= "~Word" Word        [function]
                   | Word "|Word" Word   [function]
                   | Word "&Word" Word   [function]
@@ -212,40 +210,44 @@ Bitwise logical operators are lifted from the integer versions.
 -   `bit` gets bit $N$ (0 being MSB).
 -   `byte` gets byte $N$ (0 being the MSB).
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= bit  ( Word , Word ) [function]
                   | byte ( Word , Word ) [function]
  // -----------------------------------------------
-    rule bit(N:Int, W:Int)  => (W >>Int (255 -Int N)) %Int 2
-    rule byte(N:Int, W:Int) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) %Int (2 ^Int 8)
+    rule bit(N:Int, _)  => 0 requires N <Int 0 orBool N >=Int 256
+    rule byte(N:Int, _) => 0 requires N <Int 0 orBool N >=Int 32
+
+    rule bit(N:Int, W:Int)  => (W >>Int (255 -Int N)) %Int 2                            requires N >=Int 0 andBool N <Int 256
+    rule byte(N:Int, W:Int) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) %Int (2 ^Int 8) requires N >=Int 0 andBool N <Int 32
 ```
 
 -   `#nBits` shifts in $N$ ones from the right.
 -   `#nBytes` shifts in $N$ bytes of ones from the right.
 -   `_<<Byte_` shifts an integer 8 bits to the left.
 
-```k
+```{.k .uiuck .rvk}
     syntax Int  ::= #nBits  ( Int )  [function]
                   | #nBytes ( Int )  [function]
                   | Int "<<Byte" Int [function]
  // -------------------------------------------
-    rule #nBits(N)  => (2 ^Int N) -Int 1
-    rule #nBytes(N) => #nBits(N *Int 8)
+    rule #nBits(N)  => (2 ^Int N) -Int 1  requires N >=Int 0
+    rule #nBytes(N) => #nBits(N *Int 8)   requires N >=Int 0
     rule N <<Byte M => N <<Int (8 *Int M)
 ```
 
 -   `signextend(N, W)` sign-extends from byte $N$ of $W$ (0 being MSB).
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= signextend( Word , Word ) [function]
  // ----------------------------------------------------
-    rule signextend(N:Int, W:Int) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
-    rule signextend(N:Int, W:Int) => chop( #nBytes(N +Int 1)                      &Int W ) requires notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
+    rule signextend(N:Int, W:Int) => W requires N >=Int 32 orBool N <Int 0
+    rule signextend(N:Int, W:Int) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
+    rule signextend(N:Int, W:Int) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
 ```
 
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= keccak ( WordStack ) [function]
  // -----------------------------------------------
     rule keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS)))
@@ -263,7 +265,7 @@ EVM is a stack machine, and so needs a stack of words to operate on.
 The stack and some standard operations over it are provided here.
 This stack also serves as a cons-list, so we provide some standard cons-list manipulation tools.
 
-```k
+```{.k .uiuck .rvk}
     syntax WordStack ::= ".WordStack" | Word ":" WordStack
  // ------------------------------------------------------
 ```
@@ -272,7 +274,7 @@ This stack also serves as a cons-list, so we provide some standard cons-list man
 -   `#take( N , WS)` keeps the first $N$ elements of a `WordStack` (passing with zeros as needed).
 -   `#drop( N , WS)` removes the first $N$ elements of a `WordStack`.
 
-```k
+```{.k .uiuck .rvk}
     syntax WordStack ::= WordStack "++" WordStack [function]
  // --------------------------------------------------------
     rule .WordStack ++ WS' => WS'
@@ -294,7 +296,7 @@ This stack also serves as a cons-list, so we provide some standard cons-list man
 -   `WS [ N ]` accesses element $N$ of $WS$.
 -   `WS [ N := W ]` sets element $N$ of $WS$ to $W$ (padding with zeros as needed).
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= WordStack "[" Word "]" [function]
  // -------------------------------------------------
     rule (W0 : WS)   [0] => W0
@@ -315,7 +317,7 @@ This stack also serves as a cons-list, so we provide some standard cons-list man
 -   `#sizeWordStack` calculates the size of a `WordStack`.
 -   `_in_` determines if a `Word` occurs in a `WordStack`.
 
-```k
+```{.k .uiuck .rvk}
     syntax Int ::= #sizeWordStack ( WordStack ) [function]
  // ------------------------------------------------------
     rule #sizeWordStack ( .WordStack ) => 0
@@ -329,7 +331,7 @@ This stack also serves as a cons-list, so we provide some standard cons-list man
 
 -   `#padToWidth(N, WS)` makes sure that a `WordStack` is the correct size.
 
-```k
+```{.k .uiuck .rvk}
     syntax WordStack ::= #padToWidth ( Int , WordStack ) [function]
  // ---------------------------------------------------------------
     rule #padToWidth(N, WS) => WS                     requires notBool #sizeWordStack(WS) <Int N
@@ -344,7 +346,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 -   `#asWord` will interperet a stack of bytes as a single word (with MSB first).
 -   `#asByteStack` will split a single word up into a `WordStack` where each word is a byte wide.
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= #asWord ( WordStack ) [function]
  // ------------------------------------------------
     rule #asWord( .WordStack )    => 0
@@ -364,7 +366,7 @@ Addresses
 
 -   `#addr` turns an Ethereum word into the corresponding Ethereum address (160 LSB).
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= #addr ( Word ) [function]
  // -----------------------------------------
     rule #addr(W) => W %Word (2 ^Word 160)
@@ -380,7 +382,7 @@ We are using the polymorphic `Map` sort for these word maps.
 -   `#asMapWordStack` converts a `WordStack` to a `Map`.
 -   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
 
-```k
+```{.k .uiuck .rvk}
     syntax Map ::= Map "[" Word ":=" WordStack "]" [function]
  // ---------------------------------------------------------
     rule WM[ N := .WordStack ] => WM
@@ -408,10 +410,11 @@ JSON
 
 Writing a JSON parser in K takes 5 lines.
 
-```k
+```{.k .uiuck .rvk}
     syntax JSONList ::= List{JSON,","}
+    syntax JSONKey  ::= String | Word
     syntax JSON     ::= String
-                      | String ":" JSON
+                      | JSONKey ":" JSON
                       | "{" JSONList "}"
                       | "[" JSONList "]"
  // ------------------------------------
@@ -425,9 +428,11 @@ These parsers can interperet hex-encoded strings as `Word`s, `WordStack`s, and `
 -   `#parseHexWord` interperets a string as a single hex-encoded `Word`.
 -   `#parseHexBytes` interperets a string as a stack of bytes.
 -   `#parseByteStack` interperets a string as a stack of bytes, but makes sure to remove the leading "0x".
+-   `#parseWordStack` interperets a JSON list as a stack of `Word`.
 -   `#parseMap` interperets a JSON key/value object as a map from `Word` to `Word`.
+-   `#parseAddr` interperets a string as a 160 bit hex-endcoded address.
 
-```k
+```{.k .uiuck .rvk}
     syntax Word ::= #parseHexWord ( String ) [function]
  // ---------------------------------------------------
     rule #parseHexWord("")   => 0
@@ -441,11 +446,20 @@ These parsers can interperet hex-encoded strings as `Word`s, `WordStack`s, and `
     rule #parseHexBytes("") => .WordStack
     rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytes(substrString(S, 2, lengthString(S))) requires lengthString(S) >=Int 2
 
+    syntax WordStack ::= #parseWordStack ( JSON ) [function]
+ // --------------------------------------------------------
+    rule #parseWordStack( [ .JSONList ] )            => .WordStack
+    rule #parseWordStack( [ (WORD:String) , REST ] ) => #parseHexWord(WORD) : #parseWordStack( [ REST ] )
+
     syntax Map ::= #parseMap ( JSON ) [function]
  // --------------------------------------------
     rule #parseMap( { .JSONList                   } ) => .Map
     rule #parseMap( { _   : (VALUE:String) , REST } ) => #parseMap({ REST })                                                requires #parseHexWord(VALUE) ==K 0
     rule #parseMap( { KEY : (VALUE:String) , REST } ) => #parseMap({ REST }) [ #parseHexWord(KEY) <- #parseHexWord(VALUE) ] requires #parseHexWord(VALUE) =/=K 0
+
+    syntax Word ::= #parseAddr ( String ) [function]
+ // ------------------------------------------------
+    rule #parseAddr(S) => #addr(#parseHexWord(S))
 ```
 
 Unparsing
@@ -456,7 +470,7 @@ We need to interperet a `WordStack` as a `String` again so that we can call `Kec
 -   `#unparseByteStack` turns a stack of bytes (as a `WordStack`) into a `String`.
 -   `#padByte` ensures that the `String` interperetation of a `Word` is wide enough.
 
-```k
+```{.k .uiuck .rvk}
     syntax String ::= #unparseByteStack ( WordStack ) [function]
  // ------------------------------------------------------------
     rule #unparseByteStack( .WordStack )   => ""
