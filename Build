@@ -75,6 +75,14 @@ lint_krun() {
     xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
 }
 
+run_kdebug() {
+    run_make all
+    while read test_file; do
+        progress "debugging: $test_file"
+        krun --debugger --debug --directory k/ "$test_file"
+    done
+}
+
 run_krun() {
     run_make all
     while read test_file; do
@@ -117,7 +125,8 @@ usage() {
        $0 list-passing <regx>   Run passing tests
 
 
-       $0 krun <arg>            Same as test, but pretty print output instead of checking it
+       $0 krun   <arg>          Same as test, but pretty print output instead of checking it
+       $0 kdebug <arg>          Same as krun, but run with the debugger instead
 "
 }
 
@@ -136,15 +145,16 @@ while [[ "$#" -gt '0' ]]; do
         build)        run_make build ;;
         defn)         run_make defn ;;
 
-        passing)      test_pipe_line list_passing run_tests "$@";;
-        failing)      test_pipe_line list_failing run_tests "$@";;
-        test)         test_pipe_line list_tests   run_tests "$@";;
+        passing)      test_pipe_line list_passing run_tests  "$@";;
+        failing)      test_pipe_line list_failing run_tests  "$@";;
+        test)         test_pipe_line list_tests   run_tests  "$@";;
 
-        krun)         test_pipe_line list_tests   run_krun  "$@";;
+        krun)         test_pipe_line list_tests   run_krun   "$@";;
+        kdebug)       test_pipe_line list_tests   run_kdebug "$@";;
 
-        list-tests)   test_pipe_line list_tests   cat       "$@";;
-        list-passing) test_pipe_line list_passing cat       "$@";;
-        list-failing) test_pipe_line list_failing cat       "$@";;
+        list-tests)   test_pipe_line list_tests   cat        "$@";;
+        list-passing) test_pipe_line list_passing cat        "$@";;
+        list-failing) test_pipe_line list_failing cat        "$@";;
 
         ktest)        run_ktest ;;
         *)            usage; exit 1;;
