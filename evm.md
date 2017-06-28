@@ -213,11 +213,11 @@ Simple commands controlling exceptions provide control-flow.
 -   `#exception` is used to indicate exceptional states (it consumes any operations to be performed after it).
 
 ```{.k .uiuck .rvk}
-    syntax KItem ::= "#catch" | "#try" K | "#exception" | "#end"
- // ------------------------------------------------------------
+    syntax KItem ::= "#catch" | "#try" K | "#exception" | "#end" | "#signalException"
+ // ---------------------------------------------------------------------------------
     rule <op> #catch => #dropCallStack ... </op>
     rule <op> #try K => #pushCallStack ~> K ~> #catch ... </op>
-    rule <op> #exception ~> #catch => #popCallStack ... </op>
+    rule <op> #exception ~> #catch => #popCallStack ~> #signalException ... </op>
 
     rule <op> #exception ~> (#try _    => .) ... </op>
     rule <op> #exception ~> (W:Word    => .) ... </op>
@@ -234,8 +234,8 @@ Here all `OpCode`s are subsorted into `KItem` (allowing sequentialization), and 
     syntax KItem  ::= OpCode
     syntax OpCode ::= OpCodeOp "[" OpCode "]"
                     | NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
-                    | InvalidOp | StackOp | InternalOp | CallOp | CallSixOp | PushOp | LogOp
- // ----------------------------------------------------------------------------------------
+                    | InvalidOp | StackOp | InternalOp | CallOp | CallSixOp | PushOp
+ // --------------------------------------------------------------------------------
 ```
 
 Execution follows a simple cycle where first the state is checked for exceptions, then if no exceptions will be thrown the opcode is run.
@@ -245,7 +245,7 @@ Execution follows a simple cycle where first the state is checked for exceptions
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#next"
  // -----------------------------
-    rule <op> #next => #try (#exceptional? [ OP ] ~> #exec [ OP ] ~> #pc [ OP ]) </op>
+    rule <op> #next => (#try (#exceptional? [ OP ] ~> #exec [ OP ] ~> #pc [ OP ])) ~> #next </op>
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
 
@@ -271,8 +271,8 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 ```{.k .uiuck .rvk}
     syntax OpCodeOp ::= "#invalid?"
  // -------------------------------
-    rule <op> #invalid? [ INVALID ] => #exception ... </op>
-    rule <op> #invalid? [ OP      ] => .          ... </op> requires OP =/=K INVALID
+//    rule <op> #invalid? [ INVALID ] => #exception ... </op>
+//    rule <op> #invalid? [ OP      ] => .          ... </op> requires OP =/=K INVALID
 ```
 
 -   `#stackNeeded?` checks that the stack will be not be under/overflown.
@@ -281,12 +281,12 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 ```{.k .uiuck .rvk}
     syntax OpCodeOp ::= "#stackNeeded?"
  // -----------------------------------
-    rule <op> #stackNeeded? [ OP ]
-           => #if #sizeWordStack(WS) <Int #stackNeeded(OP) orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
-              #then #exception #else .K #fi
-          ...
-         </op>
-         <wordStack> WS </wordStack>
+//    rule <op> #stackNeeded? [ OP ]
+//           => #if #sizeWordStack(WS) <Int #stackNeeded(OP) orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
+//              #then #exception #else .K #fi
+//          ...
+//         </op>
+//         <wordStack> WS </wordStack>
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
@@ -328,15 +328,15 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 ```{.k .uiuck .rvk}
     syntax OpCodeOp ::= "#badJumpDest?"
  // -----------------------------------
-    rule <op> #badJumpDest? [ OP    ] => . ... </op> requires notBool isJumpOp(OP)
-    rule <op> #badJumpDest? [ OP    ] => . ... </op> <wordStack> DEST  : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
-    rule <op> #badJumpDest? [ JUMPI ] => . ... </op> <wordStack> _ : 0 : WS </wordStack>
-
-    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
-    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST andBool W =/=K 0
-
-    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> PGM </program> requires notBool (DEST in keys(PGM))
-    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> PGM </program> requires (notBool (DEST in keys(PGM))) andBool W =/=K 0
+//    rule <op> #badJumpDest? [ OP    ] => . ... </op> requires notBool isJumpOp(OP)
+//    rule <op> #badJumpDest? [ OP    ] => . ... </op> <wordStack> DEST  : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
+//    rule <op> #badJumpDest? [ JUMPI ] => . ... </op> <wordStack> _ : 0 : WS </wordStack>
+//
+//    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
+//    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST andBool W =/=K 0
+//
+//    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> PGM </program> requires notBool (DEST in keys(PGM))
+//    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> PGM </program> requires (notBool (DEST in keys(PGM))) andBool W =/=K 0
 ```
 
 ### Execution Step
@@ -346,7 +346,11 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 ```{.k .uiuck .rvk}
     syntax OpCodeOp ::= "#exec"
  // ---------------------------
-    rule <op> #exec [ OP:InternalOp ] => #try (#gas [ OP ] ~> OP) ... </op>
+    rule <op> #exec [ OP ] => #try (#gas [ OP ] ~> OP) ... </op> requires #zeroArgs?(OP)
+
+    syntax Bool ::= "#zeroArgs?" "(" OpCode ")" [function]
+ // ------------------------------------------------------
+    rule #zeroArgs?(OP) => isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
 ```
 
 Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
@@ -417,7 +421,7 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
     syntax OpCodeOp ::= "#pc"
  // -------------------------
     rule <op> #pc [ OP         ] => . ... </op> <pc> PCOUNT => PCOUNT +Word 1           </pc> requires notBool (isPushOp(OP) orBool isJumpOp(OP))
-    rule <op> #pc [ PUSH(N, _) ] => . ... </op> <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc> 
+    rule <op> #pc [ PUSH(N, _) ] => . ... </op> <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
     rule <op> #pc [ OP         ] => . ... </op> requires isJumpOp(OP)
 
     syntax Bool ::= isJumpOp ( OpCode ) [function]
@@ -797,14 +801,15 @@ These operators query about the current `CALL*` state.
 ### Log Operations
 
 ```{.k .uiuck .rvk}
+    syntax BinStackOp ::= LogOp
     syntax LogOp ::= LOG ( Word )
  // -----------------------------
-    rule <op> LOG(N) => . ... </op>
+    rule <op> LOG(N) MEMSTART MEMWIDTH => . ... </op>
          <id> ACCT </id>
-         <wordStack> W0 : W1 : WS => #drop(N, WS) </wordStack>
+         <wordStack> WS => #drop(N, WS) </wordStack>
          <localMem> LM </localMem>
-         <memoryUsed> MU => #memoryUsageUpdate(MU, W0, W1) </memoryUsed>
-         <log> ... (.Set => SetItem({ ACCT | #take(N, WS) | #range(LM, W0, W1) })) </log>
+         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
+         <log> ... (.Set => SetItem({ ACCT | #take(N, WS) | #range(LM, MEMSTART, MEMWIDTH) })) </log>
       requires word2Bool(#sizeWordStack(WS) >=Word N)
 ```
 

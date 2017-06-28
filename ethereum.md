@@ -69,7 +69,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ```{.k .uiuck .rvk}
     syntax EthereumCommand ::= "exception" | "failure" String
  // ---------------------------------------------------------
-    rule <k> exception => . ... </k> <op> #exception ... </op>
+    rule <k> exception => . ... </k> <op> #signalException ... </op>
     rule failure _ => .
 ```
 

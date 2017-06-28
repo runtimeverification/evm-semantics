@@ -74,7 +74,7 @@ module ETHEREUM-SIMULATION
 
     syntax EthereumCommand ::= "exception" | "failure" String
  // ---------------------------------------------------------
-    rule <k> exception => . ... </k> <op> #exception ... </op>
+    rule <k> exception => . ... </k> <op> #signalException ... </op>
     rule failure _ => .
 
 
