@@ -26,7 +26,7 @@ module ETHEREUM
     imports STRING
 
     configuration <k> $PGM:EthereumSimulation </k>
-                  <exit-code exit=""> 0 </exit-code>
+                  <exit-code exit=""> 1 </exit-code>
 
                   <ethereum>
 
