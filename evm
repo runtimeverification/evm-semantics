@@ -5,8 +5,7 @@ output="$(mktemp)"
 kast_output="$(mktemp)"
 trap "rm -rf $kast $output $kast_output" INT TERM EXIT
 "$(dirname "$0")/kast-json.py" "$1" > "$kast"
-krun -d "$(dirname "$0")/k" "$kast" --parser cat --output-file "$output" --output binary --interpret
-#$interpreter "$(dirname "$0")/k/ethereum-kompiled/realdef.cma" -c PGM "$kast" textfile --output-file "$output"
+$interpreter "$(dirname "$0")/k/ethereum-kompiled/realdef.cma" -c PGM "$kast" textfile --output-file "$output"
 exit=$?
 if [ $exit -eq 0 ]; then
   exit 0
