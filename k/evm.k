@@ -218,8 +218,7 @@ module ETHEREUM
 
 
     syntax KItem  ::= OpCode
-    syntax OpCode ::= OpCodeOp "[" OpCode "]"
-                    | NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
+    syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
                     | InvalidOp | StackOp | InternalOp | CallOp | CallSixOp | PushOp
  // --------------------------------------------------------------------------------
 
@@ -250,7 +249,7 @@ module ETHEREUM
 //     `wordStack` size issues.
 
 
-    syntax OpCodeOp ::= "#exceptional?"
+    syntax InternalOp ::= "#exceptional?" "[" OpCode "]"
  // -----------------------------------
     rule <op> #exceptional? [ OP ] => #invalid? [ OP ] ~> #stackNeeded? [ OP ] ~> #badJumpDest? [ OP ] ... </op>
 
@@ -258,7 +257,7 @@ module ETHEREUM
 // -   `#invalid?` checks if it's the designated invalid opcode.
 
 
-    syntax OpCodeOp ::= "#invalid?"
+    syntax InternalOp ::= "#invalid?" "[" OpCode "]"
  // -------------------------------
 //    rule <op> #invalid? [ INVALID ] => #exception ... </op>
 //    rule <op> #invalid? [ OP      ] => .          ... </op> requires OP =/=K INVALID
@@ -269,7 +268,7 @@ module ETHEREUM
 //     `#stackNeeded?`.
 
 
-    syntax OpCodeOp ::= "#stackNeeded?"
+    syntax InternalOp ::= "#stackNeeded?" "[" OpCode "]"
  // -----------------------------------
 //    rule <op> #stackNeeded? [ OP ]
 //           => #if #sizeWordStack(WS) <Int #stackNeeded(OP) orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
@@ -317,7 +316,7 @@ module ETHEREUM
 //     jump destination.
 
 
-    syntax OpCodeOp ::= "#badJumpDest?"
+    syntax InternalOp ::= "#badJumpDest?" "[" OpCode "]"
  // -----------------------------------
 //    rule <op> #badJumpDest? [ OP    ] => . ... </op> requires notBool isJumpOp(OP)
 //    rule <op> #badJumpDest? [ OP    ] => . ... </op> <wordStack> DEST  : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
@@ -336,7 +335,7 @@ module ETHEREUM
 //     accurate and has been called) and trigger the subsequent operations.
 
 
-    syntax OpCodeOp ::= "#exec"
+    syntax InternalOp ::= "#exec" "[" OpCode "]"
  // ---------------------------
     rule <op> #exec [ OP ] => #try (#gas [ OP ] ~> OP) ... </op> requires #zeroArgs?(OP)
 
@@ -391,7 +390,7 @@ module ETHEREUM
 //     the memory consumed.
 
 
-    syntax OpCodeOp ::= "#gas"
+    syntax InternalOp ::= "#gas" "[" OpCode "]"
  // --------------------------
 
 
@@ -404,7 +403,7 @@ module ETHEREUM
 // -   `#pc` calculates the next program counter of the given operator.
 
 
-    syntax OpCodeOp ::= "#pc"
+    syntax InternalOp ::= "#pc" "[" OpCode "]"
  // -------------------------
     rule <op> #pc [ OP         ] => . ... </op> <pc> PCOUNT => PCOUNT +Word 1           </pc> requires notBool (isPushOp(OP) orBool isJumpOp(OP))
     rule <op> #pc [ PUSH(N, _) ] => . ... </op> <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>

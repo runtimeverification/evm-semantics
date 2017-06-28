@@ -232,8 +232,7 @@ Here all `OpCode`s are subsorted into `KItem` (allowing sequentialization), and 
 
 ```{.k .uiuck .rvk}
     syntax KItem  ::= OpCode
-    syntax OpCode ::= OpCodeOp "[" OpCode "]"
-                    | NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
+    syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
                     | InvalidOp | StackOp | InternalOp | CallOp | CallSixOp | PushOp
  // --------------------------------------------------------------------------------
 ```
@@ -261,7 +260,7 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 -   `#exceptional?` checks if the operator is invalid and will not cause `wordStack` size issues.
 
 ```{.k .uiuck .rvk}
-    syntax OpCodeOp ::= "#exceptional?"
+    syntax InternalOp ::= "#exceptional?" "[" OpCode "]"
  // -----------------------------------
     rule <op> #exceptional? [ OP ] => #invalid? [ OP ] ~> #stackNeeded? [ OP ] ~> #badJumpDest? [ OP ] ... </op>
 ```
@@ -269,7 +268,7 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 -   `#invalid?` checks if it's the designated invalid opcode.
 
 ```{.k .uiuck .rvk}
-    syntax OpCodeOp ::= "#invalid?"
+    syntax InternalOp ::= "#invalid?" "[" OpCode "]"
  // -------------------------------
 //    rule <op> #invalid? [ INVALID ] => #exception ... </op>
 //    rule <op> #invalid? [ OP      ] => .          ... </op> requires OP =/=K INVALID
@@ -279,7 +278,7 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 -   `#stackNeeded`, `#stackAdded`, and `#stackDelta` are helpers for deciding `#stackNeeded?`.
 
 ```{.k .uiuck .rvk}
-    syntax OpCodeOp ::= "#stackNeeded?"
+    syntax InternalOp ::= "#stackNeeded?" "[" OpCode "]"
  // -----------------------------------
 //    rule <op> #stackNeeded? [ OP ]
 //           => #if #sizeWordStack(WS) <Int #stackNeeded(OP) orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
@@ -326,7 +325,7 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 -   `#badJumpDest?` determines if the opcode will result in a bad jump destination.
 
 ```{.k .uiuck .rvk}
-    syntax OpCodeOp ::= "#badJumpDest?"
+    syntax InternalOp ::= "#badJumpDest?" "[" OpCode "]"
  // -----------------------------------
 //    rule <op> #badJumpDest? [ OP    ] => . ... </op> requires notBool isJumpOp(OP)
 //    rule <op> #badJumpDest? [ OP    ] => . ... </op> <wordStack> DEST  : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
@@ -344,7 +343,7 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 -   `#exec` will load the arguments of the opcode (it assumes `#stackNeeded?` is accurate and has been called) and trigger the subsequent operations.
 
 ```{.k .uiuck .rvk}
-    syntax OpCodeOp ::= "#exec"
+    syntax InternalOp ::= "#exec" "[" OpCode "]"
  // ---------------------------
     rule <op> #exec [ OP ] => #try (#gas [ OP ] ~> OP) ... </op> requires #zeroArgs?(OP)
 
@@ -397,7 +396,7 @@ The `CallOp` opcodes all interperet their second argument as an address.
 -   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
 
 ```{.k .uiuck .rvk}
-    syntax OpCodeOp ::= "#gas"
+    syntax InternalOp ::= "#gas" "[" OpCode "]"
  // --------------------------
 ```
 
@@ -418,7 +417,7 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
 -   `#pc` calculates the next program counter of the given operator.
 
 ```{.k .uiuck .rvk}
-    syntax OpCodeOp ::= "#pc"
+    syntax InternalOp ::= "#pc" "[" OpCode "]"
  // -------------------------
     rule <op> #pc [ OP         ] => . ... </op> <pc> PCOUNT => PCOUNT +Word 1           </pc> requires notBool (isPushOp(OP) orBool isJumpOp(OP))
     rule <op> #pc [ PUSH(N, _) ] => . ... </op> <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc>
