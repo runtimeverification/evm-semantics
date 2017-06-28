@@ -390,11 +390,13 @@ module ETHEREUM
 
     syntax OpCode ::= #stripArgs ( OpCode ) [function]
  // --------------------------------------------------
-    rule #stripArgs(OP)                         => OP requires #zeroArgs?(OP)
+    rule #stripArgs(NOP:NullStackOp)            => NOP
     rule #stripArgs(UOP:UnStackOp _)            => UOP
     rule #stripArgs(BOP:BinStackOp _ _)         => BOP
     rule #stripArgs(TOP:TernStackOp _ _ _)      => TOP
     rule #stripArgs(QOP:QuadStackOp _ _ _ _)    => QOP
+    rule #stripArgs(PUSHOP:PushOp)              => PUSHOP
+    rule #stripArgs(SOP:StackOp)                => SOP
     rule #stripArgs(COP:CallOp _ _ _ _ _ _ _)   => COP
     rule #stripArgs(CSOP:CallSixOp _ _ _ _ _ _) => CSOP
 
