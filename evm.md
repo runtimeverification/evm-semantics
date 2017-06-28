@@ -1,3 +1,15 @@
+YellowPaper
+===========
+
+In the yellowpaper the function `#exceptional?` is called `Z` (Section 9.4.2 in yellowpaper).
+It checks, in order:
+
+-   The instruction isn't `INVALID`.
+-   There are enough elements on the stack to supply the arguments.
+-   If it's a `JUMP*` operation, the destination is a valid `JUMPDEST`.
+-   Upon placing the results on the stack, there won't be a stack overflow.
+-   There is enough gas.
+
 EVM Execution
 =============
 
@@ -150,36 +162,22 @@ module ETHEREUM
     syntax Value  ::= Word | ".Value"
 ```
 
-Execution Cycle
----------------
+Hardware
+--------
 
-Execution follows a simple cycle where first the state is checked for exceptions, then if no exceptions will be thrown the opcode is run.
-
--   `#next` signals that it's time to begin the next execution cycle.
-
-```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#next"
- // -----------------------------
-    rule <op> #next => #try #execOp(OP) </op>
-         <pc> PCOUNT </pc>
-         <program> ... PCOUNT |-> OP ... </program>
-
-    rule <op> #next => #if word2Bool(PCOUNT <Word #sizeOpCodeMap(PGM)) #then #exception #else #end #fi </op>
-         <pc> PCOUNT </pc> <program> PGM </program>
-      requires notBool PCOUNT in_keys(PGM)
-```
+The `callStack` stores a list of previous states (so that they can be restored).
 
 -   `#pushCallStack` saves a copy of all the relevant state on the `callStack`
 -   `#popCallStack` restores the top element of all the relevant state on the `callStack`
 
 ```{.k .uiuck .rvk}
-    syntax KItem ::= "{" Word "|" Map "|" Word "|" WordStack "|" Word "|" WordStack "|" Map "|" Word "|" Word "}"
- // -------------------------------------------------------------------------------------------------------------
+    syntax KItem ::= "{" Word "|" Map "|" Word "|" WordStack "|" Word "|" WordStack "|" Map "|" Word "}"
+ // ----------------------------------------------------------------------------------------------------
 
-    syntax InternalOp ::= "#pushCallStack" | "#popCallStack" | "#dropCallStack"
- // ---------------------------------------------------------------------------
+    syntax InternalOp ::= "#pushCallStack"
+ // --------------------------------------
     rule <op> #pushCallStack => . ... </op>
-         <callStack> (.List => ListItem({ ACCT | PGM | CR | CD | CV | WS | LM | PCOUNT | GAVAIL })) ... </callStack>
+         <callStack> (.List => ListItem({ ACCT | PGM | CR | CD | CV | WS | LM | PCOUNT })) ... </callStack>
          <id>        ACCT   </id>
          <program>   PGM    </program>
          <caller>    CR     </caller>
@@ -188,23 +186,26 @@ Execution follows a simple cycle where first the state is checked for exceptions
          <wordStack> WS     </wordStack>
          <localMem>  LM     </localMem>
          <pc>        PCOUNT </pc>
-         <gas>       GAVAIL </gas>
 
+    syntax InternalOp ::= "#popCallStack"
+ // -------------------------------------
     rule <op> #popCallStack => . ... </op>
-         <callStack> (ListItem({ ACCT | PGM | CR | CD | CV | WS | LM | PCOUNT | GAVAIL }) => .List) ... </callStack>
+         <callStack> (ListItem({ ACCT | PGM | CR | CD | CV | WS | LM | PCOUNT }) => .List) ... </callStack>
          <id>        _ => ACCT   </id>
          <program>   _ => PGM    </program>
          <caller>    _ => CR     </caller>
          <callData>  _ => CD     </callData>
          <callValue> _ => CV     </callValue>
          <wordStack> _ => WS     </wordStack>
-         <localMem>  _ => LM     </localMem>
          <pc>        _ => PCOUNT </pc>
-         <gas>       _ => GAVAIL </gas>
 
+    syntax InternalOp ::= "#dropCallStack"
+ // --------------------------------------
     rule <op> #dropCallStack => . ... </op>
          <callStack> (ListItem(_) => .List) ... </callStack>
 ```
+
+Simple commands controlling exceptions provide control-flow.
 
 -   `#catch` is used to catch exceptional states so that the state can be rolled back.
 -   `#try` automatically puts the correct `#pushCallStack` and `#catch` in place.
@@ -223,67 +224,70 @@ Execution follows a simple cycle where first the state is checked for exceptions
     rule <op> #exception ~> (OP:OpCode => .) ... </op>
 ```
 
-Exception Checks
-----------------
+OpCode Execution Cycle
+----------------------
 
-In the yellowpaper the function `#exceptional?` is called `Z` (Section 9.4.2 in yellowpaper).
-It checks, in order:
-
--   The instruction isn't `INVALID`.
--   There are enough elements on the stack to supply the arguments.
--   If it's a `JUMP*` operation, the destination is a valid `JUMPDEST`.
--   Upon placing the results on the stack, there won't be a stack overflow.
--   There is enough gas.
-
-TODO: If we load `#memory` and `#gas` after argument loading, they stop relying on the wordStack and can make them functions.
+`OpCode` is broken into several subsorts for easier handling.
+Here all `OpCode`s are subsorted into `KItem` (allowing sequentialization), and the various sorts of opcodes are subsorted into `OpCode`.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= #execOp ( OpCode )
- // ----------------------------------------
-    rule <op> #execOp(OP)
-           => #invalid?(OP)
-           ~> #memory(OP)
-           ~> #gas(OP)
-           ~> OP
+    syntax KItem  ::= OpCode
+    syntax OpCode ::= OpCodeOp "[" OpCode "]"
+                    | NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
+                    | InvalidOp | StackOp | InternalOp | CallOp | CallSixOp | PushOp | LogOp
+ // ----------------------------------------------------------------------------------------
+```
+
+Execution follows a simple cycle where first the state is checked for exceptions, then if no exceptions will be thrown the opcode is run.
+
+-   `#next` signals that it's time to begin the next execution cycle.
+
+```{.k .uiuck .rvk}
+    syntax InternalOp ::= "#next"
+ // -----------------------------
+    rule <op> #next => #try (#exceptional? [ OP ] ~> #exec [ OP ] ~> #pc [ OP ]) </op>
+         <pc> PCOUNT </pc>
+         <program> ... PCOUNT |-> OP ... </program>
+
+    rule <op> #next => #if word2Bool(PCOUNT <Word #sizeOpCodeMap(PGM)) #then #exception #else #end #fi </op>
+         <pc> PCOUNT </pc> <program> PGM </program>
+      requires notBool (PCOUNT in keys(PGM))
+```
+
+### Exceptional Opcodes
+
+Some checks if an opcode will throw an exception are relatively quick and done up front.
+
+-   `#exceptional?` checks if the operator is invalid and will not cause `wordStack` size issues.
+
+```{.k .uiuck .rvk}
+    syntax OpCodeOp ::= "#exceptional?"
+ // -----------------------------------
+    rule <op> #exceptional? [ OP ] => #invalid? [ OP ] ~> #stackNeeded? [ OP ] ~> #badJumpDest? [ OP ] ... </op>
+```
+
+-   `#invalid?` checks if it's the designated invalid opcode.
+
+```{.k .uiuck .rvk}
+    syntax OpCodeOp ::= "#invalid?"
+ // -------------------------------
+    rule <op> #invalid? [ INVALID ] => #exception ... </op>
+    rule <op> #invalid? [ OP      ] => .          ... </op> requires OP =/=K INVALID
+```
+
+-   `#stackNeeded?` checks that the stack will be not be under/overflown.
+-   `#stackNeeded`, `#stackAdded`, and `#stackDelta` are helpers for deciding `#stackNeeded?`.
+
+```{.k .uiuck .rvk}
+    syntax OpCodeOp ::= "#stackNeeded?"
+ // -----------------------------------
+    rule <op> #stackNeeded? [ OP ]
+           => #if #sizeWordStack(WS) <Int #stackNeeded(OP) orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
+              #then #exception #else .K #fi
           ...
          </op>
-```
+         <wordStack> WS </wordStack>
 
-### Invalid Operator
-
--   OpCode `INVALID` represents the designated invalid EVM operator.
--   `#invalid?` checks if the given opcode is indeed `INVALID`.
-
-```{.k .uiuck .rvk}
-    syntax InvalidOp ::= "INVALID"
- // ------------------------------
-
-    syntax InternalOp ::= "#invalid?" "(" OpCode ")"
- // ------------------------------------------------
-    rule <op> #invalid?(INVALID) => #exception ... </op>
-    rule <op> #invalid?(OP)      => .          ... </op> requires notBool isInvalidOp(OP)
-```
-
-### Stack Size
-
--   `#stackNeeded?` throws an exception if there are not enough arguments on the stack.
--   `#stackAdded?` throws an exception if there will be too many items on the stack after the opcode completes.
-
-```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#stackNeeded?" | "#stackDelta?"
- // ------------------------------------------------------
-    rule <op> SN:Int ~> #stackNeeded? => #exception ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) <Int SN
-    rule <op> SN:Int ~> #stackNeeded? => .          ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) >=Int SN
-
-    rule <op> SD:Int ~> #stackDelta? => #exception ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) +Int SD >Int 1024
-    rule <op> SD:Int ~> #stackDelta? => .          ... </op> <wordStack> WS </wordStack> requires #sizeWordStack(WS) +Int SD <=Int 1024
-```
-
--   `#stackNeeded` calculates how many arguments the operator needs from the stack ($\delta$ in the yellowpaper).
--   `#stackAdded` calculates how many words will be added to the stack by this operator ($\alpha$ in the yellowpaper).
--   `#stackDelta` calculates the difference in size of the stack after executing the operator.
-
-```{.k .uiuck .rvk}
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
     rule #stackNeeded(PUSH(_, _))      => 0
@@ -319,81 +323,34 @@ TODO: If we load `#memory` and `#gas` after argument loading, they stop relying 
                      )
 ```
 
-### Jump Destination
-
--   `#badJumpDest?` checks that if it's a `JUMP*` operation that it's jumping to a valid destination (Section 9.4.3 in yellowpaper). According to the reference implementation, a conditional jump that does not actually jump is not an exception.
+-   `#badJumpDest?` determines if the opcode will result in a bad jump destination.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#badJumpDest?" "(" OpCode ")"
- // ----------------------------------------------------
-    rule <op> #badJumpDest?(OP) => .             ... </op> requires notBool isJumpOp(OP)
-    rule <op> #badJumpDest?(OP) => .             ... </op> <wordStack> DEST        : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
-    rule <op> #badJumpDest?(JUMP)  => #exception ... </op> <wordStack> DEST        : WS </wordStack> <program> ... DEST |-> OP'      ... </program> requires OP' =/=K JUMPDEST
-    rule <op> #badJumpDest?(JUMP)  => #exception ... </op> <wordStack> DEST        : WS </wordStack> <program> PGM </program>                       requires notBool DEST in keys(PGM)
-    rule <op> #badJumpDest?(JUMPI) => #exception ... </op> <wordStack> DEST : COND : WS </wordStack> <program> ... DEST |-> OP'      ... </program> requires OP' =/=K JUMPDEST andBool COND =/=Int 0
-    rule <op> #badJumpDest?(JUMPI) => #exception ... </op> <wordStack> DEST : COND : WS </wordStack> <program> PGM </program>                       requires notBool DEST in keys(PGM) andBool COND =/=Int 0
-    rule <op> #badJumpDest?(JUMPI) => .          ... </op> <wordStack> DEST :    0 : WS </wordStack>
-
-    syntax Bool ::= isJumpOp ( OpCode ) [function]
- // ----------------------------------------------
-    rule isJumpOp(OP) => OP ==K JUMP orBool OP ==K JUMPI
-```
-
-### Gas Check
-
--   `#enoughGas?` throws an exception if there isn't enough gas for the opcode.
-
-```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#enoughGas?"
+    syntax OpCodeOp ::= "#badJumpDest?"
  // -----------------------------------
-    rule <op> G:Int ~> #enoughGas? => #exception ... </op> <gas> GAVAIL </gas> requires G >Int GAVAIL
-    rule <op> G:Int ~> #enoughGas? => .          ... </op> <gas> GAVAIL </gas> requires G <=Int GAVAIL
+    rule <op> #badJumpDest? [ OP    ] => . ... </op> requires notBool isJumpOp(OP)
+    rule <op> #badJumpDest? [ OP    ] => . ... </op> <wordStack> DEST  : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
+    rule <op> #badJumpDest? [ JUMPI ] => . ... </op> <wordStack> _ : 0 : WS </wordStack>
+
+    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
+    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST andBool W =/=K 0
+
+    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> PGM </program> requires notBool (DEST in keys(PGM))
+    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> PGM </program> requires (notBool (DEST in keys(PGM))) andBool W =/=K 0
 ```
 
-OpCode Execution
-----------------
+### Execution Step
 
-Executing an opcode consists of deducting the necessary gas, calling it, then incrementing the program counter.
-
-```{.k .uiuck .rvk}
-    syntax InternalOp ::= #execOp ( OpCode )
- // ----------------------------------------
-    rule <op> #execOp(OP)
-           => #gas(OP)
-           ~> #memory(OP)
-           ~> OP
-           ~> #incrementPC(OP)
-           ~> #next
-          ...
-        </op>
-```
-
-### Gas Deduction
-
--   `#deductGas` removes the correct amount of gas from the current gas balance.
+-   `#exec` will load the arguments of the opcode (it assumes `#stackNeeded?` is accurate and has been called) and trigger the subsequent operations.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#deductGas"
- // ----------------------------------
-    rule <op> G:Int ~> #deductGas => . ... </op> <gas> GAVAIL => GAVAIL -Int G </gas>
-```
-
-### Argument Loading
-
-Depending on the sort of the opcode loaded, the correct number of arguments are loaded off the `wordStack`.
-This allows more "local" definition of each of the corresponding operators.
-
-Here all `OpCode`s are considered to be `KItem` (allowing sequentialization), and the various sorts of opcodes are subsorted into `OpCode`.
-
-```{.k .uiuck .rvk}
-    syntax KItem  ::= OpCode
-    syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
-                    | InvalidOp | StackOp | InternalOp | CallOp | PushOp | LogOp
- // ----------------------------------------------------------------------------
+    syntax OpCodeOp ::= "#exec"
+ // ---------------------------
+    rule <op> #exec [ OP:InternalOp ] => #try (#gas [ OP ] ~> OP) ... </op>
 ```
 
 Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
-Some of them require the first argument to be interpereted as an address (modulo 160 bits), so the `#addr?` function performs that check.
+Some of them require an argument to be interpereted as an address (modulo 160 bits), so the `#addr?` function performs that check.
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= UnStackOp Word
@@ -401,10 +358,10 @@ Some of them require the first argument to be interpereted as an address (modulo
                         | TernStackOp Word Word Word
                         | QuadStackOp Word Word Word Word
  // -----------------------------------------------------
-    rule <op> UOP:UnStackOp   => UOP #addr?(UOP, W0)          ... </op> <wordStack> W0 : WS                => WS </wordStack>
-    rule <op> BOP:BinStackOp  => BOP #addr?(BOP, W0) W1       ... </op> <wordStack> W0 : W1 : WS           => WS </wordStack>
-    rule <op> TOP:TernStackOp => TOP #addr?(TOP, W0) W1 W2    ... </op> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
-    rule <op> QOP:QuadStackOp => QOP #addr?(QOP, W0) W1 W2 W3 ... </op> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
+    rule <op> #exec [ UOP:UnStackOp   => UOP #addr?(UOP, W0)          ] ... </op> <wordStack> W0 : WS                => WS </wordStack>
+    rule <op> #exec [ BOP:BinStackOp  => BOP #addr?(BOP, W0) W1       ] ... </op> <wordStack> W0 : W1 : WS           => WS </wordStack>
+    rule <op> #exec [ TOP:TernStackOp => TOP #addr?(TOP, W0) W1 W2    ] ... </op> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
+    rule <op> #exec [ QOP:QuadStackOp => QOP #addr?(QOP, W0) W1 W2 W3 ] ... </op> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
 
     syntax Word ::= "#addr?" "(" OpCode "," Word ")" [function]
  // -----------------------------------------------------------
@@ -420,37 +377,53 @@ Some of them require the first argument to be interpereted as an address (modulo
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= StackOp WordStack
  // ---------------------------------------
-    rule <op> SO:StackOp => SO WS ... </op> <wordStack> WS </wordStack>
+    rule <op> #exec [ SO:StackOp => SO WS ] ... </op> <wordStack> WS </wordStack>
 ```
 
 The `CallOp` opcodes all interperet their second argument as an address.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= CallOp Word Word Word Word Word Word Word
-                        | "DELEGATECALL" Word Word Word Word Word Word
- // --------------------------------------------------------------------------
-    rule <op> DELEGATECALL => DELEGATECALL W0 #addr(W1) W2 W3 W4 W5    ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
-    rule <op> CO:CallOp    => CO           W0 #addr(W1) W2 W3 W4 W5 W6 ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
-      requires CO =/=K DELEGATECALL
+    syntax InternalOp ::= CallSixOp Word Word      Word Word Word Word
+                        | CallOp    Word Word Word Word Word Word Word
+ // ------------------------------------------------------------------
+    rule <op> #exec [ CSO:CallSixOp => CSO  W0 #addr(W1)    W2 W3 W4 W5 ] ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
+    rule <op> #exec [ CO:CallOp     => CO   W0 #addr(W1) W2 W3 W4 W5 W6 ] ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
 ```
 
-### Increment Program Counter
-
-All operators except for `PUSH` increment the program counter by 1 (because the arguments to `PUSH` are inline).
+-   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= #incrementPC ( OpCode ) 
- // ---------------------------------------------
-    rule <op> #incrementPC(OP) => . ... </op> <pc> PCOUNT => PCOUNT +Word #pc(OP) </pc>
-
-    syntax Word ::= #pc ( OpCode ) [function]
- // -----------------------------------------
-    rule #pc(OP)         => 1 requires notBool isPushOp(OP)
-    rule #pc(PUSH(N, _)) => 1 +Word N
+    syntax OpCodeOp ::= "#gas"
+ // --------------------------
 ```
 
-Other
------
+```
+    rule <op> #gas [ OP ] => #gas(OP) ~> #deductGas ... </op>
+
+    syntax InternalOp ::= "#deductGas"
+ // ----------------------------------
+    rule <op> G:Int ~> #deductGas => .          ... </op> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+    rule <op> G:Int ~> #deductGas => #exception ... </op> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
+```
+
+### Program Counter
+
+All operators except for `PUSH` and `JUMP*` increment the program counter by 1.
+The arguments to `PUSH` must be skipped over (as they are inline), and the opcode `JUMP` already affects the program counter in the correct way.
+
+-   `#pc` calculates the next program counter of the given operator.
+
+```{.k .uiuck .rvk}
+    syntax OpCodeOp ::= "#pc"
+ // -------------------------
+    rule <op> #pc [ OP         ] => . ... </op> <pc> PCOUNT => PCOUNT +Word 1           </pc> requires notBool (isPushOp(OP) orBool isJumpOp(OP))
+    rule <op> #pc [ PUSH(N, _) ] => . ... </op> <pc> PCOUNT => PCOUNT +Word (1 +Word N) </pc> 
+    rule <op> #pc [ OP         ] => . ... </op> requires isJumpOp(OP)
+
+    syntax Bool ::= isJumpOp ( OpCode ) [function]
+ // ----------------------------------------------
+    rule isJumpOp(OP) => OP ==K JUMP orBool OP ==K JUMPI
+```
 
 ### Substate Log
 
@@ -611,6 +584,13 @@ These are just used by the other operators for shuffling local execution state a
            ...
          </accounts>
       requires notBool ACCT in ACCTS
+```
+
+### Invalid Operator
+
+```{.k .uiuck .rvk}
+    syntax InvalidOp ::= "INVALID"
+ // ------------------------------
 ```
 
 ### Stack Manipulations
@@ -1061,8 +1041,8 @@ TODO: The `#catch` being used in each case needs to be filled in with the actual
            ...
          </account>
 
-    syntax CallOp ::= "DELEGATECALL"
- // --------------------------------
+    syntax CallSixOp ::= "DELEGATECALL"
+ // -----------------------------------
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #try ( #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
                   ~> #return RETSTART RETWIDTH

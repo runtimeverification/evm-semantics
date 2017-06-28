@@ -9,7 +9,6 @@ requires "evm.k"
 
 module ETHEREUM-SIMULATION
     imports ETHEREUM
-
 ```
 
 An Ethereum simulation is a list of Ethereum commands.
@@ -253,7 +252,7 @@ There seem to be some typos/inconsistencies in the test set requiring us to hand
     rule check TESTID : { "expect" : POST } => check "account" : POST ~> failure TESTID
     rule check TESTID : { "export" : POST } => check "account" : POST ~> failure TESTID
     rule check TESTID : { "post"   : POST } => check "account" : POST ~> failure TESTID
- // -------------------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------------
     rule <k> check "account" : { ACCT : { "balance" : (BAL:Word) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
@@ -290,9 +289,7 @@ Here we check the other post-conditions associated with an EVM test.
  // --------------------------------------------------------------------------
     rule check "out" : ((OUT:String) => #parseByteStack(OUT))
     rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
-```
 
-```{.k .uiuck .rvk}
     rule check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID
  // ------------------------------------------------------------------------------
     rule check "logs" : { "topics" : (TOPICS:JSON) , "bloom" : (BLOOM:String) , "data" : (DATA:String) , "address" : (ACCT:String) , .JSONList }
