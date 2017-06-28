@@ -493,18 +493,8 @@ Gas needs to be deducted when the maximum memory to a program increases, so
 we track the maximum used so far.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#updateMemory"
- // -----------------------------------
-    rule <op> NEWMEM:Int ~> #updateMemory => . ... </op>
-         <memoryUsed> MU => maxInt(MU, NEWMEM) </memoryUsed>
-```
-
-```{.k .uiuck .rvk}
     syntax Set ::= "#consumesMem" [function]
     rule #consumesMem => ( SetItem(MSTORE) )
-
-    syntax InternalOp ::= #times(Int)
-    rule <op> M:Int ~> #times(N:Int) => M *Int N ... </op>
 
     syntax InternalOp ::= #memory ( OpCode )
  // ----------------------------------------
