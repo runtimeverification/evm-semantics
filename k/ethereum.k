@@ -23,7 +23,7 @@ module ETHEREUM-SIMULATION
 
     syntax EthereumSimulation ::= JSON
  // ----------------------------------
-    rule JSONINPUT:JSON => run JSONINPUT .EthereumSimulation
+    rule JSONINPUT:JSON => run JSONINPUT success .EthereumSimulation
 
     syntax EthereumCommand ::= DistCommand JSON
  // -------------------------------------------
@@ -72,9 +72,10 @@ module ETHEREUM-SIMULATION
 // -   `failure_` holds the name of a test that failed if a test does fail.
 
 
-    syntax EthereumCommand ::= "exception" | "failure" String
+    syntax EthereumCommand ::= "exception" | "failure" String | "success"
  // ---------------------------------------------------------
     rule <k> exception => . ... </k> <op> #exception ... </op>
+    rule <k> success => . ... </k> <exit-code> _ => 0 </exit-code>
     rule failure _ => .
 
 

@@ -27,7 +27,7 @@ module ETHEREUM
     imports STRING
 
     configuration <k> $PGM:EthereumSimulation </k>
-                  <exit-code exit=""> 0 </exit-code>
+                  <exit-code exit=""> 1 </exit-code>
 
                   <ethereum>
 
@@ -288,6 +288,7 @@ module ETHEREUM
     rule #stackNeeded(DUP(N))          => N
     rule #stackNeeded(SWAP(N))         => N +Int 1
     rule #stackNeeded(LOG(N))          => N +Int 2
+    rule #stackNeeded(EXTCODECOP)      => 4
     rule #stackNeeded(DELEGATECALL)    => 6
     rule #stackNeeded(COP:CallOp)      => 7 requires COP =/=K DELEGATECALL
 
