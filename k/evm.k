@@ -790,8 +790,8 @@ module ETHEREUM
 
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
-    rule <op> JUMPI DEST I => . ... </op> <pc> _ => DEST </pc> requires I =/=K 0
-    rule <op> JUMPI DEST 0 => . ... </op>
+    rule <op> JUMPI DEST I => . ... </op> <pc> _      => DEST           </pc> requires I =/=K 0
+    rule <op> JUMPI DEST 0 => . ... </op> <pc> PCOUNT => PCOUNT +Word 1 </pc>
 
 
 // ### `STOP` and `RETURN`
