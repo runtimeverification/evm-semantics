@@ -340,10 +340,6 @@ module ETHEREUM
  // --------------------------------------------
     rule <op> #exec [ OP ] => #try (#gas [ OP ] ~> OP) ... </op> requires #zeroArgs?(OP)
 
-    syntax Bool ::= "#zeroArgs?" "(" OpCode ")" [function]
- // ------------------------------------------------------
-    rule #zeroArgs?(OP) => isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
-
 
 // Here we load the correct number of arguments from the `wordStack` based on the
 // sort of the opcode. Some of them require an argument to be interpereted as an
@@ -385,6 +381,26 @@ module ETHEREUM
  // ------------------------------------------------------------------
     rule <op> #exec [ CSO:CallSixOp => CSO  W0 #addr(W1)    W2 W3 W4 W5 ] ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
     rule <op> #exec [ CO:CallOp     => CO   W0 #addr(W1) W2 W3 W4 W5 W6 ] ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
+
+
+// Later we'll need a way to strip the arguments from an operator.
+
+// -   `#stripArgs` removes the arguments from an operator.
+
+
+    syntax OpCode ::= #stripArgs ( OpCode ) [function]
+ // --------------------------------------------------
+    rule #stripArgs(OP)                         => OP requires #zeroArgs?(OP)
+    rule #stripArgs(UOP:UnStackOp _)            => UOP
+    rule #stripArgs(BOP:BinStackOp _ _)         => BOP
+    rule #stripArgs(TOP:TernStackOp _ _ _)      => TOP
+    rule #stripArgs(QOP:QuadStackOp _ _ _ _)    => QOP
+    rule #stripArgs(COP:CallOp _ _ _ _ _ _ _)   => COP
+    rule #stripArgs(CSOP:CallSixOp _ _ _ _ _ _) => CSOP
+
+    syntax Bool ::= "#zeroArgs?" "(" OpCode ")" [function]
+ // ------------------------------------------------------
+    rule #zeroArgs?(OP) => isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
 
 
 // -   `#gas` calculates how much gas this operation costs, and takes into account
@@ -1152,37 +1168,36 @@ module ETHEREUM
 
     syntax Word ::= #gas ( OpCode )
  // -------------------------------
-    rule <op> #gas(OP) => #if W1 =/=K 0 andBool notBool W0 in keys(STORAGE)
-                          #then Gsset #else Gsreset #fi ... </op>
-         <wordStack> W0 : W1 : WS </wordStack>
-         <storage> STORAGE </storage>                  requires OP ==K SSTORE
+    rule <op> #gas(SSTORE W0 W1)
+           => #if W1 =/=K 0 andBool notBool W0 in keys(STORAGE) #then Gsset #else Gsreset #fi
+          ...
+         </op>
+         <storage> STORAGE </storage>
 
-    rule <op> #gas(OP) => Gexp ... </op>
-         <wordStack> W0 : 0 : WS </wordStack>               requires OP ==K EXP
-    rule <op> #gas(OP) => Gexp +Word (Gexpbyte *Word (1 +Word (log256Int(W1)))) ... </op>
-         <wordStack> W0 : W1 : WS </wordStack>         requires OP ==K EXP andBool W1 =/=K 0
+    rule <op> #gas(EXP W0 0)  => Gexp ... </op>
+    rule <op> #gas(EXP W0 W1) => Gexp +Word (Gexpbyte *Word (1 +Word (log256Int(W1)))) ... </op> requires W1 =/=K 0
 
-    rule <op> #gas(DUP(_))      => Gverylow   ... </op>
+    rule <op> #gas(DUP(_) _)    => Gverylow   ... </op>
     rule <op> #gas(PUSH(_, _))  => Gverylow   ... </op>
-    rule <op> #gas(SWAP(_))     => Gverylow   ... </op>
-    rule <op> #gas(SLOAD)       => Gsload     ... </op>
+    rule <op> #gas(SWAP(_) _)   => Gverylow   ... </op>
+    rule <op> #gas(SLOAD _)     => Gsload     ... </op>
     rule <op> #gas(BALANCE _)   => Gbalance   ... </op>
     rule <op> #gas(BLOCKHASH _) => Gblockhash ... </op>
 
-    rule <op> #gas(OP) => Gzero    ... </op> requires OP inOps Wzero
-    rule <op> #gas(OP) => Gbase    ... </op> requires OP inOps Wbase
-    rule <op> #gas(OP) => Gverylow ... </op> requires OP inOps Wverylow
-    rule <op> #gas(OP) => Glow     ... </op> requires OP inOps Wlow
-    rule <op> #gas(OP) => Gmid     ... </op> requires OP inOps Wmid
-    rule <op> #gas(OP) => Ghigh    ... </op> requires OP inOps Whigh
-    rule <op> #gas(OP) => Gextcode ... </op> requires OP inOps Wextcode
+    rule <op> #gas(OP) => Gzero    ... </op> requires #stripArgs(OP) in Wzero
+    rule <op> #gas(OP) => Gbase    ... </op> requires #stripArgs(OP) in Wbase
+    rule <op> #gas(OP) => Gverylow ... </op> requires #stripArgs(OP) in Wverylow
+    rule <op> #gas(OP) => Glow     ... </op> requires #stripArgs(OP) in Wlow
+    rule <op> #gas(OP) => Gmid     ... </op> requires #stripArgs(OP) in Wmid
+    rule <op> #gas(OP) => Ghigh    ... </op> requires #stripArgs(OP) in Whigh
+    rule <op> #gas(OP) => Gextcode ... </op> requires #stripArgs(OP) in Wextcode
 
 
 // TODO: Gas calculation for the following operators is not implemented.
 
 
-    rule <op> #gas(OP)                  => Gzero   ... </op> requires OP inOps Wcopy
-    rule <op> #gas(OP)                  => Gzero   ... </op> requires OP inOps Wcall
+    rule <op> #gas(OP)                  => Gzero   ... </op> requires #stripArgs(OP) in Wcopy
+    rule <op> #gas(OP)                  => Gzero   ... </op> requires #stripArgs(OP) in Wcall
     rule <op> #gas(SELFDESTRUCT _)      => Gzero   ... </op>
     rule <op> #gas(EXTCODECOPY _ _ _ _) => Gzero   ... </op>
     rule <op> #gas(LOG(N) _ _)          => Gzero   ... </op>
@@ -1248,16 +1263,6 @@ module ETHEREUM
     rule Gsha3word      => 6
     rule Gcopy          => 3
     rule Gblockhash     => 20
-
-    syntax Bool ::= OpCode "inOps" Set [function]
- // ---------------------------------------------
-    rule OP                           inOps S => OP in S requires #zeroArgs?(OP)
-    rule (UOP:UnStackOp _)            inOps S => UOP in S
-    rule (BOP:BinStackOp _ _)         inOps S => BOP in S
-    rule (TOP:TernStackOp _ _ _)      inOps S => TOP in S
-    rule (QOP:QuadStackOp _ _ _ _)    inOps S => QOP in S
-    rule (COP:CallOp _ _ _ _ _ _ _)   inOps S => COP in S
-    rule (CSOP:CallSixOp _ _ _ _ _ _) inOps S => CSOP in S
 
     syntax Set ::= "Wzero"    [function] | "Wbase" [function]
                  | "Wverylow" [function] | "Wlow"  [function]
