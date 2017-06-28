@@ -598,6 +598,21 @@ These are just used by the other operators for shuffling local execution state a
            ...
          </accounts>
       requires notBool ACCT in ACCTS
+
+    syntax InternalOp ::= "#transferFunds" Word Word Word
+ // -----------------------------------------------------
+    rule <op> #transferFunds ACCTFROM ACCTTO VALUE => . ... </op>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> ORIGFROM => ORIGFROM -Word VALUE </balance>
+           ...
+         </account>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <balance> ORIGTO => ORIGTO +Word VALUE </balance>
+           ...
+         </account>
+      requires word2Bool(VALUE <Word ORIGFROM)
 ```
 
 ### Invalid Operator
@@ -1144,18 +1159,32 @@ We should wait for the `#gas` calculations to be fixed before doing so.
            <balance> BALTO => BALTO +Word BALFROM </balance>
            ...
          </account>
+```
 
-    rule <op> SELFDESTRUCT ACCTTO => #newAccount ACCTTO ... </op>
+TODO: `SELFDESTRUCT` should send the created accounts the remaining ether of the current account.
+
+```{.k .uiuck .rvk}
+    rule <op> SELFDESTRUCT ACCTTO => #newAccount ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ... </op>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
          <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Word Rself-destruct #fi </refund>
-         <activeAccounts> ACCTS (.Set => SetItem(ACCTTO)) </activeAccounts>
+         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <balance> BALFROM => 0 </balance>
            ...
          </account>
       requires notBool ACCTTO in ACCTS
+
+    rule <op> SELFDESTRUCT ACCT => . ... </op>
+         <id> ACCT </id>
+         <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
+         <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Word Rself-destruct #fi </refund>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BALFROM => 0 </balance>
+           ...
+         </account>
 ```
 
 Ethereum Gas Calculation
