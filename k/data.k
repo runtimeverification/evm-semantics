@@ -12,6 +12,10 @@
 // towards our hardware.
 
 
+requires "krypto.k"
+
+
+
 requires "domains.k"
 
 module EVM-DATA
@@ -81,12 +85,6 @@ module EVM-DATA
 // -   `#symbolicWord` generates a fresh existentially-bound symbolic word.
 
 // Note: Comment out this block (remove the `k` tag) if using RV K.
-
-
-    syntax Word ::= "#symbolicWord" [function]
- // ------------------------------------------
-    rule #symbolicWord => ?X:Int
-
 
 // Arithmetic
 // ----------
@@ -401,7 +399,7 @@ module EVM-DATA
     syntax WordStack ::= #range ( Map , Word , Word ) [function]
  // ------------------------------------------------------------
     rule #range(WM,         N, 0) => .WordStack
-    rule #range(WM,         N:Int, M:Int) => 0 : #range(WM, N +Int 1, M -Int 1) requires (M >Int 0) andBool notBool N in keys(WM)
+    rule #range(WM,         N:Int, M:Int) => 0 : #range(WM, N +Int 1, M -Int 1) requires (M >Int 0) andBool notBool N in_keys(WM)
     rule #range(N |-> W WM, N:Int, M:Int) => W : #range(WM, N +Int 1, M -Int 1) requires (M >Int 0)
 
 

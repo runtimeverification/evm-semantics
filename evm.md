@@ -319,7 +319,7 @@ Execution follows a simple cycle where first the state is checked for exceptions
 
     rule <op> #next => #if word2Bool(PCOUNT <Word #sizeOpCodeMap(PGM)) #then #exception #else #end #fi </op>
          <pc> PCOUNT </pc> <program> PGM </program>
-      requires notBool (PCOUNT in keys(PGM))
+      requires notBool (PCOUNT in_keys(PGM))
 ```
 
 ### Exceptional Opcodes
@@ -404,8 +404,8 @@ Some checks if an opcode will throw an exception are relatively quick and done u
     rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
     rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST andBool W =/=K 0
 
-    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> PGM </program> requires notBool (DEST in keys(PGM))
-    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> PGM </program> requires (notBool (DEST in keys(PGM))) andBool W =/=K 0
+    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> PGM </program> requires notBool (DEST in_keys(PGM))
+    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> PGM </program> requires (notBool (DEST in_keys(PGM))) andBool W =/=K 0
 ```
 
 ### Execution Step
@@ -968,7 +968,7 @@ These operations interact with the account storage.
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
            ...
-         </account> requires notBool INDEX in keys(STORAGE)
+         </account> requires notBool INDEX in_keys(STORAGE)
 
     rule <op> SLOAD INDEX => VALUE ~> #push ... </op>
          <id> ACCT </id>
@@ -997,7 +997,7 @@ These operations interact with the account storage.
            <storage> STORAGE </storage>
            ...
          </account>
-      requires notBool (INDEX in keys(STORAGE))
+      requires notBool (INDEX in_keys(STORAGE))
 
     rule <op> SSTORE INDEX VALUE => . ... </op>
          <id> ACCT </id>

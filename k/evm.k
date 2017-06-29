@@ -20,6 +20,10 @@
 // the yellowpaper state corresponds to each cell.
 
 
+requires "krypto.k"
+
+
+
 requires "data.k"
 
 module ETHEREUM
@@ -103,7 +107,7 @@ module ETHEREUM
 // -   UIUC-K and RV-K have slight differences of opinion here.
 
 
-                        <account multiplicity="*" type="Bag">
+                        <account multiplicity="*" type="Map">
 
 
 
@@ -124,7 +128,7 @@ module ETHEREUM
 // -   UIUC-K and RV-K have slight differences of opinion here.
 
 
-                        <message multiplicity="*" type="Bag">
+                        <message multiplicity="*" type="Map">
 
 
 
@@ -308,7 +312,7 @@ module ETHEREUM
 
     rule <op> #next => #if word2Bool(PCOUNT <Word #sizeOpCodeMap(PGM)) #then #exception #else #end #fi </op>
          <pc> PCOUNT </pc> <program> PGM </program>
-      requires notBool (PCOUNT in keys(PGM))
+      requires notBool (PCOUNT in_keys(PGM))
 
 
 // ### Exceptional Opcodes
@@ -398,8 +402,8 @@ module ETHEREUM
     rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
     rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST andBool W =/=K 0
 
-    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> PGM </program> requires notBool (DEST in keys(PGM))
-    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> PGM </program> requires (notBool (DEST in keys(PGM))) andBool W =/=K 0
+    rule <op> #badJumpDest? [ JUMP  ] => #exception ... </op> <wordStack> DEST :     WS </wordStack> <program> PGM </program> requires notBool (DEST in_keys(PGM))
+    rule <op> #badJumpDest? [ JUMPI ] => #exception ... </op> <wordStack> DEST : W : WS </wordStack> <program> PGM </program> requires (notBool (DEST in_keys(PGM))) andBool W =/=K 0
 
 
 // ### Execution Step
@@ -977,7 +981,7 @@ module ETHEREUM
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
            ...
-         </account> requires notBool INDEX in keys(STORAGE)
+         </account> requires notBool INDEX in_keys(STORAGE)
 
     rule <op> SLOAD INDEX => VALUE ~> #push ... </op>
          <id> ACCT </id>
@@ -1006,7 +1010,7 @@ module ETHEREUM
            <storage> STORAGE </storage>
            ...
          </account>
-      requires notBool (INDEX in keys(STORAGE))
+      requires notBool (INDEX in_keys(STORAGE))
 
     rule <op> SSTORE INDEX VALUE => . ... </op>
          <id> ACCT </id>

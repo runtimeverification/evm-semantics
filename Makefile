@@ -14,13 +14,15 @@ split-tests: tests/tests-develop/VMTests/vmArithmeticTest/make.timestamp \
 			 tests/tests-develop/VMTests/vmSha3Test/make.timestamp \
 			 tests/tests-develop/VMTests/vmSystemOperationsTest/make.timestamp \
 			 tests/tests-develop/VMTests/vmtests/make.timestamp
+			 tests/tests-develop/VMTests/vmInputLimits/make.timestamp
+			 tests/tests-develop/VMTests/vmInputLimitsLight/make.timestamp
 
 ktest: defn split-tests 
 K:=$(shell krun --version)
 
 passing_test_file=tests/passing.expected
-#passing_tests=$(wildcard tests/tests-develop/VMTests/*/*.json)
-passing_tests=$(shell cat ${passing_test_file})
+passing_tests=$(wildcard tests/tests-develop/VMTests/*/*.json)
+#passing_tests=$(shell cat ${passing_test_file})
 passing_targets=${passing_tests:=.test}
 
 test: $(passing_targets)
@@ -51,7 +53,7 @@ k/ethereum-kompiled/interpreter: $(defn_files) KRYPTO.ml
 	@echo "== Detected RV-K, kompile will use $(K)"
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory k \
-					--hook-namespaces KRYPTO --gen-ml-only -O2
+					--hook-namespaces KRYPTO --gen-ml-only -O3 --non-strict
 	ocamlfind opt -c k/ethereum-kompiled/constants.ml -package gmp -package zarith
 	ocamlfind opt -c -I k/ethereum-kompiled KRYPTO.ml -package cryptokit
 	ocamlfind opt -a -o semantics.cmxa KRYPTO.cmx
@@ -60,7 +62,7 @@ k/ethereum-kompiled/interpreter: $(defn_files) KRYPTO.ml
 	cd $(dir $(shell which krun))/../include/ocaml/fakelibs && cp libffi.a libz.a
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory k \
-					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O2
+					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O3 --non-strict
 	cd k/ethereum-kompiled && ocamlfind opt -o interpreter constants.cmx prelude.cmx plugin.cmx parser.cmx lexer.cmx run.cmx interpreter.ml -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -linkpkg -inline 20 -nodynlink -O3
 else
 k/ethereum-kompiled/extras/timestamp: $(defn_files)

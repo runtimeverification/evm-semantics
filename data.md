@@ -389,7 +389,7 @@ We are using the polymorphic `Map` sort for these word maps.
     syntax WordStack ::= #range ( Map , Word , Word ) [function]
  // ------------------------------------------------------------
     rule #range(WM,         N, 0) => .WordStack
-    rule #range(WM,         N:Int, M:Int) => 0 : #range(WM, N +Int 1, M -Int 1) requires (M >Int 0) andBool notBool N in keys(WM)
+    rule #range(WM,         N:Int, M:Int) => 0 : #range(WM, N +Int 1, M -Int 1) requires (M >Int 0) andBool notBool N in_keys(WM)
     rule #range(N |-> W WM, N:Int, M:Int) => W : #range(WM, N +Int 1, M -Int 1) requires (M >Int 0)
 ```
 
