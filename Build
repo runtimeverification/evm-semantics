@@ -129,6 +129,13 @@ test_pipe_line() {
     $list | filter_tests "$@" | $do_run; exit
 }
 
+run_debug() {
+    run_make all
+    file=$(test_pipe_line list_tests cat "$@" | head -n 1)
+    krun --debugger --directory k "$file"
+    exit
+}
+
 [[ "$#" == '0' ]] && set build
 while [[ "$#" -gt '0' ]]; do
     run_command="$1" && shift
@@ -145,6 +152,8 @@ while [[ "$#" -gt '0' ]]; do
         list-tests)   test_pipe_line list_tests   cat       "$@";;
         list-passing) test_pipe_line list_passing cat       "$@";;
         list-failing) test_pipe_line list_failing cat       "$@";;
+
+        debug)        run_debug "$@"                            ;;
 
         ktest)        run_ktest ;;
         *)            usage; exit 1;;
