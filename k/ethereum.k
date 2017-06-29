@@ -51,6 +51,25 @@ module ETHEREUM-SIMULATION
     rule DC:DistCommand "account" : { (ACCT:Word) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
     rule DC:DistCommand "account" : { (ACCT:Word) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
 
+    syntax JSONList ::= #sortJSONList ( JSONList )            [function]
+                      | #sortJSONList ( JSONList , JSONList ) [function, klabel(#sortJSONListAux)]
+ // ----------------------------------------------------------------------------------------------
+    rule #sortJSONList(JS) => #sortJSONList(JS, .JSONList)
+    rule #sortJSONList(.JSONList, LS)            => LS
+    rule #sortJSONList(((KEY : VAL) , REST), LS) => #insertJSONKey((KEY : VAL), #sortJSONList(REST, LS))
+
+    syntax JSONList ::= #insertJSONKey ( JSON , JSONList ) [function]
+ // -----------------------------------------------------------------
+    rule #insertJSONKey( JS , .JSONList ) => JS , .JSONList
+    rule #insertJSONKey( (KEY : VAL) , ((KEY' : VAL') , REST) ) => (KEY : VAL)   , (KEY' : VAL')              , REST  requires KEY <String KEY'
+    rule #insertJSONKey( (KEY : VAL) , ((KEY' : VAL') , REST) ) => (KEY' : VAL') , #insertJSONKey((KEY : VAL) , REST) requires KEY >=String KEY'
+
+    syntax Bool ::= #isSorted ( JSONList ) [function]
+ // -------------------------------------------------
+    rule #isSorted( .JSONList ) => true
+    rule #isSorted( KEY : _ )   => true
+    rule #isSorted( (KEY : _) , (KEY' : VAL) , REST ) => KEY <=String KEY' andThenBool #isSorted((KEY' : VAL) , REST)
+
 
 // ### Driving Execution
 
@@ -257,6 +276,9 @@ module ETHEREUM-SIMULATION
     rule check DATA : [ .JSONList ] => .
     rule check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ]
 
+    rule check (KEY:String) : { JS:JSONList => #sortJSONList(JS) }
+      requires KEY in (SetItem("logs") SetItem("callcreates")) andBool notBool #isSorted(JS)
+
 
 // There seem to be some typos/inconsistencies in the test set requiring us to
 // handle the cases of `"expect"` and `"export"`.
@@ -314,7 +336,7 @@ module ETHEREUM-SIMULATION
 
     rule check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID
  // ------------------------------------------------------------------------------
-    rule check "logs" : { "topics" : (TOPICS:JSON) , "bloom" : (BLOOM:String) , "data" : (DATA:String) , "address" : (ACCT:String) , .JSONList }
+    rule check "logs" : { ("address" : (ACCT:String)) , ("bloom" : (BLOOM:String)) , ("data" : (DATA:String)) , ("topics" : (TOPICS:JSON)) , .JSONList }
       => check "logs" : { #parseAddr(ACCT) | #parseWordStack(TOPICS) | #parseByteStack(DATA) }
     rule <k> check "logs" : SLE:SubstateLogEntry => . ... </k> <log> SL </log> requires SLE in SL
 
@@ -329,8 +351,8 @@ module ETHEREUM-SIMULATION
 
     rule check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID
  // ----------------------------------------------------------------------------------------------------
-    rule check "callcreates" : { "value" : VAL , "destination" : ACCTTO , "gasLimit" : GLIMIT , "data" : DATA } => check "callcreates" : { #parseAddr(ACCTTO) | #parseHexWord(VAL) | #parseByteStack(DATA) }
-    rule check "callcreates" : { "value" : VAL , "gasLimit" : GLIMIT , "data" : DATA , "destination" : ACCTTO } => check "callcreates" : { #parseAddr(ACCTTO) | #parseHexWord(VAL) | #parseByteStack(DATA) }
+    rule check "callcreates" : { ("data" : (DATA:String)) , ("destination" : (ACCTTO:String)) , ("gasLimit" : (GLIMIT:String)) , ("value" : (VAL:String)) , .JSONList }
+      => check "callcreates" : { #parseAddr(ACCTTO) | #parseHexWord(VAL) | #parseByteStack(DATA) }
     rule <k> check "callcreates" : C:Call => . ... </k> <callLog> CL </callLog> requires C in CL
 endmodule
 
