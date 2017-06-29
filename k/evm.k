@@ -288,7 +288,6 @@ module ETHEREUM
     rule #stackNeeded(DUP(N))          => N
     rule #stackNeeded(SWAP(N))         => N +Int 1
     rule #stackNeeded(LOG(N))          => N +Int 2
-    rule #stackNeeded(EXTCODECOP)      => 4
     rule #stackNeeded(DELEGATECALL)    => 6
     rule #stackNeeded(COP:CallOp)      => 7 requires COP =/=K DELEGATECALL
 
@@ -398,6 +397,7 @@ module ETHEREUM
     rule #stripArgs(QOP:QuadStackOp _ _ _ _)    => QOP
     rule #stripArgs(PUSHOP:PushOp)              => PUSHOP
     rule #stripArgs(SOP:StackOp)                => SOP
+    rule #stripArgs(SOP:StackOp _)              => SOP
     rule #stripArgs(COP:CallOp _ _ _ _ _ _ _)   => COP
     rule #stripArgs(CSOP:CallSixOp _ _ _ _ _ _) => CSOP
 
@@ -740,7 +740,7 @@ module ETHEREUM
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
-    rule <op> BLOCKHASH N => keccak(N : .WordStack) ~> #push ... </op>
+    rule <op> BLOCKHASH N => #if N >Int HI #then 0 #else keccak(N : .WordStack) #fi ~> #push ... </op> <number> HI </number>
 
 
 // ### `JUMP*`
@@ -1106,11 +1106,6 @@ module ETHEREUM
            ...
          </account>
 
-
-// TODO: `SELFDESTRUCT` should send the created accounts the remaining ether of the
-// current account.
-
-
     rule <op> SELFDESTRUCT ACCTTO => #newAccount ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ... </op>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
@@ -1145,9 +1140,6 @@ module ETHEREUM
 //     (with its arguments).
 // -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper
 //     which helps track the memory used.
-
-// TODO: `#memory` can be made a `[function]` once this is ironed out and working
-// by passing it `MU` as an argument.
 
 
     syntax InternalOp ::= #memory ( OpCode , Int ) [function]
