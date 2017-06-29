@@ -285,6 +285,7 @@ module ETHEREUM
     rule #stackNeeded(UOP:UnStackOp)   => 1
     rule #stackNeeded(BOP:BinStackOp)  => 2 requires notBool isLogOp(BOP)
     rule #stackNeeded(TOP:TernStackOp) => 3
+    rule #stackNeeded(QOP:QuadStackOp) => 4
     rule #stackNeeded(DUP(N))          => N
     rule #stackNeeded(SWAP(N))         => N +Int 1
     rule #stackNeeded(LOG(N))          => N +Int 2
