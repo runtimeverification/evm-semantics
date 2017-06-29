@@ -64,7 +64,7 @@ module ETHEREUM-SIMULATION
  // --------------------------------------------
     rule <k> start => . ... </k> <op> . => #next </op>
     rule <k> flush => . ... </k> <op> #end => #finalize </op>
-    rule <k> flush => . ... </k> <op> (. => #finalize) ~> #signalException ~> #next </op>
+    rule <k> flush => . ... </k> <op> #exception => #finalize ~> #exception </op>
 
 
 // -   `exception` only clears from the `k` cell if there is an exception on the
@@ -74,7 +74,7 @@ module ETHEREUM-SIMULATION
 
     syntax EthereumCommand ::= "exception" | "failure" String
  // ---------------------------------------------------------
-    rule <k> exception => . ... </k> <op> #signalException ... </op>
+    rule <k> exception => . ... </k> <op> #exception ... </op>
     rule failure _ => .
 
 
@@ -247,10 +247,11 @@ module ETHEREUM-SIMULATION
 //     as stated.
 
 
-    syntax DistCommand ::= "check"
- // --------------------------------------
+    syntax EthereumCommand ::= "check" JSON
+ // ---------------------------------------
     rule check DATA : { .JSONList } => .
-    rule check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST } requires REST =/=K .JSONList
+    rule check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST }
+      requires REST =/=K .JSONList andBool notBool DATA in (SetItem("callcreates") SetItem("logs"))
 
     rule check DATA : [ .JSONList ] => .
     rule check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ]
@@ -259,6 +260,15 @@ module ETHEREUM-SIMULATION
 // There seem to be some typos/inconsistencies in the test set requiring us to
 // handle the cases of `"expect"` and `"export"`.
 
+
+    rule check "account" : { ACCTID: { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
+
+    rule check "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
+    rule check "account" : { (ACCT:Word) : { "balance" : ((VAL:String)         => #parseHexWord(VAL)) } }
+    rule check "account" : { (ACCT:Word) : { "nonce"   : ((VAL:String)         => #parseHexWord(VAL)) } }
+    rule check "account" : { (ACCT:Word) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
+    rule check "account" : { (ACCT:Word) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
+    rule check "account" : { (ACCT:Word) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
 
     rule check TESTID : { "expect" : POST } => check "account" : POST ~> failure TESTID
     rule check TESTID : { "export" : POST } => check "account" : POST ~> failure TESTID
@@ -318,8 +328,8 @@ module ETHEREUM-SIMULATION
 
     rule check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID
  // ----------------------------------------------------------------------------------------------------
-    rule check "callcreates" : { "value" : VAL , "destination" : ACCTTO , "gasLimit" : GLIMIT , "data" : DATA }
-      => check "callcreates" : { #parseAddr(ACCTTO) | #parseHexWord(VAL) | #parseByteStack(DATA) }
+    rule check "callcreates" : { "value" : VAL , "destination" : ACCTTO , "gasLimit" : GLIMIT , "data" : DATA } => check "callcreates" : { #parseAddr(ACCTTO) | #parseHexWord(VAL) | #parseByteStack(DATA) }
+    rule check "callcreates" : { "value" : VAL , "gasLimit" : GLIMIT , "data" : DATA , "destination" : ACCTTO } => check "callcreates" : { #parseAddr(ACCTTO) | #parseHexWord(VAL) | #parseByteStack(DATA) }
     rule <k> check "callcreates" : C:Call => . ... </k> <callLog> CL </callLog> requires C in CL
 endmodule
 
