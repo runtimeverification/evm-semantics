@@ -1105,11 +1105,7 @@ We should wait for the `#gasExec` calculations to be fixed before doing so.
            <balance> BALTO => BALTO +Word BALFROM </balance>
            ...
          </account>
-```
 
-TODO: `SELFDESTRUCT` should send the created accounts the remaining ether of the current account.
-
-```{.k .uiuck .rvk}
     rule <op> SELFDESTRUCT ACCTTO => #newAccount ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ... </op>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
@@ -1141,8 +1137,6 @@ Gas needs to be deducted when the maximum memory to a program increases, so we t
 
 -   `#memory` computes the new memory size given the old size and next operator (with its arguments).
 -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper which helps track the memory used.
-
-TODO: `#memory` can be made a `[function]` once this is ironed out and working by passing it `MU` as an argument.
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= #memory ( OpCode , Int ) [function]
