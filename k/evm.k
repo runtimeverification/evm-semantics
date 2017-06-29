@@ -411,12 +411,19 @@ module ETHEREUM
 
     syntax InternalOp ::= "#gas" "[" OpCode "]"
  // -------------------------------------------
-    rule <op> #gas [ OP ] => #gas(OP) ~> #deductGas ... </op>
+    rule <op> #gas [ OP ] => #memory [ OP ] ~> #gas [ OP ] ... </op>
+    rule <op> MU':Int ~> #gas [ OP ] => #exception                                            ... </op> <memoryUsed> MU        </memoryUsed> requires MU' <Int MU  orBool  MU' >Int  ((2 ^Int 256) -Int 1)
+    rule <op> MU':Int ~> #gas [ OP ] => #gasExec(OP) ~> Cmem(MU') -Int Cmem(MU) ~> #deductGas ... </op> <memoryUsed> MU => MU' </memoryUsed> requires MU' >=Int MU andBool MU' <=Int ((2 ^Int 256) -Int 1)
 
     syntax InternalOp ::= "#deductGas"
  // ----------------------------------
-    rule <op> G:Int ~> #deductGas => .          ... </op> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+    rule <op> (GEXEC ~> GMEM => GEXEC +Int GMEM) ~> #deductGas ... </op>
     rule <op> G:Int ~> #deductGas => #exception ... </op> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
+    rule <op> G:Int ~> #deductGas => .          ... </op> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+
+    syntax Int ::= Cmem ( Int ) [function]
+ // --------------------------------------
+    rule Cmem(I) => (I *Int Gmemory) +Int ((I *Int I) /Int 512)
 
 
 // ### Program Counter
@@ -485,33 +492,6 @@ module ETHEREUM
            )
            ...
          </accounts>
-
-
-// ### Memory Consumption
-
-// Gas needs to be deducted when the maximum memory to a program increases, so we
-// track the maximum used so far.
-
-
-    syntax Set ::= "#consumesMem" [function]
-    rule #consumesMem => ( SetItem(MSTORE) SetItem(SHA3) )
-
-    syntax InternalOp ::= "#memory" "[" OpCode "]"
- // ----------------------------------------------
-    rule <op> #memory [ OP ] => 0  ... </op> [owise]
-    rule <op> #memory [ MSTORE INDEX VALUE       ] => (INDEX +Int 32) up/Int 32 ... </op>
-    rule <op> #memory [ SHA3 MEMSTART MEMWIDTH   ] => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) -Int MU ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> #memory [ LOG(N) MEMSTART MEMWIDTH ] => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) -Int MU ... </op> <memoryUsed> MU </memoryUsed>
-
-
-// -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper
-//     which helps track the memory used.
-
-
-    syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
- // ----------------------------------------------------------------
-    rule #memoryUsageUpdate(S, F, 0) => S
-    rule #memoryUsageUpdate(S, F, L) => maxWord(S, (F +Int L) up/Int 32)
 
 
 // EVM Programs
@@ -647,7 +627,6 @@ module ETHEREUM
  // ----------------------------
     rule <op> MLOAD INDEX => #asWord(#range(LM, INDEX, 32)) ~> #push ... </op>
          <localMem> LM </localMem>
-         <memoryUsed> MU => maxInt(MU, (INDEX +Int 32) up/Int 32) </memoryUsed>
 
     syntax BinStackOp ::= "MSTORE" | "MSTORE8"
  // ------------------------------------------
@@ -656,7 +635,6 @@ module ETHEREUM
 
     rule <op> MSTORE8 INDEX VALUE => . ... </op>
          <localMem> LM => LM [ INDEX <- (VALUE %Int 256) ]    </localMem>
-         <memoryUsed> MU => maxInt(MU, (INDEX +Int 1) up/Int 32) </memoryUsed>
 
 
 // ### Expressions
@@ -719,7 +697,6 @@ module ETHEREUM
  // ----------------------------
     rule <op> SHA3 MEMSTART MEMWIDTH => keccak(#range(LM, MEMSTART, MEMWIDTH)) ~> #push ... </op>
          <localMem> LM </localMem>
-         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
 
 
 // ### Local State
@@ -750,7 +727,7 @@ module ETHEREUM
 
     syntax NullStackOp ::= "MSIZE" | "CODESIZE"
  // -------------------------------------------
-    rule <op> MSIZE    => 32 *Word MU    ~> #push ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> MSIZE    => 32 *Word MU         ~> #push ... </op> <memoryUsed> MU </memoryUsed>
     rule <op> CODESIZE => #sizeOpCodeMap(PGM) ~> #push ... </op> <program> PGM </program>
 
     syntax TernStackOp ::= "CODECOPY"
@@ -758,7 +735,6 @@ module ETHEREUM
     rule <op> CODECOPY MEMSTART PGMSTART WIDTH => . ... </op>
          <program> PGM </program>
          <localMem> LM => LM [ MEMSTART := #asmOpCodes(#asOpCodes(PGM)) [ PGMSTART .. WIDTH ] ] </localMem>
-         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, WIDTH) </memoryUsed>
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
@@ -796,7 +772,6 @@ module ETHEREUM
     rule <op> RETURN RETSTART RETWIDTH => . ... </op>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
-         <memoryUsed> MU => #memoryUsageUpdate(MU, RETSTART, RETWIDTH) </memoryUsed>
 
 
 // ### Call Data
@@ -819,7 +794,6 @@ module ETHEREUM
     rule <op> CALLDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </op>
          <localMem> LM => LM [ MEMSTART := CD [ DATASTART .. DATAWIDTH ] ] </localMem>
          <callData> CD </callData>
-         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, DATAWIDTH) </memoryUsed>
 
 
 // ### Log Operations
@@ -832,7 +806,6 @@ module ETHEREUM
          <id> ACCT </id>
          <wordStack> WS => #drop(N, WS) </wordStack>
          <localMem> LM </localMem>
-         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
          <log> ... (.Set => SetItem({ ACCT | #take(N, WS) | #range(LM, MEMSTART, MEMWIDTH) })) </log>
       requires word2Bool(#sizeWordStack(WS) >=Word N)
 
@@ -886,7 +859,6 @@ module ETHEREUM
  // ------------------------------------
     rule <op> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </op>
          <localMem> LM => LM [ MEMSTART := #asmOpCodes(#asOpCodes(PGM)) [ PGMSTART .. WIDTH ] ] </localMem>
-         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, WIDTH) </memoryUsed>
          <account>
            <acctID> ACCT </acctID>
            <code> PGM </code>
@@ -1018,7 +990,6 @@ module ETHEREUM
          </op>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <memoryUsed> MU => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) </memoryUsed>
          <account>
            <acctID> ACCTTO </acctID>
            <code> CODE </code>
@@ -1035,7 +1006,6 @@ module ETHEREUM
          </op>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <memoryUsed> MU => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) </memoryUsed>
          <account>
            <acctID> ACCTTO </acctID>
            <code> CODE </code>
@@ -1052,7 +1022,6 @@ module ETHEREUM
          </op>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <memoryUsed> MU => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) </memoryUsed>
          <account>
            <acctID> ACCTTO </acctID>
            <code> CODE </code>
@@ -1082,7 +1051,6 @@ module ETHEREUM
          </op>
          <id> ACCT </id>
          <localMem> LM </localMem>
-         <memoryUsed> MU => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) </memoryUsed>
          <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
@@ -1097,7 +1065,7 @@ module ETHEREUM
 //     calculation setup.
 
 // TODO: Right now `#codeDeposit` isn't performing the correct gas check. We should
-// wait for the `#gas` calculations to be fixed before doing so.
+// wait for the `#gasExec` calculations to be fixed before doing so.
 
 
     syntax InternalOp  ::= "#codeDeposit"
@@ -1167,29 +1135,48 @@ module ETHEREUM
 // Ethereum Gas Calculation
 // ========================
 
-// The gas calculation is designed to mirror the style of the yellowpaper.
+// The gas calculation is designed to mirror the style of the yellowpaper. Gas
+// needs to be deducted when the maximum memory to a program increases, so we track
+// the maximum used so far.
+
+// -   `#memory` computes the new memory size given the old size and next operator
+//     (with its arguments).
+// -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper
+//     which helps track the memory used.
+
+// TODO: `#memory` can be made a `[function]` once this is ironed out and working
+// by passing it `MU` as an argument.
 
 
-    syntax Word ::= #gas ( OpCode )
- // -------------------------------
-    rule <op> #gas(OP) => #gasExec(OP) ~> #memory [ OP ] ~> #calcGas(PREVMEM) ... </op>
-         <memoryUsed> PREVMEM </memoryUsed>
+    syntax InternalOp ::= "#memory" "[" OpCode "]"
+ // ----------------------------------------------
+    rule <op> #memory [ OP ] => 0  ... </op> [owise]
+    rule <op> #memory [ MLOAD INDEX                 ] => maxInt(MU, (INDEX +Int 32) up/Int 32) ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> #memory [ MSTORE INDEX _              ] => maxInt(MU, (INDEX +Int 32) up/Int 32) ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> #memory [ MSTORE8 INDEX _             ] => maxInt(MU, (INDEX +Int 1)  up/Int 32) ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> #memory [ SHA3 START WIDTH            ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> #memory [ LOG(N) START WIDTH          ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> #memory [ CODECOPY START _ WIDTH      ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> #memory [ RETURN START WIDTH          ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> #memory [ CALLDATACOPY START _ WIDTH  ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> #memory [ LOG(_) START WIDTH          ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> #memory [ EXTCODECOPY _ START _ WIDTH ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> #memory [ CREATE _ START WIDTH        ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> #memory [ COP:CallOp _ _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH ] => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> #memory [ CSOP:CallSixOp _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH ] => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) ... </op> <memoryUsed> MU </memoryUsed>
 
-    rule <op>  GEXEC:Int ~> #memory [ OP ] ~> #calcGas(PREVMEM)
-               => #memory [ OP ] ~> #calcGas(PREVMEM, GEXEC)
-         ... </op>
-    rule <op>  NEEDEDMEM:Int ~> #calcGas(PREVMEM, GEXEC)
-               => #calcGas(NEEDEDMEM, PREVMEM, GEXEC)
-         ... </op>
-
-    rule <op> #calcGas(NEEDEDMEM, PREVMEM, GEXEC) =>
-            ( maxInt(PREVMEM, NEEDEDMEM) -Int PREVMEM ) *Int Gmemory +Int GEXEC
-    ... </op>
+    syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
+ // ----------------------------------------------------------------
+    rule #memoryUsageUpdate(S, F, 0) => S
+    rule #memoryUsageUpdate(S, F, L) => maxWord(S, (F +Int L) up/Int 32)
 
 
+// -   `#gasExec` computes the gas needed for the execution of the opcode, not
+//     including the memory consumed (appendx H of the yellowpaper).
 
-    syntax InternalOp ::= #gasExec ( OpCode ) | #calcGas ( Int ) | #calcGas( Int, Int ) | #calcGas (Int, Int, Int)
 
+    syntax Word ::= #gasExec ( OpCode )
+ // -----------------------------------
     rule <op> #gasExec(SSTORE W0 W1)
            => #if W1 =/=K 0 andBool notBool W0 in keys(STORAGE) #then Gsset #else Gsreset #fi
           ...
@@ -1205,7 +1192,7 @@ module ETHEREUM
     rule <op> #gasExec(SLOAD _)     => Gsload     ... </op>
     rule <op> #gasExec(BALANCE _)   => Gbalance   ... </op>
     rule <op> #gasExec(BLOCKHASH _) => Gblockhash ... </op>
-    rule <op> #gasExec(SHA3 _ _)            => Gzero   ... </op>
+    rule <op> #gasExec(SHA3 _ _)    => Gzero      ... </op>
 
     rule <op> #gasExec(OP) => Gzero    ... </op> requires #stripArgs(OP) in Wzero
     rule <op> #gasExec(OP) => Gbase    ... </op> requires #stripArgs(OP) in Wbase
