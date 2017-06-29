@@ -21,6 +21,16 @@ list_tests()   { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
 list_passing() { cat "$expected_passing"; }
 list_failing() { list_tests | grep -Fvxf "$expected_passing" -; }
 
+list_quicktests() {
+    echo "tests/tests-develop/VMTests/vmEnvironmentalInfoTest/extcodecopyZeroMemExpansion.json
+tests/tests-develop/VMTests/vmSystemOperationsTest/ABAcalls0.json
+tests/tests-develop/VMTests/vmSha3Test/sha3_4.json
+tests/tests-develop/VMTests/vmArithmeticTest/sdiv_dejavu.json
+tests/tests-develop/VMTests/vmArithmeticTest/expXY.json
+tests/tests-develop/VMTests/vmArithmeticTest/expXY_success.json
+tests/tests-develop/VMTests/vmArithmeticTest/arith1.json"
+}
+
 pretty_diff() {
     if type colordiff >/dev/null 2>&1; then
         colordiff -u "$@"
@@ -112,6 +122,8 @@ usage() {
 
                                 These tests are filtered by <regex>
 
+       $0 quicktest             Run a quick round of a few tricky tests
+
        $0 list-tests   <regx>   Run passing and failing tests
        $0 list-failing <regx>   Run failing tests
        $0 list-passing <regx>   Run passing tests
@@ -132,6 +144,7 @@ test_pipe_line() {
 run_debug() {
     run_make all
     file=$(test_pipe_line list_tests cat "$@" | head -n 1)
+    progress "debugging: $file"
     krun --debugger --directory k "$file"
     exit
 }
@@ -146,6 +159,8 @@ while [[ "$#" -gt '0' ]]; do
         passing)      test_pipe_line list_passing run_tests "$@";;
         failing)      test_pipe_line list_failing run_tests "$@";;
         test)         test_pipe_line list_tests   run_tests "$@";;
+
+        quicktest)    list_quicktests | run_tests ;;
 
         krun)         test_pipe_line list_tests   run_krun  "$@";;
 
