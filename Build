@@ -23,6 +23,7 @@ list_failing() { list_tests | grep -Fvxf "$expected_passing" -; }
 
 list_quicktests() {
     echo "tests/tests-develop/VMTests/vmEnvironmentalInfoTest/extcodecopyZeroMemExpansion.json
+tests/tests-develop/VMTests/vmEnvironmentalInfoTest/calldatacopy0_return.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/ABAcalls0.json
 tests/tests-develop/VMTests/vmSha3Test/sha3_4.json
 tests/tests-develop/VMTests/vmArithmeticTest/sdiv_dejavu.json
