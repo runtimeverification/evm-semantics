@@ -28,7 +28,8 @@ tests/tests-develop/VMTests/vmSha3Test/sha3_4.json
 tests/tests-develop/VMTests/vmArithmeticTest/sdiv_dejavu.json
 tests/tests-develop/VMTests/vmArithmeticTest/expXY.json
 tests/tests-develop/VMTests/vmArithmeticTest/expXY_success.json
-tests/tests-develop/VMTests/vmArithmeticTest/arith1.json"
+tests/tests-develop/VMTests/vmArithmeticTest/arith1.json
+tests/tests-develop/VMTests/vmLogTest/log3_emptyMem.json"
 }
 
 pretty_diff() {
