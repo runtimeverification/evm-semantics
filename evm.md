@@ -296,7 +296,6 @@ Some checks if an opcode will throw an exception are relatively quick and done u
     rule #stackNeeded(DUP(N))          => N
     rule #stackNeeded(SWAP(N))         => N +Int 1
     rule #stackNeeded(LOG(N))          => N +Int 2
-    rule #stackNeeded(EXTCODECOPY)      => 4
     rule #stackNeeded(DELEGATECALL)    => 6
     rule #stackNeeded(COP:CallOp)      => 7 requires COP =/=K DELEGATECALL
 
@@ -403,7 +402,7 @@ Later we'll need a way to strip the arguments from an operator.
     rule #stripArgs(QOP:QuadStackOp _ _ _ _)    => QOP
     rule #stripArgs(PUSHOP:PushOp)              => PUSHOP
     rule #stripArgs(SOP:StackOp)                => SOP
-    rule #stripArgs(SOP:StackOp _)                => SOP
+    rule #stripArgs(SOP:StackOp _)              => SOP
     rule #stripArgs(COP:CallOp _ _ _ _ _ _ _)   => COP
     rule #stripArgs(CSOP:CallSixOp _ _ _ _ _ _) => CSOP
 
@@ -736,7 +735,7 @@ These operators make queries about the current execution state.
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
-    rule <op> BLOCKHASH N => keccak(N : .WordStack) ~> #push ... </op>
+    rule <op> BLOCKHASH N => #if N >Int HI #then 0 #else keccak(N : .WordStack) #fi ~> #push ... </op> <number> HI </number>
 ```
 
 ### `JUMP*`
