@@ -85,11 +85,12 @@ module ETHEREUM
                       <origin>   0:Word </origin>                       // I_o
 
                       // I_H* (block information)
-                      <gasLimit>   0:Word </gasLimit>                   // I_Hl
-                      <coinbase>   0:Word </coinbase>                   // I_Hc
-                      <timestamp>  0:Word </timestamp>                  // I_Hs
-                      <number>     0:Word </number>                     // I_Hi
-                      <difficulty> 0:Word </difficulty>                 // I_Hd
+                      <gasLimit>     0:Word </gasLimit>                   // I_Hl
+                      <coinbase>     0:Word </coinbase>                   // I_Hc
+                      <timestamp>    0:Word </timestamp>                  // I_Hs
+                      <number>       0:Word </number>                     // I_Hi
+                      <previousHash> 0:Word </previousHash>               // I_Hp
+                      <difficulty>   0:Word </difficulty>                 // I_Hd
 
                     </evm>
 

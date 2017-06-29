@@ -228,11 +228,12 @@ Here we load the environmental information.
 ```{.k .uiuck .rvk}
     rule load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) }
  // ----------------------------------------------------------------
-    rule <k> load "env" : { "currentCoinbase"   : (CB:Word)     } => . ... </k> <coinbase>   _ => CB     </coinbase>
-    rule <k> load "env" : { "currentDifficulty" : (DIFF:Word)   } => . ... </k> <difficulty> _ => DIFF   </difficulty>
-    rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:Word) } => . ... </k> <gasLimit>   _ => GLIMIT </gasLimit>
-    rule <k> load "env" : { "currentNumber"     : (NUM:Word)    } => . ... </k> <number>     _ => NUM    </number>
-    rule <k> load "env" : { "currentTimestamp"  : (TS:Word)     } => . ... </k> <timestamp>  _ => TS     </timestamp>
+    rule <k> load "env" : { "currentCoinbase"   : (CB:Word)     } => . ... </k> <coinbase>     _ => CB     </coinbase>
+    rule <k> load "env" : { "currentDifficulty" : (DIFF:Word)   } => . ... </k> <difficulty>   _ => DIFF   </difficulty>
+    rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:Word) } => . ... </k> <gasLimit>     _ => GLIMIT </gasLimit>
+    rule <k> load "env" : { "currentNumber"     : (NUM:Word)    } => . ... </k> <number>       _ => NUM    </number>
+    rule <k> load "env" : { "previousHash"      : (HASH:Word)   } => . ... </k> <previousHash> _ => HASH   </previousHash>
+    rule <k> load "env" : { "currentTimestamp"  : (TS:Word)     } => . ... </k> <timestamp>    _ => TS     </timestamp>
 
     rule load "exec" : { KEY : ((VAL:String) => #parseHexWord(VAL)) }
       requires KEY in (SetItem("address") SetItem("caller") SetItem("gas") SetItem("gasPrice") SetItem("value") SetItem("origin"))
