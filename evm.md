@@ -1200,22 +1200,29 @@ Gas needs to be deducted when the maximum memory to a program increases, so we t
 
     syntax Int ::= #Ccall ( Word , Word , Word )
  // --------------------------------------------
-    rule <op> #Ccall(GCAP, ACCTTO, VALUE) => #Cgascap(GCAP, GAVAIL, #Cnew(ACCTTO, ACCTS) +Int #Cxfer(VALUE)) ... </op>
+    rule <op> #Ccall(GCAP, ACCTTO, VALUE) => #Cgascap(GCAP, GAVAIL, #Cextra(ACCTTO, ACCTS, VALUE)) +Int #Cextra(ACCTTO, ACCTS, VALUE) ... </op>
          <activeAccounts> ACCTS </activeAccounts>
          <gas> GAVAIL </gas>
 
-    syntax Int ::= #Cgascap ( Word , Word , Word ) [function]
-                 | #Cnew ( Word , Set )            [function]
-                 | #Cxfer ( Word )                 [function]
- // ---------------------------------------------------------
+    syntax Int ::= #Ccallgas ( Word , Word , Word ) [function]
+                 | #Cgascap ( Word , Word , Word )  [function]
+                 | #Cextra  ( Word , Set , Word )   [function]
+                 | #Cxfer ( Word )                  [function]
+                 | #Cnew ( Word , Set )             [function]
+ // ----------------------------------------------------------
+    rule #Ccallgas(GCAP, ACCTTO, 0)     => #Cgascap(GCAP, ACCTTO, 0)
+    rule #Ccallgas(GCAP, ACCTTO, VALUE) => #Cgascap(GCAP, ACCTTO, VALUE) +Int Gcallstipend requires VALUE =/=K 0
+
     rule #Cgascap(GCAP, GAVAIL, GEXTRA) => minInt(#allButLast64(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA
     rule #Cgascap(GCAP, GAVAIL, GEXTRA) => GCAP                                            requires GAVAIL <Int  GEXTRA
 
+    rule #Cextra(ACCT, ACCTS, VALUE) => Gcall +Int #Cnew(ACCT, ACCTS) +Int #Cxfer(VALUE)
+
+    rule #Cxfer(0) => 0
+    rule #Cxfer(N) => Gcallvalue requires N =/=K 0
+
     rule #Cnew(ACCT, ACCTS) => Gnewaccount requires notBool ACCT in ACCTS
     rule #Cnew(ACCT, ACCTS) => 0           requires ACCT in ACCTS
-
-    rule #Cxfer(0) => Gcall
-    rule #Cxfer(N) => Gcall +Int Gcallvalue requires N =/=K 0
 
     syntax Int ::= #allButLast64 ( Int ) [function]
  // -----------------------------------------------
