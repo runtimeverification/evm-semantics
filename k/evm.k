@@ -411,9 +411,10 @@ module ETHEREUM
 
     syntax InternalOp ::= "#gas" "[" OpCode "]"
  // -------------------------------------------
-    rule <op> #gas [ OP ] => #memory [ OP ] ~> #gas [ OP ] ... </op>
-    rule <op> MU':Int ~> #gas [ OP ] => #exception                                            ... </op> <memoryUsed> MU        </memoryUsed> requires MU' <Int MU  orBool  MU' >Int  ((2 ^Int 256) -Int 1)
-    rule <op> MU':Int ~> #gas [ OP ] => #gasExec(OP) ~> Cmem(MU') -Int Cmem(MU) ~> #deductGas ... </op> <memoryUsed> MU => MU' </memoryUsed> requires MU' >=Int MU andBool MU' <=Int ((2 ^Int 256) -Int 1)
+    rule <op> #gas [ OP ] => #memory(OP, MU) ~> #gas [ OP ] ... </op> <memoryUsed> MU </memoryUsed>
+
+    rule <op> MU':Int ~> #gas [ OP ] => #exception ... </op> requires MU' >=Int (2 ^Int 256)
+    rule <op> MU':Int ~> #gas [ OP ] => #gasExec(OP) ~> Cmem(MU') -Int Cmem(MU) ~> #deductGas ... </op> <memoryUsed> MU => MU' </memoryUsed> requires MU' <Int (2 ^Int 256)
 
     syntax InternalOp ::= "#deductGas"
  // ----------------------------------
@@ -1148,27 +1149,29 @@ module ETHEREUM
 // by passing it `MU` as an argument.
 
 
-    syntax InternalOp ::= "#memory" "[" OpCode "]"
- // ----------------------------------------------
-    rule <op> #memory [ OP ] => 0  ... </op> [owise]
-    rule <op> #memory [ MLOAD INDEX                 ] => maxInt(MU, (INDEX +Int 32) up/Int 32) ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> #memory [ MSTORE INDEX _              ] => maxInt(MU, (INDEX +Int 32) up/Int 32) ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> #memory [ MSTORE8 INDEX _             ] => maxInt(MU, (INDEX +Int 1)  up/Int 32) ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> #memory [ SHA3 START WIDTH            ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> #memory [ LOG(N) START WIDTH          ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> #memory [ CODECOPY START _ WIDTH      ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> #memory [ RETURN START WIDTH          ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> #memory [ CALLDATACOPY START _ WIDTH  ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> #memory [ LOG(_) START WIDTH          ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> #memory [ EXTCODECOPY _ START _ WIDTH ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> #memory [ CREATE _ START WIDTH        ] => #memoryUsageUpdate(MU, START, WIDTH)  ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> #memory [ COP:CallOp _ _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH ] => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) ... </op> <memoryUsed> MU </memoryUsed>
-    rule <op> #memory [ CSOP:CallSixOp _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH ] => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) ... </op> <memoryUsed> MU </memoryUsed>
+    syntax InternalOp ::= #memory ( OpCode , Int ) [function]
+ // ---------------------------------------------------------
+    rule #memory ( OP , MU ) => MU [owise]
+
+    rule #memory ( MLOAD INDEX                 , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
+    rule #memory ( MSTORE INDEX _              , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
+    rule #memory ( MSTORE8 INDEX _             , MU ) => #memoryUsageUpdate(MU, INDEX, 1)
+    rule #memory ( SHA3 START WIDTH            , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( LOG(N) START WIDTH          , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( CODECOPY START _ WIDTH      , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( RETURN START WIDTH          , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( CALLDATACOPY START _ WIDTH  , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( LOG(_) START WIDTH          , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( EXTCODECOPY _ START _ WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( CREATE _ START WIDTH        , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+
+    rule #memory ( COP:CallOp     _ _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
+    rule #memory ( CSOP:CallSixOp _ _   ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
  // ----------------------------------------------------------------
     rule #memoryUsageUpdate(S, F, 0) => S
-    rule #memoryUsageUpdate(S, F, L) => maxWord(S, (F +Int L) up/Int 32)
+    rule #memoryUsageUpdate(S, F, L) => maxInt(S, (F +Int L) up/Int 32)
 
 
 // -   `#gasExec` computes the gas needed for the execution of the opcode, not
