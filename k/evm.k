@@ -499,10 +499,8 @@ module ETHEREUM
 
     syntax InternalOp ::= #memory ( OpCode )
  // ----------------------------------------
-    rule <op> #memory(OP) => 0 ... </op> requires notBool (OP in #consumesMem)
-
-    rule <op> #memory(MSTORE) => (INDEX +Int 32) up/Int 32 ... </op>
-         <wordStack> INDEX : VALUE : WS </wordStack>
+    rule <op> #memory(OP) => 0  ... </op>     requires notBool (OP in #consumesMem)
+    rule <op> #memory(MSTORE INDEX VALUE) => (INDEX +Int 32) up/Int 32 ... </op>
 
 
 // -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper
@@ -1191,42 +1189,60 @@ module ETHEREUM
 
     syntax Word ::= #gas ( OpCode )
  // -------------------------------
-    rule <op> #gas(SSTORE W0 W1)
+    rule <op> #gas(OP) => #gasExec(OP) ~> #memory(OP) ~> #calcGas(PREVMEM) ... </op>
+         <memoryUsed> PREVMEM </memoryUsed>
+
+    rule <op>  GEXEC:Int ~> #memory(OP) ~> #calcGas(PREVMEM)
+               => #memory(OP) ~> #calcGas(PREVMEM, GEXEC)
+         ... </op>
+    rule <op>  NEEDEDMEM:Int ~> #calcGas(PREVMEM, GEXEC)
+               => #calcGas(NEEDEDMEM, PREVMEM, GEXEC)
+         ... </op>
+
+    rule <op> #calcGas(NEEDEDMEM, PREVMEM, GEXEC) =>
+            ( maxInt(PREVMEM, NEEDEDMEM) -Int PREVMEM ) *Int Gmemory +Int GEXEC
+    ... </op>
+
+
+
+    syntax InternalOp ::= #gasExec ( OpCode ) | #calcGas ( Int ) | #calcGas( Int, Int ) | #calcGas (Int, Int, Int)
+
+    rule <op> #gasExec(SSTORE W0 W1)
            => #if W1 =/=K 0 andBool notBool W0 in keys(STORAGE) #then Gsset #else Gsreset #fi
           ...
          </op>
          <storage> STORAGE </storage>
 
-    rule <op> #gas(EXP W0 0)  => Gexp ... </op>
-    rule <op> #gas(EXP W0 W1) => Gexp +Word (Gexpbyte *Word (1 +Word (log256Int(W1)))) ... </op> requires W1 =/=K 0
+    rule <op> #gasExec(EXP W0 0)  => Gexp ... </op>
+    rule <op> #gasExec(EXP W0 W1) => Gexp +Word (Gexpbyte *Word (1 +Word (log256Int(W1)))) ... </op> requires W1 =/=K 0
 
-    rule <op> #gas(DUP(_) _)    => Gverylow   ... </op>
-    rule <op> #gas(PUSH(_, _))  => Gverylow   ... </op>
-    rule <op> #gas(SWAP(_) _)   => Gverylow   ... </op>
-    rule <op> #gas(SLOAD _)     => Gsload     ... </op>
-    rule <op> #gas(BALANCE _)   => Gbalance   ... </op>
-    rule <op> #gas(BLOCKHASH _) => Gblockhash ... </op>
+    rule <op> #gasExec(DUP(_) _)    => Gverylow   ... </op>
+    rule <op> #gasExec(PUSH(_, _))  => Gverylow   ... </op>
+    rule <op> #gasExec(SWAP(_) _)   => Gverylow   ... </op>
+    rule <op> #gasExec(SLOAD _)     => Gsload     ... </op>
+    rule <op> #gasExec(BALANCE _)   => Gbalance   ... </op>
+    rule <op> #gasExec(BLOCKHASH _) => Gblockhash ... </op>
 
-    rule <op> #gas(OP) => Gzero    ... </op> requires #stripArgs(OP) in Wzero
-    rule <op> #gas(OP) => Gbase    ... </op> requires #stripArgs(OP) in Wbase
-    rule <op> #gas(OP) => Gverylow ... </op> requires #stripArgs(OP) in Wverylow
-    rule <op> #gas(OP) => Glow     ... </op> requires #stripArgs(OP) in Wlow
-    rule <op> #gas(OP) => Gmid     ... </op> requires #stripArgs(OP) in Wmid
-    rule <op> #gas(OP) => Ghigh    ... </op> requires #stripArgs(OP) in Whigh
-    rule <op> #gas(OP) => Gextcode ... </op> requires #stripArgs(OP) in Wextcode
+    rule <op> #gasExec(OP) => Gzero    ... </op> requires #stripArgs(OP) in Wzero
+    rule <op> #gasExec(OP) => Gbase    ... </op> requires #stripArgs(OP) in Wbase
+    rule <op> #gasExec(OP) => Gverylow ... </op> requires #stripArgs(OP) in Wverylow
+    rule <op> #gasExec(OP) => Glow     ... </op> requires #stripArgs(OP) in Wlow
+    rule <op> #gasExec(OP) => Gmid     ... </op> requires #stripArgs(OP) in Wmid
+    rule <op> #gasExec(OP) => Ghigh    ... </op> requires #stripArgs(OP) in Whigh
+    rule <op> #gasExec(OP) => Gextcode ... </op> requires #stripArgs(OP) in Wextcode
 
 
 // TODO: Gas calculation for the following operators is not implemented.
 
 
-    rule <op> #gas(OP)                  => Gzero   ... </op> requires #stripArgs(OP) in Wcopy
-    rule <op> #gas(OP)                  => Gzero   ... </op> requires #stripArgs(OP) in Wcall
-    rule <op> #gas(SELFDESTRUCT _)      => Gzero   ... </op>
-    rule <op> #gas(EXTCODECOPY _ _ _ _) => Gzero   ... </op>
-    rule <op> #gas(LOG(N) _ _)          => Gzero   ... </op>
-    rule <op> #gas(SHA3 _ _)            => Gzero   ... </op>
-    rule <op> #gas(JUMPDEST)            => Gzero   ... </op>
-    rule <op> #gas(CREATE _ _ _)        => Gcreate ... </op>
+    rule <op> #gasExec(OP)                  => Gzero   ... </op> requires #stripArgs(OP) in Wcopy
+    rule <op> #gasExec(OP)                  => Gzero   ... </op> requires #stripArgs(OP) in Wcall
+    rule <op> #gasExec(SELFDESTRUCT _)      => Gzero   ... </op>
+    rule <op> #gasExec(EXTCODECOPY _ _ _ _) => Gzero   ... </op>
+    rule <op> #gasExec(LOG(N) _ _)          => Gzero   ... </op>
+    rule <op> #gasExec(SHA3 _ _)            => Gzero   ... </op>
+    rule <op> #gasExec(JUMPDEST)            => Gzero   ... </op>
+    rule <op> #gasExec(CREATE _ _ _)        => Gcreate ... </op>
 
 
 // Here the lists of gas prices and gas opcodes are provided.
