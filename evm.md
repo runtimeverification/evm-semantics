@@ -494,12 +494,13 @@ we track the maximum used so far.
 
 ```{.k .uiuck .rvk}
     syntax Set ::= "#consumesMem" [function]
-    rule #consumesMem => ( SetItem(MSTORE) )
+    rule #consumesMem => ( SetItem(MSTORE) SetItem(SHA3) )
 
     syntax InternalOp ::= #memory ( OpCode )
  // ----------------------------------------
-    rule <op> #memory(OP) => 0  ... </op>     requires notBool (OP in #consumesMem)
-    rule <op> #memory(MSTORE INDEX VALUE) => (INDEX +Int 32) up/Int 32 ... </op>
+    rule <op> #memory(OP) => 0  ... </op>     requires notBool #stripArgs(OP) in #consumesMem
+    rule <op> #memory(MSTORE INDEX VALUE)     => (INDEX +Int 32) up/Int 32 ... </op>
+    rule <op> #memory(SHA3 MEMSTART MEMWIDTH) => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) -Word MU ... </op> <memoryUsed> MU </memoryUsed>
 ```
 
 -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper which helps track the memory used.
@@ -1202,6 +1203,7 @@ The gas calculation is designed to mirror the style of the yellowpaper.
     rule <op> #gasExec(SLOAD _)     => Gsload     ... </op>
     rule <op> #gasExec(BALANCE _)   => Gbalance   ... </op>
     rule <op> #gasExec(BLOCKHASH _) => Gblockhash ... </op>
+    rule <op> #gasExec(SHA3 _ _)            => Gzero   ... </op>
 
     rule <op> #gasExec(OP) => Gzero    ... </op> requires #stripArgs(OP) in Wzero
     rule <op> #gasExec(OP) => Gbase    ... </op> requires #stripArgs(OP) in Wbase
@@ -1220,7 +1222,6 @@ TODO: Gas calculation for the following operators is not implemented.
     rule <op> #gasExec(SELFDESTRUCT _)      => Gzero   ... </op>
     rule <op> #gasExec(EXTCODECOPY _ _ _ _) => Gzero   ... </op>
     rule <op> #gasExec(LOG(N) _ _)          => Gzero   ... </op>
-    rule <op> #gasExec(SHA3 _ _)            => Gzero   ... </op>
     rule <op> #gasExec(JUMPDEST)            => Gzero   ... </op>
     rule <op> #gasExec(CREATE _ _ _)        => Gcreate ... </op>
 ```
