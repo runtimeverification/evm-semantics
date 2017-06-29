@@ -496,20 +496,21 @@ we track the maximum used so far.
     syntax Set ::= "#consumesMem" [function]
     rule #consumesMem => ( SetItem(MSTORE) SetItem(SHA3) )
 
-    syntax InternalOp ::= #memory ( OpCode )
- // ----------------------------------------
-    rule <op> #memory(OP) => 0  ... </op>     requires notBool #stripArgs(OP) in #consumesMem
-    rule <op> #memory(MSTORE INDEX VALUE)     => (INDEX +Int 32) up/Int 32 ... </op>
-    rule <op> #memory(SHA3 MEMSTART MEMWIDTH) => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) -Word MU ... </op> <memoryUsed> MU </memoryUsed>
+    syntax InternalOp ::= "#memory" "[" OpCode "]"
+ // ----------------------------------------------
+    rule <op> #memory [ OP ] => 0  ... </op> [owise]
+    rule <op> #memory [ MSTORE INDEX VALUE       ] => (INDEX +Int 32) up/Int 32 ... </op>
+    rule <op> #memory [ SHA3 MEMSTART MEMWIDTH   ] => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) -Int MU ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> #memory [ LOG(N) MEMSTART MEMWIDTH ] => #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH) -Int MU ... </op> <memoryUsed> MU </memoryUsed>
 ```
 
 -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper which helps track the memory used.
 
 ```{.k .uiuck .rvk}
-    syntax Word ::= #memoryUsageUpdate ( Word , Word , Word ) [function]
- // --------------------------------------------------------------------
-    rule #memoryUsageUpdate(S:Int, F:Int, 0)     => S
-    rule #memoryUsageUpdate(S:Int, F:Int, L:Int) => maxWord(S, (F +Int L) up/Int 32)
+    syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
+ // ----------------------------------------------------------------
+    rule #memoryUsageUpdate(S, F, 0) => S
+    rule #memoryUsageUpdate(S, F, L) => maxWord(S, (F +Int L) up/Int 32)
 ```
 
 EVM Programs
@@ -1169,11 +1170,11 @@ The gas calculation is designed to mirror the style of the yellowpaper.
 ```{.k .uiuck .rvk}
     syntax Word ::= #gas ( OpCode )
  // -------------------------------
-    rule <op> #gas(OP) => #gasExec(OP) ~> #memory(OP) ~> #calcGas(PREVMEM) ... </op>
+    rule <op> #gas(OP) => #gasExec(OP) ~> #memory [ OP ] ~> #calcGas(PREVMEM) ... </op>
          <memoryUsed> PREVMEM </memoryUsed>
 
-    rule <op>  GEXEC:Int ~> #memory(OP) ~> #calcGas(PREVMEM)
-               => #memory(OP) ~> #calcGas(PREVMEM, GEXEC)
+    rule <op>  GEXEC:Int ~> #memory [ OP ] ~> #calcGas(PREVMEM)
+               => #memory [ OP ] ~> #calcGas(PREVMEM, GEXEC)
          ... </op>
     rule <op>  NEEDEDMEM:Int ~> #calcGas(PREVMEM, GEXEC)
                => #calcGas(NEEDEDMEM, PREVMEM, GEXEC)
