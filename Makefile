@@ -13,8 +13,8 @@ split-tests: tests/tests-develop/VMTests/vmArithmeticTest/make.timestamp \
 			 tests/tests-develop/VMTests/vmPushDupSwapTest/make.timestamp \
 			 tests/tests-develop/VMTests/vmSha3Test/make.timestamp \
 			 tests/tests-develop/VMTests/vmSystemOperationsTest/make.timestamp \
-			 tests/tests-develop/VMTests/vmtests/make.timestamp
-			 tests/tests-develop/VMTests/vmInputLimits/make.timestamp
+			 tests/tests-develop/VMTests/vmtests/make.timestamp \
+			 tests/tests-develop/VMTests/vmInputLimits/make.timestamp \
 			 tests/tests-develop/VMTests/vmInputLimitsLight/make.timestamp
 
 ktest: defn split-tests 
