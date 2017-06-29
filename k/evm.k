@@ -76,11 +76,12 @@ module ETHEREUM
                       <origin>   0:Word </origin>                       // I_o
 
                       // I_H* (block information)
-                      <gasLimit>   0:Word </gasLimit>                   // I_Hl
-                      <coinbase>   0:Word </coinbase>                   // I_Hc
-                      <timestamp>  0:Word </timestamp>                  // I_Hs
-                      <number>     0:Word </number>                     // I_Hi
-                      <difficulty> 0:Word </difficulty>                 // I_Hd
+                      <gasLimit>     0:Word </gasLimit>                   // I_Hl
+                      <coinbase>     0:Word </coinbase>                   // I_Hc
+                      <timestamp>    0:Word </timestamp>                  // I_Hs
+                      <number>       0:Word </number>                     // I_Hi
+                      <previousHash> 0:Word </previousHash>               // I_Hp
+                      <difficulty>   0:Word </difficulty>                 // I_Hd
 
                     </evm>
 
@@ -1198,12 +1199,37 @@ module ETHEREUM
     rule <op> #gasExec(OP) => Ghigh    ... </op> requires #stripArgs(OP) in Whigh
     rule <op> #gasExec(OP) => Gextcode ... </op> requires #stripArgs(OP) in Wextcode
 
+    rule <op> #gasExec(COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => #Ccall(GCAP, ACCTTO, VALUE) ... </op>
+    rule <op> #gasExec(CSOP:CallSixOp GCAP ACCTTO       _ _ _ _) => #Ccall(GCAP, ACCTTO, 0)     ... </op>
+
+    syntax Int ::= #Ccall ( Word , Word , Word )
+ // --------------------------------------------
+    rule <op> #Ccall(GCAP, ACCTTO, VALUE) => #Cgascap(GCAP, GAVAIL, #Cnew(ACCTTO, ACCTS) +Int #Cxfer(VALUE)) ... </op>
+         <activeAccounts> ACCTS </activeAccounts>
+         <gas> GAVAIL </gas>
+
+    syntax Int ::= #Cgascap ( Word , Word , Word ) [function]
+                 | #Cnew ( Word , Set )            [function]
+                 | #Cxfer ( Word )                 [function]
+ // ---------------------------------------------------------
+    rule #Cgascap(GCAP, GAVAIL, GEXTRA) => minInt(#allButLast64(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA
+    rule #Cgascap(GCAP, GAVAIL, GEXTRA) => GCAP                                            requires GAVAIL <Int  GEXTRA
+
+    rule #Cnew(ACCT, ACCTS) => Gnewaccount requires notBool ACCT in ACCTS
+    rule #Cnew(ACCT, ACCTS) => 0           requires ACCT in ACCTS
+
+    rule #Cxfer(0) => Gcall
+    rule #Cxfer(N) => Gcall +Int Gcallvalue requires N =/=K 0
+
+    syntax Int ::= #allButLast64 ( Int ) [function]
+ // -----------------------------------------------
+    rule #allButLast64(N) => N -Int (N /Int 64)
+
 
 // TODO: Gas calculation for the following operators is not implemented.
 
 
     rule <op> #gasExec(OP)                  => Gzero   ... </op> requires #stripArgs(OP) in Wcopy
-    rule <op> #gasExec(OP)                  => Gzero   ... </op> requires #stripArgs(OP) in Wcall
     rule <op> #gasExec(SELFDESTRUCT _)      => Gzero   ... </op>
     rule <op> #gasExec(EXTCODECOPY _ _ _ _) => Gzero   ... </op>
     rule <op> #gasExec(LOG(N) _ _)          => Gzero   ... </op>
