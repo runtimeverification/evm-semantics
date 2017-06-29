@@ -189,24 +189,23 @@ module ETHEREUM
 
 // Simple commands controlling exceptions provide control-flow.
 
-// -   `#catch` is used to catch exceptional states so that the state can be
-//     rolled back.
-// -   `#try` automatically puts the correct `#pushCallStack` and `#catch`
-//     in place.
+// -   `#try_#andThen_` attempts the first command, on success runs the second
+//     command, on failure reverts the state and calls `#exception`.
 // -   `#end` is used to indicate the (non-exceptional) end of execution.
 // -   `#exception` is used to indicate exceptional states (it consumes any
 //     operations to be performed after it).
 
 
-    syntax KItem ::= "#catch" | "#try" K | "#exception" | "#end" | "#signalException"
- // ---------------------------------------------------------------------------------
-    rule <op> #catch => #dropCallStack ... </op>
-    rule <op> #try K => #pushCallStack ~> K ~> #catch ... </op>
-    rule <op> #exception ~> #catch => #popCallStack ~> #signalException ... </op>
+    syntax KItem ::= "#try" K "#andThen" K | "#exception" | "#end" | "#?" K ":" K "?#"
+ // ----------------------------------------------------------------------------------
+    rule <op> #exception ~> (#try _ #andThen _ => .) ... </op>
+    rule <op> #exception ~> (W:Word            => .) ... </op>
+    rule <op> #exception ~> (OP:OpCode         => .) ... </op>
 
-    rule <op> #exception ~> (#try _    => .) ... </op>
-    rule <op> #exception ~> (W:Word    => .) ... </op>
-    rule <op> #exception ~> (OP:OpCode => .) ... </op>
+    rule <op> #exception ~> #? _ : K ?# => K ... </op>
+    rule <op> #? K : _ ?# => K ... </op>
+
+    rule <op> #try K1 #andThen K2 => #pushCallStack ~> K1 ~> #? #dropCallStack ~> K2 : #popCallStack ~> #exception ?# ... </op>
 
 
 // OpCode Execution Cycle
@@ -231,7 +230,7 @@ module ETHEREUM
 
     syntax InternalOp ::= "#next"
  // -----------------------------
-    rule <op> #next => (#try (#exceptional? [ OP ] ~> #exec [ OP ] ~> #pc [ OP ])) ~> #next </op>
+    rule <op> #next => #try #exceptional? [ OP ] ~> #exec [ OP ] ~> #pc [ OP ] #andThen #next ... </op>
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
 
@@ -339,7 +338,7 @@ module ETHEREUM
 
     syntax InternalOp ::= "#exec" "[" OpCode "]"
  // --------------------------------------------
-    rule <op> #exec [ OP ] => #try (#gas [ OP ] ~> OP) ... </op> requires #zeroArgs?(OP)
+    rule <op> #exec [ OP ] => #gas [ OP ] ~> OP ... </op> requires #zeroArgs?(OP)
 
 
 // Here we load the correct number of arguments from the `wordStack` based on the
@@ -995,27 +994,9 @@ module ETHEREUM
 
     syntax InternalOp ::= "#call" Word Word Map Word WordStack
  // ----------------------------------------------------------
-    rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => 1 ~> #push ... </op>
+    rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #exception ... </op>
          <callDepth> CD </callDepth>
          <callLog> CL => { ACCTTO | VALUE | ARGS } ; CL </callLog>
-         <account>
-           <acctID>  ACCTFROM </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
-      requires word2Bool(VALUE <=Word BAL) andBool CD <Int 1024
-
-    rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #exception ... </op>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
-      requires word2Bool(VALUE >Word BAL)
-
-    rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #exception ... </op>
-         <callDepth> CD </callDepth>
-      requires CD >=Int 1024
 
 
 // For each `CALL*` operation, we make a corresponding call to `#call` and a
@@ -1028,9 +1009,9 @@ module ETHEREUM
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #try ( #call ACCTFROM #addr(ACCTTO) CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
-                  ~> #return RETSTART RETWIDTH
-                   )
+           => #pushCallStack
+           ~> #call ACCTFROM #addr(ACCTTO) CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
+           ~> #? #dropCallStack ~> #return RETSTART RETWIDTH : #popCallStack ~> 1 ~> #push ?#
            ...
          </op>
          <id> ACCTFROM </id>
@@ -1045,9 +1026,9 @@ module ETHEREUM
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #try ( #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
-                  ~> #return RETSTART RETWIDTH
-                   )
+           => #pushCallStack
+           ~> #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
+           ~> #? #dropCallStack ~> #return RETSTART RETWIDTH : #popCallStack ~> 1 ~> #push ?#
            ...
          </op>
          <id> ACCTFROM </id>
@@ -1062,9 +1043,9 @@ module ETHEREUM
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #try ( #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
-                  ~> #return RETSTART RETWIDTH
-                   )
+           => #pushCallStack
+           ~> #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
+           ~> #? #dropCallStack ~> #return RETSTART RETWIDTH : #popCallStack ~> 1 ~> #push ?#
            ...
          </op>
          <id> ACCTFROM </id>
@@ -1092,9 +1073,9 @@ module ETHEREUM
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
-           => #try ( #call ACCT #newAddr(ACCT, NONCE) #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
-                  ~> #try #codeDeposit
-                   )
+           => #pushCallStack
+           ~> #call ACCT #newAddr(ACCT, NONCE) #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
+           ~> #? #dropCallStack ~> #codeDeposit : #popCallStack ~> 1 ~> #push ?#
           ...
          </op>
          <id> ACCT </id>
