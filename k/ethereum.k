@@ -171,13 +171,14 @@ module ETHEREUM-SIMULATION
          <log>          _ => .Set   </log>
          <refund>       _ => 0:Word </refund>
 
-         <gasPrice>   _ => 0:Word </gasPrice>
-         <origin>     _ => 0:Word </origin>
-         <gasLimit>   _ => 0:Word </gasLimit>
-         <coinbase>   _ => 0:Word </coinbase>
-         <timestamp>  _ => 0:Word </timestamp>
-         <number>     _ => 0:Word </number>
-         <difficulty> _ => 0:Word </difficulty>
+         <gasPrice>     _ => 0:Word </gasPrice>
+         <origin>       _ => 0:Word </origin>
+         <gasLimit>     _ => 0:Word </gasLimit>
+         <coinbase>     _ => 0:Word </coinbase>
+         <timestamp>    _ => 0:Word </timestamp>
+         <number>       _ => 0:Word </number>
+         <previousHash> _ => 0:Word </previousHash>
+         <difficulty>   _ => 0:Word </difficulty>
 
          <activeAccounts> _ => .Set </activeAccounts>
          <accounts>       _ => .Bag </accounts>
