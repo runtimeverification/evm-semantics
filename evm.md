@@ -1192,18 +1192,18 @@ Gas needs to be deducted when the maximum memory to a program increases, so we t
     rule <op> #gasExec(JUMPDEST) => Gjumpdest ... </op>
     rule <op> #gasExec(SLOAD _)  => Gsload    ... </op>
 
-    rule <op> #gasExec(OP)          => Gzero      ... </op> requires #stripArgs(OP) in Wzero
-    rule <op> #gasExec(OP)          => Gbase      ... </op> requires #stripArgs(OP) in Wbase
-    rule <op> #gasExec(OP)          => Gverylow   ... </op> requires #stripArgs(OP) in Wverylow
-    rule <op> #gasExec(PUSH(_, _))  => Gverylow   ... </op>
-    rule <op> #gasExec(DUP(_) _)    => Gverylow   ... </op>
-    rule <op> #gasExec(SWAP(_) _)   => Gverylow   ... </op>
-    rule <op> #gasExec(OP)          => Glow       ... </op> requires #stripArgs(OP) in Wlow
-    rule <op> #gasExec(OP)          => Gmid       ... </op> requires #stripArgs(OP) in Wmid
-    rule <op> #gasExec(OP)          => Ghigh      ... </op> requires #stripArgs(OP) in Whigh
-    rule <op> #gasExec(OP)          => Gextcode   ... </op> requires #stripArgs(OP) in Wextcode
-    rule <op> #gasExec(BALANCE _)   => Gbalance   ... </op>
-    rule <op> #gasExec(BLOCKHASH _) => Gblockhash ... </op>
+    rule <op> #gasExec(OP)            => Gzero      ... </op> requires #stripArgs(OP) in Wzero
+    rule <op> #gasExec(OP)            => Gbase      ... </op> requires #stripArgs(OP) in Wbase
+    rule <op> #gasExec(OP)            => Gverylow   ... </op> requires #stripArgs(OP) in Wverylow
+    rule <op> #gasExec(PUSH(_, _))    => Gverylow   ... </op>
+    rule <op> #gasExec(DUP(_) _)      => Gverylow   ... </op>
+    rule <op> #gasExec(SWAP(_) _)     => Gverylow   ... </op>
+    rule <op> #gasExec(OP)            => Glow       ... </op> requires #stripArgs(OP) in Wlow
+    rule <op> #gasExec(OP)            => Gmid       ... </op> requires #stripArgs(OP) in Wmid
+    rule <op> #gasExec(JUMPI _ _)     => Ghigh      ... </op>
+    rule <op> #gasExec(EXTCODESIZE _) => Gextcode   ... </op>
+    rule <op> #gasExec(BALANCE _)     => Gbalance   ... </op>
+    rule <op> #gasExec(BLOCKHASH _)   => Gblockhash ... </op>
 
     syntax Int ::= Ccopy ( Word ) [function]
  // ----------------------------------------
@@ -1275,23 +1275,17 @@ Here the lists of gas prices and gas opcodes are provided.
     rule Glow           => 5
     rule Gmid           => 8
     rule Ghigh          => 10
-    rule Gextcode       => 700
-    rule Gbalance       => 400
-    rule Gsload         => 200
     rule Gjumpdest      => 1
     rule Gsset          => 20000
     rule Gsreset        => 5000
     rule Rsclear        => 15000
     rule Rselfdestruct  => 24000
-    rule Gselfdestruct  => 5000
     rule Gcreate        => 32000
     rule Gcodedeposit   => 200
-    rule Gcall          => 700
     rule Gcallvalue     => 9000
     rule Gcallstipend   => 2300
     rule Gnewaccount    => 25000
     rule Gexp           => 10
-    rule Gexpbyte       => 10
     rule Gmemory        => 3
     rule Gtxcreate      => 32000
     rule Gtxdatazero    => 4
@@ -1304,12 +1298,73 @@ Here the lists of gas prices and gas opcodes are provided.
     rule Gsha3word      => 6
     rule Gcopy          => 3
     rule Gblockhash     => 20
+```
 
+From the Go implemenatation.
+
+```
+    // SstoreResetGas   uint64 = 5000  // Once per SSTORE operation if the zeroness changes from zero.
+    // SstoreClearGas   uint64 = 5000  // Once per SSTORE operation if the zeroness doesn't change.
+    // SstoreRefundGas  uint64 = 15000 // Once per SSTORE operation if the zeroness changes to zero.
+    // TxGasContractCreation uint64 = 53000
+    // Sha3WordGas      uint64 = 6     // Once per word of the SHA3 operation's data.
+```
+
+Here we've collected different values for various constants across the different implementations we've found.
+
+### Yellowpaper
+
+```
+    rule Gextcode       => 700
+    rule Gsload         => 200
+    rule Gexpbyte       => 10
+    rule Gselfdestruct  => 5000
+    rule Gbalance       => 400
+    rule Gcall          => 700
+```
+
+### Homestead (from Go implementation)
+
+```{.k .uiuck .rvk}
+    rule Gextcode      => 20
+    rule Gsload        => 50
+    rule Gexpbyte      => 10
+    rule Gselfdestruct => 0
+    rule Gbalance      => 20
+    rule Gcall         => 40
+    // ExtcodeCopy: 20
+```
+
+### Homestead Reprice (from Go implemenatation)
+
+```
+    rule Gextcode      => 700
+    rule Gsload        => 200
+    rule Gexpbyte      => 10
+    rule Gselfdestruct => 5000
+    rule Gbalance      => 400
+    rule Gcall         => 700
+    // ExtcodeCopy: 700
+    // CreateBySuicide: 25000
+```
+
+### EIP158 (from Go implemenatation)
+
+```
+    rule Gextcodei     => 700
+    rule Gsload        => 200
+    rule Gcall         => 700
+    rule Gselfdestruct => 5000
+    rule Gbalance      => 400
+    rule Gexpbyte      => 50
+    // ExtcodeCopy: 700
+    // CreateBySuicide: 25000
+```
+
+```{.k .uiuck .rvk}
     syntax Set ::= "Wzero"    [function] | "Wbase" [function]
-                 | "Wverylow" [function] | "Wlow"  [function]
-                 | "Wmid"     [function] | "Whigh" [function]
-                 | "Wextcode" [function]
- // ------------------------------------
+                 | "Wverylow" [function] | "Wlow"  [function] | "Wmid" [function]
+ // -----------------------------------------------------------------------------
     rule Wzero    => (SetItem(STOP) SetItem(RETURN))
     rule Wbase    => ( SetItem(ADDRESS) SetItem(ORIGIN) SetItem(CALLER) SetItem(CALLVALUE) SetItem(CALLDATASIZE)
                        SetItem(CODESIZE) SetItem(GASPRICE) SetItem(COINBASE) SetItem(TIMESTAMP) SetItem(NUMBER)
@@ -1321,8 +1376,6 @@ Here the lists of gas prices and gas opcodes are provided.
                      )
     rule Wlow     => (SetItem(MUL) SetItem(DIV) SetItem(SDIV) SetItem(MOD) SetItem(SMOD) SetItem(SIGNEXTEND))
     rule Wmid     => (SetItem(ADDMOD) SetItem(MULMOD) SetItem(JUMP))
-    rule Whigh    => (SetItem(JUMPI))
-    rule Wextcode => (SetItem(EXTCODESIZE))
 ```
 
 EVM Program Representations
