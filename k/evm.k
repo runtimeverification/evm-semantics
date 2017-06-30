@@ -1216,18 +1216,18 @@ module ETHEREUM
     rule <op> #gasExec(JUMPDEST) => Gjumpdest ... </op>
     rule <op> #gasExec(SLOAD _)  => Gsload    ... </op>
 
-    rule <op> #gasExec(OP)          => Gzero      ... </op> requires #stripArgs(OP) in Wzero
-    rule <op> #gasExec(OP)          => Gbase      ... </op> requires #stripArgs(OP) in Wbase
-    rule <op> #gasExec(OP)          => Gverylow   ... </op> requires #stripArgs(OP) in Wverylow
-    rule <op> #gasExec(PUSH(_, _))  => Gverylow   ... </op>
-    rule <op> #gasExec(DUP(_) _)    => Gverylow   ... </op>
-    rule <op> #gasExec(SWAP(_) _)   => Gverylow   ... </op>
-    rule <op> #gasExec(OP)          => Glow       ... </op> requires #stripArgs(OP) in Wlow
-    rule <op> #gasExec(OP)          => Gmid       ... </op> requires #stripArgs(OP) in Wmid
-    rule <op> #gasExec(OP)          => Ghigh      ... </op> requires #stripArgs(OP) in Whigh
-    rule <op> #gasExec(OP)          => Gextcode   ... </op> requires #stripArgs(OP) in Wextcode
-    rule <op> #gasExec(BALANCE _)   => Gbalance   ... </op>
-    rule <op> #gasExec(BLOCKHASH _) => Gblockhash ... </op>
+    rule <op> #gasExec(OP)            => Gzero      ... </op> requires #stripArgs(OP) in Wzero
+    rule <op> #gasExec(OP)            => Gbase      ... </op> requires #stripArgs(OP) in Wbase
+    rule <op> #gasExec(OP)            => Gverylow   ... </op> requires #stripArgs(OP) in Wverylow
+    rule <op> #gasExec(PUSH(_, _))    => Gverylow   ... </op>
+    rule <op> #gasExec(DUP(_) _)      => Gverylow   ... </op>
+    rule <op> #gasExec(SWAP(_) _)     => Gverylow   ... </op>
+    rule <op> #gasExec(OP)            => Glow       ... </op> requires #stripArgs(OP) in Wlow
+    rule <op> #gasExec(OP)            => Gmid       ... </op> requires #stripArgs(OP) in Wmid
+    rule <op> #gasExec(JUMPI _ _)     => Ghigh      ... </op>
+    rule <op> #gasExec(EXTCODESIZE _) => Gextcode   ... </op>
+    rule <op> #gasExec(BALANCE _)     => Gbalance   ... </op>
+    rule <op> #gasExec(BLOCKHASH _)   => Gblockhash ... </op>
 
     syntax Int ::= Ccopy ( Word ) [function]
  // ----------------------------------------
@@ -1299,23 +1299,17 @@ module ETHEREUM
     rule Glow           => 5
     rule Gmid           => 8
     rule Ghigh          => 10
-    rule Gextcode       => 700
-    rule Gbalance       => 400
-    rule Gsload         => 200
     rule Gjumpdest      => 1
     rule Gsset          => 20000
     rule Gsreset        => 5000
     rule Rsclear        => 15000
     rule Rselfdestruct  => 24000
-    rule Gselfdestruct  => 5000
     rule Gcreate        => 32000
     rule Gcodedeposit   => 200
-    rule Gcall          => 700
     rule Gcallvalue     => 9000
     rule Gcallstipend   => 2300
     rule Gnewaccount    => 25000
     rule Gexp           => 10
-    rule Gexpbyte       => 10
     rule Gmemory        => 3
     rule Gtxcreate      => 32000
     rule Gtxdatazero    => 4
@@ -1329,11 +1323,34 @@ module ETHEREUM
     rule Gcopy          => 3
     rule Gblockhash     => 20
 
+
+// From the Go implemenatation.
+
+// Here we've collected different values for various constants across the different
+// implementations we've found.
+
+// ### Yellowpaper {#yellowpaper-1}
+
+// ### Homestead (from Go implementation)
+
+
+    rule Gextcode      => 20
+    rule Gsload        => 50
+    rule Gexpbyte      => 10
+    rule Gselfdestruct => 0
+    rule Gbalance      => 20
+    rule Gcall         => 40
+    // ExtcodeCopy: 20
+
+
+// ### Homestead Reprice (from Go implemenatation)
+
+// ### EIP158 (from Go implemenatation)
+
+
     syntax Set ::= "Wzero"    [function] | "Wbase" [function]
-                 | "Wverylow" [function] | "Wlow"  [function]
-                 | "Wmid"     [function] | "Whigh" [function]
-                 | "Wextcode" [function]
- // ------------------------------------
+                 | "Wverylow" [function] | "Wlow"  [function] | "Wmid" [function]
+ // -----------------------------------------------------------------------------
     rule Wzero    => (SetItem(STOP) SetItem(RETURN))
     rule Wbase    => ( SetItem(ADDRESS) SetItem(ORIGIN) SetItem(CALLER) SetItem(CALLVALUE) SetItem(CALLDATASIZE)
                        SetItem(CODESIZE) SetItem(GASPRICE) SetItem(COINBASE) SetItem(TIMESTAMP) SetItem(NUMBER)
@@ -1345,8 +1362,6 @@ module ETHEREUM
                      )
     rule Wlow     => (SetItem(MUL) SetItem(DIV) SetItem(SDIV) SetItem(MOD) SetItem(SMOD) SetItem(SIGNEXTEND))
     rule Wmid     => (SetItem(ADDMOD) SetItem(MULMOD) SetItem(JUMP))
-    rule Whigh    => (SetItem(JUMPI))
-    rule Wextcode => (SetItem(EXTCODESIZE))
 
 
 // EVM Program Representations
