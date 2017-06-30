@@ -148,7 +148,7 @@ State Manipulation
          <memoryUsed> _ => 0:Word     </memoryUsed>
          <callDepth>  _ => 0:Word     </callDepth>
          <callStack>  _ => .List      </callStack>
-         <callLog>    _ => .CallLog   </callLog>
+         <callLog>    _ => .Set       </callLog>
 
          <program>   _ => .Map       </program>
          <id>        _ => 0:Word     </id>

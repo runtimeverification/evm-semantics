@@ -37,6 +37,7 @@ module ETHEREUM
 
     configuration <k> $PGM:EthereumSimulation </k>
                   <exit-code exit=""> 1 </exit-code>
+                  <mode> VMTESTS </mode>
 
                   <ethereum>
 
@@ -48,12 +49,12 @@ module ETHEREUM
                       // Mutable during a single transaction
                       // -----------------------------------
 
-                      <op>         .K          </op>
-                      <output>     .WordStack  </output>                // H_RETURN
-                      <memoryUsed> 0:Word      </memoryUsed>            // \mu_i
-                      <callDepth>  0:Word      </callDepth>
-                      <callStack>  .List       </callStack>
-                      <callLog>    .CallLog    </callLog>
+                      <op>         .K         </op>
+                      <output>     .WordStack </output>                 // H_RETURN
+                      <memoryUsed> 0:Word     </memoryUsed>             // \mu_i
+                      <callDepth>  0:Word     </callDepth>
+                      <callStack>  .List      </callStack>
+                      <callLog>    .Set       </callLog>
 
                       <txExecState>
                         <program> .Map </program>                       // I_b
@@ -85,12 +86,12 @@ module ETHEREUM
                       <origin>   0:Word </origin>                       // I_o
 
                       // I_H* (block information)
-                      <gasLimit>     0:Word </gasLimit>                   // I_Hl
-                      <coinbase>     0:Word </coinbase>                   // I_Hc
-                      <timestamp>    0:Word </timestamp>                  // I_Hs
-                      <number>       0:Word </number>                     // I_Hi
-                      <previousHash> 0:Word </previousHash>               // I_Hp
-                      <difficulty>   0:Word </difficulty>                 // I_Hd
+                      <gasLimit>     0:Word </gasLimit>                 // I_Hl
+                      <coinbase>     0:Word </coinbase>                 // I_Hc
+                      <timestamp>    0:Word </timestamp>                // I_Hs
+                      <number>       0:Word </number>                   // I_Hi
+                      <previousHash> 0:Word </previousHash>             // I_Hp
+                      <difficulty>   0:Word </difficulty>               // I_Hd
 
                     </evm>
 
@@ -154,6 +155,7 @@ module ETHEREUM
 
                   </ethereum>
 
+    syntax Mode ::= "VMTESTS" | "NORMAL"
     syntax EthereumSimulation
     syntax AcctID ::= Word | ".AcctID"
     syntax Code   ::= Map  | ".Code"
@@ -211,16 +213,12 @@ Simple commands controlling exceptions provide control-flow.
 -   `#exception` is used to indicate exceptional states (it consumes any operations to be performed after it).
 
 ```{.k .uiuck .rvk}
-    syntax KItem ::= "#try" K "#andThen" K | "#exception" | "#end" | "#?" K ":" K "?#"
- // ----------------------------------------------------------------------------------
-    rule <op> #exception ~> (#try _ #andThen _ => .) ... </op>
-    rule <op> #exception ~> (W:Word            => .) ... </op>
-    rule <op> #exception ~> (OP:OpCode         => .) ... </op>
-
+    syntax KItem ::= "#exception" | "#end" | "#?" K ":" K "?#"
+ // ----------------------------------------------------------
+    rule <op> #exception ~> (W:Word    => .) ... </op>
+    rule <op> #exception ~> (OP:OpCode => .) ... </op>
     rule <op> #exception ~> #? _ : K ?# => K ... </op>
     rule <op> #? K : _ ?# => K ... </op>
-
-    rule <op> #try K1 #andThen K2 => #pushCallStack ~> K1 ~> #? #dropCallStack ~> K2 : #popCallStack ~> #exception ?# ... </op>
 ```
 
 OpCode Execution Cycle
@@ -243,7 +241,12 @@ Execution follows a simple cycle where first the state is checked for exceptions
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#next"
  // -----------------------------
-    rule <op> #next => #try #exceptional? [ OP ] ~> #exec [ OP ] ~> #pc [ OP ] #andThen #next ... </op>
+    rule <op> #next
+           => #pushCallStack
+           ~> #exceptional? [ OP ] ~> #exec [ OP ] ~> #pc [ OP ]
+           ~> #? #dropCallStack ~> #next : #popCallStack ~> #exception ?#
+          ...
+         </op>
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
 
@@ -385,8 +388,8 @@ The `CallOp` opcodes all interperet their second argument as an address.
     syntax InternalOp ::= CallSixOp Word Word      Word Word Word Word
                         | CallOp    Word Word Word Word Word Word Word
  // ------------------------------------------------------------------
-    rule <op> #exec [ CSO:CallSixOp => CSO  W0 #addr(W1)    W2 W3 W4 W5 ] ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
-    rule <op> #exec [ CO:CallOp     => CO   W0 #addr(W1) W2 W3 W4 W5 W6 ] ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
+    rule <op> #exec [ CSO:CallSixOp => CSO W0 #addr(W1)    W2 W3 W4 W5 ] ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
+    rule <op> #exec [ CO:CallOp     => CO  W0 #addr(W1) W2 W3 W4 W5 W6 ] ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
 ```
 
 Later we'll need a way to strip the arguments from an operator.
@@ -477,6 +480,7 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires BAL =/=K 0
 
     rule <op> #finalize ... </op>
+         <refund> 0 </refund>
          <selfDestruct> ... (SetItem(ACCT) => .Set) </selfDestruct>
          <activeAccounts> ... (SetItem(ACCT) => .Set) </activeAccounts>
          <accounts>
@@ -568,7 +572,11 @@ These are just used by the other operators for shuffling local execution state a
            ...
          </accounts>
       requires notBool ACCT in ACCTS
+```
 
+-   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
+
+```{.k .uiuck .rvk}
     syntax InternalOp ::= "#transferFunds" Word Word Word
  // -----------------------------------------------------
     rule <op> #transferFunds ACCTFROM ACCTTO VALUE => . ... </op>
@@ -583,6 +591,10 @@ These are just used by the other operators for shuffling local execution state a
            ...
          </account>
       requires word2Bool(VALUE <Word ORIGFROM)
+
+    rule <op> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </op>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool ACCTTO in ACCTS
 ```
 
 ### Invalid Operator
@@ -932,48 +944,50 @@ TODO: The `Call` sort needs to store the available gas to the `CALL*` as well, b
 
 ```{.k .uiuck .rvk}
     syntax Call ::= "{" Word "|" Word "|" WordStack "}"
-    syntax CallLog ::= ".CallLog" | Call ";" CallLog
- // ------------------------------------------------
-
-    syntax Bool ::= Call "in" CallLog [function]
- // --------------------------------------------
-    rule C      in .CallLog       => false
-    rule C:Call in (C':Call ; CL) => C ==K C' orElseBool C in CL
+ // ---------------------------------------------------
 ```
 
 -   `#call_____` takes the calling account, the account to execute as, the code to execute, the amount to transfer, and the arguments.
 
-TODO: `#call` is neutured to make sure that we can pass the VMTests. The following is closer to what it should be.
-
-```
+```{.k .uiuck .rvk}
     syntax InternalOp ::= "#call" Word Word Map Word WordStack
  // ----------------------------------------------------------
-    rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => . ... </op>
+    rule <mode> NORMAL </mode>
+         <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => . ... </op>
          <callDepth> CD => CD +Int 1 </callDepth>
-         <callLog> CL => { ACCTTO | VALUE | ARGS } ; CL </callLog>
+         <callLog> ... (.Set => SetItem({ ACCTTO | VALUE | ARGS })) </callLog>
          <id>       _ => ACCTTO                </id>
          <pc>       _ => 0                     </pc>
          <caller>   _ => ACCTFROM              </caller>
-         <localMem> _ => #WordStackAsMap(ARGS) </localMem>
+         <localMem> _ => #asMapWordStack(ARGS) </localMem>
          <program>  _ => CODE                  </program>
          <account>
-           <acctID>  ACCTFROM </acctID>
+           <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Word VALUE </balance>
            <acctMap> ... "nonce" |-> (NONCE => NONCE +Word 1) ... </acctMap>
            ...
          </account>
-      requires word2Bool(VALUE <=Word BAL) andBool CD <Int 1024
-```
+      requires VALUE <=Int BAL andBool CD <Int 1024
 
-Here is what we're actually using.
-The test-set isn't clear about whach should happen when `#call` is run, but it seems that it should push `1` onto the stack.
-
-```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#call" Word Word Map Word WordStack
- // ----------------------------------------------------------
-    rule <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => #exception ... </op>
+    rule <mode> VMTESTS </mode>
+         <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => . ... </op>
          <callDepth> CD </callDepth>
-         <callLog> CL => { ACCTTO | VALUE | ARGS } ; CL </callLog>
+         <callLog> ... (.Set => SetItem({ ACCTTO | VALUE | ARGS })) </callLog>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
+      requires VALUE <=Int BAL andBool CD <Int 1024
+
+    rule <op> #call ACCTFROM _ _ VALUE _ => #exception ... </op>
+         <callDepth> CD </callDepth>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
+      requires VALUE >Int BAL orBool CD >=Int 1024
 ```
 
 For each `CALL*` operation, we make a corresponding call to `#call` and a state-change to setup the custom parts of the calling environment.
@@ -981,12 +995,16 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 TODO: The `#catch` being used in each case needs to be filled in with the actual code to run on exception.
 
 ```{.k .uiuck .rvk}
+    syntax KItem ::= #handleCall ( K , Word ) [function]
+ // ----------------------------------------------------
+    rule #handleCall(K, SUCCESS) => #? #dropCallStack ~> SUCCESS ~> #push ~> K : #popCallStack ~> 0 ~> #push ?#
+
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
            ~> #call ACCTFROM #addr(ACCTTO) CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #? #dropCallStack ~> #return RETSTART RETWIDTH : #popCallStack ~> 1 ~> #push ?#
+           ~> #handleCall(#return RETSTART RETWIDTH, 1)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -1002,7 +1020,7 @@ TODO: The `#catch` being used in each case needs to be filled in with the actual
     rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
            ~> #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #? #dropCallStack ~> #return RETSTART RETWIDTH : #popCallStack ~> 1 ~> #push ?#
+           ~> #handleCall(#return RETSTART RETWIDTH, 1)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -1018,7 +1036,7 @@ TODO: The `#catch` being used in each case needs to be filled in with the actual
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
            ~> #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
-           ~> #? #dropCallStack ~> #return RETSTART RETWIDTH : #popCallStack ~> 1 ~> #push ?#
+           ~> #handleCall(#return RETSTART RETWIDTH, 1)
            ...
          </op>
          <id> ACCTFROM </id>
@@ -1045,7 +1063,7 @@ TODO: The `#catch_` being used need to be filled in with actual code to run.
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
            => #pushCallStack
            ~> #call ACCT #newAddr(ACCT, NONCE) #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
-           ~> #? #dropCallStack ~> #codeDeposit : #popCallStack ~> 1 ~> #push ?#
+           ~> #handleCall(#codeDeposit, #newAddr(ACCT, NONCE))
           ...
          </op>
          <id> ACCT </id>
@@ -1085,32 +1103,15 @@ We should wait for the `#gasExec` calculations to be fixed before doing so.
 ```{.k .uiuck .rvk}
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
-    rule <op> SELFDESTRUCT ACCTTO => . ... </op>
+    rule <op> SELFDESTRUCT ACCTTO => #transferFunds ACCT ACCTTO BALFROM ... </op>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
          <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Word Rselfdestruct #fi </refund>
          <account>
            <acctID> ACCT </acctID>
-           <balance> BALFROM => 0 </balance>
+           <balance> BALFROM </balance>
            ...
          </account>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <balance> BALTO => BALTO +Word BALFROM </balance>
-           ...
-         </account>
-
-    rule <op> SELFDESTRUCT ACCTTO => #newAccount ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ... </op>
-         <id> ACCT </id>
-         <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
-         <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Word Rselfdestruct #fi </refund>
-         <activeAccounts> ACCTS </activeAccounts>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BALFROM => 0 </balance>
-           ...
-         </account>
-      requires notBool ACCTTO in ACCTS
 
     rule <op> SELFDESTRUCT ACCT => . ... </op>
          <id> ACCT </id>
@@ -1282,8 +1283,8 @@ Here the lists of gas prices and gas opcodes are provided.
     rule Gsset          => 20000
     rule Gsreset        => 5000
     rule Rsclear        => 15000
-    rule Rselfdestruct => 24000
-    rule Gselfdestruct => 5000
+    rule Rselfdestruct  => 24000
+    rule Gselfdestruct  => 5000
     rule Gcreate        => 32000
     rule Gcodedeposit   => 200
     rule Gcall          => 700
