@@ -1351,12 +1351,12 @@ Here we've collected different values for various constants across the different
 ### EIP158 (from Go implemenatation)
 
 ```
-    rule Gextcodei     => 700
+    rule Gextcode      => 700
     rule Gsload        => 200
-    rule Gcall         => 700
+    rule Gexpbyte      => 50
     rule Gselfdestruct => 5000
     rule Gbalance      => 400
-    rule Gexpbyte      => 50
+    rule Gcall         => 700
     // ExtcodeCopy: 700
     // CreateBySuicide: 25000
 ```
