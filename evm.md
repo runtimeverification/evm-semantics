@@ -1325,7 +1325,7 @@ Here we've collected different values for various constants across the different
 
 ### Homestead (from Go implementation)
 
-```{.k .uiuck .rvk}
+```
     rule Gextcode      => 20
     rule Gsload        => 50
     rule Gexpbyte      => 10
@@ -1360,6 +1360,18 @@ Here we've collected different values for various constants across the different
     // ExtcodeCopy: 700
     // CreateBySuicide: 25000
 ```
+
+### From C++ implementation
+
+```{.k .uiuck .rvk}
+    rule Gextcode      => 20
+    rule Gsload        => 50
+    rule Gexpbyte      => 10
+    rule Gselfdestruct => 0
+    rule Gbalance      => 20
+    rule Gcall         => 40
+```
+
 
 ```{.k .uiuck .rvk}
     syntax Set ::= "Wzero"    [function] | "Wbase" [function]
