@@ -147,7 +147,7 @@ run_debug() {
     run_make all
     file=$(test_pipe_line list_tests cat "$@" | head -n 1)
     progress "debugging: $file"
-    krun --debugger --directory k "$file"
+    krun --debug --debugger --directory k "$file"
     exit
 }
 
