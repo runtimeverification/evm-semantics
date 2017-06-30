@@ -387,10 +387,12 @@ We are using the polymorphic `Map` sort for these word maps.
     rule #asMapWordStack(WS:WordStack) => .Map [ 0 := WS ]
 
     syntax WordStack ::= #range ( Map , Word , Word ) [function]
+    syntax WordStack ::= #rangeImpl ( Map , Word , Word , WordStack) [function]
  // ------------------------------------------------------------
-    rule #range(WM,         N, 0) => .WordStack
-    rule #range(WM,         N:Int, M:Int) => 0 : #range(WM, N +Int 1, M -Int 1) requires (M >Int 0) andBool notBool N in_keys(WM)
-    rule #range(N |-> W WM, N:Int, M:Int) => W : #range(WM, N +Int 1, M -Int 1) requires (M >Int 0)
+    rule #range(WM, N:Int, M:Int) => #rangeImpl(WM, N +Int M -Int 1, M, .WordStack)
+    rule #rangeImpl(WM,         N:Int, 0, WS) => WS
+    rule #rangeImpl(WM,         N:Int, M:Int, WS) => #rangeImpl(WM, N -Int 1, M -Int 1, 0 : WS) requires (M >Int 0) andBool notBool N in_keys(WM)
+    rule #rangeImpl(N |-> W WM, N:Int, M:Int, WS) => #rangeImpl(WM, N -Int 1, M -Int 1, W : WS) requires (M >Int 0)
 ```
 
 Parsing/Unparsing
@@ -468,7 +470,7 @@ We need to interperet a `WordStack` as a `String` again so that we can call `Kec
     syntax String ::= #unparseByteStack ( WordStack ) [function]
  // ------------------------------------------------------------
     rule #unparseByteStack( .WordStack )   => ""
-    rule #unparseByteStack( (W:Int) : WS ) => #padByte(Base2String((W %Int (2 ^Int 8)), 16)) +String #unparseByteStack(WS)
+    rule #unparseByteStack( (W:Int) : WS ) => chrChar(W %Int (2 ^Int 8)) +String #unparseByteStack(WS)
 
     syntax String ::= #padByte( String ) [function]
  // -----------------------------------------------

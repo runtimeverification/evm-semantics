@@ -22,7 +22,7 @@ let gethex = function
 let hook_keccak256 c lbl sort config ff = match c with
   [String hex] ->
   let h = Cryptokit.Hash.keccak 256 in
-  let nbytes = (String.length hex) / 2 in
+(*  let nbytes = (String.length hex) / 2 in
   let ibuf = Buffer.create nbytes in
   (for i = 0 to nbytes - 1 do 
     let high = String.get hex (i*2) in
@@ -30,7 +30,8 @@ let hook_keccak256 c lbl sort config ff = match c with
     let byte = ((gethex high) * 16) + (gethex low) in
     Buffer.add_char ibuf (char_of_int byte)
    done);
+  let bytes = Cryptokit.hash_string h (Buffer.contents ibuf) in *)
+  let bytes = Cryptokit.hash_string h hex in
   let buf = Buffer.create 64 in
-  let bytes = Cryptokit.hash_string h (Buffer.contents ibuf) in
   String.iter (fun c -> Buffer.add_string buf (Printf.sprintf "%02x" (int_of_char c))) bytes;
   [String (Buffer.contents buf)]
