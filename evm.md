@@ -1220,20 +1220,19 @@ Gas needs to be deducted when the maximum memory to a program increases, so we t
     rule Cselfdestruct(ACCT, ACCTS) => Gselfdestruct                  requires ACCT in ACCTS
 
     syntax Int ::= Ccall ( Word , Set , Word , Word , Word ) [function]
- // -------------------------------------------------------------------
-    rule Ccall(ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cgascap(GCAP, GAVAIL, Cextra(ACCT, ACCTS, VALUE)) +Int Cextra(ACCT, ACCTS, VALUE)
+                 | Ccallgas ( Word , Word , Word )           [function]
+                 | Cgascap ( Word , Word , Word )            [function]
+                 | Cextra  ( Word , Set , Word )             [function]
+                 | Cxfer ( Word )                            [function]
+                 | Cnew ( Word , Set )                       [function]
+ // --------------------------------------------------------------------
+    rule Ccall(ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cextra(ACCT, ACCTS, VALUE) +Int Cgascap(GCAP, GAVAIL, Cextra(ACCT, ACCTS, VALUE))
 
-    syntax Int ::= Ccallgas ( Word , Word , Word ) [function]
-                 | Cgascap ( Word , Word , Word )  [function]
-                 | Cextra  ( Word , Set , Word )   [function]
-                 | Cxfer ( Word )                  [function]
-                 | Cnew ( Word , Set )             [function]
- // ----------------------------------------------------------
     rule Ccallgas(GCAP, ACCTTO, 0)     => Cgascap(GCAP, ACCTTO, 0)
     rule Ccallgas(GCAP, ACCTTO, VALUE) => Cgascap(GCAP, ACCTTO, VALUE) +Int Gcallstipend requires VALUE =/=K 0
 
-    rule Cgascap(GCAP, GAVAIL, GEXTRA) => minInt(#allButLast64(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA
-    rule Cgascap(GCAP, GAVAIL, GEXTRA) => GCAP                                            requires GAVAIL <Int  GEXTRA
+    rule Cgascap(GCAP, GAVAIL, GEXTRA) => minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA
+    rule Cgascap(GCAP, GAVAIL, GEXTRA) => GCAP                                          requires GAVAIL <Int  GEXTRA
 
     rule Cextra(ACCT, ACCTS, VALUE) => Gcall +Int Cnew(ACCT, ACCTS) +Int Cxfer(VALUE)
 
@@ -1243,9 +1242,9 @@ Gas needs to be deducted when the maximum memory to a program increases, so we t
     rule Cnew(ACCT, ACCTS) => Gnewaccount requires notBool ACCT in ACCTS
     rule Cnew(ACCT, ACCTS) => 0           requires ACCT in ACCTS
 
-    syntax Int ::= #allButLast64 ( Int ) [function]
- // -----------------------------------------------
-    rule #allButLast64(N) => N -Int (N /Int 64)
+    syntax Int ::= #allBut64th ( Int ) [function]
+ // ---------------------------------------------
+    rule #allBut64th(N) => N -Int (N /Int 64)
 ```
 
 Here the lists of gas prices and gas opcodes are provided.

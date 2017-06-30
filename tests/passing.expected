@@ -242,7 +242,6 @@ tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump0_outOfBoundary.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump0_withoutJumpdest.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump1.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jumpAfterStop.json
-tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jumpDynamicJumpSameDest.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jumpHigh.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jumpInsidePushWithJumpDest.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jumpInsidePushWithoutJumpDest.json
@@ -424,16 +423,6 @@ tests/tests-develop/VMTests/vmSha3Test/sha3_memSizeQuadraticCost63.json
 tests/tests-develop/VMTests/vmSha3Test/sha3_memSizeQuadraticCost64.json
 tests/tests-develop/VMTests/vmSha3Test/sha3_memSizeQuadraticCost64_2.json
 tests/tests-develop/VMTests/vmSha3Test/sha3_memSizeQuadraticCost65.json
-tests/tests-develop/VMTests/vmSystemOperationsTest/ABAcalls0.json
-tests/tests-develop/VMTests/vmSystemOperationsTest/ABAcalls1.json
-tests/tests-develop/VMTests/vmSystemOperationsTest/ABAcalls2.json
-tests/tests-develop/VMTests/vmSystemOperationsTest/ABAcalls3.json
-tests/tests-develop/VMTests/vmSystemOperationsTest/ABAcallsSuicide0.json
-tests/tests-develop/VMTests/vmSystemOperationsTest/ABAcallsSuicide1.json
-tests/tests-develop/VMTests/vmSystemOperationsTest/CallRecursiveBomb0.json
-tests/tests-develop/VMTests/vmSystemOperationsTest/CallRecursiveBomb1.json
-tests/tests-develop/VMTests/vmSystemOperationsTest/CallRecursiveBomb2.json
-tests/tests-develop/VMTests/vmSystemOperationsTest/CallRecursiveBomb3.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/CallToNameRegistrator0.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/CallToNameRegistratorNotMuchMemory0.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/CallToNameRegistratorNotMuchMemory1.json
@@ -452,7 +441,6 @@ tests/tests-develop/VMTests/vmSystemOperationsTest/createNameRegistratorOutOfMem
 tests/tests-develop/VMTests/vmSystemOperationsTest/return0.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/return1.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/return2.json
-tests/tests-develop/VMTests/vmSystemOperationsTest/suicide0.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/suicideSendEtherToMe.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/bad_indirect_jump1.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/bad_indirect_jump2.json
