@@ -162,7 +162,6 @@ tests/tests-develop/VMTests/vmEnvironmentalInfoTest/gasprice.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/origin.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/BlockNumberDynamicJump0_AfterJumpdest.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/BlockNumberDynamicJump0_AfterJumpdest3.json
-tests/tests-develop/VMTests/vmIOandFlowOperationsTest/BlockNumberDynamicJump0_foreverOutOfGas.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/BlockNumberDynamicJump0_jumpdest0.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/BlockNumberDynamicJump0_jumpdest2.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/BlockNumberDynamicJump0_withoutJumpdest.json
