@@ -778,7 +778,7 @@ module ETHEREUM
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
-    rule <op> RETURN RETSTART RETWIDTH => . ... </op>
+    rule <op> RETURN RETSTART RETWIDTH ~> K =>  #end </op>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
 
@@ -1333,6 +1333,12 @@ module ETHEREUM
 
 // ### Homestead (from Go implementation)
 
+// ### Homestead Reprice (from Go implemenatation)
+
+// ### EIP158 (from Go implemenatation)
+
+// ### From C++ implementation
+
 
     rule Gextcode      => 20
     rule Gsload        => 50
@@ -1340,12 +1346,7 @@ module ETHEREUM
     rule Gselfdestruct => 0
     rule Gbalance      => 20
     rule Gcall         => 40
-    // ExtcodeCopy: 20
 
-
-// ### Homestead Reprice (from Go implemenatation)
-
-// ### EIP158 (from Go implemenatation)
 
 
     syntax Set ::= "Wzero"    [function] | "Wbase" [function]
