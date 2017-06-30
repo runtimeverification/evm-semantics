@@ -178,7 +178,6 @@ tests/tests-develop/VMTests/vmIOandFlowOperationsTest/BlockNumberDynamicJumpifIn
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/DyanmicJump0_outOfBoundary.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/DynamicJump0_AfterJumpdest.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/DynamicJump0_AfterJumpdest3.json
-tests/tests-develop/VMTests/vmIOandFlowOperationsTest/DynamicJump0_foreverOutOfGas.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/DynamicJump0_jumpdest0.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/DynamicJump0_jumpdest2.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/DynamicJump0_withoutJumpdest.json
@@ -237,7 +236,6 @@ tests/tests-develop/VMTests/vmIOandFlowOperationsTest/indirect_jump3.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/indirect_jump4.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump0_AfterJumpdest.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump0_AfterJumpdest3.json
-tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump0_foreverOutOfGas.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump0_jumpdest0.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump0_jumpdest2.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump0_outOfBoundary.json
@@ -460,7 +458,6 @@ tests/tests-develop/VMTests/vmIOandFlowOperationsTest/bad_indirect_jump1.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/bad_indirect_jump2.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/BlockNumberDynamicJump0_AfterJumpdest3.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/BlockNumberDynamicJump0_AfterJumpdest.json
-tests/tests-develop/VMTests/vmIOandFlowOperationsTest/BlockNumberDynamicJump0_foreverOutOfGas.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/BlockNumberDynamicJump0_jumpdest0.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/BlockNumberDynamicJump0_jumpdest2.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/BlockNumberDynamicJump0_withoutJumpdest.json
@@ -482,7 +479,6 @@ tests/tests-develop/VMTests/vmIOandFlowOperationsTest/dupAt51becameMload.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/DyanmicJump0_outOfBoundary.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/DynamicJump0_AfterJumpdest3.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/DynamicJump0_AfterJumpdest.json
-tests/tests-develop/VMTests/vmIOandFlowOperationsTest/DynamicJump0_foreverOutOfGas.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/DynamicJump0_jumpdest0.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/DynamicJump0_jumpdest2.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/DynamicJump0_withoutJumpdest.json
@@ -520,7 +516,6 @@ tests/tests-develop/VMTests/vmIOandFlowOperationsTest/indirect_jump3.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/indirect_jump4.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/JDfromStorageDynamicJump0_AfterJumpdest3.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/JDfromStorageDynamicJump0_AfterJumpdest.json
-tests/tests-develop/VMTests/vmIOandFlowOperationsTest/JDfromStorageDynamicJump0_foreverOutOfGas.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/JDfromStorageDynamicJump0_jumpdest0.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/JDfromStorageDynamicJump0_jumpdest2.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/JDfromStorageDynamicJump0_withoutJumpdest.json
@@ -536,7 +531,6 @@ tests/tests-develop/VMTests/vmIOandFlowOperationsTest/JDfromStorageDynamicJumpIn
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/JDfromStorageDynamicJumpiOutsideBoundary.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump0_AfterJumpdest3.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump0_AfterJumpdest.json
-tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump0_foreverOutOfGas.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump0_jumpdest0.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump0_jumpdest2.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump0_outOfBoundary.json
