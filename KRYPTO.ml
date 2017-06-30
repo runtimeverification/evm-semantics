@@ -1,6 +1,5 @@
 open Constants.K
 
-let h = Cryptokit.Hash.keccak 256
 
 let gethex = function
 | '0' -> 0
@@ -22,6 +21,7 @@ let gethex = function
 
 let hook_keccak256 c lbl sort config ff = match c with
   [String hex] ->
+  let h = Cryptokit.Hash.keccak 256 in
   let nbytes = (String.length hex) / 2 in
   let ibuf = Buffer.create nbytes in
   (for i = 0 to nbytes - 1 do 
