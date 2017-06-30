@@ -526,7 +526,6 @@ tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump0_withoutJumpdest.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jump1.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jumpAfterStop.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jumpdestBigList.json
-tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jumpDynamicJumpSameDest.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jumpHigh.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jumpi0.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jumpi1.json
