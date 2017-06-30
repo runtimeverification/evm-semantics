@@ -339,8 +339,8 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#invalid?" "[" OpCode "]"
  // ------------------------------------------------
-    rule <op> #invalid? [ INVALID ] => #exception ... </op>
-    rule <op> #invalid? [ OP      ] => .          ... </op> requires OP =/=K INVALID
+    rule <op> #invalid? [ INVALID(_) ] => #exception ... </op>
+    rule <op> #invalid? [ OP      ] => .          ... </op> requires notBool isInvalidOp(OP)
 ```
 
 -   `#stackNeeded?` checks that the stack will be not be under/overflown.
@@ -661,7 +661,7 @@ These are just used by the other operators for shuffling local execution state a
            <balance> ORIGTO => ORIGTO +Word VALUE </balance>
            ...
          </account>
-      requires ACCTFROM =/=Int ACCTTO andBool word2Bool(VALUE <Word ORIGFROM)
+      requires ACCTFROM =/=Int ACCTTO andBool word2Bool(VALUE <=Word ORIGFROM)
 
     rule <op> #transferFunds ACCTFROM ACCTTO VALUE => #exception ... </op>
          <account>
@@ -669,7 +669,7 @@ These are just used by the other operators for shuffling local execution state a
            <balance> ORIGFROM </balance>
            ...
          </account>
-      requires ACCTFROM =/=Int ACCTTO andBool word2Bool(VALUE >=Word ORIGFROM)
+      requires ACCTFROM =/=Int ACCTTO andBool word2Bool(VALUE >Word ORIGFROM)
 
     rule <op> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </op>
          <activeAccounts> ACCTS </activeAccounts>
@@ -681,7 +681,7 @@ These are just used by the other operators for shuffling local execution state a
 ### Invalid Operator
 
 ```{.k .uiuck .rvk}
-    syntax InvalidOp ::= "INVALID"
+    syntax InvalidOp ::= INVALID(Word)
  // ------------------------------
 ```
 
@@ -822,7 +822,7 @@ These operators make queries about the current execution state.
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
-    rule <op> BLOCKHASH N => #if N >Int HI #then 0 #else keccak(N : .WordStack) #fi ~> #push ... </op> <number> HI </number>
+    rule <op> BLOCKHASH N => #if N >=Int HI orBool HI -Int 256 >Int N #then 0 #else #parseHexWord(Keccak256(Int2String(N))) #fi ~> #push ... </op> <number> HI </number>
 ```
 
 ### `JUMP*`
@@ -1639,7 +1639,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
  // --------------------------------------------------------
     rule #dasmOpCodes( .WordStack ) => .OpCodes
     rule #dasmOpCodes( W : WS )     => #dasmOpCode(W)    ; #dasmOpCodes(WS) requires word2Bool(W >=Word 0)   andBool word2Bool(W <=Word 95)
-    rule #dasmOpCodes( W : WS )     => #dasmOpCode(W)    ; #dasmOpCodes(WS) requires word2Bool(W >=Word 240) andBool word2Bool(W <=Word 255)
+    rule #dasmOpCodes( W : WS )     => #dasmOpCode(W)    ; #dasmOpCodes(WS) requires word2Bool(W >=Word 165) andBool word2Bool(W <=Word 255)
     rule #dasmOpCodes( W : WS )     => DUP(W -Word 127)  ; #dasmOpCodes(WS) requires word2Bool(W >=Word 128) andBool word2Bool(W <=Word 143)
     rule #dasmOpCodes( W : WS )     => SWAP(W -Word 143) ; #dasmOpCodes(WS) requires word2Bool(W >=Word 144) andBool word2Bool(W <=Word 159)
     rule #dasmOpCodes( W : WS )     => LOG(W -Word 160)  ; #dasmOpCodes(WS) requires word2Bool(W >=Word 160) andBool word2Bool(W <=Word 164)
@@ -1711,8 +1711,8 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode( 242 ) => CALLCODE
     rule #dasmOpCode( 243 ) => RETURN
     rule #dasmOpCode( 244 ) => DELEGATECALL
-    rule #dasmOpCode( 254 ) => INVALID
     rule #dasmOpCode( 255 ) => SELFDESTRUCT
+    rule #dasmOpCode(   W ) => INVALID(W) [owise]
 ```
 
 Assembler
@@ -1784,7 +1784,7 @@ Assembler
     rule #asmOpCodes( CALLCODE     ; OPS ) => 242 : #asmOpCodes(OPS)
     rule #asmOpCodes( RETURN       ; OPS ) => 243 : #asmOpCodes(OPS)
     rule #asmOpCodes( DELEGATECALL ; OPS ) => 244 : #asmOpCodes(OPS)
-    rule #asmOpCodes( INVALID      ; OPS ) => 254 : #asmOpCodes(OPS)
+    rule #asmOpCodes( INVALID(W)   ; OPS ) => W   : #asmOpCodes(OPS)
     rule #asmOpCodes( SELFDESTRUCT ; OPS ) => 255 : #asmOpCodes(OPS)
     rule #asmOpCodes( DUP(W)       ; OPS ) => W +Word 127 : #asmOpCodes(OPS)
     rule #asmOpCodes( SWAP(W)      ; OPS ) => W +Word 143 : #asmOpCodes(OPS)
