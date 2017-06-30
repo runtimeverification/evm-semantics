@@ -345,7 +345,7 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#exec" "[" OpCode "]"
  // --------------------------------------------
-    rule <op> #exec [ OP ] => #gas [ OP ] ~> OP ... </op> requires #zeroArgs?(OP)
+    rule <op> #exec [ OP ] => #gas [ OP ] ~> OP ... </op> requires isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
 ```
 
 Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
@@ -406,25 +406,18 @@ Later we'll need a way to strip the arguments from an operator.
     rule #stripArgs(SOP:StackOp _)              => SOP
     rule #stripArgs(COP:CallOp _ _ _ _ _ _ _)   => COP
     rule #stripArgs(CSOP:CallSixOp _ _ _ _ _ _) => CSOP
-
-    syntax Bool ::= "#zeroArgs?" "(" OpCode ")" [function]
- // ------------------------------------------------------
-    rule #zeroArgs?(OP) => isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
 ```
 
 -   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#gas" "[" OpCode "]"
- // -------------------------------------------
-    rule <op> #gas [ OP ] => #memory(OP, MU) ~> #gas [ OP ] ... </op> <memoryUsed> MU </memoryUsed>
+    syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas"
+ // ----------------------------------------------------------
+    rule <op> #gas [ OP ] => #gasExec(OP) ~> #memory(OP, MU) ~> #deductGas ... </op> <memoryUsed> MU </memoryUsed>
 
-    rule <op> MU':Int ~> #gas [ OP ] => #exception ... </op> requires MU' >=Int (2 ^Int 256)
-    rule <op> MU':Int ~> #gas [ OP ] => #gasExec(OP) ~> Cmem(MU') -Int Cmem(MU) ~> #deductGas ... </op> <memoryUsed> MU => MU' </memoryUsed> requires MU' <Int (2 ^Int 256)
+    rule <op> GEXEC:Int ~> MU':Int ~> #deductGas => #exception ... </op> requires MU' >=Int (2 ^Int 256)
+    rule <op> GEXEC:Int ~> MU':Int ~> #deductGas => (Cmem(MU') -Int Cmem(MU)) +Int GEXEC  ~> #deductGas ... </op> <memoryUsed> MU => MU' </memoryUsed> requires MU' <Int (2 ^Int 256)
 
-    syntax InternalOp ::= "#deductGas"
- // ----------------------------------
-    rule <op> (GEXEC ~> GMEM => GEXEC +Int GMEM) ~> #deductGas ... </op>
     rule <op> G:Int ~> #deductGas => #exception ... </op> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
     rule <op> G:Int ~> #deductGas => .          ... </op> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
 
@@ -1095,7 +1088,7 @@ We should wait for the `#gasExec` calculations to be fixed before doing so.
     rule <op> SELFDESTRUCT ACCTTO => . ... </op>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
-         <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Word Rself-destruct #fi </refund>
+         <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Word Rselfdestruct #fi </refund>
          <account>
            <acctID> ACCT </acctID>
            <balance> BALFROM => 0 </balance>
@@ -1110,7 +1103,7 @@ We should wait for the `#gasExec` calculations to be fixed before doing so.
     rule <op> SELFDESTRUCT ACCTTO => #newAccount ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ... </op>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
-         <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Word Rself-destruct #fi </refund>
+         <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Word Rselfdestruct #fi </refund>
          <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
@@ -1122,7 +1115,7 @@ We should wait for the `#gasExec` calculations to be fixed before doing so.
     rule <op> SELFDESTRUCT ACCT => . ... </op>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
-         <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Word Rself-destruct #fi </refund>
+         <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Int Rselfdestruct #fi </refund>
          <account>
            <acctID> ACCT </acctID>
            <balance> BALFROM => 0 </balance>
@@ -1170,74 +1163,88 @@ Gas needs to be deducted when the maximum memory to a program increases, so we t
 ```{.k .uiuck .rvk}
     syntax Word ::= #gasExec ( OpCode )
  // -----------------------------------
-    rule <op> #gasExec(SSTORE W0 W1)
-           => #if W1 =/=K 0 andBool notBool W0 in keys(STORAGE) #then Gsset #else Gsreset #fi
-          ...
-         </op>
-         <storage> STORAGE </storage>
+    rule <op> #gasExec(SSTORE INDEX VALUE) => Csstore(INDEX, VALUE, STORAGE) ... </op>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> STORAGE </storage>
+           ...
+         </account>
 
     rule <op> #gasExec(EXP W0 0)  => Gexp ... </op>
-    rule <op> #gasExec(EXP W0 W1) => Gexp +Word (Gexpbyte *Word (1 +Word (log256Int(W1)))) ... </op> requires W1 =/=K 0
+    rule <op> #gasExec(EXP W0 W1) => Gexp +Int (Gexpbyte *Int (1 +Int (log256Int(W1)))) ... </op> requires W1 =/=K 0
 
-    rule <op> #gasExec(DUP(_) _)    => Gverylow   ... </op>
+    rule <op> #gasExec(CALLDATACOPY  _ _ WIDTH) => Gverylow +Int Ccopy(WIDTH) ... </op>
+    rule <op> #gasExec(CODECOPY      _ _ WIDTH) => Gverylow +Int Ccopy(WIDTH) ... </op>
+    rule <op> #gasExec(EXTCODECOPY _ _ _ WIDTH) => Gextcode +Int Ccopy(WIDTH) ... </op>
+
+    rule <op> #gasExec(LOG(N) _ WIDTH) => Glog +Int (Glogdata *Int WIDTH) +Int (N *Int Glogtopic) ... </op>
+
+    rule <op> #gasExec(COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => Ccall(ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) ... </op> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas>
+    rule <op> #gasExec(CSOP:CallSixOp GCAP ACCTTO       _ _ _ _) => Ccall(ACCTTO, ACCTS, GCAP, GAVAIL, 0)     ... </op> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas>
+
+    rule <op> #gasExec(SELFDESTRUCT ACCT) => Cselfdestruct(ACCT, ACCTS) ... </op> <activeAccounts> ACCTS </activeAccounts>
+    rule <op> #gasExec(CREATE _ _ _)      => Gcreate                    ... </op>
+
+    rule <op> #gasExec(SHA3 _ WIDTH) => Gsha3 +Int (Gsha3word *Int (WIDTH up/Int 32)) ... </op>
+
+    rule <op> #gasExec(JUMPDEST) => Gjumpdest ... </op>
+    rule <op> #gasExec(SLOAD _)  => Gsload    ... </op>
+
+    rule <op> #gasExec(OP)          => Gzero      ... </op> requires #stripArgs(OP) in Wzero
+    rule <op> #gasExec(OP)          => Gbase      ... </op> requires #stripArgs(OP) in Wbase
+    rule <op> #gasExec(OP)          => Gverylow   ... </op> requires #stripArgs(OP) in Wverylow
     rule <op> #gasExec(PUSH(_, _))  => Gverylow   ... </op>
+    rule <op> #gasExec(DUP(_) _)    => Gverylow   ... </op>
     rule <op> #gasExec(SWAP(_) _)   => Gverylow   ... </op>
-    rule <op> #gasExec(SLOAD _)     => Gsload     ... </op>
+    rule <op> #gasExec(OP)          => Glow       ... </op> requires #stripArgs(OP) in Wlow
+    rule <op> #gasExec(OP)          => Gmid       ... </op> requires #stripArgs(OP) in Wmid
+    rule <op> #gasExec(OP)          => Ghigh      ... </op> requires #stripArgs(OP) in Whigh
+    rule <op> #gasExec(OP)          => Gextcode   ... </op> requires #stripArgs(OP) in Wextcode
     rule <op> #gasExec(BALANCE _)   => Gbalance   ... </op>
     rule <op> #gasExec(BLOCKHASH _) => Gblockhash ... </op>
-    rule <op> #gasExec(SHA3 _ _)    => Gzero      ... </op>
 
-    rule <op> #gasExec(OP) => Gzero    ... </op> requires #stripArgs(OP) in Wzero
-    rule <op> #gasExec(OP) => Gbase    ... </op> requires #stripArgs(OP) in Wbase
-    rule <op> #gasExec(OP) => Gverylow ... </op> requires #stripArgs(OP) in Wverylow
-    rule <op> #gasExec(OP) => Glow     ... </op> requires #stripArgs(OP) in Wlow
-    rule <op> #gasExec(OP) => Gmid     ... </op> requires #stripArgs(OP) in Wmid
-    rule <op> #gasExec(OP) => Ghigh    ... </op> requires #stripArgs(OP) in Whigh
-    rule <op> #gasExec(OP) => Gextcode ... </op> requires #stripArgs(OP) in Wextcode
+    syntax Int ::= Ccopy ( Word ) [function]
+ // ----------------------------------------
+    rule Ccopy(N) => Gcopy *Int (N up/Int 32)
 
-    rule <op> #gasExec(COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => #Ccall(GCAP, ACCTTO, VALUE) ... </op>
-    rule <op> #gasExec(CSOP:CallSixOp GCAP ACCTTO       _ _ _ _) => #Ccall(GCAP, ACCTTO, 0)     ... </op>
+    syntax Int ::= Csstore ( Word , Word , Map ) [function]
+ // -------------------------------------------------------
+    rule Csstore(INDEX, VALUE, STORAGE) => Gsset   requires VALUE =/=K 0 andBool notBool INDEX in keys(STORAGE)
+    rule Csstore(INDEX, VALUE, STORAGE) => Gsreset requires VALUE ==K 0  orBool  INDEX in keys(STORAGE)
 
-    syntax Int ::= #Ccall ( Word , Word , Word )
- // --------------------------------------------
-    rule <op> #Ccall(GCAP, ACCTTO, VALUE) => #Cgascap(GCAP, GAVAIL, #Cextra(ACCTTO, ACCTS, VALUE)) +Int #Cextra(ACCTTO, ACCTS, VALUE) ... </op>
-         <activeAccounts> ACCTS </activeAccounts>
-         <gas> GAVAIL </gas>
+    syntax Int ::= Cselfdestruct ( Word , Set ) [function]
+ // ------------------------------------------------------
+    rule Cselfdestruct(ACCT, ACCTS) => Gselfdestruct +Int Gnewaccount requires notBool ACCT in ACCTS
+    rule Cselfdestruct(ACCT, ACCTS) => Gselfdestruct                  requires ACCT in ACCTS
 
-    syntax Int ::= #Ccallgas ( Word , Word , Word ) [function]
-                 | #Cgascap ( Word , Word , Word )  [function]
-                 | #Cextra  ( Word , Set , Word )   [function]
-                 | #Cxfer ( Word )                  [function]
-                 | #Cnew ( Word , Set )             [function]
+    syntax Int ::= Ccall ( Word , Set , Word , Word , Word ) [function]
+ // -------------------------------------------------------------------
+    rule Ccall(ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cgascap(GCAP, GAVAIL, Cextra(ACCT, ACCTS, VALUE)) +Int Cextra(ACCT, ACCTS, VALUE)
+
+    syntax Int ::= Ccallgas ( Word , Word , Word ) [function]
+                 | Cgascap ( Word , Word , Word )  [function]
+                 | Cextra  ( Word , Set , Word )   [function]
+                 | Cxfer ( Word )                  [function]
+                 | Cnew ( Word , Set )             [function]
  // ----------------------------------------------------------
-    rule #Ccallgas(GCAP, ACCTTO, 0)     => #Cgascap(GCAP, ACCTTO, 0)
-    rule #Ccallgas(GCAP, ACCTTO, VALUE) => #Cgascap(GCAP, ACCTTO, VALUE) +Int Gcallstipend requires VALUE =/=K 0
+    rule Ccallgas(GCAP, ACCTTO, 0)     => Cgascap(GCAP, ACCTTO, 0)
+    rule Ccallgas(GCAP, ACCTTO, VALUE) => Cgascap(GCAP, ACCTTO, VALUE) +Int Gcallstipend requires VALUE =/=K 0
 
-    rule #Cgascap(GCAP, GAVAIL, GEXTRA) => minInt(#allButLast64(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA
-    rule #Cgascap(GCAP, GAVAIL, GEXTRA) => GCAP                                            requires GAVAIL <Int  GEXTRA
+    rule Cgascap(GCAP, GAVAIL, GEXTRA) => minInt(#allButLast64(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA
+    rule Cgascap(GCAP, GAVAIL, GEXTRA) => GCAP                                            requires GAVAIL <Int  GEXTRA
 
-    rule #Cextra(ACCT, ACCTS, VALUE) => Gcall +Int #Cnew(ACCT, ACCTS) +Int #Cxfer(VALUE)
+    rule Cextra(ACCT, ACCTS, VALUE) => Gcall +Int Cnew(ACCT, ACCTS) +Int Cxfer(VALUE)
 
-    rule #Cxfer(0) => 0
-    rule #Cxfer(N) => Gcallvalue requires N =/=K 0
+    rule Cxfer(0) => 0
+    rule Cxfer(N) => Gcallvalue requires N =/=K 0
 
-    rule #Cnew(ACCT, ACCTS) => Gnewaccount requires notBool ACCT in ACCTS
-    rule #Cnew(ACCT, ACCTS) => 0           requires ACCT in ACCTS
+    rule Cnew(ACCT, ACCTS) => Gnewaccount requires notBool ACCT in ACCTS
+    rule Cnew(ACCT, ACCTS) => 0           requires ACCT in ACCTS
 
     syntax Int ::= #allButLast64 ( Int ) [function]
  // -----------------------------------------------
     rule #allButLast64(N) => N -Int (N /Int 64)
-```
-
-TODO: Gas calculation for the following operators is not implemented.
-
-```{.k .uiuck .rvk}
-    rule <op> #gasExec(OP)                  => Gzero   ... </op> requires #stripArgs(OP) in Wcopy
-    rule <op> #gasExec(SELFDESTRUCT _)      => Gzero   ... </op>
-    rule <op> #gasExec(EXTCODECOPY _ _ _ _) => Gzero   ... </op>
-    rule <op> #gasExec(LOG(N) _ _)          => Gzero   ... </op>
-    rule <op> #gasExec(JUMPDEST)            => Gzero   ... </op>
-    rule <op> #gasExec(CREATE _ _ _)        => Gcreate ... </op>
 ```
 
 Here the lists of gas prices and gas opcodes are provided.
@@ -1249,8 +1256,8 @@ Here the lists of gas prices and gas opcodes are provided.
                  | "Gextcode"       [function] | "Gbalance"       [function]
                  | "Gsload"         [function] | "Gjumpdest"      [function]
                  | "Gsset"          [function] | "Gsreset"        [function]
-                 | "Rsclear"        [function] | "Rself-destruct" [function]
-                 | "Gself-destruct" [function] | "Gcreate"        [function]
+                 | "Rsclear"        [function] | "Rselfdestruct"  [function]
+                 | "Gselfdestruct"  [function] | "Gcreate"        [function]
                  | "Gcodedeposit"   [function] | "Gcall"          [function]
                  | "Gcallvalue"     [function] | "Gcallstipend"   [function]
                  | "Gnewaccount"    [function] | "Gexp"           [function]
@@ -1275,8 +1282,8 @@ Here the lists of gas prices and gas opcodes are provided.
     rule Gsset          => 20000
     rule Gsreset        => 5000
     rule Rsclear        => 15000
-    rule Rself-destruct => 24000
-    rule Gself-destruct => 5000
+    rule Rselfdestruct => 24000
+    rule Gselfdestruct => 5000
     rule Gcreate        => 32000
     rule Gcodedeposit   => 200
     rule Gcall          => 700
@@ -1301,8 +1308,7 @@ Here the lists of gas prices and gas opcodes are provided.
     syntax Set ::= "Wzero"    [function] | "Wbase" [function]
                  | "Wverylow" [function] | "Wlow"  [function]
                  | "Wmid"     [function] | "Whigh" [function]
-                 | "Wextcode" [function] | "Wcall" [function]
-                 | "Wcopy"    [function]
+                 | "Wextcode" [function]
  // ------------------------------------
     rule Wzero    => (SetItem(STOP) SetItem(RETURN))
     rule Wbase    => ( SetItem(ADDRESS) SetItem(ORIGIN) SetItem(CALLER) SetItem(CALLVALUE) SetItem(CALLDATASIZE)
@@ -1317,8 +1323,6 @@ Here the lists of gas prices and gas opcodes are provided.
     rule Wmid     => (SetItem(ADDMOD) SetItem(MULMOD) SetItem(JUMP))
     rule Whigh    => (SetItem(JUMPI))
     rule Wextcode => (SetItem(EXTCODESIZE))
-    rule Wcopy    => (SetItem(CALLDATACOPY) SetItem(CODECOPY))
-    rule Wcall    => (SetItem(CALL) SetItem(CALLCODE) SetItem(DELEGATECALL))
 ```
 
 EVM Program Representations
