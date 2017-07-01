@@ -8,7 +8,7 @@ expected_passing="tests/passing.expected"
 now_passing="tests/passing.lastrun"
 
 export cMODE=${cMODE:-VMTESTS}
-export cSCHEDULE=${cSCHEDULE:-EIP150}
+export cSCHEDULE=${cSCHEDULE:-DEFAULT}
 
 krun_with_opts() {
     krun --directory k/ --debug -cMODE=$cMODE -cSCHEDULE=$cSCHEDULE $@
