@@ -37,7 +37,8 @@ module ETHEREUM
 
     configuration <k> $PGM:EthereumSimulation </k>
                   <exit-code exit=""> 1 </exit-code>
-                  <mode> VMTESTS </mode>
+                  <mode> $MODE:Mode </mode>
+                  <schedule> $SCHEDULE:Schedule </schedule>
 
                   <ethereum>
 
@@ -419,14 +420,16 @@ Later we'll need a way to strip the arguments from an operator.
     rule <op> #gas [ OP ] => #gasExec(OP) ~> #memory(OP, MU) ~> #deductGas ... </op> <memoryUsed> MU </memoryUsed>
 
     rule <op> GEXEC:Int ~> MU':Int ~> #deductGas => #exception ... </op> requires MU' >=Int (2 ^Int 256)
-    rule <op> GEXEC:Int ~> MU':Int ~> #deductGas => (Cmem(MU') -Int Cmem(MU)) +Int GEXEC  ~> #deductGas ... </op> <memoryUsed> MU => MU' </memoryUsed> requires MU' <Int (2 ^Int 256)
+    rule <op> (GEXEC:Int ~> MU':Int => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) +Int GEXEC)  ~> #deductGas ... </op>
+         <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
+      requires MU' <Int (2 ^Int 256)
 
     rule <op> G:Int ~> #deductGas => #exception ... </op> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
     rule <op> G:Int ~> #deductGas => .          ... </op> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
 
-    syntax Int ::= Cmem ( Int ) [function]
- // --------------------------------------
-    rule Cmem(I) => (I *Int Gmemory) +Int ((I *Int I) /Int 512)
+    syntax Int ::= Cmem ( Schedule , Int ) [function]
+ // -------------------------------------------------
+    rule Cmem(SCHED, I) => (I *Int Gmemory < SCHED >) +Int ((I *Int I) /Int Gquadcoeff < SCHED >)
 ```
 
 ### Program Counter
@@ -903,7 +906,8 @@ These operations interact with the account storage.
            <storage> ... (INDEX |-> VALUE => .Map) ... </storage>
            ...
          </account>
-         <refund> R => R +Word Rsclear </refund>
+         <refund> R => R +Word Rsstoreclear < SCHED > </refund>
+         <schedule> SCHED </schedule>
 
     rule <op> SSTORE INDEX 0 => . ... </op>
          <id> ACCT </id>
@@ -1104,9 +1108,10 @@ We should wait for the `#gasExec` calculations to be fixed before doing so.
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
     rule <op> SELFDESTRUCT ACCTTO => #transferFunds ACCT ACCTTO BALFROM ... </op>
+         <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
-         <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Word Rselfdestruct #fi </refund>
+         <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
          <account>
            <acctID> ACCT </acctID>
            <balance> BALFROM </balance>
@@ -1114,9 +1119,10 @@ We should wait for the `#gasExec` calculations to be fixed before doing so.
          </account>
 
     rule <op> SELFDESTRUCT ACCT => . ... </op>
+         <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
-         <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Int Rselfdestruct #fi </refund>
+         <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Int Rselfdestruct < SCHED > #fi </refund>
          <account>
            <acctID> ACCT </acctID>
            <balance> BALFROM => 0 </balance>
@@ -1128,7 +1134,13 @@ Ethereum Gas Calculation
 ========================
 
 The gas calculation is designed to mirror the style of the yellowpaper.
-Gas needs to be deducted when the maximum memory to a program increases, so we track the maximum used so far.
+Gas is consumed either by increasing the amount of memory being used, or by executing opcodes.
+
+Memory Consumption
+------------------
+
+Memory consumed is tracked to determine the appropriate amount of gas to charge for each operation.
+In the yellowpaper, each opcode is defined to consume zero gas unless specified otherwise next to the semantics of the opcode (appendix H).
 
 -   `#memory` computes the new memory size given the old size and next operator (with its arguments).
 -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper which helps track the memory used.
@@ -1159,12 +1171,18 @@ Gas needs to be deducted when the maximum memory to a program increases, so we t
     rule #memoryUsageUpdate(S, F, L) => maxInt(S, (F +Int L) up/Int 32)
 ```
 
--   `#gasExec` computes the gas needed for the execution of the opcode, not including the memory consumed (appendx H of the yellowpaper).
+Execution Gas
+-------------
+
+Each opcode has an intrinsic gas cost of execution as well (appendix H of the yellowpaper).
+
+-   `#gasExec` loads all the relevant surronding state and uses that to compute the intrinsic execution gas of each opcode.
 
 ```{.k .uiuck .rvk}
     syntax Word ::= #gasExec ( OpCode )
  // -----------------------------------
-    rule <op> #gasExec(SSTORE INDEX VALUE) => Csstore(INDEX, VALUE, STORAGE) ... </op>
+    rule <op> #gasExec(SSTORE INDEX VALUE) => Csstore(SCHED, INDEX, VALUE, STORAGE) ... </op>
+         <schedule> SCHED </schedule>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1172,206 +1190,84 @@ Gas needs to be deducted when the maximum memory to a program increases, so we t
            ...
          </account>
 
-    rule <op> #gasExec(EXP W0 0)  => Gexp ... </op>
-    rule <op> #gasExec(EXP W0 W1) => Gexp +Int (Gexpbyte *Int (1 +Int (log256Int(W1)))) ... </op> requires W1 =/=K 0
+    rule <op> #gasExec(EXP W0 0)  => Gexp < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </op> <schedule> SCHED </schedule> requires W1 =/=K 0
 
-    rule <op> #gasExec(CALLDATACOPY  _ _ WIDTH) => Gverylow +Int Ccopy(WIDTH) ... </op>
-    rule <op> #gasExec(CODECOPY      _ _ WIDTH) => Gverylow +Int Ccopy(WIDTH) ... </op>
-    rule <op> #gasExec(EXTCODECOPY _ _ _ WIDTH) => Gextcode +Int Ccopy(WIDTH) ... </op>
+    rule <op> #gasExec(CALLDATACOPY  _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(CODECOPY      _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(EXTCODECOPY _ _ _ WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </op> <schedule> SCHED </schedule>
 
-    rule <op> #gasExec(LOG(N) _ WIDTH) => Glog +Int (Glogdata *Int WIDTH) +Int (N *Int Glogtopic) ... </op>
+    rule <op> #gasExec(LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </op> <schedule> SCHED </schedule>
 
-    rule <op> #gasExec(COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => Ccall(ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) ... </op> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas>
-    rule <op> #gasExec(CSOP:CallSixOp GCAP ACCTTO       _ _ _ _) => Ccall(ACCTTO, ACCTS, GCAP, GAVAIL, 0)     ... </op> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas>
+    rule <op> #gasExec(COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) ... </op> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas> <schedule> SCHED </schedule>
+    rule <op> #gasExec(CSOP:CallSixOp GCAP ACCTTO       _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, 0)     ... </op> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas> <schedule> SCHED </schedule>
 
-    rule <op> #gasExec(SELFDESTRUCT ACCT) => Cselfdestruct(ACCT, ACCTS) ... </op> <activeAccounts> ACCTS </activeAccounts>
-    rule <op> #gasExec(CREATE _ _ _)      => Gcreate                    ... </op>
+    rule <op> #gasExec(SELFDESTRUCT ACCT) => Cselfdestruct(SCHED, ACCT, ACCTS) ... </op> <schedule> SCHED </schedule> <activeAccounts> ACCTS </activeAccounts>
+    rule <op> #gasExec(CREATE _ _ _)      => Gcreate < SCHED >                 ... </op> <schedule> SCHED </schedule>
 
-    rule <op> #gasExec(SHA3 _ WIDTH) => Gsha3 +Int (Gsha3word *Int (WIDTH up/Int 32)) ... </op>
+    rule <op> #gasExec(SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </op> <schedule> SCHED </schedule>
 
-    rule <op> #gasExec(JUMPDEST) => Gjumpdest ... </op>
-    rule <op> #gasExec(SLOAD _)  => Gsload    ... </op>
+    rule <op> #gasExec(JUMPDEST) => Gjumpdest < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SLOAD _)  => Gsload < SCHED >    ... </op> <schedule> SCHED </schedule>
 
-    rule <op> #gasExec(OP)            => Gzero      ... </op> requires #stripArgs(OP) in Wzero
-    rule <op> #gasExec(OP)            => Gbase      ... </op> requires #stripArgs(OP) in Wbase
-    rule <op> #gasExec(OP)            => Gverylow   ... </op> requires #stripArgs(OP) in Wverylow
-    rule <op> #gasExec(PUSH(_, _))    => Gverylow   ... </op>
-    rule <op> #gasExec(DUP(_) _)      => Gverylow   ... </op>
-    rule <op> #gasExec(SWAP(_) _)     => Gverylow   ... </op>
-    rule <op> #gasExec(OP)            => Glow       ... </op> requires #stripArgs(OP) in Wlow
-    rule <op> #gasExec(OP)            => Gmid       ... </op> requires #stripArgs(OP) in Wmid
-    rule <op> #gasExec(JUMPI _ _)     => Ghigh      ... </op>
-    rule <op> #gasExec(EXTCODESIZE _) => Gextcode   ... </op>
-    rule <op> #gasExec(BALANCE _)     => Gbalance   ... </op>
-    rule <op> #gasExec(BLOCKHASH _)   => Gblockhash ... </op>
+    rule <op> #gasExec(OP)            => Gzero < SCHED >        ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wzero
+    rule <op> #gasExec(OP)            => Gbase < SCHED >        ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wbase
+    rule <op> #gasExec(OP)            => Gverylow < SCHED >     ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wverylow
+    rule <op> #gasExec(PUSH(_, _))    => Gverylow < SCHED >     ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(DUP(_) _)      => Gverylow < SCHED >     ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SWAP(_) _)     => Gverylow < SCHED >     ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(OP)            => Glow < SCHED >         ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wlow
+    rule <op> #gasExec(OP)            => Gmid < SCHED >         ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wmid
+    rule <op> #gasExec(JUMPI _ _)     => Ghigh < SCHED >        ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(EXTCODESIZE _) => Gextcodesize < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(BALANCE _)     => Gbalance < SCHED >     ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(BLOCKHASH _)   => Gblockhash < SCHED >   ... </op> <schedule> SCHED </schedule>
+```
 
-    syntax Int ::= Ccopy ( Word ) [function]
- // ----------------------------------------
-    rule Ccopy(N) => Gcopy *Int (N up/Int 32)
+There are several helpers for calculating gas (most of them also specified in the yellowpaper).
 
-    syntax Int ::= Csstore ( Word , Word , Map ) [function]
- // -------------------------------------------------------
-    rule Csstore(INDEX, VALUE, STORAGE) => Gsset   requires VALUE =/=K 0 andBool notBool INDEX in keys(STORAGE)
-    rule Csstore(INDEX, VALUE, STORAGE) => Gsreset requires VALUE ==K 0  orBool  INDEX in keys(STORAGE)
+Note: These are all functions as the operator `#gasExec` has already loaded all the relevant state.
 
-    syntax Int ::= Cselfdestruct ( Word , Set ) [function]
- // ------------------------------------------------------
-    rule Cselfdestruct(ACCT, ACCTS) => Gselfdestruct +Int Gnewaccount requires notBool ACCT in ACCTS
-    rule Cselfdestruct(ACCT, ACCTS) => Gselfdestruct                  requires ACCT in ACCTS
+```{.k .uiuck .rvk}
+    syntax Int ::= Csstore ( Schedule , Word , Word , Map ) [function]
+ // ------------------------------------------------------------------
+    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstoreset < SCHED >   requires VALUE =/=K 0 andBool notBool INDEX in keys(STORAGE)
+    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstorereset < SCHED > requires VALUE ==K 0  orBool  INDEX in keys(STORAGE)
 
-    syntax Int ::= Ccall ( Word , Set , Word , Word , Word ) [function]
-                 | Ccallgas ( Word , Word , Word )           [function]
-                 | Cgascap ( Word , Word , Word )            [function]
-                 | Cextra  ( Word , Set , Word )             [function]
-                 | Cxfer ( Word )                            [function]
-                 | Cnew ( Word , Set )                       [function]
- // --------------------------------------------------------------------
-    rule Ccall(ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cextra(ACCT, ACCTS, VALUE) +Int Cgascap(GCAP, GAVAIL, Cextra(ACCT, ACCTS, VALUE))
+    syntax Int ::= Ccall ( Schedule , Word , Set , Word , Word , Word ) [function]
+                 | Ccallgas ( Schedule , Word , Word , Word )           [function]
+                 | Cgascap ( Word , Word , Word )                       [function]
+                 | Cextra  ( Schedule , Word , Set , Word )             [function]
+                 | Cxfer ( Schedule , Word )                            [function]
+                 | Cnew ( Schedule , Word , Set )                       [function]
+ // ------------------------------------------------------------------------------
+    rule Ccall(SCHED, ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cextra(SCHED, ACCT, ACCTS, VALUE) +Int Cgascap(GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, VALUE))
 
-    rule Ccallgas(GCAP, ACCTTO, 0)     => Cgascap(GCAP, ACCTTO, 0)
-    rule Ccallgas(GCAP, ACCTTO, VALUE) => Cgascap(GCAP, ACCTTO, VALUE) +Int Gcallstipend requires VALUE =/=K 0
+    rule Ccallgas(SCHED, GCAP, ACCTTO, 0)     => Cgascap(GCAP, ACCTTO, 0)
+    rule Ccallgas(SCHED, GCAP, ACCTTO, VALUE) => Cgascap(GCAP, ACCTTO, VALUE) +Int Gcallstipend < SCHED > requires VALUE =/=K 0
 
     rule Cgascap(GCAP, GAVAIL, GEXTRA) => minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA
     rule Cgascap(GCAP, GAVAIL, GEXTRA) => GCAP                                          requires GAVAIL <Int  GEXTRA
 
-    rule Cextra(ACCT, ACCTS, VALUE) => Gcall +Int Cnew(ACCT, ACCTS) +Int Cxfer(VALUE)
+    rule Cextra(SCHED, ACCT, ACCTS, VALUE) => Gcall < SCHED > +Int Cnew(SCHED, ACCT, ACCTS) +Int Cxfer(SCHED, VALUE)
 
-    rule Cxfer(0) => 0
-    rule Cxfer(N) => Gcallvalue requires N =/=K 0
+    rule Cxfer(SCHED, 0) => 0
+    rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=K 0
 
-    rule Cnew(ACCT, ACCTS) => Gnewaccount requires notBool ACCT in ACCTS
-    rule Cnew(ACCT, ACCTS) => 0           requires ACCT in ACCTS
+    rule Cnew(SCHED, ACCT, ACCTS) => Gnewaccount < SCHED > requires notBool ACCT in ACCTS
+    rule Cnew(SCHED, ACCT, ACCTS) => 0                  requires ACCT in ACCTS
+
+    syntax Int ::= Cselfdestruct ( Schedule , Word , Set ) [function]
+ // -----------------------------------------------------------------
+    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED > +Int Gnewaccount < SCHED > requires notBool ACCT in ACCTS
+    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED >                         requires ACCT in ACCTS
 
     syntax Int ::= #allBut64th ( Int ) [function]
  // ---------------------------------------------
     rule #allBut64th(N) => N -Int (N /Int 64)
 ```
 
-Here the lists of gas prices and gas opcodes are provided.
-
-```{.k .uiuck .rvk}
-    syntax Int ::= "Gzero"          [function] | "Gbase"          [function]
-                 | "Gverylow"       [function] | "Glow"           [function]
-                 | "Gmid"           [function] | "Ghigh"          [function]
-                 | "Gextcode"       [function] | "Gbalance"       [function]
-                 | "Gsload"         [function] | "Gjumpdest"      [function]
-                 | "Gsset"          [function] | "Gsreset"        [function]
-                 | "Rsclear"        [function] | "Rselfdestruct"  [function]
-                 | "Gselfdestruct"  [function] | "Gcreate"        [function]
-                 | "Gcodedeposit"   [function] | "Gcall"          [function]
-                 | "Gcallvalue"     [function] | "Gcallstipend"   [function]
-                 | "Gnewaccount"    [function] | "Gexp"           [function]
-                 | "Gexpbyte"       [function] | "Gmemory"        [function]
-                 | "Gtxcreate"      [function] | "Gtxdatazero"    [function]
-                 | "Gtxdatanonzero" [function] | "Gtransaction"   [function]
-                 | "Glog"           [function] | "Glogdata"       [function]
-                 | "Glogtopic"      [function] | "Gsha3"          [function]
-                 | "Gsha3word"      [function] | "Gcopy"          [function]
-                 | "Gblockhash"     [function]
- // ------------------------------------------
-    rule Gzero          => 0
-    rule Gbase          => 2
-    rule Gverylow       => 3
-    rule Glow           => 5
-    rule Gmid           => 8
-    rule Ghigh          => 10
-    rule Gjumpdest      => 1
-    rule Gsset          => 20000
-    rule Gsreset        => 5000
-    rule Rsclear        => 15000
-    rule Rselfdestruct  => 24000
-    rule Gcreate        => 32000
-    rule Gcodedeposit   => 200
-    rule Gcallvalue     => 9000
-    rule Gcallstipend   => 2300
-    rule Gnewaccount    => 25000
-    rule Gexp           => 10
-    rule Gmemory        => 3
-    rule Gtxcreate      => 32000
-    rule Gtxdatazero    => 4
-    rule Gtxdatanonzero => 68
-    rule Gtransaction   => 21000
-    rule Glog           => 375
-    rule Glogdata       => 8
-    rule Glogtopic      => 375
-    rule Gsha3          => 30
-    rule Gsha3word      => 6
-    rule Gcopy          => 3
-    rule Gblockhash     => 20
-```
-
-From the Go implemenatation.
-
-```
-    // SstoreResetGas   uint64 = 5000  // Once per SSTORE operation if the zeroness changes from zero.
-    // SstoreClearGas   uint64 = 5000  // Once per SSTORE operation if the zeroness doesn't change.
-    // SstoreRefundGas  uint64 = 15000 // Once per SSTORE operation if the zeroness changes to zero.
-    // TxGasContractCreation uint64 = 53000
-    // Sha3WordGas      uint64 = 6     // Once per word of the SHA3 operation's data.
-```
-
-Here we've collected different values for various constants across the different implementations we've found.
-
-### Yellowpaper
-
-```
-    rule Gextcode       => 700
-    rule Gsload         => 200
-    rule Gexpbyte       => 10
-    rule Gselfdestruct  => 5000
-    rule Gbalance       => 400
-    rule Gcall          => 700
-```
-
-### Homestead (from Go implementation)
-
-```
-    rule Gextcode      => 20
-    rule Gsload        => 50
-    rule Gexpbyte      => 10
-    rule Gselfdestruct => 0
-    rule Gbalance      => 20
-    rule Gcall         => 40
-    // ExtcodeCopy: 20
-```
-
-### Homestead Reprice (from Go implemenatation)
-
-```
-    rule Gextcode      => 700
-    rule Gsload        => 200
-    rule Gexpbyte      => 10
-    rule Gselfdestruct => 5000
-    rule Gbalance      => 400
-    rule Gcall         => 700
-    // ExtcodeCopy: 700
-    // CreateBySuicide: 25000
-```
-
-### EIP158 (from Go implemenatation)
-
-```
-    rule Gextcode      => 700
-    rule Gsload        => 200
-    rule Gexpbyte      => 50
-    rule Gselfdestruct => 5000
-    rule Gbalance      => 400
-    rule Gcall         => 700
-    // ExtcodeCopy: 700
-    // CreateBySuicide: 25000
-```
-
-### From C++ implementation
-
-```{.k .uiuck .rvk}
-    rule Gextcode      => 20
-    rule Gsload        => 50
-    rule Gexpbyte      => 10
-    rule Gselfdestruct => 0
-    rule Gbalance      => 20
-    rule Gcall         => 40
-```
-
+Some subsets of the opcodes are called out because they all have the same gas cost.
 
 ```{.k .uiuck .rvk}
     syntax Set ::= "Wzero"    [function] | "Wbase" [function]
@@ -1388,6 +1284,242 @@ Here we've collected different values for various constants across the different
                      )
     rule Wlow     => (SetItem(MUL) SetItem(DIV) SetItem(SDIV) SetItem(MOD) SetItem(SMOD) SetItem(SIGNEXTEND))
     rule Wmid     => (SetItem(ADDMOD) SetItem(MULMOD) SetItem(JUMP))
+```
+
+Fee Schedule from C++ Implementation
+------------------------------------
+
+The [C++ Implementation of EVM](https://github.com/ethereum/cpp-ethereum) specifies several different "profiles" for how the VM works.
+Here we provide each protocol from the C++ implementation, as the yellowpaper does not contain all the different profiles.
+Specify which profile by passing in the argument `-cSCHEDULE=<FEE_SCHEDULE>` when calling `krun` (the available `<FEE_SCHEDULE>` are supplied here).
+
+A `ScheduleConst` is a constant determined by the fee schedule; applying a `ScheduleConst` to a `Schedule` yields the correct constant for that schedule.
+
+```{.k .uiuck .rvk}
+    syntax Int ::= ScheduleConst "<" Schedule ">" [function]
+ // --------------------------------------------------------
+
+    syntax ScheduleConst ::= "Gzero"        | "Gbase"        | "Gverylow"      | "Glow"           | "Gmid"         | "Ghigh"
+                           | "Gextcodesize" | "Gextcodecopy" | "Gbalance"      | "Gsload"         | "Gjumpdest"    | "Gsstoreset"
+                           | "Gsstorereset" | "Rsstoreclear" | "Rselfdestruct" | "Gselfdestruct"  | "Gcreate"      | "Gcodedeposit"
+                           | "Gcall"        | "Gcallvalue"   | "Gcallstipend"  | "Gnewaccount"    | "Gexp"         | "Gexpbyte"
+                           | "Gmemory"      | "Gtxcreate"    | "Gtxdatazero"   | "Gtxdatanonzero" | "Gtransaction" | "Glog"
+                           | "Glogdata"     | "Glogtopic"    | "Gsha3"         | "Gsha3word"      | "Gcopy"        | "Gblockhash" | "Gquadcoeff"
+ // --------------------------------------------------------------------------------------------------------------------------------------------
+```
+
+### Defualt Schedule
+
+```{.k .uiuck .rvk}
+    syntax Schedule ::= "DEFAULT"
+ // -----------------------------
+    rule Gzero    < DEFAULT > => 0
+    rule Gbase    < DEFAULT > => 2
+    rule Gverylow < DEFAULT > => 3
+    rule Glow     < DEFAULT > => 5
+    rule Gmid     < DEFAULT > => 8
+    rule Ghigh    < DEFAULT > => 10
+
+    rule Gexp      < DEFAULT > => 10
+    rule Gexpbyte  < DEFAULT > => 10
+    rule Gsha3     < DEFAULT > => 30
+    rule Gsha3word < DEFAULT > => 6
+
+    rule Gsload       < DEFAULT > => 50
+    rule Gsstoreset   < DEFAULT > => 20000
+    rule Gsstorereset < DEFAULT > => 5000
+    rule Rsstoreclear < DEFAULT > => 15000
+
+    rule Glog      < DEFAULT > => 375
+    rule Glogdata  < DEFAULT > => 8
+    rule Glogtopic < DEFAULT > => 375
+
+    rule Gcall        < DEFAULT > => 40
+    rule Gcallstipend < DEFAULT > => 2300
+    rule Gcallvalue   < DEFAULT > => 9000
+    rule Gnewaccount  < DEFAULT > => 25000
+
+    rule Gcreate       < DEFAULT > => 32000
+    rule Gcodedeposit  < DEFAULT > => 200
+    rule Gselfdestruct < DEFAULT > => 0
+    rule Rselfdestruct < DEFAULT > => 24000
+
+    rule Gmemory    < DEFAULT > => 3
+    rule Gquadcoeff < DEFAULT > => 512
+    rule Gcopy      < DEFAULT > => 3
+
+    rule Gtransaction   < DEFAULT > => 21000
+    rule Gtxcreate      < DEFAULT > => 53000
+    rule Gtxdatazero    < DEFAULT > => 4
+    rule Gtxdatanonzero < DEFAULT > => 68
+
+    rule Gjumpdest    < DEFAULT > => 1
+    rule Gbalance     < DEFAULT > => 20
+    rule Gblockhash   < DEFAULT > => 20
+    rule Gextcodesize < DEFAULT > => 20
+    rule Gextcodecopy < DEFAULT > => 20
+```
+
+```c++
+struct EVMSchedule
+{
+    EVMSchedule(): tierStepGas(std::array<unsigned, 8>{{0, 2, 3, 5, 8, 10, 20, 0}}) {}
+    EVMSchedule(bool _efcd, bool _hdc, unsigned const& _txCreateGas): exceptionalFailedCodeDeposit(_efcd), haveDelegateCall(_hdc), tierStepGas(std::array<unsigned, 8>{{0, 2, 3, 5, 8, 10, 20, 0}}), txCreateGas(_txCreateGas) {}
+    bool exceptionalFailedCodeDeposit = true;
+    bool haveDelegateCall = true;
+    bool eip150Mode = false;
+    bool eip158Mode = false;
+    bool haveRevert = false;
+    bool haveReturnData = false;
+    bool haveStaticCall = false;
+    bool haveCreate2 = false;
+    std::array<unsigned, 8> tierStepGas;
+
+    unsigned expGas = 10;
+    unsigned expByteGas = 10;
+    unsigned sha3Gas = 30;
+    unsigned sha3WordGas = 6;
+
+    unsigned sloadGas = 50;
+    unsigned sstoreSetGas = 20000;
+    unsigned sstoreResetGas = 5000;
+    unsigned sstoreRefundGas = 15000;
+
+    unsigned logGas = 375;
+    unsigned logDataGas = 8;
+    unsigned logTopicGas = 375;
+
+    unsigned callGas = 40;
+    unsigned callStipend = 2300;
+    unsigned callValueTransferGas = 9000;
+    unsigned callNewAccountGas = 25000;
+
+    unsigned createGas = 32000;
+    unsigned createDataGas = 200;
+    unsigned suicideGas = 0;
+    unsigned suicideRefundGas = 24000;
+
+    unsigned memoryGas = 3;
+    unsigned quadCoeffDiv = 512;
+    unsigned copyGas = 3;
+
+    unsigned txGas = 21000;
+    unsigned txCreateGas = 53000;
+    unsigned txDataZeroGas = 4;
+    unsigned txDataNonZeroGas = 68;
+
+    unsigned jumpdestGas = 1;
+    unsigned balanceGas = 20;
+    unsigned blockhashGas = 20;
+    unsigned extcodesizeGas = 20;
+    unsigned extcodecopyGas = 20;
+
+    unsigned maxCodeSize = unsigned(-1);
+
+    bool staticCallDepthLimit() const { return !eip150Mode; }
+    bool suicideChargesNewAccountGas() const { return eip150Mode; }
+    bool emptinessIsNonexistence() const { return eip158Mode; }
+    bool zeroValueTransferChargesNewAccountGas() const { return !eip158Mode; }
+};
+```
+
+### Frontier Schedule
+
+```{.k .uiuck .rvk}
+    syntax Schedule ::= "FRONTIER"
+ // ------------------------------
+    rule Gtxcreate  < FRONTIER > => 21000
+    rule SCHEDCONST < FRONTIER > => SCHEDCONST < DEFAULT > requires SCHEDCONST =/=K Gtxcreate
+```
+
+```c++
+static const EVMSchedule FrontierSchedule = EVMSchedule(false, false, 21000);
+```
+
+### Homestead Schedule
+
+```{.k .uiuck .rvk}
+    syntax Schedule ::= "HOMESTEAD"
+ // -------------------------------
+    rule SCHEDCONST < HOMESTEAD > => SCHEDCONST < DEFAULT >
+```
+
+```c++
+static const EVMSchedule HomesteadSchedule = EVMSchedule(true, true, 53000);
+```
+
+### EIP150 Schedule
+
+```{.k .uiuck .rvk}
+    syntax Schedule ::= "EIP150"
+ // ----------------------------
+    rule Gbalance      < EIP150 > => 400
+    rule Gsload        < EIP150 > => 200
+    rule Gcall         < EIP150 > => 700
+    rule Gselfdestruct < EIP150 > => 5000
+    rule Gextcodesize  < EIP150 > => 700
+    rule Gextcodecopy  < EIP150 > => 700
+    rule SCHEDCONST    < EIP150 > => SCHEDCONST < HOMESTEAD >
+      requires notBool SCHEDCONST in (SetItem(Gbalance) SetItem(Gsload) SetItem(Gcall) SetItem(Gselfdestruct) SetItem(Gextcodesize) SetItem(Gextcodecopy))
+```
+
+```c++
+static const EVMSchedule EIP150Schedule = []
+{
+    EVMSchedule schedule = HomesteadSchedule;
+    schedule.eip150Mode = true;
+    schedule.extcodesizeGas = 700;
+    schedule.extcodecopyGas = 700;
+    schedule.balanceGas = 400;
+    schedule.sloadGas = 200;
+    schedule.callGas = 700;
+    schedule.suicideGas = 5000;
+    schedule.maxCodeSize = 0x6000;
+    return schedule;
+}();
+```
+
+### EIP158 Schedule
+
+```{.k .uiuck .rvk}
+    syntax Schedule ::= "EIP158"
+ // ----------------------------
+    rule Gexpbyte   < EIP158 > => 50
+    rule SCHEDCONST < EIP158 > => SCHEDCONST < EIP150 >
+      requires SCHEDCONST =/=K Gexpbyte
+```
+
+```c++
+static const EVMSchedule EIP158Schedule = []
+{
+    EVMSchedule schedule = EIP150Schedule;
+    schedule.expByteGas = 50;
+    schedule.eip158Mode = true;
+    return schedule;
+}();
+```
+
+### Metropolis Schedule
+
+```{.k .uiuck .rvk}
+    syntax Schedule ::= "METROPOLIS"
+ // --------------------------------
+    rule Gblockhash < METROPOLIS > => 800
+    rule SCHEDCONST < METROPOLIS > => SCHEDCONST < EIP158 >
+      requires SCHEDCONST =/=K Gblockhash
+```
+
+```c++
+static const EVMSchedule MetropolisSchedule = []
+{
+    EVMSchedule schedule = EIP158Schedule;
+    schedule.blockhashGas = 800;
+    schedule.haveRevert = true;
+    schedule.haveReturnData = true;
+    schedule.haveStaticCall = true;
+    schedule.haveCreate2 = true;
+    return schedule;
+}();
 ```
 
 EVM Program Representations

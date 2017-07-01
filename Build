@@ -7,6 +7,14 @@ output_file="tests/templates/output-uiuck.txt"
 expected_passing="tests/passing.expected"
 now_passing="tests/passing.lastrun"
 
+export cMODE=${cMODE:-VMTESTS}
+export cSCHEDULE=${cSCHEDULE:-EIP150}
+
+krun_with_opts() {
+    krun --directory k/ --debug -cMODE=$cMODE -cSCHEDULE=$cSCHEDULE $@
+}
+export -f krun_with_opts
+
 if krun --version | grep 'RV' >/dev/null 2>&1; then
     output_file="tests/templates/output-rvk.txt"
 fi
@@ -50,7 +58,7 @@ run_tests() {
         progress "running: $test_file..."
         pretty_diff \
             --label expected <(cat "$output_file" | lint_krun) \
-            --label actual   <(krun --debug --directory k/ "$test_file" | lint_krun) \
+            --label actual   <(krun_with_opts "$test_file" | lint_krun) \
             || output_differs=true
         if $output_differs; then
             failure "$test_file"
@@ -91,7 +99,7 @@ run_krun() {
     run_make all
     while read test_file; do
         progress "running: $test_file"
-        krun --debug --directory k/ "$test_file" | lint_krun
+        krun_with_opts "$test_file" | lint_krun
     done
 }
 
@@ -147,7 +155,7 @@ run_debug() {
     run_make all
     file=$(test_pipe_line list_tests cat "$@" | head -n 1)
     progress "debugging: $file"
-    krun --debug --debugger --directory k "$file"
+    krun_with_opts --debugger "$file"
     exit
 }
 
