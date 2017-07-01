@@ -416,17 +416,21 @@ Later we'll need a way to strip the arguments from an operator.
 -   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas"
- // ----------------------------------------------------------
-    rule <op> #gas [ OP ] => #gasExec(OP) ~> #memory(OP, MU) ~> #deductGas ... </op> <memoryUsed> MU </memoryUsed>
+    syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas" "[" OpCode "]"
+ // -------------------------------------------------------------------------
+    rule <op> #gas [ OP ] => #gasExec(OP) ~> #memory(OP, MU) ~> #deductGas [ OP ] ... </op> <memoryUsed> MU </memoryUsed>
 
-    rule <op> GEXEC:Int ~> MU':Int ~> #deductGas => #exception ... </op> requires MU' >=Int (2 ^Int 256)
-    rule <op> GEXEC:Int ~> MU':Int ~> #deductGas => (Cmem(MU') -Int Cmem(MU)) +Int GEXEC  ~> #deductGas ... </op> <memoryUsed> MU => MU' </memoryUsed>
-         <pc> PCOUNT:Int </pc> <gasDebug> ... .List => ListItem( GEXEC ) </gasDebug>
-            requires MU' <Int (2 ^Int 256)
+    rule <op> GEXEC:Int ~> MU':Int ~> #deductGas [ OP ] => #exception ... </op> requires MU' >=Int (2 ^Int 256)
+    rule <op> GEXEC:Int ~> MU':Int ~> #deductGas [ OP ] => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) +Int GEXEC  ~> #deductGas [ OP ] ... </op>
+         <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
+      requires MU' <Int (2 ^Int 256)
 
-    rule <op> G:Int ~> #deductGas => #exception ... </op> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
-    rule <op> G:Int ~> #deductGas => .          ... </op> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+    syntax K ::= "{" OpCode "|" Word "}"
+ // ------------------------------------
+    rule <op> G:Int ~> #deductGas [ OP ] => #exception ... </op> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
+    rule <op> G:Int ~> #deductGas [ OP ] => .          ... </op> <gas> GAVAIL => GAVAIL -Int G </gas>
+         <gasDebug> ... (.List => ListItem({ OP | G })) </gasDebug>
+      requires GAVAIL >=Int G
 
     syntax Int ::= Cmem ( Schedule , Int ) [function]
  // -------------------------------------------------
