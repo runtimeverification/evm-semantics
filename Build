@@ -29,6 +29,32 @@ list_tests()   { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
 list_passing() { cat "$expected_passing"; }
 list_failing() { list_tests | grep -Fvxf "$expected_passing" -; }
 
+filter_codeship() {
+    codeship_list="$1"
+    case "$codeship_list" in
+        1)  grep -e 'vmArithmeticTest/[a-dA-D]'           ;; # ???
+        2)  grep -e 'vmArithmeticTest/[eE]'               ;; # ???
+        3)  grep -e 'vmArithmeticTest/[f-mF-M]'           ;; # ???
+        4)  grep -e 'vmArithmeticTest/[n-zN-Z]'           ;; # ???
+        5)  grep -e 'vmBitwiseLogicOperationTest'         ;; # 00:03    no tests
+        6)  grep -e 'vmBlockInfoTest'                     ;; # 01:42
+        7)  grep -e 'vmEnvironmentalInfoTest/[a-bA-B]'    ;; # ???
+        8)  grep -e 'vmEnvironmentalInfoTest/[cC]'        ;; # ???
+        9)  grep -e 'vmEnvironmentalInfoTest/[d-zD-Z]'    ;; # ???
+        10) grep -e 'vmIOandFlowOperationsTest/[a-bA-B]'  ;; # ???
+        11) grep -e 'vmIOandFlowOperationsTest/[c-dC-D]'  ;; # ???
+        12) grep -e 'vmIOandFlowOperationsTest/[e-jE-J]'  ;; # ???
+        13) grep -e 'vmIOandFlowOperationsTest/[k-zK-Z]'  ;; # ???
+        14) grep -e 'vmLogTest'                           ;; # 06:35
+        15) grep -e 'vmPerformanceTest'                   ;; # 00:06    no tests
+        16) grep -e 'vmPushDupSwapTest/[a-oA-O]'          ;; # ???
+        17) grep -e 'vmPushDupSwapTest/[o-zO-Z]'          ;; # ???
+        18) grep -e 'vmSystemOperationsTest'              ;; # 02:24
+        19) grep -e 'vmSha3Test'                          ;; # 03:20
+        20) grep -e 'vmtests'                             ;; # 00:07    no tests
+    esac
+}
+
 list_quicktests() {
     echo "tests/tests-develop/VMTests/vmEnvironmentalInfoTest/extcodecopyZeroMemExpansion.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/calldatacopy0_return.json
@@ -159,28 +185,28 @@ run_debug() {
     exit
 }
 
+run_codeship() {
+    testset="$1"
+    run_make all
+    list_passing | filter_codeship "$testset" | run_tests; exit
+}
+
 [[ "$#" == '0' ]] && set build
-while [[ "$#" -gt '0' ]]; do
-    run_command="$1" && shift
-    case "$run_command" in
-        build)        run_make build ;;
-        defn)         run_make defn ;;
-
-        passing)      test_pipe_line list_passing run_tests "$@";;
-        failing)      test_pipe_line list_failing run_tests "$@";;
-        test)         test_pipe_line list_tests   run_tests "$@";;
-
-        quicktest)    list_quicktests | run_tests ;;
-
-        krun)         test_pipe_line list_tests   run_krun  "$@";;
-
-        list-tests)   test_pipe_line list_tests   cat       "$@";;
-        list-passing) test_pipe_line list_passing cat       "$@";;
-        list-failing) test_pipe_line list_failing cat       "$@";;
-
-        debug)        run_debug "$@"                            ;;
-
-        ktest)        run_ktest ;;
-        *)            usage; exit 1;;
-    esac
-done
+run_command="$1" && shift
+case "$run_command" in
+    build)         run_make build ;;
+    defn)          run_make defn ;;
+    debug)         run_debug "$@" ;;
+    krun)          test_pipe_line list_tests   run_krun  "$@" ;;
+    test)          test_pipe_line list_tests   run_tests "$@" ;;
+    passing)       test_pipe_line list_passing run_tests "$@" ;;
+    failing)       test_pipe_line list_failing run_tests "$@" ;;
+    codeship)      run_codeship $@ ;;
+    quicktest)     list_quicktests | run_tests ;;
+    list-tests)    test_pipe_line list_tests   cat       "$@" ;;
+    list-passing)  test_pipe_line list_passing cat       "$@" ;;
+    list-failing)  test_pipe_line list_failing cat       "$@" ;;
+    list-codeship) list_passing | filter_codeship "$1" ;;
+    ktest)         run_ktest ;;
+    *)             usage; exit 1;;
+esac
