@@ -20,10 +20,6 @@
 // the yellowpaper state corresponds to each cell.
 
 
-requires "krypto.k"
-
-
-
 requires "data.k"
 
 module ETHEREUM
@@ -107,7 +103,7 @@ module ETHEREUM
 // -   UIUC-K and RV-K have slight differences of opinion here.
 
 
-                        <account multiplicity="*" type="Map">
+                        <account multiplicity="*" type="Bag">
 
 
 
@@ -128,7 +124,7 @@ module ETHEREUM
 // -   UIUC-K and RV-K have slight differences of opinion here.
 
 
-                        <message multiplicity="*" type="Map">
+                        <message multiplicity="*" type="Bag">
 
 
 
