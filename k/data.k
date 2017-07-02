@@ -104,11 +104,17 @@ module EVM-DATA
 
 // -   `up/Int` performs integer division but rounds up instead of down.
 
+// NOTE: Here, we choose to add `I2 -Int 1` to the numerator beforing doing the
+// division to mimic the C++ implementation. You could alternatively calculate
+// `I1 %Int I2`, then add one to the normal integer division afterward depending on
+// the result.
+
 
     syntax Int ::= Int "up/Int" Int [function]
  // ------------------------------------------
-    rule I1 up/Int I2 => I1 /Int I2          requires I1 %Int I2 ==K 0
-    rule I1 up/Int I2 => (I1 /Int I2) +Int 1 requires I1 %Int I2 =/=K 0
+    rule I1 up/Int 0  => 0
+    rule I1 up/Int 1  => I1
+    rule I1 up/Int I2 => (I1 +Int (I2 -Int 1)) /Int I2 requires I2 >Int 1
 
 
 // -   `logNInt` returns the log base N (floored) of an integer.
