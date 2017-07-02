@@ -429,7 +429,7 @@ Later we'll need a way to strip the arguments from an operator.
 
     syntax Int ::= Cmem ( Schedule , Int ) [function]
  // -------------------------------------------------
-    rule Cmem(SCHED, I) => (I *Int Gmemory < SCHED >) +Int ((I *Int I) /Int Gquadcoeff < SCHED >)
+    rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
 ```
 
 ### Program Counter
@@ -1167,8 +1167,8 @@ In the yellowpaper, each opcode is defined to consume zero gas unless specified 
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
  // ----------------------------------------------------------------
-    rule #memoryUsageUpdate(S, F, 0) => S
-    rule #memoryUsageUpdate(S, F, L) => maxInt(S, (F +Int L) up/Int 32)
+    rule #memoryUsageUpdate(MU, START, 0)     => MU
+    rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32)
 ```
 
 Execution Gas
