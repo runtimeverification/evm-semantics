@@ -1256,8 +1256,8 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
  // ------------------------------------------------------------------------------
     rule Ccall(SCHED, ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cextra(SCHED, ACCT, ACCTS, VALUE) +Int Cgascap(GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, VALUE))
 
-    rule Ccallgas(SCHED, GCAP, ACCTTO, 0)     => Cgascap(GCAP, ACCTTO, 0)
-    rule Ccallgas(SCHED, GCAP, ACCTTO, VALUE) => Cgascap(GCAP, ACCTTO, VALUE) +Int Gcallstipend < SCHED > requires VALUE =/=K 0
+    rule Ccallgas(SCHED, GCAP, GAVAIL, 0)     => Cgascap(GCAP, GAVAIL, 0)
+    rule Ccallgas(SCHED, GCAP, GAVAIL, VALUE) => Cgascap(GCAP, GAVAIL, VALUE) +Int Gcallstipend < SCHED > requires VALUE =/=K 0
 
     rule Cgascap(GCAP, GAVAIL, GEXTRA) => minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA
     rule Cgascap(GCAP, GAVAIL, GEXTRA) => GCAP                                          requires GAVAIL <Int  GEXTRA
