@@ -30,6 +30,7 @@ module ETHEREUM
                   <exit-code exit=""> 1 </exit-code>
                   <mode> $MODE:Mode </mode>
                   <schedule> $SCHEDULE:Schedule </schedule>
+                  <analysis> .Map </analysis>
 
                   <ethereum>
 
@@ -293,7 +294,10 @@ module ETHEREUM
 // Execution follows a simple cycle where first the state is checked for
 // exceptions, then if no exceptions will be thrown the opcode is run.
 
-// -   `#next` signals that it's time to begin the next execution cycle.
+// -   `#next` takes one step in the execution cycle (loads and attempts to execute
+//     a single opcode).
+// -   `#execute` calls `#next` until the program counter is not pointing at an
+//     opcode anymore.
 
 
     syntax InternalOp ::= "#next"
@@ -301,15 +305,82 @@ module ETHEREUM
     rule <op> #next
            => #pushCallStack
            ~> #exceptional? [ OP ] ~> #exec [ OP ] ~> #pc [ OP ]
-           ~> #? #dropCallStack ~> #next : #popCallStack ~> #exception ?#
+           ~> #? #dropCallStack : #popCallStack ~> #exception ?#
           ...
          </op>
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
 
-    rule <op> #next => #if word2Bool(PCOUNT <Word #sizeOpCodeMap(PGM)) #then #exception #else #end #fi </op>
+    rule <op> #next => #if word2Bool(PCOUNT <Word #sizeOpCodeMap(PGM)) #then #exception #else #end #fi ... </op>
          <pc> PCOUNT </pc> <program> PGM </program>
       requires notBool (PCOUNT in_keys(PGM))
+
+    syntax InternalOp ::= "#execute"
+ // --------------------------------
+    rule <op> (. => #next) ~> #execute ... </op>
+    rule <op> #end ~> (#execute => .)  ... </op>
+
+    syntax InternalOp ::= "#gasAnalyze"
+ // -----------------------------------
+    rule <op> #gasAnalyze => . ... </op>
+         <analysis> ... ("to-explore" |-> .Set) ... </analysis>
+
+    rule <op> #gasAnalyze ... </op>
+         <analysis> ...
+                    ("to-explore" |-> ((SetItem(PCOUNT) => .Set) REST))
+                    ("explored"   |-> (EXPED (.Set => SetItem(PCOUNT))))
+                    ...
+         </analysis>
+      requires PCOUNT in EXPED
+
+    rule <op> #gasAnalyze
+           => #popCallStack
+           ~> #setPC(PCOUNT) ~> #abstractGas ~> #pushCallStack
+           ~> #next ~> #execTo(#abstractPoints) ~> #pushCallStack
+           ~> #mkRule
+           ~> #addToWorkList ~> #gasAnalyze
+          ...
+         </op>
+         <analysis> ...
+                    ("to-explore" |-> ((SetItem(PCOUNT) => .Set) REST))
+                    ("explored"   |-> (EXPED (.Set => SetItem(PCOUNT))))
+                    ...
+         </analysis>
+      requires notBool PCOUNT in EXPED
+
+    syntax Rule ::= "{" K "==>" K "}"
+ // ---------------------------------
+
+    syntax InternalOp ::= #setPC ( Word )
+                        | "#abstractGas"
+                        | "#mkRule"
+                        | "#addToWorkList"
+ // --------------------------------------
+    rule <op> #setPC(PCOUNT) => . ... </op> <pc> _ => PCOUNT </pc>
+    rule <op> #abstractGas   => . ... </op> <gas> _ => ?GAVAIL:Int </gas> requires ?GAVAIL >=Int 0 andBool ?GAVAIL <Int (2 ^Int 256)
+    rule <op> #mkRule => . ... </op> <callStack> (ListItem(RIGHT) ListItem(LEFT) => .List) ... </callStack> <analysis> ... "rules" |-> ((.Set => SetItem({ LEFT ==> RIGHT })) REST) ... </analysis>
+    rule <op> #addToWorkList => . ... </op> <pc> PCOUNT </pc> <analysis> ... ("to-explore" |-> ((.Set => SetItem(PCOUNT)) REST)) ... </analysis>
+
+    syntax InternalOp ::= #execTo ( Set )
+ // -------------------------------------
+    rule <op> (. => #next) ~> #execTo(OPS) ... </op>
+         <pc> PCOUNT </pc>
+         <program> ... PCOUNT |-> OP ... </program>
+      requires notBool (OP in OPS)
+
+    rule <op> #execTo(OPS) => . ... </op>
+         <pc> PCOUNT </pc>
+         <program> ... PCOUNT |-> OP ... </program>
+      requires OP in OPS
+
+    rule <op> #execTo(OPS) => #end ... </op>
+         <pc> PCOUNT </pc>
+         <program> PGM </program>
+      requires notBool PCOUNT in keys(PGM)
+
+    syntax Set ::= "#abstractPoints" [function]
+ // -------------------------------------------
+    rule #abstractPoints => (SetItem(JUMP) SetItem(JUMPI) SetItem(JUMPDEST))
 
 
 // ### Exceptional Opcodes
