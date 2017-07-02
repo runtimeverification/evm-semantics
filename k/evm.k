@@ -599,6 +599,14 @@ module ETHEREUM
          </account>
       requires word2Bool(VALUE <Word ORIGFROM)
 
+    rule <op> #transferFunds ACCTFROM ACCTTO VALUE => #exception ... </op>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> ORIGFROM </balance>
+           ...
+         </account>
+      requires word2Bool(VALUE >=Word ORIGFROM)
+
     rule <op> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </op>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCTTO in ACCTS
