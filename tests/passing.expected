@@ -265,7 +265,6 @@ tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jumpifInsidePushWithJumpDe
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/jumpifInsidePushWithoutJumpDest.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/kv1.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/log1MemExp.json
-tests/tests-develop/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1020.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/memory1.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/mloadError0.json
 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/mloadError1.json
