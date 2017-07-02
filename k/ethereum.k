@@ -77,13 +77,15 @@ module ETHEREUM-SIMULATION
 //     state begin.
 // -   `flush` places `#finalize` on the `op` cell once it sees `#end` in the `op`
 //     cell, clearing any exceptions it finds.
+// -   `gasAnalyze` places `#pushCallStack ~> #gasAnalyze` on the `op` cell.
 
 
-    syntax EthereumCommand ::= "start" | "flush"
- // --------------------------------------------
-    rule <k> start => . ... </k> <op> . => #next </op>
-    rule <k> flush => . ... </k> <op> #end => #finalize </op>
-    rule <k> flush => . ... </k> <op> #exception => #finalize ~> #exception </op>
+    syntax EthereumCommand ::= "start" | "flush" | "gasAnalyze"
+ // -----------------------------------------------------------
+    rule <k> start      => . ... </k> <op> . => #execute </op>
+    rule <k> flush      => . ... </k> <op> #end => #finalize </op>
+    rule <k> flush      => . ... </k> <op> #exception => #finalize ~> #exception </op>
+    rule <k> gasAnalyze => . ... </k> <op> . => #pushCallStack ~> #gasAnalyze </op>
 
 
 // -   `exception` only clears from the `k` cell if there is an exception on the
@@ -140,8 +142,10 @@ module ETHEREUM-SIMULATION
 // should `start ~> flush` to perform the execution.
 
 
-    rule run TESTID : { "exec" : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , "exec" : EXEC , REST }
-    rule run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush
+    rule run TESTID : { KEY : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , KEY : EXEC , REST } requires KEY in (SetItem("exec") SetItem("gasAnalyze"))
+
+    rule run TESTID : { "exec"       : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush
+    rule run TESTID : { "gasAnalyze" : (EXEC:JSON) } => load "exec" : EXEC ~> gasAnalyze
 
 
 // State Manipulation
@@ -155,6 +159,8 @@ module ETHEREUM-SIMULATION
     syntax EthereumCommand ::= "clear"
  // ----------------------------------
     rule <k> clear => . ... </k>
+
+         <analysis> _ => .Map </analysis>
 
          <op>         _ => .          </op>
          <output>     _ => .WordStack </output>
