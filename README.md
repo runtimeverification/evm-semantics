@@ -9,6 +9,16 @@ In this repository we provide a model of the EVM in K.
 -   [evm.md](evm.md): Top level EVM semantics file (including local execution and network dynamics).
 -   [data.md](data.md): Specifies the basic data of EVM execution, including the 256 bit words and some datastructures over them.
 
+We are continuously testing our implementation against the [Ethereum Test Set](https://github.com/ethereum/tests).
+The above marker only checks for a subset of the tests (those in [our codeship list](tests/passing.expected)), though many more of the tests than those listed there are passing.
+
+For more information about [The K Framework](http://kframework.org), refer to these sources:
+
+-   [The K Tutorial](https://github.com/kframework/k/tree/master/k-distribution/tutorial)
+-   [Semantics-Based Program Verifiers for All Languages](http://fsl.cs.illinois.edu/index.php/Semantics-Based_Program_Verifiers_for_All_Languages)
+-   [Reachability Logic Resources](http://fsl.cs.illinois.edu/index.php/Reachability_Logic_in_K)
+-   [Matching Logic Resources](http://fsl.cs.illinois.edu/index.php/Matching_Logic)
+
 Unfinished
 ----------
 
