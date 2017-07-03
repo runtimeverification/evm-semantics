@@ -7,7 +7,6 @@ In this repository we provide a model of the EVM in K.
 
 -   [ethereum.md](ethereum.md): Driver for semantics of EVM (for loading tests, running simulations).
 -   [evm.md](evm.md): Top level EVM semantics file (including local execution and network dynamics).
--   [evm-dasm.md](evm-dasm.md): Dissasembler (and assembler!) for EVM so that JSON test files can be read directly.
 -   [data.md](data.md): Specifies the basic data of EVM execution, including the 256 bit words and some datastructures over them.
 
 Unfinished
@@ -22,9 +21,8 @@ This would also allow us to experiment with alternative programming languages to
 
 ### Gas Semantics
 
-Right now the gas calculation is not in good shape.
-Someone should shape it up.
-It's at the end of the [EVM semantics file](evm.md).
+The gas semantics are in much better shape than they used to be, and we even have multiple profiles available (eg. Frontier vs. Homestead).
+Somehow we are failing some VMTests because the testing harness should treat tests differently than actual executions.
 
 ### Disassembler/Assembler
 
@@ -34,7 +32,7 @@ The disassembler/assembler doesn't account for this, but should.
 
 ### TODOs
 
-More local problems are defined with a small *TODO* next to them.
+More local problems are defined with a small *TODO* next to them in the semantics.
 
 Comments on EVM
 ===============
