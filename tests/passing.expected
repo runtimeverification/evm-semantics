@@ -121,6 +121,7 @@ tests/tests-develop/VMTests/vmEnvironmentalInfoTest/address1.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/balance0.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/balance01.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/balance1.json
+tests/tests-develop/VMTests/vmEnvironmentalInfoTest/balanceAddress2.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/balanceAddressInputTooBig.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/balanceAddressInputTooBigLeftMyAddress.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/balanceAddressInputTooBigRightMyAddress.json
@@ -153,6 +154,9 @@ tests/tests-develop/VMTests/vmEnvironmentalInfoTest/codecopy0.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/codecopyZeroMemExpansion.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/codecopy_DataIndexTooHigh.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/codesize.json
+tests/tests-develop/VMTests/vmEnvironmentalInfoTest/extcodecopy0.json
+tests/tests-develop/VMTests/vmEnvironmentalInfoTest/extcodecopy0AddressTooBigLeft.json
+tests/tests-develop/VMTests/vmEnvironmentalInfoTest/extcodecopy0AddressTooBigRight.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/extcodecopyZeroMemExpansion.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/extcodecopy_DataIndexTooHigh.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/extcodesize0.json
