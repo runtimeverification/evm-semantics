@@ -32,26 +32,26 @@ list_failing() { list_tests | grep -Fvxf "$expected_passing" -; }
 filter_codeship() {
     codeship_list="$1"
     case "$codeship_list" in
-        1)  grep -e 'vmArithmeticTest/[a-dA-D]'                         ;; # 06:55
-        2)  grep -e 'vmArithmeticTest/[eE]'                             ;; # 13:57
-        3)  grep -e 'vmArithmeticTest/[f-mF-M]'                         ;; # 07:55
-        4)  grep -e 'vmArithmeticTest/[n-zN-Z]'                         ;; # 09:46
-        5)  grep -e 'vmBitwiseLogicOperationTest'                       ;; # no tests
-        6)  grep -e 'vmBlockInfoTest'                                   ;; # 02:24
-        7)  grep -e 'vmEnvironmentalInfoTest/[a-bA-B]'                  ;; # 04:49
-        8)  grep -e 'vmEnvironmentalInfoTest/[cC]'                      ;; # 08:01
-        9)  grep -e 'vmEnvironmentalInfoTest/[d-zD-Z]'                  ;; # 04:59
-        10) grep -e 'vmIOandFlowOperationsTest/[a-bA-B]'                ;; # 05:36
-        11) grep -e 'vmIOandFlowOperationsTest/[c-iC-I]'                ;; # ???
-        12) grep -e 'vmIOandFlowOperationsTest/[jJ]'                    ;; # ???
-        13) grep -e 'vmIOandFlowOperationsTest/[k-zK-Z]'                ;; # 11:12
-        14) grep -e 'vmLogTest'                                         ;; # 10:45
-        15) grep -e 'vmPerformanceTest' -e 'vmPushDupSwapTest/[a-oA-O]' ;; # ???
-        16) grep -e 'vmPushDupSwapTest/[pP]'                            ;; # ???
-        17) grep -e 'vmPushDupSwapTest/[q-zQ-Z]'                        ;; # 17:27
-        18) grep -e 'vmSystemOperationsTest'                            ;; # 08:01
-        19) grep -e 'vmSha3Test'                                        ;; # 06:57
-        20) grep -e 'vmtests'                                           ;; # no tests
+        1)  grep -e 'vmArithmeticTest/[a-dA-D]'                                                ;; # 05:08
+        2)  grep -e 'vmArithmeticTest/expPowerOf256Of256'                                      ;; # ???
+        3)  grep -e 'vmArithmeticTest/[eE]' | grep -v -e 'vmArithmeticTest/expPowerOf256Of256' ;; # ???
+        4)  grep -e 'vmArithmeticTest/[f-mF-M]'                                                ;; # 08:19
+        5)  grep -e 'vmArithmeticTest/[n-zN-Z]' -e 'vmBitwiseLogicOperationTest'               ;; # 11:39
+        6)  grep -e 'vmBlockInfoTest'                                                          ;; # 02:54
+        7)  grep -e 'vmEnvironmentalInfoTest/[a-bA-B]'                                         ;; # 04:25
+        8)  grep -e 'vmEnvironmentalInfoTest/[cC]'                                             ;; # 11:25
+        9)  grep -e 'vmEnvironmentalInfoTest/[d-zD-Z]'                                         ;; # 04:22
+        10) grep -e 'vmIOandFlowOperationsTest/[a-bA-B]'                                       ;; # 07:32
+        11) grep -e 'vmIOandFlowOperationsTest/[c-iC-I]'                                       ;; # 15:58
+        12) grep -e 'vmIOandFlowOperationsTest/[jJ]'                                           ;; # 14:33
+        13) grep -e 'vmIOandFlowOperationsTest/[k-zK-Z]'                                       ;; # 13:11
+        14) grep -e 'vmLogTest/log[0-2]' -e 'vmLogTest/log_'                                   ;; # ???
+        15) grep -e 'vmLogTest/log[3-9]'                                                       ;; # ???
+        16) grep -e 'vmPerformanceTest' -e 'vmPushDupSwapTest/[a-oA-O]'                        ;; # 06:34
+        17) grep -e 'vmPushDupSwapTest/[pP]'                                                   ;; # 13:58
+        18) grep -e 'vmPushDupSwapTest/[q-zQ-Z]'                                               ;; # 05:04
+        19) grep -e 'vmSystemOperationsTest'                                                   ;; # 06:08
+        20) grep -e 'vmSha3Test' -e 'vmtests'                                                  ;; # 06:21
     esac
 }
 
