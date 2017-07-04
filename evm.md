@@ -661,7 +661,7 @@ These are just used by the other operators for shuffling local execution state a
            <balance> ORIGTO => ORIGTO +Word VALUE </balance>
            ...
          </account>
-      requires ACCTFROM =/=Int ACCTTO andBool word2Bool(VALUE <=Word ORIGFROM)
+      requires ACCTFROM =/=K ACCTTO andBool word2Bool(VALUE <=Word ORIGFROM)
 
     rule <op> #transferFunds ACCTFROM ACCTTO VALUE => #exception ... </op>
          <account>
@@ -669,11 +669,11 @@ These are just used by the other operators for shuffling local execution state a
            <balance> ORIGFROM </balance>
            ...
          </account>
-      requires ACCTFROM =/=Int ACCTTO andBool word2Bool(VALUE >Word ORIGFROM)
+      requires ACCTFROM =/=K ACCTTO andBool word2Bool(VALUE >Word ORIGFROM)
 
     rule <op> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </op>
          <activeAccounts> ACCTS </activeAccounts>
-      requires ACCTFROM =/=Int ACCTTO andBool notBool ACCTTO in ACCTS
+      requires ACCTFROM =/=K ACCTTO andBool notBool ACCTTO in ACCTS
 
     rule <op> #transferFunds ACCT ACCT _ => . ... </op>
 ```
@@ -1196,7 +1196,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```{.k .uiuck .rvk}
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
-    rule <op> SELFDESTRUCT ACCTTO => #transferFunds ACCT ACCTTO BALFROM ... </op>
+    rule <op> SELFDESTRUCT ACCTTO => #transferFunds ACCT ACCTTO BALFROM ~> #end ... </op>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
@@ -1207,7 +1207,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            ...
          </account>
 
-    rule <op> SELFDESTRUCT ACCT => . ... </op>
+    rule <op> SELFDESTRUCT ACCT => #end ... </op>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
@@ -1320,8 +1320,8 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
 ```{.k .uiuck .rvk}
     syntax Int ::= Csstore ( Schedule , Word , Word , Map ) [function]
  // ------------------------------------------------------------------
-    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstoreset < SCHED >   requires VALUE =/=K 0 andBool notBool INDEX in keys(STORAGE)
-    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstorereset < SCHED > requires VALUE ==K 0  orBool  INDEX in keys(STORAGE)
+    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstoreset < SCHED >   requires VALUE =/=K 0 andBool notBool INDEX in_keys(STORAGE)
+    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstorereset < SCHED > requires VALUE ==K 0  orBool  INDEX in_keys(STORAGE)
 
     syntax Int ::= Ccall ( Schedule , Word , Set , Word , Word , Word ) [function]
                  | Ccallgas ( Schedule , Word , Word , Word )           [function]
@@ -1348,7 +1348,7 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
 
     syntax Int ::= Cselfdestruct ( Schedule , Word , Set ) [function]
  // -----------------------------------------------------------------
-    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED > +Int Gnewaccount < SCHED > requires notBool ACCT in ACCTS
+    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED > +Int #if suicideNewAccountGas < SCHED > #then Gnewaccount < SCHED > #else 0 #fi requires notBool ACCT in ACCTS
     rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED >                         requires ACCT in ACCTS
 
     syntax Int ::= #allBut64th ( Int ) [function]
@@ -1395,6 +1395,8 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
                            | "Gmemory"      | "Gtxcreate"    | "Gtxdatazero"   | "Gtxdatanonzero" | "Gtransaction" | "Glog"
                            | "Glogdata"     | "Glogtopic"    | "Gsha3"         | "Gsha3word"      | "Gcopy"        | "Gblockhash" | "Gquadcoeff"
  // --------------------------------------------------------------------------------------------------------------------------------------------
+
+     syntax Bool ::= "suicideNewAccountGas" "<" Schedule ">" [function]
 ```
 
 ### Defualt Schedule
@@ -1447,6 +1449,8 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
     rule Gblockhash   < DEFAULT > => 20
     rule Gextcodesize < DEFAULT > => 20
     rule Gextcodecopy < DEFAULT > => 20
+
+    rule suicideNewAccountGas < DEFAULT > => false
 ```
 
 ```c++
@@ -1550,6 +1554,7 @@ static const EVMSchedule HomesteadSchedule = EVMSchedule(true, true, 53000);
     rule Gextcodecopy  < EIP150 > => 700
     rule SCHEDCONST    < EIP150 > => SCHEDCONST < HOMESTEAD >
       requires notBool SCHEDCONST in (SetItem(Gbalance) SetItem(Gsload) SetItem(Gcall) SetItem(Gselfdestruct) SetItem(Gextcodesize) SetItem(Gextcodecopy))
+    rule suicideNewAccountGas < EIP150 > => true
 ```
 
 ```c++

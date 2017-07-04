@@ -615,13 +615,12 @@ tests/tests-develop/VMTests/vmSystemOperationsTest/CallToNameRegistratorTooMuchM
 tests/tests-develop/VMTests/vmSystemOperationsTest/CallToReturn1.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/createNameRegistratorOutOfMemoryBonds0.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/createNameRegistratorOutOfMemoryBonds1.json
-tests/tests-develop/VMTests/vmSystemOperationsTest/createNameRegistratorValueTooHigh.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/PostToNameRegistrator0.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/PostToReturn1.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/return0.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/return1.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/return2.json
+tests/tests-develop/VMTests/vmSystemOperationsTest/suicide0.json
+tests/tests-develop/VMTests/vmSystemOperationsTest/suicideNotExistingAccount.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/suicideSendEtherToMe.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/TestNameRegistrator.json
-tests/tests-develop/VMTests/vmtests/boolean.json
-tests/tests-develop/VMTests/vmtests/suicide.json
