@@ -25,7 +25,6 @@ requires "data.k"
 module ETHEREUM
     imports EVM-DATA
     imports STRING
-    imports KCELLS
 
     configuration <k> $PGM:EthereumSimulation </k>
                   <exit-code exit=""> 1 </exit-code>
