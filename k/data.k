@@ -76,17 +76,6 @@ module EVM-DATA
     rule abs(I:Int) => I         requires sgn(I) ==K 1
 
 
-// -   `maxWord` and `minWord` are the lifting of `maxInt` and `minInt` (through
-//     the subsort monad!).
-
-
-    syntax Word ::= maxWord ( Word , Word ) [function]
-                  | minWord ( Word , Word ) [function]
- // --------------------------------------------------
-    rule maxWord(W0:Int, W1:Int) => maxInt(W0, W1)
-    rule minWord(W0:Int, W1:Int) => minInt(W0, W1)
-
-
 // ### Symbolic Words
 
 // -   `#symbolicWord` generates a fresh existentially-bound symbolic word.

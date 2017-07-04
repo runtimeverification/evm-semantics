@@ -34,6 +34,7 @@ requires "data.k"
 module ETHEREUM
     imports EVM-DATA
     imports STRING
+    imports KCELLS
 
     configuration <k> $PGM:EthereumSimulation </k>
                   <exit-code exit=""> 1 </exit-code>
@@ -174,53 +175,94 @@ The `callStack` stores a list of previous states (so that they can be restored).
 -   `#popCallStack` restores the top element of all the relevant state on the `callStack`
 
 ```{.k .uiuck .rvk}
-    syntax KItem ::= "{" Word "|" Map "|" Word "|" WordStack "|" Word "|" WordStack "|" Map "|" Word "}"
- // ----------------------------------------------------------------------------------------------------
+    syntax Account ::= "{" Word "|" Word "|" Map "|" Map "|" Map "}"
+    syntax State ::= "{" Word "|" Word "|" Map "|" Word "|" WordStack "|" Word "|" WordStack "|" Map "|" Word "|" Set "}"
+ // ---------------------------------------------------------------------------------------------------------------------
 
     syntax InternalOp ::= "#pushCallStack"
  // --------------------------------------
-    rule <op> #pushCallStack => . ... </op>
-         <callStack> (.List => ListItem({ ACCT | PGM | CR | CD | CV | WS | LM | PCOUNT })) ... </callStack>
-         <id>        ACCT   </id>
-         <program>   PGM    </program>
-         <caller>    CR     </caller>
-         <callData>  CD     </callData>
-         <callValue> CV     </callValue>
-         <wordStack> WS     </wordStack>
-         <localMem>  LM     </localMem>
-         <pc>        PCOUNT </pc>
+    rule <op> #pushCallStack => #storeAccounts(ACCTS)  ... </op>
+         <callStack> (.List => ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | PCOUNT | .Set })) ... </callStack>
+         <id>             ACCT   </id>
+         <gas>            GAVAIL </gas>
+         <program>        PGM    </program>
+         <caller>         CR     </caller>
+         <callData>       CD     </callData>
+         <callValue>      CV     </callValue>
+         <wordStack>      WS     </wordStack>
+         <localMem>       LM     </localMem>
+         <pc>             PCOUNT </pc>
+         <activeAccounts> ACCTS  </activeAccounts>
 
     syntax InternalOp ::= "#popCallStack"
  // -------------------------------------
-    rule <op> #popCallStack => . ... </op>
-         <callStack> (ListItem({ ACCT | PGM | CR | CD | CV | WS | LM | PCOUNT }) => .List) ... </callStack>
-         <id>        _ => ACCT   </id>
-         <program>   _ => PGM    </program>
-         <caller>    _ => CR     </caller>
-         <callData>  _ => CD     </callData>
-         <callValue> _ => CV     </callValue>
-         <wordStack> _ => WS     </wordStack>
-         <pc>        _ => PCOUNT </pc>
+    rule <op> #popCallStack => #loadAccounts(ACCTS) ... </op>
+         <callStack> (ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | PCOUNT | ACCTS }) => .List) ... </callStack>
+         <id>             _ => ACCT   </id>
+         <gas>            _ => GAVAIL </gas>
+         <program>        _ => PGM    </program>
+         <caller>         _ => CR     </caller>
+         <callData>       _ => CD     </callData>
+         <callValue>      _ => CV     </callValue>
+         <wordStack>      _ => WS     </wordStack>
+         <pc>             _ => PCOUNT </pc>
+         <accounts>       _ => .Bag   </accounts>
+         <activeAccounts> _ => .Set   </activeAccounts>
 
     syntax InternalOp ::= "#dropCallStack"
  // --------------------------------------
     rule <op> #dropCallStack => . ... </op>
          <callStack> (ListItem(_) => .List) ... </callStack>
+
+    syntax KItem ::= #loadAccounts ( Set )
+ // --------------------------------------
+    rule <op> #loadAccounts( .Set ) => . ... </op>
+    rule <op> #loadAccounts( (SetItem({ ACCT | BAL | CODE | STORAGE | ACCTMAP }) => .Set) REST ) ... </op>
+         <activeAccounts> ... (.Set => SetItem(ACCT)) </activeAccounts>
+         <accounts> ( .Bag
+                   => <account>
+                        <acctID> ACCT </acctID>
+                        <balance> BAL </balance>
+                        <code> CODE </code>
+                        <storage> STORAGE </storage>
+                        <acctMap> ACCTMAP </acctMap>
+                      </account>
+                    )
+                    ...
+         </accounts>
+
+    syntax KItem ::= #storeAccounts ( Set )
+ // ---------------------------------------
+    rule <op> #storeAccounts( .Set ) => . ... </op>
+    rule <op> #storeAccounts( (SetItem(ACCT) => .Set) REST ) ... </op>
+         <callStack> ListItem({ _ | _ | _ | _ | _ | _ | _ | _ | _ | (STORED:Set) (.Set => SetItem({ ACCT | BAL | CODE | STORAGE | ACCTMAP })) }) ... </callStack>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL </balance>
+           <code> CODE </code>
+           <storage> STORAGE </storage>
+           <acctMap> ACCTMAP </acctMap>
+         </account>
 ```
 
 Simple commands controlling exceptions provide control-flow.
 
--   `#try_#andThen_` attempts the first command, on success runs the second command, on failure reverts the state and calls `#exception`.
 -   `#end` is used to indicate the (non-exceptional) end of execution.
 -   `#exception` is used to indicate exceptional states (it consumes any operations to be performed after it).
+-   `#?_:_?#` allows for branching control-flow; if it reaches the front of the `op` cell it takes the first branch, if an exception runs into it it takes the second branch.
 
 ```{.k .uiuck .rvk}
-    syntax KItem ::= "#exception" | "#end" | "#?" K ":" K "?#"
- // ----------------------------------------------------------
-    rule <op> #exception ~> (W:Word    => .) ... </op>
-    rule <op> #exception ~> (OP:OpCode => .) ... </op>
-    rule <op> #exception ~> #? _ : K ?# => K ... </op>
+    syntax KItem ::= Exception
+    syntax Exception ::= "#exception" | "#end"
+ // ------------------------------------------
+    rule <op> EX:Exception ~> (W:Word    => .) ... </op>
+    rule <op> EX:Exception ~> (OP:OpCode => .) ... </op>
+
+    syntax KItem ::= "#?" K ":" K "?#"
+ // ----------------------------------
     rule <op> #? K : _ ?# => K ... </op>
+    rule <op> #exception ~> #? _ : K ?# => K ... </op>
+    rule <op> #end ~> (#? _ : _ ?# => .) ... </op>
 ```
 
 OpCode Execution Cycle
@@ -784,11 +826,11 @@ The `JUMP*` family of operations affect the current program counter.
 ```{.k .uiuck .rvk}
     syntax NullStackOp ::= "STOP"
  // -----------------------------
-    rule <op> STOP ~> K => #end </op>
+    rule <op> STOP => #end ... </op>
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
-    rule <op> RETURN RETSTART RETWIDTH ~> K =>  #end </op>
+    rule <op> RETURN RETSTART RETWIDTH => #end ... </op>
          <callDepth> CD => CD -Int 1 </callDepth>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
@@ -948,67 +990,64 @@ These operations interact with the account storage.
 
 The various `CALL*` (and other inter-contract control flow) operations will be desugared into these `InternalOp`s.
 
--   `#return__` is a placeholder for the calling program, specifying where to place the returned data in memory.
-
-```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#return" Word Word
- // -----------------------------------------
-    rule <op> #return RETSTART RETWIDTH => . ... </op>
-         <output> OUT </output>
-         <localMem> LM => LM [ RETSTART := #take(minWord(RETWIDTH, #sizeWordStack(OUT)), OUT) ] </localMem>
-```
-
 -   The `callLog` is used to store the `CALL*`/`CREATE` operations so that we can compare them against the test-set.
-
-TODO: The `Call` sort needs to store the available gas to the `CALL*` as well, but we are not right now because gas calculation isn't finished.
 
 ```{.k .uiuck .rvk}
     syntax Call ::= "{" Word "|" Word "|" Word "|" WordStack "}"
- // ---------------------------------------------------
+ // ------------------------------------------------------------
 ```
 
 -   `#call_____` takes the calling account, the account to execute as, the code to execute, the amount to transfer, and the arguments.
+-   `#return__` is a placeholder for the calling program, specifying where to place the returned data in memory.
 
-Ccallgas(SCHED, GCAP, GAVAIL, VALUE
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#call" Word Word Map Word Word WordStack
- // ----------------------------------------------------------
-    rule <mode> NORMAL </mode>
-         <op> #call ACCTFROM ACCTTO CODE GASCAP VALUE ARGS => . ... </op>
+                        | "#mkCall" Word Word Map Word Word WordStack
+ // -----------------------------------------------------------------
+    rule <schedule> SCHED </schedule>
+         <op> #call ACCTFROM ACCTTO CODE GCAP VALUE ARGS
+           => #pushCallStack
+           ~> #transferFunds ACCTFROM ACCTTO VALUE
+           ~> #mkCall ACCTFROM ACCTTO CODE Ccallgas(SCHED, GCAP, GAVAIL, VALUE) VALUE ARGS
+          ...
+         </op>
+         <gas> GAVAIL </gas>
+         <callDepth> CD </callDepth>
+      requires CD <Int 1024
+
+    rule <op> #call _ _ _ _ _ _ => #pushCallStack ~> #exception ... </op>
+         <callDepth> CD </callDepth>
+      requires CD >=Int 1024
+
+    rule <mode> EXECMODE </mode>
+         <op> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE ARGS
+           => #if EXECMODE ==K VMTESTS #then #end #else #next #fi
+          ...
+         </op>
+         <callLog> ... (.Set => SetItem({ ACCTTO | GLIMIT | VALUE | ARGS })) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
-         <callLog> ... (.Set => SetItem({ ACCTTO | GASCAP | VALUE | ARGS })) </callLog>
-         <id>       _ => ACCTTO                </id>
-         <pc>       _ => 0                     </pc>
-         <caller>   _ => ACCTFROM              </caller>
+         <id> _ => ACCTTO </id>
+         <gas> _ => GLIMIT </gas>
+         <pc> _ => 0 </pc>
+         <caller> _ => ACCTFROM </caller>
          <localMem> _ => #asMapWordStack(ARGS) </localMem>
-         <program>  _ => CODE                  </program>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <balance> BAL => BAL -Word VALUE </balance>
-           <acctMap> ... "nonce" |-> (NONCE => NONCE +Word 1) ... </acctMap>
-           ...
-         </account>
-      requires VALUE <=Int BAL andBool CD <Int 1024
+         <program> _ => CODE </program>
 
-    rule <mode> VMTESTS </mode>
-         <op> #call ACCTFROM ACCTTO CODE GASCAP VALUE ARGS => . ... </op>
-         <callDepth> CD </callDepth>
-         <callLog> ... (.Set => SetItem({ ACCTTO | GASCAP | VALUE | ARGS })) </callLog>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
-      requires VALUE <=Int BAL andBool CD <Int 1024
+    syntax KItem ::= "#return" Word Word
+ // ------------------------------------
+    rule <op> #end ~> #return RETSTART RETWIDTH => #popCallStack ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT ... </op>
+         <output> OUT </output>
+         <gas> GAVAIL </gas>
 
-    rule <op> #call ACCTFROM _ _ GASCAP VALUE _ => #exception ... </op>
-         <callDepth> CD </callDepth>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
-      requires VALUE >Int BAL orBool CD >=Int 1024
+    rule <op> #exception ~> #return _ _ => #popCallStack ~> 0 ~> #push ... </op>
+
+    syntax InternalOp ::= "#refund" Word
+                        | "#setLocalMem" Word Word WordStack
+ // --------------------------------------------------------
+    rule <op> #refund G => . ... </op> <gas> GAVAIL => GAVAIL +Int G </gas>
+
+    rule <op> #setLocalMem START WIDTH WS => . ... </op>
+         <localMem> LM => LM [ START := #take(minInt(WIDTH, #sizeWordStack(WS)), WS) ] </localMem>
 ```
 
 For each `CALL*` operation, we make a corresponding call to `#call` and a state-change to setup the custom parts of the calling environment.
@@ -1016,17 +1055,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 TODO: The `#catch` being used in each case needs to be filled in with the actual code to run on exception.
 
 ```{.k .uiuck .rvk}
-    syntax KItem ::= #handleCall ( K , Word ) [function]
- // ----------------------------------------------------
-    rule #handleCall(K, SUCCESS) => #? #dropCallStack ~> SUCCESS ~> #push ~> K : #popCallStack ~> 0 ~> #push ?#
-
     syntax CallOp ::= "CALL"
  // ------------------------
-    rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
+    rule <op> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
-           ~> #call ACCTFROM #addr(ACCTTO) CODE GASCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #handleCall(#return RETSTART RETWIDTH, 1)
-           ...
+           ~> #call ACCTFROM ACCTTO CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
+           ~> #return RETSTART RETWIDTH
+          ...
          </op>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
@@ -1038,10 +1073,10 @@ TODO: The `#catch` being used in each case needs to be filled in with the actual
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
-    rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
+    rule <op> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
-           ~> #call ACCTFROM ACCTFROM CODE GASCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #handleCall(#return RETSTART RETWIDTH, 1)
+           ~> #call ACCTFROM ACCTFROM CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
+           ~> #return RETSTART RETWIDTH
            ...
          </op>
          <id> ACCTFROM </id>
@@ -1054,10 +1089,10 @@ TODO: The `#catch` being used in each case needs to be filled in with the actual
 
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
-    rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
+    rule <op> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
-           ~> #call ACCTFROM ACCTFROM CODE GASCAP 0 #range(LM, ARGSTART, ARGWIDTH)
-           ~> #handleCall(#return RETSTART RETWIDTH, 1)
+           ~> #call ACCTFROM ACCTFROM CODE GCAP 0 #range(LM, ARGSTART, ARGWIDTH)
+           ~> #return RETSTART RETWIDTH
            ...
          </op>
          <id> ACCTFROM </id>
@@ -1084,7 +1119,8 @@ TODO: The `#catch_` being used need to be filled in with actual code to run.
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
            => #pushCallStack
            ~> #call ACCT #newAddr(ACCT, NONCE) #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) 0 VALUE .WordStack
-           ~> #handleCall(#codeDeposit, #newAddr(ACCT, NONCE))
+           ~> #codeDeposit
+           ~> #newAddr(ACCT, NONCE) ~> #push
           ...
          </op>
          <id> ACCT </id>
@@ -1104,8 +1140,8 @@ TODO: Right now `#codeDeposit` isn't performing the correct gas check.
 We should wait for the `#gasExec` calculations to be fixed before doing so.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp  ::= "#codeDeposit"
- // -------------------------------------
+    syntax KItem ::= "#codeDeposit"
+ // -------------------------------
     rule <op> #codeDeposit => . ... </op>
          <id> ACCT </id>
          <output> OUT => .WordStack </output>
