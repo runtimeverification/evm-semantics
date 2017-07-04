@@ -348,13 +348,11 @@ module ETHEREUM-SIMULATION
     rule <k> check "gas" : GLEFT => . ... </k> <gas> GLEFT </gas>
 
 
-// TODO: `check` on `"callcreates"` ignores the `"gasLimit"` field.
-
 
     rule check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID
  // ----------------------------------------------------------------------------------------------------
     rule check "callcreates" : { ("data" : (DATA:String)) , ("destination" : (ACCTTO:String)) , ("gasLimit" : (GLIMIT:String)) , ("value" : (VAL:String)) , .JSONList }
-      => check "callcreates" : { #parseAddr(ACCTTO) | #parseHexWord(VAL) | #parseByteStack(DATA) }
+      => check "callcreates" : { #parseAddr(ACCTTO) | #parseHexWord(GLIMIT) | #parseHexWord(VAL) | #parseByteStack(DATA) }
     rule <k> check "callcreates" : C:Call => . ... </k> <callLog> CL </callLog> requires C in CL
 endmodule
 
