@@ -840,7 +840,7 @@ module ETHEREUM
          <callDepth> CD => CD -Int 1 </callDepth>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
-      requires (EXECMODE ==K NORMAL) impliesBool (CD >Int 0)
+      requires (EXECMODE ==K VMTESTS) orBool (CD >Int 0)
 
 
 // ### Call Data
