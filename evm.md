@@ -963,19 +963,20 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 TODO: The `Call` sort needs to store the available gas to the `CALL*` as well, but we are not right now because gas calculation isn't finished.
 
 ```{.k .uiuck .rvk}
-    syntax Call ::= "{" Word "|" Word "|" WordStack "}"
+    syntax Call ::= "{" Word "|" Word "|" Word "|" WordStack "}"
  // ---------------------------------------------------
 ```
 
 -   `#call_____` takes the calling account, the account to execute as, the code to execute, the amount to transfer, and the arguments.
 
+Ccallgas(SCHED, GCAP, GAVAIL, VALUE
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#call" Word Word Map Word WordStack
+    syntax InternalOp ::= "#call" Word Word Map Word Word WordStack
  // ----------------------------------------------------------
     rule <mode> NORMAL </mode>
-         <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => . ... </op>
+         <op> #call ACCTFROM ACCTTO CODE GASCAP VALUE ARGS => . ... </op>
          <callDepth> CD => CD +Int 1 </callDepth>
-         <callLog> ... (.Set => SetItem({ ACCTTO | VALUE | ARGS })) </callLog>
+         <callLog> ... (.Set => SetItem({ ACCTTO | GASCAP | VALUE | ARGS })) </callLog>
          <id>       _ => ACCTTO                </id>
          <pc>       _ => 0                     </pc>
          <caller>   _ => ACCTFROM              </caller>
@@ -990,9 +991,9 @@ TODO: The `Call` sort needs to store the available gas to the `CALL*` as well, b
       requires VALUE <=Int BAL andBool CD <Int 1024
 
     rule <mode> VMTESTS </mode>
-         <op> #call ACCTFROM ACCTTO CODE VALUE ARGS => . ... </op>
+         <op> #call ACCTFROM ACCTTO CODE GASCAP VALUE ARGS => . ... </op>
          <callDepth> CD </callDepth>
-         <callLog> ... (.Set => SetItem({ ACCTTO | VALUE | ARGS })) </callLog>
+         <callLog> ... (.Set => SetItem({ ACCTTO | GASCAP | VALUE | ARGS })) </callLog>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL </balance>
@@ -1000,7 +1001,7 @@ TODO: The `Call` sort needs to store the available gas to the `CALL*` as well, b
          </account>
       requires VALUE <=Int BAL andBool CD <Int 1024
 
-    rule <op> #call ACCTFROM _ _ VALUE _ => #exception ... </op>
+    rule <op> #call ACCTFROM _ _ GASCAP VALUE _ => #exception ... </op>
          <callDepth> CD </callDepth>
          <account>
            <acctID> ACCTFROM </acctID>
@@ -1023,7 +1024,7 @@ TODO: The `#catch` being used in each case needs to be filled in with the actual
  // ------------------------
     rule <op> CALL GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
-           ~> #call ACCTFROM #addr(ACCTTO) CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
+           ~> #call ACCTFROM #addr(ACCTTO) CODE GASCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #handleCall(#return RETSTART RETWIDTH, 1)
            ...
          </op>
@@ -1039,7 +1040,7 @@ TODO: The `#catch` being used in each case needs to be filled in with the actual
  // ----------------------------
     rule <op> CALLCODE GASCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
-           ~> #call ACCTFROM ACCTFROM CODE VALUE #range(LM, ARGSTART, ARGWIDTH)
+           ~> #call ACCTFROM ACCTFROM CODE GASCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #handleCall(#return RETSTART RETWIDTH, 1)
            ...
          </op>
@@ -1055,7 +1056,7 @@ TODO: The `#catch` being used in each case needs to be filled in with the actual
  // -----------------------------------
     rule <op> DELEGATECALL GASCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #pushCallStack
-           ~> #call ACCTFROM ACCTFROM CODE 0 #range(LM, ARGSTART, ARGWIDTH)
+           ~> #call ACCTFROM ACCTFROM CODE GASCAP 0 #range(LM, ARGSTART, ARGWIDTH)
            ~> #handleCall(#return RETSTART RETWIDTH, 1)
            ...
          </op>
@@ -1082,7 +1083,7 @@ TODO: The `#catch_` being used need to be filled in with actual code to run.
  // -------------------------------
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
            => #pushCallStack
-           ~> #call ACCT #newAddr(ACCT, NONCE) #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) VALUE .WordStack
+           ~> #call ACCT #newAddr(ACCT, NONCE) #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) 0 VALUE .WordStack
            ~> #handleCall(#codeDeposit, #newAddr(ACCT, NONCE))
           ...
          </op>
