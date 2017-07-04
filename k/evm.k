@@ -833,12 +833,12 @@ module ETHEREUM
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
-    rule <op> RETURN RETSTART RETWIDTH => #end ... </op>
+    rule <mode> EXECMODE </mode>
+         <op> RETURN RETSTART RETWIDTH => #end ... </op>
          <callDepth> CD => CD -Int 1 </callDepth>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
-        requires CD >Int 0
- // TODO: This will get stuck when callDepth = 0
+      requires (EXECMODE ==K NORMAL) impliesBool (CD >Int 0)
 
 
 // ### Call Data
