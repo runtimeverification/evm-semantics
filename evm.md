@@ -789,8 +789,11 @@ The `JUMP*` family of operations affect the current program counter.
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
     rule <op> RETURN RETSTART RETWIDTH ~> K =>  #end </op>
+         <callDepth> CD => CD -Int 1 </callDepth>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
+        requires CD >Int 0
+ // TODO: This will get stuck when callDepth = 0
 ```
 
 ### Call Data
