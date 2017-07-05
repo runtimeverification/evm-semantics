@@ -666,7 +666,7 @@ module ETHEREUM
            <balance> ORIGTO => ORIGTO +Word VALUE </balance>
            ...
          </account>
-      requires ACCTFROM =/=Int ACCTTO andBool word2Bool(VALUE <=Word ORIGFROM)
+      requires ACCTFROM =/=K ACCTTO andBool word2Bool(VALUE <=Word ORIGFROM)
 
     rule <op> #transferFunds ACCTFROM ACCTTO VALUE => #exception ... </op>
          <account>
@@ -674,11 +674,11 @@ module ETHEREUM
            <balance> ORIGFROM </balance>
            ...
          </account>
-      requires ACCTFROM =/=Int ACCTTO andBool word2Bool(VALUE >Word ORIGFROM)
+      requires ACCTFROM =/=K ACCTTO andBool word2Bool(VALUE >Word ORIGFROM)
 
     rule <op> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </op>
          <activeAccounts> ACCTS </activeAccounts>
-      requires ACCTFROM =/=Int ACCTTO andBool notBool ACCTTO in ACCTS
+      requires ACCTFROM =/=K ACCTTO andBool notBool ACCTTO in ACCTS
 
     rule <op> #transferFunds ACCT ACCT _ => . ... </op>
 
@@ -1157,16 +1157,29 @@ module ETHEREUM
     syntax InternalOp ::= "#create" Word Word Word Map
  // --------------------------------------------------
     rule <op> #create ACCTFROM ACCTTO VALUE INITCODE
-           => #transferFunds ACCTFROM ACCTTO VALUE
-           ~> #mkCreate INITCODE #allBut64th(GAVAIL)
+           => #pushCallStack ~> #pushWorldState
+           ~> #transferFunds ACCTFROM ACCTTO VALUE
+           ~> #mkCreate INITCODE GAVAIL VALUE
           ...
          </op>
          <gas> GAVAIL </gas>
+         <callDepth> CD </callDepth>
+      requires CD <Int 1024
 
-    syntax InternalOp ::= "#mkCreate" Map Word
+    rule <op> #create _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </op>
+         <callDepth> CD </callDepth>
+      requires CD >=Int 1024
+
+    syntax InternalOp ::= "#mkCreate" Map Word Word
  // ------------------------------------------
-    rule <op> #mkCreate INITCODE GAVAIL => . ... </op>
-         <gas> _ => GAVAIL </gas>
+    rule <mode> EXECMODE </mode>
+         <op> #mkCreate INITCODE GAVAIL VALUE
+           => #if EXECMODE ==K VMTESTS #then #end #else #next #fi
+          ...
+         </op>
+         <callLog> ... (.Set => SetItem({ 0 | GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
+         <callDepth> CD => CD +Int 1 </callDepth>
+         <gas> _ => #allBut64th(GAVAIL) </gas>
          <program> _ => INITCODE </program>
          <pc> _ => 0 </pc>
          <output> _ => .WordStack </output>
@@ -1174,17 +1187,27 @@ module ETHEREUM
     syntax KItem ::= "#codeDeposit" Word
  // ------------------------------------
     rule <op> #exception ~> #codeDeposit _    => #popCallStack ~> #popWorldState  ~> 0    ~> #push ... </op>
-    rule <op> #end       ~> #codeDeposit ACCT => #popCallStack ~> #dropWorldState ~> ACCT ~> #push ~> #refund GAVAIL ... </op>
+    rule <op> #end       ~> #codeDeposit ACCT => #popCallStack ~> #dropWorldState ~> ACCT ~> #push ... </op>
          <output> OUT => .WordStack </output>
-         <gas> GAVAIL </gas>
          <account>
            <acctID> ACCT </acctID>
            <code> _ => #asMapOpCodes(#dasmOpCodes(OUT)) </code>
+           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
            ...
          </account>
 
-    syntax Word ::= #newAddr ( Word , Word )
+    syntax Word ::= #newAddr ( Word , Word ) [function]
+    syntax String ::= #rlpEncodeLength(String, Int) [function]
+                    | #rlpEncodeLength(String, Int, String) [function, klabel(#rlpEncodeLength3)]
+                    | #rlpEncodeWord(Word) [function]
  // ----------------------------------------
+    rule #newAddr(ACCT, NONCE) => #parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeWord(ACCT) +String #rlpEncodeWord(NONCE), 192)))
+    rule #rlpEncodeWord(WORD) => chrChar(WORD) requires WORD <Int 128
+    rule #rlpEncodeWord(WORD) => #rlpEncodeLength(#unparseByteStack(#asByteStack(WORD)), 128)
+    rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR requires lengthString(STR) <Int 56
+    rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires lengthString(STR) >=Int 56
+    rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
+    
 
 
 // `CREATE` will attempt to `#create` the account using the initialization code and
@@ -1214,7 +1237,7 @@ module ETHEREUM
 
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
-    rule <op> SELFDESTRUCT ACCTTO => #transferFunds ACCT ACCTTO BALFROM ... </op>
+    rule <op> SELFDESTRUCT ACCTTO => #transferFunds ACCT ACCTTO BALFROM ~> #end ... </op>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
@@ -1225,7 +1248,7 @@ module ETHEREUM
            ...
          </account>
 
-    rule <op> SELFDESTRUCT ACCT => . ... </op>
+    rule <op> SELFDESTRUCT ACCT => #end ... </op>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
@@ -1346,8 +1369,8 @@ module ETHEREUM
 
     syntax Int ::= Csstore ( Schedule , Word , Word , Map ) [function]
  // ------------------------------------------------------------------
-    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstoreset < SCHED >   requires VALUE =/=K 0 andBool notBool INDEX in keys(STORAGE)
-    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstorereset < SCHED > requires VALUE ==K 0  orBool  INDEX in keys(STORAGE)
+    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstoreset < SCHED >   requires VALUE =/=K 0 andBool notBool INDEX in_keys(STORAGE)
+    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstorereset < SCHED > requires VALUE ==K 0  orBool  INDEX in_keys(STORAGE)
 
     syntax Int ::= Ccall ( Schedule , Word , Set , Word , Word , Word ) [function]
                  | Ccallgas ( Schedule , Word , Word , Word )           [function]
@@ -1374,7 +1397,7 @@ module ETHEREUM
 
     syntax Int ::= Cselfdestruct ( Schedule , Word , Set ) [function]
  // -----------------------------------------------------------------
-    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED > +Int Gnewaccount < SCHED > requires notBool ACCT in ACCTS
+    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED > +Int #if suicideNewAccountGas < SCHED > #then Gnewaccount < SCHED > #else 0 #fi requires notBool ACCT in ACCTS
     rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED >                         requires ACCT in ACCTS
 
     syntax Int ::= #allBut64th ( Int ) [function]
@@ -1426,6 +1449,8 @@ module ETHEREUM
                            | "Gmemory"      | "Gtxcreate"    | "Gtxdatazero"   | "Gtxdatanonzero" | "Gtransaction" | "Glog"
                            | "Glogdata"     | "Glogtopic"    | "Gsha3"         | "Gsha3word"      | "Gcopy"        | "Gblockhash" | "Gquadcoeff"
  // --------------------------------------------------------------------------------------------------------------------------------------------
+
+     syntax Bool ::= "suicideNewAccountGas" "<" Schedule ">" [function]
 
 
 // ### Defualt Schedule
@@ -1479,6 +1504,8 @@ module ETHEREUM
     rule Gextcodesize < DEFAULT > => 20
     rule Gextcodecopy < DEFAULT > => 20
 
+    rule suicideNewAccountGas < DEFAULT > => false
+
 
 // ### Frontier Schedule
 
@@ -1510,6 +1537,7 @@ module ETHEREUM
     rule Gextcodecopy  < EIP150 > => 700
     rule SCHEDCONST    < EIP150 > => SCHEDCONST < HOMESTEAD >
       requires notBool SCHEDCONST in (SetItem(Gbalance) SetItem(Gsload) SetItem(Gcall) SetItem(Gselfdestruct) SetItem(Gextcodesize) SetItem(Gextcodecopy))
+    rule suicideNewAccountGas < EIP150 > => true
 
 
 // ### EIP158 Schedule

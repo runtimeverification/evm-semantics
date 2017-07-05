@@ -1141,16 +1141,29 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax InternalOp ::= "#create" Word Word Word Map
  // --------------------------------------------------
     rule <op> #create ACCTFROM ACCTTO VALUE INITCODE
-           => #transferFunds ACCTFROM ACCTTO VALUE
-           ~> #mkCreate INITCODE #allBut64th(GAVAIL)
+           => #pushCallStack ~> #pushWorldState
+           ~> #transferFunds ACCTFROM ACCTTO VALUE
+           ~> #mkCreate INITCODE GAVAIL VALUE
           ...
          </op>
          <gas> GAVAIL </gas>
+         <callDepth> CD </callDepth>
+      requires CD <Int 1024
 
-    syntax InternalOp ::= "#mkCreate" Map Word
+    rule <op> #create _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </op>
+         <callDepth> CD </callDepth>
+      requires CD >=Int 1024
+
+    syntax InternalOp ::= "#mkCreate" Map Word Word
  // ------------------------------------------
-    rule <op> #mkCreate INITCODE GAVAIL => . ... </op>
-         <gas> _ => GAVAIL </gas>
+    rule <mode> EXECMODE </mode>
+         <op> #mkCreate INITCODE GAVAIL VALUE
+           => #if EXECMODE ==K VMTESTS #then #end #else #next #fi
+          ...
+         </op>
+         <callLog> ... (.Set => SetItem({ 0 | GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
+         <callDepth> CD => CD +Int 1 </callDepth>
+         <gas> _ => #allBut64th(GAVAIL) </gas>
          <program> _ => INITCODE </program>
          <pc> _ => 0 </pc>
          <output> _ => .WordStack </output>
@@ -1158,17 +1171,27 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax KItem ::= "#codeDeposit" Word
  // ------------------------------------
     rule <op> #exception ~> #codeDeposit _    => #popCallStack ~> #popWorldState  ~> 0    ~> #push ... </op>
-    rule <op> #end       ~> #codeDeposit ACCT => #popCallStack ~> #dropWorldState ~> ACCT ~> #push ~> #refund GAVAIL ... </op>
+    rule <op> #end       ~> #codeDeposit ACCT => #popCallStack ~> #dropWorldState ~> ACCT ~> #push ... </op>
          <output> OUT => .WordStack </output>
-         <gas> GAVAIL </gas>
          <account>
            <acctID> ACCT </acctID>
            <code> _ => #asMapOpCodes(#dasmOpCodes(OUT)) </code>
+           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
            ...
          </account>
 
-    syntax Word ::= #newAddr ( Word , Word )
+    syntax Word ::= #newAddr ( Word , Word ) [function]
+    syntax String ::= #rlpEncodeLength(String, Int) [function]
+                    | #rlpEncodeLength(String, Int, String) [function, klabel(#rlpEncodeLength3)]
+                    | #rlpEncodeWord(Word) [function]
  // ----------------------------------------
+    rule #newAddr(ACCT, NONCE) => #parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeWord(ACCT) +String #rlpEncodeWord(NONCE), 192)))
+    rule #rlpEncodeWord(WORD) => chrChar(WORD) requires WORD <Int 128
+    rule #rlpEncodeWord(WORD) => #rlpEncodeLength(#unparseByteStack(#asByteStack(WORD)), 128)
+    rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR requires lengthString(STR) <Int 56
+    rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires lengthString(STR) >=Int 56
+    rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
+    
 ```
 
 `CREATE` will attempt to `#create` the account using the initialization code and cleans up the result with `#codeDeposit`.

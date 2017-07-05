@@ -278,6 +278,7 @@ tests/tests-develop/VMTests/vmEnvironmentalInfoTest/balanceCaller3.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/calldatacopy0.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/calldatacopy0_return.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/calldatacopy1.json
+tests/tests-develop/VMTests/vmEnvironmentalInfoTest/calldatacopy1_return.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/calldatacopy2.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/calldatacopy2_return.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/calldatacopy_DataIndexTooHigh2.json
@@ -303,6 +304,7 @@ tests/tests-develop/VMTests/vmEnvironmentalInfoTest/codecopy0.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/codecopy_DataIndexTooHigh.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/codecopyZeroMemExpansion.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/codesize.json
+tests/tests-develop/VMTests/vmEnvironmentalInfoTest/env1.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/extcodecopy0AddressTooBigLeft.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/extcodecopy0AddressTooBigRight.json
 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/extcodecopy0.json
