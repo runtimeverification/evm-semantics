@@ -600,11 +600,17 @@ tests/tests-develop/VMTests/vmSha3Test/sha3_memSizeQuadraticCost64_2.json
 tests/tests-develop/VMTests/vmSha3Test/sha3_memSizeQuadraticCost64.json
 tests/tests-develop/VMTests/vmSha3Test/sha3_memSizeQuadraticCost65.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/ABAcalls0.json
+tests/tests-develop/VMTests/vmSystemOperationsTest/ABAcalls1.json
+tests/tests-develop/VMTests/vmSystemOperationsTest/ABAcalls2.json
+tests/tests-develop/VMTests/vmSystemOperationsTest/ABAcalls3.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/ABAcallsSuicide0.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/ABAcallsSuicide1.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/callcodeToNameRegistrator0.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/callcodeToReturn1.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/CallRecursiveBomb0.json
+tests/tests-develop/VMTests/vmSystemOperationsTest/CallRecursiveBomb1.json
+tests/tests-develop/VMTests/vmSystemOperationsTest/CallRecursiveBomb2.json
+tests/tests-develop/VMTests/vmSystemOperationsTest/CallRecursiveBomb3.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/callstatelessToNameRegistrator0.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/callstatelessToReturn1.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/CallToNameRegistrator0.json
@@ -614,6 +620,7 @@ tests/tests-develop/VMTests/vmSystemOperationsTest/CallToNameRegistratorOutOfGas
 tests/tests-develop/VMTests/vmSystemOperationsTest/CallToNameRegistratorTooMuchMemory0.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/CallToNameRegistratorTooMuchMemory1.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/CallToNameRegistratorTooMuchMemory2.json
+tests/tests-develop/VMTests/vmSystemOperationsTest/CallToPrecompiledContract.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/CallToReturn1.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/createNameRegistrator.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/createNameRegistratorOutOfMemoryBonds0.json
