@@ -59,10 +59,11 @@ module ETHEREUM
                         <callValue> 0:Word     </callValue>             // I_v
 
                         // \mu_*
-                        <wordStack> .WordStack </wordStack>             // \mu_s
-                        <localMem>  .Map       </localMem>              // \mu_m
-                        <pc>        0:Word     </pc>                    // \mu_pc
-                        <gas>       0:Word     </gas>                   // \mu_g
+                        <wordStack>   .WordStack </wordStack>           // \mu_s
+                        <localMem>    .Map       </localMem>            // \mu_m
+                        <pc>          0:Word     </pc>                  // \mu_pc
+                        <gas>         0:Word     </gas>                 // \mu_g
+                        <previousGas> 0:Word     </previousGas>
                       </txExecState>
 
                       // A_* (execution substate)
@@ -490,7 +491,7 @@ module ETHEREUM
     syntax K ::= "{" OpCode "|" Word "}"
  // ------------------------------------
     rule <op> G:Int ~> #deductGas => #exception ... </op> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
-    rule <op> G:Int ~> #deductGas => .          ... </op> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+    rule <op> G:Int ~> #deductGas => .          ... </op> <gas> GAVAIL => GAVAIL -Int G </gas> <previousGas> _ => GAVAIL </previousGas> requires GAVAIL >=Int G
 
     syntax Int ::= Cmem ( Schedule , Int ) [function]
  // -------------------------------------------------
@@ -1045,11 +1046,12 @@ module ETHEREUM
          <op> #call ACCTFROM ACCTTO CODE GCAP VALUE ARGS
            => #pushCallStack ~> #pushWorldState
            ~> #transferFunds ACCTFROM ACCTTO VALUE
-           ~> #mkCall ACCTFROM ACCTTO CODE Ccallgas(SCHED, GCAP, GAVAIL, VALUE) VALUE ARGS
+           ~> #mkCall ACCTFROM ACCTTO CODE Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE ARGS
           ...
          </op>
-         <gas> GAVAIL </gas>
+         <previousGas> GAVAIL </previousGas>
          <callDepth> CD </callDepth>
+         <activeAccounts> ACCTS </activeAccounts>
       requires CD <Int 1024
 
     rule <op> #call _ _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </op>
@@ -1114,6 +1116,16 @@ module ETHEREUM
            <code> CODE </code>
            ...
          </account>
+    rule <op> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
+           => #call ACCTFROM ACCTTO (0 |-> #precompiled(ACCTTO)) GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
+           ~> #return RETSTART RETWIDTH
+          ...
+         </op>
+         <id> ACCTFROM </id>
+         <localMem> LM </localMem>
+         requires ACCTTO >Int 0 andBool ACCTTO <=Int 4
+
+    syntax InternalOp ::= #precompiled(Word)
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
@@ -1379,20 +1391,20 @@ module ETHEREUM
     rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstoreset < SCHED >   requires VALUE =/=K 0 andBool notBool INDEX in_keys(STORAGE)
     rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstorereset < SCHED > requires VALUE ==K 0  orBool  INDEX in_keys(STORAGE)
 
-    syntax Int ::= Ccall ( Schedule , Word , Set , Word , Word , Word ) [function]
-                 | Ccallgas ( Schedule , Word , Word , Word )           [function]
-                 | Cgascap ( Word , Word , Word )                       [function]
-                 | Cextra  ( Schedule , Word , Set , Word )             [function]
-                 | Cxfer ( Schedule , Word )                            [function]
-                 | Cnew ( Schedule , Word , Set )                       [function]
+    syntax Int ::= Ccall    ( Schedule , Word , Set , Word , Word , Word ) [function]
+                 | Ccallgas ( Schedule , Word , Set , Word , Word , Word ) [function]
+                 | Cgascap  ( Schedule , Word , Word , Word )                         [function]
+                 | Cextra   ( Schedule , Word , Set , Word )               [function]
+                 | Cxfer    ( Schedule , Word )                            [function]
+                 | Cnew     ( Schedule , Word , Set )                      [function]
  // ------------------------------------------------------------------------------
-    rule Ccall(SCHED, ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cextra(SCHED, ACCT, ACCTS, VALUE) +Int Cgascap(GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, VALUE))
+    rule Ccall(SCHED, ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cextra(SCHED, ACCT, ACCTS, VALUE) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, VALUE))
 
-    rule Ccallgas(SCHED, GCAP, GAVAIL, 0)     => Cgascap(GCAP, GAVAIL, 0)
-    rule Ccallgas(SCHED, GCAP, GAVAIL, VALUE) => Cgascap(GCAP, GAVAIL, VALUE) +Int Gcallstipend < SCHED > requires VALUE =/=K 0
+    rule Ccallgas(SCHED, ACCT, ACCTS, GCAP, GAVAIL, 0)     => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS,     0))
+    rule Ccallgas(SCHED, ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, VALUE)) +Int Gcallstipend < SCHED > requires VALUE =/=K 0
 
-    rule Cgascap(GCAP, GAVAIL, GEXTRA) => minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA
-    rule Cgascap(GCAP, GAVAIL, GEXTRA) => GCAP                                          requires GAVAIL <Int  GEXTRA
+    rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA andBool notBool word2Bool(staticCallDepthLimit < SCHED >)
+    rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => GCAP                                          requires GAVAIL <Int  GEXTRA orBool word2Bool(staticCallDepthLimit < SCHED >)
 
     rule Cextra(SCHED, ACCT, ACCTS, VALUE) => Gcall < SCHED > +Int Cnew(SCHED, ACCT, ACCTS) +Int Cxfer(SCHED, VALUE)
 
@@ -1404,7 +1416,7 @@ module ETHEREUM
 
     syntax Int ::= Cselfdestruct ( Schedule , Word , Set ) [function]
  // -----------------------------------------------------------------
-    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED > +Int #if suicideNewAccountGas < SCHED > #then Gnewaccount < SCHED > #else 0 #fi requires notBool ACCT in ACCTS
+    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED > +Int #if word2Bool(suicideNewAccountGas < SCHED >) #then Gnewaccount < SCHED > #else 0 #fi requires notBool ACCT in ACCTS
     rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED >                         requires ACCT in ACCTS
 
     syntax Int ::= #allBut64th ( Int ) [function]
@@ -1455,9 +1467,8 @@ module ETHEREUM
                            | "Gcall"        | "Gcallvalue"   | "Gcallstipend"  | "Gnewaccount"    | "Gexp"         | "Gexpbyte"
                            | "Gmemory"      | "Gtxcreate"    | "Gtxdatazero"   | "Gtxdatanonzero" | "Gtransaction" | "Glog"
                            | "Glogdata"     | "Glogtopic"    | "Gsha3"         | "Gsha3word"      | "Gcopy"        | "Gblockhash" | "Gquadcoeff"
+                           | "suicideNewAccountGas" | "staticCallDepthLimit"
  // --------------------------------------------------------------------------------------------------------------------------------------------
-
-     syntax Bool ::= "suicideNewAccountGas" "<" Schedule ">" [function]
 
 
 // ### Defualt Schedule
@@ -1511,7 +1522,8 @@ module ETHEREUM
     rule Gextcodesize < DEFAULT > => 20
     rule Gextcodecopy < DEFAULT > => 20
 
-    rule suicideNewAccountGas < DEFAULT > => false
+    rule suicideNewAccountGas < DEFAULT > => 0
+    rule staticCallDepthLimit < DEFAULT > => 1
 
 
 // ### Frontier Schedule
@@ -1544,7 +1556,8 @@ module ETHEREUM
     rule Gextcodecopy  < EIP150 > => 700
     rule SCHEDCONST    < EIP150 > => SCHEDCONST < HOMESTEAD >
       requires notBool SCHEDCONST in (SetItem(Gbalance) SetItem(Gsload) SetItem(Gcall) SetItem(Gselfdestruct) SetItem(Gextcodesize) SetItem(Gextcodecopy))
-    rule suicideNewAccountGas < EIP150 > => true
+    rule suicideNewAccountGas < EIP150 > => 1
+    rule staticCallDepthLimit < EIP150 > => 0
 
 
 // ### EIP158 Schedule
