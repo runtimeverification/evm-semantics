@@ -1162,21 +1162,27 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           ...
          </op>
          <callLog> ... (.Set => SetItem({ 0 | GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
-         <callDepth> CD => CD +Int 1 </callDepth>
          <gas> _ => #allBut64th(GAVAIL) </gas>
          <program> _ => INITCODE </program>
          <pc> _ => 0 </pc>
          <output> _ => .WordStack </output>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+          ...
+         </account>
 
     syntax KItem ::= "#codeDeposit" Word
  // ------------------------------------
-    rule <op> #exception ~> #codeDeposit _    => #popCallStack ~> #popWorldState  ~> 0    ~> #push ... </op>
-    rule <op> #end       ~> #codeDeposit ACCT => #popCallStack ~> #dropWorldState ~> ACCT ~> #push ... </op>
+    rule <op> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </op>
+ 
+    rule <mode> EXECMODE </mode>
+         <op> #end ~> #codeDeposit ACCT => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> ACCT ~> #push ... </op>
          <output> OUT => .WordStack </output>
          <account>
            <acctID> ACCT </acctID>
            <code> _ => #asMapOpCodes(#dasmOpCodes(OUT)) </code>
-           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
            ...
          </account>
 
@@ -1185,9 +1191,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                     | #rlpEncodeLength(String, Int, String) [function, klabel(#rlpEncodeLength3)]
                     | #rlpEncodeWord(Word) [function]
  // ----------------------------------------
-    rule #newAddr(ACCT, NONCE) => #parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeWord(ACCT) +String #rlpEncodeWord(NONCE), 192)))
-    rule #rlpEncodeWord(WORD) => chrChar(WORD) requires WORD <Int 128
-    rule #rlpEncodeWord(WORD) => #rlpEncodeLength(#unparseByteStack(#asByteStack(WORD)), 128)
+    rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeWord(ACCT) +String #rlpEncodeWord(NONCE), 192))))
+    rule #rlpEncodeWord(0) => "\x80"
+    rule #rlpEncodeWord(WORD) => chrChar(WORD) requires WORD >Int 0 andBool WORD <Int 128
+    rule #rlpEncodeWord(WORD) => #rlpEncodeLength(#unparseByteStack(#asByteStack(WORD)), 128) requires WORD >=Int 128
     rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR requires lengthString(STR) <Int 56
     rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires lengthString(STR) >=Int 56
     rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
