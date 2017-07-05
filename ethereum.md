@@ -120,7 +120,7 @@ Here we make sure fields that are pre-conditions are `load`ed first, and post-co
       requires KEY in (SetItem("env") SetItem("pre"))
 
     rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY : VAL }
-      requires KEY in (SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("post") SetItem("expect") SetItem("gas"))
+      requires KEY in (SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("post") SetItem("expect") SetItem("gas") SetItem("expet"))
 ```
 
 The particular key `"exec"` should be processed last, to ensure that the pre/post-conditions are in place.
@@ -273,7 +273,7 @@ Here we load the environmental information.
       requires KEY in (SetItem("logs") SetItem("callcreates")) andBool notBool #isSorted(JS)
 ```
 
-There seem to be some typos/inconsistencies in the test set requiring us to handle the cases of `"expect"` and `"export"`.
+There seem to be some typos/inconsistencies in the test set requiring us to handle the cases of `"expect"`, `"expet"`, and `"export"`.
 
 ```{.k .uiuck .rvk}
     rule check "account" : { ACCTID: { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
@@ -286,6 +286,7 @@ There seem to be some typos/inconsistencies in the test set requiring us to hand
     rule check "account" : { (ACCT:Word) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
 
     rule check TESTID : { "expect" : POST } => check "account" : POST ~> failure TESTID
+    rule check TESTID : { "expet"  : POST } => check "account" : POST ~> failure TESTID
     rule check TESTID : { "export" : POST } => check "account" : POST ~> failure TESTID
     rule check TESTID : { "post"   : POST } => check "account" : POST ~> failure TESTID
  // -----------------------------------------------------------------------------------

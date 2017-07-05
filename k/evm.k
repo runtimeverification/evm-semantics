@@ -41,12 +41,13 @@ module ETHEREUM
                       // Mutable during a single transaction
                       // -----------------------------------
 
-                      <op>         .K         </op>
-                      <output>     .WordStack </output>                 // H_RETURN
-                      <memoryUsed> 0:Word     </memoryUsed>             // \mu_i
-                      <callDepth>  0:Word     </callDepth>
-                      <callStack>  .List      </callStack>
-                      <callLog>    .Set       </callLog>
+                      <op>            .K         </op>
+                      <output>        .WordStack </output>                 // H_RETURN
+                      <memoryUsed>    0:Word     </memoryUsed>             // \mu_i
+                      <callDepth>     0:Word     </callDepth>
+                      <callStack>     .List      </callStack>
+                      <interimStates> .List      </interimStates>
+                      <callLog>       .Set       </callLog>
 
                       <txExecState>
                         <program> .Map </program>                       // I_b
@@ -150,56 +151,88 @@ module ETHEREUM
 // Hardware
 // --------
 
-// The `callStack` stores a list of previous states (so that they can be restored).
+// The `callStack` cell stores a list of previous VM execution states.
 
-// -   `#pushCallStack` saves a copy of all the relevant state on the `callStack`
-// -   `#popCallStack` restores the top element of all the relevant state on the
-//     `callStack`
+// -   `#pushCallStack` saves a copy of VM execution state on the `callStack`.
+// -   `#popCallStack` restores the top element of the `callStack`.
+// -   `#dropCallStack` removes the top element of the `callStack`.
 
 
-    syntax Account ::= "{" Word "|" Word "|" Map "|" Map "|" Map "}"
-    syntax State ::= "{" Word "|" Word "|" Map "|" Word "|" WordStack "|" Word "|" WordStack "|" Map "|" Word "|" Set "}"
- // ---------------------------------------------------------------------------------------------------------------------
+    syntax State ::= "{" Word "|" Word "|" Map "|" Word "|" WordStack "|" Word "|" WordStack "|" Map "|" Word "}"
+ // -------------------------------------------------------------------------------------------------------------
 
     syntax InternalOp ::= "#pushCallStack"
  // --------------------------------------
-    rule <op> #pushCallStack => #storeAccounts(ACCTS)  ... </op>
-         <callStack> (.List => ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | PCOUNT | .Set })) ... </callStack>
-         <id>             ACCT   </id>
-         <gas>            GAVAIL </gas>
-         <program>        PGM    </program>
-         <caller>         CR     </caller>
-         <callData>       CD     </callData>
-         <callValue>      CV     </callValue>
-         <wordStack>      WS     </wordStack>
-         <localMem>       LM     </localMem>
-         <pc>             PCOUNT </pc>
-         <activeAccounts> ACCTS  </activeAccounts>
+    rule <op> #pushCallStack => . ... </op>
+         <callStack> (.List => ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | PCOUNT })) ... </callStack>
+         <id>        ACCT   </id>
+         <gas>       GAVAIL </gas>
+         <program>   PGM    </program>
+         <caller>    CR     </caller>
+         <callData>  CD     </callData>
+         <callValue> CV     </callValue>
+         <wordStack> WS     </wordStack>
+         <localMem>  LM     </localMem>
+         <pc>        PCOUNT </pc>
 
     syntax InternalOp ::= "#popCallStack"
  // -------------------------------------
-    rule <op> #popCallStack => #loadAccounts(ACCTS) ... </op>
-         <callStack> (ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | PCOUNT | ACCTS }) => .List) ... </callStack>
-         <id>             _ => ACCT   </id>
-         <gas>            _ => GAVAIL </gas>
-         <program>        _ => PGM    </program>
-         <caller>         _ => CR     </caller>
-         <callData>       _ => CD     </callData>
-         <callValue>      _ => CV     </callValue>
-         <wordStack>      _ => WS     </wordStack>
-         <pc>             _ => PCOUNT </pc>
-         <accounts>       _ => .Bag   </accounts>
-         <activeAccounts> _ => .Set   </activeAccounts>
+    rule <op> #popCallStack => . ... </op>
+         <callStack> (ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | PCOUNT }) => .List) ... </callStack>
+         <id>        _ => ACCT   </id>
+         <gas>       _ => GAVAIL </gas>
+         <program>   _ => PGM    </program>
+         <caller>    _ => CR     </caller>
+         <callData>  _ => CD     </callData>
+         <callValue> _ => CV     </callValue>
+         <wordStack> _ => WS     </wordStack>
+         <localMem>  _ => LM     </localMem>
+         <pc>        _ => PCOUNT </pc>
 
     syntax InternalOp ::= "#dropCallStack"
  // --------------------------------------
     rule <op> #dropCallStack => . ... </op>
          <callStack> (ListItem(_) => .List) ... </callStack>
 
-    syntax KItem ::= #loadAccounts ( Set )
- // --------------------------------------
-    rule <op> #loadAccounts( .Set ) => . ... </op>
-    rule <op> #loadAccounts( (SetItem({ ACCT | BAL | CODE | STORAGE | ACCTMAP }) => .Set) REST ) ... </op>
+
+// The `interimStates` cell stores a list of previous world states.
+
+// -   `#pushWorldState` stores a copy of the current accounts at the top of the
+//     `interimStates` cell.
+// -   `#popWorldState` restores the top element of the `interimStates`.
+// -   `#dropWorldState` removes the top element of the `interimStates`.
+
+
+    syntax Account ::= "{" Word "|" Word "|" Map "|" Map "|" Map "}"
+ // ----------------------------------------------------------------
+
+    syntax InternalOp ::= "#pushWorldState" | "#pushWorldStateAux" Set | "#pushAccount" Word
+ // ----------------------------------------------------------------------------------------
+    rule <op> #pushWorldState => #pushWorldStateAux ACCTS ... </op>
+         <activeAccounts> ACCTS </activeAccounts>
+         <interimStates> (.List => ListItem(.Set)) ... </interimStates>
+
+    rule <op> #pushWorldStateAux .Set => . ... </op>
+    rule <op> #pushWorldStateAux (SetItem(ACCT) REST) => #pushAccount ACCT ~> #pushWorldStateAux REST ... </op>
+    rule <op> #pushAccount ACCT => . ... </op>
+         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE | ACCTMAP })) REST) ... </interimStates>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL </balance>
+           <code> CODE </code>
+           <storage> STORAGE </storage>
+           <acctMap> ACCTMAP </acctMap>
+         </account>
+
+    syntax InternalOp ::= "#popWorldState" | "#popWorldStateAux" Set
+ // ----------------------------------------------------------------
+    rule <op> #popWorldState => #popWorldStateAux PREVSTATE ... </op>
+         <interimStates> (ListItem(PREVSTATE) => .List) ... </interimStates>
+         <activeAccounts> _ => .Set </activeAccounts>
+         <accounts> _ => .Bag </accounts>
+
+    rule <op> #popWorldStateAux .Set => . ... </op>
+    rule <op> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE | ACCTMAP }) => .Set) REST ) ... </op>
          <activeAccounts> ... (.Set => SetItem(ACCT)) </activeAccounts>
          <accounts> ( .Bag
                    => <account>
@@ -213,18 +246,10 @@ module ETHEREUM
                     ...
          </accounts>
 
-    syntax KItem ::= #storeAccounts ( Set )
+    syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
-    rule <op> #storeAccounts( .Set ) => . ... </op>
-    rule <op> #storeAccounts( (SetItem(ACCT) => .Set) REST ) ... </op>
-         <callStack> ListItem({ _ | _ | _ | _ | _ | _ | _ | _ | _ | (STORED:Set) (.Set => SetItem({ ACCT | BAL | CODE | STORAGE | ACCTMAP })) }) ... </callStack>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           <code> CODE </code>
-           <storage> STORAGE </storage>
-           <acctMap> ACCTMAP </acctMap>
-         </account>
+    rule <op> #dropWorldState => . ... </op>
+         <interimStates> (ListItem(_) => .List) ... </interimStates>
 
 
 // Simple commands controlling exceptions provide control-flow.
@@ -1015,9 +1040,10 @@ module ETHEREUM
     syntax InternalOp ::= "#call" Word Word Map Word Word WordStack
                         | "#mkCall" Word Word Map Word Word WordStack
  // -----------------------------------------------------------------
-    rule <schedule> SCHED </schedule>
+    rule <mode> EXECMODE </mode>
+         <schedule> SCHED </schedule>
          <op> #call ACCTFROM ACCTTO CODE GCAP VALUE ARGS
-           => #pushCallStack
+           => #pushCallStack ~> #pushWorldState
            ~> #transferFunds ACCTFROM ACCTTO VALUE
            ~> #mkCall ACCTFROM ACCTTO CODE Ccallgas(SCHED, GCAP, GAVAIL, VALUE) VALUE ARGS
           ...
@@ -1026,7 +1052,7 @@ module ETHEREUM
          <callDepth> CD </callDepth>
       requires CD <Int 1024
 
-    rule <op> #call _ _ _ _ _ _ => #pushCallStack ~> #exception ... </op>
+    rule <op> #call _ _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </op>
          <callDepth> CD </callDepth>
       requires CD >=Int 1024
 
@@ -1046,11 +1072,20 @@ module ETHEREUM
 
     syntax KItem ::= "#return" Word Word
  // ------------------------------------
-    rule <op> #end ~> #return RETSTART RETWIDTH => #popCallStack ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT ... </op>
+    rule <op> #exception ~> #return _ _
+           => #popCallStack ~> #popWorldState  ~> 0 ~> #push
+          ...
+         </op>
+
+    rule <mode> EXECMODE </mode>
+         <op> #end ~> #return RETSTART RETWIDTH
+           => #popCallStack
+           ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi
+           ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
+          ...
+         </op>
          <output> OUT </output>
          <gas> GAVAIL </gas>
-
-    rule <op> #exception ~> #return _ _ => #popCallStack ~> 0 ~> #push ... </op>
 
     syntax InternalOp ::= "#refund" Word
                         | "#setLocalMem" Word Word WordStack
@@ -1064,15 +1099,11 @@ module ETHEREUM
 // For each `CALL*` operation, we make a corresponding call to `#call` and a
 // state-change to setup the custom parts of the calling environment.
 
-// TODO: The `#catch` being used in each case needs to be filled in with the actual
-// code to run on exception.
-
 
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <op> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #pushCallStack
-           ~> #call ACCTFROM ACCTTO CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTTO CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
           ...
          </op>
@@ -1087,8 +1118,7 @@ module ETHEREUM
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <op> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #pushCallStack
-           ~> #call ACCTFROM ACCTFROM CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTFROM CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
            ...
          </op>
@@ -1103,8 +1133,7 @@ module ETHEREUM
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
     rule <op> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #pushCallStack
-           ~> #call ACCTFROM ACCTFROM CODE GCAP 0 #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTFROM CODE GCAP 0 #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
            ...
          </op>
@@ -1119,23 +1148,54 @@ module ETHEREUM
 
 // ### Account Creation/Deletion
 
-// Code is allowed to create a new contract by using the `CREATE` instruction.
-// First, `#call` is used to execute the "initialization code", which returns the
-// code of the newly created account. On successful initialization, the output is
-// the code to deposit in the account (done with `#codeDeposit`). This process can
-// fail in two places, either in the initialization code or in depositing the
-// output code (so `#catch_` is provided for each).
+// -   `#create____` transfers the endowment to the new account and triggers the
+//     execution of the initialization code.
+// -   `#codeDeposit_` checks the result of initialization code and whether the
+//     code deposit can be paid, indicating an error if not.
 
-// TODO: The `#catch_` being used need to be filled in with actual code to run.
+
+    syntax InternalOp ::= "#create" Word Word Word Map
+ // --------------------------------------------------
+    rule <op> #create ACCTFROM ACCTTO VALUE INITCODE
+           => #transferFunds ACCTFROM ACCTTO VALUE
+           ~> #mkCreate INITCODE #allBut64th(GAVAIL)
+          ...
+         </op>
+         <gas> GAVAIL </gas>
+
+    syntax InternalOp ::= "#mkCreate" Map Word
+ // ------------------------------------------
+    rule <op> #mkCreate INITCODE GAVAIL => . ... </op>
+         <gas> _ => GAVAIL </gas>
+         <program> _ => INITCODE </program>
+         <pc> _ => 0 </pc>
+         <output> _ => .WordStack </output>
+
+    syntax KItem ::= "#codeDeposit" Word
+ // ------------------------------------
+    rule <op> #exception ~> #codeDeposit _    => #popCallStack ~> #popWorldState  ~> 0    ~> #push ... </op>
+    rule <op> #end       ~> #codeDeposit ACCT => #popCallStack ~> #dropWorldState ~> ACCT ~> #push ~> #refund GAVAIL ... </op>
+         <output> OUT => .WordStack </output>
+         <gas> GAVAIL </gas>
+         <account>
+           <acctID> ACCT </acctID>
+           <code> _ => #asMapOpCodes(#dasmOpCodes(OUT)) </code>
+           ...
+         </account>
+
+    syntax Word ::= #newAddr ( Word , Word )
+ // ----------------------------------------
+
+
+// `CREATE` will attempt to `#create` the account using the initialization code and
+// cleans up the result with `#codeDeposit`.
 
 
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <op> CREATE VALUE MEMSTART MEMWIDTH
-           => #pushCallStack
-           ~> #call ACCT #newAddr(ACCT, NONCE) #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH))) 0 VALUE .WordStack
-           ~> #codeDeposit
-           ~> #newAddr(ACCT, NONCE) ~> #push
+           => #create ACCT #newAddr(ACCT, NONCE) VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
+           ~> #codeDeposit #newAddr(ACCT, NONCE)
           ...
          </op>
          <id> ACCT </id>
@@ -1146,30 +1206,6 @@ module ETHEREUM
            <acctMap> ... "nonce" |-> NONCE ... </acctMap>
            ...
          </account>
-
-
-// -   `#codeDeposit` attempts to deposit code into the account being called (which
-//     requires gas to be spent).
-// -   `#newAddr` is a placeholder for the new address until we get the actual
-//     calculation setup.
-
-// TODO: Right now `#codeDeposit` isn't performing the correct gas check. We should
-// wait for the `#gasExec` calculations to be fixed before doing so.
-
-
-    syntax KItem ::= "#codeDeposit"
- // -------------------------------
-    rule <op> #codeDeposit => . ... </op>
-         <id> ACCT </id>
-         <output> OUT => .WordStack </output>
-         <account>
-           <acctID> ACCT </acctID>
-           <code> _ => #asMapOpCodes(#dasmOpCodes(OUT)) </code>
-           ...
-         </account>
-
-    syntax Word ::= #newAddr ( Word , Word )
- // ----------------------------------------
 
 
 // `SELFDESTRUCT` marks the current account for deletion and transfers funds out of
