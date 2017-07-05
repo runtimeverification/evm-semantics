@@ -615,8 +615,10 @@ tests/tests-develop/VMTests/vmSystemOperationsTest/CallToNameRegistratorTooMuchM
 tests/tests-develop/VMTests/vmSystemOperationsTest/CallToNameRegistratorTooMuchMemory1.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/CallToNameRegistratorTooMuchMemory2.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/CallToReturn1.json
+tests/tests-develop/VMTests/vmSystemOperationsTest/createNameRegistrator.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/createNameRegistratorOutOfMemoryBonds0.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/createNameRegistratorOutOfMemoryBonds1.json
+tests/tests-develop/VMTests/vmSystemOperationsTest/createNameRegistratorValueTooHigh.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/PostToNameRegistrator0.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/PostToReturn1.json
 tests/tests-develop/VMTests/vmSystemOperationsTest/return0.json
