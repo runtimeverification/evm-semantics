@@ -45,8 +45,8 @@ module ETHEREUM-SIMULATION
     rule DC:DistCommand "account" : { ACCTID: { KEY : VALUE , REST } } => DC "account" : { ACCTID : { KEY : VALUE } } ~> DC "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
 
     rule DC:DistCommand "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
-    rule DC:DistCommand "account" : { (ACCT:Word) : { "balance" : ((VAL:String)         => #parseHexWord(VAL)) } }
-    rule DC:DistCommand "account" : { (ACCT:Word) : { "nonce"   : ((VAL:String)         => #parseHexWord(VAL)) } }
+    rule DC:DistCommand "account" : { (ACCT:Word) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
+    rule DC:DistCommand "account" : { (ACCT:Word) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
     rule DC:DistCommand "account" : { (ACCT:Word) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
     rule DC:DistCommand "account" : { (ACCT:Word) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
     rule DC:DistCommand "account" : { (ACCT:Word) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
@@ -240,7 +240,10 @@ module ETHEREUM-SIMULATION
 // Here we load the environmental information.
 
 
+    rule load "env" : { KEY : ((VAL:String) => #parseWord(VAL)) }
+      requires KEY in (SetItem("currentTimestamp") SetItem("currentGasLimit") SetItem("currentNumber") SetItem("currentDifficulty"))
     rule load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) }
+      requires KEY in (SetItem("currentCoinbase") SetItem("previousHash"))
  // ----------------------------------------------------------------
     rule <k> load "env" : { "currentCoinbase"   : (CB:Word)     } => . ... </k> <coinbase>     _ => CB     </coinbase>
     rule <k> load "env" : { "currentDifficulty" : (DIFF:Word)   } => . ... </k> <difficulty>   _ => DIFF   </difficulty>
@@ -249,8 +252,10 @@ module ETHEREUM-SIMULATION
     rule <k> load "env" : { "previousHash"      : (HASH:Word)   } => . ... </k> <previousHash> _ => HASH   </previousHash>
     rule <k> load "env" : { "currentTimestamp"  : (TS:Word)     } => . ... </k> <timestamp>    _ => TS     </timestamp>
 
+    rule load "exec" : { KEY : ((VAL:String) => #parseWord(VAL)) }
+      requires KEY in (SetItem("gas") SetItem("gasPrice") SetItem("value"))
     rule load "exec" : { KEY : ((VAL:String) => #parseHexWord(VAL)) }
-      requires KEY in (SetItem("address") SetItem("caller") SetItem("gas") SetItem("gasPrice") SetItem("value") SetItem("origin"))
+      requires KEY in (SetItem("address") SetItem("caller") SetItem("origin"))
  // ------------------------------------------------------------------------------------------------------------------------------
     rule <k> load "exec" : { "gasPrice" : (GPRICE:Word)   } => . ... </k> <gasPrice>  _ => GPRICE   </gasPrice>
     rule <k> load "exec" : { "gas"      : (GAVAIL:Word)   } => . ... </k> <gas>       _ => GAVAIL   </gas>
@@ -290,8 +295,8 @@ module ETHEREUM-SIMULATION
     rule check "account" : { ACCTID: { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
  // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     rule check "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
-    rule check "account" : { (ACCT:Word) : { "balance" : ((VAL:String)         => #parseHexWord(VAL)) } }
-    rule check "account" : { (ACCT:Word) : { "nonce"   : ((VAL:String)         => #parseHexWord(VAL)) } }
+    rule check "account" : { (ACCT:Word) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
+    rule check "account" : { (ACCT:Word) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
     rule check "account" : { (ACCT:Word) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
     rule check "account" : { (ACCT:Word) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
     rule check "account" : { (ACCT:Word) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
@@ -341,7 +346,7 @@ module ETHEREUM-SIMULATION
 
     rule check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID
  // ------------------------------------------------------------------------------
-    rule check "gas" : ((GLEFT:String) => #parseHexWord(GLEFT))
+    rule check "gas" : ((GLEFT:String) => #parseWord(GLEFT))
     rule <k> check "gas" : GLEFT => . ... </k> <gas> GLEFT </gas>
 
 
@@ -349,7 +354,7 @@ module ETHEREUM-SIMULATION
     rule check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID
  // ----------------------------------------------------------------------------------------------------
     rule check "callcreates" : { ("data" : (DATA:String)) , ("destination" : (ACCTTO:String)) , ("gasLimit" : (GLIMIT:String)) , ("value" : (VAL:String)) , .JSONList }
-      => check "callcreates" : { #parseAddr(ACCTTO) | #parseHexWord(GLIMIT) | #parseHexWord(VAL) | #parseByteStack(DATA) }
+      => check "callcreates" : { #parseAddr(ACCTTO) | #parseWord(GLIMIT) | #parseWord(VAL) | #parseByteStack(DATA) }
     rule <k> check "callcreates" : C:Call => . ... </k> <callLog> CL </callLog> requires C in CL
 endmodule
 
