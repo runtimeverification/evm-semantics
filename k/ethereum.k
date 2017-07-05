@@ -129,6 +129,8 @@ module ETHEREUM-SIMULATION
     rule run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST }
       requires KEY in (SetItem("env") SetItem("pre"))
 
+    rule run TESTID : { "//" : _ , REST } => run TESTID : { REST }
+
     rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY : VAL }
       requires KEY in (SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("gas") #postKeys)
 
