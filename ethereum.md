@@ -120,7 +120,7 @@ Here we make sure fields that are pre-conditions are `load`ed first, and post-co
       requires KEY in (SetItem("env") SetItem("pre"))
 
     rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY : VAL }
-      requires KEY in (SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("post") SetItem("expect") SetItem("gas") SetItem("expet"))
+      requires KEY in (SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("post") SetItem("expect") SetItem("gas") SetItem("expet") SetItem("export"))
 ```
 
 The particular key `"exec"` should be processed last, to ensure that the pre/post-conditions are in place.
