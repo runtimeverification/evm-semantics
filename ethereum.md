@@ -238,7 +238,7 @@ Here we load the environmental information.
       requires KEY in (SetItem("currentTimestamp") SetItem("currentGasLimit") SetItem("currentNumber") SetItem("currentDifficulty"))
     rule load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) }
       requires KEY in (SetItem("currentCoinbase") SetItem("previousHash"))
- // ----------------------------------------------------------------
+ // ----------------------------------------------------------------------
     rule <k> load "env" : { "currentCoinbase"   : (CB:Word)     } => . ... </k> <coinbase>     _ => CB     </coinbase>
     rule <k> load "env" : { "currentDifficulty" : (DIFF:Word)   } => . ... </k> <difficulty>   _ => DIFF   </difficulty>
     rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:Word) } => . ... </k> <gasLimit>     _ => GLIMIT </gasLimit>
@@ -250,7 +250,7 @@ Here we load the environmental information.
       requires KEY in (SetItem("gas") SetItem("gasPrice") SetItem("value"))
     rule load "exec" : { KEY : ((VAL:String) => #parseHexWord(VAL)) }
       requires KEY in (SetItem("address") SetItem("caller") SetItem("origin"))
- // ------------------------------------------------------------------------------------------------------------------------------
+ // --------------------------------------------------------------------------
     rule <k> load "exec" : { "gasPrice" : (GPRICE:Word)   } => . ... </k> <gasPrice>  _ => GPRICE   </gasPrice>
     rule <k> load "exec" : { "gas"      : (GAVAIL:Word)   } => . ... </k> <gas>       _ => GAVAIL   </gas>
     rule <k> load "exec" : { "address"  : (ACCTTO:Word)   } => . ... </k> <id>        _ => ACCTTO   </id>
