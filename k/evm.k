@@ -1430,20 +1430,20 @@ module ETHEREUM
     rule <op> #gasExec(SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </op> <schedule> SCHED </schedule>
 
     rule <op> #gasExec(JUMPDEST) => Gjumpdest < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(SLOAD _)  => Gsload < SCHED >    ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SLOAD _)  => Gsload    < SCHED > ... </op> <schedule> SCHED </schedule>
 
-    rule <op> #gasExec(OP)            => Gzero < SCHED >        ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wzero
-    rule <op> #gasExec(OP)            => Gbase < SCHED >        ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wbase
-    rule <op> #gasExec(OP)            => Gverylow < SCHED >     ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wverylow
-    rule <op> #gasExec(PUSH(_, _))    => Gverylow < SCHED >     ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(DUP(_) _)      => Gverylow < SCHED >     ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(SWAP(_) _)     => Gverylow < SCHED >     ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(OP)            => Glow < SCHED >         ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wlow
-    rule <op> #gasExec(OP)            => Gmid < SCHED >         ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wmid
-    rule <op> #gasExec(JUMPI _ _)     => Ghigh < SCHED >        ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(OP)            => Gzero        < SCHED > ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wzero
+    rule <op> #gasExec(OP)            => Gbase        < SCHED > ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wbase
+    rule <op> #gasExec(OP)            => Gverylow     < SCHED > ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wverylow
+    rule <op> #gasExec(PUSH(_, _))    => Gverylow     < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(DUP(_) _)      => Gverylow     < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SWAP(_) _)     => Gverylow     < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(OP)            => Glow         < SCHED > ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wlow
+    rule <op> #gasExec(OP)            => Gmid         < SCHED > ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wmid
+    rule <op> #gasExec(JUMPI _ _)     => Ghigh        < SCHED > ... </op> <schedule> SCHED </schedule>
     rule <op> #gasExec(EXTCODESIZE _) => Gextcodesize < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(BALANCE _)     => Gbalance < SCHED >     ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(BLOCKHASH _)   => Gblockhash < SCHED >   ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(BALANCE _)     => Gbalance     < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(BLOCKHASH _)   => Gblockhash   < SCHED > ... </op> <schedule> SCHED </schedule>
 
 
 // There are several helpers for calculating gas (most of them also specified in
