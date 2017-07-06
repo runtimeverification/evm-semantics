@@ -1,13 +1,3 @@
-YellowPaper
-===========
-
-
--   The instruction isn't `INVALID`.
--   There are enough elements on the stack to supply the arguments.
--   If it's a `JUMP*` operation, the destination is a valid `JUMPDEST`.
--   Upon placing the results on the stack, there won't be a stack overflow.
--   There is enough gas.
-
 EVM Execution
 =============
 

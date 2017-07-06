@@ -405,13 +405,13 @@ We are using the polymorphic `Map` sort for these word maps.
  // -------------------------------------------------------
     rule #asMapWordStack(WS:WordStack) => .Map [ 0 := WS ]
 
-    syntax WordStack ::= #range ( Map , Word , Word ) [function]
-    syntax WordStack ::= #rangeImpl ( Map , Word , Word , WordStack) [function]
- // ------------------------------------------------------------
-    rule #range(WM, N:Int, M:Int) => #rangeImpl(WM, N +Int M -Int 1, M, .WordStack)
-    rule #rangeImpl(WM,         N:Int, 0, WS) => WS
-    rule #rangeImpl(WM,         N:Int, M:Int, WS) => #rangeImpl(WM, N -Int 1, M -Int 1, 0 : WS) requires (M >Int 0) andBool notBool N in_keys(WM)
-    rule #rangeImpl(N |-> W WM, N:Int, M:Int, WS) => #rangeImpl(WM, N -Int 1, M -Int 1, W : WS) requires (M >Int 0)
+    syntax WordStack ::= #range ( Map , Word , Word )            [function]
+    syntax WordStack ::= #range ( Map , Word , Word , WordStack) [function, klabel(#rangeAux)]
+ // ------------------------------------------------------------------------------------------
+    rule #range(WM, N:Int, M:Int) => #range(WM, N +Int M -Int 1, M, .WordStack)
+    rule #range(WM,         N:Int, 0,     WS) => WS
+    rule #range(WM,         N:Int, M:Int, WS) => #range(WM, N -Int 1, M -Int 1, 0 : WS) requires (M >Int 0) andBool notBool N in_keys(WM)
+    rule #range(N |-> W WM, N:Int, M:Int, WS) => #range(WM, N -Int 1, M -Int 1, W : WS) requires (M >Int 0)
 ```
 
 Parsing/Unparsing
