@@ -25,9 +25,10 @@ success()  { echo -e "\e[32m== success: $@\e[0m";
            }
 failure()  { echo -e "\e[31m== failure: $@\e[0m"; }
 
-list_tests()   { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
-list_passing() { cat "$expected_passing"; }
-list_failing() { list_tests | grep -Fvxf "$expected_passing" -; }
+list_tests()      { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
+list_passing()    { cat "$expected_passing"; }
+list_failing()    { list_tests | grep -Fvxf "$expected_passing" -; }
+list_quicktests() { list_passing | sort -R | head -n 20; }
 
 filter_codeship() {
     codeship_list="$1"
