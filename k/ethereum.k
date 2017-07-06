@@ -85,7 +85,7 @@ module ETHEREUM-SIMULATION
     rule <k> start      => . ... </k> <op> . => #execute </op>
     rule <k> flush      => . ... </k> <op> #end => #finalize </op>
     rule <k> flush      => . ... </k> <op> #exception => #finalize ~> #exception </op>
-    rule <k> gasAnalyze => . ... </k> <op> . => #pushCallStack ~> #gasAnalyze </op>
+    rule <k> gasAnalyze => . ... </k> <op> . => #initGasAnalyze ~> #pushCallStack ~> #gasAnalyze </op>
 
 
 // -   `exception` only clears from the `k` cell if there is an exception on the
