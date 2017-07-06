@@ -1408,7 +1408,7 @@ module ETHEREUM
     rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=K 0
 
     rule Cnew(SCHED, ACCT, ACCTS) => Gnewaccount < SCHED > requires notBool ACCT in ACCTS
-    rule Cnew(SCHED, ACCT, ACCTS) => 0                  requires ACCT in ACCTS
+    rule Cnew(SCHED, ACCT, ACCTS) => 0                     requires ACCT in ACCTS
 
     syntax Int ::= Cselfdestruct ( Schedule , Word , Set ) [function]
  // -----------------------------------------------------------------
