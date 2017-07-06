@@ -1214,20 +1214,6 @@ module ETHEREUM
            ...
          </account>
 
-    syntax Word ::= #newAddr ( Word , Word ) [function]
-    syntax String ::= #rlpEncodeLength(String, Int) [function]
-                    | #rlpEncodeLength(String, Int, String) [function, klabel(#rlpEncodeLength3)]
-                    | #rlpEncodeWord(Word) [function]
- // ----------------------------------------
-    rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeWord(ACCT) +String #rlpEncodeWord(NONCE), 192))))
-    rule #rlpEncodeWord(0) => "\x80"
-    rule #rlpEncodeWord(WORD) => chrChar(WORD) requires WORD >Int 0 andBool WORD <Int 128
-    rule #rlpEncodeWord(WORD) => #rlpEncodeLength(#unparseByteStack(#asByteStack(WORD)), 128) requires WORD >=Int 128
-    rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR requires lengthString(STR) <Int 56
-    rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires lengthString(STR) >=Int 56
-    rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
-    
-
 
 // `CREATE` will attempt to `#create` the account using the initialization code and
 // cleans up the result with `#codeDeposit`.
