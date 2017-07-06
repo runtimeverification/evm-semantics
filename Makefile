@@ -21,8 +21,9 @@ ktest: defn split-tests
 K:=$(shell krun --version)
 
 passing_test_file=tests/passing.expected
-#passing_tests=$(wildcard tests/tests-develop/VMTests/*/*.json)
-passing_tests=$(shell cat ${passing_test_file})
+all_tests=$(wildcard tests/tests-develop/VMTests/*/*.json)
+skipped_tests=$(wildcard tests/tests-develop/VMTests/vmPerformanceTest/*.json) tests/tests-develop/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1021.json
+passing_tests=$(filter-out ${skipped_tests}, ${all_tests})
 passing_targets=${passing_tests:=.test}
 
 test: $(passing_targets)
