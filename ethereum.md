@@ -154,15 +154,16 @@ State Manipulation
          <callStack>  _ => .List      </callStack>
          <callLog>    _ => .Set       </callLog>
 
-         <program>   _ => .Map       </program>
-         <id>        _ => 0:Word     </id>
-         <caller>    _ => 0:Word     </caller>
-         <callData>  _ => .WordStack </callData>
-         <callValue> _ => 0:Word     </callValue>
-         <wordStack> _ => .WordStack </wordStack>
-         <localMem>  _ => .Map       </localMem>
-         <pc>        _ => 0:Word     </pc>
-         <gas>       _ => 0:Word     </gas>
+         <program>     _ => .Map       </program>
+         <id>          _ => 0:Word     </id>
+         <caller>      _ => 0:Word     </caller>
+         <callData>    _ => .WordStack </callData>
+         <callValue>   _ => 0:Word     </callValue>
+         <wordStack>   _ => .WordStack </wordStack>
+         <localMem>    _ => .Map       </localMem>
+         <pc>          _ => 0:Word     </pc>
+         <gas>         _ => 0:Word     </gas>
+         <previousGas> _ => 0:Word     </previousGas>
 
          <selfDestruct> _ => .Set   </selfDestruct>
          <log>          _ => .Set   </log>
