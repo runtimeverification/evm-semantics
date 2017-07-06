@@ -43,8 +43,8 @@ module ETHEREUM
                       // -----------------------------------
 
                       <op>            .K         </op>
-                      <output>        .WordStack </output>                 // H_RETURN
-                      <memoryUsed>    0:Word     </memoryUsed>             // \mu_i
+                      <output>        .WordStack </output>              // H_RETURN
+                      <memoryUsed>    0:Word     </memoryUsed>          // \mu_i
                       <callDepth>     0:Word     </callDepth>
                       <callStack>     .List      </callStack>
                       <interimStates> .List      </interimStates>
