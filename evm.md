@@ -341,7 +341,7 @@ Some checks if an opcode will throw an exception are relatively quick and done u
     syntax InternalOp ::= "#invalid?" "[" OpCode "]"
  // ------------------------------------------------
     rule <op> #invalid? [ INVALID(_) ] => #exception ... </op>
-    rule <op> #invalid? [ OP      ] => .          ... </op> requires notBool isInvalidOp(OP)
+    rule <op> #invalid? [ OP         ] => .          ... </op> requires notBool isInvalidOp(OP)
 ```
 
 -   `#stackNeeded?` checks that the stack will be not be under/overflown.
@@ -681,9 +681,11 @@ These are just used by the other operators for shuffling local execution state a
 
 ### Invalid Operator
 
+We use `INVALID(_)` both for marking the designated invalid operator and for garbage bytes in the input program.
+
 ```{.k .uiuck .rvk}
-    syntax InvalidOp ::= INVALID(Word)
- // ------------------------------
+    syntax InvalidOp ::= INVALID ( Word )
+ // -------------------------------------
 ```
 
 ### Stack Manipulations
@@ -832,7 +834,7 @@ The `JUMP*` family of operations affect the current program counter.
 
 ```{.k .uiuck .rvk}
     syntax NullStackOp ::= "JUMPDEST"
- // ------------------------------
+ // ---------------------------------
     rule <op> JUMPDEST => . ... </op>
 
     syntax UnStackOp ::= "JUMP"
@@ -1085,6 +1087,13 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <localMem> LM => LM [ START := #take(minInt(WIDTH, #sizeWordStack(WS)), WS) ] </localMem>
 ```
 
+-   `#precompiled` is a placeholder for the 4 pre-compiled contracts at addresses 1 through 4.
+
+```{.k .uiuck .rvk}
+    syntax InternalOp ::= #precompiled ( Word )
+ // -------------------------------------------
+```
+
 For each `CALL*` operation, we make a corresponding call to `#call` and a state-change to setup the custom parts of the calling environment.
 
 ```{.k .uiuck .rvk}
@@ -1102,6 +1111,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <code> CODE </code>
            ...
          </account>
+      requires notBool (ACCTTO >Int 0 andBool ACCTTO <=Int 4)
+
     rule <op> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #call ACCTFROM ACCTTO (0 |-> #precompiled(ACCTTO)) GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
@@ -1110,8 +1121,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
          requires ACCTTO >Int 0 andBool ACCTTO <=Int 4
-
-    syntax InternalOp ::= #precompiled(Word)
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
@@ -1151,7 +1160,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#create" Word Word Word Map
- // --------------------------------------------------
+                        | "#mkCreate" Map Word Word
+ // -----------------------------------------------
     rule <op> #create ACCTFROM ACCTTO VALUE INITCODE
            => #pushCallStack ~> #pushWorldState
            ~> #transferFunds ACCTFROM ACCTTO VALUE
@@ -1166,8 +1176,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <callDepth> CD </callDepth>
       requires CD >=Int 1024
 
-    syntax InternalOp ::= "#mkCreate" Map Word Word
- // ------------------------------------------
     rule <mode> EXECMODE </mode>
          <op> #mkCreate INITCODE GAVAIL VALUE
            => #if EXECMODE ==K VMTESTS #then #end #else #next #fi
@@ -1188,7 +1196,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax KItem ::= "#codeDeposit" Word
  // ------------------------------------
     rule <op> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </op>
- 
+
     rule <mode> EXECMODE </mode>
          <op> #end ~> #codeDeposit ACCT => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> ACCT ~> #push ... </op>
          <output> OUT => .WordStack </output>
@@ -1353,18 +1361,18 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
 
     syntax Int ::= Ccall    ( Schedule , Word , Set , Word , Word , Word ) [function]
                  | Ccallgas ( Schedule , Word , Set , Word , Word , Word ) [function]
-                 | Cgascap  ( Schedule , Word , Word , Word )                         [function]
+                 | Cgascap  ( Schedule , Word , Word , Word )              [function]
                  | Cextra   ( Schedule , Word , Set , Word )               [function]
                  | Cxfer    ( Schedule , Word )                            [function]
                  | Cnew     ( Schedule , Word , Set )                      [function]
- // ------------------------------------------------------------------------------
+ // ---------------------------------------------------------------------------------
     rule Ccall(SCHED, ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cextra(SCHED, ACCT, ACCTS, VALUE) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, VALUE))
 
     rule Ccallgas(SCHED, ACCT, ACCTS, GCAP, GAVAIL, 0)     => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS,     0))
     rule Ccallgas(SCHED, ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, VALUE)) +Int Gcallstipend < SCHED > requires VALUE =/=K 0
 
-    rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA andBool notBool word2Bool(staticCallDepthLimit < SCHED >)
-    rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => GCAP                                          requires GAVAIL <Int  GEXTRA orBool word2Bool(staticCallDepthLimit < SCHED >)
+    rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA andBool notBool word2Bool(Gstaticcalldepth < SCHED >)
+    rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => GCAP                                          requires GAVAIL <Int  GEXTRA orBool word2Bool(Gstaticcalldepth < SCHED >)
 
     rule Cextra(SCHED, ACCT, ACCTS, VALUE) => Gcall < SCHED > +Int Cnew(SCHED, ACCT, ACCTS) +Int Cxfer(SCHED, VALUE)
 
@@ -1376,8 +1384,8 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
 
     syntax Int ::= Cselfdestruct ( Schedule , Word , Set ) [function]
  // -----------------------------------------------------------------
-    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED > +Int #if word2Bool(suicideNewAccountGas < SCHED >) #then Gnewaccount < SCHED > #else 0 #fi requires notBool ACCT in ACCTS
-    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED >                         requires ACCT in ACCTS
+    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED > +Int (Gselfdestructnewaccount < SCHED > *Int Gnewaccount < SCHED >) requires notBool ACCT in ACCTS
+    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED >                                                                  requires ACCT in ACCTS
 
     syntax Int ::= #allBut64th ( Int ) [function]
  // ---------------------------------------------
@@ -1421,9 +1429,9 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
                            | "Gsstorereset" | "Rsstoreclear" | "Rselfdestruct" | "Gselfdestruct"  | "Gcreate"      | "Gcodedeposit"
                            | "Gcall"        | "Gcallvalue"   | "Gcallstipend"  | "Gnewaccount"    | "Gexp"         | "Gexpbyte"
                            | "Gmemory"      | "Gtxcreate"    | "Gtxdatazero"   | "Gtxdatanonzero" | "Gtransaction" | "Glog"
-                           | "Glogdata"     | "Glogtopic"    | "Gsha3"         | "Gsha3word"      | "Gcopy"        | "Gblockhash" | "Gquadcoeff"
-                           | "suicideNewAccountGas" | "staticCallDepthLimit"
- // --------------------------------------------------------------------------------------------------------------------------------------------
+                           | "Glogdata"     | "Glogtopic"    | "Gsha3"         | "Gsha3word"      | "Gcopy"        | "Gblockhash"
+                           | "Gquadcoeff"   | "Gselfdestructnewaccount"        | "Gstaticcalldepth"
+ // -----------------------------------------------------------------------------------------------
 ```
 
 ### Defualt Schedule
@@ -1477,8 +1485,8 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
     rule Gextcodesize < DEFAULT > => 20
     rule Gextcodecopy < DEFAULT > => 20
 
-    rule suicideNewAccountGas < DEFAULT > => 0
-    rule staticCallDepthLimit < DEFAULT > => 1
+    rule Gselfdestructnewaccount < DEFAULT > => 0
+    rule Gstaticcalldepth        < DEFAULT > => 1
 ```
 
 ```c++
@@ -1538,6 +1546,7 @@ struct EVMSchedule
     unsigned maxCodeSize = unsigned(-1);
 
     bool staticCallDepthLimit() const { return !eip150Mode; }
+    bool suicideNewAccountGas() const { return !eip150Mode; }
     bool suicideChargesNewAccountGas() const { return eip150Mode; }
     bool emptinessIsNonexistence() const { return eip158Mode; }
     bool zeroValueTransferChargesNewAccountGas() const { return !eip158Mode; }
@@ -1574,16 +1583,18 @@ static const EVMSchedule HomesteadSchedule = EVMSchedule(true, true, 53000);
 ```{.k .uiuck .rvk}
     syntax Schedule ::= "EIP150"
  // ----------------------------
-    rule Gbalance      < EIP150 > => 400
-    rule Gsload        < EIP150 > => 200
-    rule Gcall         < EIP150 > => 700
-    rule Gselfdestruct < EIP150 > => 5000
-    rule Gextcodesize  < EIP150 > => 700
-    rule Gextcodecopy  < EIP150 > => 700
-    rule SCHEDCONST    < EIP150 > => SCHEDCONST < HOMESTEAD >
-      requires notBool SCHEDCONST in (SetItem(Gbalance) SetItem(Gsload) SetItem(Gcall) SetItem(Gselfdestruct) SetItem(Gextcodesize) SetItem(Gextcodecopy))
-    rule suicideNewAccountGas < EIP150 > => 1
-    rule staticCallDepthLimit < EIP150 > => 0
+    rule Gbalance                < EIP150 > => 400
+    rule Gsload                  < EIP150 > => 200
+    rule Gcall                   < EIP150 > => 700
+    rule Gselfdestruct           < EIP150 > => 5000
+    rule Gextcodesize            < EIP150 > => 700
+    rule Gextcodecopy            < EIP150 > => 700
+    rule Gselfdestructnewaccount < EIP150 > => 1
+    rule Gstaticcalldepth        < EIP150 > => 0
+    rule SCHEDCONST              < EIP150 > => SCHEDCONST < HOMESTEAD >
+      requires notBool SCHEDCONST in ( SetItem(Gbalance) SetItem(Gsload) SetItem(Gcall) SetItem(Gselfdestruct) SetItem(Gextcodesize)
+                                       SetItem(Gextcodecopy) SetItem(Gselfdestructnewaccount) SetItem(Gstaticcalldepth)
+                                     )
 ```
 
 ```c++
