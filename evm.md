@@ -297,6 +297,7 @@ Execution follows a simple cycle where first the state is checked for exceptions
 
 -   `#next` takes one step in the execution cycle (loads and attempts to execute a single opcode).
 -   `#execute` calls `#next` until the program counter is not pointing at an opcode anymore.
+-   `#execTo` executes until the next opcode is one of the specified ones.
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#next"
@@ -319,47 +320,6 @@ Execution follows a simple cycle where first the state is checked for exceptions
     rule <op> (. => #next) ~> #execute ... </op>
     rule <op> #end ~> (#execute => .)  ... </op>
 
-    syntax InternalOp ::= "#gasAnalyze"
- // -----------------------------------
-    rule <op> #gasAnalyze => . ... </op>
-         <analysis> ... ("to-explore" |-> .Set) ... </analysis>
-
-    rule <op> #gasAnalyze ... </op>
-         <analysis> ...
-                    ("to-explore" |-> ((SetItem(PCOUNT) => .Set) REST))
-                    ("explored"   |-> (EXPED (.Set => SetItem(PCOUNT))))
-                    ...
-         </analysis>
-      requires PCOUNT in EXPED
-
-    rule <op> #gasAnalyze
-           => #popCallStack
-           ~> #setPC(PCOUNT) ~> #abstractGas ~> #pushCallStack
-           ~> #next ~> #execTo(#abstractPoints) ~> #pushCallStack
-           ~> #mkRule
-           ~> #addToWorkList ~> #gasAnalyze
-          ...
-         </op>
-         <analysis> ...
-                    ("to-explore" |-> ((SetItem(PCOUNT) => .Set) REST))
-                    ("explored"   |-> (EXPED (.Set => SetItem(PCOUNT))))
-                    ...
-         </analysis>
-      requires notBool PCOUNT in EXPED
-
-    syntax Rule ::= "{" K "==>" K "}"
- // ---------------------------------
-
-    syntax InternalOp ::= #setPC ( Word )
-                        | "#abstractGas"
-                        | "#mkRule"
-                        | "#addToWorkList"
- // --------------------------------------
-    rule <op> #setPC(PCOUNT) => . ... </op> <pc> _ => PCOUNT </pc>
-    rule <op> #abstractGas   => . ... </op> <gas> _ => ?GAVAIL:Int </gas> requires ?GAVAIL >=Int 0 andBool ?GAVAIL <Int (2 ^Int 256)
-    rule <op> #mkRule => . ... </op> <callStack> (ListItem(RIGHT) ListItem(LEFT) => .List) ... </callStack> <analysis> ... "rules" |-> ((.Set => SetItem({ LEFT ==> RIGHT })) REST) ... </analysis>
-    rule <op> #addToWorkList => . ... </op> <pc> PCOUNT </pc> <analysis> ... ("to-explore" |-> ((.Set => SetItem(PCOUNT)) REST)) ... </analysis>
-
     syntax InternalOp ::= #execTo ( Set )
  // -------------------------------------
     rule <op> (. => #next) ~> #execTo(OPS) ... </op>
@@ -376,13 +336,58 @@ Execution follows a simple cycle where first the state is checked for exceptions
          <pc> PCOUNT </pc>
          <program> PGM </program>
       requires notBool PCOUNT in keys(PGM)
+```
+
+-   `#initGasAnalyze` sets up the analysis cell to perform gas analysis.
+-   `#gasAnalyze` analyzes the gas of one basic block of the code, then triggers `#gasAnalyze` again.
+
+```{.k .uiuck .rvk}
+    syntax InternalOp ::= "#initGasAnalyze"
+ // ---------------------------------------
+    rule <op> #initGasAnalyze => . ... </op>
+         <pc> _ => 0 </pc>
+         <program> PGM </program>
+         <analysis> _ => ("blocks" |-> .List) </analysis>
+
+    syntax InternalOp ::= "#gasAnalyze"
+ // -----------------------------------
+    rule <op> #gasAnalyze => #end ... </op>
+         <pc> PCOUNT </pc>
+         <program> PGM </program>
+      requires notBool (PCOUNT in_keys(PGM))
+
+    rule <op> #gasAnalyze
+           => #abstract ~> #beginSummary
+           ~> #next ~> #execTo(#abstractPoints) ~> #endSummary
+           ~> #gasAnalyze
+          ...
+         </op>
+         <pc> PCOUNT </pc>
+         <program> ... PCOUNT |-> OP ... </program>
 
     syntax Set ::= "#abstractPoints" [function]
  // -------------------------------------------
     rule #abstractPoints => (SetItem(JUMP) SetItem(JUMPI) SetItem(JUMPDEST))
+
+    syntax InternalOp ::= #setPC ( Word ) | "#abstract"
+ // ---------------------------------------------------
+    rule <op> #setPC(PCOUNT) => . ... </op> <pc> _ => PCOUNT </pc>
+    rule <op> #abstract      => . ... </op> <gas> _ => #symbolicWord </gas>
+
+    syntax Summary ::= "{" Word "|" Word "|" Word "}"
+                     | "{" Word "|" Word "|" Word "==>" Word "|" Word "|" Word "}"
+ // ------------------------------------------------------------------------------
+
+    syntax InternalOp ::= "#beginSummary" | "#endSummary"
+ // -----------------------------------------------------
+    rule <op> #beginSummary => . ... </op> <pc> PCOUNT </pc> <gas> GAVAIL </gas> <memoryUsed> MEMUSED </memoryUsed>
+         <analysis> ... "blocks" |-> ((.List => ListItem({ PCOUNT | GAVAIL | MEMUSED })) REST) ... </analysis>
+
+    rule <op> #endSummary => . ... </op> <pc> PCOUNT </pc> <gas> GAVAIL </gas> <memoryUsed> MEMUSED </memoryUsed>
+         <analysis> ... "blocks" |-> (ListItem({ PCOUNT1 | GAVAIL1 | MEMUSED1 } => { PCOUNT1 | GAVAIL1 | MEMUSED1 ==> PCOUNT | GAVAIL | MEMUSED}) REST) ... </analysis>
 ```
 
-### Exceptional Opcodes
+### Exceptional OpCodes
 
 Some checks if an opcode will throw an exception are relatively quick and done up front.
 
