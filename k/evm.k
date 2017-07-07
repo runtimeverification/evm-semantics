@@ -310,19 +310,58 @@ module ETHEREUM
  // --------------------------------------------------------------------------------
 
 
+// -   `#execute` calls `#next` repeatedly until it recieves an `#end` or
+//     `#exception`.
+// -   `#execTo` executes until the next opcode is one of the specified ones.
+
+
+    syntax KItem ::= "#execute"
+ // ---------------------------
+    rule <op> (. => #next) ~> #execute ... </op>
+    rule <op> EX:Exception ~> (#execute => .)  ... </op>
+
+    syntax InternalOp ::= "#execTo" Set
+ // -----------------------------------
+    rule <op> (. => #next) ~> #execTo OPS ... </op>
+         <pc> PCOUNT </pc>
+         <program> ... PCOUNT |-> OP ... </program>
+      requires notBool (OP in OPS)
+
+    rule <op> #execTo OPS => . ... </op>
+         <pc> PCOUNT </pc>
+         <program> ... PCOUNT |-> OP ... </program>
+      requires OP in OPS
+
+    rule <op> #execTo OPS => #end ... </op>
+         <pc> PCOUNT </pc>
+         <program> PGM </program>
+      requires notBool PCOUNT in keys(PGM)
+
+
 // Execution follows a simple cycle where first the state is checked for
 // exceptions, then if no exceptions will be thrown the opcode is run.
 
-// -   `#next` takes one step in the execution cycle (loads and attempts to execute
-//     a single opcode).
-// -   `#execute` calls `#next` until the program counter is not pointing at an
-//     opcode anymore.
-// -   `#execTo` executes until the next opcode is one of the specified ones.
+// -   Regardless of the mode, `#next` will throw `#end` or `#exception` if the
+//     current program counter is not pointing at an OpCode.
+
+// TODO: I think on `#next` we are supposed to pretend it's `STOP` if it's in the
+// middle of the program somewhere but is invalid? I suppose the semantics
+// currently loads `INVALID(N)` where `N` is the position in the bytecode array.
 
 
     syntax InternalOp ::= "#next"
  // -----------------------------
-    rule <op> #next
+    rule <op> #next => #if word2Bool(PCOUNT <Word #sizeOpCodeMap(PGM)) #then #exception #else #end #fi ... </op>
+         <pc> PCOUNT </pc>
+         <program> PGM </program>
+
+
+// -   In `NORMAL` or `VMTESTS` mode, `#next` checks if the opcode is exceptional,
+//     runs it if not, then increments the program counter.
+
+
+    rule <mode> EXECMODE </mode>
+         <op> #next
            => #pushCallStack
            ~> #exceptional? [ OP ] ~> #exec [ OP ] ~> #pc [ OP ]
            ~> #? #dropCallStack : #popCallStack ~> #exception ?#
@@ -330,74 +369,50 @@ module ETHEREUM
          </op>
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
+      requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
 
-    rule <op> #next => #if word2Bool(PCOUNT <Word #sizeOpCodeMap(PGM)) #then #exception #else #end #fi ... </op>
-         <pc> PCOUNT </pc> <program> PGM </program>
-      requires notBool (PCOUNT in_keys(PGM))
 
-    syntax InternalOp ::= "#execute"
- // --------------------------------
-    rule <op> (. => #next) ~> #execute ... </op>
-    rule <op> #end ~> (#execute => .)  ... </op>
+// -   In `GASANALYZE` mode, summaries of the state are taken at each `#gasBreaks`
+//     opcode, otherwise execution is as in `NORMAL`.
 
-    syntax InternalOp ::= #execTo ( Set )
- // -------------------------------------
-    rule <op> (. => #next) ~> #execTo(OPS) ... </op>
+
+    rule <mode> GASANALYZE </mode>
+         <op> #next => #setMode NORMAL ~> #execTo #gasBreaks ~> #setMode GASANALYZE ... </op>
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
-      requires notBool (OP in OPS)
+      requires notBool (OP in #gasBreaks)
 
-    rule <op> #execTo(OPS) => . ... </op>
+    rule <mode> GASANALYZE </mode>
+         <op> #next => #endSummary ~> #setPC (PCOUNT +Int 1) ~> #setGas 1000000000 ~> #beginSummary ~> #next ... </op>
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
-      requires OP in OPS
+      requires OP in #gasBreaks
 
-    rule <op> #execTo(OPS) => #end ... </op>
-         <pc> PCOUNT </pc>
-         <program> PGM </program>
-      requires notBool PCOUNT in keys(PGM)
+    syntax Set ::= "#gasBreaks" [function]
+ // --------------------------------------
+    rule #gasBreaks => (SetItem(JUMP) SetItem(JUMPI) SetItem(JUMPDEST))
+
+    syntax InternalOp ::= "#setPC"  Word
+                        | "#setGas" Word
+ // ------------------------------------
+    rule <op> #setPC PCOUNT  => . ... </op> <pc> _ => PCOUNT </pc>
+    rule <op> #setGas GAVAIL => . ... </op> <gas> _ => GAVAIL </gas>
 
 
-// -   `#initGasAnalyze` sets up the analysis cell to perform gas analysis.
-// -   `#gasAnalyze` analyzes the gas of one basic block of the code, then triggers
-//     `#gasAnalyze` again.
+// -   `#gasAnalyze` analyzes the gas of a chunk of code by setting up the analysis
+//     state appropriately and then setting the mode to `GASANALYZE`.
 
 
-    syntax InternalOp ::= "#initGasAnalyze"
- // ---------------------------------------
-    rule <op> #initGasAnalyze => . ... </op>
+    syntax KItem ::= "#gasAnalyze"
+ // ------------------------------
+    rule <op> #gasAnalyze => #setGas 1000000000 ~> #beginSummary ~> #setMode GASANALYZE ~> #execute ... </op>
          <pc> _ => 0 </pc>
-         <program> PGM </program>
+         <gas> _ => 1000000000 </gas>
          <analysis> _ => ("blocks" |-> .List) </analysis>
 
-    syntax InternalOp ::= "#gasAnalyze"
- // -----------------------------------
-    rule <op> #gasAnalyze => #end ... </op>
-         <pc> PCOUNT </pc>
-         <program> PGM </program>
-      requires notBool (PCOUNT in_keys(PGM))
-
-    rule <op> #gasAnalyze
-           => #abstract ~> #beginSummary
-           ~> #next ~> #execTo(#abstractPoints) ~> #endSummary
-           ~> #gasAnalyze
-          ...
-         </op>
-         <pc> PCOUNT </pc>
-         <program> ... PCOUNT |-> OP ... </program>
-
-    syntax Set ::= "#abstractPoints" [function]
- // -------------------------------------------
-    rule #abstractPoints => (SetItem(JUMP) SetItem(JUMPI) SetItem(JUMPDEST))
-
-    syntax InternalOp ::= #setPC ( Word ) | "#abstract"
- // ---------------------------------------------------
-    rule <op> #setPC(PCOUNT) => . ... </op> <pc> _ => PCOUNT </pc>
-    rule <op> #abstract      => . ... </op> <gas> _ => #symbolicWord </gas>
-
     syntax Summary ::= "{" Word "|" Word "|" Word "}"
-                     | "{" Word "|" Word "|" Word "==>" Word "|" Word "|" Word "}"
- // ------------------------------------------------------------------------------
+                     | "{" Word "==>" Word "|" Word "|" Word "}"
+ // ------------------------------------------------------------
 
     syntax InternalOp ::= "#beginSummary" | "#endSummary"
  // -----------------------------------------------------
@@ -405,7 +420,7 @@ module ETHEREUM
          <analysis> ... "blocks" |-> ((.List => ListItem({ PCOUNT | GAVAIL | MEMUSED })) REST) ... </analysis>
 
     rule <op> #endSummary => . ... </op> <pc> PCOUNT </pc> <gas> GAVAIL </gas> <memoryUsed> MEMUSED </memoryUsed>
-         <analysis> ... "blocks" |-> (ListItem({ PCOUNT1 | GAVAIL1 | MEMUSED1 } => { PCOUNT1 | GAVAIL1 | MEMUSED1 ==> PCOUNT | GAVAIL | MEMUSED}) REST) ... </analysis>
+         <analysis> ... "blocks" |-> (ListItem({ PCOUNT1 | GAVAIL1 | MEMUSED1 } => { PCOUNT1 ==> PCOUNT | GAVAIL -Int GAVAIL1 | MEMUSED -Int MEMUSED1 }) REST) ... </analysis>
 
 
 // ### Exceptional OpCodes
