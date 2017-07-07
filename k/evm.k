@@ -292,9 +292,9 @@ module ETHEREUM
 
     syntax KItem ::= "#?" K ":" K "?#"
  // ----------------------------------
-    rule <op>               (#? K : _ ?# => K) ... </op>
-    rule <op> (#exception ~> #? _ : K ?# => K) ... </op>
-    rule <op> #end       ~> (#? _ : _ ?# => .) ... </op>
+    rule <op>                (#? K : _ ?# => K) ... </op>
+    rule <op> (#exception ~>  #? _ : K ?# => K) ... </op>
+    rule <op>  #end       ~> (#? _ : _ ?# => .) ... </op>
 
 
 // OpCode Execution Cycle
@@ -355,6 +355,7 @@ module ETHEREUM
     rule <op> #next => #if word2Bool(PCOUNT <Word #sizeOpCodeMap(PGM)) #then #exception #else #end #fi ... </op>
          <pc> PCOUNT </pc>
          <program> PGM </program>
+      requires notBool (PCOUNT in_keys(PGM))
 
 
 // -   In `NORMAL` or `VMTESTS` mode, `#next` checks if the opcode is exceptional,
