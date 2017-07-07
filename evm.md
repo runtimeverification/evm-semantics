@@ -351,6 +351,7 @@ I suppose the semantics currently loads `INVALID(N)` where `N` is the position i
     rule <op> #next => #if word2Bool(PCOUNT <Word #sizeOpCodeMap(PGM)) #then #exception #else #end #fi ... </op>
          <pc> PCOUNT </pc>
          <program> PGM </program>
+      requires notBool (PCOUNT in_keys(PGM))
 ```
 
 -   In `NORMAL` or `VMTESTS` mode, `#next` checks if the opcode is exceptional, runs it if not, then increments the program counter.
