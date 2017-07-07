@@ -3,32 +3,32 @@ ktest_file=tests/config.xml
 build: k/ethereum-kompiled/extras/timestamp
 all: build split-tests
 defn: $(defn_files)
-split-tests: tests/tests-develop/VMTests/vmArithmeticTest/make.timestamp \
-			 tests/tests-develop/VMTests/vmBitwiseLogicOperationTest/make.timestamp \
-			 tests/tests-develop/VMTests/vmBlockInfoTest/make.timestamp \
-			 tests/tests-develop/VMTests/vmEnvironmentalInfoTest/make.timestamp \
-			 tests/tests-develop/VMTests/vmIOandFlowOperationsTest/make.timestamp \
-			 tests/tests-develop/VMTests/vmLogTest/make.timestamp \
-			 tests/tests-develop/VMTests/vmPerformanceTest/make.timestamp \
-			 tests/tests-develop/VMTests/vmPushDupSwapTest/make.timestamp \
-			 tests/tests-develop/VMTests/vmSha3Test/make.timestamp \
-			 tests/tests-develop/VMTests/vmSystemOperationsTest/make.timestamp \
-			 tests/tests-develop/VMTests/vmtests/make.timestamp \
-			 tests/tests-develop/VMTests/vmInputLimits/make.timestamp \
-			 tests/tests-develop/VMTests/vmInputLimitsLight/make.timestamp
+split-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
+			 tests/VMTests/vmBitwiseLogicOperationTest/make.timestamp \
+			 tests/VMTests/vmBlockInfoTest/make.timestamp \
+			 tests/VMTests/vmEnvironmentalInfoTest/make.timestamp \
+			 tests/VMTests/vmIOandFlowOperationsTest/make.timestamp \
+			 tests/VMTests/vmLogTest/make.timestamp \
+			 tests/VMTests/vmPerformanceTest/make.timestamp \
+			 tests/VMTests/vmPushDupSwapTest/make.timestamp \
+			 tests/VMTests/vmSha3Test/make.timestamp \
+			 tests/VMTests/vmSystemOperationsTest/make.timestamp \
+			 tests/VMTests/vmtests/make.timestamp \
+			 tests/VMTests/vmInputLimits/make.timestamp \
+			 tests/VMTests/vmInputLimitsLight/make.timestamp
 
 ktest: defn split-tests 
 K:=$(shell krun --version)
 
 passing_test_file=tests/passing.expected
-all_tests=$(wildcard tests/tests-develop/VMTests/*/*.json)
-skipped_tests=$(wildcard tests/tests-develop/VMTests/vmPerformanceTest/*.json) tests/tests-develop/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1021.json
+all_tests=$(wildcard tests/VMTests/*/*.json)
+skipped_tests=$(wildcard tests/VMTests/vmPerformanceTest/*.json) tests/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1021.json
 passing_tests=$(filter-out ${skipped_tests}, ${all_tests})
 passing_targets=${passing_tests:=.test}
 
 test: $(passing_targets)
 
-tests/tests-develop/%.test: tests/tests-develop/% build
+tests/%.test: tests/% build
 	./evm $<
 
 codeship: build split-tests
@@ -36,7 +36,7 @@ codeship: build split-tests
 
 .PHONY: all defn build split-tests ktest
 
-tests/tests-develop/%/make.timestamp: tests/ethereum-tests/%.json
+tests/%/make.timestamp: tests/ethereum-tests/%.json
 	@echo "==   split: $@"
 	mkdir -p $(dir $@)
 ifneq (,$(findstring RV-K, $(K)))
