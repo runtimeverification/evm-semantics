@@ -172,6 +172,7 @@ Our semantics is modal, with the initial mode being set on the command line via 
     syntax Mode ::= "#setMode" Mode
  // -------------------------------
     rule <op> #setMode EXECMODE => . ... </op> <mode> _ => EXECMODE </mode>
+    rule <op> EX:Exception ~> (#setMode _ => .) ... </op>
 ```
 
 Hardware
@@ -398,7 +399,7 @@ I suppose the semantics currently loads `INVALID(N)` where `N` is the position i
 ```{.k .uiuck .rvk}
     syntax KItem ::= "#gasAnalyze"
  // ------------------------------
-    rule <op> #gasAnalyze => #setGas 1000000000 ~> #beginSummary ~> #setMode GASANALYZE ~> #execute ... </op>
+    rule <op> #gasAnalyze => #setGas 1000000000 ~> #beginSummary ~> #setMode GASANALYZE ~> #execute ~> #endSummary ... </op>
          <pc> _ => 0 </pc>
          <gas> _ => 1000000000 </gas>
          <analysis> _ => ("blocks" |-> .List) </analysis>
@@ -407,13 +408,16 @@ I suppose the semantics currently loads `INVALID(N)` where `N` is the position i
                      | "{" Word "==>" Word "|" Word "|" Word "}"
  // ------------------------------------------------------------
 
-    syntax InternalOp ::= "#beginSummary" | "#endSummary"
- // -----------------------------------------------------
+    syntax InternalOp ::= "#beginSummary"
+ // -------------------------------------
     rule <op> #beginSummary => . ... </op> <pc> PCOUNT </pc> <gas> GAVAIL </gas> <memoryUsed> MEMUSED </memoryUsed>
          <analysis> ... "blocks" |-> ((.List => ListItem({ PCOUNT | GAVAIL | MEMUSED })) REST) ... </analysis>
 
+    syntax KItem ::= "#endSummary"
+ // ------------------------------
+    rule <op> (#end => .) ~> #endSummary ... </op>
     rule <op> #endSummary => . ... </op> <pc> PCOUNT </pc> <gas> GAVAIL </gas> <memoryUsed> MEMUSED </memoryUsed>
-         <analysis> ... "blocks" |-> (ListItem({ PCOUNT1 | GAVAIL1 | MEMUSED1 } => { PCOUNT1 ==> PCOUNT | GAVAIL -Int GAVAIL1 | MEMUSED -Int MEMUSED1 }) REST) ... </analysis>
+         <analysis> ... "blocks" |-> (ListItem({ PCOUNT1 | GAVAIL1 | MEMUSED1 } => { PCOUNT1 ==> PCOUNT | GAVAIL1 -Int GAVAIL | MEMUSED -Int MEMUSED1 }) REST) ... </analysis>
 ```
 
 ### Exceptional OpCodes
