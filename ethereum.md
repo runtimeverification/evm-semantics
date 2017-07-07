@@ -73,15 +73,14 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
 -   `start` places `#next` on the `op` cell so that execution of the loaded state begin.
 -   `flush` places `#finalize` on the `op` cell once it sees `#end` in the `op` cell, clearing any exceptions it finds.
--   `gasAnalyze` places `#gasAnalyze` on the `op` cell.
 
 ```{.k .uiuck .rvk}
-    syntax EthereumCommand ::= "start" | "flush" | "gasAnalyze"
- // -----------------------------------------------------------
-    rule <k> start      => . ... </k> <op> . => #execute </op>
-    rule <k> flush      => . ... </k> <op> #end => #finalize </op>
-    rule <k> flush      => . ... </k> <op> #exception => #finalize ~> #exception </op>
-    rule <k> gasAnalyze => . ... </k> <op> . => #gasAnalyze </op>
+    syntax EthereumCommand ::= "start" | "flush"
+ // --------------------------------------------
+    rule <mode> EXECMODE   </mode> <k> start => . ... </k> <op> . => #execute    </op> requires EXECMODE in (SetItem(VMTESTS) SetItem(NORMAL))
+    rule <mode> GASANALYZE </mode> <k> start => . ... </k> <op> . => #gasAnalyze </op>
+    rule <k> flush => . ... </k> <op> #end => #finalize </op>
+    rule <k> flush => . ... </k> <op> #exception => #finalize ~> #exception </op>
 ```
 
 -   `exception` only clears from the `k` cell if there is an exception on the `op` cell.
@@ -135,10 +134,8 @@ The particular key `"exec"` should be processed last, to ensure that the pre/pos
 When it has finished loading it's state, it should `start ~> flush` to perform the execution.
 
 ```{.k .uiuck .rvk}
-    rule run TESTID : { KEY : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , KEY : EXEC , REST } requires KEY in (SetItem("exec") SetItem("gasAnalyze"))
-
-    rule run TESTID : { "exec"       : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush
-    rule run TESTID : { "gasAnalyze" : (EXEC:JSON) } => load "exec" : EXEC ~> gasAnalyze
+    rule run TESTID : { "exec" : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , "exec" : EXEC , REST }
+    rule run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush
 ```
 
 State Manipulation
