@@ -292,9 +292,9 @@ module ETHEREUM
 
     syntax KItem ::= "#?" K ":" K "?#"
  // ----------------------------------
-    rule <op> #? K : _ ?# => K ... </op>
-    rule <op> #exception ~> #? _ : K ?# => K ... </op>
-    rule <op> #end ~> (#? _ : _ ?# => .) ... </op>
+    rule <op>               (#? K : _ ?# => K) ... </op>
+    rule <op> (#exception ~> #? _ : K ?# => K) ... </op>
+    rule <op> #end       ~> (#? _ : _ ?# => .) ... </op>
 
 
 // OpCode Execution Cycle
