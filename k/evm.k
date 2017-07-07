@@ -109,11 +109,11 @@ module ETHEREUM
 
 
 
-                          <acctID>  .AcctID </acctID>
-                          <balance> .Value  </balance>
-                          <code>    .Code   </code>
-                          <storage> .Map    </storage>
-                          <acctMap> .Map    </acctMap>
+                          <acctID>  0:Word </acctID>
+                          <balance> 0:Word </balance>
+                          <code>    .Map   </code>
+                          <storage> .Map   </storage>
+                          <acctMap> .Map   </acctMap>
                         </account>
                       </accounts>
 
@@ -130,11 +130,11 @@ module ETHEREUM
 
 
 
-                          <msgID>  .MsgID   </msgID>
-                          <to>     .AcctID  </to>
-                          <from>   .AcctID  </from>
-                          <amount> .Value   </amount>
-                          <data>   .Map     </data>
+                          <msgID>  0:Word </msgID>
+                          <to>     0:Word </to>
+                          <from>   0:Word </from>
+                          <amount> 0:Word </amount>
+                          <data>   .Map   </data>
                         </message>
                       </messages>
 
@@ -143,10 +143,7 @@ module ETHEREUM
                   </ethereum>
 
     syntax EthereumSimulation
-    syntax AcctID ::= Word | ".AcctID"
-    syntax Code   ::= Map  | ".Code"
-    syntax MsgID  ::= Word | ".MsgID"
-    syntax Value  ::= Word | ".Value"
+ // -------------------------
 
 
 // Modal Semantics
