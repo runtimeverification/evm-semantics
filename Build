@@ -149,8 +149,9 @@ test_pipe_line() {
 }
 
 run_debug() {
+    list="$1" && shift
     run_make all
-    file=$(test_pipe_line list_tests cat "$@" | head -n 1)
+    file=$(test_pipe_line $list cat "$@" | head -n 1)
     progress "debugging: $file"
     krun_with_opts --debugger "$file"
     exit
@@ -171,9 +172,10 @@ case "$run_command" in
     defn)          run_make defn ;;
 
     # Running
-    debug)         run_debug "$@" ;;
     krun)          test_pipe_line list_tests run_krun "$@" ;;
+    debug)         run_debug list_analysis "$@" ;;
     analyze-gas)   export cMODE=GASANALYZE ; test_pipe_line list_analysis run_krun "$@" ;;
+    analyze-debug) export cMODE=GASANALYZE ; run_debug list_analysis "$@" ;;
 
     # Test lists
     list-tests)    test_pipe_line list_tests   cat "$@" ;;
@@ -200,6 +202,7 @@ case "$run_command" in
        $0 krun                  Run a single program from the tests
        $0 debug                 Debug a single program from the tests
        $0 analyze-gas           Analyze a single program from the analysis directory
+       $0 analyze-debug         Debug a single program from the analysis directory
 
        $0 list-tests   <regx>   List passing and failing tests
        $0 list-failing <regx>   List failing tests
