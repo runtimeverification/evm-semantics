@@ -73,7 +73,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
 -   `start` places `#next` on the `op` cell so that execution of the loaded state begin.
 -   `flush` places `#finalize` on the `op` cell once it sees `#end` in the `op` cell, clearing any exceptions it finds.
--   `gasAnalyze` places `#pushCallStack ~> #gasAnalyze` on the `op` cell.
+-   `gasAnalyze` places `#gasAnalyze` on the `op` cell.
 
 ```{.k .uiuck .rvk}
     syntax EthereumCommand ::= "start" | "flush" | "gasAnalyze"
@@ -81,7 +81,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> start      => . ... </k> <op> . => #execute </op>
     rule <k> flush      => . ... </k> <op> #end => #finalize </op>
     rule <k> flush      => . ... </k> <op> #exception => #finalize ~> #exception </op>
-    rule <k> gasAnalyze => . ... </k> <op> . => #initGasAnalyze ~> #pushCallStack ~> #gasAnalyze </op>
+    rule <k> gasAnalyze => . ... </k> <op> . => #gasAnalyze </op>
 ```
 
 -   `exception` only clears from the `k` cell if there is an exception on the `op` cell.
