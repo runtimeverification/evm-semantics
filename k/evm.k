@@ -1379,17 +1379,6 @@ module ETHEREUM
            ...
          </account>
 
-    rule <op> SELFDESTRUCT ACCT => #end ... </op>
-         <schedule> SCHED </schedule>
-         <id> ACCT </id>
-         <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
-         <refund> RF => #ifWord ACCT in SDS #then RF #else RF +Int Rselfdestruct < SCHED > #fi </refund>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BALFROM => 0 </balance>
-           ...
-         </account>
-
 
 // Ethereum Gas Calculation
 // ========================
