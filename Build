@@ -2,7 +2,8 @@
 
 set -e      # Exit immediately if any command fails
 
-tests_dir="tests/tests-develop/VMTests/"
+analysis_dir="tests/analysis/"
+tests_dir="tests/VMTests/"
 output_file="tests/templates/output-uiuck.txt"
 expected_passing="tests/passing.expected"
 long_running="tests/long-running"
@@ -26,6 +27,7 @@ success()  { echo -e "\e[32m== success: $@\e[0m";
            }
 failure()  { echo -e "\e[31m== failure: $@\e[0m"; }
 
+list_analysis()   { find "$analysis_dir" -wholename "*$exp*" -name '*.evm'; }
 list_tests()      { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
 list_passing()    { cat "$expected_passing"; }
 list_failing()    { list_tests | grep -Fvxf "$expected_passing" -; }
@@ -138,29 +140,6 @@ run_make() {
     make -s $make_opts $@
 }
 
-usage() {
-    echo "
-    usage:
-       $0                       Build the definitions and kompile them
-       $0 defn                  Only detangle the definitions
-
-       $0 passing <regx>        Run known passing tests
-       $0 failing <regx>        Run tests who's results we're not sure of
-       $0 test    <regx>        Run passing and unknown tests
-
-                                These tests are filtered by <regex>
-
-       $0 quicktest             Run a quick round of a few tricky tests
-
-       $0 list-tests   <regx>   Run passing and failing tests
-       $0 list-failing <regx>   Run failing tests
-       $0 list-passing <regx>   Run passing tests
-
-
-       $0 krun <arg>            Same as test, but pretty print output instead of checking it
-"
-}
-
 test_pipe_line() {
     local list=$1; shift
     local do_run=$1; shift;
@@ -186,19 +165,52 @@ run_codeship() {
 [[ "$#" == '0' ]] && set build
 run_command="$1" && shift
 case "$run_command" in
+
+    # Building
     build)         run_make build ;;
     defn)          run_make defn ;;
+
+    # Running
     debug)         run_debug "$@" ;;
-    krun)          test_pipe_line list_tests   run_krun  "$@" ;;
+    krun)          test_pipe_line list_tests run_krun "$@" ;;
+    analyze-gas)   export cMODE=GASANALYZE ; test_pipe_line list_analysis run_krun "$@" ;;
+
+    # Test lists
+    list-tests)    test_pipe_line list_tests   cat "$@" ;;
+    list-passing)  test_pipe_line list_passing cat "$@" ;;
+    list-failing)  test_pipe_line list_failing cat "$@" ;;
+    list-codeship) list_passing | filter_codeship "$1" ;;
+    list-analysis) test_pipe_line list_analysis cat "$@" ;;
+
+    # Test runs
     test)          test_pipe_line list_tests   run_tests "$@" ;;
     passing)       test_pipe_line list_passing run_tests "$@" ;;
     failing)       test_pipe_line list_failing run_tests "$@" ;;
     codeship)      run_codeship $@ ;;
     quicktest)     list_quicktests | run_tests ;;
-    list-tests)    test_pipe_line list_tests   cat       "$@" ;;
-    list-passing)  test_pipe_line list_passing cat       "$@" ;;
-    list-failing)  test_pipe_line list_failing cat       "$@" ;;
-    list-codeship) list_passing | filter_codeship "$1" ;;
     ktest)         run_ktest ;;
-    *)             usage; exit 1;;
+
+    *)             echo "
+    usage:
+       $0                       Build the definitions and kompile them
+
+       $0 build                 Detangle the definitions and kompile
+       $0 defn                  Only detangle the definitions
+
+       $0 krun                  Run a single program from the tests
+       $0 debug                 Debug a single program from the tests
+       $0 analyze-gas           Analyze a single program from the analysis directory
+
+       $0 list-tests   <regx>   List passing and failing tests
+       $0 list-failing <regx>   List failing tests
+       $0 list-passing <regx>   List passing tests
+       $0 list-codeship N       List the Nth codeship testsuite
+
+       $0 test    <regx>        Run passing and unknown tests
+       $0 passing <regx>        Run known passing tests
+       $0 failing <regx>        Run tests who's results we're not sure of
+       $0 codeship N            Run the Nth codeship testsuite
+       $0 quicktest             Run 20 random passing tests
+       $0 ktest                 Run tests with ktest
+"; exit ;;
 esac
