@@ -218,8 +218,7 @@ The `callStack` cell stores a list of previous VM execution states.
 
     syntax InternalOp ::= "#dropCallStack"
  // --------------------------------------
-    rule <op> #dropCallStack => . ... </op>
-         <callStack> (ListItem(_) => .List) ... </callStack>
+    rule <op> #dropCallStack => . ... </op> <callStack> (ListItem(_) => .List) ... </callStack>
 ```
 
 The `interimStates` cell stores a list of previous world states.
@@ -274,8 +273,7 @@ The `interimStates` cell stores a list of previous world states.
 
     syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
-    rule <op> #dropWorldState => . ... </op>
-         <interimStates> (ListItem(_) => .List) ... </interimStates>
+    rule <op> #dropWorldState => . ... </op> <interimStates> (ListItem(_) => .List) ... </interimStates>
 ```
 
 Simple commands controlling exceptions provide control-flow.
@@ -558,25 +556,6 @@ The `CallOp` opcodes all interperet their second argument as an address.
     rule <op> #exec [ CO:CallOp     => CO  W0 #addr(W1) W2 W3 W4 W5 W6 ] ... </op> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
 ```
 
-Later we'll need a way to strip the arguments from an operator.
-
--   `#stripArgs` removes the arguments from an operator.
-
-```{.k .uiuck .rvk}
-    syntax OpCode ::= #stripArgs ( OpCode ) [function]
- // --------------------------------------------------
-    rule #stripArgs(NOP:NullStackOp)            => NOP
-    rule #stripArgs(UOP:UnStackOp _)            => UOP
-    rule #stripArgs(BOP:BinStackOp _ _)         => BOP
-    rule #stripArgs(TOP:TernStackOp _ _ _)      => TOP
-    rule #stripArgs(QOP:QuadStackOp _ _ _ _)    => QOP
-    rule #stripArgs(PUSHOP:PushOp)              => PUSHOP
-    rule #stripArgs(SOP:StackOp)                => SOP
-    rule #stripArgs(SOP:StackOp _)              => SOP
-    rule #stripArgs(COP:CallOp _ _ _ _ _ _ _)   => COP
-    rule #stripArgs(CSOP:CallSixOp _ _ _ _ _ _) => CSOP
-```
-
 -   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
 
 ```{.k .uiuck .rvk}
@@ -636,8 +615,7 @@ After executing a transaction, it's necessary to have the effect of the substate
     syntax InternalOp ::= "#finalize"
  // ---------------------------------
     rule <op> #finalize => . ... </op>
-         <selfDestruct> .Set </selfDestruct>
-         <refund>       0    </refund>
+         <selfDestruct> .Set </selfDestruct> <refund> 0 </refund>
 
     rule <op> #finalize ... </op>
          <id> ACCT </id>
@@ -1366,7 +1344,6 @@ In the yellowpaper, each opcode is defined to consume zero gas unless specified 
     rule #memory ( MSTORE INDEX _              , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
     rule #memory ( MSTORE8 INDEX _             , MU ) => #memoryUsageUpdate(MU, INDEX, 1)
     rule #memory ( SHA3 START WIDTH            , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
-    rule #memory ( LOG(N) START WIDTH          , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
     rule #memory ( CODECOPY START _ WIDTH      , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
     rule #memory ( RETURN START WIDTH          , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
     rule #memory ( CALLDATACOPY START _ WIDTH  , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
@@ -1434,6 +1411,23 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
     rule <op> #gasExec(EXTCODESIZE _) => Gextcodesize < SCHED > ... </op> <schedule> SCHED </schedule>
     rule <op> #gasExec(BALANCE _)     => Gbalance     < SCHED > ... </op> <schedule> SCHED </schedule>
     rule <op> #gasExec(BLOCKHASH _)   => Gblockhash   < SCHED > ... </op> <schedule> SCHED </schedule>
+```
+
+-   `#stripArgs` removes the arguments from an operator.
+
+```{.k .uiuck .rvk}
+    syntax OpCode ::= #stripArgs ( OpCode ) [function]
+ // --------------------------------------------------
+    rule #stripArgs(NOP:NullStackOp)            => NOP
+    rule #stripArgs(UOP:UnStackOp _)            => UOP
+    rule #stripArgs(BOP:BinStackOp _ _)         => BOP
+    rule #stripArgs(TOP:TernStackOp _ _ _)      => TOP
+    rule #stripArgs(QOP:QuadStackOp _ _ _ _)    => QOP
+    rule #stripArgs(PUSHOP:PushOp)              => PUSHOP
+    rule #stripArgs(SOP:StackOp)                => SOP
+    rule #stripArgs(SOP:StackOp _)              => SOP
+    rule #stripArgs(COP:CallOp _ _ _ _ _ _ _)   => COP
+    rule #stripArgs(CSOP:CallSixOp _ _ _ _ _ _) => CSOP
 ```
 
 There are several helpers for calculating gas (most of them also specified in the yellowpaper).

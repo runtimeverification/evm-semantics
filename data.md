@@ -184,8 +184,8 @@ The `<op>Word` comparison operators automatically interperet the `Bool` as a `Wo
     rule W0:Int s<Word W1:Int => abs(W1) <Word abs(W0) requires sgn(W0) ==K -1 andBool sgn(W1) ==K -1
 ```
 
-Bitwise operators.
-------------------
+Bitwise Operators
+-----------------
 
 Bitwise logical operators are lifted from the integer versions.
 
@@ -423,7 +423,7 @@ Here we provide some standard parser/unparser functions for that format.
 JSON
 ----
 
-Writing a JSON parser in K takes 5 lines.
+Writing a JSON parser in K takes 6 lines.
 
 ```{.k .uiuck .rvk}
     syntax JSONList ::= List{JSON,","}
