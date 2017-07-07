@@ -149,12 +149,32 @@ module ETHEREUM
 
                   </ethereum>
 
-    syntax Mode ::= "VMTESTS" | "NORMAL"
     syntax EthereumSimulation
     syntax AcctID ::= Word | ".AcctID"
     syntax Code   ::= Map  | ".Code"
     syntax MsgID  ::= Word | ".MsgID"
     syntax Value  ::= Word | ".Value"
+```
+
+Modal Semantics
+---------------
+
+Our semantics is modal, with the initial mode being set on the command line via `-cMODE=EXECMODE`.
+
+-   `NORMAL` executes as a client on the network would.
+-   `VMTESTS` skips `CALL*` and `CREATE` operations.
+-   `GASANALYZE` performs gas analysis of the program instead of executing normally.
+
+```{.k .uiuck .rvk}
+    syntax Mode ::= "NORMAL" | "VMTESTS" | "GASANALYZE"
+```
+
+-   `#setMode_` sets the mode to the supplied one.
+
+```{.k .uiuck .rvk}
+    syntax Mode ::= "#setMode" Mode
+ // -------------------------------
+    rule <op> #setMode EXECMODE => . ... </op> <mode> _ => EXECMODE </mode>
 ```
 
 Hardware
