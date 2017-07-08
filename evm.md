@@ -1399,15 +1399,66 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
     rule <op> #gasExec(JUMPDEST) => Gjumpdest < SCHED > ... </op> <schedule> SCHED </schedule>
     rule <op> #gasExec(SLOAD _)  => Gsload    < SCHED > ... </op> <schedule> SCHED </schedule>
 
-    rule <op> #gasExec(OP)            => Gzero        < SCHED > ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wzero
-    rule <op> #gasExec(OP)            => Gbase        < SCHED > ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wbase
-    rule <op> #gasExec(OP)            => Gverylow     < SCHED > ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wverylow
-    rule <op> #gasExec(PUSH(_, _))    => Gverylow     < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(DUP(_) _)      => Gverylow     < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(SWAP(_) _)     => Gverylow     < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(OP)            => Glow         < SCHED > ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wlow
-    rule <op> #gasExec(OP)            => Gmid         < SCHED > ... </op> <schedule> SCHED </schedule> requires #stripArgs(OP) in Wmid
-    rule <op> #gasExec(JUMPI _ _)     => Ghigh        < SCHED > ... </op> <schedule> SCHED </schedule>
+    // Wzero
+    rule <op> #gasExec(STOP)       => Gzero < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(RETURN _ _) => Gzero < SCHED > ... </op> <schedule> SCHED </schedule>
+
+    // Wbase
+    rule <op> #gasExec(ADDRESS)      => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(ORIGIN)       => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(CALLER)       => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(CALLVALUE)    => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(CALLDATASIZE) => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(CODESIZE)     => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(GASPRICE)     => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(COINBASE)     => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(TIMESTAMP)    => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(NUMBER)       => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(DIFFICULTY)   => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(GASLIMIT)     => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(POP _)        => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(PC)           => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(MSIZE)        => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(GAS)          => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+
+    // Wverylow
+    rule <op> #gasExec(ADD _ _)        => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SUB _ _)        => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(NOT _)          => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(LT _ _)         => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(GT _ _)         => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SLT _ _)        => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SGT _ _)        => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(EQ _ _)         => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(ISZERO _)       => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(AND _ _)        => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(EVMOR _ _)      => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(XOR _ _)        => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(BYTE _ _)       => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(CALLDATALOAD _) => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(MLOAD _)        => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(MSTORE _ _)     => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(MSTORE8 _ _)    => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(PUSH(_, _))     => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(DUP(_) _)       => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SWAP(_) _)      => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+
+    // Wlow
+    rule <op> #gasExec(MUL _ _)        => Glow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(DIV _ _)        => Glow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SDIV _ _)       => Glow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(MOD _ _)        => Glow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SMOD _ _)       => Glow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SIGNEXTEND _ _) => Glow < SCHED > ... </op> <schedule> SCHED </schedule>
+
+    // Wmid
+    rule <op> #gasExec(ADDMOD _ _ _) => Gmid < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(MULMOD _ _ _) => Gmid < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(JUMP _) => Gmid < SCHED > ... </op> <schedule> SCHED </schedule>
+
+    // Whigh
+    rule <op> #gasExec(JUMPI _ _) => Ghigh < SCHED > ... </op> <schedule> SCHED </schedule>
+
     rule <op> #gasExec(EXTCODESIZE _) => Gextcodesize < SCHED > ... </op> <schedule> SCHED </schedule>
     rule <op> #gasExec(BALANCE _)     => Gbalance     < SCHED > ... </op> <schedule> SCHED </schedule>
     rule <op> #gasExec(BLOCKHASH _)   => Gblockhash   < SCHED > ... </op> <schedule> SCHED </schedule>
@@ -1475,7 +1526,7 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
 
 Some subsets of the opcodes are called out because they all have the same gas cost.
 
-```{.k .uiuck .rvk}
+```
     syntax Set ::= "Wzero"    [function] | "Wbase" [function]
                  | "Wverylow" [function] | "Wlow"  [function] | "Wmid" [function]
  // -----------------------------------------------------------------------------
