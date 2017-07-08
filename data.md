@@ -166,11 +166,16 @@ The `<op>Word` comparison operators automatically interperet the `Bool` as a `Wo
                   | Word ">=Word" Word [function]
                   | Word "==Word" Word [function]
  // ---------------------------------------------
-    rule W0:Int <Word  W1:Int => bool2Word(W0 <Int  W1)
-    rule W0:Int >Word  W1:Int => bool2Word(W0 >Int  W1)
-    rule W0:Int <=Word W1:Int => bool2Word(W0 <=Int W1)
-    rule W0:Int >=Word W1:Int => bool2Word(W0 >=Int W1)
-    rule W0:Int ==Word W1:Int => bool2Word(W0 ==Int W1)
+    rule W0:Int <Word  W1:Int => 1 requires W0 <Int   W1
+    rule W0:Int <Word  W1:Int => 0 requires W0 >=Int  W1
+    rule W0:Int >Word  W1:Int => 1 requires W0 >Int   W1
+    rule W0:Int >Word  W1:Int => 0 requires W0 <=Int  W1
+    rule W0:Int <=Word W1:Int => 1 requires W0 <=Int  W1
+    rule W0:Int <=Word W1:Int => 0 requires W0 >Int   W1
+    rule W0:Int >=Word W1:Int => 1 requires W0 >=Int  W1
+    rule W0:Int >=Word W1:Int => 0 requires W0 <Int   W1
+    rule W0:Int ==Word W1:Int => 1 requires W0 ==Int  W1
+    rule W0:Int ==Word W1:Int => 0 requires W0 =/=Int W1
 ```
 
 -   `s<Word` implements a less-than for `Word` (with signed interperetation).
@@ -274,37 +279,37 @@ This stack also serves as a cons-list, so we provide some standard cons-list man
     rule .WordStack ++ WS' => WS'
     rule (W : WS)   ++ WS' => W : (WS ++ WS')
 
-    syntax WordStack ::= #take ( Word , WordStack ) [function]
- // ----------------------------------------------------------
+    syntax WordStack ::= #take ( Int , WordStack ) [function]
+ // ---------------------------------------------------------
     rule #take(0, WS)         => .WordStack
-    rule #take(N, .WordStack) => 0 : #take(N -Word 1, .WordStack) requires word2Bool(N >Word 0)
-    rule #take(N, (W : WS))   => W : #take(N -Word 1, WS)         requires word2Bool(N >Word 0)
+    rule #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
+    rule #take(N, (W : WS))   => W : #take(N -Int 1, WS)         requires N >Int 0
 
-    syntax WordStack ::= #drop ( Word , WordStack ) [function]
- // ----------------------------------------------------------
+    syntax WordStack ::= #drop ( Int , WordStack ) [function]
+ // ---------------------------------------------------------
     rule #drop(0, WS)         => WS
     rule #drop(N, .WordStack) => .WordStack
-    rule #drop(N, (W : WS))   => #drop(N -Word 1, WS) requires word2Bool(N >Word 0)
+    rule #drop(N, (W : WS))   => #drop(N -Int 1, WS) requires N >Int 0
 ```
 
 -   `WS [ N ]` accesses element $N$ of $WS$.
 -   `WS [ N := W ]` sets element $N$ of $WS$ to $W$ (padding with zeros as needed).
 
 ```{.k .uiuck .rvk}
-    syntax Word ::= WordStack "[" Word "]" [function]
- // -------------------------------------------------
+    syntax Word ::= WordStack "[" Int "]" [function]
+ // ------------------------------------------------
     rule (W0 : WS)   [0] => W0
-    rule (.WordStack)[N] => 0             requires word2Bool(N >Word 0)
-    rule (W0 : WS)   [N] => WS[N -Word 1] requires word2Bool(N >Word 0)
+    rule (.WordStack)[N] => 0            requires N >Int 0
+    rule (W0 : WS)   [N] => WS[N -Int 1] requires N >Int 0
 
-    syntax WordStack ::= WordStack "[" Word ":=" Word "]" [function]
- // ----------------------------------------------------------------
+    syntax WordStack ::= WordStack "[" Int ":=" Word "]" [function]
+ // ---------------------------------------------------------------
     rule (W0 : WS)  [ 0 := W ] => W  : WS
-    rule .WordStack [ N := W ] => 0  : (.WordStack [ N -Int 1 := W ]) requires word2Bool(N >Word 0)
-    rule (W0 : WS)  [ N := W ] => W0 : (WS [ N -Int 1 := W ])         requires word2Bool(N >Word 0)
+    rule .WordStack [ N := W ] => 0  : (.WordStack [ N -Int 1 := W ]) requires N >Int 0
+    rule (W0 : WS)  [ N := W ] => W0 : (WS [ N -Int 1 := W ])         requires N >Int 0
 
-    syntax WordStack ::= WordStack "[" Word ".." Word "]" [function]
- // ----------------------------------------------------------------
+    syntax WordStack ::= WordStack "[" Int ".." Int "]" [function]
+ // --------------------------------------------------------------
     rule WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
 ```
 
