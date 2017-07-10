@@ -1528,23 +1528,6 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
     rule <op> #gasExec(SCHED, BLOCKHASH _)   => Gblockhash   < SCHED > ... </op>
 ```
 
--   `#stripArgs` removes the arguments from an operator.
-
-```{.k .uiuck .rvk}
-    syntax OpCode ::= #stripArgs ( OpCode ) [function]
- // --------------------------------------------------
-    rule #stripArgs(NOP:NullStackOp)            => NOP
-    rule #stripArgs(UOP:UnStackOp _)            => UOP
-    rule #stripArgs(BOP:BinStackOp _ _)         => BOP
-    rule #stripArgs(TOP:TernStackOp _ _ _)      => TOP
-    rule #stripArgs(QOP:QuadStackOp _ _ _ _)    => QOP
-    rule #stripArgs(PUSHOP:PushOp)              => PUSHOP
-    rule #stripArgs(SOP:StackOp)                => SOP
-    rule #stripArgs(SOP:StackOp _)              => SOP
-    rule #stripArgs(COP:CallOp _ _ _ _ _ _ _)   => COP
-    rule #stripArgs(CSOP:CallSixOp _ _ _ _ _ _) => CSOP
-```
-
 There are several helpers for calculating gas (most of them also specified in the yellowpaper).
 
 Note: These are all functions as the operator `#gasExec` has already loaded all the relevant state.
@@ -1605,6 +1588,23 @@ Some subsets of the opcodes are called out because they all have the same gas co
                      )
     rule Wlow     => (SetItem(MUL) SetItem(DIV) SetItem(SDIV) SetItem(MOD) SetItem(SMOD) SetItem(SIGNEXTEND))
     rule Wmid     => (SetItem(ADDMOD) SetItem(MULMOD) SetItem(JUMP))
+```
+
+-   `#stripArgs` removes the arguments from an operator.
+
+```
+    syntax OpCode ::= #stripArgs ( OpCode ) [function]
+ // --------------------------------------------------
+    rule #stripArgs(NOP:NullStackOp)            => NOP
+    rule #stripArgs(UOP:UnStackOp _)            => UOP
+    rule #stripArgs(BOP:BinStackOp _ _)         => BOP
+    rule #stripArgs(TOP:TernStackOp _ _ _)      => TOP
+    rule #stripArgs(QOP:QuadStackOp _ _ _ _)    => QOP
+    rule #stripArgs(PUSHOP:PushOp)              => PUSHOP
+    rule #stripArgs(SOP:StackOp)                => SOP
+    rule #stripArgs(SOP:StackOp _)              => SOP
+    rule #stripArgs(COP:CallOp _ _ _ _ _ _ _)   => COP
+    rule #stripArgs(CSOP:CallSixOp _ _ _ _ _ _) => CSOP
 ```
 
 Fee Schedule from C++ Implementation
