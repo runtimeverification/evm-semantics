@@ -12,10 +12,34 @@ In this repository we provide a model of the EVM in K.
 We are continuously testing our implementation against the [Ethereum Test Set](https://github.com/ethereum/tests).
 The above marker only checks for a subset of the tests (those in [our codeship list](tests/passing.expected)), though many more of the tests than those listed there are passing.
 
+Building and Running
+--------------------
+
+There are two versions of K available, [RV-K](https://github.com/runtimeverification/k) and [UIUC-K](https://github.com/kframework/k).
+The files in `k/*.k` in this repository work with UIUC-K, so install that first.
+
+The script `Build` supplied in this repository will build an run the definition (use `./Build help` to see usage information).
+First `kompile` the definition with `./Build build`; to clone and split the tests run `make split-tests`.
+
+To run JSON input (or JSON with our extended "pretty" syntax for input) in file `tests/VMTests/vmArithmeticTest/add0.json` for example (after splitting the tests):
+
+```sh
+$ ./Build build
+...
+$ make split-tests
+...
+$ krun --directory k/ --debug \
+       -cMODE=NORMAL -cSCHEDULE=DEFAULT \
+       tests/VMTests/vmArithmeticTest/add0.json
+```
+
+To run a gas analysis of the program, instead supply `-cMODE=GASANALYZE`.
+To run with the Homestead fee schedule instead (or any of the other schedules), instead supply `-cSCHEDULE=HOMESTEAD`.
+
 Issues
 ------
 
-We are curating a list of [things we wish were better about EVM](issues.md).
+We are curating a list of [things we wish were different about EVM](issues.md).
 
 Unfinished
 ----------
@@ -26,6 +50,11 @@ Ethereum state consists of two parts, the network state and the EVM execution st
 Right now the semantics declares the configuration for both of these components together, and many rules reach between these two subconfigurations.
 Separating the two subconfigurations and declaring an API for the network dynamics would provide a better understanding of the "necessary ingredients" for a consensus-driven distributed store.
 This would also allow us to experiment with alternative programming languages to EVM for future blockchain systems.
+
+### Full Transaction Execution
+
+Right now we are passing the VMTests, but haven't run tests on entire transactions.
+To have confidence in our semantics, we need to run the tests involving entire transactions (not just chunks of VM code).
 
 ### TODOs
 
