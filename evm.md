@@ -1336,23 +1336,88 @@ In the yellowpaper, each opcode is defined to consume zero gas unless specified 
 -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper which helps track the memory used.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= #memory ( OpCode , Int ) [function]
- // ---------------------------------------------------------
-    rule #memory ( OP , MU ) => MU [owise]
+    syntax Int ::= #memory ( OpCode , Int ) [function]
+ // --------------------------------------------------
+    rule #memory ( MLOAD INDEX     , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
+    rule #memory ( MSTORE INDEX _  , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
+    rule #memory ( MSTORE8 INDEX _ , MU ) => #memoryUsageUpdate(MU, INDEX, 1)
 
-    rule #memory ( MLOAD INDEX                 , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
-    rule #memory ( MSTORE INDEX _              , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
-    rule #memory ( MSTORE8 INDEX _             , MU ) => #memoryUsageUpdate(MU, INDEX, 1)
-    rule #memory ( SHA3 START WIDTH            , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( SHA3 START WIDTH   , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( LOG(_) START WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+
     rule #memory ( CODECOPY START _ WIDTH      , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
-    rule #memory ( RETURN START WIDTH          , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
-    rule #memory ( CALLDATACOPY START _ WIDTH  , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
-    rule #memory ( LOG(_) START WIDTH          , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
     rule #memory ( EXTCODECOPY _ START _ WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
-    rule #memory ( CREATE _ START WIDTH        , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( CALLDATACOPY START _ WIDTH  , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+
+    rule #memory ( CREATE _ START WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( RETURN START WIDTH   , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
 
     rule #memory ( COP:CallOp     _ _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
     rule #memory ( CSOP:CallSixOp _ _   ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
+```
+
+Grumble grumble, K sucks at `owise`.
+
+```{.k .uiuck .rvk}
+    rule #memory(JUMP _,    MU) => MU
+    rule #memory(JUMPI _ _, MU) => MU
+    rule #memory(JUMPDEST,  MU) => MU
+
+    rule #memory(SSTORE _ _,   MU) => MU
+    rule #memory(SLOAD _,      MU) => MU
+
+    rule #memory(ADD _ _,        MU) => MU
+    rule #memory(SUB _ _,        MU) => MU
+    rule #memory(MUL _ _,        MU) => MU
+    rule #memory(DIV _ _,        MU) => MU
+    rule #memory(EXP _ _,        MU) => MU
+    rule #memory(MOD _ _,        MU) => MU
+    rule #memory(SDIV _ _,       MU) => MU
+    rule #memory(SMOD _ _,       MU) => MU
+    rule #memory(SIGNEXTEND _ _, MU) => MU
+    rule #memory(ADDMOD _ _ _,   MU) => MU
+    rule #memory(MULMOD _ _ _,   MU) => MU
+
+    rule #memory(NOT _,     MU) => MU
+    rule #memory(AND _ _,   MU) => MU
+    rule #memory(EVMOR _ _, MU) => MU
+    rule #memory(XOR _ _,   MU) => MU
+    rule #memory(BYTE _ _,  MU) => MU
+    rule #memory(ISZERO _,  MU) => MU
+
+    rule #memory(LT _ _,         MU) => MU
+    rule #memory(GT _ _,         MU) => MU
+    rule #memory(SLT _ _,        MU) => MU
+    rule #memory(SGT _ _,        MU) => MU
+    rule #memory(EQ _ _,         MU) => MU
+
+    rule #memory(POP _,      MU) => MU
+    rule #memory(PUSH(_, _), MU) => MU
+    rule #memory(DUP(_) _,   MU) => MU
+    rule #memory(SWAP(_) _,  MU) => MU
+
+    rule #memory(STOP,         MU) => MU
+    rule #memory(ADDRESS,      MU) => MU
+    rule #memory(ORIGIN,       MU) => MU
+    rule #memory(CALLER,       MU) => MU
+    rule #memory(CALLVALUE,    MU) => MU
+    rule #memory(CALLDATASIZE, MU) => MU
+    rule #memory(CODESIZE,     MU) => MU
+    rule #memory(GASPRICE,     MU) => MU
+    rule #memory(COINBASE,     MU) => MU
+    rule #memory(TIMESTAMP,    MU) => MU
+    rule #memory(NUMBER,       MU) => MU
+    rule #memory(DIFFICULTY,   MU) => MU
+    rule #memory(GASLIMIT,     MU) => MU
+    rule #memory(PC,           MU) => MU
+    rule #memory(MSIZE,        MU) => MU
+    rule #memory(GAS,          MU) => MU
+
+    rule #memory(SELFDESTRUCT _, MU) => MU
+    rule #memory(CALLDATALOAD _, MU) => MU
+    rule #memory(EXTCODESIZE _,  MU) => MU
+    rule #memory(BALANCE _,      MU) => MU
+    rule #memory(BLOCKHASH _,    MU) => MU
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
  // ----------------------------------------------------------------
