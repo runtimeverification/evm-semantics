@@ -561,7 +561,7 @@ The `CallOp` opcodes all interperet their second argument as an address.
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas"
  // ----------------------------------------------------------
-    rule <op> #gas [ OP ] => #gasExec(OP) ~> #memory(OP, MU) ~> #deductGas ... </op> <memoryUsed> MU </memoryUsed>
+    rule <op> #gas [ OP ] => #gasExec(SCHED, OP) ~> #memory(OP, MU) ~> #deductGas ... </op> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
 
     rule <op> GEXEC:Int ~> MU':Int ~> #deductGas => #exception ... </op> requires MU' >=Int (2 ^Int 256)
     rule <op> (GEXEC:Int ~> MU':Int => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) +Int GEXEC)  ~> #deductGas ... </op>
@@ -1433,10 +1433,9 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
 -   `#gasExec` loads all the relevant surronding state and uses that to compute the intrinsic execution gas of each opcode.
 
 ```{.k .uiuck .rvk}
-    syntax Word ::= #gasExec ( OpCode )
- // -----------------------------------
-    rule <op> #gasExec(SSTORE INDEX VALUE) => Csstore(SCHED, INDEX, VALUE, STORAGE) ... </op>
-         <schedule> SCHED </schedule>
+    syntax Word ::= #gasExec ( Schedule , OpCode )
+ // ----------------------------------------------
+    rule <op> #gasExec(SCHED, SSTORE INDEX VALUE) => Csstore(SCHED, INDEX, VALUE, STORAGE) ... </op>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1444,89 +1443,89 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
            ...
          </account>
 
-    rule <op> #gasExec(EXP W0 0)  => Gexp < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </op> <schedule> SCHED </schedule> requires W1 =/=K 0
+    rule <op> #gasExec(SCHED, EXP W0 0)  => Gexp < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </op> requires W1 =/=K 0
 
-    rule <op> #gasExec(CALLDATACOPY  _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(CODECOPY      _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(EXTCODECOPY _ _ _ WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SCHED, CALLDATACOPY  _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </op>
+    rule <op> #gasExec(SCHED, CODECOPY      _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </op>
+    rule <op> #gasExec(SCHED, EXTCODECOPY _ _ _ WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </op>
 
-    rule <op> #gasExec(LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </op>
 
-    rule <op> #gasExec(COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) ... </op> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas> <schedule> SCHED </schedule>
-    rule <op> #gasExec(CSOP:CallSixOp GCAP ACCTTO       _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, 0)     ... </op> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SCHED, COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) ... </op> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas>
+    rule <op> #gasExec(SCHED, CSOP:CallSixOp GCAP ACCTTO       _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, 0)     ... </op> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas>
 
-    rule <op> #gasExec(SELFDESTRUCT ACCT) => Cselfdestruct(SCHED, ACCT, ACCTS) ... </op> <schedule> SCHED </schedule> <activeAccounts> ACCTS </activeAccounts>
-    rule <op> #gasExec(CREATE _ _ _)      => Gcreate < SCHED >                 ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SCHED, SELFDESTRUCT ACCT) => Cselfdestruct(SCHED, ACCT, ACCTS) ... </op> <activeAccounts> ACCTS </activeAccounts>
+    rule <op> #gasExec(SCHED, CREATE _ _ _)      => Gcreate < SCHED >                 ... </op>
 
-    rule <op> #gasExec(SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </op>
 
-    rule <op> #gasExec(JUMPDEST) => Gjumpdest < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(SLOAD _)  => Gsload    < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SCHED, JUMPDEST) => Gjumpdest < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, SLOAD _)  => Gsload    < SCHED > ... </op>
 
     // Wzero
-    rule <op> #gasExec(STOP)       => Gzero < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(RETURN _ _) => Gzero < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SCHED, STOP)       => Gzero < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, RETURN _ _) => Gzero < SCHED > ... </op>
 
     // Wbase
-    rule <op> #gasExec(ADDRESS)      => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(ORIGIN)       => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(CALLER)       => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(CALLVALUE)    => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(CALLDATASIZE) => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(CODESIZE)     => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(GASPRICE)     => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(COINBASE)     => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(TIMESTAMP)    => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(NUMBER)       => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(DIFFICULTY)   => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(GASLIMIT)     => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(POP _)        => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(PC)           => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(MSIZE)        => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(GAS)          => Gbase < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SCHED, ADDRESS)      => Gbase < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, ORIGIN)       => Gbase < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, CALLER)       => Gbase < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, CALLVALUE)    => Gbase < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, CALLDATASIZE) => Gbase < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, CODESIZE)     => Gbase < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, GASPRICE)     => Gbase < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, COINBASE)     => Gbase < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, TIMESTAMP)    => Gbase < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, NUMBER)       => Gbase < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, DIFFICULTY)   => Gbase < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, GASLIMIT)     => Gbase < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, POP _)        => Gbase < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, PC)           => Gbase < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, MSIZE)        => Gbase < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, GAS)          => Gbase < SCHED > ... </op>
 
     // Wverylow
-    rule <op> #gasExec(ADD _ _)        => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(SUB _ _)        => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(NOT _)          => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(LT _ _)         => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(GT _ _)         => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(SLT _ _)        => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(SGT _ _)        => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(EQ _ _)         => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(ISZERO _)       => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(AND _ _)        => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(EVMOR _ _)      => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(XOR _ _)        => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(BYTE _ _)       => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(CALLDATALOAD _) => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(MLOAD _)        => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(MSTORE _ _)     => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(MSTORE8 _ _)    => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(PUSH(_, _))     => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(DUP(_) _)       => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(SWAP(_) _)      => Gverylow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SCHED, ADD _ _)        => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, SUB _ _)        => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, NOT _)          => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, LT _ _)         => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, GT _ _)         => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, SLT _ _)        => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, SGT _ _)        => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, EQ _ _)         => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, ISZERO _)       => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, AND _ _)        => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, EVMOR _ _)      => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, XOR _ _)        => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, BYTE _ _)       => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, CALLDATALOAD _) => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, MLOAD _)        => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, MSTORE _ _)     => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, MSTORE8 _ _)    => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, PUSH(_, _))     => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, DUP(_) _)       => Gverylow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, SWAP(_) _)      => Gverylow < SCHED > ... </op>
 
     // Wlow
-    rule <op> #gasExec(MUL _ _)        => Glow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(DIV _ _)        => Glow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(SDIV _ _)       => Glow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(MOD _ _)        => Glow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(SMOD _ _)       => Glow < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(SIGNEXTEND _ _) => Glow < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SCHED, MUL _ _)        => Glow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, DIV _ _)        => Glow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, SDIV _ _)       => Glow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, MOD _ _)        => Glow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, SMOD _ _)       => Glow < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, SIGNEXTEND _ _) => Glow < SCHED > ... </op>
 
     // Wmid
-    rule <op> #gasExec(ADDMOD _ _ _) => Gmid < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(MULMOD _ _ _) => Gmid < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(JUMP _) => Gmid < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SCHED, ADDMOD _ _ _) => Gmid < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, MULMOD _ _ _) => Gmid < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, JUMP _) => Gmid < SCHED > ... </op>
 
     // Whigh
-    rule <op> #gasExec(JUMPI _ _) => Ghigh < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SCHED, JUMPI _ _) => Ghigh < SCHED > ... </op>
 
-    rule <op> #gasExec(EXTCODESIZE _) => Gextcodesize < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(BALANCE _)     => Gbalance     < SCHED > ... </op> <schedule> SCHED </schedule>
-    rule <op> #gasExec(BLOCKHASH _)   => Gblockhash   < SCHED > ... </op> <schedule> SCHED </schedule>
+    rule <op> #gasExec(SCHED, EXTCODESIZE _) => Gextcodesize < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, BALANCE _)     => Gbalance     < SCHED > ... </op>
+    rule <op> #gasExec(SCHED, BLOCKHASH _)   => Gblockhash   < SCHED > ... </op>
 ```
 
 -   `#stripArgs` removes the arguments from an operator.
