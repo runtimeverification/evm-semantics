@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-exec /usr/bin/ld -L /usr/lib/x86_64-linux-gnu/ "$@"
