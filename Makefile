@@ -20,17 +20,6 @@ split-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
 ktest: defn split-tests 
 K:=$(shell krun --version)
 
-passing_test_file=tests/passing.expected
-all_tests=$(wildcard tests/VMTests/*/*.json)
-skipped_tests=$(wildcard tests/VMTests/vmPerformanceTest/*.json) tests/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1021.json
-passing_tests=$(filter-out ${skipped_tests}, ${all_tests})
-passing_targets=${passing_tests:=.test}
-
-test: $(passing_targets)
-
-tests/%.test: tests/% build
-	./evm $<
-
 .PHONY: all defn build split-tests ktest
 
 tests/%/make.timestamp: tests/ethereum-tests/%.json
