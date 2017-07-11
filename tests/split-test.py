@@ -15,9 +15,3 @@ with open (source_file, "r") as source:
         target_file = os.path.join(target_dir, subtest + ".json")
         with open (target_file, "w+") as target:
             json.dump({ subtest: original_test[subtest] }, target, indent=4)
-        if (len(sys.argv) == 4):
-            target_out_file = os.path.join(target_dir, subtest + ".json.out")
-            template_file = sys.argv[3] 
-            with open (target_out_file, "w+") as outfile:
-                with open (template_file, "r") as template:
-                    outfile.write(template.read())

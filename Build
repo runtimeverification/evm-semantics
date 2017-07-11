@@ -97,14 +97,6 @@ filter_tests() {
     esac
 }
 
-run_ktest() {
-    progress "running ktest ..."
-
-    pushd k
-    ktest ../tests/config.xml
-    popd
-}
-
 lint_krun() {
     # Format, &gt; entity > and make each K task start on a new line
     xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
@@ -193,7 +185,6 @@ case "$run_command" in
     failing)       test_pipe_line list_failing run_tests "$@" ;;
     codeship)      run_codeship $@ ;;
     quicktest)     list_quicktests | run_tests ;;
-    ktest)         run_ktest ;;
 
     *)             echo "
     usage:
@@ -217,6 +208,5 @@ case "$run_command" in
        $0 failing <regx>        Run tests who's results we're not sure of
        $0 codeship N            Run the Nth codeship testsuite
        $0 quicktest             Run 20 random passing tests
-       $0 ktest                 Run tests with ktest
 "; exit ;;
 esac
