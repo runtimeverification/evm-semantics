@@ -2,12 +2,27 @@ ifndef K_VERSION
 $(error K_VERSION not set. Please use the Build script, instead of running make directly)
 endif
 
+######################################################################
+## Common to all versions of K
+
 defn_dir=.build/${K_VERSION}
 defn_files=${defn_dir}/ethereum.k ${defn_dir}/data.k ${defn_dir}/evm.k ${defn_dir}/krypto.k
 
 build: .build/${K_VERSION}/ethereum-kompiled/extras/timestamp
 all: build split-tests
 defn: $(defn_files)
+
+.build/${K_VERSION}/%.k: %.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc-tangle --from markdown --to code-k --code ${K_VERSION} $< > $@
+
+tests/ethereum-tests/%.json:
+	@echo "==  git submodule: cloning upstreams test repository"
+	git submodule update --init
+
+clean: 
+	rm -r .build
 
 split-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
 			 tests/VMTests/vmBitwiseLogicOperationTest/make.timestamp \
@@ -30,6 +45,17 @@ tests/%/make.timestamp: tests/ethereum-tests/%.json
 	tests/split-test.py $< $(dir $@)
 	touch $@
 
+######################################################################
+## UIUC K Specific Code
+
+.build/uiuck/ethereum-kompiled/extras/timestamp: $(defn_files)
+	@echo "== kompile: $@"
+	kompile --debug --main-module ETHEREUM-SIMULATION \
+					--syntax-module ETHEREUM-SIMULATION $< --directory .build/uiuck
+
+######################################################################
+## RVK Specific Code
+
 .build/rvk/ethereum-kompiled/extras/timestamp: .build/rvk/ethereum-kompiled/interpreter
 .build/rvk/ethereum-kompiled/interpreter: $(defn_files) KRYPTO.ml
 	@echo "== kompile: $@"
@@ -46,20 +72,3 @@ tests/%/make.timestamp: tests/ethereum-tests/%.json
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/rvk \
 					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O3 --non-strict
 	cd .build/rvk/ethereum-kompiled && ocamlfind opt -o interpreter constants.cmx prelude.cmx plugin.cmx parser.cmx lexer.cmx run.cmx interpreter.ml -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -linkpkg -inline 20 -nodynlink -O3
-
-.build/uiuck/ethereum-kompiled/extras/timestamp: $(defn_files)
-	@echo "== kompile: $@"
-	kompile --debug --main-module ETHEREUM-SIMULATION \
-					--syntax-module ETHEREUM-SIMULATION $< --directory .build/uiuck
-
-.build/${K_VERSION}/%.k: %.md
-	@echo "==  tangle: $@"
-	mkdir -p $(dir $@)
-	pandoc-tangle --from markdown --to code-k --code ${K_VERSION} $< > $@
-
-tests/ethereum-tests/%.json:
-	@echo "==  git submodule: cloning upstreams test repository"
-	git submodule update --init
-
-clean: 
-	rm -r .build
