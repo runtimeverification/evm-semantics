@@ -26,6 +26,7 @@ list_tests()      { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
 list_passing()    { cat "$expected_passing"; }
 list_failing()    { list_tests | grep -Fvxf "$expected_passing" -; }
 list_quicktests() { list_passing | filter_not_longrunning | sort -R | head -n 20; }
+list_codeship()   { list_passing | filter_codeship "$1"; }
 
 filter_not_longrunning() { grep -Fvxf "$long_running" -; }
 
@@ -141,11 +142,6 @@ run_debug() {
     exit
 }
 
-run_codeship() {
-    testset="$1"
-    run_make all
-    list_passing | filter_codeship "$testset" | run_tests; exit
-}
 
 ######################################################################
 ## Main
@@ -178,15 +174,15 @@ case "$run_command" in
     list-tests)    test_pipe_line list_tests   cat "$@" ;;
     list-passing)  test_pipe_line list_passing cat "$@" ;;
     list-failing)  test_pipe_line list_failing cat "$@" ;;
-    list-codeship) list_passing | filter_codeship "$1" ;;
+    list-codeship) test_pipe_line list_codeship cat "$@" ;;
     list-analysis) test_pipe_line list_analysis cat "$@" ;;
 
     # Test runs
-    test)          test_pipe_line list_tests   run_tests "$@" ;;
-    passing)       test_pipe_line list_passing run_tests "$@" ;;
-    failing)       test_pipe_line list_failing run_tests "$@" ;;
-    codeship)      run_codeship $@ ;;
-    quicktest)     list_quicktests | run_tests ;;
+    test)          test_pipe_line list_tests     run_tests "$@" ;;
+    passing)       test_pipe_line list_passing   run_tests "$@" ;;
+    failing)       test_pipe_line list_failing   run_tests "$@" ;;
+    codeship)      test_pipe_line list_codeship  run_tests "$@" ;;
+    quicktest)     test_pipe_line list_quicktests run_tests "$@" ;;
 
     *)             echo "
     usage:
