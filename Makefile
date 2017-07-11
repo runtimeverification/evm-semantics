@@ -1,4 +1,6 @@
-defn_files=k/ethereum.k k/data.k k/evm.k k/krypto.k
+
+defn_dir=k
+defn_files=${defn_dir}/ethereum.k ${defn_dir}/data.k ${defn_dir}/evm.k ${defn_dir}/krypto.k
 build: k/ethereum-kompiled/extras/timestamp
 all: build split-tests
 defn: $(defn_files)
