@@ -1,5 +1,4 @@
 defn_files=k/ethereum.k k/data.k k/evm.k k/krypto.k
-ktest_file=tests/config.xml
 build: k/ethereum-kompiled/extras/timestamp
 all: build split-tests
 defn: $(defn_files)
@@ -17,20 +16,14 @@ split-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
 			 tests/VMTests/vmInputLimits/make.timestamp \
 			 tests/VMTests/vmInputLimitsLight/make.timestamp
 
-ktest: defn split-tests 
 K:=$(shell krun --version)
 
-.PHONY: all defn build split-tests ktest
+.PHONY: all defn build split-tests
 
 tests/%/make.timestamp: tests/ethereum-tests/%.json
 	@echo "==   split: $@"
 	mkdir -p $(dir $@)
-ifneq (,$(findstring RV-K, $(K)))
-	tests/split-test.py $< $(dir $@) tests/templates/output-rvk.txt
-else
-	tests/split-test.py $< $(dir $@) tests/templates/output-uiuck.txt
-endif
-	cp tests/templates/config.xml $(dir $@)
+	tests/split-test.py $< $(dir $@)
 	touch $@
 
 ifneq (,$(findstring RV-K, $(K)))
@@ -69,9 +62,6 @@ else
 	@echo "== Detected UIUC-K, will select codeblocks marked with 'uiuck'"
 	pandoc-tangle --from markdown --to code-k --code uiuck $< > $@
 endif
-
-ktest: $(ktest_file)
-	cd k; ktest $(realpath .)/$< 
 
 tests/ethereum-tests/%.json:
 	@echo "==  git submodule: cloning upstreams test repository"
