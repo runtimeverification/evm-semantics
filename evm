@@ -1,5 +1,5 @@
 #!/bin/sh
-interpreter="$(dirname "$0")/k/ethereum-kompiled/interpreter"
+interpreter="$(dirname "$0")/.build/rvk/ethereum-kompiled/interpreter"
 kast="$(mktemp)"
 output="$(mktemp)"
 kast_output="$(mktemp)"
