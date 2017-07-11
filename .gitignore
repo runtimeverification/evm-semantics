@@ -1,7 +1,9 @@
 # Build products
 # Note that we don't ignore "/k/*.k". This is because non-developers may not
 # have `pandoc-tangle` installed.
-/k/*-kompiled/
+/.build/rvk/
+/.build/uiuck/*-kompiled/
+
 /tests/VMTests
 /tests/passing.lastrun
 /.kompile*
