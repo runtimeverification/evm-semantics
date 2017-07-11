@@ -847,9 +847,12 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
 
     syntax BinStackOp ::= "LT" | "GT" | "EQ"
  // ----------------------------------------
-    rule <op> LT W0 W1 => W0 <Word  W1 ~> #push ... </op>
-    rule <op> GT W0 W1 => W0 >Word  W1 ~> #push ... </op>
-    rule <op> EQ W0 W1 => W0 ==Word W1 ~> #push ... </op>
+    rule <op> LT W0:Int W1:Int => 1 ~> #push ... </op>  requires W0 <Int   W1
+    rule <op> LT W0:Int W1:Int => 0 ~> #push ... </op>  requires W0 >=Int  W1
+    rule <op> GT W0:Int W1:Int => 1 ~> #push ... </op>  requires W0 >Int   W1
+    rule <op> GT W0:Int W1:Int => 0 ~> #push ... </op>  requires W0 <=Int  W1
+    rule <op> EQ W0:Int W1:Int => 1 ~> #push ... </op>  requires W0 ==Int  W1
+    rule <op> EQ W0:Int W1:Int => 0 ~> #push ... </op>  requires W0 =/=Int W1
 
     syntax BinStackOp ::= "SLT" | "SGT"
  // -----------------------------------
@@ -1055,7 +1058,7 @@ These operations interact with the account storage.
            <acctID> ACCT </acctID>
            <storage> ... INDEX |-> VALUE ... </storage>
            ...
-         </account> 
+         </account>
 
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
