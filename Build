@@ -15,7 +15,6 @@ export cSCHEDULE=${cSCHEDULE:-DEFAULT}
 krun_with_opts() {
     krun --directory k/ --debug -cMODE=$cMODE -cSCHEDULE=$cSCHEDULE $@
 }
-export -f krun_with_opts
 
 if krun --version | grep 'RV' >/dev/null 2>&1; then
     output_file="tests/templates/output-rvk.txt"
