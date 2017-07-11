@@ -125,7 +125,7 @@ run_make() {
     make K_VERSION=${K_VERSION} -s $make_opts $@
 }
 
-test_pipe_line() {
+with_test_list() {
     local list=$1; shift
     local do_run=$1; shift;
 
@@ -136,7 +136,7 @@ test_pipe_line() {
 run_debug() {
     list="$1" && shift
     run_make all
-    file=$(test_pipe_line $list cat "$@" | head -n 1)
+    file=$(with_test_list $list cat "$@" | head -n 1)
     progress "debugging: $file"
     krun_with_opts --debugger "$file"
     exit
@@ -165,24 +165,24 @@ case "$run_command" in
     defn)          run_make defn ;;
 
     # Running
-    krun)          test_pipe_line list_tests run_krun "$@" ;;
+    krun)          with_test_list list_tests run_krun "$@" ;;
     debug)         run_debug list_analysis "$@" ;;
-    analyze-gas)   export cMODE=GASANALYZE ; test_pipe_line list_analysis run_krun "$@" ;;
+    analyze-gas)   export cMODE=GASANALYZE ; with_test_list list_analysis run_krun "$@" ;;
     analyze-debug) export cMODE=GASANALYZE ; run_debug list_analysis "$@" ;;
 
     # Test lists
-    list-tests)    test_pipe_line list_tests   cat "$@" ;;
-    list-passing)  test_pipe_line list_passing cat "$@" ;;
-    list-failing)  test_pipe_line list_failing cat "$@" ;;
-    list-codeship) test_pipe_line list_codeship cat "$@" ;;
-    list-analysis) test_pipe_line list_analysis cat "$@" ;;
+    list-tests)    with_test_list list_tests            cat         "$@" ;;
+    list-passing)  with_test_list list_passing          cat         "$@" ;;
+    list-failing)  with_test_list list_failing          cat         "$@" ;;
+    list-codeship) with_test_list list_codeship         cat         "$@" ;;
+    list-analysis) with_test_list list_analysis         cat         "$@" ;;
 
     # Test runs
-    test)          test_pipe_line list_tests     run_tests "$@" ;;
-    passing)       test_pipe_line list_passing   run_tests "$@" ;;
-    failing)       test_pipe_line list_failing   run_tests "$@" ;;
-    codeship)      test_pipe_line list_codeship  run_tests "$@" ;;
-    quicktest)     test_pipe_line list_quicktests run_tests "$@" ;;
+    test)          with_test_list list_tests            run_tests   "$@" ;;
+    passing)       with_test_list list_passing          run_tests   "$@" ;;
+    failing)       with_test_list list_failing          run_tests   "$@" ;;
+    codeship)      with_test_list list_codeship         run_tests   "$@" ;;
+    quicktest)     with_test_list list_quicktests       run_tests   "$@" ;;
 
     *)             echo "
     usage:
