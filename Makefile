@@ -31,9 +31,6 @@ test: $(passing_targets)
 tests/%.test: tests/% build
 	./evm $<
 
-codeship: build split-tests
-	./Build passing
-
 .PHONY: all defn build split-tests ktest
 
 tests/%/make.timestamp: tests/ethereum-tests/%.json
