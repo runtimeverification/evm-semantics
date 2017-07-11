@@ -103,7 +103,6 @@ lint_krun() {
 }
 
 run_krun() {
-    run_make all
     while read test_file; do
         progress "running: $test_file"
         krun_with_opts "$test_file" | lint_krun
