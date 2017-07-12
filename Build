@@ -125,18 +125,24 @@ with_test_list() {
 
     run_make all
     while read test_file; do
-        $do_run "$test_file" || true
+        $do_run "$test_file"
     done < <($list | filter_tests "$@")
     exit $failed
 }
 
+with_first() {
+    local list=$1; shift
+    local do_run=$1; shift;
+
+    [[ $($list | wc -l) = 1 ]] || {
+        echo -e >&2 "Warning: Multiple tests passed, but only running the first"
+    }
+    $do_run $($list | head -n 1)
+}
+
 run_debug() {
-    list="$1" && shift
-    run_make all
-    file=$(with_test_list $list echo "$@" | head -n 1)
-    progress "debugging: $file"
-    krun_with_opts --debugger "$file"
-    exit
+    progress "debugging: $1"
+    krun_with_opts --debugger "$1"
 }
 
 
@@ -162,8 +168,8 @@ case "$run_command" in
     defn)          run_make defn ;;
 
     # Running
-    krun)          with_test_list list_tests run_krun "$@" ;;
-    debug)         run_debug list_analysis "$@" ;;
+    krun)          with_test_list list_tests run_krun  "$@" ;;
+    debug)         with_first     list_tests run_debug "$@" ;;
     analyze-gas)   export cMODE=GASANALYZE ; with_test_list list_analysis run_krun "$@" ;;
     analyze-debug) export cMODE=GASANALYZE ; run_debug list_analysis "$@" ;;
 
