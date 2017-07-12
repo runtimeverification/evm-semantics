@@ -635,3 +635,4 @@ tests/VMTests/vmSystemOperationsTest/return2.json
 tests/VMTests/vmSystemOperationsTest/suicide0.json
 tests/VMTests/vmSystemOperationsTest/suicideNotExistingAccount.json
 tests/VMTests/vmSystemOperationsTest/suicideSendEtherToMe.json
+tests/analysis/sumTo10.evm
