@@ -58,4 +58,6 @@ module TOKEN-SPEC
             </network>
         </ethereum>
 
+        requires TRANSFER >Int 0 andBool TRANSFER <Int 2000
+
 endmodule
