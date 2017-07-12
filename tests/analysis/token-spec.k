@@ -24,7 +24,7 @@ module TOKEN-SPEC
                     <wordStack> TRANSFER:Int : ( 428365927726247537526132020791190998556166378203 : ( 443 : ( 2835717307 : .WordStack ) ) )
                                          => ?A:WordStack                         </wordStack>
                     <localMem>     .Map  => ?B:Map                               </localMem>
-                    <pc>           1533  => ?C:Int                               </pc>
+                    <pc>           1533  => 1772                               </pc>
                     <gas>          99772 => ?D:Int                               </gas>
                     <previousGas>  99773 => ?E:Int                               </previousGas>
 
@@ -59,6 +59,5 @@ module TOKEN-SPEC
         </ethereum>
 		 requires TRANSFER >Int 0 andBool TRANSFER<Int B1 andBool B1>Int 0 andBool B2>Int 0 andBool B1 +Int B2 ==Int 5000
 
-        requires TRANSFER >Int 0 andBool TRANSFER <Int 2000
 
 endmodule
