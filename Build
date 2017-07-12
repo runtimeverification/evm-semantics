@@ -66,8 +66,10 @@ pretty_diff() {
 
 # Reads a list of json test files from stdin, and runs them
 run_tests() {
-    local test_file=$1 exit_status=0
+    local test_file=$1 exit_status=0 output_file="$default_output_file"
     progress "running: $test_file"
+
+    if [[ -e $test_file.out ]]; then output_file=$test_file.out; fi
     pretty_diff --label expected <(cat "$output_file" | lint_krun) \
                 --label actual   <(krun_with_opts "$test_file" | lint_krun) \
         || exit_status=$?
@@ -156,7 +158,7 @@ else
 fi
 progress "Using $K_VERSION"
 
-output_file="tests/templates/output-$K_VERSION.txt"
+default_output_file="tests/templates/output-$K_VERSION.txt"
 have_tangle=true; check_for_tangle
 
 [[ "$#" == '0' ]] && set build
@@ -170,8 +172,9 @@ case "$run_command" in
     # Running
     krun)          with_test_list list_tests run_krun  "$@" ;;
     debug)         with_first     list_tests run_debug "$@" ;;
-    analyze-gas)   export cMODE=GASANALYZE ; with_test_list list_analysis run_krun "$@" ;;
-    analyze-debug) export cMODE=GASANALYZE ; run_debug list_analysis "$@" ;;
+    analyze-gas)   export cMODE=GASANALYZE ; with_test_list list_analysis run_krun  "$@" ;;
+    analyze-debug) export cMODE=GASANALYZE ; with_first     list_analysis run_debug "$@" ;;
+    analyze-test)  export cMODE=GASANALYZE ; with_test_list list_analysis run_tests "$@" ;;
 
     # Test lists
     list-tests)    with_test_list list_tests            echo        "$@" ;;
