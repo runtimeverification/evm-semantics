@@ -8,7 +8,7 @@ module TOKEN-SPEC
         <schedule>  DEFAULT </schedule>
         <ethereum>
             <evm>
-                <op>            #execute  </op>
+                <op>            #execute           </op>
                 <output>        .WordStack         </output>
                 <memoryUsed>    3                  </memoryUsed>
                 <callDepth>     0                  </callDepth>
@@ -21,10 +21,9 @@ module TOKEN-SPEC
                     <caller>    428365927726247537526132020791190998556166378203 </caller>
                     <callData>  .WordStack                                       </callData>
                     <callValue> 0                                                </callValue>
-                    <wordStack> TRANSFER:Int : ( 428365927726247537526132020791190998556166378203 : ( 116727156174188091019688739584752390716576765452 : ( 282 : ( 599290589 : .WordStack ) ) ) ) =>
-								(3000 +Int TRANSFER) : 0: TRANSFER : ( 428365927726247537526132020791190998556166378203 : ( 116727156174188091019688739584752390716576765452 : ( 282 : ( 599290589 : .WordStack ) ) ) )</wordStack>
+                    <wordStack> TRANSFER:Int : ( 428365927726247537526132020791190998556166378203 : ( 116727156174188091019688739584752390716576765452 : ( 282 : ( 599290589 : .WordStack ) ) ) ) => ?W:WordStack </wordStack>
                     <localMem>     .Map  => ?B:Map                               </localMem>
-                    <pc>           818   => ?C:Int                               </pc>
+                    <pc>           818   => 1193                                 </pc>
                     <gas>          99786 => ?D:Int                               </gas>
                     <previousGas>  99787 => ?E:Int                               </previousGas>
 
