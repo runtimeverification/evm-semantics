@@ -66,24 +66,20 @@ pretty_diff() {
 
 # Reads a list of json test files from stdin, and runs them
 run_tests() {
-    local test_file test_fail_count=0
-    while read test_file; do
-        let test_count="$test_count + 1"
-        local output_differs=false
-        progress "running: $test_file..."
-        pretty_diff \
-            --label expected <(cat "$output_file" | lint_krun) \
-            --label actual   <(krun_with_opts "$test_file" | lint_krun) \
-            || output_differs=true
-        if $output_differs; then
-            failure "$test_file"
-            let test_fail_count="$test_fail_count + 1"
-        else
-            success "$test_file"
-        fi
-        progress "failed: $test_fail_count / $test_count"
-    done
-    return $test_fail_count
+    local test_file=$1 exit_status=0
+    progress "running: $test_file"
+    pretty_diff --label expected <(cat "$output_file" | lint_krun) \
+                --label actual   <(krun_with_opts "$test_file" | lint_krun) \
+        || exit_status=$?
+    count=$(($count + 1))
+    if [[ $exit_status -eq 0 ]]; then
+        success "$test_file"
+    else
+        failure "$test_file"
+        failed=$(($failed + 1))
+    fi
+    progress "failed: $failed / $count"
+    return $exit_status
 }
 
 filter_tests() {
@@ -103,10 +99,8 @@ lint_krun() {
 }
 
 run_krun() {
-    while read test_file; do
-        progress "running: $test_file"
-        krun_with_opts "$test_file" | lint_krun
-    done
+    progress "running: $1"
+    krun_with_opts "$1" | lint_krun
 }
 
 check_for_tangle() {
@@ -127,15 +121,19 @@ run_make() {
 with_test_list() {
     local list=$1; shift
     local do_run=$1; shift;
+    local count=0 failed=0 # TODO: Used by run_tests too; Find a cleaner way
 
     run_make all
-    $list | filter_tests "$@" | $do_run; exit
+    while read test_file; do
+        $do_run "$test_file" || true
+    done < <($list | filter_tests "$@")
+    exit $failed
 }
 
 run_debug() {
     list="$1" && shift
     run_make all
-    file=$(with_test_list $list cat "$@" | head -n 1)
+    file=$(with_test_list $list echo "$@" | head -n 1)
     progress "debugging: $file"
     krun_with_opts --debugger "$file"
     exit
@@ -170,11 +168,11 @@ case "$run_command" in
     analyze-debug) export cMODE=GASANALYZE ; run_debug list_analysis "$@" ;;
 
     # Test lists
-    list-tests)    with_test_list list_tests            cat         "$@" ;;
-    list-passing)  with_test_list list_passing          cat         "$@" ;;
-    list-failing)  with_test_list list_failing          cat         "$@" ;;
-    list-codeship) with_test_list list_codeship         cat         "$@" ;;
-    list-analysis) with_test_list list_analysis         cat         "$@" ;;
+    list-tests)    with_test_list list_tests            echo        "$@" ;;
+    list-passing)  with_test_list list_passing          echo        "$@" ;;
+    list-failing)  with_test_list list_failing          echo        "$@" ;;
+    list-codeship) with_test_list list_codeship         echo        "$@" ;;
+    list-analysis) with_test_list list_analysis         echo        "$@" ;;
 
     # Test runs
     test)          with_test_list list_tests            run_tests   "$@" ;;
