@@ -40,16 +40,16 @@ module ETHEREUM-SIMULATION
 // the nicer input form.
 
 
-    syntax JSON ::= Word | WordStack | OpCodes | Map | Call | SubstateLogEntry
- // --------------------------------------------------------------------------
+    syntax JSON ::= Int | WordStack | OpCodes | Map | Call | SubstateLogEntry
+ // -------------------------------------------------------------------------
     rule DC:DistCommand "account" : { ACCTID: { KEY : VALUE , REST } } => DC "account" : { ACCTID : { KEY : VALUE } } ~> DC "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
 
     rule DC:DistCommand "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
-    rule DC:DistCommand "account" : { (ACCT:Word) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
-    rule DC:DistCommand "account" : { (ACCT:Word) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
-    rule DC:DistCommand "account" : { (ACCT:Word) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
-    rule DC:DistCommand "account" : { (ACCT:Word) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
-    rule DC:DistCommand "account" : { (ACCT:Word) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
+    rule DC:DistCommand "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
+    rule DC:DistCommand "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
+    rule DC:DistCommand "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
+    rule DC:DistCommand "account" : { (ACCT:Int) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
+    rule DC:DistCommand "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
 
     syntax JSONList ::= #sortJSONList ( JSONList )            [function]
                       | #sortJSONList ( JSONList , JSONList ) [function, klabel(#sortJSONListAux)]
@@ -161,34 +161,34 @@ module ETHEREUM-SIMULATION
          <analysis> _ => .Map </analysis>
 
          <output>     _ => .WordStack </output>
-         <memoryUsed> _ => 0:Word     </memoryUsed>
-         <callDepth>  _ => 0:Word     </callDepth>
+         <memoryUsed> _ => 0          </memoryUsed>
+         <callDepth>  _ => 0          </callDepth>
          <callStack>  _ => .List      </callStack>
          <callLog>    _ => .Set       </callLog>
 
          <program>     _ => .Map       </program>
-         <id>          _ => 0:Word     </id>
-         <caller>      _ => 0:Word     </caller>
+         <id>          _ => 0          </id>
+         <caller>      _ => 0          </caller>
          <callData>    _ => .WordStack </callData>
-         <callValue>   _ => 0:Word     </callValue>
+         <callValue>   _ => 0          </callValue>
          <wordStack>   _ => .WordStack </wordStack>
          <localMem>    _ => .Map       </localMem>
-         <pc>          _ => 0:Word     </pc>
-         <gas>         _ => 0:Word     </gas>
-         <previousGas> _ => 0:Word     </previousGas>
+         <pc>          _ => 0          </pc>
+         <gas>         _ => 0          </gas>
+         <previousGas> _ => 0          </previousGas>
 
-         <selfDestruct> _ => .Set   </selfDestruct>
-         <log>          _ => .Set   </log>
-         <refund>       _ => 0:Word </refund>
+         <selfDestruct> _ => .Set </selfDestruct>
+         <log>          _ => .Set </log>
+         <refund>       _ => 0    </refund>
 
-         <gasPrice>     _ => 0:Word </gasPrice>
-         <origin>       _ => 0:Word </origin>
-         <gasLimit>     _ => 0:Word </gasLimit>
-         <coinbase>     _ => 0:Word </coinbase>
-         <timestamp>    _ => 0:Word </timestamp>
-         <number>       _ => 0:Word </number>
-         <previousHash> _ => 0:Word </previousHash>
-         <difficulty>   _ => 0:Word </difficulty>
+         <gasPrice>     _ => 0 </gasPrice>
+         <origin>       _ => 0 </origin>
+         <gasLimit>     _ => 0 </gasLimit>
+         <coinbase>     _ => 0 </coinbase>
+         <timestamp>    _ => 0 </timestamp>
+         <number>       _ => 0 </number>
+         <previousHash> _ => 0 </previousHash>
+         <difficulty>   _ => 0 </difficulty>
 
          <activeAccounts> _ => .Set </activeAccounts>
          <accounts>       _ => .Bag </accounts>
@@ -201,8 +201,8 @@ module ETHEREUM-SIMULATION
 //     been chopped to 160 bits).
 
 
-    syntax EthereumCommand ::= "mkAcct" Word
- // ----------------------------------------
+    syntax EthereumCommand ::= "mkAcct" Int
+ // ---------------------------------------
     rule <k> mkAcct ACCT => #newAccount ACCT ... </k>
 
 
@@ -213,7 +213,7 @@ module ETHEREUM-SIMULATION
  // -----------------------------
     rule load "pre" : { (ACCTID:String) : ACCT } => mkAcct #parseAddr(ACCTID) ~> load "account" : { ACCTID : ACCT }
 
-    rule <k> load "account" : { ACCT : { "balance" : (BAL:Word) } } => . ... </k>
+    rule <k> load "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <balance> _ => BAL </balance>
@@ -227,7 +227,7 @@ module ETHEREUM-SIMULATION
            ...
          </account>
 
-    rule <k> load "account" : { ACCT : { "nonce" : (NONCE:Word) } } => . ... </k>
+    rule <k> load "account" : { ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <acctMap> AM => AM [ "nonce" <- NONCE ] </acctMap>
@@ -250,25 +250,25 @@ module ETHEREUM-SIMULATION
     rule load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) }
       requires KEY in (SetItem("currentCoinbase") SetItem("previousHash"))
  // ----------------------------------------------------------------------
-    rule <k> load "env" : { "currentCoinbase"   : (CB:Word)     } => . ... </k> <coinbase>     _ => CB     </coinbase>
-    rule <k> load "env" : { "currentDifficulty" : (DIFF:Word)   } => . ... </k> <difficulty>   _ => DIFF   </difficulty>
-    rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:Word) } => . ... </k> <gasLimit>     _ => GLIMIT </gasLimit>
-    rule <k> load "env" : { "currentNumber"     : (NUM:Word)    } => . ... </k> <number>       _ => NUM    </number>
-    rule <k> load "env" : { "previousHash"      : (HASH:Word)   } => . ... </k> <previousHash> _ => HASH   </previousHash>
-    rule <k> load "env" : { "currentTimestamp"  : (TS:Word)     } => . ... </k> <timestamp>    _ => TS     </timestamp>
+    rule <k> load "env" : { "currentCoinbase"   : (CB:Int)     } => . ... </k> <coinbase>     _ => CB     </coinbase>
+    rule <k> load "env" : { "currentDifficulty" : (DIFF:Int)   } => . ... </k> <difficulty>   _ => DIFF   </difficulty>
+    rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:Int) } => . ... </k> <gasLimit>     _ => GLIMIT </gasLimit>
+    rule <k> load "env" : { "currentNumber"     : (NUM:Int)    } => . ... </k> <number>       _ => NUM    </number>
+    rule <k> load "env" : { "previousHash"      : (HASH:Int)   } => . ... </k> <previousHash> _ => HASH   </previousHash>
+    rule <k> load "env" : { "currentTimestamp"  : (TS:Int)     } => . ... </k> <timestamp>    _ => TS     </timestamp>
 
     rule load "exec" : { KEY : ((VAL:String) => #parseWord(VAL)) }
       requires KEY in (SetItem("gas") SetItem("gasPrice") SetItem("value"))
     rule load "exec" : { KEY : ((VAL:String) => #parseHexWord(VAL)) }
       requires KEY in (SetItem("address") SetItem("caller") SetItem("origin"))
  // --------------------------------------------------------------------------
-    rule <k> load "exec" : { "gasPrice" : (GPRICE:Word)   } => . ... </k> <gasPrice>  _ => GPRICE   </gasPrice>
-    rule <k> load "exec" : { "gas"      : (GAVAIL:Word)   } => . ... </k> <gas>       _ => GAVAIL   </gas>
-    rule <k> load "exec" : { "address"  : (ACCTTO:Word)   } => . ... </k> <id>        _ => ACCTTO   </id>
-    rule <k> load "exec" : { "caller"   : (ACCTFROM:Word) } => . ... </k> <caller>    _ => ACCTFROM </caller>
-    rule <k> load "exec" : { "gas"      : (GAVAIL:Word)   } => . ... </k> <gas>       _ => GAVAIL   </gas>
-    rule <k> load "exec" : { "value"    : (VALUE:Word)    } => . ... </k> <callValue> _ => VALUE    </callValue>
-    rule <k> load "exec" : { "origin"   : (ORIG:Word)     } => . ... </k> <origin>    _ => ORIG     </origin>
+    rule <k> load "exec" : { "gasPrice" : (GPRICE:Int)   } => . ... </k> <gasPrice>  _ => GPRICE   </gasPrice>
+    rule <k> load "exec" : { "gas"      : (GAVAIL:Int)   } => . ... </k> <gas>       _ => GAVAIL   </gas>
+    rule <k> load "exec" : { "address"  : (ACCTTO:Int)   } => . ... </k> <id>        _ => ACCTTO   </id>
+    rule <k> load "exec" : { "caller"   : (ACCTFROM:Int) } => . ... </k> <caller>    _ => ACCTFROM </caller>
+    rule <k> load "exec" : { "gas"      : (GAVAIL:Int)   } => . ... </k> <gas>       _ => GAVAIL   </gas>
+    rule <k> load "exec" : { "value"    : (VALUE:Int)    } => . ... </k> <callValue> _ => VALUE    </callValue>
+    rule <k> load "exec" : { "origin"   : (ORIG:Int)     } => . ... </k> <origin>    _ => ORIG     </origin>
 
     rule load "exec" : { "data" : ((DATA:String)  => #parseByteStack(DATA)) }
     rule load "exec" : { "code" : ((CODE:String)  => #dasmOpCodes(#parseByteStack(CODE))) }
@@ -301,20 +301,20 @@ module ETHEREUM-SIMULATION
     rule check "account" : { ACCTID: { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
  // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     rule check "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
-    rule check "account" : { (ACCT:Word) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
-    rule check "account" : { (ACCT:Word) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
-    rule check "account" : { (ACCT:Word) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
-    rule check "account" : { (ACCT:Word) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
-    rule check "account" : { (ACCT:Word) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
+    rule check "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
+    rule check "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
+    rule check "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
+    rule check "account" : { (ACCT:Int) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
+    rule check "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
 
-    rule <k> check "account" : { ACCT : { "balance" : (BAL:Word) } } => . ... </k>
+    rule <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            ...
          </account>
 
-    rule <k> check "account" : { ACCT : { "nonce" : (NONCE:Word) } } => . ... </k>
+    rule <k> check "account" : { ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <acctMap> "nonce" |-> NONCE </acctMap>
