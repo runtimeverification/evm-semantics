@@ -46,6 +46,7 @@ krun_with_opts() {
 
 set_krun_environment() {
     test_file=$1; shift
+    export K_OPTS=-Xss500m
     export cMODE=${cMODE:-VMTESTS}
     export cSCHEDULE=${cSCHEDULE:-DEFAULT}
     case "$test_file" in
