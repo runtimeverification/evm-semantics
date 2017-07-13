@@ -122,7 +122,7 @@ in a state where a symbolic amount `TRANSFER` is deducted from Dummy Account 1 a
 
 ### The Results
 The K prover was able to prove the all path reachability rule without any fuss. We then looked at Token's history,
-and realized that the vulnerability had been [fixed](https://github.com/ether-camp/virtual-accelerator/commit/78920651dff0ac0e13101e17842e54f73ee46633)
+and realized that the vulnerability had been [fixed](https://github.com/ether-camp/virtual-accelerator/commit/78920651dff0ac0e13101e17842e54f73ee46633).
 
 We then took the buggy code, compiled it to EVM, and plugged in into our [reachability claim](token-buggy-spec.k).
 We then fed the claim to our prover, and it couldn't prove the claim. We're working towards
