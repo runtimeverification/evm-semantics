@@ -1,4 +1,4 @@
-The K ecosystem provides a full-fleged program verifier that we use to prove properties about smart contracts.
+The K ecosystem provides a full-fledged program verifier that we use to prove properties about smart contracts.
 We present a brief summary of our verification efforts.
 
 The Hacker Gold (HKG) Token Smart Contract
@@ -15,12 +15,10 @@ audited by Zeppelin, and was deemed secure.
 
 Since we don't currently have a complete semantics of
 Solidity in K, we had to first compile the [HKG Token's Source](https://github.com/ether-camp/virtual-accelerator/blob/master/contracts/StandardToken.sol)
-to EVM. To simplify the verification process, we fixed the the total supply, added two dummy accounts before compiling the code to EVM.
+to EVM. To simplify the verification process, we fixed the total supply, and added two dummy accounts before compiling the code to EVM.
 ```javascript
 contract StandardToken is TokenInterface {
-```
-...
-```javascript
+//...
 function StandardToken() {
     totalSupply = 5000;
 
@@ -32,7 +30,7 @@ function StandardToken() {
 }
 
 ```
-Here's what the `transfer_from` function looks, pasted verbatim from HKG Token's source file
+Here's what the `transferFrom` function looks like, pasted verbatim from HKG Token's source file -
 ```javascript
  /**
      * transferFrom() - used to move allowed funds from other owner
@@ -77,7 +75,8 @@ The K prover takes as input `Reachability claims`. The claims
 are written exactly like `rules` in the semantics. The claims
 have to be supplied to K via a `specification` file. Since our
 HKG token contract contains only sequential code (no loops), our
-specification file contains a single claim which looks like -
+[specification file](token-correct-transfer-from-spec.k) contains a
+single claim that looks like -
 
 ```
     rule
@@ -87,10 +86,12 @@ specification file contains a single claim which looks like -
                 <txExecState>
                     <program>   //Compiled Solidity Code                       </program>
                     ...
-                    // Symbolic Value TRANSFER represents the amount to be used in as argument to the transfer_from method
+                    // Symbolic Value TRANSFER represents the amount to be used
+                    // in as argument to the transferFrom method
                     <wordStack> TRANSFER:Int : REMAINING_STACK => ?W:WordStack </wordStack>
                     ...
-                    // In the Ethereum ABI conforming compiled code, the transfer_from function starts from program counter 818.
+                    // In the Ethereum ABI conforming compiled code,
+                    // the transferFrom function starts from program counter 818.
                     <pc>        818   => 1331                                  </pc>
                 </txExecState>
                 ...
@@ -103,12 +104,13 @@ specification file contains a single claim which looks like -
                         <code>  //Compiled Solidity Code </code>
                         // We omit actual Values Here for the sake of readability
                         // Notice
-                        <storage>... (TOTAL_SUPPLY |-> 5000) (DUMMY_ACCOUNT_1_BALANCE |-> (2000 => 2000 -Int TRANSFER)) ...
-                            (DUMMY_ACCOUNT_2_BALANCE |-> (3000 => 3000 +Int TRANSFER)) </storage>
-                        <acctMap> "nonce" |-> 0 </acctMap>
+                        <storage> ... (TOTAL_SUPPLY |-> 5000) ...
+                            (DUMMY_ACCOUNT_1_BALANCE |-> (2000 => 2000 -Int TRANSFER)) ...
+                            (DUMMY_ACCOUNT_2_BALANCE |-> (3000 => 3000 +Int TRANSFER))... </storage>
+                        ...
                     </account>
                 </accounts>
-                <messages> .Bag </messages>
+                ...
             </network>
         </ethereum>
         requires TRANSFER >Int 0 andBool TRANSFER <Int 2000
@@ -119,20 +121,20 @@ in a state where a symbolic amount `TRANSFER` is deducted from Dummy Account 1 a
 
 
 ### The Results
-The K prover was able to prove the all path reachability rule without fuss. We then looked at Token's history,
+The K prover was able to prove the all path reachability rule without any fuss. We then looked at Token's history,
 and realized that the vulnerability had been [fixed](https://github.com/ether-camp/virtual-accelerator/commit/78920651dff0ac0e13101e17842e54f73ee46633)
 
-We then took the buggy code, compiled it to EVM, and plugged in into our reachabilty rule.
+We then took the buggy code, compiled it to EVM, and plugged in into our [reachability claim](token-buggy-spec.k).
 We then fed the claim to our prover, and it couldn't prove the claim. We're working towards
 improving the error message that K throws while attempting to prove the claim so that
 the messages themselves indicate the source of the bug.
 
-We went one step further, and tried to prove the `transfer` function's correctness. The reachability claim
+We went one step further, and tried to prove the `transfer` function's correctness. The [reachability claim](token-correct-transfer-spec.k)
 for the `transfer` function looks very similar, and we attempt to prove the same thing - all valid executions
 of the function must end in a state where the amount is deducted from the message sender's balance, and added to
-reciever's balance. The proof went through without any fuss for both the correct and buggy versions of the contract.
+receiver's balance. The proof went through without any fuss for both the correct and buggy versions of the contract.
 
 ### Moral Of The Story
 We were able to catch the bug in Hacker Gold's ERC-20 compliant token using our semantics. What stood out to the
 team was the fact that the bug was caught using a very naive proof claim - something that possibly the authors of the
-contract and the auditors at Zepellin could've easily come up with had our semantics been available then.
+contract and the auditors at Zeppelin could've easily come up with had our semantics been available then.
