@@ -75,7 +75,7 @@ The K prover takes as input `Reachability claims`. The claims
 are written exactly like `rules` in the semantics. The claims
 have to be supplied to K via a `specification` file. Since our
 HKG token contract contains only sequential code (no loops), our
-[specification file](token-correct-transfer-from-spec.k) contains a
+[specification file](token-correct-transfer-from-spec.md) contains a
 single claim that looks like -
 
 ```
@@ -124,12 +124,12 @@ The K prover was able to prove the above mentioned all path reachability rule, w
 initialized with the correct compiled HKG token code. We then looked at Token's history,
 and realized that the vulnerability had been [fixed](https://github.com/ether-camp/virtual-accelerator/commit/78920651dff0ac0e13101e17842e54f73ee46633).
 
-We then took the vulnerability containing code, compiled it to EVM, and plugged in into our [reachability claim](token-buggy-spec.k).
+We then took the vulnerability containing code, compiled it to EVM, and plugged in into our [reachability claim](token-buggy-spec.md).
 We then fed the claim to our prover, and it couldn't prove the claim. We're working towards
 improving the error message that K throws while attempting to prove the claim so that
 the messages themselves indicate the source of the bug.
 
-We went one step further, and tried to prove the `transfer` function's correctness. The [reachability claim](token-correct-transfer-spec.k)
+We went one step further, and tried to prove the `transfer` function's correctness. The [reachability claim](token-correct-transfer-spec.md)
 for the `transfer` function looks very similar, and we attempt to prove the same thing - all valid executions
 of the function must end in a state where the amount is deducted from the message sender's balance, and added to
 receiver's balance. The prover was able to verify the correctness of the token's `transfer` function's implementation as well.

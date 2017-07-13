@@ -11,8 +11,9 @@ endif
 defn_dir=.build/${K_VERSION}
 defn_files=${defn_dir}/ethereum.k ${defn_dir}/data.k ${defn_dir}/evm.k ${defn_dir}/krypto.k
 
+all: build split-tests proofs
+proofs: tests/proofs/token-correct-transfer-spec.k tests/proofs/token-correct-transfer-from-spec.k tests/proofs/token-buggy-spec.k
 build: .build/${K_VERSION}/ethereum-kompiled/extras/timestamp
-all: build split-tests
 defn: $(defn_files)
 
 .build/${K_VERSION}/%.k: %.md
@@ -20,11 +21,16 @@ defn: $(defn_files)
 	mkdir -p $(dir $@)
 	pandoc-tangle --from markdown --to code-k --code ${K_VERSION} $< > $@
 
+tests/proofs/%.k: proofs/%.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc-tangle --from markdown --to code-k --code k $< > $@
+
 tests/ethereum-tests/%.json:
 	@echo "==  git submodule: cloning upstreams test repository"
 	git submodule update --init
 
-clean: 
+clean:
 	rm -r .build
 
 split-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
@@ -40,7 +46,7 @@ split-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
 			 tests/VMTests/vmtests/make.timestamp \
 			 tests/VMTests/vmInputLimits/make.timestamp \
 			 tests/VMTests/vmInputLimitsLight/make.timestamp
-.PHONY: all defn build split-tests
+.PHONY: all defn build split-tests proofs
 
 tests/%/make.timestamp: tests/ethereum-tests/%.json
 	@echo "==   split: $@"
