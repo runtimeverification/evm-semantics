@@ -91,9 +91,7 @@ filter_tests() {
 }
 
 list_analysis()   { find "$analysis_dir" -wholename "*$exp*" -name '*.evm'; }
-list_tests()      { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
-list_quicktests() { list_short | filter_not_longrunning | sort -R | head -n 20; }
-
+list_vmtests()    { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
 list_short() {
     if [[ "$#" -gt 0 ]]; then
         cat "$expected_passing" | filter_short "$1"
@@ -104,6 +102,10 @@ list_short() {
     done | sort
     return
 }
+
+list_quicktests() { list_short | filter_not_longrunning | sort -R | head -n 20; }
+list_tests()      { list_vmtests; list_analysis; }
+
 
 # Higher-order runner helpers
 # ---------------------------
