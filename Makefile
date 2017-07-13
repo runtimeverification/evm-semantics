@@ -12,7 +12,10 @@ defn_dir=.build/${K_VERSION}
 defn_files=${defn_dir}/ethereum.k ${defn_dir}/data.k ${defn_dir}/evm.k ${defn_dir}/krypto.k
 
 all: build split-tests proofs
-proofs: tests/proofs/token-correct-transfer-spec.k tests/proofs/token-correct-transfer-from-spec.k tests/proofs/token-buggy-spec.k
+proofs: tests/proofs/token-correct-transfer-spec.k \
+		tests/proofs/token-correct-transfer-from-spec.k \
+		tests/proofs/token-buggy-spec.k \
+		tests/proofs/sum-to-n-spec.k
 build: .build/${K_VERSION}/ethereum-kompiled/extras/timestamp
 defn: $(defn_files)
 
@@ -32,6 +35,7 @@ tests/ethereum-tests/%.json:
 
 clean:
 	rm -r .build
+	rm -r tests/proofs
 
 split-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
 			 tests/VMTests/vmBitwiseLogicOperationTest/make.timestamp \
