@@ -42,7 +42,7 @@ Verification
 
 Along with improving our semantics, we continue to use them to verify
 smart contracts using K's verification infrastructure. We maintain a
-[summary of our verification effors](tests/proofs/README.md).
+[summary of our verification effors](proofs/README.md).
 
 Issues
 ------

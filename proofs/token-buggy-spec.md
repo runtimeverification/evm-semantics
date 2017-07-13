@@ -1,3 +1,10 @@
+Hacker Gold Token (HKG) Vulnerable Program Specification
+========================================================
+
+Here we provide a specification file containing a reachability rule for the
+verifying the correctness of the HKG Token's transferFrom Function.
+
+```{.k}
 module TOKEN-SPEC
     imports ETHEREUM-SIMULATION
 
@@ -57,5 +64,6 @@ module TOKEN-SPEC
             </network>
         </ethereum>
          requires TRANSFER >Int 0 andBool TRANSFER<Int 2000
-         
+
 endmodule
+```

@@ -5,6 +5,7 @@
 /.build/uiuck/*-kompiled/
 
 /tests/VMTests
+/tests/proofs/*-spec.k
 /tests/passing.lastrun
 /.kompile*
 /.krun*
