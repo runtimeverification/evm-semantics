@@ -2,6 +2,9 @@
 
 set -e      # Exit immediately if any command fails
 
+# Settings
+# --------
+
 analysis_dir="tests/analysis/"
 tests_dir="tests/VMTests/"
 expected_passing="tests/short-list"
@@ -10,6 +13,9 @@ now_passing="tests/passing.lastrun"
 
 export cMODE=${cMODE:-VMTESTS}
 export cSCHEDULE=${cSCHEDULE:-DEFAULT}
+
+# Utilities
+# ---------
 
 krun_with_opts() {
     krun --directory .build/$K_VERSION/ --debug -cMODE=$cMODE -cSCHEDULE=$cSCHEDULE $@
@@ -20,6 +26,9 @@ success()  { echo -e "\e[32m== success: $@\e[0m";
              echo "$@" >> "$now_passing"
            }
 failure()  { echo -e "\e[31m== failure: $@\e[0m"; }
+
+# Test Filters and Lists
+# ----------------------
 
 list_analysis()   { find "$analysis_dir" -wholename "*$exp*" -name '*.evm'; }
 list_tests()      { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
@@ -84,6 +93,9 @@ run_tests() {
     return $exit_status
 }
 
+# Runners
+# -------
+
 filter_tests() {
     local command=( exit 1 )
     case $# in
@@ -147,9 +159,9 @@ run_debug() {
     krun_with_opts --debugger "$1"
 }
 
-
 ######################################################################
-## Main
+# Main
+# ----
 
 if krun --version | grep 'RV' >/dev/null 2>&1; then
     K_VERSION=rvk
