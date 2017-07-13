@@ -7,13 +7,13 @@ The Hacker Gold (HKG) Token Smart Contract
 The HKG token is an ERC-20 compliant token smart contract written in solidity.
 The token became a [topic of discussion](https://www.ethnews.com/ethercamps-hkg-token-has-a-bug-and-needs-to-be-reissued)
 when a subtle vulnerability lead to a reissue. The token had been originally
-audited by Zeppelin, and was deemed secure.
+audited by [Zeppelin](https://zeppelin.solutions/security-audits), and was deemed secure.
 
 ## Using K's verifier on the HKG Token
 
 ### Compiling Solidity Source To EVM
 
-Since we don't currently have a complete semantics of
+Since we currently don't have a complete semantics of
 Solidity in K, we had to first compile the [HKG Token's Source](https://github.com/ether-camp/virtual-accelerator/blob/master/contracts/StandardToken.sol)
 to EVM. To simplify the verification process, we fixed the total supply, and added two dummy accounts before compiling the code to EVM.
 ```javascript
@@ -102,8 +102,7 @@ single claim that looks like -
                     <account>
                         ...
                         <code>  //Compiled Solidity Code </code>
-                        // We omit actual Values Here for the sake of readability
-                        // Notice
+                        // We omit actual Values Here for the sake of readability.
                         <storage> ... (TOTAL_SUPPLY |-> 5000) ...
                             (DUMMY_ACCOUNT_1_BALANCE |-> (2000 => 2000 -Int TRANSFER)) ...
                             (DUMMY_ACCOUNT_2_BALANCE |-> (3000 => 3000 +Int TRANSFER))... </storage>
@@ -116,15 +115,16 @@ single claim that looks like -
         requires TRANSFER >Int 0 andBool TRANSFER <Int 2000
 ```
 
-The rule above specifies the property that all possible valid executions of the `transfer_from` function, must end
+The rule above specifies the property that all possible valid executions of the `transferFrom` function, must end
 in a state where a symbolic amount `TRANSFER` is deducted from Dummy Account 1 and added to Dummy Account 2.
 
 
 ### The Results
-The K prover was able to prove the all path reachability rule without any fuss. We then looked at Token's history,
+The K prover was able to prove the above mentioned all path reachability rule, where the code cell was
+initialized with the correct compiled HKG token code. We then looked at Token's history,
 and realized that the vulnerability had been [fixed](https://github.com/ether-camp/virtual-accelerator/commit/78920651dff0ac0e13101e17842e54f73ee46633).
 
-We then took the buggy code, compiled it to EVM, and plugged in into our [reachability claim](token-buggy-spec.k).
+We then took the vulnerability containing code, compiled it to EVM, and plugged in into our [reachability claim](token-buggy-spec.k).
 We then fed the claim to our prover, and it couldn't prove the claim. We're working towards
 improving the error message that K throws while attempting to prove the claim so that
 the messages themselves indicate the source of the bug.
@@ -132,9 +132,9 @@ the messages themselves indicate the source of the bug.
 We went one step further, and tried to prove the `transfer` function's correctness. The [reachability claim](token-correct-transfer-spec.k)
 for the `transfer` function looks very similar, and we attempt to prove the same thing - all valid executions
 of the function must end in a state where the amount is deducted from the message sender's balance, and added to
-receiver's balance. The proof went through without any fuss for both the correct and buggy versions of the contract.
+receiver's balance. The prover was able to verify the correctness of the token's `transfer` function's implementation as well.
 
-### Moral Of The Story
+### Conclusion
 We were able to catch the bug in Hacker Gold's ERC-20 compliant token using our semantics. What stood out to the
 team was the fact that the bug was caught using a very naive proof claim - something that possibly the authors of the
 contract and the auditors at Zeppelin could've easily come up with had our semantics been available then.
