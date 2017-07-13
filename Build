@@ -17,25 +17,39 @@ export cSCHEDULE=${cSCHEDULE:-DEFAULT}
 # Utilities
 # ---------
 
-krun_with_opts() {
-    krun --directory .build/$K_VERSION/ --debug -cMODE=$cMODE -cSCHEDULE=$cSCHEDULE $@
-}
-
 progress() { echo "== $@"; }
 success()  { echo -e "\e[32m== success: $@\e[0m";
              echo "$@" >> "$now_passing"
            }
 failure()  { echo -e "\e[31m== failure: $@\e[0m"; }
 
+pretty_diff() {
+    if type colordiff >/dev/null 2>&1; then
+        colordiff -u "$@"
+    else
+        diff -u "$@"
+    fi
+}
+
+check_for_tangle() {
+    type pandoc-tangle >/dev/null 2>&1  || {
+        have_tangle=false
+        echo -e >&2 "Warning: pandoc-tangle not installed."  \
+                   "Ignoring changes in markdown files\n"
+    }
+}
+
+lint_krun() {
+    # Format, &gt; entity > and make each K task start on a new line
+    xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
+}
+
+krun_with_opts() {
+    krun --directory .build/$K_VERSION/ --debug -cMODE=$cMODE -cSCHEDULE=$cSCHEDULE $@
+}
+
 # Test Filters and Lists
 # ----------------------
-
-list_analysis()   { find "$analysis_dir" -wholename "*$exp*" -name '*.evm'; }
-list_tests()      { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
-list_passing()    { cat "$expected_passing"; }
-list_failing()    { list_tests | grep -Fvxf "$expected_passing" -; }
-list_quicktests() { list_passing | filter_not_longrunning | sort -R | head -n 20; }
-list_codeship()   { list_passing | filter_codeship "$1"; }
 
 filter_not_longrunning() { grep -Fvxf "$long_running" -; }
 
@@ -65,37 +79,6 @@ filter_codeship() {
     esac | filter_not_longrunning
 }
 
-pretty_diff() {
-    if type colordiff >/dev/null 2>&1; then
-        colordiff -u "$@"
-    else
-        diff -u "$@"
-    fi
-}
-
-# Reads a list of json test files from stdin, and runs them
-run_tests() {
-    local test_file=$1 exit_status=0 output_file="$default_output_file"
-    progress "running: $test_file"
-
-    if [[ -e $test_file.out ]]; then output_file=$test_file.out; fi
-    pretty_diff --label expected <(cat "$output_file" | lint_krun) \
-                --label actual   <(krun_with_opts "$test_file" | lint_krun) \
-        || exit_status=$?
-    count=$(($count + 1))
-    if [[ $exit_status -eq 0 ]]; then
-        success "$test_file"
-    else
-        failure "$test_file"
-        failed=$(($failed + 1))
-    fi
-    progress "failed: $failed / $count"
-    return $exit_status
-}
-
-# Runners
-# -------
-
 filter_tests() {
     local command=( exit 1 )
     case $# in
@@ -107,30 +90,15 @@ filter_tests() {
     esac
 }
 
-lint_krun() {
-    # Format, &gt; entity > and make each K task start on a new line
-    xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
-}
+list_analysis()   { find "$analysis_dir" -wholename "*$exp*" -name '*.evm'; }
+list_tests()      { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
+list_passing()    { cat "$expected_passing"; }
+list_failing()    { list_tests | grep -Fvxf "$expected_passing" -; }
+list_quicktests() { list_passing | filter_not_longrunning | sort -R | head -n 20; }
+list_codeship()   { list_passing | filter_codeship "$1"; }
 
-run_krun() {
-    progress "running: $1"
-    krun_with_opts "$1" | lint_krun
-}
-
-check_for_tangle() {
-    type pandoc-tangle >/dev/null 2>&1  || {
-        have_tangle=false
-        echo -e >&2 "Warning: pandoc-tangle not installed."  \
-                   "Ignoring changes in markdown files\n"
-    }
-}
-
-run_make() {
-    local make_opts=
-    $have_tangle || make_opts="--assume-old ethereum.md --assume-old evm.md \
-                               --assume-old data.md --assume-old krypto.md"
-    make K_VERSION=${K_VERSION} -s $make_opts $@
-}
+# Higher-order runner helpers
+# ---------------------------
 
 with_test_list() {
     local list=$1; shift
@@ -154,12 +122,46 @@ with_first() {
     $do_run $($list | head -n 1)
 }
 
+# Runners
+# -------
+
+# Reads a list of json test files from stdin, and runs them
+run_tests() {
+    local test_file=$1 exit_status=0 output_file="$default_output_file"
+    progress "running: $test_file"
+
+    if [[ -e $test_file.out ]]; then output_file=$test_file.out; fi
+    pretty_diff --label expected <(cat "$output_file" | lint_krun) \
+                --label actual   <(krun_with_opts "$test_file" | lint_krun) \
+        || exit_status=$?
+    count=$(($count + 1))
+    if [[ $exit_status -eq 0 ]]; then
+        success "$test_file"
+    else
+        failure "$test_file"
+        failed=$(($failed + 1))
+    fi
+    progress "failed: $failed / $count"
+    return $exit_status
+}
+
+run_krun() {
+    progress "running: $1"
+    krun_with_opts "$1" | lint_krun
+}
+
 run_debug() {
     progress "debugging: $1"
     krun_with_opts --debugger "$1"
 }
 
-######################################################################
+run_make() {
+    local make_opts=
+    $have_tangle || make_opts="--assume-old ethereum.md --assume-old evm.md \
+                               --assume-old data.md --assume-old krypto.md"
+    make K_VERSION=${K_VERSION} -s $make_opts $@
+}
+
 # Main
 # ----
 
