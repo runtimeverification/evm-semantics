@@ -4,7 +4,7 @@ set -e      # Exit immediately if any command fails
 
 analysis_dir="tests/analysis/"
 tests_dir="tests/VMTests/"
-expected_passing="tests/passing.expected"
+expected_passing="tests/short-list"
 long_running="tests/long-running"
 now_passing="tests/passing.lastrun"
 
