@@ -53,9 +53,9 @@ krun_with_opts() {
 
 filter_not_longrunning() { grep -Fvxf "$long_running" -; }
 
-filter_codeship() {
-    codeship_list="$1"
-    case "$codeship_list" in
+filter_short() {
+    quick_list="$1"
+    case "$quick_list" in
         1)  grep -e 'vmArithmeticTest/[a-dA-D]'                                                ;;
         2)  grep -e 'vmArithmeticTest/expPowerOf256Of256'                                      ;;
         3)  grep -e 'vmArithmeticTest/[eE]' | grep -v -e 'vmArithmeticTest/expPowerOf256Of256' ;;
@@ -95,7 +95,17 @@ list_tests()      { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
 list_passing()    { cat "$expected_passing"; }
 list_failing()    { list_tests | grep -Fvxf "$expected_passing" -; }
 list_quicktests() { list_passing | filter_not_longrunning | sort -R | head -n 20; }
-list_codeship()   { list_passing | filter_codeship "$1"; }
+
+list_short() {
+    if [[ "$#" -gt 0 ]]; then
+        list_passing | filter_short "$1"
+        return
+    fi
+    for i in $(seq 1 20); do
+        list_passing | filter_short "$i"
+    done | sort
+    return
+}
 
 # Higher-order runner helpers
 # ---------------------------
@@ -194,14 +204,14 @@ case "$run_command" in
     list-tests)    with_test_list list_tests            echo        "$@" ;;
     list-passing)  with_test_list list_passing          echo        "$@" ;;
     list-failing)  with_test_list list_failing          echo        "$@" ;;
-    list-codeship) with_test_list "list_codeship $@"    echo             ;;
+    list-short)    with_test_list "list_short $@"       echo             ;;
     list-analysis) with_test_list list_analysis         echo        "$@" ;;
 
     # Test runs
     test)          with_test_list list_tests            run_tests   "$@" ;;
     passing)       with_test_list list_passing          run_tests   "$@" ;;
     failing)       with_test_list list_failing          run_tests   "$@" ;;
-    codeship)      with_test_list "list_codeship $@"    run_tests        ;;
+    short)         with_test_list "list_short $@"       run_tests        ;;
     quicktest)     with_test_list list_quicktests       run_tests   "$@" ;;
 
     *)             echo "
@@ -219,12 +229,12 @@ case "$run_command" in
        $0 list-tests   <regx>   List passing and failing tests
        $0 list-failing <regx>   List failing tests
        $0 list-passing <regx>   List passing tests
-       $0 list-codeship N       List the Nth codeship testsuite
+       $0 list-short [N]        List the Nth short testsuite (ommitting N lists all)
 
        $0 test    <regx>        Run passing and unknown tests
        $0 passing <regx>        Run known passing tests
        $0 failing <regx>        Run tests who's results we're not sure of
-       $0 codeship N            Run the Nth codeship testsuite
+       $0 short [N]             Run the Nth short testsuite (ommitting N runs all)
        $0 quicktest             Run 20 random passing tests
 "; exit ;;
 esac
