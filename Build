@@ -5,14 +5,10 @@ set -e      # Exit immediately if any command fails
 # Settings
 # --------
 
-analysis_dir="tests/analysis/"
 tests_dir="tests/VMTests/"
 expected_passing="tests/short-list"
 long_running="tests/long-running"
 now_passing="tests/passing.lastrun"
-
-export cMODE=${cMODE:-VMTESTS}
-export cSCHEDULE=${cSCHEDULE:-DEFAULT}
 
 # Utilities
 # ---------
@@ -46,6 +42,16 @@ lint_krun() {
 
 krun_with_opts() {
     krun --directory .build/$K_VERSION/ --debug -cMODE=$cMODE -cSCHEDULE=$cSCHEDULE $@
+}
+
+set_krun_environment() {
+    test_file=$1; shift
+    export cMODE=${cMODE:-VMTESTS}
+    export cSCHEDULE=${cSCHEDULE:-DEFAULT}
+    case "$test_file" in
+       *gas-analysis*) export cMODE=GASANALYZE ;;
+       *             ) :                       ;;
+    esac
 }
 
 # Test Filters and Lists
@@ -90,8 +96,8 @@ filter_tests() {
     esac
 }
 
-list_analysis()   { find "$analysis_dir" -wholename "*$exp*" -name '*.evm'; }
-list_vmtests()    { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
+list_gas_analysis() { find "tests/gas-analysis" -wholename "*$exp*" -name '*.evm'; }
+list_vmtests()      { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
 list_short() {
     if [[ "$#" -gt 0 ]]; then
         cat "$expected_passing" | filter_short "$1"
@@ -104,7 +110,7 @@ list_short() {
 }
 
 list_quicktests() { list_short | filter_not_longrunning | sort -R | head -n 20; }
-list_tests()      { list_vmtests; list_analysis; }
+list_tests()      { list_vmtests; list_gas_analysis; }
 
 
 # Higher-order runner helpers
@@ -139,11 +145,12 @@ with_first() {
 run_tests() {
     local test_file=$1 exit_status=0 output_file="$default_output_file"
     progress "running: $test_file"
-
     if [[ -e $test_file.out ]]; then output_file=$test_file.out; fi
-    pretty_diff --label expected <(cat "$output_file" | lint_krun) \
-                --label actual   <(krun_with_opts "$test_file" | lint_krun) \
-        || exit_status=$?
+    ( # Running in a sub-shell to avoid export spilling over to other tests
+        set_krun_environment "$test_file"
+        pretty_diff --label expected <(cat "$output_file" | lint_krun) \
+                    --label actual   <(krun_with_opts "$test_file" | lint_krun)
+    ) || exit_status=$?
     count=$(($count + 1))
     if [[ $exit_status -eq 0 ]]; then
         success "$test_file"
@@ -157,12 +164,16 @@ run_tests() {
 
 run_krun() {
     progress "running: $1"
-    krun_with_opts "$1" | lint_krun
+    ( set_krun_environment "$test_file"
+      krun_with_opts "$1" | lint_krun
+    )
 }
 
 run_debug() {
     progress "debugging: $1"
-    krun_with_opts --debugger "$1"
+    ( set_krun_environment "$test_file"
+      krun_with_opts --debugger "$1"
+    )
 }
 
 run_make() {
@@ -196,9 +207,9 @@ case "$run_command" in
     # Running
     krun)          with_test_list list_tests run_krun  "$@" ;;
     debug)         with_first     list_tests run_debug "$@" ;;
-    analyze-gas)   export cMODE=GASANALYZE ; with_test_list list_analysis run_krun  "$@" ;;
-    analyze-debug) export cMODE=GASANALYZE ; with_first     list_analysis run_debug "$@" ;;
-    analyze-test)  export cMODE=GASANALYZE ; with_test_list list_analysis run_tests "$@" ;;
+    analyze-gas)   with_test_list list_analysis run_krun  "$@" ;;
+    analyze-debug) with_first     list_analysis run_debug "$@" ;;
+    analyze-test)  with_test_list list_analysis run_tests "$@" ;;
 
     # Test lists
     list-tests)    with_test_list list_tests            echo        "$@" ;;
