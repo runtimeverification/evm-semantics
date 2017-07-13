@@ -8,7 +8,7 @@ module TOKEN-SPEC
         <schedule>  DEFAULT </schedule>
         <ethereum>
             <evm>
-                <op>            #execute           </op>
+                <op>            #execute => ?OP:K  </op>
                 <output>        .WordStack         </output>
                 <memoryUsed>    3                  </memoryUsed>
                 <callDepth>     0                  </callDepth>
