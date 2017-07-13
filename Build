@@ -92,17 +92,15 @@ filter_tests() {
 
 list_analysis()   { find "$analysis_dir" -wholename "*$exp*" -name '*.evm'; }
 list_tests()      { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
-list_passing()    { cat "$expected_passing"; }
-list_failing()    { list_tests | grep -Fvxf "$expected_passing" -; }
-list_quicktests() { list_passing | filter_not_longrunning | sort -R | head -n 20; }
+list_quicktests() { list_short | filter_not_longrunning | sort -R | head -n 20; }
 
 list_short() {
     if [[ "$#" -gt 0 ]]; then
-        list_passing | filter_short "$1"
+        cat "$expected_passing" | filter_short "$1"
         return
     fi
     for i in $(seq 1 20); do
-        list_passing | filter_short "$i"
+        cat "$expected_passing" | filter_short "$i"
     done | sort
     return
 }
@@ -203,14 +201,12 @@ case "$run_command" in
     # Test lists
     list-tests)    with_test_list list_tests            echo        "$@" ;;
     list-passing)  with_test_list list_passing          echo        "$@" ;;
-    list-failing)  with_test_list list_failing          echo        "$@" ;;
     list-short)    with_test_list "list_short $@"       echo             ;;
     list-analysis) with_test_list list_analysis         echo        "$@" ;;
 
     # Test runs
     test)          with_test_list list_tests            run_tests   "$@" ;;
     passing)       with_test_list list_passing          run_tests   "$@" ;;
-    failing)       with_test_list list_failing          run_tests   "$@" ;;
     short)         with_test_list "list_short $@"       run_tests        ;;
     quicktest)     with_test_list list_quicktests       run_tests   "$@" ;;
 
