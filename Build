@@ -226,12 +226,12 @@ progress "Using $K_VERSION"
 default_output_file="tests/templates/output-$K_VERSION.txt"
 have_tangle=true; check_for_tangle
 
-[[ "$#" == '0' ]] && set build
+[[ "$#" == '0' ]] && set all
 run_command="$1" && shift
 case "$run_command" in
 
     # Building
-    build)         run_make build ;;
+    all)           run_make all ;;
     defn)          run_make defn ;;
 
     # Running
@@ -257,7 +257,6 @@ case "$run_command" in
     usage:
        $0                       Build the definitions and kompile them
 
-       $0 build                 Detangle the definitions and kompile
        $0 defn                  Only detangle the definitions
 
        $0 krun                  Run a single program from the tests
