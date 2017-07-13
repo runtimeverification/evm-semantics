@@ -180,14 +180,14 @@ case "$run_command" in
     list-tests)    with_test_list list_tests            echo        "$@" ;;
     list-passing)  with_test_list list_passing          echo        "$@" ;;
     list-failing)  with_test_list list_failing          echo        "$@" ;;
-    list-codeship) with_test_list list_codeship         echo        "$@" ;;
+    list-codeship) with_test_list "list_codeship $@"    echo             ;;
     list-analysis) with_test_list list_analysis         echo        "$@" ;;
 
     # Test runs
     test)          with_test_list list_tests            run_tests   "$@" ;;
     passing)       with_test_list list_passing          run_tests   "$@" ;;
     failing)       with_test_list list_failing          run_tests   "$@" ;;
-    codeship)      with_test_list list_codeship         run_tests   "$@" ;;
+    codeship)      with_test_list "list_codeship $@"    run_tests        ;;
     quicktest)     with_test_list list_quicktests       run_tests   "$@" ;;
 
     *)             echo "
