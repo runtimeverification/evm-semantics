@@ -1,5 +1,5 @@
-EVM Modeling
-============
+SEMANTICS OF EVM IN K
+=====================
 
 [ ![Codeship Status for kframework/evm-semantics](https://app.codeship.com/projects/d3ce9a40-343d-0135-d1d4-02553a1f9242/status?branch=master)](https://app.codeship.com/projects/226792)
 
@@ -35,6 +35,14 @@ $ krun --directory k/ --debug \
 
 To run a gas analysis of the program, instead supply `-cMODE=GASANALYZE`.
 To run with the Homestead fee schedule instead (or any of the other schedules), instead supply `-cSCHEDULE=HOMESTEAD`.
+
+
+Verification
+------------
+
+Along with improving our semantics, we continue to use them to verify
+smart contracts using K's verification infrastructure. We maintain a
+[summary of our verification effors](tests/analysis/README.md).
 
 Issues
 ------
