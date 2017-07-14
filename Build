@@ -242,13 +242,11 @@ case "$run_command" in
 
     # Test lists
     list-tests)    with_test_list list_tests            echo        "$@" ;;
-    list-passing)  with_test_list list_passing          echo        "$@" ;;
     list-short)    with_test_list "list_short $@"       echo             ;;
     list-analysis) with_test_list list_analysis         echo        "$@" ;;
 
     # Test runs
     test)          with_test_list list_tests            run_tests   "$@" ;;
-    passing)       with_test_list list_passing          run_tests   "$@" ;;
     short)         with_test_list "list_short $@"       run_tests        ;;
     quicktest)     with_test_list list_quicktests       run_tests   "$@" ;;
 
@@ -263,15 +261,13 @@ case "$run_command" in
        $0 debug                 Debug a single program from the tests
        $0 analyze-gas           Analyze a single program from the analysis directory
        $0 analyze-debug         Debug a single program from the analysis directory
+       $0 analyze-test          Run a list of tests from the analysis list
 
-       $0 list-tests   <regx>   List passing and failing tests
-       $0 list-failing <regx>   List failing tests
-       $0 list-passing <regx>   List passing tests
+       $0 list-tests <regx>     List passing and failing tests
        $0 list-short [N]        List the Nth short testsuite (ommitting N lists all)
+       $0 list-analysis <regx>  List the analysis tests
 
-       $0 test    <regx>        Run passing and unknown tests
-       $0 passing <regx>        Run known passing tests
-       $0 failing <regx>        Run tests who's results we're not sure of
+       $0 test <regx>           Run passing and unknown tests
        $0 short [N]             Run the Nth short testsuite (ommitting N runs all)
        $0 quicktest             Run 20 random passing tests
 "; exit ;;
