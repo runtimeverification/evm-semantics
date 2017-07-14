@@ -110,7 +110,7 @@ list_short() {
     return
 }
 
-list_rv_jenkins() { list_tests | sort -R | head -n 8000; }
+list_rv_jenkins() { list_tests | grep -v 'vmPerformance' | sort -R | head -n 8000; }
 list_quicktests() { list_short | filter_not_longrunning | sort -R | head -n 20; }
 list_tests()      { list_vmtests; list_gas_analysis; }
 
@@ -235,22 +235,23 @@ case "$run_command" in
     defn)          run_make defn ;;
 
     # Running
-    krun)          with_test_list list_tests run_krun  "$@" ;;
-    debug)         with_first     list_tests run_debug "$@" ;;
+    krun)          with_test_list list_tests run_krun     "$@" ;;
+    debug)         with_first     list_tests run_debug    "$@" ;;
     analyze-gas)   with_test_list list_analysis run_krun  "$@" ;;
     analyze-debug) with_first     list_analysis run_debug "$@" ;;
     analyze-test)  with_test_list list_analysis run_tests "$@" ;;
 
     # Test lists
-    list-tests)    with_test_list list_tests            echo        "$@" ;;
-    list-short)    with_test_list "list_short $@"       echo             ;;
-    list-analysis) with_test_list list_analysis         echo        "$@" ;;
+    list-tests)      with_test_list list_tests      echo "$@" ;;
+    list-rv-jenkins) with_test_list list_rv_jenkins echo "$@" ;;
+    list-short)      with_test_list "list_short $@" echo      ;;
+    list-analysis)   with_test_list list_analysis   echo "$@" ;;
 
     # Test runs
-    test)          with_test_list list_tests            run_tests   "$@" ;;
-    rv-jenkins)    with_test_list list_rv_jenkins       run_tests   "$@" ;;
-    short)         with_test_list "list_short $@"       run_tests        ;;
-    quicktest)     with_test_list list_quicktests       run_tests   "$@" ;;
+    test)       with_test_list list_tests      run_tests "$@" ;;
+    rv-jenkins) with_test_list list_rv_jenkins run_tests "$@" ;;
+    short)      with_test_list "list_short $@" run_tests      ;;
+    quicktest)  with_test_list list_quicktests run_tests "$@" ;;
 
     *)             echo "
     usage:
@@ -266,11 +267,12 @@ case "$run_command" in
        $0 analyze-test          Run a list of tests from the analysis list
 
        $0 list-tests <regx>     List passing and failing tests
+       $0 list-rv-jenkins       List 8000 random tests (excluding performance tests)
        $0 list-short [N]        List the Nth short testsuite (ommitting N lists all)
        $0 list-analysis <regx>  List the analysis tests
 
        $0 test <regx>           Run passing and unknown tests
-       $0 rv-jenkins            Run 8000 random tests
+       $0 rv-jenkins            Run 8000 random tests (excluding performance tests)
        $0 short [N]             Run the Nth short testsuite (ommitting N runs all)
        $0 quicktest             Run 20 random passing tests
 "; exit ;;
