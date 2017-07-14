@@ -177,7 +177,7 @@ test_with_rvk() {
 run_tests() {
     local test_file=$1
     progress "running: $test_file"
-    "test_with_$K_VERSION" || exit_status=$?
+    "test_with_$K_VERSION" "$@" || exit_status=$?
     count=$(($count + 1))
     if [[ $exit_status -eq 0 ]]; then
         success "$test_file"
