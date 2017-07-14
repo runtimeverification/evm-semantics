@@ -142,15 +142,42 @@ with_first() {
 # Runners
 # -------
 
-run_tests() {
-    local test_file=$1 exit_status=0 output_file="$default_output_file"
-    progress "running: $test_file"
+test_with_uiuck() {
+    local exit_status=0 output_file="$default_output_file"
     if [[ -e $test_file.out ]]; then output_file=$test_file.out; fi
     ( # Running in a sub-shell to avoid export spilling over to other tests
         set_krun_environment "$test_file"
         pretty_diff --label expected <(cat "$output_file" | lint_krun) \
                     --label actual   <(krun_with_opts "$test_file" | lint_krun)
-    ) || exit_status=$?
+    )
+}
+
+test_with_rvk() {
+    (
+        # TODO: Integrate this into Build nicely
+        set +e;
+        interpreter="$(dirname "$0")/.build/rvk/ethereum-kompiled/interpreter"
+        kast="$(mktemp)"
+        output="$(mktemp)"
+        kast_output="$(mktemp)"
+        trap "rm -rf $kast $output $kast_output" INT TERM EXIT
+        "$(dirname "$0")/kast-json.py" "$1" > "$kast"
+        $interpreter "$(dirname "$0")/k/ethereum-kompiled/realdef.cma" -c PGM "$kast" textfile -c SCHEDULE '`DEFAULT_ETHEREUM`(.KList)' text -c MODE '`VMTESTS_ETHEREUM`(.KList)' text --output-file "$output"
+        exit=$?
+        if [ $exit -eq 0 ]; then
+          exit 0
+        fi
+        k-bin-to-text "$output" "$kast_output"
+        cat "$kast_output"
+        printf "\n"
+        exit $exit
+    )
+}
+
+run_tests() {
+    local test_file=$1
+    progress "running: $test_file"
+    "test_with_$K_VERSION" || exit_status=$?
     count=$(($count + 1))
     if [[ $exit_status -eq 0 ]]; then
         success "$test_file"
@@ -185,6 +212,8 @@ run_make() {
 
 # Main
 # ----
+
+cd "$(dirname $0)"
 
 if krun --version | grep 'RV' >/dev/null 2>&1; then
     K_VERSION=rvk
