@@ -142,7 +142,6 @@ with_first() {
 # Runners
 # -------
 
-# Reads a list of json test files from stdin, and runs them
 run_tests() {
     local test_file=$1 exit_status=0 output_file="$default_output_file"
     progress "running: $test_file"
