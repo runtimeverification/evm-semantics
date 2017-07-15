@@ -18,6 +18,18 @@ module EVM-DATA
     syntax KResult ::= Int
 ```
 
+Some important numbers for rounding to:
+
+```{.k .uiuck .rvk}
+    syntax Int ::= "pow256" [function]
+                 | "pow255" [function]
+                 | "pow16"  [function]
+ // ----------------------------------
+    rule pow256 => 2 ^Int 256
+    rule pow255 => 2 ^Int 255
+    rule pow16  => 2 ^Int 16
+```
+
 Primitives
 ----------
 
@@ -29,7 +41,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 ```{.k .uiuck .rvk}
     syntax Word ::= Int | chop ( Word ) [function]
  // ----------------------------------------------
-    rule chop( W:Int ) => W %Int (2 ^Int 256)
+    rule chop( W:Int ) => W %Int pow256
 ```
 
 -   `bool2Word` interperets a `Bool` as a `Word`.
@@ -63,8 +75,8 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
     syntax Int ::= sgn ( Word ) [function]
                  | abs ( Word ) [function]
  // --------------------------------------
-    rule sgn(I:Int) => -1 requires I >=Int (2 ^Int 255)
-    rule sgn(I:Int) => 1  requires I <Int (2 ^Int 255)
+    rule sgn(I:Int) => -1 requires I >=Int pow255
+    rule sgn(I:Int) => 1  requires I <Int pow255
 
     rule abs(I:Int) => 0 -Word I requires sgn(I) ==K -1
     rule abs(I:Int) => I         requires sgn(I) ==K 1
@@ -121,7 +133,7 @@ The corresponding `<op>Word` operations automatically perform the correct `Word`
                   | Word "%Word" Word [function]
  // --------------------------------------------
     rule W0:Int +Word W1:Int => chop( W0 +Int W1 )
-    rule W0:Int -Word W1:Int => chop( (W0 +Int (2 ^Int 256)) -Int W1 )
+    rule W0:Int -Word W1:Int => chop( (W0 +Int pow256) -Int W1 )
     rule W0:Int *Word W1:Int => chop( W0 *Int W1 )
     rule W0:Int /Word 0      => 0
     rule W0:Int /Word W1:Int => chop( W0 /Int W1 ) requires W1 =/=K 0
@@ -134,9 +146,18 @@ Care is needed for `^Word` to avoid big exponentiation.
 ```{.k .uiuck .rvk}
     syntax Word ::= Word "^Word" Word [function]
  // --------------------------------------------
-    rule W0:Int ^Word W1:Int => (W0 ^Word (W1 /Int 2)) ^Word 2  requires W1 >=Int (2 ^Int 16) andBool W1 %Int 2 ==Int 0
-    rule W0:Int ^Word W1:Int => (W0 ^Word (W1 -Int 1)) *Word W0 requires W1 >=Int (2 ^Int 16) andBool W1 %Int 2 ==Int 1
-    rule W0:Int ^Word W1:Int => chop( W0 ^Int W1 )              requires W1 <Int (2 ^Int 16)
+    rule W0:Int ^Word W1:Int => (W0 ^Word (W1 /Int 2)) ^Word 2  requires W1 >=Int pow16 andBool W1 %Int 2 ==Int 0
+    rule W0:Int ^Word W1:Int => (W0 ^Word (W1 -Int 1)) *Word W0 requires W1 >=Int pow16 andBool W1 %Int 2 ==Int 1
+```
+
+RV-K has a more efficient power-modulus operator.
+
+```{.k .uiuck}
+    rule W0:Int ^Word W1:Int => (W0 ^Int W1) %Int pow256 requires W1 <Int pow16
+```
+
+```{.k .rvk}
+    rule W0:Int ^Word W1:Int => W0 ^%Int W1 pow256 requires W1 <Int pow16
 ```
 
 `/sWord` and `%sWord` give the signed interperetations of `/Word` and `%Word`.
@@ -201,7 +222,7 @@ Bitwise logical operators are lifted from the integer versions.
                   | Word "&Word" Word   [function]
                   | Word "xorWord" Word [function]
  // ----------------------------------------------
-    rule ~Word W:Int           => chop( W xorInt ((2 ^Int 256) -Int 1) )
+    rule ~Word W:Int           => chop( W xorInt (pow256 -Int 1) )
     rule W0:Int |Word   W1:Int => chop( W0 |Int W1 )
     rule W0:Int &Word   W1:Int => chop( W0 &Int W1 )
     rule W0:Int xorWord W1:Int => chop( W0 xorInt W1 )
@@ -218,7 +239,7 @@ Bitwise logical operators are lifted from the integer versions.
     rule byte(N:Int, _) => 0 requires N <Int 0 orBool N >=Int 32
 
     rule bit(N:Int, W:Int)  => (W >>Int (255 -Int N)) %Int 2                            requires N >=Int 0 andBool N <Int 256
-    rule byte(N:Int, W:Int) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) %Int (2 ^Int 8) requires N >=Int 0 andBool N <Int 32
+    rule byte(N:Int, W:Int) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) %Int 256 requires N >=Int 0 andBool N <Int 32
 ```
 
 -   `#nBits` shifts in $N$ ones from the right.
@@ -226,11 +247,11 @@ Bitwise logical operators are lifted from the integer versions.
 -   `_<<Byte_` shifts an integer 8 bits to the left.
 
 ```{.k .uiuck .rvk}
-    syntax Int  ::= #nBits  ( Int )  [function]
-                  | #nBytes ( Int )  [function]
-                  | Int "<<Byte" Int [function]
- // -------------------------------------------
-    rule #nBits(N)  => (2 ^Int N) -Int 1  requires N >=Int 0
+    syntax Int ::= #nBits  ( Int )  [function]
+                 | #nBytes ( Int )  [function]
+                 | Int "<<Byte" Int [function]
+ // ------------------------------------------
+    rule #nBits(N)  => (1 <<Int N) -Int 1  requires N >=Int 0
     rule #nBytes(N) => #nBits(N *Int 8)   requires N >=Int 0
     rule N <<Byte M => N <<Int (8 *Int M)
 ```

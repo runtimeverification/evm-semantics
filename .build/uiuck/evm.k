@@ -578,10 +578,10 @@ module ETHEREUM
  // ----------------------------------------------------------
     rule <op> #gas [ OP ] => #gasExec(SCHED, OP) ~> #memory(OP, MU) ~> #deductGas ... </op> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
 
-    rule <op> GEXEC:Int ~> MU':Int ~> #deductGas => #exception ... </op> requires MU' >=Int (2 ^Int 256)
+    rule <op> GEXEC:Int ~> MU':Int ~> #deductGas => #exception ... </op> requires MU' >=Int pow256
     rule <op> (GEXEC:Int ~> MU':Int => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) +Int GEXEC)  ~> #deductGas ... </op>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
-      requires MU' <Int (2 ^Int 256)
+      requires MU' <Int pow256
 
     syntax K ::= "{" OpCode "|" Word "}"
  // ------------------------------------
