@@ -469,12 +469,24 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 
     syntax Int ::= #stackAdded ( OpCode ) [function]
  // ------------------------------------------------
-    rule #stackAdded(OP)        => 0 requires OP in #zeroRet
-    rule #stackAdded(PUSH(_,_)) => 1
-    rule #stackAdded(LOG(_))    => 0
-    rule #stackAdded(SWAP(N))   => N
-    rule #stackAdded(DUP(N))    => N +Int 1
-    rule #stackAdded(OP)        => 1 requires notBool (OP in #zeroRet orBool isPushOp(OP) orBool isLogOp(OP) orBool isStackOp(OP))
+    rule #stackAdded(CALLDATACOPY) => 0
+    rule #stackAdded(CODECOPY)     => 0
+    rule #stackAdded(EXTCODECOPY)  => 0
+    rule #stackAdded(POP)          => 0
+    rule #stackAdded(MSTORE)       => 0
+    rule #stackAdded(MSTORE8)      => 0
+    rule #stackAdded(SSTORE)       => 0
+    rule #stackAdded(JUMP)         => 0
+    rule #stackAdded(JUMPI)        => 0
+    rule #stackAdded(JUMPDEST)     => 0
+    rule #stackAdded(STOP)         => 0
+    rule #stackAdded(RETURN)       => 0
+    rule #stackAdded(SELFDESTRUCT) => 0
+    rule #stackAdded(PUSH(_,_))    => 1
+    rule #stackAdded(LOG(_))       => 0
+    rule #stackAdded(SWAP(N))      => N
+    rule #stackAdded(DUP(N))       => N +Int 1
+    rule #stackAdded(OP)           => 1 [owise]
 
     syntax Int ::= #stackDelta ( OpCode ) [function]
  // ------------------------------------------------
