@@ -81,7 +81,8 @@ module ETHEREUM-SIMULATION
 
     syntax EthereumCommand ::= "start" | "flush"
  // --------------------------------------------
-    rule <mode> EXECMODE   </mode> <k> start => . ... </k> <op> . => #execute    </op> requires EXECMODE in (SetItem(VMTESTS) SetItem(NORMAL))
+    rule <mode> NORMAL     </mode> <k> start => . ... </k> <op> . => #execute    </op>
+    rule <mode> VMTESTS    </mode> <k> start => . ... </k> <op> . => #execute    </op>
     rule <mode> GASANALYZE </mode> <k> start => . ... </k> <op> . => #gasAnalyze </op>
     rule <k> flush => . ... </k> <op> #end => #finalize </op>
     rule <k> flush => . ... </k> <op> #exception => #finalize ~> #exception </op>
