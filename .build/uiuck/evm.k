@@ -600,8 +600,8 @@ module ETHEREUM
     rule <op> G:Int ~> #deductGas => #exception ... </op> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
     rule <op> G:Int ~> #deductGas => .          ... </op> <gas> GAVAIL => GAVAIL -Int G </gas> <previousGas> _ => GAVAIL </previousGas> requires GAVAIL >=Int G
 
-    syntax Int ::= Cmem ( Schedule , Int ) [function]
- // -------------------------------------------------
+    syntax Int ::= Cmem ( Schedule , Int ) [function, memo]
+ // -------------------------------------------------------
     rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
 
 
