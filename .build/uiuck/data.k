@@ -1,15 +1,9 @@
 // EVM Words
 // =========
 
-// EVM uses bounded 256 bit integer words. Here we provide the arithmetic of these
-// words, as well as some data-structures over them.
-
-// EVM also has bytes (8 bit words) for some encodings of data, but only a very
-// light dependence on byte-level manipulation. It's doubtful that having two
-// different ways of reading the base data-units (or that limiting yourself to
-// machine-representable units) is beneficial. Arguably hardware should evolve to
-// directly support more elegant languages, rather than our languages evolving
-// towards our hardware.
+// EVM uses bounded 256 bit integer words, and sometimes also bytes (8 bit words).
+// Here we provide the arithmetic of these words, as well as some data-structures
+// over them. Both are implemented using K's `Int`.
 
 
 requires "domains.k"
