@@ -561,7 +561,7 @@ module ETHEREUM
     rule #addr?(EXTCODESIZE,  W) => #addr(W)
     rule #addr?(EXTCODECOPY,  W) => #addr(W)
     rule #addr?(SELFDESTRUCT, W) => #addr(W)
-    rule #addr?(OP, W) => W requires notBool OP in (SetItem(BALANCE) SetItem(EXTCODESIZE) SetItem(EXTCODECOPY) SetItem(SELFDESTRUCT))
+    rule #addr?(OP, W)           => W [owise]
 
 
 // `StackOp` is used for opcodes which require a large portion of the stack.
