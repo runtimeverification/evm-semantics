@@ -23,7 +23,7 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
 
     syntax EthereumSimulation ::= JSON
  // ----------------------------------
-    rule JSONINPUT:JSON => run JSONINPUT success .EthereumSimulation
+    rule <k> JSONINPUT:JSON => run JSONINPUT success .EthereumSimulation </k>
 
     syntax EthereumCommand ::= DistCommand JSON
  // -------------------------------------------
@@ -77,11 +77,11 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ```{.k .uiuck .rvk}
     syntax EthereumCommand ::= "start" | "flush"
  // --------------------------------------------
-    rule <mode> NORMAL     </mode> <k> start => . ... </k> <op> . => #execute    </op>
-    rule <mode> VMTESTS    </mode> <k> start => . ... </k> <op> . => #execute    </op>
-    rule <mode> GASANALYZE </mode> <k> start => . ... </k> <op> . => #gasAnalyze </op>
-    rule <k> flush => . ... </k> <op> #end => #finalize </op>
-    rule <k> flush => . ... </k> <op> #exception => #finalize ~> #exception </op>
+    rule <mode> NORMAL     </mode> <k> start => #execute    ... </k>
+    rule <mode> VMTESTS    </mode> <k> start => #execute    ... </k>
+    rule <mode> GASANALYZE </mode> <k> start => #gasAnalyze ... </k>
+    rule <k> #end       ~> flush => #finalize               ... </k>
+    rule <k> #exception ~> flush => #finalize ~> #exception ... </k>
 ```
 
 -   `exception` only clears from the `k` cell if there is an exception on the `op` cell.
@@ -90,7 +90,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ```{.k .uiuck .rvk}
     syntax EthereumCommand ::= "exception" | "failure" String | "success"
  // ---------------------------------------------------------
-    rule <k> exception => . ... </k> <op> #exception ... </op>
+    rule <k> #exception ~> exception => . ... </k>
     rule <k> success => . ... </k> <exit-code> _ => 0 </exit-code>
     rule failure _ => .
 ```
@@ -153,7 +153,6 @@ State Manipulation
 
          <analysis> _ => .Map </analysis>
 
-         <op>         _ => .          </op>
          <output>     _ => .WordStack </output>
          <memoryUsed> _ => 0:Word     </memoryUsed>
          <callDepth>  _ => 0:Word     </callDepth>
@@ -196,7 +195,7 @@ State Manipulation
 ```{.k .uiuck .rvk}
     syntax EthereumCommand ::= "mkAcct" Word
  // ----------------------------------------
-    rule <k> mkAcct ACCT => . ... </k> <op> . => #newAccount ACCT </op>
+    rule <k> mkAcct ACCT => #newAccount ACCT ... </k>
 ```
 
 -   `load` loads an account or transaction into the world state.

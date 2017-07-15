@@ -7,7 +7,6 @@
   <analysis> .Map </analysis>
   <ethereum>
     <evm>
-      <op> . </op>
       <output> .WordStack </output>
       <memoryUsed> 0 </memoryUsed>
       <callDepth> 0 </callDepth>
