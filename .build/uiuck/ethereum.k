@@ -117,7 +117,7 @@ module ETHEREUM-SIMULATION
     syntax Bool ::= "#hasPost?" "(" JSON ")" [function]
  // ---------------------------------------------------
     rule #hasPost? ({ .JSONList }) => false
-    rule #hasPost? ({ (KEY:String) : _ , REST }) => KEY in #postKeys orBool #hasPost? ({ REST })
+    rule #hasPost? ({ (KEY:String) : _ , REST }) => KEY ==String "post" orBool #hasPost? ({ REST })
 
     syntax Set ::= "#postKeys" [function]
  // -------------------------------------

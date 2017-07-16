@@ -112,7 +112,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax Bool ::= "#hasPost?" "(" JSON ")" [function]
  // ---------------------------------------------------
     rule #hasPost? ({ .JSONList }) => false
-    rule #hasPost? ({ (KEY:String) : _ , REST }) => KEY in #postKeys orBool #hasPost? ({ REST })
+    rule #hasPost? ({ (KEY:String) : _ , REST }) => KEY ==String "post" orBool #hasPost? ({ REST })
 
     syntax Set ::= "#postKeys" [function]
  // -------------------------------------
