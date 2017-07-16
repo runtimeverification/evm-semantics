@@ -41,10 +41,6 @@ lint_krun() {
 }
 
 krun_with_opts() {
-    krun --directory .build/$K_VERSION/ --debug -cMODE=$cMODE -cSCHEDULE=$cSCHEDULE $@
-}
-
-set_krun_environment() {
     test_file=$1; shift
     export K_OPTS=-Xss500m
     export cMODE=${cMODE:-VMTESTS}
@@ -53,6 +49,8 @@ set_krun_environment() {
        *gas-analysis*) export cMODE=GASANALYZE ;;
        *             ) :                       ;;
     esac
+
+    krun --directory .build/$K_VERSION/ --debug -cMODE=$cMODE -cSCHEDULE=$cSCHEDULE "$test_file" "$@"
 }
 
 # Test Filters and Lists
@@ -147,7 +145,6 @@ test_with_uiuck() {
     local exit_status=0 output_file="$default_output_file"
     if [[ -e $test_file.out ]]; then output_file=$test_file.out; fi
     ( # Running in a sub-shell to avoid export spilling over to other tests
-        set_krun_environment "$test_file"
         pretty_diff --label expected <(cat "$output_file" | lint_krun) \
                     --label actual   <(krun_with_opts "$test_file" | lint_krun)
     )
@@ -192,16 +189,12 @@ run_tests() {
 
 run_krun() {
     progress "running: $1"
-    ( set_krun_environment "$test_file"
-      krun_with_opts "$1" | lint_krun
-    )
+    ( krun_with_opts "$1" | lint_krun)
 }
 
 run_debug() {
     progress "debugging: $1"
-    ( set_krun_environment "$test_file"
-      krun_with_opts --debugger "$1"
-    )
+    ( krun_with_opts "$1" --debugger )
 }
 
 run_make() {
