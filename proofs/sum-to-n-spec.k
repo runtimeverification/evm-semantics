@@ -17,7 +17,7 @@ module ADD1-SPEC
         <analysis>  .Map </analysis>
         <ethereum>
             <evm>
-                <op>  #next ~> #execute => . </op>
+                <op>  #next ~> #execute => #end </op>
                 <output>.WordStack</output>
                 <memoryUsed>0</memoryUsed>
                 <callDepth>0</callDepth>
@@ -30,7 +30,7 @@ module ADD1-SPEC
                     <caller>428365927726247537526132020791190998556166378203</caller>
                     <callData>0 : .WordStack</callData>
                     <callValue>0</callValue>
-                    <wordStack>.WordStack => 0 : .WordStack</wordStack>
+                    <wordStack>.WordStack</wordStack>
                     <localMem>.Map</localMem>
                     <pc>0 => 26</pc>
                     <gas>100000 => 79448</gas>
