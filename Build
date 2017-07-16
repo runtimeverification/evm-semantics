@@ -14,6 +14,7 @@ now_passing="tests/passing.lastrun"
 # ---------
 
 progress() { echo "== $@"; }
+warning()  { echo -e "WARNING:" "$@"; }
 success()  { echo -e "\e[32m== success: $@\e[0m";
              echo "$@" >> "$now_passing"
            }
@@ -30,8 +31,8 @@ pretty_diff() {
 check_for_tangle() {
     type pandoc-tangle >/dev/null 2>&1  || {
         have_tangle=false
-        echo -e >&2 "Warning: pandoc-tangle not installed."  \
-                   "Ignoring changes in markdown files\n"
+        warning "pandoc-tangle not installed."  \
+                "Ignoring changes in markdown files\n"
     }
 }
 
@@ -90,7 +91,7 @@ filter_tests() {
     0) cat;       return ;;
     1) grep "$1"; return ;;
     *) cat > /dev/null;
-       echo >&2 "Too many expressions";
+       warning "Too many expressions";
        ;;
     esac
 }
@@ -133,7 +134,7 @@ with_first() {
     local do_run=$1; shift;
 
     [[ $($list | wc -l) = 1 ]] || {
-        echo -e >&2 "Warning: Multiple tests passed, but only running the first"
+        warning "Multiple tests passed, but only running the first"
     }
     $do_run $($list | head -n 1)
 }
