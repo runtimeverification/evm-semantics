@@ -12,10 +12,10 @@ defn_dir=.build/${K_VERSION}
 defn_files=${defn_dir}/ethereum.k ${defn_dir}/data.k ${defn_dir}/evm.k ${defn_dir}/krypto.k
 
 all: build split-tests proofs
-proofs: tests/proofs/token-correct-transfer-spec.k \
-		tests/proofs/token-correct-transfer-from-spec.k \
-		tests/proofs/token-buggy-spec.k \
-		tests/proofs/sum-to-n-spec.k
+proofs: proofs/token-correct-transfer-spec.k \
+		proofs/token-correct-transfer-from-spec.k \
+		proofs/token-buggy-spec.k \
+		proofs/sum-to-n-spec.k
 build: .build/${K_VERSION}/ethereum-kompiled/extras/timestamp
 defn: $(defn_files)
 
@@ -24,7 +24,7 @@ defn: $(defn_files)
 	mkdir -p $(dir $@)
 	pandoc-tangle --from markdown --to code-k --code ${K_VERSION} $< > $@
 
-tests/proofs/%.k: proofs/%.md
+proofs/%.k: proofs/%.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc-tangle --from markdown --to code-k --code k $< > $@
@@ -35,7 +35,7 @@ tests/ethereum-tests/%.json:
 
 clean:
 	rm -r .build
-	rm -r tests/proofs
+	find proofs/ -name '*.k' -delete
 
 split-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
 			 tests/VMTests/vmBitwiseLogicOperationTest/make.timestamp \
