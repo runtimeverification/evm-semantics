@@ -15,6 +15,8 @@ now_passing="tests/passing.lastrun"
 
 progress() { echo "== $@"; }
 warning()  { echo -e "WARNING:" "$@"; }
+die()      { echo -e "FATAL:" "$@"; exit 1; }
+
 success()  { echo -e "\e[32m== success: $@\e[0m";
              echo "$@" >> "$now_passing"
            }
@@ -44,11 +46,11 @@ lint_krun() {
 krun_with_opts() {
     test_file=$1; shift
     export K_OPTS=-Xss500m
-    export cMODE=${cMODE:-VMTESTS}
     export cSCHEDULE=${cSCHEDULE:-DEFAULT}
     case "$test_file" in
-       *gas-analysis*) export cMODE=GASANALYZE ;;
-       *             ) :                       ;;
+       *gas-analysis/*) export cMODE=GASANALYZE ;;
+       *VMTests/*     ) export cMODE=VMTESTS    ;;
+       *              ) die "Don't know how to set mode for '$test_file'";;
     esac
 
     krun --directory .build/$K_VERSION/ --debug -cMODE=$cMODE -cSCHEDULE=$cSCHEDULE "$test_file" "$@"
