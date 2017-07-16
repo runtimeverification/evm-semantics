@@ -287,6 +287,7 @@ module ETHEREUM-SIMULATION
 
     syntax EthereumCommand ::= "check" JSON
  // ---------------------------------------
+    rule #exception ~> check J:JSON => check J ~> #exception
     rule check DATA : { .JSONList } => .
     rule check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST }
       requires REST =/=K .JSONList andBool notBool DATA in (SetItem("callcreates") SetItem("logs"))
