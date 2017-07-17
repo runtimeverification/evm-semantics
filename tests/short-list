@@ -1,3 +1,5 @@
+proofs/token-correct-transfer-from-spec.k
+proofs/token-correct-transfer-spec.k
 tests/VMTests/vmArithmeticTest/add0.json
 tests/VMTests/vmArithmeticTest/add1.json
 tests/VMTests/vmArithmeticTest/add2.json

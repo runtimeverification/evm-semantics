@@ -43,19 +43,27 @@ lint_krun() {
     xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
 }
 
+set_test_opts_for_proofs() {
+    local basename="$(basename -s -spec.k "$1")"
+    local basepath="$(dirname "$1")/$basename"
+    test_opts=( -cMODE=NORMAL "$basepath.json" --prove "$basepath-spec.k" )
+}
+
 krun_with_opts() {
     local test_file=$1; shift
     local lint=lint_krun
+    local test_opts=()
     export K_OPTS=-Xss500m
     export cSCHEDULE=${cSCHEDULE:-DEFAULT}
     case "$test_file" in
-       *gas-analysis/*) test_opts=( -cMODE=GASANALYZE );;
-       *VMTests/*     ) test_opts=( -cMODE=VMTESTS    );;
+       *gas-analysis/*) test_opts=( -cMODE=GASANALYZE "$test_file" );;
+       *VMTests/*     ) test_opts=( -cMODE=VMTESTS    "$test_file" );;
+       *proofs/*      ) set_test_opts_for_proofs "$test_file"; lint=cat;;
        *              ) die "Don't know how to set test_opts for '$test_file'";;
     esac
 
     krun --directory .build/$K_VERSION/ --debug \
-         -cSCHEDULE=$cSCHEDULE "${test_opts[@]}" "$test_file" "$@" \
+         -cSCHEDULE=$cSCHEDULE "${test_opts[@]}" "$@" \
         | $lint
 }
 
@@ -103,6 +111,7 @@ filter_tests() {
 
 list_gas_analysis() { find "tests/gas-analysis" -wholename "*$exp*" -name '*.evm'; }
 list_vmtests()      { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
+list_proofs()       { find "proofs/" -wholename "*$exp*" -name '*-spec.k'; }
 list_short() {
     if [[ "$#" -gt 0 ]]; then
         cat "$expected_passing" | filter_short "$1"
@@ -116,7 +125,7 @@ list_short() {
 
 list_rv_jenkins() { list_tests | grep -v 'vmPerformance' | sort -R | head -n 8000; }
 list_quicktests() { list_short | filter_not_longrunning | sort -R | head -n 20; }
-list_tests()      { list_vmtests; list_gas_analysis; }
+list_tests()      { list_vmtests; list_gas_analysis; list_proofs; }
 
 
 # Higher-order runner helpers
