@@ -157,7 +157,7 @@ with_first() {
 # -------
 
 test_with_uiuck() {
-    local exit_status=0 output_file="$default_output_file"
+    local output_file="$default_output_file"
     if [[ -e $test_file.out ]]; then output_file=$test_file.out; fi
     ( # Running in a sub-shell to avoid export spilling over to other tests
         pretty_diff --label expected <(cat "$output_file") \
@@ -188,7 +188,7 @@ test_with_rvk() {
 }
 
 run_tests() {
-    local test_file=$1
+    local test_file=$1 exit_status=0
     progress "running: $test_file"
     "test_with_$K_VERSION" "$@" || exit_status=$?
     count=$(($count + 1))
