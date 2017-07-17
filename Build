@@ -141,7 +141,7 @@ with_test_list() {
 
     run_make all
     while read test_file; do
-        $do_run "$test_file"
+        $do_run "$test_file" </dev/null || true
     done < <($list | filter_tests "$@")
     exit $failed
 }
