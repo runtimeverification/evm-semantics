@@ -44,7 +44,8 @@ lint_krun() {
 }
 
 krun_with_opts() {
-    test_file=$1; shift
+    local test_file=$1; shift
+    local lint=lint_krun
     export K_OPTS=-Xss500m
     export cSCHEDULE=${cSCHEDULE:-DEFAULT}
     case "$test_file" in
@@ -53,7 +54,9 @@ krun_with_opts() {
        *              ) die "Don't know how to set test_opts for '$test_file'";;
     esac
 
-    krun --directory .build/$K_VERSION/ --debug -cSCHEDULE=$cSCHEDULE "${test_opts[@]}" "$test_file" "$@"
+    krun --directory .build/$K_VERSION/ --debug \
+         -cSCHEDULE=$cSCHEDULE "${test_opts[@]}" "$test_file" "$@" \
+        | $lint
 }
 
 # Test Filters and Lists
@@ -148,8 +151,8 @@ test_with_uiuck() {
     local exit_status=0 output_file="$default_output_file"
     if [[ -e $test_file.out ]]; then output_file=$test_file.out; fi
     ( # Running in a sub-shell to avoid export spilling over to other tests
-        pretty_diff --label expected <(cat "$output_file" | lint_krun) \
-                    --label actual   <(krun_with_opts "$test_file" | lint_krun)
+        pretty_diff --label expected <(cat "$output_file") \
+                    --label actual   <(krun_with_opts "$test_file")
     )
 }
 
