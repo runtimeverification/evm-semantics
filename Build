@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e      # Exit immediately if any command fails
+set -u      # Using undefined variables is an error. Exit immediately
 
 # Settings
 # --------
@@ -14,6 +15,9 @@ now_passing="tests/passing.lastrun"
 # ---------
 
 progress() { echo "== $@"; }
+warning()  { echo -e "WARNING:" "$@"; }
+die()      { echo -e "FATAL:" "$@"; exit 1; }
+
 success()  { echo -e "\e[32m== success: $@\e[0m";
              echo "$@" >> "$now_passing"
            }
@@ -30,8 +34,8 @@ pretty_diff() {
 check_for_tangle() {
     type pandoc-tangle >/dev/null 2>&1  || {
         have_tangle=false
-        echo -e >&2 "Warning: pandoc-tangle not installed."  \
-                   "Ignoring changes in markdown files\n"
+        warning "pandoc-tangle not installed."  \
+                "Ignoring changes in markdown files\n"
     }
 }
 
@@ -40,19 +44,28 @@ lint_krun() {
     xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
 }
 
-krun_with_opts() {
-    krun --directory .build/$K_VERSION/ --debug -cMODE=$cMODE -cSCHEDULE=$cSCHEDULE $@
+set_test_opts_for_proofs() {
+    local basename="$(basename -s -spec.k "$1")"
+    local basepath="$(dirname "$1")/$basename"
+    test_opts=( -cMODE=NORMAL "$basepath.json" --prove "$basepath-spec.k" )
 }
 
-set_krun_environment() {
-    test_file=$1; shift
+krun_with_opts() {
+    local test_file=$1; shift
+    local lint=lint_krun
+    local test_opts=()
     export K_OPTS=-Xss500m
-    export cMODE=${cMODE:-VMTESTS}
     export cSCHEDULE=${cSCHEDULE:-DEFAULT}
     case "$test_file" in
-       *gas-analysis*) export cMODE=GASANALYZE ;;
-       *             ) :                       ;;
+       *gas-analysis/*) test_opts=( -cMODE=GASANALYZE "$test_file" );;
+       *VMTests/*     ) test_opts=( -cMODE=VMTESTS    "$test_file" );;
+       *proofs/*      ) set_test_opts_for_proofs "$test_file"; lint=cat;;
+       *              ) die "Don't know how to set test_opts for '$test_file'";;
     esac
+
+    krun --directory .build/$K_VERSION/ --debug \
+         -cSCHEDULE=$cSCHEDULE "${test_opts[@]}" "$@" \
+        | $lint
 }
 
 # Test Filters and Lists
@@ -92,13 +105,14 @@ filter_tests() {
     0) cat;       return ;;
     1) grep "$1"; return ;;
     *) cat > /dev/null;
-       echo >&2 "Too many expressions";
+       warning "Too many expressions";
        ;;
     esac
 }
 
-list_gas_analysis() { find "tests/gas-analysis" -wholename "*$exp*" -name '*.evm'; }
-list_vmtests()      { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
+list_gas_analysis() { find "tests/gas-analysis" -name '*.evm'; }
+list_vmtests()      { find "$tests_dir"         -name '*.json'; }
+list_proofs()       { find "proofs/"            -name '*-spec.k'; }
 list_short() {
     if [[ "$#" -gt 0 ]]; then
         cat "$expected_passing" | filter_short "$1"
@@ -110,9 +124,11 @@ list_short() {
     return
 }
 
+list_rv_jenkins() { ( list_vmtests; list_gas_analysis) \
+                    | grep -v 'vmPerformance' | sort -R | head -n 8000; }
 list_rv_jenkins() { list_tests | grep -v 'vmPerformance' | sort -R | head -n 8000; }
 list_quicktests() { list_short | filter_not_longrunning | sort -R | head -n 20; }
-list_tests()      { list_vmtests; list_gas_analysis; }
+list_tests()      { list_vmtests; list_gas_analysis; list_proofs; }
 
 
 # Higher-order runner helpers
@@ -135,7 +151,7 @@ with_first() {
     local do_run=$1; shift;
 
     [[ $($list | wc -l) = 1 ]] || {
-        echo -e >&2 "Warning: Multiple tests passed, but only running the first"
+        warning "Multiple tests passed, but only running the first"
     }
     $do_run $($list | head -n 1)
 }
@@ -144,12 +160,11 @@ with_first() {
 # -------
 
 test_with_uiuck() {
-    local exit_status=0 output_file="$default_output_file"
+    local output_file="$default_output_file"
     if [[ -e $test_file.out ]]; then output_file=$test_file.out; fi
     ( # Running in a sub-shell to avoid export spilling over to other tests
-        set_krun_environment "$test_file"
-        pretty_diff --label expected <(cat "$output_file" | lint_krun) \
-                    --label actual   <(krun_with_opts "$test_file" | lint_krun)
+        pretty_diff --label expected <(cat "$output_file") \
+                    --label actual   <(krun_with_opts "$test_file")
     )
 }
 
@@ -176,7 +191,7 @@ test_with_rvk() {
 }
 
 run_tests() {
-    local test_file=$1
+    local test_file=$1 exit_status=0
     progress "running: $test_file"
     "test_with_$K_VERSION" "$@" || exit_status=$?
     count=$(($count + 1))
@@ -192,16 +207,12 @@ run_tests() {
 
 run_krun() {
     progress "running: $1"
-    ( set_krun_environment "$test_file"
-      krun_with_opts "$1" | lint_krun
-    )
+    ( krun_with_opts "$1" | lint_krun)
 }
 
 run_debug() {
     progress "debugging: $1"
-    ( set_krun_environment "$test_file"
-      krun_with_opts --debugger "$1"
-    )
+    ( krun_with_opts "$1" --debugger )
 }
 
 run_make() {
@@ -226,12 +237,12 @@ progress "Using $K_VERSION"
 default_output_file="tests/templates/output-$K_VERSION.txt"
 have_tangle=true; check_for_tangle
 
-[[ "$#" == '0' ]] && set build
+[[ "$#" == '0' ]] && set all
 run_command="$1" && shift
 case "$run_command" in
 
     # Building
-    build)         run_make build ;;
+    all)           run_make all ;;
     defn)          run_make defn ;;
 
     # Running
@@ -257,7 +268,6 @@ case "$run_command" in
     usage:
        $0                       Build the definitions and kompile them
 
-       $0 build                 Detangle the definitions and kompile
        $0 defn                  Only detangle the definitions
 
        $0 krun                  Run a single program from the tests

@@ -127,13 +127,15 @@ module EVM-DATA
                   | Word "/Word" Word [function]
                   | Word "%Word" Word [function]
  // --------------------------------------------
-    rule W0:Int +Word W1:Int => chop( W0 +Int W1 )
-    rule W0:Int -Word W1:Int => chop( (W0 +Int (2 ^Int 256)) -Int W1 )
-    rule W0:Int *Word W1:Int => chop( W0 *Int W1 )
+    rule W0:Int +Word W1:Int => chop( W0 +Int W1 )                           requires (W0 +Int W1) >Int  (2 ^Int 256)
+    rule W0:Int +Word W1:Int => W0 +Int W1                                   requires (W0 +Int W1) <=Int (2 ^Int 256)
+    rule W0:Int -Word W1:Int => chop( (W0 +Int (2 ^Int 256)) -Int W1 )       requires (W0 <Int W1)
+    rule W0:Int -Word W1:Int => W0 -Int W1                                   requires (W0 ==Int W1)
+    rule W0:Int *Word W1:Int => chop( W0 *Int W1)                            requires (W0 *Int W1) >Int (2 ^Int 256)
     rule W0:Int /Word 0      => 0
-    rule W0:Int /Word W1:Int => chop( W0 /Int W1 ) requires W1 =/=K 0
+    rule W0:Int /Word W1:Int => W0 /Int W1                                   requires W1 =/=Int 0
     rule W0:Int %Word 0      => 0
-    rule W0:Int %Word W1:Int => chop( W0 %Int W1 ) requires W1 =/=K 0
+    rule W0:Int %Word W1:Int => W0 %Int W1                                   requires W1 =/=Int 0
 
 
 // Care is needed for `^Word` to avoid big exponentiation.
