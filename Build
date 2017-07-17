@@ -124,6 +124,8 @@ list_short() {
     return
 }
 
+list_rv_jenkins() { ( list_vmtests; list_gas_analysis) \
+                    | grep -v 'vmPerformance' | sort -R | head -n 8000; }
 list_rv_jenkins() { list_tests | grep -v 'vmPerformance' | sort -R | head -n 8000; }
 list_quicktests() { list_short | filter_not_longrunning | sort -R | head -n 20; }
 list_tests()      { list_vmtests; list_gas_analysis; list_proofs; }
