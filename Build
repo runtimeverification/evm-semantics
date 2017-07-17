@@ -48,12 +48,12 @@ krun_with_opts() {
     export K_OPTS=-Xss500m
     export cSCHEDULE=${cSCHEDULE:-DEFAULT}
     case "$test_file" in
-       *gas-analysis/*) export cMODE=GASANALYZE ;;
-       *VMTests/*     ) export cMODE=VMTESTS    ;;
-       *              ) die "Don't know how to set mode for '$test_file'";;
+       *gas-analysis/*) test_opts=( -cMODE=GASANALYZE );;
+       *VMTests/*     ) test_opts=( -cMODE=VMTESTS    );;
+       *              ) die "Don't know how to set test_opts for '$test_file'";;
     esac
 
-    krun --directory .build/$K_VERSION/ --debug -cMODE=$cMODE -cSCHEDULE=$cSCHEDULE "$test_file" "$@"
+    krun --directory .build/$K_VERSION/ --debug -cSCHEDULE=$cSCHEDULE "${test_opts[@]}" "$test_file" "$@"
 }
 
 # Test Filters and Lists
