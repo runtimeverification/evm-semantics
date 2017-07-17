@@ -109,9 +109,9 @@ filter_tests() {
     esac
 }
 
-list_gas_analysis() { find "tests/gas-analysis" -wholename "*$exp*" -name '*.evm'; }
-list_vmtests()      { find "$tests_dir" -wholename "*$exp*" -name '*.json'; }
-list_proofs()       { find "proofs/" -wholename "*$exp*" -name '*-spec.k'; }
+list_gas_analysis() { find "tests/gas-analysis" -name '*.evm'; }
+list_vmtests()      { find "$tests_dir"         -name '*.json'; }
+list_proofs()       { find "proofs/"            -name '*-spec.k'; }
 list_short() {
     if [[ "$#" -gt 0 ]]; then
         cat "$expected_passing" | filter_short "$1"
