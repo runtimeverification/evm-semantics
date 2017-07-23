@@ -21,8 +21,8 @@ rule
 <wordStack> .WordStack => 0 : (I *Int (I +Int 1)/Int 2) : .WordStack </wordStack>
 <program> 
 	      #asMapOpCodes( PUSH(1, 0) ; PUSH(1, I); JUMPDEST ; DUP(1) ; ISZERO ; PUSH(1, 21) 
-                       ; JUMPI ; DUP(1) ; SWAP(2) ; ADD ; SWAP(1) ; PUSH(1, 1) ; SWAP(1) 
-					   ; SUB ; PUSH(1, 4) ; JUMP ; JUMPDEST ; .OpCodes )
+                           ; JUMPI ; DUP(1) ; SWAP(2) ; ADD ; SWAP(1) ; PUSH(1, 1) ; SWAP(1) 
+		           ; SUB ; PUSH(1, 4) ; JUMP ; JUMPDEST ; .OpCodes )
 </program>
 requires G >=Int (52*Int I) +Int 27 
  andBool I >=Int 1 
@@ -42,8 +42,8 @@ rule
 <pc> 4=>22 </pc>
 <program> 
 	      #asMapOpCodes( PUSH(1, 0) ; PUSH(1, I); JUMPDEST ; DUP(1) ; ISZERO ; PUSH(1, 21) 
-                       ; JUMPI ; DUP(1) ; SWAP(2) ; ADD ; SWAP(1) ; PUSH(1, 1) ; SWAP(1) 
-					   ; SUB ; PUSH(1, 4) ; JUMP ; JUMPDEST ; .OpCodes )
+                           ; JUMPI ; DUP(1) ; SWAP(2) ; ADD ; SWAP(1) ; PUSH(1, 1) ; SWAP(1) 
+			   ; SUB ; PUSH(1, 4) ; JUMP ; JUMPDEST ; .OpCodes )
 </program>
 <wordStack> (N => 0) : (S =>(S +Int (N *Int (N+Int 1)/Int 2))) : .WordStack </wordStack>
 requires G >=Int 52*Int N +Int 21 
