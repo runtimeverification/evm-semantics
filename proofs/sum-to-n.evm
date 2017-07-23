@@ -1,0 +1,19 @@
+mkAcct 7
+
+load "account" : { 7 : { "balance" : 1000000000
+                       , "nonce"   : 1
+                       , "code"    : .Map
+                       , "storage" : .Map
+                       }
+                 }
+
+load "exec" : { "address" : 7
+              , "gas"     : 100000
+              , "code"    :  PUSH(1, 0) ; PUSH(1, 5)
+; JUMPDEST ; DUP(1) ; ISZERO ; PUSH(1, 21) ; JUMPI ; DUP(1) ; SWAP(2) ; ADD ; SWAP(1) ; PUSH(1, 1) ;
+SWAP(1) ; SUB ; PUSH(1, 4) ; JUMP ; JUMPDEST ; .OpCodes
+              }
+
+start
+
+.EthereumSimulation
