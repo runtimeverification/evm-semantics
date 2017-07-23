@@ -1494,6 +1494,7 @@ module ETHEREUM
 
     syntax InternalOp ::= #gasExec ( Schedule , OpCode )
  // ----------------------------------------------------
+
     rule <k> #gasExec(SCHED, SSTORE INDEX VALUE) => Csstore(SCHED, INDEX, VALUE, STORAGE) ... </k>
          <id> ACCT </id>
          <account>

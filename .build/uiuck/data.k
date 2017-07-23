@@ -36,10 +36,10 @@ module EVM-DATA
 
 
    // syntax Int ::= chop ( Int ) [function]
-   syntax K ::= "chop" "(" Int ")" //[function]
+   syntax K ::= "chop" "(" Int ")" 
  // --------------------------------------
-    rule chop( W ) => W %Int pow16
-
+   rule chop ( I:Int ) => I %Int pow256  requires I <Int 0  orBool I >=Int pow256
+   rule chop ( I:Int ) => I              requires I >=Int 0 andBool I <Int pow256
 
 // -   `bool2Word` interperets a `Bool` as a `Int`.
 // -   `word2Bool` interperets a `Int` as a `Bool`.
@@ -133,7 +133,7 @@ module EVM-DATA
                  | Int "%Word" Int [function]
  // -----------------------------------------
     rule W0 +Word W1 => chop( W0 +Int W1 )
-    rule W0 -Word W1 => chop( (W0 +Int pow16) -Int W1 )
+    rule W0 -Word W1 => chop( (W0 +Int pow256) -Int W1 )
     rule W0 *Word W1 => chop( W0 *Int W1 )
     rule W0 /Word 0  => 0
     rule W0 /Word W1 => chop( W0 /Int W1 ) requires W1 =/=K 0
