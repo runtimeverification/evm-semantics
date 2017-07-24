@@ -12,7 +12,7 @@ requires "verification.k"
 ```{.k .uiuck .rvk}
 requires "data.k"
 
-module ETHEREUM
+module EVM
     imports STRING
     imports EVM-DATA
 ```

@@ -13,7 +13,7 @@ requires "verification.k"
 
 requires "data.k"
 
-module ETHEREUM
+module EVM
     imports STRING
     imports EVM-DATA
 
