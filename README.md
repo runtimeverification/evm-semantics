@@ -6,6 +6,7 @@ Semantics of EVM in K
 In this repository we provide a model of the EVM in K.
 
 -   [ethereum.md](ethereum.md): Driver for semantics of EVM (for loading tests, running simulations).
+-   [analysis.md](analysis.md): Analysis tools for the EVM defined on top of the semantics.
 -   [evm.md](evm.md): Top level EVM semantics file (including local execution and network dynamics).
 -   [data.md](data.md): Specifies the basic data of EVM execution, including the 256 bit words and some datastructures over them.
 -   [proofs/README.md](proofs/README.md): Specifies proofs we have performed on ERC20 tokens.
