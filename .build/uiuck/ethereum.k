@@ -6,9 +6,11 @@
 
 
 requires "evm.k"
+requires "analysis.k"
 
 module ETHEREUM-SIMULATION
     imports ETHEREUM
+    imports EVM-ANALYSIS
 
 
 // An Ethereum simulation is a list of Ethereum commands. Some Ethereum commands
