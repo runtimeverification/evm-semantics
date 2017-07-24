@@ -6,9 +6,11 @@ Actual execution of the EVM is defined in [the EVM file](evm.md).
 
 ```{.k .uiuck .rvk}
 requires "evm.k"
+requires "analysis.k"
 
 module ETHEREUM-SIMULATION
     imports ETHEREUM
+    imports EVM-ANALYSIS
 ```
 
 An Ethereum simulation is a list of Ethereum commands.

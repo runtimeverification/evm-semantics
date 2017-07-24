@@ -153,11 +153,9 @@ module ETHEREUM
 
 // -   `NORMAL` executes as a client on the network would.
 // -   `VMTESTS` skips `CALL*` and `CREATE` operations.
-// -   `GASANALYZE` performs gas analysis of the program instead of
-//     executing normally.
 
 
-    syntax Mode ::= "NORMAL" | "VMTESTS" | "GASANALYZE"
+    syntax Mode ::= "NORMAL" | "VMTESTS"
 
 
 // -   `#setMode_` sets the mode to the supplied one.
@@ -369,60 +367,6 @@ module ETHEREUM
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
       requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
-
-
-// -   In `GASANALYZE` mode, summaries of the state are taken at each `#gasBreaks`
-//     opcode, otherwise execution is as in `NORMAL`.
-
-
-    rule <mode> GASANALYZE </mode>
-         <k> #next => #setMode NORMAL ~> #execTo #gasBreaks ~> #setMode GASANALYZE ... </k>
-         <pc> PCOUNT </pc>
-         <program> ... PCOUNT |-> OP ... </program>
-      requires notBool (OP in #gasBreaks)
-
-    rule <mode> GASANALYZE </mode>
-         <k> #next => #endSummary ~> #setPC (PCOUNT +Int 1) ~> #setGas 1000000000 ~> #beginSummary ~> #next ... </k>
-         <pc> PCOUNT </pc>
-         <program> ... PCOUNT |-> OP ... </program>
-      requires OP in #gasBreaks
-
-    syntax Set ::= "#gasBreaks" [function]
- // --------------------------------------
-    rule #gasBreaks => (SetItem(JUMP) SetItem(JUMPI) SetItem(JUMPDEST))
-
-    syntax InternalOp ::= "#setPC"  Int
-                        | "#setGas" Int
- // -----------------------------------
-    rule <k> #setPC PCOUNT  => . ... </k> <pc> _ => PCOUNT </pc>
-    rule <k> #setGas GAVAIL => . ... </k> <gas> _ => GAVAIL </gas>
-
-
-// -   `#gasAnalyze` analyzes the gas of a chunk of code by setting up the analysis
-//     state appropriately and then setting the mode to `GASANALYZE`.
-
-
-    syntax KItem ::= "#gasAnalyze"
- // ------------------------------
-    rule <k> #gasAnalyze => #setGas 1000000000 ~> #beginSummary ~> #setMode GASANALYZE ~> #execute ~> #endSummary ... </k>
-         <pc> _ => 0 </pc>
-         <gas> _ => 1000000000 </gas>
-         <analysis> _ => ("blocks" |-> .List) </analysis>
-
-    syntax Summary ::= "{" Int "|" Int "|" Int "}"
-                     | "{" Int "==>" Int "|" Int "|" Int "}"
- // --------------------------------------------------------
-
-    syntax InternalOp ::= "#beginSummary"
- // -------------------------------------
-    rule <k> #beginSummary => . ... </k> <pc> PCOUNT </pc> <gas> GAVAIL </gas> <memoryUsed> MEMUSED </memoryUsed>
-         <analysis> ... "blocks" |-> ((.List => ListItem({ PCOUNT | GAVAIL | MEMUSED })) REST) ... </analysis>
-
-    syntax KItem ::= "#endSummary"
- // ------------------------------
-    rule <k> (#end => .) ~> #endSummary ... </k>
-    rule <k> #endSummary => . ... </k> <pc> PCOUNT </pc> <gas> GAVAIL </gas> <memoryUsed> MEMUSED </memoryUsed>
-         <analysis> ... "blocks" |-> (ListItem({ PCOUNT1 | GAVAIL1 | MEMUSED1 } => { PCOUNT1 ==> PCOUNT | GAVAIL1 -Int GAVAIL | MEMUSED -Int MEMUSED1 }) REST) ... </analysis>
 
 
 // ### Exceptional OpCodes
