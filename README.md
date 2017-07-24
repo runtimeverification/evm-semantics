@@ -1,5 +1,5 @@
-SEMANTICS OF EVM IN K
-=====================
+KEVM: Semantics of EVM in K
+===========================
 
 [ ![Codeship Status for kframework/evm-semantics](https://app.codeship.com/projects/d3ce9a40-343d-0135-d1d4-02553a1f9242/status?branch=master)](https://app.codeship.com/projects/226792)
 
