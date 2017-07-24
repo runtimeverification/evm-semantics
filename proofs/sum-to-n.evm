@@ -9,9 +9,8 @@ load "account" : { 7 : { "balance" : 1000000000
 
 load "exec" : { "address" : 7
               , "gas"     : 100000
-              , "code"    :  PUSH(1, 0) ; PUSH(1, 5)
-; JUMPDEST ; DUP(1) ; ISZERO ; PUSH(1, 21) ; JUMPI ; DUP(1) ; SWAP(2) ; ADD ; SWAP(1) ; PUSH(1, 1) ;
-SWAP(1) ; SUB ; PUSH(1, 4) ; JUMP ; JUMPDEST ; .OpCodes
+              , "code"    :  PUSH(1, 115792089237316195423570985008687907853269984665640564039457584007913129639926) ; PUSH(1, 5); JUMPDEST ; DUP(1) ; 
+			                 ISZERO ; PUSH(1, 21) ; JUMPI ; DUP(1) ; SWAP(2) ; ADD ; SWAP(1) ; PUSH(1, 1) ; SWAP(1) ; SUB ; PUSH(1, 4) ; JUMP ; JUMPDEST ; .OpCodes
               }
 
 start
