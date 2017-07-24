@@ -4,7 +4,8 @@ The Sum To N Specification file
 Here we provide a specification file containing two reachability rules: 
 (1) Main rule stating the functional correctness of the program, including the gas that it needs; and
 (2) The helper circularity rule stating the functional correctness of its loop and the gas it needs.
-
+Note that the program behaves incorrectly/unexpectedly if arithmetic overflow occurs during its execution.
+One challenge in verifying this program is to identify the conditions under which overflow does not occur.
 
 
 ```{.k}
