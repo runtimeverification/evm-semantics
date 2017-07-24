@@ -22,7 +22,7 @@
 
 requires "data.k"
 
-module ETHEREUM
+module EVM
     imports EVM-DATA
     imports STRING
 

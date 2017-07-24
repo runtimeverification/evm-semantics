@@ -9,7 +9,7 @@ One benefit of K is that we do not have to re-specify properties about the opera
 requires "evm.k"
 
 module EVM-ANALYSIS
-    imports ETHEREUM
+    imports EVM
 ```
 
 Gas Analysis

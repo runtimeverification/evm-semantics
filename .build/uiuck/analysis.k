@@ -11,7 +11,7 @@
 requires "evm.k"
 
 module EVM-ANALYSIS
-    imports ETHEREUM
+    imports EVM
 
 
 // Gas Analysis

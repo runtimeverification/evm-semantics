@@ -21,7 +21,7 @@ requires "krypto.k"
 ```{.k .uiuck .rvk}
 requires "data.k"
 
-module ETHEREUM
+module EVM
     imports EVM-DATA
     imports STRING
 

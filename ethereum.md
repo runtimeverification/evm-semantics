@@ -9,7 +9,7 @@ requires "evm.k"
 requires "analysis.k"
 
 module ETHEREUM-SIMULATION
-    imports ETHEREUM
+    imports EVM
     imports EVM-ANALYSIS
 ```
 
