@@ -37,13 +37,11 @@ $ krun --directory k/ --debug \
 To run a gas analysis of the program, instead supply `-cMODE=GASANALYZE`.
 To run with the Homestead fee schedule instead (or any of the other schedules), instead supply `-cSCHEDULE=HOMESTEAD`.
 
-
 Verification
 ------------
 
-Along with improving our semantics, we continue to use them to verify
-smart contracts using K's verification infrastructure. We maintain a
-[summary of our verification effors](proofs/README.md).
+Along with improving our semantics, we continue to use them to verify smart contracts using K's verification infrastructure.
+We maintain a [summary of our verification effors](proofs/README.md).
 
 Issues
 ------
