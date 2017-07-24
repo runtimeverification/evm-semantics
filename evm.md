@@ -499,14 +499,6 @@ Some checks if an opcode will throw an exception are relatively quick and done u
     syntax Int ::= #stackDelta ( OpCode ) [function]
  // ------------------------------------------------
     rule #stackDelta(OP) => #stackAdded(OP) -Int #stackNeeded(OP)
-
-    syntax Set ::= "#zeroRet" [function]
- // ------------------------------------
-    rule #zeroRet => ( SetItem(CALLDATACOPY) SetItem(CODECOPY) SetItem(EXTCODECOPY)
-                       SetItem(POP) SetItem(MSTORE) SetItem(MSTORE8) SetItem(SSTORE)
-                       SetItem(JUMP) SetItem(JUMPI) SetItem(JUMPDEST)
-                       SetItem(STOP) SetItem(RETURN) SetItem(SELFDESTRUCT)
-                     )
 ```
 
 -   `#badJumpDest?` determines if the opcode will result in a bad jump destination.
