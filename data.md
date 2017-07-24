@@ -18,7 +18,7 @@ module EVM-DATA
     syntax KResult ::= Int
 ```
 
-Some important numbers for rounding to:
+Some important numbers that are referred to often during execution:
 
 ```{.k .uiuck .rvk}
     syntax Int ::= "pow256" [function]
