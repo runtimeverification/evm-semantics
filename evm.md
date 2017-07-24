@@ -1587,25 +1587,6 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
     rule #allBut64th(N) => N -Int (N /Int 64)
 ```
 
-Some subsets of the opcodes are called out because they all have the same gas cost.
-
-```
-    syntax Set ::= "Wzero"    [function] | "Wbase" [function]
-                 | "Wverylow" [function] | "Wlow"  [function] | "Wmid" [function]
- // -----------------------------------------------------------------------------
-    rule Wzero    => (SetItem(STOP) SetItem(RETURN))
-    rule Wbase    => ( SetItem(ADDRESS) SetItem(ORIGIN) SetItem(CALLER) SetItem(CALLVALUE) SetItem(CALLDATASIZE)
-                       SetItem(CODESIZE) SetItem(GASPRICE) SetItem(COINBASE) SetItem(TIMESTAMP) SetItem(NUMBER)
-                       SetItem(DIFFICULTY) SetItem(GASLIMIT) SetItem(POP) SetItem(PC) SetItem(MSIZE) SetItem(GAS)
-                     )
-    rule Wverylow => ( SetItem(ADD) SetItem(SUB) SetItem(NOT) SetItem(LT) SetItem(GT) SetItem(SLT) SetItem(SGT)
-                       SetItem(EQ) SetItem(ISZERO) SetItem(AND) SetItem(EVMOR) SetItem(XOR) SetItem(BYTE)
-                       SetItem(CALLDATALOAD) SetItem(MLOAD) SetItem(MSTORE) SetItem(MSTORE8)
-                     )
-    rule Wlow     => (SetItem(MUL) SetItem(DIV) SetItem(SDIV) SetItem(MOD) SetItem(SMOD) SetItem(SIGNEXTEND))
-    rule Wmid     => (SetItem(ADDMOD) SetItem(MULMOD) SetItem(JUMP))
-```
-
 Fee Schedule from C++ Implementation
 ------------------------------------
 

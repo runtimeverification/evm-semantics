@@ -1633,9 +1633,6 @@ module ETHEREUM
     rule #allBut64th(N) => N -Int (N /Int 64)
 
 
-// Some subsets of the opcodes are called out because they all have the same gas
-// cost.
-
 // Fee Schedule from C++ Implementation
 // ------------------------------------
 
