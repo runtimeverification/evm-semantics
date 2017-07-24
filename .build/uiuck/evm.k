@@ -1644,8 +1644,6 @@ module ETHEREUM
 // Some subsets of the opcodes are called out because they all have the same gas
 // cost.
 
-// -   `#stripArgs` removes the arguments from an operator.
-
 // Fee Schedule from C++ Implementation
 // ------------------------------------
 
