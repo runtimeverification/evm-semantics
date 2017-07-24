@@ -450,7 +450,7 @@ Here we provide some standard parser/unparser functions for that format.
 JSON
 ----
 
-Writing a JSON parser in K takes 6 lines.
+Writing a JSON (lite) parser in K takes 6 lines.
 
 ```{.k .uiuck .rvk}
     syntax JSONList ::= List{JSON,","}

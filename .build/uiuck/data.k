@@ -456,7 +456,7 @@ module EVM-DATA
 // JSON
 // ----
 
-// Writing a JSON parser in K takes 6 lines.
+// Writing a JSON (lite) parser in K takes 6 lines.
 
 
     syntax JSONList ::= List{JSON,","}
