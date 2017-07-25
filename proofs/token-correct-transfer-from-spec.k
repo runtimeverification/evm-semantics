@@ -78,6 +78,5 @@ imports ETHEREUM-SIMULATION
 		 andBool B1 <Int 2^Int 256
 		 andBool #sizeWordStack(WS) <Int 1016
 		 andBool G  >=Int 16071
-
 endmodule
 

@@ -8,13 +8,13 @@ module TRANSFER-SPEC
 imports ETHEREUM-SIMULATION
 
     rule
-        <k> #execute ... </k>
+        <k> #next ~> #execute ... </k>
         <exit-code> 1       </exit-code>
         <mode>      NORMAL  </mode>
         <schedule>  DEFAULT </schedule>
         <ethereum>
         <evm>
-                <output>        .WordStack         </output>
+ 	     <output>        .WordStack         </output>
                 <memoryUsed>    3                  </memoryUsed>
                 <callDepth>     0                  </callDepth>
                 <callStack>     .List              </callStack>
@@ -74,6 +74,5 @@ imports ETHEREUM-SIMULATION
 		  andBool B2 +Int TRANSFER<Int 2^Int 256 
 		  andBool #sizeWordStack(WS) <Int 1017
 		  andBool G >=Int 10544
-
 endmodule
 ```
