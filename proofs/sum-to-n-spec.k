@@ -26,7 +26,7 @@ rule <program> #asMapOpCodes(
 	 <localMem> .Map </localMem>	 
 	 <previousGas> _ => _ </previousGas>     
 requires N >=Int 0
- andBool N <=Int 340282366920938463463374607431768211455  // largest integer for which the program does not overflow            
+ andBool (N +Int 1) *Int N /Int 2 <Int 2^Int 256        
  andBool G >=Int 52 *Int N +Int 27  
 
 
