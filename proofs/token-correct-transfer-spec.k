@@ -9,13 +9,13 @@ module TOKEN-SPEC
 
     imports ETHEREUM-SIMULATION
     rule
-        <k> flush ~> clear ~> ( run { .JSONList } ) ~> ( success .EthereumSimulation ) </k>
+        <k> #next ~> #execute ... </k>
         <exit-code> 1       </exit-code>
         <mode>      NORMAL  </mode>
         <schedule>  DEFAULT </schedule>
         <ethereum>
             <evm>
-                <op>            #next ~> #execute  </op>
+                //<op>            #next ~> #execute  </op>
                 <output>        .WordStack         </output>
                 <memoryUsed>    3                  </memoryUsed>
                 <callDepth>     0                  </callDepth>
@@ -64,7 +64,7 @@ module TOKEN-SPEC
                 <messages> .Bag </messages>
             </network>
         </ethereum>
-		 requires TRANSFER >Int 0 andBool TRANSFER<Int B1 andBool B1>Int 0 andBool B2>Int 0 andBool B1 +Int B2 ==Int TOTAL andBool TOTAL<Int 2^Int 256
+		 requires TRANSFER >Int 0 andBool TRANSFER<Int B1 andBool B1>Int 0 andBool B2>Int 0 andBool B2 +Int TRANSFER >Int 0 andBool B2 +Int TRANSFER<Int 2^Int 256 andBool B1 +Int B2 ==Int TOTAL andBool TOTAL<Int 2^Int 256
 
 
 endmodule
