@@ -26,7 +26,7 @@ rule <program> #asMapOpCodes(
 	 <localMem> .Map </localMem>	 
 	 <previousGas> _ => _ </previousGas>     
 requires N >=Int 0
- andBool (N +Int 1) *Int N /Int 2 <Int 2^Int 256        
+ andBool N *Int (N +Int 1) /Int 2 <Int 2^Int 256        
  andBool G >=Int 52 *Int N +Int 27  
 
 
