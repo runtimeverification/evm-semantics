@@ -305,6 +305,7 @@ This stack also serves as a cons-list, so we provide some standard cons-list man
 -   `_++_` acts as `WordStack` append.
 -   `#take(N , WS)` keeps the first $N$ elements of a `WordStack` (passing with zeros as needed).
 -   `#drop(N , WS)` removes the first $N$ elements of a `WordStack`.
+-   `WS [ N .. W ]` access the range of `WS` beginning with `N` of width `W`.
 
 ```{.k .uiuck .rvk}
     syntax WordStack ::= WordStack "++" WordStack [function]
@@ -323,6 +324,10 @@ This stack also serves as a cons-list, so we provide some standard cons-list man
     rule #drop(0, WS)         => WS
     rule #drop(N, .WordStack) => .WordStack
     rule #drop(N, (W : WS))   => #drop(N -Int 1, WS) requires N >Int 0
+
+    syntax WordStack ::= WordStack "[" Int ".." Int "]" [function]
+ // --------------------------------------------------------------
+    rule WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
 ```
 
 -   `WS [ N ]` accesses element $N$ of $WS$.
@@ -340,10 +345,6 @@ This stack also serves as a cons-list, so we provide some standard cons-list man
     rule (W0 : WS)  [ 0 := W ] => W  : WS
     rule .WordStack [ N := W ] => 0  : (.WordStack [ N -Int 1 := W ]) requires N >Int 0
     rule (W0 : WS)  [ N := W ] => W0 : (WS [ N -Int 1 := W ])         requires N >Int 0
-
-    syntax WordStack ::= WordStack "[" Int ".." Int "]" [function]
- // --------------------------------------------------------------
-    rule WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
 ```
 
 -   `#sizeWordStack` calculates the size of a `WordStack`.
