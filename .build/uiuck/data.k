@@ -35,11 +35,11 @@ module EVM-DATA
 // -   `chop` interperets an integers modulo $2^256$.
 
 
-   // syntax Int ::= chop ( Int ) [function]
-   syntax K ::= "chop" "(" Int ")" 
+   syntax K ::= "chop" "(" Int ")"
  // --------------------------------------
    rule chop ( I:Int ) => I %Int pow256  requires I <Int 0  orBool I >=Int pow256
    rule chop ( I:Int ) => I              requires I >=Int 0 andBool I <Int pow256
+
 
 // -   `bool2Word` interperets a `Bool` as a `Int`.
 // -   `word2Bool` interperets a `Int` as a `Bool`.
