@@ -9,7 +9,7 @@ module TOKEN-SPEC
     imports ETHEREUM-SIMULATION
 
     rule
-        <k> #execute ... </k>
+        <k> #execute=> ?OP ... </k>
         <exit-code> 1       </exit-code>
         <mode>      NORMAL  </mode>
         <schedule>  DEFAULT </schedule>
@@ -30,8 +30,8 @@ module TOKEN-SPEC
                     <wordStack> TRANSFER:Int : ( 428365927726247537526132020791190998556166378203 : ( 116727156174188091019688739584752390716576765452 : ( 282 : ( 599290589 : .WordStack ) ) ) ) => ?W:WordStack </wordStack>
                     <localMem>     .Map  => ?B:Map                               </localMem>
                     <pc>           818   => 1331                                 </pc>
-                    <gas>          99786 => ?D:Int                               </gas>
-                    <previousGas>  99787 => ?E:Int                               </previousGas>
+                    <gas>          _ => ?D:Int                               </gas>
+                    <previousGas>  _ => ?E:Int                               </previousGas>
 
                 </txExecState>
                 <substate>
@@ -64,7 +64,16 @@ module TOKEN-SPEC
                 <messages> .Bag </messages>
             </network>
         </ethereum>
-		 requires TRANSFER >Int 0 andBool TRANSFER<Int B1 andBool B1>Int 0 andBool B2>Int 0 andBool B2 +Int TRANSFER >Int 0 andBool B2 +Int TRANSFER<Int 2^Int 256 andBool B1 +Int B2 ==Int TOTAL andBool TOTAL<Int 2^Int 256 andBool B2<Int 2^Int 256 andBool TRANSFER <Int 2^Int 256
+		 requires TRANSFER >Int 0 
+			andBool TRANSFER<Int B1 
+			andBool B1>Int 0 
+			andBool B2>Int 0 
+			andBool B2 +Int TRANSFER >Int 0 
+			andBool B2 +Int TRANSFER<Int 2^Int 256 
+			andBool B1 +Int B2 ==Int TOTAL 
+			andBool TOTAL<Int 2^Int 256 
+			andBool B2<Int 2^Int 256 
+			andBool TRANSFER <Int 2^Int 256
 	
 
 endmodule
