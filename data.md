@@ -38,10 +38,10 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `chop` interperets an integers modulo $2^256$.
 
 ```{.k .uiuck .rvk}
-   syntax K ::= "chop" "(" Int ")"
+    syntax Int ::= chop ( Int ) [function]
  // --------------------------------------
-   rule chop ( I:Int ) => I %Int pow256  requires I <Int 0  orBool I >=Int pow256
-   rule chop ( I:Int ) => I              requires I >=Int 0 andBool I <Int pow256
+    rule chop ( I:Int ) => I %Int pow256 requires I <Int 0  orBool I >=Int pow256
+    rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256
 ```
 
 -   `bool2Word` interperets a `Bool` as a `Int`.
@@ -133,7 +133,8 @@ The corresponding `<op>Word` operations automatically perform the correct modulu
                  | Int "%Word" Int [function]
  // -----------------------------------------
     rule W0 +Word W1 => chop( W0 +Int W1 )
-    rule W0 -Word W1 => chop( (W0 +Int pow256) -Int W1 )
+    rule W0 -Word W1 => chop( W0 -Int W1 ) requires W0 >=Int W1
+	rule W0 -Word W1 => chop( (W0 +Int 2^Int 256) -Int W1 ) requires W0 <Int W1
     rule W0 *Word W1 => chop( W0 *Int W1 )
     rule W0 /Word 0  => 0
     rule W0 /Word W1 => chop( W0 /Int W1 ) requires W1 =/=K 0
