@@ -506,7 +506,7 @@ Some checks if an opcode will throw an exception are relatively quick and done u
     syntax InternalOp ::= "#badJumpDest?" "[" OpCode "]"
  // ----------------------------------------------------
     rule <k> #badJumpDest? [ OP    ] => . ... </k> requires notBool isJumpOp(OP)
-    rule <k> #badJumpDest? [ OP    ] => . ... </k> <wordStack> DEST  : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program>
+    rule <k> #badJumpDest? [ OP    ] => . ... </k> <wordStack> DEST  : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program> requires isJumpOp(OP)
     rule <k> #badJumpDest? [ JUMPI ] => . ... </k> <wordStack> _ : 0 : WS </wordStack>
 
     rule <k> #badJumpDest? [ JUMP  ] => #exception ... </k> <wordStack> DEST :     WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
