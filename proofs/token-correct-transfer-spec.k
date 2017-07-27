@@ -72,7 +72,11 @@ module TOKEN-SPEC
 		  andBool B2 +Int TRANSFER<Int 2^Int 256 
 		  andBool B1 +Int B2 ==Int TOTAL 
 		  andBool TOTAL<Int 2^Int 256
+<<<<<<< HEAD
 
+=======
+		// ensures B2 +Int TRANSFER >Int 0 andBool B2 +Int TRANSFER<Int 2^Int 256
+>>>>>>> 63655c9... add the json files for function allowance and approval
 
 
 endmodule
