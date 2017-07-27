@@ -30,7 +30,7 @@ module TOKEN-SPEC
                     <wordStack>    _:Int : .WordStack  => ?A:WordStack              </wordStack>
                     <localMem>     .Map => ?B:Map                               </localMem>
                     <pc>           103     => 189                                </pc>
-                    <gas>          99849   => ?D:Int                               </gas>
+                    <gas>          G       => G -Int 7212                               </gas>
                     <previousGas>  99859   => ?E:Int                               </previousGas>
 
                 </txExecState>
@@ -62,7 +62,7 @@ module TOKEN-SPEC
                 <messages> .Bag </messages>
             </network>
         </ethereum>
-        requires B2 ==Int ?B2N andBool B1 ==Int ?B1N andBool B1 +Int B2 ==Int TOTAL andBool TOTAL ==Int ?TOTALN
+        requires B2 ==Int ?B2N andBool B1 ==Int ?B1N andBool B1 +Int B2 ==Int TOTAL andBool TOTAL ==Int ?TOTALN andBool G >=Int 7212
 		ensures ?B1N +Int ?B2N ==Int ?TOTALN
 
 endmodule

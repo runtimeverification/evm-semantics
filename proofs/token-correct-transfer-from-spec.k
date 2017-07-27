@@ -30,8 +30,8 @@ module TOKEN-SPEC
                     <wordStack> TRANSFER:Int : ( 428365927726247537526132020791190998556166378203 : ( 116727156174188091019688739584752390716576765452 : ( 282 : ( 599290589 : .WordStack ) ) ) ) => ?W:WordStack </wordStack>
                     <localMem>     .Map  => ?B:Map                               </localMem>
                     <pc>           818   => 1331                                 </pc>
-                    <gas>          99786 => ?D:Int                               </gas>
-                    <previousGas>  99787 => ?E:Int                               </previousGas>
+                    <gas>          G     => G -Int 16071                            </gas>
+                    <previousGas>  _     => _                                  </previousGas>
 
                 </txExecState>
                 <substate>
@@ -74,6 +74,7 @@ module TOKEN-SPEC
 			andBool TOTAL <Int 2^Int 256 
 			andBool B2 <Int 2^Int 256 
 			andBool TRANSFER <Int 2^Int 256
+			andBool G >=Int 16071
 	
 
 endmodule
