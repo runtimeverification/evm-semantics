@@ -55,4 +55,7 @@
   }
 }
 
-// OP: 484 |-> JUMPDEST, 2046 |-> JUMPDEST
+// OP: 469 |-> JUMPDEST, 573 |-> RETURN
+// step: 683 -> 2378
+// gas: 99849 -> 99431
+// pre-gas: 99859 -> 99434
