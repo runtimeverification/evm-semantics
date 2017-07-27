@@ -230,6 +230,10 @@ run_gitci() {
     git push
 }
 
+run_parallel() {
+    parallel --max-procs 14 --joblog par.log ./Build test
+}
+
 # Main
 # ----
 
@@ -275,6 +279,8 @@ case "$run_command" in
     # Git CI
     ci-init)    init_gitci ;;
     ci)         run_gitci "$@" ;;
+
+    par)        list_short | run_parallel ;;
 
     *)             echo "
     usage:
