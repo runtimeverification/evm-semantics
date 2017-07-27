@@ -32,8 +32,8 @@ module TOKEN-SPEC
                                          => ?A:WordStack                         </wordStack>
                     <localMem>     .Map  => ?B:Map                               </localMem>
                     <pc>           1533  => 1772                               </pc>
-                    <gas>          99772 => ?D:Int                               </gas>
-                    <previousGas>  99773 => ?E:Int                               </previousGas>
+                    <gas>          G:Int => G -Int 10544                               </gas>
+                    <previousGas>  _     => _                               </previousGas>
 
                 </txExecState>
                 <substate>
@@ -72,6 +72,7 @@ module TOKEN-SPEC
 		  andBool B2 +Int TRANSFER<Int 2^Int 256 
 		  andBool B1 +Int B2 ==Int TOTAL 
 		  andBool TOTAL<Int 2^Int 256
+		  andBool G >=Int 10544
 
 endmodule
 
