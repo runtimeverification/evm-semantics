@@ -55,4 +55,7 @@
   }
 }
 
-// OP: 107 |-> CALLVALUE 828 |-> POP
+// OP: 103 |-> JUMPDEST 189 |-> RETURN
+// gas: 99937 -> 92722
+// pre-gas: 99947 -> 92725
+// step: 335 -> 2610
