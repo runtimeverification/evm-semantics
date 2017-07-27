@@ -72,7 +72,6 @@ module TOKEN-SPEC
 		  andBool B2 +Int TRANSFER<Int 2^Int 256 
 		  andBool B1 +Int B2 ==Int TOTAL 
 		  andBool TOTAL<Int 2^Int 256
-		// ensures B2 +Int TRANSFER >Int 0 andBool B2 +Int TRANSFER<Int 2^Int 256
 
 
 
