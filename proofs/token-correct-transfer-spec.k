@@ -31,7 +31,8 @@ imports ETHEREUM-SIMULATION
                                          => ?A:WordStack                         </wordStack>
                     <localMem>     .Map  => ?B:Map                               </localMem>
                     <pc>           1533  => 1772                                 </pc>
-                    <gas>          G:Int => G -Int 10544                         </gas>
+                    //<gas>          G:Int => G -Int 10544                         </gas>
+					<gas>          20000 => _                         </gas>
                     <previousGas>  _     => _                               </previousGas>
                 </txExecState>
                 <substate>
@@ -70,7 +71,7 @@ imports ETHEREUM-SIMULATION
 		  andBool B2 +Int TRANSFER<Int 2^Int 256 
 		  andBool B1 +Int B2 ==Int TOTAL 
 		  andBool TOTAL<Int 2^Int 256
-		  andBool G >=Int 10544
+		 // andBool G >=Int 10544
 
 endmodule
 

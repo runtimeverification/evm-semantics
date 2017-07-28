@@ -6,7 +6,7 @@
 
 
 module TOKEN-SPEC
-    imports ETHEREUM-SIMULATION
+imports ETHEREUM-SIMULATION
 
     rule
         <k>  #execute => ?OP:K ... </k>
@@ -15,7 +15,6 @@ module TOKEN-SPEC
         <schedule>  DEFAULT </schedule>
         <ethereum>
             <evm>
-               // <op>            #execute => ?OP:K  </op>
                 <output>        .WordStack         </output>
                 <memoryUsed>    3                  </memoryUsed>
                 <callDepth>     0                  </callDepth>
@@ -63,8 +62,14 @@ module TOKEN-SPEC
                 <messages> .Bag </messages>
             </network>
         </ethereum>
-        requires TRANSFER >Int 0 andBool TRANSFER<Int B1 andBool B1>Int 0 andBool B2>Int 0 andBool B2 +Int TRANSFER >Int 0 andBool B2 +Int TRANSFER<Int 2^Int 256 andBool B1 +Int B2 ==Int TOTAL andBool TOTAL<Int 2^Int 256
-
+        requires TRANSFER >Int 0 
+		 andBool TRANSFER<Int B1 
+		 andBool B1>Int 0 
+		 andBool B2>Int 0 
+		 andBool B2 +Int TRANSFER >Int 0 
+		 andBool B2 +Int TRANSFER<Int 2^Int 256 
+		 andBool B1 +Int B2 ==Int TOTAL 
+		 andBool TOTAL<Int 2^Int 256
 
 endmodule
 
