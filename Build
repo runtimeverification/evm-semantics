@@ -209,7 +209,7 @@ run_tests() {
 
 run_krun() {
     progress "running: $1"
-    ( krun_with_opts "$1" | lint_krun)
+    ( krun_with_opts "$1" | lint_krun )
 }
 
 run_debug() {
