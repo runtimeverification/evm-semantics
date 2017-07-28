@@ -5,7 +5,7 @@
 // verifying the correctness of the HKG Token's transfer Function.
 
 
-module TOKEN-SPEC
+module TRANSFER-SPEC
 imports ETHEREUM-SIMULATION
 
     rule
