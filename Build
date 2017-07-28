@@ -68,6 +68,11 @@ krun_with_opts() {
         | $lint
 }
 
+init_gitci() {
+    git ci add --test short 'rm -rf .build/uiuck/*.k ; ./Build short'
+    git ci add --test long  'rm -rf .build/uiuck/*.k ; ./Build test'
+}
+
 # Test Filters and Lists
 # ----------------------
 
@@ -219,6 +224,16 @@ run_make() {
     make K_VERSION=${K_VERSION} -s $make_opts $@
 }
 
+run_gitci() {
+    testset="$1"
+    git ci test --test "$testset" 'master..develop'
+    git push
+}
+
+run_parallel() {
+    parallel --max-procs 14 --joblog par.log ./Build test
+}
+
 # Main
 # ----
 
@@ -261,6 +276,12 @@ case "$run_command" in
     short)      with_test_list "list_short $@" run_tests      ;;
     quicktest)  with_test_list list_quicktests run_tests "$@" ;;
 
+    # Git CI
+    ci-init)    init_gitci ;;
+    ci)         run_gitci "$@" ;;
+
+    par)        list_short | run_parallel ;;
+
     *)             echo "
     usage:
        $0                       Build the definitions and kompile them
@@ -282,5 +303,8 @@ case "$run_command" in
        $0 rv-jenkins            Run 8000 random tests (excluding performance tests)
        $0 short [N]             Run the Nth short testsuite (ommitting N runs all)
        $0 quicktest             Run 20 random passing tests
+
+       $0 ci-init               Initialize CI on the repo
+       $0 ci <exp>              Run CI test <exp>
 "; exit ;;
 esac

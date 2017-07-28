@@ -21,7 +21,7 @@ requires "krypto.k"
 ```{.k .uiuck .rvk}
 requires "data.k"
 
-module ETHEREUM
+module EVM
     imports EVM-DATA
     imports STRING
 
@@ -159,10 +159,9 @@ Our semantics is modal, with the initial mode being set on the command line via 
 
 -   `NORMAL` executes as a client on the network would.
 -   `VMTESTS` skips `CALL*` and `CREATE` operations.
--   `GASANALYZE` performs gas analysis of the program instead of executing normally.
 
 ```{.k .uiuck .rvk}
-    syntax Mode ::= "NORMAL" | "VMTESTS" | "GASANALYZE"
+    syntax Mode ::= "NORMAL" | "VMTESTS"
 ```
 
 -   `#setMode_` sets the mode to the supplied one.
@@ -366,58 +365,6 @@ I suppose the semantics currently loads `INVALID(N)` where `N` is the position i
       requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
 ```
 
--   In `GASANALYZE` mode, summaries of the state are taken at each `#gasBreaks` opcode, otherwise execution is as in `NORMAL`.
-
-```{.k .uiuck .rvk}
-    rule <mode> GASANALYZE </mode>
-         <k> #next => #setMode NORMAL ~> #execTo #gasBreaks ~> #setMode GASANALYZE ... </k>
-         <pc> PCOUNT </pc>
-         <program> ... PCOUNT |-> OP ... </program>
-      requires notBool (OP in #gasBreaks)
-
-    rule <mode> GASANALYZE </mode>
-         <k> #next => #endSummary ~> #setPC (PCOUNT +Int 1) ~> #setGas 1000000000 ~> #beginSummary ~> #next ... </k>
-         <pc> PCOUNT </pc>
-         <program> ... PCOUNT |-> OP ... </program>
-      requires OP in #gasBreaks
-
-    syntax Set ::= "#gasBreaks" [function]
- // --------------------------------------
-    rule #gasBreaks => (SetItem(JUMP) SetItem(JUMPI) SetItem(JUMPDEST))
-
-    syntax InternalOp ::= "#setPC"  Int
-                        | "#setGas" Int
- // -----------------------------------
-    rule <k> #setPC PCOUNT  => . ... </k> <pc> _ => PCOUNT </pc>
-    rule <k> #setGas GAVAIL => . ... </k> <gas> _ => GAVAIL </gas>
-```
-
--   `#gasAnalyze` analyzes the gas of a chunk of code by setting up the analysis state appropriately and then setting the mode to `GASANALYZE`.
-
-```{.k .uiuck .rvk}
-    syntax KItem ::= "#gasAnalyze"
- // ------------------------------
-    rule <k> #gasAnalyze => #setGas 1000000000 ~> #beginSummary ~> #setMode GASANALYZE ~> #execute ~> #endSummary ... </k>
-         <pc> _ => 0 </pc>
-         <gas> _ => 1000000000 </gas>
-         <analysis> _ => ("blocks" |-> .List) </analysis>
-
-    syntax Summary ::= "{" Int "|" Int "|" Int "}"
-                     | "{" Int "==>" Int "|" Int "|" Int "}"
- // --------------------------------------------------------
-
-    syntax InternalOp ::= "#beginSummary"
- // -------------------------------------
-    rule <k> #beginSummary => . ... </k> <pc> PCOUNT </pc> <gas> GAVAIL </gas> <memoryUsed> MEMUSED </memoryUsed>
-         <analysis> ... "blocks" |-> ((.List => ListItem({ PCOUNT | GAVAIL | MEMUSED })) REST) ... </analysis>
-
-    syntax KItem ::= "#endSummary"
- // ------------------------------
-    rule <k> (#end => .) ~> #endSummary ... </k>
-    rule <k> #endSummary => . ... </k> <pc> PCOUNT </pc> <gas> GAVAIL </gas> <memoryUsed> MEMUSED </memoryUsed>
-         <analysis> ... "blocks" |-> (ListItem({ PCOUNT1 | GAVAIL1 | MEMUSED1 } => { PCOUNT1 ==> PCOUNT | GAVAIL1 -Int GAVAIL | MEMUSED -Int MEMUSED1 }) REST) ... </analysis>
-```
-
 ### Exceptional OpCodes
 
 Some checks if an opcode will throw an exception are relatively quick and done up front.
@@ -490,14 +437,6 @@ Some checks if an opcode will throw an exception are relatively quick and done u
     syntax Int ::= #stackDelta ( OpCode ) [function]
  // ------------------------------------------------
     rule #stackDelta(OP) => #stackAdded(OP) -Int #stackNeeded(OP)
-
-    syntax Set ::= "#zeroRet" [function]
- // ------------------------------------
-    rule #zeroRet => ( SetItem(CALLDATACOPY) SetItem(CODECOPY) SetItem(EXTCODECOPY)
-                       SetItem(POP) SetItem(MSTORE) SetItem(MSTORE8) SetItem(SSTORE)
-                       SetItem(JUMP) SetItem(JUMPI) SetItem(JUMPDEST)
-                       SetItem(STOP) SetItem(RETURN) SetItem(SELFDESTRUCT)
-                     )
 ```
 
 -   `#badJumpDest?` determines if the opcode will result in a bad jump destination.
@@ -579,8 +518,6 @@ The `CallOp` opcodes all interperet their second argument as an address.
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
       requires MU' <Int pow256
 
-    syntax K ::= "{" OpCode "|" Int "}"
- // -----------------------------------
     rule <k> G:Int ~> #deductGas => #exception ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
     rule <k> G:Int ~> #deductGas => .          ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> <previousGas> _ => GAVAIL </previousGas> requires GAVAIL >=Int G
 
@@ -1585,42 +1522,6 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
     syntax Int ::= #allBut64th ( Int ) [function]
  // ---------------------------------------------
     rule #allBut64th(N) => N -Int (N /Int 64)
-```
-
-Some subsets of the opcodes are called out because they all have the same gas cost.
-
-```
-    syntax Set ::= "Wzero"    [function] | "Wbase" [function]
-                 | "Wverylow" [function] | "Wlow"  [function] | "Wmid" [function]
- // -----------------------------------------------------------------------------
-    rule Wzero    => (SetItem(STOP) SetItem(RETURN))
-    rule Wbase    => ( SetItem(ADDRESS) SetItem(ORIGIN) SetItem(CALLER) SetItem(CALLVALUE) SetItem(CALLDATASIZE)
-                       SetItem(CODESIZE) SetItem(GASPRICE) SetItem(COINBASE) SetItem(TIMESTAMP) SetItem(NUMBER)
-                       SetItem(DIFFICULTY) SetItem(GASLIMIT) SetItem(POP) SetItem(PC) SetItem(MSIZE) SetItem(GAS)
-                     )
-    rule Wverylow => ( SetItem(ADD) SetItem(SUB) SetItem(NOT) SetItem(LT) SetItem(GT) SetItem(SLT) SetItem(SGT)
-                       SetItem(EQ) SetItem(ISZERO) SetItem(AND) SetItem(EVMOR) SetItem(XOR) SetItem(BYTE)
-                       SetItem(CALLDATALOAD) SetItem(MLOAD) SetItem(MSTORE) SetItem(MSTORE8)
-                     )
-    rule Wlow     => (SetItem(MUL) SetItem(DIV) SetItem(SDIV) SetItem(MOD) SetItem(SMOD) SetItem(SIGNEXTEND))
-    rule Wmid     => (SetItem(ADDMOD) SetItem(MULMOD) SetItem(JUMP))
-```
-
--   `#stripArgs` removes the arguments from an operator.
-
-```
-    syntax OpCode ::= #stripArgs ( OpCode ) [function]
- // --------------------------------------------------
-    rule #stripArgs(NOP:NullStackOp)            => NOP
-    rule #stripArgs(UOP:UnStackOp _)            => UOP
-    rule #stripArgs(BOP:BinStackOp _ _)         => BOP
-    rule #stripArgs(TOP:TernStackOp _ _ _)      => TOP
-    rule #stripArgs(QOP:QuadStackOp _ _ _ _)    => QOP
-    rule #stripArgs(PUSHOP:PushOp)              => PUSHOP
-    rule #stripArgs(SOP:StackOp)                => SOP
-    rule #stripArgs(SOP:StackOp _)              => SOP
-    rule #stripArgs(COP:CallOp _ _ _ _ _ _ _)   => COP
-    rule #stripArgs(CSOP:CallSixOp _ _ _ _ _ _) => CSOP
 ```
 
 Fee Schedule from C++ Implementation

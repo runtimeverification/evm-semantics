@@ -1,11 +1,12 @@
-SEMANTICS OF EVM IN K
-=====================
+KEVM: Semantics of EVM in K
+===========================
 
 [ ![Codeship Status for kframework/evm-semantics](https://app.codeship.com/projects/d3ce9a40-343d-0135-d1d4-02553a1f9242/status?branch=master)](https://app.codeship.com/projects/226792)
 
 In this repository we provide a model of the EVM in K.
 
 -   [ethereum.md](ethereum.md): Driver for semantics of EVM (for loading tests, running simulations).
+-   [analysis.md](analysis.md): Analysis tools for the EVM defined on top of the semantics.
 -   [evm.md](evm.md): Top level EVM semantics file (including local execution and network dynamics).
 -   [data.md](data.md): Specifies the basic data of EVM execution, including the 256 bit words and some datastructures over them.
 
@@ -36,13 +37,11 @@ $ krun --directory k/ --debug \
 To run a gas analysis of the program, instead supply `-cMODE=GASANALYZE`.
 To run with the Homestead fee schedule instead (or any of the other schedules), instead supply `-cSCHEDULE=HOMESTEAD`.
 
-
 Verification
 ------------
 
-Along with improving our semantics, we continue to use them to verify
-smart contracts using K's verification infrastructure. We maintain a
-[summary of our verification effors](proofs/README.md).
+Along with improving our semantics, we continue to use them to verify smart contracts using K's verification infrastructure.
+We maintain a [summary of our verification effors](proofs/README.md).
 
 Issues
 ------

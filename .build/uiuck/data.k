@@ -14,7 +14,7 @@ module EVM-DATA
     syntax KResult ::= Int
 
 
-// Some important numbers for rounding to:
+// Some important numbers that are referred to often during execution:
 
 
     syntax Int ::= "pow256" [function]
@@ -291,6 +291,7 @@ module EVM-DATA
 // -   `#take(N , WS)` keeps the first $N$ elements of a `WordStack` (passing with
 //     zeros as needed).
 // -   `#drop(N , WS)` removes the first $N$ elements of a `WordStack`.
+// -   `WS [ N .. W ]` access the range of `WS` beginning with `N` of width `W`.
 
 
     syntax WordStack ::= WordStack "++" WordStack [function]
@@ -310,6 +311,10 @@ module EVM-DATA
     rule #drop(N, .WordStack) => .WordStack
     rule #drop(N, (W : WS))   => #drop(N -Int 1, WS) requires N >Int 0
 
+    syntax WordStack ::= WordStack "[" Int ".." Int "]" [function]
+ // --------------------------------------------------------------
+    rule WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
+
 
 // -   `WS [ N ]` accesses element $N$ of $WS$.
 // -   `WS [ N := W ]` sets element $N$ of $WS$ to $W$ (padding with zeros
@@ -327,10 +332,6 @@ module EVM-DATA
     rule (W0 : WS)  [ 0 := W ] => W  : WS
     rule .WordStack [ N := W ] => 0  : (.WordStack [ N -Int 1 := W ]) requires N >Int 0
     rule (W0 : WS)  [ N := W ] => W0 : (WS [ N -Int 1 := W ])         requires N >Int 0
-
-    syntax WordStack ::= WordStack "[" Int ".." Int "]" [function]
- // --------------------------------------------------------------
-    rule WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
 
 
 // -   `#sizeWordStack` calculates the size of a `WordStack`.
@@ -456,7 +457,7 @@ module EVM-DATA
 // JSON
 // ----
 
-// Writing a JSON parser in K takes 6 lines.
+// Writing a JSON (lite) parser in K takes 6 lines.
 
 
     syntax JSONList ::= List{JSON,","}
