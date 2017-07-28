@@ -1102,7 +1102,7 @@ module ETHEREUM
 
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
-    rule <k> SSTORE INDEX VALUE' => . ... </k>
+    rule <k> SSTORE INDEX VALUE1 => . ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1111,7 +1111,7 @@ module ETHEREUM
          </account>
          <refund> R => R +Word Rsstoreclear < SCHED > </refund>
          <schedule> SCHED </schedule>
-		requires VALUE' ==Int 0
+		requires VALUE1 ==Int 0
 	 
     rule <k> SSTORE INDEX 0 => . ... </k>
          <id> ACCT </id>
