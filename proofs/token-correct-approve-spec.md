@@ -1,10 +1,10 @@
-// Hacker Gold Token (HKG) Correct Program Specification
-// =====================================================
+Hacker Gold Token (HKG) Correct Program Specification
+=====================================================
 
-// Here we provide a specification file containing a reachability rule for the
-// verifying the correctness of the HKG Token's Approve Function.
+Here we provide a specification file containing a reachability rule for the
+verifying the correctness of the HKG Token's APPROVE Function.
 
-
+```{.k}
 module APPROVE-SPEC
 imports ETHEREUM-SIMULATION
  
@@ -69,3 +69,5 @@ imports ETHEREUM-SIMULATION
 		ensures ?B1N +Int ?B2N ==Int ?TOTALN
 
 endmodule
+
+```
