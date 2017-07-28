@@ -1074,7 +1074,7 @@ These operations interact with the account storage.
 
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
-    rule <k> SSTORE INDEX VALUE => . ... </k>
+    rule <k> SSTORE INDEX 0 => . ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1083,7 +1083,6 @@ These operations interact with the account storage.
          </account>
          <refund> R => R +Word Rsstoreclear < SCHED > </refund>
          <schedule> SCHED </schedule>
-	  requires VALUE =/=Int 0
 	  
     rule <k> SSTORE INDEX 0 => . ... </k>
          <id> ACCT </id>
