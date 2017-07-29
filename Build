@@ -204,10 +204,10 @@ run_test() {
 # TODO: Make this determine --max-procs based on memory of current machine + K_VERSION
 par_run_tests() {
     max_procs="3"
-    [[ "$K_VERSION" == 'rvk'   ]] && max_procs=30
-    [[ "$K_VERSION" == 'uiuck' ]] && max_procs=12
-    log_file="test-log.$K_VERSION.$(date +%Y%m%dT%H%M%S)"
-    parallel --bar --joblog "$log_file" --max-procs "$max_procs" ./Build single-test
+    [[ "$K_VERSION" == 'rvk'   ]] && mem_free=1G
+    [[ "$K_VERSION" == 'uiuck' ]] && mem_free=2G
+    job_log="test-log.$K_VERSION.$(date +%Y%m%dT%H%M%S)"
+    parallel --bar --joblog "$job_log" --memfree "$mem_free" ./Build single-test
 }
 
 run_tests() {
@@ -287,9 +287,9 @@ case "$run_command" in
     short) with_test_list "list_short $@" run_tests      ;;
     quick) with_test_list list_quick      run_tests "$@" ;;
 
-    par-test)  list_tests       | par_run_tests ;;
-    par-short) llist_short "$@" | par_run_tests ;;
-    par-quick) list_quick       | par_run_tests ;;
+    par-test)  list_tests      | par_run_tests ;;
+    par-short) list_short "$@" | par_run_tests ;;
+    par-quick) list_quick      | par_run_tests ;;
 
     *)             echo "
     usage:
