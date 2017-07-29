@@ -129,9 +129,13 @@ list_short() {
     return
 }
 
+list_rvk()   { list_vmtests; }
+list_uiuck() { ( list_proofs ; list_gas_analysis ; list_short ; ) ; }
+list_tests() { list_$K_VERSION ; }
+list_quick() { list_tests | filter_not_longrunning | sort -R | head -n 20 ; }
+
 list_rv_jenkins() { list_vmtests | grep -v 'vmPerformance' | sort -R | head -n 8000; }
-list_quicktests() { list_short | filter_not_longrunning | sort -R | head -n 20; }
-list_tests()      { list_vmtests; list_gas_analysis; list_proofs; }
+# list_tests()      { list_vmtests; list_gas_analysis; list_proofs; }
 
 # Higher-order runner helpers
 # ---------------------------
@@ -212,6 +216,10 @@ run_tests() {
     return $exit_status
 }
 
+run_parallel() {
+    parallel --bar --joblog par.log --max-procs 14 ./Build single-test
+}
+
 run_krun() {
     progress "running: $1"
     ( krun_with_opts "$1" | lint_krun )
@@ -227,17 +235,6 @@ run_make() {
     $have_tangle || make_opts="--assume-old ethereum.md --assume-old evm.md \
                                --assume-old data.md --assume-old krypto.md"
     make K_VERSION=${K_VERSION} -s $make_opts $@
-}
-
-run_gitci() {
-    testset="$1"
-    git ci test --test "$testset" 'master..develop'
-    git push
-}
-
-run_parallel() {
-    run_make
-    parallel --bar --joblog par.log --max-procs 14 ./Build single-test
 }
 
 # Main
@@ -259,6 +256,9 @@ have_tangle=true; check_for_tangle
 run_command="$1" && shift
 case "$run_command" in
 
+    # Utilities
+    single-test) run_test "$@" ;;
+
     # Building
     all)           run_make all ;;
     defn)          run_make defn ;;
@@ -271,23 +271,20 @@ case "$run_command" in
     analyze-test)  with_test_list list_analysis run_tests "$@" ;;
 
     # Test lists
-    list-tests)      with_test_list list_tests      echo "$@" ;;
-    list-rv-jenkins) with_test_list list_rv_jenkins echo "$@" ;;
-    list-short)      with_test_list "list_short $@" echo      ;;
-    list-analysis)   with_test_list list_analysis   echo "$@" ;;
+    list-tests)    with_test_list list_tests      echo "$@" ;;
+    list-short)    with_test_list "list_short $@" echo      ;;
+    list-quick)    with_test_list list_quick      echo "$@" ;;
+    list-analysis) with_test_list list_analysis   echo "$@" ;;
+    list-proofs)   with_test_list list_proofs     echo "$@" ;;
 
     # Test runs
-    single-test) run_test "$@" ;;
-    test)        with_test_list list_tests      run_tests "$@" ;;
-    rv-jenkins)  with_test_list list_rv_jenkins run_tests "$@" ;;
-    short)       with_test_list "list_short $@" run_tests      ;;
-    quicktest)   with_test_list list_quicktests run_tests "$@" ;;
+    test)  with_test_list list_tests      run_tests "$@" ;;
+    short) with_test_list "list_short $@" run_tests      ;;
+    quick) with_test_list list_quick      run_tests "$@" ;;
 
-    # Git CI
-    ci-init)    init_gitci ;;
-    ci)         run_gitci "$@" ;;
-
-    par)        list_short | run_parallel ;;
+    par-test)  list_tests       | run_parallel ;;
+    par-short) llist_short "$@" | run_parallel ;;
+    par-quick) list_quick       | run_parallel ;;
 
     *)             echo "
     usage:
