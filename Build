@@ -6,10 +6,13 @@ set -u      # Using undefined variables is an error. Exit immediately
 # Settings
 # --------
 
+test_logs="tests/logs"
+mkdir -p "$test_logs"
 tests_dir="tests/VMTests/"
 expected_passing="tests/short-list"
 long_running="tests/long-running"
 now_passing="tests/passing.lastrun"
+ci_branches=( develop )
 
 # Utilities
 # ---------
@@ -68,6 +71,11 @@ krun_with_opts() {
         | $lint
 }
 
+init_gitci() {
+    git ci add --test short 'rm -rf .build/uiuck/*.k ; ./Build short'
+    git ci add --test long  'rm -rf .build/uiuck/*.k ; ./Build test'
+}
+
 # Test Filters and Lists
 # ----------------------
 
@@ -124,9 +132,13 @@ list_short() {
     return
 }
 
+list_rvk()   { list_vmtests; }
+list_uiuck() { ( list_proofs ; list_gas_analysis ; list_short ; ) ; }
+list_tests() { list_$K_VERSION ; }
+list_quick() { list_tests | filter_not_longrunning | sort -R | head -n 20 ; }
+
 list_rv_jenkins() { list_vmtests | grep -v 'vmPerformance' | sort -R | head -n 8000; }
-list_quicktests() { list_short | filter_not_longrunning | sort -R | head -n 20; }
-list_tests()      { list_vmtests; list_gas_analysis; list_proofs; }
+# list_tests()      { list_vmtests; list_gas_analysis; list_proofs; }
 
 # Higher-order runner helpers
 # ---------------------------
@@ -174,7 +186,7 @@ test_with_rvk() {
         output="$(mktemp)"
         kast_output="$(mktemp)"
         trap "rm -rf $kast $output $kast_output" INT TERM EXIT
-        "$(dirname "$0")/kast-json.py" "$1" > "$kast"
+        "$(dirname "$0")/kast-json.py" "$test_file" > "$kast"
         $interpreter "$(dirname "$0")/.build/rvk/ethereum-kompiled/realdef.cma" -c PGM "$kast" textfile -c SCHEDULE '`DEFAULT_ETHEREUM`(.KList)' text -c MODE '`VMTESTS_ETHEREUM`(.KList)' text --output-file "$output"
         exit=$?
         if [ $exit -eq 0 ]; then
@@ -187,11 +199,31 @@ test_with_rvk() {
     )
 }
 
+run_test() {
+    run_make
+    test_file="$1"
+    "test_with_$K_VERSION"
+}
+
+par_run_tests() {
+    run_make
+    [[ "$K_VERSION" == 'rvk'   ]] && mem_free=1G
+    [[ "$K_VERSION" == 'uiuck' ]] && mem_free=2G
+    parallel --joblog - --memfree "$mem_free" ./Build single-test
+}
+
+run_git_ci() {
+    run_make
+    for branch in $ci_branches; do
+        git fsl-ci "$branch" "$0" par-test "$@"
+    done
+}
+
 run_tests() {
     local test_file=$1 exit_status=0
     progress "running: $test_file"
-    "test_with_$K_VERSION" "$@" || exit_status=$?
     count=$(($count + 1))
+    run_test "$@" || exit_status=$?
     if [[ $exit_status -eq 0 ]]; then
         success "$test_file"
     else
@@ -204,7 +236,7 @@ run_tests() {
 
 run_krun() {
     progress "running: $1"
-    ( krun_with_opts "$1" | lint_krun)
+    ( krun_with_opts "$1" | lint_krun )
 }
 
 run_debug() {
@@ -238,6 +270,9 @@ have_tangle=true; check_for_tangle
 run_command="$1" && shift
 case "$run_command" in
 
+    # Utilities
+    single-test) run_test "$@" ;;
+
     # Building
     all)           run_make all ;;
     defn)          run_make defn ;;
@@ -250,16 +285,22 @@ case "$run_command" in
     analyze-test)  with_test_list list_analysis run_tests "$@" ;;
 
     # Test lists
-    list-tests)      with_test_list list_tests      echo "$@" ;;
-    list-rv-jenkins) with_test_list list_rv_jenkins echo "$@" ;;
-    list-short)      with_test_list "list_short $@" echo      ;;
-    list-analysis)   with_test_list list_analysis   echo "$@" ;;
+    list-tests)    with_test_list list_tests      echo "$@" ;;
+    list-short)    with_test_list "list_short $@" echo      ;;
+    list-quick)    with_test_list list_quick      echo "$@" ;;
+    list-analysis) with_test_list list_analysis   echo "$@" ;;
+    list-proofs)   with_test_list list_proofs     echo "$@" ;;
 
     # Test runs
-    test)       with_test_list list_tests      run_tests "$@" ;;
-    rv-jenkins) with_test_list list_rv_jenkins run_tests "$@" ;;
-    short)      with_test_list "list_short $@" run_tests      ;;
-    quicktest)  with_test_list list_quicktests run_tests "$@" ;;
+    test)  with_test_list list_tests      run_tests "$@" ;;
+    short) with_test_list "list_short $@" run_tests      ;;
+    quick) with_test_list list_quick      run_tests "$@" ;;
+
+    par-test)  list_tests      | par_run_tests ;;
+    par-short) list_short "$@" | par_run_tests ;;
+    par-quick) list_quick      | par_run_tests ;;
+
+    ci) run_git_ci "$@" ;;
 
     *)             echo "
     usage:
@@ -282,5 +323,8 @@ case "$run_command" in
        $0 rv-jenkins            Run 8000 random tests (excluding performance tests)
        $0 short [N]             Run the Nth short testsuite (ommitting N runs all)
        $0 quicktest             Run 20 random passing tests
+
+       $0 ci-init               Initialize CI on the repo
+       $0 ci <exp>              Run CI test <exp>
 "; exit ;;
 esac
