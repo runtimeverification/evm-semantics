@@ -206,6 +206,7 @@ run_test() {
 }
 
 par_run_tests() {
+    run_make
     [[ "$K_VERSION" == 'rvk'   ]] && mem_free=1G
     [[ "$K_VERSION" == 'uiuck' ]] && mem_free=2G
     parallel --joblog - --memfree "$mem_free" ./Build single-test
