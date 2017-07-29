@@ -12,6 +12,7 @@ tests_dir="tests/VMTests/"
 expected_passing="tests/short-list"
 long_running="tests/long-running"
 now_passing="tests/passing.lastrun"
+ci_branches=( develop )
 
 # Utilities
 # ---------
@@ -199,8 +200,9 @@ test_with_rvk() {
 }
 
 run_test() {
+    run_make
     test_file="$1"
-    "test_with_$K_VERSION" || exit_status=$?
+    "test_with_$K_VERSION"
 }
 
 # TODO: Make this determine --max-procs based on memory of current machine + K_VERSION
@@ -210,6 +212,12 @@ par_run_tests() {
     [[ "$K_VERSION" == 'uiuck' ]] && mem_free=2G
     job_log="$test_logs/$K_VERSION.$(date +%Y%m%dT%H%M%S)"
     parallel --bar --joblog "$job_log" --memfree "$mem_free" ./Build single-test
+}
+
+run_git_ci() {
+    for branch in $ci_branches; do
+        git fsl-ci "$branch" "$0" par-test "$@"
+    done
 }
 
 run_tests() {
@@ -292,6 +300,8 @@ case "$run_command" in
     par-test)  list_tests      | par_run_tests ;;
     par-short) list_short "$@" | par_run_tests ;;
     par-quick) list_quick      | par_run_tests ;;
+
+    ci) run_git_ci "$@" ;;
 
     *)             echo "
     usage:
