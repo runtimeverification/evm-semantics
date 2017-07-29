@@ -201,6 +201,14 @@ run_test() {
     "test_with_$K_VERSION" || exit_status=$?
 }
 
+# TODO: Make this determine --max-procs based on memory of current machine + K_VERSION
+par_run_tests() {
+    max_procs="3"
+    [[ "$K_VERSION" == 'rvk'   ]] && max_procs=30
+    [[ "$K_VERSION" == 'uiuck' ]] && max_procs=12
+    parallel --bar --joblog par.log --max-procs "$max_procs" ./Build single-test
+}
+
 run_tests() {
     local test_file=$1 exit_status=0
     progress "running: $test_file"
@@ -214,10 +222,6 @@ run_tests() {
     fi
     progress "failed: $failed / $count"
     return $exit_status
-}
-
-run_parallel() {
-    parallel --bar --joblog par.log --max-procs 14 ./Build single-test
 }
 
 run_krun() {
@@ -282,9 +286,9 @@ case "$run_command" in
     short) with_test_list "list_short $@" run_tests      ;;
     quick) with_test_list list_quick      run_tests "$@" ;;
 
-    par-test)  list_tests       | run_parallel ;;
-    par-short) llist_short "$@" | run_parallel ;;
-    par-quick) list_quick       | run_parallel ;;
+    par-test)  list_tests       | par_run_tests ;;
+    par-short) llist_short "$@" | par_run_tests ;;
+    par-quick) list_quick       | par_run_tests ;;
 
     *)             echo "
     usage:
