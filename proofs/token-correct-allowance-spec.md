@@ -1,8 +1,7 @@
 Hacker Gold Token (HKG) Correct Program Specification
 =====================================================
 
-Here we provide a specification file containing a reachability rule for the
-verifying the correctness of the HKG Token's APPROVE Function.
+Here we provide a specification file containing a reachability rule for the verifying the correctness of the HKG Token's APPROVE Function.
 
 ```{.k}
 module TOKEN-SPEC
