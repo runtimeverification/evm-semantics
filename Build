@@ -192,11 +192,16 @@ test_with_rvk() {
     )
 }
 
+run_test() {
+    test_file="$1"
+    "test_with_$K_VERSION" || exit_status=$?
+}
+
 run_tests() {
     local test_file=$1 exit_status=0
     progress "running: $test_file"
-    "test_with_$K_VERSION" "$@" || exit_status=$?
     count=$(($count + 1))
+    run_test "$@" || exit_status=$?
     if [[ $exit_status -eq 0 ]]; then
         success "$test_file"
     else
@@ -231,7 +236,8 @@ run_gitci() {
 }
 
 run_parallel() {
-    parallel --max-procs 14 --joblog par.log ./Build test
+    run_make
+    parallel --bar --joblog par.log --max-procs 14 ./Build single-test
 }
 
 # Main
@@ -271,10 +277,11 @@ case "$run_command" in
     list-analysis)   with_test_list list_analysis   echo "$@" ;;
 
     # Test runs
-    test)       with_test_list list_tests      run_tests "$@" ;;
-    rv-jenkins) with_test_list list_rv_jenkins run_tests "$@" ;;
-    short)      with_test_list "list_short $@" run_tests      ;;
-    quicktest)  with_test_list list_quicktests run_tests "$@" ;;
+    single-test) run_test "$@" ;;
+    test)        with_test_list list_tests      run_tests "$@" ;;
+    rv-jenkins)  with_test_list list_rv_jenkins run_tests "$@" ;;
+    short)       with_test_list "list_short $@" run_tests      ;;
+    quicktest)   with_test_list list_quicktests run_tests "$@" ;;
 
     # Git CI
     ci-init)    init_gitci ;;
