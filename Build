@@ -179,7 +179,7 @@ test_with_rvk() {
         output="$(mktemp)"
         kast_output="$(mktemp)"
         trap "rm -rf $kast $output $kast_output" INT TERM EXIT
-        "$(dirname "$0")/kast-json.py" "$1" > "$kast"
+        "$(dirname "$0")/kast-json.py" "$test_file" > "$kast"
         $interpreter "$(dirname "$0")/.build/rvk/ethereum-kompiled/realdef.cma" -c PGM "$kast" textfile -c SCHEDULE '`DEFAULT_ETHEREUM`(.KList)' text -c MODE '`VMTESTS_ETHEREUM`(.KList)' text --output-file "$output"
         exit=$?
         if [ $exit -eq 0 ]; then
