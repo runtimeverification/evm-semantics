@@ -6,6 +6,8 @@ set -u      # Using undefined variables is an error. Exit immediately
 # Settings
 # --------
 
+test_logs="tests/logs"
+mkdir -p "$test_logs"
 tests_dir="tests/VMTests/"
 expected_passing="tests/short-list"
 long_running="tests/long-running"
@@ -206,7 +208,7 @@ par_run_tests() {
     max_procs="3"
     [[ "$K_VERSION" == 'rvk'   ]] && mem_free=1G
     [[ "$K_VERSION" == 'uiuck' ]] && mem_free=2G
-    job_log="test-log.$K_VERSION.$(date +%Y%m%dT%H%M%S)"
+    job_log="$test_logs/$K_VERSION.$(date +%Y%m%dT%H%M%S)"
     parallel --bar --joblog "$job_log" --memfree "$mem_free" ./Build single-test
 }
 
