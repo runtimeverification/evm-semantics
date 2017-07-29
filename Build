@@ -212,6 +212,7 @@ par_run_tests() {
 }
 
 run_git_ci() {
+    run_make
     for branch in $ci_branches; do
         git fsl-ci "$branch" "$0" par-test "$@"
     done
