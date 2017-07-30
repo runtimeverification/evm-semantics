@@ -1102,24 +1102,19 @@ module ETHEREUM
 
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
-    rule <k> SSTORE INDEX 0 => . ... </k>
+    rule <k> SSTORE INDEX VALUE => . ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> ... (INDEX |-> VALUE => .Map) ... </storage>
+           <storage> ... (INDEX |-> (OLD => VALUE)) ... </storage>
            ...
          </account>
-         <refund> R => R +Word Rsstoreclear < SCHED > </refund>
+         <refund> R => #ifInt OLD =/=Int 0 andBool VALUE ==Int 0
+                        #then R +Word Rsstoreclear < SCHED >
+                        #else R
+                       #fi
+         </refund>
          <schedule> SCHED </schedule>
-	 
-    rule <k> SSTORE INDEX 0 => . ... </k>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> STORAGE </storage>
-           ...
-         </account>
-      requires notBool (INDEX in_keys(STORAGE))
 
     rule <k> SSTORE INDEX VALUE => . ... </k>
          <id> ACCT </id>
@@ -1128,7 +1123,7 @@ module ETHEREUM
            <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>
            ...
          </account>
-      requires VALUE =/=K 0
+      requires notBool (INDEX in_keys(STORAGE))
 
 
 // ### Call Operations

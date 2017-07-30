@@ -133,8 +133,8 @@ module EVM-DATA
                  | Int "%Word" Int [function]
  // -----------------------------------------
     rule W0 +Word W1 => chop( W0 +Int W1 )
-    rule W0 -Word W1 => chop( W0 -Int W1 ) requires W0 >=Int W1 
-	rule W0 -Word W1 => chop( (W0 +Int 2^Int 256) -Int W1 ) requires W0 <Int W1 
+    rule W0 -Word W1 => chop( W0 -Int W1 ) requires W0 >=Int W1
+	rule W0 -Word W1 => chop( (W0 +Int 2^Int 256) -Int W1 ) requires W0 <Int W1
     rule W0 *Word W1 => chop( W0 *Int W1 )
     rule W0 /Word 0  => 0
     rule W0 /Word W1 => chop( W0 /Int W1 ) requires W1 =/=K 0
@@ -446,6 +446,16 @@ module EVM-DATA
     rule #range(WM,           END, 0,     WS) => WS
     rule #range(WM,           END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, 0 : WS) requires (WIDTH >Int 0) andBool notBool END in_keys(WM)
     rule #range(END |-> W WM, END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, W : WS) requires (WIDTH >Int 0)
+
+
+// -   `#removeZeros` removes any entries in a map with zero values.
+
+
+    syntax Map ::= #removeZeros ( Map ) [function]
+ // ----------------------------------------------
+    rule #removeZeros( .Map )               => .Map
+    rule #removeZeros( KEY |-> 0     REST ) => #removeZeros(REST)
+    rule #removeZeros( KEY |-> VALUE REST ) => KEY |-> VALUE #removeZeros(REST) requires VALUE =/=K 0
 
 
 // Parsing/Unparsing

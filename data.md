@@ -443,6 +443,16 @@ We are using the polymorphic `Map` sort for these word maps.
     rule #range(END |-> W WM, END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, W : WS) requires (WIDTH >Int 0)
 ```
 
+-   `#removeZeros` removes any entries in a map with zero values.
+
+```{.k .uiuck .rvk}
+    syntax Map ::= #removeZeros ( Map ) [function]
+ // ----------------------------------------------
+    rule #removeZeros( .Map )               => .Map
+    rule #removeZeros( KEY |-> 0     REST ) => #removeZeros(REST)
+    rule #removeZeros( KEY |-> VALUE REST ) => KEY |-> VALUE #removeZeros(REST) requires VALUE =/=K 0
+```
+
 Parsing/Unparsing
 =================
 
