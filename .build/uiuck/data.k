@@ -37,8 +37,8 @@ module EVM-DATA
 
     syntax Int ::= chop ( Int ) [function]
  // --------------------------------------
-    rule chop ( I:Int ) => I %Int pow256 requires I <Int 0  orBool I >=Int pow256
-    rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256
+    rule chop ( I:Int ) => I %Int pow256 //requires I <Int 0  orBool I >=Int pow256
+   // rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256
 
 
 // -   `bool2Word` interperets a `Bool` as a `Int`.
@@ -541,5 +541,7 @@ module EVM-DATA
  // -----------------------------------------------
     rule #padByte( S ) => S             requires lengthString(S) ==K 2
     rule #padByte( S ) => "0" +String S requires lengthString(S) ==K 1
+	
+	
 endmodule
 
