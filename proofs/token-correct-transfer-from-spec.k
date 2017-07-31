@@ -28,12 +28,12 @@ imports ETHEREUM-SIMULATION
                     <callData>  .WordStack                                       </callData>
                     <callValue> 0                                                </callValue>
                     <wordStack> 
-					            TRANSFER:Int: %CALLER_ID : %ORIGIN_ID : .WordStack 
-					         => B1 -Int TRANSFER : 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : .WordStack    
+					            TRANSFER:Int: %CALLER_ID : %ORIGIN_ID : WS 
+					         => B1 -Int TRANSFER : 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS   
                                                      							 </wordStack>                                                   
                     <localMem>     .Map  => _                                    </localMem>
                     <pc>           818   => 1331                                 </pc>
-					<gas>          20000     => _                         </gas>
+					<gas>          G     => G -Int 16071                         </gas>
                     <previousGas>  _     => _                                    </previousGas>
                 </txExecState>
                 <substate>
@@ -76,6 +76,7 @@ imports ETHEREUM-SIMULATION
 		 andBool B2 +Int TRANSFER <Int 2^Int 256
 		 andBool A1 <Int 2^Int 256
 		 andBool B1 <Int 2^Int 256
-		// andBool G  >=Int 16071
+		 andBool #sizeWordStack(WS) <Int 1000
+		 andBool G  >=Int 16071
 
 endmodule
