@@ -32,7 +32,7 @@ imports ETHEREUM-SIMULATION
 					         => B1 -Int TRANSFER : 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS   
                                                      							 </wordStack>                                                   
                     <localMem>     .Map   => _                                    </localMem>
-                    <pc>           818    => 1469                                 </pc>
+                    <pc>           836    => 1460                                 </pc>
 					<gas>          100000 => _                                    </gas>
                     <previousGas>  _      => _                                    </previousGas>
                 </txExecState>
@@ -71,8 +71,8 @@ imports ETHEREUM-SIMULATION
         </ethereum>	    
 		requires B2 >=Int 0
 		 andBool TRANSFER >Int 0
-		 andBool B1 >=Int TRANSFER
-         andBool A1 >=Int TRANSFER 		 
+		 andBool B1 >Int TRANSFER
+         andBool A1 >Int TRANSFER 		 
 		 andBool B2 +Int TRANSFER <Int 2^Int 256
 		 andBool A1 <Int 2^Int 256
 		 andBool B1 <Int 2^Int 256

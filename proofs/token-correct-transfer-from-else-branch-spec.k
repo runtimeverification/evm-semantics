@@ -3,7 +3,9 @@
 
 // Here we provide a specification file containing a reachability rule for the
 // verifying the correctness of the HKG Token's transferFrom Function.
-
+// step =1158
+// step = 1888
+// gas >= 474
 module TRANSFER-FROM-SPEC
 imports ETHEREUM-SIMULATION
 
@@ -27,12 +29,12 @@ imports ETHEREUM-SIMULATION
                     <callData>  .WordStack                                       </callData>
                     <callValue> 0                                                </callValue>
                     <wordStack> 
-					            TRANSFER         : %CALLER_ID   : %ORIGIN_ID : 282 : WS
-					         => 282 : 0 : WS
+					            TRANSFER     :  %CALLER_ID   : %ORIGIN_ID : 282 : WS
+					         => ?W
                                                      							 </wordStack>                                                   
                     <localMem>     .Map  => _                                    </localMem>
-                    <pc>           818   => 1457                                 </pc>
-					<gas>          99786 => 99542                                </gas>
+                    <pc>           818   => P:Int                                 </pc>
+					<gas>          99786 => _                                </gas>
                     <previousGas>  _     => _                                    </previousGas>
                 </txExecState>
                 <substate>
@@ -67,11 +69,12 @@ imports ETHEREUM-SIMULATION
                 </accounts>
                 <messages> .Bag </messages>
             </network>
-        </ethereum>	    
+        </ethereum>	
+
 		requires B2 >=Int 0
-		 andBool TRANSFER >Int 0
-		 andBool B1 >Int TRANSFER
-         andBool A1 <Int TRANSFER		 
+		 andBool ((TRANSFER >Int 0 andBool B1 <Int TRANSFER andBool A1 >Int TRANSFER andBool P ==Int 1451)
+		  orBool (TRANSFER ==Int 0 andBool B1 >Int TRANSFER andBool A1 >Int TRANSFER andBool P ==Int 1441)
+		  orBool (TRANSFER >Int 0  andBool B1 >Int TRANSFER andBool A1 <Int TRANSFER andBool P ==Int 1457))	 
 		 andBool A1 <Int 2^Int 256
 		 andBool B1 <Int 2^Int 256
 		 andBool #sizeWordStack(WS) <Int 1015
