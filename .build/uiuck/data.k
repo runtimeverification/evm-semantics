@@ -132,13 +132,8 @@ module EVM-DATA
                  | Int "%Word" Int [function]
  // -----------------------------------------
     rule W0 +Word W1 => chop( W0 +Int W1 )
-<<<<<<< HEAD
-    rule W0 -Word W1 => chop( W0 -Int W1 ) requires W0 >=Int W1 
-	rule W0 -Word W1 => chop( (W0 +Int 2^Int 256) -Int W1 ) requires W0 <Int W1 
-=======
-    rule W0 -Word W1 => chop( W0 -Int W1 ) requires W0 >=Int W1
+    rule W0 -Word W1 => chop( W0 -Int W1 )                  requires W0 >=Int W1
 	rule W0 -Word W1 => chop( (W0 +Int 2^Int 256) -Int W1 ) requires W0 <Int W1
->>>>>>> xiaoran/rebase-perf
     rule W0 *Word W1 => chop( W0 *Int W1 )
     rule W0 /Word 0  => 0
     rule W0 /Word W1 => chop( W0 /Int W1 ) requires W1 =/=K 0
@@ -343,10 +338,12 @@ module EVM-DATA
 // -   `_in_` determines if a `Int` occurs in a `WordStack`.
 
 
-    syntax Int ::= #sizeWordStack ( WordStack )  [function, smtlib(size_word_stack)]
+    syntax Int ::= #sizeWordStack ( WordStack )  [function, smtlib(sizeWordStack)]
  // ------------------------------------------------------
     rule #sizeWordStack ( .WordStack ) => 0
     rule #sizeWordStack ( W : WS )     => 1 +Int #sizeWordStack(WS)
+	
+	rule #sizeWordStack ( _ ) >=Int 0 => true [smt-lemma]
 
     syntax Bool ::= Int "in" WordStack [function]
  // ---------------------------------------------

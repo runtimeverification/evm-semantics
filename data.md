@@ -64,8 +64,8 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 ```{.k .uiuck .rvk}
     syntax Int ::= "#ifInt" Bool "#then" Int "#else" Int "#fi" [function]
  // ---------------------------------------------------------------------
-    rule #ifInt true  #then W #else _ #fi => W
-    rule #ifInt false #then _ #else W #fi => W
+    rule #ifInt B  #then W #else _ #fi => W         requires B
+    rule #ifInt B  #then _ #else W #fi => W         requires notBool B   
 ```
 
 -   `sgn` gives the twos-complement interperetation of the sign of a word.
@@ -340,10 +340,12 @@ This stack also serves as a cons-list, so we provide some standard cons-list man
 -   `_in_` determines if a `Int` occurs in a `WordStack`.
 
 ```{.k .uiuck .rvk}
-    syntax Int ::= #sizeWordStack ( WordStack ) [function]
+    syntax Int ::= #sizeWordStack ( WordStack )  [function, smtlib(sizeWordStack)]
  // ------------------------------------------------------
     rule #sizeWordStack ( .WordStack ) => 0
     rule #sizeWordStack ( W : WS )     => 1 +Int #sizeWordStack(WS)
+	
+	rule #sizeWordStack ( _ ) >=Int 0 => true [smt-lemma]
 
     syntax Bool ::= Int "in" WordStack [function]
  // ---------------------------------------------

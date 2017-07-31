@@ -19,7 +19,7 @@ rule <program> #asMapOpCodes(
 					SWAP(2); ADD; SWAP(1); PUSH(1, 1); SWAP(1); SUB; PUSH(1, 4); JUMP; JUMPDEST;
 			   .OpCodes) </program>
 	 <pc> 0 => 22 </pc>
-	 <wordStack> .WordStack => 0 : N *Int (N +Int 1) /Int 2 : .WordStack </wordStack>
+	 <wordStack> WS:WordStack => 0 : N *Int (N +Int 1) /Int 2 : WS:WordStack </wordStack>
 	 <gas> G => G -Int (52 *Int N +Int 27) </gas>
 	 <k> #execute ...</k>
 	 <mode> NORMAL </mode>
@@ -30,6 +30,7 @@ rule <program> #asMapOpCodes(
 	 <previousGas> _ => _ </previousGas>
 requires N >=Int 0
  andBool N *Int (N +Int 1) /Int 2 <Int 2^Int 256
+ andBool #sizeWordStack(WS) <Int 1021
  andBool G >=Int 52 *Int N +Int 27
 
 
@@ -39,7 +40,7 @@ rule <program> #asMapOpCodes(
 					SWAP(2); ADD; SWAP(1); PUSH(1, 1); SWAP(1); SUB; PUSH(1, 4); JUMP; JUMPDEST;
 			   .OpCodes) </program>
 	 <pc> 4 => 22 </pc>
-	 <wordStack> (I => 0) : (S => S +Int I *Int (I +Int 1) /Int 2) : .WordStack </wordStack>
+	 <wordStack> (I => 0) : (S => S +Int I *Int (I +Int 1) /Int 2) : WS:WordStack </wordStack>
 	 <gas> G => G -Int (52 *Int I +Int 21) </gas>
      <k> #execute ...</k>
 	 <mode> NORMAL </mode>
@@ -51,6 +52,7 @@ rule <program> #asMapOpCodes(
  requires I >=Int 0
  andBool S >=Int 0
  andBool S +Int I *Int (I +Int 1) /Int 2 <Int 2^Int 256
+ andBool #sizeWordStack(WS) <Int 1021
  andBool G >=Int 52 *Int I +Int 21
 
 endmodule
