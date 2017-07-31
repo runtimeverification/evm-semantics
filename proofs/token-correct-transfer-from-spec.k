@@ -71,8 +71,8 @@ imports ETHEREUM-SIMULATION
         </ethereum>	    
 		requires B2 >=Int 0
 		 andBool TRANSFER >Int 0
-		 andBool B1 >Int TRANSFER
-         andBool A1 >Int TRANSFER 		 
+		 andBool B1 >=Int TRANSFER
+         andBool A1 >=Int TRANSFER 		 
 		 andBool B2 +Int TRANSFER <Int 2^Int 256
 		 andBool A1 <Int 2^Int 256
 		 andBool B1 <Int 2^Int 256
