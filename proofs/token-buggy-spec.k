@@ -32,8 +32,8 @@ imports ETHEREUM-SIMULATION
 					         => B1 -Int TRANSFER : 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS   
                                                      							 </wordStack>                                                   
                     <localMem>     .Map   => _                                    </localMem>
-                    <pc>           836    => 1469                                 </pc>
-					<gas>          100000 => _                        </gas>
+                    <pc>           818    => 1469                                 </pc>
+					<gas>          100000 => _                                    </gas>
                     <previousGas>  _      => _                                    </previousGas>
                 </txExecState>
                 <substate>

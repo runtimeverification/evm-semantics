@@ -4,7 +4,6 @@
 // Here we provide a specification file containing a reachability rule for the
 // verifying the correctness of the HKG Token's transferFrom Function.
 
-
 module TRANSFER-FROM-SPEC
 imports ETHEREUM-SIMULATION
 
@@ -28,12 +27,12 @@ imports ETHEREUM-SIMULATION
                     <callData>  .WordStack                                       </callData>
                     <callValue> 0                                                </callValue>
                     <wordStack> 
-					            TRANSFER         : %CALLER_ID   : %ORIGIN_ID : WS 
-					         => B1 -Int TRANSFER : 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS   
+					            TRANSFER :      %CALLER_ID   : %ORIGIN_ID :  WS
+					         => TRANSFER : 0 :  %CALLER_ID   : %ORIGIN_ID :  WS
                                                      							 </wordStack>                                                   
                     <localMem>     .Map  => _                                    </localMem>
-                    <pc>           818   => 1331                                 </pc>
-					<gas>          G     => G -Int 16071                        </gas>
+                    <pc>           818   => 1441                                 </pc>
+					<gas>          99786 => 99321                                </gas>
                     <previousGas>  _     => _                                    </previousGas>
                 </txExecState>
                 <substate>
@@ -58,10 +57,10 @@ imports ETHEREUM-SIMULATION
                         <balance>  BAL                                  </balance>
                         <code>     %function_transferFrom               </code>
                         <storage>... 
-									%ACCT_1_BALANCE |-> (B1 => B1 -Int TRANSFER)
-									%ACCT_1_ALLOWED |-> (A1 => A1 -Int TRANSFER) 
-									%ACCT_2_BALANCE |-> (B2 => B2 +Int TRANSFER) 
-									%ACCT_2_ALLOWED |->  _
+									%ACCT_1_BALANCE |-> B1
+									%ACCT_1_ALLOWED |-> A1 
+									%ACCT_2_BALANCE |-> B2 
+									%ACCT_2_ALLOWED |-> _
                                       ...		                       </storage>
                         <acctMap> "nonce" |-> 0                        </acctMap>
                     </account>
@@ -70,13 +69,11 @@ imports ETHEREUM-SIMULATION
             </network>
         </ethereum>	    
 		requires B2 >=Int 0
-		 andBool TRANSFER >Int 0
-		 andBool B1 >=Int TRANSFER
-         andBool A1 >=Int TRANSFER 		 
-		 andBool B2 +Int TRANSFER <Int 2^Int 256
+		 andBool TRANSFER ==Int 0
+		 andBool B1 >Int TRANSFER
+         andBool A1 >Int TRANSFER		 
 		 andBool A1 <Int 2^Int 256
 		 andBool B1 <Int 2^Int 256
-		 andBool #sizeWordStack(WS) <Int 1016
-		 andBool G  >=Int 16071
+		 andBool #sizeWordStack(WS) <Int 1015
 
 endmodule
