@@ -28,12 +28,12 @@ imports ETHEREUM-SIMULATION
                     <callData>  .WordStack                                       </callData>
                     <callValue> 0                                                </callValue>
                     <wordStack> 
-					            TRANSFER:Int: %CALLER_ID : %ORIGIN_ID : WS 
+					            TRANSFER         : %CALLER_ID   : %ORIGIN_ID : WS 
 					         => B1 -Int TRANSFER : 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS   
                                                      							 </wordStack>                                                   
                     <localMem>     .Map  => _                                    </localMem>
                     <pc>           818   => 1331                                 </pc>
-					<gas>          G     => G -Int 16071                         </gas>
+					<gas>          G     => G -Int 16071                        </gas>
                     <previousGas>  _     => _                                    </previousGas>
                 </txExecState>
                 <substate>
@@ -55,11 +55,11 @@ imports ETHEREUM-SIMULATION
                 <accounts>
                     <account>
                         <acctID>   %ACCT_ID  </acctID>
-                        <balance>  BAL:Int                              </balance>
+                        <balance>  BAL                                  </balance>
                         <code>     %function_transferFrom               </code>
                         <storage>... 
-									%ACCT_1_BALANCE |-> (B1:Int => B1 -Int TRANSFER)
-									%ACCT_1_ALLOWED |-> (A1:Int => A1 -Int TRANSFER) 
+									%ACCT_1_BALANCE |-> (B1 => B1 -Int TRANSFER)
+									%ACCT_1_ALLOWED |-> (A1 => A1 -Int TRANSFER) 
 									%ACCT_2_BALANCE |-> (B2 => B2 +Int TRANSFER) 
 									%ACCT_2_ALLOWED |->  _
                                       ...		                       </storage>
@@ -71,12 +71,12 @@ imports ETHEREUM-SIMULATION
         </ethereum>	    
 		requires B2 >=Int 0
 		 andBool TRANSFER >Int 0
-		 andBool B1 >=Int TRANSFER
-         andBool A1 >=Int TRANSFER 		 
+		 andBool B1 >Int TRANSFER
+         andBool A1 >Int TRANSFER 		 
 		 andBool B2 +Int TRANSFER <Int 2^Int 256
 		 andBool A1 <Int 2^Int 256
 		 andBool B1 <Int 2^Int 256
-		 andBool #sizeWordStack(WS) <Int 1000
+		 andBool #sizeWordStack(WS) <Int 1016
 		 andBool G  >=Int 16071
 
 endmodule
