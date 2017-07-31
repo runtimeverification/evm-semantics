@@ -324,9 +324,10 @@ module ETHEREUM-SIMULATION
     rule <k> check "account" : { ACCT : { "storage" : (STORAGE:Map) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <storage> STORAGE </storage>
+           <storage> ACCTSTORAGE </storage>
            ...
          </account>
+      requires #removeZeros(ACCTSTORAGE) ==K STORAGE
 
     rule <k> check "account" : { ACCT : { "code" : (CODE:Map) } } => . ... </k>
          <account>
