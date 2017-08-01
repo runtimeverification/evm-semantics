@@ -9,6 +9,7 @@ In this repository we provide a model of the EVM in K.
 -   [evm.md](evm.md): Top level EVM semantics file (including local execution and network dynamics).
 -   [data.md](data.md): Specifies the basic data of EVM execution, including the 256 bit words and some datastructures over them.
 -   [proofs/README.md](proofs/README.md): Specifies proofs we have performed on ERC20 tokens.
+-   [issues.md](issues.md): Some comments about things which could be different about EVM.
 
 We are continuously testing our implementation against the [Ethereum Test Set](https://github.com/ethereum/tests).
 The above marker only checks for a subset of the tests (those in [our codeship list](tests/passing.expected)), though many more of the tests than those listed there are passing.
@@ -19,30 +20,16 @@ Building and Running
 --------------------
 
 There are two versions of K available, [RV-K](https://github.com/runtimeverification/k) and [UIUC-K](https://github.com/kframework/k).
-The files in `k/*.k` in this repository work with UIUC-K, so install that first.
+The files in `.build/uiuck/*.k` in this repository work with UIUC-K, so install that first.
 
 The script `Build` supplied in this repository will build an run the definition (use `./Build help` to see usage information).
-First `kompile` the definition with `./Build build`; to clone and split the tests run `make split-tests`.
 
-To run JSON input (or JSON with our extended "pretty" syntax for input) in file `tests/VMTests/vmArithmeticTest/add0.json` for example (after splitting the tests):
+-   To `kompile` the definition, run `./Build`.
+-   To run the tests, do `./Build test` (`./Build par-test` to run them in parallel using [GNU parallel](https://www.gnu.org/software/parallel/)).
+-   To run a single test, do `./Build test <regx-for-test>`, for example `./Build test vmArithmeticTest/add0`.
 
-```sh
-$ ./Build build
-...
-$ make split-tests
-...
-$ krun --directory k/ --debug \
-       -cMODE=NORMAL -cSCHEDULE=DEFAULT \
-       tests/VMTests/vmArithmeticTest/add0.json
-```
-
-To run a gas analysis of the program, instead supply `-cMODE=GASANALYZE`.
-To run with the Homestead fee schedule instead (or any of the other schedules), instead supply `-cSCHEDULE=HOMESTEAD`.
-
-Issues
-------
-
-We are curating a list of [things we wish were different about EVM](issues.md).
+To run in a different mode (eg. in `GASANALYZE` mode), do `export cMODE=<OTHER_MODE>` before calling `./Build`.
+To run with a different fee schedule (eg. `HOMESTEAD` instead of `DEFAULT`), do `export cSCHEDULE=<OTHER_SCHEDULE>` before calling `./Build`.
 
 Unfinished
 ----------
@@ -58,6 +45,7 @@ This would also allow us to experiment with alternative programming languages to
 
 Right now we are passing the VMTests, but haven't run tests on entire transactions.
 To have confidence in our semantics, we need to run the tests involving entire transactions (not just chunks of VM code).
+Eventually, we should run the GeneralStateTests instead.
 
 ### TODOs
 
