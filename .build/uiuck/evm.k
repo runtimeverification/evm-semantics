@@ -20,10 +20,9 @@
 // the yellowpaper state corresponds to each cell.
 
 
-requires "data.k"
-
+requires "verification.k"
 module ETHEREUM
-    imports EVM-DATA
+	imports VERIFICATION
     imports STRING
 
     configuration <k> $PGM:EthereumSimulation </k>

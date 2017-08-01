@@ -19,10 +19,10 @@ requires "krypto.k"
 ```
 
 ```{.k .uiuck .rvk}
-requires "data.k"
+requires "verification.k"
 
 module ETHEREUM
-    imports EVM-DATA
+    imports VERIFICATION
     imports STRING
 
     configuration <k> $PGM:EthereumSimulation </k>
