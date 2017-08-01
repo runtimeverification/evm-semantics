@@ -58,9 +58,9 @@ imports ETHEREUM-SIMULATION
                         <code>     %function_transfer              </code>
 						<storage>... 
 									%ACCT_1_BALANCE |-> (B1 => B1 -Int TRANSFER)
-									%ACCT_1_ALLOWED |-> A1 
+									%ACCT_1_ALLOWED |-> (A1) 
 									%ACCT_2_BALANCE |-> (B2 => B2 +Int TRANSFER) 
-									%ACCT_2_ALLOWED |->  _
+									%ACCT_2_ALLOWED |-> (A2)
                                       ...		                       </storage>
                         <acctMap> "nonce" |-> 0                        </acctMap>
                     </account>
@@ -69,11 +69,10 @@ imports ETHEREUM-SIMULATION
             </network>
         </ethereum>	    
 		requires B2 >=Int 0
-		 andBool TRANSFER >Int 0
 		 andBool B1 >Int TRANSFER
+		 andBool TRANSFER >Int 0
 		 andBool B2 +Int TRANSFER <Int 2^Int 256
-		 andBool A1 <Int 2^Int 256
-		 andBool B1 <Int 2^Int 256
+		 andBool B2 <Int 2^Int 256
 
 endmodule
 

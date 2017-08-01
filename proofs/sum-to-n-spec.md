@@ -29,6 +29,7 @@ rule <program> #asMapOpCodes(
 	 <previousGas> _ => _ </previousGas>
 requires N >=Int 0
  andBool N <=Int 340282366920938463463374607431768211455  // largest integer for which the program does not overflow, a test point to the program for checking overflow of the sum program
+ andBool #sizeWordStack(WS) <Int 1021
  andBool G >=Int 52 *Int N +Int 27
 
 
@@ -50,6 +51,7 @@ rule <program> #asMapOpCodes(
  requires I >=Int 0
  andBool S >=Int 0
  andBool S +Int I *Int (I +Int 1) /Int 2 <Int 2^Int 256
+ andBool #sizeWordStack(WS) <Int 1021
  andBool G >=Int 52 *Int I +Int 21
 
 endmodule

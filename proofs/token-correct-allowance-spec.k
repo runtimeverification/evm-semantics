@@ -27,7 +27,7 @@ imports ETHEREUM-SIMULATION
                     <caller>    %CALLER_ID                                       </caller>
                     <callData>  .WordStack                                       </callData>
                     <callValue> 0                                                </callValue>
-                    <wordStack> _:Int : .WordStack  => ?A:WordStack              </wordStack>
+                    <wordStack>     WS  => WS1:WordStack                          </wordStack>
                     <localMem>     .Map  => ?B:Map                               </localMem>
                     <pc>           469   => 573                                  </pc>
                     <gas>          G    => G -Int 415                            </gas>
@@ -54,24 +54,21 @@ imports ETHEREUM-SIMULATION
                         <acctID>   %ACCT_ID  </acctID>
                         <balance>  BAL                                  </balance>
                         <code>    %function_allowance                               </code>
-                        <storage>... 
-									%ACCT_1_BALANCE |-> B1
-									%ACCT_1_ALLOWED |-> A1
-									%ACCT_2_BALANCE |-> B2
-									%ACCT_2_ALLOWED |-> A2
-                                      ...		                       </storage>
+                        <storage> 
+									%ACCT_1_BALANCE |-> B1:Int
+									%ACCT_1_ALLOWED |-> A1:Int
+									%ACCT_2_BALANCE |-> B2:Int
+									%ACCT_2_ALLOWED |-> A2:Int
+									3 |-> %ORIGIN_ID
+									4|->%CALLER_ID
+                                      		                       </storage>
                         <acctMap> "nonce" |-> 0 </acctMap>
                     </account>
                 </accounts>
                 <messages> .Bag </messages>
             </network>
         </ethereum>
-        requires B2 ==Int ?B2N 
-		 andBool B1 ==Int ?B1N 
-		 andBool B1 +Int B2 ==Int TOTAL 
-		 andBool TOTAL ==Int ?TOTALN 
-		 andBool G >=Int 415
-		ensures ?B1N +Int ?B2N ==Int ?TOTALN
+   requires G >=Int 415  andBool #sizeWordStack(WS) <Int 1016
 
 endmodule
 
