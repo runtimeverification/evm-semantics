@@ -3,17 +3,6 @@
 set -e      # Exit immediately if any command fails
 set -u      # Using undefined variables is an error. Exit immediately
 
-# Settings
-# --------
-
-test_logs="tests/logs"
-mkdir -p "$test_logs"
-tests_dir="tests/VMTests/"
-expected_passing="tests/short-list"
-long_running="tests/long-running"
-now_passing="tests/passing.lastrun"
-ci_branches=( develop )
-
 # Utilities
 # ---------
 
@@ -53,60 +42,10 @@ set_test_opts_for_proofs() {
     test_opts=( -cMODE=NORMAL "$basepath.json" --prove "$basepath-spec.k" )
 }
 
-krun_with_opts() {
-    local test_file=$1; shift
-    local lint=lint_krun
-    local test_opts=()
-    export K_OPTS=-Xss500m
-    export cSCHEDULE=${cSCHEDULE:-DEFAULT}
-    case "$test_file" in
-       *gas-analysis/*) test_opts=( -cMODE=GASANALYZE "$test_file" );;
-       *VMTests/*     ) test_opts=( -cMODE=VMTESTS    "$test_file" );;
-       *proofs/*      ) set_test_opts_for_proofs "$test_file"; lint=cat;;
-       *              ) die "Don't know how to set test_opts for '$test_file'";;
-    esac
-
-    krun --directory .build/$K_VERSION/ --debug \
-         -cSCHEDULE=$cSCHEDULE "${test_opts[@]}" "$@" \
-        | $lint
-}
-
-init_gitci() {
-    git ci add --test short 'rm -rf .build/uiuck/*.k ; ./Build short'
-    git ci add --test long  'rm -rf .build/uiuck/*.k ; ./Build test'
-}
-
 # Test Filters and Lists
 # ----------------------
 
-filter_not_longrunning() { grep -Fvxf "$long_running" -; }
-
-filter_short() {
-    quick_list="$1"
-    case "$quick_list" in
-        1)  grep -e 'vmArithmeticTest/[a-dA-D]'                                                ;;
-        2)  grep -e 'vmArithmeticTest/expPowerOf256Of256'                                      ;;
-        3)  grep -e 'vmArithmeticTest/[eE]' | grep -v -e 'vmArithmeticTest/expPowerOf256Of256' ;;
-        4)  grep -e 'vmArithmeticTest/[f-mF-M]'                                                ;;
-        5)  grep -e 'vmArithmeticTest/[n-zN-Z]'                                                ;;
-        6)  grep -e 'vmBitwiseLogicOperationTest'                                              ;;
-        7)  grep -e 'vmBlockInfoTest' -e 'vmEnvironmentalInfoTest/[a-bA-B]'                    ;;
-        8)  grep -e 'vmEnvironmentalInfoTest/[cC]'                                             ;;
-        9)  grep -e 'vmEnvironmentalInfoTest/[d-zD-Z]' -e 'vmIOandFlowOperationsTest/[a-iA-B]' ;;
-        10) grep -e 'vmIOandFlowOperationsTest/[C-I]'                                          ;;
-        11) grep -e 'vmIOandFlowOperationsTest/[j]'                                            ;;
-        12) grep -e 'vmIOandFlowOperationsTest/[J]'                                            ;;
-        13) grep -e 'vmIOandFlowOperationsTest/[k-mK-M]'                                       ;;
-        14) grep -e 'vmIOandFlowOperationsTest/[n-zN-Z]'                                       ;;
-        15) grep -e 'vmLogTest/log[0-2]' -e 'vmLogTest/log_'                                   ;;
-        16) grep -e 'vmLogTest/log[3-9]'                                                       ;;
-        17) grep -e 'vmPerformanceTest' -e 'vmPushDupSwapTest/[a-oA-O]'                        ;;
-        18) grep -e 'vmPushDupSwapTest/push[0-1]'                                              ;;
-        19) grep -e 'vmPushDupSwapTest/[q-zQ-Z]' -e 'vmPushDupSwapTest/push[2-9]'              ;;
-        20) grep -e 'vmSystemOperationsTest' -e 'vmSha3Test' -e 'vmtests'                      ;;
-    esac | filter_not_longrunning
-}
-
+filter_not_longrunning() { grep -Fvxf "tests/long-running" - ; }
 filter_tests() {
     local command=( exit 1 )
     case $# in
@@ -118,66 +57,70 @@ filter_tests() {
     esac
 }
 
-list_gas_analysis() { find "tests/gas-analysis" -name '*.evm'; }
-list_vmtests()      { find "$tests_dir"         -name '*.json'; }
-list_proofs()       { find "proofs/"            -name '*-spec.k'; }
-list_short() {
-    if [[ "$#" -gt 0 ]]; then
-        cat "$expected_passing" | filter_short "$1"
-        return
-    fi
-    for i in $(seq 1 20); do
-        cat "$expected_passing" | filter_short "$i"
-    done | sort
-    return
-}
+list_long()  { cat "tests/long-running" ; }
+list_short() { cat "tests/short-list"   ; }
+test_lists="long short"
 
-list_rvk()   { list_vmtests; }
-list_uiuck() { ( list_proofs ; list_gas_analysis ; list_short ; ) ; }
-list_tests() { list_$K_VERSION ; }
-list_quick() { list_tests | filter_not_longrunning | sort -R | head -n 20 ; }
+list_proofs()       { find "proofs"             -name '*-spec.k' ; }
+list_gas_analysis() { find "tests/gas-analysis" -name '*.evm' ; }
+list_vmtests()      { find "tests/VMTests"      -name '*.json' | grep -v 'loop_stacklimit_1021' ; }
+test_lists="$test_lists proofs gas_analysis vmtests"
 
-list_rv_jenkins() { list_vmtests | grep -v 'vmPerformance' | sort -R | head -n 8000; }
-# list_tests()      { list_vmtests; list_gas_analysis; list_proofs; }
-
-# Higher-order runner helpers
-# ---------------------------
-
-with_test_list() {
-    local list=$1; shift
-    local do_run=$1; shift;
-    local count=0 failed=0 # TODO: Used by run_tests too; Find a cleaner way
-
-    run_make all
-    while read test_file; do
-        $do_run "$test_file" </dev/null || true
-    done < <($list | filter_tests "$@")
-    exit $failed
-}
-
-with_first() {
-    local list=$1; shift
-    local do_run=$1; shift;
-
-    [[ $($list | wc -l) = 1 ]] || {
-        warning "Multiple tests passed, but only running the first"
-    }
-    $do_run $($list | head -n 1)
-}
+list_rvk()   { list_vmtests ; }
+list_uiuck() { list_proofs ; list_gas_analysis ; list_short ; }
+list_all()   { list_$K_VERSION ; }
+list_quick() { list_all | filter_not_longrunning | sort -R | head -n 20 ; }
+test_lists="$test_lists rvk uiuck all quick"
 
 # Runners
 # -------
 
-test_with_uiuck() {
+run_uiuck() {
+    local run_file=$1; shift
+    local test_opts=()
+    export K_OPTS=-Xss500m
+    export cSCHEDULE=${cSCHEDULE:-DEFAULT}
+    case "$run_file" in
+       *gas-analysis/*) test_opts=( -cMODE=GASANALYZE "$run_file" )           ;;
+       *VMTests/*     ) test_opts=( -cMODE=VMTESTS    "$run_file" )           ;;
+       *proofs/*      ) set_test_opts_for_proofs "$run_file"                  ;;
+       *              ) die "Don't know how to set test_opts for '$run_file'" ;;
+    esac
+    krun --directory .build/$K_VERSION/ --debug -cSCHEDULE=$cSCHEDULE "${test_opts[@]}" "$@"
+}
+
+run_krun() {
+    progress "running: $1"
+    ( run_uiuck "$1" | lint_krun )
+}
+
+run_kdebug() {
+    progress "debugging: $1"
+    ( run_uiuck "$1" --debugger )
+}
+
+run_make() {
+    local make_opts=
+    $have_tangle || make_opts="--assume-old ethereum.md --assume-old evm.md \
+                               --assume-old data.md --assume-old krypto.md"
+    make K_VERSION=${K_VERSION} -s $make_opts $@
+}
+
+# Testers
+# -------
+
+test_uiuck() {
+    test_file="$1"
     local output_file="$default_output_file"
     if [[ -e $test_file.out ]]; then output_file=$test_file.out; fi
     ( # Running in a sub-shell to avoid export spilling over to other tests
         pretty_diff --label expected <(cat "$output_file") \
-                    --label actual   <(krun_with_opts "$test_file")
+                    --label actual   <(run_uiuck "$test_file" | lint_krun)
     )
 }
 
-test_with_rvk() {
+test_rvk() {
+    test_file="$1"
     (
         # TODO: Integrate this into Build nicely
         set +e;
@@ -187,7 +130,9 @@ test_with_rvk() {
         kast_output="$(mktemp)"
         trap "rm -rf $kast $output $kast_output" INT TERM EXIT
         "$(dirname "$0")/kast-json.py" "$test_file" > "$kast"
-        $interpreter "$(dirname "$0")/.build/rvk/ethereum-kompiled/realdef.cma" -c PGM "$kast" textfile -c SCHEDULE '`DEFAULT_ETHEREUM`(.KList)' text -c MODE '`VMTESTS_ETHEREUM`(.KList)' text --output-file "$output"
+        $interpreter "$(dirname "$0")/.build/rvk/ethereum-kompiled/realdef.cma" -c PGM "$kast" textfile \
+                     -c SCHEDULE '`DEFAULT_ETHEREUM`(.KList)' text -c MODE '`VMTESTS_ETHEREUM`(.KList)' text \
+                     --output-file "$output"
         exit=$?
         if [ $exit -eq 0 ]; then
           exit 0
@@ -201,54 +146,33 @@ test_with_rvk() {
 
 run_test() {
     run_make
-    test_file="$1"
-    "test_with_$K_VERSION"
-}
-
-par_run_tests() {
-    run_make
-    [[ "$K_VERSION" == 'rvk'   ]] && mem_free=1G
-    [[ "$K_VERSION" == 'uiuck' ]] && mem_free=2G
-    parallel --joblog - --memfree "$mem_free" ./Build single-test
-}
-
-run_git_ci() {
-    run_make
-    for branch in $ci_branches; do
-        git fsl-ci "$branch" "$0" par-test "$@"
-    done
+    "test_$K_VERSION" "$@"
 }
 
 run_tests() {
-    local test_file=$1 exit_status=0
-    progress "running: $test_file"
-    count=$(($count + 1))
-    run_test "$@" || exit_status=$?
-    if [[ $exit_status -eq 0 ]]; then
-        success "$test_file"
-    else
-        failure "$test_file"
-        failed=$(($failed + 1))
-    fi
-    progress "failed: $failed / $count"
-    return $exit_status
+    local test_count=0
+    local test_failed=0
+    while read test_file; do
+        progress "running: $test_file"
+        test_count=$(($test_count + 1))
+        exit_status=0
+        run_test "$test_file" || exit_status=$?
+        if [[ $exit_status -eq 0 ]]; then
+            success "$test_file"
+        else
+            failure "$test_file"
+            test_failed=$(($test_failed + 1))
+        fi
+        progress "failed: $test_failed / $test_count"
+    done
+    return $test_failed
 }
 
-run_krun() {
-    progress "running: $1"
-    ( krun_with_opts "$1" | lint_krun )
-}
-
-run_debug() {
-    progress "debugging: $1"
-    ( krun_with_opts "$1" --debugger )
-}
-
-run_make() {
-    local make_opts=
-    $have_tangle || make_opts="--assume-old ethereum.md --assume-old evm.md \
-                               --assume-old data.md --assume-old krypto.md"
-    make K_VERSION=${K_VERSION} -s $make_opts $@
+run_partests() {
+    run_make
+    [[ "$K_VERSION" == 'rvk'   ]] && mem_free=1G
+    [[ "$K_VERSION" == 'uiuck' ]] && mem_free=2G
+    parallel --joblog - --memfree "$mem_free" ./Build run
 }
 
 # Main
@@ -256,75 +180,63 @@ run_make() {
 
 cd "$(dirname $0)"
 
-if krun --version | grep 'RV' >/dev/null 2>&1; then
-    K_VERSION=rvk
-else
-    K_VERSION=uiuck
+if [[ -z "$K_VERSION" ]]; then
+    if krun --version | grep 'RV' >/dev/null 2>&1; then
+        K_VERSION=rvk
+    else
+        K_VERSION=uiuck
+    fi
 fi
 progress "Using $K_VERSION"
 
 default_output_file="tests/templates/output-$K_VERSION.txt"
 have_tangle=true; check_for_tangle
 
-[[ "$#" == '0' ]] && set all
-run_command="$1" && shift
+test_logs="tests/logs"
+mkdir -p "$test_logs"
+now_passing="$test_logs/passing.lastrun"
+ci_branches=( develop )
+
+[[ "$#" == '0' ]] && set build
+run_command="$1" ; shift
 case "$run_command" in
 
-    # Utilities
-    single-test) run_test "$@" ;;
-
     # Building
-    all)           run_make all ;;
-    defn)          run_make defn ;;
+    defn)  run_make defn ;;
+    build) run_make all  ;;
 
     # Running
-    krun)          with_test_list list_tests run_krun     "$@" ;;
-    debug)         with_first     list_tests run_debug    "$@" ;;
-    analyze-gas)   with_test_list list_analysis run_krun  "$@" ;;
-    analyze-debug) with_first     list_analysis run_debug "$@" ;;
-    analyze-test)  with_test_list list_analysis run_tests "$@" ;;
+    run)   run_krun   "$1" ;;
+    debug) run_kdebug "$1" ;;
 
-    # Test lists
-    list-tests)    with_test_list list_tests      echo "$@" ;;
-    list-short)    with_test_list "list_short $@" echo      ;;
-    list-quick)    with_test_list list_quick      echo "$@" ;;
-    list-analysis) with_test_list list_analysis   echo "$@" ;;
-    list-proofs)   with_test_list list_proofs     echo "$@" ;;
-
-    # Test runs
-    test)  with_test_list list_tests      run_tests "$@" ;;
-    short) with_test_list "list_short $@" run_tests      ;;
-    quick) with_test_list list_quick      run_tests "$@" ;;
-
-    par-test)  list_tests      | par_run_tests ;;
-    par-short) list_short "$@" | par_run_tests ;;
-    par-quick) list_quick      | par_run_tests ;;
-
-    ci) run_git_ci "$@" ;;
+    # Testing
+    list-*)    list_${run_command#list-}    | filter_tests "$@" ;;
+    test-*)    list_${run_command#test-}    | filter_tests "$@" | run_tests    ;;
+    partest-*) list_${run_command#partest-} | filter_tests "$@" | run_partests ;;
 
     *)             echo "
     usage:
-       $0                       Build the definitions and kompile them
+       $0       Defaults to '$0 build'
 
-       $0 defn                  Only detangle the definitions
+       # Building
+       # --------
+       $0 defn      Only detangle the definitions
+       $0 build     Detangle defintions and kompile
 
-       $0 krun                  Run a single program from the tests
-       $0 debug                 Debug a single program from the tests
-       $0 analyze-gas           Analyze a single program from the analysis directory
-       $0 analyze-debug         Debug a single program from the analysis directory
-       $0 analyze-test          Run a list of tests from the analysis list
+       # Running
+       # -------
+       $0 run   <pgm>   Run a single EVM program
+       $0 debug <pgm>   Run a single EVM program in the debugger
 
-       $0 list-tests <regx>     List passing and failing tests
-       $0 list-rv-jenkins       List 8000 random tests (excluding performance tests)
-       $0 list-short [N]        List the Nth short testsuite (ommitting N lists all)
-       $0 list-analysis <regx>  List the analysis tests
+       # Testing
+       # -------
+       $0 list-<test-list>    <regx>    List tests from <test-list> filtered by <regx>
+       $0 test-<test-list>    <regx>    Run tests from <test-list> filtered by <regx>
+       $0 partest-<test-list> <regx>    Run tests from <test-list> filtered by <regx> with GNU parallel
 
-       $0 test <regx>           Run passing and unknown tests
-       $0 rv-jenkins            Run 8000 random tests (excluding performance tests)
-       $0 short [N]             Run the Nth short testsuite (ommitting N runs all)
-       $0 quicktest             Run 20 random passing tests
-
-       $0 ci-init               Initialize CI on the repo
-       $0 ci <exp>              Run CI test <exp>
+       # Settings
+       # --------
+       Available <test-list>: $test_lists
+       K_VERSION: $K_VERSION
 "; exit ;;
 esac
