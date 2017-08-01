@@ -446,14 +446,14 @@ Some checks if an opcode will throw an exception are relatively quick and done u
     syntax InternalOp ::= "#stackNeeded?" "[" OpCode "]"
  // ----------------------------------------------------
     rule <k> #stackNeeded? [ OP ] => #exception ... </k>
-        <wordStack> WS </wordStack>
-   requires #sizeWordStack(WS) <Int #stackNeeded(OP) 
+         <wordStack> WS </wordStack>
+   requires #sizeWordStack(WS) <Int #stackNeeded(OP)
      orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
-			
+
     rule <k> #stackNeeded? [ OP ] => .K ... </k>
-           <wordStack> WS </wordStack>
-    requires notBool (#sizeWordStack(WS) <Int #stackNeeded(OP) 
-	         orBool   #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024)
+         <wordStack> WS </wordStack>
+    requires notBool (#sizeWordStack(WS) <Int #stackNeeded(OP)
+             orBool   #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024)
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
