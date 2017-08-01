@@ -29,7 +29,7 @@ rule <program> #asMapOpCodes(
 	 <localMem> .Map </localMem>
 	 <previousGas> _ => _ </previousGas>
 requires N >=Int 0
- andBool N *Int (N +Int 1) /Int 2 <Int 2^Int 256
+ andBool N <=Int 340282366920938463463374607431768211455  // largest integer for which the program does not overflow, a test point to the program for checking overflow of the sum program
  andBool #sizeWordStack(WS) <Int 1021
  andBool G >=Int 52 *Int N +Int 27
 
