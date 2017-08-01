@@ -21,8 +21,9 @@
 
 
 requires "verification.k"
+
 module ETHEREUM
-	imports VERIFICATION
+    imports VERIFICATION
     imports STRING
 
     configuration <k> $PGM:EthereumSimulation </k>
