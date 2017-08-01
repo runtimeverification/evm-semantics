@@ -22,16 +22,16 @@ imports ETHEREUM-SIMULATION
                 <interimStates> .List              </interimStates>
                 <callLog>       .Set               </callLog>
                 <txExecState>
-					<program>   %function_approve </program>
-                    <id>        %ACCT_ID                                         </id>
-                    <caller>    %CALLER_ID                                       </caller>
-                    <callData>  .WordStack                                       </callData>
-                    <callValue> 0                                                </callValue>
-                    <wordStack>    2000 : ( 116727156174188091019688739584752390716576765452 : ( 164 : ( 157198259 : .WordStack ) ) )  => ?A:WordStack           </wordStack>
+		    <program>      %HKG_Program                                  </program>
+                    <id>           %ACCT_ID                                      </id>
+                    <caller>       %CALLER_ID                                    </caller>
+                    <callData>     .WordStack                                    </callData>
+                    <callValue>    0                                             </callValue>
+                    <wordStack>    2000 :  %ORIGIN_ID : WS   => ?A:WordStack     </wordStack>
                     <localMem>     .Map    => ?B:Map                             </localMem>
                     <pc>           574     => 810                                </pc>
-                    <gas>          7031       => 0                        </gas>
-                    <previousGas>  _     => _                                    </previousGas>
+                    <gas>          G       => G -Int 7031                        </gas>
+                    <previousGas>  _       => _                                    </previousGas>
                  </txExecState>
                 <substate>
                     <selfDestruct> .Set             </selfDestruct>
@@ -39,7 +39,7 @@ imports ETHEREUM-SIMULATION
                     <refund>       0  => _          </refund>
                 </substate>
                 <gasPrice>     _                                                </gasPrice>
-                <origin>       %ORIGIN_ID										</origin>
+                <origin>       %ORIGIN_ID					</origin>
                 <gasLimit>     _                                                </gasLimit>
                 <coinbase>     %COINBASE_VALUE                                   </coinbase>
                 <timestamp>    1                                                </timestamp>
@@ -53,28 +53,23 @@ imports ETHEREUM-SIMULATION
                     <account>
                         <acctID>   %ACCT_ID  </acctID>
                         <balance>  BAL                                  </balance>
-                        <code>    %function_approve                              </code>
+                        <code>     %HKG_Program                          </code>
                         <storage> 
-									...
-									%ACCT_1_BALANCE |-> B1:Int
-									%ACCT_1_ALLOWED |-> A1:Int
-									%ACCT_2_BALANCE |-> B2:Int
-									%ACCT_2_ALLOWED |-> A2:Int
-									3 |-> %ORIGIN_ID
-									4|->%CALLER_ID
-                                     ... 		                       </storage>
+				   ...
+				  %ACCT_1_BALANCE |-> B1:Int
+				  %ACCT_1_ALLOWED |-> A1:Int
+				  %ACCT_2_BALANCE |-> B2:Int
+				  %ACCT_2_ALLOWED |-> A2:Int
+				  3 |-> %ORIGIN_ID
+			          4 |->%CALLER_ID
+                                     ... 		                 </storage>
                         <acctMap> "nonce" |-> 0 </acctMap>
                     </account>
                 </accounts>
                 <messages> .Bag </messages>
             </network>
         </ethereum>
-       /* requires B2 ==Int ?B2N 
-		 andBool B1 ==Int ?B1N 
-		 andBool B1 +Int B2 ==Int TOTAL 
-		 andBool TOTAL ==Int ?TOTALN 
-		 andBool G >=Int 7212
-		ensures ?B1N +Int ?B2N ==Int ?TOTALN*/
+       requires #sizeWordStack(WS) <Int 1014  andBool G >=Int 7031
 		
 
 endmodule

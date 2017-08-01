@@ -9,7 +9,7 @@ module TRANSFER-SPEC
 imports ETHEREUM-SIMULATION
 
     rule
-        <k> #next ~> #execute ... </k>
+        <k> #execute ... </k>
         <exit-code> 1       </exit-code>
         <mode>      NORMAL  </mode>
         <schedule>  DEFAULT </schedule>
@@ -22,18 +22,16 @@ imports ETHEREUM-SIMULATION
                 <interimStates> .List              </interimStates>
                 <callLog>       .Set               </callLog>
                 <txExecState>
-					<program>   %function_transfer </program>
-                    <id>        %ACCT_ID </id>
-                    <caller>    %ORIGIN_ID  </caller>
-                    <callData>  .WordStack                                       </callData>
-                    <callValue> 0                                                </callValue>
-                    <wordStack> TRANSFER:Int : ( 428365927726247537526132020791190998556166378203 : ( 443 : ( 2835717307 : .WordStack ) ) )
-                                         => ?A:WordStack                         </wordStack>
+		    <program>      %HKG_Program                                  </program>
+                    <id>           %ACCT_ID                                      </id>
+                    <caller>       %ORIGIN_ID                                    </caller>
+                    <callData>     .WordStack                                    </callData>
+                    <callValue>    0                                             </callValue>
+                    <wordStack>    TRANSFER : %CALLER_ID : WS => ?A:WordStack    </wordStack>
                     <localMem>     .Map  => ?B:Map                               </localMem>
                     <pc>           1533  => 1772                                 </pc>
-                    //<gas>          G:Int => G -Int 10544                         </gas>
-					<gas>          20000 => _                         </gas>
-                    <previousGas>  _     => _                               </previousGas>
+                    <gas>          G     => G -Int 10544                         </gas>
+                    <previousGas>  _     => _                                    </previousGas>
                 </txExecState>
                 <substate>
                     <selfDestruct> .Set             </selfDestruct>
@@ -41,9 +39,9 @@ imports ETHEREUM-SIMULATION
                      <refund>       0            </refund>
                 </substate>
                 <gasPrice>     _                                                </gasPrice>
-                <origin>       %ORIGIN_ID										</origin>
+                <origin>       %ORIGIN_ID					</origin>
                 <gasLimit>     _                                                </gasLimit>
-                <coinbase>     %COINBASE_VALUE                                   </coinbase>
+                <coinbase>     %COINBASE_VALUE                                  </coinbase>
                 <timestamp>    1                                                </timestamp>
                 <number>       0                                                </number>
                 <previousHash> 0                                                </previousHash>
@@ -55,26 +53,27 @@ imports ETHEREUM-SIMULATION
                     <account>
                         <acctID>   %ACCT_ID  </acctID>
                         <balance>  BAL                                  </balance>
-                        <code>     %function_transfer                                                </code>
+                        <code>     %HKG_Program                         </code>
                         <storage>
-						         ...
-						         (%ACCT_2_ALLOWED |-> A2:Int)
-						         (%ACCT_1_BALANCE |-> (B1:Int=> B1 -Int TRANSFER)) 
-								 (%ACCT_1_ALLOWED |-> A1) 
-								 (%ACCT_2_BALANCE |-> (B2 => B2 +Int TRANSFER)) 
-								 ...            </storage>
-                        <acctMap> "nonce" |-> 0 </acctMap>
+			            ...
+				  (%ACCT_2_ALLOWED |-> A2:Int)
+			          (%ACCT_1_BALANCE |-> (B1:Int=> B1 -Int TRANSFER)) 
+				  (%ACCT_1_ALLOWED |-> A1) 
+				  (%ACCT_2_BALANCE |-> (B2 => B2 +Int TRANSFER)) 
+				   ...                                    </storage>
+                        <acctMap> "nonce" |-> 0                           </acctMap>
                     </account>
                 </accounts>
                 <messages> .Bag </messages>
             </network>
         </ethereum>
 		 requires TRANSFER >Int 0 
-		  andBool B1 -Int TRANSFER >Int 0
-		  andBool B2>Int 0
-          andBool B1 <Int 2^Int 256		  
+		  andBool B1 >=Int TRANSFER
+		  andBool B2 >Int 0
+                  andBool B1 <Int 2^Int 256		  
 		  andBool B2 +Int TRANSFER >Int 0 
 		  andBool B2 +Int TRANSFER<Int 2^Int 256 
-		 // andBool G >=Int 10544
+		  andBool #sizeWordStack(WS) <Int 1017
+		  andBool G >=Int 10544
 
 endmodule

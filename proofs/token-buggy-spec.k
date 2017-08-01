@@ -2,7 +2,7 @@
 // ========================================================
 
 // Here we provide a specification file containing a reachability rule for the
-// verifying the correctness of the HKG Token's transferFrom Function.
+// verifying the correctness of the buggy HKG Token's transferFrom Function.
 
 
 module TOKEN-SPEC
@@ -22,18 +22,18 @@ imports ETHEREUM-SIMULATION
                 <interimStates> .List              </interimStates>
                 <callLog>       .Set               </callLog>
                 <txExecState>
-					<program>  %function_transferFrom_buggy                      </program>
+	            <program>   %HKG_Program_buggy                               </program>
                     <id>        %ACCT_ID                                         </id>
                     <caller>    %CALLER_ID                                       </caller>
                     <callData>  .WordStack                                       </callData>
                     <callValue> 0                                                </callValue>
                     <wordStack> 
-					            TRANSFER         : %CALLER_ID   : %ORIGIN_ID : WS 
-					         => B1 -Int TRANSFER : 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS   
-                                                     							 </wordStack>                                                   
+			         TRANSFER         : %CALLER_ID   : %ORIGIN_ID : WS 
+                              => A1 -Int TRANSFER : 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS   
+                                                     				 </wordStack>                                                   
                     <localMem>     .Map   => _                                    </localMem>
                     <pc>           836    => 1460                                 </pc>
-					<gas>          100000 => _                                    </gas>
+		    <gas>          100000 => _                                    </gas>
                     <previousGas>  _      => _                                    </previousGas>
                 </txExecState>
                 <substate>
@@ -42,9 +42,9 @@ imports ETHEREUM-SIMULATION
                     <refund>       0  => _          </refund>
                 </substate>
                 <gasPrice>     _                                                </gasPrice>
-                <origin>       %ORIGIN_ID										</origin>
+                <origin>       %ORIGIN_ID				        </origin>
                 <gasLimit>     _                                                </gasLimit>
-                <coinbase>     %COINBASE_VALUE                                   </coinbase>
+                <coinbase>     %COINBASE_VALUE                                  </coinbase>
                 <timestamp>    1                                                </timestamp>
                 <number>       0                                                </number>
                 <previousHash> 0                                                </previousHash>
@@ -56,14 +56,14 @@ imports ETHEREUM-SIMULATION
                     <account>
                         <acctID>   %ACCT_ID  </acctID>
                         <balance>  BAL                                  </balance>
-                        <code>     %function_transferFrom_buggy         </code>
+                        <code>     %HKG_Program_buggy                   </code>
                         <storage>... 
-									%ACCT_1_BALANCE |-> (B1 => B1 -Int TRANSFER)
-									%ACCT_1_ALLOWED |-> (A1 => A1 -Int TRANSFER) 
-									%ACCT_2_BALANCE |-> (B2 => B2 +Int TRANSFER) 
-									%ACCT_2_ALLOWED |->  _
-                                      ...		                       </storage>
-                        <acctMap> "nonce" |-> 0                        </acctMap>
+				 %ACCT_1_BALANCE |-> (B1 => B1 -Int TRANSFER)
+				 %ACCT_1_ALLOWED |-> (A1 => A1 -Int TRANSFER) 
+				 %ACCT_2_BALANCE |-> (B2 => B2 +Int TRANSFER) 
+				 %ACCT_2_ALLOWED |->  _
+                                      ...		                </storage>
+                        <acctMap> "nonce" |-> 0                         </acctMap>
                     </account>
                 </accounts>
                 <messages> .Bag </messages>
@@ -71,8 +71,8 @@ imports ETHEREUM-SIMULATION
         </ethereum>	    
 		requires B2 >=Int 0
 		 andBool TRANSFER >Int 0
-		 andBool B1 >Int TRANSFER
-         andBool A1 >Int TRANSFER 		 
+		 andBool B1 >=Int TRANSFER
+                 andBool A1 >=Int TRANSFER 		 
 		 andBool B2 +Int TRANSFER <Int 2^Int 256
 		 andBool A1 <Int 2^Int 256
 		 andBool B1 <Int 2^Int 256

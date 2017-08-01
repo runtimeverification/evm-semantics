@@ -1,11 +1,9 @@
 // Hacker Gold Token (HKG) Correct Program Specification
 // =====================================================
 
-// Here we provide a specification file containing a reachability rule for the
-// verifying the correctness of the HKG Token's transferFrom Function.
-// step =1158
-// step = 1888
-// gas >= 474
+// Here we provide a specification file containing a reachability rule for 
+// verifying the correctness of the else branch in HKG Token's transferFrom Function.
+
 module TRANSFER-FROM-SPEC
 imports ETHEREUM-SIMULATION
 
@@ -23,7 +21,7 @@ imports ETHEREUM-SIMULATION
                 <interimStates> .List              </interimStates>
                 <callLog>       .Set               </callLog>
                 <txExecState>
-					<program>  %function_transferFrom                              </program>
+					<program>  %HKG_Program                              </program>
                     <id>        %ACCT_ID                                         </id>
                     <caller>    %CALLER_ID                                       </caller>
                     <callData>  .WordStack                                       </callData>
@@ -57,7 +55,7 @@ imports ETHEREUM-SIMULATION
                     <account>
                         <acctID>   %ACCT_ID  </acctID>
                         <balance>  BAL                                  </balance>
-                        <code>     %function_transferFrom               </code>
+                        <code>     %HKG_Program               </code>
                         <storage>... 
 									%ACCT_1_BALANCE |-> B1
 									%ACCT_1_ALLOWED |-> A1 
