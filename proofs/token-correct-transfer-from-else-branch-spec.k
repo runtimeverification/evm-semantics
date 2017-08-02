@@ -27,12 +27,12 @@ imports ETHEREUM-SIMULATION
                     <callData>  .WordStack                                       </callData>
                     <callValue> 0                                                </callValue>
                     <wordStack> 
-					            TRANSFER     :  %CALLER_ID   : %ORIGIN_ID : 282 : WS
-					         => ?W
+					            TRANSFER     :  %CALLER_ID   : %ORIGIN_ID :  WS
+					         => 0 : TRANSFER :  %CALLER_ID   : %ORIGIN_ID :  WS
                                                      							 </wordStack>                                                   
                     <localMem>     .Map  => _                                    </localMem>
-                    <pc>           818   => P:Int                                 </pc>
-					<gas>          99786 => _                                </gas>
+                    <pc>           818   => 1451                                 </pc>
+					<gas>          500 => _                                      </gas>
                     <previousGas>  _     => _                                    </previousGas>
                 </txExecState>
                 <substate>
@@ -70,11 +70,12 @@ imports ETHEREUM-SIMULATION
         </ethereum>	
 
 		requires B2 >=Int 0
-		 andBool ((TRANSFER >Int 0 andBool B1 <Int TRANSFER andBool A1 >Int TRANSFER andBool P ==Int 1451)
-		  orBool (TRANSFER ==Int 0 andBool B1 >Int TRANSFER andBool A1 >Int TRANSFER andBool P ==Int 1441)
-		  orBool (TRANSFER >Int 0  andBool B1 >Int TRANSFER andBool A1 <Int TRANSFER andBool P ==Int 1457))	 
+		 andBool ((TRANSFER >Int 0 andBool B1 <Int TRANSFER andBool A1 >Int TRANSFER)
+		  orBool (TRANSFER ==Int 0 andBool B1 >Int TRANSFER andBool A1 >Int TRANSFER)
+		  orBool (TRANSFER >Int  0 andBool B1 >Int TRANSFER andBool A1 <Int TRANSFER))	 
 		 andBool A1 <Int 2^Int 256
 		 andBool B1 <Int 2^Int 256
-		 andBool #sizeWordStack(WS) <Int 1015
+		 andBool #sizeWordStack(WS) <Int 1016
+		 //andBool G -Int G1 <=Int 485
 
 endmodule
