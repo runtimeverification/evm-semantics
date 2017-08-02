@@ -11,8 +11,11 @@ requires "verification.k"
 
 
 
+requires "data.k"
+
 module ETHEREUM
     imports STRING
+    imports EVM-DATA
 
 
 
