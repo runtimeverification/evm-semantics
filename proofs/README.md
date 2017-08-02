@@ -134,3 +134,22 @@ The prover was able to verify the correctness of the token's `transfer` function
 
 We were able to catch the bug in Hacker Gold's ERC-20 compliant token using our semantics.
 What stood out to the team was the fact that the bug was caught using a very naive proof claim - something that possibly the authors of the contract and the auditors at Zeppelin could've easily come up with had our semantics been available then.
+
+### Run
+
+## Install K 
+
+The verification part is compatible with the verification verison of K.
+
+```
+$ git clone https://github.com/kframework/k.git
+$ git checkout hotfix/verification
+$ mvn clean
+$ mvn package -DskipTests
+```
+
+## Run the Prover
+
+```
+$ krun --prove -d .build\uiuck \proofs\*-spec.k \proofs\json\*.json -cMODE=NORMAL -cSCHEDULE=DEFAULT --z3-executable
+```
