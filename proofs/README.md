@@ -104,7 +104,7 @@ Since our HKG token contract contains only sequential code (no loops), our [spec
                         // We omit actual Values Here for the sake of readability.
                         <storage> ... (TOTAL_SUPPLY |-> TOTAL) ...
                             (DUMMY_ACCOUNT_1_BALANCE |-> (B1 => ?B1 -Int TRANSFER)) ...
-							(DUMMY_ACCOUNT_1_ALLOWED |-> (B1 => ?B1 -Int TRANSFER))...
+			    (DUMMY_ACCOUNT_1_ALLOWED |-> (B1 => ?B1 -Int TRANSFER))...
                             (DUMMY_ACCOUNT_2_BALANCE |-> (B2 => ?B2 +Int TRANSFER))... </storage>
                         ...
                     </account>
@@ -151,5 +151,9 @@ $ mvn package -DskipTests
 ## Run the Prover
 
 ```
-$ krun --prove -d .build\uiuck \proofs\*-spec.k \proofs\json\*.json -cMODE=NORMAL -cSCHEDULE=DEFAULT --z3-executable
+$ krun -d .build\uiuck --prove \proofs\*-spec.k \proofs\json\*.json -cMODE=NORMAL -cSCHEDULE=DEFAULT --z3-executable
 ```
+
+Note:
+1. It may take a long time (probably more than half an hour) to verify the transfer and transfer-From function of token program.
+2. The verification of "token-buggy-spec.k" is not able to go through.

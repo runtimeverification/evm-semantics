@@ -67,7 +67,7 @@ imports ETHEREUM-SIMULATION
                 <messages> .Bag </messages>
             </network>
         </ethereum>
-   requires G >=Int 415  andBool #sizeWordStack(WS) <Int 1021
+   requires G >=Int 415  andBool #sizeWordStack(WS) <Int 1017
 
 endmodule
 ```

@@ -69,7 +69,7 @@ imports ETHEREUM-SIMULATION
                 <messages> .Bag </messages>
             </network>
         </ethereum>	    
-		requires B2 >=Int 0
+	requires B2 >=Int 0
 		 andBool TRANSFER >Int 0
 		 andBool B1 >=Int TRANSFER
                  andBool A1 >=Int TRANSFER 		 
@@ -78,5 +78,6 @@ imports ETHEREUM-SIMULATION
 		 andBool B1 <Int 2^Int 256
 		 andBool #sizeWordStack(WS) <Int 1016
 		 andBool G  >=Int 16071
+
 endmodule
 

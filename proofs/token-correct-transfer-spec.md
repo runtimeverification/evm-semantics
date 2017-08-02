@@ -13,7 +13,7 @@ imports ETHEREUM-SIMULATION
         <mode>      NORMAL  </mode>
         <schedule>  DEFAULT </schedule>
         <ethereum>
-        <evm>
+		<evm>
                 <output>        .WordStack         </output>
                 <memoryUsed>    3                  </memoryUsed>
                 <callDepth>     0                  </callDepth>
@@ -26,7 +26,9 @@ imports ETHEREUM-SIMULATION
                     <caller>       %ORIGIN_ID                                    </caller>
                     <callData>     .WordStack                                    </callData>
                     <callValue>    0                                             </callValue>
-                    <wordStack>    TRANSFER : %CALLER_ID : WS => ?A:WordStack    </wordStack>
+                    <wordStack>    TRANSFER : %CALLER_ID : WS
+             			=> B2 +Int TRANSFER : 0 : TRANSFER :  %CALLER_ID : WS   
+								                                                                                                                                  </wordStack>
                     <localMem>     .Map  => ?B:Map                               </localMem>
                     <pc>           1533  => 1772                                 </pc>
                     <gas>          G     => G -Int 10544                         </gas>
@@ -35,7 +37,7 @@ imports ETHEREUM-SIMULATION
                 <substate>
                     <selfDestruct> .Set             </selfDestruct>
                     <log>          .Set             </log>
-                     <refund>       0            </refund>
+                     <refund>       0=> _            </refund>
                 </substate>
                 <gasPrice>     _                                                </gasPrice>
                 <origin>       %ORIGIN_ID					</origin>
@@ -66,6 +68,7 @@ imports ETHEREUM-SIMULATION
                 <messages> .Bag </messages>
             </network>
         </ethereum>
+
 		 requires TRANSFER >Int 0 
 		  andBool B1 >=Int TRANSFER
 		  andBool B2 >Int 0

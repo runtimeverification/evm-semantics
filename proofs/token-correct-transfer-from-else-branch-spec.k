@@ -32,7 +32,7 @@ imports ETHEREUM-SIMULATION
                                                      							 </wordStack>                                                   
                     <localMem>     .Map  => _                                    </localMem>
                     <pc>           818   => 1451                                 </pc>
-					<gas>          500 => _                                      </gas>
+					<gas>          500 => _                                     </gas>
                     <previousGas>  _     => _                                    </previousGas>
                 </txExecState>
                 <substate>
@@ -76,6 +76,5 @@ imports ETHEREUM-SIMULATION
 		 andBool A1 <Int 2^Int 256
 		 andBool B1 <Int 2^Int 256
 		 andBool #sizeWordStack(WS) <Int 1016
-		 //andBool G -Int G1 <=Int 485
 
 endmodule
