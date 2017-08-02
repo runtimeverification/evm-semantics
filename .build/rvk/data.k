@@ -65,8 +65,8 @@ module EVM-DATA
 
     syntax Int ::= "#ifInt" Bool "#then" Int "#else" Int "#fi" [function]
  // ---------------------------------------------------------------------
-    rule #ifInt B  #then W #else _ #fi => W         requires B
-    rule #ifInt B  #then _ #else W #fi => W         requires notBool B   
+    rule #ifInt B  #then W #else _ #fi => W requires B
+    rule #ifInt B  #then _ #else W #fi => W requires notBool B
 
 
 // -   `sgn` gives the twos-complement interperetation of the sign of a word.
@@ -132,7 +132,7 @@ module EVM-DATA
  // -----------------------------------------
     rule W0 +Word W1 => chop( W0 +Int W1 )
     rule W0 -Word W1 => chop( W0 -Int W1 ) requires W0 >=Int W1
-	rule W0 -Word W1 => chop( (W0 +Int 2^Int 256) -Int W1 ) requires W0 <Int W1
+    rule W0 -Word W1 => chop( (W0 +Int 2^Int 256) -Int W1 ) requires W0 <Int W1
     rule W0 *Word W1 => chop( W0 *Int W1 )
     rule W0 /Word 0  => 0
     rule W0 /Word W1 => chop( W0 /Int W1 ) requires W1 =/=K 0
@@ -341,8 +341,6 @@ module EVM-DATA
  // ------------------------------------------------------
     rule #sizeWordStack ( .WordStack ) => 0
     rule #sizeWordStack ( W : WS )     => 1 +Int #sizeWordStack(WS)
-	
-	rule #sizeWordStack ( _ ) >=Int 0 => true [smt-lemma]
 
     syntax Bool ::= Int "in" WordStack [function]
  // ---------------------------------------------
