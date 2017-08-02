@@ -1,7 +1,7 @@
 # Build products
-# Note that we don't ignore "/k/*.k". This is because non-developers may not
-# have `pandoc-tangle` installed.
-/.build/rvk/
+# Note that we don't ignore "/.build/$K_VERSION/*.k".
+# This is because non-developers may not have `pandoc-tangle` installed.
+/.build/rvk/*-kompiled/
 /.build/uiuck/*-kompiled/
 
 /tests/VMTests
