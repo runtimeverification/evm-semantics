@@ -37,8 +37,8 @@ module EVM-DATA
 
     syntax Int ::= chop ( Int ) [function]
  // --------------------------------------
-    rule chop ( I:Int ) => I %Int pow256   requires I <Int 0  orBool I >=Int pow256
-    rule chop ( I:Int ) => I               requires I >=Int 0 andBool I <Int pow256
+    rule chop ( I:Int ) => I %Int pow256 requires I <Int 0  orBool I >=Int pow256
+    rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256
 
 
 // -   `bool2Word` interperets a `Bool` as a `Int`.
@@ -61,9 +61,17 @@ module EVM-DATA
 
     syntax Int ::= "#ifInt" Bool "#then" Int "#else" Int "#fi" [function]
  // ---------------------------------------------------------------------
-    rule #ifInt B  #then W #else _ #fi => W         requires B
-    rule #ifInt B  #then _ #else W #fi => W         requires notBool B   
-   
+
+
+// If we don't place the `Bool` condition as a side-condition for UIUC-K, it will
+// attempt to only do an "implies-check" instead of full unification (which is
+// problematic when `B` is symbolic during proving).
+
+
+    rule #ifInt B #then W #else _ #fi => W requires B
+    rule #ifInt B #then _ #else W #fi => W requires notBool B
+
+
 // -   `sgn` gives the twos-complement interperetation of the sign of a word.
 // -   `abs` gives the twos-complement interperetation of the magnitude of a word.
 
@@ -132,8 +140,8 @@ module EVM-DATA
                  | Int "%Word" Int [function]
  // -----------------------------------------
     rule W0 +Word W1 => chop( W0 +Int W1 )
-    rule W0 -Word W1 => chop( W0 -Int W1 )                  requires W0 >=Int W1
-	rule W0 -Word W1 => chop( (W0 +Int 2^Int 256) -Int W1 ) requires W0 <Int W1
+    rule W0 -Word W1 => chop( W0 -Int W1 ) requires W0 >=Int W1
+    rule W0 -Word W1 => chop( (W0 +Int 2^Int 256) -Int W1 ) requires W0 <Int W1
     rule W0 *Word W1 => chop( W0 *Int W1 )
     rule W0 /Word 0  => 0
     rule W0 /Word W1 => chop( W0 /Int W1 ) requires W1 =/=K 0
@@ -341,7 +349,7 @@ module EVM-DATA
     syntax Int ::= #sizeWordStack ( WordStack )  [function, smtlib(sizeWordStack)]
  // ------------------------------------------------------
     rule #sizeWordStack ( .WordStack ) => 0
-    rule #sizeWordStack ( W : WS )     => 1 +Int #sizeWordStack(WS)	 
+    rule #sizeWordStack ( W : WS )     => 1 +Int #sizeWordStack(WS)
 
     syntax Bool ::= Int "in" WordStack [function]
  // ---------------------------------------------
@@ -550,6 +558,5 @@ module EVM-DATA
  // -----------------------------------------------
     rule #padByte( S ) => S             requires lengthString(S) ==K 2
     rule #padByte( S ) => "0" +String S requires lengthString(S) ==K 1
-
 endmodule
 

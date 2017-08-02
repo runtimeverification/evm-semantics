@@ -64,8 +64,18 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 ```{.k .uiuck .rvk}
     syntax Int ::= "#ifInt" Bool "#then" Int "#else" Int "#fi" [function]
  // ---------------------------------------------------------------------
-    rule #ifInt B  #then W #else _ #fi => W requires B
-    rule #ifInt B  #then _ #else W #fi => W requires notBool B
+```
+
+If we don't place the `Bool` condition as a side-condition for UIUC-K, it will attempt to only do an "implies-check" instead of full unification (which is problematic when `B` is symbolic during proving).
+
+```{.k .uiuck}
+    rule #ifInt B #then W #else _ #fi => W requires B
+    rule #ifInt B #then _ #else W #fi => W requires notBool B
+```
+
+```{.k .rvk}
+    rule #ifInt true  #then W #else _ #fi => W
+    rule #ifInt false #then _ #else W #fi => W
 ```
 
 -   `sgn` gives the twos-complement interperetation of the sign of a word.
