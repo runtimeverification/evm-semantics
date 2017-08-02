@@ -308,7 +308,6 @@ tests/VMTests/vmEnvironmentalInfoTest/codecopy0.json
 tests/VMTests/vmEnvironmentalInfoTest/codecopyZeroMemExpansion.json
 tests/VMTests/vmEnvironmentalInfoTest/codecopy_DataIndexTooHigh.json
 tests/VMTests/vmEnvironmentalInfoTest/codesize.json
-tests/VMTests/vmEnvironmentalInfoTest/env1.json
 tests/VMTests/vmEnvironmentalInfoTest/extcodecopy0.json
 tests/VMTests/vmEnvironmentalInfoTest/extcodecopy0AddressTooBigLeft.json
 tests/VMTests/vmEnvironmentalInfoTest/extcodecopy0AddressTooBigRight.json
@@ -429,7 +428,6 @@ tests/VMTests/vmIOandFlowOperationsTest/jumpifInsidePushWithJumpDest.json
 tests/VMTests/vmIOandFlowOperationsTest/jumpifInsidePushWithoutJumpDest.json
 tests/VMTests/vmIOandFlowOperationsTest/kv1.json
 tests/VMTests/vmIOandFlowOperationsTest/log1MemExp.json
-tests/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1020.json
 tests/VMTests/vmIOandFlowOperationsTest/memory1.json
 tests/VMTests/vmIOandFlowOperationsTest/mloadError0.json
 tests/VMTests/vmIOandFlowOperationsTest/mloadError1.json
