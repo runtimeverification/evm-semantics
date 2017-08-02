@@ -22,7 +22,7 @@ Building and Running
 There are two versions of K available, [RV-K](https://github.com/runtimeverification/k) and [UIUC-K](https://github.com/kframework/k).
 The files in `.build/uiuck/*.k` in this repository work with UIUC-K, so install that first.
 
-The script `Build` supplied in this repository will build an run the definition (use `./Build help` to see usage information).
+The script `Build` supplied in this repository will build and run the definition (use `./Build help` to see usage information).
 
 -   To `kompile` the definition, run `./Build`.
 -   To run the tests, do `./Build test` (`./Build par-test` to run them in parallel using [GNU parallel](https://www.gnu.org/software/parallel/)).
