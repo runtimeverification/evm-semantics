@@ -80,7 +80,6 @@ tests/%/make.timestamp: tests/ethereum-tests/%.json
 	ocamlfind opt -a -o semantics.cmxa KRYPTO.cmx
 	ocamlfind remove ethereum-semantics-plugin
 	ocamlfind install ethereum-semantics-plugin META semantics.cmxa semantics.a KRYPTO.cmi KRYPTO.cmx
-	cd $(dir $(shell which krun))/../include/ocaml/fakelibs && cp libffi.a libz.a
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/rvk \
 					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O3 --non-strict
