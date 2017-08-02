@@ -21,18 +21,19 @@ imports ETHEREUM-SIMULATION
                 <interimStates> .List              </interimStates>
                 <callLog>       .Set               </callLog>
                 <txExecState>
-		    <program>    %HKG_Program                                     </program>
-                    <id>         %ACCT_ID                                         </id>
-                    <caller>     %CALLER_ID                                       </caller>
-                    <callData>   .WordStack                                       </callData>
-                    <callValue>  0                                                </callValue>
+					<program>  %HKG_Program                              </program>
+                    <id>        %ACCT_ID                                         </id>
+                    <caller>    %CALLER_ID                                       </caller>
+                    <callData>  .WordStack                                       </callData>
+                    <callValue> 0                                                </callValue>
                     <wordStack> 
-				 TRANSFER : %CALLER_ID  : %ORIGIN_ID : 282 : WS => ?W
-                                                     				  </wordStack>                                                   
-                    <localMem>   .Map  => _                                       </localMem>
-                    <pc>         818   => P:Int                                   </pc>
-		    <gas>        99786 => _                                       </gas>
-                    <previousGas>  _     => _                                     </previousGas>
+				TRANSFER     :  %CALLER_ID   : %ORIGIN_ID :  WS
+			     => 0 : TRANSFER :  %CALLER_ID   : %ORIGIN_ID :  WS
+                                                     				 </wordStack>                                                   
+                    <localMem>     .Map  => _                                    </localMem>
+                    <pc>           818   => 1451                                 </pc>
+		    <gas>          500 => _                                     </gas>
+                    <previousGas>  _     => _                                    </previousGas>
                 </txExecState>
                 <substate>
                     <selfDestruct> .Set             </selfDestruct>
@@ -42,7 +43,7 @@ imports ETHEREUM-SIMULATION
                 <gasPrice>     _                                                </gasPrice>
                 <origin>       %ORIGIN_ID					</origin>
                 <gasLimit>     _                                                </gasLimit>
-                <coinbase>     %COINBASE_VALUE                                  </coinbase>
+                <coinbase>     %COINBASE_VALUE                                   </coinbase>
                 <timestamp>    1                                                </timestamp>
                 <number>       0                                                </number>
                 <previousHash> 0                                                </previousHash>
@@ -52,15 +53,15 @@ imports ETHEREUM-SIMULATION
                 <activeAccounts>   SetItem ( %ACCT_ID )   </activeAccounts>
                 <accounts>
                     <account>
-                        <acctID>   %ACCT_ID                             </acctID>
+                        <acctID>   %ACCT_ID  </acctID>
                         <balance>  BAL                                  </balance>
                         <code>     %HKG_Program                         </code>
-                        <storage>  ... 
-			           %ACCT_1_BALANCE |-> B1
-				   %ACCT_1_ALLOWED |-> A1 
-				   %ACCT_2_BALANCE |-> B2 
-				   %ACCT_2_ALLOWED |-> _
-                                   ...		                       </storage>
+                        <storage>... 
+				  (%ACCT_1_BALANCE |-> B1)
+				  (%ACCT_1_ALLOWED |-> A1) 
+				  (%ACCT_2_BALANCE |-> B2) 
+				  (%ACCT_2_ALLOWED |-> _)
+                                      ...		               </storage>
                         <acctMap> "nonce" |-> 0                        </acctMap>
                     </account>
                 </accounts>
@@ -68,13 +69,10 @@ imports ETHEREUM-SIMULATION
             </network>
         </ethereum>	
 
-		requires B2 >=Int 0
-		 andBool ((TRANSFER >Int 0 andBool B1 <Int TRANSFER andBool A1 >Int TRANSFER andBool P ==Int 1451)
-		  orBool (TRANSFER ==Int 0 andBool B1 >Int TRANSFER andBool A1 >Int TRANSFER andBool P ==Int 1441)
-		  orBool (TRANSFER >Int 0  andBool B1 >Int TRANSFER andBool A1 <Int TRANSFER andBool P ==Int 1457))	 
-		 andBool A1 <Int 2^Int 256
-		 andBool B1 <Int 2^Int 256
-		 andBool #sizeWordStack(WS) <Int 1015
+	requires ((TRANSFER >Int 0 andBool B1 <Int TRANSFER andBool A1 >=Int TRANSFER)
+	  orBool (TRANSFER ==Int 0 andBool B1 >=Int TRANSFER andBool A1 >=Int TRANSFER)
+          orBool (TRANSFER >Int  0 andBool B1 >=Int TRANSFER andBool A1 <Int TRANSFER))	 
+	 andBool #sizeWordStack(WS) <Int 1016
 
 endmodule
 ```
