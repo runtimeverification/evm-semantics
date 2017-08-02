@@ -103,6 +103,7 @@ run_make() {
     local make_opts=
     $have_tangle || make_opts="--assume-old ethereum.md --assume-old evm.md \
                                --assume-old data.md --assume-old krypto.md"
+	[[ "$K_VERSION" == 'rvk' ]] && eval `opam config env`
     make K_VERSION=${K_VERSION} -s $make_opts $@
 }
 
@@ -124,6 +125,7 @@ test_rvk() {
     (
         # TODO: Integrate this into Build nicely
         set +e;
+        eval `opam config env`
         interpreter="$(dirname "$0")/.build/rvk/ethereum-kompiled/interpreter"
         kast="$(mktemp)"
         output="$(mktemp)"
