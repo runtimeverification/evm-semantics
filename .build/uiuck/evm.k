@@ -6,6 +6,19 @@
 // with the world state. This file only defines the local execution operations, the
 // file `ethereum.md` will define the interactions with the world state.
 
+
+requires "verification.k"
+
+
+
+module ETHEREUM
+    imports STRING
+
+
+
+    imports VERIFICATION
+
+
 // Configuration
 // -------------
 
@@ -19,12 +32,6 @@
 // throughout. In the comments next to each cell, we've marked which component of
 // the yellowpaper state corresponds to each cell.
 
-
-requires "verification.k"
-
-module ETHEREUM
-    imports VERIFICATION
-    imports STRING
 
     configuration <k> $PGM:EthereumSimulation </k>
                   <exit-code exit=""> 1 </exit-code>
