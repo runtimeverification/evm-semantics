@@ -172,7 +172,7 @@ run_partests() {
     run_make
     [[ "$K_VERSION" == 'rvk'   ]] && mem_free=1G
     [[ "$K_VERSION" == 'uiuck' ]] && mem_free=2G
-    parallel --joblog - --memfree "$mem_free" ./Build run
+    parallel --joblog - --memfree "$mem_free" ./Build test
 }
 
 # Main
@@ -207,6 +207,7 @@ case "$run_command" in
 
     # Running
     run)   run_krun   "$1" ;;
+    test)  run_test   "$1" ;;
     debug) run_kdebug "$1" ;;
 
     # Testing
@@ -226,6 +227,7 @@ case "$run_command" in
        # Running
        # -------
        $0 run   <pgm>   Run a single EVM program
+       $0 test  <pgm>   Run a single EVM program like it's a test
        $0 debug <pgm>   Run a single EVM program in the debugger
 
        # Testing
