@@ -5,6 +5,23 @@ The EVM is a stack machine over some simple opcodes.
 Most of the opcodes are "local" to the execution state of the machine, but some of them must interact with the world state.
 This file only defines the local execution operations, the file `ethereum.md` will define the interactions with the world state.
 
+```{.k .rvk}
+requires "krypto.k"
+```
+
+```{.k .uiuck}
+requires "verification.k"
+```
+
+```{.k .uiuck .rvk}
+module ETHEREUM
+    imports STRING
+```
+
+```{.k .uiuck}
+    imports VERIFICATION
+```
+
 Configuration
 -------------
 
@@ -14,17 +31,7 @@ In addition, there are cells for the callstack and execution substate.
 We've broken up the configuration into two components; those parts of the state that mutate during execution of a single transaction and those that are static throughout.
 In the comments next to each cell, we've marked which component of the yellowpaper state corresponds to each cell.
 
-```{.k .rvk}
-requires "krypto.k"
-```
-
 ```{.k .uiuck .rvk}
-requires "verification.k"
-
-module ETHEREUM
-    imports VERIFICATION
-    imports STRING
-
     configuration <k> $PGM:EthereumSimulation </k>
                   <exit-code exit=""> 1 </exit-code>
                   <mode> $MODE:Mode </mode>

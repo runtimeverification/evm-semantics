@@ -9,7 +9,7 @@ endif
 ## Common to all versions of K
 
 defn_dir=.build/${K_VERSION}
-defn_files=${defn_dir}/ethereum.k ${defn_dir}/data.k ${defn_dir}/evm.k ${defn_dir}/krypto.k
+defn_files=${defn_dir}/ethereum.k ${defn_dir}/data.k ${defn_dir}/evm.k ${defn_dir}/krypto.k ${defn_dir}/verification.k
 
 all: build split-tests proofs
 proofs: proofs/token-correct-transfer-spec.k \
