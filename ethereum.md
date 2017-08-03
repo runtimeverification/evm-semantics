@@ -37,11 +37,12 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
 
     syntax EthereumCommand ::= DistCommand JSON
  // -------------------------------------------
-    rule DC:DistCommand DATA : { .JSONList } => .
-    rule DC:DistCommand DATA : { KEY : VALUE , REST } => DC DATA : { KEY : VALUE } ~> DC DATA : { REST } requires REST =/=K .JSONList
+    rule load DATA : { .JSONList } => .
+    rule load DATA : { KEY : VALUE , REST } => load DATA : { KEY : VALUE } ~> load DATA : { REST }
+      requires REST =/=K .JSONList andBool DATA =/=String "transaction"
 
-    rule DC:DistCommand DATA : [ .JSONList ] => .
-    rule DC:DistCommand DATA : [ { TEST } , REST ] => DC DATA : { TEST } ~> DC DATA : [ REST ]
+    rule load DATA : [ .JSONList ] => .
+    rule load DATA : [ { TEST } , REST ] => load DATA : { TEST } ~> load DATA : [ REST ]
 ```
 
 For verification purposes, it's much easier to specify a program in terms of its op-codes and not the hex-encoding that the tests use.
@@ -50,14 +51,14 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ```{.k .uiuck .rvk}
     syntax JSON ::= Int | WordStack | OpCodes | Map | Call | SubstateLogEntry
  // -------------------------------------------------------------------------
-    rule DC:DistCommand "account" : { ACCTID: { KEY : VALUE , REST } } => DC "account" : { ACCTID : { KEY : VALUE } } ~> DC "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
+    rule load "account" : { ACCTID: { KEY : VALUE , REST } } => load "account" : { ACCTID : { KEY : VALUE } } ~> load "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
 
-    rule DC:DistCommand "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
-    rule DC:DistCommand "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
-    rule DC:DistCommand "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
-    rule DC:DistCommand "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
-    rule DC:DistCommand "account" : { (ACCT:Int) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
-    rule DC:DistCommand "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
+    rule load "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
+    rule load "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
+    rule load "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
+    rule load "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
+    rule load "account" : { (ACCT:Int) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
+    rule load "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
 
     syntax JSONList ::= #sortJSONList ( JSONList )            [function]
                       | #sortJSONList ( JSONList , JSONList ) [function, klabel(#sortJSONListAux)]
