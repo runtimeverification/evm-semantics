@@ -37,10 +37,10 @@ lint_krun() {
 }
 
 set_test_opts_for_proofs() {
-    proof_prefix="$1"
+    proof_file="$1"
     local basename="$(basename -s -spec.k "$1")"
     local basepath="$(dirname "$1")/$basename"
-    test_opts=( -cMODE=NORMAL "$proof_prefix.json" --prove "$proof_prefix-spec.k" )
+    test_opts=( -cMODE=NORMAL "proofs/dummy-input.json" --prove "$proof_file-spec.k" )
 }
 
 # Test Filters and Lists
