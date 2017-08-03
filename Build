@@ -72,6 +72,15 @@ list_all()   { list_$K_VERSION ; }
 list_quick() { list_all | filter_not_longrunning | sort -R | head -n 20 ; }
 test_lists="$test_lists rvk uiuck all quick"
 
+build_proofs() {
+    hkg_proof_dir=tests/proofs/hkg
+    mkdir -p $hkg_proof_dir
+    progress "tangle: $hkg_proof_dir/transferFrom-then-spec.k"
+    pandoc-tangle --from markdown --to code-k --section "Then Branch" proofs/hkg/transferFrom.md > $hkg_proof_dir/transferFrom-then-spec.k
+    progress "tangle: $hkg_proof_dir/transferFrom-else-spec.k"
+    pandoc-tangle --from markdown --to code-k --section "Else Branch" proofs/hkg/transferFrom.md > $hkg_proof_dir/transferFrom-else-spec.k
+}
+
 # Runners
 # -------
 
@@ -216,6 +225,9 @@ case "$run_command" in
     list-*)    list_${run_command#list-}    | filter_tests "$@" ;;
     test-*)    list_${run_command#test-}    | filter_tests "$@" | run_tests    ;;
     partest-*) list_${run_command#partest-} | filter_tests "$@" | run_partests ;;
+
+    # Experimental
+    build-proofs) build_proofs ;;
 
     *)             echo "
     usage:
