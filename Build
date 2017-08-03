@@ -145,7 +145,7 @@ test_uiuck() {
 test_rvk() {
     test_file="$1"
     (
-        # TODO: Integrate this into Build nicely
+        # TODO: Fix run_rvk and make this call that
         set +e;
         eval `opam config env`
         interpreter="$(dirname "$0")/.build/rvk/ethereum-kompiled/interpreter"
