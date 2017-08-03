@@ -1,8 +1,5 @@
 ifndef K_VERSION
-# TODO: We let clean go through, so that RV's Jenkins CI script goes through
-ifneq ($(MAKECMDGOALS),clean)
 $(error K_VERSION not set. Please use the Build script, instead of running make directly)
-endif
 endif
 
 ######################################################################
