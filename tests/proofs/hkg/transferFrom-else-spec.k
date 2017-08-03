@@ -53,7 +53,7 @@ module TRANSFER-FROM-SPEC
 
 
         <pc>  818 => 1451 </pc>
-        <gas> 500 => _    </gas>
+        <gas> G   => G1   </gas>
 
         <wordStack>     TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
                  => 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
@@ -65,17 +65,16 @@ module TRANSFER-FROM-SPEC
           <code>     %HKG_Program </code>
           <acctMap> "nonce" |-> 0 </acctMap>
           <storage> ...
-                    (%ACCT_1_BALANCE |-> B1)
-                    (%ACCT_1_ALLOWED |-> A1)
-                    (%ACCT_2_BALANCE |-> B2)
+                    (%ACCT_1_BALANCE |-> B1:Int)
+                    (%ACCT_1_ALLOWED |-> A1:Int)
+                    (%ACCT_2_BALANCE |-> B2:Int)
                     (%ACCT_2_ALLOWED |-> _)
                     ...
           </storage>
         </account>
 
-      requires ((TRANSFER >Int 0 andBool B1 <Int  TRANSFER andBool A1 >=Int TRANSFER)
-        orBool (TRANSFER ==Int 0 andBool B1 >=Int TRANSFER andBool A1 >=Int TRANSFER)
-        orBool (TRANSFER >Int  0 andBool B1 >=Int TRANSFER andBool A1 <Int  TRANSFER))
+      requires (TRANSFER <=Int 0 orBool B1 <Int TRANSFER orBool A1 <Int TRANSFER)
        andBool #sizeWordStack(WS) <Int 1016
+       andBool G >=Int 485 andBool G -Int G1 <=Int 485
 endmodule
 

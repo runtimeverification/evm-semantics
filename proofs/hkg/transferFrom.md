@@ -85,7 +85,7 @@ endmodule
 
 ```{.k}
         <pc>  818 => 1451 </pc>
-        <gas> G  => G1    </gas>
+        <gas> G   => G1   </gas>
 
         <wordStack>     TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
                  => 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
@@ -105,9 +105,8 @@ endmodule
           </storage>
         </account>
 
- 	requires (TRANSFER <=Int 0 orBool B1 <Int TRANSFER orBool A1 <Int TRANSFER) 
-	 andBool #sizeWordStack(WS) <Int 1016
-	 andBool G >=Int 485
-	 ensures G -Int G1 <=Int 485
+      requires (TRANSFER <=Int 0 orBool B1 <Int TRANSFER orBool A1 <Int TRANSFER)
+       andBool #sizeWordStack(WS) <Int 1016
+       andBool G >=Int 485 andBool G -Int G1 <=Int 485
 endmodule
 ```
