@@ -59,7 +59,7 @@ module EVM-DATA
 // -   `#ifInt_#then_#else_#fi` provides a conditional in `Int` expressions.
 
 
-    syntax Int ::= "#ifInt" Bool "#then" Int "#else" Int "#fi" [function]
+    syntax Int ::= "#ifInt" Bool "#then" Int "#else" Int "#fi" [function, smtlib(ifInt)]
  // ---------------------------------------------------------------------
 
 
