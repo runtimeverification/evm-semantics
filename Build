@@ -43,6 +43,14 @@ set_test_opts_for_proofs() {
     test_opts=( -cMODE=NORMAL "proofs/dummy-input.json" --prove "$proof_file-spec.k" )
 }
 
+run_make() {
+    local make_opts=
+    $have_tangle || make_opts="--assume-old ethereum.md --assume-old evm.md \
+                               --assume-old data.md --assume-old krypto.md"
+    [[ "$K_VERSION" == 'rvk' ]] && eval `opam config env`
+    make K_VERSION=${K_VERSION} -s $make_opts $@
+}
+
 # Test Filters and Lists
 # ----------------------
 
@@ -121,15 +129,6 @@ run_kdebug() {
     progress "debugging: $1"
     ( run_"$K_VERSION" "$1" --debugger )
 }
-
-run_make() {
-    local make_opts=
-    $have_tangle || make_opts="--assume-old ethereum.md --assume-old evm.md \
-                               --assume-old data.md --assume-old krypto.md"
-    [[ "$K_VERSION" == 'rvk' ]] && eval `opam config env`
-    make K_VERSION=${K_VERSION} -s $make_opts $@
-}
-
 
 # Testers
 # -------
