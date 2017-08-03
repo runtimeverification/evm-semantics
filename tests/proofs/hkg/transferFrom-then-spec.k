@@ -53,7 +53,7 @@ module TRANSFER-FROM-SPEC
 
 
         <pc>  818 => 1331         </pc>
-        <gas> 20000   => _ </gas>
+        <gas> G   => G -Int 16071 </gas>
 
         <wordStack>                        TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
                  => A1 -Int TRANSFER : 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
@@ -79,6 +79,6 @@ module TRANSFER-FROM-SPEC
        andBool A1 >=Int TRANSFER andBool A1 <Int pow256
        andBool B2 >=Int 0        andBool B2 +Int TRANSFER <Int pow256
        andBool #sizeWordStack(WS) <Int 1016
-      // andBool G >=Int 16071
+       andBool G >=Int 16071
 endmodule
 
