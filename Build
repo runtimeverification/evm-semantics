@@ -36,14 +36,6 @@ lint_krun_uiuck() {
     xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
 }
 
-lint_krun_rvk() {
-    rvk_output="$(mktemp)"
-    trap "rm -rf $rvk_output" INT TERM EXIT
-    k-bin-to-text <(cat -) "$rvk_output"
-    cat "$rvk_output"
-    rm -rf "$rvk_output"
-}
-
 set_test_opts_for_proofs() {
     proof_file="$1"
     local basename="$(basename -s -spec.k "$1")"
@@ -104,16 +96,6 @@ run_uiuck() {
        *              ) die "Don't know how to set test_opts for '$run_file'" ;;
     esac
     krun --directory .build/$K_VERSION/ --debug -cSCHEDULE=$cSCHEDULE "${test_opts[@]}" "$@"
-}
-
-run_rvk() {
-    test_file="$1"
-    interpreter="$(dirname "$0")/.build/rvk/ethereum-kompiled/interpreter"
-    kast="$(mktemp)"
-    trap "rm -rf $kast" INT TERM EXIT
-    "$(dirname "$0")/kast-json.py" "$test_file" > "$kast"
-    $interpreter "$(dirname "$0")/.build/rvk/ethereum-kompiled/realdef.cma" -c PGM "$kast" textfile \
-                 -c SCHEDULE '`DEFAULT_ETHEREUM`(.KList)' text -c MODE '`VMTESTS_ETHEREUM`(.KList)' text
 }
 
 run_krun() {
@@ -217,6 +199,25 @@ run_proofs() {
     run_uiuck 'tests/proofs/hkg/transferFrom-then'
     run_uiuck 'tests/proofs/hkg/transferFrom-else'
 }
+
+lint_krun_rvk() {
+    rvk_output="$(mktemp)"
+    trap "rm -rf $rvk_output" INT TERM EXIT
+    k-bin-to-text <(cat -) "$rvk_output"
+    cat "$rvk_output"
+    rm -rf "$rvk_output"
+}
+
+run_rvk() {
+    test_file="$1"
+    interpreter="$(dirname "$0")/.build/rvk/ethereum-kompiled/interpreter"
+    kast="$(mktemp)"
+    trap "rm -rf $kast" INT TERM EXIT
+    "$(dirname "$0")/kast-json.py" "$test_file" > "$kast"
+    $interpreter "$(dirname "$0")/.build/rvk/ethereum-kompiled/realdef.cma" -c PGM "$kast" textfile \
+                 -c SCHEDULE '`DEFAULT_ETHEREUM`(.KList)' text -c MODE '`VMTESTS_ETHEREUM`(.KList)' text
+}
+
 
 # Main
 # ----
