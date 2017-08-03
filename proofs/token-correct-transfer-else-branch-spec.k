@@ -58,7 +58,7 @@ imports ETHEREUM-SIMULATION
                         <storage>
 			            ...
 				  (%ACCT_2_ALLOWED |-> A2)
-			          (%ACCT_1_BALANCE |-> B1) 
+			          (%ACCT_1_BALANCE |-> B1:Int) 
 				  (%ACCT_1_ALLOWED |-> A1) 
 				  (%ACCT_2_BALANCE |-> B2) 
 				   ...                                    </storage>
@@ -68,8 +68,7 @@ imports ETHEREUM-SIMULATION
                 <messages> .Bag </messages>
             </network>
         </ethereum>
-		requires ((TRANSFER >Int 0 andBool B1 <Int TRANSFER )
-		  orBool (TRANSFER ==Int 0 andBool B1 >Int TRANSFER))
+		requires (TRANSFER <=Int 0 orBool B1 <Int TRANSFER)
 		 andBool #sizeWordStack(WS) <Int 1015
 
 endmodule

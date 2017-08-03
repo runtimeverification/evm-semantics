@@ -67,8 +67,7 @@ imports ETHEREUM-SIMULATION
                 <messages> .Bag </messages>
             </network>
         </ethereum>
-		requires ((TRANSFER >Int 0 andBool B1 <Int TRANSFER )
-		  orBool (TRANSFER ==Int 0 andBool B1 >Int TRANSFER))
+		requires (TRANSFER <=Int 0 orBool B1 <Int TRANSFER)
 		 andBool #sizeWordStack(WS) <Int 1015
 
 endmodule
