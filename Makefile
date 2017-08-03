@@ -13,7 +13,6 @@ defn_files=${defn_dir}/ethereum.k ${defn_dir}/data.k ${defn_dir}/evm.k ${defn_di
 
 all: build split-tests proofs
 proofs: proofs/token-correct-transfer-spec.k \
-		proofs/token-correct-transfer-from-spec.k \
 		proofs/token-buggy-spec.k \
 		proofs/sum-to-n-spec.k
 build: .build/${K_VERSION}/ethereum-kompiled/extras/timestamp
