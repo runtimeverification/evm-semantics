@@ -62,7 +62,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `#ifInt_#then_#else_#fi` provides a conditional in `Int` expressions.
 
 ```{.k .uiuck .rvk}
-    syntax Int ::= "#ifInt" Bool "#then" Int "#else" Int "#fi" [function]
+    syntax Int ::= "#ifInt" Bool "#then" Int "#else" Int "#fi" [function, smtlib(ifInt)]
  // ---------------------------------------------------------------------
 ```
 
