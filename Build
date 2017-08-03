@@ -191,6 +191,10 @@ build_proofs() {
     pandoc-tangle --from markdown --to code-k --section "Then Branch" proofs/hkg/transferFrom.md > $hkg_proof_dir/transferFrom-then-spec.k
     progress "tangle: $hkg_proof_dir/transferFrom-else-spec.k"
     pandoc-tangle --from markdown --to code-k --section "Else Branch" proofs/hkg/transferFrom.md > $hkg_proof_dir/transferFrom-else-spec.k
+    progress "tangle: $hkg_proof_dir/transfer-then-spec.k"
+    pandoc-tangle --from markdown --to code-k --section "Then Branch" proofs/hkg/transfer.md > $hkg_proof_dir/transfer-then-spec.k
+    progress "tangle: $hkg_proof_dir/transfer-else-spec.k"
+    pandoc-tangle --from markdown --to code-k --section "Else Branch" proofs/hkg/transfer.md > $hkg_proof_dir/transfer-else-spec.k
 }
 
 run_proofs() {
