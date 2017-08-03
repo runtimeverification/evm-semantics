@@ -120,7 +120,7 @@ test_uiuck() {
     if [[ -e $test_file.out ]]; then output_file=$test_file.out; fi
     ( # Running in a sub-shell to avoid export spilling over to other tests
         pretty_diff --label expected <(cat "$output_file") \
-                    --label actual   <(run_uiuck "$test_file" | lint_krun)
+                    --label actual   <(run_uiuck "$test_file" | lint_krun_uiuck)
     )
 }
 
