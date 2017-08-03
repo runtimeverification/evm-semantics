@@ -31,9 +31,17 @@ check_for_tangle() {
     }
 }
 
-lint_krun() {
+lint_krun_uiuck() {
     # Format, &gt; entity > and make each K task start on a new line
     xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
+}
+
+lint_krun_rvk() {
+    rvk_output="$(mktemp)"
+    trap "rm -rf $rvk_output" INT TERM EXIT
+    k-bin-to-text <(cat -) "$rvk_output"
+    cat "$rvk_output"
+    rm -rf "$rvk_output"
 }
 
 set_test_opts_for_proofs() {
@@ -100,27 +108,18 @@ run_uiuck() {
 
 run_rvk() {
     test_file="$1"
-    eval `opam config env`
     interpreter="$(dirname "$0")/.build/rvk/ethereum-kompiled/interpreter"
     kast="$(mktemp)"
-    kast_output="$(mktemp)"
-    output="$(mktemp)"
-    trap "rm -rf $kast $output $kast_output" INT TERM EXIT
+    trap "rm -rf $kast" INT TERM EXIT
     "$(dirname "$0")/kast-json.py" "$test_file" > "$kast"
     $interpreter "$(dirname "$0")/.build/rvk/ethereum-kompiled/realdef.cma" -c PGM "$kast" textfile \
-                 -c SCHEDULE '`DEFAULT_ETHEREUM`(.KList)' text -c MODE '`VMTESTS_ETHEREUM`(.KList)' text \
-                 --output "$output"
-    exit_status=$?
-    k-bin-to-text "$output" "$kast_output"
-    cat "$kast_output"
-    printf "\n"
-    return "$exit_status"
+                 -c SCHEDULE '`DEFAULT_ETHEREUM`(.KList)' text -c MODE '`VMTESTS_ETHEREUM`(.KList)' text
 }
 
 run_krun() {
     run_make
     progress "running: $1"
-    ( run_"$K_VERSION" "$1" | lint_krun )
+    ( run_"$K_VERSION" "$1" | lint_krun_"$K_VERSION" )
 }
 
 run_kdebug() {
