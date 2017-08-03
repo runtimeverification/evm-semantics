@@ -53,12 +53,12 @@ module TRANSFER-FROM-SPEC
 
 
         <pc>  818 => 1331         </pc>
-        <gas> G   => G -Int 16071 </gas>
+        <gas> 20000   => _ </gas>
 
         <wordStack>                        TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
                  => A1 -Int TRANSFER : 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
         </wordStack>
-
+	<accounts>
         <account>
           <acctID>   %ACCT_ID     </acctID>
           <balance>  BAL          </balance>
@@ -72,12 +72,13 @@ module TRANSFER-FROM-SPEC
                     ...
           </storage>
         </account>
+        </accounts>
 
       requires TRANSFER >Int 0
        andBool B1 >=Int TRANSFER andBool B1 <Int pow256
        andBool A1 >=Int TRANSFER andBool A1 <Int pow256
        andBool B2 >=Int 0        andBool B2 +Int TRANSFER <Int pow256
        andBool #sizeWordStack(WS) <Int 1016
-       andBool G >=Int 16071
+      // andBool G >=Int 16071
 endmodule
 

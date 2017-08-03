@@ -58,8 +58,8 @@ module TRANSFER-FROM-SPEC
         <wordStack>     TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
                  => 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
         </wordStack>
-
-        <account>
+        <accounts>
+          <account>
           <acctID>   %ACCT_ID     </acctID>
           <balance>  BAL          </balance>
           <code>     %HKG_Program </code>
@@ -71,10 +71,12 @@ module TRANSFER-FROM-SPEC
                     (%ACCT_2_ALLOWED |-> _)
                     ...
           </storage>
-        </account>
+          </account>
+        </accounts>
 
       requires (TRANSFER <=Int 0 orBool B1 <Int TRANSFER orBool A1 <Int TRANSFER)
        andBool #sizeWordStack(WS) <Int 1016
-       andBool G >=Int 485 andBool G -Int G1 <=Int 485
+       andBool G >=Int 485 
+       ensures G -Int G1 <=Int 485
 endmodule
 
