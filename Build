@@ -107,10 +107,8 @@ run_kdebug() {
 
 test_uiuck() {
     test_file="$1"
-    local output_file="$default_output_file"
-    if [[ -e $test_file.out ]]; then output_file=$test_file.out; fi
     ( # Running in a sub-shell to avoid export spilling over to other tests
-        pretty_diff --label expected <(cat "$output_file") \
+        pretty_diff --label expected <(cat "tests/templates/output-uiuck.txt") \
                     --label actual   <(run_uiuck "$test_file" | lint_krun_uiuck)
     )
 }
@@ -219,8 +217,6 @@ run_rvk() {
 
 cd "$(dirname $0)"
 progress "Using $K_VERSION"
-
-default_output_file="tests/templates/output-$K_VERSION.txt"
 
 test_logs="tests/logs"
 mkdir -p "$test_logs"
