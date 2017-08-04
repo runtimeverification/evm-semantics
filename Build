@@ -88,7 +88,7 @@ run_proof() {
     export cSCHEDULE=${cSCHEDULE:-DEFAULT}
     export cMODE=${cMODE:-NORMAL}
     krun --directory .build/$K_VERSION/ -cSCHEDULE=$cSCHEDULE -cMODE=$cMODE \
-         --z3-executable tests/proofs/dummmy-input.json --prove "$proof_file"
+         --z3-executable tests/templates/dummy-proof-input.json --prove "$proof_file"
 }
 
 run_krun() {
@@ -109,8 +109,10 @@ run_kdebug() {
 
 test_uiuck() {
     test_file="$1"
+    output_expected_file=tests/templates/output-uiuck.txt
+    [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
     ( # Running in a sub-shell to avoid export spilling over to other tests
-        pretty_diff --label expected <(cat "tests/templates/output-uiuck.txt") \
+        pretty_diff --label expected <(cat "$output_expected_file") \
                     --label actual   <(run_uiuck "$test_file" | lint_krun_uiuck)
     )
 }
