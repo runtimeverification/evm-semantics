@@ -27,8 +27,10 @@ defn: $(defn_files)
 	mkdir -p $(dir $@)
 	pandoc-tangle --from markdown --to code-k --code ${K_VERSION} $< > $@
 
-proofs: tests/proofs/hkg/transferFrom-else-spec.k \
-		tests/proofs/hkg/transferFrom-then-spec.k
+proofs: tests/proofs/hkg/transferFrom-then-spec.k \
+		tests/proofs/hkg/transferFrom-else-spec.k \
+		tests/proofs/hkg/transfer-then-spec.k \
+		tests/proofs/hkg/transfer-else-spec.k
 
 tests/proofs/hkg/transferFrom-then-spec.k: proofs/hkg/transferFrom.md
 	@echo "==  tangle: $@"
@@ -36,6 +38,16 @@ tests/proofs/hkg/transferFrom-then-spec.k: proofs/hkg/transferFrom.md
 	pandoc-tangle --from markdown --to code-k --code k --section "Then Branch" $< > $@
 
 tests/proofs/hkg/transferFrom-else-spec.k: proofs/hkg/transferFrom.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc-tangle --from markdown --to code-k --code k --section "Else Branch" $< > $@
+
+tests/proofs/hkg/transfer-then-spec.k: proofs/hkg/transfer.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc-tangle --from markdown --to code-k --code k --section "Then Branch" $< > $@
+
+tests/proofs/hkg/transfer-else-spec.k: proofs/hkg/transfer.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc-tangle --from markdown --to code-k --code k --section "Else Branch" $< > $@
