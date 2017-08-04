@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <generatedTop>
   <k> . </k>
   <exit-code> 1 </exit-code>
@@ -6,7 +7,6 @@
   <analysis> "blocks" |-> ( ListItem ( { 40 ==> 46 | 20009 | 0 } ) ListItem ( { 39 ==> 39 | 0 | 0 } ) ListItem ( { 18 ==> 38 | 42 | 0 } ) ListItem ( { 11 ==> 17 | 12 | 0 } ) ListItem ( { 0 ==> 10 | 24 | 2 } ) ) </analysis>
   <ethereum>
     <evm>
-      <op> . </op>
       <output> .WordStack </output>
       <memoryUsed> 2 </memoryUsed>
       <callDepth> 0 </callDepth>
