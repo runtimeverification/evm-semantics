@@ -1,5 +1,3 @@
-proofs/token-correct-transfer-from-spec.k
-proofs/token-correct-transfer-spec.k
 tests/VMTests/vmArithmeticTest/add0.json
 tests/VMTests/vmArithmeticTest/add1.json
 tests/VMTests/vmArithmeticTest/add2.json
@@ -630,4 +628,3 @@ tests/VMTests/vmSystemOperationsTest/return2.json
 tests/VMTests/vmSystemOperationsTest/suicide0.json
 tests/VMTests/vmSystemOperationsTest/suicideNotExistingAccount.json
 tests/VMTests/vmSystemOperationsTest/suicideSendEtherToMe.json
-tests/analysis/sumTo10.evm
