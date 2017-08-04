@@ -23,14 +23,6 @@ pretty_diff() {
     fi
 }
 
-check_for_tangle() {
-    type pandoc-tangle >/dev/null 2>&1  || {
-        have_tangle=false
-        warning "pandoc-tangle not installed."  \
-                "Ignoring changes in markdown files\n"
-    }
-}
-
 lint_krun_uiuck() {
     # Format, &gt; entity > and make each K task start on a new line
     xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
@@ -45,9 +37,13 @@ set_test_opts_for_proofs() {
 
 run_make() {
     local make_opts=
-    $have_tangle || make_opts="--assume-old ethereum.md --assume-old evm.md \
-                               --assume-old data.md --assume-old krypto.md"
-    [[ "$K_VERSION" == 'rvk' ]] && eval `opam config env`
+    type pandoc-tangle >/dev/null 2>&1 || {
+        make_opts="--assume-old ethereum.md --assume-old evm.md \
+                   --assume-old data.md     --assume-old krypto.md \
+                   --assume-old analysis.md --assume-old verification.md"
+        warning "pandoc-tangle not installed."  \
+                "Ignoring changes in markdown files\n"
+    }
     make K_VERSION=${K_VERSION} -s $make_opts $@
 }
 
@@ -225,7 +221,6 @@ cd "$(dirname $0)"
 progress "Using $K_VERSION"
 
 default_output_file="tests/templates/output-$K_VERSION.txt"
-have_tangle=true; check_for_tangle
 
 test_logs="tests/logs"
 mkdir -p "$test_logs"
