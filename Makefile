@@ -7,11 +7,13 @@ endif
 
 .PHONY: all defn build split-tests proofs
 
-all: build split-tests proofs
+all: build split-tests
 
 clean:
 	rm -r .build
 	find tests/proofs/ -name '*.k' -delete
+
+build: tangle .build/${K_VERSION}/ethereum-kompiled/extras/timestamp
 
 # Tangle from *.md files
 # ----------------------
@@ -51,11 +53,6 @@ tests/proofs/hkg/transfer-else-spec.k: proofs/hkg/transfer.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc-tangle --from markdown --to code-k --code k --section "Else Branch" $< > $@
-
-# Build Definition
-# ----------------
-
-build: .build/${K_VERSION}/ethereum-kompiled/extras/timestamp
 
 # Tests
 # -----
