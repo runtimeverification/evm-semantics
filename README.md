@@ -47,12 +47,12 @@ Make sure that you have set the `K_VERSION` environment variable in your shell (
 
 The script `Build` supplied in this repository will build and run the definition (see `./Build help` to see usage information).
 
--   To `kompile` the definition, run `./Build` or `./Build build`.
+-   To `kompile` the definition, run `./Build` or `./Build make-build`.
 -   Use `./Build run <file>` and `./Build test <file>` to run/test a file, respectively.
 -   To run the tests, do `./Build test-<test-list>` (`./Build partest-<test-list>` to run them in parallel using [GNU parallel](https://www.gnu.org/software/parallel/)).
     The output of `./Build help` contains the available `<test-list>`.
 
-Running any proofs requires UIUC-K, and calling `./Build test-all` calls `./Build test-proofs` as well for UIUC-K.
+Running any proofs or symbolic reasoning requires UIUC-K.
 
 To run in a different mode (eg. in `GASANALYZE` mode), do `export cMODE=<OTHER_MODE>` before calling `./Build`.
 To run with a different fee schedule (eg. `HOMESTEAD` instead of `DEFAULT`), do `export cSCHEDULE=<OTHER_SCHEDULE>` before calling `./Build`.
