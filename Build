@@ -28,13 +28,6 @@ lint_krun_uiuck() {
     xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
 }
 
-set_test_opts_for_proofs() {
-    proof_file="$1"
-    local basename="$(basename -s -spec.k "$1")"
-    local basepath="$(dirname "$1")/$basename"
-    test_opts=( -cMODE=NORMAL "proofs/dummy-input.json" --prove "$proof_file-spec.k" )
-}
-
 run_make() {
     local make_opts=
     type pandoc-tangle >/dev/null 2>&1 || {
@@ -77,16 +70,25 @@ test_lists="$test_lists rvk uiuck all quick"
 
 run_uiuck() {
     local run_file=$1; shift
-    local test_opts=()
+    local krun_opts=()
     export K_OPTS=-Xss500m
     export cSCHEDULE=${cSCHEDULE:-DEFAULT}
     case "$run_file" in
-       *gas-analysis/*) test_opts=( -cMODE=GASANALYZE "$run_file" )           ;;
-       *VMTests/*     ) test_opts=( -cMODE=VMTESTS    "$run_file" )           ;;
-       *proofs/*      ) set_test_opts_for_proofs "$run_file"                  ;;
-       *              ) die "Don't know how to set test_opts for '$run_file'" ;;
+       *gas-analysis/*) krun_opts=( -cMODE=GASANALYZE "$run_file" )             ;;
+       *VMTests/*     ) krun_opts=( -cMODE=VMTESTS    "$run_file" )             ;;
+       *              ) die "Don't know how to set 'krun_opts' for '$run_file'" ;;
     esac
-    krun --directory .build/$K_VERSION/ -cSCHEDULE=$cSCHEDULE "${test_opts[@]}" "$@"
+    krun --directory .build/$K_VERSION/ -cSCHEDULE=$cSCHEDULE "${krun_opts[@]}" "$@"
+}
+
+run_proof() {
+    [[ "$K_VERSION" == 'uiuck' ]] || die "Proofs must be run with 'K_VERSION=uiuck'."
+    run_make
+    local proof_file="$1"; shift
+    export cSCHEDULE=${cSCHEDULE:-DEFAULT}
+    export cMODE=${cMODE:-NORMAL}
+    krun --directory .build/$K_VERSION/ -cSCHEDULE=$cSCHEDULE -cMODE=$cMODE \
+         --z3-executable tests/proofs/dummmy-input.json --prove "$proof_file"
 }
 
 run_krun() {
@@ -111,6 +113,11 @@ test_uiuck() {
         pretty_diff --label expected <(cat "tests/templates/output-uiuck.txt") \
                     --label actual   <(run_uiuck "$test_file" | lint_krun_uiuck)
     )
+}
+
+test_proof() {
+    test_file="$1"
+    [[ "$(run_proof "$test_file")" == 'true' ]]
 }
 
 test_rvk() {
@@ -140,7 +147,11 @@ test_rvk() {
 
 run_test() {
     run_make
-    "test_$K_VERSION" "$@"
+    test_file="$1"; shift
+    case "$test_file" in
+        *proofs/*) test_proof        "$test_file" "$@" ;;
+        *        ) test_"$K_VERSION" "$test_file" "$@" ;;
+    esac
 }
 
 run_tests() {
@@ -197,7 +208,6 @@ run_rvk() {
                  -c SCHEDULE '`DEFAULT_ETHEREUM`(.KList)' text -c MODE '`VMTESTS_ETHEREUM`(.KList)' text
 }
 
-
 # Main
 # ----
 
@@ -221,6 +231,7 @@ case "$run_command" in
     run)   run_krun   "$1" ;;
     test)  run_test   "$1" ;;
     debug) run_kdebug "$1" ;;
+    prove) run_proof  "$1" ;;
 
     # Testing
     list-*)    list_${run_command#list-}    | filter_tests "$@" ;;
@@ -242,6 +253,7 @@ case "$run_command" in
        $0 run   <pgm>   Run a single EVM program
        $0 test  <pgm>   Run a single EVM program like it's a test
        $0 debug <pgm>   Run a single EVM program in the debugger
+       $0 prove <spec>  Attempt to prove the specification using UIUC-K's RL prover
 
        # Testing
        # -------
