@@ -28,6 +28,8 @@ lint_krun_uiuck() {
     xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
 }
 
+lint_krun_rvk() { cat - ; }
+
 run_make() {
     local make_opts=
     type pandoc-tangle >/dev/null 2>&1 || {
@@ -81,6 +83,27 @@ run_uiuck() {
     krun --directory .build/$K_VERSION/ -cSCHEDULE=$cSCHEDULE "${krun_opts[@]}" "$@"
 }
 
+run_rvk() {
+    test_file="$1"
+    (   set +e
+        interpreter="$(dirname "$0")/.build/rvk/ethereum-kompiled/interpreter"
+        kast="$(mktemp)"
+        output="$(mktemp)"
+        kast_output="$(mktemp)"
+        trap "rm -rf $kast $output $kast_output" INT TERM EXIT
+        "$(dirname "$0")/kast-json.py" "$test_file" > "$kast"
+        set +e
+        $interpreter "$(dirname "$0")/.build/rvk/ethereum-kompiled/realdef.cma" -c PGM "$kast" textfile \
+                     -c SCHEDULE '`DEFAULT_EVM`(.KList)' text -c MODE '`VMTESTS_EVM`(.KList)' text \
+                     --output-file "$output"
+        exit_status="$?"
+        k-bin-to-text "$output" "$kast_output"
+        cat "$kast_output"
+        printf "\n"
+        exit "$exit_status"
+    )
+}
+
 run_proof() {
     [[ "$K_VERSION" == 'uiuck' ]] || die "Proofs must be run with 'K_VERSION=uiuck'."
     run_make
@@ -107,44 +130,9 @@ run_kdebug() {
 # Testers
 # -------
 
-test_uiuck() {
-    test_file="$1"
-    output_expected_file=tests/templates/output-uiuck.txt
-    [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
-    ( # Running in a sub-shell to avoid export spilling over to other tests
-        pretty_diff --label expected <(cat "$output_expected_file") \
-                    --label actual   <(run_uiuck "$test_file" | lint_krun_uiuck)
-    )
-}
-
 test_proof() {
     test_file="$1"
     [[ "$(run_proof "$test_file")" == 'true' ]]
-}
-
-test_rvk() {
-    test_file="$1"
-    (
-        # TODO: Fix run_rvk and make this call that
-        set +e;
-        interpreter="$(dirname "$0")/.build/rvk/ethereum-kompiled/interpreter"
-        kast="$(mktemp)"
-        output="$(mktemp)"
-        kast_output="$(mktemp)"
-        trap "rm -rf $kast $output $kast_output" INT TERM EXIT
-        "$(dirname "$0")/kast-json.py" "$test_file" > "$kast"
-        $interpreter "$(dirname "$0")/.build/rvk/ethereum-kompiled/realdef.cma" -c PGM "$kast" textfile \
-                     -c SCHEDULE '`DEFAULT_ETHEREUM`(.KList)' text -c MODE '`VMTESTS_ETHEREUM`(.KList)' text \
-                     --output-file "$output"
-        exit=$?
-        if [ $exit -eq 0 ]; then
-          exit 0
-        fi
-        k-bin-to-text "$output" "$kast_output"
-        cat "$kast_output"
-        printf "\n"
-        exit $exit
-    )
 }
 
 run_test() {
@@ -152,13 +140,21 @@ run_test() {
     test_file="$1"; shift
     case "$test_file" in
         *proofs/*) test_proof        "$test_file" "$@" ;;
-        *        ) test_"$K_VERSION" "$test_file" "$@" ;;
+        *        ) output_expected_file=tests/templates/output-"$K_VERSION".txt
+                   [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
+                   ( # Running in a sub-shell to avoid export spilling over to other tests
+                        pretty_diff --label expected <(cat "$output_expected_file") \
+                                    --label actual   <(run_"$K_VERSION" "$test_file" | lint_krun_"$K_VERSION")
+                   )
+                   ;;
     esac
 }
 
 run_tests() {
     local test_count=0
     local test_failed=0
+    kserver &
+    sleep 2
     while read test_file; do
         progress "running: $test_file"
         test_count=$(($test_count + 1))
@@ -172,6 +168,7 @@ run_tests() {
         fi
         progress "failed: $test_failed / $test_count"
     done
+    stop-kserver
     return $test_failed
 }
 
@@ -179,35 +176,10 @@ run_partests() {
     run_make
     [[ "$K_VERSION" == 'rvk'   ]] && mem_free=1G
     [[ "$K_VERSION" == 'uiuck' ]] && mem_free=2G
+    kserver &
+    sleep 2
     parallel --joblog - --memfree "$mem_free" ./Build test
-}
-
-# Experimental
-# ------------
-
-test_proofs() {
-    run_make build
-    for hkg_proof in transferFrom-then transferFrom-else transfer-then transfer-else; do
-        run_uiuck "test/proofs/hkg/$hkg_proof-spec.k"
-    done
-}
-
-lint_krun_rvk() {
-    rvk_output="$(mktemp)"
-    trap "rm -rf $rvk_output" INT TERM EXIT
-    k-bin-to-text <(cat -) "$rvk_output"
-    cat "$rvk_output"
-    rm -rf "$rvk_output"
-}
-
-run_rvk() {
-    test_file="$1"
-    interpreter="$(dirname "$0")/.build/rvk/ethereum-kompiled/interpreter"
-    kast="$(mktemp)"
-    trap "rm -rf $kast" INT TERM EXIT
-    "$(dirname "$0")/kast-json.py" "$test_file" > "$kast"
-    $interpreter "$(dirname "$0")/.build/rvk/ethereum-kompiled/realdef.cma" -c PGM "$kast" textfile \
-                 -c SCHEDULE '`DEFAULT_ETHEREUM`(.KList)' text -c MODE '`VMTESTS_ETHEREUM`(.KList)' text
+    stop-kserver
 }
 
 # Main
