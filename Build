@@ -98,7 +98,7 @@ run_krun() {
 }
 
 run_kdebug() {
-    [[ "$K_VERSION" == 'rvk' ]] && die "rvk does not support debugging"
+    [[ "$K_VERSION" == 'uiuck' ]] && die "Debugger must be run with 'K_VERSION=uiuck'."
     run_make
     progress "debugging: $1"
     ( run_"$K_VERSION" "$1" --debugger )
