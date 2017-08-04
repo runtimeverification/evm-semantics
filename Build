@@ -95,7 +95,7 @@ run_uiuck() {
        *proofs/*      ) set_test_opts_for_proofs "$run_file"                  ;;
        *              ) die "Don't know how to set test_opts for '$run_file'" ;;
     esac
-    krun --directory .build/$K_VERSION/ --debug -cSCHEDULE=$cSCHEDULE "${test_opts[@]}" "$@"
+    krun --directory .build/$K_VERSION/ -cSCHEDULE=$cSCHEDULE "${test_opts[@]}" "$@"
 }
 
 run_krun() {
