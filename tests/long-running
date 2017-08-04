@@ -1,7 +1,0 @@
-tests/VMTests/vmEnvironmentalInfoTest/env1.json
-tests/VMTests/vmIOandFlowOperationsTest/BlockNumberDynamicJump0_foreverOutOfGas.json
-tests/VMTests/vmIOandFlowOperationsTest/DynamicJump0_foreverOutOfGas.json
-tests/VMTests/vmIOandFlowOperationsTest/JDfromStorageDynamicJump0_foreverOutOfGas.json
-tests/VMTests/vmIOandFlowOperationsTest/jump0_foreverOutOfGas.json
-tests/VMTests/vmIOandFlowOperationsTest/jumpDynamicJumpSameDest.json
-tests/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1020.json
