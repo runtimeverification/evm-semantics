@@ -227,14 +227,6 @@ run_rvk() {
 # ----
 
 cd "$(dirname $0)"
-
-if [[ -z "$K_VERSION" ]]; then
-    if krun --version | grep 'RV' >/dev/null 2>&1; then
-        K_VERSION=rvk
-    else
-        K_VERSION=uiuck
-    fi
-fi
 progress "Using $K_VERSION"
 
 default_output_file="tests/templates/output-$K_VERSION.txt"
