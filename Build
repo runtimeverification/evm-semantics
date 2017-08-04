@@ -54,7 +54,6 @@ run_make() {
 # Test Filters and Lists
 # ----------------------
 
-filter_not_longrunning() { grep -Fvxf "tests/long-running" - ; }
 filter_tests() {
     local command=( exit 1 )
     case $# in
@@ -66,19 +65,15 @@ filter_tests() {
     esac
 }
 
-list_long()  { cat "tests/long-running" ; }
-list_short() { cat "tests/short-list"   ; }
-test_lists="long short"
-
-list_proofs()       { find "proofs"             -name '*-spec.k' ; }
-list_gas_analysis() { find "tests/gas-analysis" -name '*.evm' ; }
 list_vmtests()      { find "tests/VMTests"      -name '*.json' | grep -v 'loop_stacklimit_1021' ; }
-test_lists="$test_lists proofs gas_analysis vmtests"
+list_gas_analysis() { find "tests/gas-analysis" -name '*.evm' ; }
+list_proofs()       { find "proofs"             -name '*-spec.k' ; }
+test_lists="vmtests gas_analysis proofs"
 
 list_rvk()   { list_vmtests ; }
-list_uiuck() { list_proofs ; list_gas_analysis ; list_short ; }
+list_uiuck() { cat tests/short-list ; list_gas_analysis ; list_proofs ; }
 list_all()   { list_$K_VERSION ; }
-list_quick() { list_all | filter_not_longrunning | sort -R | head -n 20 ; }
+list_quick() { list_all | sort -R | head -n 20 ; }
 test_lists="$test_lists rvk uiuck all quick"
 
 # Runners
