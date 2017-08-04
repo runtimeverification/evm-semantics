@@ -35,15 +35,6 @@ module ETHEREUM-SIMULATION
  // ----------------------------------
     rule <k> JSONINPUT:JSON => run JSONINPUT success .EthereumSimulation </k>
 
-    syntax EthereumCommand ::= DistCommand JSON
- // -------------------------------------------
-    rule load DATA : { .JSONList } => .
-    rule load DATA : { KEY : VALUE , REST } => load DATA : { KEY : VALUE } ~> load DATA : { REST }
-      requires REST =/=K .JSONList andBool DATA =/=String "transaction"
-
-    rule load DATA : [ .JSONList ] => .
-    rule load DATA : [ { TEST } , REST ] => load DATA : { TEST } ~> load DATA : [ REST ]
-
 
 // For verification purposes, it's much easier to specify a program in terms of its
 // op-codes and not the hex-encoding that the tests use. To do so, we'll extend
@@ -53,14 +44,6 @@ module ETHEREUM-SIMULATION
 
     syntax JSON ::= Int | WordStack | OpCodes | Map | Call | SubstateLogEntry
  // -------------------------------------------------------------------------
-    rule load "account" : { ACCTID: { KEY : VALUE , REST } } => load "account" : { ACCTID : { KEY : VALUE } } ~> load "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
-
-    rule load "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
-    rule load "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
-    rule load "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
-    rule load "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
-    rule load "account" : { (ACCT:Int) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
-    rule load "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
 
     syntax JSONList ::= #sortJSONList ( JSONList )            [function]
                       | #sortJSONList ( JSONList , JSONList ) [function, klabel(#sortJSONListAux)]
@@ -240,9 +223,33 @@ module ETHEREUM-SIMULATION
 // -   `load` loads an account or transaction into the world state.
 
 
-    syntax DistCommand ::= "load"
- // -----------------------------
+    syntax EthereumCommand ::= "load" JSON
+ // --------------------------------------
+    rule load DATA : { .JSONList } => .
+    rule load DATA : { KEY : VALUE , REST } => load DATA : { KEY : VALUE } ~> load DATA : { REST }
+      requires REST =/=K .JSONList andBool DATA =/=String "transaction"
+
+    rule load DATA : [ .JSONList ] => .
+    rule load DATA : [ { TEST } , REST ] => load DATA : { TEST } ~> load DATA : [ REST ]
+
+
+// Here we perform pre-proccesing on account data which allows "pretty"
+// specification of input.
+
+
     rule load "pre" : { (ACCTID:String) : ACCT } => mkAcct #parseAddr(ACCTID) ~> load "account" : { ACCTID : ACCT }
+    rule load "account" : { ACCTID: { KEY : VALUE , REST } } => load "account" : { ACCTID : { KEY : VALUE } } ~> load "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
+
+    rule load "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
+    rule load "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
+    rule load "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
+    rule load "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
+    rule load "account" : { (ACCT:Int) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
+    rule load "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
+
+
+// The individual fields of the accounts are dealt with here.
+
 
     rule <k> load "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
          <account>
