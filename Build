@@ -219,13 +219,12 @@ mkdir -p "$test_logs"
 now_passing="$test_logs/passing.lastrun"
 ci_branches=( develop )
 
-[[ "$#" == '0' ]] && set build
+[[ "$#" == '0' ]] && set make-build
 run_command="$1" ; shift
 case "$run_command" in
 
     # Building
-    tangle) K_VERSION=uiuck run_make tangle ; K_VERSION=rvk run_make tangle ;;
-    build)  run_make all ;;
+    make-*) run_make ${run_command#make-} ;;
 
     # Running
     run)   run_krun   "$1" ;;
@@ -237,16 +236,26 @@ case "$run_command" in
     list-*)    list_${run_command#list-}    | filter_tests "$@" ;;
     test-*)    list_${run_command#test-}    | filter_tests "$@" | run_tests    ;;
     partest-*) list_${run_command#partest-} | filter_tests "$@" | run_partests ;;
-    both-*)    K_VERSION=rvk $0 ${run_command#both-} $@ && K_VERSION=uiuck $0 ${run_command#both-} ;;
+
+    # K_VERSION
+    # ---------
+    rvk-*)   K_VERSION=rvk   $0 ${run_command#rvk-}   $@ ;;
+    uiuck-*) K_VERSION=uiuck $0 ${run_command#uiuck-} $@ ;;
+    bothk-*) K_VERSION=rvk   $0 ${run_command#bothk-} $@
+             K_VERSION=uiuck $0 ${run_command#bothk-} $@ ;;
 
     *)             echo "
+    K_VERSION: $K_VERSION
     usage:
-       $0       Defaults to '$0 build'
+       $0       Defaults to '$0 make-build'
 
        # Building
        # --------
-       $0 tangle    Only tangle the definitions/proofs
-       $0 build     Tangle defintions/proofs and kompile
+       $0 make-<target>     Run 'make <target>' with 'K_VERSION' set
+
+       Useful <target>:
+       -   tangle: Build the definition/proof files from the markdown files (requires pandoc-tangle)
+       -   build:  Kompile the definition (calls tangle target first)
 
        # Running
        # -------
@@ -260,11 +269,13 @@ case "$run_command" in
        $0 list-<test-list>    <regx>    List tests from <test-list> filtered by <regx>
        $0 test-<test-list>    <regx>    Run tests from <test-list> filtered by <regx>
        $0 partest-<test-list> <regx>    Run tests from <test-list> filtered by <regx> with GNU parallel
-       $0 both-<command>      <regx>    Call '$0 <command> <regx>' for both RV-K and UIUC-K
 
-       # Settings
-       # --------
        Available <test-list>: $test_lists
-       K_VERSION: $K_VERSION
+
+       # K_VERSION
+       # ---------
+       $0 rvk-<command>   <args>    Call '$0 <command> <args>' with 'K_VERSION=rvk'
+       $0 uiuck-<command> <args>    Call '$0 <command> <args>' with 'K_VERSION=uiuck'
+       $0 bothk-<command> <args>    Call '$0 <command> <args>' first with 'rvk' then 'uiuck'
 "; exit ;;
 esac
