@@ -63,7 +63,7 @@ filter_tests() {
 
 list_vmtests()      { find "tests/VMTests"      -name '*.json' | grep -v 'loop_stacklimit_1021' ; }
 list_gas_analysis() { find "tests/gas-analysis" -name '*.evm' ; }
-list_proofs()       { find "proofs"             -name '*-spec.k' ; }
+list_proofs()       { find "tests/proofs"       -name '*-spec.k' ; }
 test_lists="vmtests gas_analysis proofs"
 
 list_rvk()   { list_vmtests ; }
