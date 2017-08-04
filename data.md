@@ -63,7 +63,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 
 ```{.k .uiuck .rvk}
     syntax Int ::= "#ifInt" Bool "#then" Int "#else" Int "#fi" [function, smtlib(ifInt)]
- // ---------------------------------------------------------------------
+ // ------------------------------------------------------------------------------------
 ```
 
 If we don't place the `Bool` condition as a side-condition for UIUC-K, it will attempt to only do an "implies-check" instead of full unification (which is problematic when `B` is symbolic during proving).

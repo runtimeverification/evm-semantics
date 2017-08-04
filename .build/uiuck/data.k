@@ -60,7 +60,7 @@ module EVM-DATA
 
 
     syntax Int ::= "#ifInt" Bool "#then" Int "#else" Int "#fi" [function, smtlib(ifInt)]
- // ---------------------------------------------------------------------
+ // ------------------------------------------------------------------------------------
 
 
 // If we don't place the `Bool` condition as a side-condition for UIUC-K, it will
