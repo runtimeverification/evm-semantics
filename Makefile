@@ -2,17 +2,24 @@ ifndef K_VERSION
 $(error K_VERSION not set. Please use the Build script, instead of running make directly)
 endif
 
-######################################################################
-## Common to all versions of K
+# Common to all versions of K
+# ===========================
+
+.PHONY: all defn build split-tests proofs
+
+all: build split-tests proofs
+
+clean:
+	rm -r .build
+	find tests/proofs/ -name '*.k' -delete
+
+# Tangle from *.md files
+# ----------------------
 
 defn_dir=.build/${K_VERSION}
 defn_files=${defn_dir}/ethereum.k ${defn_dir}/data.k ${defn_dir}/evm.k ${defn_dir}/analysis.k ${defn_dir}/krypto.k ${defn_dir}/verification.k
 
-all: build split-tests proofs
-proofs: proofs/token-correct-transfer-spec.k \
-		proofs/token-buggy-spec.k \
-		proofs/sum-to-n-spec.k
-build: .build/${K_VERSION}/ethereum-kompiled/extras/timestamp
+tangle: defn proofs
 defn: $(defn_files)
 
 .build/${K_VERSION}/%.k: %.md
@@ -20,18 +27,26 @@ defn: $(defn_files)
 	mkdir -p $(dir $@)
 	pandoc-tangle --from markdown --to code-k --code ${K_VERSION} $< > $@
 
-proofs/%.k: proofs/%.md
+proofs: tests/proofs/hkg/transferFrom-else-spec.k \
+		tests/proofs/hkg/transferFrom-then-spec.k
+
+tests/proofs/hkg/transferFrom-then-spec.k: proofs/hkg/transferFrom.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
-	pandoc-tangle --from markdown --to code-k --code k $< > $@
+	pandoc-tangle --from markdown --to code-k --code k --section "Then Branch" $< > $@
 
-tests/ethereum-tests/%.json:
-	@echo "==  git submodule: cloning upstreams test repository"
-	git submodule update --init
+tests/proofs/hkg/transferFrom-else-spec.k: proofs/hkg/transferFrom.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc-tangle --from markdown --to code-k --code k --section "Else Branch" $< > $@
 
-clean:
-	rm -r .build
-	find proofs/ -name '*.k' -delete
+# Build Definition
+# ----------------
+
+build: .build/${K_VERSION}/ethereum-kompiled/extras/timestamp
+
+# Tests
+# -----
 
 split-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
 			 tests/VMTests/vmBitwiseLogicOperationTest/make.timestamp \
@@ -46,7 +61,6 @@ split-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
 			 tests/VMTests/vmtests/make.timestamp \
 			 tests/VMTests/vmInputLimits/make.timestamp \
 			 tests/VMTests/vmInputLimitsLight/make.timestamp
-.PHONY: all defn build split-tests proofs
 
 tests/%/make.timestamp: tests/ethereum-tests/%.json
 	@echo "==   split: $@"
@@ -54,16 +68,20 @@ tests/%/make.timestamp: tests/ethereum-tests/%.json
 	tests/split-test.py $< $(dir $@)
 	touch $@
 
-######################################################################
-## UIUC K Specific Code
+tests/ethereum-tests/%.json:
+	@echo "==  git submodule: cloning upstreams test repository"
+	git submodule update --init
+
+# UIUC K Specific
+# ---------------
 
 .build/uiuck/ethereum-kompiled/extras/timestamp: $(defn_files)
 	@echo "== kompile: $@"
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/uiuck
 
-######################################################################
-## RVK Specific Code
+# RVK Specific
+# ------------
 
 .build/rvk/ethereum-kompiled/extras/timestamp: .build/rvk/ethereum-kompiled/interpreter
 .build/rvk/ethereum-kompiled/interpreter: $(defn_files) KRYPTO.ml
