@@ -250,8 +250,8 @@ run_command="$1" ; shift
 case "$run_command" in
 
     # Building
-    defn)  run_make defn ;;
-    build) run_make all  ;;
+    tangle) K_VERSION=uiuck run_make tangle ; K_VERSION=rvk run_make tangle ;;
+    build)  run_make all ;;
 
     # Running
     run)   run_krun   "$1" ;;
@@ -273,8 +273,8 @@ case "$run_command" in
 
        # Building
        # --------
-       $0 defn      Only detangle the definitions
-       $0 build     Detangle defintions and kompile
+       $0 tangle    Only tangle the definitions/proofs
+       $0 build     Tangle defintions/proofs and kompile
 
        # Running
        # -------
