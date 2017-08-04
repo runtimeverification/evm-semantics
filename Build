@@ -226,6 +226,7 @@ case "$run_command" in
     list-*)    list_${run_command#list-}    | filter_tests "$@" ;;
     test-*)    list_${run_command#test-}    | filter_tests "$@" | run_tests    ;;
     partest-*) list_${run_command#partest-} | filter_tests "$@" | run_partests ;;
+    both-*)    K_VERSION=rvk $0 ${run_command#both-} $@ && K_VERSION=uiuck $0 ${run_command#both-} ;;
 
     *)             echo "
     usage:
@@ -247,6 +248,7 @@ case "$run_command" in
        $0 list-<test-list>    <regx>    List tests from <test-list> filtered by <regx>
        $0 test-<test-list>    <regx>    Run tests from <test-list> filtered by <regx>
        $0 partest-<test-list> <regx>    Run tests from <test-list> filtered by <regx> with GNU parallel
+       $0 both-<command>      <regx>    Call '$0 <command> <regx>' for both RV-K and UIUC-K
 
        # Settings
        # --------
