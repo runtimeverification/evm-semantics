@@ -171,25 +171,12 @@ run_partests() {
 
 # Experimental
 # ------------
-hkg_proof_dir=tests/proofs/hkg
 
-build_proofs() {
-    mkdir -p $hkg_proof_dir
-    progress "tangle: $hkg_proof_dir/transferFrom-then-spec.k"
-    pandoc-tangle --from markdown --to code-k --section "Then Branch" proofs/hkg/transferFrom.md > $hkg_proof_dir/transferFrom-then-spec.k
-    progress "tangle: $hkg_proof_dir/transferFrom-else-spec.k"
-    pandoc-tangle --from markdown --to code-k --section "Else Branch" proofs/hkg/transferFrom.md > $hkg_proof_dir/transferFrom-else-spec.k
-    progress "tangle: $hkg_proof_dir/transfer-then-spec.k"
-    pandoc-tangle --from markdown --to code-k --section "Then Branch" proofs/hkg/transfer.md > $hkg_proof_dir/transfer-then-spec.k
-    progress "tangle: $hkg_proof_dir/transfer-else-spec.k"
-    pandoc-tangle --from markdown --to code-k --section "Else Branch" proofs/hkg/transfer.md > $hkg_proof_dir/transfer-else-spec.k
-}
-
-run_proofs() {
-    run_make
-    build_proofs
-    run_uiuck 'tests/proofs/hkg/transferFrom-then'
-    run_uiuck 'tests/proofs/hkg/transferFrom-else'
+test_proofs() {
+    run_make build
+    for hkg_proof in transferFrom-then transferFrom-else transfer-then transfer-else; do
+        run_uiuck "test/proofs/hkg/$hkg_proof-spec.k"
+    done
 }
 
 lint_krun_rvk() {
@@ -239,10 +226,6 @@ case "$run_command" in
     list-*)    list_${run_command#list-}    | filter_tests "$@" ;;
     test-*)    list_${run_command#test-}    | filter_tests "$@" | run_tests    ;;
     partest-*) list_${run_command#partest-} | filter_tests "$@" | run_partests ;;
-
-    # Experimental
-    build-proofs) build_proofs ;;
-    run-proofs)   run_proofs   ;;
 
     *)             echo "
     usage:
