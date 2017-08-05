@@ -171,8 +171,7 @@ run_test() {
 run_tests() {
     local test_count=0
     local test_failed=0
-    kserver &
-    sleep 2
+    [[ "$K_VERSION" == 'rvk'   ]] && ( kserver & ) && sleep 2
     while read test_file; do
         progress "running: $test_file"
         test_count=$(($test_count + 1))
@@ -186,7 +185,7 @@ run_tests() {
         fi
         progress "failed: $test_failed / $test_count"
     done
-    stop-kserver || true
+    [[ "$K_VERSION" == 'rvk' ]] && stop-kserver || true
     return $test_failed
 }
 
@@ -194,11 +193,10 @@ run_partests() {
     run_make
     [[ "$K_VERSION" == 'rvk'   ]] && mem_free=1G
     [[ "$K_VERSION" == 'uiuck' ]] && mem_free=2G
-    kserver &
-    sleep 2
+    [[ "$K_VERSION" == 'rvk'   ]] && ( kserver & ) && sleep 2
     exit_status=0
     parallel --joblog - --memfree "$mem_free" ./Build test || exit_status="$?"
-    stop-kserver || true
+    [[ "$K_VERSION" == 'rvk' ]] && stop-kserver || true
     return "$exit_status"
 }
 
