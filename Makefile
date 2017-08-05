@@ -5,7 +5,7 @@ endif
 # Common to all versions of K
 # ===========================
 
-.PHONY: all defn build split-tests proofs
+.PHONY: all clean build tangle defn proofs split-tests
 
 all: build split-tests
 
@@ -18,10 +18,10 @@ build: tangle .build/${K_VERSION}/ethereum-kompiled/extras/timestamp
 # Tangle from *.md files
 # ----------------------
 
+tangle: defn proofs
+
 defn_dir=.build/${K_VERSION}
 defn_files=${defn_dir}/ethereum.k ${defn_dir}/data.k ${defn_dir}/evm.k ${defn_dir}/analysis.k ${defn_dir}/krypto.k ${defn_dir}/verification.k
-
-tangle: defn proofs
 defn: $(defn_files)
 
 .build/${K_VERSION}/%.k: %.md
@@ -29,30 +29,14 @@ defn: $(defn_files)
 	mkdir -p $(dir $@)
 	pandoc-tangle --from markdown --to code-k --code ${K_VERSION} $< > $@
 
-proofs: tests/proofs/hkg/transferFrom-then-spec.k \
-		tests/proofs/hkg/transferFrom-else-spec.k \
-		tests/proofs/hkg/transfer-then-spec.k \
-		tests/proofs/hkg/transfer-else-spec.k
+proof_dir=tests/proofs
+proof_files=${proof_dir}/hkg/transferFrom-then-spec.k ${proof_dir}/hkg/transferFrom-else-spec.k ${proof_dir}/hkg/transfer-then-spec.k ${proof_dir}/hkg/transfer-else-spec.k
+proofs: $(proof_files)
 
-tests/proofs/hkg/transferFrom-then-spec.k: proofs/hkg/transferFrom.md
+tests/proofs/hkg/%-spec.k: proofs/hkg.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
-	pandoc-tangle --from markdown --to code-k --code k --section "Then Branch" $< > $@
-
-tests/proofs/hkg/transferFrom-else-spec.k: proofs/hkg/transferFrom.md
-	@echo "==  tangle: $@"
-	mkdir -p $(dir $@)
-	pandoc-tangle --from markdown --to code-k --code k --section "Else Branch" $< > $@
-
-tests/proofs/hkg/transfer-then-spec.k: proofs/hkg/transfer.md
-	@echo "==  tangle: $@"
-	mkdir -p $(dir $@)
-	pandoc-tangle --from markdown --to code-k --code k --section "Then Branch" $< > $@
-
-tests/proofs/hkg/transfer-else-spec.k: proofs/hkg/transfer.md
-	@echo "==  tangle: $@"
-	mkdir -p $(dir $@)
-	pandoc-tangle --from markdown --to code-k --code k --section "Else Branch" $< > $@
+	pandoc-tangle --from markdown --to code-k --code $* $< > $@
 
 # Tests
 # -----

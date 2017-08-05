@@ -1,5 +1,8 @@
-// Hacker Gold Token (HKG) Transfer-From Correct Program Specification
-// ===================================================================
+// The Hacker Gold (HKG) Token Smart Contract
+// ==========================================
+
+// TransferFrom Function
+// ---------------------
 
 // These parts of the state are constant throughout the proof.
 
@@ -49,34 +52,36 @@ module TRANSFER-FROM-SPEC
          <refund>      0    => _ </refund>
 
 
-// ### Else Branch
+// ### Then Branch {#then-branch-1}
+
+// ### Else Branch {#else-branch-1}
 
 
-        <pc>  818 => 1451 </pc>
-        <gas> G   => G1   </gas>
+         <pc>  818 => 1451 </pc>
+         <gas> G   => G1   </gas>
 
-        <wordStack>     TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
-                 => 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
-        </wordStack>
-        <accounts>
-          <account>
-          <acctID>   %ACCT_ID     </acctID>
-          <balance>  BAL          </balance>
-          <code>     %HKG_Program </code>
-          <acctMap> "nonce" |-> 0 </acctMap>
-          <storage> ...
-                    (%ACCT_1_BALANCE |-> B1:Int)
-                    (%ACCT_1_ALLOWED |-> A1:Int)
-                    (%ACCT_2_BALANCE |-> B2:Int)
-                    (%ACCT_2_ALLOWED |-> _)
-                    ...
-          </storage>
-          </account>
-        </accounts>
+         <wordStack>     TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
+                  => 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
+         </wordStack>
+         <accounts>
+           <account>
+             <acctID>   %ACCT_ID     </acctID>
+             <balance>  BAL          </balance>
+             <code>     %HKG_Program </code>
+             <acctMap> "nonce" |-> 0 </acctMap>
+             <storage> ...
+                       (%ACCT_1_BALANCE |-> B1:Int)
+                       (%ACCT_1_ALLOWED |-> A1:Int)
+                       (%ACCT_2_BALANCE |-> B2:Int)
+                       (%ACCT_2_ALLOWED |-> _)
+                       ...
+             </storage>
+           </account>
+         </accounts>
 
       requires (TRANSFER <=Int 0 orBool B1 <Int TRANSFER orBool A1 <Int TRANSFER)
        andBool #sizeWordStack(WS) <Int 1016
-       andBool G >=Int 485 
+       andBool G >=Int 485
        ensures G -Int G1 <=Int 485
 endmodule
 
