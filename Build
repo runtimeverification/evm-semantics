@@ -168,7 +168,7 @@ run_tests() {
         fi
         progress "failed: $test_failed / $test_count"
     done
-    stop-kserver
+    stop-kserver || true
     return $test_failed
 }
 
@@ -178,8 +178,10 @@ run_partests() {
     [[ "$K_VERSION" == 'uiuck' ]] && mem_free=2G
     kserver &
     sleep 2
-    parallel --joblog - --memfree "$mem_free" ./Build test
-    stop-kserver
+    exit_status=0
+    parallel --joblog - --memfree "$mem_free" ./Build test || exit_status="$?"
+    stop-kserver || true
+    return "$exit_status"
 }
 
 # Main
