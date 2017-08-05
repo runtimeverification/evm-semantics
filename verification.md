@@ -1,14 +1,29 @@
-Verification Helpers
---------------------
+KEVM Verification
+=================
+
+Using K's reachability logic theorem prover, we're able to verify many properties about EVM programs as reachability claims.
+This module defines some helpers which make writing specifications simpler.
 
 ```{.k .uiuck}
 requires "data.k"
 
 module VERIFICATION
     import EVM-DATA
+```
 
+This `smt-lemma` helps Z3 reason about stack over/under flow.
+
+```{.k .uiuck}
     rule #sizeWordStack ( _ ) >=Int 0 => true [smt-lemma]
+```
 
+Hacker Gold (HKG) Token Smart Contract
+--------------------------------------
+
+Several proofs about the [HKG Token functions](proofs/hkg.md) have been performed.
+These helper constants make writing the proof claims simpler/cleaner.
+
+```{.k .uiuck}
     syntax Int ::= "%ACCT_1_BALANCE" [function]
                  | "%ACCT_2_BALANCE" [function]
                  | "%ACCT_1_ALLOWED" [function]
