@@ -188,11 +188,28 @@ run_partests() {
 cd "$(dirname $0)"
 progress "Using $K_VERSION"
 
+# SRC is where K distributions are, defaults to $HOME/src
+export SRC=${SRC:-$HOME/src}
+
+# setup PATH
+K_RELEASE="$SRC/k/$K_VERSION/k-distribution/target/release/k"
+K_BIN="$K_RELEASE/lib/native/linux:$K_RELEASE/lib/native/linux64:$K_RELEASE/bin"
+export PATH="$PATH:$K_BIN"
+
+# setup LD_LIBRARY_PATH
+K_LD_LIBRARRY_PATH="$K_RELEASE/lib/native/linux64"
+export LD_LIBRARY_PATH="$K_LD_LIBRARRY_PATH"
+
+# setup OCaml for RV-K
+[[ "$K_VERSION" == 'rvk' ]] && eval `opam config env`
+
+# test logs
 test_logs="tests/logs"
 mkdir -p "$test_logs"
 now_passing="$test_logs/passing.lastrun"
 ci_branches=( develop )
 
+# main functionality
 [[ "$#" == '0' ]] && set make-build
 run_command="$1" ; shift
 case "$run_command" in
