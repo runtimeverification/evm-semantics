@@ -7,9 +7,6 @@
 
 
 requires "krypto.k"
-
-
-
 requires "domains.k"
 
 module EVM-DATA
