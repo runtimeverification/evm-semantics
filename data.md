@@ -5,11 +5,8 @@ EVM uses bounded 256 bit integer words, and sometimes also bytes (8 bit words).
 Here we provide the arithmetic of these words, as well as some data-structures over them.
 Both are implemented using K's `Int`.
 
-```{.k .rvk}
-requires "krypto.k"
-```
-
 ```{.k .uiuck .rvk}
+requires "krypto.k"
 requires "domains.k"
 
 module EVM-DATA
