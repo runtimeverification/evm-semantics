@@ -30,7 +30,25 @@ lint_krun_uiuck() {
 
 lint_krun_rvk() { cat - ; }
 
+ksetup() {
+    # SRC is where K distributions are, defaults to $HOME/src
+    export SRC=${SRC:-$HOME/src}
+
+    # setup PATH
+    K_RELEASE="$SRC/k/$K_VERSION/k-distribution/target/release/k"
+    K_BIN="$K_RELEASE/lib/native/linux:$K_RELEASE/lib/native/linux64:$K_RELEASE/bin"
+    export PATH="$PATH:$K_BIN"
+
+    # setup LD_LIBRARY_PATH
+    K_LD_LIBRARRY_PATH="$K_RELEASE/lib/native/linux64"
+    export LD_LIBRARY_PATH="$K_LD_LIBRARRY_PATH"
+
+    # setup OCaml for RV-K
+    [[ "$K_VERSION" == 'rvk' ]] && eval `opam config env` || true
+}
+
 run_make() {
+    ksetup
     local make_opts=
     type pandoc-tangle >/dev/null 2>&1 || {
         make_opts="--assume-old ethereum.md --assume-old evm.md \
@@ -189,21 +207,6 @@ run_partests() {
 
 cd "$(dirname $0)"
 progress "Using $K_VERSION"
-
-# SRC is where K distributions are, defaults to $HOME/src
-export SRC=${SRC:-$HOME/src}
-
-# setup PATH
-K_RELEASE="$SRC/k/$K_VERSION/k-distribution/target/release/k"
-K_BIN="$K_RELEASE/lib/native/linux:$K_RELEASE/lib/native/linux64:$K_RELEASE/bin"
-export PATH="$PATH:$K_BIN"
-
-# setup LD_LIBRARY_PATH
-K_LD_LIBRARRY_PATH="$K_RELEASE/lib/native/linux64"
-export LD_LIBRARY_PATH="$K_LD_LIBRARRY_PATH"
-
-# setup OCaml for RV-K
-[[ "$K_VERSION" == 'rvk' ]] && eval `opam config env`
 
 # test logs
 test_logs="tests/logs"
