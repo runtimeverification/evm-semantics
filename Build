@@ -232,10 +232,10 @@ case "$run_command" in
 
     # K_VERSION
     # ---------
-    rvk-*)   K_VERSION=rvk   $0 ${run_command#rvk-}   $@ ;;
-    uiuck-*) K_VERSION=uiuck $0 ${run_command#uiuck-} $@ ;;
-    bothk-*) K_VERSION=rvk   $0 ${run_command#bothk-} $@
-             K_VERSION=uiuck $0 ${run_command#bothk-} $@ ;;
+    rvk-*)   export K_VERSION=rvk   ; $0 ${run_command#rvk-}   $@ ;;
+    uiuck-*) export K_VERSION=uiuck ; $0 ${run_command#uiuck-} $@ ;;
+    bothk-*) export K_VERSION=rvk   ; $0 ${run_command#bothk-} $@
+             export K_VERSION=uiuck ; $0 ${run_command#bothk-} $@ ;;
 
     *)             echo "
     K_VERSION: $K_VERSION
