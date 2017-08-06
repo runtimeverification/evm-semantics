@@ -17,6 +17,12 @@ This `smt-lemma` helps Z3 reason about stack over/under flow.
     rule #sizeWordStack ( _ ) >=Int 0 => true [smt-lemma]
 ```
 
+Sum to N
+--------
+
+As a demonstration of simple reachability claims involing a circularity, we prove the EVM [Sum to N](proofs/sum-to-n.md) program correct.
+This program sums the numbers from 1 to N (for sufficiently small N), including pre-conditions dis-allowing integer under/overflow and stack overflow.
+
 Hacker Gold (HKG) Token Smart Contract
 --------------------------------------
 
