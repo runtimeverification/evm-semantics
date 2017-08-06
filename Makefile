@@ -30,8 +30,19 @@ defn: $(defn_files)
 	pandoc-tangle --from markdown --to code-k --code ${K_VERSION} $< > $@
 
 proof_dir=tests/proofs
-proof_files=${proof_dir}/hkg/transferFrom-then-spec.k ${proof_dir}/hkg/transferFrom-else-spec.k ${proof_dir}/hkg/transfer-then-spec.k ${proof_dir}/hkg/transfer-else-spec.k
+proof_files=${proof_dir}/sum-to-n-spec.k \
+			${proof_dir}/hkg/allowance-spec.k \
+			${proof_dir}/hkg/approve-spec.k \
+			${proof_dir}/hkg/balanceOf-spec.k \
+			${proof_dir}/hkg/transfer-else-spec.k ${proof_dir}/hkg/transfer-then-spec.k \
+			${proof_dir}/hkg/transferFrom-else-spec.k ${proof_dir}/hkg/transferFrom-then-spec.k
+
 proofs: $(proof_files)
+
+tests/proofs/sum-to-n-spec.k: proofs/sum-to-n.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc-tangle --from markdown --to code-k --code sum-to-n $< > $@
 
 tests/proofs/hkg/%-spec.k: proofs/hkg.md
 	@echo "==  tangle: $@"
