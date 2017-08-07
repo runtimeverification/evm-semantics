@@ -6,10 +6,10 @@
 // helpers which make writing specifications simpler.
 
 
-requires "data.k"
+requires "evm.k"
 
 module VERIFICATION
-    import EVM-DATA
+    imports EVM
 
 
 // This `smt-lemma` helps Z3 reason about stack over/under flow.
