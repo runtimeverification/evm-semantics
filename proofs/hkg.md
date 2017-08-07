@@ -57,8 +57,8 @@ These parts of the proof change, but we would like to avoid specifying exactly h
          <pc>  1533 => 1772         </pc>
          <gas>  G   => G -Int 10544 </gas>
 
-         <wordStack>     TRANSFER : %CALLER_ID : WS
-              => B2 +Int TRANSFER : 0 : TRANSFER :  %CALLER_ID : WS
+         <wordStack>                        TRANSFER : %CALLER_ID : WS
+                  => B2 +Int TRANSFER : 0 : TRANSFER : %CALLER_ID : WS
          </wordStack>
          <accounts>
            <account>
@@ -290,14 +290,12 @@ imports ETHEREUM-SIMULATION
                  <balance> BAL           </balance>
                  <code>    %HKG_Program  </code>
                  <acctMap> "nonce" |-> 0 </acctMap>
-                 <storage> ...
-                           %ACCT_1_BALANCE |-> B1:Int
+                 <storage> %ACCT_1_BALANCE |-> B1:Int
                            %ACCT_1_ALLOWED |-> A1:Int
                            %ACCT_2_BALANCE |-> B2:Int
                            %ACCT_2_ALLOWED |-> A2:Int
                            3 |-> %ORIGIN_ID
                            4 |-> %CALLER_ID
-                           ...
                  </storage>
                </account>
              </accounts>
@@ -443,14 +441,12 @@ module BALANCE-OF-SPEC
                  <balance> BAL           </balance>
                  <code>    %HKG_Program  </code>
                  <acctMap> "nonce" |-> 0 </acctMap>
-                 <storage> ...
-                           %ACCT_1_BALANCE |-> B1:Int
+                 <storage> %ACCT_1_BALANCE |-> B1:Int
                            %ACCT_1_ALLOWED |-> A1:Int
                            %ACCT_2_BALANCE |-> B2:Int
                            %ACCT_2_ALLOWED |-> A2:Int
                            3 |-> %ORIGIN_ID
                            4 |-> %CALLER_ID
-                           ...
                  </storage>
                </account>
              </accounts>

@@ -60,14 +60,12 @@ imports ETHEREUM-SIMULATION
                  <balance> BAL           </balance>
                  <code>    %HKG_Program  </code>
                  <acctMap> "nonce" |-> 0 </acctMap>
-                 <storage> ...
-                           %ACCT_1_BALANCE |-> B1:Int
+                 <storage> %ACCT_1_BALANCE |-> B1:Int
                            %ACCT_1_ALLOWED |-> A1:Int
                            %ACCT_2_BALANCE |-> B2:Int
                            %ACCT_2_ALLOWED |-> A2:Int
                            3 |-> %ORIGIN_ID
                            4 |-> %CALLER_ID
-                           ...
                  </storage>
                </account>
              </accounts>
