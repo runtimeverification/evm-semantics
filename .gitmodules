@@ -2,3 +2,9 @@
 	path = tests/ethereum-tests
 	url = https://github.com/ethereum/tests.git
 	branch = develop
+[submodule "tests/ci/uiuc-k"]
+	path = tests/ci/uiuc-k
+	url = https://github.com/kframework/k/
+[submodule "tests/ci/rv-k"]
+	path = tests/ci/rv-k
+	url = https://github.com/runtimeverification/k

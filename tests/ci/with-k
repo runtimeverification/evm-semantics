@@ -1,0 +1,60 @@
+#!/usr/bin/bash
+
+set -e      # Exit immediately if any command fails
+set -u      # Using undefined variables is an error. Exit immediately
+
+base_dir="$(cd "$(dirname "$0")/../.."; pwd)"
+uiuck_dir="$base_dir/tests/ci/uiuc-k"
+rvk_dir="$base_dir/tests/ci/rv-k"
+
+use_uiuck() {
+    git submodule update  --init "$uiuck_dir"
+    (cd "$uiuck_dir"; mvn package -q -DskipTests)
+    export PATH="$uiuck_dir/k-distribution/target/release/k/bin/:$PATH"
+    export K_VERSION=uiuck
+}
+
+with_kserver() {
+    local exit_status=0
+    kserver & sleep 2
+    "$@" || exit_status=$?
+    stop-kserver
+    return $exit_status
+}
+
+use_rvk() {
+    type opam >/dev/null || {
+        echo >&2 '`opam` not installed`'
+        exit 1
+    }
+    git submodule update  --init "$rvk_dir"
+    (cd "$rvk_dir"; mvn package -q -DskipTests)
+    local release_dir="$rvk_dir/k-distribution/target/release/k"
+    export \
+        PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH" \
+        LD_LIBRARY_PATH="$release_dir/lib/native/linux64:${LD_LIBRARY_PATH:-}" \
+        K_VERSION=rvk
+   # TODO: This should install the packages needed regardless of whether
+   # opaminit has been run.
+   [[ -f ~/.ocamlinit ]] ||
+       "$rvk_dir"/k-distribution/src/main/scripts/bin/k-configure-opam-dev
+
+   # TODO: some of RV's K's scripts don't set classpath correctly, and
+   # kserver must be used.
+   eval $(opam config env)
+   opam install -y cryptokit
+}
+
+[[ $# -ne 0 ]] || {
+    echo >&2 "Usage: $0 [uiuck|rvk] command args"
+    exit 1
+}
+
+which_k="$1"; shift
+case "$which_k" in
+uiuck) use_uiuck; "$@" ;;
+       # TODO: RVK requires using kserver -- otherwise some of it's scripts
+       # don't set classpath correctly
+rvk)   use_rvk; with_kserver "$@" ;;
+*)     echo >&2 "Unknown K: '$which_k'"; exit 1 ;;
+esac
