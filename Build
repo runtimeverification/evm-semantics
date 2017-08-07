@@ -148,16 +148,11 @@ run_kdebug() {
 # Testers
 # -------
 
-test_proof() {
-    test_file="$1"
-    [[ "$(run_proof "$test_file")" == 'true' ]]
-}
-
 run_test() {
     run_make
     test_file="$1"; shift
     case "$test_file" in
-        *proofs/*) test_proof        "$test_file" "$@" ;;
+        *proofs/*) [[ "$(run_proof "$test_file")" == 'true' ]] ;;
         *        ) output_expected_file=tests/templates/output-"$K_VERSION".txt
                    [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
                    ( # Running in a sub-shell to avoid export spilling over to other tests
