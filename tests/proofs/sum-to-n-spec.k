@@ -21,7 +21,8 @@ module SUM-SPEC
 // `<previousGas>`).
 
 
-    rule <mode> NORMAL </mode>
+    rule <k> #execute ... </k>
+         <mode> NORMAL </mode>
          <schedule> DEFAULT </schedule>
          <callStack> .List </callStack>
          <memoryUsed> 0   </memoryUsed>
@@ -55,7 +56,8 @@ module SUM-SPEC
 // The circularity is in the same static environment as the overall proof-goal.
 
 
-    rule <mode> NORMAL </mode>
+    rule <k> #execute ... </k>
+         <mode> NORMAL </mode>
          <schedule> DEFAULT </schedule>
          <callStack> .List </callStack>
          <memoryUsed> 0   </memoryUsed>
