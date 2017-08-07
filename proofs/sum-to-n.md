@@ -17,10 +17,10 @@ Primary Claim
 
 ```{.k .sum-to-n}
     rule <program> #asMapOpCodes(
-                        PUSH(1, 0); PUSH(1, N); JUMPDEST; DUP(1); ISZERO; PUSH(1, 21); JUMPI; DUP(1);
-                        SWAP(2); ADD; SWAP(1); PUSH(1, 1); SWAP(1); SUB; PUSH(1, 4); JUMP; JUMPDEST;
+                       PUSH(1, 0); PUSH(32, N); JUMPDEST; DUP(1); ISZERO; PUSH(1, 52); JUMPI; DUP(1);
+                        SWAP(2); ADD; SWAP(1); PUSH(1, 1); SWAP(1); SUB; PUSH(1, 35); JUMP; JUMPDEST;
                    .OpCodes) </program>
-         <pc> 0 => 22 </pc>
+         <pc> 0 => 53 </pc>
          <wordStack> WS:WordStack => 0 : N *Int (N +Int 1) /Int 2 : WS:WordStack </wordStack>
          <gas> G => G -Int (52 *Int N +Int 27) </gas>
          <k> #execute ...</k>
@@ -41,10 +41,10 @@ Circularity
 
 ```{.k .sum-to-n}
     rule <program> #asMapOpCodes(
-                        PUSH(1, 0); PUSH(1, N); JUMPDEST; DUP(1); ISZERO; PUSH(1, 21); JUMPI; DUP(1);
-                        SWAP(2); ADD; SWAP(1); PUSH(1, 1); SWAP(1); SUB; PUSH(1, 4); JUMP; JUMPDEST;
+                       PUSH(1, 0); PUSH(32, N); JUMPDEST; DUP(1); ISZERO; PUSH(1, 52); JUMPI; DUP(1);
+                        SWAP(2); ADD; SWAP(1); PUSH(1, 1); SWAP(1); SUB; PUSH(1, 35); JUMP; JUMPDEST;
                    .OpCodes) </program>
-         <pc> 4 => 22 </pc>
+         <pc> 35 => 53 </pc>
          <wordStack> (I => 0) : (S => S +Int I *Int (I +Int 1) /Int 2) : WS:WordStack </wordStack>
          <gas> G => G -Int (52 *Int I +Int 21) </gas>
          <k> #execute ...</k>
