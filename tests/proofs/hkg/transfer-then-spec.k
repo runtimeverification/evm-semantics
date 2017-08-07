@@ -58,8 +58,8 @@ module TRANSFER-SPEC
          <pc>  1533 => 1772         </pc>
          <gas>  G   => G -Int 10544 </gas>
 
-         <wordStack>     TRANSFER : %CALLER_ID : WS
-              => B2 +Int TRANSFER : 0 : TRANSFER :  %CALLER_ID : WS
+         <wordStack>                        TRANSFER : %CALLER_ID : WS
+                  => B2 +Int TRANSFER : 0 : TRANSFER : %CALLER_ID : WS
          </wordStack>
          <accounts>
            <account>
