@@ -5,10 +5,10 @@ Using K's reachability logic theorem prover, we're able to verify many propertie
 This module defines some helpers which make writing specifications simpler.
 
 ```{.k .uiuck}
-requires "data.k"
+requires "evm.k"
 
 module VERIFICATION
-    import EVM-DATA
+    imports EVM
 ```
 
 This `smt-lemma` helps Z3 reason about stack over/under flow.

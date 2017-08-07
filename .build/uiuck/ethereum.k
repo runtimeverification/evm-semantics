@@ -5,12 +5,20 @@
 // execution of the EVM is defined in [the EVM file](evm.md).
 
 
+requires "verification.k"
+
+
+
 requires "evm.k"
 requires "analysis.k"
 
 module ETHEREUM-SIMULATION
     imports EVM
     imports EVM-ANALYSIS
+
+
+
+    imports VERIFICATION
 
 
 // An Ethereum simulation is a list of Ethereum commands. Some Ethereum commands

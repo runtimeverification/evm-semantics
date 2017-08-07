@@ -5,20 +5,12 @@ The EVM is a stack machine over some simple opcodes.
 Most of the opcodes are "local" to the execution state of the machine, but some of them must interact with the world state.
 This file only defines the local execution operations, the file `ethereum.md` will define the interactions with the world state.
 
-```{.k .uiuck}
-requires "verification.k"
-```
-
 ```{.k .uiuck .rvk}
 requires "data.k"
 
 module EVM
     imports STRING
     imports EVM-DATA
-```
-
-```{.k .uiuck}
-    imports VERIFICATION
 ```
 
 Configuration

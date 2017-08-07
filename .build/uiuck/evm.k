@@ -7,19 +7,11 @@
 // file `ethereum.md` will define the interactions with the world state.
 
 
-requires "verification.k"
-
-
-
 requires "data.k"
 
 module EVM
     imports STRING
     imports EVM-DATA
-
-
-
-    imports VERIFICATION
 
 
 // Configuration
