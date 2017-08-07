@@ -126,10 +126,12 @@ run_proof() {
     [[ "$K_VERSION" == 'uiuck' ]] || die "Proofs must be run with 'K_VERSION=uiuck'."
     run_make
     local proof_file="$1"; shift
-    export cSCHEDULE=${cSCHEDULE:-DEFAULT}
-    export cMODE=${cMODE:-NORMAL}
-    krun --directory .build/$K_VERSION/ -cSCHEDULE=$cSCHEDULE -cMODE=$cMODE \
-         --z3-executable tests/templates/dummy-proof-input.json --prove "$proof_file"
+    local cSCHEDULE=${cSCHEDULE:-DEFAULT}
+    local cMODE=${cMODE:-NORMAL}
+    ( krun --directory .build/$K_VERSION/ -cSCHEDULE=$cSCHEDULE -cMODE=$cMODE \
+         --z3-executable tests/templates/dummy-proof-input.json --prove "$proof_file" \
+         </dev/null # grumble grumble `krun --prove` consumes stdin
+    )
 }
 
 run_krun() {
