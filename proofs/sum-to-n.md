@@ -18,7 +18,8 @@ Primary Claim
 The first part of the claim is largely static (or abstracted away, like `<previousGas>`).
 
 ```{.k .sum-to-n}
-    rule <mode> NORMAL </mode>
+    rule <k> #execute ... </k>
+         <mode> NORMAL </mode>
          <schedule> DEFAULT </schedule>
          <callStack> .List </callStack>
          <memoryUsed> 0   </memoryUsed>
@@ -51,7 +52,8 @@ Circularity
 The circularity is in the same static environment as the overall proof-goal.
 
 ```{.k .sum-to-n}
-    rule <mode> NORMAL </mode>
+    rule <k> #execute ... </k>
+         <mode> NORMAL </mode>
          <schedule> DEFAULT </schedule>
          <callStack> .List </callStack>
          <memoryUsed> 0   </memoryUsed>
