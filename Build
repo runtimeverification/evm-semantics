@@ -30,6 +30,16 @@ lint_krun_uiuck() {
 
 lint_krun_rvk() { cat - ; }
 
+detect_k_version() {
+    type kompile >/dev/null || die 'kompile not in $PATH'
+    if krun --version | grep 'RV' >/dev/null 2>&1; then
+        K_VERSION=rvk
+    else
+        K_VERSION=uiuck
+    fi
+    progress "Using $K_VERSION"
+}
+
 ksetup() {
     # SRC is where K distributions are, defaults to $HOME/src
     export SRC=${SRC:-$HOME/src}
@@ -204,7 +214,8 @@ run_partests() {
 # ----
 
 cd "$(dirname $0)"
-progress "Using $K_VERSION"
+
+detect_k_version
 
 # test logs
 test_logs="tests/logs"

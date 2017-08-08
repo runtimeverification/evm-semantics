@@ -11,14 +11,13 @@ use_uiuck() {
     git submodule update  --init "$uiuck_dir"
     (cd "$uiuck_dir"; mvn package -q -DskipTests)
     export PATH="$uiuck_dir/k-distribution/target/release/k/bin/:$PATH"
-    export K_VERSION=uiuck
 }
 
 with_kserver() {
     local exit_status=0
     kserver & sleep 2
     "$@" || exit_status=$?
-    stop-kserver
+    stop-kserver || true # Fails for some reason :-(
     return $exit_status
 }
 
@@ -32,8 +31,7 @@ use_rvk() {
     local release_dir="$rvk_dir/k-distribution/target/release/k"
     export \
         PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH" \
-        LD_LIBRARY_PATH="$release_dir/lib/native/linux64:${LD_LIBRARY_PATH:-}" \
-        K_VERSION=rvk
+        LD_LIBRARY_PATH="$release_dir/lib/native/linux64:${LD_LIBRARY_PATH:-}"
    # TODO: This should install the packages needed regardless of whether
    # opaminit has been run.
    [[ -f ~/.ocamlinit ]] ||
