@@ -32,10 +32,13 @@ use_rvk() {
     export \
         PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH" \
         LD_LIBRARY_PATH="$release_dir/lib/native/linux64:${LD_LIBRARY_PATH:-}"
-   # TODO: This should install the packages needed regardless of whether
-   # opaminit has been run.
-   [[ -f ~/.ocamlinit ]] ||
-       "$rvk_dir"/k-distribution/src/main/scripts/bin/k-configure-opam-dev
+
+   opam init --no-setup
+   opam repository add k "$rvk_dir/k-distribution/target/release/k/lib/opam" \
+    || opam repository set-url k "$rvk_dir/k-distribution/target/release/k/lib/opam"
+   opam update
+   opam switch 4.03.0+k
+   opam install mlgmp zarith uuidm camomile atdgen atdj ctypes ctypes-foreign
 
    # TODO: some of RV's K's scripts don't set classpath correctly, and
    # kserver must be used.
