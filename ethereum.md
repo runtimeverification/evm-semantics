@@ -114,7 +114,9 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ```{.k .uiuck .rvk}
     syntax Set ::= "#loadKeys" [function]
  // -------------------------------------
-    rule #loadKeys => ( SetItem("env") SetItem("pre") )
+    rule #loadKeys => ( SetItem("env") SetItem("pre")
+                        SetItem("blocks") SetItem("genesisBlockHeader") SetItem("network")
+                      )
 
     rule run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } requires KEY in #loadKeys
 ```
@@ -149,7 +151,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ```{.k .uiuck .rvk}
     syntax Set ::= "#discardKeys" [function]
  // ----------------------------------------
-    rule #discardKeys => ( SetItem("//") SetItem("_info") )
+    rule #discardKeys => ( SetItem("//") SetItem("_info") SetItem("genesisRLP") )
 
     rule run TESTID : { KEY : _ , REST } => run TESTID : { REST } requires KEY in #discardKeys
 ```
