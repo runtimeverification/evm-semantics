@@ -209,31 +209,55 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax Bool ::= "#hasPost?" "(" JSON ")" [function]
  // ---------------------------------------------------
     rule #hasPost? ({ .JSONList }) => false
-    rule #hasPost? ({ (KEY:String) : _ , REST }) => KEY ==String "post" orBool #hasPost? ({ REST })
+    rule #hasPost? ({ (KEY:String) : _ , REST }) => (KEY in #postKeys) orBool #hasPost? ({ REST })
+```
 
-    syntax Set ::= "#postKeys" [function]
+-   `#loadKeys` are all the JSON nodes which should be considered as loads before execution.
+
+```{.k .uiuck .rvk}
+    syntax Set ::= "#loadKeys" [function]
  // -------------------------------------
-    rule #postKeys => (SetItem("post") SetItem("expect") SetItem("export") SetItem("expet"))
+    rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") )
+
+    rule run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } requires KEY in #loadKeys
 ```
 
-Here we make sure fields that are pre-conditions are `load`ed first, and post-conditions are `check`ed last.
+-   `#execKeys` are all the JSON nodes which should be considered for execution (between loading and checking).
 
 ```{.k .uiuck .rvk}
-    rule run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST }
-      requires KEY in (SetItem("env") SetItem("pre"))
+    syntax Set ::= "#execKeys" [function]
+ // -------------------------------------
+    rule #execKeys => ( SetItem("exec") SetItem("lastblockhash") )
 
-    rule run TESTID : { "//" : _ , REST } => run TESTID : { REST }
+    rule run TESTID : { KEY : (VAL:JSON) , NEXT , REST } => run TESTID : { NEXT , KEY : VAL , REST } requires KEY in #execKeys
 
-    rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY : VAL }
-      requires KEY in (SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("gas") #postKeys)
-```
-
-The particular key `"exec"` should be processed last, to ensure that the pre/post-conditions are in place.
-When it has finished loading it's state, it should `start ~> flush` to perform the execution.
-
-```{.k .uiuck .rvk}
-    rule run TESTID : { "exec" : (EXEC:JSON) , NEXT , REST } => run TESTID : { NEXT , "exec" : EXEC , REST }
     rule run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush
+```
+
+-   `#postKeys` are a subset of `#checkKeys` which correspond to post-state account checks.
+-   `#checkKeys` are all the JSON nodes which should be considered as checks after execution.
+
+```{.k .uiuck .rvk}
+    syntax Set ::= "#postKeys" [function] | "#allPostKeys" [function] | "#checkKeys" [function]
+ // -------------------------------------------------------------------------------------------
+    rule #postKeys    => ( SetItem("post") SetItem("postState") )
+    rule #allPostKeys => ( #postKeys SetItem("expect") SetItem("export") SetItem("expet") )
+    rule #checkKeys   => ( #allPostKeys SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("gas")
+                           SetItem("blockHeader") SetItem("transactions") SetItem("uncleHeaders")
+                         )
+
+    rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { "post" : VAL } requires KEY in #allPostKeys
+    rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY    : VAL } requires KEY in #checkKeys andBool notBool KEY in #allPostKeys
+```
+
+-   `#discardKeys` are all the JSON nodes in the tests which should just be ignored.
+
+```{.k .uiuck .rvk}
+    syntax Set ::= "#discardKeys" [function]
+ // ----------------------------------------
+    rule #discardKeys => ( SetItem("//") SetItem("_info") SetItem("genesisRLP") SetItem("genesisBlockHeader") )
+
+    rule run TESTID : { KEY : _ , REST } => run TESTID : { REST } requires KEY in #discardKeys
 ```
 
 State Manipulation
@@ -425,7 +449,7 @@ Here we load the environmental information.
     rule check (KEY:String) : { JS:JSONList => #sortJSONList(JS) }
       requires KEY in (SetItem("logs") SetItem("callcreates")) andBool notBool #isSorted(JS)
 
-    rule check TESTID : { KEY : POST } => check "account" : POST ~> failure TESTID requires KEY in #postKeys
+    rule check TESTID : { "post" : POST } => check "account" : POST ~> failure TESTID
     rule check "account" : { ACCTID: { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
  // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     rule check "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
