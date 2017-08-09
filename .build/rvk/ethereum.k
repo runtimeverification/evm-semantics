@@ -438,6 +438,18 @@ module ETHEREUM-SIMULATION
     rule <k> load "exec" : { "code" : (CODE:Map)       } => . ... </k> <program>  _ => CODE </program>
 
 
+// The `"network"` key allows setting the fee schedule inside the test.
+
+
+    rule <k> load "network" : SCHEDSTRING => . ... </k>
+         <schedule> _ => #asScheduleString(SCHEDSTRING) </schedule>
+
+    syntax Schedule ::= #asScheduleString ( String ) [function]
+ // -----------------------------------------------------------
+    rule #asScheduleString("EIP150") => EIP150
+    rule #asScheduleString("EIP158") => EIP158
+
+
 // ### Checking State
 
 // -   `check_` checks if an account/transaction appears in the world-state
