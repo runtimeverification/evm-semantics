@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 
 set -e      # Exit immediately if any command fails
 set -u      # Using undefined variables is an error. Exit immediately
