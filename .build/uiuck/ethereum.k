@@ -213,6 +213,8 @@ module ETHEREUM-SIMULATION
     rule load DATA : [ .JSONList ] => .
     rule load DATA : [ { TEST } , REST ] => load DATA : { TEST } ~> load DATA : [ REST ]
 
+    rule load "transaction" : { JS:JSONList => #sortJSONList(JS) } requires notBool #isSorted(JS)
+
 
 // Here we perform pre-proccesing on account data which allows "pretty"
 // specification of input.
