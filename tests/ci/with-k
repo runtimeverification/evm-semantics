@@ -33,19 +33,19 @@ use_rvk() {
         PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH" \
         LD_LIBRARY_PATH="$release_dir/lib/native/linux64:${LD_LIBRARY_PATH:-}"
 
-   opam init --no-setup
-   opam repository add k "$rvk_dir/k-distribution/target/release/k/lib/opam" \
-    || opam repository set-url k "$rvk_dir/k-distribution/target/release/k/lib/opam"
-   cp "$rvk_dir"/k-distribution/include/ocaml/fakelibs/{libffi.a,libz.a}
-   export LIBFFI_LIBS="-L$rvk_dir/k-distribution/include/ocaml/fakelibs -lffi"
-   export LIBFFI_CFLAGS="-I$rvk_dir/k-distribution/include/ocaml/fakelibs"
-   opam update
-   opam switch 4.03.0+k
-   opam install --yes mlgmp zarith uuidm cryptokit
+    opam init --no-setup
+    opam repository add k "$rvk_dir/k-distribution/target/release/k/lib/opam" \
+        || opam repository set-url k "$rvk_dir/k-distribution/target/release/k/lib/opam"
+    cp "$rvk_dir"/k-distribution/include/ocaml/fakelibs/{libffi.a,libz.a}
+    export LIBFFI_LIBS="-L$rvk_dir/k-distribution/include/ocaml/fakelibs -lffi"
+    export LIBFFI_CFLAGS="-I$rvk_dir/k-distribution/include/ocaml/fakelibs"
+    opam update
+    opam switch 4.03.0+k
+    opam install --yes mlgmp zarith uuidm cryptokit
 
-   # TODO: some of RV's K's scripts don't set classpath correctly, and
-   # kserver must be used.
-   eval $(opam config env)
+    # TODO: some of RV's K's scripts don't set classpath correctly, and
+    # kserver must be used.
+    eval $(opam config env)
 }
 
 [[ $# -ne 0 ]] || {
@@ -55,10 +55,10 @@ use_rvk() {
 
 which_k="$1"; shift
 case "$which_k" in
-uiuck) use_uiuck; "$@" ;;
-       # TODO: RVK requires using kserver -- otherwise some of it's scripts
-       # don't set classpath correctly
-rvk)   use_rvk; with_kserver "$@" ;;
-bothk) use_rvk; with_kserver "$@"; use_uiuck; "$@" ;;
-*)     echo >&2 "Unknown K: '$which_k'"; exit 1 ;;
+    uiuck) use_uiuck; "$@" ;;
+           # TODO: RVK requires using kserver -- otherwise some of it's scripts
+           # don't set classpath correctly
+    rvk)   use_rvk; with_kserver "$@" ;;
+    bothk) use_rvk; with_kserver "$@"; use_uiuck; "$@" ;;
+    *)     echo >&2 "Unknown K: '$which_k'"; exit 1 ;;
 esac
