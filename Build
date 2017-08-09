@@ -66,12 +66,15 @@ filter_tests() {
     esac
 }
 
-list_vmtests()      { find "tests/VMTests"      -name '*.json' | grep -v 'loop_stacklimit_1021' ; }
+list_vm()      { find "tests/VMTests"         -name '*.json' | grep -v 'loop_stacklimit_1021' ; }
+list_bchain()  { find "tests/BlockchainTests" -name '*.json' ; }
+test_lists="vm bchain"
+
 list_gas_analysis() { find "tests/gas-analysis" -name '*.evm' ; }
 list_proofs()       { find "tests/proofs"       -name '*-spec.k' ; }
-test_lists="vmtests gas_analysis proofs"
+test_lists="$test_lists gas_analysis proofs"
 
-list_rvk()   { list_vmtests ; }
+list_rvk()   { list_vm ; }
 list_uiuck() { cat tests/short-list ; list_gas_analysis ; list_proofs ; }
 list_all()   { list_$K_VERSION ; }
 list_quick() { list_all | sort -R | head -n 20 ; }
@@ -86,9 +89,10 @@ run_uiuck() {
     export K_OPTS=-Xss500m
     export cSCHEDULE=${cSCHEDULE:-DEFAULT}
     case "$run_file" in
-       *gas-analysis/*) krun_opts=( -cMODE=GASANALYZE "$run_file" )             ;;
-       *VMTests/*     ) krun_opts=( -cMODE=VMTESTS    "$run_file" )             ;;
-       *              ) die "Don't know how to set 'krun_opts' for '$run_file'" ;;
+       *gas-analysis/*   ) krun_opts=( -cMODE=GASANALYZE "$run_file" )             ;;
+       *VMTests/*        ) krun_opts=( -cMODE=VMTESTS    "$run_file" )             ;;
+       *BlockchainTests/*) krun_opts=( -cMODE=NORMAL     "$run_file" )             ;;
+       *                 ) die "Don't know how to set 'krun_opts' for '$run_file'" ;;
     esac
     krun --directory .build/$K_VERSION/ -cSCHEDULE=$cSCHEDULE "${krun_opts[@]}" "$@"
 }

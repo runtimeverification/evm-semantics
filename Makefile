@@ -58,19 +58,30 @@ tests/proofs/bad/hkg-token-buggy-spec.k: proofs/token-buggy-spec.md
 # Tests
 # -----
 
-split-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
-			 tests/VMTests/vmBitwiseLogicOperationTest/make.timestamp \
-			 tests/VMTests/vmBlockInfoTest/make.timestamp \
-			 tests/VMTests/vmEnvironmentalInfoTest/make.timestamp \
-			 tests/VMTests/vmIOandFlowOperationsTest/make.timestamp \
-			 tests/VMTests/vmLogTest/make.timestamp \
-			 tests/VMTests/vmPerformanceTest/make.timestamp \
-			 tests/VMTests/vmPushDupSwapTest/make.timestamp \
-			 tests/VMTests/vmSha3Test/make.timestamp \
-			 tests/VMTests/vmSystemOperationsTest/make.timestamp \
-			 tests/VMTests/vmtests/make.timestamp \
-			 tests/VMTests/vmInputLimits/make.timestamp \
-			 tests/VMTests/vmInputLimitsLight/make.timestamp
+split-tests: vm-tests blockchain-tests
+
+vm-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
+		  tests/VMTests/vmBitwiseLogicOperationTest/make.timestamp \
+		  tests/VMTests/vmBlockInfoTest/make.timestamp \
+		  tests/VMTests/vmEnvironmentalInfoTest/make.timestamp \
+		  tests/VMTests/vmIOandFlowOperationsTest/make.timestamp \
+		  tests/VMTests/vmLogTest/make.timestamp \
+		  tests/VMTests/vmPerformanceTest/make.timestamp \
+		  tests/VMTests/vmPushDupSwapTest/make.timestamp \
+		  tests/VMTests/vmSha3Test/make.timestamp \
+		  tests/VMTests/vmSystemOperationsTest/make.timestamp \
+		  tests/VMTests/vmtests/make.timestamp \
+		  tests/VMTests/vmInputLimits/make.timestamp \
+		  tests/VMTests/vmInputLimitsLight/make.timestamp
+
+blockchain-tests: tests/BlockchainTests/bcStateTests/BLOCKHASH_Bounds/make.timestamp \
+				  tests/BlockchainTests/bcStateTests/BadStateRootTxBC/make.timestamp \
+				  tests/BlockchainTests/bcStateTests/OOGStateCopyContainingDeletedContract/make.timestamp \
+				  tests/BlockchainTests/bcStateTests/blockhashTests/make.timestamp \
+				  tests/BlockchainTests/bcStateTests/multimpleBalanceInstruction/make.timestamp \
+				  tests/BlockchainTests/bcStateTests/simpleSuicide/make.timestamp \
+				  tests/BlockchainTests/bcStateTests/suicideCoinbase/make.timestamp \
+				  tests/BlockchainTests/bcStateTests/transactionFromNotExistingAccount/make.timestamp
 
 passing_test_file=tests/passing.expected
 all_tests=$(wildcard tests/VMTests/*/*.json)

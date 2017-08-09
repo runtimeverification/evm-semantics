@@ -18,6 +18,7 @@
 # This holds the tests that are split into one test per file from
 # the ethereum tests
 /tests/VMTests
+/tests/BlockchainTests
 
 # Directory for storing temporary files like logs, snippets and TODO lists.
 /tmp
