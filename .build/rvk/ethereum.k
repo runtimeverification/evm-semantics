@@ -107,7 +107,7 @@ module ETHEREUM-SIMULATION
 
     syntax Set ::= "#postKeys" [function]
  // -------------------------------------
-    rule #postKeys => (SetItem("post") SetItem("expect") SetItem("export") SetItem("expet"))
+    rule #postKeys => (SetItem("post") SetItem("postState") SetItem("expect") SetItem("export") SetItem("expet"))
 
 
 // Here we make sure fields that are pre-conditions are `load`ed first, and
