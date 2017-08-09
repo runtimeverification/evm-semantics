@@ -5,7 +5,7 @@ endif
 # Common to all versions of K
 # ===========================
 
-.PHONY: all clean build tangle defn proofs split-tests
+.PHONY: all clean build tangle defn proofs split-tests test
 
 all: build split-tests
 
@@ -65,6 +65,17 @@ split-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
 			 tests/VMTests/vmtests/make.timestamp \
 			 tests/VMTests/vmInputLimits/make.timestamp \
 			 tests/VMTests/vmInputLimitsLight/make.timestamp
+
+passing_test_file=tests/passing.expected
+all_tests=$(wildcard tests/VMTests/*/*.json)
+skipped_tests=$(wildcard tests/VMTests/vmPerformanceTest/*.json) tests/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1021.json
+passing_tests=$(filter-out ${skipped_tests}, ${all_tests})
+passing_targets=${passing_tests:=.test}
+
+test: $(passing_targets)
+
+tests/%.test: tests/% build
+	./evm $<
 
 tests/%/make.timestamp: tests/ethereum-tests/%.json
 	@echo "==   split: $@"
