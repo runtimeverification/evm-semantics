@@ -36,14 +36,16 @@ use_rvk() {
    opam init --no-setup
    opam repository add k "$rvk_dir/k-distribution/target/release/k/lib/opam" \
     || opam repository set-url k "$rvk_dir/k-distribution/target/release/k/lib/opam"
+   cp "$rvk_dir"/k-distribution/include/ocaml/fakelibs/{libffi.a,libz.a}
+   export LIBFFI_LIBS="-L$rvk_dir/k-distribution/include/ocaml/fakelibs -lffi"
+   export LIBFFI_CFLAGS="-I$rvk_dir/k-distribution/include/ocaml/fakelibs"
    opam update
    opam switch 4.03.0+k
-   opam install mlgmp zarith uuidm camomile atdgen atdj ctypes ctypes-foreign
+   opam install --yes mlgmp zarith uuidm cryptokit
 
    # TODO: some of RV's K's scripts don't set classpath correctly, and
    # kserver must be used.
    eval $(opam config env)
-   opam install -y cryptokit
 }
 
 [[ $# -ne 0 ]] || {
