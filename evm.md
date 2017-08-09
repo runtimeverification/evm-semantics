@@ -486,7 +486,7 @@ Some of them require an argument to be interpereted as an address (modulo 160 bi
     rule #addr?(EXTCODESIZE,  W) => #addr(W)
     rule #addr?(EXTCODECOPY,  W) => #addr(W)
     rule #addr?(SELFDESTRUCT, W) => #addr(W)
-    rule #addr?(OP, W)           => W [owise]
+    rule #addr?(OP, W)           => W        requires (OP =/=K BALANCE) andBool (OP =/=K EXTCODESIZE) andBool (OP =/=K EXTCODECOPY) andBool (OP =/=K SELFDESTRUCT)
 ```
 
 `StackOp` is used for opcodes which require a large portion of the stack.
