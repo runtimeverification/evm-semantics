@@ -233,12 +233,21 @@ module ETHEREUM-SIMULATION
  // --------------------------------------
     rule load DATA : { .JSONList } => .
     rule load DATA : { KEY : VALUE , REST } => load DATA : { KEY : VALUE } ~> load DATA : { REST }
-      requires REST =/=K .JSONList andBool DATA =/=String "transaction"
+      requires REST =/=K .JSONList andBool notBool DATA in #sortedLoadKeys
 
     rule load DATA : [ .JSONList ] => .
     rule load DATA : [ { TEST } , REST ] => load DATA : { TEST } ~> load DATA : [ REST ]
 
-    rule load "transaction" : { JS:JSONList => #sortJSONList(JS) } requires notBool #isSorted(JS)
+
+// -   `#sortedLoadKeys` marks JSON nodes which need to be kept together and
+//     matched all at once (so they are sorted as well).
+
+
+    syntax Set ::= "#sortedLoadKeys" [function]
+ // -------------------------------------------
+    rule #sortedLoadKeys => ( SetItem("transaction") SetItem("blocks") )
+
+    rule load KEY : { JS:JSONList => #sortJSONList(JS) } requires KEY in #sortedLoadKeys andBool notBool #isSorted(JS)
 
 
 // Here we perform pre-proccesing on account data which allows "pretty"
