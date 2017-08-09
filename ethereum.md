@@ -366,9 +366,7 @@ Here we check the other post-conditions associated with an EVM test.
  // ------------------------------------------------------------------------------
     rule check "gas" : ((GLEFT:String) => #parseWord(GLEFT))
     rule <k> check "gas" : GLEFT => . ... </k> <gas> GLEFT </gas>
-```
 
-```{.k .uiuck .rvk}
     rule check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID
  // ----------------------------------------------------------------------------------------------------
     rule check "callcreates" : { ("data" : (DATA:String)) , ("destination" : (ACCTTO:String)) , ("gasLimit" : (GLIMIT:String)) , ("value" : (VAL:String)) , .JSONList }
