@@ -40,25 +40,7 @@ detect_k_version() {
     progress "Using $K_VERSION"
 }
 
-ksetup() {
-    # SRC is where K distributions are, defaults to $HOME/src
-    export SRC=${SRC:-$HOME/src}
-
-    # setup PATH
-    K_RELEASE="$SRC/k/$K_VERSION/k-distribution/target/release/k"
-    K_BIN="$K_RELEASE/lib/native/linux:$K_RELEASE/lib/native/linux64:$K_RELEASE/bin"
-    export PATH="$PATH:$K_BIN"
-
-    # setup LD_LIBRARY_PATH
-    K_LD_LIBRARRY_PATH="$K_RELEASE/lib/native/linux64"
-    export LD_LIBRARY_PATH="$K_LD_LIBRARRY_PATH"
-
-    # setup OCaml for RV-K
-    [[ "$K_VERSION" == 'rvk' ]] && eval `opam config env` || true
-}
-
 run_make() {
-    ksetup
     local make_opts=
     type pandoc-tangle >/dev/null 2>&1 || {
         make_opts="--assume-old ethereum.md --assume-old evm.md \
@@ -241,13 +223,6 @@ case "$run_command" in
     test-*)    list_${run_command#test-}    | filter_tests "$@" | run_tests    ;;
     partest-*) list_${run_command#partest-} | filter_tests "$@" | run_partests ;;
 
-    # K_VERSION
-    # ---------
-    rvk-*)   export K_VERSION=rvk   ; $0 ${run_command#rvk-}   $@ ;;
-    uiuck-*) export K_VERSION=uiuck ; $0 ${run_command#uiuck-} $@ ;;
-    bothk-*) export K_VERSION=rvk   ; $0 ${run_command#bothk-} $@
-             export K_VERSION=uiuck ; $0 ${run_command#bothk-} $@ ;;
-
     *)             echo "
     K_VERSION: $K_VERSION
     usage:
@@ -275,11 +250,5 @@ case "$run_command" in
        $0 partest-<test-list> <regx>    Run tests from <test-list> filtered by <regx> with GNU parallel
 
        Available <test-list>: $test_lists
-
-       # K_VERSION
-       # ---------
-       $0 rvk-<command>   <args>    Call '$0 <command> <args>' with 'K_VERSION=rvk'
-       $0 uiuck-<command> <args>    Call '$0 <command> <args>' with 'K_VERSION=uiuck'
-       $0 bothk-<command> <args>    Call '$0 <command> <args>' first with 'rvk' then 'uiuck'
 "; exit ;;
 esac
