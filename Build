@@ -218,7 +218,7 @@ cd "$(dirname $0)"
 detect_k_version
 
 # test logs
-test_logs="tests/logs"
+test_logs=".build/logs"
 mkdir -p "$test_logs"
 now_passing="$test_logs/passing.lastrun"
 
