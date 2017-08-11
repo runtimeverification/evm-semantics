@@ -1051,23 +1051,35 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 -   `#return__` is a placeholder for the calling program, specifying where to place the returned data in memory.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#call" Int Int Map Int Int WordStack
+    syntax InternalOp ::= "#call" Int Int Int Int Int WordStack
+                        | "#callWithCode" Int Int Map Int Int WordStack
                         | "#mkCall" Int Int Map Int Int WordStack
  // -------------------------------------------------------------
-    rule <mode> EXECMODE </mode>
-         <schedule> SCHED </schedule>
-         <k> #call ACCTFROM ACCTTO CODE GCAP VALUE ARGS
-           => #pushCallStack ~> #pushWorldState
-           ~> #transferFunds ACCTFROM ACCTTO VALUE
-           ~> #mkCall ACCTFROM ACCTTO CODE Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE ARGS
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE ARGS
+           => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) GLIMIT VALUE ARGS
           ...
          </k>
-         <previousGas> GAVAIL </previousGas>
+      requires ACCTTO >Int 0 andBool ACCTTO <=Int 4
+
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE ARGS
+           => #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE ARGS
+          ...
+         </k>
+         <acctID> ACCTCODE </acctID>
+         <code> CODE </code>
+      requires notBool (ACCTTO >Int 0 andBool ACCTTO <=Int 4)
+        
+    rule <schedule> SCHED </schedule>
+         <k> #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE ARGS
+           => #pushCallStack ~> #pushWorldState
+           ~> #transferFunds ACCTFROM ACCTTO VALUE
+           ~> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE ARGS
+          ...
+         </k>
          <callDepth> CD </callDepth>
-         <activeAccounts> ACCTS </activeAccounts>
       requires CD <Int 1024
 
-    rule <k> #call _ _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
+    rule <k> #callWithCode _ _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
          <callDepth> CD </callDepth>
       requires CD >=Int 1024
 
@@ -1124,57 +1136,38 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTTO CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
           ...
          </k>
+         <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <code> CODE </code>
-           ...
-         </account>
-      requires notBool (ACCTTO >Int 0 andBool ACCTTO <=Int 4)
-
-    rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTTO (0 |-> #precompiled(ACCTTO)) GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
-          ...
-         </k>
-         <id> ACCTFROM </id>
-         <localMem> LM </localMem>
-         requires ACCTTO >Int 0 andBool ACCTTO <=Int 4
+         <activeAccounts> ACCTS </activeAccounts>
+         <previousGas> GAVAIL </previousGas>
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
            ...
          </k>
+         <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <code> CODE </code>
-           ...
-         </account>
+         <activeAccounts> ACCTS </activeAccounts>
+         <previousGas> GAVAIL </previousGas>
 
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM CODE GCAP 0 #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTFROM ACCTTO GCAP 0 #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
            ...
          </k>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <code> CODE </code>
-           ...
-         </account>
 ```
 
 ### Account Creation/Deletion
