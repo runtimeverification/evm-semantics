@@ -1,5 +1,5 @@
 version = "1.0"
 description = "Ethereum Plugin for K -- OCAML"
-requires = "gmp zarith cryptokit"
+requires = "gmp zarith cryptokit secp256k1"
 archive(native) = "semantics.cmxa"
 archive(byte) = "semantics.cma"
