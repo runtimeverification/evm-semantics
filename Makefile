@@ -86,7 +86,7 @@ passing_targets=${passing_tests:=.test}
 test: $(passing_targets)
 
 tests/%.test: tests/% build
-	./evm $<
+	./vmtest $<
 
 tests/%/make.timestamp: tests/ethereum-tests/%.json
 	@echo "==   split: $@"
