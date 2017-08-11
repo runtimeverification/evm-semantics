@@ -10,3 +10,6 @@
 	url = https://github.com/runtimeverification/k
 	# `with-k rvk` needs to create a stubbed `libz.a`
 	ignore = untracked
+[submodule ".build/secp256k1"]
+	path = .build/secp256k1
+	url = https://github.com/bitcoin-core/secp256k1
