@@ -1168,9 +1168,11 @@ module EVM
          <gas> GAVAIL </gas>
 
     syntax InternalOp ::= "#refund" Int
+                        | "#setGas" Int
                         | "#setLocalMem" Int Int WordStack
  // ------------------------------------------------------
-    rule <k> #refund G => . ... </k> <gas> GAVAIL => GAVAIL +Int G </gas>
+    rule <k> #refund G      => . ... </k> <gas> GAVAIL => GAVAIL +Int G </gas>
+    rule <k> #setGas GAVAIL => . ... </k> <gas> _      => GAVAIL        </gas>
 
     rule <k> #setLocalMem START WIDTH WS => . ... </k>
          <localMem> LM => LM [ START := #take(minInt(WIDTH, #sizeWordStack(WS)), WS) ] </localMem>
