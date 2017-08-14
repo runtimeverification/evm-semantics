@@ -99,7 +99,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> startTx => #finalizeBlock ... </k>
          <txOrder> .List </txOrder>
 
-    rule <k> loadTx(ACCTFROM) => #create ACCTFROM #newAddr(ACCTFROM, NONCE +Int 1) VALUE (#asMapOpCodes(#dasmOpCodes(CODE))) ~> #execute ~> #finishTx ~> flush ~> startTx ...</k>
+    rule <k> loadTx(ACCTFROM) => #create ACCTFROM #newAddr(ACCTFROM, NONCE +Int 1) (GLIMIT -Int G0(SCHED, CODE)) VALUE (#asMapOpCodes(#dasmOpCodes(CODE))) ~> #execute ~> #finishTx ~> flush ~> startTx ...</k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
          <origin> _ => ACCTFROM </origin>
