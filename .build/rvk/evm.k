@@ -1314,7 +1314,7 @@ module EVM
            <code> _ => #asMapOpCodes(#dasmOpCodes(OUT)) </code>
            ...
          </account>
-    rule <k> #finishCodeDeposit => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #setGas GAVAIL ...</k>
+    rule <k> #finishCodeDeposit => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState ~> #setGas GAVAIL #fi ...</k>
          <mode> EXECMODE </mode>
          <gas> GAVAIL </gas>
 
