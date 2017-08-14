@@ -1226,20 +1226,19 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 -   `#codeDeposit_` checks the result of initialization code and whether the code deposit can be paid, indicating an error if not.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#create" Int Int Int Map
+    syntax InternalOp ::= "#create" Int Int Int Int Map
                         | "#mkCreate" Map Int Int
  // ---------------------------------------------
-    rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
+    rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
            => #pushCallStack ~> #pushWorldState
            ~> #transferFunds ACCTFROM ACCTTO VALUE
            ~> #mkCreate INITCODE GAVAIL VALUE
           ...
          </k>
-         <gas> GAVAIL </gas>
          <callDepth> CD </callDepth>
       requires CD <Int 1024
 
-    rule <k> #create _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
+    rule <k> #create _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
          <callDepth> CD </callDepth>
       requires CD >=Int 1024
 
@@ -1248,8 +1247,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            => #if EXECMODE ==K VMTESTS #then #end #else (#next ~> #execute)  #fi
           ...
          </k>
-         <callLog> ... (.Set => SetItem({ 0 | GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
-         <gas> _ => #allBut64th(GAVAIL) </gas>
+         <callLog> ... (.Set => SetItem({ 0 | OLDGAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
+         <gas> OLDGAVAIL => GAVAIL </gas>
          <program> _ => INITCODE </program>
          <pc> _ => 0 </pc>
          <output> _ => .WordStack </output>
@@ -1289,11 +1288,12 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
-           => #create ACCT #newAddr(ACCT, NONCE) VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
+           => #create ACCT #newAddr(ACCT, NONCE) #allBut64th(GAVAIL) VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
            ~> #codeDeposit #newAddr(ACCT, NONCE)
           ...
          </k>
          <id> ACCT </id>
+         <gas> GAVAIL </gas>
          <localMem> LM </localMem>
          <activeAccounts> ACCTS </activeAccounts>
          <account>
