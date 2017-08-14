@@ -21,6 +21,10 @@ module ETHEREUM-SIMULATION
     imports VERIFICATION
 ```
 
+```{.k .rvk}
+    imports K-REFLECTION
+```
+
 An Ethereum simulation is a list of Ethereum commands.
 Some Ethereum commands take an Ethereum specification (eg. for an account or transaction).
 
@@ -67,15 +71,62 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
 -   `start` places `#next` on the `op` cell so that execution of the loaded state begin.
 -   `flush` places `#finalize` on the `op` cell once it sees `#end` in the `op` cell, clearing any exceptions it finds.
+-   `startTx` computes the sender of the transaction, and places loadTx on the `k` cell.
+-   `loadTx` loads the next transaction to be executed into the current state, and places `initTx` on the `k` cell.
 
 ```{.k .uiuck .rvk}
-    syntax EthereumCommand ::= "start" | "flush"
+    syntax EthereumCommand ::= "start" | "flush" | "startTx" | loadTx(Int) | "#finishTx"
  // --------------------------------------------
     rule <mode> NORMAL     </mode> <k> start => #execute    ... </k>
     rule <mode> VMTESTS    </mode> <k> start => #execute    ... </k>
     rule <mode> GASANALYZE </mode> <k> start => #gasAnalyze ... </k>
     rule <k> #end       ~> flush => #finalize               ... </k>
     rule <k> #exception ~> flush => #finalize ~> #exception ... </k>
+
+    rule <k> startTx => loadTx(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW, TR, TS))  ...</k>
+         <txOrder> ListItem(MsgId:Int) ...</txOrder>
+         <msgID> MsgId </msgID>
+         <txNonce> TN </txNonce>
+         <txGasPrice> TP </txGasPrice>
+         <txGasLimit> TG </txGasLimit>
+         <to> TT </to>
+         <value> TV </value>
+         <v> TW </v>
+         <r> TR </r>
+         <s> TS </s>
+         <data> DATA </data>
+
+    rule <k> loadTx(ACCTFROM) => #create ACCTFROM #newAddr(ACCTFROM, NONCE +Int 1) VALUE (#asMapOpCodes(#dasmOpCodes(CODE))) ~> #execute ~> #finishTx ~> flush ~> startTx ...</k>
+         <schedule> SCHED </schedule>
+         <gasPrice> _ => GPRICE </gasPrice>
+         <origin> _ => ACCTFROM </origin>
+         <txOrder> ListItem(MsgId:Int) => .List ...</txOrder>
+         <msgID> MsgId </msgID>
+         <txGasPrice> GPRICE </txGasPrice>
+         <txGasLimit> GLIMIT </txGasLimit>
+         <to> 0 </to>
+         <value> VALUE </value>
+         <data> CODE </data>
+         <acctID> ACCTFROM </acctID>
+         <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+         <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
+
+    rule <k> loadTx(ACCTFROM) => #call ACCTFROM ACCTTO ACCTTO (GLIMIT -Int G0(SCHED, DATA)) VALUE DATA ~> #execute ~> #finishTx ~> flush ~> startTx ...</k>
+         <schedule> SCHED </schedule>
+         <gasPrice> _ => GPRICE </gasPrice>
+         <origin> _ => ACCTFROM </origin>
+         <txOrder> ListItem(MsgId:Int) => .List ...</txOrder>
+         <msgID> MsgId </msgID>
+         <txGasPrice> GPRICE </txGasPrice>
+         <txGasLimit> GLIMIT </txGasLimit>
+         <to> ACCTTO </to>
+         <value> VALUE </value>
+         <data> DATA </data>
+         <acctID> ACCTFROM </acctID>
+         <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+         <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
+         requires ACCTTO =/=Int 0
+         
 ```
 
 -   `exception` only clears from the `k` cell if there is an exception on the `op` cell.
@@ -115,10 +166,13 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax Set ::= "#loadKeys" [function]
  // -------------------------------------
     rule #loadKeys => ( SetItem("env") SetItem("pre")
-                        SetItem("blocks") SetItem("network")
+                        SetItem("rlp") SetItem("network")
                       )
 
     rule run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } requires KEY in #loadKeys
+
+    rule run TESTID : { "blocks" : [ { KEY : VAL , REST1 => REST1 }, .JSONList ] , ( REST2 => KEY : VAL , REST2 ) }
+    rule run TESTID : { "blocks" : [ { .JSONList }, .JSONList ] , REST } => run TESTID : { REST }
 ```
 
 -   `#execKeys` are all the JSON nodes which should be considered for execution (between loading and checking).
@@ -131,6 +185,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule run TESTID : { KEY : (VAL:JSON) , NEXT , REST } => run TESTID : { NEXT , KEY : VAL , REST } requires KEY in #execKeys
 
     rule run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush
+    rule run TESTID : { "lastblockhash" : (HASH:String) } => startTx ~> check "hash" : #asWord(#parseByteStack(HASH))
 ```
 
 -   `#postKeys` are a subset of `#checkKeys` which correspond to post-state account checks.
@@ -140,7 +195,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax Set ::= "#postKeys" [function] | "#checkKeys" [function]
  // ---------------------------------------------------------------
     rule #postKeys  => ( SetItem("post") SetItem("postState") SetItem("expect") SetItem("export") SetItem("expet") )
-    rule #checkKeys => ( #postKeys SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("gas") )
+    rule #checkKeys => ( #postKeys SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("gas") SetItem("blockHeader") SetItem("transactions") SetItem("uncleHeaders") )
 
     rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { "post" : VAL } requires KEY in #postKeys
     rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY    : VAL } requires KEY in #checkKeys andBool notBool KEY in #postKeys
@@ -235,7 +290,7 @@ State Manipulation
  // -------------------------------------------
     rule #sortedLoadKeys => ( SetItem("transaction") SetItem("blocks") )
 
-    rule load KEY : { JS:JSONList => #sortJSONList(JS) } requires KEY in #sortedLoadKeys andBool notBool #isSorted(JS)
+ //   rule load KEY : { JS:JSONList => #sortJSONList(JS) } requires KEY in #sortedLoadKeys andBool notBool #isSorted(JS)
 ```
 
 Here we perform pre-proccesing on account data which allows "pretty" specification of input.
@@ -250,6 +305,7 @@ Here we perform pre-proccesing on account data which allows "pretty" specificati
     rule load "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
     rule load "account" : { (ACCT:Int) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
     rule load "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
+    rule load "rlp" : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL))))
 ```
 
 The individual fields of the accounts are dealt with here.
@@ -330,6 +386,47 @@ The `"network"` key allows setting the fee schedule inside the test.
  // -----------------------------------------------------------
     rule #asScheduleString("EIP150") => EIP150
     rule #asScheduleString("EIP158") => EIP158
+```
+
+The `"rlp"` key loads the block information.
+
+```{.k .uiuck .rvk}
+    rule <k> load "rlp": [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONList ], BT, BU, .JSONList ] => load "transaction" : BT ...</k>
+         <previousHash> _ => #asWord(#parseByteStackRaw(HP)) </previousHash>
+         <ommersHash> _ => #asWord(#parseByteStackRaw(HO)) </ommersHash>
+         <coinbase> _ => #asWord(#parseByteStackRaw(HC)) </coinbase>
+         <stateRoot> _ => #asWord(#parseByteStackRaw(HR)) </stateRoot>
+         <transactionsRoot> _ => #asWord(#parseByteStackRaw(HT)) </transactionsRoot>
+         <receiptsRoot> _ => #asWord(#parseByteStackRaw(HE)) </receiptsRoot>
+         <logsBloom> _ => HB </logsBloom>
+         <difficulty> _ => #asWord(#parseByteStackRaw(HD)) </difficulty>
+         <number> _ => #asWord(#parseByteStackRaw(HI)) </number>
+         <gasLimit> _ => #asWord(#parseByteStackRaw(HL)) </gasLimit>
+         <gasUsed> _ => #asWord(#parseByteStackRaw(HG)) </gasUsed>
+         <timestamp> _ => #asWord(#parseByteStackRaw(HS)) </timestamp>
+	 <extraData> _ => HX </extraData>
+         <mixHash> _ => #asWord(#parseByteStackRaw(HM)) </mixHash>
+         <nonce> _ => #asWord(#parseByteStackRaw(HN)) </nonce>
+         <ommerBlockHeaders> _ => BU </ommerBlockHeaders>
+
+    rule <k> load "transaction": [ [ TN, TP, TG, TT, TV, TI, TW, TR, TS ] , REST => REST ] ...</k>
+         <txOrder>... .List => ListItem(!ID) </txOrder>
+         (.Bag =>
+           <message>
+             <msgID> !ID:Int </msgID>
+             <txNonce> #asWord(#parseByteStackRaw(TN)) </txNonce>
+             <txGasPrice> #asWord(#parseByteStackRaw(TP)) </txGasPrice>
+             <txGasLimit> #asWord(#parseByteStackRaw(TG)) </txGasLimit>
+             <to> #asWord(#parseByteStackRaw(TT)) </to>
+             <value> #asWord(#parseByteStackRaw(TV)) </value>
+             <data> #parseByteStackRaw(TI) </data>
+             <v> #asWord(#parseByteStackRaw(TW)) </v>
+             <r> TR </r>
+             <s> TS </s>
+           </message>)
+ 
+    rule load "transaction": [ .JSONList ] => .K
+
 ```
 
 ### Checking State

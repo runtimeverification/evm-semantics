@@ -77,12 +77,23 @@ In the comments next to each cell, we've marked which component of the yellowpap
                       <origin>   0 </origin>                            // I_o
 
                       // I_H* (block information)
-                      <gasLimit>     0 </gasLimit>                      // I_Hl
-                      <coinbase>     0 </coinbase>                      // I_Hc
-                      <timestamp>    0 </timestamp>                     // I_Hs
-                      <number>       0 </number>                        // I_Hi
-                      <previousHash> 0 </previousHash>                  // I_Hp
-                      <difficulty>   0 </difficulty>                    // I_Hd
+                      <previousHash>     0  </previousHash>             // I_Hp
+                      <ommersHash>       0  </ommersHash>               // I_Ho
+                      <coinbase>         0  </coinbase>                 // I_Hc
+                      <stateRoot>        0  </stateRoot>                // I_Hr
+                      <transactionsRoot> 0  </transactionsRoot>         // I_Ht
+                      <receiptsRoot>     0  </receiptsRoot>             // I_He
+                      <logsBloom>        "" </logsBloom>                // I_Hb
+                      <difficulty>       0  </difficulty>               // I_Hd
+                      <number>           0  </number>                   // I_Hi
+                      <gasLimit>         0  </gasLimit>                 // I_Hl
+                      <gasUsed>          0  </gasUsed>                  // I_Hg
+                      <timestamp>        0  </timestamp>                // I_Hs
+                      <extraData>        "" </extraData>                // I_Hx
+                      <mixHash>          0  </mixHash>                  // I_Hm
+                      <nonce>            0  </nonce>                    // I_Hn
+
+                      <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
 
                     </evm>
 
@@ -120,6 +131,8 @@ In the comments next to each cell, we've marked which component of the yellowpap
                       // Transactions Record
                       // -------------------
 
+                      <txOrder> .List </txOrder>
+
                       <messages>
 ```
 
@@ -134,11 +147,16 @@ In the comments next to each cell, we've marked which component of the yellowpap
 ```
 
 ```{.k .uiuck .rvk}
-                          <msgID>  0    </msgID>
-                          <to>     0    </to>
-                          <from>   0    </from>
-                          <amount> 0    </amount>
-                          <data>   .Map </data>
+                          <msgID>      0          </msgID>
+                          <txNonce>    0          </txNonce>    // T_n
+                          <txGasPrice> 0          </txGasPrice> // T_p
+                          <txGasLimit> 0          </txGasLimit> // T_g
+                          <to>         0          </to>         // T_t
+                          <value>      0          </value>      // T_v
+                          <v>          0          </v>          // T_w
+                          <r>          ""         </r>          // T_r
+                          <s>          ""         </s>          // T_s
+                          <data>       .WordStack </data>       // T_i/T_e
                         </message>
                       </messages>
 
@@ -1511,6 +1529,12 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
     syntax Int ::= #allBut64th ( Int ) [function]
  // ---------------------------------------------
     rule #allBut64th(N) => N -Int (N /Int 64)
+
+    syntax Int ::= G0 ( Schedule , WordStack ) [function]
+ // -----------------------------------------------------------
+    rule G0(SCHED, 0 : REST) => Gtxdatazero < SCHED > +Int G0(SCHED, REST)
+    rule G0(SCHED, N : REST) => Gtxdatanonzero < SCHED > +Int G0(SCHED, REST)
+    rule G0(SCHED, .WordStack) => Gtxcreate < SCHED >
 ```
 
 Fee Schedule from C++ Implementation
