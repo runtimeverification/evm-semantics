@@ -126,6 +126,22 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
          <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
          requires ACCTTO =/=Int 0
+
+    rule <k> #end ~> #finishTx => #mkCodeDeposit ACCT ~> #end ... </k>
+         <id> ACCT </id>
+         <txOrder> ListItem(MsgId:Int) ...</txOrder>
+         <msgID> MsgId </msgID>
+         <to> 0 </to>
+
+    rule <k> #end ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ~> #end ... </k>
+         <id> ACCT </id>
+         <gas> GAVAIL </gas>
+         <txOrder> ListItem(MsgId:Int) ...</txOrder>
+         <msgID> MsgId </msgID>
+         <to> TT </to>
+         requires TT =/=Int 0
+
+    rule #exception ~> #finishTx => #popCallStack ~> #popWorldState ~> #exception
          
 ```
 
