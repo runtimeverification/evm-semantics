@@ -70,20 +70,20 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ### Driving Execution
 
 -   `start` places `#next` on the `op` cell so that execution of the loaded state begin.
--   `flush` places `#finalize` on the `op` cell once it sees `#end` in the `op` cell, clearing any exceptions it finds.
+-   `flush` places `#finalizeTx` on the `op` cell once it sees `#end` in the `op` cell, clearing any exceptions it finds.
 -   `startTx` computes the sender of the transaction, and places loadTx on the `k` cell.
--   `loadTx` loads the next transaction to be executed into the current state, and places `initTx` on the `k` cell.
+-   `loadTx` loads the next transaction to be executed into the current state, and places the initial message call of the transaction on the `k` cell.
 
 ```{.k .uiuck .rvk}
-    syntax EthereumCommand ::= "start" | "flush" | "startTx" | loadTx(Int) | "#finishTx"
+    syntax EthereumCommand ::= "start" | "flush" | "startTx" | loadTx(Int) | "#finishTx" | "#finalizeBlock"
  // --------------------------------------------
-    rule <mode> NORMAL     </mode> <k> start => #execute    ... </k>
-    rule <mode> VMTESTS    </mode> <k> start => #execute    ... </k>
-    rule <mode> GASANALYZE </mode> <k> start => #gasAnalyze ... </k>
-    rule <k> #end       ~> flush => #finalize               ... </k>
-    rule <k> #exception ~> flush => #finalize ~> #exception ... </k>
+    rule <mode> NORMAL     </mode> <k> start => #execute      ... </k>
+    rule <mode> VMTESTS    </mode> <k> start => #execute      ... </k>
+    rule <mode> GASANALYZE </mode> <k> start => #gasAnalyze   ... </k>
+    rule <k> #end       ~> flush => #finalizeTx               ... </k>
+    rule <k> #exception ~> flush => #finalizeTx ~> #exception ... </k>
 
-    rule <k> startTx => loadTx(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW, TR, TS))  ...</k>
+    rule <k> startTx => loadTx(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW, TR, TS)) ... </k>
          <txOrder> ListItem(MsgId:Int) ...</txOrder>
          <msgID> MsgId </msgID>
          <txNonce> TN </txNonce>
@@ -100,7 +100,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
          <origin> _ => ACCTFROM </origin>
-         <txOrder> ListItem(MsgId:Int) => .List ...</txOrder>
+         <txOrder> ListItem(MsgId:Int) ...</txOrder>
          <msgID> MsgId </msgID>
          <txGasPrice> GPRICE </txGasPrice>
          <txGasLimit> GLIMIT </txGasLimit>
@@ -115,7 +115,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
          <origin> _ => ACCTFROM </origin>
-         <txOrder> ListItem(MsgId:Int) => .List ...</txOrder>
+         <txOrder> ListItem(MsgId:Int) ...</txOrder>
          <msgID> MsgId </msgID>
          <txGasPrice> GPRICE </txGasPrice>
          <txGasLimit> GLIMIT </txGasLimit>
