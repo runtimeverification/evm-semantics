@@ -596,16 +596,17 @@ module EVM
 // After executing a transaction, it's necessary to have the effect of the substate
 // log recorded.
 
-// -   `#finalize` makes the substate log actually have an effect on the state.
+// -   `#finalizeTx` makes the substate log actually have an effect on the state.
 
 
-    syntax InternalOp ::= "#finalize"
+    syntax InternalOp ::= "#finalizeTx"
  // ---------------------------------
-    rule <k> #finalize => . ... </k>
+    rule <k> #finalizeTx => . ... </k>
          <selfDestruct> .Set </selfDestruct>
          <refund>       0    </refund>
 
-    rule <k> #finalize ... </k>
+    rule <k> #finalizeTx ... </k>
+         <mode> VMTESTS </mode>
          <id> ACCT </id>
          <refund> BAL => 0 </refund>
          <account>
@@ -615,7 +616,34 @@ module EVM
          </account>
       requires BAL =/=K 0
 
-    rule <k> #finalize ... </k>
+    rule <k> (.K => #newAccount MINER) ~> #finalizeTx ... </k>
+         <mode> NORMAL </mode>
+         <coinbase> MINER </coinbase>
+         <activeAccounts> ACCTS </activeAccounts>
+         requires notBool MINER in ACCTS
+
+    rule <k> #finalizeTx ... </k>
+         <mode> NORMAL </mode>
+         <origin> ORG </origin>
+         <coinbase> MINER </coinbase>
+         <account>
+           <acctID> ORG </acctID>
+           <balance> ORGBAL => ORGBAL +Int G*(GAVAIL, GLIMIT, REFUND)*Int GPRICE </balance>
+          ...
+         </account>
+         <account>
+           <acctID> MINER </acctID>
+           <balance> MINBAL => MINBAL +Int (GLIMIT -Int G*(GAVAIL, GLIMIT, REFUND)) *Int GPRICE </balance>
+          ...
+         </account>
+         <gas> GAVAIL </gas>
+         <refund> REFUND => 0 </refund>
+         <txOrder> ListItem(MsgId:Int) => .List ...</txOrder>
+         <msgID> MsgId </msgID>
+         <txGasLimit> GLIMIT </txGasLimit>
+         <txGasPrice> GPRICE </txGasPrice>
+
+    rule <k> #finalizeTx ... </k>
          <refund> 0 </refund>
          <selfDestruct> ... (SetItem(ACCT) => .Set) </selfDestruct>
          <activeAccounts> ... (SetItem(ACCT) => .Set) </activeAccounts>
@@ -1595,6 +1623,10 @@ module EVM
     rule G0(SCHED, 0 : REST) => Gtxdatazero < SCHED > +Int G0(SCHED, REST)
     rule G0(SCHED, N : REST) => Gtxdatanonzero < SCHED > +Int G0(SCHED, REST)
     rule G0(SCHED, .WordStack) => Gtxcreate < SCHED >
+
+    syntax Int ::= "G*" "(" Int "," Int "," Int ")" [function]
+ // ----------------------------------------------------------
+    rule G*(GAVAIL, GLIMIT, REFUND) => GAVAIL +Int minInt((GLIMIT -Int GAVAIL)/Int 2, REFUND)
 
 
 // Fee Schedule from C++ Implementation
