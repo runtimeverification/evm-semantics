@@ -94,6 +94,9 @@ module ETHEREUM-SIMULATION
          <s> TS </s>
          <data> DATA </data>
 
+    rule <k> startTx => #finalizeBlock ... </k>
+         <txOrder> .List </txOrder>
+
     rule <k> loadTx(ACCTFROM) => #create ACCTFROM #newAddr(ACCTFROM, NONCE +Int 1) VALUE (#asMapOpCodes(#dasmOpCodes(CODE))) ~> #execute ~> #finishTx ~> flush ~> startTx ...</k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
@@ -140,6 +143,35 @@ module ETHEREUM-SIMULATION
          requires TT =/=Int 0
 
     rule #exception ~> #finishTx => #popCallStack ~> #popWorldState ~> #exception
+
+    // TODO: handle blocks with ommers
+    rule <k> #finalizeBlock => #rewardOmmers(OMMERS) ... </k>
+         <coinbase> MINER </coinbase>
+         <acctID> MINER </acctID>
+         <balance> MINBAL => MINBAL +Int Rb </balance>
+         <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
+
+    syntax EthereumCommand ::= #rewardOmmers(JSONList)
+ // --------------------------------------------------
+    rule #rewardOmmers(.JSONList) => .
+    rule <k> #rewardOmmers([_, _, OMMER, _, _, _, _, _, OMMNUM, _], REST) => #rewardOmmers(REST) ... </k>
+         <coinbase> MINER </coinbase>
+         <number> CURNUM </number>
+         <account>
+           <acctID> MINER </acctID>
+           <balance> MINBAL => MINBAL +Int Rb /Int 32 </balance>
+          ...
+         </account>
+         <account>
+           <acctID> OMMER </acctID>
+           <balance> OMMBAL => OMMBAL +Int Rb +Int (OMMNUM -Int CURNUM) *Int (Rb /Int 8) </balance>
+          ...
+         </account>
+
+    syntax Int ::= "Rb" [function]
+ // ------------------------------
+    rule Rb => 5 *Int (10 ^Int 18)
+    
          
 
 
