@@ -305,9 +305,9 @@ Simple commands controlling exceptions provide control-flow.
 
     syntax KItem ::= "#?" K ":" K "?#"
  // ----------------------------------
-    rule <k>                #? K : _ ?# => K  ... </k>
-    rule <k> #exception ~>  #? _ : K ?# => K  ... </k>
-    rule <k> #end       ~> (#? _ : _ ?# => .) ... </k>
+    rule <k>                #? K : _ ?#  => K         ... </k>
+    rule <k> #exception ~>  #? _ : K ?#  => K         ... </k>
+    rule <k> #end       ~> (#? K : _ ?#) => K ~> #end ... </k>
 ```
 
 OpCode Execution Cycle
@@ -1103,11 +1103,13 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule <mode> EXECMODE </mode>
          <k> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE ARGS
-           => #if EXECMODE ==K VMTESTS #then #end #else #next #fi
+           => #if EXECMODE ==K VMTESTS #then #end #else (#next ~> #execute) #fi
           ...
          </k>
          <callLog> ... (.Set => SetItem({ ACCTTO | GLIMIT | VALUE | ARGS })) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
+         <callData> _ => ARGS </callData>
+         <callValue> _ => VALUE </callValue>
          <id> _ => ACCTTO </id>
          <gas> _ => GLIMIT </gas>
          <pc> _ => 0 </pc>
@@ -1213,7 +1215,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     rule <mode> EXECMODE </mode>
          <k> #mkCreate INITCODE GAVAIL VALUE
-           => #if EXECMODE ==K VMTESTS #then #end #else #next #fi
+           => #if EXECMODE ==K VMTESTS #then #end #else (#next ~> #execute)  #fi
           ...
          </k>
          <callLog> ... (.Set => SetItem({ 0 | GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
