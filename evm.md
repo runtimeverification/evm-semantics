@@ -1246,17 +1246,27 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </account>
 
     syntax KItem ::= "#codeDeposit" Int
- // -----------------------------------
-    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
+                   | "#mkCodeDeposit" Int
+                   | "#finishCodeDeposit"
+ // -------------------------------------
+    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 ~> #push ... </k>
+         <gas> GAVAIL </gas>
 
     rule <mode> EXECMODE </mode>
-         <k> #end ~> #codeDeposit ACCT => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> ACCT ~> #push ... </k>
+         <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ~> ACCT ~> #push ...</k>
+
+    rule <k> #mkCodeDeposit ACCT => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi ~> #finishCodeDeposit ...</k>
+         <mode> EXECMODE </mode>
+         <schedule> SCHED </schedule>
          <output> OUT => .WordStack </output>
          <account>
            <acctID> ACCT </acctID>
            <code> _ => #asMapOpCodes(#dasmOpCodes(OUT)) </code>
            ...
          </account>
+    rule <k> #finishCodeDeposit => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #refund GAVAIL ...</k>
+         <mode> EXECMODE </mode>
+         <gas> GAVAIL </gas>
 ```
 
 `CREATE` will attempt to `#create` the account using the initialization code and cleans up the result with `#codeDeposit`.
