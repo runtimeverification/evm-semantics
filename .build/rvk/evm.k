@@ -82,12 +82,23 @@ module EVM
                       <origin>   0 </origin>                            // I_o
 
                       // I_H* (block information)
-                      <gasLimit>     0 </gasLimit>                      // I_Hl
-                      <coinbase>     0 </coinbase>                      // I_Hc
-                      <timestamp>    0 </timestamp>                     // I_Hs
-                      <number>       0 </number>                        // I_Hi
-                      <previousHash> 0 </previousHash>                  // I_Hp
-                      <difficulty>   0 </difficulty>                    // I_Hd
+                      <previousHash>     0  </previousHash>             // I_Hp
+                      <ommersHash>       0  </ommersHash>               // I_Ho
+                      <coinbase>         0  </coinbase>                 // I_Hc
+                      <stateRoot>        0  </stateRoot>                // I_Hr
+                      <transactionsRoot> 0  </transactionsRoot>         // I_Ht
+                      <receiptsRoot>     0  </receiptsRoot>             // I_He
+                      <logsBloom>        "" </logsBloom>                // I_Hb
+                      <difficulty>       0  </difficulty>               // I_Hd
+                      <number>           0  </number>                   // I_Hi
+                      <gasLimit>         0  </gasLimit>                 // I_Hl
+                      <gasUsed>          0  </gasUsed>                  // I_Hg
+                      <timestamp>        0  </timestamp>                // I_Hs
+                      <extraData>        "" </extraData>                // I_Hx
+                      <mixHash>          0  </mixHash>                  // I_Hm
+                      <nonce>            0  </nonce>                    // I_Hn
+
+                      <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
 
                     </evm>
 
@@ -121,6 +132,8 @@ module EVM
                       // Transactions Record
                       // -------------------
 
+                      <txOrder> .List </txOrder>
+
                       <messages>
 
 
@@ -131,11 +144,16 @@ module EVM
 
 
 
-                          <msgID>  0    </msgID>
-                          <to>     0    </to>
-                          <from>   0    </from>
-                          <amount> 0    </amount>
-                          <data>   .Map </data>
+                          <msgID>      0          </msgID>
+                          <txNonce>    0          </txNonce>    // T_n
+                          <txGasPrice> 0          </txGasPrice> // T_p
+                          <txGasLimit> 0          </txGasLimit> // T_g
+                          <to>         0          </to>         // T_t
+                          <value>      0          </value>      // T_v
+                          <v>          0          </v>          // T_w
+                          <r>          ""         </r>          // T_r
+                          <s>          ""         </s>          // T_s
+                          <data>       .WordStack </data>       // T_i/T_e
                         </message>
                       </messages>
 
@@ -289,9 +307,9 @@ module EVM
 
     syntax KItem ::= "#?" K ":" K "?#"
  // ----------------------------------
-    rule <k>                #? K : _ ?# => K  ... </k>
-    rule <k> #exception ~>  #? _ : K ?# => K  ... </k>
-    rule <k> #end       ~> (#? _ : _ ?# => .) ... </k>
+    rule <k>                #? K : _ ?#  => K         ... </k>
+    rule <k> #exception ~>  #? _ : K ?#  => K         ... </k>
+    rule <k> #end       ~> (#? K : _ ?#) => K ~> #end ... </k>
 
 
 // OpCode Execution Cycle
@@ -1084,33 +1102,47 @@ module EVM
 //     place the returned data in memory.
 
 
-    syntax InternalOp ::= "#call" Int Int Map Int Int WordStack
+    syntax InternalOp ::= "#call" Int Int Int Int Int WordStack
+                        | "#callWithCode" Int Int Map Int Int WordStack
                         | "#mkCall" Int Int Map Int Int WordStack
  // -------------------------------------------------------------
-    rule <mode> EXECMODE </mode>
-         <schedule> SCHED </schedule>
-         <k> #call ACCTFROM ACCTTO CODE GCAP VALUE ARGS
-           => #pushCallStack ~> #pushWorldState
-           ~> #transferFunds ACCTFROM ACCTTO VALUE
-           ~> #mkCall ACCTFROM ACCTTO CODE Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE ARGS
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE ARGS
+           => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) GLIMIT VALUE ARGS
           ...
          </k>
-         <previousGas> GAVAIL </previousGas>
+      requires ACCTTO >Int 0 andBool ACCTTO <=Int 4
+
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE ARGS
+           => #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE ARGS
+          ...
+         </k>
+         <acctID> ACCTCODE </acctID>
+         <code> CODE </code>
+      requires notBool (ACCTTO >Int 0 andBool ACCTTO <=Int 4)
+        
+    rule <schedule> SCHED </schedule>
+         <k> #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE ARGS
+           => #pushCallStack ~> #pushWorldState
+           ~> #transferFunds ACCTFROM ACCTTO VALUE
+           ~> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE ARGS
+          ...
+         </k>
          <callDepth> CD </callDepth>
-         <activeAccounts> ACCTS </activeAccounts>
       requires CD <Int 1024
 
-    rule <k> #call _ _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
+    rule <k> #callWithCode _ _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
          <callDepth> CD </callDepth>
       requires CD >=Int 1024
 
     rule <mode> EXECMODE </mode>
          <k> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE ARGS
-           => #if EXECMODE ==K VMTESTS #then #end #else #next #fi
+           => #if EXECMODE ==K VMTESTS #then #end #else (#next ~> #execute) #fi
           ...
          </k>
          <callLog> ... (.Set => SetItem({ ACCTTO | GLIMIT | VALUE | ARGS })) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
+         <callData> _ => ARGS </callData>
+         <callValue> _ => VALUE </callValue>
          <id> _ => ACCTTO </id>
          <gas> _ => GLIMIT </gas>
          <pc> _ => 0 </pc>
@@ -1159,57 +1191,38 @@ module EVM
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTTO CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
           ...
          </k>
+         <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <code> CODE </code>
-           ...
-         </account>
-      requires notBool (ACCTTO >Int 0 andBool ACCTTO <=Int 4)
-
-    rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTTO (0 |-> #precompiled(ACCTTO)) GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
-          ...
-         </k>
-         <id> ACCTFROM </id>
-         <localMem> LM </localMem>
-         requires ACCTTO >Int 0 andBool ACCTTO <=Int 4
+         <activeAccounts> ACCTS </activeAccounts>
+         <previousGas> GAVAIL </previousGas>
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
            ...
          </k>
+         <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <code> CODE </code>
-           ...
-         </account>
+         <activeAccounts> ACCTS </activeAccounts>
+         <previousGas> GAVAIL </previousGas>
 
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM CODE GCAP 0 #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTFROM ACCTTO GCAP 0 #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
            ...
          </k>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <code> CODE </code>
-           ...
-         </account>
 
 
 // ### Account Creation/Deletion
@@ -1239,7 +1252,7 @@ module EVM
 
     rule <mode> EXECMODE </mode>
          <k> #mkCreate INITCODE GAVAIL VALUE
-           => #if EXECMODE ==K VMTESTS #then #end #else #next #fi
+           => #if EXECMODE ==K VMTESTS #then #end #else (#next ~> #execute)  #fi
           ...
          </k>
          <callLog> ... (.Set => SetItem({ 0 | GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
@@ -1565,6 +1578,12 @@ module EVM
     syntax Int ::= #allBut64th ( Int ) [function]
  // ---------------------------------------------
     rule #allBut64th(N) => N -Int (N /Int 64)
+
+    syntax Int ::= G0 ( Schedule , WordStack ) [function]
+ // -----------------------------------------------------------
+    rule G0(SCHED, 0 : REST) => Gtxdatazero < SCHED > +Int G0(SCHED, REST)
+    rule G0(SCHED, N : REST) => Gtxdatanonzero < SCHED > +Int G0(SCHED, REST)
+    rule G0(SCHED, .WordStack) => Gtxcreate < SCHED >
 
 
 // Fee Schedule from C++ Implementation
