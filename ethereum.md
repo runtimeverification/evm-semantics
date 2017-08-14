@@ -92,6 +92,9 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ```{.k .uiuck .rvk}
     syntax EthereumCommand ::= "startTx"
  // ------------------------------------
+    rule <k> startTx => #finalizeBlock ... </k>
+         <txPending> .List </txPending>
+
     rule <k> startTx => loadTx(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW, TR, TS)) ... </k>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
@@ -183,6 +186,43 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            ...
          </message>
       requires TT =/=Int 0
+```
+
+-   `#finalizeBlock` is used to signal that block finalization procedures should take place (after transactions have executed).
+-   `#rewardOmmers(_)` pays out the reward to uncle blocks so that blocks are orphaned less often in Ethereum.
+
+TODO: Handle blocks with ommers.
+
+```{.k .uiuck .rvk}
+    syntax EthereumCommand ::= "#finalizeBlock" | #rewardOmmers ( JSONList )
+ // ------------------------------------------------------------------------
+    rule <k> #finalizeBlock => #rewardOmmers(OMMERS) ... </k>
+         <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
+         <coinbase> MINER </coinbase>
+         <account>
+           <acctID> MINER </acctID>
+           <balance> MINBAL => MINBAL +Int Rb </balance>
+           ...
+         </account>
+
+    rule <k> #rewardOmmers(.JSONList) => . ... </k>
+    rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
+         <coinbase> MINER </coinbase>
+         <number> CURNUM </number>
+         <account>
+           <acctID> MINER </acctID>
+           <balance> MINBAL => MINBAL +Int Rb /Int 32 </balance>
+          ...
+         </account>
+         <account>
+           <acctID> OMMER </acctID>
+           <balance> OMMBAL => OMMBAL +Int Rb +Int (OMMNUM -Int CURNUM) *Int (Rb /Int 8) </balance>
+          ...
+         </account>
+
+    syntax Int ::= "Rb" [function]
+ // ------------------------------
+    rule Rb => 5 *Int (10 ^Int 18)
 ```
 
 -   `exception` only clears from the `<k>` cell if there is an exception preceding it.
