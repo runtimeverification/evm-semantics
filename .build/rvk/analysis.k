@@ -79,8 +79,10 @@ module EVM-ANALYSIS
     rule #gasBreaks => (SetItem(JUMP) SetItem(JUMPI) SetItem(JUMPDEST))
 
     syntax InternalOp ::= "#setPC"  Int
+                        | "#setGas" Int
  // -----------------------------------
     rule <k> #setPC PCOUNT  => . ... </k> <pc> _ => PCOUNT </pc>
+    rule <k> #setGas GAVAIL => . ... </k> <gas> _ => GAVAIL </gas>
 
 
 // -   `#gasAnalyze` analyzes the gas of a chunk of code by setting up the analysis
