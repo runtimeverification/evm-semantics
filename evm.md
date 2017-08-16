@@ -1097,18 +1097,18 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 -   `#return__` is a placeholder for the calling program, specifying where to place the returned data in memory.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#call" Int Int Int Int Int WordStack
-                        | "#callWithCode" Int Int Map Int Int WordStack
-                        | "#mkCall" Int Int Map Int Int WordStack
+    syntax InternalOp ::= "#call" Int Int Int Int Int Int WordStack
+                        | "#callWithCode" Int Int Map Int Int Int WordStack
+                        | "#mkCall" Int Int Map Int Int Int WordStack
  // -------------------------------------------------------------
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE ARGS
-           => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) GLIMIT VALUE ARGS
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
+           => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) GLIMIT VALUE APPVALUE ARGS
           ...
          </k>
       requires ACCTTO >Int 0 andBool ACCTTO <=Int 4
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE ARGS
-           => #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE ARGS
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
+           => #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
           ...
          </k>
          <acctID> ACCTCODE </acctID>
@@ -1116,34 +1116,43 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
       requires notBool (ACCTTO >Int 0 andBool ACCTTO <=Int 4)
         
     rule <schedule> SCHED </schedule>
-         <k> #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE ARGS
+         <k> #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
            => #pushCallStack ~> #pushWorldState
            ~> #transferFunds ACCTFROM ACCTTO VALUE
-           ~> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE ARGS
+           ~> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
           ...
          </k>
          <callDepth> CD </callDepth>
       requires CD <Int 1024
 
-    rule <k> #callWithCode _ _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
+    rule <k> #callWithCode _ _ _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
          <callDepth> CD </callDepth>
       requires CD >=Int 1024
 
     rule <mode> EXECMODE </mode>
-         <k> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE ARGS
-           => #if EXECMODE ==K VMTESTS #then #end #else (#next ~> #execute) #fi
+         <k> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
+           => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else (#next ~> #execute) #fi
           ...
          </k>
          <callLog> ... (.Set => SetItem({ ACCTTO | GLIMIT | VALUE | ARGS })) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
-         <callValue> _ => VALUE </callValue>
+         <callValue> _ => APPVALUE </callValue>
          <id> _ => ACCTTO </id>
          <gas> _ => GLIMIT </gas>
-         <pc> _ => 0 </pc>
          <caller> _ => ACCTFROM </caller>
-         <localMem> _ => #asMapWordStack(ARGS) </localMem>
          <program> _ => CODE </program>
+
+    syntax KItem ::= "#initVM"
+ // --------------------------
+
+    rule <k> #initVM => . ... </k>
+         <output> _ => .WordStack </output>
+         <pc> _ => 0 </pc>
+         <localMem> _ => .Map </localMem>
+         <memoryUsed> _ => 0 </memoryUsed>
+         <wordStack> _ => .WordStack </wordStack>
+         
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
@@ -1184,7 +1193,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
           ...
          </k>
@@ -1197,7 +1206,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
            ...
          </k>
@@ -1210,11 +1219,12 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM ACCTTO GCAP 0 #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTFROM ACCTTO GCAP 0 VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
            ...
          </k>
          <id> ACCTFROM </id>
+         <callValue> VALUE </callValue>
          <localMem> LM </localMem>
 ```
 
