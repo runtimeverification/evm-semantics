@@ -596,7 +596,6 @@ After executing a transaction, it's necessary to have the effect of the substate
            <balance> CURRBAL => CURRBAL +Word BAL </balance>
            ...
          </account>
-      requires BAL =/=K 0
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
          <mode> NORMAL </mode>
