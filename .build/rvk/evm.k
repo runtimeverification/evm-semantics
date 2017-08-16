@@ -1272,12 +1272,12 @@ module EVM
 
 
     syntax InternalOp ::= "#create" Int Int Int Int Map
-                        | "#mkCreate" Map Int Int
+                        | "#mkCreate" Int Map Int Int
  // ---------------------------------------------
     rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
            => #pushCallStack ~> #pushWorldState
            ~> #transferFunds ACCTFROM ACCTTO VALUE
-           ~> #mkCreate INITCODE GAVAIL VALUE
+           ~> #mkCreate ACCTFROM INITCODE GAVAIL VALUE
           ...
          </k>
          <callDepth> CD </callDepth>
@@ -1288,16 +1288,18 @@ module EVM
       requires CD >=Int 1024
 
     rule <mode> EXECMODE </mode>
-         <k> #mkCreate INITCODE GAVAIL VALUE
-           => #if EXECMODE ==K VMTESTS #then #end #else (#next ~> #execute)  #fi
+         <k> #mkCreate ACCTFROM INITCODE GAVAIL VALUE
+           => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else (#next ~> #execute)  #fi
           ...
          </k>
          <callLog> ... (.Set => SetItem({ 0 | OLDGAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
-         <gas> OLDGAVAIL => GAVAIL </gas>
-         <program> _ => INITCODE </program>
-         <pc> _ => 0 </pc>
-         <output> _ => .WordStack </output>
+         <callDepth> CD => CD +Int 1 </callDepth>
+         <callData> _ => .WordStack </callData>
+         <callValue> _ => VALUE </callValue>
          <id> ACCT </id>
+         <gas> OLDGAVAIL => GAVAIL </gas>
+         <caller> _ => ACCTFROM </caller>
+         <program> _ => INITCODE </program>
          <account>
            <acctID> ACCT </acctID>
            <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
@@ -1322,7 +1324,7 @@ module EVM
            <code> _ => #asMapOpCodes(#dasmOpCodes(OUT)) </code>
            ...
          </account>
-    rule <k> #finishCodeDeposit => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState ~> #setGas GAVAIL #fi ...</k>
+    rule <k> #finishCodeDeposit => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState ~> #refund GAVAIL #fi ...</k>
          <mode> EXECMODE </mode>
          <gas> GAVAIL </gas>
 
@@ -1339,7 +1341,7 @@ module EVM
           ...
          </k>
          <id> ACCT </id>
-         <gas> GAVAIL </gas>
+         <gas> GAVAIL => GAVAIL /Int 64 </gas>
          <localMem> LM </localMem>
          <activeAccounts> ACCTS </activeAccounts>
          <account>
