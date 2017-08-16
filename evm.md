@@ -155,8 +155,8 @@ In the comments next to each cell, we've marked which component of the yellowpap
                           <to>         0          </to>         // T_t
                           <value>      0          </value>      // T_v
                           <v>          0          </v>          // T_w
-                          <r>          ""         </r>          // T_r
-                          <s>          ""         </s>          // T_s
+                          <r>          .WordStack </r>          // T_r
+                          <s>          .WordStack </s>          // T_s
                           <data>       .WordStack </data>       // T_i/T_e
                         </message>
                       </messages>

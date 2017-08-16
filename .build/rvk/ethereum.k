@@ -477,8 +477,8 @@ module ETHEREUM-SIMULATION
              <value> #asWord(#parseByteStackRaw(TV)) </value>
              <data> #parseByteStackRaw(TI) </data>
              <v> #asWord(#parseByteStackRaw(TW)) </v>
-             <r> TR </r>
-             <s> TS </s>
+             <r> #parseByteStackRaw(TR) </r>
+             <s> #parseByteStackRaw(TS) </s>
            </message>)
  
     rule load "transaction": [ .JSONList ] => .K
