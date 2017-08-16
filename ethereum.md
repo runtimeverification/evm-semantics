@@ -622,5 +622,30 @@ Here we check the other post-conditions associated with an EVM test.
     rule check "transactions" : { KEY : VALUE , REST } => check "transactions" : (KEY : VALUE) ~> check "transactions" : { REST }
     rule <k> check "transactions" : { .JSONList } => . ... </k> <txOrder> ListItem(_) => .List ... </txOrder>
 
+    rule check "transactions" : ("data" : (VALUE:String => #parseByteStack(VALUE)))
+    rule check "transactions" : ("gasLimit" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
+    rule check "transactions" : ("gasPrice" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
+    rule check "transactions" : ("nonce" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
+    rule check "transactions" : ("r" : (VALUE:String => #parseByteStack(VALUE)))
+    rule check "transactions" : ("s" : (VALUE:String => #parseByteStack(VALUE)))
+    rule check "transactions" : ("to" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
+    rule check "transactions" : ("v" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
+    rule check "transactions" : ("value" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
+
+    rule <k> check "transactions" : ("data" : VALUE) => . ... </k> <txOrder> ListItem(MsgId) ... </txOrder> <msgID> MsgId </msgID> <data> VALUE </data>
+    rule <k> check "transactions" : ("gasLimit" : VALUE) => . ... </k> <txOrder> ListItem(MsgId) ... </txOrder> <msgID> MsgId </msgID> <txGasLimit> VALUE </txGasLimit>
+    rule <k> check "transactions" : ("gasPrice" : VALUE) => . ... </k> <txOrder> ListItem(MsgId) ... </txOrder> <msgID> MsgId </msgID> <txGasPrice> VALUE </txGasPrice>
+    rule <k> check "transactions" : ("nonce" : VALUE) => . ... </k> <txOrder> ListItem(MsgId) ... </txOrder> <msgID> MsgId </msgID> <txNonce> VALUE </txNonce>
+    rule <k> check "transactions" : ("r" : VALUE) => . ... </k> <txOrder> ListItem(MsgId) ... </txOrder> <msgID> MsgId </msgID> <r> VALUE </r>
+    rule <k> check "transactions" : ("s" : VALUE) => . ... </k> <txOrder> ListItem(MsgId) ... </txOrder> <msgID> MsgId </msgID> <s> VALUE </s>
+    rule <k> check "transactions" : ("to" : VALUE) => . ... </k> <txOrder> ListItem(MsgId) ... </txOrder> <msgID> MsgId </msgID> <to> VALUE </to>
+    rule <k> check "transactions" : ("v" : VALUE) => . ... </k> <txOrder> ListItem(MsgId) ... </txOrder> <msgID> MsgId </msgID> <v> VALUE </v>
+    rule <k> check "transactions" : ("value" : VALUE) => . ... </k> <txOrder> ListItem(MsgId) ... </txOrder> <msgID> MsgId </msgID> <value> VALUE </value>
+
+    rule check TESTID : { "uncleHeaders" : OMMERS } => check "ommerHeaders" : OMMERS ~> failure TESTID
+ // --------------------------------------------------------------------------------------------------
+    // TODO: case with nonzero ommers
+    rule <k> check "ommerHeaders" : [ .JSONList ] => . ... </k> <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
+
 endmodule
 ```
