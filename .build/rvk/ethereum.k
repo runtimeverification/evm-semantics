@@ -571,9 +571,63 @@ module ETHEREUM-SIMULATION
     rule check TESTID : { "blockHeader" : BLOCKHEADER } => check "blockHeader" : BLOCKHEADER ~> failure TESTID
  // ----------------------------------------------------------------------------------------------------------
     rule check "blockHeader" : { KEY : VALUE , REST } => check "blockHeader" : { KEY : VALUE } ~> check "blockHeader" : { REST } requires REST =/=K .JSONList
-    rule check "blockHeader" : { "bloom" : (BLOOM:String => #parseByteStack(BLOOM)) }
-    rule check "blockHeader" : { "coinbase" : (BLOOM:String => #asWord(#parseByteStack(BLOOM))) }
-    rule <k> check "blockHeader" : { "bloom" : BLOOM } => . ...</k> <logsBloom> BLOOM </logsBloom>
-    rule <k> check "blockHeader" : { "coinbase" : BLOOM } => . ...</k> <coinbase> BLOOM </coinbase>
+
+    rule check "blockHeader" : { "bloom" : (VALUE:String => #parseByteStack(VALUE)) }
+    rule check "blockHeader" : { "coinbase" : (VALUE:String => #asWord(#parseByteStack(VALUE))) }
+    rule check "blockHeader" : { "difficulty" : (VALUE:String => #asWord(#parseByteStack(VALUE))) }
+    rule check "blockHeader" : { "extraData" : (VALUE:String => #parseByteStack(VALUE)) }
+    rule check "blockHeader" : { "gasLimit" : (VALUE:String => #asWord(#parseByteStack(VALUE))) }
+    rule check "blockHeader" : { "gasUsed" : (VALUE:String => #asWord(#parseByteStack(VALUE))) }
+    rule check "blockHeader" : { "mixHash" : (VALUE:String => #asWord(#parseByteStack(VALUE))) }
+    rule check "blockHeader" : { "nonce" : (VALUE:String => #asWord(#parseByteStack(VALUE))) }
+    rule check "blockHeader" : { "number" : (VALUE:String => #asWord(#parseByteStack(VALUE))) }
+    rule check "blockHeader" : { "parentHash" : (VALUE:String => #asWord(#parseByteStack(VALUE))) }
+    rule check "blockHeader" : { "receiptTrie" : (VALUE:String => #asWord(#parseByteStack(VALUE))) }
+    rule check "blockHeader" : { "stateRoot" : (VALUE:String => #asWord(#parseByteStack(VALUE))) }
+    rule check "blockHeader" : { "timestamp" : (VALUE:String => #asWord(#parseByteStack(VALUE))) }
+    rule check "blockHeader" : { "transactionsTrie" : (VALUE:String => #asWord(#parseByteStack(VALUE))) }
+    rule check "blockHeader" : { "uncleHash" : (VALUE:String => #asWord(#parseByteStack(VALUE))) }
+
+    rule <k> check "blockHeader" : { "bloom" : VALUE } => . ...</k> <logsBloom> VALUE </logsBloom>
+    rule <k> check "blockHeader" : { "coinbase" : VALUE } => . ...</k> <coinbase> VALUE </coinbase>
+    rule <k> check "blockHeader" : { "difficulty" : VALUE } => . ...</k> <difficulty> VALUE </difficulty>
+    rule <k> check "blockHeader" : { "extraData" : VALUE } => . ...</k> <extraData> VALUE </extraData>
+    rule <k> check "blockHeader" : { "gasLimit" : VALUE } => . ...</k> <gasLimit> VALUE </gasLimit>
+    rule <k> check "blockHeader" : { "gasUsed" : VALUE } => . ...</k> <gasUsed> VALUE </gasUsed>
+    rule <k> check "blockHeader" : { "mixHash" : VALUE } => . ...</k> <mixHash> VALUE </mixHash>
+    rule <k> check "blockHeader" : { "nonce" : VALUE } => . ...</k> <nonce> VALUE </nonce>
+    rule <k> check "blockHeader" : { "number" : VALUE } => . ...</k> <number> VALUE </number>
+    rule <k> check "blockHeader" : { "parentHash" : VALUE } => . ...</k> <previousHash> VALUE </previousHash>
+    rule <k> check "blockHeader" : { "receiptTrie" : VALUE } => . ...</k> <receiptsRoot> VALUE </receiptsRoot>
+    rule <k> check "blockHeader" : { "stateRoot" : VALUE } => . ...</k> <stateRoot> VALUE </stateRoot>
+    rule <k> check "blockHeader" : { "timestamp" : VALUE } => . ...</k> <timestamp> VALUE </timestamp>
+    rule <k> check "blockHeader" : { "transactionsTrie" : VALUE } => . ...</k> <transactionsRoot> VALUE </transactionsRoot>
+    rule <k> check "blockHeader" : { "uncleHash" : VALUE } => . ...</k> <ommersHash> VALUE </ommersHash>
+
+    rule <k> check "blockHeader" : { "hash": HASH } => . ...</k>
+         <previousHash> HP </previousHash>
+         <ommersHash> HO </ommersHash>
+         <coinbase> HC </coinbase>
+         <stateRoot> HR </stateRoot>
+         <transactionsRoot> HT </transactionsRoot>
+         <receiptsRoot> HE </receiptsRoot>
+         <logsBloom> HB </logsBloom>
+         <difficulty> HD </difficulty>
+         <number> HI </number>
+         <gasLimit> HL </gasLimit>
+         <gasUsed> HG </gasUsed>
+         <timestamp> HS </timestamp>
+         <extraData> HX </extraData>
+         <mixHash> HM </mixHash>
+         <nonce> HN </nonce>
+         requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN) ==Int #asWord(#parseByteStack(HASH))
+
+    rule check TESTID : { "transactions" : TRANSACTIONS } => check "transactions" : TRANSACTIONS ~> failure TESTID
+ // --------------------------------------------------------------------------------------------------------------
+    rule check "transactions" : [ TRANSACTION , REST ] => check "transactions" : TRANSACTION ~> check "transactions" : [ REST ] 
+    rule <k> check "transactions" : [ .JSONList ] => . ... </k> <txOrder> .List </txOrder>
+    rule check "transactions" : { KEY : VALUE , REST } => check "transactions" : (KEY : VALUE) ~> check "transactions" : { REST }
+    rule <k> check "transactions" : { .JSONList } => . ... </k> <txOrder> ListItem(_) => .List ... </txOrder>
+
 endmodule
 
