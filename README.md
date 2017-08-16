@@ -25,7 +25,7 @@ We will collect developed analysis tools in [analysis.md](analysis.md).
 
 ### Proofs
 
-Any proofs we perform will be documented in [proofs/README.md].
+Any proofs we perform will be documented in [proofs/README.md](proofs/README.md).
 These proofs are also run as tests of UIUC-K, though they take quite a while.
 The file [verification.md](verification.md) contains some helper-macros for writing down reachability claims.
 
