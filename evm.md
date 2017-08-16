@@ -132,6 +132,7 @@ In the comments next to each cell, we've marked which component of the yellowpap
                       // -------------------
 
                       <txOrder> .List </txOrder>
+                      <txPending> .List </txPending>
 
                       <messages>
 ```
@@ -581,13 +582,12 @@ After executing a transaction, it's necessary to have the effect of the substate
 -   `#finalizeTx` makes the substate log actually have an effect on the state.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#finalizeTx"
+    syntax InternalOp ::= #finalizeTx(Bool)
  // ---------------------------------
-    rule <k> #finalizeTx => . ... </k>
+    rule <k> #finalizeTx(true) => . ... </k>
          <selfDestruct> .Set </selfDestruct>
-         <refund>       0    </refund>
 
-    rule <k> #finalizeTx ... </k>
+    rule <k> #finalizeTx(false => true) ... </k>
          <mode> VMTESTS </mode>
          <id> ACCT </id>
          <refund> BAL => 0 </refund>
@@ -598,35 +598,43 @@ After executing a transaction, it's necessary to have the effect of the substate
          </account>
       requires BAL =/=K 0
 
-    rule <k> (.K => #newAccount MINER) ~> #finalizeTx ... </k>
+    rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
          <mode> NORMAL </mode>
          <coinbase> MINER </coinbase>
          <activeAccounts> ACCTS </activeAccounts>
          requires notBool MINER in ACCTS
 
-    rule <k> #finalizeTx ... </k>
+    rule <k> #finalizeTx(false) ... </k>
+         <mode> NORMAL </mode>
+         <gas> GAVAIL => G*(GAVAIL, GLIMIT, REFUND) </gas>
+         <refund> REFUND => 0 </refund>
+         <txPending> ListItem(MsgId:Int) ...</txPending>
+         <msgID> MsgId </msgID>
+         <txGasLimit> GLIMIT </txGasLimit>
+         requires REFUND =/=Int 0
+
+    rule <k> #finalizeTx(false => true) ... </k>
          <mode> NORMAL </mode>
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
          <account>
            <acctID> ORG </acctID>
-           <balance> ORGBAL => ORGBAL +Int G*(GAVAIL, GLIMIT, REFUND)*Int GPRICE </balance>
+           <balance> ORGBAL => ORGBAL +Int GAVAIL*Int GPRICE </balance>
           ...
          </account>
          <account>
            <acctID> MINER </acctID>
-           <balance> MINBAL => MINBAL +Int (GLIMIT -Int G*(GAVAIL, GLIMIT, REFUND)) *Int GPRICE </balance>
+           <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int GPRICE </balance>
           ...
          </account>
+         <refund> 0 </refund>
          <gas> GAVAIL </gas>
-         <refund> REFUND => 0 </refund>
-         <txOrder> ListItem(MsgId:Int) => .List ...</txOrder>
+         <txPending> ListItem(MsgId:Int) => .List ...</txPending>
          <msgID> MsgId </msgID>
          <txGasLimit> GLIMIT </txGasLimit>
          <txGasPrice> GPRICE </txGasPrice>
 
-    rule <k> #finalizeTx ... </k>
-         <refund> 0 </refund>
+    rule <k> #finalizeTx(true) ... </k>
          <selfDestruct> ... (SetItem(ACCT) => .Set) </selfDestruct>
          <activeAccounts> ... (SetItem(ACCT) => .Set) </activeAccounts>
          <accounts>

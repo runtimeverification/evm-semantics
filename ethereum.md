@@ -77,14 +77,14 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ```{.k .uiuck .rvk}
     syntax EthereumCommand ::= "start" | "flush" | "startTx" | loadTx(Int) | "#finishTx" | "#finalizeBlock"
  // --------------------------------------------
-    rule <mode> NORMAL     </mode> <k> start => #execute      ... </k>
-    rule <mode> VMTESTS    </mode> <k> start => #execute      ... </k>
-    rule <mode> GASANALYZE </mode> <k> start => #gasAnalyze   ... </k>
-    rule <k> #end       ~> flush => #finalizeTx               ... </k>
-    rule <k> #exception ~> flush => #finalizeTx ~> #exception ... </k>
+    rule <mode> NORMAL     </mode> <k> start => #execute             ... </k>
+    rule <mode> VMTESTS    </mode> <k> start => #execute             ... </k>
+    rule <mode> GASANALYZE </mode> <k> start => #gasAnalyze          ... </k>
+    rule <k> #end       ~> flush => #finalizeTx(false)               ... </k>
+    rule <k> #exception ~> flush => #finalizeTx(false) ~> #exception ... </k>
 
     rule <k> startTx => loadTx(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW, TR, TS)) ... </k>
-         <txOrder> ListItem(MsgId:Int) ...</txOrder>
+         <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
          <txNonce> TN </txNonce>
          <txGasPrice> TP </txGasPrice>
@@ -97,13 +97,13 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <data> DATA </data>
 
     rule <k> startTx => #finalizeBlock ... </k>
-         <txOrder> .List </txOrder>
+         <txPending> .List </txPending>
 
     rule <k> loadTx(ACCTFROM) => #create ACCTFROM #newAddr(ACCTFROM, NONCE +Int 1) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE (#asMapOpCodes(#dasmOpCodes(CODE))) ~> #execute ~> #finishTx ~> flush ~> startTx ...</k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
          <origin> _ => ACCTFROM </origin>
-         <txOrder> ListItem(MsgId:Int) ...</txOrder>
+         <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
          <txGasPrice> GPRICE </txGasPrice>
          <txGasLimit> GLIMIT </txGasLimit>
@@ -118,7 +118,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
          <origin> _ => ACCTFROM </origin>
-         <txOrder> ListItem(MsgId:Int) ...</txOrder>
+         <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
          <txGasPrice> GPRICE </txGasPrice>
          <txGasLimit> GLIMIT </txGasLimit>
@@ -132,14 +132,14 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     rule <k> #end ~> #finishTx => #mkCodeDeposit ACCT ~> #end ... </k>
          <id> ACCT </id>
-         <txOrder> ListItem(MsgId:Int) ...</txOrder>
+         <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
          <to> 0 </to>
 
     rule <k> #end ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ~> #end ... </k>
          <id> ACCT </id>
          <gas> GAVAIL </gas>
-         <txOrder> ListItem(MsgId:Int) ...</txOrder>
+         <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
          <to> TT </to>
          requires TT =/=Int 0
@@ -459,6 +459,7 @@ The `"rlp"` key loads the block information.
 
     rule <k> load "transaction": [ [ TN, TP, TG, TT, TV, TI, TW, TR, TS ] , REST => REST ] ...</k>
          <txOrder>... .List => ListItem(!ID) </txOrder>
+         <txPending>... .List => ListItem(!ID) </txPending>
          (.Bag =>
            <message>
              <msgID> !ID:Int </msgID>
