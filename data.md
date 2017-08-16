@@ -418,6 +418,27 @@ Addresses
 
     rule #sender(HT, TW, TR, TS) => #addr(#parseHexWord(Keccak256(ECDSARecover(HT, TW, TR, TS))))
 
+    syntax Int ::= #blockHeaderHash(Int, Int, Int, Int, Int, Int, WordStack, Int, Int, Int, Int, Int, WordStack, Int, Int) [function]
+ // ---------------------------------------------------------------------------------------------------------------------------------
+    rule #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
+         => #parseHexWord(Keccak256(#rlpEncodeLength(
+           #rlpEncodeWord(HP) +String
+           #rlpEncodeWord(HO) +String
+           #rlpEncodeWord(HC) +String
+           #rlpEncodeWord(HR) +String
+           #rlpEncodeWord(HT) +String
+           #rlpEncodeWord(HE) +String
+           #rlpEncodeString(#unparseByteStack(HB)) +String
+           #rlpEncodeWord(HD) +String
+           #rlpEncodeWord(HI) +String
+           #rlpEncodeWord(HL) +String
+           #rlpEncodeWord(HG) +String
+           #rlpEncodeWord(HS) +String
+           #rlpEncodeString(#unparseByteStack(HX)) +String
+           #rlpEncodeWord(HM) +String
+           #rlpEncodeWord(HN),
+         192)))
+
     syntax String ::= #rlpEncodeLength ( String , Int )          [function]
                     | #rlpEncodeLength ( String , Int , String ) [function, klabel(#rlpEncodeLengthAux)]
                     | #rlpEncodeWord ( Int )                     [function]
