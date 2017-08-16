@@ -74,25 +74,21 @@ vm-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
 		  tests/VMTests/vmInputLimits/make.timestamp \
 		  tests/VMTests/vmInputLimitsLight/make.timestamp
 
-blockchain-tests: tests/BlockchainTests/bcStateTests/BLOCKHASH_Bounds/make.timestamp \
-				  tests/BlockchainTests/bcStateTests/BadStateRootTxBC/make.timestamp \
-				  tests/BlockchainTests/bcStateTests/OOGStateCopyContainingDeletedContract/make.timestamp \
-				  tests/BlockchainTests/bcStateTests/blockhashTests/make.timestamp \
-				  tests/BlockchainTests/bcStateTests/multimpleBalanceInstruction/make.timestamp \
-				  tests/BlockchainTests/bcStateTests/simpleSuicide/make.timestamp \
-				  tests/BlockchainTests/bcStateTests/suicideCoinbase/make.timestamp \
-				  tests/BlockchainTests/bcStateTests/transactionFromNotExistingAccount/make.timestamp
+blockchain-tests: tests/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_AcreateB_BSuicide_BStore/make.timestamp
 
 passing_test_file=tests/passing.expected
-all_tests=$(wildcard tests/VMTests/*/*.json)
+passing_blockchain_tests=$(shell cat ${passing_test_file})
+all_tests=$(wildcard tests/VMTests/*/*.json) ${passing_blockchain_tests}
 skipped_tests=$(wildcard tests/VMTests/vmPerformanceTest/*.json) tests/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1021.json
 passing_tests=$(filter-out ${skipped_tests}, ${all_tests})
 passing_targets=${passing_tests:=.test}
 
 test: $(passing_targets)
 
-tests/%.test: tests/% build
-	./evm $<
+tests/VMTests/%.test: tests/VMTests/% build
+	./vmtest $<
+tests/BlockchainTests/%.test: tests/BlockchainTests/% build
+	./blockchaintest $<
 
 tests/%/make.timestamp: tests/ethereum-tests/%.json
 	@echo "==   split: $@"
