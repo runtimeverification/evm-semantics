@@ -453,13 +453,13 @@ module ETHEREUM-SIMULATION
          <stateRoot> _ => #asWord(#parseByteStackRaw(HR)) </stateRoot>
          <transactionsRoot> _ => #asWord(#parseByteStackRaw(HT)) </transactionsRoot>
          <receiptsRoot> _ => #asWord(#parseByteStackRaw(HE)) </receiptsRoot>
-         <logsBloom> _ => HB </logsBloom>
+         <logsBloom> _ => #parseByteStackRaw(HB) </logsBloom>
          <difficulty> _ => #asWord(#parseByteStackRaw(HD)) </difficulty>
          <number> _ => #asWord(#parseByteStackRaw(HI)) </number>
          <gasLimit> _ => #asWord(#parseByteStackRaw(HL)) </gasLimit>
          <gasUsed> _ => #asWord(#parseByteStackRaw(HG)) </gasUsed>
          <timestamp> _ => #asWord(#parseByteStackRaw(HS)) </timestamp>
-	 <extraData> _ => HX </extraData>
+	 <extraData> _ => #parseByteStackRaw(HX) </extraData>
          <mixHash> _ => #asWord(#parseByteStackRaw(HM)) </mixHash>
          <nonce> _ => #asWord(#parseByteStackRaw(HN)) </nonce>
          <ommerBlockHeaders> _ => BU </ommerBlockHeaders>
@@ -566,5 +566,13 @@ module ETHEREUM-SIMULATION
     rule check "callcreates" : { ("data" : (DATA:String)) , ("destination" : (ACCTTO:String)) , ("gasLimit" : (GLIMIT:String)) , ("value" : (VAL:String)) , .JSONList }
       => check "callcreates" : { #parseAddr(ACCTTO) | #parseWord(GLIMIT) | #parseWord(VAL) | #parseByteStack(DATA) }
     rule <k> check "callcreates" : C:Call => . ... </k> <callLog> CL </callLog> requires C in CL
+
+    rule check TESTID : { "blockHeader" : BLOCKHEADER } => check "blockHeader" : BLOCKHEADER ~> failure TESTID
+ // ----------------------------------------------------------------------------------------------------------
+    rule check "blockHeader" : { KEY : VALUE , REST } => check "blockHeader" : { KEY : VALUE } ~> check "blockHeader" : { REST } requires REST =/=K .JSONList
+    rule check "blockHeader" : { "bloom" : (BLOOM:String => #parseByteStack(BLOOM)) }
+    rule check "blockHeader" : { "coinbase" : (BLOOM:String => #asWord(#parseByteStack(BLOOM))) }
+    rule <k> check "blockHeader" : { "bloom" : BLOOM } => . ...</k> <logsBloom> BLOOM </logsBloom>
+    rule <k> check "blockHeader" : { "coinbase" : BLOOM } => . ...</k> <coinbase> BLOOM </coinbase>
 endmodule
 
