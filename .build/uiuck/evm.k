@@ -179,36 +179,38 @@ module EVM
 // -   `#dropCallStack` removes the top element of the `callStack`.
 
 
-    syntax State ::= "{" Int "|" Int "|" Map "|" Int "|" WordStack "|" Int "|" WordStack "|" Map "|" Int "}"
- // --------------------------------------------------------------------------------------------------------
+    syntax State ::= "{" Int "|" Int "|" Map "|" Int "|" WordStack "|" Int "|" WordStack "|" Map "|" Int "|" Int "}"
+ // ----------------------------------------------------------------------------------------------------------------
 
     syntax InternalOp ::= "#pushCallStack"
  // --------------------------------------
     rule <k> #pushCallStack => . ... </k>
-         <callStack> (.List => ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | PCOUNT })) ... </callStack>
-         <id>        ACCT   </id>
-         <gas>       GAVAIL </gas>
-         <program>   PGM    </program>
-         <caller>    CR     </caller>
-         <callData>  CD     </callData>
-         <callValue> CV     </callValue>
-         <wordStack> WS     </wordStack>
-         <localMem>  LM     </localMem>
-         <pc>        PCOUNT </pc>
+         <callStack>  (.List => ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | MUSED | PCOUNT })) ... </callStack>
+         <id>         ACCT   </id>
+         <gas>        GAVAIL </gas>
+         <program>    PGM    </program>
+         <caller>     CR     </caller>
+         <callData>   CD     </callData>
+         <callValue>  CV     </callValue>
+         <wordStack>  WS     </wordStack>
+         <localMem>   LM     </localMem>
+         <memoryUsed> MUSED  </memoryUsed>
+         <pc>         PCOUNT </pc>
 
     syntax InternalOp ::= "#popCallStack"
  // -------------------------------------
     rule <k> #popCallStack => . ... </k>
-         <callStack> (ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | PCOUNT }) => .List) ... </callStack>
-         <id>        _ => ACCT   </id>
-         <gas>       _ => GAVAIL </gas>
-         <program>   _ => PGM    </program>
-         <caller>    _ => CR     </caller>
-         <callData>  _ => CD     </callData>
-         <callValue> _ => CV     </callValue>
-         <wordStack> _ => WS     </wordStack>
-         <localMem>  _ => LM     </localMem>
-         <pc>        _ => PCOUNT </pc>
+         <callStack>  (ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | MUSED | PCOUNT }) => .List) ... </callStack>
+         <id>         _ => ACCT   </id>
+         <gas>        _ => GAVAIL </gas>
+         <program>    _ => PGM    </program>
+         <caller>     _ => CR     </caller>
+         <callData>   _ => CD     </callData>
+         <callValue>  _ => CV     </callValue>
+         <wordStack>  _ => WS     </wordStack>
+         <localMem>   _ => LM     </localMem>
+         <memoryUsed> _ => MUSED  </memoryUsed>
+         <pc>         _ => PCOUNT </pc>
 
     syntax InternalOp ::= "#dropCallStack"
  // --------------------------------------
