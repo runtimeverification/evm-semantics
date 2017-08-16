@@ -616,7 +616,6 @@ module EVM
            <balance> CURRBAL => CURRBAL +Word BAL </balance>
            ...
          </account>
-      requires BAL =/=K 0
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
          <mode> NORMAL </mode>
