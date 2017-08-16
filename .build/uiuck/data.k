@@ -427,6 +427,22 @@ module EVM-DATA
     rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeWord(ACCT) +String #rlpEncodeWord(NONCE), 192))))
 
 
+// -   `#blockHeaderHash` computes the hash of a block header given all the
+//     block data.
+
+
+    syntax Int ::= #blockHeaderHash( Int , Int , Int , Int , Int , Int , WordStack , Int , Int , Int , Int , Int , WordStack , Int , Int ) [function]
+ // -------------------------------------------------------------------------------------------------------------------------------------------------
+    rule #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
+         => #parseHexWord(Keccak256(#rlpEncodeLength(         #rlpEncodeWordStack(HP : HO : HC : HR : HT : HE : .WordStack)
+                                                      +String #rlpEncodeString(#unparseByteStack(HB))
+                                                      +String #rlpEncodeWordStack(HD : HI : HL : HG : HS : .WordStack)
+                                                      +String #rlpEncodeString(#unparseByteStack(HX))
+                                                      +String #rlpEncodeWordStack(HM : HN : .WordStack)
+                                                    , 192
+                                                    )))
+
+
 // Word Map
 // --------
 
