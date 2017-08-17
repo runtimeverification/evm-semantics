@@ -1,16 +1,26 @@
-The K ecosystem provides a full-fledged program verifier that we use to prove properties about smart contracts.
+EVM Program Verification
+========================
+
+The EVM program verifier combines the K verification infrastructure with the EVM semantics.
 We present a brief summary of our verification efforts.
+
+The SUM To N Program
+--------------------
+
+As a demonstration of simple reachability claims involing a circularity, we prove the EVM [Sum to N](sum-to-n.md) program correct.
+This program sums the numbers from 1 to N (for sufficiently small N), including pre-conditions dis-allowing integer under/overflow and stack overflow.
+The specification [Sum to N](sum-to-n.md) is given as reachability rules using the K syntax.
 
 The Hacker Gold (HKG) Token Smart Contract
 ------------------------------------------
 
-The HKG token is an ERC-20 compliant token smart contract written in solidity.
+The HKG token is an implementation of the ERC20 specification written in Solidity.
 The token became a [topic of discussion](https://www.ethnews.com/ethercamps-hkg-token-has-a-bug-and-needs-to-be-reissued) when a subtle vulnerability lead to a reissue.
 The token had been originally audited by [Zeppelin](https://zeppelin.solutions/security-audits), and was deemed secure.
 
 ### Compiling Solidity Source To EVM
 
-Since we currently don't have a complete semantics of Solidity in K, we had to first compile the [HKG Token's Source](https://github.com/ether-camp/virtual-accelerator/blob/master/contracts/StandardToken.sol) to EVM.
+Since we are performing our verification at the EVM level, the first step in the verification process is to compile the [HKG Token's Source](https://github.com/ether-camp/virtual-accelerator/blob/master/contracts/StandardToken.sol) to EVM.
 To simplify the verification process, we fixed the total supply, and added two dummy accounts before compiling the code to EVM.
 
 ```solidity
@@ -136,7 +146,7 @@ What stood out to the team was the fact that the bug was caught using a very nai
 
 ### TODO
 
-Right now we are proving complete specifications for each of the functions of the HKG token program, that is, covering all the cases that the code covers.
+Right now we are proving complete specifications for each of the functions of the HKG token program, i.e., covering all the cases that the code covers.
 To achieve a full verification, we need to analyze the cases when gas is not enough for the transaction and arithmetic overflow occurs at runtime.
 
 Install K
