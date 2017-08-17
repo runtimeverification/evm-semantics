@@ -1281,7 +1281,7 @@ module EVM
 
 
     syntax InternalOp ::= "#create" Int Int Int Int Map
-                        | "#mkCreate" Int Map Int Int
+    syntax KItem ::= "#mkCreate" Int Map Int Int
  // ---------------------------------------------
     rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
            => #pushCallStack ~> #pushWorldState
@@ -1291,6 +1291,8 @@ module EVM
          </k>
          <callDepth> CD </callDepth>
       requires CD <Int 1024
+
+    rule <k> #exception ~> #mkCreate _ _ GAVAIL _ => #exception ... </k> <gas> _ => GAVAIL </gas>
 
     rule <k> #create _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
          <callDepth> CD </callDepth>
@@ -1319,7 +1321,8 @@ module EVM
                    | "#mkCodeDeposit" Int
                    | "#finishCodeDeposit"
  // -----------------------------------
-    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
+    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 ~> #push ... </k>
+         <gas> GAVAIL </gas>
 
     rule <mode> EXECMODE </mode>
          <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ~> ACCT ~> #push ...</k>
