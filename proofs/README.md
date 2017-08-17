@@ -121,30 +121,33 @@ The following claim captures the behavior of the `transferFrom` function.
 ```
 
 The rule above specifies that in all valid executions starting in the left-hand-side of the rule, either execution will never terminate or it will reach an instance of the right-hand-side.
-Specifically, this means that any transfer of amount `TRANSFER` from account 1 to account 2 (with `TRANSFER` sufficiently low and various overflow conditions met) will happen as intended in the execution of the `transferFrom` code provided.
 
 -   Any symbol starting with a `%` indicates a constant which has been replaced by a symbol for clarity.
     In particular, `%HKG_Program` is the EVM bytecode for the `Hacker Gold` token program.
--   `TRANSFER` represents the symbolic amonut to transfer, `B1` and `B2` are the starting balances of accounts 1 and 2, repsectively, and `A1` is the allowance of account 1.
 -   The program counter starts at 818 and ends at 1331, which are the start and end of the `transferFrom` function in the compiled EVM.
+-   `TRANSFER` represents the symbolic amonut to transfer, `B1` and `B2` are the starting balances of accounts 1 and 2, repsectively, and `A1` is the allowance of account 1.
+-   The terms in the `<storage>` cell capture the behavior of `transferFrom` function, which means that any transfer of amount `TRANSFER` from account 1 to account 2 (with `TRANSFER` sufficiently low and various overflow conditions met) will happen as intended in the execution of the `transferFrom` code provided
+-   The program counter starts at 818 and ends at 1331, which are the start and end of the `transferFrom` function in the compiled EVM.
+-   The require clause states the following preconditions:
+
+    a.  the condition that the `then` branch of the function meets;
+    b.  the balance of each account should be low enough to avoid overflow during the transaction;
+    c.  bounds the size of `WS` to ensure there is no stack overflow in runtime; and
+    d.  there is enough gas for the execution of this fuction.
 
 ### The Results
 
-The K prover was able to prove the above mentioned all path reachability rule, where the code cell was initialized with the correct compiled HKG token code.
+The K prover was able to prove all the five functions implemented in `HKG` token program, where the code cell was initialized with the correct compiled HKG token code.
 We then looked at Token's history, and realized that the vulnerability had been [fixed](https://github.com/ether-camp/virtual-accelerator/commit/78920651dff0ac0e13101e17842e54f73ee46633).
 
 We then took the vulnerability containing code, compiled it to EVM, and plugged in into our [reachability claim](token-buggy-spec.md).
 We then fed the claim to our prover, and it couldn't prove the claim.
 We're working towards improving the error message that K throws while attempting to prove the claim so that the messages themselves indicate the source of the bug.
 
-We went one step further, and tried to prove the `transfer` function's correctness.
-The [reachability claim](token-correct-transfer-spec.md) for the `transfer` function looks very similar, and we attempt to prove the same thing - all valid executions of the function must end in a state where the amount is deducted from the message sender's balance, and added to receiver's balance.
-The prover was able to verify the correctness of the token's `transfer` function's implementation as well.
-
 ### Conclusion
 
-We were able to catch the bug in Hacker Gold's ERC-20 compliant token using our semantics.
-What stood out to the team was the fact that the bug was caught using a very naive proof claim - something that possibly the authors of the contract and the auditors at Zeppelin could've easily come up with had our semantics been available then.
+With our semantics, we were able to not only catch the bug in Hacker Gold's ERC-20 compliant token using our semantics, but also find two overflow issues may occur in `HKG` token program, which could be missed by manual inspection and testing.
+What stood out to the team was the fact that a full verification has a capability of finding subtle cases in interactions between the contract and its underlying execution platform.
 
 ### TODO
 
