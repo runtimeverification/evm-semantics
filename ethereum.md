@@ -133,7 +133,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
-           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+           <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
 
@@ -158,7 +158,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
-           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+           <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
       requires ACCTTO =/=Int 0
@@ -431,7 +431,7 @@ The individual fields of the accounts are dealt with here.
     rule <k> load "account" : { ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <acctMap> AM => AM [ "nonce" <- NONCE ] </acctMap>
+           <nonce> _ => NONCE </nonce>
            ...
          </account>
 
@@ -577,7 +577,7 @@ The `"rlp"` key loads the block information.
     rule <k> check "account" : { ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <acctMap> "nonce" |-> NONCE </acctMap>
+           <nonce> NONCE </nonce>
            ...
          </account>
 
