@@ -76,10 +76,10 @@ module TRANSFER-SPEC
          </wordStack>
          <accounts>
            <account>
-             <acctID>   %ACCT_ID     </acctID>
-             <balance>  BAL          </balance>
-             <code>     %HKG_Program </code>
-             <acctMap> "nonce" |-> 0 </acctMap>
+             <acctID>  %ACCT_ID     </acctID>
+             <balance> BAL          </balance>
+             <code>    %HKG_Program </code>
+             <nonce>   0            </nonce>
              <storage> ...
                        (%ACCT_1_BALANCE |-> B1:Int)
                        (%ACCT_1_ALLOWED |-> A1:Int)
