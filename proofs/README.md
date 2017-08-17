@@ -7,7 +7,7 @@ We present a brief summary of our verification efforts.
 The SUM To N Program
 --------------------
 
-As a demonstration of simple reachability claims involing a circularity, we prove the EVM [Sum to N](sum-to-n.md) program correct.
+As a demonstration of simple reachability claims involing a circularity, we prove the EVM sum program correct.
 This program sums the numbers from 1 to N (for sufficiently small N), including pre-conditions dis-allowing integer under/overflow and stack overflow.
 The specification [Sum to N](sum-to-n.md) is given as reachability rules using the K syntax.
 
@@ -126,7 +126,7 @@ The rule above specifies that in all valid executions starting in the left-hand-
     In particular, `%HKG_Program` is the EVM bytecode for the `Hacker Gold` token program.
 -   The program counter starts at 818 and ends at 1331, which are the start and end of the `transferFrom` function in the compiled EVM.
 -   `TRANSFER` represents the symbolic amonut to transfer, `B1` and `B2` are the starting balances of accounts 1 and 2, repsectively, and `A1` is the allowance of account 1.
--   The terms in the `<storage>` cell capture the behavior of `transferFrom` function, which means that any transfer of amount `TRANSFER` from account 1 to account 2 (with `TRANSFER` sufficiently low and various overflow conditions met) will happen as intended in the execution of the `transferFrom` code provided
+-   The terms in the `<storage>` cell capture the behavior of `transferFrom` function, which means that any transfer of amount `TRANSFER` from account 1 to account 2 (with `TRANSFER` sufficiently low and various overflow conditions met) will happen as intended in the execution of the `transferFrom` code provided.
 -   The program counter starts at 818 and ends at 1331, which are the start and end of the `transferFrom` function in the compiled EVM.
 -   The require clause states the following preconditions:
 
@@ -165,10 +165,16 @@ $ mvn clean
 $ mvn package -DskipTests
 ```
 
+### Kompile the definition
+
+```sh
+$ ./Build
+```
+
 ### Run the Prover
 
 ```sh
-$ krun -d .build\uiuck --prove \proofs\*-spec.k \proofs\json\*.json -cMODE=NORMAL -cSCHEDULE=DEFAULT --z3-executable
+$ krun -d .build/uiuck --prove tests/proofs/*-spec.k proofs/json/*.json -cMODE=NORMAL -cSCHEDULE=DEFAULT
 ```
 
 Note:
