@@ -41,7 +41,7 @@ Here's what the `transferFrom` function looks like, pasted verbatim from HKG Tok
 
 ```solidity
   /*
-   * transferFrom() - used to move allowed funds from other owner
+   * transferFrom() - used to move allowed funds from other owner account
    *                  account
    *
    *  @param from  - move funds from account
@@ -77,54 +77,56 @@ Here's what the `transferFrom` function looks like, pasted verbatim from HKG Tok
 }
 ```
 
+This function is specified in the ERC20 standard described previously as "Send `_value` amount of tokens from address `_from` to address `_to`", and requires the `_from` address to approve the transfer of at least the amount being sent using ERC20's approve functionality.
+
 ### Our Proof Claims
 
 The K prover takes as input *Reachability claims*.
-The claims are written exactly like *rules* in the semantics.
+The claims are written in the same format as rules from a language definition.
+Since our HKG token contract contains only sequential code (without loops), each specification in our [specification file](hkg.md) contains a single claim for each branch.
 The claims have to be supplied to K via a specification file (ends in `-spec.k`).
-Since our HKG token contract contains only sequential code (no loops), our [specification file](token-correct-transfer-from-spec.md) contains a single claim for each branch.
 
-Here is a (very abbreviated) sample reachability claim for the `transferFrom` function.
-We omit actual values here for readability.
+The following claim captures the behavior of the `transferFrom` function.
 
 ```k
-    rule ...
-         <ethereum>
-           <evm>
-             <txExecState>
-               <program> //Compiled Solidity Code </program>
+    rule <k>       #execute ... </k>
+         <id>      %ACCT_ID     </id>
+         <program> %HKG_Program </program>
 
-               // Symbolic Value TRANSFER represents the amount to be used
-               // in as argument to the transferFrom method
-               <wordStack> TRANSFER:Int : REMAINING_STACK => ?W:WordStack </wordStack>
+         <pc>  818 => 1331         </pc>
+         <gas> G   => G -Int 16071 </gas>
 
-               // In the Ethereum ABI conforming compiled code,
-               // the transferFrom function starts from program counter 818.
-               <pc>        818   => 1331                                  </pc>
-             </txExecState>
-             ...
-           </evm>
-           <network>
-             ...
-             <accounts>
-               <account>
-                 <code> //Compiled Solidity Code </code>
-                 <storage> ...
-                           (TOTAL_SUPPLY            |-> TOTAL)
-                           (DUMMY_ACCOUNT_1_BALANCE |-> (B1 => ?B1 -Int TRANSFER))
-                           (DUMMY_ACCOUNT_1_ALLOWED |-> (B1 => ?B1 -Int TRANSFER))
-                           (DUMMY_ACCOUNT_2_BALANCE |-> (B2 => ?B2 +Int TRANSFER))
-                 </storage>
-                 ...
-               </account>
-             </accounts>
-             ...
-           </network>
-         </ethereum>
-         requires TRANSFER >Int 0 andBool TRANSFER <Int 2000
+         <wordStack>                        TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
+                  => A1 -Int TRANSFER : 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
+         </wordStack>
+
+         <account>
+           <acctID>  %ACCT_ID               </acctID>
+           <code>    %function_transferFrom </code>
+           <storage> %ACCT_1_BALANCE |-> (B1 => B1 -Int TRANSFER)
+                     %ACCT_1_ALLOWED |-> (A1 => A1 -Int TRANSFER)
+                     %ACCT_2_BALANCE |-> (B2 => B2 +Int TRANSFER)
+                     %ACCT_2_ALLOWED |-> _
+                     ...
+           </storage>
+           ...
+         </account>
+         ...
+      requires TRANSFER >Int 0
+       andBool B1 >=Int TRANSFER andBool B1               <Int 2 ^Int 256
+       andBool B2 >=Int 0        andBool B2 +Int TRANSFER <Int 2 ^Int 256
+       andBool A1 >=Int TRANSFER andBool A1               <Int 2 ^Int 256
+       andBool #sizeWordStack(WS) <Int 1016
+       andBool G >=Int 16071
 ```
 
-The rule above specifies the property that all valid executions of the `transferFrom` function must end in a state where a symbolic amount `TRANSFER` is deducted from Dummy Account 1 and added to Dummy Account 2.
+The rule above specifies that in all valid executions starting in the left-hand-side of the rule, either execution will never terminate or it will reach an instance of the right-hand-side.
+Specifically, this means that any transfer of amount `TRANSFER` from account 1 to account 2 (with `TRANSFER` sufficiently low and various overflow conditions met) will happen as intended in the execution of the `transferFrom` code provided.
+
+-   Any symbol starting with a `%` indicates a constant which has been replaced by a symbol for clarity.
+    In particular, `%HKG_Program` is the EVM bytecode for the `Hacker Gold` token program.
+-   `TRANSFER` represents the symbolic amonut to transfer, `B1` and `B2` are the starting balances of accounts 1 and 2, repsectively, and `A1` is the allowance of account 1.
+-   The program counter starts at 818 and ends at 1331, which are the start and end of the `transferFrom` function in the compiled EVM.
 
 ### The Results
 
