@@ -46,7 +46,7 @@
       <timestamp> 0 </timestamp>
       <extraData> .WordStack </extraData>
       <mixHash> 0 </mixHash>
-      <nonce> 0 </nonce>
+      <blockNonce> 0 </blockNonce>
       <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
     </evm>
     <network>

@@ -96,7 +96,7 @@ module EVM
                       <timestamp>        0          </timestamp>        // I_Hs
                       <extraData>        .WordStack </extraData>        // I_Hx
                       <mixHash>          0          </mixHash>          // I_Hm
-                      <nonce>            0          </nonce>            // I_Hn
+                      <blockNonce>       0          </blockNonce>       // I_Hn
 
                       <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
 
