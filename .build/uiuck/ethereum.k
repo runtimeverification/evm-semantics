@@ -374,7 +374,7 @@ module ETHEREUM-SIMULATION
          <timestamp>         _ => 0             </timestamp>
          <extraData>         _ => .WordStack    </extraData>
          <mixHash>           _ => 0             </mixHash>
-         <nonce>             _ => 0             </nonce>
+         <blockNonce>        _ => 0             </blockNonce>
          <ommerBlockHeaders> _ => [ .JSONList ] </ommerBlockHeaders>
 
     syntax EthreumCommand ::= "clearNETWORK"
@@ -527,7 +527,7 @@ module ETHEREUM-SIMULATION
          <timestamp>         _ => #asWord(#parseByteStackRaw(HS)) </timestamp>
          <extraData>         _ => #parseByteStackRaw(HX)          </extraData>
          <mixHash>           _ => #asWord(#parseByteStackRaw(HM)) </mixHash>
-         <nonce>             _ => #asWord(#parseByteStackRaw(HN)) </nonce>
+         <blockNonce>        _ => #asWord(#parseByteStackRaw(HN)) </blockNonce>
          <ommerBlockHeaders> _ => BU                              </ommerBlockHeaders>
 
     rule <k> load "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST => REST ] ... </k>
@@ -656,7 +656,7 @@ module ETHEREUM-SIMULATION
     rule <k> check "blockHeader" : { "gasLimit"         : VALUE } => . ...</k> <gasLimit>         VALUE </gasLimit>
     rule <k> check "blockHeader" : { "gasUsed"          : VALUE } => . ...</k> <gasUsed>          VALUE </gasUsed>
     rule <k> check "blockHeader" : { "mixHash"          : VALUE } => . ...</k> <mixHash>          VALUE </mixHash>
-    rule <k> check "blockHeader" : { "nonce"            : VALUE } => . ...</k> <nonce>            VALUE </nonce>
+    rule <k> check "blockHeader" : { "nonce"            : VALUE } => . ...</k> <blockNonce>       VALUE </blockNonce>
     rule <k> check "blockHeader" : { "number"           : VALUE } => . ...</k> <number>           VALUE </number>
     rule <k> check "blockHeader" : { "parentHash"       : VALUE } => . ...</k> <previousHash>     VALUE </previousHash>
     rule <k> check "blockHeader" : { "receiptTrie"      : VALUE } => . ...</k> <receiptsRoot>     VALUE </receiptsRoot>
@@ -680,7 +680,7 @@ module ETHEREUM-SIMULATION
          <timestamp>        HS </timestamp>
          <extraData>        HX </extraData>
          <mixHash>          HM </mixHash>
-         <nonce>            HN </nonce>
+         <blockNonce>       HN </blockNonce>
       requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN) ==Int #asWord(HASH)
 
     rule check TESTID : { "transactions" : TRANSACTIONS } => check "transactions" : TRANSACTIONS ~> failure TESTID
