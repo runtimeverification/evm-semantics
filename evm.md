@@ -124,7 +124,6 @@ In the comments next to each cell, we've marked which component of the yellowpap
                           <balance> 0    </balance>
                           <code>    .Map </code>
                           <storage> .Map </storage>
-                          <acctMap> .Map </acctMap>
                         </account>
                       </accounts>
 
@@ -245,7 +244,7 @@ The `interimStates` cell stores a list of previous world states.
 -   `#dropWorldState` removes the top element of the `interimStates`.
 
 ```{.k .uiuck .rvk}
-    syntax Account ::= "{" Int "|" Int "|" Map "|" Map "|" Map "}"
+    syntax Account ::= "{" Int "|" Int "|" Map "|" Map "}"
  // --------------------------------------------------------------
 
     syntax InternalOp ::= "#pushWorldState" | "#pushWorldStateAux" Set | "#pushAccount" Int
@@ -257,13 +256,12 @@ The `interimStates` cell stores a list of previous world states.
     rule <k> #pushWorldStateAux .Set => . ... </k>
     rule <k> #pushWorldStateAux (SetItem(ACCT) REST) => #pushAccount ACCT ~> #pushWorldStateAux REST ... </k>
     rule <k> #pushAccount ACCT => . ... </k>
-         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE | ACCTMAP })) REST) ... </interimStates>
+         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE })) REST) ... </interimStates>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            <code> CODE </code>
            <storage> STORAGE </storage>
-           <acctMap> ACCTMAP </acctMap>
          </account>
 
     syntax InternalOp ::= "#popWorldState" | "#popWorldStateAux" Set
@@ -274,7 +272,7 @@ The `interimStates` cell stores a list of previous world states.
          <accounts> _ => .Bag </accounts>
 
     rule <k> #popWorldStateAux .Set => . ... </k>
-    rule <k> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE | ACCTMAP }) => .Set) REST ) ... </k>
+    rule <k> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE }) => .Set) REST ) ... </k>
          <activeAccounts> ... (.Set => SetItem(ACCT)) </activeAccounts>
          <accounts> ( .Bag
                    => <account>
@@ -282,7 +280,6 @@ The `interimStates` cell stores a list of previous world states.
                         <balance> BAL </balance>
                         <code> CODE </code>
                         <storage> STORAGE </storage>
-                        <acctMap> ACCTMAP </acctMap>
                       </account>
                     )
                     ...
@@ -715,11 +712,11 @@ These are just used by the other operators for shuffling local execution state a
          <accounts>
            ( .Bag
           => <account>
-               <acctID>  ACCT          </acctID>
-               <balance> 0             </balance>
-               <code>    .Map          </code>
-               <storage> .Map          </storage>
-               <acctMap> "nonce" |-> 0 </acctMap>
+               <acctID>  ACCT </acctID>
+               <balance> 0    </balance>
+               <code>    .Map </code>
+               <storage> .Map </storage>
+               <nonce>   0    </nonce>
              </account>
            )
            ...
@@ -1276,7 +1273,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <program> _ => INITCODE </program>
          <account>
            <acctID> ACCT </acctID>
-           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+           <nonce> NONCE => NONCE +Int 1 </nonce>
           ...
          </account>
 
@@ -1319,7 +1316,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <localMem> LM </localMem>
          <account>
            <acctID> ACCT </acctID>
-           <acctMap> ... "nonce" |-> NONCE ... </acctMap>
+           <nonce> NONCE </nonce>
            ...
          </account>
 ```

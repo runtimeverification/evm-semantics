@@ -125,7 +125,6 @@ module EVM
                           <balance> 0    </balance>
                           <code>    .Map </code>
                           <storage> .Map </storage>
-                          <acctMap> .Map </acctMap>
                         </account>
                       </accounts>
 
@@ -244,7 +243,7 @@ module EVM
 // -   `#dropWorldState` removes the top element of the `interimStates`.
 
 
-    syntax Account ::= "{" Int "|" Int "|" Map "|" Map "|" Map "}"
+    syntax Account ::= "{" Int "|" Int "|" Map "|" Map "}"
  // --------------------------------------------------------------
 
     syntax InternalOp ::= "#pushWorldState" | "#pushWorldStateAux" Set | "#pushAccount" Int
@@ -256,13 +255,12 @@ module EVM
     rule <k> #pushWorldStateAux .Set => . ... </k>
     rule <k> #pushWorldStateAux (SetItem(ACCT) REST) => #pushAccount ACCT ~> #pushWorldStateAux REST ... </k>
     rule <k> #pushAccount ACCT => . ... </k>
-         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE | ACCTMAP })) REST) ... </interimStates>
+         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE })) REST) ... </interimStates>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            <code> CODE </code>
            <storage> STORAGE </storage>
-           <acctMap> ACCTMAP </acctMap>
          </account>
 
     syntax InternalOp ::= "#popWorldState" | "#popWorldStateAux" Set
@@ -273,7 +271,7 @@ module EVM
          <accounts> _ => .Bag </accounts>
 
     rule <k> #popWorldStateAux .Set => . ... </k>
-    rule <k> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE | ACCTMAP }) => .Set) REST ) ... </k>
+    rule <k> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE }) => .Set) REST ) ... </k>
          <activeAccounts> ... (.Set => SetItem(ACCT)) </activeAccounts>
          <accounts> ( .Bag
                    => <account>
@@ -281,7 +279,6 @@ module EVM
                         <balance> BAL </balance>
                         <code> CODE </code>
                         <storage> STORAGE </storage>
-                        <acctMap> ACCTMAP </acctMap>
                       </account>
                     )
                     ...
@@ -738,11 +735,11 @@ module EVM
          <accounts>
            ( .Bag
           => <account>
-               <acctID>  ACCT          </acctID>
-               <balance> 0             </balance>
-               <code>    .Map          </code>
-               <storage> .Map          </storage>
-               <acctMap> "nonce" |-> 0 </acctMap>
+               <acctID>  ACCT </acctID>
+               <balance> 0    </balance>
+               <code>    .Map </code>
+               <storage> .Map </storage>
+               <nonce>   0    </nonce>
              </account>
            )
            ...
@@ -1313,7 +1310,7 @@ module EVM
          <program> _ => INITCODE </program>
          <account>
            <acctID> ACCT </acctID>
-           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+           <nonce> NONCE => NONCE +Int 1 </nonce>
           ...
          </account>
 
@@ -1355,10 +1352,9 @@ module EVM
          <id> ACCT </id>
          <gas> GAVAIL => GAVAIL /Int 64 </gas>
          <localMem> LM </localMem>
-         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
-           <acctMap> ... "nonce" |-> NONCE ... </acctMap>
+           <nonce> NONCE </nonce>
            ...
          </account>
 

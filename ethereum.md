@@ -111,7 +111,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <value> VALUE </value>
          <data> CODE </data>
          <acctID> ACCTFROM </acctID>
-         <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+         <nonce> NONCE => NONCE +Int 1 </nonce>
          <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
 
     rule <k> loadTx(ACCTFROM) => #call ACCTFROM ACCTTO ACCTTO (GLIMIT -Int G0(SCHED, DATA, false)) VALUE VALUE DATA ~> #execute ~> #finishTx ~> flush ~> startTx ...</k>
@@ -126,7 +126,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <value> VALUE </value>
          <data> DATA </data>
          <acctID> ACCTFROM </acctID>
-         <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+         <nonce> NONCE => NONCE +Int 1 </nonce>
          <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
          requires ACCTTO =/=Int 0
 
@@ -387,7 +387,7 @@ The individual fields of the accounts are dealt with here.
     rule <k> load "account" : { ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <acctMap> AM => AM [ "nonce" <- NONCE ] </acctMap>
+           <nonce> _ => NONCE </nonce>
            ...
          </account>
 
@@ -527,7 +527,7 @@ The `"rlp"` key loads the block information.
     rule <k> check "account" : { ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <acctMap> "nonce" |-> NONCE </acctMap>
+           <nonce> NONCE </nonce>
            ...
          </account>
 
