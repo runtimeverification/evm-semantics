@@ -1317,7 +1317,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <id> ACCT </id>
          <gas> GAVAIL => GAVAIL /Int 64 </gas>
          <localMem> LM </localMem>
-         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <acctMap> ... "nonce" |-> NONCE ... </acctMap>
