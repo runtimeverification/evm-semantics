@@ -137,17 +137,15 @@ The rule above specifies that in all valid executions starting in the left-hand-
 
 ### The Results
 
-The K prover was able to prove all the five functions implemented in `HKG` token program, where the code cell was initialized with the correct compiled HKG token code.
-We then looked at Token's history, and realized that the vulnerability had been [fixed](https://github.com/ether-camp/virtual-accelerator/commit/78920651dff0ac0e13101e17842e54f73ee46633).
-
-We then took the vulnerability containing code, compiled it to EVM, and plugged in into our [reachability claim](token-buggy-spec.md).
-We then fed the claim to our prover, and it couldn't prove the claim.
-We're working towards improving the error message that K throws while attempting to prove the claim so that the messages themselves indicate the source of the bug.
+Initially, we took the vulnerability containing code, compiled it to EVM, and plugged in into our [reachability claim](token-buggy-spec.md), which wasn't able to be verified as expected.
+Surprisingly, after fixing the bug which caused the reissuance, verifying against the ERC20 specification was still not possible due to the presence of an integer overflow bug not corrected in this reissuance.
+We preferred to not fix the code here, but just adjusted the specs to assume that the code will not be called in contexts where the overflow may happen.
+Additionally, because the KEVM semantics properly tests every condition which could result in an exception, we found that we must bound the remaining `wordStack` size to 1016 to avoid a stack overflow exception.
 
 ### Conclusion
 
-With our semantics, we were able to not only catch the bug in Hacker Gold's ERC-20 compliant token using our semantics, but also find two overflow issues may occur in `HKG` token program, which could be missed by manual inspection and testing.
-What stood out to the team was the fact that a full verification has a capability of finding subtle cases in interactions between the contract and its underlying execution platform.
+With our semantics, we were able to not only catch the bug in Hacker Gold's ERC-20 compliant token using our semantics, but also find two overflow issues may occur in `HKG` token program.
+In particular, since a bounded integer and stack size is a well known and documented limitation of the EVM, we did not explicitly reason about it during our initial proof attempts and were reminded to do so by the prover itself, further showing the power of full verification to find subtle cases in interactions between the contract and its underlying execution platform which may be missed by manual inspection and testing.
 
 ### TODO
 
