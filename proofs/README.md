@@ -157,13 +157,7 @@ To achieve a full verification, we need to analyze the cases when gas is not eno
 Install K
 =========
 
-The verification part is compatible with the verification verison of K.
-
-```sh
-$ git clone https://github.com/kframework/k.git
-$ mvn clean
-$ mvn package -DskipTests
-```
+The verification part is compatible with uiuck.
 
 ### Kompile the definition
 
