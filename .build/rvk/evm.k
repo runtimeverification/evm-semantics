@@ -1237,7 +1237,7 @@ module EVM
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, #accountEmpty(BAL, CODE, NONCE), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, <accounts> ACCTDATA </accounts>, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
           ...
          </k>
@@ -1246,15 +1246,12 @@ module EVM
          <localMem> LM </localMem>
          <activeAccounts> ACCTS </activeAccounts>
          <previousGas> GAVAIL </previousGas>
-         <acctID> ACCTTO </acctID>
-         <balance> BAL </balance>
-         <code> CODE </code>
-         <nonce> NONCE </nonce>
+         <accounts> ACCTDATA </accounts>
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, #accountEmpty(BAL, CODE, NONCE), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, <accounts> ACCTDATA </accounts>, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
            ...
          </k>
@@ -1263,10 +1260,7 @@ module EVM
          <localMem> LM </localMem>
          <activeAccounts> ACCTS </activeAccounts>
          <previousGas> GAVAIL </previousGas>
-         <acctID> ACCTTO </acctID>
-         <balance> BAL </balance>
-         <code> CODE </code>
-         <nonce> NONCE </nonce>
+         <accounts> ACCTDATA </accounts>
 
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
@@ -1526,37 +1520,27 @@ module EVM
 
     rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
 
-    rule <k> #gasExec(SCHED, COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, #accountEmpty(BAL, CODE, NONCE), GCAP, GAVAIL, VALUE) ... </k>
+    rule <k> #gasExec(SCHED, COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, <accounts> ACCTDATA </accounts>, GCAP, GAVAIL, VALUE) ... </k>
          <activeAccounts> ACCTS </activeAccounts>
          <gas> GAVAIL </gas>
-         <acctID> ACCTTO </acctID>
-         <balance> BAL </balance>
-         <code> CODE </code>
-         <nonce> NONCE </nonce>
+         <accounts> ACCTDATA </accounts>
          
-    rule <k> #gasExec(SCHED, CSOP:CallSixOp GCAP ACCTTO       _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, #accountEmpty(BAL, CODE, NONCE), GCAP, GAVAIL, 0)     ... </k>
+    rule <k> #gasExec(SCHED, CSOP:CallSixOp GCAP ACCTTO       _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, <accounts> ACCTDATA </accounts>, GCAP, GAVAIL, 0)     ... </k>
          <activeAccounts> ACCTS </activeAccounts>
          <gas> GAVAIL </gas>
-         <acctID> ACCTTO </acctID>
-         <balance> BAL </balance>
-         <code> CODE </code>
-         <nonce> NONCE </nonce>
+         <accounts> ACCTDATA </accounts>
 
-    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, ACCT, ACCTS, #accountEmpty(TOBAL, CODE, NONCE), FROMBAL) ... </k>
+    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, ACCTTO, ACCTS, <accounts> <account> <acctID> ACCTFROM </acctID> <balance> BAL </balance> ACCTFROMDATA </account> ACCTDATA </accounts>, BAL) ... </k>
          <activeAccounts> ACCTS </activeAccounts>
          <id> ACCTFROM </id>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <balance> TOBAL </balance>
-           <code> CODE </code>
-           <nonce> NONCE </nonce>
-          ...
-         </account>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <balance> FROMBAL </balance>
-          ...
-         </account>
+         <accounts>
+           <account>
+             <acctID> ACCTFROM </acctID>
+             <balance> BAL </balance>
+             ACCTFROMDATA
+           </account>
+           ACCTDATA
+         </accounts>
 
     rule <k> #gasExec(SCHED, CREATE _ _ _)      => Gcreate < SCHED >                 ... </k>
 
@@ -1642,43 +1626,46 @@ module EVM
     rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstoreset < SCHED >   requires VALUE =/=K 0 andBool notBool INDEX in_keys(STORAGE)
     rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstorereset < SCHED > requires VALUE ==K 0  orBool  INDEX in_keys(STORAGE)
 
-    syntax Int ::= Ccall    ( Schedule , Int , Set , Bool , Int , Int , Int ) [function]
-                 | Ccallgas ( Schedule , Int , Set , Bool , Int , Int , Int ) [function]
-                 | Cgascap  ( Schedule , Int , Int , Int )                    [function]
-                 | Cextra   ( Schedule , Int , Set , Bool , Int )             [function]
-                 | Cxfer    ( Schedule , Int )                                [function]
-                 | Cnew     ( Schedule , Int , Set , Bool , Int )             [function]
+    syntax Int ::= Ccall    ( Schedule , Int , Set , AccountsCell , Int , Int , Int ) [function]
+                 | Ccallgas ( Schedule , Int , Set , AccountsCell , Int , Int , Int ) [function]
+                 | Cgascap  ( Schedule , Int , Int , Int )                            [function]
+                 | Cextra   ( Schedule , Int , Set , AccountsCell , Int )             [function]
+                 | Cxfer    ( Schedule , Int )                                        [function]
+                 | Cnew     ( Schedule , Int , Set , AccountsCell , Int )             [function]
  // -----------------------------------------------------------------------------
-    rule Ccall(SCHED, ACCT, ACCTS, ISEMPTY, GCAP, GAVAIL, VALUE) => Cextra(SCHED, ACCT, ACCTS, ISEMPTY, VALUE) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, ISEMPTY, VALUE))
+    rule Ccall(SCHED, ACCT, ACCTS, ACCTDATA, GCAP, GAVAIL, VALUE) => Cextra(SCHED, ACCT, ACCTS, ACCTDATA, VALUE) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, ACCTDATA, VALUE))
 
-    rule Ccallgas(SCHED, ACCT, ACCTS, ISEMPTY, GCAP, GAVAIL, 0)     => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, ISEMPTY,     0))
-    rule Ccallgas(SCHED, ACCT, ACCTS, ISEMPTY, GCAP, GAVAIL, VALUE) => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, ISEMPTY, VALUE)) +Int Gcallstipend < SCHED > requires VALUE =/=K 0
+    rule Ccallgas(SCHED, ACCT, ACCTS, ACCTDATA, GCAP, GAVAIL, 0)     => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, ACCTDATA,     0))
+    rule Ccallgas(SCHED, ACCT, ACCTS, ACCTDATA, GCAP, GAVAIL, VALUE) => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, ACCTDATA, VALUE)) +Int Gcallstipend < SCHED > requires VALUE =/=K 0
 
     rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA andBool notBool Gstaticcalldepth << SCHED >>
     rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => GCAP                                          requires GAVAIL <Int  GEXTRA orBool Gstaticcalldepth << SCHED >>
 
-    rule Cextra(SCHED, ACCT, ACCTS, ISEMPTY, VALUE) => Gcall < SCHED > +Int Cnew(SCHED, ACCT, ACCTS, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)
+    rule Cextra(SCHED, ACCT, ACCTS, ACCTDATA, VALUE) => Gcall < SCHED > +Int Cnew(SCHED, ACCT, ACCTS, ACCTDATA, VALUE) +Int Cxfer(SCHED, VALUE)
 
     rule Cxfer(SCHED, 0) => 0
     rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=K 0
 
-    rule Cnew(SCHED, ACCT, ACCTS, ISEMPTY, VALUE) => Gnewaccount < SCHED >
-      requires         #accountNonexistent(SCHED, ACCT, ACCTS, ISEMPTY) andBool (Gzerovaluenewaccountgas << SCHED >> orBool VALUE =/=Int 0)
-    rule Cnew(SCHED, ACCT, ACCTS, ISEMPTY, VALUE) => 0
-      requires notBool #accountNonexistent(SCHED, ACCT, ACCTS, ISEMPTY) orBool (VALUE ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>)
+    rule Cnew(SCHED, ACCT, ACCTS, ACCTDATA, VALUE) => Gnewaccount < SCHED >
+      requires         #accountNonexistent(SCHED, ACCT, ACCTS, ACCTDATA) andBool (VALUE =/=Int 0 orBool          Gzerovaluenewaccountgas << SCHED >>)
+    rule Cnew(SCHED, ACCT, ACCTS, ACCTDATA, VALUE) => 0
+      requires notBool #accountNonexistent(SCHED, ACCT, ACCTS, ACCTDATA) orBool  (VALUE  ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>)
 
-    syntax Int ::= Cselfdestruct ( Schedule , Int , Set , Bool , Int ) [function]
+    syntax Int ::= Cselfdestruct ( Schedule , Int , Set , AccountsCell , Int ) [function]
  // ----------------------------------------------------------------
-    rule Cselfdestruct(SCHED, ACCT, ACCTS, ISEMPTY, BAL) => Gselfdestruct < SCHED > +Int Gnewaccount < SCHED >
-      requires (#accountNonexistent(SCHED, ACCT, ACCTS, ISEMPTY)) andBool (Gselfdestructnewaccount << SCHED >>) andBool (Gzerovaluenewaccountgas << SCHED >> orBool BAL =/=Int 0)
-    rule Cselfdestruct(SCHED, ACCT, ACCTS, ISEMPTY, BAL) => Gselfdestruct < SCHED >
-      requires (#accountNonexistent(SCHED, ACCT, ACCTS, ISEMPTY)) andBool (notBool Gselfdestructnewaccount << SCHED >> orBool (BAL ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>))
-    rule Cselfdestruct(SCHED, ACCT, ACCTS, ISEMPTY, BAL) => Gselfdestruct < SCHED >
-      requires notBool #accountNonexistent(SCHED, ACCT, ACCTS, ISEMPTY)
+    rule Cselfdestruct(SCHED, ACCT, ACCTS, ACCTDATA, BAL) => Gselfdestruct < SCHED > +Int Gnewaccount < SCHED >
+      requires (#accountNonexistent(SCHED, ACCT, ACCTS, ACCTDATA)) andBool (        Gselfdestructnewaccount << SCHED >>) andBool (BAL =/=Int 0 orBool          Gzerovaluenewaccountgas << SCHED >>)
+    rule Cselfdestruct(SCHED, ACCT, ACCTS, ACCTDATA, BAL) => Gselfdestruct < SCHED >
+      requires (#accountNonexistent(SCHED, ACCT, ACCTS, ACCTDATA)) andBool (notBool Gselfdestructnewaccount << SCHED >>  orBool  (BAL  ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>))
+    rule Cselfdestruct(SCHED, ACCT, ACCTS, ACCTDATA, BAL) => Gselfdestruct < SCHED >
+      requires notBool #accountNonexistent(SCHED, ACCT, ACCTS, ACCTDATA)
 
-    syntax Bool ::= #accountNonexistent ( Schedule , Int , Set , Bool ) [function]
+    syntax Bool ::= #accountNonexistent ( Schedule , Int , Set , AccountsCell ) [function]
+                  | #accountEmpty       ( Int , AccountsCell )                  [function]
  // ------------------------------------------------------------------------------
-    rule #accountNonexistent(SCHED, ACCT, ACCTS, ISEMPTY:Bool) => notBool ACCT in ACCTS orBool (ISEMPTY andBool Gemptyisnonexistent << SCHED >>)
+    rule #accountNonexistent(SCHED, ACCT, ACCTS, ACCTDATA) => notBool ACCT in ACCTS orBool (#accountEmpty(ACCT, ACCTDATA) andBool Gemptyisnonexistent << SCHED >>)
+    rule #accountEmpty(ACCT, <accounts> <acctID> ACCT </acctID> <balance> 0 </balance> <code> .Map </code> <nonce> 0 </nonce> ... </accounts>) => true
+    rule #accountEmpty(_, _) => false [owise]
 
     syntax Int ::= #allBut64th ( Int ) [function]
  // ---------------------------------------------
