@@ -132,7 +132,7 @@ module ETHEREUM-SIMULATION
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
-           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+           <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
 
@@ -157,7 +157,7 @@ module ETHEREUM-SIMULATION
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
-           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+           <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
       requires ACCTTO =/=Int 0
@@ -440,7 +440,7 @@ module ETHEREUM-SIMULATION
     rule <k> load "account" : { ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <acctMap> AM => AM [ "nonce" <- NONCE ] </acctMap>
+           <nonce> _ => NONCE </nonce>
            ...
          </account>
 
@@ -587,7 +587,7 @@ module ETHEREUM-SIMULATION
     rule <k> check "account" : { ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <acctMap> "nonce" |-> NONCE </acctMap>
+           <nonce> NONCE </nonce>
            ...
          </account>
 

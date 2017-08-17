@@ -62,10 +62,10 @@ module BALANCE-OF-SPEC
          <activeAccounts> SetItem ( %ACCT_ID ) </activeAccounts>
          <accounts>
            <account>
-             <acctID>  %ACCT_ID      </acctID>
-             <balance> BAL           </balance>
-             <code>    %HKG_Program  </code>
-             <acctMap> "nonce" |-> 0 </acctMap>
+             <acctID>  %ACCT_ID     </acctID>
+             <balance> BAL          </balance>
+             <code>    %HKG_Program </code>
+             <nonce>   0            </nonce>
              <storage> %ACCT_1_BALANCE |-> B1:Int
                        %ACCT_1_ALLOWED |-> A1:Int
                        %ACCT_2_BALANCE |-> B2:Int

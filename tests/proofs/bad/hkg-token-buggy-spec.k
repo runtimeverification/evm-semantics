@@ -50,9 +50,10 @@ module TOKEN-SPEC
          <activeAccounts> SetItem ( %ACCT_ID ) </activeAccounts>
          <accounts>
            <account>
-             <acctID>   %ACCT_ID           </acctID>
-             <balance>  BAL                </balance>
-             <code>     %HKG_Program_buggy </code>
+             <acctID>  %ACCT_ID           </acctID>
+             <balance> BAL                </balance>
+             <code>    %HKG_Program_buggy </code>
+             <nonce>   0                  </nonce>
              <storage> ...
                        %ACCT_1_BALANCE |-> (B1 => B1 -Int TRANSFER)
                        %ACCT_1_ALLOWED |-> (A1 => A1 -Int TRANSFER)
@@ -60,7 +61,6 @@ module TOKEN-SPEC
                        %ACCT_2_ALLOWED |-> _
                        ...
              </storage>
-             <acctMap> "nonce" |-> 0 </acctMap>
            </account>
          </accounts>
 

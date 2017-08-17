@@ -62,10 +62,10 @@ module APPROVE-SPEC
          <activeAccounts>   SetItem ( %ACCT_ID )   </activeAccounts>
          <accounts>
            <account>
-           <acctID>   %ACCT_ID     </acctID>
-           <balance>  BAL          </balance>
-           <code>     %HKG_Program </code>
-           <acctMap> "nonce" |-> 0 </acctMap>
+           <acctID>  %ACCT_ID     </acctID>
+           <balance> BAL          </balance>
+           <code>    %HKG_Program </code>
+           <nonce>   0            </nonce>
            <storage> ...
                      3 |-> %ORIGIN_ID
                      4 |-> %CALLER_ID
