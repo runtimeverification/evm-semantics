@@ -125,6 +125,7 @@ module EVM
                           <balance> 0    </balance>
                           <code>    .Map </code>
                           <storage> .Map </storage>
+                          <nonce>   0    </nonce>
                         </account>
                       </accounts>
 
@@ -243,7 +244,7 @@ module EVM
 // -   `#dropWorldState` removes the top element of the `interimStates`.
 
 
-    syntax Account ::= "{" Int "|" Int "|" Map "|" Map "}"
+    syntax Account ::= "{" Int "|" Int "|" Map "|" Map "|" Int "}"
  // --------------------------------------------------------------
 
     syntax InternalOp ::= "#pushWorldState" | "#pushWorldStateAux" Set | "#pushAccount" Int
@@ -255,12 +256,13 @@ module EVM
     rule <k> #pushWorldStateAux .Set => . ... </k>
     rule <k> #pushWorldStateAux (SetItem(ACCT) REST) => #pushAccount ACCT ~> #pushWorldStateAux REST ... </k>
     rule <k> #pushAccount ACCT => . ... </k>
-         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE })) REST) ... </interimStates>
+         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE | NONCE })) REST) ... </interimStates>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            <code> CODE </code>
            <storage> STORAGE </storage>
+           <nonce> NONCE </nonce>
          </account>
 
     syntax InternalOp ::= "#popWorldState" | "#popWorldStateAux" Set
@@ -271,7 +273,7 @@ module EVM
          <accounts> _ => .Bag </accounts>
 
     rule <k> #popWorldStateAux .Set => . ... </k>
-    rule <k> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE }) => .Set) REST ) ... </k>
+    rule <k> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE | NONCE }) => .Set) REST ) ... </k>
          <activeAccounts> ... (.Set => SetItem(ACCT)) </activeAccounts>
          <accounts> ( .Bag
                    => <account>
@@ -279,6 +281,7 @@ module EVM
                         <balance> BAL </balance>
                         <code> CODE </code>
                         <storage> STORAGE </storage>
+                        <nonce> NONCE </nonce>
                       </account>
                     )
                     ...

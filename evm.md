@@ -124,6 +124,7 @@ In the comments next to each cell, we've marked which component of the yellowpap
                           <balance> 0    </balance>
                           <code>    .Map </code>
                           <storage> .Map </storage>
+                          <nonce>   0    </nonce>
                         </account>
                       </accounts>
 
@@ -244,7 +245,7 @@ The `interimStates` cell stores a list of previous world states.
 -   `#dropWorldState` removes the top element of the `interimStates`.
 
 ```{.k .uiuck .rvk}
-    syntax Account ::= "{" Int "|" Int "|" Map "|" Map "}"
+    syntax Account ::= "{" Int "|" Int "|" Map "|" Map "|" Int "}"
  // --------------------------------------------------------------
 
     syntax InternalOp ::= "#pushWorldState" | "#pushWorldStateAux" Set | "#pushAccount" Int
@@ -256,12 +257,13 @@ The `interimStates` cell stores a list of previous world states.
     rule <k> #pushWorldStateAux .Set => . ... </k>
     rule <k> #pushWorldStateAux (SetItem(ACCT) REST) => #pushAccount ACCT ~> #pushWorldStateAux REST ... </k>
     rule <k> #pushAccount ACCT => . ... </k>
-         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE })) REST) ... </interimStates>
+         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE | NONCE })) REST) ... </interimStates>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            <code> CODE </code>
            <storage> STORAGE </storage>
+           <nonce> NONCE </nonce>
          </account>
 
     syntax InternalOp ::= "#popWorldState" | "#popWorldStateAux" Set
@@ -272,7 +274,7 @@ The `interimStates` cell stores a list of previous world states.
          <accounts> _ => .Bag </accounts>
 
     rule <k> #popWorldStateAux .Set => . ... </k>
-    rule <k> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE }) => .Set) REST ) ... </k>
+    rule <k> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE | NONCE }) => .Set) REST ) ... </k>
          <activeAccounts> ... (.Set => SetItem(ACCT)) </activeAccounts>
          <accounts> ( .Bag
                    => <account>
@@ -280,6 +282,7 @@ The `interimStates` cell stores a list of previous world states.
                         <balance> BAL </balance>
                         <code> CODE </code>
                         <storage> STORAGE </storage>
+                        <nonce> NONCE </nonce>
                       </account>
                     )
                     ...
