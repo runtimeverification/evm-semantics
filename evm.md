@@ -1199,7 +1199,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, #accountEmpty(BAL, CODE, NONCE), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
           ...
          </k>
@@ -1208,11 +1208,15 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <localMem> LM </localMem>
          <activeAccounts> ACCTS </activeAccounts>
          <previousGas> GAVAIL </previousGas>
+         <acctID> ACCTTO </acctID>
+         <balance> BAL </balance>
+         <code> CODE </code>
+         <nonce> NONCE </nonce>
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, #accountEmpty(BAL, CODE, NONCE), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
            ...
          </k>
@@ -1221,6 +1225,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <localMem> LM </localMem>
          <activeAccounts> ACCTS </activeAccounts>
          <previousGas> GAVAIL </previousGas>
+         <acctID> ACCTTO </acctID>
+         <balance> BAL </balance>
+         <code> CODE </code>
+         <nonce> NONCE </nonce>
 
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
@@ -1470,10 +1478,38 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
 
     rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
 
-    rule <k> #gasExec(SCHED, COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) ... </k> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas>
-    rule <k> #gasExec(SCHED, CSOP:CallSixOp GCAP ACCTTO       _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, 0)     ... </k> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas>
+    rule <k> #gasExec(SCHED, COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, #accountEmpty(BAL, CODE, NONCE), GCAP, GAVAIL, VALUE) ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
+         <gas> GAVAIL </gas>
+         <acctID> ACCTTO </acctID>
+         <balance> BAL </balance>
+         <code> CODE </code>
+         <nonce> NONCE </nonce>
+         
+    rule <k> #gasExec(SCHED, CSOP:CallSixOp GCAP ACCTTO       _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, #accountEmpty(BAL, CODE, NONCE), GCAP, GAVAIL, 0)     ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
+         <gas> GAVAIL </gas>
+         <acctID> ACCTTO </acctID>
+         <balance> BAL </balance>
+         <code> CODE </code>
+         <nonce> NONCE </nonce>
 
-    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCT) => Cselfdestruct(SCHED, ACCT, ACCTS) ... </k> <activeAccounts> ACCTS </activeAccounts>
+    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, ACCT, ACCTS, #accountEmpty(TOBAL, CODE, NONCE), FROMBAL) ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
+         <id> ACCTFROM </id>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <balance> TOBAL </balance>
+           <code> CODE </code>
+           <nonce> NONCE </nonce>
+          ...
+         </account>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> FROMBAL </balance>
+          ...
+         </account>
+
     rule <k> #gasExec(SCHED, CREATE _ _ _)      => Gcreate < SCHED >                 ... </k>
 
     rule <k> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </k>
@@ -1556,34 +1592,43 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
     rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstoreset < SCHED >   requires VALUE =/=K 0 andBool notBool INDEX in_keys(STORAGE)
     rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstorereset < SCHED > requires VALUE ==K 0  orBool  INDEX in_keys(STORAGE)
 
-    syntax Int ::= Ccall    ( Schedule , Int , Set , Int , Int , Int ) [function]
-                 | Ccallgas ( Schedule , Int , Set , Int , Int , Int ) [function]
-                 | Cgascap  ( Schedule , Int , Int , Int )             [function]
-                 | Cextra   ( Schedule , Int , Set , Int )             [function]
-                 | Cxfer    ( Schedule , Int )                         [function]
-                 | Cnew     ( Schedule , Int , Set )                   [function]
+    syntax Int ::= Ccall    ( Schedule , Int , Set , Bool , Int , Int , Int ) [function]
+                 | Ccallgas ( Schedule , Int , Set , Bool , Int , Int , Int ) [function]
+                 | Cgascap  ( Schedule , Int , Int , Int )                    [function]
+                 | Cextra   ( Schedule , Int , Set , Bool , Int )             [function]
+                 | Cxfer    ( Schedule , Int )                                [function]
+                 | Cnew     ( Schedule , Int , Set , Bool , Int )             [function]
  // -----------------------------------------------------------------------------
-    rule Ccall(SCHED, ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cextra(SCHED, ACCT, ACCTS, VALUE) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, VALUE))
+    rule Ccall(SCHED, ACCT, ACCTS, ISEMPTY, GCAP, GAVAIL, VALUE) => Cextra(SCHED, ACCT, ACCTS, ISEMPTY, VALUE) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, ISEMPTY, VALUE))
 
-    rule Ccallgas(SCHED, ACCT, ACCTS, GCAP, GAVAIL, 0)     => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS,     0))
-    rule Ccallgas(SCHED, ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, VALUE)) +Int Gcallstipend < SCHED > requires VALUE =/=K 0
+    rule Ccallgas(SCHED, ACCT, ACCTS, ISEMPTY, GCAP, GAVAIL, 0)     => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, ISEMPTY,     0))
+    rule Ccallgas(SCHED, ACCT, ACCTS, ISEMPTY, GCAP, GAVAIL, VALUE) => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, ISEMPTY, VALUE)) +Int Gcallstipend < SCHED > requires VALUE =/=K 0
 
     rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA andBool notBool Gstaticcalldepth << SCHED >>
     rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => GCAP                                          requires GAVAIL <Int  GEXTRA orBool Gstaticcalldepth << SCHED >>
 
-    rule Cextra(SCHED, ACCT, ACCTS, VALUE) => Gcall < SCHED > +Int Cnew(SCHED, ACCT, ACCTS) +Int Cxfer(SCHED, VALUE)
+    rule Cextra(SCHED, ACCT, ACCTS, ISEMPTY, VALUE) => Gcall < SCHED > +Int Cnew(SCHED, ACCT, ACCTS, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)
 
     rule Cxfer(SCHED, 0) => 0
     rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=K 0
 
-    rule Cnew(SCHED, ACCT, ACCTS) => Gnewaccount < SCHED > requires notBool ACCT in ACCTS
-    rule Cnew(SCHED, ACCT, ACCTS) => 0                     requires ACCT in ACCTS
+    rule Cnew(SCHED, ACCT, ACCTS, ISEMPTY, VALUE) => Gnewaccount < SCHED >
+      requires         #accountNonexistent(SCHED, ACCT, ACCTS, ISEMPTY) andBool (Gzerovaluenewaccountgas << SCHED >> orBool VALUE =/=Int 0)
+    rule Cnew(SCHED, ACCT, ACCTS, ISEMPTY, VALUE) => 0
+      requires notBool #accountNonexistent(SCHED, ACCT, ACCTS, ISEMPTY) orBool (VALUE ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>)
 
-    syntax Int ::= Cselfdestruct ( Schedule , Int , Set ) [function]
+    syntax Int ::= Cselfdestruct ( Schedule , Int , Set , Bool , Int ) [function]
  // ----------------------------------------------------------------
-    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED > +Int Gnewaccount < SCHED > requires (notBool ACCT in ACCTS) andBool (Gselfdestructnewaccount << SCHED >>)
-    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED >                            requires (notBool ACCT in ACCTS) andBool (notBool Gselfdestructnewaccount << SCHED >>)
-    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED >                            requires ACCT in ACCTS
+    rule Cselfdestruct(SCHED, ACCT, ACCTS, ISEMPTY, BAL) => Gselfdestruct < SCHED > +Int Gnewaccount < SCHED >
+      requires (#accountNonexistent(SCHED, ACCT, ACCTS, ISEMPTY)) andBool (Gselfdestructnewaccount << SCHED >>) andBool (Gzerovaluenewaccountgas << SCHED >> orBool BAL =/=Int 0)
+    rule Cselfdestruct(SCHED, ACCT, ACCTS, ISEMPTY, BAL) => Gselfdestruct < SCHED >
+      requires (#accountNonexistent(SCHED, ACCT, ACCTS, ISEMPTY)) andBool (notBool Gselfdestructnewaccount << SCHED >> orBool (BAL ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>))
+    rule Cselfdestruct(SCHED, ACCT, ACCTS, ISEMPTY, BAL) => Gselfdestruct < SCHED >
+      requires notBool #accountNonexistent(SCHED, ACCT, ACCTS, ISEMPTY)
+
+    syntax Bool ::= #accountNonexistent ( Schedule , Int , Set , Bool ) [function]
+ // ------------------------------------------------------------------------------
+    rule #accountNonexistent(SCHED, ACCT, ACCTS, ISEMPTY:Bool) => notBool ACCT in ACCTS orBool (ISEMPTY andBool Gemptyisnonexistent << SCHED >>)
 
     syntax Int ::= #allBut64th ( Int ) [function]
  // ---------------------------------------------
@@ -1615,8 +1660,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
     syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function]
  // ----------------------------------------------------------
 
-    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth"
- // ----------------------------------------------------------------------
+    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
+ // --------------------------------------------------------------------------------------------------------------------------
 ```
 
 A `ScheduleConst` is a constant determined by the fee schedule; applying a `ScheduleConst` to a `Schedule` yields the correct constant for that schedule.
@@ -1687,6 +1732,8 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
 
     rule Gselfdestructnewaccount << DEFAULT >> => false
     rule Gstaticcalldepth        << DEFAULT >> => true
+    rule Gemptyisnonexistent     << DEFAULT >> => false
+    rule Gzerovaluenewaccountgas << DEFAULT >> => true
 ```
 
 ```c++
@@ -1800,6 +1847,8 @@ static const EVMSchedule HomesteadSchedule = EVMSchedule(true, true, 53000);
 
     rule Gselfdestructnewaccount << EIP150 >> => true
     rule Gstaticcalldepth        << EIP150 >> => false
+    rule SCHEDCONST              << EIP150 >> => SCHEDCONST << HOMESTEAD >>
+      requires notBool      ( SCHEDCONST ==K Gselfdestructnewaccount orBool SCHEDCONST ==K Gstaticcalldepth )
 ```
 
 ```c++
@@ -1826,7 +1875,10 @@ static const EVMSchedule EIP150Schedule = []
     rule Gexpbyte   < EIP158 > => 50
     rule SCHEDCONST < EIP158 > => SCHEDCONST < EIP150 > requires SCHEDCONST =/=K Gexpbyte
 
-    rule SCHEDFLAG << EIP158 >> => SCHEDFLAG << EIP150 >>
+    rule Gemptyisnonexistent     << EIP158 >> => true
+    rule Gzerovaluenewaccountgas << EIP158 >> => false
+    rule SCHEDCONST              << EIP158 >> => SCHEDCONST << EIP150 >>
+      requires notBool      ( SCHEDCONST ==K Gemptyisnonexistent orBool SCHEDCONST ==K Gzerovaluenewaccountgas )
 ```
 
 ```c++
