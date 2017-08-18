@@ -139,8 +139,9 @@ The rule above specifies that in all valid executions starting in the left-hand-
 
 Initially, we took the vulnerability containing code, compiled it to EVM, and plugged in into our [reachability claim](token-buggy-spec.md), which wasn't able to be verified as expected.
 Surprisingly, after fixing the bug which caused the reissuance, verifying against the ERC20 specification was still not possible due to the presence of an integer overflow bug not corrected in this reissuance.
-We preferred to not fix the code here, but just adjusted the specs to assume that the code will not be called in contexts where the overflow may happen.
 Additionally, because the KEVM semantics properly tests every condition which could result in an exception, we found that we must bound the remaining `wordStack` size to 1016 to avoid a stack overflow exception.
+
+We verified all the five functions implemented in HKG token program with preconditions stating that the code will not be called in contexts where the overflow may happen.
 
 ### Conclusion
 
