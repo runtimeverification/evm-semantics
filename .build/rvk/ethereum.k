@@ -451,6 +451,8 @@ module ETHEREUM-SIMULATION
  // -----------------------------------------------------------
     rule #asScheduleString("EIP150") => EIP150
     rule #asScheduleString("EIP158") => EIP158
+    rule #asScheduleString("Frontier") => FRONTIER
+    rule #asScheduleString("Homestead") => HOMESTEAD
 
 
 // The `"rlp"` key loads the block information.
