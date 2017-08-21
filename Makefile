@@ -74,16 +74,25 @@ vm-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
 		  tests/VMTests/vmInputLimits/make.timestamp \
 		  tests/VMTests/vmInputLimitsLight/make.timestamp
 
-blockchain-tests: tests/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_AcreateB_BSuicide_BStore/make.timestamp
+blockchain-tests: \
+				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)) \
 
-passing_test_file=tests/passing.expected
-passing_blockchain_tests=$(shell cat ${passing_test_file})
-all_tests=$(wildcard tests/VMTests/*/*.json) ${passing_blockchain_tests}
-skipped_tests=$(wildcard tests/VMTests/vmPerformanceTest/*.json) tests/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1021.json
+#passing_test_file=tests/passing.expected
+#blockchain_tests=$(shell cat ${passing_test_file})
+blockchain_tests=$(wildcard tests/BlockchainTests/*/*/*/*.json)
+all_tests=$(wildcard tests/VMTests/*/*.json) ${blockchain_tests}
+skipped_tests=$(wildcard tests/VMTests/vmPerformanceTest/*.json) \
+   $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Byzantium.json) \
+   $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Constantinople.json) \
+   $(wildcard tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*/*.json)
+
 passing_tests=$(filter-out ${skipped_tests}, ${all_tests})
+passing_blockchain_tests=$(filter-out ${skipped_tests}, ${blockchain_tests})
 passing_targets=${passing_tests:=.test}
+passing_blockchain_targets=${passing_blockchain_tests:=.test}
 
 test: $(passing_targets)
+blockchain-test: $(passing_blockchain_targets)
 
 tests/VMTests/%.test: tests/VMTests/% build
 	./vmtest $<
