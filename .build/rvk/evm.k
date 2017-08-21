@@ -14,6 +14,10 @@ module EVM
     imports EVM-DATA
 
 
+
+    imports COLLECTIONS
+
+
 // Configuration
 // -------------
 
@@ -249,14 +253,14 @@ module EVM
     syntax Account ::= "{" Int "|" Int "|" Map "|" Map "|" Int "}"
  // --------------------------------------------------------------
 
-    syntax InternalOp ::= "#pushWorldState" | "#pushWorldStateAux" Set | "#pushAccount" Int
+    syntax InternalOp ::= "#pushWorldState" | "#pushWorldStateAux" List | "#pushAccount" Int
  // ---------------------------------------------------------------------------------------
-    rule <k> #pushWorldState => #pushWorldStateAux ACCTS ... </k>
+    rule <k> #pushWorldState => #pushWorldStateAux Set2List(ACCTS) ... </k>
          <activeAccounts> ACCTS </activeAccounts>
          <interimStates> (.List => ListItem(.Set)) ... </interimStates>
 
-    rule <k> #pushWorldStateAux .Set => . ... </k>
-    rule <k> #pushWorldStateAux (SetItem(ACCT) REST) => #pushAccount ACCT ~> #pushWorldStateAux REST ... </k>
+    rule <k> #pushWorldStateAux .List => . ... </k>
+    rule <k> #pushWorldStateAux (ListItem(ACCT) REST) => #pushAccount ACCT ~> #pushWorldStateAux REST ... </k>
     rule <k> #pushAccount ACCT => . ... </k>
          <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE | NONCE })) REST) ... </interimStates>
          <account>
