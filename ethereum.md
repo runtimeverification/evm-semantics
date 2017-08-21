@@ -99,7 +99,11 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> startTx => #finalizeBlock ... </k>
          <txPending> .List </txPending>
 
-    rule <k> loadTx(ACCTFROM) => #create ACCTFROM #newAddr(ACCTFROM, NONCE +Int 1) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE (#asMapOpCodes(#dasmOpCodes(CODE))) ~> #execute ~> #finishTx ~> flush ~> startTx ...</k>
+    rule <k> loadTx(ACCTFROM) 
+           => #create ACCTFROM #newAddr(ACCTFROM, NONCE +Int 1) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE (#asMapOpCodes(#dasmOpCodes(CODE)))
+           ~> #execute ~> #finishTx ~> #finalizeTx(false) ~> startTx 
+          ...
+         </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
          <origin> _ => ACCTFROM </origin>
@@ -114,7 +118,11 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <nonce> NONCE => NONCE +Int 1 </nonce>
          <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
 
-    rule <k> loadTx(ACCTFROM) => #call ACCTFROM ACCTTO ACCTTO (GLIMIT -Int G0(SCHED, DATA, false)) VALUE VALUE DATA ~> #execute ~> #finishTx ~> flush ~> startTx ...</k>
+    rule <k> loadTx(ACCTFROM) 
+           => #call ACCTFROM ACCTTO ACCTTO (GLIMIT -Int G0(SCHED, DATA, false)) VALUE VALUE DATA 
+           ~> #execute ~> #finishTx ~> #finalizeTx(false) ~> startTx
+          ...
+         </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
          <origin> _ => ACCTFROM </origin>
@@ -130,13 +138,13 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
          requires ACCTTO =/=Int 0
 
-    rule <k> #end ~> #finishTx => #mkCodeDeposit ACCT ~> #end ... </k>
+    rule <k> #end ~> #finishTx => #mkCodeDeposit ACCT ... </k>
          <id> ACCT </id>
          <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
          <to> 0 </to>
 
-    rule <k> #end ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ~> #end ... </k>
+    rule <k> #end ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ... </k>
          <id> ACCT </id>
          <gas> GAVAIL </gas>
          <txPending> ListItem(MsgId:Int) ...</txPending>
@@ -144,7 +152,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <to> TT </to>
          requires TT =/=Int 0
 
-    rule #exception ~> #finishTx => #popCallStack ~> #popWorldState ~> #exception
+    rule #exception ~> #finishTx => #popCallStack ~> #popWorldState
 
     // TODO: handle blocks with ommers
     rule <k> #finalizeBlock => #rewardOmmers(OMMERS) ... </k>
