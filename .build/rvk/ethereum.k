@@ -105,6 +105,7 @@ module ETHEREUM-SIMULATION
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
          <origin> _ => ACCTFROM </origin>
+         <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
          <txGasPrice> GPRICE </txGasPrice>
@@ -124,6 +125,7 @@ module ETHEREUM-SIMULATION
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
          <origin> _ => ACCTFROM </origin>
+         <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
          <txGasPrice> GPRICE </txGasPrice>

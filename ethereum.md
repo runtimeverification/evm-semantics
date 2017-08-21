@@ -107,6 +107,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
          <origin> _ => ACCTFROM </origin>
+         <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
          <txGasPrice> GPRICE </txGasPrice>
@@ -126,6 +127,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
          <origin> _ => ACCTFROM </origin>
+         <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
          <txGasPrice> GPRICE </txGasPrice>
