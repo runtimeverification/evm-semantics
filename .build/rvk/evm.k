@@ -250,48 +250,22 @@ module EVM
 // -   `#dropWorldState` removes the top element of the `interimStates`.
 
 
-    syntax Account ::= "{" Int "|" Int "|" Map "|" Map "|" Int "}"
+    syntax Accounts ::= "{" AccountsCell "|" Set "}"
  // --------------------------------------------------------------
 
-    syntax InternalOp ::= "#pushWorldState" | "#pushWorldStateAux" List | "#pushAccount" Int
+    syntax InternalOp ::= "#pushWorldState"
  // ---------------------------------------------------------------------------------------
-    rule <k> #pushWorldState => #pushWorldStateAux Set2List(ACCTS) ... </k>
+    rule <k> #pushWorldState => .K ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-         <interimStates> (.List => ListItem(.Set)) ... </interimStates>
+         <accounts> ACCTDATA </accounts>
+         <interimStates> (.List => ListItem({ <accounts> ACCTDATA </accounts> | ACCTS })) ... </interimStates>
 
-    rule <k> #pushWorldStateAux .List => . ... </k>
-    rule <k> #pushWorldStateAux (ListItem(ACCT) REST) => #pushAccount ACCT ~> #pushWorldStateAux REST ... </k>
-    rule <k> #pushAccount ACCT => . ... </k>
-         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE | NONCE })) REST) ... </interimStates>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           <code> CODE </code>
-           <storage> STORAGE </storage>
-           <nonce> NONCE </nonce>
-         </account>
-
-    syntax InternalOp ::= "#popWorldState" | "#popWorldStateAux" Set
+    syntax InternalOp ::= "#popWorldState"
  // ----------------------------------------------------------------
-    rule <k> #popWorldState => #popWorldStateAux PREVSTATE ... </k>
-         <interimStates> (ListItem(PREVSTATE) => .List) ... </interimStates>
-         <activeAccounts> _ => .Set </activeAccounts>
-         <accounts> _ => .Bag </accounts>
-
-    rule <k> #popWorldStateAux .Set => . ... </k>
-    rule <k> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE | NONCE }) => .Set) REST ) ... </k>
-         <activeAccounts> ... (.Set => SetItem(ACCT)) </activeAccounts>
-         <accounts> ( .Bag
-                   => <account>
-                        <acctID> ACCT </acctID>
-                        <balance> BAL </balance>
-                        <code> CODE </code>
-                        <storage> STORAGE </storage>
-                        <nonce> NONCE </nonce>
-                      </account>
-                    )
-                    ...
-         </accounts>
+    rule <k> #popWorldState => .K ... </k>
+         <interimStates> (ListItem({ <accounts> ACCTDATA </accounts> | ACCTS }) => .List) ... </interimStates>
+         <activeAccounts> _ => ACCTS </activeAccounts>
+         <accounts> _ => ACCTDATA </accounts>
 
     syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
