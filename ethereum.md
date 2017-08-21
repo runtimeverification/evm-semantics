@@ -114,7 +114,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
  // -----------------------------------------
     rule <k> loadTx(ACCTFROM)
           => #create ACCTFROM #newAddr(ACCTFROM, NONCE +Int 1) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE (#asMapOpCodes(#dasmOpCodes(CODE)))
-          ~> #execute ~> #finishTx ~> flush ~> startTx
+          ~> #execute ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -140,7 +140,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     rule <k> loadTx(ACCTFROM)
           => #call ACCTFROM ACCTTO ACCTTO (GLIMIT -Int G0(SCHED, DATA, false)) VALUE VALUE DATA
-          ~> #execute ~> #finishTx ~> flush ~> startTx
+          ~> #execute ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -167,9 +167,9 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
-    rule <k> #exception ~> #finishTx => #popCallStack ~> #popWorldState ~> #exception ... </k>
+    rule <k> #exception ~> #finishTx => #popCallStack ~> #popWorldState ... </k>
 
-    rule <k> #end ~> #finishTx => #mkCodeDeposit ACCT ~> #end ... </k>
+    rule <k> #end ~> #finishTx => #mkCodeDeposit ACCT ... </k>
          <id> ACCT </id>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
@@ -178,7 +178,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            ...
          </message>
 
-    rule <k> #end ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ~> #end ... </k>
+    rule <k> #end ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ... </k>
          <id> ACCT </id>
          <gas> GAVAIL </gas>
          <txPending> ListItem(TXID:Int) ... </txPending>
