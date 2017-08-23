@@ -69,7 +69,8 @@ vm-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
 		  tests/VMTests/vmInputLimitsLight/make.timestamp
 
 blockchain-tests: tests/BlockchainTests/GeneralStateTests/stAttackTest/ContractCreationSpam/make.timestamp \
-				  tests/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_AcreateB_BSuicide_BStore/make.timestamp
+				  tests/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_AcreateB_BSuicide_BStore/make.timestamp \
+				  tests/BlockchainTests/GeneralStateTests/stBlockHashTest/blockhash0/make.timestamp
 
 passing_test_file=tests/passing.expected
 passing_blockchain_tests=$(shell cat ${passing_test_file})
