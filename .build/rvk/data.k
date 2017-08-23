@@ -422,13 +422,13 @@ module EVM-DATA
 
     syntax Int ::= #newAddr ( Int , Int ) [function]
  // ------------------------------------------------
-    rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeWord(ACCT) +String #rlpEncodeWord(NONCE), 192))))
+    rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeWord(NONCE), 192))))
 
     syntax Int ::= #sender ( Int , Int , Int , Int , Int , String , Int , WordStack , WordStack ) [function]
                  | #sender ( String , Int , String , String )                                     [function, klabel(#senderAux)]
  // ----------------------------------------------------------------------------------------------------------------------------
     rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS)
-      => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWordStack(TN : TP : TG : TT : TV : .WordStack) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
+      => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWordStack(TN : TP : TG : .WordStack) +String #rlpEncodeAccount(TT) +String #rlpEncodeWord(TV) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
 
     rule #sender(HT, TW, TR, TS) => #addr(#parseHexWord(Keccak256(ECDSARecover(HT, TW, TR, TS))))
 
@@ -438,15 +438,38 @@ module EVM-DATA
 
 
     syntax Int ::= #blockHeaderHash( Int , Int , Int , Int , Int , Int , WordStack , Int , Int , Int , Int , Int , WordStack , Int , Int ) [function]
- // -------------------------------------------------------------------------------------------------------------------------------------------------
+                 | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderStr)]
+ // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+   rule #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
+         => #blockHeaderHash(#asWord(#parseByteStackRaw(HP)),
+                             #asWord(#parseByteStackRaw(HO)),
+                             #asWord(#parseByteStackRaw(HC)),
+                             #asWord(#parseByteStackRaw(HR)),
+                             #asWord(#parseByteStackRaw(HT)),
+                             #asWord(#parseByteStackRaw(HE)),
+                                     #parseByteStackRaw(HB) ,
+                             #asWord(#parseByteStackRaw(HD)),
+                             #asWord(#parseByteStackRaw(HI)),
+                             #asWord(#parseByteStackRaw(HL)),
+                             #asWord(#parseByteStackRaw(HG)),
+                             #asWord(#parseByteStackRaw(HS)),
+                                     #parseByteStackRaw(HX) ,
+                             #asWord(#parseByteStackRaw(HM)),
+                             #asWord(#parseByteStackRaw(HN)))
+
     rule #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
-         => #parseHexWord(Keccak256(#rlpEncodeLength(         #rlpEncodeWordStack(HP : HO : HC : HR : HT : HE : .WordStack)
+         => #parseHexWord(Keccak256(#rlpEncodeLength(         #rlpEncodeBytes(HP, 32)
+                                                      +String #rlpEncodeBytes(HO, 32)
+                                                      +String #rlpEncodeBytes(HC, 20)
+                                                      +String #rlpEncodeBytes(HR, 32)
+                                                      +String #rlpEncodeBytes(HT, 32)
+                                                      +String #rlpEncodeBytes(HE, 32)
                                                       +String #rlpEncodeString(#unparseByteStack(HB))
                                                       +String #rlpEncodeWordStack(HD : HI : HL : HG : HS : .WordStack)
                                                       +String #rlpEncodeString(#unparseByteStack(HX))
-                                                      +String #rlpEncodeWordStack(HM : HN : .WordStack)
-                                                    , 192
-                                                    )))
+                                                      +String #rlpEncodeBytes(HM, 32)
+                                                      +String #rlpEncodeBytes(HN, 8),
+                                                    192)))
 
 
 // Word Map
@@ -591,18 +614,25 @@ module EVM-DATA
 
 
     syntax String ::= #rlpEncodeWord ( Int )            [function]
+                    | #rlpEncodeBytes ( Int , Int )     [function]
                     | #rlpEncodeWordStack ( WordStack ) [function]
                     | #rlpEncodeString ( String )       [function]
+                    | #rlpEncodeAccount ( Int )         [function]
  // --------------------------------------------------------------
     rule #rlpEncodeWord(0) => "\x80"
     rule #rlpEncodeWord(WORD) => chrChar(WORD) requires WORD >Int 0 andBool WORD <Int 128
     rule #rlpEncodeWord(WORD) => #rlpEncodeLength(#unparseByteStack(#asByteStack(WORD)), 128) requires WORD >=Int 128
+
+    rule #rlpEncodeBytes(WORD, LEN) => #rlpEncodeString(#unparseByteStack(#padToWidth(LEN, #asByteStack(WORD))))
 
     rule #rlpEncodeWordStack(.WordStack) => ""
     rule #rlpEncodeWordStack(W : WS)     => #rlpEncodeWord(W) +String #rlpEncodeWordStack(WS)
 
     rule #rlpEncodeString(STR) => STR                        requires lengthString(STR) ==Int 1 andBool ordChar(STR) <Int 128
     rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) [owise]
+
+    rule #rlpEncodeAccount(0) => "\x80"
+    rule #rlpEncodeAccount(ACCT) => #rlpEncodeBytes(ACCT, 20) requires ACCT =/=Int 0
 
     syntax String ::= #rlpEncodeLength ( String , Int )          [function]
                     | #rlpEncodeLength ( String , Int , String ) [function, klabel(#rlpEncodeLengthAux)]
