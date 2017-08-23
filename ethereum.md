@@ -224,7 +224,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax Set ::= "#loadKeys" [function]
  // -------------------------------------
     rule #loadKeys => ( SetItem("env") SetItem("pre")
-                        SetItem("rlp") SetItem("network")
+                        SetItem("rlp") SetItem("network") SetItem("genesisRLP")
                       )
 
     rule run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } requires KEY in #loadKeys
@@ -253,7 +253,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax Set ::= "#postKeys" [function] | "#checkKeys" [function]
  // ---------------------------------------------------------------
     rule #postKeys  => ( SetItem("post") SetItem("postState") SetItem("expect") SetItem("export") SetItem("expet") )
-    rule #checkKeys => ( #postKeys SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("gas") SetItem("blockHeader") SetItem("transactions") SetItem("uncleHeaders") )
+    rule #checkKeys => ( #postKeys SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("gas") SetItem("blockHeader") SetItem("transactions") SetItem("uncleHeaders") SetItem("genesisBlockHeader") )
 
     rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { "post" : VAL } requires KEY in #postKeys
     rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY    : VAL } requires KEY in #checkKeys andBool notBool KEY in #postKeys
@@ -264,7 +264,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ```{.k .uiuck .rvk}
     syntax Set ::= "#discardKeys" [function]
  // ----------------------------------------
-    rule #discardKeys => ( SetItem("//") SetItem("_info") SetItem("genesisRLP") SetItem("genesisBlockHeader") )
+    rule #discardKeys => ( SetItem("//") SetItem("_info") )
 
     rule run TESTID : { KEY : _ , REST } => run TESTID : { REST } requires KEY in #discardKeys
 ```
@@ -375,6 +375,7 @@ Here we perform pre-proccesing on account data which allows "pretty" specificati
     rule load "account" : { (ACCT:Int) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
     rule load "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
     rule load "rlp" : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL))))
+    rule load "genesisRLP" : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL))))
 ```
 
 The individual fields of the accounts are dealt with here.
@@ -479,6 +480,9 @@ The `"rlp"` key loads the block information.
          <mixHash> _ => #asWord(#parseByteStackRaw(HM)) </mixHash>
          <blockNonce> _ => #asWord(#parseByteStackRaw(HN)) </blockNonce>
          <ommerBlockHeaders> _ => BU </ommerBlockHeaders>
+
+    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONList ], _, _, .JSONList ] => .K ...</k>
+         <blockhash> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ...</blockhash>
 
     rule <k> load "transaction": [ [ TN, TP, TG, TT, TV, TI, TW, TR, TS ] , REST => REST ] ...</k>
          <txOrder>... .List => ListItem(!ID) </txOrder>
@@ -637,6 +641,15 @@ Here we check the other post-conditions associated with an EVM test.
          <mixHash> HM </mixHash>
          <blockNonce> HN </blockNonce>
          requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN) ==Int #asWord(#parseByteStack(HASH))
+
+    rule check TESTID : { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ~> failure TESTID
+ // ----------------------------------------------------------------------------------------------------------
+    rule check "genesisBlockHeader" : { KEY : VALUE , REST } => check "genesisBlockHeader" : { KEY : VALUE } ~> check "genesisBlockHeader" : { REST } requires REST =/=K .JSONList
+    rule check "genesisBlockHeader" : { KEY : VALUE } => .K requires KEY =/=String "hash"
+
+    rule check "genesisBlockHeader" : { "hash": (HASH:String => #asWord(#parseByteStack(HASH))) }
+    rule <k> check "genesisBlockHeader" : { "hash": HASH } => . ... </k>
+         <blockhash>... ListItem(HASH) </blockhash>
 
     rule check TESTID : { "transactions" : TRANSACTIONS } => check "transactions" : TRANSACTIONS ~> failure TESTID
  // --------------------------------------------------------------------------------------------------------------
