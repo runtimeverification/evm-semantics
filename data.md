@@ -595,25 +595,25 @@ Decoding
  // ---------------------------------------------------------------------------------------------------
     rule #rlpDecodeList(STR, POS) => #rlpDecodeList(STR, POS, #decodeLengthPrefix(STR, POS)) requires POS <Int lengthString(STR)
     rule #rlpDecodeList(STR, POS) => .JSONList [owise]
-    rule #rlpDecodeList(STR, POS, _(L, P)) => #rlpDecode(substrString(STR, POS, L +Int P)) , #rlpDecodeList(STR, L +Int P)
+    rule #rlpDecodeList(STR, POS, _:LengthPrefixType(L, P)) => #rlpDecode(substrString(STR, POS, L +Int P)) , #rlpDecodeList(STR, L +Int P)
 
-    syntax LengthPrefix ::= #list ( Int , Int )
-                          | #str ( Int , Int )
-                          | #decodeLengthPrefix ( String , Int )                 [function]
-                          | #decodeLengthPrefix ( String , Int , Int )           [function, klabel(#decodeLengthPrefixAux)]
-                          | #decodeLengthPrefixLength ( K , String , Int , Int ) [function]
-                          | #decodeLengthPrefixLength ( K , Int    , Int , Int ) [function, klabel(#decodeLengthPrefixLengthAux)]
- // -----------------------------------------------------------------------------------------------------------------------------
+    syntax LengthPrefixType ::= "#str" | "#list"
+    syntax LengthPrefix ::= LengthPrefixType "(" Int "," Int ")"
+                          | #decodeLengthPrefix ( String , Int )                                [function]
+                          | #decodeLengthPrefix ( String , Int , Int )                          [function, klabel(#decodeLengthPrefixAux)]
+                          | #decodeLengthPrefixLength ( LengthPrefixType , String , Int , Int ) [function]
+                          | #decodeLengthPrefixLength ( LengthPrefixType , Int    , Int , Int ) [function, klabel(#decodeLengthPrefixLengthAux)]
+ // --------------------------------------------------------------------------------------------------------------------------------------------
     rule #decodeLengthPrefix(STR, START) => #decodeLengthPrefix(STR, START, ordChar(substrString(STR, START, START +Int 1)))
 
-    rule #decodeLengthPrefix(STR, START, B0) => #str(1, START)                                              requires B0 <Int 128
-    rule #decodeLengthPrefix(STR, START, B0) => #str(B0 -Int 128, START +Int 1)                             requires B0 >=Int 128 andBool B0 <Int (128 +Int 56)
-    rule #decodeLengthPrefix(STR, START, B0) => #decodeLengthPrefixLength(#klabel(`#str`), STR, START, B0)  requires B0 >=Int (128 +Int 56) andBool B0 <Int 192
-    rule #decodeLengthPrefix(STR, START, B0) => #list(B0 -Int 192, START +Int 1)                            requires B0 >=Int 192 andBool B0 <Int 192 +Int 56
-    rule #decodeLengthPrefix(STR, START, B0) => #decodeLengthPrefixLength(#klabel(`#list`), STR, START, B0) [owise]
+    rule #decodeLengthPrefix(STR, START, B0) => #str(1, START)                                   requires B0 <Int 128
+    rule #decodeLengthPrefix(STR, START, B0) => #str(B0 -Int 128, START +Int 1)                  requires B0 >=Int 128 andBool B0 <Int (128 +Int 56)
+    rule #decodeLengthPrefix(STR, START, B0) => #decodeLengthPrefixLength(#str, STR, START, B0)  requires B0 >=Int (128 +Int 56) andBool B0 <Int 192
+    rule #decodeLengthPrefix(STR, START, B0) => #list(B0 -Int 192, START +Int 1)                 requires B0 >=Int 192 andBool B0 <Int 192 +Int 56
+    rule #decodeLengthPrefix(STR, START, B0) => #decodeLengthPrefixLength(#list, STR, START, B0) [owise]
 
-    rule #decodeLengthPrefixLength(#klabel(`#str`),  STR, START, B0) => #decodeLengthPrefixLength(#klabel(`#str`),  START, B0 -Int 128 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 128 -Int 56 +Int 1)))))
-    rule #decodeLengthPrefixLength(#klabel(`#list`), STR, START, B0) => #decodeLengthPrefixLength(#klabel(`#list`), START, B0 -Int 192 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 192 -Int 56 +Int 1)))))
-    rule #decodeLengthPrefixLength(#klabel(TYPE), START, LL, L) => TYPE(L, START +Int 1 +Int LL)
+    rule #decodeLengthPrefixLength(#str,  STR, START, B0) => #decodeLengthPrefixLength(#str,  START, B0 -Int 128 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 128 -Int 56 +Int 1)))))
+    rule #decodeLengthPrefixLength(#list, STR, START, B0) => #decodeLengthPrefixLength(#list, START, B0 -Int 192 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 192 -Int 56 +Int 1)))))
+    rule #decodeLengthPrefixLength(TYPE, START, LL, L) => TYPE(L, START +Int 1 +Int LL)
 endmodule
 ```
