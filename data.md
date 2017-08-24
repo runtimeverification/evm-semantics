@@ -27,6 +27,19 @@ Some important numbers that are referred to often during execution:
     rule pow16  => 2 ^Int 16
 ```
 
+The JSON format is used extensively for communication in the Ethereum circles.
+Writing a JSON-ish parser in K takes 6 lines.
+
+```{.k .uiuck .rvk}
+    syntax JSONList ::= List{JSON,","}
+    syntax JSONKey  ::= String | Int
+    syntax JSON     ::= String
+                      | JSONKey ":" JSON
+                      | "{" JSONList "}"
+                      | "[" JSONList "]"
+ // ------------------------------------
+```
+
 Primitives
 ----------
 
@@ -466,21 +479,6 @@ Parsing/Unparsing
 
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
 Here we provide some standard parser/unparser functions for that format.
-
-JSON
-----
-
-Writing a JSON (lite) parser in K takes 6 lines.
-
-```{.k .uiuck .rvk}
-    syntax JSONList ::= List{JSON,","}
-    syntax JSONKey  ::= String | Int
-    syntax JSON     ::= String
-                      | JSONKey ":" JSON
-                      | "{" JSONList "}"
-                      | "[" JSONList "]"
- // ------------------------------------
-```
 
 Parsing
 -------
