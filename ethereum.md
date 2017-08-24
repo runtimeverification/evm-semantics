@@ -439,12 +439,12 @@ Here we load the environmental information.
     syntax EthereumCommand ::= "check" JSON
  // ---------------------------------------
     rule #exception ~> check J:JSON => check J ~> #exception
-    rule check DATA : { .JSONList } => .
+    rule check DATA : { .JSONList } => . requires DATA =/=String "transactions"
     rule check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST }
-      requires REST =/=K .JSONList andBool notBool DATA in (SetItem("callcreates") SetItem("logs"))
+      requires REST =/=K .JSONList andBool notBool DATA in (SetItem("callcreates") SetItem("logs") SetItem("transactions"))
 
-    rule check DATA : [ .JSONList ] => .
-    rule check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ]
+    rule check DATA : [ .JSONList ] => . requires DATA =/=String "ommerHeaders"
+    rule check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ] requires DATA =/=String "transactions"
 
     rule check (KEY:String) : { JS:JSONList => #sortJSONList(JS) }
       requires KEY in (SetItem("logs") SetItem("callcreates")) andBool notBool #isSorted(JS)
