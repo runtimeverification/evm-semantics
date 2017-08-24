@@ -1142,11 +1142,11 @@ module EVM
          </refund>
          <schedule> SCHED </schedule>
 
-    rule <k> SSTORE INDEX VALUE => . ... </k>
+    rule <k> SSTORE INDEX VALUE ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>
+           <storage> STORAGE => STORAGE [ INDEX <- 0 ] </storage>
            ...
          </account>
       requires notBool (INDEX in_keys(STORAGE))
@@ -1683,8 +1683,10 @@ module EVM
 
     syntax Int ::= Csstore ( Schedule , Int , Int , Map ) [function]
  // ----------------------------------------------------------------
-    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstoreset < SCHED >   requires VALUE =/=K 0 andBool notBool INDEX in_keys(STORAGE)
-    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstorereset < SCHED > requires VALUE ==K 0  orBool  INDEX in_keys(STORAGE)
+    rule Csstore(SCHED, INDEX, VALUE,             STORAGE) => Gsstoreset   < SCHED > requires VALUE =/=Int 0 andBool notBool INDEX in_keys(STORAGE)
+    rule Csstore(SCHED, INDEX, VALUE, INDEX |-> 0 STORAGE) => Gsstoreset   < SCHED > requires VALUE =/=Int 0
+    rule Csstore(SCHED, INDEX,     0,             STORAGE) => Gsstorereset < SCHED >
+    rule Csstore(SCHED, INDEX, VALUE, INDEX |-> N STORAGE) => Gsstorereset < SCHED > requires     N =/=Int 0
 
     syntax Int ::= Ccall    ( Schedule , Int , Map , Int , Int , Int ) [function]
                  | Ccallgas ( Schedule , Int , Map , Int , Int , Int ) [function]
