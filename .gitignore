@@ -4,9 +4,14 @@
 # See the 'exclude everything except directory foo/bar'
 # example in the gitignore man page to understand how this works.
 /.build/*
+
 !/.build/uiuck/
 /.build/uiuck/*
 !/.build/uiuck/*.k
+
+!/.build/rvk/
+/.build/rvk/*
+!/.build/rvk/*.k
 
 # This holds the tests that are split into one test per file from
 # the ethereum tests
