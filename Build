@@ -123,6 +123,7 @@ run_proof() {
     run_make
     export K_OPTS=-Xmx2G
     local proof_file="$1"; shift
+    [[ -f "$proof_file" ]] || die "$proof_file does not exist"
     local cSCHEDULE=${cSCHEDULE:-DEFAULT}
     local cMODE=${cMODE:-NORMAL}
     ( krun --directory .build/$K_VERSION/ -cSCHEDULE=$cSCHEDULE -cMODE=$cMODE \
@@ -134,6 +135,7 @@ run_proof() {
 run_krun() {
     run_make
     progress "running: $1"
+    [[ -f "$1" ]] || die "$1 does not exist"
     ( run_"$K_VERSION" "$1" | lint_krun_"$K_VERSION" )
 }
 
