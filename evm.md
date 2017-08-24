@@ -1211,7 +1211,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, <accounts> ACCTDATA </accounts>, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
+           => #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTFROM, ACCTS, <accounts> ACCTDATA </accounts>, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
            ...
          </k>
@@ -1470,12 +1470,18 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
 
     rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
 
-    rule <k> #gasExec(SCHED, COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, <accounts> ACCTDATA </accounts>, GCAP, GAVAIL, VALUE) ... </k>
+    rule <k> #gasExec(SCHED, CALL         GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO,   ACCTS, <accounts> ACCTDATA </accounts>, GCAP, GAVAIL, VALUE) ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
+         <gas> GAVAIL </gas>
+         <accounts> ACCTDATA </accounts>
+
+    rule <k> #gasExec(SCHED, CALLCODE     GCAP _      VALUE _ _ _ _) => Ccall(SCHED, ACCTFROM, ACCTS, <accounts> ACCTDATA </accounts>, GCAP, GAVAIL, VALUE) ... </k>
+         <id> ACCTFROM </id>
          <activeAccounts> ACCTS </activeAccounts>
          <gas> GAVAIL </gas>
          <accounts> ACCTDATA </accounts>
          
-    rule <k> #gasExec(SCHED, CSOP:CallSixOp GCAP ACCTTO       _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, <accounts> ACCTDATA </accounts>, GCAP, GAVAIL, 0)     ... </k>
+    rule <k> #gasExec(SCHED, DELEGATECALL GCAP ACCTTO       _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, <accounts> ACCTDATA </accounts>, GCAP, GAVAIL, 0)     ... </k>
          <activeAccounts> ACCTS </activeAccounts>
          <gas> GAVAIL </gas>
          <accounts> ACCTDATA </accounts>
