@@ -353,10 +353,10 @@ I suppose the semantics currently loads `INVALID(N)` where `N` is the position i
 ```{.k .uiuck .rvk}
     rule <mode> EXECMODE </mode>
          <k> #next
-           => #pushCallStack
-           ~> #exceptional? [ OP ] ~> #exec [ OP ] ~> #pc [ OP ]
-           ~> #? #dropCallStack : #popCallStack ~> #exception ?#
-          ...
+          => #pushCallStack
+          ~> #exceptional? [ OP ] ~> #exec [ OP ] ~> #pc [ OP ]
+          ~> #? #dropCallStack : #popCallStack ~> #exception ?#
+         ...
          </k>
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
@@ -1057,10 +1057,10 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <mode> EXECMODE </mode>
          <schedule> SCHED </schedule>
          <k> #call ACCTFROM ACCTTO CODE GCAP VALUE ARGS
-           => #pushCallStack ~> #pushWorldState
-           ~> #transferFunds ACCTFROM ACCTTO VALUE
-           ~> #mkCall ACCTFROM ACCTTO CODE Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE ARGS
-          ...
+          => #pushCallStack ~> #pushWorldState
+          ~> #transferFunds ACCTFROM ACCTTO VALUE
+          ~> #mkCall ACCTFROM ACCTTO CODE Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE ARGS
+         ...
          </k>
          <previousGas> GAVAIL </previousGas>
          <callDepth> CD </callDepth>
@@ -1073,8 +1073,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule <mode> EXECMODE </mode>
          <k> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE ARGS
-           => #if EXECMODE ==K VMTESTS #then #end #else #next #fi
-          ...
+          => #if EXECMODE ==K VMTESTS #then #end #else #next #fi
+         ...
          </k>
          <callLog> ... (.Set => SetItem({ ACCTTO | GLIMIT | VALUE | ARGS })) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
@@ -1088,16 +1088,16 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
     rule <k> #exception ~> #return _ _
-           => #popCallStack ~> #popWorldState  ~> 0 ~> #push
-          ...
+          => #popCallStack ~> #popWorldState  ~> 0 ~> #push
+         ...
          </k>
 
     rule <mode> EXECMODE </mode>
          <k> #end ~> #return RETSTART RETWIDTH
-           => #popCallStack
-           ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi
-           ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
-          ...
+          => #popCallStack
+          ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi
+          ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
+         ...
          </k>
          <output> OUT </output>
          <gas> GAVAIL </gas>
@@ -1124,9 +1124,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTTO CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
-          ...
+          => #call ACCTFROM ACCTTO CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
+          ~> #return RETSTART RETWIDTH
+         ...
          </k>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
@@ -1138,9 +1138,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
       requires notBool (ACCTTO >Int 0 andBool ACCTTO <=Int 4)
 
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTTO (0 |-> #precompiled(ACCTTO)) GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
-          ...
+          => #call ACCTFROM ACCTTO (0 |-> #precompiled(ACCTTO)) GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
+          ~> #return RETSTART RETWIDTH
+         ...
          </k>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
@@ -1149,9 +1149,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
-           ...
+          => #call ACCTFROM ACCTFROM CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
+          ~> #return RETSTART RETWIDTH
+         ...
          </k>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
@@ -1164,9 +1164,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM CODE GCAP 0 #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
-           ...
+          => #call ACCTFROM ACCTFROM CODE GCAP 0 #range(LM, ARGSTART, ARGWIDTH)
+          ~> #return RETSTART RETWIDTH
+         ...
          </k>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
@@ -1187,10 +1187,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                         | "#mkCreate" Map Int Int
  // ---------------------------------------------
     rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
-           => #pushCallStack ~> #pushWorldState
-           ~> #transferFunds ACCTFROM ACCTTO VALUE
-           ~> #mkCreate INITCODE GAVAIL VALUE
-          ...
+          => #pushCallStack ~> #pushWorldState
+          ~> #transferFunds ACCTFROM ACCTTO VALUE
+          ~> #mkCreate INITCODE GAVAIL VALUE
+         ...
          </k>
          <gas> GAVAIL </gas>
          <callDepth> CD </callDepth>
@@ -1202,8 +1202,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     rule <mode> EXECMODE </mode>
          <k> #mkCreate INITCODE GAVAIL VALUE
-           => #if EXECMODE ==K VMTESTS #then #end #else #next #fi
-          ...
+          => #if EXECMODE ==K VMTESTS #then #end #else #next #fi
+         ...
          </k>
          <callLog> ... (.Set => SetItem({ 0 | GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
          <gas> _ => #allBut64th(GAVAIL) </gas>
@@ -1237,9 +1237,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
-           => #create ACCT #newAddr(ACCT, NONCE) VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
-           ~> #codeDeposit #newAddr(ACCT, NONCE)
-          ...
+          => #create ACCT #newAddr(ACCT, NONCE) VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
+          ~> #codeDeposit #newAddr(ACCT, NONCE)
+         ...
          </k>
          <id> ACCT </id>
          <localMem> LM </localMem>
