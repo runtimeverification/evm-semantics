@@ -198,8 +198,6 @@ module ETHEREUM-SIMULATION
 // -   `#rewardOmmers(_)` pays out the reward to uncle blocks so that blocks are
 //     orphaned less often in Ethereum.
 
-// TODO: Handle blocks with ommers.
-
 
     syntax EthereumCommand ::= "#finalizeBlock" | #rewardOmmers ( JSONList )
  // ------------------------------------------------------------------------
@@ -212,6 +210,11 @@ module ETHEREUM-SIMULATION
            ...
          </account>
          <activeAccounts> ... MINER |-> (_ => false) ... </activeAccounts>
+
+    rule <k> (.K => #newAccount MINER) ~> #finalizeBlock ... </k>
+         <coinbase> MINER </coinbase>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool MINER in ACCTS
 
     rule <k> #rewardOmmers(.JSONList) => . ... </k>
     rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
