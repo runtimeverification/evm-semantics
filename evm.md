@@ -1075,11 +1075,11 @@ These operations interact with the account storage.
          </refund>
          <schedule> SCHED </schedule>
 
-    rule <k> SSTORE INDEX VALUE => . ... </k>
+    rule <k> SSTORE INDEX VALUE ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>
+           <storage> STORAGE => STORAGE [ INDEX <- 0 ] </storage>
            ...
          </account>
       requires notBool (INDEX in_keys(STORAGE))
