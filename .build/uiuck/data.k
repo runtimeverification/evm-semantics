@@ -494,9 +494,10 @@ module EVM-DATA
 // `Map`s.
 
 // -   `#parseHexWord` interperets a string as a single hex-encoded `Word`.
-// -   `#parseHexBytes` interperets a string as a stack of bytes.
-// -   `#parseByteStack` interperets a string as a stack of bytes, but makes sure
-//     to remove the leading "0x".
+// -   `#parseHexBytes` interperets a string as a hex-encoded stack of bytes.
+// -   `#parseByteStack` interperets a string as a hex-encoded stack of bytes, but
+//     makes sure to remove the leading "0x".
+// -   `#parseByteStackRaw` inteprets a string as a stack of bytes.
 // -   `#parseWordStack` interperets a JSON list as a stack of `Word`.
 // -   `#parseMap` interperets a JSON key/value object as a map from `Word` to
 //     `Word`.
@@ -516,10 +517,14 @@ module EVM-DATA
 
     syntax WordStack ::= #parseHexBytes  ( String ) [function]
                        | #parseByteStack ( String ) [function]
+                       | #parseByteStackRaw ( String ) [function]
  // ----------------------------------------------------------
     rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
     rule #parseHexBytes("") => .WordStack
     rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytes(substrString(S, 2, lengthString(S))) requires lengthString(S) >=Int 2
+
+    rule #parseByteStackRaw(S) => ordChar(substrString(S, 0, 1)) : #parseByteStackRaw(substrString(S, 1, lengthString(S))) requires lengthString(S) >=Int 1
+    rule #parseByteStackRaw("") => .WordStack
 
     syntax WordStack ::= #parseWordStack ( JSON ) [function]
  // --------------------------------------------------------
