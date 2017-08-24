@@ -25,7 +25,16 @@ These can be ambiguities/confusing wording in the [Yellow Paper](https://github.
     We think the community has reached agreement on this though, "non-existing accounts are empty accounts" or something along those lines.
 
 -   What about contracts that have "junk bytes" in them?
-    We've seen a contract with "junk bytes", and it's clear that you could actually 
+    We've seen a contract with "junk bytes", and use cases of contracts with junk bytes do exist.
+    For example, if you want to use some large chunk of data to be used in your contract but don't want to perform a sequences of `PUSH`, `CODECOPY` can be used to move the junk bytes into memory.
+
+-   The description in Appendix H of the `CALLCODE` instruction describes it as like `CALL` except for the fourth argument to the Theta function.
+    However, it does not mention that this change from `Mu_s[1]` to `I_a` also applies to the specification of `C_NEW`.
+
+-   The description in Appendix H of the `DELEGATECALL` instruction describes the gas provided to the caller as equal to `Mu_s[0]`.
+    However, this is clearly not the correct behavior, since `Mu_s[0]` is a user-provided value, and the user could set it equal to 2^256 - 1, leading to the user having an infinite amount of gas.
+    It's clear from the test suite that the intended behavior is to use `Ccallgas` but with the value for the value transfer equal to 0.
+    It also describes the exceptional condition of not enough balance in terms of `I_v`, but in fact no value transfer occurs so this condition should never occur.
 
 Issues with design of EVM
 -------------------------
@@ -58,7 +67,6 @@ These can be issues from simple "why did they do it that way?" to "this makes do
     That is, arithmetic overflows were not expected to happen by the developers, so adding code to deal with the "modulo 2^256" behavior in case of arithmetic overflow was not even considered.
     In such situations, it would be a lot better to simply throw an exception when arithmetic overflow occurs, thus indicating that something bad happened, than to default to "modulo 2^256" and ending up with a program computing wrong values.
     We conjecture that words of 256 bits should be long enough for the current smart contract needs to afford to abruptly terminate computations when the limit is reached.
-
 
 Recommendations for the Future
 ------------------------------
