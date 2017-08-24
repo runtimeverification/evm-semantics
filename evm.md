@@ -1241,25 +1241,25 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#create" Int Int Int Int Map
-    syntax KItem ::= "#mkCreate" Int Map Int Int
+    syntax KItem ::= "#mkCreate" Int Int Map Int Int
  // ---------------------------------------------
     rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
            => #pushCallStack ~> #pushWorldState
            ~> #transferFunds ACCTFROM ACCTTO VALUE
-           ~> #mkCreate ACCTFROM INITCODE GAVAIL VALUE
+           ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
           ...
          </k>
          <callDepth> CD </callDepth>
       requires CD <Int 1024
 
-    rule <k> #exception ~> #mkCreate _ _ GAVAIL _ => #exception ... </k> <gas> _ => GAVAIL </gas>
+    rule <k> #exception ~> #mkCreate _ _ _ GAVAIL _ => #exception ... </k> <gas> _ => GAVAIL </gas>
 
     rule <k> #create _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
          <callDepth> CD </callDepth>
       requires CD >=Int 1024
 
     rule <mode> EXECMODE </mode>
-         <k> #mkCreate ACCTFROM INITCODE GAVAIL VALUE
+         <k> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
            => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else (#next ~> #execute)  #fi
           ...
          </k>
@@ -1267,7 +1267,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => .WordStack </callData>
          <callValue> _ => VALUE </callValue>
-         <id> ACCT </id>
+         <id> ACCT => ACCTTO </id>
          <gas> OLDGAVAIL => GAVAIL </gas>
          <caller> _ => ACCTFROM </caller>
          <program> _ => INITCODE </program>
