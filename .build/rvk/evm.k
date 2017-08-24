@@ -1136,7 +1136,7 @@ module EVM
            => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) GLIMIT VALUE APPVALUE ARGS
           ...
          </k>
-      requires ACCTTO >Int 0 andBool ACCTTO <=Int 4
+      requires ACCTCODE >Int 0 andBool ACCTCODE <=Int 4
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
            => #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
@@ -1144,7 +1144,14 @@ module EVM
          </k>
          <acctID> ACCTCODE </acctID>
          <code> CODE </code>
-      requires notBool (ACCTTO >Int 0 andBool ACCTTO <=Int 4)
+      requires notBool (ACCTCODE >Int 0 andBool ACCTCODE <=Int 4)
+
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
+           => #callWithCode ACCTFROM ACCTTO .Map GLIMIT VALUE APPVALUE ARGS
+          ...
+         </k>
+         <activeAccounts> ACCTS </activeAccounts>
+         requires notBool (ACCTCODE >Int 0 andBool ACCTCODE <=Int 4) andBool notBool ACCTCODE in ACCTS
         
     rule <schedule> SCHED </schedule>
          <k> #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
