@@ -420,17 +420,6 @@ module EVM-DATA
  // ------------------------------------------------
     rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeWord(ACCT) +String #rlpEncodeWord(NONCE), 192))))
 
-    syntax String ::= #rlpEncodeLength ( String , Int )          [function]
-                    | #rlpEncodeLength ( String , Int , String ) [function, klabel(#rlpEncodeLengthAux)]
-                    | #rlpEncodeWord ( Int )                     [function]
- // -----------------------------------------------------------------------
-    rule #rlpEncodeWord(0) => "\x80"
-    rule #rlpEncodeWord(WORD) => chrChar(WORD) requires WORD >Int 0 andBool WORD <Int 128
-    rule #rlpEncodeWord(WORD) => #rlpEncodeLength(#unparseByteStack(#asByteStack(WORD)), 128) requires WORD >=Int 128
-    rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR requires lengthString(STR) <Int 56
-    rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires lengthString(STR) >=Int 56
-    rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
-
 
 // Word Map
 // --------
@@ -557,5 +546,83 @@ module EVM-DATA
  // -----------------------------------------------
     rule #padByte( S ) => S             requires lengthString(S) ==K 2
     rule #padByte( S ) => "0" +String S requires lengthString(S) ==K 1
+
+
+// Recursive Length Prefix (RLP)
+// =============================
+
+// RLP encoding is used extensively for executing the blocks of a transaction. For
+// details about RLP encoding, see the [YellowPaper Appendix
+// B](http://gavwood.com/paper.pdf).
+
+// Encoding
+// --------
+
+// -   `#rlpEncodeWord` RLP encodes a single EVM word.
+// -   `#rlpEncodeString` RLP encodes a single `String`.
+
+
+    syntax String ::= #rlpEncodeWord ( Int )            [function]
+                    | #rlpEncodeWordStack ( WordStack ) [function]
+                    | #rlpEncodeString ( String )       [function]
+ // --------------------------------------------------------------
+    rule #rlpEncodeWord(0) => "\x80"
+    rule #rlpEncodeWord(WORD) => chrChar(WORD) requires WORD >Int 0 andBool WORD <Int 128
+    rule #rlpEncodeWord(WORD) => #rlpEncodeLength(#unparseByteStack(#asByteStack(WORD)), 128) requires WORD >=Int 128
+
+    rule #rlpEncodeWordStack(.WordStack) => ""
+    rule #rlpEncodeWordStack(W : WS)     => #rlpEncodeWord(W) +String #rlpEncodeWordStack(WS)
+
+    rule #rlpEncodeString(STR) => STR                        requires lengthString(STR) ==Int 1 andBool ordChar(STR) <Int 128
+    rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) [owise]
+
+    syntax String ::= #rlpEncodeLength ( String , Int )          [function]
+                    | #rlpEncodeLength ( String , Int , String ) [function, klabel(#rlpEncodeLengthAux)]
+ // ----------------------------------------------------------------------------------------------------
+    rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR requires lengthString(STR) <Int 56
+    rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires lengthString(STR) >=Int 56
+    rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
+
+
+// Decoding
+// --------
+
+// -   `#rlpDecode` RLP decodes a single `String` into a `JSON`.
+// -   `#rlpDecodeList` RLP decodes a single `String` into a `JSONList`,
+//     interpereting the string as the RLP encoding of a list.
+
+
+    syntax JSON ::= #rlpDecode(String)               [function]
+                  | #rlpDecode(String, LengthPrefix) [function, klabel(#rlpDecodeAux)]
+ // ----------------------------------------------------------------------------------
+    rule #rlpDecode(STR) => #rlpDecode(STR, #decodeLengthPrefix(STR, 0))
+    rule #rlpDecode(STR, #str(LEN, POS))  => substrString(STR, POS, POS +Int LEN)
+    rule #rlpDecode(STR, #list(LEN, POS)) => [#rlpDecodeList(STR, POS)]
+
+    syntax JSONList ::= #rlpDecodeList(String, Int)               [function]
+                      | #rlpDecodeList(String, Int, LengthPrefix) [function, klabel(#rlpDecodeListAux)]
+ // ---------------------------------------------------------------------------------------------------
+    rule #rlpDecodeList(STR, POS) => #rlpDecodeList(STR, POS, #decodeLengthPrefix(STR, POS)) requires POS <Int lengthString(STR)
+    rule #rlpDecodeList(STR, POS) => .JSONList [owise]
+    rule #rlpDecodeList(STR, POS, _(L, P)) => #rlpDecode(substrString(STR, POS, L +Int P)) , #rlpDecodeList(STR, L +Int P)
+
+    syntax LengthPrefix ::= #list ( Int , Int )
+                          | #str ( Int , Int )
+                          | #decodeLengthPrefix ( String , Int )                 [function]
+                          | #decodeLengthPrefix ( String , Int , Int )           [function, klabel(#decodeLengthPrefixAux)]
+                          | #decodeLengthPrefixLength ( K , String , Int , Int ) [function]
+                          | #decodeLengthPrefixLength ( K , Int    , Int , Int ) [function, klabel(#decodeLengthPrefixLengthAux)]
+ // -----------------------------------------------------------------------------------------------------------------------------
+    rule #decodeLengthPrefix(STR, START) => #decodeLengthPrefix(STR, START, ordChar(substrString(STR, START, START +Int 1)))
+
+    rule #decodeLengthPrefix(STR, START, B0) => #str(1, START)                                              requires B0 <Int 128
+    rule #decodeLengthPrefix(STR, START, B0) => #str(B0 -Int 128, START +Int 1)                             requires B0 >=Int 128 andBool B0 <Int (128 +Int 56)
+    rule #decodeLengthPrefix(STR, START, B0) => #decodeLengthPrefixLength(#klabel(`#str`), STR, START, B0)  requires B0 >=Int (128 +Int 56) andBool B0 <Int 192
+    rule #decodeLengthPrefix(STR, START, B0) => #list(B0 -Int 192, START +Int 1)                            requires B0 >=Int 192 andBool B0 <Int 192 +Int 56
+    rule #decodeLengthPrefix(STR, START, B0) => #decodeLengthPrefixLength(#klabel(`#list`), STR, START, B0) [owise]
+
+    rule #decodeLengthPrefixLength(#klabel(`#str`),  STR, START, B0) => #decodeLengthPrefixLength(#klabel(`#str`),  START, B0 -Int 128 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 128 -Int 56 +Int 1)))))
+    rule #decodeLengthPrefixLength(#klabel(`#list`), STR, START, B0) => #decodeLengthPrefixLength(#klabel(`#list`), START, B0 -Int 192 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 192 -Int 56 +Int 1)))))
+    rule #decodeLengthPrefixLength(#klabel(TYPE), START, LL, L) => TYPE(L, START +Int 1 +Int LL)
 endmodule
 
