@@ -37,7 +37,7 @@ The file [verification.md](verification.md) contains some helper-macros for writ
 If the output is correct, the entire configuration is cleared.
 If any check fails, the configuration retains the failed check at the top of the `<k>` cell.
 
-Using the Defintion
+Using the Definition
 -------------------
 
 There are two versions of K available, [RV-K](https://github.com/runtimeverification/k) and [UIUC-K](https://github.com/kframework/k).
