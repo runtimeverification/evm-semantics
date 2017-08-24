@@ -1301,6 +1301,7 @@ module EVM
            => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else (#next ~> #execute)  #fi
           ...
          </k>
+         <schedule> SCHED </schedule>
          <callLog> ... (.Set => SetItem({ 0 | OLDGAVAIL +Int GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => .WordStack </callData>
@@ -1312,6 +1313,11 @@ module EVM
          <account>
            <acctID> ACCT </acctID>
            <nonce> NONCE => NONCE +Int 1 </nonce>
+          ...
+         </account>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <nonce> TONONCE => #if Gemptyisnonexistent << SCHED >> #then TONONCE +Int 1 #else TONONCE #fi </nonce>
           ...
          </account>
 
