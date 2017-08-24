@@ -191,14 +191,25 @@ module ETHEREUM-SIMULATION
          <log>          _ => .Set </log>
          <refund>       _ => 0    </refund>
 
-         <gasPrice>     _ => 0 </gasPrice>
-         <origin>       _ => 0 </origin>
-         <gasLimit>     _ => 0 </gasLimit>
-         <coinbase>     _ => 0 </coinbase>
-         <timestamp>    _ => 0 </timestamp>
-         <number>       _ => 0 </number>
-         <previousHash> _ => 0 </previousHash>
-         <difficulty>   _ => 0 </difficulty>
+         <gasPrice>         _ => 0          </gasPrice>
+         <origin>           _ => 0          </origin>
+         <previousHash>     _ => 0          </previousHash>
+         <ommersHash>       _ => 0          </ommersHash>
+         <coinbase>         _ => 0          </coinbase>
+         <stateRoot>        _ => 0          </stateRoot>
+         <transactionsRoot> _ => 0          </transactionsRoot>
+         <receiptsRoot>     _ => 0          </receiptsRoot>
+         <logsBloom>        _ => .WordStack </logsBloom>
+         <difficulty>       _ => 0          </difficulty>
+         <number>           _ => 0          </number>
+         <gasLimit>         _ => 0          </gasLimit>
+         <gasUsed>          _ => 0          </gasUsed>
+         <timestamp>        _ => 0          </timestamp>
+         <extraData>        _ => .WordStack </extraData>
+         <mixHash>          _ => 0          </mixHash>
+         <nonce>            _ => 0          </nonce>
+
+         <ommerBlockHeaders> _ => [ .JSONList ] </ommerBlockHeaders>
 
          <activeAccounts> _ => .Set </activeAccounts>
          <accounts>       _ => .Bag </accounts>
