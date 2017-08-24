@@ -486,7 +486,7 @@ The `"rlp"` key loads the block information.
          <ommerBlockHeaders> _ => BU </ommerBlockHeaders>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONList ], _, _, .JSONList ] => .K ...</k>
-         <blockhash> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ...</blockhash>
+         <blockhash> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(#parseByteStackRaw(HP))) ...</blockhash>
 
     rule <k> load "transaction": [ [ TN, TP, TG, TT, TV, TI, TW, TR, TS ] , REST => REST ] ...</k>
          <txOrder>... .List => ListItem(!ID) </txOrder>
@@ -653,7 +653,7 @@ Here we check the other post-conditions associated with an EVM test.
 
     rule check "genesisBlockHeader" : { "hash": (HASH:String => #asWord(#parseByteStack(HASH))) }
     rule <k> check "genesisBlockHeader" : { "hash": HASH } => . ... </k>
-         <blockhash>... ListItem(HASH) </blockhash>
+         <blockhash>... ListItem(HASH) ListItem(_) </blockhash>
 
     rule check TESTID : { "transactions" : TRANSACTIONS } => check "transactions" : TRANSACTIONS ~> failure TESTID
  // --------------------------------------------------------------------------------------------------------------
