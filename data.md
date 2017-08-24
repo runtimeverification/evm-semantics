@@ -403,22 +403,92 @@ Addresses
 ```
 
 -   `#newAddr` computes the address of a new account given the address and nonce of the creating account.
+-   `#sender` computes the sender of the transaction from its data and signature.
 
 ```{.k .uiuck .rvk}
     syntax Int ::= #newAddr ( Int , Int ) [function]
  // ------------------------------------------------
     rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeWord(ACCT) +String #rlpEncodeWord(NONCE), 192))))
 
+    syntax Int ::= #sender ( Int , Int , Int , Int , Int , String , Int , WordStack , WordStack ) [function]
+                 | #sender (String , Int , String , String ) [function, klabel(#senderAux)]
+ // --------------------------------------------------------------------------------------------------
+    rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS)
+         => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWord(TN) +String #rlpEncodeWord(TP) +String #rlpEncodeWord(TG) +String #rlpEncodeWord(TT) +String #rlpEncodeWord(TV) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
+
+    rule #sender(HT, TW, TR, TS) => #addr(#parseHexWord(Keccak256(ECDSARecover(HT, TW, TR, TS))))
+
+    syntax Int ::= #blockHeaderHash(Int, Int, Int, Int, Int, Int, WordStack, Int, Int, Int, Int, Int, WordStack, Int, Int) [function]
+ // ---------------------------------------------------------------------------------------------------------------------------------
+    rule #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
+         => #parseHexWord(Keccak256(#rlpEncodeLength(
+           #rlpEncodeWord(HP) +String
+           #rlpEncodeWord(HO) +String
+           #rlpEncodeWord(HC) +String
+           #rlpEncodeWord(HR) +String
+           #rlpEncodeWord(HT) +String
+           #rlpEncodeWord(HE) +String
+           #rlpEncodeString(#unparseByteStack(HB)) +String
+           #rlpEncodeWord(HD) +String
+           #rlpEncodeWord(HI) +String
+           #rlpEncodeWord(HL) +String
+           #rlpEncodeWord(HG) +String
+           #rlpEncodeWord(HS) +String
+           #rlpEncodeString(#unparseByteStack(HX)) +String
+           #rlpEncodeWord(HM) +String
+           #rlpEncodeWord(HN),
+         192)))
+
     syntax String ::= #rlpEncodeLength ( String , Int )          [function]
                     | #rlpEncodeLength ( String , Int , String ) [function, klabel(#rlpEncodeLengthAux)]
                     | #rlpEncodeWord ( Int )                     [function]
+                    | #rlpEncodeString ( String )                [function]
  // -----------------------------------------------------------------------
     rule #rlpEncodeWord(0) => "\x80"
     rule #rlpEncodeWord(WORD) => chrChar(WORD) requires WORD >Int 0 andBool WORD <Int 128
     rule #rlpEncodeWord(WORD) => #rlpEncodeLength(#unparseByteStack(#asByteStack(WORD)), 128) requires WORD >=Int 128
+    rule #rlpEncodeString(STR) => STR
+         requires lengthString(STR) ==Int 1 andBool ordChar(STR) <Int 128
+    rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) [owise]
     rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR requires lengthString(STR) <Int 56
     rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires lengthString(STR) >=Int 56
     rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
+
+    syntax JSON ::= #rlpDecode(String) [function]
+                  | #rlpDecode(String, LengthPrefix) [function, klabel(#rlpDecodeAux)]
+    syntax JSONList ::= #rlpDecodeList(String, Int) [function]
+                      | #rlpDecodeList(String, Int, LengthPrefix) [function, klabel(#rlpDecodeListAux)]
+    syntax LengthPrefix ::= LengthPrefixType "(" Int "," Int ")"
+                          | #decodeLengthPrefix(String, Int) [function]
+                          | #decodeLengthPrefix(String, Int, Int) [function, klabel(#decodeLengthPrefixAux)]
+                          | #decodeLengthPrefixLength(LengthPrefixType, String, Int, Int) [function]
+                          | #decodeLengthPrefixLength(LengthPrefixType, Int, Int, Int) [function, klabel(#decodeLengthPrefixLengthAux)]
+    syntax LengthPrefixType ::= "#str" | "#list"
+
+    rule #decodeLengthPrefix(STR, START) => #decodeLengthPrefix(STR, START, ordChar(substrString(STR, START, START +Int 1)))
+    rule #decodeLengthPrefix(STR, START, B0) => #str(1, START)
+         requires B0 <Int 128
+    rule #decodeLengthPrefix(STR, START, B0) => #str(B0 -Int 128, START +Int 1)
+         requires B0 >=Int 128 andBool B0 <Int (128 +Int 56)
+    rule #decodeLengthPrefix(STR, START, B0) => #decodeLengthPrefixLength(#str, STR, START, B0)
+         requires B0 >=Int (128 +Int 56) andBool B0 <Int 192
+    rule #decodeLengthPrefix(STR, START, B0) => #list(B0 -Int 192, START +Int 1)
+         requires B0 >=Int 192 andBool B0 <Int 192 +Int 56
+    rule #decodeLengthPrefix(STR, START, B0) => #decodeLengthPrefixLength(#list, STR, START, B0) [owise]
+
+    rule #decodeLengthPrefixLength(#str, STR, START, B0) => #decodeLengthPrefixLength(#str, START, B0 -Int 128 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 128 -Int 56 +Int 1)))))
+    rule #decodeLengthPrefixLength(#list, STR, START, B0) => #decodeLengthPrefixLength(#list, START, B0 -Int 192 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 192 -Int 56 +Int 1)))))
+    rule #decodeLengthPrefixLength(TYPE, START, LL, L) => TYPE(L, START +Int 1 +Int LL)
+
+    rule #rlpDecode(STR) => #rlpDecode(STR, #decodeLengthPrefix(STR, 0))
+    rule #rlpDecode(STR, #str(LEN, POS)) => substrString(STR, POS, POS +Int LEN)
+    rule #rlpDecode(STR, #list(LEN, POS)) => [#rlpDecodeList(STR, POS)]
+    rule #rlpDecodeList(STR, POS) => #rlpDecodeList(STR, POS, #decodeLengthPrefix(STR, POS))
+         requires POS <Int lengthString(STR)
+    rule #rlpDecodeList(STR, POS) => .JSONList [owise]
+    rule #rlpDecodeList(STR, POS, _:LengthPrefixType(L, P)) => #rlpDecode(substrString(STR, POS, L +Int P)) , #rlpDecodeList(STR, L +Int P)
+     
+    
 ```
 
 Word Map
@@ -488,8 +558,9 @@ Parsing
 These parsers can interperet hex-encoded strings as `Int`s, `WordStack`s, and `Map`s.
 
 -   `#parseHexWord` interperets a string as a single hex-encoded `Word`.
--   `#parseHexBytes` interperets a string as a stack of bytes.
--   `#parseByteStack` interperets a string as a stack of bytes, but makes sure to remove the leading "0x".
+-   `#parseHexBytes` interperets a string as a hex-encoded stack of bytes.
+-   `#parseByteStack` interperets a string as a hex-encoded stack of bytes, but makes sure to remove the leading "0x".
+-   `#parseByteStackRaw` inteprets a string as a stack of bytes.
 -   `#parseWordStack` interperets a JSON list as a stack of `Word`.
 -   `#parseMap` interperets a JSON key/value object as a map from `Word` to `Word`.
 -   `#parseAddr` interperets a string as a 160 bit hex-endcoded address.
@@ -508,10 +579,14 @@ These parsers can interperet hex-encoded strings as `Int`s, `WordStack`s, and `M
 
     syntax WordStack ::= #parseHexBytes  ( String ) [function]
                        | #parseByteStack ( String ) [function]
+                       | #parseByteStackRaw ( String ) [function]
  // ----------------------------------------------------------
     rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
     rule #parseHexBytes("") => .WordStack
     rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytes(substrString(S, 2, lengthString(S))) requires lengthString(S) >=Int 2
+
+    rule #parseByteStackRaw(S) => ordChar(substrString(S, 0, 1)) : #parseByteStackRaw(substrString(S, 1, lengthString(S))) requires lengthString(S) >=Int 1
+    rule #parseByteStackRaw("") => .WordStack
 
     syntax WordStack ::= #parseWordStack ( JSON ) [function]
  // --------------------------------------------------------
