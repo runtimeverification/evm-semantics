@@ -156,12 +156,16 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     rule #exception ~> #finishTx => #popCallStack ~> #popWorldState
 
-    // TODO: handle blocks with ommers
     rule <k> #finalizeBlock => #rewardOmmers(OMMERS) ... </k>
          <coinbase> MINER </coinbase>
          <acctID> MINER </acctID>
          <balance> MINBAL => MINBAL +Int Rb </balance>
          <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
+
+    rule <k> (.K => #newAccount MINER) ~> #finalizeBlock ... </k>
+         <coinbase> MINER </coinbase>
+         <activeAccounts> ACCTS </activeAccounts>
+         requires notBool MINER in ACCTS
 
     syntax EthereumCommand ::= #rewardOmmers(JSONList)
  // --------------------------------------------------
