@@ -414,11 +414,21 @@ module EVM-DATA
 
 // -   `#newAddr` computes the address of a new account given the address and nonce
 //     of the creating account.
+// -   `#sender` computes the sender of the transaction from its data
+//     and signature.
 
 
     syntax Int ::= #newAddr ( Int , Int ) [function]
  // ------------------------------------------------
     rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeWord(ACCT) +String #rlpEncodeWord(NONCE), 192))))
+
+    syntax Int ::= #sender ( Int , Int , Int , Int , Int , String , Int , WordStack , WordStack ) [function]
+                 | #sender ( String , Int , String , String )                                     [function, klabel(#senderAux)]
+ // ----------------------------------------------------------------------------------------------------------------------------
+    rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS)
+      => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWordStack(TN : TP : TG : TT : TV : .WordStack) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
+
+    rule #sender(HT, TW, TR, TS) => #addr(#parseHexWord(Keccak256(ECDSARecover(HT, TW, TR, TS))))
 
 
 // -   `#blockHeaderHash` computes the hash of a block header given all the
