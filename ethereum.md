@@ -193,8 +193,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 -   `#finalizeBlock` is used to signal that block finalization procedures should take place (after transactions have executed).
 -   `#rewardOmmers(_)` pays out the reward to uncle blocks so that blocks are orphaned less often in Ethereum.
 
-TODO: Handle blocks with ommers.
-
 ```{.k .uiuck .rvk}
     syntax EthereumCommand ::= "#finalizeBlock" | #rewardOmmers ( JSONList )
  // ------------------------------------------------------------------------
@@ -207,6 +205,11 @@ TODO: Handle blocks with ommers.
            ...
          </account>
          <activeAccounts> ... MINER |-> (_ => false) ... </activeAccounts>
+
+    rule <k> (.K => #newAccount MINER) ~> #finalizeBlock ... </k>
+         <coinbase> MINER </coinbase>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool MINER in_keys(ACCTS)
 
     rule <k> #rewardOmmers(.JSONList) => . ... </k>
     rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
