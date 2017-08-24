@@ -27,6 +27,9 @@ These can be ambiguities/confusing wording in the Yellow Paper.
 -   What about contracts that have "junk bytes" in them?
     I've seen a contract with "junk bytes", and it's clear that you could actually 
 
+-   The description in Appendix H of the CALLCODE instruction describes it as like CALL except for the fourth argument to the Theta function.
+    However, it does not mention that this change from Mu_s[1] to I_a also applies to the specification of C_NEW.
+
 Issues with design of EVM
 -------------------------
 
