@@ -756,13 +756,19 @@ module EVM
            <balance> ORIGFROM </balance>
            ...
          </account>
-      requires ACCTFROM =/=K ACCTTO andBool VALUE >Int ORIGFROM
+      requires VALUE >Int ORIGFROM
 
     rule <k> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
          <activeAccounts> ACCTS </activeAccounts>
       requires ACCTFROM =/=K ACCTTO andBool notBool ACCTTO in ACCTS
 
-    rule <k> #transferFunds ACCT ACCT _ => . ... </k>
+    rule <k> #transferFunds ACCT ACCT VALUE => . ... </k>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> ORIGFROM </balance>
+           ...
+         </account>
+      requires VALUE <=Int ORIGFROM
 
 
 // ### Invalid Operator
