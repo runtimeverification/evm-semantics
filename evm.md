@@ -131,6 +131,9 @@ In the comments next to each cell, we've marked which component of the yellowpap
                       // Transactions Record
                       // -------------------
 
+                      <txOrder>   .List </txOrder>
+                      <txPending> .List </txPending>
+
                       <messages>
 ```
 
@@ -145,11 +148,16 @@ In the comments next to each cell, we've marked which component of the yellowpap
 ```
 
 ```{.k .uiuck .rvk}
-                          <msgID>  0    </msgID>
-                          <to>     0    </to>
-                          <from>   0    </from>
-                          <amount> 0    </amount>
-                          <data>   .Map </data>
+                          <msgID>      0          </msgID>
+                          <txNonce>    0          </txNonce>            // T_n
+                          <txGasPrice> 0          </txGasPrice>         // T_p
+                          <txGasLimit> 0          </txGasLimit>         // T_g
+                          <to>         0          </to>                 // T_t
+                          <value>      0          </value>              // T_v
+                          <v>          0          </v>                  // T_w
+                          <r>          .WordStack </r>                  // T_r
+                          <s>          .WordStack </s>                  // T_s
+                          <data>       .WordStack </data>               // T_i/T_e
                         </message>
                       </messages>
 
