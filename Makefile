@@ -71,7 +71,8 @@ vm-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
 blockchain-tests: tests/BlockchainTests/GeneralStateTests/stAttackTest/ContractCreationSpam/make.timestamp \
 				  tests/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_AcreateB_BSuicide_BStore/make.timestamp \
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBlockHashTest/*.json)) \
-				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCodes/*.json))
+				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCodes/*.json)) \
+				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/*.json)) \
 
 #passing_test_file=tests/passing.expected
 #blockchain_tests=$(shell cat ${passing_test_file})
