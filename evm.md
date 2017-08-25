@@ -77,12 +77,23 @@ In the comments next to each cell, we've marked which component of the yellowpap
                       <origin>   0 </origin>                            // I_o
 
                       // I_H* (block information)
-                      <gasLimit>     0 </gasLimit>                      // I_Hl
-                      <coinbase>     0 </coinbase>                      // I_Hc
-                      <timestamp>    0 </timestamp>                     // I_Hs
-                      <number>       0 </number>                        // I_Hi
-                      <previousHash> 0 </previousHash>                  // I_Hp
-                      <difficulty>   0 </difficulty>                    // I_Hd
+                      <previousHash>     0          </previousHash>     // I_Hp
+                      <ommersHash>       0          </ommersHash>       // I_Ho
+                      <coinbase>         0          </coinbase>         // I_Hc
+                      <stateRoot>        0          </stateRoot>        // I_Hr
+                      <transactionsRoot> 0          </transactionsRoot> // I_Ht
+                      <receiptsRoot>     0          </receiptsRoot>     // I_He
+                      <logsBloom>        .WordStack </logsBloom>        // I_Hb
+                      <difficulty>       0          </difficulty>       // I_Hd
+                      <number>           0          </number>           // I_Hi
+                      <gasLimit>         0          </gasLimit>         // I_Hl
+                      <gasUsed>          0          </gasUsed>          // I_Hg
+                      <timestamp>        0          </timestamp>        // I_Hs
+                      <extraData>        .WordStack </extraData>        // I_Hx
+                      <mixHash>          0          </mixHash>          // I_Hm
+                      <nonce>            0          </nonce>            // I_Hn
+
+                      <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
 
                     </evm>
 
