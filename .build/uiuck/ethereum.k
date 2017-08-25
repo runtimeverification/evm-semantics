@@ -85,6 +85,109 @@ module ETHEREUM-SIMULATION
     rule <k> #exception ~> flush => #finalize ~> #exception ... </k>
 
 
+// -   `startTx` computes the sender of the transaction, and places loadTx on the
+//     `k` cell.
+// -   `loadTx(_)` loads the next transaction to be executed into the
+//     current state.
+// -   `finishTx` is a place-holder for performing necessary cleanup after
+//     a transaction.
+
+
+    syntax EthereumCommand ::= "startTx"
+ // ------------------------------------
+    rule <k> startTx => loadTx(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW, TR, TS)) ... </k>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID>      TXID </msgID>
+           <txNonce>    TN   </txNonce>
+           <txGasPrice> TP   </txGasPrice>
+           <txGasLimit> TG   </txGasLimit>
+           <to>         TT   </to>
+           <value>      TV   </value>
+           <v>          TW   </v>
+           <r>          TR   </r>
+           <s>          TS   </s>
+           <data>       DATA </data>
+         </message>
+
+    syntax EthereumCommand ::= loadTx ( Int )
+ // -----------------------------------------
+    rule <k> loadTx(ACCTFROM)
+          => #create ACCTFROM #newAddr(ACCTFROM, NONCE +Int 1) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE (#asMapOpCodes(#dasmOpCodes(CODE)))
+          ~> #execute ~> #finishTx ~> flush ~> startTx
+         ...
+         </k>
+         <schedule> SCHED </schedule>
+         <gasPrice> _ => GPRICE </gasPrice>
+         <origin> _ => ACCTFROM </origin>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID>      TXID   </msgID>
+           <txGasPrice> GPRICE </txGasPrice>
+           <txGasLimit> GLIMIT </txGasLimit>
+           <to>         0      </to>
+           <value>      VALUE  </value>
+           <data>       CODE   </data>
+           ...
+         </message>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
+           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+           ...
+         </account>
+
+    rule <k> loadTx(ACCTFROM)
+          => #call ACCTFROM ACCTTO ACCTTO (GLIMIT -Int G0(SCHED, DATA, false)) VALUE VALUE DATA
+          ~> #execute ~> #finishTx ~> flush ~> startTx
+         ...
+         </k>
+         <schedule> SCHED </schedule>
+         <gasPrice> _ => GPRICE </gasPrice>
+         <origin> _ => ACCTFROM </origin>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID>      TXID   </msgID>
+           <txGasPrice> GPRICE </txGasPrice>
+           <txGasLimit> GLIMIT </txGasLimit>
+           <to>         ACCTTO </to>
+           <value>      VALUE  </value>
+           <data>       DATA   </data>
+           ...
+         </message>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
+           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+           ...
+         </account>
+      requires ACCTTO =/=Int 0
+
+    syntax EthereumCommand ::= "#finishTx"
+ // --------------------------------------
+    rule <k> #exception ~> #finishTx => #popCallStack ~> #popWorldState ~> #exception ... </k>
+
+    rule <k> #end ~> #finishTx => #mkCodeDeposit ACCT ~> #end ... </k>
+         <id> ACCT </id>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <to>    0    </to>
+           ...
+         </message>
+
+    rule <k> #end ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ~> #end ... </k>
+         <id> ACCT </id>
+         <gas> GAVAIL </gas>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <to>    TT   </to>
+           ...
+         </message>
+      requires TT =/=Int 0
+
+
 // -   `exception` only clears from the `<k>` cell if there is an exception
 //     preceding it.
 // -   `failure_` holds the name of a test that failed if a test does fail.
