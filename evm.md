@@ -1602,8 +1602,8 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
 ```{.k .uiuck .rvk}
     syntax Int ::= Csstore ( Schedule , Int , Int , Map ) [function]
  // ----------------------------------------------------------------
-    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstoreset < SCHED >   requires VALUE =/=K 0 andBool notBool INDEX in_keys(STORAGE)
-    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstorereset < SCHED > requires VALUE ==K 0  orBool  INDEX in_keys(STORAGE)
+    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstoreset   < SCHED > requires VALUE =/=K 0 andBool (notBool INDEX in_keys(STORAGE) orBool  STORAGE [ INDEX ]  ==K 0)
+    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstorereset < SCHED > requires VALUE  ==K 0 orBool  (        INDEX in_keys(STORAGE) andBool STORAGE [ INDEX ] =/=K 0)
 
     syntax Int ::= Ccall    ( Schedule , Int , Set , AccountsCell , Int , Int , Int ) [function]
                  | Ccallgas ( Schedule , Int , Set , AccountsCell , Int , Int , Int ) [function]
