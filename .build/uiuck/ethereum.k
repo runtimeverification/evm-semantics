@@ -245,6 +245,7 @@ module ETHEREUM-SIMULATION
     rule run TESTID : { KEY : (VAL:JSON) , NEXT , REST } => run TESTID : { NEXT , KEY : VAL , REST } requires KEY in #execKeys
 
     rule run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush
+    rule run TESTID : { "lastblockhash" : (HASH:String) } => startTx ~> check "hash" : #asWord(#parseByteStack(HASH))
 
 
 // -   `#postKeys` are a subset of `#checkKeys` which correspond to post-state
