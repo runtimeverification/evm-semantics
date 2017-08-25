@@ -62,6 +62,13 @@ To run with a different fee schedule (eg. `HOMESTEAD` instead of `DEFAULT`), do 
 For using the `./Build` command and tests, we depend on `xmllint` (on Ubuntu via the package `libxml2-utils`).
 For developing, we depend on [`pandoc-tangle`](https://github.com/ehildenb/pandoc-tangle).
 
+### Interesting Branches
+
+These branches (off of `master`) are various interesting/useful changes to the semantics.
+
+-   `perf` and `performance` are changes which improve performance of concrete execution but cannot do symbolic reasoning.
+-   `tutorial` removes parts of the semantics and places `TODO` markers for a user to fill in.
+
 Contributing
 ------------
 
