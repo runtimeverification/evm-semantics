@@ -1557,6 +1557,14 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
     syntax Int ::= #allBut64th ( Int ) [function]
  // ---------------------------------------------
     rule #allBut64th(N) => N -Int (N /Int 64)
+
+    syntax Int ::= G0 ( Schedule , WordStack , Bool ) [function]
+ // ------------------------------------------------------------
+    rule G0(SCHED, .WordStack, true)  => Gtxcreate    < SCHED >
+    rule G0(SCHED, .WordStack, false) => Gtransaction < SCHED >
+
+    rule G0(SCHED, 0 : REST, ISCREATE) => Gtxdatazero    < SCHED > +Int G0(SCHED, REST, ISCREATE)
+    rule G0(SCHED, N : REST, ISCREATE) => Gtxdatanonzero < SCHED > +Int G0(SCHED, REST, ISCREATE)
 ```
 
 Fee Schedule from C++ Implementation
