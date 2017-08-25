@@ -1653,6 +1653,7 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
  // -----------------------------------------------------------
     rule G0(SCHED, 0 : REST, ISCREATE) => Gtxdatazero < SCHED > +Int G0(SCHED, REST, ISCREATE)
     rule G0(SCHED, N : REST, ISCREATE) => Gtxdatanonzero < SCHED > +Int G0(SCHED, REST, ISCREATE)
+      requires N =/=Int 0
     rule G0(SCHED, .WordStack, true) => Gtxcreate < SCHED >
     rule G0(SCHED, .WordStack, false) => Gtransaction < SCHED >
 
