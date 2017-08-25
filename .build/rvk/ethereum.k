@@ -226,6 +226,9 @@ module ETHEREUM-SIMULATION
 
     rule run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } requires KEY in #loadKeys
 
+    rule run TESTID : { "blocks" : [ { KEY : VAL , REST1 => REST1 }, .JSONList ] , ( REST2 => KEY : VAL , REST2 ) }
+    rule run TESTID : { "blocks" : [ { .JSONList }, .JSONList ] , REST } => run TESTID : { REST }
+
 
 // -   `#execKeys` are all the JSON nodes which should be considered for execution
 //     (between loading and checking).
