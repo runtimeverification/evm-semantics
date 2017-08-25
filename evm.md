@@ -1331,12 +1331,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
            => #checkCall ACCT VALUE
-           ~> #create ACCT #newAddr(ACCT, NONCE) #allBut64th(GAVAIL) VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
+           ~> #create ACCT #newAddr(ACCT, NONCE) #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
            ~> #codeDeposit #newAddr(ACCT, NONCE)
           ...
          </k>
+         <schedule> SCHED </schedule>
          <id> ACCT </id>
-         <gas> GAVAIL => GAVAIL /Int 64 </gas>
+         <gas> GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0 #else GAVAIL /Int 64 #fi </gas>
          <localMem> LM </localMem>
          <account>
            <acctID> ACCT </acctID>
