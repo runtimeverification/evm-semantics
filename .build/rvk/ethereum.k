@@ -75,28 +75,31 @@ module ETHEREUM-SIMULATION
 
 // ### Driving Execution
 
-// -   `start` places `#next` on the `op` cell so that execution of the loaded
+// -   `start` places `#next` on the `<k>` cell so that execution of the loaded
 //     state begin.
-// -   `flush` places `#finalize` on the `op` cell once it sees `#end` in the `op`
-//     cell, clearing any exceptions it finds.
+// -   `flush` places `#finalize` on the `<k>` cell once it sees `#end` in the
+//     `<k>` cell, clearing any exceptions it finds.
 
 
-    syntax EthereumCommand ::= "start" | "flush"
- // --------------------------------------------
+    syntax EthereumCommand ::= "start"
+ // ----------------------------------
     rule <mode> NORMAL     </mode> <k> start => #execute    ... </k>
     rule <mode> VMTESTS    </mode> <k> start => #execute    ... </k>
     rule <mode> GASANALYZE </mode> <k> start => #gasAnalyze ... </k>
+
+    syntax EthereumCommand ::= "flush"
+ // ----------------------------------
     rule <k> #end       ~> flush => #finalize               ... </k>
     rule <k> #exception ~> flush => #finalize ~> #exception ... </k>
 
 
-// -   `exception` only clears from the `k` cell if there is an exception on the
-//     `op` cell.
+// -   `exception` only clears from the `<k>` cell if there is an exception
+//     preceding it.
 // -   `failure_` holds the name of a test that failed if a test does fail.
 
 
     syntax EthereumCommand ::= "exception" | "failure" String | "success"
- // ---------------------------------------------------------
+ // ---------------------------------------------------------------------
     rule <k> #exception ~> exception => . ... </k>
     rule <k> success => . ... </k> <exit-code> _ => 0 </exit-code>
     rule failure _ => .
@@ -374,8 +377,6 @@ module ETHEREUM-SIMULATION
  // ------------------------------------------------------------------------------
     rule check "gas" : ((GLEFT:String) => #parseWord(GLEFT))
     rule <k> check "gas" : GLEFT => . ... </k> <gas> GLEFT </gas>
-
-
 
     rule check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID
  // ----------------------------------------------------------------------------------------------------
