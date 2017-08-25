@@ -13,6 +13,10 @@ module ETHEREUM-SIMULATION
     imports EVM-ANALYSIS
 
 
+
+    imports K-REFLECTION
+
+
 // An Ethereum simulation is a list of Ethereum commands. Some Ethereum commands
 // take an Ethereum specification (eg. for an account or transaction).
 
@@ -448,6 +452,54 @@ module ETHEREUM-SIMULATION
  // -----------------------------------------------------------
     rule #asScheduleString("EIP150") => EIP150
     rule #asScheduleString("EIP158") => EIP158
+
+
+// The `"rlp"` key loads the block information.
+
+
+    rule load "rlp" : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL))))
+ // -------------------------------------------------------------------------------------
+    rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONList ] , BT , BU , .JSONList ]
+          => load "transaction" : BT
+         ...
+         </k>
+         <previousHash>      _ => #asWord(#parseByteStackRaw(HP)) </previousHash>
+         <ommersHash>        _ => #asWord(#parseByteStackRaw(HO)) </ommersHash>
+         <coinbase>          _ => #asWord(#parseByteStackRaw(HC)) </coinbase>
+         <stateRoot>         _ => #asWord(#parseByteStackRaw(HR)) </stateRoot>
+         <transactionsRoot>  _ => #asWord(#parseByteStackRaw(HT)) </transactionsRoot>
+         <receiptsRoot>      _ => #asWord(#parseByteStackRaw(HE)) </receiptsRoot>
+         <logsBloom>         _ => #parseByteStackRaw(HB)          </logsBloom>
+         <difficulty>        _ => #asWord(#parseByteStackRaw(HD)) </difficulty>
+         <number>            _ => #asWord(#parseByteStackRaw(HI)) </number>
+         <gasLimit>          _ => #asWord(#parseByteStackRaw(HL)) </gasLimit>
+         <gasUsed>           _ => #asWord(#parseByteStackRaw(HG)) </gasUsed>
+         <timestamp>         _ => #asWord(#parseByteStackRaw(HS)) </timestamp>
+         <extraData>         _ => #parseByteStackRaw(HX)          </extraData>
+         <mixHash>           _ => #asWord(#parseByteStackRaw(HM)) </mixHash>
+         <nonce>             _ => #asWord(#parseByteStackRaw(HN)) </nonce>
+         <ommerBlockHeaders> _ => BU                              </ommerBlockHeaders>
+
+    rule <k> load "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST => REST ] ... </k>
+         <txOrder>   ... .List => ListItem(!ID) </txOrder>
+         <txPending> ... .List => ListItem(!ID) </txPending>
+         <messages>
+           ( .Bag
+          => <message>
+               <msgID>      !ID:Int                         </msgID>
+               <txNonce>    #asWord(#parseByteStackRaw(TN)) </txNonce>
+               <txGasPrice> #asWord(#parseByteStackRaw(TP)) </txGasPrice>
+               <txGasLimit> #asWord(#parseByteStackRaw(TG)) </txGasLimit>
+               <to>         #asWord(#parseByteStackRaw(TT)) </to>
+               <value>      #asWord(#parseByteStackRaw(TV)) </value>
+               <v>          #asWord(#parseByteStackRaw(TW)) </v>
+               <r>          #parseByteStackRaw(TR)          </r>
+               <s>          #parseByteStackRaw(TS)          </s>
+               <data>       #parseByteStackRaw(TI)          </data>
+             </message>
+           )
+           ...
+         </messages>
 
 
 // ### Checking State
