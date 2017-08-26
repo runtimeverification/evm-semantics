@@ -1241,34 +1241,39 @@ module EVM
 //     code deposit can be paid, indicating an error if not.
 
 
-    syntax InternalOp ::= "#create" Int Int Int Map
-                        | "#mkCreate" Map Int Int
- // ---------------------------------------------
-    rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
+    syntax InternalOp ::= "#create" Int Int Int Int Map
+    syntax KItem      ::= "#mkCreate" Int Map Int Int
+ // -------------------------------------------------
+    rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
           => #pushCallStack ~> #pushWorldState
           ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCreate INITCODE GAVAIL VALUE
+          ~> #mkCreate ACCTFROM INITCODE GAVAIL VALUE
          ...
          </k>
-         <gas> GAVAIL </gas>
          <callDepth> CD </callDepth>
       requires CD <Int 1024
 
-    rule <k> #create _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
+    rule <k> #exception ~> #mkCreate _ _ GAVAIL _ => #exception ... </k> <gas> _ => GAVAIL </gas>
+
+    rule <k> #create _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
          <callDepth> CD </callDepth>
       requires CD >=Int 1024
 
     rule <mode> EXECMODE </mode>
-         <k> #mkCreate INITCODE GAVAIL VALUE
-          => #if EXECMODE ==K VMTESTS #then #end #else #next #fi
+         <k> #mkCreate ACCTFROM INITCODE GAVAIL VALUE
+          => #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
          ...
          </k>
-         <callLog> ... (.Set => SetItem({ 0 | GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
-         <gas> _ => #allBut64th(GAVAIL) </gas>
+         <id> ACCT </id>
+         <gas> OLDGAVAIL => GAVAIL </gas>
          <program> _ => INITCODE </program>
          <pc> _ => 0 </pc>
          <output> _ => .WordStack </output>
-         <id> ACCT </id>
+         <caller> _ => ACCTFROM </caller>
+         <callLog> ... (.Set => SetItem({ 0 | OLDGAVAIL +Int GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
+         <callDepth> CD => CD +Int 1 </callDepth>
+         <callData> _ => .WordStack </callData>
+         <callValue> _ => VALUE </callValue>
          <account>
            <acctID> ACCT </acctID>
            <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
@@ -1296,11 +1301,12 @@ module EVM
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
-          => #create ACCT #newAddr(ACCT, NONCE) VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
+          => #create ACCT #newAddr(ACCT, NONCE) #allBut64th(GAVAIL) VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
          <id> ACCT </id>
+         <gas> GAVAIL => GAVAIL /Int 64 </gas>
          <localMem> LM </localMem>
          <activeAccounts> ACCTS </activeAccounts>
          <account>
