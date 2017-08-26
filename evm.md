@@ -289,9 +289,9 @@ Simple commands controlling exceptions provide control-flow.
 
     syntax KItem ::= "#?" K ":" K "?#"
  // ----------------------------------
-    rule <k>                #? K : _ ?# => K  ... </k>
-    rule <k> #exception ~>  #? _ : K ?# => K  ... </k>
-    rule <k> #end       ~> (#? _ : _ ?# => .) ... </k>
+    rule <k>                #? K : _ ?#  => K         ... </k>
+    rule <k> #exception ~>  #? _ : K ?#  => K         ... </k>
+    rule <k> #end       ~> (#? K : _ ?#) => K ~> #end ... </k>
 ```
 
 OpCode Execution Cycle
