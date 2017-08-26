@@ -1107,7 +1107,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule <mode> EXECMODE </mode>
          <k> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
-          => #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
+          => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
          ...
          </k>
          <callLog> ... (.Set => SetItem({ ACCTTO | GLIMIT | VALUE | ARGS })) </callLog>
@@ -1116,10 +1116,17 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <callValue> _ => APPVALUE </callValue>
          <id> _ => ACCTTO </id>
          <gas> _ => GLIMIT </gas>
-         <pc> _ => 0 </pc>
          <caller> _ => ACCTFROM </caller>
-         <localMem> _ => #asMapWordStack(ARGS) </localMem>
          <program> _ => CODE </program>
+
+    syntax KItem ::= "#initVM"
+ // --------------------------
+    rule <k> #initVM    => . ...      </k>
+         <pc>         _ => 0          </pc>
+         <memoryUsed> _ => 0          </memoryUsed>
+         <output>     _ => .WordStack </output>
+         <wordStack>  _ => .WordStack </wordStack>
+         <localMem>   _ => .Map       </localMem>
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
@@ -1221,14 +1228,12 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     rule <mode> EXECMODE </mode>
          <k> #mkCreate ACCTFROM INITCODE GAVAIL VALUE
-          => #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
+          => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
          ...
          </k>
          <id> ACCT </id>
          <gas> OLDGAVAIL => GAVAIL </gas>
          <program> _ => INITCODE </program>
-         <pc> _ => 0 </pc>
-         <output> _ => .WordStack </output>
          <caller> _ => ACCTFROM </caller>
          <callLog> ... (.Set => SetItem({ 0 | OLDGAVAIL +Int GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
