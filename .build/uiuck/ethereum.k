@@ -635,5 +635,52 @@ module ETHEREUM-SIMULATION
     rule check "callcreates" : { ("data" : (DATA:String)) , ("destination" : (ACCTTO:String)) , ("gasLimit" : (GLIMIT:String)) , ("value" : (VAL:String)) , .JSONList }
       => check "callcreates" : { #parseAddr(ACCTTO) | #parseWord(GLIMIT) | #parseWord(VAL) | #parseByteStack(DATA) }
     rule <k> check "callcreates" : C:Call => . ... </k> <callLog> CL </callLog> requires C in CL
+
+    rule check TESTID : { "blockHeader" : BLOCKHEADER } => check "blockHeader" : BLOCKHEADER ~> failure TESTID
+ // ----------------------------------------------------------------------------------------------------------
+    rule check "blockHeader" : { KEY : VALUE , REST } => check "blockHeader" : { KEY : VALUE } ~> check "blockHeader" : { REST } requires REST =/=K .JSONList
+
+    rule check "blockHeader" : { KEY : (VALUE:String => #parseByteStack(VALUE)) }
+
+    rule check "blockHeader" : { KEY : (VALUE:WordStack => #asWord(VALUE)) }
+      requires KEY in ( SetItem("coinbase") SetItem("difficulty") SetItem("gasLimit") SetItem("gasUsed")
+                        SetItem("mixHash") SetItem("nonce") SetItem("number") SetItem("parentHash")
+                        SetItem("receiptTrie") SetItem("stateRoot") SetItem("timestamp")
+                        SetItem("transactionsTrie") SetItem("uncleHash")
+                      )
+
+    rule <k> check "blockHeader" : { "bloom"            : VALUE } => . ...</k> <logsBloom>        VALUE </logsBloom>
+    rule <k> check "blockHeader" : { "coinbase"         : VALUE } => . ...</k> <coinbase>         VALUE </coinbase>
+    rule <k> check "blockHeader" : { "difficulty"       : VALUE } => . ...</k> <difficulty>       VALUE </difficulty>
+    rule <k> check "blockHeader" : { "extraData"        : VALUE } => . ...</k> <extraData>        VALUE </extraData>
+    rule <k> check "blockHeader" : { "gasLimit"         : VALUE } => . ...</k> <gasLimit>         VALUE </gasLimit>
+    rule <k> check "blockHeader" : { "gasUsed"          : VALUE } => . ...</k> <gasUsed>          VALUE </gasUsed>
+    rule <k> check "blockHeader" : { "mixHash"          : VALUE } => . ...</k> <mixHash>          VALUE </mixHash>
+    rule <k> check "blockHeader" : { "nonce"            : VALUE } => . ...</k> <nonce>            VALUE </nonce>
+    rule <k> check "blockHeader" : { "number"           : VALUE } => . ...</k> <number>           VALUE </number>
+    rule <k> check "blockHeader" : { "parentHash"       : VALUE } => . ...</k> <previousHash>     VALUE </previousHash>
+    rule <k> check "blockHeader" : { "receiptTrie"      : VALUE } => . ...</k> <receiptsRoot>     VALUE </receiptsRoot>
+    rule <k> check "blockHeader" : { "stateRoot"        : VALUE } => . ...</k> <stateRoot>        VALUE </stateRoot>
+    rule <k> check "blockHeader" : { "timestamp"        : VALUE } => . ...</k> <timestamp>        VALUE </timestamp>
+    rule <k> check "blockHeader" : { "transactionsTrie" : VALUE } => . ...</k> <transactionsRoot> VALUE </transactionsRoot>
+    rule <k> check "blockHeader" : { "uncleHash"        : VALUE } => . ...</k> <ommersHash>       VALUE </ommersHash>
+
+    rule <k> check "blockHeader" : { "hash": HASH:WordStack } => . ...</k>
+         <previousHash>     HP </previousHash>
+         <ommersHash>       HO </ommersHash>
+         <coinbase>         HC </coinbase>
+         <stateRoot>        HR </stateRoot>
+         <transactionsRoot> HT </transactionsRoot>
+         <receiptsRoot>     HE </receiptsRoot>
+         <logsBloom>        HB </logsBloom>
+         <difficulty>       HD </difficulty>
+         <number>           HI </number>
+         <gasLimit>         HL </gasLimit>
+         <gasUsed>          HG </gasUsed>
+         <timestamp>        HS </timestamp>
+         <extraData>        HX </extraData>
+         <mixHash>          HM </mixHash>
+         <nonce>            HN </nonce>
+      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN) ==Int #asWord(HASH)
 endmodule
 
