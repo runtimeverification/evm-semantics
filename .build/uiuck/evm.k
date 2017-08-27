@@ -1616,6 +1616,10 @@ module EVM
     rule G0(SCHED, 0 : REST, ISCREATE) => Gtxdatazero    < SCHED > +Int G0(SCHED, REST, ISCREATE)
     rule G0(SCHED, N : REST, ISCREATE) => Gtxdatanonzero < SCHED > +Int G0(SCHED, REST, ISCREATE)
 
+    syntax Int ::= "G*" "(" Int "," Int "," Int ")" [function]
+ // ----------------------------------------------------------
+    rule G*(GAVAIL, GLIMIT, REFUND) => GAVAIL +Int minInt((GLIMIT -Int GAVAIL)/Int 2, REFUND)
+
 
 // Fee Schedule from C++ Implementation
 // ------------------------------------
