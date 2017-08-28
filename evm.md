@@ -1270,13 +1270,18 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
            => #checkCall ACCTFROM VALUE
-           ~> #call ACCTFROM ACCTFROM ACCTTO GCAP 0 VALUE #range(LM, ARGSTART, ARGWIDTH)
+           ~> #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTFROM, ACCTS, <accounts> ACCTDATA </accounts>, GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
            ...
          </k>
-         <id> ACCTFROM </id>
+         <schedule> SCHED </schedule>
+         <id> ACCTFROM </id> 
+         <caller> ACCTAPPFROM </caller>
          <callValue> VALUE </callValue>
          <localMem> LM </localMem>
+         <activeAccounts> ACCTS </activeAccounts>
+         <previousGas> GAVAIL </previousGas>
+         <accounts> ACCTDATA </accounts>
 ```
 
 ### Account Creation/Deletion
