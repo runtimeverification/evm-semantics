@@ -539,16 +539,16 @@ The `"rlp"` key loads the block information.
          <messages>
            ( .Bag
           => <message>
-               <msgID>      !ID:Int                         </msgID>
-               <txNonce>    #asWord(#parseByteStackRaw(TN)) </txNonce>
-               <txGasPrice> #asWord(#parseByteStackRaw(TP)) </txGasPrice>
-               <txGasLimit> #asWord(#parseByteStackRaw(TG)) </txGasLimit>
-               <to>         #asWord(#parseByteStackRaw(TT)) </to>
-               <value>      #asWord(#parseByteStackRaw(TV)) </value>
-               <v>          #asWord(#parseByteStackRaw(TW)) </v>
-               <r>          #parseByteStackRaw(TR)          </r>
-               <s>          #parseByteStackRaw(TS)          </s>
-               <data>       #parseByteStackRaw(TI)          </data>
+               <msgID>      !ID:Int                                 </msgID>
+               <txNonce>    #asWord(#parseByteStackRaw(TN))         </txNonce>
+               <txGasPrice> #asWord(#parseByteStackRaw(TP))         </txGasPrice>
+               <txGasLimit> #asWord(#parseByteStackRaw(TG))         </txGasLimit>
+               <to>         #asWord(#parseByteStackRaw(TT))         </to>
+               <value>      #asWord(#parseByteStackRaw(TV))         </value>
+               <v>          #asWord(#parseByteStackRaw(TW))         </v>
+               <r>          #padToWidth(32, #parseByteStackRaw(TR)) </r>
+               <s>          #padToWidth(32, #parseByteStackRaw(TS)) </s>
+               <data>       #parseByteStackRaw(TI)                  </data>
              </message>
            )
            ...
@@ -702,6 +702,8 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : { .JSONList } => . ... </k> <txOrder> ListItem(_) => .List ... </txOrder>
 
     rule check "transactions" : (KEY : (VALUE:String => #parseByteStack(VALUE)))
+
+    rule check "transactions" : (KEY : (VALUE:WordStack => #padToWidth(32, VALUE))) requires (KEY ==String "r" orBool KEY ==String "s") andBool #sizeWordStack(VALUE) <Int 32
 
     rule check "transactions" : (KEY : (VALUE:WordStack => #asWord(VALUE)))
       requires KEY in ( SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce")
