@@ -78,7 +78,7 @@ blockchain-tests: tests/BlockchainTests/GeneralStateTests/stAttackTest/ContractC
 #blockchain_tests=$(shell cat ${passing_test_file})
 blockchain_tests=$(wildcard tests/BlockchainTests/*/*/*/*.json)
 all_tests=$(wildcard tests/VMTests/*/*.json) ${blockchain_tests}
-skipped_tests=$(wildcard tests/VMTests/vmPerformanceTest/*.json) tests/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1021.json
+skipped_tests=$(wildcard tests/VMTests/vmPerformanceTest/*.json) tests/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1021.json tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/createJS_ExampleContract_d0g0v0/createJS_ExampleContract_d0g0v0_Metropolis.json
 passing_tests=$(filter-out ${skipped_tests}, ${all_tests})
 passing_blockchain_tests=$(filter-out ${skipped_tests}, ${blockchain_tests})
 passing_targets=${passing_tests:=.test}
