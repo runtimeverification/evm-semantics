@@ -462,6 +462,7 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule #asScheduleString("EIP158") => EIP158
     rule #asScheduleString("Frontier") => FRONTIER
     rule #asScheduleString("Homestead") => HOMESTEAD
+    rule #asScheduleString("Metropolis") => METROPOLIS
 ```
 
 The `"rlp"` key loads the block information.
