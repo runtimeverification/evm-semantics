@@ -185,6 +185,7 @@ module TRANSFER-SPEC
          <callDepth>     0          </callDepth>
          <callStack>     .List      </callStack>
          <interimStates> .List      </interimStates>
+         <substateStack> .List      </substateStack>
          <callLog>       .Set       </callLog>
 
          <program>   %HKG_Program </program>
@@ -301,6 +302,7 @@ module TRANSFER-FROM-SPEC
          <callDepth>     0          </callDepth>
          <callStack>     .List      </callStack>
          <interimStates> .List      </interimStates>
+         <substateStack> .List      </substateStack>
          <callLog>       .Set       </callLog>
 
          <program>   %HKG_Program </program>
@@ -418,6 +420,7 @@ imports ETHEREUM-SIMULATION
          <callDepth>     0          </callDepth>
          <callStack>     .List      </callStack>
          <interimStates> .List      </interimStates>
+         <substateStack> .List      </substateStack>
          <callLog>       .Set       </callLog>
 
          <program>     %HKG_Program          </program>
@@ -484,6 +487,7 @@ module APPROVE-SPEC
          <callDepth>     0          </callDepth>
          <callStack>     .List      </callStack>
          <interimStates> .List      </interimStates>
+         <substateStack> .List      </substateStack>
          <callLog>       .Set       </callLog>
 
          <program>   %HKG_Program </program>
@@ -553,6 +557,7 @@ module BALANCE-OF-SPEC
          <callDepth>     0          </callDepth>
          <callStack>     .List      </callStack>
          <interimStates> .List      </interimStates>
+         <substateStack> .List      </substateStack>
          <callLog>       .Set       </callLog>
 
          <program>      %HKG_Program </program>
