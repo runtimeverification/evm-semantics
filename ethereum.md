@@ -502,8 +502,8 @@ The `"rlp"` key loads the block information.
              <value> #asWord(#parseByteStackRaw(TV)) </value>
              <data> #parseByteStackRaw(TI) </data>
              <v> #asWord(#parseByteStackRaw(TW)) </v>
-             <r> #parseByteStackRaw(TR) </r>
-             <s> #parseByteStackRaw(TS) </s>
+             <r> #padToWidth(32, #parseByteStackRaw(TR)) </r>
+             <s> #padToWidth(32, #parseByteStackRaw(TS)) </s>
            </message>)
  
     rule load "transaction": [ .JSONList ] => .K
@@ -667,8 +667,8 @@ Here we check the other post-conditions associated with an EVM test.
     rule check "transactions" : ("gasLimit" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
     rule check "transactions" : ("gasPrice" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
     rule check "transactions" : ("nonce" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
-    rule check "transactions" : ("r" : (VALUE:String => #parseByteStack(VALUE)))
-    rule check "transactions" : ("s" : (VALUE:String => #parseByteStack(VALUE)))
+    rule check "transactions" : ("r" : (VALUE:String => #padToWidth(32, #parseByteStack(VALUE))))
+    rule check "transactions" : ("s" : (VALUE:String => #padToWidth(32, #parseByteStack(VALUE))))
     rule check "transactions" : ("to" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
     rule check "transactions" : ("v" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
     rule check "transactions" : ("value" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
