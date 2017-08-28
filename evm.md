@@ -1349,13 +1349,24 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     rule <k> #mkCodeDeposit ACCT 
            => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi 
-           ~> #finishCodeDeposit ACCT #asMapOpCodes(#dasmOpCodes(OUT, SCHED)) ...</k>
+           ~> #finishCodeDeposit ACCT #asMapOpCodes(#dasmOpCodes(OUT, SCHED))
+          ...
+         </k>
          <mode> EXECMODE </mode>
          <schedule> SCHED </schedule>
          <output> OUT => .WordStack </output>
+      requires #sizeWordStack(OUT) <=Int maxCodeSize < SCHED >
+
+    rule <k> #mkCodeDeposit ACCT => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ...</k>
+         <schedule> SCHED </schedule>
+         <output> OUT => .WordStack </output>
+      requires #sizeWordStack(OUT) >Int maxCodeSize < SCHED >
+
     rule <k> #finishCodeDeposit ACCT OUT 
            => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate 
-           ~> #refund GAVAIL ~> ACCT ~> #push ...</k>
+           ~> #refund GAVAIL ~> ACCT ~> #push
+          ...
+         </k>
          <mode> EXECMODE </mode>
          <gas> GAVAIL </gas>
          <account>
@@ -1366,15 +1377,16 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     rule <k> #exception ~> #finishCodeDeposit ACCT _ 
            => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate 
-           ~> #refund GAVAIL ~> ACCT ~> #push ...</k>
+           ~> #refund GAVAIL ~> ACCT ~> #push
+          ...
+         </k>
 	 <mode> EXECMODE </mode>
 	 <gas> GAVAIL </gas>
          <schedule> FRONTIER </schedule>
 
     rule <k> #exception ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ...</k>
-	 <mode> EXECMODE </mode>
-	 <gas> GAVAIL </gas>
-         <schedule> SCHED </schedule> requires SCHED =/=K FRONTIER
+         <schedule> SCHED </schedule>
+      requires SCHED =/=K FRONTIER
 
 ```
 
@@ -1747,6 +1759,7 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
                            | "Gcall"        | "Gcallvalue"   | "Gcallstipend"  | "Gnewaccount"    | "Gexp"         | "Gexpbyte"
                            | "Gmemory"      | "Gtxcreate"    | "Gtxdatazero"   | "Gtxdatanonzero" | "Gtransaction" | "Glog"
                            | "Glogdata"     | "Glogtopic"    | "Gsha3"         | "Gsha3word"      | "Gcopy"        | "Gblockhash"   | "Gquadcoeff"
+                           | "maxCodeSize"
  // ----------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -1800,6 +1813,8 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
     rule Gblockhash   < DEFAULT > => 20
     rule Gextcodesize < DEFAULT > => 20
     rule Gextcodecopy < DEFAULT > => 20
+
+    rule maxCodeSize < DEFAULT > => 2 ^Int 32 -Int 1
 
     rule Gselfdestructnewaccount << DEFAULT >> => false
     rule Gstaticcalldepth        << DEFAULT >> => true
@@ -1911,9 +1926,13 @@ static const EVMSchedule HomesteadSchedule = EVMSchedule(true, true, 53000);
     rule Gselfdestruct < EIP150 > => 5000
     rule Gextcodesize  < EIP150 > => 700
     rule Gextcodecopy  < EIP150 > => 700
+
+    rule maxCodeSize   < EIP150 > => 24576
+
     rule SCHEDCONST    < EIP150 > => SCHEDCONST < HOMESTEAD >
       requires notBool      ( SCHEDCONST ==K Gbalance      orBool SCHEDCONST ==K Gsload       orBool SCHEDCONST ==K Gcall
                        orBool SCHEDCONST ==K Gselfdestruct orBool SCHEDCONST ==K Gextcodesize orBool SCHEDCONST ==K Gextcodecopy
+                       orBool SCHEDCONST ==K maxCodeSize
                             )
 
     rule Gselfdestructnewaccount << EIP150 >> => true
