@@ -31,6 +31,7 @@ module TRANSFER-SPEC
          <callDepth>     0          </callDepth>
          <callStack>     .List      </callStack>
          <interimStates> .List      </interimStates>
+         <substateStack> .List      </substateStack>
          <callLog>       .Set       </callLog>
 
          <program>   %HKG_Program </program>

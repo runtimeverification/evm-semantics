@@ -49,6 +49,7 @@ module EVM
                       <callDepth>     0          </callDepth>
                       <callStack>     .List      </callStack>
                       <interimStates> .List      </interimStates>
+                      <substateStack> .List      </substateStack>
                       <callLog>       .Set       </callLog>
 
                       <txExecState>
@@ -300,6 +301,31 @@ module EVM
     syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
     rule <k> #dropWorldState => . ... </k> <interimStates> (ListItem(_) => .List) ... </interimStates>
+
+
+// The `substateStack` cell stores a list of previous substate logs.
+
+// -   `#pushSubstate` stores a copy of the current substate at the top of the
+//     `substateStack` cell.
+// -   `#popSubstate` restores the top element of the `substateStack`.
+// -   `#dropSubstate` removes the top element of the `substateStack`.
+
+
+    syntax InternalOp ::= "#pushSubstate"
+ // -------------------------------------
+    rule <k> #pushSubstate => .K ... </k>
+         <substate> SUBSTATE </substate>
+         <substateStack> (.List => ListItem(<substate> SUBSTATE </substate>)) ... </substateStack>
+
+    syntax InternalOp ::= "#popSubstate"
+ // ------------------------------------
+    rule <k> #popSubstate => .K ... </k>
+         <substate> _ => SUBSTATE </substate>
+         <substateStack> (ListItem(<substate> SUBSTATE </substate>) => .List) ... </substateStack>
+
+    syntax InternalOp ::= "#dropSubstate"
+ // -------------------------------------
+    rule <k> #dropSubstate => .K ... </k> <substateStack> (ListItem(_) => .List) ... </substateStack>
 
 
 // Simple commands controlling exceptions provide control-flow.
@@ -1180,7 +1206,7 @@ module EVM
                         | "#callWithCode" Int Int Map Int Int Int WordStack
                         | "#mkCall" Int Int Map Int Int Int WordStack
  // -----------------------------------------------------------------
-    rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState ~> #exception ... </k>
+    rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
          <callDepth> CD </callDepth>
          <account>
            <acctID> ACCT </acctID>
@@ -1220,7 +1246,7 @@ module EVM
       requires notBool (ACCTCODE >Int 0 andBool ACCTCODE <=Int 4) andBool notBool ACCTCODE in_keys(ACCTS)
 
     rule #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
-      => #pushCallStack ~> #pushWorldState
+      => #pushCallStack ~> #pushWorldState ~> #pushSubstate
       ~> #transferFunds ACCTFROM ACCTTO VALUE
       ~> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
 
@@ -1250,7 +1276,7 @@ module EVM
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
     rule <k> #exception ~> #return _ _
-          => #popCallStack ~> #popWorldState  ~> 0 ~> #push
+          => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push
          ...
          </k>
 
@@ -1258,6 +1284,7 @@ module EVM
          <k> #end ~> #return RETSTART RETWIDTH
           => #popCallStack
           ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi
+          ~> #dropSubstate
           ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
          </k>
@@ -1337,7 +1364,7 @@ module EVM
     syntax InternalOp ::= "#create" Int Int Int Int Map
                         | "#mkCreate" Int Int Map Int Int
  // -----------------------------------------------------
-    rule <k> #checkCall ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #exception ... </k>
+    rule <k> #checkCall ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
          <callDepth> CD </callDepth>
          <account>
            <acctID> ACCT </acctID>
@@ -1347,7 +1374,7 @@ module EVM
       requires VALUE >Int BAL orBool CD >=Int 1024
 
     rule #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
-      => #pushCallStack ~> #pushWorldState
+      => #pushCallStack ~> #pushWorldState ~> #pushSubstate
       ~> #transferFunds ACCTFROM ACCTTO VALUE
       ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
 
@@ -1381,12 +1408,12 @@ module EVM
                    | "#mkCodeDeposit" Int
                    | "#finishCodeDeposit"
  // -------------------------------------
-    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
+    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k>
 
     rule <mode> EXECMODE </mode>
          <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ~> ACCT ~> #push ...</k>
 
-    rule <k> #mkCodeDeposit ACCT => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi ~> #finishCodeDeposit ...</k>
+    rule <k> #mkCodeDeposit ACCT => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi ~> #finishCodeDeposit ... </k>
          <mode> EXECMODE </mode>
          <schedule> SCHED </schedule>
          <output> OUT => .WordStack </output>
@@ -1396,7 +1423,7 @@ module EVM
            ...
          </account>
          <activeAccounts> ... ACCT |-> (EMPTY => #if OUT =/=K .Map #then false #else EMPTY #fi) ... </activeAccounts>
-    rule <k> #finishCodeDeposit => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #refund GAVAIL ...</k>
+    rule <k> #finishCodeDeposit => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate ~> #refund GAVAIL ... </k>
          <mode> EXECMODE </mode>
          <gas> GAVAIL </gas>
 

@@ -12,6 +12,7 @@
       <callDepth> 0 </callDepth>
       <callStack> .List </callStack>
       <interimStates> .List </interimStates>
+      <substateStack> .List </substateStack>
       <callLog> .Set </callLog>
       <txExecState>
         <program> .Map </program>

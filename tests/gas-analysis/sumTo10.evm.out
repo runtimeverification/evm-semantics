@@ -12,6 +12,7 @@
       <callDepth> 0 </callDepth>
       <callStack> .List </callStack>
       <interimStates> .List </interimStates>
+      <substateStack> .List </substateStack>
       <callLog> .Set </callLog>
       <txExecState>
         <program> 0 |-> PUSH ( 1 , 0 ) 2 |-> PUSH ( 1 , 0 ) 4 |-> MSTORE 5 |-> PUSH ( 1 , 10 ) 7 |-> PUSH ( 1 , 32 ) 9 |-> MSTORE 10 |-> JUMPDEST 11 |-> PUSH ( 1 , 32 ) 13 |-> MLOAD 14 |-> ISZERO 15 |-> PUSH ( 1 , 39 ) 17 |-> JUMPI 18 |-> PUSH ( 1 , 32 ) 20 |-> MLOAD 21 |-> DUP ( 1 ) 22 |-> PUSH ( 1 , 0 ) 24 |-> MLOAD 25 |-> ADD 26 |-> PUSH ( 1 , 0 ) 28 |-> MSTORE 29 |-> PUSH ( 1 , 1 ) 31 |-> SWAP ( 1 ) 32 |-> SUB 33 |-> PUSH ( 1 , 32 ) 35 |-> MSTORE 36 |-> PUSH ( 1 , 10 ) 38 |-> JUMP 39 |-> JUMPDEST 40 |-> PUSH ( 1 , 0 ) 42 |-> MLOAD 43 |-> PUSH ( 1 , 0 ) 45 |-> SSTORE </program>
