@@ -249,13 +249,15 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
 -   `run` runs a given set of Ethereum tests (from the test-set).
 
+Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`.
+
 ```{.k .uiuck .rvk}
     syntax EthereumCommand ::= "run" JSON
  // -------------------------------------
     rule run { .JSONList } => .
-    rule run { TESTID : (TEST:JSON) , TESTS }
-      => run (TESTID : TEST)
-      ~> #if #hasPost?( TEST ) #then .K #else exception #fi
+    rule run { TESTID : { TEST:JSONList } , TESTS }
+      => run ( TESTID : { #sortJSONList(TEST) } )
+      ~> #if #hasPost?( { TEST } ) #then .K #else exception #fi
       ~> clear
       ~> run { TESTS }
 
