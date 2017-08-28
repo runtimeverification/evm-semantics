@@ -1401,14 +1401,25 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ...</k>
 
     rule <k> #mkCodeDeposit ACCT 
-           => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi 
-           ~> #finishCodeDeposit ACCT #asMapOpCodes(#dasmOpCodes(OUT)) ...</k>
+          => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi 
+          ~> #finishCodeDeposit ACCT #asMapOpCodes(#dasmOpCodes(OUT)) ...</k>
+         ...
+         </k>
          <mode> EXECMODE </mode>
          <schedule> SCHED </schedule>
          <output> OUT => .WordStack </output>
+      requires #sizeWordStack(OUT) <=Int maxCodeSize < SCHED >
+
+    rule <k> #mkCodeDeposit ACCT => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ...</k>
+         <schedule> SCHED </schedule>
+         <output> OUT => .WordStack </output>
+      requires #sizeWordStack(OUT) >Int maxCodeSize < SCHED >
+
     rule <k> #finishCodeDeposit ACCT OUT 
            => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate 
-           ~> #refund GAVAIL ~> ACCT ~> #push ...</k>
+           ~> #refund GAVAIL ~> ACCT ~> #push
+          ...
+         </k>
          <mode> EXECMODE </mode>
          <gas> GAVAIL </gas>
          <account>
@@ -1420,15 +1431,16 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     rule <k> #exception ~> #finishCodeDeposit ACCT _ 
            => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate 
-           ~> #refund GAVAIL ~> ACCT ~> #push ...</k>
+           ~> #refund GAVAIL ~> ACCT ~> #push
+          ...
+         </k>
          <mode> EXECMODE </mode>
          <gas> GAVAIL </gas>
          <schedule> FRONTIER </schedule>
 
     rule <k> #exception ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ...</k>
-         <mode> EXECMODE </mode>
-         <gas> GAVAIL </gas>
-         <schedule> SCHED </schedule> requires SCHED =/=K FRONTIER
+         <schedule> SCHED </schedule>
+      requires SCHED =/=K FRONTIER
 
 ```
 
@@ -1795,6 +1807,7 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
                            | "Gcall"        | "Gcallvalue"   | "Gcallstipend"  | "Gnewaccount"    | "Gexp"         | "Gexpbyte"
                            | "Gmemory"      | "Gtxcreate"    | "Gtxdatazero"   | "Gtxdatanonzero" | "Gtransaction" | "Glog"
                            | "Glogdata"     | "Glogtopic"    | "Gsha3"         | "Gsha3word"      | "Gcopy"        | "Gblockhash"   | "Gquadcoeff"
+                           | "maxCodeSize"
  // ----------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -1848,6 +1861,8 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
     rule Gblockhash   < DEFAULT > => 20
     rule Gextcodesize < DEFAULT > => 20
     rule Gextcodecopy < DEFAULT > => 20
+
+    rule maxCodeSize < DEFAULT > => 2 ^Int 32 -Int 1
 
     rule Gselfdestructnewaccount << DEFAULT >> => false
     rule Gstaticcalldepth        << DEFAULT >> => true
@@ -1959,6 +1974,7 @@ static const EVMSchedule HomesteadSchedule = EVMSchedule(true, true, 53000);
     rule Gselfdestruct < EIP150 > => 5000
     rule Gextcodesize  < EIP150 > => 700
     rule Gextcodecopy  < EIP150 > => 700
+
     rule SCHEDCONST    < EIP150 > => SCHEDCONST < HOMESTEAD >
       requires notBool      ( SCHEDCONST ==K Gbalance      orBool SCHEDCONST ==K Gsload       orBool SCHEDCONST ==K Gcall
                        orBool SCHEDCONST ==K Gselfdestruct orBool SCHEDCONST ==K Gextcodesize orBool SCHEDCONST ==K Gextcodecopy
@@ -1981,7 +1997,6 @@ static const EVMSchedule EIP150Schedule = []
     schedule.sloadGas = 200;
     schedule.callGas = 700;
     schedule.suicideGas = 5000;
-    schedule.maxCodeSize = 0x6000;
     return schedule;
 }();
 ```
@@ -1991,8 +2006,10 @@ static const EVMSchedule EIP150Schedule = []
 ```{.k .uiuck .rvk}
     syntax Schedule ::= "EIP158"
  // ----------------------------
-    rule Gexpbyte   < EIP158 > => 50
-    rule SCHEDCONST < EIP158 > => SCHEDCONST < EIP150 > requires SCHEDCONST =/=K Gexpbyte
+    rule Gexpbyte    < EIP158 > => 50
+    rule maxCodeSize < EIP158 > => 24576
+
+    rule SCHEDCONST  < EIP158 > => SCHEDCONST < EIP150 > requires SCHEDCONST =/=K Gexpbyte andBool SCHEDCONST =/=K maxCodeSize
 
     rule Gemptyisnonexistent     << EIP158 >> => true
     rule Gzerovaluenewaccountgas << EIP158 >> => false
@@ -2006,6 +2023,7 @@ static const EVMSchedule EIP158Schedule = []
     EVMSchedule schedule = EIP150Schedule;
     schedule.expByteGas = 50;
     schedule.eip158Mode = true;
+    schedule.maxCodeSize = 0x6000;
     return schedule;
 }();
 ```

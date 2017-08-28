@@ -1422,14 +1422,25 @@ module EVM
          <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ...</k>
 
     rule <k> #mkCodeDeposit ACCT 
-           => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi 
-           ~> #finishCodeDeposit ACCT #asMapOpCodes(#dasmOpCodes(OUT)) ...</k>
+          => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi 
+          ~> #finishCodeDeposit ACCT #asMapOpCodes(#dasmOpCodes(OUT)) ...</k>
+         ...
+         </k>
          <mode> EXECMODE </mode>
          <schedule> SCHED </schedule>
          <output> OUT => .WordStack </output>
+      requires #sizeWordStack(OUT) <=Int maxCodeSize < SCHED >
+
+    rule <k> #mkCodeDeposit ACCT => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ...</k>
+         <schedule> SCHED </schedule>
+         <output> OUT => .WordStack </output>
+      requires #sizeWordStack(OUT) >Int maxCodeSize < SCHED >
+
     rule <k> #finishCodeDeposit ACCT OUT 
            => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate 
-           ~> #refund GAVAIL ~> ACCT ~> #push ...</k>
+           ~> #refund GAVAIL ~> ACCT ~> #push
+          ...
+         </k>
          <mode> EXECMODE </mode>
          <gas> GAVAIL </gas>
          <account>
@@ -1441,15 +1452,16 @@ module EVM
 
     rule <k> #exception ~> #finishCodeDeposit ACCT _ 
            => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate 
-           ~> #refund GAVAIL ~> ACCT ~> #push ...</k>
+           ~> #refund GAVAIL ~> ACCT ~> #push
+          ...
+         </k>
          <mode> EXECMODE </mode>
          <gas> GAVAIL </gas>
          <schedule> FRONTIER </schedule>
 
     rule <k> #exception ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ...</k>
-         <mode> EXECMODE </mode>
-         <gas> GAVAIL </gas>
-         <schedule> SCHED </schedule> requires SCHED =/=K FRONTIER
+         <schedule> SCHED </schedule>
+      requires SCHED =/=K FRONTIER
 
 
 // `CREATE` will attempt to `#create` the account using the initialization code and
@@ -1830,6 +1842,7 @@ module EVM
                            | "Gcall"        | "Gcallvalue"   | "Gcallstipend"  | "Gnewaccount"    | "Gexp"         | "Gexpbyte"
                            | "Gmemory"      | "Gtxcreate"    | "Gtxdatazero"   | "Gtxdatanonzero" | "Gtransaction" | "Glog"
                            | "Glogdata"     | "Glogtopic"    | "Gsha3"         | "Gsha3word"      | "Gcopy"        | "Gblockhash"   | "Gquadcoeff"
+                           | "maxCodeSize"
  // ----------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -1884,6 +1897,8 @@ module EVM
     rule Gextcodesize < DEFAULT > => 20
     rule Gextcodecopy < DEFAULT > => 20
 
+    rule maxCodeSize < DEFAULT > => 2 ^Int 32 -Int 1
+
     rule Gselfdestructnewaccount << DEFAULT >> => false
     rule Gstaticcalldepth        << DEFAULT >> => true
     rule Gemptyisnonexistent     << DEFAULT >> => false
@@ -1922,6 +1937,7 @@ module EVM
     rule Gselfdestruct < EIP150 > => 5000
     rule Gextcodesize  < EIP150 > => 700
     rule Gextcodecopy  < EIP150 > => 700
+
     rule SCHEDCONST    < EIP150 > => SCHEDCONST < HOMESTEAD >
       requires notBool      ( SCHEDCONST ==K Gbalance      orBool SCHEDCONST ==K Gsload       orBool SCHEDCONST ==K Gcall
                        orBool SCHEDCONST ==K Gselfdestruct orBool SCHEDCONST ==K Gextcodesize orBool SCHEDCONST ==K Gextcodecopy
@@ -1938,8 +1954,10 @@ module EVM
 
     syntax Schedule ::= "EIP158"
  // ----------------------------
-    rule Gexpbyte   < EIP158 > => 50
-    rule SCHEDCONST < EIP158 > => SCHEDCONST < EIP150 > requires SCHEDCONST =/=K Gexpbyte
+    rule Gexpbyte    < EIP158 > => 50
+    rule maxCodeSize < EIP158 > => 24576
+
+    rule SCHEDCONST  < EIP158 > => SCHEDCONST < EIP150 > requires SCHEDCONST =/=K Gexpbyte andBool SCHEDCONST =/=K maxCodeSize
 
     rule Gemptyisnonexistent     << EIP158 >> => true
     rule Gzerovaluenewaccountgas << EIP158 >> => false
