@@ -209,9 +209,9 @@ module ETHEREUM-SIMULATION
     syntax EthereumCommand ::= "run" JSON
  // -------------------------------------
     rule run { .JSONList } => .
-    rule run { TESTID : (TEST:JSON) , TESTS }
-      => run (TESTID : TEST)
-      ~> #if #hasPost?( TEST ) #then .K #else exception #fi
+    rule run { TESTID : { TEST:JSONList } , TESTS }
+      => run (TESTID : { #sortJSONList(TEST) } ) // we sort so network comes before pre
+      ~> #if #hasPost?( { TEST } ) #then .K #else exception #fi
       ~> clear
       ~> run { TESTS }
 
