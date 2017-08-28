@@ -116,7 +116,7 @@ module ETHEREUM-SIMULATION
     syntax EthereumCommand ::= loadTx ( Int )
  // -----------------------------------------
     rule <k> loadTx(ACCTFROM)
-          => #create ACCTFROM #newAddr(ACCTFROM, NONCE +Int 1) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE (#asMapOpCodes(#dasmOpCodes(CODE)))
+          => #create ACCTFROM #newAddr(ACCTFROM, NONCE) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE (#asMapOpCodes(#dasmOpCodes(CODE)))
           ~> #execute ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>

@@ -1342,8 +1342,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#create" Int Int Int Int Map
                         | "#mkCreate" Int Int Map Int Int
+                        | "#checkCreate" Int Int
  // -----------------------------------------------------
-    rule <k> #checkCall ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
+    rule <k> #checkCreate ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
          <callDepth> CD </callDepth>
          <account>
            <acctID> ACCT </acctID>
@@ -1351,6 +1352,18 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           ...
          </account>
       requires VALUE >Int BAL orBool CD >=Int 1024
+
+    rule <k> #checkCreate ACCT VALUE => . ... </k>
+         <mode> EXECMODE </mode>
+         <callDepth> CD </callDepth>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL </balance>
+           <nonce> NONCE => #ifInt EXECMODE ==K VMTESTS #then NONCE #else NONCE +Int 1 #fi </nonce>
+          ...
+         </account>
+         <activeAccounts> ... ACCT |-> (EMPTY => #if EXECMODE ==K VMTESTS #then EMPTY #else false #fi) ... </activeAccounts>
+      requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
     rule #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
            => #pushCallStack ~> #pushWorldState ~> #pushSubstate
@@ -1372,13 +1385,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <callData> _ => .WordStack </callData>
          <callValue> _ => VALUE </callValue>
          <account>
-           <acctID> ACCT </acctID>
-           <nonce> NONCE => NONCE +Int 1 </nonce>
-          ...
-         </account>
-         <account>
            <acctID> ACCTTO </acctID>
-           <nonce> TONONCE => #ifInt Gemptyisnonexistent << SCHED >> #then TONONCE +Int 1 #else TONONCE #fi </nonce>
+           <nonce> NONCE => #ifInt Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
           ...
          </account>
          <activeAccounts> ... ACCTTO |-> (EMPTY => #if Gemptyisnonexistent << SCHED >> #then false #else EMPTY #fi) ... </activeAccounts>
@@ -1413,7 +1421,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
-          => #checkCall ACCT VALUE
+          => #checkCreate ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, NONCE) #ifInt Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
