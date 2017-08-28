@@ -30,6 +30,10 @@ These can be ambiguities/confusing wording in the Yellow Paper.
 -   The description in Appendix H of the CALLCODE instruction describes it as like CALL except for the fourth argument to the Theta function.
     However, it does not mention that this change from Mu_s[1] to I_a also applies to the specification of C_NEW.
 
+-   The description in Appendix H of the DELEGATECALL instruction describes the gas provided to the caller as equal to Mu_s[0].
+    However, this is clearly not the correct behavior, since Mu_s[0] is a user-provided value, and the user could set it
+    equal to 2 ^ 256 - 1, leading to the user having an infinite amount of gas. It's clear from the test suite that the intended
+    behavior is to use Ccallgas but with the value for the value transfer equal to 0.
 Issues with design of EVM
 -------------------------
 
