@@ -146,7 +146,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <msgID> MsgId </msgID>
          <to> 0 </to>
 
-    rule <k> #end ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ... </k>
+    rule <k> #end ~> #finishTx => #popCallStack ~> #dropWorldState ~> #dropSubstate ~> #refund GAVAIL ... </k>
          <id> ACCT </id>
          <gas> GAVAIL </gas>
          <txPending> ListItem(MsgId:Int) ...</txPending>
@@ -154,7 +154,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <to> TT </to>
          requires TT =/=Int 0
 
-    rule #exception ~> #finishTx => #popCallStack ~> #popWorldState
+    rule #exception ~> #finishTx => #popCallStack ~> #popWorldState ~> #popSubstate
 
     rule <k> #finalizeBlock => #rewardOmmers(OMMERS) ... </k>
          <coinbase> MINER </coinbase>
