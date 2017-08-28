@@ -1394,26 +1394,50 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
-                   | "#finishCodeDeposit"
- // -------------------------------------
+                   | "#finishCodeDeposit" Int Map
+ // ---------------------------------------------
     rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k>
 
     rule <mode> EXECMODE </mode>
-         <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ~> ACCT ~> #push ...</k>
+         <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
 
-    rule <k> #mkCodeDeposit ACCT => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi ~> #finishCodeDeposit ... </k>
+    rule <k> #mkCodeDeposit ACCT
+          => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi
+          ~> #finishCodeDeposit ACCT #asMapOpCodes(#dasmOpCodes(OUT))
+         ...
+         </k>
          <mode> EXECMODE </mode>
          <schedule> SCHED </schedule>
          <output> OUT => .WordStack </output>
+
+    rule <k> #finishCodeDeposit ACCT OUT
+          => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate
+          ~> #refund GAVAIL ~> ACCT ~> #push
+         ...
+         </k>
+         <mode> EXECMODE </mode>
+         <gas> GAVAIL </gas>
          <account>
            <acctID> ACCT </acctID>
-           <code> _ => #asMapOpCodes(#dasmOpCodes(OUT)) </code>
+           <code> _ => OUT </code>
            ...
          </account>
          <activeAccounts> ... ACCT |-> (EMPTY => #if OUT =/=K .Map #then false #else EMPTY #fi) ... </activeAccounts>
-    rule <k> #finishCodeDeposit => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate ~> #refund GAVAIL ... </k>
+
+    rule <k> #exception ~> #finishCodeDeposit ACCT _
+          => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate
+          ~> #refund GAVAIL ~> ACCT ~> #push
+         ...
+         </k>
          <mode> EXECMODE </mode>
          <gas> GAVAIL </gas>
+         <schedule> FRONTIER </schedule>
+
+    rule <k> #exception ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k>
+         <mode> EXECMODE </mode>
+         <gas> GAVAIL </gas>
+         <schedule> SCHED </schedule> requires SCHED =/=K FRONTIER
+
 ```
 
 `CREATE` will attempt to `#create` the account using the initialization code and cleans up the result with `#codeDeposit`.
