@@ -2088,18 +2088,22 @@ After interpreting the strings representing programs as a `WordStack`, it should
 
 ```{.k .uiuck .rvk}
     syntax OpCodes ::= #dasmOpCodes ( WordStack , Schedule ) [function]
+                     | #dasmOpCodes ( OpCodes , WordStack , Schedule ) [function, klabel(#dasmOpCodesAux)]
+                     | #revOpCodes  ( OpCodes , OpCodes ) [function]
  // -------------------------------------------------------------------
-    rule #dasmOpCodes( .WordStack, _ ) => .OpCodes
-    rule #dasmOpCodes( W : WS, SCHED ) => #dasmOpCode(W, SCHED) ; #dasmOpCodes(WS, SCHED) requires W >=Int 0   andBool W <=Int 95
-    rule #dasmOpCodes( W : WS, SCHED ) => #dasmOpCode(W, SCHED) ; #dasmOpCodes(WS, SCHED) requires W >=Int 165 andBool W <=Int 255
-    rule #dasmOpCodes( W : WS, SCHED ) => DUP(W -Int 127)       ; #dasmOpCodes(WS, SCHED) requires W >=Int 128 andBool W <=Int 143
-    rule #dasmOpCodes( W : WS, SCHED ) => SWAP(W -Int 143)      ; #dasmOpCodes(WS, SCHED) requires W >=Int 144 andBool W <=Int 159
-    rule #dasmOpCodes( W : WS, SCHED ) => LOG(W -Int 160)       ; #dasmOpCodes(WS, SCHED) requires W >=Int 160 andBool W <=Int 164
-    rule #dasmOpCodes( W : WS, SCHED ) => #dasmPUSH( W -Int 95 , WS, SCHED )         requires W >=Int 96  andBool W <=Int 127
+    rule #dasmOpCodes( WS, SCHED ) => #revOpCodes(#dasmOpCodes(.OpCodes, WS, SCHED), .OpCodes)
 
-    syntax OpCodes ::= #dasmPUSH ( Int , WordStack , Schedule ) [function]
- // ----------------------------------------------------------------------
-    rule #dasmPUSH( W , WS , SCHED ) => PUSH(W, #asWord(#take(W, WS))) ; #dasmOpCodes(#drop(W, WS), SCHED)
+    rule #dasmOpCodes( OPS, .WordStack, _ ) => OPS
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(#dasmOpCode(W, SCHED) ; OPS, WS, SCHED) requires W >=Int 0   andBool W <=Int 95
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(#dasmOpCode(W, SCHED) ; OPS, WS, SCHED) requires W >=Int 165 andBool W <=Int 255
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(DUP(W -Int 127)       ; OPS, WS, SCHED) requires W >=Int 128 andBool W <=Int 143
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(SWAP(W -Int 143)      ; OPS, WS, SCHED) requires W >=Int 144 andBool W <=Int 159
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(LOG(W -Int 160)       ; OPS, WS, SCHED) requires W >=Int 160 andBool W <=Int 164
+
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(PUSH(W -Int 95, #asWord(#take(W -Int 95, WS))) ; OPS, #drop(W -Int 95, WS), SCHED) requires W >=Int 96  andBool W <=Int 127
+
+    rule #revOpCodes ( OP ; OPS , OPS' ) => #revOpCodes(OPS, OP ; OPS')
+    rule #revOpCodes ( .OpCodes , OPS  ) => OPS
 
     syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [function]
  // -----------------------------------------------------------
