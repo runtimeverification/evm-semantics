@@ -411,12 +411,16 @@ Addresses
     rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeWord(ACCT) +String #rlpEncodeWord(NONCE), 192))))
 
     syntax Int ::= #sender ( Int , Int , Int , Int , Int , String , Int , WordStack , WordStack ) [function]
-                 | #sender (String , Int , String , String ) [function, klabel(#senderAux)]
+                 | #sender ( String , Int , String , String ) [function, klabel(#senderAux)]
+                 | #sender ( String ) [function, klabel(#senderAux2)]
  // --------------------------------------------------------------------------------------------------
     rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS)
          => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWord(TN) +String #rlpEncodeWord(TP) +String #rlpEncodeWord(TG) +String #rlpEncodeWord(TT) +String #rlpEncodeWord(TV) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
 
-    rule #sender(HT, TW, TR, TS) => #addr(#parseHexWord(Keccak256(ECDSARecover(HT, TW, TR, TS))))
+    rule #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
+
+    rule #sender("") => 0
+    rule #sender(STR) => #addr(#parseHexWord(Keccak256(STR))) requires STR =/=String ""
 
     syntax Int ::= #blockHeaderHash(Int, Int, Int, Int, Int, Int, WordStack, Int, Int, Int, Int, Int, WordStack, Int, Int) [function]
                  | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderStr)]
