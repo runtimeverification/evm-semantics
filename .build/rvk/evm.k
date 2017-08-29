@@ -557,12 +557,12 @@ module EVM
 //     the memory consumed.
 
 
-    syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas"
- // ----------------------------------------------------------
-    rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #memory(OP, MU) ~> #deductGas ... </k> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
+    syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas" | "#deductMemory"
+ // ----------------------------------------------------------------------------
+    rule <k> #gas [ OP ] => #memory(OP, MU) ~> #deductMemory ~> #gasExec(SCHED, OP) ~> #deductGas ... </k> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
 
-    rule <k> GEXEC:Int ~> MU':Int ~> #deductGas => #exception ... </k> requires MU' >=Int pow256
-    rule <k> (GEXEC:Int ~> MU':Int => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) +Int GEXEC)  ~> #deductGas ... </k>
+    rule <k> MU':Int ~> #deductMemory => #exception ... </k> requires MU' >=Int pow256
+    rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
       requires MU' <Int pow256
 
@@ -1397,7 +1397,7 @@ module EVM
 
     rule <k> #mkCodeDeposit ACCT 
           => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi 
-          ~> #finishCodeDeposit ACCT #asMapOpCodes(#dasmOpCodes(OUT)) ...</k>
+          ~> #finishCodeDeposit ACCT #asMapOpCodes(#dasmOpCodes(OUT))
          ...
          </k>
          <mode> EXECMODE </mode>
