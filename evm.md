@@ -1572,7 +1572,8 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
          <gas> GAVAIL </gas>
          <accounts> ACCTDATA </accounts>
          
-    rule <k> #gasExec(SCHED, DELEGATECALL GCAP ACCTTO       _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, <accounts> ACCTDATA </accounts>, GCAP, GAVAIL, 0)     ... </k>
+    rule <k> #gasExec(SCHED, DELEGATECALL GCAP _            _ _ _ _) => Ccall(SCHED, ACCTFROM, ACCTS, <accounts> ACCTDATA </accounts>, GCAP, GAVAIL, 0)     ... </k>
+         <id> ACCTFROM </id>
          <activeAccounts> ACCTS </activeAccounts>
          <gas> GAVAIL </gas>
          <accounts> ACCTDATA </accounts>
