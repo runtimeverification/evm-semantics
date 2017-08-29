@@ -720,20 +720,20 @@ Note that `_in_` ignores the arguments to operators that are parametric.
  // --------------------------------------------------
 
     syntax Map ::= #asMapOpCodes ( OpCodes )       [function]
-                 | #asMapOpCodes ( Int , OpCodes ) [function, klabel(#asMapOpCodesAux)]
- // -----------------------------------------------------------------------------------
-    rule #asMapOpCodes( OPS:OpCodes )         => #asMapOpCodes(0, OPS)
-    rule #asMapOpCodes( N , .OpCodes )        => .Map
-    rule #asMapOpCodes( N , OP:OpCode ; OCS ) => (N |-> OP) #asMapOpCodes(N +Int 1, OCS) requires notBool isPushOp(OP)
-    rule #asMapOpCodes( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #asMapOpCodes(N +Int 1 +Int M, OCS)
+                 | #asMapOpCodes ( Int , OpCodes , Map ) [function, klabel(#asMapOpCodesAux)]
+ // -----------------------------------------------------------------------------------------
+    rule #asMapOpCodes( OPS::OpCodes )         => #asMapOpCodes(0, OPS, .Map)
+    rule #asMapOpCodes( N , .OpCodes , MAP )        => MAP
+    rule #asMapOpCodes( N , OP:OpCode ; OCS , MAP ) => #asMapOpCodes(N +Int 1, OCS, MAP (N |-> OP)) requires notBool isPushOp(OP)
+    rule #asMapOpCodes( N , PUSH(M, W) ; OCS , MAP ) => #asMapOpCodes(N +Int 1 +Int M, OCS, MAP (N |-> PUSH(M, W)))
 
     syntax OpCodes ::= #asOpCodes ( Map )       [function]
-                     | #asOpCodes ( Int , Map ) [function, klabel(#asOpCodesAux)]
- // -----------------------------------------------------------------------------
-    rule #asOpCodes(M) => #asOpCodes(0, M)
-    rule #asOpCodes(N, .Map) => .OpCodes
-    rule #asOpCodes(N, N |-> OP         M) => OP         ; #asOpCodes(N +Int 1,        M) requires notBool isPushOp(OP)
-    rule #asOpCodes(N, N |-> PUSH(S, W) M) => PUSH(S, W) ; #asOpCodes(N +Int 1 +Int S, M)
+                     | #asOpCodes ( Int , Map , OpCodes ) [function, klabel(#asOpCodesAux)]
+ // ---------------------------------------------------------------------------------------
+    rule #asOpCodes(M) => #asOpCodes(0, M, .OpCodes)
+    rule #asOpCodes(N, .Map, OPS) => OPS
+    rule #asOpCodes(N, N |-> OP         M, OPS) => #asOpCodes(N +Int 1,        M, OP         ; OPS) requires notBool isPushOp(OP)
+    rule #asOpCodes(N, N |-> PUSH(S, W) M, OPS) => #asOpCodes(N +Int 1 +Int S, M, PUSH(S, W) ; OPS)
 
     syntax Int ::= #sizeOpCodeMap ( Map ) [function]
  // ------------------------------------------------
@@ -2135,18 +2135,22 @@ After interpreting the strings representing programs as a `WordStack`, it should
 
 ```{.k .uiuck .rvk}
     syntax OpCodes ::= #dasmOpCodes ( WordStack , Schedule ) [function]
- // -------------------------------------------------------------------
-    rule #dasmOpCodes( .WordStack, _ ) => .OpCodes
-    rule #dasmOpCodes( W : WS, SCHED ) => #dasmOpCode(W, SCHED) ; #dasmOpCodes(WS, SCHED) requires W >=Int 0   andBool W <=Int 95
-    rule #dasmOpCodes( W : WS, SCHED ) => #dasmOpCode(W, SCHED) ; #dasmOpCodes(WS, SCHED) requires W >=Int 165 andBool W <=Int 255
-    rule #dasmOpCodes( W : WS, SCHED ) => DUP(W -Int 127)       ; #dasmOpCodes(WS, SCHED) requires W >=Int 128 andBool W <=Int 143
-    rule #dasmOpCodes( W : WS, SCHED ) => SWAP(W -Int 143)      ; #dasmOpCodes(WS, SCHED) requires W >=Int 144 andBool W <=Int 159
-    rule #dasmOpCodes( W : WS, SCHED ) => LOG(W -Int 160)       ; #dasmOpCodes(WS, SCHED) requires W >=Int 160 andBool W <=Int 164
-    rule #dasmOpCodes( W : WS, SCHED ) => #dasmPUSH( W -Int 95 , WS, SCHED )         requires W >=Int 96  andBool W <=Int 127
+                     | #dasmOpCodes ( OpCodes , WordStack , Schedule ) [function, klabel(#dasmOpCodesAux)]
+                     | #revOpCodes  ( OpCodes , OpCodes ) [function]
+ // ------------------------------------------------------------------------------------------------------
+    rule #dasmOpCodes( WS, SCHED ) => #revOpCodes(#dasmOpCodes(.OpCodes, WS, SCHED), .OpCodes)
 
-    syntax OpCodes ::= #dasmPUSH ( Int , WordStack , Schedule ) [function]
- // ----------------------------------------------------------------------
-    rule #dasmPUSH( W , WS , SCHED ) => PUSH(W, #asWord(#take(W, WS))) ; #dasmOpCodes(#drop(W, WS), SCHED)
+    rule #dasmOpCodes( OPS, .WordStack, _ ) => OPS
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(#dasmOpCode(W, SCHED) ; OPS, WS, SCHED) requires W >=Int 0   andBool W <=Int 95
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(#dasmOpCode(W, SCHED) ; OPS, WS, SCHED) requires W >=Int 165 andBool W <=Int 255
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(DUP(W -Int 127)       ; OPS, WS, SCHED) requires W >=Int 128 andBool W <=Int 143
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(SWAP(W -Int 143)      ; OPS, WS, SCHED) requires W >=Int 144 andBool W <=Int 159
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(LOG(W -Int 160)       ; OPS, WS, SCHED) requires W >=Int 160 andBool W <=Int 164
+
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(PUSH(W -Int 95, #asWord(#take(W -Int 95, WS))) ; OPS, #drop(W -Int 95, WS), SCHED) requires W >=Int 96  andBool W <=Int 127
+
+    rule #revOpCodes ( OP ; OPS , OPS' ) => #revOpCodes(OPS, OP ; OPS')
+    rule #revOpCodes ( .OpCodes , OPS  ) => OPS
 
     syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [function]
  // -----------------------------------------------------------
@@ -2221,73 +2225,76 @@ Assembler
 
 ```{.k .uiuck .rvk}
     syntax WordStack ::= #asmOpCodes ( OpCodes ) [function]
- // -------------------------------------------------------
-    rule #asmOpCodes( .OpCodes )           => .WordStack
-    rule #asmOpCodes( STOP         ; OPS ) =>   0 : #asmOpCodes(OPS)
-    rule #asmOpCodes( ADD          ; OPS ) =>   1 : #asmOpCodes(OPS)
-    rule #asmOpCodes( MUL          ; OPS ) =>   2 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SUB          ; OPS ) =>   3 : #asmOpCodes(OPS)
-    rule #asmOpCodes( DIV          ; OPS ) =>   4 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SDIV         ; OPS ) =>   5 : #asmOpCodes(OPS)
-    rule #asmOpCodes( MOD          ; OPS ) =>   6 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SMOD         ; OPS ) =>   7 : #asmOpCodes(OPS)
-    rule #asmOpCodes( ADDMOD       ; OPS ) =>   8 : #asmOpCodes(OPS)
-    rule #asmOpCodes( MULMOD       ; OPS ) =>   9 : #asmOpCodes(OPS)
-    rule #asmOpCodes( EXP          ; OPS ) =>  10 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SIGNEXTEND   ; OPS ) =>  11 : #asmOpCodes(OPS)
-    rule #asmOpCodes( LT           ; OPS ) =>  16 : #asmOpCodes(OPS)
-    rule #asmOpCodes( GT           ; OPS ) =>  17 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SLT          ; OPS ) =>  18 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SGT          ; OPS ) =>  19 : #asmOpCodes(OPS)
-    rule #asmOpCodes( EQ           ; OPS ) =>  20 : #asmOpCodes(OPS)
-    rule #asmOpCodes( ISZERO       ; OPS ) =>  21 : #asmOpCodes(OPS)
-    rule #asmOpCodes( AND          ; OPS ) =>  22 : #asmOpCodes(OPS)
-    rule #asmOpCodes( EVMOR        ; OPS ) =>  23 : #asmOpCodes(OPS)
-    rule #asmOpCodes( XOR          ; OPS ) =>  24 : #asmOpCodes(OPS)
-    rule #asmOpCodes( NOT          ; OPS ) =>  25 : #asmOpCodes(OPS)
-    rule #asmOpCodes( BYTE         ; OPS ) =>  26 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SHA3         ; OPS ) =>  32 : #asmOpCodes(OPS)
-    rule #asmOpCodes( ADDRESS      ; OPS ) =>  48 : #asmOpCodes(OPS)
-    rule #asmOpCodes( BALANCE      ; OPS ) =>  49 : #asmOpCodes(OPS)
-    rule #asmOpCodes( ORIGIN       ; OPS ) =>  50 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CALLER       ; OPS ) =>  51 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CALLVALUE    ; OPS ) =>  52 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CALLDATALOAD ; OPS ) =>  53 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CALLDATASIZE ; OPS ) =>  54 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CALLDATACOPY ; OPS ) =>  55 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CODESIZE     ; OPS ) =>  56 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CODECOPY     ; OPS ) =>  57 : #asmOpCodes(OPS)
-    rule #asmOpCodes( GASPRICE     ; OPS ) =>  58 : #asmOpCodes(OPS)
-    rule #asmOpCodes( EXTCODESIZE  ; OPS ) =>  59 : #asmOpCodes(OPS)
-    rule #asmOpCodes( EXTCODECOPY  ; OPS ) =>  60 : #asmOpCodes(OPS)
-    rule #asmOpCodes( BLOCKHASH    ; OPS ) =>  64 : #asmOpCodes(OPS)
-    rule #asmOpCodes( COINBASE     ; OPS ) =>  65 : #asmOpCodes(OPS)
-    rule #asmOpCodes( TIMESTAMP    ; OPS ) =>  66 : #asmOpCodes(OPS)
-    rule #asmOpCodes( NUMBER       ; OPS ) =>  67 : #asmOpCodes(OPS)
-    rule #asmOpCodes( DIFFICULTY   ; OPS ) =>  68 : #asmOpCodes(OPS)
-    rule #asmOpCodes( GASLIMIT     ; OPS ) =>  69 : #asmOpCodes(OPS)
-    rule #asmOpCodes( POP          ; OPS ) =>  80 : #asmOpCodes(OPS)
-    rule #asmOpCodes( MLOAD        ; OPS ) =>  81 : #asmOpCodes(OPS)
-    rule #asmOpCodes( MSTORE       ; OPS ) =>  82 : #asmOpCodes(OPS)
-    rule #asmOpCodes( MSTORE8      ; OPS ) =>  83 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SLOAD        ; OPS ) =>  84 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SSTORE       ; OPS ) =>  85 : #asmOpCodes(OPS)
-    rule #asmOpCodes( JUMP         ; OPS ) =>  86 : #asmOpCodes(OPS)
-    rule #asmOpCodes( JUMPI        ; OPS ) =>  87 : #asmOpCodes(OPS)
-    rule #asmOpCodes( PC           ; OPS ) =>  88 : #asmOpCodes(OPS)
-    rule #asmOpCodes( MSIZE        ; OPS ) =>  89 : #asmOpCodes(OPS)
-    rule #asmOpCodes( GAS          ; OPS ) =>  90 : #asmOpCodes(OPS)
-    rule #asmOpCodes( JUMPDEST     ; OPS ) =>  91 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CREATE       ; OPS ) => 240 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CALL         ; OPS ) => 241 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CALLCODE     ; OPS ) => 242 : #asmOpCodes(OPS)
-    rule #asmOpCodes( RETURN       ; OPS ) => 243 : #asmOpCodes(OPS)
-    rule #asmOpCodes( DELEGATECALL ; OPS ) => 244 : #asmOpCodes(OPS)
-    rule #asmOpCodes( INVALID(W)   ; OPS ) => W   : #asmOpCodes(OPS)
-    rule #asmOpCodes( SELFDESTRUCT ; OPS ) => 255 : #asmOpCodes(OPS)
-    rule #asmOpCodes( DUP(W)       ; OPS ) => W +Int 127 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SWAP(W)      ; OPS ) => W +Int 143 : #asmOpCodes(OPS)
-    rule #asmOpCodes( LOG(W)       ; OPS ) => W +Int 160 : #asmOpCodes(OPS)
-    rule #asmOpCodes( PUSH(N, W)   ; OPS ) => N +Int 95  : (#padToWidth(N, #asByteStack(W)) ++ #asmOpCodes(OPS))
+                       | #asmOpCodes ( OpCodes , WordStack ) [function, klabel(#asmOpCodesAux)]
+ // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    rule #asmOpCodes( OPS ) => #asmOpCodes( OPS , .WordStack)
+
+    rule #asmOpCodes( .OpCodes , WS )           => WS
+    rule #asmOpCodes( STOP         ; OPS , WS ) => #asmOpCodes(OPS,   0 : WS)
+    rule #asmOpCodes( ADD          ; OPS , WS ) => #asmOpCodes(OPS,   1 : WS)
+    rule #asmOpCodes( MUL          ; OPS , WS ) => #asmOpCodes(OPS,   2 : WS)
+    rule #asmOpCodes( SUB          ; OPS , WS ) => #asmOpCodes(OPS,   3 : WS)
+    rule #asmOpCodes( DIV          ; OPS , WS ) => #asmOpCodes(OPS,   4 : WS)
+    rule #asmOpCodes( SDIV         ; OPS , WS ) => #asmOpCodes(OPS,   5 : WS)
+    rule #asmOpCodes( MOD          ; OPS , WS ) => #asmOpCodes(OPS,   6 : WS)
+    rule #asmOpCodes( SMOD         ; OPS , WS ) => #asmOpCodes(OPS,   7 : WS)
+    rule #asmOpCodes( ADDMOD       ; OPS , WS ) => #asmOpCodes(OPS,   8 : WS)
+    rule #asmOpCodes( MULMOD       ; OPS , WS ) => #asmOpCodes(OPS,   9 : WS)
+    rule #asmOpCodes( EXP          ; OPS , WS ) => #asmOpCodes(OPS,  10 : WS)
+    rule #asmOpCodes( SIGNEXTEND   ; OPS , WS ) => #asmOpCodes(OPS,  11 : WS)
+    rule #asmOpCodes( LT           ; OPS , WS ) => #asmOpCodes(OPS,  16 : WS)
+    rule #asmOpCodes( GT           ; OPS , WS ) => #asmOpCodes(OPS,  17 : WS)
+    rule #asmOpCodes( SLT          ; OPS , WS ) => #asmOpCodes(OPS,  18 : WS)
+    rule #asmOpCodes( SGT          ; OPS , WS ) => #asmOpCodes(OPS,  19 : WS)
+    rule #asmOpCodes( EQ           ; OPS , WS ) => #asmOpCodes(OPS,  20 : WS)
+    rule #asmOpCodes( ISZERO       ; OPS , WS ) => #asmOpCodes(OPS,  21 : WS)
+    rule #asmOpCodes( AND          ; OPS , WS ) => #asmOpCodes(OPS,  22 : WS)
+    rule #asmOpCodes( EVMOR        ; OPS , WS ) => #asmOpCodes(OPS,  23 : WS)
+    rule #asmOpCodes( XOR          ; OPS , WS ) => #asmOpCodes(OPS,  24 : WS)
+    rule #asmOpCodes( NOT          ; OPS , WS ) => #asmOpCodes(OPS,  25 : WS)
+    rule #asmOpCodes( BYTE         ; OPS , WS ) => #asmOpCodes(OPS,  26 : WS)
+    rule #asmOpCodes( SHA3         ; OPS , WS ) => #asmOpCodes(OPS,  32 : WS)
+    rule #asmOpCodes( ADDRESS      ; OPS , WS ) => #asmOpCodes(OPS,  48 : WS)
+    rule #asmOpCodes( BALANCE      ; OPS , WS ) => #asmOpCodes(OPS,  49 : WS)
+    rule #asmOpCodes( ORIGIN       ; OPS , WS ) => #asmOpCodes(OPS,  50 : WS)
+    rule #asmOpCodes( CALLER       ; OPS , WS ) => #asmOpCodes(OPS,  51 : WS)
+    rule #asmOpCodes( CALLVALUE    ; OPS , WS ) => #asmOpCodes(OPS,  52 : WS)
+    rule #asmOpCodes( CALLDATALOAD ; OPS , WS ) => #asmOpCodes(OPS,  53 : WS)
+    rule #asmOpCodes( CALLDATASIZE ; OPS , WS ) => #asmOpCodes(OPS,  54 : WS)
+    rule #asmOpCodes( CALLDATACOPY ; OPS , WS ) => #asmOpCodes(OPS,  55 : WS)
+    rule #asmOpCodes( CODESIZE     ; OPS , WS ) => #asmOpCodes(OPS,  56 : WS)
+    rule #asmOpCodes( CODECOPY     ; OPS , WS ) => #asmOpCodes(OPS,  57 : WS)
+    rule #asmOpCodes( GASPRICE     ; OPS , WS ) => #asmOpCodes(OPS,  58 : WS)
+    rule #asmOpCodes( EXTCODESIZE  ; OPS , WS ) => #asmOpCodes(OPS,  59 : WS)
+    rule #asmOpCodes( EXTCODECOPY  ; OPS , WS ) => #asmOpCodes(OPS,  60 : WS)
+    rule #asmOpCodes( BLOCKHASH    ; OPS , WS ) => #asmOpCodes(OPS,  64 : WS)
+    rule #asmOpCodes( COINBASE     ; OPS , WS ) => #asmOpCodes(OPS,  65 : WS)
+    rule #asmOpCodes( TIMESTAMP    ; OPS , WS ) => #asmOpCodes(OPS,  66 : WS)
+    rule #asmOpCodes( NUMBER       ; OPS , WS ) => #asmOpCodes(OPS,  67 : WS)
+    rule #asmOpCodes( DIFFICULTY   ; OPS , WS ) => #asmOpCodes(OPS,  68 : WS)
+    rule #asmOpCodes( GASLIMIT     ; OPS , WS ) => #asmOpCodes(OPS,  69 : WS)
+    rule #asmOpCodes( POP          ; OPS , WS ) => #asmOpCodes(OPS,  80 : WS)
+    rule #asmOpCodes( MLOAD        ; OPS , WS ) => #asmOpCodes(OPS,  81 : WS)
+    rule #asmOpCodes( MSTORE       ; OPS , WS ) => #asmOpCodes(OPS,  82 : WS)
+    rule #asmOpCodes( MSTORE8      ; OPS , WS ) => #asmOpCodes(OPS,  83 : WS)
+    rule #asmOpCodes( SLOAD        ; OPS , WS ) => #asmOpCodes(OPS,  84 : WS)
+    rule #asmOpCodes( SSTORE       ; OPS , WS ) => #asmOpCodes(OPS,  85 : WS)
+    rule #asmOpCodes( JUMP         ; OPS , WS ) => #asmOpCodes(OPS,  86 : WS)
+    rule #asmOpCodes( JUMPI        ; OPS , WS ) => #asmOpCodes(OPS,  87 : WS)
+    rule #asmOpCodes( PC           ; OPS , WS ) => #asmOpCodes(OPS,  88 : WS)
+    rule #asmOpCodes( MSIZE        ; OPS , WS ) => #asmOpCodes(OPS,  89 : WS)
+    rule #asmOpCodes( GAS          ; OPS , WS ) => #asmOpCodes(OPS,  90 : WS)
+    rule #asmOpCodes( JUMPDEST     ; OPS , WS ) => #asmOpCodes(OPS,  91 : WS)
+    rule #asmOpCodes( CREATE       ; OPS , WS ) => #asmOpCodes(OPS, 240 : WS)
+    rule #asmOpCodes( CALL         ; OPS , WS ) => #asmOpCodes(OPS, 241 : WS)
+    rule #asmOpCodes( CALLCODE     ; OPS , WS ) => #asmOpCodes(OPS, 242 : WS)
+    rule #asmOpCodes( RETURN       ; OPS , WS ) => #asmOpCodes(OPS, 243 : WS)
+    rule #asmOpCodes( DELEGATECALL ; OPS , WS ) => #asmOpCodes(OPS, 244 : WS)
+    rule #asmOpCodes( INVALID(W)   ; OPS , WS ) => #asmOpCodes(OPS, W   : WS)
+    rule #asmOpCodes( SELFDESTRUCT ; OPS , WS ) => #asmOpCodes(OPS, 255 : WS)
+    rule #asmOpCodes( DUP(W)       ; OPS , WS ) => #asmOpCodes(OPS, W +Int 127 : WS)
+    rule #asmOpCodes( SWAP(W)      ; OPS , WS ) => #asmOpCodes(OPS, W +Int 143 : WS)
+    rule #asmOpCodes( LOG(W)       ; OPS , WS ) => #asmOpCodes(OPS, W +Int 160 : WS)
+    rule #asmOpCodes( PUSH(N, W)   ; OPS , WS ) => #asmOpCodes(OPS, N +Int 95 : (#padToWidth(N, #asByteStack(W)) ++ WS))
 endmodule
 ```

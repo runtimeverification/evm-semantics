@@ -14,7 +14,7 @@ module VERIFICATION
 This `smt-lemma` helps Z3 reason about stack over/under flow.
 
 ```{.k .uiuck}
-    rule #sizeWordStack ( _ ) >=Int 0 => true [smt-lemma]
+    rule #sizeWordStack ( _, N ) >=Int N => true [smt-lemma]
 ```
 
 Sum to N
