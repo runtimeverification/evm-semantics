@@ -33,7 +33,8 @@ These can be ambiguities/confusing wording in the Yellow Paper.
 -   The description in Appendix H of the DELEGATECALL instruction describes the gas provided to the caller as equal to Mu_s[0].
     However, this is clearly not the correct behavior, since Mu_s[0] is a user-provided value, and the user could set it
     equal to 2 ^ 256 - 1, leading to the user having an infinite amount of gas. It's clear from the test suite that the intended
-    behavior is to use Ccallgas but with the value for the value transfer equal to 0.
+    behavior is to use Ccallgas but with the value for the value transfer equal to 0. It also mistakenly describes the exceptional condition
+    of not enough balance in terms of I_v, but in fact no value transfer occurs so this condition should never occur.
 Issues with design of EVM
 -------------------------
 
