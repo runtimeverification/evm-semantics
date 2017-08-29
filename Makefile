@@ -69,7 +69,6 @@ vm-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
 		  tests/VMTests/vmInputLimitsLight/make.timestamp
 
 blockchain-tests: tests/BlockchainTests/GeneralStateTests/stAttackTest/ContractCreationSpam/make.timestamp \
-				  tests/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_AcreateB_BSuicide_BStore/make.timestamp \
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBlockHashTest/*.json)) \
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCodes/*.json)) \
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/*.json)) \
@@ -77,6 +76,13 @@ blockchain-tests: tests/BlockchainTests/GeneralStateTests/stAttackTest/ContractC
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallDelegateCodesHomestead/*.json)) \
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stChangedEIP150/*.json)) \
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCodeSizeLimit/*.json)) \
+				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/*.json)) \
+				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/*.json)) \
+				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP150Specific/*.json)) \
+				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP150singleCodeGasPrices/*.json)) \
+				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP157Specific/*.json)) \
+				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/*.json)) \
+				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stHomesteadSpecific/*.json)) \
 
 #passing_test_file=tests/passing.expected
 #blockchain_tests=$(shell cat ${passing_test_file})
