@@ -1306,7 +1306,7 @@ module EVM
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #checkCall ACCTFROM VALUE
+           => #checkCall ACCTFROM 0
            ~> #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTFROM, ACCTS, <accounts> ACCTDATA </accounts>, GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH)
            ~> #return RETSTART RETWIDTH
            ...
