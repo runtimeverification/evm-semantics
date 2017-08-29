@@ -1274,14 +1274,6 @@ module EVM
          <localMem> LM => LM [ START := #take(minInt(WIDTH, #sizeWordStack(WS)), WS) ] </localMem>
 
 
-// -   `#precompiled` is a placeholder for the 4 pre-compiled contracts at
-//     addresses 1 through 4.
-
-
-    syntax InternalOp ::= #precompiled ( Int )
- // ------------------------------------------
-
-
 // For each `CALL*` operation, we make a corresponding call to `#call` and a
 // state-change to setup the custom parts of the calling environment.
 
@@ -1483,6 +1475,58 @@ module EVM
          </account>
 
 
+// Precompiled Contracts
+// =====================
+
+// -   `#precompiled` is a placeholder for the 4 pre-compiled contracts at
+//     addresses 1 through 4.
+
+
+    syntax NullStackOp   ::= PrecompiledOp
+    syntax PrecompiledOp ::= #precompiled ( Int ) [function]
+ // --------------------------------------------------------
+    rule #precompiled(1) => ECREC
+    rule #precompiled(2) => SHA256
+    rule #precompiled(3) => RIP160
+    rule #precompiled(4) => ID
+
+
+// -   `ECREC` performs ECDSA public key recovery.
+// -   `SHA256` performs the SHA2-257 hash function.
+// -   `RIP160` performs the RIPEMD-160 hash function.
+// -   `ID` is the identity function (copies input to output).
+
+
+    syntax PrecompiledOp ::= "ECREC"
+ // --------------------------------
+    rule <k> ECREC => #end ... </k>
+         <callData> DATA </callData>
+         <output> _ => #ecrec(#sender(#unparseByteStack(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #unparseByteStack(DATA [ 64 .. 32 ]), #unparseByteStack(DATA [ 96 .. 32 ]))) </output>
+
+    syntax WordStack ::= #ecrec ( Int ) [function]
+ // ----------------------------------------------
+    rule #ecrec(0) => .WordStack
+    rule #ecrec(N) => #padToWidth(32, #asByteStack(N)) requires N >Int 0
+
+    syntax PrecompiledOp ::= "SHA256"
+ // ---------------------------------
+    rule <k> SHA256 => #end ... </k>
+         <callData> DATA </callData>
+         <output> _ => #parseHexBytes(Sha256(#unparseByteStack(DATA))) </output>
+
+    syntax PrecompiledOp ::= "RIP160"
+ // ---------------------------------
+    rule <k> RIP160 => #end ... </k>
+         <callData> DATA </callData>
+         <output> _ => #padToWidth(32, #parseHexBytes(RipEmd160(#unparseByteStack(DATA)))) </output>
+
+    syntax PrecompiledOp ::= "ID"
+ // -----------------------------
+    rule <k> ID => #end ... </k>
+         <callData> DATA </callData>
+         <output> _ => DATA </output>
+
+
 // Ethereum Gas Calculation
 // ========================
 
@@ -1585,6 +1629,8 @@ module EVM
     rule #memory(EXTCODESIZE _,  MU) => MU
     rule #memory(BALANCE _,      MU) => MU
     rule #memory(BLOCKHASH _,    MU) => MU
+
+    rule #memory(_:PrecompiledOp, MU) => MU
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
  // ----------------------------------------------------------------
@@ -1714,6 +1760,12 @@ module EVM
     rule <k> #gasExec(SCHED, EXTCODESIZE _) => Gextcodesize < SCHED > ... </k>
     rule <k> #gasExec(SCHED, BALANCE _)     => Gbalance     < SCHED > ... </k>
     rule <k> #gasExec(SCHED, BLOCKHASH _)   => Gblockhash   < SCHED > ... </k>
+
+    // Precompiled
+    rule <k> #gasExec(_, ECREC)  => 3000 ... </k>
+    rule <k> #gasExec(_, SHA256) =>  60 +Int  12 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, RIP160) => 600 +Int 120 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, ID)     =>  15 +Int   3 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
 
 
 // There are several helpers for calculating gas (most of them also specified in
