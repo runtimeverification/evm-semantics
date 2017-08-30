@@ -731,14 +731,22 @@ module EVM
 
 
 // -   `#newAccount_` allows declaring a new empty account with the given address
-//     (and assumes the rounding to 160 bits has already occured).
+//     (and assumes the rounding to 160 bits has already occured). If the account
+//     already exists, the nonce is zeroed, and the code is reset. However, in
+//     accordance with the behavior of contract creation, the value and storage
+//     is persisted.
 
 
     syntax InternalOp ::= "#newAccount" Int
  // ---------------------------------------
     rule <k> #newAccount ACCT => . ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires ACCT in ACCTS
+         <account>
+           <acctID>  ACCT </acctID>
+           <code>    _ => .Map </code>
+           <nonce>   _ => 0 </nonce>
+          ...
+         </account>
 
     rule <k> #newAccount ACCT => . ... </k>
          <activeAccounts> ACCTS (.Set => SetItem(ACCT)) </activeAccounts>
@@ -1347,6 +1355,7 @@ module EVM
 
     rule #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
            => #pushCallStack ~> #pushWorldState ~> #pushSubstate
+           ~> #newAccount ACCTTO
            ~> #transferFunds ACCTFROM ACCTTO VALUE
            ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
 
