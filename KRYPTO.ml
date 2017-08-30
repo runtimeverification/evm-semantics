@@ -1,24 +1,5 @@
 open Constants.K
 
-
-let gethex = function
-| '0' -> 0
-| '1' -> 1
-| '2' -> 2
-| '3' -> 3
-| '4' -> 4
-| '5' -> 5
-| '6' -> 6
-| '7' -> 7
-| '8' -> 8
-| '9' -> 9
-| 'a' -> 10
-| 'b' -> 11
-| 'c' -> 12
-| 'd' -> 13
-| 'e' -> 14
-| 'f' -> 15
-
 let do_hash str h =
   let bytes = Cryptokit.hash_string h str in
   let buf = Buffer.create ((String.length bytes) * 2) in
@@ -29,16 +10,19 @@ let hook_sha256 c lbl sort config ff = match c with
   [String str] ->
   let h = Cryptokit.Hash.sha2 256 in
   do_hash str h
+| _ -> failwith "sha256"
 
 let hook_keccak256 c lbl sort config ff = match c with
   [String str] ->
   let h = Cryptokit.Hash.keccak 256 in
   do_hash str h
+| _ -> failwith "keccak256"
 
 let hook_ripemd160 c lbl sort config ff = match c with
   [String str] ->
   let h = Cryptokit.Hash.ripemd160 () in
   do_hash str h
+| _ -> failwith "ripemd160"
 
 let hook_ecdsaRecover c lbl sort config ff = match c with
   [String hash], [Int v], [String r], [String s] ->
@@ -47,7 +31,7 @@ let hook_ecdsaRecover c lbl sort config ff = match c with
   let signatureArray = Array.init 64 (fun idx -> signatureString.[idx]) in
   let signatureBuffer = Bigarray.Array1.of_array Bigarray.char Bigarray.c_layout signatureArray in
   let context = Secp256k1.Context.create [Secp256k1.Context.Sign; Secp256k1.Context.Verify] in
-  try
+  (try
     let v = Z.to_int v in
     if v < 27 || v > 28 then [String ""] else
     let signature = Secp256k1.RecoverableSign.of_compact_exn context signatureBuffer (v - 27) in
@@ -60,5 +44,5 @@ let hook_ecdsaRecover c lbl sort config ff = match c with
     let publicStr = String.init 64 (fun idx -> Bigarray.Array1.get publicBuffer (idx + 1)) in
     [String publicStr]
   with Failure _ -> [String ""]
-  |    Z.Overflow -> [String ""]
-
+  |    Z.Overflow -> [String ""])
+| _ -> failwith "ecdsaRecover"
