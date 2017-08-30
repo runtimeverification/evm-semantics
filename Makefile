@@ -88,7 +88,6 @@ blockchain-tests: tests/BlockchainTests/GeneralStateTests/stAttackTest/ContractC
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stMemExpandingEIP150Calls/*.json)) \
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stNonZeroCallsTest/*.json)) \
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stPreCompiledContracts/*.json)) \
-				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*.json)) \
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/*.json)) \
 
 #passing_test_file=tests/passing.expected
