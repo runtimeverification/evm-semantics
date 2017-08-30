@@ -765,13 +765,29 @@ These are just used by the other operators for shuffling local execution state a
 ```
 
 -   `#newAccount_` allows declaring a new empty account with the given address (and assumes the rounding to 160 bits has already occured).
+    If the account already exists with non-zero nonce or non-empty code, an exception is thrown.
+    Otherwise, if the account already exists, the storage is cleared.
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#newAccount" Int
  // ---------------------------------------
+    rule <k> #newAccount ACCT => #exception ... </k>
+         <account>
+           <acctID> ACCT  </acctID>
+           <code>   CODE  </code>
+           <nonce>  NONCE </nonce>
+           ...
+         </account>
+      requires CODE =/=K .Map orBool NONCE =/=K 0
+
     rule <k> #newAccount ACCT => . ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires ACCT in_keys(ACCTS)
+         <account>
+           <acctID>  ACCT      </acctID>
+           <code>    .Map      </code>
+           <nonce>   0         </nonce>
+           <storage> _ => .Map </storage>
+           ...
+         </account>
 
     rule <k> #newAccount ACCT => . ... </k>
          <activeAccounts> ACCTS (.Map => ACCT |-> true) </activeAccounts>
@@ -1367,6 +1383,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     rule #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
       => #pushCallStack ~> #pushWorldState ~> #pushSubstate
+      ~> #newAccount ACCTTO
       ~> #transferFunds ACCTFROM ACCTTO VALUE
       ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
 
