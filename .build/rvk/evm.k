@@ -1335,11 +1335,12 @@ module EVM
       requires VALUE >Int BAL orBool CD >=Int 1024
 
     rule <k> #checkCreate ACCT VALUE => . ... </k>
+         <mode> EXECMODE </mode>
          <callDepth> CD </callDepth>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
-           <nonce> NONCE => NONCE +Int 1 </nonce>
+           <nonce> NONCE => #if EXECMODE ==K VMTESTS #then NONCE #else NONCE +Int 1 #fi </nonce>
           ...
          </account>
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
