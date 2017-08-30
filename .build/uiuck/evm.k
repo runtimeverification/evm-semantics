@@ -765,14 +765,30 @@ module EVM
 
 
 // -   `#newAccount_` allows declaring a new empty account with the given address
-//     (and assumes the rounding to 160 bits has already occured).
+//     (and assumes the rounding to 160 bits has already occured). If the account
+//     already exists with nonzero nonce or nonempty code, an exception is thrown.
+//     Otherwise, if the account already exists, the storage is cleared.
 
 
     syntax InternalOp ::= "#newAccount" Int
  // ---------------------------------------
+    rule <k> #newAccount ACCT => #exception ... </k>
+         <account>
+           <acctID> ACCT  </acctID>
+           <code>   CODE  </code>
+           <nonce>  NONCE </nonce>
+          ...
+         </account>
+      requires CODE =/=K .Map orBool NONCE =/=K 0
+
     rule <k> #newAccount ACCT => . ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires ACCT in_keys(ACCTS)
+         <account>
+           <acctID>  ACCT      </acctID>
+           <code>    .Map      </code>
+           <nonce>   0         </nonce>
+           <storage> _ => .Map </storage>
+          ...
+         </account>
 
     rule <k> #newAccount ACCT => . ... </k>
          <activeAccounts> ACCTS (.Map => ACCT |-> true) </activeAccounts>
@@ -1384,6 +1400,7 @@ module EVM
 
     rule #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
            => #pushCallStack ~> #pushWorldState ~> #pushSubstate
+           ~> #newAccount ACCTTO
            ~> #transferFunds ACCTFROM ACCTTO VALUE
            ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
 
