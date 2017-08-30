@@ -408,7 +408,7 @@ Addresses
 ```{.k .uiuck .rvk}
     syntax Int ::= #newAddr ( Int , Int ) [function]
  // ------------------------------------------------
-    rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeWord(ACCT) +String #rlpEncodeWord(NONCE), 192))))
+    rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeWord(NONCE), 192))))
 
     syntax Int ::= #sender ( Int , Int , Int , Int , Int , String , Int , WordStack , WordStack ) [function]
                  | #sender ( String , Int , String , String ) [function, klabel(#senderAux)]
