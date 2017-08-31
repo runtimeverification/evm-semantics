@@ -415,7 +415,7 @@ Addresses
                  | #sender ( String ) [function, klabel(#senderAux2)]
  // --------------------------------------------------------------------------------------------------
     rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS)
-         => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWord(TN) +String #rlpEncodeWord(TP) +String #rlpEncodeWord(TG) +String #rlpEncodeWord(TT) +String #rlpEncodeWord(TV) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
+         => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWord(TN) +String #rlpEncodeWord(TP) +String #rlpEncodeWord(TG) +String #if TT ==Int 0 #then "\x80" #else #rlpEncodeBytes(TT, 20) #fi +String #rlpEncodeWord(TV) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
 
     rule #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
 
