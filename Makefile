@@ -68,7 +68,8 @@ vm-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
 		  tests/VMTests/vmInputLimits/make.timestamp \
 		  tests/VMTests/vmInputLimitsLight/make.timestamp
 
-blockchain-tests: tests/BlockchainTests/GeneralStateTests/stAttackTest/ContractCreationSpam/make.timestamp \
+blockchain-tests: \
+				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stAttackTest/*.json)) \
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBlockHashTest/*.json)) \
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCodes/*.json)) \
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/*.json)) \
