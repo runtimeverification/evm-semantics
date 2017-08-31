@@ -47,9 +47,9 @@ module APPROVE-SPEC
          <gas>         G                    => G -Int 5269  </gas>
          <previousGas> _                    => _            </previousGas>
 
-         <selfDestruct> .Set      </selfDestruct>
-         <log>          .Set => _ </log>
-         <refund>       0    => _ </refund>
+         <selfDestruct> .Set       </selfDestruct>
+         <log>          .List => _ </log>
+         <refund>       0     => _ </refund>
 
          <gasPrice>     _               </gasPrice>
          <origin>       %ORIGIN_ID      </origin>

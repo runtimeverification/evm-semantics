@@ -50,7 +50,7 @@ module TRANSFER-FROM-SPEC
          <difficulty>   256             </difficulty>
 
          <selfDestruct>   .Set               </selfDestruct>
-         <log>            .Set               </log>
+         <log>            .List              </log>
          <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <messages>       .Bag               </messages>
 
