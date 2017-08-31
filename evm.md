@@ -722,14 +722,28 @@ These are just used by the other operators for shuffling local execution state a
     rule <k> #setStack WS    => . ... </k> <wordStack> _  => WS      </wordStack>
 ```
 
--   `#newAccount_` allows declaring a new empty account with the given address (and assumes the rounding to 160 bits has already occured). If the account already exists, the nonce is zeroed, and the code is reset. However, in accordance with the behavior of contract creation, the value and storage is persisted.
+-   `#newAccount_` allows declaring a new empty account with the given address (and assumes the rounding to 160 bits has already occured). If the account already exists with nonzero nonce or nonempty code, an exception is thrown. Otherwise, if the account already exists, the storage is cleared.
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#newAccount" Int
  // ---------------------------------------
     rule <k> #newAccount ACCT => #exception ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires ACCT in ACCTS
+         <account>
+           <acctID> ACCT  </acctID>
+           <code>   CODE  </code>
+           <nonce>  NONCE </nonce>
+          ...
+         </account>
+      requires CODE =/=K .Map orBool NONCE =/=K 0
+
+    rule <k> #newAccount ACCT => . ... </k>
+         <account>
+           <acctID>  ACCT      </acctID>
+           <code>    .Map      </code>
+           <nonce>   0         </nonce>
+           <storage> _ => .Map </storage>
+          ...
+         </account>
 
     rule <k> #newAccount ACCT => . ... </k>
          <activeAccounts> ACCTS (.Set => SetItem(ACCT)) </activeAccounts>
