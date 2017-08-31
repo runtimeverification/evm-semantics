@@ -101,7 +101,8 @@ blockchain-tests: \
 #blockchain_tests=$(shell cat ${passing_test_file})
 blockchain_tests=$(wildcard tests/BlockchainTests/*/*/*/*.json)
 all_tests=$(wildcard tests/VMTests/*/*.json) ${blockchain_tests}
-skipped_tests=$(wildcard tests/VMTests/vmPerformanceTest/*.json) tests/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1021.json $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Metropolis.json)
+skipped_tests=$(wildcard tests/VMTests/vmPerformanceTest/*.json) tests/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1021.json $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Byzantium.json) $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Constantinople.json)
+
 passing_tests=$(filter-out ${skipped_tests}, ${all_tests})
 passing_blockchain_tests=$(filter-out ${skipped_tests}, ${blockchain_tests})
 passing_targets=${passing_tests:=.test}
