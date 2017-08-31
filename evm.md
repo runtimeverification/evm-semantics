@@ -692,6 +692,26 @@ After executing a transaction, it's necessary to have the effect of the substate
            ...
          </message>
          <activeAccounts> ... ORG |-> (_ => false) MINER |-> (_ => false) ... </activeAccounts>
+      requires ORG =/=Int MINER
+
+    rule <k> #finalizeTx(false => true) ... </k>
+         <mode> NORMAL </mode>
+         <origin> ACCT </origin>
+         <coinbase> ACCT </coinbase>
+         <refund> 0 </refund>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL => BAL +Int GLIMIT *Int GPRICE </balance>
+          ...
+         </account>
+         <txPending> ListItem(MsgId:Int) => .List ... </txPending>
+         <message>
+           <msgID> MsgId </msgID>
+           <txGasLimit> GLIMIT </txGasLimit>
+           <txGasPrice> GPRICE </txGasPrice>
+           ...
+         </message>
+         <activeAccounts> ... ACCT |-> (_ => false) ... </activeAccounts>
 
     rule <k> #finalizeTx(true) ... </k>
          <selfDestruct> ... (SetItem(ACCT) => .Set) </selfDestruct>
