@@ -739,14 +739,9 @@ module EVM
 
     syntax InternalOp ::= "#newAccount" Int
  // ---------------------------------------
-    rule <k> #newAccount ACCT => . ... </k>
+    rule <k> #newAccount ACCT => #exception ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-         <account>
-           <acctID>  ACCT </acctID>
-           <code>    _ => .Map </code>
-           <nonce>   _ => 0 </nonce>
-          ...
-         </account>
+      requires ACCT in ACCTS
 
     rule <k> #newAccount ACCT => . ... </k>
          <activeAccounts> ACCTS (.Set => SetItem(ACCT)) </activeAccounts>
