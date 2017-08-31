@@ -693,6 +693,26 @@ module EVM
            ...
          </message>
          <activeAccounts> ... ORG |-> (ORGEMPTY => #if GAVAIL *Int GPRICE >Int 0 #then false #else ORGEMPTY #fi) MINER |-> (MINEMPTY => #if (GLIMIT -Int GAVAIL) *Int GPRICE >Int 0 #then false #else MINEMPTY #fi) ... </activeAccounts>
+      requires ORG =/=Int MINER
+
+    rule <k> #finalizeTx(false => true) ... </k>
+         <mode> NORMAL </mode>
+         <origin> ACCT </origin>
+         <coinbase> ACCT </coinbase>
+         <refund> 0 </refund>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL => BAL +Int GLIMIT *Int GPRICE </balance>
+           ...
+         </account>
+         <txPending> ListItem(MsgId:Int) => .List ... </txPending>
+         <message>
+           <msgID> MsgId </msgID>
+           <txGasLimit> GLIMIT </txGasLimit>
+           <txGasPrice> GPRICE </txGasPrice>
+           ...
+         </message>
+         <activeAccounts> ... ACCT |-> (EMPTY => #if GLIMIT *Int GPRICE >Int 0 #then false #else EMPTY #fi) ... </activeAccounts>
 
     rule <k> #finalizeTx(true) ... </k>
          <selfDestruct> ... (SetItem(ACCT) => .Set) </selfDestruct>
