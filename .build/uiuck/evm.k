@@ -71,9 +71,9 @@ module EVM
 
                       // A_* (execution substate)
                       <substate>
-                        <selfDestruct> .Set </selfDestruct>             // A_s
-                        <log>          .Set </log>                      // A_l
-                        <refund>       0    </refund>                   // A_r
+                        <selfDestruct> .Set  </selfDestruct>            // A_s
+                        <log>          .List </log>                     // A_l
+                        <refund>       0     </refund>                  // A_r
                       </substate>
 
                       // Immutable during a single transaction
@@ -1067,7 +1067,7 @@ module EVM
          <id> ACCT </id>
          <wordStack> WS => #drop(N, WS) </wordStack>
          <localMem> LM </localMem>
-         <log> ... (.Set => SetItem({ ACCT | #take(N, WS) | #range(LM, MEMSTART, MEMWIDTH) })) </log>
+         <log> ... (.List => ListItem({ ACCT | #take(N, WS) | #range(LM, MEMSTART, MEMWIDTH) })) </log>
       requires #sizeWordStack(WS) >=Int N
 
 

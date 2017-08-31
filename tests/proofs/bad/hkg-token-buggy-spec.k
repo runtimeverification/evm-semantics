@@ -36,7 +36,7 @@ module TOKEN-SPEC
          <previousGas>  _      => _    </previousGas>
 
          <selfDestruct> .Set    </selfDestruct>
-         <log>          .Set    </log>
+         <log>          .List   </log>
          <refund>       0  => _ </refund>
 
          <gasPrice>     _               </gasPrice>

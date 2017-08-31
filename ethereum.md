@@ -352,7 +352,7 @@ State Manipulation
          <gas>          _ => 0          </gas>
          <previousGas>  _ => 0          </previousGas>
          <selfDestruct> _ => .Set       </selfDestruct>
-         <log>          _ => .Set       </log>
+         <log>          _ => .List      </log>
          <refund>       _ => 0          </refund>
          <gasPrice>     _ => 0          </gasPrice>
          <origin>       _ => 0          </origin>
@@ -569,13 +569,13 @@ The `"rlp"` key loads the block information.
     rule #exception ~> check J:JSON => check J ~> #exception
     rule check DATA : { .JSONList } => . requires DATA =/=String "transactions"
     rule check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST }
-      requires REST =/=K .JSONList andBool notBool DATA in (SetItem("callcreates") SetItem("logs") SetItem("transactions"))
+      requires REST =/=K .JSONList andBool notBool DATA in (SetItem("callcreates") SetItem("transactions"))
 
     rule check DATA : [ .JSONList ] => . requires DATA =/=String "ommerHeaders"
     rule check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ] requires DATA =/=String "transactions"
 
     rule check (KEY:String) : { JS:JSONList => #sortJSONList(JS) }
-      requires KEY in (SetItem("logs") SetItem("callcreates")) andBool notBool #isSorted(JS)
+      requires KEY in (SetItem("callcreates")) andBool notBool #isSorted(JS)
 
     rule check TESTID : { "post" : POST } => check "account" : POST ~> failure TESTID
     rule check "account" : { ACCTID: { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
@@ -628,9 +628,17 @@ Here we check the other post-conditions associated with an EVM test.
 
     rule check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID
  // ------------------------------------------------------------------------------
-    rule check "logs" : { ("address" : (ACCT:String)) , ("bloom" : (BLOOM:String)) , ("data" : (DATA:String)) , ("topics" : (TOPICS:JSON)) , .JSONList }
-      => check "logs" : { #parseAddr(ACCT) | #parseWordStack(TOPICS) | #parseByteStack(DATA) }
-    rule <k> check "logs" : SLE:SubstateLogEntry => . ... </k> <log> SL </log> requires SLE in SL
+    rule <k> check "logs" : HASH:String => . ... </k> <log> SL </log> requires #parseHexBytes(Keccak256(#rlpEncodeLogs(SL))) ==K #parseByteStack(HASH)
+
+    syntax String ::= #rlpEncodeLogs(List)        [function]
+                    | #rlpEncodeLogsAux(List)     [function]
+                    | #rlpEncodeTopics(WordStack) [function]
+ // --------------------------------------------------------
+    rule #rlpEncodeLogs(SL) => #rlpEncodeLength(#rlpEncodeLogsAux(SL), 192)
+    rule #rlpEncodeLogsAux(ListItem({ ACCT | TOPICS | DATA }) SL) => #rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeLength(#rlpEncodeTopics(TOPICS), 192) +String #rlpEncodeString(#unparseByteStack(DATA)), 192) +String #rlpEncodeLogsAux(SL)
+    rule #rlpEncodeLogsAux(.List) => ""
+    rule #rlpEncodeTopics(TOPIC : TOPICS) => #rlpEncodeBytes(TOPIC, 32) +String #rlpEncodeTopics(TOPICS)
+    rule #rlpEncodeTopics(.WordStack) => ""
 
     rule check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID
  // ------------------------------------------------------------------------------

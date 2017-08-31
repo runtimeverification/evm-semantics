@@ -204,7 +204,7 @@ module TRANSFER-SPEC
          <difficulty>   256             </difficulty>
 
          <selfDestruct>   .Set               </selfDestruct>
-         <log>            .Set               </log>
+         <log>            .List              </log>
          <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <messages>       .Bag               </messages>
 ```
@@ -321,7 +321,7 @@ module TRANSFER-FROM-SPEC
          <difficulty>   256             </difficulty>
 
          <selfDestruct>   .Set               </selfDestruct>
-         <log>            .Set               </log>
+         <log>            .List              </log>
          <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <messages>       .Bag               </messages>
 ```
@@ -435,7 +435,7 @@ imports ETHEREUM-SIMULATION
          <previousGas> _    => _             </previousGas>
 
          <selfDestruct> .Set   </selfDestruct>
-         <log>          .Set   </log>
+         <log>          .List  </log>
          <refund>       0 => _ </refund>
 
          <gasPrice>     _               </gasPrice>
@@ -502,9 +502,9 @@ module APPROVE-SPEC
          <gas>         G                    => G -Int 5269  </gas>
          <previousGas> _                    => _            </previousGas>
 
-         <selfDestruct> .Set      </selfDestruct>
-         <log>          .Set => _ </log>
-         <refund>       0    => _ </refund>
+         <selfDestruct> .Set       </selfDestruct>
+         <log>          .List => _ </log>
+         <refund>       0     => _ </refund>
 
          <gasPrice>     _               </gasPrice>
          <origin>       %ORIGIN_ID      </origin>
@@ -573,7 +573,7 @@ module BALANCE-OF-SPEC
          <previousGas>  _     => _            </previousGas>
 
          <selfDestruct> .Set    </selfDestruct>
-         <log>          .Set    </log>
+         <log>          .List    </log>
          <refund>       0  => _ </refund>
 
          <gasPrice>     _               </gasPrice>
