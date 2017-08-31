@@ -1986,12 +1986,9 @@ static const EVMSchedule HomesteadSchedule = EVMSchedule(true, true, 53000);
     rule Gextcodesize  < EIP150 > => 700
     rule Gextcodecopy  < EIP150 > => 700
 
-    rule maxCodeSize   < EIP150 > => 24576
-
     rule SCHEDCONST    < EIP150 > => SCHEDCONST < HOMESTEAD >
       requires notBool      ( SCHEDCONST ==K Gbalance      orBool SCHEDCONST ==K Gsload       orBool SCHEDCONST ==K Gcall
                        orBool SCHEDCONST ==K Gselfdestruct orBool SCHEDCONST ==K Gextcodesize orBool SCHEDCONST ==K Gextcodecopy
-                       orBool SCHEDCONST ==K maxCodeSize
                             )
 
     rule Gselfdestructnewaccount << EIP150 >> => true
@@ -2011,7 +2008,6 @@ static const EVMSchedule EIP150Schedule = []
     schedule.sloadGas = 200;
     schedule.callGas = 700;
     schedule.suicideGas = 5000;
-    schedule.maxCodeSize = 0x6000;
     return schedule;
 }();
 ```
@@ -2021,8 +2017,10 @@ static const EVMSchedule EIP150Schedule = []
 ```{.k .uiuck .rvk}
     syntax Schedule ::= "EIP158"
  // ----------------------------
-    rule Gexpbyte   < EIP158 > => 50
-    rule SCHEDCONST < EIP158 > => SCHEDCONST < EIP150 > requires SCHEDCONST =/=K Gexpbyte
+    rule Gexpbyte    < EIP158 > => 50
+    rule maxCodeSize < EIP158 > => 24576
+
+    rule SCHEDCONST  < EIP158 > => SCHEDCONST < EIP150 > requires SCHEDCONST =/=K Gexpbyte andBool SCHEDCONST =/=K maxCodeSize
 
     rule Gemptyisnonexistent     << EIP158 >> => true
     rule Gzerovaluenewaccountgas << EIP158 >> => false
@@ -2036,6 +2034,7 @@ static const EVMSchedule EIP158Schedule = []
     EVMSchedule schedule = EIP150Schedule;
     schedule.expByteGas = 50;
     schedule.eip158Mode = true;
+    schedule.maxCodeSize = 0x6000;
     return schedule;
 }();
 ```

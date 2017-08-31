@@ -1968,12 +1968,9 @@ module EVM
     rule Gextcodesize  < EIP150 > => 700
     rule Gextcodecopy  < EIP150 > => 700
 
-    rule maxCodeSize   < EIP150 > => 24576
-
     rule SCHEDCONST    < EIP150 > => SCHEDCONST < HOMESTEAD >
       requires notBool      ( SCHEDCONST ==K Gbalance      orBool SCHEDCONST ==K Gsload       orBool SCHEDCONST ==K Gcall
                        orBool SCHEDCONST ==K Gselfdestruct orBool SCHEDCONST ==K Gextcodesize orBool SCHEDCONST ==K Gextcodecopy
-                       orBool SCHEDCONST ==K maxCodeSize
                             )
 
     rule Gselfdestructnewaccount << EIP150 >> => true
@@ -1987,8 +1984,10 @@ module EVM
 
     syntax Schedule ::= "EIP158"
  // ----------------------------
-    rule Gexpbyte   < EIP158 > => 50
-    rule SCHEDCONST < EIP158 > => SCHEDCONST < EIP150 > requires SCHEDCONST =/=K Gexpbyte
+    rule Gexpbyte    < EIP158 > => 50
+    rule maxCodeSize < EIP158 > => 24576
+
+    rule SCHEDCONST  < EIP158 > => SCHEDCONST < EIP150 > requires SCHEDCONST =/=K Gexpbyte andBool SCHEDCONST =/=K maxCodeSize
 
     rule Gemptyisnonexistent     << EIP158 >> => true
     rule Gzerovaluenewaccountgas << EIP158 >> => false
