@@ -324,6 +324,7 @@ The stack and some standard operations over it are provided here.
 This stack also serves as a cons-list, so we provide some standard cons-list manipulation tools.
 
 ```{.k .uiuck .rvk}
+    syntax WordStack [flatPredicate]
     syntax WordStack ::= ".WordStack" | Int ":" WordStack
  // -----------------------------------------------------
 ```
