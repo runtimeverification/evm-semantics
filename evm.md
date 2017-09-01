@@ -1277,7 +1277,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
          ...
          </k>
-         <callLog> ... (.Set => SetItem({ ACCTTO | GLIMIT | VALUE | ARGS })) </callLog>
+         <callLog> ... (.Set => #ifSet EXECMODE ==K VMTESTS #then SetItem({ ACCTTO | GLIMIT | VALUE | ARGS }) #else .Set #fi) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
@@ -1417,7 +1417,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <gas> OLDGAVAIL => GAVAIL </gas>
          <program> _ => INITCODE </program>
          <caller> _ => ACCTFROM </caller>
-         <callLog> ... (.Set => SetItem({ 0 | OLDGAVAIL +Int GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
+         <callLog> ... (.Set => #ifSet EXECMODE ==K VMTESTS #then SetItem({ 0 | OLDGAVAIL +Int GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) }) #else .Set #fi) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => .WordStack </callData>
          <callValue> _ => VALUE </callValue>
