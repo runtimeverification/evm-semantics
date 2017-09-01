@@ -360,16 +360,17 @@ Simple commands controlling exceptions provide control-flow.
 
 ```{.k .uiuck .rvk}
     syntax KItem ::= Exception
-    syntax Exception ::= "#exception" | "#end"
- // ------------------------------------------
+    syntax Exception ::= "#exception" | "#end" | "#revert"
+ // ------------------------------------------------------
     rule <k> EX:Exception ~> (_:Int    => .) ... </k>
     rule <k> EX:Exception ~> (_:OpCode => .) ... </k>
 
     syntax KItem ::= "#?" K ":" K "?#"
  // ----------------------------------
-    rule <k>                #? K : _ ?#  => K         ... </k>
-    rule <k> #exception ~>  #? _ : K ?#  => K         ... </k>
-    rule <k> #end       ~> (#? K : _ ?#) => K ~> #end ... </k>
+    rule <k>                #? K : _ ?#  => K               ... </k>
+    rule <k> #exception ~>  #? _ : K ?#  => K ~> #exception ... </k>
+    rule <k> #revert    ~>  #? K : _ ?#  => K ~> #revert    ... </k>
+    rule <k> #end       ~> (#? K : _ ?#) => K ~> #end       ... </k>
 ```
 
 OpCode Execution Cycle
@@ -435,7 +436,7 @@ I suppose the semantics currently loads `INVALID` where `N` is the position in t
          <k> #next
           => #pushCallStack
           ~> #exceptional? [ OP ] ~> #exec [ OP ] ~> #pc [ OP ]
-          ~> #? #dropCallStack : #popCallStack ~> #exception ?#
+          ~> #? #dropCallStack : #popCallStack ?#
          ...
          </k>
          <pc> PCOUNT </pc>
@@ -508,6 +509,7 @@ Some checks if an opcode will throw an exception are relatively quick and done u
     rule #stackAdded(JUMPDEST)     => 0
     rule #stackAdded(STOP)         => 0
     rule #stackAdded(RETURN)       => 0
+    rule #stackAdded(REVERT)       => 0
     rule #stackAdded(SELFDESTRUCT) => 0
     rule #stackAdded(PUSH(_,_))    => 1
     rule #stackAdded(LOG(_))       => 0
@@ -1051,7 +1053,7 @@ The `JUMP*` family of operations affect the current program counter.
     rule <k> JUMPI DEST 0 => . ... </k> <pc> PCOUNT => PCOUNT +Int 1 </pc>
 ```
 
-### `STOP` and `RETURN`
+### `STOP`, `REVERT`, and `RETURN`
 
 ```{.k .uiuck .rvk}
     syntax NullStackOp ::= "STOP"
@@ -1060,8 +1062,13 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
-    rule <mode> EXECMODE </mode>
-         <k> RETURN RETSTART RETWIDTH => #end ... </k>
+    rule <k> RETURN RETSTART RETWIDTH => #end ... </k>
+         <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
+         <localMem> LM </localMem>
+
+    syntax BinStackOp ::= "REVERT"
+ // ------------------------------
+    rule <k> REVERT RETSTART RETWIDTH => #revert ... </k>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
 ```
@@ -1306,6 +1313,14 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          ...
          </k>
 
+    rule <k> #revert ~> #return RETSTART RETWIDTH
+          => #popCallStack ~> #popWorldState ~> #popSubstate
+          ~> 0 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
+         ...
+         </k>
+         <output> OUT </output>
+         <gas> GAVAIL </gas>
+
     rule <mode> EXECMODE </mode>
          <k> #end ~> #return RETSTART RETWIDTH
           => #popCallStack
@@ -1438,6 +1453,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                    | "#finishCodeDeposit" Int WordStack
  // ---------------------------------------------------
     rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k>
+    rule <k> #revert ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> #refund GAVAIL ~> 0 ~> #push ... </k>
+         <gas> GAVAIL </gas>
 
     rule <mode> EXECMODE </mode>
          <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
@@ -1454,7 +1471,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     rule <k> #mkCodeDeposit ACCT => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
-         <output> OUT => .WordStack </output>
+         <output> OUT </output>
       requires #sizeWordStack(OUT) >Int maxCodeSize < SCHED >
 
     rule <k> #finishCodeDeposit ACCT OUT
@@ -1623,6 +1640,7 @@ In the yellowpaper, each opcode is defined to consume zero gas unless specified 
 
     rule #memory ( CREATE _ START WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
     rule #memory ( RETURN START WIDTH   , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( REVERT START WIDTH   , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
 
     rule #memory ( COP:CallOp     _ _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
     rule #memory ( CSOP:CallSixOp _ _   ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
@@ -1759,6 +1777,7 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
     // Wzero
     rule <k> #gasExec(SCHED, STOP)       => Gzero < SCHED > ... </k>
     rule <k> #gasExec(SCHED, RETURN _ _) => Gzero < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, REVERT _ _) => Gzero < SCHED > ... </k>
 
     // Wbase
     rule <k> #gasExec(SCHED, ADDRESS)      => Gbase < SCHED > ... </k>
@@ -1906,8 +1925,9 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
     syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function]
  // ----------------------------------------------------------
 
-    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
- // --------------------------------------------------------------------------------------------------------------------------
+    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth"
+                          | "Gemptyisnonexistent"     | "Gzerovaluenewaccountgas" | "Ghasrevert"
+ // --------------------------------------------------------------------------------------------
 ```
 
 A `ScheduleConst` is a constant determined by the fee schedule; applying a `ScheduleConst` to a `Schedule` yields the correct constant for that schedule.
@@ -1982,6 +2002,7 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
     rule Gstaticcalldepth        << DEFAULT >> => true
     rule Gemptyisnonexistent     << DEFAULT >> => false
     rule Gzerovaluenewaccountgas << DEFAULT >> => true
+    rule Ghasrevert              << DEFAULT >> => false
 ```
 
 ```c++
@@ -2149,7 +2170,9 @@ static const EVMSchedule EIP158Schedule = []
  // -------------------------------
     rule SCHEDCONST < BYZANTIUM > => SCHEDCONST < EIP158 >
 
-    rule SCHEDFLAG << BYZANTIUM >> => SCHEDFLAG << EIP158 >>
+    rule Ghasrevert << BYZANTIUM >> => true
+    rule SCHEDFLAG  << BYZANTIUM >> => SCHEDFLAG << EIP158 >>
+      requires notBool ( SCHEDFLAG ==K Ghasrevert )
 ```
 
 ```c++
@@ -2290,6 +2313,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode( 242,     _ ) => CALLCODE
     rule #dasmOpCode( 243,     _ ) => RETURN
     rule #dasmOpCode( 244, SCHED ) => DELEGATECALL requires SCHED =/=K FRONTIER
+    rule #dasmOpCode( 253, SCHED ) => REVERT       requires Ghasrevert << SCHED >>
     rule #dasmOpCode( 255,     _ ) => SELFDESTRUCT
     rule #dasmOpCode(   W,     _ ) => INVALID [owise]
 endmodule
