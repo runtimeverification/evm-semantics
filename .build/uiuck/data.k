@@ -323,6 +323,7 @@ module EVM-DATA
 // as a cons-list, so we provide some standard cons-list manipulation tools.
 
 
+    syntax WordStack [flatPredicate]
     syntax WordStack ::= ".WordStack" | Int ":" WordStack
  // -----------------------------------------------------
 
