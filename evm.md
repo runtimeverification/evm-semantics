@@ -1503,6 +1503,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```
 
 `SELFDESTRUCT` marks the current account for deletion and transfers funds out of the current account.
+Self destructing to yourself, unlike a regular transfer, destroys the balance in the account, irreparably losing it.
 
 ```{.k .uiuck .rvk}
     syntax UnStackOp ::= "SELFDESTRUCT"
@@ -1517,6 +1518,22 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <balance> BALFROM </balance>
            ...
          </account>
+      requires ACCT =/=Int ACCTTO
+
+    rule <k> SELFDESTRUCT ACCT => #end ... </k>
+         <schedule> SCHED </schedule>
+         <id> ACCT </id>
+         <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
+         <refund> RF => #ifInt ACCT in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BALFROM => 0 </balance>
+           <nonce> NONCE </nonce>
+           <code> CODE </code>
+           ...
+         </account>
+         <activeAccounts> ... ACCT |-> (_ => NONCE ==Int 0 andBool CODE ==K .Map) ... </activeAccounts>
+
 ```
 
 Precompiled Contracts
