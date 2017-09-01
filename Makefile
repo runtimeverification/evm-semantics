@@ -78,7 +78,6 @@ all_tests=$(wildcard tests/VMTests/*/*.json) ${blockchain_tests}
 skipped_tests=$(wildcard tests/VMTests/vmPerformanceTest/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Byzantium.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Constantinople.json) \
-   $(wildcard tests/BlockchainTests/GeneralStateTests/stMemoryStressTest/*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*/*.json)
 
 passing_tests=$(filter-out ${skipped_tests}, ${all_tests})
