@@ -145,7 +145,6 @@ module ETHEREUM-SIMULATION
          <to> -1 </to>
 
     rule <k> #end ~> #finishTx => #popCallStack ~> #dropWorldState ~> #dropSubstate ~> #refund GAVAIL ... </k>
-         <id> ACCT </id>
          <gas> GAVAIL </gas>
          <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>

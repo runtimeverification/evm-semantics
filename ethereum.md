@@ -147,7 +147,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <to> -1 </to>
 
     rule <k> #end ~> #finishTx => #popCallStack ~> #dropWorldState ~> #dropSubstate ~> #refund GAVAIL ... </k>
-         <id> ACCT </id>
          <gas> GAVAIL </gas>
          <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
