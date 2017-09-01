@@ -1936,13 +1936,13 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
     syntax Int ::= ScheduleConst "<" Schedule ">" [function]
  // --------------------------------------------------------
 
-    syntax ScheduleConst ::= "Gzero"        | "Gbase"        | "Gverylow"      | "Glow"           | "Gmid"         | "Ghigh"
-                           | "Gextcodesize" | "Gextcodecopy" | "Gbalance"      | "Gsload"         | "Gjumpdest"    | "Gsstoreset"
-                           | "Gsstorereset" | "Rsstoreclear" | "Rselfdestruct" | "Gselfdestruct"  | "Gcreate"      | "Gcodedeposit"
-                           | "Gcall"        | "Gcallvalue"   | "Gcallstipend"  | "Gnewaccount"    | "Gexp"         | "Gexpbyte"
-                           | "Gmemory"      | "Gtxcreate"    | "Gtxdatazero"   | "Gtxdatanonzero" | "Gtransaction" | "Glog"          | "Glogdata"
-                           | "Glogtopic"    | "Gsha3"        | "Gsha3word"     | "Gcopy"          | "Gblockhash"   | "Gquadcoeff"    | "maxCodeSize"
- // ------------------------------------------------------------------------------------------------------------------------------------------------
+    syntax ScheduleConst ::= "Gzero"        | "Gbase"        | "Gverylow"       | "Glow"           | "Gmid"         | "Ghigh"
+                           | "Gextcodesize" | "Gextcodecopy" | "Gbalance"       | "Gsload"         | "Gjumpdest"    | "Gsstoreset"
+                           | "Gsstorereset" | "Rsstoreclear" | "Rselfdestruct"  | "Gselfdestruct"  | "Gcreate"      | "Gcodedeposit"
+                           | "Gcall"        | "Gcallvalue"   | "Gcallstipend"   | "Gnewaccount"    | "Gexp"         | "Gexpbyte"      | "Gmemory"
+                           | "Gtxcreate"    | "Gtxdatazero"  | "Gtxdatanonzero" | "Gtransaction"   | "Glog"         | "Glogdata"      | "Glogtopic"
+                           | "Gsha3"        | "Gsha3word"    | "Gcopy"          | "Gblockhash"     | "Gquadcoeff"   | "maxCodeSize"   | "Rb"
+ // ----------------------------------------------------------------------------------------------------------------------------------------
 ```
 
 ### Defualt Schedule
@@ -1997,6 +1997,7 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
     rule Gextcodecopy < DEFAULT > => 20
 
     rule maxCodeSize < DEFAULT > => 2 ^Int 32 -Int 1
+    rule Rb          < DEFAULT > => 5 *Int (10 ^Int 18)
 
     rule Gselfdestructnewaccount << DEFAULT >> => false
     rule Gstaticcalldepth        << DEFAULT >> => true
@@ -2168,7 +2169,9 @@ static const EVMSchedule EIP158Schedule = []
 ```{.k .uiuck .rvk}
     syntax Schedule ::= "BYZANTIUM"
  // -------------------------------
+    rule Rb         < BYZANTIUM > => 3 *Int (10 ^Int 18)
     rule SCHEDCONST < BYZANTIUM > => SCHEDCONST < EIP158 >
+      requires notBool ( SCHEDCONST ==K Rb )
 
     rule Ghasrevert << BYZANTIUM >> => true
     rule SCHEDFLAG  << BYZANTIUM >> => SCHEDFLAG << EIP158 >>

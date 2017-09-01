@@ -200,11 +200,12 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= "#finalizeBlock" | #rewardOmmers ( JSONList )
  // ------------------------------------------------------------------------
     rule <k> #finalizeBlock => #rewardOmmers(OMMERS) ... </k>
+         <schedule> SCHED </schedule>
          <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
          <coinbase> MINER </coinbase>
          <account>
            <acctID> MINER </acctID>
-           <balance> MINBAL => MINBAL +Int Rb </balance>
+           <balance> MINBAL => MINBAL +Int Rb < SCHED > </balance>
            ...
          </account>
          <activeAccounts> ... MINER |-> (_ => false) ... </activeAccounts>
@@ -216,23 +217,20 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     rule <k> #rewardOmmers(.JSONList) => . ... </k>
     rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
+         <schedule> SCHED </schedule>
          <coinbase> MINER </coinbase>
          <number> CURNUM </number>
          <account>
            <acctID> MINER </acctID>
-           <balance> MINBAL => MINBAL +Int Rb /Int 32 </balance>
+           <balance> MINBAL => MINBAL +Int Rb < SCHED > /Int 32 </balance>
           ...
          </account>
          <account>
            <acctID> OMMER </acctID>
-           <balance> OMMBAL => OMMBAL +Int Rb +Int (OMMNUM -Int CURNUM) *Int (Rb /Int 8) </balance>
+           <balance> OMMBAL => OMMBAL +Int Rb < SCHED > +Int (OMMNUM -Int CURNUM) *Int (Rb < SCHED > /Int 8) </balance>
           ...
          </account>
          <activeAccounts> ... MINER |-> (_ => false) OMMER |-> (_ => false) ... </activeAccounts>
-
-    syntax Int ::= "Rb" [function]
- // ------------------------------
-    rule Rb => 5 *Int (10 ^Int 18)
 ```
 
 -   `exception` only clears from the `<k>` cell if there is an exception preceding it.
