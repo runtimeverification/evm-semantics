@@ -1246,7 +1246,7 @@ module EVM
            => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else (#next ~> #execute) #fi
           ...
          </k>
-         <callLog> ... (.Set => SetItem({ ACCTTO | GLIMIT | VALUE | ARGS })) </callLog>
+         <callLog> ... (.Set => #if EXECMODE ==K VMTESTS #then SetItem({ ACCTTO | GLIMIT | VALUE | ARGS }) #else .Set #fi) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
@@ -1389,7 +1389,7 @@ module EVM
           ...
          </k>
          <schedule> SCHED </schedule>
-         <callLog> ... (.Set => SetItem({ 0 | OLDGAVAIL +Int GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
+         <callLog> ... (.Set => #if EXECMODE ==K VMTESTS #then SetItem({ 0 | OLDGAVAIL +Int GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) }) #else .Set #fi) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => .WordStack </callData>
          <callValue> _ => VALUE </callValue>
