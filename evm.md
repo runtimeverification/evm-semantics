@@ -1498,8 +1498,8 @@ Precompiled Contracts
 
     syntax WordStack ::= #ecrec ( Int ) [function]
  // ----------------------------------------------
-    rule #ecrec(0) => .WordStack
-    rule #ecrec(N) => #padToWidth(32, #asByteStack(N)) requires N >Int 0
+    rule #ecrec(-1) => .WordStack
+    rule #ecrec(N) => #padToWidth(32, #asByteStack(N)) requires N >=Int 0
 
     syntax PrecompiledOp ::= "SHA256"
  // ---------------------------------

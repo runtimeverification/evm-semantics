@@ -371,6 +371,9 @@ module EVM-DATA
 
 // -   `#asWord` will interperet a stack of bytes as a single word (with
 //     MSB first).
+// -   `#asAccount` will interpret a stack of bytes as a single account id (with
+//     MSB first). Differs from `#asWord` only in that an empty stack represents
+//     the empty account, not account zero.
 // -   `#asByteStack` will split a single word up into a `WordStack` where each
 //     word is a byte wide.
 
@@ -380,6 +383,11 @@ module EVM-DATA
     rule #asWord( .WordStack )    => 0
     rule #asWord( W : .WordStack) => W
     rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
+
+    syntax Int ::= #asAccount ( WordStack ) [function]
+ // --------------------------------------------------
+    rule #asAccount( .WordStack ) => -1
+    rule #asAccount( W : WS )     => #asWord(W : WS)
 
     syntax WordStack ::= #asByteStack ( Int )             [function]
                        | #asByteStack ( Int , WordStack ) [function, klabel(#asByteStackAux)]
@@ -416,11 +424,11 @@ module EVM-DATA
                  | #sender ( String ) [function, klabel(#senderAux2)]
  // --------------------------------------------------------------------------------------------------
     rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS)
-         => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWord(TN) +String #rlpEncodeWord(TP) +String #rlpEncodeWord(TG) +String #if TT ==Int 0 #then "\x80" #else #rlpEncodeBytes(TT, 20) #fi +String #rlpEncodeWord(TV) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
+         => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWord(TN) +String #rlpEncodeWord(TP) +String #rlpEncodeWord(TG) +String #if TT ==Int -1 #then "\x80" #else #rlpEncodeBytes(TT, 20) #fi +String #rlpEncodeWord(TV) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
 
     rule #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
 
-    rule #sender("") => 0
+    rule #sender("") => -1
     rule #sender(STR) => #addr(#parseHexWord(Keccak256(STR))) requires STR =/=String ""
 
     syntax Int ::= #blockHeaderHash(Int, Int, Int, Int, Int, Int, WordStack, Int, Int, Int, Int, Int, WordStack, Int, Int) [function]

@@ -112,7 +112,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <msgID> MsgId </msgID>
          <txGasPrice> GPRICE </txGasPrice>
          <txGasLimit> GLIMIT </txGasLimit>
-         <to> 0 </to>
+         <to> -1 </to>
          <value> VALUE </value>
          <data> CODE </data>
          <acctID> ACCTFROM </acctID>
@@ -138,13 +138,13 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <acctID> ACCTFROM </acctID>
          <nonce> NONCE => NONCE +Int 1 </nonce>
          <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
-         requires ACCTTO =/=Int 0
+         requires ACCTTO =/=Int -1
 
     rule <k> #end ~> #finishTx => #mkCodeDeposit ACCT ... </k>
          <id> ACCT </id>
          <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
-         <to> 0 </to>
+         <to> -1 </to>
 
     rule <k> #end ~> #finishTx => #popCallStack ~> #dropWorldState ~> #dropSubstate ~> #refund GAVAIL ... </k>
          <id> ACCT </id>
@@ -152,7 +152,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
          <to> TT </to>
-         requires TT =/=Int 0
+         requires TT =/=Int -1
 
     rule #exception ~> #finishTx => #popCallStack ~> #popWorldState ~> #popSubstate
 
@@ -500,7 +500,7 @@ The `"rlp"` key loads the block information.
              <txNonce> #asWord(#parseByteStackRaw(TN)) </txNonce>
              <txGasPrice> #asWord(#parseByteStackRaw(TP)) </txGasPrice>
              <txGasLimit> #asWord(#parseByteStackRaw(TG)) </txGasLimit>
-             <to> #asWord(#parseByteStackRaw(TT)) </to>
+             <to> #asAccount(#parseByteStackRaw(TT)) </to>
              <value> #asWord(#parseByteStackRaw(TV)) </value>
              <data> #parseByteStackRaw(TI) </data>
              <v> #asWord(#parseByteStackRaw(TW)) </v>
@@ -679,7 +679,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule check "transactions" : ("nonce" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
     rule check "transactions" : ("r" : (VALUE:String => #padToWidth(32, #parseByteStack(VALUE))))
     rule check "transactions" : ("s" : (VALUE:String => #padToWidth(32, #parseByteStack(VALUE))))
-    rule check "transactions" : ("to" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
+    rule check "transactions" : ("to" : (VALUE:String => #asAccount(#parseByteStack(VALUE))))
     rule check "transactions" : ("v" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
     rule check "transactions" : ("value" : (VALUE:String => #asWord(#parseByteStack(VALUE))))
 
