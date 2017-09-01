@@ -52,30 +52,44 @@ tests/proofs/hkg/%-spec.k: proofs/hkg.md
 # Tests
 # -----
 
-split-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
-			 tests/VMTests/vmBitwiseLogicOperationTest/make.timestamp \
-			 tests/VMTests/vmBlockInfoTest/make.timestamp \
-			 tests/VMTests/vmEnvironmentalInfoTest/make.timestamp \
-			 tests/VMTests/vmIOandFlowOperationsTest/make.timestamp \
-			 tests/VMTests/vmLogTest/make.timestamp \
-			 tests/VMTests/vmPerformanceTest/make.timestamp \
-			 tests/VMTests/vmPushDupSwapTest/make.timestamp \
-			 tests/VMTests/vmSha3Test/make.timestamp \
-			 tests/VMTests/vmSystemOperationsTest/make.timestamp \
-			 tests/VMTests/vmtests/make.timestamp \
-			 tests/VMTests/vmInputLimits/make.timestamp \
-			 tests/VMTests/vmInputLimitsLight/make.timestamp
+split-tests: vm-tests blockchain-tests
 
-passing_test_file=tests/passing.expected
-all_tests=$(wildcard tests/VMTests/*/*.json)
-skipped_tests=$(wildcard tests/VMTests/vmPerformanceTest/*.json) tests/VMTests/vmIOandFlowOperationsTest/loop_stacklimit_1021.json
+vm-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
+		  tests/VMTests/vmBitwiseLogicOperationTest/make.timestamp \
+		  tests/VMTests/vmBlockInfoTest/make.timestamp \
+		  tests/VMTests/vmEnvironmentalInfoTest/make.timestamp \
+		  tests/VMTests/vmIOandFlowOperationsTest/make.timestamp \
+		  tests/VMTests/vmLogTest/make.timestamp \
+		  tests/VMTests/vmPerformanceTest/make.timestamp \
+		  tests/VMTests/vmPushDupSwapTest/make.timestamp \
+		  tests/VMTests/vmSha3Test/make.timestamp \
+		  tests/VMTests/vmSystemOperationsTest/make.timestamp \
+		  tests/VMTests/vmtests/make.timestamp \
+		  tests/VMTests/vmInputLimits/make.timestamp \
+		  tests/VMTests/vmInputLimitsLight/make.timestamp
+
+blockchain-tests: \
+				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)) \
+
+#passing_test_file=tests/passing.expected
+#blockchain_tests=$(shell cat ${passing_test_file})
+blockchain_tests=$(wildcard tests/BlockchainTests/*/*/*/*.json)
+all_tests=$(wildcard tests/VMTests/*/*.json) ${blockchain_tests}
+skipped_tests=$(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Byzantium.json) \
+   $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Constantinople.json)
+
 passing_tests=$(filter-out ${skipped_tests}, ${all_tests})
+passing_blockchain_tests=$(filter-out ${skipped_tests}, ${blockchain_tests})
 passing_targets=${passing_tests:=.test}
+passing_blockchain_targets=${passing_blockchain_tests:=.test}
 
 test: $(passing_targets)
+blockchain-test: $(passing_blockchain_targets)
 
-tests/%.test: tests/% build
-	./evm $<
+tests/VMTests/%.test: tests/VMTests/% build
+	./vmtest $<
+tests/BlockchainTests/%.test: tests/BlockchainTests/% build
+	./blockchaintest $<
 
 tests/%/make.timestamp: tests/ethereum-tests/%.json
 	@echo "==   split: $@"
@@ -105,7 +119,7 @@ tests/ethereum-tests/%.json:
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/rvk \
 					--hook-namespaces KRYPTO --gen-ml-only -O3 --non-strict
 	ocamlfind opt -c .build/rvk/ethereum-kompiled/constants.ml -package gmp -package zarith
-	ocamlfind opt -c -I .build/rvk/ethereum-kompiled KRYPTO.ml -package cryptokit
+	ocamlfind opt -c -I .build/rvk/ethereum-kompiled KRYPTO.ml -package cryptokit -package secp256k1
 	ocamlfind opt -a -o semantics.cmxa KRYPTO.cmx
 	ocamlfind remove ethereum-semantics-plugin
 	ocamlfind install ethereum-semantics-plugin META semantics.cmxa semantics.a KRYPTO.cmi KRYPTO.cmx
