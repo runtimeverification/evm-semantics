@@ -11,7 +11,7 @@ Issues with description of EVM
 These can be ambiguities/confusing wording in the Yellow Paper.
 
 -   In section 9.4.2, exceptions are described as if they are all catchable before an opcode is executed.
-    While you may be able to implement EVM in this way, it's not clear that it's best (you have to duplicate computation), and I also am pretty sure no implementation even does this (including the C++ one).
+    While you may be able to implement EVM in this way, it's not clear that it's best (you have to duplicate computation), and we also are pretty sure no implementation even does this (including the C++ one).
     Instead they throw exceptions when they happen and roll-back the state (which is what you would expect to happen).
     Our original implementation tried to do it the way the Yellow Paper described, and it made everything harder/slower.
 
