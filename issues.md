@@ -22,7 +22,7 @@ These can be ambiguities/confusing wording in the [Yellow Paper](https://github.
 
 -   Some operators which access data of other accounts don't specify explicitly what to do if the other account doesn't exist.
     `EXTCODESIZE` and `EXTCODECOPY` examples, though strangely enough `BALANCE` does specify what to do.
-    I think the community has reached agreement on this though, "non-existing accounts are empty accounts" or something along those lines.
+    We think the community has reached agreement on this though, "non-existing accounts are empty accounts" or something along those lines.
 
 -   What about contracts that have "junk bytes" in them?
     I've seen a contract with "junk bytes", and it's clear that you could actually 
