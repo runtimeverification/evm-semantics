@@ -54,7 +54,7 @@ These can be issues from simple "why did they do it that way?" to "this makes do
 
 -   In section H.2, the Yellow Paper states "All arithmetic is modulo 2^256 unless otherwise noted."
     Reasoning "modulo" is very complex with the current SMT provers and it was indeed a, if not the most major difficulty in our [EVM verification efforts](proofs).
-    Additionally, the programs (smart contracts) we verified turned out to be wrong, in the sense that they behave unexpectedly, in the presence of arithmetic overflows anyway.
+    Additionally, the programs (smart contracts) we verified turned out to be wrong, in the sense that they showed unintended behavior, in the presence of arithmetic overflows anyway.
     That is, arithmetic overflows were not expected to happen by the developers, so adding code to deal with the "modulo 2^256" behavior in case of arithmetic overflow was not even considered.
     In such situations, it would be a lot better to simply throw an exception when arithmetic overflow occurs, thus indicating that something bad happened, than to default to "modulo 2^256" and ending up with a program computing wrong values.
     We conjecture that words of 256 bits should be long enough for the current smart contract needs to afford to abruptly terminate computations when the limit is reached.
