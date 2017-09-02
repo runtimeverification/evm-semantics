@@ -1,7 +1,7 @@
 EVM Design Issues
 =================
 
-The EVM was the first successful general-purpose distributed computer, but that doesn't make it without fault.
+The EVM was the first successful general-purpose distributed programmable blockchain platform, but that doesn't make it without fault.
 There are several issues with both the specification of the EVM (in the Yellow Paper), and with the general design of the EVM.
 Most of these issues are written from the perspective of someone trying to do formal verification of the EVM.
 
