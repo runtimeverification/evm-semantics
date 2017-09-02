@@ -20,7 +20,7 @@ These can be ambiguities/confusing wording in the [Yellow Paper](https://github.
     For example, if the memory is overflown, then the existing semantics doesn't do anything.
     Should it throw an exception?
 
--   Some operators which access data of other accounts don't specify explicitely what to do if the other account doesn't exist.
+-   Some operators which access data of other accounts don't specify explicitly what to do if the other account doesn't exist.
     `EXTCODESIZE` and `EXTCODECOPY` examples, though strangely enough `BALANCE` does specify what to do.
     I think the community has reached agreement on this though, "non-existing accounts are empty accounts" or something along those lines.
 
