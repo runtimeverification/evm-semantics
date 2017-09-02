@@ -64,7 +64,7 @@ Recommendations for the Future
 ------------------------------
 
 In addition to the above mentioned issues, there are several things that could be improved about EVM in general as a distributed computation language.
-Here we mention the ones we mention.
+Here we mention some.
 
 ### Deterministic vs. Nondeterministic (and Proof of Work and Scalability)
 
