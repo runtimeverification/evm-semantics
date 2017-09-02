@@ -74,7 +74,7 @@ In both cases, the entire program must be executed; there is no choice about wha
 In a nondeterministic language, execution is finding one execution path among many which "solves" the program.
 For example, any logical language where there are several possible next inference steps is nondeterministic (eg. Prolog, Maude, K, Coq).
 However, once a solution is found, presenting it is telling which choices were made at each nondeterministic step; verifying it is following that same sequence of steps.
-If at each step there are a choice from $M$ inference rules, and it takes $n$ steps to reach a solution, then the speedup in verifying is $M^n$.
+If at each step there are a choice from `M` inference rules, and it takes `n` steps to reach a solution, then the speedup in verifying is `M^n`.
 
 One of the goals in a consensus-driven distributed store is scalability, which means as more resources are added to the network the network gets stronger.
 Using a deterministic language means that we lose at least one dimension of this scalability; everyone verifying the state of the world must do as much work as it took to compute the state of the world.
