@@ -43,12 +43,15 @@ These can be issues from simple "why did they do it that way?" to "this makes do
     If one of those words was symbolic, the resulting symbolic word is a mess of an expression involving the original words.
     Of course, in theory this is possible to reason about, but effectively this allows taking one symbolic value and turning it into 32 symbolic values.
     This makes symbolic execution much slower/more painful.
+    Note also that attempting to use bit-vectors, where you have one symbolic boolean variable per bit, is currently infeasible with the existing SMT solvers like [Z3](https://github.com/Z3Prover/z3); while it works with 32-bit words in some program verifiers, it is disarmingly slow with 64-bit words and we failed to prove anything with 256-bit words.
 
 -   Program representation is important in EVM (that is, you must be able to represent a program as a byte-array of opcodes).
-    When doing program analysis/abstract verification, you ideally would be allowed to make transformations on the program representation (eg. convert it to a control-flow graph) without having to maintain a translation back.
-    Currently in EVM, the `*CODECOPY` opcodes allow regarding program pieces as data, meaning that a translation back must always be maintained.
+    When doing program analysis/abstract verification, you ideally would be allowed to make transformations on the program representation (e.g., convert it to a control-flow graph) without having to maintain a translation back.
+    Currently in EVM, the `*CODECOPY` opcodes allow regarding program pieces as data, meaning that a translation back must always be maintained, because in theory a program can modify itself while executing.
     For this reason, we had to build a parser/unparser and an assembler/dissasembler into our semantics.
     Putting a symbolic value through the process of disassembling -> unparsing loses a lot of semantic information about the original value.
+    While self-modifying code is nice and powerful in principle, we are not aware of any programming languages for the blockchain that encourage or even allow that.
+
 
 Recommendations for the Future
 ------------------------------
