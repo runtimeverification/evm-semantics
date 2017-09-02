@@ -81,15 +81,15 @@ Using a deterministic language means that we lose at least one dimension of this
 Even many functional languages, by having evaluation strategies settled ahead of time, are deterministic (though they may have elegant ways of encoding nondeterministic systems).
 
 On the other hand, what secures many of these blockchain-consensus systems is proof of work.
-Proof of work is the ultimate non-deterministic programming language; the programs are the block (before adding the nonce), and the solutions are the nonce added to the block so that it hashes low enough.
-When using a nonce of size $2^N$, there are exactly $M = 2^N$ next "inference steps", and they all must be searched uniformly to find a solution ($n = 1$).
+Proof of work is the ultimate non-deterministic programming language; the programs are the blocks (before adding the nonce), and the solutions are the nonce added to the blocks so that it hashes low enough.
+When using a nonce of size `2^N`, there are exactly `M = 2^N` next "inference steps", and they all must be searched uniformly to find a solution.
 If instead the underlying programming language had some nondeterminism, some of the proof of work could be done *just by executing the transactions going into the block*.
 Perhaps the two can be used to augment each other, allowing for some of the proof of work to be provided via finding a solution to the program and the rest via hashing.
 
 If such a system were implemented, it may be important to incentivize miners to supply solutions to programs/proofs on the blockchain.
 Perhaps a system where the time between when a specification/theorem is submitted to the blockchain and when it is solved determines the reward for the computation could be used.
 Natural incentive to place proofs of theorems on the blockchain would be provided in the form of the reward; this means it's against the miners interests to ignore transactions.
-The hard part is incentivizing placing theorems on the blockchain early (as it may be adventageous to hoard theorems so that you can submit solutions early to collect the reward).
+The hard part is incentivizing placing theorems on the blockchain early (as it may be advantageous to hoard theorems so that you can submit solutions early to collect the reward).
 
 ### Termination
 
