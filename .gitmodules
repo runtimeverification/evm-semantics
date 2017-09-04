@@ -8,3 +8,5 @@
 [submodule "tests/ci/rv-k"]
 	path = tests/ci/rv-k
 	url = https://github.com/runtimeverification/k
+	# `with-k rvk` needs to create a stubbed `libz.a`
+	ignore = untracked
