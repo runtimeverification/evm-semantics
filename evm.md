@@ -63,6 +63,8 @@ In the comments next to each cell, we've marked which component of the yellowpap
                         <pc>          0          </pc>                  // \mu_pc
                         <gas>         0          </gas>                 // \mu_g
                         <previousGas> 0          </previousGas>
+
+                        <static> false </static>
                       </txExecState>
 
                       // A_* (execution substate)
@@ -203,13 +205,13 @@ The `callStack` cell stores a list of previous VM execution states.
 -   `#dropCallStack` removes the top element of the `callStack`.
 
 ```{.k .uiuck .rvk}
-    syntax State ::= "{" Int "|" Int "|" Map "|" WordStack "|" Int "|" WordStack "|" Int "|" WordStack "|" Map "|" Int "|" Int "|" Int "}"
- // --------------------------------------------------------------------------------------------------------------------------------------
+    syntax State ::= "{" Int "|" Int "|" Map "|" WordStack "|" Int "|" WordStack "|" Int "|" WordStack "|" Map "|" Int "|" Int "|" Int "|" Bool "}"
+ // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     syntax InternalOp ::= "#pushCallStack"
  // --------------------------------------
     rule <k> #pushCallStack => . ... </k>
-         <callStack>  (.List => ListItem({ ACCT | GAVAIL | PGM | BYTES | CR | CD | CV | WS | LM | MUSED | PCOUNT | DEPTH })) ... </callStack>
+         <callStack>  (.List => ListItem({ ACCT | GAVAIL | PGM | BYTES | CR | CD | CV | WS | LM | MUSED | PCOUNT | DEPTH | STATIC })) ... </callStack>
          <id>           ACCT   </id>
          <gas>          GAVAIL </gas>
          <program>      PGM    </program>
@@ -222,11 +224,12 @@ The `callStack` cell stores a list of previous VM execution states.
          <memoryUsed>   MUSED  </memoryUsed>
          <pc>           PCOUNT </pc>
          <callDepth>    DEPTH  </callDepth>
+         <static>       STATIC </static>
 
     syntax InternalOp ::= "#popCallStack"
  // -------------------------------------
     rule <k> #popCallStack => . ... </k>
-         <callStack>  (ListItem({ ACCT | GAVAIL | PGM | BYTES | CR | CD | CV | WS | LM | MUSED | PCOUNT | DEPTH }) => .List) ... </callStack>
+         <callStack>  (ListItem({ ACCT | GAVAIL | PGM | BYTES | CR | CD | CV | WS | LM | MUSED | PCOUNT | DEPTH | STATIC }) => .List) ... </callStack>
          <id>           _ => ACCT   </id>
          <gas>          _ => GAVAIL </gas>
          <program>      _ => PGM    </program>
@@ -239,6 +242,7 @@ The `callStack` cell stores a list of previous VM execution states.
          <memoryUsed>   _ => MUSED  </memoryUsed>
          <pc>           _ => PCOUNT </pc>
          <callDepth>    _ => DEPTH  </callDepth>
+         <static>       _ => STATIC </static>
 
     syntax InternalOp ::= "#dropCallStack"
  // --------------------------------------
@@ -454,7 +458,7 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#exceptional?" "[" OpCode "]"
  // ----------------------------------------------------
-    rule <k> #exceptional? [ OP ] => #invalid? [ OP ] ~> #stackNeeded? [ OP ] ~> #badJumpDest? [ OP ] ... </k>
+    rule <k> #exceptional? [ OP ] => #invalid? [ OP ] ~> #stackNeeded? [ OP ] ~> #badJumpDest? [ OP ] ~> #static? [ OP ] ... </k>
 ```
 
 -   `#invalid?` checks if it's the designated invalid opcode.
@@ -493,8 +497,8 @@ Some checks if an opcode will throw an exception are relatively quick and done u
     rule #stackNeeded(DUP(N))          => N
     rule #stackNeeded(SWAP(N))         => N +Int 1
     rule #stackNeeded(LOG(N))          => N +Int 2
-    rule #stackNeeded(DELEGATECALL)    => 6
-    rule #stackNeeded(COP:CallOp)      => 7 requires COP =/=K DELEGATECALL
+    rule #stackNeeded(CSOP:CallSixOp)  => 6
+    rule #stackNeeded(COP:CallOp)      => 7 requires notBool isCallSixOp(COP)
 
     syntax Int ::= #stackAdded ( OpCode ) [function]
  // ------------------------------------------------
@@ -538,6 +542,104 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 
     rule <k> #badJumpDest? [ JUMP  ] => #exception ... </k> <wordStack> DEST :     WS </wordStack> <program> PGM </program> requires notBool (DEST in_keys(PGM))
     rule <k> #badJumpDest? [ JUMPI ] => #exception ... </k> <wordStack> DEST : W : WS </wordStack> <program> PGM </program> requires (notBool (DEST in_keys(PGM))) andBool W =/=K 0
+```
+
+-   `#static?` determines if the opcode should throw an exception due to the static flag.
+
+```{.k .uiuck .rvk}
+    syntax InternalOp ::= "#static?" "[" OpCode "]"
+ // -----------------------------------------------
+    rule <k> #static? [ OP ] => .          ... </k>                             <static> false </static>
+    rule <k> #static? [ OP ] => .          ... </k> <wordStack> WS </wordStack> <static> true  </static> requires notBool #changesState(OP, WS)
+    rule <k> #static? [ OP ] => #exception ... </k> <wordStack> WS </wordStack> <static> true  </static> requires         #changesState(OP, WS)
+```
+
+**TODO**: Investigate why using `[owise]` here for the `false` cases breaks the proofs.
+          Alternatively, figure out how to make this go through with a boolean expression.
+
+```{.k .uiuck .rvk}
+    syntax Bool ::= #changesState ( OpCode , WordStack ) [function]
+ // ---------------------------------------------------------------
+    rule #changesState(LOG(_), _)               => true
+    rule #changesState(SSTORE, _)               => true
+    rule #changesState(CALL, _ : _ : VALUE : _) => VALUE =/=Int 0
+    rule #changesState(CREATE, _)               => true
+    rule #changesState(SELFDESTRUCT, _)         => true
+
+    rule #changesState(DUP(_), _)         => false
+    rule #changesState(SWAP(_), _)        => false
+    rule #changesState(PUSH(_, _), _)     => false
+    rule #changesState(STOP, _)           => false
+    rule #changesState(ADD, _)            => false
+    rule #changesState(MUL, _)            => false
+    rule #changesState(SUB, _)            => false
+    rule #changesState(DIV, _)            => false
+    rule #changesState(SDIV, _)           => false
+    rule #changesState(MOD, _)            => false
+    rule #changesState(SMOD, _)           => false
+    rule #changesState(ADDMOD, _)         => false
+    rule #changesState(MULMOD, _)         => false
+    rule #changesState(EXP, _)            => false
+    rule #changesState(SIGNEXTEND, _)     => false
+    rule #changesState(LT, _)             => false
+    rule #changesState(GT, _)             => false
+    rule #changesState(SLT, _)            => false
+    rule #changesState(SGT, _)            => false
+    rule #changesState(EQ, _)             => false
+    rule #changesState(ISZERO, _)         => false
+    rule #changesState(AND, _)            => false
+    rule #changesState(EVMOR, _)          => false
+    rule #changesState(XOR, _)            => false
+    rule #changesState(NOT, _)            => false
+    rule #changesState(BYTE, _)           => false
+    rule #changesState(SHA3, _)           => false
+    rule #changesState(ADDRESS, _)        => false
+    rule #changesState(BALANCE, _)        => false
+    rule #changesState(ORIGIN, _)         => false
+    rule #changesState(CALLER, _)         => false
+    rule #changesState(CALLVALUE, _)      => false
+    rule #changesState(CALLDATALOAD, _)   => false
+    rule #changesState(CALLDATASIZE, _)   => false
+    rule #changesState(CALLDATACOPY, _)   => false
+    rule #changesState(CODESIZE, _)       => false
+    rule #changesState(CODECOPY, _)       => false
+    rule #changesState(GASPRICE, _)       => false
+    rule #changesState(EXTCODESIZE, _)    => false
+    rule #changesState(EXTCODECOPY, _)    => false
+    rule #changesState(RETURNDATASIZE, _) => false
+    rule #changesState(RETURNDATACOPY, _) => false
+    rule #changesState(BLOCKHASH, _)      => false
+    rule #changesState(COINBASE, _)       => false
+    rule #changesState(TIMESTAMP, _)      => false
+    rule #changesState(NUMBER, _)         => false
+    rule #changesState(DIFFICULTY, _)     => false
+    rule #changesState(GASLIMIT, _)       => false
+    rule #changesState(POP, _)            => false
+    rule #changesState(MLOAD, _)          => false
+    rule #changesState(MSTORE, _)         => false
+    rule #changesState(MSTORE8, _)        => false
+    rule #changesState(SLOAD, _)          => false
+    rule #changesState(JUMP, _)           => false
+    rule #changesState(JUMPI, _)          => false
+    rule #changesState(PC, _)             => false
+    rule #changesState(MSIZE, _)          => false
+    rule #changesState(GAS, _)            => false
+    rule #changesState(JUMPDEST, _)       => false
+    rule #changesState(CALLCODE, _)       => false
+    rule #changesState(RETURN, _)         => false
+    rule #changesState(DELEGATECALL, _)   => false
+    rule #changesState(STATICCALL, _)     => false
+    rule #changesState(REVERT, _)         => false
+    rule #changesState(INVALID, _)        => false
+
+    rule #changesState(ECREC, _)     => false
+    rule #changesState(SHA256, _)    => false
+    rule #changesState(RIP160, _)    => false
+    rule #changesState(ID, _)        => false
+    rule #changesState(MODEXP, _)    => false
+    rule #changesState(ECADD, _)     => false
+    rule #changesState(ECMUL, _)     => false
+    rule #changesState(ECPAIRING, _) => false
 ```
 
 ### Execution Step
@@ -1258,11 +1360,11 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#checkCall" Int Int
-                        | "#call" Int Int Int Int Int Int WordStack
-                        | "#callWithCode" Int Int Map WordStack Int Int Int WordStack
-                        | "#mkCall" Int Int Map WordStack Int Int Int WordStack
- // ---------------------------------------------------------------------------
-    rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
+                        | "#call" Int Int Int Int Int Int WordStack Bool
+                        | "#callWithCode" Int Int Map WordStack Int Int Int WordStack Bool
+                        | "#mkCall" Int Int Map WordStack Int Int Int WordStack Bool
+ // --------------------------------------------------------------------------------
+    rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ _ => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
          <callDepth> CD </callDepth>
          <output> _ => .WordStack </output>
          <account>
@@ -1281,14 +1383,14 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </account>
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
-          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .WordStack GLIMIT VALUE APPVALUE ARGS
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .WordStack GLIMIT VALUE APPVALUE ARGS STATIC
          ...
          </k>
       requires ACCTCODE >Int 0 andBool ACCTCODE <=Int 4
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
-          => #callWithCode ACCTFROM ACCTTO #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) CODE GLIMIT VALUE APPVALUE ARGS
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) CODE GLIMIT VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -1296,20 +1398,20 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <code> CODE </code>
       requires notBool (ACCTCODE >Int 0 andBool ACCTCODE <=Int 4)
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
-          => #callWithCode ACCTFROM ACCTTO .Map .WordStack GLIMIT VALUE APPVALUE ARGS
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO .Map .WordStack GLIMIT VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool (ACCTCODE >Int 0 andBool ACCTCODE <=Int 4) andBool notBool ACCTCODE in_keys(ACCTS)
 
-    rule #callWithCode ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS
+    rule #callWithCode ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC
       => #pushCallStack ~> #pushWorldState ~> #pushSubstate
       ~> #transferFunds ACCTFROM ACCTTO VALUE
-      ~> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS
+      ~> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC
 
     rule <mode> EXECMODE </mode>
-         <k> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS
+         <k> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC:Bool
           => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
          ...
          </k>
@@ -1322,6 +1424,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <caller> _ => ACCTFROM </caller>
          <program> _ => CODE </program>
          <programBytes> _ => BYTES </programBytes>
+         <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
 
     syntax KItem ::= "#initVM"
  // --------------------------
@@ -1375,7 +1478,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
+          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1389,7 +1492,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
+          ~> #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1403,7 +1506,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
-          ~> #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH)
+          ~> #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1411,6 +1514,20 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <id> ACCTFROM </id>
          <caller> ACCTAPPFROM </caller>
          <callValue> VALUE </callValue>
+         <localMem> LM </localMem>
+         <activeAccounts> ACCTS </activeAccounts>
+         <previousGas> GAVAIL </previousGas>
+
+    syntax CallSixOp ::= "STATICCALL"
+ // ---------------------------------
+    rule <k> STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
+          => #checkCall ACCTFROM 0
+          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, 0) 0 0 #range(LM, ARGSTART, ARGWIDTH) true
+          ~> #return RETSTART RETWIDTH
+         ...
+         </k>
+         <schedule> SCHED </schedule>
+         <id> ACCTFROM </id>
          <localMem> LM </localMem>
          <activeAccounts> ACCTS </activeAccounts>
          <previousGas> GAVAIL </previousGas>
@@ -1791,6 +1908,10 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
          <activeAccounts> ACCTS </activeAccounts>
          <gas> GAVAIL </gas>
 
+    rule <k> #gasExec(SCHED, STATICCALL GCAP ACCTTO _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, 0) ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
+         <gas> GAVAIL </gas>
+
     rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, ACCTTO, ACCTS, BAL) ... </k>
          <activeAccounts> ACCTS </activeAccounts>
          <id> ACCTFROM </id>
@@ -1959,10 +2080,9 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
     syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function]
  // ----------------------------------------------------------
 
-    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth"
-                          | "Gemptyisnonexistent"     | "Gzerovaluenewaccountgas"
-                          | "Ghasrevert"              | "Ghasreturndata"
- // --------------------------------------------------------------------
+    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
+                          | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"
+ // -----------------------------------------------------------------------------------------
 ```
 
 A `ScheduleConst` is a constant determined by the fee schedule; applying a `ScheduleConst` to a `Schedule` yields the correct constant for that schedule.
@@ -2040,6 +2160,7 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
     rule Gzerovaluenewaccountgas << DEFAULT >> => true
     rule Ghasrevert              << DEFAULT >> => false
     rule Ghasreturndata          << DEFAULT >> => false
+    rule Ghasstaticcall          << DEFAULT >> => false
 ```
 
 ```c++
@@ -2211,8 +2332,9 @@ static const EVMSchedule EIP158Schedule = []
 
     rule Ghasrevert     << BYZANTIUM >> => true
     rule Ghasreturndata << BYZANTIUM >> => true
+    rule Ghasstaticcall << BYZANTIUM >> => true
     rule SCHEDFLAG      << BYZANTIUM >> => SCHEDFLAG << EIP158 >>
-      requires notBool ( SCHEDFLAG ==K Ghasrevert orBool SCHEDFLAG ==K Ghasreturndata )
+      requires notBool ( SCHEDFLAG ==K Ghasrevert orBool SCHEDFLAG ==K Ghasreturndata orBool SCHEDFLAG ==K Ghasstaticcall )
 ```
 
 ```c++
@@ -2355,7 +2477,8 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode( 242,     _ ) => CALLCODE
     rule #dasmOpCode( 243,     _ ) => RETURN
     rule #dasmOpCode( 244, SCHED ) => DELEGATECALL requires SCHED =/=K FRONTIER
-    rule #dasmOpCode( 253, SCHED ) => REVERT       requires Ghasrevert << SCHED >>
+    rule #dasmOpCode( 250, SCHED ) => STATICCALL   requires Ghasstaticcall << SCHED >>
+    rule #dasmOpCode( 253, SCHED ) => REVERT       requires Ghasrevert     << SCHED >>
     rule #dasmOpCode( 255,     _ ) => SELFDESTRUCT
     rule #dasmOpCode(   W,     _ ) => INVALID [owise]
 endmodule

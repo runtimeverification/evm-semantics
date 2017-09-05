@@ -194,6 +194,7 @@ module TRANSFER-SPEC
          <caller>       %ORIGIN_ID        </caller>
          <callData>     .WordStack        </callData>
          <callValue>    0                 </callValue>
+         <static>       false             </static>
 
          <gasPrice>     _               </gasPrice>
          <origin>       %ORIGIN_ID      </origin>
@@ -312,6 +313,7 @@ module TRANSFER-FROM-SPEC
          <caller>       %CALLER_ID        </caller>
          <callData>     .WordStack        </callData>
          <callValue>    0                 </callValue>
+         <static>       false             </static>
 
          <gasPrice>     _               </gasPrice>
          <origin>       %ORIGIN_ID      </origin>
@@ -431,6 +433,7 @@ imports ETHEREUM-SIMULATION
          <caller>       %CALLER_ID            </caller>
          <callData>     .WordStack            </callData>
          <callValue>    0                     </callValue>
+         <static>       false                 </static>
          <wordStack>    WS   => WS1:WordStack </wordStack>
          <localMem>     .Map => ?B:Map        </localMem>
          <pc>           469  => 573           </pc>
@@ -499,6 +502,7 @@ module APPROVE-SPEC
          <caller>       %CALLER_ID        </caller>
          <callData>     .WordStack        </callData>
          <callValue>    0                 </callValue>
+         <static>       false             </static>
 
          <wordStack>   A2 : %ORIGIN_ID : WS => ?A:WordStack </wordStack>
          <localMem>    .Map                 => ?B:Map       </localMem>
@@ -570,6 +574,7 @@ module BALANCE-OF-SPEC
          <caller>       %CALLER_ID        </caller>
          <callData>     .WordStack        </callData>
          <callValue>    0                 </callValue>
+         <static>       false             </static>
 
          <wordStack>    WS    => ?A:WordStack </wordStack>
          <localMem>     .Map  => ?B:Map       </localMem>
