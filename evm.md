@@ -426,6 +426,7 @@ I suppose the semantics currently loads `INVALID` where `N` is the position in t
     rule <k> #next => #end ... </k>
          <pc> PCOUNT </pc>
          <program> PGM </program>
+         <output> _ => .WordStack </output>
       requires notBool (PCOUNT in_keys(PGM))
 ```
 
@@ -497,25 +498,26 @@ Some checks if an opcode will throw an exception are relatively quick and done u
 
     syntax Int ::= #stackAdded ( OpCode ) [function]
  // ------------------------------------------------
-    rule #stackAdded(CALLDATACOPY) => 0
-    rule #stackAdded(CODECOPY)     => 0
-    rule #stackAdded(EXTCODECOPY)  => 0
-    rule #stackAdded(POP)          => 0
-    rule #stackAdded(MSTORE)       => 0
-    rule #stackAdded(MSTORE8)      => 0
-    rule #stackAdded(SSTORE)       => 0
-    rule #stackAdded(JUMP)         => 0
-    rule #stackAdded(JUMPI)        => 0
-    rule #stackAdded(JUMPDEST)     => 0
-    rule #stackAdded(STOP)         => 0
-    rule #stackAdded(RETURN)       => 0
-    rule #stackAdded(REVERT)       => 0
-    rule #stackAdded(SELFDESTRUCT) => 0
-    rule #stackAdded(PUSH(_,_))    => 1
-    rule #stackAdded(LOG(_))       => 0
-    rule #stackAdded(SWAP(N))      => N
-    rule #stackAdded(DUP(N))       => N +Int 1
-    rule #stackAdded(OP)           => 1 [owise]
+    rule #stackAdded(CALLDATACOPY)   => 0
+    rule #stackAdded(RETURNDATACOPY) => 0
+    rule #stackAdded(CODECOPY)       => 0
+    rule #stackAdded(EXTCODECOPY)    => 0
+    rule #stackAdded(POP)            => 0
+    rule #stackAdded(MSTORE)         => 0
+    rule #stackAdded(MSTORE8)        => 0
+    rule #stackAdded(SSTORE)         => 0
+    rule #stackAdded(JUMP)           => 0
+    rule #stackAdded(JUMPI)          => 0
+    rule #stackAdded(JUMPDEST)       => 0
+    rule #stackAdded(STOP)           => 0
+    rule #stackAdded(RETURN)         => 0
+    rule #stackAdded(REVERT)         => 0
+    rule #stackAdded(SELFDESTRUCT)   => 0
+    rule #stackAdded(PUSH(_,_))      => 1
+    rule #stackAdded(LOG(_))         => 0
+    rule #stackAdded(SWAP(N))        => N
+    rule #stackAdded(DUP(N))         => N +Int 1
+    rule #stackAdded(OP)             => 1 [owise]
 
     syntax Int ::= #stackDelta ( OpCode ) [function]
  // ------------------------------------------------
@@ -1059,6 +1061,7 @@ The `JUMP*` family of operations affect the current program counter.
     syntax NullStackOp ::= "STOP"
  // -----------------------------
     rule <k> STOP => #end ... </k>
+         <output> _ => .WordStack </output>
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
@@ -1093,6 +1096,28 @@ These operators query about the current `CALL*` state.
     rule <k> CALLDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </k>
          <localMem> LM => LM [ MEMSTART := CD [ DATASTART .. DATAWIDTH ] ] </localMem>
          <callData> CD </callData>
+```
+
+### Return Data
+
+These operators query about the current return data buffer.
+
+```{.k .uiuck .rvk}
+    syntax NullStackOp ::= "RETURNDATASIZE"
+ // ---------------------------------------
+    rule <k> RETURNDATASIZE => #sizeWordStack(RD) ~> #push ... </k>
+         <output> RD </output>
+
+    syntax TernStackOp ::= "RETURNDATACOPY"
+ // ----------------------------------------
+    rule <k> RETURNDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </k>
+         <localMem> LM => LM [ MEMSTART := RD [ DATASTART .. DATAWIDTH ] ] </localMem>
+         <output> RD </output>
+      requires DATASTART +Int DATAWIDTH <=Int #sizeWordStack(RD)
+
+    rule <k> RETURNDATACOPY MEMSTART DATASTART DATAWIDTH => #exception ... </k>
+         <output> RD </output>
+      requires DATASTART +Int DATAWIDTH >Int #sizeWordStack(RD)
 ```
 
 ### Log Operations
@@ -1239,6 +1264,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
  // ---------------------------------------------------------------------------
     rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
          <callDepth> CD </callDepth>
+         <output> _ => .WordStack </output>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
@@ -1312,6 +1338,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push
          ...
          </k>
+         <output> _ => .WordStack </output>
 
     rule <k> #revert ~> #return RETSTART RETWIDTH
           => #popCallStack ~> #popWorldState ~> #popSubstate
@@ -1401,6 +1428,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // --------------------------------------------
     rule <k> #checkCreate ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
          <callDepth> CD </callDepth>
+         <output> _ => .WordStack </output>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
@@ -1452,7 +1480,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                    | "#mkCodeDeposit" Int
                    | "#finishCodeDeposit" Int WordStack
  // ---------------------------------------------------
-    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k>
+    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k> <output> _ => .WordStack </output>
     rule <k> #revert ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> #refund GAVAIL ~> 0 ~> #push ... </k>
          <gas> GAVAIL </gas>
 
@@ -1471,7 +1499,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     rule <k> #mkCodeDeposit ACCT => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
-         <output> OUT </output>
+         <output> OUT => .WordStack </output>
       requires #sizeWordStack(OUT) >Int maxCodeSize < SCHED >
 
     rule <k> #finishCodeDeposit ACCT OUT
@@ -1540,6 +1568,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
            <balance> BALFROM </balance>
            ...
          </account>
+         <output> _ => .WordStack </output>
       requires ACCT =/=Int ACCTTO
 
     rule <k> SELFDESTRUCT ACCT => #end ... </k>
@@ -1555,6 +1584,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
            ...
          </account>
          <activeAccounts> ... ACCT |-> (_ => NONCE ==Int 0 andBool CODE ==K .WordStack) ... </activeAccounts>
+         <output> _ => .WordStack </output>
 
 ```
 
@@ -1634,9 +1664,10 @@ In the yellowpaper, each opcode is defined to consume zero gas unless specified 
     rule #memory ( SHA3 START WIDTH   , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
     rule #memory ( LOG(_) START WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
 
-    rule #memory ( CODECOPY START _ WIDTH      , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
-    rule #memory ( EXTCODECOPY _ START _ WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
-    rule #memory ( CALLDATACOPY START _ WIDTH  , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( CODECOPY START _ WIDTH       , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( EXTCODECOPY _ START _ WIDTH  , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( CALLDATACOPY START _ WIDTH   , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( RETURNDATACOPY START _ WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
 
     rule #memory ( CREATE _ START WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
     rule #memory ( RETURN START WIDTH   , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
@@ -1686,22 +1717,23 @@ Grumble grumble, K sucks at `owise`.
     rule #memory(DUP(_) _,   MU) => MU
     rule #memory(SWAP(_) _,  MU) => MU
 
-    rule #memory(STOP,         MU) => MU
-    rule #memory(ADDRESS,      MU) => MU
-    rule #memory(ORIGIN,       MU) => MU
-    rule #memory(CALLER,       MU) => MU
-    rule #memory(CALLVALUE,    MU) => MU
-    rule #memory(CALLDATASIZE, MU) => MU
-    rule #memory(CODESIZE,     MU) => MU
-    rule #memory(GASPRICE,     MU) => MU
-    rule #memory(COINBASE,     MU) => MU
-    rule #memory(TIMESTAMP,    MU) => MU
-    rule #memory(NUMBER,       MU) => MU
-    rule #memory(DIFFICULTY,   MU) => MU
-    rule #memory(GASLIMIT,     MU) => MU
-    rule #memory(PC,           MU) => MU
-    rule #memory(MSIZE,        MU) => MU
-    rule #memory(GAS,          MU) => MU
+    rule #memory(STOP,           MU) => MU
+    rule #memory(ADDRESS,        MU) => MU
+    rule #memory(ORIGIN,         MU) => MU
+    rule #memory(CALLER,         MU) => MU
+    rule #memory(CALLVALUE,      MU) => MU
+    rule #memory(CALLDATASIZE,   MU) => MU
+    rule #memory(RETURNDATASIZE, MU) => MU
+    rule #memory(CODESIZE,       MU) => MU
+    rule #memory(GASPRICE,       MU) => MU
+    rule #memory(COINBASE,       MU) => MU
+    rule #memory(TIMESTAMP,      MU) => MU
+    rule #memory(NUMBER,         MU) => MU
+    rule #memory(DIFFICULTY,     MU) => MU
+    rule #memory(GASLIMIT,       MU) => MU
+    rule #memory(PC,             MU) => MU
+    rule #memory(MSIZE,          MU) => MU
+    rule #memory(GAS,            MU) => MU
 
     rule #memory(SELFDESTRUCT _, MU) => MU
     rule #memory(CALLDATALOAD _, MU) => MU
@@ -1738,9 +1770,10 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
     rule <k> #gasExec(SCHED, EXP W0 0)  => Gexp < SCHED > ... </k>
     rule <k> #gasExec(SCHED, EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=K 0
 
-    rule <k> #gasExec(SCHED, CALLDATACOPY  _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
-    rule <k> #gasExec(SCHED, CODECOPY      _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
-    rule <k> #gasExec(SCHED, EXTCODECOPY _ _ _ WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
+    rule <k> #gasExec(SCHED, CALLDATACOPY    _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
+    rule <k> #gasExec(SCHED, RETURNDATACOPY  _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
+    rule <k> #gasExec(SCHED, CODECOPY        _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
+    rule <k> #gasExec(SCHED, EXTCODECOPY   _ _ _ WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
 
     rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
 
@@ -1780,22 +1813,23 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
     rule <k> #gasExec(SCHED, REVERT _ _) => Gzero < SCHED > ... </k>
 
     // Wbase
-    rule <k> #gasExec(SCHED, ADDRESS)      => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, ORIGIN)       => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, CALLER)       => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, CALLVALUE)    => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, CALLDATASIZE) => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, CODESIZE)     => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, GASPRICE)     => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, COINBASE)     => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, TIMESTAMP)    => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, NUMBER)       => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, DIFFICULTY)   => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, GASLIMIT)     => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, POP _)        => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, PC)           => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, MSIZE)        => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, GAS)          => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, ADDRESS)        => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, ORIGIN)         => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, CALLER)         => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, CALLVALUE)      => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, CALLDATASIZE)   => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, RETURNDATASIZE) => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, CODESIZE)       => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, GASPRICE)       => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, COINBASE)       => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, TIMESTAMP)      => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, NUMBER)         => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, DIFFICULTY)     => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, GASLIMIT)       => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, POP _)          => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, PC)             => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, MSIZE)          => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, GAS)            => Gbase < SCHED > ... </k>
 
     // Wverylow
     rule <k> #gasExec(SCHED, ADD _ _)        => Gverylow < SCHED > ... </k>
@@ -1926,8 +1960,9 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
  // ----------------------------------------------------------
 
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth"
-                          | "Gemptyisnonexistent"     | "Gzerovaluenewaccountgas" | "Ghasrevert"
- // --------------------------------------------------------------------------------------------
+                          | "Gemptyisnonexistent"     | "Gzerovaluenewaccountgas"
+                          | "Ghasrevert"              | "Ghasreturndata"
+ // --------------------------------------------------------------------
 ```
 
 A `ScheduleConst` is a constant determined by the fee schedule; applying a `ScheduleConst` to a `Schedule` yields the correct constant for that schedule.
@@ -2004,6 +2039,7 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
     rule Gemptyisnonexistent     << DEFAULT >> => false
     rule Gzerovaluenewaccountgas << DEFAULT >> => true
     rule Ghasrevert              << DEFAULT >> => false
+    rule Ghasreturndata          << DEFAULT >> => false
 ```
 
 ```c++
@@ -2173,9 +2209,10 @@ static const EVMSchedule EIP158Schedule = []
     rule SCHEDCONST < BYZANTIUM > => SCHEDCONST < EIP158 >
       requires notBool ( SCHEDCONST ==K Rb )
 
-    rule Ghasrevert << BYZANTIUM >> => true
-    rule SCHEDFLAG  << BYZANTIUM >> => SCHEDFLAG << EIP158 >>
-      requires notBool ( SCHEDFLAG ==K Ghasrevert )
+    rule Ghasrevert     << BYZANTIUM >> => true
+    rule Ghasreturndata << BYZANTIUM >> => true
+    rule SCHEDFLAG      << BYZANTIUM >> => SCHEDFLAG << EIP158 >>
+      requires notBool ( SCHEDFLAG ==K Ghasrevert orBool SCHEDFLAG ==K Ghasreturndata )
 ```
 
 ```c++
@@ -2293,6 +2330,8 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  58,     _ ) => GASPRICE
     rule #dasmOpCode(  59,     _ ) => EXTCODESIZE
     rule #dasmOpCode(  60,     _ ) => EXTCODECOPY
+    rule #dasmOpCode(  61, SCHED ) => RETURNDATASIZE requires Ghasreturndata << SCHED >>
+    rule #dasmOpCode(  62, SCHED ) => RETURNDATACOPY requires Ghasreturndata << SCHED >>
     rule #dasmOpCode(  64,     _ ) => BLOCKHASH
     rule #dasmOpCode(  65,     _ ) => COINBASE
     rule #dasmOpCode(  66,     _ ) => TIMESTAMP
