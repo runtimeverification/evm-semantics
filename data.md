@@ -182,19 +182,25 @@ Care is needed for `^Word` to avoid big exponentiation.
 
 ```{.k .uiuck .rvk}
     syntax Int ::= Int "^Word" Int [function]
- // -----------------------------------------
+    syntax Int ::= powmod(Int, Int, Int) [function]
+ // -----------------------------------------------
+```
+
+```{.k .uiuck}
     rule W0 ^Word W1 => (W0 ^Word (W1 /Int 2)) ^Word 2  requires W1 >=Int pow16 andBool W1 %Int 2 ==Int 0
     rule W0 ^Word W1 => (W0 ^Word (W1 -Int 1)) *Word W0 requires W1 >=Int pow16 andBool W1 %Int 2 ==Int 1
+    rule W0 ^Word W1 => (W0 ^Int W1) %Int pow256 requires W1 <Int pow16
 ```
 
 RV-K has a more efficient power-modulus operator.
 
-```{.k .uiuck}
-    rule W0 ^Word W1 => (W0 ^Int W1) %Int pow256 requires W1 <Int pow16
+```{.k .rvk}
+    rule W0 ^Word W1 => powmod(W0, W1, pow256)
 ```
 
-```{.k .rvk}
-    rule W0 ^Word W1 => W0 ^%Int W1 pow256 requires W1 <Int pow16
+```{.k .uiuck .rvk}
+    rule powmod(W0, W1, W2) => W0 ^%Int W1 W2 requires W2 =/=Int 0
+    rule powmod(W0, W1, 0)  => 0
 ```
 
 `/sWord` and `%sWord` give the signed interperetations of `/Word` and `%Word`.
