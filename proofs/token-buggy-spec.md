@@ -26,6 +26,7 @@ module TOKEN-SPEC
          <caller>       %CALLER_ID              </caller>
          <callData>     .WordStack              </callData>
          <callValue>    0                       </callValue>
+         <static>       false                   </static>
 
          <wordStack>                        TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
                   => A1 -Int TRANSFER : 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS

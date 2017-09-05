@@ -26,6 +26,7 @@
         <pc> 46 </pc>
         <gas> 999979991 </gas>
         <previousGas> 999999991 </previousGas>
+        <static> false </static>
       </txExecState>
       <substate>
         <selfDestruct> .Set </selfDestruct>
