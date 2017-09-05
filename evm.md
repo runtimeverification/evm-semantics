@@ -1387,7 +1387,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .WordStack GLIMIT VALUE APPVALUE ARGS STATIC
          ...
          </k>
-      requires ACCTCODE >Int 0 andBool ACCTCODE <=Int 4
+         <schedule> SCHED </schedule>
+      requires ACCTCODE in #precompiledAccounts(SCHED)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) CODE GLIMIT VALUE APPVALUE ARGS STATIC
@@ -1396,14 +1397,15 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <schedule> SCHED </schedule>
          <acctID> ACCTCODE </acctID>
          <code> CODE </code>
-      requires notBool (ACCTCODE >Int 0 andBool ACCTCODE <=Int 4)
+      requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO .Map .WordStack GLIMIT VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool (ACCTCODE >Int 0 andBool ACCTCODE <=Int 4) andBool notBool ACCTCODE in_keys(ACCTS)
+         <schedule> SCHED </schedule>
+      requires notBool ACCTCODE in #precompiledAccounts(SCHED) andBool notBool ACCTCODE in_keys(ACCTS)
 
     rule #callWithCode ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC
       => #pushCallStack ~> #pushWorldState ~> #pushSubstate
@@ -1718,6 +1720,17 @@ Precompiled Contracts
     rule #precompiled(2) => SHA256
     rule #precompiled(3) => RIP160
     rule #precompiled(4) => ID
+    rule #precompiled(5) => MODEXP
+
+    syntax Set ::= #precompiledAccounts ( Schedule ) [function]
+ // -----------------------------------------------------------
+    rule #precompiledAccounts(DEFAULT)        => SetItem(1) SetItem(2) SetItem(3) SetItem(4)
+    rule #precompiledAccounts(FRONTIER)       => #precompiledAccounts(DEFAULT)
+    rule #precompiledAccounts(HOMESTEAD)      => #precompiledAccounts(FRONTIER)
+    rule #precompiledAccounts(EIP150)         => #precompiledAccounts(HOMESTEAD)
+    rule #precompiledAccounts(EIP158)         => #precompiledAccounts(EIP150)
+    rule #precompiledAccounts(BYZANTIUM)      => #precompiledAccounts(EIP158) SetItem(5)
+    rule #precompiledAccounts(CONSTANTINOPLE) => #precompiledAccounts(BYZANTIUM)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -1754,6 +1767,23 @@ Precompiled Contracts
     rule <k> ID => #end ... </k>
          <callData> DATA </callData>
          <output> _ => DATA </output>
+
+    syntax PrecompiledOp ::= "MODEXP"
+ // ---------------------------------
+    rule <k> MODEXP => #end ... </k>
+         <callData> DATA </callData>
+         <output> _ => #modexp1(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #asWord(DATA [ 64 .. 32 ]), #drop(96,DATA)) </output>
+
+    syntax WordStack ::= #modexp1 ( Int , Int , Int , WordStack ) [function]
+                       | #modexp2 ( Int , Int , Int , WordStack ) [function]
+                       | #modexp3 ( Int , Int , Int , WordStack ) [function]
+                       | #modexp4 ( Int , Int , Int )             [function]
+ // ------------------------------------------------------------------------
+    rule #modexp1(BASELEN, EXPLEN,   MODLEN, DATA) => #modexp2(#asInteger(DATA [ 0 .. BASELEN ]), EXPLEN, MODLEN, #drop(BASELEN, DATA)) requires MODLEN =/=Int 0
+    rule #modexp1(_,       _,        0,      _)    => .WordStack
+    rule #modexp2(BASE,    EXPLEN,   MODLEN, DATA) => #modexp3(BASE, #asInteger(DATA [ 0 .. EXPLEN ]), MODLEN, #drop(EXPLEN, DATA))
+    rule #modexp3(BASE,    EXPONENT, MODLEN, DATA) => #padToWidth(MODLEN, #modexp4(BASE, EXPONENT, #asInteger(DATA [ 0 .. MODLEN ])))
+    rule #modexp4(BASE,    EXPONENT, MODULUS)      => #asByteStack(powmod(BASE, EXPONENT, MODULUS))
 ```
 
 Ethereum Gas Calculation
@@ -1999,6 +2029,12 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
     rule <k> #gasExec(_, SHA256) =>  60 +Int  12 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
     rule <k> #gasExec(_, RIP160) => 600 +Int 120 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
     rule <k> #gasExec(_, ID)     =>  15 +Int   3 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, MODEXP)
+          => #multComplexity(maxInt(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 64 .. 32 ]))) *Int maxInt(#adjustedExpLength(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), DATA), 1) /Int Gquaddivisor < SCHED >
+         ...
+         </k>
+         <schedule> SCHED </schedule>
+         <callData> DATA </callData>
 ```
 
 There are several helpers for calculating gas (most of them also specified in the yellowpaper).
@@ -2065,6 +2101,21 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
     syntax Int ::= "G*" "(" Int "," Int "," Int ")" [function]
  // ----------------------------------------------------------
     rule G*(GAVAIL, GLIMIT, REFUND) => GAVAIL +Int minInt((GLIMIT -Int GAVAIL)/Int 2, REFUND)
+
+    syntax Int ::= #multComplexity(Int) [function]
+ // ----------------------------------------------
+    rule #multComplexity(X) => X *Int X                                     requires X <=Int 64
+    rule #multComplexity(X) => X *Int X /Int 4 +Int 96 *Int X -Int 3072     requires X >Int 64 andBool X <=Int 1024
+    rule #multComplexity(X) => X *Int X /Int 16 +Int 480 *Int X -Int 199680 requires X >Int 1024
+
+    syntax Int ::= #adjustedExpLength(Int, Int, WordStack) [function]
+                 | #adjustedExpLength(Int)                 [function, klabel(#adjustedExpLengthAux)]
+ // ------------------------------------------------------------------------------------------------
+    rule #adjustedExpLength(BASELEN, EXPLEN, DATA) => #ifInt EXPLEN <=Int 32 #then 0 #else 8 *Int (EXPLEN -Int 32) #fi +Int #adjustedExpLength(#asInteger(DATA [ 96 +Int BASELEN .. minInt(EXPLEN, 32) ]))
+
+    rule #adjustedExpLength(0) => 0
+    rule #adjustedExpLength(1) => 0
+    rule #adjustedExpLength(N) => 1 +Int #adjustedExpLength(N /Int 2) requires N >Int 1
 ```
 
 Fee Schedule from C++ Implementation
@@ -2091,13 +2142,13 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
     syntax Int ::= ScheduleConst "<" Schedule ">" [function]
  // --------------------------------------------------------
 
-    syntax ScheduleConst ::= "Gzero"        | "Gbase"        | "Gverylow"       | "Glow"           | "Gmid"         | "Ghigh"
-                           | "Gextcodesize" | "Gextcodecopy" | "Gbalance"       | "Gsload"         | "Gjumpdest"    | "Gsstoreset"
-                           | "Gsstorereset" | "Rsstoreclear" | "Rselfdestruct"  | "Gselfdestruct"  | "Gcreate"      | "Gcodedeposit"
-                           | "Gcall"        | "Gcallvalue"   | "Gcallstipend"   | "Gnewaccount"    | "Gexp"         | "Gexpbyte"      | "Gmemory"
-                           | "Gtxcreate"    | "Gtxdatazero"  | "Gtxdatanonzero" | "Gtransaction"   | "Glog"         | "Glogdata"      | "Glogtopic"
-                           | "Gsha3"        | "Gsha3word"    | "Gcopy"          | "Gblockhash"     | "Gquadcoeff"   | "maxCodeSize"   | "Rb"
- // ----------------------------------------------------------------------------------------------------------------------------------------
+    syntax ScheduleConst ::= "Gzero"        | "Gbase"          | "Gverylow"      | "Glow"          | "Gmid"        | "Ghigh"
+                           | "Gextcodesize" | "Gextcodecopy"   | "Gbalance"      | "Gsload"        | "Gjumpdest"   | "Gsstoreset"
+                           | "Gsstorereset" | "Rsstoreclear"   | "Rselfdestruct" | "Gselfdestruct" | "Gcreate"     | "Gcodedeposit"  | "Gcall"
+                           | "Gcallvalue"   | "Gcallstipend"   | "Gnewaccount"   | "Gexp"          | "Gexpbyte"    | "Gmemory"       | "Gtxcreate"
+                           | "Gtxdatazero"  | "Gtxdatanonzero" | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
+                           | "Gsha3word"    | "Gcopy"          | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
+ // -------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
 ### Defualt Schedule
@@ -2136,9 +2187,10 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
     rule Gselfdestruct < DEFAULT > => 0
     rule Rselfdestruct < DEFAULT > => 24000
 
-    rule Gmemory    < DEFAULT > => 3
-    rule Gquadcoeff < DEFAULT > => 512
-    rule Gcopy      < DEFAULT > => 3
+    rule Gmemory      < DEFAULT > => 3
+    rule Gquadcoeff   < DEFAULT > => 512
+    rule Gcopy        < DEFAULT > => 3
+    rule Gquaddivisor < DEFAULT > => 20
 
     rule Gtransaction   < DEFAULT > => 21000
     rule Gtxcreate      < DEFAULT > => 53000
