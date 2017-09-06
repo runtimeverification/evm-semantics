@@ -343,7 +343,7 @@ module EVM-DATA
 
 
     syntax Int ::= #sizeWordStack ( WordStack )  [function, smtlib(sizeWordStack)]
- // ------------------------------------------------------
+ // ------------------------------------------------------------------------------
     rule #sizeWordStack ( .WordStack ) => 0
     rule #sizeWordStack ( W : WS )     => 1 +Int #sizeWordStack(WS)
 
@@ -373,15 +373,15 @@ module EVM-DATA
 //     word is a byte wide.
 
 
-    syntax Int ::= #asWord ( WordStack ) [function]
- // -----------------------------------------------
+    syntax Int ::= #asWord ( WordStack ) [function, smtlib(asWord)]
+ // ---------------------------------------------------------------
     rule #asWord( .WordStack )    => 0
     rule #asWord( W : .WordStack) => W
     rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
 
     syntax WordStack ::= #asByteStack ( Int )             [function]
-                       | #asByteStack ( Int , WordStack ) [function, klabel(#asByteStackAux)]
- // -----------------------------------------------------------------------------------------
+                       | #asByteStack ( Int , WordStack ) [function, klabel(#asByteStackAux), smtlib(asByteStack)]
+ // --------------------------------------------------------------------------------------------------------------
     rule #asByteStack( W ) => #asByteStack( W , .WordStack )
     rule #asByteStack( 0 , WS ) => WS
     rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0
