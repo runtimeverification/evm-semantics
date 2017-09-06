@@ -11,7 +11,7 @@
 module BALANCE-OF-SPEC
     imports ETHEREUM-SIMULATION
 
-    rule <k>    #execute ... </k>
+    rule <k> #execute ... </k>
          <exit-code> 1       </exit-code>
          <mode>      NORMAL  </mode>
          <schedule>  DEFAULT </schedule>
