@@ -349,7 +349,7 @@ This stack also serves as a cons-list, so we provide some standard cons-list man
 
 ```{.k .uiuck .rvk}
     syntax Int ::= #sizeWordStack ( WordStack )  [function, smtlib(sizeWordStack)]
- // ------------------------------------------------------
+ // ------------------------------------------------------------------------------
     rule #sizeWordStack ( .WordStack ) => 0
     rule #sizeWordStack ( W : WS )     => 1 +Int #sizeWordStack(WS)
 
@@ -377,15 +377,15 @@ The local memory of execution is a byte-array (instead of a word-array).
 -   `#asByteStack` will split a single word up into a `WordStack` where each word is a byte wide.
 
 ```{.k .uiuck .rvk}
-    syntax Int ::= #asWord ( WordStack ) [function]
- // -----------------------------------------------
+    syntax Int ::= #asWord ( WordStack ) [function, smtlib(asWord)]
+ // ---------------------------------------------------------------
     rule #asWord( .WordStack )    => 0
     rule #asWord( W : .WordStack) => W
     rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
 
     syntax WordStack ::= #asByteStack ( Int )             [function]
-                       | #asByteStack ( Int , WordStack ) [function, klabel(#asByteStackAux)]
- // -----------------------------------------------------------------------------------------
+                       | #asByteStack ( Int , WordStack ) [function, klabel(#asByteStackAux), smtlib(asByteStack)]
+ // --------------------------------------------------------------------------------------------------------------
     rule #asByteStack( W ) => #asByteStack( W , .WordStack )
     rule #asByteStack( 0 , WS ) => WS
     rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0
