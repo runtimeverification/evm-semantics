@@ -82,12 +82,23 @@ module EVM
                       <origin>   0 </origin>                            // I_o
 
                       // I_H* (block information)
-                      <gasLimit>     0 </gasLimit>                      // I_Hl
-                      <coinbase>     0 </coinbase>                      // I_Hc
-                      <timestamp>    0 </timestamp>                     // I_Hs
-                      <number>       0 </number>                        // I_Hi
-                      <previousHash> 0 </previousHash>                  // I_Hp
-                      <difficulty>   0 </difficulty>                    // I_Hd
+                      <previousHash>     0          </previousHash>     // I_Hp
+                      <ommersHash>       0          </ommersHash>       // I_Ho
+                      <coinbase>         0          </coinbase>         // I_Hc
+                      <stateRoot>        0          </stateRoot>        // I_Hr
+                      <transactionsRoot> 0          </transactionsRoot> // I_Ht
+                      <receiptsRoot>     0          </receiptsRoot>     // I_He
+                      <logsBloom>        .WordStack </logsBloom>        // I_Hb
+                      <difficulty>       0          </difficulty>       // I_Hd
+                      <number>           0          </number>           // I_Hi
+                      <gasLimit>         0          </gasLimit>         // I_Hl
+                      <gasUsed>          0          </gasUsed>          // I_Hg
+                      <timestamp>        0          </timestamp>        // I_Hs
+                      <extraData>        .WordStack </extraData>        // I_Hx
+                      <mixHash>          0          </mixHash>          // I_Hm
+                      <nonce>            0          </nonce>            // I_Hn
+
+                      <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
 
                     </evm>
 
@@ -121,6 +132,9 @@ module EVM
                       // Transactions Record
                       // -------------------
 
+                      <txOrder>   .List </txOrder>
+                      <txPending> .List </txPending>
+
                       <messages>
 
 
@@ -131,11 +145,16 @@ module EVM
 
 
 
-                          <msgID>  0    </msgID>
-                          <to>     0    </to>
-                          <from>   0    </from>
-                          <amount> 0    </amount>
-                          <data>   .Map </data>
+                          <msgID>      0          </msgID>
+                          <txNonce>    0          </txNonce>            // T_n
+                          <txGasPrice> 0          </txGasPrice>         // T_p
+                          <txGasLimit> 0          </txGasLimit>         // T_g
+                          <to>         0          </to>                 // T_t
+                          <value>      0          </value>              // T_v
+                          <v>          0          </v>                  // T_w
+                          <r>          .WordStack </r>                  // T_r
+                          <s>          .WordStack </s>                  // T_s
+                          <data>       .WordStack </data>               // T_i/T_e
                         </message>
                       </messages>
 
@@ -179,36 +198,38 @@ module EVM
 // -   `#dropCallStack` removes the top element of the `callStack`.
 
 
-    syntax State ::= "{" Int "|" Int "|" Map "|" Int "|" WordStack "|" Int "|" WordStack "|" Map "|" Int "}"
- // --------------------------------------------------------------------------------------------------------
+    syntax State ::= "{" Int "|" Int "|" Map "|" Int "|" WordStack "|" Int "|" WordStack "|" Map "|" Int "|" Int "}"
+ // ----------------------------------------------------------------------------------------------------------------
 
     syntax InternalOp ::= "#pushCallStack"
  // --------------------------------------
     rule <k> #pushCallStack => . ... </k>
-         <callStack> (.List => ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | PCOUNT })) ... </callStack>
-         <id>        ACCT   </id>
-         <gas>       GAVAIL </gas>
-         <program>   PGM    </program>
-         <caller>    CR     </caller>
-         <callData>  CD     </callData>
-         <callValue> CV     </callValue>
-         <wordStack> WS     </wordStack>
-         <localMem>  LM     </localMem>
-         <pc>        PCOUNT </pc>
+         <callStack>  (.List => ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | MUSED | PCOUNT })) ... </callStack>
+         <id>         ACCT   </id>
+         <gas>        GAVAIL </gas>
+         <program>    PGM    </program>
+         <caller>     CR     </caller>
+         <callData>   CD     </callData>
+         <callValue>  CV     </callValue>
+         <wordStack>  WS     </wordStack>
+         <localMem>   LM     </localMem>
+         <memoryUsed> MUSED  </memoryUsed>
+         <pc>         PCOUNT </pc>
 
     syntax InternalOp ::= "#popCallStack"
  // -------------------------------------
     rule <k> #popCallStack => . ... </k>
-         <callStack> (ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | PCOUNT }) => .List) ... </callStack>
-         <id>        _ => ACCT   </id>
-         <gas>       _ => GAVAIL </gas>
-         <program>   _ => PGM    </program>
-         <caller>    _ => CR     </caller>
-         <callData>  _ => CD     </callData>
-         <callValue> _ => CV     </callValue>
-         <wordStack> _ => WS     </wordStack>
-         <localMem>  _ => LM     </localMem>
-         <pc>        _ => PCOUNT </pc>
+         <callStack>  (ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | MUSED | PCOUNT }) => .List) ... </callStack>
+         <id>         _ => ACCT   </id>
+         <gas>        _ => GAVAIL </gas>
+         <program>    _ => PGM    </program>
+         <caller>     _ => CR     </caller>
+         <callData>   _ => CD     </callData>
+         <callValue>  _ => CV     </callValue>
+         <wordStack>  _ => WS     </wordStack>
+         <localMem>   _ => LM     </localMem>
+         <memoryUsed> _ => MUSED  </memoryUsed>
+         <pc>         _ => PCOUNT </pc>
 
     syntax InternalOp ::= "#dropCallStack"
  // --------------------------------------
@@ -289,9 +310,9 @@ module EVM
 
     syntax KItem ::= "#?" K ":" K "?#"
  // ----------------------------------
-    rule <k>                #? K : _ ?# => K  ... </k>
-    rule <k> #exception ~>  #? _ : K ?# => K  ... </k>
-    rule <k> #end       ~> (#? _ : _ ?# => .) ... </k>
+    rule <k>                #? K : _ ?#  => K         ... </k>
+    rule <k> #exception ~>  #? _ : K ?#  => K         ... </k>
+    rule <k> #end       ~> (#? K : _ ?#) => K ~> #end ... </k>
 
 
 // OpCode Execution Cycle
@@ -361,10 +382,10 @@ module EVM
 
     rule <mode> EXECMODE </mode>
          <k> #next
-           => #pushCallStack
-           ~> #exceptional? [ OP ] ~> #exec [ OP ] ~> #pc [ OP ]
-           ~> #? #dropCallStack : #popCallStack ~> #exception ?#
-          ...
+          => #pushCallStack
+          ~> #exceptional? [ OP ] ~> #exec [ OP ] ~> #pc [ OP ]
+          ~> #? #dropCallStack : #popCallStack ~> #exception ?#
+         ...
          </k>
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
@@ -578,16 +599,16 @@ module EVM
 // After executing a transaction, it's necessary to have the effect of the substate
 // log recorded.
 
-// -   `#finalize` makes the substate log actually have an effect on the state.
+// -   `#finalizeTx` makes the substate log actually have an effect on the state.
 
 
-    syntax InternalOp ::= "#finalize"
- // ---------------------------------
-    rule <k> #finalize => . ... </k>
+    syntax InternalOp ::= #finalizeTx ( Bool )
+ // ------------------------------------------
+    rule <k> #finalizeTx(true) => . ... </k>
          <selfDestruct> .Set </selfDestruct>
-         <refund>       0    </refund>
 
-    rule <k> #finalize ... </k>
+    rule <k> #finalizeTx(false => true) ... </k>
+         <mode> VMTESTS </mode>
          <id> ACCT </id>
          <refund> BAL => 0 </refund>
          <account>
@@ -595,10 +616,47 @@ module EVM
            <balance> CURRBAL => CURRBAL +Word BAL </balance>
            ...
          </account>
-      requires BAL =/=K 0
 
-    rule <k> #finalize ... </k>
+    rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
+         <mode> NORMAL </mode>
+         <coinbase> MINER </coinbase>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool MINER in ACCTS
+
+    rule <k> #finalizeTx(false) ... </k>
+         <mode> NORMAL </mode>
+         <gas> GAVAIL => G*(GAVAIL, GLIMIT, REFUND) </gas>
+         <refund> REFUND => 0 </refund>
+         <txPending> ListItem(MsgId:Int) ...</txPending>
+         <msgID> MsgId </msgID>
+         <txGasLimit> GLIMIT </txGasLimit>
+         requires REFUND =/=Int 0
+
+    rule <k> #finalizeTx(false => true) ... </k>
+         <mode> NORMAL </mode>
+         <origin> ORG </origin>
+         <coinbase> MINER </coinbase>
+         <gas> GAVAIL </gas>
          <refund> 0 </refund>
+         <account>
+           <acctID> ORG </acctID>
+           <balance> ORGBAL => ORGBAL +Int GAVAIL *Int GPRICE </balance>
+           ...
+         </account>
+         <account>
+           <acctID> MINER </acctID>
+           <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int GPRICE </balance>
+           ...
+         </account>
+         <txPending> ListItem(TXID:Int) => .List ... </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <txGasLimit> GLIMIT </txGasLimit>
+           <txGasPrice> GPRICE </txGasPrice>
+           ...
+         </message>
+
+    rule <k> #finalizeTx(true) ... </k>
          <selfDestruct> ... (SetItem(ACCT) => .Set) </selfDestruct>
          <activeAccounts> ... (SetItem(ACCT) => .Set) </activeAccounts>
          <accounts>
@@ -1078,59 +1136,84 @@ module EVM
  // ---------------------------------------------------------
 
 
-// -   `#call_____` takes the calling account, the account to execute as, the code
-//     to execute, the amount to transfer, and the arguments.
+// -   `#call_____` takes the calling account, the account to execute as, the
+//     account whose code should execute, the gas limit, the amount to transfer,
+//     and the arguments.
+// -   `#callWithCode______` takes the calling account, the accout to execute as,
+//     the code to execute (as a map), the gas limit, the amount to transfer, and
+//     the arguments.
 // -   `#return__` is a placeholder for the calling program, specifying where to
 //     place the returned data in memory.
 
 
-    syntax InternalOp ::= "#call" Int Int Map Int Int WordStack
-                        | "#mkCall" Int Int Map Int Int WordStack
+    syntax InternalOp ::= "#call" Int Int Int Int Int Int WordStack
+                        | "#callWithCode" Int Int Map Int Int Int WordStack
+                        | "#mkCall" Int Int Map Int Int Int WordStack
  // -------------------------------------------------------------
-    rule <mode> EXECMODE </mode>
-         <schedule> SCHED </schedule>
-         <k> #call ACCTFROM ACCTTO CODE GCAP VALUE ARGS
-           => #pushCallStack ~> #pushWorldState
-           ~> #transferFunds ACCTFROM ACCTTO VALUE
-           ~> #mkCall ACCTFROM ACCTTO CODE Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE ARGS
-          ...
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
+          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) GLIMIT VALUE APPVALUE ARGS
+         ...
          </k>
-         <previousGas> GAVAIL </previousGas>
+      requires ACCTTO >Int 0 andBool ACCTTO <=Int 4
+
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
+          => #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
+         ...
+         </k>
+         <acctID> ACCTCODE </acctID>
+         <code> CODE </code>
+      requires notBool (ACCTTO >Int 0 andBool ACCTTO <=Int 4)
+
+    rule <schedule> SCHED </schedule>
+         <k> #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
+          => #pushCallStack ~> #pushWorldState
+          ~> #transferFunds ACCTFROM ACCTTO VALUE
+          ~> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
+         ...
+         </k>
          <callDepth> CD </callDepth>
-         <activeAccounts> ACCTS </activeAccounts>
       requires CD <Int 1024
 
-    rule <k> #call _ _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
+    rule <k> #callWithCode _ _ _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
          <callDepth> CD </callDepth>
       requires CD >=Int 1024
 
     rule <mode> EXECMODE </mode>
-         <k> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE ARGS
-           => #if EXECMODE ==K VMTESTS #then #end #else #next #fi
-          ...
+         <k> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
+          => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
+         ...
          </k>
          <callLog> ... (.Set => SetItem({ ACCTTO | GLIMIT | VALUE | ARGS })) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
+         <callData> _ => ARGS </callData>
+         <callValue> _ => APPVALUE </callValue>
          <id> _ => ACCTTO </id>
          <gas> _ => GLIMIT </gas>
-         <pc> _ => 0 </pc>
          <caller> _ => ACCTFROM </caller>
-         <localMem> _ => #asMapWordStack(ARGS) </localMem>
          <program> _ => CODE </program>
+
+    syntax KItem ::= "#initVM"
+ // --------------------------
+    rule <k> #initVM    => . ...      </k>
+         <pc>         _ => 0          </pc>
+         <memoryUsed> _ => 0          </memoryUsed>
+         <output>     _ => .WordStack </output>
+         <wordStack>  _ => .WordStack </wordStack>
+         <localMem>   _ => .Map       </localMem>
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
     rule <k> #exception ~> #return _ _
-           => #popCallStack ~> #popWorldState  ~> 0 ~> #push
-          ...
+          => #popCallStack ~> #popWorldState  ~> 0 ~> #push
+         ...
          </k>
 
     rule <mode> EXECMODE </mode>
          <k> #end ~> #return RETSTART RETWIDTH
-           => #popCallStack
-           ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi
-           ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
-          ...
+          => #popCallStack
+          ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi
+          ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
+         ...
          </k>
          <output> OUT </output>
          <gas> GAVAIL </gas>
@@ -1159,57 +1242,39 @@ module EVM
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTTO CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
-          ...
+          => #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
+          ~> #return RETSTART RETWIDTH
+         ...
          </k>
+         <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <code> CODE </code>
-           ...
-         </account>
-      requires notBool (ACCTTO >Int 0 andBool ACCTTO <=Int 4)
-
-    rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTTO (0 |-> #precompiled(ACCTTO)) GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
-          ...
-         </k>
-         <id> ACCTFROM </id>
-         <localMem> LM </localMem>
-         requires ACCTTO >Int 0 andBool ACCTTO <=Int 4
+         <activeAccounts> ACCTS </activeAccounts>
+         <previousGas> GAVAIL </previousGas>
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM CODE GCAP VALUE #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
-           ...
+          => #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
+          ~> #return RETSTART RETWIDTH
+         ...
          </k>
+         <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <code> CODE </code>
-           ...
-         </account>
+         <activeAccounts> ACCTS </activeAccounts>
+         <previousGas> GAVAIL </previousGas>
 
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-           => #call ACCTFROM ACCTFROM CODE GCAP 0 #range(LM, ARGSTART, ARGWIDTH)
-           ~> #return RETSTART RETWIDTH
-           ...
+          => #call ACCTFROM ACCTFROM ACCTTO GCAP 0 VALUE #range(LM, ARGSTART, ARGWIDTH)
+          ~> #return RETSTART RETWIDTH
+         ...
          </k>
          <id> ACCTFROM </id>
+         <callValue> VALUE </callValue>
          <localMem> LM </localMem>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <code> CODE </code>
-           ...
-         </account>
 
 
 // ### Account Creation/Deletion
@@ -1220,34 +1285,37 @@ module EVM
 //     code deposit can be paid, indicating an error if not.
 
 
-    syntax InternalOp ::= "#create" Int Int Int Map
-                        | "#mkCreate" Map Int Int
- // ---------------------------------------------
-    rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
-           => #pushCallStack ~> #pushWorldState
-           ~> #transferFunds ACCTFROM ACCTTO VALUE
-           ~> #mkCreate INITCODE GAVAIL VALUE
-          ...
+    syntax InternalOp ::= "#create" Int Int Int Int Map
+    syntax KItem      ::= "#mkCreate" Int Map Int Int
+ // -------------------------------------------------
+    rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
+          => #pushCallStack ~> #pushWorldState
+          ~> #transferFunds ACCTFROM ACCTTO VALUE
+          ~> #mkCreate ACCTFROM INITCODE GAVAIL VALUE
+         ...
          </k>
-         <gas> GAVAIL </gas>
          <callDepth> CD </callDepth>
       requires CD <Int 1024
 
-    rule <k> #create _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
+    rule <k> #exception ~> #mkCreate _ _ GAVAIL _ => #exception ... </k> <gas> _ => GAVAIL </gas>
+
+    rule <k> #create _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
          <callDepth> CD </callDepth>
       requires CD >=Int 1024
 
     rule <mode> EXECMODE </mode>
-         <k> #mkCreate INITCODE GAVAIL VALUE
-           => #if EXECMODE ==K VMTESTS #then #end #else #next #fi
-          ...
+         <k> #mkCreate ACCTFROM INITCODE GAVAIL VALUE
+          => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
+         ...
          </k>
-         <callLog> ... (.Set => SetItem({ 0 | GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
-         <gas> _ => #allBut64th(GAVAIL) </gas>
-         <program> _ => INITCODE </program>
-         <pc> _ => 0 </pc>
-         <output> _ => .WordStack </output>
          <id> ACCT </id>
+         <gas> OLDGAVAIL => GAVAIL </gas>
+         <program> _ => INITCODE </program>
+         <caller> _ => ACCTFROM </caller>
+         <callLog> ... (.Set => SetItem({ 0 | OLDGAVAIL +Int GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
+         <callDepth> CD => CD +Int 1 </callDepth>
+         <callData> _ => .WordStack </callData>
+         <callValue> _ => VALUE </callValue>
          <account>
            <acctID> ACCT </acctID>
            <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
@@ -1255,17 +1323,27 @@ module EVM
          </account>
 
     syntax KItem ::= "#codeDeposit" Int
- // -----------------------------------
-    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
+                   | "#mkCodeDeposit" Int
+                   | "#finishCodeDeposit"
+ // -------------------------------------
+    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 ~> #push ... </k>
+         <gas> GAVAIL </gas>
 
     rule <mode> EXECMODE </mode>
-         <k> #end ~> #codeDeposit ACCT => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> ACCT ~> #push ... </k>
+         <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ~> ACCT ~> #push ...</k>
+
+    rule <k> #mkCodeDeposit ACCT => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi ~> #finishCodeDeposit ...</k>
+         <mode> EXECMODE </mode>
+         <schedule> SCHED </schedule>
          <output> OUT => .WordStack </output>
          <account>
            <acctID> ACCT </acctID>
            <code> _ => #asMapOpCodes(#dasmOpCodes(OUT)) </code>
            ...
          </account>
+    rule <k> #finishCodeDeposit => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #refund GAVAIL ...</k>
+         <mode> EXECMODE </mode>
+         <gas> GAVAIL </gas>
 
 
 // `CREATE` will attempt to `#create` the account using the initialization code and
@@ -1275,11 +1353,12 @@ module EVM
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
-           => #create ACCT #newAddr(ACCT, NONCE) VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
-           ~> #codeDeposit #newAddr(ACCT, NONCE)
-          ...
+          => #create ACCT #newAddr(ACCT, NONCE) #allBut64th(GAVAIL) VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
+          ~> #codeDeposit #newAddr(ACCT, NONCE)
+         ...
          </k>
          <id> ACCT </id>
+         <gas> GAVAIL => GAVAIL /Int 64 </gas>
          <localMem> LM </localMem>
          <activeAccounts> ACCTS </activeAccounts>
          <account>
@@ -1565,6 +1644,18 @@ module EVM
     syntax Int ::= #allBut64th ( Int ) [function]
  // ---------------------------------------------
     rule #allBut64th(N) => N -Int (N /Int 64)
+
+    syntax Int ::= G0 ( Schedule , WordStack , Bool ) [function]
+ // ------------------------------------------------------------
+    rule G0(SCHED, .WordStack, true)  => Gtxcreate    < SCHED >
+    rule G0(SCHED, .WordStack, false) => Gtransaction < SCHED >
+
+    rule G0(SCHED, 0 : REST, ISCREATE) => Gtxdatazero    < SCHED > +Int G0(SCHED, REST, ISCREATE)
+    rule G0(SCHED, N : REST, ISCREATE) => Gtxdatanonzero < SCHED > +Int G0(SCHED, REST, ISCREATE)
+
+    syntax Int ::= "G*" "(" Int "," Int "," Int ")" [function]
+ // ----------------------------------------------------------
+    rule G*(GAVAIL, GLIMIT, REFUND) => GAVAIL +Int minInt((GLIMIT -Int GAVAIL)/Int 2, REFUND)
 
 
 // Fee Schedule from C++ Implementation

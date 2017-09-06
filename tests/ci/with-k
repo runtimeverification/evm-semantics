@@ -21,11 +21,28 @@ with_kserver() {
     return $exit_status
 }
 
+build_secp256k1() {
+    local repo_dir="$base_dir/.build/secp256k1"
+    local build_dir="$base_dir/.build/local"
+    git submodule update  --init "$repo_dir"
+    [[ -e "$build_dir/lib/libsecp256k1.a" ]] || (
+        cd "$repo_dir"
+        ./autogen.sh
+        ./configure --enable-module-recovery --prefix="$build_dir"
+        make -j4 install
+    )
+
+    export PKG_CONFIG_PATH="$build_dir/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+}
+
 use_rvk() {
     type opam >/dev/null || {
         echo >&2 '`opam` not installed`'
         exit 1
     }
+
+    build_secp256k1
+
     git submodule update  --init "$rvk_dir"
     (cd "$rvk_dir"; mvn package -q -DskipTests)
     local release_dir="$rvk_dir/k-distribution/target/release/k"
@@ -41,7 +58,7 @@ use_rvk() {
     export LIBFFI_CFLAGS="-I$rvk_dir/k-distribution/include/ocaml/fakelibs"
     opam update
     opam switch 4.03.0+k
-    opam install --yes mlgmp zarith uuidm cryptokit
+    opam install --yes mlgmp zarith uuidm cryptokit secp256k1
 
     # TODO: some of RV's K's scripts don't set classpath correctly, and
     # kserver must be used.
