@@ -82,7 +82,6 @@ blockchain-tests: \
 blockchain_tests=$(wildcard tests/BlockchainTests/*/*/*/*.json)
 all_tests=$(wildcard tests/VMTests/*/*.json) ${blockchain_tests}
 skipped_tests=$(wildcard tests/VMTests/vmPerformanceTest/*.json) \
-   $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Byzantium.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Constantinople.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000*/*.json) \
