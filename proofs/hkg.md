@@ -325,11 +325,12 @@ module APPROVE-SPEC
          <callData>  .WordStack   </callData>
          <callValue> 0            </callValue>
 
-         <wordStack>   2000 : %ORIGIN_ID : WS => ?A:WordStack </wordStack>
-         <localMem>    .Map                   => ?B:Map       </localMem>
-         <pc>          574                    => 810          </pc>
-         <gas>         G                      => G -Int 7031  </gas>
-         <previousGas> _                      => _            </previousGas>
+
+         <wordStack>   A2 : %ORIGIN_ID : WS => ?A:WordStack </wordStack>
+         <localMem>    .Map                 => ?B:Map       </localMem>
+         <pc>          574                  => 806          </pc>
+         <gas>         G                    => G -Int 5269  </gas>
+         <previousGas> _                    => _            </previousGas>
 
          <selfDestruct> .Set      </selfDestruct>
          <log>          .Set => _ </log>
@@ -344,7 +345,7 @@ module APPROVE-SPEC
          <previousHash> 0               </previousHash>
          <difficulty>   256             </difficulty>
 
-         <activeAccounts> SetItem ( %ACCT_ID ) </activeAccounts>
+         <activeAccounts>   SetItem ( %ACCT_ID )   </activeAccounts>
          <accounts>
            <account>
            <acctID>   %ACCT_ID     </acctID>
@@ -352,18 +353,18 @@ module APPROVE-SPEC
            <code>     %HKG_Program </code>
            <acctMap> "nonce" |-> 0 </acctMap>
            <storage> ...
+                     3 |-> %ORIGIN_ID
+                     4 |-> %CALLER_ID
                      %ACCT_1_BALANCE |-> B1:Int
                      %ACCT_1_ALLOWED |-> A1:Int
                      %ACCT_2_BALANCE |-> B2:Int
                      %ACCT_2_ALLOWED |-> A2:Int
-                     3 |-> %ORIGIN_ID
-                     4 |->%CALLER_ID
                      ...
            </storage>
            </account>
          </accounts>
 
-      requires #sizeWordStack(WS) <Int 1014  andBool G >=Int 7031
+      requires #sizeWordStack(WS) <Int 1014  andBool G >=Int 5269
 endmodule
 ```
 
@@ -376,7 +377,7 @@ Here we provide a specification file containing a reachability rule for the veri
 module BALANCE-OF-SPEC
     imports ETHEREUM-SIMULATION
 
-    rule <k>    #execute ... </k>
+    rule <k> #execute ... </k>
          <exit-code> 1       </exit-code>
          <mode>      NORMAL  </mode>
          <schedule>  DEFAULT </schedule>
