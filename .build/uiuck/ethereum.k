@@ -162,55 +162,61 @@ module ETHEREUM-SIMULATION
 // ### Clearing State
 
 // -   `clear` clears all the execution state of the machine.
+// -   `clearX` clears the substate `X`, for `TX`, `BLOCK`, and `NETWORK`.
 
 
     syntax EthereumCommand ::= "clear"
  // ----------------------------------
-    rule <k> clear => . ... </k>
-
+    rule <k> clear => clearTX ~> clearBLOCK ~> clearNETWORK ... </k>
          <analysis> _ => .Map </analysis>
 
-         <output>     _ => .WordStack </output>
-         <memoryUsed> _ => 0          </memoryUsed>
-         <callDepth>  _ => 0          </callDepth>
-         <callStack>  _ => .List      </callStack>
-         <callLog>    _ => .Set       </callLog>
+    syntax EthreumCommand ::= "clearTX"
+ // -----------------------------------
+    rule <k> clearTX => . ... </k>
+         <output>       _ => .WordStack </output>
+         <memoryUsed>   _ => 0          </memoryUsed>
+         <callDepth>    _ => 0          </callDepth>
+         <callStack>    _ => .List      </callStack>
+         <callLog>      _ => .Set       </callLog>
+         <program>      _ => .Map       </program>
+         <id>           _ => 0          </id>
+         <caller>       _ => 0          </caller>
+         <callData>     _ => .WordStack </callData>
+         <callValue>    _ => 0          </callValue>
+         <wordStack>    _ => .WordStack </wordStack>
+         <localMem>     _ => .Map       </localMem>
+         <pc>           _ => 0          </pc>
+         <gas>          _ => 0          </gas>
+         <previousGas>  _ => 0          </previousGas>
+         <selfDestruct> _ => .Set       </selfDestruct>
+         <log>          _ => .Set       </log>
+         <refund>       _ => 0          </refund>
+         <gasPrice>     _ => 0          </gasPrice>
+         <origin>       _ => 0          </origin>
 
-         <program>     _ => .Map       </program>
-         <id>          _ => 0          </id>
-         <caller>      _ => 0          </caller>
-         <callData>    _ => .WordStack </callData>
-         <callValue>   _ => 0          </callValue>
-         <wordStack>   _ => .WordStack </wordStack>
-         <localMem>    _ => .Map       </localMem>
-         <pc>          _ => 0          </pc>
-         <gas>         _ => 0          </gas>
-         <previousGas> _ => 0          </previousGas>
-
-         <selfDestruct> _ => .Set </selfDestruct>
-         <log>          _ => .Set </log>
-         <refund>       _ => 0    </refund>
-
-         <gasPrice>         _ => 0          </gasPrice>
-         <origin>           _ => 0          </origin>
-         <previousHash>     _ => 0          </previousHash>
-         <ommersHash>       _ => 0          </ommersHash>
-         <coinbase>         _ => 0          </coinbase>
-         <stateRoot>        _ => 0          </stateRoot>
-         <transactionsRoot> _ => 0          </transactionsRoot>
-         <receiptsRoot>     _ => 0          </receiptsRoot>
-         <logsBloom>        _ => .WordStack </logsBloom>
-         <difficulty>       _ => 0          </difficulty>
-         <number>           _ => 0          </number>
-         <gasLimit>         _ => 0          </gasLimit>
-         <gasUsed>          _ => 0          </gasUsed>
-         <timestamp>        _ => 0          </timestamp>
-         <extraData>        _ => .WordStack </extraData>
-         <mixHash>          _ => 0          </mixHash>
-         <nonce>            _ => 0          </nonce>
-
+    syntax EthreumCommand ::= "clearBLOCK"
+ // --------------------------------------
+    rule <k> clearBLOCK => . ... </k>
+         <previousHash>      _ => 0             </previousHash>
+         <ommersHash>        _ => 0             </ommersHash>
+         <coinbase>          _ => 0             </coinbase>
+         <stateRoot>         _ => 0             </stateRoot>
+         <transactionsRoot>  _ => 0             </transactionsRoot>
+         <receiptsRoot>      _ => 0             </receiptsRoot>
+         <logsBloom>         _ => .WordStack    </logsBloom>
+         <difficulty>        _ => 0             </difficulty>
+         <number>            _ => 0             </number>
+         <gasLimit>          _ => 0             </gasLimit>
+         <gasUsed>           _ => 0             </gasUsed>
+         <timestamp>         _ => 0             </timestamp>
+         <extraData>         _ => .WordStack    </extraData>
+         <mixHash>           _ => 0             </mixHash>
+         <nonce>             _ => 0             </nonce>
          <ommerBlockHeaders> _ => [ .JSONList ] </ommerBlockHeaders>
 
+    syntax EthreumCommand ::= "clearNETWORK"
+ // ----------------------------------------
+    rule <k> clearNETWORK => . ... </k>
          <activeAccounts> _ => .Set </activeAccounts>
          <accounts>       _ => .Bag </accounts>
          <messages>       _ => .Bag </messages>
