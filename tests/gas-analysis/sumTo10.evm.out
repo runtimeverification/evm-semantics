@@ -32,12 +32,22 @@
       </substate>
       <gasPrice> 0 </gasPrice>
       <origin> 0 </origin>
-      <gasLimit> 0 </gasLimit>
-      <coinbase> 0 </coinbase>
-      <timestamp> 0 </timestamp>
-      <number> 0 </number>
       <previousHash> 0 </previousHash>
+      <ommersHash> 0 </ommersHash>
+      <coinbase> 0 </coinbase>
+      <stateRoot> 0 </stateRoot>
+      <transactionsRoot> 0 </transactionsRoot>
+      <receiptsRoot> 0 </receiptsRoot>
+      <logsBloom> .WordStack </logsBloom>
       <difficulty> 0 </difficulty>
+      <number> 0 </number>
+      <gasLimit> 0 </gasLimit>
+      <gasUsed> 0 </gasUsed>
+      <timestamp> 0 </timestamp>
+      <extraData> .WordStack </extraData>
+      <mixHash> 0 </mixHash>
+      <nonce> 0 </nonce>
+      <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
     </evm>
     <network>
       <activeAccounts> SetItem ( 7 ) </activeAccounts>
@@ -50,6 +60,8 @@
           <acctMap> "nonce" |-> 1 </acctMap>
         </account>
       </accounts>
+      <txOrder> .List </txOrder>
+      <txPending> .List </txPending>
       <messages> .MessageCellBag </messages>
     </network>
   </ethereum>
