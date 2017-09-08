@@ -60,19 +60,8 @@ tests/proofs/bad/hkg-token-buggy-spec.k: proofs/token-buggy-spec.md
 
 split-tests: vm-tests blockchain-tests
 
-vm-tests: tests/VMTests/vmArithmeticTest/make.timestamp \
-		  tests/VMTests/vmBitwiseLogicOperationTest/make.timestamp \
-		  tests/VMTests/vmBlockInfoTest/make.timestamp \
-		  tests/VMTests/vmEnvironmentalInfoTest/make.timestamp \
-		  tests/VMTests/vmIOandFlowOperationsTest/make.timestamp \
-		  tests/VMTests/vmLogTest/make.timestamp \
-		  tests/VMTests/vmPerformanceTest/make.timestamp \
-		  tests/VMTests/vmPushDupSwapTest/make.timestamp \
-		  tests/VMTests/vmSha3Test/make.timestamp \
-		  tests/VMTests/vmSystemOperationsTest/make.timestamp \
-		  tests/VMTests/vmtests/make.timestamp \
-		  tests/VMTests/vmInputLimits/make.timestamp \
-		  tests/VMTests/vmInputLimitsLight/make.timestamp
+vm-tests: \
+		  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/VMTests/*/*.json)) \
 
 blockchain-tests: \
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)) \
@@ -80,14 +69,13 @@ blockchain-tests: \
 #passing_test_file=tests/passing.expected
 #blockchain_tests=$(shell cat ${passing_test_file})
 blockchain_tests=$(wildcard tests/BlockchainTests/*/*/*/*.json)
-all_tests=$(wildcard tests/VMTests/*/*.json) ${blockchain_tests}
-skipped_tests=$(wildcard tests/VMTests/vmPerformanceTest/*.json) \
+all_tests=$(wildcard tests/VMTests/*/*/*.json) ${blockchain_tests}
+skipped_tests=$(wildcard tests/VMTests/vmPerformance/*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Constantinople.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth_d1g0v0/*.json)
-
 
 passing_tests=$(filter-out ${skipped_tests}, ${all_tests})
 passing_blockchain_tests=$(filter-out ${skipped_tests}, ${blockchain_tests})
