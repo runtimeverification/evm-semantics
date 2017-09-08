@@ -15,64 +15,56 @@ module BALANCE-OF-SPEC
          <exit-code> 1       </exit-code>
          <mode>      NORMAL  </mode>
          <schedule>  DEFAULT </schedule>
-         <ethereum>
-           <evm>
-             <output>        .WordStack </output>
-             <memoryUsed>    4          </memoryUsed>
-             <callDepth>     0          </callDepth>
-             <callStack>     .List      </callStack>
-             <interimStates> .List      </interimStates>
-             <callLog>       .Set       </callLog>
 
-             <txExecState>
-               <program>      %HKG_Program </program>
-               <id>           %ACCT_ID     </id>
-               <caller>       %CALLER_ID   </caller>
-               <callData>     .WordStack   </callData>
-               <callValue>    0            </callValue>
+         <output>        .WordStack </output>
+         <memoryUsed>    4          </memoryUsed>
+         <callDepth>     0          </callDepth>
+         <callStack>     .List      </callStack>
+         <interimStates> .List      </interimStates>
+         <callLog>       .Set       </callLog>
 
-               <wordStack>    WS    => ?A:WordStack </wordStack>
-               <localMem>     .Map  => ?B:Map       </localMem>
-               <pc>           316   => 381          </pc>
-               <gas>          G     => G -Int 274   </gas>
-               <previousGas>  _     => _            </previousGas>
-             </txExecState>
+         <program>      %HKG_Program </program>
+         <id>           %ACCT_ID     </id>
+         <caller>       %CALLER_ID   </caller>
+         <callData>     .WordStack   </callData>
+         <callValue>    0            </callValue>
 
-             <substate>
-               <selfDestruct> .Set    </selfDestruct>
-               <log>          .Set    </log>
-               <refund>       0  => _ </refund>
-             </substate>
+         <wordStack>    WS    => ?A:WordStack </wordStack>
+         <localMem>     .Map  => ?B:Map       </localMem>
+         <pc>           316   => 381          </pc>
+         <gas>          G     => G -Int 274   </gas>
+         <previousGas>  _     => _            </previousGas>
 
-             <gasPrice>     _               </gasPrice>
-             <origin>       %ORIGIN_ID      </origin>
-             <gasLimit>     _               </gasLimit>
-             <coinbase>     %COINBASE_VALUE </coinbase>
-             <timestamp>    1               </timestamp>
-             <number>       0               </number>
-             <previousHash> 0               </previousHash>
-             <difficulty>   256             </difficulty>
-           </evm>
-           <network>
-             <activeAccounts>   SetItem ( %ACCT_ID )   </activeAccounts>
-             <accounts>
-               <account>
-                 <acctID>  %ACCT_ID      </acctID>
-                 <balance> BAL           </balance>
-                 <code>    %HKG_Program  </code>
-                 <acctMap> "nonce" |-> 0 </acctMap>
-                 <storage> %ACCT_1_BALANCE |-> B1:Int
-                           %ACCT_1_ALLOWED |-> A1:Int
-                           %ACCT_2_BALANCE |-> B2:Int
-                           %ACCT_2_ALLOWED |-> A2:Int
-                           3 |-> %ORIGIN_ID
-                           4 |-> %CALLER_ID
-                 </storage>
-               </account>
-             </accounts>
-             <messages> .Bag </messages>
-           </network>
-         </ethereum>
+         <selfDestruct> .Set    </selfDestruct>
+         <log>          .Set    </log>
+         <refund>       0  => _ </refund>
+
+         <gasPrice>     _               </gasPrice>
+         <origin>       %ORIGIN_ID      </origin>
+         <gasLimit>     _               </gasLimit>
+         <coinbase>     %COINBASE_VALUE </coinbase>
+         <timestamp>    1               </timestamp>
+         <number>       0               </number>
+         <previousHash> 0               </previousHash>
+         <difficulty>   256             </difficulty>
+
+         <activeAccounts> SetItem ( %ACCT_ID ) </activeAccounts>
+         <accounts>
+           <account>
+             <acctID>  %ACCT_ID      </acctID>
+             <balance> BAL           </balance>
+             <code>    %HKG_Program  </code>
+             <acctMap> "nonce" |-> 0 </acctMap>
+             <storage> %ACCT_1_BALANCE |-> B1:Int
+                       %ACCT_1_ALLOWED |-> A1:Int
+                       %ACCT_2_BALANCE |-> B2:Int
+                       %ACCT_2_ALLOWED |-> A2:Int
+                       3 |-> %ORIGIN_ID
+                       4 |-> %CALLER_ID
+             </storage>
+           </account>
+         </accounts>
+
       requires #sizeWordStack(WS) <Int 1018 andBool G >=Int 274
 endmodule
 

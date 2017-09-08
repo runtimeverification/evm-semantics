@@ -35,7 +35,8 @@ proof_files=${proof_dir}/sum-to-n-spec.k \
 			${proof_dir}/hkg/approve-spec.k \
 			${proof_dir}/hkg/balanceOf-spec.k \
 			${proof_dir}/hkg/transfer-else-spec.k ${proof_dir}/hkg/transfer-then-spec.k \
-			${proof_dir}/hkg/transferFrom-else-spec.k ${proof_dir}/hkg/transferFrom-then-spec.k
+			${proof_dir}/hkg/transferFrom-else-spec.k ${proof_dir}/hkg/transferFrom-then-spec.k \
+			${proof_dir}/bad/hkg-token-buggy-spec.k
 
 proofs: $(proof_files)
 
@@ -48,6 +49,11 @@ tests/proofs/hkg/%-spec.k: proofs/hkg.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc-tangle --from markdown --to code-k --code $* $< > $@
+
+tests/proofs/bad/hkg-token-buggy-spec.k: proofs/token-buggy-spec.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc-tangle --from markdown --to code-k --code k $< > $@
 
 # Tests
 # -----
