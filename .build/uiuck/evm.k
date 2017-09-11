@@ -151,7 +151,7 @@ module EVM
                           <txNonce>    0          </txNonce>            // T_n
                           <txGasPrice> 0          </txGasPrice>         // T_p
                           <txGasLimit> 0          </txGasLimit>         // T_g
-                          <to>         0          </to>                 // T_t
+                          <to>         .Account   </to>                 // T_t
                           <value>      0          </value>              // T_v
                           <v>          0          </v>                  // T_w
                           <r>          .WordStack </r>                  // T_r
@@ -1584,10 +1584,10 @@ module EVM
          <callData> DATA </callData>
          <output> _ => #ecrec(#sender(#unparseByteStack(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #unparseByteStack(DATA [ 64 .. 32 ]), #unparseByteStack(DATA [ 96 .. 32 ]))) </output>
 
-    syntax WordStack ::= #ecrec ( Int ) [function]
- // ----------------------------------------------
-    rule #ecrec(0) => .WordStack
-    rule #ecrec(N) => #padToWidth(32, #asByteStack(N)) requires N >Int 0
+    syntax WordStack ::= #ecrec ( Account ) [function]
+ // --------------------------------------------------
+    rule #ecrec(.Account) => .WordStack
+    rule #ecrec(N:Int)    => #padToWidth(32, #asByteStack(N))
 
     syntax PrecompiledOp ::= "SHA256"
  // ---------------------------------

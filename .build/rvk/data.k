@@ -103,6 +103,17 @@ module EVM-DATA
     rule abs(I) => I         requires sgn(I) ==K 1
 
 
+// ### Empty Account
+
+// -   `.Account` represents the case when an account ID is referenced in the
+//     yellowpaper, but the actual value of the account ID is the empty set. This
+//     is used, for example, when referring to the destination of a message which
+//     creates a new contract.
+
+
+    syntax Account ::= ".Account" | Int
+
+
 // ### Symbolic Words
 
 // -   `#symbolicWord` generates a fresh existentially-bound symbolic word.
@@ -387,6 +398,9 @@ module EVM-DATA
 
 // -   `#asWord` will interperet a stack of bytes as a single word (with
 //     MSB first).
+// -   `#asAccount` will interpret a stack of bytes as a single account id (with
+//     MSB first). Differs from `#asWord` only in that an empty stack represents
+//     the empty account, not account zero.
 // -   `#asByteStack` will split a single word up into a `WordStack` where each
 //     word is a byte wide.
 
@@ -396,6 +410,11 @@ module EVM-DATA
     rule #asWord( .WordStack )    => 0
     rule #asWord( W : .WordStack) => W
     rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
+
+    syntax Account ::= #asAccount ( WordStack ) [function]
+ // ------------------------------------------------------
+    rule #asAccount( .WordStack ) => .Account
+    rule #asAccount( W : WS )     => #asWord(W : WS)
 
     syntax WordStack ::= #asByteStack ( Int )             [function]
                        | #asByteStack ( Int , WordStack ) [function, klabel(#asByteStackAux), smtlib(asByteStack)]
@@ -427,15 +446,16 @@ module EVM-DATA
  // ------------------------------------------------
     rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeWord(NONCE), 192))))
 
-    syntax Int ::= #sender ( Int , Int , Int , Int , Int , String , Int , WordStack , WordStack ) [function]
-                 | #sender ( String , Int , String , String )                                     [function, klabel(#senderAux)]
-                 | #sender ( String )                                                             [function, klabel(#senderAux2)]
- // -----------------------------------------------------------------------------------------------------------------------------
+    syntax Int ::= #sender ( Int , Int , Int , Account , Int , String , Int , WordStack , WordStack ) [function]
+                 | #sender ( String , Int , String , String )                                         [function, klabel(#senderAux)]
+                 | #sender ( String )                                                                 [function, klabel(#senderAux2)]
+ // ---------------------------------------------------------------------------------------------------------------------------------
     rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS)
       => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWordStack(TN : TP : TG : .WordStack) +String #rlpEncodeAccount(TT) +String #rlpEncodeWord(TV) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
 
     rule #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
-    rule #sender("") => 0
+
+    rule #sender("")  => .Account
     rule #sender(STR) => #addr(#parseHexWord(Keccak256(STR))) requires STR =/=String ""
 
 
@@ -636,7 +656,7 @@ module EVM-DATA
                     | #rlpEncodeBytes ( Int , Int )     [function]
                     | #rlpEncodeWordStack ( WordStack ) [function]
                     | #rlpEncodeString ( String )       [function]
-                    | #rlpEncodeAccount ( Int )         [function]
+                    | #rlpEncodeAccount ( Account )     [function]
  // --------------------------------------------------------------
     rule #rlpEncodeWord(0) => "\x80"
     rule #rlpEncodeWord(WORD) => chrChar(WORD) requires WORD >Int 0 andBool WORD <Int 128
@@ -650,8 +670,8 @@ module EVM-DATA
     rule #rlpEncodeString(STR) => STR                        requires lengthString(STR) ==Int 1 andBool ordChar(STR) <Int 128
     rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) [owise]
 
-    rule #rlpEncodeAccount(0) => "\x80"
-    rule #rlpEncodeAccount(ACCT) => #rlpEncodeBytes(ACCT, 20) requires ACCT =/=Int 0
+    rule #rlpEncodeAccount(.Account) => "\x80"
+    rule #rlpEncodeAccount(ACCT)     => #rlpEncodeBytes(ACCT, 20) requires ACCT =/=K .Account
 
     syntax String ::= #rlpEncodeLength ( String , Int )          [function]
                     | #rlpEncodeLength ( String , Int , String ) [function, klabel(#rlpEncodeLengthAux)]
