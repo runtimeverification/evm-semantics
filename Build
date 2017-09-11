@@ -117,6 +117,7 @@ run_rvk() {
 run_proof() {
     [[ "$K_VERSION" == 'uiuck' ]] || die "Proofs must be run with 'K_VERSION=uiuck'."
     run_make
+    export K_OPTS=-Xmx2G
     local proof_file="$1"; shift
     local cSCHEDULE=${cSCHEDULE:-DEFAULT}
     local cMODE=${cMODE:-NORMAL}
