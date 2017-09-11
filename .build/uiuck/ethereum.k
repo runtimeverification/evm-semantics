@@ -129,7 +129,7 @@ module ETHEREUM-SIMULATION
            <msgID>      TXID   </msgID>
            <txGasPrice> GPRICE </txGasPrice>
            <txGasLimit> GLIMIT </txGasLimit>
-           <to>         0      </to>
+           <to>         -1     </to>
            <value>      VALUE  </value>
            <data>       CODE   </data>
            ...
@@ -168,7 +168,7 @@ module ETHEREUM-SIMULATION
            ...
          </account>
          <activeAccounts> ... ACCTFROM |-> (_ => false) ... </activeAccounts>
-      requires ACCTTO =/=Int 0
+      requires ACCTTO =/=Int -1
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
@@ -179,7 +179,7 @@ module ETHEREUM-SIMULATION
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
            <msgID> TXID </msgID>
-           <to>    0    </to>
+           <to>    -1   </to>
            ...
          </message>
 
@@ -192,7 +192,7 @@ module ETHEREUM-SIMULATION
            <to>    TT   </to>
            ...
          </message>
-      requires TT =/=Int 0
+      requires TT =/=Int -1
 
 
 // -   `#finalizeBlock` is used to signal that block finalization procedures should
@@ -561,7 +561,7 @@ module ETHEREUM-SIMULATION
                <txNonce>    #asWord(#parseByteStackRaw(TN))         </txNonce>
                <txGasPrice> #asWord(#parseByteStackRaw(TP))         </txGasPrice>
                <txGasLimit> #asWord(#parseByteStackRaw(TG))         </txGasLimit>
-               <to>         #asWord(#parseByteStackRaw(TT))         </to>
+               <to>         #asAccount(#parseByteStackRaw(TT))      </to>
                <value>      #asWord(#parseByteStackRaw(TV))         </value>
                <v>          #asWord(#parseByteStackRaw(TW))         </v>
                <r>          #padToWidth(32, #parseByteStackRaw(TR)) </r>
@@ -733,9 +733,11 @@ module ETHEREUM-SIMULATION
 
     rule check "transactions" : (KEY : (VALUE:WordStack => #padToWidth(32, VALUE))) requires (KEY ==String "r" orBool KEY ==String "s") andBool #sizeWordStack(VALUE) <Int 32
 
+    rule check "transactions" : ("to" : (VALUE:WordStack => #asAccount(VALUE)))
+
     rule check "transactions" : (KEY : (VALUE:WordStack => #asWord(VALUE)))
       requires KEY in ( SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce")
-                        SetItem("to") SetItem("v") SetItem("value")
+                        SetItem("v") SetItem("value")
                       )
 
     rule <k> check "transactions" : ("data"     : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <data>       VALUE </data>       ... </message>

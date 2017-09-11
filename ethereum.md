@@ -126,7 +126,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <msgID>      TXID   </msgID>
            <txGasPrice> GPRICE </txGasPrice>
            <txGasLimit> GLIMIT </txGasLimit>
-           <to>         0      </to>
+           <to>         -1     </to>
            <value>      VALUE  </value>
            <data>       CODE   </data>
            ...
@@ -165,7 +165,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            ...
          </account>
          <activeAccounts> ... ACCTFROM |-> (_ => false) ... </activeAccounts>
-      requires ACCTTO =/=Int 0
+      requires ACCTTO =/=Int -1
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
@@ -176,7 +176,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
            <msgID> TXID </msgID>
-           <to>    0    </to>
+           <to>    -1   </to>
            ...
          </message>
 
@@ -189,7 +189,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <to>    TT   </to>
            ...
          </message>
-      requires TT =/=Int 0
+      requires TT =/=Int -1
 ```
 
 -   `#finalizeBlock` is used to signal that block finalization procedures should take place (after transactions have executed).
@@ -548,7 +548,7 @@ The `"rlp"` key loads the block information.
                <txNonce>    #asWord(#parseByteStackRaw(TN))         </txNonce>
                <txGasPrice> #asWord(#parseByteStackRaw(TP))         </txGasPrice>
                <txGasLimit> #asWord(#parseByteStackRaw(TG))         </txGasLimit>
-               <to>         #asWord(#parseByteStackRaw(TT))         </to>
+               <to>         #asAccount(#parseByteStackRaw(TT))      </to>
                <value>      #asWord(#parseByteStackRaw(TV))         </value>
                <v>          #asWord(#parseByteStackRaw(TW))         </v>
                <r>          #padToWidth(32, #parseByteStackRaw(TR)) </r>
@@ -719,9 +719,11 @@ Here we check the other post-conditions associated with an EVM test.
 
     rule check "transactions" : (KEY : (VALUE:WordStack => #padToWidth(32, VALUE))) requires (KEY ==String "r" orBool KEY ==String "s") andBool #sizeWordStack(VALUE) <Int 32
 
+    rule check "transactions" : ("to" : (VALUE:WordStack => #asAccount(VALUE)))
+
     rule check "transactions" : (KEY : (VALUE:WordStack => #asWord(VALUE)))
       requires KEY in ( SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce")
-                        SetItem("to") SetItem("v") SetItem("value")
+                        SetItem("v") SetItem("value")
                       )
 
     rule <k> check "transactions" : ("data"     : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <data>       VALUE </data>       ... </message>

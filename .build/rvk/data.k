@@ -386,6 +386,9 @@ module EVM-DATA
 
 // -   `#asWord` will interperet a stack of bytes as a single word (with
 //     MSB first).
+// -   `#asAccount` will interpret a stack of bytes as a single account id (with
+//     MSB first). Differs from `#asWord` only in that an empty stack represents
+//     the empty account, not account zero.
 // -   `#asByteStack` will split a single word up into a `WordStack` where each
 //     word is a byte wide.
 
@@ -395,6 +398,11 @@ module EVM-DATA
     rule #asWord( .WordStack )    => 0
     rule #asWord( W : .WordStack) => W
     rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
+
+    syntax Int ::= #asAccount ( WordStack ) [function]
+ // --------------------------------------------------
+    rule #asAccount( .WordStack ) => -1
+    rule #asAccount( W : WS )     => #asWord(W : WS)
 
     syntax WordStack ::= #asByteStack ( Int )             [function]
                        | #asByteStack ( Int , WordStack ) [function, klabel(#asByteStackAux), smtlib(asByteStack)]
@@ -434,7 +442,7 @@ module EVM-DATA
       => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWordStack(TN : TP : TG : .WordStack) +String #rlpEncodeAccount(TT) +String #rlpEncodeWord(TV) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
 
     rule #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
-    rule #sender("") => 0
+    rule #sender("") => -1
     rule #sender(STR) => #addr(#parseHexWord(Keccak256(STR))) requires STR =/=String ""
 
 
@@ -636,8 +644,8 @@ module EVM-DATA
     rule #rlpEncodeString(STR) => STR                        requires lengthString(STR) ==Int 1 andBool ordChar(STR) <Int 128
     rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) [owise]
 
-    rule #rlpEncodeAccount(0) => "\x80"
-    rule #rlpEncodeAccount(ACCT) => #rlpEncodeBytes(ACCT, 20) requires ACCT =/=Int 0
+    rule #rlpEncodeAccount(-1) => "\x80"
+    rule #rlpEncodeAccount(ACCT) => #rlpEncodeBytes(ACCT, 20) requires ACCT =/=Int -1
 
     syntax String ::= #rlpEncodeLength ( String , Int )          [function]
                     | #rlpEncodeLength ( String , Int , String ) [function, klabel(#rlpEncodeLengthAux)]
