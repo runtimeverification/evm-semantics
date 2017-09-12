@@ -468,13 +468,13 @@ Some checks if an opcode will throw an exception are relatively quick and done u
  // ----------------------------------------------------
     rule <k> #stackNeeded? [ OP ] => #exception ... </k>
          <wordStack> WS </wordStack>
-   requires #sizeWordStack(WS) <Int #stackNeeded(OP)
-     orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
+      requires #sizeWordStack(WS) <Int #stackNeeded(OP)
+        orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
 
     rule <k> #stackNeeded? [ OP ] => .K ... </k>
          <wordStack> WS </wordStack>
-    requires notBool (#sizeWordStack(WS) <Int #stackNeeded(OP)
-             orBool   #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024)
+      requires notBool (#sizeWordStack(WS) <Int #stackNeeded(OP)
+               orBool   #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024)
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
@@ -666,7 +666,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
          <txGasLimit> GLIMIT </txGasLimit>
-         requires REFUND =/=Int 0
+      requires REFUND =/=Int 0
 
     rule <k> #finalizeTx(false => true) ... </k>
          <mode> NORMAL </mode>

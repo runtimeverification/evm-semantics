@@ -435,13 +435,13 @@ module EVM
  // ----------------------------------------------------
     rule <k> #stackNeeded? [ OP ] => #exception ... </k>
          <wordStack> WS </wordStack>
-   requires #sizeWordStack(WS) <Int #stackNeeded(OP)
-     orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
+      requires #sizeWordStack(WS) <Int #stackNeeded(OP)
+        orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
 
     rule <k> #stackNeeded? [ OP ] => .K ... </k>
          <wordStack> WS </wordStack>
-    requires notBool (#sizeWordStack(WS) <Int #stackNeeded(OP)
-             orBool   #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024)
+      requires notBool (#sizeWordStack(WS) <Int #stackNeeded(OP)
+               orBool   #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024)
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
@@ -641,7 +641,7 @@ module EVM
          <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
          <txGasLimit> GLIMIT </txGasLimit>
-         requires REFUND =/=Int 0
+      requires REFUND =/=Int 0
 
     rule <k> #finalizeTx(false => true) ... </k>
          <mode> NORMAL </mode>
