@@ -1149,15 +1149,34 @@ module EVM
 //     place the returned data in memory.
 
 
-    syntax InternalOp ::= "#call" Int Int Int Int Int Int WordStack
+    syntax InternalOp ::= "#checkCall" Int Int
+                        | "#call" Int Int Int Int Int Int WordStack
                         | "#callWithCode" Int Int Map Int Int Int WordStack
                         | "#mkCall" Int Int Map Int Int Int WordStack
- // -------------------------------------------------------------
+ // -----------------------------------------------------------------
+    rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState ~> #exception ... </k>
+         <callDepth> CD </callDepth>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
+      requires VALUE >Int BAL orBool CD >=Int 1024
+
+     rule <k> #checkCall ACCT VALUE => . ... </k>
+         <callDepth> CD </callDepth>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
+      requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
+
     rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
           => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) GLIMIT VALUE APPVALUE ARGS
          ...
          </k>
-      requires ACCTTO >Int 0 andBool ACCTTO <=Int 4
+      requires ACCTCODE >Int 0 andBool ACCTCODE <=Int 4
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
           => #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
@@ -1165,21 +1184,19 @@ module EVM
          </k>
          <acctID> ACCTCODE </acctID>
          <code> CODE </code>
-      requires notBool (ACCTTO >Int 0 andBool ACCTTO <=Int 4)
+      requires notBool (ACCTCODE >Int 0 andBool ACCTCODE <=Int 4)
 
-    rule <schedule> SCHED </schedule>
-         <k> #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
-          => #pushCallStack ~> #pushWorldState
-          ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
+          => #callWithCode ACCTFROM ACCTTO .Map GLIMIT VALUE APPVALUE ARGS
          ...
          </k>
-         <callDepth> CD </callDepth>
-      requires CD <Int 1024
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool (ACCTCODE >Int 0 andBool ACCTCODE <=Int 4) andBool notBool ACCTCODE in_keys(ACCTS)
 
-    rule <k> #callWithCode _ _ _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
-         <callDepth> CD </callDepth>
-      requires CD >=Int 1024
+    rule #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
+      => #pushCallStack ~> #pushWorldState
+      ~> #transferFunds ACCTFROM ACCTTO VALUE
+      ~> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
 
     rule <mode> EXECMODE </mode>
          <k> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
@@ -1245,7 +1262,8 @@ module EVM
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
+          => #checkCall ACCTFROM VALUE
+          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1258,7 +1276,8 @@ module EVM
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
+          => #checkCall ACCTFROM VALUE
+          ~> #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1271,7 +1290,8 @@ module EVM
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #call ACCTFROM ACCTFROM ACCTTO GCAP 0 VALUE #range(LM, ARGSTART, ARGWIDTH)
+          => #checkCall ACCTFROM VALUE
+          ~> #call ACCTFROM ACCTFROM ACCTTO GCAP 0 VALUE #range(LM, ARGSTART, ARGWIDTH)
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1289,22 +1309,21 @@ module EVM
 
 
     syntax InternalOp ::= "#create" Int Int Int Int Map
-    syntax KItem      ::= "#mkCreate" Int Int Map Int Int
+                        | "#mkCreate" Int Int Map Int Int
  // -----------------------------------------------------
-    rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
-          => #pushCallStack ~> #pushWorldState
-          ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
-         ...
-         </k>
+    rule <k> #checkCall ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #exception ... </k>
          <callDepth> CD </callDepth>
-      requires CD <Int 1024
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
+      requires VALUE >Int BAL orBool CD >=Int 1024
 
-    rule <k> #exception ~> #mkCreate _ _ _ GAVAIL _ => #exception ... </k> <gas> _ => GAVAIL </gas>
-
-    rule <k> #create _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
-         <callDepth> CD </callDepth>
-      requires CD >=Int 1024
+    rule #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
+      => #pushCallStack ~> #pushWorldState
+      ~> #transferFunds ACCTFROM ACCTTO VALUE
+      ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
 
     rule <mode> EXECMODE </mode>
          <k> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
@@ -1312,7 +1331,7 @@ module EVM
          ...
          </k>
          <schedule> SCHED </schedule>
-         <id> ACCT </id>
+         <id> ACCT => ACCTTO </id>
          <gas> OLDGAVAIL => GAVAIL </gas>
          <program> _ => INITCODE </program>
          <caller> _ => ACCTFROM </caller>
@@ -1336,8 +1355,7 @@ module EVM
                    | "#mkCodeDeposit" Int
                    | "#finishCodeDeposit"
  // -------------------------------------
-    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 ~> #push ... </k>
-         <gas> GAVAIL </gas>
+    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
 
     rule <mode> EXECMODE </mode>
          <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ~> ACCT ~> #push ...</k>
@@ -1364,12 +1382,14 @@ module EVM
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
-          => #create ACCT #newAddr(ACCT, NONCE) #allBut64th(GAVAIL) VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
+          => #checkCall ACCT VALUE
+          ~> #create ACCT #newAddr(ACCT, NONCE) #ifInt Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
+         <schedule> SCHED </schedule>
          <id> ACCT </id>
-         <gas> GAVAIL => GAVAIL /Int 64 </gas>
+         <gas> GAVAIL => #ifInt Gstaticcalldepth << SCHED >> #then 0 #else GAVAIL /Int 64 #fi </gas>
          <localMem> LM </localMem>
          <account>
            <acctID> ACCT </acctID>
@@ -1534,11 +1554,16 @@ module EVM
 
     rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
 
-    rule <k> #gasExec(SCHED, COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) ... </k>
+    rule <k> #gasExec(SCHED, CALL         GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO,   ACCTS, GCAP, GAVAIL, VALUE) ... </k>
          <activeAccounts> ACCTS </activeAccounts>
          <gas> GAVAIL </gas>
 
-    rule <k> #gasExec(SCHED, CSOP:CallSixOp GCAP ACCTTO _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, 0) ... </k>
+    rule <k> #gasExec(SCHED, CALLCODE     GCAP _      VALUE _ _ _ _) => Ccall(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, VALUE) ... </k>
+         <id> ACCTFROM </id>
+         <activeAccounts> ACCTS </activeAccounts>
+         <gas> GAVAIL </gas>
+
+    rule <k> #gasExec(SCHED, DELEGATECALL GCAP ACCTTO _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, 0) ... </k>
          <activeAccounts> ACCTS </activeAccounts>
          <gas> GAVAIL </gas>
 
