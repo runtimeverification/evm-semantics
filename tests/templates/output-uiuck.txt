@@ -50,7 +50,7 @@
       <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
     </evm>
     <network>
-      <activeAccounts> .Set </activeAccounts>
+      <activeAccounts> .Map </activeAccounts>
       <accounts> .AccountCellBag </accounts>
       <txOrder> .List </txOrder>
       <txPending> .List </txPending>
