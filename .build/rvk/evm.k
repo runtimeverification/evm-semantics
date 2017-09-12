@@ -99,6 +99,7 @@ module EVM
                       <blockNonce>       0          </blockNonce>       // I_Hn
 
                       <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
+                      <blockhash>         .List         </blockhash>
 
                     </evm>
 
