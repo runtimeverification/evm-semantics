@@ -48,6 +48,7 @@
       <mixHash> 0 </mixHash>
       <blockNonce> 0 </blockNonce>
       <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
+      <blockhash> .List </blockhash>
     </evm>
     <network>
       <activeAccounts> 7 |-> false </activeAccounts>
