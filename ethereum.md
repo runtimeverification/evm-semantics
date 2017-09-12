@@ -113,7 +113,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= loadTx ( Int )
  // -----------------------------------------
     rule <k> loadTx(ACCTFROM)
-          => #create ACCTFROM #newAddr(ACCTFROM, NONCE) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE (#asMapOpCodes(#dasmOpCodes(CODE)))
+          => #create ACCTFROM #newAddr(ACCTFROM, NONCE) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE (#asMapOpCodes(#dasmOpCodes(CODE, SCHED)))
           ~> #execute ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
@@ -418,9 +418,10 @@ Here we perform pre-proccesing on account data which allows "pretty" specificati
     rule load "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
     rule load "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
     rule load "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
-    rule load "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
     rule load "account" : { (ACCT:Int) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
     rule load "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
+
+    rule <k> load "account" : { (ACCT:Int) : { "code" : ((CODE:String) => #dasmOpCodes(#parseByteStack(CODE), SCHED)) } } ... </k> <schedule> SCHED </schedule>
 ```
 
 The individual fields of the accounts are dealt with here.
@@ -485,9 +486,9 @@ Here we load the environmental information.
     rule <k> load "exec" : { "gas"      : (GAVAIL:Int)   } => . ... </k> <gas>       _ => GAVAIL   </gas>
     rule <k> load "exec" : { "value"    : (VALUE:Int)    } => . ... </k> <callValue> _ => VALUE    </callValue>
     rule <k> load "exec" : { "origin"   : (ORIG:Int)     } => . ... </k> <origin>    _ => ORIG     </origin>
+    rule <k> load "exec" : { "code" : ((CODE:String)  => #dasmOpCodes(#parseByteStack(CODE), SCHED)) } ... </k> <schedule> SCHED </schedule>
 
     rule load "exec" : { "data" : ((DATA:String)  => #parseByteStack(DATA)) }
-    rule load "exec" : { "code" : ((CODE:String)  => #dasmOpCodes(#parseByteStack(CODE))) }
     rule load "exec" : { "code" : ((CODE:OpCodes) => #asMapOpCodes(CODE)) }
  // -----------------------------------------------------------------------
     rule <k> load "exec" : { "data" : (DATA:WordStack) } => . ... </k> <callData> _ => DATA </callData>
@@ -582,9 +583,10 @@ The `"rlp"` key loads the block information.
     rule check "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
     rule check "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
     rule check "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
-    rule check "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #dasmOpCodes(#parseByteStack(CODE))) } }
     rule check "account" : { (ACCT:Int) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
     rule check "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
+
+    rule <k> check "account" : { (ACCT:Int) : { "code" : ((CODE:String) => #dasmOpCodes(#parseByteStack(CODE), SCHED)) } } ... </k> <schedule> SCHED </schedule>
 
     rule <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
          <account>

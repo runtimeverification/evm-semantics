@@ -1397,7 +1397,7 @@ module EVM
 
     rule <k> #mkCodeDeposit ACCT
           => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi
-          ~> #finishCodeDeposit ACCT #asMapOpCodes(#dasmOpCodes(OUT))
+          ~> #finishCodeDeposit ACCT #asMapOpCodes(#dasmOpCodes(OUT, SCHED))
          ...
          </k>
          <mode> EXECMODE </mode>
@@ -1446,7 +1446,7 @@ module EVM
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
           => #checkCreate ACCT VALUE
-          ~> #create ACCT #newAddr(ACCT, NONCE) #ifInt Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
+          ~> #create ACCT #newAddr(ACCT, NONCE) #ifInt Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH), SCHED))
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
@@ -1978,84 +1978,84 @@ module EVM
 // -   `#dasmOpCode` interperets a `Int` as an `OpCode`.
 
 
-    syntax OpCodes ::= #dasmOpCodes ( WordStack ) [function]
- // --------------------------------------------------------
-    rule #dasmOpCodes( .WordStack ) => .OpCodes
-    rule #dasmOpCodes( W : WS )     => #dasmOpCode(W)   ; #dasmOpCodes(WS) requires W >=Int 0   andBool W <=Int 95
-    rule #dasmOpCodes( W : WS )     => #dasmOpCode(W)   ; #dasmOpCodes(WS) requires W >=Int 165 andBool W <=Int 255
-    rule #dasmOpCodes( W : WS )     => DUP(W -Int 127)  ; #dasmOpCodes(WS) requires W >=Int 128 andBool W <=Int 143
-    rule #dasmOpCodes( W : WS )     => SWAP(W -Int 143) ; #dasmOpCodes(WS) requires W >=Int 144 andBool W <=Int 159
-    rule #dasmOpCodes( W : WS )     => LOG(W -Int 160)  ; #dasmOpCodes(WS) requires W >=Int 160 andBool W <=Int 164
-    rule #dasmOpCodes( W : WS )     => #dasmPUSH( W -Int 95 , WS )         requires W >=Int 96  andBool W <=Int 127
+    syntax OpCodes ::= #dasmOpCodes ( WordStack , Schedule ) [function]
+ // -------------------------------------------------------------------
+    rule #dasmOpCodes( .WordStack, _ ) => .OpCodes
+    rule #dasmOpCodes( W : WS, SCHED ) => #dasmOpCode(W, SCHED) ; #dasmOpCodes(WS, SCHED) requires W >=Int 0   andBool W <=Int 95
+    rule #dasmOpCodes( W : WS, SCHED ) => #dasmOpCode(W, SCHED) ; #dasmOpCodes(WS, SCHED) requires W >=Int 165 andBool W <=Int 255
+    rule #dasmOpCodes( W : WS, SCHED ) => DUP(W -Int 127)       ; #dasmOpCodes(WS, SCHED) requires W >=Int 128 andBool W <=Int 143
+    rule #dasmOpCodes( W : WS, SCHED ) => SWAP(W -Int 143)      ; #dasmOpCodes(WS, SCHED) requires W >=Int 144 andBool W <=Int 159
+    rule #dasmOpCodes( W : WS, SCHED ) => LOG(W -Int 160)       ; #dasmOpCodes(WS, SCHED) requires W >=Int 160 andBool W <=Int 164
+    rule #dasmOpCodes( W : WS, SCHED ) => #dasmPUSH( W -Int 95 , WS, SCHED )         requires W >=Int 96  andBool W <=Int 127
 
-    syntax OpCodes ::= #dasmPUSH ( Int , WordStack ) [function]
+    syntax OpCodes ::= #dasmPUSH ( Int , WordStack , Schedule ) [function]
+ // ----------------------------------------------------------------------
+    rule #dasmPUSH( W , WS , SCHED ) => PUSH(W, #asWord(#take(W, WS))) ; #dasmOpCodes(#drop(W, WS), SCHED)
+
+    syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [function]
  // -----------------------------------------------------------
-    rule #dasmPUSH( W , WS ) => PUSH(W, #asWord(#take(W, WS))) ; #dasmOpCodes(#drop(W, WS))
-
-    syntax OpCode ::= #dasmOpCode ( Int ) [function]
- // ------------------------------------------------
-    rule #dasmOpCode(   0 ) => STOP
-    rule #dasmOpCode(   1 ) => ADD
-    rule #dasmOpCode(   2 ) => MUL
-    rule #dasmOpCode(   3 ) => SUB
-    rule #dasmOpCode(   4 ) => DIV
-    rule #dasmOpCode(   5 ) => SDIV
-    rule #dasmOpCode(   6 ) => MOD
-    rule #dasmOpCode(   7 ) => SMOD
-    rule #dasmOpCode(   8 ) => ADDMOD
-    rule #dasmOpCode(   9 ) => MULMOD
-    rule #dasmOpCode(  10 ) => EXP
-    rule #dasmOpCode(  11 ) => SIGNEXTEND
-    rule #dasmOpCode(  16 ) => LT
-    rule #dasmOpCode(  17 ) => GT
-    rule #dasmOpCode(  18 ) => SLT
-    rule #dasmOpCode(  19 ) => SGT
-    rule #dasmOpCode(  20 ) => EQ
-    rule #dasmOpCode(  21 ) => ISZERO
-    rule #dasmOpCode(  22 ) => AND
-    rule #dasmOpCode(  23 ) => EVMOR
-    rule #dasmOpCode(  24 ) => XOR
-    rule #dasmOpCode(  25 ) => NOT
-    rule #dasmOpCode(  26 ) => BYTE
-    rule #dasmOpCode(  32 ) => SHA3
-    rule #dasmOpCode(  48 ) => ADDRESS
-    rule #dasmOpCode(  49 ) => BALANCE
-    rule #dasmOpCode(  50 ) => ORIGIN
-    rule #dasmOpCode(  51 ) => CALLER
-    rule #dasmOpCode(  52 ) => CALLVALUE
-    rule #dasmOpCode(  53 ) => CALLDATALOAD
-    rule #dasmOpCode(  54 ) => CALLDATASIZE
-    rule #dasmOpCode(  55 ) => CALLDATACOPY
-    rule #dasmOpCode(  56 ) => CODESIZE
-    rule #dasmOpCode(  57 ) => CODECOPY
-    rule #dasmOpCode(  58 ) => GASPRICE
-    rule #dasmOpCode(  59 ) => EXTCODESIZE
-    rule #dasmOpCode(  60 ) => EXTCODECOPY
-    rule #dasmOpCode(  64 ) => BLOCKHASH
-    rule #dasmOpCode(  65 ) => COINBASE
-    rule #dasmOpCode(  66 ) => TIMESTAMP
-    rule #dasmOpCode(  67 ) => NUMBER
-    rule #dasmOpCode(  68 ) => DIFFICULTY
-    rule #dasmOpCode(  69 ) => GASLIMIT
-    rule #dasmOpCode(  80 ) => POP
-    rule #dasmOpCode(  81 ) => MLOAD
-    rule #dasmOpCode(  82 ) => MSTORE
-    rule #dasmOpCode(  83 ) => MSTORE8
-    rule #dasmOpCode(  84 ) => SLOAD
-    rule #dasmOpCode(  85 ) => SSTORE
-    rule #dasmOpCode(  86 ) => JUMP
-    rule #dasmOpCode(  87 ) => JUMPI
-    rule #dasmOpCode(  88 ) => PC
-    rule #dasmOpCode(  89 ) => MSIZE
-    rule #dasmOpCode(  90 ) => GAS
-    rule #dasmOpCode(  91 ) => JUMPDEST
-    rule #dasmOpCode( 240 ) => CREATE
-    rule #dasmOpCode( 241 ) => CALL
-    rule #dasmOpCode( 242 ) => CALLCODE
-    rule #dasmOpCode( 243 ) => RETURN
-    rule #dasmOpCode( 244 ) => DELEGATECALL
-    rule #dasmOpCode( 255 ) => SELFDESTRUCT
-    rule #dasmOpCode(   W ) => INVALID(W) [owise]
+    rule #dasmOpCode(   0,     _ ) => STOP
+    rule #dasmOpCode(   1,     _ ) => ADD
+    rule #dasmOpCode(   2,     _ ) => MUL
+    rule #dasmOpCode(   3,     _ ) => SUB
+    rule #dasmOpCode(   4,     _ ) => DIV
+    rule #dasmOpCode(   5,     _ ) => SDIV
+    rule #dasmOpCode(   6,     _ ) => MOD
+    rule #dasmOpCode(   7,     _ ) => SMOD
+    rule #dasmOpCode(   8,     _ ) => ADDMOD
+    rule #dasmOpCode(   9,     _ ) => MULMOD
+    rule #dasmOpCode(  10,     _ ) => EXP
+    rule #dasmOpCode(  11,     _ ) => SIGNEXTEND
+    rule #dasmOpCode(  16,     _ ) => LT
+    rule #dasmOpCode(  17,     _ ) => GT
+    rule #dasmOpCode(  18,     _ ) => SLT
+    rule #dasmOpCode(  19,     _ ) => SGT
+    rule #dasmOpCode(  20,     _ ) => EQ
+    rule #dasmOpCode(  21,     _ ) => ISZERO
+    rule #dasmOpCode(  22,     _ ) => AND
+    rule #dasmOpCode(  23,     _ ) => EVMOR
+    rule #dasmOpCode(  24,     _ ) => XOR
+    rule #dasmOpCode(  25,     _ ) => NOT
+    rule #dasmOpCode(  26,     _ ) => BYTE
+    rule #dasmOpCode(  32,     _ ) => SHA3
+    rule #dasmOpCode(  48,     _ ) => ADDRESS
+    rule #dasmOpCode(  49,     _ ) => BALANCE
+    rule #dasmOpCode(  50,     _ ) => ORIGIN
+    rule #dasmOpCode(  51,     _ ) => CALLER
+    rule #dasmOpCode(  52,     _ ) => CALLVALUE
+    rule #dasmOpCode(  53,     _ ) => CALLDATALOAD
+    rule #dasmOpCode(  54,     _ ) => CALLDATASIZE
+    rule #dasmOpCode(  55,     _ ) => CALLDATACOPY
+    rule #dasmOpCode(  56,     _ ) => CODESIZE
+    rule #dasmOpCode(  57,     _ ) => CODECOPY
+    rule #dasmOpCode(  58,     _ ) => GASPRICE
+    rule #dasmOpCode(  59,     _ ) => EXTCODESIZE
+    rule #dasmOpCode(  60,     _ ) => EXTCODECOPY
+    rule #dasmOpCode(  64,     _ ) => BLOCKHASH
+    rule #dasmOpCode(  65,     _ ) => COINBASE
+    rule #dasmOpCode(  66,     _ ) => TIMESTAMP
+    rule #dasmOpCode(  67,     _ ) => NUMBER
+    rule #dasmOpCode(  68,     _ ) => DIFFICULTY
+    rule #dasmOpCode(  69,     _ ) => GASLIMIT
+    rule #dasmOpCode(  80,     _ ) => POP
+    rule #dasmOpCode(  81,     _ ) => MLOAD
+    rule #dasmOpCode(  82,     _ ) => MSTORE
+    rule #dasmOpCode(  83,     _ ) => MSTORE8
+    rule #dasmOpCode(  84,     _ ) => SLOAD
+    rule #dasmOpCode(  85,     _ ) => SSTORE
+    rule #dasmOpCode(  86,     _ ) => JUMP
+    rule #dasmOpCode(  87,     _ ) => JUMPI
+    rule #dasmOpCode(  88,     _ ) => PC
+    rule #dasmOpCode(  89,     _ ) => MSIZE
+    rule #dasmOpCode(  90,     _ ) => GAS
+    rule #dasmOpCode(  91,     _ ) => JUMPDEST
+    rule #dasmOpCode( 240,     _ ) => CREATE
+    rule #dasmOpCode( 241,     _ ) => CALL
+    rule #dasmOpCode( 242,     _ ) => CALLCODE
+    rule #dasmOpCode( 243,     _ ) => RETURN
+    rule #dasmOpCode( 244, SCHED ) => DELEGATECALL requires SCHED =/=K FRONTIER
+    rule #dasmOpCode( 255,     _ ) => SELFDESTRUCT
+    rule #dasmOpCode(   W,     _ ) => INVALID(W) [owise]
 
 
 // Assembler
