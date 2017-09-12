@@ -216,7 +216,7 @@ module ETHEREUM-SIMULATION
     rule <k> (.K => #newAccount MINER) ~> #finalizeBlock ... </k>
          <coinbase> MINER </coinbase>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool MINER in ACCTS
+      requires notBool MINER in_keys(ACCTS)
 
     rule <k> #rewardOmmers(.JSONList) => . ... </k>
     rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
