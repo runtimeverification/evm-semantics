@@ -265,7 +265,7 @@ TODO: Handle blocks with ommers.
 ```{.k .uiuck .rvk}
     syntax Set ::= "#loadKeys" [function]
  // -------------------------------------
-    rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") )
+    rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") )
 
     rule run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } requires KEY in #loadKeys
 
@@ -295,7 +295,7 @@ TODO: Handle blocks with ommers.
     rule #postKeys    => ( SetItem("post") SetItem("postState") )
     rule #allPostKeys => ( #postKeys SetItem("expect") SetItem("export") SetItem("expet") )
     rule #checkKeys   => ( #allPostKeys SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("gas")
-                           SetItem("blockHeader") SetItem("transactions") SetItem("uncleHeaders")
+                           SetItem("blockHeader") SetItem("transactions") SetItem("uncleHeaders") SetItem("genesisBlockHeader")
                          )
 
     rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { "post" : VAL } requires KEY in #allPostKeys
@@ -307,7 +307,7 @@ TODO: Handle blocks with ommers.
 ```{.k .uiuck .rvk}
     syntax Set ::= "#discardKeys" [function]
  // ----------------------------------------
-    rule #discardKeys => ( SetItem("//") SetItem("_info") SetItem("genesisRLP") SetItem("genesisBlockHeader") )
+    rule #discardKeys => ( SetItem("//") SetItem("_info") )
 
     rule run TESTID : { KEY : _ , REST } => run TESTID : { REST } requires KEY in #discardKeys
 ```
@@ -502,7 +502,8 @@ The `"rlp"` key loads the block information.
 
 ```{.k .uiuck .rvk}
     rule load "rlp" : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL))))
- // -------------------------------------------------------------------------------------
+    rule load "genesisRLP" : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL))))
+ // --------------------------------------------------------------------------------------------
     rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONList ] , BT , BU , .JSONList ]
           => load "transaction" : BT
          ...
@@ -523,6 +524,9 @@ The `"rlp"` key loads the block information.
          <mixHash>           _ => #asWord(#parseByteStackRaw(HM)) </mixHash>
          <blockNonce>        _ => #asWord(#parseByteStackRaw(HN)) </blockNonce>
          <ommerBlockHeaders> _ => BU                              </ommerBlockHeaders>
+
+    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONList ], _, _, .JSONList ] => .K ...</k>
+         <blockhash> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(#parseByteStackRaw(HP))) ...</blockhash>
 
     rule <k> load "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST => REST ] ... </k>
          <txOrder>   ... .List => ListItem(!ID) </txOrder>
@@ -675,6 +679,15 @@ Here we check the other post-conditions associated with an EVM test.
          <mixHash>          HM </mixHash>
          <blockNonce>       HN </blockNonce>
       requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN) ==Int #asWord(HASH)
+
+    rule check TESTID : { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ~> failure TESTID
+ // ------------------------------------------------------------------------------------------------------------------------
+    rule check "genesisBlockHeader" : { KEY : VALUE , REST } => check "genesisBlockHeader" : { KEY : VALUE } ~> check "genesisBlockHeader" : { REST } requires REST =/=K .JSONList
+    rule check "genesisBlockHeader" : { KEY : VALUE } => .K requires KEY =/=String "hash"
+
+    rule check "genesisBlockHeader" : { "hash": (HASH:String => #asWord(#parseByteStack(HASH))) }
+    rule <k> check "genesisBlockHeader" : { "hash": HASH } => . ... </k>
+         <blockhash>... ListItem(HASH) ListItem(_) </blockhash>
 
     rule check TESTID : { "transactions" : TRANSACTIONS } => check "transactions" : TRANSACTIONS ~> failure TESTID
  // --------------------------------------------------------------------------------------------------------------
