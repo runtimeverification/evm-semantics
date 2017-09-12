@@ -1994,16 +1994,26 @@ module EVM
       requires notBool      ( SCHEDCONST ==K Gemptyisnonexistent orBool SCHEDCONST ==K Gzerovaluenewaccountgas )
 
 
-// ### Metropolis Schedule
+// ### Byzantium Schedule
 
 
-    syntax Schedule ::= "METROPOLIS"
- // --------------------------------
-    rule Gblockhash < METROPOLIS > => 800
-    rule SCHEDCONST < METROPOLIS > => SCHEDCONST < EIP158 >
+    syntax Schedule ::= "BYZANTIUM"
+ // -------------------------------
+    rule SCHEDCONST < BYZANTIUM > => SCHEDCONST < EIP158 >
+
+    rule SCHEDFLAG << BYZANTIUM >> => SCHEDFLAG << EIP158 >>
+
+
+// ### Constantinople Schedule
+
+
+    syntax Schedule ::= "CONSTANTINOPLE"
+ // ------------------------------------
+    rule Gblockhash < CONSTANTINOPLE > => 800
+    rule SCHEDCONST < CONSTANTINOPLE > => SCHEDCONST < BYZANTIUM >
       requires SCHEDCONST =/=K Gblockhash
 
-    rule SCHEDFLAG << METROPOLIS >> => SCHEDFLAG << EIP158 >>
+    rule SCHEDFLAG << CONSTANTINOPLE >> => SCHEDFLAG << BYZANTIUM >>
 
 
 // EVM Program Representations

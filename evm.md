@@ -2085,26 +2085,45 @@ static const EVMSchedule EIP158Schedule = []
 }();
 ```
 
-### Metropolis Schedule
+### Byzantium Schedule
 
 ```{.k .uiuck .rvk}
-    syntax Schedule ::= "METROPOLIS"
- // --------------------------------
-    rule Gblockhash < METROPOLIS > => 800
-    rule SCHEDCONST < METROPOLIS > => SCHEDCONST < EIP158 >
-      requires SCHEDCONST =/=K Gblockhash
+    syntax Schedule ::= "BYZANTIUM"
+ // -------------------------------
+    rule SCHEDCONST < BYZANTIUM > => SCHEDCONST < EIP158 >
 
-    rule SCHEDFLAG << METROPOLIS >> => SCHEDFLAG << EIP158 >>
+    rule SCHEDFLAG << BYZANTIUM >> => SCHEDFLAG << EIP158 >>
 ```
 
 ```c++
-static const EVMSchedule MetropolisSchedule = []
+static const EVMSchedule ByzantiumSchedule = []
 {
     EVMSchedule schedule = EIP158Schedule;
-    schedule.blockhashGas = 800;
     schedule.haveRevert = true;
     schedule.haveReturnData = true;
     schedule.haveStaticCall = true;
+    schedule.blockRewardOverwrite = {3 * ether};
+    return schedule;
+}();
+```
+
+### Constantinople Schedule
+
+```{.k .uiuck .rvk}
+    syntax Schedule ::= "CONSTANTINOPLE"
+ // ------------------------------------
+    rule Gblockhash < CONSTANTINOPLE > => 800
+    rule SCHEDCONST < CONSTANTINOPLE > => SCHEDCONST < BYZANTIUM >
+      requires SCHEDCONST =/=K Gblockhash
+
+    rule SCHEDFLAG << CONSTANTINOPLE >> => SCHEDFLAG << BYZANTIUM >>
+```
+
+```c++
+static const EVMSchedule ConstantinopleSchedule = []
+{
+    EVMSchedule schedule = ByzantiumSchedule;
+    schedule.blockhashGas = 800;
     schedule.haveCreate2 = true;
     return schedule;
 }();
