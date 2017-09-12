@@ -201,13 +201,13 @@ The `callStack` cell stores a list of previous VM execution states.
 -   `#dropCallStack` removes the top element of the `callStack`.
 
 ```{.k .uiuck .rvk}
-    syntax State ::= "{" Int "|" Int "|" Map "|" Int "|" WordStack "|" Int "|" WordStack "|" Map "|" Int "|" Int "}"
- // ----------------------------------------------------------------------------------------------------------------
+    syntax State ::= "{" Int "|" Int "|" Map "|" Int "|" WordStack "|" Int "|" WordStack "|" Map "|" Int "|" Int "|" Int "}"
+ // ------------------------------------------------------------------------------------------------------------------------
 
     syntax InternalOp ::= "#pushCallStack"
  // --------------------------------------
     rule <k> #pushCallStack => . ... </k>
-         <callStack>  (.List => ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | MUSED | PCOUNT })) ... </callStack>
+         <callStack>  (.List => ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | MUSED | PCOUNT | DEPTH })) ... </callStack>
          <id>         ACCT   </id>
          <gas>        GAVAIL </gas>
          <program>    PGM    </program>
@@ -218,11 +218,12 @@ The `callStack` cell stores a list of previous VM execution states.
          <localMem>   LM     </localMem>
          <memoryUsed> MUSED  </memoryUsed>
          <pc>         PCOUNT </pc>
+         <callDepth>  DEPTH  </callDepth>
 
     syntax InternalOp ::= "#popCallStack"
  // -------------------------------------
     rule <k> #popCallStack => . ... </k>
-         <callStack>  (ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | MUSED | PCOUNT }) => .List) ... </callStack>
+         <callStack>  (ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | MUSED | PCOUNT | DEPTH }) => .List) ... </callStack>
          <id>         _ => ACCT   </id>
          <gas>        _ => GAVAIL </gas>
          <program>    _ => PGM    </program>
@@ -233,6 +234,7 @@ The `callStack` cell stores a list of previous VM execution states.
          <localMem>   _ => LM     </localMem>
          <memoryUsed> _ => MUSED  </memoryUsed>
          <pc>         _ => PCOUNT </pc>
+         <callDepth>  _ => DEPTH  </callDepth>
 
     syntax InternalOp ::= "#dropCallStack"
  // --------------------------------------
@@ -989,10 +991,8 @@ The `JUMP*` family of operations affect the current program counter.
  // ------------------------------
     rule <mode> EXECMODE </mode>
          <k> RETURN RETSTART RETWIDTH => #end ... </k>
-         <callDepth> CD => CD -Int 1 </callDepth>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
-      requires (EXECMODE ==K VMTESTS) orBool (CD >Int 0)
 ```
 
 ### Call Data
