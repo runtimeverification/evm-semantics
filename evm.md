@@ -1325,14 +1325,18 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTFROM ACCTTO GCAP 0 VALUE #range(LM, ARGSTART, ARGWIDTH)
+          => #checkCall ACCTFROM 0
+          ~> #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH)
           ~> #return RETSTART RETWIDTH
          ...
          </k>
+         <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
+         <caller> ACCTAPPFROM </caller>
          <callValue> VALUE </callValue>
          <localMem> LM </localMem>
+         <activeAccounts> ACCTS </activeAccounts>
+         <previousGas> GAVAIL </previousGas>
 ```
 
 ### Account Creation/Deletion
@@ -1624,7 +1628,8 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
          <activeAccounts> ACCTS </activeAccounts>
          <gas> GAVAIL </gas>
 
-    rule <k> #gasExec(SCHED, DELEGATECALL GCAP ACCTTO _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, 0) ... </k>
+    rule <k> #gasExec(SCHED, DELEGATECALL GCAP _ _ _ _ _) => Ccall(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, 0) ... </k>
+         <id> ACCTFROM </id>
          <activeAccounts> ACCTS </activeAccounts>
          <gas> GAVAIL </gas>
 
