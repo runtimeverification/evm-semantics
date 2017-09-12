@@ -952,7 +952,17 @@ module EVM
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
-    rule <k> BLOCKHASH N => #if N >=Int HI orBool HI -Int 256 >Int N #then 0 #else #parseHexWord(Keccak256(Int2String(N))) #fi ~> #push ... </k> <number> HI </number>
+    rule <k> BLOCKHASH N => #if N >=Int HI orBool HI -Int 256 >Int N #then 0 #else #parseHexWord(Keccak256(Int2String(N))) #fi ~> #push ... </k> <number> HI </number> <mode> VMTESTS </mode>
+
+    rule <k> BLOCKHASH N => #blockhash(HASHES, N, HI -Int 1, 0) ~> #push ... </k> <number> HI </number> <blockhash> HASHES </blockhash> <mode> NORMAL </mode>
+
+    syntax Int ::= #blockhash ( List , Int , Int , Int ) [function]
+ // ---------------------------------------------------------------
+    rule #blockhash(_, N, HI, _) => 0 requires N >Int HI
+    rule #blockhash(_, _, _, 256) => 0
+    rule #blockhash(ListItem(0) _, _, _, _) => 0
+    rule #blockhash(ListItem(H) _, N, N, _) => H
+    rule #blockhash(ListItem(_) L, N, HI, A) => #blockhash(L, N, HI -Int 1, A +Int 1) [owise]
 
 
 // ### `JUMP*`
