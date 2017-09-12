@@ -110,7 +110,7 @@ module EVM
                       // Accounts Record
                       // ---------------
 
-                      <activeAccounts> .Set </activeAccounts>
+                      <activeAccounts> .Map </activeAccounts>
                       <accounts>
 
 
@@ -244,19 +244,19 @@ module EVM
 // -   `#dropWorldState` removes the top element of the `interimStates`.
 
 
-    syntax Account ::= "{" Int "|" Int "|" Map "|" Map "|" Int "}"
- // --------------------------------------------------------------
+    syntax Account ::= "{" Int "|" Int "|" Map "|" Map "|" Int "|" Bool "}"
+ // -----------------------------------------------------------------------
 
-    syntax InternalOp ::= "#pushWorldState" | "#pushWorldStateAux" Set | "#pushAccount" Int
- // ---------------------------------------------------------------------------------------
+    syntax InternalOp ::= "#pushWorldState" | "#pushWorldStateAux" Map | "#pushAccount" Int Bool
+ // --------------------------------------------------------------------------------------------
     rule <k> #pushWorldState => #pushWorldStateAux ACCTS ... </k>
          <activeAccounts> ACCTS </activeAccounts>
          <interimStates> (.List => ListItem(.Set)) ... </interimStates>
 
-    rule <k> #pushWorldStateAux .Set => . ... </k>
-    rule <k> #pushWorldStateAux (SetItem(ACCT) REST) => #pushAccount ACCT ~> #pushWorldStateAux REST ... </k>
-    rule <k> #pushAccount ACCT => . ... </k>
-         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE | NONCE })) REST) ... </interimStates>
+    rule <k> #pushWorldStateAux .Map => . ... </k>
+    rule <k> #pushWorldStateAux ((ACCT |-> EMPTY) REST) => #pushAccount ACCT EMPTY ~> #pushWorldStateAux REST ... </k>
+    rule <k> #pushAccount ACCT EMPTY => . ... </k>
+         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE | NONCE | EMPTY })) REST) ... </interimStates>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
@@ -269,12 +269,12 @@ module EVM
  // ----------------------------------------------------------------
     rule <k> #popWorldState => #popWorldStateAux PREVSTATE ... </k>
          <interimStates> (ListItem(PREVSTATE) => .List) ... </interimStates>
-         <activeAccounts> _ => .Set </activeAccounts>
+         <activeAccounts> _ => .Map </activeAccounts>
          <accounts> _ => .Bag </accounts>
 
     rule <k> #popWorldStateAux .Set => . ... </k>
-    rule <k> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE | NONCE }) => .Set) REST ) ... </k>
-         <activeAccounts> ... (.Set => SetItem(ACCT)) </activeAccounts>
+    rule <k> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE | NONCE | EMPTY }) => .Set) REST ) ... </k>
+         <activeAccounts> ... (.Map => ACCT |-> EMPTY) </activeAccounts>
          <accounts> ( .Bag
                    => <account>
                         <acctID> ACCT </acctID>
@@ -616,12 +616,13 @@ module EVM
            <balance> CURRBAL => CURRBAL +Word BAL </balance>
            ...
          </account>
+         <activeAccounts> ... ACCT |-> (EMPTY => #if BAL >Int 0 #then false #else EMPTY #fi) ... </activeAccounts>
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
          <mode> NORMAL </mode>
          <coinbase> MINER </coinbase>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool MINER in ACCTS
+      requires notBool MINER in_keys(ACCTS)
 
     rule <k> #finalizeTx(false) ... </k>
          <mode> NORMAL </mode>
@@ -655,10 +656,11 @@ module EVM
            <txGasPrice> GPRICE </txGasPrice>
            ...
          </message>
+         <activeAccounts> ... ORG |-> (ORGEMPTY => #if GAVAIL *Int GPRICE >Int 0 #then false #else ORGEMPTY #fi) MINER |-> (MINEMPTY => #if (GLIMIT -Int GAVAIL) *Int GPRICE >Int 0 #then false #else MINEMPTY #fi) ... </activeAccounts>
 
     rule <k> #finalizeTx(true) ... </k>
          <selfDestruct> ... (SetItem(ACCT) => .Set) </selfDestruct>
-         <activeAccounts> ... (SetItem(ACCT) => .Set) </activeAccounts>
+         <activeAccounts> ... (ACCT |-> _ => .Map) </activeAccounts>
          <accounts>
            ( <account>
                <acctID> ACCT </acctID>
@@ -734,10 +736,10 @@ module EVM
  // ---------------------------------------
     rule <k> #newAccount ACCT => . ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires ACCT in ACCTS
+      requires ACCT in_keys(ACCTS)
 
     rule <k> #newAccount ACCT => . ... </k>
-         <activeAccounts> ACCTS (.Set => SetItem(ACCT)) </activeAccounts>
+         <activeAccounts> ACCTS (.Map => ACCT |-> true) </activeAccounts>
          <accounts>
            ( .Bag
           => <account>
@@ -750,7 +752,7 @@ module EVM
            )
            ...
          </accounts>
-      requires notBool ACCT in ACCTS
+      requires notBool ACCT in_keys(ACCTS)
 
 
 // -   `#transferFunds` moves money from one account into another, creating the
@@ -763,6 +765,8 @@ module EVM
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> ORIGFROM => ORIGFROM -Word VALUE </balance>
+           <nonce> NONCE </nonce>
+           <code> CODE </code>
            ...
          </account>
          <account>
@@ -770,6 +774,7 @@ module EVM
            <balance> ORIGTO => ORIGTO +Word VALUE </balance>
            ...
          </account>
+         <activeAccounts> ... ACCTTO |-> (EMPTY => #if VALUE >Int 0 #then false #else EMPTY #fi) ACCTFROM |-> (_ => ORIGFROM ==Int VALUE andBool NONCE ==Int 0 andBool CODE ==K .Map) ... </activeAccounts>
       requires ACCTFROM =/=K ACCTTO andBool VALUE <=Int ORIGFROM
 
     rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #exception ... </k>
@@ -782,7 +787,7 @@ module EVM
 
     rule <k> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires ACCTFROM =/=K ACCTTO andBool notBool ACCTTO in ACCTS
+      requires ACCTFROM =/=K ACCTTO andBool notBool ACCTTO in_keys(ACCTS)
 
     rule <k> #transferFunds ACCT ACCT _ => . ... </k>
 
@@ -1039,7 +1044,7 @@ module EVM
 
     rule <k> BALANCE ACCT => #newAccount ACCT ~> 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
+      requires notBool ACCT in_keys(ACCTS)
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
@@ -1052,7 +1057,7 @@ module EVM
 
     rule <k> EXTCODESIZE ACCT => #newAccount ACCT ~> 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
+      requires notBool ACCT in_keys(ACCTS)
 
 
 // TODO: What should happen in the case that the account doesn't exist with
@@ -1071,7 +1076,7 @@ module EVM
 
     rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #newAccount ACCT ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
+      requires notBool ACCT in_keys(ACCTS)
 
 
 // ### Account Storage Operations
@@ -1286,28 +1291,29 @@ module EVM
 
 
     syntax InternalOp ::= "#create" Int Int Int Int Map
-    syntax KItem      ::= "#mkCreate" Int Map Int Int
- // -------------------------------------------------
+    syntax KItem      ::= "#mkCreate" Int Int Map Int Int
+ // -----------------------------------------------------
     rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
           => #pushCallStack ~> #pushWorldState
           ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCreate ACCTFROM INITCODE GAVAIL VALUE
+          ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
          ...
          </k>
          <callDepth> CD </callDepth>
       requires CD <Int 1024
 
-    rule <k> #exception ~> #mkCreate _ _ GAVAIL _ => #exception ... </k> <gas> _ => GAVAIL </gas>
+    rule <k> #exception ~> #mkCreate _ _ _ GAVAIL _ => #exception ... </k> <gas> _ => GAVAIL </gas>
 
     rule <k> #create _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
          <callDepth> CD </callDepth>
       requires CD >=Int 1024
 
     rule <mode> EXECMODE </mode>
-         <k> #mkCreate ACCTFROM INITCODE GAVAIL VALUE
+         <k> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
           => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
          ...
          </k>
+         <schedule> SCHED </schedule>
          <id> ACCT </id>
          <gas> OLDGAVAIL => GAVAIL </gas>
          <program> _ => INITCODE </program>
@@ -1319,8 +1325,14 @@ module EVM
          <account>
            <acctID> ACCT </acctID>
            <nonce> NONCE => NONCE +Int 1 </nonce>
-          ...
+           ...
          </account>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <nonce> TONONCE => #ifInt Gemptyisnonexistent << SCHED >> #then TONONCE +Int 1 #else TONONCE #fi </nonce>
+           ...
+         </account>
+         <activeAccounts> ... ACCTTO |-> (EMPTY => #if Gemptyisnonexistent << SCHED >> #then false #else EMPTY #fi) ... </activeAccounts>
 
     syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
@@ -1341,6 +1353,7 @@ module EVM
            <code> _ => #asMapOpCodes(#dasmOpCodes(OUT)) </code>
            ...
          </account>
+         <activeAccounts> ... ACCT |-> (EMPTY => #if OUT =/=K .Map #then false #else EMPTY #fi) ... </activeAccounts>
     rule <k> #finishCodeDeposit => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #refund GAVAIL ...</k>
          <mode> EXECMODE </mode>
          <gas> GAVAIL </gas>
@@ -1360,7 +1373,6 @@ module EVM
          <id> ACCT </id>
          <gas> GAVAIL => GAVAIL /Int 64 </gas>
          <localMem> LM </localMem>
-         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <nonce> NONCE </nonce>
@@ -1524,11 +1536,24 @@ module EVM
 
     rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
 
-    rule <k> #gasExec(SCHED, COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) ... </k> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas>
-    rule <k> #gasExec(SCHED, CSOP:CallSixOp GCAP ACCTTO       _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, 0)     ... </k> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas>
+    rule <k> #gasExec(SCHED, COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
+         <gas> GAVAIL </gas>
 
-    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCT) => Cselfdestruct(SCHED, ACCT, ACCTS) ... </k> <activeAccounts> ACCTS </activeAccounts>
-    rule <k> #gasExec(SCHED, CREATE _ _ _)      => Gcreate < SCHED >                 ... </k>
+    rule <k> #gasExec(SCHED, CSOP:CallSixOp GCAP ACCTTO _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, 0) ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
+         <gas> GAVAIL </gas>
+
+    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, ACCTTO, ACCTS, BAL) ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
+         <id> ACCTFROM </id>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
+
+    rule <k> #gasExec(SCHED, CREATE _ _ _) => Gcreate < SCHED > ... </k>
 
     rule <k> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </k>
 
@@ -1612,12 +1637,12 @@ module EVM
     rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstoreset < SCHED >   requires VALUE =/=K 0 andBool notBool INDEX in_keys(STORAGE)
     rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstorereset < SCHED > requires VALUE ==K 0  orBool  INDEX in_keys(STORAGE)
 
-    syntax Int ::= Ccall    ( Schedule , Int , Set , Int , Int , Int ) [function]
-                 | Ccallgas ( Schedule , Int , Set , Int , Int , Int ) [function]
+    syntax Int ::= Ccall    ( Schedule , Int , Map , Int , Int , Int ) [function]
+                 | Ccallgas ( Schedule , Int , Map , Int , Int , Int ) [function]
                  | Cgascap  ( Schedule , Int , Int , Int )             [function]
-                 | Cextra   ( Schedule , Int , Set , Int )             [function]
+                 | Cextra   ( Schedule , Int , Map , Int )             [function]
                  | Cxfer    ( Schedule , Int )                         [function]
-                 | Cnew     ( Schedule , Int , Set )                   [function]
+                 | Cnew     ( Schedule , Int , Map , Int )             [function]
  // -----------------------------------------------------------------------------
     rule Ccall(SCHED, ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cextra(SCHED, ACCT, ACCTS, VALUE) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, VALUE))
 
@@ -1627,19 +1652,30 @@ module EVM
     rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA andBool notBool Gstaticcalldepth << SCHED >>
     rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => GCAP                                          requires GAVAIL <Int  GEXTRA orBool Gstaticcalldepth << SCHED >>
 
-    rule Cextra(SCHED, ACCT, ACCTS, VALUE) => Gcall < SCHED > +Int Cnew(SCHED, ACCT, ACCTS) +Int Cxfer(SCHED, VALUE)
+    rule Cextra(SCHED, ACCT, ACCTS, VALUE) => Gcall < SCHED > +Int Cnew(SCHED, ACCT, ACCTS, VALUE) +Int Cxfer(SCHED, VALUE)
 
     rule Cxfer(SCHED, 0) => 0
     rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=K 0
 
-    rule Cnew(SCHED, ACCT, ACCTS) => Gnewaccount < SCHED > requires notBool ACCT in ACCTS
-    rule Cnew(SCHED, ACCT, ACCTS) => 0                     requires ACCT in ACCTS
+    rule Cnew(SCHED, ACCT, ACCTS, VALUE) => Gnewaccount < SCHED >
+      requires         #accountNonexistent(SCHED, ACCT, ACCTS) andBool (VALUE =/=Int 0 orBool          Gzerovaluenewaccountgas << SCHED >>)
+    rule Cnew(SCHED, ACCT, ACCTS, VALUE) => 0
+      requires notBool #accountNonexistent(SCHED, ACCT, ACCTS) orBool  (VALUE  ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>)
 
-    syntax Int ::= Cselfdestruct ( Schedule , Int , Set ) [function]
- // ----------------------------------------------------------------
-    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED > +Int Gnewaccount < SCHED > requires (notBool ACCT in ACCTS) andBool (Gselfdestructnewaccount << SCHED >>)
-    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED >                            requires (notBool ACCT in ACCTS) andBool (notBool Gselfdestructnewaccount << SCHED >>)
-    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED >                            requires ACCT in ACCTS
+    syntax Int ::= Cselfdestruct ( Schedule , Int , Map , Int ) [function]
+ // ----------------------------------------------------------------------
+    rule Cselfdestruct(SCHED, ACCT, ACCTS, BAL) => Gselfdestruct < SCHED > +Int Gnewaccount < SCHED >
+      requires (#accountNonexistent(SCHED, ACCT, ACCTS)) andBool (        Gselfdestructnewaccount << SCHED >>) andBool (BAL =/=Int 0 orBool          Gzerovaluenewaccountgas << SCHED >>)
+    rule Cselfdestruct(SCHED, ACCT, ACCTS, BAL) => Gselfdestruct < SCHED >
+      requires (#accountNonexistent(SCHED, ACCT, ACCTS)) andBool (notBool Gselfdestructnewaccount << SCHED >>  orBool  (BAL  ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>))
+    rule Cselfdestruct(SCHED, ACCT, ACCTS, BAL) => Gselfdestruct < SCHED >
+      requires notBool #accountNonexistent(SCHED, ACCT, ACCTS)
+
+    syntax Bool ::= #accountNonexistent ( Schedule , Int , Map ) [function]
+                  | #accountEmpty ( Int , Map )                  [function]
+ // -----------------------------------------------------------------------
+    rule #accountNonexistent(SCHED, ACCT, ACCTS) => notBool ACCT in_keys(ACCTS) orBool (#accountEmpty(ACCT, ACCTS) andBool Gemptyisnonexistent << SCHED >>)
+    rule #accountEmpty(ACCT, (ACCT |-> EMPTY) _) => EMPTY
 
     syntax Int ::= #allBut64th ( Int ) [function]
  // ---------------------------------------------
@@ -1675,8 +1711,8 @@ module EVM
     syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function]
  // ----------------------------------------------------------
 
-    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth"
- // ----------------------------------------------------------------------
+    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
+ // --------------------------------------------------------------------------------------------------------------------------
 
 
 // A `ScheduleConst` is a constant determined by the fee schedule; applying a
@@ -1748,6 +1784,8 @@ module EVM
 
     rule Gselfdestructnewaccount << DEFAULT >> => false
     rule Gstaticcalldepth        << DEFAULT >> => true
+    rule Gemptyisnonexistent     << DEFAULT >> => false
+    rule Gzerovaluenewaccountgas << DEFAULT >> => true
 
 
 // ### Frontier Schedule
@@ -1789,6 +1827,8 @@ module EVM
 
     rule Gselfdestructnewaccount << EIP150 >> => true
     rule Gstaticcalldepth        << EIP150 >> => false
+    rule SCHEDCONST              << EIP150 >> => SCHEDCONST << HOMESTEAD >>
+      requires notBool      ( SCHEDCONST ==K Gselfdestructnewaccount orBool SCHEDCONST ==K Gstaticcalldepth )
 
 
 // ### EIP158 Schedule
@@ -1799,7 +1839,10 @@ module EVM
     rule Gexpbyte   < EIP158 > => 50
     rule SCHEDCONST < EIP158 > => SCHEDCONST < EIP150 > requires SCHEDCONST =/=K Gexpbyte
 
-    rule SCHEDFLAG << EIP158 >> => SCHEDFLAG << EIP150 >>
+    rule Gemptyisnonexistent     << EIP158 >> => true
+    rule Gzerovaluenewaccountgas << EIP158 >> => false
+    rule SCHEDCONST              << EIP158 >> => SCHEDCONST << EIP150 >>
+      requires notBool      ( SCHEDCONST ==K Gemptyisnonexistent orBool SCHEDCONST ==K Gzerovaluenewaccountgas )
 
 
 // ### Metropolis Schedule

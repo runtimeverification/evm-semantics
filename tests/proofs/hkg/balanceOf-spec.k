@@ -59,7 +59,7 @@ module BALANCE-OF-SPEC
          <previousHash> 0               </previousHash>
          <difficulty>   256             </difficulty>
 
-         <activeAccounts> SetItem ( %ACCT_ID ) </activeAccounts>
+         <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <accounts>
            <account>
              <acctID>  %ACCT_ID     </acctID>

@@ -48,10 +48,10 @@ module TRANSFER-FROM-SPEC
          <previousHash> 0               </previousHash>
          <difficulty>   256             </difficulty>
 
-         <selfDestruct>   .Set                 </selfDestruct>
-         <log>            .Set                 </log>
-         <activeAccounts> SetItem ( %ACCT_ID ) </activeAccounts>
-         <messages>       .Bag                 </messages>
+         <selfDestruct>   .Set               </selfDestruct>
+         <log>            .Set               </log>
+         <activeAccounts> %ACCT_ID |-> false </activeAccounts>
+         <messages>       .Bag               </messages>
 
 
 // These parts of the proof change, but we would like to avoid specifying exactly

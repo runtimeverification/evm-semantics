@@ -136,6 +136,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
+         <activeAccounts> ... ACCTFROM |-> (_ => false) ... </activeAccounts>
 
     rule <k> loadTx(ACCTFROM)
           => #call ACCTFROM ACCTTO ACCTTO (GLIMIT -Int G0(SCHED, DATA, false)) VALUE VALUE DATA
@@ -161,6 +162,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
+         <activeAccounts> ... ACCTFROM |-> (_ => false) ... </activeAccounts>
       requires ACCTTO =/=Int 0
 
     syntax EthereumCommand ::= "#finishTx"
@@ -204,6 +206,7 @@ TODO: Handle blocks with ommers.
            <balance> MINBAL => MINBAL +Int Rb </balance>
            ...
          </account>
+         <activeAccounts> ... MINER |-> (_ => false) ... </activeAccounts>
 
     rule <k> #rewardOmmers(.JSONList) => . ... </k>
     rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
@@ -219,6 +222,7 @@ TODO: Handle blocks with ommers.
            <balance> OMMBAL => OMMBAL +Int Rb +Int (OMMNUM -Int CURNUM) *Int (Rb /Int 8) </balance>
           ...
          </account>
+         <activeAccounts> ... MINER |-> (_ => false) OMMER |-> (_ => false) ... </activeAccounts>
 
     syntax Int ::= "Rb" [function]
  // ------------------------------
@@ -369,7 +373,7 @@ State Manipulation
     syntax EthreumCommand ::= "clearNETWORK"
  // ----------------------------------------
     rule <k> clearNETWORK => . ... </k>
-         <activeAccounts> _ => .Set </activeAccounts>
+         <activeAccounts> _ => .Map </activeAccounts>
          <accounts>       _ => .Bag </accounts>
          <messages>       _ => .Bag </messages>
 ```
@@ -420,6 +424,7 @@ The individual fields of the accounts are dealt with here.
            <balance> _ => BAL </balance>
            ...
          </account>
+         <activeAccounts> ... ACCT |-> (EMPTY => #if BAL =/=Int 0 #then false #else EMPTY #fi) ... </activeAccounts>
 
     rule <k> load "account" : { ACCT : { "code" : (CODE:Map) } } => . ... </k>
          <account>
@@ -427,6 +432,7 @@ The individual fields of the accounts are dealt with here.
            <code> _ => CODE </code>
            ...
          </account>
+         <activeAccounts> ... ACCT |-> (EMPTY => #if CODE =/=K .Map #then false #else EMPTY #fi) ... </activeAccounts>
 
     rule <k> load "account" : { ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
          <account>
@@ -434,6 +440,7 @@ The individual fields of the accounts are dealt with here.
            <nonce> _ => NONCE </nonce>
            ...
          </account>
+         <activeAccounts> ... ACCT |-> (EMPTY => #if NONCE =/=Int 0 #then false #else EMPTY #fi) ... </activeAccounts>
 
     rule <k> load "account" : { ACCT : { "storage" : (STORAGE:Map) } } => . ... </k>
          <account>

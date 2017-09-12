@@ -50,7 +50,7 @@
       <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
     </evm>
     <network>
-      <activeAccounts> SetItem ( 7 ) </activeAccounts>
+      <activeAccounts> 7 |-> false </activeAccounts>
       <accounts>
         <account>
           <acctID> 7 </acctID>
