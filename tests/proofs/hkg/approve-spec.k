@@ -29,7 +29,6 @@ module APPROVE-SPEC
          <callData>  .WordStack   </callData>
          <callValue> 0            </callValue>
 
-
          <wordStack>   A2 : %ORIGIN_ID : WS => ?A:WordStack </wordStack>
          <localMem>    .Map                 => ?B:Map       </localMem>
          <pc>          574                  => 806          </pc>

@@ -3,62 +3,57 @@ The Hacker Gold (HKG) Token Smart Contract
 
 [The ERC20 Token Standard](https://github.com/ethereum/EIPs/issues/20)
 ----------------------------------------------------------------------
-The ERC20 standard is a specification that describes several simple methods 
-that a smart contract must implement in order to be treated
-as a token by a variety of higher level applications (including wallets, exchanges, 
-and other contracts expecting to interact with tokens). The implementation details of 
-these methods are left to the user, with minimal semantic behavior provided in the specification, 
-leaving room for a wide range of complex tokens (and the associated
-security vulnerabilities). The ERC20 standard
-requires the following Solidity methods and events (and log items) to be implemented:
 
-```Javascript
+The ERC20 standard is a specification that describes several simple methods that a smart contract must implement in order to be treated as a token by a variety of higher level applications (including wallets, exchanges, and other contracts expecting to interact with tokens).
+The implementation details of these methods are left to the user, with minimal semantic behavior provided in the specification, leaving room for a wide range of complex tokens (and the associated security vulnerabilities).
+The ERC20 standard requires the following Solidity methods and events (and log items) to be implemented:
+
+```js
 // Get the total token supply
-function totalSupply() constant returns (uint256 totalSupply)
+    function totalSupply() constant returns (uint256 totalSupply)
+
 // Get the account balance of another account with address _owner
-function balanceOf(address _owner) constant returns (uint256 balance)
+    function balanceOf(address _owner) constant returns (uint256 balance)
+
 // Send _value amount of tokens to address _to
-function transfer(address _to, uint256 _value) returns (bool success)
+    function transfer(address _to, uint256 _value) returns (bool success)
+
 // Send _value amount of tokens from address _from to address _to
-function transferFrom(address _from, address _to, uint256 _value) returns (bool success)
+    function transferFrom(address _from, address _to, uint256 _value) returns (bool success)
+
 // Allow _spender to withdraw from your account, multiple times, up to the _value amount.
 // If this function is called again it overwrites the current allowance with _value.
-function approve(address _spender, uint256 _value) returns (bool success)
+    function approve(address _spender, uint256 _value) returns (bool success)
+
 // Returns the amount which _spender is still allowed to withdraw from _owner
-function allowance(address _owner, address _spender) constant returns (uint256 remaining)
+    function allowance(address _owner, address _spender) constant returns (uint256 remaining)
+
 // Triggered when tokens are transferred.
-event Transfer(address indexed _from, address indexed _to, uint256 _value)
+    event Transfer(address indexed _from, address indexed _to, uint256 _value)
+
 // Triggered whenever approve(address _spender, uint256 _value) is called.
-event Approval(address indexed _owner, address indexed _spender, uint256 _value)
+    event Approval(address indexed _owner, address indexed _spender, uint256 _value)
 ```
 
-The HKG Token is an implementation of the ERC20 specification and was a topic of discussion 
-when a vulnerability based in a typographical error lead to
-a [reissuance of the entire token](https://www.ethnews.com/ethercamps-hkg-token-has-a-bug-and-needs-to-be-reissued), 
-disrupting a nontrivial economy based on it. Previously, the token was
-[manually audited by Zeppelin](https://zeppelin.solutions/security-audits) and deemed secure, 
-further reinforcing the error-prone nature of the human review
-process and the need for tools that go beyond what is possible with manual review.
-Specifically, the typographical error in the [HKG Token Solidity source](https://github.com/ether-camp/virtual-accelerator/issues/8) code came in the form of an =+ statement being used in
-place of the desired += when updating a receiver’s balance during a transfer. While typographically similar,
-these statements are semantically very different, with the former being equivalent to a simple = (the second
-plus saying that the expression following should be treated as positive) and the latter desugaring to add the
-right hand quantity to the existing value in the variable on the left hand side of the expression. In testing, this
-error was missed, as the first balance updated would always work (with balance =+ value being semantically
-equivalent to balance += value when balance is 0, in both cases assigning value to balance). Even with full
-decision or branch coverage in testing, multiple transfers on the same account can be entirely omitted in a way
-that is difficult to notice through human review.
+The HKG Token is an implementation of the ERC20 specification and was a topic of discussion when a vulnerability based in a typographical error lead to a [reissuance of the entire token](https://www.ethnews.com/ethercamps-hkg-token-has-a-bug-and-needs-to-be-reissued), disrupting a nontrivial economy based on it.
+Previously, the token was [manually audited by Zeppelin](https://zeppelin.solutions/security-audits) and deemed secure, further reinforcing the error-prone nature of the human review process and the need for tools that go beyond what is possible with manual review.
+Specifically, the typographical error in the [HKG Token Solidity source](https://github.com/ether-camp/virtual-accelerator/issues/8) code came in the form of an `=+` statement being used in place of the desired `+=` when updating a receiver's balance during a transfer.
+While typographically similar, these statements are semantically very different, with the former being equivalent to a simple `=` (the second plus saying that the expression following should be treated as positive) and the latter desugaring to add the right hand quantity to the existing value in the variable on the left hand side of the expression.
+In testing, this error was missed, as the first balance updated would always work (with balance `=+` value being semantically equivalent to balance `+=` value when balance is 0, in both cases assigning value to balance).
+Even with full decision or branch coverage in testing, multiple transfers on the same account can be entirely omitted in a way that is difficult to notice through human review.
 
-In order to thoroughly analyze the HKG contract, we first had to compile the solidity source of the 
-contract to EVM. A more detailed description of the process, with snippets of solidity code can be
-found in Sec 6.1.1 of our [technical report](https://www.ideals.illinois.edu/handle/2142/97207).
+In order to thoroughly analyze the HKG contract, we first had to compile the solidity source of the contract to EVM.
+A more detailed description of the process, with snippets of solidity code can be found in Sec 6.1.1 of our [technical report](https://www.ideals.illinois.edu/handle/2142/97207).
 
-We now present reachability claims used for verification, one for each function in the ERC20 specification. 
+We now present reachability claims used for verification, one for each function in the ERC20 specification.
 Since the HKG token contract contains only sequential code (no loops), we only need one reachability claim per function.
-In the following claims, any symbol starting with a % indicates a constant which has been replaced
-by a symbol for clarity. In particular, %HKG Program is the EVM bytecode for the Hacker Gold token program,
-TRANSFER represents the symbolic amount to transfer, B1 and B2 are the starting balances of accounts 1 and
-2, respectively, and A1 is the allowance of account 1 (strictly smaller than the balance).
+In the following claims, any symbol starting with a `%` indicates a constant which has been replaced by a symbol for clarity.
+In particular:
+
+-   `%HKG_Program` is the EVM bytecode for the Hacker Gold token program;
+-   `TRANSFER` represents the symbolic amount to transfer;
+-   `B1` and `B2` are the starting balances of accounts 1 and 2, respectively;
+-   `A1` is the allowance of account 1 (strictly smaller than the balance).
 
 Transfer Function
 -----------------
@@ -383,7 +378,6 @@ module APPROVE-SPEC
          <caller>    %CALLER_ID   </caller>
          <callData>  .WordStack   </callData>
          <callValue> 0            </callValue>
-
 
          <wordStack>   A2 : %ORIGIN_ID : WS => ?A:WordStack </wordStack>
          <localMem>    .Map                 => ?B:Map       </localMem>
