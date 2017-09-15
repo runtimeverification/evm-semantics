@@ -1,8 +1,7 @@
 EVM Program Verification
 ========================
 
-The EVM program verifier combines the K verification infrastructure with the EVM semantics.
-We present a brief summary of our verification efforts.
+The EVM program verifier combines the K verification infrastructure with the EVM semantics. We present a brief summary of our verification efforts.
 
 The SUM To N Program
 --------------------
