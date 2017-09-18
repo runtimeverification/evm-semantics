@@ -72,10 +72,12 @@ module EVM-DATA
 
 
 // -   `#ifInt_#then_#else_#fi` provides a conditional in `Int` expressions.
+// -   `#ifSet_#then_#else_#fi` provides a conditional in `Set` expressions.
 
 
     syntax Int ::= "#ifInt" Bool "#then" Int "#else" Int "#fi" [function, smtlib(ifInt)]
- // ------------------------------------------------------------------------------------
+    syntax Set ::= "#ifSet" Bool "#then" Set "#else" Set "#fi" [function]
+ // ---------------------------------------------------------------------
 
 
 // If we don't place the `Bool` condition as a side-condition for UIUC-K, it will
@@ -83,8 +85,8 @@ module EVM-DATA
 // problematic when `B` is symbolic during proving).
 
 
-    rule #ifInt true  #then W #else _ #fi => W
-    rule #ifInt false #then _ #else W #fi => W
+    rule #ifInt A #then B #else C #fi => #if A #then B #else C #fi [macro]
+    rule #ifSet A #then B #else C #fi => #if A #then B #else C #fi [macro]
 
 
 // -   `sgn` gives the twos-complement interperetation of the sign of a word.
