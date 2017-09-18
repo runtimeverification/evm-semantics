@@ -244,7 +244,12 @@ The `interimStates` cell stores a list of previous world states.
 -   `#popWorldState` restores the top element of the `interimStates`.
 -   `#dropWorldState` removes the top element of the `interimStates`.
 
-```{.k .uiuck .rvk}
+We use slightly different rules for rv-k versus uiuc-k because uiuc-k does not support storing configuration fragments.
+The semantics of these two sets of rules are identical, however, the version rv-k uses is substantially faster.
+We would use that version in both places if not for technical limitations on the prover.
+In the long term, a new prover will be built capable of supporting the same code in both versions of the semantics.
+
+```{.k .uiuck}
     syntax Account ::= "{" Int "|" Int "|" Map "|" Map "|" Int "|" Bool "}"
  // -----------------------------------------------------------------------
 
@@ -287,6 +292,29 @@ The `interimStates` cell stores a list of previous world states.
                     )
                     ...
          </accounts>
+
+    syntax InternalOp ::= "#dropWorldState"
+ // ---------------------------------------
+    rule <k> #dropWorldState => . ... </k> <interimStates> (ListItem(_) => .List) ... </interimStates>
+```
+
+```{.k .rvk}
+    syntax Accounts ::= "{" AccountsCell "|" Map "}"
+ // ------------------------------------------------
+
+    syntax InternalOp ::= "#pushWorldState"
+ // ---------------------------------------
+    rule <k> #pushWorldState => .K ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
+         <accounts> ACCTDATA </accounts>
+         <interimStates> (.List => ListItem({ <accounts> ACCTDATA </accounts> | ACCTS })) ... </interimStates>
+
+    syntax InternalOp ::= "#popWorldState"
+ // --------------------------------------
+    rule <k> #popWorldState => .K ... </k>
+         <interimStates> (ListItem({ <accounts> ACCTDATA </accounts> | ACCTS }) => .List) ... </interimStates>
+         <activeAccounts> _ => ACCTS </activeAccounts>
+         <accounts> _ => ACCTDATA </accounts>
 
     syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
