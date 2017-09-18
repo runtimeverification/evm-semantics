@@ -243,6 +243,13 @@ module EVM
 // -   `#popWorldState` restores the top element of the `interimStates`.
 // -   `#dropWorldState` removes the top element of the `interimStates`.
 
+// We use slightly different rules for rv-k versus uiuc-k because uiuc-k does not
+// support storing configuration fragments. The semantics of these two sets of
+// rules are identical, however, the version rv-k uses is substantially faster. We
+// would use that version in both places if not for technical limitations on the
+// prover. In the long term, a new prover will be built capable of supporting the
+// same code in both versions of the semantics.
+
 
     syntax Account ::= "{" Int "|" Int "|" Map "|" Map "|" Int "|" Bool "}"
  // --------------------------------------------------------------

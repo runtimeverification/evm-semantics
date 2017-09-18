@@ -243,49 +243,30 @@ module EVM
 // -   `#popWorldState` restores the top element of the `interimStates`.
 // -   `#dropWorldState` removes the top element of the `interimStates`.
 
+// We use slightly different rules for rv-k versus uiuc-k because uiuc-k does not
+// support storing configuration fragments. The semantics of these two sets of
+// rules are identical, however, the version rv-k uses is substantially faster. We
+// would use that version in both places if not for technical limitations on the
+// prover. In the long term, a new prover will be built capable of supporting the
+// same code in both versions of the semantics.
 
-    syntax Account ::= "{" Int "|" Int "|" Map "|" Map "|" Int "|" Bool "}"
- // --------------------------------------------------------------
 
-    syntax InternalOp ::= "#pushWorldState" | "#pushWorldStateAux" Map | "#pushAccount" Int Bool
- // --------------------------------------------------------------------------------------------
-    rule <k> #pushWorldState => #pushWorldStateAux ACCTS ... </k>
+    syntax Accounts ::= "{" AccountsCell "|" Map "}"
+ // ------------------------------------------------
+
+    syntax InternalOp ::= "#pushWorldState"
+ // ---------------------------------------
+    rule <k> #pushWorldState => .K ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-         <interimStates> (.List => ListItem(.Set)) ... </interimStates>
+         <accounts> ACCTDATA </accounts>
+         <interimStates> (.List => ListItem({ <accounts> ACCTDATA </accounts> | ACCTS })) ... </interimStates>
 
-    rule <k> #pushWorldStateAux .Map => . ... </k>
-    rule <k> #pushWorldStateAux ((ACCT |-> EMPTY) REST) => #pushAccount ACCT EMPTY ~> #pushWorldStateAux REST ... </k>
-    rule <k> #pushAccount ACCT EMPTY => . ... </k>
-         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE | NONCE | EMPTY })) REST) ... </interimStates>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           <code> CODE </code>
-           <storage> STORAGE </storage>
-           <nonce> NONCE </nonce>
-         </account>
-
-    syntax InternalOp ::= "#popWorldState" | "#popWorldStateAux" Set
- // ----------------------------------------------------------------
-    rule <k> #popWorldState => #popWorldStateAux PREVSTATE ... </k>
-         <interimStates> (ListItem(PREVSTATE) => .List) ... </interimStates>
-         <activeAccounts> _ => .Map </activeAccounts>
-         <accounts> _ => .Bag </accounts>
-
-    rule <k> #popWorldStateAux .Set => . ... </k>
-    rule <k> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE | NONCE | EMPTY }) => .Set) REST ) ... </k>
-         <activeAccounts> ... (.Map => ACCT |-> EMPTY) </activeAccounts>
-         <accounts> ( .Bag
-                   => <account>
-                        <acctID> ACCT </acctID>
-                        <balance> BAL </balance>
-                        <code> CODE </code>
-                        <storage> STORAGE </storage>
-                        <nonce> NONCE </nonce>
-                      </account>
-                    )
-                    ...
-         </accounts>
+    syntax InternalOp ::= "#popWorldState"
+ // --------------------------------------
+    rule <k> #popWorldState => .K ... </k>
+         <interimStates> (ListItem({ <accounts> ACCTDATA </accounts> | ACCTS }) => .List) ... </interimStates>
+         <activeAccounts> _ => ACCTS </activeAccounts>
+         <accounts> _ => ACCTDATA </accounts>
 
     syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
