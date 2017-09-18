@@ -71,9 +71,11 @@ module EVM-DATA
 
 
 // -   `#ifInt_#then_#else_#fi` provides a conditional in `Int` expressions.
+// -   `#ifSet_#then_#else_#fi` provides a conditional in `Set` expressions.
 
 
     syntax Int ::= "#ifInt" Bool "#then" Int "#else" Int "#fi" [function, smtlib(ifInt)]
+    syntax Set ::= "#ifSet" Bool "#then" Set "#else" Set "#fi" [function]
  // ------------------------------------------------------------------------------------
 
 
@@ -84,6 +86,8 @@ module EVM-DATA
 
     rule #ifInt B #then W #else _ #fi => W requires B
     rule #ifInt B #then _ #else W #fi => W requires notBool B
+    rule #ifSet B #then W #else _ #fi => W requires B
+    rule #ifSet B #then _ #else W #fi => W requires notBool B
 
 
 // -   `sgn` gives the twos-complement interperetation of the sign of a word.
