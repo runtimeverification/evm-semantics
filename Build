@@ -250,6 +250,14 @@ case "$run_command" in
        $0 debug <pgm>   Run a single EVM program in the debugger
        $0 prove <spec>  Attempt to prove the specification using UIUC-K's RL prover
 
+       Note: <pgm> and <spec> here are paths to files, *not* test lists.
+       These files should be Ethereum programs (or specifications).
+
+       Examples:
+       $ ./Build run   tests/VMTests/vmArithmeticTest/add0.json
+       $ ./Build debug tests/gas-analysis/sumTo10.evm
+       $ ./Build prove tests/proofs/sum-to-n-spec.k
+
        # Testing
        # -------
        $0 list     <test-list> <regx>   List tests from <test-list> filtered by <regx>
