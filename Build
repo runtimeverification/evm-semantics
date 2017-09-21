@@ -226,9 +226,9 @@ case "$run_command" in
     prove) run_proof  "$1" ;;
 
     # Testing
-    list-*)    list_${run_command#list-}    | filter_tests "$@" ;;
-    test-*)    list_${run_command#test-}    | filter_tests "$@" | run_tests    ;;
-    partest-*) list_${run_command#partest-} | filter_tests "$@" | run_partests ;;
+    list)     list_$1 | filter_tests "${@:2}" ;;
+    tests)    list_$1 | filter_tests "${@:2}" | run_tests    ;;
+    partests) list_$1 | filter_tests "${@:2}" | run_partests ;;
 
     *)             echo "
     K_VERSION: $K_VERSION
@@ -252,9 +252,9 @@ case "$run_command" in
 
        # Testing
        # -------
-       $0 list-<test-list>    <regx>    List tests from <test-list> filtered by <regx>
-       $0 test-<test-list>    <regx>    Run tests from <test-list> filtered by <regx>
-       $0 partest-<test-list> <regx>    Run tests from <test-list> filtered by <regx> with GNU parallel
+       $0 list     <test-list> <regx>   List tests from <test-list> filtered by <regx>
+       $0 tests    <test-list> <regx>   Run tests from <test-list> filtered by <regx>
+       $0 partests <test-list> <regx>   Run tests from <test-list> filtered by <regx> with GNU parallel
 
        Available <test-list>: $test_lists
 "; exit ;;
