@@ -43,13 +43,7 @@ This repository contains the build-products for both versions of K (there are sl
 Use RV-K for fast concrete execution, and UIUC-K for any symbolic reasoning.
 Make sure that you have set the `K_VERSION` environment variable in your shell (add `export K_VERSION=uiuck` or `export K_VERSION=rvk` to your `.bashrc` or equivalent).
 
-The script `Build` supplied in this repository will build and run the definition (see `./Build help` to see usage information).
-
--   To `kompile` the definition, run `./Build` or `./Build make-build`.
--   Use `./Build run <file>` and `./Build test <file>` to run/test a file, respectively.
--   To run the tests, do `./Build test-<test-list>` (`./Build partest-<test-list>` to run them in parallel using [GNU parallel](https://www.gnu.org/software/parallel/)).
-    The output of `./Build help` contains the available `<test-list>`.
-
+The script `Build` supplied in this repository will build and run the definition (see `./Build help` to see more detailed usage information).
 Running any proofs or symbolic reasoning requires UIUC-K.
 
 To run in a different mode (eg. in `GASANALYZE` mode), do `export cMODE=<OTHER_MODE>` before calling `./Build`.
