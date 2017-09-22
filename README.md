@@ -180,3 +180,5 @@ For more information about [The K Framework](http://kframework.org), refer to th
 -   [Reachability Logic Resources](http://fsl.cs.illinois.edu/index.php/Reachability_Logic_in_K)
 -   [Matching Logic Resources](http://fsl.cs.illinois.edu/index.php/Matching_Logic)
 -   [Logical Frameworks](http://dl.acm.org/citation.cfm?id=208700): Discussion of logical frameworks.
+
+We are using [GNU Parallel](https://www.gnu.org/software/parallel/) to assist in testing these semantics in parallel.
