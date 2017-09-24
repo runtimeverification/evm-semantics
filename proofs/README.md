@@ -45,6 +45,11 @@ The ERC20 standard requires the following Solidity methods and events (and log i
     event Approval(address indexed _owner, address indexed _spender, uint256 _value)
 ```
 
+Here we'll collect the list of ERC20 tokens we have analyzed.
+The following files contain details about each token and the proof claims we have verified.
+
+-   [HKG Hacker Gold Token](hkg.md)
+
 Install K
 =========
 
