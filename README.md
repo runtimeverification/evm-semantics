@@ -162,11 +162,6 @@ Right now we are passing the VMTests, but haven't run tests on entire transactio
 To have confidence in our semantics, we need to run the tests involving entire transactions (not just chunks of VM code).
 We are working on running the GeneralStateTests now as well.
 
-### Full Verification
-
-Right now we are proving complete specifications for each of the functions of the HKG token program, that is, covering all the cases that the code covers.
-To achieve a full verification, we need to analyze the cases when gas is not enough for the transaction and arithmetic overflow occurs at runtime.
-
 ### TODOs
 
 More local problems are defined with a small *TODO* next to them in the semantics.
