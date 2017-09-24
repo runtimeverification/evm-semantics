@@ -1,15 +1,20 @@
-The Hacker Gold (HKG) Token Smart Contract
-==========================================
-
-
-The Hacker Gold (HKG) Token Smart Contract
-------------------------------------------
+The Hacker Gold (HKG) Token Smart Contract - Overview
+=====================================================
 
 The HKG token is an implementation of the ERC20 specification written in Solidity.
 The token became a [topic of discussion](https://www.ethnews.com/ethercamps-hkg-token-has-a-bug-and-needs-to-be-reissued) when a subtle vulnerability lead to a reissue.
 The token had been originally audited by [Zeppelin](https://zeppelin.solutions/security-audits), and was deemed secure.
 
-### Compiling Solidity Source To EVM
+Specifically, the typographical error in the [HKG Token Solidity source](https://github.com/ether-camp/virtual-accelerator/issues/8) code came in the form of an `=+` statement being used in place of the desired `+=` when updating a receiver's balance during a transfer.
+While typographically similar, these statements are semantically very different, with the former being equivalent to a simple `=` (the second plus saying that the expression following should be treated as positive) and the latter desugaring to add the right hand quantity to the existing value in the variable on the left hand side of the expression.
+In testing, this error was missed, as the first balance updated would always work (with balance `=+` value being semantically equivalent to balance `+=` value when balance is 0, in both cases assigning `value` to `balance`).
+Even with full decision or branch coverage in testing, multiple transfers on the same account can be entirely omitted in a way that is difficult to notice through human review.
+
+In order to thoroughly analyze the HKG contract, we first had to compile the Solidity source of the contract to EVM.
+A more detailed description of the process, with snippets of Solidity code, can be found in Sec 6.1.1 of our [technical report](https://www.ideals.illinois.edu/handle/2142/97207).
+
+Compiling Solidity Source To EVM
+--------------------------------
 
 Since we are performing our verification at the EVM level, the first step in the verification process is to compile the [HKG Token's Source](https://github.com/ether-camp/virtual-accelerator/blob/master/contracts/StandardToken.sol) to EVM.
 To simplify the verification process, we fixed the total supply, and added two dummy accounts before compiling the code to EVM.
@@ -70,7 +75,8 @@ Here's what the `transferFrom` function looks like, pasted verbatim from HKG Tok
 
 This function is specified in the ERC20 standard described previously as "Send `_value` amount of tokens from address `_from` to address `_to`", and requires the `_from` address to approve the transfer of at least the amount being sent using ERC20's approve functionality.
 
-### Our Proof Claims
+Our Proof Claims
+----------------
 
 The K prover takes as input *Reachability claims*.
 The claims are written in the same format as rules from a language definition.
@@ -126,7 +132,8 @@ The rule above specifies that in all valid executions starting in the left-hand-
     c.  bounds the size of `WS` to ensure there is no stack overflow in runtime; and
     d.  there is enough gas for the execution of this fuction.
 
-### The Results
+Results
+-------
 
 Initially, we took the vulnerability containing code, compiled it to EVM, and plugged in into our [reachability claim](token-buggy-spec.md), which wasn't able to be verified as expected.
 Surprisingly, after fixing the bug which caused the reissuance, verifying against the ERC20 specification was still not possible due to the presence of an integer overflow bug not corrected in this reissuance.
@@ -134,28 +141,23 @@ Additionally, because the KEVM semantics properly tests every condition which co
 
 We verified all the five functions implemented in HKG token program with preconditions stating that the code will not be called in contexts where the overflow may happen.
 
-### Conclusion
+Conclusion
+----------
 
 With our semantics, we were able to not only catch the bug in Hacker Gold's ERC-20 compliant token using our semantics, but also find two overflow issues may occur in `HKG` token program.
 In particular, since a bounded integer and stack size is a well known and documented limitation of the EVM, we did not explicitly reason about it during our initial proof attempts and were reminded to do so by the prover itself, further showing the power of full verification to find subtle cases in interactions between the contract and its underlying execution platform which may be missed by manual inspection and testing.
 
-### TODO
+TODO
+----
 
 Right now we are proving complete specifications for each of the functions of the HKG token program, i.e., covering all the cases that the code covers.
 To achieve a full verification, we need to analyze the cases when gas is not enough for the transaction and arithmetic overflow occurs at runtime.
 
-The HKG Token is an implementation of the ERC20 specification and was a topic of discussion when a vulnerability based in a typographical error lead to a [reissuance of the entire token](https://www.ethnews.com/ethercamps-hkg-token-has-a-bug-and-needs-to-be-reissued), disrupting a nontrivial economy based on it.
-Previously, the token was [manually audited by Zeppelin](https://zeppelin.solutions/security-audits) and deemed secure, further reinforcing the error-prone nature of the human review process and the need for tools that go beyond what is possible with manual review.
-Specifically, the typographical error in the [HKG Token Solidity source](https://github.com/ether-camp/virtual-accelerator/issues/8) code came in the form of an `=+` statement being used in place of the desired `+=` when updating a receiver's balance during a transfer.
-While typographically similar, these statements are semantically very different, with the former being equivalent to a simple `=` (the second plus saying that the expression following should be treated as positive) and the latter desugaring to add the right hand quantity to the existing value in the variable on the left hand side of the expression.
-In testing, this error was missed, as the first balance updated would always work (with balance `=+` value being semantically equivalent to balance `+=` value when balance is 0, in both cases assigning value to balance).
-Even with full decision or branch coverage in testing, multiple transfers on the same account can be entirely omitted in a way that is difficult to notice through human review.
-
-In order to thoroughly analyze the HKG contract, we first had to compile the solidity source of the contract to EVM.
-A more detailed description of the process, with snippets of solidity code can be found in Sec 6.1.1 of our [technical report](https://www.ideals.illinois.edu/handle/2142/97207).
+HKG Token - Full Proof Claims
+=============================
 
 We now present reachability claims used for verification, one for each function in the ERC20 specification.
-Since the HKG token contract contains only sequential code (no loops), we only need one reachability claim per function.
+Since the HKG token contract contains only sequential code (no loops), we only need one reachability claim per branch per function.
 In the following claims, any symbol starting with a `%` indicates a constant which has been replaced by a symbol for clarity.
 In particular:
 

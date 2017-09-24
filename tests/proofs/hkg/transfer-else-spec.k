@@ -1,5 +1,16 @@
-// The Hacker Gold (HKG) Token Smart Contract
-// ==========================================
+// HKG Token - Full Proof Claims
+// =============================
+
+// We now present reachability claims used for verification, one for each function
+// in the ERC20 specification. Since the HKG token contract contains only
+// sequential code (no loops), we only need one reachability claim per branch per
+// function. In the following claims, any symbol starting with a `%` indicates a
+// constant which has been replaced by a symbol for clarity. In particular:
+
+// -   `%HKG_Program` is the EVM bytecode for the Hacker Gold token program;
+// -   `TRANSFER` represents the symbolic amount to transfer;
+// -   `B1` and `B2` are the starting balances of accounts 1 and 2, respectively;
+// -   `A1` is the allowance of account 1 (strictly smaller than the balance).
 
 // Transfer Function
 // -----------------
