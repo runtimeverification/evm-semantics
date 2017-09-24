@@ -50,24 +50,15 @@ The following files contain details about each token and the proof claims we hav
 
 -   [HKG Hacker Gold Token](hkg.md)
 
-Install K
-=========
+Running Proofs
+==============
 
 The verification part is compatible with uiuck.
+Proofs generated from these markdown files will be placed in `tests/proofs/...`.
+Using the `./Build` script, you can compile the definition and run the proofs.
+See `./Build help` for more information about compiling and running programs/proofs.
 
-### Kompile the definition
+Note that:
 
-```sh
-$ ./Build
-```
-
-### Run the Prover
-
-```sh
-$ krun -d .build/uiuck --prove tests/proofs/hkg/*-spec.k proofs/json/*.json -cMODE=NORMAL -cSCHEDULE=DEFAULT
-```
-
-Note:
-
-1.  It may take a long time (probably more than half an hour) to verify the transfer and transfer-From function of token program.
-2.  The verification of "token-buggy-spec.k" is not able to go through.
+1.  It may take a long time (probably more than half an hour) to verify the `transfer` and `transferFrom` function of token program.
+2.  The verification of `token-buggy-spec.k` is not able to go through.
