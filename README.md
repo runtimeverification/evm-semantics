@@ -61,6 +61,74 @@ These branches (off of `master`) are various interesting/useful changes to the s
 -   `perf` and `performance` are changes which improve performance of concrete execution but cannot do symbolic reasoning.
 -   `tutorial` removes parts of the semantics and places `TODO` markers for a user to fill in.
 
+### Example Runs
+
+Run the file `tests/VMTests/vmArithmeticTest/add0.json`:
+
+```sh
+$ ./Build run tests/VMTests/vmArithmeticTest/add0.json
+
+# Which actually calls:
+$ krun --directory .build/uiuck/ -cSCHEDULE=DEFAULT -cMODE=VMTESTS tests/VMTests/vmArithmeticTest/add0.json
+```
+
+Run the same file as a test:
+
+```sh
+$ ./Build test tests/VMTests/vmArithmeticTest/add0.json
+```
+
+To run proofs, you can similarly use `./Build`.
+For example, to prove the specification `tests/proofs/hkg/transfer-else-spec.k`:
+
+```sh
+$ ./Build prove tests/proofs/hkg/transfer-else-spec.k
+
+# Which actually calls:
+$ krun --directory .build/uiuck/ -cSCHEDULE=DEFAULT -cMODE=NORMAL \
+         --z3-executable tests/templates/dummy-proof-input.json --prove tests/proofs/hkg/transferFrom-else-spec.k \
+         </dev/null
+```
+
+Finally, if you want to debug a given program (by stepping through its execution), you can use the `debug` option:
+
+```sh
+$ ./Build debug tests/VMTests/vmArithmeticTest/add0.json
+...
+KDebug> s
+1 Step(s) Taken.
+KDebug> p
+... Big Configuration Here ...
+KDebug>
+```
+
+### Helper Script `with-k`
+
+Not everyone wants to go through the process of installing K, so the script `./tests/ci/with-k` can be used to avoid that.
+The following will call the same `./Build` commands as above, but only after downloading, building, and setting up a fresh copy of RV-K or UIUC-K (as specified).
+
+```sh
+$ ./tests/ci/with-k rvk   ./Build run tests/VMTests/vmArithmeticTest/add0.json
+$ ./tests/ci/with-k uiuck ./Build prove tests/proofs/hkg/transfer-else-spec.k
+$ ./tests/ci/with-k rvk   ./Build test tests/VMTests/vmArithmeticTest/add0.json
+$ ./tests/ci/with-k uiuck ./Build prove tests/proofs/hkg/transfer-else-spec.k
+$ ./tests/ci/with-k uiuck ./Build debug tests/VMTests/vmArithmeticTest/add0.json
+```
+
+Note that running `./tests/ci/with-k` takes quite some time, which can be a pain when actively developing.
+To only download and setup K once for each session, you can do the following:
+
+```sh
+# Downloads and installs RV-K
+$ ./tests/ci/with-k rvk `which bash`
+
+# Now can just run `./Build` directly
+$ ./Build run tests/VMTests/vmArithmeticTest/add0.json
+$ ./Build test tests/VMTests/vmArithmeticTest/add0.json
+```
+
+The script `with-k` sets up the development environment with the fresh copy of K built and prefixed to `PATH` for the remaining commands.
+
 Contributing
 ------------
 
