@@ -71,7 +71,7 @@ list_bchain()  { find "tests/BlockchainTests" -name '*.json' ; }
 test_lists="vm bchain"
 
 list_gas_analysis() { find "tests/gas-analysis" -name '*.evm' ; }
-list_proofs()       { find "tests/proofs"       -name '*-spec.k' ; }
+list_proofs()       { find "tests/proofs"       -name '*-spec.k' -not -path 'tests/proofs/bad/*' ; }
 test_lists="$test_lists gas_analysis proofs"
 
 list_rvk()   { list_vm ; }
