@@ -720,21 +720,23 @@ Note that `_in_` ignores the arguments to operators that are parametric.
     syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
  // --------------------------------------------------
 
-    syntax Map ::= #asMapOpCodes ( OpCodes )       [function]
-                 | #asMapOpCodes ( Int , OpCodes ) [function, klabel(#asMapOpCodesAux)]
- // -----------------------------------------------------------------------------------
-    rule #asMapOpCodes( OPS:OpCodes )         => #asMapOpCodes(0, OPS)
-    rule #asMapOpCodes( N , .OpCodes )        => .Map
-    rule #asMapOpCodes( N , OP:OpCode ; OCS ) => (N |-> OP) #asMapOpCodes(N +Int 1, OCS) requires notBool isPushOp(OP)
-    rule #asMapOpCodes( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #asMapOpCodes(N +Int 1 +Int M, OCS)
+    syntax Map ::= #asMapOpCodes ( OpCodes )             [function]
+                 | #asMapOpCodes ( Int , OpCodes , Map ) [function, klabel(#asMapOpCodesAux)]
+ // -----------------------------------------------------------------------------------------
+    rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodes(0, OPS, .Map)
 
-    syntax OpCodes ::= #asOpCodes ( Map )       [function]
-                     | #asOpCodes ( Int , Map ) [function, klabel(#asOpCodesAux)]
- // -----------------------------------------------------------------------------
-    rule #asOpCodes(M) => #asOpCodes(0, M)
-    rule #asOpCodes(N, .Map) => .OpCodes
-    rule #asOpCodes(N, N |-> OP         M) => OP         ; #asOpCodes(N +Int 1,        M) requires notBool isPushOp(OP)
-    rule #asOpCodes(N, N |-> PUSH(S, W) M) => PUSH(S, W) ; #asOpCodes(N +Int 1 +Int S, M)
+    rule #asMapOpCodes( N , .OpCodes         , MAP ) => MAP
+    rule #asMapOpCodes( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodes(N +Int 1, OCS, MAP (N |-> OP)) requires notBool isPushOp(OP)
+    rule #asMapOpCodes( N , PUSH(M, W) ; OCS , MAP ) => #asMapOpCodes(N +Int 1 +Int M, OCS, MAP (N |-> PUSH(M, W)))
+
+    syntax OpCodes ::= #asOpCodes ( Map )                 [function]
+                     | #asOpCodes ( Int , Map , OpCodes ) [function, klabel(#asOpCodesAux)]
+ // ---------------------------------------------------------------------------------------
+    rule #asOpCodes(M) => #asOpCodes(0, M, .OpCodes)
+
+    rule #asOpCodes(N, .Map,               OPS) => OPS
+    rule #asOpCodes(N, N |-> OP         M, OPS) => #asOpCodes(N +Int 1,        M, OP         ; OPS) requires notBool isPushOp(OP)
+    rule #asOpCodes(N, N |-> PUSH(S, W) M, OPS) => #asOpCodes(N +Int 1 +Int S, M, PUSH(S, W) ; OPS)
 
     syntax Int ::= #sizeOpCodeMap ( Map ) [function]
  // ------------------------------------------------
