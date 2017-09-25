@@ -202,10 +202,10 @@ module TRANSFER-SPEC
          <previousHash> 0               </previousHash>
          <difficulty>   256             </difficulty>
 
-         <selfDestruct>   .Set                 </selfDestruct>
-         <log>            .Set                 </log>
-         <activeAccounts> SetItem ( %ACCT_ID ) </activeAccounts>
-         <messages>       .Bag                 </messages>
+         <selfDestruct>   .Set               </selfDestruct>
+         <log>            .Set               </log>
+         <activeAccounts> %ACCT_ID |-> false </activeAccounts>
+         <messages>       .Bag               </messages>
 ```
 
 These parts of the proof change, but we would like to avoid specifying exactly how (abstract over their state change).
@@ -317,10 +317,10 @@ module TRANSFER-FROM-SPEC
          <previousHash> 0               </previousHash>
          <difficulty>   256             </difficulty>
 
-         <selfDestruct>   .Set                 </selfDestruct>
-         <log>            .Set                 </log>
-         <activeAccounts> SetItem ( %ACCT_ID ) </activeAccounts>
-         <messages>       .Bag                 </messages>
+         <selfDestruct>   .Set               </selfDestruct>
+         <log>            .Set               </log>
+         <activeAccounts> %ACCT_ID |-> false </activeAccounts>
+         <messages>       .Bag               </messages>
 ```
 
 These parts of the proof change, but we would like to avoid specifying exactly how (abstract over their state change).
@@ -442,7 +442,7 @@ imports ETHEREUM-SIMULATION
          <previousHash> 0               </previousHash>
          <difficulty>   256             </difficulty>
 
-         <activeAccounts> SetItem ( %ACCT_ID ) </activeAccounts>
+         <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <accounts>
            <account>
              <acctID>  %ACCT_ID      </acctID>
@@ -509,7 +509,7 @@ module APPROVE-SPEC
          <previousHash> 0               </previousHash>
          <difficulty>   256             </difficulty>
 
-         <activeAccounts>   SetItem ( %ACCT_ID )   </activeAccounts>
+         <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <accounts>
            <account>
            <acctID>   %ACCT_ID     </acctID>
@@ -578,7 +578,7 @@ module BALANCE-OF-SPEC
          <previousHash> 0               </previousHash>
          <difficulty>   256             </difficulty>
 
-         <activeAccounts> SetItem ( %ACCT_ID ) </activeAccounts>
+         <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <accounts>
            <account>
              <acctID>  %ACCT_ID      </acctID>

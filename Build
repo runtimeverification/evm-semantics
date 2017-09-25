@@ -189,8 +189,6 @@ run_tests() {
 }
 
 run_partests() {
-    [[ "$K_VERSION" == 'rvk'   ]] && mem_free=1G
-    [[ "$K_VERSION" == 'uiuck' ]] && mem_free=2G
     [[ "$K_VERSION" == 'rvk'   ]] && ( kserver & ) && sleep 2
     run_make
     exit_status=0

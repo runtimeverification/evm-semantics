@@ -44,6 +44,7 @@ In the comments next to each cell, we've marked which component of the yellowpap
                       <callDepth>     0          </callDepth>
                       <callStack>     .List      </callStack>
                       <interimStates> .List      </interimStates>
+                      <substateStack> .List      </substateStack>
                       <callLog>       .Set       </callLog>
 
                       <txExecState>
@@ -65,9 +66,9 @@ In the comments next to each cell, we've marked which component of the yellowpap
 
                       // A_* (execution substate)
                       <substate>
-                        <selfDestruct> .Set </selfDestruct>             // A_s
-                        <log>          .Set </log>                      // A_l
-                        <refund>       0    </refund>                   // A_r
+                        <selfDestruct> .Set  </selfDestruct>            // A_s
+                        <log>          .List </log>                     // A_l
+                        <refund>       0     </refund>                  // A_r
                       </substate>
 
                       // Immutable during a single transaction
@@ -91,9 +92,10 @@ In the comments next to each cell, we've marked which component of the yellowpap
                       <timestamp>        0          </timestamp>        // I_Hs
                       <extraData>        .WordStack </extraData>        // I_Hx
                       <mixHash>          0          </mixHash>          // I_Hm
-                      <nonce>            0          </nonce>            // I_Hn
+                      <blockNonce>       0          </blockNonce>       // I_Hn
 
                       <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
+                      <blockhash>         .List         </blockhash>
 
                     </evm>
 
@@ -105,7 +107,7 @@ In the comments next to each cell, we've marked which component of the yellowpap
                       // Accounts Record
                       // ---------------
 
-                      <activeAccounts> .Set </activeAccounts>
+                      <activeAccounts> .Map </activeAccounts>
                       <accounts>
 ```
 
@@ -124,7 +126,7 @@ In the comments next to each cell, we've marked which component of the yellowpap
                           <balance> 0    </balance>
                           <code>    .Map </code>
                           <storage> .Map </storage>
-                          <acctMap> .Map </acctMap>
+                          <nonce>   0    </nonce>
                         </account>
                       </accounts>
 
@@ -200,13 +202,13 @@ The `callStack` cell stores a list of previous VM execution states.
 -   `#dropCallStack` removes the top element of the `callStack`.
 
 ```{.k .uiuck .rvk}
-    syntax State ::= "{" Int "|" Int "|" Map "|" Int "|" WordStack "|" Int "|" WordStack "|" Map "|" Int "|" Int "}"
- // ----------------------------------------------------------------------------------------------------------------
+    syntax State ::= "{" Int "|" Int "|" Map "|" Int "|" WordStack "|" Int "|" WordStack "|" Map "|" Int "|" Int "|" Int "}"
+ // ------------------------------------------------------------------------------------------------------------------------
 
     syntax InternalOp ::= "#pushCallStack"
  // --------------------------------------
     rule <k> #pushCallStack => . ... </k>
-         <callStack>  (.List => ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | MUSED | PCOUNT })) ... </callStack>
+         <callStack>  (.List => ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | MUSED | PCOUNT | DEPTH })) ... </callStack>
          <id>         ACCT   </id>
          <gas>        GAVAIL </gas>
          <program>    PGM    </program>
@@ -217,11 +219,12 @@ The `callStack` cell stores a list of previous VM execution states.
          <localMem>   LM     </localMem>
          <memoryUsed> MUSED  </memoryUsed>
          <pc>         PCOUNT </pc>
+         <callDepth>  DEPTH  </callDepth>
 
     syntax InternalOp ::= "#popCallStack"
  // -------------------------------------
     rule <k> #popCallStack => . ... </k>
-         <callStack>  (ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | MUSED | PCOUNT }) => .List) ... </callStack>
+         <callStack>  (ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | MUSED | PCOUNT | DEPTH }) => .List) ... </callStack>
          <id>         _ => ACCT   </id>
          <gas>        _ => GAVAIL </gas>
          <program>    _ => PGM    </program>
@@ -232,6 +235,7 @@ The `callStack` cell stores a list of previous VM execution states.
          <localMem>   _ => LM     </localMem>
          <memoryUsed> _ => MUSED  </memoryUsed>
          <pc>         _ => PCOUNT </pc>
+         <callDepth>  _ => DEPTH  </callDepth>
 
     syntax InternalOp ::= "#dropCallStack"
  // --------------------------------------
@@ -244,45 +248,50 @@ The `interimStates` cell stores a list of previous world states.
 -   `#popWorldState` restores the top element of the `interimStates`.
 -   `#dropWorldState` removes the top element of the `interimStates`.
 
-```{.k .uiuck .rvk}
-    syntax Account ::= "{" Int "|" Int "|" Map "|" Map "|" Map "}"
+We use slightly different rules for rv-k versus uiuc-k because uiuc-k does not support storing configuration fragments.
+The semantics of these two sets of rules are identical, however, the version rv-k uses is substantially faster.
+We would use that version in both places if not for technical limitations on the prover. In the long term, a
+new prover will be built capable of supporting the same code in both versions of the semantics.
+
+```{.k .uiuck}
+    syntax Account ::= "{" Int "|" Int "|" Map "|" Map "|" Int "|" Bool "}"
  // --------------------------------------------------------------
 
-    syntax InternalOp ::= "#pushWorldState" | "#pushWorldStateAux" Set | "#pushAccount" Int
- // ---------------------------------------------------------------------------------------
+    syntax InternalOp ::= "#pushWorldState" | "#pushWorldStateAux" Map | "#pushAccount" Int Bool
+ // --------------------------------------------------------------------------------------------
     rule <k> #pushWorldState => #pushWorldStateAux ACCTS ... </k>
          <activeAccounts> ACCTS </activeAccounts>
          <interimStates> (.List => ListItem(.Set)) ... </interimStates>
 
-    rule <k> #pushWorldStateAux .Set => . ... </k>
-    rule <k> #pushWorldStateAux (SetItem(ACCT) REST) => #pushAccount ACCT ~> #pushWorldStateAux REST ... </k>
-    rule <k> #pushAccount ACCT => . ... </k>
-         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE | ACCTMAP })) REST) ... </interimStates>
+    rule <k> #pushWorldStateAux .Map => . ... </k>
+    rule <k> #pushWorldStateAux ((ACCT |-> EMPTY) REST) => #pushAccount ACCT EMPTY ~> #pushWorldStateAux REST ... </k>
+    rule <k> #pushAccount ACCT EMPTY => . ... </k>
+         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE | NONCE | EMPTY })) REST) ... </interimStates>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            <code> CODE </code>
            <storage> STORAGE </storage>
-           <acctMap> ACCTMAP </acctMap>
+           <nonce> NONCE </nonce>
          </account>
 
     syntax InternalOp ::= "#popWorldState" | "#popWorldStateAux" Set
  // ----------------------------------------------------------------
     rule <k> #popWorldState => #popWorldStateAux PREVSTATE ... </k>
          <interimStates> (ListItem(PREVSTATE) => .List) ... </interimStates>
-         <activeAccounts> _ => .Set </activeAccounts>
+         <activeAccounts> _ => .Map </activeAccounts>
          <accounts> _ => .Bag </accounts>
 
     rule <k> #popWorldStateAux .Set => . ... </k>
-    rule <k> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE | ACCTMAP }) => .Set) REST ) ... </k>
-         <activeAccounts> ... (.Set => SetItem(ACCT)) </activeAccounts>
+    rule <k> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE | NONCE | EMPTY }) => .Set) REST ) ... </k>
+         <activeAccounts> ... (.Map => ACCT |-> EMPTY) </activeAccounts>
          <accounts> ( .Bag
                    => <account>
                         <acctID> ACCT </acctID>
                         <balance> BAL </balance>
                         <code> CODE </code>
                         <storage> STORAGE </storage>
-                        <acctMap> ACCTMAP </acctMap>
+                        <nonce> NONCE </nonce>
                       </account>
                     )
                     ...
@@ -291,6 +300,52 @@ The `interimStates` cell stores a list of previous world states.
     syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
     rule <k> #dropWorldState => . ... </k> <interimStates> (ListItem(_) => .List) ... </interimStates>
+```
+```{.k .rvk}
+    syntax Accounts ::= "{" AccountsCell "|" Map "}"
+ // ------------------------------------------------
+
+    syntax InternalOp ::= "#pushWorldState"
+ // ---------------------------------------
+    rule <k> #pushWorldState => .K ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
+         <accounts> ACCTDATA </accounts>
+         <interimStates> (.List => ListItem({ <accounts> ACCTDATA </accounts> | ACCTS })) ... </interimStates>
+
+    syntax InternalOp ::= "#popWorldState"
+ // --------------------------------------
+    rule <k> #popWorldState => .K ... </k>
+         <interimStates> (ListItem({ <accounts> ACCTDATA </accounts> | ACCTS }) => .List) ... </interimStates>
+         <activeAccounts> _ => ACCTS </activeAccounts>
+         <accounts> _ => ACCTDATA </accounts>
+
+    syntax InternalOp ::= "#dropWorldState"
+ // ---------------------------------------
+    rule <k> #dropWorldState => . ... </k> <interimStates> (ListItem(_) => .List) ... </interimStates>
+```
+
+The `substateStack` cell stores a list of previous substate logs.
+
+-   `#pushSubstate` stores a copy of the current substate at the top of the `substateStack` cell.
+-   `#popSubstate` restores the top element of the `substateStack`.
+-   `#dropSubstate` removes the top element of the `substateStack`.
+
+```{.k .uiuck .rvk}
+    syntax InternalOp ::= "#pushSubstate"
+ // -------------------------------------
+    rule <k> #pushSubstate => .K ... </k>
+         <substate> SUBSTATE </substate>
+         <substateStack> (.List => ListItem(<substate> SUBSTATE </substate>)) ... </substateStack>
+
+    syntax InternalOp ::= "#popSubstate"
+ // ------------------------------------
+    rule <k> #popSubstate => .K ... </k>
+         <substate> _ => SUBSTATE </substate>
+         <substateStack> (ListItem(<substate> SUBSTATE </substate>) => .List) ... </substateStack>
+
+    syntax InternalOp ::= "#dropSubstate"
+ // -------------------------------------
+    rule <k> #dropSubstate => .K ... </k> <substateStack> (ListItem(_) => .List) ... </substateStack>
 ```
 
 Simple commands controlling exceptions provide control-flow.
@@ -413,13 +468,13 @@ Some checks if an opcode will throw an exception are relatively quick and done u
  // ----------------------------------------------------
     rule <k> #stackNeeded? [ OP ] => #exception ... </k>
          <wordStack> WS </wordStack>
-   requires #sizeWordStack(WS) <Int #stackNeeded(OP)
-     orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
+      requires #sizeWordStack(WS) <Int #stackNeeded(OP)
+        orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
 
     rule <k> #stackNeeded? [ OP ] => .K ... </k>
          <wordStack> WS </wordStack>
-    requires notBool (#sizeWordStack(WS) <Int #stackNeeded(OP)
-             orBool   #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024)
+      requires notBool (#sizeWordStack(WS) <Int #stackNeeded(OP)
+               orBool   #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024)
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
@@ -531,12 +586,12 @@ The `CallOp` opcodes all interperet their second argument as an address.
 -   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
 
 ```{.k .uiuck .rvk}
-    syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas"
- // ----------------------------------------------------------
-    rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #memory(OP, MU) ~> #deductGas ... </k> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
+    syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas" | "#deductMemory"
+ // ----------------------------------------------------------------------------
+    rule <k> #gas [ OP ] => #memory(OP, MU) ~> #deductMemory ~> #gasExec(SCHED, OP) ~> #deductGas ... </k> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
 
-    rule <k> GEXEC:Int ~> MU':Int ~> #deductGas => #exception ... </k> requires MU' >=Int pow256
-    rule <k> (GEXEC:Int ~> MU':Int => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) +Int GEXEC)  ~> #deductGas ... </k>
+    rule <k> MU':Int ~> #deductMemory => #exception ... </k> requires MU' >=Int pow256
+    rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
       requires MU' <Int pow256
 
@@ -596,12 +651,13 @@ After executing a transaction, it's necessary to have the effect of the substate
            <balance> CURRBAL => CURRBAL +Word BAL </balance>
            ...
          </account>
+         <activeAccounts> ... ACCT |-> (_ => false) ... </activeAccounts>
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
          <mode> NORMAL </mode>
          <coinbase> MINER </coinbase>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool MINER in ACCTS
+      requires notBool MINER in_keys(ACCTS)
 
     rule <k> #finalizeTx(false) ... </k>
          <mode> NORMAL </mode>
@@ -610,7 +666,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <txPending> ListItem(MsgId:Int) ...</txPending>
          <msgID> MsgId </msgID>
          <txGasLimit> GLIMIT </txGasLimit>
-         requires REFUND =/=Int 0
+      requires REFUND =/=Int 0
 
     rule <k> #finalizeTx(false => true) ... </k>
          <mode> NORMAL </mode>
@@ -635,10 +691,31 @@ After executing a transaction, it's necessary to have the effect of the substate
            <txGasPrice> GPRICE </txGasPrice>
            ...
          </message>
+         <activeAccounts> ... ORG |-> (_ => false) MINER |-> (_ => false) ... </activeAccounts>
+      requires ORG =/=Int MINER
+
+    rule <k> #finalizeTx(false => true) ... </k>
+         <mode> NORMAL </mode>
+         <origin> ACCT </origin>
+         <coinbase> ACCT </coinbase>
+         <refund> 0 </refund>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL => BAL +Int GLIMIT *Int GPRICE </balance>
+          ...
+         </account>
+         <txPending> ListItem(MsgId:Int) => .List ... </txPending>
+         <message>
+           <msgID> MsgId </msgID>
+           <txGasLimit> GLIMIT </txGasLimit>
+           <txGasPrice> GPRICE </txGasPrice>
+           ...
+         </message>
+         <activeAccounts> ... ACCT |-> (_ => false) ... </activeAccounts>
 
     rule <k> #finalizeTx(true) ... </k>
          <selfDestruct> ... (SetItem(ACCT) => .Set) </selfDestruct>
-         <activeAccounts> ... (SetItem(ACCT) => .Set) </activeAccounts>
+         <activeAccounts> ... (ACCT |-> _ => .Map) </activeAccounts>
          <accounts>
            ( <account>
                <acctID> ACCT </acctID>
@@ -663,20 +740,20 @@ Note that `_in_` ignores the arguments to operators that are parametric.
  // --------------------------------------------------
 
     syntax Map ::= #asMapOpCodes ( OpCodes )       [function]
-                 | #asMapOpCodes ( Int , OpCodes ) [function, klabel(#asMapOpCodesAux)]
- // -----------------------------------------------------------------------------------
-    rule #asMapOpCodes( OPS:OpCodes )         => #asMapOpCodes(0, OPS)
-    rule #asMapOpCodes( N , .OpCodes )        => .Map
-    rule #asMapOpCodes( N , OP:OpCode ; OCS ) => (N |-> OP) #asMapOpCodes(N +Int 1, OCS) requires notBool isPushOp(OP)
-    rule #asMapOpCodes( N , PUSH(M, W) ; OCS) => (N |-> PUSH(M, W)) #asMapOpCodes(N +Int 1 +Int M, OCS)
+                 | #asMapOpCodes ( Int , OpCodes , Map ) [function, klabel(#asMapOpCodesAux)]
+ // -----------------------------------------------------------------------------------------
+    rule #asMapOpCodes( OPS::OpCodes )         => #asMapOpCodes(0, OPS, .Map)
+    rule #asMapOpCodes( N , .OpCodes , MAP )        => MAP
+    rule #asMapOpCodes( N , OP:OpCode ; OCS , MAP ) => #asMapOpCodes(N +Int 1, OCS, MAP (N |-> OP)) requires notBool isPushOp(OP)
+    rule #asMapOpCodes( N , PUSH(M, W) ; OCS , MAP ) => #asMapOpCodes(N +Int 1 +Int M, OCS, MAP (N |-> PUSH(M, W)))
 
     syntax OpCodes ::= #asOpCodes ( Map )       [function]
-                     | #asOpCodes ( Int , Map ) [function, klabel(#asOpCodesAux)]
- // -----------------------------------------------------------------------------
-    rule #asOpCodes(M) => #asOpCodes(0, M)
-    rule #asOpCodes(N, .Map) => .OpCodes
-    rule #asOpCodes(N, N |-> OP         M) => OP         ; #asOpCodes(N +Int 1,        M) requires notBool isPushOp(OP)
-    rule #asOpCodes(N, N |-> PUSH(S, W) M) => PUSH(S, W) ; #asOpCodes(N +Int 1 +Int S, M)
+                     | #asOpCodes ( Int , Map , OpCodes ) [function, klabel(#asOpCodesAux)]
+ // ---------------------------------------------------------------------------------------
+    rule #asOpCodes(M) => #asOpCodes(0, M, .OpCodes)
+    rule #asOpCodes(N, .Map, OPS) => OPS
+    rule #asOpCodes(N, N |-> OP         M, OPS) => #asOpCodes(N +Int 1,        M, OP         ; OPS) requires notBool isPushOp(OP)
+    rule #asOpCodes(N, N |-> PUSH(S, W) M, OPS) => #asOpCodes(N +Int 1 +Int S, M, PUSH(S, W) ; OPS)
 
     syntax Int ::= #sizeOpCodeMap ( Map ) [function]
  // ------------------------------------------------
@@ -704,30 +781,44 @@ These are just used by the other operators for shuffling local execution state a
     rule <k> #setStack WS    => . ... </k> <wordStack> _  => WS      </wordStack>
 ```
 
--   `#newAccount_` allows declaring a new empty account with the given address (and assumes the rounding to 160 bits has already occured).
+-   `#newAccount_` allows declaring a new empty account with the given address (and assumes the rounding to 160 bits has already occured). If the account already exists with nonzero nonce or nonempty code, an exception is thrown. Otherwise, if the account already exists, the storage is cleared.
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#newAccount" Int
  // ---------------------------------------
-    rule <k> #newAccount ACCT => . ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires ACCT in ACCTS
+    rule <k> #newAccount ACCT => #exception ... </k>
+         <account>
+           <acctID> ACCT  </acctID>
+           <code>   CODE  </code>
+           <nonce>  NONCE </nonce>
+          ...
+         </account>
+      requires CODE =/=K .Map orBool NONCE =/=K 0
 
     rule <k> #newAccount ACCT => . ... </k>
-         <activeAccounts> ACCTS (.Set => SetItem(ACCT)) </activeAccounts>
+         <account>
+           <acctID>  ACCT      </acctID>
+           <code>    .Map      </code>
+           <nonce>   0         </nonce>
+           <storage> _ => .Map </storage>
+          ...
+         </account>
+
+    rule <k> #newAccount ACCT => . ... </k>
+         <activeAccounts> ACCTS (.Map => ACCT |-> true) </activeAccounts>
          <accounts>
            ( .Bag
           => <account>
-               <acctID>  ACCT          </acctID>
-               <balance> 0             </balance>
-               <code>    .Map          </code>
-               <storage> .Map          </storage>
-               <acctMap> "nonce" |-> 0 </acctMap>
+               <acctID>  ACCT </acctID>
+               <balance> 0    </balance>
+               <code>    .Map </code>
+               <storage> .Map </storage>
+               <nonce>   0    </nonce>
              </account>
            )
            ...
          </accounts>
-      requires notBool ACCT in ACCTS
+      requires notBool ACCT in_keys(ACCTS)
 ```
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
@@ -739,6 +830,8 @@ These are just used by the other operators for shuffling local execution state a
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> ORIGFROM => ORIGFROM -Word VALUE </balance>
+           <nonce> NONCE </nonce>
+           <code> CODE </code>
            ...
          </account>
          <account>
@@ -746,6 +839,7 @@ These are just used by the other operators for shuffling local execution state a
            <balance> ORIGTO => ORIGTO +Word VALUE </balance>
            ...
          </account>
+         <activeAccounts> ... ACCTTO |-> (_ => false) ACCTFROM |-> (_ => ORIGFROM ==Int VALUE andBool NONCE ==Int 0 andBool CODE ==K .Map) ... </activeAccounts>
       requires ACCTFROM =/=K ACCTTO andBool VALUE <=Int ORIGFROM
 
     rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #exception ... </k>
@@ -754,13 +848,19 @@ These are just used by the other operators for shuffling local execution state a
            <balance> ORIGFROM </balance>
            ...
          </account>
-      requires ACCTFROM =/=K ACCTTO andBool VALUE >Int ORIGFROM
+      requires VALUE >Int ORIGFROM
 
     rule <k> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires ACCTFROM =/=K ACCTTO andBool notBool ACCTTO in ACCTS
+      requires ACCTFROM =/=K ACCTTO andBool notBool ACCTTO in_keys(ACCTS)
 
-    rule <k> #transferFunds ACCT ACCT _ => . ... </k>
+    rule <k> #transferFunds ACCT ACCT VALUE => . ... </k>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> ORIGFROM </balance>
+           ...
+         </account>
+      requires VALUE <=Int ORIGFROM
 ```
 
 ### Invalid Operator
@@ -912,7 +1012,17 @@ These operators make queries about the current execution state.
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
-    rule <k> BLOCKHASH N => #if N >=Int HI orBool HI -Int 256 >Int N #then 0 #else #parseHexWord(Keccak256(Int2String(N))) #fi ~> #push ... </k> <number> HI </number>
+    rule <k> BLOCKHASH N => #if N >=Int HI orBool HI -Int 256 >Int N #then 0 #else #parseHexWord(Keccak256(Int2String(N))) #fi ~> #push ... </k> <number> HI </number> <mode> VMTESTS </mode>
+
+    rule <k> BLOCKHASH N => #blockhash(HASHES, N, HI -Int 1, 0) ~> #push ... </k> <number> HI </number> <blockhash> HASHES </blockhash> <mode> NORMAL </mode>
+
+    syntax Int ::= #blockhash ( List , Int , Int , Int ) [function]
+ // ---------------------------------------------------------------
+    rule #blockhash(_, N, HI, _) => 0 requires N >Int HI
+    rule #blockhash(_, _, _, 256) => 0
+    rule #blockhash(ListItem(0) _, _, _, _) => 0
+    rule #blockhash(ListItem(H) _, N, N, _) => H
+    rule #blockhash(ListItem(_) L, N, HI, A) => #blockhash(L, N, HI -Int 1, A +Int 1) [owise]
 ```
 
 ### `JUMP*`
@@ -945,10 +1055,8 @@ The `JUMP*` family of operations affect the current program counter.
  // ------------------------------
     rule <mode> EXECMODE </mode>
          <k> RETURN RETSTART RETWIDTH => #end ... </k>
-         <callDepth> CD => CD -Int 1 </callDepth>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
-      requires (EXECMODE ==K VMTESTS) orBool (CD >Int 0)
 ```
 
 ### Call Data
@@ -983,7 +1091,7 @@ These operators query about the current `CALL*` state.
          <id> ACCT </id>
          <wordStack> WS => #drop(N, WS) </wordStack>
          <localMem> LM </localMem>
-         <log> ... (.Set => SetItem({ ACCT | #take(N, WS) | #range(LM, MEMSTART, MEMWIDTH) })) </log>
+         <log> ... (.List => ListItem({ ACCT | #take(N, WS) | #range(LM, MEMSTART, MEMWIDTH) })) </log>
       requires #sizeWordStack(WS) >=Int N
 ```
 
@@ -1010,7 +1118,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
 
     rule <k> BALANCE ACCT => #newAccount ACCT ~> 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
+      requires notBool ACCT in_keys(ACCTS)
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
@@ -1023,7 +1131,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
 
     rule <k> EXTCODESIZE ACCT => #newAccount ACCT ~> 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
+      requires notBool ACCT in_keys(ACCTS)
 ```
 
 TODO: What should happen in the case that the account doesn't exist with `EXTCODECOPY`?
@@ -1042,7 +1150,7 @@ Should we pad zeros (for the copied "program")?
 
     rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #newAccount ACCT ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
+      requires notBool ACCT in_keys(ACCTS)
 ```
 
 ### Account Storage Operations
@@ -1084,11 +1192,11 @@ These operations interact with the account storage.
          </refund>
          <schedule> SCHED </schedule>
 
-    rule <k> SSTORE INDEX VALUE => . ... </k>
+    rule <k> SSTORE INDEX VALUE ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>
+           <storage> STORAGE => STORAGE [ INDEX <- 0 ] </storage>
            ...
          </account>
       requires notBool (INDEX in_keys(STORAGE))
@@ -1113,12 +1221,31 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax InternalOp ::= "#call" Int Int Int Int Int Int WordStack
                         | "#callWithCode" Int Int Map Int Int Int WordStack
                         | "#mkCall" Int Int Map Int Int Int WordStack
- // -------------------------------------------------------------
+                        | "#checkCall" Int Int
+ // -----------------------------------------------------------------------
+    rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
+         <callDepth> CD </callDepth>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL </balance>
+          ...
+         </account>
+      requires VALUE >Int BAL orBool CD >=Int 1024
+
+     rule <k> #checkCall ACCT VALUE => . ... </k>
+         <callDepth> CD </callDepth>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL </balance>
+          ...
+         </account>
+      requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
+
     rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
           => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) GLIMIT VALUE APPVALUE ARGS
          ...
          </k>
-      requires ACCTTO >Int 0 andBool ACCTTO <=Int 4
+      requires ACCTCODE >Int 0 andBool ACCTCODE <=Int 4
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
           => #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
@@ -1126,28 +1253,26 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </k>
          <acctID> ACCTCODE </acctID>
          <code> CODE </code>
-      requires notBool (ACCTTO >Int 0 andBool ACCTTO <=Int 4)
+      requires notBool (ACCTCODE >Int 0 andBool ACCTCODE <=Int 4)
 
-    rule <schedule> SCHED </schedule>
-         <k> #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
-          => #pushCallStack ~> #pushWorldState
-          ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
-         ...
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
+           => #callWithCode ACCTFROM ACCTTO .Map GLIMIT VALUE APPVALUE ARGS
+          ...
          </k>
-         <callDepth> CD </callDepth>
-      requires CD <Int 1024
-
-    rule <k> #callWithCode _ _ _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
-         <callDepth> CD </callDepth>
-      requires CD >=Int 1024
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool (ACCTCODE >Int 0 andBool ACCTCODE <=Int 4) andBool notBool ACCTCODE in_keys(ACCTS)
+        
+    rule #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
+           => #pushCallStack ~> #pushWorldState ~> #pushSubstate
+           ~> #transferFunds ACCTFROM ACCTTO VALUE
+           ~> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
 
     rule <mode> EXECMODE </mode>
          <k> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
           => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
          ...
          </k>
-         <callLog> ... (.Set => SetItem({ ACCTTO | GLIMIT | VALUE | ARGS })) </callLog>
+         <callLog> ... (.Set => #ifSet EXECMODE ==K VMTESTS #then SetItem({ ACCTTO | GLIMIT | VALUE | ARGS }) #else .Set #fi) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
@@ -1168,7 +1293,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
     rule <k> #exception ~> #return _ _
-          => #popCallStack ~> #popWorldState  ~> 0 ~> #push
+          => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push
          ...
          </k>
 
@@ -1176,6 +1301,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <k> #end ~> #return RETSTART RETWIDTH
           => #popCallStack
           ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi
+          ~> #dropSubstate
           ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
          </k>
@@ -1191,20 +1317,14 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <localMem> LM => LM [ START := #take(minInt(WIDTH, #sizeWordStack(WS)), WS) ] </localMem>
 ```
 
--   `#precompiled` is a placeholder for the 4 pre-compiled contracts at addresses 1 through 4.
-
-```{.k .uiuck .rvk}
-    syntax InternalOp ::= #precompiled ( Int )
- // ------------------------------------------
-```
-
 For each `CALL*` operation, we make a corresponding call to `#call` and a state-change to setup the custom parts of the calling environment.
 
 ```{.k .uiuck .rvk}
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
+          => #checkCall ACCTFROM VALUE 
+          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1217,7 +1337,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
+          => #checkCall ACCTFROM VALUE
+          ~> #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH)
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1230,13 +1351,18 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #call ACCTFROM ACCTFROM ACCTTO GCAP 0 VALUE #range(LM, ARGSTART, ARGWIDTH)
+          => #checkCall ACCTFROM 0
+          ~> #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH)
           ~> #return RETSTART RETWIDTH
          ...
          </k>
-         <id> ACCTFROM </id>
+         <schedule> SCHED </schedule>
+         <id> ACCTFROM </id> 
+         <caller> ACCTAPPFROM </caller>
          <callValue> VALUE </callValue>
          <localMem> LM </localMem>
+         <activeAccounts> ACCTS </activeAccounts>
+         <previousGas> GAVAIL </previousGas>
 ```
 
 ### Account Creation/Deletion
@@ -1246,64 +1372,108 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
 ```{.k .uiuck .rvk}
     syntax InternalOp ::= "#create" Int Int Int Int Map
-    syntax KItem      ::= "#mkCreate" Int Map Int Int
- // -------------------------------------------------
-    rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
-          => #pushCallStack ~> #pushWorldState
-          ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCreate ACCTFROM INITCODE GAVAIL VALUE
-         ...
-         </k>
+                        | "#mkCreate" Int Int Map Int Int
+                        | "#checkCreate" Int Int
+ // -----------------------------------------------------
+    rule <k> #checkCreate ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
          <callDepth> CD </callDepth>
-      requires CD <Int 1024
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL </balance>
+          ...
+         </account>
+      requires VALUE >Int BAL orBool CD >=Int 1024
 
-    rule <k> #exception ~> #mkCreate _ _ GAVAIL _ => #exception ... </k> <gas> _ => GAVAIL </gas>
-
-    rule <k> #create _ _ _ _ _ => #pushCallStack ~> #pushWorldState ~> #exception ... </k>
+    rule <k> #checkCreate ACCT VALUE => . ... </k>
+         <mode> EXECMODE </mode>
          <callDepth> CD </callDepth>
-      requires CD >=Int 1024
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL </balance>
+           <nonce> NONCE => #ifInt EXECMODE ==K VMTESTS #then NONCE #else NONCE +Int 1 #fi </nonce>
+          ...
+         </account>
+         <activeAccounts> ... ACCT |-> (EMPTY => #if EXECMODE ==K VMTESTS #then EMPTY #else false #fi) ... </activeAccounts>
+      requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
+
+    rule #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
+           => #pushCallStack ~> #pushWorldState ~> #pushSubstate
+           ~> #newAccount ACCTTO
+           ~> #transferFunds ACCTFROM ACCTTO VALUE
+           ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
 
     rule <mode> EXECMODE </mode>
-         <k> #mkCreate ACCTFROM INITCODE GAVAIL VALUE
+         <k> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
           => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
          ...
          </k>
-         <id> ACCT </id>
+         <schedule> SCHED </schedule>
+         <id> ACCT => ACCTTO </id>
          <gas> OLDGAVAIL => GAVAIL </gas>
          <program> _ => INITCODE </program>
          <caller> _ => ACCTFROM </caller>
-         <callLog> ... (.Set => SetItem({ 0 | OLDGAVAIL +Int GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) })) </callLog>
+         <callLog> ... (.Set => #ifSet EXECMODE ==K VMTESTS #then SetItem({ 0 | OLDGAVAIL +Int GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) }) #else .Set #fi) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => .WordStack </callData>
          <callValue> _ => VALUE </callValue>
          <account>
-           <acctID> ACCT </acctID>
-           <acctMap> ... "nonce" |-> (NONCE => NONCE +Int 1) ... </acctMap>
+           <acctID> ACCTTO </acctID>
+           <nonce> NONCE => #ifInt Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
           ...
          </account>
+         <activeAccounts> ... ACCTTO |-> (EMPTY => #if Gemptyisnonexistent << SCHED >> #then false #else EMPTY #fi) ... </activeAccounts>
 
     syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
-                   | "#finishCodeDeposit"
- // -------------------------------------
-    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 ~> #push ... </k>
-         <gas> GAVAIL </gas>
+                   | "#finishCodeDeposit" Int Map
+ // ---------------------------------------------
+    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k>
 
     rule <mode> EXECMODE </mode>
-         <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ~> ACCT ~> #push ...</k>
+         <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ...</k>
 
-    rule <k> #mkCodeDeposit ACCT => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi ~> #finishCodeDeposit ...</k>
+    rule <k> #mkCodeDeposit ACCT 
+          => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi 
+          ~> #finishCodeDeposit ACCT #asMapOpCodes(#dasmOpCodes(OUT, SCHED))
+         ...
+         </k>
          <mode> EXECMODE </mode>
          <schedule> SCHED </schedule>
          <output> OUT => .WordStack </output>
-         <account>
-           <acctID> ACCT </acctID>
-           <code> _ => #asMapOpCodes(#dasmOpCodes(OUT)) </code>
-           ...
-         </account>
-    rule <k> #finishCodeDeposit => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #refund GAVAIL ...</k>
+      requires #sizeWordStack(OUT) <=Int maxCodeSize < SCHED >
+
+    rule <k> #mkCodeDeposit ACCT => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ...</k>
+         <schedule> SCHED </schedule>
+         <output> OUT => .WordStack </output>
+      requires #sizeWordStack(OUT) >Int maxCodeSize < SCHED >
+
+    rule <k> #finishCodeDeposit ACCT OUT 
+           => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate 
+           ~> #refund GAVAIL ~> ACCT ~> #push
+          ...
+         </k>
          <mode> EXECMODE </mode>
          <gas> GAVAIL </gas>
+         <account>
+           <acctID> ACCT </acctID>
+           <code> _ => OUT </code>
+           ...
+         </account>
+         <activeAccounts> ... ACCT |-> (EMPTY => #if OUT =/=K .Map #then false #else EMPTY #fi) ... </activeAccounts>
+
+    rule <k> #exception ~> #finishCodeDeposit ACCT _ 
+           => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate 
+           ~> #refund GAVAIL ~> ACCT ~> #push
+          ...
+         </k>
+         <mode> EXECMODE </mode>
+         <gas> GAVAIL </gas>
+         <schedule> FRONTIER </schedule>
+
+    rule <k> #exception ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ...</k>
+         <schedule> SCHED </schedule>
+      requires SCHED =/=K FRONTIER
+
 ```
 
 `CREATE` will attempt to `#create` the account using the initialization code and cleans up the result with `#codeDeposit`.
@@ -1312,22 +1482,23 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
-          => #create ACCT #newAddr(ACCT, NONCE) #allBut64th(GAVAIL) VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH)))
+          => #checkCreate ACCT VALUE
+          ~> #create ACCT #newAddr(ACCT, NONCE) #ifInt Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH), SCHED))
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
+         <schedule> SCHED </schedule>
          <id> ACCT </id>
-         <gas> GAVAIL => GAVAIL /Int 64 </gas>
+         <gas> GAVAIL => #ifInt Gstaticcalldepth << SCHED >> #then 0 #else GAVAIL /Int 64 #fi </gas>
          <localMem> LM </localMem>
-         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
-           <acctMap> ... "nonce" |-> NONCE ... </acctMap>
+           <nonce> NONCE </nonce>
            ...
          </account>
 ```
 
-`SELFDESTRUCT` marks the current account for deletion and transfers funds out of the current account.
+`SELFDESTRUCT` marks the current account for deletion and transfers funds out of the current account. Self destructing to yourself, unlike a regular transfer, destroys the balance in the account, irreparably losing it.
 
 ```{.k .uiuck .rvk}
     syntax UnStackOp ::= "SELFDESTRUCT"
@@ -1342,6 +1513,74 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <balance> BALFROM </balance>
            ...
          </account>
+      requires ACCT =/=Int ACCTTO
+
+    rule <k> SELFDESTRUCT ACCT => #end ... </k>
+         <schedule> SCHED </schedule>
+         <id> ACCT </id>
+         <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
+         <refund> RF => #ifInt ACCT in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BALFROM => 0 </balance>
+           <nonce> NONCE </nonce>
+           <code> CODE </code>
+           ...
+         </account>
+         <activeAccounts> ... ACCT |-> (_ => NONCE ==Int 0 andBool CODE ==K .Map) ... </activeAccounts>
+
+```
+
+Precompiled Contracts
+=====================
+
+-   `#precompiled` is a placeholder for the 4 pre-compiled contracts at addresses 1 through 4.
+
+```{.k .uiuck .rvk}
+    syntax NullStackOp ::= PrecompiledOp
+    syntax PrecompiledOp ::= #precompiled ( Int ) [function]
+ // ------------------------------------------
+    rule #precompiled(1) => ECREC
+    rule #precompiled(2) => SHA256
+    rule #precompiled(3) => RIP160
+    rule #precompiled(4) => ID
+
+```
+
+`ECREC` performs ECDSA public key recovery.
+`SHA256` performs the SHA2-257 hash function.
+`RIP160` performs the RIPEMD-160 hash function.
+`ID` is the identity function (copies input to output).
+
+```{.k .uiuck .rvk}
+    syntax PrecompiledOp ::= "ECREC"
+ // --------------------------------
+    rule <k> ECREC => #end ... </k>
+         <callData> DATA </callData>
+         <output> _ => #ecrec(#sender(#unparseByteStack(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #unparseByteStack(DATA [ 64 .. 32 ]), #unparseByteStack(DATA [ 96 .. 32 ]))) </output>
+
+    syntax WordStack ::= #ecrec ( Int ) [function]
+ // ----------------------------------------------
+    rule #ecrec(-1) => .WordStack
+    rule #ecrec(N) => #padToWidth(32, #asByteStack(N)) requires N >=Int 0
+
+    syntax PrecompiledOp ::= "SHA256"
+ // ---------------------------------
+    rule <k> SHA256 => #end ... </k>
+         <callData> DATA </callData>
+         <output> _ => #parseHexBytes(Sha256(#unparseByteStack(DATA))) </output>
+
+    syntax PrecompiledOp ::= "RIP160"
+ // ---------------------------------
+    rule <k> RIP160 => #end ... </k>
+         <callData> DATA </callData>
+         <output> _ => #padToWidth(32, #parseHexBytes(RipEmd160(#unparseByteStack(DATA)))) </output>
+
+    syntax PrecompiledOp ::= "ID"
+ // -----------------------------
+    rule <k> ID => #end ... </k>
+         <callData> DATA </callData>
+         <output> _ => DATA </output>
 ```
 
 Ethereum Gas Calculation
@@ -1443,6 +1682,8 @@ Grumble grumble, K sucks at `owise`.
     rule #memory(BALANCE _,      MU) => MU
     rule #memory(BLOCKHASH _,    MU) => MU
 
+    rule #memory(_:PrecompiledOp,  MU) => MU
+
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
  // ----------------------------------------------------------------
     rule #memoryUsageUpdate(MU, START, 0)     => MU
@@ -1476,10 +1717,29 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
 
     rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
 
-    rule <k> #gasExec(SCHED, COP:CallOp     GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) ... </k> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas>
-    rule <k> #gasExec(SCHED, CSOP:CallSixOp GCAP ACCTTO       _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, 0)     ... </k> <activeAccounts> ACCTS </activeAccounts> <gas> GAVAIL </gas>
+    rule <k> #gasExec(SCHED, CALL         GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO,   ACCTS, GCAP, GAVAIL, VALUE) ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
+         <gas> GAVAIL </gas>
 
-    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCT) => Cselfdestruct(SCHED, ACCT, ACCTS) ... </k> <activeAccounts> ACCTS </activeAccounts>
+    rule <k> #gasExec(SCHED, CALLCODE     GCAP _      VALUE _ _ _ _) => Ccall(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, VALUE) ... </k>
+         <id> ACCTFROM </id>
+         <activeAccounts> ACCTS </activeAccounts>
+         <gas> GAVAIL </gas>
+         
+    rule <k> #gasExec(SCHED, DELEGATECALL GCAP _            _ _ _ _) => Ccall(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, 0)     ... </k>
+         <id> ACCTFROM </id>
+         <activeAccounts> ACCTS </activeAccounts>
+         <gas> GAVAIL </gas>
+
+    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, ACCTTO, ACCTS, BAL) ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
+         <id> ACCTFROM </id>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
+
     rule <k> #gasExec(SCHED, CREATE _ _ _)      => Gcreate < SCHED >                 ... </k>
 
     rule <k> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </k>
@@ -1550,6 +1810,11 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
     rule <k> #gasExec(SCHED, EXTCODESIZE _) => Gextcodesize < SCHED > ... </k>
     rule <k> #gasExec(SCHED, BALANCE _)     => Gbalance     < SCHED > ... </k>
     rule <k> #gasExec(SCHED, BLOCKHASH _)   => Gblockhash   < SCHED > ... </k>
+
+    rule <k> #gasExec(_, ECREC)  => 3000 ... </k>
+    rule <k> #gasExec(_, SHA256) =>  60 +Int  12 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, RIP160) => 600 +Int 120 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, ID)     =>  15 +Int   3 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
 ```
 
 There are several helpers for calculating gas (most of them also specified in the yellowpaper).
@@ -1559,15 +1824,17 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
 ```{.k .uiuck .rvk}
     syntax Int ::= Csstore ( Schedule , Int , Int , Map ) [function]
  // ----------------------------------------------------------------
-    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstoreset < SCHED >   requires VALUE =/=K 0 andBool notBool INDEX in_keys(STORAGE)
-    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstorereset < SCHED > requires VALUE ==K 0  orBool  INDEX in_keys(STORAGE)
+    rule Csstore(SCHED, INDEX, VALUE,             STORAGE) => Gsstoreset   < SCHED > requires VALUE =/=Int 0 andBool notBool INDEX in_keys(STORAGE)
+    rule Csstore(SCHED, INDEX, VALUE, INDEX |-> 0 STORAGE) => Gsstoreset   < SCHED > requires VALUE =/=Int 0
+    rule Csstore(SCHED, INDEX,     0,             STORAGE) => Gsstorereset < SCHED >
+    rule Csstore(SCHED, INDEX, VALUE, INDEX |-> N STORAGE) => Gsstorereset < SCHED > requires     N =/=Int 0
 
-    syntax Int ::= Ccall    ( Schedule , Int , Set , Int , Int , Int ) [function]
-                 | Ccallgas ( Schedule , Int , Set , Int , Int , Int ) [function]
+    syntax Int ::= Ccall    ( Schedule , Int , Map , Int , Int , Int ) [function]
+                 | Ccallgas ( Schedule , Int , Map , Int , Int , Int ) [function]
                  | Cgascap  ( Schedule , Int , Int , Int )             [function]
-                 | Cextra   ( Schedule , Int , Set , Int )             [function]
+                 | Cextra   ( Schedule , Int , Map , Int )             [function]
                  | Cxfer    ( Schedule , Int )                         [function]
-                 | Cnew     ( Schedule , Int , Set )                   [function]
+                 | Cnew     ( Schedule , Int , Map , Int )             [function]
  // -----------------------------------------------------------------------------
     rule Ccall(SCHED, ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cextra(SCHED, ACCT, ACCTS, VALUE) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, VALUE))
 
@@ -1577,19 +1844,30 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
     rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA andBool notBool Gstaticcalldepth << SCHED >>
     rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => GCAP                                          requires GAVAIL <Int  GEXTRA orBool Gstaticcalldepth << SCHED >>
 
-    rule Cextra(SCHED, ACCT, ACCTS, VALUE) => Gcall < SCHED > +Int Cnew(SCHED, ACCT, ACCTS) +Int Cxfer(SCHED, VALUE)
+    rule Cextra(SCHED, ACCT, ACCTS, VALUE) => Gcall < SCHED > +Int Cnew(SCHED, ACCT, ACCTS, VALUE) +Int Cxfer(SCHED, VALUE)
 
     rule Cxfer(SCHED, 0) => 0
     rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=K 0
 
-    rule Cnew(SCHED, ACCT, ACCTS) => Gnewaccount < SCHED > requires notBool ACCT in ACCTS
-    rule Cnew(SCHED, ACCT, ACCTS) => 0                     requires ACCT in ACCTS
+    rule Cnew(SCHED, ACCT, ACCTS, VALUE) => Gnewaccount < SCHED >
+      requires         #accountNonexistent(SCHED, ACCT, ACCTS) andBool (VALUE =/=Int 0 orBool          Gzerovaluenewaccountgas << SCHED >>)
+    rule Cnew(SCHED, ACCT, ACCTS, VALUE) => 0
+      requires notBool #accountNonexistent(SCHED, ACCT, ACCTS) orBool  (VALUE  ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>)
 
-    syntax Int ::= Cselfdestruct ( Schedule , Int , Set ) [function]
- // ----------------------------------------------------------------
-    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED > +Int Gnewaccount < SCHED > requires (notBool ACCT in ACCTS) andBool (Gselfdestructnewaccount << SCHED >>)
-    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED >                            requires (notBool ACCT in ACCTS) andBool (notBool Gselfdestructnewaccount << SCHED >>)
-    rule Cselfdestruct(SCHED, ACCT, ACCTS) => Gselfdestruct < SCHED >                            requires ACCT in ACCTS
+    syntax Int ::= Cselfdestruct ( Schedule , Int , Map , Int ) [function]
+ // ----------------------------------------------------------------------
+    rule Cselfdestruct(SCHED, ACCT, ACCTS, BAL) => Gselfdestruct < SCHED > +Int Gnewaccount < SCHED >
+      requires (#accountNonexistent(SCHED, ACCT, ACCTS)) andBool (        Gselfdestructnewaccount << SCHED >>) andBool (BAL =/=Int 0 orBool          Gzerovaluenewaccountgas << SCHED >>)
+    rule Cselfdestruct(SCHED, ACCT, ACCTS, BAL) => Gselfdestruct < SCHED >
+      requires (#accountNonexistent(SCHED, ACCT, ACCTS)) andBool (notBool Gselfdestructnewaccount << SCHED >>  orBool  (BAL  ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>))
+    rule Cselfdestruct(SCHED, ACCT, ACCTS, BAL) => Gselfdestruct < SCHED >
+      requires notBool #accountNonexistent(SCHED, ACCT, ACCTS)
+
+    syntax Bool ::= #accountNonexistent ( Schedule , Int , Map ) [function]
+                  | #accountEmpty ( Int , Map )                  [function]
+ // -----------------------------------------------------------------------
+    rule #accountNonexistent(SCHED, ACCT, ACCTS) => notBool ACCT in_keys(ACCTS) orBool (#accountEmpty(ACCT, ACCTS) andBool Gemptyisnonexistent << SCHED >>)
+    rule #accountEmpty(ACCT, (ACCT |-> EMPTY) _) => EMPTY
 
     syntax Int ::= #allBut64th ( Int ) [function]
  // ---------------------------------------------
@@ -1601,7 +1879,7 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
     rule G0(SCHED, .WordStack, false) => Gtransaction < SCHED >
 
     rule G0(SCHED, 0 : REST, ISCREATE) => Gtxdatazero    < SCHED > +Int G0(SCHED, REST, ISCREATE)
-    rule G0(SCHED, N : REST, ISCREATE) => Gtxdatanonzero < SCHED > +Int G0(SCHED, REST, ISCREATE)
+    rule G0(SCHED, N : REST, ISCREATE) => Gtxdatanonzero < SCHED > +Int G0(SCHED, REST, ISCREATE) requires N =/=Int 0
 
     syntax Int ::= "G*" "(" Int "," Int "," Int ")" [function]
  // ----------------------------------------------------------
@@ -1621,8 +1899,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
     syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function]
  // ----------------------------------------------------------
 
-    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth"
- // ----------------------------------------------------------------------
+    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
+ // --------------------------------------------------------------------------------------------------------------------------
 ```
 
 A `ScheduleConst` is a constant determined by the fee schedule; applying a `ScheduleConst` to a `Schedule` yields the correct constant for that schedule.
@@ -1637,6 +1915,7 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
                            | "Gcall"        | "Gcallvalue"   | "Gcallstipend"  | "Gnewaccount"    | "Gexp"         | "Gexpbyte"
                            | "Gmemory"      | "Gtxcreate"    | "Gtxdatazero"   | "Gtxdatanonzero" | "Gtransaction" | "Glog"
                            | "Glogdata"     | "Glogtopic"    | "Gsha3"         | "Gsha3word"      | "Gcopy"        | "Gblockhash"   | "Gquadcoeff"
+                           | "maxCodeSize"
  // ----------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -1691,8 +1970,12 @@ A `ScheduleConst` is a constant determined by the fee schedule; applying a `Sche
     rule Gextcodesize < DEFAULT > => 20
     rule Gextcodecopy < DEFAULT > => 20
 
+    rule maxCodeSize < DEFAULT > => 2 ^Int 32 -Int 1
+
     rule Gselfdestructnewaccount << DEFAULT >> => false
     rule Gstaticcalldepth        << DEFAULT >> => true
+    rule Gemptyisnonexistent     << DEFAULT >> => false
+    rule Gzerovaluenewaccountgas << DEFAULT >> => true
 ```
 
 ```c++
@@ -1799,6 +2082,7 @@ static const EVMSchedule HomesteadSchedule = EVMSchedule(true, true, 53000);
     rule Gselfdestruct < EIP150 > => 5000
     rule Gextcodesize  < EIP150 > => 700
     rule Gextcodecopy  < EIP150 > => 700
+
     rule SCHEDCONST    < EIP150 > => SCHEDCONST < HOMESTEAD >
       requires notBool      ( SCHEDCONST ==K Gbalance      orBool SCHEDCONST ==K Gsload       orBool SCHEDCONST ==K Gcall
                        orBool SCHEDCONST ==K Gselfdestruct orBool SCHEDCONST ==K Gextcodesize orBool SCHEDCONST ==K Gextcodecopy
@@ -1806,6 +2090,8 @@ static const EVMSchedule HomesteadSchedule = EVMSchedule(true, true, 53000);
 
     rule Gselfdestructnewaccount << EIP150 >> => true
     rule Gstaticcalldepth        << EIP150 >> => false
+    rule SCHEDCONST              << EIP150 >> => SCHEDCONST << HOMESTEAD >>
+      requires notBool      ( SCHEDCONST ==K Gselfdestructnewaccount orBool SCHEDCONST ==K Gstaticcalldepth )
 ```
 
 ```c++
@@ -1819,7 +2105,6 @@ static const EVMSchedule EIP150Schedule = []
     schedule.sloadGas = 200;
     schedule.callGas = 700;
     schedule.suicideGas = 5000;
-    schedule.maxCodeSize = 0x6000;
     return schedule;
 }();
 ```
@@ -1829,10 +2114,15 @@ static const EVMSchedule EIP150Schedule = []
 ```{.k .uiuck .rvk}
     syntax Schedule ::= "EIP158"
  // ----------------------------
-    rule Gexpbyte   < EIP158 > => 50
-    rule SCHEDCONST < EIP158 > => SCHEDCONST < EIP150 > requires SCHEDCONST =/=K Gexpbyte
+    rule Gexpbyte    < EIP158 > => 50
+    rule maxCodeSize < EIP158 > => 24576
 
-    rule SCHEDFLAG << EIP158 >> => SCHEDFLAG << EIP150 >>
+    rule SCHEDCONST  < EIP158 > => SCHEDCONST < EIP150 > requires SCHEDCONST =/=K Gexpbyte andBool SCHEDCONST =/=K maxCodeSize
+
+    rule Gemptyisnonexistent     << EIP158 >> => true
+    rule Gzerovaluenewaccountgas << EIP158 >> => false
+    rule SCHEDCONST              << EIP158 >> => SCHEDCONST << EIP150 >>
+      requires notBool      ( SCHEDCONST ==K Gemptyisnonexistent orBool SCHEDCONST ==K Gzerovaluenewaccountgas )
 ```
 
 ```c++
@@ -1841,30 +2131,50 @@ static const EVMSchedule EIP158Schedule = []
     EVMSchedule schedule = EIP150Schedule;
     schedule.expByteGas = 50;
     schedule.eip158Mode = true;
+    schedule.maxCodeSize = 0x6000;
     return schedule;
 }();
 ```
 
-### Metropolis Schedule
+### Byzantium Schedule
 
 ```{.k .uiuck .rvk}
-    syntax Schedule ::= "METROPOLIS"
- // --------------------------------
-    rule Gblockhash < METROPOLIS > => 800
-    rule SCHEDCONST < METROPOLIS > => SCHEDCONST < EIP158 >
-      requires SCHEDCONST =/=K Gblockhash
+    syntax Schedule ::= "BYZANTIUM"
+ // -------------------------------
+    rule SCHEDCONST < BYZANTIUM > => SCHEDCONST < EIP158 >
 
-    rule SCHEDFLAG << METROPOLIS >> => SCHEDFLAG << EIP158 >>
+    rule SCHEDFLAG << BYZANTIUM >> => SCHEDFLAG << EIP158 >>
 ```
 
 ```c++
-static const EVMSchedule MetropolisSchedule = []
+static const EVMSchedule ByzantiumSchedule = []
 {
     EVMSchedule schedule = EIP158Schedule;
-    schedule.blockhashGas = 800;
     schedule.haveRevert = true;
     schedule.haveReturnData = true;
     schedule.haveStaticCall = true;
+    schedule.blockRewardOverwrite = {3 * ether};
+    return schedule;
+}();
+```
+
+### Constantinople Schedule
+
+```{.k .uiuck .rvk}
+    syntax Schedule ::= "CONSTANTINOPLE"
+ // ------------------------------------
+    rule Gblockhash < CONSTANTINOPLE > => 800
+    rule SCHEDCONST < CONSTANTINOPLE > => SCHEDCONST < BYZANTIUM >
+      requires SCHEDCONST =/=K Gblockhash
+
+    rule SCHEDFLAG << CONSTANTINOPLE >> => SCHEDFLAG << BYZANTIUM >>
+```
+
+```c++
+static const EVMSchedule ConstantinopleSchedule = []
+{
+    EVMSchedule schedule = ByzantiumSchedule;
+    schedule.blockhashGas = 800;
     schedule.haveCreate2 = true;
     return schedule;
 }();
@@ -1894,84 +2204,88 @@ After interpreting the strings representing programs as a `WordStack`, it should
 -   `#dasmOpCode` interperets a `Int` as an `OpCode`.
 
 ```{.k .uiuck .rvk}
-    syntax OpCodes ::= #dasmOpCodes ( WordStack ) [function]
- // --------------------------------------------------------
-    rule #dasmOpCodes( .WordStack ) => .OpCodes
-    rule #dasmOpCodes( W : WS )     => #dasmOpCode(W)   ; #dasmOpCodes(WS) requires W >=Int 0   andBool W <=Int 95
-    rule #dasmOpCodes( W : WS )     => #dasmOpCode(W)   ; #dasmOpCodes(WS) requires W >=Int 165 andBool W <=Int 255
-    rule #dasmOpCodes( W : WS )     => DUP(W -Int 127)  ; #dasmOpCodes(WS) requires W >=Int 128 andBool W <=Int 143
-    rule #dasmOpCodes( W : WS )     => SWAP(W -Int 143) ; #dasmOpCodes(WS) requires W >=Int 144 andBool W <=Int 159
-    rule #dasmOpCodes( W : WS )     => LOG(W -Int 160)  ; #dasmOpCodes(WS) requires W >=Int 160 andBool W <=Int 164
-    rule #dasmOpCodes( W : WS )     => #dasmPUSH( W -Int 95 , WS )         requires W >=Int 96  andBool W <=Int 127
+    syntax OpCodes ::= #dasmOpCodes ( WordStack , Schedule ) [function]
+                     | #dasmOpCodes ( OpCodes , WordStack , Schedule ) [function, klabel(#dasmOpCodesAux)]
+                     | #revOpCodes  ( OpCodes , OpCodes ) [function]
+ // ------------------------------------------------------------------------------------------------------
+    rule #dasmOpCodes( WS, SCHED ) => #revOpCodes(#dasmOpCodes(.OpCodes, WS, SCHED), .OpCodes)
 
-    syntax OpCodes ::= #dasmPUSH ( Int , WordStack ) [function]
+    rule #dasmOpCodes( OPS, .WordStack, _ ) => OPS
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(#dasmOpCode(W, SCHED) ; OPS, WS, SCHED) requires W >=Int 0   andBool W <=Int 95
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(#dasmOpCode(W, SCHED) ; OPS, WS, SCHED) requires W >=Int 165 andBool W <=Int 255
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(DUP(W -Int 127)       ; OPS, WS, SCHED) requires W >=Int 128 andBool W <=Int 143
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(SWAP(W -Int 143)      ; OPS, WS, SCHED) requires W >=Int 144 andBool W <=Int 159
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(LOG(W -Int 160)       ; OPS, WS, SCHED) requires W >=Int 160 andBool W <=Int 164
+
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(PUSH(W -Int 95, #asWord(#take(W -Int 95, WS))) ; OPS, #drop(W -Int 95, WS), SCHED) requires W >=Int 96  andBool W <=Int 127
+
+    rule #revOpCodes ( OP ; OPS , OPS' ) => #revOpCodes(OPS, OP ; OPS')
+    rule #revOpCodes ( .OpCodes , OPS  ) => OPS
+
+    syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [function]
  // -----------------------------------------------------------
-    rule #dasmPUSH( W , WS ) => PUSH(W, #asWord(#take(W, WS))) ; #dasmOpCodes(#drop(W, WS))
-
-    syntax OpCode ::= #dasmOpCode ( Int ) [function]
- // ------------------------------------------------
-    rule #dasmOpCode(   0 ) => STOP
-    rule #dasmOpCode(   1 ) => ADD
-    rule #dasmOpCode(   2 ) => MUL
-    rule #dasmOpCode(   3 ) => SUB
-    rule #dasmOpCode(   4 ) => DIV
-    rule #dasmOpCode(   5 ) => SDIV
-    rule #dasmOpCode(   6 ) => MOD
-    rule #dasmOpCode(   7 ) => SMOD
-    rule #dasmOpCode(   8 ) => ADDMOD
-    rule #dasmOpCode(   9 ) => MULMOD
-    rule #dasmOpCode(  10 ) => EXP
-    rule #dasmOpCode(  11 ) => SIGNEXTEND
-    rule #dasmOpCode(  16 ) => LT
-    rule #dasmOpCode(  17 ) => GT
-    rule #dasmOpCode(  18 ) => SLT
-    rule #dasmOpCode(  19 ) => SGT
-    rule #dasmOpCode(  20 ) => EQ
-    rule #dasmOpCode(  21 ) => ISZERO
-    rule #dasmOpCode(  22 ) => AND
-    rule #dasmOpCode(  23 ) => EVMOR
-    rule #dasmOpCode(  24 ) => XOR
-    rule #dasmOpCode(  25 ) => NOT
-    rule #dasmOpCode(  26 ) => BYTE
-    rule #dasmOpCode(  32 ) => SHA3
-    rule #dasmOpCode(  48 ) => ADDRESS
-    rule #dasmOpCode(  49 ) => BALANCE
-    rule #dasmOpCode(  50 ) => ORIGIN
-    rule #dasmOpCode(  51 ) => CALLER
-    rule #dasmOpCode(  52 ) => CALLVALUE
-    rule #dasmOpCode(  53 ) => CALLDATALOAD
-    rule #dasmOpCode(  54 ) => CALLDATASIZE
-    rule #dasmOpCode(  55 ) => CALLDATACOPY
-    rule #dasmOpCode(  56 ) => CODESIZE
-    rule #dasmOpCode(  57 ) => CODECOPY
-    rule #dasmOpCode(  58 ) => GASPRICE
-    rule #dasmOpCode(  59 ) => EXTCODESIZE
-    rule #dasmOpCode(  60 ) => EXTCODECOPY
-    rule #dasmOpCode(  64 ) => BLOCKHASH
-    rule #dasmOpCode(  65 ) => COINBASE
-    rule #dasmOpCode(  66 ) => TIMESTAMP
-    rule #dasmOpCode(  67 ) => NUMBER
-    rule #dasmOpCode(  68 ) => DIFFICULTY
-    rule #dasmOpCode(  69 ) => GASLIMIT
-    rule #dasmOpCode(  80 ) => POP
-    rule #dasmOpCode(  81 ) => MLOAD
-    rule #dasmOpCode(  82 ) => MSTORE
-    rule #dasmOpCode(  83 ) => MSTORE8
-    rule #dasmOpCode(  84 ) => SLOAD
-    rule #dasmOpCode(  85 ) => SSTORE
-    rule #dasmOpCode(  86 ) => JUMP
-    rule #dasmOpCode(  87 ) => JUMPI
-    rule #dasmOpCode(  88 ) => PC
-    rule #dasmOpCode(  89 ) => MSIZE
-    rule #dasmOpCode(  90 ) => GAS
-    rule #dasmOpCode(  91 ) => JUMPDEST
-    rule #dasmOpCode( 240 ) => CREATE
-    rule #dasmOpCode( 241 ) => CALL
-    rule #dasmOpCode( 242 ) => CALLCODE
-    rule #dasmOpCode( 243 ) => RETURN
-    rule #dasmOpCode( 244 ) => DELEGATECALL
-    rule #dasmOpCode( 255 ) => SELFDESTRUCT
-    rule #dasmOpCode(   W ) => INVALID(W) [owise]
+    rule #dasmOpCode(   0,     _ ) => STOP
+    rule #dasmOpCode(   1,     _ ) => ADD
+    rule #dasmOpCode(   2,     _ ) => MUL
+    rule #dasmOpCode(   3,     _ ) => SUB
+    rule #dasmOpCode(   4,     _ ) => DIV
+    rule #dasmOpCode(   5,     _ ) => SDIV
+    rule #dasmOpCode(   6,     _ ) => MOD
+    rule #dasmOpCode(   7,     _ ) => SMOD
+    rule #dasmOpCode(   8,     _ ) => ADDMOD
+    rule #dasmOpCode(   9,     _ ) => MULMOD
+    rule #dasmOpCode(  10,     _ ) => EXP
+    rule #dasmOpCode(  11,     _ ) => SIGNEXTEND
+    rule #dasmOpCode(  16,     _ ) => LT
+    rule #dasmOpCode(  17,     _ ) => GT
+    rule #dasmOpCode(  18,     _ ) => SLT
+    rule #dasmOpCode(  19,     _ ) => SGT
+    rule #dasmOpCode(  20,     _ ) => EQ
+    rule #dasmOpCode(  21,     _ ) => ISZERO
+    rule #dasmOpCode(  22,     _ ) => AND
+    rule #dasmOpCode(  23,     _ ) => EVMOR
+    rule #dasmOpCode(  24,     _ ) => XOR
+    rule #dasmOpCode(  25,     _ ) => NOT
+    rule #dasmOpCode(  26,     _ ) => BYTE
+    rule #dasmOpCode(  32,     _ ) => SHA3
+    rule #dasmOpCode(  48,     _ ) => ADDRESS
+    rule #dasmOpCode(  49,     _ ) => BALANCE
+    rule #dasmOpCode(  50,     _ ) => ORIGIN
+    rule #dasmOpCode(  51,     _ ) => CALLER
+    rule #dasmOpCode(  52,     _ ) => CALLVALUE
+    rule #dasmOpCode(  53,     _ ) => CALLDATALOAD
+    rule #dasmOpCode(  54,     _ ) => CALLDATASIZE
+    rule #dasmOpCode(  55,     _ ) => CALLDATACOPY
+    rule #dasmOpCode(  56,     _ ) => CODESIZE
+    rule #dasmOpCode(  57,     _ ) => CODECOPY
+    rule #dasmOpCode(  58,     _ ) => GASPRICE
+    rule #dasmOpCode(  59,     _ ) => EXTCODESIZE
+    rule #dasmOpCode(  60,     _ ) => EXTCODECOPY
+    rule #dasmOpCode(  64,     _ ) => BLOCKHASH
+    rule #dasmOpCode(  65,     _ ) => COINBASE
+    rule #dasmOpCode(  66,     _ ) => TIMESTAMP
+    rule #dasmOpCode(  67,     _ ) => NUMBER
+    rule #dasmOpCode(  68,     _ ) => DIFFICULTY
+    rule #dasmOpCode(  69,     _ ) => GASLIMIT
+    rule #dasmOpCode(  80,     _ ) => POP
+    rule #dasmOpCode(  81,     _ ) => MLOAD
+    rule #dasmOpCode(  82,     _ ) => MSTORE
+    rule #dasmOpCode(  83,     _ ) => MSTORE8
+    rule #dasmOpCode(  84,     _ ) => SLOAD
+    rule #dasmOpCode(  85,     _ ) => SSTORE
+    rule #dasmOpCode(  86,     _ ) => JUMP
+    rule #dasmOpCode(  87,     _ ) => JUMPI
+    rule #dasmOpCode(  88,     _ ) => PC
+    rule #dasmOpCode(  89,     _ ) => MSIZE
+    rule #dasmOpCode(  90,     _ ) => GAS
+    rule #dasmOpCode(  91,     _ ) => JUMPDEST
+    rule #dasmOpCode( 240,     _ ) => CREATE
+    rule #dasmOpCode( 241,     _ ) => CALL
+    rule #dasmOpCode( 242,     _ ) => CALLCODE
+    rule #dasmOpCode( 243,     _ ) => RETURN
+    rule #dasmOpCode( 244, SCHED ) => DELEGATECALL requires SCHED =/=K FRONTIER
+    rule #dasmOpCode( 255,     _ ) => SELFDESTRUCT
+    rule #dasmOpCode(   W,     _ ) => INVALID(W) [owise]
 ```
 
 Assembler
@@ -1981,73 +2295,76 @@ Assembler
 
 ```{.k .uiuck .rvk}
     syntax WordStack ::= #asmOpCodes ( OpCodes ) [function]
- // -------------------------------------------------------
-    rule #asmOpCodes( .OpCodes )           => .WordStack
-    rule #asmOpCodes( STOP         ; OPS ) =>   0 : #asmOpCodes(OPS)
-    rule #asmOpCodes( ADD          ; OPS ) =>   1 : #asmOpCodes(OPS)
-    rule #asmOpCodes( MUL          ; OPS ) =>   2 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SUB          ; OPS ) =>   3 : #asmOpCodes(OPS)
-    rule #asmOpCodes( DIV          ; OPS ) =>   4 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SDIV         ; OPS ) =>   5 : #asmOpCodes(OPS)
-    rule #asmOpCodes( MOD          ; OPS ) =>   6 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SMOD         ; OPS ) =>   7 : #asmOpCodes(OPS)
-    rule #asmOpCodes( ADDMOD       ; OPS ) =>   8 : #asmOpCodes(OPS)
-    rule #asmOpCodes( MULMOD       ; OPS ) =>   9 : #asmOpCodes(OPS)
-    rule #asmOpCodes( EXP          ; OPS ) =>  10 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SIGNEXTEND   ; OPS ) =>  11 : #asmOpCodes(OPS)
-    rule #asmOpCodes( LT           ; OPS ) =>  16 : #asmOpCodes(OPS)
-    rule #asmOpCodes( GT           ; OPS ) =>  17 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SLT          ; OPS ) =>  18 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SGT          ; OPS ) =>  19 : #asmOpCodes(OPS)
-    rule #asmOpCodes( EQ           ; OPS ) =>  20 : #asmOpCodes(OPS)
-    rule #asmOpCodes( ISZERO       ; OPS ) =>  21 : #asmOpCodes(OPS)
-    rule #asmOpCodes( AND          ; OPS ) =>  22 : #asmOpCodes(OPS)
-    rule #asmOpCodes( EVMOR        ; OPS ) =>  23 : #asmOpCodes(OPS)
-    rule #asmOpCodes( XOR          ; OPS ) =>  24 : #asmOpCodes(OPS)
-    rule #asmOpCodes( NOT          ; OPS ) =>  25 : #asmOpCodes(OPS)
-    rule #asmOpCodes( BYTE         ; OPS ) =>  26 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SHA3         ; OPS ) =>  32 : #asmOpCodes(OPS)
-    rule #asmOpCodes( ADDRESS      ; OPS ) =>  48 : #asmOpCodes(OPS)
-    rule #asmOpCodes( BALANCE      ; OPS ) =>  49 : #asmOpCodes(OPS)
-    rule #asmOpCodes( ORIGIN       ; OPS ) =>  50 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CALLER       ; OPS ) =>  51 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CALLVALUE    ; OPS ) =>  52 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CALLDATALOAD ; OPS ) =>  53 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CALLDATASIZE ; OPS ) =>  54 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CALLDATACOPY ; OPS ) =>  55 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CODESIZE     ; OPS ) =>  56 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CODECOPY     ; OPS ) =>  57 : #asmOpCodes(OPS)
-    rule #asmOpCodes( GASPRICE     ; OPS ) =>  58 : #asmOpCodes(OPS)
-    rule #asmOpCodes( EXTCODESIZE  ; OPS ) =>  59 : #asmOpCodes(OPS)
-    rule #asmOpCodes( EXTCODECOPY  ; OPS ) =>  60 : #asmOpCodes(OPS)
-    rule #asmOpCodes( BLOCKHASH    ; OPS ) =>  64 : #asmOpCodes(OPS)
-    rule #asmOpCodes( COINBASE     ; OPS ) =>  65 : #asmOpCodes(OPS)
-    rule #asmOpCodes( TIMESTAMP    ; OPS ) =>  66 : #asmOpCodes(OPS)
-    rule #asmOpCodes( NUMBER       ; OPS ) =>  67 : #asmOpCodes(OPS)
-    rule #asmOpCodes( DIFFICULTY   ; OPS ) =>  68 : #asmOpCodes(OPS)
-    rule #asmOpCodes( GASLIMIT     ; OPS ) =>  69 : #asmOpCodes(OPS)
-    rule #asmOpCodes( POP          ; OPS ) =>  80 : #asmOpCodes(OPS)
-    rule #asmOpCodes( MLOAD        ; OPS ) =>  81 : #asmOpCodes(OPS)
-    rule #asmOpCodes( MSTORE       ; OPS ) =>  82 : #asmOpCodes(OPS)
-    rule #asmOpCodes( MSTORE8      ; OPS ) =>  83 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SLOAD        ; OPS ) =>  84 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SSTORE       ; OPS ) =>  85 : #asmOpCodes(OPS)
-    rule #asmOpCodes( JUMP         ; OPS ) =>  86 : #asmOpCodes(OPS)
-    rule #asmOpCodes( JUMPI        ; OPS ) =>  87 : #asmOpCodes(OPS)
-    rule #asmOpCodes( PC           ; OPS ) =>  88 : #asmOpCodes(OPS)
-    rule #asmOpCodes( MSIZE        ; OPS ) =>  89 : #asmOpCodes(OPS)
-    rule #asmOpCodes( GAS          ; OPS ) =>  90 : #asmOpCodes(OPS)
-    rule #asmOpCodes( JUMPDEST     ; OPS ) =>  91 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CREATE       ; OPS ) => 240 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CALL         ; OPS ) => 241 : #asmOpCodes(OPS)
-    rule #asmOpCodes( CALLCODE     ; OPS ) => 242 : #asmOpCodes(OPS)
-    rule #asmOpCodes( RETURN       ; OPS ) => 243 : #asmOpCodes(OPS)
-    rule #asmOpCodes( DELEGATECALL ; OPS ) => 244 : #asmOpCodes(OPS)
-    rule #asmOpCodes( INVALID(W)   ; OPS ) => W   : #asmOpCodes(OPS)
-    rule #asmOpCodes( SELFDESTRUCT ; OPS ) => 255 : #asmOpCodes(OPS)
-    rule #asmOpCodes( DUP(W)       ; OPS ) => W +Int 127 : #asmOpCodes(OPS)
-    rule #asmOpCodes( SWAP(W)      ; OPS ) => W +Int 143 : #asmOpCodes(OPS)
-    rule #asmOpCodes( LOG(W)       ; OPS ) => W +Int 160 : #asmOpCodes(OPS)
-    rule #asmOpCodes( PUSH(N, W)   ; OPS ) => N +Int 95  : (#padToWidth(N, #asByteStack(W)) ++ #asmOpCodes(OPS))
+                       | #asmOpCodes ( OpCodes , WordStack ) [function, klabel(#asmOpCodesAux)]
+ // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    rule #asmOpCodes( OPS ) => #asmOpCodes( OPS , .WordStack)
+
+    rule #asmOpCodes( .OpCodes , WS )           => WS
+    rule #asmOpCodes( STOP         ; OPS , WS ) => #asmOpCodes(OPS,   0 : WS)
+    rule #asmOpCodes( ADD          ; OPS , WS ) => #asmOpCodes(OPS,   1 : WS)
+    rule #asmOpCodes( MUL          ; OPS , WS ) => #asmOpCodes(OPS,   2 : WS)
+    rule #asmOpCodes( SUB          ; OPS , WS ) => #asmOpCodes(OPS,   3 : WS)
+    rule #asmOpCodes( DIV          ; OPS , WS ) => #asmOpCodes(OPS,   4 : WS)
+    rule #asmOpCodes( SDIV         ; OPS , WS ) => #asmOpCodes(OPS,   5 : WS)
+    rule #asmOpCodes( MOD          ; OPS , WS ) => #asmOpCodes(OPS,   6 : WS)
+    rule #asmOpCodes( SMOD         ; OPS , WS ) => #asmOpCodes(OPS,   7 : WS)
+    rule #asmOpCodes( ADDMOD       ; OPS , WS ) => #asmOpCodes(OPS,   8 : WS)
+    rule #asmOpCodes( MULMOD       ; OPS , WS ) => #asmOpCodes(OPS,   9 : WS)
+    rule #asmOpCodes( EXP          ; OPS , WS ) => #asmOpCodes(OPS,  10 : WS)
+    rule #asmOpCodes( SIGNEXTEND   ; OPS , WS ) => #asmOpCodes(OPS,  11 : WS)
+    rule #asmOpCodes( LT           ; OPS , WS ) => #asmOpCodes(OPS,  16 : WS)
+    rule #asmOpCodes( GT           ; OPS , WS ) => #asmOpCodes(OPS,  17 : WS)
+    rule #asmOpCodes( SLT          ; OPS , WS ) => #asmOpCodes(OPS,  18 : WS)
+    rule #asmOpCodes( SGT          ; OPS , WS ) => #asmOpCodes(OPS,  19 : WS)
+    rule #asmOpCodes( EQ           ; OPS , WS ) => #asmOpCodes(OPS,  20 : WS)
+    rule #asmOpCodes( ISZERO       ; OPS , WS ) => #asmOpCodes(OPS,  21 : WS)
+    rule #asmOpCodes( AND          ; OPS , WS ) => #asmOpCodes(OPS,  22 : WS)
+    rule #asmOpCodes( EVMOR        ; OPS , WS ) => #asmOpCodes(OPS,  23 : WS)
+    rule #asmOpCodes( XOR          ; OPS , WS ) => #asmOpCodes(OPS,  24 : WS)
+    rule #asmOpCodes( NOT          ; OPS , WS ) => #asmOpCodes(OPS,  25 : WS)
+    rule #asmOpCodes( BYTE         ; OPS , WS ) => #asmOpCodes(OPS,  26 : WS)
+    rule #asmOpCodes( SHA3         ; OPS , WS ) => #asmOpCodes(OPS,  32 : WS)
+    rule #asmOpCodes( ADDRESS      ; OPS , WS ) => #asmOpCodes(OPS,  48 : WS)
+    rule #asmOpCodes( BALANCE      ; OPS , WS ) => #asmOpCodes(OPS,  49 : WS)
+    rule #asmOpCodes( ORIGIN       ; OPS , WS ) => #asmOpCodes(OPS,  50 : WS)
+    rule #asmOpCodes( CALLER       ; OPS , WS ) => #asmOpCodes(OPS,  51 : WS)
+    rule #asmOpCodes( CALLVALUE    ; OPS , WS ) => #asmOpCodes(OPS,  52 : WS)
+    rule #asmOpCodes( CALLDATALOAD ; OPS , WS ) => #asmOpCodes(OPS,  53 : WS)
+    rule #asmOpCodes( CALLDATASIZE ; OPS , WS ) => #asmOpCodes(OPS,  54 : WS)
+    rule #asmOpCodes( CALLDATACOPY ; OPS , WS ) => #asmOpCodes(OPS,  55 : WS)
+    rule #asmOpCodes( CODESIZE     ; OPS , WS ) => #asmOpCodes(OPS,  56 : WS)
+    rule #asmOpCodes( CODECOPY     ; OPS , WS ) => #asmOpCodes(OPS,  57 : WS)
+    rule #asmOpCodes( GASPRICE     ; OPS , WS ) => #asmOpCodes(OPS,  58 : WS)
+    rule #asmOpCodes( EXTCODESIZE  ; OPS , WS ) => #asmOpCodes(OPS,  59 : WS)
+    rule #asmOpCodes( EXTCODECOPY  ; OPS , WS ) => #asmOpCodes(OPS,  60 : WS)
+    rule #asmOpCodes( BLOCKHASH    ; OPS , WS ) => #asmOpCodes(OPS,  64 : WS)
+    rule #asmOpCodes( COINBASE     ; OPS , WS ) => #asmOpCodes(OPS,  65 : WS)
+    rule #asmOpCodes( TIMESTAMP    ; OPS , WS ) => #asmOpCodes(OPS,  66 : WS)
+    rule #asmOpCodes( NUMBER       ; OPS , WS ) => #asmOpCodes(OPS,  67 : WS)
+    rule #asmOpCodes( DIFFICULTY   ; OPS , WS ) => #asmOpCodes(OPS,  68 : WS)
+    rule #asmOpCodes( GASLIMIT     ; OPS , WS ) => #asmOpCodes(OPS,  69 : WS)
+    rule #asmOpCodes( POP          ; OPS , WS ) => #asmOpCodes(OPS,  80 : WS)
+    rule #asmOpCodes( MLOAD        ; OPS , WS ) => #asmOpCodes(OPS,  81 : WS)
+    rule #asmOpCodes( MSTORE       ; OPS , WS ) => #asmOpCodes(OPS,  82 : WS)
+    rule #asmOpCodes( MSTORE8      ; OPS , WS ) => #asmOpCodes(OPS,  83 : WS)
+    rule #asmOpCodes( SLOAD        ; OPS , WS ) => #asmOpCodes(OPS,  84 : WS)
+    rule #asmOpCodes( SSTORE       ; OPS , WS ) => #asmOpCodes(OPS,  85 : WS)
+    rule #asmOpCodes( JUMP         ; OPS , WS ) => #asmOpCodes(OPS,  86 : WS)
+    rule #asmOpCodes( JUMPI        ; OPS , WS ) => #asmOpCodes(OPS,  87 : WS)
+    rule #asmOpCodes( PC           ; OPS , WS ) => #asmOpCodes(OPS,  88 : WS)
+    rule #asmOpCodes( MSIZE        ; OPS , WS ) => #asmOpCodes(OPS,  89 : WS)
+    rule #asmOpCodes( GAS          ; OPS , WS ) => #asmOpCodes(OPS,  90 : WS)
+    rule #asmOpCodes( JUMPDEST     ; OPS , WS ) => #asmOpCodes(OPS,  91 : WS)
+    rule #asmOpCodes( CREATE       ; OPS , WS ) => #asmOpCodes(OPS, 240 : WS)
+    rule #asmOpCodes( CALL         ; OPS , WS ) => #asmOpCodes(OPS, 241 : WS)
+    rule #asmOpCodes( CALLCODE     ; OPS , WS ) => #asmOpCodes(OPS, 242 : WS)
+    rule #asmOpCodes( RETURN       ; OPS , WS ) => #asmOpCodes(OPS, 243 : WS)
+    rule #asmOpCodes( DELEGATECALL ; OPS , WS ) => #asmOpCodes(OPS, 244 : WS)
+    rule #asmOpCodes( INVALID(W)   ; OPS , WS ) => #asmOpCodes(OPS, W   : WS)
+    rule #asmOpCodes( SELFDESTRUCT ; OPS , WS ) => #asmOpCodes(OPS, 255 : WS)
+    rule #asmOpCodes( DUP(W)       ; OPS , WS ) => #asmOpCodes(OPS, W +Int 127 : WS)
+    rule #asmOpCodes( SWAP(W)      ; OPS , WS ) => #asmOpCodes(OPS, W +Int 143 : WS)
+    rule #asmOpCodes( LOG(W)       ; OPS , WS ) => #asmOpCodes(OPS, W +Int 160 : WS)
+    rule #asmOpCodes( PUSH(N, W)   ; OPS , WS ) => #asmOpCodes(OPS, N +Int 95 : (#padToWidth(N, #asByteStack(W)) ++ WS))
 endmodule
 ```

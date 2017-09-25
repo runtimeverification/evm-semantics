@@ -6,6 +6,7 @@ set -u      # Using undefined variables is an error. Exit immediately
 base_dir="$(cd "$(dirname "$0")/../.."; pwd)"
 uiuck_dir="$base_dir/tests/ci/uiuc-k"
 rvk_dir="$base_dir/tests/ci/rv-k"
+tests_dir="$base_dir/tests/ethereum-tests"
 
 use_uiuck() {
     git submodule update  --init "$uiuck_dir"
@@ -69,6 +70,8 @@ use_rvk() {
     echo >&2 "Usage: $0 [uiuck|rvk|bothk] command args"
     exit 1
 }
+
+git submodule update  --init "$tests_dir"
 
 which_k="$1"; shift
 case "$which_k" in
