@@ -358,10 +358,12 @@ module EVM-DATA
 // -   `_in_` determines if a `Int` occurs in a `WordStack`.
 
 
-    syntax Int ::= #sizeWordStack ( WordStack )  [function, smtlib(sizeWordStack)]
- // ------------------------------------------------------------------------------
-    rule #sizeWordStack ( .WordStack ) => 0
-    rule #sizeWordStack ( W : WS )     => 1 +Int #sizeWordStack(WS)
+    syntax Int ::= #sizeWordStack ( WordStack )       [function, smtlib(sizeWordStack)]
+                 | #sizeWordStack ( WordStack , Int ) [function, klabel(sizeWordStackAux), smtlib(sizeWordStackAux)]
+ // ----------------------------------------------------------------------------------------------------------------
+    rule #sizeWordStack ( WS ) => #sizeWordStack(WS, 0)
+    rule #sizeWordStack ( .WordStack, SIZE ) => SIZE
+    rule #sizeWordStack ( W : WS, SIZE )     => #sizeWordStack(WS, SIZE +Int 1)
 
     syntax Bool ::= Int "in" WordStack [function]
  // ---------------------------------------------
