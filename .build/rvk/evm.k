@@ -638,9 +638,12 @@ module EVM
          <mode> NORMAL </mode>
          <gas> GAVAIL => G*(GAVAIL, GLIMIT, REFUND) </gas>
          <refund> REFUND => 0 </refund>
-         <txPending> ListItem(MsgId:Int) ...</txPending>
-         <msgID> MsgId </msgID>
-         <txGasLimit> GLIMIT </txGasLimit>
+         <txPending> ListItem(MSGID:Int) ... </txPending>
+         <message>
+            <msgID> MSGID </msgID>
+            <txGasLimit> GLIMIT </txGasLimit>
+            ...
+         </message>
       requires REFUND =/=Int 0
 
     rule <k> #finalizeTx(false => true) ... </k>
