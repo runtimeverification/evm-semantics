@@ -389,9 +389,10 @@ module ETHEREUM-SIMULATION
     syntax EthreumCommand ::= "clearNETWORK"
  // ----------------------------------------
     rule <k> clearNETWORK => . ... </k>
-         <activeAccounts> _ => .Map </activeAccounts>
-         <accounts>       _ => .Bag </accounts>
-         <messages>       _ => .Bag </messages>
+         <activeAccounts> _ => .Map    </activeAccounts>
+         <accounts>       _ => .Bag    </accounts>
+         <messages>       _ => .Bag    </messages>
+         <schedule>       _ => DEFAULT </schedule>
 
 
 // ### Loading State
