@@ -66,8 +66,8 @@ module TRANSFER-SPEC
 // ### Then Branch
 
 
-         <pc>  1533 => 1772         </pc>
-         <gas>  G   => G -Int 10544 </gas>
+         <pc>  1533 => 1772 </pc>
+         <gas>  G   => G1   </gas>
 
          <wordStack>                        TRANSFER : %CALLER_ID : WS
                   => B2 +Int TRANSFER : 0 : TRANSFER : %CALLER_ID : WS
@@ -79,9 +79,9 @@ module TRANSFER-SPEC
              <code>    %HKG_Program </code>
              <nonce>   0            </nonce>
              <storage> ...
-                       (%ACCT_1_BALANCE |-> (B1 => B1 -Int TRANSFER))
-                       (%ACCT_1_ALLOWED |-> A1)
-                       (%ACCT_2_BALANCE |-> (B2 => B2 +Int TRANSFER))
+                       (%ACCT_1_BALANCE |-> (B1:Int => B1 -Int TRANSFER))
+                       (%ACCT_1_ALLOWED |-> A1:Int)
+                       (%ACCT_2_BALANCE |-> (B2:Int => B2 +Int TRANSFER))
                        (%ACCT_2_ALLOWED |-> _)
                        ...
              </storage>
@@ -92,7 +92,8 @@ module TRANSFER-SPEC
        andBool B1 >=Int TRANSFER andBool B1 <Int pow256
        andBool B2 >=Int 0        andBool B2 +Int TRANSFER <Int pow256
        andBool #sizeWordStack(WS) <Int 1017
-       andBool G >=Int 10544
+       andBool G >=Int 25544
+       ensures G -Int G1 <=Int 25544
 endmodule
 
 
