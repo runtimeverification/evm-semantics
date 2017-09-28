@@ -524,6 +524,16 @@ module EVM-DATA
     rule #removeZeros( KEY |-> VALUE REST ) => KEY |-> VALUE #removeZeros(REST) requires VALUE =/=K 0
 
 
+// -   `#lookup` looks up a key in a map and returns 0 if the key doesn't exist,
+//     otherwise returning its value.
+
+
+    syntax Int ::= #lookup ( Map , Int ) [function]
+ // -----------------------------------------------
+    rule #lookup( (KEY |-> VAL) M, KEY ) => VAL
+    rule #lookup(               M, KEY ) => 0 requires notBool KEY in_keys(M)
+
+
 // Parsing/Unparsing
 // =================
 
