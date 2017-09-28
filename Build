@@ -7,8 +7,8 @@ set -u      # Using undefined variables is an error. Exit immediately
 # ---------
 
 progress() { echo "== $@" ; }
-warning()  { echo -e "WARNING:" "$@" ; }
-die()      { echo -e "FATAL:" "$@" ; exit 1 ; }
+warning()  { echo -e "WARNING:" "$@" >&2 ; }
+die()      { echo -e "FATAL:" "$@" >&2 ; exit 1 ; }
 
 success()  { echo -e "\e[32m== success: $@\e[0m" ;
              echo "$@" >> "$now_passing"
