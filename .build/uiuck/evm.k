@@ -1563,7 +1563,7 @@ module EVM
 
     syntax InternalOp ::= #gasExec ( Schedule , OpCode )
  // ----------------------------------------------------
-    rule <k> #gasExec(SCHED, SSTORE INDEX VALUE) => Csstore(SCHED, INDEX, VALUE, STORAGE) ... </k>
+    rule <k> #gasExec(SCHED, SSTORE INDEX VALUE) => Csstore(SCHED, VALUE, #lookup(STORAGE, INDEX)) ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1681,10 +1681,9 @@ module EVM
 // the relevant state.
 
 
-    syntax Int ::= Csstore ( Schedule , Int , Int , Map ) [function]
- // ----------------------------------------------------------------
-    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstoreset < SCHED >   requires VALUE =/=K 0 andBool notBool INDEX in_keys(STORAGE)
-    rule Csstore(SCHED, INDEX, VALUE, STORAGE) => Gsstorereset < SCHED > requires VALUE ==K 0  orBool  INDEX in_keys(STORAGE)
+    syntax Int ::= Csstore ( Schedule , Int , Int ) [function]
+ // ----------------------------------------------------------
+    rule Csstore(SCHED, VALUE, OLD) => #ifInt VALUE =/=Int 0 andBool OLD ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
 
     syntax Int ::= Ccall    ( Schedule , Int , Map , Int , Int , Int ) [function]
                  | Ccallgas ( Schedule , Int , Map , Int , Int , Int ) [function]
