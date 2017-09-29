@@ -53,7 +53,8 @@ module EVM
                       <callLog>       .Set       </callLog>
 
                       <txExecState>
-                        <program> .Map </program>                       // I_b
+                        <program>      .Map       </program>            // I_b
+                        <programBytes> .WordStack </programBytes>
 
                         // I_*
                         <id>        0          </id>                    // I_a
@@ -123,11 +124,11 @@ module EVM
 
 
 
-                          <acctID>  0    </acctID>
-                          <balance> 0    </balance>
-                          <code>    .Map </code>
-                          <storage> .Map </storage>
-                          <nonce>   0    </nonce>
+                          <acctID>  0          </acctID>
+                          <balance> 0          </balance>
+                          <code>    .WordStack </code>
+                          <storage> .Map       </storage>
+                          <nonce>   0          </nonce>
                         </account>
                       </accounts>
 
@@ -200,40 +201,42 @@ module EVM
 // -   `#dropCallStack` removes the top element of the `callStack`.
 
 
-    syntax State ::= "{" Int "|" Int "|" Map "|" Int "|" WordStack "|" Int "|" WordStack "|" Map "|" Int "|" Int "|" Int "}"
- // ------------------------------------------------------------------------------------------------------------------------
+    syntax State ::= "{" Int "|" Int "|" Map "|" WordStack "|" Int "|" WordStack "|" Int "|" WordStack "|" Map "|" Int "|" Int "|" Int "}"
+ // --------------------------------------------------------------------------------------------------------------------------------------
 
     syntax InternalOp ::= "#pushCallStack"
  // --------------------------------------
     rule <k> #pushCallStack => . ... </k>
-         <callStack>  (.List => ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | MUSED | PCOUNT | DEPTH })) ... </callStack>
-         <id>         ACCT   </id>
-         <gas>        GAVAIL </gas>
-         <program>    PGM    </program>
-         <caller>     CR     </caller>
-         <callData>   CD     </callData>
-         <callValue>  CV     </callValue>
-         <wordStack>  WS     </wordStack>
-         <localMem>   LM     </localMem>
-         <memoryUsed> MUSED  </memoryUsed>
-         <pc>         PCOUNT </pc>
-         <callDepth>  DEPTH  </callDepth>
+         <callStack>  (.List => ListItem({ ACCT | GAVAIL | PGM | BYTES | CR | CD | CV | WS | LM | MUSED | PCOUNT | DEPTH })) ... </callStack>
+         <id>           ACCT   </id>
+         <gas>          GAVAIL </gas>
+         <program>      PGM    </program>
+         <programBytes> BYTES  </programBytes>
+         <caller>       CR     </caller>
+         <callData>     CD     </callData>
+         <callValue>    CV     </callValue>
+         <wordStack>    WS     </wordStack>
+         <localMem>     LM     </localMem>
+         <memoryUsed>   MUSED  </memoryUsed>
+         <pc>           PCOUNT </pc>
+         <callDepth>    DEPTH  </callDepth>
 
     syntax InternalOp ::= "#popCallStack"
  // -------------------------------------
     rule <k> #popCallStack => . ... </k>
-         <callStack>  (ListItem({ ACCT | GAVAIL | PGM | CR | CD | CV | WS | LM | MUSED | PCOUNT | DEPTH }) => .List) ... </callStack>
-         <id>         _ => ACCT   </id>
-         <gas>        _ => GAVAIL </gas>
-         <program>    _ => PGM    </program>
-         <caller>     _ => CR     </caller>
-         <callData>   _ => CD     </callData>
-         <callValue>  _ => CV     </callValue>
-         <wordStack>  _ => WS     </wordStack>
-         <localMem>   _ => LM     </localMem>
-         <memoryUsed> _ => MUSED  </memoryUsed>
-         <pc>         _ => PCOUNT </pc>
-         <callDepth>  _ => DEPTH  </callDepth>
+         <callStack>  (ListItem({ ACCT | GAVAIL | PGM | BYTES | CR | CD | CV | WS | LM | MUSED | PCOUNT | DEPTH }) => .List) ... </callStack>
+         <id>           _ => ACCT   </id>
+         <gas>          _ => GAVAIL </gas>
+         <program>      _ => PGM    </program>
+         <programBytes> _ => BYTES  </programBytes>
+         <caller>       _ => CR     </caller>
+         <callData>     _ => CD     </callData>
+         <callValue>    _ => CV     </callValue>
+         <wordStack>    _ => WS     </wordStack>
+         <localMem>     _ => LM     </localMem>
+         <memoryUsed>   _ => MUSED  </memoryUsed>
+         <pc>           _ => PCOUNT </pc>
+         <callDepth>    _ => DEPTH  </callDepth>
 
     syntax InternalOp ::= "#dropCallStack"
  // --------------------------------------
@@ -255,8 +258,8 @@ module EVM
 // same code in both versions of the semantics.
 
 
-    syntax Account ::= "{" Int "|" Int "|" Map "|" Map "|" Int "|" Bool "}"
- // -----------------------------------------------------------------------
+    syntax Account ::= "{" Int "|" Int "|" WordStack "|" Map "|" Int "|" Bool "}"
+ // -----------------------------------------------------------------------------
 
     syntax InternalOp ::= "#pushWorldState" | "#pushWorldStateAux" Map | "#pushAccount" Int Bool
  // --------------------------------------------------------------------------------------------
@@ -401,12 +404,12 @@ module EVM
 
 // TODO: I think on `#next` we are supposed to pretend it's `STOP` if it's in the
 // middle of the program somewhere but is invalid? I suppose the semantics
-// currently loads `INVALID(N)` where `N` is the position in the bytecode array.
+// currently loads `INVALID` where `N` is the position in the bytecode array.
 
 
     syntax InternalOp ::= "#next"
  // -----------------------------
-    rule <k> #next => #if PCOUNT <Int #sizeOpCodeMap(PGM) #then #exception #else #end #fi ... </k>
+    rule <k> #next => #end ... </k>
          <pc> PCOUNT </pc>
          <program> PGM </program>
       requires notBool (PCOUNT in_keys(PGM))
@@ -448,8 +451,8 @@ module EVM
 
     syntax InternalOp ::= "#invalid?" "[" OpCode "]"
  // ------------------------------------------------
-    rule <k> #invalid? [ INVALID(_) ] => #exception ... </k>
-    rule <k> #invalid? [ OP         ] => .          ... </k> requires notBool isInvalidOp(OP)
+    rule <k> #invalid? [ INVALID ] => #exception ... </k>
+    rule <k> #invalid? [ OP      ] => .          ... </k> requires notBool isInvalidOp(OP)
 
 
 // -   `#stackNeeded?` checks that the stack will be not be under/overflown.
@@ -762,10 +765,6 @@ module EVM
     rule #asOpCodes(N, N |-> OP         M, OPS) => #asOpCodes(N +Int 1,        M, OP         ; OPS) requires notBool isPushOp(OP)
     rule #asOpCodes(N, N |-> PUSH(S, W) M, OPS) => #asOpCodes(N +Int 1 +Int S, M, PUSH(S, W) ; OPS)
 
-    syntax Int ::= #sizeOpCodeMap ( Map ) [function]
- // ------------------------------------------------
-    rule #sizeOpCodeMap(M) => #sizeWordStack(#asmOpCodes(#asOpCodes(M)))
-
 
 // EVM OpCodes
 // -----------
@@ -804,14 +803,14 @@ module EVM
            <nonce>  NONCE </nonce>
            ...
          </account>
-      requires CODE =/=K .Map orBool NONCE =/=K 0
+      requires CODE =/=K .WordStack orBool NONCE =/=K 0
 
     rule <k> #newAccount ACCT => . ... </k>
          <account>
-           <acctID>  ACCT      </acctID>
-           <code>    .Map      </code>
-           <nonce>   0         </nonce>
-           <storage> _ => .Map </storage>
+           <acctID>  ACCT       </acctID>
+           <code>    .WordStack </code>
+           <nonce>   0          </nonce>
+           <storage> _ => .Map  </storage>
            ...
          </account>
 
@@ -820,11 +819,11 @@ module EVM
          <accounts>
            ( .Bag
           => <account>
-               <acctID>  ACCT </acctID>
-               <balance> 0    </balance>
-               <code>    .Map </code>
-               <storage> .Map </storage>
-               <nonce>   0    </nonce>
+               <acctID>  ACCT       </acctID>
+               <balance> 0          </balance>
+               <code>    .WordStack </code>
+               <storage> .Map       </storage>
+               <nonce>   0          </nonce>
              </account>
            )
            ...
@@ -851,7 +850,7 @@ module EVM
            <balance> ORIGTO => ORIGTO +Word VALUE </balance>
            ...
          </account>
-         <activeAccounts> ... ACCTTO |-> (EMPTY => #if VALUE >Int 0 #then false #else EMPTY #fi) ACCTFROM |-> (_ => ORIGFROM ==Int VALUE andBool NONCE ==Int 0 andBool CODE ==K .Map) ... </activeAccounts>
+         <activeAccounts> ... ACCTTO |-> (EMPTY => #if VALUE >Int 0 #then false #else EMPTY #fi) ACCTFROM |-> (_ => ORIGFROM ==Int VALUE andBool NONCE ==Int 0 andBool CODE ==K .WordStack) ... </activeAccounts>
       requires ACCTFROM =/=K ACCTTO andBool VALUE <=Int ORIGFROM
 
     rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #exception ... </k>
@@ -877,12 +876,12 @@ module EVM
 
 // ### Invalid Operator
 
-// We use `INVALID(_)` both for marking the designated invalid operator and for
+// We use `INVALID` both for marking the designated invalid operator and for
 // garbage bytes in the input program.
 
 
-    syntax InvalidOp ::= INVALID ( Int )
- // ------------------------------------
+    syntax InvalidOp ::= "INVALID"
+ // ------------------------------
 
 
 // ### Stack Manipulations
@@ -1017,13 +1016,13 @@ module EVM
     syntax NullStackOp ::= "MSIZE" | "CODESIZE"
  // -------------------------------------------
     rule <k> MSIZE    => 32 *Word MU         ~> #push ... </k> <memoryUsed> MU </memoryUsed>
-    rule <k> CODESIZE => #sizeOpCodeMap(PGM) ~> #push ... </k> <program> PGM </program>
+    rule <k> CODESIZE => #sizeWordStack(PGM) ~> #push ... </k> <programBytes> PGM </programBytes>
 
     syntax TernStackOp ::= "CODECOPY"
  // ---------------------------------
     rule <k> CODECOPY MEMSTART PGMSTART WIDTH => . ... </k>
-         <program> PGM </program>
-         <localMem> LM => LM [ MEMSTART := #asmOpCodes(#asOpCodes(PGM)) [ PGMSTART .. WIDTH ] ] </localMem>
+         <programBytes> PGM </programBytes>
+         <localMem> LM => LM [ MEMSTART := PGM [ PGMSTART .. WIDTH ] ] </localMem>
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
@@ -1139,7 +1138,7 @@ module EVM
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
-    rule <k> EXTCODESIZE ACCT => #sizeOpCodeMap(CODE) ~> #push ... </k>
+    rule <k> EXTCODESIZE ACCT => #sizeWordStack(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
@@ -1158,7 +1157,7 @@ module EVM
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
     rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </k>
-         <localMem> LM => LM [ MEMSTART := #asmOpCodes(#asOpCodes(PGM)) [ PGMSTART .. WIDTH ] ] </localMem>
+         <localMem> LM => LM [ MEMSTART := PGM [ PGMSTART .. WIDTH ] ] </localMem>
          <account>
            <acctID> ACCT </acctID>
            <code> PGM </code>
@@ -1244,9 +1243,9 @@ module EVM
 
     syntax InternalOp ::= "#checkCall" Int Int
                         | "#call" Int Int Int Int Int Int WordStack
-                        | "#callWithCode" Int Int Map Int Int Int WordStack
-                        | "#mkCall" Int Int Map Int Int Int WordStack
- // -----------------------------------------------------------------
+                        | "#callWithCode" Int Int Map WordStack Int Int Int WordStack
+                        | "#mkCall" Int Int Map WordStack Int Int Int WordStack
+ // ---------------------------------------------------------------------------
     rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
          <callDepth> CD </callDepth>
          <account>
@@ -1266,33 +1265,34 @@ module EVM
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
-          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) GLIMIT VALUE APPVALUE ARGS
+          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .WordStack GLIMIT VALUE APPVALUE ARGS
          ...
          </k>
       requires ACCTCODE >Int 0 andBool ACCTCODE <=Int 4
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
-          => #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
+          => #callWithCode ACCTFROM ACCTTO #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) CODE GLIMIT VALUE APPVALUE ARGS
          ...
          </k>
+         <schedule> SCHED </schedule>
          <acctID> ACCTCODE </acctID>
          <code> CODE </code>
       requires notBool (ACCTCODE >Int 0 andBool ACCTCODE <=Int 4)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS
-          => #callWithCode ACCTFROM ACCTTO .Map GLIMIT VALUE APPVALUE ARGS
+          => #callWithCode ACCTFROM ACCTTO .Map .WordStack GLIMIT VALUE APPVALUE ARGS
          ...
          </k>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool (ACCTCODE >Int 0 andBool ACCTCODE <=Int 4) andBool notBool ACCTCODE in_keys(ACCTS)
 
-    rule #callWithCode ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
+    rule #callWithCode ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS
       => #pushCallStack ~> #pushWorldState ~> #pushSubstate
       ~> #transferFunds ACCTFROM ACCTTO VALUE
-      ~> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
+      ~> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS
 
     rule <mode> EXECMODE </mode>
-         <k> #mkCall ACCTFROM ACCTTO CODE GLIMIT VALUE APPVALUE ARGS
+         <k> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS
           => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
          ...
          </k>
@@ -1304,6 +1304,7 @@ module EVM
          <gas> _ => GLIMIT </gas>
          <caller> _ => ACCTFROM </caller>
          <program> _ => CODE </program>
+         <programBytes> _ => BYTES </programBytes>
 
     syntax KItem ::= "#initVM"
  // --------------------------
@@ -1398,8 +1399,8 @@ module EVM
 //     code deposit can be paid, indicating an error if not.
 
 
-    syntax InternalOp ::= "#create" Int Int Int Int Map
-                        | "#mkCreate" Int Int Map Int Int
+    syntax InternalOp ::= "#create" Int Int Int Int WordStack
+                        | "#mkCreate" Int Int WordStack Int Int
                         | "#checkCreate" Int Int
  // --------------------------------------------
     rule <k> #checkCreate ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
@@ -1437,9 +1438,10 @@ module EVM
          <schedule> SCHED </schedule>
          <id> ACCT => ACCTTO </id>
          <gas> OLDGAVAIL => GAVAIL </gas>
-         <program> _ => INITCODE </program>
+         <program> _ => #asMapOpCodes(#dasmOpCodes(INITCODE, SCHED)) </program>
+         <programBytes> _ => INITCODE </programBytes>
          <caller> _ => ACCTFROM </caller>
-         <callLog> ... (.Set => #ifSet EXECMODE ==K VMTESTS #then SetItem({ 0 | OLDGAVAIL +Int GAVAIL | VALUE | #asmOpCodes(#asOpCodes(INITCODE)) }) #else .Set #fi) </callLog>
+         <callLog> ... (.Set => #ifSet EXECMODE ==K VMTESTS #then SetItem({ 0 | OLDGAVAIL +Int GAVAIL | VALUE | INITCODE }) #else .Set #fi) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => .WordStack </callData>
          <callValue> _ => VALUE </callValue>
@@ -1452,8 +1454,8 @@ module EVM
 
     syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
-                   | "#finishCodeDeposit" Int Map
- // ---------------------------------------------
+                   | "#finishCodeDeposit" Int WordStack
+ // ---------------------------------------------------
     rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k>
 
     rule <mode> EXECMODE </mode>
@@ -1461,7 +1463,7 @@ module EVM
 
     rule <k> #mkCodeDeposit ACCT
           => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi
-          ~> #finishCodeDeposit ACCT #asMapOpCodes(#dasmOpCodes(OUT, SCHED))
+          ~> #finishCodeDeposit ACCT OUT
          ...
          </k>
          <mode> EXECMODE </mode>
@@ -1486,7 +1488,7 @@ module EVM
            <code> _ => OUT </code>
            ...
          </account>
-         <activeAccounts> ... ACCT |-> (EMPTY => #if OUT =/=K .Map #then false #else EMPTY #fi) ... </activeAccounts>
+         <activeAccounts> ... ACCT |-> (EMPTY => #if OUT =/=K .WordStack #then false #else EMPTY #fi) ... </activeAccounts>
 
     rule <k> #exception ~> #finishCodeDeposit ACCT _
           => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate
@@ -1510,7 +1512,7 @@ module EVM
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
           => #checkCreate ACCT VALUE
-          ~> #create ACCT #newAddr(ACCT, NONCE) #ifInt Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #asMapOpCodes(#dasmOpCodes(#range(LM, MEMSTART, MEMWIDTH), SCHED))
+          ~> #create ACCT #newAddr(ACCT, NONCE) #ifInt Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
@@ -1556,7 +1558,7 @@ module EVM
            <code> CODE </code>
            ...
          </account>
-         <activeAccounts> ... ACCT |-> (_ => NONCE ==Int 0 andBool CODE ==K .Map) ... </activeAccounts>
+         <activeAccounts> ... ACCT |-> (_ => NONCE ==Int 0 andBool CODE ==K .WordStack) ... </activeAccounts>
 
 
 // Precompiled Contracts
@@ -2210,86 +2212,6 @@ module EVM
     rule #dasmOpCode( 243,     _ ) => RETURN
     rule #dasmOpCode( 244, SCHED ) => DELEGATECALL requires SCHED =/=K FRONTIER
     rule #dasmOpCode( 255,     _ ) => SELFDESTRUCT
-    rule #dasmOpCode(   W,     _ ) => INVALID(W) [owise]
-
-
-// Assembler
-// ---------
-
-// -   `#asmOpCodes` gives the `WordStack` representation of an `OpCodes`.
-
-
-    syntax WordStack ::= #asmOpCodes ( OpCodes )             [function]
-                       | #asmOpCodes ( OpCodes , WordStack ) [function, klabel(#asmOpCodesAux)]
- // -------------------------------------------------------------------------------------------
-    rule #asmOpCodes( OPS ) => #asmOpCodes( OPS , .WordStack)
-
-    rule #asmOpCodes( .OpCodes , WS )           => WS
-    rule #asmOpCodes( STOP         ; OPS , WS ) => #asmOpCodes(OPS,   0 : WS)
-    rule #asmOpCodes( ADD          ; OPS , WS ) => #asmOpCodes(OPS,   1 : WS)
-    rule #asmOpCodes( MUL          ; OPS , WS ) => #asmOpCodes(OPS,   2 : WS)
-    rule #asmOpCodes( SUB          ; OPS , WS ) => #asmOpCodes(OPS,   3 : WS)
-    rule #asmOpCodes( DIV          ; OPS , WS ) => #asmOpCodes(OPS,   4 : WS)
-    rule #asmOpCodes( SDIV         ; OPS , WS ) => #asmOpCodes(OPS,   5 : WS)
-    rule #asmOpCodes( MOD          ; OPS , WS ) => #asmOpCodes(OPS,   6 : WS)
-    rule #asmOpCodes( SMOD         ; OPS , WS ) => #asmOpCodes(OPS,   7 : WS)
-    rule #asmOpCodes( ADDMOD       ; OPS , WS ) => #asmOpCodes(OPS,   8 : WS)
-    rule #asmOpCodes( MULMOD       ; OPS , WS ) => #asmOpCodes(OPS,   9 : WS)
-    rule #asmOpCodes( EXP          ; OPS , WS ) => #asmOpCodes(OPS,  10 : WS)
-    rule #asmOpCodes( SIGNEXTEND   ; OPS , WS ) => #asmOpCodes(OPS,  11 : WS)
-    rule #asmOpCodes( LT           ; OPS , WS ) => #asmOpCodes(OPS,  16 : WS)
-    rule #asmOpCodes( GT           ; OPS , WS ) => #asmOpCodes(OPS,  17 : WS)
-    rule #asmOpCodes( SLT          ; OPS , WS ) => #asmOpCodes(OPS,  18 : WS)
-    rule #asmOpCodes( SGT          ; OPS , WS ) => #asmOpCodes(OPS,  19 : WS)
-    rule #asmOpCodes( EQ           ; OPS , WS ) => #asmOpCodes(OPS,  20 : WS)
-    rule #asmOpCodes( ISZERO       ; OPS , WS ) => #asmOpCodes(OPS,  21 : WS)
-    rule #asmOpCodes( AND          ; OPS , WS ) => #asmOpCodes(OPS,  22 : WS)
-    rule #asmOpCodes( EVMOR        ; OPS , WS ) => #asmOpCodes(OPS,  23 : WS)
-    rule #asmOpCodes( XOR          ; OPS , WS ) => #asmOpCodes(OPS,  24 : WS)
-    rule #asmOpCodes( NOT          ; OPS , WS ) => #asmOpCodes(OPS,  25 : WS)
-    rule #asmOpCodes( BYTE         ; OPS , WS ) => #asmOpCodes(OPS,  26 : WS)
-    rule #asmOpCodes( SHA3         ; OPS , WS ) => #asmOpCodes(OPS,  32 : WS)
-    rule #asmOpCodes( ADDRESS      ; OPS , WS ) => #asmOpCodes(OPS,  48 : WS)
-    rule #asmOpCodes( BALANCE      ; OPS , WS ) => #asmOpCodes(OPS,  49 : WS)
-    rule #asmOpCodes( ORIGIN       ; OPS , WS ) => #asmOpCodes(OPS,  50 : WS)
-    rule #asmOpCodes( CALLER       ; OPS , WS ) => #asmOpCodes(OPS,  51 : WS)
-    rule #asmOpCodes( CALLVALUE    ; OPS , WS ) => #asmOpCodes(OPS,  52 : WS)
-    rule #asmOpCodes( CALLDATALOAD ; OPS , WS ) => #asmOpCodes(OPS,  53 : WS)
-    rule #asmOpCodes( CALLDATASIZE ; OPS , WS ) => #asmOpCodes(OPS,  54 : WS)
-    rule #asmOpCodes( CALLDATACOPY ; OPS , WS ) => #asmOpCodes(OPS,  55 : WS)
-    rule #asmOpCodes( CODESIZE     ; OPS , WS ) => #asmOpCodes(OPS,  56 : WS)
-    rule #asmOpCodes( CODECOPY     ; OPS , WS ) => #asmOpCodes(OPS,  57 : WS)
-    rule #asmOpCodes( GASPRICE     ; OPS , WS ) => #asmOpCodes(OPS,  58 : WS)
-    rule #asmOpCodes( EXTCODESIZE  ; OPS , WS ) => #asmOpCodes(OPS,  59 : WS)
-    rule #asmOpCodes( EXTCODECOPY  ; OPS , WS ) => #asmOpCodes(OPS,  60 : WS)
-    rule #asmOpCodes( BLOCKHASH    ; OPS , WS ) => #asmOpCodes(OPS,  64 : WS)
-    rule #asmOpCodes( COINBASE     ; OPS , WS ) => #asmOpCodes(OPS,  65 : WS)
-    rule #asmOpCodes( TIMESTAMP    ; OPS , WS ) => #asmOpCodes(OPS,  66 : WS)
-    rule #asmOpCodes( NUMBER       ; OPS , WS ) => #asmOpCodes(OPS,  67 : WS)
-    rule #asmOpCodes( DIFFICULTY   ; OPS , WS ) => #asmOpCodes(OPS,  68 : WS)
-    rule #asmOpCodes( GASLIMIT     ; OPS , WS ) => #asmOpCodes(OPS,  69 : WS)
-    rule #asmOpCodes( POP          ; OPS , WS ) => #asmOpCodes(OPS,  80 : WS)
-    rule #asmOpCodes( MLOAD        ; OPS , WS ) => #asmOpCodes(OPS,  81 : WS)
-    rule #asmOpCodes( MSTORE       ; OPS , WS ) => #asmOpCodes(OPS,  82 : WS)
-    rule #asmOpCodes( MSTORE8      ; OPS , WS ) => #asmOpCodes(OPS,  83 : WS)
-    rule #asmOpCodes( SLOAD        ; OPS , WS ) => #asmOpCodes(OPS,  84 : WS)
-    rule #asmOpCodes( SSTORE       ; OPS , WS ) => #asmOpCodes(OPS,  85 : WS)
-    rule #asmOpCodes( JUMP         ; OPS , WS ) => #asmOpCodes(OPS,  86 : WS)
-    rule #asmOpCodes( JUMPI        ; OPS , WS ) => #asmOpCodes(OPS,  87 : WS)
-    rule #asmOpCodes( PC           ; OPS , WS ) => #asmOpCodes(OPS,  88 : WS)
-    rule #asmOpCodes( MSIZE        ; OPS , WS ) => #asmOpCodes(OPS,  89 : WS)
-    rule #asmOpCodes( GAS          ; OPS , WS ) => #asmOpCodes(OPS,  90 : WS)
-    rule #asmOpCodes( JUMPDEST     ; OPS , WS ) => #asmOpCodes(OPS,  91 : WS)
-    rule #asmOpCodes( CREATE       ; OPS , WS ) => #asmOpCodes(OPS, 240 : WS)
-    rule #asmOpCodes( CALL         ; OPS , WS ) => #asmOpCodes(OPS, 241 : WS)
-    rule #asmOpCodes( CALLCODE     ; OPS , WS ) => #asmOpCodes(OPS, 242 : WS)
-    rule #asmOpCodes( RETURN       ; OPS , WS ) => #asmOpCodes(OPS, 243 : WS)
-    rule #asmOpCodes( DELEGATECALL ; OPS , WS ) => #asmOpCodes(OPS, 244 : WS)
-    rule #asmOpCodes( INVALID(W)   ; OPS , WS ) => #asmOpCodes(OPS, W   : WS)
-    rule #asmOpCodes( SELFDESTRUCT ; OPS , WS ) => #asmOpCodes(OPS, 255 : WS)
-    rule #asmOpCodes( DUP(W)       ; OPS , WS ) => #asmOpCodes(OPS, W +Int 127 : WS)
-    rule #asmOpCodes( SWAP(W)      ; OPS , WS ) => #asmOpCodes(OPS, W +Int 143 : WS)
-    rule #asmOpCodes( LOG(W)       ; OPS , WS ) => #asmOpCodes(OPS, W +Int 160 : WS)
-    rule #asmOpCodes( PUSH(N, W)   ; OPS , WS ) => #asmOpCodes(OPS, N +Int 95 : (#padToWidth(N, #asByteStack(W)) ++ WS))
+    rule #dasmOpCode(   W,     _ ) => INVALID [owise]
 endmodule
 

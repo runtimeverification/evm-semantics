@@ -112,7 +112,7 @@ module ETHEREUM-SIMULATION
     syntax EthereumCommand ::= loadTx ( Int )
  // -----------------------------------------
     rule <k> loadTx(ACCTFROM)
-          => #create ACCTFROM #newAddr(ACCTFROM, NONCE) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE (#asMapOpCodes(#dasmOpCodes(CODE, SCHED)))
+          => #create ACCTFROM #newAddr(ACCTFROM, NONCE) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE CODE
           ~> #execute ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
@@ -350,6 +350,7 @@ module ETHEREUM-SIMULATION
          <callStack>    _ => .List      </callStack>
          <callLog>      _ => .Set       </callLog>
          <program>      _ => .Map       </program>
+         <programBytes> _ => .WordStack </programBytes>
          <id>           _ => 0          </id>
          <caller>       _ => 0          </caller>
          <callData>     _ => .WordStack </callData>
@@ -429,10 +430,8 @@ module ETHEREUM-SIMULATION
     rule load "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
     rule load "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
     rule load "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
-    rule load "account" : { (ACCT:Int) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
+    rule load "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #parseByteStack(CODE)) } }
     rule load "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
-
-    rule <k> load "account" : { (ACCT:Int) : { "code" : ((CODE:String) => #dasmOpCodes(#parseByteStack(CODE), SCHED)) } } ... </k> <schedule> SCHED </schedule>
 
 
 // The individual fields of the accounts are dealt with here.
@@ -446,13 +445,13 @@ module ETHEREUM-SIMULATION
          </account>
          <activeAccounts> ... ACCT |-> (EMPTY => #if BAL =/=Int 0 #then false #else EMPTY #fi) ... </activeAccounts>
 
-    rule <k> load "account" : { ACCT : { "code" : (CODE:Map) } } => . ... </k>
+    rule <k> load "account" : { ACCT : { "code" : (CODE:WordStack) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> _ => CODE </code>
            ...
          </account>
-         <activeAccounts> ... ACCT |-> (EMPTY => #if CODE =/=K .Map #then false #else EMPTY #fi) ... </activeAccounts>
+         <activeAccounts> ... ACCT |-> (EMPTY => #if CODE =/=K .WordStack #then false #else EMPTY #fi) ... </activeAccounts>
 
     rule <k> load "account" : { ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
          <account>
@@ -497,13 +496,12 @@ module ETHEREUM-SIMULATION
     rule <k> load "exec" : { "gas"      : (GAVAIL:Int)   } => . ... </k> <gas>       _ => GAVAIL   </gas>
     rule <k> load "exec" : { "value"    : (VALUE:Int)    } => . ... </k> <callValue> _ => VALUE    </callValue>
     rule <k> load "exec" : { "origin"   : (ORIG:Int)     } => . ... </k> <origin>    _ => ORIG     </origin>
-    rule <k> load "exec" : { "code" : ((CODE:String)  => #dasmOpCodes(#parseByteStack(CODE), SCHED)) } ... </k> <schedule> SCHED </schedule>
+    rule <k> load "exec" : { "code"     : ((CODE:String)   => #parseByteStack(CODE)) } ... </k>
 
-    rule load "exec" : { "data" : ((DATA:String)  => #parseByteStack(DATA)) }
-    rule load "exec" : { "code" : ((CODE:OpCodes) => #asMapOpCodes(CODE)) }
- // -----------------------------------------------------------------------
+    rule load "exec" : { "data" : ((DATA:String) => #parseByteStack(DATA)) }
+ // ------------------------------------------------------------------------
     rule <k> load "exec" : { "data" : (DATA:WordStack) } => . ... </k> <callData> _ => DATA </callData>
-    rule <k> load "exec" : { "code" : (CODE:Map)       } => . ... </k> <program>  _ => CODE </program>
+    rule <k> load "exec" : { "code" : (CODE:WordStack) } => . ... </k> <program>  _ => #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) </program> <programBytes> _ => CODE </programBytes> <schedule> SCHED </schedule>
 
 
 // The `"network"` key allows setting the fee schedule inside the test.
@@ -599,10 +597,9 @@ module ETHEREUM-SIMULATION
     rule check "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
     rule check "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
     rule check "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
-    rule check "account" : { (ACCT:Int) : { "code"    : ((CODE:OpCodes)       => #asMapOpCodes(CODE)) } }
+    rule check "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #parseByteStack(CODE)) } }
     rule check "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
 
-    rule <k> check "account" : { (ACCT:Int) : { "code" : ((CODE:String) => #dasmOpCodes(#parseByteStack(CODE), SCHED)) } } ... </k> <schedule> SCHED </schedule>
 
     rule <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
          <account>
@@ -626,7 +623,7 @@ module ETHEREUM-SIMULATION
          </account>
       requires #removeZeros(ACCTSTORAGE) ==K STORAGE
 
-    rule <k> check "account" : { ACCT : { "code" : (CODE:Map) } } => . ... </k>
+    rule <k> check "account" : { ACCT : { "code" : (CODE:WordStack) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>

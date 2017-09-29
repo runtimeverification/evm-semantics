@@ -20,11 +20,12 @@ module TOKEN-SPEC
          <substateStack> .List      </substateStack>
          <callLog>       .Set       </callLog>
 
-         <program>   %HKG_Program_buggy </program>
-         <id>        %ACCT_ID           </id>
-         <caller>    %CALLER_ID         </caller>
-         <callData>  .WordStack         </callData>
-         <callValue> 0                  </callValue>
+         <program>      %HKG_Program_buggy      </program>
+         <programBytes> %HKG_ProgramBytes_buggy </programBytes>
+         <id>           %ACCT_ID                </id>
+         <caller>       %CALLER_ID              </caller>
+         <callData>     .WordStack              </callData>
+         <callValue>    0                       </callValue>
 
          <wordStack>                        TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
                   => A1 -Int TRANSFER : 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
@@ -50,10 +51,10 @@ module TOKEN-SPEC
          <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <accounts>
            <account>
-             <acctID>  %ACCT_ID           </acctID>
-             <balance> BAL                </balance>
-             <code>    %HKG_Program_buggy </code>
-             <nonce>   0                  </nonce>
+             <acctID>  %ACCT_ID                </acctID>
+             <balance> BAL                     </balance>
+             <code>    %HKG_ProgramBytes_buggy </code>
+             <nonce>   0                       </nonce>
              <storage> ...
                        %ACCT_1_BALANCE |-> (B1 => B1 -Int TRANSFER)
                        %ACCT_1_ALLOWED |-> (A1 => A1 -Int TRANSFER)

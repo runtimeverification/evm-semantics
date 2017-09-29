@@ -16,6 +16,7 @@
       <callLog> .Set </callLog>
       <txExecState>
         <program> .Map </program>
+        <programBytes> .WordStack </programBytes>
         <id> 0 </id>
         <caller> 0 </caller>
         <callData> .WordStack </callData>
