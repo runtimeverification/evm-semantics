@@ -188,11 +188,12 @@ module TRANSFER-SPEC
          <substateStack> .List      </substateStack>
          <callLog>       .Set       </callLog>
 
-         <program>   %HKG_Program </program>
-         <id>        %ACCT_ID     </id>
-         <caller>    %ORIGIN_ID   </caller>
-         <callData>  .WordStack   </callData>
-         <callValue> 0            </callValue>
+         <program>      %HKG_Program      </program>
+         <programBytes> %HKG_ProgramBytes </programBytes>
+         <id>           %ACCT_ID          </id>
+         <caller>       %ORIGIN_ID        </caller>
+         <callData>     .WordStack        </callData>
+         <callValue>    0                 </callValue>
 
          <gasPrice>     _               </gasPrice>
          <origin>       %ORIGIN_ID      </origin>
@@ -228,10 +229,10 @@ These parts of the proof change, but we would like to avoid specifying exactly h
          </wordStack>
          <accounts>
            <account>
-             <acctID>  %ACCT_ID     </acctID>
-             <balance> BAL          </balance>
-             <code>    %HKG_Program </code>
-             <nonce>   0            </nonce>
+             <acctID>  %ACCT_ID          </acctID>
+             <balance> BAL               </balance>
+             <code>    %HKG_ProgramBytes </code>
+             <nonce>   0                 </nonce>
              <storage> ...
                        (%ACCT_1_BALANCE |-> (B1:Int => B1 -Int TRANSFER))
                        (%ACCT_1_ALLOWED |-> A1:Int)
@@ -262,10 +263,10 @@ endmodule
          </wordStack>
          <accounts>
            <account>
-             <acctID>  %ACCT_ID     </acctID>
-             <balance> BAL          </balance>
-             <code>    %HKG_Program </code>
-             <nonce>   0            </nonce>
+             <acctID>  %ACCT_ID          </acctID>
+             <balance> BAL               </balance>
+             <code>    %HKG_ProgramBytes </code>
+             <nonce>   0                 </nonce>
              <storage> ...
                        (%ACCT_1_BALANCE |-> B1:Int)
                        (%ACCT_1_ALLOWED |-> A1:Int)
@@ -305,11 +306,12 @@ module TRANSFER-FROM-SPEC
          <substateStack> .List      </substateStack>
          <callLog>       .Set       </callLog>
 
-         <program>   %HKG_Program </program>
-         <id>        %ACCT_ID     </id>
-         <caller>    %CALLER_ID   </caller>
-         <callData>  .WordStack   </callData>
-         <callValue> 0            </callValue>
+         <program>      %HKG_Program      </program>
+         <programBytes> %HKG_ProgramBytes </programBytes>
+         <id>           %ACCT_ID          </id>
+         <caller>       %CALLER_ID        </caller>
+         <callData>     .WordStack        </callData>
+         <callValue>    0                 </callValue>
 
          <gasPrice>     _               </gasPrice>
          <origin>       %ORIGIN_ID      </origin>
@@ -345,10 +347,10 @@ These parts of the proof change, but we would like to avoid specifying exactly h
          </wordStack>
          <accounts>
            <account>
-             <acctID>  %ACCT_ID     </acctID>
-             <balance> BAL          </balance>
-             <code>    %HKG_Program </code>
-             <nonce>   0            </nonce>
+             <acctID>  %ACCT_ID          </acctID>
+             <balance> BAL               </balance>
+             <code>    %HKG_ProgramBytes </code>
+             <nonce>   0                 </nonce>
              <storage> ...
                        %ACCT_1_BALANCE |-> (B1:Int => B1 -Int TRANSFER)
                        %ACCT_1_ALLOWED |-> (A1:Int => A1 -Int TRANSFER)
@@ -380,10 +382,10 @@ endmodule
          </wordStack>
          <accounts>
            <account>
-             <acctID>  %ACCT_ID     </acctID>
-             <balance> BAL          </balance>
-             <code>    %HKG_Program </code>
-             <nonce>   0            </nonce>
+             <acctID>  %ACCT_ID          </acctID>
+             <balance> BAL               </balance>
+             <code>    %HKG_ProgramBytes </code>
+             <nonce>   0                 </nonce>
              <storage> ...
                        (%ACCT_1_BALANCE |-> B1:Int)
                        (%ACCT_1_ALLOWED |-> A1:Int)
@@ -423,16 +425,17 @@ imports ETHEREUM-SIMULATION
          <substateStack> .List      </substateStack>
          <callLog>       .Set       </callLog>
 
-         <program>     %HKG_Program          </program>
-         <id>          %ACCT_ID              </id>
-         <caller>      %CALLER_ID            </caller>
-         <callData>    .WordStack            </callData>
-         <callValue>   0                     </callValue>
-         <wordStack>   WS   => WS1:WordStack </wordStack>
-         <localMem>    .Map => ?B:Map        </localMem>
-         <pc>          469  => 573           </pc>
-         <gas>         G    => G -Int 415    </gas>
-         <previousGas> _    => _             </previousGas>
+         <program>      %HKG_Program          </program>
+         <programBytes> %HKG_ProgramBytes     </programBytes>
+         <id>           %ACCT_ID              </id>
+         <caller>       %CALLER_ID            </caller>
+         <callData>     .WordStack            </callData>
+         <callValue>    0                     </callValue>
+         <wordStack>    WS   => WS1:WordStack </wordStack>
+         <localMem>     .Map => ?B:Map        </localMem>
+         <pc>           469  => 573           </pc>
+         <gas>          G    => G -Int 415    </gas>
+         <previousGas>  _    => _             </previousGas>
 
          <selfDestruct> .Set   </selfDestruct>
          <log>          .List  </log>
@@ -450,10 +453,10 @@ imports ETHEREUM-SIMULATION
          <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <accounts>
            <account>
-             <acctID>  %ACCT_ID     </acctID>
-             <balance> BAL          </balance>
-             <code>    %HKG_Program </code>
-             <nonce>   0            </nonce>
+             <acctID>  %ACCT_ID          </acctID>
+             <balance> BAL               </balance>
+             <code>    %HKG_ProgramBytes </code>
+             <nonce>   0                 </nonce>
              <storage> %ACCT_1_BALANCE |-> B1:Int
                        %ACCT_1_ALLOWED |-> A1:Int
                        %ACCT_2_BALANCE |-> B2:Int
@@ -490,11 +493,12 @@ module APPROVE-SPEC
          <substateStack> .List      </substateStack>
          <callLog>       .Set       </callLog>
 
-         <program>   %HKG_Program </program>
-         <id>        %ACCT_ID     </id>
-         <caller>    %CALLER_ID   </caller>
-         <callData>  .WordStack   </callData>
-         <callValue> 0            </callValue>
+         <program>      %HKG_Program      </program>
+         <programBytes> %HKG_ProgramBytes </programBytes>
+         <id>           %ACCT_ID          </id>
+         <caller>       %CALLER_ID        </caller>
+         <callData>     .WordStack        </callData>
+         <callValue>    0                 </callValue>
 
          <wordStack>   A2 : %ORIGIN_ID : WS => ?A:WordStack </wordStack>
          <localMem>    .Map                 => ?B:Map       </localMem>
@@ -518,10 +522,10 @@ module APPROVE-SPEC
          <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <accounts>
            <account>
-           <acctID>  %ACCT_ID     </acctID>
-           <balance> BAL          </balance>
-           <code>    %HKG_Program </code>
-           <nonce>   0            </nonce>
+           <acctID>  %ACCT_ID          </acctID>
+           <balance> BAL               </balance>
+           <code>    %HKG_ProgramBytes </code>
+           <nonce>   0                 </nonce>
            <storage> ...
                      3 |-> %ORIGIN_ID
                      4 |-> %CALLER_ID
@@ -560,11 +564,12 @@ module BALANCE-OF-SPEC
          <substateStack> .List      </substateStack>
          <callLog>       .Set       </callLog>
 
-         <program>      %HKG_Program </program>
-         <id>           %ACCT_ID     </id>
-         <caller>       %CALLER_ID   </caller>
-         <callData>     .WordStack   </callData>
-         <callValue>    0            </callValue>
+         <program>      %HKG_Program      </program>
+         <programBytes> %HKG_ProgramBytes </programBytes>
+         <id>           %ACCT_ID          </id>
+         <caller>       %CALLER_ID        </caller>
+         <callData>     .WordStack        </callData>
+         <callValue>    0                 </callValue>
 
          <wordStack>    WS    => ?A:WordStack </wordStack>
          <localMem>     .Map  => ?B:Map       </localMem>
@@ -588,10 +593,10 @@ module BALANCE-OF-SPEC
          <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <accounts>
            <account>
-             <acctID>  %ACCT_ID     </acctID>
-             <balance> BAL          </balance>
-             <code>    %HKG_Program </code>
-             <nonce>   0            </nonce>
+             <acctID>  %ACCT_ID          </acctID>
+             <balance> BAL               </balance>
+             <code>    %HKG_ProgramBytes </code>
+             <nonce>   0                 </nonce>
              <storage> %ACCT_1_BALANCE |-> B1:Int
                        %ACCT_1_ALLOWED |-> A1:Int
                        %ACCT_2_BALANCE |-> B2:Int

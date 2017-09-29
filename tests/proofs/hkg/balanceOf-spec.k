@@ -35,11 +35,12 @@ module BALANCE-OF-SPEC
          <substateStack> .List      </substateStack>
          <callLog>       .Set       </callLog>
 
-         <program>      %HKG_Program </program>
-         <id>           %ACCT_ID     </id>
-         <caller>       %CALLER_ID   </caller>
-         <callData>     .WordStack   </callData>
-         <callValue>    0            </callValue>
+         <program>      %HKG_Program      </program>
+         <programBytes> %HKG_ProgramBytes </programBytes>
+         <id>           %ACCT_ID          </id>
+         <caller>       %CALLER_ID        </caller>
+         <callData>     .WordStack        </callData>
+         <callValue>    0                 </callValue>
 
          <wordStack>    WS    => ?A:WordStack </wordStack>
          <localMem>     .Map  => ?B:Map       </localMem>
@@ -63,10 +64,10 @@ module BALANCE-OF-SPEC
          <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <accounts>
            <account>
-             <acctID>  %ACCT_ID     </acctID>
-             <balance> BAL          </balance>
-             <code>    %HKG_Program </code>
-             <nonce>   0            </nonce>
+             <acctID>  %ACCT_ID          </acctID>
+             <balance> BAL               </balance>
+             <code>    %HKG_ProgramBytes </code>
+             <nonce>   0                 </nonce>
              <storage> %ACCT_1_BALANCE |-> B1:Int
                        %ACCT_1_ALLOWED |-> A1:Int
                        %ACCT_2_BALANCE |-> B2:Int
