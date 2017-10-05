@@ -11,6 +11,7 @@ requires "domains.k"
 
 module EVM-DATA
     imports KRYPTO
+    imports STRING-BUFFER
 
     syntax KResult ::= Int
 
@@ -563,10 +564,13 @@ module EVM-DATA
 //     wide enough.
 
 
-    syntax String ::= #unparseByteStack ( WordStack ) [function]
- // ------------------------------------------------------------
-    rule #unparseByteStack( .WordStack ) => ""
-    rule #unparseByteStack( W : WS )     => chrChar(W %Int (2 ^Int 8)) +String #unparseByteStack(WS)
+    syntax String ::= #unparseByteStack ( WordStack )                [function]
+                    | #unparseByteStack ( WordStack , StringBuffer ) [function, klabel(#unparseByteStackAux)]
+ // ---------------------------------------------------------------------------------------------------------
+    rule #unparseByteStack ( WS ) => #unparseByteStack(WS, .StringBuffer)
+
+    rule #unparseByteStack( .WordStack, BUFFER ) => StringBuffer2String(BUFFER)
+    rule #unparseByteStack( W : WS, BUFFER )     => #unparseByteStack(WS, BUFFER +String chrChar(W %Int (2 ^Int 8)))
 
     syntax String ::= #padByte( String ) [function]
  // -----------------------------------------------

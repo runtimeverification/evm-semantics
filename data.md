@@ -11,6 +11,7 @@ requires "domains.k"
 
 module EVM-DATA
     imports KRYPTO
+    imports STRING-BUFFER
 
     syntax KResult ::= Int
 ```
@@ -554,10 +555,13 @@ We need to interperet a `WordStack` as a `String` again so that we can call `Kec
 -   `#padByte` ensures that the `String` interperetation of a `Int` is wide enough.
 
 ```{.k .uiuck .rvk}
-    syntax String ::= #unparseByteStack ( WordStack ) [function]
- // ------------------------------------------------------------
-    rule #unparseByteStack( .WordStack ) => ""
-    rule #unparseByteStack( W : WS )     => chrChar(W %Int (2 ^Int 8)) +String #unparseByteStack(WS)
+    syntax String ::= #unparseByteStack ( WordStack )                [function]
+                    | #unparseByteStack ( WordStack , StringBuffer ) [function, klabel(#unparseByteStackAux)]
+ // ---------------------------------------------------------------------------------------------------------
+    rule #unparseByteStack ( WS ) => #unparseByteStack(WS, .StringBuffer)
+
+    rule #unparseByteStack( .WordStack, BUFFER ) => StringBuffer2String(BUFFER)
+    rule #unparseByteStack( W : WS, BUFFER )     => #unparseByteStack(WS, BUFFER +String chrChar(W %Int (2 ^Int 8)))
 
     syntax String ::= #padByte( String ) [function]
  // -----------------------------------------------
