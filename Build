@@ -42,8 +42,8 @@ lint_krun_uiuck() {
 
 lint_krun_rvk() { cat - ; }
 
-detect_k_version() {
-    type kompile >/dev/null || die 'kompile not in $PATH'
+ensure_k() {
+    type kompile >/dev/null || die 'No K install found.'
     if krun --version | grep 'RV' >/dev/null 2>&1 ; then
         K_VERSION=rvk
     else
@@ -202,8 +202,6 @@ run_partests() {
 
 cd "$(dirname $0)"
 
-detect_k_version
-
 # test logs
 test_logs=".build/logs"
 mkdir -p "$test_logs"
@@ -215,18 +213,18 @@ run_command="$1" ; shift
 case "$run_command" in
 
     # Building
-    make) run_make $@ ;;
+    make) ensure_k ; run_make $@ ;;
 
     # Running
-    run)   run_krun   "$1" ;;
-    test)  run_test   "$1" ;;
-    debug) run_kdebug "$1" ;;
-    prove) run_proof  "$1" ;;
+    run)   ensure_k ; run_krun   "$1" ;;
+    test)  ensure_k ; run_test   "$1" ;;
+    debug) ensure_k ; run_kdebug "$1" ;;
+    prove) ensure_k ; run_proof  "$1" ;;
 
     # Testing
-    list)     list_$1 | filter_tests "${@:2}" ;;
-    tests)    list_$1 | filter_tests "${@:2}" | run_tests    ;;
-    partests) list_$1 | filter_tests "${@:2}" | run_partests ;;
+    list)                list_$1 | filter_tests "${@:2}" ;;
+    tests)    ensure_k ; list_$1 | filter_tests "${@:2}" | run_tests    ;;
+    partests) ensure_k ; list_$1 | filter_tests "${@:2}" | run_partests ;;
 
     *)             echo "
     K_VERSION: $K_VERSION
