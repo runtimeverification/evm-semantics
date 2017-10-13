@@ -849,6 +849,7 @@ These are just used by the other operators for shuffling local execution state a
          <activeAccounts> ... ACCTTO |-> (EMPTY => #if VALUE >Int 0 #then false #else EMPTY #fi) ACCTFROM |-> (_ => ORIGFROM ==Int VALUE andBool NONCE ==Int 0 andBool CODE ==K .WordStack) ... </activeAccounts>
       requires ACCTFROM =/=K ACCTTO andBool VALUE <=Int ORIGFROM
 
+/*
     rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #exception ... </k>
          <account>
            <acctID> ACCTFROM </acctID>
@@ -856,6 +857,7 @@ These are just used by the other operators for shuffling local execution state a
            ...
          </account>
       requires VALUE >Int ORIGFROM
+ */
 
     rule <k> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
          <activeAccounts> ACCTS </activeAccounts>
@@ -911,7 +913,7 @@ These operations are getters/setters of the local execution memory.
     syntax BinStackOp ::= "MSTORE" | "MSTORE8"
  // ------------------------------------------
     rule <k> MSTORE INDEX VALUE => . ... </k>
-         <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
+         <localMem> LM => LM [ INDEX := #asByteStackWidth(32, VALUE) ] </localMem>
 
     rule <k> MSTORE8 INDEX VALUE => . ... </k>
          <localMem> LM => LM [ INDEX <- (VALUE %Int 256) ]    </localMem>
@@ -1275,6 +1277,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
       ~> #transferFunds ACCTFROM ACCTTO VALUE
       ~> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS
 
+
     rule <mode> EXECMODE </mode>
          <k> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS
           => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
@@ -1410,6 +1413,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
       ~> #newAccount ACCTTO
       ~> #transferFunds ACCTFROM ACCTTO VALUE
       ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
+
 
     rule <mode> EXECMODE </mode>
          <k> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
