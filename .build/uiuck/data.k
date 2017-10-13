@@ -21,10 +21,12 @@ module EVM-DATA
 
     syntax Int ::= "pow256" [function]
                  | "pow255" [function]
+                 | "pow160" [function]
                  | "pow16"  [function]
  // ----------------------------------
     rule pow256 => 2 ^Int 256
     rule pow255 => 2 ^Int 255
+    rule pow160 => 2 ^Int 160
     rule pow16  => 2 ^Int 16
 
 
@@ -52,7 +54,7 @@ module EVM-DATA
 
     syntax Int ::= chop ( Int ) [function]
  // --------------------------------------
-    rule chop ( I:Int ) => I %Int pow256 requires I <Int 0  orBool I >=Int pow256
+    rule chop ( I:Int ) => I %Int pow256 requires I <Int 0  orBool I >=Int pow256 [smt-lemma]
     rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256
 
 
@@ -323,9 +325,10 @@ module EVM-DATA
 // as a cons-list, so we provide some standard cons-list manipulation tools.
 
 
-    syntax WordStack [flatPredicate]
-    syntax WordStack ::= ".WordStack" | Int ":" WordStack
- // -----------------------------------------------------
+    syntax Wordstack [flatPredicate]
+    syntax WordStack ::= ".WordStack"      [smtlib(word_stack_empty)]
+                       | Int ":" WordStack [klabel(_:WordStack_), smtlib(word_stack_cons)]
+ // --------------------------------------------------------------------------------------
 
 
 // -   `_++_` acts as `WordStack` append.
@@ -335,12 +338,12 @@ module EVM-DATA
 // -   `WS [ N .. W ]` access the range of `WS` beginning with `N` of width `W`.
 
 
-    syntax WordStack ::= WordStack "++" WordStack [function]
+    syntax WordStack ::= WordStack "++" WordStack [function, smtlib(appWordStack)]
  // --------------------------------------------------------
     rule .WordStack ++ WS' => WS'
     rule (W : WS)   ++ WS' => W : (WS ++ WS')
 
-    syntax WordStack ::= #take ( Int , WordStack ) [function]
+    syntax WordStack ::= #take ( Int , WordStack ) [function, smtlib(take)]
  // ---------------------------------------------------------
     rule #take(0, WS)         => .WordStack
     rule #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
@@ -415,11 +418,12 @@ module EVM-DATA
 //     word is a byte wide.
 
 
-    syntax Int ::= #asWord ( WordStack ) [function, smtlib(asWord)]
+    syntax Int ::= #asWord    ( WordStack )       [function]
+    syntax Int ::= #asWordAux ( Int , WordStack ) [function, smtlib(asWordAux)]
  // ---------------------------------------------------------------
-    rule #asWord( .WordStack )    => 0
-    rule #asWord( W : .WordStack) => W
-    rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
+    rule #asWord( W ) => #asWordAux( 0 , W )
+    rule #asWordAux( N , .WordStack )    => N
+    rule #asWordAux( N , W1 : WS )  => #asWordAux((N *Word 256) +Word W1, WS)
 
     syntax Account ::= #asAccount ( WordStack ) [function]
  // ------------------------------------------------------
@@ -432,6 +436,12 @@ module EVM-DATA
     rule #asByteStack( W ) => #asByteStack( W , .WordStack )
     rule #asByteStack( 0 , WS ) => WS
     rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0
+
+    syntax WordStack ::= #asByteStackWidth ( Int , Int )             [smtlib(asByteStackWidth)]
+                       | #asByteStackWidth ( Int , Int, WordStack ) [function, klabel(#asByteStackWidthAux), smtlib(asByteStackWidthAux)]
+    rule #asByteStackWidth( N , W ) => #asByteStackWidth( N , W , .WordStack )
+    rule #asByteStackWidth( 0 , _ , WS ) => WS
+    rule #asByteStackWidth( N , W , WS ) => #asByteStackWidth( N -Int 1 , W /Int 256 , W %Int 256 : WS ) requires N >Int 0
 
 
 // Addresses
@@ -634,7 +644,7 @@ module EVM-DATA
 //     wide enough.
 
 
-    syntax String ::= #unparseByteStack ( WordStack )                [function]
+    syntax String ::= #unparseByteStack ( WordStack )                [function, smtlib(unparse_byte_stack)]
                     | #unparseByteStack ( WordStack , StringBuffer ) [function, klabel(#unparseByteStackAux)]
  // ---------------------------------------------------------------------------------------------------------
     rule #unparseByteStack ( WS ) => #unparseByteStack(WS, .StringBuffer)

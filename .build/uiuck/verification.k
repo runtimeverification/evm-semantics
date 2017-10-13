@@ -12,7 +12,8 @@ module VERIFICATION
     imports EVM
 
 
-// This `smt-lemma` helps Z3 reason about stack over/under flow.
+// These `smt-lemma` helps Z3 reason about stack over/under flow, and to keep
+// various constraints down to reasonable sizes.
 
 
     rule #sizeWordStack ( _ , _ ) >=Int 0 => true [smt-lemma]
@@ -24,6 +25,67 @@ module VERIFICATION
     rule (X -Int A) -Int B    => X -Int (A +Int B)    [smt-lemma]
     rule ((X -Int A) >=Int B) => (X >=Int (A +Int B)) [smt-lemma]
     rule (N +Int X <Int M)    => X <Int (M -Int N)    [smt-lemma]
+
+    rule (X -Int A) -Int B => X -Int (A +Int B) [smt-lemma]
+    rule ((X -Int A) >=Int B) => (X >=Int (A +Int B)) [smt-lemma]
+
+    rule (X >=Int A ==K true) andBool ((X >=Int B ==K true) andBool P)
+      => (X >=Int A ==K true) andBool P requires A >=Int B [smt-lemma]
+    rule (X >=Int A ==K true) andBool ((X >=Int B ==K true) andBool P)
+      => (X >=Int B ==K true) andBool P requires B >=Int A [smt-lemma]
+
+    rule (N +Int X <Int M) => X <Int (M -Int N) [smt-lemma]
+    rule 1 +Int (N +Int #sizeWordStack(S)) => (N +Int 1) +Int #sizeWordStack(S) [smt-lemma]
+       // from recursing over bytes
+    rule (N +Int #sizeWordStack(S)) +Int 1 => (N +Int 1) +Int #sizeWordStack(S) [smt-lemma]
+    rule (N +Int #sizeWordStack(S)) +Int 0 =>  N +Int #sizeWordStack(S) [smt-lemma]
+    rule (N +Int #sizeWordStack(S)) +Int -1 => (N +Int -1) +Int #sizeWordStack(S) [smt-lemma]
+    rule (N +Int #sizeWordStack(S)) +Int -2 => (N +Int -2) +Int #sizeWordStack(S) [smt-lemma]
+       // from callstack, maybe?
+
+    rule #take(N,#uint(X)) => #uint(X) ++ #take(N -Int 32, .WordStack) requires N >=Int 32 [smt-lemma]
+    rule #asWordAux(N,(#uint(X)++W)) => #asWordAux(((N *Int pow256) +Int #getIntBytes(X,0,32,0)), W) [smt-lemma]
+    rule #asWordAux(N,#take(K,#uint(X))) =>
+         (N *Int (2 ^Int (K *Int 8)) +Int #getIntBytes(X,32 -Int K,32,0)) %Int pow256
+
+syntax WordStack ::= #uint(Int) [function, smtlib(uint256)]
+
+    rule 0 +Int X => X
+
+    rule Y *Int (X +Int #getIntBytes(T,A,B,S)) => (X +Int #getIntBytes(T,A,B,S)) *Int Y
+    rule (X +Int #getIntBytes(T,A,B,S)) *Int Y
+      => X *Int Y +Int #getIntBytes(T,A,B,S) *Int Y
+
+    rule (X +Int #getIntBytes(T,A,B,S)) %Int Y
+      => X %Int Y +Int #getIntBytes(T,A,B,S) %Int Y
+      requires X &Int ((2 ^Int B) -Int (2^Int A)) ==Int 0
+
+    rule (X +Int #getIntBytes(T,A,B,S)) /Int Y
+      => X /Int Y +Int #getIntBytes(T,A,B,S) /Int Y
+      requires X &Int ((2 ^Int B) -Int (2^Int A)) ==Int 0
+
+    rule Y +Int (X +Int #getIntBytes(T,A,B,S))
+      => (Y +Int Y) +Int #getIntBytes(T,A,B,S)
+    rule (X +Int #getIntBytes(T,A,B,S)) +Int Y
+      => (X +Int Y) +Int #getIntBytes(T,A,B,S)
+
+    rule #getIntBytes(T,A,B,S) *Int 256
+      => #getIntBytes(T,A,minInt(B,31 -Int S),S +Int 1)
+    rule #getIntBytes(T,A,B,S) %Int 115792089237316195423570985008687907853269984665640564039457584007913129639936
+      => #getIntBytes(T,A,minInt(B,32 -Int S),S)
+    rule #getIntBytes(T,A,B,S) /Int D
+      => #getIntBytes(T,A,B,S -Int 1) /Int (D /Int 256)
+      requires S >Int 0 andBool D %Int 256 ==Int 0
+    rule #getIntBytes(T,A,B,0) /Int D
+      => #getIntBytes(T,A +Int 1,B,0) /Int (D /Int 256)
+      requires A <Int B andBool D %Int 256 ==Int 0
+    rule #getIntBytes(T,A,A,S) => 0
+    rule #getIntBytes(T,A,B,S) +Int 0 => #getIntBytes(T,A,B,S)
+
+    rule 1461501637330902918203684832716283019655932542975 &Int #getIntBytes(T,A,B,S)
+      => #getIntBytes(T,A,minInt(B,20-Int S),S)
+
+syntax Int ::= #getIntBytes(Int,Int,Int,Int) [function, smtlib(get_int_bytes)]
 
 
 // Sum to N
