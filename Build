@@ -6,14 +6,14 @@ set -u      # Using undefined variables is an error. Exit immediately
 # Utilities
 # ---------
 
-progress() { echo "== $@"; }
-warning()  { echo -e "WARNING:" "$@"; }
-die()      { echo -e "FATAL:" "$@"; exit 1; }
+progress() { echo "== $@" ; }
+warning()  { echo -e "WARNING:" "$@" ; }
+die()      { echo -e "FATAL:" "$@" ; exit 1 ; }
 
-success()  { echo -e "\e[32m== success: $@\e[0m";
+success()  { echo -e "\e[32m== success: $@\e[0m" ;
              echo "$@" >> "$now_passing"
            }
-failure()  { echo -e "\e[31m== failure: $@\e[0m"; }
+failure()  { echo -e "\e[31m== failure: $@\e[0m" ; }
 
 pretty_diff() {
     if type colordiff >/dev/null 2>&1; then
@@ -21,23 +21,6 @@ pretty_diff() {
     else
         diff -u "$@"
     fi
-}
-
-lint_krun_uiuck() {
-    # Format, &gt; entity > and make each K task start on a new line
-    xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
-}
-
-lint_krun_rvk() { cat - ; }
-
-detect_k_version() {
-    type kompile >/dev/null || die 'kompile not in $PATH'
-    if krun --version | grep 'RV' >/dev/null 2>&1; then
-        K_VERSION=rvk
-    else
-        K_VERSION=uiuck
-    fi
-    progress "Using $K_VERSION"
 }
 
 run_make() {
@@ -52,22 +35,39 @@ run_make() {
     make K_VERSION=${K_VERSION} -s $make_opts $@
 }
 
+lint_krun_uiuck() {
+    # Format, &gt; entity > and make each K task start on a new line
+    xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
+}
+
+lint_krun_rvk() { cat - ; }
+
+detect_k_version() {
+    type kompile >/dev/null || die 'kompile not in $PATH'
+    if krun --version | grep 'RV' >/dev/null 2>&1 ; then
+        K_VERSION=rvk
+    else
+        K_VERSION=uiuck
+    fi
+    progress "Using $K_VERSION"
+}
+
 # Test Filters and Lists
 # ----------------------
 
 filter_tests() {
     local command=( exit 1 )
     case $# in
-    0) cat;       return ;;
-    1) grep "$1"; return ;;
-    *) cat > /dev/null;
-       warning "Too many expressions";
+    0) cat;        return ;;
+    1) grep "$1" ; return ;;
+    *) cat > /dev/null
+       warning "Too many expressions"
        ;;
     esac
 }
 
-list_vm()      { find "tests/VMTests"         -name '*.json' | grep -v 'loop_stacklimit_1021' ; }
-list_bchain()  { find "tests/BlockchainTests" -name '*.json' ; }
+list_vm()     { find "tests/VMTests"         -name '*.json' | grep -v 'loop_stacklimit_1021' ; }
+list_bchain() { find "tests/BlockchainTests" -name '*.json' ; }
 test_lists="vm bchain"
 
 list_gas_analysis() { find "tests/gas-analysis" -name '*.evm' ; }
@@ -84,7 +84,7 @@ test_lists="$test_lists rvk uiuck all quick"
 # -------
 
 run_uiuck() {
-    local run_file=$1; shift
+    local run_file=$1 ; shift
     local krun_opts=()
     export K_OPTS=-Xss500m
     export cSCHEDULE=${cSCHEDULE:-DEFAULT}
@@ -122,7 +122,7 @@ run_proof() {
     [[ "$K_VERSION" == 'uiuck' ]] || die "Proofs must be run with 'K_VERSION=uiuck'."
     run_make
     export K_OPTS=-Xmx2G
-    local proof_file="$1"; shift
+    local proof_file="$1" ; shift
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
     local cSCHEDULE=${cSCHEDULE:-DEFAULT}
     local cMODE=${cMODE:-NORMAL}
@@ -175,12 +175,12 @@ run_tests() {
     local test_failed=0
     [[ "$K_VERSION" == 'rvk' ]] && ( kserver & ) && sleep 2
     run_make
-    while read test_file; do
+    while read test_file ; do
         progress "running: $test_file"
         test_count=$(($test_count + 1))
         exit_status=0
         run_test "$test_file" || exit_status=$?
-        if [[ $exit_status -eq 0 ]]; then
+        if [[ $exit_status -eq 0 ]] ; then
             success "$test_file"
         else
             failure "$test_file"
@@ -268,5 +268,5 @@ case "$run_command" in
        $0 partests <test-list> <regx>   Run tests from <test-list> filtered by <regx> with GNU parallel
 
        Available <test-list>: $test_lists
-"; exit ;;
+" ; exit ;;
 esac
