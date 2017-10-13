@@ -210,12 +210,12 @@ mkdir -p "$test_logs"
 now_passing="$test_logs/passing.lastrun"
 
 # main functionality
-[[ "$#" == '0' ]] && set make-build
+[[ "$#" == '0' ]] && set make build
 run_command="$1" ; shift
 case "$run_command" in
 
     # Building
-    make-*) run_make ${run_command#make-} ;;
+    make) run_make $@ ;;
 
     # Running
     run)   run_krun   "$1" ;;
@@ -231,11 +231,11 @@ case "$run_command" in
     *)             echo "
     K_VERSION: $K_VERSION
     usage:
-       $0       Defaults to '$0 make-build'
+       $0       Defaults to '$0 make build'
 
        # Building
        # --------
-       $0 make-<target>     Run 'make <target>' with 'K_VERSION' set
+       $0 make <target>     Run 'make <target>' with 'K_VERSION' set
 
        Useful <target>:
        -   tangle: Build the definition/proof files from the markdown files (requires pandoc)
