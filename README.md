@@ -23,7 +23,7 @@ This Repository
 
 -   [data.md](data.md) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
 -   [evm.md](evm.md) is the main KEVM semantics, containing the configuration and transition rules of EVM.
--   [ethereum.md](ethereum.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
+-   [driver.md](driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
 
 ### Gas Analysis
 
@@ -39,7 +39,7 @@ The file [verification.md](verification.md) contains some helper-macros for writ
 
 ### Testing
 
-[ethereum.md](ethereum.md) loads test-files from the [Ethereum Test Set](https://github.com/ethereum/tests) and executes them, checking that the output is correct.
+[driver.md](driver.md) provides drivers for running Ethereum simulations, including the [Ethereum test sets](https://github.com/ethereum/tests).
 If the output is correct, the entire configuration is cleared.
 If any check fails, the configuration retains the failed check at the top of the `<k>` cell.
 

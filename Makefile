@@ -13,7 +13,7 @@ clean:
 	rm -r .build
 	find tests/proofs/ -name '*.k' -delete
 
-build: tangle .build/${K_VERSION}/ethereum-kompiled/extras/timestamp
+build: tangle .build/${K_VERSION}/driver-kompiled/extras/timestamp
 
 # Tangle from *.md files
 # ----------------------
@@ -21,7 +21,7 @@ build: tangle .build/${K_VERSION}/ethereum-kompiled/extras/timestamp
 tangle: defn proofs
 
 defn_dir=.build/${K_VERSION}
-defn_files=${defn_dir}/ethereum.k ${defn_dir}/data.k ${defn_dir}/evm.k ${defn_dir}/analysis.k ${defn_dir}/krypto.k ${defn_dir}/verification.k
+defn_files=${defn_dir}/driver.k ${defn_dir}/data.k ${defn_dir}/evm.k ${defn_dir}/analysis.k ${defn_dir}/krypto.k ${defn_dir}/verification.k
 defn: $(defn_files)
 
 .build/${K_VERSION}/%.k: %.md
@@ -105,7 +105,7 @@ tests/ethereum-tests/%.json:
 # UIUC K Specific
 # ---------------
 
-.build/uiuck/ethereum-kompiled/extras/timestamp: $(defn_files)
+.build/uiuck/driver-kompiled/extras/timestamp: $(defn_files)
 	@echo "== kompile: $@"
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/uiuck
@@ -113,18 +113,18 @@ tests/ethereum-tests/%.json:
 # RVK Specific
 # ------------
 
-.build/rvk/ethereum-kompiled/extras/timestamp: .build/rvk/ethereum-kompiled/interpreter
-.build/rvk/ethereum-kompiled/interpreter: $(defn_files) KRYPTO.ml
+.build/rvk/driver-kompiled/extras/timestamp: .build/rvk/driver-kompiled/interpreter
+.build/rvk/driver-kompiled/interpreter: $(defn_files) KRYPTO.ml
 	@echo "== kompile: $@"
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/rvk \
 					--hook-namespaces KRYPTO --gen-ml-only -O3 --non-strict
-	ocamlfind opt -c .build/rvk/ethereum-kompiled/constants.ml -package gmp -package zarith
-	ocamlfind opt -c -I .build/rvk/ethereum-kompiled KRYPTO.ml -package cryptokit -package secp256k1 -package bn128
+	ocamlfind opt -c .build/rvk/driver-kompiled/constants.ml -package gmp -package zarith
+	ocamlfind opt -c -I .build/rvk/driver-kompiled KRYPTO.ml -package cryptokit -package secp256k1 -package bn128
 	ocamlfind opt -a -o semantics.cmxa KRYPTO.cmx
 	ocamlfind remove ethereum-semantics-plugin
 	ocamlfind install ethereum-semantics-plugin META semantics.cmxa semantics.a KRYPTO.cmi KRYPTO.cmx
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/rvk \
 					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O3 --non-strict
-	cd .build/rvk/ethereum-kompiled && ocamlfind opt -o interpreter constants.cmx prelude.cmx plugin.cmx parser.cmx lexer.cmx run.cmx interpreter.ml -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin -linkpkg -inline 20 -nodynlink -O3 -linkall
+	cd .build/rvk/driver-kompiled && ocamlfind opt -o interpreter constants.cmx prelude.cmx plugin.cmx parser.cmx lexer.cmx run.cmx interpreter.ml -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin -linkpkg -inline 20 -nodynlink -O3 -linkall

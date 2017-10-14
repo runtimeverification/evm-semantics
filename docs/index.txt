@@ -10,7 +10,7 @@ usable for testing contracts, analyzing gas usage, verifying contracts correct, 
 
    :maxdepth: 2
    evm
-   ethereum
+   driver
    verification
    data
    analysis
