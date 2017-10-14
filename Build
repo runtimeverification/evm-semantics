@@ -153,15 +153,11 @@ run_test() {
     run_make
     test_file="$1"; shift
     case "$test_file" in
-       *VMTests/*        ) mode=vmtests            ;;
-       *                 ) mode=normal             ;;
-    esac
-    case "$test_file" in
         *proofs/*) ( pretty_diff --label expected <(echo "true") \
                                  --label actual   <(run_proof "$test_file")
                    )
                    ;;
-        *        ) output_expected_file=tests/templates/output-"$mode".txt
+        *        ) output_expected_file=tests/templates/output-success.txt
                    [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
                    ( pretty_diff --label expected <(cat "$output_expected_file") \
                                  --label actual   <(run_"$K_VERSION" "$test_file" | lint_krun_"$K_VERSION")

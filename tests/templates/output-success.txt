@@ -2,7 +2,7 @@
 <generatedTop>
   <k> . </k>
   <exit-code> 0 </exit-code>
-  <mode> VMTESTS </mode>
+  <mode> SUCCESS </mode>
   <schedule> DEFAULT </schedule>
   <analysis> .Map </analysis>
   <ethereum>
