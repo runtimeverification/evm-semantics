@@ -21,6 +21,10 @@ module VERIFICATION
       requires N =/=K 0
       [lemma]
 
+    rule (X -Int A) -Int B    => X -Int (A +Int B)    [smt-lemma]
+    rule ((X -Int A) >=Int B) => (X >=Int (A +Int B)) [smt-lemma]
+    rule (N +Int X <Int M)    => X <Int (M -Int N)    [smt-lemma]
+
 
 // Sum to N
 // --------
