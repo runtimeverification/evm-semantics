@@ -175,25 +175,27 @@ These parts of the state are constant throughout the proof.
 module TRANSFER-SPEC
     imports ETHEREUM-SIMULATION
 
-    rule <k> #execute ... </k>
+    rule <k> #execute => (RETURN _ _ ~> _) </k>
+         <pc> 0 => _ </pc>
          <exit-code> 1 </exit-code>
          <mode>     NORMAL  </mode>
          <schedule> DEFAULT </schedule>
 
          <output>        .WordStack </output>
-         <memoryUsed>    3          </memoryUsed>
+         <memoryUsed>    0 => _     </memoryUsed>
          <callDepth>     0          </callDepth>
-         <callStack>     .List      </callStack>
+         <callStack>     .List => _ </callStack>
          <interimStates> .List      </interimStates>
          <substateStack> .List      </substateStack>
          <callLog>       .Set       </callLog>
+         <wordStack> .WordStack => _ </wordStack>
 
-         <program>      %HKG_Program      </program>
+         <program>   %HKG_Program </program>
          <programBytes> %HKG_ProgramBytes </programBytes>
-         <id>           %ACCT_ID          </id>
-         <caller>       %ORIGIN_ID        </caller>
-         <callData>     .WordStack        </callData>
-         <callValue>    0                 </callValue>
+         <id>        %ACCT_ID     </id>
+         <caller>    %ORIGIN_ID   </caller>
+         <callData>  #abiCallData("transfer",#address(%CALLER_ID),#uint256(TRANSFER)) </callData>
+         <callValue> 0            </callValue>
 
          <gasPrice>     _               </gasPrice>
          <origin>       %ORIGIN_ID      </origin>
@@ -204,10 +206,10 @@ module TRANSFER-SPEC
          <previousHash> 0               </previousHash>
          <difficulty>   256             </difficulty>
 
-         <selfDestruct>   .Set               </selfDestruct>
-         <log>            .List              </log>
+         <selfDestruct>   .Set                 </selfDestruct>
+         <log>            .List => _            </log>
          <activeAccounts> %ACCT_ID |-> false </activeAccounts>
-         <messages>       .Bag               </messages>
+         <messages>       .Bag                 </messages>
 ```
 
 These parts of the proof change, but we would like to avoid specifying exactly how (abstract over their state change).
@@ -221,12 +223,8 @@ These parts of the proof change, but we would like to avoid specifying exactly h
 ### Then Branch
 
 ```{.k .transfer-then}
-         <pc>  1533 => 1772 </pc>
          <gas>  G   => G1   </gas>
 
-         <wordStack>                        TRANSFER : %CALLER_ID : WS
-                  => B2 +Int TRANSFER : 0 : TRANSFER : %CALLER_ID : WS
-         </wordStack>
          <accounts>
            <account>
              <acctID>  %ACCT_ID          </acctID>
@@ -243,24 +241,22 @@ These parts of the proof change, but we would like to avoid specifying exactly h
            </account>
          </accounts>
 
-      requires TRANSFER >Int 0
-       andBool B1 >=Int TRANSFER andBool B1 <Int pow256
-       andBool B2 >=Int 0        andBool B2 +Int TRANSFER <Int pow256
+      requires TRANSFER >Int 0 andBool TRANSFER <Int pow256
+       andBool B1 >=Int 0      andBool B1 <Int pow256
+       andBool B2 >=Int 0      andBool B2 <Int pow256
+       andBool B2 +Int TRANSFER <Int pow256
+       andBool B1 -Int TRANSFER >=Int 0
        andBool #sizeWordStack(WS) <Int 1017
-       andBool G >=Int 25544
-       ensures G -Int G1 <=Int 25544
+       andBool G >=Int 100000
+//       ensures G -Int G1 <=Int 25544
 endmodule
 ```
 
 ### Else Branch
 
 ```{.k .transfer-else}
-         <pc>  1533 => 1892 </pc>
-         <gas> G   => G1   </gas>
+         <gas> 100000   => _   </gas>
 
-         <wordStack>     TRANSFER : %CALLER_ID : WS
-                  => 0 : TRANSFER : %CALLER_ID : WS
-         </wordStack>
          <accounts>
            <account>
              <acctID>  %ACCT_ID          </acctID>
@@ -277,10 +273,11 @@ endmodule
            </account>
          </accounts>
 
-      requires (TRANSFER <=Int 0 orBool B1 <Int TRANSFER)
-       andBool #sizeWordStack(WS) <Int 1015
-       andBool G >=Int 221
-       ensures G -Int G1 <=Int 221
+      requires TRANSFER >=Int 0 andBool TRANSFER <Int pow256
+       andBool B1 >=Int 0      andBool B1 <Int pow256
+       andBool B2 >=Int 0      andBool B2 <Int pow256
+       andBool (B1 <Int TRANSFER orBool TRANSFER ==Int 0)
+       andBool #sizeWordStack(WS) <Int 1017
 endmodule
 ```
 
@@ -453,16 +450,14 @@ imports ETHEREUM-SIMULATION
          <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <accounts>
            <account>
-             <acctID>  %ACCT_ID          </acctID>
-             <balance> BAL               </balance>
+             <acctID>  %ACCT_ID      </acctID>
+             <balance> BAL           </balance>
              <code>    %HKG_ProgramBytes </code>
-             <nonce>   0                 </nonce>
-             <storage> %ACCT_1_BALANCE |-> B1:Int
-                       %ACCT_1_ALLOWED |-> A1:Int
+             <nonce>   0            </nonce>
+             <storage>
+                       ...
                        %ACCT_2_BALANCE |-> B2:Int
-                       %ACCT_2_ALLOWED |-> A2:Int
-                       3 |-> %ORIGIN_ID
-                       4 |-> %CALLER_ID
+                      ...
              </storage>
            </account>
          </accounts>
@@ -480,30 +475,32 @@ Here we provide a specification file containing a reachability rule for the veri
 module APPROVE-SPEC
     imports ETHEREUM-SIMULATION
 
-    rule <k> #execute ... </k>
+    rule <k> #execute => (RETURN _ _  ~> _) </k>
          <exit-code> 1       </exit-code>
          <mode>      NORMAL  </mode>
          <schedule>  DEFAULT </schedule>
 
-         <output>        .WordStack </output>
-         <memoryUsed>    3          </memoryUsed>
-         <callDepth>     0          </callDepth>
-         <callStack>     .List      </callStack>
-         <interimStates> .List      </interimStates>
-         <substateStack> .List      </substateStack>
-         <callLog>       .Set       </callLog>
+         <output>        .WordStack     </output>
+         <memoryUsed>    0 => _         </memoryUsed>
+         <callDepth>     0              </callDepth>
+         <callStack>     .List  => _    </callStack>
+         <interimStates> .List          </interimStates>
+         <substateStack> .List          </substateStack>
+         <callLog>       .Set           </callLog>
 
-         <program>      %HKG_Program      </program>
+         <program>   %HKG_Program </program>
          <programBytes> %HKG_ProgramBytes </programBytes>
-         <id>           %ACCT_ID          </id>
-         <caller>       %CALLER_ID        </caller>
-         <callData>     .WordStack        </callData>
-         <callValue>    0                 </callValue>
+         <id>        %ACCT_ID     </id>
+         <caller>    %CALLER_ID   </caller>
+         <callData>
+                     #abiCallData("approve", #address(%ORIGIN_ID), #uint256(A2))
+         </callData>
+         <callValue> 0            </callValue>
 
-         <wordStack>   A2 : %ORIGIN_ID : WS => ?A:WordStack </wordStack>
-         <localMem>    .Map                 => ?B:Map       </localMem>
-         <pc>          574                  => 806          </pc>
-         <gas>         G                    => G -Int 5269  </gas>
+         <wordStack>   .WordStack           => _            </wordStack>
+         <localMem>    .Map                 => _            </localMem>
+         <pc>          0                    => _            </pc>
+         <gas>         100000               => _            </gas>
          <previousGas> _                    => _            </previousGas>
 
          <selfDestruct> .Set       </selfDestruct>
@@ -532,13 +529,13 @@ module APPROVE-SPEC
                      %ACCT_1_BALANCE |-> B1:Int
                      %ACCT_1_ALLOWED |-> A1:Int
                      %ACCT_2_BALANCE |-> B2:Int
-                     %ACCT_2_ALLOWED |-> A2:Int
+                     %ACCT_2_ALLOWED |-> (_ => A2)
                      ...
            </storage>
            </account>
          </accounts>
+         requires (A2 <Int pow256) andBool (A2 >=Int 0)
 
-      requires #sizeWordStack(WS) <Int 1014  andBool G >=Int 5269
 endmodule
 ```
 
@@ -550,36 +547,36 @@ Here we provide a specification file containing a reachability rule for the veri
 ```{.k .balanceOf}
 module BALANCE-OF-SPEC
     imports ETHEREUM-SIMULATION
-
-    rule <k> #execute ... </k>
+    rule <k> #execute => (RETURN _ _  ~> _) </k>
          <exit-code> 1       </exit-code>
          <mode>      NORMAL  </mode>
          <schedule>  DEFAULT </schedule>
 
-         <output>        .WordStack </output>
-         <memoryUsed>    4          </memoryUsed>
-         <callDepth>     0          </callDepth>
-         <callStack>     .List      </callStack>
-         <interimStates> .List      </interimStates>
-         <substateStack> .List      </substateStack>
-         <callLog>       .Set       </callLog>
+         <output>        .WordStack     </output>
+         <memoryUsed>    0    => 4      </memoryUsed>
+         <callDepth>     0              </callDepth>
+         <callStack>     .List => _     </callStack>
+         <interimStates> .List          </interimStates>
+         <substateStack> .List          </substateStack>
+         <callLog>       .Set           </callLog>
 
-         <program>      %HKG_Program      </program>
+         <program>      %HKG_Program </program>
          <programBytes> %HKG_ProgramBytes </programBytes>
-         <id>           %ACCT_ID          </id>
-         <caller>       %CALLER_ID        </caller>
-         <callData>     .WordStack        </callData>
-         <callValue>    0                 </callValue>
+         <id>           %ACCT_ID     </id>
+         <caller>       %CALLER_ID   </caller>
+         <callData>     #abiCallData("balanceOf", #address(%CALLER_ID))
+         </callData>
 
-         <wordStack>    WS    => ?A:WordStack </wordStack>
-         <localMem>     .Map  => ?B:Map       </localMem>
-         <pc>           316   => 381          </pc>
-         <gas>          G     => G -Int 274   </gas>
-         <previousGas>  _     => _            </previousGas>
+         <callValue>    0                     </callValue>
+         <wordStack>    .WordStack    => _    </wordStack>
+         <localMem>     .Map    => _            </localMem>
+         <pc>           0       => _            </pc>
+         <gas>          1000    => _            </gas>
+         <previousGas>  _       => _            </previousGas>
 
-         <selfDestruct> .Set    </selfDestruct>
+         <selfDestruct> .Set     </selfDestruct>
          <log>          .List    </log>
-         <refund>       0  => _ </refund>
+         <refund>       0        </refund>
 
          <gasPrice>     _               </gasPrice>
          <origin>       %ORIGIN_ID      </origin>
@@ -593,10 +590,10 @@ module BALANCE-OF-SPEC
          <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <accounts>
            <account>
-             <acctID>  %ACCT_ID          </acctID>
-             <balance> BAL               </balance>
+             <acctID>  %ACCT_ID      </acctID>
+             <balance> BAL           </balance>
              <code>    %HKG_ProgramBytes </code>
-             <nonce>   0                 </nonce>
+             <nonce>   0            </nonce>
              <storage> %ACCT_1_BALANCE |-> B1:Int
                        %ACCT_1_ALLOWED |-> A1:Int
                        %ACCT_2_BALANCE |-> B2:Int
@@ -607,6 +604,6 @@ module BALANCE-OF-SPEC
            </account>
          </accounts>
 
-      requires #sizeWordStack(WS) <Int 1018 andBool G >=Int 274
+      requires #sizeWordStack(WS) <Int 1018
 endmodule
 ```

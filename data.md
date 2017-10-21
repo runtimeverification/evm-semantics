@@ -432,7 +432,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #asByteStack( 0 , WS ) => WS
     rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0
 
-    syntax WordStack ::= #asByteStackWidth ( Int , Int )             [smtlib(asByteStackWidth)]
+    syntax WordStack ::= #asByteStackWidth ( Int , Int )            [function, smtlib(asByteStackWidth)]
                        | #asByteStackWidth ( Int , Int, WordStack ) [function, klabel(#asByteStackWidthAux), smtlib(asByteStackWidthAux)]
     rule #asByteStackWidth( N , W ) => #asByteStackWidth( N , W , .WordStack )
     rule #asByteStackWidth( 0 , _ , WS ) => WS

@@ -127,7 +127,7 @@ run_proof() {
     local cSCHEDULE=${cSCHEDULE:-DEFAULT}
     local cMODE=${cMODE:-NORMAL}
     ( krun --smt_prelude evm.smt2 --directory .build/$K_VERSION/ -cSCHEDULE=$cSCHEDULE -cMODE=$cMODE \
-         --z3-executable tests/templates/dummy-proof-input.json --prove "$proof_file" \
+         --z3-executable --debug tests/templates/dummy-proof-input.json --prove "$proof_file" \
          </dev/null # grumble grumble `krun --prove` consumes stdin
     )
 }
