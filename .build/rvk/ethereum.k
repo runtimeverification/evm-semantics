@@ -677,21 +677,21 @@ module ETHEREUM-SIMULATION
                         SetItem("transactionsTrie") SetItem("uncleHash")
                       )
 
-    rule <k> check "blockHeader" : { "bloom"            : VALUE } => . ...</k> <logsBloom>        VALUE </logsBloom>
-    rule <k> check "blockHeader" : { "coinbase"         : VALUE } => . ...</k> <coinbase>         VALUE </coinbase>
-    rule <k> check "blockHeader" : { "difficulty"       : VALUE } => . ...</k> <difficulty>       VALUE </difficulty>
-    rule <k> check "blockHeader" : { "extraData"        : VALUE } => . ...</k> <extraData>        VALUE </extraData>
-    rule <k> check "blockHeader" : { "gasLimit"         : VALUE } => . ...</k> <gasLimit>         VALUE </gasLimit>
-    rule <k> check "blockHeader" : { "gasUsed"          : VALUE } => . ...</k> <gasUsed>          VALUE </gasUsed>
-    rule <k> check "blockHeader" : { "mixHash"          : VALUE } => . ...</k> <mixHash>          VALUE </mixHash>
-    rule <k> check "blockHeader" : { "nonce"            : VALUE } => . ...</k> <blockNonce>       VALUE </blockNonce>
-    rule <k> check "blockHeader" : { "number"           : VALUE } => . ...</k> <number>           VALUE </number>
-    rule <k> check "blockHeader" : { "parentHash"       : VALUE } => . ...</k> <previousHash>     VALUE </previousHash>
-    rule <k> check "blockHeader" : { "receiptTrie"      : VALUE } => . ...</k> <receiptsRoot>     VALUE </receiptsRoot>
-    rule <k> check "blockHeader" : { "stateRoot"        : VALUE } => . ...</k> <stateRoot>        VALUE </stateRoot>
-    rule <k> check "blockHeader" : { "timestamp"        : VALUE } => . ...</k> <timestamp>        VALUE </timestamp>
-    rule <k> check "blockHeader" : { "transactionsTrie" : VALUE } => . ...</k> <transactionsRoot> VALUE </transactionsRoot>
-    rule <k> check "blockHeader" : { "uncleHash"        : VALUE } => . ...</k> <ommersHash>       VALUE </ommersHash>
+    rule <k> check "blockHeader" : { "bloom"            : VALUE } => . ... </k> <logsBloom>        VALUE </logsBloom>
+    rule <k> check "blockHeader" : { "coinbase"         : VALUE } => . ... </k> <coinbase>         VALUE </coinbase>
+    rule <k> check "blockHeader" : { "difficulty"       : VALUE } => . ... </k> <difficulty>       VALUE </difficulty>
+    rule <k> check "blockHeader" : { "extraData"        : VALUE } => . ... </k> <extraData>        VALUE </extraData>
+    rule <k> check "blockHeader" : { "gasLimit"         : VALUE } => . ... </k> <gasLimit>         VALUE </gasLimit>
+    rule <k> check "blockHeader" : { "gasUsed"          : VALUE } => . ... </k> <gasUsed>          VALUE </gasUsed>
+    rule <k> check "blockHeader" : { "mixHash"          : VALUE } => . ... </k> <mixHash>          VALUE </mixHash>
+    rule <k> check "blockHeader" : { "nonce"            : VALUE } => . ... </k> <blockNonce>       VALUE </blockNonce>
+    rule <k> check "blockHeader" : { "number"           : VALUE } => . ... </k> <number>           VALUE </number>
+    rule <k> check "blockHeader" : { "parentHash"       : VALUE } => . ... </k> <previousHash>     VALUE </previousHash>
+    rule <k> check "blockHeader" : { "receiptTrie"      : VALUE } => . ... </k> <receiptsRoot>     VALUE </receiptsRoot>
+    rule <k> check "blockHeader" : { "stateRoot"        : VALUE } => . ... </k> <stateRoot>        VALUE </stateRoot>
+    rule <k> check "blockHeader" : { "timestamp"        : VALUE } => . ... </k> <timestamp>        VALUE </timestamp>
+    rule <k> check "blockHeader" : { "transactionsTrie" : VALUE } => . ... </k> <transactionsRoot> VALUE </transactionsRoot>
+    rule <k> check "blockHeader" : { "uncleHash"        : VALUE } => . ... </k> <ommersHash>       VALUE </ommersHash>
 
     rule <k> check "blockHeader" : { "hash": HASH:WordStack } => . ...</k>
          <previousHash>     HP </previousHash>
