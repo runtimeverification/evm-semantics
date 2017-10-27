@@ -206,8 +206,9 @@ module VERIFICATION
 // `<pc> 0 </pc>`.
 
 
-    syntax TypedArg ::= "#uint160"  "(" Int ")"
-                      | "#address"  "(" Int ")"
+    syntax TypedArg ::= "#uint160"      "(" Int ")"
+                      | "#address"      "(" Int ")"
+                      | "#uint256"      "(" Int ")"
 
     syntax TypedArgs ::= List{TypedArg, ","}
 
@@ -230,6 +231,7 @@ module VERIFICATION
 
     rule #typeName(#uint160( _ ))                       => "uint160"
     rule #typeName(#address( _ ))                       => "address"
+    rule #typeName(#uint256( _ ))                       => "uint256"
 
     rule #encodeArgs(WS | ARG, ARGS)            => #encodeArgs(WS ++ #getData(ARG) |  ARGS)
     rule #encodeArgs(WS | .TypedArgs)           => WS
@@ -237,6 +239,7 @@ module VERIFICATION
 
     rule #getData(#uint160( DATA ))             => #uint( DATA )
     rule #getData(#address( DATA ))             => #uint( DATA )
+    rule #getData(#uint256( DATA ))             => #uint( DATA )
 
 
 

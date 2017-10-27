@@ -208,8 +208,9 @@ The above constructs place the correct values (in accordance with the ABI) in th
 cell, allowing proofs of ABI-compliant EVM program to begin at `<pc> 0 </pc>`.
 
 ```{.k .uiuck}
-    syntax TypedArg ::= "#uint160"  "(" Int ")"
-                      | "#address"  "(" Int ")"
+    syntax TypedArg ::= "#uint160"      "(" Int ")"
+                      | "#address"      "(" Int ")"
+                      | "#uint256"      "(" Int ")"
 
     syntax TypedArgs ::= List{TypedArg, ","}
 
@@ -232,6 +233,7 @@ cell, allowing proofs of ABI-compliant EVM program to begin at `<pc> 0 </pc>`.
 
     rule #typeName(#uint160( _ ))                       => "uint160"
     rule #typeName(#address( _ ))                       => "address"
+    rule #typeName(#uint256( _ ))                       => "uint256"
 
     rule #encodeArgs(WS | ARG, ARGS)            => #encodeArgs(WS ++ #getData(ARG) |  ARGS)
     rule #encodeArgs(WS | .TypedArgs)           => WS
@@ -239,6 +241,7 @@ cell, allowing proofs of ABI-compliant EVM program to begin at `<pc> 0 </pc>`.
 
     rule #getData(#uint160( DATA ))             => #uint( DATA )
     rule #getData(#address( DATA ))             => #uint( DATA )
+    rule #getData(#uint256( DATA ))             => #uint( DATA )
 ```
 
 ```{.k .uiuck}
