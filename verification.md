@@ -45,14 +45,16 @@ and to keep various constraints down to reasonable sizes.
     syntax WordStack ::= #uint(Int) [function, smtlib(uint256)]
  // -----------------------------------------------------------
 
-    rule #take(N, #uint160(X))              => #uint160(X) ++ #take(N -Int 20, .WordStack)
-        requires N >=Int 20 [smt-lemma]
 
-    rule #asWord(N:(#uint160(X) ++ W))      => #asWord((N *Int pow160 +Int X) : W)                              [smt-lemma]
-    rule #take(N, #uint(X))                 => #uint(X)  ++  #take(N -Int 32, .WordStack) requires N >=Int 32   [smt-lemma]
-    rule #asWordAux(N, (#uint(X) ++ W))     => #asWordAux(((N *Int pow256) +Int #getIntBytes(X, 0, 32, 0)), W)  [smt-lemma]
+    rule #take(N, #uint(X))      => #uint(X) ++ #take(N -Int 32, .WordStack)     requires N >=Int 32 [smt-lemma]
+    rule #take(N, #uint(X) ++ W) => #uint(X) ++ #take(N -Int 32, W)              requires N >=Int 32 [smt-lemma]
+    rule #drop(N, #uint(X) ++ W) => #drop(N -Int 32, W)                          requires N >=Int 32 [smt-lemma]
 
-    rule #asWordAux(N, #take(K, #uint(X)))  => (N *Int (2 ^Int (K *Int 8)) +Int #getIntBytes(X, 32 -Int K, 32, 0)) %Int pow256
+    rule #asWordAux(N, (#uint(X) ++ W)) => #asWordAux(((N *Int pow256) +Int #getIntBytes(X, 0, 32, 0)), W)          [smt-lemma]
+    rule #asWordAux(N, #uint(X))        => #asWordAux(((N *Int pow256) +Int #getIntBytes(X, 0, 32, 0)), .WordStack) [smt-lemma]
+
+    rule #asWordAux(N, #take(K, #uint(X))) =>
+         (N *Int (2 ^Int (K *Int 8)) +Int #getIntBytes(X, 32 -Int K, 32, 0)) %Int pow256
 
 
     rule 0 +Int X => X
