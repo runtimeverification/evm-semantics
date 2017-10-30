@@ -46,7 +46,7 @@ module APPROVE-SPEC
          <wordStack>   .WordStack           => _            </wordStack>
          <localMem>    .Map                 => _            </localMem>
          <pc>          0                    => _            </pc>
-         <gas>         1000                 => _            </gas>
+         <gas>         100000               => _            </gas>
          <previousGas> _                    => _            </previousGas>
 
          <selfDestruct> .Set       </selfDestruct>
@@ -75,11 +75,12 @@ module APPROVE-SPEC
                      %ACCT_1_BALANCE |-> B1:Int
                      %ACCT_1_ALLOWED |-> A1:Int
                      %ACCT_2_BALANCE |-> B2:Int
-                     %ACCT_2_ALLOWED |-> A2:Int
+                     %ACCT_2_ALLOWED |-> (_ => A2)
                      ...
            </storage>
            </account>
          </accounts>
+         requires (A2 <Int pow256) andBool (A2 >=Int 0)
 
 endmodule
 

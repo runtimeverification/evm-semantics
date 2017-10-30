@@ -47,6 +47,7 @@ module VERIFICATION
  // -----------------------------------------------------------
 
 
+    rule #take(N, #uint(X) ++ W) => #take(N, #uint(X))                           requires N <Int 32  [smt-lemma]
     rule #take(N, #uint(X))      => #uint(X) ++ #take(N -Int 32, .WordStack)     requires N >=Int 32 [smt-lemma]
     rule #take(N, #uint(X) ++ W) => #uint(X) ++ #take(N -Int 32, W)              requires N >=Int 32 [smt-lemma]
     rule #drop(N, #uint(X) ++ W) => #drop(N -Int 32, W)                          requires N >=Int 32 [smt-lemma]
@@ -56,6 +57,9 @@ module VERIFICATION
 
     rule #asWordAux(N, #take(K, #uint(X))) =>
          (N *Int (2 ^Int (K *Int 8)) +Int #getIntBytes(X, 32 -Int K, 32, 0)) %Int pow256
+
+    rule #asWordAux(N, #uint(X))
+         => #asWordAux(((N *Int pow256) +Int #getIntBytes(X, 0, 32, 0)), .WordStack) [smt-lemma]
 
 
     rule 0 +Int X => X
