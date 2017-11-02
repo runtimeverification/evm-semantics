@@ -67,6 +67,58 @@ This can be thought of as a singly linked-list.
     rule (W : WS)   ++ WS' => W : (WS ++ WS')
 ```
 
+EVM Configuration
+=================
+
+Keeping Track of World and VM state
+-----------------------------------
+
+The actual configuration contains $60+$ cells.
+
+### VM Execution State
+
+Subconfiguration `<evm>` contains the execution state of a single VM.
+
+```
+configuration
+  <k> $PGM:EthereumSimulation </k>
+  <evm>
+    <program>   .Map       </program>   // I_b
+    <wordStack> .WordStack </wordStack> // \mu_s
+    <localMem>  .Map       </localMem>  // \mu_m
+    <gas>       0          </gas>       // \mu_g
+    ...
+  </evm>
+  ...
+```
+
+Keeping Track of World and VM state
+-----------------------------------
+
+### Network/World State
+
+Subconfiguration `<network>` contains the network/world state.
+
+-   `multiplicity="*"` allows for multiple co-existing `<account>` cells.
+
+```
+configuration
+  ...
+  <network>
+    <activeAccounts> .Map </activeAccounts>
+    <accounts>
+      <account multiplicity="*" type="Bag">
+        <acctID>  0          </acctID>
+        <balance> 0          </balance>
+        <code>    .WordStack </code>
+        <storage> .Map       </storage>
+        <nonce>   0          </nonce>
+      </account>
+    </accounts>
+    ...
+  </network>
+```
+
 EVM Execution
 =============
 
