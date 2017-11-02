@@ -428,3 +428,59 @@ head:
    andBool #sizeWordStack(WS) <Int 1021
    andBool G >=Int 52 *Int I +Int 21
 ```
+
+Verifing ABI compliant contracts
+--------------------------------
+
+. . .
+
+`#abiCallData` generates ABI compliant `callData`:
+
+```
+    syntax WordStack ::= #abiCallData ( String , TypedArgs ) [function]
+ // -------------------------------------------------------------------
+    rule #abiCallData( FNAME , ARGS ) =>
+        #parseByteStack(substrString(
+            Keccak256(#generateSignature(FNAME +String "(", ARGS)), 0, 8))
+            ++ #encodeArgs(.WordStack | ARGS)
+```
+
+. . .
+
+Here, we generate `callData` for call the `transfer` function:
+
+```
+<callData>
+    #abiCallData("transfer",#address(%ACCOUNT_TO),#uint256(TRANSFER))
+</callData>
+```
+
+Note that `TRANSFER` is a symbolic word,
+
+ERC20: Specifying `transfer`
+----------------------------
+
+. . .
+
+-   Execution reaches a `RETURN` op code
+-   Account balances are updated correctly if balances are sufficient.
+
+```
+   <k> #execute => (RETURN _ _ ~> _) </k>
+   <callData>  #abiCallData("transfer", ...) </callData>
+   <accounts>
+     <account>
+       <storage> (%ACCT_1_BALANCE |-> (B1 => B1 -Int TRANSFER))
+                 (%ACCT_2_BALANCE |-> (B2 => B2 +Int TRANSFER))
+       </storage>
+       ...
+     </account>
+   </accounts>
+
+  requires TRANSFER >Int 0 andBool TRANSFER <Int pow256
+   andBool B1 >=Int 0      andBool B1 <Int pow256
+   andBool B2 >=Int 0      andBool B2 <Int pow256
+   andBool B2 +Int TRANSFER <Int pow256
+   andBool B1 -Int TRANSFER >=Int 0
+   andBool #sizeWordStack(WS) <Int 1017
+```
