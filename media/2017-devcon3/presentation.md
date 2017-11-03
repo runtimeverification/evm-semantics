@@ -484,3 +484,52 @@ ERC20: Specifying `transfer`
    andBool B1 -Int TRANSFER >=Int 0
    andBool #sizeWordStack(WS) <Int 1017
 ```
+
+Other Work
+==========
+
+KEVM
+----
+
+Too much to present here (ask offline).
+
+### Tests
+
+-   Pass all of VMTests (deprecated) and GeneralStateTests.
+-   Almost passing BlockchainTests.
+-   Within an order of magnitude the performance of cpp-ethereum.
+
+### Verification
+
+-   Verified ERC20 specification over (fixed) HKG Token (see Github repository).
+-   Added ABI-level abstractions for easier specification of proofs (in progress).
+
+### High Level Languages (not discussed here)
+
+-   `EVM-PRIME` from IC3 Bootcamp.
+-   Extending with more primitives to give semantics to Viper.
+
+K Framework
+-----------
+
+### Language Independent PL/FM Toolkit
+
+-   Parser/interpreter/debugger/model-checker/verification tools all exist.
+-   Work towards semantics-based compiler (for even better performance).
+
+### Future Directions
+
+-   More analysis tools built on KEVM.
+-   Other blockchain language semantics in progress.
+-   Other (non-blockchain) language/systems/network semantics in progress.
+
+The End
+=======
+
+Acknowledgments
+---------------
+
+-   Formal Systems Lab (FSL) at UIUC for K support: <http://fsl.cs.illinois.edu>
+-   Runtime Verification, Inc. for K support: <http://runtimeverification.com>
+-   IOHK for funding and ideas: <http://iohk.io>
+-   Ethereum Foundation/Devcon3 Teams for hosting: <https://ethereum.org>
