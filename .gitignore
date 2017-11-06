@@ -23,3 +23,5 @@
 /semantics.a
 /semantics.cmxa
 
+# Documentation ignores
+docs/build
