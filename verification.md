@@ -96,6 +96,9 @@ and to keep various constraints down to reasonable sizes.
     rule #getIntBytes(T, 0, B, 0): (R:WordStack) => T %Int (2 ^Int (8 *Int B)): R [anywhere, lemma]
 
 
+    syntax Int ::= #getIntBytes(Int, Int, Int, Int) [function, smtlib(get_int_bytes)]
+
+    rule (X /Int Y) /Int 256 => X /Int (Y *Int 256) [lemma]
 ```
 
     #getIntBytes(T, A, B, S) representes an integer formed by division, mod,

@@ -89,7 +89,10 @@ module TRANSFER-SPEC
            </account>
          </accounts>
 
-      requires (TRANSFER <=Int 0 orBool B1 <Int TRANSFER)
-       andBool #sizeWordStack(WS) <Int 1015
+      requires TRANSFER >=Int 0 andBool TRANSFER <Int pow256
+       andBool B1 >=Int 0      andBool B1 <Int pow256
+       andBool B2 >=Int 0      andBool B2 <Int pow256
+       andBool (B1 <Int TRANSFER orBool TRANSFER ==Int 0)
+       andBool #sizeWordStack(WS) <Int 1017
 endmodule
 

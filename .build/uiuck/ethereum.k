@@ -82,7 +82,7 @@ module ETHEREUM-SIMULATION
     syntax EthereumCommand ::= "flush"
  // ----------------------------------
     rule <k> #end       ~> flush => #finalizeTx(false)               ... </k>
-//    rule <k> #exception ~> flush => #finalizeTx(false) ~> #exception ... </k>
+    rule <k> #exception ~> flush => #finalizeTx(false) ~> #exception ... </k>
 
 
 // -   `startTx` computes the sender of the transaction, and places loadTx on the
@@ -246,7 +246,7 @@ module ETHEREUM-SIMULATION
 
     syntax EthereumCommand ::= "exception" | "failure" String | "success"
  // ---------------------------------------------------------------------
-//    rule <k> #exception ~> exception => . ... </k>
+    rule <k> #exception ~> exception => . ... </k>
     rule <k> success => . ... </k> <exit-code> _ => 0 </exit-code>
     rule failure _ => .
 
@@ -584,7 +584,7 @@ module ETHEREUM-SIMULATION
 
     syntax EthereumCommand ::= "check" JSON
  // ---------------------------------------
-//    rule #exception ~> check J:JSON => check J ~> #exception
+    rule #exception ~> check J:JSON => check J ~> #exception
     rule check DATA : { .JSONList } => . requires DATA =/=String "transactions"
     rule check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST }
       requires REST =/=K .JSONList andBool notBool DATA in (SetItem("callcreates") SetItem("transactions"))

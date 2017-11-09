@@ -97,6 +97,10 @@ module VERIFICATION
     rule #getIntBytes(T, 0, B, 0): (R:WordStack) => T %Int (2 ^Int (8 *Int B)): R [anywhere, lemma]
 
 
+    syntax Int ::= #getIntBytes(Int, Int, Int, Int) [function, smtlib(get_int_bytes)]
+
+    rule (X /Int Y) /Int 256 => X /Int (Y *Int 256) [lemma]
+
 
 
     rule X +Int 0 => X [smt-lemma]
