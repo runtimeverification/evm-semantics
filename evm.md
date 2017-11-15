@@ -1721,6 +1721,9 @@ Precompiled Contracts
     rule #precompiled(3) => RIP160
     rule #precompiled(4) => ID
     rule #precompiled(5) => MODEXP
+    rule #precompiled(6) => ECADD
+    rule #precompiled(7) => ECMUL
+    rule #precompiled(8) => ECPAIRING
 
     syntax Set ::= #precompiledAccounts ( Schedule ) [function]
  // -----------------------------------------------------------
@@ -1729,7 +1732,7 @@ Precompiled Contracts
     rule #precompiledAccounts(HOMESTEAD)      => #precompiledAccounts(FRONTIER)
     rule #precompiledAccounts(EIP150)         => #precompiledAccounts(HOMESTEAD)
     rule #precompiledAccounts(EIP158)         => #precompiledAccounts(EIP150)
-    rule #precompiledAccounts(BYZANTIUM)      => #precompiledAccounts(EIP158) SetItem(5)
+    rule #precompiledAccounts(BYZANTIUM)      => #precompiledAccounts(EIP158) SetItem(5) SetItem(6) SetItem(7) SetItem(8)
     rule #precompiledAccounts(CONSTANTINOPLE) => #precompiledAccounts(BYZANTIUM)
 ```
 
@@ -1784,7 +1787,59 @@ Precompiled Contracts
     rule #modexp2(BASE,    EXPLEN,   MODLEN, DATA) => #modexp3(BASE, #asInteger(DATA [ 0 .. EXPLEN ]), MODLEN, #drop(EXPLEN, DATA))
     rule #modexp3(BASE,    EXPONENT, MODLEN, DATA) => #padToWidth(MODLEN, #modexp4(BASE, EXPONENT, #asInteger(DATA [ 0 .. MODLEN ])))
     rule #modexp4(BASE,    EXPONENT, MODULUS)      => #asByteStack(powmod(BASE, EXPONENT, MODULUS))
+
+    syntax PrecompiledOp ::= "ECADD"
+ // --------------------------------
+    rule <k> ECADD => #ecadd((#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ])), (#asWord(DATA [ 64 .. 32 ]), #asWord(DATA [ 96 .. 32 ]))) ... </k>
+         <callData> DATA </callData>
+
+    syntax InternalOp ::= #ecadd(G1Point, G1Point)
+ // ----------------------------------------------
+    rule #ecadd(P1, P2) => #exception
+      requires notBool isValidPoint(P1) orBool notBool isValidPoint(P2)
+    rule <k> #ecadd(P1, P2) => #end ... </k> <output> _ => #point(BN128Add(P1, P2)) </output>
+      requires isValidPoint(P1) andBool isValidPoint(P2)
+
+    syntax PrecompiledOp ::= "ECMUL"
+ // --------------------------------
+    rule <k> ECMUL => #ecmul((#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ])), #asWord(DATA [ 64 .. 32 ])) ... </k>
+         <callData> DATA </callData>
+
+    syntax InternalOp ::= #ecmul(G1Point, Int)
+ // ------------------------------------------
+    rule #ecmul(P, S) => #exception
+      requires notBool isValidPoint(P)
+    rule <k> #ecmul(P, S) => #end ... </k> <output> _ => #point(BN128Mul(P, S)) </output>
+      requires isValidPoint(P)
+
+    syntax WordStack ::= #point(G1Point) [function]
+ // -----------------------------------------------
+    rule #point((X, Y)) => #padToWidth(32, #asByteStack(X)) ++ #padToWidth(32, #asByteStack(Y))
+
+    syntax PrecompiledOp ::= "ECPAIRING"
+ // ------------------------------------
+    rule <k> ECPAIRING => #ecpairing(.List, .List, 0, DATA, #sizeWordStack(DATA)) ... </k>
+         <callData> DATA </callData>
+      requires #sizeWordStack(DATA) %Int 192 ==Int 0
+    rule <k> ECPAIRING => #exception ... </k>
+         <callData> DATA </callData>
+      requires #sizeWordStack(DATA) %Int 192 =/=Int 0
+
+    syntax InternalOp ::= #ecpairing(List, List, Int, WordStack, Int)
+ // -----------------------------------------------------------------
+    rule (.K => #checkPoint) ~> #ecpairing((.List => ListItem((#asWord(DATA [ I .. 32 ]), #asWord(DATA [ I +Int 32 .. 32 ])))) _, (.List => ListItem((#asWord(DATA [ I +Int 96 .. 32 ]) x #asWord(DATA [ I +Int 64 .. 32 ]) , #asWord(DATA [ I +Int 160 .. 32 ]) x #asWord(DATA [ I +Int 128 .. 32 ])))) _, I => I +Int 192, DATA, LEN)
+      requires I =/=Int LEN
+    rule <k> #ecpairing(A, B, LEN, _, LEN) => #end ... </k>
+         <output> _ => #padToWidth(32, #asByteStack(bool2Word(BN128AtePairing(A, B)))) </output>
+
+    syntax InternalOp ::= "#checkPoint"
+ // -----------------------------------
+    rule (#checkPoint => .) ~> #ecpairing(ListItem(AK::G1Point) _, ListItem(BK::G2Point) _, _, _, _)
+      requires isValidPoint(AK) andBool isValidPoint(BK)
+    rule #checkPoint ~> #ecpairing(ListItem(AK::G1Point) _, ListItem(BK::G2Point) _, _, _, _) => #exception
+      requires notBool isValidPoint(AK) orBool notBool isValidPoint(BK)
 ```
+
 
 Ethereum Gas Calculation
 ========================
@@ -2035,6 +2090,10 @@ Each opcode has an intrinsic gas cost of execution as well (appendix H of the ye
          </k>
          <schedule> SCHED </schedule>
          <callData> DATA </callData>
+
+    rule #gasExec(_, ECADD) => 500
+    rule #gasExec(_, ECMUL) => 40000
+    rule <k> #gasExec(_, ECPAIRING) => 100000 +Int (#sizeWordStack(DATA) /Int 192) *Int 80000 ... </k> <callData> DATA </callData>
 ```
 
 There are several helpers for calculating gas (most of them also specified in the yellowpaper).
