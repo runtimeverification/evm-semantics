@@ -80,6 +80,15 @@ list_all()   { list_$K_VERSION ; }
 list_quick() { list_all | sort -R | head -n 20 ; }
 test_lists="$test_lists rvk uiuck all quick"
 
+list_tests() {
+    local test_list="$1"
+    [[ "$test_lists" != *" $test_list "* ]] \
+        && [[ "$test_lists" != "$test_list "* ]] \
+        && [[ "$test_lists" != *" $test_list" ]] \
+        && die "Test list '$test_list' does not exist."
+    list_"$test_list"
+}
+
 # Runners
 # -------
 
@@ -222,9 +231,9 @@ case "$run_command" in
     prove) ensure_k ; run_proof  "$1" ;;
 
     # Testing
-    list)                list_$1 | filter_tests "${@:2}" ;;
-    tests)    ensure_k ; list_$1 | filter_tests "${@:2}" | run_tests    ;;
-    partests) ensure_k ; list_$1 | filter_tests "${@:2}" | run_partests ;;
+    list)                list_tests $1 | filter_tests "${@:2}" ;;
+    tests)    ensure_k ; list_tests $1 | filter_tests "${@:2}" | run_tests    ;;
+    partests) ensure_k ; list_tests $1 | filter_tests "${@:2}" | run_partests ;;
 
     *)             echo "
     K_VERSION: $K_VERSION
