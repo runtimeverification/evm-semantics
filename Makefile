@@ -102,7 +102,7 @@ tests/%/make.timestamp: tests/ethereum-tests/%.json
 
 tests/ethereum-tests/%.json:
 	@echo "==  git submodule: cloning upstreams test repository"
-	git submodule update --init
+	git submodule update --init -- tests/ethereum-tests
 
 # UIUC K Specific
 # ---------------
