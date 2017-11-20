@@ -1,7 +1,7 @@
 # Common to all versions of K
 # ===========================
 
-.PHONY: all clean build tangle defn split-tests split-bchain-tests split-proof-tests test sphinx
+.PHONY: all clean build defn split-tests split-bchain-tests split-proof-tests test sphinx
 
 all: build split-tests
 
@@ -14,13 +14,11 @@ check_K_VERSION = $(if $(value K_VERSION),, $(error K_VERSION undefined, must be
 K_VERSION_set:
 	@:$(call check_K_VERSION)
 
-build: K_VERSION_set tangle .build/$(K_VERSION)/driver-kompiled/extras/timestamp
+build: K_VERSION_set defn .build/$(K_VERSION)/driver-kompiled/extras/timestamp
 	@:$(call check_K_VERSION)
 
 # Tangle definition from *.md files
 # ---------------------------------
-
-tangle: defn split-proof-tests
 
 defn_dir=.build/$(K_VERSION)
 defn_files=$(defn_dir)/driver.k $(defn_dir)/data.k $(defn_dir)/evm.k $(defn_dir)/analysis.k $(defn_dir)/krypto.k $(defn_dir)/verification.k

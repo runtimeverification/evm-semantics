@@ -246,8 +246,8 @@ case "$run_command" in
        $0 make <target>     Run 'make <target>' with 'K_VERSION' set
 
        Useful <target>:
-       -   tangle: Build the definition/proof files from the markdown files (requires pandoc)
-       -   build:  Kompile the definition (calls tangle target first)
+       -   defn:   Build the K definition files from the markdown files (requires pandoc)
+       -   build:  Kompile the definition (calls defn target first)
        -   sphinx: Build Sphinx HTML documentation from semantics
 
        # Running
