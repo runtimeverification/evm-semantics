@@ -1,7 +1,7 @@
 # Common to all versions of K
 # ===========================
 
-.PHONY: all clean build tangle defn proofs split-tests test sphinx
+.PHONY: all clean build tangle defn proofs split-tests split-bchain-tests test sphinx
 
 all: build split-tests
 
@@ -60,12 +60,12 @@ tests/proofs/bad/hkg-token-buggy-spec.k: proofs/token-buggy-spec.md
 # Tests
 # -----
 
-split-tests: split-vm-tests split-blockchain-tests
+split-tests: split-vm-tests split-bchain-tests
 
 split-vm-tests: \
 		  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/VMTests/*/*.json)) \
 
-split-blockchain-tests: \
+split-bchain-tests: \
 				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)) \
 
 blockchain_tests=$(wildcard tests/BlockchainTests/*/*/*/*.json)
