@@ -67,9 +67,9 @@ filter_tests() {
     esac
 }
 
-list_vm()     { find "tests/VMTests"         -name '*.json' | grep -v 'loop_stacklimit_1021' ; }
-list_bchain() { find "tests/BlockchainTests" -name '*.json' ; }
-list_proof()  { find "tests/proofs"          -name '*-spec.k' -not -path 'tests/proofs/bad/*' ; }
+list_vm()     { run_make split-vm-tests     >&2 ; find "tests/VMTests"         -name '*.json' | grep -v 'loop_stacklimit_1021' ; }
+list_bchain() { run_make split-bchain-tests >&2 ; find "tests/BlockchainTests" -name '*.json' ; }
+list_proof()  { run_make split-proof-tests  >&2 ; find "tests/proofs"          -name '*-spec.k' -not -path 'tests/proofs/bad/*' ; }
 test_lists="vm bchain proof"
 
 list_gas_analysis() { find "tests/gas-analysis" -name '*.evm' ; }
