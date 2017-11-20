@@ -72,11 +72,11 @@ list_bchain() { find "tests/BlockchainTests" -name '*.json' ; }
 test_lists="vm bchain"
 
 list_gas_analysis() { find "tests/gas-analysis" -name '*.evm' ; }
-list_proofs()       { find "tests/proofs"       -name '*-spec.k' -not -path 'tests/proofs/bad/*' ; }
-test_lists="$test_lists gas_analysis proofs"
+list_proof()        { find "tests/proofs"       -name '*-spec.k' -not -path 'tests/proofs/bad/*' ; }
+test_lists="$test_lists gas_analysis proof"
 
 list_rvk()   { list_vm ; }
-list_uiuck() { cat tests/short-list ; list_gas_analysis ; list_proofs ; }
+list_uiuck() { cat tests/short-list ; list_gas_analysis ; list_proof ; }
 list_all()   { list_$K_VERSION ; }
 list_quick() { list_all | sort -R | head -n 20 ; }
 test_lists="$test_lists rvk uiuck all quick"
