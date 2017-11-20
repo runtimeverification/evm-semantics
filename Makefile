@@ -17,8 +17,8 @@ K_VERSION_set:
 build: K_VERSION_set tangle .build/$(K_VERSION)/driver-kompiled/extras/timestamp
 	@:$(call check_K_VERSION)
 
-# Tangle from *.md files
-# ----------------------
+# Tangle definition from *.md files
+# ---------------------------------
 
 tangle: defn split-proof-tests
 
@@ -30,6 +30,60 @@ defn: K_VERSION_set $(defn_files)
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:"$(K_VERSION)" $< > $@
+
+# Tests
+# -----
+
+split-tests: split-vm-tests split-bchain-tests split-proof-tests
+
+tests/ethereum-tests/%.json:
+	@echo "==  git submodule: cloning upstreams test repository"
+	git submodule update --init -- tests/ethereum-tests
+
+tests/%/make.timestamp: tests/ethereum-tests/%.json
+	@echo "==   split: $@"
+	mkdir -p $(dir $@)
+	tests/split-test.py $< $(dir $@)
+	touch $@
+
+blockchain_tests=$(wildcard tests/BlockchainTests/*/*/*/*.json)
+vm_tests=$(wildcard tests/VMTests/*/*/*.json)
+all_tests=$(vm_tests) $(blockchain_tests)
+skipped_tests=$(wildcard tests/VMTests/vmPerformance/*/*.json) \
+   $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Constantinople.json) \
+   $(wildcard tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*/*.json) \
+   $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000*/*.json) \
+   $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000*/*.json) \
+   $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth_d1g0v0/*.json)
+
+passing_tests=$(filter-out $(skipped_tests), $(all_tests))
+passing_vm_tests=$(filter-out $(skipped_tests), $(vm_tests))
+passing_blockchain_tests=$(filter-out $(skipped_tests), $(blockchain_tests))
+passing_targets=$(passing_tests:=.test)
+passing_vm_targets=$(passing_vm_tests:=.test)
+passing_blockchain_targets=$(passing_blockchain_tests:=.test)
+
+test: $(passing_targets)
+vm-test: $(passing_vm_targets)
+blockchain-test: $(passing_blockchain_targets)
+
+# ### VMTests
+
+split-vm-tests: \
+		  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/VMTests/*/*.json))
+
+tests/VMTests/%.test: tests/VMTests/% build
+	./vmtest $<
+
+# ### BlockchainTests
+
+split-bchain-tests: \
+				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json))
+
+tests/BlockchainTests/%.test: tests/BlockchainTests/% build
+	./blockchaintest $<
+
+# ### Proof Tests
 
 proof_dir=tests/proofs
 proof_files=$(proof_dir)/sum-to-n-spec.k \
@@ -56,53 +110,6 @@ tests/proofs/bad/hkg-token-buggy-spec.k: proofs/token-buggy-spec.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:k $< > $@
-
-# Tests
-# -----
-
-split-tests: split-vm-tests split-bchain-tests split-proof-tests
-
-split-vm-tests: \
-		  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/VMTests/*/*.json)) \
-
-split-bchain-tests: \
-				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)) \
-
-blockchain_tests=$(wildcard tests/BlockchainTests/*/*/*/*.json)
-vm_tests=$(wildcard tests/VMTests/*/*/*.json)
-all_tests=$(vm_tests) $(blockchain_tests)
-skipped_tests=$(wildcard tests/VMTests/vmPerformance/*/*.json) \
-   $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Constantinople.json) \
-   $(wildcard tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*/*.json) \
-   $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000*/*.json) \
-   $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000*/*.json) \
-   $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth_d1g0v0/*.json)
-
-passing_tests=$(filter-out $(skipped_tests), $(all_tests))
-passing_vm_tests=$(filter-out $(skipped_tests), $(vm_tests))
-passing_blockchain_tests=$(filter-out $(skipped_tests), $(blockchain_tests))
-passing_targets=$(passing_tests:=.test)
-passing_vm_targets=$(passing_vm_tests:=.test)
-passing_blockchain_targets=$(passing_blockchain_tests:=.test)
-
-test: $(passing_targets)
-vm-test: $(passing_vm_targets)
-blockchain-test: $(passing_blockchain_targets)
-
-tests/VMTests/%.test: tests/VMTests/% build
-	./vmtest $<
-tests/BlockchainTests/%.test: tests/BlockchainTests/% build
-	./blockchaintest $<
-
-tests/%/make.timestamp: tests/ethereum-tests/%.json
-	@echo "==   split: $@"
-	mkdir -p $(dir $@)
-	tests/split-test.py $< $(dir $@)
-	touch $@
-
-tests/ethereum-tests/%.json:
-	@echo "==  git submodule: cloning upstreams test repository"
-	git submodule update --init -- tests/ethereum-tests
 
 # UIUC K Specific
 # ---------------
