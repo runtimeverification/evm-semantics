@@ -69,11 +69,11 @@ filter_tests() {
 
 list_vm()     { find "tests/VMTests"         -name '*.json' | grep -v 'loop_stacklimit_1021' ; }
 list_bchain() { find "tests/BlockchainTests" -name '*.json' ; }
-test_lists="vm bchain"
+list_proof()  { find "tests/proofs"          -name '*-spec.k' -not -path 'tests/proofs/bad/*' ; }
+test_lists="vm bchain proof"
 
 list_gas_analysis() { find "tests/gas-analysis" -name '*.evm' ; }
-list_proof()        { find "tests/proofs"       -name '*-spec.k' -not -path 'tests/proofs/bad/*' ; }
-test_lists="$test_lists gas_analysis proof"
+test_lists="$test_lists gas_analysis"
 
 list_rvk()   { list_vm ; }
 list_uiuck() { cat tests/short-list ; list_gas_analysis ; list_proof ; }
