@@ -67,14 +67,6 @@ use_rvk() {
 # Common
 # ======
 
-with_kserver() {
-    local exit_status=0
-    kserver & sleep 2
-    "$@" || exit_status=$?
-    stop-kserver || true # Fails for some reason :-(
-    return $exit_status
-}
-
 [[ $# -ne 0 ]] || {
     echo >&2 "Usage: $0 [uiuck|rvk|bothk] <cmd>"
     exit 1
@@ -82,10 +74,9 @@ with_kserver() {
 
 which_k="$1"; shift
 case "$which_k" in
-    uiuck) use_uiuck; "$@" ;;
-           # TODO: RVK requires using kserver -- otherwise some of it's scripts
-           # don't set classpath correctly
-    rvk)   use_rvk; with_kserver "$@" ;;
-    bothk) use_rvk; with_kserver "$@"; use_uiuck; "$@" ;;
+    uiuck) use_uiuck ; "$@" ;;
+    rvk)   use_rvk   ; "$@" ;;
+    bothk) use_rvk   ; "$@" ;
+           use_uiuck ; "$@" ;;
     *)     echo >&2 "Unknown K: '$which_k'"; exit 1 ;;
 esac
