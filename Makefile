@@ -34,9 +34,10 @@ defn: K_VERSION_set $(defn_files)
 
 split-tests: vm-tests split-bchain-tests split-proof-tests
 
-tests/ethereum-tests/%.json:
+tests/ethereum-tests/make.timestamp:
 	@echo "==  git submodule: cloning upstreams test repository"
 	git submodule update --init -- tests/ethereum-tests
+	touch $@
 
 tests/%/make.timestamp: tests/ethereum-tests/%.json
 	@echo "==   split: $@"
