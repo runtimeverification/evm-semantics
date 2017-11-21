@@ -8,19 +8,17 @@ uiuck_dir="$base_dir/tests/ci/uiuc-k"
 rvk_dir="$base_dir/tests/ci/rv-k"
 tests_dir="$base_dir/tests/ethereum-tests"
 
+# UIUC-K
+# ======
+
 use_uiuck() {
     git submodule update  --init "$uiuck_dir"
     (cd "$uiuck_dir"; mvn package -q -DskipTests)
     export PATH="$uiuck_dir/k-distribution/target/release/k/bin/:$PATH"
 }
 
-with_kserver() {
-    local exit_status=0
-    kserver & sleep 2
-    "$@" || exit_status=$?
-    stop-kserver || true # Fails for some reason :-(
-    return $exit_status
-}
+# RV-K
+# ====
 
 build_secp256k1() {
     local repo_dir="$base_dir/.build/secp256k1"
@@ -66,8 +64,19 @@ use_rvk() {
     eval $(opam config env)
 }
 
+# Common
+# ======
+
+with_kserver() {
+    local exit_status=0
+    kserver & sleep 2
+    "$@" || exit_status=$?
+    stop-kserver || true # Fails for some reason :-(
+    return $exit_status
+}
+
 [[ $# -ne 0 ]] || {
-    echo >&2 "Usage: $0 [uiuck|rvk|bothk] command args"
+    echo >&2 "Usage: $0 [uiuck|rvk|bothk] <cmd>"
     exit 1
 }
 
