@@ -80,8 +80,6 @@ with_kserver() {
     exit 1
 }
 
-git submodule update  --init "$tests_dir"
-
 which_k="$1"; shift
 case "$which_k" in
     uiuck) use_uiuck; "$@" ;;
