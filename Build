@@ -67,8 +67,8 @@ filter_tests() {
     esac
 }
 
-list_bchain() { run_make split-bchain-tests >&2 ; find "tests/BlockchainTests" -name '*.json' ; }
-list_proof()  { run_make split-proof-tests  >&2 ; find "tests/proofs"          -name '*-spec.k' -not -path 'tests/proofs/bad/*' ; }
+list_bchain() { run_make split-bchain-tests >&2 ; find "tests/BlockchainTests" -name '*.json'   ; }
+list_proof()  { run_make split-proof-tests  >&2 ; find "tests/proofs"          -name '*-spec.k' ; }
 test_lists="bchain proof"
 
 list_vm()           { run_make vm-tests                    >&2 ; find "tests/ethereum-tests/VMTests" -name "*.json" ; }
