@@ -15,6 +15,7 @@ use_uiuck() {
     git submodule update  --init "$uiuck_dir"
     (cd "$uiuck_dir"; mvn package -q -DskipTests)
     export PATH="$uiuck_dir/k-distribution/target/release/k/bin/:$PATH"
+    export K_VERSION=uiuck
 }
 
 # RV-K
@@ -62,6 +63,7 @@ use_rvk() {
     # TODO: some of RV's K's scripts don't set classpath correctly, and
     # kserver must be used.
     eval $(opam config env)
+    export K_VERSION=rvk
 }
 
 # Common
