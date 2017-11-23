@@ -348,7 +348,7 @@ This stack also serves as a cons-list, so we provide some standard cons-list man
     rule #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
     rule #take(N, (W : WS))   => W : #take(N -Int 1, WS)         requires N >Int 0
 
-    syntax WordStack ::= #drop ( Int , WordStack ) [function]
+    syntax WordStack ::= #drop ( Int , WordStack ) [function, smtlib(drop)]
  // ---------------------------------------------------------
     rule #drop(0, WS)         => WS
     rule #drop(N, .WordStack) => .WordStack

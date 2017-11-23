@@ -529,12 +529,12 @@ module APPROVE-SPEC
                      %ACCT_1_BALANCE |-> B1:Int
                      %ACCT_1_ALLOWED |-> A1:Int
                      %ACCT_2_BALANCE |-> B2:Int
-                     %ACCT_2_ALLOWED |-> (_ => A2)
+                     %ACCT_2_ALLOWED |-> (ORIGINAL => A2)
                      ...
            </storage>
            </account>
          </accounts>
-         requires (A2 <Int pow256) andBool (A2 >=Int 0)
+         requires (A2 <Int pow256) andBool (A2 >Int 0) andBool ORIGINAL >Int 0
 
 endmodule
 ```
