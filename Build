@@ -44,12 +44,14 @@ lint_krun_uiuck() {
 lint_krun_rvk() { cat - ; }
 
 ensure_k() {
-    type kompile >/dev/null || die 'No K install found.'
-    if krun --version | grep 'RV' >/dev/null 2>&1 ; then
-        K_VERSION=rvk
-    else
-        K_VERSION=uiuck
-    fi
+    k_path="k-distribution/target/release/k/bin"
+    case "${K_VERSION:-}" in
+        uiuck)  k_path="uiuc-k/$k_path" ;;
+        rvk)    k_path="rv-k/$k_path"   ;;
+        *)      die "Bad K_VERSION: '${K_VERSION:-}'. Should be one of 'uiuck' or 'rvk'." ;;
+    esac
+    export PATH="$(pwd)/tests/ci/$k_path:$PATH"
+    type kompile >/dev/null || die "No K install found on PATH=$PATH."
     progress "Using $K_VERSION"
 }
 
