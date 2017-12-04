@@ -711,21 +711,16 @@ Here we check the other post-conditions associated with an EVM test.
 
     rule check TESTID : { "transactions" : TRANSACTIONS } => check "transactions" : TRANSACTIONS ~> failure TESTID
  // --------------------------------------------------------------------------------------------------------------
-    rule <k> check "transactions" : [ .JSONList ] => . ... </k> <txOrder> .List </txOrder>
-    rule check "transactions" : [ TRANSACTION , REST ] => check "transactions" : TRANSACTION ~> check "transactions" : [ REST ]
-    rule check "transactions" : { KEY : VALUE , REST } => check "transactions" : (KEY : VALUE) ~> check "transactions" : { REST }
+    rule <k> check "transactions" : [ .JSONList ] => . ... </k> <txOrder> .List                    </txOrder>
     rule <k> check "transactions" : { .JSONList } => . ... </k> <txOrder> ListItem(_) => .List ... </txOrder>
 
-    rule check "transactions" : (KEY : (VALUE:String => #parseByteStack(VALUE)))
+    rule <k> check "transactions" : [ TRANSACTION , REST ] => check "transactions" : TRANSACTION   ~> check "transactions" : [ REST ] ... </k>
+    rule <k> check "transactions" : { KEY : VALUE , REST } => check "transactions" : (KEY : VALUE) ~> check "transactions" : { REST } ... </k>
 
-    rule check "transactions" : (KEY : (VALUE:WordStack => #padToWidth(32, VALUE))) requires (KEY ==String "r" orBool KEY ==String "s") andBool #sizeWordStack(VALUE) <Int 32
-
-    rule check "transactions" : ("to" : (VALUE:WordStack => #asAccount(VALUE)))
-
-    rule check "transactions" : (KEY : (VALUE:WordStack => #asWord(VALUE)))
-      requires KEY in ( SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce")
-                        SetItem("v") SetItem("value")
-                      )
+    rule <k> check "transactions" : (KEY  : (VALUE:String    => #parseByteStack(VALUE))) ... </k>
+    rule <k> check "transactions" : ("to" : (VALUE:WordStack => #asAccount(VALUE)))      ... </k>
+    rule <k> check "transactions" : (KEY  : (VALUE:WordStack => #padToWidth(32, VALUE))) ... </k> requires KEY in (SetItem("r") SetItem("s")) andBool #sizeWordStack(VALUE) <Int 32
+    rule <k> check "transactions" : (KEY  : (VALUE:WordStack => #asWord(VALUE)))         ... </k> requires KEY in (SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce") SetItem("v") SetItem("value"))
 
     rule <k> check "transactions" : ("data"     : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <data>       VALUE </data>       ... </message>
     rule <k> check "transactions" : ("gasLimit" : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasLimit> VALUE </txGasLimit> ... </message>
