@@ -34,11 +34,13 @@ let hook_ecdsaRecover c lbl sort config ff = match c with
   (try
     let v = Z.to_int v in
     if v < 27 || v > 28 then [String ""] else
-    let signature = Secp256k1.RecoverableSign.of_compact_exn context signatureBuffer (v - 27) in
+    let signature = Secp256k1.RecoverableSign.of_compact_exn context (v - 27) signatureBuffer in
     if String.length hash <> 32 then [String ""] else
     let messageArray = Array.init 32 (fun idx -> hash.[idx]) in
     let messageBuffer = Bigarray.Array1.of_array Bigarray.char Bigarray.c_layout messageArray in
-    let publicKey = Secp256k1.RecoverableSign.recover context signature messageBuffer in
+    let publicKey = match Secp256k1.RecoverableSign.recover context signature messageBuffer with
+        Some k -> k
+      | None -> failwith "key recovery failed" in
     let publicBuffer = Secp256k1.Public.to_bytes ~compress:false context publicKey in
     if Bigarray.Array1.dim publicBuffer <> 65 then failwith "invalid public key length" else
     let publicStr = String.init 64 (fun idx -> Bigarray.Array1.get publicBuffer (idx + 1)) in
