@@ -50,7 +50,7 @@ module EVM-DATA
 // -   `chop` interperets an integers modulo $2^256$.
 
 
-    syntax Int ::= chop ( Int ) [function]
+    syntax Int ::= chop ( Int ) [function, concrete]
  // --------------------------------------
     rule chop ( I:Int ) => I %Int pow256 requires I <Int 0  orBool I >=Int pow256
     rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256
@@ -305,7 +305,7 @@ module EVM-DATA
 // -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 
-    syntax Int ::= keccak ( WordStack ) [function]
+    syntax Int ::= keccak ( WordStack ) [function] // [concrete]
  // ----------------------------------------------
     rule keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS)))
 
@@ -415,7 +415,7 @@ module EVM-DATA
 //     word is a byte wide.
 
 
-    syntax Int ::= #asWord ( WordStack ) [function, smtlib(asWord)]
+    syntax Int ::= #asWord ( WordStack ) [function, smtlib(asWord)] // [concrete]
  // ---------------------------------------------------------------
     rule #asWord( .WordStack )    => 0
     rule #asWord( W : .WordStack) => W

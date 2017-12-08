@@ -49,7 +49,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `chop` interperets an integers modulo $2^256$.
 
 ```{.k .uiuck .rvk}
-    syntax Int ::= chop ( Int ) [function]
+    syntax Int ::= chop ( Int ) [function, concrete]
  // --------------------------------------
     rule chop ( I:Int ) => I %Int pow256 requires I <Int 0  orBool I >=Int pow256
     rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256
@@ -306,7 +306,7 @@ Bitwise logical operators are lifted from the integer versions.
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 ```{.k .uiuck .rvk}
-    syntax Int ::= keccak ( WordStack ) [function]
+    syntax Int ::= keccak ( WordStack ) [function] // [concrete]
  // ----------------------------------------------
     rule keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS)))
 ```
@@ -411,7 +411,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 -   `#asByteStack` will split a single word up into a `WordStack` where each word is a byte wide.
 
 ```{.k .uiuck .rvk}
-    syntax Int ::= #asWord ( WordStack ) [function, smtlib(asWord)]
+    syntax Int ::= #asWord ( WordStack ) [function, smtlib(asWord)] // [concrete]
  // ---------------------------------------------------------------
     rule #asWord( .WordStack )    => 0
     rule #asWord( W : .WordStack) => W

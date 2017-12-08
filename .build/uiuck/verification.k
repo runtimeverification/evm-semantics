@@ -83,5 +83,22 @@ module VERIFICATION
     rule %HKG_Program => #asMapOpCodes(#dasmOpCodes(%HKG_ProgramBytes, DEFAULT))
     rule %HKG_Program_buggy => #asMapOpCodes(#dasmOpCodes(%HKG_ProgramBytes_buggy, DEFAULT))
 
+  syntax Int ::= nthbyteof(Int, Int, Int) [smtlib(smt_nthbyteof)]
+  syntax Int ::= hash(Int) [smtlib(smt_hash)]
+  syntax KItem ::= "$asWord" "(" WordStack ")"
+  syntax KItem ::= "$keccak" "(" WordStack ")"
+
+  syntax WordStack ::= int2wordstack(Int, Int) [function]
+                     | int2wordstackaux(Int, Int, Int, WordStack) [function]
+  rule int2wordstack(X, N) => int2wordstackaux(X, N -Int 1, N, .WordStack)
+  rule int2wordstackaux(X, I, N, WS) => int2wordstackaux(X, I -Int 1, N, nthbyteof(X, I, N) : WS) when I >Int 0
+  rule int2wordstackaux(X, 0, N, WS) => nthbyteof(X, 0, N) : WS
+
+  syntax Map ::= int2wordmap(Int, Int, Int) [function]
+               | int2wordmapaux(Int, Int, Int, Int, Map) [function]
+  rule int2wordmap(L, V, N) => int2wordmapaux(L, V, 1, N, L |-> nthbyteof(V, 0, N))
+  rule int2wordmapaux(L, V, I, N, M) => int2wordmapaux(L, V, I +Int 1, N, M (L +Int I) |-> nthbyteof(V, I, N)) when I <Int N
+  rule int2wordmapaux(L, V, N, N, M) => M
+
 endmodule
 
