@@ -80,9 +80,9 @@ These helper constants make writing the proof claims simpler/cleaner.
     rule %HKG_Program => #asMapOpCodes(#dasmOpCodes(%HKG_ProgramBytes, DEFAULT))
     rule %HKG_Program_buggy => #asMapOpCodes(#dasmOpCodes(%HKG_ProgramBytes_buggy, DEFAULT))
 
-  syntax Int ::= nthbyteof(Int, Int, Int) [smtlib(smt_nthbyteof)]
+  syntax Int ::= nthbyteof(Int, Int, Int) [function, smtlib(smt_nthbyteof)]
   syntax Int ::= hash(Int) [smtlib(smt_hash)]
-  syntax KItem ::= "$asWord" "(" WordStack ")"
+//syntax KItem ::= "$asWord" "(" WordStack ")"
   syntax KItem ::= "$keccak" "(" WordStack ")"
 
   syntax WordStack ::= int2wordstack(Int, Int) [function]
@@ -96,6 +96,120 @@ These helper constants make writing the proof claims simpler/cleaner.
   rule int2wordmap(L, V, N) => int2wordmapaux(L, V, 1, N, L |-> nthbyteof(V, 0, N))
   rule int2wordmapaux(L, V, I, N, M) => int2wordmapaux(L, V, I +Int 1, N, M (L +Int I) |-> nthbyteof(V, I, N)) when I <Int N
   rule int2wordmapaux(L, V, N, N, M) => M
+
+
+//rule #asWord(#padToWidth(32, int2wordstack(V, 4))) => V
+//     requires 0 <=Int V andBool V <Int (2 ^Int 32)
+
+
+  rule #asWord( 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : 0
+              : nthbyteof(V, 0, 4)
+              : nthbyteof(V, 1, 4)
+              : nthbyteof(V, 2, 4)
+              : nthbyteof(V, 3, 4)
+              : .WordStack ) => V
+    requires 0 <=Int V andBool V <Int (2 ^Int 32)
+
+  rule #asWord( nthbyteof(V,  0, 32)
+              : nthbyteof(V,  1, 32)
+              : nthbyteof(V,  2, 32)
+              : nthbyteof(V,  3, 32)
+              : nthbyteof(V,  4, 32)
+              : nthbyteof(V,  5, 32)
+              : nthbyteof(V,  6, 32)
+              : nthbyteof(V,  7, 32)
+              : nthbyteof(V,  8, 32)
+              : nthbyteof(V,  9, 32)
+              : nthbyteof(V, 10, 32)
+              : nthbyteof(V, 11, 32)
+              : nthbyteof(V, 12, 32)
+              : nthbyteof(V, 13, 32)
+              : nthbyteof(V, 14, 32)
+              : nthbyteof(V, 15, 32)
+              : nthbyteof(V, 16, 32)
+              : nthbyteof(V, 17, 32)
+              : nthbyteof(V, 18, 32)
+              : nthbyteof(V, 19, 32)
+              : nthbyteof(V, 20, 32)
+              : nthbyteof(V, 21, 32)
+              : nthbyteof(V, 22, 32)
+              : nthbyteof(V, 23, 32)
+              : nthbyteof(V, 24, 32)
+              : nthbyteof(V, 25, 32)
+              : nthbyteof(V, 26, 32)
+              : nthbyteof(V, 27, 32)
+              : nthbyteof(V, 28, 32)
+              : nthbyteof(V, 29, 32)
+              : nthbyteof(V, 30, 32)
+              : nthbyteof(V, 31, 32)
+              : .WordStack ) => V
+    requires 0 <=Int V andBool V <Int (2 ^Int 256)
+
+  rule #asByteStack(V)
+      => nthbyteof(V,  0, 32)
+       : nthbyteof(V,  1, 32)
+       : nthbyteof(V,  2, 32)
+       : nthbyteof(V,  3, 32)
+       : nthbyteof(V,  4, 32)
+       : nthbyteof(V,  5, 32)
+       : nthbyteof(V,  6, 32)
+       : nthbyteof(V,  7, 32)
+       : nthbyteof(V,  8, 32)
+       : nthbyteof(V,  9, 32)
+       : nthbyteof(V, 10, 32)
+       : nthbyteof(V, 11, 32)
+       : nthbyteof(V, 12, 32)
+       : nthbyteof(V, 13, 32)
+       : nthbyteof(V, 14, 32)
+       : nthbyteof(V, 15, 32)
+       : nthbyteof(V, 16, 32)
+       : nthbyteof(V, 17, 32)
+       : nthbyteof(V, 18, 32)
+       : nthbyteof(V, 19, 32)
+       : nthbyteof(V, 20, 32)
+       : nthbyteof(V, 21, 32)
+       : nthbyteof(V, 22, 32)
+       : nthbyteof(V, 23, 32)
+       : nthbyteof(V, 24, 32)
+       : nthbyteof(V, 25, 32)
+       : nthbyteof(V, 26, 32)
+       : nthbyteof(V, 27, 32)
+       : nthbyteof(V, 28, 32)
+       : nthbyteof(V, 29, 32)
+       : nthbyteof(V, 30, 32)
+       : nthbyteof(V, 31, 32)
+       : .WordStack
+    requires 0 <=Int V andBool V <Int (2 ^Int 256)
+
+  syntax Int ::= sha3(Int) [function]
+  rule sha3(V) => keccak(#padToWidth(32, #asByteStack(V)))
 
 endmodule
 ```

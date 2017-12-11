@@ -49,10 +49,10 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `chop` interperets an integers modulo $2^256$.
 
 ```{.k .uiuck .rvk}
-    syntax Int ::= chop ( Int ) [function, concrete]
+    syntax Int ::= chop ( Int ) [function]
  // --------------------------------------
-    rule chop ( I:Int ) => I %Int pow256 requires I <Int 0  orBool I >=Int pow256
-    rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256
+    rule chop ( I:Int ) => I %Int pow256 requires I <Int 0  orBool I >=Int pow256 [concrete]
+    rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256 [concrete]
 ```
 
 -   `bool2Word` interperets a `Bool` as a `Int`.
@@ -306,9 +306,9 @@ Bitwise logical operators are lifted from the integer versions.
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 ```{.k .uiuck .rvk}
-    syntax Int ::= keccak ( WordStack ) [function] // [concrete]
+    syntax Int ::= keccak ( WordStack ) [function]
  // ----------------------------------------------
-    rule keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS)))
+    rule keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS))) [concrete]
 ```
 
 Data Structures
@@ -411,11 +411,11 @@ The local memory of execution is a byte-array (instead of a word-array).
 -   `#asByteStack` will split a single word up into a `WordStack` where each word is a byte wide.
 
 ```{.k .uiuck .rvk}
-    syntax Int ::= #asWord ( WordStack ) [function, smtlib(asWord)] // [concrete]
+    syntax Int ::= #asWord ( WordStack ) [function, smtlib(asWord)]
  // ---------------------------------------------------------------
     rule #asWord( .WordStack )    => 0
     rule #asWord( W : .WordStack) => W
-    rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
+    rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS) [concrete]
 
     syntax Account ::= #asAccount ( WordStack ) [function]
  // ------------------------------------------------------
@@ -425,9 +425,9 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax WordStack ::= #asByteStack ( Int )             [function]
                        | #asByteStack ( Int , WordStack ) [function, klabel(#asByteStackAux), smtlib(asByteStack)]
  // --------------------------------------------------------------------------------------------------------------
-    rule #asByteStack( W ) => #asByteStack( W , .WordStack )
+    rule #asByteStack( W ) => #asByteStack( W , .WordStack ) [concrete]
     rule #asByteStack( 0 , WS ) => WS
-    rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0
+    rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0 [concrete]
 ```
 
 Addresses
