@@ -79,10 +79,11 @@ module TRANSFER-FROM-SPEC
           <callValue> 0 </callValue>
           <wordStack> .WordStack => _ </wordStack>
           <localMem> // TODO: auto gen
-            28 |-> nthbyteof(F, 0, 4)
-            29 |-> nthbyteof(F, 1, 4)
-            30 |-> nthbyteof(F, 2, 4)
-            31 |-> nthbyteof(F, 3, 4)
+//          28 |-> nthbyteof(F, 0, 4)
+//          29 |-> nthbyteof(F, 1, 4)
+//          30 |-> nthbyteof(F, 2, 4)
+//          31 |-> nthbyteof(F, 3, 4)
+            .Map
           =>
           (
             int2wordmap(R, B, 32)
@@ -121,7 +122,7 @@ module TRANSFER-FROM-SPEC
             _:Map
           )
           </localMem>
-          <pc> 6 => _ </pc> // TODO: auto gen
+          <pc> 0 /* 6 */ => _ </pc> // TODO: auto gen
           <gas> /* G */ 20000 => _ </gas>
           <previousGas> _ => _ </previousGas>
         </txExecState>

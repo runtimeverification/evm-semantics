@@ -208,8 +208,20 @@ These helper constants make writing the proof claims simpler/cleaner.
        : .WordStack
     requires 0 <=Int V andBool V <Int (2 ^Int 256)
 
+  rule #asByteStack(#asWord(WS)) => WS
+    requires noOverflow(WS)
+
   syntax Int ::= sha3(Int) [function]
   rule sha3(V) => keccak(#padToWidth(32, #asByteStack(V)))
+
+  rule 0 <=Int nthbyteof(V, I, N)          => true
+  rule         nthbyteof(V, I, N) <Int 256 => true
+
+  syntax Bool ::= noOverflow(WordStack)    [function]
+                | noOverflowAux(WordStack) [function]
+  rule noOverflow(WS) => #sizeWordStack(WS) <=Int 32 andBool noOverflowAux(WS)
+  rule noOverflowAux(W : WS) => 0 <=Int W andBool W <Int 256 andBool noOverflowAux(WS)
+  rule noOverflowAux(.WordStack) => true
 
 endmodule
 ```
