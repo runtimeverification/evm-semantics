@@ -50,14 +50,27 @@ module APPROVE-SPEC
             _:Map
           </localMem>
           <pc> 0 => _ </pc>
-          <gas> /* G */ 20000 => _ </gas> // NOTE: user provided
+          <gas> /* G */ 100000 => _ </gas> // NOTE: user provided
           <previousGas> _ => _ </previousGas>
         </txExecState>
 
         <substate>
           <selfDestruct> /* _ */ .Set </selfDestruct>
-          <log> /* _ */ .List </log>
-          <refund> /* _ */ 0 </refund>
+          <log>
+          (
+            .List
+          =>
+            ListItem({ ACCT_ID
+                     | /* TODO: hash("Approval(address,address,num256)") */ 63486140976153616755203102783360879283472101686154884697241723088393386309925
+                     : CALLER_ID
+                     : SPENDER
+                     : .WordStack
+                     | int2wordstack(VALUE, 32)
+                     })
+          )
+            /* _ */
+          </log>
+          <refund> /* _ */ 0 => _ </refund> // TODO: more detail
         </substate>
 
         <gasPrice> _ </gasPrice>
@@ -84,11 +97,11 @@ module APPROVE-SPEC
       </evm>
 
       <network>
-        <activeAccounts> CALLER_ID |-> false /* _ */ </activeAccounts>
+        <activeAccounts> ACCT_ID |-> false /* _ */ </activeAccounts>
 
         <accounts>
           <account>
-            <acctID> CALLER_ID </acctID>
+            <acctID> ACCT_ID </acctID>
             <balance> _ </balance>
             <code>
               #parseByteStack(
@@ -96,7 +109,7 @@ module APPROVE-SPEC
               )
             </code>
             <storage>
-              sha3(sha3(1) +Word CALLER_ID) +Word SPENDER |-> (_ => VALUE) // TODO: auto gen
+              sha3(sha3(1) +Word CALLER_ID) +Word SPENDER |-> (_:Int => VALUE) // TODO: auto gen
               _:Map
             </storage>
             <nonce> _ </nonce>
@@ -116,6 +129,6 @@ module APPROVE-SPEC
      andBool 0 <=Int SPENDER   andBool SPENDER   <Int (2 ^Int 160)
      andBool 0 <=Int VALUE     andBool VALUE     <Int (2 ^Int 256)
      andBool RET_VAL ==Int 1
-   //andBool G >Int 20000
+   //andBool G >Int 100000
 
 endmodule
