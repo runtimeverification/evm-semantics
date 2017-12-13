@@ -80,6 +80,11 @@ These helper constants make writing the proof claims simpler/cleaner.
     rule %HKG_Program => #asMapOpCodes(#dasmOpCodes(%HKG_ProgramBytes, DEFAULT))
     rule %HKG_Program_buggy => #asMapOpCodes(#dasmOpCodes(%HKG_ProgramBytes_buggy, DEFAULT))
 
+
+///////////////
+// Viper
+///////////////
+
   syntax Int ::= nthbyteof(Int, Int, Int) [function, smtlib(smt_nthbyteof)]
   syntax Int ::= hash(Int) [smtlib(smt_hash)]
 //syntax KItem ::= "$asWord" "(" WordStack ")"
@@ -104,40 +109,40 @@ These helper constants make writing the proof claims simpler/cleaner.
 //     requires 0 <=Int V andBool V <Int (2 ^Int 32)
 
 
-  rule #asWord( 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : 0
-              : nthbyteof(V, 0, 4)
-              : nthbyteof(V, 1, 4)
-              : nthbyteof(V, 2, 4)
-              : nthbyteof(V, 3, 4)
-              : .WordStack ) => V
-    requires 0 <=Int V andBool V <Int (2 ^Int 32)
+//rule #asWord( 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : 0
+//            : nthbyteof(V, 0, 4)
+//            : nthbyteof(V, 1, 4)
+//            : nthbyteof(V, 2, 4)
+//            : nthbyteof(V, 3, 4)
+//            : .WordStack ) => V
+//  requires 0 <=Int V andBool V <Int (2 ^Int 32)
 
   rule #asWord( nthbyteof(V,  0, 32)
               : nthbyteof(V,  1, 32)
