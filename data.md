@@ -335,7 +335,7 @@ This stack also serves as a cons-list, so we provide some standard cons-list man
 -   `WS [ N .. W ]` access the range of `WS` beginning with `N` of width `W`.
 
 ```{.k .uiuck .rvk}
-    syntax WordStack ::= WordStack "++" WordStack [function]
+    syntax WordStack ::= WordStack "++" WordStack [function, right]
  // --------------------------------------------------------
     rule .WordStack ++ WS' => WS'
     rule (W : WS)   ++ WS' => W : (WS ++ WS')
