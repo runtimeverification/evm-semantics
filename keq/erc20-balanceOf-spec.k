@@ -1,4 +1,4 @@
-module TRANSFER-FROM-SPEC
+module BALANCEOF-SPEC
   imports ETHEREUM-SIMULATION
 
   rule

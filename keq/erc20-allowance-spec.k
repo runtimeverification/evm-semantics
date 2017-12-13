@@ -1,4 +1,4 @@
-module TRANSFER-FROM-SPEC
+module ALLOWANCE-SPEC
   imports ETHEREUM-SIMULATION
 
   rule
