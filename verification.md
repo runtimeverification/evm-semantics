@@ -14,15 +14,15 @@ module VERIFICATION
 This `smt-lemma` helps Z3 reason about stack over/under flow.
 
 ```{.k .uiuck}
-    rule #sizeWordStack ( _ , _ ) >=Int 0 => true [smt-lemma]
-    rule #sizeWordStack ( WS , N:Int )
-      => #sizeWordStack ( WS , 0 ) +Int N
-      requires N =/=K 0
-      [lemma]
+//  rule #sizeWordStack ( _ , _ ) >=Int 0 => true [smt-lemma]
+//  rule #sizeWordStack ( WS , N:Int )
+//    => #sizeWordStack ( WS , 0 ) +Int N
+//    requires N =/=K 0
+//    [lemma]
 
-    rule (X -Int A) -Int B    => X -Int (A +Int B)    [smt-lemma]
-    rule ((X -Int A) >=Int B) => (X >=Int (A +Int B)) [smt-lemma]
-    rule (N +Int X <Int M)    => X <Int (M -Int N)    [smt-lemma]
+//  rule (X -Int A) -Int B    => X -Int (A +Int B)    [smt-lemma]
+//  rule ((X -Int A) >=Int B) => (X >=Int (A +Int B)) [smt-lemma]
+//  rule (N +Int X <Int M)    => X <Int (M -Int N)    [smt-lemma]
 ```
 
 Sum to N
@@ -214,8 +214,46 @@ These helper constants make writing the proof claims simpler/cleaner.
   syntax Int ::= sha3(Int) [function]
   rule sha3(V) => keccak(#padToWidth(32, #asByteStack(V)))
 
+  rule keccak( nthbyteof(V,  0, 32)
+             : nthbyteof(V,  1, 32)
+             : nthbyteof(V,  2, 32)
+             : nthbyteof(V,  3, 32)
+             : nthbyteof(V,  4, 32)
+             : nthbyteof(V,  5, 32)
+             : nthbyteof(V,  6, 32)
+             : nthbyteof(V,  7, 32)
+             : nthbyteof(V,  8, 32)
+             : nthbyteof(V,  9, 32)
+             : nthbyteof(V, 10, 32)
+             : nthbyteof(V, 11, 32)
+             : nthbyteof(V, 12, 32)
+             : nthbyteof(V, 13, 32)
+             : nthbyteof(V, 14, 32)
+             : nthbyteof(V, 15, 32)
+             : nthbyteof(V, 16, 32)
+             : nthbyteof(V, 17, 32)
+             : nthbyteof(V, 18, 32)
+             : nthbyteof(V, 19, 32)
+             : nthbyteof(V, 20, 32)
+             : nthbyteof(V, 21, 32)
+             : nthbyteof(V, 22, 32)
+             : nthbyteof(V, 23, 32)
+             : nthbyteof(V, 24, 32)
+             : nthbyteof(V, 25, 32)
+             : nthbyteof(V, 26, 32)
+             : nthbyteof(V, 27, 32)
+             : nthbyteof(V, 28, 32)
+             : nthbyteof(V, 29, 32)
+             : nthbyteof(V, 30, 32)
+             : nthbyteof(V, 31, 32)
+             : .WordStack ) => hash(V)
+    requires 0 <=Int V andBool V <Int (2 ^Int 256)
+
   rule 0 <=Int nthbyteof(V, I, N)          => true
   rule         nthbyteof(V, I, N) <Int 256 => true
+
+  rule 0 <=Int chop(V) => true
+  rule         chop(V) <Int /* 2 ^Int 256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936 => true
 
   syntax Bool ::= noOverflow(WordStack)    [function]
                 | noOverflowAux(WordStack) [function]
