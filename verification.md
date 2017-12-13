@@ -97,6 +97,8 @@ These helper constants make writing the proof claims simpler/cleaner.
   rule int2wordmapaux(L, V, I, N, M) => int2wordmapaux(L, V, I +Int 1, N, M (L +Int I) |-> nthbyteof(V, I, N)) when I <Int N
   rule int2wordmapaux(L, V, N, N, M) => M
 
+  rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
+  rule nthbyteof(V, I, N) =>           V %Int 256               when N ==Int (I +Int 1) [concrete]
 
 //rule #asWord(#padToWidth(32, int2wordstack(V, 4))) => V
 //     requires 0 <=Int V andBool V <Int (2 ^Int 32)
