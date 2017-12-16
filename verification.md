@@ -86,63 +86,21 @@ These helper constants make writing the proof claims simpler/cleaner.
 ///////////////
 
   syntax Int ::= nthbyteof(Int, Int, Int) [function, smtlib(smt_nthbyteof)]
-  syntax Int ::= hash(Int) [smtlib(smt_hash)]
-//syntax KItem ::= "$asWord" "(" WordStack ")"
-  syntax KItem ::= "$keccak" "(" WordStack ")"
+
+  rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
+  rule nthbyteof(V, I, N) =>           V %Int 256               when N ==Int (I +Int 1) [concrete]
+
+  rule 0 <=Int nthbyteof(V, I, N)          => true
+  rule         nthbyteof(V, I, N) <Int 256 => true
+
+  rule 0 <=Int chop(V)                     => true
+  rule         chop(V) <Int /* 2 ^Int 256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936 => true
 
   syntax WordStack ::= int2wordstack(Int, Int) [function]
                      | int2wordstackaux(Int, Int, Int, WordStack) [function]
   rule int2wordstack(X, N) => int2wordstackaux(X, N -Int 1, N, .WordStack)
   rule int2wordstackaux(X, I, N, WS) => int2wordstackaux(X, I -Int 1, N, nthbyteof(X, I, N) : WS) when I >Int 0
   rule int2wordstackaux(X, 0, N, WS) => nthbyteof(X, 0, N) : WS
-
-  syntax Map ::= int2wordmap(Int, Int, Int) [function]
-               | int2wordmapaux(Int, Int, Int, Int, Map) [function]
-  rule int2wordmap(L, V, N) => int2wordmapaux(L, V, 1, N, L |-> nthbyteof(V, 0, N))
-  rule int2wordmapaux(L, V, I, N, M) => int2wordmapaux(L, V, I +Int 1, N, M (L +Int I) |-> nthbyteof(V, I, N)) when I <Int N
-  rule int2wordmapaux(L, V, N, N, M) => M
-
-  rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
-  rule nthbyteof(V, I, N) =>           V %Int 256               when N ==Int (I +Int 1) [concrete]
-
-//rule #asWord(#padToWidth(32, int2wordstack(V, 4))) => V
-//     requires 0 <=Int V andBool V <Int (2 ^Int 32)
-
-
-//rule #asWord( 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : 0
-//            : nthbyteof(V, 0, 4)
-//            : nthbyteof(V, 1, 4)
-//            : nthbyteof(V, 2, 4)
-//            : nthbyteof(V, 3, 4)
-//            : .WordStack ) => V
-//  requires 0 <=Int V andBool V <Int (2 ^Int 32)
 
   rule #asWord( nthbyteof(V,  0, 32)
               : nthbyteof(V,  1, 32)
@@ -179,44 +137,21 @@ These helper constants make writing the proof claims simpler/cleaner.
               : .WordStack ) => V
     requires 0 <=Int V andBool V <Int (2 ^Int 256)
 
-  rule #asByteStack(V)
-      => nthbyteof(V,  0, 32)
-       : nthbyteof(V,  1, 32)
-       : nthbyteof(V,  2, 32)
-       : nthbyteof(V,  3, 32)
-       : nthbyteof(V,  4, 32)
-       : nthbyteof(V,  5, 32)
-       : nthbyteof(V,  6, 32)
-       : nthbyteof(V,  7, 32)
-       : nthbyteof(V,  8, 32)
-       : nthbyteof(V,  9, 32)
-       : nthbyteof(V, 10, 32)
-       : nthbyteof(V, 11, 32)
-       : nthbyteof(V, 12, 32)
-       : nthbyteof(V, 13, 32)
-       : nthbyteof(V, 14, 32)
-       : nthbyteof(V, 15, 32)
-       : nthbyteof(V, 16, 32)
-       : nthbyteof(V, 17, 32)
-       : nthbyteof(V, 18, 32)
-       : nthbyteof(V, 19, 32)
-       : nthbyteof(V, 20, 32)
-       : nthbyteof(V, 21, 32)
-       : nthbyteof(V, 22, 32)
-       : nthbyteof(V, 23, 32)
-       : nthbyteof(V, 24, 32)
-       : nthbyteof(V, 25, 32)
-       : nthbyteof(V, 26, 32)
-       : nthbyteof(V, 27, 32)
-       : nthbyteof(V, 28, 32)
-       : nthbyteof(V, 29, 32)
-       : nthbyteof(V, 30, 32)
-       : nthbyteof(V, 31, 32)
-       : .WordStack
+  rule #asByteStack(V) => int2wordstack(V, 32)
     requires 0 <=Int V andBool V <Int (2 ^Int 256)
 
   rule #asByteStack(#asWord(WS)) => WS
     requires noOverflow(WS)
+
+  syntax Bool ::= noOverflow(WordStack)    [function]
+                | noOverflowAux(WordStack) [function]
+  rule noOverflow(WS) => #sizeWordStack(WS) <=Int 32 andBool noOverflowAux(WS)
+  rule noOverflowAux(W : WS) => 0 <=Int W andBool W <Int 256 andBool noOverflowAux(WS)
+  rule noOverflowAux(.WordStack) => true
+
+
+
+  syntax Int ::= hash(Int) [smtlib(smt_hash)]
 
   syntax Int ::= sha3(Int) [function]
   rule sha3(V) => keccak(#padToWidth(32, #asByteStack(V)))
@@ -255,18 +190,6 @@ These helper constants make writing the proof claims simpler/cleaner.
              : nthbyteof(V, 31, 32)
              : .WordStack ) => hash(V)
     requires 0 <=Int V andBool V <Int (2 ^Int 256)
-
-  rule 0 <=Int nthbyteof(V, I, N)          => true
-  rule         nthbyteof(V, I, N) <Int 256 => true
-
-  rule 0 <=Int chop(V) => true
-  rule         chop(V) <Int /* 2 ^Int 256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936 => true
-
-  syntax Bool ::= noOverflow(WordStack)    [function]
-                | noOverflowAux(WordStack) [function]
-  rule noOverflow(WS) => #sizeWordStack(WS) <=Int 32 andBool noOverflowAux(WS)
-  rule noOverflowAux(W : WS) => 0 <=Int W andBool W <Int 256 andBool noOverflowAux(WS)
-  rule noOverflowAux(.WordStack) => true
 
 endmodule
 ```
