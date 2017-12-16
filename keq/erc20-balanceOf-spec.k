@@ -86,7 +86,8 @@ module BALANCEOF-SPEC
             .Map
           =>
           (
-            int2wordmap(R, B, 32)
+            .Map[ R := int2wordstack(B, 32) ]
+//          int2wordmap(R, B, 32)
 //           R          |-> nthbyteof(B,  0, 32)
 //          (R +Int  1) |-> nthbyteof(B,  1, 32)
 //          (R +Int  2) |-> nthbyteof(B,  2, 32)
@@ -170,7 +171,8 @@ module BALANCEOF-SPEC
             </code>
             <storage>
             //chop(hash(0) +Int O) |-> B:Int
-              chop(sha3(0) +Int O) |-> B:Int
+            //chop(sha3(0) +Int O) |-> B:Int
+              sha3(0) +Word O |-> B:Int
               _:Map
             </storage>
             <nonce> _ </nonce>

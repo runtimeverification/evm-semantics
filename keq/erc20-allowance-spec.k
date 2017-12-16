@@ -47,7 +47,8 @@ module ALLOWANCE-SPEC
             .Map
           =>
           (
-            int2wordmap(RET_ADDR, ALLOWANCE, 32)
+            .Map[ RET_ADDR := int2wordstack(ALLOWANCE, 32) ]
+//          int2wordmap(RET_ADDR, ALLOWANCE, 32)
 //           RET_ADDR          |-> nthbyteof(ALLOWANCE,  0, 32)
 //          (RET_ADDR +Int  1) |-> nthbyteof(ALLOWANCE,  1, 32)
 //          (RET_ADDR +Int  2) |-> nthbyteof(ALLOWANCE,  2, 32)

@@ -46,7 +46,7 @@ module APPROVE-SPEC
           <localMem> // TODO: auto gen
             .Map
           =>
-            int2wordmap(RET_ADDR, RET_VAL, 32)
+            .Map[ RET_ADDR := int2wordstack(RET_VAL, 32) ]
             _:Map
           </localMem>
           <pc> 0 => _ </pc>
