@@ -21,19 +21,6 @@
 (declare-fun smt_set_lt ((IntSet) (IntSet)) Bool)
 (declare-fun smt_set_le ((IntSet) (IntSet)) Bool)
 
-; stack axioms
-(declare-sort WordStack)
-(declare-fun appWordStack (WordStack WordStack) WordStack)
-(declare-fun word_stack_empty () WordStack)
-(declare-fun sizeWordStack (WordStack) Int)
-(declare-fun asByteStack (Int WordStack) WordStack)
-
-(declare-fun uint (Int) WordStack)
-
-(assert (= (sizeWordStack word_stack_empty) 0))
-(assert (forall ((w1 WordStack) (w2 WordStack))
-   (= (sizeWordStack (appWordStack w1 w2)) (+ (sizeWordStack w1) (sizeWordStack w2)))))
-
 ; sequence axioms
 (declare-sort IntSeq)
 
