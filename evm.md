@@ -95,8 +95,8 @@ In the comments next to each cell, we've marked which component of the yellowpap
                       <mixHash>          0          </mixHash>          // I_Hm
                       <blockNonce>       0          </blockNonce>       // I_Hn
 
-                      <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
-                      <blockhash>         .List         </blockhash>
+                      <ommerBlockHeaders> [.JSONList]      </ommerBlockHeaders>
+                      <blockhash>         .List            </blockhash>
 
                     </evm>
 

@@ -177,7 +177,7 @@ module VERIFICATION
                       | "#address"      "(" Int ")"
                       | "#uint256"      "(" Int ")"
 
-    syntax TypedArgs ::= List{TypedArg, ","}
+    syntax TypedArgs ::= List{TypedArg, ","}				[klabel("ArgsList")]
 
     syntax WordStack ::= "#encodeArgs" "(" WordStack "|" TypedArgs ")"  [function]
                        | "#getData" "(" TypedArg ")"                    [function]
