@@ -916,7 +916,7 @@ module EVM
     syntax BinStackOp ::= "MSTORE" | "MSTORE8"
  // ------------------------------------------
     rule <k> MSTORE INDEX VALUE => . ... </k>
-         <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
+         <localMem> LM => LM [ INDEX := #asByteStackWidth(32, VALUE) ] </localMem>
 
     rule <k> MSTORE8 INDEX VALUE => . ... </k>
          <localMem> LM => LM [ INDEX <- (VALUE %Int 256) ]    </localMem>

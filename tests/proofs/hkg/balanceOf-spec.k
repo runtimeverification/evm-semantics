@@ -21,36 +21,33 @@
 
 module BALANCE-OF-SPEC
     imports ETHEREUM-SIMULATION
-
-    rule <k> #execute ... </k>
+    rule <k> #execute => (RETURN _ _  ~> _) </k>
          <exit-code> 1       </exit-code>
          <mode>      NORMAL  </mode>
          <schedule>  DEFAULT </schedule>
 
-         <output>        .WordStack </output>
-         <memoryUsed>    4          </memoryUsed>
-         <callDepth>     0          </callDepth>
-         <callStack>     .List      </callStack>
-         <interimStates> .List      </interimStates>
-         <substateStack> .List      </substateStack>
-         <callLog>       .Set       </callLog>
+         <output>        .WordStack     </output>
+         <memoryUsed>    0    => 4      </memoryUsed>
+         <callDepth>     0              </callDepth>
+         <callStack>     .List => _     </callStack>
+         <interimStates> .List          </interimStates>
+         <callLog>       .Set           </callLog>
+         <program>      %HKG_Program                           </program>
+         <programBytes> %HKG_Program                           </programBytes>
+         <id>           %ACCT_ID                               </id>
+         <caller>       %CALLER_ID                             </caller>
+         <callData>     #abiCallData("balanceOf", #address(%CALLER_ID))
+         </callData>
+         <callValue>    0                       </callValue>
+         <wordStack>    .WordStack    => _      </wordStack>
+         <localMem>     .Map    => _            </localMem>
+         <pc>           0       => _            </pc>
+         <gas>          1000    => _            </gas>
+         <previousGas>  _       => _            </previousGas>
 
-         <program>      %HKG_Program      </program>
-         <programBytes> %HKG_ProgramBytes </programBytes>
-         <id>           %ACCT_ID          </id>
-         <caller>       %CALLER_ID        </caller>
-         <callData>     .WordStack        </callData>
-         <callValue>    0                 </callValue>
-
-         <wordStack>    WS    => ?A:WordStack </wordStack>
-         <localMem>     .Map  => ?B:Map       </localMem>
-         <pc>           316   => 381          </pc>
-         <gas>          G     => G -Int 274   </gas>
-         <previousGas>  _     => _            </previousGas>
-
-         <selfDestruct> .Set    </selfDestruct>
-         <log>          .List    </log>
-         <refund>       0  => _ </refund>
+         <selfDestruct> .Set </selfDestruct>
+         <log>          .Set </log>
+         <refund>       0    </refund>
 
          <gasPrice>     _               </gasPrice>
          <origin>       %ORIGIN_ID      </origin>
@@ -64,20 +61,18 @@ module BALANCE-OF-SPEC
          <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <accounts>
            <account>
-             <acctID>  %ACCT_ID          </acctID>
-             <balance> BAL               </balance>
-             <code>    %HKG_ProgramBytes </code>
-             <nonce>   0                 </nonce>
-             <storage> %ACCT_1_BALANCE |-> B1:Int
-                       %ACCT_1_ALLOWED |-> A1:Int
+             <acctID>  %ACCT_ID      </acctID>
+             <balance> BAL           </balance>
+             <code>    %HKG_Program  </code>
+             <acctMap> "nonce" |-> 0 </acctMap>
+             <storage>
+                       ...
                        %ACCT_2_BALANCE |-> B2:Int
-                       %ACCT_2_ALLOWED |-> A2:Int
-                       3 |-> %ORIGIN_ID
-                       4 |-> %CALLER_ID
+                      ...
              </storage>
            </account>
          </accounts>
 
-      requires #sizeWordStack(WS) <Int 1018 andBool G >=Int 274
+      requires #sizeWordStack(WS) <Int 1018
 endmodule
 

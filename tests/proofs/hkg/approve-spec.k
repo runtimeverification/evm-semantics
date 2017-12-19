@@ -22,30 +22,31 @@
 module APPROVE-SPEC
     imports ETHEREUM-SIMULATION
 
-    rule <k> #execute ... </k>
+    rule <k> #execute => (RETURN _ _  ~> _) </k>
          <exit-code> 1       </exit-code>
          <mode>      NORMAL  </mode>
          <schedule>  DEFAULT </schedule>
 
-         <output>        .WordStack </output>
-         <memoryUsed>    3          </memoryUsed>
-         <callDepth>     0          </callDepth>
-         <callStack>     .List      </callStack>
-         <interimStates> .List      </interimStates>
-         <substateStack> .List      </substateStack>
-         <callLog>       .Set       </callLog>
+         <output>        .WordStack     </output>
+         <memoryUsed>    0 => _         </memoryUsed>
+         <callDepth>     0              </callDepth>
+         <callStack>     .List  => _    </callStack>
+         <interimStates> .List          </interimStates>
+         <callLog>       .Set           </callLog>
 
-         <program>      %HKG_Program      </program>
-         <programBytes> %HKG_ProgramBytes </programBytes>
-         <id>           %ACCT_ID          </id>
-         <caller>       %CALLER_ID        </caller>
-         <callData>     .WordStack        </callData>
-         <callValue>    0                 </callValue>
+         <program>   %HKG_Program </program>
+         <id>        %ACCT_ID     </id>
+         <caller>    %CALLER_ID   </caller>
+         <callData>
+                     #abiCallData("approve", #address(%ORIGIN_ID), #uint256(A2))
+         </callData>
+         <callValue> 0            </callValue>
 
-         <wordStack>   A2 : %ORIGIN_ID : WS => ?A:WordStack </wordStack>
-         <localMem>    .Map                 => ?B:Map       </localMem>
-         <pc>          574                  => 806          </pc>
-         <gas>         G                    => G -Int 5269  </gas>
+
+         <wordStack>   .WordStack           => _            </wordStack>
+         <localMem>    .Map                 => _            </localMem>
+         <pc>          0                    => _            </pc>
+         <gas>         100000               => _            </gas>
          <previousGas> _                    => _            </previousGas>
 
          <selfDestruct> .Set       </selfDestruct>
@@ -74,12 +75,12 @@ module APPROVE-SPEC
                      %ACCT_1_BALANCE |-> B1:Int
                      %ACCT_1_ALLOWED |-> A1:Int
                      %ACCT_2_BALANCE |-> B2:Int
-                     %ACCT_2_ALLOWED |-> A2:Int
+                     %ACCT_2_ALLOWED |-> (_ => A2)
                      ...
            </storage>
            </account>
          </accounts>
+         requires (A2 <Int pow256) andBool (A2 >=Int 0)
 
-      requires #sizeWordStack(WS) <Int 1014  andBool G >=Int 5269
 endmodule
 
