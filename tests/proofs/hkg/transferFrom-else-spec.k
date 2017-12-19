@@ -1,11 +1,10 @@
 // HKG Token - Full Proof Claims
 // =============================
 
-// We now present reachability claims used for verification, one for each function
-// in the ERC20 specification. Since the HKG token contract contains only
-// sequential code (no loops), we only need one reachability claim per branch per
-// function. In the following claims, any symbol starting with a `%` indicates a
-// constant which has been replaced by a symbol for clarity. In particular:
+// We now present reachability claims used for verification, one for each function in the ERC20 specification.
+// Since the HKG token contract contains only sequential code (no loops), we only need one reachability claim per branch per function.
+// In the following claims, any symbol starting with a `%` indicates a constant which has been replaced by a symbol for clarity.
+// In particular:
 
 // -   `%HKG_Program` is the EVM bytecode for the Hacker Gold token program;
 // -   `TRANSFER` represents the symbolic amount to transfer;
@@ -56,8 +55,7 @@ module TRANSFER-FROM-SPEC
          <messages>       .Bag               </messages>
 
 
-// These parts of the proof change, but we would like to avoid specifying exactly
-// how (abstract over their state change).
+// These parts of the proof change, but we would like to avoid specifying exactly how (abstract over their state change).
 
 
          <localMem>    .Map => _ </localMem>
