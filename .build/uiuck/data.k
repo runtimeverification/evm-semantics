@@ -2,8 +2,8 @@
 // =========
 
 // EVM uses bounded 256 bit integer words, and sometimes also bytes (8 bit words).
-// Here we provide the arithmetic of these words, as well as some data-structures
-// over them. Both are implemented using K's `Int`.
+// Here we provide the arithmetic of these words, as well as some data-structures over them.
+// Both are implemented using K's `Int`.
 
 
 requires "krypto.k"
@@ -21,10 +21,12 @@ module EVM-DATA
 
     syntax Int ::= "pow256" [function]
                  | "pow255" [function]
+                 | "pow160" [function]
                  | "pow16"  [function]
  // ----------------------------------
     rule pow256 => 2 ^Int 256
     rule pow255 => 2 ^Int 255
+    rule pow160 => 2 ^Int 160
     rule pow16  => 2 ^Int 16
 
 
@@ -44,16 +46,14 @@ module EVM-DATA
 // Primitives
 // ----------
 
-// Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
-// words.
+// Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's words.
 
 // -   `chop` interperets an integers modulo $2^256$.
 
 
     syntax Int ::= chop ( Int ) [function]
  // --------------------------------------
-    rule chop ( I:Int ) => I %Int pow256 requires I <Int 0  orBool I >=Int pow256
-    rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256
+    rule chop ( I:Int ) => I %Int pow256 
 
 
 // -   `bool2Word` interperets a `Bool` as a `Int`.
@@ -80,9 +80,7 @@ module EVM-DATA
  // ---------------------------------------------------------------------
 
 
-// If we don't place the `Bool` condition as a side-condition for UIUC-K, it will
-// attempt to only do an "implies-check" instead of full unification (which is
-// problematic when `B` is symbolic during proving).
+// If we don't place the `Bool` condition as a side-condition for UIUC-K, it will attempt to only do an "implies-check" instead of full unification (which is problematic when `B` is symbolic during proving).
 
 
     rule #ifInt B #then W #else _ #fi => W requires B
@@ -108,10 +106,9 @@ module EVM-DATA
 
 // ### Empty Account
 
-// -   `.Account` represents the case when an account ID is referenced in the
-//     yellowpaper, but the actual value of the account ID is the empty set. This
-//     is used, for example, when referring to the destination of a message which
-//     creates a new contract.
+// -   `.Account` represents the case when an account ID is referenced in the yellowpaper, but
+//     the actual value of the account ID is the empty set. This is used, for example, when
+//     referring to the destination of a message which creates a new contract.
 
 
     syntax Account ::= ".Account" | Int
@@ -134,10 +131,8 @@ module EVM-DATA
 
 // -   `up/Int` performs integer division but rounds up instead of down.
 
-// NOTE: Here, we choose to add `I2 -Int 1` to the numerator beforing doing the
-// division to mimic the C++ implementation. You could alternatively calculate
-// `I1 %Int I2`, then add one to the normal integer division afterward depending on
-// the result.
+// NOTE: Here, we choose to add `I2 -Int 1` to the numerator beforing doing the division to mimic the C++ implementation.
+// You could alternatively calculate `I1 %Int I2`, then add one to the normal integer division afterward depending on the result.
 
 
     syntax Int ::= Int "up/Int" Int [function]
@@ -160,8 +155,7 @@ module EVM-DATA
     rule log256Int(N) => log2Int(N) /Int 8
 
 
-// The corresponding `<op>Word` operations automatically perform the correct
-// modulus for EVM words.
+// The corresponding `<op>Word` operations automatically perform the correct modulus for EVM words.
 
 
     syntax Int ::= Int "+Word" Int [function]
@@ -214,8 +208,7 @@ module EVM-DATA
 // Comparison Operators
 // --------------------
 
-// The `<op>Word` comparison operators automatically interperet the `Bool` as a
-// `Word`.
+// The `<op>Word` comparison operators automatically interperet the `Bool` as a `Word`.
 
 
     syntax Int ::= Int "<Word"  Int [function]
@@ -318,35 +311,34 @@ module EVM-DATA
 // Word Stack
 // ----------
 
-// EVM is a stack machine, and so needs a stack of words to operate on. The stack
-// and some standard operations over it are provided here. This stack also serves
-// as a cons-list, so we provide some standard cons-list manipulation tools.
+// EVM is a stack machine, and so needs a stack of words to operate on.
+// The stack and some standard operations over it are provided here.
+// This stack also serves as a cons-list, so we provide some standard cons-list manipulation tools.
 
 
-    syntax WordStack [flatPredicate]
-    syntax WordStack ::= ".WordStack" | Int ":" WordStack
+    syntax WordStack ::= ".WordStack" [smtlib(word_stack_empty), flatpredicate]
+                       | Int ":" WordStack [klabel(_:WordStack_), smtlib(word_stack_cons)]
  // -----------------------------------------------------
 
 
 // -   `_++_` acts as `WordStack` append.
-// -   `#take(N , WS)` keeps the first $N$ elements of a `WordStack` (passing with
-//     zeros as needed).
+// -   `#take(N , WS)` keeps the first $N$ elements of a `WordStack` (passing with zeros as needed).
 // -   `#drop(N , WS)` removes the first $N$ elements of a `WordStack`.
 // -   `WS [ N .. W ]` access the range of `WS` beginning with `N` of width `W`.
 
 
-    syntax WordStack ::= WordStack "++" WordStack [function]
+    syntax WordStack ::= WordStack "++" WordStack [function, smtlib(appWordStack)]
  // --------------------------------------------------------
     rule .WordStack ++ WS' => WS'
     rule (W : WS)   ++ WS' => W : (WS ++ WS')
 
-    syntax WordStack ::= #take ( Int , WordStack ) [function]
+    syntax WordStack ::= #take ( Int , WordStack ) [function, smtlib(take)]
  // ---------------------------------------------------------
     rule #take(0, WS)         => .WordStack
     rule #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
     rule #take(N, (W : WS))   => W : #take(N -Int 1, WS)         requires N >Int 0
 
-    syntax WordStack ::= #drop ( Int , WordStack ) [function]
+    syntax WordStack ::= #drop ( Int , WordStack ) [function, smtlib(drop)]
  // ---------------------------------------------------------
     rule #drop(0, WS)         => WS
     rule #drop(N, .WordStack) => .WordStack
@@ -358,8 +350,7 @@ module EVM-DATA
 
 
 // -   `WS [ N ]` accesses element $N$ of $WS$.
-// -   `WS [ N := W ]` sets element $N$ of $WS$ to $W$ (padding with zeros
-//     as needed).
+// -   `WS [ N := W ]` sets element $N$ of $WS$ to $W$ (padding with zeros as needed).
 
 
     syntax Int ::= WordStack "[" Int "]" [function]
@@ -406,20 +397,18 @@ module EVM-DATA
 
 // The local memory of execution is a byte-array (instead of a word-array).
 
-// -   `#asWord` will interperet a stack of bytes as a single word (with
-//     MSB first).
-// -   `#asAccount` will interpret a stack of bytes as a single account id (with
-//     MSB first). Differs from `#asWord` only in that an empty stack represents
-//     the empty account, not account zero.
-// -   `#asByteStack` will split a single word up into a `WordStack` where each
-//     word is a byte wide.
+// -   `#asWord` will interperet a stack of bytes as a single word (with MSB first).
+// -   `#asAccount` will interpret a stack of bytes as a single account id (with MSB first).
+//     Differs from `#asWord` only in that an empty stack represents the empty account, not account zero.
+// -   `#asByteStack` will split a single word up into a `WordStack` where each word is a byte wide.
 
 
-    syntax Int ::= #asWord ( WordStack ) [function, smtlib(asWord)]
+    syntax Int ::= #asWord ( WordStack ) [function]
+    syntax Int ::= #asWordAux ( Int , WordStack ) [function, smtlib(asWordAux)]
  // ---------------------------------------------------------------
-    rule #asWord( .WordStack )    => 0
-    rule #asWord( W : .WordStack) => W
-    rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
+    rule #asWord( W ) => #asWordAux( 0 , W )
+    rule #asWordAux( N , .WordStack )    => N
+    rule #asWordAux( N , W1 : WS )  => #asWordAux((N *Word 256) +Word W1, WS)
 
     syntax Account ::= #asAccount ( WordStack ) [function]
  // ------------------------------------------------------
@@ -433,12 +422,17 @@ module EVM-DATA
     rule #asByteStack( 0 , WS ) => WS
     rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0
 
+    syntax WordStack ::= #asByteStackWidth ( Int , Int )            [function, smtlib(asByteStackWidth)]
+                       | #asByteStackWidth ( Int , Int, WordStack ) [function, klabel(#asByteStackWidthAux), smtlib(asByteStackWidthAux)]
+    rule #asByteStackWidth( N , W ) => #asByteStackWidth( N , W , .WordStack )
+    rule #asByteStackWidth( 0 , _ , WS ) => WS
+    rule #asByteStackWidth( N , W , WS ) => #asByteStackWidth( N -Int 1 , W /Int 256 , W %Int 256 : WS ) requires N >Int 0
+
 
 // Addresses
 // ---------
 
-// -   `#addr` turns an Ethereum word into the corresponding Ethereum address
-//     (160 LSB).
+// -   `#addr` turns an Ethereum word into the corresponding Ethereum address (160 LSB).
 
 
     syntax Int ::= #addr ( Int ) [function]
@@ -446,10 +440,8 @@ module EVM-DATA
     rule #addr(W) => W %Word (2 ^Word 160)
 
 
-// -   `#newAddr` computes the address of a new account given the address and nonce
-//     of the creating account.
-// -   `#sender` computes the sender of the transaction from its data
-//     and signature.
+// -   `#newAddr` computes the address of a new account given the address and nonce of the creating account.
+// -   `#sender` computes the sender of the transaction from its data and signature.
 
 
     syntax Int ::= #newAddr ( Int , Int ) [function]
@@ -469,8 +461,7 @@ module EVM-DATA
     rule #sender(STR) => #addr(#parseHexWord(Keccak256(STR))) requires STR =/=String ""
 
 
-// -   `#blockHeaderHash` computes the hash of a block header given all the
-//     block data.
+// -   `#blockHeaderHash` computes the hash of a block header given all the block data.
 
 
     syntax Int ::= #blockHeaderHash( Int , Int , Int , Int , Int , Int , WordStack , Int , Int , Int , Int , Int , WordStack , Int , Int ) [function]
@@ -511,14 +502,12 @@ module EVM-DATA
 // Word Map
 // --------
 
-// Most of EVM data is held in finite maps. We are using the polymorphic `Map` sort
-// for these word maps.
+// Most of EVM data is held in finite maps.
+// We are using the polymorphic `Map` sort for these word maps.
 
-// -   `WM [ N := WS ]` assigns a contiguous chunk of $WM$ to $WS$ starting at
-//     position $W$.
+// -   `WM [ N := WS ]` assigns a contiguous chunk of $WM$ to $WS$ starting at position $W$.
 // -   `#asMapWordStack` converts a `WordStack` to a `Map`.
-// -   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at
-//     position $START$ (padding with zeros as needed).
+// -   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
 
 
     syntax Map ::= Map "[" Int ":=" WordStack "]" [function]
@@ -550,8 +539,7 @@ module EVM-DATA
     rule #removeZeros( KEY |-> VALUE REST ) => KEY |-> VALUE #removeZeros(REST) requires VALUE =/=K 0
 
 
-// -   `#lookup` looks up a key in a map and returns 0 if the key doesn't exist,
-//     otherwise returning its value.
+// -   `#lookup` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 
     syntax Int ::= #lookup ( Map , Int ) [function]
@@ -563,24 +551,20 @@ module EVM-DATA
 // Parsing/Unparsing
 // =================
 
-// The EVM test-sets are represented in JSON format with hex-encoding of the data
-// and programs. Here we provide some standard parser/unparser functions for that
-// format.
+// The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
+// Here we provide some standard parser/unparser functions for that format.
 
 // Parsing
 // -------
 
-// These parsers can interperet hex-encoded strings as `Int`s, `WordStack`s, and
-// `Map`s.
+// These parsers can interperet hex-encoded strings as `Int`s, `WordStack`s, and `Map`s.
 
 // -   `#parseHexWord` interperets a string as a single hex-encoded `Word`.
 // -   `#parseHexBytes` interperets a string as a hex-encoded stack of bytes.
-// -   `#parseByteStack` interperets a string as a hex-encoded stack of bytes, but
-//     makes sure to remove the leading "0x".
+// -   `#parseByteStack` interperets a string as a hex-encoded stack of bytes, but makes sure to remove the leading "0x".
 // -   `#parseByteStackRaw` inteprets a string as a stack of bytes.
 // -   `#parseWordStack` interperets a JSON list as a stack of `Word`.
-// -   `#parseMap` interperets a JSON key/value object as a map from `Word` to
-//     `Word`.
+// -   `#parseMap` interperets a JSON key/value object as a map from `Word` to `Word`.
 // -   `#parseAddr` interperets a string as a 160 bit hex-endcoded address.
 
 
@@ -625,16 +609,13 @@ module EVM-DATA
 // Unparsing
 // ---------
 
-// We need to interperet a `WordStack` as a `String` again so that we can call
-// `Keccak256` on it from `KRYPTO`.
+// We need to interperet a `WordStack` as a `String` again so that we can call `Keccak256` on it from `KRYPTO`.
 
-// -   `#unparseByteStack` turns a stack of bytes (as a `WordStack`) into a
-//     `String`.
-// -   `#padByte` ensures that the `String` interperetation of a `Int` is
-//     wide enough.
+// -   `#unparseByteStack` turns a stack of bytes (as a `WordStack`) into a `String`.
+// -   `#padByte` ensures that the `String` interperetation of a `Int` is wide enough.
 
 
-    syntax String ::= #unparseByteStack ( WordStack )                [function]
+    syntax String ::= #unparseByteStack ( WordStack )                [smtlib(unparse_byte_stack), function]
                     | #unparseByteStack ( WordStack , StringBuffer ) [function, klabel(#unparseByteStackAux)]
  // ---------------------------------------------------------------------------------------------------------
     rule #unparseByteStack ( WS ) => #unparseByteStack(WS, .StringBuffer)
@@ -651,9 +632,8 @@ module EVM-DATA
 // Recursive Length Prefix (RLP)
 // =============================
 
-// RLP encoding is used extensively for executing the blocks of a transaction. For
-// details about RLP encoding, see the [YellowPaper Appendix
-// B](http://gavwood.com/paper.pdf).
+// RLP encoding is used extensively for executing the blocks of a transaction.
+// For details about RLP encoding, see the [YellowPaper Appendix B](http://gavwood.com/paper.pdf).
 
 // Encoding
 // --------
@@ -695,8 +675,7 @@ module EVM-DATA
 // --------
 
 // -   `#rlpDecode` RLP decodes a single `String` into a `JSON`.
-// -   `#rlpDecodeList` RLP decodes a single `String` into a `JSONList`,
-//     interpereting the string as the RLP encoding of a list.
+// -   `#rlpDecodeList` RLP decodes a single `String` into a `JSONList`, interpereting the string as the RLP encoding of a list.
 
 
     syntax JSON ::= #rlpDecode(String)               [function]

@@ -1,10 +1,9 @@
 // EVM Execution
 // =============
 
-// The EVM is a stack machine over some simple opcodes. Most of the opcodes are
-// "local" to the execution state of the machine, but some of them must interact
-// with the world state. This file only defines the local execution operations, the
-// file `ethereum.md` will define the interactions with the world state.
+// The EVM is a stack machine over some simple opcodes.
+// Most of the opcodes are "local" to the execution state of the machine, but some of them must interact with the world state.
+// This file only defines the local execution operations, the file `ethereum.md` will define the interactions with the world state.
 
 
 requires "data.k"
@@ -17,15 +16,11 @@ module EVM
 // Configuration
 // -------------
 
-// The configuration has cells for the current account id, the current opcode, the
-// program counter, the current gas, the gas price, the current program, the word
-// stack, and the local memory. In addition, there are cells for the callstack and
-// execution substate.
+// The configuration has cells for the current account id, the current opcode, the program counter, the current gas, the gas price, the current program, the word stack, and the local memory.
+// In addition, there are cells for the callstack and execution substate.
 
-// We've broken up the configuration into two components; those parts of the state
-// that mutate during execution of a single transaction and those that are static
-// throughout. In the comments next to each cell, we've marked which component of
-// the yellowpaper state corresponds to each cell.
+// We've broken up the configuration into two components; those parts of the state that mutate during execution of a single transaction and those that are static throughout.
+// In the comments next to each cell, we've marked which component of the yellowpaper state corresponds to each cell.
 
 
     configuration <k> $PGM:EthereumSimulation </k>
@@ -100,8 +95,8 @@ module EVM
                       <mixHash>          0          </mixHash>          // I_Hm
                       <blockNonce>       0          </blockNonce>       // I_Hn
 
-                      <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
-                      <blockhash>         .List         </blockhash>
+                      <ommerBlockHeaders> [.JSONList]      </ommerBlockHeaders>
+                      <blockhash>         .List            </blockhash>
 
                     </evm>
 
@@ -172,8 +167,7 @@ module EVM
 // Modal Semantics
 // ---------------
 
-// Our semantics is modal, with the initial mode being set on the command line via
-// `-cMODE=EXECMODE`.
+// Our semantics is modal, with the initial mode being set on the command line via `-cMODE=EXECMODE`.
 
 // -   `NORMAL` executes as a client on the network would.
 // -   `VMTESTS` skips `CALL*` and `CREATE` operations.
@@ -245,17 +239,14 @@ module EVM
 
 // The `interimStates` cell stores a list of previous world states.
 
-// -   `#pushWorldState` stores a copy of the current accounts at the top of the
-//     `interimStates` cell.
+// -   `#pushWorldState` stores a copy of the current accounts at the top of the `interimStates` cell.
 // -   `#popWorldState` restores the top element of the `interimStates`.
 // -   `#dropWorldState` removes the top element of the `interimStates`.
 
-// We use slightly different rules for rv-k versus uiuc-k because uiuc-k does not
-// support storing configuration fragments. The semantics of these two sets of
-// rules are identical, however, the version rv-k uses is substantially faster. We
-// would use that version in both places if not for technical limitations on the
-// prover. In the long term, a new prover will be built capable of supporting the
-// same code in both versions of the semantics.
+// We use slightly different rules for rv-k versus uiuc-k because uiuc-k does not support storing configuration fragments.
+// The semantics of these two sets of rules are identical, however, the version rv-k uses is substantially faster.
+// We would use that version in both places if not for technical limitations on the prover.
+// In the long term, a new prover will be built capable of supporting the same code in both versions of the semantics.
 
 
     syntax Account ::= "{" Int "|" Int "|" WordStack "|" Map "|" Int "|" Bool "}"
@@ -308,8 +299,7 @@ module EVM
 
 // The `substateStack` cell stores a list of previous substate logs.
 
-// -   `#pushSubstate` stores a copy of the current substate at the top of the
-//     `substateStack` cell.
+// -   `#pushSubstate` stores a copy of the current substate at the top of the `substateStack` cell.
 // -   `#popSubstate` restores the top element of the `substateStack`.
 // -   `#dropSubstate` removes the top element of the `substateStack`.
 
@@ -334,11 +324,8 @@ module EVM
 // Simple commands controlling exceptions provide control-flow.
 
 // -   `#end` is used to indicate the (non-exceptional) end of execution.
-// -   `#exception` is used to indicate exceptional states (it consumes any
-//     operations to be performed after it).
-// -   `#?_:_?#` allows for branching control-flow; if it reaches the front of the
-//     `op` cell it takes the first branch, if an exception runs into it it takes
-//     the second branch.
+// -   `#exception` is used to indicate exceptional states (it consumes any operations to be performed after it).
+// -   `#?_:_?#` allows for branching control-flow; if it reaches the front of the `op` cell it takes the first branch, if an exception runs into it it takes the second branch.
 
 
     syntax KItem ::= Exception
@@ -357,9 +344,8 @@ module EVM
 // OpCode Execution Cycle
 // ----------------------
 
-// `OpCode` is broken into several subsorts for easier handling. Here all `OpCode`s
-// are subsorted into `KItem` (allowing sequentialization), and the various sorts
-// of opcodes are subsorted into `OpCode`.
+// `OpCode` is broken into several subsorts for easier handling.
+// Here all `OpCode`s are subsorted into `KItem` (allowing sequentialization), and the various sorts of opcodes are subsorted into `OpCode`.
 
 
     syntax KItem  ::= OpCode
@@ -368,8 +354,7 @@ module EVM
  // --------------------------------------------------------------------------------
 
 
-// -   `#execute` calls `#next` repeatedly until it recieves an `#end` or
-//     `#exception`.
+// -   `#execute` calls `#next` repeatedly until it recieves an `#end` or `#exception`.
 // -   `#execTo` executes until the next opcode is one of the specified ones.
 
 
@@ -396,15 +381,12 @@ module EVM
       requires notBool PCOUNT in keys(PGM)
 
 
-// Execution follows a simple cycle where first the state is checked for
-// exceptions, then if no exceptions will be thrown the opcode is run.
+// Execution follows a simple cycle where first the state is checked for exceptions, then if no exceptions will be thrown the opcode is run.
 
-// -   Regardless of the mode, `#next` will throw `#end` or `#exception` if the
-//     current program counter is not pointing at an OpCode.
+// -   Regardless of the mode, `#next` will throw `#end` or `#exception` if the current program counter is not pointing at an OpCode.
 
-// TODO: I think on `#next` we are supposed to pretend it's `STOP` if it's in the
-// middle of the program somewhere but is invalid? I suppose the semantics
-// currently loads `INVALID` where `N` is the position in the bytecode array.
+// TODO: I think on `#next` we are supposed to pretend it's `STOP` if it's in the middle of the program somewhere but is invalid?
+// I suppose the semantics currently loads `INVALID` where `N` is the position in the bytecode array.
 
 
     syntax InternalOp ::= "#next"
@@ -415,8 +397,7 @@ module EVM
       requires notBool (PCOUNT in_keys(PGM))
 
 
-// -   In `NORMAL` or `VMTESTS` mode, `#next` checks if the opcode is exceptional,
-//     runs it if not, then increments the program counter.
+// -   In `NORMAL` or `VMTESTS` mode, `#next` checks if the opcode is exceptional, runs it if not, then increments the program counter.
 
 
     rule <mode> EXECMODE </mode>
@@ -433,12 +414,9 @@ module EVM
 
 // ### Exceptional OpCodes
 
-// Some checks if an opcode will throw an exception are relatively quick and done
-// up front.
+// Some checks if an opcode will throw an exception are relatively quick and done up front.
 
-// -   `#exceptional?` checks if the operator is invalid and will not cause
-//     `wordStack` size issues (this implements the function `Z` in the
-//     yellowpaper, section 9.4.2).
+// -   `#exceptional?` checks if the operator is invalid and will not cause `wordStack` size issues (this implements the function `Z` in the yellowpaper, section 9.4.2).
 
 
     syntax InternalOp ::= "#exceptional?" "[" OpCode "]"
@@ -456,8 +434,7 @@ module EVM
 
 
 // -   `#stackNeeded?` checks that the stack will be not be under/overflown.
-// -   `#stackNeeded`, `#stackAdded`, and `#stackDelta` are helpers for deciding
-//     `#stackNeeded?`.
+// -   `#stackNeeded`, `#stackAdded`, and `#stackDelta` are helpers for deciding `#stackNeeded?`.
 
 
     syntax InternalOp ::= "#stackNeeded?" "[" OpCode "]"
@@ -512,8 +489,7 @@ module EVM
     rule #stackDelta(OP) => #stackAdded(OP) -Int #stackNeeded(OP)
 
 
-// -   `#badJumpDest?` determines if the opcode will result in a bad
-//     jump destination.
+// -   `#badJumpDest?` determines if the opcode will result in a bad jump destination.
 
 
     syntax InternalOp ::= "#badJumpDest?" "[" OpCode "]"
@@ -531,8 +507,7 @@ module EVM
 
 // ### Execution Step
 
-// -   `#exec` will load the arguments of the opcode (it assumes `#stackNeeded?` is
-//     accurate and has been called) and trigger the subsequent operations.
+// -   `#exec` will load the arguments of the opcode (it assumes `#stackNeeded?` is accurate and has been called) and trigger the subsequent operations.
 
 
     syntax InternalOp ::= "#exec" "[" OpCode "]"
@@ -540,9 +515,8 @@ module EVM
     rule <k> #exec [ OP ] => #gas [ OP ] ~> OP ... </k> requires isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
 
 
-// Here we load the correct number of arguments from the `wordStack` based on the
-// sort of the opcode. Some of them require an argument to be interpereted as an
-// address (modulo 160 bits), so the `#addr?` function performs that check.
+// Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
+// Some of them require an argument to be interpereted as an address (modulo 160 bits), so the `#addr?` function performs that check.
 
 
     syntax InternalOp ::= UnStackOp Int
@@ -582,8 +556,7 @@ module EVM
     rule <k> #exec [ CO:CallOp     => CO  W0 #addr(W1) W2 W3 W4 W5 W6 ] ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
 
 
-// -   `#gas` calculates how much gas this operation costs, and takes into account
-//     the memory consumed.
+// -   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
 
 
     syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas" | "#deductMemory"
@@ -606,8 +579,7 @@ module EVM
 // ### Program Counter
 
 // All operators except for `PUSH` and `JUMP*` increment the program counter by 1.
-// The arguments to `PUSH` must be skipped over (as they are inline), and the
-// opcode `JUMP` already affects the program counter in the correct way.
+// The arguments to `PUSH` must be skipped over (as they are inline), and the opcode `JUMP` already affects the program counter in the correct way.
 
 // -   `#pc` calculates the next program counter of the given operator.
 
@@ -625,18 +597,15 @@ module EVM
 
 // ### Substate Log
 
-// During execution of a transaction some things are recorded in the substate log
-// (Section 6.1 in yellowpaper). This is a right cons-list of `SubstateLogEntry`
-// (which contains the account ID along with the specified portions of the
-// `wordStack` and `localMem`).
+// During execution of a transaction some things are recorded in the substate log (Section 6.1 in yellowpaper).
+// This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
 
 
     syntax SubstateLogEntry ::= "{" Int "|" WordStack "|" WordStack "}"
  // -------------------------------------------------------------------
 
 
-// After executing a transaction, it's necessary to have the effect of the substate
-// log recorded.
+// After executing a transaction, it's necessary to have the effect of the substate log recorded.
 
 // -   `#finalizeTx` makes the substate log actually have an effect on the state.
 
@@ -737,9 +706,8 @@ module EVM
 // EVM Programs
 // ============
 
-// Lists of opcodes form programs. Deciding if an opcode is in a list will be
-// useful for modeling gas, and converting a program into a map of program-counter
-// to opcode is useful for execution.
+// Lists of opcodes form programs.
+// Deciding if an opcode is in a list will be useful for modeling gas, and converting a program into a map of program-counter to opcode is useful for execution.
 
 // Note that `_in_` ignores the arguments to operators that are parametric.
 
@@ -769,14 +737,13 @@ module EVM
 // EVM OpCodes
 // -----------
 
-// Each subsection has a different class of opcodes. Organization is based roughly
-// on what parts of the execution state are needed to compute the result of each
-// operator. This sometimes corresponds to the organization in the yellowpaper.
+// Each subsection has a different class of opcodes.
+// Organization is based roughly on what parts of the execution state are needed to compute the result of each operator.
+// This sometimes corresponds to the organization in the yellowpaper.
 
 // ### Internal Operations
 
-// These are just used by the other operators for shuffling local execution state
-// around on the EVM.
+// These are just used by the other operators for shuffling local execution state around on the EVM.
 
 // -   `#push` will push an element to the `wordStack` without any checks.
 // -   `#setStack_` will set the current stack to the given one.
@@ -788,10 +755,9 @@ module EVM
     rule <k> #setStack WS    => . ... </k> <wordStack> _  => WS      </wordStack>
 
 
-// -   `#newAccount_` allows declaring a new empty account with the given address
-//     (and assumes the rounding to 160 bits has already occured). If the account
-//     already exists with non-zero nonce or non-empty code, an exception is
-//     thrown. Otherwise, if the account already exists, the storage is cleared.
+// -   `#newAccount_` allows declaring a new empty account with the given address (and assumes the rounding to 160 bits has already occured).
+//     If the account already exists with non-zero nonce or non-empty code, an exception is thrown.
+//     Otherwise, if the account already exists, the storage is cleared.
 
 
     syntax InternalOp ::= "#newAccount" Int
@@ -831,8 +797,7 @@ module EVM
       requires notBool ACCT in_keys(ACCTS)
 
 
-// -   `#transferFunds` moves money from one account into another, creating the
-//     destination account if it doesn't exist.
+// -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
 
 
     syntax InternalOp ::= "#transferFunds" Int Int Int
@@ -853,6 +818,7 @@ module EVM
          <activeAccounts> ... ACCTTO |-> (EMPTY => #if VALUE >Int 0 #then false #else EMPTY #fi) ACCTFROM |-> (_ => ORIGFROM ==Int VALUE andBool NONCE ==Int 0 andBool CODE ==K .WordStack) ... </activeAccounts>
       requires ACCTFROM =/=K ACCTTO andBool VALUE <=Int ORIGFROM
 
+/*
     rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #exception ... </k>
          <account>
            <acctID> ACCTFROM </acctID>
@@ -860,6 +826,7 @@ module EVM
            ...
          </account>
       requires VALUE >Int ORIGFROM
+ */
 
     rule <k> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
          <activeAccounts> ACCTS </activeAccounts>
@@ -876,8 +843,7 @@ module EVM
 
 // ### Invalid Operator
 
-// We use `INVALID` both for marking the designated invalid operator and for
-// garbage bytes in the input program.
+// We use `INVALID` both for marking the designated invalid operator and for garbage bytes in the input program.
 
 
     syntax InvalidOp ::= "INVALID"
@@ -916,7 +882,7 @@ module EVM
     syntax BinStackOp ::= "MSTORE" | "MSTORE8"
  // ------------------------------------------
     rule <k> MSTORE INDEX VALUE => . ... </k>
-         <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
+         <localMem> LM => LM [ INDEX := #asByteStackWidth(32, VALUE) ] </localMem>
 
     rule <k> MSTORE8 INDEX VALUE => . ... </k>
          <localMem> LM => LM [ INDEX <- (VALUE %Int 256) ]    </localMem>
@@ -924,11 +890,9 @@ module EVM
 
 // ### Expressions
 
-// Expression calculations are simple and don't require anything but the arguments
-// from the `wordStack` to operate.
+// Expression calculations are simple and don't require anything but the arguments from the `wordStack` to operate.
 
-// NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble
-// parsing it/compiling the definition otherwise.
+// NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble parsing it/compiling the definition otherwise.
 
 
     syntax UnStackOp ::= "ISZERO" | "NOT"
@@ -1112,15 +1076,13 @@ module EVM
 // Ethereum Network OpCodes
 // ------------------------
 
-// Operators that require access to the rest of the Ethereum network world-state
-// can be taken as a first draft of a "blockchain generic" language.
+// Operators that require access to the rest of the Ethereum network world-state can be taken as a first draft of a "blockchain generic" language.
 
 // ### Account Queries
 
-// TODO: It's unclear what to do in the case of an account not existing for these
-// operators. `BALANCE` is specified to push 0 in this case, but the others are not
-// specified. For now, I assume that they instantiate an empty account and use the
-// empty data.
+// TODO: It's unclear what to do in the case of an account not existing for these operators.
+// `BALANCE` is specified to push 0 in this case, but the others are not specified.
+// For now, I assume that they instantiate an empty account and use the empty data.
 
 
     syntax UnStackOp ::= "BALANCE"
@@ -1150,8 +1112,8 @@ module EVM
       requires notBool ACCT in_keys(ACCTS)
 
 
-// TODO: What should happen in the case that the account doesn't exist with
-// `EXTCODECOPY`? Should we pad zeros (for the copied "program")?
+// TODO: What should happen in the case that the account doesn't exist with `EXTCODECOPY`?
+// Should we pad zeros (for the copied "program")?
 
 
     syntax QuadStackOp ::= "EXTCODECOPY"
@@ -1220,25 +1182,18 @@ module EVM
 
 // ### Call Operations
 
-// The various `CALL*` (and other inter-contract control flow) operations will be
-// desugared into these `InternalOp`s.
+// The various `CALL*` (and other inter-contract control flow) operations will be desugared into these `InternalOp`s.
 
-// -   The `callLog` is used to store the `CALL*`/`CREATE` operations so that we
-//     can compare them against the test-set.
+// -   The `callLog` is used to store the `CALL*`/`CREATE` operations so that we can compare them against the test-set.
 
 
     syntax Call ::= "{" Int "|" Int "|" Int "|" WordStack "}"
  // ---------------------------------------------------------
 
 
-// -   `#call_____` takes the calling account, the account to execute as, the
-//     account whose code should execute, the gas limit, the amount to transfer,
-//     and the arguments.
-// -   `#callWithCode______` takes the calling account, the accout to execute as,
-//     the code to execute (as a map), the gas limit, the amount to transfer, and
-//     the arguments.
-// -   `#return__` is a placeholder for the calling program, specifying where to
-//     place the returned data in memory.
+// -   `#call_____` takes the calling account, the account to execute as, the account whose code should execute, the gas limit, the amount to transfer, and the arguments.
+// -   `#callWithCode______` takes the calling account, the accout to execute as, the code to execute (as a map), the gas limit, the amount to transfer, and the arguments.
+// -   `#return__` is a placeholder for the calling program, specifying where to place the returned data in memory.
 
 
     syntax InternalOp ::= "#checkCall" Int Int
@@ -1291,6 +1246,7 @@ module EVM
       ~> #transferFunds ACCTFROM ACCTTO VALUE
       ~> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS
 
+
     rule <mode> EXECMODE </mode>
          <k> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS
           => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
@@ -1342,8 +1298,7 @@ module EVM
          <localMem> LM => LM [ START := #take(minInt(WIDTH, #sizeWordStack(WS)), WS) ] </localMem>
 
 
-// For each `CALL*` operation, we make a corresponding call to `#call` and a
-// state-change to setup the custom parts of the calling environment.
+// For each `CALL*` operation, we make a corresponding call to `#call` and a state-change to setup the custom parts of the calling environment.
 
 
     syntax CallOp ::= "CALL"
@@ -1393,10 +1348,8 @@ module EVM
 
 // ### Account Creation/Deletion
 
-// -   `#create____` transfers the endowment to the new account and triggers the
-//     execution of the initialization code.
-// -   `#codeDeposit_` checks the result of initialization code and whether the
-//     code deposit can be paid, indicating an error if not.
+// -   `#create____` transfers the endowment to the new account and triggers the execution of the initialization code.
+// -   `#codeDeposit_` checks the result of initialization code and whether the code deposit can be paid, indicating an error if not.
 
 
     syntax InternalOp ::= "#create" Int Int Int Int WordStack
@@ -1429,6 +1382,7 @@ module EVM
       ~> #newAccount ACCTTO
       ~> #transferFunds ACCTFROM ACCTTO VALUE
       ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
+
 
     rule <mode> EXECMODE </mode>
          <k> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
@@ -1504,8 +1458,7 @@ module EVM
       requires SCHED =/=K FRONTIER
 
 
-// `CREATE` will attempt to `#create` the account using the initialization code and
-// cleans up the result with `#codeDeposit`.
+// `CREATE` will attempt to `#create` the account using the initialization code and cleans up the result with `#codeDeposit`.
 
 
     syntax TernStackOp ::= "CREATE"
@@ -1527,9 +1480,8 @@ module EVM
          </account>
 
 
-// `SELFDESTRUCT` marks the current account for deletion and transfers funds out of
-// the current account. Self destructing to yourself, unlike a regular transfer,
-// destroys the balance in the account, irreparably losing it.
+// `SELFDESTRUCT` marks the current account for deletion and transfers funds out of the current account.
+// Self destructing to yourself, unlike a regular transfer, destroys the balance in the account, irreparably losing it.
 
 
     syntax UnStackOp ::= "SELFDESTRUCT"
@@ -1564,8 +1516,7 @@ module EVM
 // Precompiled Contracts
 // =====================
 
-// -   `#precompiled` is a placeholder for the 4 pre-compiled contracts at
-//     addresses 1 through 4.
+// -   `#precompiled` is a placeholder for the 4 pre-compiled contracts at addresses 1 through 4.
 
 
     syntax NullStackOp   ::= PrecompiledOp
@@ -1616,21 +1567,17 @@ module EVM
 // Ethereum Gas Calculation
 // ========================
 
-// The gas calculation is designed to mirror the style of the yellowpaper. Gas is
-// consumed either by increasing the amount of memory being used, or by executing
-// opcodes.
+// The gas calculation is designed to mirror the style of the yellowpaper.
+// Gas is consumed either by increasing the amount of memory being used, or by executing opcodes.
 
 // Memory Consumption
 // ------------------
 
-// Memory consumed is tracked to determine the appropriate amount of gas to charge
-// for each operation. In the yellowpaper, each opcode is defined to consume zero
-// gas unless specified otherwise next to the semantics of the opcode (appendix H).
+// Memory consumed is tracked to determine the appropriate amount of gas to charge for each operation.
+// In the yellowpaper, each opcode is defined to consume zero gas unless specified otherwise next to the semantics of the opcode (appendix H).
 
-// -   `#memory` computes the new memory size given the old size and next operator
-//     (with its arguments).
-// -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper
-//     which helps track the memory used.
+// -   `#memory` computes the new memory size given the old size and next operator (with its arguments).
+// -   `#memoryUsageUpdate` is the function `M` in appendix H of the yellowpaper which helps track the memory used.
 
 
     syntax Int ::= #memory ( OpCode , Int ) [function]
@@ -1727,11 +1674,9 @@ module EVM
 // Execution Gas
 // -------------
 
-// Each opcode has an intrinsic gas cost of execution as well (appendix H of the
-// yellowpaper).
+// Each opcode has an intrinsic gas cost of execution as well (appendix H of the yellowpaper).
 
-// -   `#gasExec` loads all the relevant surronding state and uses that to compute
-//     the intrinsic execution gas of each opcode.
+// -   `#gasExec` loads all the relevant surronding state and uses that to compute the intrinsic execution gas of each opcode.
 
 
     syntax InternalOp ::= #gasExec ( Schedule , OpCode )
@@ -1854,11 +1799,9 @@ module EVM
     rule <k> #gasExec(_, ID)     =>  15 +Int   3 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
 
 
-// There are several helpers for calculating gas (most of them also specified in
-// the yellowpaper).
+// There are several helpers for calculating gas (most of them also specified in the yellowpaper).
 
-// Note: These are all functions as the operator `#gasExec` has already loaded all
-// the relevant state.
+// Note: These are all functions as the operator `#gasExec` has already loaded all the relevant state.
 
 
     syntax Int ::= Csstore ( Schedule , Int , Int ) [function]
@@ -1925,15 +1868,11 @@ module EVM
 // Fee Schedule from C++ Implementation
 // ------------------------------------
 
-// The [C++ Implementation of EVM](https://github.com/ethereum/cpp-ethereum)
-// specifies several different "profiles" for how the VM works. Here we provide
-// each protocol from the C++ implementation, as the yellowpaper does not contain
-// all the different profiles. Specify which profile by passing in the argument
-// `-cSCHEDULE=<FEE_SCHEDULE>` when calling `krun` (the available `<FEE_SCHEDULE>`
-// are supplied here).
+// The [C++ Implementation of EVM](https://github.com/ethereum/cpp-ethereum) specifies several different "profiles" for how the VM works.
+// Here we provide each protocol from the C++ implementation, as the yellowpaper does not contain all the different profiles.
+// Specify which profile by passing in the argument `-cSCHEDULE=<FEE_SCHEDULE>` when calling `krun` (the available `<FEE_SCHEDULE>` are supplied here).
 
-// A `ScheduleFlag` is a boolean determined by the fee schedule; applying a
-// `ScheduleFlag` to a `Schedule` yields whether the flag is set or not.
+// A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `ScheduleFlag` to a `Schedule` yields whether the flag is set or not.
 
 
     syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function]
@@ -1943,8 +1882,7 @@ module EVM
  // --------------------------------------------------------------------------------------------------------------------------
 
 
-// A `ScheduleConst` is a constant determined by the fee schedule; applying a
-// `ScheduleConst` to a `Schedule` yields the correct constant for that schedule.
+// A `ScheduleConst` is a constant determined by the fee schedule; applying a `ScheduleConst` to a `Schedule` yields the correct constant for that schedule.
 
 
     syntax Int ::= ScheduleConst "<" Schedule ">" [function]
@@ -2103,28 +2041,21 @@ module EVM
 // EVM Program Representations
 // ===========================
 
-// EVM programs are represented algebraically in K, but programs can load and
-// manipulate program data directly. The opcodes `CODECOPY` and `EXTCODECOPY` rely
-// on the assembled form of the programs being present. The opcode `CREATE` relies
-// on being able to interperet EVM data as a program.
+// EVM programs are represented algebraically in K, but programs can load and manipulate program data directly.
+// The opcodes `CODECOPY` and `EXTCODECOPY` rely on the assembled form of the programs being present.
+// The opcode `CREATE` relies on being able to interperet EVM data as a program.
 
 // This is a program representation dependence, which we might want to avoid.
-// Perhaps the only program representation dependence we should have is the hash of
-// the program; doing so achieves:
+// Perhaps the only program representation dependence we should have is the hash of the program; doing so achieves:
 
-// -   Program representation independence (different analysis tools on the
-//     language don't have to ensure they have a common representation of programs,
-//     just a common interperetation of the data-files holding programs).
-// -   Programming language independence (we wouldn't even have to commit to a
-//     particular language or interperetation of the data-file).
-// -   Only depending on the hash allows us to know that we have *exactly* the
-//     correct data-file (program), and nothing more.
+// -   Program representation independence (different analysis tools on the language don't have to ensure they have a common representation of programs, just a common interperetation of the data-files holding programs).
+// -   Programming language independence (we wouldn't even have to commit to a particular language or interperetation of the data-file).
+// -   Only depending on the hash allows us to know that we have *exactly* the correct data-file (program), and nothing more.
 
 // Disassembler
 // ------------
 
-// After interpreting the strings representing programs as a `WordStack`, it should
-// be changed into an `OpCodes` for use by the EVM semantics.
+// After interpreting the strings representing programs as a `WordStack`, it should be changed into an `OpCodes` for use by the EVM semantics.
 
 // -   `#dasmOpCodes` interperets `WordStack` as an `OpCodes`.
 // -   `#dasmPUSH` handles the case of a `PushOp`.

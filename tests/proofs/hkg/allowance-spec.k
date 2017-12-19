@@ -1,11 +1,10 @@
 // HKG Token - Full Proof Claims
 // =============================
 
-// We now present reachability claims used for verification, one for each function
-// in the ERC20 specification. Since the HKG token contract contains only
-// sequential code (no loops), we only need one reachability claim per branch per
-// function. In the following claims, any symbol starting with a `%` indicates a
-// constant which has been replaced by a symbol for clarity. In particular:
+// We now present reachability claims used for verification, one for each function in the ERC20 specification.
+// Since the HKG token contract contains only sequential code (no loops), we only need one reachability claim per branch per function.
+// In the following claims, any symbol starting with a `%` indicates a constant which has been replaced by a symbol for clarity.
+// In particular:
 
 // -   `%HKG_Program` is the EVM bytecode for the Hacker Gold token program;
 // -   `TRANSFER` represents the symbolic amount to transfer;
@@ -15,8 +14,7 @@
 // Allowance Function
 // ------------------
 
-// Here we provide a specification file containing a reachability rule for the
-// verifying the correctness of the HKG Token's Allowance Function.
+// Here we provide a specification file containing a reachability rule for the verifying the correctness of the HKG Token's Allowance Function.
 
 
 module TOKEN-SPEC
@@ -63,16 +61,14 @@ imports ETHEREUM-SIMULATION
          <activeAccounts> %ACCT_ID |-> false </activeAccounts>
          <accounts>
            <account>
-             <acctID>  %ACCT_ID          </acctID>
-             <balance> BAL               </balance>
+             <acctID>  %ACCT_ID      </acctID>
+             <balance> BAL           </balance>
              <code>    %HKG_ProgramBytes </code>
-             <nonce>   0                 </nonce>
-             <storage> %ACCT_1_BALANCE |-> B1:Int
-                       %ACCT_1_ALLOWED |-> A1:Int
+             <nonce>   0            </nonce>
+             <storage>
+                       ...
                        %ACCT_2_BALANCE |-> B2:Int
-                       %ACCT_2_ALLOWED |-> A2:Int
-                       3 |-> %ORIGIN_ID
-                       4 |-> %CALLER_ID
+                      ...
              </storage>
            </account>
          </accounts>
