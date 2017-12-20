@@ -85,6 +85,8 @@ These helper constants make writing the proof claims simpler/cleaner.
 // Viper
 ///////////////
 
+  rule chop(I) => I modInt /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936 [concrete, smt-lemma]
+
   syntax Int ::= nthbyteof(Int, Int, Int) [function, smtlib(smt_nthbyteof)]
 
   rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]

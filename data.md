@@ -49,7 +49,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `chop` interperets an integers modulo $2^256$.
 
 ```{.k .uiuck .rvk}
-    syntax Int ::= chop ( Int ) [function]
+    syntax Int ::= chop ( Int ) [function, smtlib(chop)]
  // --------------------------------------
     rule chop ( I:Int ) => I %Int pow256 requires I <Int 0  orBool I >=Int pow256 [concrete]
     rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256 [concrete]
