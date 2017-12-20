@@ -420,9 +420,9 @@ The local memory of execution is a byte-array (instead of a word-array).
 ```{.k .uiuck .rvk}
     syntax Int ::= #asWord ( WordStack ) [function, smtlib(asWord)]
  // ---------------------------------------------------------------
-    rule #asWord( .WordStack )    => 0
-    rule #asWord( W : .WordStack) => W
-    rule #asWord( W0 : W1 : WS )  => #asWord(((W0 *Word 256) +Word W1) : WS)
+    rule #asWord( .WordStack     ) => 0
+    rule #asWord( W : .WordStack ) => W
+    rule #asWord( W0 : W1 : WS   ) => #asWord(((W0 *Word 256) +Word W1) : WS)
 
     syntax Int ::= #asInteger ( WordStack ) [function]
  // --------------------------------------------------
@@ -433,7 +433,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax Account ::= #asAccount ( WordStack ) [function]
  // ------------------------------------------------------
     rule #asAccount( .WordStack ) => .Account
-    rule #asAccount( W : WS )     => #asWord(W : WS)
+    rule #asAccount( W : WS     ) => #asWord(W : WS)
 
     syntax WordStack ::= #asByteStack ( Int )             [function]
                        | #asByteStack ( Int , WordStack ) [function, klabel(#asByteStackAux), smtlib(asByteStack)]
