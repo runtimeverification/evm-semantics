@@ -48,16 +48,16 @@ tests/%/make.timestamp: tests/ethereum-tests/%.json
 blockchain_tests=$(wildcard tests/BlockchainTests/*/*/*/*.json)
 vm_tests=$(wildcard tests/VMTests/*/*/*.json)
 all_tests=$(vm_tests) $(blockchain_tests)
-skipped_tests=$(wildcard tests/VMTests/vmPerformance/*/*.json) \
+slow_tests=$(wildcard tests/VMTests/vmPerformance/*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Constantinople.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth_d1g0v0/*.json)
 
-passing_tests=$(filter-out $(skipped_tests), $(all_tests))
-passing_vm_tests=$(filter-out $(skipped_tests), $(vm_tests))
-passing_blockchain_tests=$(filter-out $(skipped_tests), $(blockchain_tests))
+passing_tests=$(filter-out $(slow_tests), $(all_tests))
+passing_vm_tests=$(filter-out $(slow_tests), $(vm_tests))
+passing_blockchain_tests=$(filter-out $(slow_tests), $(blockchain_tests))
 passing_targets=$(passing_tests:=.test)
 passing_vm_targets=$(passing_vm_tests:=.test)
 passing_blockchain_targets=$(passing_blockchain_tests:=.test)
