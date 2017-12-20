@@ -5,7 +5,7 @@ Here, we define analysis tools specific to EVM.
 These tools are defined as extensions of the semantics, utilizing the underlying machinery to do execution.
 One benefit of K is that we do not have to re-specify properties about the operational behavior in our analysis tools; instead we can take the operational behavior directly.
 
-```{.k .uiuck .rvk}
+```{.k .java .ocaml}
 requires "evm.k"
 
 module EVM-ANALYSIS
@@ -22,7 +22,7 @@ This tool should be extended to take advantage of the symbolic execution engine 
 
 -   The mode `GASANALYZE` performs gas analysis of the program instead of executing normally.
 
-```{.k .uiuck .rvk}
+```{.k .java .ocaml}
     syntax Mode ::= "GASANALYZE"
 ```
 
@@ -31,7 +31,7 @@ We'll need to make summaries of the state which collect information about how mu
 -   `#beginSummary` appends a new (unfinished) summary entry in the `analysis` cell under the key `"gasAnalyze"`.
 -   `#endSummary` looks for an unfinished summary entry by the key `"gasAnalyze"` and performs the substraction necessary to state how much gas has been used since the corresponding `#beginSummary`.
 
-```{.k .uiuck .rvk}
+```{.k .java .ocaml}
     syntax Summary ::= "{" Int "|" Int "|" Int "}"
                      | "{" Int "==>" Int "|" Int "|" Int "}"
  // --------------------------------------------------------
@@ -50,7 +50,7 @@ We'll need to make summaries of the state which collect information about how mu
 
 -   In `GASANALYZE` mode, summaries of the state are taken at each `#gasBreaks` opcode, otherwise execution is as in `NORMAL`.
 
-```{.k .uiuck .rvk}
+```{.k .java .ocaml}
     rule <mode> GASANALYZE </mode>
          <k> #next => #setMode NORMAL ~> #execTo #gasBreaks ~> #setMode GASANALYZE ... </k>
          <pc> PCOUNT </pc>
@@ -76,7 +76,7 @@ We'll need to make summaries of the state which collect information about how mu
 
 -   `#gasAnalyze` analyzes the gas of a chunk of code by setting up the analysis state appropriately and then setting the mode to `GASANALYZE`.
 
-```{.k .uiuck .rvk}
+```{.k .java .ocaml}
     syntax KItem ::= "#gasAnalyze"
  // ------------------------------
     rule <k> #gasAnalyze => #setGas 1000000000 ~> #beginSummary ~> #setMode GASANALYZE ~> #execute ~> #endSummary ... </k>

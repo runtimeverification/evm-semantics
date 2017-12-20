@@ -1,11 +1,11 @@
 #!/bin/sh
-interpreter="$(dirname "$0")/.build/rvk/driver-kompiled/interpreter"
+interpreter="$(dirname "$0")/.build/ocaml/driver-kompiled/interpreter"
 kast="$(mktemp)"
 output="$(mktemp)"
 kast_output="$(mktemp)"
 trap "rm -rf $kast $output $kast_output" INT TERM EXIT
 "$(dirname "$0")/kast-json.py" "$1" > "$kast"
-$interpreter "$(dirname "$0")/.build/rvk/driver-kompiled/realdef.cma" -c PGM "$kast" textfile -c SCHEDULE '`DEFAULT_EVM`(.KList)' text -c MODE '`VMTESTS_EVM`(.KList)' text --output-file "$output"
+$interpreter "$(dirname "$0")/.build/ocaml/driver-kompiled/realdef.cma" -c PGM "$kast" textfile -c SCHEDULE '`DEFAULT_EVM`(.KList)' text -c MODE '`VMTESTS_EVM`(.KList)' text --output-file "$output"
 exit=$?
 if [ $exit -eq 0 ]; then
   exit 0

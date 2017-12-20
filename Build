@@ -23,12 +23,10 @@ pretty_diff() {
     fi
 }
 
-lint_krun_uiuck() {
+lint_krun() {
     # Format, &gt; entity > and make each K task start on a new line
     xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
 }
-
-lint_krun_rvk() { cat - ; }
 
 # Runners
 # -------
@@ -37,6 +35,9 @@ run_env() {
     local run_file=$1
     local cmode=""
     local cschedule=${cSCHEDULE:-DEFAULT}
+    local build_dir="$(pwd)/.build"
+    local release_dir="$build_dir/k/k-distribution/target/release/k"
+    local lib_dir="$build_dir/local/lib"
     case "$run_file" in
        *gas-analysis/*   ) cmode="GASANALYZE" ;;
        *VMTests/*        ) cmode="VMTESTS"    ;;
@@ -46,28 +47,32 @@ run_env() {
     esac
     export cMODE="$cmode"
     export cSCHEDULE="$cschedule"
+    export PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH"
+    export LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
+    eval $(opam config env)
 }
 
-run_uiuck() {
+run_krun() {
     local run_file=$1 ; shift
+    local backend=$1  ; shift
     run_env "$run_file"
     export K_OPTS=-Xss500m
-    krun --directory .build/$K_VERSION/ -cSCHEDULE="$cSCHEDULE" -cMODE="$cMODE" "$run_file" "$@"
+    krun --directory .build/$backend/ -cSCHEDULE="$cSCHEDULE" -cMODE="$cMODE" "$run_file" "$@"
 }
 
-run_rvk() {
+run_interpreter() {
     test_file="$1"
     run_env "$test_file"
     (   set +e
-        interpreter="$(dirname "$0")/.build/rvk/driver-kompiled/interpreter"
+        interpreter="$(dirname "$0")/.build/ocaml/driver-kompiled/interpreter"
         kast="$(mktemp)"
         output="$(mktemp)"
         kast_output="$(mktemp)"
         trap "rm -rf $kast $output $kast_output" INT TERM EXIT
         "$(dirname "$0")/kast-json.py" "$test_file" > "$kast"
         set +e
-        $interpreter "$(dirname "$0")/.build/rvk/driver-kompiled/realdef.cma" -c PGM "$kast" textfile \
-                     -c SCHEDULE '`DEFAULT_EVM`(.KList)' text -c MODE '`VMTESTS_EVM`(.KList)' text \
+        $interpreter "$(dirname "$0")/.build/ocaml/driver-kompiled/realdef.cma" -c PGM "$kast" textfile \
+                     -c SCHEDULE '`DEFAULT_EVM`(.KList)' text -c MODE "\`${cMODE}_EVM\`(.KList)" text \
                      --output-file "$output"
         exit_status="$?"
         k-bin-to-text "$output" "$kast_output"
@@ -78,27 +83,19 @@ run_rvk() {
 }
 
 run_proof() {
-    [[ "$K_VERSION" == 'uiuck' ]] || die "Proofs must be run with 'K_VERSION=uiuck'."
     local proof_file="$1" ; shift
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
     run_env "$proof_file"
     export K_OPTS=-Xmx2G
-    ( krun --directory .build/$K_VERSION/ -cSCHEDULE=$cSCHEDULE -cMODE=$cMODE \
+    ( krun --directory .build/java/ -cSCHEDULE=$cSCHEDULE -cMODE=$cMODE \
          --z3-executable tests/templates/dummy-proof-input.json --prove "$proof_file" \
          </dev/null # grumble grumble `krun --prove` consumes stdin
     )
 }
 
-run_krun() {
-    progress "running: $1"
-    [[ -f "$1" ]] || die "$1 does not exist"
-    ( run_"$K_VERSION" "$1" | lint_krun_"$K_VERSION" )
-}
-
 run_kdebug() {
-    [[ "$K_VERSION" == 'uiuck' ]] || die "Debugger must be run with 'K_VERSION=uiuck'. Currently '$K_VERSION'."
     progress "debugging: $1"
-    ( run_"$K_VERSION" "$1" --debug --debugger )
+    ( run_krun "$1" java --debug --debugger )
 }
 
 # Testers
@@ -107,16 +104,21 @@ run_kdebug() {
 run_test() {
     test_file="$1"; shift
     case "$test_file" in
-        *proofs/*) ( pretty_diff --label expected <(echo "true") \
-                                 --label actual   <(run_proof "$test_file")
-                   )
-                   ;;
-        *        ) output_expected_file=tests/templates/output-success.txt
-                   [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
-                   ( pretty_diff --label expected <(cat "$output_expected_file") \
-                                 --label actual   <(run_"$K_VERSION" "$test_file" | lint_krun_"$K_VERSION")
-                   )
-                   ;;
+        *proofs/*      ) ( pretty_diff --label expected <(echo "true") \
+                                       --label actual   <(run_proof "$test_file")
+                         )
+                         ;;
+        *gas-analysis/*) [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
+                         ( pretty_diff --label expected <(cat "$output_expected_file") \
+                                       --label actual   <(run_krun "$test_file" ocaml | lint_krun )
+                         )
+                         ;;
+        *              ) output_expected_file=tests/templates/output-success.txt
+                         [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
+                         ( pretty_diff --label expected <(cat "$output_expected_file") \
+                                       --label actual   <(run_interpreter "$test_file" )
+                         )
+                         ;;
     esac
 }
 
@@ -141,7 +143,6 @@ case "$run_command" in
     prove) run_proof  "$1" ;;
 
     *)             echo "
-    K_VERSION: $K_VERSION
     usage:
 
        # Running
@@ -149,7 +150,7 @@ case "$run_command" in
        $0 run   <pgm>   Run a single EVM program
        $0 test  <pgm>   Run a single EVM program like it's a test
        $0 debug <pgm>   Run a single EVM program in the debugger
-       $0 prove <spec>  Attempt to prove the specification using UIUC-K's RL prover
+       $0 prove <spec>  Attempt to prove the specification using K's RL prover
 
        Note: <pgm> and <spec> here are paths to files, *not* test lists.
        These files should be Ethereum programs (or specifications).
