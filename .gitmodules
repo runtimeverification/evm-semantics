@@ -3,12 +3,8 @@
 	url = https://github.com/ethereum/tests.git
 	branch = develop
 	ignore = untracked
-[submodule "tests/ci/uiuc-k"]
-	path = tests/ci/uiuc-k
-	url = https://github.com/kframework/k/
-	ignore = untracked
-[submodule "tests/ci/rv-k"]
-	path = tests/ci/rv-k
+[submodule ".build/k"]
+	path = .build/k
 	url = https://github.com/runtimeverification/k
 	ignore = untracked
 [submodule ".build/secp256k1"]
