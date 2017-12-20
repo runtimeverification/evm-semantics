@@ -4,7 +4,7 @@ KEVM Verification
 Using K's reachability logic theorem prover, we're able to verify many properties about EVM programs as reachability claims.
 This module defines some helpers which make writing specifications simpler.
 
-```{.k .uiuck}
+```{.k .java}
 requires "evm.k"
 
 module VERIFICATION
@@ -13,7 +13,7 @@ module VERIFICATION
 
 This `smt-lemma` helps Z3 reason about stack over/under flow.
 
-```{.k .uiuck}
+```{.k .java}
     rule #sizeWordStack ( _ , _ ) >=Int 0 => true [smt-lemma]
     rule #sizeWordStack ( WS , N:Int )
       => #sizeWordStack ( WS , 0 ) +Int N
@@ -31,7 +31,7 @@ Sum to N
 As a demonstration of simple reachability claims involing a circularity, we prove the EVM [Sum to N](proofs/sum-to-n.md) program correct.
 This program sums the numbers from 1 to N (for sufficiently small N), including pre-conditions dis-allowing integer under/overflow and stack overflow.
 
-```{.k .uiuck}
+```{.k .java}
     syntax Map ::= "sumTo" "(" Int ")" [function]
  // ---------------------------------------------
     rule sumTo(N)
@@ -52,7 +52,7 @@ Hacker Gold (HKG) Token Smart Contract
 Several proofs about the [HKG Token functions](proofs/hkg.md) have been performed.
 These helper constants make writing the proof claims simpler/cleaner.
 
-```{.k .uiuck}
+```{.k .java}
     syntax Int ::= "%ACCT_1_BALANCE" [function]
                  | "%ACCT_2_BALANCE" [function]
                  | "%ACCT_1_ALLOWED" [function]
