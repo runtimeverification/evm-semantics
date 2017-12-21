@@ -1,7 +1,7 @@
 # Common to all versions of K
 # ===========================
 
-.PHONY: all clean build defn split-tests split-bchain-tests split-proof-tests test sphinx
+.PHONY: all clean build defn vm-tests split-tests split-bchain-tests split-proof-tests test sphinx
 
 all: build split-tests
 
@@ -32,7 +32,7 @@ defn: K_VERSION_set $(defn_files)
 # Tests
 # -----
 
-split-tests: split-vm-tests split-bchain-tests split-proof-tests
+split-tests: vm-tests split-bchain-tests split-proof-tests
 
 tests/ethereum-tests/%.json:
 	@echo "==  git submodule: cloning upstreams test repository"
@@ -67,8 +67,7 @@ blockchain-test: $(passing_blockchain_targets)
 
 # ### VMTests
 
-split-vm-tests: \
-		  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/VMTests/*/*.json))
+vm-tests: tests/ethereum-tests/make.timestamp
 
 tests/VMTests/%.test: tests/VMTests/% build
 	./vmtest $<
