@@ -111,9 +111,9 @@ module TRANSFERFROM-SPEC
               )
             </code>
             <storage>
-              sha3(sha3(1) +Word FROM_ID) +Word CALLER_ID |-> (ALLOW => ALLOW -Int VALUE) // TODO: auto gen
               sha3(0) +Word FROM_ID |-> (BAL_FROM => BAL_FROM -Int VALUE) // TODO: auto gen
               sha3(0) +Word TO_ID   |-> (BAL_TO   => BAL_TO   +Int VALUE) // TODO: auto gen
+              sha3(sha3(1) +Word FROM_ID) +Word CALLER_ID |-> (ALLOW => ALLOW -Int VALUE) // TODO: auto gen
               _:Map
             </storage>
             <nonce> _ </nonce>
@@ -137,9 +137,9 @@ module TRANSFERFROM-SPEC
      andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
      andBool 0 <=Int ALLOW     andBool ALLOW     <Int (2 ^Int 256)
      andBool FROM_ID =/=Int TO_ID
-     andBool VALUE <=Int ALLOW
      andBool VALUE <=Int BAL_FROM
      andBool BAL_TO +Int VALUE <Int (2 ^Int 256) andBool (VALUE ==Int 0 xorBool BAL_TO +Word VALUE >Int BAL_TO) // TODO: remove
+     andBool VALUE <=Int ALLOW
      andBool RET_VAL ==Int 1
    //andBool G >Int 100000
 
