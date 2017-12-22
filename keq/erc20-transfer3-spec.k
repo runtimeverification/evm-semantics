@@ -124,7 +124,6 @@ module TRANSFER-SPEC
    //andBool G >Int 100000
 
 // TODO: CALLER_ID ==Int TO_ID
-// TODO: consider balance is not enough
 // TODO: when value < 0
 
 // TODO: properly consider exception preserving the input status

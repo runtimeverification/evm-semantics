@@ -85,6 +85,21 @@ These helper constants make writing the proof claims simpler/cleaner.
 // Viper
 ///////////////
 
+  syntax Int ::= bool2int(Bool) [function] // [smtlib(smt_bool2int)]
+  rule bool2int(B) => 1 requires B
+  rule bool2int(B) => 0 requires notBool(B)
+
+  // for addition overflow check
+  rule bool2int(B ==K 0) |Int bool2int(chop(A +Int B) >Int A) => 1
+    requires A +Int B <Int /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936
+     andBool 0 <=Int A andBool A <Int /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936
+     andBool 0 <=Int B andBool B <Int /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936
+
+  // for gas calculation
+  rule A -Int (#ifInt C #then B1 #else B2 #fi) => #ifInt C #then (A -Int B1) #else (A -Int B2) #fi
+  rule (#ifInt C #then B1 #else B2 #fi) -Int A => #ifInt C #then (B1 -Int A) #else (B2 -Int A) #fi
+
+  // TODO: change semantics
   rule chop(I) => I modInt /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936 [concrete, smt-lemma]
 
   syntax Int ::= nthbyteof(Int, Int, Int) [function, smtlib(smt_nthbyteof)]
@@ -98,6 +113,7 @@ These helper constants make writing the proof claims simpler/cleaner.
   rule 0 <=Int chop(V)                     => true
   rule         chop(V) <Int /* 2 ^Int 256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936 => true
 
+  // syntactic sugar
   syntax WordStack ::= int2wordstack(Int, Int) [function]
                      | int2wordstackaux(Int, Int, Int, WordStack) [function]
   rule int2wordstack(X, N) => int2wordstackaux(X, N -Int 1, N, .WordStack)
@@ -142,6 +158,7 @@ These helper constants make writing the proof claims simpler/cleaner.
   rule #asByteStack(V) => int2wordstack(V, 32)
     requires 0 <=Int V andBool V <Int (2 ^Int 256)
 
+  // for extracting first four bytes of function signature
   rule #asByteStack(#asWord(WS)) => WS
     requires noOverflow(WS)
 
@@ -153,6 +170,7 @@ These helper constants make writing the proof claims simpler/cleaner.
 
 
 
+  // for medeling collision-free hash function
   syntax Int ::= hash(Int) [smtlib(smt_hash)]
 
   syntax Int ::= sha3(Int) [function]
