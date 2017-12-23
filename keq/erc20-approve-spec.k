@@ -131,4 +131,6 @@ module APPROVE-SPEC
      andBool RET_VAL ==Int 1
    //andBool G >Int 100000
 
+// NOTE: negative VALUE is not possible since it is of `num256` type
+
 endmodule
