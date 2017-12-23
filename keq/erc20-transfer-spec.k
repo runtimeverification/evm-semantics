@@ -133,13 +133,11 @@ module TRANSFER-SPEC
      andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
      andBool CALLER_ID =/=Int TO_ID
      andBool VALUE <=Int BAL_FROM
-   //andBool (VALUE ==Int 0 xorBool BAL_TO +Word VALUE >Int BAL_TO) // TODO: remove
-     andBool BAL_TO +Int VALUE <Int (2 ^Int 256)
+     andBool BAL_TO +Int VALUE <Int (2 ^Int 256) // viper overflow check: (VALUE ==Int 0 xorBool BAL_TO +Word VALUE >Int BAL_TO)
      andBool RET_VAL ==Int 1
    //andBool G >Int 100000
 
-// TODO: CALLER_ID ==Int TO_ID
-// TODO: when value < 0
+// NOTE: negative VALUE is not possible since it is of `num256` type
 
   // to avoid unnecessary case split
   rule <k> LT W0 W1 => bool2int(W0  <Int W1) ~> #push ... </k> [trusted]
