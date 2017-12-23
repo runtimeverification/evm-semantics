@@ -2,7 +2,7 @@ module BALANCEOF-SPEC
   imports ETHEREUM-SIMULATION
 
   rule
-    <k> #execute => (RETURN R:Int 32  ~> _) </k>
+    <k> #execute => (RETURN RET_ADDR:Int 32  ~> _) </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> DEFAULT </schedule> // TODO: pick a right one
@@ -36,95 +36,21 @@ module BALANCEOF-SPEC
           <callData> // TODO: auto gen
             int2wordstack(F, 4)
             ++
-            int2wordstack(O, 32)
-//             nthbyteof(F,  0,  4)
-//           : nthbyteof(F,  1,  4)
-//           : nthbyteof(F,  2,  4)
-//           : nthbyteof(F,  3,  4)
-//           : nthbyteof(O,  0, 32)
-//           : nthbyteof(O,  1, 32)
-//           : nthbyteof(O,  2, 32)
-//           : nthbyteof(O,  3, 32)
-//           : nthbyteof(O,  4, 32)
-//           : nthbyteof(O,  5, 32)
-//           : nthbyteof(O,  6, 32)
-//           : nthbyteof(O,  7, 32)
-//           : nthbyteof(O,  8, 32)
-//           : nthbyteof(O,  9, 32)
-//           : nthbyteof(O, 10, 32)
-//           : nthbyteof(O, 11, 32)
-//           : nthbyteof(O, 12, 32)
-//           : nthbyteof(O, 13, 32)
-//           : nthbyteof(O, 14, 32)
-//           : nthbyteof(O, 15, 32)
-//           : nthbyteof(O, 16, 32)
-//           : nthbyteof(O, 17, 32)
-//           : nthbyteof(O, 18, 32)
-//           : nthbyteof(O, 19, 32)
-//           : nthbyteof(O, 20, 32)
-//           : nthbyteof(O, 21, 32)
-//           : nthbyteof(O, 22, 32)
-//           : nthbyteof(O, 23, 32)
-//           : nthbyteof(O, 24, 32)
-//           : nthbyteof(O, 25, 32)
-//           : nthbyteof(O, 26, 32)
-//           : nthbyteof(O, 27, 32)
-//           : nthbyteof(O, 28, 32)
-//           : nthbyteof(O, 29, 32)
-//           : nthbyteof(O, 30, 32)
-//           : nthbyteof(O, 31, 32)
-//           : .WordStack
+            int2wordstack(OWNER, 32)
           </callData>
 
           <callValue> 0 </callValue>
           <wordStack> .WordStack => _ </wordStack>
           <localMem> // TODO: auto gen
-//          28 |-> nthbyteof(F, 0, 4)
-//          29 |-> nthbyteof(F, 1, 4)
-//          30 |-> nthbyteof(F, 2, 4)
-//          31 |-> nthbyteof(F, 3, 4)
             .Map
           =>
           (
-            .Map[ R := int2wordstack(B, 32) ]
-//          int2wordmap(R, B, 32)
-//           R          |-> nthbyteof(B,  0, 32)
-//          (R +Int  1) |-> nthbyteof(B,  1, 32)
-//          (R +Int  2) |-> nthbyteof(B,  2, 32)
-//          (R +Int  3) |-> nthbyteof(B,  3, 32)
-//          (R +Int  4) |-> nthbyteof(B,  4, 32)
-//          (R +Int  5) |-> nthbyteof(B,  5, 32)
-//          (R +Int  6) |-> nthbyteof(B,  6, 32)
-//          (R +Int  7) |-> nthbyteof(B,  7, 32)
-//          (R +Int  8) |-> nthbyteof(B,  8, 32)
-//          (R +Int  9) |-> nthbyteof(B,  9, 32)
-//          (R +Int 10) |-> nthbyteof(B, 10, 32)
-//          (R +Int 11) |-> nthbyteof(B, 11, 32)
-//          (R +Int 12) |-> nthbyteof(B, 12, 32)
-//          (R +Int 13) |-> nthbyteof(B, 13, 32)
-//          (R +Int 14) |-> nthbyteof(B, 14, 32)
-//          (R +Int 15) |-> nthbyteof(B, 15, 32)
-//          (R +Int 16) |-> nthbyteof(B, 16, 32)
-//          (R +Int 17) |-> nthbyteof(B, 17, 32)
-//          (R +Int 18) |-> nthbyteof(B, 18, 32)
-//          (R +Int 19) |-> nthbyteof(B, 19, 32)
-//          (R +Int 20) |-> nthbyteof(B, 20, 32)
-//          (R +Int 21) |-> nthbyteof(B, 21, 32)
-//          (R +Int 22) |-> nthbyteof(B, 22, 32)
-//          (R +Int 23) |-> nthbyteof(B, 23, 32)
-//          (R +Int 24) |-> nthbyteof(B, 24, 32)
-//          (R +Int 25) |-> nthbyteof(B, 25, 32)
-//          (R +Int 26) |-> nthbyteof(B, 26, 32)
-//          (R +Int 27) |-> nthbyteof(B, 27, 32)
-//          (R +Int 28) |-> nthbyteof(B, 28, 32)
-//          (R +Int 29) |-> nthbyteof(B, 29, 32)
-//          (R +Int 30) |-> nthbyteof(B, 30, 32)
-//          (R +Int 31) |-> nthbyteof(B, 31, 32)
+            .Map[ RET_ADDR := int2wordstack(BAL, 32) ]
             _:Map
           )
           </localMem>
-          <pc> 0 /* 6 */ => _ </pc> // TODO: auto gen
-          <gas> /* G */ 20000 => _ </gas>
+          <pc> 0 => _ </pc>
+          <gas> /* G */ 20000 => _ </gas> // NOTE: user provided
           <previousGas> _ => _ </previousGas>
         </txExecState>
 
@@ -170,9 +96,7 @@ module BALANCEOF-SPEC
               )
             </code>
             <storage>
-            //chop(hash(0) +Int O) |-> B:Int
-            //chop(sha3(0) +Int O) |-> B:Int
-              sha3(0) +Word O |-> B:Int
+              sha3(0) +Word OWNER |-> BAL // TODO: auto gen
               _:Map
             </storage>
             <nonce> _ </nonce>
@@ -189,203 +113,8 @@ module BALANCEOF-SPEC
      andBool 0 <=Int CALLER_ID andBool CALLER_ID <Int (2 ^Int 160)
      andBool 0 <=Int ORIGIN_ID andBool ORIGIN_ID <Int (2 ^Int 160)
      andBool F ==Int 1889567281 // TODO: auto gen
-     andBool 0 <=Int O andBool O <Int (2 ^Int 160)
-     andBool 0 <=Int B andBool B <Int (2 ^Int 256)
+     andBool 0 <=Int OWNER     andBool OWNER     <Int (2 ^Int 160)
+     andBool 0 <=Int BAL       andBool BAL       <Int (2 ^Int 256)
    //andBool G >Int 20000
-
-
-  // Abstraction
-
-//rule
-//  <k> SHA3 MEMSTART MEMWIDTH => $keccak(#range(LM, MEMSTART, MEMWIDTH)) ~> #push ... </k>
-//  <localMem> LM </localMem>
-//  [trusted]
-
-//rule
-//  <k> CALLDATALOAD DATASTART => $asWord(CD [ DATASTART .. 32 ]) ~> #push ... </k>
-//  <callData> CD </callData>
-//  [trusted]
-
-//rule
-//  <k> MLOAD INDEX => $asWord(#range(LM, INDEX, 32)) ~> #push ... </k>
-//  <localMem> LM </localMem>
-//  [trusted]
-
-//rule
-//  <k> #asWord(int2wordstack(V, 32)) => V ... </k>
-//  requires 0 <=Int V andBool V <Int (2 ^Int 256)
-//  [trusted]
-
-//rule
-//  <k> $asWord(int2wordstack(V, 32)) => V ... </k>
-//  requires 0 <=Int V andBool V <Int (2 ^Int 256)
-//  [trusted]
-
-//rule
-//  <k> $asWord( nthbyteof(V,  0, 32)
-//             : nthbyteof(V,  1, 32)
-//             : nthbyteof(V,  2, 32)
-//             : nthbyteof(V,  3, 32)
-//             : nthbyteof(V,  4, 32)
-//             : nthbyteof(V,  5, 32)
-//             : nthbyteof(V,  6, 32)
-//             : nthbyteof(V,  7, 32)
-//             : nthbyteof(V,  8, 32)
-//             : nthbyteof(V,  9, 32)
-//             : nthbyteof(V, 10, 32)
-//             : nthbyteof(V, 11, 32)
-//             : nthbyteof(V, 12, 32)
-//             : nthbyteof(V, 13, 32)
-//             : nthbyteof(V, 14, 32)
-//             : nthbyteof(V, 15, 32)
-//             : nthbyteof(V, 16, 32)
-//             : nthbyteof(V, 17, 32)
-//             : nthbyteof(V, 18, 32)
-//             : nthbyteof(V, 19, 32)
-//             : nthbyteof(V, 20, 32)
-//             : nthbyteof(V, 21, 32)
-//             : nthbyteof(V, 22, 32)
-//             : nthbyteof(V, 23, 32)
-//             : nthbyteof(V, 24, 32)
-//             : nthbyteof(V, 25, 32)
-//             : nthbyteof(V, 26, 32)
-//             : nthbyteof(V, 27, 32)
-//             : nthbyteof(V, 28, 32)
-//             : nthbyteof(V, 29, 32)
-//             : nthbyteof(V, 30, 32)
-//             : nthbyteof(V, 31, 32)
-//             : .WordStack ) => V ... </k>
-//  requires 0 <=Int V andBool V <Int (2 ^Int 256)
-//  [trusted]
-
-//rule
-//  <k> #asWord(#padToWidth(32, int2wordstack(V, 4))) => V ... </k>
-//  requires 0 <=Int V andBool V <Int (2 ^Int 32)
-//  [trusted]
-
-//rule
-//  <k> $asWord(#padToWidth(32, int2wordstack(V, 4))) => V ... </k>
-//  requires 0 <=Int V andBool V <Int (2 ^Int 32)
-//  [trusted]
-
-//rule
-//  <k> $asWord( 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : 0
-//             : nthbyteof(V, 0, 4)
-//             : nthbyteof(V, 1, 4)
-//             : nthbyteof(V, 2, 4)
-//             : nthbyteof(V, 3, 4)
-//             : .WordStack ) => V ... </k>
-//  requires 0 <=Int V andBool V <Int (2 ^Int 32)
-//  [trusted]
-
-//rule
-//  <k> $keccak(int2wordstack(V, 32)) => hash(V) ... </k>
-//  requires 0 <=Int V andBool V <Int (2 ^Int 256)
-//  [trusted]
-
-//rule
-//  <k> $keccak( nthbyteof(V,  0, 32)
-//             : nthbyteof(V,  1, 32)
-//             : nthbyteof(V,  2, 32)
-//             : nthbyteof(V,  3, 32)
-//             : nthbyteof(V,  4, 32)
-//             : nthbyteof(V,  5, 32)
-//             : nthbyteof(V,  6, 32)
-//             : nthbyteof(V,  7, 32)
-//             : nthbyteof(V,  8, 32)
-//             : nthbyteof(V,  9, 32)
-//             : nthbyteof(V, 10, 32)
-//             : nthbyteof(V, 11, 32)
-//             : nthbyteof(V, 12, 32)
-//             : nthbyteof(V, 13, 32)
-//             : nthbyteof(V, 14, 32)
-//             : nthbyteof(V, 15, 32)
-//             : nthbyteof(V, 16, 32)
-//             : nthbyteof(V, 17, 32)
-//             : nthbyteof(V, 18, 32)
-//             : nthbyteof(V, 19, 32)
-//             : nthbyteof(V, 20, 32)
-//             : nthbyteof(V, 21, 32)
-//             : nthbyteof(V, 22, 32)
-//             : nthbyteof(V, 23, 32)
-//             : nthbyteof(V, 24, 32)
-//             : nthbyteof(V, 25, 32)
-//             : nthbyteof(V, 26, 32)
-//             : nthbyteof(V, 27, 32)
-//             : nthbyteof(V, 28, 32)
-//             : nthbyteof(V, 29, 32)
-//             : nthbyteof(V, 30, 32)
-//             : nthbyteof(V, 31, 32)
-//             : .WordStack ) => hash(V) ... </k>
-//  requires 0 <=Int V andBool V <Int (2 ^Int 256)
-//  [trusted]
-
-//rule
-//  <k> MSTORE L:Int V:Int => . ... </k>
-//  <localMem>
-//    M:Map
-//  =>
-//    M [  L          <- nthbyteof(V,  0, 32) ]
-//      [ (L +Int  1) <- nthbyteof(V,  1, 32) ]
-//      [ (L +Int  2) <- nthbyteof(V,  2, 32) ]
-//      [ (L +Int  3) <- nthbyteof(V,  3, 32) ]
-//      [ (L +Int  4) <- nthbyteof(V,  4, 32) ]
-//      [ (L +Int  5) <- nthbyteof(V,  5, 32) ]
-//      [ (L +Int  6) <- nthbyteof(V,  6, 32) ]
-//      [ (L +Int  7) <- nthbyteof(V,  7, 32) ]
-//      [ (L +Int  8) <- nthbyteof(V,  8, 32) ]
-//      [ (L +Int  9) <- nthbyteof(V,  9, 32) ]
-//      [ (L +Int 10) <- nthbyteof(V, 10, 32) ]
-//      [ (L +Int 11) <- nthbyteof(V, 11, 32) ]
-//      [ (L +Int 12) <- nthbyteof(V, 12, 32) ]
-//      [ (L +Int 13) <- nthbyteof(V, 13, 32) ]
-//      [ (L +Int 14) <- nthbyteof(V, 14, 32) ]
-//      [ (L +Int 15) <- nthbyteof(V, 15, 32) ]
-//      [ (L +Int 16) <- nthbyteof(V, 16, 32) ]
-//      [ (L +Int 17) <- nthbyteof(V, 17, 32) ]
-//      [ (L +Int 18) <- nthbyteof(V, 18, 32) ]
-//      [ (L +Int 19) <- nthbyteof(V, 19, 32) ]
-//      [ (L +Int 20) <- nthbyteof(V, 20, 32) ]
-//      [ (L +Int 21) <- nthbyteof(V, 21, 32) ]
-//      [ (L +Int 22) <- nthbyteof(V, 22, 32) ]
-//      [ (L +Int 23) <- nthbyteof(V, 23, 32) ]
-//      [ (L +Int 24) <- nthbyteof(V, 24, 32) ]
-//      [ (L +Int 25) <- nthbyteof(V, 25, 32) ]
-//      [ (L +Int 26) <- nthbyteof(V, 26, 32) ]
-//      [ (L +Int 27) <- nthbyteof(V, 27, 32) ]
-//      [ (L +Int 28) <- nthbyteof(V, 28, 32) ]
-//      [ (L +Int 29) <- nthbyteof(V, 29, 32) ]
-//      [ (L +Int 30) <- nthbyteof(V, 30, 32) ]
-//      [ (L +Int 31) <- nthbyteof(V, 31, 32) ]
-//  </localMem>
-//  requires 0 <=Int V andBool V <Int (2 ^Int 256)
-//  [trusted]
 
 endmodule
