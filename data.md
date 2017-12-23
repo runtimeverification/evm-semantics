@@ -52,7 +52,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
     syntax Int ::= chop ( Int ) [function, smtlib(chop)]
  // --------------------------------------
     rule chop ( I:Int ) => I %Int pow256 requires I <Int 0  orBool I >=Int pow256 [concrete]
-    rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256 [concrete]
+    rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256 // [concrete]
 ```
 
 -   `bool2Word` interperets a `Bool` as a `Int`.

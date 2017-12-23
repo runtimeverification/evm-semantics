@@ -85,15 +85,42 @@ These helper constants make writing the proof claims simpler/cleaner.
 // Viper
 ///////////////
 
+  rule 0 |Int N => N
+  rule N |Int 0 => N
+
+  rule 0 &Int N => 0
+  rule N &Int 0 => 0
+
   syntax Int ::= bool2int(Bool) [function] // [smtlib(smt_bool2int)]
   rule bool2int(B) => 1 requires B
   rule bool2int(B) => 0 requires notBool(B)
 
-  // for addition overflow check
-  rule bool2int(B ==K 0) |Int bool2int(chop(A +Int B) >Int A) => 1
-    requires A +Int B <Int /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936
-     andBool 0 <=Int A andBool A <Int /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936
-     andBool 0 <=Int B andBool B <Int /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936
+  rule bool2int(A) |Int bool2int(B) => bool2int(A  orBool B)
+  rule bool2int(A) &Int bool2int(B) => bool2int(A andBool B)
+
+  rule bool2int(A)  ==K 0 => notBool(A)
+  rule bool2int(A)  ==K 1 => A
+  rule bool2int(A) =/=K 0 => A
+  rule bool2int(A) =/=K 1 => notBool(A)
+
+  rule chop(bool2int(B)) => bool2int(B)
+
+//// for viper-specific addition overflow check
+//rule bool2int(B ==K 0) |Int bool2int(chop(A +Int B) >Int A) => 1
+//  requires A +Int B <Int /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936
+//   andBool 0 <=Int A andBool A <Int /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936
+//   andBool 0 <=Int B andBool B <Int /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936
+////
+//rule chop(A +Int B) >Int A => false
+//  requires A +Int B >=Int /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936
+//   andBool 0 <=Int A andBool A <Int /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936
+//   andBool 0 <=Int B andBool B <Int /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936
+
+//// TODO: remove by resolving chop?
+//rule chop(A -Int B) +Int B => A
+//  requires A >=Int B
+//   andBool 0 <=Int A andBool A <Int /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936
+//   andBool 0 <=Int B andBool B <Int /* pow256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936
 
   // for gas calculation
   rule A -Int (#ifInt C #then B1 #else B2 #fi) => #ifInt C #then (A -Int B1) #else (A -Int B2) #fi
