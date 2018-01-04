@@ -334,5 +334,9 @@ byte represetnations of words.
    rule X &Int Y          => Y           requires    (((2 ^Int (log2Int(X) +Int 1)) -Int 1) ==Int X)
                                           andBool      (Y <=Int X)
 
+  rule 0 <=Int keccak(V)                     => true
+  rule         keccak(V) <Int /* 2 ^Int 256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936 => true
+
+
 endmodule
 ```
