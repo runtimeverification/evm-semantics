@@ -414,63 +414,102 @@ Here we provide a specification file containing a reachability rule for the veri
 module TOKEN-SPEC
 imports ETHEREUM-SIMULATION
 
-    rule <k> #execute ... </k>
-         <exit-code> 1       </exit-code>
-         <mode>      NORMAL  </mode>
-         <schedule>  DEFAULT </schedule>
+  rule
+    <k>         #execute => (RETURN R:Int 32  ~> _) </k>
+    <exit-code> 1                                   </exit-code>
+    <mode>      NORMAL                              </mode>
+    <schedule>  DEFAULT                             </schedule>
+    <analysis>  /* _ */ .Map                        </analysis>
 
-         <output>        .WordStack </output>
-         <memoryUsed>    3          </memoryUsed>
-         <callDepth>     0          </callDepth>
-         <callStack>     .List      </callStack>
-         <interimStates> .List      </interimStates>
-         <substateStack> .List      </substateStack>
-         <callLog>       .Set       </callLog>
+    <ethereum>
+      <evm>
+        <output>        /* _ */ .WordStack </output>
+        <memoryUsed>    0 => _             </memoryUsed>
+        <callDepth>     /* CALL_DEPTH */ 0 </callDepth>
+        <callStack>     /* _ */ .List => _ </callStack>
+        <interimStates> /* _ */ .List      </interimStates>
+        <substateStack> /* _ */ .List      </substateStack>
+        <callLog>       /* _ */ .Set       </callLog>
 
-         <program>      %HKG_Program          </program>
-         <programBytes> %HKG_ProgramBytes     </programBytes>
-         <id>           %ACCT_ID              </id>
-         <caller>       %CALLER_ID            </caller>
-         <callData>     .WordStack            </callData>
-         <callValue>    0                     </callValue>
-         <static>       false                 </static>
-         <wordStack>    WS   => WS1:WordStack </wordStack>
-         <localMem>     .Map => ?B:Map        </localMem>
-         <pc>           469  => 573           </pc>
-         <gas>          G    => G -Int 415    </gas>
-         <previousGas>  _    => _             </previousGas>
+        <txExecState>
+          <program>      %HKG_Program      </program>
+          <programBytes> %HKG_ProgramBytes </programBytes>
 
-         <selfDestruct> .Set   </selfDestruct>
-         <log>          .List  </log>
-         <refund>       0 => _ </refund>
+          <id>     ACCT_ID   </id>
+          <caller> CALLER_ID </caller>
 
-         <gasPrice>     _               </gasPrice>
-         <origin>       %ORIGIN_ID      </origin>
-         <gasLimit>     _               </gasLimit>
-         <coinbase>     %COINBASE_VALUE </coinbase>
-         <timestamp>    1               </timestamp>
-         <number>       0               </number>
-         <previousHash> 0               </previousHash>
-         <difficulty>   256             </difficulty>
+          <callData> #abiCallData("allowance", #address(OWNER), #address(SPENDER)) </callData>
 
-         <activeAccounts> %ACCT_ID |-> false </activeAccounts>
-         <accounts>
-           <account>
-             <acctID>  %ACCT_ID          </acctID>
-             <balance> BAL               </balance>
-             <code>    %HKG_ProgramBytes </code>
-             <nonce>   0                 </nonce>
-             <storage> %ACCT_1_BALANCE |-> B1:Int
-                       %ACCT_1_ALLOWED |-> A1:Int
-                       %ACCT_2_BALANCE |-> B2:Int
-                       %ACCT_2_ALLOWED |-> A2:Int
-                       3 |-> %ORIGIN_ID
-                       4 |-> %CALLER_ID
-             </storage>
-           </account>
-         </accounts>
+          <callValue> 0               </callValue>
+          <wordStack> .WordStack => _ </wordStack>
 
-      requires G >=Int 415  andBool #sizeWordStack(WS) <Int 1017
+          <localMem>
+            .Map => ( .Map[ R := #asByteStackInWidth(ALLOWANCE, 32) ] _:Map)
+          </localMem>
+
+          <pc>          0  => _            </pc>
+          <gas>         /* G */ 20000 => _ </gas>
+          <previousGas> _ => _             </previousGas>
+          <static>      false              </static>
+        </txExecState>
+
+        <substate>
+          <selfDestruct> /* _ */ .Set  </selfDestruct>
+          <log>          /* _ */ .List </log>
+          <refund>       /* _ */ 0     </refund>
+        </substate>
+
+        <gasPrice>         _         </gasPrice>
+        <origin>           ORIGIN_ID </origin>
+        <previousHash>     _         </previousHash>
+        <ommersHash>       _         </ommersHash>
+        <coinbase>         _         </coinbase>
+        <stateRoot>        _         </stateRoot>
+        <transactionsRoot> _         </transactionsRoot>
+        <receiptsRoot>     _         </receiptsRoot>
+        <logsBloom>        _         </logsBloom>
+        <difficulty>       _         </difficulty>
+        <number>           _         </number>
+        <gasLimit>         _         </gasLimit>
+        <gasUsed>          _         </gasUsed>
+        <timestamp>        _         </timestamp>
+        <extraData>        _         </extraData>
+        <mixHash>          _         </mixHash>
+        <blockNonce>       _         </blockNonce>
+
+        <ommerBlockHeaders> _ </ommerBlockHeaders>
+        <blockhash>         _ </blockhash>
+      </evm>
+
+      <network>
+        <activeAccounts> ACCT_ID |-> false /* _ */ </activeAccounts>
+
+        <accounts>
+          <account>
+            <acctID>  ACCT_ID           </acctID>
+            <balance> _                 </balance>
+            <code>    %HKG_ProgramBytes </code>
+            <storage>
+              keccak(#asByteStackInWidth(SPENDER, 32) ++ #asByteStackInWidth(keccak(#asByteStackInWidth(OWNER, 32) ++ #asByteStackInWidth(2, 32)), 32)) |-> ALLOWANCE
+              _:Map
+            </storage>
+            <nonce>  _                  </nonce>
+          </account>
+          /* _ */
+        </accounts>
+
+        <txOrder>   _            </txOrder>
+        <txPending> _            </txPending>
+        <messages>  /* _ */ .Bag </messages>
+      </network>
+    </ethereum>
+    requires 0 <=Int ACCT_ID   andBool ACCT_ID   <Int (2 ^Int 160)
+     andBool 0 <=Int CALLER_ID andBool CALLER_ID <Int (2 ^Int 160)
+     andBool 0 <=Int ORIGIN_ID andBool ORIGIN_ID <Int (2 ^Int 160)
+     andBool 0 <=Int OWNER     andBool OWNER     <Int (2 ^Int 160)
+     andBool 0 <=Int SPENDER   andBool SPENDER   <Int (2 ^Int 160)
+     andBool 0 <=Int ALLOWANCE andBool ALLOWANCE <Int (2 ^Int 256)
+
 endmodule
 ```
 
