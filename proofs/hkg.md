@@ -312,121 +312,156 @@ endmodule
 TransferFrom Function
 ---------------------
 
-These parts of the state are constant throughout the proof.
 
-```{.k .transferFrom-then .transferFrom-else}
-module TRANSFER-FROM-SPEC
-    imports ETHEREUM-SIMULATION
+```{.k .transferFrom1}
+module TRANSFERFROM-SPEC
+  imports ETHEREUM-SIMULATION
 
-    rule <k> #execute ... </k>
-         <exit-code> 1 </exit-code>
-         <mode>     NORMAL  </mode>
-         <schedule> DEFAULT </schedule>
+  rule
+    <k>         #execute => (RETURN RET_ADDR:Int 32 ~> _) </k>
+    <exit-code> 1                                         </exit-code>
+    <mode>      NORMAL                                    </mode>
+    <schedule>  DEFAULT                                   </schedule>
+    <analysis>  /* _ */ .Map                              </analysis>
 
-         <output>        .WordStack </output>
-         <memoryUsed>    3          </memoryUsed>
-         <callDepth>     0          </callDepth>
-         <callStack>     .List      </callStack>
-         <interimStates> .List      </interimStates>
-         <substateStack> .List      </substateStack>
-         <callLog>       .Set       </callLog>
+    <ethereum>
+      <evm>
+        <output>        /* _ */ .WordStack </output>
+        <memoryUsed>    0 => _             </memoryUsed>
+        <callDepth>     /* CALL_DEPTH */ 0 </callDepth>
+        <callStack>     /* _ */ .List => _ </callStack>
+        <interimStates> /* _ */ .List      </interimStates>
+        <substateStack> /* _ */ .List      </substateStack>
+        <callLog>       /* _ */ .Set       </callLog>
 
-         <program>      %HKG_Program      </program>
-         <programBytes> %HKG_ProgramBytes </programBytes>
-         <id>           %ACCT_ID          </id>
-         <caller>       %CALLER_ID        </caller>
-         <callData>     .WordStack        </callData>
-         <callValue>    0                 </callValue>
-         <static>       false             </static>
+        <txExecState>
+          <program>      %HKG_Program      </program>
+          <programBytes> %HKG_ProgramBytes </programBytes>
 
-         <gasPrice>     _               </gasPrice>
-         <origin>       %ORIGIN_ID      </origin>
-         <gasLimit>     _               </gasLimit>
-         <coinbase>     %COINBASE_VALUE </coinbase>
-         <timestamp>    1               </timestamp>
-         <number>       0               </number>
-         <previousHash> 0               </previousHash>
-         <difficulty>   256             </difficulty>
+          <id>           ACCT_ID      </id>
+          <caller>       CALLER_ID    </caller>
 
-         <selfDestruct>   .Set               </selfDestruct>
-         <log>            .List              </log>
-         <activeAccounts> %ACCT_ID |-> false </activeAccounts>
-         <messages>       .Bag               </messages>
-```
+          <callData>
+            int2wordstack(F, 4)
+            ++
+            int2wordstack(FROM_ID, 32)
+            ++
+            int2wordstack(TO_ID, 32)
+            ++
+            int2wordstack(VALUE, 32)
+          </callData>
 
-These parts of the proof change, but we would like to avoid specifying exactly how (abstract over their state change).
+          <callValue> 0 </callValue>
+          <wordStack> .WordStack => _ </wordStack>
+          <localMem>
+            .Map
+                           =>
+            .Map[ RET_ADDR := int2wordstack(RET_VAL, 32) ]
+            _:Map
+          </localMem>
+          <pc>          0 => _              </pc>
+          <gas>         /* G */ 100000 => _ </gas>
+          <previousGas> _ => _              </previousGas>
+          <static>     false                </static>
+        </txExecState>
 
-```{.k .transferFrom-then .transferFrom-else}
-         <localMem>    .Map => _ </localMem>
-         <previousGas> _    => _ </previousGas>
-         <refund>      0    => _ </refund>
-```
+        <substate>
+          <selfDestruct> /* _ */ .Set </selfDestruct>
+          <log>
+          (
+            .List
+          =>
+            ListItem({ ACCT_ID
+                     | /* TODO: hash("Transfer(address,address,num256)") */ 100389287136786176327247604509743168900146139575972864366142685224231313322991
+                     : FROM_ID
+                     : TO_ID
+                     : .WordStack
+                     | int2wordstack(VALUE, 32)
+                     })
+          )
+            /* _ */
+          </log>
+          <refund> /* _ */ 0 => _ </refund>
+        </substate>
 
-### Then Branch
+        <gasPrice>          _         </gasPrice>
+        <origin>            ORIGIN_ID </origin>
 
-```{.k .transferFrom-then}
-         <pc>  818 => 1331 </pc>
-         <gas> G   => G1   </gas>
+        <previousHash>      _         </previousHash>
+        <ommersHash>        _         </ommersHash>
+        <coinbase>          _         </coinbase>
+        <stateRoot>         _         </stateRoot>
+        <transactionsRoot>  _         </transactionsRoot>
+        <receiptsRoot>      _         </receiptsRoot>
+        <logsBloom>         _         </logsBloom>
+        <difficulty>        _         </difficulty>
+        <number>            _         </number>
+        <gasLimit>          _         </gasLimit>
+        <gasUsed>           _         </gasUsed>
+        <timestamp>         _         </timestamp>
+        <extraData>         _         </extraData>
+        <mixHash>           _         </mixHash>
+        <blockNonce>        _         </blockNonce>
 
-         <wordStack>                        TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
-                  => A1 -Int TRANSFER : 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
-         </wordStack>
-         <accounts>
-           <account>
-             <acctID>  %ACCT_ID          </acctID>
-             <balance> BAL               </balance>
-             <code>    %HKG_ProgramBytes </code>
-             <nonce>   0                 </nonce>
-             <storage> ...
-                       %ACCT_1_BALANCE |-> (B1:Int => B1 -Int TRANSFER)
-                       %ACCT_1_ALLOWED |-> (A1:Int => A1 -Int TRANSFER)
-                       %ACCT_2_BALANCE |-> (B2:Int => B2 +Int TRANSFER)
-                       %ACCT_2_ALLOWED |-> _
-                       ...
-             </storage>
-           </account>
-         </accounts>
+        <ommerBlockHeaders> _         </ommerBlockHeaders>
+        <blockhash>         _         </blockhash>
+      </evm>
 
-      requires TRANSFER >Int 0
-       andBool B1 >=Int TRANSFER andBool B1 <Int pow256
-       andBool A1 >=Int TRANSFER andBool A1 <Int pow256
-       andBool B2 >=Int 0        andBool B2 +Int TRANSFER <Int pow256
-       andBool #sizeWordStack(WS) <Int 1016
-       andBool G >=Int 31071
-       ensures G -Int G1 <=Int 31071
+      <network>
+        <activeAccounts> ACCT_ID |-> false /* _ */ </activeAccounts>
+
+        <accounts>
+          <account>
+            <acctID> ACCT_ID </acctID>
+            <balance> _ </balance>
+            <code> %HKG_ProgramBytes </code>
+            <storage>
+              // sha3(0) +Word FROM_ID |-> (BAL_FROM => BAL_FROM -Int VALUE) // TODO: auto gen
+              // sha3(0) +Word TO_ID   |-> (BAL_TO   => BAL_TO   +Int VALUE) // TODO: auto gen
+              // sha3(sha3(1) +Word FROM_ID) +Word CALLER_ID |-> (ALLOW => ALLOW -Int VALUE)
+	          keccak(int2wordstack(FROM_ID, 32) ++ #padToWidth(32, #asByteStack(1)))                                                            |-> (BAL_FROM => BAL_FROM -Int VALUE )
+	          keccak(int2wordstack(TO_ID, 32)     ++ #padToWidth(32, #asByteStack(1)))                                                            |-> (BAL_TO   => BAL_TO   +Int VALUE )
+       	      keccak(int2wordstack(CALLER_ID, 32)   ++ int2wordstack(keccak(int2wordstack(FROM_ID, 32) ++ #padToWidth(32, #asByteStack(2))), 32)) |-> (ALLOW    => ALLOW    -Int VALUE )
+              _:Map
+            </storage>
+            <nonce> _ </nonce>
+          </account>
+          /* _ */
+        </accounts>
+
+        <txOrder> _ </txOrder>
+        <txPending> _ </txPending>
+        <messages> /* _ */ .Bag </messages>
+      </network>
+    </ethereum>
+    requires 0 <=Int ACCT_ID   andBool ACCT_ID   <Int (2 ^Int 160)
+     andBool 0 <=Int CALLER_ID andBool CALLER_ID <Int (2 ^Int 160)
+     andBool 0 <=Int ORIGIN_ID andBool ORIGIN_ID <Int (2 ^Int 160)
+     andBool F ==Int 599290589 // TODO: auto gen
+     andBool 0 <=Int FROM_ID   andBool FROM_ID   <Int (2 ^Int 160)
+     andBool 0 <=Int TO_ID     andBool TO_ID     <Int (2 ^Int 160)
+     //TODO: Add Alternative else proof for exception when value is 0
+     andBool 0 <Int VALUE     andBool  VALUE     <Int (2 ^Int 256)
+     andBool 0 <=Int BAL_FROM  andBool BAL_FROM  <Int (2 ^Int 256)
+     andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
+     andBool 0 <=Int ALLOW     andBool ALLOW     <Int (2 ^Int 256)
+     andBool FROM_ID =/=Int TO_ID
+     andBool VALUE <=Int BAL_FROM
+     andBool BAL_TO +Int VALUE <Int (2 ^Int 256) // viper overflow check: (VALUE ==Int 0 xorBool BAL_TO +Word VALUE >Int BAL_TO)
+     andBool VALUE <=Int ALLOW
+     andBool RET_VAL ==Int 1
+   //andBool G >Int 100000
+
+// NOTE: negative VALUE is not possible since it is of `num256` type
+
+  // to avoid unnecessary case split
+  rule <k> LT W0 W1 => bool2int(W0  <Int W1) ~> #push ... </k> [trusted]
+  rule <k> GT W0 W1 => bool2int(W0  >Int W1) ~> #push ... </k> [trusted]
+  rule <k> EQ W0 W1 => bool2int(W0 ==Int W1) ~> #push ... </k> [trusted]
+  rule <k> ISZERO W => bool2int(W  ==Int 0 ) ~> #push ... </k> [trusted]
+
 endmodule
-```
 
-### Else Branch
-
-```{.k .transferFrom-else}
-         <pc>  818 => 1451 </pc>
-         <gas> G   => G1   </gas>
-
-         <wordStack>     TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
-                  => 0 : TRANSFER : %CALLER_ID : %ORIGIN_ID : WS
-         </wordStack>
-         <accounts>
-           <account>
-             <acctID>  %ACCT_ID          </acctID>
-             <balance> BAL               </balance>
-             <code>    %HKG_ProgramBytes </code>
-             <nonce>   0                 </nonce>
-             <storage> ...
-                       (%ACCT_1_BALANCE |-> B1:Int)
-                       (%ACCT_1_ALLOWED |-> A1:Int)
-                       (%ACCT_2_BALANCE |-> B2:Int)
-                       (%ACCT_2_ALLOWED |-> _)
-                       ...
-             </storage>
-           </account>
-         </accounts>
-
-      requires (TRANSFER <=Int 0 orBool B1 <Int TRANSFER orBool A1 <Int TRANSFER)
-       andBool #sizeWordStack(WS) <Int 1016
-       andBool G >=Int 485
-       ensures G -Int G1 <=Int 485
-endmodule
 ```
 
 Allowance Function
