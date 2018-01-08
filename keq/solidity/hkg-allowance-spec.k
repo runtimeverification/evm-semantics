@@ -6,9 +6,10 @@
 // In the following claims, any symbol starting with a `%` indicates a constant which has been replaced by a symbol for clarity.
 // In particular:
 
-// -   `%HKG_Program` is the EVM bytecode for the ERC20-complaint Program;
-// -   `VALUE` represents the symbolic amount to transfer;
-// -   `BAL_FROM` and `BAL_TO` are the starting balances of accounts CALLER\_ID and TO\_ID, respectively;
+// -   `%HKG_Program` is the EVM bytecode for the Hacker Gold token program;
+// -   `TRANSFER` represents the symbolic amount to transfer;
+// -   `B1` and `B2` are the starting balances of accounts 1 and 2, respectively;
+// -   `A1` is the allowance of account 1 (strictly smaller than the balance).
 
 // BalanceOf Function
 // ------------------
@@ -49,7 +50,9 @@ module BALANCE-OF-SPEC
           <callData>
             int2wordstack(F, 4)
             ++
-            int2wordstack(O, 32)
+            int2wordstack(OWNER, 32)
+            ++
+            int2wordstack(SPENDER, 32)
           </callData>
 
           <callValue> 0 </callValue>
@@ -58,7 +61,7 @@ module BALANCE-OF-SPEC
             .Map
           =>
           (
-            .Map[ R := int2wordstack(B, 32) ]
+            .Map[ R := int2wordstack(ALLOWANCE, 32) ]
 	    _:Map
           )
           </localMem>
@@ -107,7 +110,8 @@ module BALANCE-OF-SPEC
 		%HKG_ProgramBytes
             </code>
             <storage>
-	    keccak(int2wordstack(O, 32) ++ #padToWidth(32, #asByteStack(1))) |-> B:Int
+        // sha3(spender ++ sha3(owner + loc(allowance)))
+	    keccak(int2wordstack(SPENDER, 32) ++ int2wordstack(keccak(int2wordstack(OWNER, 32) ++ #padToWidth(32, #asByteStack(2))), 32)) |-> ALLOWANCE:Int
               _:Map
             </storage>
             <nonce> _ </nonce>
@@ -123,9 +127,10 @@ module BALANCE-OF-SPEC
     requires 0 <=Int ACCT_ID   andBool ACCT_ID   <Int (2 ^Int 160)
      andBool 0 <=Int CALLER_ID andBool CALLER_ID <Int (2 ^Int 160)
      andBool 0 <=Int ORIGIN_ID andBool ORIGIN_ID <Int (2 ^Int 160)
-     andBool F ==Int 1889567281 // TODO: auto gen
-     andBool 0 <=Int O andBool O <Int (2 ^Int 160)
-     andBool 0 <=Int B andBool B <Int (2 ^Int 256)
+     andBool F ==Int 3714247998 // TODO: auto gen
+     andBool 0 <=Int OWNER     andBool OWNER     <Int (2 ^Int 160)
+     andBool 0 <=Int SPENDER   andBool SPENDER   <Int (2 ^Int 160)
+     andBool 0 <=Int ALLOWANCE andBool ALLOWANCE <Int (2 ^Int 256)
    //andBool G >Int 20000
 
 endmodule

@@ -30,3 +30,7 @@
 /semantics.a
 /semantics.cmxa
 
+# Temporarily Ignore build files. ! Remove this commit before merge.
+.build/uiuck/*.k
+.build/rvk/*.k
+keq/solidity
