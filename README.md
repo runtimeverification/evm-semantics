@@ -8,6 +8,11 @@ In this repository we provide a model of the EVM in K.
 See [our technical report on KEVM 1.0](http://hdl.handle.net/2142/97207) for more expository explanation of KEVM.
 The paper is a good starting point for people wishing to dive into reading the semantics/other tools here (especially sections 3 and 5).
 
+### Support
+
+To get support for KEVM, please join our [Riot Room](https://riot.im/app/#/room/#k:matrix.org).
+This is the fastest way to get help with KEVM.
+
 ### Structure
 
 The file [data.md](data.md) explains the basic data of EVM (including the 256 bit words and some datastructures over them).
