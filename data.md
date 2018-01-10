@@ -53,7 +53,7 @@ Some important numbers that are referred to often during execution:
 -   `chop` interperets an integers modulo $2^256$.
 
 ```{.k .uiuck .rvk}
-    syntax Int ::= chop ( Int ) [function]
+    syntax Int ::= chop ( Int ) [function, smtlib(chop)]
  // --------------------------------------
     rule chop ( I:Int ) => I %Int pow256 requires I <Int 0  orBool I >=Int pow256
     rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256
