@@ -351,7 +351,7 @@ A cons-list is used for the EVM wordstack.
 -   `#drop(N , WS)` removes the first $N$ elements of a `WordStack`.
 
 ```{.k .uiuck .rvk}
-    syntax WordStack ::= WordStack "++" WordStack [function]
+    syntax WordStack ::= WordStack "++" WordStack [function, right]
  // --------------------------------------------------------
     rule .WordStack ++ WS' => WS'
     rule (W : WS)   ++ WS' => W : (WS ++ WS')
