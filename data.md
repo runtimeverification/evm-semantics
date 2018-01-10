@@ -55,8 +55,8 @@ Some important numbers that are referred to often during execution:
 ```{.k .uiuck .rvk}
     syntax Int ::= chop ( Int ) [function, smtlib(chop)]
  // --------------------------------------
-    rule chop ( I:Int ) => I %Int pow256 requires I <Int 0  orBool I >=Int pow256
-    rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256
+    rule chop ( I:Int ) => I %Int pow256 requires I <Int 0  orBool I >=Int pow256    [concrete]
+    rule chop ( I:Int ) => I             requires I >=Int 0 andBool I <Int pow256 // [concrete]
 ```
 
 ### Boolean Conversions
@@ -90,8 +90,8 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 If we don't place the `Bool` condition as a side-condition for UIUC-K, it will attempt to only do an "implies-check" instead of full unification (which is problematic when `B` is symbolic during proving).
 
 ```{.k .uiuck}
-    rule #ifInt B #then W #else _ #fi => W requires B
-    rule #ifInt B #then _ #else W #fi => W requires notBool B
+    rule #ifInt B #then W #else _ #fi => W requires B         [concrete]
+    rule #ifInt B #then _ #else W #fi => W requires notBool B [concrete]
 
     rule #ifSet B #then W #else _ #fi => W requires B
     rule #ifSet B #then _ #else W #fi => W requires notBool B
@@ -323,7 +323,7 @@ Bitwise logical operators are lifted from the integer versions.
 ```{.k .uiuck .rvk}
     syntax Int ::= keccak ( WordStack ) [function]
  // ----------------------------------------------
-    rule keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS)))
+    rule keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS))) [concrete]
 ```
 
 Data-Structures over `Word`
@@ -416,8 +416,8 @@ A cons-list is used for the EVM wordstack.
 ```{.k .uiuck .rvk}
     syntax WordStack ::= #padToWidth ( Int , WordStack ) [function]
  // ---------------------------------------------------------------
-    rule #padToWidth(N, WS) => WS                     requires notBool #sizeWordStack(WS) <Int N
-    rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires #sizeWordStack(WS) <Int N
+    rule #padToWidth(N, WS) => WS                     requires notBool #sizeWordStack(WS) <Int N [concrete]
+    rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires #sizeWordStack(WS) <Int N         [concrete]
 ```
 
 Byte Arrays
@@ -434,9 +434,9 @@ The local memory of execution is a byte-array (instead of a word-array).
 ```{.k .uiuck .rvk}
     syntax Int ::= #asWord ( WordStack ) [function, smtlib(asWord)]
  // ---------------------------------------------------------------
-    rule #asWord( .WordStack     ) => 0
-    rule #asWord( W : .WordStack ) => W
-    rule #asWord( W0 : W1 : WS   ) => #asWord(((W0 *Word 256) +Word W1) : WS)
+    rule #asWord( .WordStack     ) => 0                                    // [concrete]
+    rule #asWord( W : .WordStack ) => W                                    // [concrete]
+    rule #asWord( W0 : W1 : WS   ) => #asWord(((W0 *Word 256) +Word W1) : WS) [concrete]
 
     syntax Int ::= #asInteger ( WordStack ) [function]
  // --------------------------------------------------
@@ -452,9 +452,9 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax WordStack ::= #asByteStack ( Int )             [function]
                        | #asByteStack ( Int , WordStack ) [function, klabel(#asByteStackAux), smtlib(asByteStack)]
  // --------------------------------------------------------------------------------------------------------------
-    rule #asByteStack( W ) => #asByteStack( W , .WordStack )
-    rule #asByteStack( 0 , WS ) => WS
-    rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0
+    rule #asByteStack( W ) => #asByteStack( W , .WordStack )                                      [concrete]
+    rule #asByteStack( 0 , WS ) => WS                                                          // [concrete]
+    rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0 [concrete]
 ```
 
 Addresses
