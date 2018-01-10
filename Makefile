@@ -35,6 +35,7 @@ proof_files=${proof_dir}/sum-to-n-spec.k \
 			${proof_dir}/hkg/approve-spec.k \
 			${proof_dir}/hkg/balanceOf-spec.k \
 			${proof_dir}/hkg/transfer1-spec.k  ${proof_dir}/hkg/transfer2-spec.k \
+			${proof_dir}/hkg/transfer3-spec.k  ${proof_dir}/hkg/transfer4-spec.k \
 			${proof_dir}/hkg/transferFrom1-spec.k \
 			${proof_dir}/bad/hkg-token-buggy-spec.k
 
