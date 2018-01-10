@@ -126,13 +126,15 @@ We do not model the hash function as an injective function simply because it is 
 
 Instead, we abstract it as an uninterpreted function that captures the possibility of the hash collision.
 
+```{.k .uiuck}
+  syntax Int ::= hash(Int) [smtlib(smt_hash)]
+```
+
 In the specification, however, one can avoid reasoning about the collision by assuming all the hashed values appearing during the execution are disjoint.
 
 In another word, we instantiate the injectivity property only for the terms appearing during the symbolic execution and reasoning, similarly as the universal quantifier instantiation does.
 
 ```{.k .uiuck}
-  syntax Int ::= hash(Int) [smtlib(smt_hash)]
-
   rule keccak( nthbyteof(V,  0, 32)
              : nthbyteof(V,  1, 32)
              : nthbyteof(V,  2, 32)
