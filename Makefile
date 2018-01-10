@@ -38,7 +38,8 @@ proof_files=${proof_dir}/sum-to-n-spec.k \
 			${proof_dir}/hkg/transferFrom-else-spec.k ${proof_dir}/hkg/transferFrom-then-spec.k \
 			${proof_dir}/bad/hkg-token-buggy-spec.k
 
-proofs: $(proof_files)
+#proofs: $(proof_files)
+proofs:
 
 tests/proofs/sum-to-n-spec.k: proofs/sum-to-n.md
 	@echo "==  tangle: $@"
