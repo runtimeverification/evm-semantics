@@ -5,7 +5,7 @@ endif
 # Common to all versions of K
 # ===========================
 
-.PHONY: all clean build tangle defn proofs split-tests test
+.PHONY: all clean build tangle defn proofs split-tests test proof_erc20
 
 all: build split-tests
 
@@ -39,7 +39,10 @@ proof_files=${proof_dir}/sum-to-n-spec.k \
 			${proof_dir}/bad/hkg-token-buggy-spec.k
 
 #proofs: $(proof_files)
-proofs:
+proofs: proof_erc20
+
+proof_erc20:
+	( cd proofs/erc20 ; for i in *.ini; do python3.6 gen-spec.py erc20-spec-tmpl.k $$i; done )
 
 tests/proofs/sum-to-n-spec.k: proofs/sum-to-n.md
 	@echo "==  tangle: $@"
