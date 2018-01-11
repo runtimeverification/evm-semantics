@@ -85,7 +85,7 @@ The script `with-k` sets up the development environment with the fresh copy of K
 ### Dependencies
 
 For using the `./Build` command and tests, we depend on `xmllint` (on Ubuntu via the package `libxml2-utils`).
-For developing, we depend on [`pandoc-tangle`](https://github.com/ehildenb/pandoc-tangle).
+For developing, we depend on [`pandoc`](https://pandoc.org/).
 
 ### Interesting Branches
 
@@ -152,8 +152,8 @@ Tests can come in the form of proofs done over contracts too :).
 These are hard requirements (**must** be met before review), and they **must** be true for **every** commit in the PR.
 
 -   The build products which we store in the repository (K definition files and proof specification files) must be up-to-date with the files they are generated from.
-    We do our development directly in the Markdown files and build the definition files (`*.k`) from them using [pandoc-tangle](https://github.com/ehildenb/pandoc-tangle).
-    Not everyone wants to install `pandoc-tangle` or `pandoc`, so the build products are kept in the repository for people who just want to experiment quickly.
+    We do our development directly in the Markdown files and build the definition files (`*.k`) from them using [pandoc](https://pandoc.org/).
+    Not everyone wants to install `pandoc`, so the build products are kept in the repository for people who just want to experiment quickly.
 
 -   If a new feature is introduced in the PR, and later a bug is fixed in the new feature, the bug fix must be squashed back into the feature introduction.
     The *only* exceptions to this are if you want to document the bug because it was quite tricky or is something you believe should be fixed about K.

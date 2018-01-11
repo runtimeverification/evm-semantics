@@ -42,11 +42,11 @@ detect_k_version() {
 
 run_make() {
     local make_opts=
-    type pandoc-tangle >/dev/null 2>&1 || {
+    type pandoc >/dev/null 2>&1 || {
         make_opts="--assume-old ethereum.md --assume-old evm.md \
                    --assume-old data.md     --assume-old krypto.md \
                    --assume-old analysis.md --assume-old verification.md"
-        warning "pandoc-tangle not installed."  \
+        warning "pandoc not installed."  \
                 "Ignoring changes in markdown files\n"
     }
     make K_VERSION=${K_VERSION} -s $make_opts $@
@@ -242,7 +242,7 @@ case "$run_command" in
        $0 make-<target>     Run 'make <target>' with 'K_VERSION' set
 
        Useful <target>:
-       -   tangle: Build the definition/proof files from the markdown files (requires pandoc-tangle)
+       -   tangle: Build the definition/proof files from the markdown files (requires pandoc)
        -   build:  Kompile the definition (calls tangle target first)
 
        # Running

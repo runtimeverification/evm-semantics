@@ -1,6 +1,3 @@
-# Build products, except for UIUC K definitions. We want the
-# repository to be runnable even if the use doesn't have
-# pandoc-tangle installed.
 # See the 'exclude everything except directory foo/bar'
 # example in the gitignore man page to understand how this works.
 /.build/*
