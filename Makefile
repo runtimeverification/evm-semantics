@@ -5,7 +5,7 @@ endif
 # Common to all versions of K
 # ===========================
 
-.PHONY: all clean build tangle defn proofs split-tests test proof_erc20
+.PHONY: all clean build tangle defn proofs split-tests test
 
 all: build split-tests
 
@@ -14,9 +14,6 @@ clean:
 	find tests/proofs/ -name '*.k' -delete
 
 build: tangle .build/${K_VERSION}/ethereum-kompiled/extras/timestamp
-
-# Tangle from *.md files
-# ----------------------
 
 tangle: defn proofs
 
@@ -29,20 +26,34 @@ defn: $(defn_files)
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:"${K_VERSION}" $< > $@
 
+# Generate spec.k files for proofs
+# ================================
+
+# TODO: We're currently using two different systems for HKG (pandoc and tangle) and the Viper
+# implementation of the ERC20 (gen-spec). This should be fixed.
+
 proof_dir=tests/proofs
-proof_files=${proof_dir}/sum-to-n-spec.k \
+proof_targets=${proof_dir}/sum-to-n-spec.k \
 			${proof_dir}/hkg/allowance-spec.k \
 			${proof_dir}/hkg/approve-spec.k \
 			${proof_dir}/hkg/balanceOf-spec.k \
 			${proof_dir}/hkg/transfer-else-spec.k ${proof_dir}/hkg/transfer-then-spec.k \
 			${proof_dir}/hkg/transferFrom-else-spec.k ${proof_dir}/hkg/transferFrom-then-spec.k \
-			${proof_dir}/bad/hkg-token-buggy-spec.k
+			${proof_dir}/bad/hkg-token-buggy-spec.k \
+			$(shell find proofs/erc20/ -name '*.ini' | sed -e 's/^/tests\//' -e 's/\.ini$$/.timestamp/g' )
 
-#proofs: $(proof_files)
-proofs: proof_erc20
+proofs: ${proof_targets}
 
-proof_erc20:
-	( cd proofs/erc20 ; for i in *.ini; do python3.6 gen-spec.py erc20-spec-tmpl.k $$i; done )
+# Generate ERC20 specs from INI file
+# ----------------------------------
+
+tests/proofs/erc20/%.timestamp : proofs/erc20/erc20-spec-tmpl.k proofs/erc20/%.ini
+	@echo "==  gen-spec: $@"
+	mkdir -p $(dir $@)
+	python3 proofs/erc20/gen-spec.py $^ $(dir $@)
+
+# Generate specs from tangled markdown
+# ------------------------------------
 
 tests/proofs/sum-to-n-spec.k: proofs/sum-to-n.md
 	@echo "==  tangle: $@"

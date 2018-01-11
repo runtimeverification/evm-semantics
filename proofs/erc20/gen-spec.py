@@ -8,16 +8,17 @@ import configparser
 def subst(text, key, val):
     return re.compile('{' + key.upper() + '}').sub(val, text)
 
-def gen(template, ini):
+def gen(template, ini, outdir):
     config = configparser.ConfigParser()
     config.read(ini)
     sections = ['DEFAULT'] if not config.sections() else config.sections()
-    out_prefix = os.path.splitext(ini)[0] 
+    ini_basename = os.path.splitext(os.path.basename(ini))[0]
+    out_prefix = outdir + ini_basename
     for sec in sections:
         genspec = template
         for key in config[sec]:
             genspec = subst(genspec, key, config[sec][key].strip())
-        genspec = subst(genspec, 'module', os.path.splitext(os.path.basename(ini))[0].upper())
+        genspec = subst(genspec, 'module', ini_basename.upper())
         fout = open(out_prefix + ('' if sec == 'DEFAULT' else sec) + "-spec.k", "w")
         fout.write(genspec)
         fout.close()
@@ -28,8 +29,8 @@ def gen(template, ini):
         os.utime(timestamp_file, None)
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        print("usage: <cmd> <template> <ini>")
+    if len(sys.argv) != 4:
+        print("usage: <cmd> <template> <ini> <outdir>")
         sys.exit(1)
     template = open(sys.argv[1], "r").read()
-    gen(template, sys.argv[2])
+    gen(template, sys.argv[2], sys.argv[3])
