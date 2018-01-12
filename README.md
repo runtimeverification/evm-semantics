@@ -17,29 +17,21 @@ To get support for KEVM, please join our [Riot Room](https://riot.im/app/#/room/
 This Repository
 ---------------
 
-### Structure
+The following files constitute the KEVM semantics:
 
+-   [krypto.md](krypto.md) sets up some basic cryptographic primitives.
 -   [data.md](data.md) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
 -   [evm.md](evm.md) is the main KEVM semantics, containing the configuration and transition rules of EVM.
+
+These additional files extend the semantics to make the repository more useful:
+
 -   [driver.md](driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
+-   [analysis.md](analysis.md) contains any automated analysis tools we develop.
 
-### Gas Analysis
+Finally, these files pertain to the [K Reachability Logic Prover]:
 
-We have defined one analysis tool so far; a *very very* simple gas analysis tool.
-This gas analysis tool should *be improved* before being used for anything significant.
-We will collect developed analysis tools in [analysis.md](analysis.md).
-
-### Proofs
-
-Any proofs we perform will be documented in [proofs/README.md](proofs/README.md).
-These proofs are also run as tests of UIUC-K, though they take quite a while.
-The file [verification.md](verification.md) contains some helper-macros for writing down reachability claims.
-
-### Testing
-
-[driver.md](driver.md) provides drivers for running Ethereum simulations, including the [Ethereum test sets](https://github.com/ethereum/tests).
-If the output is correct, the entire configuration is cleared.
-If any check fails, the configuration retains the failed check at the top of the `<k>` cell.
+-   [verification.md](verification.md) adds helpers for verification efforts.
+-   [proofs/README.md](proofs/README.md) documents proofs we have performed.
 
 Using the Definition
 --------------------
@@ -259,3 +251,4 @@ For more information about [The K Framework](http://kframework.org), refer to th
 We are using [GNU Parallel](https://www.gnu.org/software/parallel/) to assist in testing these semantics in parallel.
 
 [Sphinx Documentation Generation]: <http://sphinx-doc.org>
+[K Reachability Logic Prover]: <http://fsl.cs.illinois.edu/FSL/papers/2016/stefanescu-park-yuwen-li-rosu-2016-oopsla/stefanescu-park-yuwen-li-rosu-2016-oopsla-public.pdf>
