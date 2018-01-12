@@ -3,10 +3,13 @@ KEVM: Semantics of EVM in K
 
 In this repository we provide a model of the EVM in K.
 
-### Technical Report
+### Documentation
 
-See [our technical report on KEVM 1.0](http://hdl.handle.net/2142/97207) for more expository explanation of KEVM.
-The paper is a good starting point for people wishing to dive into reading the semantics/other tools here (especially sections 3 and 5).
+These are listed newest to oldest.
+
+-   [Jello Paper](https://jellopaper.org/), generated using [Sphinx Documentation Generation].
+-   [20 minute tour of the semantics](https://www.youtube.com/watch?v=tIq_xECoicQNov) at [Devcon3](https://ethereumfoundation.org/devcon3/).
+-   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
 
 ### Support
 
@@ -256,3 +259,5 @@ For more information about [The K Framework](http://kframework.org), refer to th
 -   [Logical Frameworks](http://dl.acm.org/citation.cfm?id=208700): Discussion of logical frameworks.
 
 We are using [GNU Parallel](https://www.gnu.org/software/parallel/) to assist in testing these semantics in parallel.
+
+[Sphinx Documentation Generation]: <http://sphinx-doc.org>
