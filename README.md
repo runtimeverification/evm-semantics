@@ -36,26 +36,22 @@ Finally, these files pertain to the [K Reachability Logic Prover]:
 Using the Definition
 --------------------
 
-There are two versions of K available, [RV-K](https://github.com/runtimeverification/k) and [UIUC-K](https://github.com/kframework/k).
-This repository contains the build-products for both versions of K (there are slight differences) in `.build/$K_VERSION/`.
-Use RV-K for fast concrete execution, and UIUC-K for any symbolic reasoning.
-Make sure that you have set the `K_VERSION` environment variable in your shell (add `export K_VERSION=uiuck` or `export K_VERSION=rvk` to your `.bashrc` or equivalent).
-
-The script `Build` supplied in this repository will build and run the definition (see `./Build help` to see more detailed usage information).
-Running any proofs or symbolic reasoning requires UIUC-K.
-
-To run in a different mode (eg. in `GASANALYZE` mode), do `export cMODE=<OTHER_MODE>` before calling `./Build`.
-To run with a different fee schedule (eg. `HOMESTEAD` instead of `DEFAULT`), do `export cSCHEDULE=<OTHER_SCHEDULE>` before calling `./Build`.
-
 ### Dependencies
 
 For using the `./Build` command and tests, we depend on `xmllint` (on Ubuntu via the package `libxml2-utils`).
 For developing, we depend on [`pandoc`](https://pandoc.org/).
 
+### K Version
+
+There are two versions of K available, [RV-K](https://github.com/runtimeverification/k) and [UIUC-K](https://github.com/kframework/k).
+This repository contains the build-products for both versions of K (there are slight differences) in `.build/$K_VERSION/`.
+Use RV-K for fast concrete execution, and UIUC-K for any symbolic reasoning.
+Make sure that you have set the `K_VERSION` environment variable in your shell (add `export K_VERSION=uiuck` or `export K_VERSION=rvk` to your `.bashrc` or equivalent).
+
 #### Helper Script `with-k`
 
 Not everyone wants to go through the process of installing K, so the script `./tests/ci/with-k` can be used to avoid that.
-The following will call the same `./Build` commands as above, but only after downloading, building, and setting up a fresh copy of RV-K or UIUC-K (as specified).
+The following calls to `./Build` are prefixed with a call to `with-k` to download, build, and set up a fresh copy of RV-K or UIUC-K (as specified).
 
 ```sh
 $ ./tests/ci/with-k rvk   ./Build run tests/VMTests/vmArithmeticTest/add0.json
@@ -64,6 +60,13 @@ $ ./tests/ci/with-k rvk   ./Build test tests/VMTests/vmArithmeticTest/add0.json
 $ ./tests/ci/with-k uiuck ./Build prove tests/proofs/hkg/transfer-else-spec.k
 $ ./tests/ci/with-k uiuck ./Build debug tests/VMTests/vmArithmeticTest/add0.json
 ```
+
+See `./Build help` to see more detailed usage information; `./Build` can build and test the definition as well as run EVM programs and proofs.
+Running any proofs or symbolic reasoning requires UIUC-K.
+
+The semantics are parametric over the `MODE` and the `SCHEDULE`.
+To run in a different mode (eg. in `GASANALYZE` mode), do `export cMODE=<OTHER_MODE>` before calling `./Build`.
+To run with a different fee schedule (eg. `HOMESTEAD` instead of `DEFAULT`), do `export cSCHEDULE=<OTHER_SCHEDULE>` before calling `./Build`.
 
 Note that running `./tests/ci/with-k` takes quite some time, which can be a pain when actively developing.
 To only download and setup K once for each session, you can do the following:
