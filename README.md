@@ -49,6 +49,11 @@ Running any proofs or symbolic reasoning requires UIUC-K.
 To run in a different mode (eg. in `GASANALYZE` mode), do `export cMODE=<OTHER_MODE>` before calling `./Build`.
 To run with a different fee schedule (eg. `HOMESTEAD` instead of `DEFAULT`), do `export cSCHEDULE=<OTHER_SCHEDULE>` before calling `./Build`.
 
+### Dependencies
+
+For using the `./Build` command and tests, we depend on `xmllint` (on Ubuntu via the package `libxml2-utils`).
+For developing, we depend on [`pandoc`](https://pandoc.org/).
+
 #### Helper Script `with-k`
 
 Not everyone wants to go through the process of installing K, so the script `./tests/ci/with-k` can be used to avoid that.
@@ -75,12 +80,6 @@ $ ./Build test tests/VMTests/vmArithmeticTest/add0.json
 ```
 
 The script `with-k` sets up the development environment with the fresh copy of K built and prefixed to `PATH` for the remaining commands.
-
-
-### Dependencies
-
-For using the `./Build` command and tests, we depend on `xmllint` (on Ubuntu via the package `libxml2-utils`).
-For developing, we depend on [`pandoc`](https://pandoc.org/).
 
 ### Example Runs
 
