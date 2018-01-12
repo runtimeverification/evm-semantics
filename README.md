@@ -8,7 +8,7 @@ Documentation/Support
 
 These may be useful for learning KEVM and K (newest to oldest):
 
--   [Jello Paper](https://thehydra.io/evm/), generated using [Sphinx Documentation Generation](http://sphinx-doc.org).
+-   [Jello Paper](https://thehydra.io/evm/), generated using [Sphinx Documentation Generation].
 -   [20 minute tour of the semantics](https://www.youtube.com/watch?v=tIq_xECoicQNov) at [Devcon3](https://ethereumfoundation.org/devcon3/).
 -   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
 
@@ -40,8 +40,11 @@ Using the Definition
 
 ### Dependencies
 
-For using the `./Build` command and tests, we depend on `xmllint` (on Ubuntu via the package `libxml2-utils`).
-For developing, we depend on [`pandoc`](https://pandoc.org/).
+-   `./Build` requires `xmllint` to pretty-print configurations when running programs/tests.
+-   When developing, the `*.k` files are generated from the `*.md` files using [Pandoc](https://pandoc.org).
+-   For generating the Jello Paper, the [Sphinx Documentation Generation] tool is used.
+
+[Sphinx Documentation Generation]: <http://sphinx-doc.org>
 
 ### K Version
 
