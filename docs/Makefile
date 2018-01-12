@@ -58,7 +58,7 @@ evm:
 	cp * $(BUILDDIR)/.; \
 	cd $(BUILDDIR); \
 	cp ../../*.md .; \
-	cp index.txt index.rst; \
+	cp README.md index.rst; \
 	pandoc -o analysis.rst  analysis.md ; \
 	pandoc -o data.rst data.md; \
 	pandoc -o driver.rst driver.md; \
