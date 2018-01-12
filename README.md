@@ -3,18 +3,16 @@ KEVM: Semantics of EVM in K
 
 In this repository we provide a model of the EVM in K.
 
-### Documentation
+Documentation/Support
+---------------------
 
-These are listed newest to oldest.
+These may be useful for learning KEVM and K (newest to oldest):
 
 -   [Jello Paper](https://thehydra.io/evm/), generated using [Sphinx Documentation Generation](http://sphinx-doc.org).
 -   [20 minute tour of the semantics](https://www.youtube.com/watch?v=tIq_xECoicQNov) at [Devcon3](https://ethereumfoundation.org/devcon3/).
 -   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
 
-### Support
-
 To get support for KEVM, please join our [Riot Room](https://riot.im/app/#/room/#k:matrix.org).
-This is the fastest way to get help with KEVM.
 
 This Repository
 ---------------
