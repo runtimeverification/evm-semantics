@@ -41,6 +41,7 @@ Using the Definition
 -   `./Build` requires `xmllint` to pretty-print configurations when running programs/tests.
 -   When developing, the `*.k` files are generated from the `*.md` files using [Pandoc](https://pandoc.org).
 -   For generating the Jello Paper, the [Sphinx Documentation Generation] tool is used.
+    Additionally, you'll need to install the Python `pygments` for K available in the [K Editor Support] repository.
 
 ### K Version
 
@@ -225,3 +226,4 @@ We are using [GNU Parallel](https://www.gnu.org/software/parallel/) to assist in
 
 [Sphinx Documentation Generation]: <http://sphinx-doc.org>
 [K Reachability Logic Prover]: <http://fsl.cs.illinois.edu/FSL/papers/2016/stefanescu-park-yuwen-li-rosu-2016-oopsla/stefanescu-park-yuwen-li-rosu-2016-oopsla-public.pdf>
+[K Editor Support]: <https://github.com/kframework/k-editor-support>
