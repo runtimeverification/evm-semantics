@@ -205,26 +205,6 @@ These are soft requirements (review **may** start without these being met), and 
            andBool isPrime(A)
     ```
 
-Unfinished
-----------
-
-### Network vs. EVM
-
-Ethereum state consists of two parts, the network state and the EVM execution state.
-Right now the semantics declares the configuration for both of these components together, and many rules reach between these two subconfigurations.
-Separating the two subconfigurations and declaring an API for the network dynamics would provide a better understanding of the "necessary ingredients" for a consensus-driven distributed store.
-This would also allow us to experiment with alternative programming languages to EVM for future blockchain systems.
-
-### Full Transaction Execution
-
-Right now we are passing the VMTests, but haven't run tests on entire transactions.
-To have confidence in our semantics, we need to run the tests involving entire transactions (not just chunks of VM code).
-We are working on running the GeneralStateTests now as well.
-
-### TODOs
-
-More local problems are defined with a small *TODO* next to them in the semantics.
-
 Resources
 =========
 
