@@ -16,14 +16,14 @@ These are listed newest to oldest.
 To get support for KEVM, please join our [Riot Room](https://riot.im/app/#/room/#k:matrix.org).
 This is the fastest way to get help with KEVM.
 
+This Repository
+---------------
+
 ### Structure
 
-The file [data.md](data.md) explains the basic data of EVM (including the 256 bit words and some datastructures over them).
-This data is defined functionally.
-
-[evm.md](evm.md) is the file containing the semantics of KEVM.
-This file contains the **configuration** (a map of the state), and a simple imperative execution machine which the EVM lives on top of.
-It deals with the semantics of opcodes, the gas cost of execution, and parsing/unparsing/assembling/disassembling.
+-   [data.md](data.md) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
+-   [evm.md](evm.md) is the main KEVM semantics, containing the configuration and transition rules of EVM.
+-   [ethereum.md](ethereum.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
 
 ### Gas Analysis
 
