@@ -137,10 +137,6 @@ Tests can come in the form of proofs done over contracts too :).
 
 These are hard requirements (**must** be met before review), and they **must** be true for **every** commit in the PR.
 
--   The build products which we store in the repository (K definition files and proof specification files) must be up-to-date with the files they are generated from.
-    We do our development directly in the Markdown files and build the definition files (`*.k`) from them using [pandoc](https://pandoc.org/).
-    Not everyone wants to install `pandoc`, so the build products are kept in the repository for people who just want to experiment quickly.
-
 -   If a new feature is introduced in the PR, and later a bug is fixed in the new feature, the bug fix must be squashed back into the feature introduction.
     The *only* exceptions to this are if you want to document the bug because it was quite tricky or is something you believe should be fixed about K.
     In these exceptional cases, place the bug-fix commit directly after the feature introduction commit and leave useful commit messages.
@@ -148,6 +144,7 @@ These are hard requirements (**must** be met before review), and they **must** b
 
 -   No tab characters, 4 spaces instead.
     Linux-style line endings; if you're on a Windows machine make sure to run `dos2unix` on the files.
+    No whitespace at the end of any lines.
 
 ### Hard - PR Tip
 
