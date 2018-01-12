@@ -38,8 +38,9 @@ Using the Definition
 
 ### Dependencies
 
-For using the `./Build` command and tests, we depend on `xmllint` (on Ubuntu via the package `libxml2-utils`).
-For developing, we depend on [`pandoc`](https://pandoc.org/).
+-   `./Build` requires `xmllint` to pretty-print configurations when running programs/tests.
+-   When developing, the `*.k` files are generated from the `*.md` files using [Pandoc](https://pandoc.org).
+-   For generating the Jello Paper, the [Sphinx Documentation Generation] tool is used.
 
 ### K Version
 
