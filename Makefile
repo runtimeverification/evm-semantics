@@ -33,15 +33,7 @@ defn: $(defn_files)
 # implementation of the ERC20 (gen-spec). This should be fixed.
 
 proof_dir=tests/proofs
-proof_targets=${proof_dir}/sum-to-n-spec.k \
-			${proof_dir}/hkg/allowance-spec.k \
-			${proof_dir}/hkg/approve-spec.k \
-			${proof_dir}/hkg/balanceOf-spec.k \
-			${proof_dir}/hkg/transfer-else-spec.k ${proof_dir}/hkg/transfer-then-spec.k \
-			${proof_dir}/hkg/transferFrom-else-spec.k ${proof_dir}/hkg/transferFrom-then-spec.k \
-			${proof_dir}/bad/hkg-token-buggy-spec.k \
-			$(shell find proofs/erc20/ -name '*.ini' | sed -e 's/^/tests\//' -e 's/\.ini$$/.timestamp/g' )
-
+proof_targets=$(shell find proofs/erc20/ -name '*.ini' | sed -e 's/^/tests\//' -e 's/\.ini$$/.timestamp/g')
 proofs: ${proof_targets}
 
 # Generate ERC20 specs from INI file
