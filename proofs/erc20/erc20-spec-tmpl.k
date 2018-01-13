@@ -43,6 +43,8 @@ module {MODULE}-SPEC
           <pc> 0 => _ </pc>
           <gas> {GAS} </gas> // NOTE: user provided
           <previousGas> _ => _ </previousGas>
+
+          <static> false </static> // NOTE: non-static call
         </txExecState>
 
         <substate>
