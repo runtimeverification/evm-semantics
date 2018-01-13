@@ -265,7 +265,7 @@ cell, allowing proofs of ABI-compliant EVM program to begin at `<pc> 0 </pc>`.
                       | "#address"      "(" Int ")"
                       | "#uint256"      "(" Int ")"
 
-    syntax TypedArgs ::= List{TypedArg, ","}
+    syntax TypedArgs ::= List{TypedArg, ","}                [klabel(typedArgs)]
 
     syntax WordStack ::= #abiCallData( String , TypedArgs ) [function]
     rule #abiCallData( FNAME , ARGS )
