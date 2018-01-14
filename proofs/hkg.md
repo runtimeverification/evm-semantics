@@ -196,21 +196,17 @@ module TRANSFER1-SPEC
           <id>     ACCT_ID   </id>
           <caller> CALLER_ID </caller>
 
-          <callData>
-            int2wordstack(F,     4)
-            ++
-            int2wordstack(TO_ID, 32)
-            ++
-            int2wordstack(VALUE, 32)
-          </callData>
+          <callData> #abiCallData("transfer", #address(TO_ID), #uint256(VALUE)) </callData>
 
           <callValue> 0               </callValue>
           <wordStack> .WordStack => _ </wordStack>
           <localMem>
-              .Map
+            .Map
               =>
-              .Map[ RET_ADDR := int2wordstack(RET_VAL, 32) ]
-              _:Map
+            (
+            .Map[ RET_ADDR := #asByteStackInWidth(RET_VAL, 32) ]
+            _:Map
+            )
           </localMem>
           <pc>          0 => _              </pc>
           <gas>         /* G */ 100000 => _ </gas>
@@ -225,11 +221,11 @@ module TRANSFER1-SPEC
             .List
           =>
             ListItem({ ACCT_ID
-                     | /* TODO: hash("Transfer(address,address,num256)") */ 100389287136786176327247604509743168900146139575972864366142685224231313322991
+                     | #parseHexWord(Keccak256(#generateSignature("Transfer", #address(CALLER_ID), #address(TO_ID), #uint256(VALUE))))
                      : CALLER_ID
                      : TO_ID
                      : .WordStack
-                     | int2wordstack(VALUE, 32)
+                     | #asByteStackInWidth(VALUE, 32)
                      })
           )
             /* _ */
@@ -268,8 +264,8 @@ module TRANSFER1-SPEC
             <balance> _                 </balance>
             <code>    %HKG_ProgramBytes </code>
             <storage>
-	          keccak(int2wordstack(CALLER_ID, 32) ++ #padToWidth(32, #asByteStack(1))) |-> (BAL_FROM => BAL_FROM -Int VALUE)
-	          keccak(int2wordstack(TO_ID, 32)     ++ #padToWidth(32, #asByteStack(1))) |-> (BAL_TO   => BAL_TO +Int VALUE)
+	          keccak(#asByteStackInWidth(CALLER_ID, 32) ++ #padToWidth(32, #asByteStackInWidth(1, 32))) |-> (BAL_FROM => BAL_FROM -Int VALUE)
+	          keccak(#asByteStackInWidth(TO_ID, 32)     ++ #padToWidth(32, #asByteStackInWidth(1, 32))) |-> (BAL_TO   => BAL_TO +Int VALUE)
               _:Map
             </storage>
             <nonce> _              </nonce>
@@ -339,20 +335,14 @@ module TRANSFER2-SPEC
           <id>     ACCT_ID   </id>
           <caller> CALLER_ID </caller>
 
-          <callData>
-            int2wordstack(F,     4)
-            ++
-            int2wordstack(TO_ID, 32)
-            ++
-            int2wordstack(VALUE, 32)
-          </callData>
+          <callData> #abiCallData("transfer", #address(TO_ID), #uint256(VALUE)) </callData>
 
           <callValue> 0               </callValue>
           <wordStack> .WordStack => _ </wordStack>
           <localMem>
               .Map
               =>
-              .Map[ RET_ADDR := int2wordstack(RET_VAL, 32) ]
+              .Map[ RET_ADDR := #asByteStackInWidth(RET_VAL, 32) ]
               _:Map
           </localMem>
           <pc>          0 => _              </pc>
@@ -368,11 +358,11 @@ module TRANSFER2-SPEC
             .List
           =>
             ListItem({ ACCT_ID
-                     | /* TODO: hash("Transfer(address,address,num256)") */ 100389287136786176327247604509743168900146139575972864366142685224231313322991
+                     | #parseHexWord(Keccak256(#generateSignature("Transfer", #address(CALLER_ID), #address(TO_ID), #uint256(VALUE))))
                      : CALLER_ID
                      : TO_ID
                      : .WordStack
-                     | int2wordstack(VALUE, 32)
+                     | #asByteStackInWidth(VALUE, 32)
                      })
           )
             /* _ */
@@ -411,7 +401,7 @@ module TRANSFER2-SPEC
             <balance> _                 </balance>
             <code>    %HKG_ProgramBytes </code>
             <storage>
-	          keccak(int2wordstack(CALLER_ID, 32) ++ #padToWidth(32, #asByteStack(1))) |-> BAL_FROM
+	          keccak(#asByteStackInWidth(CALLER_ID, 32) ++ #padToWidth(32, #asByteStackInWidth(1, 32))) |-> BAL_FROM
               _:Map
             </storage>
             <nonce> _              </nonce>
@@ -429,7 +419,6 @@ module TRANSFER2-SPEC
      andBool 0 <=Int ORIGIN_ID andBool ORIGIN_ID <Int (2 ^Int 160)
      andBool F ==Int 2835717307 // TODO: auto gen
      andBool 0 <=Int TO_ID     andBool TO_ID     <Int (2 ^Int 160)
-     //TODO: Add an extra case for exceptional return on 0.
      andBool 0 <Int VALUE      andBool VALUE     <Int (2 ^Int 256)
      andBool 0 <=Int BAL_FROM  andBool BAL_FROM  <Int (2 ^Int 256)
      andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
@@ -440,11 +429,11 @@ module TRANSFER2-SPEC
 
    // NOTE: negative VALUE is not possible since it is of `num256` type
 
-  // to avoid unnecessary case split
-  rule <k> LT W0 W1 => bool2int(W0  <Int W1) ~> #push ... </k> [trusted]
-  rule <k> GT W0 W1 => bool2int(W0  >Int W1) ~> #push ... </k> [trusted]
-  rule <k> EQ W0 W1 => bool2int(W0 ==Int W1) ~> #push ... </k> [trusted]
-  rule <k> ISZERO W => bool2int(W  ==Int 0 ) ~> #push ... </k> [trusted]
+   // to avoid unnecessary case split
+     rule <k> LT W0 W1 => bool2int(W0  <Int W1) ~> #push ... </k> [trusted]
+     rule <k> GT W0 W1 => bool2int(W0  >Int W1) ~> #push ... </k> [trusted]
+     rule <k> EQ W0 W1 => bool2int(W0 ==Int W1) ~> #push ... </k> [trusted]
+     rule <k> ISZERO W => bool2int(W  ==Int 0 ) ~> #push ... </k> [trusted]
 
 endmodule
 
@@ -478,13 +467,7 @@ module TRANSFER3-SPEC
               <id>     ACCT_ID   </id>
               <caller> CALLER_ID </caller>
 
-              <callData>
-                int2wordstack(F, 4)
-                ++
-                int2wordstack(TO_ID, 32)
-                ++
-                int2wordstack(VALUE, 32)
-              </callData>
+              <callData> #abiCallData("transfer", #address(TO_ID), #uint256(VALUE)) </callData>
 
               <callValue> 0               </callValue>
               <wordStack> .WordStack => _ </wordStack>
@@ -538,8 +521,8 @@ module TRANSFER3-SPEC
                 <balance> _                 </balance>
                 <code>    %HKG_ProgramBytes </code>
                 <storage>
-                  keccak(int2wordstack(CALLER_ID, 32) ++ #padToWidth(32, #asByteStack(1))) |-> BAL_FROM
-                  keccak(int2wordstack(TO_ID, 32)     ++ #padToWidth(32, #asByteStack(1))) |-> BAL_TO
+	              keccak(#asByteStackInWidth(CALLER_ID, 32) ++ #padToWidth(32, #asByteStackInWidth(1, 32))) |-> BAL_FROM
+	              keccak(#asByteStackInWidth(TO_ID, 32) ++ #padToWidth(32, #asByteStackInWidth(1, 32))) |-> BAL_TO
                   _:Map
                 </storage>
                 <nonce>  _                  </nonce>
@@ -611,13 +594,7 @@ module TRANSFER4-SPEC
               <id>     ACCT_ID   </id>
               <caller> CALLER_ID </caller>
 
-              <callData>
-                int2wordstack(F, 4)
-                ++
-                int2wordstack(TO_ID, 32)
-                ++
-                int2wordstack(VALUE, 32)
-              </callData>
+              <callData> #abiCallData("transfer", #address(TO_ID), #uint256(VALUE)) </callData>
 
               <callValue> 0               </callValue>
               <wordStack> .WordStack => _ </wordStack>
@@ -671,7 +648,7 @@ module TRANSFER4-SPEC
                 <balance> _                 </balance>
                 <code>    %HKG_ProgramBytes </code>
                 <storage>
-                  keccak(int2wordstack(CALLER_ID, 32) ++ #padToWidth(32, #asByteStack(1))) |-> BAL_FROM
+	              keccak(#asByteStackInWidth(CALLER_ID, 32) ++ #padToWidth(32, #asByteStackInWidth(1, 32))) |-> BAL_FROM
                   _:Map
                 </storage>
                 <nonce>  _                  </nonce>
@@ -742,13 +719,7 @@ module TRANSFER5-SPEC
               <id>     ACCT_ID   </id>
               <caller> CALLER_ID </caller>
 
-              <callData>
-                int2wordstack(F, 4)
-                ++
-                int2wordstack(TO_ID, 32)
-                ++
-                int2wordstack(VALUE, 32)
-              </callData>
+              <callData> #abiCallData("transfer", #address(TO_ID), #uint256(VALUE)) </callData>
 
               <callValue> 0               </callValue>
               <wordStack> .WordStack => _ </wordStack>
@@ -802,8 +773,8 @@ module TRANSFER5-SPEC
                 <balance> _                 </balance>
                 <code>    %HKG_ProgramBytes </code>
                 <storage>
-                  keccak(int2wordstack(CALLER_ID, 32) ++ #padToWidth(32, #asByteStack(1))) |-> BAL_FROM
-                  keccak(int2wordstack(TO_ID, 32)     ++ #padToWidth(32, #asByteStack(1))) |-> BAL_TO
+	              keccak(#asByteStackInWidth(CALLER_ID, 32) ++ #padToWidth(32, #asByteStackInWidth(1, 32))) |-> BAL_FROM
+	              keccak(#asByteStackInWidth(TO_ID, 32) ++ #padToWidth(32, #asByteStackInWidth(1, 32))) |-> BAL_TO
                   _:Map
                 </storage>
                 <nonce>  _                  </nonce>
@@ -872,13 +843,7 @@ module TRANSFER5-SPEC
               <id>     ACCT_ID   </id>
               <caller> CALLER_ID </caller>
 
-              <callData>
-                int2wordstack(F, 4)
-                ++
-                int2wordstack(TO_ID, 32)
-                ++
-                int2wordstack(VALUE, 32)
-              </callData>
+              <callData> #abiCallData("transfer", #address(TO_ID), #uint256(VALUE)) </callData>
 
               <callValue> 0               </callValue>
               <wordStack> .WordStack => _ </wordStack>
@@ -932,7 +897,7 @@ module TRANSFER5-SPEC
                 <balance> _                 </balance>
                 <code>    %HKG_ProgramBytes </code>
                 <storage>
-                  keccak(int2wordstack(CALLER_ID, 32) ++ #padToWidth(32, #asByteStack(1))) |-> BAL_FROM
+	              keccak(#asByteStackInWidth(CALLER_ID, 32) ++ #padToWidth(32, #asByteStackInWidth(1, 32))) |-> BAL_FROM
                   _:Map
                 </storage>
                 <nonce>  _                  </nonce>
