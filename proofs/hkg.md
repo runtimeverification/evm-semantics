@@ -474,7 +474,7 @@ module TRANSFER3-SPEC
               <localMem>
                 .Map
                     =>
-                .Map[ RET_ADDR := int2wordstack(RET_VAL, 32) ]
+                .Map[ RET_ADDR := #asByteStackInWidth(RET_VAL, 32) ]
                 _:Map
               </localMem>
               <pc>          0 => _              </pc>
@@ -601,7 +601,7 @@ module TRANSFER4-SPEC
               <localMem>
                 .Map
                     =>
-                .Map[ RET_ADDR := int2wordstack(RET_VAL, 32) ]
+                .Map[ RET_ADDR := #asByteStackInWidth(RET_VAL, 32) ]
                 _:Map
               </localMem>
               <pc>          0 => _              </pc>
@@ -726,7 +726,7 @@ module TRANSFER5-SPEC
               <localMem>
                 .Map
                     =>
-                .Map[ RET_ADDR := int2wordstack(RET_VAL, 32) ]
+                .Map[ RET_ADDR := #asByteStackInWidth(RET_VAL, 32) ]
                 _:Map
               </localMem>
               <pc>          0 => _              </pc>
@@ -850,7 +850,7 @@ module TRANSFER5-SPEC
               <localMem>
                 .Map
                     =>
-                .Map[ RET_ADDR := int2wordstack(RET_VAL, 32) ]
+                .Map[ RET_ADDR := #asByteStackInWidth(RET_VAL, 32) ]
                 _:Map
               </localMem>
               <pc>          0 => _              </pc>
