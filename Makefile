@@ -60,7 +60,7 @@ defn_files:=$(ocaml_files) $(java_files)
 defn: $(defn_files)
 
 .build/java/%.k: %.md
-	@echo "==  tangle: $@"
+	@echo >&2 "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:java $< > $@
 
@@ -143,12 +143,18 @@ tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTest
 # ProofTests
 
 proof_dir=tests/proofs
-proof_tests=$(proof_dir)/sum-to-n-spec.k \
+proof_files=$(proof_dir)/sum-to-n-spec.k \
             $(proof_dir)/hkg/allowance-spec.k \
             $(proof_dir)/hkg/approve-spec.k \
             $(proof_dir)/hkg/balanceOf-spec.k \
             $(proof_dir)/hkg/transfer-else-spec.k $(proof_dir)/hkg/transfer-then-spec.k \
-            $(proof_dir)/hkg/transferFrom-else-spec.k $(proof_dir)/hkg/transferFrom-then-spec.k
+            $(proof_dir)/hkg/transferFrom-else-spec.k $(proof_dir)/hkg/transferFrom-then-spec.k \
+            ${proof_dir}/erc20/totalSupply-spec.k \
+            ${proof_dir}/erc20/balanceOf-spec.k \
+            ${proof_dir}/erc20/allowance-spec.k \
+            ${proof_dir}/erc20/approve-spec.k \
+            ${proof_dir}/erc20/transfer-success-spec.k ${proof_dir}/erc20/transfer-failure-spec.k \
+            ${proof_dir}/erc20/transferFrom-success-spec.k ${proof_dir}/erc20/transferFrom-failure-spec.k
 
 proof-test-all: proof-test
 proof-test: $(proof_tests:=.test)
@@ -158,13 +164,32 @@ tests/proofs/%.test: tests/proofs/% build
 
 split-proof-tests: $(proof_tests)
 
+# #### Sum to N
 tests/proofs/sum-to-n-spec.k: proofs/sum-to-n.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:sum-to-n $< > $@
 
+# #### HKG
 tests/proofs/hkg/%-spec.k: proofs/hkg.md
 	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
+
+# #### Viper ERC20
+
+tests/proofs/erc20/%-spec.k: tests/proofs/erc20/spec-tmpl.k tests/proofs/erc20/%.ini
+	@echo >&2 "==  gen-spec: $@"
+	mkdir -p $(dir $@)
+	python3 tests/gen-spec.py $^ $(dir $@)
+
+tests/proofs/erc20/spec-tmpl.k: proofs/erc20.md
+	@echo >&2 "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to tangle.lua --metadata=code:tmpl $< > $@
+
+tests/proofs/erc20/%.ini: proofs/erc20.md
+	@echo >&2 "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
 
