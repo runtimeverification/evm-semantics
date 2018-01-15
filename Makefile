@@ -15,9 +15,6 @@ clean:
 
 build: tangle .build/${K_VERSION}/ethereum-kompiled/extras/timestamp
 
-# Tangle from *.md files
-# ----------------------
-
 tangle: defn proofs
 
 defn_dir=.build/${K_VERSION}
@@ -29,31 +26,44 @@ defn: $(defn_files)
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:"${K_VERSION}" $< > $@
 
+# Generate spec.k files for proofs
+# ================================
+
 proof_dir=tests/proofs
 proof_files=${proof_dir}/sum-to-n-spec.k \
-			${proof_dir}/hkg/allowance-spec.k \
-			${proof_dir}/hkg/approve-spec.k \
-			${proof_dir}/hkg/balanceOf-spec.k \
-			${proof_dir}/hkg/transfer-else-spec.k ${proof_dir}/hkg/transfer-then-spec.k \
-			${proof_dir}/hkg/transferFrom-else-spec.k ${proof_dir}/hkg/transferFrom-then-spec.k \
-			${proof_dir}/bad/hkg-token-buggy-spec.k
-
+            ${proof_dir}/erc20/totalSupply-spec.k \
+            ${proof_dir}/erc20/balanceOf-spec.k \
+            ${proof_dir}/erc20/allowance-spec.k \
+            ${proof_dir}/erc20/approve-spec.k \
+            ${proof_dir}/erc20/transfer-success-spec.k ${proof_dir}/erc20/transfer-failure-spec.k \
+            ${proof_dir}/erc20/transferFrom-success-spec.k ${proof_dir}/erc20/transferFrom-failure-spec.k
 proofs: $(proof_files)
+
+# Generate 'Sum To N' spec
+# ------------------------
 
 tests/proofs/sum-to-n-spec.k: proofs/sum-to-n.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:sum-to-n $< > $@
 
-tests/proofs/hkg/%-spec.k: proofs/hkg.md
+# Generate ERC20 specs
+# --------------------
+
+tests/proofs/erc20/%-spec.k: tests/proofs/erc20/spec-tmpl.k tests/proofs/erc20/%.ini
+	@echo "==  gen-spec: $@"
+	mkdir -p $(dir $@)
+	python3 tests/gen-spec.py $^ $(dir $@)
+
+tests/proofs/erc20/spec-tmpl.k: proofs/erc20.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to tangle.lua --metadata=code:tmpl $< > $@
+
+tests/proofs/erc20/%.ini: proofs/erc20.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
-
-tests/proofs/bad/hkg-token-buggy-spec.k: proofs/token-buggy-spec.md
-	@echo "==  tangle: $@"
-	mkdir -p $(dir $@)
-	pandoc --from markdown --to tangle.lua --metadata=code:k $< > $@
 
 # Tests
 # -----
