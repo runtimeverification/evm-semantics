@@ -1,62 +1,65 @@
 EVM-Specific ERC20 Specification
 ================================
 
-We present a refinement of ERC20-K that specifies all of its detailed behaviors in EVM level.
+We present a refinement of ERC20-K that specifies its detailed behaviors in EVM level.
 
-In addition to the high-level ERC20 logic specified in ERC20-K, the EVM-level specification specifies EVM-specific details such as gas consumption, data layout in local memory and storage, ABI encoding, byte representation of the program, and arithmetic overflows.
+In addition to the high-level ERC20 logic specified in ERC20-K, the EVM-level specification captures EVM-specific details such as gas consumption, data layout in storage, ABI encoding, byte representation of the program, and arithmetic overflows.
 
-We present the low-level specification in a succinct form using the abstractions introduced in [VERIFICATION module](../../verification.md).
+We present the low-level specification in a succinct form using the abstractions introduced in the module [VERIFICATION](../../verification.md).
 
 ### Call data
 
-The ABI call abstraction allows to specify the call data as a usual function call expression:
+The ABI call abstraction allows to specify the call data in a function call notation:
 
 ```
-#abiCallData("balanceOf", #address(OWNER))
+#abiCallData("transfer", #address(TO), #uint256(VALUE))
 ```
 
-instead of specifying the actual byte array:
+instead of specifying the underlying byte array:
 
 ```
-F1 : F2 : F3 : F4 : O1 : ... : O32
+F1 : F2 : F3 : F4 : T1 : ... : T32 : V1 : ... : V32
 ```
 
-where `F1 : F2 : F3 : F4` is the byte-array representation of 1889567281, a hash value of the function signature ABI encoding, and `O1 : ... : O32` is the byte-array representation of `OWNER`, the argument.
+where `F1 : F2 : F3 : F4` is the byte-array representation of 2835717307, the hash value of the function signature ABI encoding, `T1 : ... : T32` is the byte-array representation of `TO`, and `V1 : ... : V32` is the one of `VALUE`.
 
 ### Local memory
 
 The memory abstraction allows to specify the local memory as a map over words instead of byte-arrays.
 
-For example, we specify that the return value `BAL` is stored in the return address `RET_ADDR` succinctly:
+For example, we succinctly specify that a return value `1` is stored in a return address `RET_ADDR`:
 
 ```
-.Map[ RET_ADDR := #asByteStackInWidth(BAL, 32) ]
+.Map[ RET_ADDR := #asByteStackInWidth(1, 32) ]
 ```
 
-instead of specifying the actual byte-array:
+instead of specifying the underlying byte-array:
 
 ```
-.Map[ RET_ADDR      := BAL0  ]
-    [ RET_ADDR + 1  := BAL1  ]
+.Map[ RET_ADDR      := 0  ]
+    [ RET_ADDR + 1  := 0  ]
     ...
-    [ RET_ADDR + 31 := BAL31 ]
+    [ RET_ADDR + 31 := 1 ]
 ```
 
 ### Storage
 
-The storage specifies permanent data such as `totalSupply` value, `balance` map, and `allowance` map.
+The storage accommodates permanent data such as the `balances` map.
 
-The map is stored in a way that the map entries are scattered over the entire storage space where the hash of each key is used to determine the location.
+A map is laid out in the storage where the map entries are scattered over the entire storage space for which the hash of each key is used to determine the location.
 
 The detailed mechanism of calculating the location varies by compilers. In Viper, for example, `map[key1][key2]` is stored at the location:
 
 ```
 hash(hash(pos(map)) + key1) + key2
 ```
+
 where `pos(map)` is the position of `map` in the program, and `+` is the addition modulo `2^256`, while in Solidity, it is stored at:
+
 ```
 hash(key2 ++ hash(key1 ++ pos(map)))
 ```
+
 where `++` is the byte-array concatenation.
 
 
@@ -64,7 +67,7 @@ where `++` is the byte-array concatenation.
 
 Regarding the gas consumption, the maximum gas amount is specified ensuring that the program does not consume more gas than the limit.
 
-The verifier not only proves the gas limit, but also reports the exact amount of gas consumed during the execution. Indeed, it reports a set of the amounts since the gas consumption varies depending on the context (i.e., input parameters and the state of the storage).
+The verifier proves that the gas consumption is less than the provided limit, and also reports the exact amount of gas consumed during the execution. Indeed, it reports a set of the amounts since the gas consumption varies depending on the context (i.e., the input parameter values and the state of the storage).
 
 
 
@@ -77,7 +80,7 @@ totalSupply
 [DEFAULT]
 ```
 
-`<k>` cell specifies that the execution eventually reaches RETURN instruction meaning that the program will successfully finish the execution. The RETURN instruction says that a 32-byte return value will be stored in the memory at the location RET_ADDR.
+`<k>` cell specifies that the execution eventually reaches RETURN instruction meaning that the program will successfully terminate. The RETURN instruction says that a 32-byte return value will be stored in the memory at the location RET_ADDR.
 
 ```
 k: #execute => (RETURN RET_ADDR:Int 32 ~> _)
@@ -85,9 +88,9 @@ k: #execute => (RETURN RET_ADDR:Int 32 ~> _)
 callData: #abiCallData("totalSupply", .TypedArgs)
 ```
 
-`<localMem>` cell specifies that the local memory is empty in the beginning, but in the end it will contain some contents including the return value `TOTAL`, the total supply.
+`<localMem>` cell specifies that the local memory is empty in the beginning, but in the end, it will contain some contents including the return value `TOTAL`, the total supply.
 
-The other entries are captured by the wildcard symbol `_`, meaning that they are not relevant for the functional correctness.
+The other entries are represented by the wildcard symbol `_`, meaning that they are not relevant to the correctness.
 
 ```
 localMem:
@@ -99,28 +102,28 @@ localMem:
     )
 ```
 
-For the demonstration purpose, we give a loose upper-bound of the maximum gas amount. In practice, one should set a reasonable amount of the gas limit to see if the program does not consume too much gas ensuring no gas leakage.
+`<gas>` cell specifies the maximum gas amount. Here we give a loose upper-bound for the demonstration purpose. In practice, one should set a reasonable amount of the gas limit to see if the program does not consume too much gas ensuring no gas leakage.
 
 ```
 gas:
     /* G */ 100000 => _
 ```
 
-No log is generated.
+`<log>` cell specifies that no log is generated during the execution.
 
 ```
 log:
     /* _ */ .List
 ```
 
-It does not refund any gas. Note that it does not mean it consumes all the provided gas. The gas refund happens for some situation, e.g., re-claiming the unused storage entries by storing 0.
+`<refund>` cell specifies that no gas is refunded. Note that it does not mean it consumes all the provided gas. The gas refund happens only for some situation, e.g., re-claiming (i.e., garbage-collecting) unused storage entries.
 
 ```
 refund:
     /* _ */ 0
 ```
 
-`<storage>` cell specifies that the value of `totaySupply` is `TOTAL` and other entries are not relevant (could be arbitrary values). Note that `pos(totalSupply)` is 2.
+`<storage>` cell specifies that the value of `totaySupply` is `TOTAL` and other entries are not relevant (could be arbitrary values). Note that `pos(totalSupply) = 2`.
 
 ```
 storage:
@@ -128,7 +131,7 @@ storage:
     _:Map
 ```
 
-The side condition specifies both the minimum and the maximum values of the symbolic values based on their types.
+The side-condition specifies both the minimum and the maximum values of the symbolic values based on their types.
 
 ```
 requires:
@@ -170,7 +173,7 @@ refund:
     /* _ */ 0
 ```
 
-`<storage>` cell specifies that the value of `balance[OWNER]` is `BAL` which will be returned. Note that `pos(balance)` is 0.
+`<storage>` cell specifies that the value of `balances[OWNER]` is `BAL`, which is in our interest. Note that `pos(balances) = 0`.
 
 ```
 storage:
@@ -214,7 +217,7 @@ refund:
     /* _ */ 0
 ```
 
-`<storage>` cell specifies that the value of `allowance[OWNER][SPENDER]` is `ALLOWANCE` which will be returned. Note that `pos(allowance)` is 1.
+`<storage>` cell specifies that the value of `allowances[OWNER][SPENDER]` is `ALLOWANCE`, where `pos(allowances) = 1`.
 
 ```
 storage:
@@ -252,11 +255,9 @@ gas:
     /* G */ 100000 => _
 ```
 
-It generates a event log when succeeds.
+`<log>` cell specifies that an event log is generated during the execution.
 
-ERC20 declares two types of events: Approval and Transfer.
-
-The log message contains the account ID of the current contract, the hash of the event signature, the account ID who calls this contract, the SPENDER account ID, and the approved VALUE.
+The log message contains the account ID of the current contract, the hash of the signature of event Approval, the account ID who calls this contract, the SPENDER account ID, and the approved VALUE.
 
 ```
 log:
@@ -274,18 +275,28 @@ log:
     )
 ```
 
-This function may issue a refund. It will refund a gas if the allowance value is 0 while the previous value is greater than 0, re-claiming the corresponding entry of the storage.
+`<refund>` cell specifies that a refund may be issued. This function will refund a gas if the allowance value is 0 while the previous value is greater than 0, re-claiming the corresponding entry of the storage.
 
-Note that, however, we do not specify the refund detail simply because we do not think it is critical to verify the functional correctness of approve function.
+Note that, however, we have not specified the refund detail since it is not essential for the functional correctness.
 
 ```
 refund:
     /* _ */ 0 => _ /* TODO: more detail */
+```
 
+`<storage>` cell specifies that the value of `allowances[CALLER_ID][SPENDER]` will be updated to `VALUE` after the execution.
+
+```
 storage:
     sha3(sha3(1) +Word CALLER_ID) +Word SPENDER |-> (_:Int => VALUE)
     _:Map
+```
 
+Unlike the ERC20-K specification, we do not specify the case when `VALUE` is less than 0 because it is not possible --- the `VALUE` parameter is declared as the type of *unsigned* 256-bit integer.
+
+Indeed, the ABI call mechanism will reject a call to this function if the `VALUE` is negative, which is out of the scope of the EVM-level specification.
+
+```
 requires:
     andBool 0 <=Int SPENDER   andBool SPENDER   <Int (2 ^Int 160)
     andBool 0 <=Int VALUE     andBool VALUE     <Int (2 ^Int 256)
@@ -301,13 +312,13 @@ epilogue:
 transfer
 --------
 
-`transfer` function has two types of behaviors:
+`transfer` function admits two types of behaviors:
 - succeeds in transferring the value and returns true (i.e., 1)
 - fails to transfer due to the arithmetic overflow and throws an exception
 
 We present two specifications, one for each case.
 
-### transfer suceess
+### Case of success
 
 ```
 [DEFAULT]
@@ -328,7 +339,7 @@ gas:
     /* G */ 100000 => _
 ```
 
-It generates an event log of type `Transfer`.
+`<log>` cell specifies that it generates an event log of type `Transfer`.
 
 ```
 log:
@@ -352,13 +363,17 @@ epilogue:
     // NOTE: negative VALUE is not possible since it is of `num256` type
 ```
 
-Two sub-cases.
+There are two sub-cases depending on whether the caller is equal to the recipient. 
 
-Case 1:
+#### Sub-case 1: the caller `CALLER_ID` is different from the recipient `TO_ID`.
 
 ```
 [1]
+```
 
+`<storage>` cell specifies that the amount of `VALUE` is transferred from `balances[CALLER_ID]` to `balances[TO_ID]`.
+
+```
 storage:
     sha3(0) +Word CALLER_ID |-> (BAL_FROM => BAL_FROM -Int VALUE)
     sha3(0) +Word TO_ID     |-> (BAL_TO   => BAL_TO   +Int VALUE)
@@ -369,32 +384,26 @@ requires:
     andBool 0 <=Int VALUE     andBool VALUE     <Int (2 ^Int 256)
     andBool 0 <=Int BAL_FROM  andBool BAL_FROM  <Int (2 ^Int 256)
     andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
-```
-
-When the caller account is different from the receiver account.
-
-```
     andBool CALLER_ID =/=Int TO_ID
 ```
 
-The side-condition ensuring no arithmetic overflow.
+The side-condition ensures that no arithmetic overflow happens.
 
 ```
     andBool VALUE <=Int BAL_FROM
     andBool BAL_TO +Int VALUE <Int (2 ^Int 256) // viper overflow check: (VALUE ==Int 0 xorBool BAL_TO +Word VALUE >Int BAL_TO)
-```
-
-It returns true.
-
-```
     andBool RET_VAL ==Int 1
 ```
 
-Case 2:
+#### Sub-case 2: the caller `CALLER_ID` is equal to the recipient `TO_ID`.
 
 ```
 [2]
+```
 
+`<storage>` cell specifies that `balances[CALLER_ID]` is not changed since the value is transferred to himself.
+
+```
 storage:
     sha3(0) +Word CALLER_ID |-> BAL_FROM
     _:Map
@@ -403,26 +412,25 @@ requires:
     andBool 0 <=Int TO_ID     andBool TO_ID     <Int (2 ^Int 160)
     andBool 0 <=Int VALUE     andBool VALUE     <Int (2 ^Int 256)
     andBool 0 <=Int BAL_FROM  andBool BAL_FROM  <Int (2 ^Int 256)
-```
-
-When the caller account is the same with the receiver account, i.e., transferring money to himself.
-
-
-```
     andBool CALLER_ID ==Int TO_ID
+```
+
+The side-condition ensures that no arithmetic overflow happens.
+
+```
     andBool VALUE <=Int BAL_FROM
     andBool RET_VAL ==Int 1
 ```
 
 
 
-### transfer failure
+### Case of failure
 
 ```
 [DEFAULT]
 ```
 
-When failed, it throws an exception.
+`<k>` cell specifies that an exception will be thrown for the failure case.
 
 ```
 k: #execute => #exception
@@ -430,7 +438,7 @@ k: #execute => #exception
 callData: #abiCallData("transfer", #address(TO_ID), #uint256(VALUE))
 ```
 
-The local memory is not relevant at all.
+The local memory is not relevant at all in this case.
 
 ```
 localMem:
@@ -440,7 +448,7 @@ gas:
     /* G */ 100000 => _
 ```
 
-No log is generated when failed.
+No log will be generated.
 
 ```
 log:
@@ -454,7 +462,13 @@ epilogue:
     //       using CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
 
     // NOTE: negative VALUE is not possible since it is of `num256` type
+```
 
+There are two sub-cases as well depending on whether the caller is equal to the recipient. 
+
+#### Sub-case 1: the caller `CALLER_ID` is different from the recipient `TO_ID`.
+
+```
 [1]
 
 storage:
@@ -470,12 +484,16 @@ requires:
     andBool CALLER_ID =/=Int TO_ID
 ```
 
-Negation of the side-condition of that of the success case (sub-case 1):
+The side-condition causing the arithmetic overflows, i.e., the negation of that of the success case (sub-case 1):
 
 ```
     andBool ( VALUE >Int BAL_FROM
      orBool   BAL_TO +Int VALUE >=Int (2 ^Int 256) ) // viper overflow check: ( VALUE =/=Int 0 andBool BAL_TO +Word VALUE <Int BAL_TO )
+```
 
+#### Sub-case 2: the caller `CALLER_ID` is equal to the recipient `TO_ID`.
+
+```
 [2]
 
 storage:
@@ -490,7 +508,7 @@ requires:
     andBool CALLER_ID ==Int TO_ID
 ```
 
-Negation of the side-condition of that of the success case (sub-case 2):
+The side-condition causing the arithmetic overflows, i.e., the negation of that of the success case (sub-case 2):
 
 ```
     andBool VALUE >Int BAL_FROM
@@ -500,9 +518,9 @@ Negation of the side-condition of that of the success case (sub-case 2):
 transferFrom
 ------------
 
-transferFrom specification is similar to that of transfer.
+The specification of `transferFrom` is similar to that of `transfer`.
 
-### transferFrom success
+### Case of success
 
 ```
 [DEFAULT]
@@ -541,11 +559,15 @@ refund:
 
 epilogue:
     // NOTE: negative VALUE is not possible since it is of `num256` type
+```
 
+#### Sub-case 1: the sender `FROM_ID` is different from the recipient `TO_ID`.
+
+```
 [1]
 ```
 
-Three entries are updated: `balance[FROM_ID], balance[TO_ID], allowance[FROM_ID][CALLER_ID]`
+`<storage>` cell specifies that the amount of `VALUE` will be transferred from `balances[FROM_ID]` to `balances[TO_ID]`, and the amount is deducted from `allowances[FROM_ID][CALLER_ID]` correspondingly.
 
 ```
 storage:
@@ -566,7 +588,11 @@ requires:
     andBool BAL_TO +Int VALUE <Int (2 ^Int 256) // viper overflow check: (VALUE ==Int 0 xorBool BAL_TO +Word VALUE >Int BAL_TO)
     andBool VALUE <=Int ALLOW
     andBool RET_VAL ==Int 1
+```
 
+#### Sub-case 2: the sender `FROM_ID` is equal to the recipient `TO_ID`.
+
+```
 [2]
 
 storage:
@@ -586,7 +612,7 @@ requires:
     andBool RET_VAL ==Int 1
 ```
 
-### transferFrom failure
+### Case of failure
 
 ```
 [DEFAULT]
@@ -614,12 +640,11 @@ epilogue:
     // NOTE: negative VALUE is not possible since it is of `num256` type
 ```
 
+#### Sub-case 1: the sender `FROM_ID` is different from the recipient `TO_ID`.
 
-We split the sub-case 1 into three cases: one for each disjunct of the arithmetic overflow condition, due to a limitation of the current k prover that we are working on fixing.
+We split the sub-case 1 into another three sub-cases: one for each disjunct of the side-condition causing the arithmetic overflows, due to a limitation of the current K verifier that we are fixing.
 
-In terms of the faithfulness of the specification, it is identical to the unsplitted version, but it takes more time to verify.
-
-Note that the sub-cases are supposed to be OR'ed to present the overall specification.
+Note that the sub-cases are to be disjoined (i.e, OR'ed) to represent the complete specification.
 
 ```
 [1a]
@@ -681,7 +706,11 @@ requires:
   //andBool VALUE >Int BAL_FROM
   //andBool BAL_TO +Int VALUE >=Int (2 ^Int 256) // viper overflow check: ( VALUE =/=Int 0 andBool BAL_TO +Word VALUE <Int BAL_TO )
     andBool VALUE >Int ALLOW
+```
 
+#### Sub-case 2: the sender `FROM_ID` is equal to the recipient `TO_ID`.
+
+```
 [2]
 
 storage:
@@ -699,16 +728,3 @@ requires:
     andBool ( VALUE >Int BAL_FROM
      orBool   VALUE >Int ALLOW )
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
