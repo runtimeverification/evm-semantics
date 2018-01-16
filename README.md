@@ -8,7 +8,7 @@ Documentation/Support
 
 These may be useful for learning KEVM and K (newest to oldest):
 
--   [Jello Paper](https://thehydra.io/evm/), generated using [Sphinx Documentation Generation].
+-   [Jello Paper](https://jellopaper.org/), generated using [Sphinx Documentation Generation].
 -   [20 minute tour of the semantics](https://www.youtube.com/watch?v=tIq_xECoicQNov) at [Devcon3](https://ethereumfoundation.org/devcon3/).
 -   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
 
