@@ -143,13 +143,13 @@ tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTest
 # ProofTests
 
 proof_dir=tests/proofs
-proof_tests=$(proof_dir)/sum-to-n-spec.k \
-            ${proof_dir}/erc20/totalSupply-spec.k \
-            ${proof_dir}/erc20/balanceOf-spec.k \
-            ${proof_dir}/erc20/allowance-spec.k \
-            ${proof_dir}/erc20/approve-spec.k \
-            ${proof_dir}/erc20/transfer-success-spec.k ${proof_dir}/erc20/transfer-failure-spec.k \
-            ${proof_dir}/erc20/transferFrom-success-spec.k ${proof_dir}/erc20/transferFrom-failure-spec.k
+proof_tests=${proof_dir}/sum-to-n-spec.k \
+            ${proof_dir}/vyper/totalSupply-spec.k \
+            ${proof_dir}/vyper/balanceOf-spec.k \
+            ${proof_dir}/vyper/allowance-spec.k \
+            ${proof_dir}/vyper/approve-spec.k \
+            ${proof_dir}/vyper/transfer-success-spec.k ${proof_dir}/vyper/transfer-failure-spec.k \
+            ${proof_dir}/vyper/transferFrom-success-spec.k ${proof_dir}/vyper/transferFrom-failure-spec.k
 
 proof-test-all: proof-test
 proof-test: $(proof_tests:=.test)
@@ -173,17 +173,17 @@ tests/proofs/hkg/%-spec.k: proofs/hkg.md
 
 # #### Viper ERC20
 
-tests/proofs/erc20/%-spec.k: tests/proofs/erc20/spec-tmpl.k tests/proofs/erc20/%.ini
+tests/proofs/vyper/%-spec.k: tests/proofs/vyper/spec-tmpl.k tests/proofs/vyper/%.ini
 	@echo >&2 "==  gen-spec: $@"
 	mkdir -p $(dir $@)
 	python3 tests/gen-spec.py $^ $(dir $@)
 
-tests/proofs/erc20/spec-tmpl.k: proofs/vyper/erc20-vyper.md
+tests/proofs/vyper/spec-tmpl.k: proofs/vyper/erc20-vyper.md
 	@echo >&2 "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:tmpl $< > $@
 
-tests/proofs/erc20/%.ini: proofs/vyper/erc20-vyper.md
+tests/proofs/vyper/%.ini: proofs/vyper/erc20-vyper.md
 	@echo >&2 "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
