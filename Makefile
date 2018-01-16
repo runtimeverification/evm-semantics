@@ -94,7 +94,12 @@ proof_files=${proof_dir}/sum-to-n-spec.k \
             ${proof_dir}/vyper/allowance.timestamp \
             ${proof_dir}/vyper/approve.timestamp \
             ${proof_dir}/vyper/transfer-success.timestamp ${proof_dir}/vyper/transfer-failure.timestamp \
-            ${proof_dir}/vyper/transferFrom-success.timestamp ${proof_dir}/vyper/transferFrom-failure.timestamp
+            ${proof_dir}/vyper/transferFrom-success.timestamp ${proof_dir}/vyper/transferFrom-failure.timestamp \
+            ${proof_dir}/solidity/allowance.timestamp \
+            ${proof_dir}/solidity/balanceOf.timestamp \
+            ${proof_dir}/solidity/transfer-success.timestamp ${proof_dir}/solidity/transfer-failure.timestamp \
+            ${proof_dir}/solidity/transferFrom-success.timestamp ${proof_dir}/solidity/transferFrom-failure.timestamp \
+            ${proof_dir}/solidity/approve.timestamp \
 
 split-proof-tests: $(proof_files)
 
@@ -110,13 +115,25 @@ tests/proofs/vyper/%.timestamp: tests/proofs/vyper/spec-tmpl.k tests/proofs/vype
 	@echo "==  gen-spec: $@"
 	mkdir -p $(dir $@)
 	python3 tests/gen-spec.py $^ $(dir $@)
+tests/proofs/solidity/%.timestamp: tests/proofs/solidity/spec-tmpl.k tests/proofs/solidity/%.ini
+	@echo "==  gen-spec: $@"
+	mkdir -p $(dir $@)
+	python3 tests/gen-spec.py $^ $(dir $@)
 
 tests/proofs/vyper/spec-tmpl.k: proofs/vyper/erc20-vyper.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:tmpl $< > $@
+tests/proofs/solidity/spec-tmpl.k: proofs/solidity/erc20-solidity.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to tangle.lua --metadata=code:tmpl $< > $@
 
 tests/proofs/vyper/%.ini: proofs/vyper/erc20-vyper.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
+tests/proofs/solidity/%.ini: proofs/solidity/erc20-solidity.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
