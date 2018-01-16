@@ -58,15 +58,8 @@ evm:
 	cp * $(BUILDDIR)/.; \
 	cd $(BUILDDIR); \
 	cp ../../*.md .; \
-	cp README.md index.rst; \
-	pandoc -o analysis.rst  analysis.md ; \
-	pandoc -o data.rst data.md; \
-	pandoc -o driver.rst driver.md; \
-	pandoc -o evm.rst evm.md; \
-	pandoc -o issues.rst issues.md; \
-	pandoc -o krypto.rst krypto.md; \
-	pandoc -o verification.rst verification.md; \
-	sed -i 's/code:: k/code-block:: k/g' *.rst; \
+	pandoc --from markdown --to rst README.md --output index.rst; \
+	sed -i 's/{.k\( .uiuck\)\{0,1\}\( .rvk\)\{0,1\}}/k/g' *.md; \
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) html; \
 	$(SPHINXBUILD) -b text $(ALLSPHINXOPTS) html/text; \
 	echo "[+] HTML generated in build/html, text in build/html/text"
