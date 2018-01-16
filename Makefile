@@ -1,7 +1,3 @@
-ifndef K_VERSION
-$(error K_VERSION not set. Please use the Build script, instead of running make directly)
-endif
-
 # Common to all versions of K
 # ===========================
 
@@ -13,7 +9,13 @@ clean:
 	rm -r .build
 	find tests/proofs/ -name '*.k' -delete
 
-build: tangle .build/${K_VERSION}/driver-kompiled/extras/timestamp
+check_K_VERSION = $(if $(value K_VERSION),, $(error K_VERSION undefined, must be set))
+
+K_VERSION_set:
+	@:$(call check_K_VERSION)
+
+build: K_VERSION_set tangle .build/${K_VERSION}/driver-kompiled/extras/timestamp
+	@:$(call check_K_VERSION)
 
 # Tangle from *.md files
 # ----------------------
@@ -22,7 +24,7 @@ tangle: defn proofs
 
 defn_dir=.build/${K_VERSION}
 defn_files=${defn_dir}/driver.k ${defn_dir}/data.k ${defn_dir}/evm.k ${defn_dir}/analysis.k ${defn_dir}/krypto.k ${defn_dir}/verification.k
-defn: $(defn_files)
+defn: K_VERSION_set $(defn_files)
 
 .build/${K_VERSION}/%.k: %.md
 	@echo "==  tangle: $@"
