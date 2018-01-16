@@ -452,8 +452,6 @@ The `#next` operator executes a single step by:
 3.  increments the program counter, and finally
 4.  reverts state if any of the above steps threw an exception.
 
-. . .
-
 ```{.k .uiuck .rvk}
     rule <mode> EXECMODE </mode>
          <k> #next
