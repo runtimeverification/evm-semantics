@@ -190,12 +190,12 @@ tests/proofs/erc20/%-spec.k: tests/proofs/erc20/spec-tmpl.k tests/proofs/erc20/%
 	mkdir -p $(dir $@)
 	python3 tests/gen-spec.py $^ $(dir $@)
 
-tests/proofs/erc20/spec-tmpl.k: proofs/erc20.md
+tests/proofs/erc20/spec-tmpl.k: proofs/vyper/erc20-vyper.md
 	@echo >&2 "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:tmpl $< > $@
 
-tests/proofs/erc20/%.ini: proofs/erc20.md
+tests/proofs/erc20/%.ini: proofs/vyper/erc20-vyper.md
 	@echo >&2 "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
