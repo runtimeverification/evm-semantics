@@ -244,6 +244,7 @@ case "$run_command" in
        Useful <target>:
        -   tangle: Build the definition/proof files from the markdown files (requires pandoc)
        -   build:  Kompile the definition (calls tangle target first)
+       -   sphinx: Build Sphinx HTML documentation from semantics
 
        # Running
        # -------
