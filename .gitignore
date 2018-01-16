@@ -5,6 +5,10 @@
 
 !/.build/secp256k1
 
+!/.build/sphinx-docs
+/.build/sphinx-docs/*
+!/.build/sphinx-docs/conf.py
+
 # This holds the tests that are split into one test per file from
 # the ethereum tests
 /tests/VMTests
