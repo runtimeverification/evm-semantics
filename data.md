@@ -263,8 +263,7 @@ The `<op>Word` comparisons similarly lift K operators to EVM ones:
     rule W0 s<Word W1 => abs(W1) <Word abs(W0) requires sgn(W0) ==K -1 andBool sgn(W1) ==K -1
 ```
 
-Bitwise Operators
------------------
+### Bitwise Operators
 
 Bitwise logical operators are lifted from the integer versions.
 
