@@ -14,7 +14,7 @@ check_K_VERSION = $(if $(value K_VERSION),, $(error K_VERSION undefined, must be
 K_VERSION_set:
 	@:$(call check_K_VERSION)
 
-build: K_VERSION_set tangle .build/${K_VERSION}/driver-kompiled/extras/timestamp
+build: K_VERSION_set tangle .build/$(K_VERSION)/driver-kompiled/extras/timestamp
 	@:$(call check_K_VERSION)
 
 # Tangle from *.md files
@@ -22,23 +22,23 @@ build: K_VERSION_set tangle .build/${K_VERSION}/driver-kompiled/extras/timestamp
 
 tangle: defn proofs
 
-defn_dir=.build/${K_VERSION}
-defn_files=${defn_dir}/driver.k ${defn_dir}/data.k ${defn_dir}/evm.k ${defn_dir}/analysis.k ${defn_dir}/krypto.k ${defn_dir}/verification.k
+defn_dir=.build/$(K_VERSION)
+defn_files=$(defn_dir)/driver.k $(defn_dir)/data.k $(defn_dir)/evm.k $(defn_dir)/analysis.k $(defn_dir)/krypto.k $(defn_dir)/verification.k
 defn: K_VERSION_set $(defn_files)
 
-.build/${K_VERSION}/%.k: %.md
+.build/$(K_VERSION)/%.k: %.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to tangle.lua --metadata=code:"${K_VERSION}" $< > $@
+	pandoc --from markdown --to tangle.lua --metadata=code:"$(K_VERSION)" $< > $@
 
 proof_dir=tests/proofs
-proof_files=${proof_dir}/sum-to-n-spec.k \
-			${proof_dir}/hkg/allowance-spec.k \
-			${proof_dir}/hkg/approve-spec.k \
-			${proof_dir}/hkg/balanceOf-spec.k \
-			${proof_dir}/hkg/transfer-else-spec.k ${proof_dir}/hkg/transfer-then-spec.k \
-			${proof_dir}/hkg/transferFrom-else-spec.k ${proof_dir}/hkg/transferFrom-then-spec.k \
-			${proof_dir}/bad/hkg-token-buggy-spec.k
+proof_files=$(proof_dir)/sum-to-n-spec.k \
+			$(proof_dir)/hkg/allowance-spec.k \
+			$(proof_dir)/hkg/approve-spec.k \
+			$(proof_dir)/hkg/balanceOf-spec.k \
+			$(proof_dir)/hkg/transfer-else-spec.k $(proof_dir)/hkg/transfer-then-spec.k \
+			$(proof_dir)/hkg/transferFrom-else-spec.k $(proof_dir)/hkg/transferFrom-then-spec.k \
+			$(proof_dir)/bad/hkg-token-buggy-spec.k
 
 proofs: $(proof_files)
 
@@ -70,7 +70,7 @@ split-blockchain-tests: \
 
 blockchain_tests=$(wildcard tests/BlockchainTests/*/*/*/*.json)
 vm_tests=$(wildcard tests/VMTests/*/*/*.json)
-all_tests=${vm_tests} ${blockchain_tests}
+all_tests=$(vm_tests) $(blockchain_tests)
 skipped_tests=$(wildcard tests/VMTests/vmPerformance/*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Constantinople.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*/*.json) \
@@ -78,12 +78,12 @@ skipped_tests=$(wildcard tests/VMTests/vmPerformance/*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth_d1g0v0/*.json)
 
-passing_tests=$(filter-out ${skipped_tests}, ${all_tests})
-passing_vm_tests=$(filter-out ${skipped_tests}, ${vm_tests})
-passing_blockchain_tests=$(filter-out ${skipped_tests}, ${blockchain_tests})
-passing_targets=${passing_tests:=.test}
-passing_vm_targets=${passing_vm_tests:=.test}
-passing_blockchain_targets=${passing_blockchain_tests:=.test}
+passing_tests=$(filter-out $(skipped_tests), $(all_tests))
+passing_vm_tests=$(filter-out $(skipped_tests), $(vm_tests))
+passing_blockchain_tests=$(filter-out $(skipped_tests), $(blockchain_tests))
+passing_targets=$(passing_tests:=.test)
+passing_vm_targets=$(passing_vm_tests:=.test)
+passing_blockchain_targets=$(passing_blockchain_tests:=.test)
 
 test: $(passing_targets)
 vm-test: $(passing_vm_targets)
