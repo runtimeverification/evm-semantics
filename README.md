@@ -31,7 +31,7 @@ These additional files extend the semantics to make the repository more useful:
 Finally, these files pertain to the [K Reachability Logic Prover]:
 
 -   [verification.md](verification) adds helpers for verification efforts.
--   [proofs/README.md](proofs) documents proofs we have performed.
+-   [proofs/README.md](proofs/README) documents proofs we have performed.
 
 Using the Definition
 --------------------
