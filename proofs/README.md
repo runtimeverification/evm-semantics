@@ -4,12 +4,12 @@ EVM Program Verification
 The EVM program verifier combines the K verification infrastructure with the EVM semantics.
 We present a brief summary of our verification efforts.
 
-The SUM To N Program
---------------------
+[The SUM To N Program](../sum-to-n)
+-----------------------------------
 
 As a demonstration of simple reachability claims involing a circularity, we prove the EVM sum program correct.
 This program sums the numbers from 1 to N (for sufficiently small N), including pre-conditions dis-allowing integer under/overflow and stack overflow.
-The specification [Sum to N](sum-to-n.md) is given as reachability rules using the K syntax.
+The specification [Sum to N](../sum-to-n) is given as reachability rules using the K syntax.
 
 [The ERC20 Token Standard](https://github.com/ethereum/EIPs/issues/20)
 ----------------------------------------------------------------------
@@ -48,7 +48,7 @@ The ERC20 standard requires the following Solidity methods and events (and log i
 Here we'll collect the list of ERC20 tokens we have analyzed.
 The following files contain details about each token and the proof claims we have verified.
 
--   [HKG Hacker Gold Token](hkg.md)
+-   [HKG Hacker Gold Token](../hkg)
 
 Running Proofs
 ==============

@@ -5,7 +5,7 @@ EVM Execution
 
 The EVM is a stack machine over some simple opcodes.
 Most of the opcodes are "local" to the execution state of the machine, but some of them must interact with the world state.
-This file only defines the local execution operations, the file `ethereum.md` will define the interactions with the world state.
+This file only defines the local execution operations, the file `driver.md` will define the interactions with the world state.
 
 ```{.k .uiuck .rvk}
 requires "data.k"
@@ -451,8 +451,6 @@ The `#next` operator executes a single step by:
 2.  executes the opcode if it is not immediately exceptional,
 3.  increments the program counter, and finally
 4.  reverts state if any of the above steps threw an exception.
-
-. . .
 
 ```{.k .uiuck .rvk}
     rule <mode> EXECMODE </mode>
@@ -1747,7 +1745,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 ```
 
 Precompiled Contracts
-=====================
+---------------------
 
 -   `#precompiled` is a placeholder for the 4 pre-compiled contracts at addresses 1 through 4.
 

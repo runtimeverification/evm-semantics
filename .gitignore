@@ -1,12 +1,13 @@
-# Build products, except for UIUC K definitions. We want the
-# repository to be runnable even if the use doesn't have
-# pandoc-tangle installed.
 # See the 'exclude everything except directory foo/bar'
 # example in the gitignore man page to understand how this works.
 /.build/*
 /tests/proofs/*
 
 !/.build/secp256k1
+
+!/.build/sphinx-docs
+/.build/sphinx-docs/*
+!/.build/sphinx-docs/conf.py
 
 # This holds the tests that are split into one test per file from
 # the ethereum tests
@@ -23,3 +24,5 @@
 /semantics.a
 /semantics.cmxa
 
+# Documentation ignores
+docs/build

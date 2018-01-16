@@ -3,63 +3,91 @@ KEVM: Semantics of EVM in K
 
 In this repository we provide a model of the EVM in K.
 
-### Technical Report
+Documentation/Support
+---------------------
 
-See [our technical report on KEVM 1.0](http://hdl.handle.net/2142/97207) for more expository explanation of KEVM.
-The paper is a good starting point for people wishing to dive into reading the semantics/other tools here (especially sections 3 and 5).
+These may be useful for learning KEVM and K (newest to oldest):
 
-### Structure
+-   [Jello Paper](https://jellopaper.org/), generated using [Sphinx Documentation Generation].
+-   [20 minute tour of the semantics](https://www.youtube.com/watch?v=tIq_xECoicQNov) at [Devcon3](https://ethereumfoundation.org/devcon3/).
+-   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
 
-The file [data.md](data.md) explains the basic data of EVM (including the 256 bit words and some datastructures over them).
-This data is defined functionally.
+To get support for KEVM, please join our [Riot Room](https://riot.im/app/#/room/#k:matrix.org).
 
-[evm.md](evm.md) is the file containing the semantics of KEVM.
-This file contains the **configuration** (a map of the state), and a simple imperative execution machine which the EVM lives on top of.
-It deals with the semantics of opcodes, the gas cost of execution, and parsing/unparsing/assembling/disassembling.
+This Repository
+---------------
 
-### Gas Analysis
+The following files constitute the KEVM semantics:
 
-We have defined one analysis tool so far; a *very very* simple gas analysis tool.
-This gas analysis tool should *be improved* before being used for anything significant.
-We will collect developed analysis tools in [analysis.md](analysis.md).
+-   [krypto.md](krypto) sets up some basic cryptographic primitives.
+-   [data.md](data) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
+-   [evm.md](evm) is the main KEVM semantics, containing the configuration and transition rules of EVM.
 
-### Proofs
+These additional files extend the semantics to make the repository more useful:
 
-Any proofs we perform will be documented in [proofs/README.md](proofs/README.md).
-These proofs are also run as tests of UIUC-K, though they take quite a while.
-The file [verification.md](verification.md) contains some helper-macros for writing down reachability claims.
+-   [driver.md](driver) is an execution harness for KEVM, providing a simple language for describing tests/programs.
+-   [analysis.md](analysis) contains any automated analysis tools we develop.
 
-### Testing
+Finally, these files pertain to the [K Reachability Logic Prover]:
 
-[ethereum.md](ethereum.md) loads test-files from the [Ethereum Test Set](https://github.com/ethereum/tests) and executes them, checking that the output is correct.
-If the output is correct, the entire configuration is cleared.
-If any check fails, the configuration retains the failed check at the top of the `<k>` cell.
+-   [verification.md](verification) adds helpers for verification efforts.
+-   [proofs/README.md](proofs/README) documents proofs we have performed.
+
+[K Reachability Logic Prover]: <http://fsl.cs.illinois.edu/FSL/papers/2016/stefanescu-park-yuwen-li-rosu-2016-oopsla/stefanescu-park-yuwen-li-rosu-2016-oopsla-public.pdf>
 
 Using the Definition
 --------------------
+
+### Dependencies
+
+-   `./Build` requires `xmllint` to pretty-print configurations when running programs/tests.
+-   When developing, the `*.k` files are generated from the `*.md` files using [Pandoc](https://pandoc.org).
+-   For generating the Jello Paper, the [Sphinx Documentation Generation] tool is used.
+    Additionally, you'll need to install the Python `pygments` for K available in the [K Editor Support] repository.
+
+[Sphinx Documentation Generation]: <http://sphinx-doc.org>
+[K Editor Support]: <https://github.com/kframework/k-editor-support>
+
+### K Version
 
 There are two versions of K available, [RV-K](https://github.com/runtimeverification/k) and [UIUC-K](https://github.com/kframework/k).
 This repository contains the build-products for both versions of K (there are slight differences) in `.build/$K_VERSION/`.
 Use RV-K for fast concrete execution, and UIUC-K for any symbolic reasoning.
 Make sure that you have set the `K_VERSION` environment variable in your shell (add `export K_VERSION=uiuck` or `export K_VERSION=rvk` to your `.bashrc` or equivalent).
 
-The script `Build` supplied in this repository will build and run the definition (see `./Build help` to see more detailed usage information).
+#### Helper Script `with-k`
+
+Not everyone wants to go through the process of installing K, so the script `./tests/ci/with-k` can be used to avoid that.
+The following will calls to `./Build` are prefixed with a call to `with-k` to download, build, and set up a fresh copy of RV-K or UIUC-K (as specified).
+
+```sh
+$ ./tests/ci/with-k rvk   ./Build run tests/VMTests/vmArithmeticTest/add0.json
+$ ./tests/ci/with-k uiuck ./Build prove tests/proofs/hkg/transfer-else-spec.k
+$ ./tests/ci/with-k rvk   ./Build test tests/VMTests/vmArithmeticTest/add0.json
+$ ./tests/ci/with-k uiuck ./Build prove tests/proofs/hkg/transfer-else-spec.k
+$ ./tests/ci/with-k uiuck ./Build debug tests/VMTests/vmArithmeticTest/add0.json
+```
+
+See `./Build help` to see more detailed usage information; `./Build` can build and test the definition as well as run EVM programs and proofs.
 Running any proofs or symbolic reasoning requires UIUC-K.
 
+The semantics are parametric over the `MODE` and the `SCHEDULE`.
 To run in a different mode (eg. in `GASANALYZE` mode), do `export cMODE=<OTHER_MODE>` before calling `./Build`.
 To run with a different fee schedule (eg. `HOMESTEAD` instead of `DEFAULT`), do `export cSCHEDULE=<OTHER_SCHEDULE>` before calling `./Build`.
 
-### Dependencies
+Note that running `./tests/ci/with-k` takes quite some time, which can be a pain when actively developing.
+To only download and setup K once for each session, you can do the following:
 
-For using the `./Build` command and tests, we depend on `xmllint` (on Ubuntu via the package `libxml2-utils`).
-For developing, we depend on [`pandoc-tangle`](https://github.com/ehildenb/pandoc-tangle).
+```sh
+# Downloads and installs RV-K
+$ ./tests/ci/with-k rvk `which bash`
 
-### Interesting Branches
+# Now can just run `./Build` directly
+$ ./Build run tests/VMTests/vmArithmeticTest/add0.json
+$ ./Build test tests/VMTests/vmArithmeticTest/add0.json
+```
 
-These branches (off of `master`) are various interesting/useful changes to the semantics.
-
--   `perf` and `performance` are changes which improve performance of concrete execution but cannot do symbolic reasoning.
--   `tutorial` removes parts of the semantics and places `TODO` markers for a user to fill in.
+The script `with-k` sets up the development environment with the fresh copy of K built and prefixed to `PATH` for the remaining commands.
 
 ### Example Runs
 
@@ -102,33 +130,6 @@ KDebug> p
 KDebug>
 ```
 
-### Helper Script `with-k`
-
-Not everyone wants to go through the process of installing K, so the script `./tests/ci/with-k` can be used to avoid that.
-The following will call the same `./Build` commands as above, but only after downloading, building, and setting up a fresh copy of RV-K or UIUC-K (as specified).
-
-```sh
-$ ./tests/ci/with-k rvk   ./Build run tests/VMTests/vmArithmeticTest/add0.json
-$ ./tests/ci/with-k uiuck ./Build prove tests/proofs/hkg/transfer-else-spec.k
-$ ./tests/ci/with-k rvk   ./Build test tests/VMTests/vmArithmeticTest/add0.json
-$ ./tests/ci/with-k uiuck ./Build prove tests/proofs/hkg/transfer-else-spec.k
-$ ./tests/ci/with-k uiuck ./Build debug tests/VMTests/vmArithmeticTest/add0.json
-```
-
-Note that running `./tests/ci/with-k` takes quite some time, which can be a pain when actively developing.
-To only download and setup K once for each session, you can do the following:
-
-```sh
-# Downloads and installs RV-K
-$ ./tests/ci/with-k rvk `which bash`
-
-# Now can just run `./Build` directly
-$ ./Build run tests/VMTests/vmArithmeticTest/add0.json
-$ ./Build test tests/VMTests/vmArithmeticTest/add0.json
-```
-
-The script `with-k` sets up the development environment with the fresh copy of K built and prefixed to `PATH` for the remaining commands.
-
 Contributing
 ------------
 
@@ -145,10 +146,6 @@ Tests can come in the form of proofs done over contracts too :).
 
 These are hard requirements (**must** be met before review), and they **must** be true for **every** commit in the PR.
 
--   The build products which we store in the repository (K definition files and proof specification files) must be up-to-date with the files they are generated from.
-    We do our development directly in the Markdown files and build the definition files (`*.k`) from them using [pandoc-tangle](https://github.com/ehildenb/pandoc-tangle).
-    Not everyone wants to install `pandoc-tangle` or `pandoc`, so the build products are kept in the repository for people who just want to experiment quickly.
-
 -   If a new feature is introduced in the PR, and later a bug is fixed in the new feature, the bug fix must be squashed back into the feature introduction.
     The *only* exceptions to this are if you want to document the bug because it was quite tricky or is something you believe should be fixed about K.
     In these exceptional cases, place the bug-fix commit directly after the feature introduction commit and leave useful commit messages.
@@ -156,6 +153,7 @@ These are hard requirements (**must** be met before review), and they **must** b
 
 -   No tab characters, 4 spaces instead.
     Linux-style line endings; if you're on a Windows machine make sure to run `dos2unix` on the files.
+    No whitespace at the end of any lines.
 
 ### Hard - PR Tip
 
@@ -213,26 +211,6 @@ These are soft requirements (review **may** start without these being met), and 
           requires A > 3
            andBool isPrime(A)
     ```
-
-Unfinished
-----------
-
-### Network vs. EVM
-
-Ethereum state consists of two parts, the network state and the EVM execution state.
-Right now the semantics declares the configuration for both of these components together, and many rules reach between these two subconfigurations.
-Separating the two subconfigurations and declaring an API for the network dynamics would provide a better understanding of the "necessary ingredients" for a consensus-driven distributed store.
-This would also allow us to experiment with alternative programming languages to EVM for future blockchain systems.
-
-### Full Transaction Execution
-
-Right now we are passing the VMTests, but haven't run tests on entire transactions.
-To have confidence in our semantics, we need to run the tests involving entire transactions (not just chunks of VM code).
-We are working on running the GeneralStateTests now as well.
-
-### TODOs
-
-More local problems are defined with a small *TODO* next to them in the semantics.
 
 Resources
 =========

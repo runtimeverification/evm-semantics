@@ -42,11 +42,11 @@ detect_k_version() {
 
 run_make() {
     local make_opts=
-    type pandoc-tangle >/dev/null 2>&1 || {
-        make_opts="--assume-old ethereum.md --assume-old evm.md \
+    type pandoc >/dev/null 2>&1 || {
+        make_opts="--assume-old driver.md   --assume-old evm.md \
                    --assume-old data.md     --assume-old krypto.md \
                    --assume-old analysis.md --assume-old verification.md"
-        warning "pandoc-tangle not installed."  \
+        warning "pandoc not installed."  \
                 "Ignoring changes in markdown files\n"
     }
     make K_VERSION=${K_VERSION} -s $make_opts $@
@@ -100,14 +100,14 @@ run_uiuck() {
 run_rvk() {
     test_file="$1"
     (   set +e
-        interpreter="$(dirname "$0")/.build/rvk/ethereum-kompiled/interpreter"
+        interpreter="$(dirname "$0")/.build/rvk/driver-kompiled/interpreter"
         kast="$(mktemp)"
         output="$(mktemp)"
         kast_output="$(mktemp)"
         trap "rm -rf $kast $output $kast_output" INT TERM EXIT
         "$(dirname "$0")/kast-json.py" "$test_file" > "$kast"
         set +e
-        $interpreter "$(dirname "$0")/.build/rvk/ethereum-kompiled/realdef.cma" -c PGM "$kast" textfile \
+        $interpreter "$(dirname "$0")/.build/rvk/driver-kompiled/realdef.cma" -c PGM "$kast" textfile \
                      -c SCHEDULE '`DEFAULT_EVM`(.KList)' text -c MODE '`VMTESTS_EVM`(.KList)' text \
                      --output-file "$output"
         exit_status="$?"
@@ -242,8 +242,9 @@ case "$run_command" in
        $0 make-<target>     Run 'make <target>' with 'K_VERSION' set
 
        Useful <target>:
-       -   tangle: Build the definition/proof files from the markdown files (requires pandoc-tangle)
+       -   tangle: Build the definition/proof files from the markdown files (requires pandoc)
        -   build:  Kompile the definition (calls tangle target first)
+       -   sphinx: Build Sphinx HTML documentation from semantics
 
        # Running
        # -------
