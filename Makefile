@@ -35,7 +35,13 @@ proof_ini=${proof_dir}/vyper/totalSupply.ini \
           ${proof_dir}/vyper/allowance.ini \
           ${proof_dir}/vyper/approve.ini \
           ${proof_dir}/vyper/transfer-success.ini ${proof_dir}/vyper/transfer-failure.ini \
-          ${proof_dir}/vyper/transferFrom-success.ini ${proof_dir}/vyper/transferFrom-failure.ini
+          ${proof_dir}/vyper/transferFrom-success.ini ${proof_dir}/vyper/transferFrom-failure.ini \
+          ${proof_dir}/solidity/allowance.ini \
+          ${proof_dir}/solidity/balanceOf.ini \
+          ${proof_dir}/solidity/transfer-success.ini ${proof_dir}/solidity/transfer-failure.ini \
+          ${proof_dir}/solidity/transferFrom-success.ini ${proof_dir}/solidity/transferFrom-failure.ini \
+          ${proof_dir}/solidity/approve.ini \
+
 # Since it's difficult to predict which files are generated from each ini files (depends on whether non-DEFAULT ini sections exist),
 # the `gen-spec.py` script generates a timestamp which we use instead.
 proofs: $(proof_ini:.ini=.timestamp)
@@ -55,13 +61,25 @@ tests/proofs/vyper/%.timestamp: tests/proofs/vyper/spec-tmpl.k tests/proofs/vype
 	@echo "==  gen-spec: $@"
 	mkdir -p $(dir $@)
 	python3 tests/gen-spec.py $^ $(dir $@)
+tests/proofs/solidity/%.timestamp: tests/proofs/solidity/spec-tmpl.k tests/proofs/solidity/%.ini
+	@echo "==  gen-spec: $@"
+	mkdir -p $(dir $@)
+	python3 tests/gen-spec.py $^ $(dir $@)
 
 tests/proofs/vyper/spec-tmpl.k: proofs/vyper/erc20-vyper.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:tmpl $< > $@
+tests/proofs/solidity/spec-tmpl.k: proofs/solidity/erc20-solidity.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to tangle.lua --metadata=code:tmpl $< > $@
 
 tests/proofs/vyper/%.ini: proofs/vyper/erc20-vyper.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
+tests/proofs/solidity/%.ini: proofs/solidity/erc20-solidity.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
