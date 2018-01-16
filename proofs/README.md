@@ -4,8 +4,8 @@ EVM Program Verification
 The EVM program verifier combines the K verification infrastructure with the EVM semantics.
 We present a brief summary of our verification efforts.
 
-The SUM To N Program
---------------------
+[The SUM To N Program](../sum-to-n)
+-----------------------------------
 
 As a demonstration of simple reachability claims involing a circularity, we prove the EVM sum program correct.
 This program sums the numbers from 1 to N (for sufficiently small N), including pre-conditions dis-allowing integer under/overflow and stack overflow.
