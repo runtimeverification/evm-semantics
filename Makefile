@@ -84,13 +84,17 @@ tests/BlockchainTests/%.test: tests/BlockchainTests/% build
 # ### Proof Tests
 
 proof_dir=tests/proofs
+
+# Since it's difficult to predict which files are generated from each ini
+# files (it depends on whether non-DEFAULT ini sections exist), the
+# `gen-spec.py` script generates a timestamp which we use instead.
 proof_files=${proof_dir}/sum-to-n-spec.k \
-            ${proof_dir}/vyper/totalSupply-spec.k \
-            ${proof_dir}/vyper/balanceOf-spec.k \
-            ${proof_dir}/vyper/allowance-spec.k \
-            ${proof_dir}/vyper/approve-spec.k \
-            ${proof_dir}/vyper/transfer-success-spec.k ${proof_dir}/vyper/transfer-failure-spec.k \
-            ${proof_dir}/vyper/transferFrom-success-spec.k ${proof_dir}/vyper/transferFrom-failure-spec.k
+            ${proof_dir}/vyper/totalSupply.timestamp \
+            ${proof_dir}/vyper/balanceOf.timestamp \
+            ${proof_dir}/vyper/allowance.timestamp \
+            ${proof_dir}/vyper/approve.timestamp \
+            ${proof_dir}/vyper/transfer-success.timestamp ${proof_dir}/vyper/transfer-failure.timestamp \
+            ${proof_dir}/vyper/transferFrom-success.timestamp ${proof_dir}/vyper/transferFrom-failure.timestamp
 
 split-proof-tests: $(proof_files)
 
@@ -102,7 +106,7 @@ tests/proofs/sum-to-n-spec.k: proofs/sum-to-n.md
 
 # #### Viper ERC20
 
-tests/proofs/vyper/%-spec.k: tests/proofs/vyper/spec-tmpl.k tests/proofs/vyper/%.ini
+tests/proofs/vyper/%.timestamp: tests/proofs/vyper/spec-tmpl.k tests/proofs/vyper/%.ini
 	@echo "==  gen-spec: $@"
 	mkdir -p $(dir $@)
 	python3 tests/gen-spec.py $^ $(dir $@)
