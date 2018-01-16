@@ -80,7 +80,7 @@ Our Proof Claims
 
 The K prover takes as input *Reachability claims*.
 The claims are written in the same format as rules from a language definition.
-Since our HKG token contract contains only sequential code (without loops), each specification in our [specification file](hkg.md) contains a single claim for each branch.
+Since our HKG token contract contains only sequential code (without loops), each specification in our [specification file](hkg) contains a single claim for each branch.
 The claims have to be supplied to K via a specification file (ends in `-spec.k`).
 
 The following claim captures the behavior of the `transferFrom` function.
