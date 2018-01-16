@@ -150,12 +150,7 @@ tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTest
 # ProofTests
 
 proof_dir=tests/proofs
-proof_files=$(proof_dir)/sum-to-n-spec.k \
-            $(proof_dir)/hkg/allowance-spec.k \
-            $(proof_dir)/hkg/approve-spec.k \
-            $(proof_dir)/hkg/balanceOf-spec.k \
-            $(proof_dir)/hkg/transfer-else-spec.k $(proof_dir)/hkg/transfer-then-spec.k \
-            $(proof_dir)/hkg/transferFrom-else-spec.k $(proof_dir)/hkg/transferFrom-then-spec.k \
+proof_tests=$(proof_dir)/sum-to-n-spec.k \
             ${proof_dir}/erc20/totalSupply-spec.k \
             ${proof_dir}/erc20/balanceOf-spec.k \
             ${proof_dir}/erc20/allowance-spec.k \
