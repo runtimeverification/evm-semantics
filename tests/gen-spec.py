@@ -23,6 +23,12 @@ def gen(template, ini, outdir):
         fout.write(genspec)
         fout.close()
 
+    # touch timestamp file for simplifying makefile
+    timestamp_file = out_prefix + '.timestamp'
+    with open(timestamp_file, 'a'):
+        os.utime(timestamp_file, None)
+
+
 if __name__ == '__main__':
     if len(sys.argv) != 4:
         print("usage: <cmd> <template> <ini> <outdir>")
