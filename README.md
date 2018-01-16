@@ -19,19 +19,19 @@ This Repository
 
 The following files constitute the KEVM semantics:
 
--   [krypto.md](krypto.md) sets up some basic cryptographic primitives.
--   [data.md](data.md) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
--   [evm.md](evm.md) is the main KEVM semantics, containing the configuration and transition rules of EVM.
+-   [krypto.md](krypto) sets up some basic cryptographic primitives.
+-   [data.md](data) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
+-   [evm.md](evm) is the main KEVM semantics, containing the configuration and transition rules of EVM.
 
 These additional files extend the semantics to make the repository more useful:
 
--   [driver.md](driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
--   [analysis.md](analysis.md) contains any automated analysis tools we develop.
+-   [driver.md](driver) is an execution harness for KEVM, providing a simple language for describing tests/programs.
+-   [analysis.md](analysis) contains any automated analysis tools we develop.
 
 Finally, these files pertain to the [K Reachability Logic Prover]:
 
--   [verification.md](verification.md) adds helpers for verification efforts.
--   [proofs/README.md](proofs/README.md) documents proofs we have performed.
+-   [verification.md](verification) adds helpers for verification efforts.
+-   [proofs/README.md](proofs) documents proofs we have performed.
 
 Using the Definition
 --------------------
