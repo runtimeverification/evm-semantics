@@ -5,7 +5,7 @@ endif
 # Common to all versions of K
 # ===========================
 
-.PHONY: all clean build tangle defn proofs split-tests test
+.PHONY: all clean build tangle defn proofs split-tests test sphinx
 
 all: build split-tests
 
@@ -128,3 +128,29 @@ tests/ethereum-tests/%.json:
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/rvk \
 					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O3 --non-strict
 	cd .build/rvk/driver-kompiled && ocamlfind opt -o interpreter constants.cmx prelude.cmx plugin.cmx parser.cmx lexer.cmx run.cmx interpreter.ml -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin -linkpkg -inline 20 -nodynlink -O3 -linkall
+
+# Sphinx HTML Documentation
+# -------------------------
+
+# You can set these variables from the command line.
+SPHINXOPTS     =
+SPHINXBUILD    = sphinx-build
+PAPER          =
+SPHINXBUILDDIR = .build/sphinx-docs
+
+# Internal variables.
+PAPEROPT_a4     = -D latex_paper_size=a4
+PAPEROPT_letter = -D latex_paper_size=letter
+ALLSPHINXOPTS   = -d ../$(SPHINXBUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
+# the i18n builder cannot share the environment and doctrees with the others
+I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
+
+sphinx:
+	mkdir $(SPHINXBUILDDIR); \
+	cp -r *.md proofs $(SPHINXBUILDDIR)/.; \
+	cd $(SPHINXBUILDDIR); \
+	pandoc --from markdown --to rst README.md --output index.rst; \
+	sed -i 's/{.k[ a-zA-Z.-]*}/k/g' *.md proofs/*.md; \
+	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) html; \
+	$(SPHINXBUILD) -b text $(ALLSPHINXOPTS) html/text; \
+	echo "[+] HTML generated in $(SPHINXBUILDDIR)/html, text in $(SPHINXBUILDDIR)/html/text"
