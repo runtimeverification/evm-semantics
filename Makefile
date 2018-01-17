@@ -25,7 +25,7 @@ defn_files=$(defn_dir)/driver.k $(defn_dir)/data.k $(defn_dir)/evm.k $(defn_dir)
 defn: K_VERSION_set $(defn_files)
 
 .build/$(K_VERSION)/%.k: %.md
-	@echo "==  tangle: $@"
+	@echo >&2 "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:"$(K_VERSION)" $< > $@
 
@@ -35,12 +35,12 @@ defn: K_VERSION_set $(defn_files)
 split-tests: vm-tests split-bchain-tests split-proof-tests
 
 tests/ethereum-tests/make.timestamp:
-	@echo "==  git submodule: cloning upstreams test repository"
+	@echo >&2 "==  git submodule: cloning upstreams test repository"
 	git submodule update --init -- tests/ethereum-tests
 	touch $@
 
 tests/%/make.timestamp: tests/ethereum-tests/%.json
-	@echo "==   split: $@"
+	@echo >&2 "==   split: $@"
 	mkdir -p $(dir $@)
 	tests/split-test.py $< $(dir $@)
 	touch $@
@@ -94,12 +94,12 @@ proof_files=$(proof_dir)/sum-to-n-spec.k \
 split-proof-tests: $(proof_files)
 
 tests/proofs/sum-to-n-spec.k: proofs/sum-to-n.md
-	@echo "==  tangle: $@"
+	@echo >&2 "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:sum-to-n $< > $@
 
 tests/proofs/hkg/%-spec.k: proofs/hkg.md
-	@echo "==  tangle: $@"
+	@echo >&2 "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
 
@@ -107,7 +107,7 @@ tests/proofs/hkg/%-spec.k: proofs/hkg.md
 # ---------------
 
 .build/uiuck/driver-kompiled/extras/timestamp: $(defn_files)
-	@echo "== kompile: $@"
+	@echo >&2 "== kompile: $@"
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/uiuck
 
@@ -116,7 +116,7 @@ tests/proofs/hkg/%-spec.k: proofs/hkg.md
 
 .build/rvk/driver-kompiled/extras/timestamp: .build/rvk/driver-kompiled/interpreter
 .build/rvk/driver-kompiled/interpreter: $(defn_files) KRYPTO.ml
-	@echo "== kompile: $@"
+	@echo >&2 "== kompile: $@"
 	kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/rvk \
 					--hook-namespaces KRYPTO --gen-ml-only -O3 --non-strict

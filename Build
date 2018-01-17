@@ -6,14 +6,15 @@ set -u      # Using undefined variables is an error. Exit immediately
 # Utilities
 # ---------
 
-progress() { echo "== $@" ; }
-warning()  { echo -e "WARNING:" "$@" >&2 ; }
-die()      { echo -e "FATAL:" "$@" >&2 ; exit 1 ; }
+echoerr()  { echo >&2; }
+progress() { echoerr "== $@" ; }
+warning()  { echoerr -e "WARNING:" "$@" ; }
+die()      { echoerr -e "FATAL:" "$@" ; exit 1 ; }
 
-success()  { echo -e "\e[32m== success: $@\e[0m" ;
-             echo "$@" >> "$now_passing"
+success()  { echoerr -e "\e[32m== success: $@\e[0m" ;
+             echoerr "$@" >> "$now_passing"
            }
-failure()  { echo -e "\e[31m== failure: $@\e[0m" ; }
+failure()  { echoerr -e "\e[31m== failure: $@\e[0m" ; }
 
 pretty_diff() {
     if type colordiff >/dev/null 2>&1; then
@@ -69,12 +70,12 @@ filter_tests() {
     esac
 }
 
-list_bchain() { run_make split-bchain-tests >&2 ; find "tests/BlockchainTests" -name '*.json'   ; }
-list_proof()  { run_make split-proof-tests  >&2 ; find "tests/proofs"          -name '*-spec.k' ; }
+list_bchain() { run_make split-bchain-tests ; find "tests/BlockchainTests" -name '*.json'   ; }
+list_proof()  { run_make split-proof-tests  ; find "tests/proofs"          -name '*-spec.k' ; }
 test_lists="bchain proof"
 
-list_vm()           { run_make vm-tests                    >&2 ; find "tests/ethereum-tests/VMTests" -name "*.json" ; }
-list_short()        { run_make vm-tests split-bchain-tests >&2 ; cat tests/short-list ; }
+list_vm()           { run_make vm-tests                    ; find "tests/ethereum-tests/VMTests" -name "*.json" ; }
+list_short()        { run_make vm-tests split-bchain-tests ; cat tests/short-list ; }
 list_gas_analysis() { find "tests/gas-analysis" -name '*.evm' ; }
 test_lists="$test_lists vm short gas_analysis"
 
