@@ -55,44 +55,6 @@ ensure_k() {
     progress "Using $K_VERSION"
 }
 
-# Test Filters and Lists
-# ----------------------
-
-filter_tests() {
-    local command=( exit 1 )
-    case $# in
-    0) cat;        return ;;
-    1) grep "$1" ; return ;;
-    *) cat > /dev/null
-       warning "Too many expressions"
-       ;;
-    esac
-}
-
-list_bchain() { run_make split-bchain-tests >&2 ; find "tests/BlockchainTests" -name '*.json'   ; }
-list_proof()  { run_make split-proof-tests  >&2 ; find "tests/proofs"          -name '*-spec.k' ; }
-test_lists="bchain proof"
-
-list_vm()           { run_make vm-tests                    >&2 ; find "tests/ethereum-tests/VMTests" -name "*.json" ; }
-list_short()        { run_make vm-tests split-bchain-tests >&2 ; cat tests/short-list ; }
-list_gas_analysis() { find "tests/gas-analysis" -name '*.evm' ; }
-test_lists="$test_lists vm short gas_analysis"
-
-list_rvk()   { list_vm ; }
-list_uiuck() { list_short ; list_gas_analysis ; list_proof ; }
-list_all()   { list_$K_VERSION ; }
-list_quick() { list_all | sort -R | head -n 20 ; }
-test_lists="$test_lists rvk uiuck all quick"
-
-list_tests() {
-    local test_list="$1"
-    [[ "$test_lists" != *" $test_list "* ]] \
-        && [[ "$test_lists" != "$test_list "* ]] \
-        && [[ "$test_lists" != *" $test_list" ]] \
-        && die "Test list '$test_list' does not exist."
-    list_"$test_list"
-}
-
 # Runners
 # -------
 
@@ -179,37 +141,6 @@ run_test() {
     esac
 }
 
-run_tests() {
-    local test_count=0
-    local test_failed=0
-    ( kserver & ) && sleep 2
-    run_make
-    while read test_file ; do
-        progress "running: $test_file"
-        test_count=$(($test_count + 1))
-        exit_status=0
-        run_test "$test_file" || exit_status=$?
-        if [[ $exit_status -eq 0 ]] ; then
-            success "$test_file"
-        else
-            failure "$test_file"
-            test_failed=$(($test_failed + 1))
-        fi
-        progress "failed: $test_failed / $test_count"
-    done
-    stop-kserver || true
-    return $test_failed
-}
-
-run_partests() {
-    ( kserver & ) && sleep 2
-    run_make
-    exit_status=0
-    parallel --joblog - ./Build test || exit_status="$?"
-    stop-kserver || true
-    return "$exit_status"
-}
-
 # Main
 # ----
 
@@ -233,11 +164,6 @@ case "$run_command" in
     test)  ensure_k ; run_test   "$1" ;;
     debug) ensure_k ; run_kdebug "$1" ;;
     prove) ensure_k ; run_proof  "$1" ;;
-
-    # Testing
-    list)                list_tests $1 | filter_tests "${@:2}" ;;
-    tests)    ensure_k ; list_tests $1 | filter_tests "${@:2}" | run_tests    ;;
-    partests) ensure_k ; list_tests $1 | filter_tests "${@:2}" | run_partests ;;
 
     *)             echo "
     K_VERSION: $K_VERSION
@@ -267,13 +193,5 @@ case "$run_command" in
        $ ./Build run   tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
        $ ./Build debug tests/gas-analysis/sumTo10.evm
        $ ./Build prove tests/proofs/sum-to-n-spec.k
-
-       # Testing
-       # -------
-       $0 list     <test-list> <regx>   List tests from <test-list> filtered by <regx>
-       $0 tests    <test-list> <regx>   Run tests from <test-list> filtered by <regx>
-       $0 partests <test-list> <regx>   Run tests from <test-list> filtered by <regx> with GNU parallel
-
-       Available <test-list>: $test_lists
 " ; exit ;;
 esac
