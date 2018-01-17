@@ -23,19 +23,6 @@ pretty_diff() {
     fi
 }
 
-run_make() {
-    local make_opts=
-    type pandoc >/dev/null 2>&1 || {
-        make_opts="--assume-old driver.md     --assume-old evm.md \
-                   --assume-old data.md       --assume-old krypto.md \
-                   --assume-old analysis.md   --assume-old verification.md \
-                   --assume-old proofs/hkg.md --assume-old proofs/sum-to-n.md"
-        warning "pandoc not installed."  \
-                "Ignoring changes in markdown files\n"
-    }
-    make K_VERSION=${K_VERSION} -s $make_opts $@
-}
-
 lint_krun_uiuck() {
     # Format, &gt; entity > and make each K task start on a new line
     xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
@@ -95,7 +82,6 @@ run_rvk() {
 
 run_proof() {
     [[ "$K_VERSION" == 'uiuck' ]] || die "Proofs must be run with 'K_VERSION=uiuck'."
-    run_make
     export K_OPTS=-Xmx2G
     local proof_file="$1" ; shift
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
@@ -108,7 +94,6 @@ run_proof() {
 }
 
 run_krun() {
-    run_make
     progress "running: $1"
     [[ -f "$1" ]] || die "$1 does not exist"
     ( run_"$K_VERSION" "$1" | lint_krun_"$K_VERSION" )
@@ -116,7 +101,6 @@ run_krun() {
 
 run_kdebug() {
     [[ "$K_VERSION" == 'uiuck' ]] || die "Debugger must be run with 'K_VERSION=uiuck'. Currently '$K_VERSION'."
-    run_make
     progress "debugging: $1"
     ( run_"$K_VERSION" "$1" --debug --debugger )
 }
@@ -125,7 +109,6 @@ run_kdebug() {
 # -------
 
 run_test() {
-    run_make
     test_file="$1"; shift
     case "$test_file" in
         *proofs/*) ( pretty_diff --label expected <(echo "true") \
@@ -152,12 +135,8 @@ mkdir -p "$test_logs"
 now_passing="$test_logs/passing.lastrun"
 
 # main functionality
-[[ "$#" == '0' ]] && set make build
 run_command="$1" ; shift
 case "$run_command" in
-
-    # Building
-    make) ensure_k ; run_make $@ ;;
 
     # Running
     run)   ensure_k ; run_krun   "$1" ;;
@@ -168,16 +147,6 @@ case "$run_command" in
     *)             echo "
     K_VERSION: $K_VERSION
     usage:
-       $0       Defaults to '$0 make build'
-
-       # Building
-       # --------
-       $0 make <target>     Run 'make <target>' with 'K_VERSION' set
-
-       Useful <target>:
-       -   defn:   Build the K definition files from the markdown files (requires pandoc)
-       -   build:  Kompile the definition (calls defn target first)
-       -   sphinx: Build Sphinx HTML documentation from semantics
 
        # Running
        # -------
