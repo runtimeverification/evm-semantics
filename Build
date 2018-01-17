@@ -6,14 +6,14 @@ set -u      # Using undefined variables is an error. Exit immediately
 # Utilities
 # ---------
 
-progress() { echo "== $@"; }
-warning()  { echo -e "WARNING:" "$@"; }
-die()      { echo -e "FATAL:" "$@"; exit 1; }
-
-success()  { echo -e "\e[32m== success: $@\e[0m";
-             echo "$@" >> "$now_passing"
+echoerr()  { echo >&2; }
+progress() { echoerr "== $@"; }
+warning()  { echoerr -e "WARNING:" "$@"; }
+die()      { echoerr -e "FATAL:" "$@"; exit 1; }
+success()  { echoerr -e "\e[32m== success: $@\e[0m";
+             echoerr "$@" >> "$now_passing"
            }
-failure()  { echo -e "\e[31m== failure: $@\e[0m"; }
+failure()  { echoerr -e "\e[31m== failure: $@\e[0m"; }
 
 pretty_diff() {
     if type colordiff >/dev/null 2>&1; then
