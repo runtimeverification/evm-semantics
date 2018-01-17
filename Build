@@ -17,9 +17,9 @@ failure()  { echo -e "\e[31m== failure: $@\e[0m" ; }
 
 pretty_diff() {
     if type colordiff >/dev/null 2>&1; then
-        colordiff -u "$@"
+        colordiff -u -b "$@"
     else
-        diff -u "$@"
+        diff -u -b "$@"
     fi
 }
 
