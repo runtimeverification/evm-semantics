@@ -52,16 +52,13 @@ proof_files=${proof_dir}/sum-to-n-spec.k \
             ${proof_dir}/erc20/hkg/transfer-success-2-spec.k \
             ${proof_dir}/erc20/hkg/transfer-failure-1-a-spec.k \
             ${proof_dir}/erc20/hkg/transfer-failure-1-b-spec.k \
-            ${proof_dir}/erc20/hkg/transfer-failure-2-a-spec.k \
-            ${proof_dir}/erc20/hkg/transfer-failure-2-b-spec.k \
+            ${proof_dir}/erc20/hkg/transfer-failure-2-spec.k \
             ${proof_dir}/erc20/hkg/transferFrom-success-1-spec.k \
             ${proof_dir}/erc20/hkg/transferFrom-success-2-spec.k \
             ${proof_dir}/erc20/hkg/transferFrom-failure-1-a-spec.k \
             ${proof_dir}/erc20/hkg/transferFrom-failure-1-b-spec.k \
             ${proof_dir}/erc20/hkg/transferFrom-failure-1-c-spec.k \
-            ${proof_dir}/erc20/hkg/transferFrom-failure-2-a-spec.k \
-            ${proof_dir}/erc20/hkg/transferFrom-failure-2-b-spec.k \
-            ${proof_dir}/erc20/hkg/transferFrom-failure-2-c-spec.k
+            ${proof_dir}/erc20/hkg/transferFrom-failure-2-spec.k
 
 proofs: $(proof_files)
 
