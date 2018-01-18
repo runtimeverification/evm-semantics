@@ -256,7 +256,7 @@ localMem:
       .Map
     =>
     (
-      .Map[ RET_ADDR := #asByteStackInWidth(RET_VAL, 32) ]
+      .Map[ RET_ADDR := #asByteStackInWidth(1, 32) ]
       _:Map
     )
 
@@ -309,7 +309,6 @@ Indeed, the ABI call mechanism will reject a call to this function if the `VALUE
 requires:
     andBool 0 <=Int SPENDER   andBool SPENDER   <Int (2 ^Int 160)
     andBool 0 <=Int VALUE     andBool VALUE     <Int (2 ^Int 256)
-    andBool RET_VAL ==Int 1
 
 epilogue:
     // NOTE: negative VALUE is not possible since it is of `num256` type
@@ -349,7 +348,7 @@ localMem:
       .Map
     =>
     (
-      .Map[ RET_ADDR := #asByteStackInWidth(RET_VAL, 32) ]
+      .Map[ RET_ADDR := #asByteStackInWidth(1, 32) ]
       _:Map
     )
 
@@ -380,7 +379,6 @@ requires:
     andBool 0 <=Int VALUE     andBool VALUE     <Int (2 ^Int 256)
     andBool 0 <=Int BAL_FROM  andBool BAL_FROM  <Int (2 ^Int 256)
     andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
-    andBool RET_VAL ==Int 1
 
 epilogue:
     // NOTE: negative VALUE is not possible since it is of `num256` type
@@ -625,7 +623,7 @@ localMem:
       .Map
     =>
     (
-      .Map[ RET_ADDR := #asByteStackInWidth(RET_VAL, 32) ]
+      .Map[ RET_ADDR := #asByteStackInWidth(1, 32) ]
       _:Map
     )
 
@@ -653,7 +651,6 @@ requires:
     andBool 0 <=Int BAL_FROM  andBool BAL_FROM  <Int (2 ^Int 256)
     andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
     andBool 0 <=Int ALLOW     andBool ALLOW     <Int (2 ^Int 256)
-    andBool RET_VAL ==Int 1
 
 epilogue:
     // NOTE: negative VALUE is not possible since it is of `num256` type
