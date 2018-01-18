@@ -135,43 +135,55 @@ In the specification, however, one can avoid reasoning about the collision by as
 In another word, we instantiate the injectivity property only for the terms appearing during the symbolic execution and reasoning, similarly as the universal quantifier instantiation does.
 
 ```{.k .java}
-  rule keccak( nthbyteof(V,  0, 32)
-             : nthbyteof(V,  1, 32)
-             : nthbyteof(V,  2, 32)
-             : nthbyteof(V,  3, 32)
-             : nthbyteof(V,  4, 32)
-             : nthbyteof(V,  5, 32)
-             : nthbyteof(V,  6, 32)
-             : nthbyteof(V,  7, 32)
-             : nthbyteof(V,  8, 32)
-             : nthbyteof(V,  9, 32)
-             : nthbyteof(V, 10, 32)
-             : nthbyteof(V, 11, 32)
-             : nthbyteof(V, 12, 32)
-             : nthbyteof(V, 13, 32)
-             : nthbyteof(V, 14, 32)
-             : nthbyteof(V, 15, 32)
-             : nthbyteof(V, 16, 32)
-             : nthbyteof(V, 17, 32)
-             : nthbyteof(V, 18, 32)
-             : nthbyteof(V, 19, 32)
-             : nthbyteof(V, 20, 32)
-             : nthbyteof(V, 21, 32)
-             : nthbyteof(V, 22, 32)
-             : nthbyteof(V, 23, 32)
-             : nthbyteof(V, 24, 32)
-             : nthbyteof(V, 25, 32)
-             : nthbyteof(V, 26, 32)
-             : nthbyteof(V, 27, 32)
-             : nthbyteof(V, 28, 32)
-             : nthbyteof(V, 29, 32)
-             : nthbyteof(V, 30, 32)
-             : nthbyteof(V, 31, 32)
-             : .WordStack ) => hash(V)
-    requires 0 <=Int V andBool V <Int (2 ^Int 256)
+//rule keccak( nthbyteof(V,  0, 32)
+//           : nthbyteof(V,  1, 32)
+//           : nthbyteof(V,  2, 32)
+//           : nthbyteof(V,  3, 32)
+//           : nthbyteof(V,  4, 32)
+//           : nthbyteof(V,  5, 32)
+//           : nthbyteof(V,  6, 32)
+//           : nthbyteof(V,  7, 32)
+//           : nthbyteof(V,  8, 32)
+//           : nthbyteof(V,  9, 32)
+//           : nthbyteof(V, 10, 32)
+//           : nthbyteof(V, 11, 32)
+//           : nthbyteof(V, 12, 32)
+//           : nthbyteof(V, 13, 32)
+//           : nthbyteof(V, 14, 32)
+//           : nthbyteof(V, 15, 32)
+//           : nthbyteof(V, 16, 32)
+//           : nthbyteof(V, 17, 32)
+//           : nthbyteof(V, 18, 32)
+//           : nthbyteof(V, 19, 32)
+//           : nthbyteof(V, 20, 32)
+//           : nthbyteof(V, 21, 32)
+//           : nthbyteof(V, 22, 32)
+//           : nthbyteof(V, 23, 32)
+//           : nthbyteof(V, 24, 32)
+//           : nthbyteof(V, 25, 32)
+//           : nthbyteof(V, 26, 32)
+//           : nthbyteof(V, 27, 32)
+//           : nthbyteof(V, 28, 32)
+//           : nthbyteof(V, 29, 32)
+//           : nthbyteof(V, 30, 32)
+//           : nthbyteof(V, 31, 32)
+//           : .WordStack ) => hash(V)
+//  requires 0 <=Int V andBool V <Int (2 ^Int 256)
 
-  syntax Int ::= sha3(Int) [function]
-  rule sha3(V) => keccak(#padToWidth(32, #asByteStack(V)))
+  syntax IntList ::= List{Int, ""} [klabel(intList)]
+
+  syntax Int ::= #hashedLocation(String, Int, IntList) [function]
+  rule #hashedLocation(LANG, BASE, .IntList) => BASE
+  //
+  rule #hashedLocation("Viper",    BASE, OFFSET OFFSETS) => #hashedLocation("Viper",    keccakIntList(BASE) +Word OFFSET, OFFSETS)
+  rule #hashedLocation("Solidity", BASE, OFFSET OFFSETS) => #hashedLocation("Solidity", keccakIntList(OFFSET BASE),       OFFSETS)
+
+  syntax Int ::= keccakIntList(IntList) [function]
+  rule keccakIntList(VS) => keccak(intList2ByteStack(VS))
+
+  syntax WordStack ::= intList2ByteStack(IntList) [function]
+  rule intList2ByteStack(.IntList) => .WordStack
+  rule intList2ByteStack(V VS) => #asByteStackInWidth(V, 32) ++ intList2ByteStack(VS)
     requires 0 <=Int V andBool V <Int (2 ^Int 256)
 ```
 
