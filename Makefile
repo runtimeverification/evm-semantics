@@ -6,7 +6,7 @@
 all: build split-tests
 
 clean:
-	rm -r .build
+	rm -fr .build
 	find tests/proofs/ -name '*.k' -delete
 
 check_K_VERSION = $(if $(value K_VERSION),, $(error K_VERSION undefined, must be set))
