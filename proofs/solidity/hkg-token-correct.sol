@@ -76,18 +76,9 @@ contract StandardToken is TokenInterface {
     // spending permision management
     mapping (address => mapping (address => uint256)) allowed;
 
-    address dummy1 = 0x14723a09acff6d2a60dcdf7aa4aff308fddc160c;
-    address dummy2 = 0x4b0897b0513fdc7c541b6d9d7e929c4e5364d2db;
 
 
     function StandardToken(){
-        totalSupply = 5000;
-
-        balances[dummy1] = 2000;
-        balances[dummy2] = 3000;
-
-        allowed[dummy1][dummy2] = balances[dummy1];
-        allowed[dummy2][dummy1] = balances[dummy2];
     }
 
 
