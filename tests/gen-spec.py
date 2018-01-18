@@ -33,11 +33,12 @@ def gen(template, ini1, ini2, name):
     config2 = configparser.ConfigParser(comment_prefixes=(';'))
     config2.read(ini2)
     genspec = template
-    config = {**inherit_get(config1, name),
-              **config2['DEFAULT'],
-              **{'module': name.upper()}}
-    for key in config:
-        genspec = subst(genspec, key, config[key].strip())
+    for config in [ inherit_get(config1, name)
+                  , {'module': name.upper()}
+                  , config2['DEFAULT']
+                  ]:
+        for key in config:
+            genspec = subst(genspec, key, config[key].strip())
     print(genspec)
 
 if __name__ == '__main__':
