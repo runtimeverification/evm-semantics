@@ -84,22 +84,38 @@ tests/BlockchainTests/%.test: tests/BlockchainTests/% build
 # ### Proof Tests
 
 proof_dir=tests/proofs
-
-# Since it's difficult to predict which files are generated from each ini
-# files (it depends on whether non-DEFAULT ini sections exist), the
-# `gen-spec.py` script generates a timestamp which we use instead.
 proof_files=${proof_dir}/sum-to-n-spec.k \
-            ${proof_dir}/vyper/totalSupply.timestamp \
-            ${proof_dir}/vyper/balanceOf.timestamp \
-            ${proof_dir}/vyper/allowance.timestamp \
-            ${proof_dir}/vyper/approve.timestamp \
-            ${proof_dir}/vyper/transfer-success.timestamp ${proof_dir}/vyper/transfer-failure.timestamp \
-            ${proof_dir}/vyper/transferFrom-success.timestamp ${proof_dir}/vyper/transferFrom-failure.timestamp \
-            ${proof_dir}/solidity/allowance.timestamp \
-            ${proof_dir}/solidity/balanceOf.timestamp \
-            ${proof_dir}/solidity/transfer-success.timestamp ${proof_dir}/solidity/transfer-failure.timestamp \
-            ${proof_dir}/solidity/transferFrom-success.timestamp ${proof_dir}/solidity/transferFrom-failure.timestamp \
-            ${proof_dir}/solidity/approve.timestamp \
+            ${proof_dir}/erc20/viper/totalSupply-spec.k \
+            ${proof_dir}/erc20/viper/balanceOf-spec.k \
+            ${proof_dir}/erc20/viper/allowance-spec.k \
+            ${proof_dir}/erc20/viper/approve-spec.k \
+            ${proof_dir}/erc20/viper/transfer-success-1-spec.k \
+            ${proof_dir}/erc20/viper/transfer-success-2-spec.k \
+            ${proof_dir}/erc20/viper/transfer-failure-1-spec.k \
+            ${proof_dir}/erc20/viper/transfer-failure-2-spec.k \
+            ${proof_dir}/erc20/viper/transferFrom-success-1-spec.k \
+            ${proof_dir}/erc20/viper/transferFrom-success-2-spec.k \
+            ${proof_dir}/erc20/viper/transferFrom-failure-1-a-spec.k \
+            ${proof_dir}/erc20/viper/transferFrom-failure-1-b-spec.k \
+            ${proof_dir}/erc20/viper/transferFrom-failure-1-c-spec.k \
+            ${proof_dir}/erc20/viper/transferFrom-failure-2-spec.k \
+            ${proof_dir}/erc20/hkg/balanceOf-spec.k \
+            ${proof_dir}/erc20/hkg/allowance-spec.k \
+            ${proof_dir}/erc20/hkg/approve-spec.k \
+            ${proof_dir}/erc20/hkg/transfer-success-1-spec.k \
+            ${proof_dir}/erc20/hkg/transfer-success-2-spec.k \
+            ${proof_dir}/erc20/hkg/transfer-failure-1-a-spec.k \
+            ${proof_dir}/erc20/hkg/transfer-failure-1-b-spec.k \
+            ${proof_dir}/erc20/hkg/transfer-failure-2-a-spec.k \
+            ${proof_dir}/erc20/hkg/transfer-failure-2-b-spec.k \
+            ${proof_dir}/erc20/hkg/transferFrom-success-1-spec.k \
+            ${proof_dir}/erc20/hkg/transferFrom-success-2-spec.k \
+            ${proof_dir}/erc20/hkg/transferFrom-failure-1-a-spec.k \
+            ${proof_dir}/erc20/hkg/transferFrom-failure-1-b-spec.k \
+            ${proof_dir}/erc20/hkg/transferFrom-failure-1-c-spec.k \
+            ${proof_dir}/erc20/hkg/transferFrom-failure-2-a-spec.k \
+            ${proof_dir}/erc20/hkg/transferFrom-failure-2-b-spec.k \
+            ${proof_dir}/erc20/hkg/transferFrom-failure-2-c-spec.k
 
 split-proof-tests: $(proof_files)
 
@@ -111,32 +127,33 @@ tests/proofs/sum-to-n-spec.k: proofs/sum-to-n.md
 
 # #### Viper ERC20
 
-tests/proofs/vyper/%.timestamp: tests/proofs/vyper/spec-tmpl.k tests/proofs/vyper/%.ini
-	@echo "==  gen-spec: $@"
+tests/proofs/erc20/viper/%-spec.k: tests/proofs/erc20/viper/tmpl.k tests/proofs/erc20/viper/spec.ini tests/proofs/erc20/viper/pgm.ini
+	@echo >&2 "==  gen-spec: $@"
 	mkdir -p $(dir $@)
-	python3 tests/gen-spec.py $^ $(dir $@)
-tests/proofs/solidity/%.timestamp: tests/proofs/solidity/spec-tmpl.k tests/proofs/solidity/%.ini
-	@echo "==  gen-spec: $@"
+	python3 tests/gen-spec.py $^ $* > $@
+tests/proofs/erc20/hkg/%-spec.k: tests/proofs/erc20/hkg/tmpl.k tests/proofs/erc20/hkg/spec.ini tests/proofs/erc20/hkg/pgm.ini
+	@echo >&2 "==  gen-spec: $@"
 	mkdir -p $(dir $@)
-	python3 tests/gen-spec.py $^ $(dir $@)
+	python3 tests/gen-spec.py $^ $* > $@
 
-tests/proofs/vyper/spec-tmpl.k: proofs/vyper/erc20-vyper.md
-	@echo "==  tangle: $@"
+tests/proofs/erc20/viper/spec.ini: proofs/erc20.md
+	@echo >&2 "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to tangle.lua --metadata=code:erc20-spec $< > $@
+tests/proofs/erc20/hkg/spec.ini: proofs/erc20.md
+	@echo >&2 "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to tangle.lua --metadata=code:hkg-spec $< > $@
+
+tests/proofs/erc20/%/tmpl.k: proofs/erc20.md
+	@echo >&2 "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:tmpl $< > $@
-tests/proofs/solidity/spec-tmpl.k: proofs/solidity/erc20-solidity.md
-	@echo "==  tangle: $@"
-	mkdir -p $(dir $@)
-	pandoc --from markdown --to tangle.lua --metadata=code:tmpl $< > $@
 
-tests/proofs/vyper/%.ini: proofs/vyper/erc20-vyper.md
-	@echo "==  tangle: $@"
+tests/proofs/erc20/%/pgm.ini: proofs/erc20.md
+	@echo >&2 "==  tangle: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
-tests/proofs/solidity/%.ini: proofs/solidity/erc20-solidity.md
-	@echo "==  tangle: $@"
-	mkdir -p $(dir $@)
-	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
+	pandoc --from markdown --to tangle.lua --metadata=code:$*-pgm $< > $@
 
 # UIUC K Specific
 # ---------------
