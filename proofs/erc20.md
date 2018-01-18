@@ -388,7 +388,19 @@ There are two sub-cases depending on whether the caller is equal to the recipien
 ```{.k .erc20-spec .hkg-spec}
 storage:
     #hashedLocation({lang}, {pos(balances)}, CALLER_ID) |-> (BAL_FROM => BAL_FROM -Int VALUE)
+```
+
+```{.k .erc20-spec}
     #hashedLocation({lang}, {pos(balances)}, TO_ID)     |-> (BAL_TO   => BAL_TO   +Int VALUE)
+```
+
+TODO: HKG:
+
+```{.k .hkg-spec}
+    #hashedLocation({lang}, {pos(balances)}, TO_ID)     |-> (BAL_TO   => BAL_TO  +Word VALUE)
+```
+
+```{.k .erc20-spec .hkg-spec}
     _:Map
 
 +requires:
@@ -653,7 +665,19 @@ epilogue:
 ```{.k .erc20-spec .hkg-spec}
 storage:
     #hashedLocation({lang}, {pos(balances)},   FROM_ID)           |-> (BAL_FROM => BAL_FROM -Int VALUE)
+```
+
+```{.k .erc20-spec}
     #hashedLocation({lang}, {pos(balances)},   TO_ID)             |-> (BAL_TO   => BAL_TO   +Int VALUE)
+```
+
+TODO: HKG:
+
+```{.k .hkg-spec}
+    #hashedLocation({lang}, {pos(balances)},   TO_ID)             |-> (BAL_TO   => BAL_TO  +Word VALUE)
+```
+
+```{.k .erc20-spec .hkg-spec}
     #hashedLocation({lang}, {pos(allowances)}, FROM_ID CALLER_ID) |-> (ALLOW    => ALLOW    -Int VALUE)
     _:Map
 
