@@ -403,7 +403,7 @@ storage:
     #hashedLocation({lang}, {pos(balances)}, TO_ID)     |-> (BAL_TO   => BAL_TO   +Int VALUE)
 ```
 
-HKG-specific:
+##### HKG-specific:
 On the other hand, HKG token allows the additional overflow, “wrapping around” the balance if it is more than `2^256`, which is very unlikely but still a questionable behavior. See the difference where `+Word`, the addition modulo `2^256`, is used instead of `+Int`, the mathematical, arbitrary precision integer addition.
 
 ```{.k .hkg-spec}
@@ -424,7 +424,7 @@ The side-condition ensures that no arithmetic overflow happens.
     andBool BAL_TO +Int VALUE <Int (2 ^Int 256) // viper overflow check: (VALUE ==Int 0 xorBool BAL_TO +Word VALUE >Int BAL_TO)
 ```
 
-HKG-specific:
+##### HKG-specific:
 As mentioned earlier, HKG token does not check the overflow thus we have no side-condition for that. Instead, HKG token does not allow the zero value to be requested to transfer, which is questionable though, and we have the side-condition for that.
 
 ```{.k .hkg-spec}
@@ -456,7 +456,7 @@ The side-condition ensures that no arithmetic overflow (precisely underflow in t
     andBool VALUE <=Int BAL_FROM
 ```
 
-HKG-specific:
+##### HKG-specific:
 As in the sub-case 1, HKG token requires having the additional side-condition of VALUE’s being greater than 0.
 
 ```{.k .hkg-spec}
@@ -483,7 +483,7 @@ localMem:
     .Map => _:Map
 ```
 
-HKG-specific:
+##### HKG-specific:
 HKG token does not throw the exception, but returns false in the failure case. Strictly speaking, this is still compliant with the ERC20 standard since the standard says that the `transfer` function “should” throw an exception for the failure, but not “must” do.
 
 `<localMem>` cell says that it returns 0, i.e., false.
@@ -545,7 +545,7 @@ The side-condition causing the arithmetic overflows, i.e., the negation of that 
      orBool   BAL_TO +Int VALUE >=Int (2 ^Int 256) ) // viper overflow check: ( VALUE =/=Int 0 andBool BAL_TO +Word VALUE <Int BAL_TO )
 ```
 
-HKG-specific:
+##### HKG-specific:
 As in the success case, HKG token requires the different side-condition for the failure.
 
 We split this case into another two sub-cases: one for each disjunct of the side-condition causing the failure, due to a limitation of the current K verifier that we are currently fixing.
@@ -586,7 +586,7 @@ The side-condition causing the arithmetic overflows, i.e., the negation of that 
     andBool VALUE >Int BAL_FROM
 ```
 
-HKG-specific:
+##### HKG-specific:
 As in the previous case, HKG token requires the different side-condition for the failure.
 
 ```{.k .hkg-spec}
@@ -673,7 +673,7 @@ storage:
     #hashedLocation({lang}, {pos(balances)},   TO_ID)             |-> (BAL_TO   => BAL_TO   +Int VALUE)
 ```
 
-HKG-specific:
+##### HKG-specific:
 As in `transfer` function, HKG token “wraps around” the balance without checking the additional overflow. See the difference between `+Int` and `+Word` in the above and the below.
 
 ```{.k .hkg-spec}
@@ -696,7 +696,7 @@ The side-condition that avoids the overflows.
     andBool VALUE <=Int ALLOW
 ```
 
-HKG-specific:
+##### HKG-specific:
 As in `transfer` function, it does not check the additional overflow but rejects the zero value to be transferred.
 
 ```{.k .hkg-spec}
@@ -726,7 +726,7 @@ The side-condition that avoids the overflows:
     andBool VALUE <=Int ALLOW
 ```
 
-HKG-specific:
+##### HKG-specific:
 The different side-condition for HKG token:
 
 ```{.k .hkg-spec}
@@ -748,7 +748,7 @@ localMem:
     .Map => _:Map
 ```
 
-HKG-specific:
+##### HKG-specific:
 As in `transfer`, HKG token returns false in the failure case.
 
 ```{.k .hkg-spec}
@@ -817,7 +817,7 @@ Note that the sub-cases are to be disjoined (i.e, OR'ed) to represent the comple
     andBool VALUE >Int ALLOW
 ```
 
-HKG-specific:
+##### HKG-specific:
 The different side-condition for HKG token:
 
 ```{.k .hkg-spec}
@@ -856,7 +856,7 @@ The side-condition causing the failure:
      orBool   VALUE >Int ALLOW )
 ```
 
-HKG-specific:
+##### HKG-specific:
 The different side-condition for HKG token:
 
 ```{.k .hkg-spec}
