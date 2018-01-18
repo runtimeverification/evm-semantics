@@ -492,7 +492,15 @@ requires:
     andBool 0 <=Int VALUE     andBool VALUE     <Int (2 ^Int 256)
     andBool 0 <=Int BAL_FROM  andBool BAL_FROM  <Int (2 ^Int 256)
     andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
+```
 
+TODO: HKG:
+
+```{.k .hkg-spec}
+    andBool RET_VAL ==Int 0
+```
+
+```{.k .erc20-spec .hkg-spec}
 epilogue:
     // TODO: properly consider exception preserving the input status
     //       using CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
@@ -526,8 +534,6 @@ The side-condition causing the arithmetic overflows, i.e., the negation of that 
 TODO: HKG:
 
 ```{.k .hkg-spec}
-    andBool RET_VAL ==Int 0
-
 [transfer-failure-1-a]
 
 +requires:
@@ -564,8 +570,6 @@ The side-condition causing the arithmetic overflows, i.e., the negation of that 
 TODO: HKG:
 
 ```{.k .hkg-spec}
-    andBool RET_VAL ==Int 0
-
 [transfer-failure-2-a]
 
 +requires:
@@ -749,7 +753,15 @@ requires:
     andBool 0 <=Int BAL_FROM  andBool BAL_FROM  <Int (2 ^Int 256)
     andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
     andBool 0 <=Int ALLOW     andBool ALLOW     <Int (2 ^Int 256)
+```
 
+TODO: HKG:
+
+```{.k .hkg-spec}
+    andBool RET_VAL ==Int 0
+```
+
+```{.k .erc20-spec .hkg-spec}
 epilogue:
     // TODO: properly consider exception preserving the input status
     //       using CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
@@ -792,8 +804,6 @@ Note that the sub-cases are to be disjoined (i.e, OR'ed) to represent the comple
 TODO:
 
 ```{.k .hkg-spec}
-    andBool RET_VAL ==Int 0
-
 [transferFrom-failure-1-a]
 +requires:
     andBool VALUE >Int BAL_FROM
@@ -832,8 +842,6 @@ TODO:
 TODO:
 
 ```{.k .hkg-spec}
-    andBool RET_VAL ==Int 0
-
 [transferFrom-failure-2-a]
 +requires:
     andBool VALUE >Int BAL_FROM
