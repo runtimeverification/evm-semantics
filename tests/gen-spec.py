@@ -27,15 +27,15 @@ def inherit_get(config, section):
                 del merged[key]
         return merged
 
-def gen(template, ini1, ini2, name):
-    config1 = configparser.ConfigParser(comment_prefixes=(';'))
-    config1.read(ini1)
-    config2 = configparser.ConfigParser(comment_prefixes=(';'))
-    config2.read(ini2)
+def gen(template, spec_ini, pgm_ini, name):
+    spec_config = configparser.ConfigParser(comment_prefixes=(';'))
+    spec_config.read(spec_ini)
+    pgm_config = configparser.ConfigParser(comment_prefixes=(';'))
+    pgm_config.read(pgm_ini)
     genspec = template
-    for config in [ inherit_get(config1, name)
+    for config in [ inherit_get(spec_config, name)
                   , {'module': name.upper()}
-                  , config2['DEFAULT']
+                  , pgm_config['DEFAULT']
                   ]:
         for key in config:
             genspec = subst(genspec, key, config[key].strip())
@@ -43,7 +43,7 @@ def gen(template, ini1, ini2, name):
 
 if __name__ == '__main__':
     if len(sys.argv) != 5:
-        print("usage: <cmd> <template> <ini1> <ini2> <name>")
+        print("usage: <cmd> <template> <spec_ini> <pgm_ini> <name>")
         sys.exit(1)
     template = open(sys.argv[1], "r").read()
     gen(template, sys.argv[2], sys.argv[3], sys.argv[4])
