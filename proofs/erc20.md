@@ -386,7 +386,7 @@ epilogue:
     // NOTE: negative VALUE is not possible since it is of `num256` type
 ```
 
-There are two sub-cases depending on whether the caller is equal to the recipient. 
+There are two sub-cases depending on whether the caller is equal to the recipient.
 
 #### transfer success: sub-case 1: the caller `CALLER_ID` is different from the recipient `TO_ID`.
 
@@ -524,7 +524,7 @@ epilogue:
     // NOTE: negative VALUE is not possible since it is of `num256` type
 ```
 
-There are two sub-cases as well depending on whether the caller is equal to the recipient. 
+There are two sub-cases as well depending on whether the caller is equal to the recipient.
 
 #### transfer failure: sub-case 1: the caller `CALLER_ID` is different from the recipient `TO_ID`.
 
@@ -794,7 +794,7 @@ epilogue:
 [transferFrom-failure-1]
 storage:
     #hashedLocation({lang}, {pos(balances)},   FROM_ID)           |-> (BAL_FROM => _)  // BAL_FROM
-    #hashedLocation({lang}, {pos(balances)},   TO_ID)             |-> (BAL_TO   => _)  // BAL_TO  
+    #hashedLocation({lang}, {pos(balances)},   TO_ID)             |-> (BAL_TO   => _)  // BAL_TO
     #hashedLocation({lang}, {pos(allowances)}, FROM_ID CALLER_ID) |-> ALLOW
     _:Map
 
