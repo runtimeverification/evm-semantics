@@ -7,7 +7,7 @@
 all: build split-tests
 
 clean:
-	rm -r .build
+	rm -fr .build
 	find tests/proofs/ -name '*.k' -delete
 
 build: .build/ocaml/driver-kompiled/interpreter .build/java/driver-kompiled/timestamp
