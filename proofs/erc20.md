@@ -5,23 +5,23 @@ We present a refinement of ERC20-K that specifies its detailed behaviors in EVM 
 
 In addition to the high-level ERC20 logic specified in ERC20-K, the EVM-level specification captures EVM-specific details such as gas consumption, data layout in storage, ABI encoding, byte representation of the program, and arithmetic overflows.
 
-We present the low-level specification in a succinct form using the abstractions introduced in the module [VERIFICATION](../../verification.md).
+We present the low-level specification in a succinct form using the abstractions introduced in the module [VERIFICATION](../../verification.md). The abstraction also makes the specification language-agnostic, meaning that it can be used for multiple programs that are compiled from different surface languages.
 
 ### Call data
 
-The ABI call abstraction allows to specify the call data in a function call notation:
+The ABI call abstraction allows to specify the call data in a function call notation. It specifies the function name and the (symbolic) arguments along with their types. For example, the following abstraction represents a data that encodes a call to the `transfer` function with two arguments: `TO`, the receiver account address of type `address` (an 160-bit unsigned integer), and `VALUE`, the value to transfer of type `unit256` (an 256-bit unsigned integer).
 
 ```
 #abiCallData("transfer", #address(TO), #uint256(VALUE))
 ```
 
-instead of specifying the underlying byte array:
+The above term is supposed to be desugared into the following byte array:
 
 ```
 F1 : F2 : F3 : F4 : T1 : ... : T32 : V1 : ... : V32
 ```
 
-where `F1 : F2 : F3 : F4` is the byte-array representation of 2835717307, the hash value of the function signature ABI encoding, `T1 : ... : T32` is the byte-array representation of `TO`, and `V1 : ... : V32` is the one of `VALUE`.
+where `F1 : F2 : F3 : F4` is the byte-array representation of 2835717307, the hash value of the function signature ABI encoding, `T1 : ... : T32` is the byte-array representation of the first argument `TO`, and `V1 : ... : V32` is the one of the second argument `VALUE`.
 
 ### Local memory
 
@@ -33,7 +33,7 @@ For example, we succinctly specify that a return value `1` is stored in a return
 .Map[ RET_ADDR := #asByteStackInWidth(1, 32) ]
 ```
 
-instead of specifying the underlying byte-array:
+instead of specifying directly the underlying byte-array:
 
 ```
 .Map[ RET_ADDR      := 0  ]
@@ -54,7 +54,7 @@ The detailed mechanism of calculating the location varies by compilers. In Viper
 hash(hash(pos(map)) + key1) + key2
 ```
 
-where `pos(map)` is the position of `map` in the program, and `+` is the addition modulo `2^256`, while in Solidity, it is stored at:
+where `pos(map)` is the position of `map` appearing in the program, and `+` is the addition modulo `2^256`, while in Solidity, it is stored at:
 
 ```
 hash(key2 ++ hash(key1 ++ pos(map)))
@@ -62,15 +62,24 @@ hash(key2 ++ hash(key1 ++ pos(map)))
 
 where `++` is the byte-array concatenation.
 
+The hashed location abstraction allows to uniformly specify the locations in a form parameterized by the underlying compilers. For example, the location of `map[key1][key2]` can be specified as follows, where `{lang}` is a place-holder to be replaced by the name of the compiler.
+
+```
+#hashedLocation({lang}, pos(map), key1 key2)
+```
+
+This abstraction makes the specification independent of the underlying compilers, enabling it to be reused for differently compiled programs.
+
 
 ### Gas consumption
 
-Regarding the gas consumption, the maximum gas amount is specified ensuring that the program does not consume more gas than the limit.
+Regarding the gas consumption of the program, the maximum gas amount is specified to ensure that the program does not consume more gas than the limit.
 
-The verifier proves that the gas consumption is less than the provided limit, and also reports the exact amount of gas consumed during the execution. Indeed, it reports a set of the amounts since the gas consumption varies depending on the context (i.e., the input parameter values and the state of the storage).
+The verifier proves that the actual gas consumption is less than the provided limit, and also reports the exact amount of gas consumed during the execution. Indeed, it reports a set of the amounts since the gas consumption varies depending on the context (i.e., the input parameter values and the state of the storage). This provides the most precise gas analysis.
 
 
 
+We present the specification for each function defined in the ERC20 standard. Here we focus on explaining the EVM-specific detailed behaviors, referring to the ERC20-K specification for the high-level logic.
 
 
 totalSupply
@@ -88,9 +97,9 @@ k: #execute => (RETURN RET_ADDR:Int 32 ~> _)
 callData: #abiCallData("totalSupply", .TypedArgs)
 ```
 
-`<localMem>` cell specifies that the local memory is empty in the beginning, but in the end, it will contain some contents including the return value `TOTAL`, the total supply.
+`<localMem>` cell specifies that the local memory is empty in the beginning, but in the end, it will contain some contents including the return value `TOTAL`, the total supply of the tokens.
 
-The other entries are represented by the wildcard symbol `_`, meaning that they are not relevant to the correctness.
+The other entries are represented by the wildcard symbol `_`, meaning that they are not relevant to the functional correctness of the program.
 
 ```{.k .erc20-spec .hkg-spec}
 localMem:
@@ -102,7 +111,7 @@ localMem:
     )
 ```
 
-`<gas>` cell specifies the maximum gas amount. Here we give a loose upper-bound for the demonstration purpose. In practice, one should set a reasonable amount of the gas limit to see if the program does not consume too much gas ensuring no gas leakage.
+`<gas>` cell specifies the maximum gas amount. Here we give a loose upper-bound for the demonstration purpose. In practice, one should set a reasonable amount of the gas limit to see if the program does not consume too much gas (i.e., no gas leakage).
 
 ```{.k .erc20-spec .hkg-spec}
 gas:
@@ -116,14 +125,14 @@ log:
     /* _ */ .List
 ```
 
-`<refund>` cell specifies that no gas is refunded. Note that it does not mean it consumes all the provided gas. The gas refund happens only for some situation, e.g., re-claiming (i.e., garbage-collecting) unused storage entries.
+`<refund>` cell specifies that no gas is refunded. Note that it does not mean it consumes all the provided gas. The gas refund is different from returning the remaining gas after the execution. It is another notion to capture some specific gas refund events that happen, for example, when an unused storage entry is re-claimed (i.e., garbage-collected). The following specification ensures that no such event happens during the execution of the current function.
 
 ```{.k .erc20-spec .hkg-spec}
 refund:
     /* _ */ 0
 ```
 
-`<storage>` cell specifies that the value of `totaySupply` is `TOTAL` and other entries are not relevant (could be arbitrary values).
+`<storage>` cell specifies that the value of `totaySupply` is `TOTAL` and other entries are not relevant (and could be arbitrary values). Specifying the irrelevant entries implicitly expresses the non-interference property. That is, the total supply value will be returned regardless of what the other entires of the storage are. This representation of the irrelevant part is used throughout the entire specification, ensuring one of the principal security properties.
 
 ```{.k .erc20-spec .hkg-spec}
 storage:
@@ -131,7 +140,7 @@ storage:
     _:Map
 ```
 
-The side-condition specifies both the minimum and the maximum values of the symbolic values based on their types.
+The side-condition specifies the range of symbolic values based on their types.
 
 ```{.k .erc20-spec .hkg-spec}
 requires:
@@ -173,7 +182,7 @@ refund:
     /* _ */ 0
 ```
 
-`<storage>` cell specifies that the value of `balances[OWNER]` is `BAL`, which is in our interest.
+`<storage>` cell specifies that the value of `balances[OWNER]` is `BAL`, which will be returned as described in `<localMem>` cell.
 
 ```{.k .erc20-spec .hkg-spec}
 storage:
@@ -217,7 +226,7 @@ refund:
     /* _ */ 0
 ```
 
-`<storage>` cell specifies that the value of `allowances[OWNER][SPENDER]` is `ALLOWANCE`.
+`<storage>` cell specifies that the value of `allowances[OWNER][SPENDER]` is `ALLOWANCE`, which will be returned as described in `<localMem>` cell.
 
 ```{.k .erc20-spec .hkg-spec}
 storage:
@@ -257,7 +266,7 @@ gas:
 
 `<log>` cell specifies that an event log is generated during the execution.
 
-The log message contains the account ID of the current contract, the hash of the signature of event Approval, the account ID who calls this contract, the SPENDER account ID, and the approved VALUE.
+The log message contains the account ID of the current contract, the hash of the signature of event Approval, the account ID who calls this contract, the SPENDER account ID, and the approved VALUE. `#generateSignature` is a syntactic sugar, used to define the ABI call abstraction as well, that generates the event signature to be hashed.
 
 ```{.k .erc20-spec .hkg-spec}
 log:
@@ -277,7 +286,7 @@ log:
 
 `<refund>` cell specifies that a refund may be issued. This function will refund a gas if the allowance value is 0 while the previous value is greater than 0, re-claiming the corresponding entry of the storage.
 
-Note that, however, we have not specified the refund detail since it is not essential for the functional correctness.
+Note that, however, we have not specified the refund detail since it is not essential for the functional correctness. We can specify that upon request.
 
 ```{.k .erc20-spec .hkg-spec}
 refund:
@@ -292,9 +301,9 @@ storage:
     _:Map
 ```
 
-Unlike the ERC20-K specification, we do not specify the case when `VALUE` is less than 0 because it is not possible --- the `VALUE` parameter is declared as the type of *unsigned* 256-bit integer.
+Unlike the ERC20-K specification, we do not specify the case when `VALUE` is less than 0 because it is not possible --- the `VALUE` parameter is of type `uint256`, an *unsigned* 256-bit integer.
 
-Indeed, the ABI call mechanism will reject a call to this function if the `VALUE` is negative, which is out of the scope of the EVM-level specification.
+Indeed, the ABI call mechanism will reject a call to this function if the `VALUE` is negative, which is out of the scope of the EVM-level specification since it happens in the network level outside the EVM execution.
 
 ```{.k .erc20-spec .hkg-spec}
 requires:
@@ -312,6 +321,8 @@ epilogue:
 transfer
 --------
 
+`transfer` function transfers the amount of VALUE from the caller to the account TO_ID.
+
 ```{.k .erc20-spec .hkg-spec}
 [transfer]
 
@@ -321,13 +332,13 @@ gas:
     /* G */ 100000 => _
 ```
 
-`transfer` function admits two types of behaviors:
-- succeeds in transferring the value and returns true (i.e., 1)
-- fails to transfer due to the arithmetic overflow and throws an exception
+`transfer` function admits two types of behaviors: it either
+- succeeds in transferring the value and returns true (i.e., 1), or
+- fails due to the arithmetic overflow and throws an exception.
 
 We present two specifications, one for each case.
 
-### Case of success
+### transfer success
 
 ```{.k .erc20-spec .hkg-spec}
 [transfer-success]
@@ -377,7 +388,7 @@ epilogue:
 
 There are two sub-cases depending on whether the caller is equal to the recipient. 
 
-#### Sub-case 1: the caller `CALLER_ID` is different from the recipient `TO_ID`.
+#### transfer success: sub-case 1: the caller `CALLER_ID` is different from the recipient `TO_ID`.
 
 ```{.k .erc20-spec .hkg-spec}
 [transfer-success-1]
@@ -394,7 +405,8 @@ storage:
     #hashedLocation({lang}, {pos(balances)}, TO_ID)     |-> (BAL_TO   => BAL_TO   +Int VALUE)
 ```
 
-TODO: HKG:
+HKG-specific:
+On the other hand, HKG token allows the additional overflow, “wrapping around” the balance if it is more than `2^256`, which is very unlikely but still a questionable behavior. See the difference where `+Word`, the addition modulo `2^256`, is used instead of `+Int`, the mathematical, arbitrary precision integer addition.
 
 ```{.k .hkg-spec}
     #hashedLocation({lang}, {pos(balances)}, TO_ID)     |-> (BAL_TO   => BAL_TO  +Word VALUE)
@@ -414,14 +426,16 @@ The side-condition ensures that no arithmetic overflow happens.
     andBool BAL_TO +Int VALUE <Int (2 ^Int 256) // viper overflow check: (VALUE ==Int 0 xorBool BAL_TO +Word VALUE >Int BAL_TO)
 ```
 
-TODO: HKG
+HKG-specific:
+As mentioned earlier, HKG token does not check the overflow thus we have no side-condition for that. Instead, HKG token does not allow the zero value to be requested to transfer, which is questionable though, and we have the side-condition for that.
 
 ```{.k .hkg-spec}
     andBool VALUE <=Int BAL_FROM
     andBool VALUE >Int 0
 ```
 
-#### Sub-case 2: the caller `CALLER_ID` is equal to the recipient `TO_ID`.
+
+#### transfer success: sub-case 2: the caller `CALLER_ID` is equal to the recipient `TO_ID`.
 
 ```{.k .erc20-spec .hkg-spec}
 [transfer-success-2]
@@ -438,13 +452,14 @@ storage:
     andBool CALLER_ID ==Int TO_ID
 ```
 
-The side-condition ensures that no arithmetic overflow happens.
+The side-condition ensures that no arithmetic overflow (precisely underflow in this case) happens.
 
 ```{.k .erc20-spec}
     andBool VALUE <=Int BAL_FROM
 ```
 
-TODO: HKG
+HKG-specific:
+As in the sub-case 1, HKG token requires having the additional side-condition of VALUE’s being greater than 0.
 
 ```{.k .hkg-spec}
     andBool VALUE <=Int BAL_FROM
@@ -453,39 +468,36 @@ TODO: HKG
 
 
 
-### Case of failure
+### transfer failure
 
 ```{.k .erc20-spec .hkg-spec}
 [transfer-failure]
 ```
 
-`<k>` cell specifies that an exception will be thrown for the failure case.
+`<k>` cell specifies that an exception will be thrown in the failure case.
+
+Thus, the local memory is not relevant at all in this case.
 
 ```{.k .erc20-spec}
 k: #execute => #exception
-```
 
-TODO:
-
-```{.k .hkg-spec}
-k: #execute => (RETURN RET_ADDR:Int 32 ~> _)
-```
-
-The local memory is not relevant at all in this case.
-
-```{.k .erc20-spec}
 localMem:
     .Map => _:Map
 ```
 
-TODO: HKG
+HKG-specific:
+HKG token does not throw the exception, but returns false in the failure case. Strictly speaking, this is still compliant with the ERC20 standard since the standard says that the `transfer` function “should” throw an exception for the failure, but not “must” do.
+
+`<localMem>` cell says that it returns 0, i.e., false.
 
 ```{.k .hkg-spec}
+k: #execute => (RETURN RET_ADDR:Int 32 ~> _)
+
 localMem:
       .Map
     =>
     (
-      .Map[ RET_ADDR := #asByteStackInWidth(RET_VAL, 32) ]
+      .Map[ RET_ADDR := #asByteStackInWidth(0, 32) ]
       _:Map
     )
 ```
@@ -504,15 +516,7 @@ requires:
     andBool 0 <=Int VALUE     andBool VALUE     <Int (2 ^Int 256)
     andBool 0 <=Int BAL_FROM  andBool BAL_FROM  <Int (2 ^Int 256)
     andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
-```
 
-TODO: HKG:
-
-```{.k .hkg-spec}
-    andBool RET_VAL ==Int 0
-```
-
-```{.k .erc20-spec .hkg-spec}
 epilogue:
     // TODO: properly consider exception preserving the input status
     //       using CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
@@ -522,7 +526,7 @@ epilogue:
 
 There are two sub-cases as well depending on whether the caller is equal to the recipient. 
 
-#### Sub-case 1: the caller `CALLER_ID` is different from the recipient `TO_ID`.
+#### transfer failure: sub-case 1: the caller `CALLER_ID` is different from the recipient `TO_ID`.
 
 ```{.k .erc20-spec .hkg-spec}
 [transfer-failure-1]
@@ -536,14 +540,19 @@ storage:
     andBool CALLER_ID =/=Int TO_ID
 ```
 
-The side-condition causing the arithmetic overflows, i.e., the negation of that of the success case (sub-case 1):
+The side-condition causing the arithmetic overflows, i.e., the negation of that of the success case (transfer success, sub-case 1):
 
 ```{.k .erc20-spec}
     andBool ( VALUE >Int BAL_FROM
      orBool   BAL_TO +Int VALUE >=Int (2 ^Int 256) ) // viper overflow check: ( VALUE =/=Int 0 andBool BAL_TO +Word VALUE <Int BAL_TO )
 ```
 
-TODO: HKG:
+HKG-specific:
+As in the success case, HKG token requires the different side-condition for the failure.
+
+We split this case into another two sub-cases: one for each disjunct of the side-condition causing the failure, due to a limitation of the current K verifier that we are currently fixing.
+
+Note that the sub-cases are to be disjoined (i.e, OR'ed) to represent the original side-condition.
 
 ```{.k .hkg-spec}
 [transfer-failure-1-a]
@@ -560,7 +569,7 @@ TODO: HKG:
 
 
 
-#### Sub-case 2: the caller `CALLER_ID` is equal to the recipient `TO_ID`.
+#### transfer failure: sub-case 2: the caller `CALLER_ID` is equal to the recipient `TO_ID`.
 
 ```{.k .erc20-spec .hkg-spec}
 [transfer-failure-2]
@@ -573,24 +582,18 @@ storage:
     andBool CALLER_ID ==Int TO_ID
 ```
 
-The side-condition causing the arithmetic overflows, i.e., the negation of that of the success case (sub-case 2):
+The side-condition causing the arithmetic overflows, i.e., the negation of that of the success case (transfer success, sub-case 2):
 
 ```{.k .erc20-spec}
     andBool VALUE >Int BAL_FROM
 ```
 
-TODO: HKG:
+HKG-specific:
+As in the previous case, HKG token requires the different side-condition for the failure.
 
 ```{.k .hkg-spec}
-[transfer-failure-2-a]
-
-+requires:
-    andBool VALUE >Int BAL_FROM
-
-[transfer-failure-2-b]
-
-+requires:
-    andBool VALUE <=Int 0
+    andBool ( VALUE >Int BAL_FROM
+     orBool  VALUE <=Int 0 )
 ```
 
 
@@ -601,6 +604,8 @@ transferFrom
 
 The specification of `transferFrom` is similar to that of `transfer`.
 
+`transferFrom` function transfers the amount of VALUE from the (possibly remote) account FROM_ID to the account TO_ID provided that the caller is authorized to do so by the account FROM_ID.
+
 ```{.k .erc20-spec .hkg-spec}
 [transferFrom]
 callData: #abiCallData("transferFrom", #address(FROM_ID), #address(TO_ID), #uint256(VALUE))
@@ -609,7 +614,7 @@ gas:
     /* G */ 100000 => _
 ```
 
-### Case of success
+### transferFrom success
 
 ```{.k .erc20-spec .hkg-spec}
 [transferFrom-success]
@@ -654,7 +659,7 @@ epilogue:
     // NOTE: negative VALUE is not possible since it is of `num256` type
 ```
 
-#### Sub-case 1: the sender `FROM_ID` is different from the recipient `TO_ID`.
+#### transferFrom success: sub-case 1: the sender `FROM_ID` is different from the recipient `TO_ID`.
 
 ```{.k .erc20-spec .hkg-spec}
 [transferFrom-success-1]
@@ -671,7 +676,8 @@ storage:
     #hashedLocation({lang}, {pos(balances)},   TO_ID)             |-> (BAL_TO   => BAL_TO   +Int VALUE)
 ```
 
-TODO: HKG:
+HKG-specific:
+As in `transfer` function, HKG token “wraps around” the balance without checking the additional overflow. See the difference between `+Int` and `+Word` in the above and the below.
 
 ```{.k .hkg-spec}
     #hashedLocation({lang}, {pos(balances)},   TO_ID)             |-> (BAL_TO   => BAL_TO  +Word VALUE)
@@ -685,7 +691,7 @@ TODO: HKG:
     andBool FROM_ID =/=Int TO_ID
 ```
 
-TODO: ERC20
+The side-condition that avoids the overflows.
 
 ```{.k .erc20-spec}
     andBool VALUE <=Int BAL_FROM
@@ -693,7 +699,8 @@ TODO: ERC20
     andBool VALUE <=Int ALLOW
 ```
 
-TODO: HKG
+HKG-specific:
+As in `transfer` function, it does not check the additional overflow but rejects the zero value to be transferred.
 
 ```{.k .hkg-spec}
     andBool VALUE <=Int BAL_FROM
@@ -701,7 +708,7 @@ TODO: HKG
     andBool VALUE >Int 0
 ```
 
-#### Sub-case 2: the sender `FROM_ID` is equal to the recipient `TO_ID`.
+#### transferFrom success: sub-case 2: the sender `FROM_ID` is equal to the recipient `TO_ID`.
 
 ```{.k .erc20-spec .hkg-spec}
 [transferFrom-success-2]
@@ -715,14 +722,15 @@ storage:
     andBool FROM_ID ==Int TO_ID
 ```
 
-TODO:
+The side-condition that avoids the overflows:
 
 ```{.k .erc20-spec}
     andBool VALUE <=Int BAL_FROM
     andBool VALUE <=Int ALLOW
 ```
 
-TODO:
+HKG-specific:
+The different side-condition for HKG token:
 
 ```{.k .hkg-spec}
     andBool VALUE <=Int BAL_FROM
@@ -730,7 +738,7 @@ TODO:
     andBool VALUE >Int 0
 ```
 
-### Case of failure
+### transferFrom failure
 
 ```{.k .erc20-spec .hkg-spec}
 [transferFrom-failure]
@@ -738,27 +746,22 @@ TODO:
 
 ```{.k .erc20-spec}
 k: #execute => #exception
-```
 
-TODO:
-
-```{.k .hkg-spec}
-k: #execute => (RETURN RET_ADDR:Int 32 ~> _)
-```
-
-```{.k .erc20-spec}
 localMem:
     .Map => _:Map
 ```
 
-TODO: HKG
+HKG-specific:
+As in `transfer`, HKG token returns false in the failure case.
 
 ```{.k .hkg-spec}
+k: #execute => (RETURN RET_ADDR:Int 32 ~> _)
+
 localMem:
       .Map
     =>
     (
-      .Map[ RET_ADDR := #asByteStackInWidth(RET_VAL, 32) ]
+      .Map[ RET_ADDR := #asByteStackInWidth(0, 32) ]
       _:Map
     )
 ```
@@ -777,15 +780,7 @@ requires:
     andBool 0 <=Int BAL_FROM  andBool BAL_FROM  <Int (2 ^Int 256)
     andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
     andBool 0 <=Int ALLOW     andBool ALLOW     <Int (2 ^Int 256)
-```
 
-TODO: HKG:
-
-```{.k .hkg-spec}
-    andBool RET_VAL ==Int 0
-```
-
-```{.k .erc20-spec .hkg-spec}
 epilogue:
     // TODO: properly consider exception preserving the input status
     //       using CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
@@ -793,7 +788,7 @@ epilogue:
     // NOTE: negative VALUE is not possible since it is of `num256` type
 ```
 
-#### Sub-case 1: the sender `FROM_ID` is different from the recipient `TO_ID`.
+#### transferFrom failure: sub-case 1: the sender `FROM_ID` is different from the recipient `TO_ID`.
 
 ```{.k .erc20-spec .hkg-spec}
 [transferFrom-failure-1]
@@ -825,7 +820,8 @@ Note that the sub-cases are to be disjoined (i.e, OR'ed) to represent the comple
     andBool VALUE >Int ALLOW
 ```
 
-TODO:
+HKG-specific:
+The different side-condition for HKG token:
 
 ```{.k .hkg-spec}
 [transferFrom-failure-1-a]
@@ -842,7 +838,7 @@ TODO:
 ```
 
 
-#### Sub-case 2: the sender `FROM_ID` is equal to the recipient `TO_ID`.
+#### transferFrom failure: sub-case 2: the sender `FROM_ID` is equal to the recipient `TO_ID`.
 
 ```{.k .erc20-spec .hkg-spec}
 [transferFrom-failure-2]
@@ -856,32 +852,40 @@ storage:
     andBool FROM_ID ==Int TO_ID
 ```
 
-TODO:
+The side-condition causing the failure:
 
 ```{.k .erc20-spec}
     andBool ( VALUE >Int BAL_FROM
      orBool   VALUE >Int ALLOW )
 ```
 
-TODO:
+HKG-specific:
+The different side-condition for HKG token:
 
 ```{.k .hkg-spec}
-[transferFrom-failure-2-a]
-+requires:
-    andBool VALUE >Int BAL_FROM
-
-[transferFrom-failure-2-b]
-+requires:
-    andBool VALUE >Int ALLOW
-
-[transferFrom-failure-2-c]
-+requires:
-    andBool VALUE <=Int 0
+   andBool ( VALUE >Int BAL_FROM
+    orBool   VALUE >Int ALLOW
+    orBool   VALUE <=Int 0 )
 ```
 
 
 
 
+Program Specification
+The above specification is parameterized by program-specific details consisting of the language compiler, `pos`, the position map for each global (i.e., storage) variables, and the compiled EVM bytecode.
+
+We present two ERC20 token contracts: a Viper official ERC20 token and HKG token.
+
+#### Viper ERC20 Token
+
+Shipped with the official Viper language compiler distribution, an ERC20 token, written in Viper by Phil Daian, is proved w.r.t. the above ERC20 specification, indicating that it faithfully conforms to the ERC20 standard.
+
+We took the Viper source code from https://github.com/ethereum/vyper/tree/master/examples/tokens/ERC20_solidity_compatible, and compiled it down to EVM bytecode using the official Viper compiler 0.0.2 (of the commit id bf6ed1bfde2071ee2d5fdd6fbe1c09cf3bec44f2).
+
+Specifically, the `code` is obtained by running the following command:
+```
+$ viper -f bytecode_runtime examples/tokens/ERC20_solidity_compatible/ERC20.v.py
+```
 
 ```{.k .viper-pgm}
 [DEFAULT]
@@ -891,6 +895,10 @@ pos(allowances): 1
 pos(totalsupply): 2
 code: "0x600035601c52740100000000000000000000000000000000000000006020526f7fffffffffffffffffffffffffffffff6040527fffffffffffffffffffffffffffffffff8000000000000000000000000000000060605274012a05f1fffffffffffffffffffffffffdabf41c006080527ffffffffffffffffffffffffed5fa0e000000000000000000000000000000000060a05263d0e30db06000511415610168573460008112585761014052336101605261016051600060c052602060c02001546101405161016051600060c052602060c020015401116101405115176100e657600080fd5b6101405161016051600060c052602060c02001540161016051600060c052602060c020015560025461014051600254011161014051151761012657600080fd5b610140516002540160025561014051610180526101605160007fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef6020610180a3005b632e1a7d4d6000511415610260576020600461014037341561018957600080fd5b33610160526101405161016051600060c052602060c020015410156101ad57600080fd5b6101405161016051600060c052602060c02001540361016051600060c052602060c02001556101405160025410156101e457600080fd5b61014051600254036002556000600060006000600160605161014051806040519013585780919012585702610160516000f161021f57600080fd5b61014051610180526000610160517fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef6020610180a3600160005260206000f3005b6318160ddd600051141561028657341561027957600080fd5b60025460005260206000f3005b6370a0823160005114156102cd57602060046101403734156102a757600080fd5b60043560205181101558575061014051600060c052602060c020015460005260206000f3005b63a9059cbb60005114156103e057604060046101403734156102ee57600080fd5b60043560205181101558575033610180526101605161018051600060c052602060c0200154101561031e57600080fd5b6101605161018051600060c052602060c02001540361018051600060c052602060c020015561014051600060c052602060c02001546101605161014051600060c052602060c0200154011161016051151761037857600080fd5b6101605161014051600060c052602060c02001540161014051600060c052602060c0200155610160516101a05261014051610180517fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef60206101a0a3600160005260206000f3005b6323b872dd6000511415610559576060600461014037341561040157600080fd5b600435602051811015585750602435602051811015585750336101a0526101a05161014051600160c052602060c0200160c052602060c02001546101c0526101805161014051600060c052602060c0200154101561045e57600080fd5b6101805161014051600060c052602060c02001540361014051600060c052602060c020015561016051600060c052602060c02001546101805161016051600060c052602060c020015401116101805115176104b857600080fd5b6101805161016051600060c052602060c02001540161016051600060c052602060c0200155610180516101c05110156104f057600080fd5b610180516101c051036101a05161014051600160c052602060c0200160c052602060c0200155610180516101e05261016051610140517fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef60206101e0a3600160005260206000f3005b63095ea7b360005114156105ef576040600461014037341561057a57600080fd5b6004356020518110155857503361018052610160516101405161018051600160c052602060c0200160c052602060c0200155610160516101a05261014051610180517f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b92560206101a0a3600160005260206000f3005b63dd62ed3e600051141561064f576040600461014037341561061057600080fd5b6004356020518110155857506024356020518110155857506101605161014051600160c052602060c0200160c052602060c020015460005260206000f3005b"
 ```
+
+#### HKG Token
+
+TODO: explanation
 
 ```{.k .hkg-pgm}
 [DEFAULT]
