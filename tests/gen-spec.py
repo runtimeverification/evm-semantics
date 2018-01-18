@@ -1,37 +1,48 @@
 #!/usr/bin/env python3.6
 
 import sys
-import os
 import re
 import configparser
 
 def subst(text, key, val):
-    return re.compile('{' + key.upper() + '}').sub(val, text)
+#    return re.compile('{' + key.upper() + '}').sub(val, text)
+    return text.replace('{' + key + '}', val)
 
-def gen(template, ini, outdir):
-    config = configparser.ConfigParser()
-    config.read(ini)
-    sections = ['DEFAULT'] if not config.sections() else config.sections()
-    ini_basename = os.path.splitext(os.path.basename(ini))[0]
-    out_prefix = outdir + ini_basename
-    for sec in sections:
-        genspec = template
-        for key in config[sec]:
-            genspec = subst(genspec, key, config[sec][key].strip())
-        genspec = subst(genspec, 'module', ini_basename.upper())
-        fout = open(out_prefix + ('' if sec == 'DEFAULT' else sec) + "-spec.k", "w")
-        fout.write(genspec)
-        fout.close()
+def safe_get(config, section):
+    if section in config:
+        return config[section]
+    else:
+        return {}
 
-    # touch timestamp file for simplifying makefile
-    timestamp_file = out_prefix + '.timestamp'
-    with open(timestamp_file, 'a'):
-        os.utime(timestamp_file, None)
+def inherit_get(config, section):
+    if not section:
+        return safe_get(config, 'DEFAULT')
+    else:
+        parent = inherit_get(config, '-'.join(section.split('-')[:-1]))
+        current = safe_get(config, section)
+        merged = {**parent, **current}
+        for key in list(merged.keys()):
+            if key.startswith('+'):
+                merged[key[1:]] += merged[key]
+                del merged[key]
+        return merged
 
+def gen(template, ini1, ini2, name):
+    config1 = configparser.ConfigParser(comment_prefixes=(';'))
+    config1.read(ini1)
+    config2 = configparser.ConfigParser(comment_prefixes=(';'))
+    config2.read(ini2)
+    genspec = template
+    config = {**inherit_get(config1, name),
+              **config2['DEFAULT'],
+              **{'module': name.upper()}}
+    for key in config:
+        genspec = subst(genspec, key, config[key].strip())
+    print(genspec)
 
 if __name__ == '__main__':
-    if len(sys.argv) != 4:
-        print("usage: <cmd> <template> <ini> <outdir>")
+    if len(sys.argv) != 5:
+        print("usage: <cmd> <template> <ini1> <ini2> <name>")
         sys.exit(1)
     template = open(sys.argv[1], "r").read()
-    gen(template, sys.argv[2], sys.argv[3])
+    gen(template, sys.argv[2], sys.argv[3], sys.argv[4])
