@@ -279,7 +279,7 @@ log:
 Note that, however, we have not specified the refund detail since it is not essential for the functional correctness. We can specify that upon request.
 
 ```{.k .erc20-spec .hkg-spec}
-refund: _ => _ /* TODO: more detail */
+refund: _ => _
 ```
 
 `<storage>` cell specifies that the value of `allowances[CALLER_ID][SPENDER]` will be updated to `VALUE` after the execution.
@@ -359,7 +359,7 @@ log:
                })
     )
 
-refund: _ => _ /* TODO: more detail */
+refund: _ => _
 
 requires:
     andBool 0 <=Int TO_ID     andBool TO_ID     <Int (2 ^Int 160)
@@ -491,7 +491,7 @@ No log will be generated.
 ```{.k .erc20-spec .hkg-spec}
 log: _
 
-refund: _ => _ /* TODO: more detail */
+refund: _ => _
 
 requires:
     andBool 0 <=Int TO_ID     andBool TO_ID     <Int (2 ^Int 160)
@@ -624,7 +624,7 @@ log:
                })
     )
 
-refund: _ => _ /* TODO: more detail */
+refund: _ => _
 
 requires:
     andBool 0 <=Int FROM_ID   andBool FROM_ID   <Int (2 ^Int 160)
@@ -747,7 +747,7 @@ localMem:
 ```{.k .erc20-spec .hkg-spec}
 log: _
 
-refund: _ => _ /* TODO: more detail */
+refund: _ => _
 
 requires:
     andBool 0 <=Int FROM_ID   andBool FROM_ID   <Int (2 ^Int 160)
@@ -954,7 +954,7 @@ module {module}-SPEC
           <log>
             {log}
           </log>
-          <refund> {refund} </refund>
+          <refund> {refund} </refund> // TODO: more detail
         </substate>
 
         <gasPrice> _ </gasPrice>
