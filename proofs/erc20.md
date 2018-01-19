@@ -121,8 +121,7 @@ gas:
 `<log>` cell specifies that no log is generated during the execution.
 
 ```{.k .erc20-spec .hkg-spec}
-log:
-    /* _ */ .List
+log: _
 ```
 
 `<refund>` cell specifies that no gas is refunded. Note that it does not mean it consumes all the provided gas. The gas refund is different from returning the remaining gas after the execution. It is another notion to capture some specific gas refund events that happen, for example, when an unused storage entry is re-claimed (i.e., garbage-collected). The following specification ensures that no such event happens during the execution of the current function.
@@ -175,8 +174,7 @@ localMem:
 gas:
     /* G */ 100000 => _
 
-log:
-    /* _ */ .List
+log: _
 
 refund:
     /* _ */ 0
@@ -219,8 +217,7 @@ localMem:
 gas:
     /* G */ 100000 => _
 
-log:
-    /* _ */ .List
+log: _
 
 refund:
     /* _ */ 0
@@ -270,7 +267,7 @@ The log message contains the account ID of the current contract, the hash of the
 
 ```{.k .erc20-spec .hkg-spec}
 log:
-      /* _ */
+      _:List
     (
       .List
     =>
@@ -358,7 +355,7 @@ localMem:
 
 ```{.k .erc20-spec .hkg-spec}
 log:
-      /* _ */
+      _:List
     (
       .List
     =>
@@ -503,8 +500,7 @@ localMem:
 No log will be generated.
 
 ```{.k .erc20-spec .hkg-spec}
-log:
-    /* _ */ .List
+log: _
 
 refund:
     /* _ */ 0 => _ /* TODO: more detail */
@@ -628,7 +624,7 @@ localMem:
     )
 
 log:
-      /* _ */
+      _:List
     (
       .List
     =>
@@ -764,8 +760,7 @@ localMem:
 ```
 
 ```{.k .erc20-spec .hkg-spec}
-log:
-    /* _ */ .List
+log: _
 
 refund:
     /* _ */ 0 => _ /* TODO: more detail */
