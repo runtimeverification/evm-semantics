@@ -279,8 +279,7 @@ log:
 Note that, however, we have not specified the refund detail since it is not essential for the functional correctness. We can specify that upon request.
 
 ```{.k .erc20-spec .hkg-spec}
-refund:
-    _ => _ /* TODO: more detail */
+refund: _ => _ /* TODO: more detail */
 ```
 
 `<storage>` cell specifies that the value of `allowances[CALLER_ID][SPENDER]` will be updated to `VALUE` after the execution.
@@ -360,8 +359,7 @@ log:
                })
     )
 
-refund:
-    _ => _ /* TODO: more detail */
+refund: _ => _ /* TODO: more detail */
 
 requires:
     andBool 0 <=Int TO_ID     andBool TO_ID     <Int (2 ^Int 160)
@@ -468,8 +466,7 @@ Thus, the local memory is not relevant at all in this case.
 ```{.k .erc20-spec}
 k: #execute => #exception
 
-localMem:
-    .Map => _:Map
+localMem: .Map => _:Map
 ```
 
 ##### HKG-specific:
@@ -494,8 +491,7 @@ No log will be generated.
 ```{.k .erc20-spec .hkg-spec}
 log: _
 
-refund:
-    _ => _ /* TODO: more detail */
+refund: _ => _ /* TODO: more detail */
 
 requires:
     andBool 0 <=Int TO_ID     andBool TO_ID     <Int (2 ^Int 160)
@@ -628,8 +624,7 @@ log:
                })
     )
 
-refund:
-    _ => _ /* TODO: more detail */
+refund: _ => _ /* TODO: more detail */
 
 requires:
     andBool 0 <=Int FROM_ID   andBool FROM_ID   <Int (2 ^Int 160)
@@ -731,8 +726,7 @@ The different side-condition for HKG token:
 ```{.k .erc20-spec}
 k: #execute => #exception
 
-localMem:
-    .Map => _:Map
+localMem: .Map => _:Map
 ```
 
 ##### HKG-specific:
@@ -753,8 +747,7 @@ localMem:
 ```{.k .erc20-spec .hkg-spec}
 log: _
 
-refund:
-    _ => _ /* TODO: more detail */
+refund: _ => _ /* TODO: more detail */
 
 requires:
     andBool 0 <=Int FROM_ID   andBool FROM_ID   <Int (2 ^Int 160)
