@@ -1004,7 +1004,7 @@ module {module}-SPEC
             </storage>
             <nonce> _ </nonce>
           </account>
-          _
+          /* ... */
         </accounts>
 
         <txOrder> _ </txOrder>
