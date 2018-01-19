@@ -933,8 +933,8 @@ module {module}-SPEC
       <evm>
         <output> _ </output>
         <memoryUsed> 0 => _ </memoryUsed>
-        <callDepth> /* CALL_DEPTH */ 0 </callDepth> // TODO: check if <= 1024
-        <callStack> /* _ */ .List => _ </callStack>
+        <callDepth> CALL_DEPTH </callDepth>
+        <callStack> _ => _ </callStack>
         <interimStates> _ </interimStates>
         <substateStack> _ </substateStack>
         <callLog> .Set </callLog> // for vmtest only
@@ -992,7 +992,7 @@ module {module}-SPEC
       </evm>
 
       <network>
-        <activeAccounts> ACCT_ID |-> false /* _ */ </activeAccounts>
+        <activeAccounts> ACCT_ID |-> false _:Map </activeAccounts>
 
         <accounts>
           <account>
@@ -1004,7 +1004,7 @@ module {module}-SPEC
             </storage>
             <nonce> _ </nonce>
           </account>
-          /* _ */
+          _
         </accounts>
 
         <txOrder> _ </txOrder>
@@ -1015,6 +1015,7 @@ module {module}-SPEC
     requires 0 <=Int ACCT_ID   andBool ACCT_ID   <Int (2 ^Int 160)
      andBool 0 <=Int CALLER_ID andBool CALLER_ID <Int (2 ^Int 160)
      andBool 0 <=Int ORIGIN_ID andBool ORIGIN_ID <Int (2 ^Int 160)
+     andBool 0 <=Int CALL_DEPTH andBool CALL_DEPTH <Int 1024
      {requires}
 
 {epilogue}
