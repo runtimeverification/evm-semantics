@@ -5,9 +5,12 @@ We present a refinement of ERC20-K that specifies its detailed behaviors in EVM 
 
 In addition to the high-level ERC20 logic specified in ERC20-K, the EVM-level specification captures EVM-specific details such as gas consumption, data layout in storage, ABI encoding, byte representation of the program, and arithmetic overflows.
 
+Abstractions
+------------
+
 We present the low-level specification in a succinct form using the abstractions introduced in the module [VERIFICATION](../../verification.md). The abstraction also makes the specification language-agnostic, meaning that it can be used for multiple programs that are compiled from different surface languages.
 
-### Call data
+### Call Data
 
 The ABI call abstraction allows to specify the call data in a function call notation. It specifies the function name and the (symbolic) arguments along with their types. For example, the following abstraction represents a data that encodes a call to the `transfer` function with two arguments: `TO`, the receiver account address of type `address` (an 160-bit unsigned integer), and `VALUE`, the value to transfer of type `unit256` (an 256-bit unsigned integer).
 
@@ -23,7 +26,7 @@ F1 : F2 : F3 : F4 : T1 : ... : T32 : V1 : ... : V32
 
 where `F1 : F2 : F3 : F4` is the byte-array representation of 2835717307, the hash value of the function signature ABI encoding, `T1 : ... : T32` is the byte-array representation of the first argument `TO`, and `V1 : ... : V32` is the one of the second argument `VALUE`.
 
-### Local memory
+### Local Memory
 
 The memory abstraction allows to specify the local memory as a map over words instead of byte-arrays.
 
@@ -71,7 +74,7 @@ The hashed location abstraction allows to uniformly specify the locations in a f
 This abstraction makes the specification independent of the underlying compilers, enabling it to be reused for differently compiled programs.
 
 
-### Gas consumption
+### Gas Consumption
 
 Regarding the gas consumption of the program, the maximum gas amount is specified to ensure that the program does not consume more gas than the limit.
 
@@ -878,13 +881,13 @@ gascap: 100000
 ### Hacker Gold (HKG) Token
 
 The HKG token is an implementation of the ERC20 specification written in Solidity.
-The token became a [topic of discussion](https://www.ethnews.com/ethercamps-hkg-token-has-a-bug-and-needs-to-be-reissued) when a subtle vulnerability lead to a reissue.
+The token became a [topic of discussion](https://www.ethnews.com/ethercamps-hkg-token-has-a-bug-and-needs-to-be-reissued) when a subtle vulnerability leads to a reissue.
 The token had been originally audited by [Zeppelin](https://zeppelin.solutions/security-audits), and was deemed secure.
 
 Specifically, the typographical error in the [HKG Token Solidity source](https://github.com/ether-camp/virtual-accelerator/issues/8) code came in the form of an `=+` statement being used in place of the desired `+=` when updating a receiver's balance during a transfer.
-While typographically similar, these statements are semantically very different, with the former being equivalent to a simple `=` (the second plus saying that the expression following should be treated as positive) and the latter desugaring to add the right hand quantity to the existing value in the variable on the left hand side of the expression.
-In testing, this error was missed, as the first balance updated would always work (with balance `=+` value being semantically equivalent to balance `+=` value when balance is 0, in both cases assigning `value` to `balance`).
-Even with full decision or branch coverage in testing, multiple transfers on the same account can be entirely omitted in a way that is difficult to notice through human review.
+While typographically similar, these statements are semantically very different, with the former being equivalent to a simple `=` (the second plus saying that the expression following should be treated as positive) and the latter desugaring to add the right-hand quantity to the existing value in the variable on the left-hand side of the expression.
+In testing, this error was missed, as the first balance updated would always work (with balance `=+` value being semantically equivalent to balance `+=` value when the balance is 0, in both cases assigning `value` to `balance`).
+Even with the full decision or branch coverage in testing, multiple transfers on the same account can be entirely omitted in a way that is difficult to notice through human review.
 
 We took the HKG source code from https://github.com/ether-camp/virtual-accelerator/blob/master/contracts/StandardToken.sol, where we inlined the following import
 ```
@@ -906,6 +909,10 @@ gascap: 100000
 
 Specification Template
 ----------------------
+
+The above specification mentions only the relevant and essential part of the entire configuration (i.e., the VM and network state) to be succinct and close to the high-level specification ERC20-K.
+
+We present the other part of the configuration, which, combined with the above, forms the complete specification to be passed into the underlying theorem prover.
 
 ```{.k .tmpl}
 module {module}-SPEC
@@ -1008,8 +1015,12 @@ module {module}-SPEC
      {requires}
 
 {comments}
+```
 
-  // to avoid unnecessary case split
+Below are an abstract semantics of the four instruction, LT, GT, EQ, and ISZERO, that improves the performance of the underlying theorem prover’s symbolic reasoning by avoiding unnecessary case analyses.
+
+```{.k .tmpl}
+  // to avoid unnecessary case analyses
   rule <k> LT W0 W1 => bool2int(W0  <Int W1) ~> #push ... </k> [trusted]
   rule <k> GT W0 W1 => bool2int(W0  >Int W1) ~> #push ... </k> [trusted]
   rule <k> EQ W0 W1 => bool2int(W0 ==Int W1) ~> #push ... </k> [trusted]
