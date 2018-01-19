@@ -102,9 +102,17 @@ Instead, we introduce lemmas over the uninterpreted functional terms and the sem
   rule #padToWidth(32, #asByteStack(V)) => #asByteStackInWidth(V, 32)
     requires 0 <=Int V andBool V <Int (2 ^Int 256)
 
-  // for extracting first four bytes of function signature
+  // for extracting first four bytes of function signature from calldata
+
+  // in viper
   rule #padToWidth(N, #asByteStack(#asWord(WS))) => WS
     requires noOverflow(WS) andBool N ==Int #sizeWordStack(WS)
+
+  // in solidity
+  rule #asWord(WS) /Int D => #asWord(#take(#sizeWordStack(WS) -Int log256Int(D), WS))
+    requires D %Int 256 ==Int 0 andBool D >=Int 0
+     andBool #sizeWordStack(WS) >=Int log256Int(D)
+     andBool noOverflow(WS)
 
   syntax Bool ::= noOverflow(WordStack)    [function]
                 | noOverflowAux(WordStack) [function]
@@ -185,6 +193,12 @@ We introduce (guided) simplification rules that capture arithmetic properties, w
   rule (I1 -Int I2) +Int I3 => I1 -Int (I2 -Int I3) when #isConcrete(I2) andBool #isConcrete(I3)
   rule (I1 -Int I2) -Int I3 => I1 -Int (I2 +Int I3) when #isConcrete(I2) andBool #isConcrete(I3)
 
+  rule I1 &Int (I2 &Int I3) => (I1 &Int I2) &Int I3 when #isConcrete(I1) andBool #isConcrete(I2)
+
+  // 0xffff...f &Int N = N
+  rule MASK &Int N => N  requires MASK ==Int (2 ^Int (log2Int(MASK) +Int 1)) -Int 1 // MASK = 0xffff...f
+                          andBool 0 <=Int N andBool N <=Int MASK
+
   // for gas calculation
   rule A -Int (#ifInt C #then B1 #else B2 #fi) => #ifInt C #then (A -Int B1) #else (A -Int B2) #fi
   rule (#ifInt C #then B1 #else B2 #fi) -Int A => #ifInt C #then (B1 -Int A) #else (B2 -Int A) #fi
@@ -225,6 +239,10 @@ Simple lemmas for the modulo reduction.
 
   rule 0 <=Int keccak(V)                     => true
   rule         keccak(V) <Int /* 2 ^Int 256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936 => true
+
+  rule 0 <=Int X &Int Y                     => true     requires 0 <=Int X andBool X <Int (2 ^Int 256) andBool 0 <=Int Y andBool Y <Int (2 ^Int 256)
+  rule         X &Int Y <Int /* 2 ^Int 256 */ 115792089237316195423570985008687907853269984665640564039457584007913129639936 => true
+                                                        requires 0 <=Int X andBool X <Int (2 ^Int 256) andBool 0 <=Int Y andBool Y <Int (2 ^Int 256)
 ```
 
 ### Wordstack
@@ -286,35 +304,6 @@ cell, allowing proofs of ABI-compliant EVM program to begin at `<pc> 0 </pc>`.
     rule #getData(#uint160( DATA )) => #asByteStackInWidth( DATA , 32 )
     rule #getData(#address( DATA )) => #asByteStackInWidth( DATA , 32 )
     rule #getData(#uint256( DATA )) => #asByteStackInWidth( DATA , 32 )
-```
-
-TODO: fix
-
-The corresponding operations perform manipulations on
-byte represetnations of words.
-
-- An aligned division operation can be attained via byte shifts.
-- Consider `B1: B2: B3: .WordStack` is bytes based word stack. Division by
-256 is `B1: B2: .WordStack`. It doesn't matter if B3 is symbolic, as long as B3 <= 255.
-- The rule only applies on `#asWord`, which only operates over byte-stacks.
-
-```{.k .java}
-
-  rule chop( #asWord( WS ) /Int D ) => #asWord( #take(#sizeWordStack( WS ) -Int log256Int( D ), WS) )
-    requires D %Int 256 ==Int 0
-
-```
-- The corresponding Lemmas operate over `&Int` and `chop`
-- X &Int (2^a - 1) == X, given X <= (2^a - 1)
-
-```{.k .java}
-   rule chop(X &Int Y)    => X &Int Y    requires (X <Int pow256) orBool (Y <Int pow256)
-
-   // &Int Associativity
-   rule X &Int (Y &Int Z) => (X &Int Y) &Int Z
-
-   rule X &Int Y          => Y           requires    (((2 ^Int (log2Int(X) +Int 1)) -Int 1) ==Int X)
-                                          andBool      (Y <=Int X)
 ```
 
 ```{.k .uiuck}
