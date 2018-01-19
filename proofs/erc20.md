@@ -127,8 +127,7 @@ log: _
 `<refund>` cell specifies that no gas is refunded. Note that it does not mean it consumes all the provided gas. The gas refund is different from returning the remaining gas after the execution. It is another notion to capture some specific gas refund events that happen, for example, when an unused storage entry is re-claimed (i.e., garbage-collected). The following specification ensures that no such event happens during the execution of the current function.
 
 ```{.k .erc20-spec .hkg-spec}
-refund:
-    /* _ */ 0
+refund: _
 ```
 
 `<storage>` cell specifies that the value of `totaySupply` is `TOTAL` and other entries are not relevant (and could be arbitrary values). Specifying the irrelevant entries implicitly expresses the non-interference property. That is, the total supply value will be returned regardless of what the other entires of the storage are. This representation of the irrelevant part is used throughout the entire specification, ensuring one of the principal security properties.
@@ -176,8 +175,7 @@ gas:
 
 log: _
 
-refund:
-    /* _ */ 0
+refund: _
 ```
 
 `<storage>` cell specifies that the value of `balances[OWNER]` is `BAL`, which will be returned as described in `<localMem>` cell.
@@ -219,8 +217,7 @@ gas:
 
 log: _
 
-refund:
-    /* _ */ 0
+refund: _
 ```
 
 `<storage>` cell specifies that the value of `allowances[OWNER][SPENDER]` is `ALLOWANCE`, which will be returned as described in `<localMem>` cell.
@@ -287,7 +284,7 @@ Note that, however, we have not specified the refund detail since it is not esse
 
 ```{.k .erc20-spec .hkg-spec}
 refund:
-    /* _ */ 0 => _ /* TODO: more detail */
+    _ => _ /* TODO: more detail */
 ```
 
 `<storage>` cell specifies that the value of `allowances[CALLER_ID][SPENDER]` will be updated to `VALUE` after the execution.
@@ -369,7 +366,7 @@ log:
     )
 
 refund:
-    /* _ */ 0 => _ /* TODO: more detail */
+    _ => _ /* TODO: more detail */
 
 requires:
     andBool 0 <=Int TO_ID     andBool TO_ID     <Int (2 ^Int 160)
@@ -503,7 +500,7 @@ No log will be generated.
 log: _
 
 refund:
-    /* _ */ 0 => _ /* TODO: more detail */
+    _ => _ /* TODO: more detail */
 
 requires:
     andBool 0 <=Int TO_ID     andBool TO_ID     <Int (2 ^Int 160)
@@ -638,7 +635,7 @@ log:
     )
 
 refund:
-    /* _ */ 0 => _ /* TODO: more detail */
+    _ => _ /* TODO: more detail */
 
 requires:
     andBool 0 <=Int FROM_ID   andBool FROM_ID   <Int (2 ^Int 160)
@@ -763,7 +760,7 @@ localMem:
 log: _
 
 refund:
-    /* _ */ 0 => _ /* TODO: more detail */
+    _ => _ /* TODO: more detail */
 
 requires:
     andBool 0 <=Int FROM_ID   andBool FROM_ID   <Int (2 ^Int 160)
