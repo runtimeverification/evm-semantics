@@ -935,17 +935,17 @@ module {module}-SPEC
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> DEFAULT </schedule> // TODO: pick a right one
-    <analysis> /* _ */ .Map </analysis>
+    <analysis> .Map </analysis> // not part of evm
 
     <ethereum>
       <evm>
-        <output> /* _ */ .WordStack </output>
+        <output> _ </output>
         <memoryUsed> 0 => _ </memoryUsed>
         <callDepth> /* CALL_DEPTH */ 0 </callDepth> // TODO: check if <= 1024
         <callStack> /* _ */ .List => _ </callStack>
-        <interimStates> /* _ */ .List </interimStates>
-        <substateStack> /* _ */ .List </substateStack>
-        <callLog> /* _ */ .Set </callLog>
+        <interimStates> _ </interimStates>
+        <substateStack> _ </substateStack>
+        <callLog> .Set </callLog> // for vmtest only
 
         <txExecState>
           <program> #asMapOpCodes(#dasmOpCodes(#parseByteStack({code}), DEFAULT)) </program>
@@ -969,7 +969,7 @@ module {module}-SPEC
         </txExecState>
 
         <substate>
-          <selfDestruct> /* _ */ .Set </selfDestruct>
+          <selfDestruct> _ </selfDestruct>
           <log>
             {log}
           </log>
@@ -1017,7 +1017,7 @@ module {module}-SPEC
 
         <txOrder> _ </txOrder>
         <txPending> _ </txPending>
-        <messages> /* _ */ .Bag </messages>
+        <messages> _ </messages>
       </network>
     </ethereum>
     requires 0 <=Int ACCT_ID   andBool ACCT_ID   <Int (2 ^Int 160)
