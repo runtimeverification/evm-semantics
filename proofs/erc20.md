@@ -143,7 +143,7 @@ The side-condition specifies the range of symbolic values based on their types.
 requires:
     andBool 0 <=Int TOTAL     andBool TOTAL     <Int (2 ^Int 256)
 
-epilogue:
+comments:
 ```
 
 
@@ -187,7 +187,7 @@ requires:
     andBool 0 <=Int OWNER     andBool OWNER     <Int (2 ^Int 160)
     andBool 0 <=Int BAL       andBool BAL       <Int (2 ^Int 256)
 
-epilogue:
+comments:
 ```
 
 allowance
@@ -229,7 +229,7 @@ requires:
     andBool 0 <=Int SPENDER   andBool SPENDER   <Int (2 ^Int 160)
     andBool 0 <=Int ALLOWANCE andBool ALLOWANCE <Int (2 ^Int 256)
 
-epilogue:
+comments:
 ```
 
 
@@ -299,7 +299,7 @@ requires:
     andBool 0 <=Int SPENDER   andBool SPENDER   <Int (2 ^Int 160)
     andBool 0 <=Int VALUE     andBool VALUE     <Int (2 ^Int 256)
 
-epilogue:
+comments:
     // NOTE: negative VALUE is not possible since it is of `num256` type
 ```
 
@@ -367,7 +367,7 @@ requires:
     andBool 0 <=Int BAL_FROM  andBool BAL_FROM  <Int (2 ^Int 256)
     andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
 
-epilogue:
+comments:
     // NOTE: negative VALUE is not possible since it is of `num256` type
 ```
 
@@ -499,7 +499,7 @@ requires:
     andBool 0 <=Int BAL_FROM  andBool BAL_FROM  <Int (2 ^Int 256)
     andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
 
-epilogue:
+comments:
     // TODO: properly consider exception preserving the input status
     //       using CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
 
@@ -634,7 +634,7 @@ requires:
     andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
     andBool 0 <=Int ALLOW     andBool ALLOW     <Int (2 ^Int 256)
 
-epilogue:
+comments:
     // NOTE: negative VALUE is not possible since it is of `num256` type
 ```
 
@@ -757,7 +757,7 @@ requires:
     andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
     andBool 0 <=Int ALLOW     andBool ALLOW     <Int (2 ^Int 256)
 
-epilogue:
+comments:
     // TODO: properly consider exception preserving the input status
     //       using CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
 
@@ -1007,7 +1007,7 @@ module {module}-SPEC
      andBool 0 <=Int CALL_DEPTH andBool CALL_DEPTH <Int 1024
      {requires}
 
-{epilogue}
+{comments}
 
   // to avoid unnecessary case split
   rule <k> LT W0 W1 => bool2int(W0  <Int W1) ~> #push ... </k> [trusted]
