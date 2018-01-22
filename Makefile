@@ -1,7 +1,7 @@
 # Common to all versions of K
 # ===========================
 
-.PHONY: all clean build defn vm-tests split-tests split-bchain-tests split-proof-tests test sphinx
+.PHONY: all clean deps ocaml-deps build defn vm-tests split-tests split-bchain-tests split-proof-tests test sphinx
 
 all: build split-tests
 
@@ -10,6 +10,41 @@ clean:
 	find tests/proofs/ -name '*.k' -delete
 
 build: .build/ocaml/driver-kompiled/interpreter .build/java/driver-kompiled/timestamp
+
+# Get and Build Dependencies
+# --------------------------
+
+K_SUBMODULE=$(CURDIR)/.build/k
+BUILD_LOCAL=$(CURDIR)/.build/local
+PKG_CONFIG_LOCAL=$(BUILD_LOCAL)/lib/pkgconfig
+
+deps: $(K_SUBMODULE)/make.timestamp ocaml-deps
+
+$(K_SUBMODULE)/make.timestamp:
+	git submodule update --init -- $(K_SUBMODULE)
+	cd $(K_SUBMODULE) \
+		&& mvn package -q -DskipTests
+	touch $(K_SUBMODULE)/make.timestamp
+
+ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
+	opam init --quiet --no-setup
+	opam repository add k "$(K_SUBMODULE)/k-distribution/target/release/k/lib/opam" \
+		|| opam repository set-url k "$(K_SUBMODULE)/k-distribution/target/release/k/lib/opam"
+	opam update
+	opam switch 4.03.0+k
+	export PKG_CONFIG_PATH=$(PKG_CONFIG_LOCAL) ; \
+	opam install --yes mlgmp zarith uuidm cryptokit secp256k1 bn128
+
+# install secp256k1 from bitcoin-core
+.build/local/lib/pkgconfig/libsecp256k1.pc:
+	git submodule update --init -- .build/secp256k1/
+	cd .build/secp256k1/ \
+		&& ./autogen.sh \
+		&& ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
+		&& make -s -j4 \
+		&& make install
+
+K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
 
 # Tangle definition from *.md files
 # ---------------------------------
@@ -110,7 +145,7 @@ tests/proofs/hkg/%-spec.k: proofs/hkg.md
 
 .build/java/driver-kompiled/timestamp: $(java_files)
 	@echo "== kompile: $@"
-	kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
+	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/java
 
 # OCAML Backend Specific
@@ -118,7 +153,7 @@ tests/proofs/hkg/%-spec.k: proofs/hkg.md
 
 .build/ocaml/driver-kompiled/interpreter: $(ocaml_files) KRYPTO.ml
 	@echo "== kompile: $@"
-	kompile --debug --main-module ETHEREUM-SIMULATION \
+	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/ocaml \
 					--hook-namespaces KRYPTO --gen-ml-only -O3 --non-strict
 	ocamlfind opt -c .build/ocaml/driver-kompiled/constants.ml -package gmp -package zarith
@@ -126,7 +161,7 @@ tests/proofs/hkg/%-spec.k: proofs/hkg.md
 	ocamlfind opt -a -o semantics.cmxa KRYPTO.cmx
 	ocamlfind remove ethereum-semantics-plugin
 	ocamlfind install ethereum-semantics-plugin META semantics.cmxa semantics.a KRYPTO.cmi KRYPTO.cmx
-	kompile --debug --main-module ETHEREUM-SIMULATION \
+	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/ocaml \
 					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O3 --non-strict
 	cd .build/ocaml/driver-kompiled && ocamlfind opt -o interpreter constants.cmx prelude.cmx plugin.cmx parser.cmx lexer.cmx run.cmx interpreter.ml -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin -linkpkg -inline 20 -nodynlink -O3 -linkall
