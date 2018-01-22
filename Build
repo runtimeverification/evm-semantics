@@ -70,11 +70,11 @@ run_rvk() {
 
 run_proof() {
     [[ "$K_VERSION" == 'uiuck' ]] || die "Proofs must be run with 'K_VERSION=uiuck'."
-    export K_OPTS=-Xmx2G
     local proof_file="$1" ; shift
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
     local cSCHEDULE=${cSCHEDULE:-DEFAULT}
     local cMODE=${cMODE:-NORMAL}
+    export K_OPTS=-Xmx2G
     ( krun --directory .build/$K_VERSION/ -cSCHEDULE=$cSCHEDULE -cMODE=$cMODE \
          --z3-executable tests/templates/dummy-proof-input.json --prove "$proof_file" \
          </dev/null # grumble grumble `krun --prove` consumes stdin
