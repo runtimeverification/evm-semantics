@@ -40,6 +40,12 @@ On Ubuntu >= 15.04 (for example):
 sudo apt-get install make gcc maven openjdk-8-jdk flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev libxml2-utils z3
 ```
 
+To run proofs, you will also need [Z3](https://github.com/Z3Prover/z3) prover; on Ubuntu:
+
+```sh
+sudo apt-get install z3
+```
+
 If you also want to build the [Jello Paper], you'll additionally need:
 
 -   [Sphinx Documentation Generation] tool, and
