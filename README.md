@@ -50,40 +50,6 @@ This repository contains the build-products for both versions of K (there are sl
 Use RV-K for fast concrete execution, and UIUC-K for any symbolic reasoning.
 Make sure that you have set the `K_VERSION` environment variable in your shell (add `export K_VERSION=uiuck` or `export K_VERSION=rvk` to your `.bashrc` or equivalent).
 
-#### Helper Script `with-k`
-
-Not everyone wants to go through the process of installing K, so the script `./tests/ci/with-k` can be used to avoid that.
-The following calls to `./Build` are prefixed with a call to `with-k` to download, build, and set up a fresh copy of RV-K or UIUC-K (as specified).
-
-```sh
-$ ./tests/ci/with-k rvk   ./Build run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
-$ ./tests/ci/with-k uiuck ./Build prove tests/proofs/hkg/transfer-else-spec.k
-$ ./tests/ci/with-k rvk   ./Build test tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
-$ ./tests/ci/with-k uiuck ./Build prove tests/proofs/hkg/transfer-else-spec.k
-$ ./tests/ci/with-k uiuck ./Build debug tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
-```
-
-See `./Build help` to see more detailed usage information; `./Build` can build and test the definition as well as run EVM programs and proofs.
-Running any proofs or symbolic reasoning requires UIUC-K.
-
-The semantics are parametric over the `MODE` and the `SCHEDULE`.
-To run in a different mode (eg. in `GASANALYZE` mode), do `export cMODE=<OTHER_MODE>` before calling `./Build`.
-To run with a different fee schedule (eg. `HOMESTEAD` instead of `DEFAULT`), do `export cSCHEDULE=<OTHER_SCHEDULE>` before calling `./Build`.
-
-Note that running `./tests/ci/with-k` takes quite some time, which can be a pain when actively developing.
-To only download and setup K once for each session, you can do the following:
-
-```sh
-# Downloads and installs RV-K
-$ ./tests/ci/with-k rvk `which bash`
-
-# Now can just run `./Build` directly
-$ ./Build run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
-$ ./Build test tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
-```
-
-The script `with-k` sets up the development environment with the fresh copy of K built and prefixed to `PATH` for the remaining commands.
-
 ### Example Runs
 
 Run the file `tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json`:
