@@ -66,6 +66,32 @@ defn: $(defn_files)
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:ocaml $< > $@
 
+# Backend Builds
+# --------------
+
+# Java Backend
+.build/java/driver-kompiled/timestamp: $(java_files) deps
+	@echo "== kompile: $@"
+	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
+					--syntax-module ETHEREUM-SIMULATION $< --directory .build/java
+
+# OCAML Backend
+.build/ocaml/driver-kompiled/interpreter: $(ocaml_files) KRYPTO.ml deps
+	@echo "== kompile: $@"
+	eval $(shell opam config env) \
+	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
+					--syntax-module ETHEREUM-SIMULATION $< --directory .build/ocaml \
+					--hook-namespaces KRYPTO --gen-ml-only -O3 --non-strict; \
+	ocamlfind opt -c .build/ocaml/driver-kompiled/constants.ml -package gmp -package zarith; \
+	ocamlfind opt -c -I .build/ocaml/driver-kompiled KRYPTO.ml -package cryptokit -package secp256k1 -package bn128; \
+	ocamlfind opt -a -o semantics.cmxa KRYPTO.cmx; \
+	ocamlfind remove ethereum-semantics-plugin; \
+	ocamlfind install ethereum-semantics-plugin META semantics.cmxa semantics.a KRYPTO.cmi KRYPTO.cmx; \
+	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
+					--syntax-module ETHEREUM-SIMULATION $< --directory .build/ocaml \
+					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O3 --non-strict; \
+	cd .build/ocaml/driver-kompiled && ocamlfind opt -o interpreter constants.cmx prelude.cmx plugin.cmx parser.cmx lexer.cmx run.cmx interpreter.ml -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin -linkpkg -inline 20 -nodynlink -O3 -linkall
+
 # Tests
 # -----
 
@@ -139,33 +165,6 @@ tests/proofs/hkg/%-spec.k: proofs/hkg.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
-
-# Java Backend Specific
-# ---------------------
-
-.build/java/driver-kompiled/timestamp: $(java_files) deps
-	@echo "== kompile: $@"
-	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
-					--syntax-module ETHEREUM-SIMULATION $< --directory .build/java
-
-# OCAML Backend Specific
-# ----------------------
-
-.build/ocaml/driver-kompiled/interpreter: $(ocaml_files) KRYPTO.ml deps
-	@echo "== kompile: $@"
-	eval $(shell opam config env) \
-	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
-					--syntax-module ETHEREUM-SIMULATION $< --directory .build/ocaml \
-					--hook-namespaces KRYPTO --gen-ml-only -O3 --non-strict; \
-	ocamlfind opt -c .build/ocaml/driver-kompiled/constants.ml -package gmp -package zarith; \
-	ocamlfind opt -c -I .build/ocaml/driver-kompiled KRYPTO.ml -package cryptokit -package secp256k1 -package bn128; \
-	ocamlfind opt -a -o semantics.cmxa KRYPTO.cmx; \
-	ocamlfind remove ethereum-semantics-plugin; \
-	ocamlfind install ethereum-semantics-plugin META semantics.cmxa semantics.a KRYPTO.cmi KRYPTO.cmx; \
-	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
-					--syntax-module ETHEREUM-SIMULATION $< --directory .build/ocaml \
-					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O3 --non-strict; \
-	cd .build/ocaml/driver-kompiled && ocamlfind opt -o interpreter constants.cmx prelude.cmx plugin.cmx parser.cmx lexer.cmx run.cmx interpreter.ml -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin -linkpkg -inline 20 -nodynlink -O3 -linkall
 
 # Sphinx HTML Documentation
 # -------------------------
