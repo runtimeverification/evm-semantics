@@ -55,18 +55,10 @@
     </evm>
     <network>
       <activeAccounts> 7 |-> false </activeAccounts>
-      <accounts>
-        <account>
-          <acctID> 7 </acctID>
-          <balance> 1000000000 </balance>
-          <code> .WordStack </code>
-          <storage> 0 |-> 10 </storage>
-          <nonce> 1 </nonce>
-        </account>
-      </accounts>
+      <accounts> AccountCellMapItem ( <acctID> 7 </acctID> , <account><acctID> 7 </acctID><balance> 1000000000 </balance><code> .WordStack </code><storage> 0 |-> 10 </storage><nonce> 1 </nonce></account> ) </accounts>
       <txOrder> .List </txOrder>
       <txPending> .List </txPending>
-      <messages> .MessageCellBag </messages>
+      <messages> .MessageCellMap </messages>
     </network>
   </ethereum>
 </generatedTop>
