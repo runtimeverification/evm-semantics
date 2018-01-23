@@ -12,8 +12,8 @@ clean:
 
 build: .build/ocaml/driver-kompiled/interpreter .build/java/driver-kompiled/timestamp
 
-# Get and Build Dependencies
-# --------------------------
+# Dependencies
+# ------------
 
 K_SUBMODULE=$(CURDIR)/.build/k
 BUILD_LOCAL=$(CURDIR)/.build/local
@@ -47,8 +47,10 @@ ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 
 K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
 
+# Building
+# --------
+
 # Tangle definition from *.md files
-# ---------------------------------
 
 k_files:=driver.k data.k evm.k analysis.k krypto.k verification.k
 ocaml_files:=$(patsubst %,.build/ocaml/%,$(k_files))
@@ -67,16 +69,15 @@ defn: $(defn_files)
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:ocaml $< > $@
 
-# Backend Builds
-# --------------
-
 # Java Backend
+
 .build/java/driver-kompiled/timestamp: $(java_files) deps
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/java
 
 # OCAML Backend
+
 .build/ocaml/driver-kompiled/interpreter: $(ocaml_files) KRYPTO.ml deps
 	@echo "== kompile: $@"
 	eval $(shell opam config env) \
@@ -96,6 +97,8 @@ defn: $(defn_files)
 # Tests
 # -----
 
+test: vm-test bchain-test proof-test
+
 split-tests: vm-tests split-bchain-tests split-proof-tests
 
 tests/ethereum-tests/make.timestamp:
@@ -109,9 +112,6 @@ tests/%/make.timestamp: tests/ethereum-tests/%.json
 	tests/split-test.py $< $(dir $@)
 	touch $@
 
-bchain_tests=$(wildcard tests/BlockchainTests/*/*/*/*.json)
-vm_tests=$(wildcard tests/ethereum-tests/VMTests/*/*.json)
-all_tests=$(vm_tests) $(bchain_tests)
 slow_tests=$(wildcard tests/VMTests/vmPerformance/*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Constantinople.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*/*.json) \
@@ -119,43 +119,46 @@ slow_tests=$(wildcard tests/VMTests/vmPerformance/*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000*/*.json) \
    $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth_d1g0v0/*.json)
 
-passing_tests=$(filter-out $(slow_tests), $(all_tests))
+# VMTests
+
+vm_tests=$(wildcard tests/ethereum-tests/VMTests/*/*.json)
 passing_vm_tests=$(filter-out $(slow_tests), $(vm_tests))
-passing_bchain_tests=$(filter-out $(slow_tests), $(bchain_tests))
-passing_targets=$(passing_tests:=.test)
-passing_vm_targets=$(passing_vm_tests:=.test)
-passing_bchain_targets=$(passing_bchain_tests:=.test)
 
-test: $(passing_targets)
-vm-test: $(passing_vm_targets)
-bchain-test: $(passing_bchain_targets)
-
-# ### VMTests
-
-tests/ethereum-tests/VMTests/%: tests/ethereum-tests/make.timestamp
+vm-test: $(passing_vm_tests:=.test)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build
 	./vmtest $<
 
-# ### BlockchainTests
+tests/ethereum-tests/VMTests/%: tests/ethereum-tests/make.timestamp
 
-split-bchain-tests: \
-				  $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json))
+# BlockchainTests
+
+bchain_tests=$(wildcard tests/BlockchainTests/*/*/*/*.json)
+passing_bchain_tests=$(filter-out $(slow_tests), $(bchain_tests))
+
+bchain-test: $(passing_bchain_tests:=.test)
 
 tests/BlockchainTests/%.test: tests/BlockchainTests/% build
 	./blockchaintest $<
 
-# ### Proof Tests
+split-bchain-tests: $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json))
+
+# Proof Tests
 
 proof_dir=tests/proofs
-proof_files=$(proof_dir)/sum-to-n-spec.k \
-			$(proof_dir)/hkg/allowance-spec.k \
-			$(proof_dir)/hkg/approve-spec.k \
-			$(proof_dir)/hkg/balanceOf-spec.k \
-			$(proof_dir)/hkg/transfer-else-spec.k $(proof_dir)/hkg/transfer-then-spec.k \
-			$(proof_dir)/hkg/transferFrom-else-spec.k $(proof_dir)/hkg/transferFrom-then-spec.k
+proof_tests=$(proof_dir)/sum-to-n-spec.k \
+            $(proof_dir)/hkg/allowance-spec.k \
+            $(proof_dir)/hkg/approve-spec.k \
+            $(proof_dir)/hkg/balanceOf-spec.k \
+            $(proof_dir)/hkg/transfer-else-spec.k $(proof_dir)/hkg/transfer-then-spec.k \
+            $(proof_dir)/hkg/transferFrom-else-spec.k $(proof_dir)/hkg/transferFrom-then-spec.k
 
-split-proof-tests: $(proof_files)
+proof-test: $(proof_tests:=.test)
+
+tests/proofs/%.test: tests/proofs/% build
+	./Build prove $<
+
+split-proof-tests: $(proof_tests)
 
 tests/proofs/sum-to-n-spec.k: proofs/sum-to-n.md
 	@echo "==  tangle: $@"
