@@ -28,8 +28,8 @@ lint_krun() {
     xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
 }
 
-# Runners
-# -------
+# Environment Setup
+# -----------------
 
 run_env() {
     local run_file=$1
@@ -51,6 +51,9 @@ run_env() {
     export LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
     eval $(opam config env)
 }
+
+# Runners
+# -------
 
 run_krun() {
     local run_file=$1 ; shift
@@ -97,9 +100,6 @@ run_kdebug() {
     progress "debugging: $1"
     ( run_krun "$1" java --debug --debugger )
 }
-
-# Testers
-# -------
 
 run_test() {
     test_file="$1"; shift
