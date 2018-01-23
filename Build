@@ -98,7 +98,7 @@ run_proof() {
 
 run_kdebug() {
     progress "debugging: $1"
-    ( run_krun "$1" java --debug --debugger )
+    ( run_krun "$1" java --debugger )
 }
 
 run_test() {
