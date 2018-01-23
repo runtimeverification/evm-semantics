@@ -138,17 +138,18 @@ case "$run_command" in
 
     # Running
     run)   run_krun   "$1" ;;
-    test)  run_test   "$1" ;;
     debug) run_kdebug "$1" ;;
     prove) run_proof  "$1" ;;
 
-    *)             echo "
+    # Testing
+    test)  run_test   "$1" ;;
+
+    *) echo "
     usage:
 
        # Running
        # -------
        $0 run   <pgm>   Run a single EVM program
-       $0 test  <pgm>   Run a single EVM program like it's a test
        $0 debug <pgm>   Run a single EVM program in the debugger
        $0 prove <spec>  Attempt to prove the specification using K's RL prover
 
@@ -159,5 +160,11 @@ case "$run_command" in
        $ ./Build run   tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
        $ ./Build debug tests/gas-analysis/sumTo10.evm
        $ ./Build prove tests/proofs/sum-to-n-spec.k
+
+       # Testing
+       # -------
+       $0 test  <pgm>   Run a single EVM program like it's a test
+
+       Note: This command is more for devs and CI servers.
 " ; exit ;;
 esac
