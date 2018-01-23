@@ -97,6 +97,9 @@ defn: $(defn_files)
 # Tests
 # -----
 
+# Override this with `make TEST=echo` to list tests instead of running
+TEST=./kevm test
+
 test-all: vm-test-all bchain-test-all proof-test-all
 test: vm-test bchain-test proof-test
 
@@ -119,7 +122,7 @@ vm-test-all: $(vm_tests:=.test)
 vm-test: $(quick_vm_tests:=.test)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build
-	./vmtest $<
+	$(TEST) $<
 
 # BlockchainTests
 
@@ -135,7 +138,7 @@ bchain-test-all: $(bchain_tests:=.test)
 bchain-test: $(quick_bchain_tests:=.test)
 
 tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/% build
-	./blockchaintest $<
+	$(TEST) $<
 
 # ProofTests
 
@@ -151,7 +154,7 @@ proof-test-all: proof-test
 proof-test: $(proof_tests:=.test)
 
 tests/proofs/%.test: tests/proofs/% build
-	./Build prove $<
+	$(TEST) $<
 
 split-proof-tests: $(proof_tests)
 
