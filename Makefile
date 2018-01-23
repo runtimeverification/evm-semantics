@@ -1,7 +1,8 @@
 # Common to all versions of K
 # ===========================
 
-.PHONY: all clean deps ocaml-deps build defn vm-tests split-tests split-bchain-tests split-proof-tests test sphinx
+.PHONY: all clean deps ocaml-deps build defn sphinx \
+		vm-tests split-tests split-bchain-tests split-proof-tests test
 
 all: build split-tests
 
