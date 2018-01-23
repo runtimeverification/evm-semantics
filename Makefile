@@ -143,7 +143,7 @@ tests/proofs/hkg/%-spec.k: proofs/hkg.md
 # Java Backend Specific
 # ---------------------
 
-.build/java/driver-kompiled/timestamp: $(java_files)
+.build/java/driver-kompiled/timestamp: $(java_files) deps
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/java
@@ -151,7 +151,7 @@ tests/proofs/hkg/%-spec.k: proofs/hkg.md
 # OCAML Backend Specific
 # ----------------------
 
-.build/ocaml/driver-kompiled/interpreter: $(ocaml_files) KRYPTO.ml
+.build/ocaml/driver-kompiled/interpreter: $(ocaml_files) KRYPTO.ml deps
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/ocaml \
