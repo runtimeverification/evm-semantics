@@ -137,9 +137,9 @@ run_command="$1" ; shift
 case "$run_command" in
 
     # Running
-    run)   run_krun   "$1" ;;
-    debug) run_kdebug "$1" ;;
-    prove) run_proof  "$1" ;;
+    run)   run_krun   "$1" ocaml | lint_krun ;;
+    debug) run_kdebug "$1"                   ;;
+    prove) run_proof  "$1"                   ;;
 
     # Testing
     test)  run_test   "$1" ;;
