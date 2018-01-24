@@ -1,8 +1,8 @@
 # Common to all versions of K
 # ===========================
 
-.PHONY: all clean deps ocaml-deps build defn sphinx \
-		vm-tests split-tests split-bchain-tests split-proof-tests test
+.PHONY: all clean deps ocaml-deps build defn sphinx split-tests \
+		test test-all vm-test vm-test-all bchain-test bchain-test-all proof-test proof-test-all
 
 all: build split-tests
 
@@ -97,53 +97,47 @@ defn: $(defn_files)
 # Tests
 # -----
 
+test-all: vm-test-all bchain-test-all proof-test-all
 test: vm-test bchain-test proof-test
 
-split-tests: vm-tests split-bchain-tests split-proof-tests
+split-tests: tests/ethereum-tests/make.timestamp split-proof-tests
 
 tests/ethereum-tests/make.timestamp:
 	@echo "==  git submodule: cloning upstreams test repository"
 	git submodule update --init -- tests/ethereum-tests
 	touch $@
 
-tests/%/make.timestamp: tests/ethereum-tests/%.json
-	@echo "==   split: $@"
-	mkdir -p $(dir $@)
-	tests/split-test.py $< $(dir $@)
-	touch $@
-
-slow_tests=$(wildcard tests/VMTests/vmPerformance/*/*.json) \
-   $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Constantinople.json) \
-   $(wildcard tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*/*.json) \
-   $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000*/*.json) \
-   $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000*/*.json) \
-   $(wildcard tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth_d1g0v0/*.json)
+tests/ethereum-tests/%.json: tests/ethereum-tests/make.timestamp
 
 # VMTests
 
 vm_tests=$(wildcard tests/ethereum-tests/VMTests/*/*.json)
-passing_vm_tests=$(filter-out $(slow_tests), $(vm_tests))
+slow_vm_tests=$(wildcard tests/ethereum-tests/VMTests/vmPerformance/*.json)
+quick_vm_tests=$(filter-out $(slow_vm_tests), $(vm_tests))
 
-vm-test: $(passing_vm_tests:=.test)
+vm-test-all: $(vm_tests:=.test)
+vm-test: $(quick_vm_tests:=.test)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build
 	./vmtest $<
 
-tests/ethereum-tests/VMTests/%: tests/ethereum-tests/make.timestamp
-
 # BlockchainTests
 
-bchain_tests=$(wildcard tests/BlockchainTests/*/*/*/*.json)
-passing_bchain_tests=$(filter-out $(slow_tests), $(bchain_tests))
+bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)
+slow_bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*.json) \
+                  $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000*.json) \
+                  $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000*.json) \
+                  $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth_d1g0v0.json)
+                  # $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Constantinople.json)
+quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(bchain_tests))
 
-bchain-test: $(passing_bchain_tests:=.test)
+bchain-test-all: $(bchain_tests:=.test)
+bchain-test: $(quick_bchain_tests:=.test)
 
-tests/BlockchainTests/%.test: tests/BlockchainTests/% build
+tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/% build
 	./blockchaintest $<
 
-split-bchain-tests: $(patsubst tests/ethereum-tests/%.json,tests/%/make.timestamp, $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json))
-
-# Proof Tests
+# ProofTests
 
 proof_dir=tests/proofs
 proof_tests=$(proof_dir)/sum-to-n-spec.k \
@@ -153,6 +147,7 @@ proof_tests=$(proof_dir)/sum-to-n-spec.k \
             $(proof_dir)/hkg/transfer-else-spec.k $(proof_dir)/hkg/transfer-then-spec.k \
             $(proof_dir)/hkg/transferFrom-else-spec.k $(proof_dir)/hkg/transferFrom-then-spec.k
 
+proof-test-all: proof-test
 proof-test: $(proof_tests:=.test)
 
 tests/proofs/%.test: tests/proofs/% build
