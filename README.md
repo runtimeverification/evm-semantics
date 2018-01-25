@@ -39,7 +39,7 @@ Using the Definition
 ### Dependencies
 
 -   `./Build` requires `xmllint` to pretty-print configurations when running programs/tests.
--   When developing, the `*.k` files are generated from the `*.md` files using [Pandoc](https://pandoc.org).
+-   When developing, the `*.k` files are generated from the `*.md` files using [Pandoc >= 1.17](https://pandoc.org).
 -   For generating the Jello Paper, the [Sphinx Documentation Generation] tool is used.
     Additionally, you'll need to install the Python `pygments` for K available in the [K Editor Support] repository.
 
@@ -221,8 +221,6 @@ For more information about [The K Framework](http://kframework.org), refer to th
 -   [Reachability Logic Resources](http://fsl.cs.illinois.edu/index.php/Reachability_Logic_in_K)
 -   [Matching Logic Resources](http://fsl.cs.illinois.edu/index.php/Matching_Logic)
 -   [Logical Frameworks](http://dl.acm.org/citation.cfm?id=208700): Discussion of logical frameworks.
-
-We are using [GNU Parallel](https://www.gnu.org/software/parallel/) to assist in testing these semantics in parallel.
 
 [Sphinx Documentation Generation]: <http://sphinx-doc.org>
 [K Reachability Logic Prover]: <http://fsl.cs.illinois.edu/FSL/papers/2016/stefanescu-park-yuwen-li-rosu-2016-oopsla/stefanescu-park-yuwen-li-rosu-2016-oopsla-public.pdf>
