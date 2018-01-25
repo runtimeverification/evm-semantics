@@ -30,18 +30,6 @@ lint_krun_uiuck() {
 
 lint_krun_rvk() { cat - ; }
 
-ensure_k() {
-    k_path="k-distribution/target/release/k/bin"
-    case "${K_VERSION:-}" in
-        uiuck)  k_path="uiuc-k/$k_path" ;;
-        rvk)    k_path="rv-k/$k_path"   ;;
-        *)      die "Bad K_VERSION: '${K_VERSION:-}'. Should be one of 'uiuck' or 'rvk'." ;;
-    esac
-    export PATH="$(pwd)/tests/ci/$k_path:$PATH"
-    type kompile >/dev/null || die "No K install found on PATH=$PATH."
-    progress "Using $K_VERSION"
-}
-
 # Runners
 # -------
 
@@ -139,10 +127,10 @@ run_command="$1" ; shift
 case "$run_command" in
 
     # Running
-    run)   ensure_k ; run_krun   "$1" ;;
-    test)  ensure_k ; run_test   "$1" ;;
-    debug) ensure_k ; run_kdebug "$1" ;;
-    prove) ensure_k ; run_proof  "$1" ;;
+    run)   run_krun   "$1" ;;
+    test)  run_test   "$1" ;;
+    debug) run_kdebug "$1" ;;
+    prove) run_proof  "$1" ;;
 
     *)             echo "
     K_VERSION: $K_VERSION
