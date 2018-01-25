@@ -33,22 +33,31 @@ lint_krun_rvk() { cat - ; }
 # Runners
 # -------
 
+run_env() {
+    local run_file=$1
+    local cmode=""
+    local cschedule=${cSCHEDULE:-DEFAULT}
+    case "$run_file" in
+       *gas-analysis/*   ) cmode="GASANALYZE" ;;
+       *VMTests/*        ) cmode="VMTESTS"    ;;
+       *BlockchainTests/*) cmode="NORMAL"     ;;
+       *proofs/*         ) cmode="NORMAL"     ;;
+       *                 ) die "Don't know how to set 'MODE' for '$run_file'" ;;
+    esac
+    export cMODE="$cmode"
+    export cSCHEDULE="$cschedule"
+}
+
 run_uiuck() {
     local run_file=$1 ; shift
-    local krun_opts=()
+    run_env "$run_file"
     export K_OPTS=-Xss500m
-    export cSCHEDULE=${cSCHEDULE:-DEFAULT}
-    case "$run_file" in
-       *gas-analysis/*   ) krun_opts=( -cMODE=GASANALYZE "$run_file" )             ;;
-       *VMTests/*        ) krun_opts=( -cMODE=VMTESTS    "$run_file" )             ;;
-       *BlockchainTests/*) krun_opts=( -cMODE=NORMAL     "$run_file" )             ;;
-       *                 ) die "Don't know how to set 'krun_opts' for '$run_file'" ;;
-    esac
-    krun --directory .build/$K_VERSION/ -cSCHEDULE=$cSCHEDULE "${krun_opts[@]}" "$@"
+    krun --directory .build/$K_VERSION/ -cSCHEDULE="$cSCHEDULE" -cMODE="$cMODE" "$run_file" "$@"
 }
 
 run_rvk() {
     test_file="$1"
+    run_env "$test_file"
     (   set +e
         interpreter="$(dirname "$0")/.build/rvk/driver-kompiled/interpreter"
         kast="$(mktemp)"
@@ -72,8 +81,7 @@ run_proof() {
     [[ "$K_VERSION" == 'uiuck' ]] || die "Proofs must be run with 'K_VERSION=uiuck'."
     local proof_file="$1" ; shift
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
-    local cSCHEDULE=${cSCHEDULE:-DEFAULT}
-    local cMODE=${cMODE:-NORMAL}
+    run_env "$proof_file"
     export K_OPTS=-Xmx2G
     ( krun --directory .build/$K_VERSION/ -cSCHEDULE=$cSCHEDULE -cMODE=$cMODE \
          --z3-executable tests/templates/dummy-proof-input.json --prove "$proof_file" \
