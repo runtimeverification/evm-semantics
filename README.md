@@ -62,6 +62,14 @@ sudo apt-get update
 sudo apt-get install make gcc maven openjdk-8-jdk flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev
 ```
 
+### Installing/Building
+
+After installing the above dependencies, the following command will build submodule dependencies and build KEVM:
+
+```sh
+make all
+```
+
 ### Example Runs
 
 Run the file `tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json`:
