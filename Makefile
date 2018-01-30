@@ -100,8 +100,8 @@ defn: $(defn_files)
 # Override this with `make TEST=echo` to list tests instead of running
 TEST=./kevm test
 
-test-all: vm-test-all bchain-test-all proof-test-all
-test: vm-test bchain-test proof-test
+test-all: vm-test-all bchain-test-all proof-test-all interactive-test-all
+test: vm-test bchain-test proof-test interactive-test
 
 split-tests: tests/ethereum-tests/make.timestamp split-proof-tests
 
@@ -167,6 +167,17 @@ tests/proofs/hkg/%-spec.k: proofs/hkg.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
+
+# InteractiveTests
+
+interactive-test-all: interactive-test
+interactive-test: \
+	tests/interactive/gas-analysis/sumTo10.evm.test \
+	tests/interactive/add0.json.test \
+	tests/interactive/log3_MaxTopic_d0g0v0.json.test
+
+tests/interactive/%.test: tests/interactive/% tests/interactive/%.out build
+	$(TEST) $<
 
 # Sphinx HTML Documentation
 # -------------------------
