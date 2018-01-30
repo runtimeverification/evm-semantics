@@ -102,21 +102,21 @@ run_kdebug() {
 run_test() {
     test_file="$1"; shift
     case "$test_file" in
-        *proofs/*      ) ( pretty_diff --label expected <(echo "#True") \
-                                       --label actual   <(run_proof "$test_file")
-                         )
-                         ;;
-        *gas-analysis/*) [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
-                         ( pretty_diff --label expected <(cat "$output_expected_file") \
-                                       --label actual   <(run_krun "$test_file" ocaml | lint_krun )
-                         )
-                         ;;
-        *              ) output_expected_file=tests/templates/output-success.txt
-                         [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
-                         ( pretty_diff --label expected <(cat "$output_expected_file") \
-                                       --label actual   <(run_interpreter "$test_file" )
-                         )
-                         ;;
+        *proofs/*     ) ( pretty_diff --label expected <(echo "#True") \
+                                      --label actual   <(run_proof "$test_file")
+                        )
+                        ;;
+        *interactive/*) [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
+                        ( pretty_diff --label expected <(cat "$output_expected_file") \
+                                      --label actual   <(run_krun "$test_file" ocaml | lint_krun )
+                        )
+                        ;;
+        *             ) output_expected_file=tests/templates/output-success.txt
+                        [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
+                        ( pretty_diff --label expected <(cat "$output_expected_file") \
+                                      --label actual   <(run_interpreter "$test_file" )
+                        )
+                        ;;
     esac
 }
 
