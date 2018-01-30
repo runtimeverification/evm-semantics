@@ -55,10 +55,10 @@ Running Proofs
 
 The verification part is compatible with uiuck.
 Proofs generated from these markdown files will be placed in `tests/proofs/...`.
-Using the `./Build` script, you can compile the definition and run the proofs.
-See `./Build help` for more information about compiling and running programs/proofs.
+Using the `./kevm` script, you can run the proofs.
+See `./kevm help` for more information about compiling and running programs/proofs.
 
 Note that:
 
-1.  It may take a long time (probably more than half an hour) to verify the `transfer` and `transferFrom` function of token program.
+1.  It may take a long time (up to 10s of minutes) to verify the `transfer` and `transferFrom` function of token program.
 2.  The verification of `token-buggy-spec.k` is not able to go through.

@@ -38,7 +38,7 @@ Using the Definition
 
 ### Dependencies
 
--   `./Build` requires `xmllint` to pretty-print configurations when running programs/tests.
+-   `./kevm` requires `xmllint` to pretty-print configurations when running programs/tests.
 -   When developing, the `*.k` files are generated from the `*.md` files using [Pandoc >= 1.17](https://pandoc.org).
 -   For generating the Jello Paper, the [Sphinx Documentation Generation] tool is used.
     Additionally, you'll need to install the Python `pygments` for K available in the [K Editor Support] repository.
@@ -89,7 +89,7 @@ The script `with-k` sets up the development environment with the fresh copy of K
 Run the file `tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json`:
 
 ```sh
-$ ./Build run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
+$ ./kevm run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
 
 # Which actually calls:
 $ krun --directory .build/uiuck/ -cSCHEDULE=DEFAULT -cMODE=VMTESTS tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
@@ -98,14 +98,14 @@ $ krun --directory .build/uiuck/ -cSCHEDULE=DEFAULT -cMODE=VMTESTS tests/ethereu
 Run the same file as a test:
 
 ```sh
-$ ./Build test tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
+$ ./kevm test tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
 ```
 
-To run proofs, you can similarly use `./Build`.
+To run proofs, you can similarly use `./kevm`.
 For example, to prove the specification `tests/proofs/hkg/transfer-else-spec.k`:
 
 ```sh
-$ ./Build prove tests/proofs/hkg/transfer-else-spec.k
+$ ./kevm prove tests/proofs/hkg/transfer-else-spec.k
 
 # Which actually calls:
 $ krun --directory .build/uiuck/ -cSCHEDULE=DEFAULT -cMODE=NORMAL \
@@ -116,7 +116,7 @@ $ krun --directory .build/uiuck/ -cSCHEDULE=DEFAULT -cMODE=NORMAL \
 Finally, if you want to debug a given program (by stepping through its execution), you can use the `debug` option:
 
 ```sh
-$ ./Build debug tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
+$ ./kevm debug tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
 ...
 KDebug> s
 1 Step(s) Taken.
@@ -155,7 +155,7 @@ These are hard requirements (**must** be met before review), and they **must** b
 These are hard requirements (**must** be met before review), but they only have to be true for the tip of the PR before review.
 
 -   Every test in the repository must pass.
-    We will test this with `./tests/ci/with-k bothk ./Build test-all` (or `./tests/ci/with-k bothk ./Build partest-all` on parallel machines).
+    We will test this with `./tests/ci/with-k bothk ./kevm test-all` (or `./tests/ci/with-k bothk ./kevm partest-all` on parallel machines).
 
 ### Soft - Every Commit
 
