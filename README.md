@@ -154,7 +154,7 @@ These are hard requirements (**must** be met before review), and they **must** b
 These are hard requirements (**must** be met before review), but they only have to be true for the tip of the PR before review.
 
 -   Every test in the repository must pass.
-    We will test this with `./tests/ci/with-k bothk ./kevm test-all` (or `./tests/ci/with-k bothk ./kevm partest-all` on parallel machines).
+    We will test this with `make split-tests ; make test -j12`.
 
 ### Soft - Every Commit
 
