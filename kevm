@@ -91,8 +91,7 @@ run_proof() {
     run_env "$proof_file"
     export K_OPTS=-Xmx2G
     ( krun --directory .build/java/ -cSCHEDULE=$cSCHEDULE -cMODE=$cMODE \
-         --z3-executable tests/templates/dummy-proof-input.json --prove "$proof_file" \
-         </dev/null # grumble grumble `krun --prove` consumes stdin
+         --z3-executable tests/templates/dummy-proof-input.json --prove "$proof_file"
     )
 }
 
@@ -104,7 +103,7 @@ run_kdebug() {
 run_test() {
     test_file="$1"; shift
     case "$test_file" in
-        *proofs/*      ) ( pretty_diff --label expected <(echo "true") \
+        *proofs/*      ) ( pretty_diff --label expected <(echo "#True") \
                                        --label actual   <(run_proof "$test_file")
                          )
                          ;;
