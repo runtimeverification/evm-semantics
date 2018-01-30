@@ -72,37 +72,32 @@ make all
 
 ### Example Runs
 
+After building the definition, you can run the definition using `./kevm`.
+Read the `./kevm` script for examples of the actual invocations of `krun` that `./kevm` makes.
+
 Run the file `tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json`:
 
 ```sh
-$ ./kevm run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
-
-# Which actually calls:
-$ krun --directory .build/uiuck/ -cSCHEDULE=DEFAULT -cMODE=VMTESTS tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
+./kevm run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
 ```
 
 Run the same file as a test:
 
 ```sh
-$ ./kevm test tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
+./kevm test tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
 ```
 
 To run proofs, you can similarly use `./kevm`.
 For example, to prove the specification `tests/proofs/hkg/transfer-else-spec.k`:
 
 ```sh
-$ ./kevm prove tests/proofs/hkg/transfer-else-spec.k
-
-# Which actually calls:
-$ krun --directory .build/uiuck/ -cSCHEDULE=DEFAULT -cMODE=NORMAL \
-         --z3-executable tests/templates/dummy-proof-input.json --prove tests/proofs/hkg/transferFrom-else-spec.k \
-         </dev/null
+./kevm prove tests/proofs/hkg/transfer-else-spec.k
 ```
 
 Finally, if you want to debug a given program (by stepping through its execution), you can use the `debug` option:
 
 ```sh
-$ ./kevm debug tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
+./kevm debug tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
 ...
 KDebug> s
 1 Step(s) Taken.
