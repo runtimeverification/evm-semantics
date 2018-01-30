@@ -106,6 +106,24 @@ KDebug> p
 KDebug>
 ```
 
+Running Tests
+-------------
+
+The tests are run using the supplied `Makefile`.
+First, run `make split-tests` to generate some of the tests from the markdown files.
+
+The following subsume all other tests:
+
+-   `make test`: All of the quick tests.
+-   `make test-all`: All of the quick and slow tests.
+
+These are the individual test-suites (all of these can be suffixed with `-all` to also run slow tests):
+
+-   `make vm-test`: VMTests from the [Ethereum Test Set].
+-   `make bchain-test`: Subset of BlockchainTests from the [Ethereum Test Set].
+-   `make proof-test`: Proofs that are supplied in [proofs](proofs/README.md) subdirectory.
+-   `make interactive-test`: Tests of the `./kevm` command and of [analysis tools](analysis.md).
+
 Contributing
 ------------
 
@@ -193,7 +211,6 @@ Resources
 
 -   [EVM Yellowpaper](https://github.com/ethereum/yellowpaper): Original specification of EVM.
 -   [LEM Semantics of EVM](https://github.com/pirapira/eth-isabelle)
--   [Ethereum Test Set](https://github.com/ethereum/tests)
 
 For more information about [The K Framework](http://kframework.org), refer to these sources:
 
@@ -206,3 +223,4 @@ For more information about [The K Framework](http://kframework.org), refer to th
 [Sphinx Documentation Generation]: <http://sphinx-doc.org>
 [K Reachability Logic Prover]: <http://fsl.cs.illinois.edu/FSL/papers/2016/stefanescu-park-yuwen-li-rosu-2016-oopsla/stefanescu-park-yuwen-li-rosu-2016-oopsla-public.pdf>
 [K Editor Support]: <https://github.com/kframework/k-editor-support>
+[Ethereum Test Set]: <https://github.com/ethereum/tests>
