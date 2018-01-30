@@ -48,7 +48,19 @@ This repository contains the build-products for both backends in `.build/java/` 
 -   For generating the Jello Paper, the [Sphinx Documentation Generation] tool is used.
     Additionally, you'll need to install the Python `pygments` for K available in the [K Editor Support] repository.
 
+The following are needed for building/running K definitions in general:
 
+-   GNU [Bison](https://www.gnu.org/software/bison/), [Flex](https://github.com/westes/flex), and [Autoconf](http://www.gnu.org/software/autoconf/).
+-   GNU [libmpfr](http://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
+-   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
+-   [Opam](https://opam.ocaml.org/doc/Install.html), **important**: Ubuntu users prior to 15.04 **must** build from source, as the Ubuntu install for 14.10 and prior is broken.
+
+On Ubuntu >= 15.04 (for example):
+
+```sh
+sudo apt-get update
+sudo apt-get install make gcc maven openjdk-8-jdk flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev
+```
 
 ### Example Runs
 
