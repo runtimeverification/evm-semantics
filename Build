@@ -145,7 +145,7 @@ case "$run_command" in
     test)  run_test   "$1" ;;
 
     *) echo "
-    usage:
+    usage: $0 <cmd> <file> <K args>*
 
        # Running
        # -------
@@ -153,17 +153,17 @@ case "$run_command" in
        $0 debug <pgm>   Run a single EVM program in the debugger
        $0 prove <spec>  Attempt to prove the specification using K's RL prover
 
-       Note: <pgm> and <spec> here are paths to files, *not* test lists.
-       These files should be Ethereum programs (or specifications).
+       Note: <pgm> and <spec> here are paths to files.
+       These files should be Ethereum programs/specifications.
 
        Examples:
-       $ ./Build run   tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
-       $ ./Build debug tests/gas-analysis/sumTo10.evm
-       $ ./Build prove tests/proofs/sum-to-n-spec.k
+       $ $0 run   tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
+       $ $0 debug tests/gas-analysis/sumTo10.evm
+       $ $0 prove tests/proofs/sum-to-n-spec.k
 
        # Testing
        # -------
-       $0 test  <pgm>   Run a single EVM program like it's a test
+       $0 test <pgm>    Run a single EVM program like it's a test
 
        Note: This command is more for devs and CI servers.
 " ; exit ;;
