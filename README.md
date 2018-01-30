@@ -36,6 +36,11 @@ Finally, these files pertain to the [K Reachability Logic Prover]:
 Using the Definition
 --------------------
 
+### K Backends
+
+There are two backends of K available, the OCAML backend for concrete execution and the Java backend for symbolic reasoning and proofs.
+This repository contains the build-products for both backends in `.build/java/` and `.build/ocaml/`.
+
 ### Dependencies
 
 -   `./kevm` requires `xmllint` to pretty-print configurations when running programs/tests.
@@ -43,12 +48,7 @@ Using the Definition
 -   For generating the Jello Paper, the [Sphinx Documentation Generation] tool is used.
     Additionally, you'll need to install the Python `pygments` for K available in the [K Editor Support] repository.
 
-### K Version
 
-There are two versions of K available, [RV-K](https://github.com/runtimeverification/k) and [UIUC-K](https://github.com/kframework/k).
-This repository contains the build-products for both versions of K (there are slight differences) in `.build/$K_VERSION/`.
-Use RV-K for fast concrete execution, and UIUC-K for any symbolic reasoning.
-Make sure that you have set the `K_VERSION` environment variable in your shell (add `export K_VERSION=uiuck` or `export K_VERSION=rvk` to your `.bashrc` or equivalent).
 
 ### Example Runs
 
