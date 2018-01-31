@@ -161,27 +161,19 @@ proof_tests=${proof_dir}/sum-to-n-spec.k \
             ${proof_dir}/erc20/viper/transfer-failure-2-spec.k \
             ${proof_dir}/erc20/viper/transferFrom-success-1-spec.k \
             ${proof_dir}/erc20/viper/transferFrom-success-2-spec.k \
-            ${proof_dir}/erc20/viper/transferFrom-failure-1-a-spec.k \
-            ${proof_dir}/erc20/viper/transferFrom-failure-1-b-spec.k \
-            ${proof_dir}/erc20/viper/transferFrom-failure-1-c-spec.k \
+            ${proof_dir}/erc20/viper/transferFrom-failure-1-spec.k \
             ${proof_dir}/erc20/viper/transferFrom-failure-2-spec.k \
             ${proof_dir}/erc20/hkg/balanceOf-spec.k \
             ${proof_dir}/erc20/hkg/allowance-spec.k \
             ${proof_dir}/erc20/hkg/approve-spec.k \
             ${proof_dir}/erc20/hkg/transfer-success-1-spec.k \
             ${proof_dir}/erc20/hkg/transfer-success-2-spec.k \
-            ${proof_dir}/erc20/hkg/transfer-failure-1-a-spec.k \
-            ${proof_dir}/erc20/hkg/transfer-failure-1-b-spec.k \
-            ${proof_dir}/erc20/hkg/transfer-failure-2-a-spec.k \
-            ${proof_dir}/erc20/hkg/transfer-failure-2-b-spec.k \
+            ${proof_dir}/erc20/hkg/transfer-failure-1-spec.k \
+            ${proof_dir}/erc20/hkg/transfer-failure-2-spec.k \
             ${proof_dir}/erc20/hkg/transferFrom-success-1-spec.k \
             ${proof_dir}/erc20/hkg/transferFrom-success-2-spec.k \
-            ${proof_dir}/erc20/hkg/transferFrom-failure-1-a-spec.k \
-            ${proof_dir}/erc20/hkg/transferFrom-failure-1-b-spec.k \
-            ${proof_dir}/erc20/hkg/transferFrom-failure-1-c-spec.k \
-            ${proof_dir}/erc20/hkg/transferFrom-failure-2-a-spec.k \
-            ${proof_dir}/erc20/hkg/transferFrom-failure-2-b-spec.k \
-            ${proof_dir}/erc20/hkg/transferFrom-failure-2-c-spec.k
+            ${proof_dir}/erc20/hkg/transferFrom-failure-1-spec.k \
+            ${proof_dir}/erc20/hkg/transferFrom-failure-2-spec.k
 
 proof-test-all: proof-test
 proof-test: $(proof_tests:=.test)
