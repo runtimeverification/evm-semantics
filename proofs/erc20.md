@@ -540,15 +540,8 @@ We split this case into another two sub-cases: one for each disjunct of the side
 Note that the sub-cases are to be disjoined (i.e, OR'ed) to represent the original side-condition.
 
 ```{.k .hkg-spec}
-[transfer-failure-1-a]
-
-+requires:
-    andBool VALUE >Int BAL_FROM
-
-[transfer-failure-1-b]
-
-+requires:
-    andBool VALUE <=Int 0
+    andBool ( VALUE >Int BAL_FROM
+     orBool   VALUE <=Int 0 )
 ```
 
 
@@ -786,34 +779,18 @@ We split the sub-case 1 into another three sub-cases: one for each disjunct of t
 Note that the sub-cases are to be disjoined (i.e, OR'ed) to represent the complete specification.
 
 ```{.k .erc20-spec}
-[transferFrom-failure-1-a]
-+requires:
-    andBool VALUE >Int BAL_FROM
-
-[transferFrom-failure-1-b]
-+requires:
-    andBool BAL_TO +Int VALUE >=Int (2 ^Int 256) // viper overflow check: ( VALUE =/=Int 0 andBool BAL_TO +Word VALUE <Int BAL_TO )
-
-[transferFrom-failure-1-c]
-+requires:
-    andBool VALUE >Int ALLOW
+    andBool ( VALUE >Int BAL_FROM
+     orBool   BAL_TO +Int VALUE >=Int (2 ^Int 256)
+     orBool   VALUE >Int ALLOW )
 ```
 
 ##### HKG-specific:
 The different side-condition for HKG token:
 
 ```{.k .hkg-spec}
-[transferFrom-failure-1-a]
-+requires:
-    andBool VALUE >Int BAL_FROM
-
-[transferFrom-failure-1-b]
-+requires:
-    andBool VALUE >Int ALLOW
-
-[transferFrom-failure-1-c]
-+requires:
-    andBool VALUE <=Int 0
+    andBool ( VALUE >Int BAL_FROM
+     orBool   VALUE >Int ALLOW
+     orBool   VALUE <=Int 0 )
 ```
 
 
