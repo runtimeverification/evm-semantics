@@ -14,27 +14,8 @@ These may be useful for learning KEVM and K (newest to oldest):
 
 To get support for KEVM, please join our [Riot Room](https://riot.im/app/#/room/#k:matrix.org).
 
-This Repository
----------------
-
-The following files constitute the KEVM semantics:
-
--   [krypto.md](krypto) sets up some basic cryptographic primitives.
--   [data.md](data) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
--   [evm.md](evm) is the main KEVM semantics, containing the configuration and transition rules of EVM.
-
-These additional files extend the semantics to make the repository more useful:
-
--   [driver.md](driver) is an execution harness for KEVM, providing a simple language for describing tests/programs.
--   [analysis.md](analysis) contains any automated analysis tools we develop.
-
-Finally, these files pertain to the [K Reachability Logic Prover]:
-
--   [verification.md](verification) adds helpers for verification efforts.
--   [proofs/README.md](proofs/README) documents proofs we have performed.
-
-Using the Definition
---------------------
+Installing/Building
+-------------------
 
 ### K Backends
 
@@ -90,7 +71,27 @@ make deps
 make
 ```
 
-### Example Runs
+This Repository
+---------------
+
+The following files constitute the KEVM semantics:
+
+-   [krypto.md](krypto) sets up some basic cryptographic primitives.
+-   [data.md](data) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
+-   [evm.md](evm) is the main KEVM semantics, containing the configuration and transition rules of EVM.
+
+These additional files extend the semantics to make the repository more useful:
+
+-   [driver.md](driver) is an execution harness for KEVM, providing a simple language for describing tests/programs.
+-   [analysis.md](analysis) contains any automated analysis tools we develop.
+
+Finally, these files pertain to the [K Reachability Logic Prover]:
+
+-   [verification.md](verification) adds helpers for verification efforts.
+-   [proofs/README.md](proofs/README) documents proofs we have performed.
+
+Example Usage
+-------------
 
 After building the definition, you can run the definition using `./kevm`.
 Read the `./kevm` script for examples of the actual invocations of `krun` that `./kevm` makes.
