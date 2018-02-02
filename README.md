@@ -20,7 +20,7 @@ Installing/Building
 ### K Backends
 
 There are two backends of K available, the OCAML backend for concrete execution and the Java backend for symbolic reasoning and proofs.
-This repository contains the build-products for both backends in `.build/java/` and `.build/ocaml/`.
+This repository generates the build-products for both backends in `.build/java/` and `.build/ocaml/`.
 
 ### Dependencies
 
