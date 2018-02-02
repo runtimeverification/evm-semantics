@@ -8,7 +8,7 @@ Documentation/Support
 
 These may be useful for learning KEVM and K (newest to oldest):
 
--   [Jello Paper](https://jellopaper.org/), generated using [Sphinx Documentation Generation].
+-   [Jello Paper], generated using [Sphinx Documentation Generation].
 -   [20 minute tour of the semantics](https://www.youtube.com/watch?v=tIq_xECoicQNov) at [Devcon3](https://ethereumfoundation.org/devcon3/).
 -   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
 
@@ -22,26 +22,34 @@ Installing/Building
 There are two backends of K available, the OCAML backend for concrete execution and the Java backend for symbolic reasoning and proofs.
 This repository generates the build-products for both backends in `.build/java/` and `.build/ocaml/`.
 
-### Dependencies
+### System Dependencies
 
--   `./kevm` requires `xmllint` to pretty-print configurations when running programs/tests.
--   When developing, the `*.k` files are generated from the `*.md` files using [Pandoc >= 1.17](https://pandoc.org).
--   For generating the Jello Paper, the [Sphinx Documentation Generation] tool is used.
-    Additionally, you'll need to install the Python `pygments` for K available in the [K Editor Support] repository.
+The following are needed for building/running KEVM:
 
-The following are needed for building/running K definitions in general:
-
+-   [Pandoc >= 1.17](https://pandoc.org) is used to generate the `*.k` files from the `*.md` files.
 -   GNU [Bison](https://www.gnu.org/software/bison/), [Flex](https://github.com/westes/flex), and [Autoconf](http://www.gnu.org/software/autoconf/).
 -   GNU [libmpfr](http://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
 -   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
 -   [Opam](https://opam.ocaml.org/doc/Install.html), **important**: Ubuntu users prior to 15.04 **must** build from source, as the Ubuntu install for 14.10 and prior is broken.
     `opam repository` also requires `rsync`.
+-   [`xmllint`](http://xmlsoft.org/xmllint.html) makes the output of `krun` prettier (for using the `./kevm` script).
 
 On Ubuntu >= 15.04 (for example):
 
 ```sh
-sudo apt-get update
 sudo apt-get install make gcc maven openjdk-8-jdk flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev libxml2-utils z3
+```
+
+If you also want to build the [Jello Paper], you'll additionally need:
+
+-   [Sphinx Documentation Generation] tool, and
+-   The [K Editor Support] Python `pygments` package.
+
+```sh
+sudo apt-get install python-pygments python-sphinx
+git clone 'https://github.com/kframework/k-editor-support'
+cd k-editor-support/pygments
+sudo easy_install .
 ```
 
 On ArchLinux:
@@ -64,7 +72,7 @@ homebrew version of flex installed instead of the xcode command line tools versi
 
 ### Installing/Building
 
-After installing the above dependencies, the following command will build submodule dependencies and build KEVM:
+After installing the above dependencies, the following command will build submodule dependencies and then KEVM:
 
 ```sh
 make deps
@@ -241,6 +249,7 @@ For more information about [The K Framework](http://kframework.org), refer to th
 -   [Matching Logic Resources](http://fsl.cs.illinois.edu/index.php/Matching_Logic)
 -   [Logical Frameworks](http://dl.acm.org/citation.cfm?id=208700): Discussion of logical frameworks.
 
+[Jello Paper]: <https://jellopaper.org>
 [Sphinx Documentation Generation]: <http://sphinx-doc.org>
 [K Reachability Logic Prover]: <http://fsl.cs.illinois.edu/FSL/papers/2016/stefanescu-park-yuwen-li-rosu-2016-oopsla/stefanescu-park-yuwen-li-rosu-2016-oopsla-public.pdf>
 [K Editor Support]: <https://github.com/kframework/k-editor-support>
