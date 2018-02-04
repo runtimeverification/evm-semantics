@@ -98,7 +98,7 @@ The extraction mechanism varies by language compilers. For example, in Viper, th
 
 The following lemmas essentially capture the signature extraction mechanisms. It reduces the reasoning efforts of the underlying theorem prover, factoring out the essence of the byte-twiddling operations.
 
-```{.k .uiuck}
+```{.k .java}
   // for viper
   rule #padToWidth(N, #asByteStack(#asWord(WS))) => WS
     requires noOverflow(WS) andBool N ==Int #sizeWordStack(WS)
@@ -186,7 +186,7 @@ The following simplification rules are local, meant to be used in specific conte
 
 These rules are specific to reasoning about EVM programs.
 
-```{.k .uiuck}
+```{.k .java}
   syntax Bool ::= #isConcrete(K) [function, hook(KREFLECTION.isConcrete)]
 
   rule (I1 +Int I2) +Int I3 => I1 +Int (I2 +Int I3) when #isConcrete(I2) andBool #isConcrete(I3)
@@ -305,7 +305,7 @@ Sum to N
 As a demonstration of simple reachability claims involving a circularity, we prove the EVM [Sum to N](proofs/sum-to-n.md) program correct.
 This program sums the numbers from 1 to N (for sufficiently small N), including pre-conditions dis-allowing integer under/overflow and stack overflow.
 
-```{.k .uiuck}
+```{.k .java}
     syntax Map ::= "sumTo" "(" Int ")" [function]
  // ---------------------------------------------
     rule sumTo(N)
@@ -320,6 +320,6 @@ This program sums the numbers from 1 to N (for sufficiently small N), including 
                       ) [macro]
 ```
 
-```{.k .uiuck}
+```{.k .java}
 endmodule
 ```
