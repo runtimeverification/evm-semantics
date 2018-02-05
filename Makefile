@@ -163,6 +163,18 @@ proof_tests=${proof_dir}/sum-to-n-spec.k \
             ${proof_dir}/erc20/viper/transferFrom-success-2-spec.k \
             ${proof_dir}/erc20/viper/transferFrom-failure-1-spec.k \
             ${proof_dir}/erc20/viper/transferFrom-failure-2-spec.k \
+            ${proof_dir}/erc20/zeppelin/totalSupply-spec.k \
+            ${proof_dir}/erc20/zeppelin/balanceOf-spec.k \
+            ${proof_dir}/erc20/zeppelin/allowance-spec.k \
+            ${proof_dir}/erc20/zeppelin/approve-spec.k \
+            ${proof_dir}/erc20/zeppelin/transfer-success-1-spec.k \
+            ${proof_dir}/erc20/zeppelin/transfer-success-2-spec.k \
+            ${proof_dir}/erc20/zeppelin/transfer-failure-1-spec.k \
+            ${proof_dir}/erc20/zeppelin/transfer-failure-2-spec.k \
+            ${proof_dir}/erc20/zeppelin/transferFrom-success-1-spec.k \
+            ${proof_dir}/erc20/zeppelin/transferFrom-success-2-spec.k \
+            ${proof_dir}/erc20/zeppelin/transferFrom-failure-1-spec.k \
+            ${proof_dir}/erc20/zeppelin/transferFrom-failure-2-spec.k \
             ${proof_dir}/erc20/hkg/balanceOf-spec.k \
             ${proof_dir}/erc20/hkg/allowance-spec.k \
             ${proof_dir}/erc20/hkg/approve-spec.k \
@@ -197,33 +209,18 @@ tests/proofs/hkg/%-spec.k: proofs/hkg.md
 
 # #### Viper ERC20
 
-tests/proofs/erc20/viper/%-spec.k: tests/proofs/erc20/viper/tmpl.k tests/proofs/erc20/viper/spec.ini tests/proofs/erc20/viper/pgm.ini
+tests/proofs/erc20/viper/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/spec-viper.ini proofs/erc20/pgm-viper.ini
 	@echo >&2 "==  gen-spec: $@"
 	mkdir -p $(dir $@)
 	python3 tests/gen-spec.py $^ $* > $@
-tests/proofs/erc20/hkg/%-spec.k: tests/proofs/erc20/hkg/tmpl.k tests/proofs/erc20/hkg/spec.ini tests/proofs/erc20/hkg/pgm.ini
+tests/proofs/erc20/zeppelin/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/spec-zeppelin.ini proofs/erc20/pgm-zeppelin.ini
 	@echo >&2 "==  gen-spec: $@"
 	mkdir -p $(dir $@)
 	python3 tests/gen-spec.py $^ $* > $@
-
-tests/proofs/erc20/viper/spec.ini: proofs/erc20.md
-	@echo >&2 "==  tangle: $@"
+tests/proofs/erc20/hkg/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/spec-hkg.ini proofs/erc20/pgm-hkg.ini
+	@echo >&2 "==  gen-spec: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to tangle.lua --metadata=code:erc20-spec $< > $@
-tests/proofs/erc20/hkg/spec.ini: proofs/erc20.md
-	@echo >&2 "==  tangle: $@"
-	mkdir -p $(dir $@)
-	pandoc --from markdown --to tangle.lua --metadata=code:hkg-spec $< > $@
-
-tests/proofs/erc20/%/tmpl.k: proofs/erc20.md
-	@echo >&2 "==  tangle: $@"
-	mkdir -p $(dir $@)
-	pandoc --from markdown --to tangle.lua --metadata=code:tmpl $< > $@
-
-tests/proofs/erc20/%/pgm.ini: proofs/erc20.md
-	@echo >&2 "==  tangle: $@"
-	mkdir -p $(dir $@)
-	pandoc --from markdown --to tangle.lua --metadata=code:$*-pgm $< > $@
+	python3 tests/gen-spec.py $^ $* > $@
 
 # InteractiveTests
 
