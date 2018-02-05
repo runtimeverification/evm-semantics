@@ -88,13 +88,13 @@ We present the specification for each function defined in the ERC20 standard. He
 totalSupply
 -----------
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [totalSupply]
 ```
 
 `<k>` cell specifies that the execution eventually reaches RETURN instruction meaning that the program will successfully terminate. The RETURN instruction says that a 32-byte return value will be stored in the memory at the location RET_ADDR.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 k: #execute => (RETURN RET_ADDR:Int 32 ~> _)
 
 callData: #abiCallData("totalSupply", .TypedArgs)
@@ -104,7 +104,7 @@ callData: #abiCallData("totalSupply", .TypedArgs)
 
 The other entries are represented by the wildcard symbol `_`, meaning that they are not relevant to the functional correctness of the program.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 localMem:
       .Map
     =>
@@ -116,25 +116,25 @@ localMem:
 
 `<gas>` cell specifies the maximum gas amount. Here we give a loose upper-bound for the demonstration purpose. In practice, one should set a reasonable amount of the gas limit to see if the program does not consume too much gas (i.e., no gas leakage).
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 gas: {gascap} => _
 ```
 
 `<log>` cell specifies that no log is generated during the execution.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 log: _
 ```
 
 `<refund>` cell specifies that no gas is refunded. Note that it does not mean it consumes all the provided gas. The gas refund is different from returning the remaining gas after the execution. It is another notion to capture some specific gas refund events that happen, for example, when an unused storage entry is re-claimed (i.e., garbage-collected). The following specification ensures that no such event happens during the execution of the current function.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 refund: _
 ```
 
 `<storage>` cell specifies that the value of `totaySupply` is `TOTAL` and other entries are not relevant (and could be arbitrary values). Specifying the irrelevant entries implicitly expresses the non-interference property. That is, the total supply value will be returned regardless of what the other entires of the storage are. This representation of the irrelevant part is used throughout the entire specification, ensuring one of the principal security properties.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 storage:
     #hashedLocation({lang}, {pos(totalsupply)}, .IntList) |-> TOTAL
     _:Map
@@ -142,7 +142,7 @@ storage:
 
 The side-condition specifies the range of symbolic values based on their types.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 requires:
     andBool 0 <=Int TOTAL     andBool TOTAL     <Int (2 ^Int 256)
 
@@ -157,7 +157,7 @@ balanceOf
 
 The specification of `balanceOf` is similar to that of `totalSupply`.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [balanceOf]
 
 k: #execute => (RETURN RET_ADDR:Int 32 ~> _)
@@ -181,7 +181,7 @@ refund: _
 
 `<storage>` cell specifies that the value of `balances[OWNER]` is `BAL`, which will be returned as described in `<localMem>` cell.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 storage:
     #hashedLocation({lang}, {pos(balances)}, OWNER) |-> BAL
     _:Map
@@ -198,7 +198,7 @@ allowance
 
 The specification of `allowance` is similar to that of `totalSupply` as well.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [allowance]
 
 k: #execute => (RETURN RET_ADDR:Int 32 ~> _)
@@ -222,7 +222,7 @@ refund: _
 
 `<storage>` cell specifies that the value of `allowances[OWNER][SPENDER]` is `ALLOWANCE`, which will be returned as described in `<localMem>` cell.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 storage:
     #hashedLocation({lang}, {pos(allowances)}, OWNER SPENDER) |-> ALLOWANCE
     _:Map
@@ -239,7 +239,7 @@ comments:
 approve
 -------
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [approve]
 
 k: #execute => (RETURN RET_ADDR:Int 32 ~> _)
@@ -261,7 +261,7 @@ gas: {gascap} => _
 
 The log message contains the account ID of the current contract, the hash of the signature of event Approval, the account ID who calls this contract, the SPENDER account ID, and the approved VALUE. `#generateSignature` is a syntactic sugar, used to define the ABI call abstraction as well, that generates the event signature to be hashed.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 log:
       _:List
     (
@@ -281,13 +281,13 @@ log:
 
 Note that, however, we have not specified the refund detail since it is not essential for the functional correctness. We can specify that upon request.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 refund: _ => _
 ```
 
 `<storage>` cell specifies that the value of `allowances[CALLER_ID][SPENDER]` will be updated to `VALUE` after the execution.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 storage:
     #hashedLocation({lang}, {pos(allowances)}, CALLER_ID SPENDER) |-> (_:Int => VALUE)
     _:Map
@@ -297,7 +297,7 @@ Unlike the ERC20-K specification, we do not specify the case when `VALUE` is les
 
 Indeed, the ABI call mechanism will reject a call to this function if the `VALUE` is negative, which is out of the scope of the EVM-level specification since it happens in the network level outside the EVM execution.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 requires:
     andBool 0 <=Int SPENDER   andBool SPENDER   <Int (2 ^Int 160)
     andBool 0 <=Int VALUE     andBool VALUE     <Int (2 ^Int 256)
@@ -314,7 +314,7 @@ transfer
 
 `transfer` function transfers the amount of VALUE from the caller to the account TO_ID.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [transfer]
 
 callData: #abiCallData("transfer", #address(TO_ID), #uint256(VALUE))
@@ -330,7 +330,7 @@ We present two specifications, one for each case.
 
 ### transfer success
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [transfer-success]
 
 k: #execute => (RETURN RET_ADDR:Int 32 ~> _)
@@ -347,7 +347,7 @@ localMem:
 
 `<log>` cell specifies that it generates an event log of type `Transfer`.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 log:
       _:List
     (
@@ -378,29 +378,16 @@ There are two sub-cases depending on whether the caller is equal to the recipien
 
 #### transfer success: sub-case 1: the caller `CALLER_ID` is different from the recipient `TO_ID`.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [transfer-success-1]
 ```
 
 `<storage>` cell specifies that the amount of `VALUE` is transferred from `balances[CALLER_ID]` to `balances[TO_ID]`.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 storage:
     #hashedLocation({lang}, {pos(balances)}, CALLER_ID) |-> (BAL_FROM => BAL_FROM -Int VALUE)
-```
-
-```{.k .erc20-spec}
     #hashedLocation({lang}, {pos(balances)}, TO_ID)     |-> (BAL_TO   => BAL_TO   +Int VALUE)
-```
-
-##### HKG-specific:
-On the other hand, HKG token allows the additional overflow, “wrapping around” the balance if it is more than `2^256`, which is very unlikely but still a questionable behavior. See the difference where `+Word`, the addition modulo `2^256`, is used instead of `+Int`, the mathematical, arbitrary precision integer addition.
-
-```{.k .hkg-spec}
-    #hashedLocation({lang}, {pos(balances)}, TO_ID)     |-> (BAL_TO   => BAL_TO  +Word VALUE)
-```
-
-```{.k .erc20-spec .hkg-spec}
     _:Map
 
 +requires:
@@ -414,24 +401,17 @@ The side-condition ensures that no arithmetic overflow happens.
     andBool BAL_TO +Int VALUE <Int (2 ^Int 256) // viper overflow check: (VALUE ==Int 0 xorBool BAL_TO +Word VALUE >Int BAL_TO)
 ```
 
-##### HKG-specific:
-As mentioned earlier, HKG token does not check the overflow thus we have no side-condition for that. Instead, HKG token does not allow the zero value to be requested to transfer, which is questionable though, and we have the side-condition for that.
-
-```{.k .hkg-spec}
-    andBool VALUE <=Int BAL_FROM
-    andBool VALUE >Int 0
-```
 
 
 #### transfer success: sub-case 2: the caller `CALLER_ID` is equal to the recipient `TO_ID`.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [transfer-success-2]
 ```
 
 `<storage>` cell specifies that `balances[CALLER_ID]` is not changed since the value is transferred to himself.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 storage:
     #hashedLocation({lang}, {pos(balances)}, CALLER_ID) |-> BAL_FROM
     _:Map
@@ -446,19 +426,11 @@ The side-condition ensures that no arithmetic overflow (precisely underflow in t
     andBool VALUE <=Int BAL_FROM
 ```
 
-##### HKG-specific:
-As in the sub-case 1, HKG token requires having the additional side-condition of VALUE’s being greater than 0.
-
-```{.k .hkg-spec}
-    andBool VALUE <=Int BAL_FROM
-    andBool VALUE >Int 0
-```
-
 
 
 ### transfer failure
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [transfer-failure]
 ```
 
@@ -472,26 +444,9 @@ k: #execute => #exception
 localMem: .Map => _:Map
 ```
 
-##### HKG-specific:
-HKG token does not throw the exception, but returns false in the failure case. Strictly speaking, this is still compliant with the ERC20 standard since the standard says that the `transfer` function “should” throw an exception for the failure, but not “must” do.
-
-`<localMem>` cell says that it returns 0, i.e., false.
-
-```{.k .hkg-spec}
-k: #execute => (RETURN RET_ADDR:Int 32 ~> _)
-
-localMem:
-      .Map
-    =>
-    (
-      .Map[ RET_ADDR := #asByteStackInWidth(0, 32) ]
-      _:Map
-    )
-```
-
 No log will be generated.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 log: _
 
 refund: _ => _
@@ -513,7 +468,7 @@ There are two sub-cases as well depending on whether the caller is equal to the 
 
 #### transfer failure: sub-case 1: the caller `CALLER_ID` is different from the recipient `TO_ID`.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [transfer-failure-1]
 
 storage:
@@ -532,24 +487,12 @@ The side-condition causing the arithmetic overflows, i.e., the negation of that 
      orBool   BAL_TO +Int VALUE >=Int (2 ^Int 256) ) // viper overflow check: ( VALUE =/=Int 0 andBool BAL_TO +Word VALUE <Int BAL_TO )
 ```
 
-##### HKG-specific:
-As in the success case, HKG token requires the different side-condition for the failure.
-
-We split this case into another two sub-cases: one for each disjunct of the side-condition causing the failure, due to a limitation of the current K verifier that we are currently fixing.
-
-Note that the sub-cases are to be disjoined (i.e, OR'ed) to represent the original side-condition.
-
-```{.k .hkg-spec}
-    andBool ( VALUE >Int BAL_FROM
-     orBool   VALUE <=Int 0 )
-```
-
 
 
 
 #### transfer failure: sub-case 2: the caller `CALLER_ID` is equal to the recipient `TO_ID`.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [transfer-failure-2]
 
 storage:
@@ -566,14 +509,6 @@ The side-condition causing the arithmetic overflows, i.e., the negation of that 
     andBool VALUE >Int BAL_FROM
 ```
 
-##### HKG-specific:
-As in the previous case, HKG token requires the different side-condition for the failure.
-
-```{.k .hkg-spec}
-    andBool ( VALUE >Int BAL_FROM
-     orBool  VALUE <=Int 0 )
-```
-
 
 
 
@@ -584,7 +519,7 @@ The specification of `transferFrom` is similar to that of `transfer`.
 
 `transferFrom` function transfers the amount of VALUE from the (possibly remote) account FROM_ID to the account TO_ID provided that the caller is authorized to do so by the account FROM_ID.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [transferFrom]
 callData: #abiCallData("transferFrom", #address(FROM_ID), #address(TO_ID), #uint256(VALUE))
 
@@ -593,7 +528,7 @@ gas: {gascap} => _
 
 ### transferFrom success
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [transferFrom-success]
 
 k: #execute => (RETURN RET_ADDR:Int 32 ~> _)
@@ -636,29 +571,16 @@ comments:
 
 #### transferFrom success: sub-case 1: the sender `FROM_ID` is different from the recipient `TO_ID`.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [transferFrom-success-1]
 ```
 
 `<storage>` cell specifies that the amount of `VALUE` will be transferred from `balances[FROM_ID]` to `balances[TO_ID]`, and the amount is deducted from `allowances[FROM_ID][CALLER_ID]` correspondingly.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 storage:
     #hashedLocation({lang}, {pos(balances)},   FROM_ID)           |-> (BAL_FROM => BAL_FROM -Int VALUE)
-```
-
-```{.k .erc20-spec}
     #hashedLocation({lang}, {pos(balances)},   TO_ID)             |-> (BAL_TO   => BAL_TO   +Int VALUE)
-```
-
-##### HKG-specific:
-As in `transfer` function, HKG token “wraps around” the balance without checking the additional overflow. See the difference between `+Int` and `+Word` in the above and the below.
-
-```{.k .hkg-spec}
-    #hashedLocation({lang}, {pos(balances)},   TO_ID)             |-> (BAL_TO   => BAL_TO  +Word VALUE)
-```
-
-```{.k .erc20-spec .hkg-spec}
     #hashedLocation({lang}, {pos(allowances)}, FROM_ID CALLER_ID) |-> (ALLOW    => ALLOW    -Int VALUE)
     _:Map
 
@@ -674,18 +596,9 @@ The side-condition that avoids the overflows.
     andBool VALUE <=Int ALLOW
 ```
 
-##### HKG-specific:
-As in `transfer` function, it does not check the additional overflow but rejects the zero value to be transferred.
-
-```{.k .hkg-spec}
-    andBool VALUE <=Int BAL_FROM
-    andBool VALUE <=Int ALLOW
-    andBool VALUE >Int 0
-```
-
 #### transferFrom success: sub-case 2: the sender `FROM_ID` is equal to the recipient `TO_ID`.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [transferFrom-success-2]
 
 storage:
@@ -704,43 +617,15 @@ The side-condition that avoids the overflows:
     andBool VALUE <=Int ALLOW
 ```
 
-##### HKG-specific:
-The different side-condition for HKG token:
-
-```{.k .hkg-spec}
-    andBool VALUE <=Int BAL_FROM
-    andBool VALUE <=Int ALLOW
-    andBool VALUE >Int 0
-```
-
 ### transferFrom failure
 
-```{.k .erc20-spec .hkg-spec}
-[transferFrom-failure]
-```
-
 ```{.k .erc20-spec}
+[transferFrom-failure]
+
 k: #execute => #exception
 
 localMem: .Map => _:Map
-```
 
-##### HKG-specific:
-As in `transfer`, HKG token returns false in the failure case.
-
-```{.k .hkg-spec}
-k: #execute => (RETURN RET_ADDR:Int 32 ~> _)
-
-localMem:
-      .Map
-    =>
-    (
-      .Map[ RET_ADDR := #asByteStackInWidth(0, 32) ]
-      _:Map
-    )
-```
-
-```{.k .erc20-spec .hkg-spec}
 log: _
 
 refund: _ => _
@@ -762,7 +647,7 @@ comments:
 
 #### transferFrom failure: sub-case 1: the sender `FROM_ID` is different from the recipient `TO_ID`.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [transferFrom-failure-1]
 storage:
     #hashedLocation({lang}, {pos(balances)},   FROM_ID)           |-> (BAL_FROM => _)  // BAL_FROM
@@ -784,19 +669,10 @@ Note that the sub-cases are to be disjoined (i.e, OR'ed) to represent the comple
      orBool   VALUE >Int ALLOW )
 ```
 
-##### HKG-specific:
-The different side-condition for HKG token:
-
-```{.k .hkg-spec}
-    andBool ( VALUE >Int BAL_FROM
-     orBool   VALUE >Int ALLOW
-     orBool   VALUE <=Int 0 )
-```
-
 
 #### transferFrom failure: sub-case 2: the sender `FROM_ID` is equal to the recipient `TO_ID`.
 
-```{.k .erc20-spec .hkg-spec}
+```{.k .erc20-spec}
 [transferFrom-failure-2]
 
 storage:
@@ -813,15 +689,6 @@ The side-condition causing the failure:
 ```{.k .erc20-spec}
     andBool ( VALUE >Int BAL_FROM
      orBool   VALUE >Int ALLOW )
-```
-
-##### HKG-specific:
-The different side-condition for HKG token:
-
-```{.k .hkg-spec}
-   andBool ( VALUE >Int BAL_FROM
-    orBool   VALUE >Int ALLOW
-    orBool   VALUE <=Int 0 )
 ```
 
 
