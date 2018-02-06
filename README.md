@@ -54,12 +54,19 @@ The following are needed for building/running K definitions in general:
 -   GNU [libmpfr](http://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
 -   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
 -   [Opam](https://opam.ocaml.org/doc/Install.html), **important**: Ubuntu users prior to 15.04 **must** build from source, as the Ubuntu install for 14.10 and prior is broken.
+    `opam repository` also requires `rsync`.
 
 On Ubuntu >= 15.04 (for example):
 
 ```sh
 sudo apt-get update
 sudo apt-get install make gcc maven openjdk-8-jdk flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev
+```
+
+or on ArchLinux:
+
+```sh
+sudo pacman -S  base-devel rsync opam pandoc jre8-openjdk mpfr maven
 ```
 
 ### Installing/Building
