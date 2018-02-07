@@ -1,8 +1,8 @@
-module {module}-SPEC
+module {MODULE}-SPEC
   imports ETHEREUM-SIMULATION
 
   rule
-    <k> {k} </k>
+    <k> {K} </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> DEFAULT </schedule> // TODO: pick a right one
@@ -19,21 +19,19 @@ module {module}-SPEC
         <callLog> .Set </callLog> // for vmtest only
 
         <txExecState>
-          <program> #asMapOpCodes(#dasmOpCodes(#parseByteStack({code}), DEFAULT)) </program>
-          <programBytes> #parseByteStack({code}) </programBytes>
+          <program> #asMapOpCodes(#dasmOpCodes(#parseByteStack({CODE}), DEFAULT)) </program>
+          <programBytes> #parseByteStack({CODE}) </programBytes>
 
           <id> ACCT_ID </id> // contract owner
           <caller> CALLER_ID </caller> // who called this contract; in the begining, origin
 
-          <callData> {calldata} </callData>
+          <callData> {CALLDATA} </callData>
 
           <callValue> 0 </callValue>
           <wordStack> .WordStack => _ </wordStack>
-          <localMem>
-            {localmem}
-          </localMem>
+          <localMem> {LOCALMEM} </localMem>
           <pc> 0 => _ </pc>
-          <gas> {gas} </gas>
+          <gas> {GAS} </gas>
           <previousGas> _ => _ </previousGas>
 
           <static> false </static> // NOTE: non-static call
@@ -41,10 +39,8 @@ module {module}-SPEC
 
         <substate>
           <selfDestruct> _ </selfDestruct>
-          <log>
-            {log}
-          </log>
-          <refund> {refund} </refund> // TODO: more detail
+          <log> {LOG} </log>
+          <refund> {REFUND} </refund> // TODO: more detail
         </substate>
 
         <gasPrice> _ </gasPrice>
@@ -77,9 +73,9 @@ module {module}-SPEC
           <account>
             <acctID> ACCT_ID </acctID>
             <balance> _ </balance>
-            <code> #parseByteStack({code}) </code>
+            <code> #parseByteStack({CODE}) </code>
             <storage>
-              {storage}
+              {STORAGE}
             </storage>
             <nonce> _ </nonce>
           </account>
@@ -95,9 +91,8 @@ module {module}-SPEC
      andBool 0 <=Int CALLER_ID  andBool CALLER_ID  <Int (2 ^Int 160)
      andBool 0 <=Int ORIGIN_ID  andBool ORIGIN_ID  <Int (2 ^Int 160)
      andBool 0 <=Int CALL_DEPTH andBool CALL_DEPTH <Int 1024
-     {requires}
+     {REQUIRES}
 
-{comments}
 
   // to avoid unnecessary case analyses
   rule <k> LT W0 W1 => bool2int(W0  <Int W1) ~> #push ... </k> [trusted]

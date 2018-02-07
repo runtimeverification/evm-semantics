@@ -5,7 +5,7 @@ import re
 import configparser
 
 def subst(text, key, val):
-    return text.replace('{' + key + '}', val)
+    return text.replace('{' + key.upper() + '}', val)
 
 def safe_get(config, section):
     if section in config:
