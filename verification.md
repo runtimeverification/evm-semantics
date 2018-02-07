@@ -307,7 +307,8 @@ ABI Event Logs
                        | TypedArg
 
     syntax SubstateLogEntry ::= #abiEventLog(Int, String, EventArgs) [function]
-    rule #abiEventLog(ACCT_ID, EVENT_NAME, EVENT_ARGS) => { ACCT_ID | #getEventTopics(EVENT_NAME, EVENT_ARGS) | #getEventData(EVENT_ARGS) }
+    rule #abiEventLog(ACCT_ID, EVENT_NAME, EVENT_ARGS)
+      => { ACCT_ID | #getEventTopics(EVENT_NAME, EVENT_ARGS) | #getEventData(EVENT_ARGS) }
 
     syntax WordStack ::= #getEventTopics(String, EventArgs) [function]
     rule #getEventTopics(ENAME, EARGS)
@@ -325,7 +326,7 @@ ABI Event Logs
     rule #getIndexedArgs(.EventArgs)      => .WordStack
 
     syntax WordStack ::= #getEventData(EventArgs) [function]
-    rule #getEventData(#indexed(_), ES) => #getEventData(ES)
+    rule #getEventData(#indexed(_), ES) =>                #getEventData(ES)
     rule #getEventData(E:TypedArg,  ES) => #getData(E) ++ #getEventData(ES)
     rule #getEventData(.EventArgs)      => .WordStack
 
