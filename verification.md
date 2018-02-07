@@ -298,6 +298,43 @@ Below is the ABI call abstraction, a formalization for ABI encoding of the call 
     rule #getData(#uint256( DATA )) => #asByteStackInWidth( DATA , 32 )
 ```
 
+ABI Event Logs
+--------------
+
+```{.k .java}
+    syntax EventArgs ::= List{EventArg, ","} [klabel(eventArgs)]
+    syntax EventArg  ::= #indexed(TypedArg)
+                       | TypedArg
+
+    syntax SubstateLogEntry ::= #abiEventLog(Int, String, EventArgs) [function]
+    rule #abiEventLog(ACCT_ID, EVENT_NAME, EVENT_ARGS) => { ACCT_ID | #getEventTopics(EVENT_NAME, EVENT_ARGS) | #getEventData(EVENT_ARGS) }
+
+    syntax WordStack ::= #getEventTopics(String, EventArgs) [function]
+    rule #getEventTopics(ENAME, EARGS)
+      => #parseHexWord(Keccak256(#generateSignature(ENAME, #getTypedArgs(EARGS))))
+       : #getIndexedArgs(EARGS)
+
+    syntax TypedArgs ::= #getTypedArgs(EventArgs) [function]
+    rule #getTypedArgs(#indexed(E), ES) => E, #getTypedArgs(ES)
+    rule #getTypedArgs(E:TypedArg,  ES) => E, #getTypedArgs(ES)
+    rule #getTypedArgs(.EventArgs)      => .TypedArgs
+
+    syntax WordStack ::= #getIndexedArgs(EventArgs) [function]
+    rule #getIndexedArgs(#indexed(E), ES) => #getValue(E) : #getIndexedArgs(ES)
+    rule #getIndexedArgs(_:TypedArg,  ES) =>                #getIndexedArgs(ES)
+    rule #getIndexedArgs(.EventArgs)      => .WordStack
+
+    syntax WordStack ::= #getEventData(EventArgs) [function]
+    rule #getEventData(#indexed(_), ES) => #getEventData(ES)
+    rule #getEventData(E:TypedArg,  ES) => #getData(E) ++ #getEventData(ES)
+    rule #getEventData(.EventArgs)      => .WordStack
+
+    syntax Int ::= "#getValue" "(" TypedArg ")" [function]
+    rule #getValue(#uint160(V)) => V
+    rule #getValue(#address(V)) => V
+    rule #getValue(#uint256(V)) => V
+```
+
 
 Sum to N
 --------
