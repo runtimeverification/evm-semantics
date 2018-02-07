@@ -63,10 +63,24 @@ sudo apt-get update
 sudo apt-get install make gcc maven openjdk-8-jdk flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev
 ```
 
-or on ArchLinux:
+On ArchLinux:
 
 ```sh
 sudo pacman -S  base-devel rsync opam pandoc jre8-openjdk mpfr maven
+```
+
+On OSX, using [Homebrew](https://brew.sh/):
+
+```sh
+brew tap caskroom/cask caskroom/version
+brew cask install java8
+brew install bison flex libtool autoconf gmp mpfr pandoc maven opam
+```
+
+Note that Homebrew install flex as a keg-only package. To install flex's library, use:
+
+```sh
+brew link --force flex
 ```
 
 ### Installing/Building
