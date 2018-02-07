@@ -202,15 +202,15 @@ tests/proofs/hkg/%-spec.k: proofs/hkg.md
 
 # #### Viper ERC20
 
-tests/proofs/erc20/viper/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/spec-viper.ini proofs/erc20/pgm-viper.ini
+tests/proofs/erc20/viper/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/viper/spec-viper.ini proofs/erc20/viper/pgm-viper.ini
 	@echo >&2 "==  gen-spec: $@"
 	mkdir -p $(dir $@)
 	python3 tests/gen-spec.py $^ $* > $@
-tests/proofs/erc20/zeppelin/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/spec-zeppelin.ini proofs/erc20/pgm-zeppelin.ini
+tests/proofs/erc20/zeppelin/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/zeppelin/spec-zeppelin.ini proofs/erc20/zeppelin/pgm-zeppelin.ini
 	@echo >&2 "==  gen-spec: $@"
 	mkdir -p $(dir $@)
 	python3 tests/gen-spec.py $^ $* > $@
-tests/proofs/erc20/hkg/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/spec-hkg.ini proofs/erc20/pgm-hkg.ini
+tests/proofs/erc20/hkg/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/hkg/spec-hkg.ini proofs/erc20/hkg/pgm-hkg.ini
 	@echo >&2 "==  gen-spec: $@"
 	mkdir -p $(dir $@)
 	python3 tests/gen-spec.py $^ $* > $@
