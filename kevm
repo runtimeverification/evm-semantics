@@ -36,7 +36,7 @@ run_env() {
     local cmode="${cMODE:-NORMAL}"
     local cschedule="${cSCHEDULE:-DEFAULT}"
     local build_dir="$(pwd)/.build"
-    local release_dir="$build_dir/k/k-distribution/target/release/k"
+    local release_dir="${K_BIN:-$build_dir/k/k-distribution/target/release/k}"
     local lib_dir="$build_dir/local/lib"
     case "$run_file" in
        tests/interactive/gas-analysis/*      ) cmode="GASANALYZE" ;;
