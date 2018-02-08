@@ -187,8 +187,6 @@ The following simplification rules are local, meant to be used in specific conte
 These rules are specific to reasoning about EVM programs.
 
 ```{.k .java}
-  syntax Bool ::= #isConcrete(K) [function, hook(KREFLECTION.isConcrete)]
-
   rule (I1 +Int I2) +Int I3 => I1 +Int (I2 +Int I3) when #isConcrete(I2) andBool #isConcrete(I3)
   rule (I1 +Int I2) -Int I3 => I1 +Int (I2 -Int I3) when #isConcrete(I2) andBool #isConcrete(I3)
   rule (I1 -Int I2) +Int I3 => I1 -Int (I2 -Int I3) when #isConcrete(I2) andBool #isConcrete(I3)
