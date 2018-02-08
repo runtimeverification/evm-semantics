@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 import json
 import sys
@@ -25,7 +25,7 @@ def print_kast(data):
     sys.stdout.write(')')
   elif isinstance(data, OrderedDict):
     sys.stdout.write('`{_}_EVM-DATA`(')
-    for key, value in data.iteritems():
+    for key, value in data.items():
       sys.stdout.write('`_,__EVM-DATA`(`_:__EVM-DATA`(')
       print_kast(key)
       sys.stdout.write(',')
@@ -35,7 +35,7 @@ def print_kast(data):
     for key in data:
       sys.stdout.write(')')
     sys.stdout.write(')')
-  elif isinstance(data, unicode):
+  elif isinstance(data, str) or isinstance(data, unicode):
     sys.stdout.write('#token('),
     sys.stdout.write(json.dumps(json.dumps(data)))
     sys.stdout.write(',"String")')
