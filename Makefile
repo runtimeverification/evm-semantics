@@ -7,7 +7,7 @@
 all: build split-tests
 
 clean:
-	rm -rf .build/java .build/ocaml .build/logs tests/proofs
+	rm -rf .build/java .build/ocaml .build/logs tests/proofs .build/k/make.timestamp .build/local
 
 build: .build/ocaml/driver-kompiled/interpreter .build/java/driver-kompiled/timestamp
 
@@ -24,7 +24,7 @@ k-deps: $(K_SUBMODULE)/make.timestamp
 $(K_SUBMODULE)/make.timestamp:
 	git submodule update --init -- $(K_SUBMODULE)
 	cd $(K_SUBMODULE) \
-		&& mvn package -q -DskipTests
+		&& mvn package -q -DskipTests -U
 	touch $(K_SUBMODULE)/make.timestamp
 
 ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
