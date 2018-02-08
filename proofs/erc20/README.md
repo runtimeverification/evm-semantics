@@ -42,3 +42,6 @@ We tried to verify the following ERC20 token contract implementations against [E
    * Incorrect overflow detection for self-transfers
    * Rejecting transfers of `0` values
    * Returning `false` in failure
+
+
+TODO: instruction for running proofs.
