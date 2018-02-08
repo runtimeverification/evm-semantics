@@ -14,6 +14,7 @@ requires "domains.k"
 module EVM-DATA
     imports KRYPTO
     imports STRING-BUFFER
+    imports DOMAINS
 
     syntax KResult ::= Int
 ```
