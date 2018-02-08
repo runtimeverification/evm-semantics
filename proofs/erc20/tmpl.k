@@ -8,7 +8,7 @@ module {MODULE}-SPEC
     <k> {K} </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
-    <schedule> DEFAULT </schedule> // TODO: pick a right one
+    <schedule> BYZANTIUM </schedule>
     <analysis> .Map </analysis> // not part of evm
 
     <ethereum>
