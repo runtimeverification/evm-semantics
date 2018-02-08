@@ -71,14 +71,14 @@ defn: $(defn_files)
 
 # Java Backend
 
-.build/java/driver-kompiled/timestamp: $(java_files) deps
+.build/java/driver-kompiled/timestamp: $(java_files)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/java
 
 # OCAML Backend
 
-.build/ocaml/driver-kompiled/interpreter: $(ocaml_files) KRYPTO.ml deps
+.build/ocaml/driver-kompiled/interpreter: $(ocaml_files) KRYPTO.ml
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
 	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \

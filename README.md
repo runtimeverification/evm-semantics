@@ -88,7 +88,8 @@ brew link --force flex
 After installing the above dependencies, the following command will build submodule dependencies and build KEVM:
 
 ```sh
-make all
+make deps
+make
 ```
 
 ### Example Runs
