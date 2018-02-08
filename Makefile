@@ -179,7 +179,21 @@ proof_tests=${proof_dir}/sum-to-n-spec.k \
             ${proof_dir}/erc20/hkg/transferFrom-success-1-spec.k \
             ${proof_dir}/erc20/hkg/transferFrom-success-2-spec.k \
             ${proof_dir}/erc20/hkg/transferFrom-failure-1-spec.k \
-            ${proof_dir}/erc20/hkg/transferFrom-failure-2-spec.k
+            ${proof_dir}/erc20/hkg/transferFrom-failure-2-spec.k \
+            ${proof_dir}/erc20/hobby/totalSupply-spec.k \
+            ${proof_dir}/erc20/hobby/balanceOf-spec.k \
+            ${proof_dir}/erc20/hobby/allowance-spec.k \
+            ${proof_dir}/erc20/hobby/approve-success-spec.k \
+            ${proof_dir}/erc20/hobby/approve-failure-spec.k \
+            ${proof_dir}/erc20/hobby/transfer-success-1-spec.k \
+            ${proof_dir}/erc20/hobby/transfer-success-2-spec.k \
+            ${proof_dir}/erc20/hobby/transfer-failure-1-spec.k \
+            ${proof_dir}/erc20/hobby/transfer-failure-2-spec.k \
+            ${proof_dir}/erc20/hobby/transferFrom-success-1-spec.k \
+            ${proof_dir}/erc20/hobby/transferFrom-success-2-spec.k \
+            ${proof_dir}/erc20/hobby/transferFrom-failure-1-spec.k \
+            ${proof_dir}/erc20/hobby/transferFrom-failure-2-spec.k
+
 
 proof-test-all: proof-test
 proof-test: $(proof_tests:=.test)
@@ -212,6 +226,10 @@ tests/proofs/erc20/zeppelin/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/zeppelin/
 	mkdir -p $(dir $@)
 	python3 tests/gen-spec.py $^ $* > $@
 tests/proofs/erc20/hkg/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/hkg/spec-hkg.ini proofs/erc20/hkg/pgm-hkg.ini
+	@echo >&2 "==  gen-spec: $@"
+	mkdir -p $(dir $@)
+	python3 tests/gen-spec.py $^ $* > $@
+tests/proofs/erc20/hobby/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/hobby/spec-hobby.ini proofs/erc20/hobby/pgm-hobby.ini
 	@echo >&2 "==  gen-spec: $@"
 	mkdir -p $(dir $@)
 	python3 tests/gen-spec.py $^ $* > $@
