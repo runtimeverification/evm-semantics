@@ -60,27 +60,21 @@ On Ubuntu >= 15.04 (for example):
 
 ```sh
 sudo apt-get update
-sudo apt-get install make gcc maven openjdk-8-jdk flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev
+sudo apt-get install make gcc maven openjdk-8-jdk flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev libxml2-utils z3
 ```
 
 On ArchLinux:
 
 ```sh
-sudo pacman -S  base-devel rsync opam pandoc jre8-openjdk mpfr maven
+sudo pacman -S  base-devel rsync opam pandoc jre8-openjdk mpfr maven z3
 ```
 
-On OSX, using [Homebrew](https://brew.sh/):
+On OSX, using [Homebrew](https://brew.sh/), after installing the command line tools package:
 
 ```sh
 brew tap caskroom/cask caskroom/version
 brew cask install java8
-brew install bison flex libtool autoconf gmp mpfr pandoc maven opam
-```
-
-Note that Homebrew install flex as a keg-only package. To install flex's library, use:
-
-```sh
-brew link --force flex
+brew install automake libtool gmp mpfr pkg-config pandoc maven opam z3
 ```
 
 ### Installing/Building
