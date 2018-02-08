@@ -175,6 +175,7 @@ proof_tests=${proof_dir}/sum-to-n-spec.k \
             ${proof_dir}/erc20/zeppelin/transferFrom-success-2-spec.k \
             ${proof_dir}/erc20/zeppelin/transferFrom-failure-1-spec.k \
             ${proof_dir}/erc20/zeppelin/transferFrom-failure-2-spec.k \
+            ${proof_dir}/erc20/hkg/totalSupply-spec.k \
             ${proof_dir}/erc20/hkg/balanceOf-spec.k \
             ${proof_dir}/erc20/hkg/allowance-spec.k \
             ${proof_dir}/erc20/hkg/approve-spec.k \
