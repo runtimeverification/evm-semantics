@@ -1,7 +1,7 @@
 # Common to all versions of K
 # ===========================
 
-.PHONY: all clean deps ocaml-deps build defn sphinx split-tests \
+.PHONY: all clean deps k-deps ocaml-deps build defn sphinx split-tests \
 		test test-all vm-test vm-test-all bchain-test bchain-test-all proof-test proof-test-all
 
 all: build split-tests
@@ -18,7 +18,8 @@ K_SUBMODULE=$(CURDIR)/.build/k
 BUILD_LOCAL=$(CURDIR)/.build/local
 PKG_CONFIG_LOCAL=$(BUILD_LOCAL)/lib/pkgconfig
 
-deps: $(K_SUBMODULE)/make.timestamp ocaml-deps
+deps: k-deps ocaml-deps
+k-deps: $(K_SUBMODULE)/make.timestamp
 
 $(K_SUBMODULE)/make.timestamp:
 	git submodule update --init -- $(K_SUBMODULE)
