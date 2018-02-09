@@ -64,6 +64,7 @@ run_krun() {
 
 run_interpreter() {
     test_file="$1"
+    output_expected_file="$2"
     run_env "$test_file"
     (   set +e
         interpreter="$(dirname "$0")/.build/ocaml/driver-kompiled/interpreter"
@@ -77,8 +78,13 @@ run_interpreter() {
                      -c SCHEDULE '`DEFAULT_EVM`(.KList)' text -c MODE "\`${cMODE}_EVM\`(.KList)" text \
                      --output-file "$output"
         exit_status="$?"
+        if [ $exit_status -eq 0 ]; then
+	    exit 0
+        fi
         k-bin-to-text "$output" "$kast_output"
-        cat "$kast_output"
+        ( pretty_diff --label expected <(cat "$output_expected_file") \
+                      --label actual   <(cat "$kast_output" )
+        )
         printf "\n"
         exit "$exit_status"
     )
@@ -113,9 +119,7 @@ run_test() {
                         ;;
         *             ) output_expected_file=tests/templates/output-success.txt
                         [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
-                        ( pretty_diff --label expected <(cat "$output_expected_file") \
-                                      --label actual   <(run_interpreter "$test_file" )
-                        )
+                        run_interpreter "$test_file" "$output_expected_file"
                         ;;
     esac
 }
