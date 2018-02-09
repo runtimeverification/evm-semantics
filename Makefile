@@ -7,7 +7,7 @@
 all: build split-tests
 
 clean:
-	rm -rf .build/java .build/ocaml .build/logs tests/proofs .build/k/make.timestamp .build/local
+	rm -rf .build/java .build/ocaml .build/node .build/logs tests/proofs .build/k/make.timestamp .build/local
 
 build: .build/ocaml/driver-kompiled/interpreter .build/java/driver-kompiled/timestamp
 
@@ -56,7 +56,8 @@ K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
 k_files:=driver.k data.k evm.k analysis.k krypto.k verification.k
 ocaml_files:=$(patsubst %,.build/ocaml/%,$(k_files))
 java_files:=$(patsubst %,.build/java/%,$(k_files))
-defn_files:=$(ocaml_files) $(java_files)
+node_files:=$(patsubst %,.build/node/%,$(k_files))
+defn_files:=$(ocaml_files) $(java_files) $(node_files)
 
 defn: $(defn_files)
 
@@ -69,6 +70,11 @@ defn: $(defn_files)
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:ocaml $< > $@
+
+.build/node/%.k: %.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to tangle.lua --metadata=code:node $< > $@
 
 # Java Backend
 

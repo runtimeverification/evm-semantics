@@ -7,7 +7,7 @@ EVM uses bounded 256 bit integer words, and sometimes also bytes (8 bit words).
 Here we provide the arithmetic of these words, as well as some data-structures over them.
 Both are implemented using K's `Int`.
 
-```{.k .java .ocaml}
+```k
 requires "krypto.k"
 requires "domains.k"
 
@@ -24,7 +24,7 @@ module EVM-DATA
 The JSON format is used extensively for communication in the Ethereum circles.
 Writing a JSON-ish parser in K takes 6 lines.
 
-```{.k .java .ocaml}
+```k
     syntax JSONList ::= List{JSON,","}
     syntax JSONKey  ::= String | Int
     syntax JSON     ::= String
@@ -41,7 +41,7 @@ Utilities
 
 Some important numbers that are referred to often during execution:
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= "pow256" [function]
                  | "pow255" [function]
                  | "pow16"  [function]
@@ -53,7 +53,7 @@ Some important numbers that are referred to often during execution:
 
 -   `chop` interperets an integers modulo $2^256$.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= chop ( Int ) [function, smtlib(chop)]
  // ----------------------------------------------------
     rule chop ( I:Int ) => I %Int pow256 requires I  <Int 0  orBool I >=Int pow256    [concrete]
@@ -67,7 +67,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `bool2Word` interperets a `Bool` as a `Int`.
 -   `word2Bool` interperets a `Int` as a `Bool`.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= bool2Word ( Bool ) [function]
  // --------------------------------------------
     rule bool2Word(true)  => 1
@@ -82,7 +82,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `#ifInt_#then_#else_#fi` provides a conditional in `Int` expressions.
 -   `#ifSet_#then_#else_#fi` provides a conditional in `Set` expressions.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= "#ifInt" Bool "#then" Int "#else" Int "#fi" [function, smtlib(ite)]
     syntax Set ::= "#ifSet" Bool "#then" Set "#else" Set "#fi" [function]
  // ---------------------------------------------------------------------
@@ -98,7 +98,7 @@ If we don't place the `Bool` condition as a side-condition for UIUC-K, it will a
     rule #ifSet B #then _ #else W #fi => W requires notBool B
 ```
 
-```{.k .ocaml}
+```{.k .ocaml .node}
     rule #ifInt A #then B #else C #fi => #if A #then B #else C #fi [macro]
     rule #ifSet A #then B #else C #fi => #if A #then B #else C #fi [macro]
 ```
@@ -106,7 +106,7 @@ If we don't place the `Bool` condition as a side-condition for UIUC-K, it will a
 -   `sgn` gives the twos-complement interperetation of the sign of a word.
 -   `abs` gives the twos-complement interperetation of the magnitude of a word.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= sgn ( Int ) [function]
                  | abs ( Int ) [function]
  // -------------------------------------
@@ -123,7 +123,7 @@ If we don't place the `Bool` condition as a side-condition for UIUC-K, it will a
     the actual value of the account ID is the empty set. This is used, for example, when
     referring to the destination of a message which creates a new contract.
 
-```{.k .java .ocaml}
+```k
     syntax Account ::= ".Account" | Int
 ```
 
@@ -149,7 +149,7 @@ Word Operations
 NOTE: Here, we choose to add `I2 -Int 1` to the numerator beforing doing the division to mimic the C++ implementation.
 You could alternatively calculate `I1 %Int I2`, then add one to the normal integer division afterward depending on the result.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= Int "up/Int" Int [function]
  // ------------------------------------------
     rule I1 up/Int 0  => 0
@@ -159,7 +159,7 @@ You could alternatively calculate `I1 %Int I2`, then add one to the normal integ
 
 -   `logNInt` returns the log base N (floored) of an integer.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= log2Int ( Int ) [function]
  // -----------------------------------------
     rule log2Int(1) => 0
@@ -172,7 +172,7 @@ You could alternatively calculate `I1 %Int I2`, then add one to the normal integ
 
 The corresponding `<op>Word` operations automatically perform the correct modulus for EVM words.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= Int "+Word" Int [function]
                  | Int "*Word" Int [function]
                  | Int "-Word" Int [function]
@@ -191,7 +191,7 @@ The corresponding `<op>Word` operations automatically perform the correct modulu
 
 Care is needed for `^Word` to avoid big exponentiation.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= Int "^Word" Int [function]
     syntax Int ::= powmod(Int, Int, Int) [function]
  // -----------------------------------------------
@@ -205,18 +205,18 @@ Care is needed for `^Word` to avoid big exponentiation.
 
 RV-K has a more efficient power-modulus operator.
 
-```{.k .ocaml}
+```{.k .ocaml .node}
     rule W0 ^Word W1 => powmod(W0, W1, pow256)
 ```
 
-```{.k .java .ocaml}
+```k
     rule powmod(W0, W1, W2) => W0 ^%Int W1 W2 requires W2 =/=Int 0
     rule powmod(W0, W1, 0)  => 0
 ```
 
 `/sWord` and `%sWord` give the signed interperetations of `/Word` and `%Word`.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= Int "/sWord" Int [function]
                  | Int "%sWord" Int [function]
  // ------------------------------------------
@@ -234,7 +234,7 @@ RV-K has a more efficient power-modulus operator.
 
 The `<op>Word` comparisons similarly lift K operators to EVM ones:
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= Int "<Word"  Int [function]
                  | Int ">Word"  Int [function]
                  | Int "<=Word" Int [function]
@@ -255,7 +255,7 @@ The `<op>Word` comparisons similarly lift K operators to EVM ones:
 
 -   `s<Word` implements a less-than for `Word` (with signed interperetation).
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= Int "s<Word" Int [function]
  // ------------------------------------------
     rule W0 s<Word W1 => W0 <Word W1           requires sgn(W0) ==K 1  andBool sgn(W1) ==K 1
@@ -268,7 +268,7 @@ The `<op>Word` comparisons similarly lift K operators to EVM ones:
 
 Bitwise logical operators are lifted from the integer versions.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= "~Word" Int       [function]
                  | Int "|Word"   Int [function]
                  | Int "&Word"   Int [function]
@@ -283,7 +283,7 @@ Bitwise logical operators are lifted from the integer versions.
 -   `bit` gets bit $N$ (0 being MSB).
 -   `byte` gets byte $N$ (0 being the MSB).
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= bit  ( Int , Int ) [function]
                  | byte ( Int , Int ) [function]
  // --------------------------------------------
@@ -298,7 +298,7 @@ Bitwise logical operators are lifted from the integer versions.
 -   `#nBytes` shifts in $N$ bytes of ones from the right.
 -   `_<<Byte_` shifts an integer 8 bits to the left.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= #nBits  ( Int )  [function]
                  | #nBytes ( Int )  [function]
                  | Int "<<Byte" Int [function]
@@ -310,7 +310,7 @@ Bitwise logical operators are lifted from the integer versions.
 
 -   `signextend(N, W)` sign-extends from byte $N$ of $W$ (0 being MSB).
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= signextend( Int , Int ) [function]
  // -------------------------------------------------
     rule signextend(N, W) => W requires N >=Int 32 orBool N <Int 0
@@ -320,7 +320,7 @@ Bitwise logical operators are lifted from the integer versions.
 
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= keccak ( WordStack ) [function]
  // ----------------------------------------------
     rule keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS))) [concrete]
@@ -340,7 +340,7 @@ A cons-list is used for the EVM wordstack.
 -   `.WordStack` serves as the empty worstack, and
 -   `_:_` serves as the "cons" operator.
 
-```{.k .java .ocaml}
+```k
     syntax WordStack [flatPredicate]
     syntax WordStack ::= ".WordStack" | Int ":" WordStack
  // -----------------------------------------------------
@@ -350,7 +350,7 @@ A cons-list is used for the EVM wordstack.
 -   `#take(N , WS)` keeps the first $N$ elements of a `WordStack` (passing with zeros as needed).
 -   `#drop(N , WS)` removes the first $N$ elements of a `WordStack`.
 
-```{.k .java .ocaml}
+```k
     syntax WordStack ::= WordStack "++" WordStack [function, right]
  // ---------------------------------------------------------------
     rule .WordStack ++ WS' => WS'
@@ -376,7 +376,7 @@ A cons-list is used for the EVM wordstack.
 -   `WS [ N .. W ]` access the range of `WS` beginning with `N` of width `W`.
 -   `WS [ N := W ]` sets element $N$ of $WS$ to $W$ (padding with zeros as needed).
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= WordStack "[" Int "]" [function]
  // -----------------------------------------------
     rule (W0 : WS)   [0] => W0
@@ -397,7 +397,7 @@ A cons-list is used for the EVM wordstack.
 -   `#sizeWordStack` calculates the size of a `WordStack`.
 -   `_in_` determines if a `Int` occurs in a `WordStack`.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= #sizeWordStack ( WordStack )       [function, smtlib(sizeWordStack)]
                  | #sizeWordStack ( WordStack , Int ) [function, klabel(sizeWordStackAux), smtlib(sizeWordStackAux)]
  // ----------------------------------------------------------------------------------------------------------------
@@ -413,7 +413,7 @@ A cons-list is used for the EVM wordstack.
 
 -   `#padToWidth(N, WS)` makes sure that a `WordStack` is the correct size.
 
-```{.k .java .ocaml}
+```k
     syntax WordStack ::= #padToWidth ( Int , WordStack ) [function]
  // ---------------------------------------------------------------
     rule #padToWidth(N, WS) => WS                     requires notBool #sizeWordStack(WS) <Int N [concrete]
@@ -431,7 +431,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     Differs from `#asWord` only in that an empty stack represents the empty account, not account zero.
 -   `#asByteStack` will split a single word up into a `WordStack` where each word is a byte wide.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= #asWord ( WordStack ) [function, smtlib(asWord)]
  // ---------------------------------------------------------------
     rule #asWord( .WordStack     ) => 0                                    // [concrete]
@@ -462,7 +462,7 @@ Addresses
 
 -   `#addr` turns an Ethereum word into the corresponding Ethereum address (160 LSB).
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= #addr ( Int ) [function]
  // ---------------------------------------
     rule #addr(W) => W %Word (2 ^Word 160)
@@ -471,7 +471,7 @@ Addresses
 -   `#newAddr` computes the address of a new account given the address and nonce of the creating account.
 -   `#sender` computes the sender of the transaction from its data and signature.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= #newAddr ( Int , Int ) [function]
  // ------------------------------------------------
     rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeWord(NONCE), 192))))
@@ -491,7 +491,7 @@ Addresses
 
 -   `#blockHeaderHash` computes the hash of a block header given all the block data.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= #blockHeaderHash( Int , Int , Int , Int , Int , Int , WordStack , Int , Int , Int , Int , Int , WordStack , Int , Int ) [function]
                  | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderStr)]
  // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -538,7 +538,7 @@ We are using the polymorphic `Map` sort for these word maps.
 -   `#asMapWordStack` converts a `WordStack` to a `Map`.
 -   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
 
-```{.k .java .ocaml}
+```k
     syntax Map ::= Map "[" Int ":=" WordStack "]" [function]
  // --------------------------------------------------------
     rule WM[ N := .WordStack ] => WM
@@ -560,7 +560,7 @@ We are using the polymorphic `Map` sort for these word maps.
 
 -   `#removeZeros` removes any entries in a map with zero values.
 
-```{.k .java .ocaml}
+```k
     syntax Map ::= #removeZeros ( Map ) [function]
  // ----------------------------------------------
     rule #removeZeros( .Map )               => .Map
@@ -570,7 +570,7 @@ We are using the polymorphic `Map` sort for these word maps.
 
 -   `#lookup` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= #lookup ( Map , Int ) [function]
  // -----------------------------------------------
     rule #lookup( (KEY |-> VAL) M, KEY ) => VAL
@@ -596,7 +596,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `WordStack`s, and `M
 -   `#parseMap` interperets a JSON key/value object as a map from `Word` to `Word`.
 -   `#parseAddr` interperets a string as a 160 bit hex-endcoded address.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= #parseHexWord ( String ) [function]
                  | #parseWord    ( String ) [function]
  // --------------------------------------------------
@@ -643,7 +643,7 @@ We need to interperet a `WordStack` as a `String` again so that we can call `Kec
 -   `#unparseByteStack` turns a stack of bytes (as a `WordStack`) into a `String`.
 -   `#padByte` ensures that the `String` interperetation of a `Int` is wide enough.
 
-```{.k .java .ocaml}
+```k
     syntax String ::= #unparseByteStack ( WordStack )                [function]
                     | #unparseByteStack ( WordStack , StringBuffer ) [function, klabel(#unparseByteStackAux)]
  // ---------------------------------------------------------------------------------------------------------
@@ -670,7 +670,7 @@ Encoding
 -   `#rlpEncodeWord` RLP encodes a single EVM word.
 -   `#rlpEncodeString` RLP encodes a single `String`.
 
-```{.k .java .ocaml}
+```k
     syntax String ::= #rlpEncodeWord ( Int )            [function]
                     | #rlpEncodeBytes ( Int , Int )     [function]
                     | #rlpEncodeWordStack ( WordStack ) [function]
@@ -706,7 +706,7 @@ Decoding
 -   `#rlpDecode` RLP decodes a single `String` into a `JSON`.
 -   `#rlpDecodeList` RLP decodes a single `String` into a `JSONList`, interpereting the string as the RLP encoding of a list.
 
-```{.k .java .ocaml}
+```k
     syntax JSON ::= #rlpDecode(String)               [function]
                   | #rlpDecode(String, LengthPrefix) [function, klabel(#rlpDecodeAux)]
  // ----------------------------------------------------------------------------------

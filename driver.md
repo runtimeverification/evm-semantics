@@ -8,14 +8,17 @@ Actual execution of the EVM is defined in [the EVM file](../evm).
 requires "verification.k"
 ```
 
-```{.k .java .ocaml}
+```k
 requires "evm.k"
 requires "analysis.k"
 
 module ETHEREUM-SIMULATION
     imports EVM
-    imports EVM-ANALYSIS
     imports K-REFLECTION
+```
+
+```{.k .java .ocaml}
+    imports EVM-ANALYSIS
 ```
 
 ```{.k .java}
@@ -740,5 +743,8 @@ TODO: case with nonzero ommers.
     rule check TESTID : { "uncleHeaders" : OMMERS } => check "ommerHeaders" : OMMERS ~> failure TESTID
  // --------------------------------------------------------------------------------------------------
     rule <k> check "ommerHeaders" : [ .JSONList ] => . ... </k> <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
+```
+
+```k
 endmodule
 ```

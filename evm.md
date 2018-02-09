@@ -7,7 +7,7 @@ The EVM is a stack machine over some simple opcodes.
 Most of the opcodes are "local" to the execution state of the machine, but some of them must interact with the world state.
 This file only defines the local execution operations, the file `driver.md` will define the interactions with the world state.
 
-```{.k .java .ocaml}
+```k
 requires "data.k"
 
 module EVM
@@ -24,19 +24,9 @@ In addition, there are cells for the callstack and execution substate.
 We've broken up the configuration into two components; those parts of the state that mutate during execution of a single transaction and those that are static throughout.
 In the comments next to each cell, we've marked which component of the YellowPaper state corresponds to each cell.
 
-```{.k .java .ocaml}
+```k
     configuration <k> $PGM:EthereumSimulation </k>
-```
-
-```{.k .ocaml}
                   <exit-code exit=""> 1 </exit-code>
-```
-
-```{.k .java}
-                  <exit-code> 1 </exit-code>
-```
-
-```{.k .java .ocaml}
                   <mode> $MODE:Mode </mode>
                   <schedule> $SCHEDULE:Schedule </schedule>
                   <analysis> .Map </analysis>
@@ -132,11 +122,11 @@ In the comments next to each cell, we've marked which component of the YellowPap
                         <account multiplicity="*" type="Bag">
 ```
 
-```{.k .ocaml}
+```{.k .ocaml .node}
                         <account multiplicity="*" type="Map">
 ```
 
-```{.k .java .ocaml}
+```k
                           <acctID>  0          </acctID>
                           <balance> 0          </balance>
                           <code>    .WordStack </code>
@@ -160,11 +150,11 @@ In the comments next to each cell, we've marked which component of the YellowPap
                         <message multiplicity="*" type="Bag">
 ```
 
-```{.k .ocaml}
+```{.k .ocaml .node}
                         <message multiplicity="*" type="Map">
 ```
 
-```{.k .java .ocaml}
+```k
                           <msgID>      0          </msgID>
                           <txNonce>    0          </txNonce>            // T_n
                           <txGasPrice> 0          </txGasPrice>         // T_p
@@ -194,13 +184,13 @@ Our semantics is modal, with the initial mode being set on the command line via 
 -   `NORMAL` executes as a client on the network would.
 -   `VMTESTS` skips `CALL*` and `CREATE` operations.
 
-```{.k .java .ocaml}
+```k
     syntax Mode ::= "NORMAL" | "VMTESTS"
 ```
 
 -   `#setMode_` sets the mode to the supplied one.
 
-```{.k .java .ocaml}
+```k
     syntax Mode ::= "#setMode" Mode
  // -------------------------------
     rule <k> #setMode EXECMODE => . ... </k> <mode> _ => EXECMODE </mode>
@@ -218,7 +208,7 @@ The `callStack` cell stores a list of previous VM execution states.
 -   `#popCallStack` restores the top element of the `callStack`.
 -   `#dropCallStack` removes the top element of the `callStack`.
 
-```{.k .java .ocaml}
+```k
     syntax State ::= "{" Int "|" Int "|" Map "|" WordStack "|" Int "|" WordStack "|" Int "|" WordStack "|" Map "|" Int "|" Int "|" Int "|" Bool "}"
  // -----------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -325,7 +315,7 @@ In the long term, a new prover will be built capable of supporting the same code
     rule <k> #dropWorldState => . ... </k> <interimStates> (ListItem(_) => .List) ... </interimStates>
 ```
 
-```{.k .ocaml}
+```{.k .ocaml .node}
     syntax Accounts ::= "{" AccountsCell "|" Map "}"
  // ------------------------------------------------
 
@@ -356,7 +346,7 @@ The `substateStack` cell stores a list of previous substate logs.
 -   `#popSubstate` restores the top element of the `substateStack`.
 -   `#dropSubstate` removes the top element of the `substateStack`.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= "#pushSubstate"
  // -------------------------------------
     rule <k> #pushSubstate => .K ... </k>
@@ -382,7 +372,7 @@ Control Flow
 -   `#end` indicates (non-exceptional) end of execution.
 -   `#exception` indicates exceptions (consuming opcodes until a catch).
 
-```{.k .java .ocaml}
+```k
     syntax KItem     ::= Exception
     syntax Exception ::= "#exception" | "#end" | "#revert"
  // ------------------------------------------------------
@@ -394,7 +384,7 @@ Control Flow
     -   If there is no exception, take the first branch.
     -   Else, catch exception and take the second branch.
 
-```{.k .java .ocaml}
+```k
     syntax KItem ::= "#?" K ":" K "?#"
  // ----------------------------------
     rule <k>               #? B1 : _  ?# => B1               ... </k>
@@ -412,7 +402,7 @@ OpCode Execution
 -   `#execute` calls `#next` repeatedly until it recieves an `#end` or `#exception`.
 -   `#execTo` executes until the next opcode is one of the specified ones.
 
-```{.k .java .ocaml}
+```k
     syntax KItem ::= "#execute"
  // ---------------------------
     rule <k> (. => #next) ~> #execute ... </k>
@@ -443,7 +433,7 @@ Execution follows a simple cycle where first the state is checked for exceptions
 TODO: I think on `#next` we are supposed to pretend it's `STOP` if it's in the middle of the program somewhere but is invalid?
 I suppose the semantics currently loads `INVALID` where `N` is the position in the bytecode array.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= "#next"
  // -----------------------------
     rule <k> #next => #end ... </k>
@@ -462,7 +452,7 @@ The `#next` operator executes a single step by:
 3.  increments the program counter, and finally
 4.  reverts state if any of the above steps threw an exception.
 
-```{.k .java .ocaml}
+```k
     rule <mode> EXECMODE </mode>
          <k> #next
           => #pushCallStack ~> #exceptional? [ OP ]
@@ -480,7 +470,7 @@ The `#next` operator executes a single step by:
 
 -   `#exceptional?` checks if the operator is invalid and will not cause `wordStack` size issues (this implements the function `Z` in the YellowPaper, section 9.4.2).
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= "#exceptional?" "[" OpCode "]"
  // ----------------------------------------------------
     rule <k> #exceptional? [ OP ]
@@ -494,7 +484,7 @@ The `#next` operator executes a single step by:
 
 -   `#invalid?` checks if it's the designated invalid opcode.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= "#invalid?" "[" OpCode "]"
  // ------------------------------------------------
     rule <k> #invalid? [ INVALID ] => #exception ... </k>
@@ -504,7 +494,7 @@ The `#next` operator executes a single step by:
 -   `#stackNeeded?` checks that the stack will be not be under/overflown.
 -   `#stackNeeded`, `#stackAdded`, and `#stackDelta` are helpers for deciding `#stackNeeded?`.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= "#stackNeeded?" "[" OpCode "]"
  // ----------------------------------------------------
     rule <k> #stackNeeded? [ OP ] => #exception ... </k>
@@ -561,7 +551,7 @@ The `#next` operator executes a single step by:
 
 -   `#badJumpDest?` determines if the opcode will result in a bad jump destination.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= "#badJumpDest?" "[" OpCode "]"
  // ----------------------------------------------------
     rule <k> #badJumpDest? [ OP    ] => . ... </k> requires notBool isJumpOp(OP)
@@ -577,7 +567,7 @@ The `#next` operator executes a single step by:
 
 -   `#static?` determines if the opcode should throw an exception due to the static flag.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= "#static?" "[" OpCode "]"
  // -----------------------------------------------
     rule <k> #static? [ OP ] => .          ... </k>                             <static> false </static>
@@ -588,7 +578,7 @@ The `#next` operator executes a single step by:
 **TODO**: Investigate why using `[owise]` here for the `false` cases breaks the proofs.
           Alternatively, figure out how to make this go through with a boolean expression.
 
-```{.k .java .ocaml}
+```k
     syntax Bool ::= #changesState ( OpCode , WordStack ) [function]
  // ---------------------------------------------------------------
     rule #changesState(LOG(_), _)               => true
@@ -677,7 +667,7 @@ The `#next` operator executes a single step by:
 
 -   `#exec` will load the arguments of the opcode (it assumes `#stackNeeded?` is accurate and has been called) and trigger the subsequent operations.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= "#exec" "[" OpCode "]"
  // --------------------------------------------
     rule <k> #exec [ OP ] => #gas [ OP ] ~> OP ... </k> requires isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
@@ -686,7 +676,7 @@ The `#next` operator executes a single step by:
 Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
 Some of them require an argument to be interpereted as an address (modulo 160 bits), so the `#addr?` function performs that check.
 
-```{.k .java .ocaml}
+```k
     syntax KItem  ::= OpCode
     syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
                     | InvalidOp | StackOp | InternalOp | CallOp | CallSixOp | PushOp
@@ -705,7 +695,7 @@ Some of them require an argument to be interpereted as an address (modulo 160 bi
 
 `StackOp` is used for opcodes which require a large portion of the stack.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= StackOp WordStack
  // ---------------------------------------
     rule <k> #exec [ SO:StackOp => SO WS ] ... </k> <wordStack> WS </wordStack>
@@ -713,7 +703,7 @@ Some of them require an argument to be interpereted as an address (modulo 160 bi
 
 The `CallOp` opcodes all interperet their second argument as an address.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= CallSixOp Int Int     Int Int Int Int
                         | CallOp    Int Int Int Int Int Int Int
  // -----------------------------------------------------------
@@ -726,7 +716,7 @@ The `CallOp` opcodes all interperet their second argument as an address.
 -   `#addr` decides if the given argument should be interpreted as an address (given the opcode).
 -   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= "#addr?" "(" OpCode "," Int ")" [function]
  // ---------------------------------------------------------
     rule #addr?(BALANCE,      W) => #addr(W)
@@ -759,7 +749,7 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
 
 -   `#pc` calculates the next program counter of the given operator.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= "#pc" "[" OpCode "]"
  // ------------------------------------------
     rule <k> #pc [ OP         ] => . ... </k> <pc> PCOUNT => PCOUNT +Int 1          </pc> requires notBool (isPushOp(OP) orBool isJumpOp(OP))
@@ -776,7 +766,7 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
 During execution of a transaction some things are recorded in the substate log (Section 6.1 in YellowPaper).
 This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
 
-```{.k .java .ocaml}
+```k
     syntax SubstateLogEntry ::= "{" Int "|" WordStack "|" WordStack "}"
  // -------------------------------------------------------------------
 ```
@@ -785,7 +775,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 
 -   `#finalizeTx` makes the substate log actually have an effect on the state.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= #finalizeTx ( Bool )
  // ------------------------------------------
     rule <k> #finalizeTx(true) => . ... </k>
@@ -886,14 +876,14 @@ EVM Programs
 
 Lists of opcodes form programs.
 
-```{.k .java .ocaml}
+```k
     syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
  // --------------------------------------------------
 ```
 
 ### Converting to/from `Map` Representation
 
-```{.k .java .ocaml}
+```k
     syntax Map ::= #asMapOpCodes ( OpCodes )             [function]
                  | #asMapOpCodes ( Int , OpCodes , Map ) [function, klabel(#asMapOpCodesAux)]
  // -----------------------------------------------------------------------------------------
@@ -924,7 +914,7 @@ These are just used by the other operators for shuffling local execution state a
 -   `#push` will push an element to the `wordStack` without any checks.
 -   `#setStack_` will set the current stack to the given one.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= "#push" | "#setStack" WordStack
  // -----------------------------------------------------
     rule <k> W0:Int ~> #push => . ... </k> <wordStack> WS => W0 : WS </wordStack>
@@ -935,7 +925,7 @@ These are just used by the other operators for shuffling local execution state a
     If the account already exists with non-zero nonce or non-empty code, an exception is thrown.
     Otherwise, if the account already exists, the storage is cleared.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= "#newAccount" Int
  // ---------------------------------------
     rule <k> #newAccount ACCT => #exception ... </k>
@@ -975,7 +965,7 @@ These are just used by the other operators for shuffling local execution state a
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= "#transferFunds" Int Int Int
  // --------------------------------------------------
     rule <k> #transferFunds ACCTFROM ACCTTO VALUE => . ... </k>
@@ -1019,7 +1009,7 @@ These are just used by the other operators for shuffling local execution state a
 
 We use `INVALID` both for marking the designated invalid operator and for garbage bytes in the input program.
 
-```{.k .java .ocaml}
+```k
     syntax InvalidOp ::= "INVALID"
  // ------------------------------
 ```
@@ -1028,7 +1018,7 @@ We use `INVALID` both for marking the designated invalid operator and for garbag
 
 Some operators don't calculate anything, they just push the stack around a bit.
 
-```{.k .java .ocaml}
+```k
     syntax UnStackOp ::= "POP"
  // --------------------------
     rule <k> POP W => . ... </k>
@@ -1047,7 +1037,7 @@ Some operators don't calculate anything, they just push the stack around a bit.
 
 These operations are getters/setters of the local execution memory.
 
-```{.k .java .ocaml}
+```k
     syntax UnStackOp ::= "MLOAD"
  // ----------------------------
     rule <k> MLOAD INDEX => #asWord(#range(LM, INDEX, 32)) ~> #push ... </k>
@@ -1068,7 +1058,7 @@ Expression calculations are simple and don't require anything but the arguments 
 
 NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble parsing it/compiling the definition otherwise.
 
-```{.k .java .ocaml}
+```k
     syntax UnStackOp ::= "ISZERO" | "NOT"
  // -------------------------------------
     rule <k> ISZERO 0 => 1        ~> #push ... </k>
@@ -1129,7 +1119,7 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
 
 These operators make queries about the current execution state.
 
-```{.k .java .ocaml}
+```k
     syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT"
  // -------------------------------------------------------------
     rule <k> PC       => PCOUNT ~> #push ... </k> <pc> PCOUNT </pc>
@@ -1184,7 +1174,7 @@ EVM OpCodes
 
 The `JUMP*` family of operations affect the current program counter.
 
-```{.k .java .ocaml}
+```k
     syntax NullStackOp ::= "JUMPDEST"
  // ---------------------------------
     rule <k> JUMPDEST => . ... </k>
@@ -1201,7 +1191,7 @@ The `JUMP*` family of operations affect the current program counter.
 
 ### `STOP`, `REVERT`, and `RETURN`
 
-```{.k .java .ocaml}
+```k
     syntax NullStackOp ::= "STOP"
  // -----------------------------
     rule <k> STOP => #end ... </k>
@@ -1224,7 +1214,7 @@ The `JUMP*` family of operations affect the current program counter.
 
 These operators query about the current `CALL*` state.
 
-```{.k .java .ocaml}
+```k
     syntax NullStackOp ::= "CALLDATASIZE"
  // -------------------------------------
     rule <k> CALLDATASIZE => #sizeWordStack(CD) ~> #push ... </k>
@@ -1246,7 +1236,7 @@ These operators query about the current `CALL*` state.
 
 These operators query about the current return data buffer.
 
-```{.k .java .ocaml}
+```k
     syntax NullStackOp ::= "RETURNDATASIZE"
  // ---------------------------------------
     rule <k> RETURNDATASIZE => #sizeWordStack(RD) ~> #push ... </k>
@@ -1266,7 +1256,7 @@ These operators query about the current return data buffer.
 
 ### Log Operations
 
-```{.k .java .ocaml}
+```k
     syntax BinStackOp ::= LogOp
     syntax LogOp ::= LOG ( Int )
  // ----------------------------
@@ -1289,7 +1279,7 @@ TODO: It's unclear what to do in the case of an account not existing for these o
 `BALANCE` is specified to push 0 in this case, but the others are not specified.
 For now, I assume that they instantiate an empty account and use the empty data.
 
-```{.k .java .ocaml}
+```k
     syntax UnStackOp ::= "BALANCE"
  // ------------------------------
     rule <k> BALANCE ACCT => BAL ~> #push ... </k>
@@ -1320,7 +1310,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
 TODO: What should happen in the case that the account doesn't exist with `EXTCODECOPY`?
 Should we pad zeros (for the copied "program")?
 
-```{.k .java .ocaml}
+```k
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
     rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </k>
@@ -1340,7 +1330,7 @@ Should we pad zeros (for the copied "program")?
 
 These rules reach into the network state and load/store from account storage:
 
-```{.k .java .ocaml}
+```k
     syntax UnStackOp ::= "SLOAD"
  // ----------------------------
     rule <k> SLOAD INDEX => 0 ~> #push ... </k>
@@ -1391,7 +1381,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
 -   The `callLog` is used to store the `CALL*`/`CREATE` operations so that we can compare them against the test-set.
 
-```{.k .java .ocaml}
+```k
     syntax Call ::= "{" Int "|" Int "|" Int "|" WordStack "}"
  // ---------------------------------------------------------
 ```
@@ -1400,7 +1390,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 -   `#callWithCode______` takes the calling account, the accout to execute as, the code to execute (as a map), the gas limit, the amount to transfer, and the arguments.
 -   `#return__` is a placeholder for the calling program, specifying where to place the returned data in memory.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= "#checkCall" Int Int
                         | "#call" Int Int Int Int Int Int WordStack Bool
                         | "#callWithCode" Int Int Map WordStack Int Int Int WordStack Bool
@@ -1522,7 +1512,7 @@ Ethereum Network OpCodes
 
 For each `CALL*` operation, we make a corresponding call to `#call` and a state-change to setup the custom parts of the calling environment.
 
-```{.k .java .ocaml}
+```k
     syntax CallOp ::= "CALL"
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
@@ -1587,7 +1577,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 -   `#create____` transfers the endowment to the new account and triggers the execution of the initialization code.
 -   `#codeDeposit_` checks the result of initialization code and whether the code deposit can be paid, indicating an error if not.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= "#create" Int Int Int Int WordStack
                         | "#mkCreate" Int Int WordStack Int Int
                         | "#checkCreate" Int Int
@@ -1698,7 +1688,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
 `CREATE` will attempt to `#create` the account using the initialization code and cleans up the result with `#codeDeposit`.
 
-```{.k .java .ocaml}
+```k
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
@@ -1721,7 +1711,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 `SELFDESTRUCT` marks the current account for deletion and transfers funds out of the current account.
 Self destructing to yourself, unlike a regular transfer, destroys the balance in the account, irreparably losing it.
 
-```{.k .java .ocaml}
+```k
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
     rule <k> SELFDESTRUCT ACCTTO => #transferFunds ACCT ACCTTO BALFROM ~> #end ... </k>
@@ -1759,7 +1749,7 @@ Precompiled Contracts
 
 -   `#precompiled` is a placeholder for the 4 pre-compiled contracts at addresses 1 through 4.
 
-```{.k .java .ocaml}
+```k
     syntax NullStackOp   ::= PrecompiledOp
     syntax PrecompiledOp ::= #precompiled ( Int ) [function]
  // --------------------------------------------------------
@@ -1788,7 +1778,7 @@ Precompiled Contracts
 -   `RIP160` performs the RIPEMD-160 hash function.
 -   `ID` is the identity function (copies input to output).
 
-```{.k .java .ocaml}
+```k
     syntax PrecompiledOp ::= "ECREC"
  // --------------------------------
     rule <k> ECREC => #end ... </k>
@@ -1900,7 +1890,7 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 -   `#memory` computes the new memory size given the old size and next operator (with its arguments).
 -   `#memoryUsageUpdate` is the function `M` in appendix H of the YellowPaper which helps track the memory used.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= #memory ( OpCode , Int ) [function]
  // --------------------------------------------------
     rule #memory ( MLOAD INDEX     , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
@@ -1925,7 +1915,7 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
 Grumble grumble, K sucks at `owise`.
 
-```{.k .java .ocaml}
+```k
     rule #memory(JUMP _,    MU) => MU
     rule #memory(JUMPI _ _, MU) => MU
     rule #memory(JUMPDEST,  MU) => MU
@@ -2002,7 +1992,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
 -   `#gasExec` loads all the relevant surronding state and uses that to compute the intrinsic execution gas of each opcode.
 
-```{.k .java .ocaml}
+```k
     syntax InternalOp ::= #gasExec ( Schedule , OpCode )
  // ----------------------------------------------------
     rule <k> #gasExec(SCHED, SSTORE INDEX VALUE) => Csstore(SCHED, VALUE, #lookup(STORAGE, INDEX)) ... </k>
@@ -2144,7 +2134,7 @@ There are several helpers for calculating gas (most of them also specified in th
 
 Note: These are all functions as the operator `#gasExec` has already loaded all the relevant state.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= Csstore ( Schedule , Int , Int ) [function]
  // ----------------------------------------------------------
     rule Csstore(SCHED, VALUE, OLD) => #ifInt VALUE =/=Int 0 andBool OLD ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
@@ -2233,7 +2223,7 @@ Specify which profile by passing in the argument `-cSCHEDULE=<FEE_SCHEDULE>` whe
 
 A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `ScheduleFlag` to a `Schedule` yields whether the flag is set or not.
 
-```{.k .java .ocaml}
+```k
     syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function]
  // ----------------------------------------------------------
 
@@ -2246,7 +2236,7 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
 
 A `ScheduleConst` is a constant determined by the fee schedule.
 
-```{.k .java .ocaml}
+```k
     syntax Int ::= ScheduleConst "<" Schedule ">" [function]
  // --------------------------------------------------------
 
@@ -2261,7 +2251,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
 ### Default Schedule
 
-```{.k .java .ocaml}
+```k
     syntax Schedule ::= "DEFAULT"
  // -----------------------------
     rule Gzero    < DEFAULT > => 0
@@ -2389,7 +2379,7 @@ struct EVMSchedule
 
 ### Frontier Schedule
 
-```{.k .java .ocaml}
+```k
     syntax Schedule ::= "FRONTIER"
  // ------------------------------
     rule Gtxcreate  < FRONTIER > => 21000
@@ -2404,7 +2394,7 @@ static const EVMSchedule FrontierSchedule = EVMSchedule(false, false, 21000);
 
 ### Homestead Schedule
 
-```{.k .java .ocaml}
+```k
     syntax Schedule ::= "HOMESTEAD"
  // -------------------------------
     rule SCHEDCONST < HOMESTEAD > => SCHEDCONST < DEFAULT >
@@ -2418,7 +2408,7 @@ static const EVMSchedule HomesteadSchedule = EVMSchedule(true, true, 53000);
 
 ### EIP150 Schedule
 
-```{.k .java .ocaml}
+```k
     syntax Schedule ::= "EIP150"
  // ----------------------------
     rule Gbalance      < EIP150 > => 400
@@ -2456,7 +2446,7 @@ static const EVMSchedule EIP150Schedule = []
 
 ### EIP158 Schedule
 
-```{.k .java .ocaml}
+```k
     syntax Schedule ::= "EIP158"
  // ----------------------------
     rule Gexpbyte    < EIP158 > => 50
@@ -2483,7 +2473,7 @@ static const EVMSchedule EIP158Schedule = []
 
 ### Byzantium Schedule
 
-```{.k .java .ocaml}
+```k
     syntax Schedule ::= "BYZANTIUM"
  // -------------------------------
     rule Rb         < BYZANTIUM > => 3 *Int (10 ^Int 18)
@@ -2511,7 +2501,7 @@ static const EVMSchedule ByzantiumSchedule = []
 
 ### Constantinople Schedule
 
-```{.k .java .ocaml}
+```k
     syntax Schedule ::= "CONSTANTINOPLE"
  // ------------------------------------
     rule Gblockhash < CONSTANTINOPLE > => 800
@@ -2554,7 +2544,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
 -   `#dasmPUSH` handles the case of a `PushOp`.
 -   `#dasmOpCode` interperets a `Int` as an `OpCode`.
 
-```{.k .java .ocaml}
+```k
     syntax OpCodes ::= #dasmOpCodes ( WordStack , Schedule )           [function]
                      | #dasmOpCodes ( OpCodes , WordStack , Schedule ) [function, klabel(#dasmOpCodesAux)]
                      | #revOpCodes  ( OpCodes , OpCodes )              [function]

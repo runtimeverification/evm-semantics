@@ -85,7 +85,7 @@ The claims have to be supplied to K via a specification file (ends in `-spec.k`)
 
 The following claim captures the behavior of the `transferFrom` function.
 
-```k
+```{.k .example}
     rule <k>       #execute ... </k>
          <id>      %ACCT_ID     </id>
          <program> %HKG_Program </program>
