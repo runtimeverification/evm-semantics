@@ -77,6 +77,10 @@ brew cask install java8
 brew install automake libtool gmp mpfr pkg-config pandoc maven opam z3
 ```
 
+NOTE: a previous version of these instructions required the user to run `brew link flex --force`. After fetching this
+revision, you should first run `brew unlink flex`, as it is no longer necessary and will cause an error if you have the
+homebrew version of flex installed instead of the xcode command line tools version.
+
 ### Installing/Building
 
 After installing the above dependencies, the following command will build submodule dependencies and build KEVM:
