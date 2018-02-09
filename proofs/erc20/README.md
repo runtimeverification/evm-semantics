@@ -9,7 +9,10 @@ We optimized the verifier by introducing custom abstractions and lemmas specific
 We used the verifier to verify multiple ERC20 token contracts against the EVM-level specification, and found diverging behaviors of which some are questionable.
 We believe that the techniques we developed here can be also readily used for verifying other smart contracts.
 
-To reproduce the verification results of all of the ERC20 token contracts, simply run the following command in the root directory of this repository:
+Running Verifier
+----------------
+
+To reproduce the verification results for all of the ERC20 token contracts, simply run the following command in the root directory of this repository:
 ```
 $ make proof-test-all
 ```
