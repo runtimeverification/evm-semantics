@@ -42,6 +42,9 @@
       <callLog>
         .Set
       </callLog>
+      <touchedAccounts>
+        .Set
+      </touchedAccounts>
       <txExecState>
         <program>
           0 |-> PUSH ( 1 , 0 )
