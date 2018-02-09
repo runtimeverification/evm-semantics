@@ -186,7 +186,7 @@ These are soft requirements (review **may** start without these being met), and 
 
 -   Place a line of `-` after each block of syntax declarations.
 
-    ```{.k}
+    ```k
         syntax Foo ::= "newSymbol"
      // --------------------------
         rule <k> newSymbol => . ... </k>
@@ -197,14 +197,14 @@ These are soft requirements (review **may** start without these being met), and 
 
 -   Place spaces around parentheses and commas in K's pretty functional-style syntax declarations.
 
-    ```{.k}
+    ```k
         syntax Foo ::= newFunctionalSyntax ( Int , String )
      // ---------------------------------------------------
     ```
 
 -   When multiple structurally-similar rules are present, line up as much as possible (and makes sense).
 
-    ```{.k}
+    ```k
         rule <k> #do1       => . ... </k> <cell1> not-done => done        </cell1>
         rule <k> #do1Longer => . ... </k> <cell1> not-done => done-longer </cell1>
 
@@ -218,7 +218,7 @@ These are soft requirements (review **may** start without these being met), and 
 -   Line up the `r` in `requires` with the `l` in `rule` (if it's not all on one line).
     Similarly, line up the end of `andBool` for extra side-conditions with the end of `requires`.
 
-    ```{.k}
+    ```k
         rule <k> A => B ... </k>
              SOME_LARGE_CONFIGURATION
 

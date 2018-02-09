@@ -1,12 +1,24 @@
 local blocks={}
 
+--- Get if the current code block should be kept
+-- @param classes tags on the code block
+-- @param targets tags selected on the command line
+-- @return true if the selected target keeps this code block, false otherwise
 local function keep(classes,targets)
+  local has_target = false
+  local has_any = false
   for k,_ in pairs(targets) do
-    if not classes[k] then
-      return false
+    if classes[k] then
+      has_target = true
     end
   end
-  return true
+  for k,_ in pairs(classes) do
+    if k ~= "k" then
+      has_any = true
+      break
+    end
+  end
+  return classes["k"] and (not has_any or has_target)
 end
 
 local function split_classes(str)
