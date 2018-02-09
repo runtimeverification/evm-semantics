@@ -38,6 +38,9 @@
       <callLog>
         .Set
       </callLog>
+      <touchedAccounts>
+        .Set
+      </touchedAccounts>
       <txExecState>
         <program>
           .Map

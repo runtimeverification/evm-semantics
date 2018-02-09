@@ -122,6 +122,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
+         <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID     </msgID>
            <txGasPrice> GPRICE   </txGasPrice>
@@ -138,6 +139,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            ...
          </account>
          <activeAccounts> ... ACCTFROM |-> (_ => false) ... </activeAccounts>
+         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
 
     rule <k> loadTx(ACCTFROM)
           => #call ACCTFROM ACCTTO ACCTTO (GLIMIT -Int G0(SCHED, DATA, false)) VALUE VALUE DATA false
@@ -149,6 +151,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
+         <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID   </msgID>
            <txGasPrice> GPRICE </txGasPrice>
@@ -165,6 +168,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            ...
          </account>
          <activeAccounts> ... ACCTFROM |-> (_ => false) ... </activeAccounts>
+         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
 
     syntax EthereumCommand ::= "#finishTx"
@@ -339,27 +343,28 @@ State Manipulation
     syntax EthreumCommand ::= "clearTX"
  // -----------------------------------
     rule <k> clearTX => . ... </k>
-         <output>       _ => .WordStack </output>
-         <memoryUsed>   _ => 0          </memoryUsed>
-         <callDepth>    _ => 0          </callDepth>
-         <callStack>    _ => .List      </callStack>
-         <callLog>      _ => .Set       </callLog>
-         <program>      _ => .Map       </program>
-         <programBytes> _ => .WordStack </programBytes>
-         <id>           _ => 0          </id>
-         <caller>       _ => 0          </caller>
-         <callData>     _ => .WordStack </callData>
-         <callValue>    _ => 0          </callValue>
-         <wordStack>    _ => .WordStack </wordStack>
-         <localMem>     _ => .Map       </localMem>
-         <pc>           _ => 0          </pc>
-         <gas>          _ => 0          </gas>
-         <previousGas>  _ => 0          </previousGas>
-         <selfDestruct> _ => .Set       </selfDestruct>
-         <log>          _ => .List      </log>
-         <refund>       _ => 0          </refund>
-         <gasPrice>     _ => 0          </gasPrice>
-         <origin>       _ => 0          </origin>
+         <output>          _ => .WordStack </output>
+         <memoryUsed>      _ => 0          </memoryUsed>
+         <callDepth>       _ => 0          </callDepth>
+         <callStack>       _ => .List      </callStack>
+         <callLog>         _ => .Set       </callLog>
+         <program>         _ => .Map       </program>
+         <programBytes>    _ => .WordStack </programBytes>
+         <id>              _ => 0          </id>
+         <caller>          _ => 0          </caller>
+         <callData>        _ => .WordStack </callData>
+         <callValue>       _ => 0          </callValue>
+         <wordStack>       _ => .WordStack </wordStack>
+         <localMem>        _ => .Map       </localMem>
+         <pc>              _ => 0          </pc>
+         <gas>             _ => 0          </gas>
+         <previousGas>     _ => 0          </previousGas>
+         <selfDestruct>    _ => .Set       </selfDestruct>
+         <log>             _ => .List      </log>
+         <refund>          _ => 0          </refund>
+         <gasPrice>        _ => 0          </gasPrice>
+         <origin>          _ => 0          </origin>
+         <touchedAccounts> _ => .Set       </touchedAccounts>
 
     syntax EthreumCommand ::= "clearBLOCK"
  // --------------------------------------
