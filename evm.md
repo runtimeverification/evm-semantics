@@ -380,6 +380,7 @@ The `#next` operator executes a single step by:
     rule <mode> EXECMODE </mode>
          <k> #next
           => #pushCallStack ~> #exceptional? [ OP ]
+                            ~> #load         [ OP ]
                             ~> #exec         [ OP ]
                             ~> #pc           [ OP ]
           ~> #? #dropCallStack : #popCallStack ?#
@@ -611,10 +612,10 @@ Some of them require an argument to be interpereted as an address (modulo 160 bi
                         | TernStackOp Int Int Int
                         | QuadStackOp Int Int Int Int
  // -------------------------------------------------
-    rule <k> #exec [ UOP:UnStackOp   => UOP #addr?(UOP, W0)          ] ... </k> <wordStack> W0 : WS                => WS </wordStack>
-    rule <k> #exec [ BOP:BinStackOp  => BOP #addr?(BOP, W0) W1       ] ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack>
-    rule <k> #exec [ TOP:TernStackOp => TOP #addr?(TOP, W0) W1 W2    ] ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
-    rule <k> #exec [ QOP:QuadStackOp => QOP #addr?(QOP, W0) W1 W2 W3 ] ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
+    rule <k> #exec [ UOP:UnStackOp   => UOP W0          ] ... </k> <wordStack> W0 : WS                => WS </wordStack>
+    rule <k> #exec [ BOP:BinStackOp  => BOP W0 W1       ] ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack>
+    rule <k> #exec [ TOP:TernStackOp => TOP W0 W1 W2    ] ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
+    rule <k> #exec [ QOP:QuadStackOp => QOP W0 W1 W2 W3 ] ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
 ```
 
 `StackOp` is used for opcodes which require a large portion of the stack.
@@ -631,8 +632,8 @@ The `CallOp` opcodes all interperet their second argument as an address.
     syntax InternalOp ::= CallSixOp Int Int     Int Int Int Int
                         | CallOp    Int Int Int Int Int Int Int
  // -----------------------------------------------------------
-    rule <k> #exec [ CSO:CallSixOp => CSO W0 #addr(W1)    W2 W3 W4 W5 ] ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
-    rule <k> #exec [ CO:CallOp     => CO  W0 #addr(W1) W2 W3 W4 W5 W6 ] ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
+    rule <k> #exec [ CSO:CallSixOp => CSO W0 W1    W2 W3 W4 W5 ] ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
+    rule <k> #exec [ CO:CallOp     => CO  W0 W1 W2 W3 W4 W5 W6 ] ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
 ```
 
 ### Helpers
@@ -641,13 +642,55 @@ The `CallOp` opcodes all interperet their second argument as an address.
 -   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
 
 ```k
-    syntax Int ::= "#addr?" "(" OpCode "," Int ")" [function]
- // ---------------------------------------------------------
-    rule #addr?(BALANCE,      W) => #addr(W)
-    rule #addr?(EXTCODESIZE,  W) => #addr(W)
-    rule #addr?(EXTCODECOPY,  W) => #addr(W)
-    rule #addr?(SELFDESTRUCT, W) => #addr(W)
-    rule #addr?(OP, W)           => W        requires (OP =/=K BALANCE) andBool (OP =/=K EXTCODESIZE) andBool (OP =/=K EXTCODECOPY) andBool (OP =/=K SELFDESTRUCT)
+    syntax InternalOp ::= "#load" "[" OpCode "]"
+ // --------------------------------------------
+    rule <k> #load [ OP:OpCode ] => #loadAccount #addr(W0) ... </k>
+         <wordStack> (W0 => #addr(W0)) : WS </wordStack>
+      requires #addr?(OP)
+
+    rule <k> #load [ OP:OpCode ] => #loadAccount #addr(W0) ~> #lookupCode #addr(W0) ... </k>
+         <wordStack> (W0 => #addr(W0)) : WS </wordStack>
+      requires #code?(OP)
+
+    rule <k> #load [ OP:OpCode ] => #loadAccount #addr(W1) ~> #lookupCode #addr(W1) ... </k>
+         <wordStack> W0 : (W1 => #addr(W1)) : WS </wordStack>
+      requires isCallOp(OP) orBool isCallSixOp(OP)
+
+    rule <k> #load [ CREATE ] => #loadAccount #newAddr(ACCT, NONCE) ... </k>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <nonce> NONCE </nonce>
+           ...
+         </account>
+
+    rule <k> #load [ OP:OpCode ] => #lookupStorage ACCT W0 ... </k>
+         <id> ACCT </id>
+         <wordStack> W0 : WS </wordStack>
+      requires OP ==K SSTORE orBool OP ==K SLOAD
+
+    rule <k> #load [ OP:OpCode ] => . ... </k>
+      requires notBool (
+        OP ==K CREATE   orBool
+        OP ==K SLOAD    orBool
+        OP ==K SSTORE   orBool
+        isCallOp   (OP) orBool
+        isCallSixOp(OP) orBool
+        #addr?(OP)      orBool
+        #code?(OP)
+      )
+
+    syntax Bool ::= "#addr?" "(" OpCode ")" [function]
+ // --------------------------------------------------
+    rule #addr?(BALANCE)      => true
+    rule #addr?(SELFDESTRUCT) => true
+    rule #addr?(OP)           => false requires (OP =/=K BALANCE) andBool (OP =/=K SELFDESTRUCT)
+
+    syntax Bool ::= "#code?" "(" OpCode ")" [function]
+ // --------------------------------------------------
+    rule #code?(EXTCODESIZE)  => true
+    rule #code?(EXTCODECOPY)  => true
+    rule #code?(OP)           => false requires (OP =/=K EXTCODESIZE) andBool (OP =/=K EXTCODECOPY)
 
     syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas" | "#deductMemory"
  // ----------------------------------------------------------------------------
@@ -884,6 +927,39 @@ These are just used by the other operators for shuffling local execution state a
       requires notBool ACCT in ACCTS
 ```
 
+The following operations help with loading account information from an external running client.
+This minimizes the amount of information which must be stored in the configuration.
+
+-   `#loadAccount` queries for account data from the running client.
+-   `#lookupCode` loads the code of an account into the `<code>` cell.
+-   `#lookupStorage` loads the value of the specified storage key into the `<storage>` cell.
+
+```k
+    syntax InternalOp ::= "#loadAccount"   Int
+                        | "#lookupCode"    Int
+                        | "#lookupStorage" Int Int
+ // ----------------------------------------------
+```
+
+In `standalone` mode, the semantics assumes that all relevant account data is already loaded into memory.
+
+```{.k .standalone}
+    rule <k> #loadAccount   _   => . ... </k>
+    rule <k> #lookupCode    _   => . ... </k>
+    rule <k> #lookupStorage _ _ => . ... </k>
+```
+
+In `node` mode, the semantics are given in terms of an external call to a running client.
+
+```{.k .node}
+    rule <k> #lookupStorage ACCT INDEX => . ... </k>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> ... INDEX |-> _ ... </storage>
+           ...
+         </account>
+```
+
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
 
 ```k
@@ -1068,9 +1144,19 @@ These operators make queries about the current execution state.
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
-    rule <k> BLOCKHASH N => #if N >=Int HI orBool HI -Int 256 >Int N #then 0 #else #parseHexWord(Keccak256(Int2String(N))) #fi ~> #push ... </k> <number> HI </number> <mode> VMTESTS </mode>
+    rule <k> BLOCKHASH N => #if N >=Int HI orBool HI -Int 256 >Int N #then 0 #else #parseHexWord(Keccak256(Int2String(N))) #fi ~> #push ... </k>
+         <number> HI      </number>
+         <mode>   VMTESTS </mode>
+```
 
-    rule <k> BLOCKHASH N => #blockhash(HASHES, N, HI -Int 1, 0) ~> #push ... </k> <number> HI </number> <blockhash> HASHES </blockhash> <mode> NORMAL </mode>
+When running as a `node`, the blockhash will be retrieved from the running client.
+Otherwise, it is calculated here using the "shortcut" formula used for running tests.
+
+```{.k .standalone}
+    rule <k> BLOCKHASH N => #blockhash(HASHES, N, HI -Int 1, 0) ~> #push ... </k>
+         <number>    HI     </number>
+         <blockhash> HASHES </blockhash>
+         <mode>      NORMAL </mode>
 
     syntax Int ::= #blockhash ( List , Int , Int , Int ) [function]
  // ---------------------------------------------------------------
