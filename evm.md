@@ -916,10 +916,7 @@ These are just used by the other operators for shuffling local execution state a
            ( .Bag
           => <account>
                <acctID>  ACCT       </acctID>
-               <balance> 0          </balance>
-               <code>    .WordStack </code>
-               <storage> .Map       </storage>
-               <nonce>   0          </nonce>
+               ...
              </account>
            )
            ...
