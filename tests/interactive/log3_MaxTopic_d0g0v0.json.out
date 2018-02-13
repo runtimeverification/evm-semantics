@@ -149,7 +149,7 @@
     </evm>
     <network>
       <activeAccounts>
-        .Map
+        .Set
       </activeAccounts>
       <accounts>
         .AccountCellMap

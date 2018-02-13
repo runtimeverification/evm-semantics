@@ -247,7 +247,7 @@
     </evm>
     <network>
       <activeAccounts>
-        7 |-> false
+        SetItem ( 7 )
       </activeAccounts>
       <accounts>
         AccountCellMapItem ( <acctID>

@@ -113,7 +113,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
                       // Accounts Record
                       // ---------------
 
-                      <activeAccounts> .Map </activeAccounts>
+                      <activeAccounts> .Set </activeAccounts>
                       <accounts>
                         <account multiplicity="*" type="Map">
                           <acctID>  0          </acctID>
@@ -240,7 +240,7 @@ The `interimStates` cell stores a list of previous world states.
 -   `#dropWorldState` removes the top element of the `interimStates`.
 
 ```k
-    syntax Accounts ::= "{" AccountsCell "|" Map "}"
+    syntax Accounts ::= "{" AccountsCell "|" Set "}"
  // ------------------------------------------------
 
     syntax InternalOp ::= "#pushWorldState"
@@ -714,13 +714,12 @@ After executing a transaction, it's necessary to have the effect of the substate
            <balance> CURRBAL => CURRBAL +Word BAL </balance>
            ...
          </account>
-         <activeAccounts> ... ACCT |-> (EMPTY => #if BAL >Int 0 #then false #else EMPTY #fi) ... </activeAccounts>
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
          <mode> NORMAL </mode>
          <coinbase> MINER </coinbase>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool MINER in_keys(ACCTS)
+      requires notBool MINER in ACCTS
 
     rule <k> #finalizeTx(false) ... </k>
          <mode> NORMAL </mode>
@@ -757,7 +756,6 @@ After executing a transaction, it's necessary to have the effect of the substate
            <txGasPrice> GPRICE </txGasPrice>
            ...
          </message>
-         <activeAccounts> ... ORG |-> (ORGEMPTY => #if GAVAIL *Int GPRICE >Int 0 #then false #else ORGEMPTY #fi) MINER |-> (MINEMPTY => #if (GLIMIT -Int GAVAIL) *Int GPRICE >Int 0 #then false #else MINEMPTY #fi) ... </activeAccounts>
       requires ORG =/=Int MINER
 
     rule <k> #finalizeTx(false => true) ... </k>
@@ -777,11 +775,10 @@ After executing a transaction, it's necessary to have the effect of the substate
            <txGasPrice> GPRICE </txGasPrice>
            ...
          </message>
-         <activeAccounts> ... ACCT |-> (EMPTY => #if GLIMIT *Int GPRICE >Int 0 #then false #else EMPTY #fi) ... </activeAccounts>
 
     rule <k> #finalizeTx(true) ... </k>
          <selfDestruct> ... (SetItem(ACCT) => .Set) </selfDestruct>
-         <activeAccounts> ... (ACCT |-> _ => .Map) </activeAccounts>
+         <activeAccounts> ... (SetItem(ACCT) => .Set) </activeAccounts>
          <accounts>
            ( <account>
                <acctID> ACCT </acctID>
@@ -871,7 +868,7 @@ These are just used by the other operators for shuffling local execution state a
          </account>
 
     rule <k> #newAccount ACCT => . ... </k>
-         <activeAccounts> ACCTS (.Map => ACCT |-> true) </activeAccounts>
+         <activeAccounts> ACCTS (.Set => SetItem(ACCT)) </activeAccounts>
          <accounts>
            ( .Bag
           => <account>
@@ -884,7 +881,7 @@ These are just used by the other operators for shuffling local execution state a
            )
            ...
          </accounts>
-      requires notBool ACCT in_keys(ACCTS)
+      requires notBool ACCT in ACCTS
 ```
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
@@ -896,8 +893,6 @@ These are just used by the other operators for shuffling local execution state a
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> ORIGFROM => ORIGFROM -Word VALUE </balance>
-           <nonce> NONCE </nonce>
-           <code> CODE </code>
            ...
          </account>
          <account>
@@ -905,7 +900,6 @@ These are just used by the other operators for shuffling local execution state a
            <balance> ORIGTO => ORIGTO +Word VALUE </balance>
            ...
          </account>
-         <activeAccounts> ... ACCTTO |-> (EMPTY => #if VALUE >Int 0 #then false #else EMPTY #fi) ACCTFROM |-> (_ => ORIGFROM ==Int VALUE andBool NONCE ==Int 0 andBool CODE ==K .WordStack) ... </activeAccounts>
       requires ACCTFROM =/=K ACCTTO andBool VALUE <=Int ORIGFROM
 
     rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #exception ... </k>
@@ -918,7 +912,7 @@ These are just used by the other operators for shuffling local execution state a
 
     rule <k> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires ACCTFROM =/=K ACCTTO andBool notBool ACCTTO in_keys(ACCTS)
+      requires ACCTFROM =/=K ACCTTO andBool notBool ACCTTO in ACCTS
 
     rule <k> #transferFunds ACCT ACCT VALUE => . ... </k>
          <account>
@@ -1211,7 +1205,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
 
     rule <k> BALANCE ACCT => #newAccount ACCT ~> 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in_keys(ACCTS)
+      requires notBool ACCT in ACCTS
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
@@ -1224,7 +1218,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
 
     rule <k> EXTCODESIZE ACCT => #newAccount ACCT ~> 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in_keys(ACCTS)
+      requires notBool ACCT in ACCTS
 ```
 
 TODO: What should happen in the case that the account doesn't exist with `EXTCODECOPY`?
@@ -1243,7 +1237,7 @@ Should we pad zeros (for the copied "program")?
 
     rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #newAccount ACCT ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in_keys(ACCTS)
+      requires notBool ACCT in ACCTS
 ```
 
 ### Account Storage Operations
@@ -1312,7 +1306,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
 ```k
     syntax InternalOp ::= "#checkCall" Int Int
-                        | "#call" Int Int Int Int Int Int WordStack Bool
+                        | "#call" Int Int Int Exp Int Int WordStack Bool [strict(4)]
                         | "#callWithCode" Int Int Map WordStack Int Int Int WordStack Bool
                         | "#mkCall" Int Int Map WordStack Int Int Int WordStack Bool
  // --------------------------------------------------------------------------------
@@ -1335,14 +1329,14 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </account>
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS STATIC
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT:Int VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .WordStack GLIMIT VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <schedule> SCHED </schedule>
       requires ACCTCODE in #precompiledAccounts(SCHED)
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS STATIC
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT:Int VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) CODE GLIMIT VALUE APPVALUE ARGS STATIC
          ...
          </k>
@@ -1351,13 +1345,13 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <code> CODE </code>
       requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS STATIC
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT:Int VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO .Map .WordStack GLIMIT VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <activeAccounts> ACCTS </activeAccounts>
          <schedule> SCHED </schedule>
-      requires notBool ACCTCODE in #precompiledAccounts(SCHED) andBool notBool ACCTCODE in_keys(ACCTS)
+      requires notBool ACCTCODE in #precompiledAccounts(SCHED) andBool notBool ACCTCODE in ACCTS
 
     rule #callWithCode ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC
       => #pushCallStack ~> #pushWorldState ~> #pushSubstate
@@ -1417,10 +1411,10 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <output> OUT </output>
          <gas> GAVAIL </gas>
 
-    syntax InternalOp ::= "#refund" Int
+    syntax InternalOp ::= "#refund" Exp [strict]
                         | "#setLocalMem" Int Int WordStack
  // ------------------------------------------------------
-    rule <k> #refund G => . ... </k> <gas> GAVAIL => GAVAIL +Int G </gas>
+    rule <k> #refund G:Int => . ... </k> <gas> GAVAIL => GAVAIL +Int G </gas>
 
     rule <k> #setLocalMem START WIDTH WS => . ... </k>
          <localMem> LM => LM [ START := #take(minInt(WIDTH, #sizeWordStack(WS)), WS) ] </localMem>
@@ -1438,35 +1432,33 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <activeAccounts> ACCTS </activeAccounts>
          <previousGas> GAVAIL </previousGas>
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <activeAccounts> ACCTS </activeAccounts>
          <previousGas> GAVAIL </previousGas>
 
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
-          ~> #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1475,21 +1467,19 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <caller> ACCTAPPFROM </caller>
          <callValue> VALUE </callValue>
          <localMem> LM </localMem>
-         <activeAccounts> ACCTS </activeAccounts>
          <previousGas> GAVAIL </previousGas>
 
     syntax CallSixOp ::= "STATICCALL"
  // ---------------------------------
     rule <k> STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
-          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, 0) 0 0 #range(LM, ARGSTART, ARGWIDTH) true
+          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) 0 0 #range(LM, ARGSTART, ARGWIDTH) true
           ~> #return RETSTART RETWIDTH
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <activeAccounts> ACCTS </activeAccounts>
          <previousGas> GAVAIL </previousGas>
 ```
 
@@ -1522,7 +1512,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <nonce> NONCE => #if EXECMODE ==K VMTESTS #then NONCE #else NONCE +Int 1 #fi </nonce>
            ...
          </account>
-         <activeAccounts> ... ACCT |-> (EMPTY => #if EXECMODE ==K VMTESTS #then EMPTY #else false #fi) ... </activeAccounts>
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
     rule #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
@@ -1551,7 +1540,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <nonce> NONCE => #if Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
            ...
          </account>
-         <activeAccounts> ... ACCTTO |-> (EMPTY => #if Gemptyisnonexistent << SCHED >> #then false #else EMPTY #fi) ... </activeAccounts>
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
 
     syntax KItem ::= "#codeDeposit" Int
@@ -1592,7 +1580,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <code> _ => OUT </code>
            ...
          </account>
-         <activeAccounts> ... ACCT |-> (EMPTY => #if OUT =/=K .WordStack #then false #else EMPTY #fi) ... </activeAccounts>
 
     rule <k> #exception ~> #finishCodeDeposit ACCT _
           => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate
@@ -1662,7 +1649,6 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
            <code> CODE </code>
            ...
          </account>
-         <activeAccounts> ... ACCT |-> (_ => NONCE ==Int 0 andBool CODE ==K .WordStack) ... </activeAccounts>
          <output> _ => .WordStack </output>
          <touchedAccounts> ... .Set => SetItem(ACCT) ... </touchedAccounts>
 
@@ -1937,26 +1923,21 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
 
-    rule <k> #gasExec(SCHED, CALL         GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, ACCTTO,   ACCTS, GCAP, GAVAIL, VALUE) ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
+    rule <k> #gasExec(SCHED, CALL GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ... </k>
          <gas> GAVAIL </gas>
 
-    rule <k> #gasExec(SCHED, CALLCODE     GCAP _      VALUE _ _ _ _) => Ccall(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, VALUE) ... </k>
+    rule <k> #gasExec(SCHED, CALLCODE GCAP _ VALUE _ _ _ _) => Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) ... </k>
          <id> ACCTFROM </id>
-         <activeAccounts> ACCTS </activeAccounts>
          <gas> GAVAIL </gas>
 
-    rule <k> #gasExec(SCHED, DELEGATECALL GCAP _ _ _ _ _) => Ccall(SCHED, ACCTFROM, ACCTS, GCAP, GAVAIL, 0) ... </k>
+    rule <k> #gasExec(SCHED, DELEGATECALL GCAP _ _ _ _ _) => Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) ... </k>
          <id> ACCTFROM </id>
-         <activeAccounts> ACCTS </activeAccounts>
          <gas> GAVAIL </gas>
 
-    rule <k> #gasExec(SCHED, STATICCALL GCAP ACCTTO _ _ _ _) => Ccall(SCHED, ACCTTO, ACCTS, GCAP, GAVAIL, 0) ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
+    rule <k> #gasExec(SCHED, STATICCALL GCAP ACCTTO _ _ _ _) => Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) ... </k>
          <gas> GAVAIL </gas>
 
-    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, ACCTTO, ACCTS, BAL) ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
+    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, #accountNonexistent(ACCTTO), BAL) ... </k>
          <id> ACCTFROM </id>
          <account>
            <acctID> ACCTFROM </acctID>
@@ -2063,45 +2044,59 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
  // ----------------------------------------------------------
     rule Csstore(SCHED, VALUE, OLD) => #if VALUE =/=Int 0 andBool OLD ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
 
-    syntax Int ::= Ccall    ( Schedule , Int , Map , Int , Int , Int ) [function]
-                 | Ccallgas ( Schedule , Int , Map , Int , Int , Int ) [function]
-                 | Cgascap  ( Schedule , Int , Int , Int )             [function]
-                 | Cextra   ( Schedule , Int , Map , Int )             [function]
-                 | Cxfer    ( Schedule , Int )                         [function]
-                 | Cnew     ( Schedule , Int , Map , Int )             [function]
- // -----------------------------------------------------------------------------
-    rule Ccall(SCHED, ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cextra(SCHED, ACCT, ACCTS, VALUE) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, VALUE))
+    syntax Exp ::= Int
+    syntax KResult ::= Int
+    syntax Exp ::= Ccall    ( Schedule , BExp , Int , Int , Int ) [strict(2)]
+                 | Ccallgas ( Schedule , BExp , Int , Int , Int ) [strict(2)]
+    syntax Int ::= Cgascap  ( Schedule , Int , Int , Int )        [function]
+                 | Cextra   ( Schedule , Bool , Int )             [function]
+                 | Cxfer    ( Schedule , Int )                    [function]
+                 | Cnew     ( Schedule , Bool , Int )             [function]
+ // ------------------------------------------------------------------------
+    rule Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE) => Cextra(SCHED, ISEMPTY, VALUE) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE))
 
-    rule Ccallgas(SCHED, ACCT, ACCTS, GCAP, GAVAIL, 0)     => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS,     0))
-    rule Ccallgas(SCHED, ACCT, ACCTS, GCAP, GAVAIL, VALUE) => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ACCT, ACCTS, VALUE)) +Int Gcallstipend < SCHED > requires VALUE =/=K 0
+    rule Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, 0)     => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY,     0))
+    rule Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE) => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE)) +Int Gcallstipend < SCHED > requires VALUE =/=K 0
 
     rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA andBool notBool Gstaticcalldepth << SCHED >>
     rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => GCAP                                          requires GAVAIL <Int  GEXTRA orBool Gstaticcalldepth << SCHED >>
 
-    rule Cextra(SCHED, ACCT, ACCTS, VALUE) => Gcall < SCHED > +Int Cnew(SCHED, ACCT, ACCTS, VALUE) +Int Cxfer(SCHED, VALUE)
+    rule Cextra(SCHED, ISEMPTY, VALUE) => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)
 
     rule Cxfer(SCHED, 0) => 0
     rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=K 0
 
-    rule Cnew(SCHED, ACCT, ACCTS, VALUE) => Gnewaccount < SCHED >
-      requires         #accountNonexistent(SCHED, ACCT, ACCTS) andBool (VALUE =/=Int 0 orBool          Gzerovaluenewaccountgas << SCHED >>)
-    rule Cnew(SCHED, ACCT, ACCTS, VALUE) => 0
-      requires notBool #accountNonexistent(SCHED, ACCT, ACCTS) orBool  (VALUE  ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>)
+    rule Cnew(SCHED, ISEMPTY:Bool, VALUE) => Gnewaccount < SCHED >
+      requires         ISEMPTY andBool (VALUE =/=Int 0 orBool          Gzerovaluenewaccountgas << SCHED >>)
+    rule Cnew(SCHED, ISEMPTY:Bool, VALUE) => 0
+      requires notBool ISEMPTY orBool  (VALUE  ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>)
 
-    syntax Int ::= Cselfdestruct ( Schedule , Int , Map , Int ) [function]
- // ----------------------------------------------------------------------
-    rule Cselfdestruct(SCHED, ACCT, ACCTS, BAL) => Gselfdestruct < SCHED > +Int Gnewaccount < SCHED >
-      requires (#accountNonexistent(SCHED, ACCT, ACCTS)) andBool (        Gselfdestructnewaccount << SCHED >>) andBool (BAL =/=Int 0 orBool          Gzerovaluenewaccountgas << SCHED >>)
-    rule Cselfdestruct(SCHED, ACCT, ACCTS, BAL) => Gselfdestruct < SCHED >
-      requires (#accountNonexistent(SCHED, ACCT, ACCTS)) andBool (notBool Gselfdestructnewaccount << SCHED >>  orBool  (BAL  ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>))
-    rule Cselfdestruct(SCHED, ACCT, ACCTS, BAL) => Gselfdestruct < SCHED >
-      requires notBool #accountNonexistent(SCHED, ACCT, ACCTS)
+    syntax Exp ::= Cselfdestruct ( Schedule , BExp , Int ) [strict(2)]
+ // ------------------------------------------------------------------
+    rule Cselfdestruct(SCHED, ISEMPTY:Bool, BAL) => Gselfdestruct < SCHED > +Int Gnewaccount < SCHED >
+      requires         ISEMPTY andBool (        Gselfdestructnewaccount << SCHED >>) andBool (BAL =/=Int 0 orBool          Gzerovaluenewaccountgas << SCHED >>)
+    rule Cselfdestruct(SCHED, ISEMPTY:Bool, BAL) => Gselfdestruct < SCHED >
+      requires         ISEMPTY andBool (notBool Gselfdestructnewaccount << SCHED >>  orBool  (BAL  ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>))
+    rule Cselfdestruct(SCHED, ISEMPTY:Bool, BAL) => Gselfdestruct < SCHED >
+      requires notBool ISEMPTY
 
-    syntax Bool ::= #accountNonexistent ( Schedule , Int , Map ) [function]
-                  | #accountEmpty ( Int , Map )                  [function]
- // -----------------------------------------------------------------------
-    rule #accountNonexistent(SCHED, ACCT, ACCTS) => notBool ACCT in_keys(ACCTS) orBool (#accountEmpty(ACCT, ACCTS) andBool Gemptyisnonexistent << SCHED >>)
-    rule #accountEmpty(ACCT, (ACCT |-> EMPTY) _) => EMPTY
+    syntax BExp ::= Bool
+    syntax KResult ::= Bool
+    syntax BExp ::= #accountNonexistent ( Int )
+ // -------------------------------------------
+    rule <k> #accountNonexistent(ACCT) => true ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool ACCT in ACCTS
+
+    rule <k> #accountNonexistent(ACCT) => NONCE ==Int 0 andBool BAL ==Int 0 andBool CODE ==K .WordStack andBool Gemptyisnonexistent << SCHED >> ... </k>
+         <schedule> SCHED </schedule>
+         <account>
+           <acctID>  ACCT  </acctID>
+           <balance> BAL   </balance>
+           <nonce>   NONCE </nonce>
+           <code>    CODE  </code>
+           ...
+         </account>
 
     syntax Int ::= #allBut64th ( Int ) [function]
  // ---------------------------------------------

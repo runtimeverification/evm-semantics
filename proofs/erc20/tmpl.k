@@ -71,7 +71,7 @@ module {MODULE}-SPEC
       </evm>
 
       <network>
-        <activeAccounts> ACCT_ID |-> false _:Map </activeAccounts>
+        <activeAccounts> SetItem(ACCT_ID) _:Set </activeAccounts>
 
         <accounts>
           <account>
