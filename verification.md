@@ -188,5 +188,36 @@ It reduces the reasoning efforts of the underlying theorem prover, factoring out
 
     rule #asByteStackInWidthaux(X, I, N, WS) => #asByteStackInWidthaux(X, I -Int 1, N, nthbyteof(X, I, N) : WS) when I >Int 0
     rule #asByteStackInWidthaux(X, 0, N, WS) => nthbyteof(X, 0, N) : WS
+```
+
+### Abstraction for Hash
+
+We do not model the hash function as an injective function simply because it is not true due to the pigeonhole principle.
+Instead, we abstract it as an uninterpreted function that captures the possibility of the hash collision, even if the probability is very small.
+
+However, one can avoid reasoning about the potential collision by assuming all of the hashed values appearing in each execution trace are collision-free.
+This can be achieved by instantiating the injectivity property only for the terms appearing in the symbolic execution, in a way analogous to the universal quantifier instantiation.
+Hashed locations are essential for the storage layout schemes used to store compound data structures such as maps in the storage.
+
+The following syntactic sugars capture the storage layout schemes of Solidity and Viper.
+
+```{.k .java}
+    syntax IntList ::= List{Int, ""}                             [klabel(intList)]
+    syntax Int     ::= #hashedLocation( String , Int , IntList ) [function]
+ // -----------------------------------------------------------------------
+    rule #hashedLocation(LANG, BASE, .IntList) => BASE
+
+    rule #hashedLocation("Viper",    BASE, OFFSET OFFSETS) => #hashedLocation("Viper",    keccakIntList(BASE) +Word OFFSET, OFFSETS)
+    rule #hashedLocation("Solidity", BASE, OFFSET OFFSETS) => #hashedLocation("Solidity", keccakIntList(OFFSET BASE),       OFFSETS)
+
+    syntax Int ::= keccakIntList( IntList ) [function]
+ // --------------------------------------------------
+    rule keccakIntList(VS) => keccak(intList2ByteStack(VS))
+
+    syntax WordStack ::= intList2ByteStack( IntList ) [function]
+ // ------------------------------------------------------------
+    rule intList2ByteStack(.IntList) => .WordStack
+    rule intList2ByteStack(V VS)     => #asByteStackInWidth(V, 32) ++ intList2ByteStack(VS)
+      requires 0 <=Int V andBool V <Int pow256
 endmodule
 ```
