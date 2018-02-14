@@ -265,5 +265,41 @@ These rules are specific to reasoning about EVM programs.
     // for gas calculation
     rule A -Int (#ifInt C #then B1 #else B2 #fi) => #ifInt C #then (A -Int B1) #else (A -Int B2) #fi
     rule (#ifInt C #then B1 #else B2 #fi) -Int A => #ifInt C #then (B1 -Int A) #else (B2 -Int A) #fi
+```
+
+### Boolean
+
+In EVM, no boolean value exist but instead, 1 and 0 are used to represent true and false respectively.
+
+We introduce an abstraction for that, bool2int, as an uninterpreted function, and provide lemmas over it.
+
+```{.k .java}
+    syntax Int ::= bool2int( Bool ) [function] // [smtlib(smt_bool2int)]
+ // --------------------------------------------------------------------
+    rule bool2int(B) => 1 requires B
+    rule bool2int(B) => 0 requires notBool(B)
+
+    rule bool2int(A) |Int bool2int(B) => bool2int(A  orBool B)
+    rule bool2int(A) &Int bool2int(B) => bool2int(A andBool B)
+
+    rule bool2int(A)  ==K 0 => notBool(A)
+    rule bool2int(A)  ==K 1 => A
+    rule bool2int(A) =/=K 0 => A
+    rule bool2int(A) =/=K 1 => notBool(A)
+
+    rule chop(bool2int(B)) => bool2int(B)
+```
+
+Some lemmas over the comparison operators are also provided.
+
+```{.k .java}
+    rule 0 <=Int chop(V)             => true
+    rule         chop(V) <Int pow256 => true
+
+    rule 0 <=Int keccak(V)             => true
+    rule         keccak(V) <Int pow256 => true
+
+    rule 0 <=Int X &Int Y             => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <=Int Y andBool Y <Int pow256
+    rule         X &Int Y <Int pow256 => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <=Int Y andBool Y <Int pow256
 endmodule
 ```
