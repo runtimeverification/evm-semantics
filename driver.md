@@ -261,7 +261,9 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```{.k .java .ocaml}
     syntax EthereumCommand ::= "run" JSON
  // -------------------------------------
-    rule run { .JSONList } => .
+    rule run          { .JSONList } => .
+    rule run TESTID : { .JSONList } => .
+
     rule run { TESTID : { TEST:JSONList } , TESTS }
       => run ( TESTID : { #sortJSONList(TEST) } )
       ~> #if #hasPost?( { TEST } ) #then .K #else exception #fi
@@ -279,12 +281,9 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```{.k .java .ocaml}
     syntax Set ::= "#loadKeys" [function]
  // -------------------------------------
-    rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") )
+    rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") SetItem("blocks") )
 
     rule run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } requires KEY in #loadKeys
-
-    rule run TESTID : { "blocks" : [ { KEY : VAL , REST1 => REST1 }, .JSONList ] , ( REST2 => KEY : VAL , REST2 ) }
-    rule run TESTID : { "blocks" : [ { .JSONList }, .JSONList ] , REST } => run TESTID : { REST }
 ```
 
 -   `#execKeys` are all the JSON nodes which should be considered for execution (between loading and checking).
@@ -413,10 +412,14 @@ State Manipulation
  // --------------------------------------
     rule load DATA : { .JSONList } => .
     rule load DATA : { KEY : VALUE , REST } => load DATA : { KEY : VALUE } ~> load DATA : { REST }
-      requires REST =/=K .JSONList andBool DATA =/=String "transaction"
+      requires REST =/=K .JSONList andBool DATA =/=String "transaction" andBool DATA =/=String "blocks"
 
     rule load DATA : [ .JSONList ] => .
     rule load DATA : [ { TEST } , REST ] => load DATA : { TEST } ~> load DATA : [ REST ]
+
+    rule load "blocks" : { BLOCK:JSONList => #sortJSONList(BLOCK) } requires notBool #isSorted(BLOCK)
+    rule load "blocks" : { "blockHeader" : BHEADER , "rlp" : RLP , "transactions" : TXS , "uncleHeaders" : UNCLES }
+      => load "rlp" : RLP ~> check "blockHeader" : BHEADER ~> check "transactions" : TXS ~> check "ommerHeaders" : UNCLES
 ```
 
 Here we perform pre-proccesing on account data which allows "pretty" specification of input.
@@ -597,7 +600,6 @@ The `"rlp"` key loads the block information.
     rule check "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
     rule check "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #parseByteStack(CODE)) } }
     rule check "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
-
 
     rule <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
          <account>
