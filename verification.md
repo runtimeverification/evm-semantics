@@ -303,5 +303,109 @@ These lemma abstracts some properties about `#sizeWordStack`:
       => #sizeWordStack ( WS , 0 ) +Int N
       requires N =/=K 0
       [lemma]
+```
+
+ABI Abstraction DSL
+-------------------
+
+### Calldata
+
+The ABI Call mechanism provides syntatic sugar to make writing proofs easier.
+Instead of manually populating the `<callData>` cell and `<pc>` cell with the right values,
+we the sugar allows following conveniences -
+
+ `#abiCallData(*FUNCTION_NAME*, TypedArgs)`, where the typed args to have be of the
+ `#uint160(*DATA*)` where the types are from the ABI specification, and enclose
+ the data.
+
+The above constructs place the correct values (in accordance with the ABI) in the `<callData>`
+cell, allowing proofs of ABI-compliant EVM program to begin at `<pc> 0 </pc>`.
+
+```{.k .java}
+    syntax TypedArg ::= #uint160 ( Int )
+                      | #address ( Int )
+                      | #uint256 ( Int )
+ // ------------------------------------
+
+    syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
+ // ------------------------------------------------------------
+
+    syntax WordStack ::= #abiCallData ( String , TypedArgs ) [function]
+ // -------------------------------------------------------------------
+    rule #abiCallData( FNAME , ARGS )
+      => #parseByteStack(substrString(Keccak256(#generateSignature(FNAME, ARGS)), 0, 8))
+      ++ #encodeArgs(ARGS)
+
+    syntax String ::= #generateSignature     ( String, TypedArgs ) [function]
+                    | #generateSignatureArgs ( TypedArgs )         [function]
+ // -------------------------------------------------------------------------
+    rule #generateSignature( FNAME , ARGS ) => FNAME +String "(" +String #generateSignatureArgs(ARGS) +String ")"
+
+    rule #generateSignatureArgs(.TypedArgs)                            => ""
+    rule #generateSignatureArgs(TARGA:TypedArg, .TypedArgs)            => #typeName(TARGA)
+    rule #generateSignatureArgs(TARGA:TypedArg, TARGB:TypedArg, TARGS) => #typeName(TARGA) +String "," +String #generateSignatureArgs(TARGB, TARGS)
+
+    syntax String ::= #typeName ( TypedArg ) [function]
+ // ---------------------------------------------------
+    rule #typeName(#uint160( _ )) => "uint160"
+    rule #typeName(#address( _ )) => "address"
+    rule #typeName(#uint256( _ )) => "uint256"
+
+    syntax WordStack ::= #encodeArgs ( TypedArgs ) [function]
+ // ---------------------------------------------------------
+    rule #encodeArgs(ARG, ARGS)  => #getData(ARG) ++ #encodeArgs(ARGS)
+    rule #encodeArgs(.TypedArgs) => .WordStack
+
+    syntax WordStack ::= #getData ( TypedArg ) [function]
+ // -----------------------------------------------------
+    rule #getData(#uint160( DATA )) => #asByteStackInWidth( DATA , 32 )
+    rule #getData(#address( DATA )) => #asByteStackInWidth( DATA , 32 )
+    rule #getData(#uint256( DATA )) => #asByteStackInWidth( DATA , 32 )
+```
+
+### Event Logs
+
+```{.k .java}
+    syntax EventArg ::= TypedArg
+                      | #indexed ( TypedArg )
+ // -----------------------------------------
+
+    syntax EventArgs ::= List{EventArg, ","} [klabel(eventArgs)]
+ // ------------------------------------------------------------
+
+    syntax SubstateLogEntry ::= #abiEventLog ( Int , String , EventArgs ) [function]
+ // --------------------------------------------------------------------------------
+    rule #abiEventLog(ACCT_ID, EVENT_NAME, EVENT_ARGS)
+      => { ACCT_ID | #getEventTopics(EVENT_NAME, EVENT_ARGS) | #getEventData(EVENT_ARGS) }
+
+    syntax WordStack ::= #getEventTopics ( String , EventArgs ) [function]
+ // ----------------------------------------------------------------------
+    rule #getEventTopics(ENAME, EARGS)
+      => #parseHexWord(Keccak256(#generateSignature(ENAME, #getTypedArgs(EARGS))))
+       : #getIndexedArgs(EARGS)
+
+    syntax TypedArgs ::= #getTypedArgs ( EventArgs ) [function]
+ // -----------------------------------------------------------
+    rule #getTypedArgs(#indexed(E), ES) => E, #getTypedArgs(ES)
+    rule #getTypedArgs(E:TypedArg,  ES) => E, #getTypedArgs(ES)
+    rule #getTypedArgs(.EventArgs)      => .TypedArgs
+
+    syntax WordStack ::= #getIndexedArgs ( EventArgs ) [function]
+ // -------------------------------------------------------------
+    rule #getIndexedArgs(#indexed(E), ES) => #getValue(E) : #getIndexedArgs(ES)
+    rule #getIndexedArgs(_:TypedArg,  ES) =>                #getIndexedArgs(ES)
+    rule #getIndexedArgs(.EventArgs)      => .WordStack
+
+    syntax WordStack ::= #getEventData ( EventArgs ) [function]
+ // -----------------------------------------------------------
+    rule #getEventData(#indexed(_), ES) =>                #getEventData(ES)
+    rule #getEventData(E:TypedArg,  ES) => #getData(E) ++ #getEventData(ES)
+    rule #getEventData(.EventArgs)      => .WordStack
+
+    syntax Int ::= #getValue ( TypedArg ) [function]
+ // ------------------------------------------------
+    rule #getValue(#uint160(V)) => V
+    rule #getValue(#address(V)) => V
+    rule #getValue(#uint256(V)) => V
 endmodule
 ```
