@@ -11,16 +11,6 @@ module VERIFICATION
     imports EVM
 ```
 
-This `smt-lemma` helps Z3 reason about stack over/under flow.
-
-```{.k .java}
-    rule #sizeWordStack ( _ , _ ) >=Int 0 => true [smt-lemma]
-    rule #sizeWordStack ( WS , N:Int )
-      => #sizeWordStack ( WS , 0 ) +Int N
-      requires N =/=K 0
-      [lemma]
-```
-
 Sum to N
 --------
 
@@ -301,5 +291,17 @@ Some lemmas over the comparison operators are also provided.
 
     rule 0 <=Int X &Int Y             => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <=Int Y andBool Y <Int pow256
     rule         X &Int Y <Int pow256 => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <=Int Y andBool Y <Int pow256
+```
+
+### Wordstack
+
+These lemma abstracts some properties about `#sizeWordStack`:
+
+```{.k .java}
+    rule #sizeWordStack ( _ , _ ) >=Int 0 => true [smt-lemma]
+    rule #sizeWordStack ( WS , N:Int )
+      => #sizeWordStack ( WS , 0 ) +Int N
+      requires N =/=K 0
+      [lemma]
 endmodule
 ```
