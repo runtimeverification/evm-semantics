@@ -47,7 +47,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'The EVM Jello Paper'
-copyright = '2017, The KEVM Team'
+copyright = '2018, The KEVM Team'
 author = 'The KEVM Team'
 
 # The version info for the project you're documenting, acts as replacement for
