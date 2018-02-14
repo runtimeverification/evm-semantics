@@ -321,8 +321,8 @@ Bitwise logical operators are lifted from the integer versions.
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 ```k
-    syntax Int ::= keccak ( WordStack ) [function]
- // ----------------------------------------------
+    syntax Int ::= keccak ( WordStack ) [function, smtlib(smt_keccak)]
+ // ------------------------------------------------------------------
     rule keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS))) [concrete]
 ```
 
