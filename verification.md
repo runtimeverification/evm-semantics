@@ -79,6 +79,114 @@ These helper constants make writing the proof claims simpler/cleaner.
     rule %HKG_ProgramBytes_buggy => #parseByteStack("60606040526000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063095ea7b31461006a57806323b872dd146100c457806370a082311461013d578063a9059cbb1461018a578063dd62ed3e146101e4575b600080fd5b341561007557600080fd5b6100aa600480803573ffffffffffffffffffffffffffffffffffffffff16906020019091908035906020019091905050610250565b604051808215151515815260200191505060405180910390f35b34156100cf57600080fd5b610123600480803573ffffffffffffffffffffffffffffffffffffffff1690602001909190803573ffffffffffffffffffffffffffffffffffffffff16906020019091908035906020019091905050610343565b604051808215151515815260200191505060405180910390f35b341561014857600080fd5b610174600480803573ffffffffffffffffffffffffffffffffffffffff169060200190919050506105c4565b6040518082815260200191505060405180910390f35b341561019557600080fd5b6101ca600480803573ffffffffffffffffffffffffffffffffffffffff1690602001909190803590602001909190505061060e565b604051808215151515815260200191505060405180910390f35b34156101ef57600080fd5b61023a600480803573ffffffffffffffffffffffffffffffffffffffff1690602001909190803573ffffffffffffffffffffffffffffffffffffffff16906020019091905050610773565b6040518082815260200191505060405180910390f35b600081600260003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020819055508273ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff167f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925846040518082815260200191505060405180910390a3600190505b92915050565b600081600160008673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205410158015610410575081600260008673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205410155b801561041c5750600082115b156105b35781600160008673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000206000828254039250508190555081600160008573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000206000828254019250508190555081600260008673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600082825403925050819055508273ffffffffffffffffffffffffffffffffffffffff168473ffffffffffffffffffffffffffffffffffffffff167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef846040518082815260200191505060405180910390a3600190506105bd565b600090506105bd565b5b9392505050565b6000600160008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205490505b919050565b600081600160003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020541015801561065f5750600082115b156107635781600160003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000206000828254039250508190555081600160008573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020819055508273ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef846040518082815260200191505060405180910390a36001905061076d565b6000905061076d565b5b92915050565b6000600260008473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205490505b929150505600a165627a7a7230582093e640afb442869193a08cf82ed9577e403c7c53a6a95f589e2b673195da102e0029") [macro]
     rule %HKG_Program => #asMapOpCodes(#dasmOpCodes(%HKG_ProgramBytes, DEFAULT))
     rule %HKG_Program_buggy => #asMapOpCodes(#dasmOpCodes(%HKG_ProgramBytes_buggy, DEFAULT))
+```
 
+Reasoning Simplifications
+-------------------------
+
+We design abstractions that capture the EVM low-level specific details, allowing to specify specifications and reason about properties in a higher level similar to that of the surface languages (e.g., Solidity or Viper) in which smart contracts are written.
+
+### Memory Abstraction
+
+We present an abstraction for the EVM memory to allow the word-level reasoning.
+The word is considered as the smallest unit of values in the surface language level (thus in the contract developers’ mind as well), but the EVM memory is byte-addressable.
+Our abstraction helps to fill the gap and make the reasoning easier.
+
+Specifically, we introduce uninterpreted function abstractions and refinements for the word-level reasoning.
+
+The term `nthbyteof(v, i, n)` represents the i-th byte of the two's complement representation of v in n bytes (0 being MSB), with discarding high-order bytes when v is not fit in n bytes.
+
+```{.k .java}
+    syntax Int ::= nthbyteof ( Int , Int , Int ) [function, smtlib(smt_nthbyteof)]
+ // ------------------------------------------------------------------------------
+    rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
+    rule nthbyteof(V, I, N) =>           V modInt 256             when N ==Int (I +Int 1) [concrete]
+```
+
+However, we'd like to keep it uninterpreted, if the arguments are symbolic, to avoid the non-linear arithmetic reasoning, which even the state-of-the-art theorem provers cannot handle very well.
+Instead, we introduce lemmas over the uninterpreted functional terms.
+
+The following lemmas are used for symbolic reasoning about `MLOAD` and `MSTORE` instructions.
+They capture the essential mechanisms used by the two instructions: splitting a word into the byte-array and merging it back to the word.
+
+```{.k .java}
+    rule 0 <=Int nthbyteof(V, I, N)          => true
+    rule         nthbyteof(V, I, N) <Int 256 => true
+
+    rule #asWord( nthbyteof(V,  0, 32)
+                : nthbyteof(V,  1, 32)
+                : nthbyteof(V,  2, 32)
+                : nthbyteof(V,  3, 32)
+                : nthbyteof(V,  4, 32)
+                : nthbyteof(V,  5, 32)
+                : nthbyteof(V,  6, 32)
+                : nthbyteof(V,  7, 32)
+                : nthbyteof(V,  8, 32)
+                : nthbyteof(V,  9, 32)
+                : nthbyteof(V, 10, 32)
+                : nthbyteof(V, 11, 32)
+                : nthbyteof(V, 12, 32)
+                : nthbyteof(V, 13, 32)
+                : nthbyteof(V, 14, 32)
+                : nthbyteof(V, 15, 32)
+                : nthbyteof(V, 16, 32)
+                : nthbyteof(V, 17, 32)
+                : nthbyteof(V, 18, 32)
+                : nthbyteof(V, 19, 32)
+                : nthbyteof(V, 20, 32)
+                : nthbyteof(V, 21, 32)
+                : nthbyteof(V, 22, 32)
+                : nthbyteof(V, 23, 32)
+                : nthbyteof(V, 24, 32)
+                : nthbyteof(V, 25, 32)
+                : nthbyteof(V, 26, 32)
+                : nthbyteof(V, 27, 32)
+                : nthbyteof(V, 28, 32)
+                : nthbyteof(V, 29, 32)
+                : nthbyteof(V, 30, 32)
+                : nthbyteof(V, 31, 32)
+                : .WordStack ) => V
+      requires 0 <=Int V andBool V <Int pow256
+```
+
+Another type of byte-array manipulating operation is used to extract the function signature from the call data.
+The function signature is located in the first four bytes of the call data, but there is no atomic EVM instruction that can load only the four bytes, thus some kind of byte-twiddling operations are necessary.
+
+The extraction mechanism varies by language compilers.
+For example, in Viper, the first 32 bytes of the call data are loaded into the memory at the starting location 28 (i.e., in the memory range of 28 to 59), and the memory range of 0 to 31, which consists of 28 zero bytes and the four signature bytes, is loaded into the stack.
+In Solidity, however, the first 32 bytes of the call data are loaded into the stack, and the loaded word (i.e., a 256-bit integer) is divided by `2^(28*8)` (i.e., left-shifted by 28 bytes), followed by masked by 0xffffffff (i.e., 4 bytes of bit 1’s).
+
+The following lemmas essentially capture the signature extraction mechanisms.
+It reduces the reasoning efforts of the underlying theorem prover, factoring out the essence of the byte-twiddling operations.
+
+```{.k .java}
+    rule #padToWidth(32, #asByteStack(V)) => #asByteStackInWidth(V, 32)
+      requires 0 <=Int V andBool V <Int pow256
+
+    // for Viper
+    rule #padToWidth(N, #asByteStack(#asWord(WS))) => WS
+      requires #noOverflow(WS) andBool N ==Int #sizeWordStack(WS)
+
+    // for Solidity
+    rule #asWord(WS) /Int D => #asWord(#take(#sizeWordStack(WS) -Int log256Int(D), WS))
+      requires D modInt 256 ==Int 0 andBool D >=Int 0
+       andBool #sizeWordStack(WS) >=Int log256Int(D)
+       andBool #noOverflow(WS)
+
+    syntax Bool ::= #noOverflow    ( WordStack ) [function]
+                  | #noOverflowAux ( WordStack ) [function]
+ // -------------------------------------------------------
+    rule #noOverflow(WS) => #sizeWordStack(WS) <=Int 32 andBool #noOverflowAux(WS)
+
+    rule #noOverflowAux(W : WS)     => 0 <=Int W andBool W <Int 256 andBool #noOverflowAux(WS)
+    rule #noOverflowAux(.WordStack) => true
+
+    syntax WordStack ::= #asByteStackInWidth    ( Int, Int )                 [function]
+                       | #asByteStackInWidthaux ( Int, Int, Int, WordStack ) [function]
+ // -----------------------------------------------------------------------------------
+    rule #asByteStackInWidth(X, N) => #asByteStackInWidthaux(X, N -Int 1, N, .WordStack)
+
+    rule #asByteStackInWidthaux(X, I, N, WS) => #asByteStackInWidthaux(X, I -Int 1, N, nthbyteof(X, I, N) : WS) when I >Int 0
+    rule #asByteStackInWidthaux(X, 0, N, WS) => nthbyteof(X, 0, N) : WS
 endmodule
 ```
