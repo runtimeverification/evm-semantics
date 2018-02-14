@@ -215,5 +215,55 @@ The following syntactic sugars capture the storage layout schemes of Solidity an
     rule intList2ByteStack(.IntList) => .WordStack
     rule intList2ByteStack(V VS)     => #asByteStackInWidth(V, 32) ++ intList2ByteStack(VS)
       requires 0 <=Int V andBool V <Int pow256
+```
+
+### Integer Expression Simplification Rules
+
+We introduce simplification rules that capture arithmetic properties, which reduce the given terms into smaller ones.
+These rules help to improve the performance of the underlying theorem prover’s symbolic reasoning.
+
+Below are universal simplification rules that are free to be used in any context.
+
+```{.k .java}
+    rule 0 +Int N => N
+    rule N +Int 0 => N
+
+    rule N -Int 0 => N
+
+    rule 1 *Int N => N
+    rule N *Int 1 => N
+    rule 0 *Int _ => 0
+    rule _ *Int 0 => 0
+
+    rule N /Int 1 => N
+
+    rule 0 |Int N => N
+    rule N |Int 0 => N
+    rule N |Int N => N
+
+    rule 0 &Int N => 0
+    rule N &Int 0 => 0
+    rule N &Int N => N
+```
+
+The following simplification rules are local, meant to be used in specific contexts.
+The rules are applied only when the side-conditions are met.
+These rules are specific to reasoning about EVM programs.
+
+```{.k .java}
+    rule (I1 +Int I2) +Int I3 => I1 +Int (I2 +Int I3) when #isConcrete(I2) andBool #isConcrete(I3)
+    rule (I1 +Int I2) -Int I3 => I1 +Int (I2 -Int I3) when #isConcrete(I2) andBool #isConcrete(I3)
+    rule (I1 -Int I2) +Int I3 => I1 -Int (I2 -Int I3) when #isConcrete(I2) andBool #isConcrete(I3)
+    rule (I1 -Int I2) -Int I3 => I1 -Int (I2 +Int I3) when #isConcrete(I2) andBool #isConcrete(I3)
+
+    rule I1 &Int (I2 &Int I3) => (I1 &Int I2) &Int I3 when #isConcrete(I1) andBool #isConcrete(I2)
+
+    // 0xffff...f &Int N = N
+    rule MASK &Int N => N  requires MASK ==Int (2 ^Int (log2Int(MASK) +Int 1)) -Int 1 // MASK = 0xffff...f
+                            andBool 0 <=Int N andBool N <=Int MASK
+
+    // for gas calculation
+    rule A -Int (#ifInt C #then B1 #else B2 #fi) => #ifInt C #then (A -Int B1) #else (A -Int B2) #fi
+    rule (#ifInt C #then B1 #else B2 #fi) -Int A => #ifInt C #then (B1 -Int A) #else (B2 -Int A) #fi
 endmodule
 ```
