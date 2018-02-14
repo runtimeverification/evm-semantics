@@ -320,7 +320,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```{.k .java .ocaml}
     syntax Set ::= "#discardKeys" [function]
  // ----------------------------------------
-    rule #discardKeys => ( SetItem("//") SetItem("_info") )
+    rule #discardKeys => ( SetItem("//") SetItem("_info") SetItem("blocknumber") )
 
     rule run TESTID : { KEY : _ , REST } => run TESTID : { REST } requires KEY in #discardKeys
 ```

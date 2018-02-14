@@ -136,6 +136,29 @@ In the comments next to each cell, we've marked which component of the YellowPap
                         </account>
                       </accounts>
 
+                      // Blocks Record
+                      // -------------
+
+                      <blocks>
+```
+
+-   UIUC-K and RV-K have slight differences of opinion here.
+
+```{.k .java}
+                        <block multiplicity="*" type="Bag">
+```
+
+```{.k .ocaml .node}
+                        <block multiplicity="*" type="Map">
+```
+
+```k
+                          <hash>         0     </hash>
+                          <parentHash>   0     </parentHash>
+                          <transactions> .List </transactions>
+                        </block>
+                      </blocks>
+
                       // Transactions Record
                       // -------------------
 

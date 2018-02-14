@@ -133,7 +133,8 @@ tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build
 
 # BlockchainTests
 
-bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)
+bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json) # \
+             # $(wildcard tests/ethereum-tests/BlockchainTests/bcTotalDifficultyTest/*.json)
 slow_bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*.json) \
                   $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000*.json) \
                   $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000*.json) \
