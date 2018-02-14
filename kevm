@@ -50,8 +50,8 @@ run_env() {
 # -------
 
 run_krun() {
-    local run_file=$1 ; shift
     local backend=$1  ; shift
+    local run_file=$1 ; shift
     run_env "$run_file"
     export K_OPTS=-Xss500m
     krun --directory .build/$backend/ -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@"
@@ -91,25 +91,25 @@ run_proof() {
     run_env "$proof_file"
     export K_OPTS=-Xmx2G
     ( krun --directory .build/java/ -cSCHEDULE=$cSCHEDULE -pSCHEDULE='printf %s' -cMODE=$cMODE -pMODE='printf %s' \
-         --z3-executable tests/templates/dummy-proof-input.json --prove "$proof_file" --parser "$(dirname "$0")/kast-json.py"
+         --z3-executable tests/templates/dummy-proof-input.json --prove "$proof_file" --parser "$(dirname "$0")/kast-json.py" "$@"
     )
 }
 
 run_kdebug() {
     progress "debugging: $1"
-    ( run_krun "$1" java --debugger )
+    ( run_krun java "$1" --debugger )
 }
 
 run_test() {
     test_file="$1"; shift
     case "$test_file" in
         *proofs/*     ) ( pretty_diff --label expected <(echo "#True") \
-                                      --label actual   <(run_proof "$test_file")
+                                      --label actual   <(run_proof "$test_file" "$@")
                         )
                         ;;
         *interactive/*) [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
                         ( pretty_diff --label expected <(cat "$output_expected_file") \
-                                      --label actual   <(run_krun "$test_file" ocaml )
+                                      --label actual   <(run_krun ocaml "$test_file" "$@" )
                         )
                         ;;
         *             ) output_expected_file=tests/templates/output-success.txt
@@ -134,12 +134,12 @@ run_command="$1" ; shift
 case "$run_command" in
 
     # Running
-    run)   run_krun   "$1" ocaml ;;
-    debug) run_kdebug "$1"       ;;
-    prove) run_proof  "$1"       ;;
+    run)   run_krun   ocaml "$@" ;;
+    debug) run_kdebug "$@"       ;;
+    prove) run_proof  "$@"       ;;
 
     # Testing
-    test)  run_test   "$1" ;;
+    test)  run_test   "$@" ;;
 
     *) echo "
     usage: $0 <cmd> <file> <K args>*
