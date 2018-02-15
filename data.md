@@ -57,8 +57,8 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
 ```k
     syntax Int ::= chop ( Int ) [function, smtlib(chop)]
  // ----------------------------------------------------
-    rule chop ( I:Int ) => I %Int pow256 requires I  <Int 0  orBool I >=Int pow256    [concrete]
-    rule chop ( I:Int ) => I             requires I >=Int 0 andBool I  <Int pow256 // [concrete]
+    rule chop ( I:Int ) => I modInt pow256 requires I  <Int 0  orBool I >=Int pow256    [concrete]
+    rule chop ( I:Int ) => I               requires I >=Int 0 andBool I  <Int pow256 // [concrete]
 ```
 
 ### Boolean Conversions
@@ -148,7 +148,7 @@ Word Operations
 -   `up/Int` performs integer division but rounds up instead of down.
 
 NOTE: Here, we choose to add `I2 -Int 1` to the numerator beforing doing the division to mimic the C++ implementation.
-You could alternatively calculate `I1 %Int I2`, then add one to the normal integer division afterward depending on the result.
+You could alternatively calculate `I1 modInt I2`, then add one to the normal integer division afterward depending on the result.
 
 ```k
     syntax Int ::= Int "up/Int" Int [function]
@@ -187,7 +187,7 @@ The corresponding `<op>Word` operations automatically perform the correct modulu
     rule W0 /Word 0  => 0
     rule W0 /Word W1 => chop( W0 /Int W1 ) requires W1 =/=K 0
     rule W0 %Word 0  => 0
-    rule W0 %Word W1 => chop( W0 %Int W1 ) requires W1 =/=K 0
+    rule W0 %Word W1 => chop( W0 modInt W1 ) requires W1 =/=K 0
 ```
 
 Care is needed for `^Word` to avoid big exponentiation.
@@ -199,9 +199,9 @@ Care is needed for `^Word` to avoid big exponentiation.
 ```
 
 ```{.k .java}
-    rule W0 ^Word W1 => (W0 ^Word (W1 /Int 2)) ^Word 2  requires W1 >=Int pow16 andBool W1 %Int 2 ==Int 0
-    rule W0 ^Word W1 => (W0 ^Word (W1 -Int 1)) *Word W0 requires W1 >=Int pow16 andBool W1 %Int 2 ==Int 1
-    rule W0 ^Word W1 => (W0 ^Int W1) %Int pow256 requires W1 <Int pow16
+    rule W0 ^Word W1 => (W0 ^Word (W1 /Int 2)) ^Word 2  requires W1 >=Int pow16 andBool W1 modInt 2 ==Int 0
+    rule W0 ^Word W1 => (W0 ^Word (W1 -Int 1)) *Word W0 requires W1 >=Int pow16 andBool W1 modInt 2 ==Int 1
+    rule W0 ^Word W1 => (W0 ^Int W1) modInt pow256      requires W1 <Int pow16
 ```
 
 RV-K has a more efficient power-modulus operator.
@@ -291,8 +291,8 @@ Bitwise logical operators are lifted from the integer versions.
     rule bit(N, _)  => 0 requires N <Int 0 orBool N >=Int 256
     rule byte(N, _) => 0 requires N <Int 0 orBool N >=Int 32
 
-    rule bit(N, W)  => (W >>Int (255 -Int N)) %Int 2                     requires N >=Int 0 andBool N <Int 256
-    rule byte(N, W) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) %Int 256 requires N >=Int 0 andBool N <Int 32
+    rule bit(N, W)  => (W >>Int (255 -Int N)) modInt 2                     requires N >=Int 0 andBool N <Int 256
+    rule byte(N, W) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) modInt 256 requires N >=Int 0 andBool N <Int 32
 ```
 
 -   `#nBits` shifts in $N$ ones from the right.
@@ -453,9 +453,9 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax WordStack ::= #asByteStack ( Int )             [function]
                        | #asByteStack ( Int , WordStack ) [function, klabel(#asByteStackAux), smtlib(asByteStack)]
  // --------------------------------------------------------------------------------------------------------------
-    rule #asByteStack( W ) => #asByteStack( W , .WordStack )                                      [concrete]
-    rule #asByteStack( 0 , WS ) => WS                                                          // [concrete]
-    rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W %Int 256 : WS ) requires W =/=K 0 [concrete]
+    rule #asByteStack( W ) => #asByteStack( W , .WordStack )                                        [concrete]
+    rule #asByteStack( 0 , WS ) => WS                                                            // [concrete]
+    rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W modInt 256 : WS ) requires W =/=K 0 [concrete]
 ```
 
 Addresses
@@ -651,7 +651,7 @@ We need to interperet a `WordStack` as a `String` again so that we can call `Kec
     rule #unparseByteStack ( WS ) => #unparseByteStack(WS, .StringBuffer)
 
     rule #unparseByteStack( .WordStack, BUFFER ) => StringBuffer2String(BUFFER)
-    rule #unparseByteStack( W : WS, BUFFER )     => #unparseByteStack(WS, BUFFER +String chrChar(W %Int (2 ^Int 8)))
+    rule #unparseByteStack( W : WS, BUFFER )     => #unparseByteStack(WS, BUFFER +String chrChar(W modInt (2 ^Int 8)))
 
     syntax String ::= #padByte( String ) [function]
  // -----------------------------------------------

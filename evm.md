@@ -1050,7 +1050,7 @@ These operations are getters/setters of the local execution memory.
          <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
 
     rule <k> MSTORE8 INDEX VALUE => . ... </k>
-         <localMem> LM => LM [ INDEX <- (VALUE %Int 256) ]    </localMem>
+         <localMem> LM => LM [ INDEX <- (VALUE modInt 256) ] </localMem>
 ```
 
 ### Expressions
@@ -1862,10 +1862,10 @@ Precompiled Contracts
  // ------------------------------------
     rule <k> ECPAIRING => #ecpairing(.List, .List, 0, DATA, #sizeWordStack(DATA)) ... </k>
          <callData> DATA </callData>
-      requires #sizeWordStack(DATA) %Int 192 ==Int 0
+      requires #sizeWordStack(DATA) modInt 192 ==Int 0
     rule <k> ECPAIRING => #exception ... </k>
          <callData> DATA </callData>
-      requires #sizeWordStack(DATA) %Int 192 =/=Int 0
+      requires #sizeWordStack(DATA) modInt 192 =/=Int 0
 
     syntax InternalOp ::= #ecpairing(List, List, Int, WordStack, Int)
  // -----------------------------------------------------------------
