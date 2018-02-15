@@ -257,16 +257,7 @@ ABI Abstraction DSL
 
 ### Calldata
 
-The ABI Call mechanism provides syntatic sugar to make writing proofs easier.
-Instead of manually populating the `<callData>` cell and `<pc>` cell with the right values,
-we the sugar allows following conveniences -
-
- `#abiCallData(*FUNCTION_NAME*, TypedArgs)`, where the typed args to have be of the
- `#uint160(*DATA*)` where the types are from the ABI specification, and enclose
- the data.
-
-The above constructs place the correct values (in accordance with the ABI) in the `<callData>`
-cell, allowing proofs of ABI-compliant EVM program to begin at `<pc> 0 </pc>`.
+Below is the ABI call abstraction, a formalization for ABI encoding of the call data, that helps to keep the specification succinct.
 
 ```{.k .java}
     syntax TypedArg ::= #uint160 ( Int )
