@@ -39,19 +39,20 @@ Utilities
 
 ### Important Powers
 
-Some important numbers that are referred to often during execution:
+Some important numbers that are referred to often during execution.
+These can be used for pattern-matching on the LHS of rules as well (`macro` attribute expands all occurances of these in rules).
 
 ```k
-    syntax Int ::= "pow256" [function]
-                 | "pow255" [function]
-                 | "pow16"  [function]
- // ----------------------------------
-    rule pow256 => 2 ^Int 256
-    rule pow255 => 2 ^Int 255
-    rule pow16  => 2 ^Int 16
+    syntax Int ::= "pow256" [function] /* 2 ^Int 256 */
+                 | "pow255" [function] /* 2 ^Int 255 */
+                 | "pow16"  [function] /* 2 ^Int 16  */
+ // ---------------------------------------------------
+    rule pow256 => 115792089237316195423570985008687907853269984665640564039457584007913129639936 [macro]
+    rule pow255 => 57896044618658097711785492504343953926634992332820282019728792003956564819968  [macro]
+    rule pow16  => 65536 [macro]
 ```
 
--   `chop` interperets an integers modulo $2^256$.
+-   `chop` interperets an integer modulo $2^256$.
 
 ```k
     syntax Int ::= chop ( Int ) [function, smtlib(chop)]
