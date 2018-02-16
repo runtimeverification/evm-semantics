@@ -316,11 +316,11 @@ Below is the ABI call abstraction, a formalization for ABI encoding of the call 
     rule #abiEventLog(ACCT_ID, EVENT_NAME, EVENT_ARGS)
       => { ACCT_ID | #getEventTopics(EVENT_NAME, EVENT_ARGS) | #getEventData(EVENT_ARGS) }
 
-    syntax WordStack ::= #getEventTopics ( String , EventArgs ) [function]
- // ----------------------------------------------------------------------
+    syntax List ::= #getEventTopics ( String , EventArgs ) [function]
+ // -----------------------------------------------------------------
     rule #getEventTopics(ENAME, EARGS)
-      => #parseHexWord(Keccak256(#generateSignature(ENAME, #getTypedArgs(EARGS))))
-       : #getIndexedArgs(EARGS)
+      => ListItem(#parseHexWord(Keccak256(#generateSignature(ENAME, #getTypedArgs(EARGS)))))
+         #getIndexedArgs(EARGS)
 
     syntax TypedArgs ::= #getTypedArgs ( EventArgs ) [function]
  // -----------------------------------------------------------
@@ -328,11 +328,11 @@ Below is the ABI call abstraction, a formalization for ABI encoding of the call 
     rule #getTypedArgs(E:TypedArg,  ES) => E, #getTypedArgs(ES)
     rule #getTypedArgs(.EventArgs)      => .TypedArgs
 
-    syntax WordStack ::= #getIndexedArgs ( EventArgs ) [function]
- // -------------------------------------------------------------
-    rule #getIndexedArgs(#indexed(E), ES) => #getValue(E) : #getIndexedArgs(ES)
-    rule #getIndexedArgs(_:TypedArg,  ES) =>                #getIndexedArgs(ES)
-    rule #getIndexedArgs(.EventArgs)      => .WordStack
+    syntax List ::= #getIndexedArgs ( EventArgs ) [function]
+ // --------------------------------------------------------
+    rule #getIndexedArgs(#indexed(E), ES) => ListItem(#getValue(E)) #getIndexedArgs(ES)
+    rule #getIndexedArgs(_:TypedArg,  ES) =>                        #getIndexedArgs(ES)
+    rule #getIndexedArgs(.EventArgs)      => .List
 
     syntax WordStack ::= #getEventData ( EventArgs ) [function]
  // -----------------------------------------------------------

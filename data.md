@@ -378,6 +378,15 @@ A cons-list is used for the EVM wordstack.
     rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires #sizeWordStack(WS) <Int N         [concrete]
 ```
 
+-   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.
+
+```k
+    syntax List ::= WordStack2List ( WordStack ) [function]
+ // -------------------------------------------------------
+    rule WordStack2List(.WordStack) => .List
+    rule WordStack2List(W : WS) => ListItem(W) WordStack2List(WS)
+```
+
 Byte Arrays
 -----------
 

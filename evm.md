@@ -734,8 +734,8 @@ During execution of a transaction some things are recorded in the substate log (
 This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
 
 ```k
-    syntax SubstateLogEntry ::= "{" Int "|" WordStack "|" WordStack "}" [klabel(logEntry)]
- // --------------------------------------------------------------------------------------
+    syntax SubstateLogEntry ::= "{" Int "|" List "|" WordStack "}" [klabel(logEntry)]
+ // ---------------------------------------------------------------------------------
 ```
 
 After executing a transaction, it's necessary to have the effect of the substate log recorded.
@@ -1261,7 +1261,7 @@ These operators query about the current return data buffer.
          <id> ACCT </id>
          <wordStack> WS => #drop(N, WS) </wordStack>
          <localMem> LM </localMem>
-         <log> ... (.List => ListItem({ ACCT | #take(N, WS) | #range(LM, MEMSTART, MEMWIDTH) })) </log>
+         <log> ... (.List => ListItem({ ACCT | WordStack2List(#take(N, WS)) | #range(LM, MEMSTART, MEMWIDTH) })) </log>
       requires #sizeWordStack(WS) >=Int N
 ```
 
