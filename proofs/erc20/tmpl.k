@@ -20,6 +20,7 @@ module {MODULE}-SPEC
         <interimStates> _ </interimStates>
         <substateStack> _ </substateStack>
         <callLog> .Set </callLog> // for vmtest only
+        <touchedAccounts> _ => _ </touchedAccounts>
 
         <txExecState>
           <program> #asMapOpCodes(#dasmOpCodes(#parseByteStack({CODE}), DEFAULT)) </program>
