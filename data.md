@@ -79,30 +79,6 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
     rule word2Bool( W ) => true  requires W =/=K 0
 ```
 
--   `#ifInt_#then_#else_#fi` provides a conditional in `Int` expressions.
--   `#ifSet_#then_#else_#fi` provides a conditional in `Set` expressions.
-
-```k
-    syntax Int ::= "#ifInt" Bool "#then" Int "#else" Int "#fi" [function, smtlib(ite)]
-    syntax Set ::= "#ifSet" Bool "#then" Set "#else" Set "#fi" [function]
- // ---------------------------------------------------------------------
-```
-
-If we don't place the `Bool` condition as a side-condition for UIUC-K, it will attempt to only do an "implies-check" instead of full unification (which is problematic when `B` is symbolic during proving).
-
-```{.k .java}
-    rule #ifInt B #then W #else _ #fi => W requires B         [concrete]
-    rule #ifInt B #then _ #else W #fi => W requires notBool B [concrete]
-
-    rule #ifSet B #then W #else _ #fi => W requires B
-    rule #ifSet B #then _ #else W #fi => W requires notBool B
-```
-
-```{.k .ocaml .node}
-    rule #ifInt A #then B #else C #fi => #if A #then B #else C #fi [macro]
-    rule #ifSet A #then B #else C #fi => #if A #then B #else C #fi [macro]
-```
-
 -   `sgn` gives the twos-complement interperetation of the sign of a word.
 -   `abs` gives the twos-complement interperetation of the magnitude of a word.
 
@@ -131,9 +107,7 @@ If we don't place the `Bool` condition as a side-condition for UIUC-K, it will a
 
 -   `#symbolicWord` generates a fresh existentially-bound symbolic word.
 
-Note: Comment out this block (remove the `k` tag) if using RV K.
-
-```{.k .java}
+```k
     syntax Int ::= "#symbolicWord" [function]
  // -----------------------------------------
     rule #symbolicWord => chop ( ?X:Int )
@@ -195,21 +169,8 @@ Care is needed for `^Word` to avoid big exponentiation.
     syntax Int ::= Int "^Word" Int [function]
     syntax Int ::= powmod(Int, Int, Int) [function]
  // -----------------------------------------------
-```
-
-```{.k .java}
-    rule W0 ^Word W1 => (W0 ^Word (W1 /Int 2)) ^Word 2  requires W1 >=Int pow16 andBool W1 modInt 2 ==Int 0
-    rule W0 ^Word W1 => (W0 ^Word (W1 -Int 1)) *Word W0 requires W1 >=Int pow16 andBool W1 modInt 2 ==Int 1
-    rule W0 ^Word W1 => (W0 ^Int W1) modInt pow256      requires W1 <Int pow16
-```
-
-RV-K has a more efficient power-modulus operator.
-
-```{.k .ocaml .node}
     rule W0 ^Word W1 => powmod(W0, W1, pow256)
-```
 
-```k
     rule powmod(W0, W1, W2) => W0 ^%Int W1 W2 requires W2 =/=Int 0
     rule powmod(W0, W1, 0)  => 0
 ```
