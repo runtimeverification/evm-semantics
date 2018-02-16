@@ -115,19 +115,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
                       <activeAccounts> .Map </activeAccounts>
                       <accounts>
-```
-
--   UIUC-K and RV-K have slight differences of opinion here.
-
-```{.k .java}
-                        <account multiplicity="*" type="Bag">
-```
-
-```{.k .ocaml .node}
                         <account multiplicity="*" type="Map">
-```
-
-```k
                           <acctID>  0          </acctID>
                           <balance> 0          </balance>
                           <code>    .WordStack </code>
@@ -143,19 +131,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
                       <txPending> .List </txPending>
 
                       <messages>
-```
-
--   UIUC-K and RV-K have slight differences of opinion here.
-
-```{.k .java}
-                        <message multiplicity="*" type="Bag">
-```
-
-```{.k .ocaml .node}
                         <message multiplicity="*" type="Map">
-```
-
-```k
                           <msgID>      0          </msgID>
                           <txNonce>    0          </txNonce>            // T_n
                           <txGasPrice> 0          </txGasPrice>         // T_p
@@ -263,61 +239,7 @@ The `interimStates` cell stores a list of previous world states.
 -   `#popWorldState` restores the top element of the `interimStates`.
 -   `#dropWorldState` removes the top element of the `interimStates`.
 
-We use slightly different rules for rv-k versus uiuc-k because uiuc-k does not support storing configuration fragments.
-The semantics of these two sets of rules are identical, however, the version rv-k uses is substantially faster.
-We would use that version in both places if not for technical limitations on the prover.
-In the long term, a new prover will be built capable of supporting the same code in both versions of the semantics.
-
-```{.k .java}
-    syntax Account ::= "{" Int "|" Int "|" WordStack "|" Map "|" Int "|" Bool "}"
- // -----------------------------------------------------------------------------
-
-    syntax InternalOp ::= "#pushWorldState" | "#pushWorldStateAux" Map | "#pushAccount" Int Bool
- // --------------------------------------------------------------------------------------------
-    rule <k> #pushWorldState => #pushWorldStateAux ACCTS ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-         <interimStates> (.List => ListItem(.Set)) ... </interimStates>
-
-    rule <k> #pushWorldStateAux .Map => . ... </k>
-    rule <k> #pushWorldStateAux ((ACCT |-> EMPTY) REST) => #pushAccount ACCT EMPTY ~> #pushWorldStateAux REST ... </k>
-    rule <k> #pushAccount ACCT EMPTY => . ... </k>
-         <interimStates> ListItem((.Set => SetItem({ ACCT | BAL | CODE | STORAGE | NONCE | EMPTY })) REST) ... </interimStates>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           <code> CODE </code>
-           <storage> STORAGE </storage>
-           <nonce> NONCE </nonce>
-         </account>
-
-    syntax InternalOp ::= "#popWorldState" | "#popWorldStateAux" Set
- // ----------------------------------------------------------------
-    rule <k> #popWorldState => #popWorldStateAux PREVSTATE ... </k>
-         <interimStates> (ListItem(PREVSTATE) => .List) ... </interimStates>
-         <activeAccounts> _ => .Map </activeAccounts>
-         <accounts> _ => .Bag </accounts>
-
-    rule <k> #popWorldStateAux .Set => . ... </k>
-    rule <k> #popWorldStateAux ( (SetItem({ ACCT | BAL | CODE | STORAGE | NONCE | EMPTY }) => .Set) REST ) ... </k>
-         <activeAccounts> ... (.Map => ACCT |-> EMPTY) </activeAccounts>
-         <accounts> ( .Bag
-                   => <account>
-                        <acctID> ACCT </acctID>
-                        <balance> BAL </balance>
-                        <code> CODE </code>
-                        <storage> STORAGE </storage>
-                        <nonce> NONCE </nonce>
-                      </account>
-                    )
-                    ...
-         </accounts>
-
-    syntax InternalOp ::= "#dropWorldState"
- // ---------------------------------------
-    rule <k> #dropWorldState => . ... </k> <interimStates> (ListItem(_) => .List) ... </interimStates>
-```
-
-```{.k .ocaml .node}
+```k
     syntax Accounts ::= "{" AccountsCell "|" Map "}"
  // ------------------------------------------------
 
@@ -1356,7 +1278,7 @@ These rules reach into the network state and load/store from account storage:
            <storage> ... (INDEX |-> (OLD => VALUE)) ... </storage>
            ...
          </account>
-         <refund> R => #ifInt OLD =/=Int 0 andBool VALUE ==Int 0
+         <refund> R => #if OLD =/=Int 0 andBool VALUE ==Int 0
                         #then R +Word Rsstoreclear < SCHED >
                         #else R
                        #fi
@@ -1447,7 +1369,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
          ...
          </k>
-         <callLog> ... (.Set => #ifSet EXECMODE ==K VMTESTS #then SetItem({ ACCTTO | GLIMIT | VALUE | ARGS }) #else .Set #fi) </callLog>
+         <callLog> ... (.Set => #if EXECMODE ==K VMTESTS #then SetItem({ ACCTTO | GLIMIT | VALUE | ARGS }) #else .Set #fi) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
@@ -1597,7 +1519,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
-           <nonce> NONCE => #ifInt EXECMODE ==K VMTESTS #then NONCE #else NONCE +Int 1 #fi </nonce>
+           <nonce> NONCE => #if EXECMODE ==K VMTESTS #then NONCE #else NONCE +Int 1 #fi </nonce>
            ...
          </account>
          <activeAccounts> ... ACCT |-> (EMPTY => #if EXECMODE ==K VMTESTS #then EMPTY #else false #fi) ... </activeAccounts>
@@ -1620,13 +1542,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <program> _ => #asMapOpCodes(#dasmOpCodes(INITCODE, SCHED)) </program>
          <programBytes> _ => INITCODE </programBytes>
          <caller> _ => ACCTFROM </caller>
-         <callLog> ... (.Set => #ifSet EXECMODE ==K VMTESTS #then SetItem({ 0 | OLDGAVAIL +Int GAVAIL | VALUE | INITCODE }) #else .Set #fi) </callLog>
+         <callLog> ... (.Set => #if EXECMODE ==K VMTESTS #then SetItem({ 0 | OLDGAVAIL +Int GAVAIL | VALUE | INITCODE }) #else .Set #fi) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => .WordStack </callData>
          <callValue> _ => VALUE </callValue>
          <account>
            <acctID> ACCTTO </acctID>
-           <nonce> NONCE => #ifInt Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
+           <nonce> NONCE => #if Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
            ...
          </account>
          <activeAccounts> ... ACCTTO |-> (EMPTY => #if Gemptyisnonexistent << SCHED >> #then false #else EMPTY #fi) ... </activeAccounts>
@@ -1693,13 +1615,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
           => #checkCreate ACCT VALUE
-          ~> #create ACCT #newAddr(ACCT, NONCE) #ifInt Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #range(LM, MEMSTART, MEMWIDTH)
+          ~> #create ACCT #newAddr(ACCT, NONCE) #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
-         <gas> GAVAIL => #ifInt Gstaticcalldepth << SCHED >> #then 0 #else GAVAIL /Int 64 #fi </gas>
+         <gas> GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0 #else GAVAIL /Int 64 #fi </gas>
          <localMem> LM </localMem>
          <account>
            <acctID> ACCT </acctID>
@@ -1718,7 +1640,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
-         <refund> RF => #ifInt ACCT in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
+         <refund> RF => #if ACCT in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
          <account>
            <acctID> ACCT </acctID>
            <balance> BALFROM </balance>
@@ -1732,7 +1654,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
-         <refund> RF => #ifInt ACCT in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
+         <refund> RF => #if ACCT in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
          <account>
            <acctID> ACCT </acctID>
            <balance> BALFROM => 0 </balance>
@@ -2139,7 +2061,7 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
 ```k
     syntax Int ::= Csstore ( Schedule , Int , Int ) [function]
  // ----------------------------------------------------------
-    rule Csstore(SCHED, VALUE, OLD) => #ifInt VALUE =/=Int 0 andBool OLD ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
+    rule Csstore(SCHED, VALUE, OLD) => #if VALUE =/=Int 0 andBool OLD ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
 
     syntax Int ::= Ccall    ( Schedule , Int , Map , Int , Int , Int ) [function]
                  | Ccallgas ( Schedule , Int , Map , Int , Int , Int ) [function]
@@ -2206,7 +2128,7 @@ Note: These are all functions as the operator `#gasExec` has already loaded all 
     syntax Int ::= #adjustedExpLength(Int, Int, WordStack) [function]
                  | #adjustedExpLength(Int)                 [function, klabel(#adjustedExpLengthAux)]
  // ------------------------------------------------------------------------------------------------
-    rule #adjustedExpLength(BASELEN, EXPLEN, DATA) => #ifInt EXPLEN <=Int 32 #then 0 #else 8 *Int (EXPLEN -Int 32) #fi +Int #adjustedExpLength(#asInteger(DATA [ 96 +Int BASELEN .. minInt(EXPLEN, 32) ]))
+    rule #adjustedExpLength(BASELEN, EXPLEN, DATA) => #if EXPLEN <=Int 32 #then 0 #else 8 *Int (EXPLEN -Int 32) #fi +Int #adjustedExpLength(#asInteger(DATA [ 96 +Int BASELEN .. minInt(EXPLEN, 32) ]))
 
     rule #adjustedExpLength(0) => 0
     rule #adjustedExpLength(1) => 0

@@ -7,10 +7,10 @@ Liveness properties can be specified by using the reduction to safety properties
 
 This module defines some helpers which make writing specifications simpler.
 
-```{.k .java}
+```k
 requires "evm.k"
 
-module VERIFICATION
+module VERIFICATION [symbolic]
     imports EVM
 ```
 
@@ -29,7 +29,7 @@ Specifically, we introduce uninterpreted function abstractions and refinements f
 
 The term `nthbyteof(v, i, n)` represents the i-th byte of the two's complement representation of v in n bytes (0 being MSB), with discarding high-order bytes when v is not fit in n bytes.
 
-```{.k .java}
+```k
     syntax Int ::= nthbyteof ( Int , Int , Int ) [function, smtlib(smt_nthbyteof)]
  // ------------------------------------------------------------------------------
     rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
@@ -42,7 +42,7 @@ Instead, we introduce lemmas over the uninterpreted functional terms.
 The following lemmas are used for symbolic reasoning about `MLOAD` and `MSTORE` instructions.
 They capture the essential mechanisms used by the two instructions: splitting a word into the byte-array and merging it back to the word.
 
-```{.k .java}
+```k
     rule 0 <=Int nthbyteof(V, I, N)          => true
     rule         nthbyteof(V, I, N) <Int 256 => true
 
@@ -92,7 +92,7 @@ In Solidity, however, the first 32 bytes of the call data are loaded into the st
 The following lemmas essentially capture the signature extraction mechanisms.
 It reduces the reasoning efforts of the underlying theorem prover, factoring out the essence of the byte-twiddling operations.
 
-```{.k .java}
+```k
     rule #padToWidth(32, #asByteStack(V)) => #asByteStackInWidth(V, 32)
       requires 0 <=Int V andBool V <Int pow256
 
@@ -134,7 +134,7 @@ Hashed locations are essential for the storage layout schemes used to store comp
 
 The following syntactic sugars capture the storage layout schemes of Solidity and Viper.
 
-```{.k .java}
+```k
     syntax IntList ::= List{Int, ""}                             [klabel(intList)]
     syntax Int     ::= #hashedLocation( String , Int , IntList ) [function]
  // -----------------------------------------------------------------------
@@ -161,7 +161,7 @@ These rules help to improve the performance of the underlying theorem prover’s
 
 Below are universal simplification rules that are free to be used in any context.
 
-```{.k .java}
+```k
     rule 0 +Int N => N
     rule N +Int 0 => N
 
@@ -187,7 +187,7 @@ The following simplification rules are local, meant to be used in specific conte
 The rules are applied only when the side-conditions are met.
 These rules are specific to reasoning about EVM programs.
 
-```{.k .java}
+```k
     rule (I1 +Int I2) +Int I3 => I1 +Int (I2 +Int I3) when #isConcrete(I2) andBool #isConcrete(I3)
     rule (I1 +Int I2) -Int I3 => I1 +Int (I2 -Int I3) when #isConcrete(I2) andBool #isConcrete(I3)
     rule (I1 -Int I2) +Int I3 => I1 -Int (I2 -Int I3) when #isConcrete(I2) andBool #isConcrete(I3)
@@ -200,8 +200,8 @@ These rules are specific to reasoning about EVM programs.
                             andBool 0 <=Int N andBool N <=Int MASK
 
     // for gas calculation
-    rule A -Int (#ifInt C #then B1 #else B2 #fi) => #ifInt C #then (A -Int B1) #else (A -Int B2) #fi
-    rule (#ifInt C #then B1 #else B2 #fi) -Int A => #ifInt C #then (B1 -Int A) #else (B2 -Int A) #fi
+    rule A -Int (#if C #then B1 #else B2 #fi) => #if C #then (A -Int B1) #else (A -Int B2) #fi
+    rule (#if C #then B1 #else B2 #fi) -Int A => #if C #then (B1 -Int A) #else (B2 -Int A) #fi
 ```
 
 ### Boolean
@@ -209,7 +209,7 @@ These rules are specific to reasoning about EVM programs.
 In EVM, no boolean value exist but instead, 1 and 0 are used to represent true and false respectively.
 `bool2Word` is used to convert from booleans to integers, and lemmas are provided here for it.
 
-```{.k .java}
+```k
     rule bool2Word(A) |Int bool2Word(B) => bool2Word(A  orBool B)
     rule bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B)
 
@@ -223,7 +223,7 @@ In EVM, no boolean value exist but instead, 1 and 0 are used to represent true a
 
 Some lemmas over the comparison operators are also provided.
 
-```{.k .java}
+```k
     rule 0 <=Int chop(V)             => true
     rule         chop(V) <Int pow256 => true
 
@@ -236,7 +236,7 @@ Some lemmas over the comparison operators are also provided.
 
 ### `chop` Reduction
 
-```{.k .java}
+```k
     rule chop(I) => I requires 0 <=Int I andBool I <Int pow256
 ```
 
@@ -244,7 +244,7 @@ Some lemmas over the comparison operators are also provided.
 
 These lemma abstracts some properties about `#sizeWordStack`:
 
-```{.k .java}
+```k
     rule #sizeWordStack ( _ , _ ) >=Int 0 => true [smt-lemma]
     rule #sizeWordStack ( WS , N:Int )
       => #sizeWordStack ( WS , 0 ) +Int N
@@ -259,7 +259,7 @@ ABI Abstraction DSL
 
 Below is the ABI call abstraction, a formalization for ABI encoding of the call data, that helps to keep the specification succinct.
 
-```{.k .java}
+```k
     syntax TypedArg ::= #uint160 ( Int )
                       | #address ( Int )
                       | #uint256 ( Int )
@@ -303,7 +303,7 @@ Below is the ABI call abstraction, a formalization for ABI encoding of the call 
 
 ### Event Logs
 
-```{.k .java}
+```k
     syntax EventArg ::= TypedArg
                       | #indexed ( TypedArg )
  // -----------------------------------------
@@ -357,7 +357,7 @@ Verification Constants
 As a demonstration of simple reachability claims involving a circularity, we prove the EVM [Sum to N](proofs/sum-to-n.md) program correct.
 This program sums the numbers from 1 to N (for sufficiently small N), including pre-conditions dis-allowing integer under/overflow and stack overflow.
 
-```{.k .java}
+```k
     syntax Map ::= "sumTo" "(" Int ")" [function]
  // ---------------------------------------------
     rule sumTo(N)

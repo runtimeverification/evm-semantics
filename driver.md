@@ -4,25 +4,19 @@ Ethereum Simulations
 Ethereum is using the EVM to drive updates over the world state.
 Actual execution of the EVM is defined in [the EVM file](../evm).
 
-```{.k .java}
-requires "verification.k"
-```
-
 ```k
+requires "verification.k"
 requires "evm.k"
 requires "analysis.k"
 
 module ETHEREUM-SIMULATION
     imports EVM
     imports K-REFLECTION
+    imports VERIFICATION
 ```
 
 ```{.k .java .ocaml}
     imports EVM-ANALYSIS
-```
-
-```{.k .java}
-    imports VERIFICATION
 ```
 
 An Ethereum simulation is a list of Ethereum commands.
