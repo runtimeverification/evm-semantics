@@ -4,6 +4,12 @@ import sys
 import re
 import configparser
 
+# TODO: for Python 3.5 or higher: z = {**x, **y}
+def merge_two_dicts(x, y):
+    z = dict(x)
+    z.update(y)
+    return z
+
 def subst(text, key, val):
     return text.replace('{' + key.upper() + '}', val)
 
@@ -19,7 +25,7 @@ def inherit_get(config, section):
     else:
         parent = inherit_get(config, '-'.join(section.split('-')[:-1]))
         current = safe_get(config, section)
-        merged = {**parent, **current}
+        merged = merge_two_dicts(parent, current) # TODO: for Python 3.5 or higher: {**parent, **current}
         for key in list(merged.keys()):
             if key.startswith('+'):
                 merged[key[1:]] += merged[key]
