@@ -23,7 +23,7 @@ This tool should be extended to take advantage of the symbolic execution engine 
 -   The mode `GASANALYZE` performs gas analysis of the program instead of executing normally.
 
 ```{.k .java .ocaml}
-    syntax Mode ::= "GASANALYZE"
+    syntax Mode ::= "GASANALYZE" [klabel(GASANALYZE)]
 ```
 
 We'll need to make summaries of the state which collect information about how much gas has been used.
