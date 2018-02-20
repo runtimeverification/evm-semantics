@@ -240,6 +240,12 @@ Some lemmas over the comparison operators are also provided.
     rule         X &Int Y <Int pow256 => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <=Int Y andBool Y <Int pow256
 ```
 
+### `chop` Reduction
+
+```{.k .java}
+    rule chop(I) => I requires 0 <=Int I andBool I <Int pow256
+```
+
 ### Wordstack
 
 These lemma abstracts some properties about `#sizeWordStack`:
