@@ -57,8 +57,7 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
 ```k
     syntax Int ::= chop ( Int ) [function, smtlib(chop)]
  // ----------------------------------------------------
-    rule chop ( I:Int ) => I modInt pow256 requires I  <Int 0  orBool I >=Int pow256    [concrete]
-    rule chop ( I:Int ) => I               requires I >=Int 0 andBool I  <Int pow256 // [concrete]
+    rule chop ( I:Int ) => I modInt pow256 [concrete, smt-lemma]
 ```
 
 ### Boolean Conversions
