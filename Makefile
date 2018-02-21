@@ -4,6 +4,7 @@
 BUILD_DIR:=$(CURDIR)/.build
 K_SUBMODULE:=$(BUILD_DIR)/k
 PANDOC_TANGLE_SUBMODULE:=$(BUILD_DIR)/pandoc-tangle
+PLUGIN_SUBMODULE:=plugin
 BUILD_LOCAL:=$(BUILD_DIR)/local
 
 PKG_CONFIG_PATH:=$(BUILD_LOCAL)/lib/pkgconfig
@@ -14,18 +15,19 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean deps k-deps tangle-deps ocaml-deps build build-ocaml build-java defn sphinx split-tests \
+.PHONY: all clean deps k-deps tangle-deps ocaml-deps plugin-deps build build-ocaml build-java build-node defn sphinx split-tests \
 		test test-all test-conformance test-slow-conformance test-all-conformance \
 		test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
 		test-proof test-interactive
+.SECONDARY:
 
 all: build split-tests
 
 clean: clean-submodules
-	rm -rf .build/java .build/ocaml .build/node .build/logs .build/local tests/proofs/specs
+	rm -rf .build/java .build/plugin-ocaml .build/plugin-node .build/ocaml .build/node .build/logs .build/local .build/vm tests/proofs/specs
 
 clean-submodules:
-	rm -rf .build/k/make.timestamp .build/pandoc-tangle/make.timestamp tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp
+	rm -rf .build/k/make.timestamp .build/pandoc-tangle/make.timestamp tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp plugin/make.timestamp
 
 distclean: clean
 	opam switch system
@@ -37,9 +39,10 @@ distclean: clean
 # Dependencies
 # ------------
 
-deps: k-deps tangle-deps ocaml-deps
+deps: k-deps tangle-deps ocaml-deps plugin-deps
 k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
+plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 
 $(K_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
@@ -53,6 +56,11 @@ $(PANDOC_TANGLE_SUBMODULE)/make.timestamp:
 	git submodule update --init -- $(PANDOC_TANGLE_SUBMODULE)
 	touch $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 
+$(PLUGIN_SUBMODULE)/make.timestamp: ocaml-deps
+	@echo "== submodule: $@"
+	git submodule update --init --recursive -- $(PLUGIN_SUBMODULE)
+	touch $(PLUGIN_SUBMODULE)/make.timestamp
+
 ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 	opam init --quiet --no-setup
 	opam repository add k "$(K_SUBMODULE)/k-distribution/target/release/k/lib/opam" \
@@ -60,7 +68,7 @@ ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 	opam update
 	opam switch 4.03.0+k
 	eval $$(opam config env) \
-		opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128
+		opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128 ocaml-protoc rlp yojson hex ocp-ocamlres
 
 # install secp256k1 from bitcoin-core
 .build/local/lib/pkgconfig/libsecp256k1.pc:
@@ -77,16 +85,17 @@ K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
 # Building
 # --------
 
-build: build-ocaml build-java
+build: build-ocaml build-java build-node
 build-ocaml: .build/ocaml/driver-kompiled/interpreter
 build-java: .build/java/driver-kompiled/timestamp
+build-node: .build/vm/kevm-vm
 
 # Tangle definition from *.md files
 
 standalone_tangle:=.k:not(.node),.standalone
 node_tangle:=.k:not(.standalone),.node
 
-k_files:=driver.k data.k evm.k analysis.k krypto.k edsl.k
+k_files:=driver.k data.k evm.k analysis.k krypto.k edsl.k evm-node.k
 ocaml_files:=$(patsubst %,.build/ocaml/%,$(k_files))
 java_files:=$(patsubst %,.build/java/%,$(k_files))
 node_files:=$(patsubst %,.build/node/%,$(k_files))
@@ -118,24 +127,60 @@ defn: $(defn_files)
 
 # OCAML Backend
 
-.build/ocaml/driver-kompiled/interpreter: $(ocaml_files) KRYPTO.ml
+ifeq ($(BYTE),yes)
+  EXT=cmo
+  LIBEXT=cma
+  DLLEXT=cma
+  OCAMLC=c
+  LIBFLAG=-a
+else
+  EXT=cmx
+  LIBEXT=cmxa
+  DLLEXT=cmxs
+  OCAMLC=opt -O3
+  LIBFLAG=-shared
+endif
+
+.build/%/driver-kompiled/constants.$(EXT): $(defn_files)
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
-		&& $(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
-					--syntax-module ETHEREUM-SIMULATION $< --directory .build/ocaml \
-					--hook-namespaces KRYPTO --gen-ml-only -O3 --non-strict \
-		&& ocamlfind opt -c .build/ocaml/driver-kompiled/constants.ml -package gmp -package zarith \
-		&& ocamlfind opt -c -I .build/ocaml/driver-kompiled KRYPTO.ml -package cryptokit -package secp256k1 -package bn128 \
-		&& ocamlfind opt -a -o semantics.cmxa KRYPTO.cmx \
-		&& ocamlfind remove ethereum-semantics-plugin \
-		&& ocamlfind install ethereum-semantics-plugin META semantics.cmxa semantics.a KRYPTO.cmi KRYPTO.cmx \
-		&& $(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
-					--syntax-module ETHEREUM-SIMULATION $< --directory .build/ocaml \
-					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O3 --non-strict \
-		&& cd .build/ocaml/driver-kompiled \
-		&& ocamlfind opt -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin \
-					     -linkpkg -inline 20 -nodynlink -O3 -linkall \
-					     -o interpreter constants.cmx prelude.cmx plugin.cmx parser.cmx lexer.cmx run.cmx interpreter.ml
+		&& ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
+						    --syntax-module ETHEREUM-SIMULATION .build/$*/driver.k --directory .build/$* \
+						    --hook-namespaces "KRYPTO BLOCKCHAIN" --gen-ml-only -O3 --non-strict \
+		&& cd .build/$*/driver-kompiled \
+		&& ocamlfind $(OCAMLC) -c -g constants.ml -package gmp -package zarith -safe-string
+
+.build/plugin-%/semantics.$(LIBEXT): $(wildcard plugin/plugin/*.ml plugin/plugin/*.mli) .build/%/driver-kompiled/constants.$(EXT)
+	mkdir -p .build/plugin-$*
+	cp plugin/plugin/*.ml plugin/plugin/*.mli .build/plugin-$*
+	eval $$(opam config env) \
+		&& ocp-ocamlres -format ocaml plugin/plugin/proto/VERSION -o .build/plugin-$*/apiVersion.ml \
+		&& ocaml-protoc plugin/plugin/proto/*.proto -ml_out .build/plugin-$* \
+		&& cd .build/plugin-$* \
+			&& ocamlfind $(OCAMLC) -c -g -I ../$*/driver-kompiled msg_types.mli msg_types.ml msg_pb.mli msg_pb.ml threadLocal.mli threadLocal.ml apiVersion.ml world.mli world.ml caching.mli caching.ml BLOCKCHAIN.ml KRYPTO.ml \
+								   -package cryptokit -package secp256k1 -package bn128 -package ocaml-protoc -safe-string -thread \
+			&& ocamlfind $(OCAMLC) -a -o semantics.$(LIBEXT) KRYPTO.$(EXT) msg_types.$(EXT) msg_pb.$(EXT) threadLocal.$(EXT) apiVersion.$(EXT) world.$(EXT) caching.$(EXT) BLOCKCHAIN.$(EXT) -thread \
+			&& ocamlfind remove ethereum-semantics-plugin-$* \
+			&& ocamlfind install ethereum-semantics-plugin-$* ../../plugin/plugin/META semantics.* *.cmi *.$(EXT)
+
+.build/%/driver-kompiled/interpreter: .build/plugin-%/semantics.$(LIBEXT)
+	eval $$(opam config env) \
+		&& cd .build/$*/driver-kompiled \
+			&& ocamllex lexer.mll \
+			&& ocamlyacc parser.mly \
+			&& ocamlfind $(OCAMLC) -c -g -package gmp -package zarith -package uuidm -safe-string prelude.ml plugin.ml parser.mli parser.ml lexer.ml run.ml -thread \
+			&& ocamlfind $(OCAMLC) -c -g -w -11-26 -package gmp -package zarith -package uuidm -package ethereum-semantics-plugin-$* -safe-string realdef.ml -match-context-rows 2 \
+			&& ocamlfind $(OCAMLC) $(LIBFLAG) -o realdef.$(DLLEXT) realdef.$(EXT) \
+			&& ocamlfind $(OCAMLC) -g -o interpreter constants.$(EXT) prelude.$(EXT) plugin.$(EXT) parser.$(EXT) lexer.$(EXT) run.$(EXT) interpreter.ml \
+								   -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin-$* -linkpkg -linkall -thread -safe-string
+
+.build/vm/kevm-vm: $(wildcard plugin/vm/*.ml plugin/vm/*.mli) .build/node/driver-kompiled/interpreter
+	mkdir -p .build/vm
+	cp plugin/vm/*.ml plugin/vm/*.mli .build/vm
+	eval $$(opam config env) \
+		&& cd .build/vm \
+			&& ocamlfind $(OCAMLC) -g -I ../node/driver-kompiled -o kevm-vm constants.$(EXT) prelude.$(EXT) plugin.$(EXT) parser.$(EXT) lexer.$(EXT) realdef.$(EXT) run.$(EXT) VM.mli VM.ml vmNetworkServer.ml \
+								   -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin-node -package rlp -package yojson -package hex -linkpkg -linkall -thread -safe-string
 
 # Tests
 # -----
