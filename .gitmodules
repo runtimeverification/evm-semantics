@@ -20,3 +20,7 @@
 	url = https://github.com/runtimeverification/verified-smart-contracts.git
 	branch = master
 	ignore = untracked
+[submodule "plugin"]
+	path = plugin
+	url = https://github.com/runtimeverification/blockchain-k-plugin
+	ignore = untracked
