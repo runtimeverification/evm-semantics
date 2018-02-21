@@ -2165,7 +2165,7 @@ There are several helpers for calculating gas (most of them also specified in th
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT in ACCTS
 
-    rule <k> #accountNonexistent(ACCT) => NONCE ==Int 0 andBool BAL ==Int 0 andBool CODE ==K .WordStack andBool Gemptyisnonexistent << SCHED >> ... </k>
+    rule <k> #accountNonexistent(ACCT) => #accountEmpty(CODE, NONCE, BAL) andBool Gemptyisnonexistent << SCHED >> ... </k>
          <schedule> SCHED </schedule>
          <account>
            <acctID>  ACCT  </acctID>
@@ -2174,6 +2174,10 @@ There are several helpers for calculating gas (most of them also specified in th
            <code>    CODE  </code>
            ...
          </account>
+
+    syntax Bool ::= #accountEmpty ( WordStack , Int , Int ) [function, klabel(accountEmpty)]
+ // ----------------------------------------------------------------------------------------
+    rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .WordStack andBool NONCE ==Int 0 andBool BAL ==Int 0
 
     syntax Int ::= #allBut64th ( Int ) [function]
  // ---------------------------------------------
