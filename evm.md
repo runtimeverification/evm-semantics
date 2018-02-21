@@ -734,8 +734,8 @@ During execution of a transaction some things are recorded in the substate log (
 This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
 
 ```k
-    syntax SubstateLogEntry ::= "{" Int "|" WordStack "|" WordStack "}"
- // -------------------------------------------------------------------
+    syntax SubstateLogEntry ::= "{" Int "|" WordStack "|" WordStack "}" [klabel(logEntry)]
+ // --------------------------------------------------------------------------------------
 ```
 
 After executing a transaction, it's necessary to have the effect of the substate log recorded.
