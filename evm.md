@@ -962,6 +962,14 @@ In `node` mode, the semantics are given in terms of an external call to a runnin
 ```k
     syntax InternalOp ::= "#transferFunds" Int Int Int
  // --------------------------------------------------
+    rule <k> #transferFunds ACCT ACCT VALUE => . ... </k>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> ORIGFROM </balance>
+           ...
+         </account>
+      requires VALUE <=Int ORIGFROM
+
     rule <k> #transferFunds ACCTFROM ACCTTO VALUE => . ... </k>
          <account>
            <acctID> ACCTFROM </acctID>
@@ -985,15 +993,17 @@ In `node` mode, the semantics are given in terms of an external call to a runnin
 
     rule <k> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-      requires ACCTFROM =/=K ACCTTO andBool notBool ACCTTO in ACCTS
+         <schedule> SCHED </schedule>
+      requires ACCTFROM =/=K ACCTTO
+       andBool notBool ACCTTO in ACCTS
+       andBool (VALUE >Int 0 orBool notBool Gemptyisnonexistent << SCHED >>)
 
-    rule <k> #transferFunds ACCT ACCT VALUE => . ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> ORIGFROM </balance>
-           ...
-         </account>
-      requires VALUE <=Int ORIGFROM
+    rule <k> #transferFunds ACCTFROM ACCTTO 0 => . ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
+         <schedule> SCHED </schedule>
+      requires ACCTFROM =/=K ACCTTO
+       andBool notBool ACCTTO in ACCTS
+       andBool Gemptyisnonexistent << SCHED >>
 ```
 
 ### Invalid Operator
