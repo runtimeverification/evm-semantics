@@ -1,42 +1,44 @@
 Formal Verification of ERC20 Smart Contracts
 ============================================
 
-We present full functional correctness verification of ERC20 token contracts, for the first time to the best of our knowledge.
-First, we formalize its high-level business logic, called [ERC20-K](https://github.com/runtimeverification/erc20-semantics), based on the [ERC20 standard](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md) document, to provide a precise and comprehensive specification of the functional correctness properties.
-Then, we refine the specification down to EVM level to capture EVM-specific detailed behaviors, ensuring nothing bad happens in the actual execution, other than specified in the high-level specification.
-To precisely reason about the EVM bytecodes without missing any EVM quirks, we adopted [KEVM](https://github.com/kframework/evm-semantics), a complete formal semantics of EVM, and instantiated the [K-framework's reachability logic theorem prover](http://fsl.cs.illinois.edu/index.php/Semantics-Based_Program_Verifiers_for_All_Languages) to generate a correct-by-construct deductive verifier for EVM.
-We optimized the verifier by introducing custom abstractions and lemmas specific to EVM that expedite proof search of the underlying theorem prover.
-We used the verifier to verify multiple ERC20 token contracts against the EVM-level specification, and found diverging behaviors of which some are questionable.
-We believe that the techniques we developed here can be also readily used for verifying other smart contracts.
+We present full functional correctness verification of ERC20 token contracts.
+First, we formalize the high-level business logic, called [ERC20-K], based on the [ERC20 standard] document, to provide a precise and comprehensive specification of the desired functional correctness properties.
+Then, we refine the specification down to EVM level to capture EVM-specific behaviors, ensuring nothing unexpected happens in the actual execution.
+Custom abstractions and lemmas are provided to the K proof engine in the common [verification] lemma file.
+Multiple implementations of ERC20 tokens are verified here as examples for future users who wish to verify their own contracts.
+For more information, see the [Technical Report] on ERC20 verification using KEVM.
 
-Running Verifier
-----------------
+Checking Proofs
+---------------
 
 To reproduce the verification results for all of the ERC20 token contracts, simply run the following command in the root directory of this repository:
 
 ```sh
-make proof-test-all
+make proof-test
 ```
 
 The above command will automatically build and install the KEVM semantics and the K reachability logic prover if they haven't been, which requires some dependencies installed.
-For more details, please refer to [README](../../README.md).
 
-Artifact and Documentation
---------------------------
+Proof Structure
+---------------
 
--   [ERC20-K](https://github.com/runtimeverification/erc20-semantics): a formal specification of the high-level business logic of ERC20
--   [ERC20-EVM](.): an EVM-level refinement of ERC20-K
-    -   [tmpl.k](tmpl.k): specification template
-    -   [viper/](viper): Viper ERC20 token specification
-    -   [zeppelin/](zeppelin): OpenZeppelin ERC20 token specification
-    -   [hkg/](hkg): HackerGold (HKG) ERC20 token specification
-    -   [hobby/](hobby): specification for an ERC20 token of a personal hobby, called KidsEducationToken
--   [Technical Report](tech-report.pdf): full details of the verification
+The file <tmpl.k> provides the main specification template which is filled in with details from each individual token/function to be verified.
+Each of the individual token specifications are broken into two files, at `TOKEN/pgm-TOKEN.ini` and `TOKEN/spec-TOKEN.ini` (eg. `viper/pgm-TOKEN.ini` and `viper/spec-TOKEN.ini`).
+This makes it easier to see the differences between the different ERC20 implementations here.
 
-ERC20 Token Contracts
----------------------
+The verification process is broken into several steps (for a given `TOKEN`).
 
-We tried to verify the following ERC20 token contract implementations against [ERC20-K](https://github.com/runtimeverification/erc20-semantics) and its refinement [ERC20-EVM](.), and found deviations as follows:
+1.  The `TOKEN/pgm-TOKEN.ini` is read to populate the values `{COMPILER}`, `{_BALANCES}`, etc... in the file `TOKEN/spec-TOKEN.ini`.
+    If a variables in `*.ini` is called `variable_name`, it is used to populate the `{VARIABLE_NAME}` value in the target file.
+
+2.  Similarly, the resulting fields are read from `TOKEN/spec-TOKEN.ini` and substituted into the file `tmpl.k`, to generate the final specification file.
+
+3.  The K prover is invoked on the resulting file using `./kevm prove path/to/final/filename-spec.k`.
+
+Currently Verified ERC20 Token Contracts
+----------------------------------------
+
+We tried to verify the following ERC20 token contract implementations against [ERC20-K] and its refinement [ERC20-EVM], and found deviations as follows:
 
 -   [Viper ERC20 token](https://github.com/ethereum/vyper/blob/master/examples/tokens/ERC20_solidity_compatible/ERC20.v.py): fully *conforming* to the ERC20 standard
 -   [OpenZeppelin ERC20 token](https://github.com/OpenZeppelin/zeppelin-solidity/blob/master/contracts/token/ERC20/StandardToken.sol): *conforming* to the standard, but:
@@ -54,3 +56,11 @@ We tried to verify the following ERC20 token contract implementations against [E
     -   Incorrect overflow detection for self-transfers
     -   Rejecting transfers of `0` values
     -   Returning `false` in failure
+
+Resources
+=========
+
+[ERC20-K]: <https://github.com/runtimeverification/erc20-semantics>
+[ERC20]: <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md>
+[verification]: <../../verification.md>
+[Tech Report]: <PUT LINK HERE>
