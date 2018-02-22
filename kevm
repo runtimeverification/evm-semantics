@@ -54,7 +54,7 @@ run_krun() {
     local run_file=$1 ; shift
     run_env "$run_file"
     export K_OPTS=-Xss500m
-    krun --directory .build/$backend/ -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@"
+    krun --directory .build/$backend/ -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' --interpret "$run_file" "$@"
 }
 
 run_interpreter() {
