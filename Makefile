@@ -35,7 +35,7 @@ ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 	opam switch 4.03.0+k
 	eval $$(opam config env) \
 	export PKG_CONFIG_PATH=$(PKG_CONFIG_LOCAL) ; \
-	opam install --yes mlgmp zarith uuidm cryptokit secp256k1 bn128
+	opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128
 
 # install secp256k1 from bitcoin-core
 .build/local/lib/pkgconfig/libsecp256k1.pc:
