@@ -40,22 +40,22 @@ Currently Verified ERC20 Token Contracts
 
 We tried to verify the following ERC20 token contract implementations against [ERC20-K] and its refinement [ERC20-EVM], and found deviations as follows:
 
--   [Viper ERC20 token](https://github.com/ethereum/vyper/blob/master/examples/tokens/ERC20_solidity_compatible/ERC20.v.py): fully *conforming* to the ERC20 standard
--   [OpenZeppelin ERC20 token](https://github.com/OpenZeppelin/zeppelin-solidity/blob/master/contracts/token/ERC20/StandardToken.sol): *conforming* to the standard, but:
-    -   Rejecting transfers to address `0`
--   [ConsenSys ERC20 token](https://github.com/ConsenSys/Tokens/blob/master/contracts/eip20/EIP20.sol): *conforming* to the standard, but:
-    -   No arithmetic overflow protection
-    -   Supporting infinite allowances variant
--   [HackerGold (HKG) ERC20 token](https://github.com/ether-camp/virtual-accelerator/blob/master/contracts/StandardToken.sol): *deviating* from the standard:
-    -   No arithmetic overflow protection
-    -   No `totalSupply` function
-    -   Rejecting transfers of `0` values
-    -   Returning `false` in failure
--   An ERC20 token of a personal hobby, called [KidsEducationToken](https://github.com/ethereum/mist/issues/3301): *buggy* implementation:
-    -   Typographical bug: `<=` instead of `>=`
+-   [Viper ERC20 token] `viper/*-viper.ini`: fully *conforming* to the ERC20 standard.
+-   [OpenZeppelin ERC20 token] `zeppelin/*-zeppelin.ini`: *conforming* to the standard, but:
+    -   Rejecting transfers to address `0`.
+-   [ConsenSys ERC20 token] `???/*-???.ini`: *conforming* to the standard, but:
+    -   No arithmetic overflow protection.
+    -   Supporting infinite allowances variant.
+-   [HackerGold (HKG) ERC20 token] `hkg/*-hkg.ini`: *deviating* from the standard:
+    -   No arithmetic overflow protection.
+    -   No `totalSupply` function.
+    -   Rejecting transfers of `0` values.
+    -   Returning `false` in failure (??? FOR ALL FUNCTIONS?).
+-   An ERC20 token of a personal hobby, called [KidsEducationToken] `hobby/*-hobby.ini`: *buggy* implementation:
+    -   Typographical bug: `<=` instead of `>=`.
     -   Incorrect overflow detection for self-transfers
-    -   Rejecting transfers of `0` values
-    -   Returning `false` in failure
+    -   Rejecting transfers of `0` values.
+    -   Returning `false` in failure (??? FOR ALL FUNCTIONS?).
 
 Resources
 =========
@@ -63,4 +63,9 @@ Resources
 [ERC20-K]: <https://github.com/runtimeverification/erc20-semantics>
 [ERC20]: <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md>
 [verification]: <../../verification.md>
-[Tech Report]: <PUT LINK HERE>
+[Tech Report]: <???>
+[Viper ERC20 token]: <https://github.com/ethereum/vyper/blob/master/examples/tokens/ERC20_solidity_compatible/ERC20.v.py>
+[OpenZeppelin ERC20 token]: <https://github.com/OpenZeppelin/zeppelin-solidity/blob/master/contracts/token/ERC20/StandardToken.sol>
+[ConsenSys ERC20 token]: <https://github.com/ConsenSys/Tokens/blob/master/contracts/eip20/EIP20.sol>
+[HackerGold (HKG) ERC20 token]: <https://github.com/ether-camp/virtual-accelerator/blob/master/contracts/StandardToken.sol>
+[KidsEducationToken]: <https://github.com/ethereum/mist/issues/3301>
