@@ -152,13 +152,39 @@ tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTest
 
 # ProofTests
 
-proof_dir=tests/proofs
-proof_tests=$(proof_dir)/sum-to-n-spec.k \
-            $(proof_dir)/hkg/allowance-spec.k \
-            $(proof_dir)/hkg/approve-spec.k \
-            $(proof_dir)/hkg/balanceOf-spec.k \
-            $(proof_dir)/hkg/transfer-else-spec.k $(proof_dir)/hkg/transfer-then-spec.k \
-            $(proof_dir)/hkg/transferFrom-else-spec.k $(proof_dir)/hkg/transferFrom-then-spec.k
+erc20_files:=totalSupply-spec.k \
+             balanceOf-spec.k \
+             allowance-spec.k \
+             approve-spec.k \
+             transfer-success-1-spec.k \
+             transfer-success-2-spec.k \
+             transfer-failure-1-spec.k \
+             transfer-failure-2-spec.k \
+             transferFrom-success-1-spec.k \
+             transferFrom-success-2-spec.k \
+             transferFrom-failure-1-spec.k \
+             transferFrom-failure-2-spec.k
+
+hobby_erc20_files:=totalSupply-spec.k \
+                   balanceOf-spec.k \
+                   allowance-spec.k \
+                   approve-success-spec.k \
+                   approve-failure-spec.k \
+                   transfer-success-1-spec.k \
+                   transfer-success-2-spec.k \
+                   transfer-failure-1-spec.k \
+                   transfer-failure-2-spec.k \
+                   transferFrom-success-1-spec.k \
+                   transferFrom-success-2-spec.k \
+                   transferFrom-failure-1-spec.k \
+                   transferFrom-failure-2-spec.k
+
+proof_dir:=tests/proofs
+proof_tests:=$(proof_dir)/sum-to-n-spec.k \
+			 $(patsubst %, $(proof_dir)/erc20/viper/%, $(erc20_files)) \
+			 $(patsubst %, $(proof_dir)/erc20/zeppelin/%, $(erc20_files)) \
+			 $(patsubst %, $(proof_dir)/erc20/hkg/%, $(erc20_files)) \
+			 $(patsubst %, $(proof_dir)/erc20/hobby/%, $(hobby_erc20_files))
 
 proof-test-all: proof-test
 proof-test: $(proof_tests:=.test)
@@ -168,15 +194,38 @@ tests/proofs/%.test: tests/proofs/% build
 
 split-proof-tests: $(proof_tests)
 
+# #### Sum to N
 tests/proofs/sum-to-n-spec.k: proofs/sum-to-n.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:sum-to-n $< > $@
 
+# #### HKG
 tests/proofs/hkg/%-spec.k: proofs/hkg.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
+
+# #### ERC20
+tests/proofs/erc20/viper/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/viper/spec-viper.ini proofs/erc20/viper/pgm-viper.ini
+	@echo >&2 "==  gen-spec: $@"
+	mkdir -p $(dir $@)
+	python3 tests/gen-spec.py $^ $* > $@
+
+tests/proofs/erc20/zeppelin/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/zeppelin/spec-zeppelin.ini proofs/erc20/zeppelin/pgm-zeppelin.ini
+	@echo >&2 "==  gen-spec: $@"
+	mkdir -p $(dir $@)
+	python3 tests/gen-spec.py $^ $* > $@
+
+tests/proofs/erc20/hkg/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/hkg/spec-hkg.ini proofs/erc20/hkg/pgm-hkg.ini
+	@echo >&2 "==  gen-spec: $@"
+	mkdir -p $(dir $@)
+	python3 tests/gen-spec.py $^ $* > $@
+
+tests/proofs/erc20/hobby/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/hobby/spec-hobby.ini proofs/erc20/hobby/pgm-hobby.ini
+	@echo >&2 "==  gen-spec: $@"
+	mkdir -p $(dir $@)
+	python3 tests/gen-spec.py $^ $* > $@
 
 # InteractiveTests
 
