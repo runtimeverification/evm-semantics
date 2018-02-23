@@ -1,31 +1,40 @@
 # Common to all versions of K
 # ===========================
 
-.PHONY: all clean deps k-deps ocaml-deps build defn sphinx split-tests \
+.PHONY: all clean deps k-deps tangle-deps ocaml-deps build defn sphinx split-tests \
 		test test-all vm-test vm-test-all bchain-test bchain-test-all proof-test proof-test-all
 
 all: build split-tests
 
 clean:
-	rm -rf .build/java .build/ocaml .build/node .build/logs tests/proofs .build/k/make.timestamp .build/local
+	rm -rf .build/java .build/ocaml .build/node .build/logs tests/proofs .build/k/make.timestamp .build/pandoc-tangle/make.timestamp .build/local
 
 build: .build/ocaml/driver-kompiled/interpreter .build/java/driver-kompiled/timestamp
 
 # Dependencies
 # ------------
 
-K_SUBMODULE=$(CURDIR)/.build/k
-BUILD_LOCAL=$(CURDIR)/.build/local
+BUILD_DIR=$(CURDIR)/.build
+K_SUBMODULE=$(BUILD_DIR)/k
+PANDOC_TANGLE_SUBMODULE=$(BUILD_DIR)/pandoc-tangle
+BUILD_LOCAL=$(BUILD_DIR)/local
 PKG_CONFIG_LOCAL=$(BUILD_LOCAL)/lib/pkgconfig
 
-deps: k-deps ocaml-deps
+deps: k-deps tangle-deps ocaml-deps
 k-deps: $(K_SUBMODULE)/make.timestamp
+tangle-deps: $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 
 $(K_SUBMODULE)/make.timestamp:
+	@echo "== submodule: $@"
 	git submodule update --init -- $(K_SUBMODULE)
 	cd $(K_SUBMODULE) \
 		&& mvn package -q -DskipTests -U
 	touch $(K_SUBMODULE)/make.timestamp
+
+$(PANDOC_TANGLE_SUBMODULE)/make.timestamp:
+	@echo "== submodule: $@"
+	git submodule update --init -- $(PANDOC_TANGLE_SUBMODULE)
+	touch $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 
 ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 	opam init --quiet --no-setup
@@ -53,28 +62,36 @@ K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
 
 # Tangle definition from *.md files
 
+tangler:=$(PANDOC_TANGLE_SUBMODULE)/tangle.lua
+java_tangle:=.k:not(.ocaml,.node),.java
+ocaml_tangle:=.k:not(.java,.node),.ocaml
+node_tangle:=.k:not(.java,.ocaml),.node
+
 k_files:=driver.k data.k evm.k analysis.k krypto.k verification.k
 ocaml_files:=$(patsubst %,.build/ocaml/%,$(k_files))
 java_files:=$(patsubst %,.build/java/%,$(k_files))
 node_files:=$(patsubst %,.build/node/%,$(k_files))
 defn_files:=$(ocaml_files) $(java_files) $(node_files)
 
+LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
+export LUA_PATH
+
 defn: $(defn_files)
 
 .build/java/%.k: %.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to tangle.lua --metadata=code:java $< > $@
+	pandoc --from markdown --to "$(tangler)" --metadata=code:"$(java_tangle)" $< > $@
 
 .build/ocaml/%.k: %.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to tangle.lua --metadata=code:ocaml $< > $@
+	pandoc --from markdown --to "$(tangler)" --metadata=code:"$(ocaml_tangle)" $< > $@
 
 .build/node/%.k: %.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to tangle.lua --metadata=code:node $< > $@
+	pandoc --from markdown --to "$(tangler)" --metadata=code:"$(node_tangle)" $< > $@
 
 # Java Backend
 
@@ -198,7 +215,7 @@ split-proof-tests: $(proof_tests)
 tests/proofs/sum-to-n-spec.k: proofs/sum-to-n.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to tangle.lua --metadata=code:sum-to-n $< > $@
+	pandoc --from markdown --to "$(tangler)" --metadata="code:.sum-to-n" $< > $@
 
 # #### ERC20
 tests/proofs/erc20/viper/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/viper/spec-viper.ini proofs/erc20/viper/pgm-viper.ini
