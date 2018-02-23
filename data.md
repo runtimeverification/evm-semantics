@@ -251,16 +251,11 @@ The `<op>Word` comparisons similarly lift K operators to EVM ones:
                  | Int ">=Word" Int [function]
                  | Int "==Word" Int [function]
  // ------------------------------------------
-    rule W0 <Word  W1 => 1 requires W0 <Int   W1
-    rule W0 <Word  W1 => 0 requires W0 >=Int  W1
-    rule W0 >Word  W1 => 1 requires W0 >Int   W1
-    rule W0 >Word  W1 => 0 requires W0 <=Int  W1
-    rule W0 <=Word W1 => 1 requires W0 <=Int  W1
-    rule W0 <=Word W1 => 0 requires W0 >Int   W1
-    rule W0 >=Word W1 => 1 requires W0 >=Int  W1
-    rule W0 >=Word W1 => 0 requires W0 <Int   W1
-    rule W0 ==Word W1 => 1 requires W0 ==Int  W1
-    rule W0 ==Word W1 => 0 requires W0 =/=Int W1
+    rule W0 <Word  W1 => bool2Word(W0 <Int  W1)
+    rule W0 >Word  W1 => bool2Word(W0 >Int  W1)
+    rule W0 <=Word W1 => bool2Word(W0 <=Int W1)
+    rule W0 >=Word W1 => bool2Word(W0 >=Int W1)
+    rule W0 ==Word W1 => bool2Word(W0 ==Int W1)
 ```
 
 -   `s<Word` implements a less-than for `Word` (with signed interperetation).
