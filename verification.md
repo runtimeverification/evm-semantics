@@ -207,24 +207,18 @@ These rules are specific to reasoning about EVM programs.
 ### Boolean
 
 In EVM, no boolean value exist but instead, 1 and 0 are used to represent true and false respectively.
-
-We introduce an abstraction for that, bool2int, as an uninterpreted function, and provide lemmas over it.
+`bool2Word` is used to convert from booleans to integers, and lemmas are provided here for it.
 
 ```{.k .java}
-    syntax Int ::= bool2int( Bool ) [function] // [smtlib(smt_bool2int)]
- // --------------------------------------------------------------------
-    rule bool2int(B) => 1 requires B
-    rule bool2int(B) => 0 requires notBool(B)
+    rule bool2Word(A) |Int bool2Word(B) => bool2Word(A  orBool B)
+    rule bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B)
 
-    rule bool2int(A) |Int bool2int(B) => bool2int(A  orBool B)
-    rule bool2int(A) &Int bool2int(B) => bool2int(A andBool B)
+    rule bool2Word(A)  ==K 0 => notBool(A)
+    rule bool2Word(A)  ==K 1 => A
+    rule bool2Word(A) =/=K 0 => A
+    rule bool2Word(A) =/=K 1 => notBool(A)
 
-    rule bool2int(A)  ==K 0 => notBool(A)
-    rule bool2int(A)  ==K 1 => A
-    rule bool2int(A) =/=K 0 => A
-    rule bool2int(A) =/=K 1 => notBool(A)
-
-    rule chop(bool2int(B)) => bool2int(B)
+    rule chop(bool2Word(B)) => bool2Word(B)
 ```
 
 Some lemmas over the comparison operators are also provided.
