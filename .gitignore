@@ -5,6 +5,7 @@
 
 !/.build/secp256k1
 !/.build/k
+!/.build/pandoc-tangle
 
 !/.build/sphinx-docs
 /.build/sphinx-docs/*
