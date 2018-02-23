@@ -34,8 +34,8 @@ ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 	opam update
 	opam switch 4.03.0+k
 	eval $$(opam config env) \
-	export PKG_CONFIG_PATH=$(PKG_CONFIG_LOCAL) ; \
-	opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128
+	export PKG_CONFIG_PATH=$(PKG_CONFIG_LOCAL) \
+		&& opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128
 
 # install secp256k1 from bitcoin-core
 .build/local/lib/pkgconfig/libsecp256k1.pc:
@@ -88,18 +88,21 @@ defn: $(defn_files)
 .build/ocaml/driver-kompiled/interpreter: $(ocaml_files) KRYPTO.ml
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
-	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
+		&& $(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/ocaml \
-					--hook-namespaces KRYPTO --gen-ml-only -O3 --non-strict; \
-	ocamlfind opt -c .build/ocaml/driver-kompiled/constants.ml -package gmp -package zarith; \
-	ocamlfind opt -c -I .build/ocaml/driver-kompiled KRYPTO.ml -package cryptokit -package secp256k1 -package bn128; \
-	ocamlfind opt -a -o semantics.cmxa KRYPTO.cmx; \
-	ocamlfind remove ethereum-semantics-plugin; \
-	ocamlfind install ethereum-semantics-plugin META semantics.cmxa semantics.a KRYPTO.cmi KRYPTO.cmx; \
-	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
+					--hook-namespaces KRYPTO --gen-ml-only -O3 --non-strict \
+		&& ocamlfind opt -c .build/ocaml/driver-kompiled/constants.ml -package gmp -package zarith \
+		&& ocamlfind opt -c -I .build/ocaml/driver-kompiled KRYPTO.ml -package cryptokit -package secp256k1 -package bn128 \
+		&& ocamlfind opt -a -o semantics.cmxa KRYPTO.cmx \
+		&& ocamlfind remove ethereum-semantics-plugin \
+		&& ocamlfind install ethereum-semantics-plugin META semantics.cmxa semantics.a KRYPTO.cmi KRYPTO.cmx \
+		&& $(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/ocaml \
-					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O3 --non-strict; \
-	cd .build/ocaml/driver-kompiled && ocamlfind opt -o interpreter constants.cmx prelude.cmx plugin.cmx parser.cmx lexer.cmx run.cmx interpreter.ml -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin -linkpkg -inline 20 -nodynlink -O3 -linkall
+					--hook-namespaces KRYPTO --packages ethereum-semantics-plugin -O3 --non-strict \
+		&& cd .build/ocaml/driver-kompiled \
+		&& ocamlfind opt -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin \
+					     -linkpkg -inline 20 -nodynlink -O3 -linkall \
+					     -o interpreter constants.cmx prelude.cmx plugin.cmx parser.cmx lexer.cmx run.cmx interpreter.ml
 
 # Tests
 # -----
@@ -203,11 +206,11 @@ ALLSPHINXOPTS   = -d ../$(SPHINXBUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINX
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 sphinx:
-	mkdir $(SPHINXBUILDDIR); \
-	cp -r *.md proofs $(SPHINXBUILDDIR)/.; \
-	cd $(SPHINXBUILDDIR); \
-	pandoc --from markdown --to rst README.md --output index.rst; \
-	sed -i 's/{.k[ a-zA-Z.-]*}/k/g' *.md proofs/*.md; \
-	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) html; \
-	$(SPHINXBUILD) -b text $(ALLSPHINXOPTS) html/text; \
-	echo "[+] HTML generated in $(SPHINXBUILDDIR)/html, text in $(SPHINXBUILDDIR)/html/text"
+	mkdir $(SPHINXBUILDDIR) \
+		&& cp -r *.md proofs $(SPHINXBUILDDIR)/. \
+		&& cd $(SPHINXBUILDDIR) \
+		&& pandoc --from markdown --to rst README.md --output index.rst \
+		&& sed -i 's/{.k[ a-zA-Z.-]*}/k/g' *.md proofs/*.md \
+		&& $(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) html \
+		&& $(SPHINXBUILD) -b text $(ALLSPHINXOPTS) html/text \
+		&& echo "[+] HTML generated in $(SPHINXBUILDDIR)/html, text in $(SPHINXBUILDDIR)/html/text"
