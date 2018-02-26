@@ -44,8 +44,8 @@ run_env() {
        tests/ethereum-tests/BlockchainTests/*) cmode="NORMAL"     ;;
        tests/proofs/*                        ) cmode="NORMAL"     ;;
     esac
-    export cMODE="$cmode"
-    export cSCHEDULE="$cschedule"
+    export cMODE="\`${cmode}\`(.KList)"
+    export cSCHEDULE="\`${cschedule}_EVM\`(.KList)"
     export PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH"
     export LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
     eval $(opam config env)
@@ -59,7 +59,7 @@ run_krun() {
     local backend=$1  ; shift
     run_env "$run_file"
     export K_OPTS=-Xss500m
-    krun --directory .build/$backend/ -cSCHEDULE="$cSCHEDULE" -cMODE="$cMODE" "$run_file" "$@"
+    krun --directory .build/$backend/ -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@"
 }
 
 run_interpreter() {
@@ -75,7 +75,7 @@ run_interpreter() {
         "$(dirname "$0")/kast-json.py" "$test_file" > "$kast"
         set +e
         $interpreter "$(dirname "$0")/.build/ocaml/driver-kompiled/realdef.cma" -c PGM "$kast" textfile \
-                     -c SCHEDULE '`DEFAULT_EVM`(.KList)' text -c MODE "\`${cMODE}_EVM\`(.KList)" text \
+                     -c SCHEDULE "$cSCHEDULE" text -c MODE "$cMODE" text \
                      --output-file "$output"
         exit_status="$?"
         if [ $exit_status -eq 0 ]; then
@@ -95,8 +95,8 @@ run_proof() {
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
     run_env "$proof_file"
     export K_OPTS=-Xmx2G
-    ( krun --directory .build/java/ -cSCHEDULE=$cSCHEDULE -cMODE=$cMODE \
-         --z3-executable tests/templates/dummy-proof-input.json --prove "$proof_file"
+    ( krun --directory .build/java/ -cSCHEDULE=$cSCHEDULE -pSCHEDULE='printf %s' -cMODE=$cMODE -pMODE='printf %s' \
+         --z3-executable tests/templates/dummy-proof-input.json --prove "$proof_file" --parser "$(dirname "$0")/kast-json.py"
     )
 }
 

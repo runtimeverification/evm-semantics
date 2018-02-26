@@ -41,13 +41,14 @@ In the comments next to each cell, we've marked which component of the YellowPap
                       // Mutable during a single transaction
                       // -----------------------------------
 
-                      <output>        .WordStack </output>              // H_RETURN
-                      <memoryUsed>    0          </memoryUsed>          // \mu_i
-                      <callDepth>     0          </callDepth>
-                      <callStack>     .List      </callStack>
-                      <interimStates> .List      </interimStates>
-                      <substateStack> .List      </substateStack>
-                      <callLog>       .Set       </callLog>
+                      <output>          .WordStack </output>            // H_RETURN
+                      <memoryUsed>      0          </memoryUsed>        // \mu_i
+                      <callDepth>       0          </callDepth>
+                      <callStack>       .List      </callStack>
+                      <interimStates>   .List      </interimStates>
+                      <substateStack>   .List      </substateStack>
+                      <callLog>         .Set       </callLog>
+                      <touchedAccounts> .Set       </touchedAccounts>
 
                       <txExecState>
                         <program>      .Map       </program>            // I_b
@@ -185,7 +186,8 @@ Our semantics is modal, with the initial mode being set on the command line via 
 -   `VMTESTS` skips `CALL*` and `CREATE` operations.
 
 ```k
-    syntax Mode ::= "NORMAL" | "VMTESTS"
+    syntax Mode ::= "NORMAL"  [klabel(NORMAL)]
+                  | "VMTESTS" [klabel(VMTESTS)]
 ```
 
 -   `#setMode_` sets the mode to the supplied one.
@@ -1049,7 +1051,7 @@ These operations are getters/setters of the local execution memory.
          <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
 
     rule <k> MSTORE8 INDEX VALUE => . ... </k>
-         <localMem> LM => LM [ INDEX <- (VALUE %Int 256) ]    </localMem>
+         <localMem> LM => LM [ INDEX <- (VALUE modInt 256) ] </localMem>
 ```
 
 ### Expressions
@@ -1061,9 +1063,8 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
 ```k
     syntax UnStackOp ::= "ISZERO" | "NOT"
  // -------------------------------------
-    rule <k> ISZERO 0 => 1        ~> #push ... </k>
-    rule <k> ISZERO W => 0        ~> #push ... </k> requires W =/=K 0
-    rule <k> NOT    W => ~Word W  ~> #push ... </k>
+    rule <k> ISZERO W => W ==Word 0 ~> #push ... </k>
+    rule <k> NOT    W => ~Word W    ~> #push ... </k>
 
     syntax BinStackOp ::= "ADD" | "MUL" | "SUB" | "DIV" | "EXP" | "MOD"
  // -------------------------------------------------------------------
@@ -1097,12 +1098,9 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
 
     syntax BinStackOp ::= "LT" | "GT" | "EQ"
  // ----------------------------------------
-    rule <k> LT W0 W1 => 1 ~> #push ... </k>  requires W0 <Int   W1
-    rule <k> LT W0 W1 => 0 ~> #push ... </k>  requires W0 >=Int  W1
-    rule <k> GT W0 W1 => 1 ~> #push ... </k>  requires W0 >Int   W1
-    rule <k> GT W0 W1 => 0 ~> #push ... </k>  requires W0 <=Int  W1
-    rule <k> EQ W0 W1 => 1 ~> #push ... </k>  requires W0 ==Int  W1
-    rule <k> EQ W0 W1 => 0 ~> #push ... </k>  requires W0 =/=Int W1
+    rule <k> LT W0 W1 => W0 <Word  W1 ~> #push ... </k>
+    rule <k> GT W0 W1 => W0 >Word  W1 ~> #push ... </k>
+    rule <k> EQ W0 W1 => W0 ==Word W1 ~> #push ... </k>
 
     syntax BinStackOp ::= "SLT" | "SGT"
  // -----------------------------------
@@ -1459,6 +1457,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <program> _ => CODE </program>
          <programBytes> _ => BYTES </programBytes>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
+         <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
 
     syntax KItem ::= "#initVM"
  // --------------------------
@@ -1631,6 +1630,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            ...
          </account>
          <activeAccounts> ... ACCTTO |-> (EMPTY => #if Gemptyisnonexistent << SCHED >> #then false #else EMPTY #fi) ... </activeAccounts>
+         <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
 
     syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
@@ -1725,6 +1725,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
            ...
          </account>
          <output> _ => .WordStack </output>
+         <touchedAccounts> ... .Set => SetItem(ACCT) SetItem(ACCTTO) ... </touchedAccounts>
       requires ACCT =/=Int ACCTTO
 
     rule <k> SELFDESTRUCT ACCT => #end ... </k>
@@ -1741,6 +1742,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
          </account>
          <activeAccounts> ... ACCT |-> (_ => NONCE ==Int 0 andBool CODE ==K .WordStack) ... </activeAccounts>
          <output> _ => .WordStack </output>
+         <touchedAccounts> ... .Set => SetItem(ACCT) ... </touchedAccounts>
 
 ```
 
@@ -1857,10 +1859,10 @@ Precompiled Contracts
  // ------------------------------------
     rule <k> ECPAIRING => #ecpairing(.List, .List, 0, DATA, #sizeWordStack(DATA)) ... </k>
          <callData> DATA </callData>
-      requires #sizeWordStack(DATA) %Int 192 ==Int 0
+      requires #sizeWordStack(DATA) modInt 192 ==Int 0
     rule <k> ECPAIRING => #exception ... </k>
          <callData> DATA </callData>
-      requires #sizeWordStack(DATA) %Int 192 =/=Int 0
+      requires #sizeWordStack(DATA) modInt 192 =/=Int 0
 
     syntax InternalOp ::= #ecpairing(List, List, Int, WordStack, Int)
  // -----------------------------------------------------------------
