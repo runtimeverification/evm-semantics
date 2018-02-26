@@ -97,4 +97,12 @@ module {MODULE}-SPEC
      andBool 0 <=Int CALL_DEPTH andBool CALL_DEPTH <Int 1024
      {REQUIRES}
 
+  // **TODO**: These semmingly unnecessary claims are to be an workaround for the K prover issue
+  // that unresolved functions are not fully evaluated in the normal semantics rule application steps.
+  // These should be dropped once the issue is fixed.
+  rule <k> LT W0 W1 => bool2Word(W0  <Int W1) ~> #push ... </k> [trusted]
+  rule <k> GT W0 W1 => bool2Word(W0  >Int W1) ~> #push ... </k> [trusted]
+  rule <k> EQ W0 W1 => bool2Word(W0 ==Int W1) ~> #push ... </k> [trusted]
+  rule <k> ISZERO W => bool2Word(W  ==Int 0 ) ~> #push ... </k> [trusted]
+
 endmodule
