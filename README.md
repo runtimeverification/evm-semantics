@@ -108,10 +108,10 @@ Run the same file as a test:
 ```
 
 To run proofs, you can similarly use `./kevm`.
-For example, to prove the specification `tests/proofs/hkg/transfer-else-spec.k`:
+For example, to prove the specification `tests/proofs/erc20/hkg/transfer-success-1-spec.k`:
 
 ```sh
-./kevm prove tests/proofs/hkg/transfer-else-spec.k
+./kevm prove tests/proofs/erc20/hkg/transfer-success-1-spec.k
 ```
 
 Finally, if you want to debug a given program (by stepping through its execution), you can use the `debug` option:
