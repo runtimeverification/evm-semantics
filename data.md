@@ -9,7 +9,6 @@ Both are implemented using K's `Int`.
 
 ```k
 requires "krypto.k"
-requires "domains.k"
 
 module EVM-DATA
     imports KRYPTO

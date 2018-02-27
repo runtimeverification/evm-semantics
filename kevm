@@ -9,7 +9,6 @@ set -u      # Using undefined variables is an error. Exit immediately
 progress() { echo "== $@" ; }
 warning()  { echo -e "WARNING:" "$@" >&2 ; }
 die()      { echo -e "FATAL:" "$@" >&2 ; exit 1 ; }
-
 success()  { echo -e "\e[32m== success: $@\e[0m" ;
              echo "$@" >> "$now_passing"
            }
@@ -90,9 +89,7 @@ run_proof() {
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
     run_env "$proof_file"
     export K_OPTS=-Xmx2G
-    ( krun --directory .build/java/ -cSCHEDULE=$cSCHEDULE -pSCHEDULE='printf %s' -cMODE=$cMODE -pMODE='printf %s' \
-         --z3-executable tests/templates/dummy-proof-input.json --prove "$proof_file" --parser "$(dirname "$0")/kast-json.py" "$@"
-    )
+    ( kprove --directory .build/java/ --z3-executable "$proof_file" --def-module VERIFICATION )
 }
 
 run_kdebug() {

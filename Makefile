@@ -105,7 +105,7 @@ defn: $(defn_files)
 .build/java/driver-kompiled/timestamp: $(java_files)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
-					--syntax-module ETHEREUM-SIMULATION $< --directory .build/java
+					--syntax-module ETHEREUM-SIMULATION $< --directory .build/java -I .build/java
 
 # OCAML Backend
 

@@ -5,14 +5,12 @@ Ethereum is using the EVM to drive updates over the world state.
 Actual execution of the EVM is defined in [the EVM file](../evm).
 
 ```k
-requires "verification.k"
 requires "evm.k"
 requires "analysis.k"
 
 module ETHEREUM-SIMULATION
     imports EVM
     imports K-REFLECTION
-    imports VERIFICATION
 ```
 
 ```{.k .standalone}

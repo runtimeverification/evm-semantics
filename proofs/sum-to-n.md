@@ -10,8 +10,11 @@ Note that the program behaves incorrectly/unexpectedly if arithmetic overflow oc
 One challenge in verifying this program is to identify the conditions under which overflow does not occur.
 
 ```{.k .sum-to-n}
-module SUM-SPEC
+requires "verification.k"
+
+module SUM-TO-N-SPEC
     imports ETHEREUM-SIMULATION
+    imports VERIFICATION
 ```
 
 Sum To N Program and Claim
