@@ -74,9 +74,8 @@ build: .build/ocaml/driver-kompiled/interpreter .build/java/driver-kompiled/time
 # Tangle definition from *.md files
 
 tangler:=$(PANDOC_TANGLE_SUBMODULE)/tangle.lua
-java_tangle:=.k:not(.ocaml,.node),.java
-ocaml_tangle:=.k:not(.java,.node),.ocaml
-node_tangle:=.k:not(.java,.ocaml),.node
+standalone_tangle:=.k:not(.node),.standalone
+node_tangle:=.k:not(.standalone),.node
 
 k_files:=driver.k data.k evm.k analysis.k krypto.k verification.k
 ocaml_files:=$(patsubst %,.build/ocaml/%,$(k_files))
@@ -89,12 +88,12 @@ defn: $(defn_files)
 .build/java/%.k: %.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to "$(tangler)" --metadata=code:"$(java_tangle)" $< > $@
+	pandoc --from markdown --to "$(tangler)" --metadata=code:"$(standalone_tangle)" $< > $@
 
 .build/ocaml/%.k: %.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to "$(tangler)" --metadata=code:"$(ocaml_tangle)" $< > $@
+	pandoc --from markdown --to "$(tangler)" --metadata=code:"$(standalone_tangle)" $< > $@
 
 .build/node/%.k: %.md
 	@echo "==  tangle: $@"
