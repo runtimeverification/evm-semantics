@@ -200,12 +200,6 @@ tests/proofs/sum-to-n-spec.k: proofs/sum-to-n.md
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to tangle.lua --metadata=code:sum-to-n $< > $@
 
-# #### HKG
-tests/proofs/hkg/%-spec.k: proofs/hkg.md
-	@echo "==  tangle: $@"
-	mkdir -p $(dir $@)
-	pandoc --from markdown --to tangle.lua --metadata=code:$* $< > $@
-
 # #### ERC20
 tests/proofs/erc20/viper/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/viper/spec-viper.ini proofs/erc20/viper/pgm-viper.ini
 	@echo >&2 "==  gen-spec: $@"
