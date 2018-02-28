@@ -20,6 +20,13 @@ all: build split-tests
 clean:
 	rm -rf .build/java .build/ocaml .build/node .build/logs tests/proofs .build/k/make.timestamp .build/pandoc-tangle/make.timestamp .build/local
 
+distclean: clean
+	opam switch system
+	opam switch remove 4.03.0+k --yes || true
+	cd $(K_SUBMODULE) \
+		&& mvn clean -q
+	git submodule deinit --force -- ./
+
 # Dependencies
 # ------------
 
