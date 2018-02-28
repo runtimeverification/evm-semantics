@@ -32,12 +32,11 @@ The following are needed for building/running KEVM:
 -   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
 -   [Opam](https://opam.ocaml.org/doc/Install.html), **important**: Ubuntu users prior to 15.04 **must** build from source, as the Ubuntu install for 14.10 and prior is broken.
     `opam repository` also requires `rsync`.
--   [`xmllint`](http://xmlsoft.org/xmllint.html) makes the output of `krun` prettier (for using the `./kevm` script).
 
 On Ubuntu >= 15.04 (for example):
 
 ```sh
-sudo apt-get install make gcc maven openjdk-8-jdk flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev libxml2-utils z3
+sudo apt-get install make gcc maven openjdk-8-jdk flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev
 ```
 
 To run proofs, you will also need [Z3](https://github.com/Z3Prover/z3) prover; on Ubuntu:
