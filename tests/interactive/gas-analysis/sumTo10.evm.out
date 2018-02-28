@@ -1,4 +1,3 @@
-<?xml version="1.0"?>
 <generatedTop>
   <k>
     .
@@ -253,17 +252,23 @@
       <accounts>
         AccountCellMapItem ( <acctID>
           7
-        </acctID> , <account><acctID>
+        </acctID> , <account>
+          <acctID>
             7
-          </acctID><balance>
+          </acctID>
+          <balance>
             1000000000
-          </balance><code>
+          </balance>
+          <code>
             .WordStack
-          </code><storage>
+          </code>
+          <storage>
             0 |-> 10
-          </storage><nonce>
+          </storage>
+          <nonce>
             1
-          </nonce></account> )
+          </nonce>
+        </account> )
       </accounts>
       <txOrder>
         .List

@@ -23,11 +23,6 @@ pretty_diff() {
     fi
 }
 
-lint_krun() {
-    # Format, &gt; entity > and make each K task start on a new line
-    xmllint -format - | sed -e 's/&gt;/>/g'  -e 's/~>/\n   ~>/g'
-}
-
 # Environment Setup
 # -----------------
 
@@ -114,7 +109,7 @@ run_test() {
                         ;;
         *interactive/*) [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
                         ( pretty_diff --label expected <(cat "$output_expected_file") \
-                                      --label actual   <(run_krun "$test_file" ocaml | lint_krun )
+                                      --label actual   <(run_krun "$test_file" ocaml )
                         )
                         ;;
         *             ) output_expected_file=tests/templates/output-success.txt
@@ -139,9 +134,9 @@ run_command="$1" ; shift
 case "$run_command" in
 
     # Running
-    run)   run_krun   "$1" ocaml | lint_krun ;;
-    debug) run_kdebug "$1"                   ;;
-    prove) run_proof  "$1"                   ;;
+    run)   run_krun   "$1" ocaml ;;
+    debug) run_kdebug "$1"       ;;
+    prove) run_proof  "$1"       ;;
 
     # Testing
     test)  run_test   "$1" ;;
