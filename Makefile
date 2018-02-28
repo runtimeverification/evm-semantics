@@ -14,11 +14,13 @@ build: .build/ocaml/driver-kompiled/interpreter .build/java/driver-kompiled/time
 # Dependencies
 # ------------
 
-BUILD_DIR=$(CURDIR)/.build
-K_SUBMODULE=$(BUILD_DIR)/k
-PANDOC_TANGLE_SUBMODULE=$(BUILD_DIR)/pandoc-tangle
-BUILD_LOCAL=$(BUILD_DIR)/local
-PKG_CONFIG_LOCAL=$(BUILD_LOCAL)/lib/pkgconfig
+BUILD_DIR:=$(CURDIR)/.build
+K_SUBMODULE:=$(BUILD_DIR)/k
+PANDOC_TANGLE_SUBMODULE:=$(BUILD_DIR)/pandoc-tangle
+BUILD_LOCAL:=$(BUILD_DIR)/local
+
+PKG_CONFIG_PATH:=$(BUILD_LOCAL)/lib/pkgconfig
+export PKG_CONFIG_PATH
 
 deps: k-deps tangle-deps ocaml-deps
 k-deps: $(K_SUBMODULE)/make.timestamp
@@ -43,8 +45,7 @@ ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 	opam update
 	opam switch 4.03.0+k
 	eval $$(opam config env) \
-	export PKG_CONFIG_PATH=$(PKG_CONFIG_LOCAL) \
-		&& opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128
+	opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128
 
 # install secp256k1 from bitcoin-core
 .build/local/lib/pkgconfig/libsecp256k1.pc:
