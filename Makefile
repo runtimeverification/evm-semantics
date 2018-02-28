@@ -1,5 +1,16 @@
-# Common to all versions of K
-# ===========================
+# Settings
+# --------
+
+BUILD_DIR:=$(CURDIR)/.build
+K_SUBMODULE:=$(BUILD_DIR)/k
+PANDOC_TANGLE_SUBMODULE:=$(BUILD_DIR)/pandoc-tangle
+BUILD_LOCAL:=$(BUILD_DIR)/local
+
+PKG_CONFIG_PATH:=$(BUILD_LOCAL)/lib/pkgconfig
+export PKG_CONFIG_PATH
+
+LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
+export LUA_PATH
 
 .PHONY: all clean deps k-deps tangle-deps ocaml-deps build defn sphinx split-tests \
 		test test-all vm-test vm-test-all bchain-test bchain-test-all proof-test proof-test-all
@@ -9,18 +20,8 @@ all: build split-tests
 clean:
 	rm -rf .build/java .build/ocaml .build/node .build/logs tests/proofs .build/k/make.timestamp .build/pandoc-tangle/make.timestamp .build/local
 
-build: .build/ocaml/driver-kompiled/interpreter .build/java/driver-kompiled/timestamp
-
 # Dependencies
 # ------------
-
-BUILD_DIR:=$(CURDIR)/.build
-K_SUBMODULE:=$(BUILD_DIR)/k
-PANDOC_TANGLE_SUBMODULE:=$(BUILD_DIR)/pandoc-tangle
-BUILD_LOCAL:=$(BUILD_DIR)/local
-
-PKG_CONFIG_PATH:=$(BUILD_LOCAL)/lib/pkgconfig
-export PKG_CONFIG_PATH
 
 deps: k-deps tangle-deps ocaml-deps
 k-deps: $(K_SUBMODULE)/make.timestamp
@@ -61,6 +62,8 @@ K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
 # Building
 # --------
 
+build: .build/ocaml/driver-kompiled/interpreter .build/java/driver-kompiled/timestamp
+
 # Tangle definition from *.md files
 
 tangler:=$(PANDOC_TANGLE_SUBMODULE)/tangle.lua
@@ -73,9 +76,6 @@ ocaml_files:=$(patsubst %,.build/ocaml/%,$(k_files))
 java_files:=$(patsubst %,.build/java/%,$(k_files))
 node_files:=$(patsubst %,.build/node/%,$(k_files))
 defn_files:=$(ocaml_files) $(java_files) $(node_files)
-
-LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
-export LUA_PATH
 
 defn: $(defn_files)
 
