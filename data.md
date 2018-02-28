@@ -164,9 +164,11 @@ The corresponding `<op>Word` operations automatically perform the correct modulu
 ```
 
 Care is needed for `^Word` to avoid big exponentiation.
+The helper `powmod` is a totalization of the operator `_^%Int__` (which comes with K).
+`_^%Int__` is not defined when the modulus (third argument) is zero, but `powmod` is.
 
 ```k
-    syntax Int ::= Int "^Word" Int [function]
+    syntax Int ::= Int "^Word" Int       [function]
     syntax Int ::= powmod(Int, Int, Int) [function]
  // -----------------------------------------------
     rule W0 ^Word W1 => powmod(W0, W1, pow256)
