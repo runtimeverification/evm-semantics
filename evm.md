@@ -2037,50 +2037,44 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
 There are several helpers for calculating gas (most of them also specified in the YellowPaper).
 
-Note: These are all functions as the operator `#gasExec` has already loaded all the relevant state.
-
 ```k
-    syntax Int ::= Csstore ( Schedule , Int , Int ) [function]
- // ----------------------------------------------------------
-    rule Csstore(SCHED, VALUE, OLD) => #if VALUE =/=Int 0 andBool OLD ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
-
-    syntax Exp ::= Int
+    syntax Exp     ::= Int
     syntax KResult ::= Int
-    syntax Exp ::= Ccall    ( Schedule , BExp , Int , Int , Int ) [strict(2)]
-                 | Ccallgas ( Schedule , BExp , Int , Int , Int ) [strict(2)]
-    syntax Int ::= Cgascap  ( Schedule , Int , Int , Int )        [function]
-                 | Cextra   ( Schedule , Bool , Int )             [function]
-                 | Cxfer    ( Schedule , Int )                    [function]
-                 | Cnew     ( Schedule , Bool , Int )             [function]
- // ------------------------------------------------------------------------
-    rule Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE) => Cextra(SCHED, ISEMPTY, VALUE) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE))
+    syntax Exp ::= Ccall         ( Schedule , BExp , Int , Int , Int ) [strict(2)]
+                 | Ccallgas      ( Schedule , BExp , Int , Int , Int ) [strict(2)]
+                 | Cselfdestruct ( Schedule , BExp , Int )             [strict(2)]
+ // ------------------------------------------------------------------------------
+    rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE)
+          => Cextra(SCHED, VALUE, ISEMPTY) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, VALUE, ISEMPTY)) ... </k>
 
-    rule Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, 0)     => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY,     0))
-    rule Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE) => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE)) +Int Gcallstipend < SCHED > requires VALUE =/=K 0
+    rule <k> Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE)
+          => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, VALUE, ISEMPTY)) +Int #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
 
-    rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) requires GAVAIL >=Int GEXTRA andBool notBool Gstaticcalldepth << SCHED >>
-    rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA) => GCAP                                          requires GAVAIL <Int  GEXTRA orBool Gstaticcalldepth << SCHED >>
+    rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
+          => Gselfdestruct < SCHED > +Int Cnew(SCHED, BAL, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>) ... </k>
 
-    rule Cextra(SCHED, ISEMPTY, VALUE) => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)
+    syntax Int ::= Cgascap ( Schedule , Int , Int , Int ) [function]
+                 | Csstore ( Schedule , Int , Int )       [function]
+                 | Cextra  ( Schedule , Int , Bool )      [function]
+                 | Cnew    ( Schedule , Int , Bool )      [function]
+                 | Cxfer   ( Schedule , Int )             [function]
+ // ----------------------------------------------------------------
+    rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
+      => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
+
+    rule Csstore(SCHED, VALUE, OLD)
+      => #if VALUE =/=Int 0 andBool OLD ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
+
+    rule Cextra(SCHED, VALUE, ISEMPTY)
+      => Gcall < SCHED > +Int Cnew(SCHED, VALUE, ISEMPTY) +Int Cxfer(SCHED, VALUE)
+
+    rule Cnew(SCHED, VALUE, ISEMPTY:Bool)
+      => #if ISEMPTY andBool (VALUE =/=Int 0 orBool Gzerovaluenewaccountgas << SCHED >>) #then Gnewaccount < SCHED > #else 0 #fi
 
     rule Cxfer(SCHED, 0) => 0
     rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=K 0
 
-    rule Cnew(SCHED, ISEMPTY:Bool, VALUE) => Gnewaccount < SCHED >
-      requires         ISEMPTY andBool (VALUE =/=Int 0 orBool          Gzerovaluenewaccountgas << SCHED >>)
-    rule Cnew(SCHED, ISEMPTY:Bool, VALUE) => 0
-      requires notBool ISEMPTY orBool  (VALUE  ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>)
-
-    syntax Exp ::= Cselfdestruct ( Schedule , BExp , Int ) [strict(2)]
- // ------------------------------------------------------------------
-    rule Cselfdestruct(SCHED, ISEMPTY:Bool, BAL) => Gselfdestruct < SCHED > +Int Gnewaccount < SCHED >
-      requires         ISEMPTY andBool (        Gselfdestructnewaccount << SCHED >>) andBool (BAL =/=Int 0 orBool          Gzerovaluenewaccountgas << SCHED >>)
-    rule Cselfdestruct(SCHED, ISEMPTY:Bool, BAL) => Gselfdestruct < SCHED >
-      requires         ISEMPTY andBool (notBool Gselfdestructnewaccount << SCHED >>  orBool  (BAL  ==Int 0 andBool notBool Gzerovaluenewaccountgas << SCHED >>))
-    rule Cselfdestruct(SCHED, ISEMPTY:Bool, BAL) => Gselfdestruct < SCHED >
-      requires notBool ISEMPTY
-
-    syntax BExp ::= Bool
+    syntax BExp    ::= Bool
     syntax KResult ::= Bool
     syntax BExp ::= #accountNonexistent ( Int )
  // -------------------------------------------
