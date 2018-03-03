@@ -14,9 +14,6 @@ module VERIFICATION [symbolic]
     imports EVM
 ```
 
-ABI Abstraction DSL
--------------------
-
 ### ABI Call Data
 
 When a function is called in EVM, its arguments are encoded in a single byte-array and put in the so-called 'call data' section.
