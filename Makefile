@@ -132,7 +132,7 @@ defn: $(defn_files)
 # -----
 
 # Override this with `make TEST=echo` to list tests instead of running
-TEST=./kevm test
+TEST=$(CURDIR)/kevm test
 
 test-all: vm-test-all bchain-test-all proof-test-all interactive-test-all
 test: vm-test bchain-test proof-test interactive-test
@@ -176,74 +176,14 @@ tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTest
 
 # ProofTests
 
-erc20_files:=totalSupply-spec.k \
-             balanceOf-spec.k \
-             allowance-spec.k \
-             approve-spec.k \
-             transfer-success-1-spec.k \
-             transfer-success-2-spec.k \
-             transfer-failure-1-spec.k \
-             transfer-failure-2-spec.k \
-             transferFrom-success-1-spec.k \
-             transferFrom-success-2-spec.k \
-             transferFrom-failure-1-spec.k \
-             transferFrom-failure-2-spec.k
-
-hobby_erc20_files:=totalSupply-spec.k \
-                   balanceOf-spec.k \
-                   allowance-spec.k \
-                   approve-success-spec.k \
-                   approve-failure-spec.k \
-                   transfer-success-1-spec.k \
-                   transfer-success-2-spec.k \
-                   transfer-failure-1-spec.k \
-                   transfer-failure-2-spec.k \
-                   transferFrom-success-1-spec.k \
-                   transferFrom-success-2-spec.k \
-                   transferFrom-failure-1-spec.k \
-                   transferFrom-failure-2-spec.k
-
-proof_dir:=tests/proofs
-proof_tests:=$(proof_dir)/sum-to-n-spec.k \
-			 $(patsubst %, $(proof_dir)/erc20/viper/%, $(erc20_files)) \
-			 $(patsubst %, $(proof_dir)/erc20/zeppelin/%, $(erc20_files)) \
-			 $(patsubst %, $(proof_dir)/erc20/hkg/%, $(erc20_files)) \
-			 $(patsubst %, $(proof_dir)/erc20/hobby/%, $(hobby_erc20_files))
+export TEST tangler
 
 proof-test-all: proof-test
-proof-test: $(proof_tests:=.test)
+proof-test:
+	$(MAKE) -C proofs $@
 
-tests/proofs/%.test: tests/proofs/% build
-	$(TEST) $<
-
-split-proof-tests: $(proof_tests)
-
-# #### Sum to N
-tests/proofs/sum-to-n-spec.k: proofs/sum-to-n.md
-	@echo "==  tangle: $@"
-	mkdir -p $(dir $@)
-	pandoc --from markdown --to "$(tangler)" --metadata="code:.sum-to-n" $< > $@
-
-# #### ERC20
-tests/proofs/erc20/viper/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/viper/spec-viper.ini proofs/erc20/viper/pgm-viper.ini
-	@echo >&2 "==  gen-spec: $@"
-	mkdir -p $(dir $@)
-	python3 tests/gen-spec.py $^ $* > $@
-
-tests/proofs/erc20/zeppelin/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/zeppelin/spec-zeppelin.ini proofs/erc20/zeppelin/pgm-zeppelin.ini
-	@echo >&2 "==  gen-spec: $@"
-	mkdir -p $(dir $@)
-	python3 tests/gen-spec.py $^ $* > $@
-
-tests/proofs/erc20/hkg/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/hkg/spec-hkg.ini proofs/erc20/hkg/pgm-hkg.ini
-	@echo >&2 "==  gen-spec: $@"
-	mkdir -p $(dir $@)
-	python3 tests/gen-spec.py $^ $* > $@
-
-tests/proofs/erc20/hobby/%-spec.k: proofs/erc20/tmpl.k proofs/erc20/hobby/spec-hobby.ini proofs/erc20/hobby/pgm-hobby.ini
-	@echo >&2 "==  gen-spec: $@"
-	mkdir -p $(dir $@)
-	python3 tests/gen-spec.py $^ $* > $@
+split-proof-tests:
+	$(MAKE) -C proofs $@
 
 # InteractiveTests
 
