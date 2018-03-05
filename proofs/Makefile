@@ -1,5 +1,12 @@
 .PHONY: split-proof-tests
 
+lemmas_files:=tests/lemmas.k
+
+tests/%.k: %.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k" $< > $@
+
 erc20_files:=totalSupply-spec.k \
              balanceOf-spec.k \
              allowance-spec.k \
@@ -34,7 +41,7 @@ proof_tests:=$(proof_dir)/sum-to-n/sum-to-n-spec.k \
 			 $(patsubst %, $(proof_dir)/erc20-hkg/%, $(erc20_files)) \
 			 $(patsubst %, $(proof_dir)/erc20-hobby/%, $(hobby_erc20_files))
 
-split-proof-tests: $(proof_tests)
+split-proof-tests: $(proof_tests) $(lemmas_files)
 
 # #### Sum to N
 tests/sum-to-n/sum-to-n-spec.k: sum-to-n.md
