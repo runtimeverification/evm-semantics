@@ -1,7 +1,7 @@
 // ERC20-EVM Specification Template
 // For more details, refer to README.md and the technical report (Section 3)
 
-requires "verification.k"
+requires "../verification.k"
 
 module {MODULE}-SPEC
   imports ETHEREUM-SIMULATION
