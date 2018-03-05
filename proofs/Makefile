@@ -1,5 +1,8 @@
 .PHONY: proof-test-all proof-test split-proof-tests
 
+build:
+	$(MAKE) -C $(KEVM_DIR) $@
+
 erc20_files:=totalSupply-spec.k \
              balanceOf-spec.k \
              allowance-spec.k \
@@ -37,7 +40,7 @@ proof_tests:=$(proof_dir)/sum-to-n-spec.k \
 proof-test-all: proof-test
 proof-test: $(proof_tests:=.test)
 
-tests/%.test: tests/%
+tests/%.test: tests/% build
 	cd $(KEVM_DIR) && $(TEST) proofs/$<
 
 split-proof-tests: $(proof_tests)
