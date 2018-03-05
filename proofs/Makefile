@@ -38,7 +38,7 @@ proof-test-all: proof-test
 proof-test: $(proof_tests:=.test)
 
 tests/%.test: tests/%
-	$(TEST) $<
+	cd $(KEVM_DIR) && $(TEST) proofs/$<
 
 split-proof-tests: $(proof_tests)
 

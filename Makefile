@@ -132,7 +132,7 @@ defn: $(defn_files)
 # -----
 
 # Override this with `make TEST=echo` to list tests instead of running
-TEST=$(CURDIR)/kevm test
+TEST=./kevm test
 
 test-all: vm-test-all bchain-test-all proof-test-all interactive-test-all
 test: vm-test bchain-test proof-test interactive-test
@@ -176,7 +176,8 @@ tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTest
 
 # ProofTests
 
-export TEST tangler
+KEVM_DIR=$(CURDIR)
+export KEVM_DIR TEST tangler
 
 proof-test-all: proof-test
 proof-test:
