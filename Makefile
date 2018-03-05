@@ -14,7 +14,7 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean deps k-deps tangle-deps ocaml-deps build defn sphinx split-tests \
+.PHONY: all clean deps k-deps tangle-deps ocaml-deps build build-ocaml build-java defn sphinx split-tests \
 		test test-all vm-test vm-test-all bchain-test bchain-test-all proof-test proof-test-all
 
 all: build split-tests
@@ -71,7 +71,9 @@ K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
 # Building
 # --------
 
-build: .build/ocaml/driver-kompiled/interpreter .build/java/driver-kompiled/timestamp
+build: build-ocaml build-java
+build-ocaml: .build/ocaml/driver-kompiled/interpreter
+build-java: .build/java/driver-kompiled/timestamp
 
 # Tangle definition from *.md files
 
@@ -183,7 +185,7 @@ proof_tests=$(wildcard $(proof_dir)/*/*-spec.k)
 proof-test-all: proof-test
 proof-test: $(proof_tests:=.test)
 
-proofs/tests/%.test: proofs/tests/% build
+proofs/tests/%.test: proofs/tests/% build-java
 	$(TEST) $<
 
 split-proof-tests:
