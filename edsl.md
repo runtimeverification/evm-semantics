@@ -44,7 +44,7 @@ The following syntactic sugars capture the storage layout schemes of Solidity an
     syntax WordStack ::= intList2ByteStack( IntList ) [function]
  // ------------------------------------------------------------
     rule intList2ByteStack(.IntList) => .WordStack
-    rule intList2ByteStack(V VS)     => #asByteStackInWidth(V, 32) ++ intList2ByteStack(VS)
+    rule intList2ByteStack(V VS)     => #padToWidth(32, #asByteStack(V)) ++ intList2ByteStack(VS)
       requires 0 <=Int V andBool V <Int pow256
 ```
 
@@ -92,9 +92,9 @@ Below is the ABI call abstraction, a formalization for ABI encoding of the call 
 
     syntax WordStack ::= #getData ( TypedArg ) [function]
  // -----------------------------------------------------
-    rule #getData(#uint160( DATA )) => #asByteStackInWidth( DATA , 32 )
-    rule #getData(#address( DATA )) => #asByteStackInWidth( DATA , 32 )
-    rule #getData(#uint256( DATA )) => #asByteStackInWidth( DATA , 32 )
+    rule #getData(#uint160( DATA )) => #padToWidth(32, #asByteStack(DATA))
+    rule #getData(#address( DATA )) => #padToWidth(32, #asByteStack(DATA))
+    rule #getData(#uint256( DATA )) => #padToWidth(32, #asByteStack(DATA))
 ```
 
 ### Event Logs
