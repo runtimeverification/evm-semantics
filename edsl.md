@@ -8,7 +8,7 @@ Liveness properties can be specified by using the reduction to safety properties
 This module defines some helpers which make writing specifications simpler.
 
 ```k
-module VERIFICATION
+module EDSL
     imports EVM
 ```
 
