@@ -1,11 +1,10 @@
-KEVM Verification
-=================
+eDSL High-Level Notations
+=========================
 
-Using K's reachability logic theorem prover, we're able to verify many properties about EVM programs as reachability claims.
-Safety properties (and some of the liveness properties) can be naturally specified in the reachability claims.
-Liveness properties can be specified by using the reduction to safety properties, while some of the liveness properties can be directly specified in the reachability claims as well.
-
-This module defines some helpers which make writing specifications simpler.
+The eDSL high-level notations make the EVM specifications more succinct and closer to their high-level specifications.
+The succinctness increases the readability, and the closeness helps "eye-ball validation" of the specification refinement.
+The high-level notations are defined by translation to the corresponding EVM terms, and thus can be freely used with other EVM terms.
+The notations are inspired by the production compilers of the smart contract languages like Solidity and Viper, and their definition is derived by formalizing the corresponding translation made by the compilers.
 
 ```k
 module EDSL
