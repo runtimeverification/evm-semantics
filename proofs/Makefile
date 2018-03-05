@@ -1,6 +1,6 @@
 .PHONY: split-proof-tests
 
-lemmas_files:=tests/lemmas.k
+lemmas_files:=tests/lemmas.k tests/verification.k
 
 tests/%.k: %.md
 	@echo "==  tangle: $@"
