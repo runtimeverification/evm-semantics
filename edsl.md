@@ -11,19 +11,7 @@ module EDSL
     imports EVM
 ```
 
-Reasoning Simplifications
--------------------------
-
-We design abstractions that capture the EVM low-level specific details, allowing to specify specifications and reason about properties in a higher level similar to that of the surface languages (e.g., Solidity or Viper) in which smart contracts are written.
-
 ### Abstraction for Hash
-
-We do not model the hash function as an injective function simply because it is not true due to the pigeonhole principle.
-Instead, we abstract it as an uninterpreted function that captures the possibility of the hash collision, even if the probability is very small.
-
-However, one can avoid reasoning about the potential collision by assuming all of the hashed values appearing in each execution trace are collision-free.
-This can be achieved by instantiating the injectivity property only for the terms appearing in the symbolic execution, in a way analogous to the universal quantifier instantiation.
-Hashed locations are essential for the storage layout schemes used to store compound data structures such as maps in the storage.
 
 The following syntactic sugars capture the storage layout schemes of Solidity and Viper.
 
@@ -46,9 +34,6 @@ The following syntactic sugars capture the storage layout schemes of Solidity an
     rule intList2ByteStack(V VS)     => #padToWidth(32, #asByteStack(V)) ++ intList2ByteStack(VS)
       requires 0 <=Int V andBool V <Int pow256
 ```
-
-ABI Abstraction DSL
--------------------
 
 ### ABI Call Data
 
