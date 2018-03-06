@@ -1,11 +1,9 @@
+# Settings
+# --------
+
 .PHONY: split-proof-tests
 
 lemmas_files:=tests/lemmas.k tests/verification.k
-
-tests/%.k: %.md
-	@echo "==  tangle: $@"
-	mkdir -p $(dir $@)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k" $< > $@
 
 erc20_files:=totalSupply-spec.k \
              balanceOf-spec.k \
@@ -43,13 +41,25 @@ proof_tests:=$(proof_dir)/sum-to-n/sum-to-n-spec.k \
 
 split-proof-tests: $(proof_tests) $(lemmas_files)
 
-# #### Sum to N
+# Definition Files
+# ----------------
+
+# Lemmas
+tests/%.k: %.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:".k" $< > $@
+
+# Spec Files
+# ----------
+
+# Sum to N
 tests/sum-to-n/sum-to-n-spec.k: sum-to-n.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata="code:.sum-to-n" $< > $@
 
-# #### ERC20
+# ERC20
 tests/erc20-viper/%-spec.k: erc20/tmpl.k erc20/viper/spec-viper.ini erc20/viper/pgm-viper.ini
 	@echo >&2 "==  gen-spec: $@"
 	mkdir -p $(dir $@)
