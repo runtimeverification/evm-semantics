@@ -20,7 +20,7 @@ export LUA_PATH
 all: build split-tests
 
 clean:
-	rm -rf .build/java .build/ocaml .build/node .build/logs tests/proofs .build/k/make.timestamp .build/pandoc-tangle/make.timestamp .build/local
+	rm -rf .build/java .build/ocaml .build/node .build/logs tests/proofs/specs .build/k/make.timestamp .build/pandoc-tangle/make.timestamp .build/local
 
 distclean: clean
 	opam switch system
@@ -179,17 +179,17 @@ tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTest
 
 # ProofTests
 
-proof_dir:=proofs/tests
+proof_dir:=tests/proofs/specs
 proof_tests=$(wildcard $(proof_dir)/*/*-spec.k)
 
 proof-test-all: proof-test
 proof-test: $(proof_tests:=.test)
 
-proofs/tests/%.test: proofs/tests/% build-java
+$(proof_dir)/%.test: $(proof_dir)/% build-java
 	$(TEST) $<
 
 split-proof-tests:
-	$(MAKE) -C proofs $@
+	$(MAKE) -C tests/proofs $@
 
 # InteractiveTests
 
