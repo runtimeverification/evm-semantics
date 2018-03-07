@@ -2,6 +2,8 @@ Verification Lemmas
 ===================
 
 ```k
+requires "evm.k"
+
 module LEMMAS
     imports EVM
 ```
