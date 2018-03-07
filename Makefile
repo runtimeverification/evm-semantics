@@ -188,7 +188,12 @@ proof-test: $(proof_tests:=.test)
 $(proof_dir)/%.test: $(proof_dir)/% build-java
 	$(TEST) $<
 
-split-proof-tests:
+tests/proofs/make.timestamp:
+	@echo "==  git submodule: cloning upstreams proofs repository"
+	git submodule update --init -- tests/proofs
+	touch $@
+
+split-proof-tests: tests/proofs/make.timestamp
 	$(MAKE) -C tests/proofs $@
 
 # InteractiveTests
