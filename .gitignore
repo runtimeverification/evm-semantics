@@ -1,8 +1,6 @@
 # See the 'exclude everything except directory foo/bar'
 # example in the gitignore man page to understand how this works.
 /.build/*
-/tests/proofs/*
-/proofs/tests/*
 
 !/.build/secp256k1
 !/.build/k
