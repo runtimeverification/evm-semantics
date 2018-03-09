@@ -143,12 +143,12 @@ test: vm-test bchain-test proof-test interactive-test
 
 split-tests: tests/ethereum-tests/make.timestamp split-proof-tests
 
-tests/ethereum-tests/make.timestamp:
-	@echo "== submodule: $@"
-	git submodule update --init -- tests/ethereum-tests
-	touch $@
-
 tests/ethereum-tests/%.json: tests/ethereum-tests/make.timestamp
+
+tests/%/make.timestamp:
+	@echo "== submodule: $@"
+	git submodule update --init -- tests/$*
+	touch $@
 
 # VMTests
 
@@ -188,11 +188,6 @@ proof-test: $(proof_tests:=.test)
 
 $(proof_dir)/%.test: $(proof_dir)/% build-java
 	$(TEST) $<
-
-tests/proofs/make.timestamp:
-	@echo "== submodule: $@"
-	git submodule update --init -- tests/proofs
-	touch $@
 
 split-proof-tests: tests/proofs/make.timestamp
 	$(MAKE) -C tests/proofs $@
