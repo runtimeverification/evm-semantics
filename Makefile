@@ -59,6 +59,7 @@ ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 
 # install secp256k1 from bitcoin-core
 .build/local/lib/pkgconfig/libsecp256k1.pc:
+	@echo "== submodule: $@"
 	git submodule update --init -- .build/secp256k1/
 	cd .build/secp256k1/ \
 		&& ./autogen.sh \
@@ -143,7 +144,7 @@ test: vm-test bchain-test proof-test interactive-test
 split-tests: tests/ethereum-tests/make.timestamp split-proof-tests
 
 tests/ethereum-tests/make.timestamp:
-	@echo "==  git submodule: cloning upstreams test repository"
+	@echo "== submodule: $@"
 	git submodule update --init -- tests/ethereum-tests
 	touch $@
 
@@ -189,7 +190,7 @@ $(proof_dir)/%.test: $(proof_dir)/% build-java
 	$(TEST) $<
 
 tests/proofs/make.timestamp:
-	@echo "==  git submodule: cloning upstreams proofs repository"
+	@echo "== submodule: $@"
 	git submodule update --init -- tests/proofs
 	touch $@
 
