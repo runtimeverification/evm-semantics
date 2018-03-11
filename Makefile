@@ -207,13 +207,13 @@ split-proof-tests: tests/proofs/make.timestamp
 
 # InteractiveTests
 
-interactive-test-all: interactive-test
-interactive-test: \
-	tests/interactive/gas-analysis/sumTo10.evm.test \
-	tests/interactive/add0.json.test \
-	tests/interactive/log3_MaxTopic_d0g0v0.json.test
+interactive_tests:=$(wildcard tests/interactive/*.json) \
+                   $(wildcard tests/interactive/*/*.json)
 
-tests/interactive/%.test: tests/interactive/% tests/interactive/%.out build
+interactive-test-all: interactive-test
+interactive-test: $(interactive_tests:=.test)
+
+tests/interactive/%.test: tests/interactive/% build
 	$(TEST) $<
 
 # Sphinx HTML Documentation
