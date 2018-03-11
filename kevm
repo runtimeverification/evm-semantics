@@ -76,6 +76,12 @@ run_interpreter() {
     )
 }
 
+run_bugcheck() {
+    progress "bug-checking: $1"
+    input_file="$1"
+    ( run_krun bug-checker "$1" --search )
+}
+
 run_proof() {
     local proof_file="$1" ; shift
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
@@ -96,6 +102,13 @@ run_test() {
                           local output_file="$(mktemp "$test_file.out.XXXXXX")"
                           trap "rm -rf $output_file" INT TERM EXIT
                           run_proof "$test_file" "$@" > "$output_file"
+                          pretty_diff "$output_expected_file" "$output_file"
+                        )
+                        ;;
+        *bug-checker/*) [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
+                        ( local output_file="$(mktemp "$output_expected_file.XXXXXX")"
+                          trap "rm -rf $output_file" INT TERM EXIT
+                          run_bugcheck "$test_file" "$@" > "$output_file"
                           pretty_diff "$output_expected_file" "$output_file"
                         )
                         ;;
@@ -128,8 +141,9 @@ run_command="$1" ; shift
 case "$run_command" in
 
     # Running
-    run)   run_krun   ocaml "$@" --interpret ;;
-    debug) run_kdebug       "$@"             ;;
+    run)      run_krun     ocaml "$@" --interpret ;;
+    debug)    run_kdebug         "$@"             ;;
+    bugcheck) run_bugcheck       "$@"             ;;
 
     prove) run_proof "$@" ;;
 
@@ -141,8 +155,9 @@ case "$run_command" in
 
        # Running
        # -------
-       $0 run   <pgm>   Run a single EVM program
-       $0 debug <pgm>   Run a single EVM program in the debugger
+       $0 run      <pgm>   Run a single EVM program
+       $0 debug    <pgm>   Run a single EVM program in the debugger
+       $0 bugcheck <pgm>   Check for a fixed set of EVM program problems
 
        $0 prove <spec>  Attempt to prove the specification using K's RL prover
 
