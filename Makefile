@@ -208,6 +208,7 @@ split-proof-tests: tests/proofs/make.timestamp
 # InteractiveTests
 
 interactive_tests:=$(wildcard tests/interactive/*.json) \
+                   $(wildcard tests/interactive/*/*.json) \
                    $(wildcard tests/interactive/*/*.evm)
 
 test-all-interactive: test-interactive
