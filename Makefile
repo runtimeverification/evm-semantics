@@ -14,7 +14,7 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean deps k-deps tangle-deps ocaml-deps build build-ocaml build-java defn sphinx split-tests \
+.PHONY: all clean deps k-deps tangle-deps ocaml-deps build build-ocaml build-java build-bug-checker defn sphinx split-tests \
 		test test-all vm-test vm-test-all bchain-test bchain-test-all proof-test proof-test-all
 
 all: build split-tests
@@ -72,20 +72,23 @@ K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
 # Building
 # --------
 
-build: build-ocaml build-java
+build: build-ocaml build-java build-bug-checker
 build-ocaml: .build/ocaml/driver-kompiled/interpreter
 build-java: .build/java/driver-kompiled/timestamp
+build-bug-checker: .build/bug-checker/driver-kompiled/timestamp
 
 # Tangle definition from *.md files
 
-standalone_tangle:=.k:not(.node),.standalone
-node_tangle:=.k:not(.standalone),.node
+standalone_tangle:=.standalone,.k:not(.node,.bug-checker)
+node_tangle:=.node,.k:not(.standalone,.bug-checker)
+bug_checker_tangle:=.bug-checker,.k:not(.not-bug-checker)
 
 k_files:=driver.k data.k evm.k analysis.k krypto.k edsl.k
 ocaml_files:=$(patsubst %,.build/ocaml/%,$(k_files))
 java_files:=$(patsubst %,.build/java/%,$(k_files))
+bug_checker_files:=$(patsubst %,.build/bug-checker/%,$(k_files))
 node_files:=$(patsubst %,.build/node/%,$(k_files))
-defn_files:=$(ocaml_files) $(java_files) $(node_files)
+defn_files:=$(ocaml_files) $(java_files) $(bug_checker_files) $(node_files)
 
 defn: $(defn_files)
 
@@ -104,12 +107,22 @@ defn: $(defn_files)
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
 
+.build/bug-checker/%.k: %.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(bug_checker_tangle)" $< > $@
+
 # Java Backend
 
 .build/java/driver-kompiled/timestamp: $(java_files)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/java -I .build/java
+
+.build/bug-checker/driver-kompiled/timestamp: $(bug_checker_files)
+	@echo "== kompile: $@"
+	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
+					--syntax-module ETHEREUM-SIMULATION $< --directory .build/bug-checker -I .build/bug-checker
 
 # OCAML Backend
 
@@ -194,13 +207,13 @@ split-proof-tests: tests/proofs/make.timestamp
 
 # InteractiveTests
 
-interactive-test-all: interactive-test
-interactive-test: \
-	tests/interactive/gas-analysis/sumTo10.evm.test \
-	tests/interactive/add0.json.test \
-	tests/interactive/log3_MaxTopic_d0g0v0.json.test
+interactive_tests:=$(wildcard tests/interactive/*.json) \
+                   $(wildcard tests/interactive/*/*.json)
 
-tests/interactive/%.test: tests/interactive/% tests/interactive/%.out build
+interactive-test-all: interactive-test
+interactive-test: $(interactive_tests:=.test)
+
+tests/interactive/%.test: tests/interactive/% build
 	$(TEST) $<
 
 # Sphinx HTML Documentation

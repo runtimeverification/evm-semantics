@@ -56,7 +56,19 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
 ```k
     syntax Int ::= chop ( Int ) [function, smtlib(chop)]
  // ----------------------------------------------------
+```
+
+One common bug is integer overflow/underflow.
+In normal execution, the wrapping of integers happens without raising any issue.
+
+```{.k .not-bug-checker}
     rule chop ( I:Int ) => I modInt pow256 [concrete, smt-lemma]
+```
+
+When checking for bugs, execution only continues if overflow would not occur.
+
+```{.k .bug-checker}
+    rule chop ( I:Int ) => I requires I >=Int 0 andBool I <Int pow256
 ```
 
 ### Boolean Conversions
