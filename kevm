@@ -15,11 +15,7 @@ success()  { echo -e "\e[32m== success: $@\e[0m" ;
 failure()  { echo -e "\e[31m== failure: $@\e[0m" ; }
 
 pretty_diff() {
-    if type colordiff >/dev/null 2>&1; then
-        colordiff -u -b "$@"
-    else
-        diff -u -b "$@"
-    fi
+    git --no-pager diff --no-index "$@"
 }
 
 # Environment Setup
@@ -72,13 +68,9 @@ run_interpreter() {
                      -c SCHEDULE "$cSCHEDULE" text -c MODE "$cMODE" text \
                      --output-file "$output"
         exit_status="$?"
-        if [ $exit_status -eq 0 ]; then
-	    exit 0
-        fi
+        [[ "$exit_status" == '0' ]] && exit 0
         k-bin-to-text "$output" "$kast_output"
-        ( pretty_diff --label expected <(cat "$output_expected_file") \
-                      --label actual   <(cat "$kast_output" )
-        )
+        pretty_diff "$output_expected_file" "$kast_output"
         printf "\n"
         exit "$exit_status"
     )
@@ -100,13 +92,18 @@ run_kdebug() {
 run_test() {
     test_file="$1"; shift
     case "$test_file" in
-        *proofs/*     ) ( pretty_diff --label expected <(echo "#True") \
-                                      --label actual   <(run_proof "$test_file" "$@")
+        *proofs/*     ) ( local output_expected_file="tests/templates/proof-success.txt"
+                          local output_file="$(mktemp "$test_file.out.XXXXXX")"
+                          trap "rm -rf $output_file" INT TERM EXIT
+                          run_proof "$test_file" "$@" > "$output_file"
+                          pretty_diff "$output_expected_file" "$output_file"
                         )
                         ;;
         *interactive/*) [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
-                        ( pretty_diff --label expected <(cat "$output_expected_file") \
-                                      --label actual   <(run_krun ocaml "$test_file" --interpret "$@" )
+                        ( local output_file="$(mktemp "$output_expected_file.XXXXXX")"
+                          trap "rm -rf $output_file" INT TERM EXIT
+                          run_krun ocaml "$test_file" --interpret "$@" > "$output_file" || true
+                          pretty_diff "$output_expected_file" "$output_file"
                         )
                         ;;
         *             ) output_expected_file=tests/templates/output-success.txt
