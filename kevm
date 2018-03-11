@@ -66,7 +66,7 @@ run_krun() {
     local run_file=$1 ; shift
     run_env "$run_file"
     export K_OPTS=-Xss500m
-    krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' --interpret "$run_file" "$@"
+    krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@"
 }
 
 run_interpreter() {
@@ -119,7 +119,7 @@ run_test() {
                         ;;
         *interactive/*) [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
                         ( pretty_diff --label expected <(cat "$output_expected_file") \
-                                      --label actual   <(run_krun ocaml "$test_file" "$@" )
+                                      --label actual   <(run_krun ocaml "$test_file" --interpret "$@" )
                         )
                         ;;
         *             ) output_expected_file="$kevm_dir/tests/templates/output-success.txt"
@@ -136,9 +136,9 @@ run_command="$1" ; shift
 case "$run_command" in
 
     # Running
-    run)   run_krun   ocaml "$@" ;;
-    debug) run_kdebug "$@"       ;;
-    prove) run_proof  "$@"       ;;
+    run)   run_krun    ocaml --interpret "$@" ;;
+    debug) run_kdebug  "$@"                   ;;
+    prove) run_proof   "$@"                   ;;
 
     # Testing
     test)  run_test   "$@" ;;
