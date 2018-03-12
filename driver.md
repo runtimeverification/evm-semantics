@@ -96,9 +96,9 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <txGasLimit> TG   </txGasLimit>
            <to>         TT   </to>
            <value>      TV   </value>
-           <v>          TW   </v>
-           <r>          TR   </r>
-           <s>          TS   </s>
+           <sigV>       TW   </sigV>
+           <sigR>       TR   </sigR>
+           <sigS>       TS   </sigS>
            <data>       DATA </data>
          </message>
 
@@ -549,9 +549,9 @@ The `"rlp"` key loads the block information.
                <txGasLimit> #asWord(#parseByteStackRaw(TG))         </txGasLimit>
                <to>         #asAccount(#parseByteStackRaw(TT))      </to>
                <value>      #asWord(#parseByteStackRaw(TV))         </value>
-               <v>          #asWord(#parseByteStackRaw(TW))         </v>
-               <r>          #padToWidth(32, #parseByteStackRaw(TR)) </r>
-               <s>          #padToWidth(32, #parseByteStackRaw(TS)) </s>
+               <sigV>       #asWord(#parseByteStackRaw(TW))         </sigV>
+               <sigR>       #padToWidth(32, #parseByteStackRaw(TR)) </sigR>
+               <sigS>       #padToWidth(32, #parseByteStackRaw(TS)) </sigS>
                <data>       #parseByteStackRaw(TI)                  </data>
              </message>
            )
@@ -723,10 +723,10 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : ("gasLimit" : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasLimit> VALUE </txGasLimit> ... </message>
     rule <k> check "transactions" : ("gasPrice" : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasPrice> VALUE </txGasPrice> ... </message>
     rule <k> check "transactions" : ("nonce"    : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txNonce>    VALUE </txNonce>    ... </message>
-    rule <k> check "transactions" : ("r"        : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <r>          VALUE </r>          ... </message>
-    rule <k> check "transactions" : ("s"        : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <s>          VALUE </s>          ... </message>
+    rule <k> check "transactions" : ("r"        : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigR>       VALUE </sigR>       ... </message>
+    rule <k> check "transactions" : ("s"        : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigS>       VALUE </sigS>       ... </message>
     rule <k> check "transactions" : ("to"       : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <to>         VALUE </to>         ... </message>
-    rule <k> check "transactions" : ("v"        : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <v>          VALUE </v>          ... </message>
+    rule <k> check "transactions" : ("v"        : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV>       VALUE </sigV>       ... </message>
     rule <k> check "transactions" : ("value"    : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <value>      VALUE </value>      ... </message>
 ```
 

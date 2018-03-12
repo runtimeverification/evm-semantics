@@ -138,9 +138,9 @@ In the comments next to each cell, we've marked which component of the YellowPap
                           <txGasLimit> 0          </txGasLimit>         // T_g
                           <to>         .Account   </to>                 // T_t
                           <value>      0          </value>              // T_v
-                          <v>          0          </v>                  // T_w
-                          <r>          .WordStack </r>                  // T_r
-                          <s>          .WordStack </s>                  // T_s
+                          <sigV>       0          </sigV>               // T_w
+                          <sigR>       .WordStack </sigR>               // T_r
+                          <sigS>       .WordStack </sigS>               // T_s
                           <data>       .WordStack </data>               // T_i/T_e
                         </message>
                       </messages>
