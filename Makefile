@@ -15,7 +15,7 @@ export TANGLER
 export LUA_PATH
 
 .PHONY: all clean deps k-deps tangle-deps ocaml-deps build build-ocaml build-java defn sphinx split-tests \
-		test test-all vm-test vm-test-all bchain-test bchain-test-all proof-test proof-test-all
+		test test-all test-vm test-all-vm test-bchain test-all-bchain test-proof test-all-proof
 
 all: build split-tests
 
@@ -138,8 +138,8 @@ defn: $(defn_files)
 # Override this with `make TEST=echo` to list tests instead of running
 TEST=./kevm test
 
-test-all: vm-test-all bchain-test-all proof-test-all interactive-test-all
-test: vm-test bchain-test proof-test interactive-test
+test-all: test-all-vm test-all-bchain test-all-proof test-all-interactive
+test: test-vm test-bchain test-proof test-interactive
 
 split-tests: tests/ethereum-tests/make.timestamp split-proof-tests
 
@@ -156,8 +156,8 @@ vm_tests=$(wildcard tests/ethereum-tests/VMTests/*/*.json)
 slow_vm_tests=$(wildcard tests/ethereum-tests/VMTests/vmPerformance/*.json)
 quick_vm_tests=$(filter-out $(slow_vm_tests), $(vm_tests))
 
-vm-test-all: $(vm_tests:=.test)
-vm-test: $(quick_vm_tests:=.test)
+test-all-vm: $(vm_tests:=.test)
+test-vm: $(quick_vm_tests:=.test)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build
 	$(TEST) $<
@@ -172,8 +172,8 @@ slow_bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTe
                   # $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Constantinople.json)
 quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(bchain_tests))
 
-bchain-test-all: $(bchain_tests:=.test)
-bchain-test: $(quick_bchain_tests:=.test)
+test-all-bchain: $(bchain_tests:=.test)
+test-bchain: $(quick_bchain_tests:=.test)
 
 tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/% build
 	$(TEST) $<
@@ -183,8 +183,8 @@ tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTest
 proof_dir:=tests/proofs/specs
 proof_tests=$(wildcard $(proof_dir)/*/*-spec.k)
 
-proof-test-all: proof-test
-proof-test: $(proof_tests:=.test)
+test-all-proof: test-proof
+test-proof: $(proof_tests:=.test)
 
 $(proof_dir)/%.test: $(proof_dir)/% build-java
 	$(TEST) $<
@@ -194,8 +194,8 @@ split-proof-tests: tests/proofs/make.timestamp
 
 # InteractiveTests
 
-interactive-test-all: interactive-test
-interactive-test: \
+test-all-interactive: test-interactive
+test-interactive: \
 	tests/interactive/gas-analysis/sumTo10.evm.test \
 	tests/interactive/add0.json.test \
 	tests/interactive/log3_MaxTopic_d0g0v0.json.test
