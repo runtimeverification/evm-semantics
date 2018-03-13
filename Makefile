@@ -19,8 +19,11 @@ export LUA_PATH
 
 all: build split-tests
 
-clean:
-	rm -rf .build/java .build/ocaml .build/node .build/logs tests/proofs/specs .build/k/make.timestamp .build/pandoc-tangle/make.timestamp .build/local
+clean: clean-submodules
+	rm -rf .build/java .build/ocaml .build/node .build/logs .build/local
+
+clean-submodules:
+	rm -rf .build/k/make.timestamp .build/pandoc-tangle/make.timestamp tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp
 
 distclean: clean
 	opam switch system
