@@ -81,10 +81,20 @@ run_interpreter() {
     )
 }
 
+run_kdebug() {
+    progress "debugging: $1"
+    ( run_krun java "$1" --debugger )
+}
+
 run_bugcheck() {
     progress "bug-checking: $1"
     input_file="$1"
     ( run_krun bug-checker "$1" --search )
+}
+
+run_ksearch() {
+    progress "searching: $1"
+    ( run_krun java "$1" --search )
 }
 
 run_proof() {
@@ -93,11 +103,6 @@ run_proof() {
     run_env "$proof_file"
     export K_OPTS=-Xmx2G
     ( kprove --directory "$build_dir/java/" --z3-executable "$proof_file" --def-module VERIFICATION )
-}
-
-run_kdebug() {
-    progress "debugging: $1"
-    ( run_krun java "$1" --debugger )
 }
 
 run_test() {
@@ -131,7 +136,8 @@ case "$run_command" in
     debug)    run_kdebug         "$@"             ;;
     bugcheck) run_bugcheck       "$@"             ;;
 
-    prove) run_proof "$@" ;;
+    search) run_ksearch "$@" ;;
+    prove)  run_proof   "$@" ;;
 
     # Testing
     test)  run_test   "$@" ;;
@@ -145,7 +151,8 @@ case "$run_command" in
        $0 debug    <pgm>   Run a single EVM program in the debugger
        $0 bugcheck <pgm>   Check for a fixed set of EVM program problems
 
-       $0 prove <spec>  Attempt to prove the specification using K's RL prover
+       $0 search <pgm>   Run a program searching for all execution paths
+       $0 prove  <spec>  Attempt to prove the specification using K's RL prover
 
        Note: <pgm> and <spec> here are paths to files.
        These files should be Ethereum programs/specifications.
