@@ -97,11 +97,7 @@ These additional files extend the semantics to make the repository more useful:
 
 -   [driver.md](driver) is an execution harness for KEVM, providing a simple language for describing tests/programs.
 -   [analysis.md](analysis) contains any automated analysis tools we develop.
-
-Finally, these files pertain to the [K Reachability Logic Prover]:
-
--   [verification.md](verification) adds helpers for verification efforts.
--   [proofs/README.md](proofs/README) documents proofs we have performed.
+-   [edsl.md](edsl) defines high-level notations of [eDSL], a domain-specific language for EVM specifications, for formal verification of EVM bytecode using [K Reachability Logic Prover].
 
 Example Usage
 -------------
@@ -122,10 +118,10 @@ Run the same file as a test:
 ```
 
 To run proofs, you can similarly use `./kevm`.
-For example, to prove the specification `tests/proofs/erc20/hkg/transfer-success-1-spec.k`:
+For example, to prove the specification `tests/proofs/specs/vyper-erc20/totalSupply-spec.k`:
 
 ```sh
-./kevm prove tests/proofs/erc20/hkg/transfer-success-1-spec.k
+./kevm prove tests/proofs/specs/vyper-erc20/totalSupply-spec.k
 ```
 
 Finally, if you want to debug a given program (by stepping through its execution), you can use the `debug` option:
@@ -155,7 +151,7 @@ These are the individual test-suites (all of these can be suffixed with `-all` t
 
 -   `make vm-test`: VMTests from the [Ethereum Test Set].
 -   `make bchain-test`: Subset of BlockchainTests from the [Ethereum Test Set].
--   `make proof-test`: Proofs that are supplied in [proofs](proofs/README.md) subdirectory.
+-   `make proof-test`: Proofs from the [Verified Smart Contracts].
 -   `make interactive-test`: Tests of the `./kevm` command and of [analysis tools](analysis.md).
 
 Contributing
@@ -259,3 +255,5 @@ For more information about [The K Framework](http://kframework.org), refer to th
 [K Reachability Logic Prover]: <http://fsl.cs.illinois.edu/FSL/papers/2016/stefanescu-park-yuwen-li-rosu-2016-oopsla/stefanescu-park-yuwen-li-rosu-2016-oopsla-public.pdf>
 [K Editor Support]: <https://github.com/kframework/k-editor-support>
 [Ethereum Test Set]: <https://github.com/ethereum/tests>
+[Verified Smart Contracts]: <https://github.com/runtimeverification/verified-smart-contracts>
+[eDSL]: <https://github.com/runtimeverification/verified-smart-contracts/blob/master/resources/edsl.md>
