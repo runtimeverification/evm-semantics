@@ -81,6 +81,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 -   `loadTx(_)` loads the next transaction to be executed into the current state.
 -   `finishTx` is a place-holder for performing necessary cleanup after a transaction.
 
+**TODO**: `loadTx(_) => loadTx_`
+
 ```{.k .standalone}
     syntax EthereumCommand ::= "startTx"
  // ------------------------------------
@@ -636,7 +638,6 @@ The `"rlp"` key loads the block information.
     rule check "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
     rule check "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #parseByteStack(CODE)) } }
     rule check "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
-
 
     rule <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
          <account>
