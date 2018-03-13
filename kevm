@@ -3,6 +3,20 @@
 set -e      # Exit immediately if any command fails
 set -u      # Using undefined variables is an error. Exit immediately
 
+# https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
+kevm_script="$0"
+while [[ -h "$kevm_script" ]]; do
+    kevm_dir="$(cd -P "$(dirname "$kevm_script")" && pwd)"
+    kevm_script="$(readlink "$kevm_script")"
+    [[ "$kevm_script" != /* ]] && kevm_script="$kevm_dir/$kevm_script"
+done
+kevm_dir="$(cd -P "$(dirname "$kevm_script")" && pwd)"
+build_dir="$kevm_dir/.build"
+
+test_logs="$build_dir/logs"
+mkdir -p "$test_logs"
+now_passing="$test_logs/passing.lastrun"
+
 # Utilities
 # ---------
 
@@ -29,7 +43,6 @@ run_env() {
     local run_file=$1
     local cmode="${cMODE:-NORMAL}"
     local cschedule="${cSCHEDULE:-DEFAULT}"
-    local build_dir="$(pwd)/.build"
     local release_dir="${K_BIN:-$build_dir/k/k-distribution/target/release/k}"
     local lib_dir="$build_dir/local/lib"
     case "$run_file" in
@@ -53,7 +66,7 @@ run_krun() {
     local run_file=$1 ; shift
     run_env "$run_file"
     export K_OPTS=-Xss500m
-    krun --directory .build/$backend/ -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' --interpret "$run_file" "$@"
+    krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' --interpret "$run_file" "$@"
 }
 
 run_interpreter() {
@@ -61,14 +74,14 @@ run_interpreter() {
     output_expected_file="$2"
     run_env "$test_file"
     (   set +e
-        interpreter="$(dirname "$0")/.build/ocaml/driver-kompiled/interpreter"
+        interpreter="$build_dir/ocaml/driver-kompiled/interpreter"
         kast="$(mktemp)"
         output="$(mktemp)"
         kast_output="$(mktemp)"
         trap "rm -rf $kast $output $kast_output" INT TERM EXIT
-        "$(dirname "$0")/kast-json.py" "$test_file" > "$kast"
+        "$kevm_dir/kast-json.py" "$test_file" > "$kast"
         set +e
-        $interpreter "$(dirname "$0")/.build/ocaml/driver-kompiled/realdef.cma" -c PGM "$kast" textfile \
+        $interpreter "$build_dir/ocaml/driver-kompiled/realdef.cma" -c PGM "$kast" textfile \
                      -c SCHEDULE "$cSCHEDULE" text -c MODE "$cMODE" text \
                      --output-file "$output"
         exit_status="$?"
@@ -89,7 +102,7 @@ run_proof() {
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
     run_env "$proof_file"
     export K_OPTS=-Xmx2G
-    ( kprove --directory .build/java/ --z3-executable "$proof_file" --def-module VERIFICATION )
+    ( kprove --directory "$build_dir/java/" --z3-executable "$proof_file" --def-module VERIFICATION )
 }
 
 run_kdebug() {
@@ -109,7 +122,7 @@ run_test() {
                                       --label actual   <(run_krun ocaml "$test_file" "$@" )
                         )
                         ;;
-        *             ) output_expected_file=tests/templates/output-success.txt
+        *             ) output_expected_file="$kevm_dir/tests/templates/output-success.txt"
                         [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
                         run_interpreter "$test_file" "$output_expected_file"
                         ;;
@@ -119,14 +132,6 @@ run_test() {
 # Main
 # ----
 
-cd "$(dirname $0)"
-
-# test logs
-test_logs=".build/logs"
-mkdir -p "$test_logs"
-now_passing="$test_logs/passing.lastrun"
-
-# main functionality
 run_command="$1" ; shift
 case "$run_command" in
 
