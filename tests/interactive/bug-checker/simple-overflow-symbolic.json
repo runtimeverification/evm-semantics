@@ -1,0 +1,6 @@
+load "network" : "Byzantium"
+load "exec" : { "gas"  : 1000000
+              , "code" : PUSH(32, pow256 -Int 10) ; PUSH(3, #symbolicWord) ; ADD ; .OpCodes
+              }
+start
+.EthereumSimulation
