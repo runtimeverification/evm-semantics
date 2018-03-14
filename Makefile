@@ -160,7 +160,7 @@ test-all-vm: $(vm_tests:=.test)
 test-vm: $(quick_vm_tests:=.test)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build
-	$(TEST) $<
+	MODE=VMTESTS $(TEST) $<
 
 # BlockchainTests
 
@@ -194,14 +194,17 @@ split-proof-tests: tests/proofs/make.timestamp
 
 # InteractiveTests
 
-test-all-interactive: test-interactive
-test-interactive: \
-	tests/interactive/gas-analysis/sumTo10.evm.test \
-	tests/interactive/add0.json.test \
-	tests/interactive/log3_MaxTopic_d0g0v0.json.test
+interactive_tests:=$(wildcard tests/interactive/*.json) \
+                   $(wildcard tests/interactive/*/*.evm)
 
-tests/interactive/%.test: tests/interactive/% tests/interactive/%.out build
+test-all-interactive: test-interactive
+test-interactive: $(interactive_tests:=.test)
+
+tests/interactive/%.json.test: tests/interactive/%.json tests/interactive/%.json.out build
 	$(TEST) $<
+
+tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out build
+	MODE=GASANALYZE $(TEST) $<
 
 # Sphinx HTML Documentation
 # -------------------------

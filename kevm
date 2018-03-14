@@ -37,18 +37,10 @@ pretty_diff() {
 
 run_env() {
     local run_file=$1
-    local cmode="${cMODE:-NORMAL}"
-    local cschedule="${cSCHEDULE:-DEFAULT}"
     local release_dir="${K_BIN:-$build_dir/k/k-distribution/target/release/k}"
     local lib_dir="$build_dir/local/lib"
-    case "$run_file" in
-       tests/interactive/gas-analysis/*      ) cmode="GASANALYZE" ;;
-       tests/ethereum-tests/VMTests/*        ) cmode="VMTESTS"    ;;
-       tests/ethereum-tests/BlockchainTests/*) cmode="NORMAL"     ;;
-       tests/proofs/*                        ) cmode="NORMAL"     ;;
-    esac
-    export cMODE="\`${cmode}\`(.KList)"
-    export cSCHEDULE="\`${cschedule}_EVM\`(.KList)"
+    export cMODE="\`${MODE:-NORMAL}\`(.KList)"
+    export cSCHEDULE="\`${SCHEDULE:-DEFAULT}_EVM\`(.KList)"
     export PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH"
     export LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
     eval $(opam config env)
