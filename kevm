@@ -95,25 +95,18 @@ run_kdebug() {
 }
 
 run_test() {
-    test_file="$1"; shift
+    local test_file="$1"     ; shift
+    local expected_file="$1" ; shift
+    local output_file="$(mktemp "$test_file.out.XXXXXX")"
+    trap "rm -rf $output_file" INT TERM EXIT
     case "$test_file" in
-        *proofs/*     ) ( local output_expected_file="tests/templates/proof-success.txt"
-                          local output_file="$(mktemp "$test_file.out.XXXXXX")"
-                          trap "rm -rf $output_file" INT TERM EXIT
-                          run_proof "$test_file" "$@" > "$output_file"
-                          pretty_diff "$output_expected_file" "$output_file"
-                        )
+        *proofs/*     ) run_proof "$test_file" "$@" > "$output_file"
+                        pretty_diff "$expected_file" "$output_file"
                         ;;
-        *interactive/*) [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
-                        ( local output_file="$(mktemp "$output_expected_file.XXXXXX")"
-                          trap "rm -rf $output_file" INT TERM EXIT
-                          run_krun ocaml "$test_file" --interpret "$@" > "$output_file" || true
-                          pretty_diff "$output_expected_file" "$output_file"
-                        )
+        *interactive/*) run_krun ocaml "$test_file" --interpret "$@" > "$output_file" || true
+                        pretty_diff "$expected_file" "$output_file"
                         ;;
-        *             ) output_expected_file="$kevm_dir/tests/templates/output-success.txt"
-                        [[ -f "$test_file.out" ]] && output_expected_file="$test_file.out"
-                        run_interpreter "$test_file" "$output_expected_file"
+        *             ) run_interpreter "$test_file" "$expected_file"
                         ;;
     esac
 }

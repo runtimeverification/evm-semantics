@@ -160,7 +160,7 @@ test-all-vm: $(vm_tests:=.test)
 test-vm: $(quick_vm_tests:=.test)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build
-	MODE=VMTESTS $(TEST) $<
+	MODE=VMTESTS $(TEST) $< tests/templates/output-success.txt
 
 # BlockchainTests
 
@@ -176,7 +176,7 @@ test-all-bchain: $(bchain_tests:=.test)
 test-bchain: $(quick_bchain_tests:=.test)
 
 tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/% build
-	$(TEST) $<
+	$(TEST) $< tests/templates/output-success.txt
 
 # ProofTests
 
@@ -187,7 +187,7 @@ test-all-proof: test-proof
 test-proof: $(proof_tests:=.test)
 
 $(proof_dir)/%.test: $(proof_dir)/% build-java
-	$(TEST) $<
+	$(TEST) $< tests/templates/proof-success.txt
 
 split-proof-tests: tests/proofs/make.timestamp
 	$(MAKE) -C tests/proofs $@
@@ -201,10 +201,10 @@ test-all-interactive: test-interactive
 test-interactive: $(interactive_tests:=.test)
 
 tests/interactive/%.json.test: tests/interactive/%.json tests/interactive/%.json.out build
-	$(TEST) $<
+	$(TEST) $< $<.out
 
 tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out build
-	MODE=GASANALYZE $(TEST) $<
+	MODE=GASANALYZE $(TEST) $< $<.out
 
 # Sphinx HTML Documentation
 # -------------------------
