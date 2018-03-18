@@ -151,9 +151,10 @@ case "$run_command" in
        These files should be Ethereum programs/specifications.
 
        Examples:
-       $ $0 run   tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
-       $ $0 debug tests/interactive/gas-analysis/sumTo10.evm
-       $ $0 prove tests/proofs/specs/examples/sum-to-n-spec.k
+       $ $0 run      tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
+       $ $0 debug    tests/interactive/gas-analysis/sumTo10.evm
+       $ $0 bugcheck tests/interactive/bug-checker/simple-overflow.json
+       $ $0 prove    tests/proofs/specs/examples/sum-to-n-spec.k
 
        # Testing
        # -------
