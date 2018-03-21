@@ -15,7 +15,7 @@ export TANGLER
 export LUA_PATH
 
 .PHONY: all clean deps k-deps tangle-deps ocaml-deps build build-ocaml build-java defn sphinx split-tests \
-		test test-all test-vm test-all-vm test-bchain test-all-bchain test-proof test-all-proof
+		test test-all test-conformance test-all-conformance test-vm test-all-vm test-bchain test-all-bchain test-proof test-all-proof
 
 all: build split-tests
 
@@ -58,7 +58,7 @@ ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 	opam update
 	opam switch 4.03.0+k
 	eval $$(opam config env) \
-	opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128
+		opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128
 
 # install secp256k1 from bitcoin-core
 .build/local/lib/pkgconfig/libsecp256k1.pc:
@@ -146,12 +146,17 @@ test: test-vm test-bchain test-proof test-interactive
 
 split-tests: tests/ethereum-tests/make.timestamp split-proof-tests
 
-tests/ethereum-tests/%.json: tests/ethereum-tests/make.timestamp
-
 tests/%/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init -- tests/$*
 	touch $@
+
+# Ethereum Tests
+
+tests/ethereum-tests/%.json: tests/ethereum-tests/make.timestamp
+
+test-all-conformance: test-all-vm test-all-bchain
+test-conformance: test-vm test-bchain
 
 # VMTests
 
