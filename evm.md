@@ -1450,10 +1450,12 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <schedule> SCHED </schedule>
       requires notBool ACCTCODE in #precompiledAccounts(SCHED) andBool notBool ACCTCODE in ACCTS
 
-    rule #callWithCode ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC
-      => #pushCallStack ~> #pushWorldState ~> #pushSubstate
-      ~> #transferFunds ACCTFROM ACCTTO VALUE
-      ~> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC
+    rule <k> #callWithCode ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC
+          => #pushCallStack ~> #pushWorldState ~> #pushSubstate
+          ~> #transferFunds ACCTFROM ACCTTO VALUE
+          ~> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC
+         ...
+         </k>
 
     rule <mode> EXECMODE </mode>
          <k> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC:Bool
@@ -1611,11 +1613,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </account>
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
-    rule #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
-      => #pushCallStack ~> #pushWorldState ~> #pushSubstate
-      ~> #newAccount ACCTTO
-      ~> #transferFunds ACCTFROM ACCTTO VALUE
-      ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
+    rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
+          => #pushCallStack ~> #pushWorldState ~> #pushSubstate
+          ~> #newAccount ACCTTO
+          ~> #transferFunds ACCTFROM ACCTTO VALUE
+          ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
+         ...
+         </k>
 
     rule <mode> EXECMODE </mode>
          <k> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
@@ -1748,7 +1752,6 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
          </account>
          <output> _ => .WordStack </output>
          <touchedAccounts> ... .Set => SetItem(ACCT) ... </touchedAccounts>
-
 ```
 
 Precompiled Contracts
@@ -1839,7 +1842,7 @@ Precompiled Contracts
 
     syntax InternalOp ::= #ecadd(G1Point, G1Point)
  // ----------------------------------------------
-    rule #ecadd(P1, P2) => #exception
+    rule <k> #ecadd(P1, P2) => #exception ... </k>
       requires notBool isValidPoint(P1) orBool notBool isValidPoint(P2)
     rule <k> #ecadd(P1, P2) => #end ... </k> <output> _ => #point(BN128Add(P1, P2)) </output>
       requires isValidPoint(P1) andBool isValidPoint(P2)
@@ -1851,13 +1854,13 @@ Precompiled Contracts
 
     syntax InternalOp ::= #ecmul(G1Point, Int)
  // ------------------------------------------
-    rule #ecmul(P, S) => #exception
+    rule <k> #ecmul(P, S) => #exception ... </k>
       requires notBool isValidPoint(P)
     rule <k> #ecmul(P, S) => #end ... </k> <output> _ => #point(BN128Mul(P, S)) </output>
       requires isValidPoint(P)
 
-    syntax WordStack ::= #point(G1Point) [function]
- // -----------------------------------------------
+    syntax WordStack ::= #point ( G1Point ) [function]
+ // --------------------------------------------------
     rule #point((X, Y)) => #padToWidth(32, #asByteStack(X)) ++ #padToWidth(32, #asByteStack(Y))
 
     syntax PrecompiledOp ::= "ECPAIRING"
@@ -1871,16 +1874,16 @@ Precompiled Contracts
 
     syntax InternalOp ::= #ecpairing(List, List, Int, WordStack, Int)
  // -----------------------------------------------------------------
-    rule (.K => #checkPoint) ~> #ecpairing((.List => ListItem((#asWord(DATA [ I .. 32 ]), #asWord(DATA [ I +Int 32 .. 32 ])))) _, (.List => ListItem((#asWord(DATA [ I +Int 96 .. 32 ]) x #asWord(DATA [ I +Int 64 .. 32 ]) , #asWord(DATA [ I +Int 160 .. 32 ]) x #asWord(DATA [ I +Int 128 .. 32 ])))) _, I => I +Int 192, DATA, LEN)
+    rule <k> (.K => #checkPoint) ~> #ecpairing((.List => ListItem((#asWord(DATA [ I .. 32 ]), #asWord(DATA [ I +Int 32 .. 32 ])))) _, (.List => ListItem((#asWord(DATA [ I +Int 96 .. 32 ]) x #asWord(DATA [ I +Int 64 .. 32 ]) , #asWord(DATA [ I +Int 160 .. 32 ]) x #asWord(DATA [ I +Int 128 .. 32 ])))) _, I => I +Int 192, DATA, LEN) ... </k>
       requires I =/=Int LEN
     rule <k> #ecpairing(A, B, LEN, _, LEN) => #end ... </k>
          <output> _ => #padToWidth(32, #asByteStack(bool2Word(BN128AtePairing(A, B)))) </output>
 
     syntax InternalOp ::= "#checkPoint"
  // -----------------------------------
-    rule (#checkPoint => .) ~> #ecpairing(ListItem(AK::G1Point) _, ListItem(BK::G2Point) _, _, _, _)
+    rule <k> (#checkPoint => .) ~> #ecpairing(ListItem(AK::G1Point) _, ListItem(BK::G2Point) _, _, _, _) ... </k>
       requires isValidPoint(AK) andBool isValidPoint(BK)
-    rule #checkPoint ~> #ecpairing(ListItem(AK::G1Point) _, ListItem(BK::G2Point) _, _, _, _) => #exception
+    rule <k> #checkPoint ~> #ecpairing(ListItem(AK::G1Point) _, ListItem(BK::G2Point) _, _, _, _) => #exception ... </k>
       requires notBool isValidPoint(AK) orBool notBool isValidPoint(BK)
 ```
 
@@ -2127,8 +2130,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          <schedule> SCHED </schedule>
          <callData> DATA </callData>
 
-    rule #gasExec(_, ECADD) => 500
-    rule #gasExec(_, ECMUL) => 40000
+    rule <k> #gasExec(_, ECADD)     => 500   ... </k>
+    rule <k> #gasExec(_, ECMUL)     => 40000 ... </k>
     rule <k> #gasExec(_, ECPAIRING) => 100000 +Int (#sizeWordStack(DATA) /Int 192) *Int 80000 ... </k> <callData> DATA </callData>
 ```
 
