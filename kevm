@@ -110,6 +110,16 @@ run_test() {
         || pretty_diff "$expected_file" "$output_file"
 }
 
+run_test_profile() {
+    local test_file="$1"     ; shift
+    local expected_file="$1" ; shift
+    local start_time="$(date '+%s')"
+    run_test "$test_file" "$expected_file" "$@" \
+        || echo "$test_file" >> failing-tests
+    local end_time="$(date '+%s')"
+    echo "$((end_time - start_time))    $test_file" >> test-run-times
+}
+
 # Main
 # ----
 
@@ -122,8 +132,9 @@ case "$run_command" in
     prove) run_proof        "$@"             ;;
 
     # Testing
-    interpret) run_interpreter "$@" ;;
-    test)      run_test        "$@" ;;
+    interpret)    run_interpreter  "$@" ;;
+    test)         run_test         "$@" ;;
+    test-profile) run_test_profile "$@" ;;
 
     *) echo "
     usage: $0 <cmd> <file> <K args>*
@@ -144,8 +155,9 @@ case "$run_command" in
 
        # Testing
        # -------
-       $0 interpret <pgm>           Run a single EVM program (in JSON testing format) using fast interpreter
-       $0 test      <pgm> <output>  Run a single EVM program like it's a test
+       $0 interpret    <pgm>           Run a single EVM program (in JSON testing format) using fast interpreter
+       $0 test         <pgm> <output>  Run a single EVM program like it's a test
+       $0 test-profile <pgm> <output>  Same as test, but generate list of failing tests and dump timing information
 
        Note: <output> is the expected output of the given test.
              These commands are more for devs and CI servers.
