@@ -22,7 +22,7 @@ export LUA_PATH
 all: build split-tests
 
 clean: clean-submodules
-	rm -rf .build/java .build/ocaml .build/node .build/logs .build/local
+	rm -rf .build/java .build/ocaml .build/node .build/logs .build/local tests/proofs/specs
 
 clean-submodules:
 	rm -rf .build/k/make.timestamp .build/pandoc-tangle/make.timestamp tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp
