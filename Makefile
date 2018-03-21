@@ -15,7 +15,9 @@ export TANGLER
 export LUA_PATH
 
 .PHONY: all clean deps k-deps tangle-deps ocaml-deps build build-ocaml build-java defn sphinx split-tests \
-		test test-all test-conformance test-all-conformance test-vm test-all-vm test-bchain test-all-bchain test-proof test-all-proof
+		test test-all test-conformance test-slow-conformance test-all-conformance \
+		test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
+		test-proof test-interactive
 
 all: build split-tests
 
@@ -141,8 +143,8 @@ defn: $(defn_files)
 # Override this with `make TEST=echo` to list tests instead of running
 TEST=./kevm test
 
-test-all: test-all-vm test-all-bchain test-all-proof test-all-interactive
-test: test-vm test-bchain test-proof test-interactive
+test-all: test-all-conformance test-all-proof test-all-interactive
+test: test-conformance test-proof test-interactive
 
 split-tests: tests/ethereum-tests/make.timestamp split-proof-tests
 
@@ -156,6 +158,7 @@ tests/%/make.timestamp:
 tests/ethereum-tests/%.json: tests/ethereum-tests/make.timestamp
 
 test-all-conformance: test-all-vm test-all-bchain
+test-slow-conformance: test-slow-vm test-slow-bchain
 test-conformance: test-vm test-bchain
 
 # VMTests
@@ -165,6 +168,7 @@ slow_vm_tests=$(wildcard tests/ethereum-tests/VMTests/vmPerformance/*.json)
 quick_vm_tests=$(filter-out $(slow_vm_tests), $(vm_tests))
 
 test-all-vm: $(vm_tests:=.test)
+test-slow-vm: $(slow_vm_tests:=.test)
 test-vm: $(quick_vm_tests:=.test)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build
@@ -181,6 +185,7 @@ slow_bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTe
 quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(bchain_tests))
 
 test-all-bchain: $(bchain_tests:=.test)
+test-slow-bchain: $(bchain_tests:=.test)
 test-bchain: $(quick_bchain_tests:=.test)
 
 tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/% build
@@ -191,7 +196,6 @@ tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTest
 proof_dir:=tests/proofs/specs
 proof_tests=$(wildcard $(proof_dir)/*/*-spec.k)
 
-test-all-proof: test-proof
 test-proof: $(proof_tests:=.test)
 
 $(proof_dir)/%.test: $(proof_dir)/% build-java
@@ -205,7 +209,6 @@ split-proof-tests: tests/proofs/make.timestamp
 interactive_tests:=$(wildcard tests/interactive/*.json) \
                    $(wildcard tests/interactive/*/*.evm)
 
-test-all-interactive: test-interactive
 test-interactive: $(interactive_tests:=.test)
 
 tests/interactive/%.json.test: tests/interactive/%.json tests/interactive/%.json.out build
