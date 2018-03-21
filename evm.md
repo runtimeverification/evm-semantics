@@ -1611,11 +1611,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </account>
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
-    rule #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
-      => #pushCallStack ~> #pushWorldState ~> #pushSubstate
-      ~> #newAccount ACCTTO
-      ~> #transferFunds ACCTFROM ACCTTO VALUE
-      ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
+    rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
+          => #pushCallStack ~> #pushWorldState ~> #pushSubstate
+          ~> #newAccount ACCTTO
+          ~> #transferFunds ACCTFROM ACCTTO VALUE
+          ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
+         ...
+         </k>
 
     rule <mode> EXECMODE </mode>
          <k> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE

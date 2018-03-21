@@ -263,12 +263,14 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```{.k .standalone}
     syntax EthereumCommand ::= "run" JSON
  // -------------------------------------
-    rule run { .JSONList } => .
-    rule run { TESTID : { TEST:JSONList } , TESTS }
-      => run ( TESTID : { #sortJSONList(TEST) } )
-      ~> #if #hasPost?( { TEST } ) #then .K #else exception #fi
-      ~> clear
-      ~> run { TESTS }
+    rule <k> run { .JSONList } => . ... </k>
+    rule <k> run { TESTID : { TEST:JSONList } , TESTS }
+          => run ( TESTID : { #sortJSONList(TEST) } )
+          ~> #if #hasPost?( { TEST } ) #then .K #else exception #fi
+          ~> clear
+          ~> run { TESTS }
+         ...
+         </k>
 
     syntax Bool ::= "#hasPost?" "(" JSON ")" [function]
  // ---------------------------------------------------
@@ -283,10 +285,11 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
  // -------------------------------------
     rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") )
 
-    rule run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } requires KEY in #loadKeys
+    rule <k> run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } ... </k>
+      requires KEY in #loadKeys
 
-    rule run TESTID : { "blocks" : [ { KEY : VAL , REST1 => REST1 }, .JSONList ] , ( REST2 => KEY : VAL , REST2 ) }
-    rule run TESTID : { "blocks" : [ { .JSONList }, .JSONList ] , REST } => run TESTID : { REST }
+    rule <k> run TESTID : { "blocks" : [ { KEY : VAL , REST1 => REST1 }, .JSONList ] , ( REST2 => KEY : VAL , REST2 ) } ... </k>
+    rule <k> run TESTID : { "blocks" : [ { .JSONList }, .JSONList ] , REST } => run TESTID : { REST }                   ... </k>
 ```
 
 -   `#execKeys` are all the JSON nodes which should be considered for execution (between loading and checking).
@@ -296,10 +299,11 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
  // -------------------------------------
     rule #execKeys => ( SetItem("exec") SetItem("lastblockhash") )
 
-    rule run TESTID : { KEY : (VAL:JSON) , NEXT , REST } => run TESTID : { NEXT , KEY : VAL , REST } requires KEY in #execKeys
+    rule <k> run TESTID : { KEY : (VAL:JSON) , NEXT , REST } => run TESTID : { NEXT , KEY : VAL , REST } ... </k>
+      requires KEY in #execKeys
 
-    rule run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush
-    rule run TESTID : { "lastblockhash" : (HASH:String) } => startTx
+    rule <k> run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush ... </k>
+    rule <k> run TESTID : { "lastblockhash" : (HASH:String) } => startTx                   ... </k>
 ```
 
 -   `#postKeys` are a subset of `#checkKeys` which correspond to post-state account checks.
@@ -314,8 +318,8 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
                            SetItem("blockHeader") SetItem("transactions") SetItem("uncleHeaders") SetItem("genesisBlockHeader")
                          )
 
-    rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { "post" : VAL } requires KEY in #allPostKeys
-    rule run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY    : VAL } requires KEY in #checkKeys andBool notBool KEY in #allPostKeys
+    rule <k> run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { "post" : VAL } ... </k> requires KEY in #allPostKeys
+    rule <k> run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY    : VAL } ... </k> requires KEY in #checkKeys andBool notBool KEY in #allPostKeys
 ```
 
 -   `#discardKeys` are all the JSON nodes in the tests which should just be ignored.
@@ -325,7 +329,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
  // ----------------------------------------
     rule #discardKeys => ( SetItem("//") SetItem("_info") )
 
-    rule run TESTID : { KEY : _ , REST } => run TESTID : { REST } requires KEY in #discardKeys
+    rule <k> run TESTID : { KEY : _ , REST } => run TESTID : { REST } ... </k> requires KEY in #discardKeys
 ```
 
 State Manipulation
@@ -413,26 +417,25 @@ State Manipulation
 ```{.k .standalone}
     syntax EthereumCommand ::= "load" JSON
  // --------------------------------------
-    rule load DATA : { .JSONList } => .
-    rule load DATA : { KEY : VALUE , REST } => load DATA : { KEY : VALUE } ~> load DATA : { REST }
+    rule <k> load DATA : { .JSONList }          => .                                                   ... </k>
+    rule <k> load DATA : { KEY : VALUE , REST } => load DATA : { KEY : VALUE } ~> load DATA : { REST } ... </k>
       requires REST =/=K .JSONList andBool DATA =/=String "transaction"
 
-    rule load DATA : [ .JSONList ] => .
-    rule load DATA : [ { TEST } , REST ] => load DATA : { TEST } ~> load DATA : [ REST ]
+    rule <k> load DATA : [ .JSONList ]       => .                                            ... </k>
+    rule <k> load DATA : [ { TEST } , REST ] => load DATA : { TEST } ~> load DATA : [ REST ] ... </k>
 ```
 
 Here we perform pre-proccesing on account data which allows "pretty" specification of input.
 
 ```{.k .standalone}
-    rule load "pre" : { (ACCTID:String) : ACCT } => mkAcct #parseAddr(ACCTID) ~> load "account" : { ACCTID : ACCT }
-    rule load "account" : { ACCTID: { KEY : VALUE , REST } } => load "account" : { ACCTID : { KEY : VALUE } } ~> load "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
+    rule <k> load "pre" : { (ACCTID:String) : ACCT }             => mkAcct #parseAddr(ACCTID) ~> load "account" : { ACCTID : ACCT }                         ... </k>
+    rule <k> load "account" : { ACCTID: { KEY : VALUE , REST } } => load "account" : { ACCTID : { KEY : VALUE } } ~> load "account" : { ACCTID : { REST } } ... </k> requires REST =/=K .JSONList
 
-    rule load "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
-    rule load "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
-    rule load "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
-    rule load "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #parseByteStack(CODE)) } }
-    rule load "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
-
+    rule <k> load "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }                                ... </k>
+    rule <k> load "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }        ... </k>
+    rule <k> load "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }        ... </k>
+    rule <k> load "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #parseByteStack(CODE)) } }  ... </k>
+    rule <k> load "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } } ... </k>
 ```
 
 The individual fields of the accounts are dealt with here.
@@ -470,9 +473,9 @@ The individual fields of the accounts are dealt with here.
 Here we load the environmental information.
 
 ```{.k .standalone}
-    rule load "env" : { KEY : ((VAL:String) => #parseWord(VAL)) }
+    rule <k> load "env" : { KEY : ((VAL:String) => #parseWord(VAL)) } ... </k>
       requires KEY in (SetItem("currentTimestamp") SetItem("currentGasLimit") SetItem("currentNumber") SetItem("currentDifficulty"))
-    rule load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) }
+    rule <k> load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) } ... </k>
       requires KEY in (SetItem("currentCoinbase") SetItem("previousHash"))
  // ----------------------------------------------------------------------
     rule <k> load "env" : { "currentCoinbase"   : (CB:Int)     } => . ... </k> <coinbase>     _ => CB     </coinbase>
@@ -482,9 +485,9 @@ Here we load the environmental information.
     rule <k> load "env" : { "previousHash"      : (HASH:Int)   } => . ... </k> <previousHash> _ => HASH   </previousHash>
     rule <k> load "env" : { "currentTimestamp"  : (TS:Int)     } => . ... </k> <timestamp>    _ => TS     </timestamp>
 
-    rule load "exec" : { KEY : ((VAL:String) => #parseWord(VAL)) }
+    rule <k> load "exec" : { KEY : ((VAL:String) => #parseWord(VAL)) } ... </k>
       requires KEY in (SetItem("gas") SetItem("gasPrice") SetItem("value"))
-    rule load "exec" : { KEY : ((VAL:String) => #parseHexWord(VAL)) }
+    rule <k> load "exec" : { KEY : ((VAL:String) => #parseHexWord(VAL)) } ... </k>
       requires KEY in (SetItem("address") SetItem("caller") SetItem("origin"))
  // --------------------------------------------------------------------------
     rule <k> load "exec" : { "gasPrice" : (GPRICE:Int)   } => . ... </k> <gasPrice>  _ => GPRICE   </gasPrice>
@@ -496,8 +499,8 @@ Here we load the environmental information.
     rule <k> load "exec" : { "origin"   : (ORIG:Int)     } => . ... </k> <origin>    _ => ORIG     </origin>
     rule <k> load "exec" : { "code"     : ((CODE:String)   => #parseByteStack(CODE)) } ... </k>
 
-    rule load "exec" : { "data" : ((DATA:String) => #parseByteStack(DATA)) }
- // ------------------------------------------------------------------------
+    rule <k> load "exec" : { "data" : ((DATA:String) => #parseByteStack(DATA)) } ... </k>
+ // -------------------------------------------------------------------------------------
     rule <k> load "exec" : { "data" : (DATA:WordStack) } => . ... </k> <callData> _ => DATA </callData>
     rule <k> load "exec" : { "code" : (CODE:OpCodes)   } => . ... </k> <program>  _ => #asMapOpCodes(CODE) </program>
     rule <k> load "exec" : { "code" : (CODE:WordStack) } => . ... </k> <program>  _ => #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) </program> <programBytes> _ => CODE </programBytes> <schedule> SCHED </schedule>
@@ -522,9 +525,9 @@ The `"network"` key allows setting the fee schedule inside the test.
 The `"rlp"` key loads the block information.
 
 ```{.k .standalone}
-    rule load "rlp" : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL))))
-    rule load "genesisRLP" : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL))))
- // --------------------------------------------------------------------------------------------
+    rule <k> load "rlp"        : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL)))) ... </k>
+    rule <k> load "genesisRLP" : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL)))) ... </k>
+ // ---------------------------------------------------------------------------------------------------------
     rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONList ] , BT , BU , .JSONList ]
           => load "transaction" : BT
          ...
@@ -628,25 +631,29 @@ The `"rlp"` key loads the block information.
 ```{.k .standalone}
     syntax EthereumCommand ::= "check" JSON
  // ---------------------------------------
-    rule #exception ~> check J:JSON => check J ~> #exception
-    rule check DATA : { .JSONList } => . requires DATA =/=String "transactions"
-    rule check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST }
+    rule <k> #exception ~> check J:JSON => check J ~> #exception ... </k>
+
+    rule <k> check DATA : { .JSONList } => . ... </k> requires DATA =/=String "transactions"
+    rule <k> check DATA : [ .JSONList ] => . ... </k> requires DATA =/=String "ommerHeaders"
+
+    rule <k> check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST } ... </k>
       requires REST =/=K .JSONList andBool notBool DATA in (SetItem("callcreates") SetItem("transactions"))
 
-    rule check DATA : [ .JSONList ] => . requires DATA =/=String "ommerHeaders"
-    rule check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ] requires DATA =/=String "transactions"
+    rule <k> check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ] ... </k>
+      requires DATA =/=String "transactions"
 
-    rule check (KEY:String) : { JS:JSONList => #sortJSONList(JS) }
+    rule <k> check (KEY:String) : { JS:JSONList => #sortJSONList(JS) } ... </k>
       requires KEY in (SetItem("callcreates")) andBool notBool #isSorted(JS)
 
-    rule check TESTID : { "post" : POST } => check "account" : POST ~> failure TESTID
-    rule check "account" : { ACCTID: { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } requires REST =/=K .JSONList
- // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    rule check "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }
-    rule check "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }
-    rule check "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
-    rule check "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #parseByteStack(CODE)) } }
-    rule check "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
+    rule <k> check TESTID : { "post" : POST } => check "account" : POST ~> failure TESTID ... </k>
+    rule <k> check "account" : { ACCTID: { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } ... </k>
+      requires REST =/=K .JSONList
+
+    rule <k> check "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }                                ... </k>
+    rule <k> check "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }        ... </k>
+    rule <k> check "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }        ... </k>
+    rule <k> check "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #parseByteStack(CODE)) } }  ... </k>
+    rule <k> check "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } } ... </k>
 
     rule <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
          <account>
@@ -681,13 +688,13 @@ The `"rlp"` key loads the block information.
 Here we check the other post-conditions associated with an EVM test.
 
 ```{.k .standalone}
-    rule check TESTID : { "out" : OUT } => check "out" : OUT ~> failure TESTID
- // --------------------------------------------------------------------------
-    rule check "out" : ((OUT:String) => #parseByteStack(OUT))
+    rule <k> check TESTID : { "out" : OUT } => check "out" : OUT ~> failure TESTID ... </k>
+ // ---------------------------------------------------------------------------------------
+    rule <k> check "out" : ((OUT:String) => #parseByteStack(OUT)) ... </k>
     rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
 
-    rule check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID
- // ------------------------------------------------------------------------------
+    rule <k> check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID ... </k>
+ // -------------------------------------------------------------------------------------------
     rule <k> check "logs" : HASH:String => . ... </k> <log> SL </log> requires #parseHexBytes(Keccak256(#rlpEncodeLogs(SL))) ==K #parseByteStack(HASH)
 
     syntax String ::= #rlpEncodeLogs(List)        [function]
@@ -700,24 +707,27 @@ Here we check the other post-conditions associated with an EVM test.
     rule #rlpEncodeTopics(ListItem(TOPIC) TOPICS) => #rlpEncodeBytes(TOPIC, 32) +String #rlpEncodeTopics(TOPICS)
     rule #rlpEncodeTopics(.List) => ""
 
-    rule check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID
- // ------------------------------------------------------------------------------
-    rule check "gas" : ((GLEFT:String) => #parseWord(GLEFT))
+    rule <k> check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID ... </k>
+ // -------------------------------------------------------------------------------------------
+    rule <k> check "gas" : ((GLEFT:String) => #parseWord(GLEFT)) ... </k>
     rule <k> check "gas" : GLEFT => . ... </k> <gas> GLEFT </gas>
 
-    rule check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID
- // ----------------------------------------------------------------------------------------------------
-    rule check "callcreates" : { ("data" : (DATA:String)) , ("destination" : (ACCTTO:String)) , ("gasLimit" : (GLIMIT:String)) , ("value" : (VAL:String)) , .JSONList }
-      => check "callcreates" : { #parseAddr(ACCTTO) | #parseWord(GLIMIT) | #parseWord(VAL) | #parseByteStack(DATA) }
+    rule <k> check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID ... </k>
+ // -----------------------------------------------------------------------------------------------------------------
+    rule <k> check "callcreates" : { ("data" : (DATA:String)) , ("destination" : (ACCTTO:String)) , ("gasLimit" : (GLIMIT:String)) , ("value" : (VAL:String)) , .JSONList }
+          => check "callcreates" : { #parseAddr(ACCTTO) | #parseWord(GLIMIT) | #parseWord(VAL) | #parseByteStack(DATA) }
+         ...
+         </k>
     rule <k> check "callcreates" : C:Call => . ... </k> <callLog> CL </callLog> requires C in CL
 
     rule check TESTID : { "blockHeader" : BLOCKHEADER } => check "blockHeader" : BLOCKHEADER ~> failure TESTID
  // ----------------------------------------------------------------------------------------------------------
-    rule check "blockHeader" : { KEY : VALUE , REST } => check "blockHeader" : { KEY : VALUE } ~> check "blockHeader" : { REST } requires REST =/=K .JSONList
+    rule <k> check "blockHeader" : { KEY : VALUE , REST } => check "blockHeader" : { KEY : VALUE } ~> check "blockHeader" : { REST } ... </k>
+      requires REST =/=K .JSONList
 
-    rule check "blockHeader" : { KEY : (VALUE:String => #parseByteStack(VALUE)) }
+    rule <k> check "blockHeader" : { KEY : (VALUE:String => #parseByteStack(VALUE)) } ... </k>
 
-    rule check "blockHeader" : { KEY : (VALUE:WordStack => #asWord(VALUE)) }
+    rule <k> check "blockHeader" : { KEY : (VALUE:WordStack => #asWord(VALUE)) } ... </k>
       requires KEY in ( SetItem("coinbase") SetItem("difficulty") SetItem("gasLimit") SetItem("gasUsed")
                         SetItem("mixHash") SetItem("nonce") SetItem("number") SetItem("parentHash")
                         SetItem("receiptTrie") SetItem("stateRoot") SetItem("timestamp")
@@ -760,15 +770,17 @@ Here we check the other post-conditions associated with an EVM test.
 
     rule check TESTID : { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ~> failure TESTID
  // ------------------------------------------------------------------------------------------------------------------------
-    rule check "genesisBlockHeader" : { KEY : VALUE , REST } => check "genesisBlockHeader" : { KEY : VALUE } ~> check "genesisBlockHeader" : { REST } requires REST =/=K .JSONList
-    rule check "genesisBlockHeader" : { KEY : VALUE } => .K requires KEY =/=String "hash"
+    rule <k> check "genesisBlockHeader" : { KEY : VALUE , REST } => check "genesisBlockHeader" : { KEY : VALUE } ~> check "genesisBlockHeader" : { REST } ... </k>
+      requires REST =/=K .JSONList
 
-    rule check "genesisBlockHeader" : { "hash": (HASH:String => #asWord(#parseByteStack(HASH))) }
+    rule <k> check "genesisBlockHeader" : { KEY : VALUE } => .K ... </k> requires KEY =/=String "hash"
+
+    rule <k> check "genesisBlockHeader" : { "hash": (HASH:String => #asWord(#parseByteStack(HASH))) } ... </k>
     rule <k> check "genesisBlockHeader" : { "hash": HASH } => . ... </k>
          <blockhash> ... ListItem(HASH) ListItem(_) </blockhash>
 
-    rule check TESTID : { "transactions" : TRANSACTIONS } => check "transactions" : TRANSACTIONS ~> failure TESTID
- // --------------------------------------------------------------------------------------------------------------
+    rule <k> check TESTID : { "transactions" : TRANSACTIONS } => check "transactions" : TRANSACTIONS ~> failure TESTID ... </k>
+ // ---------------------------------------------------------------------------------------------------------------------------
     rule <k> check "transactions" : [ .JSONList ] => . ... </k> <txOrder> .List                    </txOrder>
     rule <k> check "transactions" : { .JSONList } => . ... </k> <txOrder> ListItem(_) => .List ... </txOrder>
 
@@ -794,8 +806,8 @@ Here we check the other post-conditions associated with an EVM test.
 TODO: case with nonzero ommers.
 
 ```{.k .standalone}
-    rule check TESTID : { "uncleHeaders" : OMMERS } => check "ommerHeaders" : OMMERS ~> failure TESTID
- // --------------------------------------------------------------------------------------------------
+    rule <k> check TESTID : { "uncleHeaders" : OMMERS } => check "ommerHeaders" : OMMERS ~> failure TESTID ... </k>
+ // ---------------------------------------------------------------------------------------------------------------
     rule <k> check "ommerHeaders" : [ .JSONList ] => . ... </k> <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
 ```
 
