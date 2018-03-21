@@ -9,10 +9,12 @@ This file only defines the local execution operations, the file `driver.md` will
 
 ```k
 requires "data.k"
+requires "network.k"
 
 module EVM
     imports STRING
     imports EVM-DATA
+    imports NETWORK
 ```
 
 Configuration
@@ -295,12 +297,14 @@ Control Flow
 ### Exception Based
 
 -   `#end` indicates (non-exceptional) end of execution.
--   `#exception` indicates exceptions (consuming opcodes until a catch).
+-   `#revert` indicates a call to the `REVERT` opcode.
+-   `#exception_` allows for typed exceptions.
 
 ```k
     syntax KItem     ::= Exception
-    syntax Exception ::= "#exception" | "#end" | "#revert"
- // ------------------------------------------------------
+    syntax Exception ::= "#exception" StatusCode
+                       | "#end" | "#revert"
+ // ---------------------------------------
     rule <k> EX:Exception ~> (_:Int    => .) ... </k>
     rule <k> EX:Exception ~> (_:OpCode => .) ... </k>
 ```
@@ -312,10 +316,10 @@ Control Flow
 ```k
     syntax KItem ::= "#?" K ":" K "?#"
  // ----------------------------------
-    rule <k>               #? B1 : _  ?# => B1               ... </k>
-    rule <k> #exception ~> #? _  : B2 ?# => B2 ~> #exception ... </k>
-    rule <k> #revert    ~> #? B1 : _  ?# => B1 ~> #revert    ... </k>
-    rule <k> #end       ~> #? B1 : _  ?# => B1 ~> #end       ... </k>
+    rule <k>                 #? B1 : _  ?# => B1                 ... </k>
+    rule <k> #exception E ~> #? _  : B2 ?# => B2 ~> #exception E ... </k>
+    rule <k> #revert      ~> #? B1 : _  ?# => B1 ~> #revert      ... </k>
+    rule <k> #end         ~> #? B1 : _  ?# => B1 ~> #end         ... </k>
 ```
 
 OpCode Execution
@@ -408,13 +412,13 @@ The `#next` operator executes a single step by:
          </k>
 ```
 
--   `#invalid?` checks if it's the designated invalid opcode.
+-   `#invalid?` checks if it's the designated invalid opcode, and throws `#exception EVM_INVALID_INSTRUCTION` if it is.
 
 ```k
     syntax InternalOp ::= "#invalid?" "[" OpCode "]"
  // ------------------------------------------------
-    rule <k> #invalid? [ INVALID ] => #exception ... </k>
-    rule <k> #invalid? [ OP      ] => .          ... </k> requires notBool isInvalidOp(OP)
+    rule <k> #invalid? [ OP      ] => .                                  ... </k> requires notBool isInvalidOp(OP)
+    rule <k> #invalid? [ INVALID ] => #exception EVM_INVALID_INSTRUCTION ... </k>
 ```
 
 -   `#stackNeeded?` checks that the stack will be not be under/overflown.
@@ -423,15 +427,23 @@ The `#next` operator executes a single step by:
 ```k
     syntax InternalOp ::= "#stackNeeded?" "[" OpCode "]"
  // ----------------------------------------------------
-    rule <k> #stackNeeded? [ OP ] => #exception ... </k>
+    rule <k> #stackNeeded? [ OP ] => #exception EVM_STACK_UNDERFLOW ... </k>
          <wordStack> WS </wordStack>
-      requires #sizeWordStack(WS) <Int #stackNeeded(OP)
-        orBool #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
+      requires #stackUnderflow(WS, OP)
 
-    rule <k> #stackNeeded? [ OP ] => .K ... </k>
+    rule <k> #stackNeeded? [ OP ] => #exception EVM_STACK_OVERFLOW ... </k>
          <wordStack> WS </wordStack>
-      requires notBool (#sizeWordStack(WS) <Int #stackNeeded(OP)
-               orBool   #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024)
+      requires #stackOverflow(WS, OP)
+
+    rule <k> #stackNeeded? [ OP ] => . ... </k>
+         <wordStack> WS </wordStack>
+      requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
+
+    syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [function]
+                  | #stackOverflow  ( WordStack , OpCode ) [function]
+ // -----------------------------------------------------------------
+    rule #stackUnderflow(WS, OP) => #sizeWordStack(WS)                      <Int #stackNeeded(OP)
+    rule #stackOverflow (WS, OP) => #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
@@ -484,11 +496,11 @@ The `#next` operator executes a single step by:
     rule <k> #badJumpDest? [ OP    ] => . ... </k> <wordStack> DEST  : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program> requires isJumpOp(OP)
     rule <k> #badJumpDest? [ JUMPI ] => . ... </k> <wordStack> _ : I : WS </wordStack> requires I ==Int 0
 
-    rule <k> #badJumpDest? [ JUMP  ] => #exception ... </k> <wordStack> DEST :     WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
-    rule <k> #badJumpDest? [ JUMPI ] => #exception ... </k> <wordStack> DEST : W : WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST andBool W =/=K 0
+    rule <k> #badJumpDest? [ JUMP  ] => #exception EVM_BAD_JUMP_DESTINATION ... </k> <wordStack> DEST :     WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST
+    rule <k> #badJumpDest? [ JUMPI ] => #exception EVM_BAD_JUMP_DESTINATION ... </k> <wordStack> DEST : W : WS </wordStack> <program> ... DEST |-> OP ... </program> requires OP =/=K JUMPDEST andBool W =/=K 0
 
-    rule <k> #badJumpDest? [ JUMP  ] => #exception ... </k> <wordStack> DEST :     WS </wordStack> <program> PGM </program> requires notBool (DEST in_keys(PGM))
-    rule <k> #badJumpDest? [ JUMPI ] => #exception ... </k> <wordStack> DEST : W : WS </wordStack> <program> PGM </program> requires (notBool (DEST in_keys(PGM))) andBool W =/=K 0
+    rule <k> #badJumpDest? [ JUMP  ] => #exception EVM_BAD_JUMP_DESTINATION ... </k> <wordStack> DEST :     WS </wordStack> <program> PGM </program> requires notBool (DEST in_keys(PGM))
+    rule <k> #badJumpDest? [ JUMPI ] => #exception EVM_BAD_JUMP_DESTINATION ... </k> <wordStack> DEST : W : WS </wordStack> <program> PGM </program> requires (notBool (DEST in_keys(PGM))) andBool W =/=K 0
 ```
 
 -   `#static?` determines if the opcode should throw an exception due to the static flag.
@@ -496,9 +508,9 @@ The `#next` operator executes a single step by:
 ```k
     syntax InternalOp ::= "#static?" "[" OpCode "]"
  // -----------------------------------------------
-    rule <k> #static? [ OP ] => .          ... </k>                             <static> false </static>
-    rule <k> #static? [ OP ] => .          ... </k> <wordStack> WS </wordStack> <static> true  </static> requires notBool #changesState(OP, WS)
-    rule <k> #static? [ OP ] => #exception ... </k> <wordStack> WS </wordStack> <static> true  </static> requires         #changesState(OP, WS)
+    rule <k> #static? [ OP ] => .                                ... </k>                             <static> false </static>
+    rule <k> #static? [ OP ] => .                                ... </k> <wordStack> WS </wordStack> <static> true  </static> requires notBool #changesState(OP, WS)
+    rule <k> #static? [ OP ] => #exception EVM_STATIC_MODE_ERROR ... </k> <wordStack> WS </wordStack> <static> true  </static> requires         #changesState(OP, WS)
 ```
 
 **TODO**: Investigate why using `[owise]` here for the `false` cases breaks the proofs.
@@ -697,13 +709,13 @@ The `CallOp` opcodes all interperet their second argument as an address.
  // ----------------------------------------------------------------------------
     rule <k> #gas [ OP ] => #memory(OP, MU) ~> #deductMemory ~> #gasExec(SCHED, OP) ~> #deductGas ... </k> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
 
-    rule <k> MU':Int ~> #deductMemory => #exception ... </k> requires MU' >=Int pow256
+    rule <k> MU':Int ~> #deductMemory => #exception EVM_INVALID_MEMORY_ACCESS ... </k> requires MU' >=Int pow256
     rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
       requires MU' <Int pow256
 
-    rule <k> G:Int ~> #deductGas => #exception ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
-    rule <k> G:Int ~> #deductGas => .          ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> <previousGas> _ => GAVAIL </previousGas> requires GAVAIL >=Int G
+    rule <k> G:Int ~> #deductGas => #exception EVM_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
+    rule <k> G:Int ~> #deductGas => .                         ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> <previousGas> _ => GAVAIL </previousGas> requires GAVAIL >=Int G
 
     syntax Int ::= Cmem ( Schedule , Int ) [function, memo]
  // -------------------------------------------------------
@@ -893,7 +905,7 @@ These are just used by the other operators for shuffling local execution state a
 ```k
     syntax InternalOp ::= "#newAccount" Int
  // ---------------------------------------
-    rule <k> #newAccount ACCT => #exception ... </k>
+    rule <k> #newAccount ACCT => #exception CLIENT_ACCOUNT_ALREADY_EXISTS ... </k>
          <account>
            <acctID> ACCT  </acctID>
            <code>   CODE  </code>
@@ -984,7 +996,7 @@ In `node` mode, the semantics are given in terms of an external call to a runnin
          </account>
       requires ACCTFROM =/=K ACCTTO andBool VALUE <=Int ORIGFROM
 
-    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #exception ... </k>
+    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #exception CLIENT_BALANCE_UNDERFLOW ... </k>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> ORIGFROM </balance>
@@ -1257,7 +1269,7 @@ These operators query about the current return data buffer.
          <output> RD </output>
       requires DATASTART +Int DATAWIDTH <=Int #sizeWordStack(RD)
 
-    rule <k> RETURNDATACOPY MEMSTART DATASTART DATAWIDTH => #exception ... </k>
+    rule <k> RETURNDATACOPY MEMSTART DATASTART DATAWIDTH => #exception EVM_INVALID_MEMORY_ACCESS ... </k>
          <output> RD </output>
       requires DATASTART +Int DATAWIDTH >Int #sizeWordStack(RD)
 ```
@@ -1407,7 +1419,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
                         | "#callWithCode" Int Int Map WordStack Int Int Int WordStack Bool
                         | "#mkCall" Int Int Map WordStack Int Int Int WordStack Bool
  // --------------------------------------------------------------------------------
-    rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ _ => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
+    rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ _ => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception CLIENT_BALANCE_UNDERFLOW ... </k>
          <callDepth> CD </callDepth>
          <output> _ => .WordStack </output>
          <account>
@@ -1483,7 +1495,13 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
-    rule <k> #exception ~> #return _ _
+    rule <k> #exception _ ~> #return _ _
+          => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push
+         ...
+         </k>
+         <output> _ => .WordStack </output>
+
+    rule <k> #exception _ ~> #return _ _
           => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push
          ...
          </k>
@@ -1590,7 +1608,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                         | "#mkCreate" Int Int WordStack Int Int
                         | "#checkCreate" Int Int
  // --------------------------------------------
-    rule <k> #checkCreate ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
+    rule <k> #checkCreate ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception CLIENT_BALANCE_UNDERFLOW ... </k>
          <callDepth> CD </callDepth>
          <output> _ => .WordStack </output>
          <account>
@@ -1645,7 +1663,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                    | "#mkCodeDeposit" Int
                    | "#finishCodeDeposit" Int WordStack
  // ---------------------------------------------------
-    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k> <output> _ => .WordStack </output>
+    rule <k> #exception _ ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k> <output> _ => .WordStack </output>
     rule <k> #revert ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> #refund GAVAIL ~> 0 ~> #push ... </k>
          <gas> GAVAIL </gas>
 
@@ -1680,7 +1698,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            ...
          </account>
 
-    rule <k> #exception ~> #finishCodeDeposit ACCT _
+    rule <k> #exception _ ~> #finishCodeDeposit ACCT _
           => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate
           ~> #refund GAVAIL ~> ACCT ~> #push
          ...
@@ -1689,7 +1707,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <gas> GAVAIL </gas>
          <schedule> FRONTIER </schedule>
 
-    rule <k> #exception ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k>
+    rule <k> #exception _ ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
       requires SCHED =/=K FRONTIER
 ```
@@ -1841,7 +1859,7 @@ Precompiled Contracts
 
     syntax InternalOp ::= #ecadd(G1Point, G1Point)
  // ----------------------------------------------
-    rule #ecadd(P1, P2) => #exception
+    rule #ecadd(P1, P2) => #exception EVM_INTERNAL_ERROR
       requires notBool isValidPoint(P1) orBool notBool isValidPoint(P2)
     rule <k> #ecadd(P1, P2) => #end ... </k> <output> _ => #point(BN128Add(P1, P2)) </output>
       requires isValidPoint(P1) andBool isValidPoint(P2)
@@ -1853,7 +1871,7 @@ Precompiled Contracts
 
     syntax InternalOp ::= #ecmul(G1Point, Int)
  // ------------------------------------------
-    rule #ecmul(P, S) => #exception
+    rule #ecmul(P, S) => #exception EVM_INTERNAL_ERROR
       requires notBool isValidPoint(P)
     rule <k> #ecmul(P, S) => #end ... </k> <output> _ => #point(BN128Mul(P, S)) </output>
       requires isValidPoint(P)
@@ -1867,7 +1885,7 @@ Precompiled Contracts
     rule <k> ECPAIRING => #ecpairing(.List, .List, 0, DATA, #sizeWordStack(DATA)) ... </k>
          <callData> DATA </callData>
       requires #sizeWordStack(DATA) modInt 192 ==Int 0
-    rule <k> ECPAIRING => #exception ... </k>
+    rule <k> ECPAIRING => #exception EVM_INTERNAL_ERROR ... </k>
          <callData> DATA </callData>
       requires #sizeWordStack(DATA) modInt 192 =/=Int 0
 
@@ -1882,7 +1900,7 @@ Precompiled Contracts
  // -----------------------------------
     rule (#checkPoint => .) ~> #ecpairing(ListItem(AK::G1Point) _, ListItem(BK::G2Point) _, _, _, _)
       requires isValidPoint(AK) andBool isValidPoint(BK)
-    rule #checkPoint ~> #ecpairing(ListItem(AK::G1Point) _, ListItem(BK::G2Point) _, _, _, _) => #exception
+    rule #checkPoint ~> #ecpairing(ListItem(AK::G1Point) _, ListItem(BK::G2Point) _, _, _, _) => #exception EVM_INTERNAL_ERROR
       requires notBool isValidPoint(AK) orBool notBool isValidPoint(BK)
 ```
 

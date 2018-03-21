@@ -82,8 +82,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "flush"
  // ----------------------------------
-    rule <k> #end       ~> flush => #finalizeTx(false)               ... </k>
-    rule <k> #exception ~> flush => #finalizeTx(false) ~> #exception ... </k>
+    rule <k> #end         ~> flush => #finalizeTx(false)       ... </k>
+    rule <k> EX:Exception ~> flush => #finalizeTx(false) ~> EX ... </k>
 ```
 
 -   `startTx` computes the sender of the transaction, and places loadTx on the `k` cell.
@@ -177,8 +177,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
-    rule <k> #exception ~> #finishTx => #popCallStack ~> #popWorldState ~> #popSubstate ... </k>
-    rule <k> #revert    ~> #finishTx => #popCallStack ~> #popWorldState ~> #popSubstate ~> #refund GAVAIL ... </k> <gas> GAVAIL </gas>
+    rule <k> #exception _ ~> #finishTx => #popCallStack ~> #popWorldState ~> #popSubstate ... </k>
+    rule <k> #revert      ~> #finishTx => #popCallStack ~> #popWorldState ~> #popSubstate ~> #refund GAVAIL ... </k> <gas> GAVAIL </gas>
 
     rule <k> #end ~> #finishTx => #mkCodeDeposit ACCT ... </k>
          <id> ACCT </id>
@@ -240,6 +240,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ```
 
 -   `exception` only clears from the `<k>` cell if there is an exception preceding it.
+-   `exception_` only clears if there is an exception of the correct type preceding it.
 -   `failure_` holds the name of a test that failed if a test does fail.
 -   `success` sets the `<exit-code>` to `0` and the `<mode>` to `SUCCESS`.
 
@@ -247,11 +248,15 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax Mode ::= "SUCCESS"
  // -------------------------
 
-    syntax EthereumCommand ::= "exception" | "failure" String | "success"
- // ---------------------------------------------------------------------
-    rule <k> #exception ~> exception => . ... </k>
-    rule <k> success => . ... </k> <exit-code> _ => 0 </exit-code> <mode> _ => SUCCESS </mode>
-    rule failure _ => .
+    syntax EthereumCommand ::= "exception" | "exception" StatusCode
+ // ---------------------------------------------------------------
+    rule <k> _:Exception  ~> exception   => . ... </k>
+    rule <k> #exception E ~> exception E => . ... </k>
+
+    syntax EthereumCommand ::= "failure" String | "success"
+ // -------------------------------------------------------
+    rule <k> success   => . ... </k> <exit-code> _ => 0 </exit-code> <mode> _ => SUCCESS </mode>
+    rule <k> failure _ => . ... </k>
 ```
 
 ### Running Tests
@@ -631,7 +636,7 @@ The `"rlp"` key loads the block information.
 ```{.k .standalone}
     syntax EthereumCommand ::= "check" JSON
  // ---------------------------------------
-    rule <k> #exception ~> check J:JSON => check J ~> #exception ... </k>
+    rule <k> EX:Exception ~> check J:JSON => check J ~> EX ... </k>
 
     rule <k> check DATA : { .JSONList } => . ... </k> requires DATA =/=String "transactions"
     rule <k> check DATA : [ .JSONList ] => . ... </k> requires DATA =/=String "ommerHeaders"

@@ -186,7 +186,7 @@ Because the same account may be loaded more than once, implementations of this i
 ```{.k .node}
     syntax Exception ::= "#endVM" | "#endCreate"
  // --------------------------------------------
-    rule <k> #exception ~> #endVM => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 </k>
+    rule <k> #exception _ ~> #endVM => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 </k>
          <output> _ => .WordStack </output>
     rule <k> #revert ~> #endVM => #popCallStack ~> #popWorldState ~> #popSubstate ~> #refund GAVAIL ~> 0 </k>
          <gas> GAVAIL </gas>       
