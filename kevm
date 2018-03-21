@@ -16,6 +16,8 @@ build_dir="$kevm_dir/.build"
 test_logs="$build_dir/logs"
 mkdir -p "$test_logs"
 now_passing="$test_logs/passing.lastrun"
+now_failing="$test_logs/failing.lastrun"
+run_times="$test_logs/runtime"
 
 # Utilities
 # ---------
@@ -23,9 +25,7 @@ now_passing="$test_logs/passing.lastrun"
 progress() { echo "== $@" ; }
 warning()  { echo -e "WARNING:" "$@" >&2 ; }
 die()      { echo -e "FATAL:" "$@" >&2 ; exit 1 ; }
-success()  { echo -e "\e[32m== success: $@\e[0m" ;
-             echo "$@" >> "$now_passing"
-           }
+success()  { echo -e "\e[32m== success: $@\e[0m" ; }
 failure()  { echo -e "\e[31m== failure: $@\e[0m" ; }
 
 pretty_diff() {
@@ -126,9 +126,10 @@ run_test_profile() {
     local expected_file="$1" ; shift
     local start_time="$(date '+%s')"
     run_test "$test_file" "$expected_file" "$@" \
-        || echo "$test_file" >> failing-tests
+        && echo "$test_file" >> "$now_passing" \
+        || echo "$test_file" >> "$now_failing"
     local end_time="$(date '+%s')"
-    echo "$((end_time - start_time))    $test_file" >> test-run-times
+    echo "$((end_time - start_time))    $test_file" >> "$run_times"
 }
 
 # Main
