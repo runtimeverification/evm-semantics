@@ -119,11 +119,11 @@ case "$run_command" in
     # Running
     run)   run_krun   ocaml "$@" --interpret ;;
     debug) run_kdebug       "$@"             ;;
-
-    prove) run_proof "$@" ;;
+    prove) run_proof        "$@"             ;;
 
     # Testing
-    test)  run_test   "$@" ;;
+    interpret) run_interpreter "$@" ;;
+    test)      run_test        "$@" ;;
 
     *) echo "
     usage: $0 <cmd> <file> <K args>*
@@ -132,7 +132,6 @@ case "$run_command" in
        # -------
        $0 run   <pgm>   Run a single EVM program
        $0 debug <pgm>   Run a single EVM program in the debugger
-
        $0 prove <spec>  Attempt to prove the specification using K's RL prover
 
        Note: <pgm> and <spec> here are paths to files.
@@ -145,8 +144,10 @@ case "$run_command" in
 
        # Testing
        # -------
-       $0 test <pgm>    Run a single EVM program like it's a test
+       $0 interpret <pgm>           Run a single EVM program (in JSON testing format) using fast interpreter
+       $0 test      <pgm> <output>  Run a single EVM program like it's a test
 
-       Note: This command is more for devs and CI servers.
+       Note: <output> is the expected output of the given test.
+             These commands are more for devs and CI servers.
 " ; exit ;;
 esac
