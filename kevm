@@ -49,6 +49,8 @@ run_env() {
 # Runners
 # -------
 
+# User Commands
+
 run_krun() {
     local backend=$1  ; shift
     local run_file=$1 ; shift
@@ -57,10 +59,25 @@ run_krun() {
     krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@"
 }
 
+run_kdebug() {
+    progress "debugging: $1"
+    run_krun java "$1" --debugger
+}
+
 run_ksearch() {
     progress "searching: $1"
     run_krun java "$1" --search
 }
+
+run_proof() {
+    local proof_file="$1" ; shift
+    [[ -f "$proof_file" ]] || die "$proof_file does not exist"
+    run_env "$proof_file"
+    export K_OPTS=-Xmx5G
+    kprove --directory "$build_dir/java/" --z3-executable "$proof_file" --def-module VERIFICATION
+}
+
+# Dev Commands
 
 run_interpreter() {
     test_file="$1"
@@ -79,19 +96,6 @@ run_interpreter() {
         && k-bin-to-text "$output" "$kast_output" \
         && cat "$kast_output" \
         && return "$exit_status"
-}
-
-run_proof() {
-    local proof_file="$1" ; shift
-    [[ -f "$proof_file" ]] || die "$proof_file does not exist"
-    run_env "$proof_file"
-    export K_OPTS=-Xmx5G
-    kprove --directory "$build_dir/java/" --z3-executable "$proof_file" --def-module VERIFICATION
-}
-
-run_kdebug() {
-    progress "debugging: $1"
-    run_krun java "$1" --debugger
 }
 
 run_test() {
