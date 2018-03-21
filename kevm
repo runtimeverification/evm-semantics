@@ -57,6 +57,11 @@ run_krun() {
     krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@"
 }
 
+run_ksearch() {
+    progress "searching: $1"
+    run_krun java "$1" --search
+}
+
 run_interpreter() {
     test_file="$1"
     run_env "$test_file"
@@ -127,9 +132,10 @@ run_command="$1" ; shift
 case "$run_command" in
 
     # Running
-    run)   run_krun   ocaml "$@" --interpret ;;
-    debug) run_kdebug       "$@"             ;;
-    prove) run_proof        "$@"             ;;
+    run)    run_krun     ocaml "$@" --interpret ;;
+    debug)  run_kdebug         "$@"             ;;
+    search) run_ksearch        "$@"             ;;
+    prove)  run_proof          "$@"             ;;
 
     # Testing
     interpret)    run_interpreter  "$@" ;;
@@ -141,9 +147,10 @@ case "$run_command" in
 
        # Running
        # -------
-       $0 run   <pgm>   Run a single EVM program
-       $0 debug <pgm>   Run a single EVM program in the debugger
-       $0 prove <spec>  Attempt to prove the specification using K's RL prover
+       $0 run    <pgm>   Run a single EVM program
+       $0 debug  <pgm>   Run a single EVM program in the debugger
+       $0 search <pgm>   Run a program searching for all execution paths
+       $0 prove  <spec>  Attempt to prove the specification using K's RL prover
 
        Note: <pgm> and <spec> here are paths to files.
        These files should be Ethereum programs/specifications.
