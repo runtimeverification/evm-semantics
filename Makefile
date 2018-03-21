@@ -180,7 +180,9 @@ bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*
 slow_bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*.json) \
                   $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000*.json) \
                   $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000*.json) \
-                  $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth_d1g0v0.json)
+                  $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth_d1g0v0.json) \
+                  $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/*RecursiveBomb*.json) \
+                  $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*BigOffset*.json)
                   # $(wildcard tests/BlockchainTests/GeneralStateTests/*/*/*_Constantinople.json)
 quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(bchain_tests))
 
