@@ -81,6 +81,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 -   `loadTx(_)` loads the next transaction to be executed into the current state.
 -   `finishTx` is a place-holder for performing necessary cleanup after a transaction.
 
+**TODO**: `loadTx(_) => loadTx_`
+
 ```{.k .standalone}
     syntax EthereumCommand ::= "startTx"
  // ------------------------------------
@@ -488,6 +490,7 @@ Here we load the environmental information.
     rule load "exec" : { "data" : ((DATA:String) => #parseByteStack(DATA)) }
  // ------------------------------------------------------------------------
     rule <k> load "exec" : { "data" : (DATA:WordStack) } => . ... </k> <callData> _ => DATA </callData>
+    rule <k> load "exec" : { "code" : (CODE:OpCodes)   } => . ... </k> <program>  _ => #asMapOpCodes(CODE) </program>
     rule <k> load "exec" : { "code" : (CODE:WordStack) } => . ... </k> <program>  _ => #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) </program> <programBytes> _ => CODE </programBytes> <schedule> SCHED </schedule>
 ```
 
@@ -537,26 +540,76 @@ The `"rlp"` key loads the block information.
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONList ], _, _, .JSONList ] => .K ... </k>
          <blockhash> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhash>
 
-    rule <k> load "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST => REST ] ... </k>
-         <txOrder>   ... .List => ListItem(!ID) </txOrder>
-         <txPending> ... .List => ListItem(!ID) </txPending>
+    syntax EthereumCommand ::= "mkTX" Int
+ // -------------------------------------
+    rule <k> mkTX TXID => . ... </k>
+         <txOrder>   ... (.List => ListItem(TXID)) </txOrder>
+         <txPending> ... (.List => ListItem(TXID)) </txPending>
          <messages>
-           ( .Bag
-          => <message>
-               <msgID>      !ID:Int                                 </msgID>
-               <txNonce>    #asWord(#parseByteStackRaw(TN))         </txNonce>
-               <txGasPrice> #asWord(#parseByteStackRaw(TP))         </txGasPrice>
-               <txGasLimit> #asWord(#parseByteStackRaw(TG))         </txGasLimit>
-               <to>         #asAccount(#parseByteStackRaw(TT))      </to>
-               <value>      #asWord(#parseByteStackRaw(TV))         </value>
-               <sigV>       #asWord(#parseByteStackRaw(TW))         </sigV>
-               <sigR>       #padToWidth(32, #parseByteStackRaw(TR)) </sigR>
-               <sigS>       #padToWidth(32, #parseByteStackRaw(TS)) </sigS>
-               <data>       #parseByteStackRaw(TI)                  </data>
-             </message>
-           )
-           ...
-         </messages>
+            ( .Bag
+           => <message>
+                <msgID> TXID:Int </msgID>
+                ...
+              </message>
+            )
+          ...
+          </messages>
+
+    rule <k> load "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST ]
+          => mkTX !ID:Int
+          ~> load "transaction" : { !ID : { "data"  : TI   ,   "gasLimit" : TG   ,   "gasPrice" : TP
+                                          , "nonce" : TN   ,   "r"        : TR   ,   "s"        : TS
+                                          , "to"    : TT   ,   "v"        : TW   ,   "value"    : TV
+                                          , .JSONList
+                                          }
+                                  }
+          ~> load "transaction" : [ REST ]
+          ...
+          </k>
+
+    rule <k> load "transaction" : { ACCTID: { KEY : VALUE , REST } }
+          => load "transaction" : { ACCTID : { KEY : VALUE } }
+          ~> load "transaction" : { ACCTID : { REST } }
+          ...
+         </k>
+      requires REST =/=K .JSONList
+
+    rule <k> load "transaction" : { TXID : { "gasLimit" : (TG:String => #asWord(#parseByteStackRaw(TG)))         } } ... </k>
+    rule <k> load "transaction" : { TXID : { "gasPrice" : (TP:String => #asWord(#parseByteStackRaw(TP)))         } } ... </k>
+    rule <k> load "transaction" : { TXID : { "nonce"    : (TN:String => #asWord(#parseByteStackRaw(TN)))         } } ... </k>
+    rule <k> load "transaction" : { TXID : { "v"        : (TW:String => #asWord(#parseByteStackRaw(TW)))         } } ... </k>
+    rule <k> load "transaction" : { TXID : { "value"    : (TV:String => #asWord(#parseByteStackRaw(TV)))         } } ... </k>
+    rule <k> load "transaction" : { TXID : { "to"       : (TT:String => #asAccount(#parseByteStackRaw(TT)))      } } ... </k>
+    rule <k> load "transaction" : { TXID : { "data"     : (TI:String => #parseByteStackRaw(TI))                  } } ... </k>
+    rule <k> load "transaction" : { TXID : { "r"        : (TR:String => #padToWidth(32, #parseByteStackRaw(TR))) } } ... </k>
+    rule <k> load "transaction" : { TXID : { "s"        : (TS:String => #padToWidth(32, #parseByteStackRaw(TS))) } } ... </k>
+
+    rule <k> load "transaction" : { TXID : { "gasLimit" : TG:Int } } => . ... </k>
+         <message> <msgID> TXID </msgID> <txGasLimit> _ => TG </txGasLimit> ... </message>
+
+    rule <k> load "transaction" : { TXID : { "gasPrice" : TP:Int } } => . ... </k>
+         <message> <msgID> TXID </msgID> <txGasPrice> _ => TP </txGasPrice> ... </message>
+
+    rule <k> load "transaction" : { TXID : { "nonce" : TN:Int } } => . ... </k>
+         <message> <msgID> TXID </msgID> <txNonce> _ => TN </txNonce> ... </message>
+
+    rule <k> load "transaction" : { TXID : { "value" : TV:Int } } => . ... </k>
+         <message> <msgID> TXID </msgID> <value> _ => TV </value> ... </message>
+
+    rule <k> load "transaction" : { TXID : { "to" : TT:Account } } => . ... </k>
+         <message> <msgID> TXID </msgID> <to> _ => TT </to> ... </message>
+
+    rule <k> load "transaction" : { TXID : { "data" : TI:WordStack } } => . ... </k>
+         <message> <msgID> TXID </msgID> <data> _ => TI </data> ... </message>
+
+    rule <k> load "transaction" : { TXID : { "v" : TW:Int } } => . ... </k>
+         <message> <msgID> TXID </msgID> <sigV> _ => TW </sigV> ... </message>
+
+    rule <k> load "transaction" : { TXID : { "r" : TR:WordStack } } => . ... </k>
+         <message> <msgID> TXID </msgID> <sigR> _ => TR </sigR> ... </message>
+
+    rule <k> load "transaction" : { TXID : { "s" : TS:WordStack } } => . ... </k>
+         <message> <msgID> TXID </msgID> <sigS> _ => TS </sigS> ... </message>
 ```
 
 ### Checking State
@@ -585,7 +638,6 @@ The `"rlp"` key loads the block information.
     rule check "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }
     rule check "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #parseByteStack(CODE)) } }
     rule check "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } }
-
 
     rule <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
          <account>
