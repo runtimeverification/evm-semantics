@@ -95,7 +95,7 @@ build-node: .build/vm/kevm-vm
 standalone_tangle:=.k:not(.node),.standalone
 node_tangle:=.k:not(.standalone),.node
 
-k_files:=driver.k data.k evm.k analysis.k krypto.k edsl.k evm-node.k
+k_files:=driver.k data.k network.k evm.k analysis.k krypto.k edsl.k evm-node.k
 ocaml_files:=$(patsubst %,.build/ocaml/%,$(k_files))
 java_files:=$(patsubst %,.build/java/%,$(k_files))
 node_files:=$(patsubst %,.build/node/%,$(k_files))
