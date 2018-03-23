@@ -92,10 +92,12 @@ run_interpreter() {
     $interpreter "$build_dir/ocaml/driver-kompiled/realdef.cma" -c PGM "$kast" textfile \
                  -c SCHEDULE "$cSCHEDULE" text -c MODE "$cMODE" text \
                  --output-file "$output" \
-        || exit_status="$?" \
-        && k-bin-to-text "$output" "$kast_output" \
-        && cat "$kast_output" \
-        && return "$exit_status"
+        || exit_status="$?"
+    if [[ "$exit_status" != '0' ]]; then
+        k-bin-to-text "$output" "$kast_output"
+        cat "$kast_output"
+        return "$exit_status"
+    fi
 }
 
 run_test() {
