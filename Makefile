@@ -143,8 +143,8 @@ defn: $(defn_files)
 # Override this with `make TEST=echo` to list tests instead of running
 TEST=./kevm test
 
-test-all: test-all-conformance test-all-proof test-all-interactive
-test: test-conformance test-proof test-interactive
+test-all: test-all-concrete test-all-proof
+test: test-concrete test-proof
 
 split-tests: tests/ethereum-tests/make.timestamp split-proof-tests
 
@@ -152,6 +152,11 @@ tests/%/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init -- tests/$*
 	touch $@
+
+# Concrete Tests
+
+test-all-concrete: test-all-conformance test-interactive
+test-concrete: test-conformance test-interactive
 
 # Ethereum Tests
 
@@ -191,19 +196,6 @@ test-bchain: $(quick_bchain_tests:=.test)
 tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/% build
 	$(TEST) $< tests/templates/output-success.txt
 
-# ProofTests
-
-proof_dir:=tests/proofs/specs
-proof_tests=$(wildcard $(proof_dir)/*/*-spec.k)
-
-test-proof: $(proof_tests:=.test)
-
-$(proof_dir)/%.test: $(proof_dir)/% build-java
-	$(TEST) $< tests/templates/proof-success.txt
-
-split-proof-tests: tests/proofs/make.timestamp
-	$(MAKE) -C tests/proofs $@
-
 # InteractiveTests
 
 interactive_tests:=$(wildcard tests/interactive/*.json) \
@@ -216,6 +208,19 @@ tests/interactive/%.json.test: tests/interactive/%.json tests/interactive/%.json
 
 tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out build
 	MODE=GASANALYZE $(TEST) $< $<.out
+
+# ProofTests
+
+proof_dir:=tests/proofs/specs
+proof_tests=$(wildcard $(proof_dir)/*/*-spec.k)
+
+test-proof: $(proof_tests:=.test)
+
+$(proof_dir)/%.test: $(proof_dir)/% build-java
+	$(TEST) $< tests/templates/proof-success.txt
+
+split-proof-tests: tests/proofs/make.timestamp
+	$(MAKE) -C tests/proofs $@
 
 # Sphinx HTML Documentation
 # -------------------------
