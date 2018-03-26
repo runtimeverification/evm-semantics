@@ -16,7 +16,7 @@ export TANGLER
 export LUA_PATH
 
 .PHONY: all clean deps k-deps tangle-deps ocaml-deps plugin-deps build build-ocaml build-java build-node defn sphinx split-tests \
-		test test-all test-conformance test-slow-conformance test-all-conformance \
+		test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
 		test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
 		test-proof test-interactive
 .SECONDARY:
