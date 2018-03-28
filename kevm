@@ -38,7 +38,7 @@ run_env() {
     local release_dir="${K_BIN:-$build_dir/k/k-distribution/target/release/k}"
     local lib_dir="$build_dir/local/lib"
     export cMODE="\`${MODE:-NORMAL}\`(.KList)"
-    export cSCHEDULE="\`${SCHEDULE:-DEFAULT}_EVM\`(.KList)"
+    export cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
     export PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH"
     export LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
     eval $(opam config env)
