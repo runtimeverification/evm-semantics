@@ -222,7 +222,7 @@ test-slow-vm: $(slow_vm_tests:=.test)
 test-vm: $(quick_vm_tests:=.test)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build
-	MODE=VMTESTS $(TEST) $< tests/templates/output-success.txt
+	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) $< tests/templates/output-success.txt
 
 # BlockchainTests
 

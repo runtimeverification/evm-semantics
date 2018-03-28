@@ -9,7 +9,7 @@
     NORMAL
   </mode>
   <schedule>
-    DEFAULT
+    BYZANTIUM
   </schedule>
   <analysis>
     .Map
