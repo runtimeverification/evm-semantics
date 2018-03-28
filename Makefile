@@ -95,7 +95,7 @@ build-node: .build/vm/kevm-vm
 standalone_tangle:=.k:not(.node),.standalone
 node_tangle:=.k:not(.standalone),.node
 
-k_files:=driver.k data.k evm.k analysis.k krypto.k edsl.k evm-node.k
+k_files:=driver.k data.k network.k evm.k analysis.k krypto.k edsl.k evm-node.k
 ocaml_files:=$(patsubst %,.build/ocaml/%,$(k_files))
 java_files:=$(patsubst %,.build/java/%,$(k_files))
 node_files:=$(patsubst %,.build/node/%,$(k_files))
@@ -222,7 +222,7 @@ test-slow-vm: $(slow_vm_tests:=.test)
 test-vm: $(quick_vm_tests:=.test)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build
-	MODE=VMTESTS $(TEST) $< tests/templates/output-success.txt
+	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) $< tests/templates/output-success.txt
 
 # BlockchainTests
 

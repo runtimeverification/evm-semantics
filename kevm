@@ -16,6 +16,8 @@ build_dir="$kevm_dir/.build"
 test_logs="$build_dir/logs"
 mkdir -p "$test_logs"
 now_passing="$test_logs/passing.lastrun"
+now_failing="$test_logs/failing.lastrun"
+run_times="$test_logs/runtime"
 
 # Utilities
 # ---------
@@ -23,10 +25,6 @@ now_passing="$test_logs/passing.lastrun"
 progress() { echo "== $@" ; }
 warning()  { echo -e "WARNING:" "$@" >&2 ; }
 die()      { echo -e "FATAL:" "$@" >&2 ; exit 1 ; }
-success()  { echo -e "\e[32m== success: $@\e[0m" ;
-             echo "$@" >> "$now_passing"
-           }
-failure()  { echo -e "\e[31m== failure: $@\e[0m" ; }
 
 pretty_diff() {
     git --no-pager diff --no-index "$@"
@@ -40,7 +38,7 @@ run_env() {
     local release_dir="${K_BIN:-$build_dir/k/k-distribution/target/release/k}"
     local lib_dir="$build_dir/local/lib"
     export cMODE="\`${MODE:-NORMAL}\`(.KList)"
-    export cSCHEDULE="\`${SCHEDULE:-DEFAULT}_EVM\`(.KList)"
+    export cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
     export PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH"
     export LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
     eval $(opam config env)
@@ -126,9 +124,10 @@ run_test_profile() {
     local expected_file="$1" ; shift
     local start_time="$(date '+%s')"
     run_test "$test_file" "$expected_file" "$@" \
-        || echo "$test_file" >> failing-tests
+        && echo "$test_file" >> "$now_passing" \
+        || echo "$test_file" >> "$now_failing"
     local end_time="$(date '+%s')"
-    echo "$((end_time - start_time))    $test_file" >> test-run-times
+    echo "$((end_time - start_time))    $test_file" >> "$run_times"
 }
 
 # Main
