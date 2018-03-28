@@ -9,7 +9,7 @@
     NORMAL
   </mode>
   <schedule>
-    DEFAULT
+    BYZANTIUM
   </schedule>
   <analysis>
     "blocks" |-> ListItem ( { 40 ==> 46 | 20009 | 0 } )
