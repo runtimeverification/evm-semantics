@@ -303,9 +303,6 @@ Execution follows a simple cycle where first the state is checked for exceptions
 
 -   Regardless of the mode, `#next` will throw `#end` or `#exception` if the current program counter is not pointing at an OpCode.
 
-TODO: I think on `#next` we are supposed to pretend it's `STOP` if it's in the middle of the program somewhere but is invalid?
-I suppose the semantics currently loads `INVALID` where `N` is the position in the bytecode array.
-
 ```k
     syntax InternalOp ::= "#next"
  // -----------------------------
@@ -356,13 +353,14 @@ The `#next` operator executes a single step by:
          </k>
 ```
 
--   `#invalid?` checks if it's the designated invalid opcode.
+-   `#invalid?` checks if it's the designated invalid opcode or some undefined opcode.
 
 ```k
     syntax InternalOp ::= "#invalid?" "[" OpCode "]"
  // ------------------------------------------------
-    rule <k> #invalid? [ INVALID ] => #exception ... </k>
-    rule <k> #invalid? [ OP      ] => .          ... </k> requires notBool isInvalidOp(OP)
+    rule <k> #invalid? [ INVALID      ] => #exception ... </k>
+    rule <k> #invalid? [ UNDEFINED(_) ] => #exception ... </k>
+    rule <k> #invalid? [ OP           ] => .          ... </k> requires notBool isInvalidOp(OP)
 ```
 
 -   `#stackNeeded?` checks that the stack will be not be under/overflown.
@@ -526,6 +524,7 @@ The `#next` operator executes a single step by:
     rule #changesState(STATICCALL, _)     => false
     rule #changesState(REVERT, _)         => false
     rule #changesState(INVALID, _)        => false
+    rule #changesState(UNDEFINED(_), _)   => false
 
     rule #changesState(ECREC, _)     => false
     rule #changesState(SHA256, _)    => false
@@ -943,11 +942,11 @@ In `node` mode, the semantics are given in terms of an external call to a runnin
 
 ### Invalid Operator
 
-We use `INVALID` both for marking the designated invalid operator and for garbage bytes in the input program.
+We use `INVALID` both for marking the designated invalid operator, and `UNDEFINED(_)` for garbage bytes in the input program.
 
 ```k
-    syntax InvalidOp ::= "INVALID"
- // ------------------------------
+    syntax InvalidOp ::= "INVALID" | "UNDEFINED" "(" Int ")"
+ // --------------------------------------------------------
 ```
 
 ### Stack Manipulations
@@ -2568,7 +2567,8 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode( 244, SCHED ) => DELEGATECALL requires SCHED =/=K FRONTIER
     rule #dasmOpCode( 250, SCHED ) => STATICCALL   requires Ghasstaticcall << SCHED >>
     rule #dasmOpCode( 253, SCHED ) => REVERT       requires Ghasrevert     << SCHED >>
+    rule #dasmOpCode( 254,     _ ) => INVALID
     rule #dasmOpCode( 255,     _ ) => SELFDESTRUCT
-    rule #dasmOpCode(   W,     _ ) => INVALID [owise]
+    rule #dasmOpCode(   W,     _ ) => UNDEFINED(W) [owise]
 endmodule
 ```
