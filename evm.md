@@ -1345,7 +1345,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </account>
       requires VALUE >Int BAL orBool CD >=Int 1024
 
-     rule <k> #checkCall ACCT VALUE => . ... </k>
+     rule <k> (#checkCall ACCT VALUE => .) ~> #call _ _ _ _ _ _ _ _ ... </k>
          <callDepth> CD </callDepth>
          <account>
            <acctID> ACCT </acctID>
@@ -1353,6 +1353,26 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
            ...
          </account>
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
+
+     rule <k> #checkCall ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #exception ... </k>
+          <callDepth> CD </callDepth>
+          <output> _ => .WordStack </output>
+          <account>
+            <acctID> ACCT </acctID>
+            <balance> BAL </balance>
+            ...
+          </account>
+       requires VALUE >Int BAL orBool CD >=Int 1024
+
+     rule <k> (#checkCall ACCT VALUE => .) ~> #create _ _ _ _ _ ... </k>
+          <callDepth> CD </callDepth>
+          <output> _ => .WordStack </output>
+          <account>
+            <acctID> ACCT </acctID>
+            <balance> BAL </balance>
+            ...
+          </account>
+       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT:Int VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .WordStack GLIMIT VALUE APPVALUE ARGS STATIC
@@ -1510,28 +1530,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```k
     syntax InternalOp ::= "#create"   Int Int Int Int WordStack
                         | "#mkCreate" Int Int Int Int WordStack
-                        | "#checkCreate" Int Int
                         | "#incrementNonce" Int
  // -------------------------------------------
-    rule <k> #checkCreate ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #exception ... </k>
-         <callDepth> CD </callDepth>
-         <output> _ => .WordStack </output>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
-      requires VALUE >Int BAL orBool CD >=Int 1024
-
-    rule <k> #checkCreate ACCT VALUE => . ... </k>
-         <callDepth> CD </callDepth>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
-      requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
-
     rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
           => #incrementNonce ACCTFROM
           ~> #pushCallStack ~> #pushWorldState
@@ -1623,7 +1623,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
-          => #checkCreate ACCT VALUE
+          => #checkCall ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, NONCE) #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
