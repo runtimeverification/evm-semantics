@@ -19,12 +19,6 @@
       <output>
         .WordStack
       </output>
-      <memoryUsed>
-        0
-      </memoryUsed>
-      <callDepth>
-        0
-      </callDepth>
       <callStack>
         .List
       </callStack>
@@ -40,7 +34,7 @@
       <touchedAccounts>
         .Set
       </touchedAccounts>
-      <txExecState>
+      <callState>
         <program>
           0 |-> PUSH ( 32 , 115792089237316195423570985008687907853269984665640564039457584007913129639935 )
           33 |-> PUSH ( 32 , 115792089237316195423570985008687907853269984665640564039457584007913129639935 )
@@ -75,13 +69,19 @@
         <gas>
           79988
         </gas>
+        <memoryUsed>
+          0
+        </memoryUsed>
         <previousGas>
           99988
         </previousGas>
         <static>
           false
         </static>
-      </txExecState>
+        <callDepth>
+          0
+        </callDepth>
+      </callState>
       <substate>
         <selfDestruct>
           .Set
