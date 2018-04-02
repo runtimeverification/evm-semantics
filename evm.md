@@ -188,48 +188,22 @@ The `callStack` cell stores a list of previous VM execution states.
 -   `#dropCallStack` removes the top element of the `callStack`.
 
 ```k
-    syntax State ::= "{" Int "|" Int "|" Map "|" WordStack "|" Int "|" WordStack "|" Int "|" WordStack "|" Map "|" Int "|" Int "|" Int "|" Bool "}"
- // -----------------------------------------------------------------------------------------------------------------------------------------------
-
     syntax InternalOp ::= "#pushCallStack"
  // --------------------------------------
     rule <k> #pushCallStack => . ... </k>
-         <callStack>  (.List => ListItem({ ACCT | GAVAIL | PGM | BYTES | CR | CD | CV | WS | LM | MUSED | PCOUNT | DEPTH | STATIC })) ... </callStack>
-         <id>           ACCT   </id>
-         <gas>          GAVAIL </gas>
-         <program>      PGM    </program>
-         <programBytes> BYTES  </programBytes>
-         <caller>       CR     </caller>
-         <callData>     CD     </callData>
-         <callValue>    CV     </callValue>
-         <wordStack>    WS     </wordStack>
-         <localMem>     LM     </localMem>
-         <memoryUsed>   MUSED  </memoryUsed>
-         <pc>           PCOUNT </pc>
-         <callDepth>    DEPTH  </callDepth>
-         <static>       STATIC </static>
+         <callStack> (.List => ListItem(CALLSTATE)) ... </callStack>
+         <callState> CALLSTATE </callState>
 
     syntax InternalOp ::= "#popCallStack"
  // -------------------------------------
     rule <k> #popCallStack => . ... </k>
-         <callStack>  (ListItem({ ACCT | GAVAIL | PGM | BYTES | CR | CD | CV | WS | LM | MUSED | PCOUNT | DEPTH | STATIC }) => .List) ... </callStack>
-         <id>           _ => ACCT   </id>
-         <gas>          _ => GAVAIL </gas>
-         <program>      _ => PGM    </program>
-         <programBytes> _ => BYTES  </programBytes>
-         <caller>       _ => CR     </caller>
-         <callData>     _ => CD     </callData>
-         <callValue>    _ => CV     </callValue>
-         <wordStack>    _ => WS     </wordStack>
-         <localMem>     _ => LM     </localMem>
-         <memoryUsed>   _ => MUSED  </memoryUsed>
-         <pc>           _ => PCOUNT </pc>
-         <callDepth>    _ => DEPTH  </callDepth>
-         <static>       _ => STATIC </static>
+         <callStack>  (ListItem(CALLSTATE) => .List) ... </callStack>
+         <callState> _ => CALLSTATE </callState>
 
     syntax InternalOp ::= "#dropCallStack"
  // --------------------------------------
-    rule <k> #dropCallStack => . ... </k> <callStack> (ListItem(_) => .List) ... </callStack>
+    rule <k> #dropCallStack => . ... </k>
+         <callStack> (ListItem(_) => .List) ... </callStack>
 ```
 
 ### The StateStack
