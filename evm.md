@@ -1565,7 +1565,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax InternalOp ::= "#create" Int Int Int Int WordStack
                         | "#mkCreate" Int Int WordStack Int Int
                         | "#checkCreate" Int Int
- // --------------------------------------------
+                        | "#incrementNonce" Int
+ // -------------------------------------------
     rule <k> #checkCreate ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
          <callDepth> CD </callDepth>
          <output> _ => .WordStack </output>
@@ -1576,13 +1577,11 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </account>
       requires VALUE >Int BAL orBool CD >=Int 1024
 
-    rule <k> #checkCreate ACCT VALUE => . ... </k>
-         <mode> EXECMODE </mode>
+    rule <k> #checkCreate ACCT VALUE => #incrementNonce ACCT ... </k>
          <callDepth> CD </callDepth>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
-           <nonce> NONCE => #if EXECMODE ==K VMTESTS #then NONCE #else NONCE +Int 1 #fi </nonce>
            ...
          </account>
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
@@ -1616,6 +1615,14 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            ...
          </account>
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
+
+    rule <k> #incrementNonce ACCT => . ... </k>
+         <mode> EXECMODE </mode>
+         <account>
+           <acctID> ACCT </acctID>
+           <nonce> NONCE => #if EXECMODE ==K VMTESTS #then NONCE #else NONCE +Int 1 #fi </nonce>
+           ...
+         </account>
 
     syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
