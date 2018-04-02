@@ -42,15 +42,13 @@ In the comments next to each cell, we've marked which component of the YellowPap
                       // -----------------------------------
 
                       <output>          .WordStack </output>            // H_RETURN
-                      <memoryUsed>      0          </memoryUsed>        // \mu_i
-                      <callDepth>       0          </callDepth>
                       <callStack>       .List      </callStack>
                       <interimStates>   .List      </interimStates>
                       <substateStack>   .List      </substateStack>
                       <callLog>         .Set       </callLog>
                       <touchedAccounts> .Set       </touchedAccounts>
 
-                      <txExecState>
+                      <callState>
                         <program>      .Map       </program>            // I_b
                         <programBytes> .WordStack </programBytes>
 
@@ -65,10 +63,12 @@ In the comments next to each cell, we've marked which component of the YellowPap
                         <localMem>    .Map       </localMem>            // \mu_m
                         <pc>          0          </pc>                  // \mu_pc
                         <gas>         0          </gas>                 // \mu_g
+                        <memoryUsed>  0          </memoryUsed>          // \mu_i
                         <previousGas> 0          </previousGas>
 
-                        <static> false </static>
-                      </txExecState>
+                        <static>    false </static>
+                        <callDepth> 0     </callDepth>
+                      </callState>
 
                       // A_* (execution substate)
                       <substate>

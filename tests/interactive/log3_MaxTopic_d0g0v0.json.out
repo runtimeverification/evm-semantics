@@ -19,12 +19,6 @@
       <output>
         .WordStack
       </output>
-      <memoryUsed>
-        0
-      </memoryUsed>
-      <callDepth>
-        0
-      </callDepth>
       <callStack>
         .List
       </callStack>
@@ -40,7 +34,7 @@
       <touchedAccounts>
         .Set
       </touchedAccounts>
-      <txExecState>
+      <callState>
         <program>
           .Map
         </program>
@@ -71,13 +65,19 @@
         <gas>
           0
         </gas>
+        <memoryUsed>
+          0
+        </memoryUsed>
         <previousGas>
           0
         </previousGas>
         <static>
           false
         </static>
-      </txExecState>
+        <callDepth>
+          0
+        </callDepth>
+      </callState>
       <substate>
         <selfDestruct>
           .Set
