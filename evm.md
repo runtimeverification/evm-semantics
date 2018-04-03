@@ -1409,25 +1409,22 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <wordStack>  _ => .WordStack </wordStack>
          <localMem>   _ => .Map       </localMem>
 
+    syntax KItem ::= "#endCall"
+ // ---------------------------
+    rule <k> #exception ~> #endCall => #popCallStack ~> #popWorldState                    ~> #exception ... </k>
+    rule <k> #revert    ~> #endCall => #popCallStack ~> #popWorldState  ~> #refund GAVAIL ~> #revert    ... </k> <gas> GAVAIL </gas>
+    rule <k> #end       ~> #endCall => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ~> #end       ... </k> <gas> GAVAIL </gas>
+
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
-    rule <k> #exception ~> #return _ _ => #popCallStack ~> #popWorldState
-          ~> 0 ~> #push ... </k>
+    rule <k> #exception ~> #return _ _ => 0 ~> #push ... </k>
          <output> _ => .WordStack </output>
 
-    rule <k> #revert ~> #return RETSTART RETWIDTH => #popCallStack ~> #popWorldState ~> #refund GAVAIL
-          ~> 0 ~> #push ~> #setLocalMem RETSTART RETWIDTH OUT
-         ...
-         </k>
+    rule <k> #revert ~> #return RETSTART RETWIDTH => 0 ~> #push ~> #setLocalMem RETSTART RETWIDTH OUT ... </k>
          <output> OUT </output>
-         <gas> GAVAIL </gas>
 
-    rule <k> #end ~> #return RETSTART RETWIDTH => #popCallStack ~> #dropWorldState ~> #refund GAVAIL
-          ~> 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH OUT
-         ...
-         </k>
+    rule <k> #end ~> #return RETSTART RETWIDTH => 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH OUT ... </k>
          <output> OUT </output>
-         <gas> GAVAIL </gas>
 
     syntax InternalOp ::= "#refund" Exp [strict]
                         | "#setLocalMem" Int Int WordStack
@@ -1451,6 +1448,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #endCall
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1464,6 +1462,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #endCall
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1477,6 +1476,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
           ~> #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #endCall
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1492,6 +1492,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule <k> STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
           ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) 0 0 #range(LM, ARGSTART, ARGWIDTH) true
+          ~> #endCall
           ~> #return RETSTART RETWIDTH
          ...
          </k>
