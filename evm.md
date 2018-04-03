@@ -1411,23 +1411,19 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
-    rule <k> #exception ~> #return _ _
-          => #popCallStack ~> #popWorldState ~> 0 ~> #push
-         ...
-         </k>
+    rule <k> #exception ~> #return _ _ => #popCallStack ~> #popWorldState
+          ~> 0 ~> #push ... </k>
          <output> _ => .WordStack </output>
 
-    rule <k> #revert ~> #return RETSTART RETWIDTH
-          => #popCallStack ~> #popWorldState
-          ~> 0 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
+    rule <k> #revert ~> #return RETSTART RETWIDTH => #popCallStack ~> #popWorldState ~> #refund GAVAIL
+          ~> 0 ~> #push ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
          </k>
          <output> OUT </output>
          <gas> GAVAIL </gas>
 
-    rule <k> #end ~> #return RETSTART RETWIDTH
-          => #popCallStack ~> #dropWorldState
-          ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
+    rule <k> #end ~> #return RETSTART RETWIDTH => #popCallStack ~> #dropWorldState ~> #refund GAVAIL
+          ~> 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
          </k>
          <output> OUT </output>
