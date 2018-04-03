@@ -29,9 +29,6 @@
       <interimStates>
         .List
       </interimStates>
-      <substateStack>
-        .List
-      </substateStack>
       <callLog>
         .Set
       </callLog>
