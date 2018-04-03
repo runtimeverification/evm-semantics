@@ -656,12 +656,17 @@ The `"rlp"` key loads the block information.
     rule <k> check "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #parseByteStack(CODE)) } }  ... </k>
     rule <k> check "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } } ... </k>
 
-    rule <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
+    rule <mode> EXECMODE </mode>
+         <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            ...
          </account>
+      requires EXECMODE =/=K VMTESTS
+
+    rule <mode> VMTESTS </mode>
+         <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
 
     rule <k> check "account" : { ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
          <account>
