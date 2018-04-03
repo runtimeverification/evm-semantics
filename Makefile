@@ -233,7 +233,7 @@ test-all-vm: $(vm_tests:=.test)
 test-slow-vm: $(slow_vm_tests:=.test)
 test-vm: $(quick_vm_tests:=.test)
 
-tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build
+tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build-ocaml
 	MODE=VMTESTS $(TEST) $<
 
 # BlockchainTests
@@ -250,7 +250,7 @@ test-all-bchain: $(bchain_tests:=.test)
 test-slow-bchain: $(bchain_tests:=.test)
 test-bchain: $(quick_bchain_tests:=.test)
 
-tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/% build
+tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/% build-ocaml
 	$(TEST) $<
 
 # InteractiveTests
@@ -260,7 +260,7 @@ interactive_tests:=$(wildcard tests/interactive/*.json) \
 
 test-interactive: $(interactive_tests:=.test)
 
-tests/interactive/%.json.test: tests/interactive/%.json build
+tests/interactive/%.json.test: tests/interactive/%.json build-ocaml build-java
 	$(TEST) $< tests/templates/output-success.json
 
 tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out build
