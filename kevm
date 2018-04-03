@@ -83,55 +83,42 @@ run_interpreter() {
     interpreter="$build_dir/ocaml/driver-kompiled/interpreter"
     kast="$(mktemp)"
     output="$(mktemp)"
-    kast_output="$(mktemp)"
-    local exit_status="0"
-    trap "rm -rf $kast $output $kast_output" INT TERM EXIT
+    trap "rm -rf $kast $output" INT TERM EXIT
     "$kevm_dir/kast-json.py" "$test_file" > "$kast"
     $interpreter "$build_dir/ocaml/driver-kompiled/realdef.cma" -c PGM "$kast" textfile \
                  -c SCHEDULE "$cSCHEDULE" text -c MODE "$cMODE" text \
-                 --output-file "$output" \
-        || exit_status="$?"
-    if [[ "$exit_status" != '0' ]]; then
-        k-bin-to-text "$output" "$kast_output"
-        cat "$kast_output"
-    fi
-    rm "$output" "$kast_output" "$kast"
-    return "$exit_status"
+                 --output-file "$output"
 }
 
 run_test() {
     local test_file="$1"     ; shift
-    local expected_file="$1" ; shift
-    local output_file="$(mktemp "$test_file.out.XXXXXX")"
-    local exit_status=0
-    trap "rm -rf $output_file" INT TERM EXIT
     case "$test_file" in
-        *proofs/*     ) run_proof "$test_file" "$@" > "$output_file" \
-                            || exit_status="$?"
+        *proofs/*     ) run_proof "$test_file" "$@"
                         ;;
-        *interactive/*) run_krun ocaml "$test_file" --interpret "$@" > "$output_file" \
-                            || exit_status="$?"
+        *interactive/*) local expected_file="$1" ; shift
+                        local output_file="$(mktemp "$test_file.out.XXXXXX")"
+                        trap "rm -rf $output_file" INT TERM EXIT
+                        run_krun ocaml "$test_file" --interpret "$@" > "$output_file" \
+                            || pretty_diff "$expected_file" "$output_file"
                         ;;
-        *             ) run_interpreter "$test_file" > "$output_file" \
-                            || exit_status="$?"
+        *             ) run_interpreter "$test_file"
                         ;;
     esac
-    [[ "$exit_status" == 0 ]] \
-        || pretty_diff "$expected_file" "$output_file" \
-        || true
-    rm "$output_file"
-    exit "$exit_status"
 }
 
 run_test_profile() {
     local test_file="$1"     ; shift
-    local expected_file="$1" ; shift
     local start_time="$(date '+%s')"
-    run_test "$test_file" "$expected_file" "$@" \
-        && echo "$test_file" >> "$now_passing" \
-        || echo "$test_file" >> "$now_failing"
+    local exit_status='0'
+    run_test "$test_file" "$@" || exit_status="$?"
     local end_time="$(date '+%s')"
+    if [[ "$exit_status" == '0' ]]; then
+        echo "$test_file" >> "$now_passing"
+    else
+        echo "$test_file" >> "$now_failing"
+    fi
     echo "$((end_time - start_time))    $test_file" >> "$run_times"
+    exit "$exit_status"
 }
 
 # Main
