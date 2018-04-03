@@ -1126,9 +1126,6 @@ These operators make queries about the current execution state.
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
-    rule <k> BLOCKHASH N => #if N >=Int HI orBool HI -Int 256 >Int N #then 0 #else #parseHexWord(Keccak256(Int2String(N))) #fi ~> #push ... </k>
-         <number> HI      </number>
-         <mode>   VMTESTS </mode>
 ```
 
 When running as a `node`, the blockhash will be retrieved from the running client.
@@ -1138,7 +1135,6 @@ Otherwise, it is calculated here using the "shortcut" formula used for running t
     rule <k> BLOCKHASH N => #blockhash(HASHES, N, HI -Int 1, 0) ~> #push ... </k>
          <number>    HI     </number>
          <blockhash> HASHES </blockhash>
-         <mode>      NORMAL </mode>
 
     syntax Int ::= #blockhash ( List , Int , Int , Int ) [function]
  // ---------------------------------------------------------------
@@ -1271,8 +1267,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
            ...
          </account>
 
-    rule <k> BALANCE ACCT => #if EXECMODE ==K VMTESTS #then #newAccount ACCT #else . #fi ~> 0 ~> #push ... </k>
-         <mode> EXECMODE </mode>
+    rule <k> BALANCE ACCT => 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT in ACCTS
 
@@ -1285,8 +1280,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
            ...
          </account>
 
-    rule <k> EXTCODESIZE ACCT => #if EXECMODE ==K VMTESTS #then #newAccount ACCT #else . #fi ~> 0 ~> #push ... </k>
-         <mode> EXECMODE </mode>
+    rule <k> EXTCODESIZE ACCT => 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT in ACCTS
 ```
@@ -1305,8 +1299,7 @@ Should we pad zeros (for the copied "program")?
            ...
          </account>
 
-    rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #if EXECMODE ==K VMTESTS #then #newAccount ACCT #else . #fi ... </k>
-         <mode> EXECMODE </mode>
+    rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </k>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT in ACCTS
 ```
@@ -1431,12 +1424,10 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          ...
          </k>
 
-    rule <mode> EXECMODE </mode>
-         <k> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC:Bool
-          => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
+    rule <k> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC:Bool
+          => #initVM ~> #execute
          ...
          </k>
-         <callLog> ... (.Set => #if EXECMODE ==K VMTESTS #then SetItem({ ACCTTO | GLIMIT | VALUE | ARGS }) #else .Set #fi) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
@@ -1473,11 +1464,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <output> OUT </output>
          <gas> GAVAIL </gas>
 
-    rule <mode> EXECMODE </mode>
-         <k> #end ~> #return RETSTART RETWIDTH
-          => #popCallStack
-          ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi
-          ~> #dropSubstate
+    rule <k> #end ~> #return RETSTART RETWIDTH
+          => #popCallStack ~> #dropWorldState ~> #dropSubstate
           ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
          </k>
@@ -1594,9 +1582,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          ...
          </k>
 
-    rule <mode> EXECMODE </mode>
-         <k> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
-          => #initVM ~> #if EXECMODE ==K VMTESTS #then #end #else #execute #fi
+    rule <k> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
+          => #initVM ~> #execute
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -1605,7 +1592,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <program> _ => #asMapOpCodes(#dasmOpCodes(INITCODE, SCHED)) </program>
          <programBytes> _ => INITCODE </programBytes>
          <caller> _ => ACCTFROM </caller>
-         <callLog> ... (.Set => #if EXECMODE ==K VMTESTS #then SetItem({ 0 | OLDGAVAIL +Int GAVAIL | VALUE | INITCODE }) #else .Set #fi) </callLog>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => .WordStack </callData>
          <callValue> _ => VALUE </callValue>
@@ -1617,10 +1603,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
 
     rule <k> #incrementNonce ACCT => . ... </k>
-         <mode> EXECMODE </mode>
          <account>
            <acctID> ACCT </acctID>
-           <nonce> NONCE => #if EXECMODE ==K VMTESTS #then NONCE #else NONCE +Int 1 #fi </nonce>
+           <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
 
@@ -1632,15 +1617,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule <k> #revert ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> #refund GAVAIL ~> 0 ~> #push ... </k>
          <gas> GAVAIL </gas>
 
-    rule <mode> EXECMODE </mode>
-         <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
+    rule <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
 
     rule <k> #mkCodeDeposit ACCT
-          => #if EXECMODE ==K VMTESTS #then . #else Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas #fi
+          => Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas
           ~> #finishCodeDeposit ACCT OUT
          ...
          </k>
-         <mode> EXECMODE </mode>
          <schedule> SCHED </schedule>
          <output> OUT => .WordStack </output>
       requires #sizeWordStack(OUT) <=Int maxCodeSize < SCHED >
@@ -1651,11 +1634,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
       requires #sizeWordStack(OUT) >Int maxCodeSize < SCHED >
 
     rule <k> #finishCodeDeposit ACCT OUT
-          => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate
+          => #popCallStack ~> #dropWorldState ~> #dropSubstate
           ~> #refund GAVAIL ~> ACCT ~> #push
          ...
          </k>
-         <mode> EXECMODE </mode>
          <gas> GAVAIL </gas>
          <account>
            <acctID> ACCT </acctID>
@@ -1664,11 +1646,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </account>
 
     rule <k> #exception ~> #finishCodeDeposit ACCT _
-          => #popCallStack ~> #if EXECMODE ==K VMTESTS #then #popWorldState #else #dropWorldState #fi ~> #dropSubstate
+          => #popCallStack ~> #dropWorldState ~> #dropSubstate
           ~> #refund GAVAIL ~> ACCT ~> #push
          ...
          </k>
-         <mode> EXECMODE </mode>
          <gas> GAVAIL </gas>
          <schedule> FRONTIER </schedule>
 
