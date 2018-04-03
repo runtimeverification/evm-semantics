@@ -44,7 +44,6 @@ In the comments next to each cell, we've marked which component of the YellowPap
                       <output>          .WordStack </output>            // H_RETURN
                       <callStack>       .List      </callStack>
                       <interimStates>   .List      </interimStates>
-                      <substateStack>   .List      </substateStack>
                       <callLog>         .Set       </callLog>
                       <touchedAccounts> .Set       </touchedAccounts>
 
@@ -210,57 +209,33 @@ The `callStack` cell stores a list of previous VM execution states.
 
 The `interimStates` cell stores a list of previous world states.
 
--   `#pushWorldState` stores a copy of the current accounts at the top of the `interimStates` cell.
+-   `#pushWorldState` stores a copy of the current accounts and the substate at the top of the `interimStates` cell.
 -   `#popWorldState` restores the top element of the `interimStates`.
 -   `#dropWorldState` removes the top element of the `interimStates`.
 
 ```k
-    syntax Accounts ::= "{" AccountsCell "|" Set "}"
- // ------------------------------------------------
+    syntax Accounts ::= "{" AccountsCellFragment "|" Set "|" SubstateCellFragment "}"
+ // ---------------------------------------------------------------------------------
 
     syntax InternalOp ::= "#pushWorldState"
  // ---------------------------------------
     rule <k> #pushWorldState => .K ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-         <accounts> ACCTDATA </accounts>
-         <interimStates> (.List => ListItem({ <accounts> ACCTDATA </accounts> | ACCTS })) ... </interimStates>
+         <interimStates> (.List => ListItem({ ACCTDATA | ACCTS | SUBSTATE })) ... </interimStates>
+         <activeAccounts> ACCTS    </activeAccounts>
+         <accounts>       ACCTDATA </accounts>
+         <substate>       SUBSTATE </substate>
 
     syntax InternalOp ::= "#popWorldState"
  // --------------------------------------
     rule <k> #popWorldState => .K ... </k>
-         <interimStates> (ListItem({ <accounts> ACCTDATA </accounts> | ACCTS }) => .List) ... </interimStates>
-         <activeAccounts> _ => ACCTS </activeAccounts>
-         <accounts> _ => ACCTDATA </accounts>
+         <interimStates> (ListItem({ ACCTDATA | ACCTS | SUBSTATE }) => .List) ... </interimStates>
+         <activeAccounts> _ => ACCTS    </activeAccounts>
+         <accounts>       _ => ACCTDATA </accounts>
+         <substate>       _ => SUBSTATE </substate>
 
     syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
     rule <k> #dropWorldState => . ... </k> <interimStates> (ListItem(_) => .List) ... </interimStates>
-```
-
-### The SubstateStack
-
-The `substateStack` cell stores a list of previous substate logs.
-
--   `#pushSubstate` stores a copy of the current substate at the top of the `substateStack` cell.
--   `#popSubstate` restores the top element of the `substateStack`.
--   `#dropSubstate` removes the top element of the `substateStack`.
-
-```k
-    syntax InternalOp ::= "#pushSubstate"
- // -------------------------------------
-    rule <k> #pushSubstate => .K ... </k>
-         <substate> SUBSTATE </substate>
-         <substateStack> (.List => ListItem(<substate> SUBSTATE </substate>)) ... </substateStack>
-
-    syntax InternalOp ::= "#popSubstate"
- // ------------------------------------
-    rule <k> #popSubstate => .K ... </k>
-         <substate> _ => SUBSTATE </substate>
-         <substateStack> (ListItem(<substate> SUBSTATE </substate>) => .List) ... </substateStack>
-
-    syntax InternalOp ::= "#dropSubstate"
- // -------------------------------------
-    rule <k> #dropSubstate => .K ... </k> <substateStack> (ListItem(_) => .List) ... </substateStack>
 ```
 
 Control Flow
@@ -1360,7 +1335,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
                         | "#callWithCode" Int Int Map WordStack Int Int Int WordStack Bool
                         | "#mkCall" Int Int Map WordStack Int Int Int WordStack Bool
  // --------------------------------------------------------------------------------
-    rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ _ => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
+    rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ _ => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState ~> #exception ... </k>
          <callDepth> CD </callDepth>
          <output> _ => .WordStack </output>
          <account>
@@ -1404,7 +1379,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
       requires notBool ACCTCODE in #precompiledAccounts(SCHED) andBool notBool ACCTCODE in ACCTS
 
     rule <k> #callWithCode ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC
-          => #pushCallStack ~> #pushWorldState ~> #pushSubstate
+          => #pushCallStack ~> #pushWorldState
           ~> #transferFunds ACCTFROM ACCTTO VALUE
           ~> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC
          ...
@@ -1437,13 +1412,13 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
     rule <k> #exception ~> #return _ _
-          => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push
+          => #popCallStack ~> #popWorldState ~> 0 ~> #push
          ...
          </k>
          <output> _ => .WordStack </output>
 
     rule <k> #revert ~> #return RETSTART RETWIDTH
-          => #popCallStack ~> #popWorldState ~> #popSubstate
+          => #popCallStack ~> #popWorldState
           ~> 0 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
          </k>
@@ -1451,7 +1426,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <gas> GAVAIL </gas>
 
     rule <k> #end ~> #return RETSTART RETWIDTH
-          => #popCallStack ~> #dropWorldState ~> #dropSubstate
+          => #popCallStack ~> #dropWorldState
           ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
          </k>
@@ -1541,7 +1516,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                         | "#checkCreate" Int Int
                         | "#incrementNonce" Int
  // -------------------------------------------
-    rule <k> #checkCreate ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #pushSubstate ~> #exception ... </k>
+    rule <k> #checkCreate ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #exception ... </k>
          <callDepth> CD </callDepth>
          <output> _ => .WordStack </output>
          <account>
@@ -1561,7 +1536,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
     rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
-          => #pushCallStack ~> #pushWorldState ~> #pushSubstate
+          => #pushCallStack ~> #pushWorldState
           ~> #newAccount ACCTTO
           ~> #transferFunds ACCTFROM ACCTTO VALUE
           ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
@@ -1599,8 +1574,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                    | "#mkCodeDeposit" Int
                    | "#finishCodeDeposit" Int WordStack
  // ---------------------------------------------------
-    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k> <output> _ => .WordStack </output>
-    rule <k> #revert ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> #refund GAVAIL ~> 0 ~> #push ... </k>
+    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k> <output> _ => .WordStack </output>
+    rule <k> #revert ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 ~> #push ... </k>
          <gas> GAVAIL </gas>
 
     rule <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
@@ -1614,13 +1589,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <output> OUT => .WordStack </output>
       requires #sizeWordStack(OUT) <=Int maxCodeSize < SCHED >
 
-    rule <k> #mkCodeDeposit ACCT => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k>
+    rule <k> #mkCodeDeposit ACCT => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
          <output> OUT => .WordStack </output>
       requires #sizeWordStack(OUT) >Int maxCodeSize < SCHED >
 
     rule <k> #finishCodeDeposit ACCT OUT
-          => #popCallStack ~> #dropWorldState ~> #dropSubstate
+          => #popCallStack ~> #dropWorldState
           ~> #refund GAVAIL ~> ACCT ~> #push
          ...
          </k>
@@ -1632,14 +1607,14 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </account>
 
     rule <k> #exception ~> #finishCodeDeposit ACCT _
-          => #popCallStack ~> #dropWorldState ~> #dropSubstate
+          => #popCallStack ~> #dropWorldState
           ~> #refund GAVAIL ~> ACCT ~> #push
          ...
          </k>
          <gas> GAVAIL </gas>
          <schedule> FRONTIER </schedule>
 
-    rule <k> #exception ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> #popSubstate ~> 0 ~> #push ... </k>
+    rule <k> #exception ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
       requires SCHED =/=K FRONTIER
 ```
