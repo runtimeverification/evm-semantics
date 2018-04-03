@@ -94,8 +94,9 @@ run_interpreter() {
     if [[ "$exit_status" != '0' ]]; then
         k-bin-to-text "$output" "$kast_output"
         cat "$kast_output"
-        return "$exit_status"
     fi
+    rm "$output" "$kast_output" "$kast"
+    return "$exit_status"
 }
 
 run_test() {
@@ -116,7 +117,10 @@ run_test() {
                         ;;
     esac
     [[ "$exit_status" == 0 ]] \
-        || pretty_diff "$expected_file" "$output_file"
+        || pretty_diff "$expected_file" "$output_file" \
+        || true
+    rm "$output_file"
+    exit "$exit_status"
 }
 
 run_test_profile() {
