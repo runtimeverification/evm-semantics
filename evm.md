@@ -723,24 +723,12 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #finalizeTx(true) => . ... </k>
          <selfDestruct> .Set </selfDestruct>
 
-    rule <k> #finalizeTx(false => true) ... </k>
-         <mode> VMTESTS </mode>
-         <id> ACCT </id>
-         <refund> BAL => 0 </refund>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> CURRBAL => CURRBAL +Word BAL </balance>
-           ...
-         </account>
-
     rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
-         <mode> NORMAL </mode>
          <coinbase> MINER </coinbase>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool MINER in ACCTS
 
     rule <k> #finalizeTx(false) ... </k>
-         <mode> NORMAL </mode>
          <gas> GAVAIL => G*(GAVAIL, GLIMIT, REFUND) </gas>
          <refund> REFUND => 0 </refund>
          <txPending> ListItem(MSGID:Int) ... </txPending>
@@ -752,7 +740,6 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires REFUND =/=Int 0
 
     rule <k> #finalizeTx(false => true) ... </k>
-         <mode> NORMAL </mode>
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
          <gas> GAVAIL </gas>
@@ -777,7 +764,6 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires ORG =/=Int MINER
 
     rule <k> #finalizeTx(false => true) ... </k>
-         <mode> NORMAL </mode>
          <origin> ACCT </origin>
          <coinbase> ACCT </coinbase>
          <refund> 0 </refund>

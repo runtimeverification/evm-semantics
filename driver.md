@@ -83,8 +83,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "flush"
  // ----------------------------------
-    rule <k> #end       ~> flush => #finalizeTx(false)               ... </k>
-    rule <k> #exception ~> flush => #finalizeTx(false) ~> #exception ... </k>
+    rule <mode> EXECMODE </mode> <k> #end       ~> flush => #finalizeTx(EXECMODE ==K VMTESTS)               ... </k>
+    rule <mode> EXECMODE </mode> <k> #exception ~> flush => #finalizeTx(EXECMODE ==K VMTESTS) ~> #exception ... </k>
 ```
 
 -   `startTx` computes the sender of the transaction, and places loadTx on the `k` cell.
