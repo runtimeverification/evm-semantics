@@ -234,7 +234,7 @@ test-slow-vm: $(slow_vm_tests:=.test)
 test-vm: $(quick_vm_tests:=.test)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build
-	MODE=VMTESTS $(TEST) $< tests/templates/output-success.txt
+	MODE=VMTESTS $(TEST) $< tests/templates/output-success.kast
 
 # BlockchainTests
 
@@ -251,7 +251,7 @@ test-slow-bchain: $(bchain_tests:=.test)
 test-bchain: $(quick_bchain_tests:=.test)
 
 tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/% build
-	$(TEST) $< tests/templates/output-success.txt
+	$(TEST) $< tests/templates/output-success.kast
 
 # InteractiveTests
 
@@ -261,7 +261,7 @@ interactive_tests:=$(wildcard tests/interactive/*.json) \
 test-interactive: $(interactive_tests:=.test)
 
 tests/interactive/%.json.test: tests/interactive/%.json tests/interactive/%.json.out build
-	$(TEST) $< $<.out
+	$(TEST) $< tests/templates/output-success.json
 
 tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out build
 	MODE=GASANALYZE $(TEST) $< $<.out
