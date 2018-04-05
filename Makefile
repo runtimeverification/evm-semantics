@@ -217,13 +217,13 @@ vm_tests=$(wildcard tests/ethereum-tests/VMTests/*/*.json)
 slow_vm_tests=$(wildcard tests/ethereum-tests/VMTests/vmPerformance/*.json)
 bad_vm_tests= $(wildcard tests/ethereum-tests/VMTests/vmBlockInfoTest/blockhash*.json) \
               $(wildcard tests/ethereum-tests/VMTests/vmEnvironmentalInfo/balance*.json) \
-              $(wildcard tests/ethereum-tests/VMTests/vmRandomTest/2015031*.json) \
               $(wildcard tests/ethereum-tests/VMTests/vmSystemOperations/*call*.json) \
               $(wildcard tests/ethereum-tests/VMTests/vmSystemOperations/*Call*.json) \
               $(wildcard tests/ethereum-tests/VMTests/vmSystemOperations/*create*.json) \
               tests/ethereum-tests/VMTests/vmEnvironmentalInfo/env1.json \
               tests/ethereum-tests/VMTests/vmEnvironmentalInfo/extcodecopy0AddressTooBigRight.json \
               tests/ethereum-tests/VMTests/vmEnvironmentalInfo/ExtCodeSizeAddressInputTooBigRightMyAddress.json \
+              tests/ethereum-tests/VMTests/vmRandomTest/201503110226PYTHON_DUP6.json \
               tests/ethereum-tests/VMTests/vmRandomTest/randomTest.json \
               tests/ethereum-tests/VMTests/vmSystemOperations/PostToNameRegistrator0.json \
               tests/ethereum-tests/VMTests/vmSystemOperations/PostToReturn1.json
