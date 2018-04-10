@@ -1335,7 +1335,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
                         | "#callWithCode" Int Int Map WordStack Int Int Int WordStack Bool
                         | "#mkCall" Int Int Map WordStack Int Int Int WordStack Bool
  // --------------------------------------------------------------------------------
-    rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ _ => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState ~> #exception ... </k>
+    rule <k> #checkCall ACCT VALUE => #exception ... </k>
          <callDepth> CD </callDepth>
          <output> _ => .WordStack </output>
          <account>
@@ -1345,7 +1345,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </account>
       requires VALUE >Int BAL orBool CD >=Int 1024
 
-     rule <k> (#checkCall ACCT VALUE => .) ~> #call _ _ _ _ _ _ _ _ ... </k>
+     rule <k> #checkCall ACCT VALUE => . ... </k>
          <callDepth> CD </callDepth>
          <account>
            <acctID> ACCT </acctID>
@@ -1353,26 +1353,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
            ...
          </account>
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
-
-     rule <k> #checkCall ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #exception ... </k>
-          <callDepth> CD </callDepth>
-          <output> _ => .WordStack </output>
-          <account>
-            <acctID> ACCT </acctID>
-            <balance> BAL </balance>
-            ...
-          </account>
-       requires VALUE >Int BAL orBool CD >=Int 1024
-
-     rule <k> (#checkCall ACCT VALUE => .) ~> #create _ _ _ _ _ ... </k>
-          <callDepth> CD </callDepth>
-          <output> _ => .WordStack </output>
-          <account>
-            <acctID> ACCT </acctID>
-            <balance> BAL </balance>
-            ...
-          </account>
-       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT:Int VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .WordStack GLIMIT VALUE APPVALUE ARGS STATIC
@@ -1467,7 +1447,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #? #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ~> #pushCallStack ~> #pushWorldState
+             ?#
           ~> #endCall
           ~> #return RETSTART RETWIDTH
          ...
@@ -1481,7 +1463,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #? #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) ~> #pushCallStack ~> #pushWorldState
+             ?#
           ~> #endCall
           ~> #return RETSTART RETWIDTH
          ...
@@ -1495,7 +1479,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
-          ~> #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #? #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
+              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) ~> #pushCallStack ~> #pushWorldState
+             ?#
           ~> #endCall
           ~> #return RETSTART RETWIDTH
          ...
@@ -1511,7 +1497,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ---------------------------------
     rule <k> STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
-          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) 0 0 #range(LM, ARGSTART, ARGWIDTH) true
+          ~> #? #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) 0 0 #range(LM, ARGSTART, ARGWIDTH) true
+              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) ~> #pushCallStack ~> #pushWorldState
+             ?#
           ~> #endCall
           ~> #return RETSTART RETWIDTH
          ...
@@ -1624,7 +1612,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
           => #checkCall ACCT VALUE
-          ~> #create ACCT #newAddr(ACCT, NONCE) #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #range(LM, MEMSTART, MEMWIDTH)
+          ~> #? #incrementNonce ACCT
+             ~> #create ACCT #newAddr(ACCT, NONCE) #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #range(LM, MEMSTART, MEMWIDTH)
+              : #refund #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi ~> #pushCallStack ~> #pushWorldState
+             ?#
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
