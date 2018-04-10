@@ -1448,9 +1448,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
           ~> #? #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
-              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ~> #pushCallStack ~> #pushWorldState
+             ~> #endCall
+              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE)
              ?#
-          ~> #endCall
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1464,9 +1464,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
           ~> #? #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
-              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) ~> #pushCallStack ~> #pushWorldState
+             ~> #endCall
+              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE)
              ?#
-          ~> #endCall
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1480,9 +1480,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
           ~> #? #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
-              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) ~> #pushCallStack ~> #pushWorldState
+             ~> #endCall
+              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0)
              ?#
-          ~> #endCall
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1498,9 +1498,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule <k> STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
           ~> #? #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) 0 0 #range(LM, ARGSTART, ARGWIDTH) true
-              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) ~> #pushCallStack ~> #pushWorldState
+             ~> #endCall
+              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0)
              ?#
-          ~> #endCall
           ~> #return RETSTART RETWIDTH
          ...
          </k>
