@@ -1556,15 +1556,17 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            ...
          </account>
 
-    syntax KItem ::= "#codeDeposit" Int
+    syntax KItem ::= "#endCreate"
+                   | "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
                    | "#finishCodeDeposit" Int WordStack
  // ---------------------------------------------------
-    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k> <output> _ => .WordStack </output>
-    rule <k> #revert ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 ~> #push ... </k>
-         <gas> GAVAIL </gas>
-
-    rule <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
+    rule <k> #exception ~> #endCreate => #exception ... </k>
+    rule <k> #revert    ~> #endCreate => #revert    ... </k>
+    rule <k> #end       ~> #endCreate => #end       ... </k>
+    rule <k> #exception ~> #codeDeposit _    => #popCallStack ~> #popWorldState ~> 0 ~> #push                   ... </k> <output> _ => .WordStack </output>
+    rule <k> #revert    ~> #codeDeposit _    => #popCallStack ~> #popWorldState ~> 0 ~> #push ~> #refund GAVAIL ... </k> <gas> GAVAIL </gas>
+    rule <k> #end       ~> #codeDeposit ACCT => #mkCodeDeposit ACCT                                             ... </k>
 
     rule <k> #mkCodeDeposit ACCT
           => Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas
@@ -1616,6 +1618,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
              ~> #create ACCT #newAddr(ACCT, NONCE) #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #range(LM, MEMSTART, MEMWIDTH)
               : #refund #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi ~> #pushCallStack ~> #pushWorldState
              ?#
+          ~> #endCreate
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
