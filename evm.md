@@ -1411,14 +1411,13 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax KItem ::= "#endCall"
  // ---------------------------
-    rule <k> #exception ~> #endCall => #popCallStack ~> #popWorldState                    ~> #exception ... </k>
+    rule <k> #exception ~> #endCall => #popCallStack ~> #popWorldState                    ~> #exception ... </k> <output> _ => .WordStack </output>
     rule <k> #revert    ~> #endCall => #popCallStack ~> #popWorldState  ~> #refund GAVAIL ~> #revert    ... </k> <gas> GAVAIL </gas>
     rule <k> #end       ~> #endCall => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ~> #end       ... </k> <gas> GAVAIL </gas>
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
     rule <k> #exception ~> #return _ _ => 0 ~> #push ... </k>
-         <output> _ => .WordStack </output>
 
     rule <k> #revert ~> #return RETSTART RETWIDTH => 0 ~> #push ~> #setLocalMem RETSTART RETWIDTH OUT ... </k>
          <output> OUT </output>
@@ -1561,10 +1560,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                    | "#mkCodeDeposit" Int
                    | "#finishCodeDeposit" Int WordStack
  // ---------------------------------------------------
-    rule <k> #exception ~> #endCreate => #popCallStack ~> #popWorldState                   ~> #exception ... </k>
+    rule <k> #exception ~> #endCreate => #popCallStack ~> #popWorldState                   ~> #exception ... </k> <output> _ => .WordStack </output>
     rule <k> #revert    ~> #endCreate => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> #revert    ... </k> <gas> GAVAIL </gas>
     rule <k> #end       ~> #endCreate =>                                                      #end       ... </k>
-    rule <k> #exception ~> #codeDeposit _    => 0 ~> #push          ... </k> <output> _ => .WordStack </output>
+    rule <k> #exception ~> #codeDeposit _    => 0 ~> #push          ... </k>
     rule <k> #revert    ~> #codeDeposit _    => 0 ~> #push          ... </k>
     rule <k> #end       ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
 
