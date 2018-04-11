@@ -189,8 +189,10 @@ Because the same account may be loaded more than once, implementations of this i
     rule <statusCode> _:ExceptionalStatuscode </statusCode>
          <k> #exception ~> #endVM => #popCallStack ~> #popWorldState ~> 0 </k>
          <output> _ => .WordStack </output>
-    rule <k> #revert ~> #endVM => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 </k>
-         <gas> GAVAIL </gas>       
+
+    rule <statusCode> EVMC_REVERT </statusCode>
+         <k> #exception ~> #endVM => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 </k>
+         <gas> GAVAIL </gas>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
          <k> #exception ~> #endVM => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ~> 1 </k>

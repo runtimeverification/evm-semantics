@@ -179,7 +179,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
     rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #exception ~> #finishTx => #popCallStack ~> #popWorldState ... </k>
-    rule <k> #revert    ~> #finishTx => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k> <gas> GAVAIL </gas>
+    rule <statusCode> EVMC_REVERT             </statusCode> <k> #exception ~> #finishTx => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k> <gas> GAVAIL </gas>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
          <k> #exception ~> #finishTx => #mkCodeDeposit ACCT ... </k>
