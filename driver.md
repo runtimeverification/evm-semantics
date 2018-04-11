@@ -119,7 +119,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> loadTx(ACCTFROM)
           => #loadAccount #newAddr(ACCTFROM, NONCE)
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE CODE
-          ~> #execute ~> #finishTx ~> #finalizeTx(false) ~> startTx
+          ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -140,7 +140,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
-           <nonce> NONCE => NONCE +Int 1 </nonce>
+           <nonce> NONCE </nonce>
            ...
          </account>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
@@ -149,7 +149,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           => #loadAccount ACCTTO
           ~> #lookupCode  ACCTTO
           ~> #call ACCTFROM ACCTTO ACCTTO (GLIMIT -Int G0(SCHED, DATA, false)) VALUE VALUE DATA false
-          ~> #execute ~> #finishTx ~> #finalizeTx(false) ~> startTx
+          ~> #endCall ~> #catch ~> #finalizeTx(false) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -189,17 +189,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <to>    .Account </to>
            ...
          </message>
-
-    rule <k> #end ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ... </k>
-         <id> ACCT </id>
-         <gas> GAVAIL </gas>
-         <txPending> ListItem(TXID:Int) ... </txPending>
-         <message>
-           <msgID> TXID </msgID>
-           <to>    TT   </to>
-           ...
-         </message>
-      requires TT =/=K .Account
 ```
 
 -   `#finalizeBlock` is used to signal that block finalization procedures should take place (after transactions have executed).

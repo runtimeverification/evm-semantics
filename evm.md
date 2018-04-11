@@ -247,9 +247,12 @@ Control Flow
 -   `#exception` indicates exceptions (consuming opcodes until a catch).
 
 ```k
-    syntax KItem     ::= Exception
+    syntax KItem     ::= Exception | "#catch"
     syntax Exception ::= "#exception" | "#end" | "#revert"
  // ------------------------------------------------------
+    rule <k>                 #catch => . ... </k>
+    rule <k> EX:Exception ~> #catch => . ... </k>
+
     rule <k> EX:Exception ~> (_:Int    => .) ... </k>
     rule <k> EX:Exception ~> (_:OpCode => .) ... </k>
 ```
@@ -1335,7 +1338,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
                         | "#callWithCode" Int Int Map WordStack Int Int Int WordStack Bool
                         | "#mkCall" Int Int Map WordStack Int Int Int WordStack Bool
  // --------------------------------------------------------------------------------
-    rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ _ => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState ~> #exception ... </k>
+    rule <k> #checkCall ACCT VALUE => #exception ... </k>
          <callDepth> CD </callDepth>
          <output> _ => .WordStack </output>
          <account>
@@ -1409,29 +1412,21 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <wordStack>  _ => .WordStack </wordStack>
          <localMem>   _ => .Map       </localMem>
 
+    syntax KItem ::= "#endCall"
+ // ---------------------------
+    rule <k> #exception ~> #endCall => #popCallStack ~> #popWorldState                    ~> #exception ... </k> <output> _ => .WordStack </output>
+    rule <k> #revert    ~> #endCall => #popCallStack ~> #popWorldState  ~> #refund GAVAIL ~> #revert    ... </k> <gas> GAVAIL </gas>
+    rule <k> #end       ~> #endCall => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ~> #end       ... </k> <gas> GAVAIL </gas>
+
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
-    rule <k> #exception ~> #return _ _
-          => #popCallStack ~> #popWorldState ~> 0 ~> #push
-         ...
-         </k>
-         <output> _ => .WordStack </output>
+    rule <k> #exception ~> #return _ _ => 0 ~> #push ... </k>
 
-    rule <k> #revert ~> #return RETSTART RETWIDTH
-          => #popCallStack ~> #popWorldState
-          ~> 0 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
-         ...
-         </k>
+    rule <k> #revert ~> #return RETSTART RETWIDTH => 0 ~> #push ~> #setLocalMem RETSTART RETWIDTH OUT ... </k>
          <output> OUT </output>
-         <gas> GAVAIL </gas>
 
-    rule <k> #end ~> #return RETSTART RETWIDTH
-          => #popCallStack ~> #dropWorldState
-          ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
-         ...
-         </k>
+    rule <k> #end ~> #return RETSTART RETWIDTH => 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH OUT ... </k>
          <output> OUT </output>
-         <gas> GAVAIL </gas>
 
     syntax InternalOp ::= "#refund" Exp [strict]
                         | "#setLocalMem" Int Int WordStack
@@ -1454,7 +1449,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #? #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+             ~> #endCall
+              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE)
+             ?#
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1467,7 +1465,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #? #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+             ~> #endCall
+              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE)
+             ?#
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1480,7 +1481,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
-          ~> #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #? #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
+             ~> #endCall
+              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0)
+             ?#
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1495,7 +1499,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ---------------------------------
     rule <k> STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
-          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) 0 0 #range(LM, ARGSTART, ARGWIDTH) true
+          ~> #? #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) 0 0 #range(LM, ARGSTART, ARGWIDTH) true
+             ~> #endCall
+              : #refund Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0)
+             ?#
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1511,39 +1518,20 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 -   `#codeDeposit_` checks the result of initialization code and whether the code deposit can be paid, indicating an error if not.
 
 ```k
-    syntax InternalOp ::= "#create" Int Int Int Int WordStack
-                        | "#mkCreate" Int Int WordStack Int Int
-                        | "#checkCreate" Int Int
+    syntax InternalOp ::= "#create"   Int Int Int Int WordStack
+                        | "#mkCreate" Int Int Int Int WordStack
                         | "#incrementNonce" Int
  // -------------------------------------------
-    rule <k> #checkCreate ACCT VALUE ~> #create _ _ GAVAIL _ _ => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState ~> #exception ... </k>
-         <callDepth> CD </callDepth>
-         <output> _ => .WordStack </output>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
-      requires VALUE >Int BAL orBool CD >=Int 1024
-
-    rule <k> #checkCreate ACCT VALUE => #incrementNonce ACCT ... </k>
-         <callDepth> CD </callDepth>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
-      requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
-
     rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
-          => #pushCallStack ~> #pushWorldState
+          => #incrementNonce ACCTFROM
+          ~> #pushCallStack ~> #pushWorldState
           ~> #newAccount ACCTTO
           ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
+          ~> #mkCreate ACCTFROM ACCTTO GAVAIL VALUE INITCODE
          ...
          </k>
 
-    rule <k> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
+    rule <k> #mkCreate ACCTFROM ACCTTO GAVAIL VALUE INITCODE
           => #initVM ~> #execute
          ...
          </k>
@@ -1570,15 +1558,17 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            ...
          </account>
 
-    syntax KItem ::= "#codeDeposit" Int
+    syntax KItem ::= "#endCreate"
+                   | "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
                    | "#finishCodeDeposit" Int WordStack
  // ---------------------------------------------------
-    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k> <output> _ => .WordStack </output>
-    rule <k> #revert ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 ~> #push ... </k>
-         <gas> GAVAIL </gas>
-
-    rule <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
+    rule <k> #exception ~> #endCreate => #popCallStack ~> #popWorldState                   ~> #exception ... </k> <output> _ => .WordStack </output>
+    rule <k> #revert    ~> #endCreate => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> #revert    ... </k> <gas> GAVAIL </gas>
+    rule <k> #end       ~> #endCreate =>                                                      #end       ... </k>
+    rule <k> #exception ~> #codeDeposit _    => 0 ~> #push          ... </k>
+    rule <k> #revert    ~> #codeDeposit _    => 0 ~> #push          ... </k>
+    rule <k> #end       ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
 
     rule <k> #mkCodeDeposit ACCT
           => Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas
@@ -1607,16 +1597,16 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </account>
 
     rule <k> #exception ~> #finishCodeDeposit ACCT _
-          => #popCallStack ~> #dropWorldState
-          ~> #refund GAVAIL ~> ACCT ~> #push
+          => #popCallStack
+          ~> #if SCHED ==K FRONTIER
+                #then #dropWorldState ~> #refund GAVAIL ~> ACCT
+                #else #popWorldState  ~>                   0
+             #fi
+          ~> #push
          ...
          </k>
          <gas> GAVAIL </gas>
-         <schedule> FRONTIER </schedule>
-
-    rule <k> #exception ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
-      requires SCHED =/=K FRONTIER
 ```
 
 `CREATE` will attempt to `#create` the account using the initialization code and cleans up the result with `#codeDeposit`.
@@ -1625,8 +1615,12 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
-          => #checkCreate ACCT VALUE
-          ~> #create ACCT #newAddr(ACCT, NONCE) #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #range(LM, MEMSTART, MEMWIDTH)
+          => #checkCall ACCT VALUE
+          ~> #? #incrementNonce ACCT
+             ~> #create ACCT #newAddr(ACCT, NONCE) #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #range(LM, MEMSTART, MEMWIDTH)
+              : #refund #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi ~> #pushCallStack ~> #pushWorldState
+             ?#
+          ~> #endCreate
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
