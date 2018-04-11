@@ -223,6 +223,10 @@ bad_vm_tests= $(wildcard tests/ethereum-tests/VMTests/vmBlockInfoTest/blockhash*
               tests/ethereum-tests/VMTests/vmEnvironmentalInfo/env1.json \
               tests/ethereum-tests/VMTests/vmEnvironmentalInfo/extcodecopy0AddressTooBigRight.json \
               tests/ethereum-tests/VMTests/vmEnvironmentalInfo/ExtCodeSizeAddressInputTooBigRightMyAddress.json \
+              tests/ethereum-tests/VMTests/vmRandomTest/201503102037PYTHON.json \
+              tests/ethereum-tests/VMTests/vmRandomTest/201503102148PYTHON.json \
+              tests/ethereum-tests/VMTests/vmRandomTest/201503102300PYTHON.json \
+              tests/ethereum-tests/VMTests/vmRandomTest/201503110050PYTHON.json \
               tests/ethereum-tests/VMTests/vmRandomTest/201503110226PYTHON_DUP6.json \
               tests/ethereum-tests/VMTests/vmRandomTest/randomTest.json \
               tests/ethereum-tests/VMTests/vmSystemOperations/PostToNameRegistrator0.json \
