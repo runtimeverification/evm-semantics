@@ -396,10 +396,11 @@ State Manipulation
     syntax EthreumCommand ::= "clearNETWORK"
  // ----------------------------------------
     rule <k> clearNETWORK => . ... </k>
-         <activeAccounts> _ => .Set    </activeAccounts>
-         <accounts>       _ => .Bag    </accounts>
-         <messages>       _ => .Bag    </messages>
-         <schedule>       _ => DEFAULT </schedule>
+         <statusCode>     _ => .StatusCode </statusCode>
+         <activeAccounts> _ => .Set        </activeAccounts>
+         <accounts>       _ => .Bag        </accounts>
+         <messages>       _ => .Bag        </messages>
+         <schedule>       _ => DEFAULT     </schedule>
 ```
 
 ### Loading State

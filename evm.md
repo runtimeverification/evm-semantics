@@ -9,10 +9,12 @@ This file only defines the local execution operations, the file `driver.md` will
 
 ```k
 requires "data.k"
+requires "network.k"
 
 module EVM
     imports STRING
     imports EVM-DATA
+    imports NETWORK
 ```
 
 Configuration
@@ -42,10 +44,11 @@ In the comments next to each cell, we've marked which component of the YellowPap
           // Mutable during a single transaction
           // -----------------------------------
 
-          <output>          .WordStack </output>            // H_RETURN
-          <callStack>       .List      </callStack>
-          <interimStates>   .List      </interimStates>
-          <touchedAccounts> .Set       </touchedAccounts>
+          <output>          .WordStack  </output>           // H_RETURN
+          <statusCode>      .StatusCode </statusCode>
+          <callStack>       .List       </callStack>
+          <interimStates>   .List       </interimStates>
+          <touchedAccounts> .Set        </touchedAccounts>
 
           <callState>
             <program>      .Map       </program>            // I_b

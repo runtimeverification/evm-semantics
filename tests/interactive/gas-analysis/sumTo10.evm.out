@@ -23,6 +23,9 @@
       <output>
         .WordStack
       </output>
+      <statusCode>
+        .StatusCode
+      </statusCode>
       <callStack>
         .List
       </callStack>
