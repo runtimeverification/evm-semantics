@@ -250,11 +250,11 @@ Control Flow
 
 ```k
     syntax KItem     ::= Exception
-    syntax KItem     ::= "#exception" StatusCode
-    syntax Exception ::= "#exception" | "#end" | "#revert"
- // ------------------------------------------------------
-    rule <k> #exception SC => #exception ... </k>
-         <statusCode> _ => SC </statusCode>
+    syntax KItem     ::= "#exception" StatusCode | "#end"
+    syntax Exception ::= "#exception" | "#revert"
+ // ---------------------------------------------
+    rule <k> #end          => #exception EVMC_SUCCESS ... </k>
+    rule <k> #exception SC => #exception              ... </k> <statusCode> _ => SC </statusCode>
 
     rule <k> EX:Exception ~> (_:Int    => .) ... </k>
     rule <k> EX:Exception ~> (_:OpCode => .) ... </k>
@@ -269,7 +269,6 @@ Control Flow
  // ----------------------------------
     rule <k>            #? B1 : _  ?# => B1               ... </k>
     rule <k> #revert ~> #? B1 : _  ?# => B1 ~> #revert    ... </k>
-    rule <k> #end    ~> #? B1 : _  ?# => B1 ~> #end       ... </k>
     rule <statusCode> SC </statusCode>
          <k> #exception ~> #? B1 : B2 ?# => #if isExceptionalStatusCode(SC) #then B2 #else B1 #fi ~> #exception ... </k>
 ```
@@ -1457,7 +1456,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <output> OUT </output>
          <gas> GAVAIL </gas>
 
-    rule <k> #end ~> #return RETSTART RETWIDTH
+    rule <statusCode> EVMC_SUCCESS </statusCode>
+         <k> #exception ~> #return RETSTART RETWIDTH
           => #popCallStack ~> #dropWorldState
           ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
@@ -1615,7 +1615,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule <k> #revert ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 ~> #push ... </k>
          <gas> GAVAIL </gas>
 
-    rule <k> #end ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
+    rule <statusCode> EVMC_SUCCESS </statusCode>
+         <k> #exception ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
 
     rule <k> #mkCodeDeposit ACCT
           => Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas

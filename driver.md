@@ -83,7 +83,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "flush"
  // ----------------------------------
-    rule <mode> EXECMODE </mode> <k> #end       ~> flush => #finalizeTx(EXECMODE ==K VMTESTS)               ... </k>
+    rule <mode> EXECMODE </mode> <statusCode> EVMC_SUCCESS            </statusCode> <k> #exception ~> flush => #finalizeTx(EXECMODE ==K VMTESTS)               ... </k>
     rule <mode> EXECMODE </mode> <statusCode> _:ExceptionalStatusCode </statusCode> <k> #exception ~> flush => #finalizeTx(EXECMODE ==K VMTESTS) ~> #exception ... </k>
 ```
 
@@ -181,7 +181,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #exception ~> #finishTx => #popCallStack ~> #popWorldState ... </k>
     rule <k> #revert    ~> #finishTx => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k> <gas> GAVAIL </gas>
 
-    rule <k> #end ~> #finishTx => #mkCodeDeposit ACCT ... </k>
+    rule <statusCode> EVMC_SUCCESS </statusCode>
+         <k> #exception ~> #finishTx => #mkCodeDeposit ACCT ... </k>
          <id> ACCT </id>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
@@ -190,7 +191,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            ...
          </message>
 
-    rule <k> #end ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ... </k>
+    rule <statusCode> EVMC_SUCCESS </statusCode>
+         <k> #exception ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ... </k>
          <id> ACCT </id>
          <gas> GAVAIL </gas>
          <txPending> ListItem(TXID:Int) ... </txPending>

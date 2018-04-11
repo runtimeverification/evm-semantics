@@ -24,7 +24,7 @@
         .WordStack
       </output>
       <statusCode>
-        .StatusCode
+        EVMC_SUCCESS
       </statusCode>
       <callStack>
         .List
