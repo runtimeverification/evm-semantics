@@ -1511,7 +1511,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </account>
       requires VALUE >Int BAL orBool CD >=Int 1024
 
-    rule <k> #checkCreate ACCT VALUE => #incrementNonce ACCT ... </k>
+    rule <k> #checkCreate ACCT VALUE => . ... </k>
          <callDepth> CD </callDepth>
          <account>
            <acctID> ACCT </acctID>
@@ -1521,7 +1521,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
     rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
-          => #pushCallStack ~> #pushWorldState
+          => #incrementNonce ACCTFROM
+          ~> #pushCallStack ~> #pushWorldState
           ~> #newAccount ACCTTO
           ~> #transferFunds ACCTFROM ACCTTO VALUE
           ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
