@@ -267,10 +267,11 @@ Control Flow
 ```k
     syntax KItem ::= "#?" K ":" K "?#"
  // ----------------------------------
-    rule <k>               #? B1 : _  ?# => B1               ... </k>
-    rule <k> #exception ~> #? _  : B2 ?# => B2 ~> #exception ... </k>
-    rule <k> #revert    ~> #? B1 : _  ?# => B1 ~> #revert    ... </k>
-    rule <k> #end       ~> #? B1 : _  ?# => B1 ~> #end       ... </k>
+    rule <k>            #? B1 : _  ?# => B1               ... </k>
+    rule <k> #revert ~> #? B1 : _  ?# => B1 ~> #revert    ... </k>
+    rule <k> #end    ~> #? B1 : _  ?# => B1 ~> #end       ... </k>
+    rule <statusCode> SC </statusCode>
+         <k> #exception ~> #? B1 : B2 ?# => #if isExceptionalStatusCode(SC) #then B2 #else B1 #fi ~> #exception ... </k>
 ```
 
 OpCode Execution
@@ -307,8 +308,7 @@ OpCode Execution
 ```
 
 Execution follows a simple cycle where first the state is checked for exceptions, then if no exceptions will be thrown the opcode is run.
-
--   Regardless of the mode, `#next` will throw `#end` or `#exception` if the current program counter is not pointing at an OpCode.
+When the `#next` operator cannot lookup the next opcode, it assumes that the end of execution has been reached.
 
 ```k
     syntax InternalOp ::= "#next"
@@ -1442,7 +1442,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
-    rule <k> #exception ~> #return _ _
+    rule <statusCode> _:ExceptionalStatusCode </statusCode>
+         <k> #exception ~> #return _ _
           => #popCallStack ~> #popWorldState ~> 0 ~> #push
          ...
          </k>
@@ -1609,7 +1610,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                    | "#mkCodeDeposit" Int
                    | "#finishCodeDeposit" Int WordStack
  // ---------------------------------------------------
-    rule <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k> <output> _ => .WordStack </output>
+    rule <statusCode> _:ExceptionalStatusCode </statusCode>
+         <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k> <output> _ => .WordStack </output>
     rule <k> #revert ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 ~> #push ... </k>
          <gas> GAVAIL </gas>
 
@@ -1641,7 +1643,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            ...
          </account>
 
-    rule <k> #exception ~> #finishCodeDeposit ACCT _
+    rule <statusCode> _:ExceptionalStatusCode </statusCode>
+         <k> #exception ~> #finishCodeDeposit ACCT _
           => #popCallStack ~> #dropWorldState
           ~> #refund GAVAIL ~> ACCT ~> #push
          ...
@@ -1649,7 +1652,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <gas> GAVAIL </gas>
          <schedule> FRONTIER </schedule>
 
-    rule <k> #exception ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
+    rule <statusCode> _:ExceptionalStatusCode </statusCode>
+         <k> #exception ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
       requires SCHED =/=K FRONTIER
 ```

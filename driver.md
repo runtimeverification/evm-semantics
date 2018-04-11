@@ -72,7 +72,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ### Driving Execution
 
 -   `start` places `#next` on the `<k>` cell so that execution of the loaded state begin.
--   `flush` places `#finalize` on the `<k>` cell once it sees `#end` in the `<k>` cell, clearing any exceptions it finds.
+-   `flush` places `#finalize` on the `<k>` cell.
 
 ```{.k .standalone}
     syntax EthereumCommand ::= "start"
@@ -84,7 +84,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= "flush"
  // ----------------------------------
     rule <mode> EXECMODE </mode> <k> #end       ~> flush => #finalizeTx(EXECMODE ==K VMTESTS)               ... </k>
-    rule <mode> EXECMODE </mode> <k> #exception ~> flush => #finalizeTx(EXECMODE ==K VMTESTS) ~> #exception ... </k>
+    rule <mode> EXECMODE </mode> <statusCode> _:ExceptionalStatusCode </statusCode> <k> #exception ~> flush => #finalizeTx(EXECMODE ==K VMTESTS) ~> #exception ... </k>
 ```
 
 -   `startTx` computes the sender of the transaction, and places loadTx on the `k` cell.
@@ -178,7 +178,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
-    rule <k> #exception ~> #finishTx => #popCallStack ~> #popWorldState ... </k>
+    rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #exception ~> #finishTx => #popCallStack ~> #popWorldState ... </k>
     rule <k> #revert    ~> #finishTx => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k> <gas> GAVAIL </gas>
 
     rule <k> #end ~> #finishTx => #mkCodeDeposit ACCT ... </k>
@@ -250,7 +250,9 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "exception" | "status" StatusCode
  // ------------------------------------------------------------
-    rule <k> #exception ~> exception => . ... </k>
+    rule <statusCode> _:ExceptionalStatusCode </statusCode>
+         <k> #exception ~> exception => . ... </k>
+
     rule <k> status SC => . ... </k> <statusCode> SC </statusCode>
 
     syntax EthereumCommand ::= "failure" String | "success"
