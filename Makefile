@@ -141,7 +141,7 @@ else
   LIBFLAG=-shared
 endif
 
-.build/%/driver-kompiled/constants.$(EXT): $(defn_files)
+.build/%/driver-kompiled/constants.$(EXT): $(ocaml_files) $(node_files)
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
 		&& ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
