@@ -119,7 +119,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> loadTx(ACCTFROM)
           => #loadAccount #newAddr(ACCTFROM, NONCE)
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE CODE
-          ~> #execute ~> #finishTx ~> #finalizeTx(false) ~> startTx
+          ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -149,7 +149,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           => #loadAccount ACCTTO
           ~> #lookupCode  ACCTTO
           ~> #call ACCTFROM ACCTTO ACCTTO (GLIMIT -Int G0(SCHED, DATA, false)) VALUE VALUE DATA false
-          ~> #execute ~> #finishTx ~> #finalizeTx(false) ~> startTx
+          ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
