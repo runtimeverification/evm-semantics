@@ -74,47 +74,55 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #encodeArgs(ARG, ARGS)  => #getData(ARG) ++ #encodeArgs(ARGS)
     rule #encodeArgs(.TypedArgs) => .WordStack
 
-    syntax WordStack ::= #getData ( TypedArg ) [function]
- // -----------------------------------------------------
-    rule #getData(#uint160( DATA )) => #padToWidth(32, #asByteStack(DATA))
-      requires 0 <=Int DATA andBool DATA <=Int maxUInt160
+    syntax Int ::= #getValue ( TypedArg ) [function]
+ // ------------------------------------------------
+    rule #getValue(#uint160( DATA )) => DATA
+      requires minUInt160 <=Int DATA andBool DATA <=Int maxUInt160
 
-    rule #getData(#address( DATA )) => #padToWidth(32, #asByteStack(DATA))
-      requires 0 <=Int DATA andBool DATA <=Int maxUInt160
+    rule #getValue(#address( DATA )) => DATA
+      requires minUInt160 <=Int DATA andBool DATA <=Int maxUInt160
 
-    rule #getData(#uint256( DATA )) => #padToWidth(32, #asByteStack(DATA))
-      requires 0 <=Int DATA andBool DATA <=Int maxUInt256
+    rule #getValue(#uint256( DATA )) => DATA
+      requires minUInt256 <=Int DATA andBool DATA <=Int maxUInt256
 
-    rule #getData( #int128( DATA )) => #padToWidth(32, #asByteStack(#signed(DATA)))
-      requires minInt128 <=Int DATA andBool DATA <=Int maxInt128
+    rule #getValue( #int128( DATA )) => #signed(DATA)
+      requires minSInt128 <=Int DATA andBool DATA <=Int maxSInt128
 
-    rule #getData(#bytes32( DATA )) => #padToWidth(32, #asByteStack(DATA))
-      requires 0 <=Int DATA andBool DATA <=Int maxUInt256
+    rule #getValue(#bytes32( DATA )) => DATA
+      requires minUInt256 <=Int DATA andBool DATA <=Int maxUInt256
 
-    rule #getData(   #bool( DATA )) => #padToWidth(32, #asByteStack(DATA))
+    rule #getValue(   #bool( DATA )) => DATA
       requires 0 <=Int DATA andBool DATA <=Int 1
-
-    syntax Int ::= "minInt128"  [function]
-                 | "maxInt128"  [function]
-                 | "maxUInt160" [function]
-                 | "maxUInt256" [function]
-                 | "minInt256"  [funciton]
-                 | "maxInt256"  [function]
- // ---------------------------------------
-    rule minInt128  => -170141183460469231731687303715884105728                                        [macro]  /* -2^127     */
-    rule maxInt128  =>  170141183460469231731687303715884105727                                        [macro]  /*  2^127 - 1 */
-    rule maxUInt160 =>  1461501637330902918203684832716283019655932542975                              [macro]  /*  2^160 - 1 */
-    rule maxUInt256 =>  115792089237316195423570985008687907853269984665640564039457584007913129639935 [macro]  /*  2^256 - 1 */
-    rule minInt256  => -57896044618658097711785492504343953926634992332820282019728792003956564819968  [macro]  /* -2^255     */
-    rule maxInt256  =>  57896044618658097711785492504343953926634992332820282019728792003956564819967  [macro]  /*  2^255 - 1 */
 
     syntax Int ::= #signed ( Int ) [function]
  // -----------------------------------------
     rule #signed(DATA) => DATA
-      requires 0 <=Int DATA andBool DATA <=Int maxInt256
+      requires 0 <=Int DATA andBool DATA <=Int maxSInt256
 
     rule #signed(DATA) => pow256 +Int DATA
-      requires minInt256 <=Int DATA andBool DATA <Int 0
+      requires minSInt256 <=Int DATA andBool DATA <Int 0
+
+    syntax WordStack ::= #getData ( TypedArg ) [function]
+ // -----------------------------------------------------
+    rule #getData(X) => #padToWidth(32, #asByteStack(#getValue(X)))
+
+    syntax Int ::= "minSInt128" [function]
+                 | "maxSInt128" [function]
+                 | "minUInt160" [function]
+                 | "maxUInt160" [function]
+                 | "minUInt256" [function]
+                 | "maxUInt256" [function]
+                 | "minSInt256" [funciton]
+                 | "maxSInt256" [function]
+ // ---------------------------------------
+    rule minSInt128 => -170141183460469231731687303715884105728  [macro]  /* -2^127     */
+    rule maxSInt128 =>  170141183460469231731687303715884105727  [macro]  /*  2^127 - 1 */
+    rule minUInt160 => 0  [macro]
+    rule maxUInt160 => 1461501637330902918203684832716283019655932542975  [macro]  /* 2^160 - 1 */
+    rule minUInt256 => 0  [macro]
+    rule maxUInt256 => 115792089237316195423570985008687907853269984665640564039457584007913129639935  [macro]  /*  2^256 - 1 */
+    rule minSInt256 => -57896044618658097711785492504343953926634992332820282019728792003956564819968  [macro]  /* -2^255     */
+    rule maxSInt256 =>  57896044618658097711785492504343953926634992332820282019728792003956564819967  [macro]  /*  2^255 - 1 */
 ```
 
 ### ABI Event Logs
@@ -184,11 +192,6 @@ where `1003892871367861763272476045097431689001461395759728643661426852242313133
     rule #getEventData(E:TypedArg,  ES) => #getData(E) ++ #getEventData(ES)
     rule #getEventData(.EventArgs)      => .WordStack
 
-    syntax Int ::= #getValue ( TypedArg ) [function]
- // ------------------------------------------------
-    rule #getValue(#uint160(V)) => V
-    rule #getValue(#address(V)) => V
-    rule #getValue(#uint256(V)) => V
 ```
 
 ### Hashed Location for Storage
