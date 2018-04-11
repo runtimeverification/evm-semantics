@@ -140,7 +140,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
-           <nonce> NONCE => NONCE +Int 1 </nonce>
+           <nonce> NONCE </nonce>
            ...
          </account>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
