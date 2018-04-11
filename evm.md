@@ -247,9 +247,12 @@ Control Flow
 -   `#exception` indicates exceptions (consuming opcodes until a catch).
 
 ```k
-    syntax KItem     ::= Exception
+    syntax KItem     ::= Exception | "#catch"
     syntax Exception ::= "#exception" | "#end" | "#revert"
  // ------------------------------------------------------
+    rule <k>                 #catch => . ... </k>
+    rule <k> EX:Exception ~> #catch => . ... </k>
+
     rule <k> EX:Exception ~> (_:Int    => .) ... </k>
     rule <k> EX:Exception ~> (_:OpCode => .) ... </k>
 ```
