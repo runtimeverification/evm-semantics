@@ -39,6 +39,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #uint256 ( Int )
                       | #int128  ( Int )
                       | #bytes32 ( Int )
+                      | #bool    ( Int )
  // ------------------------------------
 
     syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
@@ -66,6 +67,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #typeName(#uint256( _ )) => "uint256"
     rule #typeName( #int128( _ )) => "int128"
     rule #typeName(#bytes32( _ )) => "bytes32"
+    rule #typeName(   #bool( _ )) => "bool"
 
     syntax WordStack ::= #encodeArgs ( TypedArgs ) [function]
  // ---------------------------------------------------------
@@ -88,6 +90,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #getData(#bytes32( DATA )) => #padToWidth(32, #asByteStack(DATA))
       requires 0 <=Int DATA andBool DATA <=Int maxUInt256
+
+    rule #getData(   #bool( DATA )) => #padToWidth(32, #asByteStack(DATA))
+      requires 0 <=Int DATA andBool DATA <=Int 1
 
     syntax Int ::= "minInt128"  [function]
                  | "maxInt128"  [function]
