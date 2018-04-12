@@ -315,7 +315,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
  // -------------------------------------------------------------------------------------------
     rule #postKeys    => ( SetItem("post") SetItem("postState") )
     rule #allPostKeys => ( #postKeys SetItem("expect") SetItem("export") SetItem("expet") )
-    rule #checkKeys   => ( #allPostKeys SetItem("logs") SetItem("callcreates") SetItem("out") SetItem("gas")
+    rule #checkKeys   => ( #allPostKeys SetItem("logs") SetItem("out") SetItem("gas")
                            SetItem("blockHeader") SetItem("transactions") SetItem("uncleHeaders") SetItem("genesisBlockHeader")
                          )
 
@@ -328,7 +328,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```{.k .standalone}
     syntax Set ::= "#discardKeys" [function]
  // ----------------------------------------
-    rule #discardKeys => ( SetItem("//") SetItem("_info") )
+    rule #discardKeys => ( SetItem("//") SetItem("_info") SetItem("callcreates") )
 
     rule <k> run TESTID : { KEY : _ , REST } => run TESTID : { REST } ... </k> requires KEY in #discardKeys
 ```
@@ -354,7 +354,6 @@ State Manipulation
          <memoryUsed>      _ => 0          </memoryUsed>
          <callDepth>       _ => 0          </callDepth>
          <callStack>       _ => .List      </callStack>
-         <callLog>         _ => .Set       </callLog>
          <program>         _ => .Map       </program>
          <programBytes>    _ => .WordStack </programBytes>
          <id>              _ => 0          </id>
@@ -717,14 +716,6 @@ Here we check the other post-conditions associated with an EVM test.
  // -------------------------------------------------------------------------------------------
     rule <k> check "gas" : ((GLEFT:String) => #parseWord(GLEFT)) ... </k>
     rule <k> check "gas" : GLEFT => . ... </k> <gas> GLEFT </gas>
-
-    rule <k> check TESTID : { "callcreates" : CCREATES } => check "callcreates" : CCREATES ~> failure TESTID ... </k>
- // -----------------------------------------------------------------------------------------------------------------
-    rule <k> check "callcreates" : { ("data" : (DATA:String)) , ("destination" : (ACCTTO:String)) , ("gasLimit" : (GLIMIT:String)) , ("value" : (VAL:String)) , .JSONList }
-          => check "callcreates" : { #parseAddr(ACCTTO) | #parseWord(GLIMIT) | #parseWord(VAL) | #parseByteStack(DATA) }
-         ...
-         </k>
-    rule <k> check "callcreates" : C:Call => . ... </k> <callLog> CL </callLog> requires C in CL
 
     rule check TESTID : { "blockHeader" : BLOCKHEADER } => check "blockHeader" : BLOCKHEADER ~> failure TESTID
  // ----------------------------------------------------------------------------------------------------------

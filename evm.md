@@ -45,7 +45,6 @@ In the comments next to each cell, we've marked which component of the YellowPap
           <output>          .WordStack </output>            // H_RETURN
           <callStack>       .List      </callStack>
           <interimStates>   .List      </interimStates>
-          <callLog>         .Set       </callLog>
           <touchedAccounts> .Set       </touchedAccounts>
 
           <callState>

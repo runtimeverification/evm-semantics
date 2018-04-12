@@ -29,9 +29,6 @@
       <interimStates>
         .List
       </interimStates>
-      <callLog>
-        .Set
-      </callLog>
       <touchedAccounts>
         .Set
       </touchedAccounts>
