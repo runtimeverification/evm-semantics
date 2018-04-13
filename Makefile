@@ -186,7 +186,7 @@ endif
 # -----
 
 # Override this with `make TEST=echo` to list tests instead of running
-TEST=./kevm test
+TEST=./kevm test-profile
 
 test-all: test-all-concrete test-all-proof
 test: test-concrete test-proof
