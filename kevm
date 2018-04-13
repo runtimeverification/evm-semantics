@@ -127,6 +127,11 @@ run_test_profile() {
     exit "$exit_status"
 }
 
+run_get_failing() {
+    count="${1:-1}"
+    cat "$now_failing" | sort -R | head -n"$count"
+}
+
 # Main
 # ----
 
@@ -143,6 +148,7 @@ case "$run_command" in
     interpret)    run_interpreter  "$@" ;;
     test)         run_test         "$@" ;;
     test-profile) run_test_profile "$@" ;;
+    get-failing)  run_get_failing  "$@" ;;
 
     *) echo "
     usage: $0 <cmd> <file> <K args>*
@@ -167,6 +173,7 @@ case "$run_command" in
        $0 interpret    <pgm>           Run a single EVM program (in JSON testing format) using fast interpreter
        $0 test         <pgm> <output>  Run a single EVM program like it's a test
        $0 test-profile <pgm> <output>  Same as test, but generate list of failing tests and dump timing information
+       $0 get-failing  [<count>]       Return a list of failing tests, at most <count>.
 
        Note: <output> is the expected output of the given test.
              These commands are more for devs and CI servers.
