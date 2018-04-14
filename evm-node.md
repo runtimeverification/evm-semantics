@@ -184,18 +184,18 @@ Because the same account may be loaded more than once, implementations of this i
 -   `#endCreate` and `#endVM` clean up after the transaction finishes and store the return status code of the top level call frame on the top of the `<k>` cell.
 
 ```{.k .node}
-    syntax Exception ::= "#endVM" | "#endCreate"
- // --------------------------------------------
-    rule <statusCode> _:ExceptionalStatuscode </statusCode>
-         <k> #exception ~> #endVM => #popCallStack ~> #popWorldState ~> 0 </k>
+    syntax KItem ::= "#endVM" | "#endCreate"
+ // ----------------------------------------
+    rule <statusCode> _:ExceptionalStatusCode </statusCode>
+         <k> #halt ~> #endVM => #popCallStack ~> #popWorldState ~> 0 </k>
          <output> _ => .WordStack </output>
 
     rule <statusCode> EVMC_REVERT </statusCode>
-         <k> #exception ~> #endVM => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 </k>
+         <k> #halt ~> #endVM => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 </k>
          <gas> GAVAIL </gas>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
-         <k> #exception ~> #endVM => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ~> 1 </k>
+         <k> #halt ~> #endVM => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ~> 1 </k>
          <gas> GAVAIL </gas>
 
     rule <k> #endCreate => W ... </k> <wordStack> W : WS </wordStack>

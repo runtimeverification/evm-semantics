@@ -43,7 +43,7 @@ We'll need to make summaries of the state which collect information about how mu
 
     syntax KItem ::= "#endSummary"
  // ------------------------------
-    rule <statusCode> EVMC_SUCCESS </statusCode> <k> (#exception => .) ~> #endSummary ... </k>
+    rule <statusCode> EVMC_SUCCESS </statusCode> <k> (#halt => .) ~> #endSummary ... </k>
     rule <k> #endSummary => . ... </k> <pc> PCOUNT </pc> <gas> GAVAIL </gas> <memoryUsed> MEMUSED </memoryUsed>
          <analysis> ... "blocks" |-> (ListItem({ PCOUNT1 | GAVAIL1 | MEMUSED1 } => { PCOUNT1 ==> PCOUNT | GAVAIL1 -Int GAVAIL | MEMUSED -Int MEMUSED1 }) REST) ... </analysis>
 ```

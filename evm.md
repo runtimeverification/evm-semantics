@@ -245,20 +245,17 @@ Control Flow
 
 ### Exception Based
 
--   `#end` indicates (non-exceptional) end of execution.
--   `#exception` indicates exceptions (consuming opcodes until a catch).
+-   `#halt` indicates end of execution.
+    It will consume anything related to the current computation behind it on the `<k>` cell.
+-   `#end_` sets the `statusCode` then halts execution.
 
 ```k
-    syntax KItem     ::= Exception
-    syntax KItem     ::= "#exception" StatusCode | "#end" | "#revert"
-    syntax Exception ::= "#exception"
- // ---------------------------------
-    rule <k> #end          => #exception EVMC_SUCCESS ... </k>
-    rule <k> #revert       => #exception EVMC_REVERT  ... </k>
-    rule <k> #exception SC => #exception              ... </k> <statusCode> _ => SC </statusCode>
+    syntax KItem ::= "#halt" | "#end" StatusCode
+ // --------------------------------------------
+    rule <k> #end SC => #halt ... </k> <statusCode> _ => SC </statusCode>
 
-    rule <k> EX:Exception ~> (_:Int    => .) ... </k>
-    rule <k> EX:Exception ~> (_:OpCode => .) ... </k>
+    rule <k> #halt ~> (_:Int    => .) ... </k>
+    rule <k> #halt ~> (_:OpCode => .) ... </k>
 ```
 
 -   `#?_:_?#` provides an "if-then-else" (choice):
@@ -270,7 +267,7 @@ Control Flow
  // ----------------------------------
     rule <k> #? B1 : _  ?# => B1 ... </k>
     rule <statusCode> SC </statusCode>
-         <k> #exception ~> #? B1 : B2 ?# => #if isExceptionalStatusCode(SC) #then B2 #else B1 #fi ~> #exception ... </k>
+         <k> #halt ~> #? B1 : B2 ?# => #if isExceptionalStatusCode(SC) #then B2 #else B1 #fi ~> #halt ... </k>
 ```
 
 OpCode Execution
@@ -279,14 +276,14 @@ OpCode Execution
 
 ### Execution Macros
 
--   `#execute` calls `#next` repeatedly until it recieves an `#end` or `#exception`.
+-   `#execute` calls `#next` repeatedly until it recieves an `#end`.
 -   `#execTo` executes until the next opcode is one of the specified ones.
 
 ```k
     syntax KItem ::= "#execute"
  // ---------------------------
     rule <k> (. => #next) ~> #execute ... </k>
-    rule <k> EX:Exception ~> (#execute => .)  ... </k>
+    rule <k> #halt ~> (#execute => .) ... </k>
 
     syntax InternalOp ::= "#execTo" Set
  // -----------------------------------
@@ -300,7 +297,7 @@ OpCode Execution
          <program> ... PCOUNT |-> OP ... </program>
       requires OP in OPS
 
-    rule <k> #execTo OPS => #end ... </k>
+    rule <k> #execTo OPS => #end EVMC_SUCCESS ... </k>
          <pc> PCOUNT </pc>
          <program> PGM </program>
       requires notBool PCOUNT in keys(PGM)
@@ -312,7 +309,7 @@ When the `#next` operator cannot lookup the next opcode, it assumes that the end
 ```k
     syntax InternalOp ::= "#next"
  // -----------------------------
-    rule <k> #next => #end ... </k>
+    rule <k> #next => #end EVMC_SUCCESS ... </k>
          <pc> PCOUNT </pc>
          <program> PGM </program>
          <output> _ => .WordStack </output>
@@ -364,9 +361,9 @@ The `#next` operator executes a single step by:
 ```k
     syntax InternalOp ::= "#invalid?" "[" OpCode "]"
  // ------------------------------------------------
-    rule <k> #invalid? [ INVALID      ] => #exception EVMC_INVALID_INSTRUCTION   ... </k>
-    rule <k> #invalid? [ UNDEFINED(_) ] => #exception EVMC_UNDEFINED_INSTRUCTION ... </k>
-    rule <k> #invalid? [ OP           ] => .                                     ... </k> requires notBool isInvalidOp(OP)
+    rule <k> #invalid? [ INVALID      ] => #end EVMC_INVALID_INSTRUCTION   ... </k>
+    rule <k> #invalid? [ UNDEFINED(_) ] => #end EVMC_UNDEFINED_INSTRUCTION ... </k>
+    rule <k> #invalid? [ OP           ] => .                               ... </k> requires notBool isInvalidOp(OP)
 ```
 
 -   `#stackNeeded?` checks that the stack will be not be under/overflown.
@@ -375,11 +372,11 @@ The `#next` operator executes a single step by:
 ```k
     syntax InternalOp ::= "#stackNeeded?" "[" OpCode "]"
  // ----------------------------------------------------
-    rule <k> #stackNeeded? [ OP ] => #exception EVMC_STACK_UNDERFLOW ... </k>
+    rule <k> #stackNeeded? [ OP ] => #end EVMC_STACK_UNDERFLOW ... </k>
          <wordStack> WS </wordStack>
       requires #stackUnderflow(WS, OP)
 
-    rule <k> #stackNeeded? [ OP ] => #exception EVMC_STACK_OVERFLOW ... </k>
+    rule <k> #stackNeeded? [ OP ] => #end EVMC_STACK_OVERFLOW ... </k>
          <wordStack> WS </wordStack>
       requires #stackOverflow(WS, OP)
 
@@ -444,22 +441,22 @@ The `#next` operator executes a single step by:
     rule <k> #badJumpDest? [ OP    ] => . ... </k> <wordStack> DEST  : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program> requires isJumpOp(OP)
     rule <k> #badJumpDest? [ JUMPI ] => . ... </k> <wordStack> _ : I : WS </wordStack> requires I ==Int 0
 
-    rule <k> #badJumpDest? [ JUMP ] => #exception EVMC_BAD_JUMP_DESTINATION ... </k>
+    rule <k> #badJumpDest? [ JUMP ] => #end EVMC_BAD_JUMP_DESTINATION ... </k>
          <wordStack> DEST : WS </wordStack>
          <program> ... DEST |-> OP ... </program>
        requires OP =/=K JUMPDEST
 
-    rule <k> #badJumpDest? [ JUMP ] => #exception EVMC_BAD_JUMP_DESTINATION ... </k>
+    rule <k> #badJumpDest? [ JUMP ] => #end EVMC_BAD_JUMP_DESTINATION ... </k>
          <wordStack> DEST : WS </wordStack>
          <program> PGM </program>
       requires notBool (DEST in_keys(PGM))
 
-    rule <k> #badJumpDest? [ JUMPI ] => #exception EVMC_BAD_JUMP_DESTINATION ... </k>
+    rule <k> #badJumpDest? [ JUMPI ] => #end EVMC_BAD_JUMP_DESTINATION ... </k>
          <wordStack> DEST : W : WS </wordStack>
          <program> ... DEST |-> OP ... </program>
        requires OP =/=K JUMPDEST andBool W =/=K 0
 
-    rule <k> #badJumpDest? [ JUMPI ] => #exception EVMC_BAD_JUMP_DESTINATION ... </k>
+    rule <k> #badJumpDest? [ JUMPI ] => #end EVMC_BAD_JUMP_DESTINATION ... </k>
          <wordStack> DEST : W : WS </wordStack>
          <program> PGM </program>
       requires (notBool (DEST in_keys(PGM))) andBool W =/=K 0
@@ -470,9 +467,9 @@ The `#next` operator executes a single step by:
 ```k
     syntax InternalOp ::= "#static?" "[" OpCode "]"
  // -----------------------------------------------
-    rule <k> #static? [ OP ] => .                                     ... </k>                             <static> false </static>
-    rule <k> #static? [ OP ] => .                                     ... </k> <wordStack> WS </wordStack> <static> true  </static> requires notBool #changesState(OP, WS)
-    rule <k> #static? [ OP ] => #exception EVMC_STATIC_MODE_VIOLATION ... </k> <wordStack> WS </wordStack> <static> true  </static> requires         #changesState(OP, WS)
+    rule <k> #static? [ OP ] => .                               ... </k>                             <static> false </static>
+    rule <k> #static? [ OP ] => .                               ... </k> <wordStack> WS </wordStack> <static> true  </static> requires notBool #changesState(OP, WS)
+    rule <k> #static? [ OP ] => #end EVMC_STATIC_MODE_VIOLATION ... </k> <wordStack> WS </wordStack> <static> true  </static> requires         #changesState(OP, WS)
 ```
 
 **TODO**: Investigate why using `[owise]` here for the `false` cases breaks the proofs.
@@ -672,13 +669,13 @@ The `CallOp` opcodes all interperet their second argument as an address.
  // ----------------------------------------------------------------------------
     rule <k> #gas [ OP ] => #memory(OP, MU) ~> #deductMemory ~> #gasExec(SCHED, OP) ~> #deductGas ... </k> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
 
-    rule <k> MU':Int ~> #deductMemory => #exception EVMC_INVALID_MEMORY_ACCESS ... </k> requires MU' >=Int pow256
+    rule <k> MU':Int ~> #deductMemory => #end EVMC_INVALID_MEMORY_ACCESS ... </k> requires MU' >=Int pow256
     rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
       requires MU' <Int pow256
 
-    rule <k> G:Int ~> #deductGas => #exception EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
-    rule <k> G:Int ~> #deductGas => .                          ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> <previousGas> _ => GAVAIL </previousGas> requires GAVAIL >=Int G
+    rule <k> G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
+    rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> <previousGas> _ => GAVAIL </previousGas> requires GAVAIL >=Int G
 
     syntax Int ::= Cmem ( Schedule , Int ) [function, memo]
  // -------------------------------------------------------
@@ -854,7 +851,7 @@ These are just used by the other operators for shuffling local execution state a
 ```k
     syntax InternalOp ::= "#newAccount" Int
  // ---------------------------------------
-    rule <k> #newAccount ACCT => #exception EVMC_ACCOUNT_ALREADY_EXISTS ... </k>
+    rule <k> #newAccount ACCT => #end EVMC_ACCOUNT_ALREADY_EXISTS ... </k>
          <account>
            <acctID> ACCT  </acctID>
            <code>   CODE  </code>
@@ -945,7 +942,7 @@ In `node` mode, the semantics are given in terms of an external call to a runnin
          </account>
       requires ACCTFROM =/=K ACCTTO andBool VALUE <=Int ORIGFROM
 
-    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #exception EVMC_BALANCE_UNDERFLOW ... </k>
+    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #end EVMC_BALANCE_UNDERFLOW ... </k>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> ORIGFROM </balance>
@@ -1159,18 +1156,18 @@ The `JUMP*` family of operations affect the current program counter.
 ```k
     syntax NullStackOp ::= "STOP"
  // -----------------------------
-    rule <k> STOP => #end ... </k>
+    rule <k> STOP => #end EVMC_SUCCESS ... </k>
          <output> _ => .WordStack </output>
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
-    rule <k> RETURN RETSTART RETWIDTH => #end ... </k>
+    rule <k> RETURN RETSTART RETWIDTH => #end EVMC_SUCCESS ... </k>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
 
     syntax BinStackOp ::= "REVERT"
  // ------------------------------
-    rule <k> REVERT RETSTART RETWIDTH => #revert ... </k>
+    rule <k> REVERT RETSTART RETWIDTH => #end EVMC_REVERT ... </k>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
 ```
@@ -1214,7 +1211,7 @@ These operators query about the current return data buffer.
          <output> RD </output>
       requires DATASTART +Int DATAWIDTH <=Int #sizeWordStack(RD)
 
-    rule <k> RETURNDATACOPY MEMSTART DATASTART DATAWIDTH => #exception EVMC_INVALID_MEMORY_ACCESS ... </k>
+    rule <k> RETURNDATACOPY MEMSTART DATASTART DATAWIDTH => #end EVMC_INVALID_MEMORY_ACCESS ... </k>
          <output> RD </output>
       requires DATASTART +Int DATAWIDTH >Int #sizeWordStack(RD)
 ```
@@ -1363,7 +1360,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
  // --------------------------------------------------------------------------------
     rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ _
           => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState
-          ~> #exception #if VALUE >Int BAL #then EVMC_BALANCE_UNDERFLOW #else EVMC_CALL_DEPTH_EXCEEDED #fi
+          ~> #end #if VALUE >Int BAL #then EVMC_BALANCE_UNDERFLOW #else EVMC_CALL_DEPTH_EXCEEDED #fi
          ...
          </k>
          <callDepth> CD </callDepth>
@@ -1442,14 +1439,14 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> #exception ~> #return _ _
+         <k> #halt ~> #return _ _
           => #popCallStack ~> #popWorldState ~> 0 ~> #push
          ...
          </k>
          <output> _ => .WordStack </output>
 
     rule <statusCode> EVMC_REVERT </statusCode>
-         <k> #exception ~> #return RETSTART RETWIDTH
+         <k> #halt ~> #return RETSTART RETWIDTH
           => #popCallStack ~> #popWorldState
           ~> 0 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
@@ -1458,7 +1455,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <gas> GAVAIL </gas>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
-         <k> #exception ~> #return RETSTART RETWIDTH
+         <k> #halt ~> #return RETSTART RETWIDTH
           => #popCallStack ~> #dropWorldState
           ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
@@ -1551,7 +1548,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -------------------------------------------
     rule <k> #checkCreate ACCT VALUE ~> #create _ _ GAVAIL _ _
           => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState
-          ~> #exception #if VALUE >Int BAL #then EVMC_BALANCE_UNDERFLOW #else EVMC_CALL_DEPTH_EXCEEDED #fi
+          ~> #end #if VALUE >Int BAL #then EVMC_BALANCE_UNDERFLOW #else EVMC_CALL_DEPTH_EXCEEDED #fi
          ...
          </k>
          <callDepth> CD </callDepth>
@@ -1612,13 +1609,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                    | "#finishCodeDeposit" Int WordStack
  // ---------------------------------------------------
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k> <output> _ => .WordStack </output>
+         <k> #halt ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k> <output> _ => .WordStack </output>
     rule <statusCode> EVMC_REVERT </statusCode>
-         <k> #exception ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 ~> #push ... </k>
+         <k> #halt ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 ~> #push ... </k>
          <gas> GAVAIL </gas>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
-         <k> #exception ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
+         <k> #halt ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
 
     rule <k> #mkCodeDeposit ACCT
           => Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas
@@ -1647,7 +1644,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </account>
 
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> #exception ~> #finishCodeDeposit ACCT _
+         <k> #halt ~> #finishCodeDeposit ACCT _
           => #popCallStack ~> #dropWorldState
           ~> #refund GAVAIL ~> ACCT ~> #push
          ...
@@ -1656,7 +1653,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <schedule> FRONTIER </schedule>
 
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> #exception ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
+         <k> #halt ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
       requires SCHED =/=K FRONTIER
 ```
@@ -1689,7 +1686,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 ```k
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
-    rule <k> SELFDESTRUCT ACCTTO => #transferFunds ACCT ACCTTO BALFROM ~> #end ... </k>
+    rule <k> SELFDESTRUCT ACCTTO => #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
@@ -1703,7 +1700,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
          <touchedAccounts> ... .Set => SetItem(ACCT) SetItem(ACCTTO) ... </touchedAccounts>
       requires ACCT =/=Int ACCTTO
 
-    rule <k> SELFDESTRUCT ACCT => #end ... </k>
+    rule <k> SELFDESTRUCT ACCT => #end EVMC_SUCCESS ... </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
@@ -1756,7 +1753,7 @@ Precompiled Contracts
 ```k
     syntax PrecompiledOp ::= "ECREC"
  // --------------------------------
-    rule <k> ECREC => #end ... </k>
+    rule <k> ECREC => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
          <output> _ => #ecrec(#sender(#unparseByteStack(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #unparseByteStack(DATA [ 64 .. 32 ]), #unparseByteStack(DATA [ 96 .. 32 ]))) </output>
 
@@ -1767,25 +1764,25 @@ Precompiled Contracts
 
     syntax PrecompiledOp ::= "SHA256"
  // ---------------------------------
-    rule <k> SHA256 => #end ... </k>
+    rule <k> SHA256 => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
          <output> _ => #parseHexBytes(Sha256(#unparseByteStack(DATA))) </output>
 
     syntax PrecompiledOp ::= "RIP160"
  // ---------------------------------
-    rule <k> RIP160 => #end ... </k>
+    rule <k> RIP160 => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
          <output> _ => #padToWidth(32, #parseHexBytes(RipEmd160(#unparseByteStack(DATA)))) </output>
 
     syntax PrecompiledOp ::= "ID"
  // -----------------------------
-    rule <k> ID => #end ... </k>
+    rule <k> ID => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
          <output> _ => DATA </output>
 
     syntax PrecompiledOp ::= "MODEXP"
  // ---------------------------------
-    rule <k> MODEXP => #end ... </k>
+    rule <k> MODEXP => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
          <output> _ => #modexp1(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #asWord(DATA [ 64 .. 32 ]), #drop(96,DATA)) </output>
 
@@ -1807,9 +1804,9 @@ Precompiled Contracts
 
     syntax InternalOp ::= #ecadd(G1Point, G1Point)
  // ----------------------------------------------
-    rule <k> #ecadd(P1, P2) => #exception EVMC_PRECOMPILE_FAILURE ... </k>
+    rule <k> #ecadd(P1, P2) => #end EVMC_PRECOMPILE_FAILURE ... </k>
       requires notBool isValidPoint(P1) orBool notBool isValidPoint(P2)
-    rule <k> #ecadd(P1, P2) => #end ... </k> <output> _ => #point(BN128Add(P1, P2)) </output>
+    rule <k> #ecadd(P1, P2) => #end EVMC_SUCCESS ... </k> <output> _ => #point(BN128Add(P1, P2)) </output>
       requires isValidPoint(P1) andBool isValidPoint(P2)
 
     syntax PrecompiledOp ::= "ECMUL"
@@ -1819,9 +1816,9 @@ Precompiled Contracts
 
     syntax InternalOp ::= #ecmul(G1Point, Int)
  // ------------------------------------------
-    rule <k> #ecmul(P, S) => #exception EVMC_PRECOMPILE_FAILURE ... </k>
+    rule <k> #ecmul(P, S) => #end EVMC_PRECOMPILE_FAILURE ... </k>
       requires notBool isValidPoint(P)
-    rule <k> #ecmul(P, S) => #end ... </k> <output> _ => #point(BN128Mul(P, S)) </output>
+    rule <k> #ecmul(P, S) => #end EVMC_SUCCESS ... </k> <output> _ => #point(BN128Mul(P, S)) </output>
       requires isValidPoint(P)
 
     syntax WordStack ::= #point ( G1Point ) [function]
@@ -1833,7 +1830,7 @@ Precompiled Contracts
     rule <k> ECPAIRING => #ecpairing(.List, .List, 0, DATA, #sizeWordStack(DATA)) ... </k>
          <callData> DATA </callData>
       requires #sizeWordStack(DATA) modInt 192 ==Int 0
-    rule <k> ECPAIRING => #exception EVMC_PRECOMPILE_FAILURE ... </k>
+    rule <k> ECPAIRING => #end EVMC_PRECOMPILE_FAILURE ... </k>
          <callData> DATA </callData>
       requires #sizeWordStack(DATA) modInt 192 =/=Int 0
 
@@ -1841,14 +1838,14 @@ Precompiled Contracts
  // -----------------------------------------------------------------
     rule <k> (.K => #checkPoint) ~> #ecpairing((.List => ListItem((#asWord(DATA [ I .. 32 ]), #asWord(DATA [ I +Int 32 .. 32 ])))) _, (.List => ListItem((#asWord(DATA [ I +Int 96 .. 32 ]) x #asWord(DATA [ I +Int 64 .. 32 ]) , #asWord(DATA [ I +Int 160 .. 32 ]) x #asWord(DATA [ I +Int 128 .. 32 ])))) _, I => I +Int 192, DATA, LEN) ... </k>
       requires I =/=Int LEN
-    rule <k> #ecpairing(A, B, LEN, _, LEN) => #end ... </k>
+    rule <k> #ecpairing(A, B, LEN, _, LEN) => #end EVMC_SUCCESS ... </k>
          <output> _ => #padToWidth(32, #asByteStack(bool2Word(BN128AtePairing(A, B)))) </output>
 
     syntax InternalOp ::= "#checkPoint"
  // -----------------------------------
     rule <k> (#checkPoint => .) ~> #ecpairing(ListItem(AK::G1Point) _, ListItem(BK::G2Point) _, _, _, _) ... </k>
       requires isValidPoint(AK) andBool isValidPoint(BK)
-    rule <k> #checkPoint ~> #ecpairing(ListItem(AK::G1Point) _, ListItem(BK::G2Point) _, _, _, _) => #exception EVMC_PRECOMPILE_FAILURE ... </k>
+    rule <k> #checkPoint ~> #ecpairing(ListItem(AK::G1Point) _, ListItem(BK::G2Point) _, _, _, _) => #end EVMC_PRECOMPILE_FAILURE ... </k>
       requires notBool isValidPoint(AK) orBool notBool isValidPoint(BK)
 ```
 

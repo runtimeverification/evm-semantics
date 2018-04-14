@@ -35,7 +35,7 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
     rule <k> .EthereumSimulation                                 => .                   ... </k>
     rule <k> ETC                          ETS:EthereumSimulation => ETC          ~> ETS ... </k>
     rule <k> ETC1:EthereumCommand ~> ETC2 ETS:EthereumSimulation => ETC1 ~> ETC2 ~> ETS ... </k>
-    rule <k> EX:Exception         ~> ETC2 ETS:EthereumSimulation => EX   ~> ETC2 ~> ETS ... </k>
+    rule <k> KI:KItem             ~> ETC2 ETS:EthereumSimulation => KI   ~> ETC2 ~> ETS ... </k>
 
     syntax EthereumSimulation ::= JSON
  // ----------------------------------
@@ -83,8 +83,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "flush"
  // ----------------------------------
-    rule <mode> EXECMODE </mode> <statusCode> EVMC_SUCCESS            </statusCode> <k> #exception ~> flush => #finalizeTx(EXECMODE ==K VMTESTS)               ... </k>
-    rule <mode> EXECMODE </mode> <statusCode> _:ExceptionalStatusCode </statusCode> <k> #exception ~> flush => #finalizeTx(EXECMODE ==K VMTESTS) ~> #exception ... </k>
+    rule <mode> EXECMODE </mode> <statusCode> EVMC_SUCCESS            </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS)          ... </k>
+    rule <mode> EXECMODE </mode> <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS) ~> #halt ... </k>
 ```
 
 -   `startTx` computes the sender of the transaction, and places loadTx on the `k` cell.
@@ -178,11 +178,11 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
-    rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #exception ~> #finishTx => #popCallStack ~> #popWorldState ... </k>
-    rule <statusCode> EVMC_REVERT             </statusCode> <k> #exception ~> #finishTx => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k> <gas> GAVAIL </gas>
+    rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ... </k>
+    rule <statusCode> EVMC_REVERT             </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k> <gas> GAVAIL </gas>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
-         <k> #exception ~> #finishTx => #mkCodeDeposit ACCT ... </k>
+         <k> #halt ~> #finishTx => #mkCodeDeposit ACCT ... </k>
          <id> ACCT </id>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
@@ -192,7 +192,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </message>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
-         <k> #exception ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ... </k>
+         <k> #halt ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ... </k>
          <id> ACCT </id>
          <gas> GAVAIL </gas>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -253,7 +253,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= "exception" | "status" StatusCode
  // ------------------------------------------------------------
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> #exception ~> exception => . ... </k>
+         <k> #halt ~> exception => . ... </k>
 
     rule <k> status SC => . ... </k> <statusCode> SC </statusCode>
 
@@ -640,7 +640,7 @@ The `"rlp"` key loads the block information.
 ```{.k .standalone}
     syntax EthereumCommand ::= "check" JSON
  // ---------------------------------------
-    rule <k> #exception ~> check J:JSON => check J ~> #exception ... </k>
+    rule <k> #halt ~> check J:JSON => check J ~> #halt ... </k>
 
     rule <k> check DATA : { .JSONList } => . ... </k> requires DATA =/=String "transactions"
     rule <k> check DATA : [ .JSONList ] => . ... </k> requires DATA =/=String "ommerHeaders"
