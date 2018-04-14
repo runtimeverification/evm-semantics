@@ -280,7 +280,7 @@ proof_tests=$(wildcard $(proof_dir)/*/*-spec.k)
 
 test-proof: $(proof_tests:=.test)
 
-$(proof_dir)/%.test: $(proof_dir)/% build-java
+$(proof_dir)/%.test: $(proof_dir)/% build-java split-proof-tests
 	$(TEST) $<
 
 split-proof-tests: tests/proofs/make.timestamp
