@@ -227,9 +227,10 @@ bad_vm_tests= $(wildcard tests/ethereum-tests/VMTests/vmBlockInfoTest/blockhash*
               tests/ethereum-tests/VMTests/vmRandomTest/randomTest.json \
               tests/ethereum-tests/VMTests/vmSystemOperations/PostToNameRegistrator0.json \
               tests/ethereum-tests/VMTests/vmSystemOperations/PostToReturn1.json
-quick_vm_tests=$(filter-out $(slow_vm_tests) $(bad_vm_tests), $(vm_tests))
+all_vm_tests=$(filter-out $(bad_vm_tests), $(vm_tests))
+quick_vm_tests=$(filter-out $(slow_vm_tests), $(all_vm_tests))
 
-test-all-vm: $(vm_tests:=.test)
+test-all-vm: $(all_vm_tests:=.test)
 test-slow-vm: $(slow_vm_tests:=.test)
 test-vm: $(quick_vm_tests:=.test)
 
