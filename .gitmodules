@@ -24,3 +24,6 @@
 	path = plugin
 	url = https://github.com/runtimeverification/blockchain-k-plugin
 	ignore = untracked
+[submodule ".build/media/metropolis"]
+	path = .build/media/metropolis
+	url = https://github.com/matze/mtheme
