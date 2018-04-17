@@ -15,10 +15,11 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean deps k-deps tangle-deps ocaml-deps plugin-deps build build-ocaml build-java build-node defn sphinx split-tests \
+.PHONY: all clean deps k-deps tangle-deps ocaml-deps plugin-deps build build-ocaml build-java build-node defn split-tests \
 		test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
 		test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-		test-proof test-interactive
+		test-proof test-interactive \
+		metropolis-theme 2017-devcon3 sphinx
 .SECONDARY:
 
 all: build split-tests
@@ -27,7 +28,7 @@ clean: clean-submodules
 	rm -rf .build/java .build/plugin-ocaml .build/plugin-node .build/ocaml .build/node .build/logs .build/local .build/vm tests/proofs/specs
 
 clean-submodules:
-	rm -rf .build/k/make.timestamp .build/pandoc-tangle/make.timestamp tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp plugin/make.timestamp
+	rm -rf .build/k/make.timestamp .build/pandoc-tangle/make.timestamp tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp plugin/make.timestamp .build/media/metropolis/*.sty
 
 distclean: clean
 	opam switch system
@@ -286,8 +287,28 @@ $(proof_dir)/%.test: $(proof_dir)/% build-java split-proof-tests
 split-proof-tests: tests/proofs/make.timestamp
 	$(MAKE) -C tests/proofs $@
 
+# Media
+# -----
+
+# Presentations
+
+metropolis-theme: $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty
+
+$(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
+	@echo "== submodule: $@"
+	git submodule update --init -- $(dir $@)
+	cd $(dir $@) && make
+
+2017-devcon3: $(BUILD_DIR)/media/2017-devcon3.pdf
+
+$(BUILD_DIR)/media/2017-devcon3.pdf: media/2017-devcon3/presentation.md media/2017-devcon3/presentation.markdown metropolis-theme
+	@echo "== media: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to markdown --template media/2017-devcon3/presentation $< \
+		| pandoc --from markdown --to beamer --output $@
+	@echo "== 2017-devcon3: presentation generated at $@"
+
 # Sphinx HTML Documentation
-# -------------------------
 
 # You can set these variables from the command line.
 SPHINXOPTS     =
