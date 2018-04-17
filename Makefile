@@ -2,16 +2,17 @@
 # --------
 
 BUILD_DIR:=$(CURDIR)/.build
-K_SUBMODULE:=$(BUILD_DIR)/k
-PANDOC_TANGLE_SUBMODULE:=$(BUILD_DIR)/pandoc-tangle
-PLUGIN_SUBMODULE:=plugin
 BUILD_LOCAL:=$(BUILD_DIR)/local
-
 LIBRARY_PATH:=$(BUILD_LOCAL)/lib
-PKG_CONFIG_PATH:=$(BUILD_LOCAL)/lib/pkgconfig
+PKG_CONFIG_PATH:=$(LIBRARY_PATH)/pkgconfig
 export LIBRARY_PATH
 export PKG_CONFIG_PATH
 
+K_SUBMODULE:=$(BUILD_DIR)/k
+PLUGIN_SUBMODULE:=plugin
+
+# need relative path for `pandoc` on MacOS
+PANDOC_TANGLE_SUBMODULE:=.build/pandoc-tangle
 TANGLER:=$(PANDOC_TANGLE_SUBMODULE)/tangle.lua
 LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
