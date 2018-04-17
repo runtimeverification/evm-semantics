@@ -290,6 +290,8 @@ split-proof-tests: tests/proofs/make.timestamp
 # Media
 # -----
 
+media: sphinx 2017-devcon3
+
 # Presentations
 
 metropolis-theme: $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty

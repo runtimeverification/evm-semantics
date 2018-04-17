@@ -9,7 +9,7 @@ Documentation/Support
 These may be useful for learning KEVM and K (newest to oldest):
 
 -   [Jello Paper], generated using [Sphinx Documentation Generation].
--   [20 minute tour of the semantics](https://www.youtube.com/watch?v=tIq_xECoicQNov) at [Devcon3](https://ethereumfoundation.org/devcon3/).
+-   [20 minute tour of the semantics](https://www.youtube.com/watch?v=tIq_xECoicQNov) at [2017 Devcon3].
 -   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
 
 To get support for KEVM, please join our [Riot Room](https://riot.im/app/#/room/#k:matrix.org).
@@ -45,18 +45,6 @@ To run proofs, you will also need [Z3](https://github.com/Z3Prover/z3) prover; o
 sudo apt-get install z3
 ```
 
-If you also want to build the [Jello Paper], you'll additionally need:
-
--   [Sphinx Documentation Generation] tool, and
--   The [K Editor Support] Python `pygments` package.
-
-```sh
-sudo apt-get install python-pygments python-sphinx
-git clone 'https://github.com/kframework/k-editor-support'
-cd k-editor-support/pygments
-sudo easy_install .
-```
-
 On ArchLinux:
 
 ```sh
@@ -75,7 +63,7 @@ NOTE: a previous version of these instructions required the user to run `brew li
 revision, you should first run `brew unlink flex`, as it is no longer necessary and will cause an error if you have the
 homebrew version of flex installed instead of the xcode command line tools version.
 
-### Installing/Building
+### Building
 
 After installing the above dependencies, the following command will build submodule dependencies and then KEVM:
 
@@ -153,6 +141,39 @@ These are the individual test-suites (all of these can be suffixed with `-all` t
 -   `make bchain-test`: Subset of BlockchainTests from the [Ethereum Test Set].
 -   `make proof-test`: Proofs from the [Verified Smart Contracts].
 -   `make interactive-test`: Tests of the `./kevm` command and of [analysis tools](analysis.md).
+
+Media
+-----
+
+This repository can build two pieces of documentation for you, the [Jello Paper] and the [2017 Devcon3] presentation.
+
+### System Dependencies
+
+If you also want to build the [Jello Paper], you'll additionally need:
+
+-   [Sphinx Documentation Generation] tool, and
+-   The [K Editor Support] Python `pygments` package.
+
+```sh
+sudo apt-get install python-pygments python-sphinx
+git clone 'https://github.com/kframework/k-editor-support'
+cd k-editor-support/pygments
+sudo easy_install .
+```
+
+For the [2017 Devcon3] presentation, you'll need `pdflatex`, commonly provided with `texlive-full`.
+
+```sh
+sudo apt-get install texlive-full
+```
+
+### Building
+
+The Makefile supplies targets for building:
+
+-   All media in this list: `make media`
+-   [Jello Paper] documentation: `make sphinx`
+-   [2017 Devcon3] presentation: `make 2017-devcon3`
 
 Contributing
 ------------
@@ -251,6 +272,7 @@ For more information about [The K Framework](http://kframework.org), refer to th
 -   [Logical Frameworks](http://dl.acm.org/citation.cfm?id=208700): Discussion of logical frameworks.
 
 [Jello Paper]: <https://jellopaper.org>
+[2017 Devcon3]: <https://ethereumfoundation.org/devcon3/>
 [Sphinx Documentation Generation]: <http://sphinx-doc.org>
 [K Reachability Logic Prover]: <http://fsl.cs.illinois.edu/FSL/papers/2016/stefanescu-park-yuwen-li-rosu-2016-oopsla/stefanescu-park-yuwen-li-rosu-2016-oopsla-public.pdf>
 [K Editor Support]: <https://github.com/kframework/k-editor-support>
