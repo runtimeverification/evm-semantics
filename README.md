@@ -155,10 +155,10 @@ If you also want to build the [Jello Paper], you'll additionally need:
 -   The [K Editor Support] Python `pygments` package.
 
 ```sh
-sudo apt-get install python-pygments python-sphinx
+sudo apt-get install python-pygments python-sphinx python-recommonmark
 git clone 'https://github.com/kframework/k-editor-support'
 cd k-editor-support/pygments
-sudo easy_install .
+easy_install --user .
 ```
 
 For the [2017 Devcon3] presentation, you'll need `pdflatex`, commonly provided with `texlive-full`.
