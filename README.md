@@ -42,7 +42,7 @@ sudo apt-get install make gcc maven openjdk-8-jdk flex opam pkg-config libmpfr-d
 To run proofs, you will also need [Z3](https://github.com/Z3Prover/z3) prover; on Ubuntu:
 
 ```sh
-sudo apt-get install z3
+sudo apt-get install z3 libz3-dev
 ```
 
 On ArchLinux:
