@@ -65,9 +65,9 @@
         <memoryUsed>
           0
         </memoryUsed>
-        <previousGas>
+        <callGas>
           0
-        </previousGas>
+        </callGas>
         <static>
           false
         </static>
