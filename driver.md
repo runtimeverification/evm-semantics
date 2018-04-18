@@ -372,7 +372,7 @@ State Manipulation
          <localMem>        _ => .Map       </localMem>
          <pc>              _ => 0          </pc>
          <gas>             _ => 0          </gas>
-         <previousGas>     _ => 0          </previousGas>
+         <callGas>         _ => 0          </callGas>
          <selfDestruct>    _ => .Set       </selfDestruct>
          <log>             _ => .List      </log>
          <refund>          _ => 0          </refund>

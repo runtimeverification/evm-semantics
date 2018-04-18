@@ -163,9 +163,9 @@
         <memoryUsed>
           2
         </memoryUsed>
-        <previousGas>
+        <callGas>
           999999991
-        </previousGas>
+        </callGas>
         <static>
           false
         </static>

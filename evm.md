@@ -66,7 +66,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <pc>          0          </pc>                  // \mu_pc
             <gas>         0          </gas>                 // \mu_g
             <memoryUsed>  0          </memoryUsed>          // \mu_i
-            <previousGas> 0          </previousGas>
+            <callGas>     0          </callGas>
 
             <static>    false </static>
             <callDepth> 0     </callDepth>
@@ -675,7 +675,7 @@ The `CallOp` opcodes all interperet their second argument as an address.
       requires MU' <Int pow256
 
     rule <k> G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
-    rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> <previousGas> _ => GAVAIL </previousGas> requires GAVAIL >=Int G
+    rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> <callGas> _ => GAVAIL </callGas> requires GAVAIL >=Int G
 
     syntax Int ::= Cmem ( Schedule , Int ) [function, memo]
  // -------------------------------------------------------
@@ -1491,7 +1491,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <previousGas> GAVAIL </previousGas>
+         <callGas> GAVAIL </callGas>
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
@@ -1504,7 +1504,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <previousGas> GAVAIL </previousGas>
+         <callGas> GAVAIL </callGas>
 
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
@@ -1519,7 +1519,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <caller> ACCTAPPFROM </caller>
          <callValue> VALUE </callValue>
          <localMem> LM </localMem>
-         <previousGas> GAVAIL </previousGas>
+         <callGas> GAVAIL </callGas>
 
     syntax CallSixOp ::= "STATICCALL"
  // ---------------------------------
@@ -1532,7 +1532,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <previousGas> GAVAIL </previousGas>
+         <callGas> GAVAIL </callGas>
 ```
 
 ### Account Creation/Deletion
