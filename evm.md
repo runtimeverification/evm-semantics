@@ -2079,19 +2079,19 @@ There are several helpers for calculating gas (most of them also specified in th
                  | Cselfdestruct ( Schedule , BExp , Int )             [strict(2)]
  // ------------------------------------------------------------------------------
     rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE)
-          => Cextra(SCHED, VALUE, ISEMPTY) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, VALUE, ISEMPTY)) ... </k>
+          => Cextra(SCHED, ISEMPTY, VALUE) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE)) ... </k>
 
     rule <k> Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE)
-          => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, VALUE, ISEMPTY)) +Int #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
+          => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE)) +Int #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
 
     rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
-          => Gselfdestruct < SCHED > +Int Cnew(SCHED, BAL, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>) ... </k>
+          => Gselfdestruct < SCHED > +Int Cnew(SCHED, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>, BAL) ... </k>
 
     syntax Int ::= Cgascap ( Schedule , Int , Int , Int ) [function]
                  | Csstore ( Schedule , Int , Int , Int ) [function]
                  | Rsstore ( Schedule , Int , Int , Int ) [function]
-                 | Cextra  ( Schedule , Int , Bool )      [function]
-                 | Cnew    ( Schedule , Int , Bool )      [function]
+                 | Cextra  ( Schedule , Bool , Int )      [function]
+                 | Cnew    ( Schedule , Bool , Int )      [function]
                  | Cxfer   ( Schedule , Int )             [function]
  // ----------------------------------------------------------------
     rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
@@ -2125,10 +2125,10 @@ There are several helpers for calculating gas (most of them also specified in th
       => #if CURR =/=Int 0 andBool NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi
       requires notBool Ghasdirtysstore << SCHED >>
 
-    rule Cextra(SCHED, VALUE, ISEMPTY)
-      => Gcall < SCHED > +Int Cnew(SCHED, VALUE, ISEMPTY) +Int Cxfer(SCHED, VALUE)
+    rule Cextra(SCHED, ISEMPTY, VALUE)
+      => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)
 
-    rule Cnew(SCHED, VALUE, ISEMPTY:Bool)
+    rule Cnew(SCHED, ISEMPTY:Bool, VALUE)
       => #if ISEMPTY andBool (VALUE =/=Int 0 orBool Gzerovaluenewaccountgas << SCHED >>) #then Gnewaccount < SCHED > #else 0 #fi
 
     rule Cxfer(SCHED, 0) => 0
