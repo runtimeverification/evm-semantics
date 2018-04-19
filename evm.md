@@ -1304,10 +1304,10 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
 ```k
     syntax InternalOp ::= "#checkCall" Int Int
-                        | "#call"         Int Int Int Int Int Int WordStack Bool
-                        | "#callWithCode" Int Int Map WordStack Int Int Int WordStack Bool
-                        | "#mkCall"       Int Int Map WordStack Int     Int WordStack Bool
- // --------------------------------------------------------------------------------------
+                        | "#call"         Int Int Int Int Int WordStack Bool
+                        | "#callWithCode" Int Int Map WordStack Int Int WordStack Bool
+                        | "#mkCall"       Int Int Map WordStack     Int WordStack Bool
+ // ----------------------------------------------------------------------------------
     rule <k> #checkCall ACCT VALUE
           => #refund GCALL ~> #pushCallStack ~> #pushWorldState
           ~> #end #if VALUE >Int BAL #then EVMC_BALANCE_UNDERFLOW #else EVMC_CALL_DEPTH_EXCEEDED #fi
@@ -1332,15 +1332,15 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </account>
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .WordStack GLIMIT VALUE APPVALUE ARGS STATIC
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .WordStack VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <schedule> SCHED </schedule>
       requires ACCTCODE in #precompiledAccounts(SCHED)
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) CODE GLIMIT VALUE APPVALUE ARGS STATIC
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) CODE VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -1348,22 +1348,22 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <code> CODE </code>
       requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO .Map .WordStack GLIMIT VALUE APPVALUE ARGS STATIC
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO .Map .WordStack VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <activeAccounts> ACCTS </activeAccounts>
          <schedule> SCHED </schedule>
       requires notBool ACCTCODE in #precompiledAccounts(SCHED) andBool notBool ACCTCODE in ACCTS
 
-    rule <k> #callWithCode ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC
+    rule <k> #callWithCode ACCTFROM ACCTTO CODE BYTES VALUE APPVALUE ARGS STATIC
           => #pushCallStack ~> #pushWorldState
           ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT APPVALUE ARGS STATIC
+          ~> #mkCall ACCTFROM ACCTTO CODE BYTES APPVALUE ARGS STATIC
          ...
          </k>
 
-    rule <k> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT APPVALUE ARGS STATIC:Bool
+    rule <k> #mkCall ACCTFROM ACCTTO CODE BYTES APPVALUE ARGS STATIC:Bool
           => #initVM ~> #execute
          ...
          </k>
@@ -1371,7 +1371,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
          <id> _ => ACCTTO </id>
-         <gas> _ => GLIMIT </gas>
+         <gas> _ => GCALL </gas>
+         <callGas> GCALL => 0 </callGas>
          <caller> _ => ACCTFROM </caller>
          <program> _ => CODE </program>
          <programBytes> _ => BYTES </programBytes>
@@ -1435,33 +1436,31 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTTO ACCTTO GCALL VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <callGas> GCALL </callGas>
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTFROM ACCTTO GCALL VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #call ACCTFROM ACCTFROM ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <callGas> GCALL </callGas>
 
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
-          ~> #call ACCTAPPFROM ACCTFROM ACCTTO GCALL 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #call ACCTAPPFROM ACCTFROM ACCTTO 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1470,20 +1469,18 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <caller> ACCTAPPFROM </caller>
          <callValue> VALUE </callValue>
          <localMem> LM </localMem>
-         <callGas> GCALL </callGas>
 
     syntax CallSixOp ::= "STATICCALL"
  // ---------------------------------
     rule <k> STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
-          ~> #call ACCTFROM ACCTTO ACCTTO GCALL 0 0 #range(LM, ARGSTART, ARGWIDTH) true
+          ~> #call ACCTFROM ACCTTO ACCTTO 0 0 #range(LM, ARGSTART, ARGWIDTH) true
           ~> #return RETSTART RETWIDTH
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <callGas> GCALL </callGas>
 ```
 
 ### Account Creation/Deletion

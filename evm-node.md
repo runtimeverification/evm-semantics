@@ -163,12 +163,13 @@ Because the same account may be loaded more than once, implementations of this i
     rule <k> runVM(false, ACCTTO, ACCTFROM, _, ARGS, VALUE, GPRICE, GAVAIL, CB, DIFF, NUMB, GLIMIT, TS, _)
           => #loadAccount ACCTTO
           ~> #lookupCode ACCTTO
-          ~> #call ACCTFROM ACCTTO ACCTTO GAVAIL VALUE VALUE #parseByteStackRaw(ARGS) false
+          ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE #parseByteStackRaw(ARGS) false
           ~> #endVM
          ...
          </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
+         <callGas> _ => GAVAIL </callGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <coinbase> _ => CB </coinbase>
