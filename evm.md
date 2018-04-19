@@ -1472,8 +1472,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                         | "#checkCreate" Int Int
                         | "#incrementNonce" Int
  // -------------------------------------------
-    rule <k> #checkCreate ACCT VALUE ~> #create _ _ GAVAIL _ _
-          => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState
+    rule <k> #checkCreate ACCT VALUE
+          => #refund GCALL ~> #pushCallStack ~> #pushWorldState
           ~> #end #if VALUE >Int BAL #then EVMC_BALANCE_UNDERFLOW #else EVMC_CALL_DEPTH_EXCEEDED #fi
          ...
          </k>
@@ -1484,6 +1484,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <balance> BAL </balance>
            ...
          </account>
+         <previousGas> GCALL </previousGas>
       requires VALUE >Int BAL orBool CD >=Int 1024
 
     rule <k> #checkCreate ACCT VALUE => . ... </k>
