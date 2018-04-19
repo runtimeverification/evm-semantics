@@ -1617,13 +1617,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
           => #checkCreate ACCT VALUE
-          ~> #create ACCT #newAddr(ACCT, NONCE) #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #range(LM, MEMSTART, MEMWIDTH)
+          ~> #create ACCT #newAddr(ACCT, NONCE) GCALL VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
-         <gas> GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0 #else GAVAIL /Int 64 #fi </gas>
+         <callGas> GCALL </callGas>
          <localMem> LM </localMem>
          <account>
            <acctID> ACCT </acctID>
@@ -1998,7 +1998,11 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
            ...
          </account>
 
-    rule <k> #gasExec(SCHED, CREATE _ _ _) => Gcreate < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, CREATE _ START WIDTH)
+          => Gcreate < SCHED > ~> #deductGas
+          ~> #allocateCreateGas
+         ...
+         </k>
 
     rule <k> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
 
@@ -2093,6 +2097,13 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
  // ----------------------------------------
     rule <k> GCALL:Int ~> #allocateCallGas => . ... </k>
          <callGas> _ => GCALL </callGas>
+
+    syntax InternalOp ::= "#allocateCreateGas"
+ // ------------------------------------------
+    rule <schedule> SCHED </schedule>
+         <k> #allocateCreateGas => . ... </k>
+         <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Int 64      #fi </gas>
+         <callGas> _      => #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi </callGas>
 ```
 
 There are several helpers for calculating gas (most of them also specified in the YellowPaper).
