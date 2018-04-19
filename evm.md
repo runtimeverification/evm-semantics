@@ -1354,7 +1354,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
 ```k
     syntax InternalOp ::= "#checkCall" Int Int
-                        | "#call" Int Int Int Exp Int Int WordStack Bool [strict(4)]
+                        | "#call" Int Int Int Int Int Int WordStack Bool
                         | "#callWithCode" Int Int Map WordStack Int Int Int WordStack Bool
                         | "#mkCall" Int Int Map WordStack Int Int Int WordStack Bool
  // --------------------------------------------------------------------------------
@@ -1381,14 +1381,14 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </account>
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT:Int VALUE APPVALUE ARGS STATIC
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .WordStack GLIMIT VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <schedule> SCHED </schedule>
       requires ACCTCODE in #precompiledAccounts(SCHED)
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT:Int VALUE APPVALUE ARGS STATIC
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) CODE GLIMIT VALUE APPVALUE ARGS STATIC
          ...
          </k>
@@ -1397,7 +1397,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <code> CODE </code>
       requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT:Int VALUE APPVALUE ARGS STATIC
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO .Map .WordStack GLIMIT VALUE APPVALUE ARGS STATIC
          ...
          </k>
@@ -1484,33 +1484,33 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #call ACCTFROM ACCTTO ACCTTO GCALL VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <callGas> GAVAIL </callGas>
+         <callGas> GCALL </callGas>
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #call ACCTFROM ACCTFROM ACCTTO GCALL VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <callGas> GAVAIL </callGas>
+         <callGas> GCALL </callGas>
 
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
-          ~> #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #call ACCTAPPFROM ACCTFROM ACCTTO GCALL 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1519,20 +1519,20 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <caller> ACCTAPPFROM </caller>
          <callValue> VALUE </callValue>
          <localMem> LM </localMem>
-         <callGas> GAVAIL </callGas>
+         <callGas> GCALL </callGas>
 
     syntax CallSixOp ::= "STATICCALL"
  // ---------------------------------
     rule <k> STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
-          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) 0 0 #range(LM, ARGSTART, ARGWIDTH) true
+          ~> #call ACCTFROM ACCTTO ACCTTO GCALL 0 0 #range(LM, ARGSTART, ARGWIDTH) true
           ~> #return RETSTART RETWIDTH
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <callGas> GAVAIL </callGas>
+         <callGas> GCALL </callGas>
 ```
 
 ### Account Creation/Deletion
@@ -1986,14 +1986,14 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
 
     rule <k> #gasExec(SCHED, CALL GCAP ACCTTO VALUE _ _ _ _)
-          => #allocateCallGas
+          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ~> #allocateCallGas
           ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE)
          ...
          </k>
          <gas> GAVAIL </gas>
 
     rule <k> #gasExec(SCHED, CALLCODE GCAP _ VALUE _ _ _ _)
-          => #allocateCallGas
+          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) ~> #allocateCallGas
           ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE)
          ...
          </k>
@@ -2001,7 +2001,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          <gas> GAVAIL </gas>
 
     rule <k> #gasExec(SCHED, DELEGATECALL GCAP _ _ _ _ _)
-          => #allocateCallGas
+          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) ~> #allocateCallGas
           ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0)
          ...
          </k>
@@ -2009,7 +2009,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          <gas> GAVAIL </gas>
 
     rule <k> #gasExec(SCHED, STATICCALL GCAP ACCTTO _ _ _ _)
-          => #allocateCallGas
+          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) ~> #allocateCallGas
           ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0)
          ...
          </k>
@@ -2114,9 +2114,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
-    rule <k> #allocateCallGas => . ... </k>
-         <gas> GAVAIL </gas>
-         <callGas> _ => GAVAIL </callGas>
+    rule <k> GCALL:Int ~> #allocateCallGas => . ... </k>
+         <callGas> _ => GCALL </callGas>
 ```
 
 There are several helpers for calculating gas (most of them also specified in the YellowPaper).
