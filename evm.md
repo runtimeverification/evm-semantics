@@ -675,7 +675,7 @@ The `CallOp` opcodes all interperet their second argument as an address.
       requires MU' <Int pow256
 
     rule <k> G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
-    rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> <callGas> _ => GAVAIL </callGas> requires GAVAIL >=Int G
+    rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
 
     syntax Int ::= Cmem ( Schedule , Int ) [function, memo]
  // -------------------------------------------------------
@@ -1985,18 +1985,34 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
 
-    rule <k> #gasExec(SCHED, CALL GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ... </k>
+    rule <k> #gasExec(SCHED, CALL GCAP ACCTTO VALUE _ _ _ _)
+          => #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE)
+         ...
+         </k>
          <gas> GAVAIL </gas>
 
-    rule <k> #gasExec(SCHED, CALLCODE GCAP _ VALUE _ _ _ _) => Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) ... </k>
+    rule <k> #gasExec(SCHED, CALLCODE GCAP _ VALUE _ _ _ _)
+          => #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE)
+         ...
+         </k>
          <id> ACCTFROM </id>
          <gas> GAVAIL </gas>
 
-    rule <k> #gasExec(SCHED, DELEGATECALL GCAP _ _ _ _ _) => Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) ... </k>
+    rule <k> #gasExec(SCHED, DELEGATECALL GCAP _ _ _ _ _)
+          => #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0)
+         ...
+         </k>
          <id> ACCTFROM </id>
          <gas> GAVAIL </gas>
 
-    rule <k> #gasExec(SCHED, STATICCALL GCAP ACCTTO _ _ _ _) => Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) ... </k>
+    rule <k> #gasExec(SCHED, STATICCALL GCAP ACCTTO _ _ _ _)
+          => #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0)
+         ...
+         </k>
          <gas> GAVAIL </gas>
 
     rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, #accountNonexistent(ACCTTO), BAL) ... </k>
@@ -2095,6 +2111,12 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(_, ECADD)     => 500   ... </k>
     rule <k> #gasExec(_, ECMUL)     => 40000 ... </k>
     rule <k> #gasExec(_, ECPAIRING) => 100000 +Int (#sizeWordStack(DATA) /Int 192) *Int 80000 ... </k> <callData> DATA </callData>
+
+    syntax InternalOp ::= "#allocateCallGas"
+ // ----------------------------------------
+    rule <k> #allocateCallGas => . ... </k>
+         <gas> GAVAIL </gas>
+         <callGas> _ => GAVAIL </callGas>
 ```
 
 There are several helpers for calculating gas (most of them also specified in the YellowPaper).
