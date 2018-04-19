@@ -137,13 +137,14 @@ Because the same account may be loaded more than once, implementations of this i
 
     rule <k> runVM(true, _, ACCTFROM, _, ARGS, VALUE, GPRICE, GAVAIL, CB, DIFF, NUMB, GLIMIT, TS, _)
           => #loadAccount #newAddr(ACCTFROM, NONCE -Int 1)
-          ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE -Int 1) GAVAIL VALUE #parseByteStackRaw(ARGS)
+          ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE -Int 1) VALUE #parseByteStackRaw(ARGS)
           ~> #codeDeposit #newAddr(ACCTFROM, NONCE -Int 1)
           ~> #endCreate
          ...
          </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
+         <callGas> _ => GAVAIL </callGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <coinbase> _ => CB </coinbase>

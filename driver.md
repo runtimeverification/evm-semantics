@@ -118,12 +118,13 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
  // -----------------------------------------
     rule <k> loadTx(ACCTFROM)
           => #loadAccount #newAddr(ACCTFROM, NONCE)
-          ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE CODE
+          ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #execute ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
+         <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>

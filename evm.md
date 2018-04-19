@@ -1489,26 +1489,27 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 -   `#codeDeposit_` checks the result of initialization code and whether the code deposit can be paid, indicating an error if not.
 
 ```k
-    syntax InternalOp ::= "#create"   Int Int Int Int WordStack
-                        | "#mkCreate" Int Int Int Int WordStack
+    syntax InternalOp ::= "#create"   Int Int Int WordStack
+                        | "#mkCreate" Int Int Int WordStack
                         | "#incrementNonce" Int
  // -------------------------------------------
-    rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
+    rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
           => #incrementNonce ACCTFROM
           ~> #pushCallStack ~> #pushWorldState
           ~> #newAccount ACCTTO
           ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCreate ACCTFROM ACCTTO GAVAIL VALUE INITCODE
+          ~> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
          ...
          </k>
 
-    rule <k> #mkCreate ACCTFROM ACCTTO GAVAIL VALUE INITCODE
+    rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
           => #initVM ~> #execute
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCT => ACCTTO </id>
-         <gas> OLDGAVAIL => GAVAIL </gas>
+         <gas> _ => GCALL </gas>
+         <callGas> GCALL => 0 </callGas>
          <program> _ => #asMapOpCodes(#dasmOpCodes(INITCODE, SCHED)) </program>
          <programBytes> _ => INITCODE </programBytes>
          <caller> _ => ACCTFROM </caller>
@@ -1590,13 +1591,12 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
           => #checkCall ACCT VALUE
-          ~> #create ACCT #newAddr(ACCT, NONCE) GCALL VALUE #range(LM, MEMSTART, MEMWIDTH)
+          ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
-         <callGas> GCALL </callGas>
          <localMem> LM </localMem>
          <account>
            <acctID> ACCT </acctID>
