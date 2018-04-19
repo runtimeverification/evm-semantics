@@ -1336,10 +1336,10 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
 ```k
     syntax InternalOp ::= "#checkCall" Int Int
-                        | "#call" Int Int Int Int Int Int WordStack Bool
+                        | "#call"         Int Int Int Int Int Int WordStack Bool
                         | "#callWithCode" Int Int Map WordStack Int Int Int WordStack Bool
-                        | "#mkCall" Int Int Map WordStack Int Int Int WordStack Bool
- // --------------------------------------------------------------------------------
+                        | "#mkCall"       Int Int Map WordStack Int     Int WordStack Bool
+ // --------------------------------------------------------------------------------------
     rule <k> #checkCall ACCT VALUE
           => #refund GCALL ~> #pushCallStack ~> #pushWorldState
           ~> #end #if VALUE >Int BAL #then EVMC_BALANCE_UNDERFLOW #else EVMC_CALL_DEPTH_EXCEEDED #fi
@@ -1391,11 +1391,11 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #callWithCode ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC
           => #pushCallStack ~> #pushWorldState
           ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC
+          ~> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT APPVALUE ARGS STATIC
          ...
          </k>
 
-    rule <k> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC:Bool
+    rule <k> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT APPVALUE ARGS STATIC:Bool
           => #initVM ~> #execute
          ...
          </k>
