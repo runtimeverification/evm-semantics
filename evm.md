@@ -1304,33 +1304,28 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
 ```k
     syntax InternalOp ::= "#checkCall" Int Int
+                        | "#checkCallDepth"
+                        | "#checkTransferFunds" Int Int
                         | "#call"         Int Int Int Int Int WordStack Bool
                         | "#callWithCode" Int Int Map WordStack Int Int WordStack Bool
                         | "#mkCall"       Int Int Map WordStack     Int WordStack Bool
  // ----------------------------------------------------------------------------------
-    rule <k> #checkCall ACCT VALUE
-          => #refund GCALL ~> #pushCallStack ~> #pushWorldState
-          ~> #end #if VALUE >Int BAL #then EVMC_BALANCE_UNDERFLOW #else EVMC_CALL_DEPTH_EXCEEDED #fi
+    rule <k> #checkCall ACCTFROM VALUE
+          => #checkCallDepth ~> #checkTransferFunds ACCTFROM VALUE
+          ~> #? . : #refund GCALL ~> #pushCallStack ~> #pushWorldState ?#
          ...
          </k>
-         <callDepth> CD </callDepth>
-         <output> _ => .WordStack </output>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
          <callGas> GCALL </callGas>
-      requires VALUE >Int BAL orBool CD >=Int 1024
 
-     rule <k> #checkCall ACCT VALUE => . ... </k>
+    rule <k> #checkCallDepth => #if CD >=Int 1024 #then #end EVMC_CALL_DEPTH_EXCEEDED #else . #fi ... </k>
          <callDepth> CD </callDepth>
+
+    rule <k> #checkTransferFunds ACCTFROM VALUE => #if VALUE >Int BAL #then #end EVMC_BALANCE_UNDERFLOW #else . #fi ... </k>
          <account>
-           <acctID> ACCT </acctID>
+           <acctID> ACCTFROM </acctID>
            <balance> BAL </balance>
            ...
          </account>
-      requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .WordStack VALUE APPVALUE ARGS STATIC
