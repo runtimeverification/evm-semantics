@@ -1813,7 +1813,7 @@ Overall Gas
 ```k
     syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas" | "#deductMemory"
  // ----------------------------------------------------------------------------
-    rule <k> #gas [ OP ] => #memory(OP, MU) ~> #deductMemory ~> #gasExec(SCHED, OP) ~> #deductGas ... </k> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
+    rule <k> #gas [ OP ] => #memory(OP, MU) ~> #deductMemory ~> #gasExec(SCHED, OP) ... </k> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
 
     rule <k> MU':Int ~> #deductMemory => #end EVMC_INVALID_MEMORY_ACCESS ... </k> requires MU' >=Int pow256
     rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
@@ -1938,7 +1938,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 ```k
     syntax InternalOp ::= #gasExec ( Schedule , OpCode )
  // ----------------------------------------------------
-    rule <k> #gasExec(SCHED, SSTORE INDEX VALUE) => Csstore(SCHED, VALUE, #lookup(STORAGE, INDEX)) ... </k>
+    rule <k> #gasExec(SCHED, SSTORE INDEX VALUE) => Csstore(SCHED, VALUE, #lookup(STORAGE, INDEX)) ~> #deductGas ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1948,26 +1948,26 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          <refund> R => R +Int Rsstore(SCHED, VALUE, #lookup(STORAGE, INDEX)) </refund>
          <schedule> SCHED </schedule>
 
-    rule <k> #gasExec(SCHED, EXP W0 0)  => Gexp < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=K 0
+    rule <k> #gasExec(SCHED, EXP W0 0)  => Gexp < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ~> #deductGas ... </k> requires W1 =/=K 0
 
-    rule <k> #gasExec(SCHED, CALLDATACOPY    _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
-    rule <k> #gasExec(SCHED, RETURNDATACOPY  _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
-    rule <k> #gasExec(SCHED, CODECOPY        _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
-    rule <k> #gasExec(SCHED, EXTCODECOPY   _ _ _ WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
+    rule <k> #gasExec(SCHED, CALLDATACOPY    _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, RETURNDATACOPY  _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, CODECOPY        _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, EXTCODECOPY   _ _ _ WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
 
-    rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
+    rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ~> #deductGas ... </k>
 
     rule <k> #gasExec(SCHED, CALL GCAP ACCTTO VALUE _ _ _ _)
           => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE)
+          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ~> #deductGas
          ...
          </k>
          <gas> GAVAIL </gas>
 
     rule <k> #gasExec(SCHED, CALLCODE GCAP _ VALUE _ _ _ _)
           => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE)
+          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) ~> #deductGas
          ...
          </k>
          <id> ACCTFROM </id>
@@ -1975,7 +1975,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     rule <k> #gasExec(SCHED, DELEGATECALL GCAP _ _ _ _ _)
           => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0)
+          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) ~> #deductGas
          ...
          </k>
          <id> ACCTFROM </id>
@@ -1983,12 +1983,12 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     rule <k> #gasExec(SCHED, STATICCALL GCAP ACCTTO _ _ _ _)
           => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0)
+          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) ~> #deductGas
          ...
          </k>
          <gas> GAVAIL </gas>
 
-    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, #accountNonexistent(ACCTTO), BAL) ... </k>
+    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, #accountNonexistent(ACCTTO), BAL) ~> #deductGas ... </k>
          <id> ACCTFROM </id>
          <selfDestruct> SDS </selfDestruct>
          <refund> RF => #if ACCTFROM in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
@@ -1998,94 +1998,96 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
            ...
          </account>
 
-    rule <k> #gasExec(SCHED, CREATE _ _ _) => Gcreate < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, CREATE _ _ _) => Gcreate < SCHED > ~> #deductGas ... </k>
 
-    rule <k> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </k>
+    rule <k> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
 
-    rule <k> #gasExec(SCHED, JUMPDEST) => Gjumpdest < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, SLOAD _)  => Gsload    < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, JUMPDEST) => Gjumpdest < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, SLOAD _)  => Gsload    < SCHED > ~> #deductGas ... </k>
 
     // Wzero
-    rule <k> #gasExec(SCHED, STOP)       => Gzero < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, RETURN _ _) => Gzero < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, REVERT _ _) => Gzero < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, STOP)       => Gzero < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, RETURN _ _) => Gzero < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, REVERT _ _) => Gzero < SCHED > ~> #deductGas ... </k>
 
     // Wbase
-    rule <k> #gasExec(SCHED, ADDRESS)        => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, ORIGIN)         => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, CALLER)         => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, CALLVALUE)      => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, CALLDATASIZE)   => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, RETURNDATASIZE) => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, CODESIZE)       => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, GASPRICE)       => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, COINBASE)       => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, TIMESTAMP)      => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, NUMBER)         => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, DIFFICULTY)     => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, GASLIMIT)       => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, POP _)          => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, PC)             => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, MSIZE)          => Gbase < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, GAS)            => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, ADDRESS)        => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, ORIGIN)         => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, CALLER)         => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, CALLVALUE)      => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, CALLDATASIZE)   => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, RETURNDATASIZE) => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, CODESIZE)       => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, GASPRICE)       => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, COINBASE)       => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, TIMESTAMP)      => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, NUMBER)         => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, DIFFICULTY)     => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, GASLIMIT)       => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, POP _)          => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, PC)             => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, MSIZE)          => Gbase < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, GAS)            => Gbase < SCHED > ~> #deductGas ... </k>
 
     // Wverylow
-    rule <k> #gasExec(SCHED, ADD _ _)        => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, SUB _ _)        => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, NOT _)          => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, LT _ _)         => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, GT _ _)         => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, SLT _ _)        => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, SGT _ _)        => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, EQ _ _)         => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, ISZERO _)       => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, AND _ _)        => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, EVMOR _ _)      => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, XOR _ _)        => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, BYTE _ _)       => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, CALLDATALOAD _) => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, MLOAD _)        => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, MSTORE _ _)     => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, MSTORE8 _ _)    => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, PUSH(_, _))     => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, DUP(_) _)       => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, SWAP(_) _)      => Gverylow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, ADD _ _)        => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, SUB _ _)        => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, NOT _)          => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, LT _ _)         => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, GT _ _)         => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, SLT _ _)        => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, SGT _ _)        => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, EQ _ _)         => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, ISZERO _)       => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, AND _ _)        => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, EVMOR _ _)      => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, XOR _ _)        => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, BYTE _ _)       => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, CALLDATALOAD _) => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, MLOAD _)        => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, MSTORE _ _)     => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, MSTORE8 _ _)    => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, PUSH(_, _))     => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, DUP(_) _)       => Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, SWAP(_) _)      => Gverylow < SCHED > ~> #deductGas ... </k>
 
     // Wlow
-    rule <k> #gasExec(SCHED, MUL _ _)        => Glow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, DIV _ _)        => Glow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, SDIV _ _)       => Glow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, MOD _ _)        => Glow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, SMOD _ _)       => Glow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, SIGNEXTEND _ _) => Glow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, MUL _ _)        => Glow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, DIV _ _)        => Glow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, SDIV _ _)       => Glow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, MOD _ _)        => Glow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, SMOD _ _)       => Glow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, SIGNEXTEND _ _) => Glow < SCHED > ~> #deductGas ... </k>
 
     // Wmid
-    rule <k> #gasExec(SCHED, ADDMOD _ _ _) => Gmid < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, MULMOD _ _ _) => Gmid < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, JUMP _) => Gmid < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, ADDMOD _ _ _) => Gmid < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, MULMOD _ _ _) => Gmid < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, JUMP _)       => Gmid < SCHED > ~> #deductGas ... </k>
 
     // Whigh
-    rule <k> #gasExec(SCHED, JUMPI _ _) => Ghigh < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, JUMPI _ _) => Ghigh < SCHED > ~> #deductGas ... </k>
 
-    rule <k> #gasExec(SCHED, EXTCODESIZE _) => Gextcodesize < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, BALANCE _)     => Gbalance     < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, BLOCKHASH _)   => Gblockhash   < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, EXTCODESIZE _) => Gextcodesize < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, BALANCE _)     => Gbalance     < SCHED > ~> #deductGas ... </k>
+    rule <k> #gasExec(SCHED, BLOCKHASH _)   => Gblockhash   < SCHED > ~> #deductGas ... </k>
 
     // Precompiled
-    rule <k> #gasExec(_, ECREC)  => 3000 ... </k>
-    rule <k> #gasExec(_, SHA256) =>  60 +Int  12 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
-    rule <k> #gasExec(_, RIP160) => 600 +Int 120 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
-    rule <k> #gasExec(_, ID)     =>  15 +Int   3 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, ECREC)  => 3000 ~> #deductGas ... </k>
+    rule <k> #gasExec(_, SHA256) =>  60 +Int  12 *Int (#sizeWordStack(DATA) up/Int 32) ~> #deductGas ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, RIP160) => 600 +Int 120 *Int (#sizeWordStack(DATA) up/Int 32) ~> #deductGas ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, ID)     =>  15 +Int   3 *Int (#sizeWordStack(DATA) up/Int 32) ~> #deductGas ... </k> <callData> DATA </callData>
     rule <k> #gasExec(_, MODEXP)
           => #multComplexity(maxInt(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 64 .. 32 ]))) *Int maxInt(#adjustedExpLength(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), DATA), 1) /Int Gquaddivisor < SCHED >
+          ~> #deductGas
          ...
          </k>
          <schedule> SCHED </schedule>
          <callData> DATA </callData>
 
-    rule <k> #gasExec(_, ECADD)     => 500   ... </k>
-    rule <k> #gasExec(_, ECMUL)     => 40000 ... </k>
-    rule <k> #gasExec(_, ECPAIRING) => 100000 +Int (#sizeWordStack(DATA) /Int 192) *Int 80000 ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, ECADD)     => 500   ~> #deductGas ... </k>
+    rule <k> #gasExec(_, ECMUL)     => 40000 ~> #deductGas ... </k>
+    rule <k> #gasExec(_, ECPAIRING) => 100000 +Int (#sizeWordStack(DATA) /Int 192) *Int 80000 ~> #deductGas ... </k>
+         <callData> DATA </callData>
 
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
