@@ -1358,8 +1358,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
                         | "#callWithCode" Int Int Map WordStack Int Int Int WordStack Bool
                         | "#mkCall" Int Int Map WordStack Int Int Int WordStack Bool
  // --------------------------------------------------------------------------------
-    rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ _
-          => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState
+    rule <k> #checkCall ACCT VALUE
+          => #refund GCALL ~> #pushCallStack ~> #pushWorldState
           ~> #end #if VALUE >Int BAL #then EVMC_BALANCE_UNDERFLOW #else EVMC_CALL_DEPTH_EXCEEDED #fi
          ...
          </k>
@@ -1370,6 +1370,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
            <balance> BAL </balance>
            ...
          </account>
+         <callGas> GCALL </callGas>
       requires VALUE >Int BAL orBool CD >=Int 1024
 
      rule <k> #checkCall ACCT VALUE => . ... </k>
