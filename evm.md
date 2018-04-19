@@ -1592,13 +1592,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
           => #checkCreate ACCT VALUE
-          ~> #create ACCT #newAddr(ACCT, NONCE) #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #range(LM, MEMSTART, MEMWIDTH)
+          ~> #create ACCT #newAddr(ACCT, NONCE) GCALL VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
-         <gas> GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0 #else GAVAIL /Int 64 #fi </gas>
+         <previousGas> GCALL </previousGas>
          <localMem> LM </localMem>
          <account>
            <acctID> ACCT </acctID>
@@ -1617,12 +1617,12 @@ have been paid, and it may be to expensive to compute the hash of the init code.
     rule <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
           => #loadAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #checkCreate ACCT VALUE
-          ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) #allBut64th(GAVAIL) VALUE #range(LM, MEMSTART, MEMWIDTH)
+          ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) GCALL VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
          ...
          </k>
          <id> ACCT </id>
-         <gas> GAVAIL => GAVAIL /Int 64 </gas>
+         <previousGas> GCALL </previousGas>
          <localMem> LM </localMem>
 ```
 
@@ -1996,8 +1996,17 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
            ...
          </account>
 
-    rule <k> #gasExec(SCHED, CREATE _ _ _) => Gcreate < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, CREATE2 _ _ WIDTH _) => Gcreate < SCHED > +Int Gsha3word < SCHED > *Int (WIDTH up/Int 32) ... </k>
+    rule <k> #gasExec(SCHED, CREATE _ _ _)
+          => Gcreate < SCHED > ~> #deductGas
+          ~> #allocateCreateGas ~> 0
+         ...
+         </k>
+
+    rule <k> #gasExec(SCHED, CREATE2 _ _ WIDTH _)
+          => Gcreate < SCHED > +Int Gsha3word < SCHED > *Int (WIDTH up/Int 32) ~> #deductGas
+          ~> #allocateCreateGas ~> 0
+         ...
+         </k>
 
     rule <k> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </k>
 
@@ -2094,6 +2103,13 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
  // ----------------------------------------
     rule <k> GCALL:Int ~> #allocateCallGas => . ... </k>
          <previousGas> _ => GCALL </previousGas>
+
+    syntax InternalOp ::= "#allocateCreateGas"
+ // ------------------------------------------
+    rule <schedule> SCHED </schedule>
+         <k> #allocateCreateGas => . ... </k>
+         <gas>         GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Int 64      #fi </gas>
+         <previousGas> _      => #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi </previousGas>
 ```
 
 There are several helpers for calculating gas (most of them also specified in the YellowPaper).
