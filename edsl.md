@@ -40,7 +40,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #int128  ( Int )
                       | #bytes32 ( Int )
                       | #bool    ( Int )
- // ------------------------------------
+                      | #bytes   ( Int , Int )
+ // ------------------------------------------
 
     syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
  // ------------------------------------------------------------
@@ -68,11 +69,64 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #typeName( #int128( _ )) => "int128"
     rule #typeName(#bytes32( _ )) => "bytes32"
     rule #typeName(   #bool( _ )) => "bool"
+    rule #typeName( #bytes(_, _)) => "bytes"
 
-    syntax WordStack ::= #encodeArgs ( TypedArgs ) [function]
+    syntax WordStack ::= #encodeArgs    ( TypedArgs )                               [function]
+    syntax WordStack ::= #encodeArgsAux ( TypedArgs , Int , WordStack , WordStack ) [function]
+ // ------------------------------------------------------------------------------------------
+    rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .WordStack, .WordStack)
+
+    rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS ++ TAILS
+
+    rule #encodeArgsAux((ARG, ARGS), OFFSET, HEADS, TAILS)
+        => #encodeArgsAux(ARGS, OFFSET, HEADS ++ #enc(ARG), TAILS)
+      requires #isStaticType(ARG)
+
+    rule #encodeArgsAux((ARG, ARGS), OFFSET, HEADS, TAILS)
+        => #encodeArgsAux(ARGS, OFFSET +Int #sizeOfDynamicType(ARG), HEADS ++ #enc(#uint256(OFFSET)), TAILS ++ #enc(ARG))
+      requires notBool(#isStaticType(ARG))
+
+    syntax Int ::= #lenOfHeads ( TypedArgs ) [function]
+ // ---------------------------------------------------
+    rule #lenOfHeads(.TypedArgs) => 0
+    rule #lenOfHeads(ARG, ARGS)  => #lenOfHead(ARG) +Int #lenOfHeads(ARGS)
+
+    syntax Int ::= #lenOfHead ( TypedArg ) [function]
+ // -------------------------------------------------
+    rule #lenOfHead(#uint160( _ )) => 32
+    rule #lenOfHead(#address( _ )) => 32
+    rule #lenOfHead(#uint256( _ )) => 32
+    rule #lenOfHead( #int128( _ )) => 32
+    rule #lenOfHead(#bytes32( _ )) => 32
+    rule #lenOfHead(   #bool( _ )) => 32
+    rule #lenOfHead( #bytes(_, _)) => 32
+
+    syntax Bool ::= #isStaticType ( TypedArg ) [function]
+ // -----------------------------------------------------
+    rule #isStaticType(#uint160( _ )) => true
+    rule #isStaticType(#address( _ )) => true
+    rule #isStaticType(#uint256( _ )) => true
+    rule #isStaticType( #int128( _ )) => true
+    rule #isStaticType(#bytes32( _ )) => true
+    rule #isStaticType(   #bool( _ )) => true
+    rule #isStaticType( #bytes(_, _)) => false
+
+    syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
  // ---------------------------------------------------------
-    rule #encodeArgs(ARG, ARGS)  => #getData(ARG) ++ #encodeArgs(ARGS)
-    rule #encodeArgs(.TypedArgs) => .WordStack
+    rule #sizeOfDynamicType(#bytes(N, _)) => 32 +Int #ceil32(N)
+
+    syntax WordStack ::= #enc ( TypedArg ) [function]
+ // -------------------------------------------------
+    // static Type
+    rule #enc(#uint160( DATA )) => #padToWidth(32, #asByteStack(#getValue(#uint160( DATA ))))
+    rule #enc(#address( DATA )) => #padToWidth(32, #asByteStack(#getValue(#address( DATA ))))
+    rule #enc(#uint256( DATA )) => #padToWidth(32, #asByteStack(#getValue(#uint256( DATA ))))
+    rule #enc( #int128( DATA )) => #padToWidth(32, #asByteStack(#getValue( #int128( DATA ))))
+    rule #enc(#bytes32( DATA )) => #padToWidth(32, #asByteStack(#getValue(#bytes32( DATA ))))
+    rule #enc(   #bool( DATA )) => #padToWidth(32, #asByteStack(#getValue(   #bool( DATA ))))
+
+    // dynamic Type
+    rule #enc( #bytes(N, DATA)) => #enc(#uint256(N)) ++ #padToWidth(#ceil32(N), #asByteStack(DATA))
 
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
@@ -102,9 +156,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #signed(DATA) => pow256 +Int DATA
       requires minSInt256 <=Int DATA andBool DATA <Int 0
 
-    syntax WordStack ::= #getData ( TypedArg ) [function]
- // -----------------------------------------------------
-    rule #getData(X) => #padToWidth(32, #asByteStack(#getValue(X)))
+    syntax Int ::= #ceil32 ( Int ) [function]
+ // -----------------------------------------
+    rule #ceil32(N) => ((N +Int 31) /Int 32) *Int 32
 
     syntax Int ::= "minSInt128" [function]
                  | "maxSInt128" [function]
@@ -188,8 +242,8 @@ where `1003892871367861763272476045097431689001461395759728643661426852242313133
 
     syntax WordStack ::= #getEventData ( EventArgs ) [function]
  // -----------------------------------------------------------
-    rule #getEventData(#indexed(_), ES) =>                #getEventData(ES)
-    rule #getEventData(E:TypedArg,  ES) => #getData(E) ++ #getEventData(ES)
+    rule #getEventData(#indexed(_), ES) =>            #getEventData(ES)
+    rule #getEventData(E:TypedArg,  ES) => #enc(E) ++ #getEventData(ES)
     rule #getEventData(.EventArgs)      => .WordStack
 
 ```
