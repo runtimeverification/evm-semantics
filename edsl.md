@@ -159,24 +159,6 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     syntax Int ::= #ceil32 ( Int ) [function]
  // -----------------------------------------
     rule #ceil32(N) => ((N +Int 31) /Int 32) *Int 32
-
-    syntax Int ::= "minSInt128" [function]
-                 | "maxSInt128" [function]
-                 | "minUInt160" [function]
-                 | "maxUInt160" [function]
-                 | "minUInt256" [function]
-                 | "maxUInt256" [function]
-                 | "minSInt256" [funciton]
-                 | "maxSInt256" [function]
- // ---------------------------------------
-    rule minSInt128 => -170141183460469231731687303715884105728  [macro]  /* -2^127     */
-    rule maxSInt128 =>  170141183460469231731687303715884105727  [macro]  /*  2^127 - 1 */
-    rule minUInt160 => 0  [macro]
-    rule maxUInt160 => 1461501637330902918203684832716283019655932542975  [macro]  /* 2^160 - 1 */
-    rule minUInt256 => 0  [macro]
-    rule maxUInt256 => 115792089237316195423570985008687907853269984665640564039457584007913129639935  [macro]  /*  2^256 - 1 */
-    rule minSInt256 => -57896044618658097711785492504343953926634992332820282019728792003956564819968  [macro]  /* -2^255     */
-    rule maxSInt256 =>  57896044618658097711785492504343953926634992332820282019728792003956564819967  [macro]  /*  2^255 - 1 */
 ```
 
 ### ABI Event Logs
