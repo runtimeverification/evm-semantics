@@ -137,10 +137,10 @@ The following subsume all other tests:
 
 These are the individual test-suites (all of these can be suffixed with `-all` to also run slow tests):
 
--   `make vm-test`: VMTests from the [Ethereum Test Set].
--   `make bchain-test`: Subset of BlockchainTests from the [Ethereum Test Set].
--   `make proof-test`: Proofs from the [Verified Smart Contracts].
--   `make interactive-test`: Tests of the `./kevm` command and of [analysis tools](analysis.md).
+-   `make test-vm`: VMTests from the [Ethereum Test Set].
+-   `make test-bchain`: Subset of BlockchainTests from the [Ethereum Test Set].
+-   `make test-proof`: Proofs from the [Verified Smart Contracts].
+-   `make test-interactive`: Tests of the `./kevm` command and of [analysis tools](analysis.md).
 
 Media
 -----
