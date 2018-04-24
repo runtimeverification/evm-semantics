@@ -110,6 +110,27 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
     rule abs(I) => I         requires sgn(I) ==K 1
 ```
 
+-   #signed : uInt256 -> sInt256  (i.e., [minUInt256..maxUInt256] -> [minSInt256..maxSInt256])
+- #unsigned : sInt256 -> uInt256  (i.e., [minSInt256..maxSInt256] -> [minUInt256..maxUInt256])
+
+```k
+    syntax Int ::= #signed ( Int ) [function]
+ // -----------------------------------------
+    rule #signed(DATA) => DATA
+      requires 0 <=Int DATA andBool DATA <=Int maxSInt256
+
+    rule #signed(DATA) => DATA -Int pow256
+      requires maxSInt256 <Int DATA andBool DATA <=Int maxUInt256
+
+    syntax Int ::= #unsigned ( Int ) [function]
+ // -----------------------------------------
+    rule #unsigned(DATA) => DATA
+      requires 0 <=Int DATA andBool DATA <=Int maxSInt256
+
+    rule #unsigned(DATA) => pow256 +Int DATA
+      requires minSInt256 <=Int DATA andBool DATA <Int 0
+```
+
 ### Empty Account
 
 -   `.Account` represents the case when an account ID is referenced in the yellowpaper, but

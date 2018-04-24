@@ -139,7 +139,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #getValue(#uint256( DATA )) => DATA
       requires minUInt256 <=Int DATA andBool DATA <=Int maxUInt256
 
-    rule #getValue( #int128( DATA )) => #signed(DATA)
+    rule #getValue( #int128( DATA )) => #unsigned(DATA)
       requires minSInt128 <=Int DATA andBool DATA <=Int maxSInt128
 
     rule #getValue(#bytes32( DATA )) => DATA
@@ -147,14 +147,6 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #getValue(   #bool( DATA )) => DATA
       requires 0 <=Int DATA andBool DATA <=Int 1
-
-    syntax Int ::= #signed ( Int ) [function]
- // -----------------------------------------
-    rule #signed(DATA) => DATA
-      requires 0 <=Int DATA andBool DATA <=Int maxSInt256
-
-    rule #signed(DATA) => pow256 +Int DATA
-      requires minSInt256 <=Int DATA andBool DATA <Int 0
 
     syntax Int ::= #ceil32 ( Int ) [function]
  // -----------------------------------------
