@@ -647,9 +647,17 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
 ```k
     syntax InternalOp ::= "#pc" "[" OpCode "]"
  // ------------------------------------------
-    rule <k> #pc [ OP         ] => . ... </k> <pc> PCOUNT => PCOUNT +Int 1          </pc> requires notBool (isPushOp(OP) orBool isJumpOp(OP))
-    rule <k> #pc [ PUSH(N, _) ] => . ... </k> <pc> PCOUNT => PCOUNT +Int (1 +Int N) </pc>
-    rule <k> #pc [ OP         ] => . ... </k> requires isJumpOp(OP)
+    rule <k> #pc [ OP ] => . ... </k>
+         <pc> PCOUNT => PCOUNT +Int #widthOp(OP) </pc>
+      requires notBool isJumpOp(OP)
+
+    rule <k> #pc [ OP ] => . ... </k>
+      requires isJumpOp(OP)
+
+    syntax Int ::= #widthOp ( OpCode ) [function]
+ // ---------------------------------------------
+    rule #widthOp(PUSH(N, _)) => 1 +Int N
+    rule #widthOp(OP)         => 1        requires notBool isPushOp(OP)
 
     syntax Bool ::= isJumpOp ( OpCode ) [function]
  // ----------------------------------------------
