@@ -427,92 +427,14 @@ The `#next` operator executes a single step by:
 ```k
     syntax Bool ::= #changesState ( OpCode , WordStack ) [function]
  // ---------------------------------------------------------------
-    rule #changesState(LOG(_), _)               => true
-    rule #changesState(SSTORE, _)               => true
     rule #changesState(CALL, _ : _ : VALUE : _) => VALUE =/=Int 0
-    rule #changesState(CREATE, _)               => true
-    rule #changesState(CREATE2, _)              => true
-    rule #changesState(SELFDESTRUCT, _)         => true
-
-    rule #changesState(DUP(_), _)         => false
-    rule #changesState(SWAP(_), _)        => false
-    rule #changesState(PUSH(_, _), _)     => false
-    rule #changesState(STOP, _)           => false
-    rule #changesState(ADD, _)            => false
-    rule #changesState(MUL, _)            => false
-    rule #changesState(SUB, _)            => false
-    rule #changesState(DIV, _)            => false
-    rule #changesState(SDIV, _)           => false
-    rule #changesState(MOD, _)            => false
-    rule #changesState(SMOD, _)           => false
-    rule #changesState(ADDMOD, _)         => false
-    rule #changesState(MULMOD, _)         => false
-    rule #changesState(EXP, _)            => false
-    rule #changesState(SIGNEXTEND, _)     => false
-    rule #changesState(LT, _)             => false
-    rule #changesState(GT, _)             => false
-    rule #changesState(SLT, _)            => false
-    rule #changesState(SGT, _)            => false
-    rule #changesState(EQ, _)             => false
-    rule #changesState(ISZERO, _)         => false
-    rule #changesState(AND, _)            => false
-    rule #changesState(EVMOR, _)          => false
-    rule #changesState(XOR, _)            => false
-    rule #changesState(NOT, _)            => false
-    rule #changesState(BYTE, _)           => false
-    rule #changesState(SHL, _)            => false
-    rule #changesState(SHR, _)            => false
-    rule #changesState(SAR, _)            => false
-    rule #changesState(SHA3, _)           => false
-    rule #changesState(ADDRESS, _)        => false
-    rule #changesState(BALANCE, _)        => false
-    rule #changesState(ORIGIN, _)         => false
-    rule #changesState(CALLER, _)         => false
-    rule #changesState(CALLVALUE, _)      => false
-    rule #changesState(CALLDATALOAD, _)   => false
-    rule #changesState(CALLDATASIZE, _)   => false
-    rule #changesState(CALLDATACOPY, _)   => false
-    rule #changesState(CODESIZE, _)       => false
-    rule #changesState(CODECOPY, _)       => false
-    rule #changesState(GASPRICE, _)       => false
-    rule #changesState(EXTCODESIZE, _)    => false
-    rule #changesState(EXTCODECOPY, _)    => false
-    rule #changesState(RETURNDATASIZE, _) => false
-    rule #changesState(RETURNDATACOPY, _) => false
-    rule #changesState(EXTCODEHASH, _)    => false
-    rule #changesState(BLOCKHASH, _)      => false
-    rule #changesState(COINBASE, _)       => false
-    rule #changesState(TIMESTAMP, _)      => false
-    rule #changesState(NUMBER, _)         => false
-    rule #changesState(DIFFICULTY, _)     => false
-    rule #changesState(GASLIMIT, _)       => false
-    rule #changesState(POP, _)            => false
-    rule #changesState(MLOAD, _)          => false
-    rule #changesState(MSTORE, _)         => false
-    rule #changesState(MSTORE8, _)        => false
-    rule #changesState(SLOAD, _)          => false
-    rule #changesState(JUMP, _)           => false
-    rule #changesState(JUMPI, _)          => false
-    rule #changesState(PC, _)             => false
-    rule #changesState(MSIZE, _)          => false
-    rule #changesState(GAS, _)            => false
-    rule #changesState(JUMPDEST, _)       => false
-    rule #changesState(CALLCODE, _)       => false
-    rule #changesState(RETURN, _)         => false
-    rule #changesState(DELEGATECALL, _)   => false
-    rule #changesState(STATICCALL, _)     => false
-    rule #changesState(REVERT, _)         => false
-    rule #changesState(INVALID, _)        => false
-    rule #changesState(UNDEFINED(_), _)   => false
-
-    rule #changesState(ECREC, _)     => false
-    rule #changesState(SHA256, _)    => false
-    rule #changesState(RIP160, _)    => false
-    rule #changesState(ID, _)        => false
-    rule #changesState(MODEXP, _)    => false
-    rule #changesState(ECADD, _)     => false
-    rule #changesState(ECMUL, _)     => false
-    rule #changesState(ECPAIRING, _) => false
+    rule #changesState(OP,   _)                 => ( isLogOp(OP)
+                                              orBool OP ==K SSTORE
+                                              orBool OP ==K CREATE
+                                              orBool OP ==K CREATE2
+                                              orBool OP ==K SELFDESTRUCT
+                                                   )
+      requires notBool OP ==K CALL
 ```
 
 ### Execution Step
