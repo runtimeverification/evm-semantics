@@ -329,8 +329,7 @@ The `#next` operator executes a single step by:
 ```k
     rule <mode> EXECMODE </mode>
          <k> #next
-          => #invalid?     [ OP ]
-          ~> #stackNeeded? [ OP ]
+          => #stackNeeded? [ OP ]
           ~> #static?      [ OP ]
           ~> #load         [ OP ]
           ~> #exec         [ OP ]
@@ -343,16 +342,6 @@ The `#next` operator executes a single step by:
 ```
 
 ### Exceptional Checks
-
--   `#invalid?` checks if it's the designated invalid opcode or some undefined opcode.
-
-```k
-    syntax InternalOp ::= "#invalid?" "[" OpCode "]"
- // ------------------------------------------------
-    rule <k> #invalid? [ INVALID      ] => #end EVMC_INVALID_INSTRUCTION   ... </k>
-    rule <k> #invalid? [ UNDEFINED(_) ] => #end EVMC_UNDEFINED_INSTRUCTION ... </k>
-    rule <k> #invalid? [ OP           ] => .                               ... </k> requires notBool isInvalidOp(OP)
-```
 
 -   `#stackNeeded?` checks that the stack will be not be under/overflown.
 -   `#stackNeeded`, `#stackAdded`, and `#stackDelta` are helpers for deciding `#stackNeeded?`.
@@ -381,6 +370,7 @@ The `#next` operator executes a single step by:
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
     rule #stackNeeded(PUSH(_, _))      => 0
+    rule #stackNeeded(IOP:InvalidOp)   => 0
     rule #stackNeeded(NOP:NullStackOp) => 0
     rule #stackNeeded(UOP:UnStackOp)   => 1
     rule #stackNeeded(BOP:BinStackOp)  => 2 requires notBool isLogOp(BOP)
@@ -413,6 +403,7 @@ The `#next` operator executes a single step by:
     rule #stackAdded(LOG(_))         => 0
     rule #stackAdded(SWAP(N))        => N
     rule #stackAdded(DUP(N))         => N +Int 1
+    rule #stackAdded(IOP:InvalidOp)  => 0
     rule #stackAdded(OP)             => 1 [owise]
 
     syntax Int ::= #stackDelta ( OpCode ) [function]
@@ -531,6 +522,8 @@ The `#next` operator executes a single step by:
 ```k
     syntax InternalOp ::= "#exec" "[" OpCode "]"
  // --------------------------------------------
+    rule <k> #exec [ IOP:InvalidOp ] => IOP ... </k>
+
     rule <k> #exec [ OP ] => #gas [ OP ] ~> OP ... </k> requires isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
 ```
 
@@ -957,6 +950,8 @@ We use `INVALID` both for marking the designated invalid operator, and `UNDEFINE
 ```k
     syntax InvalidOp ::= "INVALID" | "UNDEFINED" "(" Int ")"
  // --------------------------------------------------------
+    rule <k> INVALID      => #end EVMC_INVALID_INSTRUCTION   ... </k>
+    rule <k> UNDEFINED(_) => #end EVMC_UNDEFINED_INSTRUCTION ... </k>
 ```
 
 ### Stack Manipulations
