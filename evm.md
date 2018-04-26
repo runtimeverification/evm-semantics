@@ -728,8 +728,7 @@ Operator `#revOps` can be used to reverse a program.
     rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodesAux(0, OPS, .Map)
 
     rule #asMapOpCodesAux( N , .OpCodes         , MAP ) => MAP
-    rule #asMapOpCodesAux( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodesAux(N +Int 1, OCS, MAP [ N <- OP ]) requires notBool isPushOp(OP)
-    rule #asMapOpCodesAux( N , PUSH(M, W) ; OCS , MAP ) => #asMapOpCodesAux(N +Int 1 +Int M, OCS, MAP [ N <- PUSH(M, W) ])
+    rule #asMapOpCodesAux( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodesAux(N +Int #widthOp(OP), OCS, MAP [ N <- OP ])
 ```
 
 EVM OpCodes
