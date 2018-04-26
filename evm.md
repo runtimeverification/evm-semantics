@@ -703,11 +703,20 @@ EVM Programs
 
 ### Program Structure
 
-Lists of opcodes form programs.
+Cons-lists of opcodes form programs (using cons operator `_;_`).
+Operator `#revOps` can be used to reverse a program.
 
 ```k
     syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
  // --------------------------------------------------
+
+    syntax OpCodes ::= #revOps    ( OpCodes )           [function]
+                     | #revOpsAux ( OpCodes , OpCodes ) [function]
+ // --------------------------------------------------------------
+    rule #revOps(OPS) => #revOpsAux(OPS, .OpCodes)
+
+    rule #revOpsAux( .OpCodes , OPS' ) => OPS'
+    rule #revOpsAux( OP ; OPS , OPS' ) => #revOpsAux( OPS , OP ; OPS' )
 ```
 
 ### Converting to/from `Map` Representation
@@ -2526,9 +2535,8 @@ After interpreting the strings representing programs as a `WordStack`, it should
 ```k
     syntax OpCodes ::= #dasmOpCodes ( WordStack , Schedule )           [function]
                      | #dasmOpCodes ( OpCodes , WordStack , Schedule ) [function, klabel(#dasmOpCodesAux)]
-                     | #revOpCodes  ( OpCodes , OpCodes )              [function]
- // -----------------------------------------------------------------------------
-    rule #dasmOpCodes( WS, SCHED ) => #revOpCodes(#dasmOpCodes(.OpCodes, WS, SCHED), .OpCodes)
+ // ------------------------------------------------------------------------------------------------------
+    rule #dasmOpCodes( WS, SCHED ) => #revOps(#dasmOpCodes(.OpCodes, WS, SCHED))
 
     rule #dasmOpCodes( OPS, .WordStack, _ ) => OPS
     rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(#dasmOpCode(W, SCHED) ; OPS, WS, SCHED) requires W >=Int 0   andBool W <=Int 95
@@ -2538,9 +2546,6 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(LOG(W -Int 160)       ; OPS, WS, SCHED) requires W >=Int 160 andBool W <=Int 164
 
     rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(PUSH(W -Int 95, #asWord(#take(W -Int 95, WS))) ; OPS, #drop(W -Int 95, WS), SCHED) requires W >=Int 96  andBool W <=Int 127
-
-    rule #revOpCodes ( OP ; OPS , OPS' ) => #revOpCodes(OPS, OP ; OPS')
-    rule #revOpCodes ( .OpCodes , OPS  ) => OPS
 
     syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [function]
  // -----------------------------------------------------------
