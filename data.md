@@ -50,23 +50,66 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     rule pow255 => 57896044618658097711785492504343953926634992332820282019728792003956564819968  [macro]
     rule pow16  => 65536 [macro]
 
-    syntax Int ::= "minSInt128" [function]
-                 | "maxSInt128" [function]
-                 | "minUInt160" [function]
-                 | "maxUInt160" [function]
-                 | "minUInt256" [function]
-                 | "maxUInt256" [function]
-                 | "minSInt256" [funciton]
-                 | "maxSInt256" [function]
- // ---------------------------------------
-    rule minSInt128 => -170141183460469231731687303715884105728  [macro]  /* -2^127     */
-    rule maxSInt128 =>  170141183460469231731687303715884105727  [macro]  /*  2^127 - 1 */
-    rule minUInt160 => 0  [macro]
-    rule maxUInt160 => 1461501637330902918203684832716283019655932542975  [macro]  /* 2^160 - 1 */
-    rule minUInt256 => 0  [macro]
-    rule maxUInt256 => 115792089237316195423570985008687907853269984665640564039457584007913129639935  [macro]  /*  2^256 - 1 */
-    rule minSInt256 => -57896044618658097711785492504343953926634992332820282019728792003956564819968  [macro]  /* -2^255     */
-    rule maxSInt256 =>  57896044618658097711785492504343953926634992332820282019728792003956564819967  [macro]  /*  2^255 - 1 */
+    syntax Int ::= "minSInt128"      [function]
+                 | "maxSInt128"      [function]
+                 | "minUInt128"      [function]
+                 | "maxUInt128"      [function]
+                 | "minUInt160"      [function]
+                 | "maxUInt160"      [function]
+                 | "minSInt256"      [funciton]
+                 | "maxSInt256"      [function]
+                 | "minUInt256"      [function]
+                 | "maxUInt256"      [function]
+                 | "minSFixed128x10" [funciton]
+                 | "maxSFixed128x10" [function]
+                 | "minUFixed128x10" [function]
+                 | "maxUFixed128x10" [function]
+ // -------------------------------------------
+    rule minSInt128      => -170141183460469231731687303715884105728                                        [macro]  /*  -2^127      */
+    rule maxSInt128      =>  170141183460469231731687303715884105727                                        [macro]  /*   2^127 - 1  */
+    rule minSFixed128x10 => -1701411834604692317316873037158841057280000000000                              [macro]  /* (-2^127    ) * 10^10 */
+    rule maxSFixed128x10 =>  1701411834604692317316873037158841057270000000000                              [macro]  /* ( 2^127 - 1) * 10^10 */
+    rule minSInt256      => -57896044618658097711785492504343953926634992332820282019728792003956564819968  [macro]  /*  -2^255      */
+    rule maxSInt256      =>  57896044618658097711785492504343953926634992332820282019728792003956564819967  [macro]  /*   2^255 - 1  */
+
+    rule minUInt128      =>  0                                                                              [macro]
+    rule maxUInt128      =>  340282366920938463463374607431768211455                                        [macro]  /*   2^128 - 1  */
+    rule minUFixed128x10 =>  0                                                                              [macro]
+    rule maxUFixed128x10 =>  3402823669209384634633746074317682114550000000000                              [macro]  /* ( 2^128 - 1) * 10^10 */
+    rule minUInt160      =>  0                                                                              [macro]
+    rule maxUInt160      =>  1461501637330902918203684832716283019655932542975                              [macro]  /*   2^160 - 1  */
+    rule minUInt256      =>  0                                                                              [macro]
+    rule maxUInt256      =>  115792089237316195423570985008687907853269984665640564039457584007913129639935 [macro]  /*   2^256 - 1  */
+```
+
+-   Range of types
+
+```k
+    syntax Bool ::= #rangeSInt    ( Int , Int )       [function]
+                  | #rangeUInt    ( Int , Int )       [function]
+                  | #rangeSFixed  ( Int , Int , Int ) [function]
+                  | #rangeUFixed  ( Int , Int , Int ) [function]
+                  | #rangeAddress ( Int )             [function]
+                  | #rangeBytes   ( Int , Int )       [function]
+ // ------------------------------------------------------------
+    rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      ) [macro]
+    rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      ) [macro]
+    rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <= maxUInt128      ) [macro]
+    rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <= maxUInt256      ) [macro]
+    rule #rangeSFixed  ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 ) [macro]
+    rule #rangeUFixed  ( 128 , 10 , X ) => #range ( minUFixed128x10 <= X <= maxUFixed128x10 ) [macro]
+    rule #rangeAddress (            X ) => #range ( minUInt160      <= X <= maxUInt160      ) [macro]
+    rule #rangeBytes   (  32 ,      X ) => #range ( minUInt256      <= X <= maxUInt256      ) [macro]
+
+    syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")" [function]
+                  | "#range" "(" Int "<"  Int "<=" Int ")" [function]
+                  | "#range" "(" Int "<=" Int "<"  Int ")" [function]
+                  | "#range" "(" Int "<=" Int "<=" Int ")" [function]
+ // -----------------------------------------------------------------
+    rule #range ( LB <  X <  UB ) => LB  <Int X andBool X  <Int UB [macro]
+    rule #range ( LB <  X <= UB ) => LB  <Int X andBool X <=Int UB [macro]
+    rule #range ( LB <= X <  UB ) => LB <=Int X andBool X  <Int UB [macro]
+    rule #range ( LB <= X <= UB ) => LB <=Int X andBool X <=Int UB [macro]
 ```
 
 -   `chop` interperets an integer modulo $2^256$.
