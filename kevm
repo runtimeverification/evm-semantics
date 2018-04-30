@@ -127,6 +127,23 @@ run_test_profile() {
     exit "$exit_status"
 }
 
+run_sort_logs() {
+    local tmp_file
+    tmp_log="$(mktemp $test_logs/log.XXXXXX)"
+
+    for log in $now_passing $now_failing; do
+        if [[ -f "$log" ]]; then
+            sort -u "$log" > "$tmp_log"
+            cp "$tmp_log" "$log"
+        fi
+    done
+
+    if [[ -f "$run_times" ]]; then
+        sort -k2 -u "$run_times" > "$tmp_log"
+        cp "$tmp_log" "$run_times"
+    fi
+}
+
 run_get_failing() {
     count="${1:-1}"
     cat "$now_failing" | sort -R | head -n"$count"
@@ -148,6 +165,7 @@ case "$run_command" in
     interpret)    run_interpreter  "$@" ;;
     test)         run_test         "$@" ;;
     test-profile) run_test_profile "$@" ;;
+    sort-logs)    run_sort_logs         ;;
     get-failing)  run_get_failing  "$@" ;;
 
     *) echo "
@@ -173,6 +191,7 @@ case "$run_command" in
        $0 interpret    <pgm>           Run a single EVM program (in JSON testing format) using fast interpreter
        $0 test         <pgm> <output>  Run a single EVM program like it's a test
        $0 test-profile <pgm> <output>  Same as test, but generate list of failing tests and dump timing information
+       $0 sort-logs                    Normalize the test logs for CI servers to use
        $0 get-failing  [<count>]       Return a list of failing tests, at most <count>.
 
        Note: <output> is the expected output of the given test.
