@@ -1690,8 +1690,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
     rule <k> SELFDESTRUCT ACCTTO => #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
-         <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
-         <refund> RF => #if ACCT in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
+         <selfDestruct> ... (.Set => SetItem(ACCT)) ... </selfDestruct>
          <account>
            <acctID> ACCT </acctID>
            <balance> BALFROM </balance>
@@ -1704,8 +1703,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
     rule <k> SELFDESTRUCT ACCT => #end EVMC_SUCCESS ... </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
-         <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
-         <refund> RF => #if ACCT in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
+         <selfDestruct> ... (.Set => SetItem(ACCT)) ... </selfDestruct>
          <account>
            <acctID> ACCT </acctID>
            <balance> BALFROM => 0 </balance>
@@ -2018,6 +2016,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, #accountNonexistent(ACCTTO), BAL) ... </k>
          <id> ACCTFROM </id>
+         <selfDestruct> SDS </selfDestruct>
+         <refund> RF => #if ACCTFROM in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL </balance>
