@@ -1843,9 +1843,15 @@ Memory Consumption
 Memory consumed is tracked to determine the appropriate amount of gas to charge for each operation.
 In the YellowPaper, each opcode is defined to consume zero gas unless specified otherwise next to the semantics of the opcode (appendix H).
 
+-   `#memory[_,_]` is an operator which will calculate the new memory size given the start and width of a modified memory segment.
 -   `#memoryUsageUpdate` is the function `M` in appendix H of the YellowPaper which helps track the memory used.
 
 ```k
+    syntax InternalOp ::= "#memory" "[" Int "," Int "]"
+ // ---------------------------------------------------
+    rule <k> #memory [ START , WIDTH ] => #memoryUsageUpdate(MU, START, WIDTH) ~> #deductMemory ... </k>
+         <memoryUsed> MU </memoryUsed>
+
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
  // ----------------------------------------------------------------
     rule #memoryUsageUpdate(MU, START, 0)     => MU
@@ -1880,42 +1886,38 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, JUMPDEST) => Gjumpdest < SCHED > ... </k>
 
     rule <k> #gasExec(SCHED, CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH)
-          => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) ~> #deductMemory
+          => #memory [ ARGSTART , ARGWIDTH ] ~> #memory [ RETSTART , RETWIDTH ]
           ~> Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ~> #allocateCallGas
           ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE)
          ...
          </k>
          <gas> GAVAIL </gas>
-         <memoryUsed> MU </memoryUsed>
 
     rule <k> #gasExec(SCHED, CALLCODE GCAP _ VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH)
-          => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) ~> #deductMemory
+          => #memory [ ARGSTART , ARGWIDTH ] ~> #memory [ RETSTART , RETWIDTH ]
           ~> Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) ~> #allocateCallGas
           ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE)
          ...
          </k>
          <id> ACCTFROM </id>
          <gas> GAVAIL </gas>
-         <memoryUsed> MU </memoryUsed>
 
     rule <k> #gasExec(SCHED, DELEGATECALL GCAP _ ARGSTART ARGWIDTH RETSTART RETWIDTH)
-          => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) ~> #deductMemory
+          => #memory [ ARGSTART , ARGWIDTH ] ~> #memory [ RETSTART , RETWIDTH ]
           ~> Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) ~> #allocateCallGas
           ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0)
          ...
          </k>
          <id> ACCTFROM </id>
          <gas> GAVAIL </gas>
-         <memoryUsed> MU </memoryUsed>
 
     rule <k> #gasExec(SCHED, STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH)
-          => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH) ~> #deductMemory
+          => #memory [ ARGSTART , ARGWIDTH ] ~> #memory [ RETSTART , RETWIDTH ]
           ~> Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) ~> #allocateCallGas
           ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0)
          ...
          </k>
          <gas> GAVAIL </gas>
-         <memoryUsed> MU </memoryUsed>
 
     rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, #accountNonexistent(ACCTTO), BAL) ... </k>
          <id> ACCTFROM </id>
@@ -1926,25 +1928,24 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
            <balance> BAL </balance>
            ...
          </account>
-         <memoryUsed> MU </memoryUsed>
 
     // Memory usage
-    rule <k> #gasExec(SCHED, MLOAD   INDEX)   => #memoryUsageUpdate(MU, INDEX, 32) ~> #deductMemory ~> Gverylow < SCHED > ... </k> <memoryUsed> MU </memoryUsed>
-    rule <k> #gasExec(SCHED, MSTORE  INDEX _) => #memoryUsageUpdate(MU, INDEX, 32) ~> #deductMemory ~> Gverylow < SCHED > ... </k> <memoryUsed> MU </memoryUsed>
-    rule <k> #gasExec(SCHED, MSTORE8 INDEX _) => #memoryUsageUpdate(MU, INDEX,  1) ~> #deductMemory ~> Gverylow < SCHED > ... </k> <memoryUsed> MU </memoryUsed>
+    rule <k> #gasExec(SCHED, MLOAD   INDEX)   => #memory [ INDEX , 32 ] ~> Gverylow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, MSTORE  INDEX _) => #memory [ INDEX , 32 ] ~> Gverylow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, MSTORE8 INDEX _) => #memory [ INDEX ,  1 ] ~> Gverylow < SCHED > ... </k>
 
-    rule <k> #gasExec(SCHED, SHA3 START WIDTH) => #memoryUsageUpdate(MU, START, WIDTH) ~> #deductMemory ~> Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </k> <memoryUsed> MU </memoryUsed>
+    rule <k> #gasExec(SCHED, SHA3 START WIDTH) => #memory [ START , WIDTH ] ~> Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </k>
 
-    rule <k> #gasExec(SCHED, LOG(N) START WIDTH) => #memoryUsageUpdate(MU, START, WIDTH) ~> #deductMemory ~> (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k> <memoryUsed> MU </memoryUsed>
+    rule <k> #gasExec(SCHED, LOG(N) START WIDTH) => #memory [ START , WIDTH ] ~> (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
 
-    rule <k> #gasExec(SCHED, CALLDATACOPY   START _ WIDTH) => #memoryUsageUpdate(MU, START, WIDTH) ~> #deductMemory ~> Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k> <memoryUsed> MU </memoryUsed>
-    rule <k> #gasExec(SCHED, RETURNDATACOPY START _ WIDTH) => #memoryUsageUpdate(MU, START, WIDTH) ~> #deductMemory ~> Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k> <memoryUsed> MU </memoryUsed>
-    rule <k> #gasExec(SCHED, CODECOPY       START _ WIDTH) => #memoryUsageUpdate(MU, START, WIDTH) ~> #deductMemory ~> Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k> <memoryUsed> MU </memoryUsed>
-    rule <k> #gasExec(SCHED, EXTCODECOPY  _ START _ WIDTH) => #memoryUsageUpdate(MU, START, WIDTH) ~> #deductMemory ~> Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k> <memoryUsed> MU </memoryUsed>
+    rule <k> #gasExec(SCHED, CALLDATACOPY   START _ WIDTH) => #memory [ START , WIDTH ] ~> Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
+    rule <k> #gasExec(SCHED, RETURNDATACOPY START _ WIDTH) => #memory [ START , WIDTH ] ~> Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
+    rule <k> #gasExec(SCHED, CODECOPY       START _ WIDTH) => #memory [ START , WIDTH ] ~> Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
+    rule <k> #gasExec(SCHED, EXTCODECOPY  _ START _ WIDTH) => #memory [ START , WIDTH ] ~> Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
 
-    rule <k> #gasExec(SCHED, CREATE _ START WIDTH) => #memoryUsageUpdate(MU, START, WIDTH) ~> #deductMemory ~> Gcreate < SCHED > ... </k> <memoryUsed> MU </memoryUsed>
-    rule <k> #gasExec(SCHED, RETURN   START WIDTH) => #memoryUsageUpdate(MU, START, WIDTH) ~> #deductMemory ~> Gzero   < SCHED > ... </k> <memoryUsed> MU </memoryUsed>
-    rule <k> #gasExec(SCHED, REVERT   START WIDTH) => #memoryUsageUpdate(MU, START, WIDTH) ~> #deductMemory ~> Gzero   < SCHED > ... </k> <memoryUsed> MU </memoryUsed>
+    rule <k> #gasExec(SCHED, CREATE _ START WIDTH) => #memory [ START , WIDTH ] ~> Gcreate < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, RETURN   START WIDTH) => #memory [ START , WIDTH ] ~> Gzero   < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, REVERT   START WIDTH) => #memory [ START , WIDTH ] ~> Gzero   < SCHED > ... </k>
 
     // Wzero
     rule <k> #gasExec(SCHED, STOP)       => Gzero < SCHED > ... </k>
