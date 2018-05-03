@@ -1320,8 +1320,6 @@ These rules reach into the network state and load/store from account storage:
            <storage> ... (INDEX |-> (OLD => VALUE)) ... </storage>
            ...
          </account>
-         <refund> R => R +Int Rsstore(SCHED, VALUE, OLD) </refund>
-         <schedule> SCHED </schedule>
 
     rule <k> SSTORE INDEX VALUE => . ... </k>
          <id> ACCT </id>
@@ -1969,6 +1967,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
            <storage> STORAGE </storage>
            ...
          </account>
+         <refund> R => R +Int Rsstore(SCHED, VALUE, #lookup(STORAGE, INDEX)) </refund>
+         <schedule> SCHED </schedule>
 
     rule <k> #gasExec(SCHED, EXP W0 0)  => Gexp < SCHED > ... </k>
     rule <k> #gasExec(SCHED, EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=K 0
