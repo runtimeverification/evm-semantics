@@ -1320,11 +1320,7 @@ These rules reach into the network state and load/store from account storage:
            <storage> ... (INDEX |-> (OLD => VALUE)) ... </storage>
            ...
          </account>
-         <refund> R => #if OLD =/=Int 0 andBool VALUE ==Int 0
-                        #then R +Word Rsstoreclear < SCHED >
-                        #else R
-                       #fi
-         </refund>
+         <refund> R => R +Int Rsstore(SCHED, VALUE, OLD) </refund>
          <schedule> SCHED </schedule>
 
     rule <k> SSTORE INDEX VALUE => . ... </k>
@@ -2157,6 +2153,11 @@ There are several helpers for calculating gas (most of them also specified in th
 
     rule Cxfer(SCHED, 0) => 0
     rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=K 0
+
+    syntax Int ::= Rsstore ( Schedule , Int , Int ) [function]
+ // ----------------------------------------------------------
+    rule Rsstore(SCHED, VALUE, OLD)
+      => #if OLD =/=Int 0 andBool VALUE ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi
 
     syntax BExp    ::= Bool
     syntax KResult ::= Bool
