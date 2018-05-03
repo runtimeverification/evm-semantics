@@ -612,7 +612,6 @@ The `CallOp` opcodes all interperet their second argument as an address.
 ### Helpers
 
 -   `#addr` decides if the given argument should be interpreted as an address (given the opcode).
--   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
 
 ```k
     syntax InternalOp ::= "#load" "[" OpCode "]"
@@ -664,22 +663,6 @@ The `CallOp` opcodes all interperet their second argument as an address.
     rule #code?(EXTCODESIZE)  => true
     rule #code?(EXTCODECOPY)  => true
     rule #code?(OP)           => false requires (OP =/=K EXTCODESIZE) andBool (OP =/=K EXTCODECOPY)
-
-    syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas" | "#deductMemory"
- // ----------------------------------------------------------------------------
-    rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k> <schedule> SCHED </schedule>
-
-    rule <k> MU':Int ~> #deductMemory => #end EVMC_INVALID_MEMORY_ACCESS ... </k> requires MU' >=Int pow256
-    rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
-         <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
-      requires MU' <Int pow256
-
-    rule <k> G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
-    rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
-
-    syntax Int ::= Cmem ( Schedule , Int ) [function, memo]
- // -------------------------------------------------------
-    rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
 ```
 
 ### Program Counter
@@ -1837,6 +1820,21 @@ Precompiled Contracts
 Ethereum Gas Calculation
 ========================
 
+Gas Operator
+------------
+
+-   `#gas` calculates how much gas this operation costs.
+-   `#deductGas` will check that gas won't be exhausted (throwing `EVMC_OUT_OF_GAS` if so), and deducts the gas.
+
+```k
+    syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas"
+ // ----------------------------------------------------------
+    rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k> <schedule> SCHED </schedule>
+
+    rule <k> G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
+    rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+```
+
 Memory Consumption
 ------------------
 
@@ -1844,18 +1842,30 @@ Memory consumed is tracked to determine the appropriate amount of gas to charge 
 In the YellowPaper, each opcode is defined to consume zero gas unless specified otherwise next to the semantics of the opcode (appendix H).
 
 -   `#memory[_,_]` is an operator which will calculate the new memory size given the start and width of a modified memory segment.
--   `#memoryUsageUpdate` is the function `M` in appendix H of the YellowPaper which helps track the memory used.
+-   `#deductMemory` is a placeholder for deducting the correct amount of gas for memory expansion, or throwing `EVMC_INVALID_MEMORY_ACCESS`.
+-   `#memoryUsageUpdate` is the function `M` in appendix H of the Yellow Paper which helps track the memory used.
+-   `Cmem` is a function from the Yellow Paper which calculates the gas due to memory expansion.
 
 ```k
-    syntax InternalOp ::= "#memory" "[" Int "," Int "]"
- // ---------------------------------------------------
+    syntax InternalOp ::= "#memory" "[" Int "," Int "]" | "#deductMemory"
+ // ---------------------------------------------------------------------
     rule <k> #memory [ START , WIDTH ] => #memoryUsageUpdate(MU, START, WIDTH) ~> #deductMemory ... </k>
          <memoryUsed> MU </memoryUsed>
+
+    rule <k> MU':Int ~> #deductMemory => #end EVMC_INVALID_MEMORY_ACCESS ... </k> requires MU' >=Int pow256
+    rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
+         <memoryUsed> MU => MU' </memoryUsed>
+         <schedule> SCHED </schedule>
+      requires MU' <Int pow256
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
  // ----------------------------------------------------------------
     rule #memoryUsageUpdate(MU, START, 0)     => MU
     rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH >Int 0
+
+    syntax Int ::= Cmem ( Schedule , Int ) [function, memo]
+ // -------------------------------------------------------
+    rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
 ```
 
 Execution Gas
