@@ -1317,18 +1317,9 @@ These rules reach into the network state and load/store from account storage:
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> ... (INDEX |-> (OLD => VALUE)) ... </storage>
-           ...
-         </account>
-
-    rule <k> SSTORE INDEX VALUE => . ... </k>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
            <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>
            ...
          </account>
-      requires notBool (INDEX in_keys(STORAGE))
 ```
 
 ### Call Operations
