@@ -5,10 +5,11 @@
     command      = make clean && make deps && make build
 
 [test "smoke"]
-    trackedFiles = .build/logs/failing.lastrun .build/logs/runtime
+    trackedFiles = .build/logs/failing.lastrun
     command      = make clean && make deps && make build && make split-tests \
                     && make -j3 -k \
                         test-interactive \
+                        tests/ethereum-tests/BlockchainTests/GeneralStateTests/stChangedEIP150/contractCreationMakeCallThatAskMoreGasThenTransactionProvided_d0g1v0.json.test \
                         tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/CreateCollisionToEmpty_d0g0v0.json.test \
                         tests/ethereum-tests/BlockchainTests/GeneralStateTests/stZeroKnowledge2/ecadd_0-0_1-3_21000_128_d0g0v0.json.test \
                         tests/ethereum-tests/BlockchainTests/GeneralStateTests/stZeroKnowledge2/ecmul_0-0_0_21000_128_d0g2v0.json.test \
@@ -138,7 +139,9 @@
                         tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBadOpcode/badOpcodes_d46g0v0.json.test \
                         tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecallcode_011_OOGE_d0g0v0.json.test \
                         tests/proofs/specs/examples/sum-to-n-spec.k.test \
-                    && ./kevm sort-logs
+                        tests/proofs/specs/casper/vote-spec.k.test \
+                        tests/proofs/specs/casper/delete_validator-spec.k.test \
+                     ; ./kevm sort-logs
 
 [test "performance"]
     trackedFiles = .build/logs/failing.lastrun .build/logs/runtime
@@ -206,4 +209,4 @@
                         tests/proofs/specs/bihu/collectToken-spec.k.test \
                         tests/proofs/specs/vyper-erc20/transfer-success-2-spec.k.test \
                         tests/proofs/specs/hobby-erc20/transferFrom-failure-2-spec.k.test \
-                    && ./kevm sort-logs
+                      ; ./kevm sort-logs
