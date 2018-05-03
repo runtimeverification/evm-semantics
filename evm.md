@@ -580,7 +580,6 @@ The `CallOp` opcodes all interperet their second argument as an address.
 ### Helpers
 
 -   `#addr` decides if the given argument should be interpreted as an address (given the opcode).
--   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
 
 ```k
     syntax InternalOp ::= "#load" "[" OpCode "]"
@@ -632,22 +631,6 @@ The `CallOp` opcodes all interperet their second argument as an address.
     rule #code?(EXTCODESIZE)  => true
     rule #code?(EXTCODECOPY)  => true
     rule #code?(OP)           => false requires (OP =/=K EXTCODESIZE) andBool (OP =/=K EXTCODECOPY)
-
-    syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas" | "#deductMemory"
- // ----------------------------------------------------------------------------
-    rule <k> #gas [ OP ] => #memory(OP, MU) ~> #deductMemory ~> #gasExec(SCHED, OP) ~> #deductGas ... </k> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
-
-    rule <k> MU':Int ~> #deductMemory => #end EVMC_INVALID_MEMORY_ACCESS ... </k> requires MU' >=Int pow256
-    rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
-         <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
-      requires MU' <Int pow256
-
-    rule <k> G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
-    rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
-
-    syntax Int ::= Cmem ( Schedule , Int ) [function, memo]
- // -------------------------------------------------------
-    rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
 ```
 
 ### Program Counter
@@ -1819,6 +1802,27 @@ Precompiled Contracts
 Ethereum Gas Calculation
 ========================
 
+Overall Gas
+-----------
+
+-   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
+-   `#deductGas` is used to check that there won't be a gas underflow (throwing `EVMC_OUT_OF_GAS` if so), and deducts the gas if not.
+-   `#deductMemory` checks that access to memory stay within sensible bounds (and deducts the correct amount of gas for it), throwing `EVMC_INVALID_MEMORY_ACCESS` if bad access happens.
+
+```k
+    syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas" | "#deductMemory"
+ // ----------------------------------------------------------------------------
+    rule <k> #gas [ OP ] => #memory(OP, MU) ~> #deductMemory ~> #gasExec(SCHED, OP) ~> #deductGas ... </k> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
+
+    rule <k> MU':Int ~> #deductMemory => #end EVMC_INVALID_MEMORY_ACCESS ... </k> requires MU' >=Int pow256
+    rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
+         <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
+      requires MU' <Int pow256
+
+    rule <k> G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
+    rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+```
+
 Memory Consumption
 ------------------
 
@@ -2126,6 +2130,10 @@ There are several helpers for calculating gas (most of them also specified in th
 
     rule Cxfer(SCHED, 0) => 0
     rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=K 0
+
+    syntax Int ::= Cmem ( Schedule , Int ) [function, memo]
+ // -------------------------------------------------------
+    rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
 
     syntax Int ::= Rsstore ( Schedule , Int , Int ) [function]
  // ----------------------------------------------------------
