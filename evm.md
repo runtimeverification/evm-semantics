@@ -1809,29 +1809,29 @@ Memory consumed is tracked to determine the appropriate amount of gas to charge 
 In the YellowPaper, each opcode is defined to consume zero gas unless specified otherwise next to the semantics of the opcode (appendix H).
 
 -   `#memory` computes the new memory size given the old size and next operator (with its arguments).
--   `#memoryUsageUpdate` is the function `M` in appendix H of the YellowPaper which helps track the memory used.
+-   `#memDelta` is the function `M` in appendix H of the YellowPaper which helps track the memory used.
 
 ```k
     syntax Int ::= #memory ( OpCode , Int ) [function]
  // --------------------------------------------------
-    rule #memory ( MLOAD   INDEX   , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
-    rule #memory ( MSTORE  INDEX _ , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
-    rule #memory ( MSTORE8 INDEX _ , MU ) => #memoryUsageUpdate(MU, INDEX, 1)
+    rule #memory ( MLOAD   INDEX   , MU ) => #memDelta(MU, INDEX, 32)
+    rule #memory ( MSTORE  INDEX _ , MU ) => #memDelta(MU, INDEX, 32)
+    rule #memory ( MSTORE8 INDEX _ , MU ) => #memDelta(MU, INDEX, 1)
 
-    rule #memory ( SHA3   START WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
-    rule #memory ( LOG(_) START WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( SHA3   START WIDTH , MU ) => #memDelta(MU, START, WIDTH)
+    rule #memory ( LOG(_) START WIDTH , MU ) => #memDelta(MU, START, WIDTH)
 
-    rule #memory ( CODECOPY       START _ WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
-    rule #memory ( EXTCODECOPY  _ START _ WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
-    rule #memory ( CALLDATACOPY   START _ WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
-    rule #memory ( RETURNDATACOPY START _ WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( CODECOPY       START _ WIDTH , MU ) => #memDelta(MU, START, WIDTH)
+    rule #memory ( EXTCODECOPY  _ START _ WIDTH , MU ) => #memDelta(MU, START, WIDTH)
+    rule #memory ( CALLDATACOPY   START _ WIDTH , MU ) => #memDelta(MU, START, WIDTH)
+    rule #memory ( RETURNDATACOPY START _ WIDTH , MU ) => #memDelta(MU, START, WIDTH)
 
-    rule #memory ( CREATE _ START WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
-    rule #memory ( RETURN   START WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
-    rule #memory ( REVERT   START WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( CREATE _ START WIDTH , MU ) => #memDelta(MU, START, WIDTH)
+    rule #memory ( RETURN   START WIDTH , MU ) => #memDelta(MU, START, WIDTH)
+    rule #memory ( REVERT   START WIDTH , MU ) => #memDelta(MU, START, WIDTH)
 
-    rule #memory ( COP:CallOp     _ _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
-    rule #memory ( CSOP:CallSixOp _ _   ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
+    rule #memory ( COP:CallOp     _ _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memDelta(#memDelta(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
+    rule #memory ( CSOP:CallSixOp _ _   ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memDelta(#memDelta(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
 ```
 
 Grumble grumble, K sucks at `owise`.
@@ -1900,10 +1900,10 @@ Grumble grumble, K sucks at `owise`.
 
     rule #memory(_:PrecompiledOp, MU) => MU
 
-    syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
- // ----------------------------------------------------------------
-    rule #memoryUsageUpdate(MU, START, 0)     => MU
-    rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH >Int 0
+    syntax Int ::= #memDelta ( Int , Int , Int ) [function]
+ // -------------------------------------------------------
+    rule #memDelta(MU, START, 0)     => MU
+    rule #memDelta(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH >Int 0
 ```
 
 ### Execution Gas
