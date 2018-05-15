@@ -1126,8 +1126,9 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
-    rule <k> JUMPI DEST 0 => . ... </k>
+    rule <k> JUMPI DEST I => . ... </k>
          <pc> PCOUNT => PCOUNT +Int 1 </pc>
+	     requires I ==Int 0
 
     rule <k> JUMPI DEST I => JUMP DEST ... </k>
       requires I =/=Int 0
