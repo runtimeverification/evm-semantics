@@ -350,7 +350,6 @@ The `#next` operator executes a single step by:
     rule <k> #exceptional? [ OP ]
           => #invalid?     [ OP ]
           ~> #stackNeeded? [ OP ]
-          ~> #badJumpDest? [ OP ]
           ~> #static?      [ OP ]
          ...
          </k>
@@ -430,36 +429,6 @@ The `#next` operator executes a single step by:
     syntax Int ::= #stackDelta ( OpCode ) [function]
  // ------------------------------------------------
     rule #stackDelta(OP) => #stackAdded(OP) -Int #stackNeeded(OP)
-```
-
--   `#badJumpDest?` determines if the opcode will result in a bad jump destination.
-
-```k
-    syntax InternalOp ::= "#badJumpDest?" "[" OpCode "]"
- // ----------------------------------------------------
-    rule <k> #badJumpDest? [ OP    ] => . ... </k> requires notBool isJumpOp(OP)
-    rule <k> #badJumpDest? [ OP    ] => . ... </k> <wordStack> DEST  : WS </wordStack> <program> ... DEST |-> JUMPDEST ... </program> requires isJumpOp(OP)
-    rule <k> #badJumpDest? [ JUMPI ] => . ... </k> <wordStack> _ : I : WS </wordStack> requires I ==Int 0
-
-    rule <k> #badJumpDest? [ JUMP ] => #end EVMC_BAD_JUMP_DESTINATION ... </k>
-         <wordStack> DEST : WS </wordStack>
-         <program> ... DEST |-> OP ... </program>
-       requires OP =/=K JUMPDEST
-
-    rule <k> #badJumpDest? [ JUMP ] => #end EVMC_BAD_JUMP_DESTINATION ... </k>
-         <wordStack> DEST : WS </wordStack>
-         <program> PGM </program>
-      requires notBool (DEST in_keys(PGM))
-
-    rule <k> #badJumpDest? [ JUMPI ] => #end EVMC_BAD_JUMP_DESTINATION ... </k>
-         <wordStack> DEST : W : WS </wordStack>
-         <program> ... DEST |-> OP ... </program>
-       requires OP =/=K JUMPDEST andBool W =/=K 0
-
-    rule <k> #badJumpDest? [ JUMPI ] => #end EVMC_BAD_JUMP_DESTINATION ... </k>
-         <wordStack> DEST : W : WS </wordStack>
-         <program> PGM </program>
-      requires (notBool (DEST in_keys(PGM))) andBool W =/=K 0
 ```
 
 -   `#static?` determines if the opcode should throw an exception due to the static flag.
@@ -1143,12 +1112,26 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax UnStackOp ::= "JUMP"
  // ---------------------------
-    rule <k> JUMP DEST => . ... </k> <pc> _ => DEST </pc>
+    rule <k> JUMP DEST => . ... </k>
+         <pc> _ => DEST </pc>
+         <program> ... DEST |-> JUMPDEST ... </program>
+
+    rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
+         <program> ... DEST |-> OP ... </program>
+      requires OP =/=K JUMPDEST
+
+    rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
+         <program> PGM </program>
+      requires notBool (DEST in_keys(PGM))
 
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
-    rule <k> JUMPI DEST I => . ... </k> <pc> _      => DEST          </pc> requires I =/=Int 0
-    rule <k> JUMPI DEST I => . ... </k> <pc> PCOUNT => PCOUNT +Int 1 </pc> requires I  ==Int 0
+    rule <k> JUMPI DEST I => . ... </k>
+         <pc> PCOUNT => PCOUNT +Int 1 </pc>
+	     requires I ==Int 0
+
+    rule <k> JUMPI DEST I => JUMP DEST ... </k>
+      requires I =/=Int 0
 ```
 
 ### `STOP`, `REVERT`, and `RETURN`
