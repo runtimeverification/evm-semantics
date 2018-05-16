@@ -1,3 +1,9 @@
+[test "kompiled-defn"]
+    trackedFiles = .build/ocaml/driver-kompiled/compiled.txt \
+                   .build/java/driver-kompiled/compiled.txt \
+                   .build/node/driver-kompiled/compiled.txt
+    command      = make clean && make deps && make build
+
 [test "smoke"]
     trackedFiles = .build/logs/failing.lastrun .build/logs/runtime
     command      = make clean && make deps && make build && make split-tests \
