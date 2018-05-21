@@ -273,7 +273,6 @@ Control Flow
 OpCode Execution
 ----------------
 
-
 ### Execution Macros
 
 -   `#execute` calls `#next` repeatedly until it recieves an `#end`.
@@ -797,7 +796,6 @@ Lists of opcodes form programs.
 
 EVM OpCodes
 -----------
-
 
 ### Internal Operations
 
@@ -1832,7 +1830,6 @@ Precompiled Contracts
       requires notBool isValidPoint(AK) orBool notBool isValidPoint(BK)
 ```
 
-
 Ethereum Gas Calculation
 ========================
 
@@ -2175,7 +2172,6 @@ There are several helpers for calculating gas (most of them also specified in th
 
 Fee Schedule from C++ Implementation
 ------------------------------------
-
 
 ### From the C++ Implementation
 

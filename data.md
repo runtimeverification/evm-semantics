@@ -153,8 +153,8 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
     rule abs(I) => I         requires sgn(I) ==K 1
 ```
 
--   #signed : uInt256 -> sInt256  (i.e., [minUInt256..maxUInt256] -> [minSInt256..maxSInt256])
-- #unsigned : sInt256 -> uInt256  (i.e., [minSInt256..maxSInt256] -> [minUInt256..maxUInt256])
+-   `#signed` : uInt256 -> sInt256  (i.e., [minUInt256..maxUInt256] -> [minSInt256..maxSInt256])
+- `#unsigned` : sInt256 -> uInt256  (i.e., [minSInt256..maxSInt256] -> [minUInt256..maxUInt256])
 
 ```k
     syntax Int ::= #signed ( Int ) [function]
@@ -370,7 +370,6 @@ Data-Structures over `Word`
 
 A WordStack for EVM
 -------------------
-
 
 ### As a cons-list
 
