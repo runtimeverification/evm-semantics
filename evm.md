@@ -328,11 +328,10 @@ The `#next` operator executes a single step by:
 ```k
     rule <mode> EXECMODE </mode>
          <k> #next
-          => #pushCallStack ~> #exceptional? [ OP ]
-                            ~> #load         [ OP ]
-                            ~> #exec         [ OP ]
-                            ~> #pc           [ OP ]
-          ~> #? #dropCallStack : #popCallStack ?#
+          => #exceptional? [ OP ]
+          ~> #load         [ OP ]
+          ~> #exec         [ OP ]
+          ~> #pc           [ OP ]
          ...
          </k>
          <pc> PCOUNT </pc>
