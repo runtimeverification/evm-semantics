@@ -145,12 +145,21 @@ else
   LIBFLAG=-shared
 endif
 
+ifeq ($(COVERAGE),k)
+KOMPILE_FLAGS=--coverage
+endif
+
+coverage:
+	sed -i 's!.build/node/\(.*\)\.k:!\1.md:!' .build/node/driver-kompiled/allRules.txt
+	sed -i 's!.build/ocaml/\(.*\)\.k:!\1.md:!' .build/ocaml/driver-kompiled/allRules.txt
+	${K_BIN}/kcovr .build/node/driver-kompiled .build/ocaml/driver-kompiled -- ./driver.md data.md evm.md analysis.md > .build/coverage.xml
+
 .build/%/driver-kompiled/constants.$(EXT): $(ocaml_files) $(node_files)
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
 		&& ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
 						    --syntax-module ETHEREUM-SIMULATION .build/$*/driver.k --directory .build/$* \
-						    --hook-namespaces "KRYPTO BLOCKCHAIN" --gen-ml-only -O3 --non-strict \
+						    --hook-namespaces "KRYPTO BLOCKCHAIN" --gen-ml-only -O3 --non-strict $(KOMPILE_FLAGS) \
 		&& cd .build/$*/driver-kompiled \
 		&& ocamlfind $(OCAMLC) -c -g constants.ml -package gmp -package zarith -safe-string
 
