@@ -536,7 +536,9 @@ The `#next` operator executes a single step by:
 ```k
     syntax InternalOp ::= "#exec" "[" OpCode "]"
  // --------------------------------------------
-    rule <k> #exec [ OP ] => #gas [ OP ] ~> OP ... </k> requires isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
+    rule <schedule> SCHED </schedule>
+         <k> #exec [ OP ] => #gas [ SCHED , OP ] ~> OP ... </k>
+      requires isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
 ```
 
 Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
@@ -1796,8 +1798,8 @@ Gas Calculation
 -   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
 
 ```k
-    syntax InternalOp ::= "#gas" "[" OpCode "]"
- // -------------------------------------------
+    syntax InternalOp ::= "#gas" "[" Schedule "," OpCode "]"
+ // --------------------------------------------------------
 ```
 
 ### Memory Expansion
@@ -1806,30 +1808,30 @@ Memory consumed is tracked to determine the appropriate amount of gas to charge 
 Here, `#gas` calculates the memory delta of a given opcode, then deducts the intrinsic execution gas of it.
 
 ```k
-    rule <k> #gas [ MLOAD   INDEX       ] => #gasMemory(INDEX, 32) ~> #gasExec(SCHED , MLOAD   INDEX      ) ... </k> <schedule> SCHED </schedule>
-    rule <k> #gas [ MSTORE  INDEX VALUE ] => #gasMemory(INDEX, 32) ~> #gasExec(SCHED , MSTORE  INDEX VALUE) ... </k> <schedule> SCHED </schedule>
-    rule <k> #gas [ MSTORE8 INDEX VALUE ] => #gasMemory(INDEX,  1) ~> #gasExec(SCHED , MSTORE8 INDEX VALUE) ... </k> <schedule> SCHED </schedule>
+    rule <k> #gas [ SCHED , MLOAD   INDEX       ] => #gasMemory(INDEX, 32) ~> #gasExec(SCHED , MLOAD   INDEX      ) ... </k>
+    rule <k> #gas [ SCHED , MSTORE  INDEX VALUE ] => #gasMemory(INDEX, 32) ~> #gasExec(SCHED , MSTORE  INDEX VALUE) ... </k>
+    rule <k> #gas [ SCHED , MSTORE8 INDEX VALUE ] => #gasMemory(INDEX,  1) ~> #gasExec(SCHED , MSTORE8 INDEX VALUE) ... </k>
 
-    rule <k> #gas [ SHA3   START WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , SHA3   START WIDTH) ... </k> <schedule> SCHED </schedule>
-    rule <k> #gas [ LOG(N) START WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , LOG(N) START WIDTH) ... </k> <schedule> SCHED </schedule>
+    rule <k> #gas [ SCHED , SHA3   START WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , SHA3   START WIDTH) ... </k>
+    rule <k> #gas [ SCHED , LOG(N) START WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , LOG(N) START WIDTH) ... </k>
 
-    rule <k> #gas [ CODECOPY       START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , CODECOPY       START V2 WIDTH) ... </k> <schedule> SCHED </schedule>
-    rule <k> #gas [ EXTCODECOPY V1 START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , EXTCODECOPY V1 START V2 WIDTH) ... </k> <schedule> SCHED </schedule>
-    rule <k> #gas [ CALLDATACOPY   START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , CALLDATACOPY   START V2 WIDTH) ... </k> <schedule> SCHED </schedule>
-    rule <k> #gas [ RETURNDATACOPY START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , RETURNDATACOPY START V2 WIDTH) ... </k> <schedule> SCHED </schedule>
+    rule <k> #gas [ SCHED , CODECOPY       START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , CODECOPY       START V2 WIDTH) ... </k>
+    rule <k> #gas [ SCHED , EXTCODECOPY V1 START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , EXTCODECOPY V1 START V2 WIDTH) ... </k>
+    rule <k> #gas [ SCHED , CALLDATACOPY   START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , CALLDATACOPY   START V2 WIDTH) ... </k>
+    rule <k> #gas [ SCHED , RETURNDATACOPY START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , RETURNDATACOPY START V2 WIDTH) ... </k>
 
-    rule <k> #gas [ CREATE V1 START WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , CREATE V1 START WIDTH) ... </k> <schedule> SCHED </schedule>
-    rule <k> #gas [ RETURN    START WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , RETURN    START WIDTH) ... </k> <schedule> SCHED </schedule>
-    rule <k> #gas [ REVERT    START WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , REVERT    START WIDTH) ... </k> <schedule> SCHED </schedule>
+    rule <k> #gas [ SCHED , CREATE V1 START WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , CREATE V1 START WIDTH) ... </k>
+    rule <k> #gas [ SCHED , RETURN    START WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , RETURN    START WIDTH) ... </k>
+    rule <k> #gas [ SCHED , REVERT    START WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , REVERT    START WIDTH) ... </k>
 
-    rule <k> #gas [ COP:CallOp     GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH ] => #gasMemory(ARGSTART, ARGWIDTH) ~> #gasMemory(RETSTART, RETWIDTH) ~> #gasExec(SCHED , COP:CallOp     GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH) ... </k> <schedule> SCHED </schedule>
-    rule <k> #gas [ CSOP:CallSixOp GCAP ACCTTO       ARGSTART ARGWIDTH RETSTART RETWIDTH ] => #gasMemory(ARGSTART, ARGWIDTH) ~> #gasMemory(RETSTART, RETWIDTH) ~> #gasExec(SCHED , CSOP:CallSixOp GCAP ACCTTO       ARGSTART ARGWIDTH RETSTART RETWIDTH) ... </k> <schedule> SCHED </schedule>
+    rule <k> #gas [ SCHED , COP:CallOp     GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH ] => #gasMemory(ARGSTART, ARGWIDTH) ~> #gasMemory(RETSTART, RETWIDTH) ~> #gasExec(SCHED , COP:CallOp     GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH) ... </k>
+    rule <k> #gas [ SCHED , CSOP:CallSixOp GCAP ACCTTO       ARGSTART ARGWIDTH RETSTART RETWIDTH ] => #gasMemory(ARGSTART, ARGWIDTH) ~> #gasMemory(RETSTART, RETWIDTH) ~> #gasExec(SCHED , CSOP:CallSixOp GCAP ACCTTO       ARGSTART ARGWIDTH RETSTART RETWIDTH) ... </k>
 ```
 
 Opcodes not listed above do not increase memory, and can go straight to calculating execution gas.
 
 ```k
-    rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ... </k> <schedule> SCHED </schedule> [owise]
+    rule <k> #gas [ SCHED , OP ] => #gasExec(SCHED, OP) ... </k> [owise]
 ```
 
 -   `#gasMemory` computes the new memory size and deducts gas accordingly.
