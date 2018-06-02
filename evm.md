@@ -1796,13 +1796,26 @@ Gas Calculation
 ---------------
 
 -   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
+-   `#gasMemory` computes the new memory size and deducts gas accordingly.
+-   `#memDelta` is the function `M` in appendix H of the YellowPaper which helps track the memory used.
 
 ```k
     syntax InternalOp ::= "#gas" "[" Schedule "," OpCode "]"
  // --------------------------------------------------------
+
+    syntax InternalOp ::= #gasMemory ( Int , Int )
+ // ----------------------------------------------
+    rule <k> #gasMemory ( START , WIDTH ) => #memDelta(MU, START, WIDTH) ~> #deductMemory ... </k> <memoryUsed> MU </memoryUsed>
+
+    syntax Int ::= #memDelta ( Int , Int , Int ) [function]
+ // -------------------------------------------------------
+    rule #memDelta(MU, START, 0)     => MU
+    rule #memDelta(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH >Int 0
 ```
 
-### Memory Expansion
+### Normal Execution Gas
+
+The following opcodes do not have complicated multi-step gas calculation, and do not have any potential for refund.
 
 Memory consumed is tracked to determine the appropriate amount of gas to charge for each operation.
 Here, `#gas` calculates the memory delta of a given opcode, then deducts the intrinsic execution gas of it.
@@ -1823,97 +1836,13 @@ Here, `#gas` calculates the memory delta of a given opcode, then deducts the int
     rule <k> #gas [ SCHED , STOP                  ] =>                             Gzero < SCHED > ~> #deductGas ... </k>
     rule <k> #gas [ SCHED , RETURN    START WIDTH ] => #gasMemory(START, WIDTH) ~> Gzero < SCHED > ~> #deductGas ... </k>
     rule <k> #gas [ SCHED , REVERT    START WIDTH ] => #gasMemory(START, WIDTH) ~> Gzero < SCHED > ~> #deductGas ... </k>
-
-    rule <k> #gas [ SCHED , CREATE V1 START WIDTH ] => #gasMemory(START, WIDTH) ~> Gcreate < SCHED > ~> #deductGas ~> #allocateCreateGas ... </k>
-
-    rule <k> #gas [ SCHED , COP:CallOp     GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH ] => #gasMemory(ARGSTART, ARGWIDTH) ~> #gasMemory(RETSTART, RETWIDTH) ~> #gasExec(SCHED , COP:CallOp     GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH) ... </k>
-    rule <k> #gas [ SCHED , CSOP:CallSixOp GCAP ACCTTO       ARGSTART ARGWIDTH RETSTART RETWIDTH ] => #gasMemory(ARGSTART, ARGWIDTH) ~> #gasMemory(RETSTART, RETWIDTH) ~> #gasExec(SCHED , CSOP:CallSixOp GCAP ACCTTO       ARGSTART ARGWIDTH RETSTART RETWIDTH) ... </k>
 ```
 
-Opcodes not listed above do not increase memory, and can go straight to calculating execution gas.
+The remaining opcodes here do not consume any memory.
 
 ```k
-    rule <k> #gas [ SCHED , OP ] => #gasExec(SCHED, OP) ... </k> [owise]
-```
-
--   `#gasMemory` computes the new memory size and deducts gas accordingly.
-
-```k
-    syntax InternalOp ::= #gasMemory ( Int , Int )
- // ----------------------------------------------
-    rule <k> #gasMemory ( START , WIDTH ) => #memDelta(MU, START, WIDTH) ~> #deductMemory ... </k> <memoryUsed> MU </memoryUsed>
-```
-
--   `#memDelta` is the function `M` in appendix H of the YellowPaper which helps track the memory used.
-
-```k
-    syntax Int ::= #memDelta ( Int , Int , Int ) [function]
- // -------------------------------------------------------
-    rule #memDelta(MU, START, 0)     => MU
-    rule #memDelta(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH >Int 0
-```
-
-### Execution Gas
-
-The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
-
--   `#gasExec` loads all the relevant surronding state and uses that to compute the intrinsic execution gas of each opcode.
-
-```k
-    syntax InternalOp ::= #gasExec ( Schedule , OpCode )
- // ----------------------------------------------------
-    rule <k> #gas [ SCHED , SSTORE INDEX VALUE ] => Csstore(SCHED, VALUE, #lookup(STORAGE, INDEX)) ~> #deductGas ... </k>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> STORAGE </storage>
-           ...
-         </account>
-         <refund> R => R +Int Rsstore(SCHED, VALUE, #lookup(STORAGE, INDEX)) </refund>
-         <schedule> SCHED </schedule>
-
     rule <k> #gas [ SCHED , EXP W0 0  ] => Gexp < SCHED > ~> #deductGas ... </k>
     rule <k> #gas [ SCHED , EXP W0 W1 ] => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ~> #deductGas ... </k> requires W1 =/=K 0
-
-    rule <k> #gasExec(SCHED, CALL GCAP ACCTTO VALUE _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ~> #deductGas
-         ...
-         </k>
-         <gas> GAVAIL </gas>
-
-    rule <k> #gasExec(SCHED, CALLCODE GCAP _ VALUE _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) ~> #deductGas
-         ...
-         </k>
-         <id> ACCTFROM </id>
-         <gas> GAVAIL </gas>
-
-    rule <k> #gasExec(SCHED, DELEGATECALL GCAP _ _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) ~> #deductGas
-         ...
-         </k>
-         <id> ACCTFROM </id>
-         <gas> GAVAIL </gas>
-
-    rule <k> #gasExec(SCHED, STATICCALL GCAP ACCTTO _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) ~> #deductGas
-         ...
-         </k>
-         <gas> GAVAIL </gas>
-
-    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, #accountNonexistent(ACCTTO), BAL) ~> #deductGas ... </k>
-         <id> ACCTFROM </id>
-         <selfDestruct> SDS </selfDestruct>
-         <refund> RF => #if ACCTFROM in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
 
     rule <k> #gas [ SCHED , JUMPDEST ] => Gjumpdest < SCHED > ~> #deductGas ... </k>
     rule <k> #gas [ SCHED , SLOAD _  ] => Gsload    < SCHED > ~> #deductGas ... </k>
@@ -1993,11 +1922,85 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gas [ _ , ECMUL     ] => 40000 ~> #deductGas ... </k>
     rule <k> #gas [ _ , ECPAIRING ] => 100000 +Int (#sizeWordStack(DATA) /Int 192) *Int 80000 ~> #deductGas ... </k>
          <callData> DATA </callData>
+```
+
+### Potentially refunding gas calculation
+
+`SELFDESTRUCT` and `SSTORE` may refund some gas.
+
+```k
+    rule <k> #gas [ SCHED , SELFDESTRUCT ACCTTO ] => Cselfdestruct(SCHED, #accountNonexistent(ACCTTO), BAL) ~> #deductGas ... </k>
+         <id> ACCTFROM </id>
+         <selfDestruct> SDS </selfDestruct>
+         <refund> RF => #if ACCTFROM in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
+
+    rule <k> #gas [ SCHED , SSTORE INDEX VALUE ] => Csstore(SCHED, VALUE, #lookup(STORAGE, INDEX)) ~> #deductGas ... </k>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> STORAGE </storage>
+           ...
+         </account>
+         <refund> R => R +Int Rsstore(SCHED, VALUE, #lookup(STORAGE, INDEX)) </refund>
+         <schedule> SCHED </schedule>
+```
+
+### `CALL*/CREATE` Gas
+
+`CALL*` opcodes require first deducting the gas for memory expansion, and *only then* calculating the gas of execution and allocating gas for the call.
+The helper `#gasCall` acts as an intermediate to amount of gas left available after deducting for the memory.
+
+```k
+    rule <k> #gas [ SCHED , COP:CallOp     GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH ] => #gasMemory(ARGSTART, ARGWIDTH) ~> #gasMemory(RETSTART, RETWIDTH) ~> #gasCall(SCHED , COP:CallOp     GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH) ... </k>
+    rule <k> #gas [ SCHED , CSOP:CallSixOp GCAP ACCTTO       ARGSTART ARGWIDTH RETSTART RETWIDTH ] => #gasMemory(ARGSTART, ARGWIDTH) ~> #gasMemory(RETSTART, RETWIDTH) ~> #gasCall(SCHED , CSOP:CallSixOp GCAP ACCTTO       ARGSTART ARGWIDTH RETSTART RETWIDTH) ... </k>
 
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
     rule <k> GCALL:Int ~> #allocateCallGas => . ... </k>
          <callGas> _ => GCALL </callGas>
+
+    syntax InternalOp ::= #gasCall ( Schedule , OpCode )
+ // ----------------------------------------------------
+    rule <k> #gasCall(SCHED, CALL GCAP ACCTTO VALUE _ _ _ _)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ~> #deductGas
+         ...
+         </k>
+         <gas> GAVAIL </gas>
+
+    rule <k> #gasCall(SCHED, CALLCODE GCAP _ VALUE _ _ _ _)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) ~> #deductGas
+         ...
+         </k>
+         <id> ACCTFROM </id>
+         <gas> GAVAIL </gas>
+
+    rule <k> #gasCall(SCHED, DELEGATECALL GCAP _ _ _ _ _)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) ~> #deductGas
+         ...
+         </k>
+         <id> ACCTFROM </id>
+         <gas> GAVAIL </gas>
+
+    rule <k> #gasCall(SCHED, STATICCALL GCAP ACCTTO _ _ _ _)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) ~> #deductGas
+         ...
+         </k>
+         <gas> GAVAIL </gas>
+```
+
+`CREATE`, on the other hand, first deducts the gas of creation, then allocates gas for the creation from the remaining gas.
+
+```k
+    rule <k> #gas [ SCHED , CREATE V1 START WIDTH ] => #gasMemory(START, WIDTH) ~> Gcreate < SCHED > ~> #deductGas ~> #allocateCreateGas ... </k>
 
     syntax InternalOp ::= "#allocateCreateGas"
  // ------------------------------------------
@@ -2006,6 +2009,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Int 64      #fi </gas>
          <callGas> _      => #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi </callGas>
 ```
+
+### Gas Calculation Helpers
 
 There are several helpers for calculating gas (most of them also specified in the YellowPaper).
 
