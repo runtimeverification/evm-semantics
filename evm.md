@@ -1808,21 +1808,23 @@ Memory consumed is tracked to determine the appropriate amount of gas to charge 
 Here, `#gas` calculates the memory delta of a given opcode, then deducts the intrinsic execution gas of it.
 
 ```k
-    rule <k> #gas [ SCHED , MLOAD   INDEX       ] => #gasMemory(INDEX, 32) ~> #gasExec(SCHED , MLOAD   INDEX      ) ... </k>
-    rule <k> #gas [ SCHED , MSTORE  INDEX VALUE ] => #gasMemory(INDEX, 32) ~> #gasExec(SCHED , MSTORE  INDEX VALUE) ... </k>
-    rule <k> #gas [ SCHED , MSTORE8 INDEX VALUE ] => #gasMemory(INDEX,  1) ~> #gasExec(SCHED , MSTORE8 INDEX VALUE) ... </k>
+    rule <k> #gas [ SCHED , MLOAD   INDEX       ] => #gasMemory(INDEX, 32) ~> Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gas [ SCHED , MSTORE  INDEX VALUE ] => #gasMemory(INDEX, 32) ~> Gverylow < SCHED > ~> #deductGas ... </k>
+    rule <k> #gas [ SCHED , MSTORE8 INDEX VALUE ] => #gasMemory(INDEX,  1) ~> Gverylow < SCHED > ~> #deductGas ... </k>
 
-    rule <k> #gas [ SCHED , SHA3   START WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , SHA3   START WIDTH) ... </k>
-    rule <k> #gas [ SCHED , LOG(N) START WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , LOG(N) START WIDTH) ... </k>
+    rule <k> #gas [ SCHED , SHA3   START WIDTH ] => #gasMemory(START, WIDTH) ~> Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
+    rule <k> #gas [ SCHED , LOG(N) START WIDTH ] => #gasMemory(START, WIDTH) ~> (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ~> #deductGas ... </k>
 
-    rule <k> #gas [ SCHED , CODECOPY       START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , CODECOPY       START V2 WIDTH) ... </k>
-    rule <k> #gas [ SCHED , EXTCODECOPY V1 START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , EXTCODECOPY V1 START V2 WIDTH) ... </k>
-    rule <k> #gas [ SCHED , CALLDATACOPY   START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , CALLDATACOPY   START V2 WIDTH) ... </k>
-    rule <k> #gas [ SCHED , RETURNDATACOPY START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , RETURNDATACOPY START V2 WIDTH) ... </k>
+    rule <k> #gas [ SCHED , CODECOPY       START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
+    rule <k> #gas [ SCHED , CALLDATACOPY   START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
+    rule <k> #gas [ SCHED , RETURNDATACOPY START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
+    rule <k> #gas [ SCHED , EXTCODECOPY V1 START V2 WIDTH ] => #gasMemory(START, WIDTH) ~> Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
 
-    rule <k> #gas [ SCHED , CREATE V1 START WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , CREATE V1 START WIDTH) ... </k>
-    rule <k> #gas [ SCHED , RETURN    START WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , RETURN    START WIDTH) ... </k>
-    rule <k> #gas [ SCHED , REVERT    START WIDTH ] => #gasMemory(START, WIDTH) ~> #gasExec(SCHED , REVERT    START WIDTH) ... </k>
+    rule <k> #gas [ SCHED , STOP                  ] =>                             Gzero < SCHED > ~> #deductGas ... </k>
+    rule <k> #gas [ SCHED , RETURN    START WIDTH ] => #gasMemory(START, WIDTH) ~> Gzero < SCHED > ~> #deductGas ... </k>
+    rule <k> #gas [ SCHED , REVERT    START WIDTH ] => #gasMemory(START, WIDTH) ~> Gzero < SCHED > ~> #deductGas ... </k>
+
+    rule <k> #gas [ SCHED , CREATE V1 START WIDTH ] => #gasMemory(START, WIDTH) ~> Gcreate < SCHED > ~> #deductGas ~> #allocateCreateGas ... </k>
 
     rule <k> #gas [ SCHED , COP:CallOp     GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH ] => #gasMemory(ARGSTART, ARGWIDTH) ~> #gasMemory(RETSTART, RETWIDTH) ~> #gasExec(SCHED , COP:CallOp     GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH) ... </k>
     rule <k> #gas [ SCHED , CSOP:CallSixOp GCAP ACCTTO       ARGSTART ARGWIDTH RETSTART RETWIDTH ] => #gasMemory(ARGSTART, ARGWIDTH) ~> #gasMemory(RETSTART, RETWIDTH) ~> #gasExec(SCHED , CSOP:CallSixOp GCAP ACCTTO       ARGSTART ARGWIDTH RETSTART RETWIDTH) ... </k>
@@ -1873,13 +1875,6 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, EXP W0 0)  => Gexp < SCHED > ~> #deductGas ... </k>
     rule <k> #gasExec(SCHED, EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ~> #deductGas ... </k> requires W1 =/=K 0
 
-    rule <k> #gasExec(SCHED, CALLDATACOPY    _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
-    rule <k> #gasExec(SCHED, RETURNDATACOPY  _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
-    rule <k> #gasExec(SCHED, CODECOPY        _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
-    rule <k> #gasExec(SCHED, EXTCODECOPY   _ _ _ WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
-
-    rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ~> #deductGas ... </k>
-
     rule <k> #gasExec(SCHED, CALL GCAP ACCTTO VALUE _ _ _ _)
           => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ~> #allocateCallGas
           ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ~> #deductGas
@@ -1920,21 +1915,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
            ...
          </account>
 
-    rule <k> #gasExec(SCHED, CREATE _ START WIDTH)
-          => Gcreate < SCHED > ~> #deductGas
-          ~> #allocateCreateGas
-         ...
-         </k>
-
-    rule <k> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ~> #deductGas ... </k>
-
     rule <k> #gasExec(SCHED, JUMPDEST) => Gjumpdest < SCHED > ~> #deductGas ... </k>
     rule <k> #gasExec(SCHED, SLOAD _)  => Gsload    < SCHED > ~> #deductGas ... </k>
-
-    // Wzero
-    rule <k> #gasExec(SCHED, STOP)       => Gzero < SCHED > ~> #deductGas ... </k>
-    rule <k> #gasExec(SCHED, RETURN _ _) => Gzero < SCHED > ~> #deductGas ... </k>
-    rule <k> #gasExec(SCHED, REVERT _ _) => Gzero < SCHED > ~> #deductGas ... </k>
 
     // Wbase
     rule <k> #gasExec(SCHED, ADDRESS)        => Gbase < SCHED > ~> #deductGas ... </k>
@@ -1970,9 +1952,6 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, XOR _ _)        => Gverylow < SCHED > ~> #deductGas ... </k>
     rule <k> #gasExec(SCHED, BYTE _ _)       => Gverylow < SCHED > ~> #deductGas ... </k>
     rule <k> #gasExec(SCHED, CALLDATALOAD _) => Gverylow < SCHED > ~> #deductGas ... </k>
-    rule <k> #gasExec(SCHED, MLOAD _)        => Gverylow < SCHED > ~> #deductGas ... </k>
-    rule <k> #gasExec(SCHED, MSTORE _ _)     => Gverylow < SCHED > ~> #deductGas ... </k>
-    rule <k> #gasExec(SCHED, MSTORE8 _ _)    => Gverylow < SCHED > ~> #deductGas ... </k>
     rule <k> #gasExec(SCHED, PUSH(_, _))     => Gverylow < SCHED > ~> #deductGas ... </k>
     rule <k> #gasExec(SCHED, DUP(_) _)       => Gverylow < SCHED > ~> #deductGas ... </k>
     rule <k> #gasExec(SCHED, SWAP(_) _)      => Gverylow < SCHED > ~> #deductGas ... </k>
