@@ -333,7 +333,6 @@ sphinx:
 	mkdir -p $(SPHINXBUILDDIR) \
 		&& cp -r *.md $(SPHINXBUILDDIR)/. \
 		&& cd $(SPHINXBUILDDIR) \
-		&& pandoc --from markdown --to rst README.md --output index.rst \
 		&& sed -i 's/{.k[ a-zA-Z.-]*}/k/g' *.md \
 		&& $(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) html \
 		&& $(SPHINXBUILD) -b text $(ALLSPHINXOPTS) html/text
