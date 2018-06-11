@@ -212,14 +212,9 @@ You could alternatively calculate `I1 modInt I2`, then add one to the normal int
     rule I1 up/Int I2 => (I1 +Int (I2 -Int 1)) /Int I2 requires I2 >Int 1
 ```
 
--   `logNInt` returns the log base N (floored) of an integer.
+-   `log256Int` returns the log base 256 (floored) of an integer.
 
 ```k
-    syntax Int ::= log2Int ( Int ) [function]
- // -----------------------------------------
-    rule log2Int(1) => 0
-    rule log2Int(W) => 1 +Int log2Int(W >>Int 1) requires W >Int 1
-
     syntax Int ::= log256Int ( Int ) [function]
  // -------------------------------------------
     rule log256Int(N) => log2Int(N) /Int 8
