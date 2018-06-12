@@ -72,7 +72,7 @@ run_proof() {
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
     run_env "$proof_file"
     export K_OPTS=-Xmx5G
-    kprove --directory "$build_dir/java/" --z3-executable "$proof_file" --def-module VERIFICATION
+    kprove --directory "$build_dir/java/" --z3-executable "$proof_file" --def-module VERIFICATION "$@"
 }
 
 # Dev Commands
