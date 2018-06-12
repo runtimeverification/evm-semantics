@@ -2149,7 +2149,7 @@ There are several helpers for calculating gas (most of them also specified in th
     rule G0(SCHED, .WordStack, true)  => Gtxcreate    < SCHED >
     rule G0(SCHED, .WordStack, false) => Gtransaction < SCHED >
 
-    rule G0(SCHED, 0 : REST, ISCREATE) => Gtxdatazero    < SCHED > +Int G0(SCHED, REST, ISCREATE)
+    rule G0(SCHED, N : REST, ISCREATE) => Gtxdatazero    < SCHED > +Int G0(SCHED, REST, ISCREATE) requires N ==Int 0
     rule G0(SCHED, N : REST, ISCREATE) => Gtxdatanonzero < SCHED > +Int G0(SCHED, REST, ISCREATE) requires N =/=Int 0
 
     syntax Int ::= "G*" "(" Int "," Int "," Int ")" [function]
