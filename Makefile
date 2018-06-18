@@ -18,7 +18,8 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean deps k-deps tangle-deps ocaml-deps plugin-deps build build-ocaml build-java build-node defn split-tests \
+.PHONY: all clean deps repo-deps system-deps k-deps tangle-deps ocaml-deps plugin-deps \
+		build build-ocaml build-java build-node defn split-tests \
 		test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
 		test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
 		test-proof test-interactive \
@@ -43,7 +44,9 @@ distclean: clean
 # Dependencies
 # ------------
 
-deps: k-deps tangle-deps ocaml-deps plugin-deps
+deps: repo-deps system-deps
+repo-deps: k-deps tangle-deps plugin-deps
+system-deps: ocaml-deps
 k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
@@ -60,7 +63,7 @@ $(PANDOC_TANGLE_SUBMODULE)/make.timestamp:
 	git submodule update --init -- $(PANDOC_TANGLE_SUBMODULE)
 	touch $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 
-$(PLUGIN_SUBMODULE)/make.timestamp: ocaml-deps
+$(PLUGIN_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init --recursive -- $(PLUGIN_SUBMODULE)
 	touch $(PLUGIN_SUBMODULE)/make.timestamp
