@@ -5,7 +5,7 @@
 	ignore = untracked
 [submodule ".build/k"]
 	path = .build/k
-	url = https://github.com/runtimeverification/k
+	url = https://github.com/kframework/k
 	ignore = untracked
 [submodule ".build/secp256k1"]
 	path = .build/secp256k1
