@@ -310,10 +310,10 @@ $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
 2017-devcon3: $(BUILD_DIR)/media/2017-devcon3.pdf
 2018-csf:     $(BUILD_DIR)/media/2018-csf.pdf
 
-$(BUILD_DIR)/media/%.pdf: media/%/presentation.md
+$(BUILD_DIR)/media/%.pdf: media/%/presentation.md media/citations.md
 	@echo "== media: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to beamer $< --output $@
+	cat $^ | pandoc --from markdown --filter pandoc-citeproc --to beamer --output $@
 	@echo "== $*: presentation generated at $@"
 
 # Sphinx HTML Documentation
