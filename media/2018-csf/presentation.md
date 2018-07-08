@@ -37,6 +37,7 @@ Overview
 -   KEVM Repository: <https://github.com/kframework/evm-semantics>
 -   K Repository: <https://github.com/kframework/k>
 -   Runtime Verification: <https://runtimeverification.com>
+-   Verified smart contracts: <https://github.com/runtimeverification/verified-smart-contracts>
 
 \K{} Framework
 ==============
@@ -431,7 +432,13 @@ Reachibility Logic Prover [@stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014
 
     Note we don't need the end state in RL to be $\epsilon$ though.
 
+. . .
+
 -   Reachability claims are fed to \K{} prover as normal \K{} rules.
+
+-   Functional correctness directly specifiable as set reachability claims.
+
+-   Many security properties specifiable as set of correctness properties.
 
 [^inthiscaseK]: In this case, we use \K{} to specify the operational semantics.
 
@@ -439,8 +446,11 @@ ERC20 Case Study
 ----------------
 
 -   "Hello world" of Ethereum smart contracts.
+
 -   Key-value store of addresses to token balances, allowing "sub-economy".
+
 -   Simple methods for purchasing/transferring/selling tokens.
+
 -   Uses (allows user-defined logic):
     -   Codify ownership distribution of a company (tokenizing equity).
     -   Tokenize pink-slips/deeds (eg. tokenizing houses, cars).
@@ -461,6 +471,12 @@ ERC20: Easing Verification
 
 Thanks!
 =======
+
+Conclusion
+----------
+
+-   \K{} used to specify semantics of Ethereum Virtual Machine (EVM).
+-   Commercial verification efforts carried out with \K{} prover.
 
 Sponsors
 --------
