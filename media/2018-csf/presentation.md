@@ -1,18 +1,26 @@
 ---
-title: 'KEVM: A Complete Formal Semantics of the Ethereum Virtual Machine'
+title: 'KEVM: A Complete Formal Semantics of the Ethereum Virtual Machine [@hildenbrandt-saxena-zhu-rodrigues-daian-guth-moore-zhang-park-rosu-2018-csf]'
 subtitle: 'K, EVM, Now, and the Future'
 author:
 -   Everett Hildenbrandt
 -   Manasvi Saxena
 -   Nishant Rodrigues
--   Lucas Peña
--   TODO remaining authors
+-   Xiaoran Zhu
+-   Philip Daian
+-   Dwight Guth
+-   Brandon Moore
+-   Daejun Park
+-   Yi Zhang
+-   Andrei \c{S}tef\u{a}nescu
+-   Grigore Ro\c{s}u
 institute:
 -   University of Illinois, Urbana-Champaign
 -   Runtime Verification, Inc.
+-   Cornell Tech, IC3
+-   East China Normal University
 date: '\today'
 theme: metropolis
-fontsize: 8pt
+fontsize: 10pt
 header-includes:
 -   \newcommand{\K}{\ensuremath{\mathbb{K}}}
 ---
@@ -42,7 +50,7 @@ PL expert builds rigorous and formal spec of the language in a high-level human-
 
 ### The Tooling
 
-Build each tool *once*, and apply it to every language, eg:
+Build each tool *once*, and apply it to every language, eg.:
 
 -   Parser
 -   Interpreter
@@ -294,14 +302,12 @@ Example Execution (cont.)
 Ethereum Virtual Machine
 ========================
 
-**TODO**: Add citations.
-
 Blockchain
 ----------
 
 -   Append-only ledger of user-submitted transactions.
 -   Can be simple transfers of value (eg. Bitcoin).
--   Miners select next block of transactions to include in ledger using consensus algorithm.[^notThisTalk]
+-   Miners select next block of transactions using consensus algorithm.[^notThisTalk]
 -   Ethereum adds:
     -   New currency! (Ether)
     -   Accounts have an associated *storage* and *code* which only transactions by that account can read/modify (onchain).
@@ -317,6 +323,8 @@ Is a stack-based bytecode over 256-bit words.
 
 Example program (sum 0 - 10):
 
+\footnotesize
+
 ```evm
   PUSH(1, 0)  ; PUSH(1, 0)  ; MSTORE
 ; PUSH(1, 10) ; PUSH(1, 32) ; MSTORE
@@ -331,39 +339,41 @@ Example program (sum 0 - 10):
 ; .OpCodes
 ```
 
+\normalsize
+
 Enforcing Termination (Gas)
 ---------------------------
 
--   User submitted transactions could be problematic, what if they have infinite loops?
--   Now miners are stuck trying to execute infinite transaction, instead of deciding consensus of the ledger for us!
+-   User submitted transactions could have infinite loops (DoS attacks!).
 -   Solution:
-    -   Each opcode costs some *gas*, which is paid for in Ether before execution.
-    -   Gas spent for execution is converted back to Ether and paid to the miner.
-    -   Gas not spent for execution is converted back to Ether and refunded to the original account.
+    -   Each opcode costs some *gas*, paid for in Ether.
+    -   Spent gas awarded to miner, remaining refunded to account.
 
 Notes:
 
--   Tuning gas costs is an ongoing challenge, it's important to charge according to actual compute resources used (storage, memory, and CPU time).
--   New hardware means that there could be attack vectors on current gas costs; tuning is an *ongoing* effort.
--   Occasional hardfork updates to the network correct the gas costs (but also often complicate the gas logic!).
+-   It's important to charge according to actual used compute resources.
+-   Tuning gas costs is an *ongoing* challenge.
+    -   New hardware available $\Rightarrow$ new gas model.
+-   Hardforks update the gas constants/rules.
 
 Intercontract Executions (and the ABI)
 --------------------------------------
 
--   Contracts can call other contracts, which could even call the original contract again (reentrancy!!).
+-   Contracts can call other contracts (reentrancy!!).
 -   Payload to other contract is a raw string of bytes called `callData`.
 -   *External* to the EVM, the Ethereum ABI has been developed:
 -   Specifies:
     -   Calling conventions (how to interpret `callData` correctly).
     -   Some high-level types (and their mapping to EVM base types).
 
-EVM Nuicances (**TODO**: Spelling)
+EVM Nuisances
 -------------
 
--   256-bit words: lots of use for crypto, but a pain for mapping cleanly to commodity hardware.
--   8-bit word-array local memory: complicates symbolic reasoning, 256-bit word expressions must be chopped up into 32 8-bit word expressions.
+-   Unstructure controlflow: dynamically calculable jump destinations.
+-   256-bit words: useful for crypto, pain for hardware.
+-   8-bit word-array local memory: complicates symbolic reasoning.
 -   No built-in calling conventions: ABI is declared external to EVM.
--   **TODO**: More nuicances.
+-   `eval` capability: copying bytes as code and running is bad for analysis.
 
 KEVM: Status and Current Uses
 =============================
@@ -374,45 +384,59 @@ Correctness and Performance
 -   Pass the VMTests and GeneralStateTests of the [Ethereum Test Suite](https://github.com/ethereum/tests).
 -   Roughly an order of magnitude slower than cpp-ethereum (reference implementation in C++).
 
-**TODO**: Include performance chart.
+**Test Set** (no. tests)   **KEVM**  **cpp-ethereum**
+------------------------- --------- -----------------
+VMAll (40683)                 99:41              4:42
+GSNormal(22705)               35:00              1:30
 
-As Execution Engine
+Antipattern Encoding
+--------------------
+
+-   EVM has designated `INVALID` opcode, halts and discards gas.
+-   Has been used to specify "assertion failure" in HLLs.
+-   Symbolically execute using KEVM and look for `INVALID` paths.
+
+Formal Verification
 -------------------
-
-[Mantis client](**TODO**: cite) has integration with KEVM, can run it as a node on the KEVM testnet.
-
-For Formal Verification
------------------------
 
 -   Runtime Verification, Inc. offers audits as a service, typical process is:
     1.  Specify high-level business logic in English, confirm with customer.[^usuallyNotDone]
-    2.  Refine to a mathematical definition of logic, conferm with customer.
-    3.  Refine to a set of Reachability Claims to be discharged by the K prover.
+    2.  Refine to a mathematical definition of logic, confirm with customer.
+    3.  Refine to a set of K Reachability Claims, confirm with customer.
     4.  Fix bugs in contract and specification until the K prover is satisfied.
     5.  Send all documents generated and list of issues found to customer.
 
--   Some other independent groups also using K prover to verify their smart contract stack (eg. [DappHub](https://github.com/kframework/dapphub)).
-    -   We assist as we can, fix bugs as we can (all of these tools are open source).
+-   Independent groups also using KEVM to verify smart contract stack (eg. [DappHub](https://github.com/kframework/dapphub)).
+    -   We assist as needed.
 
-[^usuallyNotDone]: Surprisingly, usually smart contract developers don't have a high-level specification of their contracts.
+[^usuallyNotDone]: Surprisingly, many smart contract developers don't have a high-level specification of their contracts.
 
-Future Work
------------
+Reachibility Logic Prover [@stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta]
+-------------------------------------------------------------------------------------
 
--   **TODO**
+-   Takes operational semantics as input (no axiomatic semantics).[^inthiscaseK]
 
-Conclusion
-==========
+-   Generalization of Hoare Logic:
+
+    -   Hoare triple: $\{\textit{Pre}\} \textit{Code} \{\textit{Post}\}$
+    -   Reachability claim: $\widehat{\textit{Code}} \land \widehat{\textit{Pre}} \Rightarrow \epsilon \land \widehat{\textit{Post}}$
+    -   "Any instance of $\widehat{\textit{Code}}$ which satisfies $\widehat{Pre}$ either does not terminate or reaches an instance of $\epsilon$ (empty program) which satisfies $\widehat{Post}$".
+
+    Note we don't need the end state in RL to be $\epsilon$ though.
+
+-   Reachability claims are fed to \K{} prover as normal \K{} rules.
+
+[^inthiscaseK]: In this case, we use \K{} to specify the operational semantics.
+
+Thanks!
+=======
 
 Sponsors
 --------
 
--   IOHK: Grants to both UIUC group (Formal Systems Lab), and to Runtime Verification, Inc.
--   Ethereum Foundation: Grant to Runtime Verification, Inc.
--   NSF: **TODO** list any NSF grants we have put down.
--   **TODO**: list any other grants we should here.
-
-Questions?
-----------
-
-Thanks for listening!
+The work presented in this paper was supported in part by
+the Boeing grant on "Formal Analysis Tools for Cyber Security" 2016-2017,
+the NSF grants CCF-1318191, CCF-1421575, CNS-1330599, CNS-1514163, and IIP-1660186,
+the NSF Graduate Fellowship under Grant No. DGE-1650441,
+an IOHK gift,
+and a grant from the Ethereum Foundation.
