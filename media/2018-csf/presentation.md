@@ -431,6 +431,30 @@ Reachibility Logic Prover [@stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014
 
 [^inthiscaseK]: In this case, we use \K{} to specify the operational semantics.
 
+ERC20 Case Study
+----------------
+
+-   "Hello world" of Ethereum smart contracts.
+-   Key-value store of addresses to token balances, allowing "sub-economy".
+-   Simple methods for purchasing/transferring/selling tokens.
+-   Uses (allows user-defined logic):
+    -   Codify ownership distribution of a company (tokenizing equity).
+    -   Tokenize pink-slips/deeds (eg. tokenizing houses, cars).
+    -   Ponzi schemes.
+
+ERC20: Easing Verification
+--------------------------
+
+-   First full contract we verified.
+
+-   Define state abstractions directly in \K{} itself.
+    -   `nthbyteof` for storing symbolic word (256-bits) as 32 bytes (when written to `localMem`).
+    -   `#abiCallData` allows using actual function name/signature in call instead of packed bytes representation.
+
+-   Modular specifications
+    -   Re-use same specs for different implementations, only need delta.
+    -   Have 5 verified implementations of ERC20, all different behaviors.
+
 Thanks!
 =======
 
