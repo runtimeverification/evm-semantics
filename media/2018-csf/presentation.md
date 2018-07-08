@@ -306,15 +306,16 @@ Blockchain
 ----------
 
 -   Append-only ledger of user-submitted transactions.
--   Can be simple transfers of value (eg. Bitcoin).
+-   Mostly simple transfers of value (eg. Bitcoin).
 -   Miners select next block of transactions using consensus algorithm.[^notThisTalk]
 -   Ethereum adds:
     -   New currency! (Ether)
     -   Accounts have an associated *storage* and *code* which only transactions by that account can read/modify (onchain).
-    -   Transactions can have associated *programs* written in EVM (Ethereum Virtual Machine).
-    -   Miners execute transaction code to calculate the new world state (new account balances, storage, code, etc...)
+    -   Transactions can have associated *programs* written in EVM (Ethereum Virtual Machine).[^smartContracts]
+    -   Miners execute transaction code to calculate the new world state (new account balances, storage, code, etc...).
 
 [^notThisTalk]: This talk is not about the consensus algorithms.
+[^smartContracts]: Cool kids call these programs *smart contracts*, or *contracts*.
 
 EVM (Ethereum Virtual Machine)
 ------------------------------
@@ -393,8 +394,10 @@ Antipattern Encoding
 --------------------
 
 -   EVM has designated `INVALID` opcode, halts and discards gas.
--   Has been used to specify "assertion failure" in HLLs.
+-   Has been used to specify "assertion failure" in HLLs.[^hlls]
 -   Symbolically execute using KEVM and look for `INVALID` paths.
+
+[^hlls]: High-level languages (which compile to EVM).
 
 Formal Verification
 -------------------
