@@ -32,6 +32,12 @@ Overview
 2.  Ethereum Virtual Machine
 3.  KEVM uses and future work
 
+### Links
+
+-   KEVM Repository: <https://github.com/kframework/evm-semantics>
+-   K Repository: <https://github.com/kframework/k>
+-   Runtime Verification: <https://runtimeverification.com>
+
 \K{} Framework
 ==============
 
