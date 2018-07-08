@@ -308,6 +308,7 @@ $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
 	cd $(dir $@) && make
 
 2017-devcon3: $(BUILD_DIR)/media/2017-devcon3.pdf
+2018-csf:     $(BUILD_DIR)/media/2018-csf.pdf
 
 $(BUILD_DIR)/media/%.pdf: media/%/presentation.md
 	@echo "== media: $@"
