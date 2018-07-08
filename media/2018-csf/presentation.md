@@ -70,8 +70,6 @@ The Vision: Language Independence
 
 ![K Tooling Overview](k-overview.png)
 
-**TODO**: Use new bubble diagram based on RV logo.
-
 Current Semantics
 -----------------
 
@@ -360,18 +358,18 @@ Notes:
 
 -   It's important to charge according to actual used compute resources.
 -   Tuning gas costs is an *ongoing* challenge.
-    -   New hardware available $\Rightarrow$ new gas model.
+    -   New hardware available $\rightarrow$ new gas model.
 -   Hardforks update the gas constants/rules.
 
 Intercontract Executions (and the ABI)
 --------------------------------------
 
--   Contracts can call other contracts (reentrancy!!).
+-   Contracts can call other contracts (re-entrancy!).
 -   Payload to other contract is a raw string of bytes called `callData`.
 -   *External* to the EVM, the Ethereum ABI has been developed:
 -   Specifies:
     -   Calling conventions (how to interpret `callData` correctly).
-    -   Some high-level types (and their mapping to EVM base types).
+    -   Some high-level types (and their mapping to EVM words).
 
 EVM Nuisances
 -------------
