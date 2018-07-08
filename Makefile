@@ -309,12 +309,11 @@ $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
 
 2017-devcon3: $(BUILD_DIR)/media/2017-devcon3.pdf
 
-$(BUILD_DIR)/media/2017-devcon3.pdf: media/2017-devcon3/presentation.md media/2017-devcon3/presentation.markdown metropolis-theme
+$(BUILD_DIR)/media/%.pdf: media/%/presentation.md
 	@echo "== media: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to markdown --template media/2017-devcon3/presentation $< \
-		| pandoc --from markdown --to beamer --output $@
-	@echo "== 2017-devcon3: presentation generated at $@"
+	pandoc --from markdown --to beamer $< --output $@
+	@echo "== $*: presentation generated at $@"
 
 # Sphinx HTML Documentation
 
