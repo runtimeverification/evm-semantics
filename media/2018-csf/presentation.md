@@ -30,7 +30,7 @@ Overview
 
 1.  \K{} Framework
 2.  Ethereum Virtual Machine
-3.  KEVM uses and future work
+3.  KEVM Uses
 
 ### Links
 
@@ -125,7 +125,7 @@ For example, a simple imperative language might have:
 
 > -   `<k>` will contain the initial parsed program
 > -   `<env>` contains bindings of variable names to store locations
-> -   `<store>` conaints bindings of store locations to integers
+> -   `<store>` contains bindings of store locations to integers
 
 \K{} Specifications: Transition Rules
 -------------------------------------
@@ -311,7 +311,7 @@ Blockchain
 ----------
 
 -   Append-only ledger of user-submitted transactions.
--   Mostly simple transfers of value (eg. Bitcoin).
+-   Mostly simple transfers of value.
 -   Miners select next block of transactions using consensus algorithm.[^notThisTalk]
 -   Ethereum adds:
     -   New currency! (Ether)
@@ -375,7 +375,7 @@ Intercontract Executions (and the ABI)
 EVM Nuisances
 -------------
 
--   Unstructure controlflow: dynamically calculable jump destinations.
+-   Unstructured controlflow: dynamically calculable jump destinations.
 -   256-bit words: useful for crypto, pain for hardware.
 -   8-bit word-array local memory: complicates symbolic reasoning.
 -   No built-in calling conventions: ABI is declared external to EVM.
@@ -393,14 +393,14 @@ Correctness and Performance
 **Test Set** (no. tests)   **KEVM**  **cpp-ethereum**
 ------------------------- --------- -----------------
 VMAll (40683)                 99:41              4:42
-GSNormal(22705)               35:00              1:30
+GSNormal (22705)              35:00              1:30
 
 Antipattern Encoding
 --------------------
 
 -   EVM has designated `INVALID` opcode, halts and discards gas.
 -   Has been used to specify "assertion failure" in HLLs.[^hlls]
--   Symbolically execute using KEVM and look for `INVALID` paths.
+-   Symbolically execute and look for paths ending in `INVALID`.
 
 [^hlls]: High-level languages (which compile to EVM).
 
@@ -409,13 +409,12 @@ Formal Verification
 
 -   Runtime Verification, Inc. offers audits as a service, typical process is:
     1.  Specify high-level business logic in English, confirm with customer.[^usuallyNotDone]
-    2.  Refine to a mathematical definition of logic, confirm with customer.
+    2.  Refine to a mathematical definition, confirm with customer.
     3.  Refine to a set of K Reachability Claims, confirm with customer.
     4.  Fix bugs in contract and specification until the K prover is satisfied.
     5.  Send all documents generated and list of issues found to customer.
 
--   Independent groups also using KEVM to verify smart contract stack (eg. [DappHub](https://github.com/kframework/dapphub)).
-    -   We assist as needed.
+-   Independent groups also using KEVM to verify contract stack (eg. [DappHub](https://github.com/kframework/dapphub)).
 
 [^usuallyNotDone]: Surprisingly, many smart contract developers don't have a high-level specification of their contracts.
 
@@ -441,6 +440,11 @@ Reachibility Logic Prover [@stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014
 -   Many security properties specifiable as set of correctness properties.
 
 [^inthiscaseK]: In this case, we use \K{} to specify the operational semantics.
+
+Reachability Logic Inference System [@stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta]
+-----------------------------------------------------------------------------------------------
+
+![RL Inference System](proof-system.png)
 
 ERC20 Case Study
 ----------------
