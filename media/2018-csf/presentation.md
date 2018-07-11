@@ -1,6 +1,6 @@
 ---
 title: 'KEVM: A Complete Formal Semantics of the Ethereum Virtual Machine [@hildenbrandt-saxena-zhu-rodrigues-daian-guth-moore-zhang-park-rosu-2018-csf]'
-subtitle: 'K, EVM, Now, and the Future'
+subtitle: 'K, EVM, and KEVM'
 author:
 -   Everett Hildenbrandt
 -   Manasvi Saxena
@@ -123,9 +123,9 @@ For example, a simple imperative language might have:
 
 . . .
 
-> -   `<k>` will contain the initial parsed program
-> -   `<env>` contains bindings of variable names to store locations
-> -   `<store>` contains bindings of store locations to integers
+-   `<k>` will contain the initial parsed program
+-   `<env>` contains bindings of variable names to store locations
+-   `<store>` contains bindings of store locations to integers
 
 \K{} Specifications: Transition Rules
 -------------------------------------
@@ -388,26 +388,106 @@ Correctness and Performance
 ---------------------------
 
 -   Pass the VMTests and GeneralStateTests of the [Ethereum Test Suite](https://github.com/ethereum/tests).
+
+. . .
+
 -   Roughly an order of magnitude slower than cpp-ethereum (reference implementation in C++).
 
-**Test Set** (no. tests)   **KEVM**  **cpp-ethereum**
-------------------------- --------- -----------------
-VMAll (40683)                 99:41              4:42
-GSNormal (22705)              35:00              1:30
+    **Test Set** (no. tests)   **KEVM**  **cpp-ethereum**
+    ------------------------- --------- -----------------
+    VMAll (40683)                 99:41              4:42
+    GSNormal (22705)              35:00              1:30
 
-Antipattern Encoding
---------------------
+. . .
+
+-   (Non-empty) lines of code comparison:
+
+    KEVM: 2644
+
+    cpp-ethereum: 4588
+
+Assertion Violation Checker
+---------------------------
 
 -   EVM has designated `INVALID` opcode, halts and discards gas.
 -   Has been used to specify "assertion failure" in HLLs.[^hlls]
 -   Symbolically execute and look for paths ending in `INVALID`.
 
+. . .
+
+-   Co-invariant checking - "`INVALID` never happens".
+-   Very little tooling effort needed after building semantics.
+-   Similar techniques used to find undefined behaviour in C programs.
+
 [^hlls]: High-level languages (which compile to EVM).
 
-Formal Verification
--------------------
+Reachibility Logic Prover [@stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta]
+-------------------------------------------------------------------------------------
 
--   Runtime Verification, Inc. offers audits as a service, typical process is:
+-   Takes operational semantics as input (no axiomatic semantics).[^inthiscaseK]
+-   Generalization of Hoare Logic:
+    -   Hoare triple: $\{\textit{Pre}\} \textit{Code} \{\textit{Post}\}$
+    -   Reachability claim: $\widehat{\textit{Code}} \land \widehat{\textit{Pre}} \Rightarrow \epsilon \land \widehat{\textit{Post}}$
+    -   "Any instance of $\widehat{\textit{Code}}$ which satisfies $\widehat{Pre}$ either does not terminate or reaches an instance of $\epsilon$ (empty program) which satisfies $\widehat{Post}$".
+    No need for end state in RL to be $\epsilon$ though.
+-   See paper for example claims.
+
+. . .
+
+-   Reachability claims are fed to \K{} prover as normal \K{} rules.
+-   Functional correctness directly specifiable as set reachability claims.
+-   Correctness bugs often lead to security bugs.
+
+[^inthiscaseK]: In this case, we use \K{} to specify the operational semantics.
+
+Reachability Logic Inference System [@stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta]
+-----------------------------------------------------------------------------------------------
+
+![RL Inference System](proof-system.png)
+
+Case Study: ERC20
+-----------------
+
+-   "Hello world" of Ethereum smart contracts.
+-   First full contract we verified.
+-   Key-value store of addresses to token balances.
+-   Simple methods for purchasing/transferring/selling tokens.
+
+. . .
+
+### ERC20 Uses
+
+-   Codify ownership distribution of a company (tokenizing equity).
+-   Tokenize pink-slips/deeds (eg. tokenizing houses, cars).
+-   Ponzi schemes.
+
+Case Study: ERC20 - Scaling Verification
+----------------------------------------
+
+-   First ERC20 verification took several person-months.
+
+. . .
+
+-   Define state abstractions directly in \K{} itself.
+    -   `nthbyteof` for storing symbolic word (256-bits) as 32 bytes (when written to `localMem`).
+    -   `#abiCallData` allows using actual function name/signature in call instead of packed bytes representation.
+
+. . .
+
+-   Modular specifications
+    -   Re-use same specs for different implementations, only need delta.
+    -   Have 5 verified implementations of ERC20, all different behaviors.[^verifiedSmartContracts]
+
+. . .
+
+-   Now, can verify a (reasonable) ERC20 in about a day.
+
+[^verifiedSmartContracts]: See our audited ERC20s (and other contracts) at <https://github.com/runtimeverification/verified-smart-contracts>.
+
+Tool-Assisted Security Audits
+-----------------------------
+
+-   Runtime Verification, Inc. offers audits as a service, typical process:
     1.  Specify high-level business logic in English, confirm with customer.[^usuallyNotDone]
     2.  Refine to a mathematical definition, confirm with customer.
     3.  Refine to a set of K Reachability Claims, confirm with customer.
@@ -417,61 +497,6 @@ Formal Verification
 -   Independent groups also using KEVM to verify contract stack (eg. [DappHub](https://github.com/kframework/dapphub)).
 
 [^usuallyNotDone]: Surprisingly, many smart contract developers don't have a high-level specification of their contracts.
-
-Reachibility Logic Prover [@stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta]
--------------------------------------------------------------------------------------
-
--   Takes operational semantics as input (no axiomatic semantics).[^inthiscaseK]
-
--   Generalization of Hoare Logic:
-
-    -   Hoare triple: $\{\textit{Pre}\} \textit{Code} \{\textit{Post}\}$
-    -   Reachability claim: $\widehat{\textit{Code}} \land \widehat{\textit{Pre}} \Rightarrow \epsilon \land \widehat{\textit{Post}}$
-    -   "Any instance of $\widehat{\textit{Code}}$ which satisfies $\widehat{Pre}$ either does not terminate or reaches an instance of $\epsilon$ (empty program) which satisfies $\widehat{Post}$".
-
-    Note we don't need the end state in RL to be $\epsilon$ though.
-
-. . .
-
--   Reachability claims are fed to \K{} prover as normal \K{} rules.
-
--   Functional correctness directly specifiable as set reachability claims.
-
--   Many security properties specifiable as set of correctness properties.
-
-[^inthiscaseK]: In this case, we use \K{} to specify the operational semantics.
-
-Reachability Logic Inference System [@stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta]
------------------------------------------------------------------------------------------------
-
-![RL Inference System](proof-system.png)
-
-ERC20 Case Study
-----------------
-
--   "Hello world" of Ethereum smart contracts.
-
--   Key-value store of addresses to token balances, allowing "sub-economy".
-
--   Simple methods for purchasing/transferring/selling tokens.
-
--   Uses (allows user-defined logic):
-    -   Codify ownership distribution of a company (tokenizing equity).
-    -   Tokenize pink-slips/deeds (eg. tokenizing houses, cars).
-    -   Ponzi schemes.
-
-ERC20: Easing Verification
---------------------------
-
--   First full contract we verified.
-
--   Define state abstractions directly in \K{} itself.
-    -   `nthbyteof` for storing symbolic word (256-bits) as 32 bytes (when written to `localMem`).
-    -   `#abiCallData` allows using actual function name/signature in call instead of packed bytes representation.
-
--   Modular specifications
-    -   Re-use same specs for different implementations, only need delta.
-    -   Have 5 verified implementations of ERC20, all different behaviors.
 
 Thanks!
 =======
