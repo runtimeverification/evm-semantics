@@ -296,7 +296,7 @@ split-proof-tests: tests/proofs/make.timestamp
 # Media
 # -----
 
-media: sphinx 2017-devcon3
+media: sphinx 2017-devcon3 2018-csf
 
 # Presentations
 
@@ -310,7 +310,7 @@ $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
 2017-devcon3: $(BUILD_DIR)/media/2017-devcon3.pdf
 2018-csf:     $(BUILD_DIR)/media/2018-csf.pdf
 
-$(BUILD_DIR)/media/%.pdf: media/%/presentation.md media/citations.md
+$(BUILD_DIR)/media/%.pdf: media/%.md media/citations.md
 	@echo "== media: $@"
 	mkdir -p $(dir $@)
 	cat $^ | pandoc --from markdown --filter pandoc-citeproc --to beamer --output $@
