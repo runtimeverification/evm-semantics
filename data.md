@@ -54,6 +54,8 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
 
     syntax Int ::= "minSInt128"      [function]
                  | "maxSInt128"      [function]
+                 | "minUInt8"        [function]
+                 | "maxUInt8"        [function]
                  | "minUInt128"      [function]
                  | "maxUInt128"      [function]
                  | "minUInt160"      [function]
@@ -74,6 +76,8 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     rule minSInt256      => -57896044618658097711785492504343953926634992332820282019728792003956564819968  [macro]  /*  -2^255      */
     rule maxSInt256      =>  57896044618658097711785492504343953926634992332820282019728792003956564819967  [macro]  /*   2^255 - 1  */
 
+    rule minUInt8        =>  0                                                                              [macro]
+    rule maxUInt8        =>  255                                                                            [macro]
     rule minUInt128      =>  0                                                                              [macro]
     rule maxUInt128      =>  340282366920938463463374607431768211455                                        [macro]  /*   2^128 - 1  */
     rule minUFixed128x10 =>  0                                                                              [macro]
