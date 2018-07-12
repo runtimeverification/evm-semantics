@@ -39,9 +39,11 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #uint256 ( Int )
                       | #int256  ( Int )
                       | #int128  ( Int )
+                      | #uint8   ( Int )
                       | #bytes32 ( Int )
                       | #bool    ( Int )
                       | #bytes   ( Int , Int )
+                      | #array   ( TypedArg , Int , TypedArgs )
  // ------------------------------------------
 
     syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
@@ -69,9 +71,11 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #typeName(#uint256( _ )) => "uint256"
     rule #typeName( #int256( _ )) => "int256"
     rule #typeName( #int128( _ )) => "int128"
+    rule #typeName(  #uint8( _ )) => "uint8"
     rule #typeName(#bytes32( _ )) => "bytes32"
     rule #typeName(   #bool( _ )) => "bool"
     rule #typeName( #bytes(_, _)) => "bytes"
+    rule #typeName(#array(T,_,_)) => #typeName(T) +String "[]"
 
     syntax WordStack ::= #encodeArgs    ( TypedArgs )                               [function]
     syntax WordStack ::= #encodeArgsAux ( TypedArgs , Int , WordStack , WordStack ) [function]
@@ -100,9 +104,11 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #lenOfHead(#uint256( _ )) => 32
     rule #lenOfHead( #int256( _ )) => 32
     rule #lenOfHead( #int128( _ )) => 32
+    rule #lenOfHead(  #uint8( _ )) => 32
     rule #lenOfHead(#bytes32( _ )) => 32
     rule #lenOfHead(   #bool( _ )) => 32
     rule #lenOfHead( #bytes(_, _)) => 32
+    rule #lenOfHead(#array(_,_,_)) => 32
 
     syntax Bool ::= #isStaticType ( TypedArg ) [function]
  // -----------------------------------------------------
@@ -111,13 +117,22 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #isStaticType(#uint256( _ )) => true
     rule #isStaticType( #int256( _ )) => true
     rule #isStaticType( #int128( _ )) => true
+    rule #isStaticType(  #uint8( _ )) => true
     rule #isStaticType(#bytes32( _ )) => true
     rule #isStaticType(   #bool( _ )) => true
     rule #isStaticType( #bytes(_, _)) => false
+    rule #isStaticType(#array(_,_,_)) => false
+
+    syntax Int ::= #sizeOfDynamicTypes ( TypedArgs ) [function]
+ // -----------------------------------------------------------
+    rule #sizeOfDynamicTypes(E, Es)      => #sizeOfDynamicType(E) +Int #sizeOfDynamicTypes(Es)
+    rule #sizeOfDynamicTypes(.TypedArgs) => 0
 
     syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
  // ---------------------------------------------------------
     rule #sizeOfDynamicType(#bytes(N, _)) => 32 +Int #ceil32(N)
+    rule #sizeOfDynamicType(#array(T, N, _)) => 32 *Int (1 +Int N                            ) requires         #isStaticType(T)
+    rule #sizeOfDynamicType(#array(T, N, E)) => 32 *Int (1 +Int N +Int #sizeOfDynamicTypes(E)) requires notBool #isStaticType(T)
 
     syntax WordStack ::= #enc ( TypedArg ) [function]
  // -------------------------------------------------
@@ -127,11 +142,13 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #enc(#uint256( DATA )) => #padToWidth(32, #asByteStack(#getValue(#uint256( DATA ))))
     rule #enc( #int256( DATA )) => #padToWidth(32, #asByteStack(#getValue( #int256( DATA ))))
     rule #enc( #int128( DATA )) => #padToWidth(32, #asByteStack(#getValue( #int128( DATA ))))
+    rule #enc(  #uint8( DATA )) => #padToWidth(32, #asByteStack(#getValue(  #uint8( DATA ))))
     rule #enc(#bytes32( DATA )) => #padToWidth(32, #asByteStack(#getValue(#bytes32( DATA ))))
     rule #enc(   #bool( DATA )) => #padToWidth(32, #asByteStack(#getValue(   #bool( DATA ))))
 
     // dynamic Type
     rule #enc( #bytes(N, DATA)) => #enc(#uint256(N)) ++ #padToWidth(#ceil32(N), #asByteStack(DATA))
+    rule #enc(#array(_,N,DATA)) => #enc(#uint256(N)) ++ #encodeArgs(DATA)
 
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
@@ -149,6 +166,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #getValue( #int128( DATA )) => #unsigned(DATA)
       requires minSInt128 <=Int DATA andBool DATA <=Int maxSInt128
+
+    rule #getValue(  #uint8( DATA )) => DATA
+      requires 0 <=Int DATA andBool DATA <=Int 255
 
     rule #getValue(#bytes32( DATA )) => DATA
       requires minUInt256 <=Int DATA andBool DATA <=Int maxUInt256
