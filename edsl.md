@@ -44,7 +44,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #bool    ( Int )
                       | #bytes   ( Int , Int )
                       | #array   ( TypedArg , Int , TypedArgs )
- // ------------------------------------------
+ // -----------------------------------------------------------
 
     syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
  // ------------------------------------------------------------
@@ -134,7 +134,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
       requires notBool #isStaticType(T)
 
     syntax Int ::= #sizeOfDynamicTypeAux( TypedArgs ) [function]
- // -------------------------------------------------------
+ // ------------------------------------------------------------
     rule #sizeOfDynamicTypeAux(TARG, TARGS) => #sizeOfDynamicType(TARG) +Int #sizeOfDynamicTypeAux(TARGS)
       requires notBool #isStaticType(TARG)
 
