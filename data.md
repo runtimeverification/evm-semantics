@@ -168,7 +168,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 - #unsigned : sInt256 -> uInt256  (i.e., [minSInt256..maxSInt256] -> [minUInt256..maxUInt256])
 
 ```k
-    syntax Int ::= #signed ( Int ) [function]
+    syntax Int ::= #signed ( Int ) [function, smtlib(signed)]
  // -----------------------------------------
     rule #signed(DATA) => DATA
       requires 0 <=Int DATA andBool DATA <=Int maxSInt256
@@ -176,7 +176,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
     rule #signed(DATA) => DATA -Int pow256
       requires maxSInt256 <Int DATA andBool DATA <=Int maxUInt256
 
-    syntax Int ::= #unsigned ( Int ) [function]
+    syntax Int ::= #unsigned ( Int ) [function, smtlib(unsigned)]
  // -----------------------------------------
     rule #unsigned(DATA) => DATA
       requires 0 <=Int DATA andBool DATA <=Int maxSInt256
@@ -234,11 +234,11 @@ You could alternatively calculate `I1 modInt I2`, then add one to the normal int
 The corresponding `<op>Word` operations automatically perform the correct modulus for EVM words.
 
 ```k
-    syntax Int ::= Int "+Word" Int [function]
-                 | Int "*Word" Int [function]
-                 | Int "-Word" Int [function]
-                 | Int "/Word" Int [function]
-                 | Int "%Word" Int [function]
+    syntax Int ::= Int "+Word" Int [function, smtlib(word_plus)]
+                 | Int "*Word" Int [function, smtlib(word_times)]
+                 | Int "-Word" Int [function, smtlib(word_sub)]
+                 | Int "/Word" Int [function, smtlib(word_div)]
+                 | Int "%Word" Int [function, smtlib(word_mod)]
  // -----------------------------------------
     rule W0 +Word W1 => chop( W0 +Int W1 )
     rule W0 -Word W1 => chop( W0 -Int W1 ) requires W0 >=Int W1
