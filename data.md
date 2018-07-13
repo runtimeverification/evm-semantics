@@ -451,13 +451,24 @@ A cons-list is used for the EVM wordstack.
     rule W in (W' : WS)  => (W ==K W') orElseBool (W in WS)
 ```
 
--   `#padToWidth(N, WS)` makes sure that a `WordStack` is the correct size.
+-   `#padToWidth(N, WS)` and `#padRightToWidth` make sure that a `WordStack` is the correct size.
 
 ```k
     syntax WordStack ::= #padToWidth ( Int , WordStack ) [function]
  // ---------------------------------------------------------------
     rule #padToWidth(N, WS) => WS                     requires notBool #sizeWordStack(WS) <Int N [concrete]
     rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires #sizeWordStack(WS) <Int N         [concrete]
+
+    syntax WordStack ::= #padRightToWidth ( Int , WordStack ) [function]
+ // --------------------------------------------------------------------
+    rule  #padRightToWidth(N, WS) => #padRightToWidthAux(N -Int #sizeWordStack(WS), WS, .WordStack)
+
+    syntax WordStack ::= #padRightToWidthAux ( Int , WordStack , WordStack ) [function]
+ // -----------------------------------------------------------------------------------
+    rule #padRightToWidthAux(0, WS, ZEROS) => WS ++ ZEROS
+
+    rule #padRightToWidthAux(N, WS, ZEROS) => #padRightToWidthAux(N -Int 1, WS, 0 : ZEROS)
+      requires N >Int 0
 ```
 
 -   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.

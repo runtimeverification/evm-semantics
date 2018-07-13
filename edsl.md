@@ -153,7 +153,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #enc(   #bool( DATA )) => #padToWidth(32, #asByteStack(#getValue(   #bool( DATA ))))
 
     // dynamic Type
-    rule #enc(   #bytes(N, DATA)) => #enc(#uint256(N)) ++ #padToWidth(#ceil32(N), #asByteStack(DATA))
+    rule #enc(   #bytes(N, DATA)) => #enc(#uint256(N)) ++ #padRightToWidth(#ceil32(N), #asByteStack(DATA))
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) ++ #encodeArgs(DATA)
 
     syntax Int ::= #getValue ( TypedArg ) [function]
