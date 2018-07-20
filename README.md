@@ -26,6 +26,7 @@ This repository generates the build-products for both backends in `.build/java/`
 
 The following are needed for building/running KEVM:
 
+-   [git](https://git-scm.com/)
 -   [Pandoc >= 1.17](https://pandoc.org) is used to generate the `*.k` files from the `*.md` files.
 -   GNU [Bison](https://www.gnu.org/software/bison/), [Flex](https://github.com/westes/flex), and [Autoconf](http://www.gnu.org/software/autoconf/).
 -   GNU [libmpfr](http://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
