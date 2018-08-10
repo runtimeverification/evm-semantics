@@ -302,14 +302,25 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
     rule #hashedLocation("Vyper",    BASE, OFFSET OFFSETS) => #hashedLocation("Vyper",    keccakIntList(BASE) +Word OFFSET, OFFSETS)
     rule #hashedLocation("Solidity", BASE, OFFSET OFFSETS) => #hashedLocation("Solidity", keccakIntList(OFFSET BASE),       OFFSETS)
 
-    syntax Int ::= keccakIntList( IntList ) [function]
+    syntax Int ::= keccakIntList( IntList ) [function, smtlib(smt_keccakIntList)]
  // --------------------------------------------------
-    rule keccakIntList(VS) => keccak(intList2ByteStack(VS))
+    rule keccakIntList(VS) => keccak(intList2ByteStack(VS)) [concrete]
 
     syntax WordStack ::= intList2ByteStack( IntList ) [function]
  // ------------------------------------------------------------
     rule intList2ByteStack(.IntList) => .WordStack
     rule intList2ByteStack(V VS)     => #padToWidth(32, #asByteStack(V)) ++ intList2ByteStack(VS)
       requires 0 <=Int V andBool V <Int pow256
+      
+    syntax IntList ::= wordStack2IntList( WordStack )      [function]
+                     | wordStack2IntList( WordStack, Int ) [function]
+ // -----------------------------------------------------------------
+    rule wordStack2IntList( WS ) => wordStack2IntList(WS, #sizeWordStack(WS) /Int 32)
+        requires #sizeWordStack(WS) %Int 32 ==Int 0
+    rule wordStack2IntList( WS , N ) => #asWord(WS [0 .. 32]) wordStack2IntList(#drop( 32, WS), N -Int 1)
+        requires N >Int 1
+    rule wordStack2IntList( WS , 1 ) => #asWord(WS [0 .. 32]) .IntList
+    
+    
 endmodule
 ```
