@@ -116,7 +116,7 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")" [function]
                   | "#range" "(" Int "<"  Int "<=" Int ")" [function]
                   | "#range" "(" Int "<=" Int "<"  Int ")" [function]
-                  | "#range" "(" Int "<=" Int "<=" Int ")" [function, strict(1, 3)]
+                  | "#range" "(" Int "<=" Int "<=" Int ")" [function]
  // -----------------------------------------------------------------
     rule #range ( LB <  X <  UB ) => LB  <Int X andBool X  <Int UB [macro]
     rule #range ( LB <  X <= UB ) => LB  <Int X andBool X <=Int UB [macro]
