@@ -52,40 +52,48 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     rule pow160 => 1461501637330902918203684832716283019655932542976 [macro]
     rule pow16  => 65536 [macro]
 
-    syntax Int ::= "minSInt128"      [function]
-                 | "maxSInt128"      [function]
-                 | "minUInt8"        [function]
-                 | "maxUInt8"        [function]
-                 | "minUInt128"      [function]
-                 | "maxUInt128"      [function]
-                 | "minUInt160"      [function]
-                 | "maxUInt160"      [function]
-                 | "minSInt256"      [funciton]
-                 | "maxSInt256"      [function]
-                 | "minUInt256"      [function]
-                 | "maxUInt256"      [function]
-                 | "minSFixed128x10" [funciton]
-                 | "maxSFixed128x10" [function]
-                 | "minUFixed128x10" [function]
-                 | "maxUFixed128x10" [function]
+    syntax Int ::= "minSInt128"          [function]
+                 | "maxSInt128"          [function]
+                 | "minUInt8"            [function]
+                 | "maxUInt8"            [function]
+                 | "minUInt128"          [function]
+                 | "maxUInt128"          [function]
+                 | "minUInt160"          [function]
+                 | "maxUInt160"          [function]
+                 | "minSInt256"          [funciton]
+                 | "maxSInt256"          [function]
+                 | "minUInt256"          [function]
+                 | "maxUInt256"          [function]
+                 | "minUInt" "(" Int ")" [function]
+                 | "maxUInt" "(" Int ")" [function]
+                 | "minSInt" "(" Int ")" [function]
+                 | "maxSInt" "(" Int ")" [function]
+                 | "minSFixed128x10"     [funciton]
+                 | "maxSFixed128x10"     [function]
+                 | "minUFixed128x10"     [function]
+                 | "maxUFixed128x10"     [function]
  // -------------------------------------------
-    rule minSInt128      => -170141183460469231731687303715884105728                                        [macro]  /*  -2^127      */
-    rule maxSInt128      =>  170141183460469231731687303715884105727                                        [macro]  /*   2^127 - 1  */
-    rule minSFixed128x10 => -1701411834604692317316873037158841057280000000000                              [macro]  /* (-2^127    ) * 10^10 */
-    rule maxSFixed128x10 =>  1701411834604692317316873037158841057270000000000                              [macro]  /* ( 2^127 - 1) * 10^10 */
-    rule minSInt256      => -57896044618658097711785492504343953926634992332820282019728792003956564819968  [macro]  /*  -2^255      */
-    rule maxSInt256      =>  57896044618658097711785492504343953926634992332820282019728792003956564819967  [macro]  /*   2^255 - 1  */
+    rule minSInt ( N )   =>  0 -Int 2 ^Int (N -Int 1)                           [macro]
+    rule maxSInt ( N )   =>  2 ^Int (N -Int 1) -Int 1                           [macro]
+    rule minSInt128 => minSInt ( 128 )                                          [macro]
+    rule maxSInt128 => maxSInt ( 128 )                                          [macro]
+    rule minSFixed128x10 => -1701411834604692317316873037158841057280000000000  [macro]  /* (-2^127    ) * 10^10 */
+    rule maxSFixed128x10 =>  1701411834604692317316873037158841057270000000000  [macro]  /* ( 2^127 - 1) * 10^10 */
+    rule minSInt256 => minSInt ( 256 )                                          [macro]
+    rule maxSInt256 => maxSInt ( 256 )                                          [macro]
 
-    rule minUInt8        =>  0                                                                              [macro]
-    rule maxUInt8        =>  255                                                                            [macro]
-    rule minUInt128      =>  0                                                                              [macro]
-    rule maxUInt128      =>  340282366920938463463374607431768211455                                        [macro]  /*   2^128 - 1  */
-    rule minUFixed128x10 =>  0                                                                              [macro]
-    rule maxUFixed128x10 =>  3402823669209384634633746074317682114550000000000                              [macro]  /* ( 2^128 - 1) * 10^10 */
-    rule minUInt160      =>  0                                                                              [macro]
-    rule maxUInt160      =>  1461501637330902918203684832716283019655932542975                              [macro]  /*   2^160 - 1  */
-    rule minUInt256      =>  0                                                                              [macro]
-    rule maxUInt256      =>  115792089237316195423570985008687907853269984665640564039457584007913129639935 [macro]  /*   2^256 - 1  */
+    rule minUInt ( N )   =>  0                                                  [macro]
+    rule maxUInt ( N )   =>  2 ^Int (N -Int 1) -Int 1                           [macro]
+    rule minUInt8 => minUInt ( 8 )                                              [macro]
+    rule maxUInt8 => maxUInt ( 8 )                                              [macro]
+    rule minUInt128 => minUInt ( 128 )                                          [macro]
+    rule maxUInt128 => maxUInt ( 128 )                                          [macro]
+    rule minUFixed128x10 =>  0                                                  [macro]
+    rule maxUFixed128x10 =>  3402823669209384634633746074317682114550000000000  [macro]  /* ( 2^128 - 1) * 10^10 */
+    rule minUInt160 => minUInt ( 160 )                                          [macro]
+    rule maxUInt160 => maxUInt ( 160 )                                          [macro]
+    rule minUInt256 => minUInt ( 256 )                                          [macro]
+    rule maxUInt256 => maxUInt ( 256 )                                          [macro]
 ```
 
 -   Range of types
@@ -98,10 +106,8 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
                   | #rangeAddress ( Int )             [function]
                   | #rangeBytes   ( Int , Int )       [function]
  // ------------------------------------------------------------
-    rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      ) [macro]
-    rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      ) [macro]
-    rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <= maxUInt128      ) [macro]
-    rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <= maxUInt256      ) [macro]
+    rule #rangeSInt    (   N ,      X ) => #range ( minSInt ( N )   <= X <= maxSInt ( N )   ) [macro]
+    rule #rangeUInt    (   N ,      X ) => #range ( minUInt ( N )   <= X <= maxUInt ( N )   ) [macro]
     rule #rangeSFixed  ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 ) [macro]
     rule #rangeUFixed  ( 128 , 10 , X ) => #range ( minUFixed128x10 <= X <= maxUFixed128x10 ) [macro]
     rule #rangeAddress (            X ) => #range ( minUInt160      <= X <= maxUInt160      ) [macro]
