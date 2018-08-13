@@ -83,7 +83,7 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     rule maxSInt256 => maxSInt ( 256 )                                          [macro]
 
     rule minUInt ( N )   =>  0                                                  [macro]
-    rule maxUInt ( N )   =>  2 ^Int (N -Int 1) -Int 1                           [macro]
+    rule maxUInt ( N )   =>  2 ^Int N -Int 1                                    [macro]
     rule minUInt8 => minUInt ( 8 )                                              [macro]
     rule maxUInt8 => maxUInt ( 8 )                                              [macro]
     rule minUInt128 => minUInt ( 128 )                                          [macro]
