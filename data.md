@@ -56,6 +56,8 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
                  | "maxSInt128"      [function]
                  | "minUInt8"        [function]
                  | "maxUInt8"        [function]
+                 | "minUInt48"       [function]
+                 | "maxUInt48"       [function]
                  | "minUInt128"      [function]
                  | "maxUInt128"      [function]
                  | "minUInt160"      [function]
@@ -78,6 +80,8 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
 
     rule minUInt8        =>  0                                                                              [macro]
     rule maxUInt8        =>  255                                                                            [macro]
+    rule minUInt48       =>  0                                                                              [macro]
+    rule maxUInt48       =>  281474976710655                                                                [macro]  /*   2^48 -  1  */ 
     rule minUInt128      =>  0                                                                              [macro]
     rule maxUInt128      =>  340282366920938463463374607431768211455                                        [macro]  /*   2^128 - 1  */
     rule minUFixed128x10 =>  0                                                                              [macro]
@@ -100,6 +104,7 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
  // ------------------------------------------------------------
     rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      ) [macro]
     rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      ) [macro]
+    rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <= maxUInt48       ) [macro]
     rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <= maxUInt128      ) [macro]
     rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <= maxUInt256      ) [macro]
     rule #rangeSFixed  ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 ) [macro]
