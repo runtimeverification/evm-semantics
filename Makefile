@@ -73,7 +73,7 @@ ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 	opam repository add k "$(K_SUBMODULE)/k-distribution/target/release/k/lib/opam" \
 		|| opam repository set-url k "$(K_SUBMODULE)/k-distribution/target/release/k/lib/opam"
 	opam update
-	opam switch 4.03.0+k
+	opam switch 4.06.1+k
 	eval $$(opam config env) \
 		opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128 ocaml-protoc rlp yojson hex ocp-ocamlres
 
