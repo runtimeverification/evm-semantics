@@ -478,6 +478,9 @@ The `#next` operator executes a single step by:
     rule #changesState(XOR, _)            => false
     rule #changesState(NOT, _)            => false
     rule #changesState(BYTE, _)           => false
+    rule #changesState(SHL, _)            => false
+    rule #changesState(SHR, _)            => false
+    rule #changesState(SAR, _)            => false
     rule #changesState(SHA3, _)           => false
     rule #changesState(ADDRESS, _)        => false
     rule #changesState(BALANCE, _)        => false
@@ -1022,6 +1025,12 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
  // -------------------------------------------
     rule <k> BYTE INDEX W     => byte(INDEX, W)     ~> #push ... </k>
     rule <k> SIGNEXTEND W0 W1 => signextend(W0, W1) ~> #push ... </k>
+
+    syntax BinStackOp ::= "SHL" | "SHR" | "SAR"
+ // -------------------------------------------
+    rule <k> SHL W0 W1 => W1 <<Word  W0 ~> #push ... </k>
+    rule <k> SHR W0 W1 => W1 >>Word  W0 ~> #push ... </k>
+    rule <k> SAR W0 W1 => W1 >>sWord W0 ~> #push ... </k>
 
     syntax BinStackOp ::= "AND" | "EVMOR" | "XOR"
  // ---------------------------------------------
@@ -1901,6 +1910,9 @@ Grumble grumble, K sucks at `owise`.
     rule #memory(EVMOR _ _, MU) => MU
     rule #memory(XOR _ _,   MU) => MU
     rule #memory(BYTE _ _,  MU) => MU
+    rule #memory(SHL _ _,   MU) => MU
+    rule #memory(SHR _ _,   MU) => MU
+    rule #memory(SAR _ _,   MU) => MU
     rule #memory(ISZERO _,  MU) => MU
 
     rule #memory(LT _ _,         MU) => MU
@@ -2041,6 +2053,9 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, EVMOR _ _)      => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, XOR _ _)        => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, BYTE _ _)       => Gverylow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, SHL _ _)        => Gverylow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, SHR _ _)        => Gverylow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, SAR _ _)        => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, CALLDATALOAD _) => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, MLOAD _)        => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, MSTORE _ _)     => Gverylow < SCHED > ... </k>
@@ -2196,8 +2211,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
  // ----------------------------------------------------------
 
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
-                          | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"
- // -----------------------------------------------------------------------------------------
+                          | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
+ // ------------------------------------------------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -2279,6 +2294,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasrevert              << DEFAULT >> => false
     rule Ghasreturndata          << DEFAULT >> => false
     rule Ghasstaticcall          << DEFAULT >> => false
+    rule Ghasshift               << DEFAULT >> => false
 ```
 
 ```c++
@@ -2472,11 +2488,11 @@ static const EVMSchedule ByzantiumSchedule = []
 ```k
     syntax Schedule ::= "CONSTANTINOPLE" [klabel(CONSTANTINOPLE_EVM), symbol]
  // -------------------------------------------------------------------------
-    rule Gblockhash < CONSTANTINOPLE > => 800
     rule SCHEDCONST < CONSTANTINOPLE > => SCHEDCONST < BYZANTIUM >
-      requires SCHEDCONST =/=K Gblockhash
 
+    rule Ghasshift << CONSTANTINOPLE >> => true
     rule SCHEDFLAG << CONSTANTINOPLE >> => SCHEDFLAG << BYZANTIUM >>
+      requires notBool ( SCHEDFLAG ==K Ghasshift )
 ```
 
 ```c++
@@ -2556,6 +2572,9 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  24,     _ ) => XOR
     rule #dasmOpCode(  25,     _ ) => NOT
     rule #dasmOpCode(  26,     _ ) => BYTE
+    rule #dasmOpCode(  27, SCHED ) => SHL requires Ghasshift << SCHED >>
+    rule #dasmOpCode(  28, SCHED ) => SHR requires Ghasshift << SCHED >>
+    rule #dasmOpCode(  29, SCHED ) => SAR requires Ghasshift << SCHED >>
     rule #dasmOpCode(  32,     _ ) => SHA3
     rule #dasmOpCode(  48,     _ ) => ADDRESS
     rule #dasmOpCode(  49,     _ ) => BALANCE
