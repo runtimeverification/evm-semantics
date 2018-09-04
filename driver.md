@@ -114,8 +114,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <data>       DATA </data>
          </message>
 
-    syntax EthereumCommand ::= loadTx ( Int )
- // -----------------------------------------
+    syntax EthereumCommand ::= loadTx ( Account )
+ // ---------------------------------------------
     rule <k> loadTx(ACCTFROM)
           => #loadAccount #newAddr(ACCTFROM, NONCE)
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE CODE

@@ -541,10 +541,10 @@ Addresses
  // ------------------------------------------------
     rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeWord(NONCE), 192))))
 
-    syntax Int ::= #sender ( Int , Int , Int , Account , Int , String , Int , WordStack , WordStack ) [function]
-                 | #sender ( String , Int , String , String )                                         [function, klabel(#senderAux)]
-                 | #sender ( String )                                                                 [function, klabel(#senderAux2)]
- // ---------------------------------------------------------------------------------------------------------------------------------
+    syntax Account ::= #sender ( Int , Int , Int , Account , Int , String , Int , WordStack , WordStack ) [function]
+                     | #sender ( String , Int , String , String )                                         [function, klabel(#senderAux)]
+                     | #sender ( String )                                                                 [function, klabel(#senderAux2)]
+ // -------------------------------------------------------------------------------------------------------------------------------------
     rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS)
       => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWordStack(TN : TP : TG : .WordStack) +String #rlpEncodeAccount(TT) +String #rlpEncodeWord(TV) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
 
