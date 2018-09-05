@@ -22,6 +22,9 @@ Installing/Building
 There are two backends of K available, the OCAML backend for concrete execution and the Java backend for symbolic reasoning and proofs.
 This repository generates the build-products for both backends in `.build/java/` and `.build/ocaml/`.
 
+There is also a Haskell version of K currently under development which is meant to eventually replace the Java backend for symbolic reasoning and proofs.
+To read more about building and using it, please check the [K Haskell Backend](#OPTIONAL:-K-Haskell-Backend)
+
 ### System Dependencies
 
 The following are needed for building/running KEVM:
@@ -71,6 +74,28 @@ After installing the above dependencies, the following command will build submod
 ```sh
 make deps
 make
+```
+
+### OPTIONAL: K Haskell Backend
+
+The K Haskell Backend, currently under development, is meant to eventually replace the Java backend for symbolic reasoning and proofs.
+
+#### System Dependencies
+
+In addition to the above dependencies, the Haskell Backend also depends on:
+
+- [Haskell Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade).
+  Note that the version of the `stack` tool provided by your package manager might not be recent enough. Please follow installation instructions from the Haskell Stack website linked above.
+
+To run proofs, you will also need [Z3](https://github.com/Z3Prover/z3) version 4.7.1 or higher.
+
+#### Building
+
+After installing the above dependencies, the following command will build the Kore backend submodule dependency and then the Kore version of KEVM:
+
+```sh
+make kore-deps
+make build-haskell
 ```
 
 This Repository
