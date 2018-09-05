@@ -332,11 +332,11 @@ Bitwise logical operators are lifted from the integer versions.
     syntax Int ::= bit  ( Int , Int ) [function]
                  | byte ( Int , Int ) [function]
  // --------------------------------------------
-    rule bit(N, _)  => 0 requires N <Int 0 orBool N >=Int 256
-    rule byte(N, _) => 0 requires N <Int 0 orBool N >=Int 32
+    rule bit (N, _) => 0 requires notBool (N >=Int 0 andBool N <Int 256)
+    rule byte(N, _) => 0 requires notBool (N >=Int 0 andBool N <Int  32)
 
-    rule bit(N, W)  => (W >>Int (255 -Int N)) modInt 2                     requires N >=Int 0 andBool N <Int 256
-    rule byte(N, W) => (W >>Int (256 -Int (8 *Int (N +Int 1)))) modInt 256 requires N >=Int 0 andBool N <Int 32
+    rule bit (N, W) => bitRangeInt(W , (255 -Int N)        , 1) requires N >=Int 0 andBool N <Int 256
+    rule byte(N, W) => bitRangeInt(W , ( 31 -Int N) *Int 8 , 8) requires N >=Int 0 andBool N <Int  32
 ```
 
 -   `#nBits` shifts in $N$ ones from the right.
@@ -348,7 +348,7 @@ Bitwise logical operators are lifted from the integer versions.
                  | #nBytes ( Int )  [function]
                  | Int "<<Byte" Int [function]
  // ------------------------------------------
-    rule #nBits(N)  => (1 <<Int N) -Int 1  requires N >=Int 0
+    rule #nBits(N)  => (1 <<Int N) -Int 1 requires N >=Int 0
     rule #nBytes(N) => #nBits(N *Int 8)   requires N >=Int 0
     rule N <<Byte M => N <<Int (8 *Int M)
 ```
