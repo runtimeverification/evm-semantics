@@ -4,6 +4,7 @@
 
 !/.build/secp256k1
 !/.build/k
+!/.build/kore
 !/.build/pandoc-tangle
 !/.build/media
 /.build/media/*
