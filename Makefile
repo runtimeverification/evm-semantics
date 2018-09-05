@@ -18,8 +18,11 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean deps repo-deps system-deps k-deps tangle-deps ocaml-deps plugin-deps \
-		build build-ocaml build-java build-node defn split-tests \
+KORE_SUBMODULE:=$(BUILD_DIR)/kore
+KORE_SUBMODULE_SRC:=$(KORE_SUBMODULE)/src/main/haskell/kore
+
+.PHONY: all clean deps repo-deps system-deps k-deps tangle-deps ocaml-deps plugin-deps kore-deps \
+		build build-ocaml build-java build-node build-kore defn split-tests \
 		test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
 		test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
 		test-proof test-interactive \
@@ -29,10 +32,10 @@ export LUA_PATH
 all: build split-tests
 
 clean: clean-submodules
-	rm -rf .build/java .build/plugin-ocaml .build/plugin-node .build/ocaml .build/node .build/logs .build/local .build/vm tests/proofs/specs
+	rm -rf .build/java .build/plugin-ocaml .build/plugin-node .build/ocaml .build/haskell .build/node .build/logs .build/local .build/vm tests/proofs/specs
 
 clean-submodules:
-	rm -rf .build/k/make.timestamp .build/pandoc-tangle/make.timestamp tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp plugin/make.timestamp .build/media/metropolis/*.sty
+	rm -rf .build/k/make.timestamp .build/pandoc-tangle/make.timestamp tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp plugin/make.timestamp kore/make.timestamp .build/media/metropolis/*.sty
 
 distclean: clean
 	opam switch system
@@ -50,6 +53,7 @@ system-deps: ocaml-deps
 k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
+kore-deps: $(KORE_SUBMODULE)/make.timestamp
 
 $(K_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
@@ -67,6 +71,13 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init --recursive -- $(PLUGIN_SUBMODULE)
 	touch $(PLUGIN_SUBMODULE)/make.timestamp
+
+$(KORE_SUBMODULE)/make.timestamp:
+	@echo "== submodule: $@"
+	git submodule update --init -- $(KORE_SUBMODULE)
+	cd $(KORE_SUBMODULE_SRC) \
+		&& stack build kore:exe:kore-exec
+	touch $(KORE_SUBMODULE)/make.timestamp
 
 ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 	opam init --quiet --no-setup
@@ -96,6 +107,7 @@ build: build-ocaml build-java build-node
 build-ocaml: .build/ocaml/driver-kompiled/interpreter
 build-java: .build/java/driver-kompiled/timestamp
 build-node: .build/vm/kevm-vm
+build-haskell: .build/haskell/driver.kore
 
 # Tangle definition from *.md files
 
@@ -106,6 +118,7 @@ k_files:=driver.k data.k network.k evm.k analysis.k krypto.k edsl.k evm-node.k
 ocaml_files:=$(patsubst %,.build/ocaml/%,$(k_files))
 java_files:=$(patsubst %,.build/java/%,$(k_files))
 node_files:=$(patsubst %,.build/node/%,$(k_files))
+haskell_files:=$(patsubst %,.build/haskell/%,$(k_files))
 defn_files:=$(ocaml_files) $(java_files) $(node_files)
 
 defn: $(defn_files)
@@ -125,12 +138,22 @@ defn: $(defn_files)
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
 
+.build/haskell/%.k: %.md
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(standalone_tangle)" $< > $@
+
 # Java Backend
 
 .build/java/driver-kompiled/timestamp: $(java_files)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/java -I .build/java
+
+.build/haskell/driver.kore: $(haskell_files)
+	@echo "== kompile: $@"
+	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend kore \
+					--syntax-module ETHEREUM-SIMULATION $< --directory .build/haskell -I .build/haskell
 
 # OCAML Backend
 
