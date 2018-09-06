@@ -30,3 +30,4 @@
 [submodule ".build/kore"]
 	path = .build/kore
 	url = https://github.com/kframework/kore
+	ignore = untracked
