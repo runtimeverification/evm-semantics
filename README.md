@@ -94,7 +94,7 @@ To run proofs, you will also need [Z3](https://github.com/Z3Prover/z3) version 4
 After installing the above dependencies, the following command will build the Kore backend submodule dependency and then the Kore version of KEVM:
 
 ```sh
-make kore-deps
+make haskell-deps
 make build-haskell
 ```
 

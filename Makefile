@@ -54,6 +54,7 @@ k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 kore-deps: $(KORE_SUBMODULE)/make.timestamp
+haskell-deps: tangle-deps k-deps kore-deps
 
 $(K_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
