@@ -63,9 +63,8 @@ brew cask install java8
 brew install automake libtool gmp mpfr pkg-config pandoc maven opam z3
 ```
 
-NOTE: a previous version of these instructions required the user to run `brew link flex --force`. After fetching this
-revision, you should first run `brew unlink flex`, as it is no longer necessary and will cause an error if you have the
-homebrew version of flex installed instead of the xcode command line tools version.
+NOTE: a previous version of these instructions required the user to run `brew link flex --force`.
+After fetching this revision, you should first run `brew unlink flex`, as it is no longer necessary and will cause an error if you have the homebrew version of flex installed instead of the xcode command line tools version.
 
 ### Building
 
@@ -84,8 +83,9 @@ The K Haskell Backend, currently under development, is meant to eventually repla
 
 In addition to the above dependencies, the Haskell Backend also depends on:
 
-- [Haskell Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade).
-  Note that the version of the `stack` tool provided by your package manager might not be recent enough. Please follow installation instructions from the Haskell Stack website linked above.
+-   [Haskell Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade).
+    Note that the version of the `stack` tool provided by your package manager might not be recent enough.
+    Please follow installation instructions from the Haskell Stack website linked above.
 
 To run proofs, you will also need [Z3](https://github.com/Z3Prover/z3) version 4.7.1 or higher.
 
