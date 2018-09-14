@@ -262,6 +262,9 @@
           <storage>
             0 |-> 10
           </storage>
+          <origStorage>
+            .Map
+          </origStorage>
           <nonce>
             1
           </nonce>

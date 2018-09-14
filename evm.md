@@ -118,11 +118,12 @@ In the comments next to each cell, we've marked which component of the YellowPap
           <activeAccounts> .Set </activeAccounts>
           <accounts>
             <account multiplicity="*" type="Map">
-              <acctID>  0                      </acctID>
-              <balance> 0                      </balance>
-              <code>    .WordStack:AccountCode </code>
-              <storage> .Map                   </storage>
-              <nonce>   0                      </nonce>
+              <acctID>      0                      </acctID>
+              <balance>     0                      </balance>
+              <code>        .WordStack:AccountCode </code>
+              <storage>     .Map                   </storage>
+              <origStorage> .Map                   </origStorage>
+              <nonce>       0                      </nonce>
             </account>
           </accounts>
 
@@ -684,15 +685,29 @@ This is a right cons-list of `SubstateLogEntry` (which contains the account ID a
 
 After executing a transaction, it's necessary to have the effect of the substate log recorded.
 
+-   `#finalizeStorage` updates the origStorage cell with the new values of storage.
 -   `#finalizeTx` makes the substate log actually have an effect on the state.
 -   `#deleteAccounts` deletes the accounts specified by the self destruct list.
 
 ```k
+    syntax InternalOp ::= #finalizeStorage ( Set )
+ // ----------------------------------------------
+    rule <k> #finalizeStorage((SetItem(ACCT) => .Set) _) ... </k>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> STORAGE </storage>
+           <origStorage> _ => STORAGE </origStorage>
+           ...
+         </account>
+
+    rule #finalizeStorage(.Set) => .
+
     syntax InternalOp ::= #finalizeTx ( Bool )
                         | #deleteAccounts ( List )
  // ----------------------------------------------
-    rule <k> #finalizeTx(true) => . ... </k>
+    rule <k> #finalizeTx(true) => #finalizeStorage(ACCTS) ... </k>
          <selfDestruct> .Set </selfDestruct>
+         <activeAccounts> ACCTS </activeAccounts>
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
          <coinbase> MINER </coinbase>
@@ -840,10 +855,11 @@ These are just used by the other operators for shuffling local execution state a
 
     rule <k> #newAccount ACCT => . ... </k>
          <account>
-           <acctID>  ACCT       </acctID>
-           <code>    .WordStack </code>
-           <nonce>   0          </nonce>
-           <storage> _ => .Map  </storage>
+           <acctID>      ACCT       </acctID>
+           <code>        .WordStack </code>
+           <nonce>       0          </nonce>
+           <storage>     _ => .Map  </storage>
+           <origStorage> _ => .Map  </origStorage>
            ...
          </account>
 
@@ -1311,28 +1327,29 @@ These rules reach into the network state and load/store from account storage:
 
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
-    rule <k> SSTORE INDEX VALUE => . ... </k>
+    rule <k> SSTORE INDEX NEW => . ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> ... (INDEX |-> (OLD => VALUE)) ... </storage>
+           <storage> ... (INDEX |-> (CURR => NEW)) ... </storage>
+           <origStorage> ORIGSTORAGE </origStorage>
            ...
          </account>
-         <refund> R => #if OLD =/=Int 0 andBool VALUE ==Int 0
-                        #then R +Word Rsstoreclear < SCHED >
-                        #else R
-                       #fi
-         </refund>
+         <refund> R => R +Int Rsstore(SCHED, NEW, CURR, #lookup(ORIGSTORAGE, INDEX)) </refund>
          <schedule> SCHED </schedule>
 
-    rule <k> SSTORE INDEX VALUE => . ... </k>
+    rule <k> SSTORE INDEX NEW => . ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>
+           <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
+           <origStorage> ORIGSTORAGE </origStorage>
            ...
          </account>
+         <refund> R => R +Int Rsstore(SCHED, NEW, 0, #lookup(ORIGSTORAGE, INDEX)) </refund>
+         <schedule> SCHED </schedule>
       requires notBool (INDEX in_keys(STORAGE))
+
 ```
 
 ### Call Operations
@@ -1968,11 +1985,12 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 ```k
     syntax InternalOp ::= #gasExec ( Schedule , OpCode )
  // ----------------------------------------------------
-    rule <k> #gasExec(SCHED, SSTORE INDEX VALUE) => Csstore(SCHED, VALUE, #lookup(STORAGE, INDEX)) ... </k>
+    rule <k> #gasExec(SCHED, SSTORE INDEX VALUE) => Csstore(SCHED, VALUE, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
+           <origStorage> ORIGSTORAGE </origStorage>
            ...
          </account>
 
@@ -2120,7 +2138,8 @@ There are several helpers for calculating gas (most of them also specified in th
           => Gselfdestruct < SCHED > +Int Cnew(SCHED, BAL, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>) ... </k>
 
     syntax Int ::= Cgascap ( Schedule , Int , Int , Int ) [function]
-                 | Csstore ( Schedule , Int , Int )       [function]
+                 | Csstore ( Schedule , Int , Int , Int ) [function]
+                 | Rsstore ( Schedule , Int , Int , Int ) [function]
                  | Cextra  ( Schedule , Int , Bool )      [function]
                  | Cnew    ( Schedule , Int , Bool )      [function]
                  | Cxfer   ( Schedule , Int )             [function]
@@ -2128,8 +2147,33 @@ There are several helpers for calculating gas (most of them also specified in th
     rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
 
-    rule Csstore(SCHED, VALUE, OLD)
-      => #if VALUE =/=Int 0 andBool OLD ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
+    rule Csstore(SCHED, NEW, CURR, ORIG)
+      => #if CURR ==Int NEW orBool ORIG =/=Int CURR #then Gsload < SCHED > #else #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi #fi
+      requires Ghasdirtysstore << SCHED >>
+    rule Csstore(SCHED, NEW, CURR, ORIG)
+      => #if CURR ==Int 0 andBool NEW =/=Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
+      requires notBool Ghasdirtysstore << SCHED >>
+
+    rule Rsstore(SCHED, NEW, CURR, ORIG)
+      => #if CURR =/=Int NEW andBool ORIG ==Int CURR andBool NEW ==Int 0 #then
+             Rsstoreclear < SCHED >
+         #else
+             #if CURR =/=Int NEW andBool ORIG =/=Int CURR andBool ORIG =/=Int 0 #then
+                 #if CURR ==Int 0 #then 0 -Int Rsstoreclear < SCHED > #else #if NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi #fi
+             #else
+                 0
+             #fi +Int
+             #if CURR =/=Int NEW andBool ORIG ==Int NEW #then
+                 #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi -Int Gsload < SCHED >
+             #else
+                 0
+             #fi
+         #fi
+      requires Ghasdirtysstore << SCHED >>
+
+    rule Rsstore(SCHED, NEW, CURR, ORIG)
+      => #if CURR =/=Int 0 andBool NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi
+      requires notBool Ghasdirtysstore << SCHED >>
 
     rule Cextra(SCHED, VALUE, ISEMPTY)
       => Gcall < SCHED > +Int Cnew(SCHED, VALUE, ISEMPTY) +Int Cxfer(SCHED, VALUE)
@@ -2212,7 +2256,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
 
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
- // ------------------------------------------------------------------------------------------------------------
+                          | "Ghasdirtysstore"
+ // -----------------------------------------
 ```
 
 ### Schedule Constants
@@ -2295,6 +2340,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasreturndata          << DEFAULT >> => false
     rule Ghasstaticcall          << DEFAULT >> => false
     rule Ghasshift               << DEFAULT >> => false
+    rule Ghasdirtysstore         << DEFAULT >> => false
 ```
 
 ```c++
@@ -2490,9 +2536,10 @@ static const EVMSchedule ByzantiumSchedule = []
  // -------------------------------------------------------------------------
     rule SCHEDCONST < CONSTANTINOPLE > => SCHEDCONST < BYZANTIUM >
 
-    rule Ghasshift << CONSTANTINOPLE >> => true
-    rule SCHEDFLAG << CONSTANTINOPLE >> => SCHEDFLAG << BYZANTIUM >>
-      requires notBool ( SCHEDFLAG ==K Ghasshift )
+    rule Ghasshift       << CONSTANTINOPLE >> => true
+    rule Ghasdirtysstore << CONSTANTINOPLE >> => true
+    rule SCHEDFLAG       << CONSTANTINOPLE >> => SCHEDFLAG << BYZANTIUM >>
+      requires notBool ( SCHEDFLAG ==K Ghasshift orBool SCHEDFLAG ==K Ghasdirtysstore )
 ```
 
 ```c++

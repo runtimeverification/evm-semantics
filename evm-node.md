@@ -52,6 +52,7 @@ Because the same account may be loaded more than once, implementations of this i
                <balance> #getBalance(ACCT) </balance>
                <code> #if #isCodeEmpty(ACCT) #then .WordStack #else #unloaded #fi </code>
                <storage> .Map </storage>
+               <origStorage> .Map </origStorage>
                <nonce> #getNonce(ACCT) </nonce>
              </account>
            )
@@ -74,6 +75,7 @@ Because the same account may be loaded more than once, implementations of this i
          <account>
            <acctID>  ACCT                                                         </acctID>
            <storage> STORAGE => STORAGE [ INDEX <- #getStorageData(ACCT, INDEX) ] </storage>
+           <origStorage> ORIGSTORAGE => ORIGSTORAGE [ INDEX <- #getStorageData(ACCT, INDEX) ] </origStorage>
            ...
          </account>
       requires notBool INDEX in_keys(STORAGE)
