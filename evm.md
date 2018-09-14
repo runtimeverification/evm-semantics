@@ -451,6 +451,7 @@ The `#next` operator executes a single step by:
     rule #changesState(SSTORE, _)               => true
     rule #changesState(CALL, _ : _ : VALUE : _) => VALUE =/=Int 0
     rule #changesState(CREATE, _)               => true
+    rule #changesState(CREATE2, _)              => true
     rule #changesState(SELFDESTRUCT, _)         => true
 
     rule #changesState(DUP(_), _)         => false
@@ -1695,6 +1696,25 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </account>
 ```
 
+`CREATE2` will attempt to `#create` the account, but with the new scheme for choosing the account address.
+Note that we cannot execute #loadAccount during the #load phase earlier because gas will not yet
+have been paid, and it may be to expensive to compute the hash of the init code.
+
+```k
+    syntax QuadStackOp ::= "CREATE2"
+ // --------------------------------
+    rule <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
+          => #loadAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
+          ~> #checkCreate ACCT VALUE
+          ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) #allBut64th(GAVAIL) VALUE #range(LM, MEMSTART, MEMWIDTH)
+          ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
+         ...
+         </k>
+         <id> ACCT </id>
+         <gas> GAVAIL => GAVAIL /Int 64 </gas>
+         <localMem> LM </localMem>
+```
+
 `SELFDESTRUCT` marks the current account for deletion and transfers funds out of the current account.
 Self destructing to yourself, unlike a regular transfer, destroys the balance in the account, irreparably losing it.
 
@@ -1892,9 +1912,10 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
     rule #memory ( CALLDATACOPY START _ WIDTH   , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
     rule #memory ( RETURNDATACOPY START _ WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
 
-    rule #memory ( CREATE _ START WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
-    rule #memory ( RETURN START WIDTH   , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
-    rule #memory ( REVERT START WIDTH   , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( CREATE  _ START WIDTH   , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( CREATE2 _ START WIDTH _ , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( RETURN START WIDTH      , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( REVERT START WIDTH      , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
 
     rule #memory ( COP:CallOp     _ _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
     rule #memory ( CSOP:CallSixOp _ _   ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
@@ -2027,6 +2048,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          </account>
 
     rule <k> #gasExec(SCHED, CREATE _ _ _) => Gcreate < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, CREATE2 _ _ WIDTH _) => Gcreate < SCHED > +Int Gsha3word < SCHED > *Int (WIDTH up/Int 32) ... </k>
 
     rule <k> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </k>
 
@@ -2256,8 +2278,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
 
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
-                          | "Ghasdirtysstore"
- // -----------------------------------------
+                          | "Ghasdirtysstore"         | "Ghascreate2"
+ // -----------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -2341,6 +2363,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasstaticcall          << DEFAULT >> => false
     rule Ghasshift               << DEFAULT >> => false
     rule Ghasdirtysstore         << DEFAULT >> => false
+    rule Ghascreate2             << DEFAULT >> => false
 ```
 
 ```c++
@@ -2538,8 +2561,9 @@ static const EVMSchedule ByzantiumSchedule = []
 
     rule Ghasshift       << CONSTANTINOPLE >> => true
     rule Ghasdirtysstore << CONSTANTINOPLE >> => true
+    rule Ghascreate2     << CONSTANTINOPLE >> => true
     rule SCHEDFLAG       << CONSTANTINOPLE >> => SCHEDFLAG << BYZANTIUM >>
-      requires notBool ( SCHEDFLAG ==K Ghasshift orBool SCHEDFLAG ==K Ghasdirtysstore )
+      requires notBool ( SCHEDFLAG ==K Ghasshift orBool SCHEDFLAG ==K Ghasdirtysstore orBool SCHEDFLAG ==K Ghascreate2 )
 ```
 
 ```c++
@@ -2661,6 +2685,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode( 242,     _ ) => CALLCODE
     rule #dasmOpCode( 243,     _ ) => RETURN
     rule #dasmOpCode( 244, SCHED ) => DELEGATECALL requires SCHED =/=K FRONTIER
+    rule #dasmOpCode( 245, SCHED ) => CREATE2      requires Ghascreate2    << SCHED >>
     rule #dasmOpCode( 250, SCHED ) => STATICCALL   requires Ghasstaticcall << SCHED >>
     rule #dasmOpCode( 253, SCHED ) => REVERT       requires Ghasrevert     << SCHED >>
     rule #dasmOpCode( 254,     _ ) => INVALID
