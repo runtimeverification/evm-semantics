@@ -91,6 +91,10 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     rule maxUInt160      =>  1461501637330902918203684832716283019655932542975                              [macro]  /*   2^160 - 1  */
     rule minUInt256      =>  0                                                                              [macro]
     rule maxUInt256      =>  115792089237316195423570985008687907853269984665640564039457584007913129639935 [macro]  /*   2^256 - 1  */
+
+    syntax Int ::= "eth"
+ // --------------------
+    rule eth => 1000000000000000000 [macro]
 ```
 
 -   Range of types
