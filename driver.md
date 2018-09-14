@@ -475,6 +475,7 @@ The individual fields of the accounts are dealt with here.
          <account>
            <acctID> ACCT </acctID>
            <storage> _ => STORAGE </storage>
+           <origStorage> _ => STORAGE </origStorage>
            ...
          </account>
 ```
