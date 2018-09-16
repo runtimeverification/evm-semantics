@@ -42,6 +42,7 @@ run_env() {
     export PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH"
     export LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
     eval $(opam config env)
+    export PATH="$build_dir/kore/.stack-work/install/x86_64-linux/lts-11.3/8.2.2/bin/:$PATH"
 }
 
 # Runners
@@ -53,8 +54,15 @@ run_krun() {
     local backend=$1  ; shift
     local run_file=$1 ; shift
     run_env "$run_file"
-    export K_OPTS=-Xss500m
-    krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@"
+    if [[ "$backend" == "haskell" ]]; then
+        kast="$(mktemp "$build_dir/haskell/kast.XXXXXX")"
+        trap "rm -rf $kast" INT TERM EXIT
+        kast --directory "$build_dir/haskell" --sort K --kore $run_file > $kast
+        stack exec -- kore-exec "$build_dir/haskell/driver.kore" --module ETHEREUM-SIMULATION --is-program --pattern $kast
+    else
+        export K_OPTS=-Xss500m
+        krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@"
+    fi
 }
 
 run_kdebug() {
@@ -163,6 +171,7 @@ case "$run_command" in
     prove)    run_proof          "$@"                 ;;
 
     # Testing
+    haskell)      run_krun haskell "$@" ;;
     interpret)    run_interpreter  "$@" ;;
     test)         run_test         "$@" ;;
     test-profile) run_test_profile "$@" ;;
@@ -200,11 +209,12 @@ case "$run_command" in
 
     These commands are more for devs and CI servers.
 
-        $0 interpret           <pgm>
+        $0 [haskell|interpret] <pgm>
         $0 [test|test-profile] <pgm> <output>
         $0 sort-logs
         $0 get-failing [<count>]
 
+    -   haskell        Run a single EVM program (in JSON testing format) using Haskell backend
     -   interpret      Run a single EVM program (in JSON testing format) using fast interpreter
     -   test           Run a single EVM program like it's a test
     -   test-profile   Same as test, but generate list of failing tests and dump timing information
