@@ -103,15 +103,15 @@ This Repository
 
 The following files constitute the KEVM semantics:
 
--   [krypto.md](krypto) sets up some basic cryptographic primitives.
--   [data.md](data) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
--   [evm.md](evm) is the main KEVM semantics, containing the configuration and transition rules of EVM.
+-   [krypto.md](krypto.md) sets up some basic cryptographic primitives.
+-   [data.md](data.md) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
+-   [evm.md](evm.md) is the main KEVM semantics, containing the configuration and transition rules of EVM.
 
 These additional files extend the semantics to make the repository more useful:
 
--   [driver.md](driver) is an execution harness for KEVM, providing a simple language for describing tests/programs.
--   [analysis.md](analysis) contains any automated analysis tools we develop.
--   [edsl.md](edsl) defines high-level notations of [eDSL], a domain-specific language for EVM specifications, for formal verification of EVM bytecode using [K Reachability Logic Prover].
+-   [driver.md](driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
+-   [analysis.md](analysis.md) contains any automated analysis tools we develop.
+-   [edsl.md](edsl.md) defines high-level notations of [eDSL], a domain-specific language for EVM specifications, for formal verification of EVM bytecode using [K Reachability Logic Prover].
 
 Example Usage
 -------------
