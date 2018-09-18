@@ -42,7 +42,6 @@ run_env() {
     export PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH"
     export LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
     eval $(opam config env)
-    export PATH="$build_dir/kore/.stack-work/install/x86_64-linux/lts-11.3/8.2.2/bin/:$PATH"
 }
 
 # Runners
@@ -58,7 +57,9 @@ run_krun() {
         kast="$(mktemp "$build_dir/haskell/kast.XXXXXX")"
         trap "rm -rf $kast" INT TERM EXIT
         kast --directory "$build_dir/haskell" --sort K --kore $run_file > $kast
+        pushd "$build_dir/kore" > /dev/null
         stack exec -- kore-exec "$build_dir/haskell/driver.kore" --module ETHEREUM-SIMULATION --is-program --pattern $kast
+        popd > /dev/null
     else
         export K_OPTS=-Xss500m
         krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@"
