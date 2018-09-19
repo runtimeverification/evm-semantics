@@ -53,15 +53,10 @@ run_krun() {
     local backend=$1  ; shift
     local run_file=$1 ; shift
     run_env "$run_file"
+    export KOPTS=-Xss500m
     if [[ "$backend" == "haskell" ]]; then
-        kast="$(mktemp "$build_dir/haskell/kast.XXXXXX")"
-        trap "rm -rf $kast" INT TERM EXIT
-        kast --directory "$build_dir/haskell" --sort K --kore $run_file > $kast
-        pushd "$build_dir/kore" > /dev/null
-        stack exec -- kore-exec "$build_dir/haskell/driver.kore" --module ETHEREUM-SIMULATION --is-program --pattern $kast
-        popd > /dev/null
+        krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@" --haskell-backend-command "$build_dir/kore/bin/kore-exec" --output none
     else
-        export K_OPTS=-Xss500m
         krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@"
     fi
 }

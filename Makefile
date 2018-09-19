@@ -53,7 +53,7 @@ system-deps: ocaml-deps
 k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
-kore-deps: $(KORE_SUBMODULE)/make.timestamp
+kore-deps: $(KORE_SUBMODULE)/bin/kore-exec
 haskell-deps: tangle-deps k-deps kore-deps
 
 $(K_SUBMODULE)/make.timestamp:
@@ -73,12 +73,11 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 	git submodule update --init --recursive -- $(PLUGIN_SUBMODULE)
 	touch $(PLUGIN_SUBMODULE)/make.timestamp
 
-$(KORE_SUBMODULE)/make.timestamp:
+$(KORE_SUBMODULE)/bin/kore-exec:
 	@echo "== submodule: $@"
 	git submodule update --init -- $(KORE_SUBMODULE)
-	cd $(KORE_SUBMODULE_SRC) \
-		&& stack build kore:exe:kore-exec
-	touch $(KORE_SUBMODULE)/make.timestamp
+	cd $(KORE_SUBMODULE) \
+		&& stack install --local-bin-path $(abspath $(KORE_SUBMODULE))/bin kore:exe:kore-exec
 
 ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 	opam init --quiet --no-setup
@@ -108,7 +107,7 @@ build: build-ocaml build-java build-node
 build-ocaml: .build/ocaml/driver-kompiled/interpreter
 build-java: .build/java/driver-kompiled/timestamp
 build-node: .build/vm/kevm-vm
-build-haskell: .build/haskell/driver.kore
+build-haskell: .build/haskell/driver-kompiled/definition.kore
 
 # Tangle definition from *.md files
 
@@ -151,9 +150,9 @@ defn: $(defn_files)
 	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/java -I .build/java
 
-.build/haskell/driver.kore: $(haskell_files)
+.build/haskell/driver-kompiled/definition.kore: $(haskell_files)
 	@echo "== kompile: $@"
-	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend kore \
+	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend haskell \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/haskell -I .build/haskell
 
 # OCAML Backend
