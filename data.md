@@ -13,7 +13,7 @@ requires "krypto.k"
 module EVM-DATA
     imports KRYPTO
     imports STRING-BUFFER
-    imports DOMAINS
+    imports MAP
 
     syntax KResult ::= Int
 ```
@@ -42,35 +42,35 @@ Some important numbers that are referred to often during execution.
 These can be used for pattern-matching on the LHS of rules as well (`macro` attribute expands all occurances of these in rules).
 
 ```k
-    syntax Int ::= "pow256" [function] /* 2 ^Int 256 */
-                 | "pow255" [function] /* 2 ^Int 255 */
-                 | "pow160" [function] /* 2 ^Int 160 */
-                 | "pow16"  [function] /* 2 ^Int 16  */
- // ---------------------------------------------------
+    syntax Int ::= "pow256" /* 2 ^Int 256 */
+                 | "pow255" /* 2 ^Int 255 */
+                 | "pow160" /* 2 ^Int 160 */
+                 | "pow16"  /* 2 ^Int 16  */
+ // ----------------------------------------
     rule pow256 => 115792089237316195423570985008687907853269984665640564039457584007913129639936 [macro]
     rule pow255 => 57896044618658097711785492504343953926634992332820282019728792003956564819968  [macro]
     rule pow160 => 1461501637330902918203684832716283019655932542976 [macro]
     rule pow16  => 65536 [macro]
 
-    syntax Int ::= "minSInt128"      [function]
-                 | "maxSInt128"      [function]
-                 | "minUInt8"        [function]
-                 | "maxUInt8"        [function]
-                 | "minUInt48"       [function]
-                 | "maxUInt48"       [function]
-                 | "minUInt128"      [function]
-                 | "maxUInt128"      [function]
-                 | "minUInt160"      [function]
-                 | "maxUInt160"      [function]
-                 | "minSInt256"      [funciton]
-                 | "maxSInt256"      [function]
-                 | "minUInt256"      [function]
-                 | "maxUInt256"      [function]
-                 | "minSFixed128x10" [funciton]
-                 | "maxSFixed128x10" [function]
-                 | "minUFixed128x10" [function]
-                 | "maxUFixed128x10" [function]
- // -------------------------------------------
+    syntax Int ::= "minSInt128"
+                 | "maxSInt128"
+                 | "minUInt8"
+                 | "maxUInt8"
+                 | "minUInt48"
+                 | "maxUInt48"
+                 | "minUInt128"
+                 | "maxUInt128"
+                 | "minUInt160"
+                 | "maxUInt160"
+                 | "minSInt256"
+                 | "maxSInt256"
+                 | "minUInt256"
+                 | "maxUInt256"
+                 | "minSFixed128x10"
+                 | "maxSFixed128x10"
+                 | "minUFixed128x10"
+                 | "maxUFixed128x10"
+ // --------------------------------
     rule minSInt128      => -170141183460469231731687303715884105728                                        [macro]  /*  -2^127      */
     rule maxSInt128      =>  170141183460469231731687303715884105727                                        [macro]  /*   2^127 - 1  */
     rule minSFixed128x10 => -1701411834604692317316873037158841057280000000000                              [macro]  /* (-2^127    ) * 10^10 */
@@ -95,13 +95,13 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
 -   Range of types
 
 ```k
-    syntax Bool ::= #rangeSInt    ( Int , Int )       [function]
-                  | #rangeUInt    ( Int , Int )       [function]
-                  | #rangeSFixed  ( Int , Int , Int ) [function]
-                  | #rangeUFixed  ( Int , Int , Int ) [function]
-                  | #rangeAddress ( Int )             [function]
-                  | #rangeBytes   ( Int , Int )       [function]
- // ------------------------------------------------------------
+    syntax Bool ::= #rangeSInt    ( Int , Int )
+                  | #rangeUInt    ( Int , Int )
+                  | #rangeSFixed  ( Int , Int , Int )
+                  | #rangeUFixed  ( Int , Int , Int )
+                  | #rangeAddress ( Int )
+                  | #rangeBytes   ( Int , Int )
+ // -------------------------------------------
     rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      ) [macro]
     rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      ) [macro]
     rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <= maxUInt48       ) [macro]
@@ -112,11 +112,11 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     rule #rangeAddress (            X ) => #range ( minUInt160      <= X <= maxUInt160      ) [macro]
     rule #rangeBytes   (  32 ,      X ) => #range ( minUInt256      <= X <= maxUInt256      ) [macro]
 
-    syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")" [function]
-                  | "#range" "(" Int "<"  Int "<=" Int ")" [function]
-                  | "#range" "(" Int "<=" Int "<"  Int ")" [function]
-                  | "#range" "(" Int "<=" Int "<=" Int ")" [function]
- // -----------------------------------------------------------------
+    syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")"
+                  | "#range" "(" Int "<"  Int "<=" Int ")"
+                  | "#range" "(" Int "<=" Int "<"  Int ")"
+                  | "#range" "(" Int "<=" Int "<=" Int ")"
+ // ------------------------------------------------------
     rule #range ( LB <  X <  UB ) => LB  <Int X andBool X  <Int UB [macro]
     rule #range ( LB <  X <= UB ) => LB  <Int X andBool X <=Int UB [macro]
     rule #range ( LB <= X <  UB ) => LB <=Int X andBool X  <Int UB [macro]
@@ -557,9 +557,9 @@ Addresses
 -   `#blockHeaderHash` computes the hash of a block header given all the block data.
 
 ```k
-    syntax Int ::= #blockHeaderHash( Int , Int , Int , Int , Int , Int , WordStack , Int , Int , Int , Int , Int , WordStack , Int , Int ) [function]
-                 | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderStr)]
- // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    syntax Int ::= #blockHeaderHash( Int , Int , Int , Int , Int , Int , WordStack , Int , Int , Int , Int , Int , WordStack , Int , Int ) [function, klabel(blockHeaderHash), symbol]
+                 | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderStr), symbol]
+ // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
    rule #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
          => #blockHeaderHash(#asWord(#parseByteStackRaw(HP)),
                              #asWord(#parseByteStackRaw(HO)),
