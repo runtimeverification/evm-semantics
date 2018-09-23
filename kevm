@@ -93,7 +93,7 @@ run_interpreter() {
 run_test() {
     local test_file="$1"     ; shift
     case "$test_file" in
-        *proofs/*     ) run_proof "$test_file" "$@"
+        *proofs/*     ) run_proof "$test_file" --debug "$@"
                         ;;
         *interactive/*) local expected_file="$1" ; shift
                         local output_file="$(mktemp "$test_file.out.XXXXXX")"
