@@ -682,10 +682,12 @@ This is a right cons-list of `SubstateLogEntry` (which contains the account ID a
 After executing a transaction, it's necessary to have the effect of the substate log recorded.
 
 -   `#finalizeTx` makes the substate log actually have an effect on the state.
+-   `#deleteAccounts` deletes the accounts specified by the self destruct list.
 
 ```k
     syntax InternalOp ::= #finalizeTx ( Bool )
- // ------------------------------------------
+                        | #deleteAccounts ( List )
+ // ----------------------------------------------
     rule <k> #finalizeTx(true) => . ... </k>
          <selfDestruct> .Set </selfDestruct>
 
@@ -746,8 +748,11 @@ After executing a transaction, it's necessary to have the effect of the substate
            ...
          </message>
 
-    rule <k> #finalizeTx(true) ... </k>
-         <selfDestruct> ... (SetItem(ACCT) => .Set) </selfDestruct>
+    rule <k> (. => #deleteAccounts(Set2List(ACCTS))) ~> #finalizeTx(true) ... </k>
+         <selfDestruct> ACCTS => .Set </selfDestruct>
+      requires size(ACCTS) >Int 0
+
+    rule <k> #deleteAccounts(ListItem(ACCT) ACCTS) => #deleteAccounts(ACCTS) ... </k>
          <activeAccounts> ... (SetItem(ACCT) => .Set) </activeAccounts>
          <accounts>
            ( <account>
@@ -758,6 +763,8 @@ After executing a transaction, it's necessary to have the effect of the substate
            )
            ...
          </accounts>
+
+    rule <k> #deleteAccounts(.List) => . ... </k>
 ```
 
 EVM Programs
