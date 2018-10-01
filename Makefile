@@ -220,7 +220,7 @@ endif
 TEST=./kevm test-profile
 
 test-all: test-all-concrete test-all-proof
-test: test-concrete test-proof
+test: test-concrete test-proof test-java
 
 split-tests: tests/ethereum-tests/make.timestamp split-proof-tests
 
@@ -310,6 +310,9 @@ proof_dir:=tests/proofs/specs
 proof_tests=$(wildcard $(proof_dir)/*/*-spec.k)
 
 test-proof: $(proof_tests:=.test)
+
+test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11_d0g0v0.json
+	./kevm run-java $< | diff - tests/templates/output-success-java.json
 
 $(proof_dir)/%.test: $(proof_dir)/% build-java split-proof-tests
 	$(TEST) $<
