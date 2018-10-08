@@ -536,7 +536,7 @@ The `#next` operator executes a single step by:
 ```k
     syntax InternalOp ::= "#exec" "[" OpCode "]"
  // --------------------------------------------
-    rule <k> #exec [ OP ] => #gas [ OP ] ~> OP ... </k> requires isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
+    rule <k> #exec [ OP ] => OP ... </k> requires isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
 ```
 
 Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
