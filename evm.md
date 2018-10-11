@@ -165,8 +165,8 @@ Our semantics is modal, with the initial mode being set on the command line via 
 -   `VMTESTS` skips `CALL*` and `CREATE` operations.
 
 ```k
-    syntax Mode ::= "NORMAL"  [klabel(NORMAL)]
-                  | "VMTESTS" [klabel(VMTESTS)]
+    syntax Mode ::= "NORMAL"  [klabel(NORMAL), symbol]
+                  | "VMTESTS" [klabel(VMTESTS), symbol]
 ```
 
 -   `#setMode_` sets the mode to the supplied one.
@@ -2220,8 +2220,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Default Schedule
 
 ```k
-    syntax Schedule ::= "DEFAULT"
- // -----------------------------
+    syntax Schedule ::= "DEFAULT" [klabel(DEFAULT_EVM), symbol]
+ // -----------------------------------------------------------
     rule Gzero    < DEFAULT > => 0
     rule Gbase    < DEFAULT > => 2
     rule Gverylow < DEFAULT > => 3
@@ -2348,8 +2348,8 @@ struct EVMSchedule
 ### Frontier Schedule
 
 ```k
-    syntax Schedule ::= "FRONTIER"
- // ------------------------------
+    syntax Schedule ::= "FRONTIER" [klabel(FRONTIER_EVM), symbol]
+ // -------------------------------------------------------------
     rule Gtxcreate  < FRONTIER > => 21000
     rule SCHEDCONST < FRONTIER > => SCHEDCONST < DEFAULT > requires SCHEDCONST =/=K Gtxcreate
 
@@ -2363,8 +2363,8 @@ static const EVMSchedule FrontierSchedule = EVMSchedule(false, false, 21000);
 ### Homestead Schedule
 
 ```k
-    syntax Schedule ::= "HOMESTEAD"
- // -------------------------------
+    syntax Schedule ::= "HOMESTEAD" [klabel(HOMESTEAD_EVM), symbol]
+ // ---------------------------------------------------------------
     rule SCHEDCONST < HOMESTEAD > => SCHEDCONST < DEFAULT >
 
     rule SCHEDFLAG << HOMESTEAD >> => SCHEDFLAG << DEFAULT >>
@@ -2377,8 +2377,8 @@ static const EVMSchedule HomesteadSchedule = EVMSchedule(true, true, 53000);
 ### EIP150 Schedule
 
 ```k
-    syntax Schedule ::= "EIP150"
- // ----------------------------
+    syntax Schedule ::= "EIP150" [klabel(EIP150_EVM), symbol]
+ // ---------------------------------------------------------
     rule Gbalance      < EIP150 > => 400
     rule Gsload        < EIP150 > => 200
     rule Gcall         < EIP150 > => 700
@@ -2415,8 +2415,8 @@ static const EVMSchedule EIP150Schedule = []
 ### EIP158 Schedule
 
 ```k
-    syntax Schedule ::= "EIP158"
- // ----------------------------
+    syntax Schedule ::= "EIP158" [klabel(EIP158_EVM), symbol]
+ // ---------------------------------------------------------
     rule Gexpbyte    < EIP158 > => 50
     rule maxCodeSize < EIP158 > => 24576
 
@@ -2442,8 +2442,8 @@ static const EVMSchedule EIP158Schedule = []
 ### Byzantium Schedule
 
 ```k
-    syntax Schedule ::= "BYZANTIUM"
- // -------------------------------
+    syntax Schedule ::= "BYZANTIUM" [klabel(BYZANTIUM_EVM), symbol]
+ // ---------------------------------------------------------------
     rule Rb         < BYZANTIUM > => 3 *Int (10 ^Int 18)
     rule SCHEDCONST < BYZANTIUM > => SCHEDCONST < EIP158 >
       requires notBool ( SCHEDCONST ==K Rb )
@@ -2470,8 +2470,8 @@ static const EVMSchedule ByzantiumSchedule = []
 ### Constantinople Schedule
 
 ```k
-    syntax Schedule ::= "CONSTANTINOPLE"
- // ------------------------------------
+    syntax Schedule ::= "CONSTANTINOPLE" [klabel(CONSTANTINOPLE_EVM), symbol]
+ // -------------------------------------------------------------------------
     rule Gblockhash < CONSTANTINOPLE > => 800
     rule SCHEDCONST < CONSTANTINOPLE > => SCHEDCONST < BYZANTIUM >
       requires SCHEDCONST =/=K Gblockhash
