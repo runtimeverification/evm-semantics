@@ -32,7 +32,7 @@ KORE_SUBMODULE_SRC:=$(KORE_SUBMODULE)/src/main/haskell/kore
 all: build split-tests
 
 clean: clean-submodules
-	rm -rf .build/java .build/plugin-ocaml .build/plugin-node .build/ocaml .build/haskell .build/node .build/logs .build/local .build/vm tests/proofs/specs
+	rm -rf .build/java .build/plugin-ocaml .build/plugin-node .build/ocaml .build/haskell .build/llvm .build/node .build/logs .build/local .build/vm tests/proofs/specs
 
 clean-submodules:
 	rm -rf .build/k/make.timestamp .build/pandoc-tangle/make.timestamp tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp plugin/make.timestamp kore/make.timestamp .build/media/metropolis/*.sty
@@ -109,6 +109,7 @@ build-ocaml: .build/ocaml/driver-kompiled/interpreter
 build-java: .build/java/driver-kompiled/timestamp
 build-node: .build/vm/kevm-vm
 build-haskell: .build/haskell/driver.kore
+build-llvm: .build/llvm/driver-kompiled/interpreter
 
 # Tangle definition from *.md files
 
@@ -171,6 +172,14 @@ else
   OCAMLC=opt -O3
   LIBFLAG=-shared
 endif
+
+.build/llvm/driver-kompiled/interpreter: $(ocaml_files)
+	@echo "== kompile: $@"
+	eval $$(opam config env) \
+		&& ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
+						    --syntax-module ETHEREUM-SIMULATION .build/ocaml/driver.k --directory .build/llvm \
+						    --backend llvm -ccopt ~/blockchain-k-plugin/plugin-c/crypto.cpp \
+						    -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 ${KOMPILE_FLAGS}
 
 .build/%/driver-kompiled/constants.$(EXT): $(ocaml_files) $(node_files)
 	@echo "== kompile: $@"
