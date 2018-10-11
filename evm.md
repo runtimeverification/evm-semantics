@@ -499,6 +499,7 @@ The `#next` operator executes a single step by:
     rule #changesState(EXTCODECOPY, _)    => false
     rule #changesState(RETURNDATASIZE, _) => false
     rule #changesState(RETURNDATACOPY, _) => false
+    rule #changesState(EXTCODEHASH, _)    => false
     rule #changesState(BLOCKHASH, _)      => false
     rule #changesState(COINBASE, _)       => false
     rule #changesState(TIMESTAMP, _)      => false
@@ -630,7 +631,8 @@ The `CallOp` opcodes all interperet their second argument as an address.
  // --------------------------------------------------
     rule #addr?(BALANCE)      => true
     rule #addr?(SELFDESTRUCT) => true
-    rule #addr?(OP)           => false requires (OP =/=K BALANCE) andBool (OP =/=K SELFDESTRUCT)
+    rule #addr?(EXTCODEHASH)  => true
+    rule #addr?(OP)           => false requires (OP =/=K BALANCE) andBool (OP =/=K SELFDESTRUCT) andBool (OP =/=K EXTCODEHASH)
 
     syntax Bool ::= "#code?" "(" OpCode ")" [function]
  // --------------------------------------------------
@@ -1280,6 +1282,24 @@ For now, I assume that they instantiate an empty account and use the empty data.
          </account>
 
     rule <k> EXTCODESIZE ACCT => 0 ~> #push ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool ACCT in ACCTS
+
+    syntax UnStackOp ::= "EXTCODEHASH"
+ // ----------------------------------
+```
+
+```{.k .standalone}
+    rule <k> EXTCODEHASH ACCT => keccak(CODE) ~> #push ... </k>
+         <account>
+           <acctID> ACCT </acctID>
+           <code> CODE </code>
+           ...
+         </account>
+```
+
+```k
+    rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT in ACCTS
 ```
@@ -1985,6 +2005,7 @@ Grumble grumble, K sucks at `owise`.
     rule #memory(SELFDESTRUCT _, MU) => MU
     rule #memory(CALLDATALOAD _, MU) => MU
     rule #memory(EXTCODESIZE _,  MU) => MU
+    rule #memory(EXTCODEHASH _,  MU) => MU
     rule #memory(BALANCE _,      MU) => MU
     rule #memory(BLOCKHASH _,    MU) => MU
 
@@ -2122,6 +2143,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     rule <k> #gasExec(SCHED, EXTCODESIZE _) => Gextcodesize < SCHED > ... </k>
     rule <k> #gasExec(SCHED, BALANCE _)     => Gbalance     < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, EXTCODEHASH _) => Gbalance     < SCHED > ... </k>
     rule <k> #gasExec(SCHED, BLOCKHASH _)   => Gblockhash   < SCHED > ... </k>
 
     // Precompiled
@@ -2278,8 +2300,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
 
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
-                          | "Ghasdirtysstore"         | "Ghascreate2"
- // -----------------------------------------------------------------
+                          | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"
+ // ------------------------------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -2364,6 +2386,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasshift               << DEFAULT >> => false
     rule Ghasdirtysstore         << DEFAULT >> => false
     rule Ghascreate2             << DEFAULT >> => false
+    rule Ghasextcodehash         << DEFAULT >> => false
 ```
 
 ```c++
@@ -2564,8 +2587,9 @@ static const EVMSchedule ByzantiumSchedule = []
     rule Ghasshift       << CONSTANTINOPLE >> => true
     rule Ghasdirtysstore << CONSTANTINOPLE >> => true
     rule Ghascreate2     << CONSTANTINOPLE >> => true
+    rule Ghasextcodehash << CONSTANTINOPLE >> => true
     rule SCHEDFLAG       << CONSTANTINOPLE >> => SCHEDFLAG << BYZANTIUM >>
-      requires notBool ( SCHEDFLAG ==K Ghasshift orBool SCHEDFLAG ==K Ghasdirtysstore orBool SCHEDFLAG ==K Ghascreate2 )
+      requires notBool ( SCHEDFLAG ==K Ghasshift orBool SCHEDFLAG ==K Ghasdirtysstore orBool SCHEDFLAG ==K Ghascreate2 orBool SCHEDFLAG ==K Ghasextcodehash )
 ```
 
 ```c++
@@ -2664,6 +2688,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  60,     _ ) => EXTCODECOPY
     rule #dasmOpCode(  61, SCHED ) => RETURNDATASIZE requires Ghasreturndata << SCHED >>
     rule #dasmOpCode(  62, SCHED ) => RETURNDATACOPY requires Ghasreturndata << SCHED >>
+    rule #dasmOpCode(  63, SCHED ) => EXTCODEHASH requires Ghasextcodehash << SCHED >>
     rule #dasmOpCode(  64,     _ ) => BLOCKHASH
     rule #dasmOpCode(  65,     _ ) => COINBASE
     rule #dasmOpCode(  66,     _ ) => TIMESTAMP
