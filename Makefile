@@ -288,13 +288,15 @@ slow_bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTe
                   $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000*.json) \
                   $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000*.json) \
                   $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth_d1g0v0.json) \
-                  tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest177_d0g0v0.json \
-                  tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSpecialTest/JUMPDEST_Attack_d0g0v0.json \
-                  tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSpecialTest/JUMPDEST_AttackwithJump_d0g0v0.json
-quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(bchain_tests))
+		  tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_ContractRETURNBigOffset_d2g0v0.json \
+		  tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_ContractRETURNBigOffset_d1g0v0.json
+bad_bchain_tests= tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/RevertOpcodeInCreateReturns_d0g0v0.json \
+                  tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/RevertInCreateInInit_d0g0v0.json
+all_bchain_tests=$(filter-out $(bad_bchain_tests), $(bchain_tests))
+quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(all_bchain_tests))
 
-test-all-bchain: $(bchain_tests:=.test)
-test-slow-bchain: $(bchain_tests:=.test)
+test-all-bchain: $(all_bchain_tests:=.test)
+test-slow-bchain: $(slow_bchain_tests:=.test)
 test-bchain: $(quick_bchain_tests:=.test)
 
 tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/% build-ocaml
