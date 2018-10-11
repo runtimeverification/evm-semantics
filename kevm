@@ -108,14 +108,14 @@ run_test() {
 
 run_test_profile() {
     local test_file="$1"     ; shift
-    local start_time="$(date '+%s')"
+    local start_time="$(date '+%s.%N')"
     local exit_status='0'
     local output_log_dir="$test_logs/$(dirname -- "$test_file")"
     local stdout_log="$test_logs/$test_file.out"
     local stderr_log="$test_logs/$test_file.err"
     [[ -d "$output_log_dir" ]] || mkdir -p "$output_log_dir"
     run_test "$test_file" "$@" 1> "$stdout_log" 2> "$stderr_log" || exit_status="$?"
-    local end_time="$(date '+%s')"
+    local end_time="$(date '+%s.%N')"
     if [[ "$exit_status" == '0' ]]; then
         echo "$test_file" >> "$now_passing"
     else
@@ -123,7 +123,7 @@ run_test_profile() {
         cat "$stdout_log"
         cat "$stderr_log" >&2
     fi
-    echo "$((end_time - start_time))    $test_file" >> "$run_times"
+    echo "$(echo "$end_time - $start_time" | bc)    $test_file" >> "$run_times"
     exit "$exit_status"
 }
 
