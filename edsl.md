@@ -44,7 +44,6 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #bytes32 ( Int )
                       | #bool    ( Int )
                       | #bytes   ( WordStack )
-                      | #bytes   ( Int , Int )
                       | #array   ( TypedArg , Int , TypedArgs )
  // -----------------------------------------------------------
 
@@ -78,7 +77,6 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #typeName(   #bytes32( _ )) => "bytes32"
     rule #typeName(      #bool( _ )) => "bool"
     rule #typeName(     #bytes( _ )) => "bytes"
-    rule #typeName(    #bytes(_, _)) => "bytes"
     rule #typeName( #array(T, _, _)) => #typeName(T) +String "[]"
 
     syntax WordStack ::= #encodeArgs    ( TypedArgs )                               [function]
@@ -113,7 +111,6 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #lenOfHead(  #bytes32( _ )) => 32
     rule #lenOfHead(     #bool( _ )) => 32
     rule #lenOfHead(    #bytes( _ )) => 32
-    rule #lenOfHead(   #bytes(_, _)) => 32
     rule #lenOfHead(#array(_, _, _)) => 32
 
     syntax Bool ::= #isStaticType ( TypedArg ) [function]
@@ -128,14 +125,11 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #isStaticType(  #bytes32( _ )) => true
     rule #isStaticType(     #bool( _ )) => true
     rule #isStaticType(    #bytes( _ )) => false
-    rule #isStaticType(   #bytes(_, _)) => false
     rule #isStaticType(#array(_, _, _)) => false
 
     syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
  // ---------------------------------------------------------
     rule #sizeOfDynamicType(#bytes( WS )) => 32 +Int #ceil32(#sizeWordStack(WS))
-
-    rule #sizeOfDynamicType(#bytes(N, _)) => 32 +Int #ceil32(N)
 
     rule #sizeOfDynamicType(#array(T, N, _)) => 32 *Int (1 +Int N)
       requires #isStaticType(T)
@@ -165,7 +159,6 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     // dynamic Type
     rule #enc(        #bytes(WS)) => #enc(#uint256(#sizeWordStack(WS))) ++ #padRightToWidth(#ceil32(#sizeWordStack(WS)), WS)
-    rule #enc(   #bytes(N, DATA)) => #enc(#uint256(N)) ++ #padRightToWidth(#ceil32(N), #asByteStack(DATA))
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) ++ #encodeArgs(DATA)
 
     syntax Int ::= #getValue ( TypedArg ) [function]
