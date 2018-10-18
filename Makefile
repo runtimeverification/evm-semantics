@@ -9,7 +9,7 @@ export LIBRARY_PATH
 export PKG_CONFIG_PATH
 
 K_SUBMODULE:=$(BUILD_DIR)/k
-PLUGIN_SUBMODULE:=plugin
+PLUGIN_SUBMODULE:=$(abspath plugin)
 
 # need relative path for `pandoc` on MacOS
 PANDOC_TANGLE_SUBMODULE:=.build/pandoc-tangle
@@ -178,7 +178,7 @@ endif
 	eval $$(opam config env) \
 		&& ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
 						    --syntax-module ETHEREUM-SIMULATION .build/ocaml/driver.k --directory .build/llvm \
-						    --backend llvm -ccopt ~/blockchain-k-plugin/plugin-c/crypto.cpp \
+						    --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp \
 						    -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 ${KOMPILE_FLAGS}
 
 .build/%/driver-kompiled/constants.$(EXT): $(ocaml_files) $(node_files)
