@@ -105,13 +105,14 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
  // -------------------------------------------
     rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      ) [macro]
     rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      ) [macro]
+    rule #rangeUInt    (   8 ,      X ) => #range ( minUInt8        <= X <= maxUInt8        ) [macro]
     rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <= maxUInt48       ) [macro]
     rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <= maxUInt128      ) [macro]
     rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <= maxUInt256      ) [macro]
     rule #rangeSFixed  ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 ) [macro]
     rule #rangeUFixed  ( 128 , 10 , X ) => #range ( minUFixed128x10 <= X <= maxUFixed128x10 ) [macro]
     rule #rangeAddress (            X ) => #range ( minUInt160      <= X <= maxUInt160      ) [macro]
-    rule #rangeBytes   (  32 ,      X ) => #range ( minUInt256      <= X <= maxUInt256      ) [macro]
+    rule #rangeBytes   (   N ,      X ) => #range ( 0               <= X <= #nBytes(N)      ) [macro]
 
     syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")"
                   | "#range" "(" Int "<"  Int "<=" Int ")"
@@ -343,15 +344,18 @@ Bitwise logical operators are lifted from the integer versions.
 -   `#nBits` shifts in $N$ ones from the right.
 -   `#nBytes` shifts in $N$ bytes of ones from the right.
 -   `_<<Byte_` shifts an integer 8 bits to the left.
+-   `_>>Byte_` shifts an integer 8 bits to the right.
 
 ```k
     syntax Int ::= #nBits  ( Int )  [function]
                  | #nBytes ( Int )  [function]
                  | Int "<<Byte" Int [function]
+                 | Int ">>Byte" Int [function]
  // ------------------------------------------
     rule #nBits(N)  => (1 <<Int N) -Int 1 requires N >=Int 0
     rule #nBytes(N) => #nBits(N *Int 8)   requires N >=Int 0
     rule N <<Byte M => N <<Int (8 *Int M)
+    rule N >>Byte M => N >>Int (8 *Int M)
 ```
 
 -   `signextend(N, W)` sign-extends from byte $N$ of $W$ (0 being MSB).
