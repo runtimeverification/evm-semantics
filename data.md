@@ -712,7 +712,7 @@ We are using the polymorphic `Map` sort for these word maps.
 
 ////
 
-    syntax IMap [smt-prelude] // (declare-sort IMap () (Array Int Int))
+    syntax IMap [smt-prelude] // (define-sort IMap () (Array Int Int))
 
     syntax IMap ::= Map
 
@@ -780,7 +780,7 @@ We are using the polymorphic `Map` sort for these word maps.
     rule select(M:Map, K)                 => #lookup(M, K)           [concrete]
     rule selectRange(M:Map, START, WIDTH) => #range(M, START, WIDTH) [concrete]
 
-//  syntax IMap ::= ".IMap" // (define-fun emptyIMap () IMap ((as const IMap) 0))
+//  syntax IMap ::= ".IMap" [function, smtlib(emptyIMap)] // (define-fun emptyIMap () IMap ((as const IMap) 0))
 //  rule select(.IMap, _) => 0
 ```
 
