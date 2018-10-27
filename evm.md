@@ -62,7 +62,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             // \mu_*
             <wordStack>   .WordStack </wordStack>           // \mu_s
-            <localMem>    .Map       </localMem>            // \mu_m
+            <localMem>    .IMap      </localMem>            // \mu_m
             <pc>          0          </pc>                  // \mu_pc
             <gas>         0          </gas>                 // \mu_g
             <memoryUsed>  0          </memoryUsed>          // \mu_i
@@ -121,7 +121,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <acctID>  0                      </acctID>
               <balance> 0                      </balance>
               <code>    .WordStack:AccountCode </code>
-              <storage> .Map                   </storage>
+              <storage> .IMap                  </storage>
               <nonce>   0                      </nonce>
             </account>
           </accounts>
@@ -886,9 +886,10 @@ In `node` mode, the semantics are given in terms of an external call to a runnin
     rule <k> #lookupStorage ACCT INDEX => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <storage> ... INDEX |-> _ ... </storage>
+           <storage> STORAGE:Map </storage>
            ...
          </account>
+      requires INDEX in_keys(STORAGE)
 ```
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
@@ -1284,19 +1285,11 @@ These rules reach into the network state and load/store from account storage:
 ```k
     syntax UnStackOp ::= "SLOAD"
  // ----------------------------
-    rule <k> SLOAD INDEX => 0 ~> #push ... </k>
+    rule <k> SLOAD INDEX => #lookup(STORAGE, INDEX) ~> #push ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
-           ...
-         </account> requires notBool INDEX in_keys(STORAGE)
-
-    rule <k> SLOAD INDEX => VALUE ~> #push ... </k>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> ... INDEX |-> VALUE ... </storage>
            ...
          </account>
 
@@ -1306,24 +1299,18 @@ These rules reach into the network state and load/store from account storage:
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> ... (INDEX |-> (OLD => VALUE)) ... </storage>
+           <storage> STORAGE => #update(STORAGE, INDEX, VALUE) </storage>
            ...
          </account>
-         <refund> R => #if OLD =/=Int 0 andBool VALUE ==Int 0
-                        #then R +Word Rsstoreclear < SCHED >
-                        #else R
-                       #fi
-         </refund>
+         <refund> R => Rsstore(SCHED, #lookup(STORAGE, INDEX), VALUE, R) </refund>
          <schedule> SCHED </schedule>
 
-    rule <k> SSTORE INDEX VALUE => . ... </k>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>
-           ...
-         </account>
-      requires notBool (INDEX in_keys(STORAGE))
+    syntax Int ::= Rsstore ( Schedule , Int , Int , Int ) [function]
+ // ----------------------------------------------------------------
+    rule Rsstore(SCHED, OLD, NEW, R) => #if OLD =/=Int 0 andBool NEW ==Int 0
+                                         #then R +Word Rsstoreclear < SCHED >
+                                         #else R
+                                        #fi
 ```
 
 ### Call Operations
