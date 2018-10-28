@@ -162,7 +162,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) ++ #encodeArgs(DATA)
 
     syntax WordStack ::= #encBytes ( Int , WordStack ) [function]
-    rule #encBytes(N, WS) => #enc(#uint256(N)) ++ WS ++ #buff(#ceil32(N) -Int N, 0)
+    rule #encBytes(N, WS) => #enc(#uint256(N)) ++ WS ++ #buf(#ceil32(N) -Int N, 0)
 
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------

@@ -17,30 +17,26 @@ module IMAP-SYNTAX
     syntax Int  ::= select ( IMap , Int )       [function, smtlib(select), smt-prelude]
 endmodule
 
-module IMAP-CONCRETE
-    imports IMAP-SYNTAX
-    imports MAP
-    syntax IMap ::= Map
-    syntax IMap ::= ".IMap" [function]
-    rule .IMap => .Map
-endmodule
-
 module IMAP-SYMBOLIC [symbolic]
     imports IMAP-SYNTAX
     rule select(store(M, K0, V), K) => V            requires K0  ==Int K
     rule select(store(M, K0, V), K) => select(M, K) requires K0 =/=Int K
 endmodule
 
-module IMAP
-    imports IMAP-CONCRETE
+module EVM-IMAP
+    imports IMAP-SYNTAX
     imports IMAP-SYMBOLIC
+    imports MAP
+    syntax IMap ::= Map
+    syntax IMap ::= ".IMap" [function]
+    rule .IMap => .Map
 endmodule
 
 module EVM-DATA
     imports KRYPTO
     imports STRING-BUFFER
     imports MAP
-    imports IMAP
+    imports EVM-IMAP
     imports COLLECTIONS
 
     syntax KResult ::= Int
@@ -881,6 +877,7 @@ module EVM-DATA-SYMBOLIC [symbolic]
 
     rule #asWord(#buf(SIZE, DATA)) => DATA requires SIZE <=Int 32
 
+    rule #buf(SIZE, _)        => .WordStack requires SIZE  ==Int 0
     rule #bufSeg(_, _, WIDTH) => .WordStack requires WIDTH ==Int 0
 
     rule #bufSeg(WS, START, WIDTH) => WS requires START ==Int 0 andBool WIDTH ==Int #sizeWordStack(WS) andBool WIDTH >=Int 0
@@ -968,8 +965,7 @@ module EVM-DATA-SYMBOLIC [symbolic]
     rule select(M:Map, K)                 => #lookup(M, K)           [concrete]
     rule selectRange(M:Map, START, WIDTH) => #range(M, START, WIDTH) [concrete]
 
-//  syntax IMap ::= ".IMap" [function, smtlib(emptyIMap)] // (define-fun emptyIMap () IMap ((as const IMap) 0))
+//  syntax IMap ::= ".IMap" [function, smtlib(emptyIMap), smt-prelude] // (define-fun emptyIMap () IMap ((as const IMap) 0))
 //  rule select(.IMap, _) => 0
-
 endmodule
 ```
