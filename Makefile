@@ -114,7 +114,6 @@ build-llvm: .build/llvm/driver-kompiled/interpreter
 # Tangle definition from *.md files
 
 standalone_tangle:=.k:not(.node),.standalone
-java_tangle:=.k:not(.node),.standalone,.java
 node_tangle:=.k:not(.standalone),.node
 
 k_files:=driver.k data.k network.k evm.k analysis.k krypto.k edsl.k evm-node.k
@@ -129,7 +128,7 @@ defn: $(defn_files)
 .build/java/%.k: %.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(java_tangle)" $< > $@
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(standalone_tangle)" $< > $@
 
 .build/ocaml/%.k: %.md
 	@echo "==  tangle: $@"

@@ -14,6 +14,7 @@ requires "network.k"
 module EVM
     imports STRING
     imports EVM-DATA
+    imports EVM-DATA-SYMBOLIC
     imports NETWORK
 ```
 
