@@ -42,7 +42,6 @@ module EVM-DATA
     imports MAP
     imports IMAP
     imports COLLECTIONS
-    imports K-REFLECTION
 
     syntax KResult ::= Int
 ```
@@ -853,6 +852,7 @@ Symbolic Byte Array and Map
 
 ```k
 module EVM-DATA-SYMBOLIC [symbolic]
+    imports K-REFLECTION
     imports EVM-DATA
 
     rule ( WS1 ++ WS2 ) ++ WS3 => WS1 ++ ( WS2 ++ WS3 )
