@@ -872,15 +872,15 @@ module EVM-DATA-SYMBOLIC [symbolic]
       => #bufSeg(BUF, START0 +Int START, WIDTH)
       requires 0 <=Int START andBool START +Int WIDTH <=Int WIDTH0
 
-    rule #take(N, BUF      ) => #take(N, BUF ++ .WordStack)               requires #isBuf(BUF)
+    rule #take(N, BUF      ) => #bufSeg(BUF, 0, N)                        requires #isBuf(BUF) andBool 0 <=Int N andBool N <=Int #sizeBuffer(BUF)
     rule #take(N, BUF ++ WS) => #bufSeg(BUF, 0, N)                        requires #isBuf(BUF) andBool 0 <=Int N andBool N <=Int #sizeBuffer(BUF)
     rule #take(N, BUF ++ WS) => BUF ++ #take(N -Int #sizeBuffer(BUF), WS) requires #isBuf(BUF) andBool N >Int #sizeBuffer(BUF)
 
-    rule #drop(N, BUF      ) => #drop(N, BUF ++ .WordStack)                    requires #isBuf(BUF)
+    rule #drop(N, BUF      ) => #bufSeg(BUF, N, #sizeBuffer(BUF) -Int N)       requires #isBuf(BUF) andBool 0 <=Int N andBool N <Int #sizeBuffer(BUF)
     rule #drop(N, BUF ++ WS) => #bufSeg(BUF, N, #sizeBuffer(BUF) -Int N) ++ WS requires #isBuf(BUF) andBool 0 <=Int N andBool N <Int #sizeBuffer(BUF)
     rule #drop(N, BUF ++ WS) => #drop(N -Int #sizeBuffer(BUF), WS)             requires #isBuf(BUF) andBool N >=Int #sizeBuffer(BUF)
 
-    rule (BUF      ) [ N ] => (BUF ++ .WordStack) [ N ]      requires #isBuf(BUF)
+    rule (BUF      ) [ N ] => #bufElm(BUF, N)                requires #isBuf(BUF) andBool 0 <=Int N andBool N <Int #sizeBuffer(BUF)
     rule (BUF ++ WS) [ N ] => #bufElm(BUF, N)                requires #isBuf(BUF) andBool 0 <=Int N andBool N <Int #sizeBuffer(BUF)
     rule (BUF ++ WS) [ N ] => WS [ N -Int #sizeBuffer(BUF) ] requires #isBuf(BUF) andBool N >=Int #sizeBuffer(BUF)
 
