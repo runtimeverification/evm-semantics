@@ -866,12 +866,11 @@ module EVM-DATA-SYMBOLIC [symbolic]
     rule #buf(SIZE, _)        => .WordStack requires SIZE  ==Int 0
     rule #bufSeg(_, _, WIDTH) => .WordStack requires WIDTH ==Int 0
 
-    rule #bufSeg(WS, START, WIDTH) => WS requires START ==Int 0 andBool WIDTH ==Int #sizeWordStack(WS) andBool WIDTH >=Int 0
+    rule #bufSeg(WS, START, WIDTH) => WS requires START ==Int 0 andBool WIDTH ==Int #sizeWordStack(WS)
 
     rule #bufSeg(#bufSeg(BUF, START0, WIDTH0), START, WIDTH)
       => #bufSeg(BUF, START0 +Int START, WIDTH)
       requires 0 <=Int START andBool START +Int WIDTH <=Int WIDTH0
-       andBool WIDTH >=Int 0
 
     rule #take(N, BUF      ) => #take(N, BUF ++ .WordStack)               requires #isBuf(BUF)
     rule #take(N, BUF ++ WS) => #bufSeg(BUF, 0, N)                        requires #isBuf(BUF) andBool 0 <=Int N andBool N <=Int #sizeBuffer(BUF)
@@ -885,16 +884,16 @@ module EVM-DATA-SYMBOLIC [symbolic]
     rule (BUF ++ WS) [ N ] => #bufElm(BUF, N)                requires #isBuf(BUF) andBool 0 <=Int N andBool N <Int #sizeBuffer(BUF)
     rule (BUF ++ WS) [ N ] => WS [ N -Int #sizeBuffer(BUF) ] requires #isBuf(BUF) andBool N >=Int #sizeBuffer(BUF)
 
-    // invariant: #sizeWordStack(_) >=Int 0
-    //            #sizeBuffer(_)    >=Int 0
+ // rule #sizeWordStack(_) >=Int 0 => true [smt-lemma]
+ // rule #sizeBuffer(_)    >=Int 0 => true [smt-lemma]
 
     rule #sizeWordStack ( BUF ++ WS, SIZE ) => #sizeWordStack(WS, SIZE +Int #sizeBuffer(BUF)) requires #isBuf(BUF)
     rule #sizeWordStack ( BUF      , SIZE ) =>                    SIZE +Int #sizeBuffer(BUF)  requires #isBuf(BUF)
 
     syntax Int ::= #sizeBuffer ( WordStack ) [function]
  // ------------------------------------------------
-    rule #sizeBuffer ( #buf(N,_) )      => N requires N >=Int 0
-    rule #sizeBuffer ( #bufSeg(_,_,N) ) => N requires N >=Int 0
+    rule #sizeBuffer ( #buf(N,_) )      => N
+    rule #sizeBuffer ( #bufSeg(_,_,N) ) => N
 ```
 
 ### Symbolic Word Map
@@ -903,33 +902,31 @@ module EVM-DATA-SYMBOLIC [symbolic]
     syntax IMap      ::= storeRange  ( IMap , Int , Int , WordStack ) [function, smtlib(storeRange),  smt-prelude]
     syntax WordStack ::= selectRange ( IMap , Int , Int )             [function, smtlib(selectRange), smt-prelude]
 
-    rule select(storeRange(M, START, WIDTH, WS), K) => WS[K -Int START] requires          START <=Int K andBool K <Int START +Int WIDTH  andBool WIDTH >=Int 0
-    rule select(storeRange(M, START, WIDTH, WS), K) => select(M, K)     requires notBool (START <=Int K andBool K <Int START +Int WIDTH) andBool WIDTH >=Int 0
+    rule select(storeRange(M, START, WIDTH, WS), K) => WS[K -Int START] requires          START <=Int K andBool K <Int START +Int WIDTH
+    rule select(storeRange(M, START, WIDTH, WS), K) => select(M, K)     requires notBool (START <=Int K andBool K <Int START +Int WIDTH)
 
-  //rule selectRange(store(M, K0, V), START, WIDTH) => ???                          requires START <=Int K0 andBool K0 < START +Int WIDTH       andBool WIDTH >=Int 0 // included // NOTE: the reasoning is case specific
-    rule selectRange(store(M, K0, V), START, WIDTH) => selectRange(M, START, WIDTH) requires ( K0 <Int START orBool START +Int WIDTH <=Int K0 ) andBool WIDTH >=Int 0 // no overlap
+  //rule selectRange(store(M, K0, V), START, WIDTH) => ???                          requires START <=Int K0 andBool K0 < START +Int WIDTH       // included // NOTE: the reasoning is case specific
+    rule selectRange(store(M, K0, V), START, WIDTH) => selectRange(M, START, WIDTH) requires ( K0 <Int START orBool START +Int WIDTH <=Int K0 ) // no overlap
 
     // included: [START0..[START..END]..END0]
     rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => WS [ START -Int START0 .. WIDTH ]
       requires START0 <=Int START andBool START +Int WIDTH <=Int START0 +Int WIDTH0
-       andBool WIDTH0 >=Int 1 andBool WIDTH >=Int 1
 
     // no overlap: [START..END]..[START0..END0]  or  [START0..END0]..[START..END]
     rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => selectRange(M, START, WIDTH)
       requires ( (START +Int WIDTH) <=Int START0 orBool (START0 +Int WIDTH0) <=Int START )
-       andBool WIDTH0 >=Int 1 andBool WIDTH >=Int 1
 
     // left  margin: [START..(START0..END]..END0)  or  [START..(START0..END0)..END]
     rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => selectRange(M, START, START0 -Int START)
                                                                       ++ selectRange(storeRange(M, START0, WIDTH0, WS), START0, (START +Int WIDTH) -Int START0)
       requires START <Int START0 andBool START0 <Int START +Int WIDTH
-       andBool WIDTH0 >=Int 1 andBool WIDTH >=Int 1
+       andBool WIDTH0 >=Int 1 // to avoid unnecessary split
 
     // right margin: (START0..[START..END0)..END]  or  [START..(START0..END0)..END]
     rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => selectRange(storeRange(M, START0, WIDTH0, WS), START, (START0 +Int WIDTH0) -Int START)
                                                                       ++ selectRange(M, START0 +Int WIDTH0, (START +Int WIDTH) -Int (START0 +Int WIDTH0))
       requires START <Int START0 +Int WIDTH0 andBool START0 +Int WIDTH0 <Int START +Int WIDTH
-       andBool WIDTH0 >=Int 1 andBool WIDTH >=Int 1
+       andBool WIDTH0 >=Int 1 // to avoid unnecessary split
 
     //
 
