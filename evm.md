@@ -1009,7 +1009,7 @@ These operations are getters/setters of the local execution memory.
          <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
 
     rule <k> MSTORE8 INDEX VALUE => . ... </k>
-         <localMem> LM => LM [ INDEX <- (VALUE modInt 256) ] </localMem>
+         <localMem> LM => #update(LM, INDEX, VALUE modInt 256) </localMem>
 ```
 
 ### Expressions

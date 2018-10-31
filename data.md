@@ -886,17 +886,27 @@ module EVM-DATA-SYMBOLIC [symbolic]
       => #bufSeg(BUF, START0 +Int START, WIDTH)
       requires 0 <=Int START andBool START +Int WIDTH <=Int WIDTH0
 
-    rule #take(N, BUF      ) => #take(N, BUF ++ .WordStack)               requires #isBuf(BUF)
-    rule #take(N, BUF ++ WS) => #bufSeg(BUF, 0, N)                        requires #isBuf(BUF) andBool 0 <=Int N andBool N <=Int #sizeBuffer(BUF)
-    rule #take(N, BUF ++ WS) => BUF ++ #take(N -Int #sizeBuffer(BUF), WS) requires #isBuf(BUF) andBool N >Int #sizeBuffer(BUF)
+    // Auxiliary function to make rules compatible with simplification `rule WS ++ .WordStack => WS`
+    syntax WordStack ::= #takeAux ( Int , WordStack , WordStack ) [function]
+ // ------------------------------------------------------------------------
+    rule #take(N, BUF      ) => #takeAux(N, BUF, .WordStack)               requires #isBuf(BUF)
+    rule #take(N, BUF ++ WS) => #takeAux(N, BUF, WS)                       requires #isBuf(BUF)
+    rule #takeAux(N, BUF, WS) => #bufSeg(BUF, 0, N)                        requires 0 <=Int N andBool N <=Int #sizeBuffer(BUF)
+    rule #takeAux(N, BUF, WS) => BUF ++ #take(N -Int #sizeBuffer(BUF), WS) requires N >Int #sizeBuffer(BUF)
 
-    rule #drop(N, BUF      ) => #drop(N, BUF ++ .WordStack)                    requires #isBuf(BUF)
-    rule #drop(N, BUF ++ WS) => #bufSeg(BUF, N, #sizeBuffer(BUF) -Int N) ++ WS requires #isBuf(BUF) andBool 0 <=Int N andBool N <Int #sizeBuffer(BUF)
-    rule #drop(N, BUF ++ WS) => #drop(N -Int #sizeBuffer(BUF), WS)             requires #isBuf(BUF) andBool N >=Int #sizeBuffer(BUF)
+    syntax WordStack ::= #dropAux ( Int , WordStack , WordStack ) [function]
+ // ------------------------------------------------------------------------
+    rule #drop(N, BUF      ) => #dropAux(N, BUF, .WordStack)                    requires #isBuf(BUF)
+    rule #drop(N, BUF ++ WS) => #dropAux(N, BUF, WS)                            requires #isBuf(BUF)
+    rule #dropAux(N, BUF, WS) => #bufSeg(BUF, N, #sizeBuffer(BUF) -Int N) ++ WS requires 0 <=Int N andBool N <Int #sizeBuffer(BUF)
+    rule #dropAux(N, BUF, WS) => #drop(N -Int #sizeBuffer(BUF), WS)             requires N >=Int #sizeBuffer(BUF)
 
-    rule (BUF      ) [ N ] => (BUF ++ .WordStack) [ N ]      requires #isBuf(BUF)
-    rule (BUF ++ WS) [ N ] => #bufElm(BUF, N)                requires #isBuf(BUF) andBool 0 <=Int N andBool N <Int #sizeBuffer(BUF)
-    rule (BUF ++ WS) [ N ] => WS [ N -Int #sizeBuffer(BUF) ] requires #isBuf(BUF) andBool N >=Int #sizeBuffer(BUF)
+    syntax Int ::= #getElmAux ( WordStack , WordStack , Int ) [function]
+ // -------------------------------------------------------------------
+    rule (BUF      ) [ N ] => #getElmAux(BUF, .WordStack, N)      requires #isBuf(BUF)
+    rule (BUF ++ WS) [ N ] => #getElmAux(BUF, WS, N)              requires #isBuf(BUF)
+    rule #getElmAux(BUF, WS, N) => #bufElm(BUF, N)                requires 0 <=Int N andBool N <Int #sizeBuffer(BUF)
+    rule #getElmAux(BUF, WS, N) => WS [ N -Int #sizeBuffer(BUF) ] requires N >=Int #sizeBuffer(BUF)
 
  // rule #sizeWordStack(_) >=Int 0 => true [smt-lemma]
  // rule #sizeBuffer(_)    >=Int 0 => true [smt-lemma]
