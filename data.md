@@ -517,7 +517,7 @@ The local memory of execution is a byte-array (instead of a word-array).
  // ---------------------------------------------------------------
     rule #asWord( .WordStack     ) => 0                                    // [concrete]
     rule #asWord( W : .WordStack ) => W                                    // [concrete]
-    rule #asWord( W0 : W1 : WS   ) => #asWord(((W0 *Word 256) +Word W1) : WS) requires #sizeWordStack(WS) <=Int 32 [concrete]
+    rule #asWord( W0 : W1 : WS   ) => #asWord(((W0 *Word 256) +Word W1) : WS) requires #sizeWordStack(WS) <=Int 30 [concrete]
 
     syntax Int ::= #asInteger ( WordStack ) [function]
  // --------------------------------------------------
