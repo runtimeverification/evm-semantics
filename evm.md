@@ -693,9 +693,9 @@ After executing a transaction, it's necessary to have the effect of the substate
 -   `#deleteAccounts` deletes the accounts specified by the self destruct list.
 
 ```k
-    syntax InternalOp ::= #finalizeStorage ( Set )
+    syntax InternalOp ::= #finalizeStorage ( List )
  // ----------------------------------------------
-    rule <k> #finalizeStorage((SetItem(ACCT) => .Set) _) ... </k>
+    rule <k> #finalizeStorage((ListItem(ACCT) => .List) _) ... </k>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
@@ -703,12 +703,12 @@ After executing a transaction, it's necessary to have the effect of the substate
            ...
          </account>
 
-    rule #finalizeStorage(.Set) => .
+    rule #finalizeStorage(.List) => .
 
     syntax InternalOp ::= #finalizeTx ( Bool )
                         | #deleteAccounts ( List )
  // ----------------------------------------------
-    rule <k> #finalizeTx(true) => #finalizeStorage(ACCTS) ... </k>
+    rule <k> #finalizeTx(true) => #finalizeStorage(Set2List(ACCTS)) ... </k>
          <selfDestruct> .Set </selfDestruct>
          <activeAccounts> ACCTS </activeAccounts>
 
