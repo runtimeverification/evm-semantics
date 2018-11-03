@@ -14,6 +14,7 @@ requires "network.k"
 module EVM
     imports STRING
     imports EVM-DATA
+    imports EVM-DATA-SYMBOLIC
     imports NETWORK
     imports K-REFLECTION
 ```
@@ -63,7 +64,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             // \mu_*
             <wordStack>   .WordStack </wordStack>           // \mu_s
-            <localMem>    .Map       </localMem>            // \mu_m
+            <localMem>    .IMap      </localMem>            // \mu_m
             <pc>          0          </pc>                  // \mu_pc
             <gas>         0          </gas>                 // \mu_g
             <memoryUsed>  0          </memoryUsed>          // \mu_i
@@ -122,8 +123,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <acctID>      0                      </acctID>
               <balance>     0                      </balance>
               <code>        .WordStack:AccountCode </code>
-              <storage>     .Map                   </storage>
-              <origStorage> .Map                   </origStorage>
+              <storage>     .IMap                  </storage>
+              <origStorage> .IMap                  </origStorage>
               <nonce>       0                      </nonce>
             </account>
           </accounts>
@@ -907,9 +908,10 @@ In `node` mode, the semantics are given in terms of an external call to a runnin
     rule <k> #lookupStorage ACCT INDEX => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <storage> ... INDEX |-> _ ... </storage>
+           <storage> STORAGE:Map </storage>
            ...
          </account>
+      requires INDEX in_keys(STORAGE)
 ```
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
@@ -1005,7 +1007,7 @@ These operations are getters/setters of the local execution memory.
          <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
 
     rule <k> MSTORE8 INDEX VALUE => . ... </k>
-         <localMem> LM => LM [ INDEX <- (VALUE modInt 256) ] </localMem>
+         <localMem> LM => #update(LM, INDEX, VALUE modInt 256) </localMem>
 ```
 
 ### Expressions
@@ -1329,19 +1331,11 @@ These rules reach into the network state and load/store from account storage:
 ```k
     syntax UnStackOp ::= "SLOAD"
  // ----------------------------
-    rule <k> SLOAD INDEX => 0 ~> #push ... </k>
+    rule <k> SLOAD INDEX => #lookup(STORAGE, INDEX) ~> #push ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
-           ...
-         </account> requires notBool INDEX in_keys(STORAGE)
-
-    rule <k> SLOAD INDEX => VALUE ~> #push ... </k>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> ... INDEX |-> VALUE ... </storage>
            ...
          </account>
 
@@ -1351,24 +1345,12 @@ These rules reach into the network state and load/store from account storage:
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> ... (INDEX |-> (CURR => NEW)) ... </storage>
+           <storage> STORAGE => #update(STORAGE, INDEX, NEW) </storage>
            <origStorage> ORIGSTORAGE </origStorage>
            ...
          </account>
-         <refund> R => R +Int Rsstore(SCHED, NEW, CURR, #lookup(ORIGSTORAGE, INDEX)) </refund>
+         <refund> R => R +Int Rsstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) </refund>
          <schedule> SCHED </schedule>
-
-    rule <k> SSTORE INDEX NEW => . ... </k>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
-           <origStorage> ORIGSTORAGE </origStorage>
-           ...
-         </account>
-         <refund> R => R +Int Rsstore(SCHED, NEW, 0, #lookup(ORIGSTORAGE, INDEX)) </refund>
-         <schedule> SCHED </schedule>
-      requires notBool (INDEX in_keys(STORAGE))
 
 ```
 

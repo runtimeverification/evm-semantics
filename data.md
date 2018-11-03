@@ -10,10 +10,19 @@ Both are implemented using K's `Int`.
 ```k
 requires "krypto.k"
 
+module EVM-IMAP
+    imports IMAP
+    imports MAP
+    syntax IMap ::= Map
+    syntax IMap ::= ".IMap" [function]
+    rule .IMap => .Map
+endmodule
+
 module EVM-DATA
     imports KRYPTO
     imports STRING-BUFFER
     imports MAP
+    imports EVM-IMAP
     imports COLLECTIONS
 
     syntax KResult ::= Int
@@ -623,19 +632,19 @@ We are using the polymorphic `Map` sort for these word maps.
 -   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
 
 ```k
-    syntax Map ::= Map "[" Int ":=" WordStack "]" [function]
+    syntax IMap ::= IMap "[" Int ":=" WordStack "]" [function]
  // --------------------------------------------------------
     rule WM[ N := .WordStack ] => WM
-    rule WM[ N := W : WS     ] => (WM[N <- W])[N +Int 1 := WS]
+    rule WM[ N := W : WS     ] => (WM[N <- W])[N +Int 1 := WS] [concrete]
 
-    syntax Map ::= #asMapWordStack ( WordStack ) [function]
+    syntax IMap ::= #asMapWordStack ( WordStack ) [function]
  // -------------------------------------------------------
     rule #asMapWordStack(WS:WordStack) => .Map [ 0 := WS ]
 
-    syntax WordStack ::= #range ( Map , Int , Int )            [function]
-    syntax WordStack ::= #range ( Map , Int , Int , WordStack) [function, klabel(#rangeAux)]
+    syntax WordStack ::= #range ( IMap , Int , Int )            [function]
+    syntax WordStack ::= #range (  Map , Int , Int , WordStack) [function, klabel(#rangeAux)]
  // ----------------------------------------------------------------------------------------
-    rule #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack)
+    rule #range(WM:Map, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack) [concrete]
 
     rule #range(WM,           END, WIDTH, WS) => WS                                           requires WIDTH ==Int 0
     rule #range(WM,           END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, 0 : WS) requires (WIDTH >Int 0) andBool notBool END in_keys(WM)
@@ -657,10 +666,14 @@ We are using the polymorphic `Map` sort for these word maps.
 -   `#lookup` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 ```k
-    syntax Int ::= #lookup ( Map , Int ) [function]
+    syntax Int ::= #lookup ( IMap , Int ) [function]
  // -----------------------------------------------
-    rule #lookup( (KEY |-> VAL) M, KEY ) => VAL
-    rule #lookup(               M, KEY ) => 0 requires notBool KEY in_keys(M)
+    rule #lookup( (KEY |-> VAL) M, KEY ) => VAL                               [concrete]
+    rule #lookup(               M, KEY ) => 0 requires notBool KEY in_keys(M) [concrete]
+
+    syntax IMap ::= #update ( IMap , Int , Int ) [function]
+ // -----------------------------------------------
+    rule #update( M, KEY, VAL ) => M [ KEY <- VAL ] [concrete]
 ```
 
 Parsing/Unparsing
@@ -825,5 +838,127 @@ Decoding
     rule #decodeLengthPrefixLength(#str,  STR, START, B0) => #decodeLengthPrefixLength(#str,  START, B0 -Int 128 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 128 -Int 56 +Int 1)))))
     rule #decodeLengthPrefixLength(#list, STR, START, B0) => #decodeLengthPrefixLength(#list, START, B0 -Int 192 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 192 -Int 56 +Int 1)))))
     rule #decodeLengthPrefixLength(TYPE, START, LL, L) => TYPE(L, START +Int 1 +Int LL)
+endmodule
+```
+
+Symbolic Byte Array and Map
+===========================
+
+### Symbolic WordStack
+
+```k
+module EVM-DATA-SYMBOLIC [symbolic]
+    imports K-REFLECTION
+    imports EVM-DATA
+
+    rule ( WS1 ++ WS2 ) ++ WS3 => WS1 ++ ( WS2 ++ WS3 )
+
+    syntax WordStack ::= #buf    ( Int , Int )             [function] // SIZE, DATA // left zero padding
+                       | #bufSeg ( WordStack , Int , Int ) [function] // BUFFER, START, WIDTH
+    syntax Int       ::= #bufElm ( WordStack , Int )       [function] // BUFFER, INDEX
+
+    syntax Bool ::= #isBuf ( WordStack ) [function]
+    rule #isBuf(#buf(_,_)) => true
+    rule #isBuf(#bufSeg(_,_,_)) => true
+
+    rule #asWord(#buf(SIZE, DATA)) => DATA requires SIZE <=Int 32
+
+    rule #buf(SIZE, _)        => .WordStack requires SIZE  ==Int 0
+    rule #bufSeg(_, _, WIDTH) => .WordStack requires WIDTH ==Int 0
+
+    rule #bufSeg(WS, START, WIDTH) => WS requires START ==Int 0 andBool WIDTH ==Int #sizeWordStack(WS)
+
+    rule #bufSeg(#bufSeg(BUF, START0, WIDTH0), START, WIDTH)
+      => #bufSeg(BUF, START0 +Int START, WIDTH)
+      requires 0 <=Int START andBool START +Int WIDTH <=Int WIDTH0
+
+    // Auxiliary function to make rules compatible with simplification `rule WS ++ .WordStack => WS`
+    syntax WordStack ::= #takeAux ( Int , WordStack , WordStack ) [function]
+ // ------------------------------------------------------------------------
+    rule #take(N, BUF      ) => #takeAux(N, BUF, .WordStack)               requires #isBuf(BUF)
+    rule #take(N, BUF ++ WS) => #takeAux(N, BUF, WS)                       requires #isBuf(BUF)
+    rule #takeAux(N, BUF, WS) => #bufSeg(BUF, 0, N)                        requires 0 <=Int N andBool N <=Int #sizeBuffer(BUF)
+    rule #takeAux(N, BUF, WS) => BUF ++ #take(N -Int #sizeBuffer(BUF), WS) requires N >Int #sizeBuffer(BUF)
+
+    syntax WordStack ::= #dropAux ( Int , WordStack , WordStack ) [function]
+ // ------------------------------------------------------------------------
+    rule #drop(N, BUF      ) => #dropAux(N, BUF, .WordStack)                    requires #isBuf(BUF)
+    rule #drop(N, BUF ++ WS) => #dropAux(N, BUF, WS)                            requires #isBuf(BUF)
+    rule #dropAux(N, BUF, WS) => #bufSeg(BUF, N, #sizeBuffer(BUF) -Int N) ++ WS requires 0 <=Int N andBool N <Int #sizeBuffer(BUF)
+    rule #dropAux(N, BUF, WS) => #drop(N -Int #sizeBuffer(BUF), WS)             requires N >=Int #sizeBuffer(BUF)
+
+    syntax Int ::= #getElmAux ( WordStack , WordStack , Int ) [function]
+ // -------------------------------------------------------------------
+    rule (BUF      ) [ N ] => #getElmAux(BUF, .WordStack, N)      requires #isBuf(BUF)
+    rule (BUF ++ WS) [ N ] => #getElmAux(BUF, WS, N)              requires #isBuf(BUF)
+    rule #getElmAux(BUF, WS, N) => #bufElm(BUF, N)                requires 0 <=Int N andBool N <Int #sizeBuffer(BUF)
+    rule #getElmAux(BUF, WS, N) => WS [ N -Int #sizeBuffer(BUF) ] requires N >=Int #sizeBuffer(BUF)
+
+ // rule #sizeWordStack(_) >=Int 0 => true [smt-lemma]
+ // rule #sizeBuffer(_)    >=Int 0 => true [smt-lemma]
+
+    rule #sizeWordStack ( BUF ++ WS, SIZE ) => #sizeWordStack(WS, SIZE +Int #sizeBuffer(BUF)) requires #isBuf(BUF)
+    rule #sizeWordStack ( BUF      , SIZE ) =>                    SIZE +Int #sizeBuffer(BUF)  requires #isBuf(BUF)
+
+    syntax Int ::= #sizeBuffer ( WordStack ) [function]
+ // ------------------------------------------------
+    rule #sizeBuffer ( #buf(N,_) )      => N
+    rule #sizeBuffer ( #bufSeg(_,_,N) ) => N
+```
+
+### Symbolic Word Map
+
+```k
+    syntax IMap      ::= storeRange  ( IMap , Int , Int , WordStack ) [function, smtlib(storeRange),  smt-prelude]
+    syntax WordStack ::= selectRange ( IMap , Int , Int )             [function, smtlib(selectRange), smt-prelude]
+
+    rule select(storeRange(M, START, WIDTH, WS), K) => WS[K -Int START] requires          START <=Int K andBool K <Int START +Int WIDTH
+    rule select(storeRange(M, START, WIDTH, WS), K) => select(M, K)     requires notBool (START <=Int K andBool K <Int START +Int WIDTH)
+
+  //rule selectRange(store(M, K0, V), START, WIDTH) => ???                          requires START <=Int K0 andBool K0 < START +Int WIDTH       // included // NOTE: the reasoning is case specific
+    rule selectRange(store(M, K0, V), START, WIDTH) => selectRange(M, START, WIDTH) requires ( K0 <Int START orBool START +Int WIDTH <=Int K0 ) // no overlap
+
+    // included: [START0..[START..END]..END0]
+    rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => WS [ START -Int START0 .. WIDTH ]
+      requires START0 <=Int START andBool START +Int WIDTH <=Int START0 +Int WIDTH0
+
+    // no overlap: [START..END]..[START0..END0]  or  [START0..END0]..[START..END]
+    rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => selectRange(M, START, WIDTH)
+      requires ( (START +Int WIDTH) <=Int START0 orBool (START0 +Int WIDTH0) <=Int START )
+
+    // left  margin: [START..(START0..END]..END0)  or  [START..(START0..END0)..END]
+    rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => selectRange(M, START, START0 -Int START)
+                                                                      ++ selectRange(storeRange(M, START0, WIDTH0, WS), START0, (START +Int WIDTH) -Int START0)
+      requires START <Int START0 andBool START0 <Int START +Int WIDTH
+       andBool WIDTH0 >=Int 1 // to avoid unnecessary split
+
+    // right margin: (START0..[START..END0)..END]  or  [START..(START0..END0)..END]
+    rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => selectRange(storeRange(M, START0, WIDTH0, WS), START, (START0 +Int WIDTH0) -Int START)
+                                                                      ++ selectRange(M, START0 +Int WIDTH0, (START +Int WIDTH) -Int (START0 +Int WIDTH0))
+      requires START <Int START0 +Int WIDTH0 andBool START0 +Int WIDTH0 <Int START +Int WIDTH
+       andBool WIDTH0 >=Int 1 // to avoid unnecessary split
+
+    //
+
+    // TODO: check validity: i.e., WS ==K .WordStack
+    rule storeRange(M, _, WIDTH, _) => M requires WIDTH ==Int 0
+
+    rule selectRange(M, _, WIDTH) => .WordStack requires WIDTH ==Int 0
+
+    // lifting
+
+    rule #lookup(M, K)    => select(M, K)   requires notBool (#isConcrete(M) andBool #isConcrete(K))
+    rule #update(M, K, V) => store(M, K, V) requires notBool (#isConcrete(M) andBool #isConcrete(K) andBool #isConcrete(V))
+
+    rule #range(M, START, WIDTH) => selectRange(M, START, WIDTH)                 requires notBool (#isConcrete(M) andBool #isConcrete(START) andBool #isConcrete(WIDTH))
+    rule M [ START := WS ]       => storeRange(M, START, #sizeWordStack(WS), WS) requires notBool (#isConcrete(M) andBool #isConcrete(START) andBool #isConcrete(WS))
+
+    // once it gets down to the concrete map, return to the corresponding function
+    // shouldn't have the infinite rule application
+    rule select(M:Map, K)                 => #lookup(M, K)           [concrete]
+    rule selectRange(M:Map, START, WIDTH) => #range(M, START, WIDTH) [concrete]
+
+//  syntax IMap ::= ".IMap" [function, smtlib(emptyIMap), smt-prelude] // (define-fun emptyIMap () IMap ((as const IMap) 0))
+//  rule select(.IMap, _) => 0
 endmodule
 ```
