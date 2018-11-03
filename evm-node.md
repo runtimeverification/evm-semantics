@@ -74,8 +74,8 @@ Because the same account may be loaded more than once, implementations of this i
     rule <k> #lookupStorage ACCT INDEX => . ... </k>
          <account>
            <acctID>  ACCT                                                         </acctID>
-           <storage> STORAGE => STORAGE [ INDEX <- #getStorageData(ACCT, INDEX) ] </storage>
-           <origStorage> ORIGSTORAGE => ORIGSTORAGE [ INDEX <- #getStorageData(ACCT, INDEX) ] </origStorage>
+           <storage> STORAGE => #update(STORAGE, INDEX, #getStorageData(ACCT, INDEX)) </storage>
+           <origStorage> ORIGSTORAGE => #update(ORIGSTORAGE, INDEX, #getStorageData(ACCT, INDEX)) </origStorage>
            ...
          </account>
       requires notBool INDEX in_keys(STORAGE)
@@ -83,9 +83,10 @@ Because the same account may be loaded more than once, implementations of this i
     rule <k> #lookupStorage ACCT INDEX => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <storage> ... INDEX |-> _ ... </storage>
+           <storage> STORAGE:Map </storage>
            ...
          </account>
+      requires INDEX in_keys(STORAGE)
 
     rule <k> #lookupStorage ACCT _ => . ... </k>
       requires notBool #accountExists(ACCT)

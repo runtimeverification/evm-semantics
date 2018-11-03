@@ -147,19 +147,22 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     syntax WordStack ::= #enc ( TypedArg ) [function]
  // -------------------------------------------------
     // static Type
-    rule #enc(#uint160( DATA )) => #padToWidth(32, #asByteStack(#getValue(#uint160( DATA ))))
-    rule #enc(#address( DATA )) => #padToWidth(32, #asByteStack(#getValue(#address( DATA ))))
-    rule #enc(#uint256( DATA )) => #padToWidth(32, #asByteStack(#getValue(#uint256( DATA ))))
-    rule #enc( #uint48( DATA )) => #padToWidth(32, #asByteStack(#getValue( #uint48( DATA ))))
-    rule #enc(  #uint8( DATA )) => #padToWidth(32, #asByteStack(#getValue(  #uint8( DATA ))))
-    rule #enc( #int256( DATA )) => #padToWidth(32, #asByteStack(#getValue( #int256( DATA ))))
-    rule #enc( #int128( DATA )) => #padToWidth(32, #asByteStack(#getValue( #int128( DATA ))))
-    rule #enc(#bytes32( DATA )) => #padToWidth(32, #asByteStack(#getValue(#bytes32( DATA ))))
-    rule #enc(   #bool( DATA )) => #padToWidth(32, #asByteStack(#getValue(   #bool( DATA ))))
+    rule #enc(#uint160( DATA )) => #buf(32, #getValue(#uint160( DATA )))
+    rule #enc(#address( DATA )) => #buf(32, #getValue(#address( DATA )))
+    rule #enc(#uint256( DATA )) => #buf(32, #getValue(#uint256( DATA )))
+    rule #enc( #uint48( DATA )) => #buf(32, #getValue( #uint48( DATA )))
+    rule #enc(  #uint8( DATA )) => #buf(32, #getValue(  #uint8( DATA )))
+    rule #enc( #int256( DATA )) => #buf(32, #getValue( #int256( DATA )))
+    rule #enc( #int128( DATA )) => #buf(32, #getValue( #int128( DATA )))
+    rule #enc(#bytes32( DATA )) => #buf(32, #getValue(#bytes32( DATA )))
+    rule #enc(   #bool( DATA )) => #buf(32, #getValue(   #bool( DATA )))
 
     // dynamic Type
-    rule #enc(        #bytes(WS)) => #enc(#uint256(#sizeWordStack(WS))) ++ #padRightToWidth(#ceil32(#sizeWordStack(WS)), WS)
+    rule #enc(        #bytes(WS)) => #encBytes(#sizeWordStack(WS), WS)
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) ++ #encodeArgs(DATA)
+
+    syntax WordStack ::= #encBytes ( Int , WordStack ) [function]
+    rule #encBytes(N, WS) => #enc(#uint256(N)) ++ WS ++ #buf(#ceil32(N) -Int N, 0)
 
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
