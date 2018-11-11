@@ -15,6 +15,7 @@ module EVM
     imports STRING
     imports EVM-DATA
     imports NETWORK
+    imports K-REFLECTION
 ```
 
 Configuration
@@ -1809,6 +1810,7 @@ Precompiled Contracts
     rule <k> ECREC => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
          <output> _ => #ecrec(#sender(#unparseByteStack(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #unparseByteStack(DATA [ 64 .. 32 ]), #unparseByteStack(DATA [ 96 .. 32 ]))) </output>
+      requires #isConcrete(DATA)
 
     syntax WordStack ::= #ecrec ( Account ) [function]
  // --------------------------------------------------
