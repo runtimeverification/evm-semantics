@@ -8,9 +8,11 @@ The notations are inspired by the production compilers of the smart contract lan
 
 ```k
 requires "evm.k"
+requires "symbolic.k"
 
 module EDSL
     imports EVM
+    imports SYMBOLIC
 ```
 
 ### ABI Call Data
