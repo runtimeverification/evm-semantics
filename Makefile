@@ -76,9 +76,9 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 $(KORE_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init -- $(KORE_SUBMODULE)
-	cd $(KORE_SUBMODULE_SRC) \
-		&& stack build kore:exe:kore-exec
-	touch $(KORE_SUBMODULE)/make.timestamp
+	cd $(KORE_SUBMODULE) \
+		&& stack install --local-bin-path $(abspath $(KORE_SUBMODULE))/bin kore:exe:kore-exec
+	touch ${KORE_SUBMODULE}/make.timestamp
 
 ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 	opam init --quiet --no-setup
@@ -108,7 +108,7 @@ build: build-ocaml build-java build-node
 build-ocaml: .build/ocaml/driver-kompiled/interpreter
 build-java: .build/java/driver-kompiled/timestamp
 build-node: .build/vm/kevm-vm
-build-haskell: .build/haskell/driver.kore
+build-haskell: .build/haskell/driver-kompiled/definition.kore
 build-llvm: .build/llvm/driver-kompiled/interpreter
 
 # Tangle definition from *.md files
@@ -152,9 +152,9 @@ defn: $(defn_files)
 	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/java -I .build/java
 
-.build/haskell/driver.kore: $(haskell_files)
+.build/haskell/driver-kompiled/definition.kore: $(haskell_files)
 	@echo "== kompile: $@"
-	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend kore \
+	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend haskell \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/haskell -I .build/haskell
 
 # OCAML Backend

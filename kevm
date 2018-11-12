@@ -54,7 +54,11 @@ run_krun() {
     local run_file=$1 ; shift
     run_env "$run_file"
     export K_OPTS=-Xss500m
-    krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@"
+    if [[ "$backend" == "haskell" ]]; then
+        krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@" --haskell-backend-command "$build_dir/kore/bin/kore-exec"
+    else
+        krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@"
+    fi
 }
 
 run_kdebug() {
@@ -156,11 +160,12 @@ run_command="$1" ; shift
 case "$run_command" in
 
     # Running
-    run)      run_krun     ocaml "$@" --interpret     ;;
-    run-java) run_krun     java  "$@" --z3-executable ;;
-    debug)    run_kdebug         "$@"                 ;;
-    search)   run_ksearch        "$@"                 ;;
-    prove)    run_proof          "$@"                 ;;
+    run)          run_krun    ocaml   "$@" --interpret     ;;
+    run-java)     run_krun    java    "$@" --z3-executable ;;
+    run-haskell)  run_krun    haskell "$@"                 ;;
+    debug)        run_kdebug          "$@"                 ;;
+    search)       run_ksearch         "$@"                 ;;
+    prove)        run_proof           "$@"                 ;;
 
     # Testing
     interpret)    run_interpreter  "$@" ;;
@@ -173,13 +178,15 @@ case "$run_command" in
     normal usage
     ============
 
-        $0 [run|debug|search] <pgm>  <K args>*
-        $0 prove              <spec> <K args>*
+        $0 [run|run-java|run-haskell|debug|search] <pgm>  <K args>*
+        $0 prove                                   <spec> <K args>*
 
-    -   run       Run a single EVM program
-    -   debug     Run a single EVM program in the debugger
-    -   search    Run a program searching for all execution paths
-    -   prove     Attempt to prove the specification using K's RL prover
+    -   run         Run a single EVM program
+    -   run-java    Run a single EVM program using the Java backend
+    -   run-haskell Run a single EVM program using the Haskell backend
+    -   debug       Run a single EVM program in the debugger
+    -   search      Run a program searching for all execution paths
+    -   prove       Attempt to prove the specification using K's RL prover
 
     Note: <pgm> and <spec> here are paths to files.
     These files should be Ethereum programs/specifications.
