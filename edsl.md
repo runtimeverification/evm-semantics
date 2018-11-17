@@ -8,11 +8,9 @@ The notations are inspired by the production compilers of the smart contract lan
 
 ```k
 requires "evm.k"
-requires "symbolic.k"
 
-module EDSL
+module EDSL         [symbolic]
     imports EVM
-    imports SYMBOLIC
 ```
 
 ### ABI Call Data
@@ -314,5 +312,22 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
     rule intList2ByteStack(.IntList) => .WordStack
     rule intList2ByteStack(V VS)     => #padToWidth(32, #asByteStack(V)) ++ intList2ByteStack(VS)
       requires 0 <=Int V andBool V <Int pow256
+      
+    syntax IntList ::= byteStack2IntList ( WordStack )       [function]
+                     | byteStack2IntList ( WordStack , Int ) [function]
+                     
+    syntax Int ::=     bytesInNextInt ( WordStack , Int )    [function] //how many bytes will go into next Int.
+ // ------------------------------------------------------------
+    rule byteStack2IntList ( WS ) => byteStack2IntList ( WS , #sizeWordStack(WS) /Int 32 )
+    
+    // #sizeWordStack(WS) is not necessarily a multiple of 32.
+    rule byteStack2IntList ( WS , N ) 
+         => #asWord ( WS [ 0 .. bytesInNextInt(WS, N) ] ) byteStack2IntList ( #drop(bytesInNextInt(WS, N), WS) , N -Int 1 ) 
+         requires N >Int 0
+    
+    rule byteStack2IntList ( WS , 0 ) => .IntList
+    
+    rule bytesInNextInt(WS, N) => #sizeWordStack(WS) -Int 32 *Int (N -Int 1)
+
 endmodule
 ```

@@ -4,8 +4,11 @@ EVM Execution
 This module contains custom extensions for smart contract verification.
 
 ```k
-module SYMBOLIC
+requires "edsl.k"
+
+module EVM-SYMBOLIC     [symbolic]
     imports EVM
+    imports EDSL
 ```
 
 Symbolic result of ecrecover.
@@ -22,7 +25,7 @@ Symbolic result of ecrecover.
       requires notBool #isConcrete(DATA) andBool #sizeWordStack(DATA) ==Int 128 andBool #ecrecEmpty(DATA)
 
     //Symbolic wrapper over the argument of #ecrec, no implementation. 
-    syntax Int ::= #symEcrec ( WordStack ) [function]
+    syntax Int ::= #symEcrec ( WordStack )   [function]
     
     //Symbolic predicate representing whether output of #ecrec is empty. No implementation.
     syntax Bool ::= #ecrecEmpty( WordStack ) [function]

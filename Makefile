@@ -117,7 +117,7 @@ build-llvm: .build/llvm/driver-kompiled/interpreter
 standalone_tangle:=.k:not(.node),.standalone
 node_tangle:=.k:not(.standalone),.node
 
-k_files:=driver.k data.k network.k evm.k analysis.k krypto.k edsl.k evm-node.k symbolic.k
+k_files:=driver.k data.k network.k evm.k analysis.k krypto.k edsl.k evm-node.k evm-symbolic.k
 ocaml_files:=$(patsubst %,.build/ocaml/%,$(k_files))
 java_files:=$(patsubst %,.build/java/%,$(k_files))
 node_files:=$(patsubst %,.build/node/%,$(k_files))
