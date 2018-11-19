@@ -960,5 +960,24 @@ module EVM-DATA-SYMBOLIC [symbolic]
 
 //  syntax IMap ::= ".IMap" [function, smtlib(emptyIMap), smt-prelude] // (define-fun emptyIMap () IMap ((as const IMap) 0))
 //  rule select(.IMap, _) => 0
+
+
+    syntax Bool ::= "#inKeys" "(" IMap "," Int ")" [function]
+
+    rule #inKeys(.IMap, A) => false
+    rule #inKeys(store(M, K, V), K0) => #inKeys(M, K0)
+        requires K =/=Int K0
+
+    rule #inKeys(store(M, K, V), K0) => true
+        requires K ==Int K0
+
+    //Reduces IMaps where multiple entries share the same key
+    rule store(store(M, K0, V0), K1, V1) => store(M, K0, V1)
+        requires K0 ==Int K1
+
+    rule store(store(M, K0, V0), K1, V1) => store(store(M, K1, V1), K0, V0)
+        requires K0 =/=Int K1
+        andBool #inKeys(M, K1)
+
 endmodule
 ```
