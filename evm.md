@@ -721,15 +721,6 @@ Lists of opcodes form programs.
     rule #asMapOpCodes( N , .OpCodes         , MAP ) => MAP
     rule #asMapOpCodes( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodes(N +Int 1, OCS, MAP [ N <- OP ]) requires notBool isPushOp(OP)
     rule #asMapOpCodes( N , PUSH(M, W) ; OCS , MAP ) => #asMapOpCodes(N +Int 1 +Int M, OCS, MAP [ N <- PUSH(M, W) ])
-
-    syntax OpCodes ::= #asOpCodes ( Map )                 [function]
-                     | #asOpCodes ( Int , Map , OpCodes ) [function, klabel(#asOpCodesAux)]
- // ---------------------------------------------------------------------------------------
-    rule #asOpCodes(M) => #asOpCodes(0, M, .OpCodes)
-
-    rule #asOpCodes(N, .Map,               OPS) => OPS
-    rule #asOpCodes(N, N |-> OP         M, OPS) => #asOpCodes(N +Int 1,        M, OP         ; OPS) requires notBool isPushOp(OP)
-    rule #asOpCodes(N, N |-> PUSH(S, W) M, OPS) => #asOpCodes(N +Int 1 +Int S, M, PUSH(S, W) ; OPS)
 ```
 
 EVM OpCodes
