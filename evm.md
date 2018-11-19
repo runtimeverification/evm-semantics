@@ -713,14 +713,14 @@ Lists of opcodes form programs.
 ### Converting to/from `Map` Representation
 
 ```k
-    syntax Map ::= #asMapOpCodes ( OpCodes )             [function]
-                 | #asMapOpCodes ( Int , OpCodes , Map ) [function, klabel(#asMapOpCodesAux)]
- // -----------------------------------------------------------------------------------------
-    rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodes(0, OPS, .Map)
+    syntax Map ::= #asMapOpCodes    ( OpCodes )             [function]
+                 | #asMapOpCodesAux ( Int , OpCodes , Map ) [function]
+ // ------------------------------------------------------------------
+    rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodesAux(0, OPS, .Map)
 
-    rule #asMapOpCodes( N , .OpCodes         , MAP ) => MAP
-    rule #asMapOpCodes( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodes(N +Int 1, OCS, MAP [ N <- OP ]) requires notBool isPushOp(OP)
-    rule #asMapOpCodes( N , PUSH(M, W) ; OCS , MAP ) => #asMapOpCodes(N +Int 1 +Int M, OCS, MAP [ N <- PUSH(M, W) ])
+    rule #asMapOpCodesAux( N , .OpCodes         , MAP ) => MAP
+    rule #asMapOpCodesAux( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodesAux(N +Int 1, OCS, MAP [ N <- OP ]) requires notBool isPushOp(OP)
+    rule #asMapOpCodesAux( N , PUSH(M, W) ; OCS , MAP ) => #asMapOpCodesAux(N +Int 1 +Int M, OCS, MAP [ N <- PUSH(M, W) ])
 ```
 
 EVM OpCodes
