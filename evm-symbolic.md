@@ -31,6 +31,26 @@ Symbolic result of ecrecover.
     syntax Bool ::= #ecrecEmpty( WordStack ) [function]
 ```
 
+Split construct. Allows to force branching on arbitrary boolean expressions.
+Usage pattern in specs: `k: (split(Exp) => .) ~> (#execute => #halt) ~> _`
+If you want to enumerate all values in a certain range, this is an example usage:
+```
+k: ( split(NR_SIG ==Int 1) ~> split(NR_SIG ==Int 2) => . ) ~> (#execute => #halt) ~> _
++requires:
+    andBool #range(1 <= NR_SIG <= 2)
+``` 
+You have to enumerate each value in a separate split, because kprove cannot infer the last value (e.g. NR_SIG ==Int 2)
+from the other constraints, even if it's the only value possible.
+But if you put this value explicitly in another split, then K can prove that child path 
+`(NR_SIG ==Int 2) ==K false` is infeasible and won't generate it.
+
+```k
+    syntax KItem ::= split ( Bool )
+ // -----------------------------------------
+    rule split ( true ) => .
+    rule split ( false ) => .
+```
+
 ```k
 endmodule
 ```
