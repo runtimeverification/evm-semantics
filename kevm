@@ -76,7 +76,7 @@ run_proof() {
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
     run_env "$proof_file"
     export K_OPTS=-Xmx5G
-    kprove --directory "$build_dir/java/" --z3-executable "$proof_file" --def-module VERIFICATION "$@"
+    kprove --directory "$build_dir/java/" "$proof_file" --def-module VERIFICATION "$@"
 }
 
 # Dev Commands
@@ -160,12 +160,12 @@ run_command="$1" ; shift
 case "$run_command" in
 
     # Running
-    run)          run_krun    ocaml   "$@" --interpret     ;;
-    run-java)     run_krun    java    "$@" --z3-executable ;;
-    run-haskell)  run_krun    haskell "$@"                 ;;
-    debug)        run_kdebug          "$@"                 ;;
-    search)       run_ksearch         "$@"                 ;;
-    prove)        run_proof           "$@"                 ;;
+    run)          run_krun    ocaml   "$@" --interpret ;;
+    run-java)     run_krun    java    "$@"             ;;
+    run-haskell)  run_krun    haskell "$@"             ;;
+    debug)        run_kdebug          "$@"             ;;
+    search)       run_ksearch         "$@"             ;;
+    prove)        run_proof           "$@"             ;;
 
     # Testing
     interpret)    run_interpreter  "$@" ;;
