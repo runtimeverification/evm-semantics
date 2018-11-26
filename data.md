@@ -275,8 +275,8 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
  // -----------------------------------------------
     rule W0 ^Word W1 => powmod(W0, W1, pow256)
 
-    rule powmod(W0, W1, W2) => W0 ^%Int W1 W2  requires W2 =/=Int 0
-    rule powmod(W0, W1, W2) => 0               requires W2  ==Int 0
+    rule powmod(W0, W1, W2) => W0 ^%Int W1 W2  requires W2 =/=Int 0 [concrete]
+    rule powmod(W0, W1, W2) => 0               requires W2  ==Int 0 [concrete]
 ```
 
 `/sWord` and `%sWord` give the signed interperetations of `/Word` and `%Word`.
@@ -853,8 +853,8 @@ module EVM-DATA-SYMBOLIC [symbolic]
 
     rule ( WS1 ++ WS2 ) ++ WS3 => WS1 ++ ( WS2 ++ WS3 )
 
-    syntax WordStack ::= #buf    ( Int , Int )             [function] // SIZE, DATA // left zero padding
-                       | #bufSeg ( WordStack , Int , Int ) [function] // BUFFER, START, WIDTH
+    syntax WordStack ::= #buf    ( Int , Int )             [function, smtlib(buf)]    // SIZE, DATA // left zero padding
+                       | #bufSeg ( WordStack , Int , Int ) [function, smtlib(bufSeg)] // BUFFER, START, WIDTH
     syntax Int       ::= #bufElm ( WordStack , Int )       [function] // BUFFER, INDEX
 
     syntax Bool ::= #isBuf ( WordStack ) [function]
@@ -909,8 +909,8 @@ module EVM-DATA-SYMBOLIC [symbolic]
 ### Symbolic Word Map
 
 ```k
-    syntax IMap      ::= storeRange  ( IMap , Int , Int , WordStack ) [function, smtlib(storeRange),  smt-prelude]
-    syntax WordStack ::= selectRange ( IMap , Int , Int )             [function, smtlib(selectRange), smt-prelude]
+    syntax IMap      ::= storeRange  ( IMap , Int , Int , WordStack ) [function, smtlib(storeRange) ]
+    syntax WordStack ::= selectRange ( IMap , Int , Int )             [function, smtlib(selectRange)]
 
     rule select(storeRange(M, START, WIDTH, WS), K) => WS[K -Int START] requires          START <=Int K andBool K <Int START +Int WIDTH
     rule select(storeRange(M, START, WIDTH, WS), K) => select(M, K)     requires notBool (START <=Int K andBool K <Int START +Int WIDTH)

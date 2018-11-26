@@ -193,9 +193,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #getValue(   #bool( DATA )) => DATA
       requires 0 <=Int DATA andBool DATA <=Int 1
 
-    syntax Int ::= #ceil32 ( Int ) [function]
+    syntax Int ::= #ceil32 ( Int ) [function, smtlib(ceil32), smt-prelude]
  // -----------------------------------------
-    rule #ceil32(N) => ((N +Int 31) /Int 32) *Int 32
+    rule #ceil32(N) => ((N +Int 31) /Int 32) *Int 32 [concrete]
 ```
 
 ### ABI Event Logs
