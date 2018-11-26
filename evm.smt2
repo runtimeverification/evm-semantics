@@ -13,3 +13,6 @@
 ; IMap
 (define-sort IMap () (Array Int Int))
 (define-fun emptyIMap () IMap ((as const IMap) 0))
+
+; ceil32
+(define-fun ceil32 ((x Int)) Int ( * ( div ( + x 31 ) 32 ) 32 ) )
