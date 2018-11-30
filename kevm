@@ -96,36 +96,41 @@ run_interpreter() {
 }
 
 run_test() {
-    local backend=$1        ; shift
-    local test_file="$1"    ; shift
+    local backend test_file output_file expected_file
+
+    backend=$1     ; shift
+    test_file="$1" ; shift
+
+    output_file="$(mktemp "$test_file.out.XXXXXX")"
+    trap "rm -rf $output_file" INT TERM EXIT
+
+    if [[ -f "$test_file.out" ]]; then
+        expected_file="$test_file.out"
+    else
+        expected_file="tests/templates/output-success.json"
+    fi
+
     case "$test_file" in
         *proofs/*)
             run_proof "$test_file" --debug "$@"
             ;;
         *interactive/*)
-            local expected_file="$1" ; shift
-            local output_file="$(mktemp "$test_file.out.XXXXXX")"
-            trap "rm -rf $output_file" INT TERM EXIT
             run_krun ocaml "$test_file" "$@" > "$output_file" \
                 || pretty_diff "$expected_file" "$output_file"
             ;;
         *)
-            # Only care about --backend parameter if it's not a proof test or
-            # interactive test
+            # Only care about --backend parameter if it's not a proof test or interactive test
             case "$backend" in
                 haskell)
-                    local output_file="$(mktemp "$test_file.out.XXXXXX")"
-                    trap "rm -rf $output_file" INT TERM EXIT
-
                     # Ignore whitespace diffs until we get the generated counter issue fixed
                     run_krun haskell "$test_file" "$@" > "$output_file" \
-                        || pretty_diff -w "tests/templates/output-success.json" "output_file"
+                        || pretty_diff --ignore-all-space "$expected_file" "$output_file"
                     ;;
                 ocaml)
                     run_interpreter "$test_file"
                     ;;
                 *)
-                    die "Cannot test with $backend backend!"
+                    die "Cannot test file '$test_file' with '$backend' backend!"
                     ;;
             esac
             ;;
