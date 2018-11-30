@@ -104,36 +104,38 @@ run_interpreter() {
 run_test() {
     local backend=$1        ; shift
     local test_file="$1"    ; shift
-    case "$backend" in
-        haskell)
+    case "$test_file" in
+        *proofs/*)
+            run_proof "$test_file" --debug "$@"
+            ;;
+        *interactive/*)
+            local expected_file="$1" ; shift
             local output_file="$(mktemp "$test_file.out.XXXXXX")"
             trap "rm -rf $output_file" INT TERM EXIT
-
-            # Ignore whitespace diffs until we get the generated counter issue
-            # fixed
-            run_krun haskell "$test_file" "$@" > "$output_file" \
-                || pretty_diff -w "tests/templates/output-success.json" "output_file"
-            ;;
-        ocaml)
-            case "$test_file" in
-                *proofs/*)
-                    run_proof "$test_file" --debug "$@"
-                    ;;
-                *interactive/*)
-                    local expected_file="$1" ; shift
-                    local output_file="$(mktemp "$test_file.out.XXXXXX")"
-                    trap "rm -rf $output_file" INT TERM EXIT
-                    run_krun ocaml "$test_file" "$@" > "$output_file" \
-                        || pretty_diff "$expected_file" "$output_file"
-                    ;;
-                *)
-                    run_interpreter "$test_file"
-                    ;;
-            esac
+            run_krun ocaml "$test_file" "$@" > "$output_file" \
+                || pretty_diff "$expected_file" "$output_file"
             ;;
         *)
-            echo "Cannot test with $backend backend!"
-            exit 1
+            # Only care about --backend parameter if it's not a proof test or
+            # interactive test
+            case "$backend" in
+                haskell)
+                    local output_file="$(mktemp "$test_file.out.XXXXXX")"
+                    trap "rm -rf $output_file" INT TERM EXIT
+
+                    # Ignore whitespace diffs until we get the generated counter issue
+                    # fixed
+                    run_krun haskell "$test_file" "$@" > "$output_file" \
+                        || pretty_diff -w "tests/templates/output-success.json" "output_file"
+                    ;;
+                ocaml)
+                    run_interpreter "$test_file"
+                    ;;
+                *)
+                    echo "Cannot test with $backend backend!"
+                    exit 1
+                    ;;
+            esac
             ;;
     esac
 }
