@@ -106,18 +106,13 @@ run_test() {
     local test_file="$1"    ; shift
     case "$backend" in
         haskell)
-            # To test the haskell backend, compare it to the ocaml backend.
-            local ocaml_output_file="$(mktemp "$test_file.ocaml.out.XXXXXX")"
-            local haskell_output_file="$(mktemp "$test_file.haskell.out.XXXXXX")"
-            trap "rm -rf $ocaml_output_file $haskell_output_file" INT TERM EXIT
-
-            # Ignore errors from krun
-            run_krun ocaml "$test_file" "$@" > "$ocaml_output_file" || true
-            run_krun haskell "$test_file" "$@" > "$haskell_output_file" || true
+            local output_file="$(mktemp "$test_file.out.XXXXXX")"
+            trap "rm -rf $output_file" INT TERM EXIT
 
             # Ignore whitespace diffs until we get the generated counter issue
             # fixed
-            pretty_diff -w "$ocaml_output_file" "$haskell_output_file"
+            run_krun haskell "$test_file" "$@" > "$output_file" \
+                || pretty_diff -w "tests/templates/output-success.json" "output_file"
             ;;
         ocaml)
             case "$test_file" in
