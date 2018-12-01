@@ -26,7 +26,7 @@ KORE_SUBMODULE_SRC:=$(KORE_SUBMODULE)/src/main/haskell/kore
 		defn java-defn ocaml-defn node-defn haskell-defn \
 		test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
 		test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-		test-proof test-interactive test-haskell \
+		test-proof test-interactive test-vm-normal \
 		metropolis-theme 2017-devcon3 sphinx
 .SECONDARY:
 
@@ -282,14 +282,13 @@ quick_vm_tests=$(filter-out $(slow_vm_tests), $(all_vm_tests))
 test-all-vm: $(all_vm_tests:=.test)
 test-slow-vm: $(slow_vm_tests:=.test)
 test-vm: $(quick_vm_tests:=.test)
+test-vm-normal: $(quick_vm_tests:=.testnormal)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build-ocaml
 	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) $<
 
-test-haskell: $(quick_vm_tests:=.haskelltest)
-
-tests/ethereum-tests/VMTests/%.haskelltest: tests/ethereum-tests/VMTests/% build-haskell
-	$(TEST) --backend haskell $<
+tests/ethereum-tests/VMTests/%.testnormal: tests/ethereum-tests/VMTests/%
+	SCHEDULE=DEFAULT $(TEST) --backend $(TEST_BACKEND) $<
 
 # BlockchainTests
 
