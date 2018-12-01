@@ -121,10 +121,15 @@ run_test() {
         *)
             # Only care about --backend parameter if it's not a proof test or interactive test
             case "$backend" in
+                java)
+                    # Ignore whitespace diffs until we get the generated counter issue fixed
+                    run_krun "$backend" "$test_file" "$@" > "$output_file" \
+                        || pretty_diff --ignore-all-space "$expected_file" "$output_file"
+                    ;;
                 haskell)
                     # Ignore whitespace diffs until we get the generated counter issue fixed
-                    run_krun haskell "$test_file" "$@" > "$output_file" \
-                        || pretty_diff --ignore-all-space "$expected_file" "$output_file"
+                    run_krun "$backend" "$test_file" "$@" > "$output_file"
+                    pretty_diff --ignore-all-space "$expected_file" "$output_file"
                     ;;
                 ocaml)
                     run_interpreter "$test_file"
