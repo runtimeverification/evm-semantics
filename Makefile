@@ -25,7 +25,7 @@ KORE_SUBMODULE_SRC:=$(KORE_SUBMODULE)/src/main/haskell/kore
 		build build-ocaml build-java build-node build-kore defn split-tests \
 		test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
 		test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-		test-proof test-interactive \
+		test-proof test-interactive test-haskell \
 		metropolis-theme 2017-devcon3 sphinx
 .SECONDARY:
 
@@ -281,6 +281,11 @@ test-vm: $(quick_vm_tests:=.test)
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build-ocaml
 	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) $<
 
+test-haskell: $(quick_vm_tests:=.haskelltest)
+
+tests/ethereum-tests/VMTests/%.haskelltest: tests/ethereum-tests/VMTests/% build-haskell
+	$(TEST) --backend haskell $<
+
 # BlockchainTests
 
 bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)
@@ -310,10 +315,10 @@ interactive_tests:=$(wildcard tests/interactive/*.json) \
 test-interactive: $(interactive_tests:=.test)
 
 tests/interactive/%.json.test: tests/interactive/%.json build-ocaml build-java
-	$(TEST) $< tests/templates/output-success.json
+	$(TEST) $<
 
 tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out build-ocaml build-java
-	MODE=GASANALYZE $(TEST) $< $<.out
+	MODE=GASANALYZE $(TEST) $<
 
 # ProofTests
 
@@ -323,7 +328,7 @@ proof_tests=$(wildcard $(proof_dir)/*/*-spec.k)
 test-proof: $(proof_tests:=.test)
 
 test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11_d0g0v0.json
-	./kevm run-java $< | diff - tests/templates/output-success-java.json
+	./kevm run --backend java $< | diff - tests/templates/output-success-java.json
 
 $(proof_dir)/%.test: $(proof_dir)/% build-java split-proof-tests
 	$(TEST) $<

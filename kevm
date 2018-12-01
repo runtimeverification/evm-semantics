@@ -54,11 +54,12 @@ run_krun() {
     local run_file=$1 ; shift
     run_env "$run_file"
     export K_OPTS=-Xss500m
-    if [[ "$backend" == "haskell" ]]; then
-        krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@" --haskell-backend-command "$build_dir/kore/bin/kore-exec"
-    else
-        krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "$@"
-    fi
+    case "$backend" in
+        haskell)    args=(--haskell-backend-command $build_dir/kore/bin/kore-exec)  ;;
+        ocaml)      args=(--interpret)                                              ;;
+        *)          args=()                                                         ;;
+    esac
+    krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "${args[@]-}" "$@"
 }
 
 run_kdebug() {
@@ -95,30 +96,57 @@ run_interpreter() {
 }
 
 run_test() {
-    local test_file="$1"     ; shift
+    local backend test_file output_file expected_file
+
+    backend=$1     ; shift
+    test_file="$1" ; shift
+
+    output_file="$(mktemp "$test_file.out.XXXXXX")"
+    trap "rm -rf $output_file" INT TERM EXIT
+
+    if [[ -f "$test_file.out" ]]; then
+        expected_file="$test_file.out"
+    else
+        expected_file="tests/templates/output-success.json"
+    fi
+
     case "$test_file" in
-        *proofs/*     ) run_proof "$test_file" --debug "$@"
-                        ;;
-        *interactive/*) local expected_file="$1" ; shift
-                        local output_file="$(mktemp "$test_file.out.XXXXXX")"
-                        trap "rm -rf $output_file" INT TERM EXIT
-                        run_krun ocaml "$test_file" --interpret "$@" > "$output_file" \
-                            || pretty_diff "$expected_file" "$output_file"
-                        ;;
-        *             ) run_interpreter "$test_file"
-                        ;;
+        *proofs/*)
+            run_proof "$test_file" --debug "$@"
+            ;;
+        *interactive/*)
+            run_krun ocaml "$test_file" "$@" > "$output_file" \
+                || pretty_diff "$expected_file" "$output_file"
+            ;;
+        *)
+            # Only care about --backend parameter if it's not a proof test or interactive test
+            case "$backend" in
+                haskell)
+                    # Ignore whitespace diffs until we get the generated counter issue fixed
+                    run_krun haskell "$test_file" "$@" > "$output_file" \
+                        || pretty_diff --ignore-all-space "$expected_file" "$output_file"
+                    ;;
+                ocaml)
+                    run_interpreter "$test_file"
+                    ;;
+                *)
+                    die "Cannot test file '$test_file' with '$backend' backend!"
+                    ;;
+            esac
+            ;;
     esac
 }
 
 run_test_profile() {
-    local test_file="$1"     ; shift
+    local backend=$1        ; shift
+    local test_file="$1"    ; shift
     local start_time="$(date '+%s.%N')"
     local exit_status='0'
     local output_log_dir="$test_logs/$(dirname -- "$test_file")"
     local stdout_log="$test_logs/$test_file.out"
     local stderr_log="$test_logs/$test_file.err"
     [[ -d "$output_log_dir" ]] || mkdir -p "$output_log_dir"
-    run_test "$test_file" "$@" 1> "$stdout_log" 2> "$stderr_log" || exit_status="$?"
+    run_test "$backend" "$test_file" "$@" 1> "$stdout_log" 2> "$stderr_log" || exit_status="$?"
     local end_time="$(date '+%s.%N')"
     if [[ "$exit_status" == '0' ]]; then
         echo "$test_file" >> "$now_passing"
@@ -157,33 +185,36 @@ run_get_failing() {
 # ----
 
 run_command="$1" ; shift
+backend="ocaml"
+if [[ $# -gt 0 ]] && [[ $1 == '--backend' ]]; then
+    backend="$2"
+    shift 2
+fi
+
 case "$run_command" in
 
     # Running
-    run)          run_krun    ocaml   "$@" --interpret ;;
-    run-java)     run_krun    java    "$@"             ;;
-    run-haskell)  run_krun    haskell "$@"             ;;
-    debug)        run_kdebug          "$@"             ;;
-    search)       run_ksearch         "$@"             ;;
-    prove)        run_proof           "$@"             ;;
+    run)          run_krun      "$backend"  "$@"    ;;
+    debug)        run_kdebug                "$@"    ;;
+    search)       run_ksearch               "$@"    ;;
+    prove)        run_proof                 "$@"    ;;
 
     # Testing
-    interpret)    run_interpreter  "$@" ;;
-    test)         run_test         "$@" ;;
-    test-profile) run_test_profile "$@" ;;
-    sort-logs)    run_sort_logs         ;;
-    get-failing)  run_get_failing  "$@" ;;
+    interpret)    run_interpreter               "$@"    ;;
+    test)         run_test         "$backend"   "$@"    ;;
+    test-profile) run_test_profile "$backend"   "$@"    ;;
+    sort-logs)    run_sort_logs                         ;;
+    get-failing)  run_get_failing               "$@"    ;;
 
     *) echo "
     normal usage
     ============
 
-        $0 [run|run-java|run-haskell|debug|search] <pgm>  <K args>*
-        $0 prove                                   <spec> <K args>*
+        $0 run            [--backend <backend>] <pgm>   <K args>*
+        $0 [debug|search]                       <pgm>   <K args>*
+        $0 prove                                <spec>  <K args>*
 
     -   run         Run a single EVM program
-    -   run-java    Run a single EVM program using the Java backend
-    -   run-haskell Run a single EVM program using the Haskell backend
     -   debug       Run a single EVM program in the debugger
     -   search      Run a program searching for all execution paths
     -   prove       Attempt to prove the specification using K's RL prover
@@ -195,6 +226,9 @@ case "$run_command" in
     Useful <K args> are:
 
     -   --debug: output more debugging information when running/proving.
+
+    <backend> is one of [ocaml|java|haskell].
+    Default: ocaml
 
     Examples:
 
@@ -208,7 +242,7 @@ case "$run_command" in
     These commands are more for devs and CI servers.
 
         $0 interpret           <pgm>
-        $0 [test|test-profile] <pgm> <output>
+        $0 [test|test-profile] [--backend <backend>] <pgm> <output>
         $0 sort-logs
         $0 get-failing [<count>]
 
