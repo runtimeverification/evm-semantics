@@ -107,7 +107,7 @@ run_test() {
     if [[ -f "$test_file.out" ]]; then
         expected_file="$test_file.out"
     else
-        expected_file="tests/templates/output-success.json"
+        expected_file="tests/templates/output-success-$backend.json"
     fi
 
     case "$test_file" in
