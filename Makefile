@@ -231,7 +231,8 @@ endif
 # -----
 
 # Override this with `make TEST=echo` to list tests instead of running
-TEST=./kevm test-profile
+TEST_BACKEND:=ocaml
+TEST:=./kevm test-profile
 
 test-all: test-all-concrete test-all-proof
 test: test-concrete test-proof test-java
@@ -285,7 +286,7 @@ test-vm: $(quick_vm_tests:=.test)
 test-vm-normal: $(quick_vm_tests:=.testnormal)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build-ocaml
-	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) $<
+	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) --backend $(TEST_BACKEND) $<
 
 tests/ethereum-tests/VMTests/%.testnormal: tests/ethereum-tests/VMTests/%
 	SCHEDULE=DEFAULT $(TEST) --backend $(TEST_BACKEND) $<
@@ -309,7 +310,7 @@ test-slow-bchain: $(slow_bchain_tests:=.test)
 test-bchain: $(quick_bchain_tests:=.test)
 
 tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/% build-ocaml
-	$(TEST) $<
+	$(TEST) --backend $(TEST_BACKEND) $<
 
 # InteractiveTests
 
@@ -319,10 +320,10 @@ interactive_tests:=$(wildcard tests/interactive/*.json) \
 test-interactive: $(interactive_tests:=.test)
 
 tests/interactive/%.json.test: tests/interactive/%.json build-ocaml build-java
-	$(TEST) $<
+	$(TEST) --backend $(TEST_BACKEND) $<
 
 tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out build-ocaml build-java
-	MODE=GASANALYZE $(TEST) $<
+	MODE=GASANALYZE $(TEST) --backend $(TEST_BACKEND) $<
 
 # ProofTests
 
