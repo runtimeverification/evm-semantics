@@ -92,7 +92,7 @@ K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
 # Building
 # --------
 
-build: build-ocaml build-java build-node build-haskell
+build: build-llvm build-java build-node build-haskell
 build-ocaml: .build/ocaml/driver-kompiled/interpreter
 build-java: .build/java/driver-kompiled/timestamp
 build-node: .build/vm/kevm-vm
