@@ -15,9 +15,7 @@ build_dir="$kevm_dir/.build"
 
 test_logs="$build_dir/logs"
 mkdir -p "$test_logs"
-now_passing="$test_logs/passing.lastrun"
-now_failing="$test_logs/failing.lastrun"
-run_times="$test_logs/runtime"
+test_log="$test_logs/tests.log"
 
 # Utilities
 # ---------
@@ -143,24 +141,29 @@ run_test() {
 }
 
 run_test_profile() {
-    local backend=$1        ; shift
-    local test_file="$1"    ; shift
-    local start_time="$(date '+%s.%N')"
-    local exit_status='0'
-    local output_log_dir="$test_logs/$(dirname -- "$test_file")"
-    local stdout_log="$test_logs/$test_file.out"
-    local stderr_log="$test_logs/$test_file.err"
+    local backend test_file exit_status
+    local output_log_dir stdout_log stderr_log
+
+    backend=$1     ; shift
+    test_file="$1" ; shift
+
+    output_log_dir="$test_logs/$(dirname -- "$test_file")"
+    stdout_log="$test_logs/$test_file.out"
+    stderr_log="$test_logs/$test_file.err"
     [[ -d "$output_log_dir" ]] || mkdir -p "$output_log_dir"
-    run_test "$backend" "$test_file" "$@" 1> "$stdout_log" 2> "$stderr_log" || exit_status="$?"
-    local end_time="$(date '+%s.%N')"
+
+    exit_status='0'
+    `which time` --quiet --format '%x %Us %Ss %MKB %C' --output "$test_log" --append \
+        bash -c "$0 test --backend $backend $test_file $@" \
+        1> "$stdout_log" 2> "$stderr_log" \
+        || exit_status="$?"
+
     if [[ "$exit_status" == '0' ]]; then
-        echo "$test_file" >> "$now_passing"
+        progress "passed test: $test_file"
     else
-        echo "$test_file" >> "$now_failing"
-        cat "$stdout_log"
-        cat "$stderr_log" >&2
+        die "failed test: $test_file"
     fi
-    echo "$(echo "$end_time - $start_time" | bc)    $test_file" >> "$run_times"
+
     exit "$exit_status"
 }
 
