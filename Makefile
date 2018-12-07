@@ -49,13 +49,13 @@ distclean: clean
 # ------------
 
 deps: repo-deps system-deps
-repo-deps: k-deps tangle-deps plugin-deps
+repo-deps: tangle-deps k-deps plugin-deps
 system-deps: ocaml-deps
+haskell-deps: tangle-deps k-deps kore-deps
 k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 kore-deps: $(KORE_SUBMODULE)/make.timestamp
-haskell-deps: tangle-deps k-deps kore-deps
 
 $(K_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
@@ -156,6 +156,8 @@ haskell-defn: $(haskell_files)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
 					--syntax-module ETHEREUM-SIMULATION $< --directory .build/java -I .build/java
+
+# Haskell Backend
 
 .build/haskell/driver-kompiled/definition.kore: $(haskell_files)
 	@echo "== kompile: $@"
@@ -285,7 +287,7 @@ test-slow-vm: $(slow_vm_tests:=.test)
 test-vm: $(quick_vm_tests:=.test)
 test-vm-normal: $(quick_vm_tests:=.testnormal)
 
-tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/% build-ocaml
+tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/%
 	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) --backend $(TEST_BACKEND) $<
 
 tests/ethereum-tests/VMTests/%.testnormal: tests/ethereum-tests/VMTests/%
@@ -309,7 +311,7 @@ test-all-bchain: $(all_bchain_tests:=.test)
 test-slow-bchain: $(slow_bchain_tests:=.test)
 test-bchain: $(quick_bchain_tests:=.test)
 
-tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/% build-ocaml
+tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/%
 	$(TEST) --backend $(TEST_BACKEND) $<
 
 # InteractiveTests
@@ -319,10 +321,10 @@ interactive_tests:=$(wildcard tests/interactive/*.json) \
 
 test-interactive: $(interactive_tests:=.test)
 
-tests/interactive/%.json.test: tests/interactive/%.json build-ocaml build-java
+tests/interactive/%.json.test: tests/interactive/%.json
 	$(TEST) --backend $(TEST_BACKEND) $<
 
-tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out build-ocaml build-java
+tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out
 	MODE=GASANALYZE $(TEST) --backend $(TEST_BACKEND) $<
 
 # ProofTests
@@ -335,7 +337,7 @@ test-proof: $(proof_tests:=.test)
 test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11_d0g0v0.json
 	./kevm run --backend java $< | diff - tests/templates/output-success-java.json
 
-$(proof_dir)/%.test: $(proof_dir)/% build-java split-proof-tests
+$(proof_dir)/%.test: $(proof_dir)/% split-proof-tests
 	$(TEST) $<
 
 split-proof-tests: tests/proofs/make.timestamp
