@@ -1895,8 +1895,8 @@ Grumble grumble, K sucks at `owise`.
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
  // ----------------------------------------------------------------
-    rule #memoryUsageUpdate(MU, START, 0)     => MU
-    rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH >Int 0
+    rule #memoryUsageUpdate(MU, START, WIDTH) => MU                                       requires WIDTH ==Int 0
+    rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH >Int 0  [concrete]
 ```
 
 Execution Gas
@@ -2152,7 +2152,7 @@ There are several helpers for calculating gas (most of them also specified in th
     rule Cxfer(SCHED, 0) => 0
     rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=Int 0
 
-    rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
+    rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)  [concrete]
 
     syntax BExp    ::= Bool
     syntax KResult ::= Bool
