@@ -960,5 +960,13 @@ module EVM-DATA-SYMBOLIC [symbolic]
 
 //  syntax IMap ::= ".IMap" [function, smtlib(emptyIMap), smt-prelude] // (define-fun emptyIMap () IMap ((as const IMap) 0))
 //  rule select(.IMap, _) => 0
+```
+
+### Symbolic Gas
+
+```k
+    syntax Int ::= #symCmem ( Int )  [function, smtlib(symCmem)]
+ // -------------------------------------------------------------
+
 endmodule
 ```
