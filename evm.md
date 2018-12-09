@@ -653,7 +653,7 @@ The `CallOp` opcodes all interperet their second argument as an address.
 
     syntax Int ::= Cmem ( Schedule , Int ) [function, memo]
  // -------------------------------------------------------
-    rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
+    rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)  [concrete]
 ```
 
 ### Program Counter
@@ -2006,8 +2006,8 @@ Grumble grumble, K sucks at `owise`.
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
  // ----------------------------------------------------------------
-    rule #memoryUsageUpdate(MU, START, 0)     => MU
-    rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH >Int 0
+    rule #memoryUsageUpdate(MU, START, WIDTH) => MU                                       requires WIDTH ==Int 0
+    rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH >Int 0  [concrete]
 ```
 
 Execution Gas
