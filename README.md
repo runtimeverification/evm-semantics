@@ -89,6 +89,19 @@ In addition to the above dependencies, the Haskell Backend also depends on:
 
 To run proofs, you will also need [Z3](https://github.com/Z3Prover/z3) version 4.7.1 or higher.
 
+On Ubuntu:
+
+```sh
+sudo apt-get install haskell-stack z3 libz3-dev
+```
+
+To upgrade `stack` (if needed):
+
+```sh
+stack upgrade
+export PATH=$HOME/.local/bin:$PATH
+```
+
 #### Building
 
 After installing the above dependencies, the following command will build the Kore backend submodule dependency and then the Kore version of KEVM:
