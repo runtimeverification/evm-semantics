@@ -26,7 +26,7 @@ KORE_SUBMODULE_SRC:=$(KORE_SUBMODULE)/src/main/haskell/kore
 		defn java-defn ocaml-defn node-defn haskell-defn \
 		test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
 		test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-		test-proof test-interactive test-vm-normal \
+		test-proof test-interactive test-vm-normal test-vm-haskell-perf \
 		metropolis-theme 2017-devcon3 sphinx
 .SECONDARY:
 
@@ -282,16 +282,43 @@ bad_vm_tests= $(wildcard tests/ethereum-tests/VMTests/vmBlockInfoTest/blockhash*
 all_vm_tests=$(filter-out $(bad_vm_tests), $(vm_tests))
 quick_vm_tests=$(filter-out $(slow_vm_tests), $(all_vm_tests))
 
+# Based on (time haskell / time java) over 592 tests
+# timeouts: 44
+# min: 6.74
+# max: 915.06
+# median: 28.46
+# tests with >=4x median slowdown (including timeouts): 70
+# representative tests
+haskell_perf_tests=tests/ethereum-tests/VMTests/vmArithmeticTest/expPowerOf256Of256_1.json \
+                   tests/ethereum-tests/VMTests/vmArithmeticTest/arith1.json \
+                   tests/ethereum-tests/VMTests/vmArithmeticTest/fibbonacci_unrolled.json \
+                   tests/ethereum-tests/VMTests/vmPushDupSwapTest/push33.json \
+                   tests/ethereum-tests/VMTests/vmEnvironmentalInfo/calldatacopy_sec.json \
+                   tests/ethereum-tests/VMTests/vmSha3Test/sha3_0.json \
+                   tests/ethereum-tests/VMTests/vmSha3Test/sha3_memSizeQuadraticCost32.json \
+                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/jumpi_at_the_end.json \
+                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/jumpdestBigList.json \
+                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/for_loop2.json \
+                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/BlockNumberDynamicJump0_foreverOutOfGas.json \
+                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/byte1.json \
+                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/jump0_foreverOutOfGas.json \
+                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/loop_stacklimit_1020.json
+
 test-all-vm: $(all_vm_tests:=.test)
 test-slow-vm: $(slow_vm_tests:=.test)
 test-vm: $(quick_vm_tests:=.test)
 test-vm-normal: $(quick_vm_tests:=.testnormal)
+test-vm-haskell-perf: $(haskell_perf_tests:=.haskellperf)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/%
 	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) --backend $(TEST_BACKEND) $<
 
 tests/ethereum-tests/VMTests/%.testnormal: tests/ethereum-tests/VMTests/%
 	SCHEDULE=DEFAULT $(TEST) --backend $(TEST_BACKEND) $<
+
+tests/ethereum-tests/VMTests/%.haskellperf: tests/ethereum-tests/VMTests/%
+	SCHEDULE=DEFAULT $(TEST) --backend java         $< || true
+	SCHEDULE=DEFAULT $(TEST) --backend haskell-perf $< || true
 
 # BlockchainTests
 
