@@ -16,6 +16,8 @@ build_dir="$kevm_dir/.build"
 test_logs="$build_dir/logs"
 mkdir -p "$test_logs"
 test_log="$test_logs/tests.log"
+haskell_prof_log="kore-exec.prof"
+haskell_hp_log="kore-exec.hp"
 
 # Utilities
 # ---------
@@ -53,9 +55,10 @@ run_krun() {
     run_env "$run_file"
     export K_OPTS=-Xss500m
     case "$backend" in
-        haskell)    args=(--haskell-backend-command $build_dir/kore/bin/kore-exec)  ;;
-        ocaml)      args=(--interpret)                                              ;;
-        *)          args=()                                                         ;;
+        haskell)      args=(--haskell-backend-command "$build_dir/kore/bin/kore-exec")                                   ;;
+        haskell-perf) args=(--haskell-backend-command "$build_dir/kore/bin/kore-exec +RTS -p -h -RTS") ; backend=haskell ;;
+        ocaml)        args=(--interpret)                                                                                 ;;
+        *)            args=()                                                                                            ;;
     esac
     krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "${args[@]-}" "$@"
 }
@@ -94,13 +97,15 @@ run_interpreter() {
 }
 
 run_test() {
-    local backend test_file output_file expected_file
+    local backend test_file test_log_name output_file expected_file
 
     backend=$1     ; shift
     test_file="$1" ; shift
 
-    output_file="$(mktemp "$test_file.out.XXXXXX")"
-    trap "rm -rf $output_file" INT TERM EXIT
+    test_log_name="$test_logs/$test_file"
+    mkdir -p "$(dirname "$test_log_name")"
+
+    output_file="$test_log_name.out"
 
     if [[ -f "$test_file.out" ]]; then
         expected_file="$test_file.out"
@@ -117,16 +122,15 @@ run_test() {
                 || pretty_diff "$expected_file" "$output_file"
             ;;
         *)
-            # Only care about --backend parameter if it's not a proof test or interactive test
             case "$backend" in
                 java)
-                    # Ignore whitespace diffs until we get the generated counter issue fixed
                     run_krun "$backend" "$test_file" "$@" > "$output_file" \
                         || pretty_diff --ignore-all-space "$expected_file" "$output_file"
                     ;;
-                haskell)
-                    # Ignore whitespace diffs until we get the generated counter issue fixed
-                    run_krun "$backend" "$test_file" "$@" > "$output_file"
+                haskell*)
+                    run_krun "$backend" "$test_file" "$@" > "$output_file" || true
+                    [[ ! -f "$haskell_prof_log" ]] || mv "$haskell_prof_log" "$test_log_name.$haskell_prof_log"
+                    [[ ! -f "$haskell_hp_log"   ]] || mv "$haskell_hp_log"   "$test_log_name.$haskell_hp_log"
                     pretty_diff --ignore-all-space "$expected_file" "$output_file"
                     ;;
                 ocaml)
@@ -235,7 +239,7 @@ case "$run_command" in
 
     -   --debug: output more debugging information when running/proving.
 
-    <backend> is one of [ocaml|java|haskell].
+    <backend> is one of [ocaml|java|haskell|haskell-perf].
     Default: ocaml
 
     Examples:
