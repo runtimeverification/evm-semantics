@@ -22,7 +22,8 @@ KORE_SUBMODULE:=$(BUILD_DIR)/kore
 KORE_SUBMODULE_SRC:=$(KORE_SUBMODULE)/src/main/haskell/kore
 
 .PHONY: all clean deps repo-deps system-deps k-deps tangle-deps ocaml-deps plugin-deps kore-deps \
-		build build-ocaml build-java build-node build-kore defn split-tests \
+		build build-ocaml build-java build-node build-kore split-tests \
+		defn java-defn ocaml-defn node-defn haskell-defn \
 		test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
 		test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
 		test-proof test-interactive test-haskell \
@@ -124,6 +125,10 @@ haskell_files:=$(patsubst %,.build/haskell/%,$(k_files))
 defn_files:=$(ocaml_files) $(java_files) $(node_files)
 
 defn: $(defn_files)
+java-defn: $(java_files)
+ocaml-defn: $(ocaml_files)
+node-defn: $(node_files)
+haskell-defn: $(haskell_files)
 
 .build/java/%.k: %.md
 	@echo "==  tangle: $@"
