@@ -78,7 +78,7 @@ $(KORE_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init -- $(KORE_SUBMODULE)
 	cd $(KORE_SUBMODULE) \
-		&& stack install --local-bin-path $(abspath $(KORE_SUBMODULE))/bin kore:exe:kore-exec
+		&& stack install --profile --local-bin-path $(abspath $(KORE_SUBMODULE))/bin kore:exe:kore-exec
 	touch ${KORE_SUBMODULE}/make.timestamp
 
 ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
