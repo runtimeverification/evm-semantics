@@ -51,6 +51,11 @@ But if you put this value explicitly in another split, then K can prove that chi
     rule split ( false ) => .
 ```
 
+### Symbolic Gas
+
 ```k
+    syntax Int ::= #symCmem ( Int )  [function, smtlib(symCmem)]
+ // -------------------------------------------------------------
+
 endmodule
 ```
