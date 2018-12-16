@@ -54,8 +54,11 @@ But if you put this value explicitly in another split, then K can prove that chi
 ### Symbolic Gas
 
 ```k
-    syntax Int ::= #symCmem ( Int )  [function, smtlib(symCmem)]
- // -------------------------------------------------------------
+    syntax Int ::= #gas ( Int , Int , Int )  [function]  // startGas, nonMemory, memory
+ // -----------------------------------------------------------------------------------
+
+    syntax Int ::= #symCmem ( Int )  [function]
+ // -------------------------------------------
 
 endmodule
 ```
