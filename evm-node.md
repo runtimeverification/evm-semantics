@@ -8,6 +8,7 @@ module EVM-NODE
     imports EVM
     imports K-REFLECTION
     imports COLLECTIONS
+    imports BYTES
 ```
 
 ### State loading operations.
