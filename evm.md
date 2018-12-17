@@ -807,8 +807,8 @@ Lists of opcodes form programs.
     rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodes(0, OPS, .Map)
 
     rule #asMapOpCodes( N , .OpCodes         , MAP ) => MAP
-    rule #asMapOpCodes( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodes(N +Int 1, OCS, MAP (N |-> OP)) requires notBool isPushOp(OP)
-    rule #asMapOpCodes( N , PUSH(M, W) ; OCS , MAP ) => #asMapOpCodes(N +Int 1 +Int M, OCS, MAP (N |-> PUSH(M, W)))
+    rule #asMapOpCodes( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodes(N +Int 1, OCS, MAP [ N <- OP ]) requires notBool isPushOp(OP)
+    rule #asMapOpCodes( N , PUSH(M, W) ; OCS , MAP ) => #asMapOpCodes(N +Int 1 +Int M, OCS, MAP [ N <- PUSH(M, W) ])
 
     syntax OpCodes ::= #asOpCodes ( Map )                 [function]
                      | #asOpCodes ( Int , Map , OpCodes ) [function, klabel(#asOpCodesAux)]
