@@ -132,8 +132,8 @@ Because the same account may be loaded more than once, implementations of this i
 
 ```{.k .node}
     syntax EthereumSimulation ::= runVM ( iscreate: Bool , to: Int          , from: Int       , code: String  , args: String  , value: Int     , gasprice: Int
-                                        , gas: Int       , beneficiary: Int , difficulty: Int , number: Int   , gaslimit: Int , timestamp: Int , unused: String )
- // -------------------------------------------------------------------------------------------------------------------------------------------------------------
+                                        , gas: Int       , beneficiary: Int , difficulty: Int , number: Int   , gaslimit: Int , timestamp: Int , unused: String ) [symbol]
+ // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
     rule <k> (.K => #loadAccount ACCTFROM) ~> runVM(... from: ACCTFROM) ... </k>
          <activeAccounts> .Set </activeAccounts>
 
@@ -211,7 +211,7 @@ Because the same account may be loaded more than once, implementations of this i
 
 ```{.k .node}
     syntax KItem ::= vmResult ( return: String , gas: Int , refund: Int , status: Int , selfdestruct: List , logs: List , AccountsCell , touched: List )
-    syntax KItem ::= extractConfig ( GeneratedTopCell ) [function]
+    syntax KItem ::= extractConfig ( GeneratedTopCell ) [function, symbol]
  // --------------------------------------------------------------
     rule extractConfig ( <generatedTop>
                            <output> OUT </output>
@@ -231,8 +231,8 @@ Because the same account may be loaded more than once, implementations of this i
 -   `contractBytes` takes the contents of the `<code>` cell and returns its binary representation as a String.
 
 ```{.k .node}
-    syntax String ::= contractBytes(WordStack) [function]
- // -----------------------------------------------------
+    syntax String ::= contractBytes(AccountCode) [function, symbol]
+ // ---------------------------------------------------------------
     rule contractBytes(WS) => #unparseByteStack(WS)
 ```
 

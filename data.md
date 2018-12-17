@@ -733,7 +733,7 @@ We need to interperet a `WordStack` as a `String` again so that we can call `Kec
 -   `#padByte` ensures that the `String` interperetation of a `Int` is wide enough.
 
 ```k
-    syntax String ::= #unparseByteStack ( WordStack )                [function, klabel(unparseByteStack)]
+    syntax String ::= #unparseByteStack ( WordStack )                [function, klabel(unparseByteStack), symbol]
                     | #unparseByteStack ( WordStack , StringBuffer ) [function, klabel(#unparseByteStackAux)]
  // ---------------------------------------------------------------------------------------------------------
     rule #unparseByteStack ( WS ) => #unparseByteStack(WS, .StringBuffer)
