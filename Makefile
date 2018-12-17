@@ -107,6 +107,7 @@ node_tangle:=.k:not(.standalone):not(.symbolic),.node,.concrete
 
 k_files:=driver.k data.k network.k evm.k analysis.k krypto.k edsl.k evm-node.k
 ocaml_files:=$(patsubst %,.build/ocaml/%,$(k_files))
+llvm_files:=$(patsubst %,.build/llvm/%,$(k_files))
 java_files:=$(patsubst %,.build/java/%,$(k_files))
 node_files:=$(patsubst %,.build/node/%,$(k_files))
 haskell_files:=$(patsubst %,.build/haskell/%,$(k_files))
@@ -127,6 +128,11 @@ haskell-defn: $(haskell_files)
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
+
+.build/llvm/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(standalone_tangle)" $< > $@
 
 .build/node/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 	@echo "==  tangle: $@"
@@ -168,15 +174,15 @@ else
   LIBFLAG=-shared
 endif
 
-.build/llvm/driver-kompiled/interpreter: $(ocaml_files)
+.build/llvm/driver-kompiled/interpreter .build/node/driver-kompiled/interpreter: $(llvm_files) $(node_files)
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
 	    && ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
-	                        --syntax-module ETHEREUM-SIMULATION .build/ocaml/driver.k --directory .build/llvm \
-	                        --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp \
-	                        -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
+	                        --syntax-module ETHEREUM-SIMULATION $(dir $(patsubst %/,%,$(dir $@)))/driver.k --directory $(dir $(patsubst %/,%,$(dir $@))) \
+	                        --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/blockchain.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/world.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/proto/msg.pb.cc -ccopt -I -ccopt ${PLUGIN_SUBMODULE}/plugin-c \
+	                        -ccopt -lprotobuf -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
-.build/%/driver-kompiled/constants.$(EXT): $(ocaml_files) $(node_files)
+.build/%/driver-kompiled/constants.$(EXT): $(ocaml_files)
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
 	    && ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
@@ -209,13 +215,9 @@ endif
 	        && ocamlfind $(OCAMLC) -g -o interpreter constants.$(EXT) prelude.$(EXT) plugin.$(EXT) parser.$(EXT) lexer.$(EXT) run.$(EXT) interpreter.ml \
 	                               -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin-$* -linkpkg -linkall -thread -safe-string
 
-.build/vm/kevm-vm: $(wildcard plugin/vm/*.ml plugin/vm/*.mli) .build/node/driver-kompiled/interpreter
+.build/vm/kevm-vm: .build/node/driver-kompiled/interpreter $(wildcard plugin/vm-c/*.cpp plugin/vm-c/*.h)
 	mkdir -p .build/vm
-	cp plugin/vm/*.ml plugin/vm/*.mli .build/vm
-	eval $$(opam config env) \
-	    && cd .build/vm \
-	        && ocamlfind $(OCAMLC) -g -I ../node/driver-kompiled -o kevm-vm constants.$(EXT) prelude.$(EXT) plugin.$(EXT) parser.$(EXT) lexer.$(EXT) realdef.$(EXT) run.$(EXT) VM.mli VM.ml vmNetworkServer.ml \
-	                               -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin-node -package rlp -package yojson -package hex -linkpkg -linkall -thread -safe-string
+	llvm-kompile .build/node/driver-kompiled/definition.kore ETHEREUM-SIMULATION library ${PLUGIN_SUBMODULE}/vm-c/main.cpp ${PLUGIN_SUBMODULE}/vm-c/vm.cpp -I ${PLUGIN_SUBMODULE}/plugin-c/ ${PLUGIN_SUBMODULE}/plugin-c/*.cpp ${PLUGIN_SUBMODULE}/plugin-c/proto/msg.pb.cc -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I ${PLUGIN_SUBMODULE}/vm-c/ -I ${PLUGIN_SUBMODULE}/vm-c/kevm/ ${PLUGIN_SUBMODULE}/vm-c/kevm/semantics.cpp -o .build/vm/kevm-vm -g -O2
 
 # Tests
 # -----
