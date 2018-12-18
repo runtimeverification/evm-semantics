@@ -640,9 +640,17 @@ We are using the polymorphic `Map` sort for these word maps.
     syntax WordStack ::= #range ( Map , Int , Int , WordStack) [function, klabel(#rangeAux)]
  // ----------------------------------------------------------------------------------------
     rule #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack)
+```
 
+```{.k .concrete}
     rule #range(WM, END, WIDTH, WS) => WS                                           requires WIDTH ==Int 0
     rule #range(WM, END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, getInt(WM[END] orDefault 0) : WS) requires (WIDTH >Int 0)
+```
+
+```{.k .symbolic}
+    rule #range(WM,           END, WIDTH, WS) => WS                                           requires WIDTH ==Int 0
+    rule #range(WM,           END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, 0 : WS) requires (WIDTH >Int 0) andBool notBool END in_keys(WM)
+    rule #range(END |-> W WM, END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, W : WS) requires (WIDTH >Int 0)
 ```
 
 -   `#removeZeros` removes any entries in a map with zero values.
