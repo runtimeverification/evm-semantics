@@ -1292,11 +1292,24 @@ For now, I assume that they instantiate an empty account and use the empty data.
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
+           <nonce> NONCE </nonce>
+           <balance> BAL </balance>
            ...
          </account>
+      requires notBool #accountEmpty(CODE, NONCE, BAL)
 ```
 
 ```k
+     rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k>
+         <account>
+           <acctID> ACCT </acctID>
+           <code> CODE </code>
+           <nonce> NONCE </nonce>
+           <balance> BAL </balance>
+           ...
+         </account>
+       requires #accountEmpty(CODE, NONCE, BAL)
+
     rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT in ACCTS
