@@ -18,10 +18,7 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-KORE_SUBMODULE:=$(BUILD_DIR)/kore
-KORE_SUBMODULE_SRC:=$(KORE_SUBMODULE)/src/main/haskell/kore
-
-.PHONY: all clean deps repo-deps system-deps k-deps tangle-deps ocaml-deps plugin-deps kore-deps \
+.PHONY: all clean deps repo-deps system-deps k-deps ocaml-deps plugin-deps \
         build build-ocaml build-java build-node build-kore split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn \
         test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
@@ -51,11 +48,9 @@ distclean: clean
 deps: repo-deps system-deps
 repo-deps: tangle-deps k-deps plugin-deps
 system-deps: ocaml-deps
-haskell-deps: tangle-deps k-deps kore-deps
 k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
-kore-deps: $(KORE_SUBMODULE)/make.timestamp
 
 $(K_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
@@ -73,13 +68,6 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init --recursive -- $(PLUGIN_SUBMODULE)
 	touch $(PLUGIN_SUBMODULE)/make.timestamp
-
-$(KORE_SUBMODULE)/make.timestamp:
-	@echo "== submodule: $@"
-	git submodule update --init -- $(KORE_SUBMODULE)
-	cd $(KORE_SUBMODULE) \
-        && stack install --profile --local-bin-path $(abspath $(KORE_SUBMODULE))/bin kore:exe:kore-exec
-	touch ${KORE_SUBMODULE}/make.timestamp
 
 ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 	eval $$(opam config env) \

@@ -55,10 +55,10 @@ run_krun() {
     run_env "$run_file"
     export K_OPTS=-Xss500m
     case "$backend" in
-        haskell)      args=(--haskell-backend-command "$build_dir/kore/bin/kore-exec")                                   ;;
-        haskell-perf) args=(--haskell-backend-command "$build_dir/kore/bin/kore-exec +RTS -p -h -RTS") ; backend=haskell ;;
-        ocaml)        args=(--interpret)                                                                                 ;;
-        *)            args=()                                                                                            ;;
+        haskell)      args=()                                                                        ;;
+        haskell-perf) args=(--haskell-backend-command "kore-exec +RTS -p -h -RTS") ; backend=haskell ;;
+        ocaml)        args=(--interpret)                                                             ;;
+        *)            args=()                                                                        ;;
     esac
     krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "${args[@]-}" "$@"
 }
