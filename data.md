@@ -412,7 +412,8 @@ A cons-list is used for the EVM wordstack.
 
 ```k
     syntax WordStack [flatPredicate]
-    syntax WordStack ::= ".WordStack" | Int ":" WordStack
+    syntax WordStack ::= ".WordStack" 
+                       | Int ":" WordStack [klabel(_:_WS)]
  // -----------------------------------------------------
 ```
 
@@ -421,7 +422,7 @@ A cons-list is used for the EVM wordstack.
 -   `#drop(N , WS)` removes the first $N$ elements of a `WordStack`.
 
 ```k
-    syntax WordStack ::= WordStack "++" WordStack [function, right]
+    syntax WordStack ::= WordStack "++" WordStack [function, right, klabel(_++_WS)]
  // ---------------------------------------------------------------
     rule .WordStack ++ WS' => WS'
     rule (W : WS)   ++ WS' => W : (WS ++ WS')
