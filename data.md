@@ -404,7 +404,6 @@ A cons-list is used for the EVM wordstack.
     syntax WordStack [flatPredicate]
     syntax WordStack ::= ".WordStack"      [smtlib(_dotWS)]
                        | Int ":" WordStack [klabel(_:_WS), smtlib(_WS_)]
- // --------------------------------------------------------------------
 ```
 
 -   `_++_` acts as `WordStack` append.
