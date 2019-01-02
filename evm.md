@@ -2117,10 +2117,10 @@ There are several helpers for calculating gas (most of them also specified in th
 
     rule Csstore(SCHED, NEW, CURR, ORIG)
       => #if CURR ==Int NEW orBool ORIG =/=Int CURR #then Gsload < SCHED > #else #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi #fi
-      requires Ghasdirtysstore << SCHED >>
+      requires Ghasdirtysstore << SCHED >>  [concrete]
     rule Csstore(SCHED, NEW, CURR, ORIG)
       => #if CURR ==Int 0 andBool NEW =/=Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
-      requires notBool Ghasdirtysstore << SCHED >>
+      requires notBool Ghasdirtysstore << SCHED >>  [concrete]
 
     rule Rsstore(SCHED, NEW, CURR, ORIG)
       => #if CURR =/=Int NEW andBool ORIG ==Int CURR andBool NEW ==Int 0 #then
@@ -2138,10 +2138,12 @@ There are several helpers for calculating gas (most of them also specified in th
              #fi
          #fi
       requires Ghasdirtysstore << SCHED >>
+      [concrete]
 
     rule Rsstore(SCHED, NEW, CURR, ORIG)
       => #if CURR =/=Int 0 andBool NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi
       requires notBool Ghasdirtysstore << SCHED >>
+      [concrete]
 
     rule Cextra(SCHED, VALUE, ISEMPTY)
       => Gcall < SCHED > +Int Cnew(SCHED, VALUE, ISEMPTY) +Int Cxfer(SCHED, VALUE)  [concrete]
