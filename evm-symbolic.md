@@ -60,18 +60,20 @@ But if you put this value explicitly in another split, then K can prove that chi
     syntax Int ::= #symCmem ( Int )  [function]
  // -------------------------------------------
 
-    syntax Int ::= #sendGas ( Schedule, Int , Int , Bool)  [function]  // schedule, accountID, value, sendSuccess? (gcap by default is 0)
- // -------------------------------------------------------------------------------------------------------------------------------------
+ // callSuccess? caputures various cases where a call may fail including out of gas, insufficient balance and etc.
+ // TODO: include the calldata as the argument.
+    syntax Int ::= #callGas ( Schedule , Int , Int , Int , Bool )  [function]  // schedule, gasCap, accountTo, value, callSuccess?
+ // ------------------------------------------------------------------------------------------------------------------------------
 
 ```
 
 ### Symbolic Call
 ```k
-    syntax Bool ::= #sendSuccess ( Int )  [function]  // accountID
- // --------------------------------------------------------------
-
-    syntax Bool ::= #sendFailure ( Int )  [function]  // accountID
- // --------------------------------------------------------------
+ // gasCap helps to differentiate different calls to the same account.
+ // TODO: We need to include the calldata as the argument.
+    syntax Bool ::= #callSuccess ( Int , Int )  [function]  // gasCap, accountTo
+                  | #callFailure ( Int , Int )  [function]  // gasCap, accountTo
+ // ----------------------------------------------------------------------------
 
 endmodule
 ```
