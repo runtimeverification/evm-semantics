@@ -174,12 +174,16 @@ else
   LIBFLAG=-shared
 endif
 
-.build/llvm/driver-kompiled/interpreter .build/node/driver-kompiled/interpreter: $(llvm_files) $(node_files)
+.build/plugin-node/proto/msg.pb.cc: ${PLUGIN_SUBMODULE}/plugin/proto/msg.proto
+	mkdir -p .build/plugin-node
+	protoc --cpp_out=.build/plugin-node -I ${PLUGIN_SUBMODULE}/plugin ${PLUGIN_SUBMODULE}/plugin/proto/msg.proto
+
+.build/llvm/driver-kompiled/interpreter .build/node/driver-kompiled/interpreter: $(llvm_files) $(node_files) .build/plugin-node/proto/msg.pb.cc
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
 	    && ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
 	                        --syntax-module ETHEREUM-SIMULATION $(dir $(patsubst %/,%,$(dir $@)))/driver.k --directory $(dir $(patsubst %/,%,$(dir $@))) \
-	                        --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/blockchain.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/world.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/proto/msg.pb.cc -ccopt -I -ccopt ${PLUGIN_SUBMODULE}/plugin-c \
+	                        --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/blockchain.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/world.cpp -ccopt `pwd`/.build/plugin-node/proto/msg.pb.cc -ccopt -I -ccopt ${PLUGIN_SUBMODULE}/plugin-c \
 	                        -ccopt -lprotobuf -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
 .build/%/driver-kompiled/constants.$(EXT): $(ocaml_files)
@@ -215,9 +219,9 @@ endif
 	        && ocamlfind $(OCAMLC) -g -o interpreter constants.$(EXT) prelude.$(EXT) plugin.$(EXT) parser.$(EXT) lexer.$(EXT) run.$(EXT) interpreter.ml \
 	                               -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin-$* -linkpkg -linkall -thread -safe-string
 
-.build/vm/kevm-vm: .build/node/driver-kompiled/interpreter $(wildcard plugin/vm-c/*.cpp plugin/vm-c/*.h)
+.build/vm/kevm-vm: .build/node/driver-kompiled/interpreter $(wildcard plugin/vm-c/*.cpp plugin/vm-c/*.h) .build/plugin-node/proto/msg.pb.cc
 	mkdir -p .build/vm
-	llvm-kompile .build/node/driver-kompiled/definition.kore ETHEREUM-SIMULATION library ${PLUGIN_SUBMODULE}/vm-c/main.cpp ${PLUGIN_SUBMODULE}/vm-c/vm.cpp -I ${PLUGIN_SUBMODULE}/plugin-c/ ${PLUGIN_SUBMODULE}/plugin-c/*.cpp ${PLUGIN_SUBMODULE}/plugin-c/proto/msg.pb.cc -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I ${PLUGIN_SUBMODULE}/vm-c/ -I ${PLUGIN_SUBMODULE}/vm-c/kevm/ ${PLUGIN_SUBMODULE}/vm-c/kevm/semantics.cpp -o .build/vm/kevm-vm -g -O2
+	llvm-kompile .build/node/driver-kompiled/definition.kore ETHEREUM-SIMULATION library ${PLUGIN_SUBMODULE}/vm-c/main.cpp ${PLUGIN_SUBMODULE}/vm-c/vm.cpp -I ${PLUGIN_SUBMODULE}/plugin-c/ ${PLUGIN_SUBMODULE}/plugin-c/*.cpp `pwd`/.build/plugin-node/proto/msg.pb.cc -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I ${PLUGIN_SUBMODULE}/vm-c/ -I ${PLUGIN_SUBMODULE}/vm-c/kevm/ ${PLUGIN_SUBMODULE}/vm-c/kevm/semantics.cpp -o .build/vm/kevm-vm -g -O2
 
 # Tests
 # -----
