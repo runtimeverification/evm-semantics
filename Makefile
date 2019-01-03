@@ -73,7 +73,7 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 	git submodule update --init --recursive -- $(PLUGIN_SUBMODULE)
 	touch $(PLUGIN_SUBMODULE)/make.timestamp
 
-ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
+ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc .build/local/lib/libff.so
 	eval $$(opam config env) \
 	    opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128 ocaml-protoc rlp yojson hex ocp-ocamlres
 
@@ -86,6 +86,18 @@ ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
 	    && make -s -j4 \
 	    && make install
+
+.build/local/lib/libff.so:
+	@echo "== submodule: $@"
+	git submodule update --init --recursive -- .build/libff/
+	cd .build/libff/ \
+	    && mkdir -p build \
+	    && cd build \
+	    && CC=clang-6.0 CXX=clang++-6.0 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(BUILD_LOCAL)" \
+	    && make -s -j4 \
+	    && make install
+
+
 
 K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
 
@@ -183,7 +195,7 @@ endif
 	eval $$(opam config env) \
 	    && ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
 	                        --syntax-module ETHEREUM-SIMULATION $(dir $(patsubst %/,%,$(dir $@)))/driver.k --directory $(dir $(patsubst %/,%,$(dir $@))) \
-	                        --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/blockchain.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/world.cpp -ccopt `pwd`/.build/plugin-node/proto/msg.pb.cc -ccopt -I -ccopt ${PLUGIN_SUBMODULE}/plugin-c \
+	                        --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/blockchain.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/world.cpp -ccopt `pwd`/.build/plugin-node/proto/msg.pb.cc -ccopt -I -ccopt ${PLUGIN_SUBMODULE}/plugin-c -ccopt -I -ccopt `pwd`/.build/plugin-node -ccopt -I -ccopt ${BUILD_LOCAL}/include \
 	                        -ccopt -lprotobuf -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
 .build/%/driver-kompiled/constants.$(EXT): $(ocaml_files)
@@ -221,13 +233,13 @@ endif
 
 .build/vm/kevm-vm: .build/node/driver-kompiled/interpreter $(wildcard plugin/vm-c/*.cpp plugin/vm-c/*.h) .build/plugin-node/proto/msg.pb.cc
 	mkdir -p .build/vm
-	llvm-kompile .build/node/driver-kompiled/definition.kore ETHEREUM-SIMULATION library ${PLUGIN_SUBMODULE}/vm-c/main.cpp ${PLUGIN_SUBMODULE}/vm-c/vm.cpp -I ${PLUGIN_SUBMODULE}/plugin-c/ ${PLUGIN_SUBMODULE}/plugin-c/*.cpp `pwd`/.build/plugin-node/proto/msg.pb.cc -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I ${PLUGIN_SUBMODULE}/vm-c/ -I ${PLUGIN_SUBMODULE}/vm-c/kevm/ ${PLUGIN_SUBMODULE}/vm-c/kevm/semantics.cpp -o .build/vm/kevm-vm -g -O2
+	llvm-kompile .build/node/driver-kompiled/definition.kore ETHEREUM-SIMULATION library ${PLUGIN_SUBMODULE}/vm-c/main.cpp ${PLUGIN_SUBMODULE}/vm-c/vm.cpp -I ${PLUGIN_SUBMODULE}/plugin-c/ -I `pwd`/.build/plugin-node ${PLUGIN_SUBMODULE}/plugin-c/*.cpp `pwd`/.build/plugin-node/proto/msg.pb.cc -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I ${PLUGIN_SUBMODULE}/vm-c/ -I ${PLUGIN_SUBMODULE}/vm-c/kevm/ -I ${BUILD_LOCAL}/include ${PLUGIN_SUBMODULE}/vm-c/kevm/semantics.cpp -o .build/vm/kevm-vm -g -O2
 
 # Tests
 # -----
 
 # Override this with `make TEST=echo` to list tests instead of running
-TEST_CONCRETE_BACKEND:=ocaml
+TEST_CONCRETE_BACKEND:=llvm
 TEST_SYMBOLIC_BACKEND:=java
 TEST:=./kevm test-profile
 
