@@ -69,10 +69,10 @@ But if you put this value explicitly in another split, then K can prove that chi
 
 ### Symbolic Call
 ```k
- // gasCap helps to differentiate different calls to the same account.
- // TODO: We need to include the calldata as the argument.
-    syntax Bool ::= #callSuccess ( Int , Int )  [function]  // gasCap, accountTo
-                  | #callFailure ( Int , Int )  [function]  // gasCap, accountTo
+ // PC helps to differentiate different calls to the same account.
+ // TODO: include the calldata as the argument.
+    syntax Bool ::= #callSuccess ( Int , Int )  [function]  // pc, accountTo
+                  | #callFailure ( Int , Int )  [function]  // pc, accountTo
  // ----------------------------------------------------------------------------
 
 endmodule
