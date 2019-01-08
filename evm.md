@@ -2258,7 +2258,7 @@ There are several helpers for calculating gas (most of them also specified in th
          </account>
 
     syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, klabel(accountEmpty), symbol]
- // ------------------------------------------------------------------------------------------------
+ // --------------------------------------------------------------------------------------------------
     rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .WordStack andBool NONCE ==Int 0 andBool BAL ==Int 0
 
     syntax Int ::= #allBut64th ( Int ) [function]

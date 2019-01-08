@@ -213,7 +213,7 @@ Because the same account may be loaded more than once, implementations of this i
 ```{.k .node}
     syntax KItem ::= vmResult ( return: String , gas: Int , refund: Int , status: Int , selfdestruct: List , logs: List , AccountsCell , touched: List )
     syntax KItem ::= extractConfig ( GeneratedTopCell ) [function, symbol]
- // --------------------------------------------------------------
+ // ----------------------------------------------------------------------
     rule extractConfig ( <generatedTop>
                            <output> OUT </output>
                            <gas> GAVAIL </gas>

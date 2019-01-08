@@ -643,8 +643,8 @@ We are using the polymorphic `Map` sort for these word maps.
 ```
 
 ```{.k .concrete}
-    rule #range(WM, END, WIDTH, WS) => WS                                           requires WIDTH ==Int 0
-    rule #range(WM, END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, getInt(WM[END] orDefault 0) : WS) requires (WIDTH >Int 0)
+    rule #range(WM, END, WIDTH, WS) => WS                                                                     requires WIDTH ==Int 0
+    rule #range(WM, END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, getInt(WM[END] orDefault 0) : WS) requires WIDTH  >Int 0
 ```
 
 ```{.k .symbolic}
