@@ -807,8 +807,8 @@ Lists of opcodes form programs.
     rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodes(0, OPS, .Map)
 
     rule #asMapOpCodes( N , .OpCodes         , MAP ) => MAP
-    rule #asMapOpCodes( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodes(N +Int 1, OCS, MAP (N |-> OP)) requires notBool isPushOp(OP)
-    rule #asMapOpCodes( N , PUSH(M, W) ; OCS , MAP ) => #asMapOpCodes(N +Int 1 +Int M, OCS, MAP (N |-> PUSH(M, W)))
+    rule #asMapOpCodes( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodes(N +Int 1, OCS, MAP [ N <- OP ]) requires notBool isPushOp(OP)
+    rule #asMapOpCodes( N , PUSH(M, W) ; OCS , MAP ) => #asMapOpCodes(N +Int 1 +Int M, OCS, MAP [ N <- PUSH(M, W) ])
 
     syntax OpCodes ::= #asOpCodes ( Map )                 [function]
                      | #asOpCodes ( Int , Map , OpCodes ) [function, klabel(#asOpCodesAux)]
@@ -2257,8 +2257,8 @@ There are several helpers for calculating gas (most of them also specified in th
            ...
          </account>
 
-    syntax Bool ::= #accountEmpty ( WordStack , Int , Int ) [function, klabel(accountEmpty)]
- // ----------------------------------------------------------------------------------------
+    syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, klabel(accountEmpty), symbol]
+ // --------------------------------------------------------------------------------------------------
     rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .WordStack andBool NONCE ==Int 0 andBool BAL ==Int 0
 
     syntax Int ::= #allBut64th ( Int ) [function]

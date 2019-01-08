@@ -114,8 +114,9 @@ build-llvm: .build/llvm/driver-kompiled/interpreter
 
 # Tangle definition from *.md files
 
-standalone_tangle:=.k:not(.node),.standalone
-node_tangle:=.k:not(.standalone),.node
+concrete_tangle:=.k:not(.node):not(.symbolic),.standalone,.concrete
+symbolic_tangle:=.k:not(.node):not(.concrete),.standalone,.symbolic
+node_tangle:=.k:not(.standalone):not(.symbolic),.node,.concrete
 
 k_files:=driver.k data.k network.k evm.k analysis.k krypto.k edsl.k evm-node.k
 ocaml_files:=$(patsubst %,.build/ocaml/%,$(k_files))
@@ -133,12 +134,12 @@ haskell-defn: $(haskell_files)
 .build/java/%.k: %.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(standalone_tangle)" $< > $@
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
 .build/ocaml/%.k: %.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(standalone_tangle)" $< > $@
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
 .build/node/%.k: %.md
 	@echo "==  tangle: $@"
@@ -148,7 +149,7 @@ haskell-defn: $(haskell_files)
 .build/haskell/%.k: %.md
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(standalone_tangle)" $< > $@
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
 # Java Backend
 
