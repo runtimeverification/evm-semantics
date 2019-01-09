@@ -73,7 +73,14 @@ But if you put this value explicitly in another split, then K can prove that chi
  // TODO: include the calldata as the argument.
     syntax Bool ::= #callSuccess ( Int , Int )  [function]  // pc, accountTo
                   | #callFailure ( Int , Int )  [function]  // pc, accountTo
- // ----------------------------------------------------------------------------
+ // -------------------------------------------------------------------------
+
+    syntax Int ::= #callResult ( Int , Int )  [function]  // pc, accountTo
+ // ----------------------------------------------------------------------
+
+
+    syntax Int ::= #extCodeSize ( Int )  [function]
+ // -----------------------------------------------
 
 endmodule
 ```
