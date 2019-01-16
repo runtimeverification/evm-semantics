@@ -2207,10 +2207,12 @@ There are several helpers for calculating gas (most of them also specified in th
              #fi
          #fi
       requires Ghasdirtysstore << SCHED >>
+      [concrete]
 
     rule Rsstore(SCHED, NEW, CURR, ORIG)
       => #if CURR =/=Int 0 andBool NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi
       requires notBool Ghasdirtysstore << SCHED >>
+      [concrete]
 
     rule Cextra(SCHED, VALUE, ISEMPTY)
       => Gcall < SCHED > +Int Cnew(SCHED, VALUE, ISEMPTY) +Int Cxfer(SCHED, VALUE)  [concrete]
