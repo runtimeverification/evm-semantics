@@ -11,11 +11,9 @@ requires "evm-node.k"
 ```k
 requires "evm.k"
 requires "analysis.k"
-requires "evm-symbolic.k"
 
 module ETHEREUM-SIMULATION
     imports EVM
-    imports EVM-SYMBOLIC
     imports K-REFLECTION
 ```
 
