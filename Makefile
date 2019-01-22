@@ -366,7 +366,7 @@ test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add1
 	./kevm run --backend java $< | diff - tests/templates/output-success-java.json
 
 $(proof_dir)/%.test: $(proof_dir)/% split-proof-tests
-	$(TEST) $<
+	$(TEST) --backend $(TEST_BACKEND) $<
 
 split-proof-tests: tests/proofs/make.timestamp
 	$(MAKE) -C tests/proofs $@
