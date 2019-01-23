@@ -1,6 +1,31 @@
 EVM Words
 =========
 
+### Module `IMap`
+This is an algebraic map theory that allows the symbolic map reasoning in the K level. Currently, it is a monomorphic map from Int to Int.
+
+```k
+requires "krypto.k"
+
+module IMAP-SYNTAX
+    imports INT
+    syntax IMap [smt-prelude] // (define-sort IMap () (Array Int Int))
+    syntax IMap ::= store  ( IMap , Int , Int ) [function, smtlib(store),  smt-prelude]
+    syntax Int  ::= select ( IMap , Int )       [function, smtlib(select), smt-prelude]
+endmodule
+
+module IMAP-SYMBOLIC [symbolic]
+    imports IMAP-SYNTAX
+    rule select(store(M, K0, V), K) => V            requires K0  ==Int K
+    rule select(store(M, K0, V), K) => select(M, K) requires K0 =/=Int K
+endmodule
+
+module IMAP
+    imports IMAP-SYNTAX
+    imports IMAP-SYMBOLIC
+endmodule
+```
+
 ### Module `EVM-DATA`
 
 EVM uses bounded 256 bit integer words, and sometimes also bytes (8 bit words).
@@ -8,8 +33,6 @@ Here we provide the arithmetic of these words, as well as some data-structures o
 Both are implemented using K's `Int`.
 
 ```k
-requires "krypto.k"
-
 module EVM-DATA
     imports KRYPTO
     imports STRING-BUFFER
