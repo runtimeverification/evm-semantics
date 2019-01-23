@@ -234,7 +234,8 @@ endif
 # -----
 
 # Override this with `make TEST=echo` to list tests instead of running
-TEST_BACKEND:=ocaml
+TEST_CONCRETE_BACKEND:=ocaml
+TEST_SYMBOLIC_BACKEND:=java
 TEST:=./kevm test-profile
 
 test-all: test-all-concrete test-all-proof
@@ -312,10 +313,10 @@ test-vm-normal: $(quick_vm_tests:=.testnormal)
 test-vm-haskell-perf: $(haskell_perf_tests:=.haskellperf)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/%
-	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) --backend $(TEST_BACKEND) $<
+	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
 
 tests/ethereum-tests/VMTests/%.testnormal: tests/ethereum-tests/VMTests/%
-	SCHEDULE=DEFAULT $(TEST) --backend $(TEST_BACKEND) $<
+	SCHEDULE=DEFAULT $(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
 
 tests/ethereum-tests/VMTests/%.haskellperf: tests/ethereum-tests/VMTests/%
 	SCHEDULE=DEFAULT $(TEST) --backend java         $< || true
@@ -340,7 +341,7 @@ test-slow-bchain: $(slow_bchain_tests:=.test)
 test-bchain: $(quick_bchain_tests:=.test)
 
 tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/%
-	$(TEST) --backend $(TEST_BACKEND) $<
+	$(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
 
 # InteractiveTests
 
@@ -350,10 +351,10 @@ interactive_tests:=$(wildcard tests/interactive/*.json) \
 test-interactive: $(interactive_tests:=.test)
 
 tests/interactive/%.json.test: tests/interactive/%.json
-	$(TEST) --backend $(TEST_BACKEND) $<
+	$(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
 
 tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out
-	MODE=GASANALYZE $(TEST) --backend $(TEST_BACKEND) $<
+	MODE=GASANALYZE $(TEST) --backend $(TEST_SYMBOLIC_BACKEND) $<
 
 # ProofTests
 
@@ -366,7 +367,7 @@ test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add1
 	./kevm run --backend java $< | diff - tests/templates/output-success-java.json
 
 $(proof_dir)/%.test: $(proof_dir)/% split-proof-tests
-	$(TEST) --backend $(TEST_BACKEND) $<
+	$(TEST) --backend $(TEST_SYMBOLIC_BACKEND) $<
 
 split-proof-tests: tests/proofs/make.timestamp
 	$(MAKE) -C tests/proofs $@
