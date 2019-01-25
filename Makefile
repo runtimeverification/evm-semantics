@@ -40,7 +40,7 @@ clean-submodules:
 
 distclean: clean
 	opam switch system
-	opam switch remove 4.03.0+k --yes || true
+	opam switch remove 4.06.1+k --yes || true
 	cd $(K_SUBMODULE) \
 	    && mvn clean -q
 	git submodule deinit --force -- ./
@@ -81,14 +81,10 @@ $(KORE_SUBMODULE)/make.timestamp:
         && stack install --profile --local-bin-path $(abspath $(KORE_SUBMODULE))/bin kore:exe:kore-exec
 	touch ${KORE_SUBMODULE}/make.timestamp
 
-ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
-	opam init --quiet --no-setup
-	opam repository add k "$(K_SUBMODULE)/k-distribution/target/release/k/lib/opam" \
-	    || opam repository set-url k "$(K_SUBMODULE)/k-distribution/target/release/k/lib/opam"
-	opam update
-	opam switch 4.06.1+k
+ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc k-deps
+	${K_BIN}/k-configure-opam
 	eval $$(opam config env) \
-	    opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128 ocaml-protoc rlp yojson hex ocp-ocamlres
+	    opam install --yes cryptokit secp256k1.0.3.2 bn128 ocaml-protoc rlp yojson hex ocp-ocamlres
 
 # install secp256k1 from bitcoin-core
 .build/local/lib/pkgconfig/libsecp256k1.pc:
