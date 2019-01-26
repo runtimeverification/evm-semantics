@@ -41,7 +41,7 @@ pipeline {
         }
       }
     }
-    stage('Test Conformance') {
+    stage('Test Proofs') {
       steps {
         ansiColor('xterm') {
           sh '''
