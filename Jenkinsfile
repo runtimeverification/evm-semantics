@@ -22,10 +22,9 @@ pipeline {
             git submodule update --init --recursive
             cd ../../
             export PATH=$HOME/.local/bin:$PATH
-            nprocs=4
             make deps        -B
-            make build       -B -j"$nprocs"
-            make split-tests -B -j"$nprocs"
+            make build       -B -j4
+            make split-tests -B
           '''
         }
       }
