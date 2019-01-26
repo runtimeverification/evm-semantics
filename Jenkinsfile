@@ -59,7 +59,7 @@ pipeline {
                 export PATH=$HOME/.local/bin:$PATH
                 export LD_LIBRARY_PATH=$(pwd)/.build/local/lib
                 rm -rf mantis-cardano
-                git clone 'git@github.com:input-output-hk/mantis-cardano'
+                git clone 'https://github.com/input-output-hk/mantis-cardano'
                 cd mantis-cardano
                 git checkout fix-master/GMC-136-round_3
                 git submodule update --init
