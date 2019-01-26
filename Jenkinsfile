@@ -18,10 +18,8 @@ pipeline {
         ansiColor('xterm') {
           sh '''
             export PATH=$HOME/.local/bin:$PATH
-            nprocs=$(nproc)
-            [ "$nprocs" -gt '10' ] && nprocs='10'
-            nprocs_proofs="$nprocs"
-            [ "$nprocs_proofs" -gt '6' ] && nprocs_proofs='6'
+            nprocs=4
+            ./.build/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev
             make deps        -B
             make build       -B -j"$nprocs"
             make split-tests -B -j"$nprocs"
@@ -37,7 +35,6 @@ pipeline {
               sh '''
                 export PATH=$HOME/.local/bin:$PATH
                 nprocs=$(nproc)
-                [ "$nprocs" -gt '10' ] && nprocs='10'
                 make test-concrete -j"$nprocs"
               '''
             }
