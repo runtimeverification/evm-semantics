@@ -19,7 +19,6 @@ pipeline {
           sh '''
             export PATH=$HOME/.local/bin:$PATH
             nprocs=4
-            ./.build/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev
             make deps        -B
             make build       -B -j"$nprocs"
             make split-tests -B -j"$nprocs"
