@@ -40,6 +40,7 @@ pipeline {
           }
         }
         stage('Proofs') {
+          agent { label 'big-mem' }
           steps {
             ansiColor('xterm') {
               sh '''
