@@ -1,5 +1,9 @@
 FROM ubuntu:bionic
 
+ENV TZ=America/Chicago
+RUN    ln --symbolic --no-dereference --force /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone
+
 RUN apt update
 RUN apt install --yes \
         autoconf bison build-essential clang++-6.0 clang-6.0 cmake coreutils \
