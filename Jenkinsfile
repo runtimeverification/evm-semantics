@@ -57,11 +57,10 @@ pipeline {
         stage('Mantis') {
           steps {
             ansiColor('xterm') {
+              git credentialsId: 'rv-jenkins', url: 'git@github.com:input-output-hk/mantis-cardano.git', branch: 'fix-master/GMC-136-round_3'
               sh '''
                 export PATH=$HOME/.local/bin:$PATH
                 export LD_LIBRARY_PATH=$(pwd)/.build/local/lib
-                rm -rf mantis-cardano
-                git clone 'https://github.com/input-output-hk/mantis-cardano'
                 cd mantis-cardano
                 git checkout fix-master/GMC-136-round_3
                 git submodule update --init
