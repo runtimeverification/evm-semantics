@@ -15,3 +15,12 @@ RUN groupadd -g $GROUP_ID user && \
 
 USER $USER_ID:$GROUP_ID
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.28.0
+
+RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.4 \
+    && cd z3                                                        \
+    && python scripts/mk_make.py --prefix=$HOME/.local              \
+    && cd build                                                     \
+    && make -j$(nproc)                                              \
+    && make install                                                 \
+    && cd ..                                                        \
+    && rm -rf z3
