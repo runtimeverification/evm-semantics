@@ -8,7 +8,7 @@ RUN    echo "deb https://dl.bintray.com/sbt/debian /" >> /etc/apt/sources.list.d
     && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
 
 RUN apt update && apt upgrade --yes
-RUN apt install --yes \
+RUN apt install --yes                                                        \
         autoconf bison build-essential clang++-6.0 clang-6.0 cmake coreutils \
         diffutils flex gcc git libboost-test-dev libffi-dev libgmp-dev       \
         libjemalloc-dev libmpfr-dev libstdc++6 libtool libxml2               \
@@ -37,6 +37,14 @@ RUN    groupadd --gid $GROUP_ID user \
 USER $USER_ID:$GROUP_ID
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.28.0
 
-RUN    git clone 'https://github.com/kframework/k' --branch=nightly-0f3835d3a /home/user/k \
-    && ./home/user/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev              \
-    && rm -rf /home/user/k
+RUN    cd /home/user                                                          \
+    && git clone 'https://github.com/kframework/k' --branch=nightly-0f3835d3a \
+    && ./k/k-distribution/src/main/scripts/bin/k-configure-opam-dev           \
+    && rm -rf k
+
+RUN    cd /home/user                                                             \
+    && git clone 'https://github.com/input-output-hk/sbt-verify' --branch=v0.4.1 \
+    && cd sbt-verify                                                             \
+    && sbt publishLocal                                                          \
+    && cd ../                                                                    \
+    && rm -rf sbt-verify
