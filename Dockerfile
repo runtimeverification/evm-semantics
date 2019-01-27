@@ -6,17 +6,18 @@ RUN    ln --symbolic --no-dereference --force /usr/share/zoneinfo/$TZ /etc/local
 
 RUN apt update && apt upgrade --yes
 
-RUN    echo "deb https://dl.bintray.com/sbt/debian /" >> /etc/apt/sources.list.d/sbt.list                    \
-    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
-    && apt update
-
 RUN apt install --yes                                                        \
         autoconf bison build-essential clang++-6.0 clang-6.0 cmake coreutils \
-        diffutils flex gcc git libboost-test-dev libffi-dev libgmp-dev       \
+        diffutils flex gcc git gnupg libboost-test-dev libffi-dev libgmp-dev \
         libjemalloc-dev libmpfr-dev libstdc++6 libtool libxml2               \
         libyaml-cpp-dev llvm-6.0 m4 make maven opam openjdk-8-jdk pandoc     \
         pkg-config python3 python-jinja2 python-pygments python-recommonmark \
-        python-sphinx sbt scala time unifdef zlib1g-dev
+        python-sphinx scala time unifdef zlib1g-dev
+
+RUN    echo "deb https://dl.bintray.com/sbt/debian /" >> /etc/apt/sources.list.d/sbt.list                    \
+    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
+    && apt update                                                                                            \
+    && apt install --yes sbt
 
 RUN curl -sSL https://get.haskellstack.org/ | sh
 
