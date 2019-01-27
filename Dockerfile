@@ -14,6 +14,8 @@ RUN apt install --yes                                                        \
         pkg-config python3 python-jinja2 python-pygments python-recommonmark \
         python-sphinx scala time unifdef zlib1g-dev
 
+RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+
 RUN    echo "deb https://dl.bintray.com/sbt/debian /" >> /etc/apt/sources.list.d/sbt.list                    \
     && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
     && apt update                                                                                            \
