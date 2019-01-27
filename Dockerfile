@@ -21,20 +21,21 @@ RUN curl -sSL https://get.haskellstack.org/ | sh
 RUN cpan install App::FatPacker Getopt::Declare String::Escape String::ShellQuote UUID::Tiny
 
 RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.4 \
-    && cd z3                     \
-    && python scripts/mk_make.py \
-    && cd build                  \
-    && make -j8                  \
-    && make install              \
-    && cd ../..                  \
+    && cd z3                                                        \
+    && python scripts/mk_make.py                                    \
+    && cd build                                                     \
+    && make -j8                                                     \
+    && make install                                                 \
+    && cd ../..                                                     \
     && rm -rf z3
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
-RUN    groupadd --gid $GROUP_ID user \
+RUN    groupadd --gid $GROUP_ID user                                        \
     && useradd --create-home --uid $USER_ID --shell /bin/sh --gid user user
 
 USER $USER_ID:$GROUP_ID
+
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.28.0
 
 RUN    cd /home/user                                                          \
