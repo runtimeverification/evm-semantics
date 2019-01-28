@@ -25,7 +25,7 @@ RUN curl -sSL https://get.haskellstack.org/ | sh
 
 RUN cpan install App::FatPacker Getopt::Declare String::Escape String::ShellQuote UUID::Tiny
 
-RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.4 \
+RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.6.0 \
     && cd z3                                                        \
     && python scripts/mk_make.py                                    \
     && cd build                                                     \
