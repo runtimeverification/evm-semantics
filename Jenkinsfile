@@ -17,10 +17,6 @@ pipeline {
       steps {
         ansiColor('xterm') {
           sh '''
-            git submodule update --init
-            cd .build/k
-            git submodule update --init --recursive
-            cd ../../
             export PATH=$HOME/.local/bin:$PATH
             make deps        -B
             make build       -B -j4
