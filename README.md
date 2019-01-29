@@ -68,11 +68,23 @@ After fetching this revision, you should first run `brew unlink flex`, as it is 
 
 ### Building
 
-After installing the above dependencies, the following command will build submodule dependencies and then KEVM:
+After installing the above dependencies, make sure the submodules are setup:
+
+```sh
+git submodule update --init --recursive
+```
+
+If you haven't already setup K's OCaml dependencies more recently than February 1, 2019, then you also need to setup the K OCaml dependencies:
+
+```sh
+./.build/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev
+```
+
+Finally, you can install repository specific dependencies and build the semantics:
 
 ```sh
 make deps
-make
+make build
 ```
 
 ### OPTIONAL: K Haskell Backend
