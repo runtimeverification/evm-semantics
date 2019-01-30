@@ -157,7 +157,7 @@ run_test_profile() {
     [[ -d "$output_log_dir" ]] || mkdir -p "$output_log_dir"
 
     exit_status='0'
-    `which time` --quiet --format '%x %Us %Ss %MKB %C' --output "$test_log" --append \
+    `which time` --quiet --format '%x %es %Us %Ss %MKB %C' --output "$test_log" --append \
         bash -c "$0 test --backend $backend $test_file $@" \
         1> "$stdout_log" 2> "$stderr_log" \
         || exit_status="$?"
