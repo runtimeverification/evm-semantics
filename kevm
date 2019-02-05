@@ -80,9 +80,9 @@ run_proof() {
     run_env "$proof_file"
     export K_OPTS=-Xmx5G
     case "$backend" in
-        haskell)      args=(--haskell-backend-command "$build_dir/kore/bin/kore-exec")                                   ;;
-        haskell-perf) args=(--haskell-backend-command "$build_dir/kore/bin/kore-exec +RTS -p -h -RTS") ; backend=haskell ;;
-        *)            args=() ; backend=java                                                                             ;;
+        haskell)      args=()                                                                        ;;
+        haskell-perf) args=(--haskell-backend-command "kore-exec +RTS -p -h -RTS") ; backend=haskell ;;
+        *)            args=() ; backend=java                                                         ;;
     esac
     kprove --directory "$build_dir/$backend/" "$proof_file" --def-module VERIFICATION "${args[@]-}" "$@"
 }
