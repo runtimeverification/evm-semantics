@@ -26,7 +26,7 @@ pipeline {
         }
       }
     }
-    stage('Test') {
+    stage('Test Execution') {
       parallel {
         stage('Conformance') {
           steps {
@@ -35,18 +35,6 @@ pipeline {
                 export PATH=$HOME/.local/bin:$PATH
                 nprocs=$(nproc)
                 make test-concrete -j"$nprocs"
-              '''
-            }
-          }
-        }
-        stage('Proofs') {
-          steps {
-            ansiColor('xterm') {
-              sh '''
-                export PATH=$HOME/.local/bin:$PATH
-                nprocs=$(nproc)
-                [ "$nprocs" -gt '6' ] && nprocs='6'
-                make test-proof -j"$nprocs"
               '''
             }
           }
@@ -67,6 +55,18 @@ pipeline {
               '''
             }
           }
+        }
+      }
+    }
+    stage('Test Proofs') {
+      steps {
+        ansiColor('xterm') {
+          sh '''
+            export PATH=$HOME/.local/bin:$PATH
+            nprocs=$(nproc)
+            [ "$nprocs" -gt '6' ] && nprocs='6'
+            make test-proof -j"$nprocs"
+          '''
         }
       }
     }
