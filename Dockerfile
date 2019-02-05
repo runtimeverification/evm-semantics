@@ -4,12 +4,14 @@ ENV TZ=America/Chicago
 RUN    ln --symbolic --no-dereference --force /usr/share/zoneinfo/$TZ /etc/localtime \
     && echo $TZ > /etc/timezone
 
-RUN    apt update                                                           \
-    && apt upgrade --yes                                                    \
-    && apt install --yes                                                    \
-           autoconf curl flex gcc libffi-dev libmpfr-dev libtool make maven \
-           opam openjdk-8-jdk pandoc pkg-config python3 python-pygments     \
-           python-recommonmark python-sphinx time zlib1g-dev
+RUN    apt update                                                            \
+    && apt upgrade --yes                                                     \
+    && apt install --yes                                                     \
+           autoconf curl flex gcc libffi-dev libmpfr-dev libtool make maven  \
+           opam openjdk-8-jdk pandoc pkg-config python3 python-pygments      \
+           python-recommonmark python-sphinx time zlib1g-dev libcrypto++-dev \
+           libsecp256k1-dev cmake libssl-dev libprocps-dev clang-6.0 bison   \
+           libboost-test-dev libyaml-cpp-dev libjemalloc-dev
 
 RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 
@@ -23,6 +25,16 @@ RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.6.0 \
     && make install                                                 \
     && cd ../..                                                     \
     && rm -rf z3
+
+RUN    git clone 'https://github.com/scipr-lab/libff' --recursive        \
+    && cd libff                                                         \
+    && mkdir build                                                      \
+    && cd build                                                         \
+    && CC=clang-6.0 CXX=clang++-6.0 cmake .. -DCMAKE_BUILD_TYPE=Release \
+    && make -j8                                                         \
+    && make install                                                     \
+    && cd ../..                                                         \
+    && rm -rf libff
 
 RUN    echo "deb https://dl.bintray.com/sbt/debian /" >> /etc/apt/sources.list.d/sbt.list                    \
     && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \

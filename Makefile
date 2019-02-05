@@ -45,6 +45,8 @@ distclean: clean
 # Dependencies
 # ------------
 
+llvm-deps: deps
+llvm-deps: LLVM_BACKEND=
 deps: repo-deps system-deps
 repo-deps: tangle-deps k-deps plugin-deps
 system-deps: ocaml-deps
@@ -52,11 +54,13 @@ k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 
+LLVM_BACKEND:=-Dllvm.backend.skip
+
 $(K_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init --recursive -- $(K_SUBMODULE)
 	cd $(K_SUBMODULE) \
-	    && mvn package -q -DskipTests -U -Dllvm.backend.skip
+	    && mvn package -q -DskipTests -U ${LLVM_BACKEND}
 	touch $(K_SUBMODULE)/make.timestamp
 
 $(PANDOC_TANGLE_SUBMODULE)/make.timestamp:
