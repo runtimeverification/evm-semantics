@@ -2,7 +2,11 @@ pipeline {
   agent {
     dockerfile {
       additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+      args '-m 60g'
     }
+  }
+  options {
+    lock('proofs')
   }
   stages {
     stage("Init title") {
