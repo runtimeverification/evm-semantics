@@ -906,9 +906,10 @@ In `node` mode, the semantics are given in terms of an external call to a runnin
     rule <k> #lookupStorage ACCT INDEX => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <storage> ... INDEX |-> _ ... </storage>
+           <storage> STORAGE:Map </storage>
            ...
          </account>
+      requires INDEX in_keys(STORAGE)
 ```
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
