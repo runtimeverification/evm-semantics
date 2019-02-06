@@ -1276,7 +1276,6 @@ These rules reach into the network state and load/store from account storage:
          </account>
          <refund> R => R +Int Rsstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) </refund>
          <schedule> SCHED </schedule>
-
 ```
 
 ### Call Operations
