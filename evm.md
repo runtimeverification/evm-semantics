@@ -62,7 +62,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             // \mu_*
             <wordStack>   .WordStack </wordStack>           // \mu_s
-            <localMem>    .Map       </localMem>            // \mu_m
+            <localMem>    .IMap      </localMem>            // \mu_m
             <pc>          0          </pc>                  // \mu_pc
             <gas>         0          </gas>                 // \mu_g
             <memoryUsed>  0          </memoryUsed>          // \mu_i
@@ -121,8 +121,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <acctID>      0                      </acctID>
               <balance>     0                      </balance>
               <code>        .WordStack:AccountCode </code>
-              <storage>     .Map                   </storage>
-              <origStorage> .Map                   </origStorage>
+              <storage>     .IMap                  </storage>
+              <origStorage> .IMap                  </origStorage>
               <nonce>       0                      </nonce>
             </account>
           </accounts>

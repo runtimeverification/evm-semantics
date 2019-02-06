@@ -10,10 +10,22 @@ Both are implemented using K's `Int`.
 ```k
 requires "krypto.k"
 
+module EVM-IMAP
+    imports MAP
+    syntax IMap ::= Map
+    syntax IMap ::= ".IMap" [function]
+    rule .IMap => .Map
+
+    syntax IMap ::= IMap "[" Int "<-" Int "]" [function, klabel(iMapUpdate)]
+ // ------------------------------------------------------------------------
+    rule iMapUpdate( M:Map, KEY, VAL ) => mapUpdate( M, KEY, VAL ) [concrete]
+endmodule
+
 module EVM-DATA
     imports KRYPTO
     imports STRING-BUFFER
     imports MAP
+    imports EVM-IMAP
     imports COLLECTIONS
 
     syntax KResult ::= Int
@@ -624,23 +636,23 @@ We are using the polymorphic `Map` sort for these word maps.
 -   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
 
 ```k
-    syntax Map ::= Map "[" Int ":=" WordStack "]" [function]
- // --------------------------------------------------------
+    syntax IMap ::= IMap "[" Int ":=" WordStack "]" [function]
+ // ----------------------------------------------------------
     rule WM[ N := .WordStack ] => WM
     rule WM[ N := W : WS     ] => (WM[N <- W])[N +Int 1 := WS]
 
-    syntax Map ::= #asMapWordStack ( WordStack ) [function]
- // -------------------------------------------------------
+    syntax IMap ::= #asMapWordStack ( WordStack ) [function]
+ // --------------------------------------------------------
     rule #asMapWordStack(WS:WordStack) => .Map [ 0 := WS ]
 
     syntax Int ::= getInt(KItem) [function]
  // ---------------------------------------
     rule getInt(I:Int) => I
 
-    syntax WordStack ::= #range ( Map , Int , Int )            [function]
-    syntax WordStack ::= #range ( Map , Int , Int , WordStack) [function, klabel(#rangeAux)]
- // ----------------------------------------------------------------------------------------
-    rule #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack)
+    syntax WordStack ::= #range ( IMap , Int , Int )            [function]
+    syntax WordStack ::= #range (  Map , Int , Int , WordStack) [function, klabel(#rangeAux)]
+ // -----------------------------------------------------------------------------------------
+    rule #range(WM:Map, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack)
 ```
 
 ```{.k .concrete}
@@ -669,8 +681,8 @@ We are using the polymorphic `Map` sort for these word maps.
 -   `#lookup` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 ```k
-    syntax Int ::= #lookup ( Map , Int ) [function]
- // -----------------------------------------------
+    syntax Int ::= #lookup ( IMap , Int ) [function]
+ // ------------------------------------------------
     rule #lookup( (KEY |-> VAL) M, KEY ) => VAL
     rule #lookup(               M, KEY ) => 0 requires notBool KEY in_keys(M)
 ```
