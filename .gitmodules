@@ -27,7 +27,3 @@
 [submodule ".build/media/metropolis"]
 	path = .build/media/metropolis
 	url = https://github.com/matze/mtheme
-[submodule ".build/kore"]
-	path = .build/kore
-	url = https://github.com/kframework/kore
-	ignore = untracked

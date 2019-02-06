@@ -55,10 +55,10 @@ run_krun() {
     run_env "$run_file"
     export K_OPTS=-Xss500m
     case "$backend" in
-        haskell)      args=(--haskell-backend-command "$build_dir/kore/bin/kore-exec")                                   ;;
-        haskell-perf) args=(--haskell-backend-command "$build_dir/kore/bin/kore-exec +RTS -p -h -RTS") ; backend=haskell ;;
-        ocaml)        args=(--interpret)                                                                                 ;;
-        *)            args=()                                                                                            ;;
+        haskell)      args=()                                                                        ;;
+        haskell-perf) args=(--haskell-backend-command "kore-exec +RTS -p -h -RTS") ; backend=haskell ;;
+        ocaml)        args=(--interpret)                                                             ;;
+        *)            args=()                                                                        ;;
     esac
     krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "${args[@]-}" "$@"
 }
@@ -74,11 +74,17 @@ run_ksearch() {
 }
 
 run_proof() {
+    local backend=$1  ; shift
     local proof_file="$1" ; shift
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
     run_env "$proof_file"
     export K_OPTS=-Xmx5G
-    kprove --directory "$build_dir/java/" "$proof_file" --def-module VERIFICATION "$@"
+    case "$backend" in
+        haskell)      args=()                                                                        ;;
+        haskell-perf) args=(--haskell-backend-command "kore-exec +RTS -p -h -RTS") ; backend=haskell ;;
+        *)            args=() ; backend=java                                                         ;;
+    esac
+    kprove --directory "$build_dir/$backend/" "$proof_file" --def-module VERIFICATION "${args[@]-}" "$@"
 }
 
 # Dev Commands
@@ -115,7 +121,7 @@ run_test() {
 
     case "$test_file" in
         *proofs/*)
-            run_proof "$test_file" --debug "$@"
+            run_proof "$backend" "$test_file" --debug "$@"
             ;;
         *interactive/*)
             run_krun ocaml "$test_file" "$@" > "$output_file" \
@@ -157,7 +163,7 @@ run_test_profile() {
     [[ -d "$output_log_dir" ]] || mkdir -p "$output_log_dir"
 
     exit_status='0'
-    `which time` --quiet --format '%x %Us %Ss %MKB %C' --output "$test_log" --append \
+    `which time` --quiet --format '%x %es %Us %Ss %MKB %C' --output "$test_log" --append \
         bash -c "$0 test --backend $backend $test_file $@" \
         1> "$stdout_log" 2> "$stderr_log" \
         || exit_status="$?"
@@ -209,7 +215,7 @@ case "$run_command" in
     run)          run_krun      "$backend"  "$@"    ;;
     debug)        run_kdebug                "$@"    ;;
     search)       run_ksearch               "$@"    ;;
-    prove)        run_proof                 "$@"    ;;
+    prove)        run_proof     "$backend"  "$@"    ;;
 
     # Testing
     interpret)    run_interpreter               "$@"    ;;
@@ -224,7 +230,7 @@ case "$run_command" in
 
         $0 run            [--backend <backend>] <pgm>   <K args>*
         $0 [debug|search]                       <pgm>   <K args>*
-        $0 prove                                <spec>  <K args>*
+        $0 prove          [--backend <backend>] <spec>  <K args>*
 
     -   run         Run a single EVM program
     -   debug       Run a single EVM program in the debugger
@@ -240,7 +246,7 @@ case "$run_command" in
     -   --debug: output more debugging information when running/proving.
 
     <backend> is one of [ocaml|java|haskell|haskell-perf].
-    Default: ocaml
+    Default: ocaml for execution, java for prove
 
     Examples:
 

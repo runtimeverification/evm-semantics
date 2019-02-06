@@ -193,6 +193,8 @@ These are the individual test-suites (all of these can be suffixed with `-all` t
 -   `make test-proof`: Proofs from the [Verified Smart Contracts].
 -   `make test-interactive`: Tests of the `./kevm` command and of [analysis tools](analysis.md).
 
+When running tests with the `Makefile`, you can specify the `TEST_CONCRETE_BACKEND` (for concrete tests), or `TEST_SYMBOLIC_BACKEND` (for proofs).
+
 Media
 -----
 

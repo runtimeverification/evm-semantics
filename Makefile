@@ -18,10 +18,7 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-KORE_SUBMODULE:=$(BUILD_DIR)/kore
-KORE_SUBMODULE_SRC:=$(KORE_SUBMODULE)/src/main/haskell/kore
-
-.PHONY: all clean deps repo-deps system-deps k-deps tangle-deps ocaml-deps plugin-deps kore-deps \
+.PHONY: all clean deps repo-deps system-deps k-deps ocaml-deps plugin-deps \
         build build-ocaml build-java build-node build-kore split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn \
         test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
@@ -51,15 +48,13 @@ distclean: clean
 deps: repo-deps system-deps
 repo-deps: tangle-deps k-deps plugin-deps
 system-deps: ocaml-deps
-haskell-deps: tangle-deps k-deps kore-deps
 k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
-kore-deps: $(KORE_SUBMODULE)/make.timestamp
 
 $(K_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
-	git submodule update --init -- $(K_SUBMODULE)
+	git submodule update --init --recursive -- $(K_SUBMODULE)
 	cd $(K_SUBMODULE) \
 	    && mvn package -q -DskipTests -U -Dllvm.backend.skip
 	touch $(K_SUBMODULE)/make.timestamp
@@ -73,13 +68,6 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init --recursive -- $(PLUGIN_SUBMODULE)
 	touch $(PLUGIN_SUBMODULE)/make.timestamp
-
-$(KORE_SUBMODULE)/make.timestamp:
-	@echo "== submodule: $@"
-	git submodule update --init -- $(KORE_SUBMODULE)
-	cd $(KORE_SUBMODULE) \
-        && stack install --profile --local-bin-path $(abspath $(KORE_SUBMODULE))/bin kore:exe:kore-exec
-	touch ${KORE_SUBMODULE}/make.timestamp
 
 ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 	eval $$(opam config env) \
@@ -229,7 +217,8 @@ endif
 # -----
 
 # Override this with `make TEST=echo` to list tests instead of running
-TEST_BACKEND:=ocaml
+TEST_CONCRETE_BACKEND:=ocaml
+TEST_SYMBOLIC_BACKEND:=java
 TEST:=./kevm test-profile
 
 test-all: test-all-concrete test-all-proof
@@ -307,10 +296,10 @@ test-vm-normal: $(quick_vm_tests:=.testnormal)
 test-vm-haskell-perf: $(haskell_perf_tests:=.haskellperf)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/%
-	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) --backend $(TEST_BACKEND) $<
+	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
 
 tests/ethereum-tests/VMTests/%.testnormal: tests/ethereum-tests/VMTests/%
-	SCHEDULE=DEFAULT $(TEST) --backend $(TEST_BACKEND) $<
+	SCHEDULE=DEFAULT $(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
 
 tests/ethereum-tests/VMTests/%.haskellperf: tests/ethereum-tests/VMTests/%
 	SCHEDULE=DEFAULT $(TEST) --backend java         $< || true
@@ -335,7 +324,7 @@ test-slow-bchain: $(slow_bchain_tests:=.test)
 test-bchain: $(quick_bchain_tests:=.test)
 
 tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/%
-	$(TEST) --backend $(TEST_BACKEND) $<
+	$(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
 
 # InteractiveTests
 
@@ -345,10 +334,10 @@ interactive_tests:=$(wildcard tests/interactive/*.json) \
 test-interactive: $(interactive_tests:=.test)
 
 tests/interactive/%.json.test: tests/interactive/%.json
-	$(TEST) --backend $(TEST_BACKEND) $<
+	$(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
 
 tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out
-	MODE=GASANALYZE $(TEST) --backend $(TEST_BACKEND) $<
+	MODE=GASANALYZE $(TEST) --backend $(TEST_SYMBOLIC_BACKEND) $<
 
 # ProofTests
 
@@ -361,7 +350,7 @@ test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add1
 	./kevm run --backend java $< | diff - tests/templates/output-success-java.json
 
 $(proof_dir)/%.test: $(proof_dir)/% split-proof-tests
-	$(TEST) $<
+	$(TEST) --backend $(TEST_SYMBOLIC_BACKEND) $<
 
 split-proof-tests: tests/proofs/make.timestamp
 	$(MAKE) -C tests/proofs $@

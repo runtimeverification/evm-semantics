@@ -4,12 +4,12 @@ ENV TZ=America/Chicago
 RUN    ln --symbolic --no-dereference --force /usr/share/zoneinfo/$TZ /etc/localtime \
     && echo $TZ > /etc/timezone
 
-RUN apt update && apt upgrade --yes
-
-RUN apt install --yes                                                    \
-        autoconf curl flex gcc libffi-dev libmpfr-dev libtool make maven \
-        opam openjdk-8-jdk pandoc pkg-config python3 python-pygments     \
-        python-recommonmark python-sphinx time zlib1g-dev
+RUN    apt update                                                           \
+    && apt upgrade --yes                                                    \
+    && apt install --yes                                                    \
+           autoconf curl flex gcc libffi-dev libmpfr-dev libtool make maven \
+           opam openjdk-8-jdk pandoc pkg-config python3 python-pygments     \
+           python-recommonmark python-sphinx time zlib1g-dev
 
 RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 
