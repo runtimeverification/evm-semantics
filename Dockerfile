@@ -43,6 +43,12 @@ ADD .build/k/k-distribution/src/main/scripts/lib/opam  /home/user/.tmp-opam/lib/
 RUN    cd /home/user \
     && ./.tmp-opam/bin/k-configure-opam-dev
 
+ENV LC_ALL=C.UTF-8
+ADD --chown=user:user .build/k/haskell-backend/src/main/native/haskell-backend/stack.yaml /home/user/.tmp-haskell/
+ADD --chown=user:user .build/k/haskell-backend/src/main/native/haskell-backend/src/main/haskell/kore/package.yaml /home/user/.tmp-haskell/src/main/haskell/kore/
+RUN    cd /home/user/.tmp-haskell \
+    && stack build --only-snapshot --test --bench --haddock --library-profiling
+
 RUN    cd /home/user                                                             \
     && git clone 'https://github.com/input-output-hk/sbt-verify' --branch=v0.4.1 \
     && cd sbt-verify                                                             \
