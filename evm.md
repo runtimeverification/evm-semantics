@@ -906,9 +906,10 @@ In `node` mode, the semantics are given in terms of an external call to a runnin
     rule <k> #lookupStorage ACCT INDEX => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <storage> ... INDEX |-> _ ... </storage>
+           <storage> STORAGE:Map </storage>
            ...
          </account>
+      requires INDEX in_keys(STORAGE)
 ```
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
@@ -1341,19 +1342,11 @@ These rules reach into the network state and load/store from account storage:
 ```k
     syntax UnStackOp ::= "SLOAD"
  // ----------------------------
-    rule <k> SLOAD INDEX => 0 ~> #push ... </k>
+    rule <k> SLOAD INDEX => #lookup(STORAGE, INDEX) ~> #push ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
-           ...
-         </account> requires notBool INDEX in_keys(STORAGE)
-
-    rule <k> SLOAD INDEX => VALUE ~> #push ... </k>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> ... INDEX |-> VALUE ... </storage>
            ...
          </account>
 
@@ -1363,24 +1356,12 @@ These rules reach into the network state and load/store from account storage:
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> ... (INDEX |-> (CURR => NEW)) ... </storage>
-           <origStorage> ORIGSTORAGE </origStorage>
-           ...
-         </account>
-         <refund> R => R +Int Rsstore(SCHED, NEW, CURR, #lookup(ORIGSTORAGE, INDEX)) </refund>
-         <schedule> SCHED </schedule>
-
-    rule <k> SSTORE INDEX NEW => . ... </k>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
            <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
            <origStorage> ORIGSTORAGE </origStorage>
            ...
          </account>
-         <refund> R => R +Int Rsstore(SCHED, NEW, 0, #lookup(ORIGSTORAGE, INDEX)) </refund>
+         <refund> R => R +Int Rsstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) </refund>
          <schedule> SCHED </schedule>
-      requires notBool (INDEX in_keys(STORAGE))
 
 ```
 
