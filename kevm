@@ -78,7 +78,7 @@ run_proof() {
     local proof_file="$1" ; shift
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
     run_env "$proof_file"
-    export K_OPTS=-Xmx5G
+    export K_OPTS=-Xmx8G
     case "$backend" in
         haskell)      args=()                                                                        ;;
         haskell-perf) args=(--haskell-backend-command "kore-exec +RTS -p -h -RTS") ; backend=haskell ;;
