@@ -904,9 +904,9 @@ module EVM-DATA-SYMBOLIC [symbolic]
 ### Symbolic Word Map
 
 ```k
-    syntax Map ::= store  ( Map , Int , Int ) [function, smtlib(smt_store) ]
-    syntax Int ::= select ( Map , Int )       [function, smtlib(smt_select)]
- // ------------------------------------------------------------------------
+    syntax Map ::= store  ( Map , Int , Int ) [function, smtlib(storeInt) ]
+    syntax Int ::= select ( Map , Int )       [function, smtlib(selectInt)]
+ // -----------------------------------------------------------------------
     rule select(store(M, K0, V), K) => V            requires K0  ==Int K
     rule select(store(M, K0, V), K) => select(M, K) requires K0 =/=Int K
 
@@ -945,8 +945,8 @@ module EVM-DATA-SYMBOLIC [symbolic]
 
     // lifting
 
-    rule #lookup(M, K)    => select(M, K)   requires notBool (#isConcrete(M) andBool #isConcrete(K))
-    rule M:Map [K <- V ]  => store(M, K, V) requires notBool (#isConcrete(M) andBool #isConcrete(K) andBool #isConcrete(V))
+    rule #lookup(M, K:Int)         => select(M, K)   requires notBool (#isConcrete(M) andBool #isConcrete(K))
+    rule M:Map [ K:Int <- V:Int ]  => store(M, K, V) requires notBool (#isConcrete(M) andBool #isConcrete(K) andBool #isConcrete(V))
 
     rule #range(M, START, WIDTH) => selectRange(M, START, WIDTH)                 requires notBool (#isConcrete(M) andBool #isConcrete(START) andBool #isConcrete(WIDTH))
     rule M [ START := WS ]       => storeRange(M, START, #sizeWordStack(WS), WS) requires notBool (#isConcrete(M) andBool #isConcrete(START) andBool #isConcrete(WS))
