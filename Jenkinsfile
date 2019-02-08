@@ -43,6 +43,17 @@ pipeline {
             }
           }
         }
+        stage('Conformance (LLVM)') {
+          steps {
+            ansiColor('xterm') {
+              sh '''
+                export PATH=$HOME/.local/bin:$PATH
+                nprocs=$(nproc)
+                make TEST_CONCRETE_BACKEND=llvm test-concrete -j"$nprocs"
+              '''
+            }
+          }
+        }
         stage('Mantis') {
           steps {
             ansiColor('xterm') {
