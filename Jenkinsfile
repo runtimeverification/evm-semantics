@@ -22,7 +22,7 @@ pipeline {
         ansiColor('xterm') {
           sh '''
             export PATH=$HOME/.local/bin:$PATH
-            make deps        -B
+            make llvm-deps   -B
             make build       -B -j4
             make build-llvm
             make split-tests -B
