@@ -329,7 +329,8 @@ The `#next` operator executes a single step by:
 ```k
     rule <mode> EXECMODE </mode>
          <k> #next
-          => #exceptional? [ OP ]
+          => #stackNeeded? [ OP ]
+          ~> #static?      [ OP ]
           ~> #load         [ OP ]
           ~> #exec         [ OP ]
           ~> #pc           [ OP ]
@@ -340,30 +341,7 @@ The `#next` operator executes a single step by:
       requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
 ```
 
-### Exceptional OpCodes
-
--   `#exceptional?` checks if the operator is invalid and will not cause `wordStack` size issues (this implements the function `Z` in the YellowPaper, section 9.4.2).
-
-```k
-    syntax InternalOp ::= "#exceptional?" "[" OpCode "]"
- // ----------------------------------------------------
-    rule <k> #exceptional? [ OP ]
-          => #invalid?     [ OP ]
-          ~> #stackNeeded? [ OP ]
-          ~> #static?      [ OP ]
-         ...
-         </k>
-```
-
--   `#invalid?` checks if it's the designated invalid opcode or some undefined opcode.
-
-```k
-    syntax InternalOp ::= "#invalid?" "[" OpCode "]"
- // ------------------------------------------------
-    rule <k> #invalid? [ INVALID      ] => #end EVMC_INVALID_INSTRUCTION   ... </k>
-    rule <k> #invalid? [ UNDEFINED(_) ] => #end EVMC_UNDEFINED_INSTRUCTION ... </k>
-    rule <k> #invalid? [ OP           ] => .                               ... </k> requires notBool isInvalidOp(OP)
-```
+### Exceptional Checks
 
 -   `#stackNeeded?` checks that the stack will be not be under/overflown.
 -   `#stackNeeded`, `#stackAdded`, and `#stackDelta` are helpers for deciding `#stackNeeded?`.
@@ -392,6 +370,7 @@ The `#next` operator executes a single step by:
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
     rule #stackNeeded(PUSH(_, _))      => 0
+    rule #stackNeeded(IOP:InvalidOp)   => 0
     rule #stackNeeded(NOP:NullStackOp) => 0
     rule #stackNeeded(UOP:UnStackOp)   => 1
     rule #stackNeeded(BOP:BinStackOp)  => 2 requires notBool isLogOp(BOP)
@@ -424,6 +403,7 @@ The `#next` operator executes a single step by:
     rule #stackAdded(LOG(_))         => 0
     rule #stackAdded(SWAP(N))        => N
     rule #stackAdded(DUP(N))         => N +Int 1
+    rule #stackAdded(IOP:InvalidOp)  => 0
     rule #stackAdded(OP)             => 1 [owise]
 
     syntax Int ::= #stackDelta ( OpCode ) [function]
@@ -447,92 +427,14 @@ The `#next` operator executes a single step by:
 ```k
     syntax Bool ::= #changesState ( OpCode , WordStack ) [function]
  // ---------------------------------------------------------------
-    rule #changesState(LOG(_), _)               => true
-    rule #changesState(SSTORE, _)               => true
     rule #changesState(CALL, _ : _ : VALUE : _) => VALUE =/=Int 0
-    rule #changesState(CREATE, _)               => true
-    rule #changesState(CREATE2, _)              => true
-    rule #changesState(SELFDESTRUCT, _)         => true
-
-    rule #changesState(DUP(_), _)         => false
-    rule #changesState(SWAP(_), _)        => false
-    rule #changesState(PUSH(_, _), _)     => false
-    rule #changesState(STOP, _)           => false
-    rule #changesState(ADD, _)            => false
-    rule #changesState(MUL, _)            => false
-    rule #changesState(SUB, _)            => false
-    rule #changesState(DIV, _)            => false
-    rule #changesState(SDIV, _)           => false
-    rule #changesState(MOD, _)            => false
-    rule #changesState(SMOD, _)           => false
-    rule #changesState(ADDMOD, _)         => false
-    rule #changesState(MULMOD, _)         => false
-    rule #changesState(EXP, _)            => false
-    rule #changesState(SIGNEXTEND, _)     => false
-    rule #changesState(LT, _)             => false
-    rule #changesState(GT, _)             => false
-    rule #changesState(SLT, _)            => false
-    rule #changesState(SGT, _)            => false
-    rule #changesState(EQ, _)             => false
-    rule #changesState(ISZERO, _)         => false
-    rule #changesState(AND, _)            => false
-    rule #changesState(EVMOR, _)          => false
-    rule #changesState(XOR, _)            => false
-    rule #changesState(NOT, _)            => false
-    rule #changesState(BYTE, _)           => false
-    rule #changesState(SHL, _)            => false
-    rule #changesState(SHR, _)            => false
-    rule #changesState(SAR, _)            => false
-    rule #changesState(SHA3, _)           => false
-    rule #changesState(ADDRESS, _)        => false
-    rule #changesState(BALANCE, _)        => false
-    rule #changesState(ORIGIN, _)         => false
-    rule #changesState(CALLER, _)         => false
-    rule #changesState(CALLVALUE, _)      => false
-    rule #changesState(CALLDATALOAD, _)   => false
-    rule #changesState(CALLDATASIZE, _)   => false
-    rule #changesState(CALLDATACOPY, _)   => false
-    rule #changesState(CODESIZE, _)       => false
-    rule #changesState(CODECOPY, _)       => false
-    rule #changesState(GASPRICE, _)       => false
-    rule #changesState(EXTCODESIZE, _)    => false
-    rule #changesState(EXTCODECOPY, _)    => false
-    rule #changesState(RETURNDATASIZE, _) => false
-    rule #changesState(RETURNDATACOPY, _) => false
-    rule #changesState(EXTCODEHASH, _)    => false
-    rule #changesState(BLOCKHASH, _)      => false
-    rule #changesState(COINBASE, _)       => false
-    rule #changesState(TIMESTAMP, _)      => false
-    rule #changesState(NUMBER, _)         => false
-    rule #changesState(DIFFICULTY, _)     => false
-    rule #changesState(GASLIMIT, _)       => false
-    rule #changesState(POP, _)            => false
-    rule #changesState(MLOAD, _)          => false
-    rule #changesState(MSTORE, _)         => false
-    rule #changesState(MSTORE8, _)        => false
-    rule #changesState(SLOAD, _)          => false
-    rule #changesState(JUMP, _)           => false
-    rule #changesState(JUMPI, _)          => false
-    rule #changesState(PC, _)             => false
-    rule #changesState(MSIZE, _)          => false
-    rule #changesState(GAS, _)            => false
-    rule #changesState(JUMPDEST, _)       => false
-    rule #changesState(CALLCODE, _)       => false
-    rule #changesState(RETURN, _)         => false
-    rule #changesState(DELEGATECALL, _)   => false
-    rule #changesState(STATICCALL, _)     => false
-    rule #changesState(REVERT, _)         => false
-    rule #changesState(INVALID, _)        => false
-    rule #changesState(UNDEFINED(_), _)   => false
-
-    rule #changesState(ECREC, _)     => false
-    rule #changesState(SHA256, _)    => false
-    rule #changesState(RIP160, _)    => false
-    rule #changesState(ID, _)        => false
-    rule #changesState(MODEXP, _)    => false
-    rule #changesState(ECADD, _)     => false
-    rule #changesState(ECMUL, _)     => false
-    rule #changesState(ECPAIRING, _) => false
+    rule #changesState(OP,   _)                 => ( isLogOp(OP)
+                                              orBool OP ==K SSTORE
+                                              orBool OP ==K CREATE
+                                              orBool OP ==K CREATE2
+                                              orBool OP ==K SELFDESTRUCT
+                                                   )
+      requires notBool OP ==K CALL
 ```
 
 ### Execution Step
@@ -542,6 +444,8 @@ The `#next` operator executes a single step by:
 ```k
     syntax InternalOp ::= "#exec" "[" OpCode "]"
  // --------------------------------------------
+    rule <k> #exec [ IOP:InvalidOp ] => IOP ... </k>
+
     rule <k> #exec [ OP ] => #gas [ OP ] ~> OP ... </k> requires isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
 ```
 
@@ -665,9 +569,17 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
 ```k
     syntax InternalOp ::= "#pc" "[" OpCode "]"
  // ------------------------------------------
-    rule <k> #pc [ OP         ] => . ... </k> <pc> PCOUNT => PCOUNT +Int 1          </pc> requires notBool (isPushOp(OP) orBool isJumpOp(OP))
-    rule <k> #pc [ PUSH(N, _) ] => . ... </k> <pc> PCOUNT => PCOUNT +Int (1 +Int N) </pc>
-    rule <k> #pc [ OP         ] => . ... </k> requires isJumpOp(OP)
+    rule <k> #pc [ OP ] => . ... </k>
+         <pc> PCOUNT => PCOUNT +Int #widthOp(OP) </pc>
+      requires notBool isJumpOp(OP)
+
+    rule <k> #pc [ OP ] => . ... </k>
+      requires isJumpOp(OP)
+
+    syntax Int ::= #widthOp ( OpCode ) [function]
+ // ---------------------------------------------
+    rule #widthOp(PUSH(N, _)) => 1 +Int N
+    rule #widthOp(OP)         => 1        requires notBool isPushOp(OP)
 
     syntax Bool ::= isJumpOp ( OpCode ) [function]
  // ----------------------------------------------
@@ -701,7 +613,7 @@ After executing a transaction, it's necessary to have the effect of the substate
            ...
          </account>
 
-    rule #finalizeStorage(.List) => .
+    rule <k> #finalizeStorage(.List) => . ... </k>
 
     syntax InternalOp ::= #finalizeTx ( Bool )
                         | #deleteAccounts ( List )
@@ -968,6 +880,8 @@ We use `INVALID` both for marking the designated invalid operator, and `UNDEFINE
 ```k
     syntax InvalidOp ::= "INVALID" | "UNDEFINED" "(" Int ")"
  // --------------------------------------------------------
+    rule <k> INVALID      => #end EVMC_INVALID_INSTRUCTION   ... </k>
+    rule <k> UNDEFINED(_) => #end EVMC_UNDEFINED_INSTRUCTION ... </k>
 ```
 
 ### Stack Manipulations
@@ -1362,7 +1276,6 @@ These rules reach into the network state and load/store from account storage:
          </account>
          <refund> R => R +Int Rsstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) </refund>
          <schedule> SCHED </schedule>
-
 ```
 
 ### Call Operations
@@ -1421,8 +1334,11 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          ...
          </k>
          <schedule> SCHED </schedule>
-         <acctID> ACCTCODE </acctID>
-         <code> CODE </code>
+         <account>
+           <acctID> ACCTCODE </acctID>
+           <code> CODE </code>
+           ...
+         </account>
       requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT:Int VALUE APPVALUE ARGS STATIC
