@@ -23,7 +23,7 @@ export LUA_PATH
         defn java-defn ocaml-defn node-defn haskell-defn \
         test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-        test-proof test-interactive test-vm-normal test-vm-haskell-perf \
+        test-proof test-interactive test-vm-haskell \
         metropolis-theme 2017-devcon3 sphinx
 .SECONDARY:
 
@@ -88,7 +88,7 @@ K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
 # Building
 # --------
 
-build: build-ocaml build-java build-node
+build: build-ocaml build-java build-node build-haskell
 build-ocaml: .build/ocaml/driver-kompiled/interpreter
 build-java: .build/java/driver-kompiled/timestamp
 build-node: .build/vm/kevm-vm
@@ -234,7 +234,7 @@ tests/%/make.timestamp:
 # Concrete Tests
 
 test-all-concrete: test-all-conformance test-interactive
-test-concrete: test-conformance test-interactive
+test-concrete: test-conformance test-interactive test-vm-haskell
 
 # Ethereum Tests
 
@@ -267,43 +267,19 @@ bad_vm_tests= $(wildcard tests/ethereum-tests/VMTests/vmBlockInfoTest/blockhash*
 all_vm_tests=$(filter-out $(bad_vm_tests), $(vm_tests))
 quick_vm_tests=$(filter-out $(slow_vm_tests), $(all_vm_tests))
 
-# Based on (time haskell / time java) over 592 tests
-# timeouts: 44
-# min: 6.74
-# max: 915.06
-# median: 28.46
-# tests with >=4x median slowdown (including timeouts): 70
-# representative tests
-haskell_perf_tests=tests/ethereum-tests/VMTests/vmArithmeticTest/expPowerOf256Of256_1.json \
-                   tests/ethereum-tests/VMTests/vmArithmeticTest/arith1.json \
-                   tests/ethereum-tests/VMTests/vmArithmeticTest/fibbonacci_unrolled.json \
-                   tests/ethereum-tests/VMTests/vmPushDupSwapTest/push33.json \
-                   tests/ethereum-tests/VMTests/vmEnvironmentalInfo/calldatacopy_sec.json \
-                   tests/ethereum-tests/VMTests/vmSha3Test/sha3_0.json \
-                   tests/ethereum-tests/VMTests/vmSha3Test/sha3_memSizeQuadraticCost32.json \
-                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/jumpi_at_the_end.json \
-                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/jumpdestBigList.json \
-                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/for_loop2.json \
-                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/BlockNumberDynamicJump0_foreverOutOfGas.json \
-                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/byte1.json \
-                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/jump0_foreverOutOfGas.json \
-                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/loop_stacklimit_1020.json
+haskell_vm_tests=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
+                 tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json
 
 test-all-vm: $(all_vm_tests:=.test)
 test-slow-vm: $(slow_vm_tests:=.test)
 test-vm: $(quick_vm_tests:=.test)
-test-vm-normal: $(quick_vm_tests:=.testnormal)
-test-vm-haskell-perf: $(haskell_perf_tests:=.haskellperf)
+test-vm-haskell: $(haskell_vm_tests:=.haskelltest)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/%
 	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
 
-tests/ethereum-tests/VMTests/%.testnormal: tests/ethereum-tests/VMTests/%
-	SCHEDULE=DEFAULT $(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
-
-tests/ethereum-tests/VMTests/%.haskellperf: tests/ethereum-tests/VMTests/%
-	SCHEDULE=DEFAULT $(TEST) --backend java         $< || true
-	SCHEDULE=DEFAULT $(TEST) --backend haskell-perf $< || true
+tests/ethereum-tests/VMTests/%.haskelltest: tests/ethereum-tests/VMTests/%
+	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) --backend haskell $<
 
 # BlockchainTests
 
