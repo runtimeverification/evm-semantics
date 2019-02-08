@@ -21,7 +21,7 @@ pipeline {
       steps {
         ansiColor('xterm') {
           sh '''
-            export PATH=$HOME/.local/bin:$PATH
+            export PATH=$HOME/.local/bin:$HOME/.cargo/bin:$PATH
             make llvm-deps   -B
             make build       -B -j4
             make build-llvm
