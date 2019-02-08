@@ -904,15 +904,15 @@ module EVM-DATA-SYMBOLIC [symbolic]
 ### Symbolic Word Map
 
 ```k
-    syntax Map ::= store  ( Map , Int , Int ) [function, smtlib(store),  smt-prelude]
-    syntax Int ::= select ( Map , Int )       [function, smtlib(select), smt-prelude]
- // ---------------------------------------------------------------------------------
+    syntax Map ::= store  ( Map , Int , Int ) [function, smtlib(smt_store) ]
+    syntax Int ::= select ( Map , Int )       [function, smtlib(smt_select)]
+ // ------------------------------------------------------------------------
     rule select(store(M, K0, V), K) => V            requires K0  ==Int K
     rule select(store(M, K0, V), K) => select(M, K) requires K0 =/=Int K
 
-    syntax Map       ::= storeRange  ( Map , Int , Int , WordStack ) [function, smtlib(storeRange),  smt-prelude]
-    syntax WordStack ::= selectRange ( Map , Int , Int )             [function, smtlib(selectRange), smt-prelude]
- // -------------------------------------------------------------------------------------------------------------
+    syntax Map       ::= storeRange  ( Map , Int , Int , WordStack ) [function, smtlib(storeRange) ]
+    syntax WordStack ::= selectRange ( Map , Int , Int )             [function, smtlib(selectRange)]
+ // ------------------------------------------------------------------------------------------------
     rule select(storeRange(M, START, WIDTH, WS), K) => WS[K -Int START] requires          START <=Int K andBool K <Int START +Int WIDTH
     rule select(storeRange(M, START, WIDTH, WS), K) => select(M, K)     requires notBool (START <=Int K andBool K <Int START +Int WIDTH)
 
