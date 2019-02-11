@@ -317,7 +317,7 @@ tests/interactive/%.json.test: tests/interactive/%.json
 	$(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
 
 tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out
-	MODE=GASANALYZE $(TEST) --backend $(TEST_SYMBOLIC_BACKEND) $<
+	MODE=GASANALYZE $(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
 
 # ProofTests
 
