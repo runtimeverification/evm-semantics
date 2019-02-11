@@ -135,7 +135,7 @@ run_test() {
             run_proof "$backend" "$test_file" --debug "$@"
             ;;
         *interactive/*)
-            run_krun ocaml "$test_file" "$@" > "$output_file" \
+            run_krun "$backend" "$test_file" "$@" > "$output_file" \
                 || pretty_diff "$expected_file" "$output_file"
             ;;
         *)
