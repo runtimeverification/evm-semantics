@@ -1,0 +1,3 @@
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stAttackTest/ContractCreationSpam_d0g0v0.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest177_d0g0v0.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSpecialTest/JUMPDEST_Attack_d0g0v0.json
