@@ -31,6 +31,7 @@ pipeline {
       }
     }
     stage('Test Execution') {
+      failFast true
       parallel {
         stage('Conformance') {
           steps {
@@ -84,6 +85,11 @@ pipeline {
           '''
         }
       }
+    }
+  }
+  post {
+    always {
+      archiveArtifacts '.build/logs/**/*.out .build/logs/**/*.err'
     }
   }
 }
