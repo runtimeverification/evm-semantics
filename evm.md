@@ -67,7 +67,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <pc>          0          </pc>                  // \mu_pc
               <gas>         0          </gas>                 // \mu_g
               <memoryUsed>  0          </memoryUsed>          // \mu_i
-              <previousGas> 0          </previousGas>
+              <callGas>     0          </callGas>
 
               <static>    false </static>
               <callDepth> 0     </callDepth>
@@ -1294,7 +1294,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
            <balance> BAL </balance>
            ...
          </account>
-         <previousGas> GCALL </previousGas>
+         <callGas> GCALL </callGas>
       requires VALUE >Int BAL orBool CD >=Int 1024
 
      rule <k> #checkCall ACCT VALUE => . ... </k>
@@ -1349,7 +1349,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <callValue> _ => APPVALUE </callValue>
          <id> _ => ACCTTO </id>
          <gas> _ => GCALL </gas>
-         <previousGas> GCALL => 0 </previousGas>
+         <callGas> GCALL => 0 </callGas>
          <caller> _ => ACCTFROM </caller>
          <program> _ => CODE </program>
          <programBytes> _ => BYTES </programBytes>
@@ -1486,7 +1486,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <schedule> SCHED </schedule>
          <id> ACCT => ACCTTO </id>
          <gas> _ => GCALL </gas>
-         <previousGas> GCALL => 0 </previousGas>
+         <callGas> GCALL => 0 </callGas>
          <program> _ => #asMapOpCodes(#dasmOpCodes(INITCODE, SCHED)) </program>
          <programBytes> _ => INITCODE </programBytes>
          <caller> _ => ACCTFROM </caller>
@@ -1597,7 +1597,7 @@ have been paid, and it may be to expensive to compute the hash of the init code.
          ...
          </k>
          <id> ACCT </id>
-         <previousGas> GCALL </previousGas>
+         <callGas> GCALL </callGas>
          <localMem> LM </localMem>
 ```
 
@@ -2078,14 +2078,14 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
     rule <k> GCALL:Int ~> #allocateCallGas => . ... </k>
-         <previousGas> _ => GCALL </previousGas>
+         <callGas> _ => GCALL </callGas>
 
     syntax InternalOp ::= "#allocateCreateGas"
  // ------------------------------------------
     rule <schedule> SCHED </schedule>
          <k> #allocateCreateGas => . ... </k>
-         <gas>         GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Int 64      #fi </gas>
-         <previousGas> _      => #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi </previousGas>
+         <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Int 64      #fi </gas>
+         <callGas> _      => #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi </callGas>
 ```
 
 There are several helpers for calculating gas (most of them also specified in the YellowPaper).

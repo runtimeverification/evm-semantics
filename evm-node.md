@@ -148,7 +148,7 @@ Because the same account may be loaded more than once, implementations of this i
          </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
-         <previousGas> _ => GAVAIL </previousGas>
+         <callGas> _ => GAVAIL </callGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <coinbase> _ => CB </coinbase>
@@ -174,7 +174,7 @@ Because the same account may be loaded more than once, implementations of this i
          </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
-         <previousGas> _ => GAVAIL </previousGas>
+         <callGas> _ => GAVAIL </callGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <coinbase> _ => CB </coinbase>

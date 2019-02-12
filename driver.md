@@ -124,7 +124,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
-         <previousGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </previousGas>
+         <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -155,7 +155,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
-         <previousGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </previousGas>
+         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -374,7 +374,7 @@ State Manipulation
          <localMem>        _ => .Map       </localMem>
          <pc>              _ => 0          </pc>
          <gas>             _ => 0          </gas>
-         <previousGas>     _ => 0          </previousGas>
+         <callGas>         _ => 0          </callGas>
          <selfDestruct>    _ => .Set       </selfDestruct>
          <log>             _ => .List      </log>
          <refund>          _ => 0          </refund>
