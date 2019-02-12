@@ -87,9 +87,4 @@ pipeline {
       }
     }
   }
-  post {
-    always {
-      archiveArtifacts '.build/logs/**/*.out .build/logs/**/*.err'
-    }
-  }
 }
