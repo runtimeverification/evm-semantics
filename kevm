@@ -60,7 +60,7 @@ run_krun() {
         ocaml)        args=(--interpret)                                                             ;;
         *)            args=()                                                                        ;;
     esac
-    krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "${args[@]-}" "$@"
+    krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "${args[@]-}" "$@" --smt-prelude prelude.smt2 
 }
 
 run_kdebug() {
