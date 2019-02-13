@@ -93,7 +93,7 @@ run_interpreter() {
     test_file="$1"
     run_env "$test_file"
     interpreter="$build_dir/llvm/driver-kompiled/interpreter"
-    kore="$(mktemp)"
+    kast="$(mktemp)"
     output="$(mktemp)"
     trap "rm -rf $kast $output" INT TERM EXIT
     "$kevm_dir/kast-json.py" "$test_file" > "$kast"
@@ -149,9 +149,6 @@ run_test() {
                     [[ ! -f "$haskell_prof_log" ]] || mv "$haskell_prof_log" "$test_log_name.$haskell_prof_log"
                     [[ ! -f "$haskell_hp_log"   ]] || mv "$haskell_hp_log"   "$test_log_name.$haskell_hp_log"
                     pretty_diff --ignore-all-space "$expected_file" "$output_file"
-                    ;;
-                llvm)
-                    run_interpreter "$test_file"
                     ;;
                 llvm)
                     run_llvm "$test_file"
