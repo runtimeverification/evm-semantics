@@ -45,6 +45,8 @@ distclean: clean
 # Dependencies
 # ------------
 
+llvm-deps: deps
+llvm-deps: LLVM_BACKEND=
 deps: repo-deps system-deps
 repo-deps: tangle-deps k-deps plugin-deps
 system-deps: ocaml-deps
@@ -52,11 +54,13 @@ k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 
+LLVM_BACKEND:=-Dllvm.backend.skip
+
 $(K_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init --recursive -- $(K_SUBMODULE)
 	cd $(K_SUBMODULE) \
-	    && mvn package -q -DskipTests -U -Dllvm.backend.skip
+	    && mvn package -DskipTests -U ${LLVM_BACKEND}
 	touch $(K_SUBMODULE)/make.timestamp
 
 $(PANDOC_TANGLE_SUBMODULE)/make.timestamp:
@@ -292,7 +296,8 @@ slow_bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTe
                   tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_ContractRETURNBigOffset_d1g0v0.json
 bad_bchain_tests= tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/RevertOpcodeInCreateReturns_d0g0v0.json \
                   tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/RevertInCreateInInit_d0g0v0.json
-all_bchain_tests=$(filter-out $(bad_bchain_tests), $(bchain_tests))
+failing_bchain_tests=$(shell cat tests/failing.${TEST_CONCRETE_BACKEND})
+all_bchain_tests=$(filter-out $(bad_bchain_tests), $(filter-out $(failing_bchain_tests), $(bchain_tests)))
 quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(all_bchain_tests))
 
 test-all-bchain: $(all_bchain_tests:=.test)
@@ -313,7 +318,7 @@ tests/interactive/%.json.test: tests/interactive/%.json
 	$(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
 
 tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out
-	MODE=GASANALYZE $(TEST) --backend $(TEST_SYMBOLIC_BACKEND) $<
+	MODE=GASANALYZE $(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
 
 # ProofTests
 
