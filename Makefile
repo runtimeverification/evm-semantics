@@ -223,7 +223,7 @@ endif
 # Override this with `make TEST=echo` to list tests instead of running
 TEST_CONCRETE_BACKEND:=ocaml
 TEST_SYMBOLIC_BACKEND:=java
-TEST:=./kevm test-profile
+TEST:=./kevm test
 
 test-all: test-all-concrete test-all-proof
 test: test-concrete test-proof test-java
