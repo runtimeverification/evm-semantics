@@ -5,9 +5,6 @@ pipeline {
       args '-m 60g'
     }
   }
-  options {
-    lock('proofs')
-  }
   stages {
     stage("Init title") {
       when { changeRequest() }
@@ -75,6 +72,9 @@ pipeline {
       }
     }
     stage('Test Proofs') {
+      options {
+        lock("proofs-${env.NODE_NAME}")
+      }
       steps {
         ansiColor('xterm') {
           sh '''
