@@ -41,7 +41,6 @@ pretty_diff() {
 # User Commands
 
 run_krun() {
-    local backend=$1  ; shift
     local run_file=$1 ; shift
     run_env "$run_file"
     export K_OPTS=-Xss500m
@@ -51,11 +50,10 @@ run_krun() {
         ocaml)        args=(--interpret)                                                             ;;
         *)            args=()                                                                        ;;
     esac
-    krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "${args[@]-}" "$@"
+    krun --directory "$backend_dir" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "${args[@]-}" "$@"
 }
 
 run_proof() {
-    local backend=$1  ; shift
     local proof_file="$1" ; shift
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
     run_env "$proof_file"
@@ -63,9 +61,8 @@ run_proof() {
     case "$backend" in
         haskell)      args=()                                                                        ;;
         haskell-perf) args=(--haskell-backend-command "kore-exec +RTS -p -h -RTS") ; backend=haskell ;;
-        *)            args=() ; backend=java                                                         ;;
     esac
-    kprove --directory "$build_dir/$backend/" "$proof_file" --def-module VERIFICATION "${args[@]-}" "$@"
+    kprove --directory "$backend_dir" "$proof_file" --def-module VERIFICATION "${args[@]-}" "$@"
 }
 
 # Dev Commands
@@ -95,9 +92,8 @@ run_llvm() {
 }
 
 run_test() {
-    local backend test_file test_log_name output_file expected_file
+    local test_file test_log_name output_file expected_file
 
-    backend=$1     ; shift
     test_file="$1" ; shift
 
     test_log_name="$test_logs/$test_file"
@@ -113,20 +109,20 @@ run_test() {
 
     case "$test_file" in
         *proofs/*)
-            run_proof "$backend" "$test_file" --debug "$@"
+            run_proof "$test_file" --debug "$@"
             ;;
         *interactive/*)
-            run_krun "$backend" "$test_file" "$@" > "$output_file" \
+            run_krun "$test_file" "$@" > "$output_file" \
                 || pretty_diff "$expected_file" "$output_file"
             ;;
         *)
             case "$backend" in
                 java)
-                    run_krun "$backend" "$test_file" "$@" > "$output_file" \
+                    run_krun "$test_file" "$@" > "$output_file" \
                         || pretty_diff --ignore-all-space "$expected_file" "$output_file"
                     ;;
                 haskell*)
-                    run_krun "$backend" "$test_file" "$@" > "$output_file" || true
+                    run_krun "$test_file" "$@" > "$output_file" || true
                     [[ ! -f "$haskell_prof_log" ]] || mv "$haskell_prof_log" "$test_log_name.$haskell_prof_log"
                     [[ ! -f "$haskell_hp_log"   ]] || mv "$haskell_hp_log"   "$test_log_name.$haskell_hp_log"
                     pretty_diff --ignore-all-space "$expected_file" "$output_file"
@@ -146,10 +142,9 @@ run_test() {
 }
 
 run_test_profile() {
-    local backend test_file exit_status
+    local test_file exit_status
     local output_log_dir stdout_log stderr_log
 
-    backend=$1     ; shift
     test_file="$1" ; shift
 
     output_log_dir="$test_logs/$(dirname -- "$test_file")"
@@ -205,7 +200,7 @@ if [[ $# -gt 0 ]] && [[ $1 == '--backend' ]]; then
     backend="$2"
     shift 2
 fi
-backend_dir="$defn_dir/$backend"
+backend_dir="$build_dir/$backend"
 [[ ! "$backend" == "ocaml" ]] || eval $(opam config env)
 
 cMODE="\`${MODE:-NORMAL}\`(.KList)"
@@ -214,15 +209,15 @@ cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
 case "$run_command" in
 
     # Running
-    run)          run_krun      "$backend"  "$@"    ;;
-    prove)        run_proof     "$backend"  "$@"    ;;
+    run)   run_krun  "$@" ;;
+    prove) run_proof "$@" ;;
 
     # Testing
-    interpret)    run_interpreter               "$@"    ;;
-    test)         run_test         "$backend"   "$@"    ;;
-    test-profile) run_test_profile "$backend"   "$@"    ;;
-    sort-logs)    run_sort_logs                         ;;
-    get-failing)  run_get_failing               "$@"    ;;
+    interpret)    run_interpreter  "$@" ;;
+    test)         run_test         "$@" ;;
+    test-profile) run_test_profile "$@" ;;
+    sort-logs)    run_sort_logs         ;;
+    get-failing)  run_get_failing  "$@" ;;
 
     *) echo "
     normal usage
