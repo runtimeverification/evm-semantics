@@ -163,18 +163,6 @@ For example, to prove the specification `tests/proofs/specs/vyper-erc20/totalSup
 ./kevm prove tests/proofs/specs/vyper-erc20/totalSupply-spec.k
 ```
 
-Finally, if you want to debug a given program (by stepping through its execution), you can use the `debug` option:
-
-```sh
-./kevm debug tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
-...
-KDebug> s
-1 Step(s) Taken.
-KDebug> p
-... Big Configuration Here ...
-KDebug>
-```
-
 Running Tests
 -------------
 
