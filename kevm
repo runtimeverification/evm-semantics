@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-set -e      # Exit immediately if any command fails
-set -u      # Using undefined variables is an error. Exit immediately
+set -euo pipefail
+shopt -s extglob
 
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 kevm_script="$0"
@@ -12,6 +12,11 @@ while [[ -h "$kevm_script" ]]; do
 done
 kevm_dir="$(cd -P "$(dirname "$kevm_script")" && pwd)"
 build_dir="$kevm_dir/.build"
+release_dir="${K_BIN:-$build_dir/k/k-distribution/target/release/k}"
+lib_dir="$build_dir/local/lib"
+
+PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH"
+LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
 
 test_logs="$build_dir/logs"
 mkdir -p "$test_logs"
@@ -28,20 +33,6 @@ die()      { echo -e "FATAL:" "$@" >&2 ; exit 1 ; }
 
 pretty_diff() {
     git --no-pager diff --no-index "$@"
-}
-
-# Environment Setup
-# -----------------
-
-run_env() {
-    local run_file=$1
-    local release_dir="${K_BIN:-$build_dir/k/k-distribution/target/release/k}"
-    local lib_dir="$build_dir/local/lib"
-    export cMODE="\`${MODE:-NORMAL}\`(.KList)"
-    export cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
-    export PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH"
-    export LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
-    eval $(opam config env)
 }
 
 # Runners
@@ -207,11 +198,18 @@ run_get_failing() {
 # ----
 
 run_command="$1" ; shift
+
 backend="ocaml"
+[[ ! "$run_command" == 'prove' ]] || backend='java'
 if [[ $# -gt 0 ]] && [[ $1 == '--backend' ]]; then
     backend="$2"
     shift 2
 fi
+backend_dir="$defn_dir/$backend"
+[[ ! "$backend" == "ocaml" ]] || eval $(opam config env)
+
+cMODE="\`${MODE:-NORMAL}\`(.KList)"
+cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
 
 case "$run_command" in
 
