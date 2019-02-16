@@ -63,16 +63,6 @@ run_krun() {
     krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "${args[@]-}" "$@"
 }
 
-run_kdebug() {
-    progress "debugging: $1"
-    run_krun java "$1" --debugger
-}
-
-run_ksearch() {
-    progress "searching: $1"
-    run_krun java "$1" --search
-}
-
 run_proof() {
     local backend=$1  ; shift
     local proof_file="$1" ; shift
@@ -227,8 +217,6 @@ case "$run_command" in
 
     # Running
     run)          run_krun      "$backend"  "$@"    ;;
-    debug)        run_kdebug                "$@"    ;;
-    search)       run_ksearch               "$@"    ;;
     prove)        run_proof     "$backend"  "$@"    ;;
 
     # Testing
@@ -242,14 +230,12 @@ case "$run_command" in
     normal usage
     ============
 
-        $0 run            [--backend <backend>] <pgm>   <K args>*
-        $0 [debug|search]                       <pgm>   <K args>*
-        $0 prove          [--backend <backend>] <spec>  <K args>*
+        $0 run   [--backend <backend>] <pgm>   <K args>*
+        $0 prove [--backend <backend>] <spec>  <K args>*
 
-    -   run         Run a single EVM program
-    -   debug       Run a single EVM program in the debugger
-    -   search      Run a program searching for all execution paths
-    -   prove       Attempt to prove the specification using K's RL prover
+    -   run    Run a single EVM program
+    -   search Run a program searching for all execution paths
+    -   prove  Attempt to prove the specification using K's RL prover
 
     Note: <pgm> and <spec> here are paths to files.
     These files should be Ethereum programs/specifications.
