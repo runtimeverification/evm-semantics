@@ -22,9 +22,6 @@ Installing/Building
 There are three backends of K available, the OCAML backend for concrete execution, the Java backend for symbolic reasoning and proofs, and the experimental Haskell backend for developers.
 This repository generates the build-products for both backends in `.build/java/` and `.build/ocaml/`.
 
-There is also a Haskell version of K currently under development which is meant to eventually replace the Java backend for symbolic reasoning and proofs.
-To read more about building and using it, please check the [K Haskell Backend](#OPTIONAL:-K-Haskell-Backend)
-
 ### System Dependencies
 
 The following are needed for building/running KEVM:
@@ -36,17 +33,21 @@ The following are needed for building/running KEVM:
 -   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
 -   [Opam](https://opam.ocaml.org/doc/Install.html), **important**: Ubuntu users prior to 15.04 **must** build from source, as the Ubuntu install for 14.10 and prior is broken.
     `opam repository` also requires `rsync`.
+-   [Haskell Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade).
+    Note that the version of the `stack` tool provided by your package manager might not be recent enough.
+    Please follow installation instructions from the Haskell Stack website linked above.
 
 On Ubuntu >= 15.04 (for example):
 
 ```sh
-sudo apt-get install make gcc maven openjdk-8-jdk flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev
+sudo apt-get install make gcc maven openjdk-8-jdk flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev z3 libz3-dev
 ```
 
-To run proofs, you will also need [Z3](https://github.com/Z3Prover/z3) prover; on Ubuntu:
+To upgrade `stack` (if needed):
 
 ```sh
-sudo apt-get install z3 libz3-dev
+stack upgrade
+export PATH=$HOME/.local/bin:$PATH
 ```
 
 On ArchLinux:
@@ -94,25 +95,6 @@ The K Haskell Backend, currently under development, is meant to eventually repla
 #### System Dependencies
 
 In addition to the above dependencies, the Haskell Backend also depends on:
-
--   [Haskell Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade).
-    Note that the version of the `stack` tool provided by your package manager might not be recent enough.
-    Please follow installation instructions from the Haskell Stack website linked above.
-
-To run proofs, you will also need [Z3](https://github.com/Z3Prover/z3) version 4.7.1 or higher.
-
-On Ubuntu:
-
-```sh
-sudo apt-get install haskell-stack z3 libz3-dev
-```
-
-To upgrade `stack` (if needed):
-
-```sh
-stack upgrade
-export PATH=$HOME/.local/bin:$PATH
-```
 
 #### Building
 
