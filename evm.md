@@ -1682,7 +1682,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 Precompiled Contracts
 ---------------------
 
--   `#precompiled` is a placeholder for the 4 pre-compiled contracts at addresses 1 through 4.
+-   `#precompiled` is a placeholder for the 8 pre-compiled contracts at addresses 1 through 8.
 
 ```k
     syntax NullStackOp   ::= PrecompiledOp
