@@ -42,7 +42,6 @@ pretty_diff() {
 
 run_krun() {
     local run_file=$1 ; shift
-    run_env "$run_file"
     export K_OPTS=-Xss500m
     case "$backend" in
         haskell)      args=()                                                                        ;;
@@ -56,7 +55,6 @@ run_krun() {
 run_proof() {
     local proof_file="$1" ; shift
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
-    run_env "$proof_file"
     export K_OPTS=-Xmx8G
     case "$backend" in
         haskell)      args=()                                                                        ;;
@@ -69,7 +67,6 @@ run_proof() {
 
 run_interpreter() {
     test_file="$1"
-    run_env "$test_file"
     interpreter="$build_dir/ocaml/driver-kompiled/interpreter"
     kast="$(mktemp)"
     output="$(mktemp)"
@@ -82,7 +79,6 @@ run_interpreter() {
 
 run_llvm() {
     test_file="$1"
-    run_env "$test_file"
     interpreter="$build_dir/llvm/driver-kompiled/interpreter"
     kast="$(mktemp)"
     output="$(mktemp)"
