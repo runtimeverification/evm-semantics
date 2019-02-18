@@ -32,7 +32,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
       <exit-code exit=""> 1 </exit-code>
       <mode> $MODE:Mode </mode>
       <schedule> $SCHEDULE:Schedule </schedule>
-      <analysis> .Map </analysis>
+      <analysis> "coverage" |-> .Set </analysis>
 
       <ethereum>
 
@@ -166,8 +166,9 @@ Our semantics is modal, with the initial mode being set on the command line via 
 -   `VMTESTS` skips `CALL*` and `CREATE` operations.
 
 ```k
-    syntax Mode ::= "NORMAL"  [klabel(NORMAL), symbol]
-                  | "VMTESTS" [klabel(VMTESTS), symbol]
+    syntax Mode ::= "NORMAL"   [klabel(NORMAL), symbol]
+                  | "VMTESTS"  [klabel(VMTESTS), symbol]
+                  | "COVERAGE" [klabel(COVERAGE), symbol]
 ```
 
 -   `#setMode_` sets the mode to the supplied one.
@@ -339,6 +340,16 @@ The `#next` operator executes a single step by:
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
       requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
+
+      rule <mode> COVERAGE </mode>
+           <k> #next 
+            => #setMode NORMAL
+            ~> #next
+            ~> #setMode COVERAGE
+            ...
+           </k> 
+           <pc> PCOUNT </pc>
+           <analysis> ... "coverage" |-> (PCS:Set (.Set => SetItem(PCOUNT))) ... </analysis>
 ```
 
 ### Exceptional Checks

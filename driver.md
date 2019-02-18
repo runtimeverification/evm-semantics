@@ -79,6 +79,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
  // ----------------------------------
     rule <mode> NORMAL     </mode> <k> start => #execute    ... </k>
     rule <mode> VMTESTS    </mode> <k> start => #execute    ... </k>
+    rule <mode> COVERAGE   </mode> <k> start => #execute    ... </k>
     rule <mode> GASANALYZE </mode> <k> start => #gasAnalyze ... </k>
 
     syntax EthereumCommand ::= "flush"
@@ -355,7 +356,12 @@ State Manipulation
     syntax EthereumCommand ::= "clear"
  // ----------------------------------
     rule <k> clear => clearTX ~> clearBLOCK ~> clearNETWORK ... </k>
-         <analysis> _ => .Map </analysis>
+         <analysis> _ => "coverage" |-> .Set </analysis>
+         <mode> EXECMODE </mode>
+      requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
+
+    rule <k> clear => clearTX ~> clearBLOCK ~> clearNETWORK ... </k>
+         <mode> COVERAGE </mode>
 
     syntax EthreumCommand ::= "clearTX"
  // -----------------------------------
