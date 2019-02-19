@@ -36,11 +36,6 @@ RUN    git clone 'https://github.com/scipr-lab/libff' --recursive        \
     && cd ../..                                                         \
     && rm -rf libff
 
-RUN    echo "deb https://dl.bintray.com/sbt/debian /" >> /etc/apt/sources.list.d/sbt.list                    \
-    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
-    && apt update                                                                                            \
-    && apt install --yes sbt
-
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 RUN    groupadd --gid $GROUP_ID user                                        \
@@ -60,10 +55,3 @@ ADD --chown=user:user .build/k/haskell-backend/src/main/native/haskell-backend/s
 ADD --chown=user:user .build/k/haskell-backend/src/main/native/haskell-backend/src/main/haskell/kore/package.yaml /home/user/.tmp-haskell/src/main/haskell/kore/
 RUN    cd /home/user/.tmp-haskell \
     && stack build --only-snapshot --test --bench --haddock --library-profiling
-
-RUN    cd /home/user                                                             \
-    && git clone 'https://github.com/input-output-hk/sbt-verify' --branch=v0.4.1 \
-    && cd sbt-verify                                                             \
-    && sbt publishLocal                                                          \
-    && cd ../                                                                    \
-    && rm -rf sbt-verify
