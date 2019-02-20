@@ -748,7 +748,7 @@ These are just used by the other operators for shuffling local execution state a
            <nonce>  NONCE </nonce>
            ...
          </account>
-      requires CODE =/=K .WordStack orBool NONCE =/=K 0
+      requires CODE =/=K .WordStack orBool NONCE =/=Int 0
 
     rule <k> #newAccount ACCT => . ... </k>
          <account>
@@ -1920,7 +1920,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          <schedule> SCHED </schedule>
 
     rule <k> #gasExec(SCHED, EXP W0 0)  => Gexp < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=K 0
+    rule <k> #gasExec(SCHED, EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=Int 0
 
     rule <k> #gasExec(SCHED, CALLDATACOPY    _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
     rule <k> #gasExec(SCHED, RETURNDATACOPY  _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
@@ -2149,7 +2149,7 @@ There are several helpers for calculating gas (most of them also specified in th
       => #if ISEMPTY andBool (VALUE =/=Int 0 orBool Gzerovaluenewaccountgas << SCHED >>) #then Gnewaccount < SCHED > #else 0 #fi
 
     rule Cxfer(SCHED, 0) => 0
-    rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=K 0
+    rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=Int 0
 
     rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
 
