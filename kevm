@@ -15,8 +15,8 @@ build_dir="$kevm_dir/.build"
 release_dir="${K_BIN:-$build_dir/k/k-distribution/target/release/k}"
 lib_dir="$build_dir/local/lib"
 
-PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH"
-LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
+export PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH"
+export LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
 
 test_logs="$build_dir/logs"
 mkdir -p "$test_logs"
