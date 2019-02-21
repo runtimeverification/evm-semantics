@@ -134,32 +134,6 @@ run_test() {
     esac
 }
 
-run_test_profile() {
-    local test_file exit_status
-    local output_log_dir stdout_log stderr_log
-
-    test_file="$1" ; shift
-
-    output_log_dir="$test_logs/$(dirname -- "$test_file")"
-    stdout_log="$test_logs/$test_file.out"
-    stderr_log="$test_logs/$test_file.err"
-    [[ -d "$output_log_dir" ]] || mkdir -p "$output_log_dir"
-
-    exit_status='0'
-    `which time` --quiet --format '%x %es %Us %Ss %MKB %C' --output "$test_log" --append \
-        bash -c "$0 test --backend $backend $test_file $@" \
-        1> "$stdout_log" 2> "$stderr_log" \
-        || exit_status="$?"
-
-    if [[ "$exit_status" == '0' ]]; then
-        progress "passed test: $test_file"
-    else
-        die "failed test: $test_file"
-    fi
-
-    exit "$exit_status"
-}
-
 # Main
 # ----
 
@@ -180,23 +154,20 @@ cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
 case "$run_command-$backend" in
 
     # Running
-    run-@(ocaml|java|llvm|haskell|haskell-perf) ) run_krun      "$@" ;;
-    interpret-@(ocaml|llvm)                     ) run_interpret "$@" ;;
-    prove-@(java|haskell|haskell-perf)          ) run_proof     "$@" ;;
-
-    test-@(ocaml|java|llvm|haskell|haskell-perf)         ) run_test         "$@" ;;
-    test-profile-@(ocaml|java|llvm|haskell|haskell-perf) ) run_test_profile "$@" ;;
+    run-@(ocaml|java|llvm|haskell|haskell-perf)  ) run_krun      "$@" ;;
+    interpret-@(ocaml|llvm)                      ) run_interpret "$@" ;;
+    prove-@(java|haskell|haskell-perf)           ) run_proof     "$@" ;;
+    test-@(ocaml|java|llvm|haskell|haskell-perf) ) run_test      "$@" ;;
 
     *) echo "
-    usage: $0 (run|test|test-profile) [--backend (ocaml|java|llvm|haskell|haskell-perf)] <pgm>  <K args>*
-           $0 interpret               [--backend (ocaml|llvm)]                           <pgm>
-           $0 prove                   [--backend (java|haskell|haskell-perf)]            <spec> <K args>*
+    usage: $0 (run|test) [--backend (ocaml|java|llvm|haskell|haskell-perf)] <pgm>  <K args>*
+           $0 interpret  [--backend (ocaml|llvm)]                           <pgm>
+           $0 prove      [--backend (java|haskell|haskell-perf)]            <spec> <K args>*
 
-       $0 run          : Run a single EVM program
-       $0 test         : Run a single EVM program like it's a test
-       $0 test-profile : Additionally record timing and memory usage to '${test_log#$(pwd)/}'
-       $0 interpret    : Run JSON EVM programs without K Frontend (external parser)
-       $0 prove        : Run a EVM K proof
+       $0 run       : Run a single EVM program
+       $0 test      : Run a single EVM program like it's a test
+       $0 interpret : Run JSON EVM programs without K Frontend (external parser)
+       $0 prove     : Run an EVM K proof
 
        Note: <pgm> is a path to a file containing an EVM program/test.
              <spec> is a K specification to be proved.
