@@ -160,28 +160,6 @@ run_test_profile() {
     exit "$exit_status"
 }
 
-run_sort_logs() {
-    local tmp_file
-    tmp_log="$(mktemp $test_logs/log.XXXXXX)"
-
-    for log in $now_passing $now_failing; do
-        if [[ -f "$log" ]]; then
-            sort -u "$log" > "$tmp_log"
-            cp "$tmp_log" "$log"
-        fi
-    done
-
-    if [[ -f "$run_times" ]]; then
-        sort -k2 -u "$run_times" > "$tmp_log"
-        cp "$tmp_log" "$run_times"
-    fi
-}
-
-run_get_failing() {
-    count="${1:-1}"
-    cat "$now_failing" | sort -R | head -n"$count"
-}
-
 # Main
 # ----
 
@@ -202,9 +180,9 @@ cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
 case "$run_command-$backend" in
 
     # Running
-    run-@(ocaml|java|llvm|haskell|haskell-perf) )          run_krun         "$@" ;;
-    interpret-@(ocaml|llvm)                     )          run_interpret    "$@" ;;
-    prove-@(java|haskell|haskell-perf)          )          run_proof        "$@" ;;
+    run-@(ocaml|java|llvm|haskell|haskell-perf) ) run_krun      "$@" ;;
+    interpret-@(ocaml|llvm)                     ) run_interpret "$@" ;;
+    prove-@(java|haskell|haskell-perf)          ) run_proof     "$@" ;;
 
     test-@(ocaml|java|llvm|haskell|haskell-perf)         ) run_test         "$@" ;;
     test-profile-@(ocaml|java|llvm|haskell|haskell-perf) ) run_test_profile "$@" ;;
