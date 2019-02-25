@@ -83,5 +83,36 @@ We'll need to make summaries of the state which collect information about how mu
          <pc> _ => 0 </pc>
          <gas> _ => 1000000000 </gas>
          <analysis> _ => ("blocks" |-> .List) </analysis>
+```
+
+Test Coverage Analysis
+------------
+
+This tool will be used to measure the code coverage of a test. It records the program counter of each executed opcode and saves the total set of the program's opcodes.
+
+-    At the beginning of the test's execution, two keys are added to the `analysis` map, one which points to the set which will contain all executed opcodes and one which points to the whole program.
+
+```{.k .standalone}
+    syntax Mode ::= "COVERAGE" [klabel(COVERAGE), symbol]
+// ------------------------------------------------------
+    rule <mode> COVERAGE </mode>
+         <k> #next ... </k>
+         <analysis> ANALYSIS => ANALYSIS ["coverage" <- .Set]["currentProgram" <- PROGRAM] </analysis>
+         <program> PROGRAM </program>
+      requires notBool("coverage" in_keys(ANALYSIS)) andBool notBool("currentProgram" in_keys(ANALYSIS))
+```
+
+-    `COVERAGE` mode is built on top of the `NORMAL` execution mode. Before each opcode, the program count is stored within the `analysis` cell and then execution resumes normally. After the opcode is executed, the mode is switched back to `COVERAGE` in order to store the next opcode's program counter.
+
+```{.k .standalone}
+    rule <mode> COVERAGE </mode>
+         <k> #next 
+          => #setMode NORMAL
+          ~> #next
+          ~> #setMode COVERAGE
+          ...
+         </k> 
+         <pc> PCOUNT </pc>
+         <analysis> ... "coverage" |-> (PCS:Set (.Set => SetItem(PCOUNT))) ... </analysis>
 endmodule
 ```

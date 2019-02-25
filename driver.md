@@ -356,10 +356,10 @@ State Manipulation
     syntax EthereumCommand ::= "clear"
  // ----------------------------------
     rule <k> clear => clearTX ~> clearBLOCK ~> clearNETWORK ... </k>
-         <analysis> _ => "coverage" |-> .Set </analysis>
+         <analysis> _ => .Map </analysis>
          <mode> EXECMODE </mode>
       requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
-
+    
     rule <k> clear => clearTX ~> clearBLOCK ~> clearNETWORK ... </k>
          <mode> COVERAGE </mode>
 
