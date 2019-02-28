@@ -105,7 +105,7 @@ run_test() {
 
     case "$test_file" in
         *proofs/*)
-            run_proof "$test_file" --debug "$@"
+            run_proof "$test_file" "$@"
             ;;
         *interactive/*)
             run_krun "$test_file" "$@" > "$output_file" \
