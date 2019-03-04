@@ -56,11 +56,14 @@ plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 
 LLVM_BACKEND:=-Dllvm.backend.skip
 
+# Set to -Dhaskell.backend.skip to not build
+HASKELL_BACKEND?=
+
 $(K_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init --recursive -- $(K_SUBMODULE)
 	cd $(K_SUBMODULE) \
-	    && mvn package -DskipTests -U ${LLVM_BACKEND}
+	    && mvn package -DskipTests -U ${LLVM_BACKEND} ${HASKELL_BACKEND}
 	touch $(K_SUBMODULE)/make.timestamp
 
 $(PANDOC_TANGLE_SUBMODULE)/make.timestamp:
