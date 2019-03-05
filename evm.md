@@ -283,8 +283,8 @@ OpCode Execution
 ```k
     syntax KItem ::= "#execute"
  // ---------------------------
-    rule <k> (. => #next) ~> #execute ... </k>
-    rule <k> #halt ~> (#execute => .) ... </k>
+    rule [step]: <k> (. => #next) ~> #execute ... </k>
+    rule [halt]: <k> #halt ~> (#execute => .) ... </k>
 
     syntax InternalOp ::= "#execTo" Set
  // -----------------------------------
