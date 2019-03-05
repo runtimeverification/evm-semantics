@@ -19,8 +19,8 @@ Installing/Building
 
 ### K Backends
 
-There are three backends of K available, the OCAML backend for concrete execution, the Java backend for symbolic reasoning and proofs, and the experimental Haskell backend for developers.
-This repository generates the build-products for both backends in `.build/java/` and `.build/ocaml/`.
+There are four backends of K available, the OCAML and (experimental) LLVM backends for concrete execution, and the Java and (experimental) Haskell backends for symbolic reasoning and proofs.
+This repository generates the build-products for both non-experimental backends in `.build/java/` and `.build/ocaml/`.
 
 ### System Dependencies
 
@@ -33,21 +33,11 @@ The following are needed for building/running KEVM:
 -   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
 -   [Opam](https://opam.ocaml.org/doc/Install.html), **important**: Ubuntu users prior to 15.04 **must** build from source, as the Ubuntu install for 14.10 and prior is broken.
     `opam repository` also requires `rsync`.
--   [Haskell Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade).
-    Note that the version of the `stack` tool provided by your package manager might not be recent enough.
-    Please follow installation instructions from the Haskell Stack website linked above.
 
 On Ubuntu >= 15.04 (for example):
 
 ```sh
-sudo apt-get install make gcc maven openjdk-8-jdk flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev z3 libz3-dev
-```
-
-To upgrade `stack` (if needed):
-
-```sh
-stack upgrade
-export PATH=$HOME/.local/bin:$PATH
+sudo apt-get install make git gcc maven openjdk-8-jdk bison flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev z3 libz3-dev
 ```
 
 On ArchLinux:
@@ -88,21 +78,51 @@ make deps
 make build
 ```
 
-### OPTIONAL: K Haskell Backend
+### OPTIONAL: K LLVM/Haskell Backends
 
-The K Haskell Backend, currently under development, is meant to eventually replace the Java backend for symbolic reasoning and proofs.
+The K LLVM/Haskell backends, currently under development, require extra dependencies to work.
 
 #### System Dependencies
 
-In addition to the above dependencies, the Haskell Backend also depends on:
+-   [Haskell Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade).
+    Note that the version of the `stack` tool provided by your package manager might not be recent enough.
+    Please follow installation instructions from the Haskell Stack website linked above.
+
+To upgrade `stack` (if needed):
+
+```sh
+stack upgrade
+export PATH=$HOME/.local/bin:$PATH
+```
+
+The LLVM backend has additional dependencies:
+
+```k
+sudo apt-get install cmake clang-6.0 clang++-6.0 llvm-6.0 libboost-test-dev libgmp-dev libyaml-cpp-dev libjemalloc-dev curl
+```
+
+And you need to setup Rust:
+
+```sh
+curl https://sh.rustup.rs -sSf | sh
+source $HOME/.cargo/env
+rustup toolchain install 1.28.0
+rustup default 1.28.0
+```
 
 #### Building
 
-After installing the above dependencies, the following command will build the Kore backend submodule dependency and then the Kore version of KEVM:
+After installing the above dependencies, the following command will build the extra backends into K:
+
+-   `make haskell-deps`: additionally build the Haskell backend into K.
+-   `make llvm-deps`: additionally build the LLVM backend into K.
+-   `make all-deps`: additionally build both the Haskell and LLVM backends into K.
+
+Following this dependency setup, you can also now `kompile` the LLVM and Haskell backends:
 
 ```sh
-make haskell-deps
 make build-haskell
+make build-llvm
 ```
 
 This Repository
