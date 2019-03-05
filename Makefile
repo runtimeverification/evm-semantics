@@ -18,7 +18,7 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean deps repo-deps system-deps k-deps ocaml-deps plugin-deps \
+.PHONY: all clean deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps \
         build build-ocaml build-java build-node build-kore split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn \
         test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
@@ -45,8 +45,13 @@ distclean: clean
 # Dependencies
 # ------------
 
+all-deps: deps
+all-deps: BACKEND_SKIP=
 llvm-deps: deps
-llvm-deps: LLVM_BACKEND=
+llvm-deps: BACKEND_SKIP=-Dhaskell.backend.skip
+haskell-deps: deps
+haskell-deps: BACKEND_SKIP=-Dllvm.backend.skip
+
 deps: repo-deps system-deps
 repo-deps: tangle-deps k-deps plugin-deps
 system-deps: ocaml-deps
@@ -54,13 +59,12 @@ k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 
-LLVM_BACKEND:=-Dllvm.backend.skip
+BACKEND_SKIP=-Dhaskell.backend.skip -Dllvm.backend.skip
 
 $(K_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init --recursive -- $(K_SUBMODULE)
-	cd $(K_SUBMODULE) \
-	    && mvn package -DskipTests -U ${LLVM_BACKEND}
+	cd $(K_SUBMODULE) && mvn package -DskipTests -U ${BACKEND_SKIP}
 	touch $(K_SUBMODULE)/make.timestamp
 
 $(PANDOC_TANGLE_SUBMODULE)/make.timestamp:
@@ -92,7 +96,7 @@ K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
 # Building
 # --------
 
-build: build-ocaml build-java build-node build-haskell
+build: build-ocaml build-java build-node
 build-ocaml: .build/ocaml/driver-kompiled/interpreter
 build-java: .build/java/driver-kompiled/timestamp
 build-node: .build/vm/kevm-vm
