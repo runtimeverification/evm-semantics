@@ -55,3 +55,5 @@ ADD --chown=user:user .build/k/haskell-backend/src/main/native/haskell-backend/s
 ADD --chown=user:user .build/k/haskell-backend/src/main/native/haskell-backend/src/main/haskell/kore/package.yaml /home/user/.tmp-haskell/src/main/haskell/kore/
 RUN    cd /home/user/.tmp-haskell \
     && stack build --only-snapshot --test --bench --haddock --library-profiling
+
+ENV LD_LIBRARY_PATH=/usr/local/lib
