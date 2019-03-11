@@ -2145,8 +2145,8 @@ There are several helpers for calculating gas (most of them also specified in th
       requires notBool Ghasdirtysstore << SCHED >>
       [concrete]
 
-    rule Cextra(SCHED, VALUE, ISEMPTY)
-      => Gcall < SCHED > +Int Cnew(SCHED, VALUE, ISEMPTY) +Int Cxfer(SCHED, VALUE)  [concrete]
+    rule Cextra(SCHED, ISEMPTY, VALUE)
+      => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)  [concrete]
 
     rule Cnew(SCHED, ISEMPTY:Bool, VALUE)
       => #if ISEMPTY andBool (VALUE =/=Int 0 orBool Gzerovaluenewaccountgas << SCHED >>) #then Gnewaccount < SCHED > #else 0 #fi
