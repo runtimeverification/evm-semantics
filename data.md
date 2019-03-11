@@ -405,7 +405,7 @@ A cons-list is used for the EVM wordstack.
     syntax WordStack [flatPredicate]
     syntax WordStack ::= ".WordStack"      [smtlib(_dotWS)]
                        | Int ":" WordStack [klabel(_:_WS), smtlib(_WS_)]
- // -----------------------------------------------------
+ // --------------------------------------------------------------------
 ```
 
 -   `_++_` acts as `WordStack` append.
@@ -414,7 +414,7 @@ A cons-list is used for the EVM wordstack.
 
 ```k
     syntax WordStack ::= WordStack "++" WordStack [function, right, klabel(_++_WS), smtlib(_plusWS_)]
- // ---------------------------------------------------------------
+ // -------------------------------------------------------------------------------------------------
     rule .WordStack ++ WS' => WS'
     rule (W : WS)   ++ WS' => W : (WS ++ WS')
 
