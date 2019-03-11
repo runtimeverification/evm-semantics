@@ -283,8 +283,8 @@ OpCode Execution
 ```k
     syntax KItem ::= "#execute"
  // ---------------------------
-    rule <k> (. => #next) ~> #execute ... </k>
-    rule <k> #halt ~> (#execute => .) ... </k>
+    rule [step]: <k> (. => #next) ~> #execute ... </k>
+    rule [halt]: <k> #halt ~> (#execute => .) ... </k>
 
     syntax InternalOp ::= "#execTo" Set
  // -----------------------------------
@@ -329,7 +329,8 @@ The `#next` operator executes a single step by:
 ```k
     rule <mode> EXECMODE </mode>
          <k> #next
-          => #exceptional? [ OP ]
+          => #stackNeeded? [ OP ]
+          ~> #static?      [ OP ]
           ~> #load         [ OP ]
           ~> #exec         [ OP ]
           ~> #pc           [ OP ]
@@ -340,30 +341,7 @@ The `#next` operator executes a single step by:
       requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
 ```
 
-### Exceptional OpCodes
-
--   `#exceptional?` checks if the operator is invalid and will not cause `wordStack` size issues (this implements the function `Z` in the YellowPaper, section 9.4.2).
-
-```k
-    syntax InternalOp ::= "#exceptional?" "[" OpCode "]"
- // ----------------------------------------------------
-    rule <k> #exceptional? [ OP ]
-          => #invalid?     [ OP ]
-          ~> #stackNeeded? [ OP ]
-          ~> #static?      [ OP ]
-         ...
-         </k>
-```
-
--   `#invalid?` checks if it's the designated invalid opcode or some undefined opcode.
-
-```k
-    syntax InternalOp ::= "#invalid?" "[" OpCode "]"
- // ------------------------------------------------
-    rule <k> #invalid? [ INVALID      ] => #end EVMC_INVALID_INSTRUCTION   ... </k>
-    rule <k> #invalid? [ UNDEFINED(_) ] => #end EVMC_UNDEFINED_INSTRUCTION ... </k>
-    rule <k> #invalid? [ OP           ] => .                               ... </k> requires notBool isInvalidOp(OP)
-```
+### Exceptional Checks
 
 -   `#stackNeeded?` checks that the stack will be not be under/overflown.
 -   `#stackNeeded`, `#stackAdded`, and `#stackDelta` are helpers for deciding `#stackNeeded?`.
@@ -392,6 +370,7 @@ The `#next` operator executes a single step by:
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
     rule #stackNeeded(PUSH(_, _))      => 0
+    rule #stackNeeded(IOP:InvalidOp)   => 0
     rule #stackNeeded(NOP:NullStackOp) => 0
     rule #stackNeeded(UOP:UnStackOp)   => 1
     rule #stackNeeded(BOP:BinStackOp)  => 2 requires notBool isLogOp(BOP)
@@ -424,6 +403,7 @@ The `#next` operator executes a single step by:
     rule #stackAdded(LOG(_))         => 0
     rule #stackAdded(SWAP(N))        => N
     rule #stackAdded(DUP(N))         => N +Int 1
+    rule #stackAdded(IOP:InvalidOp)  => 0
     rule #stackAdded(OP)             => 1 [owise]
 
     syntax Int ::= #stackDelta ( OpCode ) [function]
@@ -447,92 +427,14 @@ The `#next` operator executes a single step by:
 ```k
     syntax Bool ::= #changesState ( OpCode , WordStack ) [function]
  // ---------------------------------------------------------------
-    rule #changesState(LOG(_), _)               => true
-    rule #changesState(SSTORE, _)               => true
     rule #changesState(CALL, _ : _ : VALUE : _) => VALUE =/=Int 0
-    rule #changesState(CREATE, _)               => true
-    rule #changesState(CREATE2, _)              => true
-    rule #changesState(SELFDESTRUCT, _)         => true
-
-    rule #changesState(DUP(_), _)         => false
-    rule #changesState(SWAP(_), _)        => false
-    rule #changesState(PUSH(_, _), _)     => false
-    rule #changesState(STOP, _)           => false
-    rule #changesState(ADD, _)            => false
-    rule #changesState(MUL, _)            => false
-    rule #changesState(SUB, _)            => false
-    rule #changesState(DIV, _)            => false
-    rule #changesState(SDIV, _)           => false
-    rule #changesState(MOD, _)            => false
-    rule #changesState(SMOD, _)           => false
-    rule #changesState(ADDMOD, _)         => false
-    rule #changesState(MULMOD, _)         => false
-    rule #changesState(EXP, _)            => false
-    rule #changesState(SIGNEXTEND, _)     => false
-    rule #changesState(LT, _)             => false
-    rule #changesState(GT, _)             => false
-    rule #changesState(SLT, _)            => false
-    rule #changesState(SGT, _)            => false
-    rule #changesState(EQ, _)             => false
-    rule #changesState(ISZERO, _)         => false
-    rule #changesState(AND, _)            => false
-    rule #changesState(EVMOR, _)          => false
-    rule #changesState(XOR, _)            => false
-    rule #changesState(NOT, _)            => false
-    rule #changesState(BYTE, _)           => false
-    rule #changesState(SHL, _)            => false
-    rule #changesState(SHR, _)            => false
-    rule #changesState(SAR, _)            => false
-    rule #changesState(SHA3, _)           => false
-    rule #changesState(ADDRESS, _)        => false
-    rule #changesState(BALANCE, _)        => false
-    rule #changesState(ORIGIN, _)         => false
-    rule #changesState(CALLER, _)         => false
-    rule #changesState(CALLVALUE, _)      => false
-    rule #changesState(CALLDATALOAD, _)   => false
-    rule #changesState(CALLDATASIZE, _)   => false
-    rule #changesState(CALLDATACOPY, _)   => false
-    rule #changesState(CODESIZE, _)       => false
-    rule #changesState(CODECOPY, _)       => false
-    rule #changesState(GASPRICE, _)       => false
-    rule #changesState(EXTCODESIZE, _)    => false
-    rule #changesState(EXTCODECOPY, _)    => false
-    rule #changesState(RETURNDATASIZE, _) => false
-    rule #changesState(RETURNDATACOPY, _) => false
-    rule #changesState(EXTCODEHASH, _)    => false
-    rule #changesState(BLOCKHASH, _)      => false
-    rule #changesState(COINBASE, _)       => false
-    rule #changesState(TIMESTAMP, _)      => false
-    rule #changesState(NUMBER, _)         => false
-    rule #changesState(DIFFICULTY, _)     => false
-    rule #changesState(GASLIMIT, _)       => false
-    rule #changesState(POP, _)            => false
-    rule #changesState(MLOAD, _)          => false
-    rule #changesState(MSTORE, _)         => false
-    rule #changesState(MSTORE8, _)        => false
-    rule #changesState(SLOAD, _)          => false
-    rule #changesState(JUMP, _)           => false
-    rule #changesState(JUMPI, _)          => false
-    rule #changesState(PC, _)             => false
-    rule #changesState(MSIZE, _)          => false
-    rule #changesState(GAS, _)            => false
-    rule #changesState(JUMPDEST, _)       => false
-    rule #changesState(CALLCODE, _)       => false
-    rule #changesState(RETURN, _)         => false
-    rule #changesState(DELEGATECALL, _)   => false
-    rule #changesState(STATICCALL, _)     => false
-    rule #changesState(REVERT, _)         => false
-    rule #changesState(INVALID, _)        => false
-    rule #changesState(UNDEFINED(_), _)   => false
-
-    rule #changesState(ECREC, _)     => false
-    rule #changesState(SHA256, _)    => false
-    rule #changesState(RIP160, _)    => false
-    rule #changesState(ID, _)        => false
-    rule #changesState(MODEXP, _)    => false
-    rule #changesState(ECADD, _)     => false
-    rule #changesState(ECMUL, _)     => false
-    rule #changesState(ECPAIRING, _) => false
+    rule #changesState(OP,   _)                 => ( isLogOp(OP)
+                                              orBool OP ==K SSTORE
+                                              orBool OP ==K CREATE
+                                              orBool OP ==K CREATE2
+                                              orBool OP ==K SELFDESTRUCT
+                                                   )
+      requires notBool OP ==K CALL
 ```
 
 ### Execution Step
@@ -542,6 +444,8 @@ The `#next` operator executes a single step by:
 ```k
     syntax InternalOp ::= "#exec" "[" OpCode "]"
  // --------------------------------------------
+    rule <k> #exec [ IOP:InvalidOp ] => IOP ... </k>
+
     rule <k> #exec [ OP ] => #gas [ OP ] ~> OP ... </k> requires isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
 ```
 
@@ -586,7 +490,6 @@ The `CallOp` opcodes all interperet their second argument as an address.
 ### Helpers
 
 -   `#addr` decides if the given argument should be interpreted as an address (given the opcode).
--   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
 
 ```k
     syntax InternalOp ::= "#load" "[" OpCode "]"
@@ -639,20 +542,6 @@ The `CallOp` opcodes all interperet their second argument as an address.
     rule #code?(EXTCODESIZE)  => true
     rule #code?(EXTCODECOPY)  => true
     rule #code?(OP)           => false requires (OP =/=K EXTCODESIZE) andBool (OP =/=K EXTCODECOPY)
-
-    syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas" | "#deductMemory"
- // ----------------------------------------------------------------------------
-    rule <k> #gas [ OP ] => #memory(OP, MU) ~> #deductMemory ~> #gasExec(SCHED, OP) ~> #deductGas ... </k> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
-
-    rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
-         <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
-
-    rule <k> G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
-    rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> <previousGas> _ => GAVAIL </previousGas> requires GAVAIL >=Int G
-
-    syntax Int ::= Cmem ( Schedule , Int ) [function, memo]
- // -------------------------------------------------------
-    rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
 ```
 
 ### Program Counter
@@ -665,9 +554,17 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
 ```k
     syntax InternalOp ::= "#pc" "[" OpCode "]"
  // ------------------------------------------
-    rule <k> #pc [ OP         ] => . ... </k> <pc> PCOUNT => PCOUNT +Int 1          </pc> requires notBool (isPushOp(OP) orBool isJumpOp(OP))
-    rule <k> #pc [ PUSH(N, _) ] => . ... </k> <pc> PCOUNT => PCOUNT +Int (1 +Int N) </pc>
-    rule <k> #pc [ OP         ] => . ... </k> requires isJumpOp(OP)
+    rule <k> #pc [ OP ] => . ... </k>
+         <pc> PCOUNT => PCOUNT +Int #widthOp(OP) </pc>
+      requires notBool isJumpOp(OP)
+
+    rule <k> #pc [ OP ] => . ... </k>
+      requires isJumpOp(OP)
+
+    syntax Int ::= #widthOp ( OpCode ) [function]
+ // ---------------------------------------------
+    rule #widthOp(PUSH(N, _)) => 1 +Int N
+    rule #widthOp(OP)         => 1        requires notBool isPushOp(OP)
 
     syntax Bool ::= isJumpOp ( OpCode ) [function]
  // ----------------------------------------------
@@ -701,7 +598,7 @@ After executing a transaction, it's necessary to have the effect of the substate
            ...
          </account>
 
-    rule #finalizeStorage(.List) => .
+    rule <k> #finalizeStorage(.List) => . ... </k>
 
     syntax InternalOp ::= #finalizeTx ( Bool )
                         | #deleteAccounts ( List )
@@ -791,33 +688,32 @@ EVM Programs
 
 ### Program Structure
 
-Lists of opcodes form programs.
+Cons-lists of opcodes form programs (using cons operator `_;_`).
+Operator `#revOps` can be used to reverse a program.
 
 ```k
     syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
  // --------------------------------------------------
+
+    syntax OpCodes ::= #revOps    ( OpCodes )           [function]
+                     | #revOpsAux ( OpCodes , OpCodes ) [function]
+ // --------------------------------------------------------------
+    rule #revOps(OPS) => #revOpsAux(OPS, .OpCodes)
+
+    rule #revOpsAux( .OpCodes , OPS' ) => OPS'
+    rule #revOpsAux( OP ; OPS , OPS' ) => #revOpsAux( OPS , OP ; OPS' )
 ```
 
 ### Converting to/from `Map` Representation
 
 ```k
-    syntax Map ::= #asMapOpCodes ( OpCodes )             [function]
-                 | #asMapOpCodes ( Int , OpCodes , Map ) [function, klabel(#asMapOpCodesAux)]
- // -----------------------------------------------------------------------------------------
-    rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodes(0, OPS, .Map)
+    syntax Map ::= #asMapOpCodes    ( OpCodes )             [function]
+                 | #asMapOpCodesAux ( Int , OpCodes , Map ) [function]
+ // ------------------------------------------------------------------
+    rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodesAux(0, OPS, .Map)
 
-    rule #asMapOpCodes( N , .OpCodes         , MAP ) => MAP
-    rule #asMapOpCodes( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodes(N +Int 1, OCS, MAP [ N <- OP ]) requires notBool isPushOp(OP)
-    rule #asMapOpCodes( N , PUSH(M, W) ; OCS , MAP ) => #asMapOpCodes(N +Int 1 +Int M, OCS, MAP [ N <- PUSH(M, W) ])
-
-    syntax OpCodes ::= #asOpCodes ( Map )                 [function]
-                     | #asOpCodes ( Int , Map , OpCodes ) [function, klabel(#asOpCodesAux)]
- // ---------------------------------------------------------------------------------------
-    rule #asOpCodes(M) => #asOpCodes(0, M, .OpCodes)
-
-    rule #asOpCodes(N, .Map,               OPS) => OPS
-    rule #asOpCodes(N, N |-> OP         M, OPS) => #asOpCodes(N +Int 1,        M, OP         ; OPS) requires notBool isPushOp(OP)
-    rule #asOpCodes(N, N |-> PUSH(S, W) M, OPS) => #asOpCodes(N +Int 1 +Int S, M, PUSH(S, W) ; OPS)
+    rule #asMapOpCodesAux( N , .OpCodes         , MAP ) => MAP
+    rule #asMapOpCodesAux( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodesAux(N +Int #widthOp(OP), OCS, MAP [ N <- OP ])
 ```
 
 EVM OpCodes
@@ -852,7 +748,7 @@ These are just used by the other operators for shuffling local execution state a
            <nonce>  NONCE </nonce>
            ...
          </account>
-      requires CODE =/=K .WordStack orBool NONCE =/=K 0
+      requires CODE =/=K .WordStack orBool NONCE =/=Int 0
 
     rule <k> #newAccount ACCT => . ... </k>
          <account>
@@ -968,6 +864,8 @@ We use `INVALID` both for marking the designated invalid operator, and `UNDEFINE
 ```k
     syntax InvalidOp ::= "INVALID" | "UNDEFINED" "(" Int ")"
  // --------------------------------------------------------
+    rule <k> INVALID      => #end EVMC_INVALID_INSTRUCTION   ... </k>
+    rule <k> UNDEFINED(_) => #end EVMC_UNDEFINED_INSTRUCTION ... </k>
 ```
 
 ### Stack Manipulations
@@ -1357,12 +1255,8 @@ These rules reach into the network state and load/store from account storage:
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
-           <origStorage> ORIGSTORAGE </origStorage>
            ...
          </account>
-         <refund> R => R +Int Rsstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) </refund>
-         <schedule> SCHED </schedule>
-
 ```
 
 ### Call Operations
@@ -1382,12 +1276,12 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
 ```k
     syntax InternalOp ::= "#checkCall" Int Int
-                        | "#call" Int Int Int Exp Int Int WordStack Bool [strict(4)]
-                        | "#callWithCode" Int Int Map WordStack Int Int Int WordStack Bool
-                        | "#mkCall" Int Int Map WordStack Int Int Int WordStack Bool
- // --------------------------------------------------------------------------------
-    rule <k> #checkCall ACCT VALUE ~> #call _ _ _ GLIMIT _ _ _ _
-          => #refund GLIMIT ~> #pushCallStack ~> #pushWorldState
+                        | "#call"         Int Int Int Int Int WordStack Bool
+                        | "#callWithCode" Int Int Map WordStack Int Int WordStack Bool
+                        | "#mkCall"       Int Int Map WordStack     Int WordStack Bool
+ // ----------------------------------------------------------------------------------
+    rule <k> #checkCall ACCT VALUE
+          => #refund GCALL ~> #pushCallStack ~> #pushWorldState
           ~> #end #if VALUE >Int BAL #then EVMC_BALANCE_UNDERFLOW #else EVMC_CALL_DEPTH_EXCEEDED #fi
          ...
          </k>
@@ -1398,6 +1292,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
            <balance> BAL </balance>
            ...
          </account>
+         <previousGas> GCALL </previousGas>
       requires VALUE >Int BAL orBool CD >=Int 1024
 
      rule <k> #checkCall ACCT VALUE => . ... </k>
@@ -1409,38 +1304,41 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </account>
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT:Int VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .WordStack GLIMIT VALUE APPVALUE ARGS STATIC
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .WordStack VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <schedule> SCHED </schedule>
       requires ACCTCODE in #precompiledAccounts(SCHED)
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT:Int VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) CODE GLIMIT VALUE APPVALUE ARGS STATIC
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) CODE VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <schedule> SCHED </schedule>
-         <acctID> ACCTCODE </acctID>
-         <code> CODE </code>
+         <account>
+           <acctID> ACCTCODE </acctID>
+           <code> CODE </code>
+           ...
+         </account>
       requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE GLIMIT:Int VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO .Map .WordStack GLIMIT VALUE APPVALUE ARGS STATIC
+    rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO .Map .WordStack VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <activeAccounts> ACCTS </activeAccounts>
          <schedule> SCHED </schedule>
       requires notBool ACCTCODE in #precompiledAccounts(SCHED) andBool notBool ACCTCODE in ACCTS
 
-    rule <k> #callWithCode ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC
+    rule <k> #callWithCode ACCTFROM ACCTTO CODE BYTES VALUE APPVALUE ARGS STATIC
           => #pushCallStack ~> #pushWorldState
           ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC
+          ~> #mkCall ACCTFROM ACCTTO CODE BYTES APPVALUE ARGS STATIC
          ...
          </k>
 
-    rule <k> #mkCall ACCTFROM ACCTTO CODE BYTES GLIMIT VALUE APPVALUE ARGS STATIC:Bool
+    rule <k> #mkCall ACCTFROM ACCTTO CODE BYTES APPVALUE ARGS STATIC:Bool
           => #initVM ~> #execute
          ...
          </k>
@@ -1448,7 +1346,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
          <id> _ => ACCTTO </id>
-         <gas> _ => GLIMIT </gas>
+         <gas> _ => GCALL </gas>
+         <previousGas> GCALL => 0 </previousGas>
          <caller> _ => ACCTFROM </caller>
          <program> _ => CODE </program>
          <programBytes> _ => BYTES </programBytes>
@@ -1512,33 +1411,31 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <previousGas> GAVAIL </previousGas>
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #call ACCTFROM ACCTFROM ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <previousGas> GAVAIL </previousGas>
 
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
-          ~> #call ACCTAPPFROM ACCTFROM ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #call ACCTAPPFROM ACCTFROM ACCTTO 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1547,20 +1444,18 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <caller> ACCTAPPFROM </caller>
          <callValue> VALUE </callValue>
          <localMem> LM </localMem>
-         <previousGas> GAVAIL </previousGas>
 
     syntax CallSixOp ::= "STATICCALL"
  // ---------------------------------
     rule <k> STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
-          ~> #call ACCTFROM ACCTTO ACCTTO Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) 0 0 #range(LM, ARGSTART, ARGWIDTH) true
+          ~> #call ACCTFROM ACCTTO ACCTTO 0 0 #range(LM, ARGSTART, ARGWIDTH) true
           ~> #return RETSTART RETWIDTH
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
-         <previousGas> GAVAIL </previousGas>
 ```
 
 ### Account Creation/Deletion
@@ -1569,49 +1464,27 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 -   `#codeDeposit_` checks the result of initialization code and whether the code deposit can be paid, indicating an error if not.
 
 ```k
-    syntax InternalOp ::= "#create" Int Int Int Int WordStack
-                        | "#mkCreate" Int Int WordStack Int Int
-                        | "#checkCreate" Int Int
+    syntax InternalOp ::= "#create"   Int Int Int WordStack
+                        | "#mkCreate" Int Int Int WordStack
                         | "#incrementNonce" Int
  // -------------------------------------------
-    rule <k> #checkCreate ACCT VALUE ~> #create _ _ GAVAIL _ _
-          => #refund GAVAIL ~> #pushCallStack ~> #pushWorldState
-          ~> #end #if VALUE >Int BAL #then EVMC_BALANCE_UNDERFLOW #else EVMC_CALL_DEPTH_EXCEEDED #fi
-         ...
-         </k>
-         <callDepth> CD </callDepth>
-         <output> _ => .WordStack </output>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
-      requires VALUE >Int BAL orBool CD >=Int 1024
-
-    rule <k> #checkCreate ACCT VALUE => #incrementNonce ACCT ... </k>
-         <callDepth> CD </callDepth>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
-      requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
-
-    rule <k> #create ACCTFROM ACCTTO GAVAIL VALUE INITCODE
-          => #pushCallStack ~> #pushWorldState
+    rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
+          => #incrementNonce ACCTFROM
+          ~> #pushCallStack ~> #pushWorldState
           ~> #newAccount ACCTTO
           ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
+          ~> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
          ...
          </k>
 
-    rule <k> #mkCreate ACCTFROM ACCTTO INITCODE GAVAIL VALUE
+    rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
           => #initVM ~> #execute
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCT => ACCTTO </id>
-         <gas> OLDGAVAIL => GAVAIL </gas>
+         <gas> _ => GCALL </gas>
+         <previousGas> GCALL => 0 </previousGas>
          <program> _ => #asMapOpCodes(#dasmOpCodes(INITCODE, SCHED)) </program>
          <programBytes> _ => INITCODE </programBytes>
          <caller> _ => ACCTFROM </caller>
@@ -1692,14 +1565,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
-          => #checkCreate ACCT VALUE
-          ~> #create ACCT #newAddr(ACCT, NONCE) #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi VALUE #range(LM, MEMSTART, MEMWIDTH)
+          => #checkCall ACCT VALUE
+          ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
-         <gas> GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0 #else GAVAIL /Int 64 #fi </gas>
          <localMem> LM </localMem>
          <account>
            <acctID> ACCT </acctID>
@@ -1717,13 +1589,13 @@ have been paid, and it may be to expensive to compute the hash of the init code.
  // --------------------------------
     rule <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
           => #loadAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
-          ~> #checkCreate ACCT VALUE
-          ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) #allBut64th(GAVAIL) VALUE #range(LM, MEMSTART, MEMWIDTH)
+          ~> #checkCall ACCT VALUE
+          ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
          ...
          </k>
          <id> ACCT </id>
-         <gas> GAVAIL => GAVAIL /Int 64 </gas>
+         <previousGas> GCALL </previousGas>
          <localMem> LM </localMem>
 ```
 
@@ -1736,8 +1608,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
     rule <k> SELFDESTRUCT ACCTTO => #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
-         <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
-         <refund> RF => #if ACCT in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
+         <selfDestruct> ... (.Set => SetItem(ACCT)) ... </selfDestruct>
          <account>
            <acctID> ACCT </acctID>
            <balance> BALFROM </balance>
@@ -1750,8 +1621,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
     rule <k> SELFDESTRUCT ACCT => #end EVMC_SUCCESS ... </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
-         <selfDestruct> SDS (.Set => SetItem(ACCT)) </selfDestruct>
-         <refund> RF => #if ACCT in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
+         <selfDestruct> ... (.Set => SetItem(ACCT)) ... </selfDestruct>
          <account>
            <acctID> ACCT </acctID>
            <balance> BALFROM => 0 </balance>
@@ -1790,6 +1660,7 @@ Precompiled Contracts
     rule #precompiledAccounts(EIP158)         => #precompiledAccounts(EIP150)
     rule #precompiledAccounts(BYZANTIUM)      => #precompiledAccounts(EIP158) SetItem(5) SetItem(6) SetItem(7) SetItem(8)
     rule #precompiledAccounts(CONSTANTINOPLE) => #precompiledAccounts(BYZANTIUM)
+    rule #precompiledAccounts(PETERSBURG)     => #precompiledAccounts(CONSTANTINOPLE)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -1899,6 +1770,25 @@ Precompiled Contracts
 
 Ethereum Gas Calculation
 ========================
+
+Overall Gas
+-----------
+
+-   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
+-   `#deductGas` is used to check that there won't be a gas underflow (throwing `EVMC_OUT_OF_GAS` if so), and deducts the gas if not.
+-   `#deductMemory` checks that access to memory stay within sensible bounds (and deducts the correct amount of gas for it), throwing `EVMC_INVALID_MEMORY_ACCESS` if bad access happens.
+
+```k
+    syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas" | "#deductMemory"
+ // ----------------------------------------------------------------------------
+    rule <k> #gas [ OP ] => #memory(OP, MU) ~> #deductMemory ~> #gasExec(SCHED, OP) ~> #deductGas ... </k> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
+
+    rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
+         <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
+
+    rule <k> G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
+    rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+```
 
 Memory Consumption
 ------------------
@@ -2019,7 +1909,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 ```k
     syntax InternalOp ::= #gasExec ( Schedule , OpCode )
  // ----------------------------------------------------
-    rule <k> #gasExec(SCHED, SSTORE INDEX VALUE) => Csstore(SCHED, VALUE, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) ... </k>
+    rule <k> #gasExec(SCHED, SSTORE INDEX NEW) => Csstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -2027,9 +1917,11 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
            <origStorage> ORIGSTORAGE </origStorage>
            ...
          </account>
+         <refund> R => R +Int Rsstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) </refund>
+         <schedule> SCHED </schedule>
 
     rule <k> #gasExec(SCHED, EXP W0 0)  => Gexp < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=K 0
+    rule <k> #gasExec(SCHED, EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=Int 0
 
     rule <k> #gasExec(SCHED, CALLDATACOPY    _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
     rule <k> #gasExec(SCHED, RETURNDATACOPY  _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
@@ -2038,30 +1930,57 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
 
-    rule <k> #gasExec(SCHED, CALL GCAP ACCTTO VALUE _ _ _ _) => Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ... </k>
+    rule <k> #gasExec(SCHED, CALL GCAP ACCTTO VALUE _ _ _ _)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE)
+         ...
+         </k>
          <gas> GAVAIL </gas>
 
-    rule <k> #gasExec(SCHED, CALLCODE GCAP _ VALUE _ _ _ _) => Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) ... </k>
+    rule <k> #gasExec(SCHED, CALLCODE GCAP _ VALUE _ _ _ _)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE)
+         ...
+         </k>
          <id> ACCTFROM </id>
          <gas> GAVAIL </gas>
 
-    rule <k> #gasExec(SCHED, DELEGATECALL GCAP _ _ _ _ _) => Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) ... </k>
+    rule <k> #gasExec(SCHED, DELEGATECALL GCAP _ _ _ _ _)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0)
+         ...
+         </k>
          <id> ACCTFROM </id>
          <gas> GAVAIL </gas>
 
-    rule <k> #gasExec(SCHED, STATICCALL GCAP ACCTTO _ _ _ _) => Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) ... </k>
+    rule <k> #gasExec(SCHED, STATICCALL GCAP ACCTTO _ _ _ _)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0)
+         ...
+         </k>
          <gas> GAVAIL </gas>
 
     rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, #accountNonexistent(ACCTTO), BAL) ... </k>
          <id> ACCTFROM </id>
+         <selfDestruct> SDS </selfDestruct>
+         <refund> RF => #if ACCTFROM in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL </balance>
            ...
          </account>
 
-    rule <k> #gasExec(SCHED, CREATE _ _ _) => Gcreate < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, CREATE2 _ _ WIDTH _) => Gcreate < SCHED > +Int Gsha3word < SCHED > *Int (WIDTH up/Int 32) ... </k>
+    rule <k> #gasExec(SCHED, CREATE _ _ _)
+          => Gcreate < SCHED > ~> #deductGas
+          ~> #allocateCreateGas ~> 0
+         ...
+         </k>
+
+    rule <k> #gasExec(SCHED, CREATE2 _ _ WIDTH _)
+          => Gcreate < SCHED > +Int Gsha3word < SCHED > *Int (WIDTH up/Int 32) ~> #deductGas
+          ~> #allocateCreateGas ~> 0
+         ...
+         </k>
 
     rule <k> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </k>
 
@@ -2153,6 +2072,18 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(_, ECADD)     => 500   ... </k>
     rule <k> #gasExec(_, ECMUL)     => 40000 ... </k>
     rule <k> #gasExec(_, ECPAIRING) => 100000 +Int (#sizeWordStack(DATA) /Int 192) *Int 80000 ... </k> <callData> DATA </callData>
+
+    syntax InternalOp ::= "#allocateCallGas"
+ // ----------------------------------------
+    rule <k> GCALL:Int ~> #allocateCallGas => . ... </k>
+         <previousGas> _ => GCALL </previousGas>
+
+    syntax InternalOp ::= "#allocateCreateGas"
+ // ------------------------------------------
+    rule <schedule> SCHED </schedule>
+         <k> #allocateCreateGas => . ... </k>
+         <gas>         GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Int 64      #fi </gas>
+         <previousGas> _      => #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi </previousGas>
 ```
 
 There are several helpers for calculating gas (most of them also specified in the YellowPaper).
@@ -2165,21 +2096,22 @@ There are several helpers for calculating gas (most of them also specified in th
                  | Cselfdestruct ( Schedule , BExp , Int )             [strict(2)]
  // ------------------------------------------------------------------------------
     rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE)
-          => Cextra(SCHED, VALUE, ISEMPTY) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, VALUE, ISEMPTY)) ... </k>
+          => Cextra(SCHED, ISEMPTY, VALUE) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE)) ... </k>
 
     rule <k> Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE)
-          => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, VALUE, ISEMPTY)) +Int #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
+          => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE)) +Int #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
 
     rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
-          => Gselfdestruct < SCHED > +Int Cnew(SCHED, BAL, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>) ... </k>
+          => Gselfdestruct < SCHED > +Int Cnew(SCHED, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>, BAL) ... </k>
 
     syntax Int ::= Cgascap ( Schedule , Int , Int , Int ) [function]
                  | Csstore ( Schedule , Int , Int , Int ) [function]
                  | Rsstore ( Schedule , Int , Int , Int ) [function]
-                 | Cextra  ( Schedule , Int , Bool )      [function]
-                 | Cnew    ( Schedule , Int , Bool )      [function]
+                 | Cextra  ( Schedule , Bool , Int )      [function]
+                 | Cnew    ( Schedule , Bool , Int )      [function]
                  | Cxfer   ( Schedule , Int )             [function]
- // ----------------------------------------------------------------
+                 | Cmem    ( Schedule , Int )             [function, memo]
+ // ----------------------------------------------------------------------
     rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
 
@@ -2211,14 +2143,16 @@ There are several helpers for calculating gas (most of them also specified in th
       => #if CURR =/=Int 0 andBool NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi
       requires notBool Ghasdirtysstore << SCHED >>
 
-    rule Cextra(SCHED, VALUE, ISEMPTY)
-      => Gcall < SCHED > +Int Cnew(SCHED, VALUE, ISEMPTY) +Int Cxfer(SCHED, VALUE)
+    rule Cextra(SCHED, ISEMPTY, VALUE)
+      => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)
 
-    rule Cnew(SCHED, VALUE, ISEMPTY:Bool)
+    rule Cnew(SCHED, ISEMPTY:Bool, VALUE)
       => #if ISEMPTY andBool (VALUE =/=Int 0 orBool Gzerovaluenewaccountgas << SCHED >>) #then Gnewaccount < SCHED > #else 0 #fi
 
     rule Cxfer(SCHED, 0) => 0
-    rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=K 0
+    rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=Int 0
+
+    rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
 
     syntax BExp    ::= Bool
     syntax KResult ::= Bool
@@ -2594,6 +2528,27 @@ static const EVMSchedule ConstantinopleSchedule = []
 }();
 ```
 
+
+### Petersburg Schedule
+
+```k
+    syntax Schedule ::= "PETERSBURG" [klabel(PETERSBURG_EVM), symbol]
+ // -----------------------------------------------------------------
+    rule SCHEDCONST < PETERSBURG > => SCHEDCONST < CONSTANTINOPLE >
+
+    rule Ghasdirtysstore << PETERSBURG >> => false
+    rule SCHEDFLAG       << PETERSBURG >> => SCHEDFLAG << CONSTANTINOPLE >>
+      requires notBool ( SCHEDFLAG ==K Ghasdirtysstore )
+```
+
+```c++
+static const EVMSchedule ConstantinopleFixSchedule = [] {
+    EVMSchedule schedule = ConstantinopleSchedule;
+    schedule.eip1283Mode = false;
+    return schedule;
+}();
+```
+
 EVM Program Representations
 ===========================
 
@@ -2620,9 +2575,8 @@ After interpreting the strings representing programs as a `WordStack`, it should
 ```k
     syntax OpCodes ::= #dasmOpCodes ( WordStack , Schedule )           [function]
                      | #dasmOpCodes ( OpCodes , WordStack , Schedule ) [function, klabel(#dasmOpCodesAux)]
-                     | #revOpCodes  ( OpCodes , OpCodes )              [function]
- // -----------------------------------------------------------------------------
-    rule #dasmOpCodes( WS, SCHED ) => #revOpCodes(#dasmOpCodes(.OpCodes, WS, SCHED), .OpCodes)
+ // ------------------------------------------------------------------------------------------------------
+    rule #dasmOpCodes( WS, SCHED ) => #revOps(#dasmOpCodes(.OpCodes, WS, SCHED))
 
     rule #dasmOpCodes( OPS, .WordStack, _ ) => OPS
     rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(#dasmOpCode(W, SCHED) ; OPS, WS, SCHED) requires W >=Int 0   andBool W <=Int 95
@@ -2632,9 +2586,6 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(LOG(W -Int 160)       ; OPS, WS, SCHED) requires W >=Int 160 andBool W <=Int 164
 
     rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(PUSH(W -Int 95, #asWord(#take(W -Int 95, WS))) ; OPS, #drop(W -Int 95, WS), SCHED) requires W >=Int 96  andBool W <=Int 127
-
-    rule #revOpCodes ( OP ; OPS , OPS' ) => #revOpCodes(OPS, OP ; OPS')
-    rule #revOpCodes ( .OpCodes , OPS  ) => OPS
 
     syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [function]
  // -----------------------------------------------------------

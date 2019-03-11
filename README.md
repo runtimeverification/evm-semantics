@@ -19,11 +19,8 @@ Installing/Building
 
 ### K Backends
 
-There are three backends of K available, the OCAML backend for concrete execution, the Java backend for symbolic reasoning and proofs, and the experimental Haskell backend for developers.
-This repository generates the build-products for both backends in `.build/java/` and `.build/ocaml/`.
-
-There is also a Haskell version of K currently under development which is meant to eventually replace the Java backend for symbolic reasoning and proofs.
-To read more about building and using it, please check the [K Haskell Backend](#OPTIONAL:-K-Haskell-Backend)
+There are four backends of K available, the OCAML and (experimental) LLVM backends for concrete execution, and the Java and (experimental) Haskell backends for symbolic reasoning and proofs.
+This repository generates the build-products for both non-experimental backends in `.build/java/` and `.build/ocaml/`.
 
 ### System Dependencies
 
@@ -40,13 +37,7 @@ The following are needed for building/running KEVM:
 On Ubuntu >= 15.04 (for example):
 
 ```sh
-sudo apt-get install make gcc maven openjdk-8-jdk flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev
-```
-
-To run proofs, you will also need [Z3](https://github.com/Z3Prover/z3) prover; on Ubuntu:
-
-```sh
-sudo apt-get install z3 libz3-dev
+sudo apt-get install make git gcc maven openjdk-8-jdk bison flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev z3 libz3-dev
 ```
 
 On ArchLinux:
@@ -87,25 +78,15 @@ make deps
 make build
 ```
 
-### OPTIONAL: K Haskell Backend
+### OPTIONAL: K LLVM/Haskell Backends
 
-The K Haskell Backend, currently under development, is meant to eventually replace the Java backend for symbolic reasoning and proofs.
+The K LLVM/Haskell backends, currently under development, require extra dependencies to work.
 
 #### System Dependencies
-
-In addition to the above dependencies, the Haskell Backend also depends on:
 
 -   [Haskell Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade).
     Note that the version of the `stack` tool provided by your package manager might not be recent enough.
     Please follow installation instructions from the Haskell Stack website linked above.
-
-To run proofs, you will also need [Z3](https://github.com/Z3Prover/z3) version 4.7.1 or higher.
-
-On Ubuntu:
-
-```sh
-sudo apt-get install haskell-stack z3 libz3-dev
-```
 
 To upgrade `stack` (if needed):
 
@@ -114,13 +95,34 @@ stack upgrade
 export PATH=$HOME/.local/bin:$PATH
 ```
 
-#### Building
+The LLVM backend has additional dependencies:
 
-After installing the above dependencies, the following command will build the Kore backend submodule dependency and then the Kore version of KEVM:
+```k
+sudo apt-get install cmake clang-6.0 clang++-6.0 llvm-6.0 libboost-test-dev libgmp-dev libyaml-cpp-dev libjemalloc-dev curl
+```
+
+And you need to setup Rust:
 
 ```sh
-make haskell-deps
+curl https://sh.rustup.rs -sSf | sh
+source $HOME/.cargo/env
+rustup toolchain install 1.28.0
+rustup default 1.28.0
+```
+
+#### Building
+
+After installing the above dependencies, the following command will build the extra backends into K:
+
+-   `make haskell-deps`: additionally build the Haskell backend into K.
+-   `make llvm-deps`: additionally build the LLVM backend into K.
+-   `make all-deps`: additionally build both the Haskell and LLVM backends into K.
+
+Following this dependency setup, you can also now `kompile` the LLVM and Haskell backends:
+
+```sh
 make build-haskell
+make build-llvm
 ```
 
 This Repository
@@ -161,18 +163,6 @@ For example, to prove the specification `tests/proofs/specs/vyper-erc20/totalSup
 
 ```sh
 ./kevm prove tests/proofs/specs/vyper-erc20/totalSupply-spec.k
-```
-
-Finally, if you want to debug a given program (by stepping through its execution), you can use the `debug` option:
-
-```sh
-./kevm debug tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
-...
-KDebug> s
-1 Step(s) Taken.
-KDebug> p
-... Big Configuration Here ...
-KDebug>
 ```
 
 Running Tests

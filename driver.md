@@ -118,12 +118,13 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
  // ---------------------------------------------
     rule <k> loadTx(ACCTFROM)
           => #loadAccount #newAddr(ACCTFROM, NONCE)
-          ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) (GLIMIT -Int G0(SCHED, CODE, true)) VALUE CODE
-          ~> #execute ~> #finishTx ~> #finalizeTx(false) ~> startTx
+          ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
+          ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
+         <previousGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </previousGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -140,7 +141,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
-           <nonce> NONCE => NONCE +Int 1 </nonce>
+           <nonce> NONCE </nonce>
            ...
          </account>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
@@ -148,12 +149,13 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> loadTx(ACCTFROM)
           => #loadAccount ACCTTO
           ~> #lookupCode  ACCTTO
-          ~> #call ACCTFROM ACCTTO ACCTTO (GLIMIT -Int G0(SCHED, DATA, false)) VALUE VALUE DATA false
-          ~> #execute ~> #finishTx ~> #finalizeTx(false) ~> startTx
+          ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
+          ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
+         <previousGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </previousGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -178,7 +180,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
-    rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ... </k>
+    rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState                   ... </k>
     rule <statusCode> EVMC_REVERT             </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k> <gas> GAVAIL </gas>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
@@ -524,12 +526,13 @@ The `"network"` key allows setting the fee schedule inside the test.
 
     syntax Schedule ::= #asScheduleString ( String ) [function]
  // -----------------------------------------------------------
-    rule #asScheduleString("EIP150")         => EIP150
-    rule #asScheduleString("EIP158")         => EIP158
-    rule #asScheduleString("Frontier")       => FRONTIER
-    rule #asScheduleString("Homestead")      => HOMESTEAD
-    rule #asScheduleString("Byzantium")      => BYZANTIUM
-    rule #asScheduleString("Constantinople") => CONSTANTINOPLE
+    rule #asScheduleString("EIP150")            => EIP150
+    rule #asScheduleString("EIP158")            => EIP158
+    rule #asScheduleString("Frontier")          => FRONTIER
+    rule #asScheduleString("Homestead")         => HOMESTEAD
+    rule #asScheduleString("Byzantium")         => BYZANTIUM
+    rule #asScheduleString("Constantinople")    => CONSTANTINOPLE
+    rule #asScheduleString("ConstantinopleFix") => PETERSBURG
 ```
 
 The `"rlp"` key loads the block information.

@@ -18,12 +18,12 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean deps repo-deps system-deps k-deps ocaml-deps plugin-deps \
+.PHONY: all clean deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps \
         build build-ocaml build-java build-node build-kore split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn \
         test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-        test-proof test-interactive test-vm-normal test-vm-haskell-perf \
+        test-proof test-interactive test-vm-haskell \
         metropolis-theme 2017-devcon3 sphinx
 .SECONDARY:
 
@@ -45,6 +45,13 @@ distclean: clean
 # Dependencies
 # ------------
 
+all-deps: deps
+all-deps: BACKEND_SKIP=
+llvm-deps: deps
+llvm-deps: BACKEND_SKIP=-Dhaskell.backend.skip
+haskell-deps: deps
+haskell-deps: BACKEND_SKIP=-Dllvm.backend.skip
+
 deps: repo-deps system-deps
 repo-deps: tangle-deps k-deps plugin-deps
 system-deps: ocaml-deps
@@ -52,11 +59,12 @@ k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 
+BACKEND_SKIP=-Dhaskell.backend.skip -Dllvm.backend.skip
+
 $(K_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init --recursive -- $(K_SUBMODULE)
-	cd $(K_SUBMODULE) \
-	    && mvn package -q -DskipTests -U -Dllvm.backend.skip
+	cd $(K_SUBMODULE) && mvn package -DskipTests -U ${BACKEND_SKIP}
 	touch $(K_SUBMODULE)/make.timestamp
 
 $(PANDOC_TANGLE_SUBMODULE)/make.timestamp:
@@ -170,7 +178,7 @@ endif
 	    && ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
 	                        --syntax-module ETHEREUM-SIMULATION .build/ocaml/driver.k --directory .build/llvm \
 	                        --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp \
-	                        -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
+	                        -ccopt -L/usr/local/lib -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
 .build/%/driver-kompiled/constants.$(EXT): $(ocaml_files) $(node_files)
 	@echo "== kompile: $@"
@@ -216,10 +224,10 @@ endif
 # Tests
 # -----
 
-# Override this with `make TEST=echo` to list tests instead of running
+# Override this with `make TEST=true` to list tests instead of running
 TEST_CONCRETE_BACKEND:=ocaml
 TEST_SYMBOLIC_BACKEND:=java
-TEST:=./kevm test-profile
+TEST:=./kevm
 
 test-all: test-all-concrete test-all-proof
 test: test-concrete test-proof test-java
@@ -234,7 +242,7 @@ tests/%/make.timestamp:
 # Concrete Tests
 
 test-all-concrete: test-all-conformance test-interactive
-test-concrete: test-conformance test-interactive
+test-concrete: test-conformance test-interactive test-vm-haskell
 
 # Ethereum Tests
 
@@ -248,62 +256,21 @@ test-conformance: test-vm test-bchain
 
 vm_tests=$(wildcard tests/ethereum-tests/VMTests/*/*.json)
 slow_vm_tests=$(wildcard tests/ethereum-tests/VMTests/vmPerformance/*.json)
-bad_vm_tests= $(wildcard tests/ethereum-tests/VMTests/vmBlockInfoTest/blockhash*.json) \
-              $(wildcard tests/ethereum-tests/VMTests/vmEnvironmentalInfo/balance*.json) \
-              $(wildcard tests/ethereum-tests/VMTests/vmSystemOperations/*call*.json) \
-              $(wildcard tests/ethereum-tests/VMTests/vmSystemOperations/*Call*.json) \
-              $(wildcard tests/ethereum-tests/VMTests/vmSystemOperations/*create*.json) \
-              tests/ethereum-tests/VMTests/vmEnvironmentalInfo/env1.json \
-              tests/ethereum-tests/VMTests/vmEnvironmentalInfo/extcodecopy0AddressTooBigRight.json \
-              tests/ethereum-tests/VMTests/vmEnvironmentalInfo/ExtCodeSizeAddressInputTooBigRightMyAddress.json \
-              tests/ethereum-tests/VMTests/vmRandomTest/201503102037PYTHON.json \
-              tests/ethereum-tests/VMTests/vmRandomTest/201503102148PYTHON.json \
-              tests/ethereum-tests/VMTests/vmRandomTest/201503102300PYTHON.json \
-              tests/ethereum-tests/VMTests/vmRandomTest/201503110050PYTHON.json \
-              tests/ethereum-tests/VMTests/vmRandomTest/201503110226PYTHON_DUP6.json \
-              tests/ethereum-tests/VMTests/vmRandomTest/randomTest.json \
-              tests/ethereum-tests/VMTests/vmSystemOperations/PostToNameRegistrator0.json \
-              tests/ethereum-tests/VMTests/vmSystemOperations/PostToReturn1.json
-all_vm_tests=$(filter-out $(bad_vm_tests), $(vm_tests))
-quick_vm_tests=$(filter-out $(slow_vm_tests), $(all_vm_tests))
+quick_vm_tests=$(filter-out $(slow_vm_tests), $(vm_tests))
 
-# Based on (time haskell / time java) over 592 tests
-# timeouts: 44
-# min: 6.74
-# max: 915.06
-# median: 28.46
-# tests with >=4x median slowdown (including timeouts): 70
-# representative tests
-haskell_perf_tests=tests/ethereum-tests/VMTests/vmArithmeticTest/expPowerOf256Of256_1.json \
-                   tests/ethereum-tests/VMTests/vmArithmeticTest/arith1.json \
-                   tests/ethereum-tests/VMTests/vmArithmeticTest/fibbonacci_unrolled.json \
-                   tests/ethereum-tests/VMTests/vmPushDupSwapTest/push33.json \
-                   tests/ethereum-tests/VMTests/vmEnvironmentalInfo/calldatacopy_sec.json \
-                   tests/ethereum-tests/VMTests/vmSha3Test/sha3_0.json \
-                   tests/ethereum-tests/VMTests/vmSha3Test/sha3_memSizeQuadraticCost32.json \
-                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/jumpi_at_the_end.json \
-                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/jumpdestBigList.json \
-                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/for_loop2.json \
-                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/BlockNumberDynamicJump0_foreverOutOfGas.json \
-                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/byte1.json \
-                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/jump0_foreverOutOfGas.json \
-                   tests/ethereum-tests/VMTests/vmIOandFlowOperations/loop_stacklimit_1020.json
+haskell_vm_tests=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
+                 tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json
 
 test-all-vm: $(all_vm_tests:=.test)
 test-slow-vm: $(slow_vm_tests:=.test)
 test-vm: $(quick_vm_tests:=.test)
-test-vm-normal: $(quick_vm_tests:=.testnormal)
-test-vm-haskell-perf: $(haskell_perf_tests:=.haskellperf)
+test-vm-haskell: $(haskell_vm_tests:=.haskelltest)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/%
-	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
+	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
 
-tests/ethereum-tests/VMTests/%.testnormal: tests/ethereum-tests/VMTests/%
-	SCHEDULE=DEFAULT $(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
-
-tests/ethereum-tests/VMTests/%.haskellperf: tests/ethereum-tests/VMTests/%
-	SCHEDULE=DEFAULT $(TEST) --backend java         $< || true
-	SCHEDULE=DEFAULT $(TEST) --backend haskell-perf $< || true
+tests/ethereum-tests/VMTests/%.haskelltest: tests/ethereum-tests/VMTests/%
+	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) test --backend haskell $<
 
 # BlockchainTests
 
@@ -316,7 +283,8 @@ slow_bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTe
                   tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_ContractRETURNBigOffset_d1g0v0.json
 bad_bchain_tests= tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/RevertOpcodeInCreateReturns_d0g0v0.json \
                   tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/RevertInCreateInInit_d0g0v0.json
-all_bchain_tests=$(filter-out $(bad_bchain_tests), $(bchain_tests))
+failing_bchain_tests=$(shell cat tests/failing.${TEST_CONCRETE_BACKEND})
+all_bchain_tests=$(filter-out $(bad_bchain_tests), $(filter-out $(failing_bchain_tests), $(bchain_tests)))
 quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(all_bchain_tests))
 
 test-all-bchain: $(all_bchain_tests:=.test)
@@ -324,7 +292,7 @@ test-slow-bchain: $(slow_bchain_tests:=.test)
 test-bchain: $(quick_bchain_tests:=.test)
 
 tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/%
-	$(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
+	$(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
 
 # InteractiveTests
 
@@ -334,10 +302,10 @@ interactive_tests:=$(wildcard tests/interactive/*.json) \
 test-interactive: $(interactive_tests:=.test)
 
 tests/interactive/%.json.test: tests/interactive/%.json
-	$(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
+	$(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
 
 tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out
-	MODE=GASANALYZE $(TEST) --backend $(TEST_SYMBOLIC_BACKEND) $<
+	MODE=GASANALYZE $(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
 
 # ProofTests
 
@@ -350,7 +318,7 @@ test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add1
 	./kevm run --backend java $< | diff - tests/templates/output-success-java.json
 
 $(proof_dir)/%.test: $(proof_dir)/% split-proof-tests
-	$(TEST) --backend $(TEST_SYMBOLIC_BACKEND) $<
+	$(TEST) test --backend $(TEST_SYMBOLIC_BACKEND) $<
 
 split-proof-tests: tests/proofs/make.timestamp
 	$(MAKE) -C tests/proofs $@
