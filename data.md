@@ -13,7 +13,7 @@ requires "krypto.k"
 module EVM-DATA
     imports KRYPTO
     imports STRING-BUFFER
-    imports MAP
+    imports MAP-SYMBOLIC
     imports COLLECTIONS
 
     syntax KResult ::= Int
@@ -429,7 +429,6 @@ A cons-list is used for the EVM wordstack.
     rule #drop(0, WS)         => WS
     rule #drop(N, .WordStack) => .WordStack
     rule #drop(N, (W : WS))   => #drop(N -Int 1, WS) requires N >Int 0
-
 ```
 
 ### Element Access
