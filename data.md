@@ -9,6 +9,7 @@ Both are implemented using K's `Int`.
 
 ```k
 requires "krypto.k"
+
 module EVM-DATA
     imports KRYPTO
     imports STRING-BUFFER
