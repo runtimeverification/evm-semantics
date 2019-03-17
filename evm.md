@@ -386,9 +386,15 @@ The `#next` operator executes a single step by:
 ```k
     syntax InternalOp ::= "#static?" "[" OpCode "]"
  // -----------------------------------------------
-    rule <k> #static? [ OP ] => .                               ... </k>                             <static> false </static>
-    rule <k> #static? [ OP ] => .                               ... </k> <wordStack> WS </wordStack> <static> true  </static> requires notBool #changesState(OP, WS)
-    rule <k> #static? [ OP ] => #end EVMC_STATIC_MODE_VIOLATION ... </k> <wordStack> WS </wordStack> <static> true  </static> requires         #changesState(OP, WS)
+    rule <k> #static? [ OP ] => . ... </k>
+         <wordStack> WS </wordStack>
+         <static> STATIC:Bool </static>
+      requires notBool (STATIC andBool #changesState(OP, WS))
+
+    rule <k> #static? [ OP ] => #end EVMC_STATIC_MODE_VIOLATION ... </k>
+         <wordStack> WS </wordStack>
+         <static> STATIC:Bool </static>
+      requires STATIC andBool #changesState(OP, WS)
 ```
 
 **TODO**: Investigate why using `[owise]` here for the `false` cases breaks the proofs.
