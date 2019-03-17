@@ -242,7 +242,7 @@ tests/%/make.timestamp:
 # Concrete Tests
 
 test-all-concrete: test-all-conformance test-interactive
-test-concrete: test-conformance test-interactive test-vm-haskell
+test-concrete: test-conformance test-interactive
 
 # Ethereum Tests
 

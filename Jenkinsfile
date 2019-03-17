@@ -60,6 +60,17 @@ pipeline {
             }
           }
         }
+        stage('Conformance (Haskell)') {
+          steps {
+            ansiColor('xterm') {
+              sh '''
+                export PATH=$HOME/.local/bin:$PATH
+                nprocs=$(nproc)
+                make test-vm-haskell -j"$nprocs"
+              '''
+            }
+          }
+        }
       }
     }
     stage('Test Proofs') {
