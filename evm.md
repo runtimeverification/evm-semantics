@@ -289,48 +289,55 @@ When the `#next` operator cannot lookup the next opcode, it assumes that the end
 
 ### Single Step
 
-The `#next` operator executes a single step by:
+If the program-counter points to an actual opcode, it's loaded into the `#next [_]` operator.
+The `#next [_]` operator initiates execution by:
 
-1.  performing some quick checks for exceptional opcodes,
-2.  executes the opcode if it is not immediately exceptional,
-3.  increments the program counter, and finally
-4.  reverts state if any of the above steps threw an exception.
+1.  checking if there will be a stack over/underflow, or a static mode violation,
+2.  loading any additional state needed (when executing in full-node mode),
+3.  executing the opcode (which includes any gas deduction needed), and
+4.  adjusting the program counter.
 
 ```k
+    syntax InternalOp ::= "#next" "[" OpCode "]"
+ // --------------------------------------------
     rule <mode> EXECMODE </mode>
-         <k> #next
-          => #stackNeeded? [ OP ]
-          ~> #static?      [ OP ]
-          ~> #load         [ OP ]
-          ~> #exec         [ OP ]
-          ~> #pc           [ OP ]
-         ...
-         </k>
+         <k> #next => #next [ OP ] ... </k>
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
       requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
+
+    rule <k> #next [ OP ]
+          => #load [ OP ]
+          ~> #exec [ OP ]
+          ~> #pc   [ OP ]
+         ...
+         </k>
+         <wordStack> WS </wordStack>
+         <static> STATIC:Bool </static>
+      requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
+       andBool notBool ( STATIC andBool #changesState(OP, WS) )
+
+    rule <k> #next [ OP ] => #end EVMC_STACK_UNDERFLOW ... </k>
+         <wordStack> WS </wordStack>
+      requires #stackUnderflow(WS, OP)
+
+    rule <k> #next [ OP ] => #end EVMC_STACK_OVERFLOW ... </k>
+         <wordStack> WS </wordStack>
+      requires #stackOverflow(WS, OP)
+
+    rule <k> #next [ OP ] => #end EVMC_STATIC_MODE_VIOLATION ... </k>
+         <wordStack> WS </wordStack>
+         <static> STATIC:Bool </static>
+      requires STATIC andBool #changesState(OP, WS)
 ```
 
 ### Exceptional Checks
 
--   `#stackNeeded?` checks that the stack will be not be under/overflown.
--   `#stackNeeded`, `#stackAdded`, and `#stackDelta` are helpers for deciding `#stackNeeded?`.
+-   `#stackNeeded` is how many arguments that opcode will need off the top of the stack.
+-   `#stackAdded` is how many arguments that opcode will push onto the top of the stack.
+-   `#stackDelta` is the delta the stack will have after the opcode executes.
 
 ```k
-    syntax InternalOp ::= "#stackNeeded?" "[" OpCode "]"
- // ----------------------------------------------------
-    rule <k> #stackNeeded? [ OP ] => #end EVMC_STACK_UNDERFLOW ... </k>
-         <wordStack> WS </wordStack>
-      requires #stackUnderflow(WS, OP)
-
-    rule <k> #stackNeeded? [ OP ] => #end EVMC_STACK_OVERFLOW ... </k>
-         <wordStack> WS </wordStack>
-      requires #stackOverflow(WS, OP)
-
-    rule <k> #stackNeeded? [ OP ] => . ... </k>
-         <wordStack> WS </wordStack>
-      requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
-
     syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [function]
                   | #stackOverflow  ( WordStack , OpCode ) [function]
  // -----------------------------------------------------------------
@@ -381,24 +388,7 @@ The `#next` operator executes a single step by:
     rule #stackDelta(OP) => #stackAdded(OP) -Int #stackNeeded(OP)
 ```
 
--   `#static?` determines if the opcode should throw an exception due to the static flag.
-
-```k
-    syntax InternalOp ::= "#static?" "[" OpCode "]"
- // -----------------------------------------------
-    rule <k> #static? [ OP ] => . ... </k>
-         <wordStack> WS </wordStack>
-         <static> STATIC:Bool </static>
-      requires notBool (STATIC andBool #changesState(OP, WS))
-
-    rule <k> #static? [ OP ] => #end EVMC_STATIC_MODE_VIOLATION ... </k>
-         <wordStack> WS </wordStack>
-         <static> STATIC:Bool </static>
-      requires STATIC andBool #changesState(OP, WS)
-```
-
-**TODO**: Investigate why using `[owise]` here for the `false` cases breaks the proofs.
-          Alternatively, figure out how to make this go through with a boolean expression.
+-   `#changesState` is true if the given opcode will change `<network>` state given the arguments.
 
 ```k
     syntax Bool ::= #changesState ( OpCode , WordStack ) [function]
