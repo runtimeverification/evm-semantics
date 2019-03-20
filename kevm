@@ -24,6 +24,8 @@ test_log="$test_logs/tests.log"
 haskell_prof_log="kore-exec.prof"
 haskell_hp_log="kore-exec.hp"
 
+klab_dir="$build_dir/klab"
+
 # Utilities
 # ---------
 
@@ -61,6 +63,27 @@ run_proof() {
         haskell-perf) args=(--haskell-backend-command "kore-exec +RTS -p -h -RTS") ; backend=haskell ;;
     esac
     kprove --directory "$backend_dir" "$proof_file" --def-module VERIFICATION "${args[@]-}" "$@"
+}
+
+run_klab() {
+    local run_mode run_file
+
+    run_mode="$1" ; shift
+    run_file="$1" ; shift
+
+    $0 "$run_mode" --backend java "$run_file" \
+        --state-log --state-log-path "$klab_dir/data" --state-log-id klab-statelog \
+        --state-log-events OPEN,EXECINIT,SEARCHINIT,REACHINIT,REACHTARGET,REACHPROVED,NODE,RULE,SRULE,RULEATTEMPT,IMPLICATION,Z3QUERY,Z3RESULT,CLOSE \
+        --output-flatten "_Map_ #And" \
+        --output-tokenize "_;__EVM" \
+        --output-omit "<programBytes> <program> <code> <previousGas> <touchedAccounts> <interimStates> <callStack> <callData>" \
+        --no-alpha-renaming --restore-original-names --no-sort-collections \
+        --output json \
+        "$@" \
+        >/dev/null || true
+
+    export KLAB_OUT="$klab_dir"
+    klab debug klab-statelog
 }
 
 # Dev Commands
@@ -154,23 +177,28 @@ cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
 case "$run_command-$backend" in
 
     # Running
-    run-@(ocaml|java|llvm|haskell|haskell-perf)  ) run_krun      "$@" ;;
-    interpret-@(ocaml|llvm)                      ) run_interpret "$@" ;;
-    prove-@(java|haskell|haskell-perf)           ) run_proof     "$@" ;;
-    test-@(ocaml|java|llvm|haskell|haskell-perf) ) run_test      "$@" ;;
+    run-@(ocaml|java|llvm|haskell|haskell-perf)  ) run_krun                        "$@" ;;
+    interpret-@(ocaml|llvm)                      ) run_interpret                   "$@" ;;
+    prove-@(java|haskell|haskell-perf)           ) run_proof                       "$@" ;;
+    test-@(ocaml|java|llvm|haskell|haskell-perf) ) run_test                        "$@" ;;
+    klab-@(run|prove)-java                       ) run_klab "${run_command#klab-}" "$@" ;;
 
     *) echo "
     usage: $0 (run|test) [--backend (ocaml|java|llvm|haskell|haskell-perf)] <pgm>  <K args>*
            $0 interpret  [--backend (ocaml|llvm)]                           <pgm>
            $0 prove      [--backend (java|haskell|haskell-perf)]            <spec> <K args>*
+           $0 klab-(run|prove)                                              <spec> <K args>*
 
        $0 run       : Run a single EVM program
        $0 test      : Run a single EVM program like it's a test
        $0 interpret : Run JSON EVM programs without K Frontend (external parser)
        $0 prove     : Run an EVM K proof
+       $0 klab-(run|prove) : Run or prove a spec and launch KLab on the execution graph.
 
        Note: <pgm> is a path to a file containing an EVM program/test.
              <spec> is a K specification to be proved.
              <K args> are any arguments you want to pass to K when executing/proving.
+
+       KLab: Make sure that the 'klab/bin' directory is on your PATH to use this option.
 " ; exit ;;
 esac
