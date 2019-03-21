@@ -320,8 +320,13 @@ test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add1
 $(proof_dir)/%.test: $(proof_dir)/% split-proof-tests
 	$(TEST) test --backend $(TEST_SYMBOLIC_BACKEND) $<
 
-split-proof-tests: tests/proofs/make.timestamp
-	$(MAKE) -C tests/proofs $@
+split-proof-tests:
+	$(MAKE) --directory tests/proofs/resources      $@
+	$(MAKE) --directory tests/proofs/bihu           $@
+	$(MAKE) --directory tests/proofs/erc20/gno      $@
+	$(MAKE) --directory tests/proofs/erc20/hobby    $@
+	$(MAKE) --directory tests/proofs/erc20/hkg      $@
+	$(MAKE) --directory tests/proofs/erc20/ds-token $@
 
 # Media
 # -----
