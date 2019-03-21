@@ -164,6 +164,7 @@ run_command="$1" ; shift
 
 backend="ocaml"
 [[ ! "$run_command" == 'prove' ]] || backend='java'
+[[ ! "$run_command" =~ klab*   ]] || backend='java'
 if [[ $# -gt 0 ]] && [[ $1 == '--backend' ]]; then
     backend="$2"
     shift 2
