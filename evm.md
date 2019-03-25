@@ -337,8 +337,8 @@ The `#next` operator executes a single step by:
          ...
          </k>
          <pc> PCOUNT </pc>
-         <program> ... PCOUNT |-> OP ... </program>
-      requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
+         <analysis> ... "currentProgramHash" |-> HASH  HASH |-> (PCS:Set (.Set => SetItem(PCOUNT))) ... </analysis> <program> ... PCOUNT |-> OP ... </program>
+     // requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
 ```
 
 ### Exceptional Checks
@@ -1364,6 +1364,18 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <localMem>   _ => .Map       </localMem>
          <programBytes> CODE </programBytes>
          <analysis> ANALYSIS => ANALYSIS["currentProgramHash" <- keccak(CODE)][keccak(CODE) <- .Set] </analysis>
+      requires notBool keccak(CODE) in_keys(ANALYSIS)
+       //  <analysis> ANALYSIS => ANALYSIS["currentTx" <- !N:Int][!N <- .Set] </analysis>
+
+    rule <k> #initVM    => . ...      </k>
+         <pc>         _ => 0          </pc>
+         <memoryUsed> _ => 0          </memoryUsed>
+         <output>     _ => .WordStack </output>
+         <wordStack>  _ => .WordStack </wordStack>
+         <localMem>   _ => .Map       </localMem>
+         <programBytes> CODE </programBytes>
+         <analysis> ANALYSIS </analysis>
+      requires keccak(CODE) in_keys(ANALYSIS)
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
