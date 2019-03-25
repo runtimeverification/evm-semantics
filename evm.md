@@ -1362,6 +1362,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <output>     _ => .WordStack </output>
          <wordStack>  _ => .WordStack </wordStack>
          <localMem>   _ => .Map       </localMem>
+         <programBytes> CODE </programBytes>
+         <analysis> ANALYSIS => ANALYSIS["currentProgramHash" <- keccak(CODE)][keccak(CODE) <- .Set] </analysis>
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------

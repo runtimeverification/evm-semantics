@@ -113,6 +113,6 @@ This tool will be used to measure the code coverage of a test. It records the pr
           ...
          </k> 
          <pc> PCOUNT </pc>
-         <analysis> ... "coverage" |-> (PCS:Set (.Set => SetItem(PCOUNT))) ... </analysis>
+         <analysis> ... "currentProgramHash" |-> HASH  HASH |-> (PCS:Set (.Set => SetItem(PCOUNT))) ... </analysis>
 endmodule
 ```
