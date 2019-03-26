@@ -1363,7 +1363,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <wordStack>  _ => .WordStack </wordStack>
          <localMem>   _ => .Map       </localMem>
          <programBytes> CODE </programBytes>
-         <analysis> ANALYSIS => ANALYSIS["currentProgramHash" <- keccak(CODE)][keccak(CODE) <- .Set] </analysis>
+         <program> PROGRAM </program>
+         <analysis> ANALYSIS => ANALYSIS["currentProgramHash" <- keccak(CODE)][keccak(CODE) <- .Set]["currentProgram" <- PROGRAM] </analysis>
       requires notBool keccak(CODE) in_keys(ANALYSIS)
        //  <analysis> ANALYSIS => ANALYSIS["currentTx" <- !N:Int][!N <- .Set] </analysis>
 

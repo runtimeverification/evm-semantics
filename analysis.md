@@ -95,25 +95,25 @@ This tool will be used to measure the code coverage of a test. It records the pr
 ```{.k .standalone}
     syntax Mode ::= "COVERAGE" [klabel(COVERAGE), symbol]
 // ------------------------------------------------------
-    rule <mode> COVERAGE </mode>
-         <k> #next ... </k>
-         <analysis> ANALYSIS => ANALYSIS ["coverage" <- .Set]["currentProgram" <- PROGRAM] </analysis>
-         <program> PROGRAM </program>
-      requires notBool("coverage" in_keys(ANALYSIS)) andBool notBool("currentProgram" in_keys(ANALYSIS))
+  //  rule <mode> COVERAGE </mode>
+  //       <k> #next ... </k>
+  //       <analysis> ANALYSIS => ANALYSIS ["coverage" <- .Set]["currentProgram" <- PROGRAM] </analysis>
+  //       <program> PROGRAM </program>
+  //    requires notBool("coverage" in_keys(ANALYSIS)) andBool notBool("currentProgram" in_keys(ANALYSIS))
 ```
 
 -    `COVERAGE` mode is built on top of the `NORMAL` execution mode. Before each opcode, the program count is stored within the `analysis` cell and then execution resumes normally. After the opcode is executed, the mode is switched back to `COVERAGE` in order to store the next opcode's program counter.
 
 ```{.k .standalone}
-    rule <mode> COVERAGE </mode>
-         <k> #next 
-          => #setMode NORMAL
-          ~> #next
-          ~> #setMode COVERAGE
-          ...
-         </k> 
-         <pc> PCOUNT </pc>
-         <analysis> ... "currentProgramHash" |-> HASH  HASH |-> (PCS:Set (.Set => SetItem(PCOUNT))) ... </analysis>
+  //  rule <mode> COVERAGE </mode>
+  //       <k> #next 
+  //        => #setMode NORMAL
+  //        ~> #next
+  //        ~> #setMode COVERAGE
+  //        ...
+  //       </k> 
+  //       <pc> PCOUNT </pc>
+  //       <analysis> ... "currentProgramHash" |-> HASH  HASH |-> (PCS:Set (.Set => SetItem(PCOUNT))) ... </analysis>
        //  <analysis> ... "currentTx" |-> ID  ID |-> (PCS:Set (.Set => SetItem(PCOUNT))) ... </analysis>
 endmodule
 ```
