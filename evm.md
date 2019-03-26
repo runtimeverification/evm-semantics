@@ -337,7 +337,8 @@ The `#next` operator executes a single step by:
          ...
          </k>
          <pc> PCOUNT </pc>
-         <analysis> ... "currentProgramHash" |-> HASH  HASH |-> (PCS:Set (.Set => SetItem(PCOUNT))) ... </analysis> <program> ... PCOUNT |-> OP ... </program>
+         <program> ... PCOUNT |-> OP ... </program>
+         <analysis> ... "currentProgramHash" |-> HASH  HASH |-> (PCS:Set (.Set => SetItem(PCOUNT))) ... </analysis> 
      // requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
 ```
 
