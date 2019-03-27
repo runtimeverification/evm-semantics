@@ -309,24 +309,29 @@ tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm 
 
 # ProofTests
 
-proof_dir:=tests/proofs/specs
-proof_tests=$(wildcard $(proof_dir)/*/*-spec.k)
+proof_repo:=tests/proofs
+proof_specs_dir:=$(proof_repo)/specs
+proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
 
 test-proof: $(proof_tests:=.test)
 
 test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11_d0g0v0.json
 	./kevm run --backend java $< | diff - tests/templates/output-success-java.json
 
-$(proof_dir)/%.test: $(proof_dir)/% split-proof-tests
+$(proof_specs_dir)/%.test: $(proof_specs_dir)/% split-proof-tests
 	$(TEST) test --backend $(TEST_SYMBOLIC_BACKEND) $<
 
-split-proof-tests:
+split-proof-tests: $(proof_repo)/git-submodule
 	$(MAKE) --directory tests/proofs/resources      $@
 	$(MAKE) --directory tests/proofs/bihu           $@
 	$(MAKE) --directory tests/proofs/erc20/gno      $@
 	$(MAKE) --directory tests/proofs/erc20/hobby    $@
 	$(MAKE) --directory tests/proofs/erc20/hkg      $@
 	$(MAKE) --directory tests/proofs/erc20/ds-token $@
+
+$(proof_repo)/git-submodule:
+	@echo "== submodule: $*"
+	git submodule update --init --recursive -- $(proof_repo)
 
 # Media
 # -----
