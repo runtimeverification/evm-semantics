@@ -79,7 +79,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
  // ----------------------------------
     rule <mode> NORMAL     </mode> <k> start => #execute    ... </k>
     rule <mode> VMTESTS    </mode> <k> start => #execute    ... </k>
-    rule <mode> COVERAGE   </mode> <k> start => #execute    ... </k>
     rule <mode> GASANALYZE </mode> <k> start => #gasAnalyze ... </k>
 
     syntax EthereumCommand ::= "flush"
