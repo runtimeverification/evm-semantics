@@ -89,25 +89,34 @@ run_klab() {
 # Dev Commands
 
 run_interpret() {
+    local test_file interpreter kast output exit_status
+
     test_file="$1" ; shift
     interpreter="$build_dir/$backend/driver-kompiled/interpreter"
     kast="$(mktemp)"
     output="$(mktemp)"
     trap "rm -rf $kast $output" INT TERM EXIT
+    exit_status=0
     case "$backend" in
         ocaml)  "$kevm_dir/kast-json.py" "$test_file" > "$kast"
                 "$interpreter" "$build_dir/ocaml/driver-kompiled/realdef.cma" -c PGM "$kast" textfile \
                              -c SCHEDULE "$cSCHEDULE" text -c MODE "$cMODE" text \
-                             --output-file "$output"
+                             --output-file "$output" \
+                    || exit_status="$?"
                 ;;
 
         llvm)   "$kevm_dir/kore-json.py" "$test_file" "$cSCHEDULE" "$cMODE" > "$kast"
-                "$interpreter" "$kast" -1 "$output"
+                "$interpreter" "$kast" -1 "$output" \
+                    || exit_status="$?"
                 ;;
 
         *)      die "Bad backend for interpreter: '$backend'"
                 ;;
     esac
+    if [[ "$exit_status" != '0' ]]; then
+        cat "$output"
+        exit "$exit_status"
+    fi
 }
 
 run_test() {
