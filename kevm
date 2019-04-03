@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-set -e      # Exit immediately if any command fails
-set -u      # Using undefined variables is an error. Exit immediately
+set -euo pipefail
+shopt -s extglob
 
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 kevm_script="$0"
@@ -12,6 +12,11 @@ while [[ -h "$kevm_script" ]]; do
 done
 kevm_dir="$(cd -P "$(dirname "$kevm_script")" && pwd)"
 build_dir="$kevm_dir/.build"
+release_dir="${K_BIN:-$build_dir/k/k-distribution/target/release/k}"
+lib_dir="$build_dir/local/lib"
+
+export PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH"
+export LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
 
 test_logs="$build_dir/logs"
 mkdir -p "$test_logs"
@@ -30,29 +35,13 @@ pretty_diff() {
     git --no-pager diff --no-index "$@"
 }
 
-# Environment Setup
-# -----------------
-
-run_env() {
-    local run_file=$1
-    local release_dir="${K_BIN:-$build_dir/k/k-distribution/target/release/k}"
-    local lib_dir="$build_dir/local/lib"
-    export cMODE="\`${MODE:-NORMAL}\`(.KList)"
-    export cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
-    export PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH"
-    export LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
-    eval $(opam config env)
-}
-
 # Runners
 # -------
 
 # User Commands
 
 run_krun() {
-    local backend=$1  ; shift
     local run_file=$1 ; shift
-    run_env "$run_file"
     export K_OPTS=-Xss500m
     case "$backend" in
         haskell)      args=()                                                                        ;;
@@ -60,63 +49,47 @@ run_krun() {
         ocaml)        args=(--interpret)                                                             ;;
         *)            args=()                                                                        ;;
     esac
-    krun --directory "$build_dir/$backend/" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "${args[@]-}" "$@"
-}
-
-run_kdebug() {
-    progress "debugging: $1"
-    run_krun java "$1" --debugger
-}
-
-run_ksearch() {
-    progress "searching: $1"
-    run_krun java "$1" --search
+    krun --directory "$backend_dir" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "${args[@]-}" "$@"
 }
 
 run_proof() {
-    local backend=$1  ; shift
     local proof_file="$1" ; shift
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
-    run_env "$proof_file"
     export K_OPTS=-Xmx8G
     case "$backend" in
         haskell)      args=()                                                                        ;;
         haskell-perf) args=(--haskell-backend-command "kore-exec +RTS -p -h -RTS") ; backend=haskell ;;
-        *)            args=() ; backend=java                                                         ;;
     esac
-    kprove --directory "$build_dir/$backend/" "$proof_file" --def-module VERIFICATION "${args[@]-}" "$@"
+    kprove --directory "$backend_dir" "$proof_file" --def-module VERIFICATION "${args[@]-}" "$@"
 }
 
 # Dev Commands
 
-run_interpreter() {
-    test_file="$1"
-    run_env "$test_file"
-    interpreter="$build_dir/ocaml/driver-kompiled/interpreter"
+run_interpret() {
+    test_file="$1" ; shift
+    interpreter="$build_dir/$backend/driver-kompiled/interpreter"
     kast="$(mktemp)"
     output="$(mktemp)"
     trap "rm -rf $kast $output" INT TERM EXIT
-    "$kevm_dir/kast-json.py" "$test_file" > "$kast"
-    "$interpreter" "$build_dir/ocaml/driver-kompiled/realdef.cma" -c PGM "$kast" textfile \
-                 -c SCHEDULE "$cSCHEDULE" text -c MODE "$cMODE" text \
-                 --output-file "$output"
-}
+    case "$backend" in
+        ocaml)  "$kevm_dir/kast-json.py" "$test_file" > "$kast"
+                "$interpreter" "$build_dir/ocaml/driver-kompiled/realdef.cma" -c PGM "$kast" textfile \
+                             -c SCHEDULE "$cSCHEDULE" text -c MODE "$cMODE" text \
+                             --output-file "$output"
+                ;;
 
-run_llvm() {
-    test_file="$1"
-    run_env "$test_file"
-    interpreter="$build_dir/llvm/driver-kompiled/interpreter"
-    kast="$(mktemp)"
-    output="$(mktemp)"
-    trap "rm -rf $kast $output" INT TERM EXIT
-    "$kevm_dir/kore-json.py" "$test_file" "$cSCHEDULE" "$cMODE" > "$kast"
-    "$interpreter" "$kast" -1 "$output"
+        llvm)   "$kevm_dir/kore-json.py" "$test_file" "$cSCHEDULE" "$cMODE" > "$kast"
+                "$interpreter" "$kast" -1 "$output"
+                ;;
+
+        *)      die "Bad backend for interpreter: '$backend'"
+                ;;
+    esac
 }
 
 run_test() {
-    local backend test_file test_log_name output_file expected_file
+    local test_file test_log_name output_file expected_file
 
-    backend=$1     ; shift
     test_file="$1" ; shift
 
     test_log_name="$test_logs/$test_file"
@@ -132,29 +105,26 @@ run_test() {
 
     case "$test_file" in
         *proofs/*)
-            run_proof "$backend" "$test_file" --debug "$@"
+            run_proof "$test_file" "$@"
             ;;
         *interactive/*)
-            run_krun "$backend" "$test_file" "$@" > "$output_file" \
+            run_krun "$test_file" "$@" > "$output_file" \
                 || pretty_diff "$expected_file" "$output_file"
             ;;
         *)
             case "$backend" in
                 java)
-                    run_krun "$backend" "$test_file" "$@" > "$output_file" \
+                    run_krun "$test_file" "$@" > "$output_file" \
                         || pretty_diff --ignore-all-space "$expected_file" "$output_file"
                     ;;
                 haskell*)
-                    run_krun "$backend" "$test_file" "$@" > "$output_file" || true
+                    run_krun "$test_file" "$@" > "$output_file" || true
                     [[ ! -f "$haskell_prof_log" ]] || mv "$haskell_prof_log" "$test_log_name.$haskell_prof_log"
                     [[ ! -f "$haskell_hp_log"   ]] || mv "$haskell_hp_log"   "$test_log_name.$haskell_hp_log"
                     pretty_diff --ignore-all-space "$expected_file" "$output_file"
                     ;;
-                ocaml)
-                    run_interpreter "$test_file"
-                    ;;
-                llvm)
-                    run_llvm "$test_file"
+                ocaml|llvm)
+                    run_interpret "$test_file"
                     ;;
                 *)
                     die "Cannot test file '$test_file' with '$backend' backend!"
@@ -164,126 +134,43 @@ run_test() {
     esac
 }
 
-run_test_profile() {
-    local backend test_file exit_status
-    local output_log_dir stdout_log stderr_log
-
-    backend=$1     ; shift
-    test_file="$1" ; shift
-
-    output_log_dir="$test_logs/$(dirname -- "$test_file")"
-    stdout_log="$test_logs/$test_file.out"
-    stderr_log="$test_logs/$test_file.err"
-    [[ -d "$output_log_dir" ]] || mkdir -p "$output_log_dir"
-
-    exit_status='0'
-    `which time` --quiet --format '%x %es %Us %Ss %MKB %C' --output "$test_log" --append \
-        bash -c "$0 test --backend $backend $test_file $@" \
-        1> "$stdout_log" 2> "$stderr_log" \
-        || exit_status="$?"
-
-    if [[ "$exit_status" == '0' ]]; then
-        progress "passed test: $test_file"
-    else
-        die "failed test: $test_file"
-    fi
-
-    exit "$exit_status"
-}
-
-run_sort_logs() {
-    local tmp_file
-    tmp_log="$(mktemp $test_logs/log.XXXXXX)"
-
-    for log in $now_passing $now_failing; do
-        if [[ -f "$log" ]]; then
-            sort -u "$log" > "$tmp_log"
-            cp "$tmp_log" "$log"
-        fi
-    done
-
-    if [[ -f "$run_times" ]]; then
-        sort -k2 -u "$run_times" > "$tmp_log"
-        cp "$tmp_log" "$run_times"
-    fi
-}
-
-run_get_failing() {
-    count="${1:-1}"
-    cat "$now_failing" | sort -R | head -n"$count"
-}
-
 # Main
 # ----
 
 run_command="$1" ; shift
+
 backend="ocaml"
+[[ ! "$run_command" == 'prove' ]] || backend='java'
 if [[ $# -gt 0 ]] && [[ $1 == '--backend' ]]; then
     backend="$2"
     shift 2
 fi
+backend_dir="$build_dir/$backend"
+[[ ! "$backend" == "ocaml" ]] || eval $(opam config env)
 
-case "$run_command" in
+cMODE="\`${MODE:-NORMAL}\`(.KList)"
+cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
+
+case "$run_command-$backend" in
 
     # Running
-    run)          run_krun      "$backend"  "$@"    ;;
-    debug)        run_kdebug                "$@"    ;;
-    search)       run_ksearch               "$@"    ;;
-    prove)        run_proof     "$backend"  "$@"    ;;
-
-    # Testing
-    interpret)    run_interpreter               "$@"    ;;
-    test)         run_test         "$backend"   "$@"    ;;
-    test-profile) run_test_profile "$backend"   "$@"    ;;
-    sort-logs)    run_sort_logs                         ;;
-    get-failing)  run_get_failing               "$@"    ;;
+    run-@(ocaml|java|llvm|haskell|haskell-perf)  ) run_krun      "$@" ;;
+    interpret-@(ocaml|llvm)                      ) run_interpret "$@" ;;
+    prove-@(java|haskell|haskell-perf)           ) run_proof     "$@" ;;
+    test-@(ocaml|java|llvm|haskell|haskell-perf) ) run_test      "$@" ;;
 
     *) echo "
-    normal usage
-    ============
+    usage: $0 (run|test) [--backend (ocaml|java|llvm|haskell|haskell-perf)] <pgm>  <K args>*
+           $0 interpret  [--backend (ocaml|llvm)]                           <pgm>
+           $0 prove      [--backend (java|haskell|haskell-perf)]            <spec> <K args>*
 
-        $0 run            [--backend <backend>] <pgm>   <K args>*
-        $0 [debug|search]                       <pgm>   <K args>*
-        $0 prove          [--backend <backend>] <spec>  <K args>*
+       $0 run       : Run a single EVM program
+       $0 test      : Run a single EVM program like it's a test
+       $0 interpret : Run JSON EVM programs without K Frontend (external parser)
+       $0 prove     : Run an EVM K proof
 
-    -   run         Run a single EVM program
-    -   debug       Run a single EVM program in the debugger
-    -   search      Run a program searching for all execution paths
-    -   prove       Attempt to prove the specification using K's RL prover
-
-    Note: <pgm> and <spec> here are paths to files.
-    These files should be Ethereum programs/specifications.
-
-    <K args> are any options you want to pass directly to K.
-    Useful <K args> are:
-
-    -   --debug: output more debugging information when running/proving.
-
-    <backend> is one of [ocaml|java|haskell|haskell-perf|llvm].
-    Default: ocaml for execution, java for prove
-
-    Examples:
-
-        $ $0 run   tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
-        $ $0 debug tests/interactive/gas-analysis/sumTo10.evm
-        $ $0 prove tests/proofs/specs/examples/sum-to-n-spec.k
-
-    ci usage
-    ========
-
-    These commands are more for devs and CI servers.
-
-        $0 interpret           <pgm>
-        $0 [test|test-profile] [--backend <backend>] <pgm> <output>
-        $0 sort-logs
-        $0 get-failing [<count>]
-
-    -   interpret      Run a single EVM program (in JSON testing format) using fast interpreter
-    -   test           Run a single EVM program like it's a test
-    -   test-profile   Same as test, but generate list of failing tests and dump timing information
-    -   sort-logs      Normalize the test logs for CI servers to use
-    -   get-failing    Return a list of failing tests, at most <count>.
-
-    Note: <output> is the expected output of the given test.
+       Note: <pgm> is a path to a file containing an EVM program/test.
+             <spec> is a K specification to be proved.
+             <K args> are any arguments you want to pass to K when executing/proving.
 " ; exit ;;
 esac

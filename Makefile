@@ -18,7 +18,7 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean deps repo-deps system-deps k-deps ocaml-deps plugin-deps \
+.PHONY: all clean deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps \
         build build-ocaml build-java build-node build-kore split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn \
         test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
@@ -45,8 +45,13 @@ distclean: clean
 # Dependencies
 # ------------
 
+all-deps: deps
+all-deps: BACKEND_SKIP=
 llvm-deps: deps
-llvm-deps: LLVM_BACKEND=
+llvm-deps: BACKEND_SKIP=-Dhaskell.backend.skip
+haskell-deps: deps
+haskell-deps: BACKEND_SKIP=-Dllvm.backend.skip
+
 deps: repo-deps system-deps
 repo-deps: tangle-deps k-deps plugin-deps
 system-deps: ocaml-deps
@@ -54,13 +59,12 @@ k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 
-LLVM_BACKEND:=-Dllvm.backend.skip
+BACKEND_SKIP=-Dhaskell.backend.skip -Dllvm.backend.skip
 
 $(K_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init --recursive -- $(K_SUBMODULE)
-	cd $(K_SUBMODULE) \
-	    && mvn package -DskipTests -U ${LLVM_BACKEND}
+	cd $(K_SUBMODULE) && mvn package -DskipTests -U ${BACKEND_SKIP}
 	touch $(K_SUBMODULE)/make.timestamp
 
 $(PANDOC_TANGLE_SUBMODULE)/make.timestamp:
@@ -92,7 +96,7 @@ K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
 # Building
 # --------
 
-build: build-ocaml build-java build-node build-haskell
+build: build-ocaml build-java build-node
 build-ocaml: .build/ocaml/driver-kompiled/interpreter
 build-java: .build/java/driver-kompiled/timestamp
 build-node: .build/vm/kevm-vm
@@ -174,7 +178,7 @@ endif
 	    && ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
 	                        --syntax-module ETHEREUM-SIMULATION .build/ocaml/driver.k --directory .build/llvm \
 	                        --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp \
-	                        -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
+	                        -ccopt -L/usr/local/lib -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
 .build/%/driver-kompiled/constants.$(EXT): $(ocaml_files) $(node_files)
 	@echo "== kompile: $@"
@@ -220,10 +224,10 @@ endif
 # Tests
 # -----
 
-# Override this with `make TEST=echo` to list tests instead of running
+# Override this with `make TEST=true` to list tests instead of running
 TEST_CONCRETE_BACKEND:=ocaml
 TEST_SYMBOLIC_BACKEND:=java
-TEST:=./kevm test-profile
+TEST:=./kevm
 
 test-all: test-all-concrete test-all-proof
 test: test-concrete test-proof test-java
@@ -252,24 +256,7 @@ test-conformance: test-vm test-bchain
 
 vm_tests=$(wildcard tests/ethereum-tests/VMTests/*/*.json)
 slow_vm_tests=$(wildcard tests/ethereum-tests/VMTests/vmPerformance/*.json)
-bad_vm_tests= $(wildcard tests/ethereum-tests/VMTests/vmBlockInfoTest/blockhash*.json) \
-              $(wildcard tests/ethereum-tests/VMTests/vmEnvironmentalInfo/balance*.json) \
-              $(wildcard tests/ethereum-tests/VMTests/vmSystemOperations/*call*.json) \
-              $(wildcard tests/ethereum-tests/VMTests/vmSystemOperations/*Call*.json) \
-              $(wildcard tests/ethereum-tests/VMTests/vmSystemOperations/*create*.json) \
-              tests/ethereum-tests/VMTests/vmEnvironmentalInfo/env1.json \
-              tests/ethereum-tests/VMTests/vmEnvironmentalInfo/extcodecopy0AddressTooBigRight.json \
-              tests/ethereum-tests/VMTests/vmEnvironmentalInfo/ExtCodeSizeAddressInputTooBigRightMyAddress.json \
-              tests/ethereum-tests/VMTests/vmRandomTest/201503102037PYTHON.json \
-              tests/ethereum-tests/VMTests/vmRandomTest/201503102148PYTHON.json \
-              tests/ethereum-tests/VMTests/vmRandomTest/201503102300PYTHON.json \
-              tests/ethereum-tests/VMTests/vmRandomTest/201503110050PYTHON.json \
-              tests/ethereum-tests/VMTests/vmRandomTest/201503110226PYTHON_DUP6.json \
-              tests/ethereum-tests/VMTests/vmRandomTest/randomTest.json \
-              tests/ethereum-tests/VMTests/vmSystemOperations/PostToNameRegistrator0.json \
-              tests/ethereum-tests/VMTests/vmSystemOperations/PostToReturn1.json
-all_vm_tests=$(filter-out $(bad_vm_tests), $(vm_tests))
-quick_vm_tests=$(filter-out $(slow_vm_tests), $(all_vm_tests))
+quick_vm_tests=$(filter-out $(slow_vm_tests), $(vm_tests))
 
 haskell_vm_tests=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
                  tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json
@@ -280,10 +267,10 @@ test-vm: $(quick_vm_tests:=.test)
 test-vm-haskell: $(haskell_vm_tests:=.haskelltest)
 
 tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/%
-	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
+	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
 
 tests/ethereum-tests/VMTests/%.haskelltest: tests/ethereum-tests/VMTests/%
-	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) --backend haskell $<
+	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) test --backend haskell $<
 
 # BlockchainTests
 
@@ -305,7 +292,7 @@ test-slow-bchain: $(slow_bchain_tests:=.test)
 test-bchain: $(quick_bchain_tests:=.test)
 
 tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/%
-	$(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
+	$(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
 
 # InteractiveTests
 
@@ -315,10 +302,10 @@ interactive_tests:=$(wildcard tests/interactive/*.json) \
 test-interactive: $(interactive_tests:=.test)
 
 tests/interactive/%.json.test: tests/interactive/%.json
-	$(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
+	$(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
 
 tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out
-	MODE=GASANALYZE $(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
+	MODE=GASANALYZE $(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
 
 # ProofTests
 
@@ -331,7 +318,7 @@ test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add1
 	./kevm run --backend java $< | diff - tests/templates/output-success-java.json
 
 $(proof_dir)/%.test: $(proof_dir)/% split-proof-tests
-	$(TEST) --backend $(TEST_SYMBOLIC_BACKEND) $<
+	$(TEST) test --backend $(TEST_SYMBOLIC_BACKEND) $<
 
 split-proof-tests: tests/proofs/make.timestamp
 	$(MAKE) -C tests/proofs $@
