@@ -28,129 +28,131 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
 ```k
     configuration
-      <k> $PGM:EthereumSimulation </k>
-      <exit-code exit=""> 1 </exit-code>
-      <mode> $MODE:Mode </mode>
-      <schedule> $SCHEDULE:Schedule </schedule>
-      <analysis> .Map </analysis>
+      <kevm>
+        <k> $PGM:EthereumSimulation </k>
+        <exit-code exit=""> 1 </exit-code>
+        <mode> $MODE:Mode </mode>
+        <schedule> $SCHEDULE:Schedule </schedule>
+        <analysis> .Map </analysis>
 
-      <ethereum>
+        <ethereum>
 
-        // EVM Specific
-        // ============
+          // EVM Specific
+          // ============
 
-        <evm>
+          <evm>
 
-          // Mutable during a single transaction
-          // -----------------------------------
+            // Mutable during a single transaction
+            // -----------------------------------
 
-          <output>          .WordStack  </output>           // H_RETURN
-          <statusCode>      .StatusCode </statusCode>
-          <callStack>       .List       </callStack>
-          <interimStates>   .List       </interimStates>
-          <touchedAccounts> .Set        </touchedAccounts>
+            <output>          .WordStack  </output>           // H_RETURN
+            <statusCode>      .StatusCode </statusCode>
+            <callStack>       .List       </callStack>
+            <interimStates>   .List       </interimStates>
+            <touchedAccounts> .Set        </touchedAccounts>
 
-          <callState>
-            <program>      .Map       </program>            // I_b
-            <programBytes> .WordStack </programBytes>
+            <callState>
+              <program>      .Map       </program>            // I_b
+              <programBytes> .WordStack </programBytes>
 
-            // I_*
-            <id>        0          </id>                    // I_a
-            <caller>    0          </caller>                // I_s
-            <callData>  .WordStack </callData>              // I_d
-            <callValue> 0          </callValue>             // I_v
+              // I_*
+              <id>        0          </id>                    // I_a
+              <caller>    0          </caller>                // I_s
+              <callData>  .WordStack </callData>              // I_d
+              <callValue> 0          </callValue>             // I_v
 
-            // \mu_*
-            <wordStack>   .WordStack </wordStack>           // \mu_s
-            <localMem>    .Map       </localMem>            // \mu_m
-            <pc>          0          </pc>                  // \mu_pc
-            <gas>         0          </gas>                 // \mu_g
-            <memoryUsed>  0          </memoryUsed>          // \mu_i
-            <previousGas> 0          </previousGas>
+              // \mu_*
+              <wordStack>   .WordStack </wordStack>           // \mu_s
+              <localMem>    .Map       </localMem>            // \mu_m
+              <pc>          0          </pc>                  // \mu_pc
+              <gas>         0          </gas>                 // \mu_g
+              <memoryUsed>  0          </memoryUsed>          // \mu_i
+              <previousGas> 0          </previousGas>
 
-            <static>    false </static>
-            <callDepth> 0     </callDepth>
-          </callState>
+              <static>    false </static>
+              <callDepth> 0     </callDepth>
+            </callState>
 
-          // A_* (execution substate)
-          <substate>
-            <selfDestruct> .Set  </selfDestruct>            // A_s
-            <log>          .List </log>                     // A_l
-            <refund>       0     </refund>                  // A_r
-          </substate>
+            // A_* (execution substate)
+            <substate>
+              <selfDestruct> .Set  </selfDestruct>            // A_s
+              <log>          .List </log>                     // A_l
+              <refund>       0     </refund>                  // A_r
+            </substate>
 
-          // Immutable during a single transaction
-          // -------------------------------------
+            // Immutable during a single transaction
+            // -------------------------------------
 
-          <gasPrice> 0 </gasPrice>                          // I_p
-          <origin>   0 </origin>                            // I_o
+            <gasPrice> 0 </gasPrice>                          // I_p
+            <origin>   0 </origin>                            // I_o
 
-          // I_H* (block information)
-          <previousHash>     0          </previousHash>     // I_Hp
-          <ommersHash>       0          </ommersHash>       // I_Ho
-          <coinbase>         0          </coinbase>         // I_Hc
-          <stateRoot>        0          </stateRoot>        // I_Hr
-          <transactionsRoot> 0          </transactionsRoot> // I_Ht
-          <receiptsRoot>     0          </receiptsRoot>     // I_He
-          <logsBloom>        .WordStack </logsBloom>        // I_Hb
-          <difficulty>       0          </difficulty>       // I_Hd
-          <number>           0          </number>           // I_Hi
-          <gasLimit>         0          </gasLimit>         // I_Hl
-          <gasUsed>          0          </gasUsed>          // I_Hg
-          <timestamp>        0          </timestamp>        // I_Hs
-          <extraData>        .WordStack </extraData>        // I_Hx
-          <mixHash>          0          </mixHash>          // I_Hm
-          <blockNonce>       0          </blockNonce>       // I_Hn
+            // I_H* (block information)
+            <previousHash>     0          </previousHash>     // I_Hp
+            <ommersHash>       0          </ommersHash>       // I_Ho
+            <coinbase>         0          </coinbase>         // I_Hc
+            <stateRoot>        0          </stateRoot>        // I_Hr
+            <transactionsRoot> 0          </transactionsRoot> // I_Ht
+            <receiptsRoot>     0          </receiptsRoot>     // I_He
+            <logsBloom>        .WordStack </logsBloom>        // I_Hb
+            <difficulty>       0          </difficulty>       // I_Hd
+            <number>           0          </number>           // I_Hi
+            <gasLimit>         0          </gasLimit>         // I_Hl
+            <gasUsed>          0          </gasUsed>          // I_Hg
+            <timestamp>        0          </timestamp>        // I_Hs
+            <extraData>        .WordStack </extraData>        // I_Hx
+            <mixHash>          0          </mixHash>          // I_Hm
+            <blockNonce>       0          </blockNonce>       // I_Hn
 
-          <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
-          <blockhash>         .List         </blockhash>
+            <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
+            <blockhash>         .List         </blockhash>
 
-        </evm>
+          </evm>
 
-        // Ethereum Network
-        // ================
+          // Ethereum Network
+          // ================
 
-        <network>
+          <network>
 
-          // Accounts Record
-          // ---------------
+            // Accounts Record
+            // ---------------
 
-          <activeAccounts> .Set </activeAccounts>
-          <accounts>
-            <account multiplicity="*" type="Map">
-              <acctID>      0                      </acctID>
-              <balance>     0                      </balance>
-              <code>        .WordStack:AccountCode </code>
-              <storage>     .Map                   </storage>
-              <origStorage> .Map                   </origStorage>
-              <nonce>       0                      </nonce>
-            </account>
-          </accounts>
+            <activeAccounts> .Set </activeAccounts>
+            <accounts>
+              <account multiplicity="*" type="Map">
+                <acctID>      0                      </acctID>
+                <balance>     0                      </balance>
+                <code>        .WordStack:AccountCode </code>
+                <storage>     .Map                   </storage>
+                <origStorage> .Map                   </origStorage>
+                <nonce>       0                      </nonce>
+              </account>
+            </accounts>
 
-          // Transactions Record
-          // -------------------
+            // Transactions Record
+            // -------------------
 
-          <txOrder>   .List </txOrder>
-          <txPending> .List </txPending>
+            <txOrder>   .List </txOrder>
+            <txPending> .List </txPending>
 
-          <messages>
-            <message multiplicity="*" type="Map">
-              <msgID>      0          </msgID>
-              <txNonce>    0          </txNonce>            // T_n
-              <txGasPrice> 0          </txGasPrice>         // T_p
-              <txGasLimit> 0          </txGasLimit>         // T_g
-              <to>         .Account   </to>                 // T_t
-              <value>      0          </value>              // T_v
-              <sigV>       0          </sigV>               // T_w
-              <sigR>       .WordStack </sigR>               // T_r
-              <sigS>       .WordStack </sigS>               // T_s
-              <data>       .WordStack </data>               // T_i/T_e
-            </message>
-          </messages>
+            <messages>
+              <message multiplicity="*" type="Map">
+                <msgID>      0          </msgID>
+                <txNonce>    0          </txNonce>            // T_n
+                <txGasPrice> 0          </txGasPrice>         // T_p
+                <txGasLimit> 0          </txGasLimit>         // T_g
+                <to>         .Account   </to>                 // T_t
+                <value>      0          </value>              // T_v
+                <sigV>       0          </sigV>               // T_w
+                <sigR>       .WordStack </sigR>               // T_r
+                <sigS>       .WordStack </sigS>               // T_s
+                <data>       .WordStack </data>               // T_i/T_e
+              </message>
+            </messages>
 
-        </network>
+          </network>
 
-      </ethereum>
+        </ethereum>
+      </kevm>
 
     syntax EthereumSimulation
     syntax AccountCode ::= WordStack

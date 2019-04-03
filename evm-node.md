@@ -215,9 +215,9 @@ Because the same account may be loaded more than once, implementations of this i
 
 ```{.k .node}
     syntax KItem ::= vmResult ( return: String , gas: Int , refund: Int , status: Int , selfdestruct: List , logs: List , AccountsCell , touched: List )
-    syntax KItem ::= extractConfig ( GeneratedTopCell ) [function, symbol]
- // ----------------------------------------------------------------------
-    rule extractConfig ( <generatedTop>
+    syntax KItem ::= extractConfig ( KevmCell ) [function, symbol]
+ // --------------------------------------------------------------
+    rule extractConfig ( <kevm>
                            <output> OUT </output>
                            <gas> GAVAIL </gas>
                            <refund> REFUND </refund>
@@ -227,7 +227,7 @@ Because the same account may be loaded more than once, implementations of this i
                            <accounts> ACCTS </accounts>
                            <touchedAccounts> TOUCHED </touchedAccounts>
                            ...
-                         </generatedTop>
+                         </kevm>
                        )
       => vmResult(#unparseByteStack(OUT), GAVAIL, REFUND, STATUS, Set2List(SD), LOGS, <accounts> ACCTS </accounts>, Set2List(TOUCHED))
 ```
@@ -244,7 +244,7 @@ The following are expected to exist in the client, but are already defined in [d
 
 -   `accountEmpty` takes the contents of the `<code>` cell, the contents of the `<nonce>` cell, and the contents of the `<balance>` cell and returns true if the account is empty according to the semantics of EIP161 (i.e., empty code zero balance zero nonce).
 -   `unparseByteStack` takes a WordStack and returns the corresponding byte String.
--   `initGeneratedTopCell` is the top cell initializer used to construct an initial configuration.
+-   `initKevmCell` is the top cell initializer used to construct an initial configuration.
     The configuration is expected to have `$MODE`, `$PGM`, and `$SCHEDULE` parameters.
 -   `logEntry` is an entry in the log data created by a transaction.
     It is expected to consist of an Int address, a List of Int topics, and a WordStack of data.
