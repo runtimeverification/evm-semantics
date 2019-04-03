@@ -32,6 +32,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
       <exit-code exit=""> 1 </exit-code>
       <mode> $MODE:Mode </mode>
       <schedule> $SCHEDULE:Schedule </schedule>
+      <execPhase> CONTRACT_CONS </execPhase>
       <analysis> .Map </analysis>
 
       <ethereum>
@@ -178,6 +179,10 @@ Our semantics is modal, with the initial mode being set on the command line via 
     rule <k> #setMode EXECMODE => . ... </k> <mode> _ => EXECMODE </mode>
 ```
 
+```k
+    syntax Phase ::= "CONTRACT_CONS"   [klabel(CONTRACT_CONS), symbol]
+                   | "CONTRACT_RTIME"  [klabel(CONTRACT_RTIME), symbol]
+```
 State Stacks
 ------------
 
@@ -337,8 +342,11 @@ The `#next` operator executes a single step by:
          ...
          </k>
          <pc> PCOUNT </pc>
+         <execPhase> PHASE </execPhase>
+         <id> ACCT </id>
          <program> ... PCOUNT |-> OP ... </program>
-         <analysis> ... "currentProgramHash" |-> HASH  HASH |-> (PCS:Set (.Set => SetItem(PCOUNT))) ... </analysis> 
+         <analysis> ... "coveredOpcodes" |-> OPCODES:Map  OPCODES((ACCT|->PHASE) |-> (PCS:Set (.Set => SetItem(PCOUNT)))) ... </analysis>
+         //<analysis> ... "currentProgramHash" |-> HASH  HASH |-> (PCS:Set (.Set => SetItem(PCOUNT))) ... </analysis> 
      // requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
 ```
 
@@ -1343,6 +1351,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           => #initVM ~> #execute
          ...
          </k>
+         <execPhase> _ => CONTRACT_RTIME </execPhase>
+         <analysis> ANALYSIS => ANALYSIS["programs" <- .Map]["coveredOpcodes" <- .Map] </analysis>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
@@ -1354,10 +1364,32 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <programBytes> _ => BYTES </programBytes>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
+       requires ANALYSIS ==K .Map
+
+   rule <k> #mkCall ACCTFROM ACCTTO CODE BYTES APPVALUE ARGS STATIC:Bool
+          => #initVM ~> #execute
+         ...
+         </k>
+         <execPhase> _ => CONTRACT_RTIME </execPhase>
+         <analysis> ANALYSIS </analysis>
+         <callDepth> CD => CD +Int 1 </callDepth>
+         <callData> _ => ARGS </callData>
+         <callValue> _ => APPVALUE </callValue>
+         <id> _ => ACCTTO </id>
+         <gas> _ => GCALL </gas>
+         <previousGas> GCALL => 0 </previousGas>
+         <caller> _ => ACCTFROM </caller>
+         <program> _ => CODE </program>
+         <programBytes> _ => BYTES </programBytes>
+         <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
+         <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
+       requires ANALYSIS =/=K .Map
 
     syntax KItem ::= "#initVM"
  // --------------------------
     rule <k> #initVM    => . ...      </k>
+         <execPhase> PHASE </execPhase>
+         <id> ACCT </id>
          <pc>         _ => 0          </pc>
          <memoryUsed> _ => 0          </memoryUsed>
          <output>     _ => .WordStack </output>
@@ -1365,7 +1397,9 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <localMem>   _ => .Map       </localMem>
          <programBytes> CODE </programBytes>
          <program> PROGRAM </program>
-         <analysis> ANALYSIS => ANALYSIS["currentProgramHash" <- keccak(CODE)][keccak(CODE) <- .Set]["currentProgram" <- PROGRAM] </analysis>
+         <analysis> ANALYSIS("programs" |-> PROGRAMS:Map)("coveredOpcodes" |-> OPCODES:Map) => ANALYSIS["programs" <- PROGRAMS[(ACCT |-> PHASE) <- PROGRAM]]["coveredOpcodes" <- OPCODES[(ACCT |-> PHASE) <- .Set]]</analysis>
+         //<analysis> ANALYSIS => ANALYSIS[(ACCT |-> PHASE) <- PROGRAM] </analysis>
+         //<analysis> ANALYSIS => ANALYSIS["currentProgramHash" <- keccak(CODE)][keccak(CODE) <- .Set]["currentProgram" <- PROGRAM] </analysis>
       requires notBool keccak(CODE) in_keys(ANALYSIS)
        //  <analysis> ANALYSIS => ANALYSIS["currentTx" <- !N:Int][!N <- .Set] </analysis>
 
@@ -1498,6 +1532,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          ...
          </k>
          <schedule> SCHED </schedule>
+         <execPhase> _ => CONTRACT_CONS </execPhase>
+         <analysis> ANALYSIS => ANALYSIS["programs" <- .Map]["coveredOpcodes" <- .Map] </analysis>
          <id> ACCT => ACCTTO </id>
          <gas> _ => GCALL </gas>
          <previousGas> GCALL => 0 </previousGas>
@@ -1513,6 +1549,30 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            ...
          </account>
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
+     requires ANALYSIS ==K .Map
+    rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
+          => #initVM ~> #execute
+         ...
+         </k>
+         <schedule> SCHED </schedule>
+         <execPhase> _ => CONTRACT_CONS </execPhase>
+         <analysis> ANALYSIS</analysis>
+         <id> ACCT => ACCTTO </id>
+         <gas> _ => GCALL </gas>
+         <previousGas> GCALL => 0 </previousGas>
+         <program> _ => #asMapOpCodes(#dasmOpCodes(INITCODE, SCHED)) </program>
+         <programBytes> _ => INITCODE </programBytes>
+         <caller> _ => ACCTFROM </caller>
+         <callDepth> CD => CD +Int 1 </callDepth>
+         <callData> _ => .WordStack </callData>
+         <callValue> _ => VALUE </callValue>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <nonce> NONCE => #if Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
+           ...
+         </account>
+         <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
+     requires ANALYSIS =/=K .Map
 
     rule <k> #incrementNonce ACCT => . ... </k>
          <account>
