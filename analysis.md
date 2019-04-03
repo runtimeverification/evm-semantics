@@ -10,6 +10,44 @@ requires "evm.k"
 
 module EVM-ANALYSIS
     imports EVM
+    imports STRATEGY
+
+    configuration
+      <monitoredKevm>
+        <kevm/>
+        <s/>
+      </monitoredKevm>
+
+    syntax #RuleTag ::= "(" #RuleTag ")" [bracket]
+ // ----------------------------------------------
+
+    syntax Strategy ::= ".Strategy"
+ // -------------------------------
+    rule <s> .Strategy => . ... </s>
+
+    syntax KItem ::= #catchSTUCK       ( Strategy )            [function]
+                   | #catchSTUCKorElse ( Strategy , Strategy )
+ // ----------------------------------------------------------
+    rule #catchSTUCK(S) => #catchSTUCKorElse(S, .Strategy)
+
+    rule <s> #STUCK() ~> (S:Strategy => .) ... </s>
+
+    rule <s> #catchSTUCKorElse(_, S') => S' ... </s>
+    rule <s> #STUCK() ~> #catchSTUCKorElse(S, _) => S ... </s>
+
+    syntax Strategy ::= Strategy ";" Strategy [left]
+ // ------------------------------------------------
+    rule <s> S:Strategy ; S':Strategy => S ~> S' ... </s> [structural]
+
+    syntax #RuleTag ::= #RuleTag "|" #RuleTag [left, klabel(#alternateRule)]
+ // ------------------------------------------------------------------------
+    rule <s> #applyRule(#alternateRule(RT, RT')) => #applyRule(RT) ~> #catchSTUCK(#applyRule(RT')) ... </s>
+
+    syntax #RuleTag ::= #RuleTag "*" [klabel(#repeatRule)]
+ // ------------------------------------------------------
+    rule <s> #applyRule(#repeatRule(RT)) => #applyRule(RT) ~> #catchSTUCKorElse(.Strategy, #applyRule(#repeatRule(RT))) ... </s>
+
+    rule <s> ~ regular => . ... </s>
 ```
 
 Gas Analysis
