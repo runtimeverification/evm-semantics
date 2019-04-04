@@ -305,7 +305,7 @@ tests/interactive/%.json.test: tests/interactive/%.json
 	$(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
 
 tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out
-	MODE=GASANALYZE $(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
+	$(TEST) test --backend $(TEST_CONCRETE_BACKEND) $< -cSTRATEGY='^ ((gasAnalyze | regular) *)'
 
 # ProofTests
 
