@@ -58,12 +58,6 @@ This can be used to ensure that computation will finish without throwing an exce
 Here we provide a simplistic gas analysis tool (which just returns an approximation of the gas used for each basic block).
 This tool should be extended to take advantage of the symbolic execution engine so that we can provide proper bounds on the gas used.
 
--   The mode `GASANALYZE` performs gas analysis of the program instead of executing normally.
-
-```{.k .standalone}
-    syntax Mode ::= "GASANALYZE" [klabel(GASANALYZE), symbol]
-```
-
 We'll need to make summaries of the state which collect information about how much gas has been used.
 
 -   `#beginSummary` appends a new (unfinished) summary entry in the `analysis` cell under the key `"gasAnalyze"`.
@@ -81,25 +75,25 @@ We'll need to make summaries of the state which collect information about how mu
 
     syntax KItem ::= "#endSummary"
  // ------------------------------
-    rule <statusCode> EVMC_SUCCESS </statusCode> <k> (#halt => .) ~> #endSummary ... </k>
+    rule <statusCode> EVMC_SUCCESS </statusCode> <k> (#halt => .) ~> #endSummary ... </k> [tag(gasAnalyze)]
     rule <k> #endSummary => . ... </k> <pc> PCOUNT </pc> <gas> GAVAIL </gas> <memoryUsed> MEMUSED </memoryUsed>
          <analysis> ... "blocks" |-> (ListItem({ PCOUNT1 | GAVAIL1 | MEMUSED1 } => { PCOUNT1 ==> PCOUNT | GAVAIL1 -Int GAVAIL | MEMUSED -Int MEMUSED1 }) REST) ... </analysis>
 ```
 
--   In `GASANALYZE` mode, summaries of the state are taken at each `#gasBreaks` opcode, otherwise execution is as in `NORMAL`.
+-   When executing `gasAnalyze` rules, we reset the gas counter at `#gasBreak` opcodes.
 
 ```{.k .standalone}
-    rule <mode> GASANALYZE </mode>
-         <k> #next => #setMode NORMAL ~> #execTo #gasBreaks ~> #setMode GASANALYZE ... </k>
+    rule <k> #next => #execTo #gasBreaks ... </k>
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
       requires notBool (OP in #gasBreaks)
+      [tag(gasAnalyze)]
 
-    rule <mode> GASANALYZE </mode>
-         <k> #next => #endSummary ~> #setPC (PCOUNT +Int 1) ~> #setGas 1000000000 ~> #beginSummary ~> #next ... </k>
+    rule <k> #next => #endSummary ~> #setPC (PCOUNT +Int 1) ~> #setGas 1000000000 ~> #beginSummary ~> #next ... </k>
          <pc> PCOUNT </pc>
          <program> ... PCOUNT |-> OP ... </program>
       requires OP in #gasBreaks
+      [tag(gasAnalyze)]
 
     syntax Set ::= "#gasBreaks" [function]
  // --------------------------------------
@@ -112,14 +106,6 @@ We'll need to make summaries of the state which collect information about how mu
     rule <k> #setGas GAVAIL => . ... </k> <gas> _ => GAVAIL </gas>
 ```
 
--   `#gasAnalyze` analyzes the gas of a chunk of code by setting up the analysis state appropriately and then setting the mode to `GASANALYZE`.
-
 ```{.k .standalone}
-    syntax KItem ::= "#gasAnalyze"
- // ------------------------------
-    rule <k> #gasAnalyze => #setGas 1000000000 ~> #beginSummary ~> #setMode GASANALYZE ~> #execute ~> #endSummary ... </k>
-         <pc> _ => 0 </pc>
-         <gas> _ => 1000000000 </gas>
-         <analysis> _ => ("blocks" |-> .List) </analysis>
 endmodule
 ```

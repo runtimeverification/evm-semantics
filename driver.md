@@ -77,9 +77,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ```{.k .standalone}
     syntax EthereumCommand ::= "start"
  // ----------------------------------
-    rule <mode> NORMAL     </mode> <k> start => #execute    ... </k>
-    rule <mode> VMTESTS    </mode> <k> start => #execute    ... </k>
-    rule <mode> GASANALYZE </mode> <k> start => #gasAnalyze ... </k>
+    rule <mode> NORMAL  </mode> <k> start => #execute ... </k>
+    rule <mode> VMTESTS </mode> <k> start => #execute ... </k>
 
     syntax EthereumCommand ::= "flush"
  // ----------------------------------
