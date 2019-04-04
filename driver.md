@@ -10,15 +10,10 @@ requires "evm-node.k"
 
 ```k
 requires "evm.k"
-requires "analysis.k"
 
 module ETHEREUM-SIMULATION
     imports EVM
     imports K-REFLECTION
-```
-
-```{.k .standalone}
-    imports EVM-ANALYSIS
 ```
 
 ```{.k .node}
@@ -77,9 +72,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ```{.k .standalone}
     syntax EthereumCommand ::= "start"
  // ----------------------------------
-    rule <mode> NORMAL     </mode> <k> start => #execute    ... </k>
-    rule <mode> VMTESTS    </mode> <k> start => #execute    ... </k>
-    rule <mode> GASANALYZE </mode> <k> start => #gasAnalyze ... </k>
+    rule <mode> NORMAL  </mode> <k> start => #execute ... </k>
+    rule <mode> VMTESTS </mode> <k> start => #execute ... </k>
 
     syntax EthereumCommand ::= "flush"
  // ----------------------------------
