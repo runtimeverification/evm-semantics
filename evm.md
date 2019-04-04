@@ -183,6 +183,12 @@ Our semantics is modal, with the initial mode being set on the command line via 
     syntax Phase ::= "CONTRACT_CONS"   [klabel(CONTRACT_CONS), symbol]
                    | "CONTRACT_RTIME"  [klabel(CONTRACT_RTIME), symbol]
 ```
+
+```k
+    syntax Map ::= #updateSetInMap (Map, Map, Int)[function]
+ // ---------------------------------------------
+    rule #updateSetInMap ((K|-> PCS:Set) M:Map, K:Map, PCOUNTER:Int) => M[K <- (PCS SetItem(PCOUNTER))]
+```
 State Stacks
 ------------
 
@@ -345,9 +351,7 @@ The `#next` operator executes a single step by:
          <execPhase> PHASE </execPhase>
          <id> ACCT </id>
          <program> ... PCOUNT |-> OP ... </program>
-         <analysis> ... "coveredOpcodes" |-> OPCODES:Map  OPCODES((ACCT|->PHASE) |-> (PCS:Set (.Set => SetItem(PCOUNT)))) ... </analysis>
-         //<analysis> ... "currentProgramHash" |-> HASH  HASH |-> (PCS:Set (.Set => SetItem(PCOUNT))) ... </analysis> 
-     // requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
+         <analysis> ANALYSIS("coveredPCs" |-> OPCODES:Map) => ANALYSIS["coveredPCs" <- #updateSetInMap (OPCODES,(ACCT |-> PHASE), PCOUNT)] </analysis>
 ```
 
 ### Exceptional Checks
@@ -1352,7 +1356,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          ...
          </k>
          <execPhase> _ => CONTRACT_RTIME </execPhase>
-         <analysis> ANALYSIS => ANALYSIS["programs" <- .Map]["coveredOpcodes" <- .Map] </analysis>
+         <analysis> ANALYSIS => ANALYSIS["programs" <- .Map]["coveredPCs" <- .Map] </analysis>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
@@ -1397,11 +1401,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <localMem>   _ => .Map       </localMem>
          <programBytes> CODE </programBytes>
          <program> PROGRAM </program>
-         <analysis> ANALYSIS("programs" |-> PROGRAMS:Map)("coveredOpcodes" |-> OPCODES:Map) => ANALYSIS["programs" <- PROGRAMS[(ACCT |-> PHASE) <- PROGRAM]]["coveredOpcodes" <- OPCODES[(ACCT |-> PHASE) <- .Set]]</analysis>
-         //<analysis> ANALYSIS => ANALYSIS[(ACCT |-> PHASE) <- PROGRAM] </analysis>
-         //<analysis> ANALYSIS => ANALYSIS["currentProgramHash" <- keccak(CODE)][keccak(CODE) <- .Set]["currentProgram" <- PROGRAM] </analysis>
+         <analysis> ANALYSIS("programs" |-> PROGRAMS:Map)("coveredPCs" |-> OPCODES:Map) => ANALYSIS["programs" <- PROGRAMS[(ACCT |-> PHASE) <- PROGRAM]]["coveredPCs" <- OPCODES[(ACCT |-> PHASE) <- .Set]]</analysis>
       requires notBool keccak(CODE) in_keys(ANALYSIS)
-       //  <analysis> ANALYSIS => ANALYSIS["currentTx" <- !N:Int][!N <- .Set] </analysis>
 
     rule <k> #initVM    => . ...      </k>
          <pc>         _ => 0          </pc>
@@ -1533,7 +1534,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
          <schedule> SCHED </schedule>
          <execPhase> _ => CONTRACT_CONS </execPhase>
-         <analysis> ANALYSIS => ANALYSIS["programs" <- .Map]["coveredOpcodes" <- .Map] </analysis>
+         <analysis> ANALYSIS => ANALYSIS["programs" <- .Map]["coveredPCs" <- .Map] </analysis>
          <id> ACCT => ACCTTO </id>
          <gas> _ => GCALL </gas>
          <previousGas> GCALL => 0 </previousGas>
