@@ -185,9 +185,9 @@ Our semantics is modal, with the initial mode being set on the command line via 
 ```
 
 ```k
-    syntax Map ::= #updateSetInMap (Map, Map, Int)[function]
+    syntax Map ::= #updateSetInMap (Map, List, Int)[function]
  // ---------------------------------------------
-    rule #updateSetInMap ((K|-> PCS:Set) M:Map, K:Map, PCOUNTER:Int) => M[K <- (PCS SetItem(PCOUNTER))]
+    rule #updateSetInMap ((K|-> PCS:Set) M:Map, K:List, PCOUNTER:Int) => M[K <- (PCS SetItem(PCOUNTER))]
 ```
 State Stacks
 ------------
@@ -351,7 +351,8 @@ The `#next` operator executes a single step by:
          <execPhase> PHASE </execPhase>
          <id> ACCT </id>
          <program> ... PCOUNT |-> OP ... </program>
-         <analysis> ANALYSIS("coveredPCs" |-> OPCODES:Map) => ANALYSIS["coveredPCs" <- #updateSetInMap (OPCODES,(ACCT |-> PHASE), PCOUNT)] </analysis>
+         <programBytes> CODE </programBytes>
+         <analysis> ANALYSIS("coveredPCs" |-> OPCODES:Map) => ANALYSIS["coveredPCs" <- #updateSetInMap (OPCODES,(ListItem(ACCT) ListItem(keccak(CODE)) ListItem(PHASE)), PCOUNT)] </analysis>
 ```
 
 ### Exceptional Checks
@@ -1401,7 +1402,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <localMem>   _ => .Map       </localMem>
          <programBytes> CODE </programBytes>
          <program> PROGRAM </program>
-         <analysis> ANALYSIS("programs" |-> PROGRAMS:Map)("coveredPCs" |-> OPCODES:Map) => ANALYSIS["programs" <- PROGRAMS[(ACCT |-> PHASE) <- PROGRAM]]["coveredPCs" <- OPCODES[(ACCT |-> PHASE) <- .Set]]</analysis>
+         <analysis> ANALYSIS("programs" |-> PROGRAMS:Map)("coveredPCs" |-> OPCODES:Map) => ANALYSIS["programs" <- PROGRAMS[(ListItem(ACCT) ListItem(keccak(CODE)) ListItem(PHASE)) <- PROGRAM]]["coveredPCs" <- OPCODES[(ListItem(ACCT) ListItem(keccak(CODE)) ListItem(PHASE)) <- .Set]]</analysis>
       requires notBool keccak(CODE) in_keys(ANALYSIS)
 
     rule <k> #initVM    => . ...      </k>
