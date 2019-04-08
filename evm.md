@@ -352,7 +352,7 @@ The `#next` operator executes a single step by:
          <id> ACCT </id>
          <program> ... PCOUNT |-> OP ... </program>
          <programBytes> CODE </programBytes>
-         <analysis> ANALYSIS("coveredPCs" |-> OPCODES:Map) => ANALYSIS["coveredPCs" <- #updateSetInMap (OPCODES,(ListItem(ACCT) ListItem(keccak(CODE)) ListItem(PHASE)), PCOUNT)] </analysis>
+         <analysis> ANALYSIS("coveredPCs" |-> OPCODES:Map) => ANALYSIS["coveredPCs" <- #updateSetInMap (OPCODES,(ListItem(keccak(CODE)) ListItem(PHASE)), PCOUNT)] </analysis>
 ```
 
 ### Exceptional Checks
@@ -1402,18 +1402,20 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <localMem>   _ => .Map       </localMem>
          <programBytes> CODE </programBytes>
          <program> PROGRAM </program>
-         <analysis> ANALYSIS("programs" |-> PROGRAMS:Map)("coveredPCs" |-> OPCODES:Map) => ANALYSIS["programs" <- PROGRAMS[(ListItem(ACCT) ListItem(keccak(CODE)) ListItem(PHASE)) <- PROGRAM]]["coveredPCs" <- OPCODES[(ListItem(ACCT) ListItem(keccak(CODE)) ListItem(PHASE)) <- .Set]]</analysis>
-      requires notBool keccak(CODE) in_keys(ANALYSIS)
+         <analysis> ANALYSIS("programs" |-> PROGRAMS:Map)("coveredPCs" |-> OPCODES:Map) => ANALYSIS["programs" <- PROGRAMS[(ListItem(keccak(CODE)) ListItem(PHASE)) <- PROGRAM]]["coveredPCs" <- OPCODES[(ListItem(keccak(CODE)) ListItem(PHASE)) <- .Set]]</analysis>
+      requires notBool (ListItem(keccak(CODE)) ListItem(PHASE)) in_keys(PROGRAMS)
 
     rule <k> #initVM    => . ...      </k>
+         <execPhase> PHASE </execPhase>
+         <id> ACCT </id>
          <pc>         _ => 0          </pc>
          <memoryUsed> _ => 0          </memoryUsed>
          <output>     _ => .WordStack </output>
          <wordStack>  _ => .WordStack </wordStack>
          <localMem>   _ => .Map       </localMem>
          <programBytes> CODE </programBytes>
-         <analysis> ANALYSIS </analysis>
-      requires keccak(CODE) in_keys(ANALYSIS)
+         <analysis> ANALYSIS:Map("programs" |-> PROGRAMS:Map) </analysis>
+      requires ( ListItem(keccak(CODE)) ListItem(PHASE)) in_keys(PROGRAMS)
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
@@ -1552,6 +1554,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </account>
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
      requires ANALYSIS ==K .Map
+
     rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
           => #initVM ~> #execute
          ...
