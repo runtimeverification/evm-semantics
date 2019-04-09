@@ -321,13 +321,19 @@ test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add1
 $(proof_specs_dir)/%.test: $(proof_specs_dir)/% split-proof-tests
 	$(TEST) test --backend $(TEST_SYMBOLIC_BACKEND) $<
 
-split-proof-tests: $(proof_repo)/git-submodule
-	$(MAKE) --directory tests/proofs/resources      $@
-	$(MAKE) --directory tests/proofs/bihu           $@
-	$(MAKE) --directory tests/proofs/erc20/gno      $@
-	$(MAKE) --directory tests/proofs/erc20/hobby    $@
-	$(MAKE) --directory tests/proofs/erc20/hkg      $@
-	$(MAKE) --directory tests/proofs/erc20/ds-token $@
+active_proof_tests=resources      \
+                   bihu           \
+                   erc20/gno      \
+                   erc20/hobby    \
+                   erc20/hkg      \
+                   erc20/ds-token
+
+proof_test_dirs:=$(patsubst %,tests/proofs/%,$(active_proof_tests))
+
+split-proof-tests: $(proof_test_dirs:=.proof-split)
+
+%.proof-split: $(proof_repo)/git-submodule
+	$(MAKE) --directory $@ split-proof-tests
 
 $(proof_repo)/git-submodule:
 	@echo "== submodule: $*"
