@@ -38,7 +38,7 @@ pipeline {
     stage('Test Execution') {
       failFast true
       parallel {
-        stage('Conformance') {
+        stage('Conformance (OCaml)') {
           steps {
             ansiColor('xterm') {
               sh '''
@@ -73,7 +73,7 @@ pipeline {
         }
       }
     }
-    stage('Test Proofs') {
+    stage('Test Proofs (Java)') {
       options {
         lock("proofs-${env.NODE_NAME}")
       }
