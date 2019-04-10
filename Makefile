@@ -337,7 +337,7 @@ proof_test_dirs:=$(patsubst %,tests/proofs/%,$(active_proof_tests))
 split-proof-tests: $(proof_test_dirs:=.proof-split)
 
 %.proof-split: $(proof_repo)/git-submodule
-	$(MAKE) --directory $@ split-proof-tests
+	$(MAKE) --directory $* split-proof-tests
 
 $(proof_repo)/git-submodule:
 	@echo "== submodule: $*"
