@@ -172,14 +172,6 @@ else
   LIBFLAG=-shared
 endif
 
-.build/llvm/driver-kompiled/interpreter: $(ocaml_files)
-	@echo "== kompile: $@"
-	eval $$(opam config env) \
-	    && ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
-	                        --syntax-module ETHEREUM-SIMULATION .build/ocaml/driver.k --directory .build/llvm \
-	                        --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp \
-	                        -ccopt -L/usr/local/lib -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
-
 .build/%/driver-kompiled/constants.$(EXT): $(ocaml_files) $(node_files)
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
@@ -213,6 +205,8 @@ endif
 	        && ocamlfind $(OCAMLC) -g -o interpreter constants.$(EXT) prelude.$(EXT) plugin.$(EXT) parser.$(EXT) lexer.$(EXT) run.$(EXT) interpreter.ml \
 	                               -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin-$* -linkpkg -linkall -thread -safe-string
 
+# Node Backend
+
 .build/vm/kevm-vm: $(wildcard plugin/vm/*.ml plugin/vm/*.mli) .build/node/driver-kompiled/interpreter
 	mkdir -p .build/vm
 	cp plugin/vm/*.ml plugin/vm/*.mli .build/vm
@@ -220,6 +214,16 @@ endif
 	    && cd .build/vm \
 	        && ocamlfind $(OCAMLC) -g -I ../node/driver-kompiled -o kevm-vm constants.$(EXT) prelude.$(EXT) plugin.$(EXT) parser.$(EXT) lexer.$(EXT) realdef.$(EXT) run.$(EXT) VM.mli VM.ml vmNetworkServer.ml \
 	                               -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin-node -package rlp -package yojson -package hex -linkpkg -linkall -thread -safe-string
+
+# LLVM Backend
+
+.build/llvm/driver-kompiled/interpreter: $(ocaml_files)
+	@echo "== kompile: $@"
+	eval $$(opam config env) \
+	    && ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
+	                        --syntax-module ETHEREUM-SIMULATION .build/ocaml/driver.k --directory .build/llvm \
+	                        --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp \
+	                        -ccopt -L/usr/local/lib -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
 # Tests
 # -----
@@ -321,13 +325,19 @@ test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add1
 $(proof_specs_dir)/%.test: $(proof_specs_dir)/% split-proof-tests
 	$(TEST) test --backend $(TEST_SYMBOLIC_BACKEND) $<
 
-split-proof-tests: $(proof_repo)/git-submodule
-	$(MAKE) --directory tests/proofs/resources      $@
-	$(MAKE) --directory tests/proofs/bihu           $@
-	$(MAKE) --directory tests/proofs/erc20/gno      $@
-	$(MAKE) --directory tests/proofs/erc20/hobby    $@
-	$(MAKE) --directory tests/proofs/erc20/hkg      $@
-	$(MAKE) --directory tests/proofs/erc20/ds-token $@
+active_proof_tests=resources      \
+                   bihu           \
+                   erc20/gno      \
+                   erc20/hobby    \
+                   erc20/hkg      \
+                   erc20/ds-token
+
+proof_test_dirs:=$(patsubst %,tests/proofs/%,$(active_proof_tests))
+
+split-proof-tests: $(proof_test_dirs:=.proof-split)
+
+%.proof-split: $(proof_repo)/git-submodule
+	$(MAKE) --directory $* split-proof-tests
 
 $(proof_repo)/git-submodule:
 	@echo "== submodule: $*"
