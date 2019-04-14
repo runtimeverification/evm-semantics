@@ -163,7 +163,6 @@ The following files constitute the KEVM semantics:
 These additional files extend the semantics to make the repository more useful:
 
 -   [driver.md](driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
--   [analysis.md](analysis.md) contains any automated analysis tools we develop.
 -   [edsl.md](edsl.md) defines high-level notations of [eDSL], a domain-specific language for EVM specifications, for formal verification of EVM bytecode using [K Reachability Logic Prover].
 
 Example Usage
@@ -207,7 +206,7 @@ These are the individual test-suites (all of these can be suffixed with `-all` t
 -   `make test-vm`: VMTests from the [Ethereum Test Set].
 -   `make test-bchain`: Subset of BlockchainTests from the [Ethereum Test Set].
 -   `make test-proof`: Proofs from the [Verified Smart Contracts].
--   `make test-interactive`: Tests of the `./kevm` command and of [analysis tools](analysis.md).
+-   `make test-interactive`: Tests of the `./kevm` command.
 
 When running tests with the `Makefile`, you can specify the `TEST_CONCRETE_BACKEND` (for concrete tests), or `TEST_SYMBOLIC_BACKEND` (for proofs).
 
