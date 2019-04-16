@@ -11,9 +11,6 @@
   <schedule>
     DEFAULT
   </schedule>
-  <analysis>
-    .Map
-  </analysis>
   <ethereum>
     <evm>
       <output>

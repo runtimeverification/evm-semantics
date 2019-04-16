@@ -33,7 +33,6 @@ In the comments next to each cell, we've marked which component of the YellowPap
         <exit-code exit=""> 1 </exit-code>
         <mode> $MODE:Mode </mode>
         <schedule> $SCHEDULE:Schedule </schedule>
-        <analysis> .Map </analysis>
 
         <ethereum>
 

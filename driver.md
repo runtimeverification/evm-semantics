@@ -349,7 +349,6 @@ State Manipulation
     syntax EthereumCommand ::= "clear"
  // ----------------------------------
     rule <k> clear => clearTX ~> clearBLOCK ~> clearNETWORK ... </k>
-         <analysis> _ => .Map </analysis>
 
     syntax EthreumCommand ::= "clearTX"
  // -----------------------------------
