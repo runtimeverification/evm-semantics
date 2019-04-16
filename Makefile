@@ -339,7 +339,7 @@ proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
 test-proof: $(proof_tests:=.test)
 
 $(proof_specs_dir)/%.test: $(proof_specs_dir)/%
-	$(TEST) test --backend $(TEST_SYMBOLIC_BACKEND) $<
+	$(TEST) test --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures
 
 # Media
 # -----
