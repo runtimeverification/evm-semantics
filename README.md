@@ -11,7 +11,7 @@ These may be useful for learning KEVM and K (newest to oldest):
 -   [Jello Paper], generated using [Sphinx Documentation Generation].
 -   [20 minute tour of the semantics](https://www.youtube.com/watch?v=tIq_xECoicQNov) at [2017 Devcon3].
 -   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
--   [KEVM Paper at CSF'19/FLoC](http://fsl.cs.illinois.edu/index.php/KEVM:_A_Complete_Semantics_of_the_Ethereum_Virtual_Machine).
+-   [KEVM Paper at CSF'18/FLoC](http://fsl.cs.illinois.edu/index.php/KEVM:_A_Complete_Semantics_of_the_Ethereum_Virtual_Machine).
 
 To get support for KEVM, please join our [Riot Room](https://riot.im/app/#/room/#k:matrix.org).
 
