@@ -1895,8 +1895,8 @@ Grumble grumble, K sucks at `owise`.
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
  // ----------------------------------------------------------------
-    rule #memoryUsageUpdate(MU, START, 0)     => MU
-    rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH >Int 0
+    rule #memoryUsageUpdate(MU, START, WIDTH) => MU                                       requires WIDTH ==Int 0
+    rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH >Int 0  [concrete]
 ```
 
 Execution Gas
@@ -2113,14 +2113,14 @@ There are several helpers for calculating gas (most of them also specified in th
                  | Cmem    ( Schedule , Int )             [function, memo]
  // ----------------------------------------------------------------------
     rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
-      => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
+      => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi  [concrete]
 
     rule Csstore(SCHED, NEW, CURR, ORIG)
       => #if CURR ==Int NEW orBool ORIG =/=Int CURR #then Gsload < SCHED > #else #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi #fi
-      requires Ghasdirtysstore << SCHED >>
+      requires Ghasdirtysstore << SCHED >>  [concrete]
     rule Csstore(SCHED, NEW, CURR, ORIG)
       => #if CURR ==Int 0 andBool NEW =/=Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
-      requires notBool Ghasdirtysstore << SCHED >>
+      requires notBool Ghasdirtysstore << SCHED >>  [concrete]
 
     rule Rsstore(SCHED, NEW, CURR, ORIG)
       => #if CURR =/=Int NEW andBool ORIG ==Int CURR andBool NEW ==Int 0 #then
@@ -2138,13 +2138,15 @@ There are several helpers for calculating gas (most of them also specified in th
              #fi
          #fi
       requires Ghasdirtysstore << SCHED >>
+      [concrete]
 
     rule Rsstore(SCHED, NEW, CURR, ORIG)
       => #if CURR =/=Int 0 andBool NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi
       requires notBool Ghasdirtysstore << SCHED >>
+      [concrete]
 
     rule Cextra(SCHED, ISEMPTY, VALUE)
-      => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)
+      => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)  [concrete]
 
     rule Cnew(SCHED, ISEMPTY:Bool, VALUE)
       => #if ISEMPTY andBool (VALUE =/=Int 0 orBool Gzerovaluenewaccountgas << SCHED >>) #then Gnewaccount < SCHED > #else 0 #fi
@@ -2152,7 +2154,7 @@ There are several helpers for calculating gas (most of them also specified in th
     rule Cxfer(SCHED, 0) => 0
     rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=Int 0
 
-    rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
+    rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)  [concrete]
 
     syntax BExp    ::= Bool
     syntax KResult ::= Bool
