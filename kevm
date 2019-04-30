@@ -32,7 +32,7 @@ warning()  { echo -e "WARNING:" "$@" >&2 ; }
 die()      { echo -e "FATAL:" "$@" >&2 ; exit 1 ; }
 
 pretty_diff() {
-    git --no-pager diff --no-index "$@"
+    git --no-pager diff --no-index --ignore-all-space "$@"
 }
 
 # Runners
@@ -142,7 +142,7 @@ run_test() {
             case "$backend" in
                 java|haskell)
                     run_krun "$test_file" "$@" > "$output_file" \
-                        || pretty_diff --ignore-all-space "$expected_file" "$output_file"
+                        || pretty_diff "$expected_file" "$output_file"
                     ;;
                 ocaml|llvm)
                     run_interpret "$test_file"
