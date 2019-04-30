@@ -44,6 +44,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #bytes32 ( Int )
                       | #bool    ( Int )
                       | #bytes   ( WordStack )
+                      | #string  ( String )
                       | #array   ( TypedArg , Int , TypedArgs )
  // -----------------------------------------------------------
 
@@ -77,6 +78,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #typeName(   #bytes32( _ )) => "bytes32"
     rule #typeName(      #bool( _ )) => "bool"
     rule #typeName(     #bytes( _ )) => "bytes"
+    rule #typeName(    #string( _ )) => "string"
     rule #typeName( #array(T, _, _)) => #typeName(T) +String "[]"
 
     syntax WordStack ::= #encodeArgs    ( TypedArgs )                               [function]
@@ -111,6 +113,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #lenOfHead(  #bytes32( _ )) => 32
     rule #lenOfHead(     #bool( _ )) => 32
     rule #lenOfHead(    #bytes( _ )) => 32
+    rule #lenOfHead(   #string( _ )) => 32
     rule #lenOfHead(#array(_, _, _)) => 32
 
     syntax Bool ::= #isStaticType ( TypedArg ) [function]
@@ -125,6 +128,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #isStaticType(  #bytes32( _ )) => true
     rule #isStaticType(     #bool( _ )) => true
     rule #isStaticType(    #bytes( _ )) => false
+    rule #isStaticType(   #string( _ )) => false
     rule #isStaticType(#array(_, _, _)) => false
 
     syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
@@ -160,6 +164,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     // dynamic Type
     rule #enc(        #bytes(WS)) => #enc(#uint256(#sizeWordStack(WS))) ++ #padRightToWidth(#ceil32(#sizeWordStack(WS)), WS)
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) ++ #encodeArgs(DATA)
+    rule #enc(      #string(STR)) => #enc(#bytes(#parseByteStackRaw(STR)))
 
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
@@ -328,6 +333,15 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
     rule byteStack2IntList ( WS , 0 ) => .IntList
 
     rule bytesInNextInt(WS, N) => #sizeWordStack(WS) -Int 32 *Int (N -Int 1)
+```
+
+Solidity stores values of type `bytes` and `string` in one slot if they are short enough. If the data is at most 31 bytes long, it is stored in the higher-order bytes (left aligned) and the lowest-order byte stores `2 * length`.
+
+```k
+    syntax Int ::= #packBytes ( WordStack )    [function]
+ // ----------------------------------------------------
+    rule #packBytes( WS ) => #asInteger(#padRightToWidth(31, WS) ++ #asByteStack(2 *Int #sizeWordStack(WS)))
+    requires #sizeWordStack(WS) <=Int 31
 
 endmodule
 ```
