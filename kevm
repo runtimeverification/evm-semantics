@@ -145,8 +145,8 @@ run_test() {
                         || pretty_diff --ignore-all-space "$expected_file" "$output_file"
                     ;;
                 haskell*)
-                    run_krun "$test_file" "$@" > "$output_file" || true
-                    pretty_diff --ignore-all-space "$expected_file" "$output_file"
+                    run_krun "$test_file" "$@" > "$output_file" \
+                        || pretty_diff --ignore-all-space "$expected_file" "$output_file"
                     ;;
                 ocaml|llvm)
                     run_interpret "$test_file"
