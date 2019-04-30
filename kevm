@@ -140,11 +140,7 @@ run_test() {
             ;;
         *)
             case "$backend" in
-                java)
-                    run_krun "$test_file" "$@" > "$output_file" \
-                        || pretty_diff --ignore-all-space "$expected_file" "$output_file"
-                    ;;
-                haskell*)
+                java|haskell)
                     run_krun "$test_file" "$@" > "$output_file" \
                         || pretty_diff --ignore-all-space "$expected_file" "$output_file"
                     ;;
