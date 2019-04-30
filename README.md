@@ -37,7 +37,7 @@ The following are needed for building/running KEVM:
 On Ubuntu >= 15.04 (for example):
 
 ```sh
-sudo apt-get install make git gcc maven openjdk-8-jdk bison flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev z3 libz3-dev
+sudo apt install make git gcc maven openjdk-8-jdk bison flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev z3 libz3-dev
 ```
 
 On ArchLinux:
@@ -98,7 +98,7 @@ export PATH=$HOME/.local/bin:$PATH
 The LLVM backend has additional dependencies:
 
 ```k
-sudo apt-get install cmake clang-6.0 clang++-6.0 llvm-6.0 libboost-test-dev libgmp-dev libyaml-cpp-dev libjemalloc-dev curl
+sudo apt install cmake clang-6.0 clang++-6.0 llvm-6.0 lld-6.0 libboost-test-dev libgmp-dev libyaml-cpp-dev libjemalloc-dev curl
 ```
 
 And you need to setup Rust:
@@ -198,7 +198,7 @@ If you also want to build the [Jello Paper], you'll additionally need:
 -   The [K Editor Support] Python `pygments` package.
 
 ```sh
-sudo apt-get install python-pygments python-sphinx python-recommonmark
+sudo apt install python-pygments python-sphinx python-recommonmark
 git clone 'https://github.com/kframework/k-editor-support'
 cd k-editor-support/pygments
 easy_install --user .
@@ -207,7 +207,7 @@ easy_install --user .
 For the [2017 Devcon3] presentation, you'll need `pdflatex`, commonly provided with `texlive-full`.
 
 ```sh
-sudo apt-get install texlive-full
+sudo apt install texlive-full
 ```
 
 ### Building
