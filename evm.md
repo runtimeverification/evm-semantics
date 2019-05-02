@@ -263,7 +263,6 @@ Control Flow
 OpCode Execution
 ----------------
 
-
 ### Execution Macros
 
 -   `#execute` calls `#next` repeatedly until it recieves an `#end`.
@@ -2288,70 +2287,6 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasextcodehash         << DEFAULT >> => false
 ```
 
-```c++
-struct EVMSchedule
-{
-    EVMSchedule(): tierStepGas(std::array<unsigned, 8>{{0, 2, 3, 5, 8, 10, 20, 0}}) {}
-    EVMSchedule(bool _efcd, bool _hdc, unsigned const& _txCreateGas): exceptionalFailedCodeDeposit(_efcd), haveDelegateCall(_hdc), tierStepGas(std::array<unsigned, 8>{{0, 2, 3, 5, 8, 10, 20, 0}}), txCreateGas(_txCreateGas) {}
-    bool exceptionalFailedCodeDeposit = true;
-    bool haveDelegateCall = true;
-    bool eip150Mode = false;
-    bool eip158Mode = false;
-    bool haveRevert = false;
-    bool haveReturnData = false;
-    bool haveStaticCall = false;
-    bool haveCreate2 = false;
-    std::array<unsigned, 8> tierStepGas;
-
-    unsigned expGas = 10;
-    unsigned expByteGas = 10;
-    unsigned sha3Gas = 30;
-    unsigned sha3WordGas = 6;
-
-    unsigned sloadGas = 50;
-    unsigned sstoreSetGas = 20000;
-    unsigned sstoreResetGas = 5000;
-    unsigned sstoreRefundGas = 15000;
-
-    unsigned logGas = 375;
-    unsigned logDataGas = 8;
-    unsigned logTopicGas = 375;
-
-    unsigned callGas = 40;
-    unsigned callStipend = 2300;
-    unsigned callValueTransferGas = 9000;
-    unsigned callNewAccountGas = 25000;
-
-    unsigned createGas = 32000;
-    unsigned createDataGas = 200;
-    unsigned suicideGas = 0;
-    unsigned suicideRefundGas = 24000;
-
-    unsigned memoryGas = 3;
-    unsigned quadCoeffDiv = 512;
-    unsigned copyGas = 3;
-
-    unsigned txGas = 21000;
-    unsigned txCreateGas = 53000;
-    unsigned txDataZeroGas = 4;
-    unsigned txDataNonZeroGas = 68;
-
-    unsigned jumpdestGas = 1;
-    unsigned balanceGas = 20;
-    unsigned blockhashGas = 20;
-    unsigned extcodesizeGas = 20;
-    unsigned extcodecopyGas = 20;
-
-    unsigned maxCodeSize = unsigned(-1);
-
-    bool staticCallDepthLimit() const { return !eip150Mode; }
-    bool suicideNewAccountGas() const { return !eip150Mode; }
-    bool suicideChargesNewAccountGas() const { return eip150Mode; }
-    bool emptinessIsNonexistence() const { return eip158Mode; }
-    bool zeroValueTransferChargesNewAccountGas() const { return !eip158Mode; }
-};
-```
-
 ### Frontier Schedule
 
 ```k
@@ -2363,10 +2298,6 @@ struct EVMSchedule
     rule SCHEDFLAG << FRONTIER >> => SCHEDFLAG << DEFAULT >>
 ```
 
-```c++
-static const EVMSchedule FrontierSchedule = EVMSchedule(false, false, 21000);
-```
-
 ### Homestead Schedule
 
 ```k
@@ -2375,10 +2306,6 @@ static const EVMSchedule FrontierSchedule = EVMSchedule(false, false, 21000);
     rule SCHEDCONST < HOMESTEAD > => SCHEDCONST < DEFAULT >
 
     rule SCHEDFLAG << HOMESTEAD >> => SCHEDFLAG << DEFAULT >>
-```
-
-```c++
-static const EVMSchedule HomesteadSchedule = EVMSchedule(true, true, 53000);
 ```
 
 ### EIP150 Schedule
@@ -2404,21 +2331,6 @@ static const EVMSchedule HomesteadSchedule = EVMSchedule(true, true, 53000);
       requires notBool      ( SCHEDCONST ==K Gselfdestructnewaccount orBool SCHEDCONST ==K Gstaticcalldepth )
 ```
 
-```c++
-static const EVMSchedule EIP150Schedule = []
-{
-    EVMSchedule schedule = HomesteadSchedule;
-    schedule.eip150Mode = true;
-    schedule.extcodesizeGas = 700;
-    schedule.extcodecopyGas = 700;
-    schedule.balanceGas = 400;
-    schedule.sloadGas = 200;
-    schedule.callGas = 700;
-    schedule.suicideGas = 5000;
-    return schedule;
-}();
-```
-
 ### EIP158 Schedule
 
 ```k
@@ -2435,17 +2347,6 @@ static const EVMSchedule EIP150Schedule = []
       requires notBool      ( SCHEDCONST ==K Gemptyisnonexistent orBool SCHEDCONST ==K Gzerovaluenewaccountgas )
 ```
 
-```c++
-static const EVMSchedule EIP158Schedule = []
-{
-    EVMSchedule schedule = EIP150Schedule;
-    schedule.expByteGas = 50;
-    schedule.eip158Mode = true;
-    schedule.maxCodeSize = 0x6000;
-    return schedule;
-}();
-```
-
 ### Byzantium Schedule
 
 ```k
@@ -2460,18 +2361,6 @@ static const EVMSchedule EIP158Schedule = []
     rule Ghasstaticcall << BYZANTIUM >> => true
     rule SCHEDFLAG      << BYZANTIUM >> => SCHEDFLAG << EIP158 >>
       requires notBool ( SCHEDFLAG ==K Ghasrevert orBool SCHEDFLAG ==K Ghasreturndata orBool SCHEDFLAG ==K Ghasstaticcall )
-```
-
-```c++
-static const EVMSchedule ByzantiumSchedule = []
-{
-    EVMSchedule schedule = EIP158Schedule;
-    schedule.haveRevert = true;
-    schedule.haveReturnData = true;
-    schedule.haveStaticCall = true;
-    schedule.blockRewardOverwrite = {3 * ether};
-    return schedule;
-}();
 ```
 
 ### Constantinople Schedule
@@ -2491,17 +2380,6 @@ static const EVMSchedule ByzantiumSchedule = []
       requires notBool ( SCHEDFLAG ==K Ghasshift orBool SCHEDFLAG ==K Ghasdirtysstore orBool SCHEDFLAG ==K Ghascreate2 orBool SCHEDFLAG ==K Ghasextcodehash )
 ```
 
-```c++
-static const EVMSchedule ConstantinopleSchedule = []
-{
-    EVMSchedule schedule = ByzantiumSchedule;
-    schedule.blockhashGas = 800;
-    schedule.haveCreate2 = true;
-    return schedule;
-}();
-```
-
-
 ### Petersburg Schedule
 
 ```k
@@ -2512,14 +2390,6 @@ static const EVMSchedule ConstantinopleSchedule = []
     rule Ghasdirtysstore << PETERSBURG >> => false
     rule SCHEDFLAG       << PETERSBURG >> => SCHEDFLAG << CONSTANTINOPLE >>
       requires notBool ( SCHEDFLAG ==K Ghasdirtysstore )
-```
-
-```c++
-static const EVMSchedule ConstantinopleFixSchedule = [] {
-    EVMSchedule schedule = ConstantinopleSchedule;
-    schedule.eip1283Mode = false;
-    return schedule;
-}();
 ```
 
 EVM Program Representations
