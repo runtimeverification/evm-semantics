@@ -7,11 +7,11 @@ RUN    ln --symbolic --no-dereference --force /usr/share/zoneinfo/$TZ /etc/local
 RUN    apt update                                                                  \
     && apt upgrade --yes                                                           \
     && apt install --yes                                                           \
-           autoconf curl flex gcc libffi-dev libmpfr-dev libtool llvm-6.0-tools    \
-           make maven opam openjdk-8-jdk pandoc pkg-config python3 python-pygments \
-           python-recommonmark python-sphinx time zlib1g-dev libcrypto++-dev       \
-           libsecp256k1-dev cmake libssl-dev libprocps-dev clang-6.0 bison         \
-           libboost-test-dev libyaml-cpp-dev libjemalloc-dev
+        autoconf bison clang-6.0 cmake curl flex gcc libboost-test-dev             \
+        libcrypto++-dev libffi-dev libjemalloc-dev libmpfr-dev libprocps-dev       \
+        libsecp256k1-dev libssl-dev libtool libyaml-cpp-dev lld-6.0 llvm-6.0-tools \
+        make maven opam openjdk-8-jdk pandoc pkg-config python3 python-pygments    \
+        python-recommonmark python-sphinx time zlib1g-dev
 
 RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 
