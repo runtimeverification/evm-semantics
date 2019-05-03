@@ -4,8 +4,12 @@
 BUILD_DIR:=$(CURDIR)/.build
 BUILD_LOCAL:=$(BUILD_DIR)/local
 LIBRARY_PATH:=$(BUILD_LOCAL)/lib
+C_INCLUDE_PATH:=$(BUILD_LOCAL)/include
+CPLUS_INCLUDE_PATH:=$(BUILD_LOCAL)/include
 PKG_CONFIG_PATH:=$(LIBRARY_PATH)/pkgconfig
 export LIBRARY_PATH
+export C_INCLUDE_PATH
+export CPLUS_INCLUDE_PATH
 export PKG_CONFIG_PATH
 
 K_SUBMODULE:=$(BUILD_DIR)/k
@@ -241,7 +245,8 @@ endif
 	    && ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
 	                        --syntax-module ETHEREUM-SIMULATION .build/ocaml/driver.k --directory .build/llvm \
 	                        --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp \
-	                        -ccopt -L/usr/local/lib -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
+	                        -ccopt -L/usr/local/lib \
+	                        -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
 # Tests
 # -----
