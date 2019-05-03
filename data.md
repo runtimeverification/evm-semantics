@@ -199,16 +199,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 
 ```k
     syntax Account ::= ".Account" | Int
-```
-
-### Symbolic Words
-
--   `#symbolicWord` generates a fresh existentially-bound symbolic word.
-
-```k
-    syntax Int ::= "#symbolicWord" [function]
- // -----------------------------------------
-    rule #symbolicWord => chop ( ?X:Int )
+ // -----------------------------------
 ```
 
 Word Operations
