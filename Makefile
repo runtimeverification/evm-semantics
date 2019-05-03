@@ -40,10 +40,7 @@ clean-submodules:
 	rm -rf .build/k/make.timestamp .build/pandoc-tangle/make.timestamp tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp plugin/make.timestamp kore/make.timestamp .build/media/metropolis/*.sty
 
 distclean: clean
-	opam switch system
-	opam switch remove 4.03.0+k --yes || true
-	cd $(K_SUBMODULE) \
-	    && mvn clean -q
+	cd $(K_SUBMODULE) && mvn clean -q
 	git submodule deinit --force -- ./
 
 # Dependencies
