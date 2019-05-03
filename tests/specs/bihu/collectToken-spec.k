@@ -8,11 +8,11 @@ module COLLECTTOKEN-SPEC
 
   // collectToken
   rule
+    <kevm>
     <k> #execute => #halt </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> BYZANTIUM </schedule>
-    <analysis> .Map </analysis> // not part of evm
 
     <ethereum>
       <evm>
@@ -37,7 +37,7 @@ module COLLECTTOKEN-SPEC
           <pc> 0 => _ </pc>
           <gas> GASCAP => _ </gas>
           <memoryUsed> 0 => _ </memoryUsed>
-          <previousGas> _ => _ </previousGas>
+          <callGas> _ => _ </callGas>
 
           <static> false </static> // NOTE: non-static call
           <callDepth> CALL_DEPTH </callDepth>
@@ -96,6 +96,7 @@ _:Map
         <messages> _ </messages>
       </network>
     </ethereum>
+    </kevm>
     requires 0 <=Int ACCT_ID    andBool ACCT_ID    <Int (2 ^Int 160)
      andBool 0 <=Int CALLER_ID  andBool CALLER_ID  <Int (2 ^Int 160)
      andBool 0 <=Int ORIGIN_ID  andBool ORIGIN_ID  <Int (2 ^Int 160)
@@ -147,7 +148,7 @@ ensures VALUE ==Int @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int BAL
           <pc> 498 => 545 </pc>
           <gas> GASCAP => GASCAP -Int (293 *Int (YEARCOUNT -Int INDEX)) -Int 26 </gas>
           <memoryUsed> MU </memoryUsed>
-          <previousGas> _ => _ </previousGas>
+          <callGas> _ => _ </callGas>
 
           <static> false </static> // NOTE: non-static call
           <callDepth> CALL_DEPTH </callDepth>
@@ -223,7 +224,6 @@ andBool GASCAP >=Int ((293 *Int (YEARCOUNT -Int INDEX)) +Int 26)
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> BYZANTIUM </schedule>
-    <analysis> .Map </analysis> // not part of evm
 
     <ethereum>
       <evm>
@@ -248,7 +248,7 @@ andBool GASCAP >=Int ((293 *Int (YEARCOUNT -Int INDEX)) +Int 26)
           <pc> 750 => 793 </pc>
           <gas> GASCAP => GASCAP -Int 114 </gas>
           <memoryUsed> MU </memoryUsed>
-          <previousGas> _ => _ </previousGas>
+          <callGas> _ => _ </callGas>
 
           <static> false </static> // NOTE: non-static call
           <callDepth> CALL_DEPTH </callDepth>

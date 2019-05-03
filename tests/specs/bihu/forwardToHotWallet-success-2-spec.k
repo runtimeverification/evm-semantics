@@ -8,11 +8,11 @@ module FORWARDTOHOTWALLET-SUCCESS-2-SPEC
 
   // forwardToHotWallet-success-2
   rule
+    <kevm>
     <k> #execute => #halt </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> BYZANTIUM </schedule>
-    <analysis> .Map </analysis> // not part of evm
 
     <ethereum>
       <evm>
@@ -37,7 +37,7 @@ module FORWARDTOHOTWALLET-SUCCESS-2-SPEC
           <pc> 0 => _ </pc>
           <gas> 22000 => _ </gas>
           <memoryUsed> 0 => _ </memoryUsed>
-          <previousGas> _ => _ </previousGas>
+          <callGas> _ => _ </callGas>
 
           <static> false </static> // NOTE: non-static call
           <callDepth> CALL_DEPTH </callDepth>
@@ -98,6 +98,7 @@ _:Map
         <messages> _ </messages>
       </network>
     </ethereum>
+    </kevm>
     requires 0 <=Int ACCT_ID    andBool ACCT_ID    <Int (2 ^Int 160)
      andBool 0 <=Int CALLER_ID  andBool CALLER_ID  <Int (2 ^Int 160)
      andBool 0 <=Int ORIGIN_ID  andBool ORIGIN_ID  <Int (2 ^Int 160)

@@ -83,7 +83,7 @@ module SUM-TO-N-SPEC
          <callStack> .List </callStack>
          <memoryUsed> 0   </memoryUsed>
          <localMem> .Map </localMem>
-         <previousGas> _ => _ </previousGas>
+         <callGas> _ => _ </callGas>
          <program> sumTo(N) </program>
 
 
@@ -119,7 +119,7 @@ module SUM-TO-N-SPEC
          <callStack> .List </callStack>
          <memoryUsed> 0   </memoryUsed>
          <localMem> .Map </localMem>
-         <previousGas> _ => _ </previousGas>
+         <callGas> _ => _ </callGas>
          <program> sumTo(N) </program>
 
 
