@@ -236,7 +236,7 @@ TEST:=./kevm
 test-all: test-all-concrete test-all-proof
 test: test-concrete test-proof test-java
 
-split-tests: tests/ethereum-tests/make.timestamp split-proof-tests
+split-tests: tests/ethereum-tests/make.timestamp
 
 tests/%/make.timestamp:
 	@echo "== submodule: $@"
@@ -311,37 +311,18 @@ tests/interactive/%.json.test: tests/interactive/%.json
 tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out
 	MODE=GASANALYZE $(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
 
+test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11_d0g0v0.json
+	./kevm run --backend java $< | diff - tests/templates/output-success-java.json
+
 # ProofTests
 
-proof_repo:=tests/proofs
-proof_specs_dir:=$(proof_repo)/specs
+proof_specs_dir:=tests/specs
 proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
 
 test-proof: $(proof_tests:=.test)
 
-test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11_d0g0v0.json
-	./kevm run --backend java $< | diff - tests/templates/output-success-java.json
-
-$(proof_specs_dir)/%.test: $(proof_specs_dir)/% split-proof-tests
+$(proof_specs_dir)/%.test: $(proof_specs_dir)/%
 	$(TEST) test --backend $(TEST_SYMBOLIC_BACKEND) $<
-
-active_proof_tests=resources      \
-                   bihu           \
-                   erc20/gno      \
-                   erc20/hobby    \
-                   erc20/hkg      \
-                   erc20/ds-token
-
-proof_test_dirs:=$(patsubst %,tests/proofs/%,$(active_proof_tests))
-
-split-proof-tests: $(proof_test_dirs:=.proof-split)
-
-%.proof-split: $(proof_repo)/git-submodule
-	$(MAKE) --directory $* split-proof-tests
-
-$(proof_repo)/git-submodule:
-	@echo "== submodule: $*"
-	git submodule update --init --recursive -- $(proof_repo)
 
 # Media
 # -----

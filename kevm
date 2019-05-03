@@ -131,7 +131,7 @@ run_test() {
     fi
 
     case "$test_file" in
-        *proofs/*)
+        *specs/*)
             run_proof "$test_file" "$@"
             ;;
         *interactive/*)
