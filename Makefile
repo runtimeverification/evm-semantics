@@ -18,7 +18,7 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps \
+.PHONY: all clean deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 \
         build build-ocaml build-java build-node build-kore split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn \
         test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
@@ -77,11 +77,13 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 	git submodule update --init --recursive -- $(PLUGIN_SUBMODULE)
 	touch $(PLUGIN_SUBMODULE)/make.timestamp
 
-ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
+ocaml-deps:
 	eval $$(opam config env) \
 	    opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128 ocaml-protoc rlp yojson hex ocp-ocamlres
 
 # install secp256k1 from bitcoin-core
+libsecp256k1: .build/local/lib/pkgconfig/libsecp256k1.pc
+
 .build/local/lib/pkgconfig/libsecp256k1.pc:
 	@echo "== submodule: $@"
 	git submodule update --init -- .build/secp256k1/
