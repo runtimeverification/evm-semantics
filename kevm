@@ -21,8 +21,6 @@ export LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PA
 test_logs="$build_dir/logs"
 mkdir -p "$test_logs"
 test_log="$test_logs/tests.log"
-haskell_prof_log="kore-exec.prof"
-haskell_hp_log="kore-exec.hp"
 
 klab_dir="$build_dir/klab"
 
@@ -34,7 +32,7 @@ warning()  { echo -e "WARNING:" "$@" >&2 ; }
 die()      { echo -e "FATAL:" "$@" >&2 ; exit 1 ; }
 
 pretty_diff() {
-    git --no-pager diff --no-index "$@"
+    git --no-pager diff --no-index --ignore-all-space "$@"
 }
 
 # Runners
@@ -46,10 +44,8 @@ run_krun() {
     local run_file=$1 ; shift
     export K_OPTS=-Xss500m
     case "$backend" in
-        haskell)      args=()                                                                        ;;
-        haskell-perf) args=(--haskell-backend-command "kore-exec +RTS -p -h -RTS") ; backend=haskell ;;
-        ocaml)        args=(--interpret)                                                             ;;
-        *)            args=()                                                                        ;;
+        ocaml) args=(--interpret) ;;
+        *)     args=()            ;;
     esac
     krun --directory "$backend_dir" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "${args[@]-}" "$@"
 }
@@ -59,8 +55,7 @@ run_proof() {
     [[ -f "$proof_file" ]] || die "$proof_file does not exist"
     export K_OPTS=-Xmx8G
     case "$backend" in
-        haskell)      args=()                                                                        ;;
-        haskell-perf) args=(--haskell-backend-command "kore-exec +RTS -p -h -RTS") ; backend=haskell ;;
+        *) args=() ;;
     esac
     kprove --directory "$backend_dir" "$proof_file" --def-module VERIFICATION "${args[@]-}" "$@"
 }
@@ -145,15 +140,9 @@ run_test() {
             ;;
         *)
             case "$backend" in
-                java)
+                java|haskell)
                     run_krun "$test_file" "$@" > "$output_file" \
-                        || pretty_diff --ignore-all-space "$expected_file" "$output_file"
-                    ;;
-                haskell*)
-                    run_krun "$test_file" "$@" > "$output_file" || true
-                    [[ ! -f "$haskell_prof_log" ]] || mv "$haskell_prof_log" "$test_log_name.$haskell_prof_log"
-                    [[ ! -f "$haskell_hp_log"   ]] || mv "$haskell_hp_log"   "$test_log_name.$haskell_hp_log"
-                    pretty_diff --ignore-all-space "$expected_file" "$output_file"
+                        || pretty_diff "$expected_file" "$output_file"
                     ;;
                 ocaml|llvm)
                     run_interpret "$test_file"
@@ -187,17 +176,17 @@ cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
 case "$run_command-$backend" in
 
     # Running
-    run-@(ocaml|java|llvm|haskell|haskell-perf)  ) run_krun                        "$@" ;;
-    interpret-@(ocaml|llvm)                      ) run_interpret                   "$@" ;;
-    prove-@(java|haskell|haskell-perf)           ) run_proof                       "$@" ;;
-    test-@(ocaml|java|llvm|haskell|haskell-perf) ) run_test                        "$@" ;;
-    klab-@(run|prove)-java                       ) run_klab "${run_command#klab-}" "$@" ;;
+    run-@(ocaml|java|llvm|haskell)  ) run_krun                        "$@" ;;
+    interpret-@(ocaml|llvm)         ) run_interpret                   "$@" ;;
+    prove-@(java|haskell)           ) run_proof                       "$@" ;;
+    test-@(ocaml|java|llvm|haskell) ) run_test                        "$@" ;;
+    klab-@(run|prove)-java          ) run_klab "${run_command#klab-}" "$@" ;;
 
     *) echo "
-    usage: $0 (run|test) [--backend (ocaml|java|llvm|haskell|haskell-perf)] <pgm>  <K args>*
-           $0 interpret  [--backend (ocaml|llvm)]                           <pgm>
-           $0 prove      [--backend (java|haskell|haskell-perf)]            <spec> <K args>*
-           $0 klab-(run|prove)                                              <spec> <K args>*
+    usage: $0 (run|test) [--backend (ocaml|java|llvm|haskell)] <pgm>  <K args>*
+           $0 interpret  [--backend (ocaml|llvm)]              <pgm>
+           $0 prove      [--backend (java|haskell)]            <spec> <K args>*
+           $0 klab-(run|prove)                                 <spec> <K args>*
 
        $0 run       : Run a single EVM program
        $0 test      : Run a single EVM program like it's a test
