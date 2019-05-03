@@ -247,9 +247,7 @@
         SetItem ( 7 )
       </activeAccounts>
       <accounts>
-        AccountCellMapItem ( <acctID>
-          7
-        </acctID> , <account>
+        <account>
           <acctID>
             7
           </acctID>
@@ -268,7 +266,7 @@
           <nonce>
             1
           </nonce>
-        </account> )
+        </account>
       </accounts>
       <txOrder>
         .List
