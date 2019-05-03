@@ -3,6 +3,7 @@
 /.build/*
 
 !/.build/secp256k1
+!/.build/libff
 !/.build/k
 !/.build/kore
 !/.build/pandoc-tangle

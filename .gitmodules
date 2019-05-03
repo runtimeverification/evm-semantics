@@ -22,3 +22,7 @@
 [submodule ".build/media/metropolis"]
 	path = .build/media/metropolis
 	url = https://github.com/matze/mtheme
+[submodule ".build/libff"]
+	path = .build/libff
+	url = https://github.com/scipr-lab/libff
+	ignore = untracked
