@@ -114,13 +114,26 @@ The LLVM backend has additional dependencies:
 sudo apt install cmake clang-6.0 clang++-6.0 llvm-6.0 lld-6.0 libboost-test-dev libgmp-dev libyaml-cpp-dev libjemalloc-dev curl
 ```
 
+On Arch, you'll also need `crypto++` package.
+
 And you need to setup Rust:
 
 ```sh
-curl https://sh.rustup.rs -sSf | sh
-source $HOME/.cargo/env
-rustup toolchain install 1.28.0
-rustup default 1.28.0
+.build/k/llvm-backend/src/main/native/llvm-backend/install-rust
+```
+
+Additionally, you need to setup the remaining LLVM dependencies.
+
+On Ubuntu:
+
+```sh
+make llvm-deps
+```
+
+On Arch:
+
+```sh
+make LIBFF_CC=clang LIBFF_CXX=clang++ llvm-deps
 ```
 
 #### Building

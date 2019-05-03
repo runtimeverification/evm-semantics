@@ -47,7 +47,7 @@ distclean: clean
 
 all-deps: deps
 all-deps: BACKEND_SKIP=
-llvm-deps: deps
+llvm-deps: .build/local/lib/libff.a deps
 llvm-deps: BACKEND_SKIP=-Dhaskell.backend.skip
 haskell-deps: deps
 haskell-deps: BACKEND_SKIP=-Dllvm.backend.skip
@@ -67,6 +67,8 @@ $(K_SUBMODULE)/make.timestamp:
 	cd $(K_SUBMODULE) && mvn package -DskipTests -U ${BACKEND_SKIP}
 	touch $(K_SUBMODULE)/make.timestamp
 
+K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
+
 $(PANDOC_TANGLE_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init -- $(PANDOC_TANGLE_SUBMODULE)
@@ -85,7 +87,7 @@ ocaml-deps:
 libsecp256k1: .build/local/lib/pkgconfig/libsecp256k1.pc
 
 .build/local/lib/pkgconfig/libsecp256k1.pc:
-	@echo "== submodule: $@"
+	@echo "== submodule: .build/secp256k1"
 	git submodule update --init -- .build/secp256k1/
 	cd .build/secp256k1/ \
 	    && ./autogen.sh \
@@ -93,7 +95,21 @@ libsecp256k1: .build/local/lib/pkgconfig/libsecp256k1.pc
 	    && make -s -j4 \
 	    && make install
 
-K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
+# install libff from scipr-lab
+libff: .build/local/lib/libff.a
+
+LIBFF_CC ?=clang-6.0
+LIBFF_CXX?=clang-6.0++
+
+.build/local/lib/libff.a:
+	@echo "== submodule: .build/libff"
+	git submodule update --init --recursive -- .build/libff/
+	cd .build/libff/ \
+	    && mkdir -p build \
+	    && cd build \
+	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(BUILD_LOCAL)" \
+	    && make -s -j4 \
+	    && make install
 
 # Building
 # --------
