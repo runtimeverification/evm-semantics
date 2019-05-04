@@ -100,7 +100,7 @@ libsecp256k1: .build/local/lib/pkgconfig/libsecp256k1.pc
 libff: .build/local/lib/libff.a
 
 LIBFF_CC ?=clang-6.0
-LIBFF_CXX?=clang-6.0++
+LIBFF_CXX?=clang++-6.0
 
 .build/local/lib/libff.a:
 	@echo "== submodule: .build/libff"
