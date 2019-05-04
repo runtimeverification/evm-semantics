@@ -26,16 +26,6 @@ RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.6.0 \
     && cd ../..                                                     \
     && rm -rf z3
 
-RUN    git clone 'https://github.com/scipr-lab/libff' --recursive        \
-    && cd libff                                                         \
-    && mkdir build                                                      \
-    && cd build                                                         \
-    && CC=clang-6.0 CXX=clang++-6.0 cmake .. -DCMAKE_BUILD_TYPE=Release \
-    && make -j8                                                         \
-    && make install                                                     \
-    && cd ../..                                                         \
-    && rm -rf libff
-
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 RUN    groupadd --gid $GROUP_ID user                                        \

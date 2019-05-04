@@ -46,7 +46,7 @@ distclean: clean
 # Dependencies
 # ------------
 
-all-deps: deps
+all-deps: deps llvm-deps haskell-deps
 all-deps: BACKEND_SKIP=
 llvm-deps: .build/local/lib/libff.a deps
 llvm-deps: BACKEND_SKIP=-Dhaskell.backend.skip
