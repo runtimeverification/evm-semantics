@@ -256,8 +256,9 @@ Control Flow
  // --------------------------------------------
     rule <k> #end SC => #halt ... </k> <statusCode> _ => SC </statusCode>
 
-    rule <k> #halt ~> (_:Int    => .) ... </k>
-    rule <k> #halt ~> (_:OpCode => .) ... </k>
+    rule <k> #halt ~> (_:Int     => .) ... </k>
+    rule <k> #halt ~> (_:OpCode  => .) ... </k>
+    rule <k> #halt ~> (_:OpCodes => .) ... </k>
 ```
 
 OpCode Execution
@@ -271,15 +272,18 @@ OpCode Execution
     syntax KItem ::= "#execute"
  // ---------------------------
     rule [halt]: <k> #halt ~> (#execute => .) ... </k>
-    rule [step]: <k> (. => #next [ OP ]) ~> #execute ... </k>
+    rule [step]: <k> (. => OPS) ~> #execute ... </k>
                  <pc> PCOUNT </pc>
-                 <program> ... PCOUNT |-> OP ... </program>
+                 <program> ... PCOUNT |-> OPS ... </program>
 
     rule <k> (. => #end EVMC_SUCCESS) ~> #execute ... </k>
          <pc> PCOUNT </pc>
          <program> PGM </program>
          <output> _ => .ByteArray </output>
       requires notBool (PCOUNT in_keys(PGM))
+
+    rule <k> .OpCodes => .                   ... </k>
+    rule <k> OP ; OPS => #next [ OP ] ~> OPS ... </k>
 ```
 
 ### Single Step
@@ -517,6 +521,14 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
  // ---------------------------------------------
     rule #widthOp(PUSH(N, _)) => 1 +Int N
     rule #widthOp(OP)         => 1        requires notBool isPushOp(OP)
+
+    syntax Int ::= #widthOps    ( OpCodes )       [function]
+                 | #widthOpsAux ( OpCodes , Int ) [function]
+ // --------------------------------------------------------
+    rule #widthOps(OPS) => #widthOpsAux(OPS, 0)
+
+    rule #widthOpsAux(.OpCodes, N) => N
+    rule #widthOpsAux(OP ; OPS, N) => #widthOpsAux(OPS, N +Int #widthOp(OP))
 ```
 
 ### Substate Log
@@ -640,6 +652,7 @@ Cons-lists of opcodes form programs (using cons operator `_;_`).
 Operator `#revOps` can be used to reverse a program.
 
 ```k
+    syntax OpCodes [flatPredicate]
     syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
  // --------------------------------------------------
 
@@ -655,13 +668,31 @@ Operator `#revOps` can be used to reverse a program.
 ### Converting to/from `Map` Representation
 
 ```k
-    syntax Map ::= #asMapOpCodes    ( OpCodes )             [function]
-                 | #asMapOpCodesAux ( Int , OpCodes , Map ) [function]
- // ------------------------------------------------------------------
-    rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodesAux(0, OPS, .Map)
+    syntax Map ::= #asMapOpCodes    ( OpCodes )          [function]
+                 | #asMapOpCodesAux ( Int , List , Map ) [function]
+ // ---------------------------------------------------------------
+    rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodesAux(0, #basicBlocks(OPS), .Map)
 
-    rule #asMapOpCodesAux( N , .OpCodes         , MAP ) => MAP
-    rule #asMapOpCodesAux( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodesAux(N +Int #widthOp(OP), OCS, MAP [ N <- OP ])
+    rule #asMapOpCodesAux( N , .List                 , MAP ) => MAP
+    rule #asMapOpCodesAux( N , ListItem(OPS) BBLOCKS , MAP ) => #asMapOpCodesAux(N +Int #widthOps(OPS), BBLOCKS, MAP [ N <- OPS ])
+
+    syntax List ::= #basicBlocks    ( OpCodes )                  [function]
+                  | #basicBlocksAux ( OpCodes , OpCodes , List ) [function]
+ // -----------------------------------------------------------------------
+    rule #basicBlocks(OPS) => #basicBlocksAux(OPS, .OpCodes, .List)
+
+    rule #basicBlocksAux(.OpCodes , .OpCodes , BBLOCKS) => BBLOCKS
+    rule #basicBlocksAux(.OpCodes , OP ; OPS , BBLOCKS) => BBLOCKS ListItem(#revOps(OP ; OPS))
+
+    rule #basicBlocksAux( OP ; OPS ,      OPS' , BBLOCKS )
+      => #basicBlocksAux(      OPS , OP ; OPS' , BBLOCKS )
+      requires OP =/=K JUMPDEST
+
+    rule #basicBlocksAux( JUMPDEST ; OPS , .OpCodes            , BBLOCKS )
+      => #basicBlocksAux(            OPS , JUMPDEST ; .OpCodes , BBLOCKS )
+
+    rule #basicBlocksAux( JUMPDEST ; OPS , OP' ; OPS'          , BBLOCKS                               )
+      => #basicBlocksAux(            OPS , JUMPDEST ; .OpCodes , BBLOCKS ListItem(#revOps(OP' ; OPS')) )
 ```
 
 EVM OpCodes
@@ -994,10 +1025,10 @@ The `JUMP*` family of operations affect the current program counter.
  // ---------------------------
     rule <k> JUMP DEST => #endBasicBlock ... </k>
          <pc> _ => DEST </pc>
-         <program> ... DEST |-> JUMPDEST ... </program>
+         <program> ... DEST |-> (JUMPDEST ; _) ... </program>
 
     rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
-         <program> ... DEST |-> OP ... </program>
+         <program> ... DEST |-> (OP ; _) ... </program>
       requires OP =/=K JUMPDEST
 
     rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
@@ -1014,8 +1045,9 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax InternalOp ::= "#endBasicBlock"
  // --------------------------------------
-    rule <k> #endBasicBlock ~> (_:OpCode => .) ... </k>
-    rule <k> (#endBasicBlock => .) ~> #execute ... </k>
+    rule <k> #endBasicBlock ~> (_:OpCode  => .) ... </k>
+    rule <k> #endBasicBlock ~> (_:OpCodes => .) ... </k>
+    rule <k> (#endBasicBlock => .) ~> #execute  ... </k>
 ```
 
 ### `STOP`, `REVERT`, and `RETURN`
@@ -1256,7 +1288,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .ByteArray VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE) ; .OpCodes) .ByteArray VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <schedule> SCHED </schedule>
