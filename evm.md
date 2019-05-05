@@ -1009,13 +1009,9 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax UnStackOp ::= "JUMP"
  // ---------------------------
-    rule <k> JUMP DEST => . ... </k>
+    rule <k> JUMP DEST => #if OP ==K JUMPDEST #then . #else #end EVMC_BAD_JUMP_DESTINATION #fi ... </k>
          <pc> _ => DEST </pc>
-         <program> ... DEST |-> JUMPDEST ... </program>
-
-    rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
          <program> ... DEST |-> OP ... </program>
-      requires OP =/=K JUMPDEST
 
     rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
          <program> PGM </program>
