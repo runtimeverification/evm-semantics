@@ -279,30 +279,12 @@ OpCode Execution
 ### Execution Macros
 
 -   `#execute` calls `#next` repeatedly until it recieves an `#end`.
--   `#execTo` executes until the next opcode is one of the specified ones.
 
 ```k
     syntax KItem ::= "#execute"
  // ---------------------------
     rule [step]: <k> (. => #next) ~> #execute ... </k>
     rule [halt]: <k> #halt ~> (#execute => .) ... </k>
-
-    syntax InternalOp ::= "#execTo" Set
- // -----------------------------------
-    rule <k> (. => #next) ~> #execTo OPS ... </k>
-         <pc> PCOUNT </pc>
-         <program> ... PCOUNT |-> OP ... </program>
-      requires notBool (OP in OPS)
-
-    rule <k> #execTo OPS => . ... </k>
-         <pc> PCOUNT </pc>
-         <program> ... PCOUNT |-> OP ... </program>
-      requires OP in OPS
-
-    rule <k> #execTo OPS => #end EVMC_SUCCESS ... </k>
-         <pc> PCOUNT </pc>
-         <program> PGM </program>
-      requires notBool PCOUNT in keys(PGM)
 ```
 
 Execution follows a simple cycle where first the state is checked for exceptions, then if no exceptions will be thrown the opcode is run.
