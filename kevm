@@ -23,6 +23,7 @@ mkdir -p "$test_logs"
 test_log="$test_logs/tests.log"
 
 klab_dir="$build_dir/klab"
+KLAB_NODE_STACK_SIZE="${KLAB_NODE_STACK_SIZE:-30000}"
 
 # Utilities
 # ---------
@@ -78,7 +79,9 @@ run_klab() {
         >/dev/null || true
 
     export KLAB_OUT="$klab_dir"
-    klab debug klab-statelog
+    # klab often runs out of stack space when running long-running KEVM programs
+    # klab debug klab-statelog
+    node --stack-size=$KLAB_NODE_STACK_SIZE $(dirname $(which klab))/../libexec/klab-debug klab-statelog
 }
 
 # Dev Commands
