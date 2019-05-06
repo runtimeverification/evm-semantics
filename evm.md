@@ -270,21 +270,19 @@ OpCode Execution
 ```k
     syntax KItem ::= "#execute"
  // ---------------------------
-    rule [step]: <k> (. => #next) ~> #execute ... </k>
-    rule [halt]: <k> #halt ~> (#execute => .) ... </k>
-```
+    rule [step]: <mode> EXECMODE </mode>
+                 <k> (. => #next [ OP ]) ~> #execute ... </k>
+                 <pc> PCOUNT </pc>
+                 <program> ... PCOUNT |-> OP ... </program>
+              requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
 
-Execution follows a simple cycle where first the state is checked for exceptions, then if no exceptions will be thrown the opcode is run.
-When the `#next` operator cannot lookup the next opcode, it assumes that the end of execution has been reached.
-
-```k
-    syntax InternalOp ::= "#next"
- // -----------------------------
-    rule <k> #next => #end EVMC_SUCCESS ... </k>
+    rule <k> #execute => #end EVMC_SUCCESS ... </k>
          <pc> PCOUNT </pc>
          <program> PGM </program>
          <output> _ => .WordStack </output>
       requires notBool (PCOUNT in_keys(PGM))
+
+    rule [halt]: <k> #halt ~> (#execute => .) ... </k>
 ```
 
 ### Single Step
@@ -300,12 +298,6 @@ The `#next [_]` operator initiates execution by:
 ```k
     syntax InternalOp ::= "#next" "[" OpCode "]"
  // --------------------------------------------
-    rule <mode> EXECMODE </mode>
-         <k> #next => #next [ OP ] ... </k>
-         <pc> PCOUNT </pc>
-         <program> ... PCOUNT |-> OP ... </program>
-      requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
-
     rule <k> #next [ OP ]
           => #load [ OP ]
           ~> #exec [ OP ]
