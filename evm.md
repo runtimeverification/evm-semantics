@@ -522,19 +522,11 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
  // ------------------------------------------
     rule <k> #pc [ OP ] => . ... </k>
          <pc> PCOUNT => PCOUNT +Int #widthOp(OP) </pc>
-      requires notBool isJumpOp(OP)
-
-    rule <k> #pc [ OP ] => . ... </k>
-      requires isJumpOp(OP)
 
     syntax Int ::= #widthOp ( OpCode ) [function]
  // ---------------------------------------------
     rule #widthOp(PUSH(N, _)) => 1 +Int N
     rule #widthOp(OP)         => 1        requires notBool isPushOp(OP)
-
-    syntax Bool ::= isJumpOp ( OpCode ) [function]
- // ----------------------------------------------
-    rule isJumpOp(OP) => OP ==K JUMP orBool OP ==K JUMPI
 ```
 
 ### Substate Log
@@ -1009,7 +1001,7 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax UnStackOp ::= "JUMP"
  // ---------------------------
-    rule <k> JUMP DEST => #if OP ==K JUMPDEST #then . #else #end EVMC_BAD_JUMP_DESTINATION #fi ... </k>
+    rule <k> JUMP DEST => #if OP ==K JUMPDEST #then #endBasicBlock #else #end EVMC_BAD_JUMP_DESTINATION #fi ... </k>
          <pc> _ => DEST </pc>
          <program> ... DEST |-> OP ... </program>
 
@@ -1020,11 +1012,15 @@ The `JUMP*` family of operations affect the current program counter.
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
     rule <k> JUMPI DEST I => . ... </k>
-         <pc> PCOUNT => PCOUNT +Int 1 </pc>
       requires I ==Int 0
 
     rule <k> JUMPI DEST I => JUMP DEST ... </k>
       requires I =/=Int 0
+
+    syntax InternalOp ::= "#endBasicBlock"
+ // --------------------------------------
+    rule <k> #endBasicBlock ~> (_:OpCode => .) ... </k>
+    rule <k> (#endBasicBlock => .) ~> #execute ... </k>
 ```
 
 ### `STOP`, `REVERT`, and `RETURN`
