@@ -265,24 +265,21 @@ OpCode Execution
 
 ### Execution Macros
 
--   `#execute` calls `#next` repeatedly until it receives an `#end`.
+-   `#execute` loads the next opcode (or halts with `EVMC_SUCCESS` if there is no next opcode).
 
 ```k
     syntax KItem ::= "#execute"
  // ---------------------------
-    rule [step]: <mode> EXECMODE </mode>
-                 <k> (. => #next [ OP ]) ~> #execute ... </k>
+    rule [halt]: <k> #halt ~> (#execute => .) ... </k>
+    rule [step]: <k> (. => #next [ OP ]) ~> #execute ... </k>
                  <pc> PCOUNT </pc>
                  <program> ... PCOUNT |-> OP ... </program>
-              requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
 
-    rule <k> #execute => #end EVMC_SUCCESS ... </k>
+    rule <k> (. => #end EVMC_SUCCESS) ~> #execute ... </k>
          <pc> PCOUNT </pc>
          <program> PGM </program>
          <output> _ => .WordStack </output>
       requires notBool (PCOUNT in_keys(PGM))
-
-    rule [halt]: <k> #halt ~> (#execute => .) ... </k>
 ```
 
 ### Single Step
