@@ -260,18 +260,6 @@ Control Flow
     rule <k> #halt ~> (_:OpCode => .) ... </k>
 ```
 
--   `#?_:_?#` provides an "if-then-else" (choice):
-    -   If there is no exception, take the first branch.
-    -   Else, catch exception and take the second branch.
-
-```k
-    syntax KItem ::= "#?" K ":" K "?#"
- // ----------------------------------
-    rule <k> #? B1 : _  ?# => B1 ... </k>
-    rule <statusCode> SC </statusCode>
-         <k> #halt ~> #? B1 : B2 ?# => #if isExceptionalStatusCode(SC) #then B2 #else B1 #fi ~> #halt ... </k>
-```
-
 OpCode Execution
 ----------------
 
