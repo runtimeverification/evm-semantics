@@ -25,7 +25,7 @@ def print_kast(data, sort="SortJSON"):
     sys.stdout.write(')')
   elif isinstance(data, OrderedDict):
     sys.stdout.write("Lbl'LBraUndsRBraUnds'EVM-DATA'UndsUnds'JSONList{}(")
-    for key, value in list(data.items()):
+    for key, value in data.items():
       sys.stdout.write("Lbl'UndsCommUndsUnds'EVM-DATA'UndsUnds'JSON'Unds'JSONList{}(Lbl'UndsColnUndsUnds'EVM-DATA'UndsUnds'JSONKey'Unds'JSON{}(")
       print_kast(key, "SortJSONKey")
       sys.stdout.write(',')
@@ -35,11 +35,11 @@ def print_kast(data, sort="SortJSON"):
     for key in data:
       sys.stdout.write(')')
     sys.stdout.write(')')
-  elif isinstance(data, str) or isinstance(data, str):
+  elif isinstance(data, str) or isinstance(data, unicode):
     sys.stdout.write("inj{SortString{}, " + sort + "{}}(\dv{SortString{}}("),
     sys.stdout.write(json.dumps(data))
     sys.stdout.write('))')
-  elif isinstance(data, int) or isinstance(data, int):
+  elif isinstance(data, long) or isinstance(data, int):
     sys.stdout.write("inj{SortInt{}, " + sort + '{}}(\dv{SortInt{}}("'),
     sys.stdout.write(str(data))
     sys.stdout.write('"))')
