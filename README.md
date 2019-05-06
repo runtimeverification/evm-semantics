@@ -35,16 +35,28 @@ The following are needed for building/running KEVM:
 -   [Opam](https://opam.ocaml.org/doc/Install.html), **important**: Ubuntu users prior to 15.04 **must** build from source, as the Ubuntu install for 14.10 and prior is broken.
     `opam repository` also requires `rsync`.
 
-On Ubuntu >= 15.04 (for example):
+On Ubuntu >= 18.04 (for example):
 
 ```sh
-sudo apt install make git gcc maven openjdk-8-jdk bison flex opam pkg-config libmpfr-dev autoconf libtool pandoc zlib1g-dev z3 libz3-dev
+sudo apt install                                             \
+    autoconf bison flex gcc git libmpfr-dev libsecp256k1-dev \
+    libtool libz3-dev make maven opam openjdk-8-jdk pandoc   \
+    pkg-config z3 zlib1g-dev
+```
+
+On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
+
+```sh
+make libsecp256k1
 ```
 
 On ArchLinux:
 
 ```sh
-sudo pacman -S  base-devel rsync opam pandoc jre8-openjdk mpfr maven z3
+sudo pacman -S                                              \
+    base base-devel boost clang cmake crypto++ curl git gmp \
+    jdk-openjdk jemalloc libsecp256k1 lld llvm maven mpfr   \
+    opam python rustup stack yaml-cpp z3 zlib
 ```
 
 On OSX, using [Homebrew](https://brew.sh/), after installing the command line tools package:
@@ -102,13 +114,26 @@ The LLVM backend has additional dependencies:
 sudo apt install cmake clang-6.0 clang++-6.0 llvm-6.0 lld-6.0 libboost-test-dev libgmp-dev libyaml-cpp-dev libjemalloc-dev curl
 ```
 
+On Arch, you'll also need `crypto++` package.
+
 And you need to setup Rust:
 
 ```sh
-curl https://sh.rustup.rs -sSf | sh
-source $HOME/.cargo/env
-rustup toolchain install 1.28.0
-rustup default 1.28.0
+.build/k/llvm-backend/src/main/native/llvm-backend/install-rust
+```
+
+Additionally, you need to setup the remaining LLVM dependencies.
+
+On Ubuntu:
+
+```sh
+make llvm-deps
+```
+
+On Arch:
+
+```sh
+make LIBFF_CC=clang LIBFF_CXX=clang++ llvm-deps
 ```
 
 #### Building

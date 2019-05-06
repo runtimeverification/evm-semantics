@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import json
 import sys
@@ -25,7 +25,7 @@ def print_kast(data, sort="SortJSON"):
     sys.stdout.write(')')
   elif isinstance(data, OrderedDict):
     sys.stdout.write("Lbl'LBraUndsRBraUnds'EVM-DATA'UndsUnds'JSONList{}(")
-    for key, value in data.items():
+    for key, value in list(data.items()):
       sys.stdout.write("Lbl'UndsCommUndsUnds'EVM-DATA'UndsUnds'JSON'Unds'JSONList{}(Lbl'UndsColnUndsUnds'EVM-DATA'UndsUnds'JSONKey'Unds'JSON{}(")
       print_kast(key, "SortJSONKey")
       sys.stdout.write(',')
@@ -35,11 +35,11 @@ def print_kast(data, sort="SortJSON"):
     for key in data:
       sys.stdout.write(')')
     sys.stdout.write(')')
-  elif isinstance(data, str) or isinstance(data, unicode):
+  elif isinstance(data, str) or isinstance(data, str):
     sys.stdout.write("inj{SortString{}, " + sort + "{}}(\dv{SortString{}}("),
     sys.stdout.write(json.dumps(data))
     sys.stdout.write('))')
-  elif isinstance(data, long) or isinstance(data, int):
+  elif isinstance(data, int) or isinstance(data, int):
     sys.stdout.write("inj{SortInt{}, " + sort + '{}}(\dv{SortInt{}}("'),
     sys.stdout.write(str(data))
     sys.stdout.write('"))')
@@ -48,15 +48,15 @@ def print_kast(data, sort="SortJSON"):
     raise AssertionError
 
 def print_klabel(s):
-  print "Lbl" + s.replace("_", "'Unds'").replace("`", "").replace("(.KList)", "{}"),
+  print("Lbl" + s.replace("_", "'Unds'").replace("`", "").replace("(.KList)", "{}"), end=' ')
 
-print "[initial-configuration{}(LblinitGeneratedTopCell{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Stop'Map{}(),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$PGM\")),inj{SortJSON{}, SortKItem{}}(",
+print("[initial-configuration{}(LblinitGeneratedTopCell{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Stop'Map{}(),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$PGM\")),inj{SortJSON{}, SortKItem{}}(", end=' ')
 print_kast(data)
-print "))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$SCHEDULE\")),inj{SortSchedule{}, SortKItem{}}(",
+print("))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$SCHEDULE\")),inj{SortSchedule{}, SortKItem{}}(", end=' ')
 print_klabel(sys.argv[2])
-print "()))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$MODE\")),inj{SortMode{}, SortKItem{}}(",
+print("()))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$MODE\")),inj{SortMode{}, SortKItem{}}(", end=' ')
 print_klabel(sys.argv[3])
-print "())))))]"
-print
-print "module TMP"
-print "endmodule []"
+print("())))))]")
+print()
+print("module TMP")
+print("endmodule []")

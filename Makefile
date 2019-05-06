@@ -4,8 +4,12 @@
 BUILD_DIR:=$(CURDIR)/.build
 BUILD_LOCAL:=$(BUILD_DIR)/local
 LIBRARY_PATH:=$(BUILD_LOCAL)/lib
+C_INCLUDE_PATH:=$(BUILD_LOCAL)/include
+CPLUS_INCLUDE_PATH:=$(BUILD_LOCAL)/include
 PKG_CONFIG_PATH:=$(LIBRARY_PATH)/pkgconfig
 export LIBRARY_PATH
+export C_INCLUDE_PATH
+export CPLUS_INCLUDE_PATH
 export PKG_CONFIG_PATH
 
 K_SUBMODULE:=$(BUILD_DIR)/k
@@ -18,7 +22,7 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps \
+.PHONY: all clean deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff \
         build build-ocaml build-java build-node build-kore split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn \
         test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
@@ -36,18 +40,15 @@ clean-submodules:
 	rm -rf .build/k/make.timestamp .build/pandoc-tangle/make.timestamp tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp plugin/make.timestamp kore/make.timestamp .build/media/metropolis/*.sty
 
 distclean: clean
-	opam switch system
-	opam switch remove 4.03.0+k --yes || true
-	cd $(K_SUBMODULE) \
-	    && mvn clean -q
+	cd $(K_SUBMODULE) && mvn clean -q
 	git submodule deinit --force -- ./
 
 # Dependencies
 # ------------
 
-all-deps: deps
+all-deps: deps llvm-deps haskell-deps
 all-deps: BACKEND_SKIP=
-llvm-deps: deps
+llvm-deps: .build/local/lib/libff.a deps
 llvm-deps: BACKEND_SKIP=-Dhaskell.backend.skip
 haskell-deps: deps
 haskell-deps: BACKEND_SKIP=-Dllvm.backend.skip
@@ -67,6 +68,8 @@ $(K_SUBMODULE)/make.timestamp:
 	cd $(K_SUBMODULE) && mvn package -DskipTests -U ${BACKEND_SKIP}
 	touch $(K_SUBMODULE)/make.timestamp
 
+K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
+
 $(PANDOC_TANGLE_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init -- $(PANDOC_TANGLE_SUBMODULE)
@@ -77,13 +80,15 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 	git submodule update --init --recursive -- $(PLUGIN_SUBMODULE)
 	touch $(PLUGIN_SUBMODULE)/make.timestamp
 
-ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
+ocaml-deps:
 	eval $$(opam config env) \
 	    opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128 ocaml-protoc rlp yojson hex ocp-ocamlres
 
 # install secp256k1 from bitcoin-core
+libsecp256k1: .build/local/lib/pkgconfig/libsecp256k1.pc
+
 .build/local/lib/pkgconfig/libsecp256k1.pc:
-	@echo "== submodule: $@"
+	@echo "== submodule: .build/secp256k1"
 	git submodule update --init -- .build/secp256k1/
 	cd .build/secp256k1/ \
 	    && ./autogen.sh \
@@ -91,7 +96,21 @@ ocaml-deps: .build/local/lib/pkgconfig/libsecp256k1.pc
 	    && make -s -j4 \
 	    && make install
 
-K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
+# install libff from scipr-lab
+libff: .build/local/lib/libff.a
+
+LIBFF_CC ?=clang-6.0
+LIBFF_CXX?=clang++-6.0
+
+.build/local/lib/libff.a:
+	@echo "== submodule: .build/libff"
+	git submodule update --init --recursive -- .build/libff/
+	cd .build/libff/ \
+	    && mkdir -p build \
+	    && cd build \
+	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(BUILD_LOCAL)" \
+	    && make -s -j4 \
+	    && make install
 
 # Building
 # --------
@@ -223,7 +242,8 @@ endif
 	    && ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
 	                        --syntax-module ETHEREUM-SIMULATION .build/ocaml/driver.k --directory .build/llvm \
 	                        --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp \
-	                        -ccopt -L/usr/local/lib -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
+	                        -ccopt -L/usr/local/lib \
+	                        -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
 # Tests
 # -----
