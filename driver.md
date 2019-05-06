@@ -357,8 +357,8 @@ State Manipulation
     rule <k> clear => clearTX ~> clearBLOCK ~> clearNETWORK ... </k>
          <analysis> _ => .Map </analysis>
 
-    syntax EthreumCommand ::= "clearTX"
- // -----------------------------------
+    syntax EthereumCommand ::= "clearTX"
+ // ------------------------------------
     rule <k> clearTX => . ... </k>
          <output>          _ => .WordStack </output>
          <memoryUsed>      _ => 0          </memoryUsed>
@@ -382,8 +382,8 @@ State Manipulation
          <origin>          _ => 0          </origin>
          <touchedAccounts> _ => .Set       </touchedAccounts>
 
-    syntax EthreumCommand ::= "clearBLOCK"
- // --------------------------------------
+    syntax EthereumCommand ::= "clearBLOCK"
+ // ---------------------------------------
     rule <k> clearBLOCK => . ... </k>
          <previousHash>      _ => 0             </previousHash>
          <ommersHash>        _ => 0             </ommersHash>
@@ -403,8 +403,8 @@ State Manipulation
          <ommerBlockHeaders> _ => [ .JSONList ] </ommerBlockHeaders>
          <blockhash>         _ => .List         </blockhash>
 
-    syntax EthreumCommand ::= "clearNETWORK"
- // ----------------------------------------
+    syntax EthereumCommand ::= "clearNETWORK"
+ // -----------------------------------------
     rule <k> clearNETWORK => . ... </k>
          <statusCode>     _ => .StatusCode </statusCode>
          <activeAccounts> _ => .Set        </activeAccounts>
