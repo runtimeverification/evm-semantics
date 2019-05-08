@@ -128,7 +128,7 @@ concrete_tangle:=.k:not(.node):not(.symbolic),.standalone,.concrete
 symbolic_tangle:=.k:not(.node):not(.concrete),.standalone,.symbolic
 node_tangle:=.k:not(.standalone):not(.symbolic),.node,.concrete
 
-k_files:=driver.k data.k network.k evm.k analysis.k krypto.k edsl.k evm-node.k
+k_files:=driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k
 ocaml_files:=$(patsubst %,.build/ocaml/%,$(k_files))
 java_files:=$(patsubst %,.build/java/%,$(k_files))
 node_files:=$(patsubst %,.build/node/%,$(k_files))
@@ -328,9 +328,6 @@ test-interactive: $(interactive_tests:=.test)
 tests/interactive/%.json.test: tests/interactive/%.json
 	$(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
 
-tests/interactive/gas-analysis/%.evm.test: tests/interactive/gas-analysis/%.evm tests/interactive/gas-analysis/%.evm.out
-	MODE=GASANALYZE $(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
-
 test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11_d0g0v0.json
 	./kevm run --backend java $< | diff - tests/templates/output-success-java.json
 
@@ -342,7 +339,7 @@ proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
 test-proof: $(proof_tests:=.test)
 
 $(proof_specs_dir)/%.test: $(proof_specs_dir)/%
-	$(TEST) test --backend $(TEST_SYMBOLIC_BACKEND) $<
+	$(TEST) test --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures
 
 # Media
 # -----

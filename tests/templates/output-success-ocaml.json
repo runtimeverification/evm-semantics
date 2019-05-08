@@ -11,9 +11,6 @@
   <schedule>
     DEFAULT
   </schedule>
-  <analysis>
-    .Map
-  </analysis>
   <ethereum>
     <evm>
       <output>
@@ -65,9 +62,9 @@
         <memoryUsed>
           0
         </memoryUsed>
-        <previousGas>
+        <callGas>
           0
-        </previousGas>
+        </callGas>
         <static>
           false
         </static>
