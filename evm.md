@@ -521,14 +521,6 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
  // ---------------------------------------------
     rule #widthOp(PUSH(N, _)) => 1 +Int N
     rule #widthOp(OP)         => 1        requires notBool isPushOp(OP)
-
-    syntax Int ::= #widthOps    ( OpCodes )       [function]
-                 | #widthOpsAux ( OpCodes , Int ) [function]
- // --------------------------------------------------------
-    rule #widthOps(OPS) => #widthOpsAux(OPS, 0)
-
-    rule #widthOpsAux(.OpCodes, N) => N
-    rule #widthOpsAux(OP ; OPS, N) => #widthOpsAux(OPS, N +Int #widthOp(OP))
 ```
 
 ### Substate Log
@@ -668,31 +660,27 @@ Operator `#revOps` can be used to reverse a program.
 ### Converting to/from `Map` Representation
 
 ```k
-    syntax Map ::= #asMapOpCodes    ( OpCodes )          [function]
-                 | #asMapOpCodesAux ( Int , List , Map ) [function]
- // ---------------------------------------------------------------
-    rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodesAux(0, #basicBlocks(OPS), .Map)
+    syntax Map ::= #asMapOpCodes    ( OpCodes )                       [function]
+                 | #asMapOpCodesAux ( Int , OpCodes , OpCodes , Map ) [function]
+ // ----------------------------------------------------------------------------
+    rule #asMapOpCodes( OPS:OpCodes ) => #asMapOpCodesAux(0, OPS, .OpCodes, .Map)
 
-    rule #asMapOpCodesAux( N , .List                 , MAP ) => MAP
-    rule #asMapOpCodesAux( N , ListItem(OPS) BBLOCKS , MAP ) => #asMapOpCodesAux(N +Int #widthOps(OPS), BBLOCKS, MAP [ N <- OPS ])
+    rule #asMapOpCodesAux( N , .OpCodes , OPS' , BBLOCKS ) => BBLOCKS [ N <- #revOps(OPS') ]
 
-    syntax List ::= #basicBlocks    ( OpCodes )                  [function]
-                  | #basicBlocksAux ( OpCodes , OpCodes , List ) [function]
- // -----------------------------------------------------------------------
-    rule #basicBlocks(OPS) => #basicBlocksAux(OPS, .OpCodes, .List)
+    rule #asMapOpCodesAux( N                      , JUMPDEST ; OPS ,                OPS' , BBLOCKS )
+      => #asMapOpCodesAux( N +Int #widthOps(OPS') ,            OPS , JUMPDEST ; .OpCodes , BBLOCKS [ N <- #revOps(OPS') ] )
 
-    rule #basicBlocksAux(.OpCodes , .OpCodes , BBLOCKS) => BBLOCKS
-    rule #basicBlocksAux(.OpCodes , OP ; OPS , BBLOCKS) => BBLOCKS ListItem(#revOps(OP ; OPS))
-
-    rule #basicBlocksAux( OP ; OPS ,      OPS' , BBLOCKS )
-      => #basicBlocksAux(      OPS , OP ; OPS' , BBLOCKS )
+    rule #asMapOpCodesAux( N , OP ; OPS ,      OPS' , BBLOCKS )
+      => #asMapOpCodesAux( N ,      OPS , OP ; OPS' , BBLOCKS )
       requires OP =/=K JUMPDEST
 
-    rule #basicBlocksAux( JUMPDEST ; OPS , .OpCodes            , BBLOCKS )
-      => #basicBlocksAux(            OPS , JUMPDEST ; .OpCodes , BBLOCKS )
+    syntax Int ::= #widthOps    ( OpCodes )       [function]
+                 | #widthOpsAux ( OpCodes , Int ) [function]
+ // --------------------------------------------------------
+    rule #widthOps(OPS) => #widthOpsAux(OPS, 0)
 
-    rule #basicBlocksAux( JUMPDEST ; OPS , OP' ; OPS'          , BBLOCKS                               )
-      => #basicBlocksAux(            OPS , JUMPDEST ; .OpCodes , BBLOCKS ListItem(#revOps(OP' ; OPS')) )
+    rule #widthOpsAux(.OpCodes, N) => N
+    rule #widthOpsAux(OP ; OPS, N) => #widthOpsAux(OPS, N +Int #widthOp(OP))
 ```
 
 EVM OpCodes
