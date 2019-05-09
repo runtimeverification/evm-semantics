@@ -34,13 +34,14 @@ export LUA_PATH
 all: build split-tests
 
 clean: clean-submodules
-	rm -rf .build/java .build/plugin-ocaml .build/plugin-node .build/ocaml .build/haskell .build/llvm .build/node .build/logs .build/local .build/vm tests/proofs/specs
+	rm -rf .build/java .build/plugin-ocaml .build/plugin-node .build/ocaml .build/haskell .build/llvm .build/node .build/logs .build/vm tests/proofs/specs
 
 clean-submodules:
 	rm -rf .build/k/make.timestamp .build/pandoc-tangle/make.timestamp tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp plugin/make.timestamp kore/make.timestamp .build/media/metropolis/*.sty
 
 distclean: clean
 	cd $(K_SUBMODULE) && mvn clean -q
+	rm -rf .build/local
 	git submodule deinit --force -- ./
 
 # Dependencies
