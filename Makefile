@@ -116,7 +116,7 @@ LIBFF_CXX?=clang++-6.0
 # Building
 # --------
 
-build: build-ocaml build-java build-node
+build: build-ocaml build-java
 build-ocaml: .build/ocaml/driver-kompiled/interpreter
 build-java: .build/java/driver-kompiled/timestamp
 build-node: .build/vm/kevm-vm
