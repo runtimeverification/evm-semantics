@@ -239,12 +239,10 @@ endif
 
 .build/llvm/driver-kompiled/interpreter: $(ocaml_files)
 	@echo "== kompile: $@"
-	eval $$(opam config env) \
-	    && ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
-	                        --syntax-module ETHEREUM-SIMULATION .build/ocaml/driver.k --directory .build/llvm \
-	                        --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp \
-	                        -ccopt -L/usr/local/lib \
-	                        -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
+	${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
+	                 --syntax-module ETHEREUM-SIMULATION .build/ocaml/driver.k --directory .build/llvm \
+	                 --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp \
+	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
 # Tests
 # -----
