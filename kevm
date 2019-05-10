@@ -57,14 +57,9 @@ run_kast() {
     kast --directory "$backend_dir" "$run_file" "$@"
 }
 
-run_proof() {
-    local proof_file="$1" ; shift
-    [[ -f "$proof_file" ]] || die "$proof_file does not exist"
+run_prove() {
     export K_OPTS=-Xmx8G
-    case "$backend" in
-        *) args=() ;;
-    esac
-    kprove --directory "$backend_dir" "$proof_file" --def-module VERIFICATION "${args[@]-}" "$@"
+    kprove --directory "$backend_dir" "$run_file" --def-module VERIFICATION "${args[@]-}" "$@"
 }
 
 run_klab() {
@@ -140,7 +135,7 @@ run_test() {
 
     case "$test_file" in
         *specs/*)
-            run_proof "$test_file" "$@"
+            run_prove "$test_file" "$@"
             ;;
         *interactive/*)
             run_krun "$test_file" "$@" > "$output_file" \
@@ -191,7 +186,7 @@ case "$run_command-$backend" in
     run-@(ocaml|java|llvm|haskell)  ) run_krun                        "$@" ;;
     kast-@(ocaml|java|llvm|haskell) ) run_kast                        "$@" ;;
     interpret-@(ocaml|llvm)         ) run_interpret                   "$@" ;;
-    prove-@(java|haskell)           ) run_proof                       "$@" ;;
+    prove-@(java|haskell)           ) run_prove                       "$@" ;;
     test-@(ocaml|java|llvm|haskell) ) run_test                        "$@" ;;
     klab-@(run|prove)-java          ) run_klab "${run_command#klab-}" "$@" ;;
 
