@@ -290,33 +290,29 @@ tests/%.run-interactive: tests/%
 	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
-# Concrete Tests
+# Smoke Tests
+
+smoke_tests_run=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
+                tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json
+
+# Conformance Tests
+
+tests/ethereum-tests/%.json: tests/ethereum-tests/make.timestamp
 
 test-all-concrete: test-all-conformance test-interactive
 test-concrete: test-conformance test-interactive
-
-# Ethereum Tests
-
-tests/ethereum-tests/%.json: tests/ethereum-tests/make.timestamp
 
 test-all-conformance: test-all-vm test-all-bchain
 test-slow-conformance: test-slow-vm test-slow-bchain
 test-conformance: test-vm test-bchain
 
-# VMTests
-
 vm_tests=$(wildcard tests/ethereum-tests/VMTests/*/*.json)
 slow_vm_tests=$(wildcard tests/ethereum-tests/VMTests/vmPerformance/*.json)
 quick_vm_tests=$(filter-out $(slow_vm_tests), $(vm_tests))
 
-smoke_tests=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
-            tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json
-
 test-all-vm: $(all_vm_tests:=.run)
 test-slow-vm: $(slow_vm_tests:=.run)
 test-vm: $(quick_vm_tests:=.run)
-
-# BlockchainTests
 
 bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)
 slow_bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*.json) \
@@ -335,19 +331,19 @@ test-all-bchain: $(all_bchain_tests:=.run)
 test-slow-bchain: $(slow_bchain_tests:=.run)
 test-bchain: $(quick_bchain_tests:=.run)
 
-# Interactive Tests
-
-test-interactive: test-interactive-run
-
-test-interactive-run: TEST=./kevm run
-test-interactive-run: $(smoke_tests:=.run-interactive)
-
 # Proof Tests
 
 proof_specs_dir:=tests/specs
 proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
 
 test-proof: $(proof_tests:=.prove)
+
+# Interactive Tests
+
+test-interactive: test-interactive-run
+
+test-interactive-run: TEST=./kevm run
+test-interactive-run: $(smoke_tests_run:=.run-interactive)
 
 # Media
 # -----
