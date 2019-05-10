@@ -255,10 +255,8 @@ endif
 # Tests
 # -----
 
-# Override this with `make TEST=true` to list tests instead of running
 TEST_CONCRETE_BACKEND:=ocaml
 TEST_SYMBOLIC_BACKEND:=java
-TEST:=./kevm test
 CHECK:=git --no-pager diff --no-index --ignore-all-space
 
 KEVM_MODE:=NORMAL
@@ -280,20 +278,18 @@ tests/ethereum-tests/VMTests/%: KEVM_MODE=VMTESTS
 tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE=DEFAULT
 
 tests/%.run: tests/%
-	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
+	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) ./kevm test --backend $(TEST_CONCRETE_BACKEND) $<
 
 tests/%.prove: tests/%
-	$(TEST) --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failurees
+	./kevm test --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failurees
 
-tests/%.run-interactive: TEST=./kevm run
 tests/%.run-interactive: tests/%
-	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
+	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) ./kevm run --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
 	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
-tests/%.prove-interactive: TEST=./kevm prove
 tests/%.prove-interactive: tests/%
-	$(TEST) --backend $(TEST_SYMBOLIC_BACKEND) $<
+	./kevm prove --backend $(TEST_SYMBOLIC_BACKEND) $<
 
 # Smoke Tests
 
