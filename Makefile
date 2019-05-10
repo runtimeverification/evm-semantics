@@ -285,6 +285,7 @@ tests/%.run: tests/%
 tests/%.prove: tests/%
 	$(TEST) --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failurees
 
+tests/%.run-interactive: TEST=./kevm run
 tests/%.run-interactive: tests/%
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
 	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
@@ -342,7 +343,6 @@ test-proof: $(proof_tests:=.prove)
 
 test-interactive: test-interactive-run
 
-test-interactive-run: TEST=./kevm run
 test-interactive-run: $(smoke_tests_run:=.run-interactive)
 
 # Media
