@@ -30,7 +30,7 @@ pipeline {
       steps {
         sh '''
           export PATH=$HOME/.local/bin:$HOME/.cargo/bin:$PATH
-          make build build-llvm build-haskell -j4 -B
+          make build build-llvm build-haskell build-node -j4 -B
         '''
       }
     }
