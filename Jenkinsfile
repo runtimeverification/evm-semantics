@@ -70,5 +70,46 @@ pipeline {
         '''
       }
     }
+    stage('Test Interactive') {
+      failFast true
+      parallel {
+        stage('OCaml') {
+          steps {
+            sh '''
+              export PATH=$HOME/.local/bin:$PATH
+              nprocs=$(nproc)
+              make test-interactive TEST_CONCRETE_BACKEND=ocaml
+            '''
+          }
+        }
+        stage('LLVM') {
+          steps {
+            sh '''
+              export PATH=$HOME/.local/bin:$PATH
+              nprocs=$(nproc)
+              make test-interactive TEST_CONCRETE_BACKEND=llvm
+            '''
+          }
+        }
+        stage('Java') {
+          steps {
+            sh '''
+              export PATH=$HOME/.local/bin:$PATH
+              nprocs=$(nproc)
+              make test-interactive TEST_CONCRETE_BACKEND=java
+            '''
+          }
+        }
+        stage('Haskell') {
+          steps {
+            sh '''
+              export PATH=$HOME/.local/bin:$PATH
+              nprocs=$(nproc)
+              make test-interactive TEST_CONCRETE_BACKEND=haskell
+            '''
+          }
+        }
+      }
+    }
   }
 }
