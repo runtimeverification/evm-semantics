@@ -27,7 +27,7 @@ export LUA_PATH
         defn java-defn ocaml-defn node-defn haskell-defn \
         test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-        test-proof test-interactive test-vm-haskell \
+        test-proof test-interactive test-interactive-run \
         metropolis-theme 2017-devcon3 sphinx
 .SECONDARY:
 
@@ -258,7 +258,11 @@ endif
 # Override this with `make TEST=true` to list tests instead of running
 TEST_CONCRETE_BACKEND:=ocaml
 TEST_SYMBOLIC_BACKEND:=java
-TEST:=./kevm
+TEST:=./kevm test
+CHECK:=git --no-pager diff --no-index --ignore-all-space
+
+KEVM_MODE:=NORMAL
+KEVM_SCHEDULE:=PETERSBURG
 
 test-all: test-all-concrete test-all-proof
 test: test-concrete test-proof test-java
@@ -269,6 +273,22 @@ tests/%/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init -- tests/$*
 	touch $@
+
+# Generic Test Harnesses
+
+tests/ethereum-tests/VMTests/%: KEVM_MODE=VMTESTS
+tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE=DEFAULT
+
+tests/%.run: tests/%
+	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) --backend $(TEST_CONCRETE_BACKEND) $<
+
+tests/%.prove: tests/%
+	$(TEST) --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failurees
+
+tests/%.run-interactive: tests/%
+	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
+	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
+	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 # Concrete Tests
 
@@ -289,19 +309,12 @@ vm_tests=$(wildcard tests/ethereum-tests/VMTests/*/*.json)
 slow_vm_tests=$(wildcard tests/ethereum-tests/VMTests/vmPerformance/*.json)
 quick_vm_tests=$(filter-out $(slow_vm_tests), $(vm_tests))
 
-haskell_vm_tests=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
-                 tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json
+smoke_tests=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
+            tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json
 
-test-all-vm: $(all_vm_tests:=.test)
-test-slow-vm: $(slow_vm_tests:=.test)
-test-vm: $(quick_vm_tests:=.test)
-test-vm-haskell: $(haskell_vm_tests:=.haskelltest)
-
-tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/%
-	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
-
-tests/ethereum-tests/VMTests/%.haskelltest: tests/ethereum-tests/VMTests/%
-	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) test --backend haskell $<
+test-all-vm: $(all_vm_tests:=.run)
+test-slow-vm: $(slow_vm_tests:=.run)
+test-vm: $(quick_vm_tests:=.run)
 
 # BlockchainTests
 
@@ -318,35 +331,23 @@ failing_bchain_tests=$(shell cat tests/failing.${TEST_CONCRETE_BACKEND})
 all_bchain_tests=$(filter-out $(bad_bchain_tests), $(filter-out $(failing_bchain_tests), $(bchain_tests)))
 quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(all_bchain_tests))
 
-test-all-bchain: $(all_bchain_tests:=.test)
-test-slow-bchain: $(slow_bchain_tests:=.test)
-test-bchain: $(quick_bchain_tests:=.test)
+test-all-bchain: $(all_bchain_tests:=.run)
+test-slow-bchain: $(slow_bchain_tests:=.run)
+test-bchain: $(quick_bchain_tests:=.run)
 
-tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/%
-	$(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
+# Interactive Tests
 
-# InteractiveTests
+test-interactive: test-interactive-run
 
-interactive_tests:=$(wildcard tests/interactive/*.json) \
-                   $(wildcard tests/interactive/*/*.evm)
+test-interactive-run: TEST=./kevm run
+test-interactive-run: $(smoke_tests:=.run-interactive)
 
-test-interactive: $(interactive_tests:=.test)
-
-tests/interactive/%.json.test: tests/interactive/%.json
-	$(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
-
-test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11_d0g0v0.json
-	./kevm run --backend java $< | diff - tests/templates/output-success-java.json
-
-# ProofTests
+# Proof Tests
 
 proof_specs_dir:=tests/specs
 proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
 
-test-proof: $(proof_tests:=.test)
-
-$(proof_specs_dir)/%.test: $(proof_specs_dir)/%
-	$(TEST) test --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures
+test-proof: $(proof_tests:=.prove)
 
 # Media
 # -----

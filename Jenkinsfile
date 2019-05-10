@@ -55,15 +55,6 @@ pipeline {
             '''
           }
         }
-        stage('Conformance (Haskell)') {
-          steps {
-            sh '''
-              export PATH=$HOME/.local/bin:$PATH
-              nprocs=$(nproc)
-              make test-vm-haskell -j"$nprocs"
-            '''
-          }
-        }
       }
     }
     stage('Test Proofs (Java)') {
