@@ -291,10 +291,17 @@ tests/%.run-interactive: tests/%
 	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
+tests/%.prove-interactive: TEST=./kevm prove
+tests/%.prove-interactive: tests/%
+	$(TEST) --backend $(TEST_SYMBOLIC_BACKEND) $<
+
 # Smoke Tests
 
 smoke_tests_run=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
                 tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json
+
+smoke_tests_prove=tests/specs/examples/sum-to-n-spec.k \
+                  tests/specs/ds-token-erc20/transfer-failure-1-a-spec.k
 
 # Conformance Tests
 
@@ -341,9 +348,10 @@ test-proof: $(proof_tests:=.prove)
 
 # Interactive Tests
 
-test-interactive: test-interactive-run
+test-interactive: test-interactive-run test-interactive-prove
 
 test-interactive-run: $(smoke_tests_run:=.run-interactive)
+test-interactive-prove: $(smoke_tests_prove:=.prove-interactive)
 
 # Media
 # -----
