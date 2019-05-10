@@ -264,8 +264,8 @@ CHECK:=git --no-pager diff --no-index --ignore-all-space
 KEVM_MODE:=NORMAL
 KEVM_SCHEDULE:=PETERSBURG
 
-test-all: test-all-concrete test-all-proof
-test: test-concrete test-proof test-java
+test-all: test-all-concrete test-all-proof test-interactive
+test: test-concrete test-proof test-interactive
 
 split-tests: tests/ethereum-tests/make.timestamp
 
