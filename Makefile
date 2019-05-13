@@ -278,7 +278,9 @@ tests/ethereum-tests/VMTests/%: KEVM_MODE=VMTESTS
 tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE=DEFAULT
 
 tests/%.run: tests/%
-	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) ./kevm test --backend $(TEST_CONCRETE_BACKEND) $<
+	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) ./kevm interpret --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
+	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
+	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.prove: tests/%
 	./kevm prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failurees
