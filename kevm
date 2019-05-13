@@ -30,9 +30,8 @@ KLAB_NODE_STACK_SIZE="${KLAB_NODE_STACK_SIZE:-30000}"
 # Utilities
 # ---------
 
-progress() { echo "== $@" ; }
-warning()  { echo -e "WARNING:" "$@" >&2 ; }
-die()      { echo -e "FATAL:" "$@" >&2 ; exit 1 ; }
+notif() { echo "== $@" >&2 ; }
+fatal() { echo "[FATAL] $@" ; exit 1 ; }
 
 pretty_diff() {
     git --no-pager diff --no-index --ignore-all-space "$@"
@@ -107,7 +106,7 @@ run_interpret() {
                     || exit_status="$?"
                 ;;
 
-        *)      die "Bad backend for interpreter: '$backend'"
+        *)      fatal "Bad backend for interpreter: '$backend'"
                 ;;
     esac
     if [[ "$exit_status" != '0' ]]; then
@@ -145,7 +144,7 @@ run_test() {
                     run_interpret "$test_file"
                     ;;
                 *)
-                    die "Cannot test file '$test_file' with '$backend' backend!"
+                    fatal "Cannot test file '$test_file' with '$backend' backend!"
                     ;;
             esac
             ;;
@@ -169,7 +168,7 @@ backend_dir="$build_dir/$backend"
 
 # get the run file
 run_file="$curdir/$1" ; shift
-[[ -f "$run_file" ]] || die "File does not exist: $run_file"
+[[ -f "$run_file" ]] || fatal "File does not exist: $run_file"
 
 cMODE="\`${MODE:-NORMAL}\`(.KList)"
 cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
