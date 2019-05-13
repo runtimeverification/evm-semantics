@@ -131,9 +131,6 @@ run_test() {
     fi
 
     case "$test_file" in
-        *specs/*)
-            run_prove "$test_file" "$@"
-            ;;
         *interactive/*)
             run_krun "$test_file" "$@" > "$output_file" \
                 || pretty_diff "$expected_file" "$output_file"

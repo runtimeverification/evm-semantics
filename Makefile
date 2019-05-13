@@ -281,7 +281,7 @@ tests/%.run: tests/%
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) ./kevm test --backend $(TEST_CONCRETE_BACKEND) $<
 
 tests/%.prove: tests/%
-	./kevm test --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failurees
+	./kevm prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failurees
 
 tests/%.run-interactive: tests/%
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) ./kevm run --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
