@@ -72,8 +72,7 @@ run_klab() {
     local run_mode
 
     run_mode="$1" ; shift
-
-    $0 "$run_mode" --backend java "$run_file" \
+    "$0" "$run_mode" --backend java "${run_file#$curdir}" \
         --state-log --state-log-path "$klab_dir/data" --state-log-id klab-statelog \
         --state-log-events OPEN,EXECINIT,SEARCHINIT,REACHINIT,REACHTARGET,REACHPROVED,NODE,RULE,SRULE,RULEATTEMPT,IMPLICATION,Z3QUERY,Z3RESULT,CLOSE \
         --output-flatten "_Map_ #And" \
@@ -82,7 +81,7 @@ run_klab() {
         --no-alpha-renaming --restore-original-names --no-sort-collections \
         --output json \
         "$@" \
-        >/dev/null || true
+        || true
 
     export KLAB_OUT="$klab_dir"
     # klab often runs out of stack space when running long-running KEVM programs
