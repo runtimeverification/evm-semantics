@@ -27,7 +27,7 @@ export LUA_PATH
         defn java-defn ocaml-defn node-defn haskell-defn \
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-        test-proof test-parse test-interactive test-interactive-run \
+        test-proof test-parse test-interactive test-interactive-run test-interactive-prove \
         metropolis-theme 2017-devcon3 sphinx
 .SECONDARY:
 
@@ -354,7 +354,7 @@ test-parse: $(parse_tests:=.parse)
 
 # Interactive Tests
 
-test-interactive: test-interactive-run test-interactive-prove
+test-interactive: test-interactive-run
 
 test-interactive-run: $(smoke_tests_run:=.run-interactive)
 test-interactive-prove: $(smoke_tests_prove:=.prove)
