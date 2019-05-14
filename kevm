@@ -57,7 +57,7 @@ run_kast() {
     output_mode="${1:-kast}"
 
     case "$run_file-$output_mode" in
-        *.json-@(kast|kore)) "$kevm_dir/kast-json.py" "$run_file" "$cSCHEDULE" "$cMODE"          ;;
+        *.json-@(kast|kore)) "$kevm_dir/$output_mode-json.py" "$run_file" "$cSCHEDULE" "$cMODE"  ;;
         *-kore)              kast --directory "$backend_dir" "$run_file" --kore                  ;;
         *)                   kast --directory "$backend_dir" "$run_file" --output "$output_mode" ;;
     esac
