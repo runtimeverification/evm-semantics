@@ -65,6 +65,7 @@ On OSX, using [Homebrew](https://brew.sh/), after installing the command line to
 brew tap caskroom/cask caskroom/versions
 brew cask install adoptopenjdk8
 brew install automake libtool gmp mpfr pkg-config pandoc maven opam z3 libffi
+make libsecp256k1
 ```
 
 NOTE: a previous version of these instructions required the user to run `brew link flex --force`.
@@ -90,8 +91,6 @@ Finally, you can install repository specific dependencies and build the semantic
 make deps
 make build
 ```
-
-NOTE: If you get errors with secp256k1 when running `make deps` you should: `make libsecp256k1`
 
 ### OPTIONAL: K LLVM/Haskell Backends
 
