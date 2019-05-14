@@ -91,6 +91,8 @@ make deps
 make build
 ```
 
+NOTE: If you get errors with secp256k1 when running `make deps` you should: `make libsecp256k1`
+
 ### OPTIONAL: K LLVM/Haskell Backends
 
 The K LLVM/Haskell backends, currently under development, require extra dependencies to work.
