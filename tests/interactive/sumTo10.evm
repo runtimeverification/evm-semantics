@@ -20,4 +20,6 @@ failure "Interactive sumTo10 test"
 
 success
 
+clear
+
 .EthereumSimulation
