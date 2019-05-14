@@ -25,7 +25,7 @@ export LUA_PATH
 .PHONY: all clean deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff \
         build build-ocaml build-java build-node build-kore split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn \
-        test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
+        test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
         test-proof test-parse test-interactive test-interactive-run \
         metropolis-theme 2017-devcon3 sphinx
@@ -262,8 +262,8 @@ CHECK:=git --no-pager diff --no-index --ignore-all-space
 KEVM_MODE:=NORMAL
 KEVM_SCHEDULE:=PETERSBURG
 
-test-all: test-all-concrete test-all-proof test-interactive
-test: test-concrete test-proof test-interactive
+test-all: test-all-conformance test-all-proof test-interactive test-parse
+test: test-conformance test-proof test-interactive test-parse
 
 split-tests: tests/ethereum-tests/make.timestamp
 
@@ -307,9 +307,6 @@ smoke_tests_prove=tests/specs/examples/sum-to-n-spec.k \
 # Conformance Tests
 
 tests/ethereum-tests/%.json: tests/ethereum-tests/make.timestamp
-
-test-all-concrete: test-all-conformance test-interactive
-test-concrete: test-conformance test-interactive
 
 test-all-conformance: test-all-vm test-all-bchain
 test-slow-conformance: test-slow-vm test-slow-bchain

@@ -42,7 +42,7 @@ pipeline {
             sh '''
               export PATH=$HOME/.local/bin:$PATH
               nprocs=$(nproc)
-              make test-concrete -j"$nprocs"
+              make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=ocaml
             '''
           }
         }
@@ -51,7 +51,7 @@ pipeline {
             sh '''
               export PATH=$HOME/.local/bin:$PATH
               nprocs=$(nproc)
-              make TEST_CONCRETE_BACKEND=llvm test-concrete -j"$nprocs"
+              make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=llvm
             '''
           }
         }
