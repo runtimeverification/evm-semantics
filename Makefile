@@ -353,9 +353,10 @@ test-proof: $(proof_tests:=.prove)
 # Parse Tests
 
 parse_tests:=$(wildcard tests/interactive/*.json) \
-             $(wildcord tests/interactive/*.evm)
+             $(wildcard tests/interactive/*.evm)
 
 test-parse: $(parse_tests:=.parse)
+	echo $(parse_tests)
 
 # Interactive Tests
 
