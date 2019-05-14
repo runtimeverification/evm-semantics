@@ -27,7 +27,7 @@ export LUA_PATH
         defn java-defn ocaml-defn node-defn haskell-defn \
         test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-        test-proof test-interactive test-interactive-run \
+        test-proof test-parse test-interactive test-interactive-run \
         metropolis-theme 2017-devcon3 sphinx
 .SECONDARY:
 
@@ -285,6 +285,11 @@ tests/%.run: tests/%
 tests/%.prove: tests/%
 	./kevm prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failurees
 
+tests/%.parse: tests/%
+	./kevm kast --backend $(TEST_CONCRETE_BACKEND) $< > $@-out
+	$(CHECK) $@-expected $@-out
+	rm -rf $@-out
+
 tests/%.run-interactive: tests/%
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) ./kevm run --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
 	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
@@ -296,7 +301,8 @@ tests/%.prove-interactive: tests/%
 # Smoke Tests
 
 smoke_tests_run=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
-                tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json
+                tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json \
+                tests/interactive/sumTo10.evm
 
 smoke_tests_prove=tests/specs/examples/sum-to-n-spec.k \
                   tests/specs/ds-token-erc20/transfer-failure-1-a-spec.k
@@ -343,6 +349,13 @@ proof_specs_dir:=tests/specs
 proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
 
 test-proof: $(proof_tests:=.prove)
+
+# Parse Tests
+
+parse_tests:=$(wildcard tests/interactive/*.json) \
+             $(wildcord tests/interactive/*.evm)
+
+test-parse: $(parse_tests:=.parse)
 
 # Interactive Tests
 
