@@ -282,21 +282,18 @@ tests/%.run: tests/%
 	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
-tests/%.prove: tests/%
-	./kevm prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failurees
+tests/%.run-interactive: tests/%
+	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) ./kevm run --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
+	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
+	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.parse: tests/%
 	./kevm kast --backend $(TEST_CONCRETE_BACKEND) $< > $@-out
 	$(CHECK) $@-expected $@-out
 	rm -rf $@-out
 
-tests/%.run-interactive: tests/%
-	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) ./kevm run --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
-	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
-	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
-
-tests/%.prove-interactive: tests/%
-	./kevm prove --backend $(TEST_SYMBOLIC_BACKEND) $<
+tests/%.prove: tests/%
+	./kevm prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures
 
 # Smoke Tests
 
@@ -363,7 +360,7 @@ test-parse: $(parse_tests:=.parse)
 test-interactive: test-interactive-run test-interactive-prove
 
 test-interactive-run: $(smoke_tests_run:=.run-interactive)
-test-interactive-prove: $(smoke_tests_prove:=.prove-interactive)
+test-interactive-prove: $(smoke_tests_prove:=.prove)
 
 # Media
 # -----
