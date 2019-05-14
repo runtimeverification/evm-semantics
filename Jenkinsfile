@@ -42,7 +42,7 @@ pipeline {
             sh '''
               export PATH=$HOME/.local/bin:$PATH
               nprocs=$(nproc)
-              make test-concrete -j"$nprocs"
+              make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=ocaml
             '''
           }
         }
@@ -51,16 +51,7 @@ pipeline {
             sh '''
               export PATH=$HOME/.local/bin:$PATH
               nprocs=$(nproc)
-              make TEST_CONCRETE_BACKEND=llvm test-concrete -j"$nprocs"
-            '''
-          }
-        }
-        stage('Conformance (Haskell)') {
-          steps {
-            sh '''
-              export PATH=$HOME/.local/bin:$PATH
-              nprocs=$(nproc)
-              make test-vm-haskell -j"$nprocs"
+              make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=llvm
             '''
           }
         }
@@ -77,6 +68,51 @@ pipeline {
           [ "$nprocs" -gt '6' ] && nprocs='6'
           make test-proof -j"$nprocs"
         '''
+      }
+    }
+    stage('Test Interactive') {
+      failFast true
+      parallel {
+        stage('OCaml krun') {
+          steps {
+            sh '''
+              export PATH=$HOME/.local/bin:$PATH
+              make test-interactive TEST_CONCRETE_BACKEND=ocaml
+            '''
+          }
+        }
+        stage('LLVM krun') {
+          steps {
+            sh '''
+              export PATH=$HOME/.local/bin:$PATH
+              make test-interactive TEST_CONCRETE_BACKEND=llvm
+            '''
+          }
+        }
+        stage('Java krun') {
+          steps {
+            sh '''
+              export PATH=$HOME/.local/bin:$PATH
+              make test-interactive TEST_CONCRETE_BACKEND=java
+            '''
+          }
+        }
+        stage('Haskell krun') {
+          steps {
+            sh '''
+              export PATH=$HOME/.local/bin:$PATH
+              make test-interactive TEST_CONCRETE_BACKEND=haskell
+            '''
+          }
+        }
+        stage('OCaml kast') {
+          steps {
+            sh '''
+              export PATH=$HOME/.local/bin:$PATH
+              make test-parse TEST_CONCRETE_BACKEND=ocaml
+            '''
+          }
+        }
       }
     }
   }
