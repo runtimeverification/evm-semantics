@@ -73,39 +73,43 @@ pipeline {
     stage('Test Interactive') {
       failFast true
       parallel {
-        stage('OCaml') {
+        stage('OCaml krun') {
           steps {
             sh '''
               export PATH=$HOME/.local/bin:$PATH
-              nprocs=$(nproc)
               make test-interactive TEST_CONCRETE_BACKEND=ocaml
             '''
           }
         }
-        stage('LLVM') {
+        stage('LLVM krun') {
           steps {
             sh '''
               export PATH=$HOME/.local/bin:$PATH
-              nprocs=$(nproc)
               make test-interactive TEST_CONCRETE_BACKEND=llvm
             '''
           }
         }
-        stage('Java') {
+        stage('Java krun') {
           steps {
             sh '''
               export PATH=$HOME/.local/bin:$PATH
-              nprocs=$(nproc)
               make test-interactive TEST_CONCRETE_BACKEND=java
             '''
           }
         }
-        stage('Haskell') {
+        stage('Haskell krun') {
           steps {
             sh '''
               export PATH=$HOME/.local/bin:$PATH
-              nprocs=$(nproc)
               make test-interactive TEST_CONCRETE_BACKEND=haskell
+            '''
+          }
+        }
+        stage('OCaml kast') {
+          steps {
+            sh '''
+              export PATH=$HOME/.local/bin:$PATH
+              make test-parse TEST_CONCRETE_BACKEND=ocaml
             '''
           }
         }
