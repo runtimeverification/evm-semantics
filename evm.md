@@ -401,7 +401,7 @@ The `#next [_]` operator initiates execution by:
  // --------------------------------------------
     rule <k> #exec [ IOP:InvalidOp ] => IOP ... </k>
 
-    rule <k> #exec [ OP ] => #gas [ OP ] ~> OP ... </k> requires isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
+    rule <k> #exec [ OP ] => #gas [ OP ] ~> OP ... </k> requires isNullStackOp(OP) orBool isPushOp(OP)
 ```
 
 Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
@@ -418,10 +418,10 @@ Some of them require an argument to be interpereted as an address (modulo 160 bi
                         | TernStackOp Int Int Int
                         | QuadStackOp Int Int Int Int
  // -------------------------------------------------
-    rule <k> #exec [ UOP:UnStackOp   => UOP W0          ] ... </k> <wordStack> W0 : WS                => WS </wordStack>
-    rule <k> #exec [ BOP:BinStackOp  => BOP W0 W1       ] ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack>
-    rule <k> #exec [ TOP:TernStackOp => TOP W0 W1 W2    ] ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
-    rule <k> #exec [ QOP:QuadStackOp => QOP W0 W1 W2 W3 ] ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
+    rule <k> #exec [ UOP:UnStackOp   ] => #gas [ UOP W0          ] ~> UOP W0          ... </k> <wordStack> W0 : WS                => WS </wordStack>
+    rule <k> #exec [ BOP:BinStackOp  ] => #gas [ BOP W0 W1       ] ~> BOP W0 W1       ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack>
+    rule <k> #exec [ TOP:TernStackOp ] => #gas [ TOP W0 W1 W2    ] ~> TOP W0 W1 W2    ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
+    rule <k> #exec [ QOP:QuadStackOp ] => #gas [ QOP W0 W1 W2 W3 ] ~> QOP W0 W1 W2 W3 ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
 ```
 
 `StackOp` is used for opcodes which require a large portion of the stack.
@@ -429,7 +429,7 @@ Some of them require an argument to be interpereted as an address (modulo 160 bi
 ```k
     syntax InternalOp ::= StackOp WordStack
  // ---------------------------------------
-    rule <k> #exec [ SO:StackOp => SO WS ] ... </k> <wordStack> WS </wordStack>
+    rule <k> #exec [ SO:StackOp ] => #gas [ SO WS ] ~> SO WS ... </k> <wordStack> WS </wordStack>
 ```
 
 The `CallOp` opcodes all interperet their second argument as an address.
@@ -438,8 +438,8 @@ The `CallOp` opcodes all interperet their second argument as an address.
     syntax InternalOp ::= CallSixOp Int Int     Int Int Int Int
                         | CallOp    Int Int Int Int Int Int Int
  // -----------------------------------------------------------
-    rule <k> #exec [ CSO:CallSixOp => CSO W0 W1    W2 W3 W4 W5 ] ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
-    rule <k> #exec [ CO:CallOp     => CO  W0 W1 W2 W3 W4 W5 W6 ] ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
+    rule <k> #exec [ CSO:CallSixOp ] => #gas [ CSO W0 W1    W2 W3 W4 W5 ] ~> CSO W0 W1    W2 W3 W4 W5 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
+    rule <k> #exec [ CO:CallOp     ] => #gas [ CO  W0 W1 W2 W3 W4 W5 W6 ] ~> CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
 ```
 
 ### Helpers
@@ -1843,7 +1843,7 @@ Grumble grumble, K sucks at `owise`.
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
  // ----------------------------------------------------------------
     rule #memoryUsageUpdate(MU, START, WIDTH) => MU                                       requires WIDTH ==Int 0
-    rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH >Int 0  [concrete]
+    rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH  >Int 0 [concrete]
 ```
 
 Execution Gas
