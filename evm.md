@@ -401,7 +401,7 @@ The `#next [_]` operator initiates execution by:
  // --------------------------------------------
     rule <k> #exec [ IOP:InvalidOp ] => IOP ... </k>
 
-    rule <k> #exec [ OP ] => #gas [ OP ] ~> OP ... </k> requires isNullStackOp(OP) orBool isPushOp(OP)
+    rule <k> #exec [ OP ] => #gas [ OP , OP ] ~> OP ... </k> requires isNullStackOp(OP) orBool isPushOp(OP)
 ```
 
 Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
@@ -418,10 +418,10 @@ Some of them require an argument to be interpereted as an address (modulo 160 bi
                         | TernStackOp Int Int Int
                         | QuadStackOp Int Int Int Int
  // -------------------------------------------------
-    rule <k> #exec [ UOP:UnStackOp   ] => #gas [ UOP W0          ] ~> UOP W0          ... </k> <wordStack> W0 : WS                => WS </wordStack>
-    rule <k> #exec [ BOP:BinStackOp  ] => #gas [ BOP W0 W1       ] ~> BOP W0 W1       ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack>
-    rule <k> #exec [ TOP:TernStackOp ] => #gas [ TOP W0 W1 W2    ] ~> TOP W0 W1 W2    ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
-    rule <k> #exec [ QOP:QuadStackOp ] => #gas [ QOP W0 W1 W2 W3 ] ~> QOP W0 W1 W2 W3 ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
+    rule <k> #exec [ UOP:UnStackOp   ] => #gas [ UOP , UOP W0          ] ~> UOP W0          ... </k> <wordStack> W0 : WS                => WS </wordStack>
+    rule <k> #exec [ BOP:BinStackOp  ] => #gas [ BOP , BOP W0 W1       ] ~> BOP W0 W1       ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack>
+    rule <k> #exec [ TOP:TernStackOp ] => #gas [ TOP , TOP W0 W1 W2    ] ~> TOP W0 W1 W2    ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
+    rule <k> #exec [ QOP:QuadStackOp ] => #gas [ QOP , QOP W0 W1 W2 W3 ] ~> QOP W0 W1 W2 W3 ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
 ```
 
 `StackOp` is used for opcodes which require a large portion of the stack.
@@ -429,7 +429,7 @@ Some of them require an argument to be interpereted as an address (modulo 160 bi
 ```k
     syntax InternalOp ::= StackOp WordStack
  // ---------------------------------------
-    rule <k> #exec [ SO:StackOp ] => #gas [ SO WS ] ~> SO WS ... </k> <wordStack> WS </wordStack>
+    rule <k> #exec [ SO:StackOp ] => #gas [ SO , SO WS ] ~> SO WS ... </k> <wordStack> WS </wordStack>
 ```
 
 The `CallOp` opcodes all interperet their second argument as an address.
@@ -438,8 +438,8 @@ The `CallOp` opcodes all interperet their second argument as an address.
     syntax InternalOp ::= CallSixOp Int Int     Int Int Int Int
                         | CallOp    Int Int Int Int Int Int Int
  // -----------------------------------------------------------
-    rule <k> #exec [ CSO:CallSixOp ] => #gas [ CSO W0 W1    W2 W3 W4 W5 ] ~> CSO W0 W1    W2 W3 W4 W5 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
-    rule <k> #exec [ CO:CallOp     ] => #gas [ CO  W0 W1 W2 W3 W4 W5 W6 ] ~> CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
+    rule <k> #exec [ CSO:CallSixOp ] => #gas [ CSO , CSO W0 W1    W2 W3 W4 W5 ] ~> CSO W0 W1    W2 W3 W4 W5 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
+    rule <k> #exec [ CO:CallOp     ] => #gas [ CO  , CO  W0 W1 W2 W3 W4 W5 W6 ] ~> CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
 ```
 
 ### Helpers
@@ -1726,10 +1726,24 @@ Overall Gas
 -   `#deductMemory` checks that access to memory stay within sensible bounds (and deducts the correct amount of gas for it), throwing `EVMC_INVALID_MEMORY_ACCESS` if bad access happens.
 
 ```k
-    syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas" | "#deductMemory"
- // ----------------------------------------------------------------------------
-    rule <k> #gas [ OP ] => #memory(OP, MU) ~> #deductMemory ~> #gasExec(SCHED, OP) ~> #deductGas ... </k> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
+    syntax InternalOp ::= "#gas" "[" OpCode "," OpCode "]"
+ // ---------------------------------------------------------------------------
+    rule <k> #gas [ OP , AOP ]
+          => #if #usesMemory(OP) #then #memory [ AOP ] #else .K #fi
+          ~> #gas [ AOP ]
+         ...
+        </k>
 
+    rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k>
+         <schedule> SCHED </schedule>
+
+    rule <k> #memory [ OP ] => #memory(OP, MU) ~> #deductMemory ... </k>
+         <schedule> SCHED </schedule>
+         <memoryUsed> MU </memoryUsed>
+
+    syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas"
+                        | "#memory" "[" OpCode "]" | "#deductMemory"
+ // ----------------------------------------------------------------
     rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
@@ -1768,6 +1782,24 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
     rule #memory ( COP:CallOp     _ _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
     rule #memory ( CSOP:CallSixOp _ _   ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
+
+    syntax Bool ::= #usesMemory ( OpCode ) [function]
+ // -------------------------------------------------
+    rule #usesMemory(OP) => isLogOp(OP)
+                     orBool isCallOp(OP)
+                     orBool isCallSixOp(OP)
+                     orBool OP ==K MLOAD
+                     orBool OP ==K MSTORE
+                     orBool OP ==K MSTORE8
+                     orBool OP ==K SHA3
+                     orBool OP ==K CODECOPY
+                     orBool OP ==K EXTCODECOPY
+                     orBool OP ==K CALLDATACOPY
+                     orBool OP ==K RETURNDATACOPY
+                     orBool OP ==K CREATE
+                     orBool OP ==K CREATE2
+                     orBool OP ==K RETURN
+                     orBool OP ==K REVERT
 ```
 
 Grumble grumble, K sucks at `owise`.
