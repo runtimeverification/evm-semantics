@@ -76,7 +76,7 @@ run_klab() {
         --state-log --state-log-path "$klab_dir/data" --state-log-id klab-statelog \
         --state-log-events OPEN,EXECINIT,SEARCHINIT,REACHINIT,REACHTARGET,REACHPROVED,NODE,RULE,SRULE,RULEATTEMPT,IMPLICATION,Z3QUERY,Z3RESULT,CLOSE \
         --output-flatten "_Map_ #And" \
-        --output-tokenize "_;__EVM" \
+        --output-tokenize "_;__EVM ___EVM ____EVM _____EVM" \
         --output-omit "<programBytes> <program> <code> <callGas> <touchedAccounts> <interimStates> <callStack> <callData>" \
         --no-alpha-renaming --restore-original-names --no-sort-collections \
         --output json \
