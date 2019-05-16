@@ -97,11 +97,12 @@ Verification Examples
 ### KEVM Lemmas
 
 -   File [kevm-lemmas-spec.md](../kevm-lemmas-spec.k)
--   Summaries of the "positive" cases of arithmetic opcodes
--   Work through how to use KLab to discover preconditions and lemmas to simplify them.
+-   Summaries of the "positive" cases of arithmetic opcodes and push
+-   Work through how to use KLab to discover preconditions
+-   Complete the push, push, add specification
 
 ```sh
-make test-prove-kevm-lemmas
+make test-prove-verified
 ```
 
 . . .
@@ -114,9 +115,9 @@ make test-prove-kevm-lemmas
     make test-prove-gen
     ```
 
--   Explain ini file format of [ds-token-erc20-spec.ini](../tests/specs/ds-token-erc20/ds-token-erc20-spec.ini).
--   Delete all except the `transfer` blocks.
--   Remove `requires` clauses to explore result in KLab.
+-   Explain ini file format of [ds-token-erc20-spec.ini](../tests/specs/ds-token-erc20/ds-token-erc20-spec.ini)
+-   Delete all except the `transfer` blocks
+-   Remove `requires` clauses to explore result in KLab
 
 Open Verification Challenge
 ---------------------------
