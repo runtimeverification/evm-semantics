@@ -62,7 +62,7 @@ sudo pacman -S                                              \
 On OSX, using [Homebrew](https://brew.sh/), after installing the command line tools package:
 
 ```sh
-brew tap caskroom/cask caskroom/versions
+brew tap caskroom/cask
 brew cask install adoptopenjdk8
 brew install automake libtool gmp mpfr pkg-config pandoc maven opam z3 libffi
 ```
