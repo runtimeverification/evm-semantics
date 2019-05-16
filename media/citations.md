@@ -384,7 +384,7 @@ references:
     given: Grigore
   issued:
   - year: '2016'
-    month: September
+    month: '09'
   title: 'Runtime verification at work: A tutorial'
   title-short: Runtime verification at work
   container-title: Runtime verification - 16th international conference, RV 2016 madrid,
@@ -404,7 +404,7 @@ references:
     given: Grigore
   issued:
   - year: '2012'
-    month: January
+    month: 01
   title: An executable formal semantics of c with applications
   container-title: Proceedings of the 39th acm sigplan-sigact symposium on principles
     of programming languages (popl’12)
@@ -564,7 +564,7 @@ references:
     given: Grigore
   issued:
   - year: '2010'
-    month: March
+    month: 03
   title: 'K-Maude: A rewriting based tool for semantics of programming languages'
   title-short: K-Maude
   container-title: Proceedings of the 8th international workshop on rewriting logic
@@ -605,7 +605,7 @@ references:
     given: Grigore
   issued:
   - year: '2015'
-    month: June
+    month: 06
   title: Defining the undefinedness of c
   container-title: Proceedings of the 36th acm sigplan conference on programming language
     design and implementation (pldi’15)
@@ -622,7 +622,7 @@ references:
     given: Grigore
   issued:
   - year: '2015'
-    month: January
+    month: 01
   title: '[K-Java: A Complete Semantics of Java]{.nocase}'
   container-title: Proceedings of the 42nd symposium on principles of programming
     languages (popl’15)
@@ -641,7 +641,7 @@ references:
     given: Grigore
   issued:
   - year: '2015'
-    month: June
+    month: 06
   title: 'KJS: A complete formal semantics of JavaScript'
   title-short: KJS
   container-title: Proceedings of the 36th acm sigplan conference on programming language
@@ -657,7 +657,7 @@ references:
     given: Chucky
   issued:
   - year: '2012'
-    month: July
+    month: 07
   title: A formal semantics of C with applications
   publisher: University of Illinois
   genre: PhD thesis
@@ -679,7 +679,7 @@ references:
     given: Grigore
   issued:
   - year: '2014'
-    month: July
+    month: 07
   title: All-path reachability logic
   container-title: Proceedings of the joint 25th international conference on rewriting
     techniques and applications and 12th international conference on typed lambda
@@ -719,7 +719,7 @@ references:
     given: Grigore
   issued:
   - year: '2016'
-    month: July
+    month: 07
   title: 'RV-Match: Practical semantics-based program analysis'
   title-short: RV-Match
   container-title: Computer aided verification - 28th international conference (CAV

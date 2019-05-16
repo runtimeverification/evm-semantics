@@ -377,9 +377,19 @@ test-interactive-help:
 # Media
 # -----
 
-media: sphinx 2017-devcon3 2018-csf
+media: sphinx media-pdf
 
-# Presentations
+### Media generated PDFs
+
+media_pdfs:=201710-presentation-devcon3 201801-presentation-csf
+
+media/%.pdf: media/%.md media/citations.md
+	@echo "== media: $@"
+	mkdir -p $(dir $@)
+	cat $^ | pandoc --from markdown --filter pandoc-citeproc --to beamer --output $@
+	@echo "== $*: presentation generated at $@"
+
+media-pdf: $(patsubst %, media/%.pdf, $(media_pdfs))
 
 metropolis-theme: $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty
 
@@ -387,15 +397,6 @@ $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
 	@echo "== submodule: $@"
 	git submodule update --init -- $(dir $@)
 	cd $(dir $@) && make
-
-2017-devcon3: $(BUILD_DIR)/media/2017-devcon3.pdf
-2018-csf:     $(BUILD_DIR)/media/2018-csf.pdf
-
-$(BUILD_DIR)/media/%.pdf: media/%.md media/citations.md
-	@echo "== media: $@"
-	mkdir -p $(dir $@)
-	cat $^ | pandoc --from markdown --filter pandoc-citeproc --to beamer --output $@
-	@echo "== $*: presentation generated at $@"
 
 # Sphinx HTML Documentation
 
