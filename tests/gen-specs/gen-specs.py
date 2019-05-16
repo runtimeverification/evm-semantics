@@ -50,6 +50,8 @@ def gen(spec_template, rule_template, spec_ini, spec_name):
     for rname in rule_name_list_all:
         if not prefixes_any(rname, rule_name_list_all):
             rule_name_list.append(rname)
+    if len(rule_name_list) == 0:
+        rule_name_list = [spec_name]
     if 'pgm' not in spec_config:
         print('''Must specify a "pgm" section in the .ini file.''')
         sys.exit(1)
