@@ -27,7 +27,7 @@ export LUA_PATH
         defn java-defn ocaml-defn node-defn haskell-defn \
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-        test-proof test-parse test-interactive test-interactive-help test-interactive-run test-interactive-prove \
+        test-proof test-gen-spec test-parse test-interactive test-interactive-help test-interactive-run test-interactive-prove \
         metropolis-theme 2017-devcon3 sphinx
 .SECONDARY:
 
@@ -296,6 +296,9 @@ tests/%.parse: tests/%
 tests/%.prove: tests/%
 	$(TEST) prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures
 
+tests/specs/ds-token-erc20/%-spec.k: tests/specs/ds-token-erc20/ds-token-erc20-spec.ini
+	python3 tests/gen-specs/gen-specs.py $^ $* > $@
+
 # Smoke Tests
 
 smoke_tests_run=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
@@ -344,6 +347,11 @@ proof_specs_dir:=tests/specs
 proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
 
 test-proof: $(proof_tests:=.prove)
+
+test_gen_specs:=totalSupply balanceOf allowance approve transfer transferFrom
+test_prove_gen_specs:=$(patsubst %, tests/specs/ds-token-erc20/%-spec.k, $(test_gen_specs))
+
+test-prove-gen: $(test_prove_gen_specs:=.prove)
 
 # Parse Tests
 

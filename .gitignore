@@ -16,10 +16,8 @@
 !/.build/sphinx-docs/conf.py
 !/.build/sphinx-docs/index.rst
 
-# This holds the tests that are split into one test per file from
-# the ethereum tests
-/tests/VMTests
-/tests/BlockchainTests
+# Tests
+/tests/specs/ds-token-erc20/*-spec.k
 
 # Directory for storing temporary files like logs, snippets and TODO lists.
 /tmp
