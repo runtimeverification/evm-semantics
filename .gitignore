@@ -4,3 +4,6 @@
 /src
 /package/pkg
 /package/src
+
+# Tests
+/tests/specs/ds-token-erc20/*-spec.k

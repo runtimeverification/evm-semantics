@@ -40,7 +40,7 @@ export LUA_PATH
         defn java-defn ocaml-defn node-defn haskell-defn llvm-defn \
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-        test-proof test-klab-prove test-parse test-failure \
+        test-proof test-gen-spec test-klab-prove test-parse test-failure \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly \
         media media-pdf sphinx metropolis-theme
 .SECONDARY:
@@ -402,6 +402,9 @@ tests/%.search: tests/%
 tests/%.klab-prove: tests/%
 	$(TEST) klab-prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE)
 
+tests/specs/ds-token-erc20/%-spec.k: tests/specs/ds-token-erc20/ds-token-erc20-spec.ini
+	python3 tests/gen-specs/gen-specs.py $^ $* > $@
+
 # Smoke Tests
 
 smoke_tests_run=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
@@ -450,6 +453,11 @@ proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
 
 test-proof: $(proof_tests:=.prove)
 test-klab-prove: $(smoke_tests_prove:=.klab-prove)
+
+test_gen_specs:=totalSupply balanceOf allowance approve transfer transferFrom
+test_prove_gen_specs:=$(patsubst %, tests/specs/ds-token-erc20/%-spec.k, $(test_gen_specs))
+
+test-prove-gen: $(test_prove_gen_specs:=.prove)
 
 # Parse Tests
 
