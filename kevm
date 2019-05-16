@@ -65,7 +65,7 @@ run_kast() {
 
 run_prove() {
     export K_OPTS=-Xmx8G
-    kprove --directory "$backend_dir" "$run_file" --def-module VERIFICATION "${args[@]-}" "$@"
+    kprove --directory "$backend_dir" "$run_file" "${args[@]-}" "$@"
 }
 
 run_klab() {
