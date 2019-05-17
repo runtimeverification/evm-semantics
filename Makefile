@@ -123,6 +123,10 @@ build-node: .build/vm/kevm-vm
 build-haskell: .build/haskell/driver-kompiled/definition.kore
 build-llvm: .build/llvm/driver-kompiled/interpreter
 
+MAIN_MODULE:=ETHEREUM-SIMULATION
+SYNTAX_MODULE:=$(MAIN_MODULE)
+MAIN_DEFN_FILE:=driver.k
+
 # Tangle definition from *.md files
 
 concrete_tangle:=.k:not(.node):not(.symbolic),.standalone,.concrete
@@ -166,15 +170,15 @@ haskell-defn: $(haskell_files)
 
 .build/java/driver-kompiled/timestamp: $(java_files)
 	@echo "== kompile: $@"
-	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
-	                 --syntax-module ETHEREUM-SIMULATION $< --directory .build/java -I .build/java
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend java \
+	                 --syntax-module $(SYNTAX_MODULE) .build/java/$(MAIN_DEFN_FILE) --directory .build/java -I .build/java
 
 # Haskell Backend
 
 .build/haskell/driver-kompiled/definition.kore: $(haskell_files)
 	@echo "== kompile: $@"
-	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend haskell --hook-namespaces KRYPTO \
-	                 --syntax-module ETHEREUM-SIMULATION $< --directory .build/haskell -I .build/haskell
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend haskell --hook-namespaces KRYPTO \
+	                 --syntax-module $(SYNTAX_MODULE) .build/haskell/$(MAIN_DEFN_FILE) --directory .build/haskell -I .build/haskell
 
 # OCAML Backend
 
@@ -195,8 +199,8 @@ endif
 .build/%/driver-kompiled/constants.$(EXT): $(ocaml_files)
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
-	    && ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
-	                        --syntax-module ETHEREUM-SIMULATION .build/$*/driver.k --directory .build/$* \
+	    && ${K_BIN}/kompile --debug --main-module $(MAIN_MODULE) \
+	                        --syntax-module $(SYNTAX_MODULE) .build/$*/$(MAIN_DEFN_FILE) --directory .build/$* \
 	                        --hook-namespaces "KRYPTO BLOCKCHAIN" --gen-ml-only -O3 --non-strict \
 	    && cd .build/$*/driver-kompiled \
 	    && ocamlfind $(OCAMLC) -c -g constants.ml -package gmp -package zarith -safe-string
@@ -229,8 +233,8 @@ endif
 
 .build/node/driver-kompiled/interpreter: $(node_files) .build/plugin-node/proto/msg.pb.cc
 	@echo "== kompile: $@"
-	${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
-	                 --syntax-module ETHEREUM-SIMULATION .build/node/driver.k --directory .build/node --hook-namespaces "KRYPTO BLOCKCHAIN" \
+	${K_BIN}/kompile --debug --main-module $(MAIN_MODULE) \
+	                 --syntax-module $(SYNTAX_MODULE) .build/node/$(MAIN_DEFN_FILE) --directory .build/node --hook-namespaces "KRYPTO BLOCKCHAIN" \
 	                 --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/blockchain.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/world.cpp -ccopt ${BUILD_DIR}/plugin-node/proto/msg.pb.cc \
 	                 -ccopt -I${BUILD_DIR}/plugin-node \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -lprotobuf -ccopt -g -ccopt -std=c++11 -ccopt -O2
@@ -247,8 +251,8 @@ endif
 
 .build/llvm/driver-kompiled/interpreter: $(ocaml_files)
 	@echo "== kompile: $@"
-	${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
-	                 --syntax-module ETHEREUM-SIMULATION .build/ocaml/driver.k --directory .build/llvm --hook-namespaces KRYPTO \
+	${K_BIN}/kompile --debug --main-module $(MAIN_MODULE) \
+	                 --syntax-module $(SYNTAX_MODULE) .build/ocaml/$(MAIN_DEFN_FILE) --directory .build/llvm --hook-namespaces KRYPTO \
 	                 --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
