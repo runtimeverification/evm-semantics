@@ -38,6 +38,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #address ( Int )
                       | #uint256 ( Int )
                       | #uint48  ( Int )
+                      | #uint16  ( Int )
                       | #uint8   ( Int )
                       | #int256  ( Int )
                       | #int128  ( Int )
@@ -72,6 +73,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #typeName(   #address( _ )) => "address"
     rule #typeName(   #uint256( _ )) => "uint256"
     rule #typeName(    #uint48( _ )) => "uint48"
+    rule #typeName(    #uint16( _ )) => "uint16"
     rule #typeName(     #uint8( _ )) => "uint8"
     rule #typeName(    #int256( _ )) => "int256"
     rule #typeName(    #int128( _ )) => "int128"
@@ -107,6 +109,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #lenOfHead(  #address( _ )) => 32
     rule #lenOfHead(  #uint256( _ )) => 32
     rule #lenOfHead(   #uint48( _ )) => 32
+    rule #lenOfHead(   #uint16( _ )) => 32
     rule #lenOfHead(    #uint8( _ )) => 32
     rule #lenOfHead(   #int256( _ )) => 32
     rule #lenOfHead(   #int128( _ )) => 32
@@ -122,6 +125,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #isStaticType(  #address( _ )) => true
     rule #isStaticType(  #uint256( _ )) => true
     rule #isStaticType(   #uint48( _ )) => true
+    rule #isStaticType(   #uint16( _ )) => true
     rule #isStaticType(    #uint8( _ )) => true
     rule #isStaticType(   #int256( _ )) => true
     rule #isStaticType(   #int128( _ )) => true
@@ -155,6 +159,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #enc(#address( DATA )) => #buf(32, #getValue(#address( DATA )))
     rule #enc(#uint256( DATA )) => #buf(32, #getValue(#uint256( DATA )))
     rule #enc( #uint48( DATA )) => #buf(32, #getValue( #uint48( DATA )))
+    rule #enc( #uint16( DATA )) => #buf(32, #getValue( #uint16( DATA )))    
     rule #enc(  #uint8( DATA )) => #buf(32, #getValue(  #uint8( DATA )))
     rule #enc( #int256( DATA )) => #buf(32, #getValue( #int256( DATA )))
     rule #enc( #int128( DATA )) => #buf(32, #getValue( #int128( DATA )))
@@ -188,6 +193,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #getValue(  #uint48( DATA )) => DATA
       requires minUInt48 <=Int DATA andBool DATA <=Int maxUInt48
+
+    rule #getValue(  #uint16( DATA )) => DATA
+      requires minUInt16 <=Int DATA andBool DATA <=Int maxUInt16
 
     rule #getValue(  #uint8( DATA )) => DATA
       requires minUInt8 <=Int DATA andBool DATA <=Int maxUInt8
