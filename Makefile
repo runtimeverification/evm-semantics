@@ -120,12 +120,17 @@ $(BUILD_LOCAL)/lib/libff.a:
 # Building
 # --------
 
+MAIN_MODULE:=ETHEREUM-SIMULATION
+SYNTAX_MODULE:=$(MAIN_MODULE)
+MAIN_DEFN_FILE:=driver
+KOMPILE_OPTS:=
+
 build: build-ocaml build-java
-build-ocaml: $(DEFN_DIR)/ocaml/driver-kompiled/interpreter
-build-java: $(DEFN_DIR)/java/driver-kompiled/timestamp
+build-ocaml: $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter
+build-java: $(DEFN_DIR)/java/$(MAIN_DEFN_FILE)-kompiled/timestamp
 build-node: $(DEFN_DIR)/vm/kevm-vm
-build-haskell: $(DEFN_DIR)/haskell/driver-kompiled/definition.kore
-build-llvm: $(DEFN_DIR)/llvm/driver-kompiled/interpreter
+build-haskell: $(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+build-llvm: $(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 # Tangle definition from *.md files
 
@@ -133,7 +138,7 @@ concrete_tangle:=.k:not(.node):not(.symbolic),.standalone,.concrete
 symbolic_tangle:=.k:not(.node):not(.concrete),.standalone,.symbolic
 node_tangle:=.k:not(.standalone):not(.symbolic),.node,.concrete
 
-k_files:=driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k
+k_files:=$(MAIN_DEFN_FILE).k data.k network.k evm.k krypto.k edsl.k evm-node.k
 ocaml_files:=$(patsubst %,$(DEFN_DIR)/ocaml/%,$(k_files))
 java_files:=$(patsubst %,$(DEFN_DIR)/java/%,$(k_files))
 node_files:=$(patsubst %,$(DEFN_DIR)/node/%,$(k_files))
@@ -168,17 +173,19 @@ $(DEFN_DIR)/haskell/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 
 # Java Backend
 
-$(DEFN_DIR)/java/driver-kompiled/timestamp: $(java_files)
+$(DEFN_DIR)/java/$(MAIN_DEFN_FILE)-kompiled/timestamp: $(java_files)
 	@echo "== kompile: $@"
-	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
-	                 --syntax-module ETHEREUM-SIMULATION $< --directory $(DEFN_DIR)/java -I $(DEFN_DIR)/java
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend java \
+	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/java/$(MAIN_DEFN_FILE).k \
+	                 --directory $(DEFN_DIR)/java -I $(DEFN_DIR)/java $(KOMPILE_OPTS)
 
 # Haskell Backend
 
-$(DEFN_DIR)/haskell/driver-kompiled/definition.kore: $(haskell_files)
+$(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE)-kompiled/definition.kore: $(haskell_files)
 	@echo "== kompile: $@"
-	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend haskell --hook-namespaces KRYPTO \
-	                 --syntax-module ETHEREUM-SIMULATION $< --directory $(DEFN_DIR)/haskell -I $(DEFN_DIR)/haskell
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend haskell --hook-namespaces KRYPTO \
+	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE).k \
+	                 --directory $(DEFN_DIR)/haskell -I $(DEFN_DIR)/haskell $(KOMPILE_OPTS)
 
 # OCAML Backend
 
@@ -199,28 +206,30 @@ endif
 $(DEFN_DIR)/%/driver-kompiled/constants.$(EXT): $(ocaml_files)
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
-	    && ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
-	                        --syntax-module ETHEREUM-SIMULATION $(DEFN_DIR)/$*/driver.k --directory $(DEFN_DIR)/$* \
+	    && ${K_BIN}/kompile --debug --main-module $(MAIN_MODULE) \
+	                        --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/$*/$(MAIN_DEFN_FILE).k \
 	                        --hook-namespaces "KRYPTO BLOCKCHAIN" --gen-ml-only -O3 --non-strict \
+	                        --directory $(DEFN_DIR)/$* -I $(DEFN_DIR)/$* $(KOMPILE_OPTS) \
 	    && cd $(DEFN_DIR)/$*/driver-kompiled \
 	    && ocamlfind $(OCAMLC) -c -g constants.ml -package gmp -package zarith -safe-string
 
-$(BUILD_DIR)/plugin-%/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) $(DEFN_DIR)/%/driver-kompiled/constants.$(EXT)
-	mkdir -p .build/plugin-$*
-	cp $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli .build/plugin-$*
+$(BUILD_DIR)/plugin-%/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) $(DEFN_DIR)/%/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT)
+	mkdir -p $(BUILD_DIR)/plugin-$*
+	cp $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli $(BUILD_DIR)/plugin-$*
 	eval $$(opam config env) \
 	    && ocp-ocamlres -format ocaml $(PLUGIN_SUBMODULE)/plugin/proto/VERSION -o $(BUILD_DIR)/plugin-$*/apiVersion.ml \
 	    && ocaml-protoc $(PLUGIN_SUBMODULE)/plugin/proto/*.proto -ml_out .build/plugin-$* \
 	    && cd $(BUILD_DIR)/plugin-$* \
-	        && ocamlfind $(OCAMLC) -c -g -I $(CURDIR)/$(DEFN_DIR)/$*/driver-kompiled msg_types.mli msg_types.ml msg_pb.mli msg_pb.ml apiVersion.ml world.mli world.ml caching.mli caching.ml BLOCKCHAIN.ml KRYPTO.ml \
+	        && ocamlfind $(OCAMLC) -c -g -I $(CURDIR)/$(DEFN_DIR)/$*/driver-kompiled \
+	                               msg_types.mli msg_types.ml msg_pb.mli msg_pb.ml apiVersion.ml world.mli world.ml caching.mli caching.ml BLOCKCHAIN.ml KRYPTO.ml \
 	                               -package cryptokit -package secp256k1 -package bn128 -package ocaml-protoc -safe-string -thread \
 	        && ocamlfind $(OCAMLC) -a -o semantics.$(LIBEXT) KRYPTO.$(EXT) msg_types.$(EXT) msg_pb.$(EXT) apiVersion.$(EXT) world.$(EXT) caching.$(EXT) BLOCKCHAIN.$(EXT) -thread \
 	        && ocamlfind remove ethereum-semantics-plugin-$* \
 	        && ocamlfind install ethereum-semantics-plugin-$* $(PLUGIN_SUBMODULE)/plugin/META semantics.* *.cmi *.$(EXT)
 
-$(DEFN_DIR)/%/driver-kompiled/interpreter: $(BUILD_DIR)/plugin-%/semantics.$(LIBEXT)
+$(DEFN_DIR)/%/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(BUILD_DIR)/plugin-%/semantics.$(LIBEXT)
 	eval $$(opam config env) \
-	    && cd $(DEFN_DIR)/$*/driver-kompiled \
+	    && cd $(DEFN_DIR)/$*/$(MAIN_DEFN_FILE)-kompiled \
 	        && ocamllex lexer.mll \
 	        && ocamlyacc parser.mly \
 	        && ocamlfind $(OCAMLC) -c -g -package gmp -package zarith -package uuidm -safe-string prelude.ml plugin.ml parser.mli parser.ml lexer.ml hooks.ml run.ml -thread \
@@ -231,31 +240,36 @@ $(DEFN_DIR)/%/driver-kompiled/interpreter: $(BUILD_DIR)/plugin-%/semantics.$(LIB
 
 # Node Backend
 
-$(DEFN_DIR)/node/driver-kompiled/interpreter: $(node_files) $(BUILD_DIR)/plugin-node/proto/msg.pb.cc
+$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(BUILD_DIR)/plugin-node/proto/msg.pb.cc
 	@echo "== kompile: $@"
-	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
-	                 --syntax-module ETHEREUM-SIMULATION $(DEFN_DIR)/node/driver.k --directory $(DEFN_DIR)/node --hook-namespaces "KRYPTO BLOCKCHAIN" \
+	${K_BIN}/kompile --debug --main-module $(MAIN_MODULE) \
+	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/node/$(MAIN_DEFN_FILE).k \
+	                 --directory $(DEFN_DIR)/node -I $(DEFN_DIR)/node \
+	                 --hook-namespaces "KRYPTO BLOCKCHAIN" \
 	                 --backend llvm -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blockchain.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/world.cpp -ccopt $(CURDIR)/$(BUILD_DIR)/plugin-node/proto/msg.pb.cc \
 	                 -ccopt -I$(CURDIR)/$(BUILD_DIR)/plugin-node \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -lprotobuf -ccopt -g -ccopt -std=c++11 -ccopt -O2
+	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -lprotobuf -ccopt -g -ccopt -std=c++11 -ccopt -O2 \
+	                 -I $(DEFN_DIR)/node $(KOMPILE_OPTS)
 
 $(BUILD_DIR)/plugin-node/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 	mkdir -p .build/plugin-node
 	protoc --cpp_out=.build/plugin-node -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 
-$(DEFN_DIR)/vm/kevm-vm: $(DEFN_DIR)/node/driver-kompiled/interpreter
+$(DEFN_DIR)/vm/kevm-vm: $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter
 	mkdir -p $(DEFN_DIR)/vm
-	$(K_BIN)/llvm-kompile $(DEFN_DIR)/node/driver-kompiled/definition.kore $(DEFN_DIR)/node/driver-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(BUILD_DIR)/plugin-node $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(BUILD_DIR)/plugin-node/proto/msg.pb.cc \
+	$(K_BIN)/llvm-kompile $(DEFN_DIR)/node/driver-kompiled/definition.kore $(DEFN_DIR)/node/driver-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp \
+                          -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(BUILD_DIR)/plugin-node $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(BUILD_DIR)/plugin-node/proto/msg.pb.cc \
 	                      -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $(DEFN_DIR)/vm/kevm-vm -g -O2
 
 # LLVM Backend
 
-$(DEFN_DIR)/llvm/driver-kompiled/interpreter: $(ocaml_files)
+$(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(ocaml_files)
 	@echo "== kompile: $@"
-	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
-	                 --syntax-module ETHEREUM-SIMULATION $(DEFN_DIR)/ocaml/driver.k --directory $(DEFN_DIR)/llvm --hook-namespaces KRYPTO \
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) \
+	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE).k --directory $(DEFN_DIR)/llvm --hook-namespaces KRYPTO \
 	                 --backend llvm -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
+	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2 \
+	                 -I $(DEFN_DIR)/llvm -I $(DEFN_DIR)/ocaml $(KOMPILE_OPTS)
 
 # Tests
 # -----
