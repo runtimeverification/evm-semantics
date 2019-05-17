@@ -116,16 +116,17 @@ LIBFF_CXX?=clang++-6.0
 # Building
 # --------
 
-build: build-ocaml build-java
-build-ocaml: .build/ocaml/driver-kompiled/interpreter
-build-java: .build/java/driver-kompiled/timestamp
-build-node: .build/vm/kevm-vm
-build-haskell: .build/haskell/driver-kompiled/definition.kore
-build-llvm: .build/llvm/driver-kompiled/interpreter
-
 MAIN_MODULE:=ETHEREUM-SIMULATION
 SYNTAX_MODULE:=$(MAIN_MODULE)
-MAIN_DEFN_FILE:=driver.k
+MAIN_DEFN_FILE:=driver
+KOMPILE_OPTS:=
+
+build: build-ocaml build-java
+build-ocaml: .build/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter
+build-java: .build/java/$(MAIN_DEFN_FILE)-kompiled/timestamp
+build-node: .build/vm/kevm-vm
+build-haskell: .build/haskell/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+build-llvm: .build/llvm/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 # Tangle definition from *.md files
 
@@ -168,17 +169,19 @@ haskell-defn: $(haskell_files)
 
 # Java Backend
 
-.build/java/driver-kompiled/timestamp: $(java_files)
+.build/java/$(MAIN_DEFN_FILE)-kompiled/timestamp: $(java_files)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend java \
-	                 --syntax-module $(SYNTAX_MODULE) .build/java/$(MAIN_DEFN_FILE) --directory .build/java -I .build/java
+	                 --syntax-module $(SYNTAX_MODULE) .build/java/$(MAIN_DEFN_FILE).k --directory .build/java \
+	                 -I .build/java $(KOMPILE_OPTS)
 
 # Haskell Backend
 
-.build/haskell/driver-kompiled/definition.kore: $(haskell_files)
+.build/haskell/$(MAIN_DEFN_FILE)-kompiled/definition.kore: $(haskell_files)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend haskell --hook-namespaces KRYPTO \
-	                 --syntax-module $(SYNTAX_MODULE) .build/haskell/$(MAIN_DEFN_FILE) --directory .build/haskell -I .build/haskell
+	                 --syntax-module $(SYNTAX_MODULE) .build/haskell/$(MAIN_DEFN_FILE).k --directory .build/haskell \
+	                 -I .build/haskell $(KOMPILE_OPTS)
 
 # OCAML Backend
 
@@ -196,31 +199,32 @@ else
   LIBFLAG=-shared
 endif
 
-.build/%/driver-kompiled/constants.$(EXT): $(ocaml_files)
+.build/%/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
 	    && ${K_BIN}/kompile --debug --main-module $(MAIN_MODULE) \
-	                        --syntax-module $(SYNTAX_MODULE) .build/$*/$(MAIN_DEFN_FILE) --directory .build/$* \
+	                        --syntax-module $(SYNTAX_MODULE) .build/$*/$(MAIN_DEFN_FILE).k --directory .build/$* \
 	                        --hook-namespaces "KRYPTO BLOCKCHAIN" --gen-ml-only -O3 --non-strict \
-	    && cd .build/$*/driver-kompiled \
+	                        -I .build/$* $(KOMPILE_OPTS) \
+	    && cd .build/$*/$(MAIN_DEFN_FILE)-kompiled \
 	    && ocamlfind $(OCAMLC) -c -g constants.ml -package gmp -package zarith -safe-string
 
-.build/plugin-%/semantics.$(LIBEXT): $(wildcard plugin/plugin/*.ml plugin/plugin/*.mli) .build/%/driver-kompiled/constants.$(EXT)
+.build/plugin-%/semantics.$(LIBEXT): $(wildcard plugin/plugin/*.ml plugin/plugin/*.mli) .build/%/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT)
 	mkdir -p .build/plugin-$*
 	cp plugin/plugin/*.ml plugin/plugin/*.mli .build/plugin-$*
 	eval $$(opam config env) \
 	    && ocp-ocamlres -format ocaml plugin/plugin/proto/VERSION -o .build/plugin-$*/apiVersion.ml \
 	    && ocaml-protoc plugin/plugin/proto/*.proto -ml_out .build/plugin-$* \
 	    && cd .build/plugin-$* \
-	        && ocamlfind $(OCAMLC) -c -g -I ../$*/driver-kompiled msg_types.mli msg_types.ml msg_pb.mli msg_pb.ml apiVersion.ml world.mli world.ml caching.mli caching.ml BLOCKCHAIN.ml KRYPTO.ml \
+	        && ocamlfind $(OCAMLC) -c -g -I ../$*/$(MAIN_DEFN_FILE)-kompiled msg_types.mli msg_types.ml msg_pb.mli msg_pb.ml apiVersion.ml world.mli world.ml caching.mli caching.ml BLOCKCHAIN.ml KRYPTO.ml \
 	                               -package cryptokit -package secp256k1 -package bn128 -package ocaml-protoc -safe-string -thread \
 	        && ocamlfind $(OCAMLC) -a -o semantics.$(LIBEXT) KRYPTO.$(EXT) msg_types.$(EXT) msg_pb.$(EXT) apiVersion.$(EXT) world.$(EXT) caching.$(EXT) BLOCKCHAIN.$(EXT) -thread \
 	        && ocamlfind remove ethereum-semantics-plugin-$* \
 	        && ocamlfind install ethereum-semantics-plugin-$* ../../plugin/plugin/META semantics.* *.cmi *.$(EXT)
 
-.build/%/driver-kompiled/interpreter: .build/plugin-%/semantics.$(LIBEXT)
+.build/%/$(MAIN_DEFN_FILE)-kompiled/interpreter: .build/plugin-%/semantics.$(LIBEXT)
 	eval $$(opam config env) \
-	    && cd .build/$*/driver-kompiled \
+	    && cd .build/$*/$(MAIN_DEFN_FILE)-kompiled \
 	        && ocamllex lexer.mll \
 	        && ocamlyacc parser.mly \
 	        && ocamlfind $(OCAMLC) -c -g -package gmp -package zarith -package uuidm -safe-string prelude.ml plugin.ml parser.mli parser.ml lexer.ml hooks.ml run.ml -thread \
@@ -231,30 +235,32 @@ endif
 
 # Node Backend
 
-.build/node/driver-kompiled/interpreter: $(node_files) .build/plugin-node/proto/msg.pb.cc
+.build/node/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) .build/plugin-node/proto/msg.pb.cc
 	@echo "== kompile: $@"
 	${K_BIN}/kompile --debug --main-module $(MAIN_MODULE) \
-	                 --syntax-module $(SYNTAX_MODULE) .build/node/$(MAIN_DEFN_FILE) --directory .build/node --hook-namespaces "KRYPTO BLOCKCHAIN" \
+	                 --syntax-module $(SYNTAX_MODULE) .build/node/$(MAIN_DEFN_FILE).k --directory .build/node --hook-namespaces "KRYPTO BLOCKCHAIN" \
 	                 --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/blockchain.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/world.cpp -ccopt ${BUILD_DIR}/plugin-node/proto/msg.pb.cc \
 	                 -ccopt -I${BUILD_DIR}/plugin-node \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -lprotobuf -ccopt -g -ccopt -std=c++11 -ccopt -O2
+	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -lprotobuf -ccopt -g -ccopt -std=c++11 -ccopt -O2 \
+	                 -I .build/node $(KOMPILE_OPTS)
 
 .build/plugin-node/proto/msg.pb.cc: ${PLUGIN_SUBMODULE}/plugin/proto/msg.proto
 	mkdir -p .build/plugin-node
 	protoc --cpp_out=.build/plugin-node -I ${PLUGIN_SUBMODULE}/plugin ${PLUGIN_SUBMODULE}/plugin/proto/msg.proto
 
-.build/vm/kevm-vm: .build/node/driver-kompiled/interpreter
+.build/vm/kevm-vm: .build/node/$(MAIN_DEFN_FILE)-kompiled/interpreter
 	mkdir -p .build/vm
-	${K_BIN}/llvm-kompile .build/node/driver-kompiled/definition.kore .build/node/driver-kompiled/dt library ${PLUGIN_SUBMODULE}/vm-c/main.cpp ${PLUGIN_SUBMODULE}/vm-c/vm.cpp -I ${PLUGIN_SUBMODULE}/plugin-c/ -I ${BUILD_DIR}/plugin-node ${PLUGIN_SUBMODULE}/plugin-c/*.cpp ${BUILD_DIR}/plugin-node/proto/msg.pb.cc -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I ${PLUGIN_SUBMODULE}/vm-c/ -I ${PLUGIN_SUBMODULE}/vm-c/kevm/ ${PLUGIN_SUBMODULE}/vm-c/kevm/semantics.cpp -o .build/vm/kevm-vm -g -O2
+	${K_BIN}/llvm-kompile .build/node/$(MAIN_DEFN_FILE)-kompiled/definition.kore .build/node/$(MAIN_DEFN_FILE)-kompiled/dt library ${PLUGIN_SUBMODULE}/vm-c/main.cpp ${PLUGIN_SUBMODULE}/vm-c/vm.cpp -I ${PLUGIN_SUBMODULE}/plugin-c/ -I ${BUILD_DIR}/plugin-node ${PLUGIN_SUBMODULE}/plugin-c/*.cpp ${BUILD_DIR}/plugin-node/proto/msg.pb.cc -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I ${PLUGIN_SUBMODULE}/vm-c/ -I ${PLUGIN_SUBMODULE}/vm-c/kevm/ ${PLUGIN_SUBMODULE}/vm-c/kevm/semantics.cpp -o .build/vm/kevm-vm -g -O2
 
 # LLVM Backend
 
-.build/llvm/driver-kompiled/interpreter: $(ocaml_files)
+.build/llvm/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(ocaml_files)
 	@echo "== kompile: $@"
 	${K_BIN}/kompile --debug --main-module $(MAIN_MODULE) \
-	                 --syntax-module $(SYNTAX_MODULE) .build/ocaml/$(MAIN_DEFN_FILE) --directory .build/llvm --hook-namespaces KRYPTO \
+	                 --syntax-module $(SYNTAX_MODULE) .build/ocaml/$(MAIN_DEFN_FILE).k --directory .build/llvm --hook-namespaces KRYPTO \
 	                 --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
+	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2 \
+	                 -I .build/llvm -I .build/ocaml $(KOMPILE_OPTS)
 
 # Tests
 # -----
