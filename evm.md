@@ -278,7 +278,7 @@ OpCode Execution
 
 ### Execution Macros
 
--   `#execute` calls `#next` repeatedly until it recieves an `#end`.
+-   `#execute` calls `#next` repeatedly until it receives an `#end`.
 -   `#execTo` executes until the next opcode is one of the specified ones.
 
 ```k
