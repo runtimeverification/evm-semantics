@@ -37,7 +37,8 @@ Install KEVM
 -   Should be able to run:
 
     ```sh
-    make test-prove-gen test-prove-kevm-lemmas -j3
+    make test-prove-verified
+    make test-prove-gen -j3
     ```
 
 . . .
@@ -49,6 +50,13 @@ Install KEVM
 
     ```sh
     make deps-npm
+    ```
+
+-   Should be able to run (in KEVM repo with `klab/bin` on your `PATH`):
+
+    ```sh
+    make tests/specs/verified/kevm-lemmas-spec.k
+    ./kevm klab-prove tests/specs/verified/kevm-lemmas-spec.k --boundary-cells k,pc
     ```
 
 `./kevm help`
