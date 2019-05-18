@@ -8,3 +8,4 @@
 # Tests
 /tests/specs/ds-token-erc20/*-spec.k
 /tests/specs/hkg-erc20/*-spec.k
+/tests/specs/hobby-erc20/*-spec.k
