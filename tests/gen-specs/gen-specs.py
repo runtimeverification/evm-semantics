@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os.path as path
 import sys
 import re
 import configparser
@@ -42,16 +43,7 @@ def inherit_get(config, section):
 def prefixes_any(sec, secs):
     return any(sec_name.startswith(sec + "-") for sec_name in secs)
 
-def gen(spec_template, rule_template, spec_ini, spec_name):
-    spec_config = configparser.ConfigParser(comment_prefixes=(';'))
-    spec_config.read(spec_ini)
-    rule_name_list_all = list(filter(lambda sec: sec.startswith(spec_name + "-"), spec_config.sections()))
-    rule_name_list = []
-    for rname in rule_name_list_all:
-        if not prefixes_any(rname, rule_name_list_all):
-            rule_name_list.append(rname)
-    if len(rule_name_list) == 0:
-        rule_name_list = [spec_name]
+def genSpecRules(rule_template, spec_config, rule_name_list):
     if 'pgm' not in spec_config:
         print('''Must specify a "pgm" section in the .ini file.''')
         sys.exit(1)
@@ -59,17 +51,28 @@ def gen(spec_template, rule_template, spec_ini, spec_name):
     rule_spec_list = []
     for name in rule_name_list:
         rule_spec = rule_template
-        for config in [ inherit_get(spec_config, name)
-                      , pgm_config
-                      ]:
+        for config in [ inherit_get(spec_config, name) , pgm_config ]:
             rule_spec = subst_all(rule_spec, config)
         rule_spec = subst(rule_spec, "rulename", name)
         rule_spec_list.append(rule_spec)
-    delimeter = "\n"
-    rules = delimeter.join(rule_spec_list)
-    genspec = subst(spec_template, 'module', spec_name.upper())
-    genspec = subst(genspec, 'rules', rules)
-    print(genspec)
+    return "\n".join(rule_spec_list)
+
+def gen(spec_template, rule_template, spec_ini):
+    spec_config = configparser.ConfigParser(comment_prefixes=(';'))
+    spec_config.read(spec_ini)
+    for spec_name in spec_config['meta-data']['proofs'].split(' '):
+        rule_name_list_all = list(filter(lambda sec: sec.startswith(spec_name + "-"), spec_config.sections()))
+        rule_name_list = []
+        for rname in rule_name_list_all:
+            if not prefixes_any(rname, rule_name_list_all):
+                rule_name_list.append(rname)
+        if len(rule_name_list) == 0:
+            rule_name_list = [spec_name]
+        rules = genSpecRules(rule_template, spec_config, rule_name_list)
+        genspec = subst(spec_template, 'module', spec_name.upper())
+        genspec = subst(genspec, 'rules', rules)
+        with open(path.dirname(spec_ini) + "/" + spec_name + "-spec.k", "w") as spec_out:
+            spec_out.write(genspec)
 
 def subst_all(init_rule_spec, config):
     rule_spec = init_rule_spec
@@ -81,9 +84,9 @@ def subst_all(init_rule_spec, config):
         return rule_spec
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        print("usage: " + sys.argv[0] + " <spec_ini> <spec_name>")
+    if len(sys.argv) < 2:
+        print("usage: " + sys.argv[0] + " <spec_ini>")
         sys.exit(1)
     module_template = open("tests/gen-specs/module-tmpl.k", "r").read()
     spec_template   = open("tests/gen-specs/spec-tmpl.k",   "r").read()
-    gen(module_template, spec_template, sys.argv[1], sys.argv[2])
+    gen(module_template, spec_template, sys.argv[1])
