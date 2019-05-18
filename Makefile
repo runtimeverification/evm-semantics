@@ -359,7 +359,7 @@ KEVM_SCHEDULE:=PETERSBURG
 test-all: test-all-conformance test-all-proof test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
 
-split-tests: tests/ethereum-tests/make.timestamp
+split-tests: tests/ethereum-tests/make.timestamp split-tests-prove
 
 tests/%/make.timestamp:
 	@echo "== submodule: $@"
@@ -401,11 +401,6 @@ tests/%.search: tests/%
 
 tests/%.klab-prove: tests/%
 	$(TEST) klab-prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE)
-
-gen_test_deps:=$(wildcard tests/gen-specs/*)
-
-tests/specs/ds-token-erc20/%-spec.k: tests/specs/ds-token-erc20/ds-token-erc20-spec.ini $(gen_tests_deps)
-	python3 tests/gen-specs/gen-specs.py $< $* > $@
 
 # Smoke Tests
 
@@ -452,16 +447,17 @@ test-bchain: $(quick_bchain_tests:=.run)
 
 test_specs_dir:=tests/specs
 
-test-prove: test-prove-gen test-prove-static
+split_tests_prove:=ds-token-erc20
+split_tests_prove_ini_files:=$(split_tests_prove:%=$(test_specs_dir)/%/spec.ini)
 
-test_static_specs:=$(wildcard $(test_specs_dir)/*/*-spec.k)
+split-tests-prove: $(split_tests_prove_ini_files:=.split-prove)
 
-test-prove-static: $(test_static_specs:=.prove)
+$(test_specs_dir)/%.split-prove:
+	python3 tests/gen-specs/gen-specs.py $(test_specs_dir)/$*
 
-test_gen_specs:=totalSupply balanceOf allowance approve transfer transferFrom
-test_prove_gen_specs:=$(patsubst %, tests/specs/ds-token-erc20/%-spec.k, $(test_gen_specs))
+test_prove_specs:=$(wildcard $(test_specs_dir)/*/*-spec.k)
 
-test-prove-gen: $(test_prove_gen_specs:=.prove)
+test-prove: $(test_prove_specs:=.prove)
 
 # Parse Tests
 
