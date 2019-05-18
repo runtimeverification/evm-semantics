@@ -27,7 +27,7 @@ export LUA_PATH
         defn java-defn ocaml-defn node-defn haskell-defn \
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-        test-proof test-prove-gen test-parse test-interactive test-interactive-help test-interactive-run test-interactive-prove \
+        test-prove test-prove-gen test-parse test-interactive test-interactive-help test-interactive-run test-interactive-prove \
         metropolis-theme 2017-devcon3 sphinx
 .SECONDARY:
 
@@ -264,7 +264,7 @@ KEVM_MODE:=NORMAL
 KEVM_SCHEDULE:=PETERSBURG
 
 test-all: test-all-conformance test-all-proof test-interactive test-parse
-test: test-conformance test-proof test-interactive test-parse
+test: test-conformance test-prove test-interactive test-parse
 
 split-tests: tests/ethereum-tests/make.timestamp
 
@@ -345,10 +345,13 @@ test-bchain: $(quick_bchain_tests:=.run)
 
 # Proof Tests
 
-proof_specs_dir:=tests/specs
-proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
+test_specs_dir:=tests/specs
 
-test-proof: $(proof_tests:=.prove)
+test-prove: test-prove-gen test-prove-static
+
+test_static_specs:=$(wildcard $(test_specs_dir)/*/*-spec.k)
+
+test-prove-static: $(test_static_specs:=.prove)
 
 test_gen_specs:=totalSupply balanceOf allowance approve transfer transferFrom
 test_prove_gen_specs:=$(patsubst %, tests/specs/ds-token-erc20/%-spec.k, $(test_gen_specs))
