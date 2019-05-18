@@ -342,7 +342,7 @@ test-bchain: $(quick_bchain_tests:=.run)
 
 test_specs_dir:=tests/specs
 
-split_tests_prove:=ds-token-erc20 hkg-erc20
+split_tests_prove:=ds-token-erc20 hkg-erc20 hobby-erc20
 split_tests_prove_ini_files:=$(split_tests_prove:%=$(test_specs_dir)/%/spec.ini)
 
 split-tests-prove: $(split_tests_prove_ini_files:=.split-prove)
