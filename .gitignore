@@ -32,4 +32,4 @@
 /semantics.cmxa
 
 # Documentation ignores
-docs/build
+/media/*.pdf
