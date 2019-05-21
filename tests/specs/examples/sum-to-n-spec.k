@@ -8,7 +8,7 @@
 
 
 requires "edsl.k"
-requires "../lemmas.k"
+requires "../trusted/lemmas.k"
 
 module VERIFICATION
     imports EDSL
