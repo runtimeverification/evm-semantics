@@ -25,9 +25,9 @@ export LUA_PATH
 .PHONY: all clean deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff \
         build build-ocaml build-java build-node build-kore split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn \
-        test test-all test-concrete test-all-concrete test-conformance test-slow-conformance test-all-conformance \
+        test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-        test-proof test-interactive test-vm-haskell \
+        test-proof test-parse test-interactive test-interactive-help test-interactive-run test-interactive-prove \
         metropolis-theme 2017-devcon3 sphinx
 .SECONDARY:
 
@@ -255,13 +255,15 @@ endif
 # Tests
 # -----
 
-# Override this with `make TEST=true` to list tests instead of running
 TEST_CONCRETE_BACKEND:=ocaml
 TEST_SYMBOLIC_BACKEND:=java
-TEST:=./kevm
+CHECK:=git --no-pager diff --no-index --ignore-all-space
 
-test-all: test-all-concrete test-all-proof
-test: test-concrete test-proof test-java
+KEVM_MODE:=NORMAL
+KEVM_SCHEDULE:=PETERSBURG
+
+test-all: test-all-conformance test-all-proof test-interactive test-parse
+test: test-conformance test-proof test-interactive test-parse
 
 split-tests: tests/ethereum-tests/make.timestamp
 
@@ -270,12 +272,39 @@ tests/%/make.timestamp:
 	git submodule update --init -- tests/$*
 	touch $@
 
-# Concrete Tests
+# Generic Test Harnesses
 
-test-all-concrete: test-all-conformance test-interactive
-test-concrete: test-conformance test-interactive
+tests/ethereum-tests/VMTests/%: KEVM_MODE=VMTESTS
+tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE=DEFAULT
 
-# Ethereum Tests
+tests/%.run: tests/%
+	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) ./kevm interpret --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
+	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
+	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
+
+tests/%.run-interactive: tests/%
+	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) ./kevm run --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
+	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
+	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
+
+tests/%.parse: tests/%
+	./kevm kast --backend $(TEST_CONCRETE_BACKEND) $< > $@-out
+	$(CHECK) $@-expected $@-out
+	rm -rf $@-out
+
+tests/%.prove: tests/%
+	./kevm prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures
+
+# Smoke Tests
+
+smoke_tests_run=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
+                tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json \
+                tests/interactive/sumTo10.evm
+
+smoke_tests_prove=tests/specs/examples/sum-to-n-spec.k \
+                  tests/specs/ds-token-erc20/transfer-failure-1-a-spec.k
+
+# Conformance Tests
 
 tests/ethereum-tests/%.json: tests/ethereum-tests/make.timestamp
 
@@ -283,27 +312,13 @@ test-all-conformance: test-all-vm test-all-bchain
 test-slow-conformance: test-slow-vm test-slow-bchain
 test-conformance: test-vm test-bchain
 
-# VMTests
-
 vm_tests=$(wildcard tests/ethereum-tests/VMTests/*/*.json)
 slow_vm_tests=$(wildcard tests/ethereum-tests/VMTests/vmPerformance/*.json)
 quick_vm_tests=$(filter-out $(slow_vm_tests), $(vm_tests))
 
-haskell_vm_tests=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
-                 tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json
-
-test-all-vm: $(all_vm_tests:=.test)
-test-slow-vm: $(slow_vm_tests:=.test)
-test-vm: $(quick_vm_tests:=.test)
-test-vm-haskell: $(haskell_vm_tests:=.haskelltest)
-
-tests/ethereum-tests/VMTests/%.test: tests/ethereum-tests/VMTests/%
-	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
-
-tests/ethereum-tests/VMTests/%.haskelltest: tests/ethereum-tests/VMTests/%
-	MODE=VMTESTS SCHEDULE=DEFAULT $(TEST) test --backend haskell $<
-
-# BlockchainTests
+test-all-vm: $(all_vm_tests:=.run)
+test-slow-vm: $(slow_vm_tests:=.run)
+test-vm: $(quick_vm_tests:=.run)
 
 bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)
 slow_bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*.json) \
@@ -318,35 +333,34 @@ failing_bchain_tests=$(shell cat tests/failing.${TEST_CONCRETE_BACKEND})
 all_bchain_tests=$(filter-out $(bad_bchain_tests), $(filter-out $(failing_bchain_tests), $(bchain_tests)))
 quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(all_bchain_tests))
 
-test-all-bchain: $(all_bchain_tests:=.test)
-test-slow-bchain: $(slow_bchain_tests:=.test)
-test-bchain: $(quick_bchain_tests:=.test)
+test-all-bchain: $(all_bchain_tests:=.run)
+test-slow-bchain: $(slow_bchain_tests:=.run)
+test-bchain: $(quick_bchain_tests:=.run)
 
-tests/ethereum-tests/BlockchainTests/%.test: tests/ethereum-tests/BlockchainTests/%
-	$(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
-
-# InteractiveTests
-
-interactive_tests:=$(wildcard tests/interactive/*.json) \
-                   $(wildcard tests/interactive/*/*.evm)
-
-test-interactive: $(interactive_tests:=.test)
-
-tests/interactive/%.json.test: tests/interactive/%.json
-	$(TEST) test --backend $(TEST_CONCRETE_BACKEND) $<
-
-test-java: tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11_d0g0v0.json
-	./kevm run --backend java $< | diff - tests/templates/output-success-java.json
-
-# ProofTests
+# Proof Tests
 
 proof_specs_dir:=tests/specs
 proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
 
-test-proof: $(proof_tests:=.test)
+test-proof: $(proof_tests:=.prove)
 
-$(proof_specs_dir)/%.test: $(proof_specs_dir)/%
-	$(TEST) test --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures
+# Parse Tests
+
+parse_tests:=$(wildcard tests/interactive/*.json) \
+             $(wildcard tests/interactive/*.evm)
+
+test-parse: $(parse_tests:=.parse)
+	echo $(parse_tests)
+
+# Interactive Tests
+
+test-interactive: test-interactive-run test-interactive-prove test-interactive-help
+
+test-interactive-run: $(smoke_tests_run:=.run-interactive)
+test-interactive-prove: $(smoke_tests_prove:=.prove)
+
+test-interactive-help:
+	$(TEST) help
 
 # Media
 # -----
