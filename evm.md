@@ -265,7 +265,7 @@ OpCode Execution
 
 ### Execution Macros
 
--   `#execute` calls `#next` repeatedly until it recieves an `#end`.
+-   `#execute` calls `#next` repeatedly until it receives an `#end`.
 
 ```k
     syntax KItem ::= "#execute"
