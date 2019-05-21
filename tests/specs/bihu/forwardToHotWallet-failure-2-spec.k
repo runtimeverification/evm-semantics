@@ -1,4 +1,3 @@
-requires "abstract-semantics-direct-gas.k"
 requires "verification.k"
 
 module FORWARDTOHOTWALLET-FAILURE-2-SPEC
