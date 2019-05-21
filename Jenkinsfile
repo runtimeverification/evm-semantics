@@ -77,7 +77,7 @@ pipeline {
           steps {
             sh '''
               export PATH=$HOME/.local/bin:$PATH
-              make test-interactive TEST_CONCRETE_BACKEND=ocaml
+              make test-interactive-run TEST_CONCRETE_BACKEND=ocaml
             '''
           }
         }
@@ -85,7 +85,7 @@ pipeline {
           steps {
             sh '''
               export PATH=$HOME/.local/bin:$PATH
-              make test-interactive TEST_CONCRETE_BACKEND=llvm
+              make test-interactive-run TEST_CONCRETE_BACKEND=llvm
             '''
           }
         }
@@ -93,7 +93,7 @@ pipeline {
           steps {
             sh '''
               export PATH=$HOME/.local/bin:$PATH
-              make test-interactive TEST_CONCRETE_BACKEND=java
+              make test-interactive-run TEST_CONCRETE_BACKEND=java
             '''
           }
         }
@@ -101,7 +101,7 @@ pipeline {
           steps {
             sh '''
               export PATH=$HOME/.local/bin:$PATH
-              make test-interactive TEST_CONCRETE_BACKEND=haskell
+              make test-interactive-run TEST_CONCRETE_BACKEND=haskell
             '''
           }
         }
@@ -110,6 +110,13 @@ pipeline {
             sh '''
               export PATH=$HOME/.local/bin:$PATH
               make test-parse TEST_CONCRETE_BACKEND=ocaml
+            '''
+          }
+        }
+        stage('KEVM help') {
+          steps {
+            sh '''
+              ./kevm help
             '''
           }
         }
