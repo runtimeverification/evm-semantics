@@ -1738,7 +1738,6 @@ Overall Gas
          <schedule> SCHED </schedule>
 
     rule <k> #memory [ OP ] => #memory(OP, MU) ~> #deductMemory ... </k>
-         <schedule> SCHED </schedule>
          <memoryUsed> MU </memoryUsed>
 
     syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas"
