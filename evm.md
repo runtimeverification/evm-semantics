@@ -265,22 +265,17 @@ OpCode Execution
 
 ### Execution Macros
 
--   `#execute` calls `#next` repeatedly until it receives an `#end`.
+-   `#execute` loads the next opcode (or halts with `EVMC_SUCCESS` if there is no next opcode).
 
 ```k
     syntax KItem ::= "#execute"
  // ---------------------------
-    rule [step]: <k> (. => #next) ~> #execute ... </k>
     rule [halt]: <k> #halt ~> (#execute => .) ... </k>
-```
+    rule [step]: <k> (. => #next [ OP ]) ~> #execute ... </k>
+                 <pc> PCOUNT </pc>
+                 <program> ... PCOUNT |-> OP ... </program>
 
-Execution follows a simple cycle where first the state is checked for exceptions, then if no exceptions will be thrown the opcode is run.
-When the `#next` operator cannot lookup the next opcode, it assumes that the end of execution has been reached.
-
-```k
-    syntax InternalOp ::= "#next"
- // -----------------------------
-    rule <k> #next => #end EVMC_SUCCESS ... </k>
+    rule <k> (. => #end EVMC_SUCCESS) ~> #execute ... </k>
          <pc> PCOUNT </pc>
          <program> PGM </program>
          <output> _ => .WordStack </output>
@@ -289,48 +284,50 @@ When the `#next` operator cannot lookup the next opcode, it assumes that the end
 
 ### Single Step
 
-The `#next` operator executes a single step by:
+If the program-counter points to an actual opcode, it's loaded into the `#next [_]` operator.
+The `#next [_]` operator initiates execution by:
 
-1.  performing some quick checks for exceptional opcodes,
-2.  executes the opcode if it is not immediately exceptional,
-3.  increments the program counter, and finally
-4.  reverts state if any of the above steps threw an exception.
+1.  checking if there will be a stack over/underflow, or a static mode violation,
+2.  loading any additional state needed (when executing in full-node mode),
+3.  executing the opcode (which includes any gas deduction needed), and
+4.  adjusting the program counter.
 
 ```k
-    rule <mode> EXECMODE </mode>
-         <k> #next
-          => #stackNeeded? [ OP ]
-          ~> #static?      [ OP ]
-          ~> #load         [ OP ]
-          ~> #exec         [ OP ]
-          ~> #pc           [ OP ]
+    syntax InternalOp ::= "#next" "[" OpCode "]"
+ // --------------------------------------------
+    rule <k> #next [ OP ]
+          => #load [ OP ]
+          ~> #exec [ OP ]
+          ~> #pc   [ OP ]
          ...
          </k>
-         <pc> PCOUNT </pc>
-         <program> ... PCOUNT |-> OP ... </program>
-      requires EXECMODE in (SetItem(NORMAL) SetItem(VMTESTS))
+         <wordStack> WS </wordStack>
+         <static> STATIC:Bool </static>
+      requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
+       andBool notBool ( STATIC andBool #changesState(OP, WS) )
+
+    rule <k> #next [ OP ] => #end EVMC_STACK_UNDERFLOW ... </k>
+         <wordStack> WS </wordStack>
+      requires #stackUnderflow(WS, OP)
+
+    rule <k> #next [ OP ] => #end EVMC_STACK_OVERFLOW ... </k>
+         <wordStack> WS </wordStack>
+      requires #stackOverflow(WS, OP)
+
+    rule <k> #next [ OP ] => #end EVMC_STATIC_MODE_VIOLATION ... </k>
+         <wordStack> WS </wordStack>
+         <static> STATIC:Bool </static>
+      requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
+       andBool STATIC andBool #changesState(OP, WS)
 ```
 
 ### Exceptional Checks
 
--   `#stackNeeded?` checks that the stack will be not be under/overflown.
--   `#stackNeeded`, `#stackAdded`, and `#stackDelta` are helpers for deciding `#stackNeeded?`.
+-   `#stackNeeded` is how many arguments that opcode will need off the top of the stack.
+-   `#stackAdded` is how many arguments that opcode will push onto the top of the stack.
+-   `#stackDelta` is the delta the stack will have after the opcode executes.
 
 ```k
-    syntax InternalOp ::= "#stackNeeded?" "[" OpCode "]"
- // ----------------------------------------------------
-    rule <k> #stackNeeded? [ OP ] => #end EVMC_STACK_UNDERFLOW ... </k>
-         <wordStack> WS </wordStack>
-      requires #stackUnderflow(WS, OP)
-
-    rule <k> #stackNeeded? [ OP ] => #end EVMC_STACK_OVERFLOW ... </k>
-         <wordStack> WS </wordStack>
-      requires #stackOverflow(WS, OP)
-
-    rule <k> #stackNeeded? [ OP ] => . ... </k>
-         <wordStack> WS </wordStack>
-      requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
-
     syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [function]
                   | #stackOverflow  ( WordStack , OpCode ) [function]
  // -----------------------------------------------------------------
@@ -381,18 +378,7 @@ The `#next` operator executes a single step by:
     rule #stackDelta(OP) => #stackAdded(OP) -Int #stackNeeded(OP)
 ```
 
--   `#static?` determines if the opcode should throw an exception due to the static flag.
-
-```k
-    syntax InternalOp ::= "#static?" "[" OpCode "]"
- // -----------------------------------------------
-    rule <k> #static? [ OP ] => .                               ... </k>                             <static> false </static>
-    rule <k> #static? [ OP ] => .                               ... </k> <wordStack> WS </wordStack> <static> true  </static> requires notBool #changesState(OP, WS)
-    rule <k> #static? [ OP ] => #end EVMC_STATIC_MODE_VIOLATION ... </k> <wordStack> WS </wordStack> <static> true  </static> requires         #changesState(OP, WS)
-```
-
-**TODO**: Investigate why using `[owise]` here for the `false` cases breaks the proofs.
-          Alternatively, figure out how to make this go through with a boolean expression.
+-   `#changesState` is true if the given opcode will change `<network>` state given the arguments.
 
 ```k
     syntax Bool ::= #changesState ( OpCode , WordStack ) [function]
@@ -416,7 +402,7 @@ The `#next` operator executes a single step by:
  // --------------------------------------------
     rule <k> #exec [ IOP:InvalidOp ] => IOP ... </k>
 
-    rule <k> #exec [ OP ] => #gas [ OP ] ~> OP ... </k> requires isInternalOp(OP) orBool isNullStackOp(OP) orBool isPushOp(OP)
+    rule <k> #exec [ OP ] => #gas [ OP , OP ] ~> OP ... </k> requires isNullStackOp(OP) orBool isPushOp(OP)
 ```
 
 Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
@@ -433,10 +419,10 @@ Some of them require an argument to be interpereted as an address (modulo 160 bi
                         | TernStackOp Int Int Int
                         | QuadStackOp Int Int Int Int
  // -------------------------------------------------
-    rule <k> #exec [ UOP:UnStackOp   => UOP W0          ] ... </k> <wordStack> W0 : WS                => WS </wordStack>
-    rule <k> #exec [ BOP:BinStackOp  => BOP W0 W1       ] ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack>
-    rule <k> #exec [ TOP:TernStackOp => TOP W0 W1 W2    ] ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
-    rule <k> #exec [ QOP:QuadStackOp => QOP W0 W1 W2 W3 ] ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
+    rule <k> #exec [ UOP:UnStackOp   ] => #gas [ UOP , UOP W0          ] ~> UOP W0          ... </k> <wordStack> W0 : WS                => WS </wordStack>
+    rule <k> #exec [ BOP:BinStackOp  ] => #gas [ BOP , BOP W0 W1       ] ~> BOP W0 W1       ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack>
+    rule <k> #exec [ TOP:TernStackOp ] => #gas [ TOP , TOP W0 W1 W2    ] ~> TOP W0 W1 W2    ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
+    rule <k> #exec [ QOP:QuadStackOp ] => #gas [ QOP , QOP W0 W1 W2 W3 ] ~> QOP W0 W1 W2 W3 ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
 ```
 
 `StackOp` is used for opcodes which require a large portion of the stack.
@@ -444,7 +430,7 @@ Some of them require an argument to be interpereted as an address (modulo 160 bi
 ```k
     syntax InternalOp ::= StackOp WordStack
  // ---------------------------------------
-    rule <k> #exec [ SO:StackOp => SO WS ] ... </k> <wordStack> WS </wordStack>
+    rule <k> #exec [ SO:StackOp ] => #gas [ SO , SO WS ] ~> SO WS ... </k> <wordStack> WS </wordStack>
 ```
 
 The `CallOp` opcodes all interperet their second argument as an address.
@@ -453,8 +439,8 @@ The `CallOp` opcodes all interperet their second argument as an address.
     syntax InternalOp ::= CallSixOp Int Int     Int Int Int Int
                         | CallOp    Int Int Int Int Int Int Int
  // -----------------------------------------------------------
-    rule <k> #exec [ CSO:CallSixOp => CSO W0 W1    W2 W3 W4 W5 ] ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
-    rule <k> #exec [ CO:CallOp     => CO  W0 W1 W2 W3 W4 W5 W6 ] ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
+    rule <k> #exec [ CSO:CallSixOp ] => #gas [ CSO , CSO W0 W1    W2 W3 W4 W5 ] ~> CSO W0 W1    W2 W3 W4 W5 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
+    rule <k> #exec [ CO:CallOp     ] => #gas [ CO  , CO  W0 W1 W2 W3 W4 W5 W6 ] ~> CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
 ```
 
 ### Helpers
@@ -526,19 +512,11 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
  // ------------------------------------------
     rule <k> #pc [ OP ] => . ... </k>
          <pc> PCOUNT => PCOUNT +Int #widthOp(OP) </pc>
-      requires notBool isJumpOp(OP)
-
-    rule <k> #pc [ OP ] => . ... </k>
-      requires isJumpOp(OP)
 
     syntax Int ::= #widthOp ( OpCode ) [function]
  // ---------------------------------------------
     rule #widthOp(PUSH(N, _)) => 1 +Int N
     rule #widthOp(OP)         => 1        requires notBool isPushOp(OP)
-
-    syntax Bool ::= isJumpOp ( OpCode ) [function]
- // ----------------------------------------------
-    rule isJumpOp(OP) => OP ==K JUMP orBool OP ==K JUMPI
 ```
 
 ### Substate Log
@@ -1013,13 +991,9 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax UnStackOp ::= "JUMP"
  // ---------------------------
-    rule <k> JUMP DEST => . ... </k>
+    rule <k> JUMP DEST => #if OP ==K JUMPDEST #then #endBasicBlock #else #end EVMC_BAD_JUMP_DESTINATION #fi ... </k>
          <pc> _ => DEST </pc>
-         <program> ... DEST |-> JUMPDEST ... </program>
-
-    rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
          <program> ... DEST |-> OP ... </program>
-      requires OP =/=K JUMPDEST
 
     rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
          <program> PGM </program>
@@ -1028,11 +1002,15 @@ The `JUMP*` family of operations affect the current program counter.
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
     rule <k> JUMPI DEST I => . ... </k>
-         <pc> PCOUNT => PCOUNT +Int 1 </pc>
       requires I ==Int 0
 
     rule <k> JUMPI DEST I => JUMP DEST ... </k>
       requires I =/=Int 0
+
+    syntax InternalOp ::= "#endBasicBlock"
+ // --------------------------------------
+    rule <k> #endBasicBlock ~> (_:OpCode => .) ... </k>
+    rule <k> (#endBasicBlock => .) ~> #execute ... </k>
 ```
 
 ### `STOP`, `REVERT`, and `RETURN`
@@ -1749,10 +1727,23 @@ Overall Gas
 -   `#deductMemory` checks that access to memory stay within sensible bounds (and deducts the correct amount of gas for it), throwing `EVMC_INVALID_MEMORY_ACCESS` if bad access happens.
 
 ```k
-    syntax InternalOp ::= "#gas" "[" OpCode "]" | "#deductGas" | "#deductMemory"
- // ----------------------------------------------------------------------------
-    rule <k> #gas [ OP ] => #memory(OP, MU) ~> #deductMemory ~> #gasExec(SCHED, OP) ~> #deductGas ... </k> <memoryUsed> MU </memoryUsed> <schedule> SCHED </schedule>
+    syntax InternalOp ::= "#gas" "[" OpCode "," OpCode "]"
+ // ---------------------------------------------------------------------------
+    rule <k> #gas [ OP , AOP ]
+          => #if #usesMemory(OP) #then #memory [ AOP ] #else .K #fi
+          ~> #gas [ AOP ]
+         ...
+        </k>
 
+    rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k>
+         <schedule> SCHED </schedule>
+
+    rule <k> #memory [ OP ] => #memory(OP, MU) ~> #deductMemory ... </k>
+         <memoryUsed> MU </memoryUsed>
+
+    syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas"
+                        | "#memory" "[" OpCode "]" | "#deductMemory"
+ // ----------------------------------------------------------------
     rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
@@ -1791,82 +1782,31 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
     rule #memory ( COP:CallOp     _ _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
     rule #memory ( CSOP:CallSixOp _ _   ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
-```
 
-Grumble grumble, K sucks at `owise`.
+    rule #memory ( _ , MU ) => MU [owise]
 
-```k
-    rule #memory(JUMP _,    MU) => MU
-    rule #memory(JUMPI _ _, MU) => MU
-    rule #memory(JUMPDEST,  MU) => MU
-
-    rule #memory(SSTORE _ _,   MU) => MU
-    rule #memory(SLOAD _,      MU) => MU
-
-    rule #memory(ADD _ _,        MU) => MU
-    rule #memory(SUB _ _,        MU) => MU
-    rule #memory(MUL _ _,        MU) => MU
-    rule #memory(DIV _ _,        MU) => MU
-    rule #memory(EXP _ _,        MU) => MU
-    rule #memory(MOD _ _,        MU) => MU
-    rule #memory(SDIV _ _,       MU) => MU
-    rule #memory(SMOD _ _,       MU) => MU
-    rule #memory(SIGNEXTEND _ _, MU) => MU
-    rule #memory(ADDMOD _ _ _,   MU) => MU
-    rule #memory(MULMOD _ _ _,   MU) => MU
-
-    rule #memory(NOT _,     MU) => MU
-    rule #memory(AND _ _,   MU) => MU
-    rule #memory(EVMOR _ _, MU) => MU
-    rule #memory(XOR _ _,   MU) => MU
-    rule #memory(BYTE _ _,  MU) => MU
-    rule #memory(SHL _ _,   MU) => MU
-    rule #memory(SHR _ _,   MU) => MU
-    rule #memory(SAR _ _,   MU) => MU
-    rule #memory(ISZERO _,  MU) => MU
-
-    rule #memory(LT _ _,         MU) => MU
-    rule #memory(GT _ _,         MU) => MU
-    rule #memory(SLT _ _,        MU) => MU
-    rule #memory(SGT _ _,        MU) => MU
-    rule #memory(EQ _ _,         MU) => MU
-
-    rule #memory(POP _,      MU) => MU
-    rule #memory(PUSH(_, _), MU) => MU
-    rule #memory(DUP(_) _,   MU) => MU
-    rule #memory(SWAP(_) _,  MU) => MU
-
-    rule #memory(STOP,           MU) => MU
-    rule #memory(ADDRESS,        MU) => MU
-    rule #memory(ORIGIN,         MU) => MU
-    rule #memory(CALLER,         MU) => MU
-    rule #memory(CALLVALUE,      MU) => MU
-    rule #memory(CALLDATASIZE,   MU) => MU
-    rule #memory(RETURNDATASIZE, MU) => MU
-    rule #memory(CODESIZE,       MU) => MU
-    rule #memory(GASPRICE,       MU) => MU
-    rule #memory(COINBASE,       MU) => MU
-    rule #memory(TIMESTAMP,      MU) => MU
-    rule #memory(NUMBER,         MU) => MU
-    rule #memory(DIFFICULTY,     MU) => MU
-    rule #memory(GASLIMIT,       MU) => MU
-    rule #memory(PC,             MU) => MU
-    rule #memory(MSIZE,          MU) => MU
-    rule #memory(GAS,            MU) => MU
-
-    rule #memory(SELFDESTRUCT _, MU) => MU
-    rule #memory(CALLDATALOAD _, MU) => MU
-    rule #memory(EXTCODESIZE _,  MU) => MU
-    rule #memory(EXTCODEHASH _,  MU) => MU
-    rule #memory(BALANCE _,      MU) => MU
-    rule #memory(BLOCKHASH _,    MU) => MU
-
-    rule #memory(_:PrecompiledOp, MU) => MU
+    syntax Bool ::= #usesMemory ( OpCode ) [function]
+ // -------------------------------------------------
+    rule #usesMemory(OP) => isLogOp(OP)
+                     orBool isCallOp(OP)
+                     orBool isCallSixOp(OP)
+                     orBool OP ==K MLOAD
+                     orBool OP ==K MSTORE
+                     orBool OP ==K MSTORE8
+                     orBool OP ==K SHA3
+                     orBool OP ==K CODECOPY
+                     orBool OP ==K EXTCODECOPY
+                     orBool OP ==K CALLDATACOPY
+                     orBool OP ==K RETURNDATACOPY
+                     orBool OP ==K CREATE
+                     orBool OP ==K CREATE2
+                     orBool OP ==K RETURN
+                     orBool OP ==K REVERT
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
  // ----------------------------------------------------------------
     rule #memoryUsageUpdate(MU, START, WIDTH) => MU                                       requires WIDTH ==Int 0
-    rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH >Int 0  [concrete]
+    rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH  >Int 0 [concrete]
 ```
 
 Execution Gas
