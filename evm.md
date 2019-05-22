@@ -317,7 +317,8 @@ The `#next [_]` operator initiates execution by:
     rule <k> #next [ OP ] => #end EVMC_STATIC_MODE_VIOLATION ... </k>
          <wordStack> WS </wordStack>
          <static> STATIC:Bool </static>
-      requires STATIC andBool #changesState(OP, WS)
+      requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
+       andBool STATIC andBool #changesState(OP, WS)
 ```
 
 ### Exceptional Checks
