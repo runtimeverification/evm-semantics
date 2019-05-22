@@ -57,6 +57,8 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
                  | "maxSInt128"
                  | "minUInt8"
                  | "maxUInt8"
+                 | "minUInt16"
+                 | "maxUInt16"
                  | "minUInt48"
                  | "maxUInt48"
                  | "minUInt128"
@@ -81,6 +83,8 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
 
     rule minUInt8        =>  0                                                                              [macro]
     rule maxUInt8        =>  255                                                                            [macro]
+    rule minUInt16       =>  0                                                                              [macro]
+    rule maxUInt16       =>  65535                                                                          [macro]  /*   2^16 -  1  */
     rule minUInt48       =>  0                                                                              [macro]
     rule maxUInt48       =>  281474976710655                                                                [macro]  /*   2^48 -  1  */
     rule minUInt128      =>  0                                                                              [macro]
@@ -110,6 +114,7 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      ) [macro]
     rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      ) [macro]
     rule #rangeUInt    (   8 ,      X ) => #range ( minUInt8        <= X <= maxUInt8        ) [macro]
+    rule #rangeUInt    (  16 ,      X ) => #range ( minUInt16       <= X <= maxUInt16       ) [macro]
     rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <= maxUInt48       ) [macro]
     rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <= maxUInt128      ) [macro]
     rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <= maxUInt256      ) [macro]
