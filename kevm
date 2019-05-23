@@ -104,12 +104,13 @@ view_klab() {
 # Dev Commands
 
 run_interpret() {
-    local interpreter kast output exit_status
+    local interpreter kast output output_kast exit_status
 
     interpreter="$build_dir/$backend/driver-kompiled/interpreter"
     kast="$(mktemp)"
     output="$(mktemp)"
-    trap "rm -rf $kast $output" INT TERM EXIT
+    output_kast="$(mktemp)"
+    trap "rm -rf $kast $output $output_kast" INT TERM EXIT
     exit_status=0
     case "$backend" in
         ocaml)  run_kast > "$kast"
@@ -128,7 +129,8 @@ run_interpret() {
                 ;;
     esac
     if [[ "$exit_status" != '0' ]]; then
-        cat "$output"
+        k-bin-to-text "$output" "$output_kast"
+        cat "$output_kast"
         exit "$exit_status"
     fi
 }
