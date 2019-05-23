@@ -663,16 +663,14 @@ Operator `#revOps` can be used to reverse a program.
     syntax Map ::= #asMapOpCodes    ( OpCodes )                       [function]
                  | #asMapOpCodesAux ( Int , OpCodes , OpCodes , Map ) [function]
  // ----------------------------------------------------------------------------
-    rule #asMapOpCodes( OPS:OpCodes ) => #asMapOpCodesAux(0, OPS, .OpCodes, .Map)
+    rule #asMapOpCodes( OPS ) => #asMapOpCodesAux(0, OPS, .OpCodes, .Map)
 
     rule #asMapOpCodesAux( N , .OpCodes , OPS' , BBLOCKS ) => BBLOCKS [ N <- #revOps(OPS') ]
-
-    rule #asMapOpCodesAux( N                      , JUMPDEST ; OPS ,                OPS' , BBLOCKS )
-      => #asMapOpCodesAux( N +Int #widthOps(OPS') ,            OPS , JUMPDEST ; .OpCodes , BBLOCKS [ N <- #revOps(OPS') ] )
-
-    rule #asMapOpCodesAux( N , OP ; OPS ,      OPS' , BBLOCKS )
-      => #asMapOpCodesAux( N ,      OPS , OP ; OPS' , BBLOCKS )
-      requires OP =/=K JUMPDEST
+    rule #asMapOpCodesAux( N , OP ; OPS , OPS' , BBLOCKS )
+      => #if OP ==K JUMPDEST
+            #then #asMapOpCodesAux( N +Int #widthOps(OPS') , OPS , OP ; .OpCodes , BBLOCKS [ N <- #revOps(OPS') ] )
+            #else #asMapOpCodesAux( N                      , OPS , OP ; OPS'     , BBLOCKS )
+         #fi
 
     syntax Int ::= #widthOps    ( OpCodes )       [function]
                  | #widthOpsAux ( OpCodes , Int ) [function]
