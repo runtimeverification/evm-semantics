@@ -356,6 +356,8 @@ CHECK:=git --no-pager diff --no-index --ignore-all-space
 KEVM_MODE:=NORMAL
 KEVM_SCHEDULE:=PETERSBURG
 
+TEST_SPECS_DIR:=tests/specs
+
 test-all: test-all-conformance test-all-proof test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
 
@@ -408,7 +410,7 @@ smoke_tests_run=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
                 tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json \
                 tests/interactive/sumTo10.evm
 
-smoke_tests_prove=tests/specs/ds-token-erc20/transfer-failure-1-a-spec.k
+smoke_tests_prove=$(TEST_SPECS_DIR)/ds-token-erc20/transfer-failure-1-a-spec.k
 
 # Conformance Tests
 
@@ -445,17 +447,15 @@ test-bchain: $(quick_bchain_tests:=.run)
 
 # Proof Tests
 
-test_specs_dir:=tests/specs
-
 split_tests_prove:=ds-token-erc20 hkg-erc20 hobby-erc20
-split_tests_prove_ini_files:=$(split_tests_prove:%=$(test_specs_dir)/%/spec.ini)
+split_tests_prove_ini_files:=$(split_tests_prove:%=$(TEST_SPECS_DIR)/%/spec.ini)
 
 split-tests-prove: $(split_tests_prove_ini_files:=.split-prove)
 
-$(test_specs_dir)/%.split-prove:
-	python3 tests/gen-specs/gen-specs.py $(test_specs_dir)/$*
+$(TEST_SPECS_DIR)/%.split-prove: tests/gen-specs/defn-tmpl.k tests/gen-specs/rule-tmpl.k $(TEST_SPECS_DIR)/%
+	$(K_BIN)/gen-specs.py $^
 
-test_prove_specs:=$(wildcard $(test_specs_dir)/*/*-spec.k)
+test_prove_specs:=$(wildcard $(TEST_SPECS_DIR)/*/*-spec.k)
 
 test-prove: $(test_prove_specs:=.prove)
 
