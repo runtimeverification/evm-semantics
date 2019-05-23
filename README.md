@@ -188,7 +188,7 @@ To run proofs, you can similarly use `./kevm`.
 For example, to prove the specification `tests/proofs/specs/vyper-erc20/totalSupply-spec.k`:
 
 ```sh
-./kevm prove tests/proofs/specs/vyper-erc20/totalSupply-spec.k
+./kevm prove tests/proofs/specs/vyper-erc20/totalSupply-spec.k -m VERIFICATION
 ```
 
 Running Tests
