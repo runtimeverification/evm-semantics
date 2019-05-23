@@ -140,11 +140,12 @@ run_command="$1" ; shift
 
 if [[ "$run_command" == 'help' ]]; then
     echo "
-        usage: $0 (run|kast)       [--backend (ocaml|java|llvm|haskell)] <pgm>  <K args>*
-               $0 interpret        [--backend (ocaml|llvm)]              <pgm>
-               $0 prove            [--backend (java|haskell)]            <spec> <K args>*
-               $0 klab-(run|prove)                                       <spec> <K args>*
-               $0 klab-view                                              <spec>
+        usage: $0 (run|kast) [--backend (ocaml|java|llvm|haskell)] <pgm>  <K args>*
+               $0 interpret  [--backend (ocaml|llvm)]              <pgm>
+               $0 prove      [--backend (java|haskell)]            <spec> <K args>* -m <def_module>
+               $0 klab-run                                         <pgm>  <K args>*
+               $0 klab-prove                                       <spec> <K args>* -m <def_module>
+               $0 klab-view                                        <spec>
 
            $0 run       : Run a single EVM program
            $0 interpret : Run JSON EVM programs without K Frontend (external parser)
@@ -155,6 +156,7 @@ if [[ "$run_command" == 'help' ]]; then
            Note: <pgm> is a path to a file containing an EVM program/test.
                  <spec> is a K specification to be proved.
                  <K args> are any arguments you want to pass to K when executing/proving.
+                 <def_module> is the module to take as axioms when doing verification.
 
            KLab: Make sure that the 'klab/bin' directory is on your PATH to use this option.
     "

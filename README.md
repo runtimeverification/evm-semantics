@@ -182,8 +182,7 @@ To run proofs, you can similarly use `./kevm`.
 For example, to prove one of the specifications:
 
 ```sh
-make split-tests-prove      # generate the *-spec.k files from the spec.ini file
-./kevm prove tests/specs/ds-token-erc20/totalSupply-spec.k
+./kevm prove tests/specs/ds-token-erc20/transfer-failure-1-a-spec.k -m VERIFICATION
 ```
 
 Running Tests
