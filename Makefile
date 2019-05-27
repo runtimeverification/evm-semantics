@@ -39,10 +39,9 @@ clean: clean-submodules
 clean-submodules:
 	rm -rf .build/k/make.timestamp .build/pandoc-tangle/make.timestamp tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp plugin/make.timestamp kore/make.timestamp .build/media/metropolis/*.sty
 
-distclean: clean
-	cd $(K_SUBMODULE) && mvn clean -q
-	rm -rf .build/local
-	git submodule deinit --force -- ./
+distclean:
+	rm -rf $(BUILD_DIR)
+	git submodule update --init --recursive
 
 # Dependencies
 # ------------
