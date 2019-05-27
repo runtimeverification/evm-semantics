@@ -406,6 +406,7 @@ I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 sphinx:
 	@echo "== media: $@"
 	mkdir -p $(SPHINXBUILDDIR) \
+	    && cp -r media/sphinx-docs/* $(SPHINXBUILDDIR) \
 	    && cp -r *.md $(SPHINXBUILDDIR)/. \
 	    && cd $(SPHINXBUILDDIR) \
 	    && sed -i 's/{.k[ a-zA-Z.-]*}/k/g' *.md \
