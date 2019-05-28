@@ -1,8 +1,9 @@
 # Settings
 # --------
 
-BUILD_DIR:=$(CURDIR)/.build
-BUILD_LOCAL:=$(BUILD_DIR)/local
+BUILD_DIR:=.build
+DEFN_DIR:=$(BUILD_DIR)/defn
+BUILD_LOCAL:=$(CURDIR)/$(BUILD_DIR)/local
 LIBRARY_PATH:=$(BUILD_LOCAL)/lib
 C_INCLUDE_PATH:=$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH:=$(BUILD_LOCAL)/include
@@ -37,6 +38,7 @@ all: build split-tests
 
 clean: clean-submodules
 	rm -rf $(BUILD_DIR)
+	git clean -dfx -- tests/specs
 
 clean-submodules:
 	rm -rf $(DEPS_DIR)/k/make.timestamp $(DEPS_DIR)/pandoc-tangle/make.timestamp $(DEPS_DIR)/metropolis/*.sty \
@@ -51,7 +53,7 @@ distclean: clean
 
 all-deps: deps llvm-deps haskell-deps
 all-deps: BACKEND_SKIP=
-llvm-deps: .build/local/lib/libff.a deps
+llvm-deps: $(BUILD_LOCAL)/lib/libff.a deps
 llvm-deps: BACKEND_SKIP=-Dhaskell.backend.skip
 haskell-deps: deps
 haskell-deps: BACKEND_SKIP=-Dllvm.backend.skip
@@ -88,9 +90,9 @@ ocaml-deps:
 	    opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128 ocaml-protoc rlp yojson hex ocp-ocamlres
 
 # install secp256k1 from bitcoin-core
-libsecp256k1: .build/local/lib/pkgconfig/libsecp256k1.pc
+libsecp256k1: $(BUILD_LOCAL)/lib/pkgconfig/libsecp256k1.pc
 
-.build/local/lib/pkgconfig/libsecp256k1.pc:
+$(BUILD_LOCAL)/lib/pkgconfig/libsecp256k1.pc:
 	@echo "== submodule: $(DEPS_DIR)/secp256k1"
 	git submodule update --init -- $(DEPS_DIR)/secp256k1/
 	cd $(DEPS_DIR)/secp256k1/ \
@@ -100,12 +102,12 @@ libsecp256k1: .build/local/lib/pkgconfig/libsecp256k1.pc
 	    && make install
 
 # install libff from scipr-lab
-libff: .build/local/lib/libff.a
+libff: $(BUILD_LOCAL)/lib/libff.a
 
 LIBFF_CC ?=clang-6.0
 LIBFF_CXX?=clang++-6.0
 
-.build/local/lib/libff.a:
+$(BUILD_LOCAL)/lib/libff.a:
 	@echo "== submodule: $(DEPS_DIR)/libff"
 	git submodule update --init --recursive -- $(DEPS_DIR)/libff/
 	cd $(DEPS_DIR)/libff/ \
@@ -119,11 +121,11 @@ LIBFF_CXX?=clang++-6.0
 # --------
 
 build: build-ocaml build-java
-build-ocaml: .build/ocaml/driver-kompiled/interpreter
-build-java: .build/java/driver-kompiled/timestamp
-build-node: .build/vm/kevm-vm
-build-haskell: .build/haskell/driver-kompiled/definition.kore
-build-llvm: .build/llvm/driver-kompiled/interpreter
+build-ocaml: $(DEFN_DIR)/ocaml/driver-kompiled/interpreter
+build-java: $(DEFN_DIR)/java/driver-kompiled/timestamp
+build-node: $(DEFN_DIR)/vm/kevm-vm
+build-haskell: $(DEFN_DIR)/haskell/driver-kompiled/definition.kore
+build-llvm: $(DEFN_DIR)/llvm/driver-kompiled/interpreter
 
 # Tangle definition from *.md files
 
@@ -132,10 +134,10 @@ symbolic_tangle:=.k:not(.node):not(.concrete),.standalone,.symbolic
 node_tangle:=.k:not(.standalone):not(.symbolic),.node,.concrete
 
 k_files:=driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k
-ocaml_files:=$(patsubst %,.build/ocaml/%,$(k_files))
-java_files:=$(patsubst %,.build/java/%,$(k_files))
-node_files:=$(patsubst %,.build/node/%,$(k_files))
-haskell_files:=$(patsubst %,.build/haskell/%,$(k_files))
+ocaml_files:=$(patsubst %,$(DEFN_DIR)/ocaml/%,$(k_files))
+java_files:=$(patsubst %,$(DEFN_DIR)/java/%,$(k_files))
+node_files:=$(patsubst %,$(DEFN_DIR)/node/%,$(k_files))
+haskell_files:=$(patsubst %,$(DEFN_DIR)/haskell/%,$(k_files))
 defn_files:=$(ocaml_files) $(java_files) $(node_files)
 
 defn: $(defn_files)
@@ -144,39 +146,39 @@ ocaml-defn: $(ocaml_files)
 node-defn: $(node_files)
 haskell-defn: $(haskell_files)
 
-.build/java/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
+$(DEFN_DIR)/java/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
-.build/ocaml/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
+$(DEFN_DIR)/ocaml/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
-.build/node/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
+$(DEFN_DIR)/node/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
 
-.build/haskell/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
+$(DEFN_DIR)/haskell/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
 # Java Backend
 
-.build/java/driver-kompiled/timestamp: $(java_files)
+$(DEFN_DIR)/java/driver-kompiled/timestamp: $(java_files)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend java \
-	                 --syntax-module ETHEREUM-SIMULATION $< --directory .build/java -I .build/java
+	                 --syntax-module ETHEREUM-SIMULATION $< --directory $(DEFN_DIR)/java -I $(DEFN_DIR)/java
 
 # Haskell Backend
 
-.build/haskell/driver-kompiled/definition.kore: $(haskell_files)
+$(DEFN_DIR)/haskell/driver-kompiled/definition.kore: $(haskell_files)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION --backend haskell --hook-namespaces KRYPTO \
-	                 --syntax-module ETHEREUM-SIMULATION $< --directory .build/haskell -I .build/haskell
+	                 --syntax-module ETHEREUM-SIMULATION $< --directory $(DEFN_DIR)/haskell -I $(DEFN_DIR)/haskell
 
 # OCAML Backend
 
@@ -194,31 +196,31 @@ else
   LIBFLAG=-shared
 endif
 
-.build/%/driver-kompiled/constants.$(EXT): $(ocaml_files)
+$(DEFN_DIR)/%/driver-kompiled/constants.$(EXT): $(ocaml_files)
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
 	    && ${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
-	                        --syntax-module ETHEREUM-SIMULATION .build/$*/driver.k --directory .build/$* \
+	                        --syntax-module ETHEREUM-SIMULATION $(DEFN_DIR)/$*/driver.k --directory $(DEFN_DIR)/$* \
 	                        --hook-namespaces "KRYPTO BLOCKCHAIN" --gen-ml-only -O3 --non-strict \
-	    && cd .build/$*/driver-kompiled \
+	    && cd $(DEFN_DIR)/$*/driver-kompiled \
 	    && ocamlfind $(OCAMLC) -c -g constants.ml -package gmp -package zarith -safe-string
 
-.build/plugin-%/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) .build/%/driver-kompiled/constants.$(EXT)
+$(BUILD_DIR)/plugin-%/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) $(DEFN_DIR)/%/driver-kompiled/constants.$(EXT)
 	mkdir -p .build/plugin-$*
 	cp $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli .build/plugin-$*
 	eval $$(opam config env) \
-	    && ocp-ocamlres -format ocaml $(PLUGIN_SUBMODULE)/plugin/proto/VERSION -o .build/plugin-$*/apiVersion.ml \
+	    && ocp-ocamlres -format ocaml $(PLUGIN_SUBMODULE)/plugin/proto/VERSION -o $(BUILD_DIR)/plugin-$*/apiVersion.ml \
 	    && ocaml-protoc $(PLUGIN_SUBMODULE)/plugin/proto/*.proto -ml_out .build/plugin-$* \
-	    && cd .build/plugin-$* \
-	        && ocamlfind $(OCAMLC) -c -g -I ../$*/driver-kompiled msg_types.mli msg_types.ml msg_pb.mli msg_pb.ml apiVersion.ml world.mli world.ml caching.mli caching.ml BLOCKCHAIN.ml KRYPTO.ml \
+	    && cd $(BUILD_DIR)/plugin-$* \
+	        && ocamlfind $(OCAMLC) -c -g -I $(CURDIR)/$(DEFN_DIR)/$*/driver-kompiled msg_types.mli msg_types.ml msg_pb.mli msg_pb.ml apiVersion.ml world.mli world.ml caching.mli caching.ml BLOCKCHAIN.ml KRYPTO.ml \
 	                               -package cryptokit -package secp256k1 -package bn128 -package ocaml-protoc -safe-string -thread \
 	        && ocamlfind $(OCAMLC) -a -o semantics.$(LIBEXT) KRYPTO.$(EXT) msg_types.$(EXT) msg_pb.$(EXT) apiVersion.$(EXT) world.$(EXT) caching.$(EXT) BLOCKCHAIN.$(EXT) -thread \
 	        && ocamlfind remove ethereum-semantics-plugin-$* \
 	        && ocamlfind install ethereum-semantics-plugin-$* $(PLUGIN_SUBMODULE)/plugin/META semantics.* *.cmi *.$(EXT)
 
-.build/%/driver-kompiled/interpreter: .build/plugin-%/semantics.$(LIBEXT)
+$(DEFN_DIR)/%/driver-kompiled/interpreter: $(BUILD_DIR)/plugin-%/semantics.$(LIBEXT)
 	eval $$(opam config env) \
-	    && cd .build/$*/driver-kompiled \
+	    && cd $(DEFN_DIR)/$*/driver-kompiled \
 	        && ocamllex lexer.mll \
 	        && ocamlyacc parser.mly \
 	        && ocamlfind $(OCAMLC) -c -g -package gmp -package zarith -package uuidm -safe-string prelude.ml plugin.ml parser.mli parser.ml lexer.ml hooks.ml run.ml -thread \
@@ -229,28 +231,29 @@ endif
 
 # Node Backend
 
-.build/node/driver-kompiled/interpreter: $(node_files) .build/plugin-node/proto/msg.pb.cc
+$(DEFN_DIR)/node/driver-kompiled/interpreter: $(node_files) $(BUILD_DIR)/plugin-node/proto/msg.pb.cc
 	@echo "== kompile: $@"
-	${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
-	                 --syntax-module ETHEREUM-SIMULATION .build/node/driver.k --directory .build/node --hook-namespaces "KRYPTO BLOCKCHAIN" \
-	                 --backend llvm -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blockchain.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/world.cpp -ccopt ${BUILD_DIR}/plugin-node/proto/msg.pb.cc \
-	                 -ccopt -I${BUILD_DIR}/plugin-node \
+	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
+	                 --syntax-module ETHEREUM-SIMULATION $(DEFN_DIR)/node/driver.k --directory $(DEFN_DIR)/node --hook-namespaces "KRYPTO BLOCKCHAIN" \
+	                 --backend llvm -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blockchain.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/world.cpp -ccopt $(CURDIR)/$(BUILD_DIR)/plugin-node/proto/msg.pb.cc \
+	                 -ccopt -I$(CURDIR)/$(BUILD_DIR)/plugin-node \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -lprotobuf -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
-.build/plugin-node/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
+$(BUILD_DIR)/plugin-node/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 	mkdir -p .build/plugin-node
 	protoc --cpp_out=.build/plugin-node -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 
-.build/vm/kevm-vm: .build/node/driver-kompiled/interpreter
-	mkdir -p .build/vm
-	${K_BIN}/llvm-kompile .build/node/driver-kompiled/definition.kore .build/node/driver-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp -I $(PLUGIN_SUBMODULE)/plugin-c/ -I ${BUILD_DIR}/plugin-node $(PLUGIN_SUBMODULE)/plugin-c/*.cpp ${BUILD_DIR}/plugin-node/proto/msg.pb.cc -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o .build/vm/kevm-vm -g -O2
+$(DEFN_DIR)/vm/kevm-vm: $(DEFN_DIR)/node/driver-kompiled/interpreter
+	mkdir -p $(DEFN_DIR)/vm
+	$(K_BIN)/llvm-kompile $(DEFN_DIR)/node/driver-kompiled/definition.kore $(DEFN_DIR)/node/driver-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(BUILD_DIR)/plugin-node $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(BUILD_DIR)/plugin-node/proto/msg.pb.cc \
+	                      -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $(DEFN_DIR)/vm/kevm-vm -g -O2
 
 # LLVM Backend
 
-.build/llvm/driver-kompiled/interpreter: $(ocaml_files)
+$(DEFN_DIR)/llvm/driver-kompiled/interpreter: $(ocaml_files)
 	@echo "== kompile: $@"
-	${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
-	                 --syntax-module ETHEREUM-SIMULATION .build/ocaml/driver.k --directory .build/llvm --hook-namespaces KRYPTO \
+	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
+	                 --syntax-module ETHEREUM-SIMULATION $(DEFN_DIR)/ocaml/driver.k --directory $(DEFN_DIR)/llvm --hook-namespaces KRYPTO \
 	                 --backend llvm -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
@@ -400,7 +403,7 @@ $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
 SPHINXOPTS     =
 SPHINXBUILD    = sphinx-build
 PAPER          =
-SPHINXBUILDDIR = .build/sphinx-docs
+SPHINXBUILDDIR = $(BUILD_DIR)/sphinx-docs
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
