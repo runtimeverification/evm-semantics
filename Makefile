@@ -346,7 +346,7 @@ proof_specs_dir:=tests/specs
 proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
 
 test-proof: $(proof_tests:=.prove)
-test-klab-prove: $(proof_tests:=.klab-prove)
+test-klab-prove: $(smoke_tests_prove:=.klab-prove)
 
 # Parse Tests
 
