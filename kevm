@@ -27,8 +27,9 @@ test_logs="$build_dir/logs"
 mkdir -p "$test_logs"
 test_log="$test_logs/tests.log"
 
-klab_dir="$build_dir/klab"
+KLAB_OUT="${KLAB_OUT:-$build_dir/klab}"
 KLAB_NODE_STACK_SIZE="${KLAB_NODE_STACK_SIZE:-30000}"
+export KLAB_OUT
 
 # Utilities
 # ---------
@@ -79,7 +80,7 @@ run_klab() {
     klab_log="$(basename "${rel_run_file%-spec.k}")"
 
     "$0" "$run_mode" --backend java "$rel_run_file" \
-        --state-log --state-log-path "$klab_dir/data" --state-log-id "$klab_log" \
+        --state-log --state-log-path "$KLAB_OUT/data" --state-log-id "$klab_log" \
         --state-log-events OPEN,EXECINIT,SEARCHINIT,REACHINIT,REACHTARGET,REACHPROVED,NODE,RULE,SRULE,RULEATTEMPT,IMPLICATION,Z3QUERY,Z3RESULT,CLOSE \
         --output-flatten "_Map_ #And" \
         --output-tokenize "_;__EVM" \
@@ -89,7 +90,6 @@ run_klab() {
         "$@" \
         || true
 
-    export KLAB_OUT="$klab_dir"
     # klab often runs out of stack space when running long-running KEVM programs
     # klab debug "$klab_log"
     node --stack-size=$KLAB_NODE_STACK_SIZE $(dirname $(which klab))/../libexec/klab-debug "$klab_log"
