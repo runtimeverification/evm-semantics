@@ -85,8 +85,7 @@ run_klab() {
         --output-omit "<programBytes> <program> <code> <callGas> <touchedAccounts> <interimStates> <callStack> <callData>" \
         --no-alpha-renaming --restore-original-names --no-sort-collections \
         --output json \
-        "$@" \
-        || true
+        "$@"
 }
 
 view_klab() {
