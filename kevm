@@ -87,6 +87,13 @@ run_klab() {
         --output json \
         "$@" \
         || true
+}
+
+view_klab() {
+    local rel_run_file
+
+    rel_run_file="${run_file#$curdir}"
+    klab_log="$(basename "${rel_run_file%-spec.k}")"
 
     # klab often runs out of stack space when running long-running KEVM programs
     # klab debug "$klab_log"
@@ -136,11 +143,13 @@ if [[ "$run_command" == 'help' ]]; then
                $0 interpret        [--backend (ocaml|llvm)]              <pgm>
                $0 prove            [--backend (java|haskell)]            <spec> <K args>*
                $0 klab-(run|prove)                                       <spec> <K args>*
+               $0 klab-view                                              <spec>
 
            $0 run       : Run a single EVM program
            $0 interpret : Run JSON EVM programs without K Frontend (external parser)
            $0 prove     : Run an EVM K proof
-           $0 klab-(run|prove) : Run or prove a spec and launch KLab on the execution graph.
+           $0 klab-(run|prove) : Run program or prove spec and dump StateLogs which KLab can read
+           $0 klab-view : View the statelog associated with a given program or spec
 
            Note: <pgm> is a path to a file containing an EVM program/test.
                  <spec> is a K specification to be proved.
@@ -176,5 +185,6 @@ case "$run_command-$backend" in
     interpret-@(ocaml|llvm)         ) run_interpret                   "$@" ;;
     prove-@(java|haskell)           ) run_prove                       "$@" ;;
     klab-@(run|prove)-java          ) run_klab "${run_command#klab-}" "$@" ;;
+    klab-view-*                     ) view_klab                       "$@" ;;
     *) $0 help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
