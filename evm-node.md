@@ -215,21 +215,17 @@ Because the same account may be loaded more than once, implementations of this i
 
 ```{.k .node}
     syntax KItem ::= vmResult ( return: String , gas: Int , refund: Int , status: Int , selfdestruct: List , logs: List , AccountsCell , touched: List )
-    syntax KItem ::= extractConfig ( KevmCell ) [function, symbol]
- // --------------------------------------------------------------
-    rule extractConfig ( <kevm>
-                           <output> OUT </output>
-                           <gas> GAVAIL </gas>
-                           <refund> REFUND </refund>
-                           <k> STATUS:Int </k>
-                           <selfDestruct> SD </selfDestruct>
-                           <log> LOGS </log>
-                           <accounts> ACCTS </accounts>
-                           <touchedAccounts> TOUCHED </touchedAccounts>
-                           ...
-                         </kevm>
-                       )
-      => vmResult(#unparseByteStack(OUT), GAVAIL, REFUND, STATUS, Set2List(SD), LOGS, <accounts> ACCTS </accounts>, Set2List(TOUCHED))
+    syntax KItem ::= extractConfig() [function, symbol]
+ // ---------------------------------------------------
+    rule [[ extractConfig() => vmResult(#unparseByteStack(OUT), GAVAIL, REFUND, STATUS, Set2List(SD), LOGS, <accounts> ACCTS </accounts>, Set2List(TOUCHED)) ]]
+         <output> OUT </output>
+         <gas> GAVAIL </gas>
+         <refund> REFUND </refund>
+         <k> STATUS:Int </k>
+         <selfDestruct> SD </selfDestruct>
+         <log> LOGS </log>
+         <accounts> ACCTS </accounts>
+         <touchedAccounts> TOUCHED </touchedAccounts>
 ```
 
 -   `contractBytes` takes the contents of the `<code>` cell and returns its binary representation as a String.
