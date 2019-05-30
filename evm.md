@@ -1601,14 +1601,14 @@ Precompiled Contracts
 
     syntax Set ::= #precompiledAccounts ( Schedule ) [function]
  // -----------------------------------------------------------
-    rule #precompiledAccounts(DEFAULT)        => SetItem(1) SetItem(2) SetItem(3) SetItem(4)
-    rule #precompiledAccounts(FRONTIER)       => #precompiledAccounts(DEFAULT)
-    rule #precompiledAccounts(HOMESTEAD)      => #precompiledAccounts(FRONTIER)
-    rule #precompiledAccounts(EIP150)         => #precompiledAccounts(HOMESTEAD)
-    rule #precompiledAccounts(EIP158)         => #precompiledAccounts(EIP150)
-    rule #precompiledAccounts(BYZANTIUM)      => #precompiledAccounts(EIP158) SetItem(5) SetItem(6) SetItem(7) SetItem(8)
-    rule #precompiledAccounts(CONSTANTINOPLE) => #precompiledAccounts(BYZANTIUM)
-    rule #precompiledAccounts(PETERSBURG)     => #precompiledAccounts(CONSTANTINOPLE)
+    rule #precompiledAccounts(DEFAULT)           => SetItem(1) SetItem(2) SetItem(3) SetItem(4)
+    rule #precompiledAccounts(FRONTIER)          => #precompiledAccounts(DEFAULT)
+    rule #precompiledAccounts(HOMESTEAD)         => #precompiledAccounts(FRONTIER)
+    rule #precompiledAccounts(TANGERINE_WHISTLE) => #precompiledAccounts(HOMESTEAD)
+    rule #precompiledAccounts(SPURIOUS_DRAGON)   => #precompiledAccounts(TANGERINE_WHISTLE)
+    rule #precompiledAccounts(BYZANTIUM)         => #precompiledAccounts(SPURIOUS_DRAGON) SetItem(5) SetItem(6) SetItem(7) SetItem(8)
+    rule #precompiledAccounts(CONSTANTINOPLE)    => #precompiledAccounts(BYZANTIUM)
+    rule #precompiledAccounts(PETERSBURG)        => #precompiledAccounts(CONSTANTINOPLE)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -2248,42 +2248,42 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule SCHEDFLAG << HOMESTEAD >> => SCHEDFLAG << DEFAULT >>
 ```
 
-### EIP150 Schedule
+### Tangerine Whistle Schedule
 
 ```k
-    syntax Schedule ::= "EIP150" [klabel(EIP150_EVM), symbol]
- // ---------------------------------------------------------
-    rule Gbalance      < EIP150 > => 400
-    rule Gsload        < EIP150 > => 200
-    rule Gcall         < EIP150 > => 700
-    rule Gselfdestruct < EIP150 > => 5000
-    rule Gextcodesize  < EIP150 > => 700
-    rule Gextcodecopy  < EIP150 > => 700
+    syntax Schedule ::= "TANGERINE_WHISTLE" [klabel(TANGERINE_WHISTLE_EVM), symbol]
+ // -------------------------------------------------------------------------------
+    rule Gbalance      < TANGERINE_WHISTLE > => 400
+    rule Gsload        < TANGERINE_WHISTLE > => 200
+    rule Gcall         < TANGERINE_WHISTLE > => 700
+    rule Gselfdestruct < TANGERINE_WHISTLE > => 5000
+    rule Gextcodesize  < TANGERINE_WHISTLE > => 700
+    rule Gextcodecopy  < TANGERINE_WHISTLE > => 700
 
-    rule SCHEDCONST    < EIP150 > => SCHEDCONST < HOMESTEAD >
+    rule SCHEDCONST    < TANGERINE_WHISTLE > => SCHEDCONST < HOMESTEAD >
       requires notBool      ( SCHEDCONST ==K Gbalance      orBool SCHEDCONST ==K Gsload       orBool SCHEDCONST ==K Gcall
                        orBool SCHEDCONST ==K Gselfdestruct orBool SCHEDCONST ==K Gextcodesize orBool SCHEDCONST ==K Gextcodecopy
                             )
 
-    rule Gselfdestructnewaccount << EIP150 >> => true
-    rule Gstaticcalldepth        << EIP150 >> => false
-    rule SCHEDCONST              << EIP150 >> => SCHEDCONST << HOMESTEAD >>
+    rule Gselfdestructnewaccount << TANGERINE_WHISTLE >> => true
+    rule Gstaticcalldepth        << TANGERINE_WHISTLE >> => false
+    rule SCHEDCONST              << TANGERINE_WHISTLE >> => SCHEDCONST << HOMESTEAD >>
       requires notBool      ( SCHEDCONST ==K Gselfdestructnewaccount orBool SCHEDCONST ==K Gstaticcalldepth )
 ```
 
-### EIP158 Schedule
+### Spurious Dragon Schedule
 
 ```k
-    syntax Schedule ::= "EIP158" [klabel(EIP158_EVM), symbol]
- // ---------------------------------------------------------
-    rule Gexpbyte    < EIP158 > => 50
-    rule maxCodeSize < EIP158 > => 24576
+    syntax Schedule ::= "SPURIOUS_DRAGON" [klabel(SPURIOUS_DRAGON_EVM), symbol]
+ // ---------------------------------------------------------------------------
+    rule Gexpbyte    < SPURIOUS_DRAGON > => 50
+    rule maxCodeSize < SPURIOUS_DRAGON > => 24576
 
-    rule SCHEDCONST  < EIP158 > => SCHEDCONST < EIP150 > requires SCHEDCONST =/=K Gexpbyte andBool SCHEDCONST =/=K maxCodeSize
+    rule SCHEDCONST  < SPURIOUS_DRAGON > => SCHEDCONST < TANGERINE_WHISTLE > requires SCHEDCONST =/=K Gexpbyte andBool SCHEDCONST =/=K maxCodeSize
 
-    rule Gemptyisnonexistent     << EIP158 >> => true
-    rule Gzerovaluenewaccountgas << EIP158 >> => false
-    rule SCHEDCONST              << EIP158 >> => SCHEDCONST << EIP150 >>
+    rule Gemptyisnonexistent     << SPURIOUS_DRAGON >> => true
+    rule Gzerovaluenewaccountgas << SPURIOUS_DRAGON >> => false
+    rule SCHEDCONST              << SPURIOUS_DRAGON >> => SCHEDCONST << TANGERINE_WHISTLE >>
       requires notBool      ( SCHEDCONST ==K Gemptyisnonexistent orBool SCHEDCONST ==K Gzerovaluenewaccountgas )
 ```
 
@@ -2293,13 +2293,13 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     syntax Schedule ::= "BYZANTIUM" [klabel(BYZANTIUM_EVM), symbol]
  // ---------------------------------------------------------------
     rule Rb         < BYZANTIUM > => 3 *Int eth
-    rule SCHEDCONST < BYZANTIUM > => SCHEDCONST < EIP158 >
+    rule SCHEDCONST < BYZANTIUM > => SCHEDCONST < SPURIOUS_DRAGON >
       requires notBool ( SCHEDCONST ==K Rb )
 
     rule Ghasrevert     << BYZANTIUM >> => true
     rule Ghasreturndata << BYZANTIUM >> => true
     rule Ghasstaticcall << BYZANTIUM >> => true
-    rule SCHEDFLAG      << BYZANTIUM >> => SCHEDFLAG << EIP158 >>
+    rule SCHEDFLAG      << BYZANTIUM >> => SCHEDFLAG << SPURIOUS_DRAGON >>
       requires notBool ( SCHEDFLAG ==K Ghasrevert orBool SCHEDFLAG ==K Ghasreturndata orBool SCHEDFLAG ==K Ghasstaticcall )
 ```
 
