@@ -1601,14 +1601,14 @@ Precompiled Contracts
 
     syntax Set ::= #precompiledAccounts ( Schedule ) [function]
  // -----------------------------------------------------------
-    rule #precompiledAccounts(DEFAULT)        => SetItem(1) SetItem(2) SetItem(3) SetItem(4)
-    rule #precompiledAccounts(FRONTIER)       => #precompiledAccounts(DEFAULT)
-    rule #precompiledAccounts(HOMESTEAD)      => #precompiledAccounts(FRONTIER)
-    rule #precompiledAccounts(TANGERINE_WHISTLE)         => #precompiledAccounts(HOMESTEAD)
-    rule #precompiledAccounts(SPURIOUS_DRAGON)         => #precompiledAccounts(TANGERINE_WHISTLE)
-    rule #precompiledAccounts(BYZANTIUM)      => #precompiledAccounts(SPURIOUS_DRAGON) SetItem(5) SetItem(6) SetItem(7) SetItem(8)
-    rule #precompiledAccounts(CONSTANTINOPLE) => #precompiledAccounts(BYZANTIUM)
-    rule #precompiledAccounts(PETERSBURG)     => #precompiledAccounts(CONSTANTINOPLE)
+    rule #precompiledAccounts(DEFAULT)           => SetItem(1) SetItem(2) SetItem(3) SetItem(4)
+    rule #precompiledAccounts(FRONTIER)          => #precompiledAccounts(DEFAULT)
+    rule #precompiledAccounts(HOMESTEAD)         => #precompiledAccounts(FRONTIER)
+    rule #precompiledAccounts(TANGERINE_WHISTLE) => #precompiledAccounts(HOMESTEAD)
+    rule #precompiledAccounts(SPURIOUS_DRAGON)   => #precompiledAccounts(TANGERINE_WHISTLE)
+    rule #precompiledAccounts(BYZANTIUM)         => #precompiledAccounts(SPURIOUS_DRAGON) SetItem(5) SetItem(6) SetItem(7) SetItem(8)
+    rule #precompiledAccounts(CONSTANTINOPLE)    => #precompiledAccounts(BYZANTIUM)
+    rule #precompiledAccounts(PETERSBURG)        => #precompiledAccounts(CONSTANTINOPLE)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -2252,7 +2252,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
 ```k
     syntax Schedule ::= "TANGERINE_WHISTLE" [klabel(TANGERINE_WHISTLE_EVM), symbol]
- // ---------------------------------------------------------
+ // -------------------------------------------------------------------------------
     rule Gbalance      < TANGERINE_WHISTLE > => 400
     rule Gsload        < TANGERINE_WHISTLE > => 200
     rule Gcall         < TANGERINE_WHISTLE > => 700
@@ -2275,7 +2275,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
 ```k
     syntax Schedule ::= "SPURIOUS_DRAGON" [klabel(SPURIOUS_DRAGON_EVM), symbol]
- // ---------------------------------------------------------
+ // ---------------------------------------------------------------------------
     rule Gexpbyte    < SPURIOUS_DRAGON > => 50
     rule maxCodeSize < SPURIOUS_DRAGON > => 24576
 
