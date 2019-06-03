@@ -17,6 +17,10 @@ DEPS_DIR:=deps
 K_SUBMODULE:=$(abspath $(DEPS_DIR)/k)
 PLUGIN_SUBMODULE:=$(abspath $(DEPS_DIR)/plugin)
 
+K_RELEASE:=$(K_SUBMODULE)/k-distribution/target/release/k
+K_BIN:=$(K_RELEASE)/bin
+K_LIB:=$(K_RELEASE)/lib
+
 # need relative path for `pandoc` on MacOS
 PANDOC_TANGLE_SUBMODULE:=$(DEPS_DIR)/pandoc-tangle
 TANGLER:=$(PANDOC_TANGLE_SUBMODULE)/tangle.lua
@@ -72,8 +76,6 @@ $(K_SUBMODULE)/make.timestamp:
 	git submodule update --init --recursive -- $(K_SUBMODULE)
 	cd $(K_SUBMODULE) && mvn package -DskipTests -U ${BACKEND_SKIP}
 	touch $(K_SUBMODULE)/make.timestamp
-
-K_BIN=$(K_SUBMODULE)/k-distribution/target/release/k/bin
 
 $(PANDOC_TANGLE_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
