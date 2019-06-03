@@ -28,7 +28,7 @@ export LUA_PATH
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
         test-proof test-parse test-interactive test-interactive-help test-interactive-run test-interactive-prove \
-        metropolis-theme 2017-devcon3 sphinx
+        metropolis-theme 2017-devcon3 sphinx test-node
 .SECONDARY:
 
 all: build split-tests
@@ -243,6 +243,17 @@ endif
 	mkdir -p .build/vm
 	${K_BIN}/llvm-kompile .build/node/driver-kompiled/definition.kore .build/node/driver-kompiled/dt library ${PLUGIN_SUBMODULE}/vm-c/main.cpp ${PLUGIN_SUBMODULE}/vm-c/vm.cpp -I ${PLUGIN_SUBMODULE}/plugin-c/ -I ${BUILD_DIR}/plugin-node ${PLUGIN_SUBMODULE}/plugin-c/*.cpp ${BUILD_DIR}/plugin-node/proto/msg.pb.cc -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I ${PLUGIN_SUBMODULE}/vm-c/ -I ${PLUGIN_SUBMODULE}/vm-c/kevm/ ${PLUGIN_SUBMODULE}/vm-c/kevm/semantics.cpp -o .build/vm/kevm-vm -g -O2
 
+.build/plugin-node/proto/msg_pb.js: ${PLUGIN_SUBMODULE}/plugin/proto/msg.proto
+	protoc --js_out=import_style=commonjs,binary:.build/plugin-node -I ${PLUGIN_SUBMODULE}/plugin ${PLUGIN_SUBMODULE}/plugin/proto/msg.proto
+
+.build/plugin-node/test/vmtest.js:
+	mkdir -p .build/plugin-node/test
+	cp ${PLUGIN_SUBMODULE}/dev/vmtest.js .build/plugin-node/test
+
+.build/plugin-node/test/node_modules: .build/plugin-node/test/vmtest.js
+	cd .build/plugin-node/test; \
+	npm i google-protobuf tcp-port-used ethereumjs-util safe-buffer
+
 # LLVM Backend
 
 .build/llvm/driver-kompiled/interpreter: $(ocaml_files)
@@ -362,6 +373,12 @@ test-interactive-prove: $(smoke_tests_prove:=.prove)
 
 test-interactive-help:
 	$(TEST) help
+
+# Node Test
+
+test-node: .build/plugin-node/proto/msg_pb.js .build/plugin-node/test/vmtest.js .build/plugin-node/test/node_modules
+
+
 
 # Media
 # -----
