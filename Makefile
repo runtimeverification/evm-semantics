@@ -230,10 +230,10 @@ $(BUILD_DIR)/%/driver-kompiled/interpreter: $(BUILD_DIR)/plugin-%/semantics.$(LI
 
 $(DEFN_DIR)/node/driver-kompiled/interpreter: $(node_files) $(BUILD_DIR)/plugin-node/proto/msg.pb.cc
 	@echo "== kompile: $@"
-	${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
+	$(K_BIN)/kompile --debug --main-module ETHEREUM-SIMULATION \
 	                 --syntax-module ETHEREUM-SIMULATION $(DEFN_DIR)/node/driver.k --directory $(DEFN_DIR)/node --hook-namespaces "KRYPTO BLOCKCHAIN" \
-	                 --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/blockchain.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/world.cpp -ccopt ${BUILD_DIR}/plugin-node/proto/msg.pb.cc \
-	                 -ccopt -I${BUILD_DIR}/plugin-node \
+	                 --backend llvm -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blockchain.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/world.cpp -ccopt $(CURDIR)/$(BUILD_DIR)/plugin-node/proto/msg.pb.cc \
+	                 -ccopt -I$(CURDIR)/$(BUILD_DIR)/plugin-node \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -lprotobuf -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
 $(BUILD_DIR)/plugin-node/proto/msg.pb.cc: ${PLUGIN_SUBMODULE}/plugin/proto/msg.proto
