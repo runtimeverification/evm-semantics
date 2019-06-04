@@ -112,7 +112,7 @@ export PATH=$HOME/.local/bin:$PATH
 The LLVM backend has additional dependencies:
 
 ```k
-sudo apt install cmake clang-6.0 clang++-6.0 llvm-6.0 lld-6.0 libboost-test-dev libgmp-dev libyaml-cpp-dev libjemalloc-dev curl protobuf-compiler libprotobuf-dev
+sudo apt install cmake clang-6.0 clang++-6.0 llvm-6.0 lld-6.0 libboost-test-dev libgmp-dev libyaml-cpp-dev libjemalloc-dev curl protobuf-compiler libprotobuf-dev nodejs npm
 ```
 
 On Arch, you'll also need `crypto++` package.

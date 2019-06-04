@@ -12,7 +12,7 @@ RUN    apt update                                                               
         libsecp256k1-dev libssl-dev libtool libyaml-cpp-dev lld-6.0 llvm-6.0-tools \
         make maven opam openjdk-8-jdk pandoc pkg-config python3 python-pygments    \
         python-recommonmark python-sphinx time zlib1g-dev protobuf-compiler        \
-        libprotobuf-dev
+        libprotobuf-dev nodejs npm
 
 RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 

@@ -113,6 +113,13 @@ pipeline {
             '''
           }
         }
+        stage('KEVM-VM test') {
+          steps {
+            sh '''
+              make test-node-run
+            '''
+          }
+        }
         stage('KEVM help') {
           steps {
             sh '''

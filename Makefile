@@ -28,7 +28,7 @@ export LUA_PATH
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
         test-proof test-parse test-interactive test-interactive-help test-interactive-run test-interactive-prove \
-        metropolis-theme 2017-devcon3 sphinx test-node
+        metropolis-theme 2017-devcon3 sphinx test-node test-node-run
 .SECONDARY:
 
 all: build split-tests
@@ -378,8 +378,12 @@ test-interactive-help:
 	$(TEST) help
 
 # Node Tests
+
 test-node: .build/test-node/proto/msg_pb.js .build/test-node/package.json .build/test-node/check-all-schedules.js .build/test-node/node_modules
 
+test-node-run: build-node test-node
+	cd .build/test-node; \
+	nodejs check-all-schedules.js $(BUILD_DIR)/vm/kevm-vm
 
 
 # Media
