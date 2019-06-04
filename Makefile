@@ -243,16 +243,19 @@ endif
 	mkdir -p .build/vm
 	${K_BIN}/llvm-kompile .build/node/driver-kompiled/definition.kore .build/node/driver-kompiled/dt library ${PLUGIN_SUBMODULE}/vm-c/main.cpp ${PLUGIN_SUBMODULE}/vm-c/vm.cpp -I ${PLUGIN_SUBMODULE}/plugin-c/ -I ${BUILD_DIR}/plugin-node ${PLUGIN_SUBMODULE}/plugin-c/*.cpp ${BUILD_DIR}/plugin-node/proto/msg.pb.cc -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I ${PLUGIN_SUBMODULE}/vm-c/ -I ${PLUGIN_SUBMODULE}/vm-c/kevm/ ${PLUGIN_SUBMODULE}/vm-c/kevm/semantics.cpp -o .build/vm/kevm-vm -g -O2
 
-.build/plugin-node/proto/msg_pb.js: ${PLUGIN_SUBMODULE}/plugin/proto/msg.proto
-	protoc --js_out=import_style=commonjs,binary:.build/plugin-node -I ${PLUGIN_SUBMODULE}/plugin ${PLUGIN_SUBMODULE}/plugin/proto/msg.proto
+.build/test-node/proto/msg_pb.js: ${PLUGIN_SUBMODULE}/plugin/proto/msg.proto
+	mkdir -p .build/test-node
+	protoc --js_out=import_style=commonjs,binary:.build/test-node -I ${PLUGIN_SUBMODULE}/plugin ${PLUGIN_SUBMODULE}/plugin/proto/msg.proto
 
-.build/plugin-node/test/vmtest.js:
-	mkdir -p .build/plugin-node/test
-	cp ${PLUGIN_SUBMODULE}/dev/vmtest.js .build/plugin-node/test
+.build/test-node/package.json:
+	cp ${PLUGIN_SUBMODULE}/tests/package.json .build/test-node
 
-.build/plugin-node/test/node_modules: .build/plugin-node/test/vmtest.js
-	cd .build/plugin-node/test; \
-	npm i google-protobuf tcp-port-used ethereumjs-util safe-buffer
+.build/test-node/check-all-schedules.js: .build/test-node/proto/msg_pb.js
+	cp ${PLUGIN_SUBMODULE}/tests/check-all-schedules.js .build/test-node
+
+.build/test-node/node_modules: .build/test-node/check-all-schedules.js
+	cd .build/test-node; \
+	npm i
 
 # LLVM Backend
 
@@ -374,9 +377,8 @@ test-interactive-prove: $(smoke_tests_prove:=.prove)
 test-interactive-help:
 	$(TEST) help
 
-# Node Test
-
-test-node: .build/plugin-node/proto/msg_pb.js .build/plugin-node/test/vmtest.js .build/plugin-node/test/node_modules
+# Node Tests
+test-node: .build/test-node/proto/msg_pb.js .build/test-node/package.json .build/test-node/check-all-schedules.js .build/test-node/node_modules
 
 
 
