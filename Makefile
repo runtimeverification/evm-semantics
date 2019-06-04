@@ -21,6 +21,9 @@ K_RELEASE:=$(K_SUBMODULE)/k-distribution/target/release/k
 K_BIN:=$(K_RELEASE)/bin
 K_LIB:=$(K_RELEASE)/lib
 
+PATH:=$(K_BIN):$(PATH)
+export PATH
+
 # need relative path for `pandoc` on MacOS
 PANDOC_TANGLE_SUBMODULE:=$(DEPS_DIR)/pandoc-tangle
 TANGLER:=$(PANDOC_TANGLE_SUBMODULE)/tangle.lua
@@ -127,12 +130,18 @@ SYNTAX_MODULE:=$(MAIN_MODULE)
 MAIN_DEFN_FILE:=driver
 KOMPILE_OPTS:=
 
+ocaml_kompiled:=$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter
+java_kompiled:=$(DEFN_DIR)/java/$(MAIN_DEFN_FILE)-kompiled/timestamp
+node_kompiled:=$(DEFN_DIR)/vm/kevm-vm
+haskell_kompiled:=$(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+llvm_kompiled:=$(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE)-kompiled/interpreter
+
 build: build-ocaml build-java
-build-ocaml: $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter
-build-java: $(DEFN_DIR)/java/$(MAIN_DEFN_FILE)-kompiled/timestamp
-build-node: $(DEFN_DIR)/vm/kevm-vm
-build-haskell: $(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE)-kompiled/definition.kore
-build-llvm: $(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE)-kompiled/interpreter
+build-ocaml: $(ocaml_kompiled)
+build-java: $(java_kompiled)
+build-node: $(node_kompiled)
+build-haskell: $(haskell_kompiled)
+build-llvm: $(llvm_kompiled)
 
 # Tangle definition from *.md files
 
@@ -140,12 +149,12 @@ concrete_tangle:=.k:not(.node):not(.symbolic),.standalone,.concrete
 symbolic_tangle:=.k:not(.node):not(.concrete),.standalone,.symbolic
 node_tangle:=.k:not(.standalone):not(.symbolic),.node,.concrete
 
-k_files:=$(MAIN_DEFN_FILE).k data.k network.k evm.k krypto.k edsl.k evm-node.k
-ocaml_files:=$(patsubst %,$(DEFN_DIR)/ocaml/%,$(k_files))
-java_files:=$(patsubst %,$(DEFN_DIR)/java/%,$(k_files))
-node_files:=$(patsubst %,$(DEFN_DIR)/node/%,$(k_files))
-haskell_files:=$(patsubst %,$(DEFN_DIR)/haskell/%,$(k_files))
-defn_files:=$(ocaml_files) $(java_files) $(node_files)
+k_files=$(MAIN_DEFN_FILE).k driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k
+ocaml_files=$(patsubst %,$(DEFN_DIR)/ocaml/%,$(k_files))
+java_files=$(patsubst %,$(DEFN_DIR)/java/%,$(k_files))
+node_files=$(patsubst %,$(DEFN_DIR)/node/%,$(k_files))
+haskell_files=$(patsubst %,$(DEFN_DIR)/haskell/%,$(k_files))
+defn_files=$(ocaml_files) $(java_files) $(node_files)
 
 defn: $(defn_files)
 java-defn: $(java_files)
@@ -175,7 +184,7 @@ $(DEFN_DIR)/haskell/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 
 # Java Backend
 
-$(DEFN_DIR)/java/$(MAIN_DEFN_FILE)-kompiled/timestamp: $(java_files)
+$(java_kompiled): $(java_files)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend java \
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/java/$(MAIN_DEFN_FILE).k \
@@ -183,7 +192,7 @@ $(DEFN_DIR)/java/$(MAIN_DEFN_FILE)-kompiled/timestamp: $(java_files)
 
 # Haskell Backend
 
-$(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE)-kompiled/definition.kore: $(haskell_files)
+$(haskell_kompiled): $(haskell_files)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend haskell --hook-namespaces KRYPTO \
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE).k \
@@ -257,7 +266,7 @@ $(BUILD_DIR)/plugin-node/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.p
 	mkdir -p .build/plugin-node
 	protoc --cpp_out=.build/plugin-node -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 
-$(DEFN_DIR)/vm/kevm-vm: $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter
+$(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter
 	mkdir -p $(DEFN_DIR)/vm
 	$(K_BIN)/llvm-kompile $(DEFN_DIR)/node/driver-kompiled/definition.kore $(DEFN_DIR)/node/driver-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp \
                           -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(BUILD_DIR)/plugin-node $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(BUILD_DIR)/plugin-node/proto/msg.pb.cc \
@@ -265,7 +274,7 @@ $(DEFN_DIR)/vm/kevm-vm: $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 # LLVM Backend
 
-$(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(ocaml_files)
+$(llvm_kompiled): $(ocaml_files)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) \
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE).k --directory $(DEFN_DIR)/llvm --hook-namespaces KRYPTO \
