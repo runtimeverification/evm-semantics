@@ -3,26 +3,26 @@
 	url = https://github.com/ethereum/tests.git
 	branch = develop
 	ignore = untracked
-[submodule ".build/k"]
-	path = .build/k
+[submodule "deps/k"]
+	path = deps/k
 	url = https://github.com/kframework/k
 	ignore = untracked
-[submodule ".build/secp256k1"]
-	path = .build/secp256k1
+[submodule "deps/secp256k1"]
+	path = deps/secp256k1
 	url = https://github.com/bitcoin-core/secp256k1
 	ignore = untracked
-[submodule ".build/pandoc-tangle"]
-	path = .build/pandoc-tangle
+[submodule "deps/pandoc-tangle"]
+	path = deps/pandoc-tangle
 	url = https://github.com/ehildenb/pandoc-tangle
 	ignore = untracked
-[submodule "plugin"]
-	path = plugin
+[submodule "deps/plugin"]
+	path = deps/plugin
 	url = https://github.com/runtimeverification/blockchain-k-plugin
 	ignore = untracked
-[submodule ".build/media/metropolis"]
-	path = .build/media/metropolis
+[submodule "deps/metropolis"]
+	path = deps/metropolis
 	url = https://github.com/matze/mtheme
-[submodule ".build/libff"]
-	path = .build/libff
+[submodule "deps/libff"]
+	path = deps/libff
 	url = https://github.com/scipr-lab/libff
 	ignore = untracked
