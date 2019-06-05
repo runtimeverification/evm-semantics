@@ -12,17 +12,19 @@ export C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH
 export PKG_CONFIG_PATH
 
-K_SUBMODULE:=$(BUILD_DIR)/k
-PLUGIN_SUBMODULE:=$(abspath plugin)
+DEPS_DIR:=deps
+K_SUBMODULE:=$(abspath $(DEPS_DIR)/k)
+PLUGIN_SUBMODULE:=$(abspath $(DEPS_DIR)/plugin)
 
 # need relative path for `pandoc` on MacOS
-PANDOC_TANGLE_SUBMODULE:=.build/pandoc-tangle
+PANDOC_TANGLE_SUBMODULE:=$(DEPS_DIR)/pandoc-tangle
 TANGLER:=$(PANDOC_TANGLE_SUBMODULE)/tangle.lua
 LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff \
+.PHONY: all clean clean-submodules distclean \
+        deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff \
         build build-ocaml build-java build-node build-kore split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn \
         test test-all test-conformance test-slow-conformance test-all-conformance \
@@ -34,14 +36,14 @@ export LUA_PATH
 all: build split-tests
 
 clean: clean-submodules
-	rm -rf .build/java .build/plugin-ocaml .build/plugin-node .build/ocaml .build/haskell .build/llvm .build/node .build/logs .build/vm tests/proofs/specs
+	rm -rf $(BUILD_DIR)
 
 clean-submodules:
-	rm -rf .build/k/make.timestamp .build/pandoc-tangle/make.timestamp tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp plugin/make.timestamp kore/make.timestamp .build/media/metropolis/*.sty
+	rm -rf $(DEPS_DIR)/k/make.timestamp $(DEPS_DIR)/pandoc-tangle/make.timestamp $(DEPS_DIR)/metropolis/*.sty
+	       tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp $(DEPS_DIR)/plugin/make.timestamp
 
 distclean: clean
 	cd $(K_SUBMODULE) && mvn clean -q
-	rm -rf .build/local
 	git submodule deinit --force -- ./
 
 # Dependencies
@@ -89,9 +91,9 @@ ocaml-deps:
 libsecp256k1: .build/local/lib/pkgconfig/libsecp256k1.pc
 
 .build/local/lib/pkgconfig/libsecp256k1.pc:
-	@echo "== submodule: .build/secp256k1"
-	git submodule update --init -- .build/secp256k1/
-	cd .build/secp256k1/ \
+	@echo "== submodule: $(DEPS_DIR)/secp256k1"
+	git submodule update --init -- $(DEPS_DIR)/secp256k1/
+	cd $(DEPS_DIR)/secp256k1/ \
 	    && ./autogen.sh \
 	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
 	    && make -s -j4 \
@@ -104,9 +106,9 @@ LIBFF_CC ?=clang-6.0
 LIBFF_CXX?=clang++-6.0
 
 .build/local/lib/libff.a:
-	@echo "== submodule: .build/libff"
-	git submodule update --init --recursive -- .build/libff/
-	cd .build/libff/ \
+	@echo "== submodule: $(DEPS_DIR)/libff"
+	git submodule update --init --recursive -- $(DEPS_DIR)/libff/
+	cd $(DEPS_DIR)/libff/ \
 	    && mkdir -p build \
 	    && cd build \
 	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(BUILD_LOCAL)" \
@@ -201,18 +203,18 @@ endif
 	    && cd .build/$*/driver-kompiled \
 	    && ocamlfind $(OCAMLC) -c -g constants.ml -package gmp -package zarith -safe-string
 
-.build/plugin-%/semantics.$(LIBEXT): $(wildcard plugin/plugin/*.ml plugin/plugin/*.mli) .build/%/driver-kompiled/constants.$(EXT)
+.build/plugin-%/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) .build/%/driver-kompiled/constants.$(EXT)
 	mkdir -p .build/plugin-$*
-	cp plugin/plugin/*.ml plugin/plugin/*.mli .build/plugin-$*
+	cp $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli .build/plugin-$*
 	eval $$(opam config env) \
-	    && ocp-ocamlres -format ocaml plugin/plugin/proto/VERSION -o .build/plugin-$*/apiVersion.ml \
-	    && ocaml-protoc plugin/plugin/proto/*.proto -ml_out .build/plugin-$* \
+	    && ocp-ocamlres -format ocaml $(PLUGIN_SUBMODULE)/plugin/proto/VERSION -o .build/plugin-$*/apiVersion.ml \
+	    && ocaml-protoc $(PLUGIN_SUBMODULE)/plugin/proto/*.proto -ml_out .build/plugin-$* \
 	    && cd .build/plugin-$* \
 	        && ocamlfind $(OCAMLC) -c -g -I ../$*/driver-kompiled msg_types.mli msg_types.ml msg_pb.mli msg_pb.ml apiVersion.ml world.mli world.ml caching.mli caching.ml BLOCKCHAIN.ml KRYPTO.ml \
 	                               -package cryptokit -package secp256k1 -package bn128 -package ocaml-protoc -safe-string -thread \
 	        && ocamlfind $(OCAMLC) -a -o semantics.$(LIBEXT) KRYPTO.$(EXT) msg_types.$(EXT) msg_pb.$(EXT) apiVersion.$(EXT) world.$(EXT) caching.$(EXT) BLOCKCHAIN.$(EXT) -thread \
 	        && ocamlfind remove ethereum-semantics-plugin-$* \
-	        && ocamlfind install ethereum-semantics-plugin-$* ../../plugin/plugin/META semantics.* *.cmi *.$(EXT)
+	        && ocamlfind install ethereum-semantics-plugin-$* $(PLUGIN_SUBMODULE)/plugin/META semantics.* *.cmi *.$(EXT)
 
 .build/%/driver-kompiled/interpreter: .build/plugin-%/semantics.$(LIBEXT)
 	eval $$(opam config env) \
@@ -231,17 +233,17 @@ endif
 	@echo "== kompile: $@"
 	${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
 	                 --syntax-module ETHEREUM-SIMULATION .build/node/driver.k --directory .build/node --hook-namespaces "KRYPTO BLOCKCHAIN" \
-	                 --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/blockchain.cpp -ccopt ${PLUGIN_SUBMODULE}/plugin-c/world.cpp -ccopt ${BUILD_DIR}/plugin-node/proto/msg.pb.cc \
+	                 --backend llvm -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blockchain.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/world.cpp -ccopt ${BUILD_DIR}/plugin-node/proto/msg.pb.cc \
 	                 -ccopt -I${BUILD_DIR}/plugin-node \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -lprotobuf -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
-.build/plugin-node/proto/msg.pb.cc: ${PLUGIN_SUBMODULE}/plugin/proto/msg.proto
+.build/plugin-node/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 	mkdir -p .build/plugin-node
-	protoc --cpp_out=.build/plugin-node -I ${PLUGIN_SUBMODULE}/plugin ${PLUGIN_SUBMODULE}/plugin/proto/msg.proto
+	protoc --cpp_out=.build/plugin-node -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 
 .build/vm/kevm-vm: .build/node/driver-kompiled/interpreter
 	mkdir -p .build/vm
-	${K_BIN}/llvm-kompile .build/node/driver-kompiled/definition.kore .build/node/driver-kompiled/dt library ${PLUGIN_SUBMODULE}/vm-c/main.cpp ${PLUGIN_SUBMODULE}/vm-c/vm.cpp -I ${PLUGIN_SUBMODULE}/plugin-c/ -I ${BUILD_DIR}/plugin-node ${PLUGIN_SUBMODULE}/plugin-c/*.cpp ${BUILD_DIR}/plugin-node/proto/msg.pb.cc -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I ${PLUGIN_SUBMODULE}/vm-c/ -I ${PLUGIN_SUBMODULE}/vm-c/kevm/ ${PLUGIN_SUBMODULE}/vm-c/kevm/semantics.cpp -o .build/vm/kevm-vm -g -O2
+	${K_BIN}/llvm-kompile .build/node/driver-kompiled/definition.kore .build/node/driver-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp -I $(PLUGIN_SUBMODULE)/plugin-c/ -I ${BUILD_DIR}/plugin-node $(PLUGIN_SUBMODULE)/plugin-c/*.cpp ${BUILD_DIR}/plugin-node/proto/msg.pb.cc -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o .build/vm/kevm-vm -g -O2
 
 # LLVM Backend
 
@@ -249,7 +251,7 @@ endif
 	@echo "== kompile: $@"
 	${K_BIN}/kompile --debug --main-module ETHEREUM-SIMULATION \
 	                 --syntax-module ETHEREUM-SIMULATION .build/ocaml/driver.k --directory .build/llvm --hook-namespaces KRYPTO \
-	                 --backend llvm -ccopt ${PLUGIN_SUBMODULE}/plugin-c/crypto.cpp \
+	                 --backend llvm -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
 # Tests
@@ -404,6 +406,7 @@ I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 sphinx:
 	@echo "== media: $@"
 	mkdir -p $(SPHINXBUILDDIR) \
+	    && cp -r media/sphinx-docs/* $(SPHINXBUILDDIR) \
 	    && cp -r *.md $(SPHINXBUILDDIR)/. \
 	    && cd $(SPHINXBUILDDIR) \
 	    && sed -i 's/{.k[ a-zA-Z.-]*}/k/g' *.md \

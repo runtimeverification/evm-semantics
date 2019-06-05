@@ -13,9 +13,12 @@ while [[ -h "$kevm_script" ]]; do
     [[ "$kevm_script" != /* ]] && kevm_script="$kevm_dir/$kevm_script"
 done
 kevm_dir="$(cd -P "$(dirname "$kevm_script")" && pwd)"
+
 build_dir="$kevm_dir/.build"
-release_dir="${K_BIN:-$build_dir/k/k-distribution/target/release/k}"
 lib_dir="$build_dir/local/lib"
+
+k_submodule="$kevm_dir/deps/k"
+release_dir="${K_BIN:-$k_submodule/k-distribution/target/release/k}"
 
 export PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH"
 export LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
