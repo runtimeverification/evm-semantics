@@ -213,7 +213,7 @@ endif
 	                               -package cryptokit -package secp256k1 -package bn128 -package ocaml-protoc -safe-string -thread \
 	        && ocamlfind $(OCAMLC) -a -o semantics.$(LIBEXT) KRYPTO.$(EXT) msg_types.$(EXT) msg_pb.$(EXT) apiVersion.$(EXT) world.$(EXT) caching.$(EXT) BLOCKCHAIN.$(EXT) -thread \
 	        && ocamlfind remove ethereum-semantics-plugin-$* \
-	        && ocamlfind install ethereum-semantics-plugin-$* ../../plugin/plugin/META semantics.* *.cmi *.$(EXT)
+	        && ocamlfind install ethereum-semantics-plugin-$* $(PLUGIN_SUBMODULE)/plugin/META semantics.* *.cmi *.$(EXT)
 
 .build/%/driver-kompiled/interpreter: .build/plugin-%/semantics.$(LIBEXT)
 	eval $$(opam config env) \
