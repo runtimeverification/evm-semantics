@@ -188,7 +188,8 @@ $(java_kompiled): $(java_files)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend java \
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/java/$(MAIN_DEFN_FILE).k \
-	                 --directory $(DEFN_DIR)/java -I $(DEFN_DIR)/java $(KOMPILE_OPTS)
+	                 --directory $(DEFN_DIR)/java -I $(DEFN_DIR)/java \
+	                 $(KOMPILE_OPTS)
 
 # Haskell Backend
 
@@ -196,7 +197,8 @@ $(haskell_kompiled): $(haskell_files)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend haskell --hook-namespaces KRYPTO \
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE).k \
-	                 --directory $(DEFN_DIR)/haskell -I $(DEFN_DIR)/haskell $(KOMPILE_OPTS)
+	                 --directory $(DEFN_DIR)/haskell -I $(DEFN_DIR)/haskell \
+	                 $(KOMPILE_OPTS)
 
 # OCAML Backend
 
@@ -253,14 +255,14 @@ $(DEFN_DIR)/%/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(BUILD_DIR)/plugin-%/sema
 
 $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(BUILD_DIR)/plugin-node/proto/msg.pb.cc
 	@echo "== kompile: $@"
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) \
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/node/$(MAIN_DEFN_FILE).k \
-	                 --directory $(DEFN_DIR)/node -I $(DEFN_DIR)/node \
+	                 --directory $(DEFN_DIR)/node -I $(DEFN_DIR)/node -I $(DEFN_DIR)/node \
 	                 --hook-namespaces "KRYPTO BLOCKCHAIN" \
-	                 --backend llvm -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blockchain.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/world.cpp -ccopt $(CURDIR)/$(BUILD_DIR)/plugin-node/proto/msg.pb.cc \
+	                 $(KOMPILE_OPTS) \
+	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blockchain.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/world.cpp -ccopt $(CURDIR)/$(BUILD_DIR)/plugin-node/proto/msg.pb.cc \
 	                 -ccopt -I$(CURDIR)/$(BUILD_DIR)/plugin-node \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -lprotobuf -ccopt -g -ccopt -std=c++11 -ccopt -O2 \
-	                 -I $(DEFN_DIR)/node $(KOMPILE_OPTS)
+	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -lprotobuf -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
 $(BUILD_DIR)/plugin-node/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 	mkdir -p .build/plugin-node
@@ -276,11 +278,13 @@ $(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 $(llvm_kompiled): $(ocaml_files)
 	@echo "== kompile: $@"
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) \
-	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE).k --directory $(DEFN_DIR)/llvm --hook-namespaces KRYPTO \
-	                 --backend llvm -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2 \
-	                 -I $(DEFN_DIR)/llvm -I $(DEFN_DIR)/ocaml $(KOMPILE_OPTS)
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
+	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE).k \
+	                 --directory $(DEFN_DIR)/llvm -I $(DEFN_DIR)/llvm -I $(DEFN_DIR)/ocaml \
+	                 --hook-namespaces KRYPTO \
+	                 $(KOMPILE_OPTS) \
+	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
+	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
 # Tests
 # -----
