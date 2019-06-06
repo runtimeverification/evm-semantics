@@ -44,7 +44,7 @@ export LUA_PATH
 all: build split-tests
 
 clean: clean-submodules
-	rm -rf $(BUILD_DIR)
+	rm -rf $(DEFN_DIR)
 	git clean -dfx -- tests/specs
 
 clean-submodules:
@@ -52,8 +52,8 @@ clean-submodules:
 	       tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp $(DEPS_DIR)/plugin/make.timestamp
 
 distclean: clean
-	cd $(K_SUBMODULE) && mvn clean -q
-	git submodule deinit --force -- ./
+	rm -rf $(BUILD_DIR) $(DEPS_DIR)
+	git submodule update --init --recursive
 
 # Dependencies
 # ------------
