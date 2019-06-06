@@ -69,7 +69,7 @@ run_kast() {
 
 run_prove() {
     export K_OPTS=-Xmx8G
-    kprove --directory "$backend_dir" "$run_file" "${args[@]-}" "$@"
+    kprove --directory "$backend_dir" "$run_file" "$@"
 }
 
 run_klab() {
