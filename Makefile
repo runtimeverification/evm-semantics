@@ -29,8 +29,8 @@ export LUA_PATH
         defn java-defn ocaml-defn node-defn haskell-defn \
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-        test-proof test-parse test-interactive test-interactive-help test-interactive-run test-interactive-prove \
-        metropolis-theme 2017-devcon3 sphinx
+        test-proof test-klab-prove test-parse test-interactive test-interactive-help test-interactive-run test-interactive-prove \
+        media media-pdf sphinx metropolis-theme
 .SECONDARY:
 
 all: build split-tests
@@ -39,7 +39,7 @@ clean: clean-submodules
 	rm -rf $(BUILD_DIR)
 
 clean-submodules:
-	rm -rf $(DEPS_DIR)/k/make.timestamp $(DEPS_DIR)/pandoc-tangle/make.timestamp $(DEPS_DIR)/metropolis/*.sty
+	rm -rf $(DEPS_DIR)/k/make.timestamp $(DEPS_DIR)/pandoc-tangle/make.timestamp $(DEPS_DIR)/metropolis/*.sty \
 	       tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp $(DEPS_DIR)/plugin/make.timestamp
 
 distclean: clean
@@ -260,6 +260,7 @@ endif
 TEST_CONCRETE_BACKEND:=ocaml
 TEST_SYMBOLIC_BACKEND:=java
 TEST:=./kevm
+KPROVE_MODULE:=VERIFICATION
 CHECK:=git --no-pager diff --no-index --ignore-all-space
 
 KEVM_MODE:=NORMAL
@@ -291,12 +292,15 @@ tests/%.run-interactive: tests/%
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.parse: tests/%
-	$(TEST) kast --backend $(TEST_CONCRETE_BACKEND) $< > $@-out
+	$(TEST) kast --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
 	$(CHECK) $@-expected $@-out
 	rm -rf $@-out
 
 tests/%.prove: tests/%
-	$(TEST) prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures
+	$(TEST) prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE)
+
+tests/%.klab-prove: tests/%
+	$(TEST) klab-prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE)
 
 # Smoke Tests
 
@@ -346,6 +350,7 @@ proof_specs_dir:=tests/specs
 proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
 
 test-proof: $(proof_tests:=.prove)
+test-klab-prove: $(smoke_tests_prove:=.klab-prove)
 
 # Parse Tests
 
@@ -368,9 +373,19 @@ test-interactive-help:
 # Media
 # -----
 
-media: sphinx 2017-devcon3 2018-csf
+media: sphinx media-pdf
 
-# Presentations
+### Media generated PDFs
+
+media_pdfs:=201710-presentation-devcon3 201801-presentation-csf
+
+media/%.pdf: media/%.md media/citations.md
+	@echo "== media: $@"
+	mkdir -p $(dir $@)
+	cat $^ | pandoc --from markdown --filter pandoc-citeproc --to beamer --output $@
+	@echo "== $*: presentation generated at $@"
+
+media-pdf: $(patsubst %, media/%.pdf, $(media_pdfs))
 
 metropolis-theme: $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty
 
@@ -378,15 +393,6 @@ $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
 	@echo "== submodule: $@"
 	git submodule update --init -- $(dir $@)
 	cd $(dir $@) && make
-
-2017-devcon3: $(BUILD_DIR)/media/2017-devcon3.pdf
-2018-csf:     $(BUILD_DIR)/media/2018-csf.pdf
-
-$(BUILD_DIR)/media/%.pdf: media/%.md media/citations.md
-	@echo "== media: $@"
-	mkdir -p $(dir $@)
-	cat $^ | pandoc --from markdown --filter pandoc-citeproc --to beamer --output $@
-	@echo "== $*: presentation generated at $@"
 
 # Sphinx HTML Documentation
 

@@ -178,17 +178,11 @@ Run the file `tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json`:
 ./kevm run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
 ```
 
-Run the same file as a test:
-
-```sh
-./kevm test tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
-```
-
 To run proofs, you can similarly use `./kevm`.
-For example, to prove the specification `tests/proofs/specs/vyper-erc20/totalSupply-spec.k`:
+For example, to prove one of the specifications:
 
 ```sh
-./kevm prove tests/proofs/specs/vyper-erc20/totalSupply-spec.k
+./kevm prove tests/specs/ds-token-erc20/transfer-failure-1-a-spec.k -m VERIFICATION
 ```
 
 Running Tests

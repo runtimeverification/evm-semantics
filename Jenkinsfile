@@ -113,6 +113,14 @@ pipeline {
             '''
           }
         }
+        stage('Java KLab') {
+          steps {
+            sh '''
+              export PATH=$HOME/.local/bin:$PATH
+              make test-klab-prove TEST_SYMBOLIC_BACKEND=java
+            '''
+          }
+        }
         stage('KEVM help') {
           steps {
             sh '''
