@@ -30,7 +30,7 @@ export LUA_PATH
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
         test-proof test-klab-prove test-parse test-interactive test-interactive-help test-interactive-run test-interactive-prove \
-        metropolis-theme 2017-devcon3 sphinx
+        media media-pdf sphinx metropolis-theme
 .SECONDARY:
 
 all: build split-tests
