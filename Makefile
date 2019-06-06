@@ -77,7 +77,7 @@ BACKEND_SKIP=-Dhaskell.backend.skip -Dllvm.backend.skip
 $(K_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
 	git submodule update --init --recursive -- $(K_SUBMODULE)
-	cd $(K_SUBMODULE) && mvn package -DskipTests -U ${BACKEND_SKIP}
+	cd $(K_SUBMODULE) && mvn package -DskipTests -U $(BACKEND_SKIP)
 	touch $(K_SUBMODULE)/make.timestamp
 
 $(PANDOC_TANGLE_SUBMODULE)/make.timestamp:
@@ -217,7 +217,7 @@ endif
 $(DEFN_DIR)/%/driver-kompiled/constants.$(EXT): $(ocaml_files)
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
-	    && ${K_BIN}/kompile --debug --main-module $(MAIN_MODULE) \
+	    && $(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) \
 	                        --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/$*/$(MAIN_DEFN_FILE).k \
 	                        --hook-namespaces "KRYPTO BLOCKCHAIN" --gen-ml-only -O3 --non-strict \
 	                        --directory $(DEFN_DIR)/$* -I $(DEFN_DIR)/$* $(KOMPILE_OPTS) \
@@ -253,7 +253,7 @@ $(DEFN_DIR)/%/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(BUILD_DIR)/plugin-%/sema
 
 $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(BUILD_DIR)/plugin-node/proto/msg.pb.cc
 	@echo "== kompile: $@"
-	${K_BIN}/kompile --debug --main-module $(MAIN_MODULE) \
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) \
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/node/$(MAIN_DEFN_FILE).k \
 	                 --directory $(DEFN_DIR)/node -I $(DEFN_DIR)/node \
 	                 --hook-namespaces "KRYPTO BLOCKCHAIN" \
@@ -364,7 +364,7 @@ slow_bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTe
                   tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_ContractRETURNBigOffset_d1g0v0.json
 bad_bchain_tests= tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/RevertOpcodeInCreateReturns_d0g0v0.json \
                   tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/RevertInCreateInInit_d0g0v0.json
-failing_bchain_tests=$(shell cat tests/failing.${TEST_CONCRETE_BACKEND})
+failing_bchain_tests=$(shell cat tests/failing.$(TEST_CONCRETE_BACKEND))
 all_bchain_tests=$(filter-out $(bad_bchain_tests), $(filter-out $(failing_bchain_tests), $(bchain_tests)))
 quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(all_bchain_tests))
 
