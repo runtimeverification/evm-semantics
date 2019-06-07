@@ -52,8 +52,10 @@ clean-submodules:
 	       tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp $(DEPS_DIR)/plugin/make.timestamp
 
 distclean: clean
-	rm -rf $(BUILD_DIR) $(DEPS_DIR)
-	git submodule update --init --recursive
+	rm -rf $(BUILD_DIR)
+	cd $(DEPS_DIR)/k         && mvn clean --quiet
+	cd $(DEPS_DIR)/secp256k1 && make distclean || true
+	cd $(DEPS_DIR)/libff     && rm -rf build
 
 # Dependencies
 # ------------
