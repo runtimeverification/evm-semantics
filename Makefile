@@ -151,7 +151,7 @@ concrete_tangle:=.k:not(.node):not(.symbolic),.standalone,.concrete
 symbolic_tangle:=.k:not(.node):not(.concrete),.standalone,.symbolic
 node_tangle:=.k:not(.standalone):not(.symbolic),.node,.concrete
 
-k_files=$(MAIN_DEFN_FILE).k driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k
+k_files=driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k
 ocaml_files=$(patsubst %,$(DEFN_DIR)/ocaml/%,$(k_files))
 java_files=$(patsubst %,$(DEFN_DIR)/java/%,$(k_files))
 node_files=$(patsubst %,$(DEFN_DIR)/node/%,$(k_files))
