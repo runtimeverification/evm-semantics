@@ -15,6 +15,7 @@ done
 kevm_dir="$(cd -P "$(dirname "$kevm_script")" && pwd)"
 
 build_dir="$kevm_dir/.build"
+defn_dir="$build_dir/defn"
 lib_dir="$build_dir/local/lib"
 
 k_submodule="$kevm_dir/deps/k"
@@ -176,7 +177,7 @@ if [[ $# -gt 0 ]] && [[ $1 == '--backend' ]]; then
     backend="$2"
     shift 2
 fi
-backend_dir="$build_dir/$backend"
+backend_dir="$defn_dir/$backend"
 [[ ! "$backend" == "ocaml" ]] || eval $(opam config env)
 
 # get the run file
