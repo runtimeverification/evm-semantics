@@ -153,37 +153,43 @@ node_tangle:=.k:not(.standalone):not(.symbolic),.node,.concrete
 
 k_files=driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k
 ocaml_files=$(patsubst %,$(DEFN_DIR)/ocaml/%,$(k_files))
+llvm_files=$(patsubst %,$(DEFN_DIR)/llvm/%,$(k_files))
 java_files=$(patsubst %,$(DEFN_DIR)/java/%,$(k_files))
-node_files=$(patsubst %,$(DEFN_DIR)/node/%,$(k_files))
 haskell_files=$(patsubst %,$(DEFN_DIR)/haskell/%,$(k_files))
+node_files=$(patsubst %,$(DEFN_DIR)/node/%,$(k_files))
 defn_files=$(ocaml_files) $(java_files) $(node_files)
 
 defn: $(defn_files)
-java-defn: $(java_files)
 ocaml-defn: $(ocaml_files)
-llvm-defn: $(ocaml_files)
-node-defn: $(node_files)
+llvm-defn: $(llvm_files)
+java-defn: $(java_files)
 haskell-defn: $(haskell_files)
-
-$(DEFN_DIR)/java/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
-	@echo "==  tangle: $@"
-	mkdir -p $(dir $@)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
+node-defn: $(node_files)
 
 $(DEFN_DIR)/ocaml/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
-$(DEFN_DIR)/node/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
+$(DEFN_DIR)/llvm/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
+
+$(DEFN_DIR)/java/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
 $(DEFN_DIR)/haskell/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
+
+$(DEFN_DIR)/node/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
 
 # Java Backend
 
@@ -279,11 +285,11 @@ $(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 # LLVM Backend
 
-$(llvm_kompiled): $(ocaml_files)
+$(llvm_kompiled): $(llvm_files)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
-	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE).k \
-	                 --directory $(DEFN_DIR)/llvm -I $(DEFN_DIR)/llvm -I $(DEFN_DIR)/ocaml \
+	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE).k \
+	                 --directory $(DEFN_DIR)/llvm -I $(DEFN_DIR)/llvm -I $(DEFN_DIR)/llvm \
 	                 --hook-namespaces KRYPTO \
 	                 $(KOMPILE_OPTS) \
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
