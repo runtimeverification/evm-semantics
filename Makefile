@@ -34,7 +34,7 @@ export LUA_PATH
 .PHONY: all clean clean-submodules distclean \
         deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff \
         build build-ocaml build-java build-node build-kore split-tests \
-        defn java-defn ocaml-defn node-defn haskell-defn \
+        defn java-defn ocaml-defn node-defn haskell-defn llvm-defn \
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
         test-proof test-klab-prove test-parse test-interactive test-interactive-help test-interactive-run test-interactive-prove \
@@ -161,6 +161,7 @@ defn_files=$(ocaml_files) $(java_files) $(node_files)
 defn: $(defn_files)
 java-defn: $(java_files)
 ocaml-defn: $(ocaml_files)
+llvm-defn: $(ocaml_files)
 node-defn: $(node_files)
 haskell-defn: $(haskell_files)
 
