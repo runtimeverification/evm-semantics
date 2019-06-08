@@ -152,12 +152,15 @@ symbolic_tangle:=.k:not(.node):not(.concrete),.standalone,.symbolic
 node_tangle:=.k:not(.standalone):not(.symbolic),.node,.concrete
 
 k_files=driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k
-ocaml_files=$(patsubst %,$(DEFN_DIR)/ocaml/%,$(k_files))
-llvm_files=$(patsubst %,$(DEFN_DIR)/llvm/%,$(k_files))
-java_files=$(patsubst %,$(DEFN_DIR)/java/%,$(k_files))
-haskell_files=$(patsubst %,$(DEFN_DIR)/haskell/%,$(k_files))
-node_files=$(patsubst %,$(DEFN_DIR)/node/%,$(k_files))
-defn_files=$(ocaml_files) $(java_files) $(node_files)
+EXTRA_K_FILES+=$(MAIN_DEFN_FILE).k
+ALL_K_FILES:=$(k_files) $(EXTRA_K_FILES)
+
+ocaml_files=$(patsubst %, $(DEFN_DIR)/ocaml/%, $(ALL_K_FILES))
+llvm_files=$(patsubst %, $(DEFN_DIR)/llvm/%, $(ALL_K_FILES))
+java_files=$(patsubst %, $(DEFN_DIR)/java/%, $(ALL_K_FILES))
+haskell_files=$(patsubst %, $(DEFN_DIR)/haskell/%, $(ALL_K_FILES))
+node_files=$(patsubst %, $(DEFN_DIR)/node/%, $(ALL_K_FILES))
+defn_files=$(ocaml_files) $(llvm_file) $(java_files) $(haskell_files) $(node_files)
 
 defn: $(defn_files)
 ocaml-defn: $(ocaml_files)
