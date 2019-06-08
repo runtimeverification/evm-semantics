@@ -235,13 +235,13 @@ $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
 	    && cd $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled \
 	    && ocamlfind $(OCAMLC) -c -g constants.ml -package gmp -package zarith -safe-string
 
-$(BUILD_DIR)/plugin-ocaml/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT)
-	mkdir -p $(BUILD_DIR)/plugin-ocaml
-	cp $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli $(BUILD_DIR)/plugin-ocaml
+$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT)
+	mkdir -p $(dir $@)
+	cp $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli $(dir $@)
 	eval $$(opam config env) \
-	    && ocp-ocamlres -format ocaml $(PLUGIN_SUBMODULE)/plugin/proto/VERSION -o $(BUILD_DIR)/plugin-ocaml/apiVersion.ml \
-	    && ocaml-protoc $(PLUGIN_SUBMODULE)/plugin/proto/*.proto -ml_out $(BUILD_DIR)/plugin-ocaml \
-	    && cd $(BUILD_DIR)/plugin-ocaml \
+	    && ocp-ocamlres -format ocaml $(PLUGIN_SUBMODULE)/plugin/proto/VERSION -o $(dir $@)/apiVersion.ml \
+	    && ocaml-protoc $(PLUGIN_SUBMODULE)/plugin/proto/*.proto -ml_out $(dir $@) \
+	    && cd $(dir $@) \
 	        && ocamlfind $(OCAMLC) -c -g -I $(CURDIR)/$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled \
 	                               msg_types.mli msg_types.ml msg_pb.mli msg_pb.ml apiVersion.ml world.mli world.ml caching.mli caching.ml BLOCKCHAIN.ml KRYPTO.ml \
 	                               -package cryptokit -package secp256k1 -package bn128 -package ocaml-protoc -safe-string -thread \
@@ -249,7 +249,7 @@ $(BUILD_DIR)/plugin-ocaml/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/pl
 	        && ocamlfind remove ethereum-semantics-plugin-ocaml \
 	        && ocamlfind install ethereum-semantics-plugin-ocaml $(PLUGIN_SUBMODULE)/plugin/META semantics.* *.cmi *.$(EXT)
 
-$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(BUILD_DIR)/plugin-ocaml/semantics.$(LIBEXT)
+$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT)
 	eval $$(opam config env) \
 	    && cd $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled \
 	        && ocamllex lexer.mll \
