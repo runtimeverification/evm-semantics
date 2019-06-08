@@ -225,14 +225,14 @@ else
   LIBFLAG=-shared
 endif
 
-$(DEFN_DIR)/%/driver-kompiled/constants.$(EXT): $(ocaml_files)
+$(DEFN_DIR)/%/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
 	    && $(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) \
 	                        --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/$*/$(MAIN_DEFN_FILE).k \
 	                        --hook-namespaces "KRYPTO BLOCKCHAIN" --gen-ml-only -O3 --non-strict \
 	                        --directory $(DEFN_DIR)/$* -I $(DEFN_DIR)/$* $(KOMPILE_OPTS) \
-	    && cd $(DEFN_DIR)/$*/driver-kompiled \
+	    && cd $(DEFN_DIR)/$*/$(MAIN_DEFN_FILE)-kompiled \
 	    && ocamlfind $(OCAMLC) -c -g constants.ml -package gmp -package zarith -safe-string
 
 $(BUILD_DIR)/plugin-%/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) $(DEFN_DIR)/%/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT)
@@ -242,7 +242,7 @@ $(BUILD_DIR)/plugin-%/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin
 	    && ocp-ocamlres -format ocaml $(PLUGIN_SUBMODULE)/plugin/proto/VERSION -o $(BUILD_DIR)/plugin-$*/apiVersion.ml \
 	    && ocaml-protoc $(PLUGIN_SUBMODULE)/plugin/proto/*.proto -ml_out $(BUILD_DIR)/plugin-$* \
 	    && cd $(BUILD_DIR)/plugin-$* \
-	        && ocamlfind $(OCAMLC) -c -g -I $(CURDIR)/$(DEFN_DIR)/$*/driver-kompiled \
+	        && ocamlfind $(OCAMLC) -c -g -I $(CURDIR)/$(DEFN_DIR)/$*/$(MAIN_DEFN_FILE)-kompiled \
 	                               msg_types.mli msg_types.ml msg_pb.mli msg_pb.ml apiVersion.ml world.mli world.ml caching.mli caching.ml BLOCKCHAIN.ml KRYPTO.ml \
 	                               -package cryptokit -package secp256k1 -package bn128 -package ocaml-protoc -safe-string -thread \
 	        && ocamlfind $(OCAMLC) -a -o semantics.$(LIBEXT) KRYPTO.$(EXT) msg_types.$(EXT) msg_pb.$(EXT) apiVersion.$(EXT) world.$(EXT) caching.$(EXT) BLOCKCHAIN.$(EXT) -thread \
@@ -279,7 +279,7 @@ $(BUILD_DIR)/plugin-node/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.p
 
 $(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter
 	mkdir -p $(DEFN_DIR)/vm
-	$(K_BIN)/llvm-kompile $(DEFN_DIR)/node/driver-kompiled/definition.kore $(DEFN_DIR)/node/driver-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp \
+	$(K_BIN)/llvm-kompile $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp \
                           -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(BUILD_DIR)/plugin-node $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(BUILD_DIR)/plugin-node/proto/msg.pb.cc \
 	                      -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $(DEFN_DIR)/vm/kevm-vm -g -O2
 
