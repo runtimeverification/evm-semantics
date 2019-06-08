@@ -225,40 +225,40 @@ else
   LIBFLAG=-shared
 endif
 
-$(DEFN_DIR)/%/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
+$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
 	@echo "== kompile: $@"
 	eval $$(opam config env) \
 	    && $(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) \
-	                        --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/$*/$(MAIN_DEFN_FILE).k \
+	                        --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE).k \
 	                        --hook-namespaces "KRYPTO BLOCKCHAIN" --gen-ml-only -O3 --non-strict \
-	                        --directory $(DEFN_DIR)/$* -I $(DEFN_DIR)/$* $(KOMPILE_OPTS) \
-	    && cd $(DEFN_DIR)/$*/$(MAIN_DEFN_FILE)-kompiled \
+	                        --directory $(DEFN_DIR)/ocaml -I $(DEFN_DIR)/ocaml $(KOMPILE_OPTS) \
+	    && cd $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled \
 	    && ocamlfind $(OCAMLC) -c -g constants.ml -package gmp -package zarith -safe-string
 
-$(BUILD_DIR)/plugin-%/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) $(DEFN_DIR)/%/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT)
-	mkdir -p $(BUILD_DIR)/plugin-$*
-	cp $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli $(BUILD_DIR)/plugin-$*
+$(BUILD_DIR)/plugin-ocaml/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT)
+	mkdir -p $(BUILD_DIR)/plugin-ocaml
+	cp $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli $(BUILD_DIR)/plugin-ocaml
 	eval $$(opam config env) \
-	    && ocp-ocamlres -format ocaml $(PLUGIN_SUBMODULE)/plugin/proto/VERSION -o $(BUILD_DIR)/plugin-$*/apiVersion.ml \
-	    && ocaml-protoc $(PLUGIN_SUBMODULE)/plugin/proto/*.proto -ml_out $(BUILD_DIR)/plugin-$* \
-	    && cd $(BUILD_DIR)/plugin-$* \
-	        && ocamlfind $(OCAMLC) -c -g -I $(CURDIR)/$(DEFN_DIR)/$*/$(MAIN_DEFN_FILE)-kompiled \
+	    && ocp-ocamlres -format ocaml $(PLUGIN_SUBMODULE)/plugin/proto/VERSION -o $(BUILD_DIR)/plugin-ocaml/apiVersion.ml \
+	    && ocaml-protoc $(PLUGIN_SUBMODULE)/plugin/proto/*.proto -ml_out $(BUILD_DIR)/plugin-ocaml \
+	    && cd $(BUILD_DIR)/plugin-ocaml \
+	        && ocamlfind $(OCAMLC) -c -g -I $(CURDIR)/$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled \
 	                               msg_types.mli msg_types.ml msg_pb.mli msg_pb.ml apiVersion.ml world.mli world.ml caching.mli caching.ml BLOCKCHAIN.ml KRYPTO.ml \
 	                               -package cryptokit -package secp256k1 -package bn128 -package ocaml-protoc -safe-string -thread \
 	        && ocamlfind $(OCAMLC) -a -o semantics.$(LIBEXT) KRYPTO.$(EXT) msg_types.$(EXT) msg_pb.$(EXT) apiVersion.$(EXT) world.$(EXT) caching.$(EXT) BLOCKCHAIN.$(EXT) -thread \
-	        && ocamlfind remove ethereum-semantics-plugin-$* \
-	        && ocamlfind install ethereum-semantics-plugin-$* $(PLUGIN_SUBMODULE)/plugin/META semantics.* *.cmi *.$(EXT)
+	        && ocamlfind remove ethereum-semantics-plugin-ocaml \
+	        && ocamlfind install ethereum-semantics-plugin-ocaml $(PLUGIN_SUBMODULE)/plugin/META semantics.* *.cmi *.$(EXT)
 
-$(DEFN_DIR)/%/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(BUILD_DIR)/plugin-%/semantics.$(LIBEXT)
+$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(BUILD_DIR)/plugin-ocaml/semantics.$(LIBEXT)
 	eval $$(opam config env) \
-	    && cd $(DEFN_DIR)/$*/$(MAIN_DEFN_FILE)-kompiled \
+	    && cd $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled \
 	        && ocamllex lexer.mll \
 	        && ocamlyacc parser.mly \
 	        && ocamlfind $(OCAMLC) -c -g -package gmp -package zarith -package uuidm -safe-string prelude.ml plugin.ml parser.mli parser.ml lexer.ml hooks.ml run.ml -thread \
-	        && ocamlfind $(OCAMLC) -c -g -w -11-26 -package gmp -package zarith -package uuidm -package ethereum-semantics-plugin-$* -safe-string realdef.ml -match-context-rows 2 \
+	        && ocamlfind $(OCAMLC) -c -g -w -11-26 -package gmp -package zarith -package uuidm -package ethereum-semantics-plugin-ocaml -safe-string realdef.ml -match-context-rows 2 \
 	        && ocamlfind $(OCAMLC) $(LIBFLAG) -o realdef.$(DLLEXT) realdef.$(EXT) \
 	        && ocamlfind $(OCAMLC) -g -o interpreter constants.$(EXT) prelude.$(EXT) plugin.$(EXT) parser.$(EXT) lexer.$(EXT) hooks.$(EXT) run.$(EXT) interpreter.ml \
-	                               -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin-$* -linkpkg -linkall -thread -safe-string
+	                               -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin-ocaml -linkpkg -linkall -thread -safe-string
 
 # Node Backend
 
