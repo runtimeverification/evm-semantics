@@ -1,6 +1,3 @@
-import hudson.model.Result
-import jenkins.model.CauseOfInterruption
-
 pipeline {
   agent none
   options {
@@ -11,11 +8,12 @@ pipeline {
       agent any
       steps {
         script {
-          build.getProject()._getRuns().iterator().each{ run ->
-            def exec = run.getExecutor()
-            if( run != build && exec != null ){
-              def cause = { "interrupted by build #${build.getId()}" as String } as CauseOfInterruption
-              exec.interrupt(Result.ABORTED, cause)
+          def jobName = env.JOB_NAME
+          def buildNumber = env.BUILD_NUMBER.toInteger()
+          def currentJob = Jenkins.instance.getItemByFullName(jobName)
+          for (def build : currentJob.builds) {
+            if (build.isBuilding() && build.number.toInteger() != buildNumber) {
+              build.doStop()
             }
           }
         }
