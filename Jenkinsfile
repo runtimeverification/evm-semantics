@@ -2,6 +2,7 @@ pipeline {
   agent none
   options {
     ansiColor('xterm')
+    skipDefaultCheckout()
   }
   stages {
     stage('Kill old builds') {
@@ -10,8 +11,8 @@ pipeline {
         script {
           def jobName = env.JOB_NAME
           def buildNumber = env.BUILD_NUMBER.toInteger()
-          def currentJob = Jenkins.instance.getItemByFullName(jobName)
-          for (def build : currentJob.builds) {
+          def currentJobs = Jenkins.instance.getItemByFullName(jobName)
+          for (def build : currentJobs.builds) {
             if (build.isBuilding() && build.number.toInteger() != buildNumber) {
               build.doStop()
             }
@@ -27,12 +28,17 @@ pipeline {
         }
       }
       stages {
-        stage("Init title") {
+        stage('Init title') {
           when { changeRequest() }
           steps {
             script {
               currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}"
             }
+          }
+        }
+        stage('Checkout') {
+          steps {
+            checkout scm
           }
         }
         stage('Dependencies') {
