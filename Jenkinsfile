@@ -3,9 +3,8 @@ pipeline {
     ansiColor('xterm')
   }
   stages {
-    stage('Kill old builds') {
-      agent any
-      steps {
+    node {
+      stage('Kill old builds') {
         build.getProject()._getRuns().iterator().each{ run ->
           def exec = run.getExecutor()
           //if the run is not a current build and it has executor (running) then stop it
