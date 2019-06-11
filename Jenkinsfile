@@ -5,18 +5,14 @@ pipeline {
   stages {
     stage('Kill older builds') {
       steps {
-        def jobName = env.JOB_NAME
-        def buildNumber = env.BUILD_NUMBER.toInteger()
-        /* Get job name */
-        def currentJob = Jenkins.instance.getItemByFullName(jobName)
-
-        /* Iterating over the builds for specific job */
-        for (def build : currentJob.builds) {
-            /* If there is a build that is currently running and it's not current build */
-            if (build.isBuilding() && build.number.toInteger() != buildNumber) {
-                /* Than stopping it */
-                build.doStop()
-            }
+        build.getProject()._getRuns().iterator().each{ run ->
+          def exec = run.getExecutor()
+          //if the run is not a current build and it has executor (running) then stop it
+          if( run!=build && exec!=null ){
+            //prepare the cause of interruption
+            def cause = { "interrupted by build #${build.getId()}" as String } as CauseOfInterruption 
+            exec.interrupt(Result.ABORTED, cause)
+          }
         }
       }
     }
