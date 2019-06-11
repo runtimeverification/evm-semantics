@@ -1,3 +1,6 @@
+import hudson.model.Result
+import jenkins.model.CauseOfInterruption
+
 pipeline {
   agent none
   options {
