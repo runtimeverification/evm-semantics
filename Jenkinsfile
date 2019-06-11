@@ -6,8 +6,8 @@ pipeline {
   }
   stages {
     stage('Kill old builds') {
+      agent none
       when { changeRequest() }
-      agent any
       steps {
         script {
           def jobName     = env.JOB_NAME
@@ -21,13 +21,8 @@ pipeline {
         }
       }
     }
-    stage('Run CI') {
-      agent {
-        dockerfile {
-          additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-          args '-m 60g'
-        }
-      }
+    stage('Init Title and Checkout') {
+      agent { label 'docker' }
       stages {
         stage('Init title') {
           when { changeRequest() }
@@ -42,6 +37,17 @@ pipeline {
             checkout scm
           }
         }
+      }
+    }
+    stage('Run CI') {
+      agent {
+        dockerfile {
+          additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+          args '-m 60g'
+          reuseNode true
+        }
+      }
+      stages {
         stage('Dependencies') {
           steps {
             sh '''
