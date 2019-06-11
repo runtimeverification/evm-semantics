@@ -6,6 +6,7 @@ pipeline {
   }
   stages {
     stage('Kill old builds') {
+      when { changeRequest() }
       agent any
       steps {
         script {
