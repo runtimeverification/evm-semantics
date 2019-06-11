@@ -9,7 +9,7 @@ pipeline {
       agent any
       steps {
         script {
-          def jobName = env.JOB_NAME
+          def jobName     = env.JOB_NAME
           def buildNumber = env.BUILD_NUMBER.toInteger()
           def currentJobs = Jenkins.instance.getItemByFullName(jobName)
           for (def build : currentJobs.builds) {
