@@ -1,4 +1,4 @@
-def cancelPreviousBuilds() {
+void cancelPreviousBuilds() {
     def jobName = env.JOB_NAME
     def buildNumber = env.BUILD_NUMBER.toInteger()
     /* Get job name */
