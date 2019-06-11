@@ -3,15 +3,18 @@ pipeline {
     ansiColor('xterm')
   }
   stages {
-    node {
-      stage('Kill old builds') {
-        build.getProject()._getRuns().iterator().each{ run ->
-          def exec = run.getExecutor()
-          //if the run is not a current build and it has executor (running) then stop it
-          if( run!=build && exec!=null ){
-            //prepare the cause of interruption
-            def cause = { "interrupted by build #${build.getId()}" as String } as CauseOfInterruption
-            exec.interrupt(Result.ABORTED, cause)
+    stage('Kill old builds') {
+      agent any
+      steps {
+        script {
+          build.getProject()._getRuns().iterator().each{ run ->
+            def exec = run.getExecutor()
+            //if the run is not a current build and it has executor (running) then stop it
+            if( run!=build && exec!=null ){
+              //prepare the cause of interruption
+              def cause = { "interrupted by build #${build.getId()}" as String } as CauseOfInterruption
+              exec.interrupt(Result.ABORTED, cause)
+            }
           }
         }
       }
