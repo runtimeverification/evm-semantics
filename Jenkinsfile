@@ -21,7 +21,7 @@ pipeline {
         }
       }
     }
-    stage('Run CI') {
+    stage('Run CI- blah') {
       agent { label 'docker' }
       stages {
         stage('Init title') {
