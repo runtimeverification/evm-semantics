@@ -9,7 +9,7 @@ pipeline {
       agent none
       when { changeRequest() }
       steps {
-        build job: 'rv-devops', parameters: [ string(name: 'BUILD_JOB_NAME', value: "${evn.JOB_NAME}")
+        build job: 'rv-devops', parameters: [ string(name: 'BUILD_JOB_NAME', value: "${env.JOB_NAME}")
                                             , string(name: 'BUILD_JOB_NUMBER', value: "${env.BUILD_NUMBER}")
                                             ]
       }
