@@ -9,16 +9,9 @@ pipeline {
       agent none
       when { changeRequest() }
       steps {
-        script {
-          def jobName     = env.JOB_NAME
-          def buildNumber = env.BUILD_NUMBER.toInteger()
-          def currentJobs = Jenkins.instance.getItemByFullName(jobName)
-          for (def build : currentJobs.builds) {
-            if (build.isBuilding() && build.number.toInteger() != buildNumber) {
-              build.doStop()
-            }
-          }
-        }
+        build job: 'rv-devops', parameters: [ string(name: 'BUILD_JOB_NAME', value: "${evn.JOB_NAME}")
+                                            , string(name: 'BUILD_JOB_NUMBER', value: "${env.BUILD_NUMBER}")
+                                            ]
       }
     }
     stage('Run CI') {
