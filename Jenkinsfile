@@ -9,9 +9,9 @@ pipeline {
       agent none
       when { changeRequest() }
       steps {
-        build job: 'rv-devops', parameters: [ string(name: 'BUILD_JOB_NAME', value: "${env.JOB_NAME}")
-                                            , string(name: 'BUILD_JOB_NUMBER', value: "${env.BUILD_NUMBER}")
-                                            ]
+        build job: 'rv-devops/master', parameters: [ string(name: 'BUILD_JOB_NAME', value: "${env.JOB_NAME}")
+                                                   , string(name: 'BUILD_JOB_NUMBER', value: "${env.BUILD_NUMBER}")
+                                                   ]
       }
     }
     stage('Run CI') {
