@@ -1341,7 +1341,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax InternalOp ::= "#refund" Exp [strict]
                         | "#setLocalMem" Int Int WordStack
  // ------------------------------------------------------
-    rule <k> #refund G:Int => . ... </k> <gas> GAVAIL => GAVAIL +Int G </gas>
+    rule [refund]: <k> #refund G:Int => . ... </k> <gas> GAVAIL => GAVAIL +Int G </gas>
 
     rule <k> #setLocalMem START WIDTH WS => . ... </k>
          <localMem> LM => LM [ START := #take(minInt(WIDTH, #sizeWordStack(WS)), WS) ] </localMem>
