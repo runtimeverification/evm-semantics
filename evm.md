@@ -667,11 +667,12 @@ Operator `#revOps` can be used to reverse a program.
 
     rule #asMapOpCodesAux( N , .OpCodes , OPS' , BBLOCKS ) => #insertBasicBlock(BBLOCKS, N, OPS')
 
-    rule #asMapOpCodesAux( N , OP ; OPS , OPS' , BBLOCKS )
-      => #if OP ==K JUMPDEST
-            #then #asMapOpCodesAux( N +Int #widthOps(OPS') , OPS , OP ; .OpCodes , #insertBasicBlock(BBLOCKS, N, OPS') )
-            #else #asMapOpCodesAux( N                      , OPS , OP ; OPS'     , BBLOCKS )
-         #fi
+    rule #asMapOpCodesAux( N , JUMPDEST ; OPS , OPS' , BBLOCKS )
+      => #asMapOpCodesAux( N +Int #widthOps(OPS') , OPS , JUMPDEST ; .OpCodes , #insertBasicBlock(BBLOCKS, N, OPS') )
+
+    rule #asMapOpCodesAux( N , OP ; OPS ,      OPS' , BBLOCKS )
+      => #asMapOpCodesAux( N ,      OPS , OP ; OPS' , BBLOCKS )
+      requires OP =/=K JUMPDEST
 
     syntax Map ::= #insertBasicBlock ( Map , Int , OpCodes ) [function]
  // -------------------------------------------------------------------
