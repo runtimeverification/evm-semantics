@@ -2147,8 +2147,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
 A `ScheduleConst` is a constant determined by the fee schedule.
 
 ```k
-    syntax Int ::= ScheduleConst "<" Schedule ">" [function]
- // --------------------------------------------------------
+    syntax Int ::= ScheduleConst "<" Schedule ">" [function, functional]
+ // --------------------------------------------------------------------
 
     syntax ScheduleConst ::= "Gzero"        | "Gbase"          | "Gverylow"      | "Glow"          | "Gmid"        | "Ghigh"
                            | "Gextcodesize" | "Gextcodecopy"   | "Gbalance"      | "Gsload"        | "Gjumpdest"   | "Gsstoreset"
