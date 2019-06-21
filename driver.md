@@ -75,11 +75,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
  // ----------------------------------
     rule <mode> NORMAL  </mode> <k> start => #execute ... </k>
     rule <mode> VMTESTS </mode> <k> start => #execute ... </k>
-
-    syntax EthereumCommand ::= "flush"
- // ----------------------------------
-    rule <k> flush => #finalizeTx(EXECMODE ==K VMTESTS) ... </k> <mode> EXECMODE </mode> <statusCode> EVMC_SUCCESS            </statusCode>
-    rule <k> flush => #finalizeTx(EXECMODE ==K VMTESTS) ... </k> <mode> EXECMODE </mode> <statusCode> _:ExceptionalStatusCode </statusCode>
 ```
 
 -   `startTx` computes the sender of the transaction, and places loadTx on the `k` cell.
@@ -308,8 +303,15 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> run TESTID : { KEY : (VAL:JSON) , NEXT , REST } => run TESTID : { NEXT , KEY : VAL , REST } ... </k>
       requires KEY in #execKeys
 
-    rule <k> run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush ... </k>
-    rule <k> run TESTID : { "lastblockhash" : (HASH:String) } => startTx                   ... </k>
+    rule <k> run TESTID : { "lastblockhash" : (HASH:String) } => startTx ... </k>
+
+    rule <mode> EXECMODE </mode>
+         <k> run TESTID : { "exec" : (EXEC:JSON) }
+          => load "exec" : EXEC
+          ~> start
+          ~> #finalizeTx(EXECMODE ==K VMTESTS)
+         ...
+         </k>
 ```
 
 -   `#postKeys` are a subset of `#checkKeys` which correspond to post-state account checks.
