@@ -103,6 +103,13 @@ pipeline {
             '''
           }
         }
+        stage('LLVM failing') {
+          steps {
+            sh '''
+              make test-failure TEST_CONCRETE_BACKEND=llvm
+            '''
+          }
+        }
         stage('Java KLab') {
           steps {
             sh '''
