@@ -7,12 +7,10 @@ kevm_dir="${KEVM_DIR:-.}"
 build_dir="$kevm_dir/.build"
 defn_dir="$build_dir/defn"
 lib_dir="$build_dir/local/lib"
+k_release_dir="${K_RELEASE:-$kevm_dir/deps/k/k-distribution/target/release/k}"
 
-k_submodule="$kevm_dir/deps/k"
-release_dir="${K_BIN:-$k_submodule/k-distribution/target/release/k}"
-
-export PATH="$release_dir/lib/native/linux:$release_dir/lib/native/linux64:$release_dir/bin/:$PATH"
-export LD_LIBRARY_PATH="$release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
+export PATH="$k_release_dir/lib/native/linux:$k_release_dir/lib/native/linux64:$k_release_dir/bin/:$PATH"
+export LD_LIBRARY_PATH="$k_release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
 
 test_logs="$build_dir/logs"
 mkdir -p "$test_logs"
