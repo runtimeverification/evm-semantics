@@ -2133,8 +2133,8 @@ Specify which profile by passing in the argument `-cSCHEDULE=<FEE_SCHEDULE>` whe
 A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `ScheduleFlag` to a `Schedule` yields whether the flag is set or not.
 
 ```k
-    syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function]
- // ----------------------------------------------------------
+    syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function, functional]
+ // ----------------------------------------------------------------------
 
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
