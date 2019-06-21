@@ -3,17 +3,7 @@
 set -euo pipefail
 shopt -s extglob
 
-curdir="$(pwd)"
-
-# https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
-kevm_script="$0"
-while [[ -h "$kevm_script" ]]; do
-    kevm_dir="$(cd -P "$(dirname "$kevm_script")" && pwd)"
-    kevm_script="$(readlink "$kevm_script")"
-    [[ "$kevm_script" != /* ]] && kevm_script="$kevm_dir/$kevm_script"
-done
-kevm_dir="$(cd -P "$(dirname "$kevm_script")" && pwd)"
-
+kevm_dir="${KEVM_DIR:-.}"
 build_dir="$kevm_dir/.build"
 defn_dir="$build_dir/defn"
 lib_dir="$build_dir/local/lib"
@@ -74,13 +64,12 @@ run_prove() {
 }
 
 run_klab() {
-    local run_mode rel_run_file klab_log
+    local run_mode klab_log
 
     run_mode="$1" ; shift
-    rel_run_file="${run_file#$curdir}"
-    klab_log="$(basename "${rel_run_file%-spec.k}")"
+    klab_log="$(basename "${run_file%-spec.k}")"
 
-    "$0" "$run_mode" --backend java "$rel_run_file" \
+    "$0" "$run_mode" --backend java "$run_file" \
         --state-log --state-log-path "$KLAB_OUT/data" --state-log-id "$klab_log" \
         --state-log-events OPEN,EXECINIT,SEARCHINIT,REACHINIT,REACHTARGET,REACHPROVED,NODE,RULE,SRULE,RULEATTEMPT,IMPLICATION,Z3QUERY,Z3RESULT,CLOSE \
         --output-flatten "_Map_ #And" \
@@ -92,10 +81,9 @@ run_klab() {
 }
 
 view_klab() {
-    local rel_run_file
+    local klab_log
 
-    rel_run_file="${run_file#$curdir}"
-    klab_log="$(basename "${rel_run_file%-spec.k}")"
+    klab_log="$(basename "${run_file%-spec.k}")"
 
     # klab often runs out of stack space when running long-running KEVM programs
     # klab debug "$klab_log"
@@ -181,7 +169,7 @@ backend_dir="$defn_dir/$backend"
 [[ ! "$backend" == "ocaml" ]] || eval $(opam config env)
 
 # get the run file
-run_file="$curdir/$1" ; shift
+run_file="$1" ; shift
 [[ -f "$run_file" ]] || fatal "File does not exist: $run_file"
 
 cMODE="\`${MODE:-NORMAL}\`(.KList)"
