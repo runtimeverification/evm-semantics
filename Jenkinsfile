@@ -103,9 +103,10 @@ pipeline {
             '''
           }
         }
-        stage('LLVM failing') {
+        stage('Failing tests') {
           steps {
             sh '''
+              make test-failure TEST_CONCRETE_BACKEND=ocaml
               make test-failure TEST_CONCRETE_BACKEND=llvm
             '''
           }
