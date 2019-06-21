@@ -653,7 +653,7 @@ The `"rlp"` key loads the block information.
       requires KEY in (SetItem("callcreates")) andBool notBool #isSorted(JS)
 
     rule <k> check TESTID : { "post" : POST } => check "account" : POST ~> failure TESTID ... </k>
-    rule <k> check "account" : { ACCTID: { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } ... </k>
+    rule <k> check "account" : { ACCTID:Int : { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } ... </k>
       requires REST =/=K .JSONList
 
     rule <k> check "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }                                ... </k>
