@@ -50,3 +50,4 @@ RUN    cd /home/user/.tmp-haskell \
     && stack build --only-snapshot --test --bench --no-haddock-deps --haddock --library-profiling
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
+ENV PATH=/home/user/.local/bin:/home/user/.cargo/bin:$PATH
