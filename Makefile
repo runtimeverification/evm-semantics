@@ -37,7 +37,8 @@ export LUA_PATH
         defn java-defn ocaml-defn node-defn haskell-defn llvm-defn \
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-        test-proof test-klab-prove test-parse test-interactive test-interactive-help test-interactive-run test-interactive-prove \
+        test-proof test-klab-prove test-parse test-failure \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove \
         media media-pdf sphinx metropolis-theme
 .SECONDARY:
 
@@ -335,6 +336,11 @@ tests/%.run-interactive: tests/%
 	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
+tests/%.run-expected: tests/% tests/%.expected
+	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) run --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
+	    || $(CHECK) tests/$*.expected tests/$*.$(TEST_CONCRETE_BACKEND)-out
+	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
+
 tests/%.parse: tests/%
 	$(TEST) kast --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
 	$(CHECK) $@-expected $@-out
@@ -403,6 +409,12 @@ parse_tests:=$(wildcard tests/interactive/*.json) \
 
 test-parse: $(parse_tests:=.parse)
 	echo $(parse_tests)
+
+# Failing correctly tests
+
+failure_tests:=$(wildcard tests/failing/*.json)
+
+test-failure: $(failure_tests:=.run-expected)
 
 # Interactive Tests
 

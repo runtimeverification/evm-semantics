@@ -20,7 +20,6 @@ pipeline {
     stage('Dependencies') {
       steps {
         sh '''
-          export PATH=$HOME/.local/bin:$HOME/.cargo/bin:$PATH
           make all-deps -B
           make split-tests -B
         '''
@@ -29,7 +28,6 @@ pipeline {
     stage('Build') {
       steps {
         sh '''
-          export PATH=$HOME/.local/bin:$HOME/.cargo/bin:$PATH
           make build build-llvm build-haskell build-node -j4 -B
         '''
       }
@@ -40,7 +38,6 @@ pipeline {
         stage('Conformance (OCaml)') {
           steps {
             sh '''
-              export PATH=$HOME/.local/bin:$PATH
               nprocs=$(nproc)
               make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=ocaml
             '''
@@ -49,7 +46,6 @@ pipeline {
         stage('Conformance (LLVM)') {
           steps {
             sh '''
-              export PATH=$HOME/.local/bin:$PATH
               nprocs=$(nproc)
               make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=llvm
             '''
@@ -63,7 +59,6 @@ pipeline {
       }
       steps {
         sh '''
-          export PATH=$HOME/.local/bin:$PATH
           nprocs=$(nproc)
           [ "$nprocs" -gt '6' ] && nprocs='6'
           make test-proof -j"$nprocs"
@@ -76,7 +71,6 @@ pipeline {
         stage('OCaml krun') {
           steps {
             sh '''
-              export PATH=$HOME/.local/bin:$PATH
               make test-interactive-run TEST_CONCRETE_BACKEND=ocaml
             '''
           }
@@ -84,7 +78,6 @@ pipeline {
         stage('LLVM krun') {
           steps {
             sh '''
-              export PATH=$HOME/.local/bin:$PATH
               make test-interactive-run TEST_CONCRETE_BACKEND=llvm
             '''
           }
@@ -92,7 +85,6 @@ pipeline {
         stage('Java krun') {
           steps {
             sh '''
-              export PATH=$HOME/.local/bin:$PATH
               make test-interactive-run TEST_CONCRETE_BACKEND=java
             '''
           }
@@ -100,7 +92,6 @@ pipeline {
         stage('Haskell krun') {
           steps {
             sh '''
-              export PATH=$HOME/.local/bin:$PATH
               make test-interactive-run TEST_CONCRETE_BACKEND=haskell
             '''
           }
@@ -108,15 +99,21 @@ pipeline {
         stage('OCaml kast') {
           steps {
             sh '''
-              export PATH=$HOME/.local/bin:$PATH
               make test-parse TEST_CONCRETE_BACKEND=ocaml
+            '''
+          }
+        }
+        stage('Failing tests') {
+          steps {
+            sh '''
+              make test-failure TEST_CONCRETE_BACKEND=ocaml
+              make test-failure TEST_CONCRETE_BACKEND=llvm
             '''
           }
         }
         stage('Java KLab') {
           steps {
             sh '''
-              export PATH=$HOME/.local/bin:$PATH
               make test-klab-prove TEST_SYMBOLIC_BACKEND=java
             '''
           }
