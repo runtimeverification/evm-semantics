@@ -30,7 +30,10 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
     rule <k> ETC                          ETS:EthereumSimulation => ETC          ~> ETS ... </k>
     rule <k> ETC1:EthereumCommand ~> ETC2 ETS:EthereumSimulation => ETC1 ~> ETC2 ~> ETS ... </k>
 
-    rule <k> #halt ~> ETC ETS:EthereumSimulation => #halt ~> ETC ~> ETS ... </k>
+    rule <k> (#halt => .) ~> #finishTx ... </k>
+    rule <k> (#halt => .) ~> exception ... </k>
+    rule <k> (#halt => .) ~> failure _ ... </k>
+    rule <k> (#halt => .) ~> check _   ... </k>
 
     syntax EthereumSimulation ::= JSON
  // ----------------------------------
@@ -174,11 +177,11 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
-    rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState                   ... </k>
-    rule <statusCode> EVMC_REVERT             </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k> <gas> GAVAIL </gas>
+    rule <k> #finishTx => #popCallStack ~> #popWorldState                   ... </k> <statusCode> _:ExceptionalStatusCode </statusCode>
+    rule <k> #finishTx => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k> <statusCode> EVMC_REVERT             </statusCode> <gas> GAVAIL </gas>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
-         <k> #halt ~> #finishTx => #mkCodeDeposit ACCT ... </k>
+         <k> #finishTx => #mkCodeDeposit ACCT ... </k>
          <id> ACCT </id>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
@@ -188,7 +191,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </message>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
-         <k> #halt ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ... </k>
+         <k> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ... </k>
          <id> ACCT </id>
          <gas> GAVAIL </gas>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -249,15 +252,14 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= "exception" | "status" StatusCode
  // ------------------------------------------------------------
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> #halt ~> exception => . ... </k>
+         <k> exception => . ... </k>
 
     rule <k> status SC => . ... </k> <statusCode> SC </statusCode>
 
     syntax EthereumCommand ::= "failure" String | "success"
  // -------------------------------------------------------
     rule <k> success => . ... </k> <exit-code> _ => 0 </exit-code> <mode> _ => SUCCESS </mode>
-    rule <k>          failure _ => . ... </k>
-    rule <k> #halt ~> failure _ => . ... </k>
+    rule <k> failure _ => . ... </k>
 ```
 
 ### Running Tests
@@ -638,8 +640,6 @@ The `"rlp"` key loads the block information.
 ```{.k .standalone}
     syntax EthereumCommand ::= "check" JSON
  // ---------------------------------------
-    rule <k> #halt ~> check J:JSON => check J ~> #halt ... </k>
-
     rule <k> check DATA : { .JSONList } => . ... </k> requires DATA =/=String "transactions"
     rule <k> check DATA : [ .JSONList ] => . ... </k> requires DATA =/=String "ommerHeaders"
 
