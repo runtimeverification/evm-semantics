@@ -23,10 +23,9 @@ An Ethereum simulation is a list of Ethereum commands.
 Some Ethereum commands take an Ethereum specification (eg. for an account or transaction).
 
 ```{.k .standalone}
-    syntax EthereumSimulation ::= ".EthereumSimulation"
+    syntax EthereumSimulation ::= EthereumCommand
                                 | EthereumCommand EthereumSimulation
  // ----------------------------------------------------------------
-    rule <k> .EthereumSimulation                                 => .                   ... </k>
     rule <k> ETC                          ETS:EthereumSimulation => ETC          ~> ETS ... </k>
     rule <k> ETC1:EthereumCommand ~> ETC2 ETS:EthereumSimulation => ETC1 ~> ETC2 ~> ETS ... </k>
 
@@ -37,7 +36,7 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
 
     syntax EthereumSimulation ::= JSON
  // ----------------------------------
-    rule <k> JSONINPUT:JSON => run JSONINPUT success .EthereumSimulation </k>
+    rule <k> JSONINPUT:JSON => run JSONINPUT success </k>
 ```
 
 For verification purposes, it's much easier to specify a program in terms of its op-codes and not the hex-encoding that the tests use.
