@@ -1219,15 +1219,13 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 ```
 
 -   `#call_____` takes the calling account, the account to execute as, the account whose code should execute, the gas limit, the amount to transfer, and the arguments.
--   `#callWithCode______` takes the calling account, the accout to execute as, the code to execute (as a map), the gas limit, the amount to transfer, and the arguments.
 -   `#return__` is a placeholder for the calling program, specifying where to place the returned data in memory.
 
 ```k
     syntax InternalOp ::= "#checkCall" Int Int
-                        | "#call"         Int Int Int Int Int WordStack Bool
-                        | "#callWithCode" Int Int Map WordStack Int Int WordStack Bool
-                        | "#mkCall"       Int Int Map WordStack     Int WordStack Bool
- // ----------------------------------------------------------------------------------
+                        | "#call"      Int Int Int Int Int WordStack Bool
+                        | "#mkCall"    Int Int Int Int WordStack Bool
+ // ---------------------------------------------------------------------
     rule <k> #checkCall ACCT VALUE
           => #refund GCALL ~> #pushCallStack ~> #pushWorldState
           ~> #end #if VALUE >Int BAL #then EVMC_BALANCE_UNDERFLOW #else EVMC_CALL_DEPTH_EXCEEDED #fi
@@ -1253,40 +1251,13 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .WordStack VALUE APPVALUE ARGS STATIC
-         ...
-         </k>
-         <schedule> SCHED </schedule>
-      requires ACCTCODE in #precompiledAccounts(SCHED)
-
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) CODE VALUE APPVALUE ARGS STATIC
-         ...
-         </k>
-         <schedule> SCHED </schedule>
-         <account>
-           <acctID> ACCTCODE </acctID>
-           <code> CODE </code>
-           ...
-         </account>
-      requires notBool ACCTCODE in #precompiledAccounts(SCHED)
-
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO .Map .WordStack VALUE APPVALUE ARGS STATIC
-         ...
-         </k>
-         <activeAccounts> ACCTS </activeAccounts>
-         <schedule> SCHED </schedule>
-      requires notBool ACCTCODE in #precompiledAccounts(SCHED) andBool notBool ACCTCODE in ACCTS
-
-    rule <k> #callWithCode ACCTFROM ACCTTO CODE BYTES VALUE APPVALUE ARGS STATIC
           => #pushCallStack ~> #pushWorldState
           ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCall ACCTFROM ACCTTO CODE BYTES APPVALUE ARGS STATIC
+          ~> #mkCall ACCTFROM ACCTTO ACCTCODE APPVALUE ARGS STATIC
          ...
          </k>
 
-    rule <k> #mkCall ACCTFROM ACCTTO CODE BYTES APPVALUE ARGS STATIC:Bool
+    rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE APPVALUE ARGS STATIC:Bool
           => #initVM ~> #execute
          ...
          </k>
@@ -1297,10 +1268,55 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <gas> _ => GCALL </gas>
          <callGas> GCALL => 0 </callGas>
          <caller> _ => ACCTFROM </caller>
-         <program> _ => CODE </program>
-         <programBytes> _ => BYTES </programBytes>
+         <program> _ => #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) </program>
+         <programBytes> _ => CODE </programBytes>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
+         <schedule> SCHED </schedule>
+         <account>
+           <acctID> ACCTCODE </acctID>
+           <code> CODE </code>
+           ...
+         </account>
+      requires notBool ACCTCODE in #precompiledAccounts(SCHED)
+
+    rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE APPVALUE ARGS STATIC:Bool
+          => #initVM ~> #execute
+         ...
+         </k>
+         <callDepth> CD => CD +Int 1 </callDepth>
+         <callData> _ => ARGS </callData>
+         <callValue> _ => APPVALUE </callValue>
+         <id> _ => ACCTTO </id>
+         <gas> _ => GCALL </gas>
+         <callGas> GCALL => 0 </callGas>
+         <caller> _ => ACCTFROM </caller>
+         <program> _ => (0 |-> #precompiled(ACCTCODE)) </program>
+         <programBytes> _ => .WordStack </programBytes>
+         <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
+         <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
+         <schedule> SCHED </schedule>
+      requires ACCTCODE in #precompiledAccounts(SCHED)
+
+    rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE APPVALUE ARGS STATIC:Bool
+          => #initVM ~> #execute
+         ...
+         </k>
+         <callDepth> CD => CD +Int 1 </callDepth>
+         <callData> _ => ARGS </callData>
+         <callValue> _ => APPVALUE </callValue>
+         <id> _ => ACCTTO </id>
+         <gas> _ => GCALL </gas>
+         <callGas> GCALL => 0 </callGas>
+         <caller> _ => ACCTFROM </caller>
+         <program> _ => .Map </program>
+         <programBytes> _ => .WordStack </programBytes>
+         <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
+         <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
+         <activeAccounts> ACCTS </activeAccounts>
+         <schedule> SCHED </schedule>
+      requires notBool ACCTCODE in #precompiledAccounts(SCHED)
+       andBool notBool ACCTCODE in ACCTS
 
     syntax KItem ::= "#initVM"
  // --------------------------
