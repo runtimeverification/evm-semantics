@@ -1224,7 +1224,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 ```k
     syntax InternalOp ::= "#checkCall" Int Int
                         | "#call"      Int Int Int Int Int WordStack Bool
-                        | "#mkCall"    Int Int Int Int WordStack Bool
+                        | "#mkCall"    Int Int Int     Int WordStack Bool
  // ---------------------------------------------------------------------
     rule <k> #checkCall ACCT VALUE
           => #refund GCALL ~> #pushCallStack ~> #pushWorldState
