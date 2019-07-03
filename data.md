@@ -234,7 +234,8 @@ You could alternatively calculate `I1 modInt I2`, then add one to the normal int
 ```
 
 The corresponding `<op>Word` operations automatically perform the correct modulus for EVM words.
-Operands are assumed to be within the range of a 256 bit EVM word. 
+Warning: operands are assumed to be within the range of a 256 bit EVM word. Unbound integers may not return the correct result.
+
 ```k
     syntax Int ::= Int "+Word" Int [function]
                  | Int "*Word" Int [function]
