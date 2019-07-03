@@ -39,6 +39,7 @@ pipeline {
           steps {
             sh '''
               nprocs=$(nproc)
+              [ "$nprocs" -gt '16' ] && nprocs='16'
               make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=ocaml
             '''
           }
@@ -47,6 +48,7 @@ pipeline {
           steps {
             sh '''
               nprocs=$(nproc)
+              [ "$nprocs" -gt '16' ] && nprocs='16'
               make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=llvm
             '''
           }
