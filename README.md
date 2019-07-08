@@ -152,6 +152,17 @@ make build-haskell
 make build-llvm
 ```
 
+#### Building Full Node
+
+The target `make build-node` can be used to build an EVM binary which can comminicate with an Ethereum client.
+
+Extra dependencies `gettext`, `autopoint`, and `libtool-bin` may be needed on Ubuntu to link this statically.
+Then invoke command:
+
+```sh
+make build-node LLVM_KOMPILE_OPTS='-static' KOMPILE_OPTS='-ccopt -static'
+```
+
 This Repository
 ---------------
 
