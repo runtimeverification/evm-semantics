@@ -58,8 +58,39 @@ distclean: clean
 	cd $(DEPS_DIR)/secp256k1 && make distclean || true
 	cd $(DEPS_DIR)/libff     && rm -rf build
 
-# Dependencies
-# ------------
+# Non-K Dependencies
+# ------------------
+
+libsecp256k1_out:=$(LIBRARY_PATH)/pkgconfig/libsecp256k1.pc
+libff_out:=$(LIBRARY_PATH)/libff.a
+
+libsecp256k1: $(libsecp256k1_out)
+libff: $(libff_out)
+
+$(libsecp256k1_out):
+	@echo "== submodule: $(DEPS_DIR)/secp256k1"
+	git submodule update --init -- $(DEPS_DIR)/secp256k1/
+	cd $(DEPS_DIR)/secp256k1/ \
+	    && ./autogen.sh \
+	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
+	    && make -s -j4 \
+	    && make install
+
+LIBFF_CC ?=clang-6.0
+LIBFF_CXX?=clang++-6.0
+
+$(libff_out):
+	@echo "== submodule: $(DEPS_DIR)/libff"
+	git submodule update --init --recursive -- $(DEPS_DIR)/libff/
+	cd $(DEPS_DIR)/libff/ \
+	    && mkdir -p build \
+	    && cd build \
+	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(BUILD_LOCAL)" \
+	    && make -s -j4 \
+	    && make install
+
+# K Dependencies
+# --------------
 
 all-deps: deps llvm-deps haskell-deps
 all-deps: BACKEND_SKIP=
@@ -96,34 +127,6 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 ocaml-deps:
 	eval $$(opam config env) \
 	    opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128 ocaml-protoc rlp yojson hex ocp-ocamlres
-
-libsecp256k1_out:=$(LIBRARY_PATH)/pkgconfig/libsecp256k1.pc
-libff_out:=$(LIBRARY_PATH)/libff.a
-
-libsecp256k1: $(libsecp256k1_out)
-libff: $(libff_out)
-
-$(libsecp256k1_out):
-	@echo "== submodule: $(DEPS_DIR)/secp256k1"
-	git submodule update --init -- $(DEPS_DIR)/secp256k1/
-	cd $(DEPS_DIR)/secp256k1/ \
-	    && ./autogen.sh \
-	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
-	    && make -s -j4 \
-	    && make install
-
-LIBFF_CC ?=clang-6.0
-LIBFF_CXX?=clang++-6.0
-
-$(libff_out):
-	@echo "== submodule: $(DEPS_DIR)/libff"
-	git submodule update --init --recursive -- $(DEPS_DIR)/libff/
-	cd $(DEPS_DIR)/libff/ \
-	    && mkdir -p build \
-	    && cd build \
-	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(BUILD_LOCAL)" \
-	    && make -s -j4 \
-	    && make install
 
 # Building
 # --------
