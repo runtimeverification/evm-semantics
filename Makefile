@@ -74,7 +74,7 @@ libff: $(libff_out)
 
 $(libsecp256k1_out):
 	@echo "== submodule: $(DEPS_DIR)/secp256k1"
-	git submodule update --init -- $(DEPS_DIR)/secp256k1/
+	git submodule update --init --recursive -- $(DEPS_DIR)/secp256k1
 	cd $(DEPS_DIR)/secp256k1/ \
 	    && ./autogen.sh \
 	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
@@ -82,8 +82,8 @@ $(libsecp256k1_out):
 	    && make install
 
 $(libprocps_out):
-	# @echo "== submodule: $(DEPS_DIR)/secp256k1"
-	# git submodule update --init -- $(DEPS_DIR)/secp256k1/
+	@echo "== submodule: $(DEPS_DIR)/procps"
+	git submodule update --init --recursive -- $(DEPS_DIR)/procps
 	cd $(DEPS_DIR)/procps/ \
 	    && ./autogen.sh \
 	    && ./configure --prefix="$(BUILD_LOCAL)" \
@@ -92,7 +92,7 @@ $(libprocps_out):
 
 $(libff_out):
 	@echo "== submodule: $(DEPS_DIR)/libff"
-	git submodule update --init --recursive -- $(DEPS_DIR)/libff/
+	git submodule update --init --recursive -- $(DEPS_DIR)/libff
 	cd $(DEPS_DIR)/libff/ \
 	    && mkdir -p build \
 	    && cd build \
