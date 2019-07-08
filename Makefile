@@ -69,7 +69,7 @@ libff: $(libff_out)
 
 $(libsecp256k1_out):
 	@echo "== submodule: $(DEPS_DIR)/secp256k1"
-	git submodule update --init -- $(DEPS_DIR)/secp256k1/
+	git submodule update --init --recursive -- $(DEPS_DIR)/secp256k1
 	cd $(DEPS_DIR)/secp256k1/ \
 	    && ./autogen.sh \
 	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
@@ -81,7 +81,7 @@ LIBFF_CXX?=clang++-6.0
 
 $(libff_out):
 	@echo "== submodule: $(DEPS_DIR)/libff"
-	git submodule update --init --recursive -- $(DEPS_DIR)/libff/
+	git submodule update --init --recursive -- $(DEPS_DIR)/libff
 	cd $(DEPS_DIR)/libff/ \
 	    && mkdir -p build \
 	    && cd build \
