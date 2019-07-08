@@ -303,7 +303,7 @@ $(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter $(libp
                           $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $@ -g -O2 \
                           -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ \
                           $(LLVM_KOMPILE_OPTS) \
-                          -L $(LIBRARY_PATH) \
+                          -L$(LIBRARY_PATH) \
                           -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1
 
 # LLVM Backend
@@ -317,7 +317,7 @@ $(llvm_kompiled): $(llvm_files) $(libprocps_out)
 	                 $(KOMPILE_OPTS) \
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
 	                 -ccopt -g -ccopt -std=c++11 -ccopt -O2 \
-	                 -ccopt -L $(LIBRARY_PATH) \
+	                 -ccopt -L$(LIBRARY_PATH) \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps
 
 
