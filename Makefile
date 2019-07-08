@@ -77,8 +77,8 @@ $(libsecp256k1_out):
 	git submodule update --init --recursive -- $(DEPS_DIR)/secp256k1
 	cd $(DEPS_DIR)/secp256k1/ \
 	    && ./autogen.sh \
-	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
-	    && make -s -j4 \
+	    && CC=$(LIB_CC) CXX=$(LIB_CXX) ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
+	    && make CC=$(LIB_CC) CXX=$(LIB_CXX) -s -j4 \
 	    && make install
 
 $(libprocps_out):
@@ -86,7 +86,7 @@ $(libprocps_out):
 	git submodule update --init --recursive -- $(DEPS_DIR)/procps
 	cd $(DEPS_DIR)/procps/ \
 	    && ./autogen.sh \
-	    && ./configure --prefix="$(BUILD_LOCAL)" \
+	    && CC=$(LIB_CC) CXX=$(LIB_CXX) ./configure --prefix="$(BUILD_LOCAL)" \
 	    && make CC=$(LIB_CC) CXX=$(LIB_CXX) -s -j4 \
 	    && make install
 
@@ -97,7 +97,7 @@ $(libff_out):
 	    && mkdir -p build \
 	    && cd build \
 	    && CC=$(LIB_CC) CXX=$(LIB_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(BUILD_LOCAL)" \
-	    && make -s -j4 \
+	    && make CC=$(LIB_CC) CXX=$(LIB_CXX) -s -j4 \
 	    && make install
 
 # K Dependencies
