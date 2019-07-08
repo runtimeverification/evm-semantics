@@ -86,8 +86,8 @@ $(libprocps_out):
 	git submodule update --init --recursive -- $(DEPS_DIR)/procps
 	cd $(DEPS_DIR)/procps/ \
 	    && ./autogen.sh \
-	    && CC=$(LIB_CC) CXX=$(LIB_CXX) ./configure --prefix="$(BUILD_LOCAL)" \
-	    && make CC=$(LIB_CC) CXX=$(LIB_CXX) -s -j4 \
+	    && ./configure --prefix="$(BUILD_LOCAL)" \
+	    && make -s -j4 \
 	    && make install
 
 $(libff_out):
