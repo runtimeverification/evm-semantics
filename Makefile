@@ -24,6 +24,8 @@ K_LIB:=$(K_RELEASE)/lib
 PATH:=$(K_BIN):$(PATH)
 export PATH
 
+INSTALL_DIR?=$(LIBRARY_PATH)
+
 # need relative path for `pandoc` on MacOS
 PANDOC_TANGLE_SUBMODULE:=$(DEPS_DIR)/pandoc-tangle
 TANGLER:=$(PANDOC_TANGLE_SUBMODULE)/tangle.lua
@@ -31,7 +33,7 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean clean-submodules distclean \
+.PHONY: all clean clean-submodules distclean install \
         deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff \
         build build-ocaml build-java build-node build-kore split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn llvm-defn \
@@ -309,6 +311,12 @@ $(llvm_kompiled): $(llvm_files)
 	                 -ccopt -L$(LIBRARY_PATH) \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps
 
+# Installing
+# ----------
+
+install: $(node_kompiled)
+	mkdir -p $(INSTALL_DIR)/usr/bin
+	cp $(node_kompiled) $(INSTALL_DIR)/usr/bin/
 
 # Tests
 # -----
