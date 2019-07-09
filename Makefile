@@ -61,9 +61,6 @@ distclean: clean
 # Non-K Dependencies
 # ------------------
 
-LIB_CC ?=clang-6.0
-LIB_CXX?=clang++-6.0
-
 libsecp256k1_out:=$(LIBRARY_PATH)/pkgconfig/libsecp256k1.pc
 libprocps_out:=$(LIBRARY_PATH)/pkgconfig/libprocps.pc
 libff_out:=$(LIBRARY_PATH)/libff.a
@@ -77,8 +74,8 @@ $(libsecp256k1_out):
 	git submodule update --init --recursive -- $(DEPS_DIR)/secp256k1
 	cd $(DEPS_DIR)/secp256k1/ \
 	    && ./autogen.sh \
-	    && CC=$(LIB_CC) CXX=$(LIB_CXX) ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
-	    && make CC=$(LIB_CC) CXX=$(LIB_CXX) -s -j4 \
+	    && ./configure --enable-module-recovery --prefix=$(BUILD_LOCAL) \
+	    && make -s -j4 \
 	    && make install
 
 $(libprocps_out):
@@ -86,9 +83,12 @@ $(libprocps_out):
 	git submodule update --init --recursive -- $(DEPS_DIR)/procps
 	cd $(DEPS_DIR)/procps/ \
 	    && ./autogen.sh \
-	    && ./configure --prefix="$(BUILD_LOCAL)" \
+	    && ./configure --prefix=$(BUILD_LOCAL) \
 	    && make -s -j4 \
 	    && make install
+
+LIBFF_CC ?=clang-6.0
+LIBFF_CXX?=clang++-6.0
 
 $(libff_out):
 	@echo "== submodule: $(DEPS_DIR)/libff"
@@ -96,8 +96,8 @@ $(libff_out):
 	cd $(DEPS_DIR)/libff/ \
 	    && mkdir -p build \
 	    && cd build \
-	    && CC=$(LIB_CC) CXX=$(LIB_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(BUILD_LOCAL)" \
-	    && make CC=$(LIB_CC) CXX=$(LIB_CXX) -s -j4 \
+	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(BUILD_LOCAL)" \
+	    && make CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) -s -j4 \
 	    && make install
 
 # K Dependencies

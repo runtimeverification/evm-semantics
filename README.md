@@ -134,7 +134,7 @@ make llvm-deps
 On Arch:
 
 ```sh
-make LIB_CC=clang LIB_CXX=clang++ llvm-deps
+make LIBFF_CC=clang LIBFF_CXX=clang++ llvm-deps
 ```
 
 #### Building
