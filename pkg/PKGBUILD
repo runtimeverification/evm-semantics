@@ -1,0 +1,36 @@
+# Maintainer: Everett Hildenbrandt <everett.hildenbrandt@runtimeverification.com>
+pkgname=kevm
+pkgver=0.0.1
+pkgrel=1
+epoch=
+pkgdesc="K implementation of the Ethereum Virtual Machine (EVM)"
+arch=('x86_64')
+url="https://github.com/kframework/evm-semantics"
+license=('custom')
+groups=()
+depends=('kframework')
+makedepends=()
+checkdepends=()
+optdepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=(!strip)
+install=kevm.install
+changelog=
+source=()
+noextract=()
+md5sums=()
+validpgpkeys=()
+
+build() {
+    cd "$pkgname-$pkgver"
+    make build-node
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make INSTALL_DIR="$pkgdir/" install
+	install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
