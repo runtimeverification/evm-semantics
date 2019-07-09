@@ -85,7 +85,7 @@ $(libff_out):
 	cd $(DEPS_DIR)/libff/ \
 	    && mkdir -p build \
 	    && cd build \
-	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(BUILD_LOCAL)" \
+	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) \
 	    && make -s -j4 \
 	    && make install
 
