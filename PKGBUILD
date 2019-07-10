@@ -1,6 +1,6 @@
 # Maintainer: Everett Hildenbrandt <everett.hildenbrandt@runtimeverification.com>
-pkgname=kevm
-pkgver=r1834.6ced26e
+pkgname=kevm-git
+pkgver=r1823.2bfbd9e
 pkgrel=1
 epoch=
 pkgdesc="K implementation of the Ethereum Virtual Machine (EVM)"
@@ -17,9 +17,9 @@ conflicts=()
 replaces=()
 backup=()
 options=(!strip)
-install=kevm.install
+install=kevm-git.install
 changelog=
-source=('git+https://github.com/kframework/evm-semantics#tag=node-v0.0-alpha')
+source=('git+https://github.com/kframework/evm-semantics#branch=master')
 noextract=()
 md5sums=('SKIP')
 validpgpkeys=()
@@ -37,11 +37,11 @@ pkgver() {
 
 build() {
     cd "$srcdir/evm-semantics"
-    make build-node
+    make K_BIN="$(dirname $(which kompile))" build-node
 }
 
 package() {
-	cd "$pkgname-$pkgver"
-	make INSTALL_DIR="$pkgdir/" install
-	install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    cd "$pkgname-$pkgver"
+    make INSTALL_DIR="$pkgdir/" install
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
