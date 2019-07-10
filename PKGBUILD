@@ -1,6 +1,6 @@
 # Maintainer: Everett Hildenbrandt <everett.hildenbrandt@runtimeverification.com>
 pkgname=kevm
-pkgver=0.0.1
+pkgver=r1834.6ced26e
 pkgrel=1
 epoch=
 pkgdesc="K implementation of the Ethereum Virtual Machine (EVM)"
@@ -9,7 +9,7 @@ url="https://github.com/kframework/evm-semantics"
 license=('custom')
 groups=()
 depends=('kframework')
-makedepends=()
+makedepends=('pandoc' 'protobuf')
 checkdepends=()
 optdepends=()
 provides=()
@@ -19,13 +19,24 @@ backup=()
 options=(!strip)
 install=kevm.install
 changelog=
-source=()
+source=('git+https://github.com/kframework/evm-semantics#tag=node-v0.0-alpha')
 noextract=()
-md5sums=()
+md5sums=('SKIP')
 validpgpkeys=()
 
+prepare() {
+    mkdir -p "$pkgname-$pkgver"
+    cd "$srcdir/evm-semantics"
+    git submodule update --init --recursive
+}
+
+pkgver() {
+    cd "$srcdir/evm-semantics"
+    printf 'r%s.%s' "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
 build() {
-    cd "$pkgname-$pkgver"
+    cd "$srcdir/evm-semantics"
     make build-node
 }
 

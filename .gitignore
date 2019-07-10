@@ -1,2 +1,5 @@
 /.build/*
 /rustc-*
+/pkg
+/src
+/evm-semantics
