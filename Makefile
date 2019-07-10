@@ -272,7 +272,7 @@ $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(DEFN_DIR)/ocaml/$(MA
 
 # Node Backend
 
-$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc
+$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/node/$(MAIN_DEFN_FILE).k \
@@ -288,7 +288,7 @@ $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUB
 	mkdir -p $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin
 	protoc --cpp_out=$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 
-$(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter
+$(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter $(libff_out)
 	mkdir -p $(DEFN_DIR)/vm
 	$(K_BIN)/llvm-kompile $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp \
                           $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $@ -g -O2 \
@@ -299,7 +299,7 @@ $(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 # LLVM Backend
 
-$(llvm_kompiled): $(llvm_files)
+$(llvm_kompiled): $(llvm_files) $(libff_out)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE).k \
