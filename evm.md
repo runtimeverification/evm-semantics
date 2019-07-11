@@ -1379,7 +1379,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           ~> #return RETSTART RETWIDTH
          ...
          </k>
-         <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
 
@@ -1391,7 +1390,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           ~> #return RETSTART RETWIDTH
          ...
          </k>
-         <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
 
@@ -1403,7 +1401,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           ~> #return RETSTART RETWIDTH
          ...
          </k>
-         <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <caller> ACCTAPPFROM </caller>
          <callValue> VALUE </callValue>
@@ -1417,7 +1414,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           ~> #return RETSTART RETWIDTH
          ...
          </k>
-         <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
 ```
@@ -1534,7 +1530,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
-         <schedule> SCHED </schedule>
          <id> ACCT </id>
          <localMem> LM </localMem>
          <account>
@@ -1570,7 +1565,6 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
     rule <k> SELFDESTRUCT ACCTTO => #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
-         <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> ... (.Set => SetItem(ACCT)) ... </selfDestruct>
          <account>
@@ -1583,7 +1577,6 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
       requires ACCT =/=Int ACCTTO
 
     rule <k> SELFDESTRUCT ACCT => #end EVMC_SUCCESS ... </k>
-         <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> ... (.Set => SetItem(ACCT)) ... </selfDestruct>
          <account>
