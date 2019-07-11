@@ -1261,12 +1261,9 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           => #initVM ~> #execute
          ...
          </k>
-         <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
          <id> _ => ACCTTO </id>
-         <gas> _ => GCALL </gas>
-         <callGas> GCALL => 0 </callGas>
          <caller> _ => ACCTFROM </caller>
          <program> _ => #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) </program>
          <programBytes> _ => CODE </programBytes>
@@ -1284,12 +1281,9 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           => #initVM ~> #execute
          ...
          </k>
-         <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
          <id> _ => ACCTTO </id>
-         <gas> _ => GCALL </gas>
-         <callGas> GCALL => 0 </callGas>
          <caller> _ => ACCTFROM </caller>
          <program> _ => (0 |-> #precompiled(ACCTCODE)) </program>
          <programBytes> _ => .WordStack </programBytes>
@@ -1302,12 +1296,9 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           => #initVM ~> #execute
          ...
          </k>
-         <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
          <id> _ => ACCTTO </id>
-         <gas> _ => GCALL </gas>
-         <callGas> GCALL => 0 </callGas>
          <caller> _ => ACCTFROM </caller>
          <program> _ => .Map </program>
          <programBytes> _ => .WordStack </programBytes>
@@ -1320,12 +1311,15 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax KItem ::= "#initVM"
  // --------------------------
-    rule <k> #initVM    => . ...      </k>
-         <pc>         _ => 0          </pc>
-         <memoryUsed> _ => 0          </memoryUsed>
-         <output>     _ => .WordStack </output>
-         <wordStack>  _ => .WordStack </wordStack>
-         <localMem>   _ => .Map       </localMem>
+    rule <k> #initVM     => . ...      </k>
+         <pc>          _ => 0          </pc>
+         <memoryUsed>  _ => 0          </memoryUsed>
+         <gas>         _ => GCALL </gas>
+         <callGas> GCALL => 0 </callGas>
+         <callDepth> CD => CD +Int 1 </callDepth>
+         <output>      _ => .WordStack </output>
+         <wordStack>   _ => .WordStack </wordStack>
+         <localMem>    _ => .Map       </localMem>
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
@@ -1443,14 +1437,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
          <schedule> SCHED </schedule>
          <id> ACCT => ACCTTO </id>
-         <gas> _ => GCALL </gas>
-         <callGas> GCALL => 0 </callGas>
          <program> _ => #asMapOpCodes(#dasmOpCodes(INITCODE, SCHED)) </program>
          <programBytes> _ => INITCODE </programBytes>
          <caller> _ => ACCTFROM </caller>
-         <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => .WordStack </callData>
-         <callValue> _ => VALUE </callValue>
          <account>
            <acctID> ACCTTO </acctID>
            <nonce> NONCE => #if Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
