@@ -234,6 +234,7 @@ You could alternatively calculate `I1 modInt I2`, then add one to the normal int
 ```
 
 The corresponding `<op>Word` operations automatically perform the correct modulus for EVM words.
+Warning: operands are assumed to be within the range of a 256 bit EVM word. Unbound integers may not return the correct result.
 
 ```k
     syntax Int ::= Int "+Word" Int [function]
@@ -243,13 +244,13 @@ The corresponding `<op>Word` operations automatically perform the correct modulu
                  | Int "%Word" Int [function]
  // -----------------------------------------
     rule W0 +Word W1 => chop( W0 +Int W1 )
-    rule W0 -Word W1 => chop( W0 -Int W1 ) requires W0 >=Int W1
+    rule W0 -Word W1 => W0 -Int W1 requires W0 >=Int W1
     rule W0 -Word W1 => chop( (W0 +Int pow256) -Int W1 ) requires W0 <Int W1
     rule W0 *Word W1 => chop( W0 *Int W1 )
-    rule W0 /Word W1 => 0                    requires W1  ==Int 0
-    rule W0 /Word W1 => chop( W0 /Int W1 )   requires W1 =/=Int 0
-    rule W0 %Word W1 => 0                    requires W1  ==Int 0
-    rule W0 %Word W1 => chop( W0 modInt W1 ) requires W1 =/=Int 0
+    rule W0 /Word W1 => 0            requires W1  ==Int 0
+    rule W0 /Word W1 => W0 /Int W1   requires W1 =/=Int 0
+    rule W0 %Word W1 => 0            requires W1  ==Int 0
+    rule W0 %Word W1 => W0 modInt W1 requires W1 =/=Int 0
 ```
 
 Care is needed for `^Word` to avoid big exponentiation.
@@ -324,13 +325,13 @@ Bitwise logical operators are lifted from the integer versions.
                  | Int ">>Word"  Int [function]
                  | Int ">>sWord" Int [function]
  // -------------------------------------------
-    rule ~Word W       => chop( W xorInt (pow256 -Int 1) )
-    rule W0 |Word   W1 => chop( W0 |Int W1 )
-    rule W0 &Word   W1 => chop( W0 &Int W1 )
-    rule W0 xorWord W1 => chop( W0 xorInt W1 )
+    rule ~Word W       => W xorInt maxUInt256
+    rule W0 |Word   W1 => W0 |Int W1
+    rule W0 &Word   W1 => W0 &Int W1
+    rule W0 xorWord W1 => W0 xorInt W1
     rule W0 <<Word  W1 => chop( W0 <<Int W1 ) requires W1 <Int 256
     rule W0 <<Word  W1 => 0 requires W1 >=Int 256
-    rule W0 >>Word  W1 => chop( W0 >>Int W1 )
+    rule W0 >>Word  W1 => W0 >>Int W1
     rule W0 >>sWord W1 => chop( (abs(W0) *Int sgn(W0)) >>Int W1 )
 ```
 
