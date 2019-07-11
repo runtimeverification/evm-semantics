@@ -182,18 +182,18 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
     syntax Int ::= #signed ( Int ) [function]
  // -----------------------------------------
     rule #signed(DATA) => DATA
-      requires 0 <=Int DATA andBool DATA <=Int maxSInt256
+      requires 0 <=Int DATA andBool DATA <=Int maxSInt256 [concrete]
 
     rule #signed(DATA) => DATA -Int pow256
-      requires maxSInt256 <Int DATA andBool DATA <=Int maxUInt256
+      requires maxSInt256 <Int DATA andBool DATA <=Int maxUInt256 [concrete]
 
     syntax Int ::= #unsigned ( Int ) [function]
  // -----------------------------------------
     rule #unsigned(DATA) => DATA
-      requires 0 <=Int DATA andBool DATA <=Int maxSInt256
+      requires 0 <=Int DATA andBool DATA <=Int maxSInt256 [concrete]
 
     rule #unsigned(DATA) => pow256 +Int DATA
-      requires minSInt256 <=Int DATA andBool DATA <Int 0
+      requires minSInt256 <=Int DATA andBool DATA <Int 0 [concrete]
 ```
 
 ### Empty Account
