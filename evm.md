@@ -395,7 +395,7 @@ The `#next [_]` operator initiates execution by:
 
 ### Execution Step
 
--   `#exec` will load the arguments of the opcode (it assumes `#stackNeeded?` is accurate and has been called) and trigger the subsequent operations.
+-   `#exec` will load the arguments of the opcode (it assumes `#load` has been called to check for stack under/overflow) and trigger the subsequent operations.
 
 ```k
     syntax InternalOp ::= "#exec" "[" OpCode "]"
@@ -2351,7 +2351,6 @@ Disassembler
 After interpreting the strings representing programs as a `WordStack`, it should be changed into an `OpCodes` for use by the EVM semantics.
 
 -   `#dasmOpCodes` interperets `WordStack` as an `OpCodes`.
--   `#dasmPUSH` handles the case of a `PushOp`.
 -   `#dasmOpCode` interperets a `Int` as an `OpCode`.
 
 ```k
