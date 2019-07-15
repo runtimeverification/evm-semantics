@@ -377,8 +377,7 @@ smoke_tests_run=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
                 tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json \
                 tests/interactive/sumTo10.evm
 
-smoke_tests_prove=tests/specs/examples/sum-to-n-spec.k \
-                  tests/specs/ds-token-erc20/transfer-failure-1-a-spec.k
+smoke_tests_prove=tests/specs/ds-token-erc20/transfer-failure-1-a-spec.k
 
 # Conformance Tests
 
