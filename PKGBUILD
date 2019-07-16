@@ -1,6 +1,6 @@
 # Maintainer: Everett Hildenbrandt <everett.hildenbrandt@runtimeverification.com>
 pkgname=kevm-git
-pkgver=r1833.39ebefe
+pkgver=0.0.1
 pkgrel=1
 epoch=
 pkgdesc="K implementation of the Ethereum Virtual Machine (EVM)"
@@ -19,7 +19,7 @@ backup=()
 options=(!strip)
 install=kevm-git.install
 changelog=
-source=('git+https://github.com/kframework/evm-semantics#commit=39ebefe')
+source=('git+https://github.com/kframework/evm-semantics#branch=master')
 noextract=()
 md5sums=('SKIP')
 validpgpkeys=()
