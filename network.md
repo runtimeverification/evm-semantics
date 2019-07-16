@@ -31,18 +31,18 @@ The following codes all indicate that the VM ended execution with an exception, 
 
 ```k
     syntax String ::= StatusCode2String ( StatusCode ) [function, functional, hook(STRING.token2string)]
-
-    syntax ExceptionalStatusCode ::= "EVMC_FAILURE" [token]
-                                   | "EVMC_INVALID_INSTRUCTION" [token]
+ // ----------------------------------------------------------------------------------------------------
+    syntax ExceptionalStatusCode ::= "EVMC_FAILURE"               [token]
+                                   | "EVMC_INVALID_INSTRUCTION"   [token]
                                    | "EVMC_UNDEFINED_INSTRUCTION" [token]
-                                   | "EVMC_OUT_OF_GAS" [token]
-                                   | "EVMC_BAD_JUMP_DESTINATION" [token]
-                                   | "EVMC_STACK_OVERFLOW" [token]
-                                   | "EVMC_STACK_UNDERFLOW" [token]
-                                   | "EVMC_CALL_DEPTH_EXCEEDED" [token]
+                                   | "EVMC_OUT_OF_GAS"            [token]
+                                   | "EVMC_BAD_JUMP_DESTINATION"  [token]
+                                   | "EVMC_STACK_OVERFLOW"        [token]
+                                   | "EVMC_STACK_UNDERFLOW"       [token]
+                                   | "EVMC_CALL_DEPTH_EXCEEDED"   [token]
                                    | "EVMC_INVALID_MEMORY_ACCESS" [token]
                                    | "EVMC_STATIC_MODE_VIOLATION" [token]
-                                   | "EVMC_PRECOMPILE_FAILURE" [token]
+                                   | "EVMC_PRECOMPILE_FAILURE"    [token]
 ```
 
 ### Ending Codes
@@ -55,7 +55,7 @@ These additional status codes indicate that execution has ended in some non-exce
 ```k
     syntax EndStatusCode ::= ExceptionalStatusCode
                            | "EVMC_SUCCESS" [token]
-                           | "EVMC_REVERT" [token]
+                           | "EVMC_REVERT"  [token]
 ```
 
 ### Other Codes
@@ -68,9 +68,9 @@ The following codes indicate other non-execution errors with the VM.
 
 ```k
     syntax StatusCode ::= EndStatusCode
-                        | "EVMC_REJECTED" [token]
+                        | "EVMC_REJECTED"       [token]
                         | "EVMC_INTERNAL_ERROR" [token]
-                        | ".StatusCode" [token]
+                        | ".StatusCode"         [token]
 ```
 
 Client/Network Codes
@@ -84,7 +84,7 @@ These are not present in the [EVM-C API].
 
 ```k
     syntax ExceptionalStatusCode ::= "EVMC_ACCOUNT_ALREADY_EXISTS" [token]
-                                   | "EVMC_BALANCE_UNDERFLOW" [token]
+                                   | "EVMC_BALANCE_UNDERFLOW"      [token]
 ```
 
 ```k
