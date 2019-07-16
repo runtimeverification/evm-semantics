@@ -24,6 +24,11 @@ noextract=()
 md5sums=('SKIP')
 validpgpkeys=()
 
+prepare() {
+    cd "$srcdir/evm-semantics"
+    git submodule update --init --recursive
+}
+
 pkgver() {
     cd "$srcdir/evm-semantics"
     printf 'r%s.%s' "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
