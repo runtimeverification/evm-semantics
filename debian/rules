@@ -20,7 +20,7 @@
 	dh $@
 
 override_dh_auto_build:
-	git submodule update --init -- deps/libff
+	git submodule update --init --recursive
 	make K_RELEASE="/usr/lib/kframework" build-node
 
 override_dh_auto_install:
