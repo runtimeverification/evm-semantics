@@ -8,8 +8,8 @@ arch=('x86_64')
 url="https://github.com/kframework/evm-semantics"
 license=('custom')
 groups=()
-depends=('kframework-git' 'crypto++' 'libsecp256k1')
-makedepends=('pandoc' 'protobuf')
+depends=('kframework-git' 'libsecp256k1' 'crypto++' 'protobuf')
+makedepends=('pandoc')
 checkdepends=()
 optdepends=()
 provides=()
@@ -23,11 +23,6 @@ source=('git+https://github.com/kframework/evm-semantics#commit=39ebefe')
 noextract=()
 md5sums=('SKIP')
 validpgpkeys=()
-
-prepare() {
-    cd "$srcdir/evm-semantics"
-    git submodule update --init --recursive
-}
 
 pkgver() {
     cd "$srcdir/evm-semantics"
