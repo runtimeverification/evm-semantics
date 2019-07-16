@@ -46,19 +46,19 @@ export LUA_PATH
 
 all: build split-tests
 
-clean: clean-submodules
+clean:
 	rm -rf $(DEFN_DIR)
 	git clean -dfx -- tests/specs
 
-clean-submodules:
-	rm -rf $(DEPS_DIR)/k/make.timestamp $(DEPS_DIR)/pandoc-tangle/make.timestamp $(DEPS_DIR)/metropolis/*.sty \
-	       tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp $(DEPS_DIR)/plugin/make.timestamp
-
 distclean: clean
 	rm -rf $(BUILD_DIR)
+
+clean-submodules: distclean
+	rm -rf $(DEPS_DIR)/k/make.timestamp $(DEPS_DIR)/pandoc-tangle/make.timestamp $(DEPS_DIR)/metropolis/*.sty \
+	       tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp $(DEPS_DIR)/plugin/make.timestamp  \
+	       $(DEPS_DIR)/libff/build
 	cd $(DEPS_DIR)/k         && mvn clean --quiet
 	cd $(DEPS_DIR)/secp256k1 && make distclean || true
-	cd $(DEPS_DIR)/libff     && rm -rf build
 
 # Non-K Dependencies
 # ------------------
