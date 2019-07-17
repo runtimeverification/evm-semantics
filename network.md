@@ -86,8 +86,8 @@ The following codes indicate other non-execution errors with the VM.
                         | "EVMC_REJECTED"
                         | "EVMC_INTERNAL_ERROR"
                         | ".StatusCode"
-    rule StatusCode2String(EMVC_REJECTED) => "EVMC_REJECTED"
-    rule StatusCode2String(EMVC_INTERNAL_ERROR) => "EVMC_INTERNAL_ERROR"
+    rule StatusCode2String(EVMC_REJECTED) => "EVMC_REJECTED"
+    rule StatusCode2String(EVMC_INTERNAL_ERROR) => "EVMC_INTERNAL_ERROR"
     rule StatusCode2String(.StatusCode) => ""
 ```
 
