@@ -214,7 +214,7 @@ Because the same account may be loaded more than once, implementations of this i
 -   `extractConfig` takes a final configuration after rewriting and extracts a `vmResult` from it in order to abstract away configuration structure from the postprocessing done by the blockchain-k-plugin.
 
 ```{.k .node}
-    syntax KItem ::= vmResult ( return: String , gas: Int , refund: Int , status: Int , selfdestruct: List , logs: List , AccountsCell , touched: List , status: String )
+    syntax KItem ::= vmResult ( return: String , gas: Int , refund: Int , status: Int , selfdestruct: List , logs: List , AccountsCell , touched: List , statusCode: String )
     syntax KItem ::= extractConfig() [function, symbol]
  // ---------------------------------------------------
     rule [[ extractConfig() => vmResult(#unparseByteStack(OUT), GAVAIL, REFUND, STATUS, Set2List(SD), LOGS, <accounts> ACCTS </accounts>, Set2List(TOUCHED), StatusCode2String(STATUSCODE)) ]]
