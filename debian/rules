@@ -13,8 +13,10 @@
 # package maintainers to append LDFLAGS
 #export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
+CARGO_HOME?=$HOME/.cargo
+
 # because FileCheck isn't showing up on PATH, add /usr/lib/llvm-8/bin
-# PATH:=/usr/lib/llvm-8/bin:$(CARGO_HOME)/bin:$(PATH)
+PATH:=/usr/lib/llvm-8/bin:$(CARGO_HOME)/bin:$(PATH)
 
 %:
 	dh $@
