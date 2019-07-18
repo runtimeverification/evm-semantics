@@ -153,12 +153,14 @@ pipeline {
             }
           }
           steps {
-            sh '''
-              cp -r package/debian ./
-              dpkg-buildpackage --no-sign
-              apt install --yes ../kevm_*.deb
-            '''
-            stash name: 'bionic', includes: "kevm_${env.RELEASE_ID}_amd64.deb"
+            dir("kevm-0.0.1") {
+              sh '''
+                cp -r package/debian ./
+                dpkg-buildpackage --no-sign
+                apt install --yes ../kevm_*.deb
+              '''
+              stash name: 'bionic', includes: "kevm_${env.RELEASE_ID}_amd64.deb"
+            }
           }
         }
         stage('Build Arch Package') {
@@ -169,6 +171,7 @@ pipeline {
             }
           }
           steps {
+            checkout scm
             sh '''
               curl --location --output k-nightly-arch.tar.xz "https://github.com/kframework/k/releases/download/nightly-$K_NIGHTLY/kframework-5.0.0-1-x86_64.pkg.tar.xz"
               pacman --noconfirm --upgrade k-nightly-arch.tar.xz
