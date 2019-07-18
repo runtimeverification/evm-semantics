@@ -11,3 +11,6 @@ RUN    apt update                                                               
                          libssl-dev pandoc pkg-config protobuf-compiler
 
 RUN curl -sSL https://get.haskellstack.org/ | sh -s - -f
+
+ADD https://github.com/kframework/k/releases/download/nightly-$K_NIGHTLY/kframework_5.0.0_amd64_bionic.deb kframework_5.0.0_amd64_bionic.deb
+RUN apt install --yes kframework_5.0.0_amd64_bionic.deb
