@@ -155,10 +155,10 @@ pipeline {
           steps {
             sh '''
               curl --location --output k-nightly-bionic.deb "https://github.com/kframework/k/releases/download/nightly-$K_NIGHTLY/kframework_5.0.0_amd64_bionic.deb"
-              sudo apt install --yes ./k-nightly-bionic.deb
+              apt install --yes ./k-nightly-bionic.deb
               cp -r package/debian ./
               dpkg-buildpackage --no-sign
-              sudo apt install ../kevm_*.deb
+              apt install ../kevm_*.deb
             '''
             stash name: 'bionic', includes: "kevm_${env.RELEASE_ID}_amd64.deb"
           }
@@ -173,7 +173,7 @@ pipeline {
           steps {
             sh '''
               curl --location --output k-nightly-arch.tar.xz "https://github.com/kframework/k/releases/download/nightly-$K_NIGHTLY/kframework-5.0.0-1-x86_64.pkg.tar.xz"
-              sudo pacman --noconfirm --upgrade k-nightly-arch.tar.xz
+              pacman --noconfirm --upgrade k-nightly-arch.tar.xz
               cd package
               makepkg --noconfirm --syncdeps --install
             '''
