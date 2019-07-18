@@ -142,7 +142,7 @@ pipeline {
       // }
       environment {
         GITHUB_TOKEN = credentials('rv-jenkins')
-        RELEASE_ID   = '0.0.1'
+        K_NIGHTLY    = 89361d7c8
       }
       stages {
         stage('Build Ubuntu Package') {
@@ -154,12 +154,30 @@ pipeline {
           }
           steps {
             sh '''
-              curl --location --output k-nightly-bionic.deb "https://github.com/kframework/k/releases/download/nightly-89361d7c8/kframework_5.0.0_amd64_bionic.deb"
+              curl --location --output k-nightly-bionic.deb "https://github.com/kframework/k/releases/download/nightly-$K_NIGHTLY/kframework_5.0.0_amd64_bionic.deb"
               sudo apt install --yes ./k-nightly-bionic.deb
+              cp -r package/debian ./
               dpkg-buildpackage --no-sign
-              sudo apt install ../kevm_"$RELEASE_ID"_amd64.deb
+              sudo apt install ../kevm_*.deb
             '''
             stash name: 'bionic', includes: "kevm_${env.RELEASE_ID}_amd64.deb"
+          }
+        }
+        stage('Build Arch Package') {
+          agent {
+            dockerfile {
+              dir 'package'
+              filename 'Dockerfile.arch'
+            }
+          }
+          steps {
+            sh '''
+              curl --location --output k-nightly-arch.tar.xz "https://github.com/kframework/k/releases/download/nightly-$K_NIGHTLY/kframework-5.0.0-1-x86_64.pkg.tar.xz"
+              sudo pacman --noconfirm --upgrade k-nightly-arch.tar.xz
+              cd package
+              makepkg --noconfirm --syncdeps --install
+            '''
+            stash name: 'arch', includes: "kevm_${env.RELEASE_ID}_amd64.deb"
           }
         }
         stage('Upload Packages') {
