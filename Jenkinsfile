@@ -155,6 +155,9 @@ pipeline {
           steps {
             sh '''
               curl --location --output k-nightly-bionic.deb "https://github.com/kframework/k/releases/download/nightly-$K_NIGHTLY/kframework_5.0.0_amd64_bionic.deb"
+              pwd
+              ls
+              echo $USER
               apt install --yes ./k-nightly-bionic.deb
               cp -r package/debian ./
               dpkg-buildpackage --no-sign
