@@ -1,5 +1,5 @@
-Installating Release Builds
-===========================
+Installing Release Builds
+=========================
 
 These instructions explain how to download, install, and build the KEVM packages.
 Current supported systems are:
