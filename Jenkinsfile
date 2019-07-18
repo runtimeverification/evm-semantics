@@ -158,7 +158,7 @@ pipeline {
               apt install --yes ./k-nightly-bionic.deb
               cp -r package/debian ./
               dpkg-buildpackage --no-sign
-              apt install ../kevm_*.deb
+              apt install --yes ../kevm_*.deb
             '''
             stash name: 'bionic', includes: "kevm_${env.RELEASE_ID}_amd64.deb"
           }
