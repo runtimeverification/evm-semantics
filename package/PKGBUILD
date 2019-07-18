@@ -17,7 +17,7 @@ conflicts=()
 replaces=()
 backup=()
 options=(!strip)
-install=kevm-git.install
+install=
 changelog=
 source=('git+https://github.com/kframework/evm-semantics#branch=master')
 noextract=()
