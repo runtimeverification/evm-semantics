@@ -10,7 +10,7 @@ Package: kevm
 Architecture: any
 Section: devel
 Priority: optional
-Depends:
+Depends: libjemalloc-dev, libprotobuf-dev, libcrypto++-dev, libsecp256k1-dev
 Description: K Semantics of EVM
  Implementation of Ethereum Virtual Machine (EVM) in K.
  kevm-vm executable communicates over protobuf to run EVM transactions.
