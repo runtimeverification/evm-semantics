@@ -142,7 +142,7 @@ pipeline {
       // }
       environment {
         GITHUB_TOKEN = credentials('rv-jenkins')
-        K_NIGHTLY    = 89361d7c8
+        K_NIGHTLY    = '89361d7c8'
       }
       stages {
         stage('Build Ubuntu Package') {
