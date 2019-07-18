@@ -135,6 +135,7 @@ pipeline {
     //  }
     //}
     stage('Deploy') {
+      agent { label 'docker' }
       // when {
       //   not { changeRequest() }
       //   branch 'master'
@@ -142,8 +143,12 @@ pipeline {
       // }
       environment {
         GITHUB_TOKEN = credentials('rv-jenkins')
+        RELEASE_ID   = '1.0.0b1'
       }
       stages {
+        stage('Checkout SCM') {
+          steps { checkout scm }
+        }
         stage('Build Ubuntu Package') {
           agent {
             dockerfile {
@@ -153,7 +158,8 @@ pipeline {
             }
           }
           steps {
-            dir("kevm-0.0.1") {
+            dir("${env.RELEASE_ID}") {
+              checkout scm
               sh '''
                 cp -r package/debian ./
                 dpkg-buildpackage --no-sign
@@ -168,6 +174,7 @@ pipeline {
             dockerfile {
               dir 'package'
               filename 'Dockerfile.arch'
+              reuseNode true
             }
           }
           steps {
@@ -187,6 +194,7 @@ pipeline {
             dockerfile {
               dir 'package'
               filename 'Dockerfile.arch'
+              reuseNode true
             }
           }
           steps {
