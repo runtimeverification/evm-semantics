@@ -4,10 +4,10 @@ ENV TZ=America/Chicago
 RUN    ln --symbolic --no-dereference --force /usr/share/zoneinfo/$TZ /etc/localtime \
     && echo $TZ > /etc/timezone
 
-RUN    apt update                                                           \
-    && apt upgrade --yes                                                    \
-    && apt install --yes clang-6.0 cmake jq libcrypto++-dev libjemalloc-dev \
-                         libprocps-dev libprotobuf-dev libsecp256k1-dev     \
+RUN    apt update                                                                \
+    && apt upgrade --yes                                                         \
+    && apt install --yes clang-6.0 cmake curl jq libcrypto++-dev libjemalloc-dev \
+                         libprocps-dev libprotobuf-dev libsecp256k1-dev          \
                          libssl-dev pandoc pkg-config protobuf-compiler
 
 RUN curl -sSL https://get.haskellstack.org/ | sh -s - -f
