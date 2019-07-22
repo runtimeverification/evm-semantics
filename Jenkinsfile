@@ -212,6 +212,13 @@ pipeline {
           }
         }
       }
+      post {
+        failure {
+          slackSend color: '#cb2431'                                   \
+                  , channel: '#kevm'                                   \
+                  , message: "KEVM Packaging Failed: ${env.BUILD_URL}"
+        }
+      }
     }
   }
 }
