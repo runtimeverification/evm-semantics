@@ -1,0 +1,14 @@
+FROM ubuntu:bionic
+
+ENV TZ=America/Chicago
+RUN    ln --symbolic --no-dereference --force /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone
+
+RUN    apt update                                                                        \
+    && apt upgrade --yes                                                                 \
+    && apt install --yes clang-6.0 cmake curl dh-make jq libcrypto++-dev libjemalloc-dev \
+                         libprocps-dev libprotobuf-dev libsecp256k1-dev libssl-dev       \
+                         pandoc pkg-config protobuf-compiler
+
+ADD https://github.com/kframework/k/releases/download/nightly-89361d7c8/kframework_5.0.0_amd64_bionic.deb kframework_5.0.0_amd64_bionic.deb
+RUN apt install --yes ./kframework_5.0.0_amd64_bionic.deb
