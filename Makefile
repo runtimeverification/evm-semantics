@@ -13,6 +13,9 @@ export C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH
 export PKG_CONFIG_PATH
 
+INSTALL_PREFIX:=/usr/local
+INSTALL_DIR?=$(DESTDIR)$(INSTALL_PREFIX)/bin
+
 DEPS_DIR:=deps
 K_SUBMODULE:=$(abspath $(DEPS_DIR)/k)
 PLUGIN_SUBMODULE:=$(abspath $(DEPS_DIR)/plugin)
@@ -31,7 +34,7 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean clean-submodules distclean \
+.PHONY: all clean clean-submodules distclean install \
         deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff \
         build build-ocaml build-java build-node build-kore split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn llvm-defn \
@@ -44,26 +47,57 @@ export LUA_PATH
 
 all: build split-tests
 
-clean: clean-submodules
+clean:
 	rm -rf $(DEFN_DIR)
 	git clean -dfx -- tests/specs
 
-clean-submodules:
-	rm -rf $(DEPS_DIR)/k/make.timestamp $(DEPS_DIR)/pandoc-tangle/make.timestamp $(DEPS_DIR)/metropolis/*.sty \
-	       tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp $(DEPS_DIR)/plugin/make.timestamp
-
 distclean: clean
 	rm -rf $(BUILD_DIR)
+
+clean-submodules: distclean
+	rm -rf $(DEPS_DIR)/k/make.timestamp $(DEPS_DIR)/pandoc-tangle/make.timestamp $(DEPS_DIR)/metropolis/*.sty \
+	       tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp $(DEPS_DIR)/plugin/make.timestamp  \
+	       $(DEPS_DIR)/libff/build
 	cd $(DEPS_DIR)/k         && mvn clean --quiet
 	cd $(DEPS_DIR)/secp256k1 && make distclean || true
-	cd $(DEPS_DIR)/libff     && rm -rf build
 
-# Dependencies
-# ------------
+# Non-K Dependencies
+# ------------------
+
+libsecp256k1_out:=$(LIBRARY_PATH)/pkgconfig/libsecp256k1.pc
+libff_out:=$(LIBRARY_PATH)/libff.a
+
+libsecp256k1: $(libsecp256k1_out)
+libff: $(libff_out)
+
+$(libsecp256k1_out):
+	@echo "== submodule: $(DEPS_DIR)/secp256k1"
+	git submodule update --init --recursive -- $(DEPS_DIR)/secp256k1
+	cd $(DEPS_DIR)/secp256k1/ \
+	    && ./autogen.sh \
+	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
+	    && make -s -j4 \
+	    && make install
+
+LIBFF_CC ?=clang-6.0
+LIBFF_CXX?=clang++-6.0
+
+$(libff_out):
+	@echo "== submodule: $(DEPS_DIR)/libff"
+	git submodule update --init --recursive -- $(DEPS_DIR)/libff
+	cd $(DEPS_DIR)/libff/ \
+	    && mkdir -p build \
+	    && cd build \
+	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) \
+	    && make -s -j4 \
+	    && make install
+
+# K Dependencies
+# --------------
 
 all-deps: deps llvm-deps haskell-deps
 all-deps: BACKEND_SKIP=
-llvm-deps: $(BUILD_LOCAL)/lib/libff.a deps
+llvm-deps: $(libff_out) deps
 llvm-deps: BACKEND_SKIP=-Dhaskell.backend.skip
 haskell-deps: deps
 haskell-deps: BACKEND_SKIP=-Dllvm.backend.skip
@@ -97,34 +131,6 @@ ocaml-deps:
 	eval $$(opam config env) \
 	    opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128 ocaml-protoc rlp yojson hex ocp-ocamlres
 
-# install secp256k1 from bitcoin-core
-libsecp256k1: $(BUILD_LOCAL)/lib/pkgconfig/libsecp256k1.pc
-
-$(BUILD_LOCAL)/lib/pkgconfig/libsecp256k1.pc:
-	@echo "== submodule: $(DEPS_DIR)/secp256k1"
-	git submodule update --init -- $(DEPS_DIR)/secp256k1/
-	cd $(DEPS_DIR)/secp256k1/ \
-	    && ./autogen.sh \
-	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
-	    && make -s -j4 \
-	    && make install
-
-# install libff from scipr-lab
-libff: $(BUILD_LOCAL)/lib/libff.a
-
-LIBFF_CC ?=clang-6.0
-LIBFF_CXX?=clang++-6.0
-
-$(BUILD_LOCAL)/lib/libff.a:
-	@echo "== submodule: $(DEPS_DIR)/libff"
-	git submodule update --init --recursive -- $(DEPS_DIR)/libff/
-	cd $(DEPS_DIR)/libff/ \
-	    && mkdir -p build \
-	    && cd build \
-	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(BUILD_LOCAL)" \
-	    && make -s -j4 \
-	    && make install
-
 # Building
 # --------
 
@@ -132,6 +138,7 @@ MAIN_MODULE:=ETHEREUM-SIMULATION
 SYNTAX_MODULE:=$(MAIN_MODULE)
 MAIN_DEFN_FILE:=driver
 KOMPILE_OPTS:=
+LLVM_KOMPILE_OPTS:=
 
 ocaml_kompiled:=$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter
 java_kompiled:=$(DEFN_DIR)/java/$(MAIN_DEFN_FILE)-kompiled/timestamp
@@ -266,7 +273,7 @@ $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(DEFN_DIR)/ocaml/$(MA
 
 # Node Backend
 
-$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc
+$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/node/$(MAIN_DEFN_FILE).k \
@@ -275,21 +282,25 @@ $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(DEFN_DI
 	                 $(KOMPILE_OPTS) \
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blockchain.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/world.cpp -ccopt $(CURDIR)/$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc \
 	                 -ccopt -I$(CURDIR)/$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin \
+	                 -ccopt -L$(LIBRARY_PATH) \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -lprotobuf -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
 $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 	mkdir -p $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin
 	protoc --cpp_out=$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 
-$(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter
+$(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter $(libff_out)
 	mkdir -p $(DEFN_DIR)/vm
 	$(K_BIN)/llvm-kompile $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp \
-                          -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc \
-	                      -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1 -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ -I node/ $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $(DEFN_DIR)/vm/kevm-vm -g -O2
+                          $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $@ -g -O2 \
+                          -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ -I node/ \
+                          $(LLVM_KOMPILE_OPTS) \
+                          -L$(LIBRARY_PATH) \
+                          -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1
 
 # LLVM Backend
 
-$(llvm_kompiled): $(llvm_files)
+$(llvm_kompiled): $(llvm_files) $(libff_out)
 	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE).k \
@@ -297,7 +308,16 @@ $(llvm_kompiled): $(llvm_files)
 	                 --hook-namespaces KRYPTO \
 	                 $(KOMPILE_OPTS) \
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -g -ccopt -std=c++11 -ccopt -O2
+	                 -ccopt -g -ccopt -std=c++11 -ccopt -O2 \
+	                 -ccopt -L$(LIBRARY_PATH) \
+	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps
+
+# Installing
+# ----------
+
+install: $(node_kompiled)
+	mkdir -p $(INSTALL_DIR)
+	cp $(node_kompiled) $(INSTALL_DIR)/
 
 # Tests
 # -----
@@ -358,8 +378,7 @@ smoke_tests_run=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
                 tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json \
                 tests/interactive/sumTo10.evm
 
-smoke_tests_prove=tests/specs/examples/sum-to-n-spec.k \
-                  tests/specs/ds-token-erc20/transfer-failure-1-a-spec.k
+smoke_tests_prove=tests/specs/ds-token-erc20/transfer-failure-1-a-spec.k
 
 # Conformance Tests
 
