@@ -21,7 +21,7 @@ override_dh_auto_build:
 	make K_RELEASE="/usr/lib/kframework" build-node
 
 override_dh_auto_install:
-	make K_RELEASE="/usr/lib/kframework" INSTALL_DIR="debian/kevm" install
+	make K_RELEASE="/usr/lib/kframework" DESTDIR="debian/kevm" INSTALL_PREFIX="/usr" install
 
 override_dh_auto_test:
 	true
