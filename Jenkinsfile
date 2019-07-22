@@ -4,7 +4,16 @@ pipeline {
     ansiColor('xterm')
   }
   stages {
+    stage("Init title") {
+      when { changeRequest() }
+      steps {
+        script {
+          currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}"
+        }
+      }
+    }
     stage('Build and Test') {
+      when { changeRequest() }
       agent {
         dockerfile {
           additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
@@ -12,14 +21,6 @@ pipeline {
         }
       }
       stages {
-        stage("Init title") {
-          when { changeRequest() }
-          steps {
-            script {
-              currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}"
-            }
-          }
-        }
         stage('Dependencies') {
           steps {
             sh '''
@@ -135,13 +136,13 @@ pipeline {
       }
     }
     stage('Deploy') {
-      agent { label 'docker' }
-      options { skipDefaultCheckout() }
       when {
         not { changeRequest() }
         branch 'master'
         beforeAgent true
       }
+      agent { label 'docker' }
+      options { skipDefaultCheckout() }
       environment {
         GITHUB_TOKEN = credentials('rv-jenkins')
         RELEASE_ID   = '1.0.0'
