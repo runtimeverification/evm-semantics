@@ -13,6 +13,9 @@ export C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH
 export PKG_CONFIG_PATH
 
+INSTALL_PREFIX:=/usr/local
+INSTALL_DIR?=$(DESTDIR)$(INSTALL_PREFIX)/bin
+
 DEPS_DIR:=deps
 K_SUBMODULE:=$(abspath $(DEPS_DIR)/k)
 PLUGIN_SUBMODULE:=$(abspath $(DEPS_DIR)/plugin)
@@ -23,8 +26,6 @@ K_LIB:=$(K_RELEASE)/lib
 
 PATH:=$(K_BIN):$(PATH)
 export PATH
-
-INSTALL_DIR?=$(LIBRARY_PATH)
 
 # need relative path for `pandoc` on MacOS
 PANDOC_TANGLE_SUBMODULE:=$(DEPS_DIR)/pandoc-tangle
@@ -315,8 +316,8 @@ $(llvm_kompiled): $(llvm_files) $(libff_out)
 # ----------
 
 install: $(node_kompiled)
-	mkdir -p $(INSTALL_DIR)/usr/bin
-	cp $(node_kompiled) $(INSTALL_DIR)/usr/bin/
+	mkdir -p $(INSTALL_DIR)
+	cp $(node_kompiled) $(INSTALL_DIR)/
 
 # Tests
 # -----
