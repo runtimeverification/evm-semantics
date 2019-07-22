@@ -1,0 +1,13 @@
+FROM archlinux/base
+
+RUN    pacman -Syu --noconfirm \
+    && pacman -S   --noconfirm git hub sudo
+
+ADD https://github.com/kframework/k/releases/download/nightly-89361d7c8/kframework-5.0.0-1-x86_64.pkg.tar.xz kframework_5.0.0-1_x86_64.pkg.tar.xz
+RUN pacman --noconfirm -U ./kframework_5.0.0-1_x86_64.pkg.tar.xz
+
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+RUN    groupadd -g $GROUP_ID user                                                \
+    && useradd --create-home --uid $USER_ID --shell /bin/sh --gid $GROUP_ID user \
+    && echo "user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
