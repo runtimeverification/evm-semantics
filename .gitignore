@@ -2,3 +2,5 @@
 /rustc-*
 /pkg
 /src
+/package/pkg
+/package/src
