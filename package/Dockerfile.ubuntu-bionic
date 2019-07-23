@@ -6,7 +6,7 @@ RUN    ln --symbolic --no-dereference --force /usr/share/zoneinfo/$TZ /etc/local
 
 RUN    apt update                                                                        \
     && apt upgrade --yes                                                                 \
-    && apt install --yes clang-6.0 cmake curl dh-make jq libcrypto++-dev libjemalloc-dev \
+    && apt install --yes clang-8 cmake curl dh-make jq libcrypto++-dev libjemalloc-dev \
                          libprocps-dev libprotobuf-dev libsecp256k1-dev libssl-dev       \
                          pandoc pkg-config protobuf-compiler
 

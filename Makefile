@@ -79,8 +79,8 @@ $(libsecp256k1_out):
 	    && make -s -j4 \
 	    && make install
 
-LIBFF_CC ?=clang-6.0
-LIBFF_CXX?=clang++-6.0
+LIBFF_CC ?=clang-8
+LIBFF_CXX?=clang++-8
 
 $(libff_out):
 	@echo "== submodule: $(DEPS_DIR)/libff"
