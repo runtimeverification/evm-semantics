@@ -1134,19 +1134,17 @@ For now, I assume that they instantiate an empty account and use the empty data.
  // ----------------------------------
 ```
 
-```{.k .standalone}
+```k
     rule <k> EXTCODEHASH ACCT => keccak(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <code> CODE </code>
+           <code> CODE:WordStack </code>
            <nonce> NONCE </nonce>
            <balance> BAL </balance>
            ...
          </account>
       requires notBool #accountEmpty(CODE, NONCE, BAL)
-```
 
-```k
      rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>

@@ -22,7 +22,7 @@ Because the same account may be loaded more than once, implementations of this i
 -   Empty code is detected without lazy evaluation by means of checking the code hash, and therefore will always be represented in the `<code>` cell as `.WordStack`.
 
 ```{.k .node}
-    syntax AccountCode ::= "#unloaded"
+    syntax AccountCode ::= #unloaded(Int)
 ```
 
 -   `#getBalance` returns the balance of an account that exists based on its integer address.
@@ -31,9 +31,10 @@ Because the same account may be loaded more than once, implementations of this i
 -   `#accountExists` returns true if the account is present in the state trie for the current block, and false otherwise.
 
 ```{.k .node}
-    syntax Int  ::= #getBalance ( Int ) [function, hook(BLOCKCHAIN.getBalance)]
-                  | #getNonce   ( Int ) [function, hook(BLOCKCHAIN.getNonce)]
- // -------------------------------------------------------------------------
+    syntax Int  ::= #getBalance  ( Int ) [function, hook(BLOCKCHAIN.getBalance)]
+                  | #getNonce    ( Int ) [function, hook(BLOCKCHAIN.getNonce)]
+                  | #getCodeHash ( Int ) [function, hook(BLOCKCHAIN.getCodeHash)]
+ // -----------------------------------------------------------------------------
 
     syntax Bool ::= #isCodeEmpty   ( Int ) [function, hook(BLOCKCHAIN.isCodeEmpty)]
                   | #accountExists ( Int ) [function, hook(BLOCKCHAIN.accountExists)]
@@ -51,7 +52,7 @@ Because the same account may be loaded more than once, implementations of this i
           => <account>
                <acctID> ACCT </acctID>
                <balance> #getBalance(ACCT) </balance>
-               <code> #if #isCodeEmpty(ACCT) #then .WordStack #else #unloaded #fi </code>
+               <code> #if #isCodeEmpty(ACCT) #then .WordStack #else #unloaded(#getCodeHash(ACCT)) #fi </code>
                <storage> .Map </storage>
                <origStorage> .Map </origStorage>
                <nonce> #getNonce(ACCT) </nonce>
@@ -102,7 +103,7 @@ Because the same account may be loaded more than once, implementations of this i
     rule <k> #lookupCode ACCT => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <code> #unloaded => #parseByteStackRaw(#getCode(ACCT)) </code>
+           <code> #unloaded(_) => #parseByteStackRaw(#getCode(ACCT)) </code>
            ...
          </account>
 
@@ -125,6 +126,17 @@ Because the same account may be loaded more than once, implementations of this i
  // ------------------------------------------------------------------------------
     rule <k> BLOCKHASH N => #getBlockhash(N) ~> #push ... </k> <mode> NORMAL </mode> requires N >=Int 0 andBool N  <Int 256
     rule <k> BLOCKHASH N => 0                ~> #push ... </k> <mode> NORMAL </mode> requires N  <Int 0  orBool N >=Int 256
+```
+
+```{.k .node}
+    rule <k> EXTCODEHASH ACCT => HASH ~> #push ... </k>
+         <account>
+           <acctID> ACCT </acctID>
+           <code> #unloaded(HASH) </code>
+           <nonce> NONCE </nonce>
+           <balance> BAL </balance>
+           ...
+         </account>
 ```
 
 ### Transaction Execution
@@ -214,10 +226,10 @@ Because the same account may be loaded more than once, implementations of this i
 -   `extractConfig` takes a final configuration after rewriting and extracts a `vmResult` from it in order to abstract away configuration structure from the postprocessing done by the blockchain-k-plugin.
 
 ```{.k .node}
-    syntax KItem ::= vmResult ( return: String , gas: Int , refund: Int , status: Int , selfdestruct: List , logs: List , AccountsCell , touched: List )
+    syntax KItem ::= vmResult ( return: String , gas: Int , refund: Int , status: Int , selfdestruct: List , logs: List , AccountsCell , touched: List , statusCode: String )
     syntax KItem ::= extractConfig() [function, symbol]
  // ---------------------------------------------------
-    rule [[ extractConfig() => vmResult(#unparseByteStack(OUT), GAVAIL, REFUND, STATUS, Set2List(SD), LOGS, <accounts> ACCTS </accounts>, Set2List(TOUCHED)) ]]
+    rule [[ extractConfig() => vmResult(#unparseByteStack(OUT), GAVAIL, REFUND, STATUS, Set2List(SD), LOGS, <accounts> ACCTS </accounts>, Set2List(TOUCHED), StatusCode2String(STATUSCODE)) ]]
          <output> OUT </output>
          <gas> GAVAIL </gas>
          <refund> REFUND </refund>
@@ -226,6 +238,7 @@ Because the same account may be loaded more than once, implementations of this i
          <log> LOGS </log>
          <accounts> ACCTS </accounts>
          <touchedAccounts> TOUCHED </touchedAccounts>
+         <statusCode> STATUSCODE </statusCode>
 ```
 
 -   `contractBytes` takes the contents of the `<code>` cell and returns its binary representation as a String.
