@@ -10,5 +10,6 @@ RUN    apt update                                                               
                          libprocps-dev libprotobuf-dev libsecp256k1-dev libssl-dev       \
                          pandoc pkg-config protobuf-compiler
 
-ADD https://github.com/kframework/k/releases/download/nightly-89361d7c8/kframework_5.0.0_amd64_bionic.deb kframework_5.0.0_amd64_bionic.deb
-RUN apt install --yes ./kframework_5.0.0_amd64_bionic.deb
+ARG K_RELEASE=https://github.com/kframework/k/releases/download/nightly-89361d7c8
+ADD $K_RELEASE/kframework_5.0.0_amd64_bionic.deb kframework.deb
+RUN apt install --yes ./kframework.deb
