@@ -6,7 +6,7 @@ pipeline {
   stages {
     stage("Init title") {
       when {
-        changeRequest() 
+        changeRequest()
         beforeAgent true
       }
       steps {
@@ -206,8 +206,9 @@ pipeline {
         stage('Upload Packages') {
           agent {
             dockerfile {
-              dir 'package'
+              dir "kevm-${env.RELEASE_ID}/package"
               filename 'Dockerfile.arch'
+              additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
               reuseNode true
             }
           }
