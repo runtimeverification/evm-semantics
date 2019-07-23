@@ -205,7 +205,8 @@ pipeline {
               unstash 'bionic'
               sh '''
                 sudo apt-get update && sudo apt-get upgrade --yes
-                sudo apt-get install kevm_${KEVM_RELEASE_ID}_amd64.deb
+                ls
+                sudo apt-get install ./kevm_${KEVM_RELEASE_ID}_amd64.deb
                 sudo npm install -g npx
                 make test-interactive-firefly
               '''
