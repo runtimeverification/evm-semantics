@@ -41,7 +41,7 @@ export LUA_PATH
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
         test-proof test-klab-prove test-parse test-failure \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly \
         media media-pdf sphinx metropolis-theme
 .SECONDARY:
 
@@ -466,6 +466,14 @@ test-interactive-search: $(search_tests:=.search)
 
 test-interactive-help:
 	$(TEST) help
+
+test-interactive-firefly:
+	mkdir -p $(BUILD_DIR)/firefly
+	cd $(BUILD_DIR)/firefly
+	git clone 'https://github.com/openzeppelin/openzeppelin-solidity'
+	npm install
+	npx kevm-ganache-cli &
+	npx truffle test test/token/ERC20/ERC20.test.js
 
 # Media
 # -----
