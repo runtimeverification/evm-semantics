@@ -182,7 +182,7 @@ pipeline {
           steps {
             dir("kevm-${env.RELEASE_ID}") {
               sh '''
-                sudo pacman -Syu
+                sudo pacman -Syu --noconfirm
                 cd package
                 makepkg --noconfirm --syncdeps
               '''
