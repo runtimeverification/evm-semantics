@@ -159,6 +159,7 @@ pipeline {
       environment {
         GITHUB_TOKEN    = credentials('rv-jenkins')
         KEVM_RELEASE_ID = '1.0.0'
+        K_RELEASE       = """${sh(cat deps/k_release)}"""
       }
       stages {
         stage('Checkout SCM') {
@@ -169,6 +170,7 @@ pipeline {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
               filename 'Dockerfile.ubuntu-bionic'
+              additionalBuildArgs "--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) --build-arg K_RELEASE=${env.K_RELEASE}"
               reuseNode true
             }
           }
@@ -188,7 +190,7 @@ pipeline {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
               filename 'Dockerfile.arch'
-              additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+              additionalBuildArgs "--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) --build-arg K_RELEASE=${env.K_RELEASE}"
               reuseNode true
             }
           }
