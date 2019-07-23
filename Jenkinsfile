@@ -183,7 +183,7 @@ pipeline {
           steps {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
               sh '''
-                sudo apt update && sudo apt upgrade --yes
+                sudo apt-get update && sudo apt-get upgrade --yes
                 cp -r package/debian ./
                 dpkg-buildpackage --no-sign
               '''
@@ -204,8 +204,8 @@ pipeline {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
               unstash 'bionic'
               sh '''
-                sudo apt update && sudo apt upgrade --yes
-                sudo apt install kevm_${KEVM_RELEASE_ID}_amd64.deb
+                sudo apt-get update && sudo apt-get upgrade --yes
+                sudo apt-get install kevm_${KEVM_RELEASE_ID}_amd64.deb
                 sudo npm install -g npx
                 make test-interactive-firefly
               '''
