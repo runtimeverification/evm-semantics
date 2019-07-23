@@ -166,7 +166,7 @@ pipeline {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
               checkout scm
               script {
-                env.K_RELEASE = sh 'cat deps/k_release'
+                env.K_RELEASE = sh(script: 'cat deps/k_release', returnStdout: true).trim()
               }
             }
           }
@@ -225,8 +225,8 @@ pipeline {
             unstash 'arch'
             sh '''
               git_commit=$(cd kevm-$KEVM_RELEASE_ID && git rev-parse --short HEAD)
-              hub release create                                                                                            \
-                  --attach "kevm_${KEVM_RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                                     \
+              hub release create                                                                                                      \
+                  --attach "kevm_${KEVM_RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                                          \
                   --attach "kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package"             \
                   --message "$(echo -e "KEVM Release $KEVM_RELEASE_ID - $git_commit\n\n" ; cat kevm-${KEVM_RELEASE_ID}/INSTALL.md ;)" \
                   --commitish $(git rev-parse HEAD) "v$KEVM_RELEASE_ID-$git_commit"
