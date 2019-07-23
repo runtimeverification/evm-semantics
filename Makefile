@@ -55,7 +55,7 @@ distclean: clean
 	rm -rf $(BUILD_DIR)
 
 clean-submodules: distclean
-	rm -rf $(DEPS_DIR)/k/make.timestamp $(DEPS_DIR)/pandoc-tangle/make.timestamp $(DEPS_DIR)/metropolis/*.sty \
+	rm -rf $(DEPS_DIR)/k/make.timestamp $(DEPS_DIR)/metropolis/*.sty \
 	       tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp $(DEPS_DIR)/plugin/make.timestamp  \
 	       $(DEPS_DIR)/libff/build
 	cd $(DEPS_DIR)/k         && mvn clean --quiet
@@ -82,9 +82,11 @@ $(libsecp256k1_out):
 LIBFF_CC ?=clang-8
 LIBFF_CXX?=clang++-8
 
-$(libff_out):
+$(DEPS_DIR)/libff/CMakeLists.txt:
 	@echo "== submodule: $(DEPS_DIR)/libff"
 	git submodule update --init --recursive -- $(DEPS_DIR)/libff
+
+$(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 	cd $(DEPS_DIR)/libff/ \
 	    && mkdir -p build \
 	    && cd build \
@@ -106,7 +108,7 @@ deps: repo-deps system-deps
 repo-deps: tangle-deps k-deps plugin-deps
 system-deps: ocaml-deps
 k-deps: $(K_SUBMODULE)/make.timestamp
-tangle-deps: $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
+tangle-deps: $(TANGLER)
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 
 BACKEND_SKIP=-Dhaskell.backend.skip -Dllvm.backend.skip
@@ -117,10 +119,9 @@ $(K_SUBMODULE)/make.timestamp:
 	cd $(K_SUBMODULE) && mvn package -DskipTests -U $(BACKEND_SKIP)
 	touch $(K_SUBMODULE)/make.timestamp
 
-$(PANDOC_TANGLE_SUBMODULE)/make.timestamp:
+$(TANGLER):
 	@echo "== submodule: $@"
 	git submodule update --init -- $(PANDOC_TANGLE_SUBMODULE)
-	touch $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
 
 $(PLUGIN_SUBMODULE)/make.timestamp:
 	@echo "== submodule: $@"
@@ -177,27 +178,27 @@ java-defn: $(java_files)
 haskell-defn: $(haskell_files)
 node-defn: $(node_files)
 
-$(DEFN_DIR)/ocaml/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
+$(DEFN_DIR)/ocaml/%.k: %.md $(TANGLER)
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
-$(DEFN_DIR)/llvm/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
+$(DEFN_DIR)/llvm/%.k: %.md $(TANGLER)
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
-$(DEFN_DIR)/java/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
+$(DEFN_DIR)/java/%.k: %.md $(TANGLER)
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
-$(DEFN_DIR)/haskell/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
+$(DEFN_DIR)/haskell/%.k: %.md $(TANGLER)
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
-$(DEFN_DIR)/node/%.k: %.md $(PANDOC_TANGLE_SUBMODULE)/make.timestamp
+$(DEFN_DIR)/node/%.k: %.md $(TANGLER)
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
