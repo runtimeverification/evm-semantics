@@ -82,9 +82,11 @@ $(libsecp256k1_out):
 LIBFF_CC ?=clang-8
 LIBFF_CXX?=clang++-8
 
-$(libff_out):
+$(DEPS_DIR)/libff/CMakeLists.txt:
 	@echo "== submodule: $(DEPS_DIR)/libff"
 	git submodule update --init --recursive -- $(DEPS_DIR)/libff
+
+$(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 	cd $(DEPS_DIR)/libff/ \
 	    && mkdir -p build \
 	    && cd build \
