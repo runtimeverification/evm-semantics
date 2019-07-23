@@ -166,7 +166,7 @@ pipeline {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
               checkout scm
               script {
-                env.K_RELEASE = sh 'cat deps/k_release'
+                env.K_RELEASE = sh(script: 'cat deps/k_release', returnStdout: true).trim()
               }
             }
           }
