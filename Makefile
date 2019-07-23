@@ -79,8 +79,8 @@ $(libsecp256k1_out):
 	    && make -s -j4 \
 	    && make install
 
-LIBFF_CC ?=clang-6.0
-LIBFF_CXX?=clang++-6.0
+LIBFF_CC ?=clang-8
+LIBFF_CXX?=clang++-8
 
 $(libff_out):
 	@echo "== submodule: $(DEPS_DIR)/libff"
@@ -278,6 +278,7 @@ $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(DEFN_DI
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/node/$(MAIN_DEFN_FILE).k \
 	                 --directory $(DEFN_DIR)/node -I $(DEFN_DIR)/node -I $(DEFN_DIR)/node \
 	                 --hook-namespaces "KRYPTO BLOCKCHAIN" \
+			 --iterated \
 	                 $(KOMPILE_OPTS) \
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blockchain.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/world.cpp -ccopt $(CURDIR)/$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc \
 	                 -ccopt -I$(CURDIR)/$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin \
