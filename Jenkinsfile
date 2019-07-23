@@ -159,11 +159,17 @@ pipeline {
       environment {
         GITHUB_TOKEN    = credentials('rv-jenkins')
         KEVM_RELEASE_ID = '1.0.0'
-        K_RELEASE       = """${sh(cat deps/k_release)}"""
       }
       stages {
         stage('Checkout SCM') {
-          steps { dir("kevm-${env.KEVM_RELEASE_ID}") { checkout scm } }
+          steps {
+            dir("kevm-${env.KEVM_RELEASE_ID}") {
+              checkout scm
+              script {
+                env.K_RELEASE = sh 'cat deps/k_release'
+              }
+            }
+          }
         }
         stage('Build Ubuntu Bionic Package') {
           agent {
