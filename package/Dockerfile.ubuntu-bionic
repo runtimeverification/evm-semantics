@@ -4,13 +4,13 @@ ENV TZ=America/Chicago
 RUN    ln --symbolic --no-dereference --force /usr/share/zoneinfo/$TZ /etc/localtime \
     && echo $TZ > /etc/timezone
 
-RUN    apt update                                                                       \
-    && apt upgrade --yes                                                                \
-    && apt install --yes clang-8 cmake curl dh-make git jq libcrypto++-dev              \
+RUN    apt-get update                                                                   \
+    && apt-get upgrade --yes                                                            \
+    && apt-get install --yes clang-8 cmake curl dh-make git jq libcrypto++-dev          \
                          libjemalloc-dev libprocps-dev libprotobuf-dev libsecp256k1-dev \
                          libssl-dev nodejs npm pandoc pkg-config protobuf-compiler
 
 ARG K_RELEASE
 RUN echo "Using K_RELEASE: $K_RELEASE"
 ADD $K_RELEASE/kframework_5.0.0_amd64_bionic.deb kframework.deb
-RUN apt install --yes ./kframework.deb
+RUN apt-get install --yes ./kframework.deb

@@ -4,12 +4,12 @@ ENV TZ=America/Chicago
 RUN    ln --symbolic --no-dereference --force /usr/share/zoneinfo/$TZ /etc/localtime \
     && echo $TZ > /etc/timezone
 
-RUN    apt update                                                               \
-    && apt upgrade --yes                                                        \
-    && apt install --yes                                                        \
-        autoconf bison clang-8 cmake curl flex gcc libboost-test-dev          \
+RUN    apt-get update                                                           \
+    && apt-get upgrade --yes                                                    \
+    && apt-get install --yes                                                    \
+        autoconf bison clang-8 cmake curl flex gcc libboost-test-dev            \
         libcrypto++-dev libffi-dev libjemalloc-dev libmpfr-dev libprocps-dev    \
-        libsecp256k1-dev libssl-dev libtool libyaml-dev lld-8 llvm-8-tools  \
+        libsecp256k1-dev libssl-dev libtool libyaml-dev lld-8 llvm-8-tools      \
         make maven opam openjdk-8-jdk pandoc pkg-config python3 python-pygments \
         python-recommonmark python-sphinx time zlib1g-dev protobuf-compiler     \
         libprotobuf-dev
