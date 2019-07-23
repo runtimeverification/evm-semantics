@@ -157,56 +157,56 @@ pipeline {
       agent { label 'docker' }
       options { skipDefaultCheckout() }
       environment {
-        GITHUB_TOKEN = credentials('rv-jenkins')
-        RELEASE_ID   = '1.0.0'
+        GITHUB_TOKEN    = credentials('rv-jenkins')
+        KEVM_RELEASE_ID = '1.0.0'
       }
       stages {
         stage('Checkout SCM') {
-          steps { dir("kevm-${env.RELEASE_ID}") { checkout scm } }
+          steps { dir("kevm-${env.KEVM_RELEASE_ID}") { checkout scm } }
         }
-        stage('Build Ubuntu Package') {
+        stage('Build Ubuntu Bionic Package') {
           agent {
             dockerfile {
-              dir "kevm-${env.RELEASE_ID}/package"
+              dir "kevm-${env.KEVM_RELEASE_ID}/package"
               filename 'Dockerfile.ubuntu-bionic'
               reuseNode true
             }
           }
           steps {
-            dir("kevm-${env.RELEASE_ID}") {
+            dir("kevm-${env.KEVM_RELEASE_ID}") {
               sh '''
                 sudo apt update && sudo apt upgrade --yes
                 cp -r package/debian ./
                 dpkg-buildpackage --no-sign
               '''
             }
-            stash name: 'bionic', includes: "kevm_${env.RELEASE_ID}_amd64.deb"
+            stash name: 'bionic', includes: "kevm_${env.KEVM_RELEASE_ID}_amd64.deb"
           }
         }
         stage('Build Arch Package') {
           agent {
             dockerfile {
-              dir "kevm-${env.RELEASE_ID}/package"
+              dir "kevm-${env.KEVM_RELEASE_ID}/package"
               filename 'Dockerfile.arch'
               additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
               reuseNode true
             }
           }
           steps {
-            dir("kevm-${env.RELEASE_ID}") {
+            dir("kevm-${env.KEVM_RELEASE_ID}") {
               sh '''
                 sudo pacman -Syu --noconfirm
                 cd package
                 makepkg --noconfirm --syncdeps
               '''
             }
-            stash name: 'arch', includes: "kevm-${env.RELEASE_ID}/package/kevm-git-${env.RELEASE_ID}-1-x86_64.pkg.tar.xz"
+            stash name: 'arch', includes: "kevm-${env.KEVM_RELEASE_ID}/package/kevm-git-${env.KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz"
           }
         }
         stage('Upload Packages') {
           agent {
             dockerfile {
-              dir "kevm-${env.RELEASE_ID}/package"
+              dir "kevm-${env.KEVM_RELEASE_ID}/package"
               filename 'Dockerfile.arch'
               additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
               reuseNode true
@@ -216,12 +216,12 @@ pipeline {
             unstash 'bionic'
             unstash 'arch'
             sh '''
-              git_commit=$(cd kevm-$RELEASE_ID && git rev-parse --short HEAD)
+              git_commit=$(cd kevm-$KEVM_RELEASE_ID && git rev-parse --short HEAD)
               hub release create                                                                                            \
-                  --attach "kevm_${RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                                     \
-                  --attach "kevm-${RELEASE_ID}/package/kevm-git-${RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package"             \
-                  --message "$(echo -e "KEVM Release $RELEASE_ID - $git_commit\n\n" ; cat kevm-${RELEASE_ID}/INSTALL.md ;)" \
-                  --commitish $(git rev-parse HEAD) "v$RELEASE_ID-$git_commit"
+                  --attach "kevm_${KEVM_RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                                     \
+                  --attach "kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package"             \
+                  --message "$(echo -e "KEVM Release $KEVM_RELEASE_ID - $git_commit\n\n" ; cat kevm-${KEVM_RELEASE_ID}/INSTALL.md ;)" \
+                  --commitish $(git rev-parse HEAD) "v$KEVM_RELEASE_ID-$git_commit"
             '''
           }
         }
