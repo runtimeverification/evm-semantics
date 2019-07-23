@@ -1,7 +1,7 @@
 FROM archlinux/base
 
 RUN    pacman -Syu --noconfirm \
-    && pacman -S   --noconfirm git hub sudo
+    && pacman -S   --noconfirm curl gcc git hub make nodejs npm python2 sudo
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000

@@ -191,6 +191,27 @@ pipeline {
             stash name: 'bionic', includes: "kevm_${env.KEVM_RELEASE_ID}_amd64.deb"
           }
         }
+        stage('Test Ubuntu Bionic Package') {
+          agent {
+            dockerfile {
+              dir "kevm-${env.KEVM_RELEASE_ID}/package"
+              filename 'Dockerfile.ubuntu-bionic'
+              additionalBuildArgs "--build-arg USER_ID=\$(id -u) --build-arg GROUP_ID=\$(id -g) --build-arg K_RELEASE=${env.K_RELEASE}"
+              reuseNode true
+            }
+          }
+          steps {
+            dir("kevm-${env.KEVM_RELEASE_ID}") {
+              unstash 'bionic'
+              sh '''
+                sudo apt update && sudo apt upgrade --yes
+                sudo apt install kevm_${KEVM_RELEASE_ID}_amd64.deb
+                sudo npm install -g npx
+                make test-interactive-firefly
+              '''
+            }
+          }
+        }
         stage('Build Arch Package') {
           agent {
             dockerfile {
@@ -209,6 +230,27 @@ pipeline {
               '''
             }
             stash name: 'arch', includes: "kevm-${env.KEVM_RELEASE_ID}/package/kevm-git-${env.KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz"
+          }
+        }
+        stage('Test Arch Package') {
+          agent {
+            dockerfile {
+              dir "kevm-${env.KEVM_RELEASE_ID}/package"
+              filename 'Dockerfile.arch'
+              additionalBuildArgs "--build-arg USER_ID=\$(id -u) --build-arg GROUP_ID=\$(id -g) --build-arg K_RELEASE=${env.K_RELEASE}"
+              reuseNode true
+            }
+          }
+          steps {
+            dir("kevm-${env.KEVM_RELEASE_ID}") {
+              unstash 'arch'
+              sh '''
+                sudo pacman -Syu --noconfirm
+                sudo pacman --noconfirm -U kevm-git-${env.KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz
+                sudo npm install -g npx
+                make test-interactive-firefly
+              '''
+            }
           }
         }
         stage('Upload Packages') {
