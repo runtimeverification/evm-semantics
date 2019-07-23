@@ -5,7 +5,10 @@ pipeline {
   }
   stages {
     stage("Init title") {
-      when { changeRequest() }
+      when {
+        changeRequest() 
+        beforeAgent true
+      }
       steps {
         script {
           currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}"
@@ -13,7 +16,10 @@ pipeline {
       }
     }
     stage('Build and Test') {
-      when { changeRequest() }
+      when {
+        changeRequest()
+        beforeAgent true
+      }
       agent {
         dockerfile {
           additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
