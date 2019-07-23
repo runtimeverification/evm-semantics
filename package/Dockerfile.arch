@@ -9,6 +9,7 @@ RUN    groupadd -g $GROUP_ID user                                               
     && useradd --create-home --uid $USER_ID --shell /bin/sh --gid $GROUP_ID user \
     && echo "user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-ARG K_RELEASE=https://github.com/kframework/k/releases/download/nightly-89361d7c8
+ARG K_RELEASE
+RUN echo "Using K_RELEASE: $K_RELEASE"
 ADD $K_RELEASE/kframework-5.0.0-1-x86_64.pkg.tar.xz kframework.pkg.tar.xz
 RUN sudo pacman --noconfirm -U ./kframework.pkg.tar.xz
