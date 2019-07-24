@@ -269,7 +269,7 @@ pipeline {
                   --attach "kevm_${KEVM_RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                                          \
                   --attach "kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package"             \
                   --message "$(echo -e "KEVM Release $KEVM_RELEASE_ID - $git_commit\n\n" ; cat kevm-${KEVM_RELEASE_ID}/INSTALL.md ;)" \
-                  --commitish $(git rev-parse HEAD) "v$KEVM_RELEASE_ID-$git_commit"
+                  --commitish $git_commit "v$KEVM_RELEASE_ID-$git_commit"
             '''
           }
         }
