@@ -81,9 +81,18 @@ $(libsecp256k1_out): $(DEPS_DIR)/secp256k1/autogen.sh
 	    && make -s -j4 \
 	    && make install
 
+UNAME_S := $(shell uname -s)
+
+ifeq ($(UNAME_S),Linux)
+  LIBFF_CMAKE_FLASG=
+  LINK_PROCPS=-lprocps
+else
+  LIBFF_CMAKE_FLAGS=-DWITH_PROCPS=OFF
+  LINK_PROCPS=
+endif
+
 LIBFF_CC ?=clang-8
 LIBFF_CXX?=clang++-8
-LIBFF_CMAKE_FLAGS?=
 
 $(DEPS_DIR)/libff/CMakeLists.txt:
 	@echo "== submodule: $(DEPS_DIR)/libff"
@@ -288,7 +297,7 @@ $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(DEFN_DI
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blockchain.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/world.cpp -ccopt $(CURDIR)/$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc \
 	                 -ccopt -I$(CURDIR)/$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin \
 	                 -ccopt -L$(LIBRARY_PATH) \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps -ccopt -lprotobuf -ccopt -g -ccopt -std=c++11 -ccopt -O2
+	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS)) -ccopt -lprotobuf -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
 $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 	mkdir -p $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin
@@ -301,7 +310,7 @@ $(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter $(libf
                           -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ -I node/ \
                           $(LLVM_KOMPILE_OPTS) \
                           -L$(LIBRARY_PATH) \
-                          -lff -lprotobuf -lgmp -lprocps -lcryptopp -lsecp256k1
+                          -lff -lprotobuf -lgmp $(LINK_PROCPS) -lcryptopp -lsecp256k1
 
 # LLVM Backend
 
@@ -315,7 +324,7 @@ $(llvm_kompiled): $(llvm_files) $(libff_out)
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
 	                 -ccopt -g -ccopt -std=c++11 -ccopt -O2 \
 	                 -ccopt -L$(LIBRARY_PATH) \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lprocps
+	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS))
 
 # Installing
 # ----------
