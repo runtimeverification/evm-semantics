@@ -467,14 +467,14 @@ test-interactive-search: $(search_tests:=.search)
 test-interactive-help:
 	$(TEST) help
 
+# Notice that `npm install` comes after `npx kevm-ganache-cli` to allow time for it to start up.
 test-interactive-firefly:
 	mkdir -p $(BUILD_DIR)/firefly
-	cd $(BUILD_DIR)/firefly
-	git clone 'https://github.com/openzeppelin/openzeppelin-solidity'
-	# Notice that `npm install` comes after `npx kevm-ganache-cli` to allow time for it to start up.
-	npx kevm-ganache-cli &
-	npm install
-	npx truffle test test/token/ERC20/ERC20.test.js
+	cd $(BUILD_DIR)/firefly \
+	    && git clone 'https://github.com/openzeppelin/openzeppelin-solidity' \
+	    && npx kevm-ganache-cli &                                            \
+	    && npm install                                                       \
+	    && npx truffle test test/token/ERC20/ERC20.test.js
 
 # Media
 # -----
