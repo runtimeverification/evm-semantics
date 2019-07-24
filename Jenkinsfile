@@ -256,7 +256,7 @@ pipeline {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
               filename 'Dockerfile.arch'
-              additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+              additionalBuildArgs "--build-arg USER_ID=\$(id -u) --build-arg GROUP_ID=\$(id -g) --build-arg K_RELEASE=${env.K_RELEASE}"
               reuseNode true
             }
           }
