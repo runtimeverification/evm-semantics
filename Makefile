@@ -470,7 +470,8 @@ test-interactive-help:
 # Notice that `npm install` comes after `npx kevm-ganache-cli` to allow time for it to start up.
 test-interactive-firefly:
 	mkdir -p $(BUILD_DIR)/firefly
-	cd $(BUILD_DIR)/firefly \
+	cd $(BUILD_DIR)/firefly                                                  \
+	    && rm -rf openzeppelin-solidity                                      \
 	    && git clone 'https://github.com/openzeppelin/openzeppelin-solidity' \
 	    && cd openzeppelin-solidity                                          \
 	    && { npx kevm-ganache-cli & }                                        \
