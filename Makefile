@@ -70,9 +70,11 @@ libff_out:=$(LIBRARY_PATH)/libff.a
 libsecp256k1: $(libsecp256k1_out)
 libff: $(libff_out)
 
-$(libsecp256k1_out):
+$(DEPS_DIR)/secp256k1/autogen.sh:
 	@echo "== submodule: $(DEPS_DIR)/secp256k1"
 	git submodule update --init --recursive -- $(DEPS_DIR)/secp256k1
+
+$(libsecp256k1_out): $(DEPS_DIR)/secp256k1/autogen.sh
 	cd $(DEPS_DIR)/secp256k1/ \
 	    && ./autogen.sh \
 	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
