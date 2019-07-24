@@ -261,26 +261,23 @@ pipeline {
             }
           }
           steps {
-            unstash 'bionic'
-            unstash 'arch'
             dir("kevm-${env.RELEASE_ID}") {
               checkout scm
+              unstash 'bionic'
+              unstash 'arch'
               sh '''
                 find . -name .git | xargs rm -r
                 rm -r deps/k tests/ethereum-tests deps/metropolis
                 cd ..
                 tar czvf kevm-${RELEASE_ID}.tar.gz kevm-${RELEASE_ID}
+                git_commit=$(git rev-parse --short HEAD)
+                hub release create                                                                              \
+                    --attach "kevm_${KEVM_RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                  \
+                    --attach "package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package"             \
+                    --message "$(echo -e "KEVM Release $KEVM_RELEASE_ID - $git_commit\n\n" ; cat INSTALL.md ;)" \
+                    --commitish $git_commit "v$KEVM_RELEASE_ID-$git_commit"
               '''
             }
-            sh '''
-              git_commit=$(cd kevm-$KEVM_RELEASE_ID && git rev-parse --short HEAD)
-              hub release create                                                                                                      \
-                  --attach "kevm_${KEVM_RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                                          \
-                  --attach "kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package"             \
-                  --attach "kevm-${KEVM_RELEASE_ID}.tar.gz#Source tar.gz"                                                             \
-                  --message "$(echo -e "KEVM Release $KEVM_RELEASE_ID - $git_commit\n\n" ; cat kevm-${KEVM_RELEASE_ID}/INSTALL.md ;)" \
-                  --commitish $git_commit "v$KEVM_RELEASE_ID-$git_commit"
-            '''
           }
         }
       }
