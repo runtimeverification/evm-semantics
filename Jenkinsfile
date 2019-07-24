@@ -245,7 +245,7 @@ pipeline {
               unstash 'arch'
               sh '''
                 sudo pacman -Syu --noconfirm
-                sudo pacman --noconfirm -U kevm-git-${env.KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz
+                sudo pacman --noconfirm -U kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz
                 make test-interactive-firefly
               '''
             }
