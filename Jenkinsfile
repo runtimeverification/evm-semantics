@@ -261,16 +261,18 @@ pipeline {
             }
           }
           steps {
-            unstash 'bionic'
-            unstash 'arch'
-            sh '''
-              git_commit=$(cd kevm-$KEVM_RELEASE_ID && git rev-parse --short HEAD)
-              hub release create                                                                                                      \
-                  --attach "kevm_${KEVM_RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                                          \
-                  --attach "kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package"             \
-                  --message "$(echo -e "KEVM Release $KEVM_RELEASE_ID - $git_commit\n\n" ; cat kevm-${KEVM_RELEASE_ID}/INSTALL.md ;)" \
-                  --commitish $git_commit "v$KEVM_RELEASE_ID-$git_commit"
-            '''
+            dir("kevm-${env.KEVM_RELEASE_ID}") {
+              unstash 'bionic'
+              unstash 'arch'
+              sh '''
+                git_commit=$(git rev-parse --short HEAD)
+                hub release create                                                                              \
+                    --attach "kevm_${KEVM_RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                  \
+                    --attach "package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package"             \
+                    --message "$(echo -e "KEVM Release $KEVM_RELEASE_ID - $git_commit\n\n" ; cat INSTALL.md ;)" \
+                    --commitish $git_commit "v$KEVM_RELEASE_ID-$git_commit"
+              '''
+            }
           }
         }
       }
