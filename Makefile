@@ -81,6 +81,7 @@ $(libsecp256k1_out):
 
 LIBFF_CC ?=clang-8
 LIBFF_CXX?=clang++-8
+LIBFF_CMAKE_FLAGS?=
 
 $(DEPS_DIR)/libff/CMakeLists.txt:
 	@echo "== submodule: $(DEPS_DIR)/libff"
