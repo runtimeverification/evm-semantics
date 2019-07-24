@@ -81,6 +81,7 @@ $(libsecp256k1_out):
 
 LIBFF_CC ?=clang-8
 LIBFF_CXX?=clang++-8
+LIBFF_CMAKE_FLAGS?=
 
 $(DEPS_DIR)/libff/CMakeLists.txt:
 	@echo "== submodule: $(DEPS_DIR)/libff"
@@ -90,7 +91,7 @@ $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 	cd $(DEPS_DIR)/libff/ \
 	    && mkdir -p build \
 	    && cd build \
-	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) \
+	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) $(LIBFF_CMAKE_FLAGS) \
 	    && make -s -j4 \
 	    && make install
 
