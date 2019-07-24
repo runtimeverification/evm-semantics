@@ -11,6 +11,7 @@ RUN    apt-get update                                                           
                          libssl-dev pandoc pkg-config protobuf-compiler sudo
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN apt-get install --yes nodejs
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
