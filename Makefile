@@ -84,7 +84,7 @@ $(libsecp256k1_out): $(DEPS_DIR)/secp256k1/autogen.sh
 UNAME_S := $(shell uname -s)
 
 ifeq ($(UNAME_S),Linux)
-  LIBFF_CMAKE_FLASG=
+  LIBFF_CMAKE_FLAGS=
   LINK_PROCPS=-lprocps
 else
   LIBFF_CMAKE_FLAGS=-DWITH_PROCPS=OFF
