@@ -472,7 +472,7 @@ test-interactive-firefly:
 	mkdir -p $(BUILD_DIR)/firefly
 	cd $(BUILD_DIR)/firefly \
 	    && git clone 'https://github.com/openzeppelin/openzeppelin-solidity' \
-	    && npx kevm-ganache-cli &                                            \
+	    && { npx kevm-ganache-cli & }                                        \
 	    && npm install                                                       \
 	    && npx truffle test test/token/ERC20/ERC20.test.js
 
