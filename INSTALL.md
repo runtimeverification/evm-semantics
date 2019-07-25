@@ -52,7 +52,7 @@ cp -r package/debian ./
 dpkg-buildpackage --no-sign
 ```
 
-This will throw an error for any build dependencies you're missing, install them with `sudo apt install ...`.
+This will throw an error for any missing build dependencies, install them with `sudo apt install ...`.
 The `kevm_X.Y.Z_amd64_ID.deb` package will be placed one directory up from the repository root.
 
 ### Arch
