@@ -60,6 +60,13 @@ run_prove() {
     kprove --directory "$backend_dir" "$run_file" "$@"
 }
 
+run_search() {
+    local search_pattern
+    search_pattern="$1" ; shift
+    export K_OPTS=-Xmx8G
+    run_krun --search --pattern "$search_pattern" "$@"
+}
+
 run_klab() {
     local run_mode klab_log
 
@@ -132,6 +139,7 @@ if [[ "$run_command" == 'help' ]]; then
                $0 interpret  [--backend (ocaml|llvm)]              <pgm>  <interpreter arg>*
                $0 kast       [--backend (ocaml|java)]              <pgm>  <output format> <K arg>*
                $0 prove      [--backend (java|haskell)]            <spec> <K arg>* -m <def_module>
+               $0 search     [--backend (java|haskell)]            <pgm>  <pattern> <K arg>*
                $0 klab-run                                         <pgm>  <K arg>*
                $0 klab-prove                                       <spec> <K arg>* -m <def_module>
                $0 klab-view                                        <spec>
@@ -139,6 +147,7 @@ if [[ "$run_command" == 'help' ]]; then
            $0 run       : Run a single EVM program
            $0 interpret : Run JSON EVM programs without K Frontend (external parser)
            $0 kast      : Parse an EVM program and output it in a supported format
+           $0 prove     : Run an EVM K proof
            $0 prove     : Run an EVM K proof
            $0 klab-(run|prove) : Run program or prove spec and dump StateLogs which KLab can read
            $0 klab-view : View the statelog associated with a given program or spec
@@ -148,6 +157,7 @@ if [[ "$run_command" == 'help' ]]; then
                  <K arg> is an argument you want to pass to K.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
                  <output format> is the format for Kast to output the term in.
+                 <pattern> is the configuration pattern to search for.
                  <def_module> is the module to take as axioms when doing verification.
 
            klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
@@ -179,6 +189,7 @@ case "$run_command-$backend" in
     kast-@(ocaml|java|llvm|haskell) ) run_kast                        "$@" ;;
     interpret-@(ocaml|llvm)         ) run_interpret                   "$@" ;;
     prove-@(java|haskell)           ) run_prove                       "$@" ;;
+    search-@(java|haskell)          ) run_search                      "$@" ;;
     klab-@(run|prove)-java          ) run_klab "${run_command#klab-}" "$@" ;;
     klab-view-java                  ) view_klab                       "$@" ;;
     *) $0 help ; fatal "Unknown command on backend: $run_command $backend" ;;
