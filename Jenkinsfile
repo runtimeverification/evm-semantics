@@ -130,6 +130,13 @@ pipeline {
                 '''
               }
             }
+            stage('Haskell Search') {
+              steps {
+                sh '''
+                  make test-interactive-search TEST_SYMBOLIC_BACKEND=haskell -j4
+                '''
+              }
+            }
             stage('KEVM help') {
               steps {
                 sh '''
