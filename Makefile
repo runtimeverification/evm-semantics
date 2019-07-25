@@ -384,7 +384,9 @@ tests/%.prove: tests/%
 	$(TEST) prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE)
 
 tests/%.search: tests/%
-	$(TEST) search --backend $(TEST_SYMBOLIC_BACKEND) $< "$(shell cat $<.pattern)"
+	$(TEST) search --backend $(TEST_SYMBOLIC_BACKEND) $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" > $@-out
+	$(CHECK) $@-expected $@-out
+	rm -rf $@-out
 
 tests/%.klab-prove: tests/%
 	$(TEST) klab-prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE)

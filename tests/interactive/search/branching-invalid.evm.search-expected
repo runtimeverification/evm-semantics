@@ -1,0 +1,319 @@
+  {
+    DotVar0
+  #Equals
+    <generatedCounter>
+      0
+    </generatedCounter>
+  }
+#And
+  {
+    DotVar2
+  #Equals
+    <network>
+      <activeAccounts>
+        .Set
+      </activeAccounts>
+      <accounts>
+        .AccountCellMap
+      </accounts>
+      <txOrder>
+        .List
+      </txOrder>
+      <txPending>
+        .List
+      </txPending>
+      <messages>
+        .MessageCellMap
+      </messages>
+    </network>
+  }
+#And
+  {
+    _0
+  #Equals
+    <output>
+      .WordStack
+    </output>
+  }
+#And
+  {
+    _1
+  #Equals
+    <callStack>
+      .List
+    </callStack>
+  }
+#And
+  {
+    _2
+  #Equals
+    <interimStates>
+      .List
+    </interimStates>
+  }
+#And
+  {
+    _3
+  #Equals
+    <touchedAccounts>
+      .Set
+    </touchedAccounts>
+  }
+#And
+  {
+    _4
+  #Equals
+    <callState>
+      <program>
+        0 |-> PUSH ( 1 , 3 )
+        2 |-> PUSH ( 1 , 4 )
+        4 |-> ADD
+        5 |-> PUSH ( 1 , 8 )
+        7 |-> EQ
+        8 |-> PUSH ( 1 , 12 )
+        10 |-> JUMPI
+        11 |-> INVALID
+        12 |-> JUMPDEST
+        13 |-> STOP
+      </program>
+      <programBytes>
+        .WordStack
+      </programBytes>
+      <id>
+        0
+      </id>
+      <caller>
+        0
+      </caller>
+      <callData>
+        .WordStack
+      </callData>
+      <callValue>
+        0
+      </callValue>
+      <wordStack>
+        .WordStack
+      </wordStack>
+      <localMem>
+        .Map
+      </localMem>
+      <pc>
+        11
+      </pc>
+      <gas>
+        9972
+      </gas>
+      <memoryUsed>
+        0
+      </memoryUsed>
+      <callGas>
+        0
+      </callGas>
+      <static>
+        false
+      </static>
+      <callDepth>
+        0
+      </callDepth>
+    </callState>
+  }
+#And
+  {
+    _5
+  #Equals
+    <substate>
+      <selfDestruct>
+        .Set
+      </selfDestruct>
+      <log>
+        .List
+      </log>
+      <refund>
+        0
+      </refund>
+    </substate>
+  }
+#And
+  {
+    _6
+  #Equals
+    <gasPrice>
+      0
+    </gasPrice>
+  }
+#And
+  {
+    _7
+  #Equals
+    <origin>
+      0
+    </origin>
+  }
+#And
+  {
+    _8
+  #Equals
+    <previousHash>
+      0
+    </previousHash>
+  }
+#And
+  {
+    _9
+  #Equals
+    <ommersHash>
+      0
+    </ommersHash>
+  }
+#And
+  {
+    _10
+  #Equals
+    <coinbase>
+      0
+    </coinbase>
+  }
+#And
+  {
+    _11
+  #Equals
+    <stateRoot>
+      0
+    </stateRoot>
+  }
+#And
+  {
+    _12
+  #Equals
+    <transactionsRoot>
+      0
+    </transactionsRoot>
+  }
+#And
+  {
+    _13
+  #Equals
+    <receiptsRoot>
+      0
+    </receiptsRoot>
+  }
+#And
+  {
+    _14
+  #Equals
+    <logsBloom>
+      .WordStack
+    </logsBloom>
+  }
+#And
+  {
+    _15
+  #Equals
+    <difficulty>
+      0
+    </difficulty>
+  }
+#And
+  {
+    _16
+  #Equals
+    <number>
+      0
+    </number>
+  }
+#And
+  {
+    _17
+  #Equals
+    <gasLimit>
+      0
+    </gasLimit>
+  }
+#And
+  {
+    _18
+  #Equals
+    <gasUsed>
+      0
+    </gasUsed>
+  }
+#And
+  {
+    _19
+  #Equals
+    <timestamp>
+      0
+    </timestamp>
+  }
+#And
+  {
+    _20
+  #Equals
+    <extraData>
+      .WordStack
+    </extraData>
+  }
+#And
+  {
+    _21
+  #Equals
+    <mixHash>
+      0
+    </mixHash>
+  }
+#And
+  {
+    _22
+  #Equals
+    <blockNonce>
+      0
+    </blockNonce>
+  }
+#And
+  {
+    _23
+  #Equals
+    <ommerBlockHeaders>
+      [ .JSONList ]
+    </ommerBlockHeaders>
+  }
+#And
+  {
+    _24
+  #Equals
+    <blockhash>
+      .List
+    </blockhash>
+  }
+#And
+  {
+    _25
+  #Equals
+    <k>
+      #halt ~> .EthereumSimulation
+    </k>
+  }
+#And
+  {
+    _26
+  #Equals
+    <exit-code>
+      1
+    </exit-code>
+  }
+#And
+  {
+    _27
+  #Equals
+    <mode>
+      NORMAL
+    </mode>
+  }
+#And
+  {
+    _28
+  #Equals
+    <schedule>
+      BYZANTIUM
+    </schedule>
+  }
