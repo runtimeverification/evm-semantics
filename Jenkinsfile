@@ -267,8 +267,6 @@ pipeline {
               sh '''
                 git_commit=$(git rev-parse --short HEAD)
                 release_tag="v${KEVM_RELEASE_ID}-${git_commit}"
-                hub tag "${release_tag}"
-                hub push origin "${release_tag}"
                 hub release create                                                                              \
                     --attach "kevm_${KEVM_RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                  \
                     --attach "package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package"             \
