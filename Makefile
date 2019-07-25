@@ -329,9 +329,16 @@ $(llvm_kompiled): $(llvm_files) $(libff_out)
 # Installing
 # ----------
 
+KEVM_RELEASE_TAG?=
+
 install: $(node_kompiled)
 	mkdir -p $(INSTALL_DIR)
 	cp $(node_kompiled) $(INSTALL_DIR)/
+
+release.md: INSTALL.md
+	echo "KEVM Release $(KEVM_RELEASE_TAG)"  > $@
+	echo                                    >> $@
+	cat INSTALL.md                          >> $@
 
 # Tests
 # -----
