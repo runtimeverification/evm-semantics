@@ -1,0 +1,13 @@
+load "exec" : { "gas" : 10000
+              ,"code" : PUSH(1, 3) ; PUSH(1, 4) ; ADD
+                      ; PUSH(1, 7) ; EQ
+                      ; PUSH(1, 13) ; JUMPI     // jumpi("end")
+                      ; INVALID
+                      ; JUMPDEST                // jumpdest("end")
+                      ; STOP
+                      ; .OpCodes
+              }
+
+start
+
+.EthereumSimulation

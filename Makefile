@@ -41,7 +41,7 @@ export LUA_PATH
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
         test-proof test-klab-prove test-parse test-failure \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search \
         media media-pdf sphinx metropolis-theme
 .SECONDARY:
 
@@ -383,6 +383,11 @@ tests/%.parse: tests/%
 tests/%.prove: tests/%
 	$(TEST) prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE)
 
+tests/%.search: tests/%
+	$(TEST) search --backend $(TEST_SYMBOLIC_BACKEND) $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" > $@-out
+	$(CHECK) $@-expected $@-out
+	rm -rf $@-out
+
 tests/%.klab-prove: tests/%
 	$(TEST) klab-prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE)
 
@@ -451,10 +456,13 @@ test-failure: $(failure_tests:=.run-expected)
 
 # Interactive Tests
 
-test-interactive: test-interactive-run test-interactive-prove test-interactive-help
+test-interactive: test-interactive-run test-interactive-prove test-interactive-search test-interactive-help
 
 test-interactive-run: $(smoke_tests_run:=.run-interactive)
 test-interactive-prove: $(smoke_tests_prove:=.prove)
+
+search_tests:=$(wildcard tests/interactive/search/*.evm)
+test-interactive-search: $(search_tests:=.search)
 
 test-interactive-help:
 	$(TEST) help
