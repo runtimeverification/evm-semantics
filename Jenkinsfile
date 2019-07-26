@@ -148,7 +148,7 @@ pipeline {
         }
       }
     }
-    stage('Deploy') {
+    stage('Release') {
       when {
         not { changeRequest() }
         branch 'master'
