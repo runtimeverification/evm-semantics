@@ -616,7 +616,6 @@ Most of EVM data is held in finite maps.
 We are using the polymorphic `Map` sort for these word maps.
 
 -   `WM [ N := WS ]` assigns a contiguous chunk of $WM$ to $WS$ starting at position $W$.
--   `#asMapWordStack` converts a `WordStack` to a `Map`.
 -   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
 
 ```k
@@ -624,14 +623,6 @@ We are using the polymorphic `Map` sort for these word maps.
  // --------------------------------------------------------
     rule WM[ N := .WordStack ] => WM
     rule WM[ N := W : WS     ] => (WM[N <- W])[N +Int 1 := WS] [concrete]
-
-    syntax Map ::= #asMapWordStack ( WordStack ) [function]
- // -------------------------------------------------------
-    rule #asMapWordStack(WS:WordStack) => .Map [ 0 := WS ]
-
-    syntax Int ::= getInt(KItem) [function]
- // ---------------------------------------
-    rule getInt(I:Int) => I
 
     syntax WordStack ::= #range ( Map , Int , Int )            [function]
     syntax WordStack ::= #range ( Map , Int , Int , WordStack) [function, klabel(#rangeAux)]
@@ -713,11 +704,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `WordStack`s, and `M
     rule #parseByteStackRaw(S) => ordChar(substrString(S, 0, 1)) : #parseByteStackRaw(substrString(S, 1, lengthString(S))) requires lengthString(S) >=Int 1
     rule #parseByteStackRaw("") => .WordStack
 
-    syntax WordStack ::= #parseWordStack ( JSON ) [function]
- // --------------------------------------------------------
-    rule #parseWordStack( [ .JSONList ] )            => .WordStack
-    rule #parseWordStack( [ (WORD:String) , REST ] ) => #parseHexWord(WORD) : #parseWordStack( [ REST ] )
-
+```k
     syntax Map ::= #parseMap ( JSON ) [function]
  // --------------------------------------------
     rule #parseMap( { .JSONList                   } ) => .Map
