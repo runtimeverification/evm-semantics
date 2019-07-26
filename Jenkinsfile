@@ -176,7 +176,7 @@ pipeline {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
               filename 'Dockerfile.ubuntu-bionic'
-              additionalBuildArgs "--build-arg USER_ID=\$(id -u) --build-arg GROUP_ID=\$(id -g) --build-arg K_RELEASE=${env.K_RELEASE}"
+              additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
               reuseNode true
             }
           }
@@ -198,7 +198,7 @@ pipeline {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
               filename 'Dockerfile.ubuntu-bionic'
-              additionalBuildArgs "--build-arg USER_ID=\$(id -u) --build-arg GROUP_ID=\$(id -g) --build-arg K_RELEASE=${env.K_RELEASE}"
+              additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
               reuseNode true
             }
           }
@@ -218,7 +218,7 @@ pipeline {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
               filename 'Dockerfile.arch'
-              additionalBuildArgs "--build-arg USER_ID=\$(id -u) --build-arg GROUP_ID=\$(id -g) --build-arg K_RELEASE=${env.K_RELEASE}"
+              additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
               reuseNode true
             }
           }
@@ -240,7 +240,7 @@ pipeline {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
               filename 'Dockerfile.arch'
-              additionalBuildArgs "--build-arg USER_ID=\$(id -u) --build-arg GROUP_ID=\$(id -g) --build-arg K_RELEASE=${env.K_RELEASE}"
+              additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
               reuseNode true
             }
           }
@@ -260,7 +260,7 @@ pipeline {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
               filename 'Dockerfile.arch'
-              additionalBuildArgs "--build-arg USER_ID=\$(id -u) --build-arg GROUP_ID=\$(id -g) --build-arg K_RELEASE=${env.K_RELEASE}"
+              additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
               reuseNode true
             }
           }
