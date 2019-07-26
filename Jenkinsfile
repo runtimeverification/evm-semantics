@@ -178,7 +178,7 @@ pipeline {
               sh '''
                 sudo apt-get update && sudo apt-get upgrade --yes
                 curl --location "$(cat deps/k_release)/kframework_5.0.0_amd64_bionic.deb" --output kframework.deb
-                sudo apt-get install ./kframework.deb
+                sudo apt-get install --yes ./kframework.deb
                 cp -r package/debian ./
                 dpkg-buildpackage --no-sign
               '''
@@ -200,7 +200,7 @@ pipeline {
               unstash 'bionic'
               sh '''
                 sudo apt-get update && sudo apt-get upgrade --yes
-                sudo apt-get install ./kevm_${KEVM_RELEASE_ID}_amd64.deb
+                sudo apt-get install --yes ./kevm_${KEVM_RELEASE_ID}_amd64.deb
                 make test-interactive-firefly
               '''
             }
