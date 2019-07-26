@@ -162,14 +162,7 @@ pipeline {
       }
       stages {
         stage('Checkout SCM') {
-          steps {
-            dir("kevm-${env.KEVM_RELEASE_ID}") {
-              checkout scm
-              script {
-                env.K_RELEASE = sh(script: 'cat deps/k_release', returnStdout: true).trim()
-              }
-            }
-          }
+          steps { dir("kevm-${env.KEVM_RELEASE_ID}") { checkout scm } }
         }
         stage('Build Ubuntu Bionic Package') {
           agent {
@@ -184,7 +177,7 @@ pipeline {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
               sh '''
                 sudo apt-get update && sudo apt-get upgrade --yes
-                curl --location "${env.K_RELEASE}/kframework_5.0.0_amd64_bionic.deb" --output kframework.deb
+                curl --location "$(cat deps/k_release)/kframework_5.0.0_amd64_bionic.deb" --output kframework.deb
                 sudo apt-get install ./kframework.deb
                 cp -r package/debian ./
                 dpkg-buildpackage --no-sign
@@ -226,7 +219,7 @@ pipeline {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
               sh '''
                 sudo pacman -Syu --noconfirm
-                curl --location "${env.K_RELEASE}/kframework-5.0.0-1-x86_64.pkg.tar.xz" --output kframework.pkg.tar.xz
+                curl --location "$(cat deps/k_release)/kframework-5.0.0-1-x86_64.pkg.tar.xz" --output kframework.pkg.tar.xz
                 sudo pacman -U kframework.pkg.tar.xz
                 cd package
                 makepkg --noconfirm --syncdeps
