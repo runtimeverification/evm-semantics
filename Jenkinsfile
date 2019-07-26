@@ -220,7 +220,7 @@ pipeline {
               sh '''
                 sudo pacman -Syu --noconfirm
                 curl --location "$(cat deps/k_release)/kframework-5.0.0-1-x86_64.pkg.tar.xz" --output kframework.pkg.tar.xz
-                sudo pacman -U kframework.pkg.tar.xz
+                sudo pacman --noconfirm -U kframework.pkg.tar.xz
                 cd package
                 makepkg --noconfirm --syncdeps
               '''
