@@ -2092,6 +2092,7 @@ There are several helpers for calculating gas (most of them also specified in th
     rule #allBut64th(N) => N -Int (N /Int 64)
 ```
 
+```{.k .symbolic}
     syntax Int ::= G0 ( Schedule , ByteArray , Bool ) [function]
  // ------------------------------------------------------------
     rule G0(SCHED, .WordStack, true)  => Gtxcreate    < SCHED >
@@ -2099,7 +2100,23 @@ There are several helpers for calculating gas (most of them also specified in th
 
     rule G0(SCHED, N : REST, ISCREATE) => Gtxdatazero    < SCHED > +Int G0(SCHED, REST, ISCREATE) requires N ==Int 0
     rule G0(SCHED, N : REST, ISCREATE) => Gtxdatanonzero < SCHED > +Int G0(SCHED, REST, ISCREATE) requires N =/=Int 0
+```
 
+```{.k .concrete}
+    syntax Int ::= G0 ( Schedule , ByteArray , Bool ) [function]
+                 | G0 ( Schedule , ByteArray , Int , Int ) [function, klabel(G0data)]
+                 | G0 ( Schedule , Bool ) [function, klabel(G0base)]
+ // ----------------------------------------------------------------
+    rule G0(SCHED, WS, B) => G0(SCHED, WS, 0, #sizeByteArray(WS)) +Int G0(SCHED, B)
+
+    rule G0(SCHED, true)  => Gtxcreate    < SCHED >
+    rule G0(SCHED, false) => Gtransaction < SCHED >
+
+    rule G0(SCHED, WS, I, I) => 0
+    rule G0(SCHED, WS, I, J) => #if WS[I] ==Int 0 #then Gtxdatazero < SCHED > #else Gtxdatanonzero < SCHED > #fi +Int G0(SCHED, WS, I +Int 1, J) [owise]
+```
+
+```k
     syntax Int ::= "G*" "(" Int "," Int "," Int ")" [function]
  // ----------------------------------------------------------
     rule G*(GAVAIL, GLIMIT, REFUND) => GAVAIL +Int minInt((GLIMIT -Int GAVAIL)/Int 2, REFUND)
@@ -2357,8 +2374,13 @@ After interpreting the strings representing programs as a `WordStack`, it should
 
 ```k
     syntax OpCodes ::= #dasmOpCodes ( ByteArray , Schedule )           [function]
-                     | #dasmOpCodes ( OpCodes , ByteArray , Schedule ) [function, klabel(#dasmOpCodesAux)]
+ // -----------------------------------------------------------------------------
+```
+
+```{.k .symbolic}
+    syntax OpCodes ::= #dasmOpCodes ( OpCodes , ByteArray , Schedule ) [function, klabel(#dasmOpCodesAux)]
  // ------------------------------------------------------------------------------------------------------
+
     rule #dasmOpCodes( WS, SCHED ) => #revOps(#dasmOpCodes(.OpCodes, WS, SCHED))
 
     rule #dasmOpCodes( OPS, .WordStack, _ ) => OPS
@@ -2369,7 +2391,25 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(LOG(W -Int 160)       ; OPS, WS, SCHED) requires W >=Int 160 andBool W <=Int 164
 
     rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(PUSH(W -Int 95, #asWord(#take(W -Int 95, WS))) ; OPS, #drop(W -Int 95, WS), SCHED) requires W >=Int 96  andBool W <=Int 127
+```
 
+```{.k .concrete}
+    syntax OpCodes ::= #dasmOpCodes ( OpCodes , ByteArray , Schedule , Int , Int ) [function, klabel(#dasmOpCodesAux)]
+ // ------------------------------------------------------------------------------------------------------------------
+
+    rule #dasmOpCodes( WS, SCHED ) => #revOps(#dasmOpCodes(.OpCodes, WS, SCHED, 0, #sizeByteArray(WS)))
+
+    rule #dasmOpCodes( OPS, _ ,     _ , I , J ) => OPS requires I >=Int J
+    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(#dasmOpCode(WS[I], SCHED) ; OPS, WS, SCHED, I +Int 1, J) requires WS[I] >=Int 0   andBool WS[I] <=Int 95 [owise]
+    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(#dasmOpCode(WS[I], SCHED) ; OPS, WS, SCHED, I +Int 1, J) requires WS[I] >=Int 165 andBool WS[I] <=Int 255 [owise]
+    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(DUP(WS[I] -Int 127)       ; OPS, WS, SCHED, I +Int 1, J) requires WS[I] >=Int 128 andBool WS[I] <=Int 143 [owise]
+    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(SWAP(WS[I] -Int 143)      ; OPS, WS, SCHED, I +Int 1, J) requires WS[I] >=Int 144 andBool WS[I] <=Int 159 [owise]
+    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(LOG(WS[I] -Int 160)       ; OPS, WS, SCHED, I +Int 1, J) requires WS[I] >=Int 160 andBool WS[I] <=Int 164 [owise]
+
+    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(PUSH(WS[I] -Int 95, #asWord(WS [ I +Int 1 .. WS[I] -Int 95 ])) ; OPS, WS, SCHED, I +Int WS[I] -Int 94, J) requires WS[I] >=Int 96  andBool WS[I] <=Int 127 [owise]
+```
+
+```k
     syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [function]
  // -----------------------------------------------------------
     rule #dasmOpCode(   0,     _ ) => STOP
