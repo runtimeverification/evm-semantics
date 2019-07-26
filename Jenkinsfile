@@ -275,9 +275,9 @@ pipeline {
       }
       post {
         failure {
-          slackSend color: '#cb2431'                                   \
-                  , channel: '#kevm'                                   \
-                  , message: "KEVM Packaging Failed: ${env.BUILD_URL}"
+          slackSend color: '#cb2431'                                 \
+                  , channel: '#kevm'                                 \
+                  , message: "KEVM Release Failed: ${env.BUILD_URL}"
         }
       }
     }
