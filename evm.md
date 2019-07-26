@@ -44,7 +44,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
             // Mutable during a single transaction
             // -----------------------------------
 
-            <output>          .WordStack  </output>           // H_RETURN
+            <output>          .ByteArray  </output>           // H_RETURN
             <statusCode>      .StatusCode </statusCode>
             <callStack>       .List       </callStack>
             <interimStates>   .List       </interimStates>
@@ -52,12 +52,12 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             <callState>
               <program>      .Map       </program>            // I_b
-              <programBytes> .WordStack </programBytes>
+              <programBytes> .ByteArray </programBytes>
 
               // I_*
               <id>        0          </id>                    // I_a
               <caller>    0          </caller>                // I_s
-              <callData>  .WordStack </callData>              // I_d
+              <callData>  .ByteArray </callData>              // I_d
               <callValue> 0          </callValue>             // I_v
 
               // \mu_*
@@ -92,13 +92,13 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <stateRoot>        0          </stateRoot>        // I_Hr
             <transactionsRoot> 0          </transactionsRoot> // I_Ht
             <receiptsRoot>     0          </receiptsRoot>     // I_He
-            <logsBloom>        .WordStack </logsBloom>        // I_Hb
+            <logsBloom>        .ByteArray </logsBloom>        // I_Hb
             <difficulty>       0          </difficulty>       // I_Hd
             <number>           0          </number>           // I_Hi
             <gasLimit>         0          </gasLimit>         // I_Hl
             <gasUsed>          0          </gasUsed>          // I_Hg
             <timestamp>        0          </timestamp>        // I_Hs
-            <extraData>        .WordStack </extraData>        // I_Hx
+            <extraData>        .ByteArray </extraData>        // I_Hx
             <mixHash>          0          </mixHash>          // I_Hm
             <blockNonce>       0          </blockNonce>       // I_Hn
 
@@ -120,7 +120,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <account multiplicity="*" type="Map">
                 <acctID>      0                      </acctID>
                 <balance>     0                      </balance>
-                <code>        .WordStack:AccountCode </code>
+                <code>        .ByteArray:AccountCode </code>
                 <storage>     .Map                   </storage>
                 <origStorage> .Map                   </origStorage>
                 <nonce>       0                      </nonce>
@@ -142,9 +142,9 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <to>         .Account   </to>                 // T_t
                 <value>      0          </value>              // T_v
                 <sigV>       0          </sigV>               // T_w
-                <sigR>       .WordStack </sigR>               // T_r
-                <sigS>       .WordStack </sigS>               // T_s
-                <data>       .WordStack </data>               // T_i/T_e
+                <sigR>       .ByteArray </sigR>               // T_r
+                <sigS>       .ByteArray </sigS>               // T_s
+                <data>       .ByteArray </data>               // T_i/T_e
               </message>
             </messages>
 
@@ -154,7 +154,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
       </kevm>
 
     syntax EthereumSimulation
-    syntax AccountCode ::= WordStack
+    syntax AccountCode ::= ByteArray
  // --------------------------------
 ```
 
@@ -278,7 +278,7 @@ OpCode Execution
     rule <k> (. => #end EVMC_SUCCESS) ~> #execute ... </k>
          <pc> PCOUNT </pc>
          <program> PGM </program>
-         <output> _ => .WordStack </output>
+         <output> _ => .ByteArray </output>
       requires notBool (PCOUNT in_keys(PGM))
 ```
 
@@ -525,7 +525,7 @@ During execution of a transaction some things are recorded in the substate log (
 This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
 
 ```k
-    syntax SubstateLogEntry ::= "{" Int "|" List "|" WordStack "}" [klabel(logEntry)]
+    syntax SubstateLogEntry ::= "{" Int "|" List "|" ByteArray "}" [klabel(logEntry)]
  // ---------------------------------------------------------------------------------
 ```
 
@@ -696,17 +696,18 @@ These are just used by the other operators for shuffling local execution state a
            <nonce>  NONCE </nonce>
            ...
          </account>
-      requires CODE =/=K .WordStack orBool NONCE =/=Int 0
+      requires CODE =/=K .ByteArray orBool NONCE =/=Int 0
 
     rule <k> #newAccount ACCT => . ... </k>
          <account>
            <acctID>      ACCT       </acctID>
-           <code>        .WordStack </code>
+           <code>        WS         </code>
            <nonce>       0          </nonce>
            <storage>     _ => .Map  </storage>
            <origStorage> _ => .Map  </origStorage>
            ...
          </account>
+      requires #sizeByteArray(WS) ==Int 0
 
     rule <k> #newAccount ACCT => . ... </k>
          <activeAccounts> ACCTS (.Set => SetItem(ACCT)) </activeAccounts>
@@ -948,7 +949,7 @@ These operators make queries about the current execution state.
     syntax NullStackOp ::= "MSIZE" | "CODESIZE"
  // -------------------------------------------
     rule <k> MSIZE    => 32 *Word MU         ~> #push ... </k> <memoryUsed> MU </memoryUsed>
-    rule <k> CODESIZE => #sizeWordStack(PGM) ~> #push ... </k> <programBytes> PGM </programBytes>
+    rule <k> CODESIZE => #sizeByteArray(PGM) ~> #push ... </k> <programBytes> PGM </programBytes>
 
     syntax TernStackOp ::= "CODECOPY"
  // ---------------------------------
@@ -1019,7 +1020,7 @@ The `JUMP*` family of operations affect the current program counter.
     syntax NullStackOp ::= "STOP"
  // -----------------------------
     rule <k> STOP => #end EVMC_SUCCESS ... </k>
-         <output> _ => .WordStack </output>
+         <output> _ => .ByteArray </output>
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
@@ -1041,7 +1042,7 @@ These operators query about the current `CALL*` state.
 ```k
     syntax NullStackOp ::= "CALLDATASIZE"
  // -------------------------------------
-    rule <k> CALLDATASIZE => #sizeWordStack(CD) ~> #push ... </k>
+    rule <k> CALLDATASIZE => #sizeByteArray(CD) ~> #push ... </k>
          <callData> CD </callData>
 
     syntax UnStackOp ::= "CALLDATALOAD"
@@ -1063,7 +1064,7 @@ These operators query about the current return data buffer.
 ```k
     syntax NullStackOp ::= "RETURNDATASIZE"
  // ---------------------------------------
-    rule <k> RETURNDATASIZE => #sizeWordStack(RD) ~> #push ... </k>
+    rule <k> RETURNDATASIZE => #sizeByteArray(RD) ~> #push ... </k>
          <output> RD </output>
 
     syntax TernStackOp ::= "RETURNDATACOPY"
@@ -1071,11 +1072,11 @@ These operators query about the current return data buffer.
     rule <k> RETURNDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </k>
          <localMem> LM => LM [ MEMSTART := RD [ DATASTART .. DATAWIDTH ] ] </localMem>
          <output> RD </output>
-      requires DATASTART +Int DATAWIDTH <=Int #sizeWordStack(RD)
+      requires DATASTART +Int DATAWIDTH <=Int #sizeByteArray(RD)
 
     rule <k> RETURNDATACOPY MEMSTART DATASTART DATAWIDTH => #end EVMC_INVALID_MEMORY_ACCESS ... </k>
          <output> RD </output>
-      requires DATASTART +Int DATAWIDTH >Int #sizeWordStack(RD)
+      requires DATASTART +Int DATAWIDTH >Int #sizeByteArray(RD)
 ```
 
 ### Log Operations
@@ -1119,7 +1120,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
-    rule <k> EXTCODESIZE ACCT => #sizeWordStack(CODE) ~> #push ... </k>
+    rule <k> EXTCODESIZE ACCT => #sizeByteArray(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
@@ -1138,7 +1139,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
     rule <k> EXTCODEHASH ACCT => keccak(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <code> CODE:WordStack </code>
+           <code> CODE:ByteArray </code>
            <nonce> NONCE </nonce>
            <balance> BAL </balance>
            ...
@@ -1222,9 +1223,9 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
 ```k
     syntax InternalOp ::= "#checkCall" Int Int
-                        | "#call"         Int Int Int Int Int WordStack Bool
-                        | "#callWithCode" Int Int Map WordStack Int Int WordStack Bool
-                        | "#mkCall"       Int Int Map WordStack     Int WordStack Bool
+                        | "#call"         Int Int Int Int Int ByteArray Bool
+                        | "#callWithCode" Int Int Map ByteArray Int Int ByteArray Bool
+                        | "#mkCall"       Int Int Map ByteArray     Int ByteArray Bool
  // ----------------------------------------------------------------------------------
     rule <k> #checkCall ACCT VALUE
           => #refund GCALL ~> #pushCallStack ~> #pushWorldState
@@ -1232,7 +1233,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          ...
          </k>
          <callDepth> CD </callDepth>
-         <output> _ => .WordStack </output>
+         <output> _ => .ByteArray </output>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
@@ -1251,7 +1252,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .WordStack VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .ByteArray VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -1270,7 +1271,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
       requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO .Map .WordStack VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO .Map .ByteArray VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <activeAccounts> ACCTS </activeAccounts>
@@ -1305,7 +1306,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #initVM    => . ...      </k>
          <pc>         _ => 0          </pc>
          <memoryUsed> _ => 0          </memoryUsed>
-         <output>     _ => .WordStack </output>
+         <output>     _ => .ByteArray </output>
          <wordStack>  _ => .WordStack </wordStack>
          <localMem>   _ => .Map       </localMem>
 
@@ -1316,7 +1317,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           => #popCallStack ~> #popWorldState ~> 0 ~> #push
          ...
          </k>
-         <output> _ => .WordStack </output>
+         <output> _ => .ByteArray </output>
 
     rule <statusCode> EVMC_REVERT </statusCode>
          <k> #halt ~> #return RETSTART RETWIDTH
@@ -1337,12 +1338,12 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <gas> GAVAIL </gas>
 
     syntax InternalOp ::= "#refund" Exp [strict]
-                        | "#setLocalMem" Int Int WordStack
+                        | "#setLocalMem" Int Int ByteArray
  // ------------------------------------------------------
     rule [refund]: <k> #refund G:Int => . ... </k> <gas> GAVAIL => GAVAIL +Int G </gas>
 
     rule <k> #setLocalMem START WIDTH WS => . ... </k>
-         <localMem> LM => LM [ START := #take(minInt(WIDTH, #sizeWordStack(WS)), WS) ] </localMem>
+         <localMem> LM => LM [ START := #take(minInt(WIDTH, #sizeByteArray(WS)), WS) ] </localMem>
 ```
 
 Ethereum Network OpCodes
@@ -1410,8 +1411,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 -   `#codeDeposit_` checks the result of initialization code and whether the code deposit can be paid, indicating an error if not.
 
 ```k
-    syntax InternalOp ::= "#create"   Int Int Int WordStack
-                        | "#mkCreate" Int Int Int WordStack
+    syntax InternalOp ::= "#create"   Int Int Int ByteArray
+                        | "#mkCreate" Int Int Int ByteArray
                         | "#incrementNonce" Int
  // -------------------------------------------
     rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
@@ -1435,7 +1436,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <programBytes> _ => INITCODE </programBytes>
          <caller> _ => ACCTFROM </caller>
          <callDepth> CD => CD +Int 1 </callDepth>
-         <callData> _ => .WordStack </callData>
+         <callData> _ => .ByteArray </callData>
          <callValue> _ => VALUE </callValue>
          <account>
            <acctID> ACCTTO </acctID>
@@ -1453,10 +1454,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
-                   | "#finishCodeDeposit" Int WordStack
+                   | "#finishCodeDeposit" Int ByteArray
  // ---------------------------------------------------
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> #halt ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k> <output> _ => .WordStack </output>
+         <k> #halt ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k> <output> _ => .ByteArray </output>
     rule <statusCode> EVMC_REVERT </statusCode>
          <k> #halt ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 ~> #push ... </k>
          <gas> GAVAIL </gas>
@@ -1465,18 +1466,18 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <k> #halt ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
 
     rule <k> #mkCodeDeposit ACCT
-          => Gcodedeposit < SCHED > *Int #sizeWordStack(OUT) ~> #deductGas
+          => Gcodedeposit < SCHED > *Int #sizeByteArray(OUT) ~> #deductGas
           ~> #finishCodeDeposit ACCT OUT
          ...
          </k>
          <schedule> SCHED </schedule>
-         <output> OUT => .WordStack </output>
-      requires #sizeWordStack(OUT) <=Int maxCodeSize < SCHED >
+         <output> OUT => .ByteArray </output>
+      requires #sizeByteArray(OUT) <=Int maxCodeSize < SCHED >
 
     rule <k> #mkCodeDeposit ACCT => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
-         <output> OUT => .WordStack </output>
-      requires #sizeWordStack(OUT) >Int maxCodeSize < SCHED >
+         <output> OUT => .ByteArray </output>
+      requires #sizeByteArray(OUT) >Int maxCodeSize < SCHED >
 
     rule <k> #finishCodeDeposit ACCT OUT
           => #popCallStack ~> #dropWorldState
@@ -1560,7 +1561,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
            <balance> BALFROM </balance>
            ...
          </account>
-         <output> _ => .WordStack </output>
+         <output> _ => .ByteArray </output>
          <touchedAccounts> ... .Set => SetItem(ACCT) SetItem(ACCTTO) ... </touchedAccounts>
       requires ACCT =/=Int ACCTTO
 
@@ -1575,7 +1576,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
            <code> CODE </code>
            ...
          </account>
-         <output> _ => .WordStack </output>
+         <output> _ => .ByteArray </output>
          <touchedAccounts> ... .Set => SetItem(ACCT) ... </touchedAccounts>
 ```
 
@@ -1621,9 +1622,9 @@ Precompiled Contracts
          <callData> DATA </callData>
          <output> _ => #ecrec(#sender(#unparseByteStack(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #unparseByteStack(DATA [ 64 .. 32 ]), #unparseByteStack(DATA [ 96 .. 32 ]))) </output>
 
-    syntax WordStack ::= #ecrec ( Account ) [function]
+    syntax ByteArray ::= #ecrec ( Account ) [function]
  // --------------------------------------------------
-    rule #ecrec(.Account) => .WordStack
+    rule #ecrec(.Account) => .ByteArray
     rule #ecrec(N:Int)    => #padToWidth(32, #asByteStack(N))
 
     syntax PrecompiledOp ::= "SHA256"
@@ -1650,13 +1651,13 @@ Precompiled Contracts
          <callData> DATA </callData>
          <output> _ => #modexp1(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #asWord(DATA [ 64 .. 32 ]), #drop(96,DATA)) </output>
 
-    syntax WordStack ::= #modexp1 ( Int , Int , Int , WordStack ) [function]
-                       | #modexp2 ( Int , Int , Int , WordStack ) [function]
-                       | #modexp3 ( Int , Int , Int , WordStack ) [function]
+    syntax ByteArray ::= #modexp1 ( Int , Int , Int , ByteArray ) [function]
+                       | #modexp2 ( Int , Int , Int , ByteArray ) [function]
+                       | #modexp3 ( Int , Int , Int , ByteArray ) [function]
                        | #modexp4 ( Int , Int , Int )             [function]
  // ------------------------------------------------------------------------
     rule #modexp1(BASELEN, EXPLEN,   MODLEN, DATA) => #modexp2(#asInteger(DATA [ 0 .. BASELEN ]), EXPLEN, MODLEN, #drop(BASELEN, DATA)) requires MODLEN =/=Int 0
-    rule #modexp1(_,       _,        0,      _)    => .WordStack
+    rule #modexp1(_,       _,        0,      _)    => .ByteArray
     rule #modexp2(BASE,    EXPLEN,   MODLEN, DATA) => #modexp3(BASE, #asInteger(DATA [ 0 .. EXPLEN ]), MODLEN, #drop(EXPLEN, DATA))
     rule #modexp3(BASE,    EXPONENT, MODLEN, DATA) => #padToWidth(MODLEN, #modexp4(BASE, EXPONENT, #asInteger(DATA [ 0 .. MODLEN ])))
     rule #modexp4(BASE,    EXPONENT, MODULUS)      => #asByteStack(powmod(BASE, EXPONENT, MODULUS))
@@ -1685,20 +1686,20 @@ Precompiled Contracts
     rule <k> #ecmul(P, S) => #end EVMC_SUCCESS ... </k> <output> _ => #point(BN128Mul(P, S)) </output>
       requires isValidPoint(P)
 
-    syntax WordStack ::= #point ( G1Point ) [function]
+    syntax ByteArray ::= #point ( G1Point ) [function]
  // --------------------------------------------------
     rule #point((X, Y)) => #padToWidth(32, #asByteStack(X)) ++ #padToWidth(32, #asByteStack(Y))
 
     syntax PrecompiledOp ::= "ECPAIRING"
  // ------------------------------------
-    rule <k> ECPAIRING => #ecpairing(.List, .List, 0, DATA, #sizeWordStack(DATA)) ... </k>
+    rule <k> ECPAIRING => #ecpairing(.List, .List, 0, DATA, #sizeByteArray(DATA)) ... </k>
          <callData> DATA </callData>
-      requires #sizeWordStack(DATA) modInt 192 ==Int 0
+      requires #sizeByteArray(DATA) modInt 192 ==Int 0
     rule <k> ECPAIRING => #end EVMC_PRECOMPILE_FAILURE ... </k>
          <callData> DATA </callData>
-      requires #sizeWordStack(DATA) modInt 192 =/=Int 0
+      requires #sizeByteArray(DATA) modInt 192 =/=Int 0
 
-    syntax InternalOp ::= #ecpairing(List, List, Int, WordStack, Int)
+    syntax InternalOp ::= #ecpairing(List, List, Int, ByteArray, Int)
  // -----------------------------------------------------------------
     rule <k> (.K => #checkPoint) ~> #ecpairing((.List => ListItem((#asWord(DATA [ I .. 32 ]), #asWord(DATA [ I +Int 32 .. 32 ])))) _, (.List => ListItem((#asWord(DATA [ I +Int 96 .. 32 ]) x #asWord(DATA [ I +Int 64 .. 32 ]) , #asWord(DATA [ I +Int 160 .. 32 ]) x #asWord(DATA [ I +Int 128 .. 32 ])))) _, I => I +Int 192, DATA, LEN) ... </k>
       requires I =/=Int LEN
@@ -1967,9 +1968,9 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     // Precompiled
     rule <k> #gasExec(_, ECREC)  => 3000 ... </k>
-    rule <k> #gasExec(_, SHA256) =>  60 +Int  12 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
-    rule <k> #gasExec(_, RIP160) => 600 +Int 120 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
-    rule <k> #gasExec(_, ID)     =>  15 +Int   3 *Int (#sizeWordStack(DATA) up/Int 32) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, SHA256) =>  60 +Int  12 *Int (#sizeByteArray(DATA) up/Int 32) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, RIP160) => 600 +Int 120 *Int (#sizeByteArray(DATA) up/Int 32) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, ID)     =>  15 +Int   3 *Int (#sizeByteArray(DATA) up/Int 32) ... </k> <callData> DATA </callData>
     rule <k> #gasExec(_, MODEXP)
           => #multComplexity(maxInt(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 64 .. 32 ]))) *Int maxInt(#adjustedExpLength(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), DATA), 1) /Int Gquaddivisor < SCHED >
          ...
@@ -1979,7 +1980,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     rule <k> #gasExec(_, ECADD)     => 500   ... </k>
     rule <k> #gasExec(_, ECMUL)     => 40000 ... </k>
-    rule <k> #gasExec(_, ECPAIRING) => 100000 +Int (#sizeWordStack(DATA) /Int 192) *Int 80000 ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, ECPAIRING) => 100000 +Int (#sizeByteArray(DATA) /Int 192) *Int 80000 ... </k> <callData> DATA </callData>
 
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
@@ -2084,13 +2085,14 @@ There are several helpers for calculating gas (most of them also specified in th
 
     syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, klabel(accountEmpty), symbol]
  // --------------------------------------------------------------------------------------------------
-    rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .WordStack andBool NONCE ==Int 0 andBool BAL ==Int 0
+    rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .ByteArray andBool NONCE ==Int 0 andBool BAL ==Int 0
 
     syntax Int ::= #allBut64th ( Int ) [function]
  // ---------------------------------------------
     rule #allBut64th(N) => N -Int (N /Int 64)
+```
 
-    syntax Int ::= G0 ( Schedule , WordStack , Bool ) [function]
+    syntax Int ::= G0 ( Schedule , ByteArray , Bool ) [function]
  // ------------------------------------------------------------
     rule G0(SCHED, .WordStack, true)  => Gtxcreate    < SCHED >
     rule G0(SCHED, .WordStack, false) => Gtransaction < SCHED >
@@ -2108,7 +2110,7 @@ There are several helpers for calculating gas (most of them also specified in th
     rule #multComplexity(X) => X *Int X /Int 4 +Int 96 *Int X -Int 3072     requires X >Int 64 andBool X <=Int 1024
     rule #multComplexity(X) => X *Int X /Int 16 +Int 480 *Int X -Int 199680 requires X >Int 1024
 
-    syntax Int ::= #adjustedExpLength(Int, Int, WordStack) [function]
+    syntax Int ::= #adjustedExpLength(Int, Int, ByteArray) [function]
                  | #adjustedExpLength(Int)                 [function, klabel(#adjustedExpLengthAux)]
  // ------------------------------------------------------------------------------------------------
     rule #adjustedExpLength(BASELEN, EXPLEN, DATA) => #if EXPLEN <=Int 32 #then 0 #else 8 *Int (EXPLEN -Int 32) #fi +Int #adjustedExpLength(#asInteger(DATA [ 96 +Int BASELEN .. minInt(EXPLEN, 32) ]))
@@ -2354,8 +2356,8 @@ After interpreting the strings representing programs as a `WordStack`, it should
 -   `#dasmOpCode` interperets a `Int` as an `OpCode`.
 
 ```k
-    syntax OpCodes ::= #dasmOpCodes ( WordStack , Schedule )           [function]
-                     | #dasmOpCodes ( OpCodes , WordStack , Schedule ) [function, klabel(#dasmOpCodesAux)]
+    syntax OpCodes ::= #dasmOpCodes ( ByteArray , Schedule )           [function]
+                     | #dasmOpCodes ( OpCodes , ByteArray , Schedule ) [function, klabel(#dasmOpCodesAux)]
  // ------------------------------------------------------------------------------------------------------
     rule #dasmOpCodes( WS, SCHED ) => #revOps(#dasmOpCodes(.OpCodes, WS, SCHED))
 

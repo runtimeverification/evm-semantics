@@ -379,7 +379,7 @@ Bitwise logical operators are lifted from the integer versions.
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 ```k
-    syntax Int ::= keccak ( WordStack ) [function, smtlib(smt_keccak)]
+    syntax Int ::= keccak ( ByteArray ) [function, smtlib(smt_keccak)]
  // ------------------------------------------------------------------
     rule keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS))) [concrete]
 ```
@@ -510,25 +510,25 @@ The local memory of execution is a byte-array (instead of a word-array).
 -   `#asByteStack` will split a single word up into a `WordStack` where each word is a byte wide.
 
 ```k
-    syntax Int ::= #asWord ( WordStack ) [function, smtlib(asWord)]
+    syntax Int ::= #asWord ( ByteArray ) [function, smtlib(asWord)]
  // ---------------------------------------------------------------
     rule #asWord( .WordStack     ) => 0                                    // [concrete]
     rule #asWord( W : .WordStack ) => W                                    // [concrete]
     rule #asWord( W0 : W1 : WS   ) => #asWord(((W0 *Word 256) +Word W1) : WS) [concrete]
 
-    syntax Int ::= #asInteger ( WordStack ) [function]
+    syntax Int ::= #asInteger ( ByteArray ) [function]
  // --------------------------------------------------
     rule #asInteger( .WordStack     ) => 0
     rule #asInteger( W : .WordStack ) => W
     rule #asInteger( W0 : W1 : WS   ) => #asInteger(((W0 *Int 256) +Int W1) : WS)
 
-    syntax Account ::= #asAccount ( WordStack ) [function]
+    syntax Account ::= #asAccount ( ByteArray ) [function]
  // ------------------------------------------------------
     rule #asAccount( .WordStack ) => .Account
     rule #asAccount( W : WS     ) => #asWord(W : WS)
 
-    syntax WordStack ::= #asByteStack ( Int )             [function]
-                       | #asByteStack ( Int , WordStack ) [function, klabel(#asByteStackAux), smtlib(asByteStack)]
+    syntax ByteArray ::= #asByteStack ( Int )             [function]
+                       | #asByteStack ( Int , ByteArray ) [function, klabel(#asByteStackAux), smtlib(asByteStack)]
  // --------------------------------------------------------------------------------------------------------------
     rule #asByteStack( W ) => #asByteStack( W , .WordStack )                                        [concrete]
     rule #asByteStack( 0 , WS ) => WS                                                            // [concrete]
@@ -551,12 +551,12 @@ Addresses
 
 ```k
     syntax Int ::= #newAddr ( Int , Int ) [function]
-                 | #newAddr ( Int , Int , WordStack ) [function, klabel(#newAddrCreate2)]
+                 | #newAddr ( Int , Int , ByteArray ) [function, klabel(#newAddrCreate2)]
  // -------------------------------------------------------------------------------------
     rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeWord(NONCE), 192))))
     rule #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#padToWidth(20, #asByteStack(ACCT))) +String #unparseByteStack(#padToWidth(32, #asByteStack(SALT))) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE)))))))
 
-    syntax Account ::= #sender ( Int , Int , Int , Account , Int , String , Int , WordStack , WordStack ) [function]
+    syntax Account ::= #sender ( Int , Int , Int , Account , Int , String , Int , ByteArray , ByteArray ) [function]
                      | #sender ( String , Int , String , String )                                         [function, klabel(#senderAux)]
                      | #sender ( String )                                                                 [function, klabel(#senderAux2)]
  // -------------------------------------------------------------------------------------------------------------------------------------
@@ -573,7 +573,7 @@ Addresses
 -   `#blockHeaderHash` computes the hash of a block header given all the block data.
 
 ```k
-    syntax Int ::= #blockHeaderHash( Int , Int , Int , Int , Int , Int , WordStack , Int , Int , Int , Int , Int , WordStack , Int , Int ) [function, klabel(blockHeaderHash), symbol]
+    syntax Int ::= #blockHeaderHash( Int , Int , Int , Int , Int , Int , ByteArray , Int , Int , Int , Int , Int , ByteArray , Int , Int ) [function, klabel(blockHeaderHash), symbol]
                  | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderStr), symbol]
  // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
    rule #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
@@ -619,13 +619,13 @@ We are using the polymorphic `Map` sort for these word maps.
 -   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
 
 ```k
-    syntax Map ::= Map "[" Int ":=" WordStack "]" [function]
+    syntax Map ::= Map "[" Int ":=" ByteArray "]" [function]
  // --------------------------------------------------------
     rule WM[ N := .WordStack ] => WM
     rule WM[ N := W : WS     ] => (WM[N <- W])[N +Int 1 := WS] [concrete]
 
-    syntax WordStack ::= #range ( Map , Int , Int )            [function]
-    syntax WordStack ::= #range ( Map , Int , Int , WordStack) [function, klabel(#rangeAux)]
+    syntax ByteArray ::= #range ( Map , Int , Int )            [function]
+    syntax ByteArray ::= #range ( Map , Int , Int , ByteArray ) [function, klabel(#rangeAux)]
  // ----------------------------------------------------------------------------------------
     rule #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack) [concrete]
 ```
@@ -671,7 +671,7 @@ Here we provide some standard parser/unparser functions for that format.
 Parsing
 -------
 
-These parsers can interperet hex-encoded strings as `Int`s, `WordStack`s, and `Map`s.
+These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `Map`s.
 
 -   `#parseHexWord` interperets a string as a single hex-encoded `Word`.
 -   `#parseHexBytes` interperets a string as a hex-encoded stack of bytes.
@@ -693,7 +693,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `WordStack`s, and `M
     rule #parseWord(S)  => #parseHexWord(S) requires lengthString(S) >=Int 2 andBool substrString(S, 0, 2) ==String "0x"
     rule #parseWord(S)  => String2Int(S) [owise]
 
-    syntax WordStack ::= #parseHexBytes  ( String ) [function]
+    syntax ByteArray ::= #parseHexBytes  ( String ) [function]
                        | #parseByteStack ( String ) [function]
                        | #parseByteStackRaw ( String ) [function]
  // ----------------------------------------------------------
@@ -719,14 +719,14 @@ These parsers can interperet hex-encoded strings as `Int`s, `WordStack`s, and `M
 Unparsing
 ---------
 
-We need to interperet a `WordStack` as a `String` again so that we can call `Keccak256` on it from `KRYPTO`.
+We need to interperet a `ByteArray` as a `String` again so that we can call `Keccak256` on it from `KRYPTO`.
 
--   `#unparseByteStack` turns a stack of bytes (as a `WordStack`) into a `String`.
+-   `#unparseByteStack` turns a stack of bytes (as a `ByteArray`) into a `String`.
 -   `#padByte` ensures that the `String` interperetation of a `Int` is wide enough.
 
 ```k
-    syntax String ::= #unparseByteStack ( WordStack )                [function, klabel(unparseByteStack), symbol]
-                    | #unparseByteStack ( WordStack , StringBuffer ) [function, klabel(#unparseByteStackAux)]
+    syntax String ::= #unparseByteStack ( ByteArray )                [function, klabel(unparseByteStack), symbol]
+                    | #unparseByteStack ( ByteArray , StringBuffer ) [function, klabel(#unparseByteStackAux)]
  // ---------------------------------------------------------------------------------------------------------
     rule #unparseByteStack ( WS ) => #unparseByteStack(WS, .StringBuffer)
 

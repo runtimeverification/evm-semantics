@@ -52,7 +52,7 @@ Because the same account may be loaded more than once, implementations of this i
           => <account>
                <acctID> ACCT </acctID>
                <balance> #getBalance(ACCT) </balance>
-               <code> #if #isCodeEmpty(ACCT) #then .WordStack #else #unloaded(#getCodeHash(ACCT)) #fi </code>
+               <code> #if #isCodeEmpty(ACCT) #then .ByteArray #else #unloaded(#getCodeHash(ACCT)) #fi </code>
                <storage> .Map </storage>
                <origStorage> .Map </origStorage>
                <nonce> #getNonce(ACCT) </nonce>
@@ -110,7 +110,7 @@ Because the same account may be loaded more than once, implementations of this i
     rule <k> #lookupCode ACCT => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <code> _:WordStack </code>
+           <code> _:ByteArray </code>
            ...
          </account>
 
@@ -206,7 +206,7 @@ Because the same account may be loaded more than once, implementations of this i
  // ----------------------------------------
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> #halt ~> #endVM => #popCallStack ~> #popWorldState ~> 0 </k>
-         <output> _ => .WordStack </output>
+         <output> _ => .ByteArray </output>
 
     rule <statusCode> EVMC_REVERT </statusCode>
          <k> #halt ~> #endVM => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 </k>
