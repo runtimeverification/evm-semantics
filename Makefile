@@ -481,9 +481,10 @@ test-interactive-firefly:
 	    && rm -rf openzeppelin-solidity                                      \
 	    && git clone 'https://github.com/openzeppelin/openzeppelin-solidity' \
 	    && cd openzeppelin-solidity                                          \
+	    && git checkout b8c8308                                              \
 	    && { npx kevm-ganache-cli & }                                        \
 	    && npm install                                                       \
-	    && npx truffle test test/token/ERC20/ERC20.test.js
+	    && npx truffle test
 
 # Media
 # -----
