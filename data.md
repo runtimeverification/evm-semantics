@@ -15,7 +15,13 @@ module EVM-DATA
     imports STRING-BUFFER
     imports MAP-SYMBOLIC
     imports COLLECTIONS
+```
 
+```{.k .concrete}
+    imports BYTES
+```
+
+```
     syntax KResult ::= Int
 ```
 
@@ -405,16 +411,10 @@ A cons-list is used for the EVM wordstack.
  // --------------------------------------------------------------------
 ```
 
--   `_++_` acts as `WordStack` append.
 -   `#take(N , WS)` keeps the first $N$ elements of a `WordStack` (passing with zeros as needed).
 -   `#drop(N , WS)` removes the first $N$ elements of a `WordStack`.
 
 ```k
-    syntax WordStack ::= WordStack "++" WordStack [function, right, klabel(_++_WS), smtlib(_plusWS_)]
- // -------------------------------------------------------------------------------------------------
-    rule .WordStack ++ WS' => WS'
-    rule (W : WS)   ++ WS' => W : (WS ++ WS')
-
     syntax WordStack ::= #take ( Int , WordStack ) [function]
  // ---------------------------------------------------------
     rule #take(0, WS)         => .WordStack
@@ -431,7 +431,6 @@ A cons-list is used for the EVM wordstack.
 ### Element Access
 
 -   `WS [ N ]` accesses element $N$ of $WS$.
--   `WS [ N .. W ]` access the range of `WS` beginning with `N` of width `W`.
 -   `WS [ N := W ]` sets element $N$ of $WS$ to $W$ (padding with zeros as needed).
 
 ```k
@@ -440,10 +439,6 @@ A cons-list is used for the EVM wordstack.
     rule (W0 : WS)   [N] => W0           requires N ==Int 0
     rule (.WordStack)[N] => 0            requires N >Int 0
     rule (W0 : WS)   [N] => WS[N -Int 1] requires N >Int 0
-
-    syntax WordStack ::= WordStack "[" Int ".." Int "]" [function]
- // --------------------------------------------------------------
-    rule WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
 
     syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function]
  // --------------------------------------------------------------
@@ -469,24 +464,7 @@ A cons-list is used for the EVM wordstack.
     rule W in (W' : WS)  => (W ==K W') orElseBool (W in WS)
 ```
 
--   `#padToWidth(N, WS)` and `#padRightToWidth` make sure that a `WordStack` is the correct size.
-
 ```k
-    syntax WordStack ::= #padToWidth ( Int , WordStack ) [function]
- // ---------------------------------------------------------------
-    rule #padToWidth(N, WS) => WS                     requires notBool #sizeWordStack(WS) <Int N [concrete]
-    rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires #sizeWordStack(WS) <Int N         [concrete]
-
-    syntax WordStack ::= #padRightToWidth ( Int , WordStack ) [function]
- // --------------------------------------------------------------------
-    rule  #padRightToWidth(N, WS) => #padRightToWidthAux(N -Int #sizeWordStack(WS), WS, .WordStack)
-
-    syntax WordStack ::= #padRightToWidthAux ( Int , WordStack , WordStack ) [function]
- // -----------------------------------------------------------------------------------
-    rule #padRightToWidthAux(0, WS, ZEROS) => WS ++ ZEROS
-
-    rule #padRightToWidthAux(N, WS, ZEROS) => #padRightToWidthAux(N -Int 1, WS, 0 : ZEROS)
-      requires N >Int 0
 ```
 
 -   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.
@@ -507,9 +485,57 @@ The local memory of execution is a byte-array (instead of a word-array).
 -   `#asInteger` will interperet a stack of bytes as a single arbitrary-precision integer (with MSB first).
 -   `#asAccount` will interpret a stack of bytes as a single account id (with MSB first).
     Differs from `#asWord` only in that an empty stack represents the empty account, not account zero.
--   `#asByteStack` will split a single word up into a `WordStack` where each word is a byte wide.
+-   `#asByteStack` will split a single word up into a `ByteArray`.
+-   `_++_` acts as `ByteArray` append.
+-   `WS [ N .. W ]` access the range of `WS` beginning with `N` of width `W`.
+-   `#sizeByteArray` calculates the size of a `ByteArray`.
+-   `#padToWidth(N, WS)` and `#padRightToWidth` make sure that a `WordStack` is the correct size.
 
-```k
+```{.k .concrete}
+    syntax ByteArray ::= Bytes
+    syntax ByteArray ::= ".ByteArray" [function]
+    rule .ByteArray => .Bytes
+
+    syntax Int ::= #asWord ( ByteArray ) [function, smtlib(asWord)]
+ // ---------------------------------------------------------------
+    rule #asWord(WS) => chop(Bytes2Int(WS, BE, Unsigned))
+
+    syntax Int ::= #asInteger ( ByteArray ) [function]
+ // --------------------------------------------------
+    rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned)
+
+    syntax Account ::= #asAccount ( ByteArray ) [function]
+ // ------------------------------------------------------
+    rule #asAccount(BS) => .Account requires lengthBytes(BS) ==Int 0
+    rule #asAccount(BS) => #asWord(BS) [owise]
+
+    syntax ByteArray ::= #asByteStack ( Int )             [function]
+ // ----------------------------------------------------------------
+    rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned)
+
+    syntax ByteArray ::= ByteArray "++" ByteArray [function, right, klabel(_++_WS), smtlib(_plusWS_)]
+ // -------------------------------------------------------------------------------------------------
+    rule WS ++ WS' => WS +Bytes WS'
+
+    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function]
+ // --------------------------------------------------------------
+    rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires START <Int #sizeByteArray(WS)
+    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0) [owise]
+
+    syntax Int ::= #sizeByteArray ( ByteArray )       [function, functional]
+ // ------------------------------------------------------------------------
+    rule #sizeByteArray ( WS ) => lengthBytes(WS)
+
+    syntax ByteArray ::= #padToWidth ( Int , ByteArray ) [function]
+ // ---------------------------------------------------------------
+    rule #padToWidth(N, WS) => padLeftBytes(WS, N, 0)
+```
+
+```{.k .symbolic}
+    syntax ByteArray ::= WordStack
+    syntax ByteArray ::= ".ByteArray" [function]
+    rule .ByteArray => .WordStack
+
     syntax Int ::= #asWord ( ByteArray ) [function, smtlib(asWord)]
  // ---------------------------------------------------------------
     rule #asWord( .WordStack     ) => 0                                    // [concrete]
@@ -533,6 +559,35 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #asByteStack( W ) => #asByteStack( W , .WordStack )                                        [concrete]
     rule #asByteStack( 0 , WS ) => WS                                                            // [concrete]
     rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W modInt 256 : WS ) requires W =/=K 0 [concrete]
+	
+    syntax ByteArray ::= ByteArray "++" ByteArray [function, right, klabel(_++_WS), smtlib(_plusWS_)]
+ // -------------------------------------------------------------------------------------------------
+    rule .WordStack ++ WS' => WS'
+    rule (W : WS)   ++ WS' => W : {WS ++ WS'}:>WordStack
+
+    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function]
+ // --------------------------------------------------------------
+    rule WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
+
+    syntax Int ::= #sizeByteArray ( ByteArray )       [function, functional]
+ // ------------------------------------------------------------------------
+    rule #sizeByteArray ( WS ) => #sizeWordStack(WS)
+
+    syntax ByteArray ::= #padToWidth ( Int , ByteArray ) [function]
+ // ---------------------------------------------------------------
+    rule #padToWidth(N, WS) => WS                     requires notBool #sizeByteArray(WS) <Int N [concrete]
+    rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires #sizeByteArray(WS) <Int N         [concrete]
+
+    syntax ByteArray ::= #padRightToWidth ( Int , ByteArray ) [function]
+ // --------------------------------------------------------------------
+    rule  #padRightToWidth(N, WS) => #padRightToWidthAux(N -Int #sizeByteArray(WS), WS, .WordStack)
+
+    syntax ByteArray ::= #padRightToWidthAux ( Int , ByteArray , ByteArray ) [function]
+ // -----------------------------------------------------------------------------------
+    rule #padRightToWidthAux(0, WS, ZEROS) => WS ++ ZEROS
+
+    rule #padRightToWidthAux(N, WS, ZEROS) => #padRightToWidthAux(N -Int 1, WS, 0 : ZEROS)
+      requires N >Int 0
 ```
 
 Addresses
@@ -618,7 +673,24 @@ We are using the polymorphic `Map` sort for these word maps.
 -   `WM [ N := WS ]` assigns a contiguous chunk of $WM$ to $WS$ starting at position $W$.
 -   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
 
-```k
+```{.k .concrete}
+    syntax Map ::= Map "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
+ // --------------------------------------------------------
+    rule WM[ N := WS ] => WM [ N := WS, 0, #sizeByteArray(WS) ]
+    
+    syntax Map ::= Map "[" Int ":=" ByteArray "," Int "," Int "]" [function]
+    rule WM [ N := WS, I, I ] => WM
+    rule WM [ N := WS, I, J ] => (WM[N <- WS[I]])[N +Int 1 := WS, I +Int 1, J ] [owise]
+
+    syntax ByteArray ::= #range ( Map , Int , Int )            [function]
+    syntax ByteArray ::= #range ( Map , Int , Int , Int , ByteArray ) [function, klabel(#rangeAux)]
+ // -----------------------------------------------------------------------------------------------
+    rule #range(WM, START, WIDTH) => #range(WM, START, 0, WIDTH, padLeftBytes(.Bytes, WIDTH, 0))
+    rule #range(WM, I, WIDTH, WIDTH, WS) => WS
+    rule #range(WM, I,     J, WIDTH, WS) => #range(WM, I +Int 1, J +Int 1, WIDTH, WS [ J <- {WM[I] orDefault 0}:>Int ]) [owise]
+```
+
+```{.k .symbolic}
     syntax Map ::= Map "[" Int ":=" ByteArray "]" [function]
  // --------------------------------------------------------
     rule WM[ N := .WordStack ] => WM
@@ -628,14 +700,6 @@ We are using the polymorphic `Map` sort for these word maps.
     syntax ByteArray ::= #range ( Map , Int , Int , ByteArray ) [function, klabel(#rangeAux)]
  // ----------------------------------------------------------------------------------------
     rule #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack) [concrete]
-```
-
-```{.k .concrete}
-    rule #range(WM, END, WIDTH, WS) => WS                                                                     requires WIDTH ==Int 0
-    rule #range(WM, END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, getInt(WM[END] orDefault 0) : WS) requires WIDTH  >Int 0
-```
-
-```{.k .symbolic}
     rule #range(WM,           END, WIDTH, WS) => WS                                           requires WIDTH ==Int 0
     rule #range(WM,           END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, 0 : WS) requires (WIDTH >Int 0) andBool notBool END in_keys(WM)
     rule #range(END |-> W WM, END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, W : WS) requires (WIDTH >Int 0)
@@ -692,17 +756,32 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
     rule #parseWord("") => 0
     rule #parseWord(S)  => #parseHexWord(S) requires lengthString(S) >=Int 2 andBool substrString(S, 0, 2) ==String "0x"
     rule #parseWord(S)  => String2Int(S) [owise]
+```
 
+```{.k .concrete}
+    syntax ByteArray ::= #parseHexBytes  ( String ) [function]
+                       | #parseByteStack ( String ) [function]
+                       | #parseByteStackRaw ( String ) [function]
+ // ----------------------------------------------------------
+    rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
+    rule #parseHexBytes("") => .ByteArray
+    rule #parseHexBytes(S)  => Int2Bytes(1, #parseHexWord(substrString(S, 0, 2)), BE) +Bytes {#parseHexBytes(substrString(S, 2, lengthString(S)))}:>Bytes requires lengthString(S) >=Int 2
+
+    rule #parseByteStackRaw(S) => String2Bytes(S)
+```
+
+```{.k .symbolic}
     syntax ByteArray ::= #parseHexBytes  ( String ) [function]
                        | #parseByteStack ( String ) [function]
                        | #parseByteStackRaw ( String ) [function]
  // ----------------------------------------------------------
     rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
     rule #parseHexBytes("") => .WordStack
-    rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytes(substrString(S, 2, lengthString(S))) requires lengthString(S) >=Int 2
+    rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : {#parseHexBytes(substrString(S, 2, lengthString(S)))}:>WordStack requires lengthString(S) >=Int 2
 
-    rule #parseByteStackRaw(S) => ordChar(substrString(S, 0, 1)) : #parseByteStackRaw(substrString(S, 1, lengthString(S))) requires lengthString(S) >=Int 1
+    rule #parseByteStackRaw(S) => ordChar(substrString(S, 0, 1)) : {#parseByteStackRaw(substrString(S, 1, lengthString(S)))}:>WordStack requires lengthString(S) >=Int 1
     rule #parseByteStackRaw("") => .WordStack
+```
 
 ```k
     syntax Map ::= #parseMap ( JSON ) [function]
@@ -724,7 +803,13 @@ We need to interperet a `ByteArray` as a `String` again so that we can call `Kec
 -   `#unparseByteStack` turns a stack of bytes (as a `ByteArray`) into a `String`.
 -   `#padByte` ensures that the `String` interperetation of a `Int` is wide enough.
 
-```k
+```{.k .concrete}
+    syntax String ::= #unparseByteStack ( ByteArray )                [function, klabel(unparseByteStack), symbol]
+ // -------------------------------------------------------------------------------------------------------------
+    rule #unparseByteStack(WS) => Bytes2String(WS)
+```
+
+```{.k .symbolic}
     syntax String ::= #unparseByteStack ( ByteArray )                [function, klabel(unparseByteStack), symbol]
                     | #unparseByteStack ( ByteArray , StringBuffer ) [function, klabel(#unparseByteStackAux)]
  // ---------------------------------------------------------------------------------------------------------
@@ -732,7 +817,9 @@ We need to interperet a `ByteArray` as a `String` again so that we can call `Kec
 
     rule #unparseByteStack( .WordStack, BUFFER ) => StringBuffer2String(BUFFER)
     rule #unparseByteStack( W : WS, BUFFER )     => #unparseByteStack(WS, BUFFER +String chrChar(W modInt (2 ^Int 8)))
+```
 
+```k
     syntax String ::= #padByte( String ) [function]
  // -----------------------------------------------
     rule #padByte( S ) => S             requires lengthString(S) ==K 2
