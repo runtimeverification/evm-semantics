@@ -138,7 +138,7 @@ export PATH=$HOME/.local/bin:$PATH
 The LLVM backend has additional dependencies:
 
 ```k
-sudo apt install cmake clang-8 clang++-8 llvm-8 lld-8 libboost-test-dev libgmp-dev libyaml-cpp-dev libjemalloc-dev curl protobuf-compiler libprotobuf-dev
+sudo apt install cmake clang-8 clang++-8 llvm-8 llvm-8-tools lld-8 libboost-test-dev libgmp-dev libprocps-dev libyaml-dev libjemalloc-dev curl protobuf-compiler libprotobuf-dev
 ```
 
 On Arch, you'll also need `crypto++` package.
