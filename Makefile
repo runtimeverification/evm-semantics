@@ -306,11 +306,11 @@ $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUB
 $(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter $(libff_out)
 	mkdir -p $(DEFN_DIR)/vm
 	$(K_BIN)/llvm-kompile $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp \
-                          $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $@ -g -O2 \
-                          -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ -I node/ \
-                          $(LLVM_KOMPILE_OPTS) \
-                          -L$(LIBRARY_PATH) \
-                          -lff -lprotobuf -lgmp $(LINK_PROCPS) -lcryptopp -lsecp256k1
+	                      $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $@ -g -O2 \
+	                      -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ -I node/ \
+	                      $(LLVM_KOMPILE_OPTS) \
+	                      -L$(LIBRARY_PATH) \
+	                      -lff -lprotobuf -lgmp $(LINK_PROCPS) -lcryptopp -lsecp256k1
 
 # LLVM Backend
 
