@@ -302,7 +302,7 @@ pipeline {
                   --attach "kevm-${KEVM_RELEASE_ID}-src.tar.gz#Source tar.gz"                                             \
                   --attach "kevm_${KEVM_RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                              \
                   --attach "kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package" \
-                  --file "release.md" --commitish "$(git rev-parse HEAD)" "${release_tag}"
+                  --file "release.md" "${release_tag}"
             '''
           }
         }
