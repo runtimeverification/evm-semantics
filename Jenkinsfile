@@ -187,15 +187,15 @@ pipeline {
           }
           steps {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
+              unstash 'bionic-kframework'
               sh '''
                 sudo apt-get update && sudo apt-get upgrade --yes
-                curl --location "$(cat deps/k_release)/kframework_5.0.0_amd64_bionic.deb" --output kframework.deb
                 sudo apt-get install --yes ./kframework.deb
                 cp -r package/debian ./
                 dpkg-buildpackage --no-sign
               '''
             }
-            stash name: 'bionic', includes: "kevm_${env.KEVM_RELEASE_ID}_amd64.deb"
+            stash name: 'bionic-kevm', includes: "kevm_${env.KEVM_RELEASE_ID}_amd64.deb"
           }
         }
         stage('Test Ubuntu Bionic Package') {
@@ -209,7 +209,7 @@ pipeline {
           }
           steps {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
-              unstash 'bionic'
+              unstash 'bionic-kevm'
               sh '''
                 sudo apt-get update && sudo apt-get upgrade --yes
                 sudo apt-get install --yes ./kevm_${KEVM_RELEASE_ID}_amd64.deb
@@ -229,15 +229,15 @@ pipeline {
           }
           steps {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
+              unstash 'arch-kframework'
               sh '''
                 sudo pacman -Syu --noconfirm
-                curl --location "$(cat deps/k_release)/kframework-5.0.0-1-x86_64.pkg.tar.xz" --output kframework.pkg.tar.xz
-                sudo pacman --noconfirm -U kframework.pkg.tar.xz
+                sudo pacman --noconfirm -U kframework-git.pkg.tar.xz
                 cd package
                 makepkg --noconfirm --syncdeps
               '''
             }
-            stash name: 'arch', includes: "kevm-${env.KEVM_RELEASE_ID}/package/kevm-git-${env.KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz"
+            stash name: 'arch-kevm', includes: "kevm-${env.KEVM_RELEASE_ID}/package/kevm-git-${env.KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz"
           }
         }
         stage('Test Arch Package') {
@@ -251,7 +251,7 @@ pipeline {
           }
           steps {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
-              unstash 'arch'
+              unstash 'arch-kevm'
               sh '''
                 sudo pacman -Syu --noconfirm
                 sudo pacman --noconfirm -U package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz
@@ -270,10 +270,10 @@ pipeline {
             }
           }
           steps {
-            dir("kevm-${env.RELEASE_ID}") {
+            dir("kevm-${env.KEVM_RELEASE_ID}") {
               checkout scm
-              unstash 'bionic'
-              unstash 'arch'
+              unstash 'bionic-kevm'
+              unstash 'arch-kevm'
               sh '''
                 find . -name .git | xargs rm -r
                 rm -r deps/k tests/ethereum-tests deps/metropolis
