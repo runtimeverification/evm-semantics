@@ -331,7 +331,8 @@ $(llvm_kompiled): $(llvm_files) $(libff_out)
 
 KEVM_RELEASE_TAG?=
 
-install: $(node_kompiled)
+install: $(INSTALL_DIR)/$(notdir $(node_kompiled))
+$(INSTALL_DIR)/$(notdir $(node_kompiled)): $(node_kompiled)
 	mkdir -p $(INSTALL_DIR)
 	cp $(node_kompiled) $(INSTALL_DIR)/
 
