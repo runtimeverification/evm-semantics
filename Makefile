@@ -34,7 +34,7 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean clean-submodules distclean install \
+.PHONY: all clean clean-submodules distclean install uninstall \
         deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff \
         build build-ocaml build-java build-node build-kore split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn llvm-defn \
@@ -335,6 +335,9 @@ install: $(INSTALL_DIR)/$(notdir $(node_kompiled))
 $(INSTALL_DIR)/$(notdir $(node_kompiled)): $(node_kompiled)
 	mkdir -p $(INSTALL_DIR)
 	cp $(node_kompiled) $(INSTALL_DIR)/
+
+uninstall:
+	rm $(INSTALL_DIR)/$(notdir $(node_kompiled))
 
 release.md: INSTALL.md
 	echo "KEVM Release $(KEVM_RELEASE_TAG)"  > $@
