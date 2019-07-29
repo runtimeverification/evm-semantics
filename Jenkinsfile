@@ -214,11 +214,21 @@ pipeline {
           steps {
             unstash 'bionic'
             unstash 'arch'
+            dir("kevm-${env.RELEASE_ID}") {
+              checkout scm
+              sh '''
+                find . -name git | xargs rm -r
+                rm -r deps/k tests/ethereum-tests deps/metropolis
+                cd ..
+                tar czvf kevm-${RELEASE_ID}.tar.gz kevm-${RELEASE_ID}
+              '''
+            }
             sh '''
               git_commit=$(cd kevm-$RELEASE_ID && git rev-parse --short HEAD)
               hub release create                                                                                            \
                   --attach "kevm_${RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                                     \
                   --attach "kevm-${RELEASE_ID}/package/kevm-git-${RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package"             \
+                  --attach "kevm-${RELEASE_ID}.tar.gz#Source tar.gz"                                                        \
                   --message "$(echo -e "KEVM Release $RELEASE_ID - $git_commit\n\n" ; cat kevm-${RELEASE_ID}/INSTALL.md ;)" \
                   --commitish $(git rev-parse HEAD) "v$RELEASE_ID-$git_commit"
             '''
