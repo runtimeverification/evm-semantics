@@ -217,7 +217,7 @@ pipeline {
             dir("kevm-${env.RELEASE_ID}") {
               checkout scm
               sh '''
-                find . -name git | xargs rm -r
+                find . -name .git | xargs rm -r
                 rm -r deps/k tests/ethereum-tests deps/metropolis
                 cd ..
                 tar czvf kevm-${RELEASE_ID}.tar.gz kevm-${RELEASE_ID}
