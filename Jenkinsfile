@@ -161,8 +161,20 @@ pipeline {
         KEVM_RELEASE_ID = '1.0.0'
       }
       stages {
-        stage('Checkout SCM') {
-          steps { dir("kevm-${env.KEVM_RELEASE_ID}") { checkout scm } }
+        stage('Checkout SCM - Download K Release') {
+          steps {
+            dir("kevm-${env.KEVM_RELEASE_ID}") {
+              checkout scm
+              sh '''
+                commit_short=$(cd deps/k && git rev-parse --short HEAD)
+                K_RELEASE="https://github.com/kframework/k/releases/download/nightly-$commit_short"
+                curl --fail --location "${K_RELEASE}/kframework_5.0.0_amd64_bionic.deb"    --output kframework.deb
+                curl --fail --location "${K_RELEASE}/kframework-5.0.0-1-x86_64.pkg.tar.xz" --output kframework-git.pkg.tar.xz
+              '''
+              stash name: 'bionic-kframework', includes: 'kframework.deb'
+              stash name: 'arch-kframework',   includes: 'kframework-git.pkg.tar.xz'
+            }
+          }
         }
         stage('Build Ubuntu Bionic Package') {
           agent {
