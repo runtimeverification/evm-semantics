@@ -278,7 +278,7 @@ pipeline {
                 find . -name .git | xargs rm -r
                 rm -r deps/k tests/ethereum-tests deps/metropolis
                 cd ..
-                tar czvf kevm-${RELEASE_ID}.tar.gz kevm-${RELEASE_ID}
+                tar czvf kevm-${KEVM_RELEASE_ID}.tar.gz kevm-${KEVM_RELEASE_ID}
                 release_tag="v${KEVM_RELEASE_ID}-$(git rev-parse --short HEAD)"
                 make release.md KEVM_RELEASE_TAG=${release_tag}
                 hub release create                                                                  \
