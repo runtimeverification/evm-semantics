@@ -56,7 +56,7 @@ On Ubuntu >= 18.04 (for example):
 ```sh
 sudo apt install                                             \
     autoconf bison flex gcc git libmpfr-dev libsecp256k1-dev \
-    libtool libz3-dev make maven opam openjdk-8-jdk pandoc   \
+    libtool libz3-dev make maven opam openjdk-11-jdk pandoc  \
     pkg-config z3 zlib1g-dev
 ```
 
