@@ -526,7 +526,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 ```
 
 ```{.k .symbolic}
-    syntax ByteArray ::= Bytes
+    syntax ByteArray ::= WordStack
                        | ".ByteArray" [function]
  // --------------------------------------------
     rule .ByteArray => .WordStack
