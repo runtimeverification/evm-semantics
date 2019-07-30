@@ -44,7 +44,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #int128  ( Int )
                       | #bytes32 ( Int )
                       | #bool    ( Int )
-                      | #bytes   ( WordStack )
+                      | #bytes   ( ByteArray )
                       | #string  ( String )
                       | #array   ( TypedArg , Int , TypedArgs )
  // -----------------------------------------------------------
@@ -52,7 +52,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
  // ------------------------------------------------------------
 
-    syntax WordStack ::= #abiCallData ( String , TypedArgs ) [function]
+    syntax ByteArray ::= #abiCallData ( String , TypedArgs ) [function]
  // -------------------------------------------------------------------
     rule #abiCallData( FNAME , ARGS )
       => #parseByteStack(substrString(Keccak256(#generateSignature(FNAME, ARGS)), 0, 8))
@@ -83,8 +83,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #typeName(    #string( _ )) => "string"
     rule #typeName( #array(T, _, _)) => #typeName(T) +String "[]"
 
-    syntax WordStack ::= #encodeArgs    ( TypedArgs )                               [function]
-    syntax WordStack ::= #encodeArgsAux ( TypedArgs , Int , WordStack , WordStack ) [function]
+    syntax ByteArray ::= #encodeArgs    ( TypedArgs )                               [function]
+    syntax ByteArray ::= #encodeArgsAux ( TypedArgs , Int , ByteArray , ByteArray ) [function]
  // ------------------------------------------------------------------------------------------
     rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .WordStack, .WordStack)
 
@@ -152,7 +152,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #sizeOfDynamicTypeAux(.TypedArgs) => 0
 
-    syntax WordStack ::= #enc ( TypedArg ) [function]
+    syntax ByteArray ::= #enc ( TypedArg ) [function]
  // -------------------------------------------------
     // static Type
     rule #enc(#uint160( DATA )) => #buf(32, #getValue(#uint160( DATA )))
@@ -171,13 +171,13 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) ++ #encodeArgs(DATA)
     rule #enc(      #string(STR)) => #enc(#bytes(#parseByteStackRaw(STR)))
 
-    syntax WordStack ::= #encBytes ( Int , WordStack ) [function]
+    syntax ByteArray ::= #encBytes ( Int , WordStack ) [function]
  // -------------------------------------------------------------
     rule #encBytes(N, WS) => #enc(#uint256(N)) ++ WS ++ #buf(#ceil32(N) -Int N, 0)
 
     //Byte array buffer. Lemmas defined in evm-data-symbolic.k
     // SIZE, DATA // left zero padding
-    syntax WordStack ::= #buf ( Int , Int ) [function, smtlib(buf)]
+    syntax ByteArray ::= #buf ( Int , Int ) [function, smtlib(buf)]
  // ---------------------------------------------------------------
 
     syntax Int ::= #getValue ( TypedArg ) [function]
@@ -278,7 +278,7 @@ where `1003892871367861763272476045097431689001461395759728643661426852242313133
     rule #getIndexedArgs(_:TypedArg,  ES) =>                        #getIndexedArgs(ES)
     rule #getIndexedArgs(.EventArgs)      => .List
 
-    syntax WordStack ::= #getEventData ( EventArgs ) [function]
+    syntax ByteArray ::= #getEventData ( EventArgs ) [function]
  // -----------------------------------------------------------
     rule #getEventData(#indexed(_), ES) =>            #getEventData(ES)
     rule #getEventData(E:TypedArg,  ES) => #enc(E) ++ #getEventData(ES)
@@ -329,7 +329,7 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
  // --------------------------------------------------
     rule keccakIntList(VS) => keccak(intList2ByteStack(VS)) [concrete]
 
-    syntax WordStack ::= intList2ByteStack( IntList ) [function]
+    syntax ByteArray ::= intList2ByteStack( IntList ) [function]
  // ------------------------------------------------------------
     rule intList2ByteStack(.IntList) => .WordStack
     rule intList2ByteStack(V VS)     => #padToWidth(32, #asByteStack(V)) ++ intList2ByteStack(VS)

@@ -41,7 +41,7 @@ For verification purposes, it's much easier to specify a program in terms of its
 To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a "pretti-fication" to the nicer input form.
 
 ```{.k .standalone}
-    syntax JSON ::= Int | WordStack | OpCodes | Map | Call | SubstateLogEntry | Account
+    syntax JSON ::= Int | ByteArray | OpCodes | Map | Call | SubstateLogEntry | Account
  // -----------------------------------------------------------------------------------
 
     syntax JSONList ::= #sortJSONList ( JSONList )            [function]
@@ -354,15 +354,15 @@ State Manipulation
     syntax EthereumCommand ::= "clearTX"
  // ------------------------------------
     rule <k> clearTX => . ... </k>
-         <output>          _ => .WordStack </output>
+         <output>          _ => .ByteArray </output>
          <memoryUsed>      _ => 0          </memoryUsed>
          <callDepth>       _ => 0          </callDepth>
          <callStack>       _ => .List      </callStack>
          <program>         _ => .Map       </program>
-         <programBytes>    _ => .WordStack </programBytes>
+         <programBytes>    _ => .ByteArray </programBytes>
          <id>              _ => 0          </id>
          <caller>          _ => 0          </caller>
-         <callData>        _ => .WordStack </callData>
+         <callData>        _ => .ByteArray </callData>
          <callValue>       _ => 0          </callValue>
          <wordStack>       _ => .WordStack </wordStack>
          <localMem>        _ => .Map       </localMem>
@@ -385,13 +385,13 @@ State Manipulation
          <stateRoot>         _ => 0             </stateRoot>
          <transactionsRoot>  _ => 0             </transactionsRoot>
          <receiptsRoot>      _ => 0             </receiptsRoot>
-         <logsBloom>         _ => .WordStack    </logsBloom>
+         <logsBloom>         _ => .ByteArray    </logsBloom>
          <difficulty>        _ => 0             </difficulty>
          <number>            _ => 0             </number>
          <gasLimit>          _ => 0             </gasLimit>
          <gasUsed>           _ => 0             </gasUsed>
          <timestamp>         _ => 0             </timestamp>
-         <extraData>         _ => .WordStack    </extraData>
+         <extraData>         _ => .ByteArray    </extraData>
          <mixHash>           _ => 0             </mixHash>
          <blockNonce>        _ => 0             </blockNonce>
          <ommerBlockHeaders> _ => [ .JSONList ] </ommerBlockHeaders>
@@ -453,7 +453,7 @@ The individual fields of the accounts are dealt with here.
            ...
          </account>
 
-    rule <k> load "account" : { ACCT : { "code" : (CODE:WordStack) } } => . ... </k>
+    rule <k> load "account" : { ACCT : { "code" : (CODE:ByteArray) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> _ => CODE </code>
@@ -507,9 +507,9 @@ Here we load the environmental information.
 
     rule <k> load "exec" : { "data" : ((DATA:String) => #parseByteStack(DATA)) } ... </k>
  // -------------------------------------------------------------------------------------
-    rule <k> load "exec" : { "data" : (DATA:WordStack) } => . ... </k> <callData> _ => DATA </callData>
+    rule <k> load "exec" : { "data" : (DATA:ByteArray) } => . ... </k> <callData> _ => DATA </callData>
     rule <k> load "exec" : { "code" : (CODE:OpCodes)   } => . ... </k> <program>  _ => #asMapOpCodes(CODE) </program>
-    rule <k> load "exec" : { "code" : (CODE:WordStack) } => . ... </k> <program>  _ => #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) </program> <programBytes> _ => CODE </programBytes> <schedule> SCHED </schedule>
+    rule <k> load "exec" : { "code" : (CODE:ByteArray) } => . ... </k> <program>  _ => #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) </program> <programBytes> _ => CODE </programBytes> <schedule> SCHED </schedule>
 ```
 
 The `"network"` key allows setting the fee schedule inside the test.
@@ -618,16 +618,16 @@ The `"rlp"` key loads the block information.
     rule <k> load "transaction" : { TXID : { "to" : TT:Account } } => . ... </k>
          <message> <msgID> TXID </msgID> <to> _ => TT </to> ... </message>
 
-    rule <k> load "transaction" : { TXID : { "data" : TI:WordStack } } => . ... </k>
+    rule <k> load "transaction" : { TXID : { "data" : TI:ByteArray } } => . ... </k>
          <message> <msgID> TXID </msgID> <data> _ => TI </data> ... </message>
 
     rule <k> load "transaction" : { TXID : { "v" : TW:Int } } => . ... </k>
          <message> <msgID> TXID </msgID> <sigV> _ => TW </sigV> ... </message>
 
-    rule <k> load "transaction" : { TXID : { "r" : TR:WordStack } } => . ... </k>
+    rule <k> load "transaction" : { TXID : { "r" : TR:ByteArray } } => . ... </k>
          <message> <msgID> TXID </msgID> <sigR> _ => TR </sigR> ... </message>
 
-    rule <k> load "transaction" : { TXID : { "s" : TS:WordStack } } => . ... </k>
+    rule <k> load "transaction" : { TXID : { "s" : TS:ByteArray } } => . ... </k>
          <message> <msgID> TXID </msgID> <sigS> _ => TS </sigS> ... </message>
 ```
 
@@ -689,7 +689,7 @@ The `"rlp"` key loads the block information.
          </account>
       requires #removeZeros(ACCTSTORAGE) ==K STORAGE
 
-    rule <k> check "account" : { ACCT : { "code" : (CODE:WordStack) } } => . ... </k>
+    rule <k> check "account" : { ACCT : { "code" : (CODE:ByteArray) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
@@ -731,7 +731,7 @@ Here we check the other post-conditions associated with an EVM test.
 
     rule <k> check "blockHeader" : { KEY : (VALUE:String => #parseByteStack(VALUE)) } ... </k>
 
-    rule <k> check "blockHeader" : { KEY : (VALUE:WordStack => #asWord(VALUE)) } ... </k>
+    rule <k> check "blockHeader" : { KEY : (VALUE:ByteArray => #asWord(VALUE)) } ... </k>
       requires KEY in ( SetItem("coinbase") SetItem("difficulty") SetItem("gasLimit") SetItem("gasUsed")
                         SetItem("mixHash") SetItem("nonce") SetItem("number") SetItem("parentHash")
                         SetItem("receiptTrie") SetItem("stateRoot") SetItem("timestamp")
@@ -754,7 +754,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "blockHeader" : { "transactionsTrie" : VALUE } => . ... </k> <transactionsRoot> VALUE </transactionsRoot>
     rule <k> check "blockHeader" : { "uncleHash"        : VALUE } => . ... </k> <ommersHash>       VALUE </ommersHash>
 
-    rule <k> check "blockHeader" : { "hash": HASH:WordStack } => . ...</k>
+    rule <k> check "blockHeader" : { "hash": HASH:ByteArray } => . ...</k>
          <previousHash>     HP </previousHash>
          <ommersHash>       HO </ommersHash>
          <coinbase>         HC </coinbase>
@@ -792,9 +792,9 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : { KEY : VALUE , REST } => check "transactions" : (KEY : VALUE) ~> check "transactions" : { REST } ... </k>
 
     rule <k> check "transactions" : (KEY  : (VALUE:String    => #parseByteStack(VALUE))) ... </k>
-    rule <k> check "transactions" : ("to" : (VALUE:WordStack => #asAccount(VALUE)))      ... </k>
-    rule <k> check "transactions" : (KEY  : (VALUE:WordStack => #padToWidth(32, VALUE))) ... </k> requires KEY in (SetItem("r") SetItem("s")) andBool #sizeWordStack(VALUE) <Int 32
-    rule <k> check "transactions" : (KEY  : (VALUE:WordStack => #asWord(VALUE)))         ... </k> requires KEY in (SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce") SetItem("v") SetItem("value"))
+    rule <k> check "transactions" : ("to" : (VALUE:ByteArray => #asAccount(VALUE)))      ... </k>
+    rule <k> check "transactions" : (KEY  : (VALUE:ByteArray => #padToWidth(32, VALUE))) ... </k> requires KEY in (SetItem("r") SetItem("s")) andBool #sizeByteArray(VALUE) <Int 32
+    rule <k> check "transactions" : (KEY  : (VALUE:ByteArray => #asWord(VALUE)))         ... </k> requires KEY in (SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce") SetItem("v") SetItem("value"))
 
     rule <k> check "transactions" : ("data"     : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <data>       VALUE </data>       ... </message>
     rule <k> check "transactions" : ("gasLimit" : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasLimit> VALUE </txGasLimit> ... </message>
