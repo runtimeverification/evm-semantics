@@ -16,7 +16,8 @@ RUN    apt-get update                                                           
 
 RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 
-RUN curl -sSL https://get.haskellstack.org/ | sh
+ADD deps/k/haskell-backend/src/main/native/haskell-backend/scripts/install-stack.sh /.install-stack/
+RUN /.install-stack/install-stack.sh
 
 RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.6.0 \
     && cd z3                                                        \
