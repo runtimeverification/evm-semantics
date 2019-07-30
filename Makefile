@@ -484,7 +484,7 @@ test-interactive-firefly:
 	    && git checkout b8c8308                                              \
 	    && { npx kevm-ganache-cli & }                                        \
 	    && npm install                                                       \
-	    && npx truffle test test/token/ERC20/ERC20.test.js
+	    && npx truffle test
 
 # Media
 # -----
