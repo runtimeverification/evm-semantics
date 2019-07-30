@@ -2380,7 +2380,6 @@ After interpreting the strings representing programs as a `WordStack`, it should
 ```{.k .symbolic}
     syntax OpCodes ::= #dasmOpCodes ( OpCodes , ByteArray , Schedule ) [function, klabel(#dasmOpCodesAux)]
  // ------------------------------------------------------------------------------------------------------
-
     rule #dasmOpCodes( WS, SCHED ) => #revOps(#dasmOpCodes(.OpCodes, WS, SCHED))
 
     rule #dasmOpCodes( OPS, .WordStack, _ ) => OPS
@@ -2396,7 +2395,6 @@ After interpreting the strings representing programs as a `WordStack`, it should
 ```{.k .concrete}
     syntax OpCodes ::= #dasmOpCodes ( OpCodes , ByteArray , Schedule , Int , Int ) [function, klabel(#dasmOpCodesAux)]
  // ------------------------------------------------------------------------------------------------------------------
-
     rule #dasmOpCodes( WS, SCHED ) => #revOps(#dasmOpCodes(.OpCodes, WS, SCHED, 0, #sizeByteArray(WS)))
 
     rule #dasmOpCodes( OPS, _ ,     _ , I , J ) => OPS requires I >=Int J

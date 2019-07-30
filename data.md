@@ -503,8 +503,8 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
     rule #asAccount(BS) => #asWord(BS) [owise]
 
-    syntax ByteArray ::= #asByteStack ( Int )             [function]
- // ----------------------------------------------------------------
+    syntax ByteArray ::= #asByteStack ( Int ) [function]
+ // ----------------------------------------------------
     rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned)
 
     syntax ByteArray ::= ByteArray "++" ByteArray [function, right, klabel(_++_WS), smtlib(_plusWS_)]
@@ -668,11 +668,11 @@ We are using the polymorphic `Map` sort for these word maps.
     syntax Map ::= Map "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
  // -------------------------------------------------------------------------------
     rule WM[ N := WS ] => WM [ N := WS, 0, #sizeByteArray(WS) ]
-    
+
     syntax Map ::= Map "[" Int ":=" ByteArray "," Int "," Int "]" [function]
  // ------------------------------------------------------------------------
     rule WM [ N := WS, I, I ] => WM
-    rule WM [ N := WS, I, J ] => (WM[N <- WS[I]])[N +Int 1 := WS, I +Int 1, J ] [owise]
+    rule WM [ N := WS, I, J ] => (WM[N <- WS[I]])[ N +Int 1 := WS, I +Int 1, J ] [owise]
 
     syntax ByteArray ::= #range ( Map , Int , Int )                   [function]
                        | #range ( Map , Int , Int , Int , ByteArray ) [function, klabel(#rangeAux)]
