@@ -1,10 +1,9 @@
 FROM archlinux/base
 
 RUN    pacman -Syu --noconfirm \
-    && pacman -S   --noconfirm git hub sudo
+    && pacman -S   --noconfirm base base-devel curl gcc git hub make nodejs npm python2 sudo
 
-ADD https://github.com/kframework/k/releases/download/nightly-89361d7c8/kframework-5.0.0-1-x86_64.pkg.tar.xz kframework_5.0.0-1_x86_64.pkg.tar.xz
-RUN pacman --noconfirm -U ./kframework_5.0.0-1_x86_64.pkg.tar.xz
+RUN npm install -g npx
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
