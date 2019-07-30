@@ -48,7 +48,7 @@ ENV LC_ALL=C.UTF-8
 ADD --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/stack.yaml /home/user/.tmp-haskell/
 ADD --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/kore/package.yaml /home/user/.tmp-haskell/kore/
 RUN    cd /home/user/.tmp-haskell \
-    && stack build --only-snapshot --test --bench --no-haddock-deps --haddock --library-profiling
+    && stack build --only-snapshot
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
 ENV PATH=/home/user/.local/bin:/home/user/.cargo/bin:$PATH
