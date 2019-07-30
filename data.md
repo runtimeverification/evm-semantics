@@ -21,10 +21,6 @@ module EVM-DATA
     imports BYTES
 ```
 
-```
-    syntax KResult ::= Int
-```
-
 ### JSON Formatting
 
 The JSON format is used extensively for communication in the Ethereum circles.
@@ -464,9 +460,6 @@ A cons-list is used for the EVM wordstack.
     rule W in (W' : WS)  => (W ==K W') orElseBool (W in WS)
 ```
 
-```k
-```
-
 -   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.
 
 ```k
@@ -493,7 +486,8 @@ The local memory of execution is a byte-array (instead of a word-array).
 
 ```{.k .concrete}
     syntax ByteArray ::= Bytes
-    syntax ByteArray ::= ".ByteArray" [function]
+                       | ".ByteArray" [function]
+ // --------------------------------------------
     rule .ByteArray => .Bytes
 
     syntax Int ::= #asWord ( ByteArray ) [function, smtlib(asWord)]
@@ -506,7 +500,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 
     syntax Account ::= #asAccount ( ByteArray ) [function]
  // ------------------------------------------------------
-    rule #asAccount(BS) => .Account requires lengthBytes(BS) ==Int 0
+    rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
     rule #asAccount(BS) => #asWord(BS) [owise]
 
     syntax ByteArray ::= #asByteStack ( Int )             [function]
@@ -520,10 +514,10 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function]
  // --------------------------------------------------------------
     rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires START <Int #sizeByteArray(WS)
-    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0) [owise]
+    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0)                                              [owise]
 
-    syntax Int ::= #sizeByteArray ( ByteArray )       [function, functional]
- // ------------------------------------------------------------------------
+    syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional]
+ // ------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => lengthBytes(WS)
 
     syntax ByteArray ::= #padToWidth ( Int , ByteArray ) [function]
@@ -532,8 +526,9 @@ The local memory of execution is a byte-array (instead of a word-array).
 ```
 
 ```{.k .symbolic}
-    syntax ByteArray ::= WordStack
-    syntax ByteArray ::= ".ByteArray" [function]
+    syntax ByteArray ::= Bytes
+                       | ".ByteArray" [function]
+ // --------------------------------------------
     rule .ByteArray => .WordStack
 
     syntax Int ::= #asWord ( ByteArray ) [function, smtlib(asWord)]
@@ -559,7 +554,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #asByteStack( W ) => #asByteStack( W , .WordStack )                                        [concrete]
     rule #asByteStack( 0 , WS ) => WS                                                            // [concrete]
     rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W modInt 256 : WS ) requires W =/=K 0 [concrete]
-	
+
     syntax ByteArray ::= ByteArray "++" ByteArray [function, right, klabel(_++_WS), smtlib(_plusWS_)]
  // -------------------------------------------------------------------------------------------------
     rule .WordStack ++ WS' => WS'
@@ -569,23 +564,19 @@ The local memory of execution is a byte-array (instead of a word-array).
  // --------------------------------------------------------------
     rule WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
 
-    syntax Int ::= #sizeByteArray ( ByteArray )       [function, functional]
- // ------------------------------------------------------------------------
+    syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional]
+ // ------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => #sizeWordStack(WS)
 
-    syntax ByteArray ::= #padToWidth ( Int , ByteArray ) [function]
- // ---------------------------------------------------------------
-    rule #padToWidth(N, WS) => WS                     requires notBool #sizeByteArray(WS) <Int N [concrete]
-    rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires #sizeByteArray(WS) <Int N         [concrete]
-
-    syntax ByteArray ::= #padRightToWidth ( Int , ByteArray ) [function]
- // --------------------------------------------------------------------
-    rule  #padRightToWidth(N, WS) => #padRightToWidthAux(N -Int #sizeByteArray(WS), WS, .WordStack)
-
-    syntax ByteArray ::= #padRightToWidthAux ( Int , ByteArray , ByteArray ) [function]
+    syntax ByteArray ::= #padToWidth         ( Int , ByteArray )             [function]
+                       | #padRightToWidth    ( Int , ByteArray )             [function]
+                       | #padRightToWidthAux ( Int , ByteArray , ByteArray ) [function]
  // -----------------------------------------------------------------------------------
-    rule #padRightToWidthAux(0, WS, ZEROS) => WS ++ ZEROS
+    rule #padToWidth(N, WS) => WS                     requires notBool #sizeByteArray(WS) <Int N [concrete]
+    rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires         #sizeByteArray(WS) <Int N [concrete]
 
+    rule #padRightToWidth(N, WS) => #padRightToWidthAux(N -Int #sizeByteArray(WS), WS, .WordStack)
+    rule #padRightToWidthAux(0, WS, ZEROS) => WS ++ ZEROS
     rule #padRightToWidthAux(N, WS, ZEROS) => #padRightToWidthAux(N -Int 1, WS, 0 : ZEROS)
       requires N >Int 0
 ```
@@ -675,15 +666,16 @@ We are using the polymorphic `Map` sort for these word maps.
 
 ```{.k .concrete}
     syntax Map ::= Map "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
- // --------------------------------------------------------
+ // -------------------------------------------------------------------------------
     rule WM[ N := WS ] => WM [ N := WS, 0, #sizeByteArray(WS) ]
     
     syntax Map ::= Map "[" Int ":=" ByteArray "," Int "," Int "]" [function]
+ // ------------------------------------------------------------------------
     rule WM [ N := WS, I, I ] => WM
     rule WM [ N := WS, I, J ] => (WM[N <- WS[I]])[N +Int 1 := WS, I +Int 1, J ] [owise]
 
-    syntax ByteArray ::= #range ( Map , Int , Int )            [function]
-    syntax ByteArray ::= #range ( Map , Int , Int , Int , ByteArray ) [function, klabel(#rangeAux)]
+    syntax ByteArray ::= #range ( Map , Int , Int )                   [function]
+                       | #range ( Map , Int , Int , Int , ByteArray ) [function, klabel(#rangeAux)]
  // -----------------------------------------------------------------------------------------------
     rule #range(WM, START, WIDTH) => #range(WM, START, 0, WIDTH, padLeftBytes(.Bytes, WIDTH, 0))
     rule #range(WM, I, WIDTH, WIDTH, WS) => WS
@@ -696,9 +688,9 @@ We are using the polymorphic `Map` sort for these word maps.
     rule WM[ N := .WordStack ] => WM
     rule WM[ N := W : WS     ] => (WM[N <- W])[N +Int 1 := WS] [concrete]
 
-    syntax ByteArray ::= #range ( Map , Int , Int )            [function]
+    syntax ByteArray ::= #range ( Map , Int , Int )             [function]
     syntax ByteArray ::= #range ( Map , Int , Int , ByteArray ) [function, klabel(#rangeAux)]
- // ----------------------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------------------
     rule #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack) [concrete]
     rule #range(WM,           END, WIDTH, WS) => WS                                           requires WIDTH ==Int 0
     rule #range(WM,           END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, 0 : WS) requires (WIDTH >Int 0) andBool notBool END in_keys(WM)
@@ -759,10 +751,10 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
 ```
 
 ```{.k .concrete}
-    syntax ByteArray ::= #parseHexBytes  ( String ) [function]
-                       | #parseByteStack ( String ) [function]
+    syntax ByteArray ::= #parseHexBytes     ( String ) [function]
+                       | #parseByteStack    ( String ) [function]
                        | #parseByteStackRaw ( String ) [function]
- // ----------------------------------------------------------
+ // -------------------------------------------------------------
     rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
     rule #parseHexBytes("") => .ByteArray
     rule #parseHexBytes(S)  => Int2Bytes(1, #parseHexWord(substrString(S, 0, 2)), BE) +Bytes {#parseHexBytes(substrString(S, 2, lengthString(S)))}:>Bytes requires lengthString(S) >=Int 2
@@ -771,10 +763,10 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
 ```
 
 ```{.k .symbolic}
-    syntax ByteArray ::= #parseHexBytes  ( String ) [function]
-                       | #parseByteStack ( String ) [function]
+    syntax ByteArray ::= #parseHexBytes     ( String ) [function]
+                       | #parseByteStack    ( String ) [function]
                        | #parseByteStackRaw ( String ) [function]
- // ----------------------------------------------------------
+ // -------------------------------------------------------------
     rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
     rule #parseHexBytes("") => .WordStack
     rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : {#parseHexBytes(substrString(S, 2, lengthString(S)))}:>WordStack requires lengthString(S) >=Int 2
@@ -804,8 +796,8 @@ We need to interperet a `ByteArray` as a `String` again so that we can call `Kec
 -   `#padByte` ensures that the `String` interperetation of a `Int` is wide enough.
 
 ```{.k .concrete}
-    syntax String ::= #unparseByteStack ( ByteArray )                [function, klabel(unparseByteStack), symbol]
- // -------------------------------------------------------------------------------------------------------------
+    syntax String ::= #unparseByteStack ( ByteArray ) [function, klabel(unparseByteStack), symbol]
+ // ----------------------------------------------------------------------------------------------
     rule #unparseByteStack(WS) => Bytes2String(WS)
 ```
 

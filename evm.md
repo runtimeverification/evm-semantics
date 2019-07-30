@@ -2103,10 +2103,10 @@ There are several helpers for calculating gas (most of them also specified in th
 ```
 
 ```{.k .concrete}
-    syntax Int ::= G0 ( Schedule , ByteArray , Bool ) [function]
+    syntax Int ::= G0 ( Schedule , ByteArray , Bool )      [function]
                  | G0 ( Schedule , ByteArray , Int , Int ) [function, klabel(G0data)]
-                 | G0 ( Schedule , Bool ) [function, klabel(G0base)]
- // ----------------------------------------------------------------
+                 | G0 ( Schedule , Bool )                  [function, klabel(G0base)]
+ // ---------------------------------------------------------------------------------
     rule G0(SCHED, WS, B) => G0(SCHED, WS, 0, #sizeByteArray(WS)) +Int G0(SCHED, B)
 
     rule G0(SCHED, true)  => Gtxcreate    < SCHED >
