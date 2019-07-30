@@ -41,7 +41,7 @@ export LUA_PATH
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
         test-proof test-klab-prove test-parse test-failure \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly \
         media media-pdf sphinx metropolis-theme
 .SECONDARY:
 
@@ -306,11 +306,11 @@ $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUB
 $(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter $(libff_out)
 	mkdir -p $(DEFN_DIR)/vm
 	$(K_BIN)/llvm-kompile $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp \
-                          $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $@ -g -O2 \
-                          -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ -I node/ \
-                          $(LLVM_KOMPILE_OPTS) \
-                          -L$(LIBRARY_PATH) \
-                          -lff -lprotobuf -lgmp $(LINK_PROCPS) -lcryptopp -lsecp256k1
+	                      $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $@ -g -O2 \
+	                      -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ -I node/ \
+	                      $(LLVM_KOMPILE_OPTS) \
+	                      -L$(LIBRARY_PATH) \
+	                      -lff -lprotobuf -lgmp $(LINK_PROCPS) -lcryptopp -lsecp256k1
 
 # LLVM Backend
 
@@ -329,9 +329,16 @@ $(llvm_kompiled): $(llvm_files) $(libff_out)
 # Installing
 # ----------
 
+KEVM_RELEASE_TAG?=
+
 install: $(node_kompiled)
 	mkdir -p $(INSTALL_DIR)
 	cp $(node_kompiled) $(INSTALL_DIR)/
+
+release.md: INSTALL.md
+	echo "KEVM Release $(KEVM_RELEASE_TAG)"  > $@
+	echo                                    >> $@
+	cat INSTALL.md                          >> $@
 
 # Tests
 # -----
@@ -466,6 +473,18 @@ test-interactive-search: $(search_tests:=.search)
 
 test-interactive-help:
 	$(TEST) help
+
+# Notice that `npm install` comes after `npx kevm-ganache-cli` to allow time for it to start up.
+test-interactive-firefly:
+	mkdir -p $(BUILD_DIR)/firefly
+	cd $(BUILD_DIR)/firefly                                                  \
+	    && rm -rf openzeppelin-solidity                                      \
+	    && git clone 'https://github.com/openzeppelin/openzeppelin-solidity' \
+	    && cd openzeppelin-solidity                                          \
+	    && git checkout b8c8308                                              \
+	    && { npx kevm-ganache-cli & }                                        \
+	    && npm install                                                       \
+	    && npx truffle test test/token/ERC20/ERC20.test.js
 
 # Media
 # -----
