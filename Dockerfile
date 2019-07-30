@@ -16,7 +16,8 @@ RUN    apt-get update                                                           
 
 RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 
-RUN curl -sSL https://get.haskellstack.org/ | sh
+ADD deps/k/haskell-backend/src/main/native/haskell-backend/scripts/install-stack.sh /.install-stack/
+RUN /.install-stack/install-stack.sh
 
 RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.6.0 \
     && cd z3                                                        \
@@ -47,7 +48,7 @@ ENV LC_ALL=C.UTF-8
 ADD --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/stack.yaml /home/user/.tmp-haskell/
 ADD --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/kore/package.yaml /home/user/.tmp-haskell/kore/
 RUN    cd /home/user/.tmp-haskell \
-    && stack build --only-snapshot --test --bench --no-haddock-deps --haddock --library-profiling
+    && stack build --only-snapshot
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
 ENV PATH=/home/user/.local/bin:/home/user/.cargo/bin:$PATH
