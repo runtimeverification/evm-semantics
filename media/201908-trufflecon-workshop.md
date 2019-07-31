@@ -1,11 +1,11 @@
 ---
-title: 'K Workshop'
+title: 'K/KEVM Formal Verification Workshop'
 subtitle: 'Understanding the K Prover'
 author:
 -   Everett Hildenbrandt
+-   Grigore Rosu
 institute:
 -   Runtime Verification
--   ConsenSys
 date: '\today'
 theme: metropolis
 fontsize: 8pt
@@ -31,14 +31,12 @@ Install KEVM
     ```sh
     make deps
     make build-java
-    make build-ocaml
     ```
 
 -   Should be able to run:
 
     ```sh
-    make test-prove-verified
-    make test-prove-gen -j3
+    make tests/specs/ds-token-erc20/transferFrom-failure-2-c-spec.k.prove
     ```
 
 . . .
@@ -63,57 +61,88 @@ Install KEVM
 -------------
 
 ```sh
-$ ./kevm help
-
-usage: ./kevm (run|kast)       [--backend (ocaml|java|llvm|haskell)] <pgm>  <K args>*
-       ./kevm interpret        [--backend (ocaml|llvm)]              <pgm>
-       ./kevm prove            [--backend (java|haskell)]            <spec> <K args>*
-       ./kevm klab-(run|prove)                                       <spec> <K args>*
+usage: ./kevm run        [--backend (ocaml|java|llvm|haskell)] <pgm>  <K arg>*
+       ./kevm interpret  [--backend (ocaml|llvm)]              <pgm>  <interpreter arg>*
+       ./kevm kast       [--backend (ocaml|java)]              <pgm>  <output format> <K arg>*
+       ./kevm prove      [--backend (java|haskell)]            <spec> <K arg>* -m <def_module>
+       ./kevm search     [--backend (java|haskell)]            <pgm>  <pattern> <K arg>*
+       ./kevm klab-run                                         <pgm>  <K arg>*
+       ./kevm klab-prove                                       <spec> <K arg>* -m <def_module>
+       ./kevm klab-view                                        <spec>
 
    ./kevm run       : Run a single EVM program
    ./kevm interpret : Run JSON EVM programs without K Frontend (external parser)
+   ./kevm kast      : Parse an EVM program and output it in a supported format
    ./kevm prove     : Run an EVM K proof
-   ./kevm klab-(run|prove) : Run or prove a spec and launch KLab on the execution graph.
+   ./kevm search    : Search for a K pattern in an EVM program execution
+   ./kevm klab-(run|prove) : Run program or prove spec and dump StateLogs which KLab can read
+   ./kevm klab-view : View the statelog associated with a given program or spec
 
    Note: <pgm> is a path to a file containing an EVM program/test.
          <spec> is a K specification to be proved.
-         <K args> are any arguments you want to pass to K when executing/proving.
+         <K arg> is an argument you want to pass to K.
+         <interpreter arg> is an argument you want to pass to the derived interpreter.
+         <output format> is the format for Kast to output the term in.
+         <pattern> is the configuration pattern to search for.
+         <def_module> is the module to take as axioms when doing verification.
 
-   KLab: Make sure that the 'klab/bin' directory is on your PATH to use this option.
+   klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
 ```
 
 `./kevm` examples
 -----------------
 
-> -   Run a test: `MODE=... SCHEDULE=... ./kevm run tests/etheremu-tests/...`
-> -   Interpret a test (fast): `MODE=... SCHEDULE=... ./kevm interpret tests/etheremu-tests/...`
-> -   Run a proof: `./kevm prove tests/specs/*-spec.k`
-> -   Run a test under KLab: `MODE=... SCHEDULE=... ./kevm klab-run tests/ethereum-tests/...`
-> -   Run a proof under KLab: `./kevm klab-prove tests/ethereum-tests/...`
+-   Run a test: `./kevm run tests/etheremu-tests/...`
+-   Interpret a test (fast): `./kevm interpret tests/etheremu-tests/...`
+-   Run a proof: `./kevm prove tests/specs/*-spec.k`
+-   Run a test under KLab: `./kevm klab-run tests/ethereum-tests/...`
+-   Run a proof under KLab: `./kevm klab-prove tests/ethereum-tests/...`
+
+-   Environment variables `MODE` and `SCHEDULE` control how KEVM executes.
+-   `MODE` can be `NORMAL` or `VMTESTS`.
+-   `SCHEDULE` can be `DEFAULT`, `FRONTIER`, `HOMESTEAD`, `TANGERINE_WHISTLE`, `SPURIOUS_DRAGON`, `BYZANTIUM`, `CONSTANTINOPLE`, or `PETERSBURG`.
 
 Introduction to KEVM
 --------------------
 
--   File [data.md](../data.md) defines data-structures of EVM.
--   File [evm.md](../evm.md) defines the semantics itself.
--   File [driver.md](../driver.md) defines the testing harness.
--   File [edsl.md](../edsl.md) defines a DSL for aiding specification for proofs.
+-   [data.md](../data.md) defines data-structures of EVM.
+-   [network.md](../network.md) defines the EVMC status codes.
+-   [evm.md](../evm.md) defines the semantics itself.
+-   [driver.md](../driver.md) defines the testing harness.
+-   [edsl.md](../edsl.md) defines a DSL for aiding specification for proofs.
+-   [evm-node.md](../evm-node.md) defines the protobuf interface to use KEVM over RPC.
 
-Verification Examples
----------------------
+Understanding the K Prover: Single Opcode
+-----------------------------------------
 
-### KEVM Lemmas
+File `add-spec.k`:
 
--   File [kevm-lemmas-spec.md](../kevm-lemmas-spec.k)
--   Summaries of the "positive" cases of arithmetic opcodes and push
--   Work through how to use KLab to discover preconditions
--   Complete the push, push, add specification
+```k
+requires "driver.k"
 
-```sh
-make test-prove-verified
+module EVM-OPTIMIZED
+    imports EVM
+    imports ETHEREUM-SIMULATION
+
+    rule <k> #next [ ADD ] => . ... </k>
+         <schedule> SCHEDULE </schedule>
+         <wordStack> W0 : W1 : WS => chop(W0 +Int W1) : WS </wordStack>
+         <pc> PCOUNT => PCOUNT +Int 1 </pc>
+         <gas> G => G -Int Gverylow < SCHEDULE > </gas>
+      requires G >=Int Gverylow < SCHEDULE >
+       andBool notBool ( #sizeWordStack(W0 : W1 : WS) <Int 0
+                  orBool #sizeWordStack(W0 : W1 : WS) >Int 1024
+                       )
+endmodule
 ```
 
 . . .
+
+-   `./kevm prove      add-spec.k --def-module EVM`
+-   `./kevm klab-prove add-spec.k --def-module EVM`
+
+Larger K Proof
+--------------
 
 ### ERC20 `transfer` functions
 
@@ -138,5 +167,5 @@ Rest of time.
 Thanks!
 -------
 
--   ConsenSys for hosting us!
+-   TruffleCon for hosting us!
 -   You all for attending!
