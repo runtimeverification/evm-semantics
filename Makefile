@@ -497,7 +497,7 @@ media: sphinx media-pdf
 
 ### Media generated PDFs
 
-media_pdfs:=201710-presentation-devcon3 201801-presentation-csf 201905-exercise-k-workshop
+media_pdfs:=201710-presentation-devcon3 201801-presentation-csf 201905-exercise-k-workshop 201908-trufflecon-workshop
 
 media/%.pdf: media/%.md media/citations.md
 	@echo "== media: $@"
