@@ -50,6 +50,7 @@ Install KEVM
     make deps-npm
     ```
 
+-   Patch KLab (comment lines 90 - 94 of `lib/behavior.js`).
 -   Should be able to run (in KEVM repo with `klab/bin` on your `PATH`):
 
     ```sh
