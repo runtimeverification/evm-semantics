@@ -5,3 +5,5 @@
 /package/pkg
 /package/src
 /media/*.pdf
+
+*.swp
