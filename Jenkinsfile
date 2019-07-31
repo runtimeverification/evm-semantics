@@ -38,7 +38,7 @@ pipeline {
         stage('Build') {
           steps {
             sh '''
-              make build build-llvm build-haskell build-node -j4 -B
+              make build build-llvm build-haskell build-node -j4
             '''
           }
         }
