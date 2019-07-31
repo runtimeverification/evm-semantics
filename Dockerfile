@@ -1,20 +1,14 @@
-FROM ubuntu:bionic
+FROM runtimeverificationinc/ubuntu:bionic
 
-ENV TZ=America/Chicago
-RUN    ln --symbolic --no-dereference --force /usr/share/zoneinfo/$TZ /etc/localtime \
-    && echo $TZ > /etc/timezone
-
-RUN    apt-get update                                                           \
-    && apt-get upgrade --yes                                                    \
-    && apt-get install --yes                                                    \
-        autoconf bison clang-8 cmake curl flex gcc libboost-test-dev            \
-        libcrypto++-dev libffi-dev libjemalloc-dev libmpfr-dev libprocps-dev    \
-        libsecp256k1-dev libssl-dev libtool libyaml-dev lld-8 llvm-8-tools      \
-        make maven opam openjdk-8-jdk pandoc pkg-config python3 python-pygments \
-        python-recommonmark python-sphinx time zlib1g-dev protobuf-compiler     \
-        libprotobuf-dev
-
-RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+RUN    apt-get update                                                         \
+    && apt-get upgrade --yes                                                  \
+    && apt-get install --yes                                                  \
+        autoconf bison clang-8 cmake curl flex gcc libboost-test-dev          \
+        libcrypto++-dev libffi-dev libjemalloc-dev libmpfr-dev libprocps-dev  \
+        libprotobuf-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-8 \
+        llvm-8-tools make maven opam openjdk-11-jdk pandoc pkg-config         \
+        protobuf-compiler python3 python-pygments python-recommonmark         \
+        python-sphinx time zlib1g-dev
 
 ADD deps/k/haskell-backend/src/main/native/haskell-backend/scripts/install-stack.sh /.install-stack/
 RUN /.install-stack/install-stack.sh
@@ -28,12 +22,7 @@ RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.6.0 \
     && cd ../..                                                     \
     && rm -rf z3
 
-ARG USER_ID=1000
-ARG GROUP_ID=1000
-RUN    groupadd --gid $GROUP_ID user                                        \
-    && useradd --create-home --uid $USER_ID --shell /bin/sh --gid user user
-
-USER $USER_ID:$GROUP_ID
+USER user:user
 
 ADD --chown=user:user deps/k/llvm-backend/src/main/native/llvm-backend/install-rust deps/k/llvm-backend/src/main/native/llvm-backend/rust-checksum /home/user/.install-rust/
 RUN    cd /home/user/.install-rust \

@@ -34,7 +34,7 @@ LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean clean-submodules distclean install \
+.PHONY: all clean clean-submodules distclean install uninstall \
         deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff \
         build build-ocaml build-java build-node build-kore split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn llvm-defn \
@@ -331,9 +331,13 @@ $(llvm_kompiled): $(llvm_files) $(libff_out)
 
 KEVM_RELEASE_TAG?=
 
-install: $(node_kompiled)
+install: $(INSTALL_DIR)/$(notdir $(node_kompiled))
+$(INSTALL_DIR)/$(notdir $(node_kompiled)): $(node_kompiled)
 	mkdir -p $(INSTALL_DIR)
 	cp $(node_kompiled) $(INSTALL_DIR)/
+
+uninstall:
+	rm $(INSTALL_DIR)/$(notdir $(node_kompiled))
 
 release.md: INSTALL.md
 	echo "KEVM Release $(KEVM_RELEASE_TAG)"  > $@
@@ -484,7 +488,7 @@ test-interactive-firefly:
 	    && git checkout b8c8308                                              \
 	    && { npx kevm-ganache-cli --gasLimit 0xfffffffffff --port 8545 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501200,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501202,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501203,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501204,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501205,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501206,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501207,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501208,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501209,1000000000000000000000000 & }                                        \
 	    && npm install                                                       \
-	    && npx truffle test
+	    && npx truffle test test/token/ERC20/ERC20.test.js
 
 # Media
 # -----

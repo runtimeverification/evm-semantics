@@ -56,7 +56,7 @@ On Ubuntu >= 18.04 (for example):
 ```sh
 sudo apt install                                             \
     autoconf bison flex gcc git libmpfr-dev libsecp256k1-dev \
-    libtool libz3-dev make maven opam openjdk-8-jdk pandoc   \
+    libtool libz3-dev make maven opam openjdk-11-jdk pandoc  \
     pkg-config z3 zlib1g-dev
 ```
 
@@ -79,7 +79,7 @@ On OSX, using [Homebrew](https://brew.sh/), after installing the command line to
 
 ```sh
 brew tap caskroom/cask
-brew cask install adoptopenjdk8
+brew cask install adoptopenjdk12
 brew install automake libtool gmp mpfr pkg-config pandoc maven opam z3 libffi
 make libsecp256k1
 ```
@@ -138,7 +138,7 @@ export PATH=$HOME/.local/bin:$PATH
 The LLVM backend has additional dependencies:
 
 ```k
-sudo apt install cmake clang-8 clang++-8 llvm-8 lld-8 libboost-test-dev libgmp-dev libyaml-cpp-dev libjemalloc-dev curl protobuf-compiler libprotobuf-dev
+sudo apt install cmake clang-8 clang++-8 llvm-8 llvm-8-tools lld-8 libboost-test-dev libgmp-dev libprocps-dev libyaml-dev libjemalloc-dev curl protobuf-compiler libprotobuf-dev
 ```
 
 On Arch, you'll also need `crypto++` package.
