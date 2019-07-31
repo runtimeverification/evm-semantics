@@ -10,7 +10,7 @@ RUN    apt-get update                                                         \
         protobuf-compiler python3 python-pygments python-recommonmark         \
         python-sphinx time zlib1g-dev
 
-ADD deps/k/haskell-backend/src/main/native/haskell-backend/scripts/install-stack.sh /.install-stack/
+COPY deps/k/haskell-backend/src/main/native/haskell-backend/scripts/install-stack.sh /.install-stack/
 RUN /.install-stack/install-stack.sh
 
 RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.6.0 \
@@ -24,18 +24,18 @@ RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.6.0 \
 
 USER user:user
 
-ADD --chown=user:user deps/k/llvm-backend/src/main/native/llvm-backend/install-rust deps/k/llvm-backend/src/main/native/llvm-backend/rust-checksum /home/user/.install-rust/
+COPY --chown=user:user deps/k/llvm-backend/src/main/native/llvm-backend/install-rust deps/k/llvm-backend/src/main/native/llvm-backend/rust-checksum /home/user/.install-rust/
 RUN    cd /home/user/.install-rust \
     && ./install-rust
 
-ADD deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-common /home/user/.tmp-opam/bin/
-ADD deps/k/k-distribution/src/main/scripts/lib/opam  /home/user/.tmp-opam/lib/opam/
+COPY deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-common /home/user/.tmp-opam/bin/
+COPY deps/k/k-distribution/src/main/scripts/lib/opam  /home/user/.tmp-opam/lib/opam/
 RUN    cd /home/user \
     && ./.tmp-opam/bin/k-configure-opam-dev
 
 ENV LC_ALL=C.UTF-8
-ADD --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/stack.yaml /home/user/.tmp-haskell/
-ADD --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/kore/package.yaml /home/user/.tmp-haskell/kore/
+COPY --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/stack.yaml /home/user/.tmp-haskell/
+COPY --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/kore/package.yaml /home/user/.tmp-haskell/kore/
 RUN    cd /home/user/.tmp-haskell \
     && stack build --only-snapshot
 
