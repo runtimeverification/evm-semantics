@@ -1,8 +1,4 @@
-FROM ubuntu:bionic
-
-ENV TZ=America/Chicago
-RUN    ln --symbolic --no-dereference --force /usr/share/zoneinfo/$TZ /etc/localtime \
-    && echo $TZ > /etc/timezone
+FROM runtimeverificationinc/ubuntu:bionic
 
 RUN    apt-get update                                                         \
     && apt-get upgrade --yes                                                  \
@@ -26,12 +22,7 @@ RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.6.0 \
     && cd ../..                                                     \
     && rm -rf z3
 
-ARG USER_ID=1000
-ARG GROUP_ID=1000
-RUN    groupadd --gid $GROUP_ID user                                        \
-    && useradd --create-home --uid $USER_ID --shell /bin/sh --gid user user
-
-USER $USER_ID:$GROUP_ID
+USER user:user
 
 ADD --chown=user:user deps/k/llvm-backend/src/main/native/llvm-backend/install-rust deps/k/llvm-backend/src/main/native/llvm-backend/rust-checksum /home/user/.install-rust/
 RUN    cd /home/user/.install-rust \
