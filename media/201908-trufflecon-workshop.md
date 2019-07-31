@@ -120,9 +120,8 @@ File `add-spec.k`:
 ```k
 requires "driver.k"
 
-module EVM-OPTIMIZED
+module ADD-SPEC
     imports EVM
-    imports ETHEREUM-SIMULATION
 
     rule <k> #next [ ADD ] => . ... </k>
          <schedule> SCHEDULE </schedule>
@@ -130,8 +129,8 @@ module EVM-OPTIMIZED
          <pc> PCOUNT => PCOUNT +Int 1 </pc>
          <gas> G => G -Int Gverylow < SCHEDULE > </gas>
       requires G >=Int Gverylow < SCHEDULE >
-       andBool notBool ( #sizeWordStack(W0 : W1 : WS) <Int 0
-                  orBool #sizeWordStack(W0 : W1 : WS) >Int 1024
+       andBool notBool ( #stackUnderflow ( W0 : W1 : WS , ADD )
+                  orBool #stackOverflow  ( W0 : W1 : WS , ADD )
                        )
 endmodule
 ```
@@ -140,6 +139,11 @@ endmodule
 
 -   `./kevm prove      add-spec.k --def-module EVM`
 -   `./kevm klab-prove add-spec.k --def-module EVM`
+-   `./kevm klab-view  add-spec.k --def-module EVM`
+
+. . .
+
+-   Try with side-conditions removed.
 
 Larger K Proof
 --------------
