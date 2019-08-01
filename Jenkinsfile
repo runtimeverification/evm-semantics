@@ -23,6 +23,7 @@ pipeline {
       agent {
         dockerfile {
           args '-m 60g'
+          additionalBuildArgs '--pull'
         }
       }
       stages {
@@ -202,6 +203,7 @@ pipeline {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
               filename 'Dockerfile.ubuntu-bionic'
+              additionalBuildArgs '--pull'
               reuseNode true
             }
           }
@@ -223,6 +225,7 @@ pipeline {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
               filename 'Dockerfile.ubuntu-bionic'
+              additionalBuildArgs '--pull'
               reuseNode true
             }
           }
