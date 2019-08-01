@@ -22,7 +22,6 @@ pipeline {
       }
       agent {
         dockerfile {
-          additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
           args '-m 60g'
         }
       }
@@ -203,7 +202,6 @@ pipeline {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
               filename 'Dockerfile.ubuntu-bionic'
-              additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
               reuseNode true
             }
           }
@@ -225,7 +223,6 @@ pipeline {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
               filename 'Dockerfile.ubuntu-bionic'
-              additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
               reuseNode true
             }
           }
@@ -233,7 +230,7 @@ pipeline {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
               unstash 'bionic-kevm'
               sh '''
-                sudo apt-get update && sudo apt-get upgrade --yes
+                sudo apt-get update -q && sudo apt-get upgrade --yes
                 sudo apt-get install --yes ./kevm_${KEVM_RELEASE_ID}_amd64.deb
                 make test-interactive-firefly
               '''
