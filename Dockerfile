@@ -1,7 +1,6 @@
 FROM runtimeverificationinc/ubuntu:bionic
 
 RUN    apt-get update  -q                                                     \
-    && apt-get upgrade --yes                                                  \
     && apt-get install --yes                                                  \
         autoconf bison clang-8 cmake curl flex gcc libboost-test-dev          \
         libcrypto++-dev libffi-dev libjemalloc-dev libmpfr-dev libprocps-dev  \
