@@ -1,6 +1,6 @@
 FROM runtimeverificationinc/ubuntu:bionic
 
-RUN    apt-get update                                                         \
+RUN    apt-get update  -q                                                     \
     && apt-get upgrade --yes                                                  \
     && apt-get install --yes                                                  \
         autoconf bison clang-8 cmake curl flex gcc libboost-test-dev          \
@@ -13,20 +13,7 @@ RUN    apt-get update                                                         \
 COPY deps/k/haskell-backend/src/main/native/haskell-backend/scripts/install-stack.sh /.install-stack/
 RUN /.install-stack/install-stack.sh
 
-RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.6.0 \
-    && cd z3                                                        \
-    && python scripts/mk_make.py                                    \
-    && cd build                                                     \
-    && make -j8                                                     \
-    && make install                                                 \
-    && cd ../..                                                     \
-    && rm -rf z3
-
 USER user:user
-
-COPY --chown=user:user deps/k/llvm-backend/src/main/native/llvm-backend/install-rust deps/k/llvm-backend/src/main/native/llvm-backend/rust-checksum /home/user/.install-rust/
-RUN    cd /home/user/.install-rust \
-    && ./install-rust
 
 COPY deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-common /home/user/.tmp-opam/bin/
 COPY deps/k/k-distribution/src/main/scripts/lib/opam  /home/user/.tmp-opam/lib/opam/
@@ -37,6 +24,43 @@ COPY --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/st
 COPY --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/kore/package.yaml /home/user/.tmp-haskell/kore/
 RUN    cd /home/user/.tmp-haskell \
     && stack build --only-snapshot
+
+
+# Copy z3.
+COPY --from=runtimeverificationinc/z3:4.6.0-llvm-8-ubuntu-bionic \
+     --chown=user:user \
+     /z3 /home/user/z3
+
+# Install z3.
+RUN    cd /home/user/z3/build \
+    && sudo make install      \
+    && cd ../..               \
+    && rm -rf z3
+
+# Copy rust's .cargo, .rustup, and build-in-source directories.
+COPY --chown=user:user \
+     --from=runtimeverificationinc/rust:1.34.0-llvm-8-ubuntu-bionic \
+     /root/.cargo \
+     /home/user/.cargo
+
+COPY --chown=user:user \
+     --from=runtimeverificationinc/rust:1.34.0-llvm-8-ubuntu-bionic \
+     /root/.rustup \
+     /home/user/.rustup
+
+COPY --chown=user:user \
+     --from=runtimeverificationinc/rust:1.34.0-llvm-8-ubuntu-bionic \
+     /rustc-1.34.0-src \
+     /home/user/rustc-1.34.0-src
+
+# Use rustup.
+RUN    cd /home/user/rustc-1.34.0-src \
+    && /home/user/.cargo/bin/rustup \
+         toolchain \
+         link \
+         rust-${RUST_VERSION}-llvm-${LLVM_VERSION} \
+         build/x86_64-unknown-linux-gnu/stage2
+    
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
 ENV PATH=/home/user/.local/bin:/home/user/.cargo/bin:$PATH
