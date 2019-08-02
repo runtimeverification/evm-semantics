@@ -17,8 +17,8 @@ Overview
 -   Install KEVM and KLab on your machine
 -   Simple uses of the `./kevm` script
 -   (Brief) introduction to KEVM
--   Verification examples: KEVM lemma proofs, ERC20 `transfer` function
--   Open verification challenge
+-   Verification examples: Single opcode (`ADD`), ERC20 `transfer` function
+-   LTL runtime verification example
 
 Install KEVM
 ------------
@@ -29,7 +29,7 @@ Install KEVM
 -   Build instructions in README.
 
     ```sh
-    make deps
+    make llvm-deps
     make build-java
     ```
 
@@ -54,12 +54,8 @@ Install KEVM
 -   Should be able to run (in KEVM repo with `klab/bin` on your `PATH`):
 
     ```sh
-    tests/gen-specs/kprove-ini tests/gen-specs/defn-tmpl.k         \
-                               tests/gen-specs/rule-tmpl.k         \
-                               tests/specs/ds-token-erc20/spec.ini \
-                               transfer-success-1
-    ./kevm klab-prove tests/specs/ds-token-erc20/transfer-success-1-spec.k \
-            --boundary-cells k,pc
+    ./kevm klab-prove add-spec.k
+    ./kevm klab-view  add-spec.k
     ```
 
 `./kevm help`
@@ -153,25 +149,36 @@ endmodule
 Larger K Proof
 --------------
 
-### ERC20 `transfer` functions
+### INI File Formats
 
--   Run proof.
+-   Look at `tests/specs/ds-token-erc20/spec.ini`
+-   Split out tests with:
 
     ```sh
-    make test-prove-gen
+    tests/gen-specs/kprove-ini tests/gen-specs/defn-tmpl.k         \
+                               tests/gen-specs/rule-tmpl.k         \
+                               tests/specs/ds-token-erc20/spec.ini \
+                               transfer-success-1
     ```
 
--   Explain ini file format of [ds-token-erc20-spec.ini](../tests/specs/ds-token-erc20/ds-token-erc20-spec.ini)
--   Delete all except the `transfer` blocks
--   Remove `requires` clauses to explore result in KLab
+-   Examine generated file `tests/specs/ds-token-erc20/transfer-success-1-spec.k`
 
-Open Verification Challenge
----------------------------
+LTL Runtime Verification
+------------------------
 
-Rest of time.
+-   File `kevm-ltl.md` instruments semantics (*without* modifying it).
+-   Build definition:
 
--   Work on `transferFrom` function?
--   Try to setup your own contract?
+    ```sh
+    make MAIN_MODULE=KEVM-LTL MAIN_DEFN_FILE=kevm-ltl build-llvm
+    ```
+
+-   Try verifying a property:
+
+    ```sh
+    ./kevm ltl addition.evm '"eventually revert"'
+    ./kevm ltl addition.evm '"always ((~ overflow) \/ eventually revert)"'
+    ```
 
 Thanks!
 -------
