@@ -272,15 +272,17 @@ OpCode Execution
     syntax KItem ::= "#execute"
  // ---------------------------
     rule [halt]: <k> #halt ~> (#execute => .) ... </k>
-    rule [step]: <k> (. => #next [ OP ]) ~> #execute ... </k>
+    rule [step]: <k> (. => #next [ #dasmOpCode(PGM [ PCOUNT ], SCHED) ]) ~> #execute ... </k>
                  <pc> PCOUNT </pc>
-                 <program> ... PCOUNT |-> OP ... </program>
+                 <programBytes> PGM </programBytes>
+                 <schedule> SCHED </schedule>
+      requires PCOUNT <Int #sizeByteArray(PGM)
 
     rule <k> (. => #end EVMC_SUCCESS) ~> #execute ... </k>
          <pc> PCOUNT </pc>
-         <program> PGM </program>
+         <programBytes> PGM </programBytes>
          <output> _ => .ByteArray </output>
-      requires notBool (PCOUNT in_keys(PGM))
+      requires PCOUNT >=Int #sizeByteArray(PGM)
 ```
 
 ### Single Step
