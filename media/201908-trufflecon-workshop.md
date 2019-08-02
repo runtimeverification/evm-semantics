@@ -20,8 +20,29 @@ Overview
 -   Verification examples: Single opcode (`ADD`), ERC20 `transfer` function
 -   LTL runtime verification example
 
-Install KEVM
-------------
+Install KEVM: Docker Way
+------------------------
+
+### Get Docker Container
+
+```sh
+docker login
+# it will ask for username and password
+# email will NOT work, they need their dockerhub USERNAME
+
+docker run -it --name trufflecon-evm                \
+    -u user -w /home/user/evm-semantics             \
+    runtimeverificationinc/evm-semantics:trufflecon
+```
+
+### Setup Environment
+
+```sh
+source env
+```
+
+Install KEVM: From Source
+-------------------------
 
 ### KEVM
 
@@ -31,12 +52,6 @@ Install KEVM
     ```sh
     make llvm-deps
     make build-java
-    ```
-
--   Should be able to run:
-
-    ```sh
-    make tests/specs/ds-token-erc20/transferFrom-failure-2-c-spec.k.prove
     ```
 
 . . .
