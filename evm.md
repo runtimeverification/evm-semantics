@@ -53,6 +53,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <callState>
               <program>      .Map       </program>            // I_b
               <programBytes> .ByteArray </programBytes>
+              <jumpDests> .Set </jumpDests>
 
               // I_*
               <id>        0          </id>                    // I_a
@@ -994,13 +995,15 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax UnStackOp ::= "JUMP"
  // ---------------------------
-    rule <k> JUMP DEST => #if OP ==K JUMPDEST #then #endBasicBlock #else #end EVMC_BAD_JUMP_DESTINATION #fi ... </k>
+    rule <k> JUMP DEST => #if DEST in DESTS #then #endBasicBlock #else #end EVMC_BAD_JUMP_DESTINATION #fi ... </k>
          <pc> _ => DEST </pc>
-         <program> ... DEST |-> OP ... </program>
+         <programBytes> PGM </programBytes>
+         <jumpDests> DESTS </jumpDests>
+      requires DEST <Int #sizeByteArray(PGM)
 
     rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
-         <program> PGM </program>
-      requires notBool (DEST in_keys(PGM))
+         <programBytes> PGM </programBytes>
+      requires DEST >=Int #sizeByteArray(PGM)
 
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
@@ -1301,12 +1304,27 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax KItem ::= "#initVM"
  // --------------------------
-    rule <k> #initVM    => . ...      </k>
-         <pc>         _ => 0          </pc>
-         <memoryUsed> _ => 0          </memoryUsed>
-         <output>     _ => .ByteArray </output>
-         <wordStack>  _ => .WordStack </wordStack>
-         <localMem>   _ => .ByteArray </localMem>
+    rule <k> #initVM      => . ...      </k>
+         <pc>           _ => 0          </pc>
+         <memoryUsed>   _ => 0          </memoryUsed>
+         <output>       _ => .ByteArray </output>
+         <wordStack>    _ => .WordStack </wordStack>
+         <localMem>     _ => .ByteArray </localMem>
+         <jumpDests>    _ => #computeValidJumpDests(PGM) </jumpDests>
+         <programBytes> PGM             </programBytes>
+
+    syntax Set ::= #computeValidJumpDests(ByteArray)           [function]
+                 | #computeValidJumpDests(ByteArray, Int, Set) [function, klabel(#computeValidJumpDestsAux)]
+ // --------------------------------------------------------------------------------------------------------
+    rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .Set)
+
+    rule #computeValidJumpDests(PGM, I, RESULT) => RESULT requires I >=Int #sizeByteArray(PGM)
+    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, #computeNextOffset(I, PGM [ I ]), SetItem(I) RESULT) requires PGM [ I ] ==Int 91
+    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, #computeNextOffset(I, PGM [ I ]), RESULT) [owise]
+
+    syntax Int ::= #computeNextOffset(Int, Int) [function]
+    rule #computeNextOffset(I, W) => I +Int W -Int 94 requires W >=Int 96 andBool W <=Int 127
+    rule #computeNextOffset(I, _) => I +Int 1 [owise]
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
