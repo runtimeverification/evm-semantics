@@ -51,7 +51,6 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <touchedAccounts> .Set        </touchedAccounts>
 
             <callState>
-              <program>      .Map       </program>            // I_b
               <programBytes> .ByteArray </programBytes>
               <jumpDests> .Set </jumpDests>
 
@@ -1293,7 +1292,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <gas> _ => GCALL </gas>
          <callGas> GCALL => 0 </callGas>
          <caller> _ => ACCTFROM </caller>
-         <program> _ => CODE </program>
          <programBytes> _ => BYTES </programBytes>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
@@ -1450,7 +1448,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <id> ACCT => ACCTTO </id>
          <gas> _ => GCALL </gas>
          <callGas> GCALL => 0 </callGas>
-         <program> _ => #asMapOpCodes(#dasmOpCodes(INITCODE, SCHED)) </program>
          <programBytes> _ => INITCODE </programBytes>
          <caller> _ => ACCTFROM </caller>
          <callDepth> CD => CD +Int 1 </callDepth>
