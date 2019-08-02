@@ -1224,8 +1224,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 ```k
     syntax InternalOp ::= "#checkCall" Int Int
                         | "#call"         Int Int Int Int Int ByteArray Bool
-                        | "#callWithCode" Int Int Map ByteArray Int Int ByteArray Bool
-                        | "#mkCall"       Int Int Map ByteArray     Int ByteArray Bool
+                        | "#callWithCode" Int Int Int ByteArray Int Int ByteArray Bool
+                        | "#mkCall"       Int Int Int ByteArray     Int ByteArray Bool
  // ----------------------------------------------------------------------------------
     rule <k> #checkCall ACCT VALUE
           => #refund GCALL ~> #pushCallStack ~> #pushWorldState
@@ -1252,41 +1252,31 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .ByteArray VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO ACCTCODE CODE VALUE APPVALUE ARGS STATIC
          ...
          </k>
-         <schedule> SCHED </schedule>
-      requires ACCTCODE in #precompiledAccounts(SCHED)
-
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) CODE VALUE APPVALUE ARGS STATIC
-         ...
-         </k>
-         <schedule> SCHED </schedule>
          <account>
            <acctID> ACCTCODE </acctID>
            <code> CODE </code>
            ...
          </account>
-      requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO .Map .ByteArray VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO ACCTCODE .ByteArray VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <activeAccounts> ACCTS </activeAccounts>
-         <schedule> SCHED </schedule>
-      requires notBool ACCTCODE in #precompiledAccounts(SCHED) andBool notBool ACCTCODE in ACCTS
+      requires notBool ACCTCODE in ACCTS
 
-    rule <k> #callWithCode ACCTFROM ACCTTO CODE BYTES VALUE APPVALUE ARGS STATIC
+    rule <k> #callWithCode ACCTFROM ACCTTO ACCTCODE BYTES VALUE APPVALUE ARGS STATIC
           => #pushCallStack ~> #pushWorldState
           ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCall ACCTFROM ACCTTO CODE BYTES APPVALUE ARGS STATIC
+          ~> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC
          ...
          </k>
 
-    rule <k> #mkCall ACCTFROM ACCTTO CODE BYTES APPVALUE ARGS STATIC:Bool
-          => #initVM ~> #execute
+    rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC:Bool
+          => #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
          ...
          </k>
          <callDepth> CD => CD +Int 1 </callDepth>
@@ -1300,6 +1290,12 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <programBytes> _ => BYTES </programBytes>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
+         <schedule> SCHED </schedule>
+
+    syntax K ::= "#precompiled?" "(" Int "," Schedule ")" [function]
+ // ----------------------------------------------------------------
+    rule #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] requires ACCTCODE in #precompiledAccounts(SCHED)
+    rule #precompiled?(ACCTCODE,     _) => .                                [owise]
 
     syntax KItem ::= "#initVM"
  // --------------------------
