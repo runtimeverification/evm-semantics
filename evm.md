@@ -2383,35 +2383,7 @@ Disassembler
 
 After interpreting the strings representing programs as a `WordStack`, it should be changed into an `OpCodes` for use by the EVM semantics.
 
--   `#dasmOpCodes` interperets `WordStack` as an `OpCodes`.
--   `#dasmPUSH` handles the case of a `PushOp`.
 -   `#dasmOpCode` interperets a `Int` as an `OpCode`.
-
-```k
-    syntax Int     ::= #widthOpCode ( Int )                  [function]
-    syntax OpCodes ::= #dasmOpCodes ( ByteArray , Schedule ) [function]
- // -------------------------------------------------------------------
-    rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
-    rule #widthOpCode(_) => 1 [owise]
-```
-
-```{.k .symbolic}
-    syntax OpCodes ::= #dasmOpCodes ( OpCodes , ByteArray , Schedule ) [function, klabel(#dasmOpCodesAux)]
- // ------------------------------------------------------------------------------------------------------
-    rule #dasmOpCodes( WS, SCHED ) => #revOps(#dasmOpCodes(.OpCodes, WS, SCHED))
-
-    rule #dasmOpCodes( OPS, .WordStack, _ ) => OPS
-    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(#dasmOpCode(W, SCHED) ; OPS, #drop(#widthOpCode(W) -Int 1, WS), SCHED)
-```
-
-```{.k .concrete}
-    syntax OpCodes ::= #dasmOpCodes ( OpCodes , ByteArray , Schedule , Int , Int ) [function, klabel(#dasmOpCodesAux)]
- // ------------------------------------------------------------------------------------------------------------------
-    rule #dasmOpCodes( WS, SCHED ) => #revOps(#dasmOpCodes(.OpCodes, WS, SCHED, 0, #sizeByteArray(WS)))
-
-    rule #dasmOpCodes( OPS, _ ,     _ , I , J ) => OPS requires I >=Int J
-    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(#dasmOpCode(WS[I], SCHED) ; OPS, WS, SCHED, I +Int #widthOpCode(WS[I]), J) [owise]
-```
 
 ```k
     syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [function]
