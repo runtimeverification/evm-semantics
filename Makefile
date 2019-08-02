@@ -40,7 +40,7 @@ export LUA_PATH
         defn java-defn ocaml-defn node-defn haskell-defn llvm-defn \
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-        test-prove test-prove-gen test-klab-prove test-parse test-failure \
+        test-prove test-klab-prove test-parse test-failure \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly \
         media media-pdf sphinx metropolis-theme
 .SECONDARY:
@@ -458,6 +458,7 @@ $(TEST_SPECS_DIR)/%.split-prove: tests/gen-specs/defn-tmpl.k tests/gen-specs/rul
 test_prove_specs:=$(wildcard $(TEST_SPECS_DIR)/*/*-spec.k)
 
 test-prove: $(test_prove_specs:=.prove)
+test-klab-prove: $(smoke_tests_prove:=.klab-prove)
 
 # Parse Tests
 
