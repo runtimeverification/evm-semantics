@@ -662,24 +662,13 @@ Most of EVM data is held in finite maps.
 We are using the polymorphic `Map` sort for these word maps.
 
 -   `WM [ N := WS ]` assigns a contiguous chunk of $WM$ to $WS$ starting at position $W$.
--   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
 
 ```{.k .concrete}
-    syntax Map ::= Map "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
+    syntax ByteArray ::= ByteArray "[" Int ":=" Int "]" [function, klabel(mapWriteInt)]
+    syntax ByteArray ::= ByteArray "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
  // -------------------------------------------------------------------------------
-    rule WM[ N := WS ] => WM [ N := WS, 0, #sizeByteArray(WS) ]
-
-    syntax Map ::= Map "[" Int ":=" ByteArray "," Int "," Int "]" [function]
- // ------------------------------------------------------------------------
-    rule WM [ N := WS, I, I ] => WM
-    rule WM [ N := WS, I, J ] => (WM[N <- WS[I]])[ N +Int 1 := WS, I +Int 1, J ] [owise]
-
-    syntax ByteArray ::= #range ( Map , Int , Int )                   [function]
-                       | #range ( Map , Int , Int , Int , ByteArray ) [function, klabel(#rangeAux)]
- // -----------------------------------------------------------------------------------------------
-    rule #range(WM, START, WIDTH) => #range(WM, START, 0, WIDTH, padLeftBytes(.Bytes, WIDTH, 0))
-    rule #range(WM, I, WIDTH, WIDTH, WS) => WS
-    rule #range(WM, I,     J, WIDTH, WS) => #range(WM, I +Int 1, J +Int 1, WIDTH, WS [ J <- {WM[I] orDefault 0}:>Int ]) [owise]
+    rule WS [ N := W:Int ] => padRightBytes(WS, N +Int 1, 0) [ N <- W ]
+    rule WS [ N := WS'   ] => replaceAtBytes(padRightBytes(WS, N +Int #sizeByteArray(WS'), 0), N, WS')
 ```
 
 ```{.k .symbolic}
