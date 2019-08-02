@@ -1,6 +1,6 @@
 ---
 title: 'K/KEVM Formal Verification Workshop'
-subtitle: 'Understanding the K Prover'
+subtitle: 'Understanding the K Prover and Runtime Verification'
 author:
 -   Everett Hildenbrandt
 -   Grigore Rosu
