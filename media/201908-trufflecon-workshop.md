@@ -25,7 +25,7 @@ Install KEVM
 
 ### KEVM
 
--   Branch `kevm-lemmas` of KEVM: <https://github.com/kframework/evm-semantics>
+-   Branch `trufflecon` of KEVM: <https://github.com/kframework/evm-semantics>
 -   Build instructions in README.
 
     ```sh
@@ -54,8 +54,12 @@ Install KEVM
 -   Should be able to run (in KEVM repo with `klab/bin` on your `PATH`):
 
     ```sh
-    make tests/specs/verified/kevm-lemmas-spec.k
-    ./kevm klab-prove tests/specs/verified/kevm-lemmas-spec.k --boundary-cells k,pc
+    tests/gen-specs/kprove-ini tests/gen-specs/defn-tmpl.k         \
+                               tests/gen-specs/rule-tmpl.k         \
+                               tests/specs/ds-token-erc20/spec.ini \
+                               transfer-success-1
+    ./kevm klab-prove tests/specs/ds-token-erc20/transfer-success-1-spec.k \
+            --boundary-cells k,pc
     ```
 
 `./kevm help`
@@ -119,7 +123,7 @@ Understanding the K Prover: Single Opcode
 File `add-spec.k`:
 
 ```k
-requires "driver.k"
+requires "evm.k"
 
 module ADD-SPEC
     imports EVM
