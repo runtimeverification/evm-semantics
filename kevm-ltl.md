@@ -64,11 +64,11 @@ module LTL
     rule LTLderive(FORM1 \/ FORM2 , ES) => LTLderive(FORM1, ES) \/ LTLderive(FORM2, ES)
     rule LTLderive(FORM1 /\ FORM2 , ES) => LTLderive(FORM1, ES) /\ LTLderive(FORM2, ES)
 
-    syntax LTLFormula ::= "EG" LTLFormula
-                        | "AG" LTLFormula
- // -------------------------------------
-    rule LTLderive(EG FORM, ES) => LTLderive(FORM, ES) \/ EG FORM
-    rule LTLderive(AG FORM, ES) => LTLderive(FORM, ES) /\ AG FORM
+    syntax LTLFormula ::= "always"     LTLFormula
+                        | "eventually" LTLFormula
+ // ---------------------------------------------
+    rule LTLderive(always     FORM, ES) => LTLderive(FORM, ES) /\ always     FORM
+    rule LTLderive(eventually FORM, ES) => LTLderive(FORM, ES) \/ eventually FORM
 endmodule
 
 module KEVM-LTL
