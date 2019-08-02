@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+
+import os.path as path
+import sys
+import re
+import configparser
+
+# TODO: for Python 3.5 or higher: z = {**x, **y}
+def merge_two_dicts(x, y):
+    z = dict(x)
+    z.update(y)
+    return z
+
+def subst(text, key, val):
+    return text.replace('{' + key.upper() + '}', val)
+
+def subst_all(init_rule_spec, config):
+    rule_spec = init_rule_spec
+    for key in config:
+        rule_spec = subst(rule_spec, key, config[key].strip())
+    if rule_spec != init_rule_spec:
+        return subst_all(rule_spec, config)
+    else:
+        return rule_spec
+
+def write_spec_file(output_dir, spec_name, spec_template, proof_goals, proof_lemmas):
+    rules_string  = '\n'.join(proof_goals)
+
+    if len(proof_lemmas) > 0:
+        rules_string += '\n\n    // Trusted lemmas follow\n\n'
+        rules_string += '\n'.join([proof_lemma + '    [trusted]\n' for proof_lemma in proof_lemmas])
+
+    spec_defn_tmpl = subst(spec_template, 'module', spec_name.upper())
+    spec_defn      = subst(spec_defn_tmpl, 'rules', rules_string)
+
+    spec_file_name = spec_name + '-spec.k'
+    output_file = output_dir + '/' + spec_file_name
+    with open(output_file, 'w') as spec_out:
+        spec_out.write(spec_defn)
+        print(spec_file_name)
+
+def safe_get(config, section):
+    if section in config:
+        return config[section]
+    else:
+        return {}
+
+def inherit_get(config, section):
+    if not section:
+        return safe_get(config, 'root')
+    else:
+        parent = inherit_get(config, '-'.join(section.split('-')[:-1]))
+        current = safe_get(config, section)
+        merged = merge_two_dicts(parent, current) # TODO: for Python 3.5 or higher: {**parent, **current}
+        for key in list(merged.keys()):
+            if key.startswith('+'):
+                merged[key[1:]] += merged[key]
+                del merged[key]
+        return merged
+
+def split_spec_cases(spec_config, spec_name):
+    spec_prefix_tree = list(filter(lambda sec: sec.startswith(spec_name + "-"), spec_config.sections()))
+    case_name_set = set([])
+    leaf_name_set = set([])
+
+    for rname in spec_prefix_tree:
+        if not any(sec_name.startswith(rname + '-') for sec_name in spec_prefix_tree):
+            leaf_name_set.add(rname)
+
+    if len(leaf_name_set) == 0:
+        leaf_name_set.add(spec_name)
+
+    for rname in leaf_name_set:
+        case_name = rname
+        while set(spec_config[case_name].keys()).issubset(set(['_lemmas', 'requires', '+requires'])):
+            case_name = '-'.join(case_name.split('-')[:-1])
+        case_name_set.add(case_name)
+
+    leaf_name_set = leaf_name_set.difference(case_name_set)
+
+    return (sorted(list(case_name_set)), sorted(list(leaf_name_set)))
+
+def gen_spec_rule(rule_template, pgm_config, rule_config, rule_name):
+    rule_spec = rule_template
+    for config in [ rule_config , pgm_config ]:
+        rule_spec = subst_all(rule_spec, config)
+    rule_spec = subst(rule_spec, 'rulename', rule_name)
+    return rule_spec
+
+def gen_spec_rules(rule_template, spec_config, proof_goals, proof_lemmas, trusted = False):
+    if len(proof_goals) == 0:
+        return ([], [])
+    pgm_config = spec_config['pgm']
+    rule_spec_list = []
+    lemma_names = set(proof_lemmas)
+    for rname in proof_goals:
+        rule_config = inherit_get(spec_config, rname)
+        rule_spec = gen_spec_rule(rule_template, pgm_config, rule_config, rname)
+        rule_spec_list.append(rule_spec)
+        if not trusted and '_lemmas' in rule_config:
+            lemma_names = lemma_names.union(set(rule_config['_lemmas'].split()))
+    (lemma_spec_list, _) = gen_spec_rules(rule_template, spec_config, list(lemma_names), [])
+    return (rule_spec_list, lemma_spec_list)
+
+def gen_spec_defn(spec_template, rule_template, spec_config, spec_name, output_dir):
+
+    (case_rules, leaf_rules) = split_spec_cases(spec_config, spec_name)
+
+    (proof_goals, proof_lemmas) = gen_spec_rules(rule_template, spec_config, case_rules, leaf_rules)
+    write_spec_file(output_dir, spec_name, spec_template, proof_goals, proof_lemmas)
+
+    if len(leaf_rules) > 0:
+        (proof_goals, proof_lemmas) = gen_spec_rules(rule_template, spec_config, leaf_rules, [])
+        write_spec_file(output_dir, spec_name + "_cases", spec_template, proof_goals, proof_lemmas)
+
+def usage():
+    exec_name = path.basename(sys.argv[0])
+    usage_strs = [ 'usage: ' + sys.argv[0]
+                 , ''
+                 , '    ' + exec_name + ' <spec_defn_tmpl> <spec_rule_tmp> <spec_ini> <spec_name>*'
+                 , ''
+                 , '        <spec_defn_tmpl>: template K definition to use.'
+                 , '        <spec_rule_tmpl>: template K rule specification to use.'
+                 , '        <spec_ini>:       ini format file describing tree of K proofs.'
+                 , '        <spec_name>:      name of specification to generate (defaults to pgm.specs).'
+                 ]
+    sys.stderr.write('\n'.join(usage_strs))
+
+if __name__ == '__main__':
+    if len(sys.argv) < 4:
+        usage()
+        sys.exit(1)
+
+    spec_defn_tmpl = open(sys.argv[1], 'r').read()
+    spec_rule_tmpl = open(sys.argv[2], 'r').read()
+    spec_ini_file  = sys.argv[3]
+    output_dir     = path.abspath(path.dirname(spec_ini_file))
+
+    spec_config = configparser.ConfigParser(comment_prefixes=(';'))
+    spec_config.read(spec_ini_file)
+
+    if 'pgm' not in spec_config.sections():
+        sys.stderr.write('File ' + spec_ini_file + ' must have a `pgm` section!')
+        sys.exit(1)
+
+    spec_names = sys.argv[4:]
+    if len(spec_names) == 0:
+        spec_names = spec_config['pgm']['specs'].split()
+
+    for spec_name in spec_names:
+        gen_spec_defn(spec_defn_tmpl, spec_rule_tmpl, spec_config, spec_name, output_dir)

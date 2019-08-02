@@ -453,7 +453,7 @@ split_tests_prove_ini_files:=$(split_tests_prove:%=$(TEST_SPECS_DIR)/%/spec.ini)
 split-tests-prove: $(split_tests_prove_ini_files:=.split-prove)
 
 $(TEST_SPECS_DIR)/%.split-prove: tests/gen-specs/defn-tmpl.k tests/gen-specs/rule-tmpl.k $(TEST_SPECS_DIR)/%
-	$(K_BIN)/kprove-ini $^
+	$(TEST_SPECS_DIR)/kprove-ini $^
 
 test_prove_specs:=$(wildcard $(TEST_SPECS_DIR)/*/*-spec.k)
 
