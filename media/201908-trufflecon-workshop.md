@@ -29,6 +29,8 @@ Install KEVM: Docker Way
 docker login
 # it will ask for username and password
 # email will NOT work, they need their dockerhub USERNAME
+# Proxy user: ehildenbproxy
+# Proxy pass: ehildenb-proxy
 
 docker run -it --name trufflecon-evm                \
     -u user -w /home/user/evm-semantics             \
