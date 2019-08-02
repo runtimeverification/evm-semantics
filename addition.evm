@@ -1,0 +1,9 @@
+load { "gas"  : 10000000
+  // Query: AG ((~ overflow) \/ EG revert)
+     , "code" : UNSAFEADD(100        , 100) // AG ((~ overflow) \/ EG revert)
+  // , "code" : UNSAFEADD(maxUInt256 , 100) // (EG revert) /\ AG ((~ overflow) \/ EG revert)
+  // , "code" :   SAFEADD(100        , 100) // AG ((~ overflow) \/ EG revert)
+  // , "code" :   SAFEADD(maxUInt256 , 100) // AG ((~ overflow) \/ EG revert)
+     }
+
+start
