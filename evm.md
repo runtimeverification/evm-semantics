@@ -336,7 +336,7 @@ The `#next [_]` operator initiates execution by:
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
-    rule #stackNeeded(PUSH(_, _))      => 0
+    rule #stackNeeded(PUSH(_))      => 0
     rule #stackNeeded(IOP:InvalidOp)   => 0
     rule #stackNeeded(NOP:NullStackOp) => 0
     rule #stackNeeded(UOP:UnStackOp)   => 1
@@ -366,7 +366,7 @@ The `#next [_]` operator initiates execution by:
     rule #stackAdded(RETURN)         => 0
     rule #stackAdded(REVERT)         => 0
     rule #stackAdded(SELFDESTRUCT)   => 0
-    rule #stackAdded(PUSH(_,_))      => 1
+    rule #stackAdded(PUSH(_))      => 1
     rule #stackAdded(LOG(_))         => 0
     rule #stackAdded(SWAP(N))        => N
     rule #stackAdded(DUP(N))         => N +Int 1
@@ -515,7 +515,7 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
 
     syntax Int ::= #widthOp ( OpCode ) [function]
  // ---------------------------------------------
-    rule #widthOp(PUSH(N, _)) => 1 +Int N
+    rule #widthOp(PUSH(N)) => 1 +Int N
     rule #widthOp(OP)         => 1        requires notBool isPushOp(OP)
 ```
 
@@ -831,9 +831,11 @@ Some operators don't calculate anything, they just push the stack around a bit.
     rule <k> DUP(N)  WS:WordStack => #setStack ((WS [ N -Int 1 ]) : WS)                      ... </k>
     rule <k> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Int 1 ]) : (WS [ N -Int 1 := W0 ])) ... </k>
 
-    syntax PushOp ::= PUSH ( Int , Int )
+    syntax PushOp ::= PUSH ( Int )
  // ------------------------------------
-    rule <k> PUSH(_, W) => W ~> #push ... </k>
+    rule <k> PUSH(N) => #asWord(PGM [ PCOUNT +Int 1 .. N ]) ~> #push ... </k>
+         <pc> PCOUNT </pc>
+         <programBytes> PGM </programBytes>
 ```
 
 ### Local Memory
@@ -1937,7 +1939,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, MLOAD _)        => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, MSTORE _ _)     => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, MSTORE8 _ _)    => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, PUSH(_, _))     => Gverylow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, PUSH(_))        => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, DUP(_) _)       => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, SWAP(_) _)      => Gverylow < SCHED > ... </k>
 
