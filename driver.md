@@ -43,7 +43,7 @@ For verification purposes, it's much easier to specify a program in terms of its
 To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a "pretti-fication" to the nicer input form.
 
 ```{.k .standalone}
-    syntax JSON ::= Int | ByteArray | OpCodes | Map | Call | SubstateLogEntry | Account
+    syntax JSON ::= Int | ByteArray | Map | Call | SubstateLogEntry | Account
  // -----------------------------------------------------------------------------------
 
     syntax JSONList ::= #sortJSONList ( JSONList )            [function]
