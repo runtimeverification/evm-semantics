@@ -636,36 +636,6 @@ After executing a transaction, it's necessary to have the effect of the substate
 EVM Programs
 ============
 
-### Program Structure
-
-Cons-lists of opcodes form programs (using cons operator `_;_`).
-Operator `#revOps` can be used to reverse a program.
-
-```k
-    syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
- // --------------------------------------------------
-
-    syntax OpCodes ::= #revOps    ( OpCodes )           [function]
-                     | #revOpsAux ( OpCodes , OpCodes ) [function]
- // --------------------------------------------------------------
-    rule #revOps(OPS) => #revOpsAux(OPS, .OpCodes)
-
-    rule #revOpsAux( .OpCodes , OPS' ) => OPS'
-    rule #revOpsAux( OP ; OPS , OPS' ) => #revOpsAux( OPS , OP ; OPS' )
-```
-
-### Converting to/from `Map` Representation
-
-```k
-    syntax Map ::= #asMapOpCodes    ( OpCodes )             [function]
-                 | #asMapOpCodesAux ( Int , OpCodes , Map ) [function]
- // ------------------------------------------------------------------
-    rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodesAux(0, OPS, .Map)
-
-    rule #asMapOpCodesAux( N , .OpCodes         , MAP ) => MAP
-    rule #asMapOpCodesAux( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodesAux(N +Int #widthOp(OP), OCS, MAP [ N <- OP ])
-```
-
 EVM OpCodes
 -----------
 
