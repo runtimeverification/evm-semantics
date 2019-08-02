@@ -1284,12 +1284,12 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <programBytes> PGM             </programBytes>
 
     syntax Set ::= #computeValidJumpDests(ByteArray)           [function]
-                 | #computeValidJumpDests(ByteArray, Int, Set) [function, klabel(#computeValidJumpDestsAux)]
- // --------------------------------------------------------------------------------------------------------
-    rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .Set)
+                 | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
+ // ---------------------------------------------------------------------------------------------------------
+    rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
 
-    rule #computeValidJumpDests(PGM, I, RESULT) => RESULT requires I >=Int #sizeByteArray(PGM)
-    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, #computeNextOffset(I, PGM [ I ]), SetItem(I) RESULT) requires PGM [ I ] ==Int 91
+    rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
+    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, #computeNextOffset(I, PGM [ I ]), ListItem(I) RESULT) requires PGM [ I ] ==Int 91
     rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, #computeNextOffset(I, PGM [ I ]), RESULT) [owise]
 
     syntax Int ::= #computeNextOffset(Int, Int) [function]
