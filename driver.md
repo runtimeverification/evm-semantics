@@ -367,7 +367,7 @@ State Manipulation
          <callData>        _ => .ByteArray </callData>
          <callValue>       _ => 0          </callValue>
          <wordStack>       _ => .WordStack </wordStack>
-         <localMem>        _ => .Map       </localMem>
+         <localMem>        _ => .ByteArray </localMem>
          <pc>              _ => 0          </pc>
          <gas>             _ => 0          </gas>
          <callGas>         _ => 0          </callGas>

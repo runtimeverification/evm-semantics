@@ -62,7 +62,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
               // \mu_*
               <wordStack>   .WordStack </wordStack>           // \mu_s
-              <localMem>    .Map       </localMem>            // \mu_m
+              <localMem>    .ByteArray </localMem>            // \mu_m
               <pc>          0          </pc>                  // \mu_pc
               <gas>         0          </gas>                 // \mu_g
               <memoryUsed>  0          </memoryUsed>          // \mu_i
@@ -845,7 +845,7 @@ These operations are getters/setters of the local execution memory.
 ```k
     syntax UnStackOp ::= "MLOAD"
  // ----------------------------
-    rule <k> MLOAD INDEX => #asWord(#range(LM, INDEX, 32)) ~> #push ... </k>
+    rule <k> MLOAD INDEX => #asWord(LM [ INDEX .. 32 ]) ~> #push ... </k>
          <localMem> LM </localMem>
 
     syntax BinStackOp ::= "MSTORE" | "MSTORE8"
@@ -854,7 +854,7 @@ These operations are getters/setters of the local execution memory.
          <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
 
     rule <k> MSTORE8 INDEX VALUE => . ... </k>
-         <localMem> LM => LM [ INDEX <- (VALUE modInt 256) ] </localMem>
+         <localMem> LM => LM [ INDEX := (VALUE modInt 256) ] </localMem>
 ```
 
 ### Expressions
@@ -918,7 +918,7 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
 
     syntax BinStackOp ::= "SHA3"
  // ----------------------------
-    rule <k> SHA3 MEMSTART MEMWIDTH => keccak(#range(LM, MEMSTART, MEMWIDTH)) ~> #push ... </k>
+    rule <k> SHA3 MEMSTART MEMWIDTH => keccak(LM [ MEMSTART .. MEMWIDTH ]) ~> #push ... </k>
          <localMem> LM </localMem>
 ```
 
@@ -1027,13 +1027,13 @@ The `JUMP*` family of operations affect the current program counter.
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
     rule <k> RETURN RETSTART RETWIDTH => #end EVMC_SUCCESS ... </k>
-         <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
+         <output> _ => LM [ RETSTART .. RETWIDTH ] </output>
          <localMem> LM </localMem>
 
     syntax BinStackOp ::= "REVERT"
  // ------------------------------
     rule <k> REVERT RETSTART RETWIDTH => #end EVMC_REVERT ... </k>
-         <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
+         <output> _ => LM [ RETSTART .. RETWIDTH ] </output>
          <localMem> LM </localMem>
 ```
 
@@ -1091,7 +1091,7 @@ These operators query about the current return data buffer.
          <id> ACCT </id>
          <wordStack> WS => #drop(N, WS) </wordStack>
          <localMem> LM </localMem>
-         <log> ... (.List => ListItem({ ACCT | WordStack2List(#take(N, WS)) | #range(LM, MEMSTART, MEMWIDTH) })) </log>
+         <log> ... (.List => ListItem({ ACCT | WordStack2List(#take(N, WS)) | LM [ MEMSTART .. MEMWIDTH ] })) </log>
       requires #sizeWordStack(WS) >=Int N
 ```
 
@@ -1306,7 +1306,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <memoryUsed> _ => 0          </memoryUsed>
          <output>     _ => .ByteArray </output>
          <wordStack>  _ => .WordStack </wordStack>
-         <localMem>   _ => .Map       </localMem>
+         <localMem>   _ => .ByteArray </localMem>
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
@@ -1356,7 +1356,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ------------------------
     rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE LM [ ARGSTART .. ARGWIDTH ] false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1368,7 +1368,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ----------------------------
     rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
-          ~> #call ACCTFROM ACCTFROM ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #call ACCTFROM ACCTFROM ACCTTO VALUE VALUE LM [ ARGSTART .. ARGWIDTH ] false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1380,7 +1380,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -----------------------------------
     rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
-          ~> #call ACCTAPPFROM ACCTFROM ACCTTO 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
+          ~> #call ACCTAPPFROM ACCTFROM ACCTTO 0 VALUE LM [ ARGSTART .. ARGWIDTH ] false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1394,7 +1394,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ---------------------------------
     rule <k> STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
-          ~> #call ACCTFROM ACCTTO ACCTTO 0 0 #range(LM, ARGSTART, ARGWIDTH) true
+          ~> #call ACCTFROM ACCTTO ACCTTO 0 0 LM [ ARGSTART .. ARGWIDTH ] true
           ~> #return RETSTART RETWIDTH
          ...
          </k>
@@ -1511,7 +1511,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
           => #checkCall ACCT VALUE
-          ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
+          ~> #create ACCT #newAddr(ACCT, NONCE) VALUE LM [ MEMSTART .. MEMWIDTH ]
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
@@ -1533,10 +1533,10 @@ have been paid, and it may be to expensive to compute the hash of the init code.
     syntax QuadStackOp ::= "CREATE2"
  // --------------------------------
     rule <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
-          => #loadAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
+          => #loadAccount #newAddr(ACCT, SALT, LM [ MEMSTART ..  MEMWIDTH ])
           ~> #checkCall ACCT VALUE
-          ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
-          ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
+          ~> #create ACCT #newAddr(ACCT, SALT, LM [ MEMSTART .. MEMWIDTH ]) VALUE LM [ MEMSTART .. MEMWIDTH ]
+          ~> #codeDeposit #newAddr(ACCT, SALT, LM [ MEMSTART .. MEMWIDTH ])
          ...
          </k>
          <id> ACCT </id>
