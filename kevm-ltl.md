@@ -121,15 +121,6 @@ module KEVM-LTL
 
     syntax EventId ::= Int
  // ----------------------
-    rule <k> #halt ~> #execute ... </k>
-         <pc> PCOUNT </pc>
-         <formula> FORM => LTLderive(FORM, EVENTS) </formula>
-         <eventsId> EID => PCOUNT </eventsId>
-         <events> EVENTS => .Set </events>
-         <trace> TRACE:List (.List => ListItem(EID { EVENTS })) </trace>
-      requires EID =/=K PCOUNT
-      [priority(24)]
-
     rule <k> #execute ... </k>
          <pc> PCOUNT </pc>
          <formula> FORM => LTLderive(FORM, EVENTS) </formula>
@@ -140,7 +131,16 @@ module KEVM-LTL
       [priority(24)]
 
     rule <k> #halt </k>
+         <formula> FORM => LTLderive(FORM, EVENTS) </formula>
+         <eventsId> EID => .EventId </eventsId>
+         <events> EVENTS => .Set </events>
+         <trace> TRACE:List (.List => ListItem(EID { EVENTS })) </trace>
+      requires EID =/=K .EventId
+      [priority(24)]
+
+    rule <k> #halt </k>
          <formula> FORM => LTLterminate(FORM) </formula>
+         <eventsId> .EventId </eventsId>
       requires notBool isLTLAtom(FORM)
 
     syntax LTLEvent ::= "overflow"
