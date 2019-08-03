@@ -55,6 +55,7 @@ Introduction to Firefly
 -   Higher confidence in results (run tests with both!).
 -   More features to come:
     -   Test coverage metrics.
+    -   Automated property verification.
     -   Test generation.
     -   Contract symbolic execution.
     -   ... your ideas??
@@ -72,7 +73,7 @@ Instructions from <https://www.npmjs.com/package/kevm-ganache-cli>:
 
 ```sh
 sudo apt install nodejs npm curl git
-curl --location 'https://github.com/kframework/evm-semantics/releases/download/v1.0.0-9ae34f5/kevm_1.0.0_amd64.deb' \
+curl --location 'https://github.com/kframework/evm-semantics/releases/download/v1.0.0-a47e4b2/kevm_1.0.0_amd64.deb' \
      --output kevm_1.0.0_amd64.deb
 sudo apt install ./kevm_1.0.0_amd64.deb
 ```
@@ -91,7 +92,18 @@ Firefly Demo - Run OpenZeppelin Tests
 ### Start `kevm-ganache-cli`
 
 ```sh
-npx kevm-ganache-cli
+npx kevm-ganache-cli                                                                                         \
+    --gasLimit 0xfffffffffff                                                                                 \
+    --account="0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501200,1000000000000000000000000" \
+    --account="0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201,1000000000000000000000000" \
+    --account="0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501202,1000000000000000000000000" \
+    --account="0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501203,1000000000000000000000000" \
+    --account="0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501204,1000000000000000000000000" \
+    --account="0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501205,1000000000000000000000000" \
+    --account="0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501206,1000000000000000000000000" \
+    --account="0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501207,1000000000000000000000000" \
+    --account="0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501208,1000000000000000000000000" \
+    --account="0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501209,1000000000000000000000000"
 ```
 
 . . .
@@ -99,8 +111,9 @@ npx kevm-ganache-cli
 ### Run OpenZeppelin tests
 
 ```sh
-git clone 'https://github.com/openzeppelin/openzeppelin-solidity'
-cd openzeppelin-solidity
+git clone 'https://github.com/OpenZeppelin/openzeppelin-contracts.git'
+cd openzeppelin-contracts
+git checkout b8c8308
 npm install
 npx truffle test test/token/ERC20/ERC20.test.js
 ```
@@ -108,24 +121,16 @@ npx truffle test test/token/ERC20/ERC20.test.js
 Firefly Demo - Catching Arithmetic Overflow
 -------------------------------------------
 
-### Original K Rule
+### Instrumented Rule
 
 ```k
-rule <k> ADD W0 W1 => W0 +Word W1 ~> #push ... </k>
-```
-
-. . .
-
-### Add Instrumented Rule
-
-```k
-rule <k> ADD W0 W1
-      => #end EVMC_CUSTOM("Integer over/underflow at program-counter: " +String Int2String(PCOUNT))
-     ...
-     </k>
-     <pc> PCOUNT </pc>
-  requires W0 +Word W1 =/=Int W0 +Int W1
-  [priority(25)]
+    syntax LTLEvent ::= "overflow"
+ // ------------------------------
+    rule <k> ADD W0 W1 ... </k>
+         <events> EVENTS (.Set => SetItem(overflow)) </events>
+      requires notBool overflow in EVENTS
+       andBool W0 +Word W1 =/=Int W0 +Int W1
+      [priority(24)]
 ```
 
 -   `#end EVMC_CUSTOM ...` is a custom error message which halts execution there.
