@@ -9,9 +9,16 @@ module LTL
     configuration
       <ltl>
         <formula> $LTLFORMULA:LTLFormula </formula>
+        <eventsId> .EventId </eventsId>
         <events> .Set </events>
         <trace> .List </trace>
       </ltl>
+
+    syntax EventId ::= ".EventId"
+ // -----------------------------
+
+    syntax KItem ::= EventId "{" Set "}"
+ // ------------------------------------
 
     syntax KItem ::= LTLFormula
  // ---------------------------
@@ -37,7 +44,6 @@ module LTL
     syntax LTLFormula ::= "~" LTLFormula
                         | LTLFormula "\\/" LTLFormula
                         | LTLFormula "/\\" LTLFormula
-                        | LTLFormula "->"  LTLFormula
  // -------------------------------------------------
     rule ~ True  => False [anywhere]
     rule ~ False => True  [anywhere]
@@ -54,21 +60,28 @@ module LTL
     rule False /\ FORM2 => False [anywhere]
     rule FORM1 /\ False => False [anywhere]
 
-    rule True  -> FORM2 => FORM2 [anywhere]
-    rule FORM1 -> True  => True  [anywhere]
-
-    rule False -> FORM2 => True    [anywhere]
-    rule FORM1 -> False => ~ FORM1 [anywhere]
-
     rule LTLderive(~ FORM         , ES) => ~ LTLderive(FORM, ES)
     rule LTLderive(FORM1 \/ FORM2 , ES) => LTLderive(FORM1, ES) \/ LTLderive(FORM2, ES)
     rule LTLderive(FORM1 /\ FORM2 , ES) => LTLderive(FORM1, ES) /\ LTLderive(FORM2, ES)
+
+    syntax LTLFormula ::= LTLFormula "->" LTLFormula
+ // ------------------------------------------------
+    rule FORM1 -> FORM2 => (~ FORM1) \/ FORM2 [macro]
 
     syntax LTLFormula ::= "always"     LTLFormula
                         | "eventually" LTLFormula
  // ---------------------------------------------
     rule LTLderive(always     FORM, ES) => LTLderive(FORM, ES) /\ always     FORM
     rule LTLderive(eventually FORM, ES) => LTLderive(FORM, ES) \/ eventually FORM
+
+    syntax LTLFormula ::= LTLterminate ( LTLFormula ) [function]
+ // ------------------------------------------------------------
+    rule LTLterminate(~ FORM1)        => ~ LTLterminate(FORM1)
+    rule LTLterminate(FORM1 /\ FORM2) => LTLterminate(FORM1) /\ LTLterminate(FORM2)
+    rule LTLterminate(FORM1 \/ FORM2) => LTLterminate(FORM1) \/ LTLterminate(FORM2)
+
+    rule LTLterminate(always _)     => True
+    rule LTLterminate(eventually _) => False
 endmodule
 
 module KEVM-LTL
@@ -106,19 +119,29 @@ module KEVM-LTL
                           ; PUSH(32, 0) ; PUSH(32, 0) ; REVERT                             // revert
                           ; JUMPDEST ; PUSH(32, 0) ; MLOAD ; .OpCodes                      // no revert
 
-    rule <k> #halt ~> (#execute => .) ... </k>
+    syntax EventId ::= Int
+ // ----------------------
+    rule <k> #halt ~> #execute ... </k>
+         <pc> PCOUNT </pc>
          <formula> FORM => LTLderive(FORM, EVENTS) </formula>
+         <eventsId> EID => PCOUNT </eventsId>
          <events> EVENTS => .Set </events>
-         <trace> TRACE:List (.List => ListItem(EVENTS)) </trace>
+         <trace> TRACE:List (.List => ListItem(EID { EVENTS })) </trace>
+      requires EID =/=K PCOUNT
       [priority(24)]
 
-    rule <k> (. => #next [ OP ]) ~> #execute ... </k>
+    rule <k> #execute ... </k>
          <pc> PCOUNT </pc>
-         <program> ... PCOUNT |-> OP ... </program>
          <formula> FORM => LTLderive(FORM, EVENTS) </formula>
+         <eventsId> EID => PCOUNT </eventsId>
          <events> EVENTS => .Set </events>
-         <trace> TRACE:List (.List => ListItem(EVENTS)) </trace>
+         <trace> TRACE:List (.List => ListItem(EID { EVENTS })) </trace>
+      requires EID =/=K PCOUNT
       [priority(24)]
+
+    rule <k> #halt </k>
+         <formula> FORM => LTLterminate(FORM) </formula>
+      requires notBool isLTLAtom(FORM)
 
     syntax LTLEvent ::= "overflow"
  // ------------------------------
