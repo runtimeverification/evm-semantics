@@ -32,15 +32,17 @@ docker login
 # Proxy user: ehildenbproxy
 # Proxy pass: ehildenb-proxy
 
-docker run -it --name trufflecon-evm                \
-    -u user -w /home/user/evm-semantics             \
+docker run -it -u user -w /home/user/evm-semantics  \
     runtimeverificationinc/evm-semantics:trufflecon
 ```
 
 ### Setup Environment
 
 ```sh
-source env
+cd ../
+eval $(cat env)
+cd evm-semantics
+which klab
 ```
 
 Install KEVM: From Source
