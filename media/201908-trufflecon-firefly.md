@@ -118,10 +118,8 @@ npm install
 npx truffle test test/token/ERC20/ERC20.test.js
 ```
 
-Firefly Demo - Catching Arithmetic Overflow
--------------------------------------------
-
-### Instrumented Rule
+KEVM Extensions - Event Monitoring
+----------------------------------
 
 ```k
     syntax LTLEvent ::= "overflow"
@@ -131,47 +129,50 @@ Firefly Demo - Catching Arithmetic Overflow
       requires notBool overflow in EVENTS
        andBool W0 +Word W1 =/=Int W0 +Int W1
       [priority(24)]
+
+    syntax LTLEvent ::= "revert"
+ // ----------------------------
+    rule <k> REVERT _ _ ... </k>
+         <events> EVENTS (.Set => SetItem(revert)) </events>
+      requires notBool revert in EVENTS
+      [priority(24)]
 ```
 
--   `#end EVMC_CUSTOM ...` is a custom error message which halts execution there.
--   We record the program counter for source map back to Solidity.
--   `W0 +Word W1` is modulo $2^256$, `W0 +Int W1` is unbounded.
--   `priority(25)` instructs KEVM to prefer this rule when it applies.
+-   Monitors built-in to the KEVM semantics as an extension.
+-   Can build arbitrary LTL formula over the monitors.
 
-Firefly Demo - Catching Arithmetic Overflow
--------------------------------------------
+KEVM Extensions - LTL Model Checking
+------------------------------------
 
--   Currently causes `kevm-ganache-cli` to crash if there is an overflow violation.
--   Should handle this more gracefully.
+### Input file `addition.evm`
 
-Firefly Demo - Arithmetic Overflow should `REVERT`
---------------------------------------------------
+```evm
+load { "gas"  : 10000000
+  // Query: always ((~ overflow) \/ eventually revert)
+  // , "code" : UNSAFEADD(100        , 100) // True
+  // , "code" : UNSAFEADD(maxUInt256 , 100) // False
+  // , "code" :   SAFEADD(100        , 100) // True
+     , "code" :   SAFEADD(maxUInt256 , 100) // True
+     }
 
-### Instrument Semantics
-
-```k
-    configuration
-      ...
-      <temporal-formula> .Formula </temporal-formula>
-      <log> .List </log>
-      ...
-
-    syntax Formula ::= ".Formula"
-                     | "overflow" | "revert"
-                     | "E" Formula | Formula "->" Formula
- // -----------------------------------------------------
-    rule <k> ADD W0 W1 => W0 +Word W1 ~> #push ... </k>
-      requires W0 +Word W1 ==Int W0 +Int W1
-
-    rule <k> ADD W0 W1 => W0 +Word W1 ~> #push ... </k>
-         <pc> PCOUNT </pc>
-         <temporal-formula> overflow => . ... </temporal-formula>
-      requires W0 +Word W1 =/=Int W0 +Int W1
-      [priority(25)]
+start
 ```
 
-### Run Test
+. . .
 
-```k
+### Query
 
+```sh
+./kevm ltl addition.evm 'always (overflow -> eventually revert)'
 ```
+
+Truffle Firefly Plugin
+----------------------
+
+-   Developed with help from Truffle devs today as plugin!
+-   Modified OpenZeppelin test-suite which links to `truffle-plugin-firefly`.
+
+```sh
+npx truffle run firefly SafeMath 'always (overflow -> eventually revert)'
+```
+
