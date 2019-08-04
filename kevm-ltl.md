@@ -157,5 +157,12 @@ module KEVM-LTL
          <events> EVENTS (.Set => SetItem(revert)) </events>
       requires notBool revert in EVENTS
       [priority(24)]
+
+    syntax LTLEvent ::= "invalid"
+ // -----------------------------
+    rule <k> INVALID ... </k>
+         <events> EVENTS (.Set => SetItem(invalid)) </events>
+      requires notBool invalid in EVENTS
+      [priority(24)]
 endmodule
 ```
