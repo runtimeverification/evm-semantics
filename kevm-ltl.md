@@ -106,6 +106,7 @@ module KEVM-LTL
     rule <k> load { "gas" : GAVAIL , "code" : OPS:OpCodes , .JSONList } => . ... </k>
          <gas> _ => GAVAIL </gas>
          <program> _ => #asMapOpCodes(OPS) </program>
+         <exit-code> _ => 0 </exit-code>
 
     rule <k> start => #execute ... </k>
 
