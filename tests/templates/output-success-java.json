@@ -30,11 +30,8 @@
       </touchedAccounts>
       <callState>
         <program>
-          .Map
-        </program>
-        <programBytes>
           .WordStack
-        </programBytes>
+        </program>
         <id>
           0
         </id>

@@ -85,8 +85,7 @@ module SUM-TO-N-SPEC
          <memoryUsed> 0   </memoryUsed>
          <localMem> .Map </localMem>
          <callGas> _ => _ </callGas>
-         <program> #asMapOpCodes(#dasmOpCodes(sumToN, DEFAULT)) </program>
-         <programBytes> sumToN </programBytes>
+         <program> #asmOpCodes(sumToN) </program>
 
 
 
@@ -122,8 +121,7 @@ module SUM-TO-N-SPEC
          <memoryUsed> 0   </memoryUsed>
          <localMem> .Map </localMem>
          <callGas> _ => _ </callGas>
-         <program> #asMapOpCodes(#dasmOpCodes(sumToN, DEFAULT)) </program>
-         <programBytes> sumToN </programBytes>
+         <program> #asmOpCodes(sumToN) </program>
 
 
 

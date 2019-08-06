@@ -65,20 +65,8 @@
   #Equals
     <callState>
       <program>
-        0 |-> PUSH ( 1 )
-        2 |-> PUSH ( 1 )
-        4 |-> ADD
-        5 |-> PUSH ( 1 )
-        7 |-> EQ
-        8 |-> PUSH ( 1 )
-        10 |-> JUMPI
-        11 |-> INVALID
-        12 |-> JUMPDEST
-        13 |-> STOP
-      </program>
-      <programBytes>
         96 : 3 : 96 : 4 : 1 : 96 : 8 : 20 : 96 : 12 : 87 : 254 : 91 : 0 : .WordStack
-      </programBytes>
+      </program>
       <id>
         0
       </id>

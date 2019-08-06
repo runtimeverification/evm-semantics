@@ -33,11 +33,8 @@
       </touchedAccounts>
       <callState>
         <program>
-          .Map
-        </program>
-        <programBytes>
           b""
-        </programBytes>
+        </program>
         <id>
           0
         </id>
