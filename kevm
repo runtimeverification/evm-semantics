@@ -67,13 +67,6 @@ run_search() {
     run_krun --search --pattern "$search_pattern" "$@"
 }
 
-run_ltl() {
-    local ltl_formula
-    ltl_formula="$1" ; shift
-    export K_OPTS=-Xmx8G
-    run_krun -cLTLFORMULA="$ltl_formula" "$@"
-}
-
 run_klab() {
     local run_mode klab_log
 
@@ -147,7 +140,6 @@ if [[ "$run_command" == 'help' ]]; then
                $0 kast       [--backend (ocaml|java)]              <pgm>  <output format> <K arg>*
                $0 prove      [--backend (java|haskell)]            <spec> <K arg>* -m <def_module>
                $0 search     [--backend (java|haskell)]            <pgm>  <pattern> <K arg>*
-               $0 ltl                                              <pgm>  <ltl formula> <K arg>*
                $0 klab-run                                         <pgm>  <K arg>*
                $0 klab-prove                                       <spec> <K arg>* -m <def_module>
                $0 klab-view                                        <spec>
@@ -157,7 +149,6 @@ if [[ "$run_command" == 'help' ]]; then
            $0 kast      : Parse an EVM program and output it in a supported format
            $0 prove     : Run an EVM K proof
            $0 search    : Search for a K pattern in an EVM program execution
-           $0 ltl       : Check some LTL formula with a given concrete execution run
            $0 klab-(run|prove) : Run program or prove spec and dump StateLogs which KLab can read
            $0 klab-view : View the statelog associated with a given program or spec
 
@@ -167,7 +158,6 @@ if [[ "$run_command" == 'help' ]]; then
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
                  <output format> is the format for Kast to output the term in.
                  <pattern> is the configuration pattern to search for.
-                 <ltl formula> is the LTL formula to runtime verify.
                  <def_module> is the module to take as axioms when doing verification.
 
            klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
@@ -178,7 +168,6 @@ fi
 backend="ocaml"
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
-[[ ! "$run_command" =~ ltl*    ]] || backend='llvm'
 if [[ $# -gt 0 ]] && [[ $1 == '--backend' ]]; then
     backend="$2"
     shift 2
@@ -201,7 +190,6 @@ case "$run_command-$backend" in
     interpret-@(ocaml|llvm)         ) run_interpret                   "$@" ;;
     prove-@(java|haskell)           ) run_prove                       "$@" ;;
     search-@(java|haskell)          ) run_search                      "$@" ;;
-    ltl-@(llvm)                     ) run_ltl                         "$@" ;;
     klab-@(run|prove)-java          ) run_klab "${run_command#klab-}" "$@" ;;
     klab-view-java                  ) view_klab                       "$@" ;;
     *) $0 help ; fatal "Unknown command on backend: $run_command $backend" ;;
