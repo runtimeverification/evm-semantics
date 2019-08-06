@@ -35,6 +35,9 @@
         <program>
           b""
         </program>
+        <jumpDests>
+          .Set
+        </jumpDests>
         <id>
           0
         </id>
