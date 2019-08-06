@@ -165,7 +165,7 @@ start
 ### Query
 
 ```sh
-./kevm ltl media/201908-trufflecon/addition.evm 'always (overflow -> eventually revert)'
+./kevm run --backend llvm media/201908-trufflecon/addition.evm -cLTLFORMULA='always (overflow -> eventually revert)'
 ```
 
 Truffle Firefly Plugin
