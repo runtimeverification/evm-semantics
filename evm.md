@@ -51,7 +51,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <touchedAccounts> .Set        </touchedAccounts>
 
             <callState>
-              <programBytes> .ByteArray </programBytes>
+              <program> .ByteArray </program>
               <jumpDests> .Set </jumpDests>
 
               // I_*
@@ -273,13 +273,13 @@ OpCode Execution
     rule [halt]: <k> #halt ~> (#execute => .) ... </k>
     rule [step]: <k> (. => #next [ #dasmOpCode(PGM [ PCOUNT ], SCHED) ]) ~> #execute ... </k>
                  <pc> PCOUNT </pc>
-                 <programBytes> PGM </programBytes>
+                 <program> PGM </program>
                  <schedule> SCHED </schedule>
       requires PCOUNT <Int #sizeByteArray(PGM)
 
     rule <k> (. => #end EVMC_SUCCESS) ~> #execute ... </k>
          <pc> PCOUNT </pc>
-         <programBytes> PGM </programBytes>
+         <program> PGM </program>
          <output> _ => .ByteArray </output>
       requires PCOUNT >=Int #sizeByteArray(PGM)
 ```
@@ -807,7 +807,7 @@ Some operators don't calculate anything, they just push the stack around a bit.
  // ------------------------------
     rule <k> PUSH(N) => #asWord(PGM [ PCOUNT +Int 1 .. N ]) ~> #push ... </k>
          <pc> PCOUNT </pc>
-         <programBytes> PGM </programBytes>
+         <program> PGM </program>
 ```
 
 ### Local Memory
@@ -923,12 +923,12 @@ These operators make queries about the current execution state.
     syntax NullStackOp ::= "MSIZE" | "CODESIZE"
  // -------------------------------------------
     rule <k> MSIZE    => 32 *Word MU         ~> #push ... </k> <memoryUsed> MU </memoryUsed>
-    rule <k> CODESIZE => #sizeByteArray(PGM) ~> #push ... </k> <programBytes> PGM </programBytes>
+    rule <k> CODESIZE => #sizeByteArray(PGM) ~> #push ... </k> <program> PGM </program>
 
     syntax TernStackOp ::= "CODECOPY"
  // ---------------------------------
     rule <k> CODECOPY MEMSTART PGMSTART WIDTH => . ... </k>
-         <programBytes> PGM </programBytes>
+         <program> PGM </program>
          <localMem> LM => LM [ MEMSTART := PGM [ PGMSTART .. WIDTH ] ] </localMem>
 
     syntax UnStackOp ::= "BLOCKHASH"
@@ -968,12 +968,12 @@ The `JUMP*` family of operations affect the current program counter.
  // ---------------------------
     rule <k> JUMP DEST => #if DEST in DESTS #then #endBasicBlock #else #end EVMC_BAD_JUMP_DESTINATION #fi ... </k>
          <pc> _ => DEST </pc>
-         <programBytes> PGM </programBytes>
+         <program> PGM </program>
          <jumpDests> DESTS </jumpDests>
       requires DEST <Int #sizeByteArray(PGM)
 
     rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
-         <programBytes> PGM </programBytes>
+         <program> PGM </program>
       requires DEST >=Int #sizeByteArray(PGM)
 
     syntax BinStackOp ::= "JUMPI"
@@ -1262,7 +1262,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <gas> _ => GCALL </gas>
          <callGas> GCALL => 0 </callGas>
          <caller> _ => ACCTFROM </caller>
-         <programBytes> _ => BYTES </programBytes>
+         <program> _ => BYTES </program>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
          <schedule> SCHED </schedule>
@@ -1281,7 +1281,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <wordStack>    _ => .WordStack </wordStack>
          <localMem>     _ => .Map       </localMem>
          <jumpDests>    _ => #computeValidJumpDests(PGM) </jumpDests>
-         <programBytes> PGM             </programBytes>
+         <program>      PGM             </program>
 
     syntax Set ::= #computeValidJumpDests(ByteArray)           [function]
                  | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
@@ -1418,7 +1418,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <id> ACCT => ACCTTO </id>
          <gas> _ => GCALL </gas>
          <callGas> GCALL => 0 </callGas>
-         <programBytes> _ => INITCODE </programBytes>
+         <program> _ => INITCODE </program>
          <caller> _ => ACCTFROM </caller>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => .ByteArray </callData>
