@@ -98,7 +98,7 @@ git submodule update --init --recursive
 If you haven't already setup K's OCaml dependencies more recently than February 1, 2019, then you also need to setup the K OCaml dependencies:
 
 ```sh
-./.build/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev
+./deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev
 ```
 
 Finally, you can install repository specific dependencies and build the semantics:
@@ -146,7 +146,7 @@ On Arch, you'll also need `crypto++` package.
 And you need to setup Rust:
 
 ```sh
-.build/k/llvm-backend/src/main/native/llvm-backend/install-rust
+./deps/k/llvm-backend/src/main/native/llvm-backend/install-rust
 ```
 
 Additionally, you need to setup the remaining LLVM dependencies.
