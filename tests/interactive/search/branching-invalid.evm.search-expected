@@ -67,6 +67,9 @@
       <program>
         96 : 3 : 96 : 4 : 1 : 96 : 8 : 20 : 96 : 12 : 87 : 254 : 91 : 0 : .WordStack
       </program>
+      <jumpDests>
+        SetItem ( 12 )
+      </jumpDests>
       <id>
         0
       </id>
