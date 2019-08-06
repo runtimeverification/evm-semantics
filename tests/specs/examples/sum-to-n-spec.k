@@ -19,18 +19,10 @@ module VERIFICATION
       requires N =/=K 0
       [lemma]
 
-    syntax Map ::= "sumTo" "(" Int ")" [function]
- // ---------------------------------------------
+    syntax ByteArray ::= "sumTo" "(" Int ")" [function]
+ // ---------------------------------------------------
     rule sumTo(N)
-      => #asMapOpCodes( PUSH(1, 0) ; PUSH(32, N)                // s = 0 ; n = N
-                      ; JUMPDEST                                // label:loop
-                      ; DUP(1) ; ISZERO ; PUSH(1, 52) ; JUMPI   // if n == 0, jump to end
-                      ; DUP(1) ; SWAP(2) ; ADD                  // s = s + n
-                      ; SWAP(1) ; PUSH(1, 1) ; SWAP(1) ; SUB    // n = n - 1
-                      ; PUSH(1, 35) ; JUMP                      // jump to loop
-                      ; JUMPDEST                                // label:end
-                      ; .OpCodes
-                      ) [macro]
+      => 96 : 0 : 127 : .WordStack ++ #padToWidth(32, #asByteStack(N)) ++ 91 : 128 : 21 : 96 : 52 : 87 : 128 : 145 : 1 : 144 : 96 : 1 : 144 : 3 : 96 : 35 : 86 : 91 : .WordStack [macro]
 endmodule
 
 

@@ -65,14 +65,8 @@
   #Equals
     <callState>
       <program>
-        0 |-> PUSH ( 32 , 3 )
-        33 |-> PUSH ( 32 , 4 )
-        66 |-> ADD
-        67 |-> INVALID
+        127 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 3 : 127 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 4 : 254 : .WordStack
       </program>
-      <programBytes>
-        .WordStack
-      </programBytes>
       <id>
         0
       </id>
