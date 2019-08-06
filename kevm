@@ -5,7 +5,7 @@ shopt -s extglob
 
 kevm_dir="${KEVM_DIR:-.}"
 build_dir="$kevm_dir/.build"
-defn_dir="$build_dir/defn"
+defn_dir="${KEVM_DEFN_DIR:-$build_dir/defn}"
 lib_dir="$build_dir/local/lib"
 k_release_dir="${K_RELEASE:-$kevm_dir/deps/k/k-distribution/target/release/k}"
 
