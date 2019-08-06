@@ -121,6 +121,8 @@ npx truffle test test/token/ERC20/ERC20.test.js
 KEVM Extensions - Event Monitoring
 ----------------------------------
 
+Compile semantics with additional file `media/201908-trufflecon/kevm-ltl.md`.
+
 ```k
     syntax LTLEvent ::= "overflow"
  // ------------------------------
@@ -163,7 +165,7 @@ start
 ### Query
 
 ```sh
-./kevm ltl addition.evm 'always (overflow -> eventually revert)'
+./kevm ltl media/201908-trufflecon/addition.evm 'always (overflow -> eventually revert)'
 ```
 
 Truffle Firefly Plugin

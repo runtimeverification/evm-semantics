@@ -165,38 +165,22 @@ endmodule
 
 -   Try with side-conditions removed.
 
-Larger K Proof
---------------
-
-### INI File Formats
-
--   Look at `tests/specs/ds-token-erc20/spec.ini`
--   Split out tests with:
-
-    ```sh
-    tests/gen-specs/kprove-ini tests/gen-specs/defn-tmpl.k         \
-                               tests/gen-specs/rule-tmpl.k         \
-                               tests/specs/ds-token-erc20/spec.ini \
-                               transfer-success-1
-    ```
-
--   Examine generated file `tests/specs/ds-token-erc20/transfer-success-1-spec.k`
-
 LTL Runtime Verification
 ------------------------
 
--   File `kevm-ltl.md` instruments semantics (*without* modifying it).
+-   Compile semantics with `media/201908-trufflecon/kevm-ltl.md`, which instruments semantics (*without* modifying it).
 -   Build definition:
 
     ```sh
+    cp media/201908-trufflecon/kevm-ltl.md kevm-ltl.md
     make MAIN_MODULE=KEVM-LTL MAIN_DEFN_FILE=kevm-ltl build-llvm
     ```
 
 -   Try verifying a property:
 
     ```sh
-    ./kevm ltl addition.evm '"eventually revert"'
-    ./kevm ltl addition.evm '"always ((~ overflow) \/ eventually revert)"'
+    ./kevm ltl media/201908-trufflecon/addition.evm 'eventually revert'
+    ./kevm ltl media/201908-trufflecon/addition.evm 'always ((~ overflow) \/ eventually revert)'
     ```
 
 Thanks!
