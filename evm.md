@@ -1287,14 +1287,25 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
                  | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
  // ---------------------------------------------------------------------------------------------------------
     rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
+```
 
+```{.k .symbolic}
+    rule #computeValidJumpDests(.WordStack, _, RESULT) => List2Set(RESULT)
+    rule #computeValidJumpDests(91 : WS, I, RESULT) => #computeValidJumpDests(WS, I +Int 1, ListItem(I) RESULT)
+    rule #computeValidJumpDests(W : WS, I, RESULT) => #computeValidJumpDests(#drop(#widthOpCode(W), W : WS), I +Int #widthOpCode(W), RESULT) requires W =/=Int 91
+```
+
+```{.k .concrete}
     rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
-    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, #computeNextOffset(I, PGM [ I ]), ListItem(I) RESULT) requires PGM [ I ] ==Int 91
-    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, #computeNextOffset(I, PGM [ I ]), RESULT) [owise]
+    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, ListItem(I) RESULT) requires PGM [ I ] ==Int 91
+    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) [owise]
+```
 
-    syntax Int ::= #computeNextOffset(Int, Int) [function]
-    rule #computeNextOffset(I, W) => I +Int W -Int 94 requires W >=Int 96 andBool W <=Int 127
-    rule #computeNextOffset(I, _) => I +Int 1 [owise]
+```k
+    syntax Int ::= #widthOpCode(Int) [function]
+ // -------------------------------------------
+    rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
+    rule #widthOpCode(_) => 1 [owise]
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
