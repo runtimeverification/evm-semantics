@@ -56,6 +56,16 @@ module WEB3-JSON-RPC
 
     syntax KItem ::= "#runRPCCall"
  // ------------------------------
+    rule <k> #runRPCCall => . </k>
+         <method> "net_version" </method>
+         <web3result> _ => #runNetVersion </web3result>
+
+    syntax JSON ::= "#runNetVersion"
+ // ---------------------------------
+    rule <web3result> #runNetVersion => { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( CHAINID ) } </web3result>
+         <jsonrpc> JSONRPC </jsonrpc>
+         <callid> CALLID </callid>
+         <chainID> CHAINID </chainID>
 
 endmodule
 ```

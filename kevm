@@ -41,7 +41,7 @@ run_krun() {
         ocaml) args=(--interpret) ;;
         *)     args=()            ;;
     esac
-    krun --directory "$backend_dir" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' "$run_file" "${args[@]-}" "$@"
+    krun --directory "$backend_dir" -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' -cMODE="$cMODE" -pMODE='printf %s' -cCHAINID="$cCHAINID" -pCHAINID='printf %s' "$run_file" "${args[@]-}" "$@"
 }
 
 run_kast() {
@@ -50,8 +50,8 @@ run_kast() {
     output_mode="${1:-kast}" ; shift
 
     case "$run_file-$output_mode" in
-        *.json-@(kast|kore)) "$kevm_dir/$output_mode-json.py" "$run_file" "$cSCHEDULE" "$cMODE"       ;;
-        *)                   kast --directory "$backend_dir" "$run_file" --output "$output_mode" "$@" ;;
+        *.json-@(kast|kore)) "$kevm_dir/$output_mode-json.py" "$run_file" "$cSCHEDULE" "$cMODE" "$cCHAINID" ;;
+        *)                   kast --directory "$backend_dir" "$run_file" --output "$output_mode" "$@"       ;;
     esac
 }
 
@@ -108,8 +108,8 @@ run_interpret() {
     case "$backend" in
         ocaml)  run_kast kast > "$kast"
                 "$interpreter" "$backend_dir/driver-kompiled/realdef.cma" -c PGM "$kast" textfile \
-                             -c SCHEDULE "$cSCHEDULE" text -c MODE "$cMODE" text --initializer 'initKevmCell' \
-                             --output-file "$output" "$@" \
+                             -c SCHEDULE "$cSCHEDULE" text -c MODE "$cMODE" -c CHAINID "$cCHAINID" \
+                             text --initializer 'initKevmCell' --output-file "$output" "$@" \
                     || exit_status="$?"
                 ;;
 
@@ -181,6 +181,7 @@ run_file="$1" ; shift
 
 cMODE="\`${MODE:-NORMAL}\`(.KList)"
 cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
+cCHAINID="#token(\"${CHAINID:-28346}\",\"Int\")"
 
 case "$run_command-$backend" in
 
