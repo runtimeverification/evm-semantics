@@ -359,6 +359,7 @@ State Manipulation
          <callDepth>       _ => 0          </callDepth>
          <callStack>       _ => .List      </callStack>
          <program>         _ => .ByteArray </program>
+         <jumpDests>       _ => .Set       </jumpDests>
          <id>              _ => 0          </id>
          <caller>          _ => 0          </caller>
          <callData>        _ => .ByteArray </callData>
