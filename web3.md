@@ -10,14 +10,16 @@ module WEB3
     // LOGIC GOES HERE
 
     configuration
-      <kevm />
-      <web3request>
-        <jsonrpc> "" </jsonrpc>
-        <callid> 0 </callid>
-        <method> "" </method>
-        <params> [ .JSONList ] </params>
-      </web3request>
-      <web3result> { .JSONList } </web3result>
+      <kevm-client>
+        <kevm />
+        <web3request>
+          <jsonrpc> "" </jsonrpc>
+          <callid> 0 </callid>
+          <method> "" </method>
+          <params> [ .JSONList ] </params>
+        </web3request>
+        <web3result> { .JSONList } </web3result>
+      </kevm-client>
 
     syntax EthereumSimulation ::= JSON
     syntax JSON ::= Int | Bool
@@ -25,7 +27,7 @@ module WEB3
     rule <k> J:JSON => #loadRPCCall J ... </k>
 
     syntax KItem ::= "#loadRPCCall" JSON
- // ----------------------------------
+ // ------------------------------------
     rule <k> #loadRPCCall J:JSON => #runRPCCall ... </k>
          <jsonrpc> _ => #getVersion(J) </jsonrpc>
          <callid> _ => #getId(J) </callid>
@@ -61,7 +63,7 @@ module WEB3
          <web3result> _ => #runNetVersion </web3result>
 
     syntax JSON ::= "#runNetVersion"
- // ---------------------------------
+ // --------------------------------
     rule <web3result> #runNetVersion => { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( CHAINID ) } </web3result>
          <jsonrpc> JSONRPC </jsonrpc>
          <callid> CALLID </callid>
