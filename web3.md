@@ -18,12 +18,13 @@ module WEB3
           <method> "" </method>
           <params> [ .JSONList ] </params>
         </web3request>
-        <web3result> { .JSONList } </web3result>
+        <web3result> .List </web3result>
       </kevm-client>
 
-    syntax EthereumSimulation ::= JSON
+    syntax EthereumSimulation ::= List{JSON, " "}
     syntax JSON ::= Int | Bool
 
+    rule <k> J:JSON REST:EthereumSimulation => #loadRPCCall J ~> REST ... </k>
     rule <k> J:JSON => #loadRPCCall J ... </k>
 
     syntax KItem ::= "#loadRPCCall" JSON
@@ -56,15 +57,19 @@ module WEB3
     rule #getParams( { KEY : _, REST } => { REST } )
         requires KEY =/=String "params"
 
+    syntax KItem ::= #sendResponse( JSON )
+ // --------------------------------------
+    rule <k> #sendResponse( J:JSON ) => . ... </k>
+         <web3result> ... ( .List => ListItem( J ) ) </web3result>
+
     syntax KItem ::= "#runRPCCall"
  // ------------------------------
-    rule <k> #runRPCCall => . </k>
+    rule <k> #runRPCCall => #runNetVersion ... </k>
          <method> "net_version" </method>
-         <web3result> _ => #runNetVersion </web3result>
 
-    syntax JSON ::= "#runNetVersion"
- // --------------------------------
-    rule <web3result> #runNetVersion => { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( CHAINID ) } </web3result>
+    syntax KItem ::= "#runNetVersion"
+ // ---------------------------------
+    rule <k> #runNetVersion => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( CHAINID ) } ) ... </k>
          <jsonrpc> JSONRPC </jsonrpc>
          <callid> CALLID </callid>
          <chainID> CHAINID </chainID>
