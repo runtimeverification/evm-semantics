@@ -108,7 +108,7 @@ run_interpret() {
     case "$backend" in
         ocaml)  run_kast kast > "$kast"
                 "$interpreter" "$backend_dir/driver-kompiled/realdef.cma" -c PGM "$kast" textfile \
-                             -c SCHEDULE "$cSCHEDULE" text -c MODE "$cMODE" -c CHAINID "$cCHAINID" \
+                             -c SCHEDULE "$cSCHEDULE" text -c MODE "$cMODE" text -c CHAINID "$cCHAINID" \
                              text --initializer 'initKevmCell' --output-file "$output" "$@" \
                     || exit_status="$?"
                 ;;
