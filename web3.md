@@ -4,7 +4,7 @@ Web3 RPC JSON Handler
 requires "evm.k"
 requires "data.k"
 
-module WEB3-JSON-RPC
+module WEB3
     imports EVM
     imports EVM-DATA
     // LOGIC GOES HERE
