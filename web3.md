@@ -68,6 +68,8 @@ module WEB3
          <method> "net_version" </method>
     rule <k> #runRPCCall => #eth_gasPrice ... </k>
          <method> "eth_gasPrice" </method>
+    rule <k> #runRPCCall => #eth_blockNumber ... </k>
+         <method> "eth_blockNumber" </method>
 
     syntax KItem ::= "#net_version"
  // -------------------------------
@@ -82,6 +84,13 @@ module WEB3
          <jsonrpc> JSONRPC </jsonrpc>
          <callid> CALLID </callid>
          <gasPrice> PRICE </gasPrice>
+
+    syntax KItem ::= "#eth_blockNumber"
+ // -----------------------------------
+    rule <k> #eth_blockNumber => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( BLOCKNUM ) } ) ... </k>
+         <jsonrpc> JSONRPC </jsonrpc>
+         <callid> CALLID </callid>
+         <number> BLOCKNUM </number>
 
 endmodule
 ```
