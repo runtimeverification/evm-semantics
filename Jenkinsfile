@@ -38,7 +38,7 @@ pipeline {
         stage('Build') {
           steps {
             sh '''
-              make build build-llvm build-haskell build-node -j4 -B
+              make build build-llvm build-haskell build-node -j4
             '''
           }
         }
@@ -169,10 +169,10 @@ pipeline {
                 commit_short=$(cd deps/k && git rev-parse --short HEAD)
                 K_RELEASE="https://github.com/kframework/k/releases/download/nightly-$commit_short"
                 curl --fail --location "${K_RELEASE}/kframework_5.0.0_amd64_bionic.deb"    --output kframework.deb
-              #  curl --fail --location "${K_RELEASE}/kframework-5.0.0-1-x86_64.pkg.tar.xz" --output kframework-git.pkg.tar.xz
+                curl --fail --location "${K_RELEASE}/kframework-5.0.0-1-x86_64.pkg.tar.xz" --output kframework-git.pkg.tar.xz
               '''
               stash name: 'bionic-kframework', includes: 'kframework.deb'
-              //stash name: 'arch-kframework',   includes: 'kframework-git.pkg.tar.xz'
+              stash name: 'arch-kframework',   includes: 'kframework-git.pkg.tar.xz'
             }
           }
         }
@@ -239,7 +239,7 @@ pipeline {
               '''
             }
           }
-        }/*
+        }
         stage('Build Arch Package') {
           agent {
             dockerfile {
@@ -281,7 +281,7 @@ pipeline {
               '''
             }
           }
-        }*/
+        }
         stage('Upload Release') {
           agent {
             dockerfile {
@@ -295,13 +295,14 @@ pipeline {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
               unstash 'src-kevm'
               unstash 'bionic-kevm'
-           //   unstash 'arch-kevm'
+              unstash 'arch-kevm'
               sh '''
                 release_tag="v${KEVM_RELEASE_ID}-$(git rev-parse --short HEAD)"
                 make release.md KEVM_RELEASE_TAG=${release_tag}
                 hub release create                                                                                          \
                     --attach "kevm-${KEVM_RELEASE_ID}-src.tar.gz#Source tar.gz"                                             \
                     --attach "kevm_${KEVM_RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                              \
+                    --attach "kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package" \
                     --file "release.md" "${release_tag}"
               '''
             }
