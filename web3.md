@@ -64,15 +64,24 @@ module WEB3
 
     syntax KItem ::= "#runRPCCall"
  // ------------------------------
-    rule <k> #runRPCCall => #runNetVersion ... </k>
+    rule <k> #runRPCCall => #net_version ... </k>
          <method> "net_version" </method>
+    rule <k> #runRPCCall => #eth_gasPrice ... </k>
+         <method> "eth_gasPrice" </method>
 
-    syntax KItem ::= "#runNetVersion"
- // ---------------------------------
-    rule <k> #runNetVersion => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( CHAINID ) } ) ... </k>
+    syntax KItem ::= "#net_version"
+ // -------------------------------
+    rule <k> #net_version => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( CHAINID ) } ) ... </k>
          <jsonrpc> JSONRPC </jsonrpc>
          <callid> CALLID </callid>
          <chainID> CHAINID </chainID>
+
+    syntax KItem ::= "#eth_gasPrice"
+ // --------------------------------
+    rule <k> #eth_gasPrice => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( PRICE ) } ) ... </k> // TODO: Decide to have output in hex form here or convert it later
+         <jsonrpc> JSONRPC </jsonrpc>
+         <callid> CALLID </callid>
+         <gasPrice> PRICE </gasPrice>
 
 endmodule
 ```
