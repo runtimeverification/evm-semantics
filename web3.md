@@ -70,6 +70,8 @@ module WEB3
          <method> "eth_gasPrice" </method>
     rule <k> #runRPCCall => #eth_blockNumber ... </k>
          <method> "eth_blockNumber" </method>
+    rule <k> #runRPCCall => #eth_accounts ... </k>
+         <method> "eth_accounts" </method>
 
     syntax KItem ::= "#net_version"
  // -------------------------------
@@ -80,7 +82,7 @@ module WEB3
 
     syntax KItem ::= "#eth_gasPrice"
  // --------------------------------
-    rule <k> #eth_gasPrice => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( PRICE ) } ) ... </k> // TODO: Decide to have output in hex form here or convert it later
+    rule <k> #eth_gasPrice => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( PRICE ) } ) ... </k> // TODO: Decide whether to have a #Int2HexString() here or do the conversion outside
          <jsonrpc> JSONRPC </jsonrpc>
          <callid> CALLID </callid>
          <gasPrice> PRICE </gasPrice>
@@ -91,6 +93,18 @@ module WEB3
          <jsonrpc> JSONRPC </jsonrpc>
          <callid> CALLID </callid>
          <number> BLOCKNUM </number>
+
+    syntax KItem ::= "#eth_accounts"
+ // --------------------------------
+    rule <k> #eth_accounts => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : [ #acctsToJArray( ACCTS ) ] } ) ... </k>
+         <jsonrpc> JSONRPC </jsonrpc>
+         <callid> CALLID </callid>
+         <activeAccounts> ACCTS </activeAccounts>
+
+    syntax JSONList ::= #acctsToJArray( Set ) [function]
+ // ------------------------------------------------
+    rule #acctsToJArray( .Set ) => .JSONList
+    rule #acctsToJArray( SetItem( ACCT ) ACCTS:Set ) => Int2String( ACCT ), #acctsToJArray( ACCTS )
 
 endmodule
 ```
