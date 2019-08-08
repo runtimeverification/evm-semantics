@@ -72,6 +72,8 @@ module WEB3
          <method> "eth_blockNumber" </method>
     rule <k> #runRPCCall => #eth_accounts ... </k>
          <method> "eth_accounts" </method>
+    rule <k> #runRPCCall => #eth_getBalance ... </k>
+         <method> "eth_getBalance" </method>
 
     syntax KItem ::= "#net_version"
  // -------------------------------
@@ -105,6 +107,17 @@ module WEB3
  // ------------------------------------------------
     rule #acctsToJArray( .Set ) => .JSONList
     rule #acctsToJArray( SetItem( ACCT ) ACCTS:Set ) => Int2String( ACCT ), #acctsToJArray( ACCTS )
+
+    syntax KItem ::= "#eth_getBalance"
+ // ----------------------------------
+    rule <k> #eth_getBalance => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( ACCTBALANCE ) } ) ... </k>
+         <jsonrpc> JSONRPC </jsonrpc>
+         <callid> CALLID </callid>
+         <params> [ DATA, TAG, .JSONList ] </params>
+         <account> ...
+           <acctID> DATA </acctID> // TODO: Make sure DATA is in proper format (the RPC uses hex strings)
+           <balance> ACCTBALANCE </balance>
+         ... </account>
 
 endmodule
 ```
