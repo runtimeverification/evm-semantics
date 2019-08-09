@@ -56,7 +56,7 @@ distclean: clean
 
 clean-submodules: distclean
 	rm -rf $(DEPS_DIR)/k/make.timestamp $(DEPS_DIR)/metropolis/*.sty \
-	       tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp $(DEPS_DIR)/plugin/make.timestamp  \
+	       tests/ethereum-tests/make.timestamp $(DEPS_DIR)/plugin/make.timestamp  \
 	       $(DEPS_DIR)/libff/build
 	cd $(DEPS_DIR)/k         && mvn clean --quiet
 	cd $(DEPS_DIR)/secp256k1 && make distclean || true
@@ -356,8 +356,8 @@ CHECK:=git --no-pager diff --no-index --ignore-all-space
 KEVM_MODE:=NORMAL
 KEVM_SCHEDULE:=PETERSBURG
 
-test-all: test-all-conformance test-all-proof test-interactive test-parse
-test: test-conformance test-proof test-interactive test-parse
+test-all: test-all-conformance test-prove test-interactive test-parse
+test: test-conformance test-prove test-interactive test-parse
 
 split-tests: tests/ethereum-tests/make.timestamp
 
@@ -445,10 +445,10 @@ test-bchain: $(quick_bchain_tests:=.run)
 
 # Proof Tests
 
-proof_specs_dir:=tests/specs
-proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
+prove_specs_dir:=tests/specs
+prove_tests=$(wildcard $(prove_specs_dir)/*/*-spec.k)
 
-test-prove: $(test_prove_specs:=.prove)
+test-prove: $(prove_tests:=.prove)
 test-klab-prove: $(smoke_tests_prove:=.klab-prove)
 
 # Parse Tests
