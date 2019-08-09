@@ -446,7 +446,7 @@ test-bchain: $(quick_bchain_tests:=.run)
 # Proof Tests
 
 proof_specs_dir:=tests/specs
-proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
+test_prove_specs=$(wildcard $(proof_specs_dir)/*/*-spec.k)
 
 test-prove: $(test_prove_specs:=.prove)
 test-klab-prove: $(smoke_tests_prove:=.klab-prove)
