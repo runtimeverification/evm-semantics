@@ -37,7 +37,7 @@ export LUA_PATH
 .PHONY: all clean clean-submodules distclean install uninstall \
         deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff \
         build build-ocaml build-java build-node build-llvm build-web3 split-tests \
-        defn java-defn ocaml-defn node-defn haskell-defn llvm-defn \
+        defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn \
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
         test-prove test-klab-prove test-parse test-failure \
@@ -156,6 +156,7 @@ LLVM_KOMPILE_OPTS:=
 ocaml_kompiled:=$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter
 java_kompiled:=$(DEFN_DIR)/java/$(MAIN_DEFN_FILE)-kompiled/timestamp
 node_kompiled:=$(DEFN_DIR)/vm/kevm-vm
+web3_kompiled:=$(DEFN_DIR)/web3/kevm-client
 haskell_kompiled:=$(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 llvm_kompiled:=$(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
@@ -163,12 +164,9 @@ build: build-ocaml build-java
 build-ocaml: $(ocaml_kompiled)
 build-java: $(java_kompiled)
 build-node: $(node_kompiled)
+build-web3: $(web3_kompiled)
 build-haskell: $(haskell_kompiled)
 build-llvm: $(llvm_kompiled)
-
-build-web3: MAIN_MODULE=WEB3
-build-web3: MAIN_DEFN_FILE=web3
-build-web3: $(llvm_kompiled)
 
 # Tangle definition from *.md files
 
@@ -185,7 +183,8 @@ llvm_files=$(patsubst %, $(DEFN_DIR)/llvm/%, $(ALL_K_FILES))
 java_files=$(patsubst %, $(DEFN_DIR)/java/%, $(ALL_K_FILES))
 haskell_files=$(patsubst %, $(DEFN_DIR)/haskell/%, $(ALL_K_FILES))
 node_files=$(patsubst %, $(DEFN_DIR)/node/%, $(ALL_K_FILES))
-defn_files=$(ocaml_files) $(llvm_file) $(java_files) $(haskell_files) $(node_files)
+web3_files=$(patsubst %, $(DEFN_DIR)/web3/%, $(ALL_K_FILES))
+defn_files=$(ocaml_files) $(llvm_file) $(java_files) $(haskell_files) $(node_files) $(web3_files)
 
 defn: $(defn_files)
 ocaml-defn: $(ocaml_files)
@@ -193,6 +192,7 @@ llvm-defn: $(llvm_files)
 java-defn: $(java_files)
 haskell-defn: $(haskell_files)
 node-defn: $(node_files)
+web3-defn: $(web3_files)
 
 $(DEFN_DIR)/ocaml/%.k: %.md $(TANGLER)
 	@echo "==  tangle: $@"
@@ -215,6 +215,11 @@ $(DEFN_DIR)/haskell/%.k: %.md $(TANGLER)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
 $(DEFN_DIR)/node/%.k: %.md $(TANGLER)
+	@echo "==  tangle: $@"
+	mkdir -p $(dir $@)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
+
+$(DEFN_DIR)/web3/%.k: %.md $(TANGLER)
 	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
@@ -309,12 +314,38 @@ $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUB
 
 $(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter $(libff_out)
 	mkdir -p $(DEFN_DIR)/vm
-	$(K_BIN)/llvm-kompile $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp \
+	$(K_BIN)/llvm-kompile $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/init.cpp $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp \
 	                      $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $@ -g -O2 \
 	                      -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ -I node/ \
 	                      $(LLVM_KOMPILE_OPTS) \
 	                      -L$(LIBRARY_PATH) \
 	                      -lff -lprotobuf -lgmp $(LINK_PROCPS) -lcryptopp -lsecp256k1
+
+# Web3 Backend
+
+$(DEFN_DIR)/web3/web3-kompiled/interpreter: $(web3_files) $(libff_out)
+	@echo "== kompile: $@"
+	$(K_BIN)/kompile --debug --main-module WEB3 --backend llvm \
+	                 --syntax-module WEB3 $(DEFN_DIR)/web3/web3.k \
+	                 --directory $(DEFN_DIR)/web3 -I $(DEFN_DIR)/web3 \
+	                 --hook-namespaces "KRYPTO BLOCKCHAIN JSON" \
+			 --iterated \
+	                 $(KOMPILE_OPTS) \
+	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/client-c/json.cpp \
+	                 -ccopt -L$(LIBRARY_PATH) -ccopt -I -ccopt $(PLUGIN_SUBMODULE)/vm-c \
+	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS)) -ccopt -g -ccopt -std=c++11 -ccopt -O2
+
+$(web3_kompiled): $(DEFN_DIR)/web3/web3-kompiled/interpreter $(libff_out)
+	mkdir -p $(DEFN_DIR)/web3
+	$(K_BIN)/llvm-kompile $(DEFN_DIR)/web3/web3-kompiled/definition.kore $(DEFN_DIR)/web3/web3-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/init.cpp $(PLUGIN_SUBMODULE)/client-c/main.cpp $(PLUGIN_SUBMODULE)/client-c/json.cpp \
+	                      $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -o $@ -g -O2 \
+	                      -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/plugin-c/ -I node/ \
+	                      $(LLVM_KOMPILE_OPTS) \
+	                      -L$(LIBRARY_PATH) \
+	                      -lff -lgmp $(LINK_PROCPS) -lcryptopp -lsecp256k1
+
+
+
 
 # LLVM Backend
 
