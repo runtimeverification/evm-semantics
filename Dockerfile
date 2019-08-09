@@ -9,9 +9,6 @@ RUN    apt-get update  -q                                                     \
         protobuf-compiler python3 python-pygments python-recommonmark         \
         python-sphinx time zlib1g-dev
 
-COPY deps/k/haskell-backend/src/main/native/haskell-backend/scripts/install-stack.sh /.install-stack/
-RUN /.install-stack/install-stack.sh
-
 USER user:user
 
 COPY deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-common /home/user/.tmp-opam/bin/
@@ -19,10 +16,16 @@ COPY deps/k/k-distribution/src/main/scripts/lib/opam  /home/user/.tmp-opam/lib/o
 RUN    cd /home/user \
     && ./.tmp-opam/bin/k-configure-opam-dev
 
-COPY --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/stack.yaml /home/user/.tmp-haskell/
-COPY --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/kore/package.yaml /home/user/.tmp-haskell/kore/
-RUN    cd /home/user/.tmp-haskell \
-    && stack build --only-snapshot
+# Copy haskell.
+COPY --from=runtimeverificationinc/haskell:ubuntu-bionic \
+     --chown=user:user \
+     /home/user/.stack \
+     /home/user/.stack
+
+COPY --from=runtimeverificationinc/haskell:ubuntu-bionic \
+     --chown=user:user \
+     /usr/local/bin/stack \
+     /usr/local/bin/stack
 
 # Copy z3.
 COPY --from=runtimeverificationinc/z3:4.6.0-llvm-8-ubuntu-bionic \
