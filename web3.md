@@ -77,21 +77,21 @@ module WEB3
 
     syntax KItem ::= "#net_version"
  // -------------------------------
-    rule <k> #net_version => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( CHAINID ) } ) ... </k>
+    rule <k> #net_version => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseQuantity( CHAINID ) } ) ... </k>
          <jsonrpc> JSONRPC </jsonrpc>
          <callid> CALLID </callid>
          <chainID> CHAINID </chainID>
 
     syntax KItem ::= "#eth_gasPrice"
  // --------------------------------
-    rule <k> #eth_gasPrice => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( PRICE ) } ) ... </k> // TODO: Decide whether to have a #Int2HexString() here or do the conversion outside
+    rule <k> #eth_gasPrice => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseQuantity( PRICE ) } ) ... </k>
          <jsonrpc> JSONRPC </jsonrpc>
          <callid> CALLID </callid>
          <gasPrice> PRICE </gasPrice>
 
     syntax KItem ::= "#eth_blockNumber"
  // -----------------------------------
-    rule <k> #eth_blockNumber => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( BLOCKNUM ) } ) ... </k>
+    rule <k> #eth_blockNumber => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseQuantity( BLOCKNUM ) } ) ... </k>
          <jsonrpc> JSONRPC </jsonrpc>
          <callid> CALLID </callid>
          <number> BLOCKNUM </number>
@@ -104,18 +104,21 @@ module WEB3
          <activeAccounts> ACCTS </activeAccounts>
 
     syntax JSONList ::= #acctsToJArray( Set ) [function]
- // ------------------------------------------------
+ // ----------------------------------------------------
     rule #acctsToJArray( .Set ) => .JSONList
-    rule #acctsToJArray( SetItem( ACCT ) ACCTS:Set ) => Int2String( ACCT ), #acctsToJArray( ACCTS )
+    rule #acctsToJArray( SetItem( ACCT ) ACCTS:Set ) => #unparseData( ACCT, 20 ), #acctsToJArray( ACCTS )
 
     syntax KItem ::= "#eth_getBalance"
  // ----------------------------------
-    rule <k> #eth_getBalance => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( ACCTBALANCE ) } ) ... </k>
+    rule <k> #eth_getBalance ... </k>
+         <params> [ (DATA => #parseHexWord(DATA)), _ ] </params>
+
+    rule <k> #eth_getBalance => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseQuantity( ACCTBALANCE ) } ) ... </k>
          <jsonrpc> JSONRPC </jsonrpc>
          <callid> CALLID </callid>
          <params> [ DATA, TAG, .JSONList ] </params>
          <account> ...
-           <acctID> DATA </acctID> // TODO: Make sure DATA is in proper format (the RPC uses hex strings)
+           <acctID> DATA </acctID>
            <balance> ACCTBALANCE </balance>
          ... </account>
 
