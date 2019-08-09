@@ -7,6 +7,7 @@ requires "evm.k"
 module WEB3
     imports EVM
     imports EVM-DATA
+    imports K-IO
 
     configuration
       <kevm-client>
@@ -14,13 +15,14 @@ module WEB3
         <blockchain>
           <chainID> $CHAINID:Int </chainID>
         </blockchain>
+        <web3socket> $SOCK:Int </web3socket>
+        <web3clientsocket> 0:IOInt </web3clientsocket>
         <web3request>
           <jsonrpc> "" </jsonrpc>
           <callid> 0 </callid>
           <method> "" </method>
           <params> [ .JSONList ] </params>
         </web3request>
-        <web3result> .List </web3result>
       </kevm-client>
 
     syntax JSON   ::= Int | Bool
@@ -45,23 +47,39 @@ module WEB3
     rule #getString( KEY, { KEY2 : _, REST }        ) => #getString( KEY, { REST } )
       requires KEY =/=K KEY2
 
-    syntax EthereumSimulation ::= List{JSON, " "}
- // ---------------------------------------------
-    rule <k> J:JSON REST:EthereumSimulation => #loadRPCCall J ~> REST ... </k>
-    rule <k> J:JSON => #loadRPCCall J ... </k>
+    syntax IOJSON ::= JSON | IOError
 
-    syntax KItem ::= "#loadRPCCall" JSON
- // ------------------------------------
-    rule <k> #loadRPCCall J:JSON => #runRPCCall ...          </k>
+    syntax EthereumSimulation ::= accept() [symbol]
+ // -----------------------------------------------
+
+    rule <k> accept() => getRequest() ... </k>
+         <web3socket> SOCK </web3socket>
+         <web3clientsocket> _ => #accept(SOCK) </web3clientsocket>
+
+    syntax KItem ::= getRequest()
+ // -----------------------------
+
+    rule <k> getRequest() => #loadRPCCall(#getRequest(SOCK)) ... </k>
+         <web3clientsocket> SOCK </web3clientsocket>
+
+    syntax IOJSON ::= #getRequest(Int) [function, hook(JSON.read)] 
+    syntax K ::= #putResponse(JSON, Int) [function, hook(JSON.write)]
+
+    syntax KItem ::= #loadRPCCall(IOJSON)
+ // -------------------------------------
+    rule <k> #loadRPCCall(J:JSON) => #runRPCCall ... </k>
          <jsonrpc> _             => #getString("jsonrpc", J) </jsonrpc>
          <callid>  _             => #getInt   ("id"     , J) </callid>
          <method>  _             => #getString("method" , J) </method>
          <params>  _             => #getJSON  ("params" , J) </params>
 
-    syntax KItem ::= #sendResponse ( JSON )
- // ---------------------------------------
-    rule <k> #sendResponse( J:JSON ) => . ... </k>
-         <web3result> ... ( .List => ListItem( J ) ) </web3result>
+    rule <k> #loadRPCCall(#EOF) => #shutdownWrite(SOCK) ~> #close(SOCK) ~> accept() ... </k>
+         <web3clientsocket> SOCK </web3clientsocket>
+
+    syntax KItem ::= #sendResponse( JSON )
+ // --------------------------------------
+    rule <k> #sendResponse(J) => #putResponse(J, SOCK) ~> getRequest() ... </k>
+         <web3clientsocket> SOCK </web3clientsocket>
 
     syntax KItem ::= "#runRPCCall"
  // ------------------------------
