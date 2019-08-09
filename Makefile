@@ -40,6 +40,7 @@ export LUA_PATH
         defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn \
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
+        test-web3 \
         test-prove test-klab-prove test-parse test-failure \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly \
         media media-pdf sphinx metropolis-theme
@@ -421,6 +422,10 @@ tests/%.run-expected: tests/% tests/%.expected
 	    || $(CHECK) tests/$*.expected tests/$*.$(TEST_CONCRETE_BACKEND)-out
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
+tests/%.run-web3: tests/%.in.json
+	PORT=`tests/web3/get_port.py`; $(client_kompiled) $$PORT 127.0.0.1 & while ! netcat -z 127.0.0.1 $$PORT; do sleep 0.1; done; cat $^ | netcat 127.0.0.1 $$PORT -q 0 | diff - tests/$*.out.json; RESULT=$$?; pkill kevm-client -P $$$$; [ $$? -eq 0 ]
+
+
 tests/%.parse: tests/%
 	$(TEST) kast --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
 	$(CHECK) $@-expected $@-out
@@ -474,9 +479,13 @@ failing_bchain_tests=$(shell cat tests/failing.$(TEST_CONCRETE_BACKEND))
 all_bchain_tests=$(filter-out $(bad_bchain_tests), $(filter-out $(failing_bchain_tests), $(bchain_tests)))
 quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(all_bchain_tests))
 
+web3_tests=$(wildcard tests/web3/*.in.json)
+
 test-all-bchain: $(all_bchain_tests:=.run)
 test-slow-bchain: $(slow_bchain_tests:=.run)
 test-bchain: $(quick_bchain_tests:=.run)
+
+test-web3: $(web3_tests:.in.json=.run-web3)
 
 # Proof Tests
 
