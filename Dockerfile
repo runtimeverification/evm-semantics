@@ -11,10 +11,11 @@ RUN    apt-get update  -q                                                     \
 
 USER user:user
 
-COPY deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-common /home/user/.tmp-opam/bin/
-COPY deps/k/k-distribution/src/main/scripts/lib/opam  /home/user/.tmp-opam/lib/opam/
-RUN    cd /home/user \
-    && ./.tmp-opam/bin/k-configure-opam-dev
+# Copy OCaml.
+COPY --chown=user:user \
+     --from=runtimeverificationinc/ocaml:ubuntu-bionic \
+     /home/user/.opam \
+     /home/user/.opam
 
 # Copy haskell.
 COPY --from=runtimeverificationinc/haskell:ubuntu-bionic \
