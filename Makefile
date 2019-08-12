@@ -36,7 +36,7 @@ export LUA_PATH
 
 .PHONY: all clean clean-submodules distclean install uninstall \
         deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff \
-        build build-ocaml build-java build-node build-kore split-tests \
+        build build-ocaml build-java build-node build-llvm build-web3 split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn llvm-defn \
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
@@ -165,6 +165,10 @@ build-java: $(java_kompiled)
 build-node: $(node_kompiled)
 build-haskell: $(haskell_kompiled)
 build-llvm: $(llvm_kompiled)
+
+build-web3: MAIN_MODULE=WEB3
+build-web3: MAIN_DEFN_FILE=web3
+build-web3: $(llvm_kompiled)
 
 # Tangle definition from *.md files
 
