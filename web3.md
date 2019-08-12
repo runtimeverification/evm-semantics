@@ -70,6 +70,8 @@ module WEB3
  // ------------------------------
     rule <k> #runRPCCall => #net_version ... </k>
          <method> "net_version" </method>
+    rule <k> #runRPCCall => #web3_clientVersion ... </k>
+         <method> "web3_clientVersion" </method>
     rule <k> #runRPCCall => #eth_gasPrice ... </k>
          <method> "eth_gasPrice" </method>
     rule <k> #runRPCCall => #eth_blockNumber ... </k>
@@ -89,6 +91,12 @@ module WEB3
          <jsonrpc> JSONRPC </jsonrpc>
          <callid> CALLID </callid>
          <chainID> CHAINID </chainID>
+
+    syntax KItem ::= "#web3_clientVersion"
+ // -------------------------------
+    rule <k> #web3_clientVersion => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : "Firefly RPC/v0.0.1/kevm" } ) ... </k>
+         <jsonrpc> JSONRPC </jsonrpc>
+         <callid> CALLID </callid>
 
     syntax KItem ::= "#eth_gasPrice"
  // --------------------------------
