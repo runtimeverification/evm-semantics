@@ -80,7 +80,7 @@ module WEB3
 
     syntax KItem ::= "#net_version"
  // -------------------------------
-    rule <k> #net_version => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseQuantity( CHAINID ) } ) ... </k>
+    rule <k> #net_version => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( CHAINID ) } ) ... </k>
          <jsonrpc> JSONRPC </jsonrpc>
          <callid> CALLID </callid>
          <chainID> CHAINID </chainID>
