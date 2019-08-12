@@ -11,7 +11,10 @@ module WEB3
 
     configuration
       <kevm-client>
-        <kevm />
+        <kevm/>
+        <blockchain>
+          <chainID> $CHAINID:Int </chainID>
+        </blockchain>
         <web3request>
           <jsonrpc> "" </jsonrpc>
           <callid> 0 </callid>

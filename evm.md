@@ -105,8 +105,6 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
             <blockhash>         .List         </blockhash>
 
-            <chainID> $CHAINID:Int </chainID>
-
           </evm>
 
           // Ethereum Network
