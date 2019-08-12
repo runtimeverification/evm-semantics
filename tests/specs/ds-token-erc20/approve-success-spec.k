@@ -107,7 +107,7 @@ andBool 0 <=Int STOPPED   andBool STOPPED   <Int (2 ^Int 256)
 andBool STOPPED ==Int 0
 andBool 0 <=Int ORIG_VAL     andBool ORIG_VAL     <Int (2 ^Int 256)
 andBool #hashedLocation("Solidity", 4, .IntList) =/=Int #hashedLocation("Solidity", 2, CALLER_ID SPENDER)
-     
+
 
 endmodule
 

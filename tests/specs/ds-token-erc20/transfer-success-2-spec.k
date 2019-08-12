@@ -110,7 +110,7 @@ andBool CALLER_ID ==Int TO_ID
 andBool VALUE <=Int BAL_FROM
 andBool STOPPED ==Int 0
 andBool #hashedLocation("Solidity", 4, .IntList) =/=Int #hashedLocation("Solidity", 1, CALLER_ID)
-     
+
 
 endmodule
 

@@ -113,7 +113,7 @@ andBool #hashedLocation("Solidity", 1, CALLER_ID) =/=Int #hashedLocation("Solidi
 andBool #hashedLocation("Solidity", 4, .IntList)   =/=Int #hashedLocation("Solidity", 1, TO_ID)
 andBool #hashedLocation("Solidity", 4, .IntList)   =/=Int #hashedLocation("Solidity", 1, CALLER_ID)
 andBool STOPPED ==Int 1 <<Int (20 *Int 8)
-     
+
 
 endmodule
 
