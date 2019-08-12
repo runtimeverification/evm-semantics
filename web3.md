@@ -1,5 +1,6 @@
 Web3 RPC JSON Handler
 ====================
+
 ```k
 requires "evm.k"
 requires "data.k"
@@ -7,7 +8,6 @@ requires "data.k"
 module WEB3
     imports EVM
     imports EVM-DATA
-    // LOGIC GOES HERE
 
     configuration
       <kevm-client>
@@ -24,9 +24,11 @@ module WEB3
         <web3result> .List </web3result>
       </kevm-client>
 
-    syntax EthereumSimulation ::= List{JSON, " "}
     syntax JSON ::= Int | Bool
+ // --------------------------
 
+    syntax EthereumSimulation ::= List{JSON, " "}
+ // ---------------------------------------------
     rule <k> J:JSON REST:EthereumSimulation => #loadRPCCall J ~> REST ... </k>
     rule <k> J:JSON => #loadRPCCall J ... </k>
 
@@ -60,8 +62,8 @@ module WEB3
     rule #getParams( { KEY : _, REST } => { REST } )
         requires KEY =/=String "params"
 
-    syntax KItem ::= #sendResponse( JSON )
- // --------------------------------------
+    syntax KItem ::= #sendResponse ( JSON )
+ // ---------------------------------------
     rule <k> #sendResponse( J:JSON ) => . ... </k>
          <web3result> ... ( .List => ListItem( J ) ) </web3result>
 
@@ -110,8 +112,8 @@ module WEB3
          <callid> CALLID </callid>
          <activeAccounts> ACCTS </activeAccounts>
 
-    syntax JSONList ::= #acctsToJArray( Set ) [function]
- // ----------------------------------------------------
+    syntax JSONList ::= #acctsToJArray ( Set ) [function]
+ // -----------------------------------------------------
     rule #acctsToJArray( .Set ) => .JSONList
     rule #acctsToJArray( SetItem( ACCT ) ACCTS:Set ) => #unparseData( ACCT, 20 ), #acctsToJArray( ACCTS )
 
@@ -124,13 +126,14 @@ module WEB3
          <jsonrpc> JSONRPC </jsonrpc>
          <callid> CALLID </callid>
          <params> [ DATA, TAG, .JSONList ] </params>
-         <account> ...
+         <account>
            <acctID> DATA </acctID>
            <balance> ACCTBALANCE </balance>
-         ... </account>
+           ...
+         </account>
 
     syntax KItem ::= "#eth_getStorageAt"
- // -------------------------------
+ // ------------------------------------
     rule <k> #eth_getStorageAt ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), QUANTITY:Int, _ ] </params>
 
