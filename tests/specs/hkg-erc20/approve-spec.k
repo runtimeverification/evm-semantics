@@ -102,7 +102,7 @@ _:Map </origStorage>
      andBool 0 <=Int SPENDER   andBool SPENDER   <Int (2 ^Int 160)
 andBool 0 <=Int VALUE     andBool VALUE     <Int (2 ^Int 256)
 andBool 0 <=Int INIT_VALUE     andBool INIT_VALUE     <Int (2 ^Int 256)
-     
+
 
 endmodule
 

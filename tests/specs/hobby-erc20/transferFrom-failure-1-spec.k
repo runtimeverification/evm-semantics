@@ -114,7 +114,7 @@ andBool ( VALUE <=Int 0 orBool VALUE >Int BAL_FROM orBool VALUE >Int ALLOW orBoo
 andBool #hashedLocation("Solidity", 1, FROM_ID) =/=Int #hashedLocation("Solidity", 1, TO_ID)
 andBool #hashedLocation("Solidity", 2, FROM_ID CALLER_ID) =/=Int #hashedLocation("Solidity", 1, TO_ID)
 andBool #hashedLocation("Solidity", 2, FROM_ID CALLER_ID) =/=Int #hashedLocation("Solidity", 1, FROM_ID)
-     
+
 
 endmodule
 

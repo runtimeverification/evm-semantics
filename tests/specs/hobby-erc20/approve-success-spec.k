@@ -103,7 +103,7 @@ _:Map </origStorage>
 andBool 0 <=Int VALUE     andBool VALUE     <Int (2 ^Int 256)
 andBool 0 <=Int ALLOWANCE andBool ALLOWANCE <Int (2 ^Int 256)
 andBool ( VALUE ==Int 0 orBool ALLOWANCE ==Int 0 )
-     
+
 
 endmodule
 
