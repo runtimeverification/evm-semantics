@@ -161,16 +161,34 @@ pipeline {
             stage ( 'Publish release image' ) {
               steps {
                 sh """
+                  # Temporary container name.
                   container_name=evm-semantics-${env.CHANGE_ID}
+
+                  # Create a container with the above name, from the image used so far.
                   docker create --interactive --name ${container_name} evm-semantics:${env.CHANGE_ID}
+
+                  # Copy the contents of the workspace into `/home/user/evm-semantics`
+                  # Inside the container.
                   docker cp ${WORKSPACE} ${container_name}:/home/user/evm-semantics
+
+                  # Start the container (it will keep running because of `--interactive`).
                   docker start ${container_name}
+
+                  # Run the `chown` command inside the running container.
                   docker exec ${container_name} chown -R user:user /home/user/evm-semantics
+
+                  # Commit the container into an image.
+                  # It is imperative that we use the same tag as the original `img` object.
                   docker commit ${container_name} evm-semantics:${env.CHANGE_ID}
+
+                  # Stop and remove the temporary container.
                   docker rm -f ${container_name}
                 """
                 script {
                   docker.withRegistry ( 'runtimeverificationinc', 'rvdockerhub' ) {
+                    // This will only work because the previous step
+                    // commits an image with the same tag as the original `img`.
+                    // The argument here changes the tag to `latest`.
                     img.push('latest')
                   }
                 }
