@@ -167,6 +167,7 @@ pipeline {
                   docker start ${container_name}
                   docker exec ${container_name} chown -R user:user /home/user/evm-semantics
                   docker commit ${container_name} evm-semantics:${env.CHANGE_ID}
+                  docker rm -f ${container_name}
                 """
                 script {
                   docker.withRegistry ( 'runtimeverificationinc', 'rvdockerhub' ) {
