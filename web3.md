@@ -23,8 +23,27 @@ module WEB3
         <web3result> .List </web3result>
       </kevm-client>
 
-    syntax JSON ::= Int | Bool
- // --------------------------
+    syntax JSON   ::= Int | Bool
+                    | #getJSON ( JSONKey, JSON ) [function]
+ // -------------------------------------------------------
+    rule #getJSON( KEY, { KEY : J, _ } )     => J
+    rule #getJSON( _, { .JSONList } )        => { .JSONList }
+    rule #getJSON( KEY, { KEY2 : _, REST } ) => #getJSON( KEY, { REST } )
+      requires KEY =/=K KEY2
+
+    syntax Int ::= #getInt ( JSONKey, JSON ) [function]
+ // ---------------------------------------------------
+    rule #getInt( KEY, { KEY : VALUE:Int, _ } ) => VALUE
+    rule #getInt( _  , { .JSONList }          ) => 0 // TODO: Need something better for nonexistent key/value
+    rule #getInt( KEY, { KEY2 : _, REST }     ) => #getInt( KEY, { REST } )
+      requires KEY =/=K KEY2
+
+    syntax String ::= #getString ( JSONKey, JSON ) [function]
+ // ---------------------------------------------------------
+    rule #getString( KEY, { KEY : VALUE:String, _ } ) => VALUE
+    rule #getString( _  , { .JSONList }             ) => "" // TODO: Need something better for nonexistent key/value
+    rule #getString( KEY, { KEY2 : _, REST }        ) => #getString( KEY, { REST } )
+      requires KEY =/=K KEY2
 
     syntax EthereumSimulation ::= List{JSON, " "}
  // ---------------------------------------------
@@ -33,33 +52,11 @@ module WEB3
 
     syntax KItem ::= "#loadRPCCall" JSON
  // ------------------------------------
-    rule <k> #loadRPCCall J:JSON => #runRPCCall ... </k>
-         <jsonrpc> _ => #getVersion(J) </jsonrpc>
-         <callid> _ => #getId(J) </callid>
-         <method> _ => #getMethod(J) </method>
-         <params> _ => #getParams(J) </params>
-
-    syntax Int ::= #getId( JSON ) [function]
- // ----------------------------------------
-    rule #getId( { "id" : VALUE:Int, _ } ) => VALUE
-    rule #getId( { KEY : _, REST } => { REST } )
-        requires KEY =/=String "id"
-
-    syntax String ::= #getVersion( JSON ) [function]
-                    | #getMethod( JSON )  [function]
- // ------------------------------------------------
-    rule #getVersion( { "jsonrpc" : VALUE:String, _ } ) => VALUE
-    rule #getVersion( { KEY : _, REST } => { REST } )
-        requires KEY =/=String "jsonrpc"
-    rule #getMethod( { "method" : VALUE:String, _ } ) => VALUE
-    rule #getMethod( { KEY : _, REST } => { REST } )
-        requires KEY =/=String "method"
-
-    syntax JSON ::= #getParams( JSON ) [function]
- // ---------------------------------------------
-    rule #getParams( { "params" : VALUE:JSON, _ } ) => VALUE
-    rule #getParams( { KEY : _, REST } => { REST } )
-        requires KEY =/=String "params"
+    rule <k> #loadRPCCall J:JSON => #runRPCCall ...          </k>
+         <jsonrpc> _             => #getString("jsonrpc", J) </jsonrpc>
+         <callid>  _             => #getInt   ("id"     , J) </callid>
+         <method>  _             => #getString("method" , J) </method>
+         <params>  _             => #getJSON  ("params" , J) </params>
 
     syntax KItem ::= #sendResponse ( JSON )
  // ---------------------------------------
