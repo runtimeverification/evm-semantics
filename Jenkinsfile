@@ -1,153 +1,187 @@
+// Groovy object holding the docker image.
+def img
+
+// Our internal registry.
+def PRIVATE_REGISTRY = "https://10.0.0.21:5201"
+
+
 pipeline {
   agent none
   options {
     ansiColor('xterm')
   }
   stages {
-    stage("Init title") {
+    stage ( 'PR' ) {
       when {
         changeRequest()
         beforeAgent true
       }
-      steps {
-        script {
-          currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}"
-        }
-      }
-    }
-    stage('Build and Test') {
-      when {
-        changeRequest()
-        beforeAgent true
-      }
-      agent {
-        dockerfile {
-          additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-          args '-m 60g'
-        }
-      }
+      agent any
       stages {
-        stage('Dependencies') {
+        stage ( "Init title" ) {
           steps {
-            sh '''
-              make all-deps -B
-              make split-tests -B
-            '''
+            script {
+              currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}"
+            }
           }
         }
-        stage('Build') {
+        stage ( "Build and push docker image" ) {
           steps {
-            sh '''
-              make build build-llvm build-haskell build-node -j4
-            '''
+            script {
+              docker.withRegistry ( "${PRIVATE_REGISTRY}", 'rvdockerhub' ) {
+                img = docker.build "evm-semantics:${env.CHANGE_ID}"
+                img.push()
+              }
+            }
           }
         }
-        stage('Test Execution') {
-          failFast true
-          parallel {
-            stage('Conformance (OCaml)') {
-              steps {
+
+        stage ( 'Build and Test' ) {
+          stages {
+            stage ( 'Dependencies' ) {
+              steps { script { img.inside {
+                sh '''
+                  make all-deps -B
+                  make split-tests -B
+                '''
+              } } }
+            }
+            stage ( 'Build' ) {
+              steps { script { img.inside {
+                sh 'make build build-llvm build-haskell build-node -j4'
+              } } }
+            }
+            stage ( 'Test Execution' ) {
+              failFast true
+              parallel {
+                stage ( 'Conformance (OCaml)' ) {
+                  steps { script { img.inside {
+                    sh '''
+                      nprocs=$(nproc)
+                      [ "$nprocs" -gt '16' ] && nprocs='16'
+                      make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=ocaml
+                    '''
+                  } } }
+                }
+                stage ( 'Conformance (LLVM)' ) {
+                  steps { script { img.inside {
+                    sh '''
+                      nprocs=$(nproc)
+                      [ "$nprocs" -gt '16' ] && nprocs='16'
+                      make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=llvm
+                    '''
+                  } } }
+                }
+              } // parallel
+            }   // Test Execution
+
+            stage ( 'Test Proofs (Java)' ) {
+              options {
+                lock("proofs-${env.NODE_NAME}")
+              }
+              steps { script { img.inside {
                 sh '''
                   nprocs=$(nproc)
-                  [ "$nprocs" -gt '16' ] && nprocs='16'
-                  make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=ocaml
+                  [ "$nprocs" -gt '6' ] && nprocs='6'
+                  make test-prove -j"$nprocs"
                 '''
-              }
+              } } }
             }
-            stage('Conformance (LLVM)') {
+
+            stage ( 'Test Interactive' ) {
+              failFast true
+              parallel {
+                stage ( 'OCaml krun' ) {
+                  steps { script { img.inside {
+                    sh '''
+                      make test-interactive-run TEST_CONCRETE_BACKEND=ocaml
+                    '''
+                  } } }
+                }
+                stage ( 'LLVM krun' ) {
+                  steps { script { img.inside {
+                    sh '''
+                      make test-interactive-run TEST_CONCRETE_BACKEND=llvm
+                    '''
+                  } } }
+                }
+                stage ( 'Java krun' ) {
+                  steps { script { img.inside {
+                    sh '''
+                      make test-interactive-run TEST_CONCRETE_BACKEND=java
+                    '''
+                  } } }
+                }
+                stage ( 'Haskell krun' ) {
+                  steps { script { img.inside {
+                    sh '''
+                      make test-interactive-run TEST_CONCRETE_BACKEND=haskell
+                    '''
+                  } } }
+                }
+                stage ( 'OCaml kast' ) {
+                  steps { script { img.inside {
+                    sh '''
+                      make test-parse TEST_CONCRETE_BACKEND=ocaml
+                    '''
+                  } } }
+                }
+                stage ( 'Failing tests' ) {
+                  steps { script { img.inside {
+                    sh '''
+                      make test-failure TEST_CONCRETE_BACKEND=ocaml
+                      make test-failure TEST_CONCRETE_BACKEND=llvm
+                    '''
+                  } } }
+                }
+                stage ( 'Java KLab' ) {
+                  steps { script { img.inside {
+                    sh '''
+                      make test-klab-prove TEST_SYMBOLIC_BACKEND=java
+                    '''
+                  } } }
+                }
+                stage ( 'Haskell Search' ) {
+                  steps { script { img.inside {
+                    sh '''
+                      make test-interactive-search TEST_SYMBOLIC_BACKEND=haskell -j4
+                    '''
+                  } } }
+                }
+                stage ( 'KEVM help' ) {
+                  steps { script { img.inside {
+                    sh '''
+                      ./kevm help
+                    '''
+                  } } }
+                }
+              } // parallel
+            }   // Test Interactive
+
+            stage ( 'Publish release image' ) {
               steps {
-                sh '''
-                  nprocs=$(nproc)
-                  [ "$nprocs" -gt '16' ] && nprocs='16'
-                  make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=llvm
-                '''
+                sh """
+                  container_name=evm-semantics-${env.CHANGE_ID}
+                  docker create --interactive --name ${container_name} evm-semantics:${env.CHANGE_ID}
+                  docker cp ${WORKSPACE} ${container_name}:/home/user/evm-semantics
+                  docker start ${container_name}
+                  docker exec ${container_name} chown -R user:user /home/user/evm-semantics
+                  docker commit ${container_name} evm-semantics:${env.CHANGE_ID}
+                """
+                script {
+                  docker.withRegistry ( 'runtimeverificationinc', 'rvdockerhub' ) {
+                    img.push('latest')
+                  }
+                }
               }
-            }
-          }
-        }
-        stage('Test Proofs (Java)') {
-          options {
-            lock("proofs-${env.NODE_NAME}")
-          }
-          steps {
-            sh '''
-              nprocs=$(nproc)
-              [ "$nprocs" -gt '6' ] && nprocs='6'
-              make test-prove -j"$nprocs"
-            '''
-          }
-        }
-        stage('Test Interactive') {
-          failFast true
-          parallel {
-            stage('OCaml krun') {
-              steps {
-                sh '''
-                  make test-interactive-run TEST_CONCRETE_BACKEND=ocaml
-                '''
-              }
-            }
-            stage('LLVM krun') {
-              steps {
-                sh '''
-                  make test-interactive-run TEST_CONCRETE_BACKEND=llvm
-                '''
-              }
-            }
-            stage('Java krun') {
-              steps {
-                sh '''
-                  make test-interactive-run TEST_CONCRETE_BACKEND=java
-                '''
-              }
-            }
-            stage('Haskell krun') {
-              steps {
-                sh '''
-                  make test-interactive-run TEST_CONCRETE_BACKEND=haskell
-                '''
-              }
-            }
-            stage('OCaml kast') {
-              steps {
-                sh '''
-                  make test-parse TEST_CONCRETE_BACKEND=ocaml
-                '''
-              }
-            }
-            stage('Failing tests') {
-              steps {
-                sh '''
-                  make test-failure TEST_CONCRETE_BACKEND=ocaml
-                  make test-failure TEST_CONCRETE_BACKEND=llvm
-                '''
-              }
-            }
-            stage('Java KLab') {
-              steps {
-                sh '''
-                  make test-klab-prove TEST_SYMBOLIC_BACKEND=java
-                '''
-              }
-            }
-            stage('Haskell Search') {
-              steps {
-                sh '''
-                  make test-interactive-search TEST_SYMBOLIC_BACKEND=haskell -j4
-                '''
-              }
-            }
-            stage('KEVM help') {
-              steps {
-                sh '''
-                  ./kevm help
-                '''
-              }
-            }
-          }
-        }
-      }
-    }
+            } // Publish release image.
+
+          } // Build and Test (stages)
+        }   // Build and Test
+
+      } // PR stages
+    }   // PR
+
     stage('Release') {
       when {
         not { changeRequest() }
@@ -316,6 +350,7 @@ pipeline {
                   , message: "KEVM Release Failed: ${env.BUILD_URL}"
         }
       }
-    }
-  }
-}
+    } // Release
+
+  }   // Pipeline stages
+}     // Pipeline
