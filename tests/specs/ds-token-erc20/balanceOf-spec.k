@@ -100,7 +100,7 @@ _:Map </storage>
      andBool 0 <=Int CALL_DEPTH andBool CALL_DEPTH <Int 1024
      andBool 0 <=Int OWNER     andBool OWNER     <Int (2 ^Int 160)
 andBool 0 <=Int BAL       andBool BAL       <Int (2 ^Int 256)
-     
+
 
 endmodule
 
