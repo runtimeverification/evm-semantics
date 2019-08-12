@@ -373,9 +373,9 @@ Bitwise logical operators are lifted from the integer versions.
 ```k
     syntax Int ::= signextend( Int , Int ) [function]
  // -------------------------------------------------
-    rule signextend(N, W) => W requires N >=Int 32 orBool N <Int 0
-    rule signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
-    rule signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
+    rule signextend(N, W) => W requires N >=Int 32 orBool N <Int 0    [concrete]
+    rule signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))   [concrete]
+    rule signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))   [concrete]
 ```
 
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
