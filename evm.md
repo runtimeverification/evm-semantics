@@ -1288,7 +1288,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <gas> _ => GCALL </gas>
          <callGas> GCALL => 0 </callGas>
          <caller> _ => ACCTFROM </caller>
-         <program> _ => CODE </program>
+         <program> _ => #asMapOpCodes(#dasmOpCodes(BYTES, SCHED)) </program>
          <programBytes> _ => BYTES </programBytes>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
@@ -2371,8 +2371,11 @@ After interpreting the strings representing programs as a `WordStack`, it should
 -   `#dasmOpCode` interperets a `Int` as an `OpCode`.
 
 ```k
-    syntax OpCodes ::= #dasmOpCodes ( ByteArray , Schedule )           [function]
- // -----------------------------------------------------------------------------
+    syntax Int     ::= #widthOpCode(Int)                     [function]
+    syntax OpCodes ::= #dasmOpCodes ( ByteArray , Schedule ) [function]
+ // -------------------------------------------------------------------
+    rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
+    rule #widthOpCode(_) => 1 [owise]
 ```
 
 ```{.k .symbolic}
@@ -2396,13 +2399,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCodes( WS, SCHED ) => #revOps(#dasmOpCodes(.OpCodes, WS, SCHED, 0, #sizeByteArray(WS)))
 
     rule #dasmOpCodes( OPS, _ ,     _ , I , J ) => OPS requires I >=Int J
-    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(#dasmOpCode(WS[I], SCHED) ; OPS, WS, SCHED, I +Int 1, J) requires WS[I] >=Int 0   andBool WS[I] <=Int 95 [owise]
-    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(#dasmOpCode(WS[I], SCHED) ; OPS, WS, SCHED, I +Int 1, J) requires WS[I] >=Int 165 andBool WS[I] <=Int 255 [owise]
-    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(DUP(WS[I] -Int 127)       ; OPS, WS, SCHED, I +Int 1, J) requires WS[I] >=Int 128 andBool WS[I] <=Int 143 [owise]
-    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(SWAP(WS[I] -Int 143)      ; OPS, WS, SCHED, I +Int 1, J) requires WS[I] >=Int 144 andBool WS[I] <=Int 159 [owise]
-    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(LOG(WS[I] -Int 160)       ; OPS, WS, SCHED, I +Int 1, J) requires WS[I] >=Int 160 andBool WS[I] <=Int 164 [owise]
-
-    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(PUSH(WS[I] -Int 95, #asWord(WS [ I +Int 1 .. WS[I] -Int 95 ])) ; OPS, WS, SCHED, I +Int WS[I] -Int 94, J) requires WS[I] >=Int 96  andBool WS[I] <=Int 127 [owise]
+    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(#dasmOpCode(WS[I], SCHED) ; OPS, WS, SCHED, I +Int #widthOpCode(WS[I]), J) [owise]
 ```
 
 ```k
