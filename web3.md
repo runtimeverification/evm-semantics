@@ -77,6 +77,10 @@ module WEB3
          <method> "eth_accounts" </method>
     rule <k> #runRPCCall => #eth_getBalance ... </k>
          <method> "eth_getBalance" </method>
+    rule <k> #runRPCCall => #eth_getStorageAt ... </k>
+         <method> "eth_getStorageAt" </method>
+    rule <k> #runRPCCall => #eth_getCode ... </k>
+         <method> "eth_getCode" </method>
 
     syntax KItem ::= "#net_version"
  // -------------------------------
@@ -125,5 +129,34 @@ module WEB3
            <balance> ACCTBALANCE </balance>
          ... </account>
 
+    syntax KItem ::= "#eth_getStorageAt"
+ // -------------------------------
+    rule <k> #eth_getStorageAt ... </k>
+         <params> [ (DATA => #parseHexWord(DATA)), QUANTITY:Int, _ ] </params>
+
+    rule <k> #eth_getStorageAt => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY) ) } ) ... </k>
+         <jsonrpc> JSONRPC </jsonrpc>
+         <callid> CALLID </callid>
+         <params> [ DATA, QUANTITY, TAG, .JSONList ] </params>
+         <account>
+           <acctID> DATA </acctID>
+           <storage> STORAGE </storage>
+           ...
+         </account>
+
+    syntax KItem ::= "#eth_getCode"
+ // -------------------------------
+    rule <k> #eth_getCode ... </k>
+         <params> [ (DATA => #parseHexWord(DATA)), _ ] </params>
+
+    rule <k> #eth_getCode => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseDataByteArray( CODE ) } ) ... </k>
+         <jsonrpc> JSONRPC </jsonrpc>
+         <callid> CALLID </callid>
+         <params> [ DATA, TAG, .JSONList ] </params>
+         <account>
+           <acctID> DATA </acctID>
+           <code> CODE </code>
+           ...
+         </account>
 endmodule
 ```
