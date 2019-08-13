@@ -72,8 +72,13 @@ module WEB3
 
     syntax KItem ::= #sendResponse( JSON )
  // --------------------------------------
-    rule <k> #sendResponse(J) => #putResponse(J, SOCK) ~> getRequest() ... </k>
+    rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", "id": CALLID, J }, SOCK) ~> getRequest() </k>
+         <callid> CALLID </callid>
          <web3clientsocket> SOCK </web3clientsocket>
+      requires CALLID =/=K undef
+
+    rule <k> #sendResponse(_) ~> _ => getRequest() </k>
+         <callid> undef </callid>
 
     syntax KItem ::= "#runRPCCall"
  // ------------------------------
@@ -96,36 +101,26 @@ module WEB3
 
     syntax KItem ::= "#net_version"
  // -------------------------------
-    rule <k> #net_version => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( CHAINID ) } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #net_version => #sendResponse( "result" : Int2String( CHAINID ) ) ... </k>
          <chainID> CHAINID </chainID>
 
     syntax KItem ::= "#web3_clientVersion"
  // -------------------------------
-    rule <k> #web3_clientVersion => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : "Firefly RPC/v0.0.1/kevm" } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #web3_clientVersion => #sendResponse( "result" : "Firefly RPC/v0.0.1/kevm" ) ... </k>
 
     syntax KItem ::= "#eth_gasPrice"
  // --------------------------------
-    rule <k> #eth_gasPrice => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseQuantity( PRICE ) } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #eth_gasPrice => #sendResponse( "result" : #unparseQuantity( PRICE ) ) ... </k>
          <gasPrice> PRICE </gasPrice>
 
     syntax KItem ::= "#eth_blockNumber"
  // -----------------------------------
-    rule <k> #eth_blockNumber => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseQuantity( BLOCKNUM ) } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #eth_blockNumber => #sendResponse( "result" : #unparseQuantity( BLOCKNUM ) ) ... </k>
          <number> BLOCKNUM </number>
 
     syntax KItem ::= "#eth_accounts"
  // --------------------------------
-    rule <k> #eth_accounts => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : [ #acctsToJArray( ACCTS ) ] } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #eth_accounts => #sendResponse( "result" : [ #acctsToJArray( ACCTS ) ] ) ... </k>
          <activeAccounts> ACCTS </activeAccounts>
 
     syntax JSONList ::= #acctsToJArray ( Set ) [function]
@@ -138,9 +133,7 @@ module WEB3
     rule <k> #eth_getBalance ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), _ ] </params>
 
-    rule <k> #eth_getBalance => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseQuantity( ACCTBALANCE ) } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( ACCTBALANCE ) ) ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
          <account>
            <acctID> DATA </acctID>
@@ -153,9 +146,7 @@ module WEB3
     rule <k> #eth_getStorageAt ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), QUANTITY:Int, _ ] </params>
 
-    rule <k> #eth_getStorageAt => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY) ) } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #eth_getStorageAt => #sendResponse( "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY) ) ) ... </k>
          <params> [ DATA, QUANTITY, TAG, .JSONList ] </params>
          <account>
            <acctID> DATA </acctID>
@@ -168,9 +159,7 @@ module WEB3
     rule <k> #eth_getCode ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), _ ] </params>
 
-    rule <k> #eth_getCode => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseDataByteArray( CODE ) } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #eth_getCode => #sendResponse( "result" : #unparseDataByteArray( CODE ) ) ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
          <account>
            <acctID> DATA </acctID>
