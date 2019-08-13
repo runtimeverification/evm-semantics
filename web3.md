@@ -18,34 +18,28 @@ module WEB3
         <web3socket> $SOCK:Int </web3socket>
         <web3clientsocket> 0:IOInt </web3clientsocket>
         <web3request>
-          <jsonrpc> "" </jsonrpc>
-          <callid> 0 </callid>
-          <method> "" </method>
+          <jsonrpc> "":JSON </jsonrpc>
+          <callid> 0:JSON </callid>
+          <method> "":JSON </method>
           <params> [ .JSONList ] </params>
         </web3request>
       </kevm-client>
 
-    syntax JSON   ::= Int | Bool
-                    | #getJSON ( JSONKey, JSON ) [function]
- // -------------------------------------------------------
+    syntax JSON ::= Int | Bool | "null" | "undef"
+                  | #getJSON ( JSONKey, JSON ) [function]
+ // -----------------------------------------------------
     rule #getJSON( KEY, { KEY : J, _ } )     => J
-    rule #getJSON( _, { .JSONList } )        => { .JSONList }
+    rule #getJSON( _, { .JSONList } )        => undef
     rule #getJSON( KEY, { KEY2 : _, REST } ) => #getJSON( KEY, { REST } )
       requires KEY =/=K KEY2
 
     syntax Int ::= #getInt ( JSONKey, JSON ) [function]
  // ---------------------------------------------------
-    rule #getInt( KEY, { KEY : VALUE:Int, _ } ) => VALUE
-    rule #getInt( _  , { .JSONList }          ) => 0 // TODO: Need something better for nonexistent key/value
-    rule #getInt( KEY, { KEY2 : _, REST }     ) => #getInt( KEY, { REST } )
-      requires KEY =/=K KEY2
+    rule #getInt( KEY, J ) => {#getJSON( KEY, J )}:>Int
 
     syntax String ::= #getString ( JSONKey, JSON ) [function]
  // ---------------------------------------------------------
-    rule #getString( KEY, { KEY : VALUE:String, _ } ) => VALUE
-    rule #getString( _  , { .JSONList }             ) => "" // TODO: Need something better for nonexistent key/value
-    rule #getString( KEY, { KEY2 : _, REST }        ) => #getString( KEY, { REST } )
-      requires KEY =/=K KEY2
+    rule #getString( KEY, J ) => {#getJSON( KEY, J )}:>String
 
     syntax IOJSON ::= JSON | IOError
 
@@ -67,11 +61,11 @@ module WEB3
 
     syntax KItem ::= #loadRPCCall(IOJSON)
  // -------------------------------------
-    rule <k> #loadRPCCall(J:JSON) => #runRPCCall ... </k>
-         <jsonrpc> _             => #getString("jsonrpc", J) </jsonrpc>
-         <callid>  _             => #getInt   ("id"     , J) </callid>
-         <method>  _             => #getString("method" , J) </method>
-         <params>  _             => #getJSON  ("params" , J) </params>
+    rule <k> #loadRPCCall({ _ } #as J) => #runRPCCall ... </k>
+         <jsonrpc> _             => #getJSON("jsonrpc", J) </jsonrpc>
+         <callid>  _             => #getJSON("id"     , J) </callid>
+         <method>  _             => #getJSON("method" , J) </method>
+         <params>  _             => #getJSON("params" , J) </params>
 
     rule <k> #loadRPCCall(#EOF) => #shutdownWrite(SOCK) ~> #close(SOCK) ~> accept() ... </k>
          <web3clientsocket> SOCK </web3clientsocket>
