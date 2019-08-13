@@ -5,7 +5,7 @@ shopt -s extglob
 
 kevm_dir="${KEVM_DIR:-.}"
 build_dir="$kevm_dir/.build"
-defn_dir="$build_dir/defn"
+defn_dir="${KEVM_DEFN_DIR:-$build_dir/defn}"
 lib_dir="$build_dir/local/lib"
 k_release_dir="${K_RELEASE:-$kevm_dir/deps/k/k-distribution/target/release/k}"
 
@@ -65,6 +65,10 @@ run_search() {
     search_pattern="$1" ; shift
     export K_OPTS=-Xmx8G
     run_krun --search --pattern "$search_pattern" "$@"
+}
+
+run_web3() {
+    run_krun -cCHAINID="$cCHAINID" -pCHAINID='printf %s' "$@"
 }
 
 run_klab() {
@@ -140,6 +144,7 @@ if [[ "$run_command" == 'help' ]]; then
                $0 kast       [--backend (ocaml|java)]              <pgm>  <output format> <K arg>*
                $0 prove      [--backend (java|haskell)]            <spec> <K arg>* -m <def_module>
                $0 search     [--backend (java|haskell)]            <pgm>  <pattern> <K arg>*
+               $0 web3       [--backend (llvm)]                    <pgm>  <K arg>*
                $0 klab-run                                         <pgm>  <K arg>*
                $0 klab-prove                                       <spec> <K arg>* -m <def_module>
                $0 klab-view                                        <spec>
@@ -149,6 +154,7 @@ if [[ "$run_command" == 'help' ]]; then
            $0 kast      : Parse an EVM program and output it in a supported format
            $0 prove     : Run an EVM K proof
            $0 search    : Search for a K pattern in an EVM program execution
+           $0 web3      : Run version of semantics which understand Web3 RPC (**UNDER CONSTRUCTION**)
            $0 klab-(run|prove) : Run program or prove spec and dump StateLogs which KLab can read
            $0 klab-view : View the statelog associated with a given program or spec
 
@@ -181,6 +187,7 @@ run_file="$1" ; shift
 
 cMODE="\`${MODE:-NORMAL}\`(.KList)"
 cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
+cCHAINID="#token(\"${CHAINID:-28346}\",\"Int\")"
 
 case "$run_command-$backend" in
 
@@ -190,6 +197,7 @@ case "$run_command-$backend" in
     interpret-@(ocaml|llvm)         ) run_interpret                   "$@" ;;
     prove-@(java|haskell)           ) run_prove                       "$@" ;;
     search-@(java|haskell)          ) run_search                      "$@" ;;
+    web3-@(llvm)                    ) run_web3                        "$@" ;;
     klab-@(run|prove)-java          ) run_klab "${run_command#klab-}" "$@" ;;
     klab-view-java                  ) view_klab                       "$@" ;;
     *) $0 help ; fatal "Unknown command on backend: $run_command $backend" ;;

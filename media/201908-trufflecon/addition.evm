@@ -1,0 +1,9 @@
+load { "gas"  : 10000000
+  // Query: always ((~ overflow) \/ eventually revert)
+  // , "code" : UNSAFEADD(100        , 100) // True
+  // , "code" : UNSAFEADD(maxUInt256 , 100) // False
+  // , "code" :   SAFEADD(100        , 100) // True
+     , "code" :   SAFEADD(maxUInt256 , 100) // True
+     }
+
+start

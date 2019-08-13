@@ -110,7 +110,7 @@ andBool VALUE >Int 0
 andBool VALUE <=Int BAL_FROM
 andBool BAL_TO +Int VALUE <Int (2 ^Int 256)
 andBool #hashedLocation("Solidity", 1, CALLER_ID) =/=Int #hashedLocation("Solidity", 1, TO_ID)
-     
+
 
 endmodule
 

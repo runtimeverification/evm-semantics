@@ -108,7 +108,7 @@ andBool 0 <=Int BAL_TO    andBool BAL_TO    <Int (2 ^Int 256)
 andBool CALLER_ID =/=Int TO_ID
 andBool ( VALUE >Int BAL_FROM
 orBool   VALUE <=Int 0 )
-     
+
 
 endmodule
 
