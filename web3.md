@@ -96,7 +96,10 @@ module WEB3
 
     rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
          <s> #STUCK() => . ...</s>
-         <callid> _:String #Or _:Int </callid>
+         <callid> _:Int </callid>
+    rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
+         <s> #STUCK() => . ...</s>
+         <callid> _:String </callid>
 
     syntax KItem ::= "#runRPCCall"
  // ------------------------------
