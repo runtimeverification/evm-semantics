@@ -816,6 +816,18 @@ We need to interperet a `ByteArray` as a `String` again so that we can call `Kec
  // -----------------------------------------------
     rule #padByte( S ) => S             requires lengthString(S) ==K 2
     rule #padByte( S ) => "0" +String S requires lengthString(S) ==K 1
+
+    syntax String ::= #unparseQuantity( Int ) [function]
+ // ----------------------------------------------------
+    rule #unparseQuantity( I ) => "0x" +String Base2String(I, 16)
+
+    syntax String ::= #unparseData          ( Int, Int  ) [function]
+                    | #unparseDataByteArray ( ByteArray ) [function]
+ // ----------------------------------------------------------------
+    rule #unparseData(    _,      0 ) => "0x"
+    rule #unparseData( DATA, LENGTH ) => #unparseDataByteArray(#padToWidth(LENGTH,#asByteStack(DATA)))
+
+    rule #unparseDataByteArray( DATA ) => replaceFirst(Base2String(#asInteger(#asByteStack(1) ++ DATA), 16), "1", "0x")
 ```
 
 Recursive Length Prefix (RLP)

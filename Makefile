@@ -36,7 +36,7 @@ export LUA_PATH
 
 .PHONY: all clean clean-submodules distclean install uninstall \
         deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff \
-        build build-ocaml build-java build-node build-kore split-tests \
+        build build-ocaml build-java build-node build-llvm build-web3 split-tests \
         defn java-defn ocaml-defn node-defn haskell-defn llvm-defn \
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
@@ -56,7 +56,7 @@ distclean: clean
 
 clean-submodules: distclean
 	rm -rf $(DEPS_DIR)/k/make.timestamp $(DEPS_DIR)/metropolis/*.sty \
-	       tests/ethereum-tests/make.timestamp tests/proofs/make.timestamp $(DEPS_DIR)/plugin/make.timestamp  \
+	       tests/ethereum-tests/make.timestamp $(DEPS_DIR)/plugin/make.timestamp  \
 	       $(DEPS_DIR)/libff/build
 	cd $(DEPS_DIR)/k         && mvn clean --quiet
 	cd $(DEPS_DIR)/secp256k1 && make distclean || true
@@ -166,13 +166,17 @@ build-node: $(node_kompiled)
 build-haskell: $(haskell_kompiled)
 build-llvm: $(llvm_kompiled)
 
+build-web3: MAIN_MODULE=WEB3
+build-web3: MAIN_DEFN_FILE=web3
+build-web3: $(llvm_kompiled)
+
 # Tangle definition from *.md files
 
 concrete_tangle:=.k:not(.node):not(.symbolic),.standalone,.concrete
 symbolic_tangle:=.k:not(.node):not(.concrete),.standalone,.symbolic
 node_tangle:=.k:not(.standalone):not(.symbolic),.node,.concrete
 
-k_files=driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k
+k_files=driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k web3.k
 EXTRA_K_FILES+=$(MAIN_DEFN_FILE).k
 ALL_K_FILES:=$(k_files) $(EXTRA_K_FILES)
 
@@ -356,8 +360,8 @@ CHECK:=git --no-pager diff --no-index --ignore-all-space
 KEVM_MODE:=NORMAL
 KEVM_SCHEDULE:=PETERSBURG
 
-test-all: test-all-conformance test-all-proof test-interactive test-parse
-test: test-conformance test-proof test-interactive test-parse
+test-all: test-all-conformance test-prove test-interactive test-parse
+test: test-conformance test-prove test-interactive test-parse
 
 split-tests: tests/ethereum-tests/make.timestamp
 
@@ -445,10 +449,10 @@ test-bchain: $(quick_bchain_tests:=.run)
 
 # Proof Tests
 
-proof_specs_dir:=tests/specs
-proof_tests=$(wildcard $(proof_specs_dir)/*/*-spec.k)
+prove_specs_dir:=tests/specs
+prove_tests=$(wildcard $(prove_specs_dir)/*/*-spec.k)
 
-test-prove: $(test_prove_specs:=.prove)
+test-prove: $(prove_tests:=.prove)
 test-klab-prove: $(smoke_tests_prove:=.klab-prove)
 
 # Parse Tests

@@ -102,7 +102,7 @@ _:Map </storage>
 andBool 0 <=Int VALUE     andBool VALUE     <Int (2 ^Int 256)
 andBool 0 <=Int STOPPED   andBool STOPPED   <Int (2 ^Int 256)
 andBool STOPPED ==Int 1 <<Int (20 *Int 8)
-     
+
 
 endmodule
 
