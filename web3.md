@@ -63,7 +63,7 @@ module WEB3
 
     syntax KItem ::= #loadRPCCall(IOJSON)
  // -------------------------------------
-    rule <k> #loadRPCCall({ _ } #as J) => #runRPCCall ... </k>
+    rule <k> #loadRPCCall({ _ } #as J) => #checkRPCCall ~> #runRPCCall ... </k>
          <jsonrpc> _             => #getJSON("jsonrpc", J) </jsonrpc>
          <callid>  _             => #getJSON("id"     , J) </callid>
          <method>  _             => #getJSON("method" , J) </method>
@@ -81,6 +81,23 @@ module WEB3
 
     rule <k> #sendResponse(_) ~> _ => getRequest() </k>
          <callid> undef </callid>
+
+    syntax KItem ::= "#checkRPCCall"
+ // --------------------------------
+    rule <k> #checkRPCCall => . ...</k>
+         <jsonrpc> "2.0" </jsonrpc>
+         <method> _:String </method>
+         <params> undef #Or [ _ ] #Or { _ } #Or undef </params>
+         <callid> _:String #Or null #Or _:Int #Or undef </callid>
+
+    rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
+         <s> #STUCK() => . ...</s>
+         <callid> undef => null </callid>
+
+    rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
+         <s> #STUCK() => . ...</s>
+         <callid> J </callid>
+      requires J =/=K undef
 
     syntax KItem ::= "#runRPCCall"
  // ------------------------------
