@@ -8,10 +8,12 @@ module WEB3
     imports EVM
     imports EVM-DATA
     imports K-IO
+    imports DEFAULT-STRATEGY
 
     configuration
       <kevm-client>
         <kevm/>
+        <s/>
         <blockchain>
           <chainID> $CHAINID:Int </chainID>
         </blockchain>
