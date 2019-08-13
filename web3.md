@@ -118,6 +118,9 @@ module WEB3
     rule <k> #runRPCCall => #eth_getCode ... </k>
          <method> "eth_getCode" </method>
 
+    rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k>
+         <s> #STUCK() => . ...</s>
+
     syntax KItem ::= "#net_version"
  // -------------------------------
     rule <k> #net_version => #sendResponse( "result" : Int2String( CHAINID ) ) ... </k>
