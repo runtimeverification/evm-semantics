@@ -8,12 +8,10 @@ module WEB3
     imports EVM
     imports EVM-DATA
     imports K-IO
-    imports DEFAULT-STRATEGY
 
     configuration
       <kevm-client>
         <kevm/>
-        <s/>
         <blockchain>
           <chainID> $CHAINID:Int </chainID>
         </blockchain>
@@ -91,15 +89,12 @@ module WEB3
          <callid> _:String #Or null #Or _:Int #Or undef </callid>
 
     rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
-         <s> #STUCK() => . ...</s>
-         <callid> undef #Or [ _ ] #Or { _ } => null </callid>
+         <callid> undef #Or [ _ ] #Or { _ } => null </callid> [owise]
 
     rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
-         <s> #STUCK() => . ...</s>
-         <callid> _:Int </callid>
+         <callid> _:Int </callid> [owise]
     rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
-         <s> #STUCK() => . ...</s>
-         <callid> _:String </callid>
+         <callid> _:String </callid> [owise]
 
     syntax KItem ::= "#runRPCCall"
  // ------------------------------
@@ -120,8 +115,7 @@ module WEB3
     rule <k> #runRPCCall => #eth_getCode ... </k>
          <method> "eth_getCode" </method>
 
-    rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k>
-         <s> #STUCK() => . ...</s>
+    rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
     syntax KItem ::= "#net_version"
  // -------------------------------
