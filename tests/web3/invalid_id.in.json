@@ -1,0 +1,6 @@
+{
+  "jsonrpc": "2.0",
+  "id": {},
+  "method": "net_version",
+  "params": []
+}
