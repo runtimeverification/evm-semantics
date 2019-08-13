@@ -68,7 +68,7 @@ run_search() {
 }
 
 run_web3() {
-    run_krun -cCHAINID="$cCHAINID" -pCHAINID='printf %s' "$@"
+    exec -a "$0 web3" ${defn_dir}/web3/kevm-client "$@"
 }
 
 run_klab() {
@@ -174,6 +174,7 @@ fi
 backend="ocaml"
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
+[[ ! "$run_command" =~ web3*   ]] || backend='llvm'
 if [[ $# -gt 0 ]] && [[ $1 == '--backend' ]]; then
     backend="$2"
     shift 2
@@ -182,8 +183,10 @@ backend_dir="$defn_dir/$backend"
 [[ ! "$backend" == "ocaml" ]] || eval $(opam config env)
 
 # get the run file
-run_file="$1" ; shift
-[[ -f "$run_file" ]] || fatal "File does not exist: $run_file"
+if [[ ! "$run_command" == 'web3' ]]; then
+  run_file="$1" ; shift
+  [[ -f "$run_file" ]] || fatal "File does not exist: $run_file"
+fi
 
 cMODE="\`${MODE:-NORMAL}\`(.KList)"
 cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"

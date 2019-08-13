@@ -423,7 +423,7 @@ tests/%.run-expected: tests/% tests/%.expected
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-web3: tests/%.in.json
-	PORT=`tests/web3/get_port.py`; $(web3_kompiled) -p $$PORT & while ! netcat -z 127.0.0.1 $$PORT; do sleep 0.1; done; cat $^ | netcat 127.0.0.1 $$PORT -q 0 | diff - tests/$*.out.json; RESULT=$$?; pkill kevm-client -P $$$$; [ $$? -eq 0 ]
+	PORT=`tests/web3/get_port.py`; ./kevm web3 -p $$PORT & while ! netcat -z 127.0.0.1 $$PORT; do sleep 0.1; done; cat $^ | netcat 127.0.0.1 $$PORT -q 0 | diff - tests/$*.out.json; RESULT=$$?; pkill kevm-client -P $$$$; [ $$? -eq 0 ]
 
 
 tests/%.parse: tests/%
