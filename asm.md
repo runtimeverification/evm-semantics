@@ -22,8 +22,8 @@ module EVM-ASSEMBLY
 ```
 
 ```{.k .symbolic}
-    syntax ByteArray ::= #asmOpCodes ( OpCodes, ByteArray ) [function]
- // ------------------------------------------------------------------
+    syntax ByteArray ::= #asmOpCodes ( OpCodes, ByteArray ) [function, klabel(#asmOpCodesAux)]
+ // ------------------------------------------------------------------------------------------
     rule #asmOpCodes( OPS ) => #asmOpCodes(#revOps(OPS), .ByteArray)
 
     rule #asmOpCodes( PUSH(N, W) ; OCS, WS ) => #asmOpCodes(OCS, #asmOpCode(PUSH(N)) : {#padToWidth(N, #asByteStack(W)) ++ WS}:>WordStack)
@@ -32,8 +32,8 @@ module EVM-ASSEMBLY
 ```
 
 ```{.k .concrete}
-    syntax ByteArray ::= #asmOpCodes ( OpCodes, StringBuffer ) [function]
- // ---------------------------------------------------------------------
+    syntax ByteArray ::= #asmOpCodes ( OpCodes, StringBuffer ) [function, klabel(#asmOpCodesAux)]
+ // ---------------------------------------------------------------------------------------------
     rule #asmOpCodes( OPS ) => #asmOpCodes(OPS, .StringBuffer)
 
     rule #asmOpCodes( PUSH(N, W) ; OCS, SB ) => #asmOpCodes(OCS, (SB +String chrChar(#asmOpCode(PUSH(N)))) +String Bytes2String(Int2Bytes(N, W, BE)))
