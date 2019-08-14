@@ -2384,7 +2384,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCodes( WS, SCHED ) => #revOps(#dasmOpCodes(.OpCodes, WS, SCHED))
 
     rule #dasmOpCodes( OPS, .WordStack, _ ) => OPS
-    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(#dasmOpCode(W, SCHED) ; OPS, WS, SCHED)
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(#dasmOpCode(W, SCHED) ; OPS, #drop(#widthOpCode(W) -Int 1, WS), SCHED)
 ```
 
 ```{.k .concrete}
