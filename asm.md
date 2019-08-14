@@ -27,7 +27,7 @@ module EVM-ASSEMBLY
     rule #asmOpCodes( OPS ) => #asmOpCodes(#revOps(OPS), .ByteArray)
 
     rule #asmOpCodes( PUSH(N, W) ; OCS, WS ) => #asmOpCodes(OCS, #asmOpCode(PUSH(N)) : {#padToWidth(N, #asByteStack(W)) ++ WS}:>WordStack)
-    rule #asmOpCodes( OP ; OCS, WS ) => #asmOpCodes(OCS, #asmOpCode(OP) : WS) [owise]
+    rule #asmOpCodes( OP ; OCS, WS ) => #asmOpCodes(OCS, #asmOpCode(OP) : WS) requires PUSH(_, _) :/=K OP
     rule #asmOpCodes( .OpCodes, WS ) => WS
 ```
 
