@@ -144,7 +144,7 @@ if [[ "$run_command" == 'help' ]]; then
                $0 kast       [--backend (ocaml|java)]              <pgm>  <output format> <K arg>*
                $0 prove      [--backend (java|haskell)]            <spec> <K arg>* -m <def_module>
                $0 search     [--backend (java|haskell)]            <pgm>  <pattern> <K arg>*
-               $0 web3       [--backend (llvm)]                    <pgm>  <K arg>*
+               $0 web3       [--backend (llvm)]                    -p <port>
                $0 klab-run                                         <pgm>  <K arg>*
                $0 klab-prove                                       <spec> <K arg>* -m <def_module>
                $0 klab-view                                        <spec>
@@ -164,6 +164,7 @@ if [[ "$run_command" == 'help' ]]; then
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
                  <output format> is the format for Kast to output the term in.
                  <pattern> is the configuration pattern to search for.
+                 <port> is the port to listen on for Web3 JSON RPC requests.
                  <def_module> is the module to take as axioms when doing verification.
 
            klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
@@ -184,8 +185,8 @@ backend_dir="$defn_dir/$backend"
 
 # get the run file
 if [[ ! "$run_command" == 'web3' ]]; then
-  run_file="$1" ; shift
-  [[ -f "$run_file" ]] || fatal "File does not exist: $run_file"
+    run_file="$1" ; shift
+    [[ -f "$run_file" ]] || fatal "File does not exist: $run_file"
 fi
 
 cMODE="\`${MODE:-NORMAL}\`(.KList)"
