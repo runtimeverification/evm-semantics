@@ -373,9 +373,9 @@ Bitwise logical operators are lifted from the integer versions.
 ```k
     syntax Int ::= signextend( Int , Int ) [function]
  // -------------------------------------------------
-    rule signextend(N, W) => W requires N >=Int 32 orBool N <Int 0
-    rule signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
-    rule signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
+    rule signextend(N, W) => W requires N >=Int 32 orBool N <Int 0 [concrete]
+    rule signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))         [concrete]
+    rule signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W)) [concrete]
 ```
 
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
@@ -816,6 +816,18 @@ We need to interperet a `ByteArray` as a `String` again so that we can call `Kec
  // -----------------------------------------------
     rule #padByte( S ) => S             requires lengthString(S) ==K 2
     rule #padByte( S ) => "0" +String S requires lengthString(S) ==K 1
+
+    syntax String ::= #unparseQuantity( Int ) [function]
+ // ----------------------------------------------------
+    rule #unparseQuantity( I ) => "0x" +String Base2String(I, 16)
+
+    syntax String ::= #unparseData          ( Int, Int  ) [function]
+                    | #unparseDataByteArray ( ByteArray ) [function]
+ // ----------------------------------------------------------------
+    rule #unparseData(    _,      0 ) => "0x"
+    rule #unparseData( DATA, LENGTH ) => #unparseDataByteArray(#padToWidth(LENGTH,#asByteStack(DATA)))
+
+    rule #unparseDataByteArray( DATA ) => replaceFirst(Base2String(#asInteger(#asByteStack(1) ++ DATA), 16), "1", "0x")
 ```
 
 Recursive Length Prefix (RLP)

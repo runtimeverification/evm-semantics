@@ -101,7 +101,7 @@ _:Map </storage>
      andBool 0 <=Int OWNER     andBool OWNER     <Int (2 ^Int 160)
 andBool 0 <=Int SPENDER   andBool SPENDER   <Int (2 ^Int 160)
 andBool 0 <=Int ALLOWANCE andBool ALLOWANCE <Int (2 ^Int 256)
-     
+
 
 endmodule
 
