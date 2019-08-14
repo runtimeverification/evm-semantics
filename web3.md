@@ -81,6 +81,8 @@ module WEB3
          <method> "eth_getStorageAt" </method>
     rule <k> #runRPCCall => #eth_getCode ... </k>
          <method> "eth_getCode" </method>
+    rule <k> #runRPCCall => #eth_sign ... </k>
+         <method> "eth_sign" </method>
 
     syntax KItem ::= "#net_version"
  // -------------------------------
@@ -165,5 +167,22 @@ module WEB3
            <code> CODE </code>
            ...
          </account>
+
+    syntax KItem ::= "#eth_sign"
+ // ----------------------------
+    rule <k> #eth_sign => #signMessage(#privateKey(ACCTADDR),#hashMessage(#unparseByteStack(#parseByteStack(MESSAGE)))) ... </k>
+         <params> [ ACCTADDR, MESSAGE, _ ] </params>
+
+    syntax KItem ::= #signMessage ( String , String )
+ // -------------------------------------------------
+    rule <k> #signMessage(KEY, MHASH) => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : "0x" +String ECDSASign( MHASH, KEY ) } ) ... </k>
+         <jsonrpc> JSONRPC </jsonrpc>
+         <callid> CALLID </callid>
+
+    syntax String ::= #hashMessage ( String ) [function]
+                    | #privateKey  ( String ) [function] // TODO: Implement this properly (Get private key for account address)
+ // ----------------------------------------------------
+    rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
+    rule #privateKey( ADDR ) => #unparseByteStack(#parseByteStack(ADDR)) // Wrong.
 endmodule
 ```
