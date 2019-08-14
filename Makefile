@@ -330,7 +330,7 @@ $(DEFN_DIR)/web3/web3-kompiled/interpreter: $(web3_files) $(libff_out)
 	                 --syntax-module WEB3 $(DEFN_DIR)/web3/web3.k \
 	                 --directory $(DEFN_DIR)/web3 -I $(DEFN_DIR)/web3 \
 	                 --hook-namespaces "KRYPTO BLOCKCHAIN JSON" \
-			 --iterated \
+	                 --iterated \
 	                 $(KOMPILE_OPTS) \
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/client-c/json.cpp \
 	                 -ccopt -L$(LIBRARY_PATH) -ccopt -I -ccopt $(PLUGIN_SUBMODULE)/vm-c \
@@ -344,9 +344,6 @@ $(web3_kompiled): $(DEFN_DIR)/web3/web3-kompiled/interpreter $(libff_out)
 	                      $(LLVM_KOMPILE_OPTS) \
 	                      -L$(LIBRARY_PATH) \
 	                      -lff -lgmp $(LINK_PROCPS) -lcryptopp -lsecp256k1
-
-
-
 
 # LLVM Backend
 
@@ -423,8 +420,14 @@ tests/%.run-expected: tests/% tests/%.expected
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-web3: tests/%.in.json
-	PORT=`tests/web3/get_port.py`; ./kevm web3 -p $$PORT & while ! netcat -z 127.0.0.1 $$PORT; do sleep 0.1; done; cat $^ | netcat 127.0.0.1 $$PORT -q 0 | diff - tests/$*.out.json; RESULT=$$?; pkill kevm-client -P $$$$; [ $$? -eq 0 ]
-
+	PORT=`tests/web3/get_port.py`;                                                     \
+	    ./kevm web3 -p $$PORT &                                                        \
+	    while ! netcat -z 127.0.0.1 $$PORT; do                                         \
+	        sleep 0.1;                                                                 \
+	    done;                                                                          \
+	    cat $^ | netcat 127.0.0.1 $$PORT -q 0 | diff - tests/$*.out.json; RESULT=$$? ; \
+	    pkill kevm-client -P $$$$ ;                                                    \
+	    [ $$? -eq 0 ]
 
 tests/%.parse: tests/%
 	$(TEST) kast --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
