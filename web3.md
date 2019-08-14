@@ -26,38 +26,39 @@ module WEB3
       </kevm-client>
 
     syntax JSON ::= Int | Bool | "null" | "undef"
-                  | #getJSON ( JSONKey, JSON ) [function]
- // -----------------------------------------------------
+                  | #getJSON ( JSONKey , JSON ) [function]
+ // ------------------------------------------------------
     rule #getJSON( KEY, { KEY : J, _ } )     => J
     rule #getJSON( _, { .JSONList } )        => undef
     rule #getJSON( KEY, { KEY2 : _, REST } ) => #getJSON( KEY, { REST } )
       requires KEY =/=K KEY2
 
-    syntax Int ::= #getInt ( JSONKey, JSON ) [function]
- // ---------------------------------------------------
+    syntax Int ::= #getInt ( JSONKey , JSON ) [function]
+ // ----------------------------------------------------
     rule #getInt( KEY, J ) => {#getJSON( KEY, J )}:>Int
 
-    syntax String ::= #getString ( JSONKey, JSON ) [function]
- // ---------------------------------------------------------
+    syntax String ::= #getString ( JSONKey , JSON ) [function]
+ // ----------------------------------------------------------
     rule #getString( KEY, J ) => {#getJSON( KEY, J )}:>String
 
     syntax IOJSON ::= JSON | IOError
 
     syntax EthereumSimulation ::= accept() [symbol]
  // -----------------------------------------------
-
     rule <k> accept() => getRequest() ... </k>
          <web3socket> SOCK </web3socket>
          <web3clientsocket> _ => #accept(SOCK) </web3clientsocket>
 
     syntax KItem ::= getRequest()
  // -----------------------------
-
     rule <k> getRequest() => #loadRPCCall(#getRequest(SOCK)) ... </k>
          <web3clientsocket> SOCK </web3clientsocket>
 
-    syntax IOJSON ::= #getRequest(Int) [function, hook(JSON.read)] 
+    syntax IOJSON ::= #getRequest(Int) [function, hook(JSON.read)]
+ // --------------------------------------------------------------
+
     syntax K ::= #putResponse(JSON, Int) [function, hook(JSON.write)]
+ // -----------------------------------------------------------------
 
     syntax KItem ::= #loadRPCCall(IOJSON)
  // -------------------------------------
@@ -93,6 +94,7 @@ module WEB3
 
     rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
          <callid> _:Int </callid> [owise]
+
     rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
          <callid> _:String </callid> [owise]
 
@@ -143,7 +145,7 @@ module WEB3
 
     syntax JSONList ::= #acctsToJArray ( Set ) [function]
  // -----------------------------------------------------
-    rule #acctsToJArray( .Set ) => .JSONList
+    rule #acctsToJArray( .Set                      ) => .JSONList
     rule #acctsToJArray( SetItem( ACCT ) ACCTS:Set ) => #unparseData( ACCT, 20 ), #acctsToJArray( ACCTS )
 
     syntax KItem ::= "#eth_getBalance"
