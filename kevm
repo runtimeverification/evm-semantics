@@ -201,7 +201,7 @@ case "$run_command-$backend" in
     interpret-@(ocaml|llvm)         ) run_interpret                   "$@" ;;
     prove-@(java|haskell)           ) run_prove                       "$@" ;;
     search-@(java|haskell)          ) run_search                      "$@" ;;
-    web3-@(llvm|ocaml)              ) run_web3                        "$@" ;;
+    web3-@(llvm)                    ) run_web3                        "$@" ;;
     klab-@(run|prove)-java          ) run_klab "${run_command#klab-}" "$@" ;;
     klab-view-java                  ) view_klab                       "$@" ;;
     *) $0 help ; fatal "Unknown command on backend: $run_command $backend" ;;

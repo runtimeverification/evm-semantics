@@ -192,13 +192,11 @@ module WEB3
     syntax KItem ::= "#eth_sign"
  // ----------------------------
     rule <k> #eth_sign => #signMessage(#privateKey(ACCTADDR),#hashMessage(#unparseByteStack(#parseByteStack(MESSAGE)))) ... </k>
-         <params> [ ACCTADDR, MESSAGE, _ ] </params>
+         <params> [ ACCTADDR, MESSAGE, .JSONList ] </params>
 
     syntax KItem ::= #signMessage ( String , String )
  // -------------------------------------------------
-    rule <k> #signMessage(KEY, MHASH) => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : "0x" +String ECDSASign( MHASH, KEY ) } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #signMessage(KEY, MHASH) => #sendResponse( "result" : "0x" +String ECDSASign( MHASH, KEY ) ) ... </k>
 
     syntax String ::= #hashMessage ( String ) [function]
                     | #privateKey  ( String ) [function] // TODO: Implement this properly (Get private key for account address)
