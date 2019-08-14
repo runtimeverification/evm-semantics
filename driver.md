@@ -10,9 +10,11 @@ requires "evm-node.k"
 
 ```k
 requires "evm.k"
+requires "asm.k"
 
 module ETHEREUM-SIMULATION
     imports EVM
+    imports EVM-ASSEMBLY
 ```
 
 ```{.k .node}
