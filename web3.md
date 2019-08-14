@@ -7,6 +7,7 @@ requires "evm.k"
 module WEB3
     imports EVM
     imports EVM-DATA
+    imports K-IO
 
     configuration
       <kevm-client>
@@ -14,54 +15,88 @@ module WEB3
         <blockchain>
           <chainID> $CHAINID:Int </chainID>
         </blockchain>
+        <web3socket> $SOCK:Int </web3socket>
+        <web3clientsocket> 0:IOInt </web3clientsocket>
         <web3request>
-          <jsonrpc> "" </jsonrpc>
-          <callid> 0 </callid>
-          <method> "" </method>
+          <jsonrpc> "":JSON </jsonrpc>
+          <callid> 0:JSON </callid>
+          <method> "":JSON </method>
           <params> [ .JSONList ] </params>
         </web3request>
-        <web3result> .List </web3result>
       </kevm-client>
 
-    syntax JSON   ::= Int | Bool
-                    | #getJSON ( JSONKey, JSON ) [function]
- // -------------------------------------------------------
+    syntax JSON ::= Int | Bool | "null" | "undef"
+                  | #getJSON ( JSONKey , JSON ) [function]
+ // ------------------------------------------------------
     rule #getJSON( KEY, { KEY : J, _ } )     => J
-    rule #getJSON( _, { .JSONList } )        => { .JSONList }
+    rule #getJSON( _, { .JSONList } )        => undef
     rule #getJSON( KEY, { KEY2 : _, REST } ) => #getJSON( KEY, { REST } )
       requires KEY =/=K KEY2
 
-    syntax Int ::= #getInt ( JSONKey, JSON ) [function]
- // ---------------------------------------------------
-    rule #getInt( KEY, { KEY : VALUE:Int, _ } ) => VALUE
-    rule #getInt( _  , { .JSONList }          ) => 0 // TODO: Need something better for nonexistent key/value
-    rule #getInt( KEY, { KEY2 : _, REST }     ) => #getInt( KEY, { REST } )
-      requires KEY =/=K KEY2
+    syntax Int ::= #getInt ( JSONKey , JSON ) [function]
+ // ----------------------------------------------------
+    rule #getInt( KEY, J ) => {#getJSON( KEY, J )}:>Int
 
-    syntax String ::= #getString ( JSONKey, JSON ) [function]
- // ---------------------------------------------------------
-    rule #getString( KEY, { KEY : VALUE:String, _ } ) => VALUE
-    rule #getString( _  , { .JSONList }             ) => "" // TODO: Need something better for nonexistent key/value
-    rule #getString( KEY, { KEY2 : _, REST }        ) => #getString( KEY, { REST } )
-      requires KEY =/=K KEY2
+    syntax String ::= #getString ( JSONKey , JSON ) [function]
+ // ----------------------------------------------------------
+    rule #getString( KEY, J ) => {#getJSON( KEY, J )}:>String
 
-    syntax EthereumSimulation ::= List{JSON, " "}
- // ---------------------------------------------
-    rule <k> J:JSON REST:EthereumSimulation => #loadRPCCall J ~> REST ... </k>
-    rule <k> J:JSON => #loadRPCCall J ... </k>
+    syntax IOJSON ::= JSON | IOError
 
-    syntax KItem ::= "#loadRPCCall" JSON
- // ------------------------------------
-    rule <k> #loadRPCCall J:JSON => #runRPCCall ...          </k>
-         <jsonrpc> _             => #getString("jsonrpc", J) </jsonrpc>
-         <callid>  _             => #getInt   ("id"     , J) </callid>
-         <method>  _             => #getString("method" , J) </method>
-         <params>  _             => #getJSON  ("params" , J) </params>
+    syntax EthereumSimulation ::= accept() [symbol]
+ // -----------------------------------------------
+    rule <k> accept() => getRequest() ... </k>
+         <web3socket> SOCK </web3socket>
+         <web3clientsocket> _ => #accept(SOCK) </web3clientsocket>
 
-    syntax KItem ::= #sendResponse ( JSON )
- // ---------------------------------------
-    rule <k> #sendResponse( J:JSON ) => . ... </k>
-         <web3result> ... ( .List => ListItem( J ) ) </web3result>
+    syntax KItem ::= getRequest()
+ // -----------------------------
+    rule <k> getRequest() => #loadRPCCall(#getRequest(SOCK)) ... </k>
+         <web3clientsocket> SOCK </web3clientsocket>
+
+    syntax IOJSON ::= #getRequest(Int) [function, hook(JSON.read)]
+ // --------------------------------------------------------------
+
+    syntax K ::= #putResponse(JSON, Int) [function, hook(JSON.write)]
+ // -----------------------------------------------------------------
+
+    syntax KItem ::= #loadRPCCall(IOJSON)
+ // -------------------------------------
+    rule <k> #loadRPCCall({ _ } #as J) => #checkRPCCall ~> #runRPCCall ... </k>
+         <jsonrpc> _             => #getJSON("jsonrpc", J) </jsonrpc>
+         <callid>  _             => #getJSON("id"     , J) </callid>
+         <method>  _             => #getJSON("method" , J) </method>
+         <params>  _             => #getJSON("params" , J) </params>
+
+    rule <k> #loadRPCCall(#EOF) => #shutdownWrite(SOCK) ~> #close(SOCK) ~> accept() ... </k>
+         <web3clientsocket> SOCK </web3clientsocket>
+
+    syntax KItem ::= #sendResponse( JSON )
+ // --------------------------------------
+    rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", "id": CALLID, J }, SOCK) ~> getRequest() </k>
+         <callid> CALLID </callid>
+         <web3clientsocket> SOCK </web3clientsocket>
+      requires CALLID =/=K undef
+
+    rule <k> #sendResponse(_) ~> _ => getRequest() </k>
+         <callid> undef </callid>
+
+    syntax KItem ::= "#checkRPCCall"
+ // --------------------------------
+    rule <k> #checkRPCCall => . ...</k>
+         <jsonrpc> "2.0" </jsonrpc>
+         <method> _:String </method>
+         <params> undef #Or [ _ ] #Or { _ } #Or undef </params>
+         <callid> _:String #Or null #Or _:Int #Or undef </callid>
+
+    rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
+         <callid> undef #Or [ _ ] #Or { _ } => null </callid> [owise]
+
+    rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
+         <callid> _:Int </callid> [owise]
+
+    rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
+         <callid> _:String </callid> [owise]
 
     syntax KItem ::= "#runRPCCall"
  // ------------------------------
@@ -84,43 +119,35 @@ module WEB3
     rule <k> #runRPCCall => #eth_sign ... </k>
          <method> "eth_sign" </method>
 
+    rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
+
     syntax KItem ::= "#net_version"
  // -------------------------------
-    rule <k> #net_version => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : Int2String( CHAINID ) } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #net_version => #sendResponse( "result" : Int2String( CHAINID ) ) ... </k>
          <chainID> CHAINID </chainID>
 
     syntax KItem ::= "#web3_clientVersion"
  // -------------------------------
-    rule <k> #web3_clientVersion => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : "Firefly RPC/v0.0.1/kevm" } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #web3_clientVersion => #sendResponse( "result" : "Firefly RPC/v0.0.1/kevm" ) ... </k>
 
     syntax KItem ::= "#eth_gasPrice"
  // --------------------------------
-    rule <k> #eth_gasPrice => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseQuantity( PRICE ) } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #eth_gasPrice => #sendResponse( "result" : #unparseQuantity( PRICE ) ) ... </k>
          <gasPrice> PRICE </gasPrice>
 
     syntax KItem ::= "#eth_blockNumber"
  // -----------------------------------
-    rule <k> #eth_blockNumber => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseQuantity( BLOCKNUM ) } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #eth_blockNumber => #sendResponse( "result" : #unparseQuantity( BLOCKNUM ) ) ... </k>
          <number> BLOCKNUM </number>
 
     syntax KItem ::= "#eth_accounts"
  // --------------------------------
-    rule <k> #eth_accounts => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : [ #acctsToJArray( ACCTS ) ] } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #eth_accounts => #sendResponse( "result" : [ #acctsToJArray( ACCTS ) ] ) ... </k>
          <activeAccounts> ACCTS </activeAccounts>
 
     syntax JSONList ::= #acctsToJArray ( Set ) [function]
  // -----------------------------------------------------
-    rule #acctsToJArray( .Set ) => .JSONList
+    rule #acctsToJArray( .Set                      ) => .JSONList
     rule #acctsToJArray( SetItem( ACCT ) ACCTS:Set ) => #unparseData( ACCT, 20 ), #acctsToJArray( ACCTS )
 
     syntax KItem ::= "#eth_getBalance"
@@ -128,9 +155,7 @@ module WEB3
     rule <k> #eth_getBalance ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), _ ] </params>
 
-    rule <k> #eth_getBalance => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseQuantity( ACCTBALANCE ) } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( ACCTBALANCE ) ) ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
          <account>
            <acctID> DATA </acctID>
@@ -143,9 +168,7 @@ module WEB3
     rule <k> #eth_getStorageAt ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), QUANTITY:Int, _ ] </params>
 
-    rule <k> #eth_getStorageAt => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY) ) } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #eth_getStorageAt => #sendResponse( "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY) ) ) ... </k>
          <params> [ DATA, QUANTITY, TAG, .JSONList ] </params>
          <account>
            <acctID> DATA </acctID>
@@ -158,9 +181,7 @@ module WEB3
     rule <k> #eth_getCode ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), _ ] </params>
 
-    rule <k> #eth_getCode => #sendResponse( { "id" : CALLID, "jsonrpc" : JSONRPC, "result" : #unparseDataByteArray( CODE ) } ) ... </k>
-         <jsonrpc> JSONRPC </jsonrpc>
-         <callid> CALLID </callid>
+    rule <k> #eth_getCode => #sendResponse( "result" : #unparseDataByteArray( CODE ) ) ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
          <account>
            <acctID> DATA </acctID>
