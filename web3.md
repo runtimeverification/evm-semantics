@@ -15,6 +15,7 @@ module WEB3
         <blockchain>
           <chainID> $CHAINID:Int </chainID>
         </blockchain>
+        <accountKeys> .Map </accountKeys>
         <web3socket> $SOCK:Int </web3socket>
         <web3clientsocket> 0:IOInt </web3clientsocket>
         <web3request>
@@ -203,10 +204,6 @@ module WEB3
  // ----------------------------------------------------
     rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
     rule [[ #privateKey( ADDR ) => #unparseByteStack(#parseByteStack(KEY)) ]]
-         <account>
-           <acctID> ADDR </acctID>
-           <privateKey> KEY </privateKey>
-           ...
-         </account>
+         <accountKeys>... ADDR |-> KEY ...</accountKeys>
 endmodule
 ```

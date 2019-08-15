@@ -56,7 +56,6 @@ Because the same account may be loaded more than once, implementations of this i
                <storage> .Map </storage>
                <origStorage> .Map </origStorage>
                <nonce> #getNonce(ACCT) </nonce>
-               <privateKey> "" </privateKey>
              </account>
            )
            ...

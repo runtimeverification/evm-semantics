@@ -124,7 +124,6 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <storage>     .Map                   </storage>
                 <origStorage> .Map                   </origStorage>
                 <nonce>       0                      </nonce>
-                <privateKey>  ""                     </privateKey>
               </account>
             </accounts>
 
