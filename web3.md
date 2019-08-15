@@ -191,7 +191,7 @@ module WEB3
 
     syntax KItem ::= "#eth_sign"
  // ----------------------------
-    rule <k> #eth_sign => #signMessage(#privateKey(ACCTADDR),#hashMessage(#unparseByteStack(#parseByteStack(MESSAGE)))) ... </k>
+    rule <k> #eth_sign => #signMessage(#privateKey(#parseHexWord(ACCTADDR)),#hashMessage(#unparseByteStack(#parseByteStack(MESSAGE)))) ... </k>
          <params> [ ACCTADDR, MESSAGE, .JSONList ] </params>
 
     syntax KItem ::= #signMessage ( String , String )
@@ -199,9 +199,14 @@ module WEB3
     rule <k> #signMessage(KEY, MHASH) => #sendResponse( "result" : "0x" +String ECDSASign( MHASH, KEY ) ) ... </k>
 
     syntax String ::= #hashMessage ( String ) [function]
-                    | #privateKey  ( String ) [function] // TODO: Implement this properly (Get private key for account address)
+                    | #privateKey  ( Int )    [function]
  // ----------------------------------------------------
     rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
-    rule #privateKey( ADDR ) => #unparseByteStack(#parseByteStack(ADDR)) // Wrong.
+    rule [[ #privateKey( ADDR ) => #unparseByteStack(#parseByteStack(KEY)) ]]
+         <account>
+           <acctID> ADDR </acctID>
+           <privateKey> KEY </privateKey>
+           ...
+         </account>
 endmodule
 ```
