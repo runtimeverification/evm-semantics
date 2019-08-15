@@ -101,7 +101,7 @@ module WEB3
  // --------------------------------------------------------------------------
     rule List2JSON(L) => List2JSON(L, .JSONList)
 
-    rule List2JSON(L ListItem(J), JS) => List2JSON(L, J, JS)
+    rule List2JSON(L ListItem(J), JS) => List2JSON(L, (J, JS))
     rule List2JSON(.List, JS) => [ JS ]
 
     syntax KItem ::= #sendResponse( JSON )
