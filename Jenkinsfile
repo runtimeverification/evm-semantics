@@ -38,7 +38,7 @@ pipeline {
         stage('Build') {
           steps {
             sh '''
-              make build build-llvm build-haskell build-node -j4
+              make build build-llvm build-haskell build-node build-web3 -j4
             '''
           }
         }
@@ -60,6 +60,15 @@ pipeline {
                   nprocs=$(nproc)
                   [ "$nprocs" -gt '16' ] && nprocs='16'
                   make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=llvm
+                '''
+              }
+            }
+            stage('Conformance (Web3)') {
+              steps {
+                sh '''
+                  nprocs=$(nproc)
+                  [ "$nprocs" -gt '16' ] && nprocs='16'
+                  make test-web3 -j"$nprocs"
                 '''
               }
             }
