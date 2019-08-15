@@ -492,8 +492,8 @@ test-web3: $(web3_tests:.in.json=.run-web3)
 
 # Proof Tests
 
-proof_specs_dir:=tests/specs
-test_prove_specs=$(wildcard $(proof_specs_dir)/*/*-spec.k)
+prove_specs_dir:=tests/specs
+prove_tests=$(wildcard $(prove_specs_dir)/*/*-spec.k)
 
 test-prove: $(prove_tests:=.prove)
 test-klab-prove: $(smoke_tests_prove:=.klab-prove)
