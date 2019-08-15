@@ -1294,10 +1294,10 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
          <schedule> SCHED </schedule>
 
-    syntax K ::= "#precompiled?" "(" Int "," Schedule ")" [function]
- // ----------------------------------------------------------------
-    rule #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] requires ACCTCODE in #precompiledAccounts(SCHED)
-    rule #precompiled?(ACCTCODE,     _) => .                                [owise]
+    syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
+ // --------------------------------------------------------------
+    rule <k> #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] ... </k> requires         ACCTCODE in #precompiledAccounts(SCHED)
+    rule <k> #precompiled?(ACCTCODE,     _) => .                                ... </k> requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
     syntax KItem ::= "#initVM"
  // --------------------------
