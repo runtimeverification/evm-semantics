@@ -21,17 +21,17 @@ module VERIFICATION
       [lemma]
 
     syntax ByteArray ::= "sumToN" [function]
- // ---------------------------------------------------
+ // ----------------------------------------
     rule sumToN
-      => #asmOpCodes(PUSH(1, 0) ; SWAP(1)                       // s = 0 ; n = N
-                      ; JUMPDEST                                // label:loop
-                      ; DUP(1) ; ISZERO ; PUSH(1, 20) ; JUMPI   // if n == 0, jump to end
-                      ; DUP(1) ; SWAP(2) ; ADD                  // s = s + n
-                      ; SWAP(1) ; PUSH(1, 1) ; SWAP(1) ; SUB    // n = n - 1
-                      ; PUSH(1, 3) ; JUMP                      // jump to loop
-                      ; JUMPDEST                                // label:end
-                      ; .OpCodes
-                      ) [macro]
+      => #asmOpCodes(PUSH(1, 0) ; SWAP(1)                   // s = 0 ; n = N
+                    ; JUMPDEST                              // label:loop
+                    ; DUP(1) ; ISZERO ; PUSH(1, 20) ; JUMPI // if n == 0, jump to end
+                    ; DUP(1) ; SWAP(2) ; ADD                // s = s + n
+                    ; SWAP(1) ; PUSH(1, 1) ; SWAP(1) ; SUB  // n = n - 1
+                    ; PUSH(1, 3) ; JUMP                     // jump to loop
+                    ; JUMPDEST                              // label:end
+                    ; .OpCodes
+                    ) [macro]
 endmodule
 
 

@@ -50,7 +50,7 @@ ADD deps/k/java-backend/pom.xml /home/user/.tmp-maven/java-backend/
 ADD deps/k/k-distribution/pom.xml /home/user/.tmp-maven/k-distribution/
 ADD deps/k/kore/pom.xml /home/user/.tmp-maven/kore/
 RUN    cd /home/user/.tmp-maven \
-    && mvn dependency:go-offline 
+    && mvn dependency:go-offline
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
 ENV PATH=/home/user/.local/bin:/home/user/.cargo/bin:$PATH

@@ -3,10 +3,9 @@ Ethereum Assembler
 
 This file contains an assembler from EVM opcodes to byte strings.
 
-Note that due to the design of EVM, which depends on the binary representation
-of a smart contract, it is **not** the case that disassembling and then
-reassembling the same contract will yield the same sequence of bytes. As a simple counterexample,
-consider the contract `0x60`. Disassembling and then reassembling this contract will yield `0x6000`.
+Note that due to the design of EVM, which depends on the binary representation of a smart contract, it is **not** the case that disassembling and then reassembling the same contract will yield the same sequence of bytes.
+As a simple counterexample, consider the contract `0x60`.
+Disassembling and then reassembling this contract will yield `0x6000`.
 
 As such, assembly is not considered part of the semantics of EVM, but is provided merely as a sample implementation to ease readability and make it easier to write inputs to the KEVM semantics.
 
@@ -43,7 +42,7 @@ module EVM-ASSEMBLY
 
 ```k
     syntax Int ::= #asmOpCode ( OpCode ) [function]
- // --------------------------------------------------
+ // -----------------------------------------------
     rule #asmOpCode( STOP           ) =>   0
     rule #asmOpCode( ADD            ) =>   1
     rule #asmOpCode( MUL            ) =>   2

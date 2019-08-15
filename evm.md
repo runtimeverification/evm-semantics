@@ -336,7 +336,7 @@ The `#next [_]` operator initiates execution by:
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
-    rule #stackNeeded(PUSH(_))      => 0
+    rule #stackNeeded(PUSH(_))         => 0
     rule #stackNeeded(IOP:InvalidOp)   => 0
     rule #stackNeeded(NOP:NullStackOp) => 0
     rule #stackNeeded(UOP:UnStackOp)   => 1
@@ -366,7 +366,7 @@ The `#next [_]` operator initiates execution by:
     rule #stackAdded(RETURN)         => 0
     rule #stackAdded(REVERT)         => 0
     rule #stackAdded(SELFDESTRUCT)   => 0
-    rule #stackAdded(PUSH(_))      => 1
+    rule #stackAdded(PUSH(_))        => 1
     rule #stackAdded(LOG(_))         => 0
     rule #stackAdded(SWAP(N))        => N
     rule #stackAdded(DUP(N))         => N +Int 1
@@ -516,7 +516,7 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
     syntax Int ::= #widthOp ( OpCode ) [function]
  // ---------------------------------------------
     rule #widthOp(PUSH(N)) => 1 +Int N
-    rule #widthOp(OP)         => 1        requires notBool isPushOp(OP)
+    rule #widthOp(OP)      => 1        requires notBool isPushOp(OP)
 ```
 
 ### Substate Log
@@ -832,7 +832,7 @@ Some operators don't calculate anything, they just push the stack around a bit.
     rule <k> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Int 1 ]) : (WS [ N -Int 1 := W0 ])) ... </k>
 
     syntax PushOp ::= PUSH ( Int )
- // ------------------------------------
+ // ------------------------------
     rule <k> PUSH(N) => #asWord(PGM [ PCOUNT +Int 1 .. N ]) ~> #push ... </k>
          <pc> PCOUNT </pc>
          <programBytes> PGM </programBytes>
@@ -2371,7 +2371,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
 -   `#dasmOpCode` interperets a `Int` as an `OpCode`.
 
 ```k
-    syntax Int     ::= #widthOpCode(Int)                     [function]
+    syntax Int     ::= #widthOpCode ( Int )                  [function]
     syntax OpCodes ::= #dasmOpCodes ( ByteArray , Schedule ) [function]
  // -------------------------------------------------------------------
     rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
