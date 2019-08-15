@@ -1297,7 +1297,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
  // --------------------------------------------------------------
     rule <k> #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] ... </k> requires         ACCTCODE in #precompiledAccounts(SCHED)
-    rule <k> #precompiled?(ACCTCODE,     _) => .                                ... </k> requires notBool ACCTCODE in #precompiledAccounts(SCHED)
+    rule <k> #precompiled?(ACCTCODE, SCHED) => .                                ... </k> requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
     syntax KItem ::= "#initVM"
  // --------------------------
