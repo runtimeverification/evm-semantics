@@ -196,7 +196,7 @@ module WEB3
          <params> [ ACCTADDR, MESSAGE, .JSONList ] </params>
          <accountKeys>... #parseHexWord(ACCTADDR) |-> KEY ...</accountKeys>
 
-    rule <k> #eth_sign => #sendResponse( "error": {"code": 3, "message": "Execution error", "data": [{ "code": 100, "message": "Account doesn't exist" }]} ) ... </k>
+    rule <k> #eth_sign => #sendResponse( "error": {"code": 3, "message": "Execution error", "data": [{ "code": 100, "message": "Account key doesn't exist, account locked!" }]} ) ... </k>
          <params> [ ACCTADDR, _ ] </params>
          <accountKeys> KEYMAP </accountKeys>
       requires notBool #parseHexWord(ACCTADDR) in_keys(KEYMAP)
