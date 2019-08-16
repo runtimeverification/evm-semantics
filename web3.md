@@ -16,6 +16,7 @@ module WEB3
           <chainID> $CHAINID:Int </chainID>
         </blockchain>
         <accountKeys> .Map </accountKeys>
+        <snapshots> .List </snapshots> 
         <web3socket> $SOCK:Int </web3socket>
         <web3clientsocket> 0:IOInt </web3clientsocket>
         <web3request>
@@ -23,7 +24,9 @@ module WEB3
           <callid> 0:JSON </callid>
           <method> "":JSON </method>
           <params> [ .JSONList ] </params>
+          <batch> undef </batch>
         </web3request>
+        <web3response> .List </web3response>
       </kevm-client>
 
     syntax JSON ::= Int | Bool | "null" | "undef"
@@ -54,6 +57,7 @@ module WEB3
  // -----------------------------
     rule <k> getRequest() => #loadRPCCall(#getRequest(SOCK)) ... </k>
          <web3clientsocket> SOCK </web3clientsocket>
+         <batch> _ => undef </batch>
 
     syntax IOJSON ::= #getRequest(Int) [function, hook(JSON.read)]
  // --------------------------------------------------------------
@@ -72,15 +76,56 @@ module WEB3
     rule <k> #loadRPCCall(#EOF) => #shutdownWrite(SOCK) ~> #close(SOCK) ~> accept() ... </k>
          <web3clientsocket> SOCK </web3clientsocket>
 
+    rule <k> #loadRPCCall([ _, _ ] #as J) => #loadFromBatch ... </k>
+         <batch> _ => J </batch>
+         <web3response> _ => .List </web3response>
+
+    rule <k> #loadRPCCall(_:String #Or null #Or _:Int #Or [ .JSONList ]) => #sendResponse("error": {"code": -32600, "message": "Invalid Request"}) ... </k>
+         <callid> _ => null </callid>
+
+    syntax KItem ::= "#loadFromBatch"
+ // ---------------------------------
+    rule <k> #loadFromBatch ~> _ => #loadRPCCall(J) </k>
+         <batch> [ J , JS => JS ] </batch>
+
+    rule <k> #loadFromBatch ~> _ => #putResponse(List2JSON(RESPONSE), SOCK) ~> getRequest() </k>
+         <batch> [ .JSONList ] </batch>
+         <web3clientsocket> SOCK </web3clientsocket>
+         <web3response> RESPONSE </web3response>
+      requires size(RESPONSE) >Int 0
+
+    rule <k> #loadFromBatch ~> _ => getRequest() </k>
+         <batch> [ .JSONList ] </batch>
+         <web3response> .List </web3response>
+
+    syntax JSON ::= List2JSON(List)           [function]
+                  | List2JSON(List, JSONList) [function, klabel(List2JSONAux)]
+ // --------------------------------------------------------------------------
+    rule List2JSON(L) => List2JSON(L, .JSONList)
+
+    rule List2JSON(L ListItem(J), JS) => List2JSON(L, (J, JS))
+    rule List2JSON(.List, JS) => [ JS ]
+
     syntax KItem ::= #sendResponse( JSON )
  // --------------------------------------
     rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", "id": CALLID, J }, SOCK) ~> getRequest() </k>
          <callid> CALLID </callid>
          <web3clientsocket> SOCK </web3clientsocket>
+         <batch> undef </batch>
       requires CALLID =/=K undef
 
     rule <k> #sendResponse(_) ~> _ => getRequest() </k>
          <callid> undef </callid>
+         <batch> undef </batch>
+
+    rule <k> #sendResponse(J) ~> _ => #loadFromBatch </k>
+         <callid> CALLID </callid>
+         <batch> [ _ ] </batch>
+         <web3response> ... .List => ListItem({ "jsonrpc": "2.0", "id": CALLID, J }) </web3response>
+
+    rule <k> #sendResponse(_) ~> _ => #loadFromBatch </k>
+         <callid> undef </callid>
+         <batch> [ _ ] </batch>
 
     syntax KItem ::= "#checkRPCCall"
  // --------------------------------
@@ -119,6 +164,12 @@ module WEB3
          <method> "eth_getCode" </method>
     rule <k> #runRPCCall => #eth_sign ... </k>
          <method> "eth_sign" </method>
+    rule <k> #runRPCCall => #evm_snapshot ... </k>
+         <method> "evm_snapshot" </method>
+    rule <k> #runRPCCall => #evm_revert ... </k>
+         <method> "evm_revert" </method>
+    rule <k> #runRPCCall => #evm_increaseTime ... </k>
+         <method> "evm_increaseTime" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -209,5 +260,35 @@ module WEB3
  // ----------------------------------------------------
     rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
 
+    syntax KItem ::= "#evm_snapshot"
+ // --------------------------------
+    rule <k> #evm_snapshot => #pushNetworkState ~> #sendResponse( "result" : #unparseQuantity( size ( SNAPSHOTS ) ) ) ... </k>
+         <snapshots> SNAPSHOTS </snapshots>
+
+    syntax KItem ::= "#pushNetworkState"
+ // ------------------------------------
+    rule <k> #pushNetworkState => . ... </k>
+         <snapshots> ... ( .List => ListItem(NETWORKSTATE)) </snapshots>
+         <network> NETWORKSTATE </network>
+
+    syntax KItem ::= "#evm_revert"
+ // ------------------------------
+    rule <k> #evm_revert => #sendResponse( "result" : "true" ) ... </k>
+         <params> [ .JSONList ] </params>
+         <snapshots> ... ( ListItem(NETWORKSTATE) => .List ) </snapshots>
+         <network> ( _ => NETWORKSTATE ) </network>
+
+    rule <k> #evm_revert ... </k>
+         <params> [ (DATA => #parseHexWord(DATA)), .JSONList ] </params>
+
+    rule <k> #evm_revert ... </k>
+         <params> ( [ DATA:Int, .JSONList ] => [ .JSONList ] ) </params>
+         <snapshots> ( SNAPSHOTS => range(SNAPSHOTS, 0, DATA ) ) </snapshots>
+
+    syntax KItem ::= "#evm_increaseTime"
+ // ------------------------------------
+    rule <k> #evm_increaseTime => #sendResponse( "result" : Int2String(TS +Int DATA ) ) ... </k>
+         <params> [ DATA:Int, .JSONList ] </params>
+         <timestamp> ( TS:Int => ( TS +Int DATA ) ) </timestamp>
 endmodule
 ```
