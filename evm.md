@@ -167,8 +167,9 @@ Our semantics is modal, with the initial mode being set on the command line via 
 -   `VMTESTS` skips `CALL*` and `CREATE` operations.
 
 ```k
-    syntax Mode ::= "NORMAL"  [klabel(NORMAL), symbol]
+    syntax Mode ::= "NORMAL"  [klabel(NORMAL) , symbol]
                   | "VMTESTS" [klabel(VMTESTS), symbol]
+ // ---------------------------------------------------
 ```
 
 -   `#setMode_` sets the mode to the supplied one.
