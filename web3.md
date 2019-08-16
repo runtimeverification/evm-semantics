@@ -150,6 +150,8 @@ module WEB3
 
     syntax KItem ::= "#runRPCCall"
  // ------------------------------
+    rule <k> #runRPCCall => #firefly_shutdown ... </k>
+         <method> "firefly_shutdown" </method>
     rule <k> #runRPCCall => #net_version ... </k>
          <method> "net_version" </method>
     rule <k> #runRPCCall => #web3_clientVersion ... </k>
@@ -176,6 +178,13 @@ module WEB3
          <method> "evm_increaseTime" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
+
+    syntax KItem ::= "#firefly_shutdown"
+ // ------------------------------------
+    rule <k> #firefly_shutdown ~> _ => #putResponse({ "jsonrpc": "2.0" , "id": CALLID , "result": "Firefly client shutting down!" }, SOCK) </k>
+         <callid> CALLID </callid>
+         <web3clientsocket> SOCK </web3clientsocket>
+         <exit-code> _ => 0 </exit-code>
 
     syntax KItem ::= "#net_version"
  // -------------------------------
