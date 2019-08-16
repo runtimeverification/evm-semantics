@@ -21,7 +21,6 @@ module WEB3
         <opcodeLists> .Map </opcodeLists>
         <errorPC> 0 </errorPC>
         <blockchain>
-          <chainID> $CHAINID:Int </chainID>
           <blockList> .List </blockList>
         </blockchain>
         <accountKeys> .Map </accountKeys>
@@ -350,8 +349,8 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#net_version"
  // -------------------------------
-    rule <k> #net_version => #rpcResponseSuccess(Int2String( CHAINID )) ... </k>
-         <chainID> CHAINID </chainID>
+    rule <k> #net_version => #rpcResponseSuccess(Int2String( CID )) ... </k>
+         <chainID> CID </chainID>
 
     syntax KItem ::= "#web3_clientVersion"
  // --------------------------------------

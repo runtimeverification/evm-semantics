@@ -37,9 +37,10 @@ pretty_diff() {
 
 run_krun() {
     export K_OPTS=-Xss500m
-    krun --directory "$backend_dir"                    \
-        -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' \
-        -cMODE="$cMODE"         -pMODE='printf %s'     \
+    krun --directory "$backend_dir"                                      \
+        -cSCHEDULE="$cSCHEDULE"                   -pSCHEDULE='printf %s' \
+        -cMODE="$cMODE"                           -pMODE='printf %s'     \
+        -cCHAINID="#token(\"$cCHAINID\",\"Int\")" -pCHAINID='printf %s'  \
         "$run_file" "$@"
 }
 
@@ -49,8 +50,8 @@ run_kast() {
     output_mode="${1:-kast}" ; shift
 
     case "$run_file-$output_mode" in
-        *.json-@(kast|kore)) "$kevm_dir/$output_mode-json.py" "$run_file" "$cSCHEDULE" "$cMODE"       ;;
-        *)                   kast --directory "$backend_dir" "$run_file" --output "$output_mode" "$@" ;;
+        *.json-@(kast|kore)) "$kevm_dir/$output_mode-json.py" "$run_file" "$cSCHEDULE" "$cMODE" "$cCHAINID" ;;
+        *)                   kast --directory "$backend_dir" "$run_file" --output "$output_mode" "$@"       ;;
     esac
 }
 
@@ -307,7 +308,7 @@ fi
 
 cMODE="\`${MODE:-NORMAL}\`(.KList)"
 cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
-cCHAINID="#token(\"${CHAINID:-28346}\",\"Int\")"
+cCHAINID="${CHAINID:-0}"
 
 case "$run_command-$backend" in
 

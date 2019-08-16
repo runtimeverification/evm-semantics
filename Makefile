@@ -309,6 +309,7 @@ CHECK        := git --no-pager diff --no-index --ignore-all-space -R
 
 KEVM_MODE     := NORMAL
 KEVM_SCHEDULE := PETERSBURG
+KEVM_CHAINID  := 0
 
 KEVM_WEB3_ARGS := --shutdownable
 
@@ -330,21 +331,21 @@ tests/ethereum-tests/VMTests/%: KEVM_MODE=VMTESTS
 tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE=DEFAULT
 
 tests/%.run: tests/%
-	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE)                                                                        \
+	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) CHAINID=$(KEVM_CHAINID)                                                \
 	    $(TEST) interpret $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                           \
 	    $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                     \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-interactive: tests/%
-	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE)                                                                        \
+	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) CHAINID=$(KEVM_CHAINID)                                                \
 	    $(TEST) run $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                                 \
 	    $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                     \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-expected: tests/% tests/%.expected
-	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE)                                                                        \
+	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) CHAINID=$(KEVM_CHAINID)                                                \
 	    $(TEST) run $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                                 \
 	    $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                     \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
