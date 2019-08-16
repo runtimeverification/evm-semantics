@@ -360,7 +360,7 @@ State Manipulation
          <memoryUsed>      _ => 0          </memoryUsed>
          <callDepth>       _ => 0          </callDepth>
          <callStack>       _ => .List      </callStack>
-         <program>         _ => .Map       </program>
+         <program>         _ => .List      </program>
          <programBytes>    _ => .ByteArray </programBytes>
          <id>              _ => 0          </id>
          <caller>          _ => 0          </caller>
