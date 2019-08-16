@@ -136,7 +136,7 @@ module WEB3
     rule <k> #checkRPCCall => . ...</k>
          <jsonrpc> "2.0" </jsonrpc>
          <method> _:String </method>
-         <params> undef #Or [ _ ] #Or { _ } #Or undef </params>
+         <params> undef #Or [ _ ] #Or { _ } </params>
          <callid> _:String #Or null #Or _:Int #Or undef </callid>
 
     rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
