@@ -120,7 +120,7 @@ module WEB3
     rule <k> #sendResponse(J) ~> _ => #loadFromBatch </k>
          <callid> CALLID </callid>
          <batch> [ _ ] </batch>
-         <web3response>... .List => ListItem({ "jsonrpc": "2.0", "id": CALLID, J }) </web3response>
+         <web3response> ... .List => ListItem({ "jsonrpc": "2.0", "id": CALLID, J }) </web3response>
 
     rule <k> #sendResponse(_) ~> _ => #loadFromBatch </k>
          <callid> undef </callid>
@@ -246,14 +246,14 @@ module WEB3
     syntax KItem ::= "#pushNetworkState"
  // ------------------------------------
     rule <k> #pushNetworkState => . ... </k>
-         <snapshots>... ( .List => ListItem(NETWORKSTATE)) </snapshots>
+         <snapshots> ... ( .List => ListItem(NETWORKSTATE)) </snapshots>
          <network> NETWORKSTATE </network>
 
     syntax KItem ::= "#evm_revert"
  // ------------------------------
     rule <k> #evm_revert => #sendResponse( "result" : "true" ) ... </k>
          <params> [ .JSONList ] </params>
-         <snapshots>... ( ListItem(NETWORKSTATE) => .List ) </snapshots>
+         <snapshots> ... ( ListItem(NETWORKSTATE) => .List ) </snapshots>
          <network> ( _ => NETWORKSTATE ) </network>
 
     rule <k> #evm_revert ... </k>
