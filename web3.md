@@ -46,6 +46,7 @@ module WEB3
     rule #getString( KEY, J ) => {#getJSON( KEY, J )}:>String
 
     syntax IOJSON ::= JSON | IOError
+ // --------------------------------
 
     syntax EthereumSimulation ::= accept() [symbol]
  // -----------------------------------------------
@@ -68,10 +69,10 @@ module WEB3
     syntax KItem ::= #loadRPCCall(IOJSON)
  // -------------------------------------
     rule <k> #loadRPCCall({ _ } #as J) => #checkRPCCall ~> #runRPCCall ... </k>
-         <jsonrpc> _             => #getJSON("jsonrpc", J) </jsonrpc>
-         <callid>  _             => #getJSON("id"     , J) </callid>
-         <method>  _             => #getJSON("method" , J) </method>
-         <params>  _             => #getJSON("params" , J) </params>
+         <jsonrpc> _ => #getJSON("jsonrpc", J) </jsonrpc>
+         <callid>  _ => #getJSON("id"     , J) </callid>
+         <method>  _ => #getJSON("method" , J) </method>
+         <params>  _ => #getJSON("params" , J) </params>
 
     rule <k> #loadRPCCall(#EOF) => #shutdownWrite(SOCK) ~> #close(SOCK) ~> accept() ... </k>
          <web3clientsocket> SOCK </web3clientsocket>
@@ -107,7 +108,7 @@ module WEB3
     rule List2JSON(L) => List2JSON(L, .JSONList)
 
     rule List2JSON(L ListItem(J), JS) => List2JSON(L, (J, JS))
-    rule List2JSON(.List, JS) => [ JS ]
+    rule List2JSON(.List        , JS) => [ JS ]
 
     syntax KItem ::= #sendResponse( JSON )
  // --------------------------------------
@@ -182,7 +183,7 @@ module WEB3
          <chainID> CHAINID </chainID>
 
     syntax KItem ::= "#web3_clientVersion"
- // -------------------------------
+ // --------------------------------------
     rule <k> #web3_clientVersion => #sendResponse( "result" : "Firefly RPC/v0.0.1/kevm" ) ... </k>
 
     syntax KItem ::= "#eth_gasPrice"
