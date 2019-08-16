@@ -388,6 +388,7 @@ CHECK:=git --no-pager diff --no-index --ignore-all-space
 
 KEVM_MODE:=NORMAL
 KEVM_SCHEDULE:=PETERSBURG
+KEVM_CHAINID:='0'
 
 test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
@@ -403,9 +404,10 @@ tests/%/make.timestamp:
 
 tests/ethereum-tests/VMTests/%: KEVM_MODE=VMTESTS
 tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE=DEFAULT
+tests/ethereum-tests/VMTests/%: KEVM_CHAINID='0'
 
 tests/%.run: tests/%
-	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) interpret --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
+	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) CHAINID=$(KEVM_CHAINID) $(TEST) interpret --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
 	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 

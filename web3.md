@@ -12,9 +12,6 @@ module WEB3
     configuration
       <kevm-client>
         <kevm/>
-        <blockchain>
-          <chainID> $CHAINID:Int </chainID>
-        </blockchain>
         <web3socket> $SOCK:Int </web3socket>
         <web3clientsocket> 0:IOInt </web3clientsocket>
         <web3request>
