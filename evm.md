@@ -51,7 +51,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <touchedAccounts> .Set        </touchedAccounts>
 
             <callState>
-              <program>      .Map       </program>            // I_b
+              <program>      .List      </program>            // I_b
               <programBytes> .ByteArray </programBytes>
 
               // I_*
@@ -271,15 +271,16 @@ OpCode Execution
     syntax KItem ::= "#execute"
  // ---------------------------
     rule [halt]: <k> #halt ~> (#execute => .) ... </k>
-    rule [step]: <k> (. => #next [ OP ]) ~> #execute ... </k>
+    rule [step]: <k> (. => #next [ { PGM [ PCOUNT ] }:>OpCode ]) ~> #execute ... </k>
                  <pc> PCOUNT </pc>
-                 <program> ... PCOUNT |-> OP ... </program>
+                 <program> PGM </program>
+      requires PCOUNT <Int size(PGM)
 
     rule <k> (. => #end EVMC_SUCCESS) ~> #execute ... </k>
          <pc> PCOUNT </pc>
          <program> PGM </program>
          <output> _ => .ByteArray </output>
-      requires notBool (PCOUNT in_keys(PGM))
+      requires PCOUNT >=Int size(PGM)
 ```
 
 ### Single Step
@@ -652,16 +653,21 @@ Operator `#revOps` can be used to reverse a program.
     rule #revOpsAux( OP ; OPS , OPS' ) => #revOpsAux( OPS , OP ; OPS' )
 ```
 
-### Converting to/from `Map` Representation
+### Converting to/from `List` Representation
 
 ```k
-    syntax Map ::= #asMapOpCodes    ( OpCodes )             [function]
-                 | #asMapOpCodesAux ( Int , OpCodes , Map ) [function]
- // ------------------------------------------------------------------
-    rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodesAux(0, OPS, .Map)
+    syntax List ::= #asMapOpCodes    ( OpCodes )        [function]
+                  | #asMapOpCodesAux ( OpCodes , List ) [function]
+ // --------------------------------------------------------------
+    rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodesAux(OPS, .List)
 
-    rule #asMapOpCodesAux( N , .OpCodes         , MAP ) => MAP
-    rule #asMapOpCodesAux( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodesAux(N +Int #widthOp(OP), OCS, MAP [ N <- OP ])
+    rule #asMapOpCodesAux( .OpCodes         , LIST ) => LIST
+    rule #asMapOpCodesAux( PUSH(N) ; OCS , LIST ) => #asMapOpCodesAux(OCS, appendMakeList(LIST ListItem(PUSH(N)), N, PUSHDATA))
+    rule #asMapOpCodesAux( OP      ; OCS , LIST ) => #asMapOpCodesAux(OCS, LIST ListItem(OP)) [owise]
+
+    syntax List ::= appendMakeList(List, Int, KItem) [function]
+    rule appendMakeList(L, 0, _) => L
+    rule appendMakeList(L, N, K) => appendMakeList(L ListItem(K), N -Int 1, K) requires N >Int 0
 ```
 
 EVM OpCodes
@@ -832,7 +838,8 @@ Some operators don't calculate anything, they just push the stack around a bit.
     rule <k> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Int 1 ]) : (WS [ N -Int 1 := W0 ])) ... </k>
 
     syntax PushOp ::= PUSH ( Int )
- // ------------------------------
+    syntax InternalOp ::= "PUSHDATA"
+ // --------------------------------
     rule <k> PUSH(N) => #asWord(PGM [ PCOUNT +Int 1 .. N ]) ~> #push ... </k>
          <pc> PCOUNT </pc>
          <programBytes> PGM </programBytes>
@@ -994,13 +1001,14 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax UnStackOp ::= "JUMP"
  // ---------------------------
-    rule <k> JUMP DEST => #if OP ==K JUMPDEST #then #endBasicBlock #else #end EVMC_BAD_JUMP_DESTINATION #fi ... </k>
+    rule <k> JUMP DEST => #if PGM [ DEST ] ==K JUMPDEST #then #endBasicBlock #else #end EVMC_BAD_JUMP_DESTINATION #fi ... </k>
          <pc> _ => DEST </pc>
-         <program> ... DEST |-> OP ... </program>
+         <program> PGM </program>
+      requires DEST <Int size(PGM)
 
     rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
          <program> PGM </program>
-      requires notBool (DEST in_keys(PGM))
+      requires DEST >=Int size(PGM)
 
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
