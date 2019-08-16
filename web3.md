@@ -204,11 +204,18 @@ module WEB3
          <network> NETWORKSTATE </network>
 
     syntax KItem ::= "#evm_revert"
- // -------------------------------
+ // ------------------------------
     rule <k> #evm_revert => #sendResponse( "result" : "true" ) ... </k>
          <params> [.JSONList] </params>
          <snapshots>... ListItem(NETWORKSTATE) => .List </snapshots>
          <network> _ => NETWORKSTATE </network>
 
+    rule <k> #evm_revert ... </k>
+         <params> [ (DATA => #parseHexWord(DATA))] </params>
+
+    rule <k> #evm_revert => #sendResponse( "result" : "true" ) ... </k>
+         <params> [DATA, .JSONList ] </params>
+         <snapshots> SNAPSHOTS => range(SNAPSHOTS, 0, DATA) </snapshots>
+         <network> NETWORKSTATE => (SNAPSHOTS [DATA]) </network>
 endmodule
 ```
