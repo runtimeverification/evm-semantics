@@ -22,6 +22,10 @@ RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.6.0 \
     && cd ../..                                                     \
     && rm -rf z3
 
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN apt-get install --yes nodejs
+RUN npm install -g npx
+
 USER user:user
 
 ADD --chown=user:user deps/k/llvm-backend/src/main/native/llvm-backend/install-rust deps/k/llvm-backend/src/main/native/llvm-backend/rust-checksum /home/user/.install-rust/
