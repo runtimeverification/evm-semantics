@@ -14,6 +14,7 @@ module KRYPTO
 -   `Sha256` takes a String and returns a 64-character hex-encoded string of the 32-byte SHA2-256 hash of the string.
 -   `RipEmd160` takes a String and returns a 40-character hex-encoded string of the 20-byte RIPEMD160 hash of the string.
 -   `ECDSARecover` takes a 32-character byte string of a message, v, r, s of the signed message and returns the 64-character public key used to sign the message.
+-   `ECDSASign` takes a 32-character byte string of a message hash, a 32-character byte string of a private key, and returns the 65 byte hex-encoded signature in [r,s,v] form
     See [this StackOverflow post](https://ethereum.stackexchange.com/questions/15766/what-does-v-r-s-in-eth-gettransactionbyhash-mean) for some information about v, r, and s.
 
 In all functions above, input `String` is interpreted as byte array, e.g. it is NOT hex-encoded.
@@ -23,6 +24,7 @@ In all functions above, input `String` is interpreted as byte array, e.g. it is 
                     | ECDSARecover ( String , Int , String , String ) [function, hook(KRYPTO.ecdsaRecover)]
                     | Sha256 ( String )                               [function, hook(KRYPTO.sha256)]
                     | RipEmd160 ( String )                            [function, hook(KRYPTO.ripemd160)]
+                    | ECDSASign ( String, String )                    [function, hook(KRYPTO.ecdsaSign)]
  // ----------------------------------------------------------------------------------------------------
 ```
 

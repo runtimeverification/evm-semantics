@@ -15,6 +15,7 @@ module WEB3
         <blockchain>
           <chainID> $CHAINID:Int </chainID>
         </blockchain>
+        <accountKeys> .Map </accountKeys>
         <snapshots> .List </snapshots> 
         <web3socket> $SOCK:Int </web3socket>
         <web3clientsocket> 0:IOInt </web3clientsocket>
@@ -164,6 +165,8 @@ module WEB3
          <method> "eth_getStorageAt" </method>
     rule <k> #runRPCCall => #eth_getCode ... </k>
          <method> "eth_getCode" </method>
+    rule <k> #runRPCCall => #eth_sign ... </k>
+         <method> "eth_sign" </method>
     rule <k> #runRPCCall => #evm_snapshot ... </k>
          <method> "evm_snapshot" </method>
     rule <k> #runRPCCall => #evm_revert ... </k>
@@ -240,6 +243,25 @@ module WEB3
            <code> CODE </code>
            ...
          </account>
+
+    syntax KItem ::= "#eth_sign"
+ // ----------------------------
+    rule <k> #eth_sign => #signMessage(KEY, #hashMessage(#unparseByteStack(#parseByteStack(MESSAGE)))) ... </k>
+         <params> [ ACCTADDR, MESSAGE, .JSONList ] </params>
+         <accountKeys>... #parseHexWord(ACCTADDR) |-> KEY ...</accountKeys>
+
+    rule <k> #eth_sign => #sendResponse( "error": {"code": 3, "message": "Execution error", "data": [{ "code": 100, "message": "Account key doesn't exist, account locked!" }]} ) ... </k>
+         <params> [ ACCTADDR, _ ] </params>
+         <accountKeys> KEYMAP </accountKeys>
+      requires notBool #parseHexWord(ACCTADDR) in_keys(KEYMAP)
+
+    syntax KItem ::= #signMessage ( String , String )
+ // -------------------------------------------------
+    rule <k> #signMessage(KEY, MHASH) => #sendResponse( "result" : "0x" +String ECDSASign( MHASH, KEY ) ) ... </k>
+
+    syntax String ::= #hashMessage ( String ) [function]
+ // ----------------------------------------------------
+    rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
 
     syntax KItem ::= "#evm_snapshot"
  // --------------------------------
