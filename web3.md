@@ -15,6 +15,7 @@ module WEB3
         <blockchain>
           <chainID> $CHAINID:Int </chainID>
         </blockchain>
+        <snapshots> .List </snapshots> 
         <web3socket> $SOCK:Int </web3socket>
         <web3clientsocket> 0:IOInt </web3clientsocket>
         <web3request>
@@ -116,6 +117,8 @@ module WEB3
          <method> "eth_getStorageAt" </method>
     rule <k> #runRPCCall => #eth_getCode ... </k>
          <method> "eth_getCode" </method>
+    rule <k> #runRPCCall => #evm_snapshot ... </k>
+         <method> "evm_snapshot" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -186,5 +189,16 @@ module WEB3
            <code> CODE </code>
            ...
          </account>
+
+    syntax KItem ::= "#evm_snapshot"
+ // --------------------------------
+    rule <k> #evm_snapshot => #pushNetworkState ~> #sendResponse( "result" : #unparseQuantity( size ( SNAPSHOTS ) ) ) ... </k>
+         <snapshots> SNAPSHOTS </snapshots>
+
+    syntax KItem ::= "#pushNetworkState"
+ // ------------------------------------
+    rule <k> #pushNetworkState => . ... </k>
+         <snapshots>... .List => ListItem (NETWORKSTATE) </snapshots>
+         <network> NETWORKSTATE </network>
 endmodule
 ```
