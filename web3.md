@@ -293,5 +293,28 @@ module WEB3
     rule <k> #evm_increaseTime => #sendResponse( "result" : Int2String(TS +Int DATA ) ) ... </k>
          <params> [ DATA:Int, .JSONList ] </params>
          <timestamp> ( TS:Int => ( TS +Int DATA ) ) </timestamp>
+```
+
+# eth_estimateGas
+
+```k
+    syntax KItem ::= "#eth_estimateGas"
+ // -----------------------------------
+    rule <k> DATA:Int ~> #eth_estimateGas => #sendResponse( "result": #unparseQuantity( DATA ) ) ... </k>
+
+    syntax KItem ::= "loadTX" JSON
+ // ------------------------------
+    rule <k> loadTX J => . ... </k>
+         <caller>      X  =>  #if  #getJSON("from",      J)  =/=K  undef  #then  #parseHexWord(#getString("from",J))      #else  X           #fi  </caller>
+         <to>          _  =>                                                     #parseHexWord(#getString("to",  J))                              </to>
+         <txGasLimit>  _  =>  #if  #getJSON("gas",       J)  =/=K  undef  #then  #parseHexWord(#getString("gas",J))       #else  GASL        #fi  </txGasLimit>
+         <txGasPrice>  _  =>  #if  #getJSON("gasPrice",  J)  =/=K  undef  #then  #parseHexWord(#getString("gasPrice",J))  #else  GASP        #fi  </txGasPrice>
+         <value>       _  =>  #if  #getJSON("value",     J)  =/=K  undef  #then  #parseHexWord(#getString("value",J))     #else  0           #fi  </value>
+         <data>        _  =>  #if  #getJSON("data",      J)  =/=K  undef  #then  #parseHexBytes(#getString("data",J))     #else  .ByteArray  #fi  </data>
+         <gasPrice> GASP </gasPrice>
+         <gasLimit> GASL </gasLimit>
+```
+    
+```k
 endmodule
 ```
