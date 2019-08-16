@@ -119,6 +119,8 @@ module WEB3
          <method> "eth_getCode" </method>
     rule <k> #runRPCCall => #evm_snapshot ... </k>
          <method> "evm_snapshot" </method>
+    rule <k> #runRPCCall => #evm_revert ... </k>
+         <method> "evm_revert" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -200,5 +202,13 @@ module WEB3
     rule <k> #pushNetworkState => . ... </k>
          <snapshots>... .List => ListItem (NETWORKSTATE) </snapshots>
          <network> NETWORKSTATE </network>
+
+    syntax KItem ::= "#evm_revert"
+ // -------------------------------
+    rule <k> #evm_revert => #sendResponse( "result" : "true" ) ... </k>
+         <params> [.JSONList] </params>
+         <snapshots>... ListItem(NETWORKSTATE) => .List </snapshots>
+         <network> _ => NETWORKSTATE </network>
+
 endmodule
 ```
