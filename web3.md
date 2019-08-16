@@ -202,28 +202,27 @@ module WEB3
     syntax KItem ::= "#pushNetworkState"
  // ------------------------------------
     rule <k> #pushNetworkState => . ... </k>
-         <snapshots>... .List => ListItem (NETWORKSTATE) </snapshots>
+         <snapshots>... ( .List => ListItem(NETWORKSTATE)) </snapshots>
          <network> NETWORKSTATE </network>
 
     syntax KItem ::= "#evm_revert"
  // ------------------------------
     rule <k> #evm_revert => #sendResponse( "result" : "true" ) ... </k>
-         <params> [.JSONList] </params>
-         <snapshots>... ListItem(NETWORKSTATE) => .List </snapshots>
-         <network> _ => NETWORKSTATE </network>
+         <params> [ .JSONList ] </params>
+         <snapshots>... ( ListItem(NETWORKSTATE) => .List ) </snapshots>
+         <network> ( _ => NETWORKSTATE ) </network>
 
     rule <k> #evm_revert ... </k>
-         <params> [ (DATA => #parseHexWord(DATA))] </params>
+         <params> [ (DATA => #parseHexWord(DATA)), .JSONList ] </params>
 
-    rule <k> #evm_revert => #sendResponse( "result" : "true" ) ... </k>
-         <params> [DATA, .JSONList ] </params>
-         <snapshots> SNAPSHOTS => range(SNAPSHOTS, 0, DATA) </snapshots>
-         // <network> NETWORKSTATE => (SNAPSHOTS [DATA]) </network>
+    rule <k> #evm_revert ... </k>
+         <params> ( [ DATA:Int, .JSONList ] => [ .JSONList ] ) </params>
+         <snapshots> ( SNAPSHOTS => range(SNAPSHOTS, 0, DATA ) ) </snapshots>
 
     syntax KItem ::= "#evm_increaseTime"
  // ------------------------------------
-    rule <k> #evm_increaseTime => #sendResponse( "result" : Int2String(TS +Int DATA) ) ... </k>
-         <params> [DATA:Int, .JSONList] </params>
-         <timestamp> TS:Int => ( TS +Int DATA ) </timestamp>
+    rule <k> #evm_increaseTime => #sendResponse( "result" : Int2String(TS +Int DATA ) ) ... </k>
+         <params> [ DATA:Int, .JSONList ] </params>
+         <timestamp> ( TS:Int => ( TS +Int DATA ) ) </timestamp>
 endmodule
 ```
