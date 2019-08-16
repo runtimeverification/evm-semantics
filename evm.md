@@ -661,7 +661,7 @@ Operator `#revOps` can be used to reverse a program.
  // --------------------------------------------------------------
     rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodesAux(OPS, .List)
 
-    rule #asMapOpCodesAux( .OpCodes         , LIST ) => LIST
+    rule #asMapOpCodesAux( .OpCodes      , LIST ) => LIST
     rule #asMapOpCodesAux( PUSH(N) ; OCS , LIST ) => #asMapOpCodesAux(OCS, appendMakeList(LIST ListItem(PUSH(N)), N, PUSHDATA))
     rule #asMapOpCodesAux( OP      ; OCS , LIST ) => #asMapOpCodesAux(OCS, LIST ListItem(OP)) [owise]
 
