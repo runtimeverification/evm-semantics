@@ -121,6 +121,8 @@ module WEB3
          <method> "evm_snapshot" </method>
     rule <k> #runRPCCall => #evm_revert ... </k>
          <method> "evm_revert" </method>
+    rule <k> #runRPCCall => #evm_increaseTime ... </k>
+         <method> "evm_increaseTime" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -216,6 +218,12 @@ module WEB3
     rule <k> #evm_revert => #sendResponse( "result" : "true" ) ... </k>
          <params> [DATA, .JSONList ] </params>
          <snapshots> SNAPSHOTS => range(SNAPSHOTS, 0, DATA) </snapshots>
-         <network> NETWORKSTATE => (SNAPSHOTS [DATA]) </network>
+         // <network> NETWORKSTATE => (SNAPSHOTS [DATA]) </network>
+
+    syntax KItem ::= "#evm_increaseTime"
+ // ------------------------------------
+    rule <k> #evm_increaseTime => #sendResponse( "result" : Int2String(TS +Int DATA) ) ... </k>
+         <params> [DATA:Int, .JSONList] </params>
+         <timestamp> TS:Int => ( TS +Int DATA ) </timestamp>
 endmodule
 ```
