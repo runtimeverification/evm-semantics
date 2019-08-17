@@ -943,13 +943,20 @@ These operators make queries about the current execution state.
     rule <k> NUMBER     => NUMB ~> #push ... </k> <number> NUMB </number>
     rule <k> DIFFICULTY => DIFF ~> #push ... </k> <difficulty> DIFF </difficulty>
 
-    syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE" | "CHAINID"
- // --------------------------------------------------------------------------------
-    rule <k> ADDRESS   => ACCT ~> #push ... </k> <id> ACCT </id>
-    rule <k> ORIGIN    => ORG  ~> #push ... </k> <origin> ORG </origin>
-    rule <k> CALLER    => CL   ~> #push ... </k> <caller> CL </caller>
-    rule <k> CALLVALUE => CV   ~> #push ... </k> <callValue> CV </callValue>
-    rule <k> CHAINID   => CID  ~> #push ... </k> <chainID> CID </chainID>
+    syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE" | "CHAINID" | "SELFBALANCE"
+ // ------------------------------------------------------------------------------------------------
+    rule <k> ADDRESS     => ACCT ~> #push ... </k> <id> ACCT </id>
+    rule <k> ORIGIN      => ORG  ~> #push ... </k> <origin> ORG </origin>
+    rule <k> CALLER      => CL   ~> #push ... </k> <caller> CL </caller>
+    rule <k> CALLVALUE   => CV   ~> #push ... </k> <callValue> CV </callValue>
+    rule <k> CHAINID     => CID  ~> #push ... </k> <chainID> CID </chainID>
+    rule <k> SELFBALANCE => BAL  ~> #push ... </k>
+         <id> ACCT </id>
+         <account>
+            <acctID> ACCT </acctID>
+            <balance> BAL </balance>
+            ...
+         </account>
 
     syntax NullStackOp ::= "MSIZE" | "CODESIZE"
  // -------------------------------------------
@@ -1958,6 +1965,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, MOD _ _)        => Glow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, SMOD _ _)       => Glow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, SIGNEXTEND _ _) => Glow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, SELFBALANCE)    => Glow < SCHED > ... </k>
 
     // Wmid
     rule <k> #gasExec(SCHED, ADDMOD _ _ _) => Gmid < SCHED > ... </k>
@@ -2162,7 +2170,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghaschainid"
- // --------------------------------------------------------------------------------------------------------------
+                          | "Ghasselfbalance"
+ // -----------------------------------------
 ```
 
 ### Schedule Constants
@@ -2255,6 +2264,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghascreate2             << DEFAULT >> => false
     rule Ghasextcodehash         << DEFAULT >> => false
     rule Ghaschainid             << DEFAULT >> => false
+    rule Ghasselfbalance         << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -2372,17 +2382,21 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gecpairconst   < ISTANBUL > => 45000
     rule Gecpaircoeff   < ISTANBUL > => 34000
     rule Gtxdatanonzero < ISTANBUL > => 16
+    rule Gsload         < ISTANBUL > => 800
+    rule Gbalance       < ISTANBUL > => 700 //Gextcodehash == Gbalance
 
     rule SCHEDCONST < ISTANBUL > => SCHEDCONST < PETERSBURG >
       requires notBool (SCHEDCONST ==K Gecadd orBool SCHEDCONST ==K Gecpairconst
                 orBool  SCHEDCONST ==K Gecmul orBool SCHEDCONST ==K Gecpaircoeff
-                orBool  SCHEDCONST ==K Gtxdatanonzero)
+                orBool  SCHEDCONST ==K Gtxdatanonzero
+                orBool  SCHEDCONST ==K Gsload orBool SCHEDCONST ==K Gbalance)
 
-    rule Ghaschainid << ISTANBUL >> => true
+    rule Ghaschainid     << ISTANBUL >> => true
+    rule Ghasselfbalance << ISTANBUL >> => true
 
     rule SCHEDFLAG   << ISTANBUL >> => SCHEDFLAG << PETERSBURG >>
-      requires notBool (SCHEDFLAG ==K Ghaschainid)
-//TODO
+      requires notBool (SCHEDFLAG ==K Ghaschainid orBool SCHEDFLAG ==K Ghasselfbalance)
+//TODO: EIP2200, EIP152
 ```
 
 EVM Program Representations
@@ -2496,6 +2510,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  68,     _ ) => DIFFICULTY
     rule #dasmOpCode(  69,     _ ) => GASLIMIT
     rule #dasmOpCode(  70, SCHED ) => CHAINID requires Ghaschainid << SCHED >>
+    rule #dasmOpCode(  71, SCHED ) => SELFBALANCE requires Ghasselfbalance << SCHED >>
     rule #dasmOpCode(  80,     _ ) => POP
     rule #dasmOpCode(  81,     _ ) => MLOAD
     rule #dasmOpCode(  82,     _ ) => MSTORE
