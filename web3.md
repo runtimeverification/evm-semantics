@@ -162,8 +162,8 @@ module WEB3
 
     syntax KItem ::= "#net_version"
  // -------------------------------
-    rule <k> #net_version => #sendResponse( "result" : Int2String( CHAINID ) ) ... </k>
-         <chainID> CHAINID </chainID>
+    rule <k> #net_version => #sendResponse( "result" : Int2String( CID ) ) ... </k>
+         <chainID> CID </chainID>
 
     syntax KItem ::= "#web3_clientVersion"
  // -------------------------------
