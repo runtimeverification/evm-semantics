@@ -2367,14 +2367,16 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "ISTANBUL" [klabel(ISTANBUL_EVM), symbol]
  // -----------------------------------------------------------------
-    rule Gecadd       < ISTANBUL > => 150
-    rule Gecmul       < ISTANBUL > => 6000
-    rule Gecpairconst < ISTANBUL > => 45000
-    rule Gecpaircoeff < ISTANBUL > => 34000
+    rule Gecadd         < ISTANBUL > => 150
+    rule Gecmul         < ISTANBUL > => 6000
+    rule Gecpairconst   < ISTANBUL > => 45000
+    rule Gecpaircoeff   < ISTANBUL > => 34000
+    rule Gtxdatanonzero < ISTANBUL > => 16
 
     rule SCHEDCONST < ISTANBUL > => SCHEDCONST < PETERSBURG >
       requires notBool (SCHEDCONST ==K Gecadd orBool SCHEDCONST ==K Gecpairconst
-                orBool  SCHEDCONST ==K Gecmul orBool SCHEDCONST ==K Gecpaircoeff)
+                orBool  SCHEDCONST ==K Gecmul orBool SCHEDCONST ==K Gecpaircoeff
+                orBool  SCHEDCONST ==K Gtxdatanonzero)
 
     rule Ghaschainid << ISTANBUL >> => true
 
