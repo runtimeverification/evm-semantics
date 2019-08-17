@@ -278,7 +278,7 @@ $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT): $(wildc
 	    && cd $(dir $@) \
 	        && ocamlfind $(OCAMLC) -c -g -I $(CURDIR)/$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled \
 	                               KRYPTO.ml \
-	                               -package cryptokit -package secp256k1 -package bn128 -package ocaml-protoc -safe-string -thread \
+	                               -package cryptokit -package hex -package secp256k1 -package bn128 -package ocaml-protoc -safe-string -thread \
 	        && ocamlfind $(OCAMLC) -a -o semantics.$(LIBEXT) KRYPTO.$(EXT) -thread \
 	        && ocamlfind remove ethereum-semantics-plugin-ocaml \
 	        && ocamlfind install ethereum-semantics-plugin-ocaml $(PLUGIN_SUBMODULE)/plugin/META semantics.* *.cmi *.$(EXT)
@@ -292,7 +292,7 @@ $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(DEFN_DIR)/ocaml/$(MA
 	        && ocamlfind $(OCAMLC) -c -g -w -11-26 -package gmp -package zarith -package uuidm -package ethereum-semantics-plugin-ocaml -safe-string realdef.ml -match-context-rows 2 \
 	        && ocamlfind $(OCAMLC) $(LIBFLAG) -o realdef.$(DLLEXT) realdef.$(EXT) \
 	        && ocamlfind $(OCAMLC) -g -o interpreter constants.$(EXT) prelude.$(EXT) plugin.$(EXT) parser.$(EXT) lexer.$(EXT) hooks.$(EXT) run.$(EXT) interpreter.ml \
-	                               -package gmp -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin-ocaml -linkpkg -linkall -thread -safe-string
+	                               -package gmp -package hex -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin-ocaml -linkpkg -linkall -thread -safe-string
 
 # Node Backend
 

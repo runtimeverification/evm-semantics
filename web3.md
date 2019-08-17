@@ -15,6 +15,8 @@ module WEB3
         <blockchain>
           <chainID> $CHAINID:Int </chainID>
         </blockchain>
+        <accountKeys> .Map </accountKeys>
+        <snapshots> .List </snapshots> 
         <web3socket> $SOCK:Int </web3socket>
         <web3clientsocket> 0:IOInt </web3clientsocket>
         <web3request>
@@ -119,7 +121,7 @@ module WEB3
     rule <k> #sendResponse(J) ~> _ => #loadFromBatch </k>
          <callid> CALLID </callid>
          <batch> [ _ ] </batch>
-         <web3response>... .List => ListItem({ "jsonrpc": "2.0", "id": CALLID, J }) </web3response>
+         <web3response> ... .List => ListItem({ "jsonrpc": "2.0", "id": CALLID, J }) </web3response>
 
     rule <k> #sendResponse(_) ~> _ => #loadFromBatch </k>
          <callid> undef </callid>
@@ -160,6 +162,14 @@ module WEB3
          <method> "eth_getStorageAt" </method>
     rule <k> #runRPCCall => #eth_getCode ... </k>
          <method> "eth_getCode" </method>
+    rule <k> #runRPCCall => #eth_sign ... </k>
+         <method> "eth_sign" </method>
+    rule <k> #runRPCCall => #evm_snapshot ... </k>
+         <method> "evm_snapshot" </method>
+    rule <k> #runRPCCall => #evm_revert ... </k>
+         <method> "evm_revert" </method>
+    rule <k> #runRPCCall => #evm_increaseTime ... </k>
+         <method> "evm_increaseTime" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -230,5 +240,55 @@ module WEB3
            <code> CODE </code>
            ...
          </account>
+
+    syntax KItem ::= "#eth_sign"
+ // ----------------------------
+    rule <k> #eth_sign => #signMessage(KEY, #hashMessage(#unparseByteStack(#parseByteStack(MESSAGE)))) ... </k>
+         <params> [ ACCTADDR, MESSAGE, .JSONList ] </params>
+         <accountKeys>... #parseHexWord(ACCTADDR) |-> KEY ...</accountKeys>
+
+    rule <k> #eth_sign => #sendResponse( "error": {"code": 3, "message": "Execution error", "data": [{ "code": 100, "message": "Account key doesn't exist, account locked!" }]} ) ... </k>
+         <params> [ ACCTADDR, _ ] </params>
+         <accountKeys> KEYMAP </accountKeys>
+      requires notBool #parseHexWord(ACCTADDR) in_keys(KEYMAP)
+
+    syntax KItem ::= #signMessage ( String , String )
+ // -------------------------------------------------
+    rule <k> #signMessage(KEY, MHASH) => #sendResponse( "result" : "0x" +String ECDSASign( MHASH, KEY ) ) ... </k>
+
+    syntax String ::= #hashMessage ( String ) [function]
+ // ----------------------------------------------------
+    rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
+
+    syntax KItem ::= "#evm_snapshot"
+ // --------------------------------
+    rule <k> #evm_snapshot => #pushNetworkState ~> #sendResponse( "result" : #unparseQuantity( size ( SNAPSHOTS ) ) ) ... </k>
+         <snapshots> SNAPSHOTS </snapshots>
+
+    syntax KItem ::= "#pushNetworkState"
+ // ------------------------------------
+    rule <k> #pushNetworkState => . ... </k>
+         <snapshots> ... ( .List => ListItem(NETWORKSTATE)) </snapshots>
+         <network> NETWORKSTATE </network>
+
+    syntax KItem ::= "#evm_revert"
+ // ------------------------------
+    rule <k> #evm_revert => #sendResponse( "result" : "true" ) ... </k>
+         <params> [ .JSONList ] </params>
+         <snapshots> ... ( ListItem(NETWORKSTATE) => .List ) </snapshots>
+         <network> ( _ => NETWORKSTATE ) </network>
+
+    rule <k> #evm_revert ... </k>
+         <params> [ (DATA => #parseHexWord(DATA)), .JSONList ] </params>
+
+    rule <k> #evm_revert ... </k>
+         <params> ( [ DATA:Int, .JSONList ] => [ .JSONList ] ) </params>
+         <snapshots> ( SNAPSHOTS => range(SNAPSHOTS, 0, DATA ) ) </snapshots>
+
+    syntax KItem ::= "#evm_increaseTime"
+ // ------------------------------------
+    rule <k> #evm_increaseTime => #sendResponse( "result" : Int2String(TS +Int DATA ) ) ... </k>
+         <params> [ DATA:Int, .JSONList ] </params>
+         <timestamp> ( TS:Int => ( TS +Int DATA ) ) </timestamp>
 endmodule
 ```
