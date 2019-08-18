@@ -75,6 +75,21 @@ run_web3() {
         | "$0" kast --backend web3 - pretty --input kore --module WEB3 --sort GeneratedTopCell
 }
 
+run_web3_send() {
+    local web3_port web3_method web3_params
+    web3_port="$1"   ; shift
+    web3_method="$1" ; shift
+
+    join_args() {
+        local IFS=','
+        echo "$*"
+    }
+    web3_params="$(join_args "$@")"
+
+    echo '{"jsonrpc": "2.0", "id": 1, "method": "'"$web3_method"'", "params": ['"$web3_params"']}' \
+        | netcat 127.0.0.1 "$web3_port" -q 0
+}
+
 run_klab() {
     local run_mode klab_log
 
@@ -149,6 +164,7 @@ if [[ "$run_command" == 'help' ]]; then
                $0 prove      [--backend (java|haskell)]                 <spec> <K arg>* -m <def_module>
                $0 search     [--backend (java|haskell)]                 <pgm>  <pattern> <K arg>*
                $0 web3                                                  <port>
+               $0 web3-send                                             <port> <web3 method> <web3 params>
                $0 klab-run                                              <pgm>  <K arg>*
                $0 klab-prove                                            <spec> <K arg>* -m <def_module>
                $0 klab-view                                             <spec>
@@ -159,6 +175,7 @@ if [[ "$run_command" == 'help' ]]; then
            $0 prove     : Run an EVM K proof
            $0 search    : Search for a K pattern in an EVM program execution
            $0 web3      : Run version of semantics which understand Web3 RPC (**UNDER CONSTRUCTION**)
+           $0 web3-send : Send message to running Web3 instance of KEVM (**UNDER CONSTRUCTION**)
            $0 klab-(run|prove) : Run program or prove spec and dump StateLogs which KLab can read
            $0 klab-view : View the statelog associated with a given program or spec
 
@@ -212,6 +229,7 @@ case "$run_command-$backend" in
     prove-@(java|haskell)                ) run_prove                       "$@" ;;
     search-@(java|haskell)               ) run_search                      "$@" ;;
     web3-@(llvm)                         ) run_web3                        "$@" ;;
+    web3-send-@(llvm)                    ) run_web3_send                   "$@" ;;
     klab-@(run|prove)-java               ) run_klab "${run_command#klab-}" "$@" ;;
     klab-view-java                       ) view_klab                       "$@" ;;
     *) $0 help ; fatal "Unknown command on backend: $run_command $backend" ;;
