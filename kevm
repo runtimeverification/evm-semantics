@@ -68,7 +68,11 @@ run_search() {
 }
 
 run_web3() {
-    exec -a "$0 web3" ${defn_dir}/web3/kevm-client "$@"
+    local web3_port
+    web3_port="$1" ; shift
+    run_file='-'
+    exec -a "$0 web3" ${defn_dir}/web3/kevm-client -p "$web3_port" "$@" 3>&2 2>&1 1>&3 \
+        | "$0" kast --backend web3 - pretty --input kore --module WEB3 --sort GeneratedTopCell
 }
 
 run_klab() {
@@ -139,15 +143,15 @@ run_command="$1" ; shift
 
 if [[ "$run_command" == 'help' ]]; then
     echo "
-        usage: $0 run        [--backend (ocaml|java|llvm|haskell)] <pgm>  <K arg>*
-               $0 interpret  [--backend (ocaml|llvm)]              <pgm>  <interpreter arg>*
-               $0 kast       [--backend (ocaml|java)]              <pgm>  <output format> <K arg>*
-               $0 prove      [--backend (java|haskell)]            <spec> <K arg>* -m <def_module>
-               $0 search     [--backend (java|haskell)]            <pgm>  <pattern> <K arg>*
-               $0 web3       [--backend (llvm)]                    -p <port>
-               $0 klab-run                                         <pgm>  <K arg>*
-               $0 klab-prove                                       <spec> <K arg>* -m <def_module>
-               $0 klab-view                                        <spec>
+        usage: $0 run        [--backend (ocaml|java|llvm|haskell)]      <pgm>  <K arg>*
+               $0 interpret  [--backend (ocaml|llvm)]                   <pgm>  <interpreter arg>*
+               $0 kast       [--backend (ocaml|java|llvm|haskell|web3)] <pgm>  <output format> <K arg>*
+               $0 prove      [--backend (java|haskell)]                 <spec> <K arg>* -m <def_module>
+               $0 search     [--backend (java|haskell)]                 <pgm>  <pattern> <K arg>*
+               $0 web3                                                  <port>
+               $0 klab-run                                              <pgm>  <K arg>*
+               $0 klab-prove                                            <spec> <K arg>* -m <def_module>
+               $0 klab-view                                             <spec>
 
            $0 run       : Run a single EVM program
            $0 interpret : Run JSON EVM programs without K Frontend (external parser)
@@ -202,13 +206,13 @@ cCHAINID="#token(\"${CHAINID:-28346}\",\"Int\")"
 case "$run_command-$backend" in
 
     # Running
-    run-@(ocaml|java|llvm|haskell)  ) run_krun                        "$@" ;;
-    kast-@(ocaml|java|llvm|haskell) ) run_kast                        "$@" ;;
-    interpret-@(ocaml|llvm)         ) run_interpret                   "$@" ;;
-    prove-@(java|haskell)           ) run_prove                       "$@" ;;
-    search-@(java|haskell)          ) run_search                      "$@" ;;
-    web3-@(llvm)                    ) run_web3                        "$@" ;;
-    klab-@(run|prove)-java          ) run_klab "${run_command#klab-}" "$@" ;;
-    klab-view-java                  ) view_klab                       "$@" ;;
+    run-@(ocaml|java|llvm|haskell)       ) run_krun                        "$@" ;;
+    kast-@(ocaml|java|llvm|haskell|web3) ) run_kast                        "$@" ;;
+    interpret-@(ocaml|llvm)              ) run_interpret                   "$@" ;;
+    prove-@(java|haskell)                ) run_prove                       "$@" ;;
+    search-@(java|haskell)               ) run_search                      "$@" ;;
+    web3-@(llvm)                         ) run_web3                        "$@" ;;
+    klab-@(run|prove)-java               ) run_klab "${run_command#klab-}" "$@" ;;
+    klab-view-java                       ) view_klab                       "$@" ;;
     *) $0 help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
