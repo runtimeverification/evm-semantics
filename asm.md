@@ -16,6 +16,9 @@ module EVM-ASSEMBLY
     syntax OpCode ::= PUSH(Int, Int) [klabel(PUSHAsm)]
  // --------------------------------------------------
 
+    syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
+ // --------------------------------------------------
+
     syntax ByteArray ::= #asmOpCodes ( OpCodes ) [function]
  // -------------------------------------------------------
 ```
