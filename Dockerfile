@@ -43,5 +43,18 @@ ADD --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/kor
 RUN    cd /home/user/.tmp-haskell \
     && stack build --only-snapshot
 
+ADD deps/k/pom.xml /home/user/.tmp-maven/
+ADD deps/k/ktree/pom.xml /home/user/.tmp-maven/ktree/
+ADD deps/k/llvm-backend/pom.xml /home/user/.tmp-maven/llvm-backend/
+ADD deps/k/llvm-backend/src/main/native/llvm-backend/matching/pom.xml /home/user/.tmp-maven/llvm-backend/src/main/native/llvm-backend/matching/
+ADD deps/k/haskell-backend/pom.xml /home/user/.tmp-maven/haskell-backend/
+ADD deps/k/ocaml-backend/pom.xml /home/user/.tmp-maven/ocaml-backend/
+ADD deps/k/kernel/pom.xml /home/user/.tmp-maven/kernel/
+ADD deps/k/java-backend/pom.xml /home/user/.tmp-maven/java-backend/
+ADD deps/k/k-distribution/pom.xml /home/user/.tmp-maven/k-distribution/
+ADD deps/k/kore/pom.xml /home/user/.tmp-maven/kore/
+RUN    cd /home/user/.tmp-maven \
+    && mvn dependency:go-offline
+
 ENV LD_LIBRARY_PATH=/usr/local/lib
 ENV PATH=/home/user/.local/bin:/home/user/.cargo/bin:$PATH

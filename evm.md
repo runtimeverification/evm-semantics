@@ -336,7 +336,7 @@ The `#next [_]` operator initiates execution by:
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
-    rule #stackNeeded(PUSH(_, _))      => 0
+    rule #stackNeeded(PUSH(_))         => 0
     rule #stackNeeded(IOP:InvalidOp)   => 0
     rule #stackNeeded(NOP:NullStackOp) => 0
     rule #stackNeeded(UOP:UnStackOp)   => 1
@@ -366,7 +366,7 @@ The `#next [_]` operator initiates execution by:
     rule #stackAdded(RETURN)         => 0
     rule #stackAdded(REVERT)         => 0
     rule #stackAdded(SELFDESTRUCT)   => 0
-    rule #stackAdded(PUSH(_,_))      => 1
+    rule #stackAdded(PUSH(_))        => 1
     rule #stackAdded(LOG(_))         => 0
     rule #stackAdded(SWAP(N))        => N
     rule #stackAdded(DUP(N))         => N +Int 1
@@ -515,8 +515,8 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
 
     syntax Int ::= #widthOp ( OpCode ) [function]
  // ---------------------------------------------
-    rule #widthOp(PUSH(N, _)) => 1 +Int N
-    rule #widthOp(OP)         => 1        requires notBool isPushOp(OP)
+    rule #widthOp(PUSH(N)) => 1 +Int N
+    rule #widthOp(OP)      => 1        requires notBool isPushOp(OP)
 ```
 
 ### Substate Log
@@ -831,9 +831,11 @@ Some operators don't calculate anything, they just push the stack around a bit.
     rule <k> DUP(N)  WS:WordStack => #setStack ((WS [ N -Int 1 ]) : WS)                      ... </k>
     rule <k> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Int 1 ]) : (WS [ N -Int 1 := W0 ])) ... </k>
 
-    syntax PushOp ::= PUSH ( Int , Int )
- // ------------------------------------
-    rule <k> PUSH(_, W) => W ~> #push ... </k>
+    syntax PushOp ::= PUSH ( Int )
+ // ------------------------------
+    rule <k> PUSH(N) => #asWord(PGM [ PCOUNT +Int 1 .. N ]) ~> #push ... </k>
+         <pc> PCOUNT </pc>
+         <programBytes> PGM </programBytes>
 ```
 
 ### Local Memory
@@ -1224,8 +1226,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 ```k
     syntax InternalOp ::= "#checkCall" Int Int
                         | "#call"         Int Int Int Int Int ByteArray Bool
-                        | "#callWithCode" Int Int Map ByteArray Int Int ByteArray Bool
-                        | "#mkCall"       Int Int Map ByteArray     Int ByteArray Bool
+                        | "#callWithCode" Int Int Int ByteArray Int Int ByteArray Bool
+                        | "#mkCall"       Int Int Int ByteArray     Int ByteArray Bool
  // ----------------------------------------------------------------------------------
     rule <k> #checkCall ACCT VALUE
           => #refund GCALL ~> #pushCallStack ~> #pushWorldState
@@ -1252,41 +1254,31 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO (0 |-> #precompiled(ACCTCODE)) .ByteArray VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO ACCTCODE CODE VALUE APPVALUE ARGS STATIC
          ...
          </k>
-         <schedule> SCHED </schedule>
-      requires ACCTCODE in #precompiledAccounts(SCHED)
-
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) CODE VALUE APPVALUE ARGS STATIC
-         ...
-         </k>
-         <schedule> SCHED </schedule>
          <account>
            <acctID> ACCTCODE </acctID>
            <code> CODE </code>
            ...
          </account>
-      requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO .Map .ByteArray VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO ACCTCODE .ByteArray VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <activeAccounts> ACCTS </activeAccounts>
-         <schedule> SCHED </schedule>
-      requires notBool ACCTCODE in #precompiledAccounts(SCHED) andBool notBool ACCTCODE in ACCTS
+      requires notBool ACCTCODE in ACCTS
 
-    rule <k> #callWithCode ACCTFROM ACCTTO CODE BYTES VALUE APPVALUE ARGS STATIC
+    rule <k> #callWithCode ACCTFROM ACCTTO ACCTCODE BYTES VALUE APPVALUE ARGS STATIC
           => #pushCallStack ~> #pushWorldState
           ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCall ACCTFROM ACCTTO CODE BYTES APPVALUE ARGS STATIC
+          ~> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC
          ...
          </k>
 
-    rule <k> #mkCall ACCTFROM ACCTTO CODE BYTES APPVALUE ARGS STATIC:Bool
-          => #initVM ~> #execute
+    rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC:Bool
+          => #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
          ...
          </k>
          <callDepth> CD => CD +Int 1 </callDepth>
@@ -1296,10 +1288,16 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <gas> _ => GCALL </gas>
          <callGas> GCALL => 0 </callGas>
          <caller> _ => ACCTFROM </caller>
-         <program> _ => CODE </program>
+         <program> _ => #asMapOpCodes(#dasmOpCodes(BYTES, SCHED)) </program>
          <programBytes> _ => BYTES </programBytes>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
+         <schedule> SCHED </schedule>
+
+    syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
+ // --------------------------------------------------------------
+    rule <k> #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] ... </k> requires         ACCTCODE in #precompiledAccounts(SCHED)
+    rule <k> #precompiled?(ACCTCODE, SCHED) => .                                ... </k> requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
     syntax KItem ::= "#initVM"
  // --------------------------
@@ -1941,7 +1939,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, MLOAD _)        => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, MSTORE _ _)     => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, MSTORE8 _ _)    => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, PUSH(_, _))     => Gverylow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, PUSH(_))        => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, DUP(_) _)       => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, SWAP(_) _)      => Gverylow < SCHED > ... </k>
 
@@ -2373,8 +2371,11 @@ After interpreting the strings representing programs as a `WordStack`, it should
 -   `#dasmOpCode` interperets a `Int` as an `OpCode`.
 
 ```k
-    syntax OpCodes ::= #dasmOpCodes ( ByteArray , Schedule )           [function]
- // -----------------------------------------------------------------------------
+    syntax Int     ::= #widthOpCode ( Int )                  [function]
+    syntax OpCodes ::= #dasmOpCodes ( ByteArray , Schedule ) [function]
+ // -------------------------------------------------------------------
+    rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
+    rule #widthOpCode(_) => 1 [owise]
 ```
 
 ```{.k .symbolic}
@@ -2383,13 +2384,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCodes( WS, SCHED ) => #revOps(#dasmOpCodes(.OpCodes, WS, SCHED))
 
     rule #dasmOpCodes( OPS, .WordStack, _ ) => OPS
-    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(#dasmOpCode(W, SCHED) ; OPS, WS, SCHED) requires W >=Int 0   andBool W <=Int 95
-    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(#dasmOpCode(W, SCHED) ; OPS, WS, SCHED) requires W >=Int 165 andBool W <=Int 255
-    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(DUP(W -Int 127)       ; OPS, WS, SCHED) requires W >=Int 128 andBool W <=Int 143
-    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(SWAP(W -Int 143)      ; OPS, WS, SCHED) requires W >=Int 144 andBool W <=Int 159
-    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(LOG(W -Int 160)       ; OPS, WS, SCHED) requires W >=Int 160 andBool W <=Int 164
-
-    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(PUSH(W -Int 95, #asWord(#take(W -Int 95, WS))) ; OPS, #drop(W -Int 95, WS), SCHED) requires W >=Int 96  andBool W <=Int 127
+    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(#dasmOpCode(W, SCHED) ; OPS, #drop(#widthOpCode(W) -Int 1, WS), SCHED)
 ```
 
 ```{.k .concrete}
@@ -2398,13 +2393,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCodes( WS, SCHED ) => #revOps(#dasmOpCodes(.OpCodes, WS, SCHED, 0, #sizeByteArray(WS)))
 
     rule #dasmOpCodes( OPS, _ ,     _ , I , J ) => OPS requires I >=Int J
-    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(#dasmOpCode(WS[I], SCHED) ; OPS, WS, SCHED, I +Int 1, J) requires WS[I] >=Int 0   andBool WS[I] <=Int 95 [owise]
-    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(#dasmOpCode(WS[I], SCHED) ; OPS, WS, SCHED, I +Int 1, J) requires WS[I] >=Int 165 andBool WS[I] <=Int 255 [owise]
-    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(DUP(WS[I] -Int 127)       ; OPS, WS, SCHED, I +Int 1, J) requires WS[I] >=Int 128 andBool WS[I] <=Int 143 [owise]
-    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(SWAP(WS[I] -Int 143)      ; OPS, WS, SCHED, I +Int 1, J) requires WS[I] >=Int 144 andBool WS[I] <=Int 159 [owise]
-    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(LOG(WS[I] -Int 160)       ; OPS, WS, SCHED, I +Int 1, J) requires WS[I] >=Int 160 andBool WS[I] <=Int 164 [owise]
-
-    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(PUSH(WS[I] -Int 95, #asWord(WS [ I +Int 1 .. WS[I] -Int 95 ])) ; OPS, WS, SCHED, I +Int WS[I] -Int 94, J) requires WS[I] >=Int 96  andBool WS[I] <=Int 127 [owise]
+    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(#dasmOpCode(WS[I], SCHED) ; OPS, WS, SCHED, I +Int #widthOpCode(WS[I]), J) [owise]
 ```
 
 ```k
@@ -2471,6 +2460,75 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  89,     _ ) => MSIZE
     rule #dasmOpCode(  90,     _ ) => GAS
     rule #dasmOpCode(  91,     _ ) => JUMPDEST
+    rule #dasmOpCode(  96,     _ ) => PUSH(1)
+    rule #dasmOpCode(  97,     _ ) => PUSH(2)
+    rule #dasmOpCode(  98,     _ ) => PUSH(3)
+    rule #dasmOpCode(  99,     _ ) => PUSH(4)
+    rule #dasmOpCode( 100,     _ ) => PUSH(5)
+    rule #dasmOpCode( 101,     _ ) => PUSH(6)
+    rule #dasmOpCode( 102,     _ ) => PUSH(7)
+    rule #dasmOpCode( 103,     _ ) => PUSH(8)
+    rule #dasmOpCode( 104,     _ ) => PUSH(9)
+    rule #dasmOpCode( 105,     _ ) => PUSH(10)
+    rule #dasmOpCode( 106,     _ ) => PUSH(11)
+    rule #dasmOpCode( 107,     _ ) => PUSH(12)
+    rule #dasmOpCode( 108,     _ ) => PUSH(13)
+    rule #dasmOpCode( 109,     _ ) => PUSH(14)
+    rule #dasmOpCode( 110,     _ ) => PUSH(15)
+    rule #dasmOpCode( 111,     _ ) => PUSH(16)
+    rule #dasmOpCode( 112,     _ ) => PUSH(17)
+    rule #dasmOpCode( 113,     _ ) => PUSH(18)
+    rule #dasmOpCode( 114,     _ ) => PUSH(19)
+    rule #dasmOpCode( 115,     _ ) => PUSH(20)
+    rule #dasmOpCode( 116,     _ ) => PUSH(21)
+    rule #dasmOpCode( 117,     _ ) => PUSH(22)
+    rule #dasmOpCode( 118,     _ ) => PUSH(23)
+    rule #dasmOpCode( 119,     _ ) => PUSH(24)
+    rule #dasmOpCode( 120,     _ ) => PUSH(25)
+    rule #dasmOpCode( 121,     _ ) => PUSH(26)
+    rule #dasmOpCode( 122,     _ ) => PUSH(27)
+    rule #dasmOpCode( 123,     _ ) => PUSH(28)
+    rule #dasmOpCode( 124,     _ ) => PUSH(29)
+    rule #dasmOpCode( 125,     _ ) => PUSH(30)
+    rule #dasmOpCode( 126,     _ ) => PUSH(31)
+    rule #dasmOpCode( 127,     _ ) => PUSH(32)
+    rule #dasmOpCode( 128,     _ ) => DUP(1)
+    rule #dasmOpCode( 129,     _ ) => DUP(2)
+    rule #dasmOpCode( 130,     _ ) => DUP(3)
+    rule #dasmOpCode( 131,     _ ) => DUP(4)
+    rule #dasmOpCode( 132,     _ ) => DUP(5)
+    rule #dasmOpCode( 133,     _ ) => DUP(6)
+    rule #dasmOpCode( 134,     _ ) => DUP(7)
+    rule #dasmOpCode( 135,     _ ) => DUP(8)
+    rule #dasmOpCode( 136,     _ ) => DUP(9)
+    rule #dasmOpCode( 137,     _ ) => DUP(10)
+    rule #dasmOpCode( 138,     _ ) => DUP(11)
+    rule #dasmOpCode( 139,     _ ) => DUP(12)
+    rule #dasmOpCode( 140,     _ ) => DUP(13)
+    rule #dasmOpCode( 141,     _ ) => DUP(14)
+    rule #dasmOpCode( 142,     _ ) => DUP(15)
+    rule #dasmOpCode( 143,     _ ) => DUP(16)
+    rule #dasmOpCode( 144,     _ ) => SWAP(1)
+    rule #dasmOpCode( 145,     _ ) => SWAP(2)
+    rule #dasmOpCode( 146,     _ ) => SWAP(3)
+    rule #dasmOpCode( 147,     _ ) => SWAP(4)
+    rule #dasmOpCode( 148,     _ ) => SWAP(5)
+    rule #dasmOpCode( 149,     _ ) => SWAP(6)
+    rule #dasmOpCode( 150,     _ ) => SWAP(7)
+    rule #dasmOpCode( 151,     _ ) => SWAP(8)
+    rule #dasmOpCode( 152,     _ ) => SWAP(9)
+    rule #dasmOpCode( 153,     _ ) => SWAP(10)
+    rule #dasmOpCode( 154,     _ ) => SWAP(11)
+    rule #dasmOpCode( 155,     _ ) => SWAP(12)
+    rule #dasmOpCode( 156,     _ ) => SWAP(13)
+    rule #dasmOpCode( 157,     _ ) => SWAP(14)
+    rule #dasmOpCode( 158,     _ ) => SWAP(15)
+    rule #dasmOpCode( 159,     _ ) => SWAP(16)
+    rule #dasmOpCode( 160,     _ ) => LOG(0)
+    rule #dasmOpCode( 161,     _ ) => LOG(1)
+    rule #dasmOpCode( 162,     _ ) => LOG(2)
+    rule #dasmOpCode( 163,     _ ) => LOG(3)
+    rule #dasmOpCode( 164,     _ ) => LOG(4)
     rule #dasmOpCode( 240,     _ ) => CREATE
     rule #dasmOpCode( 241,     _ ) => CALL
     rule #dasmOpCode( 242,     _ ) => CALLCODE
