@@ -83,6 +83,9 @@ module WEB3
     rule <k> #loadRPCCall(_:String #Or null #Or _:Int #Or [ .JSONList ]) => #sendResponse("error": {"code": -32600, "message": "Invalid Request"}) ... </k>
          <callid> _ => null </callid>
 
+    rule <k> #loadRPCCall(undef) => #sendResponse("error": {"code": -32700, "message": "Parse error"}) ... </k>
+         <callid> _ => null </callid>
+
     syntax KItem ::= "#loadFromBatch"
  // ---------------------------------
     rule <k> #loadFromBatch ~> _ => #loadRPCCall(J) </k>
