@@ -667,7 +667,7 @@ Operator `#revOps` can be used to reverse a program.
 
     syntax List ::= appendMakeList(List, Int, KItem) [function]
     rule appendMakeList(L, 0, _) => L
-    rule appendMakeList(L, N, K) => appendMakeList(L ListItem(K), N -Int 1, K) requires N >Int 0
+    rule appendMakeList(L, N, K) => L makeList(N, K) [owise]
 ```
 
 EVM OpCodes
