@@ -86,6 +86,7 @@ module SUM-TO-N-SPEC
          <localMem> .Map </localMem>
          <callGas> _ => _ </callGas>
          <program> sumToN </program>
+         <jumpDests> #computeValidJumpDests(sumToN) </jumpDests>
 
 
 
@@ -122,6 +123,7 @@ module SUM-TO-N-SPEC
          <localMem> .Map </localMem>
          <callGas> _ => _ </callGas>
          <program> sumToN </program>
+         <jumpDests> #computeValidJumpDests(sumToN) </jumpDests>
 
 
 
