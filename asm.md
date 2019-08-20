@@ -35,7 +35,7 @@ Operator `#revOps` can be used to reverse a program.
     rule #revOpsAux( OP ; OPS , OPS' ) => #revOpsAux( OPS , OP ; OPS' )
 ```
 
-```
+```k
     syntax ByteArray ::= #asmOpCodes ( OpCodes ) [function]
  // -------------------------------------------------------
 ```
