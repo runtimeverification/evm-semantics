@@ -16,6 +16,15 @@ module WEB3
           <chainID> $CHAINID:Int </chainID>
         </blockchain>
         <accountKeys> .Map </accountKeys>
+        <filters multiplicity="*" type="Map">
+          <filter>
+            <filterID>  0   </filterID>
+            <fromBlock> 0   </fromBlock>
+            <toBlock>   0   </toBlock>
+            <address>   0   </address>
+            <topics>  .List </topics>
+          </filter>
+        </filters>
         <snapshots> .List </snapshots>
         <web3socket> $SOCK:Int </web3socket>
         <web3shutdownable> $SHUTDOWNABLE:Bool </web3shutdownable>
@@ -177,6 +186,8 @@ module WEB3
          <method> "evm_revert" </method>
     rule <k> #runRPCCall => #evm_increaseTime ... </k>
          <method> "evm_increaseTime" </method>
+    rule <k> #runRPCCall => #eth_newBlockFilter ... </k>
+         <method> "eth_newBlockFilter" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -308,5 +319,14 @@ module WEB3
     rule <k> #evm_increaseTime => #sendResponse( "result" : Int2String(TS +Int DATA ) ) ... </k>
          <params> [ DATA:Int, .JSONList ] </params>
          <timestamp> ( TS:Int => ( TS +Int DATA ) ) </timestamp>
+
+    syntax KItem ::= "#eth_newBlockFilter"
+ // ------------------------------------
+    rule <k> #eth_newBlockFilter => #sendResponse( "result" : #unparseQuantity( FILTERID ) ) ... </k>
+         <number> BLOCKNUM </number>
+         <filter>
+           <filterID> FILTERID </filterID>
+           <fromBlock> BLOCKNUM </fromBlock>
+         </filter>
 endmodule
 ```
