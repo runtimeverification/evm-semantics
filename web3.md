@@ -300,17 +300,38 @@ module WEB3
 ```k
     syntax KItem ::= "#eth_estimateGas"
  // -----------------------------------
-    rule <k> DATA:Int ~> #eth_estimateGas => #sendResponse( "result": #unparseQuantity( DATA ) ) ... </k>
+    rule <k> #halt ~> #eth_estimateGas => #sendResponse( "result": #unparseQuantity( GASUSED ) ) ... </k>
+         <gasUsed> GASUSED </gasUsed>
+
+    rule <k> (#eth_estimateGas => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false ~> #eth_estimateGas) ... </k>
+         <txPending> ListItem(MSGID) ... </txPending>
+         <origin> ACCTFROM </origin>
+         <message>
+           <msgID> MSGID  </msgID>
+           <to>    ACCTTO </to>
+           <value> VALUE  </value>
+           <data>  DATA   </data>
+           ...
+         </message>
 
     syntax KItem ::= "loadTX" JSON
  // ------------------------------
     rule <k> loadTX J => . ... </k>
          <caller>      X  =>  #if  #getJSON("from",      J)  =/=K  undef  #then  #parseHexWord(#getString("from",J))      #else  X           #fi  </caller>
-         <to>          _  =>                                                     #parseHexWord(#getString("to",  J))                              </to>
-         <txGasLimit>  _  =>  #if  #getJSON("gas",       J)  =/=K  undef  #then  #parseHexWord(#getString("gas",J))       #else  GASL        #fi  </txGasLimit>
-         <txGasPrice>  _  =>  #if  #getJSON("gasPrice",  J)  =/=K  undef  #then  #parseHexWord(#getString("gasPrice",J))  #else  GASP        #fi  </txGasPrice>
-         <value>       _  =>  #if  #getJSON("value",     J)  =/=K  undef  #then  #parseHexWord(#getString("value",J))     #else  0           #fi  </value>
-         <data>        _  =>  #if  #getJSON("data",      J)  =/=K  undef  #then  #parseHexBytes(#getString("data",J))     #else  .ByteArray  #fi  </data>
+         <txPending> (.List => ListItem(ID)) ... </txPending>
+         <messages>
+         ...
+           (.Bag => <message>
+             <msgID> !ID:Int </msgID>
+             <to>                                                       #parseHexWord(#getString("to",J))                            </to>
+             <txGasLimit> #if  #getJSON("gas",      J) =/=K undef #then #parseHexWord(#getString("gas",J))      #else GASL       #fi </txGasLimit>
+             <txGasPrice> #if  #getJSON("gasPrice", J) =/=K undef #then #parseHexWord(#getString("gasPrice",J)) #else GASP       #fi </txGasPrice>
+             <value>      #if  #getJSON("value",    J) =/=K undef #then #parseHexWord(#getString("value",J))    #else 0          #fi </value>
+             <data>       #if  #getJSON("data",     J) =/=K undef #then #parseHexBytes(#getString("data",J))    #else .ByteArray #fi </data>
+             ...
+           </message>)
+         ...
+         </messages>
          <gasPrice> GASP </gasPrice>
          <gasLimit> GASL </gasLimit>
 ```
