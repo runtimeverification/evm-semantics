@@ -45,7 +45,6 @@ endmodule
 
 
 module SUM-TO-N-SPEC
-    imports ETHEREUM-SIMULATION
     imports VERIFICATION
 
 
