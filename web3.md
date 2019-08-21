@@ -16,8 +16,9 @@ module WEB3
           <chainID> $CHAINID:Int </chainID>
         </blockchain>
         <accountKeys> .Map </accountKeys>
-        <filters multiplicity="*" type="Map">
-          <filter>
+        <nextFilterSlot> 0 </nextFilterSlot>
+        <filters>
+          <filter  multiplicity="*" type="Map">
             <filterID>  0   </filterID>
             <fromBlock> 0   </fromBlock>
             <toBlock>   0   </toBlock>
@@ -322,11 +323,13 @@ module WEB3
 
     syntax KItem ::= "#eth_newBlockFilter"
  // ------------------------------------
-    rule <k> #eth_newBlockFilter => #sendResponse( "result" : #unparseQuantity( FILTERID ) ) ... </k>
-         <number> BLOCKNUM </number>
-         <filter>
-           <filterID> FILTERID </filterID>
-           <fromBlock> BLOCKNUM </fromBlock>
-         </filter>
+    rule <k> #eth_newBlockFilter => #sendResponse ( "result": #unparseQuantity( FILTID )) </k>
+         <filters>
+            ...
+              (.Bag => <filterID> FILTID </filterID> )
+            ...
+         </filters>
+         <nextFilterSlot> ( FILTID:Int => FILTID +Int 1 ) </nextFilterSlot>
+
 endmodule
 ```
