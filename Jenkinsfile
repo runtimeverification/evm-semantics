@@ -228,6 +228,7 @@ pipeline {
           }
           steps {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
+              checkout scm
               unstash 'bionic-kframework'
               sh '''
                 sudo apt-get update && sudo apt-get upgrade --yes
@@ -271,6 +272,7 @@ pipeline {
           }
           steps {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
+              checkout scm
               unstash 'buster-kframework'
               sh '''
                 sudo apt-get update && sudo apt-get upgrade --yes
@@ -313,6 +315,7 @@ pipeline {
           }
           steps {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
+              checkout scm
               unstash 'arch-kframework'
               sh '''
                 sudo pacman -Syu --noconfirm
