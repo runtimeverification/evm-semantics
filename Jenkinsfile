@@ -233,7 +233,7 @@ pipeline {
                 sudo apt-get update && sudo apt-get upgrade --yes
                 sudo apt-get install --yes ./kframework-bionic.deb
                 cp -r package/debian ./
-                cp package/ubuntu/control debian
+                cp package/ubuntu/* debian
                 dpkg-buildpackage --no-sign
               '''
             }
