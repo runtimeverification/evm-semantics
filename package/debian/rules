@@ -18,7 +18,7 @@
 
 override_dh_auto_build:
 	git submodule update --init --recursive
-	make K_RELEASE="/usr/lib/kframework" LIBF_CC=clang-7 LIBFF_CXX=clang++-7 build-node
+	make K_RELEASE="/usr/lib/kframework" LIBFF_CC=clang-7 LIBFF_CXX=clang++-7 build-node
 
 override_dh_auto_install:
 	make K_RELEASE="/usr/lib/kframework" DESTDIR="debian/kevm" INSTALL_PREFIX="/usr" install
