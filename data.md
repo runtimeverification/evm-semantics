@@ -655,6 +655,22 @@ Addresses
 
 ```
 
+- `M3:2048` computes the 2048-bit hash of a log entry in which exactly 3 bits are set. This is used to compute the Bloom filter of a log entry.
+
+```k
+    syntax Int ::= "M3:2048" "(" ByteArray ")" [function]
+ // -----------------------------------------------------
+    rule M3:2048(WS) => #fun(HASH => setBit(Mxi(HASH, 0)) |Int setBit(Mxi(HASH, 2)) |Int setBit(Mxi(HASH, 4)))(#parseByteStack(Keccak256(#unparseByteStack(WS))))
+
+    syntax Int ::= Mxi(ByteArray, Int) [function]
+ // ---------------------------------------------
+    rule Mxi(X, I) => #asInteger(X [ I .. 2 ]) %Int 2048
+
+    syntax Int ::= setBit(Int) [function]
+ // -------------------------------------
+    rule setBit(I) => 1 <<Int I
+```
+
 Word Map
 --------
 
