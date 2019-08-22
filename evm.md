@@ -669,6 +669,21 @@ After executing a transaction, it's necessary to have the effect of the substate
            <balance> OMMBAL => OMMBAL +Int Rb < SCHED > +Int (OMMNUM -Int CURNUM) *Int (Rb < SCHED > /Int 8) </balance>
           ...
          </account>
+
+    syntax ByteArray ::= #bloomFilter(List)      [function]
+                       | #bloomFilter(List, Int) [function, klabel(#bloomFilterAux)]
+ // --------------------------------------------------------------------------------
+    rule #bloomFilter(L) => #bloomFilter(L, 0)
+
+    rule #bloomFilter(.List, B) => #padToWidth(256, #asByteStack(B))
+    rule #bloomFilter(ListItem({ ACCT | TOPICS | _ }) L, B) => #bloomFilter(ListItem(#padToWidth(20, #asByteStack(ACCT))) listAsByteArrays(TOPICS) L, B)
+
+    syntax List ::= listAsByteArrays(List) [function]
+ // -------------------------------------------------
+    rule listAsByteArrays(.List) => .List
+    rule listAsByteArrays(ListItem(TOPIC) L) => ListItem(#padToWidth(32, #asByteStack(TOPIC))) listAsByteArrays(L)
+
+    rule #bloomFilter(ListItem(WS:ByteArray) L, B) => #bloomFilter(L, B |Int M3:2048(WS))
 ```
 
 EVM Programs
