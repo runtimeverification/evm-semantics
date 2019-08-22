@@ -660,19 +660,15 @@ Addresses
 ```k
     syntax Int ::= "M3:2048" "(" ByteArray ")" [function]
  // -----------------------------------------------------
-    rule M3:2048(WS) => setBits(#parseByteStack(Keccak256(#unparseByteStack(WS))))
+    rule M3:2048(WS) => setBloomFilterBits(#parseByteStack(Keccak256(#unparseByteStack(WS))))
 
-    syntax Int ::= setBits(ByteArray) [function]
- // --------------------------------------------
-    rule setBits(HASH) => setBit(Mxi(HASH, 0)) |Int setBit(Mxi(HASH, 2)) |Int setBit(Mxi(HASH, 4))
+    syntax Int ::= setBloomFilterBits(ByteArray) [function]
+ // -------------------------------------------------------
+    rule setBloomFilterBits(HASH) => (1 <<Int getBloomFilterBit(HASH, 0)) |Int (1 <<Int getBloomFilterBit(HASH, 2)) |Int (1 <<Int getBloomFilterBit(HASH, 4))
 
-    syntax Int ::= Mxi(ByteArray, Int) [function]
- // ---------------------------------------------
-    rule Mxi(X, I) => #asInteger(X [ I .. 2 ]) %Int 2048
-
-    syntax Int ::= setBit(Int) [function]
- // -------------------------------------
-    rule setBit(I) => 1 <<Int I
+    syntax Int ::= getBloomFilterBit(ByteArray, Int) [function]
+ // -----------------------------------------------------------
+    rule getBloomFilterBit(X, I) => #asInteger(X [ I .. 2 ]) %Int 2048
 ```
 
 Word Map
