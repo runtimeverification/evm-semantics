@@ -176,6 +176,9 @@ pipeline {
       environment {
         GITHUB_TOKEN    = credentials('rv-jenkins')
         KEVM_RELEASE_ID = '1.0.0'
+        PACKAGE = 'kevm'
+        VERSION = '1.0.0'
+        ROOT_URL = 'https://github.com/kframework/evm-semantics/releases/download/nightly'
       }
       stages {
         stage('Checkout SCM - Download K Release') {
@@ -347,6 +350,45 @@ pipeline {
             }
           }
         }
+        stage('Build Homebrew Bottle') {
+          agent {
+            label 'anka'
+          }
+          steps {
+            unstash 'src-kevm'
+            dir('homebrew-k') {
+              git url: 'git@github.com:kframework/homebrew-k.git'
+              sh '''
+                ${WORKSPACE}/deps/k/src/main/scripts/brew-build-bottle
+              '''
+              stash name: "mojave-kevm", includes: "kevm--${env.KEVM_RELEASE_ID}.mojave.bottle*.tar.gz"
+            }
+          }
+        }
+        stage('Test Homebrew Bottle') {
+          agent {
+            label 'anka'
+          }
+          steps {
+            dir('homebrew-k') {
+              git url: 'git@github.com:kframework/homebrew-k.git', branch: 'brew-release-kevm'
+              unstash "mojave-kevm"
+              sh '''
+                ${WORKSPACE}/src/main/scripts/brew-install-bottle
+              '''
+            }
+            dir("kevm-${env.KEVM_RELEASE_ID}") {
+              sh '''
+                make test-interactive-firefly
+              '''
+            }
+            dir('homebrew-k') {
+              sh '''
+                ${WORKSPACE}/src/main/scripts/brew-update-to-final
+              '''
+            }
+          }
+        }
 /*        stage('Upload Release') {
           agent {
             dockerfile {
@@ -368,6 +410,9 @@ pipeline {
               dir("arch") {
                 unstash 'arch-kevm'
               }
+              dir("mojave") {
+                unstash 'mojave-kevm'
+              }
               sh '''
                 release_tag="v${KEVM_RELEASE_ID}-$(git rev-parse --short HEAD)"
                 make release.md KEVM_RELEASE_TAG=${release_tag}
@@ -376,6 +421,7 @@ pipeline {
                     --attach "bionic/kevm_${KEVM_RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                            \
                     --attach "buster/kevm_${KEVM_RELEASE_ID}_amd64.deb#Debian Buster (10) Package"                               \
                     --attach "arch/kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package" \
+                    --attach mojave/kevm-5.0.0.mojave.bottle*.tar.gz"#Mac OS X Homebrew Bottle"                                  \
                     --file "release.md" "${release_tag}"
               '''
             }
