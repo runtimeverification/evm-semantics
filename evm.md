@@ -631,6 +631,46 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #deleteAccounts(.List) => . ... </k>
 ```
 
+### Block processing
+
+-   `#finalizeBlock` is used to signal that block finalization procedures should take place (after transactions have executed).
+-   `#rewardOmmers(_)` pays out the reward to uncle blocks so that blocks are orphaned less often in Ethereum.
+
+```{.k .standalone}
+    syntax EthereumCommand ::= "#finalizeBlock" | #rewardOmmers ( JSONList )
+ // ------------------------------------------------------------------------
+    rule <k> #finalizeBlock => #rewardOmmers(OMMERS) ... </k>
+         <schedule> SCHED </schedule>
+         <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
+         <coinbase> MINER </coinbase>
+         <account>
+           <acctID> MINER </acctID>
+           <balance> MINBAL => MINBAL +Int Rb < SCHED > </balance>
+           ...
+         </account>
+
+    rule <k> (.K => #newAccount MINER) ~> #finalizeBlock ... </k>
+         <coinbase> MINER </coinbase>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool MINER in ACCTS
+
+    rule <k> #rewardOmmers(.JSONList) => . ... </k>
+    rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
+         <schedule> SCHED </schedule>
+         <coinbase> MINER </coinbase>
+         <number> CURNUM </number>
+         <account>
+           <acctID> MINER </acctID>
+           <balance> MINBAL => MINBAL +Int Rb < SCHED > /Int 32 </balance>
+          ...
+         </account>
+         <account>
+           <acctID> OMMER </acctID>
+           <balance> OMMBAL => OMMBAL +Int Rb < SCHED > +Int (OMMNUM -Int CURNUM) *Int (Rb < SCHED > /Int 8) </balance>
+          ...
+         </account>
+```
+
 EVM Programs
 ============
 
