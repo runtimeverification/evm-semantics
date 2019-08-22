@@ -16,8 +16,9 @@ module WEB3
           <chainID> $CHAINID:Int </chainID>
         </blockchain>
         <accountKeys> .Map </accountKeys>
-        <snapshots> .List </snapshots> 
+        <snapshots> .List </snapshots>
         <web3socket> $SOCK:Int </web3socket>
+        <web3shutdownable> $SHUTDOWNABLE:Bool </web3shutdownable>
         <web3clientsocket> 0:IOInt </web3clientsocket>
         <web3request>
           <jsonrpc> "":JSON </jsonrpc>
@@ -46,6 +47,7 @@ module WEB3
     rule #getString( KEY, J ) => {#getJSON( KEY, J )}:>String
 
     syntax IOJSON ::= JSON | IOError
+ // --------------------------------
 
     syntax EthereumSimulation ::= accept() [symbol]
  // -----------------------------------------------
@@ -68,10 +70,10 @@ module WEB3
     syntax KItem ::= #loadRPCCall(IOJSON)
  // -------------------------------------
     rule <k> #loadRPCCall({ _ } #as J) => #checkRPCCall ~> #runRPCCall ... </k>
-         <jsonrpc> _             => #getJSON("jsonrpc", J) </jsonrpc>
-         <callid>  _             => #getJSON("id"     , J) </callid>
-         <method>  _             => #getJSON("method" , J) </method>
-         <params>  _             => #getJSON("params" , J) </params>
+         <jsonrpc> _ => #getJSON("jsonrpc", J) </jsonrpc>
+         <callid>  _ => #getJSON("id"     , J) </callid>
+         <method>  _ => #getJSON("method" , J) </method>
+         <params>  _ => #getJSON("params" , J) </params>
 
     rule <k> #loadRPCCall(#EOF) => #shutdownWrite(SOCK) ~> #close(SOCK) ~> accept() ... </k>
          <web3clientsocket> SOCK </web3clientsocket>
@@ -107,7 +109,7 @@ module WEB3
     rule List2JSON(L) => List2JSON(L, .JSONList)
 
     rule List2JSON(L ListItem(J), JS) => List2JSON(L, (J, JS))
-    rule List2JSON(.List, JS) => [ JS ]
+    rule List2JSON(.List        , JS) => [ JS ]
 
     syntax KItem ::= #sendResponse( JSON )
  // --------------------------------------
@@ -135,7 +137,7 @@ module WEB3
     rule <k> #checkRPCCall => . ...</k>
          <jsonrpc> "2.0" </jsonrpc>
          <method> _:String </method>
-         <params> undef #Or [ _ ] #Or { _ } #Or undef </params>
+         <params> undef #Or [ _ ] #Or { _ } </params>
          <callid> _:String #Or null #Or _:Int #Or undef </callid>
 
     rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
@@ -149,6 +151,8 @@ module WEB3
 
     syntax KItem ::= "#runRPCCall"
  // ------------------------------
+    rule <k> #runRPCCall => #firefly_shutdown ... </k>
+         <method> "firefly_shutdown" </method>
     rule <k> #runRPCCall => #net_version ... </k>
          <method> "net_version" </method>
     rule <k> #runRPCCall => #web3_clientVersion ... </k>
@@ -176,13 +180,24 @@ module WEB3
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
+    syntax KItem ::= "#firefly_shutdown"
+ // ------------------------------------
+    rule <k> #firefly_shutdown ~> _ => #putResponse({ "jsonrpc": "2.0" , "id": CALLID , "result": "Firefly client shutting down!" }, SOCK) </k>
+         <web3shutdownable> true </web3shutdownable>
+         <callid> CALLID </callid>
+         <web3clientsocket> SOCK </web3clientsocket>
+         <exit-code> _ => 0 </exit-code>
+
+    rule <k> #firefly_shutdown => #sendResponse( "error": {"code": -32800, "message": "Firefly client not started with `--shutdownable`!"} ) ... </k>
+         <web3shutdownable> false </web3shutdownable>
+
     syntax KItem ::= "#net_version"
  // -------------------------------
     rule <k> #net_version => #sendResponse( "result" : Int2String( CHAINID ) ) ... </k>
          <chainID> CHAINID </chainID>
 
     syntax KItem ::= "#web3_clientVersion"
- // -------------------------------
+ // --------------------------------------
     rule <k> #web3_clientVersion => #sendResponse( "result" : "Firefly RPC/v0.0.1/kevm" ) ... </k>
 
     syntax KItem ::= "#eth_gasPrice"

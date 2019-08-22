@@ -389,6 +389,8 @@ CHECK:=git --no-pager diff --no-index --ignore-all-space
 KEVM_MODE:=NORMAL
 KEVM_SCHEDULE:=PETERSBURG
 
+KEVM_WEB3_ARGS:=--shutdownable
+
 test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
 
@@ -419,15 +421,10 @@ tests/%.run-expected: tests/% tests/%.expected
 	    || $(CHECK) tests/$*.expected tests/$*.$(TEST_CONCRETE_BACKEND)-out
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
+tests/web3/no-shutdown/%: KEVM_WEB3_ARGS=
+
 tests/%.run-web3: tests/%.in.json
-	PORT=`tests/web3/get_port.py`;                                                     \
-	    ./kevm web3 -p $$PORT &                                                        \
-	    while ! netcat -z 127.0.0.1 $$PORT; do                                         \
-	        sleep 0.1;                                                                 \
-	    done;                                                                          \
-	    cat $^ | netcat 127.0.0.1 $$PORT -q 0 | diff - tests/$*.out.json; RESULT=$$? ; \
-	    pkill kevm-client -P $$$$ ;                                                    \
-	    [ $$? -eq 0 ]
+	tests/web3/runtest.sh $< tests/$*.out.json $(KEVM_WEB3_ARGS)
 
 tests/%.parse: tests/%
 	$(TEST) kast --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
@@ -482,7 +479,8 @@ failing_bchain_tests=$(shell cat tests/failing.$(TEST_CONCRETE_BACKEND))
 all_bchain_tests=$(filter-out $(bad_bchain_tests), $(filter-out $(failing_bchain_tests), $(bchain_tests)))
 quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(all_bchain_tests))
 
-web3_tests=$(wildcard tests/web3/*.in.json)
+web3_tests=$(wildcard tests/web3/*.in.json) \
+           $(wildcard tests/web3/no-shutdown/*.in.json)
 
 test-all-bchain: $(all_bchain_tests:=.run)
 test-slow-bchain: $(slow_bchain_tests:=.run)
