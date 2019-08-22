@@ -487,6 +487,7 @@ test-slow-bchain: $(slow_bchain_tests:=.run)
 test-bchain: $(quick_bchain_tests:=.run)
 
 test-web3: $(web3_tests:.in.json=.run-web3)
+	sleep 5
 
 # Proof Tests
 
