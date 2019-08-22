@@ -575,6 +575,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
          <gas> GAVAIL </gas>
+         <gasUsed> GUSED => GUSED +Int GLIMIT -Int GAVAIL </gasUsed>
          <refund> 0 </refund>
          <account>
            <acctID> ORG </acctID>
@@ -598,6 +599,8 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #finalizeTx(false => true) ... </k>
          <origin> ACCT </origin>
          <coinbase> ACCT </coinbase>
+         <gas> GAVAIL </gas>
+         <gasUsed> GUSED => GUSED +Int GLIMIT -Int GAVAIL </gasUsed>
          <refund> 0 </refund>
          <account>
            <acctID> ACCT </acctID>
@@ -633,10 +636,18 @@ After executing a transaction, it's necessary to have the effect of the substate
 
 ### Block processing
 
+-   `#startBlock` is used to signal that we are about to start mining a block and block initialization should take place (before transactions are executed).
 -   `#finalizeBlock` is used to signal that block finalization procedures should take place (after transactions have executed).
 -   `#rewardOmmers(_)` pays out the reward to uncle blocks so that blocks are orphaned less often in Ethereum.
 
 ```{.k .standalone}
+    syntax EthereumCommand ::= "#startBlock"
+ // ----------------------------------------
+    rule <k> #startBlock => . ... </k>
+         <gasUsed> _ => 0 </gasUsed>
+         <log> _ => .List </log>
+         <logsBloom> _ => #padToWidth(256, .ByteArray) </logsBloom>
+
     syntax EthereumCommand ::= "#finalizeBlock" | #rewardOmmers ( JSONList )
  // ------------------------------------------------------------------------
     rule <k> #finalizeBlock => #rewardOmmers(OMMERS) ... </k>
@@ -648,6 +659,8 @@ After executing a transaction, it's necessary to have the effect of the substate
            <balance> MINBAL => MINBAL +Int Rb < SCHED > </balance>
            ...
          </account>
+         <log> LOGS </log>
+         <logsBloom> _ => #bloomFilter(LOGS) </logsBloom>
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeBlock ... </k>
          <coinbase> MINER </coinbase>

@@ -273,7 +273,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
       requires KEY in #execKeys
 
     rule <k> run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush ... </k>
-    rule <k> run TESTID : { "lastblockhash" : (HASH:String) } => startTx                   ... </k>
+    rule <k> run TESTID : { "lastblockhash" : (HASH:String) } => #startBlock ~> startTx    ... </k>
 ```
 
 -   `#postKeys` are a subset of `#checkKeys` which correspond to post-state account checks.
