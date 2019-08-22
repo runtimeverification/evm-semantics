@@ -20,6 +20,6 @@ exit_code='0'
 git --no-pager diff --no-index "$output_file" "$tmp_output_file" || exit_code="$?"
 ./kevm web3-send "$PORT" 'firefly_shutdown'
 echo
-kill "$kevm_client_pid" || true
+pkill -P "$kevm_client_pid" kevm-client || true
 
 exit "$exit_code"
