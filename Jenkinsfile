@@ -15,7 +15,7 @@ pipeline {
         }
       }
     }
-    stage('Build and Test') {
+/*    stage('Build and Test') {
       when {
         changeRequest()
         beforeAgent true
@@ -164,13 +164,13 @@ pipeline {
           }
         }
       }
-    }
+    }*/
     stage('Release') {
-      when {
+/*      when {
         not { changeRequest() }
         branch 'master'
         beforeAgent true
-      }
+      }*/
       agent { label 'docker' }
       options { skipDefaultCheckout() }
       environment {
@@ -347,7 +347,7 @@ pipeline {
             }
           }
         }
-        stage('Upload Release') {
+/*        stage('Upload Release') {
           agent {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
@@ -380,7 +380,7 @@ pipeline {
               '''
             }
           }
-        }
+        }*/
       }
       post {
         failure {
