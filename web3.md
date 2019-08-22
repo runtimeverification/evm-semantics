@@ -16,8 +16,9 @@ module WEB3
           <chainID> $CHAINID:Int </chainID>
         </blockchain>
         <accountKeys> .Map </accountKeys>
-        <snapshots> .List </snapshots> 
+        <snapshots> .List </snapshots>
         <web3socket> $SOCK:Int </web3socket>
+        <web3shutdownable> $SHUTDOWNABLE:Bool </web3shutdownable>
         <web3clientsocket> 0:IOInt </web3clientsocket>
         <web3request>
           <jsonrpc> "":JSON </jsonrpc>
@@ -182,9 +183,13 @@ module WEB3
     syntax KItem ::= "#firefly_shutdown"
  // ------------------------------------
     rule <k> #firefly_shutdown ~> _ => #putResponse({ "jsonrpc": "2.0" , "id": CALLID , "result": "Firefly client shutting down!" }, SOCK) </k>
+         <web3shutdownable> true </web3shutdownable>
          <callid> CALLID </callid>
          <web3clientsocket> SOCK </web3clientsocket>
          <exit-code> _ => 0 </exit-code>
+
+    rule <k> #firefly_shutdown => #sendResponse( "error": {"code": -32800, "message": "Firefly client not started with `--shutdownable`!"} ) ... </k>
+         <web3shutdownable> false </web3shutdownable>
 
     syntax KItem ::= "#net_version"
  // -------------------------------
