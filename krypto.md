@@ -36,7 +36,7 @@ The BN128 elliptic curve is defined over 2-dimensional points over the fields of
 -   `isValidPoint` takes a point in either G1 or G2 and validates that it actually falls on the respective elliptic curve.
 
 ```k
-    syntax G1Point ::= "(" Int "," Int ")"
+    syntax G1Point ::= "(" Int "," Int ")" [prefer]
     syntax G2Point ::= "(" Int "x" Int "," Int "x" Int ")"
     syntax G1Point ::= BN128Add(G1Point, G1Point) [function, hook(KRYPTO.bn128add)]
                      | BN128Mul(G1Point, Int)     [function, hook(KRYPTO.bn128mul)]

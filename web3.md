@@ -29,7 +29,7 @@ module WEB3
         <web3response> .List </web3response>
       </kevm-client>
 
-    syntax JSON ::= Int | Bool | "null" | "undef"
+    syntax JSON ::= Bool | "null" | "undef"
                   | #getJSON ( JSONKey , JSON ) [function]
  // ------------------------------------------------------
     rule #getJSON( KEY, { KEY : J, _ } )     => J
