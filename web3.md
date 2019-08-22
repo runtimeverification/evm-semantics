@@ -191,6 +191,7 @@ module WEB3
          <method> "eth_newBlockFilter" </method>
     rule <k> #runRPCCall => #eth_uninstallFilter ... </k>
          <method> "eth_uninstallFilter" </method>
+
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
     syntax KItem ::= "#firefly_shutdown"
@@ -337,8 +338,6 @@ module WEB3
          </filters>
          <number> BLOCKNUM </number>
          <nextFilterSlot> ( FILTID:Int => FILTID +Int 1 ) </nextFilterSlot>
-
-
 
     syntax KItem ::= "#eth_uninstallFilter"
  // ---------------------------------------
