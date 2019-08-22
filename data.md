@@ -660,7 +660,11 @@ Addresses
 ```k
     syntax Int ::= "M3:2048" "(" ByteArray ")" [function]
  // -----------------------------------------------------
-    rule M3:2048(WS) => #fun(HASH => setBit(Mxi(HASH, 0)) |Int setBit(Mxi(HASH, 2)) |Int setBit(Mxi(HASH, 4)))(#parseByteStack(Keccak256(#unparseByteStack(WS))))
+    rule M3:2048(WS) => setBits(#parseByteStack(Keccak256(#unparseByteStack(WS))))
+
+    syntax Int ::= setBits(ByteArray) [function]
+ // --------------------------------------------
+    rule setBits(HASH) => setBit(Mxi(HASH, 0)) |Int setBit(Mxi(HASH, 2)) |Int setBit(Mxi(HASH, 4))
 
     syntax Int ::= Mxi(ByteArray, Int) [function]
  // ---------------------------------------------
