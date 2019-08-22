@@ -20,6 +20,7 @@ cat "$input_file" | netcat 127.0.0.1 "$PORT" -q 0 > "$tmp_output_file"
 echo
 timeout 20 tail --pid="$kevm_client_pid" -f /dev/null || true
 pkill -P "$kevm_client_pid" kevm-client               || true
+timeout 20 tail --pid="$kevm_client_pid" -f /dev/null || true
 
 exit_code='0'
 git --no-pager diff --no-index "$output_file" "$tmp_output_file" || exit_code="$?"
