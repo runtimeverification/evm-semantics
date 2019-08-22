@@ -16,10 +16,12 @@ tmp_output_file="$(mktemp)"
 trap "rm -rf $tmp_output_file" INT TERM EXIT
 cat "$input_file" | netcat 127.0.0.1 "$PORT" -q 0 > "$tmp_output_file"
 
-exit_code='0'
-git --no-pager diff --no-index "$output_file" "$tmp_output_file" || exit_code="$?"
 ./kevm web3-send "$PORT" 'firefly_shutdown'
 echo
+timeout 20 tail --pid="$kevm_client_pid" -f /dev/null
 pkill -P "$kevm_client_pid" kevm-client || true
+
+exit_code='0'
+git --no-pager diff --no-index "$output_file" "$tmp_output_file" || exit_code="$?"
 
 exit "$exit_code"
