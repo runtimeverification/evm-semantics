@@ -66,9 +66,7 @@ pipeline {
             stage('Conformance (Web3)') {
               steps {
                 sh '''
-                  nprocs=$(nproc)
-                  [ "$nprocs" -gt '16' ] && nprocs='16'
-                  make test-web3 -j"$nprocs"
+                  make test-web3
                 '''
               }
             }
