@@ -852,6 +852,17 @@ We need to interperet a `ByteArray` as a `String` again so that we can call `Kec
     rule #unparseDataByteArray( DATA ) => replaceFirst(Base2String(#asInteger(#asByteStack(1) ++ DATA), 16), "1", "0x")
 ```
 
+String Helper Functions
+-----------------------
+
+```k
+    syntax String ::= Hex2Binary ( String ) [function]
+                    | Binary2Hex ( String ) [function]
+ // --------------------------------------------------
+    rule Hex2Binary ( S ) => #unparseByteStack( #parseByteStack ( S ) )
+    rule Binary2Hex ( S ) => #unparseDataByteArray( String2Bytes( S ) )
+```
+
 Recursive Length Prefix (RLP)
 =============================
 
