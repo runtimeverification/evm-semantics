@@ -40,8 +40,10 @@ module WEB3
         <web3response> .List </web3response>
       </kevm-client>
 
-    syntax JSON ::= Bool | "null" | "undef"
-                  | #getJSON ( JSONKey , JSON ) [function]
+    syntax JSON ::= "null" | "undef"
+ // --------------------------------
+
+    syntax JSON ::= #getJSON ( JSONKey , JSON ) [function]
  // ------------------------------------------------------
     rule #getJSON( KEY, { KEY : J, _ } )     => J
     rule #getJSON( _, { .JSONList } )        => undef
