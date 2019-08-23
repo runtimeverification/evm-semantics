@@ -16,6 +16,16 @@ module WEB3
           <chainID> $CHAINID:Int </chainID>
         </blockchain>
         <accountKeys> .Map </accountKeys>
+        <nextFilterSlot> 0 </nextFilterSlot>
+        <filters>
+          <filter  multiplicity="*" type="Map">
+            <filterID>  0   </filterID>
+            <fromBlock> 0   </fromBlock>
+            <toBlock>   0   </toBlock>
+            <address>   0   </address>
+            <topics>  .List </topics>
+          </filter>
+        </filters>
         <snapshots> .List </snapshots>
         <web3socket> $SOCK:Int </web3socket>
         <web3shutdownable> $SHUTDOWNABLE:Bool </web3shutdownable>
@@ -177,6 +187,10 @@ module WEB3
          <method> "evm_revert" </method>
     rule <k> #runRPCCall => #evm_increaseTime ... </k>
          <method> "evm_increaseTime" </method>
+    rule <k> #runRPCCall => #eth_newBlockFilter ... </k>
+         <method> "eth_newBlockFilter" </method>
+    rule <k> #runRPCCall => #eth_uninstallFilter ... </k>
+         <method> "eth_uninstallFilter" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -308,5 +322,41 @@ module WEB3
     rule <k> #evm_increaseTime => #sendResponse( "result" : Int2String(TS +Int DATA ) ) ... </k>
          <params> [ DATA:Int, .JSONList ] </params>
          <timestamp> ( TS:Int => ( TS +Int DATA ) ) </timestamp>
+
+    syntax KItem ::= "#eth_newBlockFilter"
+ // --------------------------------------
+    rule <k> #eth_newBlockFilter => #sendResponse ( "result": #unparseQuantity( FILTID )) ... </k>
+         <filters>
+           ( .Bag
+          => <filter>
+               <filterID> FILTID </filterID>
+               <fromBlock> BLOCKNUM </fromBlock>
+               ...
+             </filter>
+           )
+           ...
+         </filters>
+         <number> BLOCKNUM </number>
+         <nextFilterSlot> ( FILTID:Int => FILTID +Int 1 ) </nextFilterSlot>
+
+    syntax KItem ::= "#eth_uninstallFilter"
+ // ---------------------------------------
+    rule <k> #eth_uninstallFilter ... </k>
+         <params> [ (DATA => #parseHexWord(DATA)), .JSONList ] </params>
+
+    rule <k> #eth_uninstallFilter => #sendResponse ( "result": "true" ) ... </k>
+         <params> [ FILTID, .JSONList ] </params>
+         <filters>
+           ( <filter>
+               <filterID> FILTID </filterID>
+               ...
+             </filter>
+          => .Bag
+           )
+           ...
+         </filters>
+
+    rule <k> #eth_uninstallFilter => #sendResponse ( "result": false ) ... </k> [owise]
+
 endmodule
 ```
