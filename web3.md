@@ -355,5 +355,13 @@ module WEB3
            )
            ...
          </filters>
+
+    rule <k> #eth_uninstallFilter => #sendResponse ( "result": "error" ) ... </k>
+         <params> [ FILTID:Int, .JSONList ] </params>
+         <filters> FILTERS </filters>
+     requires notBool ( <filterID> FILTID </filterID> in_keys(FILTERS))
+
+     syntax Bool ::= FilterIDCell "in_keys" "(" FilterCellMap ")" [function, hook(MAP.in_keys)]
+     syntax FilterCellMap [hook(MAP.Map)]
 endmodule
 ```
