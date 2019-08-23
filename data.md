@@ -460,6 +460,15 @@ A cons-list is used for the EVM wordstack.
     rule W in (W' : WS)  => (W ==K W') orElseBool (W in WS)
 ```
 
+-   `#replicate` is a `WordStack` of length `N` with `A` the value of every element.
+
+```k
+    syntax WordStack ::= #replicate ( Int, Int ) [function, functional]
+ // -------------------------------------------------------------------
+    rule #replicate( N, A ) => A : #replicate(N -Int 1, A) requires         N >Int 0
+    rule #replicate( N, A ) => .WordStack                  requires notBool N >Int 0
+```
+
 -   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.
 
 ```k
