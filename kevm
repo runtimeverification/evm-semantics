@@ -72,7 +72,7 @@ run_web3() {
     web3_port="$1" ; shift
     run_file='-'
     exec -a "$0 web3" ${defn_dir}/web3/kevm-client -p "$web3_port" "$@" 3>&2 2>&1 1>&3 \
-        | "$0" kast --backend web3 - pretty --input kore --module WEB3 --sort GeneratedTopCell
+        | "$0" kast --backend web3 - pretty --input kore --sort GeneratedTopCell
 }
 
 run_web3_send() {

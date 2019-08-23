@@ -369,10 +369,12 @@ pipeline {
               sh '''
                 release_tag="v${KEVM_RELEASE_ID}-$(git rev-parse --short HEAD)"
                 make release.md KEVM_RELEASE_TAG=${release_tag}
+                mv bionic/kevm_${KEVM_RELEASE_ID}_amd64.deb bionic/kevm_${KEVM_RELEASE_ID}_amd64_bionic.deb
+                mv buster/kevm_${KEVM_RELEASE_ID}_amd64.deb buster/kevm_${KEVM_RELEASE_ID}_amd64_buster.deb
                 hub release create                                                                                               \
                     --attach "kevm-${KEVM_RELEASE_ID}-src.tar.gz#Source tar.gz"                                                  \
-                    --attach "bionic/kevm_${KEVM_RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                            \
-                    --attach "buster/kevm_${KEVM_RELEASE_ID}_amd64.deb#Debian Buster (10) Package"                               \
+                    --attach "bionic/kevm_${KEVM_RELEASE_ID}_amd64_bionic.deb#Ubuntu Bionic (18.04) Package"                            \
+                    --attach "buster/kevm_${KEVM_RELEASE_ID}_amd64_buster.deb#Debian Buster (10) Package"                               \
                     --attach "arch/kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package" \
                     --file "release.md" "${release_tag}"
               '''
