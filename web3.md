@@ -356,13 +356,7 @@ module WEB3
            ...
          </filters>
 
-    rule <k> #eth_uninstallFilter => #sendResponse ( "error": { "code": -32900, "message": "Filter not present!" }) ... </k>
-         <params> [ FILTID:Int, .JSONList ] </params>
-         <filters> FILTERS </filters>
-      requires notBool ( <filterID> FILTID </filterID> in_keys(FILTERS))
+    rule <k> #eth_uninstallFilter => #sendResponse ( "result": false ) ... </k> [owise]
 
-     syntax FilterCellMap [hook(MAP.Map)]
-     syntax Bool ::= FilterIDCell "in_keys" "(" FilterCellMap ")" [function, hook(MAP.in_keys)]
-  // ------------------------------------------------------------------------------------------
 endmodule
 ```
