@@ -584,7 +584,7 @@ The local memory of execution is a byte-array (instead of a word-array).
                        | #padRightToWidth ( Int , ByteArray ) [function]
  // --------------------------------------------------------------------
     rule #padToWidth(N, WS)      => #replicateAux(N -Int #sizeByteArray(WS), 0, WS) [concrete]
-    rule #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0)   [concrete]
+    rule #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0)  [concrete]
 ```
 
 Addresses
