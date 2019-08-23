@@ -244,6 +244,8 @@ WEB3 JSON RPC
          <method> "eth_newBlockFilter" </method>
     rule <k> #runRPCCall => #eth_uninstallFilter ... </k>
          <method> "eth_uninstallFilter" </method>
+    rule <k> #runRPCCall => #eth_sendTransaction ... </k>
+         <method> "eth_sendTransaction" </method>
     rule <k> #runRPCCall => #personal_importRawKey ... </k>
          <method> "personal_importRawKey" </method>
 
@@ -425,6 +427,99 @@ WEB3 JSON RPC
          </filters>
 
     rule <k> #eth_uninstallFilter => #sendResponse ( "result": false ) ... </k> [owise]
+```
+
+# eth_sendTransaction
+
+```k
+    syntax KItem ::= "#eth_sendTransaction"
+ // ---------------------------------------
+    rule <k> #eth_sendTransaction => loadTX J ~> #returnTxHash ... </k>
+         <params> [ J, _ ] </params>
+
+    syntax KItem ::= "#returnTxHash"
+ // --------------------------------
+    rule <k> #returnTxHash => #sendResponse( "result" : #hashTx( TXID ) ) ... </k>
+         <txPending> ListItem( TXID:Int ) ... </txPending>
+
+    rule <k> #returnTxHash => #sendResponse( "error" : {"code": -32603, "message": "Internal error"} ) ... </k>
+         <txPending> _ </txPending> [owise]
+
+    syntax String ::= #hashTx ( Int ) [function]
+ // --------------------------------------------
+    rule [[ #hashTx( TXID ) => Sha3( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE)
+                                                         +String #rlpEncodeWord( GPRICE )
+                                                         +String #rlpEncodeWord( GLIMIT )
+                                                         +String #rlpEncodeWord( ACCTTO )
+                                                         +String #rlpEncodeWord( VALUE )
+                                                         +String #rlpEncodeWord( #asWord( DATA ) )
+                                                         +String #rlpEncodeWord( V )
+                                                         +String #rlpEncodeWord( #asWord( R ) )
+                                                         +String #rlpEncodeWord( #asWord( S ) ),
+                                                        192 ) ) ]]
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce>    TXNONCE </txNonce>
+           <txGasPrice> GPRICE  </txGasPrice>
+           <txGasLimit> GLIMIT  </txGasLimit>
+           <to>         ACCTTO  </to>
+           <value>      VALUE   </value>
+           <data>       DATA    </data>
+           <sigR>       R       </sigR>
+           <sigS>       S       </sigS>
+           <sigV>       V       </sigV>
+         </message>
+
+    syntax KItem ::= "loadTX" JSON
+ // ------------------------------
+    rule <k> loadTX J => signTX !TXID #parseHexWord( #getString ( "from", J ) ) ... </k>
+         <txPending> .List => ListItem( !TXID ) ... </txPending>
+         <messages>
+         ...
+           (.Bag => <message>
+             <msgID> !TXID:Int </msgID>
+             <to>         #if isString( #getJSON("to",       J) ) #then #parseHexWord(#getString("to",J))       #else 0          #fi </to>
+             <txGasLimit> #if isString( #getJSON("gas",      J) ) #then #parseHexWord(#getString("gas",J))      #else GASL       #fi </txGasLimit>
+             <txGasPrice> #if isString( #getJSON("gasPrice", J) ) #then #parseHexWord(#getString("gasPrice",J)) #else GASP       #fi </txGasPrice>
+             <value>      #if isString( #getJSON("value",    J) ) #then #parseHexWord(#getString("value",J))    #else 0          #fi </value>
+             <data>       #if isString( #getJSON("data",     J) ) #then #parseByteStack(#getString("data",J))   #else .ByteArray #fi </data>
+             ...
+           </message>)
+         ...
+         </messages>
+         <gasPrice> GASP </gasPrice>
+         <gasLimit> GASL </gasLimit>
+
+    syntax KItem ::= "signTX" Int Int
+                   | "signTX" Int String  [klabel(signTXAux)]
+ // ---------------------------------------------------------
+    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( #unparseByteStack( #parseHexBytes( Sha256 ( #rlpEncodeLength( #rlpEncodeWord( TXNONCE )
+                                                                                   +String #rlpEncodeWord( GPRICE )
+                                                                                   +String #rlpEncodeWord( GLIMIT )
+                                                                                   +String #rlpEncodeWord( ACCTTO )
+                                                                                   +String #rlpEncodeWord( VALUE )
+                                                                                   +String #rlpEncodeWord( #asWord( DATA ) ),
+                                                                                     192 ) ) ) ), #unparseByteStack( #padToWidth( 32, #asByteStack( KEY ) ) ) ) ... </k>
+         <accountKeys> ... ACCTFROM |-> KEY ... </accountKeys>
+         <message>
+           <msgID>      TXID    </msgID>
+           <txNonce>    TXNONCE </txNonce>
+           <txGasPrice> GPRICE  </txGasPrice>
+           <txGasLimit> GLIMIT  </txGasLimit>
+           <to>         ACCTTO  </to>
+           <value>      VALUE   </value>
+           <data>       DATA    </data>
+           ...
+         </message>
+
+    rule <k> signTX TXID SIG:String => . ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <sigR> _ => #parseHexBytes( substrString( SIG, 0, 64 ) ) </sigR>
+           <sigS> _ => #parseHexBytes( substrString( SIG, 64, 128 ) ) </sigS>
+           <sigV> _ => #parseHexWord( substrString( SIG, 128, 130 ) ) </sigV>
+           ...
+         </message>
 ```
 
 - `#personal_importRawKey` Takes an unencrypted private key, encrypts it with a passphrase, stores it and returns the address of the key.

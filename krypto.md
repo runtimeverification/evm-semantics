@@ -24,6 +24,7 @@ In all functions above, input `String` is interpreted as byte array, e.g. it is 
     syntax String ::= Keccak256 ( String )                            [function, hook(KRYPTO.keccak256)]
                     | ECDSARecover ( String , Int , String , String ) [function, hook(KRYPTO.ecdsaRecover)]
                     | Sha256 ( String )                               [function, hook(KRYPTO.sha256)]
+                    | Sha3 ( String )                                 [function, hook(KRYPTO.sha3)]
                     | RipEmd160 ( String )                            [function, hook(KRYPTO.ripemd160)]
                     | ECDSASign ( String, String )                    [function, hook(KRYPTO.ecdsaSign)]
                     | ECDSAPubKey ( String )                          [function, hook(KRYPTO.ecdsaPubKey)]
