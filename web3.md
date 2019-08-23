@@ -193,6 +193,8 @@ module WEB3
          <method> "eth_newBlockFilter" </method>
     rule <k> #runRPCCall => #eth_uninstallFilter ... </k>
          <method> "eth_uninstallFilter" </method>
+    rule <k> #runRPCCall => #personal_importRawKey ... </k>
+         <method> "personal_importRawKey" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -359,6 +361,20 @@ module WEB3
          </filters>
 
     rule <k> #eth_uninstallFilter => #sendResponse ( "result": false ) ... </k> [owise]
+
+    syntax KItem ::= "#personal_importRawKey"
+ // -----------------------------------------
+    rule <k> #personal_importRawKey => StoreKey( #unparseByteStack( #parseByteStack( PRIKEY ) ), #ethAddress( ECDSAPubKey( #unparseByteStack( #parseByteStack( PRIKEY ) ) ) ) ) ... </k>
+         <params> [ PRIKEY, _, .JSONList ] </params>
+
+    syntax KItem ::= StoreKey ( String, String )
+ // --------------------------------------------
+    rule <k> StoreKey ( PRIKEY, ACCTADDR ) => #sendResponse ( "result": #unparseData( #parseHexWord( ACCTADDR ), 20 ) ) ... </k>
+         <accountKeys> M => M[PRIKEY <- ACCTADDR] </accountKeys>
+
+    syntax String ::= #ethAddress ( String ) [function]
+ // ---------------------------------------------------
+    rule #ethAddress( PUBKEY ) => Keccak256( #unparseByteStack( #parseByteStack( PUBKEY ) ) )
 
 endmodule
 ```
