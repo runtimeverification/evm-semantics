@@ -463,7 +463,6 @@ A cons-list is used for the EVM wordstack.
 -   `#replicateAux` pushes `N` copies of `A` onto a `WordStack`.
 -   `#replicate` is a `WordStack` of length `N` with `A` the value of every element.
 
-
 ```k
     syntax WordStack ::= #replicate    ( Int, Int )            [function, functional]
                        | #replicateAux ( Int, Int, WordStack ) [function, functional]
