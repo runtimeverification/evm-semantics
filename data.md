@@ -465,11 +465,9 @@ A cons-list is used for the EVM wordstack.
 
 
 ```k
- // ----------------------------------------------------------------------------------
-
     syntax WordStack ::= #replicate    ( Int, Int )            [function, functional]
                        | #replicateAux ( Int, Int, WordStack ) [function, functional]
- // -------------------------------------------------------------------
+ // ---------------------------------------------------------------------------------
     rule #replicate   ( N, A )     => #replicateAux(N, A, .WordStack)
     rule #replicateAux( N, A, WS ) => #replicateAux(N -Int 1, A, A : WS) requires         N >Int 0
     rule #replicateAux( N, A, WS ) => WS                                 requires notBool N >Int 0
