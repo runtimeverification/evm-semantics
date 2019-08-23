@@ -425,6 +425,8 @@ tests/web3/no-shutdown/%: KEVM_WEB3_ARGS=
 
 tests/%.run-web3: tests/%.in.json
 	tests/web3/runtest.sh $< tests/$*.out.json $(KEVM_WEB3_ARGS)
+	$(CHECK) tests/$*.expected.json tests/$*.out.json
+	rm -rf tests/$*.out.json
 
 tests/%.parse: tests/%
 	$(TEST) kast --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out

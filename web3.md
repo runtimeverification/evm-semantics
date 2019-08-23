@@ -40,8 +40,10 @@ module WEB3
         <web3response> .List </web3response>
       </kevm-client>
 
-    syntax JSON ::= Bool | "null" | "undef"
-                  | #getJSON ( JSONKey , JSON ) [function]
+    syntax JSON ::= "null" | "undef"
+ // --------------------------------
+
+    syntax JSON ::= #getJSON ( JSONKey , JSON ) [function]
  // ------------------------------------------------------
     rule #getJSON( KEY, { KEY : J, _ } )     => J
     rule #getJSON( _, { .JSONList } )        => undef
@@ -305,7 +307,7 @@ module WEB3
 
     syntax KItem ::= "#evm_revert"
  // ------------------------------
-    rule <k> #evm_revert => #sendResponse( "result" : "true" ) ... </k>
+    rule <k> #evm_revert => #sendResponse( "result" : true ) ... </k>
          <params> [ .JSONList ] </params>
          <snapshots> ... ( ListItem(NETWORKSTATE) => .List ) </snapshots>
          <network> ( _ => NETWORKSTATE ) </network>
@@ -344,7 +346,7 @@ module WEB3
     rule <k> #eth_uninstallFilter ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), .JSONList ] </params>
 
-    rule <k> #eth_uninstallFilter => #sendResponse ( "result": "true" ) ... </k>
+    rule <k> #eth_uninstallFilter => #sendResponse ( "result": true ) ... </k>
          <params> [ FILTID, .JSONList ] </params>
          <filters>
            ( <filter>
