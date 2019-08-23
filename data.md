@@ -577,17 +577,11 @@ The local memory of execution is a byte-array (instead of a word-array).
  // ------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => #sizeWordStack(WS)
 
-    syntax ByteArray ::= #padToWidth         ( Int , ByteArray )             [function]
-                       | #padRightToWidth    ( Int , ByteArray )             [function]
-                       | #padRightToWidthAux ( Int , ByteArray , ByteArray ) [function]
- // -----------------------------------------------------------------------------------
-    rule #padToWidth(N, WS) => WS                     requires notBool #sizeByteArray(WS) <Int N [concrete]
-    rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires         #sizeByteArray(WS) <Int N [concrete]
-
-    rule #padRightToWidth(N, WS) => #padRightToWidthAux(N -Int #sizeByteArray(WS), WS, .WordStack)
-    rule #padRightToWidthAux(0, WS, ZEROS) => WS ++ ZEROS
-    rule #padRightToWidthAux(N, WS, ZEROS) => #padRightToWidthAux(N -Int 1, WS, 0 : ZEROS)
-      requires N >Int 0
+    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function]
+                       | #padRightToWidth ( Int , ByteArray ) [function]
+ // --------------------------------------------------------------------
+    rule #padToWidth(N, WS)      => #replicate(N -Int #sizeByteArray(WS), 0) ++ WS [concrete]
+    rule #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0) [concrete]
 ```
 
 Addresses
