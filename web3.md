@@ -16,8 +16,19 @@ module WEB3
           <chainID> $CHAINID:Int </chainID>
         </blockchain>
         <accountKeys> .Map </accountKeys>
-        <snapshots> .List </snapshots> 
+        <nextFilterSlot> 0 </nextFilterSlot>
+        <filters>
+          <filter  multiplicity="*" type="Map">
+            <filterID>  0   </filterID>
+            <fromBlock> 0   </fromBlock>
+            <toBlock>   0   </toBlock>
+            <address>   0   </address>
+            <topics>  .List </topics>
+          </filter>
+        </filters>
+        <snapshots> .List </snapshots>
         <web3socket> $SOCK:Int </web3socket>
+        <web3shutdownable> $SHUTDOWNABLE:Bool </web3shutdownable>
         <web3clientsocket> 0:IOInt </web3clientsocket>
         <web3request>
           <jsonrpc> "":JSON </jsonrpc>
@@ -29,7 +40,7 @@ module WEB3
         <web3response> .List </web3response>
       </kevm-client>
 
-    syntax JSON ::= Int | Bool | "null" | "undef"
+    syntax JSON ::= Bool | "null" | "undef"
                   | #getJSON ( JSONKey , JSON ) [function]
  // ------------------------------------------------------
     rule #getJSON( KEY, { KEY : J, _ } )     => J
@@ -46,6 +57,7 @@ module WEB3
     rule #getString( KEY, J ) => {#getJSON( KEY, J )}:>String
 
     syntax IOJSON ::= JSON | IOError
+ // --------------------------------
 
     syntax EthereumSimulation ::= accept() [symbol]
  // -----------------------------------------------
@@ -68,10 +80,10 @@ module WEB3
     syntax KItem ::= #loadRPCCall(IOJSON)
  // -------------------------------------
     rule <k> #loadRPCCall({ _ } #as J) => #checkRPCCall ~> #runRPCCall ... </k>
-         <jsonrpc> _             => #getJSON("jsonrpc", J) </jsonrpc>
-         <callid>  _             => #getJSON("id"     , J) </callid>
-         <method>  _             => #getJSON("method" , J) </method>
-         <params>  _             => #getJSON("params" , J) </params>
+         <jsonrpc> _ => #getJSON("jsonrpc", J) </jsonrpc>
+         <callid>  _ => #getJSON("id"     , J) </callid>
+         <method>  _ => #getJSON("method" , J) </method>
+         <params>  _ => #getJSON("params" , J) </params>
 
     rule <k> #loadRPCCall(#EOF) => #shutdownWrite(SOCK) ~> #close(SOCK) ~> accept() ... </k>
          <web3clientsocket> SOCK </web3clientsocket>
@@ -107,7 +119,7 @@ module WEB3
     rule List2JSON(L) => List2JSON(L, .JSONList)
 
     rule List2JSON(L ListItem(J), JS) => List2JSON(L, (J, JS))
-    rule List2JSON(.List, JS) => [ JS ]
+    rule List2JSON(.List        , JS) => [ JS ]
 
     syntax KItem ::= #sendResponse( JSON )
  // --------------------------------------
@@ -135,7 +147,7 @@ module WEB3
     rule <k> #checkRPCCall => . ...</k>
          <jsonrpc> "2.0" </jsonrpc>
          <method> _:String </method>
-         <params> undef #Or [ _ ] #Or { _ } #Or undef </params>
+         <params> undef #Or [ _ ] #Or { _ } </params>
          <callid> _:String #Or null #Or _:Int #Or undef </callid>
 
     rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
@@ -149,6 +161,8 @@ module WEB3
 
     syntax KItem ::= "#runRPCCall"
  // ------------------------------
+    rule <k> #runRPCCall => #firefly_shutdown ... </k>
+         <method> "firefly_shutdown" </method>
     rule <k> #runRPCCall => #net_version ... </k>
          <method> "net_version" </method>
     rule <k> #runRPCCall => #web3_clientVersion ... </k>
@@ -173,8 +187,23 @@ module WEB3
          <method> "evm_revert" </method>
     rule <k> #runRPCCall => #evm_increaseTime ... </k>
          <method> "evm_increaseTime" </method>
+    rule <k> #runRPCCall => #eth_newBlockFilter ... </k>
+         <method> "eth_newBlockFilter" </method>
+    rule <k> #runRPCCall => #eth_uninstallFilter ... </k>
+         <method> "eth_uninstallFilter" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
+
+    syntax KItem ::= "#firefly_shutdown"
+ // ------------------------------------
+    rule <k> #firefly_shutdown ~> _ => #putResponse({ "jsonrpc": "2.0" , "id": CALLID , "result": "Firefly client shutting down!" }, SOCK) </k>
+         <web3shutdownable> true </web3shutdownable>
+         <callid> CALLID </callid>
+         <web3clientsocket> SOCK </web3clientsocket>
+         <exit-code> _ => 0 </exit-code>
+
+    rule <k> #firefly_shutdown => #sendResponse( "error": {"code": -32800, "message": "Firefly client not started with `--shutdownable`!"} ) ... </k>
+         <web3shutdownable> false </web3shutdownable>
 
     syntax KItem ::= "#net_version"
  // -------------------------------
@@ -182,7 +211,7 @@ module WEB3
          <chainID> CHAINID </chainID>
 
     syntax KItem ::= "#web3_clientVersion"
- // -------------------------------
+ // --------------------------------------
     rule <k> #web3_clientVersion => #sendResponse( "result" : "Firefly RPC/v0.0.1/kevm" ) ... </k>
 
     syntax KItem ::= "#eth_gasPrice"
@@ -293,5 +322,41 @@ module WEB3
     rule <k> #evm_increaseTime => #sendResponse( "result" : Int2String(TS +Int DATA ) ) ... </k>
          <params> [ DATA:Int, .JSONList ] </params>
          <timestamp> ( TS:Int => ( TS +Int DATA ) ) </timestamp>
+
+    syntax KItem ::= "#eth_newBlockFilter"
+ // --------------------------------------
+    rule <k> #eth_newBlockFilter => #sendResponse ( "result": #unparseQuantity( FILTID )) ... </k>
+         <filters>
+           ( .Bag
+          => <filter>
+               <filterID> FILTID </filterID>
+               <fromBlock> BLOCKNUM </fromBlock>
+               ...
+             </filter>
+           )
+           ...
+         </filters>
+         <number> BLOCKNUM </number>
+         <nextFilterSlot> ( FILTID:Int => FILTID +Int 1 ) </nextFilterSlot>
+
+    syntax KItem ::= "#eth_uninstallFilter"
+ // ---------------------------------------
+    rule <k> #eth_uninstallFilter ... </k>
+         <params> [ (DATA => #parseHexWord(DATA)), .JSONList ] </params>
+
+    rule <k> #eth_uninstallFilter => #sendResponse ( "result": "true" ) ... </k>
+         <params> [ FILTID, .JSONList ] </params>
+         <filters>
+           ( <filter>
+               <filterID> FILTID </filterID>
+               ...
+             </filter>
+          => .Bag
+           )
+           ...
+         </filters>
+
+    rule <k> #eth_uninstallFilter => #sendResponse ( "result": false ) ... </k> [owise]
+
 endmodule
 ```

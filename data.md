@@ -29,7 +29,7 @@ Writing a JSON-ish parser in K takes 6 lines.
 ```k
     syntax JSONList ::= List{JSON,","}
     syntax JSONKey  ::= String | Int
-    syntax JSON     ::= String
+    syntax JSON     ::= String | Int
                       | JSONKey ":" JSON
                       | "{" JSONList "}"
                       | "[" JSONList "]"
@@ -659,6 +659,22 @@ Addresses
                                                       +String #rlpEncodeBytes(HN, 8),
                                                     192)))
 
+```
+
+- `M3:2048` computes the 2048-bit hash of a log entry in which exactly 3 bits are set. This is used to compute the Bloom filter of a log entry.
+
+```k
+    syntax Int ::= "M3:2048" "(" ByteArray ")" [function]
+ // -----------------------------------------------------
+    rule M3:2048(WS) => setBloomFilterBits(#parseByteStack(Keccak256(#unparseByteStack(WS))))
+
+    syntax Int ::= setBloomFilterBits(ByteArray) [function]
+ // -------------------------------------------------------
+    rule setBloomFilterBits(HASH) => (1 <<Int getBloomFilterBit(HASH, 0)) |Int (1 <<Int getBloomFilterBit(HASH, 2)) |Int (1 <<Int getBloomFilterBit(HASH, 4))
+
+    syntax Int ::= getBloomFilterBit(ByteArray, Int) [function]
+ // -----------------------------------------------------------
+    rule getBloomFilterBit(X, I) => #asInteger(X [ I .. 2 ]) %Int 2048
 ```
 
 Word Map
