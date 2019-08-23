@@ -370,7 +370,7 @@ module WEB3
     syntax KItem ::= StoreKey ( String, String )
  // --------------------------------------------
     rule <k> StoreKey ( PRIKEY, ACCTADDR ) => #sendResponse ( "result": Binary2Hex ( ACCTADDR ) ) ... </k>
-         <accountKeys> M => M[PRIKEY <- ACCTADDR] </accountKeys>
+         <accountKeys> M => M[ACCTADDR <- PRIKEY] </accountKeys>
 
     syntax String ::= #ethAddress ( String ) [function]
  // ---------------------------------------------------
