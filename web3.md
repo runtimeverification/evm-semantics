@@ -364,17 +364,13 @@ module WEB3
 
     syntax KItem ::= "#personal_importRawKey"
  // -----------------------------------------
-    rule <k> #personal_importRawKey => StoreKey( Hex2Binary( PRIKEY ), #ethAddress( ECDSAPubKey( Hex2Binary( PRIKEY ) ) ) ) ... </k>
+    rule <k> #personal_importRawKey => StoreKey( #parseHexWord( PRIKEY ), #addr( #parseHexWord( Keccak256 ( Hex2Binary( ECDSAPubKey( Hex2Binary( PRIKEY ) ) ) ) ) ) ) ... </k>
          <params> [ PRIKEY, _ ] </params>
 
-    syntax KItem ::= StoreKey ( String, String )
- // --------------------------------------------
-    rule <k> StoreKey ( PRIKEY, ACCTADDR ) => #sendResponse ( "result": Binary2Hex ( ACCTADDR ) ) ... </k>
+    syntax KItem ::= StoreKey ( Int, Int )
+ // --------------------------------------
+    rule <k> StoreKey ( PRIKEY, ACCTADDR ) => #sendResponse ( "result": #unparseData( ACCTADDR, 20 ) ) ... </k>
          <accountKeys> M => M[ACCTADDR <- PRIKEY] </accountKeys>
-
-    syntax String ::= #ethAddress ( String ) [function]
- // ---------------------------------------------------
-    rule #ethAddress( PUBKEY ) => Hex2Binary ( substrString ( Keccak256 ( Hex2Binary( PUBKEY ) ), 24, 64 ) )
 
 endmodule
 ```
