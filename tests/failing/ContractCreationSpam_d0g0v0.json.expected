@@ -140,10 +140,10 @@
       <ommerBlockHeaders>
         [ .JSONList ]
       </ommerBlockHeaders>
-      <blockhash>
+      <blockhashes>
         ListItem ( 16571357051919171647812252688150536926893680553418066239369932048252618811190 )
         ListItem ( 0 )
-      </blockhash>
+      </blockhashes>
     </evm>
     <network>
       <activeAccounts>

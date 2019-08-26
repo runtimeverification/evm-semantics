@@ -275,9 +275,9 @@
   {
     _24
   #Equals
-    <blockhash>
+    <blockhashes>
       .List
-    </blockhash>
+    </blockhashes>
   }
 #And
   {

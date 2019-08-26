@@ -137,9 +137,9 @@
       <ommerBlockHeaders>
         [ .JSONList ]
       </ommerBlockHeaders>
-      <blockhash>
+      <blockhashes>
         .List
-      </blockhash>
+      </blockhashes>
     </evm>
     <network>
       <activeAccounts>

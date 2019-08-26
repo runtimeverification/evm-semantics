@@ -69,7 +69,7 @@ module TRANSFER-FAILURE-2-B-SPEC
         <blockNonce> _ </blockNonce>
 
         <ommerBlockHeaders> _ </ommerBlockHeaders>
-        <blockhash> _ </blockhash>
+        <blockhashes> _ </blockhash>
       </evm>
 
       <network>

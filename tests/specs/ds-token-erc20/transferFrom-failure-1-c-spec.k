@@ -69,7 +69,7 @@ module TRANSFERFROM-FAILURE-1-C-SPEC
         <blockNonce> _ </blockNonce>
 
         <ommerBlockHeaders> _ </ommerBlockHeaders>
-        <blockhash> _ </blockhash>
+        <blockhashes> _ </blockhash>
       </evm>
 
       <network>

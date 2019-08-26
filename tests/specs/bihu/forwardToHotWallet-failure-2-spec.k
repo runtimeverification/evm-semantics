@@ -69,7 +69,7 @@ module FORWARDTOHOTWALLET-FAILURE-2-SPEC
         <blockNonce> _ </blockNonce>
 
         <ommerBlockHeaders> _ </ommerBlockHeaders>
-        <blockhash> _ </blockhash>
+        <blockhashes> _ </blockhash>
       </evm>
 
       <network>

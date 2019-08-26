@@ -86,6 +86,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <origin>   0 </origin>                            // I_o
 
             // I_H* (block information)
+            <blockhashes> .List </blockhashes>
             <block>
               <previousHash>     0          </previousHash>     // I_Hp
               <ommersHash>       0          </ommersHash>       // I_Ho
@@ -104,7 +105,6 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <blockNonce>       0          </blockNonce>       // I_Hn
 
               <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
-              <blockhash>         .List         </blockhash>
             </block>
 
           </evm>
@@ -1039,8 +1039,8 @@ Otherwise, it is calculated here using the "shortcut" formula used for running t
 
 ```{.k .standalone}
     rule <k> BLOCKHASH N => #blockhash(HASHES, N, HI -Int 1, 0) ~> #push ... </k>
-         <number>    HI     </number>
-         <blockhash> HASHES </blockhash>
+         <number>      HI     </number>
+         <blockhashes> HASHES </blockhashes>
 
     syntax Int ::= #blockhash ( List , Int , Int , Int ) [function]
  // ---------------------------------------------------------------
