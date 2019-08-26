@@ -186,17 +186,72 @@ Our semantics is modal, with the initial mode being set on the command line via 
 State Stacks
 ------------
 ### The BlockchainStack
+
 ```k
-    syntax BlockchainItem ::= "{" NetworkCellFragment "|" BlockCellFragment "}"
+    syntax BlockchainItem ::= "{" NetworkCellFragment "|" BlockCell "}"
  // -----------------------------------------------------------
 
-   syntax InternalOp ::= "#pushBlock"
+   syntax InternalOp ::= "#pushBlockchainState"
  // ---------------------------------------
-    rule <k> #pushBlock => . ... </k>
-         <blockList> (.List => ListItem({ NETWORK | BLOCK })) ... </blockList>
+    rule <k> #pushBlockchainState => . ... </k>
+         <blockList> (.List => ListItem({ NETWORK | <block> BLOCK </block> })) ... </blockList>
          <network> NETWORK </network>
-         <block> BLOCK </block>
+         <block>   BLOCK   </block>
 
+   syntax InternalOp ::= "#getBlockchainState" "(" Int ")"
+ // ---------------------------------------
+    rule <k> #getBlockchainState(BLOCKNUM) => . ... </k>
+         <blockList> (
+            ListItem(
+               { NETWORK |
+             (
+                <block>
+                  <previousHash>     HP       </previousHash>     // I_Hp
+                  <ommersHash>       HO       </ommersHash>       // I_Ho
+                  <coinbase>         HC       </coinbase>         // I_Hc
+                  <stateRoot>        HR       </stateRoot>        // I_Hr
+                  <transactionsRoot> HT       </transactionsRoot> // I_Ht
+                  <receiptsRoot>     HE       </receiptsRoot>     // I_He
+                  <logsBloom>        HB       </logsBloom>        // I_Hb
+                  <difficulty>       HD       </difficulty>       // I_Hd
+                  <number>           BLOCKNUM </number>           // I_Hi
+                  <gasLimit>         HL       </gasLimit>         // I_Hl
+                  <gasUsed>          HG       </gasUsed>          // I_Hg
+                  <timestamp>        HS       </timestamp>        // I_Hs
+                  <extraData>        HX       </extraData>        // I_Hx
+                  <mixHash>          HM       </mixHash>          // I_Hm
+                  <blockNonce>       HN       </blockNonce>       // I_Hn
+  
+                  <ommerBlockHeaders> OBH </ommerBlockHeaders>
+                  <blockhash>         BH  </blockhash>
+                </block>
+             ) 
+               }
+            ) => .List) ... 
+         </blockList>
+         <network> _ => NETWORK </network>
+         <block>
+           <previousHash>     _ => HP       </previousHash>     // I_Hp
+           <ommersHash>       _ => HO       </ommersHash>       // I_Ho
+           <coinbase>         _ => HC       </coinbase>         // I_Hc
+           <stateRoot>        _ => HR       </stateRoot>        // I_Hr
+           <transactionsRoot> _ => HT       </transactionsRoot> // I_Ht
+           <receiptsRoot>     _ => HE       </receiptsRoot>     // I_He
+           <logsBloom>        _ => HB       </logsBloom>        // I_Hb
+           <difficulty>       _ => HD       </difficulty>       // I_Hd
+           <number>           _ => BLOCKNUM </number>           // I_Hi
+           <gasLimit>         _ => HL       </gasLimit>         // I_Hl
+           <gasUsed>          _ => HG       </gasUsed>          // I_Hg
+           <timestamp>        _ => HS       </timestamp>        // I_Hs
+           <extraData>        _ => HX       </extraData>        // I_Hx
+           <mixHash>          _ => HM       </mixHash>          // I_Hm
+           <blockNonce>       _ => HN       </blockNonce>       // I_Hn
+  
+           <ommerBlockHeaders> _ => OBH </ommerBlockHeaders>
+           <blockhash>         _ => BH  </blockhash>
+         </block>
+
+    rule <k> #getBlockchainState(BLOCKNUM) => . ... </k> [owise]
 ```
 ### The CallStack
 
