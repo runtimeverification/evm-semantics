@@ -54,13 +54,13 @@ The `blockList` cell stores a list of previous blocks and network states.
 
 ```k
     syntax BlockchainItem ::= ".BlockchainItem"
-                            | "{" NetworkCellFragment "|" BlockCellFragment "}"
- // ---------------------------------------------------------------------------
+                            | "{" NetworkCell "|" BlockCell "}"
+ // -----------------------------------------------------------
 
     syntax KItem ::= "#pushBlockchainState"
  // ---------------------------------------
     rule <k> #pushBlockchainState => . ... </k>
-         <blockList> (.List => ListItem({ NETWORK | BLOCK })) ... </blockList>
+         <blockList> (.List => ListItem({ <network> NETWORK </network> | <block> BLOCK </block> })) ... </blockList>
          <network> NETWORK </network>
          <block>   BLOCK   </block>
 
@@ -71,7 +71,7 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     syntax KItem ::= #setBlockchainState ( BlockchainItem )
  // -------------------------------------------------------
-    rule <k> #setBlockchainState({ NETWORK | BLOCK }) => . ... </k>
+    rule <k> #setBlockchainState({ <network> NETWORK </network> | <block> BLOCK </block> }) => . ... </k>
          <network> _ => NETWORK </network>
          <block>   _ => BLOCK   </block>
 
@@ -79,8 +79,8 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     syntax BlockchainItem ::= #getBlockByNumber ( Int , List ) [function]
  // ---------------------------------------------------------------------
-    rule #getBlockByNumber(BLOCKNUM,  ListItem({ _ | <block>-fragment _ _ _ _ _ _ _ _ <number> BLOCKNUM </number> _ _ _ _ _ _ _ _ </block>-fragment } #as BLOCKCHAINITEM) REST ) => BLOCKCHAINITEM
-    rule #getBlockByNumber(BLOCKNUM', ListItem({ _ | <block>-fragment _ _ _ _ _ _ _ _ <number> BLOCKNUM </number> _ _ _ _ _ _ _ _ </block>-fragment }) REST )                    => #getBlockByNumber(BLOCKNUM', REST)
+    rule #getBlockByNumber(BLOCKNUM,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCKCHAINITEM) REST ) => BLOCKCHAINITEM
+    rule #getBlockByNumber(BLOCKNUM', ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }                   ) REST ) => #getBlockByNumber(BLOCKNUM', REST)
       requires BLOCKNUM =/=Int BLOCKNUM'
     rule #getBlockByNumber(_, .List) => .BlockchainItem
 ```
