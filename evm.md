@@ -86,25 +86,28 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <origin>   0 </origin>                            // I_o
 
             // I_H* (block information)
-            <previousHash>     0          </previousHash>     // I_Hp
-            <ommersHash>       0          </ommersHash>       // I_Ho
-            <coinbase>         0          </coinbase>         // I_Hc
-            <stateRoot>        0          </stateRoot>        // I_Hr
-            <transactionsRoot> 0          </transactionsRoot> // I_Ht
-            <receiptsRoot>     0          </receiptsRoot>     // I_He
-            <logsBloom>        .ByteArray </logsBloom>        // I_Hb
-            <difficulty>       0          </difficulty>       // I_Hd
-            <number>           0          </number>           // I_Hi
-            <gasLimit>         0          </gasLimit>         // I_Hl
-            <gasUsed>          0          </gasUsed>          // I_Hg
-            <timestamp>        0          </timestamp>        // I_Hs
-            <extraData>        .ByteArray </extraData>        // I_Hx
-            <mixHash>          0          </mixHash>          // I_Hm
-            <blockNonce>       0          </blockNonce>       // I_Hn
+            <block>
+              <previousHash>     0          </previousHash>     // I_Hp
+              <ommersHash>       0          </ommersHash>       // I_Ho
+              <coinbase>         0          </coinbase>         // I_Hc
+              <stateRoot>        0          </stateRoot>        // I_Hr
+              <transactionsRoot> 0          </transactionsRoot> // I_Ht
+              <receiptsRoot>     0          </receiptsRoot>     // I_He
+              <logsBloom>        .ByteArray </logsBloom>        // I_Hb
+              <difficulty>       0          </difficulty>       // I_Hd
+              <number>           0          </number>           // I_Hi
+              <gasLimit>         0          </gasLimit>         // I_Hl
+              <gasUsed>          0          </gasUsed>          // I_Hg
+              <timestamp>        0          </timestamp>        // I_Hs
+              <extraData>        .ByteArray </extraData>        // I_Hx
+              <mixHash>          0          </mixHash>          // I_Hm
+              <blockNonce>       0          </blockNonce>       // I_Hn
 
-            <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
-            <blockhash>         .List         </blockhash>
+              <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
+              <blockhash>         .List         </blockhash>
+            </block>
 
+            <blockList> .List </blockList>
           </evm>
 
           // Ethereum Network
@@ -182,7 +185,19 @@ Our semantics is modal, with the initial mode being set on the command line via 
 
 State Stacks
 ------------
+### The BlockchainStack
+```k
+    syntax BlockchainItem ::= "{" NetworkCellFragment "|" BlockCellFragment "}"
+ // -----------------------------------------------------------
 
+   syntax InternalOp ::= "#pushBlock"
+ // ---------------------------------------
+    rule <k> #pushBlock => . ... </k>
+         <blockList> (.List => ListItem({ NETWORK | BLOCK })) ... </blockList>
+         <network> NETWORK </network>
+         <block> BLOCK </block>
+
+```
 ### The CallStack
 
 The `callStack` cell stores a list of previous VM execution states.
