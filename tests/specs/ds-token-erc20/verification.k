@@ -1,6 +1,6 @@
 requires "abstract-semantics-segmented-gas.k"
 requires "edsl.k"
-requires "evm-data-map-concrete.k"
+requires "../evm-data-map-concrete.k"
 requires "evm-symbolic.k"
 
 module VERIFICATION

@@ -1,6 +1,6 @@
-requires "evm-direct-gas.k"
-requires "evm-data-map-concrete.k"
 requires "edsl.k"
+requires "../evm-data-map-concrete.k"
+requires "evm-direct-gas.k"
 requires "../lemmas.k"
 
 module VERIFICATION
