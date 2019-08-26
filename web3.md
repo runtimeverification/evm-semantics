@@ -376,15 +376,20 @@ module WEB3
          </filters>
 
     rule <k> #eth_uninstallFilter => #sendResponse ( "result": false ) ... </k> [owise]
+```
 
+- `#personal_importRawKey` Takes an unencrypted private key, encrypts it with a passphrase, stores it and returns the address of the key.
+
+**TODO**: Currently nothing is done with the passphrase
+```k
     syntax KItem ::= "#personal_importRawKey"
  // -----------------------------------------
     rule <k> #personal_importRawKey => StoreKey( #parseHexWord( PRIKEY ), #addr( #parseHexWord( Keccak256 ( Hex2Binary( ECDSAPubKey( Hex2Binary( PRIKEY ) ) ) ) ) ) ) ... </k>
-         <params> [ PRIKEY, _ ] </params> // TODO: This takes another parameter with the passphrase for the unencrypted key
+         <params> [ PRIKEY, _ ] </params>
 
     syntax KItem ::= StoreKey ( Int, Int )
  // --------------------------------------
-    rule <k> StoreKey ( PRIKEY, ACCTADDR ) => #sendResponse ( "result": #unparseData( ACCTADDR, 20 ) ) ... </k>
+    rule <k> StoreKey ( PRIKEY, ACCTADDR ) => #newAccount ACCTADDR ~> #sendResponse ( "result": #unparseData( ACCTADDR, 20 ) ) ... </k>
          <accountKeys> M => M[ACCTADDR <- PRIKEY] </accountKeys>
 
 endmodule
