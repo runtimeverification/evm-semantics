@@ -439,24 +439,28 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#returnTxHash"
  // --------------------------------
-    rule <k> #returnTxHash => #sendResponse( "result" : #hashTx( TXID ) ) ... </k>
+    rule <k> #returnTxHash => #sendResponse( "result" : "0x" +String #hashTx( TXID, true ) ) ... </k>
          <txPending> ListItem( TXID:Int ) ... </txPending>
 
     rule <k> #returnTxHash => #sendResponse( "error" : {"code": -32603, "message": "Internal error"} ) ... </k>
          <txPending> _ </txPending> [owise]
+```
 
-    syntax String ::= #hashTx ( Int ) [function]
- // --------------------------------------------
-    rule [[ #hashTx( TXID ) => Keccak256( #rlpEncodeLength(           #rlpEncodeWord( TXNONCE )
-                                                         +String #rlpEncodeWord( GPRICE )
-                                                         +String #rlpEncodeWord( GLIMIT )
-                                                         +String #rlpEncodeWord( ACCTTO )
-                                                         +String #rlpEncodeWord( VALUE )
-                                                         +String #rlpEncodeString( #unparseByteStack( DATA ) )
-                                                         +String #rlpEncodeWord( V +Int 27 )
-                                                         +String #rlpEncodeString( #unparseByteStack( R ) )
-                                                         +String #rlpEncodeString( #unparseByteStack( S ) ),
-                                                        192 ) ) ]]
+- `hashTx` Takes a transaction ID, and true (signed transaction) or false (unsigned transaction). Returns the hash of the rlp-encoded transaction.
+
+```k
+    syntax String ::= #hashTx ( Int, Bool ) [function]
+ // --------------------------------------------------
+    rule [[ #hashTx( TXID , true ) => Keccak256( #rlpEncodeLength(        #rlpEncodeWord( TXNONCE )
+                                                                  +String #rlpEncodeWord( GPRICE )
+                                                                  +String #rlpEncodeWord( GLIMIT )
+                                                                  +String #rlpEncodeWord( ACCTTO )
+                                                                  +String #rlpEncodeWord( VALUE )
+                                                                  +String #rlpEncodeString( #unparseByteStack( DATA ) )
+                                                                  +String #rlpEncodeWord( V +Int 27 )
+                                                                  +String #rlpEncodeString( #unparseByteStack( R ) )
+                                                                  +String #rlpEncodeString( #unparseByteStack( S ) ),
+                                                                  192 ) ) ]]
          <message>
            <msgID> TXID </msgID>
            <txNonce>    TXNONCE </txNonce>
@@ -470,6 +474,30 @@ WEB3 JSON RPC
            <sigV>       V       </sigV>
          </message>
 
+    rule [[ #hashTx( TXID, false ) => Keccak256( #rlpEncodeLength(        #rlpEncodeWord( TXNONCE )
+                                                                  +String #rlpEncodeWord( GPRICE )
+                                                                  +String #rlpEncodeWord( GLIMIT )
+                                                                  +String #rlpEncodeWord( ACCTTO )
+                                                                  +String #rlpEncodeWord( VALUE )
+                                                                  +String #rlpEncodeString( #unparseByteStack( DATA ) ),
+                                                                  192 ) ) ]]
+         <message>
+           <msgID>      TXID    </msgID>
+           <txNonce>    TXNONCE </txNonce>
+           <txGasPrice> GPRICE  </txGasPrice>
+           <txGasLimit> GLIMIT  </txGasLimit>
+           <to>         ACCTTO  </to>
+           <value>      VALUE   </value>
+           <data>       DATA    </data>
+           ...
+         </message>
+```
+
+- `loadTX` Loads the JSON parameter for a transaction and signs it with the "from" account's key.
+
+**TODO**: Make sure nonce is being determined properly
+**TODO**: You're supposed to be able to overwrite a pending tx by using its "from" and "nonce" parameters
+```k
     syntax KItem ::= "loadTX" JSON
  // ------------------------------
     rule <k> loadTX J => signTX !TXID #parseHexWord( #getString ( "from", J ) ) ... </k>
@@ -478,8 +506,9 @@ WEB3 JSON RPC
          ...
            (.Bag => <message>
              <msgID> !TXID:Int </msgID>
+             <txNonce>    #if isString( #getJSON("nonce",    J) ) #then #parseHexWord(#getString("nonce",J))    #else 0          #fi </txNonce>
              <to>         #if isString( #getJSON("to",       J) ) #then #parseHexWord(#getString("to",J))       #else 0          #fi </to>
-             <txGasLimit> #if isString( #getJSON("gas",      J) ) #then #parseHexWord(#getString("gas",J))      #else GASL       #fi </txGasLimit>
+             <txGasLimit> #if isString( #getJSON("gas",      J) ) #then #parseHexWord(#getString("gas",J))      #else 90000      #fi </txGasLimit>
              <txGasPrice> #if isString( #getJSON("gasPrice", J) ) #then #parseHexWord(#getString("gasPrice",J)) #else GASP       #fi </txGasPrice>
              <value>      #if isString( #getJSON("value",    J) ) #then #parseHexWord(#getString("value",J))    #else 0          #fi </value>
              <data>       #if isString( #getJSON("data",     J) ) #then #parseByteStack(#getString("data",J))   #else .ByteArray #fi </data>
@@ -488,18 +517,14 @@ WEB3 JSON RPC
          ...
          </messages>
          <gasPrice> GASP </gasPrice>
-         <gasLimit> GASL </gasLimit>
+      requires isString( #getJSON("from", J ) )
+
+    rule <k> loadTX _ => #sendResponse( "error": {"code": -32000, "message": "from not found; is required"} ) ... </k> [owise]
 
     syntax KItem ::= "signTX" Int Int
-                   | "signTX" Int String  [klabel(signTXAux)]
- // ---------------------------------------------------------
-    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( Hex2Binary( Keccak256 ( #rlpEncodeLength(        #rlpEncodeWord( TXNONCE )
-                                                                                                         +String #rlpEncodeWord( GPRICE )
-                                                                                                         +String #rlpEncodeWord( GLIMIT )
-                                                                                                         +String #rlpEncodeWord( ACCTTO )
-                                                                                                         +String #rlpEncodeWord( VALUE )
-                                                                                                         +String #rlpEncodeString( #unparseByteStack( DATA ) ),
-                                                                                                         192 ) ) ), #unparseByteStack( #padToWidth( 32, #asByteStack( KEY ) ) ) ) ... </k>
+                   | "signTX" Int String [klabel(signTXAux)]
+ // --------------------------------------------------------
+    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( Hex2Binary( #hashTx( TXID, false ) ), #unparseByteStack( #padToWidth( 32, #asByteStack( KEY ) ) ) ) ... </k>
          <accountKeys> ... ACCTFROM |-> KEY ... </accountKeys>
          <message>
            <msgID>      TXID    </msgID>
