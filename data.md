@@ -29,7 +29,7 @@ Writing a JSON-ish parser in K takes 6 lines.
 ```k
     syntax JSONList ::= List{JSON,","}
     syntax JSONKey  ::= String | Int
-    syntax JSON     ::= String
+    syntax JSON     ::= String | Int | Bool
                       | JSONKey ":" JSON
                       | "{" JSONList "}"
                       | "[" JSONList "]"
@@ -460,6 +460,18 @@ A cons-list is used for the EVM wordstack.
     rule W in (W' : WS)  => (W ==K W') orElseBool (W in WS)
 ```
 
+-   `#replicateAux` pushes `N` copies of `A` onto a `WordStack`.
+-   `#replicate` is a `WordStack` of length `N` with `A` the value of every element.
+
+```k
+    syntax WordStack ::= #replicate    ( Int, Int )            [function, functional]
+                       | #replicateAux ( Int, Int, WordStack ) [function, functional]
+ // ---------------------------------------------------------------------------------
+    rule #replicate   ( N, A )     => #replicateAux(N, A, .WordStack)
+    rule #replicateAux( N, A, WS ) => #replicateAux(N -Int 1, A, A : WS) requires         N >Int 0
+    rule #replicateAux( N, A, WS ) => WS                                 requires notBool N >Int 0
+```
+
 -   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.
 
 ```k
@@ -568,17 +580,11 @@ The local memory of execution is a byte-array (instead of a word-array).
  // ------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => #sizeWordStack(WS)
 
-    syntax ByteArray ::= #padToWidth         ( Int , ByteArray )             [function]
-                       | #padRightToWidth    ( Int , ByteArray )             [function]
-                       | #padRightToWidthAux ( Int , ByteArray , ByteArray ) [function]
- // -----------------------------------------------------------------------------------
-    rule #padToWidth(N, WS) => WS                     requires notBool #sizeByteArray(WS) <Int N [concrete]
-    rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires         #sizeByteArray(WS) <Int N [concrete]
-
-    rule #padRightToWidth(N, WS) => #padRightToWidthAux(N -Int #sizeByteArray(WS), WS, .WordStack)
-    rule #padRightToWidthAux(0, WS, ZEROS) => WS ++ ZEROS
-    rule #padRightToWidthAux(N, WS, ZEROS) => #padRightToWidthAux(N -Int 1, WS, 0 : ZEROS)
-      requires N >Int 0
+    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function]
+                       | #padRightToWidth ( Int , ByteArray ) [function]
+ // --------------------------------------------------------------------
+    rule #padToWidth(N, WS)      => #replicateAux(N -Int #sizeByteArray(WS), 0, WS) [concrete]
+    rule #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0)  [concrete]
 ```
 
 Addresses
@@ -653,6 +659,22 @@ Addresses
                                                       +String #rlpEncodeBytes(HN, 8),
                                                     192)))
 
+```
+
+- `M3:2048` computes the 2048-bit hash of a log entry in which exactly 3 bits are set. This is used to compute the Bloom filter of a log entry.
+
+```k
+    syntax Int ::= "M3:2048" "(" ByteArray ")" [function]
+ // -----------------------------------------------------
+    rule M3:2048(WS) => setBloomFilterBits(#parseByteStack(Keccak256(#unparseByteStack(WS))))
+
+    syntax Int ::= setBloomFilterBits(ByteArray) [function]
+ // -------------------------------------------------------
+    rule setBloomFilterBits(HASH) => (1 <<Int getBloomFilterBit(HASH, 0)) |Int (1 <<Int getBloomFilterBit(HASH, 2)) |Int (1 <<Int getBloomFilterBit(HASH, 4))
+
+    syntax Int ::= getBloomFilterBit(ByteArray, Int) [function]
+ // -----------------------------------------------------------
+    rule getBloomFilterBit(X, I) => #asInteger(X [ I .. 2 ]) %Int 2048
 ```
 
 Word Map

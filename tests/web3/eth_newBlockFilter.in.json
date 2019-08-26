@@ -1,0 +1,5 @@
+[{"jsonrpc":"2.0", "method":"eth_newBlockFilter", "params":[], "id":1},
+{"jsonrpc":"2.0", "method":"eth_newBlockFilter", "params":[], "id":2},
+{"jsonrpc":"2.0", "method":"eth_uninstallFilter", "params":["0x0"], "id":3},
+{"jsonrpc":"2.0", "method":"eth_uninstallFilter", "params":["0x1"], "id":4},
+{"jsonrpc":"2.0", "method":"eth_uninstallFilter", "params":["0x2"], "id":4}]
