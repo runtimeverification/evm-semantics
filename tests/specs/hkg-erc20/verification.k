@@ -1,13 +1,14 @@
-requires "evm-symbolic.k"
-requires "evm-data-map-concrete.k"
+requires "abstract-semantics-segmented-gas.k"
 requires "edsl.k"
-requires "../lemmas.k"
+requires "evm-data-map-concrete.k"
+requires "evm-symbolic.k"
 
 module VERIFICATION
-    imports EVM-SYMBOLIC
-    imports EVM-DATA-MAP-CONCRETE
+    imports ABSTRACT-SEMANTICS-SEGMENTED-GAS
     imports EDSL
-    imports LEMMAS
+    imports ETHEREUM-SIMULATION
+    imports EVM-DATA-MAP-CONCRETE
+    imports EVM-SYMBOLIC
 
     rule #sizeWordStack ( WS , N:Int )
       => N +Int #sizeWordStack ( WS , 0 )

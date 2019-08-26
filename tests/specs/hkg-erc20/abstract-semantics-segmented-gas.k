@@ -1,8 +1,10 @@
 requires "evm-symbolic.k"
+requires "../lemmas.k"
 
 module ABSTRACT-SEMANTICS-SEGMENTED-GAS
   imports EVM
   imports EVM-SYMBOLIC
+  imports LEMMAS
 
   // to avoid unnecessary case analyses
   rule <k> LT W0 W1 => bool2Word(W0  <Int W1) ~> #push ... </k> [trusted]

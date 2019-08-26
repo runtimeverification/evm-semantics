@@ -1,9 +1,6 @@
-requires "abstract-semantics-segmented-gas.k"
 requires "verification.k"
 
 module APPROVE-SPEC
-  imports ETHEREUM-SIMULATION
-  imports ABSTRACT-SEMANTICS-SEGMENTED-GAS
   imports VERIFICATION
 
   // approve
