@@ -496,17 +496,21 @@ WEB3 JSON RPC
 - `loadTX` Loads the JSON parameter for a transaction and signs it with the "from" account's key.
 
 **TODO**: Make sure nonce is being determined properly
-**TODO**: You're supposed to be able to overwrite a pending tx by using its "from" and "nonce" parameters
+**TODO**: You're supposed to be able to overwrite a pending tx by using its same "from" and "nonce" values
 ```k
     syntax KItem ::= "loadTX" JSON
  // ------------------------------
-    rule <k> loadTX J => signTX !TXID #parseHexWord( #getString ( "from", J ) ) ... </k>
+    rule <k> loadTX J => signTX !TXID (#parseHexWord( #getString ( "from", J ) ) #as ACCTADDR) ... </k>
          <txPending> .List => ListItem( !TXID ) ... </txPending>
+         <account>
+           <acctID> ACCTADDR </acctID>
+           <nonce> ACCTNONCE => ACCTNONCE +Int 1 </nonce>
+           ...
+         </account>
          <messages>
-         ...
            (.Bag => <message>
              <msgID> !TXID:Int </msgID>
-             <txNonce>    #if isString( #getJSON("nonce",    J) ) #then #parseHexWord(#getString("nonce",J))    #else 0          #fi </txNonce>
+             <txNonce>    #if isString( #getJSON("nonce",    J) ) #then #parseHexWord(#getString("nonce",J))    #else ACCTNONCE  #fi </txNonce>
              <to>         #if isString( #getJSON("to",       J) ) #then #parseHexWord(#getString("to",J))       #else 0          #fi </to>
              <txGasLimit> #if isString( #getJSON("gas",      J) ) #then #parseHexWord(#getString("gas",J))      #else 90000      #fi </txGasLimit>
              <txGasPrice> #if isString( #getJSON("gasPrice", J) ) #then #parseHexWord(#getString("gasPrice",J)) #else GASP       #fi </txGasPrice>
