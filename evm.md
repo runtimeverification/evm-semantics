@@ -187,6 +187,10 @@ State Stacks
 ------------
 ### The BlockchainStack
 
+The `blockList` cell stores a list of previous block and network states.
+-   `#pushBlockchainState` saves a copy of the block state and network state on the `blockList`.
+-   `#getBlockchainState(Int)` restores a blockchain state for a given block number.
+
 ```k
     syntax BlockchainItem ::= "{" NetworkCellFragment "|" BlockCell "}"
  // -----------------------------------------------------------
