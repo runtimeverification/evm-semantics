@@ -1,9 +1,6 @@
-requires "abstract-semantics-segmented-gas.k"
 requires "verification.k"
 
 module TRANSFERFROM-FAILURE-1-C-SPEC
-  imports ETHEREUM-SIMULATION
-  imports ABSTRACT-SEMANTICS-SEGMENTED-GAS
   imports VERIFICATION
 
   // transferFrom-failure-1-c
