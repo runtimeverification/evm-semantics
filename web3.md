@@ -365,7 +365,7 @@ module WEB3
     syntax KItem ::= "#personal_importRawKey"
  // -----------------------------------------
     rule <k> #personal_importRawKey => StoreKey( #parseHexWord( PRIKEY ), #addr( #parseHexWord( Keccak256 ( Hex2Binary( ECDSAPubKey( Hex2Binary( PRIKEY ) ) ) ) ) ) ) ... </k>
-         <params> [ PRIKEY, _ ] </params>
+         <params> [ PRIKEY, _ ] </params> // TODO: This takes another parameter with the passphrase for the unencrypted key
 
     syntax KItem ::= StoreKey ( Int, Int )
  // --------------------------------------
