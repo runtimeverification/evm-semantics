@@ -181,6 +181,8 @@ module WEB3
          <method> "eth_getStorageAt" </method>
     rule <k> #runRPCCall => #eth_getCode ... </k>
          <method> "eth_getCode" </method>
+    rule <k> #runRPCCall => #eth_getTransactionCount ... </k>
+         <method> "eth_getTransactionCount" </method>
     rule <k> #runRPCCall => #eth_sign ... </k>
          <method> "eth_sign" </method>
     rule <k> #runRPCCall => #evm_snapshot ... </k>
@@ -272,6 +274,19 @@ module WEB3
          <account>
            <acctID> DATA </acctID>
            <code> CODE </code>
+           ...
+         </account>
+
+    syntax KItem ::= "#eth_getTransactionCount"
+ // -------------------------------------------
+    rule <k> #eth_getTransactionCount ... </k>
+         <params> [ (DATA => #parseHexWord(DATA)), _ ] </params>
+
+    rule <k> #eth_getTransactionCount => #sendResponse( "result" : #unparseQuantity( NONCE ) ) ... </k>
+         <params> [ DATA, TAG, .JSONList ] </params>
+         <account>
+           <acctID> DATA </acctID>
+           <nonce> NONCE </nonce>
            ...
          </account>
 
