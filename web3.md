@@ -385,7 +385,10 @@ module WEB3
     syntax KItem ::= "#personal_importRawKey"
  // -----------------------------------------
     rule <k> #personal_importRawKey => StoreKey( #parseHexWord( PRIKEY ), #addr( #parseHexWord( Keccak256 ( Hex2Binary( ECDSAPubKey( Hex2Binary( PRIKEY ) ) ) ) ) ) ) ... </k>
-         <params> [ PRIKEY, _ ] </params>
+         <params> [ PRIKEY, PASSPHRASE, .JSONList ] </params>
+      requires isString( PRIKEY ) andBool isString( PASSPHRASE ) andBool lengthString( PRIKEY ) ==Int 66
+
+    rule <k> #personal_importRawKey => #sendResponse( "error": {"code": -32000, "message":"Incorrect arguments. Method 'personal_importRawKey' expects DATA of length 32 and DATA of any length" } ) ... </k> [owise]
 
     syntax KItem ::= StoreKey ( Int, Int )
  // --------------------------------------
