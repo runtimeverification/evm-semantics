@@ -196,14 +196,14 @@ The `blockList` cell stores a list of previous block and network states.
  // -------------------------------------------------------------------
 
    syntax InternalOp ::= "#pushBlockchainState"
- // ---------------------------------------
+ // ------------------------------------------
     rule <k> #pushBlockchainState => . ... </k>
          <blockList> (.List => ListItem({ NETWORK | <block> BLOCK </block> })) ... </blockList>
          <network> NETWORK </network>
          <block>   BLOCK   </block>
 
    syntax InternalOp ::= "#getBlockchainState" "(" Int ")"
- // ---------------------------------------
+ // ------------------------------------------------------
     rule <k> #getBlockchainState(BLOCKNUM) => . ... </k>
          <blockList> (
             ListItem(
