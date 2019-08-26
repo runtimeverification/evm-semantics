@@ -860,7 +860,7 @@ String Helper Functions
                     | Binary2Hex ( String ) [function]
  // --------------------------------------------------
     rule Hex2Binary ( S ) => #unparseByteStack( #parseByteStack ( S ) )
-    rule Binary2Hex ( S ) => #unparseDataByteArray( String2Bytes( S ) )
+    rule Binary2Hex ( S ) => #unparseDataByteArray( #parseByteStackRaw ( S ) )
 ```
 
 Recursive Length Prefix (RLP)
