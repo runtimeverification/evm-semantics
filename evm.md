@@ -107,7 +107,6 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <blockhash>         .List         </blockhash>
             </block>
 
-            <blockList> .List </blockList>
           </evm>
 
           // Ethereum Network
@@ -185,35 +184,6 @@ Our semantics is modal, with the initial mode being set on the command line via 
 
 State Stacks
 ------------
-
-### The BlockchainStack
-
-The `blockList` cell stores a list of previous block and network states.
--   `#pushBlockchainState` saves a copy of the block state and network state on the `blockList`.
--   `#getBlockchainState(Int)` restores a blockchain state for a given block number.
-
-```k
-    syntax BlockchainItem ::= "{" NetworkCellFragment "|" BlockCellFragment "}"
- // ---------------------------------------------------------------------------
-
-   syntax InternalOp ::= "#pushBlockchainState"
- // -------------------------------------------
-    rule <k> #pushBlockchainState => . ... </k>
-         <blockList> (.List => ListItem({ NETWORK | BLOCK })) ... </blockList>
-         <network> NETWORK </network>
-         <block>   BLOCK   </block>
-
-   syntax InternalOp ::= "#getBlockchainState" "(" Int ")"
- // ------------------------------------------------------
-    rule <k> #getBlockchainState(BLOCKNUM) => . ... </k>
-         <blockList> (ListItem({ NETWORK | BLOCK })) ... </blockList>
-         <network> _ => NETWORK </network>
-         <block>   _ => BLOCK   </block>
-      requires 
-        (( <block>-fragment _ _ _ _ _ _ _ _ <number> BLOCKNUM </number> _ _ _ _ _ _ </block>-fragment) ==K BLOCK )
-
-    rule <k> #getBlockchainState(BLOCKNUM) => . ... </k> [owise]
-```
 
 ### The CallStack
 
