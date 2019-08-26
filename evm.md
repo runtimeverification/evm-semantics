@@ -193,7 +193,7 @@ The `blockList` cell stores a list of previous block and network states.
 
 ```k
     syntax BlockchainItem ::= "{" NetworkCellFragment "|" BlockCell "}"
- // -----------------------------------------------------------
+ // -------------------------------------------------------------------
 
    syntax InternalOp ::= "#pushBlockchainState"
  // ---------------------------------------
@@ -225,13 +225,13 @@ The `blockList` cell stores a list of previous block and network states.
                   <extraData>        HX       </extraData>        // I_Hx
                   <mixHash>          HM       </mixHash>          // I_Hm
                   <blockNonce>       HN       </blockNonce>       // I_Hn
-  
+
                   <ommerBlockHeaders> OBH </ommerBlockHeaders>
                   <blockhash>         BH  </blockhash>
                 </block>
-             ) 
+             )
                }
-            ) => .List) ... 
+            ) => .List) ...
          </blockList>
          <network> _ => NETWORK </network>
          <block>
@@ -250,7 +250,7 @@ The `blockList` cell stores a list of previous block and network states.
            <extraData>        _ => HX       </extraData>        // I_Hx
            <mixHash>          _ => HM       </mixHash>          // I_Hm
            <blockNonce>       _ => HN       </blockNonce>       // I_Hn
-  
+
            <ommerBlockHeaders> _ => OBH </ommerBlockHeaders>
            <blockhash>         _ => BH  </blockhash>
          </block>
