@@ -447,15 +447,15 @@ WEB3 JSON RPC
 
     syntax String ::= #hashTx ( Int ) [function]
  // --------------------------------------------
-    rule [[ #hashTx( TXID ) => Sha3( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE)
+    rule [[ #hashTx( TXID ) => Keccak256( #rlpEncodeLength(           #rlpEncodeWord( TXNONCE )
                                                          +String #rlpEncodeWord( GPRICE )
                                                          +String #rlpEncodeWord( GLIMIT )
                                                          +String #rlpEncodeWord( ACCTTO )
                                                          +String #rlpEncodeWord( VALUE )
-                                                         +String #rlpEncodeWord( #asWord( DATA ) )
-                                                         +String #rlpEncodeWord( V )
-                                                         +String #rlpEncodeWord( #asWord( R ) )
-                                                         +String #rlpEncodeWord( #asWord( S ) ),
+                                                         +String #rlpEncodeString( #unparseByteStack( DATA ) )
+                                                         +String #rlpEncodeWord( V +Int 27 )
+                                                         +String #rlpEncodeString( #unparseByteStack( R ) )
+                                                         +String #rlpEncodeString( #unparseByteStack( S ) ),
                                                         192 ) ) ]]
          <message>
            <msgID> TXID </msgID>
@@ -493,13 +493,13 @@ WEB3 JSON RPC
     syntax KItem ::= "signTX" Int Int
                    | "signTX" Int String  [klabel(signTXAux)]
  // ---------------------------------------------------------
-    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( #unparseByteStack( #parseHexBytes( Sha256 ( #rlpEncodeLength( #rlpEncodeWord( TXNONCE )
-                                                                                   +String #rlpEncodeWord( GPRICE )
-                                                                                   +String #rlpEncodeWord( GLIMIT )
-                                                                                   +String #rlpEncodeWord( ACCTTO )
-                                                                                   +String #rlpEncodeWord( VALUE )
-                                                                                   +String #rlpEncodeWord( #asWord( DATA ) ),
-                                                                                     192 ) ) ) ), #unparseByteStack( #padToWidth( 32, #asByteStack( KEY ) ) ) ) ... </k>
+    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( Hex2Binary( Keccak256 ( #rlpEncodeLength(        #rlpEncodeWord( TXNONCE )
+                                                                                                         +String #rlpEncodeWord( GPRICE )
+                                                                                                         +String #rlpEncodeWord( GLIMIT )
+                                                                                                         +String #rlpEncodeWord( ACCTTO )
+                                                                                                         +String #rlpEncodeWord( VALUE )
+                                                                                                         +String #rlpEncodeString( #unparseByteStack( DATA ) ),
+                                                                                                         192 ) ) ), #unparseByteStack( #padToWidth( 32, #asByteStack( KEY ) ) ) ) ... </k>
          <accountKeys> ... ACCTFROM |-> KEY ... </accountKeys>
          <message>
            <msgID>      TXID    </msgID>
