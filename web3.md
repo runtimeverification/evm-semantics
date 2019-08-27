@@ -384,16 +384,26 @@ module WEB3
 ```k
     syntax KItem ::= "#personal_importRawKey"
  // -----------------------------------------
-    rule <k> #personal_importRawKey => StoreKey( #parseHexWord( PRIKEY ), #addr( #parseHexWord( Keccak256 ( Hex2Binary( ECDSAPubKey( Hex2Binary( PRIKEY ) ) ) ) ) ) ) ... </k>
-         <params> [ PRIKEY, PASSPHRASE, .JSONList ] </params>
-      requires isString( PRIKEY ) andBool isString( PASSPHRASE ) andBool lengthString( PRIKEY ) ==Int 66
+    rule <k> #personal_importRawKey => #acctFromPrivateKey PRIKEY ~> #sendResponse( "result": #unparseData( #addrFromPrivateKey( PRIKEY ), 20 ) ) ... </k>
+         <params> [ PRIKEY:String, PASSPHRASE:String, "check1", "check2", .JSONList ] </params>
 
-    rule <k> #personal_importRawKey => #sendResponse( "error": {"code": -32000, "message":"Incorrect arguments. Method 'personal_importRawKey' expects DATA of length 32 and DATA of any length" } ) ... </k> [owise]
+    rule <k> #personal_importRawKey ... </k>
+         <params> [ PRIKEY:String, _, (.JSONList => "check1", .JSONList) ] </params>
+      requires lengthString( PRIKEY ) ==Int 66
 
-    syntax KItem ::= StoreKey ( Int, Int )
- // --------------------------------------
-    rule <k> StoreKey ( PRIKEY, ACCTADDR ) => #newAccount ACCTADDR ~> #sendResponse ( "result": #unparseData( ACCTADDR, 20 ) ) ... </k>
-         <accountKeys> M => M[ACCTADDR <- PRIKEY] </accountKeys>
+    rule <k> #personal_importRawKey => #sendResponse( "error": {"code": -32000, "message":"Private key length is invalid. Must be 32 bytes."} ) ... </k>
+         <params> [ PRIKEY:String, _ ] </params>
+      requires lengthString( PRIKEY ) =/=Int 66
+
+    rule <k> #personal_importRawKey ... </k>
+         <params> [ _:String, _:String, "check1", (.JSONList => "check2", .JSONList) ] </params>
+
+    rule <k> #personal_importRawKey => #sendResponse( "error": {"code": -32000, "message":"Method 'personal_importRawKey' requires exactly 2 parameters"} ) ... </k> [owise]
+
+    syntax KItem ::= "#acctFromPrivateKey" String
+ // ---------------------------------------------
+    rule <k> #acctFromPrivateKey KEY => #newAccount #addrFromPrivateKey(KEY) ... </k>
+         <accountKeys> M => M[#addrFromPrivateKey(KEY) <- #parseHexWord(KEY)] </accountKeys>
 
 endmodule
 ```
