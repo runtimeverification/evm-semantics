@@ -359,7 +359,7 @@ State Manipulation
          <mixHash>           _ => 0             </mixHash>
          <blockNonce>        _ => 0             </blockNonce>
          <ommerBlockHeaders> _ => [ .JSONList ] </ommerBlockHeaders>
-         <blockhash>         _ => .List         </blockhash>
+         <blockhashes>       _ => .List         </blockhashes>
 
     syntax EthereumCommand ::= "clearNETWORK"
  // -----------------------------------------
@@ -521,7 +521,7 @@ The `"rlp"` key loads the block information.
          <ommerBlockHeaders> _ => BU                              </ommerBlockHeaders>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONList ], _, _, .JSONList ] => .K ... </k>
-         <blockhash> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhash>
+         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhashes>
 
     syntax EthereumCommand ::= "mkTX" Int
  // -------------------------------------
@@ -745,7 +745,7 @@ Here we check the other post-conditions associated with an EVM test.
 
     rule <k> check "genesisBlockHeader" : { "hash": (HASH:String => #asWord(#parseByteStack(HASH))) } ... </k>
     rule <k> check "genesisBlockHeader" : { "hash": HASH } => . ... </k>
-         <blockhash> ... ListItem(HASH) ListItem(_) </blockhash>
+         <blockhashes> ... ListItem(HASH) ListItem(_) </blockhashes>
 
     rule <k> check TESTID : { "transactions" : TRANSACTIONS } => check "transactions" : TRANSACTIONS ~> failure TESTID ... </k>
  // ---------------------------------------------------------------------------------------------------------------------------
