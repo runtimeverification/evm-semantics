@@ -365,16 +365,19 @@ release.md: INSTALL.md
 # Tests
 # -----
 
-TEST_CONCRETE_BACKEND:=llvm
-TEST_SYMBOLIC_BACKEND:=java
-TEST:=./kevm
-KPROVE_MODULE:=VERIFICATION
-CHECK:=git --no-pager diff --no-index --ignore-all-space
+TEST_CONCRETE_BACKEND := llvm
+TEST_SYMBOLIC_BACKEND := java
 
-KEVM_MODE:=NORMAL
-KEVM_SCHEDULE:=PETERSBURG
+TEST  := ./kevm
+CHECK := git --no-pager diff --no-index --ignore-all-space
 
-KEVM_WEB3_ARGS:=--shutdownable
+KEVM_MODE     := NORMAL
+KEVM_SCHEDULE := PETERSBURG
+
+KEVM_WEB3_ARGS := --shutdownable
+
+KPROVE_MODULE  := VERIFICATION
+KPROVE_OPTIONS :=
 
 test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
@@ -421,7 +424,7 @@ tests/specs/functional/%.prove: TEST_SYMBOLIC_BACKEND=haskell
 tests/specs/functional/storageRoot-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
 
 tests/%.prove: tests/%
-	$(TEST) prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE)
+	$(TEST) prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE) $(KPROVE_OPTIONS)
 
 tests/%.search: tests/%
 	$(TEST) search --backend $(TEST_SYMBOLIC_BACKEND) $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" > $@-out
@@ -429,7 +432,7 @@ tests/%.search: tests/%
 	rm -rf $@-out
 
 tests/%.klab-prove: tests/%
-	$(TEST) klab-prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE)
+	$(TEST) klab-prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE) $(KPROVE_OPTIONS)
 
 # Smoke Tests
 
