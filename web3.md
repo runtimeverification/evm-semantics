@@ -294,7 +294,7 @@ WEB3 JSON RPC
     syntax KItem ::= "#eth_getBalance"
  // ----------------------------------
     rule <k> #eth_getBalance ... </k>
-         <params> [ (DATA => #parseHexWord(DATA)), _ ] </params>
+         <params> [ (DATA => #parseHexWord(DATA)), _, .JSONList ] </params>
 
     rule <k> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( ACCTBALANCE ) ) ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
@@ -303,6 +303,26 @@ WEB3 JSON RPC
            <balance> ACCTBALANCE </balance>
            ...
          </account>
+      requires TAG ==String "latest"
+
+    rule <k> #eth_getBalance => #getBlockchainState(0) ~> #sendResponse( "result" : #unparseQuantity( ACCTBALANCE ) ) ~> #getBlockchainState(BLOCKNUM) ... </k>
+         <params> [ DATA, TAG, .JSONList ] </params>
+         <account>
+           <acctID> DATA </acctID>
+           <balance> ACCTBALANCE </balance>
+           ...
+         </account>
+         <number> BLOCKNUM </number>
+      requires TAG ==String "earliest"
+
+    rule <k> #eth_getBalance => #getBlockchainState(#parseHexWord(TAG)) ~> #sendResponse( "result" : #unparseQuantity( ACCTBALANCE ) ) ~> #getBlockchainState(BLOCKNUM) ... </k>
+         <params> [ DATA, TAG, .JSONList ] </params>
+         <account>
+           <acctID> DATA </acctID>
+           <balance> ACCTBALANCE </balance>
+           ...
+         </account>
+         <number> BLOCKNUM </number>
 
     syntax KItem ::= "#eth_getStorageAt"
  // ------------------------------------
