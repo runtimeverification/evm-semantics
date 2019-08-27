@@ -299,7 +299,7 @@ WEB3 JSON RPC
     rule <k> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( ACCTBALANCE ) ) ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
          <account>
-           <acctID> DATA </acctID>
+           <acctID>  DATA </acctID>
            <balance> ACCTBALANCE </balance>
            ...
          </account>
@@ -308,7 +308,7 @@ WEB3 JSON RPC
     rule <k> #eth_getBalance => #getBlockchainState(0) ~> #sendResponse( "result" : #unparseQuantity( ACCTBALANCE ) ) ~> #getBlockchainState(BLOCKNUM) ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
          <account>
-           <acctID> DATA </acctID>
+           <acctID>  DATA        </acctID>
            <balance> ACCTBALANCE </balance>
            ...
          </account>
@@ -318,7 +318,7 @@ WEB3 JSON RPC
     rule <k> #eth_getBalance => #getBlockchainState(#parseHexWord(TAG)) ~> #sendResponse( "result" : #unparseQuantity( ACCTBALANCE ) ) ~> #getBlockchainState(BLOCKNUM) ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
          <account>
-           <acctID> DATA </acctID>
+           <acctID>  DATA        </acctID>
            <balance> ACCTBALANCE </balance>
            ...
          </account>
@@ -327,15 +327,35 @@ WEB3 JSON RPC
     syntax KItem ::= "#eth_getStorageAt"
  // ------------------------------------
     rule <k> #eth_getStorageAt ... </k>
-         <params> [ (DATA => #parseHexWord(DATA)), QUANTITY:Int, _ ] </params>
+         <params> [ (DATA => #parseHexWord(DATA)), QUANTITY:Int, _, .JSONList ] </params>
 
     rule <k> #eth_getStorageAt => #sendResponse( "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY) ) ) ... </k>
          <params> [ DATA, QUANTITY, TAG, .JSONList ] </params>
          <account>
-           <acctID> DATA </acctID>
+           <acctID>  DATA    </acctID>
            <storage> STORAGE </storage>
            ...
          </account>
+      requires TAG ==String "latest"
+
+    rule <k> #eth_getStorageAt => #getBlockchainState(0) ~> #sendResponse( "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY) ) ) ~> #getBlockchainState(BLOCKNUM) ... </k>
+         <params> [ DATA, QUANTITY, TAG, .JSONList ] </params>
+         <account>
+           <acctID>  DATA    </acctID>
+           <storage> STORAGE </storage>
+           ...
+         </account>
+         <number> BLOCKNUM </number>
+      requires TAG ==String "earliest"
+
+    rule <k> #eth_getStorageAt => #getBlockchainState(#parseHexWord(TAG)) ~> #sendResponse( "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY) ) ) ~> #getBlockchainState(BLOCKNUM) ... </k>
+         <params> [ DATA, QUANTITY, TAG, .JSONList ] </params>
+         <account>
+           <acctID>  DATA    </acctID>
+           <storage> STORAGE </storage>
+           ...
+         </account>
+         <number> BLOCKNUM </number>
 
     syntax KItem ::= "#eth_getCode"
  // -------------------------------
