@@ -14,6 +14,7 @@ module WEB3
         <kevm/>
         <blockchain>
           <chainID> $CHAINID:Int </chainID>
+          <blockList> .List </blockList>
         </blockchain>
         <accountKeys> .Map </accountKeys>
         <nextFilterSlot> 0 </nextFilterSlot>
@@ -39,7 +40,55 @@ module WEB3
         </web3request>
         <web3response> .List </web3response>
       </kevm-client>
+```
 
+The Blockchain State
+--------------------
+
+A `BlockchainItem` contains the information of a block and its network state.
+The `blockList` cell stores a list of previous blocks and network states.
+-   `#pushBlockchainState` saves a copy of the block state and network state as a `BlockchainItem` in the `blockList` cell.
+-   `#getBlockchainState(Int)` restores a blockchain state for a given block number.
+-   `#setBlockchainState(BlockchainItem)` helper rule for `#getBlockchainState(Int)`.
+-   `#getBlockByNumber(Int)` retrieves a specific `BlockchainItem` from the `blockList` cell.
+
+```k
+    syntax BlockchainItem ::= ".BlockchainItem"
+                            | "{" NetworkCell "|" BlockCell "}"
+ // -----------------------------------------------------------
+
+    syntax KItem ::= "#pushBlockchainState"
+ // ---------------------------------------
+    rule <k> #pushBlockchainState => . ... </k>
+         <blockList> (.List => ListItem({ <network> NETWORK </network> | <block> BLOCK </block> })) ... </blockList>
+         <network> NETWORK </network>
+         <block>   BLOCK   </block>
+
+    syntax KItem ::= #getBlockchainState ( Int )
+ // --------------------------------------------
+    rule <k> #getBlockchainState(BLOCKNUM) => #setBlockchainState(#getBlockByNumber(BLOCKNUM, BLOCKLIST)) ... </k>
+         <blockList> BLOCKLIST </blockList>
+
+    syntax KItem ::= #setBlockchainState ( BlockchainItem )
+ // -------------------------------------------------------
+    rule <k> #setBlockchainState({ <network> NETWORK </network> | <block> BLOCK </block> }) => . ... </k>
+         <network> _ => NETWORK </network>
+         <block>   _ => BLOCK   </block>
+
+    rule <k> #setBlockchainState(.BlockchainItem) => #sendResponse("error": {"code": -37600, "message": "Unable to find block by number"}) ... </k>
+
+    syntax BlockchainItem ::= #getBlockByNumber ( Int , List ) [function]
+ // ---------------------------------------------------------------------
+    rule #getBlockByNumber(BLOCKNUM,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCKCHAINITEM) REST ) => BLOCKCHAINITEM
+    rule #getBlockByNumber(BLOCKNUM', ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }                   ) REST ) => #getBlockByNumber(BLOCKNUM', REST)
+      requires BLOCKNUM =/=Int BLOCKNUM'
+    rule #getBlockByNumber(_, .List) => .BlockchainItem
+```
+
+WEB3 JSON RPC
+-------------
+
+```k
     syntax JSON ::= "null" | "undef"
  // --------------------------------
 
@@ -181,6 +230,8 @@ module WEB3
          <method> "eth_getStorageAt" </method>
     rule <k> #runRPCCall => #eth_getCode ... </k>
          <method> "eth_getCode" </method>
+    rule <k> #runRPCCall => #eth_getTransactionCount ... </k>
+         <method> "eth_getTransactionCount" </method>
     rule <k> #runRPCCall => #eth_sign ... </k>
          <method> "eth_sign" </method>
     rule <k> #runRPCCall => #evm_snapshot ... </k>
@@ -272,6 +323,19 @@ module WEB3
          <account>
            <acctID> DATA </acctID>
            <code> CODE </code>
+           ...
+         </account>
+
+    syntax KItem ::= "#eth_getTransactionCount"
+ // -------------------------------------------
+    rule <k> #eth_getTransactionCount ... </k>
+         <params> [ (DATA => #parseHexWord(DATA)), _ ] </params>
+
+    rule <k> #eth_getTransactionCount => #sendResponse( "result" : #unparseQuantity( NONCE ) ) ... </k>
+         <params> [ DATA, TAG, .JSONList ] </params>
+         <account>
+           <acctID> DATA </acctID>
+           <nonce> NONCE </nonce>
            ...
          </account>
 
