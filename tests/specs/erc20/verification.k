@@ -6,7 +6,6 @@ requires "evm-symbolic.k"
 module VERIFICATION
     imports ABSTRACT-SEMANTICS-SEGMENTED-GAS
     imports EDSL
-    imports ETHEREUM-SIMULATION
     imports EVM-DATA-MAP-CONCRETE
     imports EVM-SYMBOLIC
 
