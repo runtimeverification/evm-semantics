@@ -436,7 +436,7 @@ smoke_tests_run=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
                 tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json \
                 tests/interactive/sumTo10.evm
 
-smoke_tests_prove=tests/specs/ds-token-erc20/transfer-failure-1-a-spec.k
+smoke_tests_prove=tests/specs/erc20/ds/transfer-failure-1-a-spec.k
 
 # Conformance Tests
 
@@ -474,8 +474,9 @@ test-web3: $(web3_tests:.in.json=.run-web3)
 
 # Proof Tests
 
-prove_specs_dir:=tests/specs
-prove_tests=$(wildcard $(prove_specs_dir)/*/*-spec.k)
+prove_specs_dir := tests/specs
+prove_tests     := $(wildcard $(prove_specs_dir)/*/*-spec.k) \
+                   $(wildcard $(prove_specs_dir)/*/*/*-spec.k)
 
 test-prove: $(prove_tests:=.prove)
 test-klab-prove: $(smoke_tests_prove:=.klab-prove)
