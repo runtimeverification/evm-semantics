@@ -86,24 +86,26 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <origin>   0 </origin>                            // I_o
 
             // I_H* (block information)
-            <previousHash>     0          </previousHash>     // I_Hp
-            <ommersHash>       0          </ommersHash>       // I_Ho
-            <coinbase>         0          </coinbase>         // I_Hc
-            <stateRoot>        0          </stateRoot>        // I_Hr
-            <transactionsRoot> 0          </transactionsRoot> // I_Ht
-            <receiptsRoot>     0          </receiptsRoot>     // I_He
-            <logsBloom>        .ByteArray </logsBloom>        // I_Hb
-            <difficulty>       0          </difficulty>       // I_Hd
-            <number>           0          </number>           // I_Hi
-            <gasLimit>         0          </gasLimit>         // I_Hl
-            <gasUsed>          0          </gasUsed>          // I_Hg
-            <timestamp>        0          </timestamp>        // I_Hs
-            <extraData>        .ByteArray </extraData>        // I_Hx
-            <mixHash>          0          </mixHash>          // I_Hm
-            <blockNonce>       0          </blockNonce>       // I_Hn
+            <blockhashes> .List </blockhashes>
+            <block>
+              <previousHash>     0          </previousHash>     // I_Hp
+              <ommersHash>       0          </ommersHash>       // I_Ho
+              <coinbase>         0          </coinbase>         // I_Hc
+              <stateRoot>        0          </stateRoot>        // I_Hr
+              <transactionsRoot> 0          </transactionsRoot> // I_Ht
+              <receiptsRoot>     0          </receiptsRoot>     // I_He
+              <logsBloom>        .ByteArray </logsBloom>        // I_Hb
+              <difficulty>       0          </difficulty>       // I_Hd
+              <number>           0          </number>           // I_Hi
+              <gasLimit>         0          </gasLimit>         // I_Hl
+              <gasUsed>          0          </gasUsed>          // I_Hg
+              <timestamp>        0          </timestamp>        // I_Hs
+              <extraData>        .ByteArray </extraData>        // I_Hx
+              <mixHash>          0          </mixHash>          // I_Hm
+              <blockNonce>       0          </blockNonce>       // I_Hn
 
-            <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
-            <blockhash>         .List         </blockhash>
+              <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
+            </block>
 
           </evm>
 
@@ -1037,8 +1039,8 @@ Otherwise, it is calculated here using the "shortcut" formula used for running t
 
 ```{.k .standalone}
     rule <k> BLOCKHASH N => #blockhash(HASHES, N, HI -Int 1, 0) ~> #push ... </k>
-         <number>    HI     </number>
-         <blockhash> HASHES </blockhash>
+         <number>      HI     </number>
+         <blockhashes> HASHES </blockhashes>
 
     syntax Int ::= #blockhash ( List , Int , Int , Int ) [function]
  // ---------------------------------------------------------------

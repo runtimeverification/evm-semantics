@@ -153,141 +153,68 @@
   {
     _8
   #Equals
-    <previousHash>
-      0
-    </previousHash>
+    <blockhashes>
+      .List
+    </blockhashes>
   }
 #And
   {
     _9
   #Equals
-    <ommersHash>
-      0
-    </ommersHash>
+    <block>
+      <previousHash>
+        0
+      </previousHash>
+      <ommersHash>
+        0
+      </ommersHash>
+      <coinbase>
+        0
+      </coinbase>
+      <stateRoot>
+        0
+      </stateRoot>
+      <transactionsRoot>
+        0
+      </transactionsRoot>
+      <receiptsRoot>
+        0
+      </receiptsRoot>
+      <logsBloom>
+        .WordStack
+      </logsBloom>
+      <difficulty>
+        0
+      </difficulty>
+      <number>
+        0
+      </number>
+      <gasLimit>
+        0
+      </gasLimit>
+      <gasUsed>
+        0
+      </gasUsed>
+      <timestamp>
+        0
+      </timestamp>
+      <extraData>
+        .WordStack
+      </extraData>
+      <mixHash>
+        0
+      </mixHash>
+      <blockNonce>
+        0
+      </blockNonce>
+      <ommerBlockHeaders>
+        [ .JSONList ]
+      </ommerBlockHeaders>
+    </block>
   }
 #And
   {
     _10
-  #Equals
-    <coinbase>
-      0
-    </coinbase>
-  }
-#And
-  {
-    _11
-  #Equals
-    <stateRoot>
-      0
-    </stateRoot>
-  }
-#And
-  {
-    _12
-  #Equals
-    <transactionsRoot>
-      0
-    </transactionsRoot>
-  }
-#And
-  {
-    _13
-  #Equals
-    <receiptsRoot>
-      0
-    </receiptsRoot>
-  }
-#And
-  {
-    _14
-  #Equals
-    <logsBloom>
-      .WordStack
-    </logsBloom>
-  }
-#And
-  {
-    _15
-  #Equals
-    <difficulty>
-      0
-    </difficulty>
-  }
-#And
-  {
-    _16
-  #Equals
-    <number>
-      0
-    </number>
-  }
-#And
-  {
-    _17
-  #Equals
-    <gasLimit>
-      0
-    </gasLimit>
-  }
-#And
-  {
-    _18
-  #Equals
-    <gasUsed>
-      0
-    </gasUsed>
-  }
-#And
-  {
-    _19
-  #Equals
-    <timestamp>
-      0
-    </timestamp>
-  }
-#And
-  {
-    _20
-  #Equals
-    <extraData>
-      .WordStack
-    </extraData>
-  }
-#And
-  {
-    _21
-  #Equals
-    <mixHash>
-      0
-    </mixHash>
-  }
-#And
-  {
-    _22
-  #Equals
-    <blockNonce>
-      0
-    </blockNonce>
-  }
-#And
-  {
-    _23
-  #Equals
-    <ommerBlockHeaders>
-      [ .JSONList ]
-    </ommerBlockHeaders>
-  }
-#And
-  {
-    _24
-  #Equals
-    <blockhash>
-      .List
-    </blockhash>
-  }
-#And
-  {
-    _25
   #Equals
     <k>
       #halt ~> .EthereumSimulation
@@ -295,7 +222,7 @@
   }
 #And
   {
-    _26
+    _11
   #Equals
     <exit-code>
       1
@@ -303,7 +230,7 @@
   }
 #And
   {
-    _27
+    _12
   #Equals
     <mode>
       NORMAL
@@ -311,7 +238,7 @@
   }
 #And
   {
-    _28
+    _13
   #Equals
     <schedule>
       BYZANTIUM
