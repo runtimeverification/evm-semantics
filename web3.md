@@ -398,9 +398,6 @@ WEB3 JSON RPC
  // ----------------------------------------------------
     rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
 
-    syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "}"
- // ---------------------------------------------------------------------------
-
     syntax KItem ::= "#evm_snapshot"
  // --------------------------------
     rule <k> #evm_snapshot => #pushNetworkState ~> #sendResponse( "result" : #unparseQuantity( size ( SNAPSHOTS ) ) ) ... </k>
@@ -409,19 +406,17 @@ WEB3 JSON RPC
     syntax KItem ::= "#pushNetworkState"
  // ------------------------------------
     rule <k> #pushNetworkState => . ... </k>
-         <snapshots> ... (.List => ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> })) </snapshots>
+         <snapshots> ... (.List => ListItem({ <network> NETWORK </network> | <block> BLOCK </block> })) </snapshots>
          <network>   NETWORK   </network>
          <block>     BLOCK     </block>
-         <blockList> BLOCKLIST </blockList>
 
     syntax KItem ::= "#evm_revert"
  // ------------------------------
     rule <k> #evm_revert => #sendResponse( "result" : true ) ... </k>
          <params> [ .JSONList ] </params>
-         <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> }) => .List ) </snapshots>
+         <snapshots> ... ( ListItem({ <network> NETWORK </network> | <block> BLOCK </block> }) => .List ) </snapshots>
          <network>   ( _ => NETWORK )   </network>
          <block>     ( _ => BLOCK )     </block>
-         <blockList> ( _ => BLOCKLIST ) </blockList>
 
     rule <k> #evm_revert ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), .JSONList ] </params>
