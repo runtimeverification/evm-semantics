@@ -2,5 +2,5 @@
   "jsonrpc": "2.0",
   "id": 1,
   "method": "personal_importRawKey",
-  "params": ["0xdeadbeef"]
+  "params": ["0xdeadbeef", "asdf"]
 }

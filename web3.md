@@ -385,18 +385,12 @@ module WEB3
     syntax KItem ::= "#personal_importRawKey"
  // -----------------------------------------
     rule <k> #personal_importRawKey => #acctFromPrivateKey PRIKEY ~> #sendResponse( "result": #unparseData( #addrFromPrivateKey( PRIKEY ), 20 ) ) ... </k>
-         <params> [ PRIKEY:String, PASSPHRASE:String, "check1", "check2", .JSONList ] </params>
-
-    rule <k> #personal_importRawKey ... </k>
-         <params> [ PRIKEY:String, _, (.JSONList => "check1", .JSONList) ] </params>
+         <params> [ PRIKEY:String, PASSPHRASE:String, .JSONList ] </params>
       requires lengthString( PRIKEY ) ==Int 66
 
     rule <k> #personal_importRawKey => #sendResponse( "error": {"code": -32000, "message":"Private key length is invalid. Must be 32 bytes."} ) ... </k>
-         <params> [ PRIKEY:String, _ ] </params>
+         <params> [ PRIKEY:String, _:String, .JSONList ] </params>
       requires lengthString( PRIKEY ) =/=Int 66
-
-    rule <k> #personal_importRawKey ... </k>
-         <params> [ _:String, _:String, "check1", (.JSONList => "check2", .JSONList) ] </params>
 
     rule <k> #personal_importRawKey => #sendResponse( "error": {"code": -32000, "message":"Method 'personal_importRawKey' requires exactly 2 parameters"} ) ... </k> [owise]
 
