@@ -600,6 +600,7 @@ Addresses
 
 -   `#newAddr` computes the address of a new account given the address and nonce of the creating account.
 -   `#sender` computes the sender of the transaction from its data and signature.
+-   `#addrFromPrivateKey` computes the address of an account given its private key
 
 ```k
     syntax Int ::= #newAddr ( Int , Int ) [function]
@@ -620,6 +621,11 @@ Addresses
 
     rule #sender("")  => .Account
     rule #sender(STR) => #addr(#parseHexWord(Keccak256(STR))) requires STR =/=String ""
+
+    syntax Int ::= #addrFromPrivateKey ( String ) [function]
+ // --------------------------------------------------------
+    rule #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256 ( Hex2Raw( ECDSAPubKey( Hex2Raw( KEY ) ) ) ) ) )
+
 ```
 
 -   `#blockHeaderHash` computes the hash of a block header given all the block data.
@@ -850,6 +856,20 @@ We need to interperet a `ByteArray` as a `String` again so that we can call `Kec
     rule #unparseData( DATA, LENGTH ) => #unparseDataByteArray(#padToWidth(LENGTH,#asByteStack(DATA)))
 
     rule #unparseDataByteArray( DATA ) => replaceFirst(Base2String(#asInteger(#asByteStack(1) ++ DATA), 16), "1", "0x")
+```
+
+String Helper Functions
+-----------------------
+
+- `Hex2Raw` Takes a string of hex encoded bytes and converts it to a raw bytestring
+- `Raw2Hex` Takes a string of raw bytes and converts it to a hex representation
+
+```k
+    syntax String ::= Hex2Raw ( String ) [function]
+                    | Raw2Hex ( String ) [function]
+ // -----------------------------------------------
+    rule Hex2Raw ( S ) => #unparseByteStack( #parseByteStack ( S ) )
+    rule Raw2Hex ( S ) => #unparseDataByteArray( #parseByteStackRaw ( S ) )
 ```
 
 Recursive Length Prefix (RLP)

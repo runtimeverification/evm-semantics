@@ -244,6 +244,8 @@ WEB3 JSON RPC
          <method> "eth_newBlockFilter" </method>
     rule <k> #runRPCCall => #eth_uninstallFilter ... </k>
          <method> "eth_uninstallFilter" </method>
+    rule <k> #runRPCCall => #personal_importRawKey ... </k>
+         <method> "personal_importRawKey" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -423,6 +425,28 @@ WEB3 JSON RPC
          </filters>
 
     rule <k> #eth_uninstallFilter => #sendResponse ( "result": false ) ... </k> [owise]
+```
+
+- `#personal_importRawKey` Takes an unencrypted private key, encrypts it with a passphrase, stores it and returns the address of the key.
+
+**TODO**: Currently nothing is done with the passphrase
+```k
+    syntax KItem ::= "#personal_importRawKey"
+ // -----------------------------------------
+    rule <k> #personal_importRawKey => #acctFromPrivateKey PRIKEY ~> #sendResponse( "result": #unparseData( #addrFromPrivateKey( PRIKEY ), 20 ) ) ... </k>
+         <params> [ PRIKEY:String, PASSPHRASE:String, .JSONList ] </params>
+      requires lengthString( PRIKEY ) ==Int 66
+
+    rule <k> #personal_importRawKey => #sendResponse( "error": {"code": -32000, "message":"Private key length is invalid. Must be 32 bytes."} ) ... </k>
+         <params> [ PRIKEY:String, _:String, .JSONList ] </params>
+      requires lengthString( PRIKEY ) =/=Int 66
+
+    rule <k> #personal_importRawKey => #sendResponse( "error": {"code": -32000, "message":"Method 'personal_importRawKey' requires exactly 2 parameters"} ) ... </k> [owise]
+
+    syntax KItem ::= "#acctFromPrivateKey" String
+ // ---------------------------------------------
+    rule <k> #acctFromPrivateKey KEY => #newAccount #addrFromPrivateKey(KEY) ... </k>
+         <accountKeys> M => M[#addrFromPrivateKey(KEY) <- #parseHexWord(KEY)] </accountKeys>
 
 endmodule
 ```

@@ -15,6 +15,7 @@ module KRYPTO
 -   `RipEmd160` takes a String and returns a 40-character hex-encoded string of the 20-byte RIPEMD160 hash of the string.
 -   `ECDSARecover` takes a 32-character byte string of a message, v, r, s of the signed message and returns the 64-character public key used to sign the message.
 -   `ECDSASign` takes a 32-character byte string of a message hash, a 32-character byte string of a private key, and returns the 65 byte hex-encoded signature in [r,s,v] form
+-   `ECDSAPubKey` takes a 32-character byte string of a private key, and returns the 64 byte hex-encoded public key
     See [this StackOverflow post](https://ethereum.stackexchange.com/questions/15766/what-does-v-r-s-in-eth-gettransactionbyhash-mean) for some information about v, r, and s.
 
 In all functions above, input `String` is interpreted as byte array, e.g. it is NOT hex-encoded.
@@ -25,7 +26,8 @@ In all functions above, input `String` is interpreted as byte array, e.g. it is 
                     | Sha256 ( String )                               [function, hook(KRYPTO.sha256)]
                     | RipEmd160 ( String )                            [function, hook(KRYPTO.ripemd160)]
                     | ECDSASign ( String, String )                    [function, hook(KRYPTO.ecdsaSign)]
- // ----------------------------------------------------------------------------------------------------
+                    | ECDSAPubKey ( String )                          [function, hook(KRYPTO.ecdsaPubKey)]
+ // ------------------------------------------------------------------------------------------------------
 ```
 
 The BN128 elliptic curve is defined over 2-dimensional points over the fields of zero- and first-degree polynomials modulo a large prime. (x, y) is a point on G1, whereas (x1 x x2, y1 x y2) is a point on G2, in which x1 and y1 are zero-degree coefficients and x2 and y2 are first-degree coefficients. In each case, (0, 0) is used to represent the point at infinity.
