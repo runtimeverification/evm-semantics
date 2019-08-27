@@ -1,4 +1,4 @@
-requires "verification.k"
+requires "../verification.k"
 
 module APPROVE-SUCCESS-SPEC
   imports VERIFICATION

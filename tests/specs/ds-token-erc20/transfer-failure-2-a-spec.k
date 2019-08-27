@@ -1,4 +1,4 @@
-requires "verification.k"
+requires "../verification.k"
 
 module TRANSFER-FAILURE-2-A-SPEC
   imports VERIFICATION
