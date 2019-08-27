@@ -45,7 +45,8 @@ export LUA_PATH
         test test-all test-conformance test-rest-conformance test-all-conformance                                                           \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                       \
         test-web3                                                                                                                           \
-        test-prove test-klab-prove test-parse test-failure                                                                                  \
+        test-prove test-prove-benchmarks test-prove-functional test-prove-erc20 test-prove-bihu test-prove-examples test-klab-prove         \
+        test-parse test-failure                                                                                                             \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly \
         media media-pdf sphinx metropolis-theme
 .SECONDARY:
@@ -474,11 +475,20 @@ test-web3: $(web3_tests:.in.json=.run-web3)
 
 # Proof Tests
 
-prove_specs_dir := tests/specs
-prove_tests     := $(wildcard $(prove_specs_dir)/*/*-spec.k) \
-                   $(wildcard $(prove_specs_dir)/*/*/*-spec.k)
+prove_specs_dir        := tests/specs
+prove_benchmarks_tests := $(wildcard $(prove_specs_dir)/benchmarks/*-spec.k)
+prove_functional_tests := $(wildcard $(prove_specs_dir)/functional/*-spec.k)
+prove_erc20_tests      := $(wildcard $(prove_specs_dir)/erc20/*/*-spec.k)
+prove_bihu_tests       := $(wildcard $(prove_specs_dir)/bihu/*-spec.k)
+prove_examples_tests   := $(wildcard $(prove_specs_dir)/examples/*-spec.k)
 
-test-prove: $(prove_tests:=.prove)
+test-prove: test-prove-benchmarks test-prove-functional test-prove-erc20 test-prove-bihu test-prove-examples
+test-prove-benchmarks: $(prove_benchmarks_tests:=.prove)
+test-prove-functional: $(prove_functional_tests:=.prove)
+test-prove-erc20:      $(prove_erc20_tests:=.prove)
+test-prove-bihu:       $(prove_bihu_tests:=.prove)
+test-prove-examples:   $(prove_examples_tests:=.prove)
+
 test-klab-prove: $(smoke_tests_prove:=.klab-prove)
 
 # Parse Tests
