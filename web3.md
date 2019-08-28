@@ -431,19 +431,21 @@ WEB3 JSON RPC
 
 # eth_sendTransaction
 
+**TODO**: Handle contract creation
 ```k
     syntax KItem ::= "#eth_sendTransaction"
+                   | "#eth_sendTransaction_finalize"
  // ---------------------------------------
-    rule <k> #eth_sendTransaction => loadTX J ~> #eth_sendTransaction ... </k>
-         <params> [ ({ _ } #as J => true), .JSONList ] </params>
+    rule <k> #eth_sendTransaction => loadTX J ~> #eth_sendTransaction_finalize ... </k>
+         <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString( #getJSON("from",J) )
 
-    rule <k> #eth_sendTransaction => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+    rule <k> #eth_sendTransaction_finalize => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
          <txPending> ListItem( TXID ) ... </txPending>
-         <params> [ true, .JSONList ] </params>
 
     rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "from not found; is required"} ) ... </k>
-         <params> [ _, .JSONList ] </params>
+         <params> [ ({ _ } #as J), .JSONList ] </params>
+      requires notBool isString( #getJSON("from",J) )
 
     rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_sendTransaction' requires exactly 1 argument."} ) ... </k> [owise]
 ```
