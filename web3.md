@@ -432,10 +432,11 @@ WEB3 JSON RPC
 # eth_sendTransaction
 
 **TODO**: Handle contract creation
+
 ```k
     syntax KItem ::= "#eth_sendTransaction"
                    | "#eth_sendTransaction_finalize"
- // ---------------------------------------
+ // ------------------------------------------------
     rule <k> #eth_sendTransaction => loadTX J ~> #eth_sendTransaction_finalize ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString( #getJSON("from",J) )
@@ -454,19 +455,23 @@ WEB3 JSON RPC
 - `#hashUnsignedTx` Returns the hash of the rlp-encoded transaction without R S or V.
 
 ```k
-    syntax String ::= #hashSignedTx ( Int )   [function]
+    syntax String ::= #hashSignedTx   ( Int ) [function]
                     | #hashUnsignedTx ( Int ) [function]
  // ----------------------------------------------------
-    rule [[ #hashSignedTx( TXID ) => Keccak256( #rlpEncodeLength(        #rlpEncodeWord( TXNONCE )
-                                                                 +String #rlpEncodeWord( GPRICE )
-                                                                 +String #rlpEncodeWord( GLIMIT )
-                                                                 +String #rlpEncodeWord( ACCTTO )
-                                                                 +String #rlpEncodeWord( VALUE )
-                                                                 +String #rlpEncodeString( #unparseByteStack( DATA ) )
-                                                                 +String #rlpEncodeWord( V +Int 27 )
-                                                                 +String #rlpEncodeString( #unparseByteStack( R ) )
-                                                                 +String #rlpEncodeString( #unparseByteStack( S ) ),
-                                                                 192 ) ) ]]
+    rule [[ #hashSignedTx( TXID )
+         => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
+                                         +String #rlpEncodeWord( GPRICE )
+                                         +String #rlpEncodeWord( GLIMIT )
+                                         +String #rlpEncodeWord( ACCTTO )
+                                         +String #rlpEncodeWord( VALUE )
+                                         +String #rlpEncodeString( #unparseByteStack( DATA ) )
+                                         +String #rlpEncodeWord( V +Int 27 )
+                                         +String #rlpEncodeString( #unparseByteStack( R ) )
+                                         +String #rlpEncodeString( #unparseByteStack( S ) )
+                                       , 192
+                                       )
+                     )
+         ]]
          <message>
            <msgID> TXID </msgID>
            <txNonce>    TXNONCE </txNonce>
@@ -480,13 +485,17 @@ WEB3 JSON RPC
            <sigV>       V       </sigV>
          </message>
 
-    rule [[ #hashUnsignedTx( TXID ) => Keccak256( #rlpEncodeLength(        #rlpEncodeWord( TXNONCE )
-                                                                   +String #rlpEncodeWord( GPRICE )
-                                                                   +String #rlpEncodeWord( GLIMIT )
-                                                                   +String #rlpEncodeWord( ACCTTO )
-                                                                   +String #rlpEncodeWord( VALUE )
-                                                                   +String #rlpEncodeString( #unparseByteStack( DATA ) ),
-                                                                   192 ) ) ]]
+    rule [[ #hashUnsignedTx( TXID )
+         => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
+                                         +String #rlpEncodeWord( GPRICE )
+                                         +String #rlpEncodeWord( GLIMIT )
+                                         +String #rlpEncodeWord( ACCTTO )
+                                         +String #rlpEncodeWord( VALUE )
+                                         +String #rlpEncodeString( #unparseByteStack( DATA ) )
+                                       , 192
+                                       )
+                     )
+         ]]
          <message>
            <msgID>      TXID    </msgID>
            <txNonce>    TXNONCE </txNonce>
@@ -503,6 +512,7 @@ WEB3 JSON RPC
 
 **TODO**: Make sure nonce is being determined properly
 **TODO**: You're supposed to be able to overwrite a pending tx by using its same "from" and "nonce" values
+
 ```k
     syntax KItem ::= "loadTX" JSON
  // ------------------------------
@@ -558,6 +568,7 @@ WEB3 JSON RPC
 - `#personal_importRawKey` Takes an unencrypted private key, encrypts it with a passphrase, stores it and returns the address of the key.
 
 **TODO**: Currently nothing is done with the passphrase
+
 ```k
     syntax KItem ::= "#personal_importRawKey"
  // -----------------------------------------
