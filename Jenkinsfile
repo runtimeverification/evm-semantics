@@ -44,7 +44,7 @@ pipeline {
         }
         stage('Test Execution') {
           failFast true
-          options { timeout(time: 25, unit: 'MINUTES') }
+          options { timeout(time: 15, unit: 'MINUTES') }
           parallel {
             stage('Conformance (OCaml)') {
               steps {
