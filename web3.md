@@ -83,6 +83,45 @@ The `blockList` cell stores a list of previous blocks and network states.
     rule #getBlockByNumber(BLOCKNUM', ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }                   ) REST ) => #getBlockByNumber(BLOCKNUM', REST)
       requires BLOCKNUM =/=Int BLOCKNUM'
     rule #getBlockByNumber(_, .List) => .BlockchainItem
+
+    syntax AccountItem ::= AccountCell | ".NoAccount"
+ // -------------------------------------------------
+
+    syntax AccountItem ::= #getAccountFromBlockchainItem( BlockchainItem , Int ) [function]
+ // ---------------------------------------------------------------------------------------
+    rule #getAccountFromBlockchainItem ( { <network> <accounts> (<account> <acctID> ACCT </acctID> ACCOUNTDATA </account>) ... </accounts>  ... </network> | _ } , ACCT ) => <account> <acctID> ACCT </acctID> ACCOUNTDATA </account>
+    rule #getAccountFromBlockchainItem(_, _) => .NoAccount [owise]
+
+    syntax BlockIdentifier ::= Int | String
+ // ---------------------------------------
+
+    syntax BlockIdentifier ::= #parseBlockIdentifier ( String ) [function]
+ // --------------------------------------------------------------------
+    rule #parseBlockIdentifier(TAG) => TAG
+      requires TAG ==String "earliest"
+        orBool TAG ==String "latest"
+        orBool TAG ==String "pending"
+
+    rule #parseBlockIdentifier(BLOCKNUM) => #parseHexWord(BLOCKNUM) [owise]
+
+    syntax KItem ::= #getAccountAtBlock ( BlockIdentifier , Int )
+ // -------------------------------------------------------------
+    rule <k> #getAccountAtBlock(BLOCKNUM:Int , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(BLOCKNUM, BLOCKLIST), ACCTID) ... </k>
+         <blockList> BLOCKLIST </blockList>
+
+    rule <k> #getAccountAtBlock(TAG , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(0, BLOCKLIST), ACCTID) ... </k>
+         <blockList> BLOCKLIST </blockList>
+      requires TAG ==String "earliest"
+
+    rule <k> #getAccountAtBlock(TAG , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber((size(BLOCKLIST) -Int 1), BLOCKLIST), ACCTID) ... </k>
+         <blockList> BLOCKLIST </blockList>
+      requires TAG ==String "latest"
+
+    rule <k> #getAccountAtBlock(TAG , ACCTID) => #getAccountFromBlockchainItem({<network> NETWORK </network> | <block> BLOCK </block>}, ACCTID) ... </k>
+         <network> NETWORK </network>
+         <block>   BLOCK   </block>
+      requires TAG ==String "pending"
+
 ```
 
 WEB3 JSON RPC
@@ -296,92 +335,49 @@ WEB3 JSON RPC
     rule <k> #eth_getBalance ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), _, .JSONList ] </params>
 
-    rule <k> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( ACCTBALANCE ) ) ... </k>
+    rule <k> #eth_getBalance => #getAccountAtBlock(#parseBlockIdentifier(TAG), DATA) ~> #eth_getBalance ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
-         <account>
-           <acctID>  DATA </acctID>
-           <balance> ACCTBALANCE </balance>
-           ...
-         </account>
-      requires TAG ==String "latest"
 
-    rule <k> #eth_getBalance => #getBlockchainState(0) ~> #sendResponse( "result" : #unparseQuantity( ACCTBALANCE ) ) ~> #getBlockchainState(BLOCKNUM) ... </k>
-         <params> [ DATA, TAG, .JSONList ] </params>
-         <account>
-           <acctID>  DATA        </acctID>
-           <balance> ACCTBALANCE </balance>
-           ...
-         </account>
-         <number> BLOCKNUM </number>
-      requires TAG ==String "earliest"
+    rule <k> <account> ... <balance> ACCTBALANCE </balance> ... </account> ~> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( ACCTBALANCE )) ... </k>
 
-    rule <k> #eth_getBalance => #getBlockchainState(#parseHexWord(TAG)) ~> #sendResponse( "result" : #unparseQuantity( ACCTBALANCE ) ) ~> #getBlockchainState(BLOCKNUM) ... </k>
-         <params> [ DATA, TAG, .JSONList ] </params>
-         <account>
-           <acctID>  DATA        </acctID>
-           <balance> ACCTBALANCE </balance>
-           ...
-         </account>
-         <number> BLOCKNUM </number>
+    rule <k> .NoAccount ~> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( 0 )) ... </k>
 
     syntax KItem ::= "#eth_getStorageAt"
  // ------------------------------------
     rule <k> #eth_getStorageAt ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), QUANTITY:Int, _, .JSONList ] </params>
 
-    rule <k> #eth_getStorageAt => #sendResponse( "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY) ) ) ... </k>
+    rule <k> #eth_getStorageAt => #getAccountAtBlock(#parseBlockIdentifier(TAG), DATA) ~> #eth_getStorageAt ... </k>
          <params> [ DATA, QUANTITY, TAG, .JSONList ] </params>
-         <account>
-           <acctID>  DATA    </acctID>
-           <storage> STORAGE </storage>
-           ...
-         </account>
-      requires TAG ==String "latest"
 
-    rule <k> #eth_getStorageAt => #getBlockchainState(0) ~> #sendResponse( "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY) ) ) ~> #getBlockchainState(BLOCKNUM) ... </k>
+    rule <k> <account> ... <storage> STORAGE </storage> ... </account> ~> #eth_getStorageAt => #sendResponse( "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY))) ... </k>
          <params> [ DATA, QUANTITY, TAG, .JSONList ] </params>
-         <account>
-           <acctID>  DATA    </acctID>
-           <storage> STORAGE </storage>
-           ...
-         </account>
-         <number> BLOCKNUM </number>
-      requires TAG ==String "earliest"
 
-    rule <k> #eth_getStorageAt => #getBlockchainState(#parseHexWord(TAG)) ~> #sendResponse( "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY) ) ) ~> #getBlockchainState(BLOCKNUM) ... </k>
-         <params> [ DATA, QUANTITY, TAG, .JSONList ] </params>
-         <account>
-           <acctID>  DATA    </acctID>
-           <storage> STORAGE </storage>
-           ...
-         </account>
-         <number> BLOCKNUM </number>
+    rule <k> .NoAccount ~> #eth_getStorageAt => #sendResponse( "result" : #unparseQuantity( 0 )) ... </k>
 
     syntax KItem ::= "#eth_getCode"
  // -------------------------------
     rule <k> #eth_getCode ... </k>
-         <params> [ (DATA => #parseHexWord(DATA)), _ ] </params>
+         <params> [ (DATA => #parseHexWord(DATA)), _, .JSONList ] </params>
 
-    rule <k> #eth_getCode => #sendResponse( "result" : #unparseDataByteArray( CODE ) ) ... </k>
+    rule <k> #eth_getCode => #getAccountAtBlock(#parseBlockIdentifier(TAG), DATA) ~> #eth_getCode ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
-         <account>
-           <acctID> DATA </acctID>
-           <code> CODE </code>
-           ...
-         </account>
+
+     rule <k> <account> ... <code> CODE </code> ... </account> ~> #eth_getCode =>  #sendResponse( "result" : #unparseDataByteArray( CODE )) ... </k>
+
+     rule <k> .NoAccount ~> #eth_getCode => #sendResponse( "result" : #unparseDataByteArray( .ByteArray )) ... </k>
 
     syntax KItem ::= "#eth_getTransactionCount"
  // -------------------------------------------
     rule <k> #eth_getTransactionCount ... </k>
-         <params> [ (DATA => #parseHexWord(DATA)), _ ] </params>
+         <params> [ (DATA => #parseHexWord(DATA)), _, .JSONList ] </params>
 
-    rule <k> #eth_getTransactionCount => #sendResponse( "result" : #unparseQuantity( NONCE ) ) ... </k>
+    rule <k> #eth_getTransactionCount => #getAccountAtBlock(#parseBlockIdentifier(TAG), DATA) ~> #eth_getTransactionCount ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
-         <account>
-           <acctID> DATA </acctID>
-           <nonce> NONCE </nonce>
-           ...
-         </account>
+
+    rule <k> <account> ... <nonce> NONCE </nonce> ... </account> ~> #eth_getTransactionCount => #sendResponse( "result" : #unparseQuantity( NONCE )) ... </k>
+
+    rule <k> .NoAccount ~> #eth_getTransactionCount => #sendResponse ("result" : #unparseQuantity( 0 )) ... </k>
 
     syntax KItem ::= "#eth_sign"
  // ----------------------------
