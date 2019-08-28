@@ -44,23 +44,19 @@ pipeline {
         }
         stage('Test Execution') {
           failFast true
-          options { timeout(time: 12, unit: 'MINUTES') }
+          options { timeout(time: 25, unit: 'MINUTES') }
           parallel {
             stage('Conformance (OCaml)') {
               steps {
                 sh '''
-                  nprocs=$(nproc)
-                  [ "$nprocs" -gt '16' ] && nprocs='16'
-                  make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=ocaml
+                  make test-conformance -j8 TEST_CONCRETE_BACKEND=ocaml
                 '''
               }
             }
             stage('Conformance (LLVM)') {
               steps {
                 sh '''
-                  nprocs=$(nproc)
-                  [ "$nprocs" -gt '16' ] && nprocs='16'
-                  make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=llvm
+                  make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm
                 '''
               }
             }
@@ -80,9 +76,7 @@ pipeline {
           }
           steps {
             sh '''
-              nprocs=$(nproc)
-              [ "$nprocs" -gt '6' ] && nprocs='6'
-              make test-prove -j"$nprocs"
+              make test-prove -j6
             '''
           }
         }
