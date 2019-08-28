@@ -7,6 +7,12 @@
 {
   "jsonrpc": "2.0",
   "id": 2,
+  "method": "personal_importRawKey",
+  "params": ["0x6211fdf3ef11d0865cb48bcc1a0f514e069f3e942f0cdb6a420f633055dad19d", "0x"]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 3,
   "method": "eth_sendTransaction",
   "params": [
     {
@@ -19,7 +25,7 @@
 },
 {
   "jsonrpc": "2.0",
-  "id": 3,
+  "id": 4,
   "method": "eth_sendTransaction",
   "params": [
     {
@@ -27,6 +33,19 @@
       "gasPrice": "0x4a817c800",
       "value": "0x8000",
       "to": "0x581fe40d187f2a00cde1c2206e639922d87cc659"
+    }
+  ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "eth_sendTransaction",
+  "params": [
+    {
+      "from": "0x458dcff555ff249f35d0b083d6cf6da53ba59d8c",
+      "gasPrice": "0x4a817c800",
+      "value": "0x8000",
+      "to": "0x45d7004f34bb92825e438e267eb7bccdd9772d82"
     }
   ]
 }]

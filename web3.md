@@ -434,33 +434,37 @@ WEB3 JSON RPC
 ```k
     syntax KItem ::= "#eth_sendTransaction"
  // ---------------------------------------
-    rule <k> #eth_sendTransaction => loadTX J ~> #returnTxHash ... </k>
-         <params> [ J, _ ] </params>
+    rule <k> #eth_sendTransaction => loadTX J ~> #eth_sendTransaction ... </k>
+         <params> [ ({ _ } #as J => true), .JSONList ] </params>
+      requires isString( #getJSON("from",J) )
 
-    syntax KItem ::= "#returnTxHash"
- // --------------------------------
-    rule <k> #returnTxHash => #sendResponse( "result" : "0x" +String #hashTx( TXID, true ) ) ... </k>
-         <txPending> ListItem( TXID:Int ) ... </txPending>
+    rule <k> #eth_sendTransaction => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+         <txPending> ListItem( TXID ) ... </txPending>
+         <params> [ true, .JSONList ] </params>
 
-    rule <k> #returnTxHash => #sendResponse( "error" : {"code": -32603, "message": "Internal error"} ) ... </k>
-         <txPending> _ </txPending> [owise]
+    rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "from not found; is required"} ) ... </k>
+         <params> [ _, .JSONList ] </params>
+
+    rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_sendTransaction' requires exactly 1 argument."} ) ... </k> [owise]
 ```
 
-- `hashTx` Takes a transaction ID, and true (signed transaction) or false (unsigned transaction). Returns the hash of the rlp-encoded transaction.
+- `#hashSignedTx` Takes a transaction ID. Returns the hash of the rlp-encoded transaction with R S and V.
+- `#hashUnsignedTx` Returns the hash of the rlp-encoded transaction without R S or V.
 
 ```k
-    syntax String ::= #hashTx ( Int, Bool ) [function]
- // --------------------------------------------------
-    rule [[ #hashTx( TXID , true ) => Keccak256( #rlpEncodeLength(        #rlpEncodeWord( TXNONCE )
-                                                                  +String #rlpEncodeWord( GPRICE )
-                                                                  +String #rlpEncodeWord( GLIMIT )
-                                                                  +String #rlpEncodeWord( ACCTTO )
-                                                                  +String #rlpEncodeWord( VALUE )
-                                                                  +String #rlpEncodeString( #unparseByteStack( DATA ) )
-                                                                  +String #rlpEncodeWord( V +Int 27 )
-                                                                  +String #rlpEncodeString( #unparseByteStack( R ) )
-                                                                  +String #rlpEncodeString( #unparseByteStack( S ) ),
-                                                                  192 ) ) ]]
+    syntax String ::= #hashSignedTx ( Int )   [function]
+                    | #hashUnsignedTx ( Int ) [function]
+ // ----------------------------------------------------
+    rule [[ #hashSignedTx( TXID ) => Keccak256( #rlpEncodeLength(        #rlpEncodeWord( TXNONCE )
+                                                                 +String #rlpEncodeWord( GPRICE )
+                                                                 +String #rlpEncodeWord( GLIMIT )
+                                                                 +String #rlpEncodeWord( ACCTTO )
+                                                                 +String #rlpEncodeWord( VALUE )
+                                                                 +String #rlpEncodeString( #unparseByteStack( DATA ) )
+                                                                 +String #rlpEncodeWord( V +Int 27 )
+                                                                 +String #rlpEncodeString( #unparseByteStack( R ) )
+                                                                 +String #rlpEncodeString( #unparseByteStack( S ) ),
+                                                                 192 ) ) ]]
          <message>
            <msgID> TXID </msgID>
            <txNonce>    TXNONCE </txNonce>
@@ -474,13 +478,13 @@ WEB3 JSON RPC
            <sigV>       V       </sigV>
          </message>
 
-    rule [[ #hashTx( TXID, false ) => Keccak256( #rlpEncodeLength(        #rlpEncodeWord( TXNONCE )
-                                                                  +String #rlpEncodeWord( GPRICE )
-                                                                  +String #rlpEncodeWord( GLIMIT )
-                                                                  +String #rlpEncodeWord( ACCTTO )
-                                                                  +String #rlpEncodeWord( VALUE )
-                                                                  +String #rlpEncodeString( #unparseByteStack( DATA ) ),
-                                                                  192 ) ) ]]
+    rule [[ #hashUnsignedTx( TXID ) => Keccak256( #rlpEncodeLength(        #rlpEncodeWord( TXNONCE )
+                                                                   +String #rlpEncodeWord( GPRICE )
+                                                                   +String #rlpEncodeWord( GLIMIT )
+                                                                   +String #rlpEncodeWord( ACCTTO )
+                                                                   +String #rlpEncodeWord( VALUE )
+                                                                   +String #rlpEncodeString( #unparseByteStack( DATA ) ),
+                                                                   192 ) ) ]]
          <message>
            <msgID>      TXID    </msgID>
            <txNonce>    TXNONCE </txNonce>
@@ -500,7 +504,7 @@ WEB3 JSON RPC
 ```k
     syntax KItem ::= "loadTX" JSON
  // ------------------------------
-    rule <k> loadTX J => signTX !TXID (#parseHexWord( #getString ( "from", J ) ) #as ACCTADDR) ... </k>
+    rule <k> loadTX J => signTX !TXID ACCTADDR ... </k>
          <txPending> .List => ListItem( !TXID ) ... </txPending>
          <account>
            <acctID> ACCTADDR </acctID>
@@ -521,14 +525,12 @@ WEB3 JSON RPC
          ...
          </messages>
          <gasPrice> GASP </gasPrice>
-      requires isString( #getJSON("from", J ) )
-
-    rule <k> loadTX _ => #sendResponse( "error": {"code": -32000, "message": "from not found; is required"} ) ... </k> [owise]
+      requires #parseHexWord(#getString("from",J)) ==Int ACCTADDR
 
     syntax KItem ::= "signTX" Int Int
                    | "signTX" Int String [klabel(signTXAux)]
  // --------------------------------------------------------
-    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( Hex2Binary( #hashTx( TXID, false ) ), #unparseByteStack( #padToWidth( 32, #asByteStack( KEY ) ) ) ) ... </k>
+    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( Hex2Raw( #hashUnsignedTx( TXID ) ), #unparseByteStack( #padToWidth( 32, #asByteStack( KEY ) ) ) ) ... </k>
          <accountKeys> ... ACCTFROM |-> KEY ... </accountKeys>
          <message>
            <msgID>      TXID    </msgID>
@@ -544,7 +546,7 @@ WEB3 JSON RPC
     rule <k> signTX TXID SIG:String => . ... </k>
          <message>
            <msgID> TXID </msgID>
-           <sigR> _ => #parseHexBytes( substrString( SIG, 0, 64 ) ) </sigR>
+           <sigR> _ => #parseHexBytes( substrString( SIG, 0, 64 ) )   </sigR>
            <sigS> _ => #parseHexBytes( substrString( SIG, 64, 128 ) ) </sigS>
            <sigV> _ => #parseHexWord( substrString( SIG, 128, 130 ) ) </sigV>
            ...
