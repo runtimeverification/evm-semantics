@@ -44,6 +44,7 @@ pipeline {
         }
         stage('Test Execution') {
           failFast true
+          options { timeout(time: 12, unit: 'MINUTES') }
           parallel {
             stage('Conformance (OCaml)') {
               steps {
@@ -75,6 +76,7 @@ pipeline {
         stage('Test Proofs (Java)') {
           options {
             lock("proofs-${env.NODE_NAME}")
+            timeout(time: 60, unit: 'MINUTES')
           }
           steps {
             sh '''
@@ -86,6 +88,7 @@ pipeline {
         }
         stage('Test Interactive') {
           failFast true
+          options { timeout(time: 20, unit: 'MINUTES') }
           parallel {
             stage('OCaml krun') {
               steps {
