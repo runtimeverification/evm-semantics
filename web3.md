@@ -109,11 +109,11 @@ The `blockList` cell stores a list of previous blocks and network states.
     rule <k> #getAccountAtBlock(BLOCKNUM:Int , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(BLOCKNUM, BLOCKLIST), ACCTID) ... </k>
          <blockList> BLOCKLIST </blockList>
 
-    rule <k> #getAccountAtBlock(TAG , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber((size(BLOCKLIST) -Int 1, BLOCKLIST), ACCTID) ... </k>
+    rule <k> #getAccountAtBlock(TAG , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(size(BLOCKLIST) -Int 1, BLOCKLIST), ACCTID) ... </k>
          <blockList> BLOCKLIST </blockList>
       requires TAG ==String "earliest"
 
-    rule <k> #getAccountAtBlock(TAG , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(0), BLOCKLIST), ACCTID) ... </k>
+    rule <k> #getAccountAtBlock(TAG , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(0, BLOCKLIST), ACCTID) ... </k>
          <blockList> BLOCKLIST </blockList>
       requires TAG ==String "latest"
 
