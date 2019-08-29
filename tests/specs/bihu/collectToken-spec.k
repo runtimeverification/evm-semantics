@@ -52,24 +52,25 @@ module COLLECTTOKEN-SPEC
         <gasPrice> _ </gasPrice>
         <origin> ORIGIN_ID </origin> // who fires tx
 
-        <previousHash> _ </previousHash>
-        <ommersHash> _ </ommersHash>
-        <coinbase> _ </coinbase>
-        <stateRoot> _ </stateRoot>
-        <transactionsRoot> _ </transactionsRoot>
-        <receiptsRoot> _ </receiptsRoot>
-        <logsBloom> _ </logsBloom>
-        <difficulty> _ </difficulty>
-        <number> _ </number>
-        <gasLimit> _ </gasLimit>
-        <gasUsed> _ </gasUsed>
-        <timestamp> NOW </timestamp> // block.timestamp // now
-        <extraData> _ </extraData>
-        <mixHash> _ </mixHash>
-        <blockNonce> _ </blockNonce>
-
-        <ommerBlockHeaders> _ </ommerBlockHeaders>
-        <blockhash> _ </blockhash>
+        <blockhashes> _ </blockhashes>
+        <block>
+          <previousHash> _ </previousHash>
+          <ommersHash> _ </ommersHash>
+          <coinbase> _ </coinbase>
+          <stateRoot> _ </stateRoot>
+          <transactionsRoot> _ </transactionsRoot>
+          <receiptsRoot> _ </receiptsRoot>
+          <logsBloom> _ </logsBloom>
+          <difficulty> _ </difficulty>
+          <number> _ </number>
+          <gasLimit> _ </gasLimit>
+          <gasUsed> _ </gasUsed>
+          <timestamp> NOW </timestamp> // block.timestamp // now
+          <extraData> _ </extraData>
+          <mixHash> _ </mixHash>
+          <blockNonce> _ </blockNonce>
+          <ommerBlockHeaders> _ </ommerBlockHeaders>
+        </block>
       </evm>
 
       <network>
@@ -179,7 +180,7 @@ ensures VALUE ==Int @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int BAL
         <blockNonce> _ </blockNonce>
 
         <ommerBlockHeaders> _ </ommerBlockHeaders>
-        <blockhash> _ </blockhash>
+        <blockhashes> _ </blockhashes>
       </evm>
 
       <network>
@@ -279,7 +280,7 @@ andBool GASCAP >=Int ((293 *Int (YEARCOUNT -Int INDEX)) +Int 26)
         <blockNonce> _ </blockNonce>
 
         <ommerBlockHeaders> _ </ommerBlockHeaders>
-        <blockhash> _ </blockhash>
+        <blockhashes> _ </blockhashes>
       </evm>
 
       <network>

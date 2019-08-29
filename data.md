@@ -29,7 +29,7 @@ Writing a JSON-ish parser in K takes 6 lines.
 ```k
     syntax JSONList ::= List{JSON,","}
     syntax JSONKey  ::= String | Int
-    syntax JSON     ::= String
+    syntax JSON     ::= String | Int | Bool
                       | JSONKey ":" JSON
                       | "{" JSONList "}"
                       | "[" JSONList "]"
@@ -460,6 +460,18 @@ A cons-list is used for the EVM wordstack.
     rule W in (W' : WS)  => (W ==K W') orElseBool (W in WS)
 ```
 
+-   `#replicateAux` pushes `N` copies of `A` onto a `WordStack`.
+-   `#replicate` is a `WordStack` of length `N` with `A` the value of every element.
+
+```k
+    syntax WordStack ::= #replicate    ( Int, Int )            [function, functional]
+                       | #replicateAux ( Int, Int, WordStack ) [function, functional]
+ // ---------------------------------------------------------------------------------
+    rule #replicate   ( N, A )     => #replicateAux(N, A, .WordStack)
+    rule #replicateAux( N, A, WS ) => #replicateAux(N -Int 1, A, A : WS) requires         N >Int 0
+    rule #replicateAux( N, A, WS ) => WS                                 requires notBool N >Int 0
+```
+
 -   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.
 
 ```k
@@ -568,17 +580,11 @@ The local memory of execution is a byte-array (instead of a word-array).
  // ------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => #sizeWordStack(WS)
 
-    syntax ByteArray ::= #padToWidth         ( Int , ByteArray )             [function]
-                       | #padRightToWidth    ( Int , ByteArray )             [function]
-                       | #padRightToWidthAux ( Int , ByteArray , ByteArray ) [function]
- // -----------------------------------------------------------------------------------
-    rule #padToWidth(N, WS) => WS                     requires notBool #sizeByteArray(WS) <Int N [concrete]
-    rule #padToWidth(N, WS) => #padToWidth(N, 0 : WS) requires         #sizeByteArray(WS) <Int N [concrete]
-
-    rule #padRightToWidth(N, WS) => #padRightToWidthAux(N -Int #sizeByteArray(WS), WS, .WordStack)
-    rule #padRightToWidthAux(0, WS, ZEROS) => WS ++ ZEROS
-    rule #padRightToWidthAux(N, WS, ZEROS) => #padRightToWidthAux(N -Int 1, WS, 0 : ZEROS)
-      requires N >Int 0
+    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function]
+                       | #padRightToWidth ( Int , ByteArray ) [function]
+ // --------------------------------------------------------------------
+    rule #padToWidth(N, WS)      => #replicateAux(N -Int #sizeByteArray(WS), 0, WS) [concrete]
+    rule #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0)  [concrete]
 ```
 
 Addresses
@@ -594,6 +600,7 @@ Addresses
 
 -   `#newAddr` computes the address of a new account given the address and nonce of the creating account.
 -   `#sender` computes the sender of the transaction from its data and signature.
+-   `#addrFromPrivateKey` computes the address of an account given its private key
 
 ```k
     syntax Int ::= #newAddr ( Int , Int ) [function]
@@ -614,6 +621,11 @@ Addresses
 
     rule #sender("")  => .Account
     rule #sender(STR) => #addr(#parseHexWord(Keccak256(STR))) requires STR =/=String ""
+
+    syntax Int ::= #addrFromPrivateKey ( String ) [function]
+ // --------------------------------------------------------
+    rule #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256 ( Hex2Raw( ECDSAPubKey( Hex2Raw( KEY ) ) ) ) ) )
+
 ```
 
 -   `#blockHeaderHash` computes the hash of a block header given all the block data.
@@ -653,6 +665,22 @@ Addresses
                                                       +String #rlpEncodeBytes(HN, 8),
                                                     192)))
 
+```
+
+- `M3:2048` computes the 2048-bit hash of a log entry in which exactly 3 bits are set. This is used to compute the Bloom filter of a log entry.
+
+```k
+    syntax Int ::= "M3:2048" "(" ByteArray ")" [function]
+ // -----------------------------------------------------
+    rule M3:2048(WS) => setBloomFilterBits(#parseByteStack(Keccak256(#unparseByteStack(WS))))
+
+    syntax Int ::= setBloomFilterBits(ByteArray) [function]
+ // -------------------------------------------------------
+    rule setBloomFilterBits(HASH) => (1 <<Int getBloomFilterBit(HASH, 0)) |Int (1 <<Int getBloomFilterBit(HASH, 2)) |Int (1 <<Int getBloomFilterBit(HASH, 4))
+
+    syntax Int ::= getBloomFilterBit(ByteArray, Int) [function]
+ // -----------------------------------------------------------
+    rule getBloomFilterBit(X, I) => #asInteger(X [ I .. 2 ]) %Int 2048
 ```
 
 Word Map
@@ -828,6 +856,20 @@ We need to interperet a `ByteArray` as a `String` again so that we can call `Kec
     rule #unparseData( DATA, LENGTH ) => #unparseDataByteArray(#padToWidth(LENGTH,#asByteStack(DATA)))
 
     rule #unparseDataByteArray( DATA ) => replaceFirst(Base2String(#asInteger(#asByteStack(1) ++ DATA), 16), "1", "0x")
+```
+
+String Helper Functions
+-----------------------
+
+- `Hex2Raw` Takes a string of hex encoded bytes and converts it to a raw bytestring
+- `Raw2Hex` Takes a string of raw bytes and converts it to a hex representation
+
+```k
+    syntax String ::= Hex2Raw ( String ) [function]
+                    | Raw2Hex ( String ) [function]
+ // -----------------------------------------------
+    rule Hex2Raw ( S ) => #unparseByteStack( #parseByteStack ( S ) )
+    rule Raw2Hex ( S ) => #unparseDataByteArray( #parseByteStackRaw ( S ) )
 ```
 
 Recursive Length Prefix (RLP)

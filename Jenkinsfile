@@ -44,31 +44,26 @@ pipeline {
         }
         stage('Test Execution') {
           failFast true
+          options { timeout(time: 15, unit: 'MINUTES') }
           parallel {
             stage('Conformance (OCaml)') {
               steps {
                 sh '''
-                  nprocs=$(nproc)
-                  [ "$nprocs" -gt '16' ] && nprocs='16'
-                  make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=ocaml
+                  make test-conformance -j8 TEST_CONCRETE_BACKEND=ocaml
                 '''
               }
             }
             stage('Conformance (LLVM)') {
               steps {
                 sh '''
-                  nprocs=$(nproc)
-                  [ "$nprocs" -gt '16' ] && nprocs='16'
-                  make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=llvm
+                  make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm
                 '''
               }
             }
             stage('Conformance (Web3)') {
               steps {
                 sh '''
-                  nprocs=$(nproc)
-                  [ "$nprocs" -gt '16' ] && nprocs='16'
-                  make test-web3 -j"$nprocs"
+                  make test-web3
                 '''
               }
             }
@@ -77,17 +72,17 @@ pipeline {
         stage('Test Proofs (Java)') {
           options {
             lock("proofs-${env.NODE_NAME}")
+            timeout(time: 60, unit: 'MINUTES')
           }
           steps {
             sh '''
-              nprocs=$(nproc)
-              [ "$nprocs" -gt '6' ] && nprocs='6'
-              make test-prove -j"$nprocs"
+              make test-prove -j6
             '''
           }
         }
         stage('Test Interactive') {
           failFast true
+          options { timeout(time: 20, unit: 'MINUTES') }
           parallel {
             stage('OCaml krun') {
               steps {
@@ -185,10 +180,12 @@ pipeline {
               sh '''
                 commit_short=$(cd deps/k && git rev-parse --short HEAD)
                 K_RELEASE="https://github.com/kframework/k/releases/download/nightly-$commit_short"
-                curl --fail --location "${K_RELEASE}/kframework_5.0.0_amd64_bionic.deb"    --output kframework.deb
+                curl --fail --location "${K_RELEASE}/kframework_5.0.0_amd64_bionic.deb"    --output kframework-bionic.deb
                 curl --fail --location "${K_RELEASE}/kframework-5.0.0-1-x86_64.pkg.tar.xz" --output kframework-git.pkg.tar.xz
+                curl --fail --location "${K_RELEASE}/kframework_5.0.0_amd64_buster.deb"    --output kframework-buster.deb
               '''
-              stash name: 'bionic-kframework', includes: 'kframework.deb'
+              stash name: 'bionic-kframework', includes: 'kframework-bionic.deb'
+              stash name: 'buster-kframework', includes: 'kframework-buster.deb'
               stash name: 'arch-kframework',   includes: 'kframework-git.pkg.tar.xz'
             }
           }
@@ -226,11 +223,13 @@ pipeline {
           }
           steps {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
+              checkout scm
               unstash 'bionic-kframework'
               sh '''
                 sudo apt-get update && sudo apt-get upgrade --yes
-                sudo apt-get install --yes ./kframework.deb
+                sudo apt-get install --yes ./kframework-bionic.deb
                 cp -r package/debian ./
+                cp package/ubuntu/* debian
                 dpkg-buildpackage --no-sign
               '''
             }
@@ -257,6 +256,49 @@ pipeline {
             }
           }
         }
+        stage('Build Debian Buster Package') {
+          agent {
+            dockerfile {
+              dir "kevm-${env.KEVM_RELEASE_ID}/package"
+              filename 'Dockerfile.debian-buster'
+              additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+              reuseNode true
+            }
+          }
+          steps {
+            dir("kevm-${env.KEVM_RELEASE_ID}") {
+              checkout scm
+              unstash 'buster-kframework'
+              sh '''
+                sudo apt-get update && sudo apt-get upgrade --yes
+                sudo apt-get install --yes ./kframework-buster.deb
+                cp -r package/debian ./
+                dpkg-buildpackage --no-sign
+              '''
+            }
+            stash name: 'buster-kevm', includes: "kevm_${env.KEVM_RELEASE_ID}_amd64.deb"
+          }
+        }
+        stage('Test Debian Buster Package') {
+          agent {
+            dockerfile {
+              dir "kevm-${env.KEVM_RELEASE_ID}/package"
+              filename 'Dockerfile.debian-buster'
+              additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+              reuseNode true
+            }
+          }
+          steps {
+            dir("kevm-${env.KEVM_RELEASE_ID}") {
+              unstash 'buster-kevm'
+              sh '''
+                sudo apt-get update && sudo apt-get upgrade --yes
+                sudo apt-get install --yes ./kevm_${KEVM_RELEASE_ID}_amd64.deb
+                make test-interactive-firefly
+              '''
+            }
+          }
+        }
         stage('Build Arch Package') {
           agent {
             dockerfile {
@@ -268,6 +310,7 @@ pipeline {
           }
           steps {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
+              checkout scm
               unstash 'arch-kframework'
               sh '''
                 sudo pacman -Syu --noconfirm
@@ -311,15 +354,25 @@ pipeline {
           steps {
             dir("kevm-${env.KEVM_RELEASE_ID}") {
               unstash 'src-kevm'
-              unstash 'bionic-kevm'
-              unstash 'arch-kevm'
+              dir("bionic") {
+                unstash 'bionic-kevm'
+              }
+              dir("buster") {
+                unstash 'buster-kevm'
+              }
+              dir("arch") {
+                unstash 'arch-kevm'
+              }
               sh '''
                 release_tag="v${KEVM_RELEASE_ID}-$(git rev-parse --short HEAD)"
                 make release.md KEVM_RELEASE_TAG=${release_tag}
-                hub release create                                                                                          \
-                    --attach "kevm-${KEVM_RELEASE_ID}-src.tar.gz#Source tar.gz"                                             \
-                    --attach "kevm_${KEVM_RELEASE_ID}_amd64.deb#Ubuntu Bionic (18.04) Package"                              \
-                    --attach "kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package" \
+                mv bionic/kevm_${KEVM_RELEASE_ID}_amd64.deb bionic/kevm_${KEVM_RELEASE_ID}_amd64_bionic.deb
+                mv buster/kevm_${KEVM_RELEASE_ID}_amd64.deb buster/kevm_${KEVM_RELEASE_ID}_amd64_buster.deb
+                hub release create                                                                                               \
+                    --attach "kevm-${KEVM_RELEASE_ID}-src.tar.gz#Source tar.gz"                                                  \
+                    --attach "bionic/kevm_${KEVM_RELEASE_ID}_amd64_bionic.deb#Ubuntu Bionic (18.04) Package"                            \
+                    --attach "buster/kevm_${KEVM_RELEASE_ID}_amd64_buster.deb#Debian Buster (10) Package"                               \
+                    --attach "arch/kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package" \
                     --file "release.md" "${release_tag}"
               '''
             }

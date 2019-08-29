@@ -43,8 +43,8 @@ For verification purposes, it's much easier to specify a program in terms of its
 To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a "pretti-fication" to the nicer input form.
 
 ```{.k .standalone}
-    syntax JSON ::= Int | ByteArray | OpCodes | Map | Call | SubstateLogEntry | Account
- // -----------------------------------------------------------------------------------
+    syntax JSON ::= ByteArray | OpCodes | Map | Call | SubstateLogEntry | Account
+ // -----------------------------------------------------------------------------
 
     syntax JSONList ::= #sortJSONList ( JSONList )            [function]
                       | #sortJSONList ( JSONList , JSONList ) [function, klabel(#sortJSONListAux)]
@@ -202,44 +202,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
       requires TT =/=K .Account
 ```
 
--   `#finalizeBlock` is used to signal that block finalization procedures should take place (after transactions have executed).
--   `#rewardOmmers(_)` pays out the reward to uncle blocks so that blocks are orphaned less often in Ethereum.
-
-```{.k .standalone}
-    syntax EthereumCommand ::= "#finalizeBlock" | #rewardOmmers ( JSONList )
- // ------------------------------------------------------------------------
-    rule <k> #finalizeBlock => #rewardOmmers(OMMERS) ... </k>
-         <schedule> SCHED </schedule>
-         <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
-         <coinbase> MINER </coinbase>
-         <account>
-           <acctID> MINER </acctID>
-           <balance> MINBAL => MINBAL +Int Rb < SCHED > </balance>
-           ...
-         </account>
-
-    rule <k> (.K => #newAccount MINER) ~> #finalizeBlock ... </k>
-         <coinbase> MINER </coinbase>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool MINER in ACCTS
-
-    rule <k> #rewardOmmers(.JSONList) => . ... </k>
-    rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
-         <schedule> SCHED </schedule>
-         <coinbase> MINER </coinbase>
-         <number> CURNUM </number>
-         <account>
-           <acctID> MINER </acctID>
-           <balance> MINBAL => MINBAL +Int Rb < SCHED > /Int 32 </balance>
-          ...
-         </account>
-         <account>
-           <acctID> OMMER </acctID>
-           <balance> OMMBAL => OMMBAL +Int Rb < SCHED > +Int (OMMNUM -Int CURNUM) *Int (Rb < SCHED > /Int 8) </balance>
-          ...
-         </account>
-```
-
 -   `exception` only clears from the `<k>` cell if there is an exception preceding it.
 -   `failure_` holds the name of a test that failed if a test does fail.
 -   `success` sets the `<exit-code>` to `0` and the `<mode>` to `SUCCESS`.
@@ -311,7 +273,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
       requires KEY in #execKeys
 
     rule <k> run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush ... </k>
-    rule <k> run TESTID : { "lastblockhash" : (HASH:String) } => startTx                   ... </k>
+    rule <k> run TESTID : { "lastblockhash" : (HASH:String) } => #startBlock ~> startTx    ... </k>
 ```
 
 -   `#postKeys` are a subset of `#checkKeys` which correspond to post-state account checks.
@@ -397,7 +359,7 @@ State Manipulation
          <mixHash>           _ => 0             </mixHash>
          <blockNonce>        _ => 0             </blockNonce>
          <ommerBlockHeaders> _ => [ .JSONList ] </ommerBlockHeaders>
-         <blockhash>         _ => .List         </blockhash>
+         <blockhashes>       _ => .List         </blockhashes>
 
     syntax EthereumCommand ::= "clearNETWORK"
  // -----------------------------------------
@@ -559,7 +521,7 @@ The `"rlp"` key loads the block information.
          <ommerBlockHeaders> _ => BU                              </ommerBlockHeaders>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONList ], _, _, .JSONList ] => .K ... </k>
-         <blockhash> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhash>
+         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhashes>
 
     syntax EthereumCommand ::= "mkTX" Int
  // -------------------------------------
@@ -783,7 +745,7 @@ Here we check the other post-conditions associated with an EVM test.
 
     rule <k> check "genesisBlockHeader" : { "hash": (HASH:String => #asWord(#parseByteStack(HASH))) } ... </k>
     rule <k> check "genesisBlockHeader" : { "hash": HASH } => . ... </k>
-         <blockhash> ... ListItem(HASH) ListItem(_) </blockhash>
+         <blockhashes> ... ListItem(HASH) ListItem(_) </blockhashes>
 
     rule <k> check TESTID : { "transactions" : TRANSACTIONS } => check "transactions" : TRANSACTIONS ~> failure TESTID ... </k>
  // ---------------------------------------------------------------------------------------------------------------------------
