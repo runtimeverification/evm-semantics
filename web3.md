@@ -428,11 +428,11 @@ WEB3 JSON RPC
     rule <k> #evm_revert ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), .JSONList ] </params>
 
-    rule <k> #evm_revert => #getBlockchainState(BLOCKID) ~> #clearTrailingSnapshots(DATA) ~> #sendResponse( "result" : true ) ... </k>
+    rule <k> #evm_revert => #setBlockchainState(BLOCKLIST[BLOCKID:Int]) ~> #clearTrailingSnapshots(DATA) ~> #sendResponse( "result" : true ) ... </k>
          <params> [ DATA:Int, .JSONList ] </params>
          <snapshots> ... DATA |-> BLOCKID ... </snapshots>
          <blockList> BLOCKLIST => range(BLOCKLIST, 0, BLOCKID) </blockList>
-         
+
     syntax KItem ::= "#evm_increaseTime"
  // ------------------------------------
     rule <k> #evm_increaseTime => #sendResponse( "result" : Int2String(TS +Int DATA ) ) ... </k>
