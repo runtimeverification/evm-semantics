@@ -44,22 +44,19 @@ pipeline {
         }
         stage('Test Execution') {
           failFast true
+          options { timeout(time: 15, unit: 'MINUTES') }
           parallel {
             stage('Conformance (OCaml)') {
               steps {
                 sh '''
-                  nprocs=$(nproc)
-                  [ "$nprocs" -gt '16' ] && nprocs='16'
-                  make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=ocaml
+                  make test-conformance -j8 TEST_CONCRETE_BACKEND=ocaml
                 '''
               }
             }
             stage('Conformance (LLVM)') {
               steps {
                 sh '''
-                  nprocs=$(nproc)
-                  [ "$nprocs" -gt '16' ] && nprocs='16'
-                  make test-conformance -j"$nprocs" TEST_CONCRETE_BACKEND=llvm
+                  make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm
                 '''
               }
             }
@@ -75,17 +72,17 @@ pipeline {
         stage('Test Proofs (Java)') {
           options {
             lock("proofs-${env.NODE_NAME}")
+            timeout(time: 60, unit: 'MINUTES')
           }
           steps {
             sh '''
-              nprocs=$(nproc)
-              [ "$nprocs" -gt '6' ] && nprocs='6'
-              make test-prove -j"$nprocs"
+              make test-prove -j6
             '''
           }
         }
         stage('Test Interactive') {
           failFast true
+          options { timeout(time: 20, unit: 'MINUTES') }
           parallel {
             stage('OCaml krun') {
               steps {
