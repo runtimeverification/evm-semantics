@@ -84,13 +84,13 @@ The `blockList` cell stores a list of previous blocks and network states.
       requires BLOCKNUM =/=Int BLOCKNUM'
     rule #getBlockByNumber(_, .List) => .BlockchainItem
 
-    syntax AccountItem ::= AccountCell | ".NoAccount"
- // -------------------------------------------------
+    syntax AccountItem ::= AccountCell | ".AccountItem"
+ // ---------------------------------------------------
 
     syntax AccountItem ::= #getAccountFromBlockchainItem( BlockchainItem , Int ) [function]
  // ---------------------------------------------------------------------------------------
     rule #getAccountFromBlockchainItem ( { <network> <accounts> (<account> <acctID> ACCT </acctID> ACCOUNTDATA </account>) ... </accounts>  ... </network> | _ } , ACCT ) => <account> <acctID> ACCT </acctID> ACCOUNTDATA </account>
-    rule #getAccountFromBlockchainItem(_, _) => .NoAccount [owise]
+    rule #getAccountFromBlockchainItem(_, _) => .AccountItem [owise]
 
     syntax BlockIdentifier ::= Int | String
  // ---------------------------------------
@@ -340,7 +340,7 @@ WEB3 JSON RPC
 
     rule <k> <account> ... <balance> ACCTBALANCE </balance> ... </account> ~> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( ACCTBALANCE )) ... </k>
 
-    rule <k> .NoAccount ~> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( 0 )) ... </k>
+    rule <k> .AccountItem ~> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( 0 )) ... </k>
 
     syntax KItem ::= "#eth_getStorageAt"
  // ------------------------------------
@@ -353,7 +353,7 @@ WEB3 JSON RPC
     rule <k> <account> ... <storage> STORAGE </storage> ... </account> ~> #eth_getStorageAt => #sendResponse( "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY))) ... </k>
          <params> [ DATA, QUANTITY, TAG, .JSONList ] </params>
 
-    rule <k> .NoAccount ~> #eth_getStorageAt => #sendResponse( "result" : #unparseQuantity( 0 )) ... </k>
+    rule <k> .AccountItem ~> #eth_getStorageAt => #sendResponse( "result" : #unparseQuantity( 0 )) ... </k>
 
     syntax KItem ::= "#eth_getCode"
  // -------------------------------
@@ -365,7 +365,7 @@ WEB3 JSON RPC
 
      rule <k> <account> ... <code> CODE </code> ... </account> ~> #eth_getCode =>  #sendResponse( "result" : #unparseDataByteArray( CODE )) ... </k>
 
-     rule <k> .NoAccount ~> #eth_getCode => #sendResponse( "result" : #unparseDataByteArray( .ByteArray )) ... </k>
+     rule <k> .AccountItem ~> #eth_getCode => #sendResponse( "result" : #unparseDataByteArray( .ByteArray )) ... </k>
 
     syntax KItem ::= "#eth_getTransactionCount"
  // -------------------------------------------
@@ -377,7 +377,7 @@ WEB3 JSON RPC
 
     rule <k> <account> ... <nonce> NONCE </nonce> ... </account> ~> #eth_getTransactionCount => #sendResponse( "result" : #unparseQuantity( NONCE )) ... </k>
 
-    rule <k> .NoAccount ~> #eth_getTransactionCount => #sendResponse ("result" : #unparseQuantity( 0 )) ... </k>
+    rule <k> .AccountItem ~> #eth_getTransactionCount => #sendResponse ("result" : #unparseQuantity( 0 )) ... </k>
 
     syntax KItem ::= "#eth_sign"
  // ----------------------------
