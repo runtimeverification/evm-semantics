@@ -287,6 +287,8 @@ WEB3 JSON RPC
          <method> "eth_sendTransaction" </method>
     rule <k> #runRPCCall => #personal_importRawKey ... </k>
          <method> "personal_importRawKey" </method>
+    rule <k> #runRPCCall => #firefly_addAccount ... </k>
+         <method> "firefly_addAccount" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -636,6 +638,33 @@ WEB3 JSON RPC
  // ---------------------------------------------
     rule <k> #acctFromPrivateKey KEY => #newAccount #addrFromPrivateKey(KEY) ... </k>
          <accountKeys> M => M[#addrFromPrivateKey(KEY) <- #parseHexWord(KEY)] </accountKeys>
+
+    syntax KItem ::= "#firefly_addAccount"
+ // --------------------------------------
+    rule <k> #firefly_addAccount ... </k>
+         <params> [ (ADDRESS => #parseHexWord(ADDRESS)),
+                    (BALANCE => #parseHexWord(BALANCE)),
+                    (NONCE => #parseHexWord(NONCE)),
+                    (CODE => #parseByteStack(CODE)),
+                    ({ STORAGE } => #parseMap({ STORAGE })),
+                    .JSONList ]
+         </params>
+
+    rule <k> #firefly_addAccount => (#newAccount ADDRESS) ~> #loadAccountData ~> #sendResponse( "result": true ) ... </k>
+         <params> [ ADDRESS, BALANCE, NONCE, CODE, STORAGE, .JSONList ] </params>
+
+
+    syntax KItem ::= "#loadAccountData"
+ // ----------------------------------
+    rule <k> #loadAccountData => . ... </k>
+         <params> [ ADDRESS, BALANCE, NONCE, CODE, STORAGE, .JSONList ] </params>
+         <account>
+           <acctID>  ADDRESS        </acctID>
+           <balance> (_ => BALANCE) </balance>
+           <code>    (_ => CODE)    </code>
+           <nonce>   (_ => NONCE)   </nonce>
+           <storage> (_ => STORAGE) </storage>
+         </account>
 
 endmodule
 ```
