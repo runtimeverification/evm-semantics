@@ -435,9 +435,7 @@ WEB3 JSON RPC
     rule <k> #evm_revert => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'evm_revert' requires exactly 1 arguments. Request specified 0 arguments: [null]."} )  ... </k>
          <params> [ .JSONList ] </params>
 
-     rule <k> #evm_revert => #sendResponse ( "result" : false ) ... </k>
-          <snapshots> .List </snapshots>
-
+     rule <k> #evm_revert => #sendResponse ( "result" : false ) ... </k> [owise]
 
     syntax KItem ::= "#evm_increaseTime"
  // ------------------------------------
