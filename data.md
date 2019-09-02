@@ -136,7 +136,7 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     rule #range ( LB <= X <= UB ) => LB <=Int X andBool X <=Int UB [macro]
 ```
 
--   `chop` interperets an integer modulo $2^256$.
+-   `chop` interprets an integer modulo $2^256$.
 
 ```k
     syntax Int ::= chop ( Int ) [function, smtlib(chop)]
@@ -148,17 +148,17 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
 
 Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's words.
 
--   `bool2Word` interperets a `Bool` as a `Int`.
--   `word2Bool` interperets a `Int` as a `Bool`.
+-   `bool2Word` interprets a `Bool` as a `Int`.
+-   `word2Bool` interprets a `Int` as a `Bool`.
 
 ```k
-    syntax Int ::= bool2Word ( Bool ) [function]
- // --------------------------------------------
+    syntax Int ::= bool2Word ( Bool ) [function, functional]
+ // --------------------------------------------------------
     rule bool2Word( B:Bool ) => 1 requires B
     rule bool2Word( B:Bool ) => 0 requires notBool B
 
-    syntax Bool ::= word2Bool ( Int ) [function]
- // --------------------------------------------
+    syntax Bool ::= word2Bool ( Int ) [function, functional]
+ // --------------------------------------------------------
     rule word2Bool( W ) => false requires W  ==Int 0
     rule word2Bool( W ) => true  requires W =/=Int 0
 ```
@@ -167,9 +167,9 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `abs` gives the twos-complement interperetation of the magnitude of a word.
 
 ```k
-    syntax Int ::= sgn ( Int ) [function]
-                 | abs ( Int ) [function]
- // -------------------------------------
+    syntax Int ::= sgn ( Int ) [function, functional]
+                 | abs ( Int ) [function, functional]
+ // -------------------------------------------------
     rule sgn(I) => -1 requires I >=Int pow255
     rule sgn(I) => 1  requires I <Int pow255
 
@@ -190,7 +190,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
       requires maxSInt256 <Int DATA andBool DATA <=Int maxUInt256 [concrete]
 
     syntax Int ::= #unsigned ( Int ) [function]
- // -----------------------------------------
+ // -------------------------------------------
     rule #unsigned(DATA) => DATA
       requires 0 <=Int DATA andBool DATA <=Int maxSInt256 [concrete]
 
@@ -239,12 +239,12 @@ The corresponding `<op>Word` operations automatically perform the correct modulu
 Warning: operands are assumed to be within the range of a 256 bit EVM word. Unbound integers may not return the correct result.
 
 ```k
-    syntax Int ::= Int "+Word" Int [function]
-                 | Int "*Word" Int [function]
-                 | Int "-Word" Int [function]
-                 | Int "/Word" Int [function]
-                 | Int "%Word" Int [function]
- // -----------------------------------------
+    syntax Int ::= Int "+Word" Int [function, functional]
+                 | Int "*Word" Int [function, functional]
+                 | Int "-Word" Int [function, functional]
+                 | Int "/Word" Int [function, functional]
+                 | Int "%Word" Int [function, functional]
+ // -----------------------------------------------------
     rule W0 +Word W1 => chop( W0 +Int W1 )
     rule W0 -Word W1 => W0 -Int W1 requires W0 >=Int W1
     rule W0 -Word W1 => chop( (W0 +Int pow256) -Int W1 ) requires W0 <Int W1
@@ -278,8 +278,8 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
     rule W0 /sWord W1 => #sgnInterp(sgn(W0) *Int sgn(W1) , abs(W0) /Word abs(W1))
     rule W0 %sWord W1 => #sgnInterp(sgn(W0)              , abs(W0) %Word abs(W1))
 
-    syntax Int ::= #sgnInterp ( Int , Int ) [function]
- // --------------------------------------------------
+    syntax Int ::= #sgnInterp ( Int , Int ) [function, functional]
+ // --------------------------------------------------------------
     rule #sgnInterp( W0 , W1 ) => 0          requires W0 ==Int 0
     rule #sgnInterp( W0 , W1 ) => W1         requires W0 >Int 0
     rule #sgnInterp( W0 , W1 ) => 0 -Word W1 requires W0 <Int 0
@@ -290,12 +290,12 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
 The `<op>Word` comparisons similarly lift K operators to EVM ones:
 
 ```k
-    syntax Int ::= Int "<Word"  Int [function]
-                 | Int ">Word"  Int [function]
-                 | Int "<=Word" Int [function]
-                 | Int ">=Word" Int [function]
-                 | Int "==Word" Int [function]
- // ------------------------------------------
+    syntax Int ::= Int "<Word"  Int [function, functional]
+                 | Int ">Word"  Int [function, functional]
+                 | Int "<=Word" Int [function, functional]
+                 | Int ">=Word" Int [function, functional]
+                 | Int "==Word" Int [function, functional]
+ // ------------------------------------------------------
     rule W0 <Word  W1 => bool2Word(W0 <Int  W1)
     rule W0 >Word  W1 => bool2Word(W0 >Int  W1)
     rule W0 <=Word W1 => bool2Word(W0 <=Int W1)
@@ -306,12 +306,12 @@ The `<op>Word` comparisons similarly lift K operators to EVM ones:
 -   `s<Word` implements a less-than for `Word` (with signed interperetation).
 
 ```k
-    syntax Int ::= Int "s<Word" Int [function]
- // ------------------------------------------
-    rule W0 s<Word W1 => W0 <Word W1           requires sgn(W0) ==K 1  andBool sgn(W1) ==K 1
-    rule W0 s<Word W1 => bool2Word(false)      requires sgn(W0) ==K 1  andBool sgn(W1) ==K -1
-    rule W0 s<Word W1 => bool2Word(true)       requires sgn(W0) ==K -1 andBool sgn(W1) ==K 1
-    rule W0 s<Word W1 => abs(W1) <Word abs(W0) requires sgn(W0) ==K -1 andBool sgn(W1) ==K -1
+    syntax Int ::= Int "s<Word" Int [function, functional]
+ // ------------------------------------------------------
+    rule W0 s<Word W1 => W0 <Word W1           requires sgn(W0) ==K 1  andBool sgn(W1) ==K 1    [concrete]
+    rule W0 s<Word W1 => bool2Word(false)      requires sgn(W0) ==K 1  andBool sgn(W1) ==K -1   [concrete]
+    rule W0 s<Word W1 => bool2Word(true)       requires sgn(W0) ==K -1 andBool sgn(W1) ==K 1    [concrete]
+    rule W0 s<Word W1 => abs(W1) <Word abs(W0) requires sgn(W0) ==K -1 andBool sgn(W1) ==K -1   [concrete]
 ```
 
 ### Bitwise Operators
@@ -319,14 +319,14 @@ The `<op>Word` comparisons similarly lift K operators to EVM ones:
 Bitwise logical operators are lifted from the integer versions.
 
 ```k
-    syntax Int ::= "~Word" Int       [function]
-                 | Int "|Word"   Int [function]
-                 | Int "&Word"   Int [function]
-                 | Int "xorWord" Int [function]
-                 | Int "<<Word"  Int [function]
-                 | Int ">>Word"  Int [function]
-                 | Int ">>sWord" Int [function]
- // -------------------------------------------
+    syntax Int ::= "~Word" Int       [function, functional]
+                 | Int "|Word"   Int [function, functional]
+                 | Int "&Word"   Int [function, functional]
+                 | Int "xorWord" Int [function, functional]
+                 | Int "<<Word"  Int [function, functional]
+                 | Int ">>Word"  Int [function, functional]
+                 | Int ">>sWord" Int [function, functional]
+ // -------------------------------------------------------
     rule ~Word W       => W xorInt maxUInt256
     rule W0 |Word   W1 => W0 |Int W1
     rule W0 &Word   W1 => W0 &Int W1
@@ -373,9 +373,9 @@ Bitwise logical operators are lifted from the integer versions.
 ```k
     syntax Int ::= signextend( Int , Int ) [function]
  // -------------------------------------------------
-    rule signextend(N, W) => W requires N >=Int 32 orBool N <Int 0 [concrete]
-    rule signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))         [concrete]
-    rule signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W)) [concrete]
+    rule signextend(N, W) => W requires N >=Int 32 orBool N <Int 0    [concrete]
+    rule signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))   [concrete]
+    rule signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))   [concrete]
 ```
 
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
@@ -757,13 +757,13 @@ Parsing
 
 These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `Map`s.
 
--   `#parseHexWord` interperets a string as a single hex-encoded `Word`.
--   `#parseHexBytes` interperets a string as a hex-encoded stack of bytes.
--   `#parseByteStack` interperets a string as a hex-encoded stack of bytes, but makes sure to remove the leading "0x".
+-   `#parseHexWord` interprets a string as a single hex-encoded `Word`.
+-   `#parseHexBytes` interprets a string as a hex-encoded stack of bytes.
+-   `#parseByteStack` interprets a string as a hex-encoded stack of bytes, but makes sure to remove the leading "0x".
 -   `#parseByteStackRaw` inteprets a string as a stack of bytes.
--   `#parseWordStack` interperets a JSON list as a stack of `Word`.
--   `#parseMap` interperets a JSON key/value object as a map from `Word` to `Word`.
--   `#parseAddr` interperets a string as a 160 bit hex-endcoded address.
+-   `#parseWordStack` interprets a JSON list as a stack of `Word`.
+-   `#parseMap` interprets a JSON key/value object as a map from `Word` to `Word`.
+-   `#parseAddr` interprets a string as a 160 bit hex-endcoded address.
 
 ```k
     syntax Int ::= #parseHexWord ( String ) [function]
