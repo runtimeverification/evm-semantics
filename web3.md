@@ -253,6 +253,8 @@ WEB3 JSON RPC
  // ------------------------------
     rule <k> #runRPCCall => #firefly_shutdown ... </k>
          <method> "firefly_shutdown" </method>
+    rule <k> #runRPCCall => #firefly_addAccount ... </k>
+         <method> "firefly_addAccount" </method>
     rule <k> #runRPCCall => #net_version ... </k>
          <method> "net_version" </method>
     rule <k> #runRPCCall => #web3_clientVersion ... </k>
@@ -287,8 +289,6 @@ WEB3 JSON RPC
          <method> "eth_sendTransaction" </method>
     rule <k> #runRPCCall => #personal_importRawKey ... </k>
          <method> "personal_importRawKey" </method>
-    rule <k> #runRPCCall => #firefly_addAccount ... </k>
-         <method> "firefly_addAccount" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -642,20 +642,20 @@ WEB3 JSON RPC
     syntax KItem ::= "#firefly_addAccount"
  // --------------------------------------
     rule <k> #firefly_addAccount ... </k>
-         <params> [ (ADDRESS => #parseHexWord(ADDRESS)),
-                    (BALANCE => #parseHexWord(BALANCE)),
-                    (NONCE => #parseHexWord(NONCE)),
-                    (CODE => #parseByteStack(CODE)),
-                    ({ STORAGE } => #parseMap({ STORAGE })),
-                    .JSONList ]
+         <params> [ (ADDRESS => #parseHexWord(ADDRESS))
+                  , (BALANCE => #parseHexWord(BALANCE))
+                  , (NONCE => #parseHexWord(NONCE))
+                  , (CODE => #parseByteStack(CODE))
+                  , ({ STORAGE } => #parseMap({ STORAGE }))
+                  , .JSONList ]
          </params>
 
-    rule <k> #firefly_addAccount => (#newAccount ADDRESS) ~> #loadAccountData ~> #sendResponse( "result": true ) ... </k>
+    rule <k> #firefly_addAccount => #newAccount ADDRESS ~> #loadAccountData ~> #sendResponse( "result": true ) ... </k>
          <params> [ ADDRESS, BALANCE, NONCE, CODE, STORAGE, .JSONList ] </params>
 
 
     syntax KItem ::= "#loadAccountData"
- // ----------------------------------
+ // -----------------------------------
     rule <k> #loadAccountData => . ... </k>
          <params> [ ADDRESS, BALANCE, NONCE, CODE, STORAGE, .JSONList ] </params>
          <account>
