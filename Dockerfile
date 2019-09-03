@@ -28,10 +28,6 @@ RUN npm install -g npx
 
 USER user:user
 
-ADD --chown=user:user deps/k/llvm-backend/src/main/native/llvm-backend/install-rust deps/k/llvm-backend/src/main/native/llvm-backend/rust-checksum /home/user/.install-rust/
-RUN    cd /home/user/.install-rust \
-    && ./install-rust
-
 ADD deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-common /home/user/.tmp-opam/bin/
 ADD deps/k/k-distribution/src/main/scripts/lib/opam  /home/user/.tmp-opam/lib/opam/
 RUN    cd /home/user \
@@ -57,4 +53,4 @@ RUN    cd /home/user/.tmp-maven \
     && mvn dependency:go-offline
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
-ENV PATH=/home/user/.local/bin:/home/user/.cargo/bin:$PATH
+ENV PATH=/home/user/.local/bin:$PATH
