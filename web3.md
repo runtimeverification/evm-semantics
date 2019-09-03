@@ -648,7 +648,7 @@ WEB3 JSON RPC
     rule <k> #firefly_addAccount =>  #sendResponse( "error": {"code": -32025, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
 
     syntax KItem ::= "#loadAccountData" JSON
- // -----------------------------------
+ // ----------------------------------------
     rule <k> #loadAccountData J => . ... </k>
          <account>
            <acctID>  ACCTID  </acctID>
@@ -660,7 +660,7 @@ WEB3 JSON RPC
          </account>
       requires #parseHexWord(#getString("address", J)) ==Int ACCTID
 
-    rule <k> #loadAccountData _ =>  #sendResponse( "error": {"code": -32025, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
+    rule <k> #loadAccountData _ =>  #sendResponse( "error": {"code": -32026, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
 
 endmodule
 ```
