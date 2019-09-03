@@ -641,30 +641,26 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#firefly_addAccount"
  // --------------------------------------
-    rule <k> #firefly_addAccount ... </k>
-         <params> [ (ADDRESS => #parseHexWord(ADDRESS))
-                  , (BALANCE => #parseHexWord(BALANCE))
-                  , (NONCE => #parseHexWord(NONCE))
-                  , (CODE => #parseByteStack(CODE))
-                  , ({ STORAGE } => #parseMap({ STORAGE }))
-                  , .JSONList ]
-         </params>
+    rule <k> #firefly_addAccount => #newAccount #parseHexWord( #getString("address", J) ) ~> #loadAccountData J ~> #sendResponse( "result": true ) ... </k>
+         <params> [ ({ _ } #as J), .JSONList ] </params>
+      requires isString( #getJSON("address", J) )
 
-    rule <k> #firefly_addAccount => #newAccount ADDRESS ~> #loadAccountData ~> #sendResponse( "result": true ) ... </k>
-         <params> [ ADDRESS, BALANCE, NONCE, CODE, STORAGE, .JSONList ] </params>
+    rule <k> #firefly_addAccount =>  #sendResponse( "error": {"code": -32025, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
 
-
-    syntax KItem ::= "#loadAccountData"
+    syntax KItem ::= "#loadAccountData" JSON
  // -----------------------------------
-    rule <k> #loadAccountData => . ... </k>
-         <params> [ ADDRESS, BALANCE, NONCE, CODE, STORAGE, .JSONList ] </params>
+    rule <k> #loadAccountData J => . ... </k>
          <account>
-           <acctID>  ADDRESS        </acctID>
-           <balance> (_ => BALANCE) </balance>
-           <code>    (_ => CODE)    </code>
-           <nonce>   (_ => NONCE)   </nonce>
-           <storage> (_ => STORAGE) </storage>
+           <acctID>  ACCTID  </acctID>
+           <balance>     ( _ => #if isString( #getJSON("balance",  J) ) #then #parseHexWord(#getString("balance", J)) #else 100                    #fi )     </balance>
+           <code>        ( _ => #if isString( #getJSON("code",     J) ) #then #parseByteStack(#getString("code",  J)) #else .ByteArray:AccountCode #fi )        </code>
+           <nonce>       ( _ => #if isString( #getJSON("nonce",    J) ) #then #parseHexWord(#getString("nonce",   J)) #else 0                      #fi )       </nonce>
+           <storage>     ( _ => #if isString( #getJSON("storage",  J) ) #then #parseMap(#getString("storage",     J)) #else .Map                   #fi )     </storage>
+           <origStorage> ( _ => #if isString( #getJSON("storage",  J) ) #then #parseMap(#getString("storage",     J)) #else .Map                   #fi ) </origStorage>
          </account>
+      requires #parseHexWord(#getString("address", J)) ==Int ACCTID
+
+    rule <k> #loadAccountData _ =>  #sendResponse( "error": {"code": -32025, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
 
 endmodule
 ```
