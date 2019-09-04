@@ -37,14 +37,15 @@ LUA_PATH                := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean clean-submodules distclean install uninstall \
-        deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff \
-        build build-all build-ocaml build-java build-node build-llvm build-web3 split-tests \
-        defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn \
-        test test-all test-conformance test-slow-conformance test-all-conformance \
-        test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
-        test-web3 \
-        test-prove test-klab-prove test-parse test-failure \
+.PHONY: all clean clean-submodules distclean install uninstall                                                                              \
+        deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff                         \
+        build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                                               \
+        defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                                                \
+        split-tests                                                                                                                         \
+        test test-all test-conformance test-slow-conformance test-all-conformance                                                           \
+        test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain                                                       \
+        test-web3                                                                                                                           \
+        test-prove test-klab-prove test-parse test-failure                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly \
         media media-pdf sphinx metropolis-theme
 .SECONDARY:
@@ -170,7 +171,7 @@ web3_files    := $(patsubst %, $(web3_dir)/%, $(ALL_K_FILES))
 defn_files    := $(ocaml_files) $(llvm_file) $(java_files) $(haskell_files) $(node_files) $(web3_files)
 
 ocaml_kompiled   := $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
-java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/compiled.txt
+java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
 node_kompiled    := $(DEFN_DIR)/vm/kevm-vm
 web3_kompiled    := $(web3_dir)/kevm-client
 haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
@@ -220,7 +221,7 @@ KOMPILE_OPTS      :=
 LLVM_KOMPILE_OPTS :=
 
 build:     build-ocaml build-java
-build-all: build-ocaml build-java build-node build-web3 build-haskell build-llvm
+build-all: build-ocaml build-java build-node build-haskell build-llvm build-web3
 build-ocaml:   $(ocaml_kompiled)
 build-java:    $(java_kompiled)
 build-node:    $(node_kompiled)
@@ -283,7 +284,7 @@ $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT): $(wildcard $
 	        && ocamlfind remove ethereum-semantics-plugin-ocaml \
 	        && ocamlfind install ethereum-semantics-plugin-ocaml $(PLUGIN_SUBMODULE)/plugin/META semantics.* *.cmi *.$(EXT)
 
-$(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT)
+$(ocaml_kompiled): $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT)
 	eval $$(opam config env) \
 	    && cd $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled \
 	        && ocamllex lexer.mll \
