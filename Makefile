@@ -200,19 +200,19 @@ $(llvm_dir)/%.k: %.md $(TANGLER)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
 $(java_dir)/%.k: %.md $(TANGLER)
-	mkdir -p $(java_dir)
+	@mkdir -p $(java_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
 $(haskell_dir)/%.k: %.md $(TANGLER)
-	mkdir -p $(haskell_dir)
+	@mkdir -p $(haskell_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
 $(node_dir)/%.k: %.md $(TANGLER)
-	mkdir -p $(node_dir)
+	@mkdir -p $(node_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
 
 $(web3_dir)/%.k: %.md $(TANGLER)
-	mkdir -p $(web3_dir)
+	@mkdir -p $(web3_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
 
 # Kompiling
