@@ -1,0 +1,13 @@
+[{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "firefly_addAccount",
+  "params": [
+    {
+      "address": "0xf2b39e6c322c897bbe7a60f301c7ba90ad1c7bc8814e53b467be423e38ac2eb6",
+      "balance": "0x100",
+      "nonce": "0x3",
+      "storage": { "0" : "0x64" }
+    }
+  ]
+}]
