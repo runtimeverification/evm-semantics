@@ -160,12 +160,19 @@ k_files=driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k web3.k asm.k
 EXTRA_K_FILES += $(MAIN_DEFN_FILE).k
 ALL_K_FILES   := $(k_files) $(EXTRA_K_FILES)
 
-ocaml_files   := $(patsubst %, $(DEFN_DIR)/ocaml/%, $(ALL_K_FILES))
-llvm_files    := $(patsubst %, $(DEFN_DIR)/llvm/%, $(ALL_K_FILES))
-java_files    := $(patsubst %, $(DEFN_DIR)/java/%, $(ALL_K_FILES))
-haskell_files := $(patsubst %, $(DEFN_DIR)/haskell/%, $(ALL_K_FILES))
-node_files    := $(patsubst %, $(DEFN_DIR)/node/%, $(ALL_K_FILES))
-web3_files    := $(patsubst %, $(DEFN_DIR)/web3/%, $(ALL_K_FILES))
+ocaml_dir   := $(DEFN_DIR)/ocaml
+llvm_dir    := $(DEFN_DIR)/llvm
+java_dir    := $(DEFN_DIR)/java
+haskell_dir := $(DEFN_DIR)/haskell
+node_dir    := $(DEFN_DIR)/node
+web3_dir    := $(DEFN_DIR)/web3
+
+ocaml_files   := $(patsubst %, $(ocaml_dir)/%, $(ALL_K_FILES))
+llvm_files    := $(patsubst %, $(llvm_dir)/%, $(ALL_K_FILES))
+java_files    := $(patsubst %, $(java_dir)/%, $(ALL_K_FILES))
+haskell_files := $(patsubst %, $(haskell_dir)/%, $(ALL_K_FILES))
+node_files    := $(patsubst %, $(node_dir)/%, $(ALL_K_FILES))
+web3_files    := $(patsubst %, $(web3_dir)/%, $(ALL_K_FILES))
 defn_files    := $(ocaml_files) $(llvm_file) $(java_files) $(haskell_files) $(node_files) $(web3_files)
 
 defn: $(defn_files)
@@ -176,27 +183,27 @@ haskell-defn: $(haskell_files)
 node-defn:    $(node_files)
 web3-defn:    $(web3_files)
 
-$(DEFN_DIR)/ocaml/%.k: %.md $(TANGLER)
+$(ocaml_dir)/%.k: %.md $(TANGLER)
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
-$(DEFN_DIR)/llvm/%.k: %.md $(TANGLER)
+$(llvm_dir)/%.k: %.md $(TANGLER)
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
-$(DEFN_DIR)/java/%.k: %.md $(TANGLER)
+$(java_dir)/%.k: %.md $(TANGLER)
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
-$(DEFN_DIR)/haskell/%.k: %.md $(TANGLER)
+$(haskell_dir)/%.k: %.md $(TANGLER)
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
-$(DEFN_DIR)/node/%.k: %.md $(TANGLER)
+$(node_dir)/%.k: %.md $(TANGLER)
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
 
-$(DEFN_DIR)/web3/%.k: %.md $(TANGLER)
+$(web3_dir)/%.k: %.md $(TANGLER)
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
 
@@ -205,12 +212,12 @@ $(DEFN_DIR)/web3/%.k: %.md $(TANGLER)
 KOMPILE_OPTS      :=
 LLVM_KOMPILE_OPTS :=
 
-ocaml_kompiled   := $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter
-java_kompiled    := $(DEFN_DIR)/java/$(MAIN_DEFN_FILE)-kompiled/timestamp
+ocaml_kompiled   := $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
+java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
 node_kompiled    := $(DEFN_DIR)/vm/kevm-vm
-web3_kompiled    := $(DEFN_DIR)/web3/kevm-client
-haskell_kompiled := $(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE)-kompiled/definition.kore
-llvm_kompiled    := $(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE)-kompiled/interpreter
+web3_kompiled    := $(web3_dir)/kevm-client
+haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 build:     build-ocaml build-java
 build-all: build-ocaml build-java build-node build-web3 build-haskell build-llvm
@@ -225,16 +232,16 @@ build-llvm:    $(llvm_kompiled)
 
 $(java_kompiled): $(java_files)
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend java \
-	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/java/$(MAIN_DEFN_FILE).k \
-	                 --directory $(DEFN_DIR)/java -I $(DEFN_DIR)/java \
+	                 --syntax-module $(SYNTAX_MODULE) $(java_dir)/$(MAIN_DEFN_FILE).k \
+	                 --directory $(java_dir) -I $(java_dir) \
 	                 $(KOMPILE_OPTS)
 
 # Haskell Backend
 
 $(haskell_kompiled): $(haskell_files)
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend haskell --hook-namespaces KRYPTO \
-	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE).k \
-	                 --directory $(DEFN_DIR)/haskell -I $(DEFN_DIR)/haskell \
+	                 --syntax-module $(SYNTAX_MODULE) $(haskell_dir)/$(MAIN_DEFN_FILE).k \
+	                 --directory $(haskell_dir) -I $(haskell_dir) \
 	                 $(KOMPILE_OPTS)
 
 # OCAML Backend
@@ -253,32 +260,32 @@ else
   LIBFLAG=-shared
 endif
 
-$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
+$(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
 	eval $$(opam config env) \
 	    && $(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) \
-	                        --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE).k \
+	                        --syntax-module $(SYNTAX_MODULE) $(ocaml_dir)/$(MAIN_DEFN_FILE).k \
 	                        --hook-namespaces "KRYPTO" --gen-ml-only -O3 --non-strict \
-	                        --directory $(DEFN_DIR)/ocaml -I $(DEFN_DIR)/ocaml $(KOMPILE_OPTS) \
-	    && cd $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled \
+	                        --directory $(ocaml_dir) -I $(ocaml_dir) $(KOMPILE_OPTS) \
+	    && cd $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled \
 	    && ocamlfind $(OCAMLC) -c -g constants.ml -package gmp -package zarith -safe-string
 
-$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT)
+$(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT)
 	mkdir -p $(dir $@)
 	cp $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli $(dir $@)
 	eval $$(opam config env) \
 	    && ocp-ocamlres -format ocaml $(PLUGIN_SUBMODULE)/plugin/proto/VERSION -o $(dir $@)/apiVersion.ml \
 	    && ocaml-protoc $(PLUGIN_SUBMODULE)/plugin/proto/*.proto -ml_out $(dir $@) \
 	    && cd $(dir $@) \
-	        && ocamlfind $(OCAMLC) -c -g -I $(CURDIR)/$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled \
+	        && ocamlfind $(OCAMLC) -c -g -I $(CURDIR)/$(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled \
 	                               KRYPTO.ml \
 	                               -package cryptokit -package hex -package secp256k1 -package bn128 -package ocaml-protoc -safe-string -thread \
 	        && ocamlfind $(OCAMLC) -a -o semantics.$(LIBEXT) KRYPTO.$(EXT) -thread \
 	        && ocamlfind remove ethereum-semantics-plugin-ocaml \
 	        && ocamlfind install ethereum-semantics-plugin-ocaml $(PLUGIN_SUBMODULE)/plugin/META semantics.* *.cmi *.$(EXT)
 
-$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT)
+$(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT)
 	eval $$(opam config env) \
-	    && cd $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled \
+	    && cd $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled \
 	        && ocamllex lexer.mll \
 	        && ocamlyacc parser.mly \
 	        && ocamlfind $(OCAMLC) -c -g -package gmp -package zarith -package uuidm -safe-string prelude.ml plugin.ml parser.mli parser.ml lexer.ml hooks.ml run.ml -thread \
@@ -289,37 +296,37 @@ $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(DEFN_DIR)/ocaml/$(MA
 
 # Node Backend
 
-$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
+$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
-	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/node/$(MAIN_DEFN_FILE).k \
-	                 --directory $(DEFN_DIR)/node -I $(DEFN_DIR)/node -I $(DEFN_DIR)/node \
+	                 --syntax-module $(SYNTAX_MODULE) $(node_dir)/$(MAIN_DEFN_FILE).k \
+	                 --directory $(node_dir) -I $(node_dir) -I $(node_dir) \
 	                 --hook-namespaces "KRYPTO BLOCKCHAIN" \
 			 --iterated \
 	                 $(KOMPILE_OPTS) \
-	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blockchain.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/world.cpp -ccopt $(CURDIR)/$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc \
-	                 -ccopt -I$(CURDIR)/$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin \
+	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blockchain.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/world.cpp -ccopt $(CURDIR)/$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc \
+	                 -ccopt -I$(CURDIR)/$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin \
 	                 -ccopt -L$(LIBRARY_PATH) \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS)) -ccopt -lprotobuf -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
-$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
-	mkdir -p $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin
-	protoc --cpp_out=$(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
+$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
+	mkdir -p $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin
+	protoc --cpp_out=$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 
-$(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter $(libff_out)
+$(node_kompiled): $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter $(libff_out)
 	mkdir -p $(DEFN_DIR)/vm
-	$(K_BIN)/llvm-kompile $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/init.cpp $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp \
-	                      $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $@ -g -O2 \
-	                      -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ -I node/ \
+	$(K_BIN)/llvm-kompile $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/init.cpp $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp \
+	                      $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $@ -g -O2 \
+	                      -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ -I node/ \
 	                      $(LLVM_KOMPILE_OPTS) \
 	                      -L$(LIBRARY_PATH) \
 	                      -lff -lprotobuf -lgmp $(LINK_PROCPS) -lcryptopp -lsecp256k1
 
 # Web3 Backend
 
-$(DEFN_DIR)/web3/web3-kompiled/interpreter: $(web3_files) $(libff_out)
+$(web3_dir)/web3-kompiled/interpreter: $(web3_files) $(libff_out)
 	$(K_BIN)/kompile --debug --main-module WEB3 --backend llvm \
-	                 --syntax-module WEB3 $(DEFN_DIR)/web3/web3.k \
-	                 --directory $(DEFN_DIR)/web3 -I $(DEFN_DIR)/web3 \
+	                 --syntax-module WEB3 $(web3_dir)/web3.k \
+	                 --directory $(web3_dir) -I $(web3_dir) \
 	                 --hook-namespaces "KRYPTO BLOCKCHAIN JSON" \
 	                 --iterated \
 	                 $(KOMPILE_OPTS) \
@@ -327,9 +334,9 @@ $(DEFN_DIR)/web3/web3-kompiled/interpreter: $(web3_files) $(libff_out)
 	                 -ccopt -L$(LIBRARY_PATH) -ccopt -I -ccopt $(PLUGIN_SUBMODULE)/vm-c \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS)) -ccopt -g -ccopt -std=c++11 -ccopt -O2
 
-$(web3_kompiled): $(DEFN_DIR)/web3/web3-kompiled/interpreter $(libff_out)
-	mkdir -p $(DEFN_DIR)/web3
-	$(K_BIN)/llvm-kompile $(DEFN_DIR)/web3/web3-kompiled/definition.kore $(DEFN_DIR)/web3/web3-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/init.cpp $(PLUGIN_SUBMODULE)/client-c/main.cpp $(PLUGIN_SUBMODULE)/client-c/json.cpp \
+$(web3_kompiled): $(web3_dir)/web3-kompiled/interpreter $(libff_out)
+	mkdir -p $(web3_dir)
+	$(K_BIN)/llvm-kompile $(web3_dir)/web3-kompiled/definition.kore $(web3_dir)/web3-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/init.cpp $(PLUGIN_SUBMODULE)/client-c/main.cpp $(PLUGIN_SUBMODULE)/client-c/json.cpp \
 	                      $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -o $@ -g -O2 \
 	                      -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/plugin-c/ -I node/ \
 	                      $(LLVM_KOMPILE_OPTS) \
@@ -340,8 +347,8 @@ $(web3_kompiled): $(DEFN_DIR)/web3/web3-kompiled/interpreter $(libff_out)
 
 $(llvm_kompiled): $(llvm_files) $(libff_out)
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
-	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE).k \
-	                 --directory $(DEFN_DIR)/llvm -I $(DEFN_DIR)/llvm -I $(DEFN_DIR)/llvm \
+	                 --syntax-module $(SYNTAX_MODULE) $(llvm_dir)/$(MAIN_DEFN_FILE).k \
+	                 --directory $(llvm_dir) -I $(llvm_dir) -I $(llvm_dir) \
 	                 --hook-namespaces KRYPTO \
 	                 $(KOMPILE_OPTS) \
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
