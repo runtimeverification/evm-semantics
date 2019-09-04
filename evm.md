@@ -1353,7 +1353,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <output>       _ => .ByteArray </output>
          <wordStack>    _ => .WordStack </wordStack>
          <localMem>     _ => .Map       </localMem>
-         <program>      PGM             </program>
 
     syntax Set ::= #computeValidJumpDests(ByteArray)           [function]
                  | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
