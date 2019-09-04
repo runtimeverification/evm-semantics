@@ -1335,6 +1335,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <callGas> GCALL => 0 </callGas>
          <caller> _ => ACCTFROM </caller>
          <program> _ => BYTES </program>
+         <jumpDests> _ => #computeValidJumpDests(BYTES) </jumpDests>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
          <schedule> SCHED </schedule>
@@ -1352,7 +1353,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <output>       _ => .ByteArray </output>
          <wordStack>    _ => .WordStack </wordStack>
          <localMem>     _ => .Map       </localMem>
-         <jumpDests>    _ => #computeValidJumpDests(PGM) </jumpDests>
          <program>      PGM             </program>
 
     syntax Set ::= #computeValidJumpDests(ByteArray)           [function]
@@ -1502,6 +1502,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <gas> _ => GCALL </gas>
          <callGas> GCALL => 0 </callGas>
          <program> _ => INITCODE </program>
+         <jumpDests> _ => #computeValidJumpDests(INITCODE) </jumpDests>
          <caller> _ => ACCTFROM </caller>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => .ByteArray </callData>
