@@ -651,37 +651,41 @@ WEB3 JSON RPC
     rule <k> #acctFromPrivateKey KEY => #newAccount #addrFromPrivateKey(KEY) ... </k>
          <accountKeys> M => M[#addrFromPrivateKey(KEY) <- #parseHexWord(KEY)] </accountKeys>
 
-    syntax KItem ::= "#firefly_addAccount"
- // --------------------------------------
-    rule <k> #firefly_addAccount => #newAccount #parseHexWord( #getString("address", J) ) ~> #loadAccountData J ~> #sendResponse( "result": true ) ... </k>
+    syntax KItem ::= "#firefly_addAccount" | "#firefly_addAccountByAddress" Int | "#firefly_addAccountByKey" String
+ // ---------------------------------------------------------------------------------------------------------------
+    rule <k> #firefly_addAccount => #firefly_addAccountByAddress #parseHexWord(#getString("address", J)) ... </k>
+         <params> [ ({ _ } #as J), .JSONList ] </params>
+      requires isString(#getJSON("address", J))
+
+    rule <k> #firefly_addAccount => #firefly_addAccountByKey #getString("key", J) ... </k>
+         <params> [ ({ _ } #as J), .JSONList ] </params>
+      requires isString(#getJSON("key", J))
+
+    rule <k> #firefly_addAccountByAddress ACCT_ADDR => #newAccount ACCT_ADDR ~> #loadAccountData ACCT_ADDR J ~> #sendResponse( "result": true ) ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
          <activeAccounts> ACCTS </activeAccounts>
-      requires isString( #getJSON("address", J) )
-       andBool notBool #parseHexWord(#getString("address", J)) in ACCTS
+      requires notBool ACCT_ADDR in ACCTS
 
-    rule <k> #firefly_addAccount => #sendResponse( "result": false ) ... </k>
-         <params> [ ({ _ } #as J), .JSONList ] </params>
-          <activeAccounts> ACCTS </activeAccounts>
-      requires isString( #getJSON("address", J) )
-       andBool #parseHexWord(#getString("address", J)) in ACCTS
-
-    rule <k> #firefly_addAccount => #acctFromPrivateKey( #getString("key", J) ) ~> #loadAccountData J ~> #sendResponse( "result": true ) ... </k>
+    rule <k> #firefly_addAccountByAddress ACCT_ADDR => #sendResponse( "result": false ) ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
          <activeAccounts> ACCTS </activeAccounts>
-      requires isString( #getJSON("key", J) )
-       andBool notBool #addrFromPrivateKey(#getString("key", J)) in ACCTS
+      requires ACCT_ADDR in ACCTS
 
-    rule <k> #firefly_addAccount => #sendResponse( "result": false ) ... </k>
+    rule <k> #firefly_addAccountByKey ACCT_KEY => #acctFromPrivateKey ACCT_KEY ~> #loadAccountData #addrFromPrivateKey(ACCT_KEY) J ~> #sendResponse( "result": true ) ... </k>
+         <params> [ ({ _ } #as J), .JSONList ] </params>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool #addrFromPrivateKey(ACCT_KEY) in ACCTS
+
+    rule <k> #firefly_addAccountByKey ACCT_KEY => #sendResponse( "result": false ) ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
           <activeAccounts> ACCTS </activeAccounts>
-      requires isString( #getJSON("key", J) )
-       andBool #addrFromPrivateKey(#getString("key", J)) in ACCTS
+      requires #addrFromPrivateKey(ACCT_KEY) in ACCTS
 
-    rule <k> #firefly_addAccount =>  #sendResponse( "error": {"code": -32025, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
+    rule <k> #firefly_addAccount => #sendResponse( "error": {"code": -32025, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
 
-    syntax KItem ::= "#loadAccountData" JSON
- // ----------------------------------------
-    rule <k> #loadAccountData J => . ... </k>
+    syntax KItem ::= "#loadAccountData" Int JSON
+ // --------------------------------------------
+    rule <k> #loadAccountData ACCTID J => . ... </k>
          <account>
            <acctID>  ACCTID  </acctID>
            <balance>     ( _ => #if            isString( #getJSON("balance",  J) ) #then #parseHexWord(#getString("balance", J)) #else 100                    #fi )     </balance>
@@ -690,10 +694,8 @@ WEB3 JSON RPC
            <storage>     ( _ => #if notBool isJSONUndef( #getJSON("storage",  J) ) #then #parseMap(#getJSON("storage",       J)) #else .Map                   #fi )     </storage>
            <origStorage> ( _ => #if notBool isJSONUndef( #getJSON("storage",  J) ) #then #parseMap(#getJSON("storage",       J)) #else .Map                   #fi ) </origStorage>
          </account>
-      requires isString( #getJSON("address", J) )
-       andBool #parseHexWord(#getString("address", J)) ==Int ACCTID
 
-    rule <k> #loadAccountData J => . ... </k>
+    rule <k> #loadAccountData ACCTID J => . ... </k>
          <account>
            <acctID>  ACCTID  </acctID>
            <balance>     ( _ => #if            isString( #getJSON("balance",  J) ) #then #parseHexWord(#getString("balance", J)) #else 100                    #fi )     </balance>
@@ -702,10 +704,8 @@ WEB3 JSON RPC
            <storage>     ( _ => #if notBool isJSONUndef( #getJSON("storage",  J) ) #then #parseMap(#getJSON("storage",       J)) #else .Map                   #fi )     </storage>
            <origStorage> ( _ => #if notBool isJSONUndef( #getJSON("storage",  J) ) #then #parseMap(#getJSON("storage",       J)) #else .Map                   #fi ) </origStorage>
          </account>
-      requires isString( #getJSON("key", J) )
-       andBool #addrFromPrivateKey(#getString("key", J)) ==Int ACCTID
 
-    rule <k> #loadAccountData _ =>  #sendResponse( "error": {"code": -32026, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
+    rule <k> #loadAccountData _ _ =>  #sendResponse( "error": {"code": -32026, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
 
 endmodule
 ```
