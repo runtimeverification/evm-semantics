@@ -1037,15 +1037,16 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax UnStackOp ::= "JUMP"
  // ---------------------------
-    rule <k> JUMP DEST => #if DEST in DESTS #then #endBasicBlock #else #end EVMC_BAD_JUMP_DESTINATION #fi ... </k>
+    rule <k> JUMP DEST => #endBasicBlock... </k>
          <pc> _ => DEST </pc>
          <program> PGM </program>
          <jumpDests> DESTS </jumpDests>
-      requires DEST <Int #sizeByteArray(PGM)
+      requires DEST in DESTS
 
     rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
          <program> PGM </program>
-      requires DEST >=Int #sizeByteArray(PGM)
+         <jumpDests> DESTS </jumpDests>
+      requires notBool DEST in DESTS
 
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
