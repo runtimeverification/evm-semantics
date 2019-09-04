@@ -36,7 +36,7 @@ export LUA_PATH
 
 .PHONY: all clean clean-submodules distclean install uninstall \
         deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff \
-        build build-ocaml build-java build-node build-llvm build-web3 split-tests \
+        build build-all build-ocaml build-java build-node build-llvm build-web3 split-tests \
         defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn \
         test test-all test-conformance test-slow-conformance test-all-conformance \
         test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain \
@@ -162,6 +162,7 @@ haskell_kompiled:=$(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 llvm_kompiled:=$(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 build: build-ocaml build-java
+build-all: build-ocaml build-java build-node build-web3 build-haskell build-llvm
 build-ocaml: $(ocaml_kompiled)
 build-java: $(java_kompiled)
 build-node: $(node_kompiled)
