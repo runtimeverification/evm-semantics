@@ -150,12 +150,6 @@ MAIN_MODULE    := ETHEREUM-SIMULATION
 SYNTAX_MODULE  := $(MAIN_MODULE)
 MAIN_DEFN_FILE := driver
 
-# Tangle definition from *.md files
-
-concrete_tangle := .k:not(.node):not(.symbolic),.standalone,.concrete
-symbolic_tangle := .k:not(.node):not(.concrete),.standalone,.symbolic
-node_tangle     := .k:not(.standalone):not(.symbolic),.node,.concrete
-
 k_files       := driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k web3.k asm.k
 EXTRA_K_FILES += $(MAIN_DEFN_FILE).k
 ALL_K_FILES   := $(k_files) $(EXTRA_K_FILES)
@@ -174,6 +168,19 @@ haskell_files := $(patsubst %, $(haskell_dir)/%, $(ALL_K_FILES))
 node_files    := $(patsubst %, $(node_dir)/%, $(ALL_K_FILES))
 web3_files    := $(patsubst %, $(web3_dir)/%, $(ALL_K_FILES))
 defn_files    := $(ocaml_files) $(llvm_file) $(java_files) $(haskell_files) $(node_files) $(web3_files)
+
+ocaml_kompiled   := $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
+java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
+node_kompiled    := $(DEFN_DIR)/vm/kevm-vm
+web3_kompiled    := $(web3_dir)/kevm-client
+haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
+
+# Tangle definition from *.md files
+
+concrete_tangle := .k:not(.node):not(.symbolic),.standalone,.concrete
+symbolic_tangle := .k:not(.node):not(.concrete),.standalone,.symbolic
+node_tangle     := .k:not(.standalone):not(.symbolic),.node,.concrete
 
 defn: $(defn_files)
 ocaml-defn:   $(ocaml_files)
@@ -211,13 +218,6 @@ $(web3_dir)/%.k: %.md $(TANGLER)
 
 KOMPILE_OPTS      :=
 LLVM_KOMPILE_OPTS :=
-
-ocaml_kompiled   := $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
-java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
-node_kompiled    := $(DEFN_DIR)/vm/kevm-vm
-web3_kompiled    := $(web3_dir)/kevm-client
-haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
-llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 build:     build-ocaml build-java
 build-all: build-ocaml build-java build-node build-web3 build-haskell build-llvm
