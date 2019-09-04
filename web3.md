@@ -633,10 +633,10 @@ WEB3 JSON RPC
              <txGasLimit> #parseHexWord( Raw2Hex( GLIMIT ) )    </txGasLimit>
              <to>         #parseHexWord( Raw2Hex( TO ) )        </to>
              <value>      #parseHexWord( Raw2Hex( VALUE ) )     </value>
-             <data>       #parseByteStack( Raw2Hex( DATA ) )    </data>
+             <data>       #parseByteStackRaw( DATA )            </data>
              <sigV>       #parseHexWord( Raw2Hex( V ) ) -Int 27 </sigV>
-             <sigR>       #parseByteStack( Raw2Hex( R ) )       </sigR>
-             <sigS>       #parseByteStack( Raw2Hex( S ) )       </sigS>
+             <sigR>       #parseByteStackRaw( R )               </sigR>
+             <sigS>       #parseByteStackRaw( S )               </sigS>
            </message>
          )
          ...
@@ -645,6 +645,16 @@ WEB3 JSON RPC
     rule <k> #eth_sendRawTransactionLoad => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
 
     rule <k> #eth_sendRawTransactionVerify TXID => #eth_sendRawTransactionSend TXID ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <sigV> V </sigV>
+           <sigR> R </sigR>
+           <sigS> S </sigS>
+           ...
+         </message>
+      requires ECDSARecover( Hex2Raw( #hashUnsignedTx( TXID ) ), V +Int 27, #unparseByteStack(R), #unparseByteStack(S) ) =/=String ""
+
+    rule <k> #eth_sendRawTransactionVerify _ => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
 
     rule <k> #eth_sendRawTransactionSend TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
 
