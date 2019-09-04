@@ -348,6 +348,8 @@ WEB3 JSON RPC
 
     rule <k> .AccountItem ~> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( 0 )) ... </k>
 
+    rule <k> #eth_getBalance => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getBalance' requires exactly 2 arguments."} ) ... </k> [owise]
+
     syntax KItem ::= "#eth_getStorageAt"
  // ------------------------------------
     rule <k> #eth_getStorageAt ... </k>
@@ -361,6 +363,8 @@ WEB3 JSON RPC
 
     rule <k> .AccountItem ~> #eth_getStorageAt => #sendResponse( "result" : #unparseQuantity( 0 )) ... </k>
 
+    rule <k> #eth_getStorageAt => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getStorageAt' requires exactly 3 arguments."} ) ... </k> [owise]
+
     syntax KItem ::= "#eth_getCode"
  // -------------------------------
     rule <k> #eth_getCode ... </k>
@@ -373,6 +377,8 @@ WEB3 JSON RPC
 
      rule <k> .AccountItem ~> #eth_getCode => #sendResponse( "result" : #unparseDataByteArray( .ByteArray )) ... </k>
 
+    rule <k> #eth_getCode => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getCode' requires exactly 2 arguments."} ) ... </k> [owise]
+
     syntax KItem ::= "#eth_getTransactionCount"
  // -------------------------------------------
     rule <k> #eth_getTransactionCount ... </k>
@@ -384,6 +390,8 @@ WEB3 JSON RPC
     rule <k> <account> ... <nonce> NONCE </nonce> ... </account> ~> #eth_getTransactionCount => #sendResponse( "result" : #unparseQuantity( NONCE )) ... </k>
 
     rule <k> .AccountItem ~> #eth_getTransactionCount => #sendResponse ("result" : #unparseQuantity( 0 )) ... </k>
+
+    rule <k> #eth_getTransactionCount => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getTransactionCount' requires exactly 2 arguments."} ) ... </k> [owise]
 
     syntax KItem ::= "#eth_sign"
  // ----------------------------
