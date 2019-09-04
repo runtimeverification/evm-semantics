@@ -146,27 +146,9 @@ ocaml-deps:
 # Building
 # --------
 
-MAIN_MODULE:=ETHEREUM-SIMULATION
-SYNTAX_MODULE:=$(MAIN_MODULE)
-MAIN_DEFN_FILE:=driver
-KOMPILE_OPTS:=
-LLVM_KOMPILE_OPTS:=
-
-ocaml_kompiled:=$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter
-java_kompiled:=$(DEFN_DIR)/java/$(MAIN_DEFN_FILE)-kompiled/timestamp
-node_kompiled:=$(DEFN_DIR)/vm/kevm-vm
-web3_kompiled:=$(DEFN_DIR)/web3/kevm-client
-haskell_kompiled:=$(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE)-kompiled/definition.kore
-llvm_kompiled:=$(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE)-kompiled/interpreter
-
-build: build-ocaml build-java
-build-all: build-ocaml build-java build-node build-web3 build-haskell build-llvm
-build-ocaml: $(ocaml_kompiled)
-build-java: $(java_kompiled)
-build-node: $(node_kompiled)
-build-web3: $(web3_kompiled)
-build-haskell: $(haskell_kompiled)
-build-llvm: $(llvm_kompiled)
+MAIN_MODULE    := ETHEREUM-SIMULATION
+SYNTAX_MODULE  := $(MAIN_MODULE)
+MAIN_DEFN_FILE := driver
 
 # Tangle definition from *.md files
 
@@ -217,6 +199,27 @@ $(DEFN_DIR)/node/%.k: %.md $(TANGLER)
 $(DEFN_DIR)/web3/%.k: %.md $(TANGLER)
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
+
+# Kompiling
+
+KOMPILE_OPTS      :=
+LLVM_KOMPILE_OPTS :=
+
+ocaml_kompiled:=$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter
+java_kompiled:=$(DEFN_DIR)/java/$(MAIN_DEFN_FILE)-kompiled/timestamp
+node_kompiled:=$(DEFN_DIR)/vm/kevm-vm
+web3_kompiled:=$(DEFN_DIR)/web3/kevm-client
+haskell_kompiled:=$(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+llvm_kompiled:=$(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE)-kompiled/interpreter
+
+build: build-ocaml build-java
+build-all: build-ocaml build-java build-node build-web3 build-haskell build-llvm
+build-ocaml: $(ocaml_kompiled)
+build-java: $(java_kompiled)
+build-node: $(node_kompiled)
+build-web3: $(web3_kompiled)
+build-haskell: $(haskell_kompiled)
+build-llvm: $(llvm_kompiled)
 
 # Java Backend
 
