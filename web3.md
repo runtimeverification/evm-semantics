@@ -685,24 +685,38 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#loadAccountData" Int JSON
  // --------------------------------------------
-    rule <k> #loadAccountData ACCTID J => . ... </k>
+    rule <k> #loadAccountData _ { .JSONList } => . ... </k>
+
+    rule <k> #loadAccountData _ { "address": _, REST => REST } ... </k>
+    rule <k> #loadAccountData _ { "key"    : _, REST => REST } ... </k>
+
+    rule <k> #loadAccountData ACCTID { ("balance": BALANCE_STRING, REST) => REST } ... </k>
          <account>
-           <acctID>  ACCTID  </acctID>
-           <balance>     ( _ => #if            isString( #getJSON("balance",  J) ) #then #parseHexWord(#getString("balance", J)) #else 100                    #fi )     </balance>
-           <code>        ( _ => #if            isString( #getJSON("code",     J) ) #then #parseByteStack(#getString("code",  J)) #else .ByteArray:AccountCode #fi )        </code>
-           <nonce>       ( _ => #if            isString( #getJSON("nonce",    J) ) #then #parseHexWord(#getString("nonce",   J)) #else 0                      #fi )       </nonce>
-           <storage>     ( _ => #if notBool isJSONUndef( #getJSON("storage",  J) ) #then #parseMap(#getJSON("storage",       J)) #else .Map                   #fi )     </storage>
-           <origStorage> ( _ => #if notBool isJSONUndef( #getJSON("storage",  J) ) #then #parseMap(#getJSON("storage",       J)) #else .Map                   #fi ) </origStorage>
+           <acctID> ACCTID </acctID>
+           <balance> _ => #parseHexWord(BALANCE_STRING) </balance>
+           ...
          </account>
 
-    rule <k> #loadAccountData ACCTID J => . ... </k>
+    rule <k> #loadAccountData ACCTID { ("code": CODE_STRING, REST) => REST } ... </k>
          <account>
-           <acctID>  ACCTID  </acctID>
-           <balance>     ( _ => #if            isString( #getJSON("balance",  J) ) #then #parseHexWord(#getString("balance", J)) #else 100                    #fi )     </balance>
-           <code>        ( _ => #if            isString( #getJSON("code",     J) ) #then #parseByteStack(#getString("code",  J)) #else .ByteArray:AccountCode #fi )        </code>
-           <nonce>       ( _ => #if            isString( #getJSON("nonce",    J) ) #then #parseHexWord(#getString("nonce",   J)) #else 0                      #fi )       </nonce>
-           <storage>     ( _ => #if notBool isJSONUndef( #getJSON("storage",  J) ) #then #parseMap(#getJSON("storage",       J)) #else .Map                   #fi )     </storage>
-           <origStorage> ( _ => #if notBool isJSONUndef( #getJSON("storage",  J) ) #then #parseMap(#getJSON("storage",       J)) #else .Map                   #fi ) </origStorage>
+           <acctID> ACCTID </acctID>
+           <code> _ => #parseByteStack(CODE_STRING) </code>
+           ...
+         </account>
+
+    rule <k> #loadAccountData ACCTID { ("nonce": NONCE_STRING, REST) => REST } ... </k>
+         <account>
+           <acctID> ACCTID </acctID>
+           <nonce> _ => #parseHexWord(NONCE_STRING) </nonce>
+           ...
+         </account>
+
+    rule <k> #loadAccountData ACCTID { ("storage": { STORAGE_JSON }, REST) => REST } ... </k>
+         <account>
+           <acctID> ACCTID </acctID>
+           <storage>     _ => #parseMap({ STORAGE_JSON }) </storage>
+           <origStorage> _ => #parseMap({ STORAGE_JSON }) </origStorage>
+           ...
          </account>
 
     rule <k> #loadAccountData _ _ =>  #sendResponse( "error": {"code": -32026, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
