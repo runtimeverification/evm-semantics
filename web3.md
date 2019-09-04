@@ -146,6 +146,10 @@ WEB3 JSON RPC
  // ----------------------------------------------------------
     rule #getString( KEY, J ) => {#getJSON( KEY, J )}:>String
 
+    syntax Bool ::= isJSONUndef ( JSON ) [function]
+ // -----------------------------------------------
+    rule isJSONUndef(J) => J ==K undef
+
     syntax IOJSON ::= JSON | IOError
  // --------------------------------
 
@@ -660,11 +664,11 @@ WEB3 JSON RPC
     rule <k> #loadAccountData J => . ... </k>
          <account>
            <acctID>  ACCTID  </acctID>
-           <balance>     ( _ => #if isString( #getJSON("balance",  J) ) #then #parseHexWord(#getString("balance", J)) #else 100                    #fi )     </balance>
-           <code>        ( _ => #if isString( #getJSON("code",     J) ) #then #parseByteStack(#getString("code",  J)) #else .ByteArray:AccountCode #fi )        </code>
-           <nonce>       ( _ => #if isString( #getJSON("nonce",    J) ) #then #parseHexWord(#getString("nonce",   J)) #else 0                      #fi )       </nonce>
-           <storage>     ( _ => #if   isJSON( #getJSON("storage",  J) ) #then #parseMap(#getJSON("storage",       J)) #else .Map                   #fi )     </storage>
-           <origStorage> ( _ => #if   isJSON( #getJSON("storage",  J) ) #then #parseMap(#getJSON("storage",       J)) #else .Map                   #fi ) </origStorage>
+           <balance>     ( _ => #if            isString( #getJSON("balance",  J) ) #then #parseHexWord(#getString("balance", J)) #else 100                    #fi )     </balance>
+           <code>        ( _ => #if            isString( #getJSON("code",     J) ) #then #parseByteStack(#getString("code",  J)) #else .ByteArray:AccountCode #fi )        </code>
+           <nonce>       ( _ => #if            isString( #getJSON("nonce",    J) ) #then #parseHexWord(#getString("nonce",   J)) #else 0                      #fi )       </nonce>
+           <storage>     ( _ => #if notBool isJSONUndef( #getJSON("storage",  J) ) #then #parseMap(#getJSON("storage",       J)) #else .Map                   #fi )     </storage>
+           <origStorage> ( _ => #if notBool isJSONUndef( #getJSON("storage",  J) ) #then #parseMap(#getJSON("storage",       J)) #else .Map                   #fi ) </origStorage>
          </account>
       requires #parseHexWord(#getString("address", J)) ==Int ACCTID
 
