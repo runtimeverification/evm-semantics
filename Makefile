@@ -184,27 +184,27 @@ node-defn:    $(node_files)
 web3-defn:    $(web3_files)
 
 $(ocaml_dir)/%.k: %.md $(TANGLER)
-	mkdir -p $(dir $@)
+	@mkdir -p $(ocaml_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
 $(llvm_dir)/%.k: %.md $(TANGLER)
-	mkdir -p $(dir $@)
+	@mkdir -p $(llvm_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
 $(java_dir)/%.k: %.md $(TANGLER)
-	mkdir -p $(dir $@)
+	mkdir -p $(java_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
 $(haskell_dir)/%.k: %.md $(TANGLER)
-	mkdir -p $(dir $@)
+	mkdir -p $(haskell_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
 $(node_dir)/%.k: %.md $(TANGLER)
-	mkdir -p $(dir $@)
+	mkdir -p $(node_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
 
 $(web3_dir)/%.k: %.md $(TANGLER)
-	mkdir -p $(dir $@)
+	mkdir -p $(web3_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
 
 # Kompiling
