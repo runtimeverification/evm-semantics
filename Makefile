@@ -152,29 +152,29 @@ MAIN_DEFN_FILE := driver
 
 # Tangle definition from *.md files
 
-concrete_tangle:=.k:not(.node):not(.symbolic),.standalone,.concrete
-symbolic_tangle:=.k:not(.node):not(.concrete),.standalone,.symbolic
-node_tangle:=.k:not(.standalone):not(.symbolic),.node,.concrete
+concrete_tangle := .k:not(.node):not(.symbolic),.standalone,.concrete
+symbolic_tangle := .k:not(.node):not(.concrete),.standalone,.symbolic
+node_tangle     := .k:not(.standalone):not(.symbolic),.node,.concrete
 
 k_files=driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k web3.k asm.k
-EXTRA_K_FILES+=$(MAIN_DEFN_FILE).k
-ALL_K_FILES:=$(k_files) $(EXTRA_K_FILES)
+EXTRA_K_FILES += $(MAIN_DEFN_FILE).k
+ALL_K_FILES   := $(k_files) $(EXTRA_K_FILES)
 
-ocaml_files=$(patsubst %, $(DEFN_DIR)/ocaml/%, $(ALL_K_FILES))
-llvm_files=$(patsubst %, $(DEFN_DIR)/llvm/%, $(ALL_K_FILES))
-java_files=$(patsubst %, $(DEFN_DIR)/java/%, $(ALL_K_FILES))
-haskell_files=$(patsubst %, $(DEFN_DIR)/haskell/%, $(ALL_K_FILES))
-node_files=$(patsubst %, $(DEFN_DIR)/node/%, $(ALL_K_FILES))
-web3_files=$(patsubst %, $(DEFN_DIR)/web3/%, $(ALL_K_FILES))
-defn_files=$(ocaml_files) $(llvm_file) $(java_files) $(haskell_files) $(node_files) $(web3_files)
+ocaml_files   := $(patsubst %, $(DEFN_DIR)/ocaml/%, $(ALL_K_FILES))
+llvm_files    := $(patsubst %, $(DEFN_DIR)/llvm/%, $(ALL_K_FILES))
+java_files    := $(patsubst %, $(DEFN_DIR)/java/%, $(ALL_K_FILES))
+haskell_files := $(patsubst %, $(DEFN_DIR)/haskell/%, $(ALL_K_FILES))
+node_files    := $(patsubst %, $(DEFN_DIR)/node/%, $(ALL_K_FILES))
+web3_files    := $(patsubst %, $(DEFN_DIR)/web3/%, $(ALL_K_FILES))
+defn_files    := $(ocaml_files) $(llvm_file) $(java_files) $(haskell_files) $(node_files) $(web3_files)
 
 defn: $(defn_files)
-ocaml-defn: $(ocaml_files)
-llvm-defn: $(llvm_files)
-java-defn: $(java_files)
+ocaml-defn:   $(ocaml_files)
+llvm-defn:    $(llvm_files)
+java-defn:    $(java_files)
 haskell-defn: $(haskell_files)
-node-defn: $(node_files)
-web3-defn: $(web3_files)
+node-defn:    $(node_files)
+web3-defn:    $(web3_files)
 
 $(DEFN_DIR)/ocaml/%.k: %.md $(TANGLER)
 	mkdir -p $(dir $@)
@@ -205,21 +205,21 @@ $(DEFN_DIR)/web3/%.k: %.md $(TANGLER)
 KOMPILE_OPTS      :=
 LLVM_KOMPILE_OPTS :=
 
-ocaml_kompiled:=$(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter
-java_kompiled:=$(DEFN_DIR)/java/$(MAIN_DEFN_FILE)-kompiled/timestamp
-node_kompiled:=$(DEFN_DIR)/vm/kevm-vm
-web3_kompiled:=$(DEFN_DIR)/web3/kevm-client
-haskell_kompiled:=$(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE)-kompiled/definition.kore
-llvm_kompiled:=$(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE)-kompiled/interpreter
+ocaml_kompiled   := $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter
+java_kompiled    := $(DEFN_DIR)/java/$(MAIN_DEFN_FILE)-kompiled/timestamp
+node_kompiled    := $(DEFN_DIR)/vm/kevm-vm
+web3_kompiled    := $(DEFN_DIR)/web3/kevm-client
+haskell_kompiled := $(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+llvm_kompiled    := $(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
-build: build-ocaml build-java
+build:     build-ocaml build-java
 build-all: build-ocaml build-java build-node build-web3 build-haskell build-llvm
-build-ocaml: $(ocaml_kompiled)
-build-java: $(java_kompiled)
-build-node: $(node_kompiled)
-build-web3: $(web3_kompiled)
+build-ocaml:   $(ocaml_kompiled)
+build-java:    $(java_kompiled)
+build-node:    $(node_kompiled)
+build-web3:    $(web3_kompiled)
 build-haskell: $(haskell_kompiled)
-build-llvm: $(llvm_kompiled)
+build-llvm:    $(llvm_kompiled)
 
 # Java Backend
 
