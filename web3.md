@@ -347,7 +347,7 @@ WEB3 JSON RPC
     syntax KItem ::= "#eth_getStorageAt"
  // ------------------------------------
     rule <k> #eth_getStorageAt ... </k>
-         <params> [ (DATA => #parseHexWord(DATA)), QUANTITY:Int, _, .JSONList ] </params>
+         <params> [ (DATA => #parseHexWord(DATA)), (QUANTITY => #parseHexWord(QUANTITY)), _, .JSONList ] </params>
 
     rule <k> #eth_getStorageAt => #getAccountAtBlock(#parseBlockIdentifier(TAG), DATA) ~> #eth_getStorageAt ... </k>
          <params> [ DATA, QUANTITY, TAG, .JSONList ] </params>
@@ -643,7 +643,15 @@ WEB3 JSON RPC
  // --------------------------------------
     rule <k> #firefly_addAccount => #newAccount #parseHexWord( #getString("address", J) ) ~> #loadAccountData J ~> #sendResponse( "result": true ) ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
+         <activeAccounts> ACCTS </activeAccounts>
       requires isString( #getJSON("address", J) )
+       andBool notBool #parseHexWord(#getString("address", J)) in ACCTS
+
+    rule <k> #firefly_addAccount => #sendResponse( "result": false ) ... </k>
+         <params> [ ({ _ } #as J), .JSONList ] </params>
+          <activeAccounts> ACCTS </activeAccounts>
+      requires isString( #getJSON("address", J) )
+       andBool #parseHexWord(#getString("address", J)) in ACCTS
 
     rule <k> #firefly_addAccount =>  #sendResponse( "error": {"code": -32025, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
 
@@ -655,8 +663,8 @@ WEB3 JSON RPC
            <balance>     ( _ => #if isString( #getJSON("balance",  J) ) #then #parseHexWord(#getString("balance", J)) #else 100                    #fi )     </balance>
            <code>        ( _ => #if isString( #getJSON("code",     J) ) #then #parseByteStack(#getString("code",  J)) #else .ByteArray:AccountCode #fi )        </code>
            <nonce>       ( _ => #if isString( #getJSON("nonce",    J) ) #then #parseHexWord(#getString("nonce",   J)) #else 0                      #fi )       </nonce>
-           <storage>     ( _ => #if isString( #getJSON("storage",  J) ) #then #parseMap(#getString("storage",     J)) #else .Map                   #fi )     </storage>
-           <origStorage> ( _ => #if isString( #getJSON("storage",  J) ) #then #parseMap(#getString("storage",     J)) #else .Map                   #fi ) </origStorage>
+           <storage>     ( _ => #if   isJSON( #getJSON("storage",  J) ) #then #parseMap(#getJSON("storage",       J)) #else .Map                   #fi )     </storage>
+           <origStorage> ( _ => #if   isJSON( #getJSON("storage",  J) ) #then #parseMap(#getJSON("storage",       J)) #else .Map                   #fi ) </origStorage>
          </account>
       requires #parseHexWord(#getString("address", J)) ==Int ACCTID
 
