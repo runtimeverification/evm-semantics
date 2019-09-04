@@ -639,21 +639,21 @@ WEB3 JSON RPC
     rule <k> #eth_sendRawTransactionLoad => #eth_sendRawTransactionVerify !TXID ... </k>
          <params> [ NONCE, GPRICE, GLIMIT, TO, VALUE, DATA, V, R, S, .JSONList ] </params>
          <messages>
-         (.Bag =>
-           <message>
-             <msgID> !TXID </msgID>
-             <txNonce>    #parseHexWord( Raw2Hex( NONCE ) )     </txNonce>
-             <txGasPrice> #parseHexWord( Raw2Hex( GPRICE ) )    </txGasPrice>
-             <txGasLimit> #parseHexWord( Raw2Hex( GLIMIT ) )    </txGasLimit>
-             <to>         #parseHexWord( Raw2Hex( TO ) )        </to>
-             <value>      #parseHexWord( Raw2Hex( VALUE ) )     </value>
-             <data>       #parseByteStackRaw( DATA )            </data>
-             <sigV>       #parseHexWord( Raw2Hex( V ) ) -Int 27 </sigV>
-             <sigR>       #parseByteStackRaw( R )               </sigR>
-             <sigS>       #parseByteStackRaw( S )               </sigS>
-           </message>
-         )
-         ...
+           ( .Bag
+          => <message>
+               <msgID> !TXID </msgID>
+               <txNonce>    #parseHexWord( Raw2Hex( NONCE ) )     </txNonce>
+               <txGasPrice> #parseHexWord( Raw2Hex( GPRICE ) )    </txGasPrice>
+               <txGasLimit> #parseHexWord( Raw2Hex( GLIMIT ) )    </txGasLimit>
+               <to>         #parseHexWord( Raw2Hex( TO ) )        </to>
+               <value>      #parseHexWord( Raw2Hex( VALUE ) )     </value>
+               <data>       #parseByteStackRaw( DATA )            </data>
+               <sigV>       #parseHexWord( Raw2Hex( V ) ) -Int 27 </sigV>
+               <sigR>       #parseByteStackRaw( R )               </sigR>
+               <sigS>       #parseByteStackRaw( S )               </sigS>
+             </message>
+           )
+           ...
          </messages>
 
     rule <k> #eth_sendRawTransactionLoad => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
@@ -671,7 +671,6 @@ WEB3 JSON RPC
     rule <k> #eth_sendRawTransactionVerify _ => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
 
     rule <k> #eth_sendRawTransactionSend TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
-
 ```
 
 - `#personal_importRawKey` Takes an unencrypted private key, encrypts it with a passphrase, stores it and returns the address of the key.
