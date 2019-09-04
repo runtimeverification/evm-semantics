@@ -75,7 +75,6 @@ libsecp256k1: $(libsecp256k1_out)
 libff: $(libff_out)
 
 $(DEPS_DIR)/secp256k1/autogen.sh:
-	@echo "== submodule: $(DEPS_DIR)/secp256k1"
 	git submodule update --init --recursive -- $(DEPS_DIR)/secp256k1
 
 $(libsecp256k1_out): $(DEPS_DIR)/secp256k1/autogen.sh
@@ -99,7 +98,6 @@ LIBFF_CC ?=clang-8
 LIBFF_CXX?=clang++-8
 
 $(DEPS_DIR)/libff/CMakeLists.txt:
-	@echo "== submodule: $(DEPS_DIR)/libff"
 	git submodule update --init --recursive -- $(DEPS_DIR)/libff
 
 $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
@@ -130,17 +128,14 @@ plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 BACKEND_SKIP=-Dhaskell.backend.skip -Dllvm.backend.skip
 
 $(K_SUBMODULE)/make.timestamp:
-	@echo "== submodule: $@"
 	git submodule update --init --recursive -- $(K_SUBMODULE)
 	cd $(K_SUBMODULE) && mvn package -DskipTests -U $(BACKEND_SKIP)
 	touch $(K_SUBMODULE)/make.timestamp
 
 $(TANGLER):
-	@echo "== submodule: $@"
 	git submodule update --init -- $(PANDOC_TANGLE_SUBMODULE)
 
 $(PLUGIN_SUBMODULE)/make.timestamp:
-	@echo "== submodule: $@"
 	git submodule update --init --recursive -- $(PLUGIN_SUBMODULE)
 	touch $(PLUGIN_SUBMODULE)/make.timestamp
 
@@ -200,39 +195,32 @@ node-defn: $(node_files)
 web3-defn: $(web3_files)
 
 $(DEFN_DIR)/ocaml/%.k: %.md $(TANGLER)
-	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
 $(DEFN_DIR)/llvm/%.k: %.md $(TANGLER)
-	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
 $(DEFN_DIR)/java/%.k: %.md $(TANGLER)
-	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
 $(DEFN_DIR)/haskell/%.k: %.md $(TANGLER)
-	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
 
 $(DEFN_DIR)/node/%.k: %.md $(TANGLER)
-	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
 
 $(DEFN_DIR)/web3/%.k: %.md $(TANGLER)
-	@echo "==  tangle: $@"
 	mkdir -p $(dir $@)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
 
 # Java Backend
 
 $(java_kompiled): $(java_files)
-	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend java \
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/java/$(MAIN_DEFN_FILE).k \
 	                 --directory $(DEFN_DIR)/java -I $(DEFN_DIR)/java \
@@ -241,7 +229,6 @@ $(java_kompiled): $(java_files)
 # Haskell Backend
 
 $(haskell_kompiled): $(haskell_files)
-	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend haskell --hook-namespaces KRYPTO \
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/haskell/$(MAIN_DEFN_FILE).k \
 	                 --directory $(DEFN_DIR)/haskell -I $(DEFN_DIR)/haskell \
@@ -264,7 +251,6 @@ else
 endif
 
 $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
-	@echo "== kompile: $@"
 	eval $$(opam config env) \
 	    && $(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) \
 	                        --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE).k \
@@ -301,7 +287,6 @@ $(DEFN_DIR)/ocaml/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(DEFN_DIR)/ocaml/$(MA
 # Node Backend
 
 $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
-	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/node/$(MAIN_DEFN_FILE).k \
 	                 --directory $(DEFN_DIR)/node -I $(DEFN_DIR)/node -I $(DEFN_DIR)/node \
@@ -329,7 +314,6 @@ $(node_kompiled): $(DEFN_DIR)/node/$(MAIN_DEFN_FILE)-kompiled/interpreter $(libf
 # Web3 Backend
 
 $(DEFN_DIR)/web3/web3-kompiled/interpreter: $(web3_files) $(libff_out)
-	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module WEB3 --backend llvm \
 	                 --syntax-module WEB3 $(DEFN_DIR)/web3/web3.k \
 	                 --directory $(DEFN_DIR)/web3 -I $(DEFN_DIR)/web3 \
@@ -352,7 +336,6 @@ $(web3_kompiled): $(DEFN_DIR)/web3/web3-kompiled/interpreter $(libff_out)
 # LLVM Backend
 
 $(llvm_kompiled): $(llvm_files) $(libff_out)
-	@echo "== kompile: $@"
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
 	                 --syntax-module $(SYNTAX_MODULE) $(DEFN_DIR)/llvm/$(MAIN_DEFN_FILE).k \
 	                 --directory $(DEFN_DIR)/llvm -I $(DEFN_DIR)/llvm -I $(DEFN_DIR)/llvm \
@@ -401,7 +384,6 @@ test: test-conformance test-prove test-interactive test-parse
 split-tests: tests/ethereum-tests/make.timestamp
 
 tests/%/make.timestamp:
-	@echo "== submodule: $@"
 	git submodule update --init -- tests/$*
 	touch $@
 
@@ -554,17 +536,14 @@ media_pdfs := 201710-presentation-devcon3                          \
               201908-trufflecon-workshop 201908-trufflecon-firefly
 
 media/%.pdf: media/%.md media/citations.md
-	@echo "== media: $@"
 	mkdir -p $(dir $@)
 	cat $^ | pandoc --from markdown --filter pandoc-citeproc --to beamer --output $@
-	@echo "== $*: presentation generated at $@"
 
 media-pdf: $(patsubst %, media/%.pdf, $(media_pdfs))
 
 metropolis-theme: $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty
 
 $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
-	@echo "== submodule: $@"
 	git submodule update --init -- $(dir $@)
 	cd $(dir $@) && make
 
@@ -584,7 +563,6 @@ ALLSPHINXOPTS   = -d ../$(SPHINXBUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINX
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 sphinx:
-	@echo "== media: $@"
 	mkdir -p $(SPHINXBUILDDIR) \
 	    && cp -r media/sphinx-docs/* $(SPHINXBUILDDIR) \
 	    && cp -r *.md $(SPHINXBUILDDIR)/. \
@@ -592,4 +570,3 @@ sphinx:
 	    && sed -i 's/{.k[ a-zA-Z.-]*}/k/g' *.md \
 	    && $(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) html \
 	    && $(SPHINXBUILD) -b text $(ALLSPHINXOPTS) html/text
-	@echo "== sphinx: HTML generated in $(SPHINXBUILDDIR)/html, text in $(SPHINXBUILDDIR)/html/text"
