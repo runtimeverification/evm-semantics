@@ -291,6 +291,8 @@ WEB3 JSON RPC
          <method> "eth_uninstallFilter" </method>
     rule <k> #runRPCCall => #eth_sendTransaction ... </k>
          <method> "eth_sendTransaction" </method>
+    rule <k> #runRPCCall => #eth_sendRawTransaction ... </k>
+         <method> "eth_sendRawTransaction" </method>
     rule <k> #runRPCCall => #personal_importRawKey ... </k>
          <method> "personal_importRawKey" </method>
 
@@ -627,6 +629,62 @@ WEB3 JSON RPC
            <sigV> _ => #parseHexWord( substrString( SIG, 128, 130 ) ) </sigV>
            ...
          </message>
+```
+
+# eth_sendRawTransaction
+
+**TODO**: Verify the signature provided for the transaction
+
+```k
+
+    syntax KItem ::= "#eth_sendRawTransaction"
+                   | "#eth_sendRawTransactionLoad"
+                   | "#eth_sendRawTransactionVerify" Int
+                   | "#eth_sendRawTransactionSend" Int
+ // ----------------------------------------------------
+    rule <k> #eth_sendRawTransaction => #eth_sendRawTransactionLoad ... </k>
+         <params> [ RAWTX:String, .JSONList ] => #rlpDecode( Hex2Raw( RAWTX ) ) </params>
+
+    rule <k> #eth_sendRawTransaction => #sendResponse("error": { "code": -32000, "message":"\"value\" argument must not be a number" } ) ... </k>
+         <params> [ _:Int, .JSONList ] </params>
+
+    rule <k> #eth_sendRawTransaction => #sendResponse("error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
+
+    rule <k> #eth_sendRawTransactionLoad => #eth_sendRawTransactionVerify !TXID ... </k>
+         <params> [ NONCE, GPRICE, GLIMIT, TO, VALUE, DATA, V, R, S, .JSONList ] </params>
+         <messages>
+           ( .Bag
+          => <message>
+               <msgID> !TXID </msgID>
+               <txNonce>    #parseHexWord( Raw2Hex( NONCE ) )     </txNonce>
+               <txGasPrice> #parseHexWord( Raw2Hex( GPRICE ) )    </txGasPrice>
+               <txGasLimit> #parseHexWord( Raw2Hex( GLIMIT ) )    </txGasLimit>
+               <to>         #parseHexWord( Raw2Hex( TO ) )        </to>
+               <value>      #parseHexWord( Raw2Hex( VALUE ) )     </value>
+               <data>       #parseByteStackRaw( DATA )            </data>
+               <sigV>       #parseHexWord( Raw2Hex( V ) ) -Int 27 </sigV>
+               <sigR>       #parseByteStackRaw( R )               </sigR>
+               <sigS>       #parseByteStackRaw( S )               </sigS>
+             </message>
+           )
+           ...
+         </messages>
+
+    rule <k> #eth_sendRawTransactionLoad => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
+
+    rule <k> #eth_sendRawTransactionVerify TXID => #eth_sendRawTransactionSend TXID ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <sigV> V </sigV>
+           <sigR> R </sigR>
+           <sigS> S </sigS>
+           ...
+         </message>
+      requires ECDSARecover( Hex2Raw( #hashUnsignedTx( TXID ) ), V +Int 27, #unparseByteStack(R), #unparseByteStack(S) ) =/=String ""
+
+    rule <k> #eth_sendRawTransactionVerify _ => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
+
+    rule <k> #eth_sendRawTransactionSend TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
 ```
 
 - `#personal_importRawKey` Takes an unencrypted private key, encrypts it with a passphrase, stores it and returns the address of the key.
