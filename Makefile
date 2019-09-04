@@ -1,36 +1,39 @@
 # Settings
 # --------
 
-BUILD_DIR:=.build
-DEFN_DIR:=$(BUILD_DIR)/defn
-BUILD_LOCAL:=$(CURDIR)/$(BUILD_DIR)/local
-LIBRARY_PATH:=$(BUILD_LOCAL)/lib
-C_INCLUDE_PATH:=$(BUILD_LOCAL)/include
-CPLUS_INCLUDE_PATH:=$(BUILD_LOCAL)/include
-PKG_CONFIG_PATH:=$(LIBRARY_PATH)/pkgconfig
+BUILD_DIR   := .build
+DEFN_DIR    := $(BUILD_DIR)/defn
+BUILD_LOCAL := $(CURDIR)/$(BUILD_DIR)/local
+
+LIBRARY_PATH       := $(BUILD_LOCAL)/lib
+C_INCLUDE_PATH     := $(BUILD_LOCAL)/include
+CPLUS_INCLUDE_PATH := $(BUILD_LOCAL)/include
+PKG_CONFIG_PATH    := $(LIBRARY_PATH)/pkgconfig
+
 export LIBRARY_PATH
 export C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH
 export PKG_CONFIG_PATH
 
-INSTALL_PREFIX:=/usr/local
-INSTALL_DIR?=$(DESTDIR)$(INSTALL_PREFIX)/bin
+INSTALL_PREFIX := /usr/local
+INSTALL_DIR    ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
 
-DEPS_DIR:=deps
-K_SUBMODULE:=$(abspath $(DEPS_DIR)/k)
-PLUGIN_SUBMODULE:=$(abspath $(DEPS_DIR)/plugin)
+DEPS_DIR         := deps
+K_SUBMODULE      := $(abspath $(DEPS_DIR)/k)
+PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
 
-K_RELEASE:=$(K_SUBMODULE)/k-distribution/target/release/k
-K_BIN:=$(K_RELEASE)/bin
-K_LIB:=$(K_RELEASE)/lib
+K_RELEASE := $(K_SUBMODULE)/k-distribution/target/release/k
+K_BIN     := $(K_RELEASE)/bin
+K_LIB     := $(K_RELEASE)/lib
+export K_RELEASE
 
-PATH:=$(K_BIN):$(PATH)
+PATH := $(K_BIN):$(PATH)
 export PATH
 
 # need relative path for `pandoc` on MacOS
-PANDOC_TANGLE_SUBMODULE:=$(DEPS_DIR)/pandoc-tangle
-TANGLER:=$(PANDOC_TANGLE_SUBMODULE)/tangle.lua
-LUA_PATH:=$(PANDOC_TANGLE_SUBMODULE)/?.lua;;
+PANDOC_TANGLE_SUBMODULE := $(DEPS_DIR)/pandoc-tangle
+TANGLER                 := $(PANDOC_TANGLE_SUBMODULE)/tangle.lua
+LUA_PATH                := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
