@@ -400,30 +400,44 @@ WEB3 JSON RPC
  // ----------------------------------------------------
     rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
 
+    syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "}"
+ // ---------------------------------------------------------------------------
+
     syntax KItem ::= "#evm_snapshot"
  // --------------------------------
-    rule <k> #evm_snapshot => #pushNetworkState ~> #sendResponse( "result" : #unparseQuantity( size ( SNAPSHOTS ) ) ) ... </k>
+    rule <k> #evm_snapshot => #pushNetworkState ~> #sendResponse( "result" : #unparseQuantity( size ( SNAPSHOTS ))) ... </k>
          <snapshots> SNAPSHOTS </snapshots>
 
     syntax KItem ::= "#pushNetworkState"
  // ------------------------------------
     rule <k> #pushNetworkState => . ... </k>
-         <snapshots> ... ( .List => ListItem(NETWORKSTATE)) </snapshots>
-         <network> NETWORKSTATE </network>
+         <snapshots> ... (.List => ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> })) </snapshots>
+         <network>   NETWORK   </network>
+         <block>     BLOCK     </block>
+         <blockList> BLOCKLIST </blockList>
 
     syntax KItem ::= "#evm_revert"
  // ------------------------------
     rule <k> #evm_revert => #sendResponse( "result" : true ) ... </k>
-         <params> [ .JSONList ] </params>
-         <snapshots> ... ( ListItem(NETWORKSTATE) => .List ) </snapshots>
-         <network> ( _ => NETWORKSTATE ) </network>
+         <params>    [ DATA:Int, .JSONList ] </params>
+         <snapshots> REST ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> }) => .List ) </snapshots>
+         <network>   ( _ => NETWORK )   </network>
+         <block>     ( _ => BLOCK )     </block>
+         <blockList> ( _ => BLOCKLIST ) </blockList>
+      requires DATA ==Int size(REST)
 
     rule <k> #evm_revert ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), .JSONList ] </params>
 
     rule <k> #evm_revert ... </k>
-         <params> ( [ DATA:Int, .JSONList ] => [ .JSONList ] ) </params>
+         <params> ( [ DATA:Int, .JSONList ] ) </params>
          <snapshots> ( SNAPSHOTS => range(SNAPSHOTS, 0, DATA ) ) </snapshots>
+      requires size(SNAPSHOTS) >Int (DATA +Int 1)
+
+    rule <k> #evm_revert => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'evm_revert' requires exactly 1 arguments. Request specified 0 arguments: [null]."} )  ... </k>
+         <params> [ .JSONList ] </params>
+
+     rule <k> #evm_revert => #sendResponse ( "result" : false ) ... </k> [owise]
 
     syntax KItem ::= "#evm_increaseTime"
  // ------------------------------------
