@@ -82,7 +82,7 @@ pipeline {
         }
         stage('Test Interactive') {
           failFast true
-          options { timeout(time: 30, unit: 'MINUTES') }
+          options { timeout(time: 35, unit: 'MINUTES') }
           parallel {
             stage('OCaml krun') {
               steps {
