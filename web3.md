@@ -738,6 +738,47 @@ WEB3 JSON RPC
     rule <k> #eth_sendRawTransactionSend TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
 ```
 
+# loadCallSettings
+
+- Takes a JSON with parameters for sendTransaction/call/estimateGas/etc and sets up the execution environment
+
+```k
+    syntax KItem ::= "#loadCallSettings" JSON
+ // -----------------------------------------
+    rule <k> #loadCallSettings { .JSONList } => . ... </k>
+
+    rule <k> #loadCallSettings { ("from" : ACCTFROM, REST => REST) } ... </k>
+         <caller> _ => #parseHexWord( ACCTFROM ) </caller>
+
+    rule <k> #loadCallSettings { "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
+
+    rule <k> #loadCallSettings { ( "to" : ACCTTO:Int, REST => REST ) } ... </k>
+         <id> _ => ACCTTO </id>
+         <program> _ => CODE </program>
+         <jumpDests> _ => #computeValidJumpDests(CODE) </jumpDests>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <code> CODE </code>
+           ...
+         </account>
+
+    rule <k> ( . => #newAccount ACCTTO ) ~> #loadCallSettings { "to" : ACCTTO:Int, REST } ... </k> [owise]
+
+    rule <k> #loadCallSettings { ( "gas" : GLIMIT, REST => REST ) } ... </k>
+         <gas> _ => #parseHexWord( GLIMIT ) </gas>
+
+    rule <k> #loadCallSettings { ( "gasPrice" : GPRICE, REST => REST ) } ... </k>
+         <gasPrice> _ => #parseHexWord( GPRICE ) </gasPrice>
+
+    rule <k> #loadCallSettings { ( "value" : VALUE, REST => REST ) } ... </k>
+         <callValue> _ => #parseHexWord( VALUE ) </callValue>
+
+    rule <k> #loadCallSettings { ( "data" : DATA, REST => REST ) } ... </k>
+         <callData> _ => #parseByteStack( DATA ) </callData>
+
+    rule <k> #loadCallSettings { ( "nonce" : _, REST => REST ) } ... </k>
+```
+
 - `#personal_importRawKey` Takes an unencrypted private key, encrypts it with a passphrase, stores it and returns the address of the key.
 
 **TODO**: Currently nothing is done with the passphrase

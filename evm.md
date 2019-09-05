@@ -1266,7 +1266,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 ```
 
 -   `#call_____` takes the calling account, the account to execute as, the account whose code should execute, the gas limit, the amount to transfer, and the arguments.
--   `#callWithCode______` takes the calling account, the accout to execute as, the code to execute (as a map), the gas limit, the amount to transfer, and the arguments.
+-   `#callWithCode______` takes the calling account, the accout to execute as, the code to execute (as a bytearray), the gas limit, the amount to transfer, and the arguments.
 -   `#return__` is a placeholder for the calling program, specifying where to place the returned data in memory.
 
 ```k
