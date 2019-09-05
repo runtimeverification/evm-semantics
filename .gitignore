@@ -1,5 +1,4 @@
 /.build/*
-/rustc-*
 /pkg
 /src
 /package/pkg

@@ -307,7 +307,7 @@ $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(node_dir)/$(
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blockchain.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/world.cpp -ccopt $(CURDIR)/$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc \
 	                 -ccopt -I$(CURDIR)/$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin \
 	                 -ccopt -L$(LIBRARY_PATH) \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS)) -ccopt -lprotobuf -ccopt -g -ccopt -std=c++11 -ccopt -O2
+	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS)) -ccopt -lprotobuf -ccopt -g -ccopt -std=c++14 -ccopt -O2
 
 $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 	mkdir -p $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin
@@ -333,7 +333,7 @@ $(web3_dir)/web3-kompiled/interpreter: $(web3_files) $(libff_out)
 	                 $(KOMPILE_OPTS) \
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/client-c/json.cpp \
 	                 -ccopt -L$(LIBRARY_PATH) -ccopt -I -ccopt $(PLUGIN_SUBMODULE)/vm-c \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS)) -ccopt -g -ccopt -std=c++11 -ccopt -O2
+	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS)) -ccopt -g -ccopt -std=c++14 -ccopt -O2
 
 $(web3_kompiled): $(web3_dir)/web3-kompiled/interpreter $(libff_out)
 	mkdir -p $(web3_dir)
@@ -353,7 +353,7 @@ $(llvm_kompiled): $(llvm_files) $(libff_out)
 	                 --hook-namespaces KRYPTO \
 	                 $(KOMPILE_OPTS) \
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
-	                 -ccopt -g -ccopt -std=c++11 -ccopt -O2 \
+	                 -ccopt -g -ccopt -std=c++14 -ccopt -O2 \
 	                 -ccopt -L$(LIBRARY_PATH) \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS))
 

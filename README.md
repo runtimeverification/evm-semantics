@@ -72,7 +72,7 @@ On ArchLinux:
 sudo pacman -S                                              \
     base base-devel boost clang cmake crypto++ curl git gmp \
     jdk-openjdk jemalloc libsecp256k1 lld llvm maven mpfr   \
-    opam python rustup stack yaml-cpp z3 zlib
+    opam python stack yaml-cpp z3 zlib
 ```
 
 On OSX, using [Homebrew](https://brew.sh/), after installing the command line tools package:
@@ -142,12 +142,6 @@ sudo apt install cmake clang-8 clang++-8 llvm-8 llvm-8-tools lld-8 libboost-test
 ```
 
 On Arch, you'll also need `crypto++` package.
-
-And you need to setup Rust:
-
-```sh
-./deps/k/llvm-backend/src/main/native/llvm-backend/install-rust
-```
 
 Additionally, you need to setup the remaining LLVM dependencies.
 
