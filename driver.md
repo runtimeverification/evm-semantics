@@ -322,8 +322,8 @@ State Manipulation
          <memoryUsed>      _ => 0          </memoryUsed>
          <callDepth>       _ => 0          </callDepth>
          <callStack>       _ => .List      </callStack>
-         <program>         _ => .Map       </program>
-         <programBytes>    _ => .ByteArray </programBytes>
+         <program>         _ => .ByteArray </program>
+         <jumpDests>       _ => .Set       </jumpDests>
          <id>              _ => 0          </id>
          <caller>          _ => 0          </caller>
          <callData>        _ => .ByteArray </callData>
@@ -472,8 +472,8 @@ Here we load the environmental information.
     rule <k> load "exec" : { "data" : ((DATA:String) => #parseByteStack(DATA)) } ... </k>
  // -------------------------------------------------------------------------------------
     rule <k> load "exec" : { "data" : (DATA:ByteArray) } => . ... </k> <callData> _ => DATA </callData>
-    rule <k> load "exec" : { "code" : (CODE:OpCodes)   } => . ... </k> <program>  _ => #asMapOpCodes(#dasmOpCodes(#asmOpCodes(CODE), SCHED)) </program> <programBytes> _ => #asmOpCodes(CODE) </programBytes> <schedule> SCHED </schedule>
-    rule <k> load "exec" : { "code" : (CODE:ByteArray) } => . ... </k> <program>  _ => #asMapOpCodes(#dasmOpCodes(CODE, SCHED)) </program> <programBytes> _ => CODE </programBytes> <schedule> SCHED </schedule>
+    rule <k> load "exec" : { "code" : (CODE:OpCodes)   } => . ... </k> <program> _ => #asmOpCodes(CODE) </program> <jumpDests> _ => #computeValidJumpDests(#asmOpCodes(CODE)) </jumpDests> <schedule> SCHED </schedule>
+    rule <k> load "exec" : { "code" : (CODE:ByteArray) } => . ... </k> <program> _ => CODE </program> <jumpDests> _ => #computeValidJumpDests(CODE) </jumpDests> <schedule> SCHED </schedule>
 ```
 
 The `"network"` key allows setting the fee schedule inside the test.

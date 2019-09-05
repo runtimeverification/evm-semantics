@@ -51,8 +51,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <touchedAccounts> .Set        </touchedAccounts>
 
             <callState>
-              <program>      .Map       </program>            // I_b
-              <programBytes> .ByteArray </programBytes>
+              <program> .ByteArray </program>
+              <jumpDests> .Set </jumpDests>
 
               // I_*
               <id>        0          </id>                    // I_a
@@ -274,15 +274,17 @@ OpCode Execution
     syntax KItem ::= "#execute"
  // ---------------------------
     rule [halt]: <k> #halt ~> (#execute => .) ... </k>
-    rule [step]: <k> (. => #next [ OP ]) ~> #execute ... </k>
+    rule [step]: <k> (. => #next [ #dasmOpCode(PGM [ PCOUNT ], SCHED) ]) ~> #execute ... </k>
                  <pc> PCOUNT </pc>
-                 <program> ... PCOUNT |-> OP ... </program>
+                 <program> PGM </program>
+                 <schedule> SCHED </schedule>
+      requires PCOUNT <Int #sizeByteArray(PGM)
 
     rule <k> (. => #end EVMC_SUCCESS) ~> #execute ... </k>
          <pc> PCOUNT </pc>
          <program> PGM </program>
          <output> _ => .ByteArray </output>
-      requires notBool (PCOUNT in_keys(PGM))
+      requires PCOUNT >=Int #sizeByteArray(PGM)
 ```
 
 ### Single Step
@@ -705,36 +707,6 @@ After executing a transaction, it's necessary to have the effect of the substate
 EVM Programs
 ============
 
-### Program Structure
-
-Cons-lists of opcodes form programs (using cons operator `_;_`).
-Operator `#revOps` can be used to reverse a program.
-
-```k
-    syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
- // --------------------------------------------------
-
-    syntax OpCodes ::= #revOps    ( OpCodes )           [function]
-                     | #revOpsAux ( OpCodes , OpCodes ) [function]
- // --------------------------------------------------------------
-    rule #revOps(OPS) => #revOpsAux(OPS, .OpCodes)
-
-    rule #revOpsAux( .OpCodes , OPS' ) => OPS'
-    rule #revOpsAux( OP ; OPS , OPS' ) => #revOpsAux( OPS , OP ; OPS' )
-```
-
-### Converting to/from `Map` Representation
-
-```k
-    syntax Map ::= #asMapOpCodes    ( OpCodes )             [function]
-                 | #asMapOpCodesAux ( Int , OpCodes , Map ) [function]
- // ------------------------------------------------------------------
-    rule #asMapOpCodes( OPS::OpCodes ) => #asMapOpCodesAux(0, OPS, .Map)
-
-    rule #asMapOpCodesAux( N , .OpCodes         , MAP ) => MAP
-    rule #asMapOpCodesAux( N , OP:OpCode  ; OCS , MAP ) => #asMapOpCodesAux(N +Int #widthOp(OP), OCS, MAP [ N <- OP ])
-```
-
 EVM OpCodes
 -----------
 
@@ -906,7 +878,7 @@ Some operators don't calculate anything, they just push the stack around a bit.
  // ------------------------------
     rule <k> PUSH(N) => #asWord(PGM [ PCOUNT +Int 1 .. N ]) ~> #push ... </k>
          <pc> PCOUNT </pc>
-         <programBytes> PGM </programBytes>
+         <program> PGM </program>
 ```
 
 ### Local Memory
@@ -1022,12 +994,12 @@ These operators make queries about the current execution state.
     syntax NullStackOp ::= "MSIZE" | "CODESIZE"
  // -------------------------------------------
     rule <k> MSIZE    => 32 *Word MU         ~> #push ... </k> <memoryUsed> MU </memoryUsed>
-    rule <k> CODESIZE => #sizeByteArray(PGM) ~> #push ... </k> <programBytes> PGM </programBytes>
+    rule <k> CODESIZE => #sizeByteArray(PGM) ~> #push ... </k> <program> PGM </program>
 
     syntax TernStackOp ::= "CODECOPY"
  // ---------------------------------
     rule <k> CODECOPY MEMSTART PGMSTART WIDTH => . ... </k>
-         <programBytes> PGM </programBytes>
+         <program> PGM </program>
          <localMem> LM => LM [ MEMSTART := PGM [ PGMSTART .. WIDTH ] ] </localMem>
 
     syntax UnStackOp ::= "BLOCKHASH"
@@ -1065,13 +1037,16 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax UnStackOp ::= "JUMP"
  // ---------------------------
-    rule <k> JUMP DEST => #if OP ==K JUMPDEST #then #endBasicBlock #else #end EVMC_BAD_JUMP_DESTINATION #fi ... </k>
+    rule <k> JUMP DEST => #endBasicBlock... </k>
          <pc> _ => DEST </pc>
-         <program> ... DEST |-> OP ... </program>
+         <program> PGM </program>
+         <jumpDests> DESTS </jumpDests>
+      requires DEST in DESTS
 
     rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
          <program> PGM </program>
-      requires notBool (DEST in_keys(PGM))
+         <jumpDests> DESTS </jumpDests>
+      requires notBool DEST in DESTS
 
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
@@ -1359,8 +1334,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <gas> _ => GCALL </gas>
          <callGas> GCALL => 0 </callGas>
          <caller> _ => ACCTFROM </caller>
-         <program> _ => #asMapOpCodes(#dasmOpCodes(BYTES, SCHED)) </program>
-         <programBytes> _ => BYTES </programBytes>
+         <program> _ => BYTES </program>
+         <jumpDests> _ => #computeValidJumpDests(BYTES) </jumpDests>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
          <schedule> SCHED </schedule>
@@ -1372,12 +1347,36 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax KItem ::= "#initVM"
  // --------------------------
-    rule <k> #initVM    => . ...      </k>
-         <pc>         _ => 0          </pc>
-         <memoryUsed> _ => 0          </memoryUsed>
-         <output>     _ => .ByteArray </output>
-         <wordStack>  _ => .WordStack </wordStack>
-         <localMem>   _ => .Map       </localMem>
+    rule <k> #initVM      => . ...      </k>
+         <pc>           _ => 0          </pc>
+         <memoryUsed>   _ => 0          </memoryUsed>
+         <output>       _ => .ByteArray </output>
+         <wordStack>    _ => .WordStack </wordStack>
+         <localMem>     _ => .Map       </localMem>
+
+    syntax Set ::= #computeValidJumpDests(ByteArray)           [function]
+                 | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
+ // ---------------------------------------------------------------------------------------------------------
+    rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
+```
+
+```{.k .symbolic}
+    rule #computeValidJumpDests(.WordStack, _, RESULT) => List2Set(RESULT)
+    rule #computeValidJumpDests(91 : WS, I, RESULT) => #computeValidJumpDests(WS, I +Int 1, ListItem(I) RESULT)
+    rule #computeValidJumpDests(W : WS, I, RESULT) => #computeValidJumpDests(#drop(#widthOpCode(W), W : WS), I +Int #widthOpCode(W), RESULT) requires W =/=Int 91
+```
+
+```{.k .concrete}
+    rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
+    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, ListItem(I) RESULT) requires I <Int #sizeByteArray(PGM) andBool PGM [ I ] ==Int 91
+    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) [owise]
+```
+
+```k
+    syntax Int ::= #widthOpCode(Int) [function]
+ // -------------------------------------------
+    rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
+    rule #widthOpCode(_) => 1 [owise]
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
@@ -1501,8 +1500,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <id> ACCT => ACCTTO </id>
          <gas> _ => GCALL </gas>
          <callGas> GCALL => 0 </callGas>
-         <program> _ => #asMapOpCodes(#dasmOpCodes(INITCODE, SCHED)) </program>
-         <programBytes> _ => INITCODE </programBytes>
+         <program> _ => INITCODE </program>
+         <jumpDests> _ => #computeValidJumpDests(INITCODE) </jumpDests>
          <caller> _ => ACCTFROM </caller>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => .ByteArray </callData>
@@ -2437,35 +2436,7 @@ Disassembler
 
 After interpreting the strings representing programs as a `WordStack`, it should be changed into an `OpCodes` for use by the EVM semantics.
 
--   `#dasmOpCodes` interperets `WordStack` as an `OpCodes`.
--   `#dasmPUSH` handles the case of a `PushOp`.
 -   `#dasmOpCode` interperets a `Int` as an `OpCode`.
-
-```k
-    syntax Int     ::= #widthOpCode ( Int )                  [function]
-    syntax OpCodes ::= #dasmOpCodes ( ByteArray , Schedule ) [function]
- // -------------------------------------------------------------------
-    rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
-    rule #widthOpCode(_) => 1 [owise]
-```
-
-```{.k .symbolic}
-    syntax OpCodes ::= #dasmOpCodes ( OpCodes , ByteArray , Schedule ) [function, klabel(#dasmOpCodesAux)]
- // ------------------------------------------------------------------------------------------------------
-    rule #dasmOpCodes( WS, SCHED ) => #revOps(#dasmOpCodes(.OpCodes, WS, SCHED))
-
-    rule #dasmOpCodes( OPS, .WordStack, _ ) => OPS
-    rule #dasmOpCodes( OPS, W : WS, SCHED ) => #dasmOpCodes(#dasmOpCode(W, SCHED) ; OPS, #drop(#widthOpCode(W) -Int 1, WS), SCHED)
-```
-
-```{.k .concrete}
-    syntax OpCodes ::= #dasmOpCodes ( OpCodes , ByteArray , Schedule , Int , Int ) [function, klabel(#dasmOpCodesAux)]
- // ------------------------------------------------------------------------------------------------------------------
-    rule #dasmOpCodes( WS, SCHED ) => #revOps(#dasmOpCodes(.OpCodes, WS, SCHED, 0, #sizeByteArray(WS)))
-
-    rule #dasmOpCodes( OPS, _ ,     _ , I , J ) => OPS requires I >=Int J
-    rule #dasmOpCodes( OPS, WS, SCHED , I , J ) => #dasmOpCodes(#dasmOpCode(WS[I], SCHED) ; OPS, WS, SCHED, I +Int #widthOpCode(WS[I]), J) [owise]
-```
 
 ```k
     syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [function]

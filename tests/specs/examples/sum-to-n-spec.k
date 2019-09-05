@@ -36,8 +36,8 @@ module SUM-TO-N-SPEC
          <memoryUsed> 0   </memoryUsed>
          <localMem> .Map </localMem>
          <callGas> _ => _ </callGas>
-         <program> #asMapOpCodes(#dasmOpCodes(sumToN, DEFAULT)) </program>
-         <programBytes> sumToN </programBytes>
+         <program> sumToN </program>
+         <jumpDests> #computeValidJumpDests(sumToN) </jumpDests>
 
          <pc>        0  => 21                                </pc>
          <wordStack> N : WS => 0 : N *Int (N +Int 1) /Int 2 : WS </wordStack>
@@ -55,8 +55,8 @@ module SUM-TO-N-SPEC
          <memoryUsed> 0   </memoryUsed>
          <localMem> .Map </localMem>
          <callGas> _ => _ </callGas>
-         <program> #asMapOpCodes(#dasmOpCodes(sumToN, DEFAULT)) </program>
-         <programBytes> sumToN </programBytes>
+         <program> sumToN </program>
+         <jumpDests> #computeValidJumpDests(sumToN) </jumpDests>
 
          <pc>  3 => 21                         </pc>
          <gas> G => G -Int (52 *Int I +Int 21) </gas>
