@@ -1,0 +1,53 @@
+[
+    {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "firefly_addAccount",
+        "params": [
+            {
+                "address": "0x08420C2a843E241d798cfb2717F10D0897A84CEE",
+                "balance": "0x100",
+                "nonce": "0x3",
+                "storage": {
+                    "0": "0x64"
+                }
+            }
+        ]
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "firefly_addAccount",
+        "params": [
+            {
+                "address": "0x717CcFF1c439E579a1e055566040d232663695c4",
+                "balance": "0x64",
+                "storage": {}
+            }
+        ]
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "method": "firefly_addAccount",
+        "params": [
+            {
+                "address": "0x0EFF7a5a881311f04505Dd0beD278D0632E88E9F",
+                "balance": "0x100",
+                "nonce": "0x3",
+                "code": "0x608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550610314806100606000396000f3fe608060405260043610610062576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680630900f01014610067578063445df0ac146100b85780638da5cb5b146100e3578063fdacd5761461013a575b600080fd5b34801561007357600080fd5b506100b66004803603602081101561008a57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610175565b005b3480156100c457600080fd5b506100cd61025d565b6040518082815260200191505060405180910390f35b3480156100ef57600080fd5b506100f8610263565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b34801561014657600080fd5b506101736004803603602081101561015d57600080fd5b8101908080359060200190929190505050610288565b005b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16141561025a5760008190508073ffffffffffffffffffffffffffffffffffffffff1663fdacd5766001546040518263ffffffff167c010000000000000000000000000000000000000000000000000000000002815260040180828152602001915050600060405180830381600087803b15801561024057600080fd5b505af1158015610254573d6000803e3d6000fd5b50505050505b50565b60015481565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614156102e557806001819055505b5056fea165627a7a723058202d8ef51a8355623aa65b62cac971975a91f9613ef0391cef2d90374d202aaa8e0029",
+                "storage": {}
+            }
+        ]
+    }
+    ,
+    {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "method": "eth_getBalance",
+        "params": [
+            "0x08420C2a843E241d798cfb2717F10D0897A84CEE",
+            "pending"
+        ]
+    }
+]
