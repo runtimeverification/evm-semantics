@@ -15,7 +15,27 @@ module EVM-ASSEMBLY
 
     syntax OpCode ::= PUSH(Int, Int) [klabel(PUSHAsm)]
  // --------------------------------------------------
+```
 
+### Program Structure
+
+Cons-lists of opcodes form programs (using cons operator `_;_`).
+Operator `#revOps` can be used to reverse a program.
+
+```k
+    syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
+ // --------------------------------------------------
+
+    syntax OpCodes ::= #revOps    ( OpCodes )           [function]
+                     | #revOpsAux ( OpCodes , OpCodes ) [function]
+ // --------------------------------------------------------------
+    rule #revOps(OPS) => #revOpsAux(OPS, .OpCodes)
+
+    rule #revOpsAux( .OpCodes , OPS' ) => OPS'
+    rule #revOpsAux( OP ; OPS , OPS' ) => #revOpsAux( OPS , OP ; OPS' )
+```
+
+```k
     syntax ByteArray ::= #asmOpCodes ( OpCodes ) [function]
  // -------------------------------------------------------
 ```
