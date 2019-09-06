@@ -778,8 +778,8 @@ WEB3 JSON RPC
 
     rule <k> #loadCallSettings { ( "nonce" : _, REST => REST ) } ... </k>
 
-    syntax KItem ::= "#loadCallSettings"  Int Int
- // ---------------------------------------------
+    syntax KItem ::= "#loadCallSettings" Int Int
+ // --------------------------------------------
     rule <k> #loadCallSettings ACCTFROM TXID => . ... </k>
          <gas>       ( _ => GLIMIT )                       </gas>
          <gasPrice>  ( _ => GPRICE )                        </gasPrice>
@@ -804,6 +804,15 @@ WEB3 JSON RPC
            <data>       DATA    </data>
            ...
          </message>
+```
+
+- `#executeTransaction` takes a transaction, loads it into the current state and executes it.
+
+```k
+    syntax KItem ::= "#executeTx" JSON
+ // ----------------------------------
+    rule <k> #executeTx J => #loadCallSettings J ~> #initVM ~> #execute ... </k>
+    
 ```
 
 - `#personal_importRawKey` Takes an unencrypted private key, encrypts it with a passphrase, stores it and returns the address of the key.
