@@ -777,6 +777,33 @@ WEB3 JSON RPC
          <callData> _ => #parseByteStack( DATA ) </callData>
 
     rule <k> #loadCallSettings { ( "nonce" : _, REST => REST ) } ... </k>
+
+    syntax KItem ::= "#loadCallSettings"  Int Int
+ // ---------------------------------------------
+    rule <k> #loadCallSettings ACCTFROM TXID => . ... </k>
+         <gas>       ( _ => GLIMIT )                       </gas>
+         <gasPrice>  ( _ => GPRICE )                        </gasPrice>
+         <callValue> ( _ => VALUE )                        </callValue>
+         <callData>  ( _ => DATA )                         </callData>
+         <caller>    ( _ => ACCTFROM )                     </caller>
+         <id>        ( _ => ACCTTO )                       </id>
+         <program>   ( _ => CODE )                         </program>
+         <jumpDests> ( _ => #computeValidJumpDests(CODE) ) </jumpDests>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <code>   CODE </code>
+           ...
+         </account>
+         <txPending> ... ListItem(TXID) ... </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <txGasPrice> GPRICE  </txGasPrice>
+           <txGasLimit> GLIMIT  </txGasLimit>
+           <to>         ACCTTO  </to>
+           <value>      VALUE   </value>
+           <data>       DATA    </data>
+           ...
+         </message>
 ```
 
 - `#personal_importRawKey` Takes an unencrypted private key, encrypts it with a passphrase, stores it and returns the address of the key.
