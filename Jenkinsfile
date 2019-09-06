@@ -340,7 +340,6 @@ pipeline {
               sh '''
                 sudo pacman -Syu --noconfirm
                 sudo pacman --noconfirm -U package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz
-                make test-interactive-firefly
               '''
             }
           }
