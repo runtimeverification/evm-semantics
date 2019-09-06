@@ -747,11 +747,11 @@ WEB3 JSON RPC
  // -----------------------------------------
     rule <k> #loadCallSettings { .JSONList } => . ... </k>
 
-    rule <k> #loadCallSettings { ("from" : ACCTFROM, REST => REST) } ... </k>
-         <caller> _ => #parseHexWord( ACCTFROM ) </caller>
+    rule <k> #loadCallSettings { "from" : ( ACCTFROM:String => #parseHexWord( ACCTFROM ) ), REST } ... </k>
+    rule <k> #loadCallSettings { ("from" : ACCTFROM:Int, REST => REST) } ... </k>
+         <caller> _ => ACCTFROM </caller>
 
     rule <k> #loadCallSettings { "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
-
     rule <k> #loadCallSettings { ( "to" : ACCTTO:Int, REST => REST ) } ... </k>
          <id> _ => ACCTTO </id>
          <program> _ => CODE </program>
@@ -764,17 +764,21 @@ WEB3 JSON RPC
 
     rule <k> ( . => #newAccount ACCTTO ) ~> #loadCallSettings { "to" : ACCTTO:Int, REST } ... </k> [owise]
 
-    rule <k> #loadCallSettings { ( "gas" : GLIMIT, REST => REST ) } ... </k>
-         <gas> _ => #parseHexWord( GLIMIT ) </gas>
+    rule <k> #loadCallSettings { "gas" : ( GLIMIT:String => #parseHexWord( GLIMIT ) ), REST } ... </k>
+    rule <k> #loadCallSettings { ( "gas" : GLIMIT:Int, REST => REST ) } ... </k>
+         <gas> _ => GLIMIT </gas>
 
-    rule <k> #loadCallSettings { ( "gasPrice" : GPRICE, REST => REST ) } ... </k>
-         <gasPrice> _ => #parseHexWord( GPRICE ) </gasPrice>
+    rule <k> #loadCallSettings { "gasPrice" : ( GPRICE:String => #parseHexWord( GPRICE ) ), REST } ... </k>
+    rule <k> #loadCallSettings { ( "gasPrice" : GPRICE:Int, REST => REST ) } ... </k>
+         <gasPrice> _ => GPRICE </gasPrice>
 
-    rule <k> #loadCallSettings { ( "value" : VALUE, REST => REST ) } ... </k>
-         <callValue> _ => #parseHexWord( VALUE ) </callValue>
+    rule <k> #loadCallSettings { "value" : ( VALUE:String => #parseHexWord( VALUE ) ), REST } ... </k>
+    rule <k> #loadCallSettings { ( "value" : VALUE:Int, REST => REST ) } ... </k>
+         <callValue> _ => VALUE </callValue>
 
-    rule <k> #loadCallSettings { ( "data" : DATA, REST => REST ) } ... </k>
-         <callData> _ => #parseByteStack( DATA ) </callData>
+    rule <k> #loadCallSettings { "data" : ( DATA:String => #parseByteStack( DATA ) ), REST } ... </k>
+    rule <k> #loadCallSettings { ( "data" : DATA:ByteArray, REST => REST ) } ... </k>
+         <callData> _ => DATA </callData>
 
     rule <k> #loadCallSettings { ( "nonce" : _, REST => REST ) } ... </k>
 
