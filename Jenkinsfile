@@ -38,7 +38,7 @@ pipeline {
         stage('Build') {
           steps {
             sh '''
-              make build build-llvm build-haskell build-node build-web3 -j4
+              make build-all -j4
             '''
           }
         }
@@ -82,7 +82,7 @@ pipeline {
         }
         stage('Test Interactive') {
           failFast true
-          options { timeout(time: 20, unit: 'MINUTES') }
+          options { timeout(time: 35, unit: 'MINUTES') }
           parallel {
             stage('OCaml krun') {
               steps {

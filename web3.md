@@ -83,6 +83,45 @@ The `blockList` cell stores a list of previous blocks and network states.
     rule #getBlockByNumber(BLOCKNUM', ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }                   ) REST ) => #getBlockByNumber(BLOCKNUM', REST)
       requires BLOCKNUM =/=Int BLOCKNUM'
     rule #getBlockByNumber(_, .List) => .BlockchainItem
+
+    syntax AccountItem ::= AccountCell | ".AccountItem"
+ // ---------------------------------------------------
+
+    syntax AccountItem ::= #getAccountFromBlockchainItem( BlockchainItem , Int ) [function]
+ // ---------------------------------------------------------------------------------------
+    rule #getAccountFromBlockchainItem ( { <network> <accounts> (<account> <acctID> ACCT </acctID> ACCOUNTDATA </account>) ... </accounts>  ... </network> | _ } , ACCT ) => <account> <acctID> ACCT </acctID> ACCOUNTDATA </account>
+    rule #getAccountFromBlockchainItem(_, _) => .AccountItem [owise]
+
+    syntax BlockIdentifier ::= Int | String
+ // ---------------------------------------
+
+    syntax BlockIdentifier ::= #parseBlockIdentifier ( String ) [function]
+ // ----------------------------------------------------------------------
+    rule #parseBlockIdentifier(TAG) => TAG
+      requires TAG ==String "earliest"
+        orBool TAG ==String "latest"
+        orBool TAG ==String "pending"
+
+    rule #parseBlockIdentifier(BLOCKNUM) => #parseHexWord(BLOCKNUM) [owise]
+
+    syntax KItem ::= #getAccountAtBlock ( BlockIdentifier , Int )
+ // -------------------------------------------------------------
+    rule <k> #getAccountAtBlock(BLOCKNUM:Int , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(BLOCKNUM, BLOCKLIST), ACCTID) ... </k>
+         <blockList> BLOCKLIST </blockList>
+
+    rule <k> #getAccountAtBlock(TAG , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(0, BLOCKLIST), ACCTID) ... </k>
+         <blockList> BLOCKLIST </blockList>
+      requires TAG ==String "earliest"
+
+    rule <k> #getAccountAtBlock(TAG , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(size(BLOCKLIST) -Int 1, BLOCKLIST), ACCTID) ... </k>
+         <blockList> BLOCKLIST </blockList>
+      requires TAG ==String "latest"
+
+    rule <k> #getAccountAtBlock(TAG , ACCTID) => #getAccountFromBlockchainItem({<network> NETWORK </network> | <block> BLOCK </block>}, ACCTID) ... </k>
+         <network> NETWORK </network>
+         <block>   BLOCK   </block>
+      requires TAG ==String "pending"
+
 ```
 
 WEB3 JSON RPC
@@ -106,6 +145,10 @@ WEB3 JSON RPC
     syntax String ::= #getString ( JSONKey , JSON ) [function]
  // ----------------------------------------------------------
     rule #getString( KEY, J ) => {#getJSON( KEY, J )}:>String
+
+    syntax Bool ::= isJSONUndef ( JSON ) [function]
+ // -----------------------------------------------
+    rule isJSONUndef(J) => J ==K undef
 
     syntax IOJSON ::= JSON | IOError
  // --------------------------------
@@ -214,6 +257,8 @@ WEB3 JSON RPC
  // ------------------------------
     rule <k> #runRPCCall => #firefly_shutdown ... </k>
          <method> "firefly_shutdown" </method>
+    rule <k> #runRPCCall => #firefly_addAccount ... </k>
+         <method> "firefly_addAccount" </method>
     rule <k> #runRPCCall => #net_version ... </k>
          <method> "net_version" </method>
     rule <k> #runRPCCall => #web3_clientVersion ... </k>
@@ -246,6 +291,8 @@ WEB3 JSON RPC
          <method> "eth_uninstallFilter" </method>
     rule <k> #runRPCCall => #eth_sendTransaction ... </k>
          <method> "eth_sendTransaction" </method>
+    rule <k> #runRPCCall => #eth_sendRawTransaction ... </k>
+         <method> "eth_sendRawTransaction" </method>
     rule <k> #runRPCCall => #personal_importRawKey ... </k>
          <method> "personal_importRawKey" </method>
 
@@ -294,54 +341,59 @@ WEB3 JSON RPC
     syntax KItem ::= "#eth_getBalance"
  // ----------------------------------
     rule <k> #eth_getBalance ... </k>
-         <params> [ (DATA => #parseHexWord(DATA)), _ ] </params>
+         <params> [ (DATA => #parseHexWord(DATA)), _, .JSONList ] </params>
 
-    rule <k> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( ACCTBALANCE ) ) ... </k>
+    rule <k> #eth_getBalance => #getAccountAtBlock(#parseBlockIdentifier(TAG), DATA) ~> #eth_getBalance ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
-         <account>
-           <acctID> DATA </acctID>
-           <balance> ACCTBALANCE </balance>
-           ...
-         </account>
+
+    rule <k> <account> ... <balance> ACCTBALANCE </balance> ... </account> ~> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( ACCTBALANCE )) ... </k>
+
+    rule <k> .AccountItem ~> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( 0 )) ... </k>
+
+    rule <k> #eth_getBalance => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getBalance' requires exactly 2 arguments."} ) ... </k> [owise]
 
     syntax KItem ::= "#eth_getStorageAt"
  // ------------------------------------
     rule <k> #eth_getStorageAt ... </k>
-         <params> [ (DATA => #parseHexWord(DATA)), QUANTITY:Int, _ ] </params>
+         <params> [ (DATA => #parseHexWord(DATA)), (QUANTITY => #parseHexWord(QUANTITY)), _, .JSONList ] </params>
 
-    rule <k> #eth_getStorageAt => #sendResponse( "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY) ) ) ... </k>
+    rule <k> #eth_getStorageAt => #getAccountAtBlock(#parseBlockIdentifier(TAG), DATA) ~> #eth_getStorageAt ... </k>
          <params> [ DATA, QUANTITY, TAG, .JSONList ] </params>
-         <account>
-           <acctID> DATA </acctID>
-           <storage> STORAGE </storage>
-           ...
-         </account>
+
+    rule <k> <account> ... <storage> STORAGE </storage> ... </account> ~> #eth_getStorageAt => #sendResponse( "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY))) ... </k>
+         <params> [ DATA, QUANTITY, TAG, .JSONList ] </params>
+
+    rule <k> .AccountItem ~> #eth_getStorageAt => #sendResponse( "result" : #unparseQuantity( 0 )) ... </k>
+
+    rule <k> #eth_getStorageAt => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getStorageAt' requires exactly 3 arguments."} ) ... </k> [owise]
 
     syntax KItem ::= "#eth_getCode"
  // -------------------------------
     rule <k> #eth_getCode ... </k>
-         <params> [ (DATA => #parseHexWord(DATA)), _ ] </params>
+         <params> [ (DATA => #parseHexWord(DATA)), _, .JSONList ] </params>
 
-    rule <k> #eth_getCode => #sendResponse( "result" : #unparseDataByteArray( CODE ) ) ... </k>
+    rule <k> #eth_getCode => #getAccountAtBlock(#parseBlockIdentifier(TAG), DATA) ~> #eth_getCode ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
-         <account>
-           <acctID> DATA </acctID>
-           <code> CODE </code>
-           ...
-         </account>
+
+     rule <k> <account> ... <code> CODE </code> ... </account> ~> #eth_getCode =>  #sendResponse( "result" : #unparseDataByteArray( CODE )) ... </k>
+
+     rule <k> .AccountItem ~> #eth_getCode => #sendResponse( "result" : #unparseDataByteArray( .ByteArray )) ... </k>
+
+    rule <k> #eth_getCode => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getCode' requires exactly 2 arguments."} ) ... </k> [owise]
 
     syntax KItem ::= "#eth_getTransactionCount"
  // -------------------------------------------
     rule <k> #eth_getTransactionCount ... </k>
-         <params> [ (DATA => #parseHexWord(DATA)), _ ] </params>
+         <params> [ (DATA => #parseHexWord(DATA)), _, .JSONList ] </params>
 
-    rule <k> #eth_getTransactionCount => #sendResponse( "result" : #unparseQuantity( NONCE ) ) ... </k>
+    rule <k> #eth_getTransactionCount => #getAccountAtBlock(#parseBlockIdentifier(TAG), DATA) ~> #eth_getTransactionCount ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
-         <account>
-           <acctID> DATA </acctID>
-           <nonce> NONCE </nonce>
-           ...
-         </account>
+
+    rule <k> <account> ... <nonce> NONCE </nonce> ... </account> ~> #eth_getTransactionCount => #sendResponse( "result" : #unparseQuantity( NONCE )) ... </k>
+
+    rule <k> .AccountItem ~> #eth_getTransactionCount => #sendResponse ("result" : #unparseQuantity( 0 )) ... </k>
+
+    rule <k> #eth_getTransactionCount => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getTransactionCount' requires exactly 2 arguments."} ) ... </k> [owise]
 
     syntax KItem ::= "#eth_sign"
  // ----------------------------
@@ -362,30 +414,44 @@ WEB3 JSON RPC
  // ----------------------------------------------------
     rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
 
+    syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "}"
+ // ---------------------------------------------------------------------------
+
     syntax KItem ::= "#evm_snapshot"
  // --------------------------------
-    rule <k> #evm_snapshot => #pushNetworkState ~> #sendResponse( "result" : #unparseQuantity( size ( SNAPSHOTS ) ) ) ... </k>
+    rule <k> #evm_snapshot => #pushNetworkState ~> #sendResponse( "result" : #unparseQuantity( size ( SNAPSHOTS ))) ... </k>
          <snapshots> SNAPSHOTS </snapshots>
 
     syntax KItem ::= "#pushNetworkState"
  // ------------------------------------
     rule <k> #pushNetworkState => . ... </k>
-         <snapshots> ... ( .List => ListItem(NETWORKSTATE)) </snapshots>
-         <network> NETWORKSTATE </network>
+         <snapshots> ... (.List => ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> })) </snapshots>
+         <network>   NETWORK   </network>
+         <block>     BLOCK     </block>
+         <blockList> BLOCKLIST </blockList>
 
     syntax KItem ::= "#evm_revert"
  // ------------------------------
     rule <k> #evm_revert => #sendResponse( "result" : true ) ... </k>
-         <params> [ .JSONList ] </params>
-         <snapshots> ... ( ListItem(NETWORKSTATE) => .List ) </snapshots>
-         <network> ( _ => NETWORKSTATE ) </network>
+         <params>    [ DATA:Int, .JSONList ] </params>
+         <snapshots> REST ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> }) => .List ) </snapshots>
+         <network>   ( _ => NETWORK )   </network>
+         <block>     ( _ => BLOCK )     </block>
+         <blockList> ( _ => BLOCKLIST ) </blockList>
+      requires DATA ==Int size(REST)
 
     rule <k> #evm_revert ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), .JSONList ] </params>
 
     rule <k> #evm_revert ... </k>
-         <params> ( [ DATA:Int, .JSONList ] => [ .JSONList ] ) </params>
+         <params> ( [ DATA:Int, .JSONList ] ) </params>
          <snapshots> ( SNAPSHOTS => range(SNAPSHOTS, 0, DATA ) ) </snapshots>
+      requires size(SNAPSHOTS) >Int (DATA +Int 1)
+
+    rule <k> #evm_revert => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'evm_revert' requires exactly 1 arguments. Request specified 0 arguments: [null]."} )  ... </k>
+         <params> [ .JSONList ] </params>
+
+     rule <k> #evm_revert => #sendResponse ( "result" : false ) ... </k> [owise]
 
     syntax KItem ::= "#evm_increaseTime"
  // ------------------------------------
@@ -565,6 +631,62 @@ WEB3 JSON RPC
          </message>
 ```
 
+# eth_sendRawTransaction
+
+**TODO**: Verify the signature provided for the transaction
+
+```k
+
+    syntax KItem ::= "#eth_sendRawTransaction"
+                   | "#eth_sendRawTransactionLoad"
+                   | "#eth_sendRawTransactionVerify" Int
+                   | "#eth_sendRawTransactionSend" Int
+ // ----------------------------------------------------
+    rule <k> #eth_sendRawTransaction => #eth_sendRawTransactionLoad ... </k>
+         <params> [ RAWTX:String, .JSONList ] => #rlpDecode( Hex2Raw( RAWTX ) ) </params>
+
+    rule <k> #eth_sendRawTransaction => #sendResponse("error": { "code": -32000, "message":"\"value\" argument must not be a number" } ) ... </k>
+         <params> [ _:Int, .JSONList ] </params>
+
+    rule <k> #eth_sendRawTransaction => #sendResponse("error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
+
+    rule <k> #eth_sendRawTransactionLoad => #eth_sendRawTransactionVerify !TXID ... </k>
+         <params> [ NONCE, GPRICE, GLIMIT, TO, VALUE, DATA, V, R, S, .JSONList ] </params>
+         <messages>
+           ( .Bag
+          => <message>
+               <msgID> !TXID </msgID>
+               <txNonce>    #parseHexWord( Raw2Hex( NONCE ) )     </txNonce>
+               <txGasPrice> #parseHexWord( Raw2Hex( GPRICE ) )    </txGasPrice>
+               <txGasLimit> #parseHexWord( Raw2Hex( GLIMIT ) )    </txGasLimit>
+               <to>         #parseHexWord( Raw2Hex( TO ) )        </to>
+               <value>      #parseHexWord( Raw2Hex( VALUE ) )     </value>
+               <data>       #parseByteStackRaw( DATA )            </data>
+               <sigV>       #parseHexWord( Raw2Hex( V ) ) -Int 27 </sigV>
+               <sigR>       #parseByteStackRaw( R )               </sigR>
+               <sigS>       #parseByteStackRaw( S )               </sigS>
+             </message>
+           )
+           ...
+         </messages>
+
+    rule <k> #eth_sendRawTransactionLoad => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
+
+    rule <k> #eth_sendRawTransactionVerify TXID => #eth_sendRawTransactionSend TXID ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <sigV> V </sigV>
+           <sigR> R </sigR>
+           <sigS> S </sigS>
+           ...
+         </message>
+      requires ECDSARecover( Hex2Raw( #hashUnsignedTx( TXID ) ), V +Int 27, #unparseByteStack(R), #unparseByteStack(S) ) =/=String ""
+
+    rule <k> #eth_sendRawTransactionVerify _ => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
+
+    rule <k> #eth_sendRawTransactionSend TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+```
+
 - `#personal_importRawKey` Takes an unencrypted private key, encrypts it with a passphrase, stores it and returns the address of the key.
 
 **TODO**: Currently nothing is done with the passphrase
@@ -586,6 +708,76 @@ WEB3 JSON RPC
  // ---------------------------------------------
     rule <k> #acctFromPrivateKey KEY => #newAccount #addrFromPrivateKey(KEY) ... </k>
          <accountKeys> M => M[#addrFromPrivateKey(KEY) <- #parseHexWord(KEY)] </accountKeys>
+
+    syntax KItem ::= "#firefly_addAccount" | "#firefly_addAccountByAddress" Int | "#firefly_addAccountByKey" String
+ // ---------------------------------------------------------------------------------------------------------------
+    rule <k> #firefly_addAccount => #firefly_addAccountByAddress #parseHexWord(#getString("address", J)) ... </k>
+         <params> [ ({ _ } #as J), .JSONList ] </params>
+      requires isString(#getJSON("address", J))
+
+    rule <k> #firefly_addAccount => #firefly_addAccountByKey #getString("key", J) ... </k>
+         <params> [ ({ _ } #as J), .JSONList ] </params>
+      requires isString(#getJSON("key", J))
+
+    rule <k> #firefly_addAccountByAddress ACCT_ADDR => #newAccount ACCT_ADDR ~> #loadAccountData ACCT_ADDR J ~> #sendResponse( "result": true ) ... </k>
+         <params> [ ({ _ } #as J), .JSONList ] </params>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool ACCT_ADDR in ACCTS
+
+    rule <k> #firefly_addAccountByAddress ACCT_ADDR => #sendResponse( "result": false ) ... </k>
+         <params> [ ({ _ } #as J), .JSONList ] </params>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires ACCT_ADDR in ACCTS
+
+    rule <k> #firefly_addAccountByKey ACCT_KEY => #acctFromPrivateKey ACCT_KEY ~> #loadAccountData #addrFromPrivateKey(ACCT_KEY) J ~> #sendResponse( "result": true ) ... </k>
+         <params> [ ({ _ } #as J), .JSONList ] </params>
+         <activeAccounts> ACCTS </activeAccounts>
+      requires notBool #addrFromPrivateKey(ACCT_KEY) in ACCTS
+
+    rule <k> #firefly_addAccountByKey ACCT_KEY => #sendResponse( "result": false ) ... </k>
+         <params> [ ({ _ } #as J), .JSONList ] </params>
+          <activeAccounts> ACCTS </activeAccounts>
+      requires #addrFromPrivateKey(ACCT_KEY) in ACCTS
+
+    rule <k> #firefly_addAccount => #sendResponse( "error": {"code": -32025, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
+
+    syntax KItem ::= "#loadAccountData" Int JSON
+ // --------------------------------------------
+    rule <k> #loadAccountData _ { .JSONList } => . ... </k>
+
+    rule <k> #loadAccountData _ { "address": _, REST => REST } ... </k>
+    rule <k> #loadAccountData _ { "key"    : _, REST => REST } ... </k>
+
+    rule <k> #loadAccountData ACCTID { ("balance": BALANCE_STRING, REST) => REST } ... </k>
+         <account>
+           <acctID> ACCTID </acctID>
+           <balance> _ => #parseHexWord(BALANCE_STRING) </balance>
+           ...
+         </account>
+
+    rule <k> #loadAccountData ACCTID { ("code": CODE_STRING, REST) => REST } ... </k>
+         <account>
+           <acctID> ACCTID </acctID>
+           <code> _ => #parseByteStack(CODE_STRING) </code>
+           ...
+         </account>
+
+    rule <k> #loadAccountData ACCTID { ("nonce": NONCE_STRING, REST) => REST } ... </k>
+         <account>
+           <acctID> ACCTID </acctID>
+           <nonce> _ => #parseHexWord(NONCE_STRING) </nonce>
+           ...
+         </account>
+
+    rule <k> #loadAccountData ACCTID { ("storage": { STORAGE_JSON }, REST) => REST } ... </k>
+         <account>
+           <acctID> ACCTID </acctID>
+           <storage>     _ => #parseMap({ STORAGE_JSON }) </storage>
+           <origStorage> _ => #parseMap({ STORAGE_JSON }) </origStorage>
+           ...
+         </account>
+
+    rule <k> #loadAccountData _ _ =>  #sendResponse( "error": {"code": -32026, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
 
 endmodule
 ```
