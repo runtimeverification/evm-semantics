@@ -750,6 +750,7 @@ WEB3 JSON RPC
     rule <k> #loadCallSettings { "from" : ( ACCTFROM:String => #parseHexWord( ACCTFROM ) ), REST } ... </k>
     rule <k> #loadCallSettings { ("from" : ACCTFROM:Int, REST => REST) } ... </k>
          <caller> _ => ACCTFROM </caller>
+         <origin> _ => ACCTFROM </origin>
 
     rule <k> #loadCallSettings { "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
     rule <k> #loadCallSettings { ( "to" : ACCTTO:Int, REST => REST ) } ... </k>
@@ -782,22 +783,17 @@ WEB3 JSON RPC
 
     rule <k> #loadCallSettings { ( "nonce" : _, REST => REST ) } ... </k>
 
-    syntax KItem ::= "#loadCallSettings" Int Int
- // --------------------------------------------
-    rule <k> #loadCallSettings ACCTFROM TXID => . ... </k>
-         <gas>       ( _ => GLIMIT )                       </gas>
-         <gasPrice>  ( _ => GPRICE )                        </gasPrice>
-         <callValue> ( _ => VALUE )                        </callValue>
-         <callData>  ( _ => DATA )                         </callData>
-         <caller>    ( _ => ACCTFROM )                     </caller>
-         <id>        ( _ => ACCTTO )                       </id>
-         <program>   ( _ => CODE )                         </program>
-         <jumpDests> ( _ => #computeValidJumpDests(CODE) ) </jumpDests>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <code>   CODE </code>
-           ...
-         </account>
+    rule <k> #loadCallSettings TXID:Int
+          => #loadCallSettings {
+               "from":     #addr( #parseHexWord( ECDSARecover( Hex2Raw( #hashUnsignedTx( TXID ) ), V, #unparseByteStack( R ), #unparseByteStack( S ) ) ) ),
+               "to":       ACCTTO,
+               "gas":      GLIMIT,
+               "gasPrice": GPRICE,
+               "value":    VALUE,
+               "data":     DATA
+             }
+         ...
+         </k>
          <txPending> ... ListItem(TXID) ... </txPending>
          <message>
            <msgID> TXID </msgID>
@@ -806,6 +802,9 @@ WEB3 JSON RPC
            <to>         ACCTTO  </to>
            <value>      VALUE   </value>
            <data>       DATA    </data>
+           <sigR>       R       </sigR>
+           <sigS>       S       </sigS>
+           <sigV>       V       </sigV>
            ...
          </message>
 ```
