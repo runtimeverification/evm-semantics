@@ -738,6 +738,18 @@ WEB3 JSON RPC
     rule <k> #eth_sendRawTransactionSend TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
 ```
 
+# Transaction Receipts 
+- The transaction receipt is a tuple of four items comprising: 
+  - the cumulative gas used in the block containing the transaction receipt as of immediately after the transaction has happened
+  - the set of logs created through execution of the transaction
+  - the Bloom filter composed from information in those logs
+  - the status code of the transaction.
+
+```k
+    syntax TxReceipt ::= "{" Int "|" List "|" ByteArray "|" Int "}"
+ // ---------------------------------------------------------------
+```
+
 # loadCallSettings
 
 - Takes a JSON with parameters for sendTransaction/call/estimateGas/etc and sets up the execution environment
@@ -814,8 +826,12 @@ WEB3 JSON RPC
 ```k
     syntax KItem ::= "#executeTx" JSON
  // ----------------------------------
-    rule <k> #executeTx J => #loadCallSettings J ~> #initVM ~> #execute ... </k>
-    
+    rule <k> #executeTx J => #clearLogs ~> #loadCallSettings J ~> #initVM ~> #execute ... </k>
+
+    syntax KItem ::= "#clearLogs"
+ // -----------------------------
+    rule <k> #clearLogs => . ... </k>
+         <log> _ => .List </log> 
 ```
 
 - `#personal_importRawKey` Takes an unencrypted private key, encrypts it with a passphrase, stores it and returns the address of the key.
