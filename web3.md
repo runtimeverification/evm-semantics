@@ -500,7 +500,7 @@ eth_sendTransaction
 -------------------
 
 **TODO**: Handle contract creation
-
+**TODO**: REMOVE `#executeTx TXID`
 ```k
     syntax KItem ::= "#eth_sendTransaction"
                    | "#eth_sendTransaction_finalize"
@@ -509,7 +509,7 @@ eth_sendTransaction
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString( #getJSON("from",J) )
 
-    rule <k> #eth_sendTransaction_finalize => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+    rule <k> #eth_sendTransaction_finalize => #executeTx TXID ~> #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
          <txPending> ListItem( TXID ) ... </txPending>
 
     rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "from not found; is required"} ) ... </k>
