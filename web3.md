@@ -16,6 +16,7 @@ module WEB3
           <chainID> $CHAINID:Int </chainID>
           <blockList> .List </blockList>
         </blockchain>
+        <txReceipts> .List </txReceipts>
         <accountKeys> .Map </accountKeys>
         <nextFilterSlot> 0 </nextFilterSlot>
         <filters>
@@ -495,7 +496,8 @@ WEB3 JSON RPC
     rule <k> #eth_uninstallFilter => #sendResponse ( "result": false ) ... </k> [owise]
 ```
 
-# eth_sendTransaction
+eth_sendTransaction
+-------------------
 
 **TODO**: Handle contract creation
 
@@ -682,7 +684,8 @@ WEB3 JSON RPC
          </message>
 ```
 
-# eth_sendRawTransaction
+eth_sendRawTransaction
+----------------------
 
 **TODO**: Verify the signature provided for the transaction
 
@@ -738,7 +741,9 @@ WEB3 JSON RPC
     rule <k> #eth_sendRawTransactionSend TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
 ```
 
-# Transaction Receipts 
+ Transaction Receipts
+---------------------
+
 - The transaction receipt is a tuple of four items comprising: 
   - the cumulative gas used in the block containing the transaction receipt as of immediately after the transaction has happened
   - the set of logs created through execution of the transaction
@@ -750,7 +755,8 @@ WEB3 JSON RPC
  // ---------------------------------------------------------------
 ```
 
-# loadCallSettings
+loadCallSettings
+----------------
 
 - Takes a JSON with parameters for sendTransaction/call/estimateGas/etc and sets up the execution environment
 
@@ -821,12 +827,23 @@ WEB3 JSON RPC
          </message>
 ```
 
-- `#executeTransaction` takes a transaction, loads it into the current state and executes it.
+- `#executeTx` takes a transaction, loads it into the current state and executes it.
+
+**TODO**: record the logs after `finalizeTX`
 
 ```k
-    syntax KItem ::= "#executeTx" JSON
- // ----------------------------------
-    rule <k> #executeTx J => #clearLogs ~> #loadCallSettings J ~> #initVM ~> #execute ... </k>
+    syntax KItem ::= "#executePendingTxs"
+ // -------------------------------------
+    rule <k> #executePendingTxs => . ... </k>
+         <txPending> .List </txPending>
+
+    rule <k> #executePendingTxs => #executeTx TXID ~> #executePendingTxs ... </k>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+
+    syntax KItem ::= "#executeTx" Int
+ // ---------------------------------
+    rule <k> #executeTx TXID:Int => #clearLogs ~> #loadCallSettings TXID ~> #initVM ~> #execute ~> #finalizeTx(false) ... </k>
+    <txPending> ... ListItem(TXID) ... </txPending>
 
     syntax KItem ::= "#clearLogs"
  // -----------------------------
