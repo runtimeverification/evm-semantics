@@ -812,7 +812,7 @@ loadCallSettings
              }
          ...
          </k>
-         <txPending> ... ListItem(TXID) ... </txPending>
+         <txPending> ListItem(TXID) ... </txPending>
          <message>
            <msgID> TXID </msgID>
            <txGasPrice> GPRICE  </txGasPrice>
@@ -842,8 +842,12 @@ loadCallSettings
 
     syntax KItem ::= "#executeTx" Int
  // ---------------------------------
-    rule <k> #executeTx TXID:Int => #clearLogs ~> #loadCallSettings TXID ~> #initVM ~> #execute ~> #finalizeTx(false) ... </k>
-    <txPending> ... ListItem(TXID) ... </txPending>
+    rule <k> #executeTx TXID:Int => #clearLogs ~> #loadCallSettings TXID ~> #initVM ~> #execute ~> #catchHaltTx ~> #finalizeTx(false) ... </k>
+    <txPending> ListItem(TXID) ... </txPending>
+
+    syntax KItem ::= "#catchHaltTx"
+ // -------------------------------
+    rule <k> #halt ~> #catchHaltTx => . ... </k>
 
     syntax KItem ::= "#clearLogs"
  // -----------------------------
