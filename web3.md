@@ -503,7 +503,7 @@ WEB3 JSON RPC
     syntax KItem ::= "#eth_sendTransaction"
                    | "#eth_sendTransaction_finalize"
  // ------------------------------------------------
-    rule <k> #eth_sendTransaction => createTX !ID:Int J ~> #eth_sendTransaction_finalize ... </k>
+    rule <k> #eth_sendTransaction => createTX #parseHexWord(#getString("from", J)) J ~> #eth_sendTransaction_finalize ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString( #getJSON("from",J) )
 
@@ -582,8 +582,8 @@ WEB3 JSON RPC
 ```k
     syntax KItem ::= "createTX" Int JSON
  // ------------------------------------
-    rule <k> createTX TXID J => loadTX TXID J ~> signTX TXID ACCTID ... </k>
-         <txPending> (.List => ListItem(TXID)) ... </txPending>
+    rule <k> createTX ACCTID J => loadTX !TXID:Int J ~> signTX !TXID:Int ACCTID ... </k>
+         <txPending> (.List => ListItem(!TXID)) ... </txPending>
          <account>
            <acctID> ACCTID </acctID>
            <nonce>  ACCTNONCE </nonce>
@@ -592,7 +592,7 @@ WEB3 JSON RPC
          <messages>
             ( .Bag
            => <message>
-                <msgID> TXID </msgID>
+                <msgID> !TXID </msgID>
                 <txGasPrice> 1         </txGasPrice>
                 <txNonce>    ACCTNONCE </txNonce>
                 <txGasLimit> 90000     </txGasLimit>
@@ -601,7 +601,6 @@ WEB3 JSON RPC
             )
           ...
           </messages>
-      requires #parseHexWord(#getString("from", J)) ==Int ACCTID
 
     syntax KItem ::= "loadTX" Int JSON
  // ----------------------------------
