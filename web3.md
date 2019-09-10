@@ -593,8 +593,9 @@ WEB3 JSON RPC
             ( .Bag
            => <message>
                 <msgID> TXID </msgID>
-                <txGasPrice> 1 </txGasPrice>
-                <txNonce> ACCTNONCE </txNonce>
+                <txGasPrice> 1         </txGasPrice>
+                <txNonce>    ACCTNONCE </txNonce>
+                <txGasLimit> 90000     </txGasLimit>
                 ...
               </message>
             )
