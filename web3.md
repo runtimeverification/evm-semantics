@@ -503,7 +503,7 @@ WEB3 JSON RPC
     syntax KItem ::= "#eth_sendTransaction"
                    | "#eth_sendTransaction_finalize"
  // ------------------------------------------------
-    rule <k> #eth_sendTransaction => loadTX J ~> #eth_sendTransaction_finalize ... </k>
+    rule <k> #eth_sendTransaction => createTX !ID:Int J ~> #eth_sendTransaction_finalize ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString( #getJSON("from",J) )
 
@@ -580,30 +580,75 @@ WEB3 JSON RPC
 **TODO**: You're supposed to be able to overwrite a pending tx by using its same "from" and "nonce" values
 
 ```k
-    syntax KItem ::= "loadTX" JSON
- // ------------------------------
-    rule <k> loadTX J => signTX !TXID ACCTADDR ... </k>
-         <txPending> .List => ListItem( !TXID ) ... </txPending>
+    syntax KItem ::= "createTX" Int JSON
+ // ------------------------------------
+    rule <k> createTX TXID J => loadTX TXID J ~> signTX TXID ACCTID ... </k>
+         <txPending> (.List => ListItem(TXID)) ... </txPending>
          <account>
-           <acctID> ACCTADDR </acctID>
-           <nonce> ACCTNONCE => ACCTNONCE +Int 1 </nonce>
+           <acctID> ACCTID </acctID>
+           <nonce>  ACCTNONCE </nonce>
            ...
          </account>
          <messages>
-           (.Bag => <message>
-             <msgID> !TXID:Int </msgID>
-             <txNonce>    #if isString( #getJSON("nonce",    J) ) #then #parseHexWord(#getString("nonce",J))    #else ACCTNONCE  #fi </txNonce>
-             <to>         #if isString( #getJSON("to",       J) ) #then #parseHexWord(#getString("to",J))       #else 0          #fi </to>
-             <txGasLimit> #if isString( #getJSON("gas",      J) ) #then #parseHexWord(#getString("gas",J))      #else 90000      #fi </txGasLimit>
-             <txGasPrice> #if isString( #getJSON("gasPrice", J) ) #then #parseHexWord(#getString("gasPrice",J)) #else GASP       #fi </txGasPrice>
-             <value>      #if isString( #getJSON("value",    J) ) #then #parseHexWord(#getString("value",J))    #else 0          #fi </value>
-             <data>       #if isString( #getJSON("data",     J) ) #then #parseByteStack(#getString("data",J))   #else .ByteArray #fi </data>
-             ...
-           </message>)
-         ...
-         </messages>
-         <gasPrice> GASP </gasPrice>
-      requires #parseHexWord(#getString("from",J)) ==Int ACCTADDR
+            ( .Bag
+           => <message>
+                <msgID> TXID </msgID>
+                <txGasPrice> 1 </txGasPrice>
+                <txNonce> ACCTNONCE </txNonce>
+                ...
+              </message>
+            )
+          ...
+          </messages>
+      requires #parseHexWord(#getString("from", J)) ==Int ACCTID
+
+    syntax KItem ::= "loadTX" Int JSON
+ // ----------------------------------
+    rule <k> loadTX _ { .JSONList } => . ... </k>
+
+    rule <k> loadTX _ { ("from": _, REST) => REST } ... </k>
+
+    rule <k> loadTX TXID { ("to": TO_STRING, REST) => REST } ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <to> ( _ => #parseHexWord(TO_STRING) ) </to>
+           ...
+         </message>
+
+    rule <k> loadTX TXID { ("nonce": NONCE_STRING, REST) => REST } ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce> ( _ => #parseHexWord(NONCE_STRING) ) </txNonce>
+           ...
+         </message>
+
+    rule <k> loadTX TXID { ("gas": GAS_STRING, REST) => REST } ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <txGasLimit> ( _ => #parseHexWord(GAS_STRING) ) </txGasLimit>
+           ...
+         </message>
+
+    rule <k> loadTX TXID { ("gasPrice": GPRICE_STRING, REST) => REST } ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <txGasPrice> ( _ => #parseHexWord(GPRICE_STRING) ) </txGasPrice>
+           ...
+         </message>
+
+    rule <k> loadTX TXID { ("value": VALUE_STRING, REST) => REST } ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <value> ( _ => #parseHexWord(VALUE_STRING) ) </value>
+           ...
+         </message>
+
+    rule <k> loadTX TXID { ("data": DATA_STRING, REST) => REST } ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <data> ( _ => #parseByteStack(DATA_STRING) ) </data>
+           ...
+         </message>
 
     syntax KItem ::= "signTX" Int Int
                    | "signTX" Int String [klabel(signTXAux)]
