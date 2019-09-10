@@ -413,13 +413,13 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax WordStack ::= #take ( Int , WordStack ) [function, functional]
  // ---------------------------------------------------------------------
-    rule #take(0, WS)         => .WordStack
+    rule #take(N, WS)         => .WordStack                      requires N <=Int 0
     rule #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
     rule #take(N, (W : WS))   => W : #take(N -Int 1, WS)         requires N >Int 0
 
     syntax WordStack ::= #drop ( Int , WordStack ) [function, functional]
  // ---------------------------------------------------------------------
-    rule #drop(0, WS)         => WS
+    rule #drop(N, WS)         => WS                  requires N <=Int 0
     rule #drop(N, .WordStack) => .WordStack
     rule #drop(N, (W : WS))   => #drop(N -Int 1, WS) requires N >Int 0
 ```
@@ -720,7 +720,7 @@ We are using the polymorphic `Map` sort for these word maps.
     syntax ByteArray ::= #range ( Map , Int , Int , ByteArray ) [function, functional, klabel(#rangeAux)]
  // -----------------------------------------------------------------------------------------------------
     rule #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack) [concrete]
-    rule #range(WM,           END, WIDTH, WS) => WS                                           requires WIDTH ==Int 0
+    rule #range(WM,           END, WIDTH, WS) => WS                                           requires WIDTH <=Int 0
     rule #range(WM,           END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, 0 : WS) requires (WIDTH >Int 0) andBool notBool END in_keys(WM)
     rule #range(END |-> W WM, END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, W : WS) requires (WIDTH >Int 0)
 ```
