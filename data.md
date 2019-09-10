@@ -261,8 +261,8 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
 
 ```k
     syntax Int ::= Int "^Word" Int       [function]
-    syntax Int ::= powmod(Int, Int, Int) [function]
- // -----------------------------------------------
+    syntax Int ::= powmod(Int, Int, Int) [function, functional]
+ // -----------------------------------------------------------
     rule W0 ^Word W1 => powmod(W0, W1, pow256)
 
     rule powmod(W0, W1, W2) => W0 ^%Int W1 W2  requires W2 =/=Int 0 [concrete]
