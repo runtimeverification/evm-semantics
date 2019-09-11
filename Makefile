@@ -466,7 +466,7 @@ test-slow-vm: $(slow_vm_tests:=.run)
 test-vm: $(quick_vm_tests:=.run)
 
 bchain_tests=$(wildcard tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/*/*.json)
-slow_bchain_tests=$(shell cat tests/slow.$(TEST_CONCRETE_BACKEND))
+slow_bchain_tests=$(shell cat tests/slow.$(TEST_CONCRETE_BACKEND))	# timeout after 20s
 failing_bchain_tests=$(shell cat tests/failing.$(TEST_CONCRETE_BACKEND))
 all_bchain_tests=$(filter-out $(failing_bchain_tests), $(bchain_tests))
 quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(all_bchain_tests))
