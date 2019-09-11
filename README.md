@@ -104,9 +104,11 @@ If you haven't already setup K's OCaml dependencies more recently than February 
 Finally, you can install repository specific dependencies and build the semantics:
 
 ```sh
-make deps
-make build
+make deps RELEASE=1
+make build RELEASE=1
 ```
+
+If you are a developer, you probably should omit `RELEASE` from the above commands unless you are testing performance, as the build is somewhat slower.
 
 ### Installing
 
