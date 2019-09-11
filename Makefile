@@ -471,7 +471,9 @@ slow_bchain_tests=$(wildcard tests/ethereum-tests/LegacyTests/Constantinople/Blo
                   $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000*.json) \
                   $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth_d1g0v0.json) \
                   tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_ContractRETURNBigOffset_d2g0v0.json \
-                  tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_ContractRETURNBigOffset_d1g0v0.json
+                  tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_ContractRETURNBigOffset_d1g0v0.json \
+                  tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stTimeConsuming/static_Call50000_sha256_d1g0v0.json \
+                  tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stTimeConsuming/static_Call50000_sha256_d0g0v0.json
 bad_bchain_tests= tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stCreate2/RevertOpcodeInCreateReturns_d0g0v0.json \
                   tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stCreate2/RevertInCreateInInit_d0g0v0.json
 failing_bchain_tests=$(shell cat tests/failing.$(TEST_CONCRETE_BACKEND))
