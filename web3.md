@@ -803,7 +803,7 @@ loadCallSettings
 
     rule <k> #loadCallSettings TXID:Int
           => #loadCallSettings {
-               "from":     #addr( #parseHexWord( ECDSARecover( Hex2Raw( #hashUnsignedTx( TXID ) ), V, #unparseByteStack( R ), #unparseByteStack( S ) ) ) ),
+               "from":     #unparseDataByteArray(#padToWidth(20, #ecrec(#sender(#hashUnsignedTx(TXID), V, #unparseByteStack(R), #unparseByteStack(S))))),
                "to":       ACCTTO,
                "gas":      GLIMIT,
                "gasPrice": GPRICE,
