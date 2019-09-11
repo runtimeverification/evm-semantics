@@ -461,7 +461,7 @@ vm_tests=$(wildcard tests/ethereum-tests/VMTests/*/*.json)
 slow_vm_tests=$(wildcard tests/ethereum-tests/VMTests/vmPerformance/*.json)
 quick_vm_tests=$(filter-out $(slow_vm_tests), $(vm_tests))
 
-test-all-vm: $(all_vm_tests:=.run)
+test-all-vm: $(vm_tests:=.run)
 test-slow-vm: $(slow_vm_tests:=.run)
 test-vm: $(quick_vm_tests:=.run)
 
