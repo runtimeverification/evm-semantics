@@ -64,7 +64,7 @@ clean-submodules: distclean
 	       tests/ethereum-tests/make.timestamp $(DEPS_DIR)/plugin/make.timestamp  \
 	       $(DEPS_DIR)/libff/build
 	cd $(DEPS_DIR)/k         && mvn clean --quiet
-	cd $(DEPS_DIR)/secp256k1 && make distclean || true
+	cd $(DEPS_DIR)/secp256k1 && $(MAKE) distclean || true
 
 # Non-K Dependencies
 # ------------------
@@ -82,8 +82,8 @@ $(libsecp256k1_out): $(DEPS_DIR)/secp256k1/autogen.sh
 	cd $(DEPS_DIR)/secp256k1/ \
 	    && ./autogen.sh \
 	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
-	    && make -s -j4 \
-	    && make install
+	    && $(MAKE) \
+	    && $(MAKE) install
 
 UNAME_S := $(shell uname -s)
 
@@ -556,7 +556,7 @@ metropolis-theme: $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty
 
 $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
 	git submodule update --init -- $(dir $@)
-	cd $(dir $@) && make
+	cd $(dir $@) && $(MAKE)
 
 # Sphinx HTML Documentation
 
