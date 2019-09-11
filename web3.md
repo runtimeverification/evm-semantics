@@ -744,7 +744,7 @@ eth_sendRawTransaction
  Transaction Receipts
 ---------------------
 
-- The transaction receipt is a tuple of four items comprising: 
+- The transaction receipt is a tuple of four items comprising:
   - the cumulative gas used in the block containing the transaction receipt as of immediately after the transaction has happened
   - the set of logs created through execution of the transaction
   - the Bloom filter composed from information in those logs
@@ -857,7 +857,7 @@ loadCallSettings
     syntax KItem ::= "#clearLogs"
  // -----------------------------
     rule <k> #clearLogs => . ... </k>
-         <log> _ => .List </log> 
+         <log> _ => .List </log>
 ```
 
 - `#personal_importRawKey` Takes an unencrypted private key, encrypts it with a passphrase, stores it and returns the address of the key.
