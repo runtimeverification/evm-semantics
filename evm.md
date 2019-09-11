@@ -1014,8 +1014,8 @@ Otherwise, it is calculated here using the "shortcut" formula used for running t
          <number>      HI     </number>
          <blockhashes> HASHES </blockhashes>
 
-    syntax Int ::= #blockhash ( List , Int , Int , Int ) [function, functional]
- // ---------------------------------------------------------------------------
+    syntax Int ::= #blockhash ( List , Int , Int , Int ) [function]
+ // ---------------------------------------------------------------
     rule #blockhash(_, N, HI, _) => 0 requires N >Int HI
     rule #blockhash(_, _, _, 256) => 0
     rule #blockhash(ListItem(0) _, _, _, _) => 0
