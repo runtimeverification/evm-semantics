@@ -16,6 +16,6 @@ cat "$input_file" | netcat 127.0.0.1 "$PORT" -q 0 > "$output_file"
 
 ./kevm web3-send "$PORT" 'firefly_shutdown'
 echo
-timeout 20 tail --pid="$kevm_client_pid" -f /dev/null || true
+timeout 8 tail --pid="$kevm_client_pid" -f /dev/null || true
 pkill -P "$kevm_client_pid" kevm-client               || true
-timeout 20 tail --pid="$kevm_client_pid" -f /dev/null || true
+timeout 8 tail --pid="$kevm_client_pid" -f /dev/null || true
