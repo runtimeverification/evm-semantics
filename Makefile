@@ -182,7 +182,7 @@ defn_files    := $(ocaml_files) $(llvm_file) $(java_files) $(haskell_files) $(no
 ocaml_kompiled   := $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
 node_kompiled    := $(DEFN_DIR)/vm/kevm-vm
-web3_kompiled    := $(web3_dir)/kevm-client
+web3_kompiled    := $(web3_dir)/build/kevm-client
 haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
@@ -306,52 +306,37 @@ $(ocaml_kompiled): $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LI
 
 # Node Backend
 
-$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
+$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore: $(node_files)
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
 	                 --syntax-module $(SYNTAX_MODULE) $(node_dir)/$(MAIN_DEFN_FILE).k \
 	                 --directory $(node_dir) -I $(node_dir) -I $(node_dir) \
 	                 --hook-namespaces "KRYPTO BLOCKCHAIN" \
-			 --iterated \
-	                 $(KOMPILE_OPTS) \
-	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blockchain.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/world.cpp -ccopt $(CURDIR)/$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc \
-	                 -ccopt -I$(CURDIR)/$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin \
-	                 -ccopt -L$(LIBRARY_PATH) \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS)) -ccopt -lprotobuf -ccopt -g -ccopt -std=c++14 -ccopt -O2
+			 --no-llvm-kompile \
+	                 $(KOMPILE_OPTS)
 
 $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 	mkdir -p $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin
 	protoc --cpp_out=$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 
-$(node_kompiled): $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter $(libff_out)
+.PHONY: $(node_kompiled)
+$(node_kompiled): $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
 	mkdir -p $(DEFN_DIR)/vm
-	$(K_BIN)/llvm-kompile $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/init.cpp $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp \
-	                      $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $@ -g -O2 \
-	                      -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ -I node/ \
-	                      $(LLVM_KOMPILE_OPTS) \
-	                      -L$(LIBRARY_PATH) \
-	                      -lff -lprotobuf -lgmp $(LINK_PROCPS) -lcryptopp -lsecp256k1
+	cd $(DEFN_DIR)/vm && cmake $(CURDIR)/cmake/node -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
 # Web3 Backend
 
-$(web3_dir)/web3-kompiled/interpreter: $(web3_files) $(libff_out)
+$(web3_dir)/web3-kompiled/definition.kore: $(web3_files)
 	$(K_BIN)/kompile --debug --main-module WEB3 --backend llvm \
 	                 --syntax-module WEB3 $(web3_dir)/web3.k \
 	                 --directory $(web3_dir) -I $(web3_dir) \
-	                 --hook-namespaces "KRYPTO BLOCKCHAIN JSON" \
-	                 --iterated \
-	                 $(KOMPILE_OPTS) \
-	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/client-c/json.cpp \
-	                 -ccopt -L$(LIBRARY_PATH) -ccopt -I -ccopt $(PLUGIN_SUBMODULE)/vm-c \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS)) -ccopt -g -ccopt -std=c++14 -ccopt -O2
+	                 --hook-namespaces "KRYPTO JSON" \
+	                 --no-llvm-kompile \
+	                 $(KOMPILE_OPTS)
 
-$(web3_kompiled): $(web3_dir)/web3-kompiled/interpreter $(libff_out)
-	mkdir -p $(web3_dir)
-	$(K_BIN)/llvm-kompile $(web3_dir)/web3-kompiled/definition.kore $(web3_dir)/web3-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/init.cpp $(PLUGIN_SUBMODULE)/client-c/main.cpp $(PLUGIN_SUBMODULE)/client-c/json.cpp \
-	                      $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -o $@ -g -O2 \
-	                      -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/plugin-c/ -I node/ \
-	                      $(LLVM_KOMPILE_OPTS) \
-	                      -L$(LIBRARY_PATH) \
-	                      -lff -lgmp $(LINK_PROCPS) -lcryptopp -lsecp256k1
+.PHONY: $(web3_kompiled)
+$(web3_kompiled): $(web3_dir)/web3-kompiled/definition.kore $(libff_out)
+	mkdir -p $(web3_dir)/build
+	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
 # LLVM Backend
 
@@ -373,8 +358,7 @@ KEVM_RELEASE_TAG?=
 
 install: $(INSTALL_DIR)/$(notdir $(node_kompiled))
 $(INSTALL_DIR)/$(notdir $(node_kompiled)): $(node_kompiled)
-	mkdir -p $(INSTALL_DIR)
-	cp $(node_kompiled) $(INSTALL_DIR)/
+	cd $(DEFN_DIR)/vm && $(MAKE) install
 
 uninstall:
 	rm $(INSTALL_DIR)/$(notdir $(node_kompiled))
