@@ -20,7 +20,7 @@ INSTALL_DIR    ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
 
 DEPS_DIR         := deps
 K_SUBMODULE      := $(abspath $(DEPS_DIR)/k)
-PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
+export PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
 
 K_RELEASE := $(K_SUBMODULE)/k-distribution/target/release/k
 K_BIN     := $(K_RELEASE)/bin
@@ -149,7 +149,7 @@ ocaml-deps:
 
 MAIN_MODULE    := ETHEREUM-SIMULATION
 SYNTAX_MODULE  := $(MAIN_MODULE)
-MAIN_DEFN_FILE := driver
+export MAIN_DEFN_FILE := driver
 
 k_files       := driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k web3.k asm.k
 EXTRA_K_FILES += $(MAIN_DEFN_FILE).k
@@ -159,8 +159,8 @@ ocaml_dir   := $(DEFN_DIR)/ocaml
 llvm_dir    := $(DEFN_DIR)/llvm
 java_dir    := $(DEFN_DIR)/java
 haskell_dir := $(DEFN_DIR)/haskell
-node_dir    := $(DEFN_DIR)/node
-web3_dir    := $(DEFN_DIR)/web3
+export node_dir    := $(CURDIR)/$(DEFN_DIR)/node
+export web3_dir    := $(CURDIR)/$(DEFN_DIR)/web3
 
 ocaml_files   := $(patsubst %, $(ocaml_dir)/%, $(ALL_K_FILES))
 llvm_files    := $(patsubst %, $(llvm_dir)/%, $(ALL_K_FILES))
