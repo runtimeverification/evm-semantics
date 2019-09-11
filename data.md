@@ -323,10 +323,10 @@ Bitwise logical operators are lifted from the integer versions.
                  | Int "|Word"   Int [function, functional]
                  | Int "&Word"   Int [function, functional]
                  | Int "xorWord" Int [function, functional]
-                 | Int "<<Word"  Int [function, functional]
-                 | Int ">>Word"  Int [function, functional]
-                 | Int ">>sWord" Int [function, functional]
- // -------------------------------------------------------
+                 | Int "<<Word"  Int [function]
+                 | Int ">>Word"  Int [function]
+                 | Int ">>sWord" Int [function]
+ // -------------------------------------------
     rule ~Word W       => W xorInt maxUInt256
     rule W0 |Word   W1 => W0 |Int W1
     rule W0 &Word   W1 => W0 &Int W1
