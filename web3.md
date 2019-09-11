@@ -608,45 +608,51 @@ WEB3 JSON RPC
 
     rule <k> loadTX _ { ("from": _, REST) => REST } ... </k>
 
-    rule <k> loadTX TXID { ("to": TO_STRING, REST) => REST } ... </k>
+    rule <k> loadTX _ { "to": (TO_STRING => #parseHexWord(TO_STRING)) , REST } ... </k>
+    rule <k> loadTX TXID { ("to": ACCTTO:Int, REST) => REST } ... </k>
          <message>
            <msgID> TXID </msgID>
-           <to> ( _ => #parseHexWord(TO_STRING) ) </to>
+           <to> ( _ => ACCTTO ) </to>
            ...
          </message>
 
-    rule <k> loadTX TXID { ("nonce": NONCE_STRING, REST) => REST } ... </k>
+    rule <k> loadTX _ { "nonce": (NONCE_STRING => #parseHexWord(NONCE_STRING)) , REST } ... </k>
+    rule <k> loadTX TXID { ("nonce": ACCTNONCE:Int, REST) => REST } ... </k>
          <message>
            <msgID> TXID </msgID>
-           <txNonce> ( _ => #parseHexWord(NONCE_STRING) ) </txNonce>
+           <txNonce> ( _ => ACCTNONCE ) </txNonce>
            ...
          </message>
 
-    rule <k> loadTX TXID { ("gas": GAS_STRING, REST) => REST } ... </k>
+    rule <k> loadTX _ { "gas": (GAS_STRING => #parseHexWord(GAS_STRING)) , REST } ... </k>
+    rule <k> loadTX TXID { ("gas": GLIMIT:Int, REST) => REST } ... </k>
          <message>
            <msgID> TXID </msgID>
-           <txGasLimit> ( _ => #parseHexWord(GAS_STRING) ) </txGasLimit>
+           <txGasLimit> ( _ => GLIMIT ) </txGasLimit>
            ...
          </message>
 
-    rule <k> loadTX TXID { ("gasPrice": GPRICE_STRING, REST) => REST } ... </k>
+    rule <k> loadTX _ { "gasPrice": (GPRICE_STRING => #parseHexWord(GPRICE_STRING)) , REST } ... </k>
+    rule <k> loadTX TXID { ("gasPrice": GPRICE:Int, REST) => REST } ... </k>
          <message>
            <msgID> TXID </msgID>
-           <txGasPrice> ( _ => #parseHexWord(GPRICE_STRING) ) </txGasPrice>
+           <txGasPrice> ( _ => GPRICE ) </txGasPrice>
            ...
          </message>
 
-    rule <k> loadTX TXID { ("value": VALUE_STRING, REST) => REST } ... </k>
+    rule <k> loadTX _ { "value": (VALUE_STRING => #parseHexWord(VALUE_STRING)) , REST } ... </k>
+    rule <k> loadTX TXID { ("value": VALUE:Int, REST) => REST } ... </k>
          <message>
            <msgID> TXID </msgID>
-           <value> ( _ => #parseHexWord(VALUE_STRING) ) </value>
+           <value> ( _ => VALUE ) </value>
            ...
          </message>
 
-    rule <k> loadTX TXID { ("data": DATA_STRING, REST) => REST } ... </k>
+    rule <k> loadTX _ { "data": (DATA_STRING => #parseByteStack(DATA_STRING)) , REST } ... </k>
+    rule <k> loadTX TXID { ("data": DATA:ByteArray, REST) => REST } ... </k>
          <message>
            <msgID> TXID </msgID>
-           <data> ( _ => #parseByteStack(DATA_STRING) ) </data>
+           <data> ( _ => DATA ) </data>
            ...
          </message>
 
