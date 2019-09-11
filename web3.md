@@ -765,10 +765,10 @@ loadCallSettings
  // -----------------------------------------
     rule <k> #loadCallSettings { .JSONList } => . ... </k>
 
-    rule <k> #loadCallSettings { "from" : ( ACCTFROM:String => #parseHexWord( ACCTFROM ) ), REST } ... </k>
-    rule <k> #loadCallSettings { ("from" : ACCTFROM:Int, REST => REST) } ... </k>
-         <caller> _ => ACCTFROM </caller>
-         <origin> _ => ACCTFROM </origin>
+ //   rule <k> #loadCallSettings { "from" : ( ACCTFROM:String => #parseHexWord( ACCTFROM ) ), REST } ... </k>
+ //   rule <k> #loadCallSettings { ("from" : ACCTFROM:Int, REST => REST) } ... </k>
+ //        <caller> _ => ACCTFROM </caller>
+ //        <origin> _ => ACCTFROM </origin>
 
     rule <k> #loadCallSettings { "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
     rule <k> #loadCallSettings { ( "to" : ACCTTO:Int, REST => REST ) } ... </k>
@@ -803,28 +803,33 @@ loadCallSettings
 
     rule <k> #loadCallSettings TXID:Int
           => #loadCallSettings {
-               "from":     #unparseDataByteArray(#padToWidth(20, #ecrec(#sender(#hashUnsignedTx(TXID), V, #unparseByteStack(R), #unparseByteStack(S))))),
-               "to":       ACCTTO,
-               "gas":      GLIMIT,
-               "gasPrice": GPRICE,
-               "value":    VALUE,
+               "from":     #unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW +Int 27, TR, TS))),
+               "to":       TT,
+               "gas":      TG,
+               "gasPrice": TP,
+               "value":    TV,
                "data":     DATA
              }
          ...
          </k>
          <txPending> ListItem(TXID) ... </txPending>
          <message>
-           <msgID> TXID </msgID>
-           <txGasPrice> GPRICE  </txGasPrice>
-           <txGasLimit> GLIMIT  </txGasLimit>
-           <to>         ACCTTO  </to>
-           <value>      VALUE   </value>
-           <data>       DATA    </data>
-           <sigR>       R       </sigR>
-           <sigS>       S       </sigS>
-           <sigV>       V       </sigV>
-           ...
+           <msgID>      TXID </msgID>
+           <txNonce>    TN   </txNonce>
+           <txGasPrice> TP   </txGasPrice>
+           <txGasLimit> TG   </txGasLimit>
+           <to>         TT   </to>
+           <value>      TV   </value>
+           <sigV>       TW   </sigV>
+           <sigR>       TR   </sigR>
+           <sigS>       TS   </sigS>
+           <data>       DATA </data>
          </message>
+
+    syntax ByteArray ::= #ecrecAddr ( Account ) [function]
+ // ------------------------------------------------------
+    rule #ecrecAddr(.Account) => .ByteArray
+    rule #ecrecAddr(N:Int) => #padToWidth(20, #asByteStack(N))
 ```
 
 - `#executeTx` takes a transaction, loads it into the current state and executes it.
