@@ -43,7 +43,7 @@ export LUA_PATH
         defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                                                \
         split-tests                                                                                                                         \
         test test-all test-conformance test-slow-conformance test-all-conformance                                                           \
-        test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain                                                       \
+        test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain test-rest-bchain                                      \
         test-web3                                                                                                                           \
         test-prove test-klab-prove test-parse test-failure                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly \
@@ -479,12 +479,14 @@ bad_bchain_tests= tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTest
 failing_bchain_tests=$(shell cat tests/failing.$(TEST_CONCRETE_BACKEND))
 all_bchain_tests=$(filter-out $(bad_bchain_tests), $(filter-out $(failing_bchain_tests), $(bchain_tests)))
 quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(all_bchain_tests))
+rest_bchain_tests=$(filter-out $(quick_bchain_tests), $(bchain_tests))
 
 web3_tests=$(wildcard tests/web3/*.in.json) \
            $(wildcard tests/web3/no-shutdown/*.in.json)
 
 test-all-bchain: $(all_bchain_tests:=.run)
 test-slow-bchain: $(slow_bchain_tests:=.run)
+test-rest-bchain: $(rest_bchain_tests:=.run)
 test-bchain: $(quick_bchain_tests:=.run)
 
 test-web3: $(web3_tests:.in.json=.run-web3)
