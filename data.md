@@ -29,7 +29,7 @@ Writing a JSON-ish parser in K takes 6 lines.
 ```k
     syntax JSONList ::= List{JSON,","}
     syntax JSONKey  ::= String | Int
-    syntax JSON     ::= String | Int | Bool | ByteArray
+    syntax JSON     ::= String | Int | Bool
                       | JSONKey ":" JSON
                       | "{" JSONList "}"
                       | "[" JSONList "]"
