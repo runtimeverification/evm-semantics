@@ -433,13 +433,11 @@ A cons-list is used for the EVM wordstack.
     syntax Int ::= WordStack "[" Int "]" [function]
  // -----------------------------------------------
     rule (W0 : WS)   [N] => W0           requires N ==Int 0
-    rule (.WordStack)[N] => 0            requires N >Int 0
     rule (W0 : WS)   [N] => WS[N -Int 1] requires N >Int 0
 
     syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function]
  // --------------------------------------------------------------
     rule (W0 : WS)  [ N := W ] => W  : WS                             requires N ==Int 0
-    rule .WordStack [ N := W ] => 0  : (.WordStack [ N -Int 1 := W ]) requires N >Int 0
     rule (W0 : WS)  [ N := W ] => W0 : (WS [ N -Int 1 := W ])         requires N >Int 0
 ```
 
