@@ -765,10 +765,10 @@ loadCallSettings
  // -----------------------------------------
     rule <k> #loadCallSettings { .JSONList } => . ... </k>
 
- //   rule <k> #loadCallSettings { "from" : ( ACCTFROM:String => #parseHexWord( ACCTFROM ) ), REST } ... </k>
- //   rule <k> #loadCallSettings { ("from" : ACCTFROM:Int, REST => REST) } ... </k>
- //        <caller> _ => ACCTFROM </caller>
- //        <origin> _ => ACCTFROM </origin>
+    rule <k> #loadCallSettings { "from" : ( ACCTFROM:String => #parseHexWord( ACCTFROM ) ), REST } ... </k>
+    rule <k> #loadCallSettings { ("from" : ACCTFROM:Int, REST => REST) } ... </k>
+         <caller> _ => ACCTFROM </caller>
+         <origin> _ => ACCTFROM </origin>
 
     rule <k> #loadCallSettings { "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
     rule <k> #loadCallSettings { ( "to" : ACCTTO:Int, REST => REST ) } ... </k>
