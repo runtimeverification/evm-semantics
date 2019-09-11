@@ -1872,7 +1872,7 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function, functional]
  // ----------------------------------------------------------------------------
-    rule #memoryUsageUpdate(MU, START, WIDTH) => MU                                       requires WIDTH <=Int 0
+    rule #memoryUsageUpdate(MU, START, WIDTH) => MU                                       requires notBool WIDTH >Int 0
     rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH  >Int 0 [concrete]
 ```
 
