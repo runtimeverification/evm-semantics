@@ -833,7 +833,7 @@ loadCallSettings
 ```
 
 - `#executeTx` takes a transaction, loads it into the current state and executes it.
-
+**TODO**: treat the account creation case
 **TODO**: record the logs after `finalizeTX`
 
 ```k
@@ -847,8 +847,29 @@ loadCallSettings
 
     syntax KItem ::= "#executeTx" Int
  // ---------------------------------
-    rule <k> #executeTx TXID:Int => #clearLogs ~> #loadCallSettings TXID ~> #initVM ~> #execute ~> #catchHaltTx ~> #finalizeTx(false) ... </k>
-    <txPending> ListItem(TXID) ... </txPending>
+    rule <k> #executeTx TXID:Int => #clearLogs ~> #loadCallSettings TXID ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false ~> #catchHaltTx ~> #finalizeTx(false) ... </k>
+         <txPending> ListItem(TXID) ... </txPending>
+         <schedule> SCHED </schedule>
+         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
+         <callDepth> _ => -1 </callDepth>
+         <coinbase> MINER </coinbase>
+         <message>
+           <msgID>      TXID   </msgID>
+           <txGasPrice> GPRICE </txGasPrice>
+           <txGasLimit> GLIMIT </txGasLimit>
+           <to>         ACCTTO </to>
+           <value>      VALUE  </value>
+           <data>       DATA   </data>
+           ...
+         </message>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
+           <nonce> NONCE => NONCE +Int 1 </nonce>
+           ...
+         </account>
+         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
+      requires ACCTTO =/=K .Account
 
     syntax KItem ::= "#catchHaltTx"
  // -------------------------------
