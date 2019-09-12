@@ -717,25 +717,15 @@ WEB3 JSON RPC
 
     rule <k> #eth_sendRawTransaction => #sendResponse("error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
 
-    rule <k> #eth_sendRawTransactionLoad => #eth_sendRawTransactionVerify !TXID ... </k>
-         <params> [ NONCE, GPRICE, GLIMIT, TO, VALUE, DATA, V, R, S, .JSONList ] </params>
-         <messages>
-           ( .Bag
-          => <message>
-               <msgID> !TXID </msgID>
-               <txNonce>    #parseHexWord( Raw2Hex( NONCE ) )     </txNonce>
-               <txGasPrice> #parseHexWord( Raw2Hex( GPRICE ) )    </txGasPrice>
-               <txGasLimit> #parseHexWord( Raw2Hex( GLIMIT ) )    </txGasLimit>
-               <to>         #parseHexWord( Raw2Hex( TO ) )        </to>
-               <value>      #parseHexWord( Raw2Hex( VALUE ) )     </value>
-               <data>       #parseByteStackRaw( DATA )            </data>
-               <sigV>       #parseHexWord( Raw2Hex( V ) ) -Int 27 </sigV>
-               <sigR>       #parseByteStackRaw( R )               </sigR>
-               <sigS>       #parseByteStackRaw( S )               </sigS>
-             </message>
-           )
-           ...
-         </messages>
+    rule <k> #eth_sendRawTransactionLoad => mkTX !ID:Int
+          ~> load "transaction" : { !ID : { "data"  : Raw2Hex(TI) , "gas"      : Raw2Hex(TG) , "gasPrice" : Raw2Hex(TP)
+                                          , "nonce" : Raw2Hex(TN) , "r"        : Raw2Hex(TR) , "s"        : Raw2Hex(TS)
+                                          , "to"    : Raw2Hex(TT) , "v"        : Raw2Hex(TW) , "value"    : Raw2Hex(TV)
+                                          , .JSONList
+                                          }
+                                  }
+          ~> #eth_sendRawTransactionVerify !ID ... </k>
+         <params> [ TN, TP, TG, TT, TV, TI, TW, TR, TS, .JSONList ] </params>
 
     rule <k> #eth_sendRawTransactionLoad => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
 
@@ -747,7 +737,7 @@ WEB3 JSON RPC
            <sigS> S </sigS>
            ...
          </message>
-      requires ECDSARecover( Hex2Raw( #hashUnsignedTx( TXID ) ), V +Int 27, #unparseByteStack(R), #unparseByteStack(S) ) =/=String ""
+      requires ECDSARecover( Hex2Raw( #hashUnsignedTx( TXID ) ), V, #unparseByteStack(R), #unparseByteStack(S) ) =/=String ""
 
     rule <k> #eth_sendRawTransactionVerify _ => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
 
