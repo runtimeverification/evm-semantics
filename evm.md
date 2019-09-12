@@ -1870,9 +1870,9 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
                      orBool OP ==K RETURN
                      orBool OP ==K REVERT
 
-    syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function]
- // ----------------------------------------------------------------
-    rule #memoryUsageUpdate(MU, START, WIDTH) => MU                                       requires WIDTH ==Int 0
+    syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function, functional]
+ // ----------------------------------------------------------------------------
+    rule #memoryUsageUpdate(MU, START, WIDTH) => MU                                       requires notBool WIDTH >Int 0
     rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH  >Int 0 [concrete]
 ```
 
@@ -2087,8 +2087,8 @@ There are several helpers for calculating gas (most of them also specified in th
                  | Cextra  ( Schedule , Bool , Int )      [function]
                  | Cnew    ( Schedule , Bool , Int )      [function]
                  | Cxfer   ( Schedule , Int )             [function]
-                 | Cmem    ( Schedule , Int )             [function, memo]
- // ----------------------------------------------------------------------
+                 | Cmem    ( Schedule , Int )             [function, functional, memo]
+ // ----------------------------------------------------------------------------------
     rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi  [concrete]
 
