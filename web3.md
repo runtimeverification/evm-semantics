@@ -598,6 +598,7 @@ eth_sendTransaction
                 <txGasPrice> 1         </txGasPrice>
                 <txNonce>    ACCTNONCE </txNonce>
                 <txGasLimit> 90000     </txGasLimit>
+                <to>         .Account  </to>
                 ...
               </message>
             )
@@ -847,7 +848,46 @@ loadCallSettings
 
     syntax KItem ::= "#executeTx" Int
  // ---------------------------------
-    rule <k> #executeTx TXID:Int => #clearLogs ~> #loadCallSettings TXID ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false ~> #catchHaltTx ~> #finalizeTx(false) ... </k>
+    rule <k> #executeTx TXID:Int
+          => #clearLogs
+          ~> #loadCallSettings TXID
+          ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
+          ~> #catchHaltTx
+          ~> #finalizeTx(false)
+         ...
+         </k>
+         <schedule> SCHED </schedule>
+         <gasPrice> _ => GPRICE </gasPrice>
+         <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
+         <origin> _ => ACCTFROM </origin>
+         <callDepth> _ => -1 </callDepth>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <coinbase> MINER </coinbase>
+         <message>
+           <msgID>      TXID     </msgID>
+           <txGasPrice> GPRICE   </txGasPrice>
+           <txGasLimit> GLIMIT   </txGasLimit>
+           <to>         .Account </to>
+           <value>      VALUE    </value>
+           <data>       CODE     </data>
+           ...
+         </message>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
+           <nonce> NONCE </nonce>
+           ...
+         </account>
+         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
+
+    rule <k> #executeTx TXID:Int
+          => #clearLogs
+          ~> #loadCallSettings TXID
+          ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
+          ~> #catchHaltTx
+          ~> #finalizeTx(false)
+         ...
+         </k>
          <txPending> ListItem(TXID) ... </txPending>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
