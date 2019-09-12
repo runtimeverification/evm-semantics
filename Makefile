@@ -211,8 +211,8 @@ $(web3_dir)/%.k: %.md $(TANGLER)
 KOMPILE_OPTS      :=
 LLVM_KOMPILE_OPTS :=
 
-build:     build-ocaml build-java
-build-all: build-ocaml build-java build-node build-haskell build-llvm build-web3
+build: build-llvm build-haskell build-java build-web3 build-node
+build-all: build build-ocaml
 build-ocaml:   $(ocaml_kompiled)
 build-java:    $(java_kompiled)
 build-node:    $(node_kompiled)
@@ -369,7 +369,7 @@ release.md: INSTALL.md
 # Tests
 # -----
 
-TEST_CONCRETE_BACKEND:=ocaml
+TEST_CONCRETE_BACKEND:=llvm
 TEST_SYMBOLIC_BACKEND:=java
 TEST:=./kevm
 KPROVE_MODULE:=VERIFICATION

@@ -36,8 +36,8 @@ Installing/Building
 
 ### K Backends
 
-There are four backends of K available, the OCAML and (experimental) LLVM backends for concrete execution, and the Java and (experimental) Haskell backends for symbolic reasoning and proofs.
-This repository generates the build-products for both non-experimental backends in `.build/java/` and `.build/ocaml/`.
+There are four backends of K available: LLVM (default) and OCaml for concrete execution and Java (default) and Haskell for symbolic execution.
+This repository generates the build-products for each backend in `.build/defn/`.
 
 ### System Dependencies
 
@@ -109,7 +109,7 @@ Get the submodules:
 git submodule update --init --recursive
 ```
 
-If you haven't already setup K's OCaml dependencies more recently than February 1, 2019, then you also need to setup the K OCaml dependencies:
+If you haven't already setup K's OCaml dependencies more recently than February 1, 2019, then you also need to setup the K OCaml dependencies (**not** needed if you don't intend to use the OCaml backend):
 
 ```sh
 ./deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev
