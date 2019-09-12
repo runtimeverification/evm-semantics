@@ -112,13 +112,6 @@ $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 # K Dependencies
 # --------------
 
-all-deps: deps llvm-deps haskell-deps
-all-deps: BACKEND_SKIP=
-llvm-deps: $(libff_out) deps
-llvm-deps: BACKEND_SKIP=-Dhaskell.backend.skip
-haskell-deps: deps
-haskell-deps: BACKEND_SKIP=-Dllvm.backend.skip
-
 deps: repo-deps system-deps
 repo-deps: tangle-deps k-deps plugin-deps
 system-deps: ocaml-deps
@@ -126,11 +119,9 @@ k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(TANGLER)
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 
-BACKEND_SKIP=-Dhaskell.backend.skip -Dllvm.backend.skip
-
 $(K_SUBMODULE)/make.timestamp:
 	git submodule update --init --recursive -- $(K_SUBMODULE)
-	cd $(K_SUBMODULE) && mvn package -DskipTests -U $(BACKEND_SKIP)
+	cd $(K_SUBMODULE) && mvn package -DskipTests -U
 	touch $(K_SUBMODULE)/make.timestamp
 
 $(TANGLER):
