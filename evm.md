@@ -373,7 +373,7 @@ The `#next [_]` operator initiates execution by:
     rule #stackAdded(SELFDESTRUCT)   => 0
     rule #stackAdded(PUSH(_))        => 1
     rule #stackAdded(LOG(_))         => 0
-    rule #stackAdded(SWAP(N))        => N
+    rule #stackAdded(SWAP(N))        => N +Int 1
     rule #stackAdded(DUP(N))         => N +Int 1
     rule #stackAdded(IOP:InvalidOp)  => 0
     rule #stackAdded(OP)             => 1 [owise]
