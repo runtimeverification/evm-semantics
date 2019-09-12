@@ -42,8 +42,8 @@ export LUA_PATH
         build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                                               \
         defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                                                \
         split-tests                                                                                                                         \
-        test test-all test-conformance test-slow-conformance test-all-conformance                                                           \
-        test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain                                                       \
+        test test-all test-conformance test-rest-conformance test-all-conformance                                                           \
+        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                       \
         test-web3                                                                                                                           \
         test-prove test-klab-prove test-parse test-failure                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly \
@@ -453,37 +453,33 @@ smoke_tests_prove=tests/specs/ds-token-erc20/transfer-failure-1-a-spec.k
 
 tests/ethereum-tests/%.json: tests/ethereum-tests/make.timestamp
 
+slow_conformance_tests    = $(shell cat tests/slow.$(TEST_CONCRETE_BACKEND))    # timeout after 20s
+failing_conformance_tests = $(shell cat tests/failing.$(TEST_CONCRETE_BACKEND))
+
 test-all-conformance: test-all-vm test-all-bchain
-test-slow-conformance: test-slow-vm test-slow-bchain
+test-rest-conformance: test-rest-vm test-rest-bchain
 test-conformance: test-vm test-bchain
 
-vm_tests=$(wildcard tests/ethereum-tests/VMTests/*/*.json)
-slow_vm_tests=$(wildcard tests/ethereum-tests/VMTests/vmPerformance/*.json)
-quick_vm_tests=$(filter-out $(slow_vm_tests), $(vm_tests))
+vm_tests         = $(wildcard tests/ethereum-tests/VMTests/*/*.json)
+quick_vm_tests   = $(filter-out $(slow_conformance_tests), $(vm_tests))
+passing_vm_tests = $(filter-out $(failing_conformance_tests), $(quick_vm_tests))
+rest_vm_tests    = $(filter-out $(passing_vm_tests), $(vm_tests))
 
-test-all-vm: $(all_vm_tests:=.run)
-test-slow-vm: $(slow_vm_tests:=.run)
-test-vm: $(quick_vm_tests:=.run)
+test-all-vm: $(vm_tests:=.run)
+test-rest-vm: $(rest_vm_tests:=.run)
+test-vm: $(passing_vm_tests:=.run)
 
-bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)
-slow_bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*.json) \
-                  $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000*.json) \
-                  $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000*.json) \
-                  $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth_d1g0v0.json) \
-                  tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_ContractRETURNBigOffset_d2g0v0.json \
-                  tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_ContractRETURNBigOffset_d1g0v0.json
-bad_bchain_tests= tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/RevertOpcodeInCreateReturns_d0g0v0.json \
-                  tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/RevertInCreateInInit_d0g0v0.json
-failing_bchain_tests=$(shell cat tests/failing.$(TEST_CONCRETE_BACKEND))
-all_bchain_tests=$(filter-out $(bad_bchain_tests), $(filter-out $(failing_bchain_tests), $(bchain_tests)))
-quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(all_bchain_tests))
+bchain_tests         = $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/*/*.json)
+quick_bchain_tests   = $(filter-out $(slow_conformance_tests), $(bchain_tests))
+passing_bchain_tests = $(filter-out $(failing_conformance_tests), $(quick_bchain_tests))
+rest_bchain_tests    = $(filter-out $(passing_bchain_tests), $(bchain_tests))
+
+test-all-bchain: $(all_bchain_tests:=.run)
+test-rest-bchain: $(rest_bchain_tests:=.run)
+test-bchain: $(passing_bchain_tests:=.run)
 
 web3_tests=$(wildcard tests/web3/*.in.json) \
            $(wildcard tests/web3/no-shutdown/*.in.json)
-
-test-all-bchain: $(all_bchain_tests:=.run)
-test-slow-bchain: $(slow_bchain_tests:=.run)
-test-bchain: $(quick_bchain_tests:=.run)
 
 test-web3: $(web3_tests:.in.json=.run-web3)
 
