@@ -38,7 +38,7 @@ export TANGLER
 export LUA_PATH
 
 .PHONY: all clean clean-submodules distclean install uninstall                                                                              \
-        deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff                         \
+        deps all-deps llvm-deps haskell-deps repo-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff                                     \
         build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                                               \
         defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                                                \
         split-tests                                                                                                                         \
@@ -112,9 +112,8 @@ $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 # K Dependencies
 # --------------
 
-deps: repo-deps system-deps
+deps: repo-deps
 repo-deps: tangle-deps k-deps plugin-deps
-system-deps: ocaml-deps
 k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(TANGLER)
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp

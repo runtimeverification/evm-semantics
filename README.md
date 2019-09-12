@@ -109,12 +109,6 @@ Get the submodules:
 git submodule update --init --recursive
 ```
 
-If you haven't already setup K's OCaml dependencies more recently than February 1, 2019, then you also need to setup the K OCaml dependencies (**not** needed if you don't intend to use the OCaml backend):
-
-```sh
-./deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev
-```
-
 And finally build the repository specific dependencies:
 
 ```sh
@@ -141,6 +135,27 @@ You can also build specific backends as so:
 make build-haskell
 make build-llvm
 make build-java
+```
+
+#### OPTIONAL: OCaml Backend
+
+If you wish to build the OCaml backend, you will need to take some additional steps.
+
+First, make sure you have our custom OCaml compiler installed (should only need to do this once):
+
+```sh
+./deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev
+```
+
+Next you need to install the specific OCaml packages we requires:
+
+```sh
+make ocaml-deps
+```
+
+And next you can build the OCaml backend:
+
+```sh
 make build-ocaml
 ```
 
