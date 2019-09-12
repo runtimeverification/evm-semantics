@@ -38,7 +38,7 @@ export TANGLER
 export LUA_PATH
 
 .PHONY: all clean clean-submodules distclean install uninstall                                                                              \
-        deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff                         \
+        deps all-deps llvm-deps haskell-deps repo-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff                                     \
         build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                                               \
         defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                                                \
         split-tests                                                                                                                         \
@@ -112,25 +112,15 @@ $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 # K Dependencies
 # --------------
 
-all-deps: deps llvm-deps haskell-deps
-all-deps: BACKEND_SKIP=
-llvm-deps: $(libff_out) deps
-llvm-deps: BACKEND_SKIP=-Dhaskell.backend.skip
-haskell-deps: deps
-haskell-deps: BACKEND_SKIP=-Dllvm.backend.skip
-
-deps: repo-deps system-deps
+deps: repo-deps
 repo-deps: tangle-deps k-deps plugin-deps
-system-deps: ocaml-deps
 k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(TANGLER)
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 
-BACKEND_SKIP=-Dhaskell.backend.skip -Dllvm.backend.skip
-
 $(K_SUBMODULE)/make.timestamp:
 	git submodule update --init --recursive -- $(K_SUBMODULE)
-	cd $(K_SUBMODULE) && mvn package -DskipTests -U $(BACKEND_SKIP)
+	cd $(K_SUBMODULE) && mvn package -DskipTests -U
 	touch $(K_SUBMODULE)/make.timestamp
 
 $(TANGLER):
@@ -220,8 +210,8 @@ $(web3_dir)/%.k: %.md $(TANGLER)
 KOMPILE_OPTS      :=
 LLVM_KOMPILE_OPTS :=
 
-build:     build-ocaml build-java
-build-all: build-ocaml build-java build-node build-haskell build-llvm build-web3
+build: build-llvm build-haskell build-java build-web3 build-node
+build-all: build build-ocaml
 build-ocaml:   $(ocaml_kompiled)
 build-java:    $(java_kompiled)
 build-node:    $(node_kompiled)
@@ -378,7 +368,7 @@ release.md: INSTALL.md
 # Tests
 # -----
 
-TEST_CONCRETE_BACKEND:=ocaml
+TEST_CONCRETE_BACKEND:=llvm
 TEST_SYMBOLIC_BACKEND:=java
 TEST:=./kevm
 KPROVE_MODULE:=VERIFICATION

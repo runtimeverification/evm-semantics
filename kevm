@@ -200,7 +200,7 @@ if [[ "$run_command" == 'help' ]]; then
     exit 0
 fi
 
-backend="ocaml"
+backend="llvm"
 debug=false
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
