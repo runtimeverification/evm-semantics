@@ -590,88 +590,9 @@ WEB3 JSON RPC
          </message>
 ```
 
-- `loadTX` Loads the JSON parameter for a transaction and signs it with the "from" account's key.
-
-**TODO**: Make sure nonce is being determined properly
-**TODO**: You're supposed to be able to overwrite a pending tx by using its same "from" and "nonce" values
+-   signTX TXID ACCTFROM: Signs the transaction with TXID using ACCTFROM's private key
 
 ```k
-    syntax KItem ::= "createTX" Int JSON
- // ------------------------------------
-    rule <k> createTX ACCTID J => loadTX !TXID:Int J ~> signTX !TXID:Int ACCTID ... </k>
-         <txPending> (.List => ListItem(!TXID)) ... </txPending>
-         <account>
-           <acctID> ACCTID </acctID>
-           <nonce>  ACCTNONCE </nonce>
-           ...
-         </account>
-         <messages>
-            ( .Bag
-           => <message>
-                <msgID> !TXID </msgID>
-                <txGasPrice> 1         </txGasPrice>
-                <txNonce>    ACCTNONCE </txNonce>
-                <txGasLimit> 90000     </txGasLimit>
-                ...
-              </message>
-            )
-          ...
-          </messages>
-
-    syntax KItem ::= "loadTX" Int JSON
- // ----------------------------------
-    rule <k> loadTX _ { .JSONList } => . ... </k>
-
-    rule <k> loadTX _ { ("from": _, REST) => REST } ... </k>
-
-    rule <k> loadTX _ { "to": (TO_STRING => #parseHexWord(TO_STRING)) , REST } ... </k>
-    rule <k> loadTX TXID { ("to": ACCTTO:Int, REST) => REST } ... </k>
-         <message>
-           <msgID> TXID </msgID>
-           <to> ( _ => ACCTTO ) </to>
-           ...
-         </message>
-
-    rule <k> loadTX _ { "nonce": (NONCE_STRING => #parseHexWord(NONCE_STRING)) , REST } ... </k>
-    rule <k> loadTX TXID { ("nonce": ACCTNONCE:Int, REST) => REST } ... </k>
-         <message>
-           <msgID> TXID </msgID>
-           <txNonce> ( _ => ACCTNONCE ) </txNonce>
-           ...
-         </message>
-
-    rule <k> loadTX _ { "gas": (GAS_STRING => #parseHexWord(GAS_STRING)) , REST } ... </k>
-    rule <k> loadTX TXID { ("gas": GLIMIT:Int, REST) => REST } ... </k>
-         <message>
-           <msgID> TXID </msgID>
-           <txGasLimit> ( _ => GLIMIT ) </txGasLimit>
-           ...
-         </message>
-
-    rule <k> loadTX _ { "gasPrice": (GPRICE_STRING => #parseHexWord(GPRICE_STRING)) , REST } ... </k>
-    rule <k> loadTX TXID { ("gasPrice": GPRICE:Int, REST) => REST } ... </k>
-         <message>
-           <msgID> TXID </msgID>
-           <txGasPrice> ( _ => GPRICE ) </txGasPrice>
-           ...
-         </message>
-
-    rule <k> loadTX _ { "value": (VALUE_STRING => #parseHexWord(VALUE_STRING)) , REST } ... </k>
-    rule <k> loadTX TXID { ("value": VALUE:Int, REST) => REST } ... </k>
-         <message>
-           <msgID> TXID </msgID>
-           <value> ( _ => VALUE ) </value>
-           ...
-         </message>
-
-    rule <k> loadTX _ { "data": (DATA_STRING => #parseByteStack(DATA_STRING)) , REST } ... </k>
-    rule <k> loadTX TXID { ("data": DATA:ByteArray, REST) => REST } ... </k>
-         <message>
-           <msgID> TXID </msgID>
-           <data> ( _ => DATA ) </data>
-           ...
-         </message>
-
     syntax KItem ::= "signTX" Int Int
                    | "signTX" Int String [klabel(signTXAux)]
  // --------------------------------------------------------
