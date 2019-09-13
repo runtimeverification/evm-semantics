@@ -572,22 +572,22 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #asByteStack( 0 , WS ) => WS                                                            // [concrete]
     rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W modInt 256 : WS ) requires W =/=K 0 [concrete]
 
-    syntax ByteArray ::= ByteArray "++" ByteArray [function, right, klabel(_++_WS), smtlib(_plusWS_)]
- // -------------------------------------------------------------------------------------------------
+    syntax ByteArray ::= ByteArray "++" ByteArray [function, memo, right, klabel(_++_WS), smtlib(_plusWS_)]
+ // -------------------------------------------------------------------------------------------------------
     rule .WordStack ++ WS' => WS'
     rule (W : WS)   ++ WS' => W : {WS ++ WS'}:>WordStack
 
-    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional]
- // --------------------------------------------------------------------------
+    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional, memo]
+ // --------------------------------------------------------------------------------
     rule WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
 
-    syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional]
- // ------------------------------------------------------------------
+    syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, memo]
+ // ------------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => #sizeWordStack(WS)
 
-    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, functional]
-                       | #padRightToWidth ( Int , ByteArray ) [function]
- // --------------------------------------------------------------------------------
+    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, functional, memo]
+                       | #padRightToWidth ( Int , ByteArray ) [function, memo]
+ // --------------------------------------------------------------------------------------
     rule #padToWidth(N, WS)      => #replicateAux(N -Int #sizeByteArray(WS), 0, WS) [concrete]
     rule #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0)  [concrete]
 ```
