@@ -499,7 +499,8 @@ eth_sendTransaction
 -------------------
 
 **TODO**: Handle contract creation
-**TODO**: REMOVE `#executeTx TXID`
+**TODO**: Only call `#executeTx TXID` when mining is turned on, or when the mining interval comes around.
+
 ```k
     syntax KItem ::= "#eth_sendTransaction"
                    | "#eth_sendTransaction_finalize"
