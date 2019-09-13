@@ -638,14 +638,17 @@ WEB3 JSON RPC
 
     rule <k> #eth_sendRawTransaction => #sendResponse("error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
 
-    rule <k> #eth_sendRawTransactionLoad => mkTX !ID:Int
+    rule <k> #eth_sendRawTransactionLoad
+          => mkTX !ID:Int
           ~> load "transaction" : { !ID : { "data"  : Raw2Hex(TI) , "gas"      : Raw2Hex(TG) , "gasPrice" : Raw2Hex(TP)
                                           , "nonce" : Raw2Hex(TN) , "r"        : Raw2Hex(TR) , "s"        : Raw2Hex(TS)
                                           , "to"    : Raw2Hex(TT) , "v"        : Raw2Hex(TW) , "value"    : Raw2Hex(TV)
                                           , .JSONList
                                           }
                                   }
-          ~> #eth_sendRawTransactionVerify !ID ... </k>
+          ~> #eth_sendRawTransactionVerify !ID
+         ...
+         </k>
          <params> [ TN, TP, TG, TT, TV, TI, TW, TR, TS, .JSONList ] </params>
 
     rule <k> #eth_sendRawTransactionLoad => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
