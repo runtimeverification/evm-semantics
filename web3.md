@@ -129,8 +129,8 @@ WEB3 JSON RPC
 -------------
 
 ```k
-    syntax JSON ::= "null" | "undef" | ByteArray
- // --------------------------------------------
+    syntax JSON ::= "null" | "undef" | ByteArray | Account
+ // ------------------------------------------------------
 
     syntax JSON ::= #getJSON ( JSONKey , JSON ) [function]
  // ------------------------------------------------------
@@ -509,7 +509,7 @@ eth_sendTransaction
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString( #getJSON("from",J) )
 
-    rule <k> #eth_sendTransaction_finalize => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+    rule <k> #eth_sendTransaction_finalize => #executeTx TXID ~> #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
          <txPending> ListItem( TXID ) ... </txPending>
 
     rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "from not found; is required"} ) ... </k>
@@ -611,13 +611,14 @@ eth_sendTransaction
 
     rule <k> loadTX _ { ("from": _, REST) => REST } ... </k>
 
-    rule <k> loadTX _ { "to": (TO_STRING => #parseHexWord(TO_STRING)) , REST } ... </k>
+    rule <k> loadTX _ { "to": (TO_STRING:String => #parseHexWord(TO_STRING)) , REST } ... </k>
     rule <k> loadTX TXID { ("to": ACCTTO:Int, REST) => REST } ... </k>
          <message>
            <msgID> TXID </msgID>
            <to> ( _ => ACCTTO ) </to>
            ...
          </message>
+    rule <k> loadTX _ { ("to": .Account, REST) => REST } ... </k>
 
     rule <k> loadTX _ { "nonce": (NONCE_STRING => #parseHexWord(NONCE_STRING)) , REST } ... </k>
     rule <k> loadTX TXID { ("nonce": ACCTNONCE:Int, REST) => REST } ... </k>
@@ -771,7 +772,8 @@ loadCallSettings
          <caller> _ => ACCTFROM </caller>
          <origin> _ => ACCTFROM </origin>
 
-    rule <k> #loadCallSettings { "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
+    rule <k> #loadCallSettings { ( "to" : .Account, REST => REST ) } ... </k>
+    rule <k> #loadCallSettings {   "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
     rule <k> #loadCallSettings { ( "to" : ACCTTO:Int, REST => REST ) } ... </k>
          <id> _ => ACCTTO </id>
          <program> _ => CODE </program>
@@ -857,9 +859,7 @@ loadCallSettings
          ...
          </k>
          <schedule> SCHED </schedule>
-         <gasPrice> _ => GPRICE </gasPrice>
          <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
-         <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <coinbase> MINER </coinbase>
