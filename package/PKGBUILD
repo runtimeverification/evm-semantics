@@ -31,11 +31,11 @@ prepare() {
 
 build() {
     cd "$srcdir/evm-semantics"
-    make K_RELEASE="/usr/lib/kframework" LIBFF_CC=clang LIBFF_CXX=clang++ build-node
+    make RELEASE=1 K_RELEASE="/usr/lib/kframework" LIBFF_CC=clang LIBFF_CXX=clang++ build-node
 }
 
 package() {
     cd "$srcdir/evm-semantics"
-    make K_RELEASE="/usr/lib/kframework" DESTDIR="$pkgdir" INSTALL_PREFIX="/usr" install
+    make RELEASE=1 K_RELEASE="/usr/lib/kframework" DESTDIR="$pkgdir" INSTALL_PREFIX="/usr" install
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
