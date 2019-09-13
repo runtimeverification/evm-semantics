@@ -531,7 +531,7 @@ WEB3 JSON RPC
                                          +String #rlpEncodeWord( ACCTTO )
                                          +String #rlpEncodeWord( VALUE )
                                          +String #rlpEncodeString( #unparseByteStack( DATA ) )
-                                         +String #rlpEncodeWord( V +Int 27 )
+                                         +String #rlpEncodeWord( V )
                                          +String #rlpEncodeString( #unparseByteStack( R ) )
                                          +String #rlpEncodeString( #unparseByteStack( S ) )
                                        , 192
@@ -675,9 +675,9 @@ WEB3 JSON RPC
     rule <k> signTX TXID SIG:String => . ... </k>
          <message>
            <msgID> TXID </msgID>
-           <sigR> _ => #parseHexBytes( substrString( SIG, 0, 64 ) )   </sigR>
-           <sigS> _ => #parseHexBytes( substrString( SIG, 64, 128 ) ) </sigS>
-           <sigV> _ => #parseHexWord( substrString( SIG, 128, 130 ) ) </sigV>
+           <sigR> _ => #parseHexBytes( substrString( SIG, 0, 64 ) )           </sigR>
+           <sigS> _ => #parseHexBytes( substrString( SIG, 64, 128 ) )         </sigS>
+           <sigV> _ => #parseHexWord( substrString( SIG, 128, 130 ) ) +Int 27 </sigV>
            ...
          </message>
 ```
@@ -713,7 +713,7 @@ WEB3 JSON RPC
                <to>         #parseHexWord( Raw2Hex( TO ) )        </to>
                <value>      #parseHexWord( Raw2Hex( VALUE ) )     </value>
                <data>       #parseByteStackRaw( DATA )            </data>
-               <sigV>       #parseHexWord( Raw2Hex( V ) ) -Int 27 </sigV>
+               <sigV>       #parseHexWord( Raw2Hex( V ) )         </sigV>
                <sigR>       #parseByteStackRaw( R )               </sigR>
                <sigS>       #parseByteStackRaw( S )               </sigS>
              </message>
@@ -731,7 +731,7 @@ WEB3 JSON RPC
            <sigS> S </sigS>
            ...
          </message>
-      requires ECDSARecover( Hex2Raw( #hashUnsignedTx( TXID ) ), V +Int 27, #unparseByteStack(R), #unparseByteStack(S) ) =/=String ""
+      requires ECDSARecover( Hex2Raw( #hashUnsignedTx( TXID ) ), V, #unparseByteStack(R), #unparseByteStack(S) ) =/=String ""
 
     rule <k> #eth_sendRawTransactionVerify _ => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
 
