@@ -30,8 +30,7 @@ pipeline {
         stage('Dependencies') {
           steps {
             sh '''
-              make all-deps -B
-              make split-tests -B
+              make deps ocaml-deps split-tests -j3
             '''
           }
         }
