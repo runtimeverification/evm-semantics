@@ -16,7 +16,6 @@ module WEB3
           <chainID> $CHAINID:Int </chainID>
           <blockList> .List </blockList>
         </blockchain>
-        <txReceipts> .List </txReceipts>
         <accountKeys> .Map </accountKeys>
         <nextFilterSlot> 0 </nextFilterSlot>
         <filters>
@@ -743,20 +742,6 @@ eth_sendRawTransaction
     rule <k> #eth_sendRawTransactionSend TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
 ```
 
- Transaction Receipts
----------------------
-
-- The transaction receipt is a tuple of four items comprising:
-  - the cumulative gas used in the block containing the transaction receipt as of immediately after the transaction has happened
-  - the set of logs created through execution of the transaction
-  - the Bloom filter composed from information in those logs
-  - the status code of the transaction.
-
-```k
-    syntax TxReceipt ::= "{" Int "|" List "|" ByteArray "|" Int "}"
- // ---------------------------------------------------------------
-```
-
 loadCallSettings
 ----------------
 
@@ -838,16 +823,9 @@ loadCallSettings
 - `#executeTx` takes a transaction, loads it into the current state and executes it.
 **TODO**: treat the account creation case
 **TODO**: record the logs after `finalizeTX`
+**TODO**: execute all pending transactions
 
 ```k
-    syntax KItem ::= "#executePendingTxs"
- // -------------------------------------
-    rule <k> #executePendingTxs => . ... </k>
-         <txPending> .List </txPending>
-
-    rule <k> #executePendingTxs => #executeTx TXID ~> #executePendingTxs ... </k>
-         <txPending> ListItem(TXID:Int) ... </txPending>
-
     syntax KItem ::= "#executeTx" Int
  // ---------------------------------
     rule <k> #executeTx TXID:Int
