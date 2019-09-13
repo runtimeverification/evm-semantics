@@ -498,7 +498,6 @@ WEB3 JSON RPC
 eth_sendTransaction
 -------------------
 
-**TODO**: Handle contract creation
 **TODO**: Only call `#executeTx TXID` when mining is turned on, or when the mining interval comes around.
 
 ```k
