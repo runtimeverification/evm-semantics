@@ -509,7 +509,7 @@ eth_sendTransaction
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString( #getJSON("from",J) )
 
-    rule <k> #eth_sendTransaction_finalize => #executeTx TXID ~> #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+    rule <k> #eth_sendTransaction_finalize => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
          <txPending> ListItem( TXID ) ... </txPending>
 
     rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "from not found; is required"} ) ... </k>
@@ -530,7 +530,7 @@ eth_sendTransaction
          => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
                                          +String #rlpEncodeWord( GPRICE )
                                          +String #rlpEncodeWord( GLIMIT )
-                                         +String #rlpEncodeWord( ACCTTO )
+                                         +String #rlpEncodeAccount( ACCTTO )
                                          +String #rlpEncodeWord( VALUE )
                                          +String #rlpEncodeString( #unparseByteStack( DATA ) )
                                          +String #rlpEncodeWord( V +Int 27 )
@@ -557,7 +557,7 @@ eth_sendTransaction
          => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
                                          +String #rlpEncodeWord( GPRICE )
                                          +String #rlpEncodeWord( GLIMIT )
-                                         +String #rlpEncodeWord( ACCTTO )
+                                         +String #rlpEncodeAccount( ACCTTO )
                                          +String #rlpEncodeWord( VALUE )
                                          +String #rlpEncodeString( #unparseByteStack( DATA ) )
                                        , 192
