@@ -597,7 +597,6 @@ eth_sendTransaction
                 <txGasPrice> 1         </txGasPrice>
                 <txNonce>    ACCTNONCE </txNonce>
                 <txGasLimit> 90000     </txGasLimit>
-                <to>         .Account  </to>
                 ...
               </message>
             )
@@ -611,13 +610,12 @@ eth_sendTransaction
     rule <k> loadTX _ { ("from": _, REST) => REST } ... </k>
 
     rule <k> loadTX _ { "to": (TO_STRING:String => #parseHexWord(TO_STRING)) , REST } ... </k>
-    rule <k> loadTX TXID { ("to": ACCTTO:Int, REST) => REST } ... </k>
+    rule <k> loadTX TXID { ("to": ACCTTO:Account, REST) => REST } ... </k>
          <message>
            <msgID> TXID </msgID>
            <to> ( _ => ACCTTO ) </to>
            ...
          </message>
-    rule <k> loadTX _ { ("to": .Account, REST) => REST } ... </k>
 
     rule <k> loadTX _ { "nonce": (NONCE_STRING => #parseHexWord(NONCE_STRING)) , REST } ... </k>
     rule <k> loadTX TXID { ("nonce": ACCTNONCE:Int, REST) => REST } ... </k>
@@ -757,9 +755,8 @@ loadCallSettings
          <caller> _ => ACCTFROM </caller>
          <origin> _ => ACCTFROM </origin>
 
-    rule <k> #loadCallSettings { ( "to" : .Account, REST => REST ) } ... </k>
     rule <k> #loadCallSettings {   "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
-    rule <k> #loadCallSettings { ( "to" : ACCTTO:Int, REST => REST ) } ... </k>
+    rule <k> #loadCallSettings { ( "to" : ACCTTO:Account, REST => REST ) } ... </k>
          <id> _ => ACCTTO </id>
          <program> _ => CODE </program>
          <jumpDests> _ => #computeValidJumpDests(CODE) </jumpDests>
