@@ -713,7 +713,7 @@ WEB3 JSON RPC
                <to>         #parseHexWord( Raw2Hex( TO ) )        </to>
                <value>      #parseHexWord( Raw2Hex( VALUE ) )     </value>
                <data>       #parseByteStackRaw( DATA )            </data>
-               <sigV>       #parseHexWord( Raw2Hex( V ) ) -Int 27 </sigV>
+               <sigV>       #parseHexWord( Raw2Hex( V ) )         </sigV>
                <sigR>       #parseByteStackRaw( R )               </sigR>
                <sigS>       #parseByteStackRaw( S )               </sigS>
              </message>
