@@ -112,13 +112,14 @@ git submodule update --init --recursive
 And finally build the repository specific dependencies:
 
 ```sh
-make deps
+make RELEASE=1 deps
 ```
+If you are a developer, you probably should omit `RELEASE` from the above commands unless you are testing performance, as the build is somewhat slower.
 
 On Arch, instead do:
 
 ```sh
-make LIBFF_CC=clang LIBFF_CXX=clang++ deps
+make LIBFF_CC=clang LIBFF_CXX=clang++ RELEASE=1 deps
 ```
 
 ### Building
@@ -126,14 +127,14 @@ make LIBFF_CC=clang LIBFF_CXX=clang++ deps
 Finally, you can install repository specific dependencies and build the semantics:
 
 ```sh
-make build
+make build RELEASE=1
 ```
 
 You can also build specific backends as so:
 
 ```sh
 make build-haskell
-make build-llvm
+make build-llvm RELEASE=1
 make build-java
 ```
 
@@ -164,7 +165,7 @@ make build-ocaml
 To install the `kevm-vm` binary for use in Firefly and other full-nodes, do:
 
 ```sh
-make install
+make install RELEASE=1
 ```
 
 You can set `DESTDIR` and `INSTALL_PREFIX` to change where the installation goes.

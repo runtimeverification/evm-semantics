@@ -72,10 +72,12 @@ run_web3() {
     web3_port="$1" ; shift
     run_file='-'
     if $debug; then
-        gdb --args ${defn_dir}/web3/kevm-client -p "$web3_port" "$@"
-    else
-      exec -a "$0 web3" ${defn_dir}/web3/kevm-client -p "$web3_port" "$@" 3>&2 2>&1 1>&3 \
+        gdb --args ${defn_dir}/web3/build/kevm-client -p "$web3_port" "$@"
+    elif $dump; then
+      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client -p "$web3_port" "$@" 3>&2 2>&1 1>&3 \
           | "$0" kast --backend web3 - pretty --input kore --sort GeneratedTopCell
+    else
+      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client -p "$web3_port" "$@" 2>/dev/null
     fi
 }
 
@@ -170,7 +172,7 @@ if [[ "$run_command" == 'help' ]]; then
                $0 kast       [--backend (ocaml|java|llvm|haskell|web3)] <pgm>  <output format> <K arg>*
                $0 prove      [--backend (java|haskell)]                 <spec> <K arg>* -m <def_module>
                $0 search     [--backend (java|haskell)]                 <pgm>  <pattern> <K arg>*
-               $0 web3       [--debug]                                  <port>
+               $0 web3       [--debug|--dump]                           <port>
                $0 web3-send                                             <port> <web3 method> <web3 params>
                $0 klab-run                                              <pgm>  <K arg>*
                $0 klab-prove                                            <spec> <K arg>* -m <def_module>
@@ -202,6 +204,7 @@ fi
 
 backend="llvm"
 debug=false
+dump=false
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 [[ ! "$run_command" =~ web3*   ]] || backend='llvm'
@@ -214,6 +217,10 @@ while [[ $# -gt 0 ]]; do
     ;;
     --debug)
     debug=true
+    shift
+    ;;
+    --dump)
+    dump=true
     shift
     ;;
     *)
