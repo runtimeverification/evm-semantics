@@ -528,7 +528,7 @@ WEB3 JSON RPC
          => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
                                          +String #rlpEncodeWord( GPRICE )
                                          +String #rlpEncodeWord( GLIMIT )
-                                         +String #rlpEncodeWord( ACCTTO )
+                                         +String #rlpEncodeAccount( ACCTTO )
                                          +String #rlpEncodeWord( VALUE )
                                          +String #rlpEncodeString( #unparseByteStack( DATA ) )
                                          +String #rlpEncodeWord( V )
@@ -555,7 +555,7 @@ WEB3 JSON RPC
          => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
                                          +String #rlpEncodeWord( GPRICE )
                                          +String #rlpEncodeWord( GLIMIT )
-                                         +String #rlpEncodeWord( ACCTTO )
+                                         +String #rlpEncodeAccount( ACCTTO )
                                          +String #rlpEncodeWord( VALUE )
                                          +String #rlpEncodeString( #unparseByteStack( DATA ) )
                                        , 192
