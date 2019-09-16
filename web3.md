@@ -128,8 +128,8 @@ WEB3 JSON RPC
 -------------
 
 ```k
-    syntax JSON ::= "null" | "undef"
- // --------------------------------
+    syntax JSON ::= "null" | "undef" | ByteArray
+ // --------------------------------------------
 
     syntax JSON ::= #getJSON ( JSONKey , JSON ) [function]
  // ------------------------------------------------------
@@ -503,7 +503,7 @@ WEB3 JSON RPC
     syntax KItem ::= "#eth_sendTransaction"
                    | "#eth_sendTransaction_finalize"
  // ------------------------------------------------
-    rule <k> #eth_sendTransaction => loadTX J ~> #eth_sendTransaction_finalize ... </k>
+    rule <k> #eth_sendTransaction => createTX #parseHexWord(#getString("from", J)) J ~> #eth_sendTransaction_finalize ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString( #getJSON("from",J) )
 
@@ -531,7 +531,7 @@ WEB3 JSON RPC
                                          +String #rlpEncodeWord( ACCTTO )
                                          +String #rlpEncodeWord( VALUE )
                                          +String #rlpEncodeString( #unparseByteStack( DATA ) )
-                                         +String #rlpEncodeWord( V +Int 27 )
+                                         +String #rlpEncodeWord( V )
                                          +String #rlpEncodeString( #unparseByteStack( R ) )
                                          +String #rlpEncodeString( #unparseByteStack( S ) )
                                        , 192
@@ -580,30 +580,81 @@ WEB3 JSON RPC
 **TODO**: You're supposed to be able to overwrite a pending tx by using its same "from" and "nonce" values
 
 ```k
-    syntax KItem ::= "loadTX" JSON
- // ------------------------------
-    rule <k> loadTX J => signTX !TXID ACCTADDR ... </k>
-         <txPending> .List => ListItem( !TXID ) ... </txPending>
+    syntax KItem ::= "createTX" Int JSON
+ // ------------------------------------
+    rule <k> createTX ACCTID J => loadTX !TXID:Int J ~> signTX !TXID:Int ACCTID ... </k>
+         <txPending> (.List => ListItem(!TXID)) ... </txPending>
          <account>
-           <acctID> ACCTADDR </acctID>
-           <nonce> ACCTNONCE => ACCTNONCE +Int 1 </nonce>
+           <acctID> ACCTID </acctID>
+           <nonce>  ACCTNONCE </nonce>
            ...
          </account>
          <messages>
-           (.Bag => <message>
-             <msgID> !TXID:Int </msgID>
-             <txNonce>    #if isString( #getJSON("nonce",    J) ) #then #parseHexWord(#getString("nonce",J))    #else ACCTNONCE  #fi </txNonce>
-             <to>         #if isString( #getJSON("to",       J) ) #then #parseHexWord(#getString("to",J))       #else 0          #fi </to>
-             <txGasLimit> #if isString( #getJSON("gas",      J) ) #then #parseHexWord(#getString("gas",J))      #else 90000      #fi </txGasLimit>
-             <txGasPrice> #if isString( #getJSON("gasPrice", J) ) #then #parseHexWord(#getString("gasPrice",J)) #else GASP       #fi </txGasPrice>
-             <value>      #if isString( #getJSON("value",    J) ) #then #parseHexWord(#getString("value",J))    #else 0          #fi </value>
-             <data>       #if isString( #getJSON("data",     J) ) #then #parseByteStack(#getString("data",J))   #else .ByteArray #fi </data>
-             ...
-           </message>)
-         ...
-         </messages>
-         <gasPrice> GASP </gasPrice>
-      requires #parseHexWord(#getString("from",J)) ==Int ACCTADDR
+            ( .Bag
+           => <message>
+                <msgID> !TXID </msgID>
+                <txGasPrice> 1         </txGasPrice>
+                <txNonce>    ACCTNONCE </txNonce>
+                <txGasLimit> 90000     </txGasLimit>
+                ...
+              </message>
+            )
+          ...
+          </messages>
+
+    syntax KItem ::= "loadTX" Int JSON
+ // ----------------------------------
+    rule <k> loadTX _ { .JSONList } => . ... </k>
+
+    rule <k> loadTX _ { ("from": _, REST) => REST } ... </k>
+
+    rule <k> loadTX _ { "to": (TO_STRING => #parseHexWord(TO_STRING)) , REST } ... </k>
+    rule <k> loadTX TXID { ("to": ACCTTO:Int, REST) => REST } ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <to> ( _ => ACCTTO ) </to>
+           ...
+         </message>
+
+    rule <k> loadTX _ { "nonce": (NONCE_STRING => #parseHexWord(NONCE_STRING)) , REST } ... </k>
+    rule <k> loadTX TXID { ("nonce": ACCTNONCE:Int, REST) => REST } ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce> ( _ => ACCTNONCE ) </txNonce>
+           ...
+         </message>
+
+    rule <k> loadTX _ { "gas": (GAS_STRING => #parseHexWord(GAS_STRING)) , REST } ... </k>
+    rule <k> loadTX TXID { ("gas": GLIMIT:Int, REST) => REST } ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <txGasLimit> ( _ => GLIMIT ) </txGasLimit>
+           ...
+         </message>
+
+    rule <k> loadTX _ { "gasPrice": (GPRICE_STRING => #parseHexWord(GPRICE_STRING)) , REST } ... </k>
+    rule <k> loadTX TXID { ("gasPrice": GPRICE:Int, REST) => REST } ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <txGasPrice> ( _ => GPRICE ) </txGasPrice>
+           ...
+         </message>
+
+    rule <k> loadTX _ { "value": (VALUE_STRING => #parseHexWord(VALUE_STRING)) , REST } ... </k>
+    rule <k> loadTX TXID { ("value": VALUE:Int, REST) => REST } ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <value> ( _ => VALUE ) </value>
+           ...
+         </message>
+
+    rule <k> loadTX _ { "data": (DATA_STRING => #parseByteStack(DATA_STRING)) , REST } ... </k>
+    rule <k> loadTX TXID { ("data": DATA:ByteArray, REST) => REST } ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <data> ( _ => DATA ) </data>
+           ...
+         </message>
 
     syntax KItem ::= "signTX" Int Int
                    | "signTX" Int String [klabel(signTXAux)]
@@ -624,9 +675,9 @@ WEB3 JSON RPC
     rule <k> signTX TXID SIG:String => . ... </k>
          <message>
            <msgID> TXID </msgID>
-           <sigR> _ => #parseHexBytes( substrString( SIG, 0, 64 ) )   </sigR>
-           <sigS> _ => #parseHexBytes( substrString( SIG, 64, 128 ) ) </sigS>
-           <sigV> _ => #parseHexWord( substrString( SIG, 128, 130 ) ) </sigV>
+           <sigR> _ => #parseHexBytes( substrString( SIG, 0, 64 ) )           </sigR>
+           <sigS> _ => #parseHexBytes( substrString( SIG, 64, 128 ) )         </sigS>
+           <sigV> _ => #parseHexWord( substrString( SIG, 128, 130 ) ) +Int 27 </sigV>
            ...
          </message>
 ```
@@ -662,7 +713,7 @@ WEB3 JSON RPC
                <to>         #parseHexWord( Raw2Hex( TO ) )        </to>
                <value>      #parseHexWord( Raw2Hex( VALUE ) )     </value>
                <data>       #parseByteStackRaw( DATA )            </data>
-               <sigV>       #parseHexWord( Raw2Hex( V ) ) -Int 27 </sigV>
+               <sigV>       #parseHexWord( Raw2Hex( V ) )         </sigV>
                <sigR>       #parseByteStackRaw( R )               </sigR>
                <sigS>       #parseByteStackRaw( S )               </sigS>
              </message>
@@ -680,7 +731,7 @@ WEB3 JSON RPC
            <sigS> S </sigS>
            ...
          </message>
-      requires ECDSARecover( Hex2Raw( #hashUnsignedTx( TXID ) ), V +Int 27, #unparseByteStack(R), #unparseByteStack(S) ) =/=String ""
+      requires ECDSARecover( Hex2Raw( #hashUnsignedTx( TXID ) ), V, #unparseByteStack(R), #unparseByteStack(S) ) =/=String ""
 
     rule <k> #eth_sendRawTransactionVerify _ => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
 

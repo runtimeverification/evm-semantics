@@ -139,8 +139,8 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
 -   `chop` interprets an integer modulo $2^256$.
 
 ```k
-    syntax Int ::= chop ( Int ) [function, smtlib(chop)]
- // ----------------------------------------------------
+    syntax Int ::= chop ( Int ) [function, functional, smtlib(chop)]
+ // ----------------------------------------------------------------
     rule chop ( I:Int ) => I modInt pow256 [concrete, smt-lemma]
 ```
 
@@ -261,8 +261,8 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
 
 ```k
     syntax Int ::= Int "^Word" Int       [function]
-    syntax Int ::= powmod(Int, Int, Int) [function]
- // -----------------------------------------------
+    syntax Int ::= powmod(Int, Int, Int) [function, functional]
+ // -----------------------------------------------------------
     rule W0 ^Word W1 => powmod(W0, W1, pow256)
 
     rule powmod(W0, W1, W2) => W0 ^%Int W1 W2  requires W2 =/=Int 0 [concrete]
@@ -323,10 +323,10 @@ Bitwise logical operators are lifted from the integer versions.
                  | Int "|Word"   Int [function, functional]
                  | Int "&Word"   Int [function, functional]
                  | Int "xorWord" Int [function, functional]
-                 | Int "<<Word"  Int [function, functional]
-                 | Int ">>Word"  Int [function, functional]
-                 | Int ">>sWord" Int [function, functional]
- // -------------------------------------------------------
+                 | Int "<<Word"  Int [function]
+                 | Int ">>Word"  Int [function]
+                 | Int ">>sWord" Int [function]
+ // -------------------------------------------
     rule ~Word W       => W xorInt maxUInt256
     rule W0 |Word   W1 => W0 |Int W1
     rule W0 &Word   W1 => W0 &Int W1
@@ -371,8 +371,8 @@ Bitwise logical operators are lifted from the integer versions.
 -   `signextend(N, W)` sign-extends from byte $N$ of $W$ (0 being MSB).
 
 ```k
-    syntax Int ::= signextend( Int , Int ) [function]
- // -------------------------------------------------
+    syntax Int ::= signextend( Int , Int ) [function, functional]
+ // -------------------------------------------------------------
     rule signextend(N, W) => W requires N >=Int 32 orBool N <Int 0    [concrete]
     rule signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))   [concrete]
     rule signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))   [concrete]
@@ -411,15 +411,15 @@ A cons-list is used for the EVM wordstack.
 -   `#drop(N , WS)` removes the first $N$ elements of a `WordStack`.
 
 ```k
-    syntax WordStack ::= #take ( Int , WordStack ) [function]
- // ---------------------------------------------------------
-    rule #take(0, WS)         => .WordStack
+    syntax WordStack ::= #take ( Int , WordStack ) [function, functional]
+ // ---------------------------------------------------------------------
+    rule #take(N, WS)         => .WordStack                      requires notBool N >Int 0
     rule #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
     rule #take(N, (W : WS))   => W : #take(N -Int 1, WS)         requires N >Int 0
 
-    syntax WordStack ::= #drop ( Int , WordStack ) [function]
- // ---------------------------------------------------------
-    rule #drop(0, WS)         => WS
+    syntax WordStack ::= #drop ( Int , WordStack ) [function, functional]
+ // ---------------------------------------------------------------------
+    rule #drop(N, WS)         => WS                  requires notBool N >Int 0
     rule #drop(N, .WordStack) => .WordStack
     rule #drop(N, (W : WS))   => #drop(N -Int 1, WS) requires N >Int 0
 ```
@@ -433,14 +433,19 @@ A cons-list is used for the EVM wordstack.
     syntax Int ::= WordStack "[" Int "]" [function]
  // -----------------------------------------------
     rule (W0 : WS)   [N] => W0           requires N ==Int 0
-    rule (.WordStack)[N] => 0            requires N >Int 0
     rule (W0 : WS)   [N] => WS[N -Int 1] requires N >Int 0
 
     syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function]
  // --------------------------------------------------------------
     rule (W0 : WS)  [ N := W ] => W  : WS                             requires N ==Int 0
-    rule .WordStack [ N := W ] => 0  : (.WordStack [ N -Int 1 := W ]) requires N >Int 0
     rule (W0 : WS)  [ N := W ] => W0 : (WS [ N -Int 1 := W ])         requires N >Int 0
+```
+
+-   Definedness conditions for `WS [ N ]` and `WS [ N := W ]`
+
+```{.k .symbolic}
+    rule #Ceil(WS[N])        => {((0 <=Int N) andBool (N <Int #sizeWordStack(WS))) #Equals true}  [anywhere]
+    rule #Ceil(WS[ N := W ]) => {((0 <=Int N) andBool (N <Int #sizeWordStack(WS))) #Equals true}  [anywhere]
 ```
 
 -   `#sizeWordStack` calculates the size of a `WordStack`.
@@ -475,8 +480,8 @@ A cons-list is used for the EVM wordstack.
 -   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.
 
 ```k
-    syntax List ::= WordStack2List ( WordStack ) [function]
- // -------------------------------------------------------
+    syntax List ::= WordStack2List ( WordStack ) [function, functional]
+ // -------------------------------------------------------------------
     rule WordStack2List(.WordStack) => .List
     rule WordStack2List(W : WS) => ListItem(W) WordStack2List(WS)
 ```
@@ -543,8 +548,8 @@ The local memory of execution is a byte-array (instead of a word-array).
  // --------------------------------------------
     rule .ByteArray => .WordStack
 
-    syntax Int ::= #asWord ( ByteArray ) [function, smtlib(asWord)]
- // ---------------------------------------------------------------
+    syntax Int ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
+ // ---------------------------------------------------------------------------
     rule #asWord( .WordStack     ) => 0                                    // [concrete]
     rule #asWord( W : .WordStack ) => W                                    // [concrete]
     rule #asWord( W0 : W1 : WS   ) => #asWord(((W0 *Word 256) +Word W1) : WS) [concrete]
@@ -560,29 +565,29 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #asAccount( .WordStack ) => .Account
     rule #asAccount( W : WS     ) => #asWord(W : WS)
 
-    syntax ByteArray ::= #asByteStack ( Int )             [function]
+    syntax ByteArray ::= #asByteStack ( Int )             [function, functional]
                        | #asByteStack ( Int , ByteArray ) [function, klabel(#asByteStackAux), smtlib(asByteStack)]
  // --------------------------------------------------------------------------------------------------------------
     rule #asByteStack( W ) => #asByteStack( W , .WordStack )                                        [concrete]
     rule #asByteStack( 0 , WS ) => WS                                                            // [concrete]
     rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W modInt 256 : WS ) requires W =/=K 0 [concrete]
 
-    syntax ByteArray ::= ByteArray "++" ByteArray [function, right, klabel(_++_WS), smtlib(_plusWS_)]
- // -------------------------------------------------------------------------------------------------
+    syntax ByteArray ::= ByteArray "++" ByteArray [function, memo, right, klabel(_++_WS), smtlib(_plusWS_)]
+ // -------------------------------------------------------------------------------------------------------
     rule .WordStack ++ WS' => WS'
     rule (W : WS)   ++ WS' => W : {WS ++ WS'}:>WordStack
 
-    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function]
- // --------------------------------------------------------------
+    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional, memo]
+ // --------------------------------------------------------------------------------
     rule WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
 
-    syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional]
- // ------------------------------------------------------------------
+    syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, memo]
+ // ------------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => #sizeWordStack(WS)
 
-    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function]
-                       | #padRightToWidth ( Int , ByteArray ) [function]
- // --------------------------------------------------------------------
+    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, functional, memo]
+                       | #padRightToWidth ( Int , ByteArray ) [function, memo]
+ // --------------------------------------------------------------------------------------
     rule #padToWidth(N, WS)      => #replicateAux(N -Int #sizeByteArray(WS), 0, WS) [concrete]
     rule #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0)  [concrete]
 ```
@@ -711,16 +716,16 @@ We are using the polymorphic `Map` sort for these word maps.
 ```
 
 ```{.k .symbolic}
-    syntax Map ::= Map "[" Int ":=" ByteArray "]" [function]
- // --------------------------------------------------------
+    syntax Map ::= Map "[" Int ":=" ByteArray "]" [function, functional]
+ // --------------------------------------------------------------------
     rule WM[ N := .WordStack ] => WM
     rule WM[ N := W : WS     ] => (WM[N <- W])[N +Int 1 := WS] [concrete]
 
-    syntax ByteArray ::= #range ( Map , Int , Int )             [function]
-    syntax ByteArray ::= #range ( Map , Int , Int , ByteArray ) [function, klabel(#rangeAux)]
- // -----------------------------------------------------------------------------------------
+    syntax ByteArray ::= #range ( Map , Int , Int )             [function, functional]
+    syntax ByteArray ::= #range ( Map , Int , Int , ByteArray ) [function, functional, klabel(#rangeAux)]
+ // -----------------------------------------------------------------------------------------------------
     rule #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack) [concrete]
-    rule #range(WM,           END, WIDTH, WS) => WS                                           requires WIDTH ==Int 0
+    rule #range(WM,           END, WIDTH, WS) => WS                                           requires notBool WIDTH >Int 0
     rule #range(WM,           END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, 0 : WS) requires (WIDTH >Int 0) andBool notBool END in_keys(WM)
     rule #range(END |-> W WM, END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, W : WS) requires (WIDTH >Int 0)
 ```

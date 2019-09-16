@@ -36,8 +36,8 @@ Installing/Building
 
 ### K Backends
 
-There are four backends of K available, the OCAML and (experimental) LLVM backends for concrete execution, and the Java and (experimental) Haskell backends for symbolic reasoning and proofs.
-This repository generates the build-products for both non-experimental backends in `.build/java/` and `.build/ocaml/`.
+There are four backends of K available: LLVM (default) and OCaml for concrete execution and Java (default) and Haskell for symbolic execution.
+This repository generates the build-products for each backend in `.build/defn/`.
 
 ### System Dependencies
 
@@ -54,10 +54,13 @@ The following are needed for building/running KEVM:
 On Ubuntu >= 18.04 (for example):
 
 ```sh
-sudo apt install                                             \
-    autoconf bison flex gcc git libmpfr-dev libsecp256k1-dev \
-    libtool libz3-dev make maven opam openjdk-11-jdk pandoc  \
-    pkg-config z3 zlib1g-dev
+sudo apt install                                                       \
+            autoconf bison clang++-8 clang-8 cmake curl flex gcc git   \
+            libboost-test-dev libgmp-dev libjemalloc-dev libmpfr-dev   \
+            libprocps-dev libprotobuf-dev libsecp256k1-dev libtool     \
+            libyaml-dev libz3-dev lld-8 llvm-8 llvm-8-tools make maven \
+            opam openjdk-11-jdk pandoc pkg-config protobuf-compiler    \
+            z3 zlib1g-dev
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
@@ -87,43 +90,6 @@ make libsecp256k1
 NOTE: a previous version of these instructions required the user to run `brew link flex --force`.
 After fetching this revision, you should first run `brew unlink flex`, as it is no longer necessary and will cause an error if you have the homebrew version of flex installed instead of the xcode command line tools version.
 
-### Building
-
-After installing the above dependencies, make sure the submodules are setup:
-
-```sh
-git submodule update --init --recursive
-```
-
-If you haven't already setup K's OCaml dependencies more recently than February 1, 2019, then you also need to setup the K OCaml dependencies:
-
-```sh
-./deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev
-```
-
-Finally, you can install repository specific dependencies and build the semantics:
-
-```sh
-make deps
-make build
-```
-
-### Installing
-
-To install the `kevm-vm` binary for use in Firefly and other full-nodes, do:
-
-```sh
-make install
-```
-
-You can set `DESTDIR` and `INSTALL_PREFIX` to change where the installation goes.
-
-### OPTIONAL: K LLVM/Haskell Backends
-
-The K LLVM/Haskell backends, currently under development, require extra dependencies to work.
-
-#### System Dependencies
-
 -   [Haskell Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade).
     Note that the version of the `stack` tool provided by your package manager might not be recent enough.
     Please follow installation instructions from the Haskell Stack website linked above.
@@ -135,42 +101,74 @@ stack upgrade
 export PATH=$HOME/.local/bin:$PATH
 ```
 
-The LLVM backend has additional dependencies:
+### Build K Dependency
 
-```k
-sudo apt install cmake clang-8 clang++-8 llvm-8 llvm-8-tools lld-8 libboost-test-dev libgmp-dev libprocps-dev libyaml-dev libjemalloc-dev curl protobuf-compiler libprotobuf-dev
-```
-
-On Arch, you'll also need `crypto++` package.
-
-Additionally, you need to setup the remaining LLVM dependencies.
-
-On Ubuntu:
+Get the submodules:
 
 ```sh
-make llvm-deps
+git submodule update --init --recursive
 ```
 
-On Arch:
+And finally build the repository specific dependencies:
 
 ```sh
-make LIBFF_CC=clang LIBFF_CXX=clang++ llvm-deps
+make RELEASE=1 deps
+```
+If you are a developer, you probably should omit `RELEASE` from the above commands unless you are testing performance, as the build is somewhat slower.
+
+On Arch, instead do:
+
+```sh
+make LIBFF_CC=clang LIBFF_CXX=clang++ RELEASE=1 deps
 ```
 
-#### Building
+### Building
 
-After installing the above dependencies, the following command will build the extra backends into K:
+Finally, you can install repository specific dependencies and build the semantics:
 
--   `make haskell-deps`: additionally build the Haskell backend into K.
--   `make llvm-deps`: additionally build the LLVM backend into K.
--   `make all-deps`: additionally build both the Haskell and LLVM backends into K.
+```sh
+make build RELEASE=1
+```
 
-Following this dependency setup, you can also now `kompile` the LLVM and Haskell backends:
+You can also build specific backends as so:
 
 ```sh
 make build-haskell
-make build-llvm
+make build-llvm RELEASE=1
+make build-java
 ```
+
+#### OPTIONAL: OCaml Backend
+
+If you wish to build the OCaml backend, you will need to take some additional steps.
+
+First, make sure you have our custom OCaml compiler installed (should only need to do this once):
+
+```sh
+./deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev
+```
+
+Next you need to install the specific OCaml packages we requires:
+
+```sh
+make ocaml-deps
+```
+
+And next you can build the OCaml backend:
+
+```sh
+make build-ocaml
+```
+
+### Installing
+
+To install the `kevm-vm` binary for use in Firefly and other full-nodes, do:
+
+```sh
+make install RELEASE=1
+```
+
+You can set `DESTDIR` and `INSTALL_PREFIX` to change where the installation goes.
 
 Example Usage
 -------------

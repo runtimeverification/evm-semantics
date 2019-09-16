@@ -20,7 +20,7 @@ INSTALL_DIR    ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
 
 DEPS_DIR         := deps
 K_SUBMODULE      := $(abspath $(DEPS_DIR)/k)
-PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
+export PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
 
 K_RELEASE := $(K_SUBMODULE)/k-distribution/target/release/k
 K_BIN     := $(K_RELEASE)/bin
@@ -38,12 +38,12 @@ export TANGLER
 export LUA_PATH
 
 .PHONY: all clean clean-submodules distclean install uninstall                                                                              \
-        deps all-deps llvm-deps haskell-deps repo-deps system-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff                         \
+        deps all-deps llvm-deps haskell-deps repo-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff                                     \
         build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                                               \
         defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                                                \
         split-tests                                                                                                                         \
-        test test-all test-conformance test-slow-conformance test-all-conformance                                                           \
-        test-vm test-slow-vm test-all-vm test-bchain test-slow-bchain test-all-bchain                                                       \
+        test test-all test-conformance test-rest-conformance test-all-conformance                                                           \
+        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                       \
         test-web3                                                                                                                           \
         test-prove test-klab-prove test-parse test-failure                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly \
@@ -64,7 +64,7 @@ clean-submodules: distclean
 	       tests/ethereum-tests/make.timestamp $(DEPS_DIR)/plugin/make.timestamp  \
 	       $(DEPS_DIR)/libff/build
 	cd $(DEPS_DIR)/k         && mvn clean --quiet
-	cd $(DEPS_DIR)/secp256k1 && make distclean || true
+	cd $(DEPS_DIR)/secp256k1 && $(MAKE) distclean || true
 
 # Non-K Dependencies
 # ------------------
@@ -82,8 +82,8 @@ $(libsecp256k1_out): $(DEPS_DIR)/secp256k1/autogen.sh
 	cd $(DEPS_DIR)/secp256k1/ \
 	    && ./autogen.sh \
 	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
-	    && make -s -j4 \
-	    && make install
+	    && $(MAKE) \
+	    && $(MAKE) install
 
 UNAME_S := $(shell uname -s)
 
@@ -112,25 +112,24 @@ $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 # K Dependencies
 # --------------
 
-all-deps: deps llvm-deps haskell-deps
-all-deps: BACKEND_SKIP=
-llvm-deps: $(libff_out) deps
-llvm-deps: BACKEND_SKIP=-Dhaskell.backend.skip
-haskell-deps: deps
-haskell-deps: BACKEND_SKIP=-Dllvm.backend.skip
-
-deps: repo-deps system-deps
+deps: repo-deps
 repo-deps: tangle-deps k-deps plugin-deps
-system-deps: ocaml-deps
 k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(TANGLER)
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 
-BACKEND_SKIP=-Dhaskell.backend.skip -Dllvm.backend.skip
+ifneq ($(RELEASE),)
+K_BUILD_TYPE         := Release
+SEMANTICS_BUILD_TYPE := Release
+KOMPILE_OPTS         += --iterated
+else
+K_BUILD_TYPE         := FastBuild
+SEMANTICS_BUILD_TYPE := Debug
+endif
 
 $(K_SUBMODULE)/make.timestamp:
 	git submodule update --init --recursive -- $(K_SUBMODULE)
-	cd $(K_SUBMODULE) && mvn package -DskipTests -U $(BACKEND_SKIP)
+	cd $(K_SUBMODULE) && mvn package -DskipTests -U -Dproject.build.type=${K_BUILD_TYPE}
 	touch $(K_SUBMODULE)/make.timestamp
 
 $(TANGLER):
@@ -149,7 +148,7 @@ ocaml-deps:
 
 MAIN_MODULE    := ETHEREUM-SIMULATION
 SYNTAX_MODULE  := $(MAIN_MODULE)
-MAIN_DEFN_FILE := driver
+export MAIN_DEFN_FILE := driver
 
 k_files       := driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k web3.k asm.k
 EXTRA_K_FILES += $(MAIN_DEFN_FILE).k
@@ -159,8 +158,8 @@ ocaml_dir   := $(DEFN_DIR)/ocaml
 llvm_dir    := $(DEFN_DIR)/llvm
 java_dir    := $(DEFN_DIR)/java
 haskell_dir := $(DEFN_DIR)/haskell
-node_dir    := $(DEFN_DIR)/node
-web3_dir    := $(DEFN_DIR)/web3
+export node_dir    := $(CURDIR)/$(DEFN_DIR)/node
+export web3_dir    := $(CURDIR)/$(DEFN_DIR)/web3
 
 ocaml_files   := $(patsubst %, $(ocaml_dir)/%, $(ALL_K_FILES))
 llvm_files    := $(patsubst %, $(llvm_dir)/%, $(ALL_K_FILES))
@@ -173,7 +172,7 @@ defn_files    := $(ocaml_files) $(llvm_file) $(java_files) $(haskell_files) $(no
 ocaml_kompiled   := $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
 node_kompiled    := $(DEFN_DIR)/vm/kevm-vm
-web3_kompiled    := $(web3_dir)/kevm-client
+web3_kompiled    := $(web3_dir)/build/kevm-client
 haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
@@ -220,8 +219,8 @@ $(web3_dir)/%.k: %.md $(TANGLER)
 KOMPILE_OPTS      :=
 LLVM_KOMPILE_OPTS :=
 
-build:     build-ocaml build-java
-build-all: build-ocaml build-java build-node build-haskell build-llvm build-web3
+build: build-llvm build-haskell build-java build-web3 build-node
+build-all: build build-ocaml
 build-ocaml:   $(ocaml_kompiled)
 build-java:    $(java_kompiled)
 build-node:    $(node_kompiled)
@@ -297,52 +296,37 @@ $(ocaml_kompiled): $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LI
 
 # Node Backend
 
-$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter: $(node_files) $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
+$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore: $(node_files)
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
 	                 --syntax-module $(SYNTAX_MODULE) $(node_dir)/$(MAIN_DEFN_FILE).k \
 	                 --directory $(node_dir) -I $(node_dir) -I $(node_dir) \
 	                 --hook-namespaces "KRYPTO BLOCKCHAIN" \
-			 --iterated \
-	                 $(KOMPILE_OPTS) \
-	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blockchain.cpp -ccopt $(PLUGIN_SUBMODULE)/plugin-c/world.cpp -ccopt $(CURDIR)/$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc \
-	                 -ccopt -I$(CURDIR)/$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin \
-	                 -ccopt -L$(LIBRARY_PATH) \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS)) -ccopt -lprotobuf -ccopt -g -ccopt -std=c++14 -ccopt -O2
+			 --no-llvm-kompile \
+	                 $(KOMPILE_OPTS)
 
 $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 	mkdir -p $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin
 	protoc --cpp_out=$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 
-$(node_kompiled): $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter $(libff_out)
+.PHONY: $(node_kompiled)
+$(node_kompiled): $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
 	mkdir -p $(DEFN_DIR)/vm
-	$(K_BIN)/llvm-kompile $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/init.cpp $(PLUGIN_SUBMODULE)/vm-c/main.cpp $(PLUGIN_SUBMODULE)/vm-c/vm.cpp \
-	                      $(PLUGIN_SUBMODULE)/plugin-c/*.cpp $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(PLUGIN_SUBMODULE)/vm-c/kevm/semantics.cpp -o $@ -g -O2 \
-	                      -I $(PLUGIN_SUBMODULE)/plugin-c/ -I $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/vm-c/kevm/ -I node/ \
-	                      $(LLVM_KOMPILE_OPTS) \
-	                      -L$(LIBRARY_PATH) \
-	                      -lff -lprotobuf -lgmp $(LINK_PROCPS) -lcryptopp -lsecp256k1
+	cd $(DEFN_DIR)/vm && cmake $(CURDIR)/cmake/node -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
 # Web3 Backend
 
-$(web3_dir)/web3-kompiled/interpreter: $(web3_files) $(libff_out)
+$(web3_dir)/web3-kompiled/definition.kore: $(web3_files)
 	$(K_BIN)/kompile --debug --main-module WEB3 --backend llvm \
 	                 --syntax-module WEB3 $(web3_dir)/web3.k \
 	                 --directory $(web3_dir) -I $(web3_dir) \
-	                 --hook-namespaces "KRYPTO BLOCKCHAIN JSON" \
-	                 --iterated \
-	                 $(KOMPILE_OPTS) \
-	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -ccopt $(PLUGIN_SUBMODULE)/client-c/json.cpp \
-	                 -ccopt -L$(LIBRARY_PATH) -ccopt -I -ccopt $(PLUGIN_SUBMODULE)/vm-c \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS)) -ccopt -g -ccopt -std=c++14 -ccopt -O2
+	                 --hook-namespaces "KRYPTO JSON" \
+	                 --no-llvm-kompile \
+	                 $(KOMPILE_OPTS)
 
-$(web3_kompiled): $(web3_dir)/web3-kompiled/interpreter $(libff_out)
-	mkdir -p $(web3_dir)
-	$(K_BIN)/llvm-kompile $(web3_dir)/web3-kompiled/definition.kore $(web3_dir)/web3-kompiled/dt library $(PLUGIN_SUBMODULE)/vm-c/init.cpp $(PLUGIN_SUBMODULE)/client-c/main.cpp $(PLUGIN_SUBMODULE)/client-c/json.cpp \
-	                      $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp -o $@ -g -O2 \
-	                      -I $(PLUGIN_SUBMODULE)/vm-c/ -I $(PLUGIN_SUBMODULE)/plugin-c/ -I node/ \
-	                      $(LLVM_KOMPILE_OPTS) \
-	                      -L$(LIBRARY_PATH) \
-	                      -lff -lgmp $(LINK_PROCPS) -lcryptopp -lsecp256k1
+.PHONY: $(web3_kompiled)
+$(web3_kompiled): $(web3_dir)/web3-kompiled/definition.kore $(libff_out)
+	mkdir -p $(web3_dir)/build
+	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
 # LLVM Backend
 
@@ -364,8 +348,7 @@ KEVM_RELEASE_TAG?=
 
 install: $(INSTALL_DIR)/$(notdir $(node_kompiled))
 $(INSTALL_DIR)/$(notdir $(node_kompiled)): $(node_kompiled)
-	mkdir -p $(INSTALL_DIR)
-	cp $(node_kompiled) $(INSTALL_DIR)/
+	cd $(DEFN_DIR)/vm && $(MAKE) install
 
 uninstall:
 	rm $(INSTALL_DIR)/$(notdir $(node_kompiled))
@@ -378,7 +361,7 @@ release.md: INSTALL.md
 # Tests
 # -----
 
-TEST_CONCRETE_BACKEND:=ocaml
+TEST_CONCRETE_BACKEND:=llvm
 TEST_SYMBOLIC_BACKEND:=java
 TEST:=./kevm
 KPROVE_MODULE:=VERIFICATION
@@ -453,37 +436,33 @@ smoke_tests_prove=tests/specs/ds-token-erc20/transfer-failure-1-a-spec.k
 
 tests/ethereum-tests/%.json: tests/ethereum-tests/make.timestamp
 
+slow_conformance_tests    = $(shell cat tests/slow.$(TEST_CONCRETE_BACKEND))    # timeout after 20s
+failing_conformance_tests = $(shell cat tests/failing.$(TEST_CONCRETE_BACKEND))
+
 test-all-conformance: test-all-vm test-all-bchain
-test-slow-conformance: test-slow-vm test-slow-bchain
+test-rest-conformance: test-rest-vm test-rest-bchain
 test-conformance: test-vm test-bchain
 
-vm_tests=$(wildcard tests/ethereum-tests/VMTests/*/*.json)
-slow_vm_tests=$(wildcard tests/ethereum-tests/VMTests/vmPerformance/*.json)
-quick_vm_tests=$(filter-out $(slow_vm_tests), $(vm_tests))
+vm_tests         = $(wildcard tests/ethereum-tests/VMTests/*/*.json)
+quick_vm_tests   = $(filter-out $(slow_conformance_tests), $(vm_tests))
+passing_vm_tests = $(filter-out $(failing_conformance_tests), $(quick_vm_tests))
+rest_vm_tests    = $(filter-out $(passing_vm_tests), $(vm_tests))
 
-test-all-vm: $(all_vm_tests:=.run)
-test-slow-vm: $(slow_vm_tests:=.run)
-test-vm: $(quick_vm_tests:=.run)
+test-all-vm: $(vm_tests:=.run)
+test-rest-vm: $(rest_vm_tests:=.run)
+test-vm: $(passing_vm_tests:=.run)
 
-bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)
-slow_bchain_tests=$(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/*.json) \
-                  $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000*.json) \
-                  $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000*.json) \
-                  $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth_d1g0v0.json) \
-                  tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_ContractRETURNBigOffset_d2g0v0.json \
-                  tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/CREATE_ContractRETURNBigOffset_d1g0v0.json
-bad_bchain_tests= tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/RevertOpcodeInCreateReturns_d0g0v0.json \
-                  tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/RevertInCreateInInit_d0g0v0.json
-failing_bchain_tests=$(shell cat tests/failing.$(TEST_CONCRETE_BACKEND))
-all_bchain_tests=$(filter-out $(bad_bchain_tests), $(filter-out $(failing_bchain_tests), $(bchain_tests)))
-quick_bchain_tests=$(filter-out $(slow_bchain_tests), $(all_bchain_tests))
+bchain_tests         = $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/*/*.json)
+quick_bchain_tests   = $(filter-out $(slow_conformance_tests), $(bchain_tests))
+passing_bchain_tests = $(filter-out $(failing_conformance_tests), $(quick_bchain_tests))
+rest_bchain_tests    = $(filter-out $(passing_bchain_tests), $(bchain_tests))
+
+test-all-bchain: $(all_bchain_tests:=.run)
+test-rest-bchain: $(rest_bchain_tests:=.run)
+test-bchain: $(passing_bchain_tests:=.run)
 
 web3_tests=$(wildcard tests/web3/*.in.json) \
            $(wildcard tests/web3/no-shutdown/*.in.json)
-
-test-all-bchain: $(all_bchain_tests:=.run)
-test-slow-bchain: $(slow_bchain_tests:=.run)
-test-bchain: $(quick_bchain_tests:=.run)
 
 test-web3: $(web3_tests:.in.json=.run-web3)
 
@@ -557,7 +536,7 @@ metropolis-theme: $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty
 
 $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
 	git submodule update --init -- $(dir $@)
-	cd $(dir $@) && make
+	cd $(dir $@) && $(MAKE)
 
 # Sphinx HTML Documentation
 
