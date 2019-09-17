@@ -508,7 +508,7 @@ eth_sendTransaction
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString( #getJSON("from",J) )
 
-    rule <k> #eth_sendTransaction_finalize => #executeTx TXID ~> #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+    rule <k> #eth_sendTransaction_finalize => #prepareTx TXID ~> #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
          <txPending> ListItem( TXID ) ... </txPending>
 
     rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "from not found; is required"} ) ... </k>
@@ -790,7 +790,7 @@ loadCallSettings
 
     rule <k> #loadCallSettings TXID:Int
           => #loadCallSettings {
-               "from":     #unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW +Int 27, TR, TS))),
+               "from":     #unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS))),
                "to":       TT,
                "gas":      TG,
                "gasPrice": TP,
@@ -825,16 +825,25 @@ loadCallSettings
 **TODO**: execute all pending transactions
 
 ```k
+    syntax KItem ::= "#prepareTx" Int
+ // ---------------------------------
+    rule <k> #prepareTx TXID:Int
+          => #clearLogs
+          ~> #loadCallSettings TXID
+          ~> #executeTx TXID
+         ...
+         </k>
+
+
     syntax KItem ::= "#executeTx" Int
  // ---------------------------------
     rule <k> #executeTx TXID:Int
-          => #clearLogs
-          ~> #loadCallSettings TXID
-          ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
+          => #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #catchHaltTx
           ~> #finalizeTx(false)
          ...
          </k>
+         <origin> ACCTFROM </origin>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
          <callDepth> _ => -1 </callDepth>
@@ -858,13 +867,12 @@ loadCallSettings
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
 
     rule <k> #executeTx TXID:Int
-          => #clearLogs
-          ~> #loadCallSettings TXID
-          ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
+          => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #catchHaltTx
           ~> #finalizeTx(false)
          ...
          </k>
+         <origin> ACCTFROM </origin>
          <txPending> ListItem(TXID) ... </txPending>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
