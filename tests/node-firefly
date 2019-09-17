@@ -34,4 +34,4 @@ while netstat -lnt | awk '$$4 ~ /[:\.]'$kevm_vm_port'$$/ {exit 1}'; do
     sleep 1
 done
 
-npm truffle test
+npx truffle test
