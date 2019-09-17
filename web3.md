@@ -128,8 +128,8 @@ WEB3 JSON RPC
 -------------
 
 ```k
-    syntax JSON ::= "null" | "undef" | ByteArray
- // --------------------------------------------
+    syntax JSON ::= "null" | "undef" | ByteArray | Account
+ // ------------------------------------------------------
 
     syntax JSON ::= #getJSON ( JSONKey , JSON ) [function]
  // ------------------------------------------------------
@@ -495,9 +495,10 @@ WEB3 JSON RPC
     rule <k> #eth_uninstallFilter => #sendResponse ( "result": false ) ... </k> [owise]
 ```
 
-# eth_sendTransaction
+eth_sendTransaction
+-------------------
 
-**TODO**: Handle contract creation
+**TODO**: Only call `#executeTx TXID` when mining is turned on, or when the mining interval comes around.
 
 ```k
     syntax KItem ::= "#eth_sendTransaction"
@@ -507,7 +508,7 @@ WEB3 JSON RPC
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString( #getJSON("from",J) )
 
-    rule <k> #eth_sendTransaction_finalize => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+    rule <k> #eth_sendTransaction_finalize => #prepareTx TXID ~> #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
          <txPending> ListItem( TXID ) ... </txPending>
 
     rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "from not found; is required"} ) ... </k>
@@ -528,7 +529,7 @@ WEB3 JSON RPC
          => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
                                          +String #rlpEncodeWord( GPRICE )
                                          +String #rlpEncodeWord( GLIMIT )
-                                         +String #rlpEncodeWord( ACCTTO )
+                                         +String #rlpEncodeAccount( ACCTTO )
                                          +String #rlpEncodeWord( VALUE )
                                          +String #rlpEncodeString( #unparseByteStack( DATA ) )
                                          +String #rlpEncodeWord( V )
@@ -555,7 +556,7 @@ WEB3 JSON RPC
          => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
                                          +String #rlpEncodeWord( GPRICE )
                                          +String #rlpEncodeWord( GLIMIT )
-                                         +String #rlpEncodeWord( ACCTTO )
+                                         +String #rlpEncodeAccount( ACCTTO )
                                          +String #rlpEncodeWord( VALUE )
                                          +String #rlpEncodeString( #unparseByteStack( DATA ) )
                                        , 192
@@ -608,8 +609,9 @@ WEB3 JSON RPC
 
     rule <k> loadTX _ { ("from": _, REST) => REST } ... </k>
 
-    rule <k> loadTX _ { "to": (TO_STRING => #parseHexWord(TO_STRING)) , REST } ... </k>
-    rule <k> loadTX TXID { ("to": ACCTTO:Int, REST) => REST } ... </k>
+    rule <k> loadTX _    { "to": (TO_STRING:String => #parseHexWord(TO_STRING)) , REST } ... </k>
+    rule <k> loadTX _    { "to": .Account   , REST => REST } ... </k>
+    rule <k> loadTX TXID { "to": ACCTTO:Int , REST => REST } ... </k>
          <message>
            <msgID> TXID </msgID>
            <to> ( _ => ACCTTO ) </to>
@@ -682,7 +684,8 @@ WEB3 JSON RPC
          </message>
 ```
 
-# eth_sendRawTransaction
+eth_sendRawTransaction
+----------------------
 
 **TODO**: Verify the signature provided for the transaction
 
@@ -736,6 +739,171 @@ WEB3 JSON RPC
     rule <k> #eth_sendRawTransactionVerify _ => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
 
     rule <k> #eth_sendRawTransactionSend TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+```
+
+loadCallSettings
+----------------
+
+- Takes a JSON with parameters for sendTransaction/call/estimateGas/etc and sets up the execution environment
+
+```k
+    syntax KItem ::= "#loadCallSettings" JSON
+ // -----------------------------------------
+    rule <k> #loadCallSettings { .JSONList } => . ... </k>
+
+    rule <k> #loadCallSettings { "from" : ( ACCTFROM:String => #parseHexWord( ACCTFROM ) ), REST } ... </k>
+    rule <k> #loadCallSettings { ("from" : ACCTFROM:Int, REST => REST) } ... </k>
+         <caller> _ => ACCTFROM </caller>
+         <origin> _ => ACCTFROM </origin>
+
+    rule <k> #loadCallSettings { "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
+    rule <k> #loadCallSettings { "to" : .Account   , REST => REST } ... </k>
+    rule <k> #loadCallSettings { "to" : ACCTTO:Int , REST => REST } ... </k>
+         <id> _ => ACCTTO </id>
+         <program> _ => CODE </program>
+         <jumpDests> _ => #computeValidJumpDests(CODE) </jumpDests>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <code> CODE </code>
+           ...
+         </account>
+
+    rule <k> ( . => #newAccount ACCTTO ) ~> #loadCallSettings { "to" : ACCTTO:Int, REST } ... </k> [owise]
+
+    rule <k> #loadCallSettings { "gas" : ( GLIMIT:String => #parseHexWord( GLIMIT ) ), REST } ... </k>
+    rule <k> #loadCallSettings { ( "gas" : GLIMIT:Int, REST => REST ) } ... </k>
+         <gas> _ => GLIMIT </gas>
+
+    rule <k> #loadCallSettings { "gasPrice" : ( GPRICE:String => #parseHexWord( GPRICE ) ), REST } ... </k>
+    rule <k> #loadCallSettings { ( "gasPrice" : GPRICE:Int, REST => REST ) } ... </k>
+         <gasPrice> _ => GPRICE </gasPrice>
+
+    rule <k> #loadCallSettings { "value" : ( VALUE:String => #parseHexWord( VALUE ) ), REST } ... </k>
+    rule <k> #loadCallSettings { ( "value" : VALUE:Int, REST => REST ) } ... </k>
+         <callValue> _ => VALUE </callValue>
+
+    rule <k> #loadCallSettings { "data" : ( DATA:String => #parseByteStack( DATA ) ), REST } ... </k>
+    rule <k> #loadCallSettings { ( "data" : DATA:ByteArray, REST => REST ) } ... </k>
+         <callData> _ => DATA </callData>
+
+    rule <k> #loadCallSettings { ( "nonce" : _, REST => REST ) } ... </k>
+
+    rule <k> #loadCallSettings TXID:Int
+          => #loadCallSettings {
+               "from":     #unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS))),
+               "to":       TT,
+               "gas":      TG,
+               "gasPrice": TP,
+               "value":    TV,
+               "data":     DATA
+             }
+         ...
+         </k>
+         <txPending> ListItem(TXID) ... </txPending>
+         <message>
+           <msgID>      TXID </msgID>
+           <txNonce>    TN   </txNonce>
+           <txGasPrice> TP   </txGasPrice>
+           <txGasLimit> TG   </txGasLimit>
+           <to>         TT   </to>
+           <value>      TV   </value>
+           <sigV>       TW   </sigV>
+           <sigR>       TR   </sigR>
+           <sigS>       TS   </sigS>
+           <data>       DATA </data>
+         </message>
+
+    syntax ByteArray ::= #ecrecAddr ( Account ) [function]
+ // ------------------------------------------------------
+    rule #ecrecAddr(.Account) => .ByteArray
+    rule #ecrecAddr(N:Int) => #padToWidth(20, #asByteStack(N))
+```
+
+- `#executeTx` takes a transaction, loads it into the current state and executes it.
+**TODO**: treat the account creation case
+**TODO**: record the logs after `finalizeTX`
+**TODO**: execute all pending transactions
+
+```k
+    syntax KItem ::= "#prepareTx" Int
+ // ---------------------------------
+    rule <k> #prepareTx TXID:Int
+          => #clearLogs
+          ~> #loadCallSettings TXID
+          ~> #executeTx TXID
+         ...
+         </k>
+
+
+    syntax KItem ::= "#executeTx" Int
+ // ---------------------------------
+    rule <k> #executeTx TXID:Int
+          => #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
+          ~> #catchHaltTx
+          ~> #finalizeTx(false)
+         ...
+         </k>
+         <origin> ACCTFROM </origin>
+         <schedule> SCHED </schedule>
+         <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
+         <callDepth> _ => -1 </callDepth>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <coinbase> MINER </coinbase>
+         <message>
+           <msgID>      TXID     </msgID>
+           <txGasPrice> GPRICE   </txGasPrice>
+           <txGasLimit> GLIMIT   </txGasLimit>
+           <to>         .Account </to>
+           <value>      VALUE    </value>
+           <data>       CODE     </data>
+           ...
+         </message>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
+           <nonce> NONCE </nonce>
+           ...
+         </account>
+         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
+
+    rule <k> #executeTx TXID:Int
+          => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
+          ~> #catchHaltTx
+          ~> #finalizeTx(false)
+         ...
+         </k>
+         <origin> ACCTFROM </origin>
+         <txPending> ListItem(TXID) ... </txPending>
+         <schedule> SCHED </schedule>
+         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
+         <callDepth> _ => -1 </callDepth>
+         <coinbase> MINER </coinbase>
+         <message>
+           <msgID>      TXID   </msgID>
+           <txGasPrice> GPRICE </txGasPrice>
+           <txGasLimit> GLIMIT </txGasLimit>
+           <to>         ACCTTO </to>
+           <value>      VALUE  </value>
+           <data>       DATA   </data>
+           ...
+         </message>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
+           <nonce> NONCE => NONCE +Int 1 </nonce>
+           ...
+         </account>
+         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
+      requires ACCTTO =/=K .Account
+
+    syntax KItem ::= "#catchHaltTx"
+ // -------------------------------
+    rule <k> #halt ~> #catchHaltTx => . ... </k>
+
+    syntax KItem ::= "#clearLogs"
+ // -----------------------------
+    rule <k> #clearLogs => . ... </k>
+         <log> _ => .List </log>
 ```
 
 - `#personal_importRawKey` Takes an unencrypted private key, encrypts it with a passphrase, stores it and returns the address of the key.
