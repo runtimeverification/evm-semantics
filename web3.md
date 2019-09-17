@@ -609,8 +609,9 @@ eth_sendTransaction
 
     rule <k> loadTX _ { ("from": _, REST) => REST } ... </k>
 
-    rule <k> loadTX _ { "to": (TO_STRING:String => #parseHexWord(TO_STRING)) , REST } ... </k>
-    rule <k> loadTX TXID { ("to": ACCTTO:Account, REST) => REST } ... </k>
+    rule <k> loadTX _    { "to": (TO_STRING:String => #parseHexWord(TO_STRING)) , REST } ... </k>
+    rule <k> loadTX _    { "to": .Account   , REST => REST } ... </k>
+    rule <k> loadTX TXID { "to": ACCTTO:Int , REST => REST } ... </k>
          <message>
            <msgID> TXID </msgID>
            <to> ( _ => ACCTTO ) </to>
@@ -755,8 +756,9 @@ loadCallSettings
          <caller> _ => ACCTFROM </caller>
          <origin> _ => ACCTFROM </origin>
 
-    rule <k> #loadCallSettings {   "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
-    rule <k> #loadCallSettings { ( "to" : ACCTTO:Account, REST => REST ) } ... </k>
+    rule <k> #loadCallSettings { "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
+    rule <k> #loadCallSettings { "to" : .Account   , REST => REST } ... </k>
+    rule <k> #loadCallSettings { "to" : ACCTTO:Int , REST => REST } ... </k>
          <id> _ => ACCTTO </id>
          <program> _ => CODE </program>
          <jumpDests> _ => #computeValidJumpDests(CODE) </jumpDests>
