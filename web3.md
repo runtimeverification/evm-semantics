@@ -518,7 +518,7 @@ eth_sendTransaction
 
     rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_sendTransaction' requires exactly 1 argument."} ) ... </k> [owise]
 
-    rule <k> #eth_sendTransaction_load J => mkTX !ID:Int ~> load "transaction" : { !ID : J } ~> signTX !ID #parseHexWord( #getString("from",J) ) ~> #eth_sendTransaction_final !ID ... </k>
+    rule <k> #eth_sendTransaction_load J => mkTX !ID:Int ~> #loadNonce #parseHexWord( #getString("from",J) ) !ID ~> load "transaction" : { !ID : J } ~> signTX !ID #parseHexWord( #getString("from",J) ) ~> #prepareTx !ID ~> #eth_sendTransaction_final !ID ... </k>
 
     rule <k> #eth_sendTransaction_final TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
 
@@ -532,6 +532,20 @@ eth_sendTransaction
     rule <k> load "transaction" : { TXID : { "r"        : (TR:String => #padToWidth(32, #parseByteStack(TR))) } } ... </k>
     rule <k> load "transaction" : { TXID : { "s"        : (TS:String => #padToWidth(32, #parseByteStack(TS))) } } ... </k>
     rule <k> load "transaction" : { TXID : { "from"     : _ } } => . ... </k>
+
+    syntax KItem ::= "#loadNonce" Int Int
+ // -------------------------------------
+    rule <k> #loadNonce ACCT TXID => . ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce> _ => NONCE </txNonce>
+           ...
+         </message>
+         <account>
+           <acctID> ACCT </acctID>
+           <nonce> NONCE </nonce>
+           ...
+         </account>
 ```
 
 - `#hashSignedTx` Takes a transaction ID. Returns the hash of the rlp-encoded transaction with R S and V.
