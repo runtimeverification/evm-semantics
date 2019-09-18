@@ -1,7 +1,7 @@
 FROM archlinux/base
 
 RUN    pacman -Syu --noconfirm \
-    && pacman -S   --noconfirm base base-devel curl gcc git hub make nodejs npm python2 sudo
+    && pacman -S   --noconfirm base base-devel curl gcc git hub make net-tools nodejs npm python2 sudo
 
 RUN npm install -g npx
 
