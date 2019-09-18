@@ -251,6 +251,7 @@ pipeline {
               sh '''
                 sudo apt-get update && sudo apt-get upgrade --yes
                 sudo apt-get install --yes ./kevm_${KEVM_RELEASE_ID}_amd64.deb
+                export PATH=$PATH:$(pwd)/.build/defn/vm
                 make test-interactive-firefly
               '''
             }
@@ -295,6 +296,7 @@ pipeline {
               sh '''
                 sudo apt-get update && sudo apt-get upgrade --yes
                 sudo apt-get install --yes ./kevm_${KEVM_RELEASE_ID}_amd64.deb
+                export PATH=$PATH:$(pwd)/.build/defn/vm
                 make test-interactive-firefly
               '''
             }
@@ -339,6 +341,7 @@ pipeline {
               sh '''
                 sudo pacman -Syu --noconfirm
                 sudo pacman --noconfirm -U package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz
+                export PATH=$PATH:$(pwd)/.build/defn/vm
                 make test-interactive-firefly
               '''
             }
