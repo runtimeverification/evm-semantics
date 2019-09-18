@@ -1,0 +1,178 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "firefly_addAccount",
+    "params": [
+      {
+        "key": "0xee63e43531c6d3c67c5dd7ddf9391f10862fd0687a7babb8b3518a14e8737d23",
+        "balance": "0x56BC75E2D63100000",
+        "nonce": "0x0"
+      }
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "firefly_addAccount",
+    "params": [
+      {
+        "key": "0xaff19912afc67eb4d8326188d596e4c5ab901e83a44e8b44e595fb197dc6bf00",
+        "balance": "0x56BC75E2D63100000",
+        "nonce": "0x0"
+      }
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "firefly_addAccount",
+    "params": [
+      {
+        "key": "0xa14bcf6a4dbc2122de0b4afe3ea715ef36ce21e9f59712f2b8281b86e2ed409b",
+        "balance": "0x56BC75E2D63100000",
+        "nonce": "0x0"
+      }
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 4,
+    "method": "firefly_addAccount",
+    "params": [
+      {
+        "key": "0xb4ff1f764699ad7f5112e5483c6ad8388959c1de3b57c53605335a4a9591b1c9",
+        "balance": "0x56BC75E2D63100000",
+        "nonce": "0x0"
+      }
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 5,
+    "method": "eth_sendTransaction",
+    "params": [
+      {
+        "from": "0xAe50d85e631CC8058616f8ea068D155b764b0dD4",
+        "gasPrice": "0x1",
+        "gas": "0x76c0",
+        "value": "0x8ac7230489e80000",
+        "to": "0x28AF1Bb79f6D919F9502022cdcC05B7410691D75"
+      }
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 6,
+    "method": "eth_sendTransaction",
+    "params": [
+      {
+        "from": "0xAeF634FD982559286e91CAa015dE625Bf43503bC",
+        "gasPrice": "0x1",
+        "value": "0x8ac7230489e80000",
+        "gas": "0x76c0",
+        "to": "0xAe50d85e631CC8058616f8ea068D155b764b0dD4"
+      }
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 7,
+    "method": "eth_sendTransaction",
+    "params": [
+      {
+        "from": "0x6C4B296889dFc6F791DCbFF1797E3e0D0c476F6f",
+        "gasPrice": "0x1",
+        "value": "0x15af1d78b58c40000",
+        "gas": "0x76c0",
+        "to": "0xAe50d85e631CC8058616f8ea068D155b764b0dD4"
+      }
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 8,
+    "method": "eth_sendTransaction",
+    "params": [
+      {
+        "from": "0xAeF634FD982559286e91CAa015dE625Bf43503bC",
+        "gasPrice": "0x1",
+        "value": "0x15af1d78b58c40000",
+        "gas": "0x76c0",
+        "to": "0x6C4B296889dFc6F791DCbFF1797E3e0D0c476F6f"
+      }
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 9,
+    "method": "eth_getBalance",
+    "params": [
+      "0xAe50d85e631CC8058616f8ea068D155b764b0dD4",
+      "pending"
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 10,
+    "method": "eth_getBalance",
+    "params": [
+      "0x28AF1Bb79f6D919F9502022cdcC05B7410691D75",
+      "pending"
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 11,
+    "method": "eth_getBalance",
+    "params": [
+      "0xAeF634FD982559286e91CAa015dE625Bf43503bC",
+      "pending"
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 12,
+    "method": "eth_getBalance",
+    "params": [
+      "0x6C4B296889dFc6F791DCbFF1797E3e0D0c476F6f",
+      "pending"
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 13,
+    "method": "eth_getTransactionCount",
+    "params": [
+      "0xAe50d85e631CC8058616f8ea068D155b764b0dD4",
+      "pending"
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 14,
+    "method": "eth_getTransactionCount",
+    "params": [
+      "0x28AF1Bb79f6D919F9502022cdcC05B7410691D75",
+      "pending"
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 15,
+    "method": "eth_getTransactionCount",
+    "params": [
+      "0xAeF634FD982559286e91CAa015dE625Bf43503bC",
+      "pending"
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 16,
+    "method": "eth_getTransactionCount",
+    "params": [
+      "0x6C4B296889dFc6F791DCbFF1797E3e0D0c476F6f",
+      "pending"
+    ]
+  }
+]
