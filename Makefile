@@ -212,7 +212,7 @@ $(node_dir)/%.k: %.md $(TANGLER)
 
 $(web3_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(web3_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
 # Kompiling
 
