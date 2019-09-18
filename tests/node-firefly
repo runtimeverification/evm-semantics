@@ -30,7 +30,7 @@ npm install
 npx truffle compile
 
 # Wait for kevm-vm to start up
-while netstat -lnt | awk '$$4 ~ /[:\.]'$kevm_vm_port'$$/ {exit 1}'; do
+while netstat -lunt | grep 'LISTEN$' | grep ":${kevm_vm_port}"; do
     sleep 1
 done
 
