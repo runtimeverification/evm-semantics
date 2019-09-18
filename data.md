@@ -618,7 +618,6 @@ Addresses
                      | #sender ( String , Int , String , String )                                         [function, klabel(#senderAux)]
                      | #sender ( String )                                                                 [function, klabel(#senderAux2)]
  // -------------------------------------------------------------------------------------------------------------------------------------
-
     rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS)
       => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWordStack(TN : TP : TG : .WordStack) +String #rlpEncodeAccount(TT) +String #rlpEncodeWord(TV) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
 
@@ -630,7 +629,6 @@ Addresses
     syntax Int ::= #addrFromPrivateKey ( String ) [function]
  // --------------------------------------------------------
     rule #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256 ( Hex2Raw( ECDSAPubKey( Hex2Raw( KEY ) ) ) ) ) )
-
 ```
 
 -   `#blockHeaderHash` computes the hash of a block header given all the block data.
