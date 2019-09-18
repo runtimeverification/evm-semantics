@@ -18,6 +18,15 @@ module WEB3
         </blockchain>
         <accountKeys> .Map </accountKeys>
         <nextFilterSlot> 0 </nextFilterSlot>
+        <txReceipts multiplicity ="*" type="Map">
+          <txReceipt>
+            <txHash>        "":String          </txHash>
+            <cumulativeGas> 0          </cumulativeGas>
+            <logSet>        .List      </logSet>
+            <bloomFilter>   .ByteArray </bloomFilter>
+            <txStatus>      0          </txStatus>
+          </txReceipt>
+        </txReceipts>
         <filters>
           <filter  multiplicity="*" type="Map">
             <filterID>  0   </filterID>
@@ -739,6 +748,32 @@ eth_sendRawTransaction
     rule <k> #eth_sendRawTransactionVerify _ => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
 
     rule <k> #eth_sendRawTransactionSend TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+```
+
+Transaction Receipts
+--------------------
+- The transaction receipt is a tuple of four items comprising: 
+  - the cumulative gas used in the block containing the transaction receipt as of immediately after the transaction has happened
+  - the set of logs created through execution of the transaction
+  - the Bloom filter composed from information in those logs
+  - the status code of the transaction.
+
+```k
+    syntax KItem ::= "#makeTxReceipt" Int
+ // -------------------------------------
+    rule <k> #makeTxReceipt TXID => . ... </k>
+         <txReceipts>
+           ( .Bag
+          => <txReceipt>
+               <txHash> "0x" +String #hashSignedTx (TXID) </txHash>
+               <cumulativeGas> GLIMIT </cumulativeGas>
+               <logSet> LOGS </logSet>
+               <bloomFilter> #bloomFilters(LOGS) </bloomFilter>
+             </txReceipt>
+           )
+         </txReceipts>
+         <gas> GLIMIT </gas>
+         <log> LOGS </log>
 ```
 
 loadCallSettings
