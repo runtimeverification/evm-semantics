@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -xeuo pipefail
 
 open_zeppelin_commit="b8c8308"
 kevm_vm_port="8545"
