@@ -236,6 +236,7 @@ pipeline {
           }
         }
         stage('Test Ubuntu Bionic Package') {
+          options { timeout(time: 15, unit: 'MINUTES') }
           agent {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
@@ -279,6 +280,7 @@ pipeline {
           }
         }
         stage('Test Debian Buster Package') {
+          options { timeout(time: 15, unit: 'MINUTES') }
           agent {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
@@ -322,6 +324,7 @@ pipeline {
           }
         }
         stage('Test Arch Package') {
+          options { timeout(time: 15, unit: 'MINUTES') }
           agent {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
