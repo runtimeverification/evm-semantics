@@ -768,35 +768,15 @@ Transaction Receipts
                <txHash> "0x" +String #hashSignedTx (TXID) </txHash>
                <cumulativeGas> GLIMIT </cumulativeGas>
                <logSet> LOGS </logSet>
-               <bloomFilter> LOGSBLOOM </bloomFilter>
-               <txStatus> 1 </txStatus>
-             </txReceipt>
-           )
-           ...
-         </txReceipts>
-         <statusCode> EVMC_SUCCESS </statusCode>
-         <logsBloom> LOGSBLOOM </logsBloom>
-         <gas> GLIMIT </gas>
-         <log> LOGS </log>
-
-    rule <k> #makeTxReceipt TXID => . ... </k>
-         <txReceipts>
-           ( .Bag
-          => <txReceipt>
-               <txHash> "0x" +String #hashSignedTx (TXID) </txHash>
-               <cumulativeGas> GLIMIT </cumulativeGas>
-               <logSet> LOGS </logSet>
-               <bloomFilter> LOGSBLOOM </bloomFilter>
-               <txStatus> 0 </txStatus>
+               <bloomFilter> #bloomFilter(LOGS) </bloomFilter>
+               <txStatus> bool2Word(STATUSCODE ==K EVMC_SUCCESS) </txStatus>
              </txReceipt>
            )
            ...
          </txReceipts>
          <statusCode> STATUSCODE </statusCode>
-         <logsBloom> LOGSBLOOM </logsBloom>
          <gas> GLIMIT </gas>
          <log> LOGS </log>
-      requires STATUSCODE =/=K EVMC_SUCCESS
 ```
 
 loadCallSettings
