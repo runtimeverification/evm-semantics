@@ -18,8 +18,8 @@ module WEB3
         </blockchain>
         <accountKeys> .Map </accountKeys>
         <nextFilterSlot> 0 </nextFilterSlot>
-        <txReceipts multiplicity ="*" type="Map">
-          <txReceipt>
+        <txReceipts>
+          <txReceipt multiplicity ="*" type="Map">
             <txHash>        "":String          </txHash>
             <cumulativeGas> 0          </cumulativeGas>
             <logSet>        .List      </logSet>
@@ -768,12 +768,35 @@ Transaction Receipts
                <txHash> "0x" +String #hashSignedTx (TXID) </txHash>
                <cumulativeGas> GLIMIT </cumulativeGas>
                <logSet> LOGS </logSet>
-               <bloomFilter> #bloomFilters(LOGS) </bloomFilter>
+               <bloomFilter> LOGSBLOOM </bloomFilter>
+               <txStatus> 1 </txStatus>
              </txReceipt>
            )
+           ...
          </txReceipts>
+         <statusCode> EVMC_SUCCESS </statusCode>
+         <logsBloom> LOGSBLOOM </logsBloom>
          <gas> GLIMIT </gas>
          <log> LOGS </log>
+
+    rule <k> #makeTxReceipt TXID => . ... </k>
+         <txReceipts>
+           ( .Bag
+          => <txReceipt>
+               <txHash> "0x" +String #hashSignedTx (TXID) </txHash>
+               <cumulativeGas> GLIMIT </cumulativeGas>
+               <logSet> LOGS </logSet>
+               <bloomFilter> LOGSBLOOM </bloomFilter>
+               <txStatus> 0 </txStatus>
+             </txReceipt>
+           )
+           ...
+         </txReceipts>
+         <statusCode> STATUSCODE </statusCode>
+         <logsBloom> LOGSBLOOM </logsBloom>
+         <gas> GLIMIT </gas>
+         <log> LOGS </log>
+      requires STATUSCODE =/=K EVMC_SUCCESS
 ```
 
 loadCallSettings
@@ -866,6 +889,7 @@ loadCallSettings
           => #clearLogs
           ~> #loadCallSettings TXID
           ~> #executeTx TXID
+          ~> #makeTxReceipt TXID
          ...
          </k>
 
