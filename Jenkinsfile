@@ -239,6 +239,7 @@ pipeline {
           }
         }
         stage('Test Ubuntu Bionic Package') {
+          options { timeout(time: 15, unit: 'MINUTES') }
           agent {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
@@ -253,6 +254,7 @@ pipeline {
               sh '''
                 sudo apt-get update && sudo apt-get upgrade --yes
                 sudo apt-get install --yes ./kevm_${KEVM_RELEASE_ID}_amd64.deb
+                export PATH=$PATH:$(pwd)/.build/defn/vm
                 make test-interactive-firefly
               '''
             }
@@ -282,6 +284,7 @@ pipeline {
           }
         }
         stage('Test Debian Buster Package') {
+          options { timeout(time: 15, unit: 'MINUTES') }
           agent {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
@@ -296,6 +299,7 @@ pipeline {
               sh '''
                 sudo apt-get update && sudo apt-get upgrade --yes
                 sudo apt-get install --yes ./kevm_${KEVM_RELEASE_ID}_amd64.deb
+                export PATH=$PATH:$(pwd)/.build/defn/vm
                 make test-interactive-firefly
               '''
             }
@@ -325,6 +329,7 @@ pipeline {
           }
         }
         stage('Test Arch Package') {
+          options { timeout(time: 15, unit: 'MINUTES') }
           agent {
             dockerfile {
               dir "kevm-${env.KEVM_RELEASE_ID}/package"
@@ -372,6 +377,7 @@ pipeline {
             }
             dir("kevm-${env.KEVM_RELEASE_ID}") {
               sh '''
+                export PATH=$PATH:$(pwd)/.build/defn/vm
                 make test-interactive-firefly
               '''
             }

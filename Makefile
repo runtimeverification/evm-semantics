@@ -503,16 +503,7 @@ test-interactive-help:
 
 # Notice that `npm install` comes after `npx kevm-ganache-cli` to allow time for it to start up.
 test-interactive-firefly:
-	mkdir -p $(BUILD_DIR)/firefly
-	cd $(BUILD_DIR)/firefly                                                  \
-	    && rm -rf openzeppelin-solidity                                      \
-	    && git clone 'https://github.com/openzeppelin/openzeppelin-solidity' \
-	    && cd openzeppelin-solidity                                          \
-	    && git checkout b8c8308                                              \
-	    && { npx kevm-ganache-cli --gasLimit 0xfffffffffff --port 8545 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501200,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501202,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501203,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501204,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501205,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501206,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501207,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501208,1000000000000000000000000 --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501209,1000000000000000000000000 & }                                        \
-	    && npm install                                                       \
-	    && while netstat -lnt | awk '$$4 ~ /[:\.]8080$$/ {exit 1}'; do sleep 1; done          \
-	    && node_modules/.bin/truffle test
+	./tests/node-firefly
 
 # Media
 # -----
