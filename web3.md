@@ -18,7 +18,6 @@ module WEB3
         </blockchain>
         <accountKeys> .Map </accountKeys>
         <nextFilterSlot> 0 </nextFilterSlot>
-        <cumulativeGas> 0 </cumulativeGas>
         <txReceipts>
           <txReceipt multiplicity ="*" type="Map">
             <txHash>          "":String  </txHash>
@@ -776,14 +775,8 @@ Transaction Receipts
            ...
          </txReceipts>
          <statusCode> STATUSCODE </statusCode>
-         <cumulativeGas> CGAS </cumulativeGas>
+         <gasUsed> CGAS </gasUsed>
          <log> LOGS </log>
-
-    syntax KItem ::= "#updateCumulativeGas"
- // ---------------------------------------
-    rule <k> #updateCumulativeGas => . ... </k>
-         <gasUsed> GUSED </gasUsed>
-         <cumulativeGas> CGAS => CGAS +Int GUSED </cumulativeGas>
 ```
 
 loadCallSettings
@@ -887,7 +880,6 @@ loadCallSettings
           => #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #catchHaltTx
           ~> #finalizeTx(false)
-          ~> #updateCumulativeGas
          ...
          </k>
          <origin> ACCTFROM </origin>
@@ -917,7 +909,6 @@ loadCallSettings
           => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #catchHaltTx
           ~> #finalizeTx(false)
-          ~> #updateCumulativeGas
          ...
          </k>
          <origin> ACCTFROM </origin>
