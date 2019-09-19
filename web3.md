@@ -18,17 +18,18 @@ module WEB3
         </blockchain>
         <accountKeys> .Map </accountKeys>
         <nextFilterSlot> 0 </nextFilterSlot>
+        <cumulativeGas> 0 </cumulativeGas>
         <txReceipts>
           <txReceipt multiplicity ="*" type="Map">
-            <txHash>        "":String          </txHash>
-            <cumulativeGas> 0          </cumulativeGas>
-            <logSet>        .List      </logSet>
-            <bloomFilter>   .ByteArray </bloomFilter>
-            <txStatus>      0          </txStatus>
+            <txHash>          "":String  </txHash>
+            <txCumulativeGas> 0          </txCumulativeGas>
+            <logSet>          .List      </logSet>
+            <bloomFilter>     .ByteArray </bloomFilter>
+            <txStatus>        0          </txStatus>
           </txReceipt>
         </txReceipts>
         <filters>
-          <filter  multiplicity="*" type="Map">
+          <filter multiplicity="*" type="Map">
             <filterID>  0   </filterID>
             <fromBlock> 0   </fromBlock>
             <toBlock>   0   </toBlock>
@@ -766,7 +767,7 @@ Transaction Receipts
            ( .Bag
           => <txReceipt>
                <txHash> "0x" +String #hashSignedTx (TXID) </txHash>
-               <cumulativeGas> GLIMIT </cumulativeGas>
+               <txCumulativeGas> CGAS </txCumulativeGas>
                <logSet> LOGS </logSet>
                <bloomFilter> #bloomFilter(LOGS) </bloomFilter>
                <txStatus> bool2Word(STATUSCODE ==K EVMC_SUCCESS) </txStatus>
@@ -775,8 +776,14 @@ Transaction Receipts
            ...
          </txReceipts>
          <statusCode> STATUSCODE </statusCode>
-         <gas> GLIMIT </gas>
+         <cumulativeGas> CGAS </cumulativeGas>
          <log> LOGS </log>
+
+    syntax KItem ::= "#updateCumulativeGas"
+ // ---------------------------------------
+    rule <k> #updateCumulativeGas => . ... </k>
+         <gasUsed> GUSED </gasUsed>
+         <cumulativeGas> CGAS => CGAS +Int GUSED </cumulativeGas>
 ```
 
 loadCallSettings
@@ -880,6 +887,7 @@ loadCallSettings
           => #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #catchHaltTx
           ~> #finalizeTx(false)
+          ~> #updateCumulativeGas
          ...
          </k>
          <origin> ACCTFROM </origin>
@@ -909,6 +917,7 @@ loadCallSettings
           => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #catchHaltTx
           ~> #finalizeTx(false)
+          ~> #updateCumulativeGas
          ...
          </k>
          <origin> ACCTFROM </origin>
