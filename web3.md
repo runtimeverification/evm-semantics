@@ -304,6 +304,8 @@ WEB3 JSON RPC
          <method> "eth_sendRawTransaction" </method>
     rule <k> #runRPCCall => #personal_importRawKey ... </k>
          <method> "personal_importRawKey" </method>
+    rule <k> #runRPCCall => #eth_call ... </k>
+         <method> "eth_call" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -1035,6 +1037,31 @@ loadCallSettings
          </account>
 
     rule <k> #loadAccountData _ _ =>  #sendResponse( "error": {"code": -32026, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
+```
 
+- `#eth_call`
+ **TODO**: remove duplicated login in `evm_revert` and `eth_call_finalize`
+
+```k
+    syntax KItem ::= #eth_call
+ // --------------------------
+    rule <k> #eth_call
+          => #pushNetworkState
+          ~> createTX #parseHexWord(#getString("from", J)) J
+          ~> #eth_call_finalize
+         ...
+         </k>
+         <params> [ ({ _ } #as J), .JSONList ] </params>
+      requires isString( #getJSON("to", J) )
+        andBool isString(#getJSON("from,J) )
+
+    syntax KItem ::= #eth_call_finalize
+ // -----------------------------------
+    rule <k> #eth_call_finalize => #sendResponse ("result": #unparseByteStack( OUTPUT )) ... </k>
+         <output> OUTPUT </output>
+         <snapshots> REST ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> }) => .List ) </snapshots>
+         <network>   ( _ => NETWORK )   </network>
+         <block>     ( _ => BLOCK )     </block>
+         <blockList> ( _ => BLOCKLIST ) </blockList>
 endmodule
 ```
