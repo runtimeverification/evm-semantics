@@ -36,10 +36,10 @@
           .Set
         </jumpDests>
         <id>
-          0
+          .Account
         </id>
         <caller>
-          0
+          .Account
         </caller>
         <callData>
           b""
@@ -87,7 +87,7 @@
         0
       </gasPrice>
       <origin>
-        0
+        .Account
       </origin>
       <blockhashes>
         .List

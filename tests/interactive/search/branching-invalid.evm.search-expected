@@ -71,10 +71,10 @@
         SetItem ( 12 )
       </jumpDests>
       <id>
-        0
+        .Account
       </id>
       <caller>
-        0
+        .Account
       </caller>
       <callData>
         .WordStack
@@ -137,7 +137,7 @@
     _7
   #Equals
     <origin>
-      0
+      .Account
     </origin>
   }
 #And

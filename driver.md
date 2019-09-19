@@ -324,8 +324,8 @@ State Manipulation
          <callStack>       _ => .List      </callStack>
          <program>         _ => .ByteArray </program>
          <jumpDests>       _ => .Set       </jumpDests>
-         <id>              _ => 0          </id>
-         <caller>          _ => 0          </caller>
+         <id>              _ => .Account   </id>
+         <caller>          _ => .Account   </caller>
          <callData>        _ => .ByteArray </callData>
          <callValue>       _ => 0          </callValue>
          <wordStack>       _ => .WordStack </wordStack>
@@ -337,7 +337,7 @@ State Manipulation
          <log>             _ => .List      </log>
          <refund>          _ => 0          </refund>
          <gasPrice>        _ => 0          </gasPrice>
-         <origin>          _ => 0          </origin>
+         <origin>          _ => .Account   </origin>
          <touchedAccounts> _ => .Set       </touchedAccounts>
 
     syntax EthereumCommand ::= "clearBLOCK"
