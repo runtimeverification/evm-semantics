@@ -8,7 +8,7 @@ RUN    apt-get update                                                         \
         libprotobuf-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-8 \
         llvm-8-tools make maven opam openjdk-11-jdk pandoc pkg-config         \
         protobuf-compiler python3 python-pygments python-recommonmark         \
-        python-sphinx time zlib1g-dev netcat-openbsd rapidjson-dev net-tools
+        python-sphinx time zlib1g-dev netcat-openbsd rapidjson-dev
 
 ADD deps/k/haskell-backend/src/main/native/haskell-backend/scripts/install-stack.sh /.install-stack/
 RUN /.install-stack/install-stack.sh
