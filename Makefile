@@ -295,6 +295,10 @@ $(ocaml_kompiled): $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LI
 
 # Node Backend
 
+$(node_kompiled): MAIN_DEFN_FILE=evm-node
+$(node_kompiled): MAIN_MODULE=EVM-NODE
+$(node_kompiled): SYNTAX_MODULE=EVM-NODE
+
 $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore: $(node_files)
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
 	                 --syntax-module $(SYNTAX_MODULE) $(node_dir)/$(MAIN_DEFN_FILE).k \
@@ -308,9 +312,6 @@ $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUBMODUL
 	protoc --cpp_out=$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 
 .PHONY: $(node_kompiled)
-$(node_kompiled): MAIN_DEFN_FILE=evm-node
-$(node_kompiled): MAIN_MODULE=EVM-NODE
-$(node_kompiled): SYNTAX_MODULE=EVM-NODE
 $(node_kompiled): $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
 	@mkdir -p $(DEFN_DIR)/vm
 	cd $(DEFN_DIR)/vm && cmake $(CURDIR)/cmake/node -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
