@@ -160,10 +160,7 @@ pipeline {
       }
     }
     stage('Release') {
-      agent {
-        label 'docker'
-        reuseNode true
-      }
+      agent { label 'docker' }
       options { skipDefaultCheckout() }
       environment {
         GITHUB_TOKEN    = credentials('rv-jenkins')
