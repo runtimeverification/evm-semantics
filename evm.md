@@ -55,8 +55,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <jumpDests> .Set </jumpDests>
 
               // I_*
-              <id>        0          </id>                    // I_a
-              <caller>    0          </caller>                // I_s
+              <id>        .Account   </id>                    // I_a
+              <caller>    .Account   </caller>                // I_s
               <callData>  .ByteArray </callData>              // I_d
               <callValue> 0          </callValue>             // I_v
 
@@ -82,8 +82,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
             // Immutable during a single transaction
             // -------------------------------------
 
-            <gasPrice> 0 </gasPrice>                          // I_p
-            <origin>   0 </origin>                            // I_o
+            <gasPrice> 0        </gasPrice>                   // I_p
+            <origin>   .Account </origin>                     // I_o
 
             // I_H* (block information)
             <blockhashes> .List </blockhashes>
@@ -1265,8 +1265,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
  // ---------------------------------------------------------
 ```
 
--   `#call_____` takes the calling account, the account to execute as, the account whose code should execute, the gas limit, the amount to transfer, and the arguments.
--   `#callWithCode______` takes the calling account, the accout to execute as, the code to execute (as a map), the gas limit, the amount to transfer, and the arguments.
+-   `#call_____` takes the calling account, the account to execute as, the account whose code should execute, the gas limit, the amount to transfer, the arguments, and the static flag.
+-   `#callWithCode______` takes the calling account, the accout to execute as, the code to execute (as a bytearray), the gas limit, the amount to transfer, the arguments, and the static flag.
 -   `#return__` is a placeholder for the calling program, specifying where to place the returned data in memory.
 
 ```k

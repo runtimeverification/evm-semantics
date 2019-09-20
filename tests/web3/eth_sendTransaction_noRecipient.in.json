@@ -1,0 +1,24 @@
+[    {
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "firefly_addAccount",
+  "params": [
+      {
+          "key": "0xd69a486f32489a3219e40d27a9e842d5eff4b8708d1bfb6fb451f61ffe9ca2fd",
+          "balance": "0x56BC75E2D63100000"
+      }
+  ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 59,
+  "method": "eth_sendTransaction",
+  "params": [
+    {
+      "from": "0xEd3d51FF62ba1A50288CE55A1A89b6786DBc4633",
+      "gas": "0xf6c0",
+      "gasPrice": "0x1",
+      "value": "0x2B5E3AF16B1880000"
+    }
+  ]
+}]
