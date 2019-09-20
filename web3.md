@@ -1045,11 +1045,11 @@ loadCallSettings
 ```
 
 - `#eth_call`
- **TODO**: remove duplicated login in `evm_revert` and `eth_call_finalize`
+ **TODO**: add logic for the case in which "from" field is not present
 
 ```k
     syntax KItem ::= "#eth_call"
- // --------------------------
+ // ----------------------------
     rule <k> #eth_call
           => #pushNetworkState
           ~> createTX #parseHexWord(#getString("from", J)) J
@@ -1060,8 +1060,12 @@ loadCallSettings
       requires isString( #getJSON("to", J) )
         andBool isString(#getJSON("from",J) )
 
+    rule <k> #eth_call => #sendResponse( "error": {"code": -32027, "message":"Method 'eth_call' has invalid arguments"} ) ...  </k>
+         <params> [ ({ _ } #as J), .JSONList ] </params>
+      requires notBool isString( #getJSON("from", J) )
+
     syntax KItem ::= "#eth_call_finalize"
- // -----------------------------------
+ // -------------------------------------
     rule <k> #eth_call_finalize => #popNetworkState ~> #sendResponse ("result": #unparseByteStack( OUTPUT )) ... </k>
          <output> OUTPUT </output>
 endmodule
