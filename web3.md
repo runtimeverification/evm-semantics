@@ -1053,7 +1053,7 @@ loadCallSettings
     rule <k> #eth_call
           => #pushNetworkState
           ~> createTX #parseHexWord(#getString("from", J)) J
-          ~> #eth_call_finalize
+          ~> #eth_call_intermediate
          ...
          </k>
          <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
@@ -1064,9 +1064,14 @@ loadCallSettings
          <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
       requires notBool isString( #getJSON("from", J) )
 
+    syntax KItem ::= "#eth_call_intermediate"
+ // -----------------------------------------
+    rule <k> #eth_call_intermediate => #prepareTx TXID ~> #eth_call_finalize ... </k>
+         <txPending> ListItem( TXID ) ... </txPending>
+
     syntax KItem ::= "#eth_call_finalize"
  // -------------------------------------
-    rule <k> #eth_call_finalize => #popNetworkState ~> #sendResponse ("result": #unparseByteStack( OUTPUT )) ... </k>
+    rule <k> #eth_call_finalize => #popNetworkState ~> #sendResponse ("result": #unparseDataByteArray( OUTPUT )) ... </k>
          <output> OUTPUT </output>
 endmodule
 ```
