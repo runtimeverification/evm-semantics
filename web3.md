@@ -619,8 +619,7 @@ eth_sendTransaction
     rule <k> loadTX _ { ("from": _, REST) => REST } ... </k>
 
     rule <k> loadTX _    { "to": (TO_STRING:String => #parseHexWord(TO_STRING)) , REST } ... </k>
-    rule <k> loadTX _    { "to": .Account   , REST => REST } ... </k>
-    rule <k> loadTX TXID { "to": ACCTTO:Int , REST => REST } ... </k>
+    rule <k> loadTX TXID { "to": ACCTTO:Account , REST => REST } ... </k>
          <message>
            <msgID> TXID </msgID>
            <to> ( _ => ACCTTO ) </to>
@@ -854,7 +853,7 @@ loadCallSettings
     syntax ByteArray ::= #ecrecAddr ( Account ) [function]
  // ------------------------------------------------------
     rule #ecrecAddr(.Account) => .ByteArray
-    rule #ecrecAddr(N:Int) => #padToWidth(20, #asByteStack(N))
+    rule #ecrecAddr(N:Int)    => #padToWidth(20, #asByteStack(N))
 ```
 
 - `#executeTx` takes a transaction, loads it into the current state and executes it.
