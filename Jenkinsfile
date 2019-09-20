@@ -160,12 +160,10 @@ pipeline {
       }
     }
     stage('Release') {
-      when {
-        not { changeRequest() }
-        branch 'master'
-        beforeAgent true
+      agent {
+        label 'docker'
+        reuseNode true
       }
-      agent { label 'docker' }
       options { skipDefaultCheckout() }
       environment {
         GITHUB_TOKEN    = credentials('rv-jenkins')
@@ -173,6 +171,14 @@ pipeline {
       }
       stages {
         stage('Test Release') {
+          agent {
+            dockerfile {
+              dir "kevm-${env.KEVM_RELEASE_ID}/package"
+              filename 'Dockerfile.ubuntu-bionic'
+              additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+              reuseNode true
+            }
+          }
           stages {
             stage('Checkout SCM - Download K Release') {
               steps {
@@ -192,14 +198,6 @@ pipeline {
               }
             }
             stage('Build Ubuntu Bionic Package') {
-              agent {
-                dockerfile {
-                  dir "kevm-${env.KEVM_RELEASE_ID}/package"
-                  filename 'Dockerfile.ubuntu-bionic'
-                  additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                  reuseNode true
-                }
-              }
               steps {
                 dir("kevm-${env.KEVM_RELEASE_ID}") {
                   checkout scm
@@ -240,6 +238,11 @@ pipeline {
           }
         }
         stage('Deploy Release') {
+          when {
+            not { changeRequest() }
+            branch 'master'
+            beforeAgent true
+          }
           stages {
             stage('Build Source Tarball') {
               agent {
