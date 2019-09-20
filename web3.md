@@ -441,15 +441,20 @@ WEB3 JSON RPC
          <block>     BLOCK     </block>
          <blockList> BLOCKLIST </blockList>
 
-    syntax KItem ::= "#evm_revert"
- // ------------------------------
-    rule <k> #evm_revert => #sendResponse( "result" : true ) ... </k>
-         <params>    [ DATA:Int, .JSONList ] </params>
-         <snapshots> REST ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> }) => .List ) </snapshots>
+    syntax KItem ::= "#popNetworkState"
+ // -----------------------------------
+    rule <k> #popNetworkState => . ... </k>
+         <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> }) => .List ) </snapshots>
          <network>   ( _ => NETWORK )   </network>
          <block>     ( _ => BLOCK )     </block>
          <blockList> ( _ => BLOCKLIST ) </blockList>
-      requires DATA ==Int size(REST)
+
+    syntax KItem ::= "#evm_revert"
+ // ------------------------------
+    rule <k> #evm_revert => #popNetworkState ~> #sendResponse( "result" : true ) ... </k>
+         <params>    [ DATA:Int, .JSONList ] </params>
+         <snapshots> SNAPSHOTS </snapshots>
+      requires DATA ==Int ( size(SNAPSHOTS) -Int 1 )
 
     rule <k> #evm_revert ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), .JSONList ] </params>
@@ -1043,7 +1048,7 @@ loadCallSettings
  **TODO**: remove duplicated login in `evm_revert` and `eth_call_finalize`
 
 ```k
-    syntax KItem ::= #eth_call
+    syntax KItem ::= "#eth_call"
  // --------------------------
     rule <k> #eth_call
           => #pushNetworkState
@@ -1053,15 +1058,11 @@ loadCallSettings
          </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString( #getJSON("to", J) )
-        andBool isString(#getJSON("from,J) )
+        andBool isString(#getJSON("from",J) )
 
-    syntax KItem ::= #eth_call_finalize
+    syntax KItem ::= "#eth_call_finalize"
  // -----------------------------------
-    rule <k> #eth_call_finalize => #sendResponse ("result": #unparseByteStack( OUTPUT )) ... </k>
+    rule <k> #eth_call_finalize => #popNetworkState ~> #sendResponse ("result": #unparseByteStack( OUTPUT )) ... </k>
          <output> OUTPUT </output>
-         <snapshots> REST ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> }) => .List ) </snapshots>
-         <network>   ( _ => NETWORK )   </network>
-         <block>     ( _ => BLOCK )     </block>
-         <blockList> ( _ => BLOCKLIST ) </blockList>
 endmodule
 ```
