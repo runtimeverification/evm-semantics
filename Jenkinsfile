@@ -15,150 +15,150 @@ pipeline {
         }
       }
     }
-    //stage('Build and Test') {
-    //  when {
-    //    changeRequest()
-    //    beforeAgent true
-    //  }
-    //  agent {
-    //    dockerfile {
-    //      additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-    //      args '-m 60g'
-    //    }
-    //  }
-    //  stages {
-    //    stage('Dependencies') {
-    //      steps {
-    //        sh '''
-    //          make deps ocaml-deps split-tests -j3
-    //        '''
-    //      }
-    //    }
-    //    stage('Build') {
-    //      steps {
-    //        sh '''
-    //          make build-all -j4
-    //        '''
-    //      }
-    //    }
-    //    stage('Test Execution') {
-    //      failFast true
-    //      options { timeout(time: 15, unit: 'MINUTES') }
-    //      parallel {
-    //        stage('Conformance (OCaml)') {
-    //          steps {
-    //            sh '''
-    //              make test-conformance -j8 TEST_CONCRETE_BACKEND=ocaml
-    //            '''
-    //          }
-    //        }
-    //        stage('Conformance (LLVM)') {
-    //          steps {
-    //            sh '''
-    //              make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm
-    //            '''
-    //          }
-    //        }
-    //        stage('Conformance (Web3)') {
-    //          steps {
-    //            sh '''
-    //              make test-web3
-    //            '''
-    //          }
-    //        }
-    //      }
-    //    }
-    //    stage('Test Proofs (Java)') {
-    //      options {
-    //        lock("proofs-${env.NODE_NAME}")
-    //        timeout(time: 60, unit: 'MINUTES')
-    //      }
-    //      steps {
-    //        sh '''
-    //          make test-prove -j6
-    //        '''
-    //      }
-    //    }
-    //    stage('Test Interactive') {
-    //      failFast true
-    //      options { timeout(time: 35, unit: 'MINUTES') }
-    //      parallel {
-    //        stage('OCaml krun') {
-    //          steps {
-    //            sh '''
-    //              make test-interactive-run TEST_CONCRETE_BACKEND=ocaml
-    //            '''
-    //          }
-    //        }
-    //        stage('LLVM krun') {
-    //          steps {
-    //            sh '''
-    //              make test-interactive-run TEST_CONCRETE_BACKEND=llvm
-    //            '''
-    //          }
-    //        }
-    //        stage('Java krun') {
-    //          steps {
-    //            sh '''
-    //              make test-interactive-run TEST_CONCRETE_BACKEND=java
-    //            '''
-    //          }
-    //        }
-    //        stage('Haskell krun') {
-    //          steps {
-    //            sh '''
-    //              make test-interactive-run TEST_CONCRETE_BACKEND=haskell
-    //            '''
-    //          }
-    //        }
-    //        stage('OCaml kast') {
-    //          steps {
-    //            sh '''
-    //              make test-parse TEST_CONCRETE_BACKEND=ocaml
-    //            '''
-    //          }
-    //        }
-    //        stage('Failing tests') {
-    //          steps {
-    //            sh '''
-    //              make test-failure TEST_CONCRETE_BACKEND=ocaml
-    //              make test-failure TEST_CONCRETE_BACKEND=llvm
-    //            '''
-    //          }
-    //        }
-    //        stage('Java KLab') {
-    //          steps {
-    //            sh '''
-    //              make test-klab-prove TEST_SYMBOLIC_BACKEND=java
-    //            '''
-    //          }
-    //        }
-    //        stage('Haskell Search') {
-    //          steps {
-    //            sh '''
-    //              make test-interactive-search TEST_SYMBOLIC_BACKEND=haskell -j4
-    //            '''
-    //          }
-    //        }
-    //        stage('KEVM help') {
-    //          steps {
-    //            sh '''
-    //              ./kevm help
-    //            '''
-    //          }
-    //        }
-    //        stage('Firefly') {
-    //          steps {
-    //            sh '''
-    //              export PATH=$PATH:$(pwd)/.build/defn/vm
-    //              make test-interactive-firefly
-    //            '''
-    //          }
-    //        }
-    //      }
-    //    }
-    //  }
-    //}
+    stage('Build and Test') {
+      when {
+        changeRequest()
+        beforeAgent true
+      }
+      agent {
+        dockerfile {
+          additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+          args '-m 60g'
+        }
+      }
+      stages {
+        stage('Dependencies') {
+          steps {
+            sh '''
+              make deps ocaml-deps split-tests -j3
+            '''
+          }
+        }
+        stage('Build') {
+          steps {
+            sh '''
+              make build-all -j4
+            '''
+          }
+        }
+        stage('Test Execution') {
+          failFast true
+          options { timeout(time: 15, unit: 'MINUTES') }
+          parallel {
+            stage('Conformance (OCaml)') {
+              steps {
+                sh '''
+                  make test-conformance -j8 TEST_CONCRETE_BACKEND=ocaml
+                '''
+              }
+            }
+            stage('Conformance (LLVM)') {
+              steps {
+                sh '''
+                  make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm
+                '''
+              }
+            }
+            stage('Conformance (Web3)') {
+              steps {
+                sh '''
+                  make test-web3
+                '''
+              }
+            }
+          }
+        }
+        stage('Test Proofs (Java)') {
+          options {
+            lock("proofs-${env.NODE_NAME}")
+            timeout(time: 60, unit: 'MINUTES')
+          }
+          steps {
+            sh '''
+              make test-prove -j6
+            '''
+          }
+        }
+        stage('Test Interactive') {
+          failFast true
+          options { timeout(time: 35, unit: 'MINUTES') }
+          parallel {
+            stage('OCaml krun') {
+              steps {
+                sh '''
+                  make test-interactive-run TEST_CONCRETE_BACKEND=ocaml
+                '''
+              }
+            }
+            stage('LLVM krun') {
+              steps {
+                sh '''
+                  make test-interactive-run TEST_CONCRETE_BACKEND=llvm
+                '''
+              }
+            }
+            stage('Java krun') {
+              steps {
+                sh '''
+                  make test-interactive-run TEST_CONCRETE_BACKEND=java
+                '''
+              }
+            }
+            stage('Haskell krun') {
+              steps {
+                sh '''
+                  make test-interactive-run TEST_CONCRETE_BACKEND=haskell
+                '''
+              }
+            }
+            stage('OCaml kast') {
+              steps {
+                sh '''
+                  make test-parse TEST_CONCRETE_BACKEND=ocaml
+                '''
+              }
+            }
+            stage('Failing tests') {
+              steps {
+                sh '''
+                  make test-failure TEST_CONCRETE_BACKEND=ocaml
+                  make test-failure TEST_CONCRETE_BACKEND=llvm
+                '''
+              }
+            }
+            stage('Java KLab') {
+              steps {
+                sh '''
+                  make test-klab-prove TEST_SYMBOLIC_BACKEND=java
+                '''
+              }
+            }
+            stage('Haskell Search') {
+              steps {
+                sh '''
+                  make test-interactive-search TEST_SYMBOLIC_BACKEND=haskell -j4
+                '''
+              }
+            }
+            stage('KEVM help') {
+              steps {
+                sh '''
+                  ./kevm help
+                '''
+              }
+            }
+            stage('Firefly') {
+              steps {
+                sh '''
+                  export PATH=$PATH:$(pwd)/.build/defn/vm
+                  make test-interactive-firefly
+                '''
+              }
+            }
+          }
+        }
+      }
+    }
     stage('Release') {
       agent { label 'docker' }
       options { skipDefaultCheckout() }
