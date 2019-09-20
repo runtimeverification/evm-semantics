@@ -102,9 +102,8 @@ $(DEPS_DIR)/libff/CMakeLists.txt:
 	git submodule update --init --recursive -- $(DEPS_DIR)/libff
 
 $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
-	cd $(DEPS_DIR)/libff/ \
-	    && mkdir -p build \
-	    && cd build \
+	@mkdir -p $(DEPS_DIR)/libff/build
+	cd $(DEPS_DIR)/libff/build \
 	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) $(LIBFF_CMAKE_FLAGS) \
 	    && make -s -j4 \
 	    && make install
@@ -212,7 +211,7 @@ $(node_dir)/%.k: %.md $(TANGLER)
 
 $(web3_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(web3_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
 # Kompiling
 
@@ -270,7 +269,7 @@ $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
 	    && ocamlfind $(OCAMLC) -c -g constants.ml -package gmp -package zarith -safe-string
 
 $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT)
-	mkdir -p $(dir $@)
+	@mkdir -p $(dir $@)
 	cp $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli $(dir $@)
 	eval $$(opam config env) \
 	    && ocp-ocamlres -format ocaml $(PLUGIN_SUBMODULE)/plugin/proto/VERSION -o $(dir $@)/apiVersion.ml \
@@ -296,21 +295,25 @@ $(ocaml_kompiled): $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LI
 
 # Node Backend
 
+$(node_kompiled): MAIN_DEFN_FILE=evm-node
+$(node_kompiled): MAIN_MODULE=EVM-NODE
+$(node_kompiled): SYNTAX_MODULE=EVM-NODE
+
 $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore: $(node_files)
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
 	                 --syntax-module $(SYNTAX_MODULE) $(node_dir)/$(MAIN_DEFN_FILE).k \
 	                 --directory $(node_dir) -I $(node_dir) -I $(node_dir) \
 	                 --hook-namespaces "KRYPTO BLOCKCHAIN" \
-			 --no-llvm-kompile \
+	                 --no-llvm-kompile \
 	                 $(KOMPILE_OPTS)
 
 $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
-	mkdir -p $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin
+	@mkdir -p $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin
 	protoc --cpp_out=$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 
 .PHONY: $(node_kompiled)
 $(node_kompiled): $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
-	mkdir -p $(DEFN_DIR)/vm
+	@mkdir -p $(DEFN_DIR)/vm
 	cd $(DEFN_DIR)/vm && cmake $(CURDIR)/cmake/node -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
 # Web3 Backend
@@ -325,7 +328,7 @@ $(web3_dir)/web3-kompiled/definition.kore: $(web3_files)
 
 .PHONY: $(web3_kompiled)
 $(web3_kompiled): $(web3_dir)/web3-kompiled/definition.kore $(libff_out)
-	mkdir -p $(web3_dir)/build
+	@mkdir -p $(web3_dir)/build
 	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
 # LLVM Backend
@@ -518,7 +521,7 @@ media_pdfs := 201710-presentation-devcon3                          \
               201908-trufflecon-workshop 201908-trufflecon-firefly
 
 media/%.pdf: media/%.md media/citations.md
-	mkdir -p $(dir $@)
+	@mkdir -p $(dir $@)
 	cat $^ | pandoc --from markdown --filter pandoc-citeproc --to beamer --output $@
 
 media-pdf: $(patsubst %, media/%.pdf, $(media_pdfs))
@@ -545,10 +548,10 @@ ALLSPHINXOPTS   = -d ../$(SPHINXBUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINX
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 sphinx:
-	mkdir -p $(SPHINXBUILDDIR) \
-	    && cp -r media/sphinx-docs/* $(SPHINXBUILDDIR) \
-	    && cp -r *.md $(SPHINXBUILDDIR)/. \
-	    && cd $(SPHINXBUILDDIR) \
+	@mkdir -p $(SPHINXBUILDDIR)
+	cp -r media/sphinx-docs/* $(SPHINXBUILDDIR)/
+	cp -r *.md $(SPHINXBUILDDIR)/
+	cd $(SPHINXBUILDDIR) \
 	    && sed -i 's/{.k[ a-zA-Z.-]*}/k/g' *.md \
 	    && $(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) html \
 	    && $(SPHINXBUILD) -b text $(ALLSPHINXOPTS) html/text

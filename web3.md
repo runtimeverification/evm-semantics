@@ -18,8 +18,17 @@ module WEB3
         </blockchain>
         <accountKeys> .Map </accountKeys>
         <nextFilterSlot> 0 </nextFilterSlot>
+        <txReceipts>
+          <txReceipt multiplicity ="*" type="Map">
+            <txHash>          "":String  </txHash>
+            <txCumulativeGas> 0          </txCumulativeGas>
+            <logSet>          .List      </logSet>
+            <bloomFilter>     .ByteArray </bloomFilter>
+            <txStatus>        0          </txStatus>
+          </txReceipt>
+        </txReceipts>
         <filters>
-          <filter  multiplicity="*" type="Map">
+          <filter multiplicity="*" type="Map">
             <filterID>  0   </filterID>
             <fromBlock> 0   </fromBlock>
             <toBlock>   0   </toBlock>
@@ -610,8 +619,7 @@ eth_sendTransaction
     rule <k> loadTX _ { ("from": _, REST) => REST } ... </k>
 
     rule <k> loadTX _    { "to": (TO_STRING:String => #parseHexWord(TO_STRING)) , REST } ... </k>
-    rule <k> loadTX _    { "to": .Account   , REST => REST } ... </k>
-    rule <k> loadTX TXID { "to": ACCTTO:Int , REST => REST } ... </k>
+    rule <k> loadTX TXID { "to": ACCTTO:Account , REST => REST } ... </k>
          <message>
            <msgID> TXID </msgID>
            <to> ( _ => ACCTTO ) </to>
@@ -741,6 +749,35 @@ eth_sendRawTransaction
     rule <k> #eth_sendRawTransactionSend TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
 ```
 
+Transaction Receipts
+--------------------
+- The transaction receipt is a tuple of four items comprising: 
+  - the cumulative gas used in the block containing the transaction receipt as of immediately after the transaction has happened
+  - the set of logs created through execution of the transaction
+  - the Bloom filter composed from information in those logs
+  - the status code of the transaction.
+
+```k
+    syntax KItem ::= "#makeTxReceipt" Int
+ // -------------------------------------
+    rule <k> #makeTxReceipt TXID => . ... </k>
+         <txReceipts>
+           ( .Bag
+          => <txReceipt>
+               <txHash> "0x" +String #hashSignedTx (TXID) </txHash>
+               <txCumulativeGas> CGAS </txCumulativeGas>
+               <logSet> LOGS </logSet>
+               <bloomFilter> #bloomFilter(LOGS) </bloomFilter>
+               <txStatus> bool2Word(STATUSCODE ==K EVMC_SUCCESS) </txStatus>
+             </txReceipt>
+           )
+           ...
+         </txReceipts>
+         <statusCode> STATUSCODE </statusCode>
+         <gasUsed> CGAS </gasUsed>
+         <log> LOGS </log>
+```
+
 loadCallSettings
 ----------------
 
@@ -816,7 +853,7 @@ loadCallSettings
     syntax ByteArray ::= #ecrecAddr ( Account ) [function]
  // ------------------------------------------------------
     rule #ecrecAddr(.Account) => .ByteArray
-    rule #ecrecAddr(N:Int) => #padToWidth(20, #asByteStack(N))
+    rule #ecrecAddr(N:Int)    => #padToWidth(20, #asByteStack(N))
 ```
 
 - `#executeTx` takes a transaction, loads it into the current state and executes it.
@@ -831,6 +868,7 @@ loadCallSettings
           => #clearLogs
           ~> #loadCallSettings TXID
           ~> #executeTx TXID
+          ~> #makeTxReceipt TXID
          ...
          </k>
 
