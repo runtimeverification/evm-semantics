@@ -306,6 +306,8 @@ WEB3 JSON RPC
          <method> "personal_importRawKey" </method>
     rule <k> #runRPCCall => #eth_call ... </k>
          <method> "eth_call" </method>
+    rule <k> #runRPCCall => #eth_estimateGas ... </k>
+         <method> "eth_estimateGas" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -1073,5 +1075,38 @@ loadCallSettings
  // -------------------------------------
     rule <k> #eth_call_finalize => #popNetworkState ~> #sendResponse ("result": #unparseDataByteArray( OUTPUT )) ... </k>
          <output> OUTPUT </output>
+```
+
+- `#eth_estimateGas`
+**TODO**: avoid EVMC_OUT_OF_GAS
+**TODO**: implement funcionality for block number argument
+
+```k
+    syntax KItem ::= "#eth_estimateGas"
+ // -----------------------------------
+    rule <k> #eth_estimateGas
+          => #pushNetworkState
+          ~> createTX #parseHexWord(#getString("from", J)) J
+          ~> #eth_estimateGas_intermediate
+         ...
+         </k>
+         <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
+      requires isString(#getJSON("from", J) )
+
+    rule <k> #eth_estimateGas => #sendResponse( "error": {"code": -32028, "message":"Method 'eth_estimateGas' has invalid arguments"} ) ...  </k>
+         <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
+      requires notBool isString( #getJSON("from", J) )
+
+    syntax KItem ::= "#eth_estimateGas_intermediate"
+ // ------------------------------------------------
+    rule <k> #eth_estimateGas_intermediate => #prepareTx TXID ~> #eth_estimateGas_finalize ~> GUSED ... </k>
+         <txPending> ListItem( TXID ) ... </txPending>
+         <gasUsed> GUSED </gasUsed>
+
+    syntax KItem ::= "#eth_estimateGas_finalize"
+ // --------------------------------------------
+    rule <k> #eth_estimateGas_finalize ~> INITGUSED:Int => #popNetworkState ~> #sendResponse ("result": #unparseQuantity( GUSED -Int INITGUSED )) ... </k>
+         <gasUsed> GUSED </gasUsed>
+
 endmodule
 ```
