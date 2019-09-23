@@ -702,11 +702,13 @@ eth_sendRawTransaction
 
 Transaction Receipts
 --------------------
-- The transaction receipt is a tuple of four items comprising: 
-  - the cumulative gas used in the block containing the transaction receipt as of immediately after the transaction has happened
-  - the set of logs created through execution of the transaction
-  - the Bloom filter composed from information in those logs
-  - the status code of the transaction.
+
+-   The transaction receipt is a tuple of four items comprising:
+
+    -   the cumulative gas used in the block containing the transaction receipt as of immediately after the transaction has happened,
+    -   the set of logs created through execution of the transaction,
+    -   the Bloom filter composed from information in those logs, and
+    -   the status code of the transaction.
 
 ```k
     syntax KItem ::= "#makeTxReceipt" Int
@@ -996,8 +998,12 @@ loadCallSettings
  // ----------------------------
     rule <k> #eth_call
           => #pushNetworkState
-          ~> createTX #parseHexWord(#getString("from", J)) J
-          ~> #eth_call_intermediate
+          ~> mkTX !ID:Int
+          ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
+          ~> load "transaction" : { !ID : J }
+          ~> signTX !ID #parseHexWord(#getString("from", J))
+          ~> #prepareTx !ID
+          ~> #eth_call_finalize
          ...
          </k>
          <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
@@ -1007,11 +1013,6 @@ loadCallSettings
     rule <k> #eth_call => #sendResponse( "error": {"code": -32027, "message":"Method 'eth_call' has invalid arguments"} ) ...  </k>
          <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
       requires notBool isString( #getJSON("from", J) )
-
-    syntax KItem ::= "#eth_call_intermediate"
- // -----------------------------------------
-    rule <k> #eth_call_intermediate => #prepareTx TXID ~> #eth_call_finalize ... </k>
-         <txPending> ListItem( TXID ) ... </txPending>
 
     syntax KItem ::= "#eth_call_finalize"
  // -------------------------------------
