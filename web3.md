@@ -307,6 +307,8 @@ WEB3 JSON RPC
          <method> "eth_sendRawTransaction" </method>
     rule <k> #runRPCCall => #personal_importRawKey ... </k>
          <method> "personal_importRawKey" </method>
+    rule <k> #runRPCCall => #eth_call ... </k>
+         <method> "eth_call" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -442,15 +444,20 @@ WEB3 JSON RPC
          <block>     BLOCK     </block>
          <blockList> BLOCKLIST </blockList>
 
-    syntax KItem ::= "#evm_revert"
- // ------------------------------
-    rule <k> #evm_revert => #sendResponse( "result" : true ) ... </k>
-         <params>    [ DATA:Int, .JSONList ] </params>
-         <snapshots> REST ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> }) => .List ) </snapshots>
+    syntax KItem ::= "#popNetworkState"
+ // -----------------------------------
+    rule <k> #popNetworkState => . ... </k>
+         <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> }) => .List ) </snapshots>
          <network>   ( _ => NETWORK )   </network>
          <block>     ( _ => BLOCK )     </block>
          <blockList> ( _ => BLOCKLIST ) </blockList>
-      requires DATA ==Int size(REST)
+
+    syntax KItem ::= "#evm_revert"
+ // ------------------------------
+    rule <k> #evm_revert => #popNetworkState ~> #sendResponse( "result" : true ) ... </k>
+         <params>    [ DATA:Int, .JSONList ] </params>
+         <snapshots> SNAPSHOTS </snapshots>
+      requires DATA ==Int ( size(SNAPSHOTS) -Int 1 )
 
     rule <k> #evm_revert ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), .JSONList ] </params>
@@ -695,11 +702,13 @@ eth_sendRawTransaction
 
 Transaction Receipts
 --------------------
-- The transaction receipt is a tuple of four items comprising: 
-  - the cumulative gas used in the block containing the transaction receipt as of immediately after the transaction has happened
-  - the set of logs created through execution of the transaction
-  - the Bloom filter composed from information in those logs
-  - the status code of the transaction.
+
+-   The transaction receipt is a tuple of four items comprising:
+
+    -   the cumulative gas used in the block containing the transaction receipt as of immediately after the transaction has happened,
+    -   the set of logs created through execution of the transaction,
+    -   the Bloom filter composed from information in those logs, and
+    -   the status code of the transaction.
 
 ```k
     syntax KItem ::= "#makeTxReceipt" Int
@@ -979,6 +988,35 @@ loadCallSettings
          </account>
 
     rule <k> #loadAccountData _ _ =>  #sendResponse( "error": {"code": -32026, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
+```
 
+- `#eth_call`
+ **TODO**: add logic for the case in which "from" field is not present
+
+```k
+    syntax KItem ::= "#eth_call"
+ // ----------------------------
+    rule <k> #eth_call
+          => #pushNetworkState
+          ~> mkTX !ID:Int
+          ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
+          ~> load "transaction" : { !ID : J }
+          ~> signTX !ID #parseHexWord(#getString("from", J))
+          ~> #prepareTx !ID
+          ~> #eth_call_finalize
+         ...
+         </k>
+         <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
+      requires isString( #getJSON("to", J) )
+        andBool isString(#getJSON("from",J) )
+
+    rule <k> #eth_call => #sendResponse( "error": {"code": -32027, "message":"Method 'eth_call' has invalid arguments"} ) ...  </k>
+         <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
+      requires notBool isString( #getJSON("from", J) )
+
+    syntax KItem ::= "#eth_call_finalize"
+ // -------------------------------------
+    rule <k> #eth_call_finalize => #popNetworkState ~> #sendResponse ("result": #unparseDataByteArray( OUTPUT )) ... </k>
+         <output> OUTPUT </output>
 endmodule
 ```
