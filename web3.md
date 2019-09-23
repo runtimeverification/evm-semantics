@@ -947,43 +947,5 @@ loadCallSettings
     rule <k> loadAccount _ { "code"    : ((CODE:String)        => #parseByteStack(CODE)) }   ... </k>
     rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) }  ... </k>
 
-    syntax KItem ::= "#loadAccountData" Int JSON
- // --------------------------------------------
-    rule <k> #loadAccountData _ { .JSONList } => . ... </k>
-
-    rule <k> #loadAccountData _ { "address": _, REST => REST } ... </k>
-    rule <k> #loadAccountData _ { "key"    : _, REST => REST } ... </k>
-
-    rule <k> #loadAccountData ACCTID { ("balance": BALANCE_STRING, REST) => REST } ... </k>
-         <account>
-           <acctID> ACCTID </acctID>
-           <balance> _ => #parseHexWord(BALANCE_STRING) </balance>
-           ...
-         </account>
-
-    rule <k> #loadAccountData ACCTID { ("code": CODE_STRING, REST) => REST } ... </k>
-         <account>
-           <acctID> ACCTID </acctID>
-           <code> _ => #parseByteStack(CODE_STRING) </code>
-           ...
-         </account>
-
-    rule <k> #loadAccountData ACCTID { ("nonce": NONCE_STRING, REST) => REST } ... </k>
-         <account>
-           <acctID> ACCTID </acctID>
-           <nonce> _ => #parseHexWord(NONCE_STRING) </nonce>
-           ...
-         </account>
-
-    rule <k> #loadAccountData ACCTID { ("storage": { STORAGE_JSON }, REST) => REST } ... </k>
-         <account>
-           <acctID> ACCTID </acctID>
-           <storage>     _ => #parseMap({ STORAGE_JSON }) </storage>
-           <origStorage> _ => #parseMap({ STORAGE_JSON }) </origStorage>
-           ...
-         </account>
-
-    rule <k> #loadAccountData _ _ =>  #sendResponse( "error": {"code": -32026, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
-
 endmodule
 ```

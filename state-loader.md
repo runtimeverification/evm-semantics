@@ -107,46 +107,6 @@ Here we perform pre-proccesing on account data which allows "pretty" specificati
 
 ```{.k}
     rule <k> load "pre" : { (ACCTID:String) : ACCT } => mkAcct #parseAddr(ACCTID) ~> loadAccount #parseAddr(ACCTID) ACCT ... </k>
-    rule <k> load "account" : { ACCTID: { KEY : VALUE , REST } } => load "account" : { ACCTID : { KEY : VALUE } } ~> load "account" : { ACCTID : { REST } } ... </k> requires REST =/=K .JSONList
-
-    rule <k> load "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }                                ... </k>
-    rule <k> load "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }        ... </k>
-    rule <k> load "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }        ... </k>
-    rule <k> load "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #parseByteStack(CODE)) } }  ... </k>
-    rule <k> load "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } } ... </k>
-```
-
-The individual fields of the accounts are dealt with here.
-
-```{.k}
-    rule <k> load "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> _ => BAL </balance>
-           ...
-         </account>
-
-    rule <k> load "account" : { ACCT : { "code" : (CODE:ByteArray) } } => . ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <code> _ => CODE </code>
-           ...
-         </account>
-
-    rule <k> load "account" : { ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <nonce> _ => NONCE </nonce>
-           ...
-         </account>
-
-    rule <k> load "account" : { ACCT : { "storage" : (STORAGE:Map) } } => . ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> _ => STORAGE </storage>
-           <origStorage> _ => STORAGE </origStorage>
-           ...
-         </account>
 
     syntax EthereumCommand ::= "loadAccount" Int JSON
  // -------------------------------------------------
