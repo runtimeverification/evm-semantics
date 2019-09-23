@@ -296,9 +296,14 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> run TESTID : { KEY : _ , REST } => run TESTID : { REST } ... </k> requires KEY in #discardKeys
 ```
 
--   `driver.md` specific handling of transaction fields
+-   `driver.md` specific handling of state-loader commands
 
 ```{.k .standalone}
+    rule <k> loadAccount _ { "balance" : ((VAL:String)         => #parseWord(VAL)) }         ... </k>
+    rule <k> loadAccount _ { "nonce"   : ((VAL:String)         => #parseWord(VAL)) }         ... </k>
+    rule <k> loadAccount _ { "code"    : ((CODE:String)        => #parseByteStack(CODE)) }   ... </k>
+    rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) }  ... </k>
+
     rule <k> loadTransaction _ { "gasLimit" : (TG:String => #asWord(#parseByteStackRaw(TG)))         } ... </k>
     rule <k> loadTransaction _ { "gasPrice" : (TP:String => #asWord(#parseByteStackRaw(TP)))         } ... </k>
     rule <k> loadTransaction _ { "nonce"    : (TN:String => #asWord(#parseByteStackRaw(TN)))         } ... </k>

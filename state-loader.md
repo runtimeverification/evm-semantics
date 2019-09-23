@@ -106,7 +106,7 @@ module STATE-LOADER
 Here we perform pre-proccesing on account data which allows "pretty" specification of input.
 
 ```{.k}
-    rule <k> load "pre" : { (ACCTID:String) : ACCT }             => mkAcct #parseAddr(ACCTID) ~> load "account" : { ACCTID : ACCT }                         ... </k>
+    rule <k> load "pre" : { (ACCTID:String) : ACCT } => mkAcct #parseAddr(ACCTID) ~> loadAccount #parseAddr(ACCTID) ACCT ... </k>
     rule <k> load "account" : { ACCTID: { KEY : VALUE , REST } } => load "account" : { ACCTID : { KEY : VALUE } } ~> load "account" : { ACCTID : { REST } } ... </k> requires REST =/=K .JSONList
 
     rule <k> load "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }                                ... </k>
