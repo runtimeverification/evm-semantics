@@ -531,16 +531,6 @@ eth_sendTransaction
 
     rule <k> #eth_sendTransaction_final TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
 
-    rule <k> load "transaction" : { TXID : { "gas"      : (TG:String => #parseHexWord(TG))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "gasPrice" : (TP:String => #parseHexWord(TP))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "nonce"    : (TN:String => #parseHexWord(TN))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "v"        : (TW:String => #parseHexWord(TW))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "value"    : (TV:String => #parseHexWord(TV))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "to"       : (TT:String => #parseHexWord(TT))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "data"     : (TI:String => #parseByteStack(TI))                  } } ... </k>
-    rule <k> load "transaction" : { TXID : { "r"        : (TR:String => #padToWidth(32, #parseByteStack(TR))) } } ... </k>
-    rule <k> load "transaction" : { TXID : { "s"        : (TS:String => #padToWidth(32, #parseByteStack(TS))) } } ... </k>
-    rule <k> load "transaction" : { TXID : { "from"     : _ } } => . ... </k>
     rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG))                    } ... </k>
     rule <k> loadTransaction _ { "gasPrice" : (TP:String => #parseHexWord(TP))                    } ... </k>
     rule <k> loadTransaction _ { "nonce"    : (TN:String => #parseHexWord(TN))                    } ... </k>

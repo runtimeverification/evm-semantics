@@ -299,15 +299,6 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 -   `driver.md` specific handling of transaction fields
 
 ```{.k .standalone}
-    rule <k> load "transaction" : { TXID : { "gasLimit" : (TG:String => #asWord(#parseByteStackRaw(TG)))         } } ... </k>
-    rule <k> load "transaction" : { TXID : { "gasPrice" : (TP:String => #asWord(#parseByteStackRaw(TP)))         } } ... </k>
-    rule <k> load "transaction" : { TXID : { "nonce"    : (TN:String => #asWord(#parseByteStackRaw(TN)))         } } ... </k>
-    rule <k> load "transaction" : { TXID : { "v"        : (TW:String => #asWord(#parseByteStackRaw(TW)))         } } ... </k>
-    rule <k> load "transaction" : { TXID : { "value"    : (TV:String => #asWord(#parseByteStackRaw(TV)))         } } ... </k>
-    rule <k> load "transaction" : { TXID : { "to"       : (TT:String => #asAccount(#parseByteStackRaw(TT)))      } } ... </k>
-    rule <k> load "transaction" : { TXID : { "data"     : (TI:String => #parseByteStackRaw(TI))                  } } ... </k>
-    rule <k> load "transaction" : { TXID : { "r"        : (TR:String => #padToWidth(32, #parseByteStackRaw(TR))) } } ... </k>
-    rule <k> load "transaction" : { TXID : { "s"        : (TS:String => #padToWidth(32, #parseByteStackRaw(TS))) } } ... </k>
     rule <k> loadTransaction _ { "gasLimit" : (TG:String => #asWord(#parseByteStackRaw(TG)))         } ... </k>
     rule <k> loadTransaction _ { "gasPrice" : (TP:String => #asWord(#parseByteStackRaw(TP)))         } ... </k>
     rule <k> loadTransaction _ { "nonce"    : (TN:String => #asWord(#parseByteStackRaw(TN)))         } ... </k>
