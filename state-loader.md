@@ -251,12 +251,11 @@ The `"rlp"` key loads the block information.
 
     rule <k> load "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST ]
           => mkTX !ID:Int
-          ~> load "transaction" : { !ID : { "data"  : TI   ,   "gasLimit" : TG   ,   "gasPrice" : TP
-                                          , "nonce" : TN   ,   "r"        : TR   ,   "s"        : TS
-                                          , "to"    : TT   ,   "v"        : TW   ,   "value"    : TV
-                                          , .JSONList
-                                          }
-                                  }
+          ~> loadTransaction !ID { "data"  : TI   ,   "gasLimit" : TG   ,   "gasPrice" : TP
+                                 , "nonce" : TN   ,   "r"        : TR   ,   "s"        : TS
+                                 , "to"    : TT   ,   "v"        : TW   ,   "value"    : TV
+                                 , .JSONList
+                                 }
           ~> load "transaction" : [ REST ]
           ...
           </k>
