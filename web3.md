@@ -920,7 +920,7 @@ loadCallSettings
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString(#getJSON("key", J))
 
-    rule <k> #firefly_addAccountByAddress ACCT_ADDR => #newAccount ACCT_ADDR ~> #loadAccountData ACCT_ADDR J ~> #sendResponse( "result": true ) ... </k>
+    rule <k> #firefly_addAccountByAddress ACCT_ADDR => #newAccount ACCT_ADDR ~> loadAccount ACCT_ADDR J ~> #sendResponse( "result": true ) ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT_ADDR in ACCTS
@@ -930,7 +930,7 @@ loadCallSettings
          <activeAccounts> ACCTS </activeAccounts>
       requires ACCT_ADDR in ACCTS
 
-    rule <k> #firefly_addAccountByKey ACCT_KEY => #acctFromPrivateKey ACCT_KEY ~> #loadAccountData #addrFromPrivateKey(ACCT_KEY) J ~> #sendResponse( "result": true ) ... </k>
+    rule <k> #firefly_addAccountByKey ACCT_KEY => #acctFromPrivateKey ACCT_KEY ~> loadAccount #addrFromPrivateKey(ACCT_KEY) J ~> #sendResponse( "result": true ) ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool #addrFromPrivateKey(ACCT_KEY) in ACCTS
@@ -941,6 +941,11 @@ loadCallSettings
       requires #addrFromPrivateKey(ACCT_KEY) in ACCTS
 
     rule <k> #firefly_addAccount => #sendResponse( "error": {"code": -32025, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
+
+    rule <k> loadAccount _ { "balance" : ((VAL:String)         => #parseHexWord(VAL)) }         ... </k>
+    rule <k> loadAccount _ { "nonce"   : ((VAL:String)         => #parseHexWord(VAL)) }         ... </k>
+    rule <k> loadAccount _ { "code"    : ((CODE:String)        => #parseByteStack(CODE)) }   ... </k>
+    rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) }  ... </k>
 
     syntax KItem ::= "#loadAccountData" Int JSON
  // --------------------------------------------
