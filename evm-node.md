@@ -4,6 +4,8 @@ EVM Integration with Production Client
 Contained in this file is glue code needed in order to enable the ability to use KEVM as a VM for an actual Ethereum node.
 
 ```{.k .node}
+requires "evm.k"
+
 module EVM-NODE
     imports EVM
     imports K-REFLECTION
