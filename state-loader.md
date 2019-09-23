@@ -268,6 +268,15 @@ The `"rlp"` key loads the block information.
          </k>
       requires REST =/=K .JSONList
 
+    syntax EthereumCommand ::= "loadTransaction" Int JSON
+ // -----------------------------------------------------
+    rule <k> loadTransaction TXID { KEY : VALUE , REST }
+          => loadTransaction TXID { KEY : VALUE }
+          ~> loadTransaction TXID { REST }
+          ...
+         </k>
+      requires REST =/=K .JSONList
+
     rule <k> load "transaction" : { TXID : { GLIMIT     : TG:Int } } => . ... </k>
          <message> <msgID> TXID </msgID> <txGasLimit> _ => TG </txGasLimit> ... </message>
       requires GLIMIT in (SetItem("gas") SetItem("gasLimit"))
@@ -294,6 +303,36 @@ The `"rlp"` key loads the block information.
          <message> <msgID> TXID </msgID> <sigR> _ => TR </sigR> ... </message>
 
     rule <k> load "transaction" : { TXID : { "s" : TS:ByteArray } } => . ... </k>
+         <message> <msgID> TXID </msgID> <sigS> _ => TS </sigS> ... </message>
+
+    rule <k> loadTransaction TXID { .JSONList } => . ... </k>
+
+    rule <k> loadTransaction TXID { GLIMIT     : TG:Int } => . ... </k>
+         <message> <msgID> TXID </msgID> <txGasLimit> _ => TG </txGasLimit> ... </message>
+      requires GLIMIT in (SetItem("gas") SetItem("gasLimit"))
+
+    rule <k> loadTransaction TXID { "gasPrice" : TP:Int } => . ... </k>
+         <message> <msgID> TXID </msgID> <txGasPrice> _ => TP </txGasPrice> ... </message>
+
+    rule <k> loadTransaction TXID { "nonce" : TN:Int } => . ... </k>
+         <message> <msgID> TXID </msgID> <txNonce> _ => TN </txNonce> ... </message>
+
+    rule <k> loadTransaction TXID { "value" : TV:Int } => . ... </k>
+         <message> <msgID> TXID </msgID> <value> _ => TV </value> ... </message>
+
+    rule <k> loadTransaction TXID { "to" : TT:Account } => . ... </k>
+         <message> <msgID> TXID </msgID> <to> _ => TT </to> ... </message>
+
+    rule <k> loadTransaction TXID { "data" : TI:ByteArray } => . ... </k>
+         <message> <msgID> TXID </msgID> <data> _ => TI </data> ... </message>
+
+    rule <k> loadTransaction TXID { "v" : TW:Int } => . ... </k>
+         <message> <msgID> TXID </msgID> <sigV> _ => TW </sigV> ... </message>
+
+    rule <k> loadTransaction TXID { "r" : TR:ByteArray } => . ... </k>
+         <message> <msgID> TXID </msgID> <sigR> _ => TR </sigR> ... </message>
+
+    rule <k> loadTransaction TXID { "s" : TS:ByteArray } => . ... </k>
          <message> <msgID> TXID </msgID> <sigS> _ => TS </sigS> ... </message>
 ```
 
