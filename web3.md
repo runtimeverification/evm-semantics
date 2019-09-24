@@ -789,7 +789,7 @@ loadCallSettings
              }
          ...
          </k>
-         <txPending> ListItem(TXID) ... </txPending>
+         <txPending> ... ListItem(TXID) </txPending>
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
@@ -838,7 +838,7 @@ loadCallSettings
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
          <callDepth> _ => -1 </callDepth>
-         <txPending> ListItem(TXID:Int) ... </txPending>
+         <txPending> ... ListItem(TXID:Int) </txPending>
          <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID     </msgID>
@@ -864,7 +864,7 @@ loadCallSettings
          ...
          </k>
          <origin> ACCTFROM </origin>
-         <txPending> ListItem(TXID) ... </txPending>
+         <txPending> ... ListItem(TXID) </txPending>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
          <callDepth> _ => -1 </callDepth>
