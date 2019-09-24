@@ -942,10 +942,10 @@ loadCallSettings
 
     rule <k> #firefly_addAccount => #sendResponse( "error": {"code": -32025, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
 
-    rule <k> loadAccount _ { "balance" : ((VAL:String)         => #parseHexWord(VAL)) }         ... </k>
-    rule <k> loadAccount _ { "nonce"   : ((VAL:String)         => #parseHexWord(VAL)) }         ... </k>
-    rule <k> loadAccount _ { "code"    : ((CODE:String)        => #parseByteStack(CODE)) }   ... </k>
-    rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) }  ... </k>
+    rule <k> loadAccount _ { "balance" : ((VAL:String)         => #parseHexWord(VAL)),     _ } ... </k>
+    rule <k> loadAccount _ { "nonce"   : ((VAL:String)         => #parseHexWord(VAL)),     _ } ... </k>
+    rule <k> loadAccount _ { "code"    : ((CODE:String)        => #parseByteStack(CODE)),  _ } ... </k>
+    rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })), _ } ... </k>
 
 endmodule
 ```
