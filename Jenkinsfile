@@ -71,7 +71,7 @@ pipeline {
         stage('Test Proofs (Java)') {
           options {
             lock("proofs-${env.NODE_NAME}")
-            timeout(time: 45, unit: 'MINUTES')
+            timeout(time: 60, unit: 'MINUTES')
           }
           parallel {
             stage('Java Proofs') {
