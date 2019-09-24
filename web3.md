@@ -309,6 +309,8 @@ WEB3 JSON RPC
          <method> "personal_importRawKey" </method>
     rule <k> #runRPCCall => #eth_call ... </k>
          <method> "eth_call" </method>
+    rule <k> #runRPCCall => #eth_estimateGas ... </k>
+         <method> "eth_estimateGas" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -1018,5 +1020,37 @@ loadCallSettings
  // -------------------------------------
     rule <k> #eth_call_finalize => #popNetworkState ~> #sendResponse ("result": #unparseDataByteArray( OUTPUT )) ... </k>
          <output> OUTPUT </output>
+```
+
+- `#eth_estimateGas`
+**TODO**: avoid EVMC_OUT_OF_GAS
+**TODO**: implement funcionality for block number argument
+
+```k
+    syntax KItem ::= "#eth_estimateGas"
+ // -----------------------------------
+    rule <k> #eth_estimateGas
+          => #pushNetworkState
+          ~> mkTX !ID:Int
+          ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
+          ~> load "transaction" : { !ID : J }
+          ~> signTX !ID #parseHexWord(#getString("from", J))
+          ~> #prepareTx !ID
+          ~> #eth_estimateGas_finalize GUSED
+         ...
+         </k>
+         <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
+         <gasUsed> GUSED </gasUsed>
+      requires isString(#getJSON("from", J) )
+
+    rule <k> #eth_estimateGas => #sendResponse( "error": {"code": -32028, "message":"Method 'eth_estimateGas' has invalid arguments"} ) ...  </k>
+         <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
+      requires notBool isString( #getJSON("from", J) )
+
+    syntax KItem ::= "#eth_estimateGas_finalize" Int
+ // ------------------------------------------------
+    rule <k> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #sendResponse ("result": #unparseQuantity( GUSED -Int INITGUSED )) ... </k>
+         <gasUsed> GUSED </gasUsed>
+
 endmodule
 ```
