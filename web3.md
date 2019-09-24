@@ -531,16 +531,16 @@ eth_sendTransaction
 
     rule <k> #eth_sendTransaction_final TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
 
-    rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG))                    } ... </k>
-    rule <k> loadTransaction _ { "gasPrice" : (TP:String => #parseHexWord(TP))                    } ... </k>
-    rule <k> loadTransaction _ { "nonce"    : (TN:String => #parseHexWord(TN))                    } ... </k>
-    rule <k> loadTransaction _ { "v"        : (TW:String => #parseHexWord(TW))                    } ... </k>
-    rule <k> loadTransaction _ { "value"    : (TV:String => #parseHexWord(TV))                    } ... </k>
-    rule <k> loadTransaction _ { "to"       : (TT:String => #parseHexWord(TT))                    } ... </k>
-    rule <k> loadTransaction _ { "data"     : (TI:String => #parseByteStack(TI))                  } ... </k>
-    rule <k> loadTransaction _ { "r"        : (TR:String => #padToWidth(32, #parseByteStack(TR))) } ... </k>
-    rule <k> loadTransaction _ { "s"        : (TS:String => #padToWidth(32, #parseByteStack(TS))) } ... </k>
-    rule <k> loadTransaction _ { "from"     : _ } => . ... </k>
+    rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG)), _                 } ... </k>
+    rule <k> loadTransaction _ { "gasPrice" : (TP:String => #parseHexWord(TP)), _                 } ... </k>
+    rule <k> loadTransaction _ { "nonce"    : (TN:String => #parseHexWord(TN)), _                 } ... </k>
+    rule <k> loadTransaction _ { "v"        : (TW:String => #parseHexWord(TW)), _                 } ... </k>
+    rule <k> loadTransaction _ { "value"    : (TV:String => #parseHexWord(TV)), _                 } ... </k>
+    rule <k> loadTransaction _ { "to"       : (TT:String => #parseHexWord(TT)), _                 } ... </k>
+    rule <k> loadTransaction _ { "data"     : (TI:String => #parseByteStack(TI)), _               } ... </k>
+    rule <k> loadTransaction _ { "r"        : (TR:String => #padToWidth(32, #parseByteStack(TR))), _ } ... </k>
+    rule <k> loadTransaction _ { "s"        : (TS:String => #padToWidth(32, #parseByteStack(TS))), _ } ... </k>
+    rule <k> loadTransaction _ { ("from"    : _, REST => REST) } ... </k>
 
     syntax KItem ::= "#loadNonce" Int Int
  // -------------------------------------

@@ -304,15 +304,15 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> loadAccount _ { "code"    : ((CODE:String)        => #parseByteStack(CODE)) }   ... </k>
     rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) }  ... </k>
 
-    rule <k> loadTransaction _ { "gasLimit" : (TG:String => #asWord(#parseByteStackRaw(TG)))         } ... </k>
-    rule <k> loadTransaction _ { "gasPrice" : (TP:String => #asWord(#parseByteStackRaw(TP)))         } ... </k>
-    rule <k> loadTransaction _ { "nonce"    : (TN:String => #asWord(#parseByteStackRaw(TN)))         } ... </k>
-    rule <k> loadTransaction _ { "v"        : (TW:String => #asWord(#parseByteStackRaw(TW)))         } ... </k>
-    rule <k> loadTransaction _ { "value"    : (TV:String => #asWord(#parseByteStackRaw(TV)))         } ... </k>
-    rule <k> loadTransaction _ { "to"       : (TT:String => #asAccount(#parseByteStackRaw(TT)))      } ... </k>
-    rule <k> loadTransaction _ { "data"     : (TI:String => #parseByteStackRaw(TI))                  } ... </k>
-    rule <k> loadTransaction _ { "r"        : (TR:String => #padToWidth(32, #parseByteStackRaw(TR))) } ... </k>
-    rule <k> loadTransaction _ { "s"        : (TS:String => #padToWidth(32, #parseByteStackRaw(TS))) } ... </k>
+    rule <k> loadTransaction _ { "gasLimit" : (TG:String => #asWord(#parseByteStackRaw(TG))), _      } ... </k>
+    rule <k> loadTransaction _ { "gasPrice" : (TP:String => #asWord(#parseByteStackRaw(TP))), _      } ... </k>
+    rule <k> loadTransaction _ { "nonce"    : (TN:String => #asWord(#parseByteStackRaw(TN))), _      } ... </k>
+    rule <k> loadTransaction _ { "v"        : (TW:String => #asWord(#parseByteStackRaw(TW))), _      } ... </k>
+    rule <k> loadTransaction _ { "value"    : (TV:String => #asWord(#parseByteStackRaw(TV))), _      } ... </k>
+    rule <k> loadTransaction _ { "to"       : (TT:String => #asAccount(#parseByteStackRaw(TT))), _   } ... </k>
+    rule <k> loadTransaction _ { "data"     : (TI:String => #parseByteStackRaw(TI)), _               } ... </k>
+    rule <k> loadTransaction _ { "r"        : (TR:String => #padToWidth(32, #parseByteStackRaw(TR))), _ } ... </k>
+    rule <k> loadTransaction _ { "s"        : (TS:String => #padToWidth(32, #parseByteStackRaw(TS))), _ } ... </k>
 ```
 
 ### Checking State
