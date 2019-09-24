@@ -307,6 +307,8 @@ WEB3 JSON RPC
          <method> "eth_sendRawTransaction" </method>
     rule <k> #runRPCCall => #personal_importRawKey ... </k>
          <method> "personal_importRawKey" </method>
+    rule <k> #runRPCCall => #eth_call ... </k>
+         <method> "eth_call" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -426,8 +428,8 @@ WEB3 JSON RPC
  // ----------------------------------------------------
     rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
 
-    syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "}"
- // ---------------------------------------------------------------------------
+    syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "|" TxReceiptsCell "}"
+ // ----------------------------------------------------------------------------------------------
 
     syntax KItem ::= "#evm_snapshot"
  // --------------------------------
@@ -437,20 +439,27 @@ WEB3 JSON RPC
     syntax KItem ::= "#pushNetworkState"
  // ------------------------------------
     rule <k> #pushNetworkState => . ... </k>
-         <snapshots> ... (.List => ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> })) </snapshots>
-         <network>   NETWORK   </network>
-         <block>     BLOCK     </block>
-         <blockList> BLOCKLIST </blockList>
+         <snapshots> ... (.List => ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts>})) </snapshots>
+         <network>    NETWORK   </network>
+         <block>      BLOCK     </block>
+         <blockList>  BLOCKLIST </blockList>
+         <txReceipts> RECEIPTS  </txReceipts>
+
+    syntax KItem ::= "#popNetworkState"
+ // -----------------------------------
+    rule <k> #popNetworkState => . ... </k>
+         <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts>}) => .List ) </snapshots>
+         <network>    ( _ => NETWORK )   </network>
+         <block>      ( _ => BLOCK )     </block>
+         <blockList>  ( _ => BLOCKLIST ) </blockList>
+         <txReceipts> ( _ => RECEIPTS )  </txReceipts>
 
     syntax KItem ::= "#evm_revert"
  // ------------------------------
-    rule <k> #evm_revert => #sendResponse( "result" : true ) ... </k>
+    rule <k> #evm_revert => #popNetworkState ~> #sendResponse( "result" : true ) ... </k>
          <params>    [ DATA:Int, .JSONList ] </params>
-         <snapshots> REST ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> }) => .List ) </snapshots>
-         <network>   ( _ => NETWORK )   </network>
-         <block>     ( _ => BLOCK )     </block>
-         <blockList> ( _ => BLOCKLIST ) </blockList>
-      requires DATA ==Int size(REST)
+         <snapshots> SNAPSHOTS </snapshots>
+      requires DATA ==Int ( size(SNAPSHOTS) -Int 1 )
 
     rule <k> #evm_revert ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), .JSONList ] </params>
@@ -695,11 +704,13 @@ eth_sendRawTransaction
 
 Transaction Receipts
 --------------------
-- The transaction receipt is a tuple of four items comprising: 
-  - the cumulative gas used in the block containing the transaction receipt as of immediately after the transaction has happened
-  - the set of logs created through execution of the transaction
-  - the Bloom filter composed from information in those logs
-  - the status code of the transaction.
+
+-   The transaction receipt is a tuple of four items comprising:
+
+    -   the cumulative gas used in the block containing the transaction receipt as of immediately after the transaction has happened,
+    -   the set of logs created through execution of the transaction,
+    -   the Bloom filter composed from information in those logs, and
+    -   the status code of the transaction.
 
 ```k
     syntax KItem ::= "#makeTxReceipt" Int
@@ -780,7 +791,7 @@ loadCallSettings
              }
          ...
          </k>
-         <txPending> ListItem(TXID) ... </txPending>
+         <txPending> ... ListItem(TXID) </txPending>
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
@@ -829,7 +840,7 @@ loadCallSettings
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
          <callDepth> _ => -1 </callDepth>
-         <txPending> ListItem(TXID:Int) ... </txPending>
+         <txPending> ... ListItem(TXID:Int) </txPending>
          <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID     </msgID>
@@ -855,7 +866,7 @@ loadCallSettings
          ...
          </k>
          <origin> ACCTFROM </origin>
-         <txPending> ListItem(TXID) ... </txPending>
+         <txPending> ... ListItem(TXID) </txPending>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
          <callDepth> _ => -1 </callDepth>
@@ -946,6 +957,35 @@ loadCallSettings
     rule <k> loadAccount _ { "nonce"   : ((VAL:String)         => #parseHexWord(VAL)),     _ } ... </k>
     rule <k> loadAccount _ { "code"    : ((CODE:String)        => #parseByteStack(CODE)),  _ } ... </k>
     rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })), _ } ... </k>
+```
 
+- `#eth_call`
+ **TODO**: add logic for the case in which "from" field is not present
+
+```k
+    syntax KItem ::= "#eth_call"
+ // ----------------------------
+    rule <k> #eth_call
+          => #pushNetworkState
+          ~> mkTX !ID:Int
+          ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
+          ~> loadTransaction !ID J
+          ~> signTX !ID #parseHexWord(#getString("from", J))
+          ~> #prepareTx !ID
+          ~> #eth_call_finalize
+         ...
+         </k>
+         <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
+      requires isString( #getJSON("to", J) )
+        andBool isString(#getJSON("from",J) )
+
+    rule <k> #eth_call => #sendResponse( "error": {"code": -32027, "message":"Method 'eth_call' has invalid arguments"} ) ...  </k>
+         <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
+      requires notBool isString( #getJSON("from", J) )
+
+    syntax KItem ::= "#eth_call_finalize"
+ // -------------------------------------
+    rule <k> #eth_call_finalize => #popNetworkState ~> #sendResponse ("result": #unparseDataByteArray( OUTPUT )) ... </k>
+         <output> OUTPUT </output>
 endmodule
 ```
