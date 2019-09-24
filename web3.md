@@ -1035,13 +1035,14 @@ loadCallSettings
           ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
           ~> load "transaction" : { !ID : J }
           ~> signTX !ID #parseHexWord(#getString("from", J))
-          ~> #setMode ACCUMULATE_GAS
           ~> #prepareTx !ID
           ~> #eth_estimateGas_finalize GUSED
          ...
          </k>
          <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
-         <gasUsed> GUSED </gasUsed>
+         <gasUsed>  GUSED  </gasUsed>
+         <gasLimit> GLIMIT </gasLimit>
+         <gas> ( _ => GLIMIT) </gas>
       requires isString(#getJSON("from", J) )
 
     rule <k> #eth_estimateGas => #sendResponse( "error": {"code": -32028, "message":"Method 'eth_estimateGas' has invalid arguments"} ) ...  </k>
@@ -1052,15 +1053,5 @@ loadCallSettings
  // ------------------------------------------------
     rule <k> #eth_estimateGas_finalize INITGUSED:Int => #sendResponse ("result": #unparseQuantity( GUSED -Int INITGUSED )) ... </k>
          <gasUsed> GUSED </gasUsed>
-
-    syntax Mode ::= "ACCUMULATE_GAS"
- // --------------------------------
-    rule <k> G:Int ~> #deductGas => . ... </k>
-         <gas>  GUSED => GUSED +Int G </gas>
-         <mode> ACCUMULATE_GAS        </mode>
-
-    rule <k> G:Int ~> #deductGas => . ... </k>
-         <mode> ACCUMULATE_GAS </mode>
-      [priority(25)]
 endmodule
 ```
