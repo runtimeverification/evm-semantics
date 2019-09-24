@@ -429,7 +429,7 @@ WEB3 JSON RPC
     rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
 
     syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "|" TxReceiptsCell "}"
- // ---------------------------------------------------------------------------
+ // ----------------------------------------------------------------------------------------------
 
     syntax KItem ::= "#evm_snapshot"
  // --------------------------------
