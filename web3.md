@@ -428,7 +428,7 @@ WEB3 JSON RPC
  // ----------------------------------------------------
     rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
 
-    syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "}"
+    syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "|" TxReceiptsCell "}"
  // ---------------------------------------------------------------------------
 
     syntax KItem ::= "#evm_snapshot"
@@ -439,18 +439,20 @@ WEB3 JSON RPC
     syntax KItem ::= "#pushNetworkState"
  // ------------------------------------
     rule <k> #pushNetworkState => . ... </k>
-         <snapshots> ... (.List => ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> })) </snapshots>
-         <network>   NETWORK   </network>
-         <block>     BLOCK     </block>
-         <blockList> BLOCKLIST </blockList>
+         <snapshots> ... (.List => ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts>})) </snapshots>
+         <network>    NETWORK   </network>
+         <block>      BLOCK     </block>
+         <blockList>  BLOCKLIST </blockList>
+         <txReceipts> RECEIPTS  </txReceipts>
 
     syntax KItem ::= "#popNetworkState"
  // -----------------------------------
     rule <k> #popNetworkState => . ... </k>
-         <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> }) => .List ) </snapshots>
-         <network>   ( _ => NETWORK )   </network>
-         <block>     ( _ => BLOCK )     </block>
-         <blockList> ( _ => BLOCKLIST ) </blockList>
+         <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts>}) => .List ) </snapshots>
+         <network>    ( _ => NETWORK )   </network>
+         <block>      ( _ => BLOCK )     </block>
+         <blockList>  ( _ => BLOCKLIST ) </blockList>
+         <txReceipts> ( _ => RECEIPTS )  </txReceipts>
 
     syntax KItem ::= "#evm_revert"
  // ------------------------------
