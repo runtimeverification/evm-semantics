@@ -739,6 +739,13 @@ loadCallSettings
 - Takes a JSON with parameters for sendTransaction/call/estimateGas/etc and sets up the execution environment
 
 ```k
+    rule <k> loadCallState { "from" : ( ACCTFROM:String => #parseHexWord( ACCTFROM ) ), REST } ... </k>
+    rule <k> loadCallState { "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
+    rule <k> loadCallState { "gas" : ( GLIMIT:String => #parseHexWord( GLIMIT ) ), REST } ... </k>
+    rule <k> loadCallState { "gasPrice" : ( GPRICE:String => #parseHexWord( GPRICE ) ), REST } ... </k>
+    rule <k> loadCallState { "value" : ( VALUE:String => #parseHexWord( VALUE ) ), REST } ... </k>
+    rule <k> loadCallState { "data" : ( DATA:String => #parseByteStack( DATA ) ), REST } ... </k>
+
     syntax KItem ::= "#loadCallSettings" JSON
  // -----------------------------------------
     rule <k> #loadCallSettings { .JSONList } => . ... </k>
@@ -821,7 +828,7 @@ loadCallSettings
  // ---------------------------------
     rule <k> #prepareTx TXID:Int
           => #clearLogs
-          ~> #loadCallSettings TXID
+          ~> loadCallState TXID
           ~> #executeTx TXID
           ~> #makeTxReceipt TXID
          ...
