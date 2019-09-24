@@ -3,11 +3,13 @@ Web3 RPC JSON Handler
 
 ```k
 requires "evm.k"
+requires "state-loader.k"
 
 module WEB3
     imports EVM
     imports EVM-DATA
     imports K-IO
+    imports STATE-LOADER
 
     configuration
       <kevm-client>
@@ -49,6 +51,7 @@ module WEB3
         </web3request>
         <web3response> .List </web3response>
       </kevm-client>
+
 ```
 
 The Blockchain State
@@ -304,6 +307,8 @@ WEB3 JSON RPC
          <method> "eth_sendRawTransaction" </method>
     rule <k> #runRPCCall => #personal_importRawKey ... </k>
          <method> "personal_importRawKey" </method>
+    rule <k> #runRPCCall => #eth_call ... </k>
+         <method> "eth_call" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -423,8 +428,8 @@ WEB3 JSON RPC
  // ----------------------------------------------------
     rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
 
-    syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "}"
- // ---------------------------------------------------------------------------
+    syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "|" TxReceiptsCell "}"
+ // ----------------------------------------------------------------------------------------------
 
     syntax KItem ::= "#evm_snapshot"
  // --------------------------------
@@ -434,20 +439,27 @@ WEB3 JSON RPC
     syntax KItem ::= "#pushNetworkState"
  // ------------------------------------
     rule <k> #pushNetworkState => . ... </k>
-         <snapshots> ... (.List => ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> })) </snapshots>
-         <network>   NETWORK   </network>
-         <block>     BLOCK     </block>
-         <blockList> BLOCKLIST </blockList>
+         <snapshots> ... (.List => ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts>})) </snapshots>
+         <network>    NETWORK   </network>
+         <block>      BLOCK     </block>
+         <blockList>  BLOCKLIST </blockList>
+         <txReceipts> RECEIPTS  </txReceipts>
+
+    syntax KItem ::= "#popNetworkState"
+ // -----------------------------------
+    rule <k> #popNetworkState => . ... </k>
+         <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts>}) => .List ) </snapshots>
+         <network>    ( _ => NETWORK )   </network>
+         <block>      ( _ => BLOCK )     </block>
+         <blockList>  ( _ => BLOCKLIST ) </blockList>
+         <txReceipts> ( _ => RECEIPTS )  </txReceipts>
 
     syntax KItem ::= "#evm_revert"
  // ------------------------------
-    rule <k> #evm_revert => #sendResponse( "result" : true ) ... </k>
+    rule <k> #evm_revert => #popNetworkState ~> #sendResponse( "result" : true ) ... </k>
          <params>    [ DATA:Int, .JSONList ] </params>
-         <snapshots> REST ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> }) => .List ) </snapshots>
-         <network>   ( _ => NETWORK )   </network>
-         <block>     ( _ => BLOCK )     </block>
-         <blockList> ( _ => BLOCKLIST ) </blockList>
-      requires DATA ==Int size(REST)
+         <snapshots> SNAPSHOTS </snapshots>
+      requires DATA ==Int ( size(SNAPSHOTS) -Int 1 )
 
     rule <k> #evm_revert ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), .JSONList ] </params>
@@ -511,20 +523,47 @@ eth_sendTransaction
 
 ```k
     syntax KItem ::= "#eth_sendTransaction"
-                   | "#eth_sendTransaction_finalize"
- // ------------------------------------------------
-    rule <k> #eth_sendTransaction => createTX #parseHexWord(#getString("from", J)) J ~> #eth_sendTransaction_finalize ... </k>
+                   | "#eth_sendTransaction_load" JSON
+                   | "#eth_sendTransaction_final" Int
+ // -------------------------------------------------
+    rule <k> #eth_sendTransaction => #eth_sendTransaction_load J ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString( #getJSON("from",J) )
-
-    rule <k> #eth_sendTransaction_finalize => #prepareTx TXID ~> #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
-         <txPending> ListItem( TXID ) ... </txPending>
 
     rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "from not found; is required"} ) ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires notBool isString( #getJSON("from",J) )
 
     rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_sendTransaction' requires exactly 1 argument."} ) ... </k> [owise]
+
+    rule <k> #eth_sendTransaction_load J => mkTX !ID:Int ~> #loadNonce #parseHexWord( #getString("from",J) ) !ID ~> load "transaction" : { !ID : J } ~> signTX !ID #parseHexWord( #getString("from",J) ) ~> #prepareTx !ID ~> #eth_sendTransaction_final !ID ... </k>
+
+    rule <k> #eth_sendTransaction_final TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+
+    rule <k> load "transaction" : { TXID : { "gas"      : (TG:String => #parseHexWord(TG))                    } } ... </k>
+    rule <k> load "transaction" : { TXID : { "gasPrice" : (TP:String => #parseHexWord(TP))                    } } ... </k>
+    rule <k> load "transaction" : { TXID : { "nonce"    : (TN:String => #parseHexWord(TN))                    } } ... </k>
+    rule <k> load "transaction" : { TXID : { "v"        : (TW:String => #parseHexWord(TW))                    } } ... </k>
+    rule <k> load "transaction" : { TXID : { "value"    : (TV:String => #parseHexWord(TV))                    } } ... </k>
+    rule <k> load "transaction" : { TXID : { "to"       : (TT:String => #parseHexWord(TT))                    } } ... </k>
+    rule <k> load "transaction" : { TXID : { "data"     : (TI:String => #parseByteStack(TI))                  } } ... </k>
+    rule <k> load "transaction" : { TXID : { "r"        : (TR:String => #padToWidth(32, #parseByteStack(TR))) } } ... </k>
+    rule <k> load "transaction" : { TXID : { "s"        : (TS:String => #padToWidth(32, #parseByteStack(TS))) } } ... </k>
+    rule <k> load "transaction" : { TXID : { "from"     : _ } } => . ... </k>
+
+    syntax KItem ::= "#loadNonce" Int Int
+ // -------------------------------------
+    rule <k> #loadNonce ACCT TXID => . ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce> _ => NONCE </txNonce>
+           ...
+         </message>
+         <account>
+           <acctID> ACCT </acctID>
+           <nonce> NONCE </nonce>
+           ...
+         </account>
 ```
 
 - `#hashSignedTx` Takes a transaction ID. Returns the hash of the rlp-encoded transaction with R S and V.
@@ -584,88 +623,9 @@ eth_sendTransaction
          </message>
 ```
 
-- `loadTX` Loads the JSON parameter for a transaction and signs it with the "from" account's key.
-
-**TODO**: Make sure nonce is being determined properly
-**TODO**: You're supposed to be able to overwrite a pending tx by using its same "from" and "nonce" values
+-   signTX TXID ACCTFROM: Signs the transaction with TXID using ACCTFROM's private key
 
 ```k
-    syntax KItem ::= "createTX" Int JSON
- // ------------------------------------
-    rule <k> createTX ACCTID J => loadTX !TXID:Int J ~> signTX !TXID:Int ACCTID ... </k>
-         <txPending> (.List => ListItem(!TXID)) ... </txPending>
-         <account>
-           <acctID> ACCTID </acctID>
-           <nonce>  ACCTNONCE </nonce>
-           ...
-         </account>
-         <messages>
-            ( .Bag
-           => <message>
-                <msgID> !TXID </msgID>
-                <txGasPrice> 1         </txGasPrice>
-                <txNonce>    ACCTNONCE </txNonce>
-                <txGasLimit> 90000     </txGasLimit>
-                ...
-              </message>
-            )
-          ...
-          </messages>
-
-    syntax KItem ::= "loadTX" Int JSON
- // ----------------------------------
-    rule <k> loadTX _ { .JSONList } => . ... </k>
-
-    rule <k> loadTX _ { ("from": _, REST) => REST } ... </k>
-
-    rule <k> loadTX _    { "to": (TO_STRING:String => #parseHexWord(TO_STRING)) , REST } ... </k>
-    rule <k> loadTX TXID { "to": ACCTTO:Account , REST => REST } ... </k>
-         <message>
-           <msgID> TXID </msgID>
-           <to> ( _ => ACCTTO ) </to>
-           ...
-         </message>
-
-    rule <k> loadTX _ { "nonce": (NONCE_STRING => #parseHexWord(NONCE_STRING)) , REST } ... </k>
-    rule <k> loadTX TXID { ("nonce": ACCTNONCE:Int, REST) => REST } ... </k>
-         <message>
-           <msgID> TXID </msgID>
-           <txNonce> ( _ => ACCTNONCE ) </txNonce>
-           ...
-         </message>
-
-    rule <k> loadTX _ { "gas": (GAS_STRING => #parseHexWord(GAS_STRING)) , REST } ... </k>
-    rule <k> loadTX TXID { ("gas": GLIMIT:Int, REST) => REST } ... </k>
-         <message>
-           <msgID> TXID </msgID>
-           <txGasLimit> ( _ => GLIMIT ) </txGasLimit>
-           ...
-         </message>
-
-    rule <k> loadTX _ { "gasPrice": (GPRICE_STRING => #parseHexWord(GPRICE_STRING)) , REST } ... </k>
-    rule <k> loadTX TXID { ("gasPrice": GPRICE:Int, REST) => REST } ... </k>
-         <message>
-           <msgID> TXID </msgID>
-           <txGasPrice> ( _ => GPRICE ) </txGasPrice>
-           ...
-         </message>
-
-    rule <k> loadTX _ { "value": (VALUE_STRING => #parseHexWord(VALUE_STRING)) , REST } ... </k>
-    rule <k> loadTX TXID { ("value": VALUE:Int, REST) => REST } ... </k>
-         <message>
-           <msgID> TXID </msgID>
-           <value> ( _ => VALUE ) </value>
-           ...
-         </message>
-
-    rule <k> loadTX _ { "data": (DATA_STRING => #parseByteStack(DATA_STRING)) , REST } ... </k>
-    rule <k> loadTX TXID { ("data": DATA:ByteArray, REST) => REST } ... </k>
-         <message>
-           <msgID> TXID </msgID>
-           <data> ( _ => DATA ) </data>
-           ...
-         </message>
-
     syntax KItem ::= "signTX" Int Int
                    | "signTX" Int String [klabel(signTXAux)]
  // --------------------------------------------------------
@@ -712,25 +672,18 @@ eth_sendRawTransaction
 
     rule <k> #eth_sendRawTransaction => #sendResponse("error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
 
-    rule <k> #eth_sendRawTransactionLoad => #eth_sendRawTransactionVerify !TXID ... </k>
-         <params> [ NONCE, GPRICE, GLIMIT, TO, VALUE, DATA, V, R, S, .JSONList ] </params>
-         <messages>
-           ( .Bag
-          => <message>
-               <msgID> !TXID </msgID>
-               <txNonce>    #parseHexWord( Raw2Hex( NONCE ) )     </txNonce>
-               <txGasPrice> #parseHexWord( Raw2Hex( GPRICE ) )    </txGasPrice>
-               <txGasLimit> #parseHexWord( Raw2Hex( GLIMIT ) )    </txGasLimit>
-               <to>         #parseHexWord( Raw2Hex( TO ) )        </to>
-               <value>      #parseHexWord( Raw2Hex( VALUE ) )     </value>
-               <data>       #parseByteStackRaw( DATA )            </data>
-               <sigV>       #parseHexWord( Raw2Hex( V ) )         </sigV>
-               <sigR>       #parseByteStackRaw( R )               </sigR>
-               <sigS>       #parseByteStackRaw( S )               </sigS>
-             </message>
-           )
-           ...
-         </messages>
+    rule <k> #eth_sendRawTransactionLoad
+          => mkTX !ID:Int
+          ~> load "transaction" : { !ID : { "data"  : Raw2Hex(TI) , "gas"      : Raw2Hex(TG) , "gasPrice" : Raw2Hex(TP)
+                                          , "nonce" : Raw2Hex(TN) , "r"        : Raw2Hex(TR) , "s"        : Raw2Hex(TS)
+                                          , "to"    : Raw2Hex(TT) , "v"        : Raw2Hex(TW) , "value"    : Raw2Hex(TV)
+                                          , .JSONList
+                                          }
+                                  }
+          ~> #eth_sendRawTransactionVerify !ID
+         ...
+         </k>
+         <params> [ TN, TP, TG, TT, TV, TI, TW, TR, TS, .JSONList ] </params>
 
     rule <k> #eth_sendRawTransactionLoad => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
 
@@ -751,11 +704,13 @@ eth_sendRawTransaction
 
 Transaction Receipts
 --------------------
-- The transaction receipt is a tuple of four items comprising: 
-  - the cumulative gas used in the block containing the transaction receipt as of immediately after the transaction has happened
-  - the set of logs created through execution of the transaction
-  - the Bloom filter composed from information in those logs
-  - the status code of the transaction.
+
+-   The transaction receipt is a tuple of four items comprising:
+
+    -   the cumulative gas used in the block containing the transaction receipt as of immediately after the transaction has happened,
+    -   the set of logs created through execution of the transaction,
+    -   the Bloom filter composed from information in those logs, and
+    -   the status code of the transaction.
 
 ```k
     syntax KItem ::= "#makeTxReceipt" Int
@@ -836,7 +791,7 @@ loadCallSettings
              }
          ...
          </k>
-         <txPending> ListItem(TXID) ... </txPending>
+         <txPending> ... ListItem(TXID) </txPending>
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
@@ -885,7 +840,7 @@ loadCallSettings
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
          <callDepth> _ => -1 </callDepth>
-         <txPending> ListItem(TXID:Int) ... </txPending>
+         <txPending> ... ListItem(TXID:Int) </txPending>
          <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID     </msgID>
@@ -911,7 +866,7 @@ loadCallSettings
          ...
          </k>
          <origin> ACCTFROM </origin>
-         <txPending> ListItem(TXID) ... </txPending>
+         <txPending> ... ListItem(TXID) </txPending>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
          <callDepth> _ => -1 </callDepth>
@@ -1035,6 +990,35 @@ loadCallSettings
          </account>
 
     rule <k> #loadAccountData _ _ =>  #sendResponse( "error": {"code": -32026, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
+```
 
+- `#eth_call`
+ **TODO**: add logic for the case in which "from" field is not present
+
+```k
+    syntax KItem ::= "#eth_call"
+ // ----------------------------
+    rule <k> #eth_call
+          => #pushNetworkState
+          ~> mkTX !ID:Int
+          ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
+          ~> load "transaction" : { !ID : J }
+          ~> signTX !ID #parseHexWord(#getString("from", J))
+          ~> #prepareTx !ID
+          ~> #eth_call_finalize
+         ...
+         </k>
+         <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
+      requires isString( #getJSON("to", J) )
+        andBool isString(#getJSON("from",J) )
+
+    rule <k> #eth_call => #sendResponse( "error": {"code": -32027, "message":"Method 'eth_call' has invalid arguments"} ) ...  </k>
+         <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
+      requires notBool isString( #getJSON("from", J) )
+
+    syntax KItem ::= "#eth_call_finalize"
+ // -------------------------------------
+    rule <k> #eth_call_finalize => #popNetworkState ~> #sendResponse ("result": #unparseDataByteArray( OUTPUT )) ... </k>
+         <output> OUTPUT </output>
 endmodule
 ```

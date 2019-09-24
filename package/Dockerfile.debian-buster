@@ -4,12 +4,11 @@ ENV TZ=America/Chicago
 RUN    ln --symbolic --no-dereference --force /usr/share/zoneinfo/$TZ /etc/localtime \
     && echo $TZ > /etc/timezone
 
-RUN    apt-get update                                                                   \
-    && apt-get upgrade --yes                                                            \
-    && apt-get install --yes clang-7 cmake curl dh-make git libcrypto++-dev             \
-                         libjemalloc-dev libprocps-dev libprotobuf-dev libsecp256k1-dev \
-                         libssl-dev pandoc pkg-config protobuf-compiler sudo            \
-                         netcat-openbsd
+RUN    apt-get update                                                                       \
+    && apt-get upgrade --yes                                                                \
+    && apt-get install --yes clang-7 cmake curl dh-make git libcrypto++-dev                 \
+                         libjemalloc-dev libprocps-dev libprotobuf-dev libsecp256k1-dev     \
+                         libssl-dev netcat-openbsd pandoc pkg-config protobuf-compiler sudo
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN apt-get install --yes nodejs
