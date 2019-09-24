@@ -1035,6 +1035,7 @@ loadCallSettings
           ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
           ~> load "transaction" : { !ID : J }
           ~> signTX !ID #parseHexWord(#getString("from", J))
+          ~> #setMode ACCUMULATE_GAS
           ~> #prepareTx !ID
           ~> #eth_estimateGas_finalize GUSED
          ...
@@ -1049,8 +1050,17 @@ loadCallSettings
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
-    rule <k> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #sendResponse ("result": #unparseQuantity( GUSED -Int INITGUSED )) ... </k>
+    rule <k> #eth_estimateGas_finalize INITGUSED:Int => #sendResponse ("result": #unparseQuantity( GUSED -Int INITGUSED )) ... </k>
          <gasUsed> GUSED </gasUsed>
 
+    syntax Mode ::= "ACCUMULATE_GAS"
+ // --------------------------------
+    rule <k> G:Int ~> #deductGas => . ... </k>
+         <gas>  GUSED => GUSED +Int G </gas>
+         <mode> ACCUMULATE_GAS        </mode>
+
+    rule <k> G:Int ~> #deductGas => . ... </k>
+         <mode> ACCUMULATE_GAS </mode>
+      [priority(25)]
 endmodule
 ```
