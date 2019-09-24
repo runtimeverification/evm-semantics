@@ -238,11 +238,11 @@ pipeline {
           }
         }
         stage('Deploy Release') {
-          when {
+/*          when {
             not { changeRequest() }
             branch 'master'
             beforeAgent true
-          }
+          }*/
           stages {
             stage('Build Source Tarball') {
               agent {
