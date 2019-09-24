@@ -71,12 +71,23 @@ pipeline {
         stage('Test Proofs (Java)') {
           options {
             lock("proofs-${env.NODE_NAME}")
-            timeout(time: 60, unit: 'MINUTES')
+            timeout(time: 45, unit: 'MINUTES')
           }
-          steps {
-            sh '''
-              make test-prove -j6
-            '''
+          parallel {
+            stage('Java Proofs') {
+              steps {
+                sh '''
+                  make test-prove -j6
+                '''
+              }
+            }
+            stage('Haskell Proofs') {
+              steps {
+                sh '''
+                  make tests/specs/examples/sum-to-n-spec.k.prove TEST_SYMBOLIC_BACKEND=haskell
+                '''
+              }
+            }
           }
         }
         stage('Test Interactive') {
