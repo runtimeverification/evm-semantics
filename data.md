@@ -451,14 +451,23 @@ A cons-list is used for the EVM wordstack.
 -   `#sizeWordStack` calculates the size of a `WordStack`.
 -   `_in_` determines if a `Int` occurs in a `WordStack`.
 
-```k
+```{.k .symbolic}
+    syntax Int ::= #sizeWordStack ( WordStack )       [function, functional, memo, smtlib(sizeWordStack)]
+ // -----------------------------------------------------------------------------------------------------
+    rule #sizeWordStack ( .WordStack ) => 0
+    rule #sizeWordStack ( W : WS     ) => 1 +Int #sizeWordStack(WS)
+```
+
+```{.k .concrete}
     syntax Int ::= #sizeWordStack ( WordStack )       [function, functional, smtlib(sizeWordStack)]
                  | #sizeWordStack ( WordStack , Int ) [function, functional, klabel(sizeWordStackAux), smtlib(sizeWordStackAux)]
  // ----------------------------------------------------------------------------------------------------------------------------
     rule #sizeWordStack ( WS ) => #sizeWordStack(WS, 0)
     rule #sizeWordStack ( .WordStack, SIZE ) => SIZE
     rule #sizeWordStack ( W : WS, SIZE )     => #sizeWordStack(WS, SIZE +Int 1)
+```
 
+```k
     syntax Bool ::= Int "in" WordStack [function]
  // ---------------------------------------------
     rule W in .WordStack => false

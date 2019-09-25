@@ -7,11 +7,6 @@ module VERIFICATION
     imports LEMMAS
     imports EVM-ASSEMBLY
 
-    rule #sizeWordStack ( WS , N:Int )
-      => N +Int #sizeWordStack ( WS , 0 )
-      requires N =/=K 0
-      [lemma]
-
     syntax ByteArray ::= "sumToN" [function]
  // ----------------------------------------
     rule sumToN
