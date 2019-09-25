@@ -1023,7 +1023,7 @@ loadCallSettings
 ```
 
 - `#eth_estimateGas`
-**TODO**: avoid EVMC_OUT_OF_GAS
+**TODO**: add test for EVMC_OUT_OF_GAS
 **TODO**: implement funcionality for block number argument
 
 ```k
@@ -1053,5 +1053,9 @@ loadCallSettings
  // ------------------------------------------------
     rule <k> #eth_estimateGas_finalize INITGUSED:Int => #sendResponse ("result": #unparseQuantity( GUSED -Int INITGUSED )) ... </k>
          <gasUsed> GUSED </gasUsed>
+
+    rule <k> #eth_estimateGas_finalize _ => #sendResponse ( "error": {"code": -32000, "message":"base fee exceeds gas limit"}) ... </k>
+         <statusCode> EVMC_OUT_OF_GAS </statusCode>
+
 endmodule
 ```
