@@ -166,28 +166,7 @@ Here we load the environmental information.
 
     syntax KItem ::= "loadCallState" JSON
  // -------------------------------------
-    rule <k> loadCallState { "caller" : (ACCTFROM:Int), REST => REST } ... </k> <caller> _ => ACCTFROM </caller>
-    rule <k> loadCallState { "origin" : (ORIG:Int), REST => REST } ... </k> <origin> _ => ORIG </origin>
-    rule <k> loadCallState { "address" : (ACCTTO:Int), REST => REST } ... </k> <id> _ => ACCTTO </id>
-
-    rule <k> loadCallState { "code" : (CODE:OpCodes), REST => REST} ... </k>
-         <program> _ => #asmOpCodes(CODE) </program>
-         <jumpDests> _ => #computeValidJumpDests(#asmOpCodes(CODE)) </jumpDests>
-
-    rule <k> loadCallState { "from" : ACCTFROM:Int, REST => REST } ... </k>
-         <caller> _ => ACCTFROM </caller>
-         <origin> _ => ACCTFROM </origin>
-
-    rule <k> loadCallState { "to" : .Account   , REST => REST } ... </k>
-    rule <k> loadCallState { ("to" : ACCTTO:Int => "code" : CODE), REST } ... </k>
-         <id> _ => ACCTTO </id>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <code> CODE </code>
-           ...
-         </account>
-
-    rule <k> ( . => #newAccount ACCTTO ) ~> loadCallState { "to" : ACCTTO:Int, REST } ... </k> [owise]
+    rule <k> loadCallState { "data" : ( DATA:String => #parseByteStack( DATA ) ), REST } ... </k>
 
     rule <k> loadCallState { "code" : CODE:ByteArray, REST => REST } ... </k>
          <program> _ => CODE </program>
@@ -197,38 +176,8 @@ Here we load the environmental information.
     rule <k> loadCallState { "gasPrice" : GPRICE:Int, REST => REST } ... </k> <gasPrice>  _ => GPRICE </gasPrice>
     rule <k> loadCallState { "value" : VALUE:Int, REST => REST }     ... </k> <callValue> _ => VALUE  </callValue>
     rule <k> loadCallState { "data" : DATA:ByteArray, REST => REST } ... </k> <callData>  _ => DATA   </callData>
-    rule <k> loadCallState { "nonce" : _, REST => REST } ... </k>
 
     rule <k> loadCallState { .JSONList } => . ... </k>
-
-    rule <k> loadCallState TXID:Int
-          => loadCallState {
-               "from":     #unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS))),
-               "to":       TT,
-               "gas":      TG,
-               "gasPrice": TP,
-               "value":    TV,
-               "data":     DATA
-             }
-         ...
-         </k>
-         <message>
-           <msgID>      TXID </msgID>
-           <txNonce>    TN   </txNonce>
-           <txGasPrice> TP   </txGasPrice>
-           <txGasLimit> TG   </txGasLimit>
-           <to>         TT   </to>
-           <value>      TV   </value>
-           <sigV>       TW   </sigV>
-           <sigR>       TR   </sigR>
-           <sigS>       TS   </sigS>
-           <data>       DATA </data>
-         </message>
-
-    syntax ByteArray ::= #ecrecAddr ( Account ) [function]
- // ------------------------------------------------------
-    rule #ecrecAddr(.Account) => .ByteArray
-    rule #ecrecAddr(N:Int)    => #padToWidth(20, #asByteStack(N))
 ```
 
 The `"network"` key allows setting the fee schedule inside the test.

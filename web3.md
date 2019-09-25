@@ -741,7 +741,51 @@ Transaction Receipts
     rule <k> loadCallState { "gas" : ( GLIMIT:String => #parseHexWord( GLIMIT ) ), REST } ... </k>
     rule <k> loadCallState { "gasPrice" : ( GPRICE:String => #parseHexWord( GPRICE ) ), REST } ... </k>
     rule <k> loadCallState { "value" : ( VALUE:String => #parseHexWord( VALUE ) ), REST } ... </k>
-    rule <k> loadCallState { "data" : ( DATA:String => #parseByteStack( DATA ) ), REST } ... </k>
+    rule <k> loadCallState { "nonce" : _, REST => REST } ... </k>
+
+    rule <k> loadCallState { "from" : ACCTFROM:Int, REST => REST } ... </k>
+         <caller> _ => ACCTFROM </caller>
+         <origin> _ => ACCTFROM </origin>
+
+    rule <k> loadCallState { "to" : .Account   , REST => REST } ... </k>
+    rule <k> loadCallState { ("to" : ACCTTO:Int => "code" : CODE), REST } ... </k>
+         <id> _ => ACCTTO </id>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <code> CODE </code>
+           ...
+         </account>
+
+    rule <k> ( . => #newAccount ACCTTO ) ~> loadCallState { "to" : ACCTTO:Int, REST } ... </k> [owise]
+
+    rule <k> loadCallState TXID:Int
+          => loadCallState {
+               "from":     #unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS))),
+               "to":       TT,
+               "gas":      TG,
+               "gasPrice": TP,
+               "value":    TV,
+               "data":     DATA
+             }
+         ...
+         </k>
+         <message>
+           <msgID>      TXID </msgID>
+           <txNonce>    TN   </txNonce>
+           <txGasPrice> TP   </txGasPrice>
+           <txGasLimit> TG   </txGasLimit>
+           <to>         TT   </to>
+           <value>      TV   </value>
+           <sigV>       TW   </sigV>
+           <sigR>       TR   </sigR>
+           <sigS>       TS   </sigS>
+           <data>       DATA </data>
+         </message>
+
+    syntax ByteArray ::= #ecrecAddr ( Account ) [function]
+ // ------------------------------------------------------
+    rule #ecrecAddr(.Account) => .ByteArray
+    rule #ecrecAddr(N:Int)    => #padToWidth(20, #asByteStack(N))
 ```
 
 - `#executeTx` takes a transaction, loads it into the current state and executes it.
