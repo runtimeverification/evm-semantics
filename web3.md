@@ -969,6 +969,8 @@ loadCallSettings
     rule <k> loadAccount _ { "nonce"   : ((VAL:String)         => #parseHexWord(VAL)),     _ } ... </k>
     rule <k> loadAccount _ { "code"    : ((CODE:String)        => #parseByteStack(CODE)),  _ } ... </k>
     rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })), _ } ... </k>
+    rule <k> loadAccount _ { "key" : _, REST => REST } ... </k>
+    rule <k> loadAccount _ { "address" : _, REST => REST } ... </k>
 ```
 
 - `#eth_call`
@@ -1012,7 +1014,7 @@ loadCallSettings
           => #pushNetworkState
           ~> mkTX !ID:Int
           ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
-          ~> load "transaction" : { !ID : J }
+          ~> loadTransaction !ID J
           ~> signTX !ID #parseHexWord(#getString("from", J))
           ~> #prepareTx !ID
           ~> #eth_estimateGas_finalize GUSED
