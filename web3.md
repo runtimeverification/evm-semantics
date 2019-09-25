@@ -1014,7 +1014,7 @@ loadCallSettings
       requires isString( #getJSON("to", J) )
         andBool isString(#getJSON("from",J) )
 
-    rule <k> #eth_call => #popNetworkState ~> #sendResponse( "error": {"code": -32027, "message":"Method 'eth_call' has invalid arguments"} ) ...  </k>
+    rule <k> #eth_call => #sendResponse( "error": {"code": -32027, "message":"Method 'eth_call' has invalid arguments"} ) ...  </k>
          <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
       requires notBool isString( #getJSON("from", J) )
 
