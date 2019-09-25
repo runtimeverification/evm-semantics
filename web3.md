@@ -1014,7 +1014,7 @@ loadCallSettings
       requires isString( #getJSON("to", J) )
         andBool isString(#getJSON("from",J) )
 
-    rule <k> #eth_call => #sendResponse( "error": {"code": -32027, "message":"Method 'eth_call' has invalid arguments"} ) ...  </k>
+    rule <k> #eth_call => #popNetworkState ~> #sendResponse( "error": {"code": -32027, "message":"Method 'eth_call' has invalid arguments"} ) ...  </k>
          <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
       requires notBool isString( #getJSON("from", J) )
 
@@ -1053,10 +1053,10 @@ loadCallSettings
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
-    rule <k> #eth_estimateGas_finalize INITGUSED:Int => #sendResponse ("result": #unparseQuantity( GUSED -Int INITGUSED )) ... </k>
+    rule <k> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #sendResponse ("result": #unparseQuantity( GUSED -Int INITGUSED )) ... </k>
          <gasUsed> GUSED </gasUsed>
 
-    rule <k> #eth_estimateGas_finalize _ => #sendResponse ( "error": {"code": -32000, "message":"base fee exceeds gas limit"}) ... </k>
+    rule <k> #eth_estimateGas_finalize _ => #popNetworkState ~> #sendResponse ( "error": {"code": -32000, "message":"base fee exceeds gas limit"}) ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
 
 endmodule
