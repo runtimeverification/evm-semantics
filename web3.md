@@ -827,6 +827,15 @@ loadCallSettings
          ...
          </k>
 
+    syntax KItem ::= "#updateAcctCode" Int
+ // --------------------------------------
+    rule <k> #updateAcctCode ADDR:Int => . ... </k>
+         <output> CODE </output>
+         <account>
+           <acctID> ADDR </acctID>
+           <code> (_ => CODE) </code>
+           ...
+         </account>
 
     syntax KItem ::= "#executeTx" Int
  // ---------------------------------
@@ -834,6 +843,7 @@ loadCallSettings
           => #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #catchHaltTx
           ~> #finalizeTx(false)
+          ~> #updateAcctCode #newAddr(ACCTFROM, NONCE)
          ...
          </k>
          <origin> ACCTFROM </origin>
