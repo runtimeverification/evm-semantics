@@ -106,47 +106,23 @@ module STATE-LOADER
 Here we perform pre-proccesing on account data which allows "pretty" specification of input.
 
 ```{.k}
-    rule <k> load "pre" : { (ACCTID:String) : ACCT }             => mkAcct #parseAddr(ACCTID) ~> load "account" : { ACCTID : ACCT }                         ... </k>
-    rule <k> load "account" : { ACCTID: { KEY : VALUE , REST } } => load "account" : { ACCTID : { KEY : VALUE } } ~> load "account" : { ACCTID : { REST } } ... </k> requires REST =/=K .JSONList
+    rule <k> load "pre" : { (ACCTID:String) : ACCT } => mkAcct #parseAddr(ACCTID) ~> loadAccount #parseAddr(ACCTID) ACCT ... </k>
 
-    rule <k> load "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }                                ... </k>
-    rule <k> load "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }        ... </k>
-    rule <k> load "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }        ... </k>
-    rule <k> load "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #parseByteStack(CODE)) } }  ... </k>
-    rule <k> load "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } } ... </k>
-```
+    syntax EthereumCommand ::= "loadAccount" Int JSON
+ // -------------------------------------------------
+    rule <k> loadAccount _ { .JSONList } => . ... </k>
 
-The individual fields of the accounts are dealt with here.
+    rule <k> loadAccount ACCT { "balance" : (BAL:Int), REST => REST } ... </k>
+         <account> <acctID> ACCT </acctID> <balance> _ => BAL </balance> ... </account>
 
-```{.k}
-    rule <k> load "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> _ => BAL </balance>
-           ...
-         </account>
+    rule <k> loadAccount ACCT { "code" : (CODE:ByteArray), REST => REST } ... </k>
+         <account> <acctID> ACCT </acctID> <code> _ => CODE </code> ... </account>
 
-    rule <k> load "account" : { ACCT : { "code" : (CODE:ByteArray) } } => . ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <code> _ => CODE </code>
-           ...
-         </account>
+    rule <k> loadAccount ACCT { "nonce" : (NONCE:Int), REST => REST } ... </k>
+         <account> <acctID> ACCT </acctID> <nonce> _ => NONCE </nonce> ... </account>
 
-    rule <k> load "account" : { ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <nonce> _ => NONCE </nonce>
-           ...
-         </account>
-
-    rule <k> load "account" : { ACCT : { "storage" : (STORAGE:Map) } } => . ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> _ => STORAGE </storage>
-           <origStorage> _ => STORAGE </origStorage>
-           ...
-         </account>
+    rule <k> loadAccount ACCT { "storage" : (STORAGE:Map), REST => REST } ... </k>
+         <account> <acctID> ACCT </acctID> <origStorage> _ => STORAGE </origStorage> <storage> _ => STORAGE </storage> ... </account>
 ```
 
 Here we load the environmental information.
@@ -246,49 +222,45 @@ The `"rlp"` key loads the block information.
 
     rule <k> load "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST ]
           => mkTX !ID:Int
-          ~> load "transaction" : { !ID : { "data"  : TI   ,   "gasLimit" : TG   ,   "gasPrice" : TP
-                                          , "nonce" : TN   ,   "r"        : TR   ,   "s"        : TS
-                                          , "to"    : TT   ,   "v"        : TW   ,   "value"    : TV
-                                          , .JSONList
-                                          }
-                                  }
+          ~> loadTransaction !ID { "data"  : TI   ,   "gasLimit" : TG   ,   "gasPrice" : TP
+                                 , "nonce" : TN   ,   "r"        : TR   ,   "s"        : TS
+                                 , "to"    : TT   ,   "v"        : TW   ,   "value"    : TV
+                                 , .JSONList
+                                 }
           ~> load "transaction" : [ REST ]
           ...
           </k>
 
-    rule <k> load "transaction" : { ACCTID: { KEY : VALUE , REST } }
-          => load "transaction" : { ACCTID : { KEY : VALUE } }
-          ~> load "transaction" : { ACCTID : { REST } }
-          ...
-         </k>
-      requires REST =/=K .JSONList
+    syntax EthereumCommand ::= "loadTransaction" Int JSON
+ // -----------------------------------------------------
+    rule <k> loadTransaction _ { .JSONList } => . ... </k>
 
-    rule <k> load "transaction" : { TXID : { GLIMIT     : TG:Int } } => . ... </k>
+    rule <k> loadTransaction TXID { GLIMIT : TG:Int, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <txGasLimit> _ => TG </txGasLimit> ... </message>
       requires GLIMIT in (SetItem("gas") SetItem("gasLimit"))
 
-    rule <k> load "transaction" : { TXID : { "gasPrice" : TP:Int } } => . ... </k>
+    rule <k> loadTransaction TXID { "gasPrice" : TP:Int, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <txGasPrice> _ => TP </txGasPrice> ... </message>
 
-    rule <k> load "transaction" : { TXID : { "nonce" : TN:Int } } => . ... </k>
+    rule <k> loadTransaction TXID { "nonce" : TN:Int, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <txNonce> _ => TN </txNonce> ... </message>
 
-    rule <k> load "transaction" : { TXID : { "value" : TV:Int } } => . ... </k>
+    rule <k> loadTransaction TXID { "value" : TV:Int, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <value> _ => TV </value> ... </message>
 
-    rule <k> load "transaction" : { TXID : { "to" : TT:Account } } => . ... </k>
+    rule <k> loadTransaction TXID { "to" : TT:Account, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <to> _ => TT </to> ... </message>
 
-    rule <k> load "transaction" : { TXID : { "data" : TI:ByteArray } } => . ... </k>
+    rule <k> loadTransaction TXID { "data" : TI:ByteArray, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <data> _ => TI </data> ... </message>
 
-    rule <k> load "transaction" : { TXID : { "v" : TW:Int } } => . ... </k>
+    rule <k> loadTransaction TXID { "v" : TW:Int, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <sigV> _ => TW </sigV> ... </message>
 
-    rule <k> load "transaction" : { TXID : { "r" : TR:ByteArray } } => . ... </k>
+    rule <k> loadTransaction TXID { "r" : TR:ByteArray, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <sigR> _ => TR </sigR> ... </message>
 
-    rule <k> load "transaction" : { TXID : { "s" : TS:ByteArray } } => . ... </k>
+    rule <k> loadTransaction TXID { "s" : TS:ByteArray, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <sigS> _ => TS </sigS> ... </message>
 ```
 
