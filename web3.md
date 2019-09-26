@@ -807,7 +807,6 @@ Transaction Receipts
  // ---------------------------------
     rule <k> #prepareTx TXID:Int
           => #clearLogs
-          ~> #loadCallSettings TXID
           ~> #validateTx TXID
          ...
          </k>
@@ -825,21 +824,9 @@ Transaction Receipts
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, false) ) <Int 0
 
-    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ... </k>
+    rule <k> #validateTx TXID => #loadCallSettings TXID ~> #executeTx TXID ~> #makeTxReceipt TXID ... </k>
          <schedule> SCHED </schedule>
-         <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
-         <message>
-           <msgID>      TXID     </msgID>
-           <txGasLimit> GLIMIT   </txGasLimit>
-           <data>       CODE     </data>
-           <to>         .Account </to>
-           ...
-         </message>
-      requires ( GLIMIT -Int G0(SCHED, CODE, false) ) >=Int 0
-
-    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ... </k>
-         <schedule> SCHED </schedule>
-         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
+         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
          <message>
            <msgID>      TXID   </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
@@ -847,8 +834,7 @@ Transaction Receipts
            <to>         ACCTTO   </to>
            ...
          </message>
-      requires ACCTTO =/=K .Account
-       andBool ( GLIMIT -Int G0(SCHED, DATA, false) ) >=Int 0
+      requires ( GLIMIT -Int G0(SCHED, DATA, false) ) >=Int 0
 
     syntax KItem ::= "#updateAcctCode" Int
  // --------------------------------------
