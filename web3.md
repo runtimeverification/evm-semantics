@@ -542,6 +542,9 @@ eth_sendTransaction
 
     rule <k> #eth_sendTransaction_final TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
 
+    rule <k> #eth_sendTransaction_final TXID => #sendResponse( "error": {"code": -32000, "message": "base fee exceeds gas limit"} ) ... </k>
+         <statusCode> EVMC_OUT_OF_GAS </statusCode>
+
     rule <k> load "transaction" : { TXID : { "gas"      : (TG:String => #parseHexWord(TG))                    } } ... </k>
     rule <k> load "transaction" : { TXID : { "gasPrice" : (TP:String => #parseHexWord(TP))                    } } ... </k>
     rule <k> load "transaction" : { TXID : { "nonce"    : (TN:String => #parseHexWord(TN))                    } } ... </k>
