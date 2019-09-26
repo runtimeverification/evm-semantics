@@ -734,55 +734,33 @@ Transaction Receipts
          <log> LOGS </log>
 ```
 
-loadCallSettings
-----------------
-
-- Takes a JSON with parameters for sendTransaction/call/estimateGas/etc and sets up the execution environment
+- loadCallState: web3.md specific rules
 
 ```k
-    syntax KItem ::= "#loadCallSettings" JSON
- // -----------------------------------------
-    rule <k> #loadCallSettings { .JSONList } => . ... </k>
+    rule <k> loadCallState { "from" : ( ACCTFROM:String => #parseHexWord( ACCTFROM ) ), REST } ... </k>
+    rule <k> loadCallState { "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
+    rule <k> loadCallState { "gas" : ( GLIMIT:String => #parseHexWord( GLIMIT ) ), REST } ... </k>
+    rule <k> loadCallState { "gasPrice" : ( GPRICE:String => #parseHexWord( GPRICE ) ), REST } ... </k>
+    rule <k> loadCallState { "value" : ( VALUE:String => #parseHexWord( VALUE ) ), REST } ... </k>
+    rule <k> loadCallState { "nonce" : _, REST => REST } ... </k>
 
-    rule <k> #loadCallSettings { "from" : ( ACCTFROM:String => #parseHexWord( ACCTFROM ) ), REST } ... </k>
-    rule <k> #loadCallSettings { ("from" : ACCTFROM:Int, REST => REST) } ... </k>
+    rule <k> loadCallState { "from" : ACCTFROM:Int, REST => REST } ... </k>
          <caller> _ => ACCTFROM </caller>
          <origin> _ => ACCTFROM </origin>
 
-    rule <k> #loadCallSettings { "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
-    rule <k> #loadCallSettings { "to" : .Account   , REST => REST } ... </k>
-    rule <k> #loadCallSettings { "to" : ACCTTO:Int , REST => REST } ... </k>
+    rule <k> loadCallState { "to" : .Account   , REST => REST } ... </k>
+    rule <k> loadCallState { ("to" : ACCTTO:Int => "code" : CODE), REST } ... </k>
          <id> _ => ACCTTO </id>
-         <program> _ => CODE </program>
-         <jumpDests> _ => #computeValidJumpDests(CODE) </jumpDests>
          <account>
            <acctID> ACCTTO </acctID>
            <code> CODE </code>
            ...
          </account>
 
-    rule <k> ( . => #newAccount ACCTTO ) ~> #loadCallSettings { "to" : ACCTTO:Int, REST } ... </k> [owise]
+    rule <k> ( . => #newAccount ACCTTO ) ~> loadCallState { "to" : ACCTTO:Int, REST } ... </k> [owise]
 
-    rule <k> #loadCallSettings { "gas" : ( GLIMIT:String => #parseHexWord( GLIMIT ) ), REST } ... </k>
-    rule <k> #loadCallSettings { ( "gas" : GLIMIT:Int, REST => REST ) } ... </k>
-         <gas> _ => GLIMIT </gas>
-
-    rule <k> #loadCallSettings { "gasPrice" : ( GPRICE:String => #parseHexWord( GPRICE ) ), REST } ... </k>
-    rule <k> #loadCallSettings { ( "gasPrice" : GPRICE:Int, REST => REST ) } ... </k>
-         <gasPrice> _ => GPRICE </gasPrice>
-
-    rule <k> #loadCallSettings { "value" : ( VALUE:String => #parseHexWord( VALUE ) ), REST } ... </k>
-    rule <k> #loadCallSettings { ( "value" : VALUE:Int, REST => REST ) } ... </k>
-         <callValue> _ => VALUE </callValue>
-
-    rule <k> #loadCallSettings { "data" : ( DATA:String => #parseByteStack( DATA ) ), REST } ... </k>
-    rule <k> #loadCallSettings { ( "data" : DATA:ByteArray, REST => REST ) } ... </k>
-         <callData> _ => DATA </callData>
-
-    rule <k> #loadCallSettings { ( "nonce" : _, REST => REST ) } ... </k>
-
-    rule <k> #loadCallSettings TXID:Int
-          => #loadCallSettings {
+    rule <k> loadCallState TXID:Int
+          => loadCallState {
                "from":     #unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS))),
                "to":       TT,
                "gas":      TG,
@@ -792,7 +770,6 @@ loadCallSettings
              }
          ...
          </k>
-         <txPending> ... ListItem(TXID) </txPending>
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
@@ -822,7 +799,7 @@ loadCallSettings
  // ---------------------------------
     rule <k> #prepareTx TXID:Int
           => #clearLogs
-          ~> #loadCallSettings TXID
+          ~> loadCallState TXID
           ~> #executeTx TXID
           ~> #makeTxReceipt TXID
          ...

@@ -140,25 +140,20 @@ Here we load the environmental information.
     rule <k> load "env" : { "previousHash"      : (HASH:Int)   } => . ... </k> <previousHash> _ => HASH   </previousHash>
     rule <k> load "env" : { "currentTimestamp"  : (TS:Int)     } => . ... </k> <timestamp>    _ => TS     </timestamp>
 
-    rule <k> load "exec" : { KEY : ((VAL:String) => #parseWord(VAL)) } ... </k>
-      requires KEY in (SetItem("gas") SetItem("gasPrice") SetItem("value"))
-    rule <k> load "exec" : { KEY : ((VAL:String) => #parseHexWord(VAL)) } ... </k>
-      requires KEY in (SetItem("address") SetItem("caller") SetItem("origin"))
- // --------------------------------------------------------------------------
-    rule <k> load "exec" : { "gasPrice" : (GPRICE:Int)   } => . ... </k> <gasPrice>  _ => GPRICE   </gasPrice>
-    rule <k> load "exec" : { "gas"      : (GAVAIL:Int)   } => . ... </k> <gas>       _ => GAVAIL   </gas>
-    rule <k> load "exec" : { "address"  : (ACCTTO:Int)   } => . ... </k> <id>        _ => ACCTTO   </id>
-    rule <k> load "exec" : { "caller"   : (ACCTFROM:Int) } => . ... </k> <caller>    _ => ACCTFROM </caller>
-    rule <k> load "exec" : { "gas"      : (GAVAIL:Int)   } => . ... </k> <gas>       _ => GAVAIL   </gas>
-    rule <k> load "exec" : { "value"    : (VALUE:Int)    } => . ... </k> <callValue> _ => VALUE    </callValue>
-    rule <k> load "exec" : { "origin"   : (ORIG:Int)     } => . ... </k> <origin>    _ => ORIG     </origin>
-    rule <k> load "exec" : { "code"     : ((CODE:String)   => #parseByteStack(CODE)) } ... </k>
+    syntax KItem ::= "loadCallState" JSON
+ // -------------------------------------
+    rule <k> loadCallState { "data" : ( DATA:String => #parseByteStack( DATA ) ), REST } ... </k>
 
-    rule <k> load "exec" : { "data" : ((DATA:String) => #parseByteStack(DATA)) } ... </k>
- // -------------------------------------------------------------------------------------
-    rule <k> load "exec" : { "data" : (DATA:ByteArray) } => . ... </k> <callData> _ => DATA </callData>
-    rule <k> load "exec" : { "code" : (CODE:OpCodes)   } => . ... </k> <program> _ => #asmOpCodes(CODE) </program> <jumpDests> _ => #computeValidJumpDests(#asmOpCodes(CODE)) </jumpDests> <schedule> SCHED </schedule>
-    rule <k> load "exec" : { "code" : (CODE:ByteArray) } => . ... </k> <program> _ => CODE </program> <jumpDests> _ => #computeValidJumpDests(CODE) </jumpDests> <schedule> SCHED </schedule>
+    rule <k> loadCallState { "code" : CODE:ByteArray, REST => REST } ... </k>
+         <program> _ => CODE </program>
+         <jumpDests> _ => #computeValidJumpDests(CODE) </jumpDests>
+
+    rule <k> loadCallState { "gas" : GLIMIT:Int, REST => REST }      ... </k> <gas>       _ => GLIMIT </gas>
+    rule <k> loadCallState { "gasPrice" : GPRICE:Int, REST => REST } ... </k> <gasPrice>  _ => GPRICE </gasPrice>
+    rule <k> loadCallState { "value" : VALUE:Int, REST => REST }     ... </k> <callValue> _ => VALUE  </callValue>
+    rule <k> loadCallState { "data" : DATA:ByteArray, REST => REST } ... </k> <callData>  _ => DATA   </callData>
+
+    rule <k> loadCallState { .JSONList } => . ... </k>
 ```
 
 The `"network"` key allows setting the fee schedule inside the test.

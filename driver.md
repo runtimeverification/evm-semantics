@@ -266,8 +266,26 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> run TESTID : { KEY : (VAL:JSON) , NEXT , REST } => run TESTID : { NEXT , KEY : VAL , REST } ... </k>
       requires KEY in #execKeys
 
-    rule <k> run TESTID : { "exec" : (EXEC:JSON) } => load "exec" : EXEC ~> start ~> flush ... </k>
+    rule <k> run TESTID : { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
     rule <k> run TESTID : { "lastblockhash" : (HASH:String) } => #startBlock ~> startTx    ... </k>
+
+    rule <k> load "exec" : J => loadCallState J ... </k>
+
+    rule <k> loadCallState { "caller" : (ACCTFROM:Int), REST => REST } ... </k> <caller> _ => ACCTFROM </caller>
+    rule <k> loadCallState { "origin" : (ORIG:Int), REST => REST }     ... </k> <origin> _ => ORIG     </origin>
+    rule <k> loadCallState { "address" : (ACCTTO:Int), REST => REST }  ... </k> <id>     _ => ACCTTO   </id>
+
+    rule <k> loadCallState { "code" : (CODE:OpCodes), REST => REST} ... </k>
+         <program> _ => #asmOpCodes(CODE) </program>
+         <jumpDests> _ => #computeValidJumpDests(#asmOpCodes(CODE)) </jumpDests>
+
+    rule <k> loadCallState { KEY : ((VAL:String) => #parseWord(VAL)), _ } ... </k>
+      requires KEY in (SetItem("gas") SetItem("gasPrice") SetItem("value"))
+
+    rule <k> loadCallState { KEY : ((VAL:String) => #parseHexWord(VAL)), _ } ... </k>
+      requires KEY in (SetItem("address") SetItem("caller") SetItem("origin"))
+
+    rule <k> loadCallState { "code" : ((CODE:String) => #parseByteStack(CODE)), _ } ... </k>
 ```
 
 -   `#postKeys` are a subset of `#checkKeys` which correspond to post-state account checks.
