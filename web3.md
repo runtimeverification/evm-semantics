@@ -538,20 +538,20 @@ eth_sendTransaction
 
     rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_sendTransaction' requires exactly 1 argument."} ) ... </k> [owise]
 
-    rule <k> #eth_sendTransaction_load J => mkTX !ID:Int ~> #loadNonce #parseHexWord( #getString("from",J) ) !ID ~> load "transaction" : { !ID : J } ~> signTX !ID #parseHexWord( #getString("from",J) ) ~> #prepareTx !ID ~> #eth_sendTransaction_final !ID ... </k>
+    rule <k> #eth_sendTransaction_load J => mkTX !ID:Int ~> #loadNonce #parseHexWord( #getString("from",J) ) !ID ~> loadTransaction !ID J ~> signTX !ID #parseHexWord( #getString("from",J) ) ~> #prepareTx !ID ~> #eth_sendTransaction_final !ID ... </k>
 
     rule <k> #eth_sendTransaction_final TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
 
-    rule <k> load "transaction" : { TXID : { "gas"      : (TG:String => #parseHexWord(TG))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "gasPrice" : (TP:String => #parseHexWord(TP))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "nonce"    : (TN:String => #parseHexWord(TN))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "v"        : (TW:String => #parseHexWord(TW))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "value"    : (TV:String => #parseHexWord(TV))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "to"       : (TT:String => #parseHexWord(TT))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "data"     : (TI:String => #parseByteStack(TI))                  } } ... </k>
-    rule <k> load "transaction" : { TXID : { "r"        : (TR:String => #padToWidth(32, #parseByteStack(TR))) } } ... </k>
-    rule <k> load "transaction" : { TXID : { "s"        : (TS:String => #padToWidth(32, #parseByteStack(TS))) } } ... </k>
-    rule <k> load "transaction" : { TXID : { "from"     : _ } } => . ... </k>
+    rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG)), _                 } ... </k>
+    rule <k> loadTransaction _ { "gasPrice" : (TP:String => #parseHexWord(TP)), _                 } ... </k>
+    rule <k> loadTransaction _ { "nonce"    : (TN:String => #parseHexWord(TN)), _                 } ... </k>
+    rule <k> loadTransaction _ { "v"        : (TW:String => #parseHexWord(TW)), _                 } ... </k>
+    rule <k> loadTransaction _ { "value"    : (TV:String => #parseHexWord(TV)), _                 } ... </k>
+    rule <k> loadTransaction _ { "to"       : (TT:String => #parseHexWord(TT)), _                 } ... </k>
+    rule <k> loadTransaction _ { "data"     : (TI:String => #parseByteStack(TI)), _               } ... </k>
+    rule <k> loadTransaction _ { "r"        : (TR:String => #padToWidth(32, #parseByteStack(TR))), _ } ... </k>
+    rule <k> loadTransaction _ { "s"        : (TS:String => #padToWidth(32, #parseByteStack(TS))), _ } ... </k>
+    rule <k> loadTransaction _ { ("from"    : _, REST => REST) } ... </k>
 
     syntax KItem ::= "#loadNonce" Int Int
  // -------------------------------------
@@ -676,12 +676,11 @@ eth_sendRawTransaction
 
     rule <k> #eth_sendRawTransactionLoad
           => mkTX !ID:Int
-          ~> load "transaction" : { !ID : { "data"  : Raw2Hex(TI) , "gas"      : Raw2Hex(TG) , "gasPrice" : Raw2Hex(TP)
-                                          , "nonce" : Raw2Hex(TN) , "r"        : Raw2Hex(TR) , "s"        : Raw2Hex(TS)
-                                          , "to"    : Raw2Hex(TT) , "v"        : Raw2Hex(TW) , "value"    : Raw2Hex(TV)
-                                          , .JSONList
-                                          }
-                                  }
+          ~> loadTransaction !ID { "data"  : Raw2Hex(TI) , "gas"      : Raw2Hex(TG) , "gasPrice" : Raw2Hex(TP)
+                                 , "nonce" : Raw2Hex(TN) , "r"        : Raw2Hex(TR) , "s"        : Raw2Hex(TS)
+                                 , "to"    : Raw2Hex(TT) , "v"        : Raw2Hex(TW) , "value"    : Raw2Hex(TV)
+                                 , .JSONList
+                                 }
           ~> #eth_sendRawTransactionVerify !ID
          ...
          </k>
@@ -920,7 +919,7 @@ Transaction Receipts
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString(#getJSON("key", J))
 
-    rule <k> #firefly_addAccountByAddress ACCT_ADDR => #newAccount ACCT_ADDR ~> #loadAccountData ACCT_ADDR J ~> #sendResponse( "result": true ) ... </k>
+    rule <k> #firefly_addAccountByAddress ACCT_ADDR => #newAccount ACCT_ADDR ~> loadAccount ACCT_ADDR J ~> #sendResponse( "result": true ) ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT_ADDR in ACCTS
@@ -930,7 +929,7 @@ Transaction Receipts
          <activeAccounts> ACCTS </activeAccounts>
       requires ACCT_ADDR in ACCTS
 
-    rule <k> #firefly_addAccountByKey ACCT_KEY => #acctFromPrivateKey ACCT_KEY ~> #loadAccountData #addrFromPrivateKey(ACCT_KEY) J ~> #sendResponse( "result": true ) ... </k>
+    rule <k> #firefly_addAccountByKey ACCT_KEY => #acctFromPrivateKey ACCT_KEY ~> loadAccount #addrFromPrivateKey(ACCT_KEY) J ~> #sendResponse( "result": true ) ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool #addrFromPrivateKey(ACCT_KEY) in ACCTS
@@ -942,43 +941,12 @@ Transaction Receipts
 
     rule <k> #firefly_addAccount => #sendResponse( "error": {"code": -32025, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
 
-    syntax KItem ::= "#loadAccountData" Int JSON
- // --------------------------------------------
-    rule <k> #loadAccountData _ { .JSONList } => . ... </k>
-
-    rule <k> #loadAccountData _ { "address": _, REST => REST } ... </k>
-    rule <k> #loadAccountData _ { "key"    : _, REST => REST } ... </k>
-
-    rule <k> #loadAccountData ACCTID { ("balance": BALANCE_STRING, REST) => REST } ... </k>
-         <account>
-           <acctID> ACCTID </acctID>
-           <balance> _ => #parseHexWord(BALANCE_STRING) </balance>
-           ...
-         </account>
-
-    rule <k> #loadAccountData ACCTID { ("code": CODE_STRING, REST) => REST } ... </k>
-         <account>
-           <acctID> ACCTID </acctID>
-           <code> _ => #parseByteStack(CODE_STRING) </code>
-           ...
-         </account>
-
-    rule <k> #loadAccountData ACCTID { ("nonce": NONCE_STRING, REST) => REST } ... </k>
-         <account>
-           <acctID> ACCTID </acctID>
-           <nonce> _ => #parseHexWord(NONCE_STRING) </nonce>
-           ...
-         </account>
-
-    rule <k> #loadAccountData ACCTID { ("storage": { STORAGE_JSON }, REST) => REST } ... </k>
-         <account>
-           <acctID> ACCTID </acctID>
-           <storage>     _ => #parseMap({ STORAGE_JSON }) </storage>
-           <origStorage> _ => #parseMap({ STORAGE_JSON }) </origStorage>
-           ...
-         </account>
-
-    rule <k> #loadAccountData _ _ =>  #sendResponse( "error": {"code": -32026, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
+    rule <k> loadAccount _ { "balance" : ((VAL:String)         => #parseHexWord(VAL)),     _ } ... </k>
+    rule <k> loadAccount _ { "nonce"   : ((VAL:String)         => #parseHexWord(VAL)),     _ } ... </k>
+    rule <k> loadAccount _ { "code"    : ((CODE:String)        => #parseByteStack(CODE)),  _ } ... </k>
+    rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })), _ } ... </k>
+    rule <k> loadAccount _ { "key" : _, REST => REST } ... </k>
+    rule <k> loadAccount _ { "address" : _, REST => REST } ... </k>
 ```
 
 - `#eth_call`
@@ -991,7 +959,7 @@ Transaction Receipts
           => #pushNetworkState
           ~> mkTX !ID:Int
           ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
-          ~> load "transaction" : { !ID : J }
+          ~> loadTransaction !ID J
           ~> signTX !ID #parseHexWord(#getString("from", J))
           ~> #prepareTx !ID
           ~> #eth_call_finalize
@@ -1022,7 +990,7 @@ Transaction Receipts
           => #pushNetworkState
           ~> mkTX !ID:Int
           ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
-          ~> load "transaction" : { !ID : J }
+          ~> loadTransaction !ID J
           ~> signTX !ID #parseHexWord(#getString("from", J))
           ~> #prepareTx !ID
           ~> #eth_estimateGas_finalize GUSED
