@@ -817,12 +817,13 @@ Transaction Receipts
          <statusCode> ( _ => EVMC_OUT_OF_GAS) </statusCode>
          <schedule> SCHED </schedule>
          <message>
-           <msgID>      TXID     </msgID>
-           <txGasLimit> GLIMIT   </txGasLimit>
-           <data>       DATA     </data>
+           <msgID>      TXID   </msgID>
+           <txGasLimit> GLIMIT </txGasLimit>
+           <data>       DATA   </data>
+           <to>         ACCTTO </to>
            ...
          </message>
-      requires ( GLIMIT -Int G0(SCHED, DATA, false) ) <Int 0
+      requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
 
     rule <k> #validateTx TXID => #loadCallSettings TXID ~> #executeTx TXID ~> #makeTxReceipt TXID ... </k>
          <schedule> SCHED </schedule>
@@ -831,10 +832,10 @@ Transaction Receipts
            <msgID>      TXID   </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
            <data>       DATA   </data>
-           <to>         ACCTTO   </to>
+           <to>         ACCTTO </to>
            ...
          </message>
-      requires ( GLIMIT -Int G0(SCHED, DATA, false) ) >=Int 0
+      requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) >=Int 0
 
     syntax KItem ::= "#updateAcctCode" Int
  // --------------------------------------
