@@ -314,18 +314,25 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> run TESTID : { KEY : _ , REST } => run TESTID : { REST } ... </k> requires KEY in #discardKeys
 ```
 
--   `driver.md` specific handling of transaction fields
+-   `driver.md` specific handling of state-loader commands
 
 ```{.k .standalone}
-    rule <k> load "transaction" : { TXID : { "gasLimit" : (TG:String => #asWord(#parseByteStackRaw(TG)))         } } ... </k>
-    rule <k> load "transaction" : { TXID : { "gasPrice" : (TP:String => #asWord(#parseByteStackRaw(TP)))         } } ... </k>
-    rule <k> load "transaction" : { TXID : { "nonce"    : (TN:String => #asWord(#parseByteStackRaw(TN)))         } } ... </k>
-    rule <k> load "transaction" : { TXID : { "v"        : (TW:String => #asWord(#parseByteStackRaw(TW)))         } } ... </k>
-    rule <k> load "transaction" : { TXID : { "value"    : (TV:String => #asWord(#parseByteStackRaw(TV)))         } } ... </k>
-    rule <k> load "transaction" : { TXID : { "to"       : (TT:String => #asAccount(#parseByteStackRaw(TT)))      } } ... </k>
-    rule <k> load "transaction" : { TXID : { "data"     : (TI:String => #parseByteStackRaw(TI))                  } } ... </k>
-    rule <k> load "transaction" : { TXID : { "r"        : (TR:String => #padToWidth(32, #parseByteStackRaw(TR))) } } ... </k>
-    rule <k> load "transaction" : { TXID : { "s"        : (TS:String => #padToWidth(32, #parseByteStackRaw(TS))) } } ... </k>
+    rule <k> load "account" : { ACCTID : ACCT } => loadAccount ACCTID ACCT ... </k>
+
+    rule <k> loadAccount _ { "balance" : ((VAL:String)         => #parseWord(VAL)),        _ } ... </k>
+    rule <k> loadAccount _ { "nonce"   : ((VAL:String)         => #parseWord(VAL)),        _ } ... </k>
+    rule <k> loadAccount _ { "code"    : ((CODE:String)        => #parseByteStack(CODE)),  _ } ... </k>
+    rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })), _ } ... </k>
+
+    rule <k> loadTransaction _ { "gasLimit" : (TG:String => #asWord(#parseByteStackRaw(TG))), _      } ... </k>
+    rule <k> loadTransaction _ { "gasPrice" : (TP:String => #asWord(#parseByteStackRaw(TP))), _      } ... </k>
+    rule <k> loadTransaction _ { "nonce"    : (TN:String => #asWord(#parseByteStackRaw(TN))), _      } ... </k>
+    rule <k> loadTransaction _ { "v"        : (TW:String => #asWord(#parseByteStackRaw(TW))), _      } ... </k>
+    rule <k> loadTransaction _ { "value"    : (TV:String => #asWord(#parseByteStackRaw(TV))), _      } ... </k>
+    rule <k> loadTransaction _ { "to"       : (TT:String => #asAccount(#parseByteStackRaw(TT))), _   } ... </k>
+    rule <k> loadTransaction _ { "data"     : (TI:String => #parseByteStackRaw(TI)), _               } ... </k>
+    rule <k> loadTransaction _ { "r"        : (TR:String => #padToWidth(32, #parseByteStackRaw(TR))), _ } ... </k>
+    rule <k> loadTransaction _ { "s"        : (TS:String => #padToWidth(32, #parseByteStackRaw(TS))), _ } ... </k>
 ```
 
 ### Checking State
