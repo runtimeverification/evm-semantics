@@ -676,12 +676,11 @@ eth_sendRawTransaction
 
     rule <k> #eth_sendRawTransactionLoad
           => mkTX !ID:Int
-          ~> load "transaction" : { !ID : { "data"  : Raw2Hex(TI) , "gas"      : Raw2Hex(TG) , "gasPrice" : Raw2Hex(TP)
-                                          , "nonce" : Raw2Hex(TN) , "r"        : Raw2Hex(TR) , "s"        : Raw2Hex(TS)
-                                          , "to"    : Raw2Hex(TT) , "v"        : Raw2Hex(TW) , "value"    : Raw2Hex(TV)
-                                          , .JSONList
-                                          }
-                                  }
+          ~> loadTransaction !ID { "data"  : Raw2Hex(TI) , "gas"      : Raw2Hex(TG) , "gasPrice" : Raw2Hex(TP)
+                                 , "nonce" : Raw2Hex(TN) , "r"        : Raw2Hex(TR) , "s"        : Raw2Hex(TS)
+                                 , "to"    : Raw2Hex(TT) , "v"        : Raw2Hex(TW) , "value"    : Raw2Hex(TV)
+                                 , .JSONList
+                                 }
           ~> #eth_sendRawTransactionVerify !ID
          ...
          </k>
