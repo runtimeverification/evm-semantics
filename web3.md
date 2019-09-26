@@ -541,6 +541,13 @@ eth_sendTransaction
     rule <k> #eth_sendTransaction_load J => mkTX !ID:Int ~> #loadNonce #parseHexWord( #getString("from",J) ) !ID ~> loadTransaction !ID J ~> signTX !ID #parseHexWord( #getString("from",J) ) ~> #prepareTx !ID ~> #eth_sendTransaction_final !ID ... </k>
 
     rule <k> #eth_sendTransaction_final TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+        <statusCode> EVMC_SUCCESS </statusCode>
+
+    rule <k> #eth_sendTransaction_final TXID => #sendResponse( "error": {"code": -32000, "message": "base fee exceeds gas limit"} ) ... </k>
+         <statusCode> EVMC_OUT_OF_GAS </statusCode>
+
+    rule <k> #eth_sendTransaction_final TXID => #sendResponse( "error": {"code": -32000, "message":"sender doesn't have enough funds to send tx."} ) ... </k>
+         <statusCode> EVMC_BALANCE_UNDERFLOW </statusCode>
 
     rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG)), _                 } ... </k>
     rule <k> loadTransaction _ { "gasPrice" : (TP:String => #parseHexWord(TP)), _                 } ... </k>
@@ -799,11 +806,35 @@ Transaction Receipts
  // ---------------------------------
     rule <k> #prepareTx TXID:Int
           => #clearLogs
-          ~> loadCallState TXID
-          ~> #executeTx TXID
-          ~> #makeTxReceipt TXID
+          ~> #validateTx TXID
          ...
          </k>
+
+    syntax KItem ::= "#validateTx" Int
+ // ----------------------------------
+    rule <k> #validateTx TXID => . ... </k>
+         <statusCode> ( _ => EVMC_OUT_OF_GAS) </statusCode>
+         <schedule> SCHED </schedule>
+         <message>
+           <msgID>      TXID   </msgID>
+           <txGasLimit> GLIMIT </txGasLimit>
+           <data>       DATA   </data>
+           <to>         ACCTTO </to>
+           ...
+         </message>
+      requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
+
+    rule <k> #validateTx TXID => loadCallState TXID ~> #executeTx TXID ~> #makeTxReceipt TXID ... </k>
+         <schedule> SCHED </schedule>
+         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
+         <message>
+           <msgID>      TXID   </msgID>
+           <txGasLimit> GLIMIT </txGasLimit>
+           <data>       DATA   </data>
+           <to>         ACCTTO </to>
+           ...
+         </message>
+      requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) >=Int 0
 
     syntax KItem ::= "#updateAcctCode" Int
  // --------------------------------------
@@ -825,8 +856,6 @@ Transaction Receipts
          ...
          </k>
          <origin> ACCTFROM </origin>
-         <schedule> SCHED </schedule>
-         <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
          <callDepth> _ => -1 </callDepth>
          <txPending> ... ListItem(TXID:Int) </txPending>
          <coinbase> MINER </coinbase>
@@ -855,8 +884,6 @@ Transaction Receipts
          </k>
          <origin> ACCTFROM </origin>
          <txPending> ... ListItem(TXID) </txPending>
-         <schedule> SCHED </schedule>
-         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
          <callDepth> _ => -1 </callDepth>
          <coinbase> MINER </coinbase>
          <message>
