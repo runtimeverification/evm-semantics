@@ -309,6 +309,8 @@ WEB3 JSON RPC
          <method> "personal_importRawKey" </method>
     rule <k> #runRPCCall => #eth_call ... </k>
          <method> "eth_call" </method>
+    rule <k> #runRPCCall => #eth_estimateGas ... </k>
+         <method> "eth_estimateGas" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -536,20 +538,27 @@ eth_sendTransaction
 
     rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_sendTransaction' requires exactly 1 argument."} ) ... </k> [owise]
 
-    rule <k> #eth_sendTransaction_load J => mkTX !ID:Int ~> #loadNonce #parseHexWord( #getString("from",J) ) !ID ~> load "transaction" : { !ID : J } ~> signTX !ID #parseHexWord( #getString("from",J) ) ~> #prepareTx !ID ~> #eth_sendTransaction_final !ID ... </k>
+    rule <k> #eth_sendTransaction_load J => mkTX !ID:Int ~> #loadNonce #parseHexWord( #getString("from",J) ) !ID ~> loadTransaction !ID J ~> signTX !ID #parseHexWord( #getString("from",J) ) ~> #prepareTx !ID ~> #eth_sendTransaction_final !ID ... </k>
 
     rule <k> #eth_sendTransaction_final TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+        <statusCode> EVMC_SUCCESS </statusCode>
 
-    rule <k> load "transaction" : { TXID : { "gas"      : (TG:String => #parseHexWord(TG))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "gasPrice" : (TP:String => #parseHexWord(TP))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "nonce"    : (TN:String => #parseHexWord(TN))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "v"        : (TW:String => #parseHexWord(TW))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "value"    : (TV:String => #parseHexWord(TV))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "to"       : (TT:String => #parseHexWord(TT))                    } } ... </k>
-    rule <k> load "transaction" : { TXID : { "data"     : (TI:String => #parseByteStack(TI))                  } } ... </k>
-    rule <k> load "transaction" : { TXID : { "r"        : (TR:String => #padToWidth(32, #parseByteStack(TR))) } } ... </k>
-    rule <k> load "transaction" : { TXID : { "s"        : (TS:String => #padToWidth(32, #parseByteStack(TS))) } } ... </k>
-    rule <k> load "transaction" : { TXID : { "from"     : _ } } => . ... </k>
+    rule <k> #eth_sendTransaction_final TXID => #sendResponse( "error": {"code": -32000, "message": "base fee exceeds gas limit"} ) ... </k>
+         <statusCode> EVMC_OUT_OF_GAS </statusCode>
+
+    rule <k> #eth_sendTransaction_final TXID => #sendResponse( "error": {"code": -32000, "message":"sender doesn't have enough funds to send tx."} ) ... </k>
+         <statusCode> EVMC_BALANCE_UNDERFLOW </statusCode>
+
+    rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG)), _                 } ... </k>
+    rule <k> loadTransaction _ { "gasPrice" : (TP:String => #parseHexWord(TP)), _                 } ... </k>
+    rule <k> loadTransaction _ { "nonce"    : (TN:String => #parseHexWord(TN)), _                 } ... </k>
+    rule <k> loadTransaction _ { "v"        : (TW:String => #parseHexWord(TW)), _                 } ... </k>
+    rule <k> loadTransaction _ { "value"    : (TV:String => #parseHexWord(TV)), _                 } ... </k>
+    rule <k> loadTransaction _ { "to"       : (TT:String => #parseHexWord(TT)), _                 } ... </k>
+    rule <k> loadTransaction _ { "data"     : (TI:String => #parseByteStack(TI)), _               } ... </k>
+    rule <k> loadTransaction _ { "r"        : (TR:String => #padToWidth(32, #parseByteStack(TR))), _ } ... </k>
+    rule <k> loadTransaction _ { "s"        : (TS:String => #padToWidth(32, #parseByteStack(TS))), _ } ... </k>
+    rule <k> loadTransaction _ { ("from"    : _, REST => REST) } ... </k>
 
     syntax KItem ::= "#loadNonce" Int Int
  // -------------------------------------
@@ -674,12 +683,11 @@ eth_sendRawTransaction
 
     rule <k> #eth_sendRawTransactionLoad
           => mkTX !ID:Int
-          ~> load "transaction" : { !ID : { "data"  : Raw2Hex(TI) , "gas"      : Raw2Hex(TG) , "gasPrice" : Raw2Hex(TP)
-                                          , "nonce" : Raw2Hex(TN) , "r"        : Raw2Hex(TR) , "s"        : Raw2Hex(TS)
-                                          , "to"    : Raw2Hex(TT) , "v"        : Raw2Hex(TW) , "value"    : Raw2Hex(TV)
-                                          , .JSONList
-                                          }
-                                  }
+          ~> loadTransaction !ID { "data"  : Raw2Hex(TI) , "gas"      : Raw2Hex(TG) , "gasPrice" : Raw2Hex(TP)
+                                 , "nonce" : Raw2Hex(TN) , "r"        : Raw2Hex(TR) , "s"        : Raw2Hex(TS)
+                                 , "to"    : Raw2Hex(TT) , "v"        : Raw2Hex(TW) , "value"    : Raw2Hex(TV)
+                                 , .JSONList
+                                 }
           ~> #eth_sendRawTransactionVerify !ID
          ...
          </k>
@@ -733,55 +741,33 @@ Transaction Receipts
          <log> LOGS </log>
 ```
 
-loadCallSettings
-----------------
-
-- Takes a JSON with parameters for sendTransaction/call/estimateGas/etc and sets up the execution environment
+- loadCallState: web3.md specific rules
 
 ```k
-    syntax KItem ::= "#loadCallSettings" JSON
- // -----------------------------------------
-    rule <k> #loadCallSettings { .JSONList } => . ... </k>
+    rule <k> loadCallState { "from" : ( ACCTFROM:String => #parseHexWord( ACCTFROM ) ), REST } ... </k>
+    rule <k> loadCallState { "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
+    rule <k> loadCallState { "gas" : ( GLIMIT:String => #parseHexWord( GLIMIT ) ), REST } ... </k>
+    rule <k> loadCallState { "gasPrice" : ( GPRICE:String => #parseHexWord( GPRICE ) ), REST } ... </k>
+    rule <k> loadCallState { "value" : ( VALUE:String => #parseHexWord( VALUE ) ), REST } ... </k>
+    rule <k> loadCallState { "nonce" : _, REST => REST } ... </k>
 
-    rule <k> #loadCallSettings { "from" : ( ACCTFROM:String => #parseHexWord( ACCTFROM ) ), REST } ... </k>
-    rule <k> #loadCallSettings { ("from" : ACCTFROM:Int, REST => REST) } ... </k>
+    rule <k> loadCallState { "from" : ACCTFROM:Int, REST => REST } ... </k>
          <caller> _ => ACCTFROM </caller>
          <origin> _ => ACCTFROM </origin>
 
-    rule <k> #loadCallSettings { "to" : ( ACCTTO:String => #parseHexWord( ACCTTO ) ), REST } ... </k>
-    rule <k> #loadCallSettings { "to" : .Account   , REST => REST } ... </k>
-    rule <k> #loadCallSettings { "to" : ACCTTO:Int , REST => REST } ... </k>
+    rule <k> loadCallState { "to" : .Account   , REST => REST } ... </k>
+    rule <k> loadCallState { ("to" : ACCTTO:Int => "code" : CODE), REST } ... </k>
          <id> _ => ACCTTO </id>
-         <program> _ => CODE </program>
-         <jumpDests> _ => #computeValidJumpDests(CODE) </jumpDests>
          <account>
            <acctID> ACCTTO </acctID>
            <code> CODE </code>
            ...
          </account>
 
-    rule <k> ( . => #newAccount ACCTTO ) ~> #loadCallSettings { "to" : ACCTTO:Int, REST } ... </k> [owise]
+    rule <k> ( . => #newAccount ACCTTO ) ~> loadCallState { "to" : ACCTTO:Int, REST } ... </k> [owise]
 
-    rule <k> #loadCallSettings { "gas" : ( GLIMIT:String => #parseHexWord( GLIMIT ) ), REST } ... </k>
-    rule <k> #loadCallSettings { ( "gas" : GLIMIT:Int, REST => REST ) } ... </k>
-         <gas> _ => GLIMIT </gas>
-
-    rule <k> #loadCallSettings { "gasPrice" : ( GPRICE:String => #parseHexWord( GPRICE ) ), REST } ... </k>
-    rule <k> #loadCallSettings { ( "gasPrice" : GPRICE:Int, REST => REST ) } ... </k>
-         <gasPrice> _ => GPRICE </gasPrice>
-
-    rule <k> #loadCallSettings { "value" : ( VALUE:String => #parseHexWord( VALUE ) ), REST } ... </k>
-    rule <k> #loadCallSettings { ( "value" : VALUE:Int, REST => REST ) } ... </k>
-         <callValue> _ => VALUE </callValue>
-
-    rule <k> #loadCallSettings { "data" : ( DATA:String => #parseByteStack( DATA ) ), REST } ... </k>
-    rule <k> #loadCallSettings { ( "data" : DATA:ByteArray, REST => REST ) } ... </k>
-         <callData> _ => DATA </callData>
-
-    rule <k> #loadCallSettings { ( "nonce" : _, REST => REST ) } ... </k>
-
-    rule <k> #loadCallSettings TXID:Int
-          => #loadCallSettings {
+    rule <k> loadCallState TXID:Int
+          => loadCallState {
                "from":     #unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS))),
                "to":       TT,
                "gas":      TG,
@@ -791,7 +777,6 @@ loadCallSettings
              }
          ...
          </k>
-         <txPending> ... ListItem(TXID) </txPending>
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
@@ -821,12 +806,45 @@ loadCallSettings
  // ---------------------------------
     rule <k> #prepareTx TXID:Int
           => #clearLogs
-          ~> #loadCallSettings TXID
-          ~> #executeTx TXID
-          ~> #makeTxReceipt TXID
+          ~> #validateTx TXID
          ...
          </k>
 
+    syntax KItem ::= "#validateTx" Int
+ // ----------------------------------
+    rule <k> #validateTx TXID => . ... </k>
+         <statusCode> ( _ => EVMC_OUT_OF_GAS) </statusCode>
+         <schedule> SCHED </schedule>
+         <message>
+           <msgID>      TXID   </msgID>
+           <txGasLimit> GLIMIT </txGasLimit>
+           <data>       DATA   </data>
+           <to>         ACCTTO </to>
+           ...
+         </message>
+      requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
+
+    rule <k> #validateTx TXID => loadCallState TXID ~> #executeTx TXID ~> #makeTxReceipt TXID ... </k>
+         <schedule> SCHED </schedule>
+         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
+         <message>
+           <msgID>      TXID   </msgID>
+           <txGasLimit> GLIMIT </txGasLimit>
+           <data>       DATA   </data>
+           <to>         ACCTTO </to>
+           ...
+         </message>
+      requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) >=Int 0
+
+    syntax KItem ::= "#updateAcctCode" Int
+ // --------------------------------------
+    rule <k> #updateAcctCode ADDR:Int => . ... </k>
+         <output> CODE </output>
+         <account>
+           <acctID> ADDR </acctID>
+           <code> (_ => CODE) </code>
+           ...
+         </account>
 
     syntax KItem ::= "#executeTx" Int
  // ---------------------------------
@@ -834,11 +852,10 @@ loadCallSettings
           => #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #catchHaltTx
           ~> #finalizeTx(false)
+          ~> #updateAcctCode #newAddr(ACCTFROM, NONCE)
          ...
          </k>
          <origin> ACCTFROM </origin>
-         <schedule> SCHED </schedule>
-         <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
          <callDepth> _ => -1 </callDepth>
          <txPending> ... ListItem(TXID:Int) </txPending>
          <coinbase> MINER </coinbase>
@@ -867,8 +884,6 @@ loadCallSettings
          </k>
          <origin> ACCTFROM </origin>
          <txPending> ... ListItem(TXID) </txPending>
-         <schedule> SCHED </schedule>
-         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
          <callDepth> _ => -1 </callDepth>
          <coinbase> MINER </coinbase>
          <message>
@@ -931,7 +946,7 @@ loadCallSettings
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString(#getJSON("key", J))
 
-    rule <k> #firefly_addAccountByAddress ACCT_ADDR => #newAccount ACCT_ADDR ~> #loadAccountData ACCT_ADDR J ~> #sendResponse( "result": true ) ... </k>
+    rule <k> #firefly_addAccountByAddress ACCT_ADDR => #newAccount ACCT_ADDR ~> loadAccount ACCT_ADDR J ~> #sendResponse( "result": true ) ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT_ADDR in ACCTS
@@ -941,7 +956,7 @@ loadCallSettings
          <activeAccounts> ACCTS </activeAccounts>
       requires ACCT_ADDR in ACCTS
 
-    rule <k> #firefly_addAccountByKey ACCT_KEY => #acctFromPrivateKey ACCT_KEY ~> #loadAccountData #addrFromPrivateKey(ACCT_KEY) J ~> #sendResponse( "result": true ) ... </k>
+    rule <k> #firefly_addAccountByKey ACCT_KEY => #acctFromPrivateKey ACCT_KEY ~> loadAccount #addrFromPrivateKey(ACCT_KEY) J ~> #sendResponse( "result": true ) ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool #addrFromPrivateKey(ACCT_KEY) in ACCTS
@@ -953,43 +968,12 @@ loadCallSettings
 
     rule <k> #firefly_addAccount => #sendResponse( "error": {"code": -32025, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
 
-    syntax KItem ::= "#loadAccountData" Int JSON
- // --------------------------------------------
-    rule <k> #loadAccountData _ { .JSONList } => . ... </k>
-
-    rule <k> #loadAccountData _ { "address": _, REST => REST } ... </k>
-    rule <k> #loadAccountData _ { "key"    : _, REST => REST } ... </k>
-
-    rule <k> #loadAccountData ACCTID { ("balance": BALANCE_STRING, REST) => REST } ... </k>
-         <account>
-           <acctID> ACCTID </acctID>
-           <balance> _ => #parseHexWord(BALANCE_STRING) </balance>
-           ...
-         </account>
-
-    rule <k> #loadAccountData ACCTID { ("code": CODE_STRING, REST) => REST } ... </k>
-         <account>
-           <acctID> ACCTID </acctID>
-           <code> _ => #parseByteStack(CODE_STRING) </code>
-           ...
-         </account>
-
-    rule <k> #loadAccountData ACCTID { ("nonce": NONCE_STRING, REST) => REST } ... </k>
-         <account>
-           <acctID> ACCTID </acctID>
-           <nonce> _ => #parseHexWord(NONCE_STRING) </nonce>
-           ...
-         </account>
-
-    rule <k> #loadAccountData ACCTID { ("storage": { STORAGE_JSON }, REST) => REST } ... </k>
-         <account>
-           <acctID> ACCTID </acctID>
-           <storage>     _ => #parseMap({ STORAGE_JSON }) </storage>
-           <origStorage> _ => #parseMap({ STORAGE_JSON }) </origStorage>
-           ...
-         </account>
-
-    rule <k> #loadAccountData _ _ =>  #sendResponse( "error": {"code": -32026, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
+    rule <k> loadAccount _ { "balance" : ((VAL:String)         => #parseHexWord(VAL)),     _ } ... </k>
+    rule <k> loadAccount _ { "nonce"   : ((VAL:String)         => #parseHexWord(VAL)),     _ } ... </k>
+    rule <k> loadAccount _ { "code"    : ((CODE:String)        => #parseByteStack(CODE)),  _ } ... </k>
+    rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })), _ } ... </k>
+    rule <k> loadAccount _ { "key" : _, REST => REST } ... </k>
+    rule <k> loadAccount _ { "address" : _, REST => REST } ... </k>
 ```
 
 - `#eth_call`
@@ -1002,7 +986,7 @@ loadCallSettings
           => #pushNetworkState
           ~> mkTX !ID:Int
           ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
-          ~> load "transaction" : { !ID : J }
+          ~> loadTransaction !ID J
           ~> signTX !ID #parseHexWord(#getString("from", J))
           ~> #prepareTx !ID
           ~> #eth_call_finalize
@@ -1020,5 +1004,42 @@ loadCallSettings
  // -------------------------------------
     rule <k> #eth_call_finalize => #popNetworkState ~> #sendResponse ("result": #unparseDataByteArray( OUTPUT )) ... </k>
          <output> OUTPUT </output>
+```
+
+- `#eth_estimateGas`
+**TODO**: add test for EVMC_OUT_OF_GAS
+**TODO**: implement funcionality for block number argument
+
+```k
+    syntax KItem ::= "#eth_estimateGas"
+ // -----------------------------------
+    rule <k> #eth_estimateGas
+          => #pushNetworkState
+          ~> mkTX !ID:Int
+          ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
+          ~> loadTransaction !ID J
+          ~> signTX !ID #parseHexWord(#getString("from", J))
+          ~> #prepareTx !ID
+          ~> #eth_estimateGas_finalize GUSED
+         ...
+         </k>
+         <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
+         <gasUsed>  GUSED  </gasUsed>
+         <gasLimit> GLIMIT </gasLimit>
+         <gas> ( _ => GLIMIT) </gas>
+      requires isString(#getJSON("from", J) )
+
+    rule <k> #eth_estimateGas => #sendResponse( "error": {"code": -32028, "message":"Method 'eth_estimateGas' has invalid arguments"} ) ...  </k>
+         <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
+      requires notBool isString( #getJSON("from", J) )
+
+    syntax KItem ::= "#eth_estimateGas_finalize" Int
+ // ------------------------------------------------
+    rule <k> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #sendResponse ("result": #unparseQuantity( GUSED -Int INITGUSED )) ... </k>
+         <gasUsed> GUSED </gasUsed>
+
+    rule <k> #eth_estimateGas_finalize _ => #popNetworkState ~> #sendResponse ( "error": {"code": -32000, "message":"base fee exceeds gas limit"}) ... </k>
+         <statusCode> EVMC_OUT_OF_GAS </statusCode>
+
 endmodule
 ```

@@ -1,1 +1,1 @@
-[{"jsonrpc":"2.0","id":1,"result":"0xeaeedf2f3cfc5cebf3421409c67794a8de424efa"},{"jsonrpc":"2.0","id":59,"result":"0x3e5f5a90b001e037a6b1b2b647623a3c6335f33016bdd8611fb9555e6275947d"}]
+[{"jsonrpc":"2.0","id":1,"result":"0xeaeedf2f3cfc5cebf3421409c67794a8de424efa"},{"jsonrpc":"2.0","id":59,"error":{"code":-32000,"message":"sender doesn't have enough funds to send tx."}}]
