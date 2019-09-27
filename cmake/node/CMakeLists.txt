@@ -33,5 +33,7 @@ target_compile_options(kevm-vm
 	PUBLIC -Wall -Werror)
 target_link_libraries(kevm-vm
 	ff protobuf gmp ${LINK_PROCPS} cryptopp secp256k1)
+target_link_directories(kevm-vm
+	PUBLIC $ENV{LIBRARY_PATH})
 
 include(LLVMKompile)
