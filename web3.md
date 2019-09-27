@@ -14,6 +14,8 @@ module WEB3
     configuration
       <kevm-client>
         <kevm/>
+        <execPhase> .Phase </execPhase>
+        <analysis> .Map </analysis>
         <blockchain>
           <chainID> $CHAINID:Int </chainID>
           <blockList> .List </blockList>
@@ -1040,6 +1042,58 @@ Transaction Receipts
 
     rule <k> #eth_estimateGas_finalize _ => #popNetworkState ~> #sendResponse ( "error": {"code": -32000, "message":"base fee exceeds gas limit"}) ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
+```
 
+Collecting Coverage Data
+------------------------
+
+- `<execPhase>` cell is used to differentiate between the generated code used for contract deployment and the bytecode of the contract.
+
+```k
+    syntax Phase ::= ".Phase"
+                   | "CONSTRUCTOR"
+                   | "RUNTIME"
+    
+    rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC:Bool
+          => #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
+         ...
+         </k>
+         <execPhase> ( _ => RUNTIME ) </execPhase>
+         <callDepth> CD => CD +Int 1 </callDepth>
+         <callData> _ => ARGS </callData>
+         <callValue> _ => APPVALUE </callValue>
+         <id> _ => ACCTTO </id>
+         <gas> _ => GCALL </gas>
+         <callGas> GCALL => 0 </callGas>
+         <caller> _ => ACCTFROM </caller>
+         <program> _ => BYTES </program>
+         <jumpDests> _ => #computeValidJumpDests(BYTES) </jumpDests>
+         <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
+         <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
+         <schedule> SCHED </schedule>
+      [priority(25)]
+
+    rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
+          => #initVM ~> #execute
+         ...
+         </k>
+         <execPhase> ( _ => CONSTRUCTOR ) </execPhase>
+         <schedule> SCHED </schedule>
+         <id> ACCT => ACCTTO </id>
+         <gas> _ => GCALL </gas>
+         <callGas> GCALL => 0 </callGas>
+         <program> _ => INITCODE </program>
+         <jumpDests> _ => #computeValidJumpDests(INITCODE) </jumpDests>
+         <caller> _ => ACCTFROM </caller>
+         <callDepth> CD => CD +Int 1 </callDepth>
+         <callData> _ => .ByteArray </callData>
+         <callValue> _ => VALUE </callValue>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <nonce> NONCE => #if Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
+           ...
+         </account>
+         <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
+      [priority(25)]
 endmodule
 ```
