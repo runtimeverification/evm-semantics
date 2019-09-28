@@ -1054,46 +1054,14 @@ Collecting Coverage Data
                    | "CONSTRUCTOR"
                    | "RUNTIME"
     
-    rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC:Bool
-          => #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
-         ...
-         </k>
-         <execPhase> ( _ => RUNTIME ) </execPhase>
-         <callDepth> CD => CD +Int 1 </callDepth>
-         <callData> _ => ARGS </callData>
-         <callValue> _ => APPVALUE </callValue>
-         <id> _ => ACCTTO </id>
-         <gas> _ => GCALL </gas>
-         <callGas> GCALL => 0 </callGas>
-         <caller> _ => ACCTFROM </caller>
-         <program> _ => BYTES </program>
-         <jumpDests> _ => #computeValidJumpDests(BYTES) </jumpDests>
-         <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
-         <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
-         <schedule> SCHED </schedule>
+    rule <k> #mkCall _ _ _ _ _ _ _ ... </k>
+         <execPhase> ( EPHASE => RUNTIME ) </execPhase>
+      requires EPHASE =/=K RUNTIME
       [priority(25)]
 
-    rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
-          => #initVM ~> #execute
-         ...
-         </k>
-         <execPhase> ( _ => CONSTRUCTOR ) </execPhase>
-         <schedule> SCHED </schedule>
-         <id> ACCT => ACCTTO </id>
-         <gas> _ => GCALL </gas>
-         <callGas> GCALL => 0 </callGas>
-         <program> _ => INITCODE </program>
-         <jumpDests> _ => #computeValidJumpDests(INITCODE) </jumpDests>
-         <caller> _ => ACCTFROM </caller>
-         <callDepth> CD => CD +Int 1 </callDepth>
-         <callData> _ => .ByteArray </callData>
-         <callValue> _ => VALUE </callValue>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <nonce> NONCE => #if Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
-           ...
-         </account>
-         <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
+    rule <k> #mkCreate _ _ _ _ ... </k>
+         <execPhase> ( EPHASE => CONSTRUCTOR ) </execPhase>
+      requires EPHASE =/=K CONSTRUCTOR
       [priority(25)]
 endmodule
 ```
