@@ -1051,15 +1051,6 @@ NOGAS Mode
 ```k
     syntax Mode ::= "NOGAS"
  // -----------------------
-    rule <k> #gas [ OP , AOP ]
-          => #if #usesMemory(OP) #then #memory [ AOP ] #else .K #fi
-          ~> #gas [ AOP ]
-         ...
-        </k>
-         <mode> MODE </mode>
-     requires MODE =/=K NOGAS
-     [priority(25)]
-
     rule <k> #gas [ OP , AOP ] => . ... </k>
          <mode> NOGAS </mode>
      [priority(25)]
