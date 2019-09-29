@@ -334,9 +334,14 @@ The `#next [_]` operator initiates execution by:
 
 ```k
     syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [function]
+                  | #stackUnderflow ( WordStack , Int    ) [function, functional]
                   | #stackOverflow  ( WordStack , OpCode ) [function]
- // -----------------------------------------------------------------
-    rule #stackUnderflow(WS, OP) => #sizeWordStack(WS)                      <Int #stackNeeded(OP)
+ // -----------------------------------------------------------------------------
+    rule #stackUnderflow(WS        , OP:OpCode) => #stackUnderflow(WS, #stackNeeded(OP))
+    rule #stackUnderflow(WS        , N:Int    ) => false                         requires notBool (N >Int 0)
+    rule #stackUnderflow(W : WS    , N:Int    ) => #stackUnderflow(WS, N -Int 1) requires          N >Int 0
+    rule #stackUnderflow(.WordStack, N:Int    ) => true                          requires          N >Int 0
+
     rule #stackOverflow (WS, OP) => #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
