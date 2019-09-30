@@ -1068,15 +1068,17 @@ Collecting Coverage Data
       [priority(25)]
 
     rule <k> #initVM ... </k>
-         <opcodeCoverage> OC => OC [ ListItem({keccak(CODE) | EPHASE}) <- .Set ] </opcodeCoverage>
+         <opcodeCoverage> OC => OC [ {keccak(CODE) | EPHASE} <- .Set ] </opcodeCoverage>
          <execPhase> EPHASE </execPhase>
          <program> CODE </program>
-      requires notBool ListItem({keccak(CODE) | EPHASE}) in_keys(OC)
+      requires notBool {keccak(CODE) | EPHASE} in_keys(OC)
       [priority(25)]
 
     rule <k> #execute ... </k>
          <pc> PCOUNT </pc>
-         <opcodeCoverage> OC[ ListItem({keccak(CODE) | EPHASE}) |-> ( (PCS .Set) => SetItem(PCOUNT) ) ] </pcVisited>
+         <execPhase> EPHASE </execPhase>
+         <program> CODE </program>
+         <opcodeCoverage> ... { keccak(CODE) | EPHASE } |-> (PCS (.Set => SetItem(PCOUNT))) ... </opcodeCoverage>
       requires notBool PCOUNT in PCS
       [priority(25)]
 endmodule
