@@ -984,6 +984,7 @@ Transaction Receipts
  // ----------------------------
     rule <k> #eth_call
           => #pushNetworkState
+          ~> #setMode NOGAS
           ~> mkTX !ID:Int
           ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
           ~> loadTransaction !ID J
@@ -1002,7 +1003,7 @@ Transaction Receipts
 
     syntax KItem ::= "#eth_call_finalize"
  // -------------------------------------
-    rule <k> #eth_call_finalize => #popNetworkState ~> #sendResponse ("result": #unparseDataByteArray( OUTPUT )) ... </k>
+    rule <k> #eth_call_finalize => #setMode NORMAL ~> #popNetworkState ~> #sendResponse ("result": #unparseDataByteArray( OUTPUT )) ... </k>
          <output> OUTPUT </output>
 ```
 
@@ -1040,6 +1041,22 @@ Transaction Receipts
 
     rule <k> #eth_estimateGas_finalize _ => #popNetworkState ~> #sendResponse ( "error": {"code": -32000, "message":"base fee exceeds gas limit"}) ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
+```
 
+NOGAS Mode
+----------
+
+- Used for `eth_call` RPC messages
+
+```k
+    syntax Mode ::= "NOGAS"
+ // -----------------------
+    rule <k> #gas [ OP , AOP ] => . ... </k>
+         <mode> NOGAS </mode>
+     [priority(25)]
+
+    rule <k> #validateTx TXID => loadCallState TXID ~> #executeTx TXID ~> #makeTxReceipt TXID ... </k>
+         <mode> NOGAS </mode>
+     [priority(25)]
 endmodule
 ```
