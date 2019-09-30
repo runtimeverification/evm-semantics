@@ -335,7 +335,7 @@ pipeline {
                   git url: 'git@github.com:kframework/homebrew-k.git', branch: 'brew-release-kevm'
                   unstash "mojave-kevm"
                   sh '''
-                    ${WORKSPACE}/src/main/scripts/brew-install-bottle
+                    ${WORKSPACE}/deps/k/src/main/scripts/brew-install-bottle
                   '''
                 }
                 dir("kevm-${env.KEVM_RELEASE_ID}") {
@@ -346,7 +346,7 @@ pipeline {
                 }
                 dir('homebrew-k') {
                   sh '''
-                    ${WORKSPACE}/src/main/scripts/brew-update-to-final
+                    ${WORKSPACE}/deps/k/src/main/scripts/brew-update-to-final
                   '''
                 }
               }
