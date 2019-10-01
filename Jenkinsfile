@@ -339,8 +339,8 @@ pipeline {
                   '''
                 }
                 dir("kevm-${env.KEVM_RELEASE_ID}") {
+                  checkout scm
                   sh '''
-                    export PATH=$PATH:$(pwd)/.build/defn/vm
                     make test-interactive-firefly
                   '''
                 }
