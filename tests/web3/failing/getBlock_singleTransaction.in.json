@@ -1,0 +1,41 @@
+[{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "firefly_addAccount",
+  "params": [
+    {
+      "key": "0x2b8ba85ff7f2c7fa62cddb20ae40ef2553b9fdbff086f60d1647ecaab15af867",
+      "balance": "0x8ac7230489e80000"
+    }
+  ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "firefly_addAccount",
+  "params": [
+    {
+      "key": "0x080c18943a25de49fcff55528f238a2c029ce1e88da36e0f7ea82e839c2fc13a",
+      "balance": "0x8ac7230489e80000"
+    }
+  ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "eth_sendTransaction",
+  "params": [{
+    "from": "0xd308979bf428e38b458a99da348e28933a4cddb1",
+    "to": "0xde5f12af6e6856ea35c4a4b5e5a1c1baaeeeef01",
+    "value": "0x1"
+  }]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "eth_getBlockByNumber",
+  "params": [
+    "latest",
+    false
+  ]
+}]
