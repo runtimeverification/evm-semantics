@@ -45,6 +45,15 @@
   "id": 5,
   "method": "eth_getBlockByNumber",
   "params": [
+    "0x1",
+    false
+  ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "eth_getBlockByNumber",
+  "params": [
     "latest",
     false
   ]
