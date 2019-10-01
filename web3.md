@@ -986,6 +986,7 @@ Transaction Receipts
  // ----------------------------
     rule <k> #eth_call
           => #pushNetworkState
+          ~> #setMode NOGAS
           ~> mkTX !ID:Int
           ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
           ~> loadTransaction !ID J
@@ -1004,7 +1005,7 @@ Transaction Receipts
 
     syntax KItem ::= "#eth_call_finalize"
  // -------------------------------------
-    rule <k> #eth_call_finalize => #popNetworkState ~> #sendResponse ("result": #unparseDataByteArray( OUTPUT )) ... </k>
+    rule <k> #eth_call_finalize => #setMode NORMAL ~> #popNetworkState ~> #sendResponse ("result": #unparseDataByteArray( OUTPUT )) ... </k>
          <output> OUTPUT </output>
 ```
 
@@ -1044,6 +1045,23 @@ Transaction Receipts
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
 ```
 
+NOGAS Mode
+----------
+
+- Used for `eth_call` RPC messages
+
+```k
+    syntax Mode ::= "NOGAS"
+ // -----------------------
+    rule <k> #gas [ OP , AOP ] => . ... </k>
+         <mode> NOGAS </mode>
+     [priority(25)]
+
+    rule <k> #validateTx TXID => loadCallState TXID ~> #executeTx TXID ~> #makeTxReceipt TXID ... </k>
+         <mode> NOGAS </mode>
+     [priority(25)]
+```
+
 Collecting Coverage Data
 ------------------------
 
@@ -1081,5 +1099,6 @@ Collecting Coverage Data
          <opcodeCoverage> ... { keccak(CODE) | EPHASE } |-> (PCS (.Set => SetItem(PCOUNT))) ... </opcodeCoverage>
       requires notBool PCOUNT in PCS
       [priority(25)]
+
 endmodule
 ```
