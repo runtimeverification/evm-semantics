@@ -1098,7 +1098,7 @@ Collecting Coverage Data
 
 
     rule <k> #initVM ... </k>
-         <opcodeLists> OL => OL [ {keccak(PGM) | EPHASE} <- #parseByteCode(PGM,SCHED) ] </opcodeLists>
+         <opcodeLists> OL => OL [ {keccak(PGM) | EPHASE} <- #getOpcodeList(PGM,SCHED) ] </opcodeLists>
          <execPhase> EPHASE </execPhase>
          <schedule> SCHED </schedule>
          <program> PGM </program>
@@ -1107,15 +1107,15 @@ Collecting Coverage Data
 
     syntax OpcodeItem ::= "{" Int "|" OpCode "}"
 
-    syntax List ::= #parseByteCode( ByteArray, Schedule ) [function]
+    syntax List ::= #getOpcodeList( ByteArray, Schedule ) [function]
  // ----------------------------------------------------------------
-    rule #parseByteCode(PGM , SCHED) => #parseByteCodeAux(0, #sizeByteArray(PGM), PGM, SCHED, .List)
+    rule #getOpcodeList(PGM , SCHED) => #parseByteCode(0, #sizeByteArray(PGM), PGM, SCHED)
 
-    syntax List ::= #parseByteCodeAux ( Int, Int, ByteArray, Schedule, List ) [function]
- // ------------------------------------------------------------------------------------
-    rule #parseByteCodeAux(PCOUNT, SIZE, _, _, OPLIST) => OPLIST
+    syntax List ::= #parseByteCode ( Int, Int, ByteArray, Schedule ) [function]
+ // ---------------------------------------------------------------------------
+    rule #parseByteCode(PCOUNT, SIZE, _, _) => .List
       requires PCOUNT >=Int SIZE
-    rule #parseByteCodeAux(PCOUNT, SIZE, PGM, SCHED, OPLIST) => #parseByteCodeAux(PCOUNT +Int #widthOp(#dasmOpCode(PGM [ PCOUNT ], SCHED)), SIZE, PGM, SCHED, OPLIST ListItem({ PCOUNT | #dasmOpCode(PGM [ PCOUNT ], SCHED) } ) )
+    rule #parseByteCode(PCOUNT, SIZE, PGM, SCHED) => ListItem({ PCOUNT | #dasmOpCode(PGM [ PCOUNT ], SCHED) } ) #parseByteCode(PCOUNT +Int #widthOp(#dasmOpCode(PGM [ PCOUNT ], SCHED)), SIZE, PGM, SCHED)
       requires PCOUNT <Int SIZE
 
     rule <k> #execute ... </k>
