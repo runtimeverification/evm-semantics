@@ -1141,7 +1141,7 @@ Collecting Coverage Data
     syntax JSONList ::= #serializeCoverage ( List, Map ) [function]
  // ---------------------------------------------------------------
     rule #serializeCoverage (.List, _ ) => .JSONList
-    rule #serializeCoverage ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map ) => { CODEHASH:{ Phase2String(EPHASE): [List2JSONList(Set2List(X))] }}, #serializeCoverage(KEYS, COVERAGE)
+    rule #serializeCoverage ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [List2JSONList(Set2List(X))] }}, #serializeCoverage(KEYS, COVERAGE)
 
     syntax JSONList ::= #serializePrograms ( List, Map ) [function]
  // ---------------------------------------------------------------
