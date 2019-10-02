@@ -1074,6 +1074,9 @@ Collecting Coverage Data
 - `<opcodeLists>` cell is a map similar to `<opcodeCoverage>` which stores instead a list containing all the `OpcodeItem`s of the executed bytecode for each contract.
 - `OpcodeItem` is a tuple which contains the Program Counter and the Opcode name.
 
+**TODO**: instead of having both `#serializeCoverage` and `#serializePrograms` we could keep only the first rule as `#serializeCoverageMap` if `<opcodeLists>` would store `Sets` instead of `Lists`.
+**TODO**: compute coverage percentage in `#makeCoverageReport`
+
 ```k
     syntax Phase ::= ".Phase"
                    | "CONSTRUCTOR"
@@ -1136,7 +1139,7 @@ Collecting Coverage Data
 
     syntax JSON ::= #makeCoverageReport ( Map, Map ) [function]
  // -----------------------------------------------------------
-    rule #makeCoverageReport (COVERAGE, PGMS) => {"coverageMap": [#serializeCoverage(keys_list(COVERAGE),COVERAGE)]}                 //, "programs": #serializePrograms(keys_list(PGMS),PGMS)}
+    rule #makeCoverageReport (COVERAGE, PGMS) => {"coverages": [#serializeCoverage(keys_list(COVERAGE),COVERAGE)], "programs": [#serializePrograms(keys_list(PGMS),PGMS)] }
 
     syntax JSONList ::= #serializeCoverage ( List, Map ) [function]
  // ---------------------------------------------------------------
@@ -1146,6 +1149,7 @@ Collecting Coverage Data
     syntax JSONList ::= #serializePrograms ( List, Map ) [function]
  // ---------------------------------------------------------------
     rule #serializePrograms (.List, _ ) => .JSONList
+    rule #serializePrograms ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:List PGMS:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [List2JSONList(X)] }}, #serializePrograms(KEYS, PGMS)
 
     syntax String ::= Phase2String ( Phase ) [function]
  // ----------------------------------------------------
@@ -1154,7 +1158,8 @@ Collecting Coverage Data
 
     syntax JSONList ::= List2JSONList ( List ) [function]
  // -----------------------------------------------------
-    rule List2JSONList (.List) => .JSONList
-    rule List2JSONList (ListItem(I:Int) L) => I, List2JSONList(L)
+    rule List2JSONList (.List)                           => .JSONList
+    rule List2JSONList (ListItem(I:Int) L)               => I, List2JSONList(L)
+    rule List2JSONList (ListItem({I:Int | _:OpCode }) L) => I, List2JSONList(L)
 endmodule
 ```
