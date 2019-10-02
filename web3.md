@@ -143,8 +143,8 @@ WEB3 JSON RPC
 -------------
 
 ```k
-    syntax JSON ::= "null" | "undef" | ByteArray | Account
- // ------------------------------------------------------
+    syntax JSON ::= "null" | "undef" | ByteArray | Account | Float
+ // --------------------------------------------------------------
 
     syntax JSON ::= #getJSON ( JSONKey , JSON ) [function]
  // ------------------------------------------------------
@@ -1075,7 +1075,8 @@ Collecting Coverage Data
 - `OpcodeItem` is a tuple which contains the Program Counter and the Opcode name.
 
 **TODO**: instead of having both `#serializeCoverage` and `#serializePrograms` we could keep only the first rule as `#serializeCoverageMap` if `<opcodeLists>` would store `Sets` instead of `Lists`.
-**TODO**: compute coverage percentage in `#makeCoverageReport`
+**TODO**: compute coverage percentages in `Float` instead of `Int`
+**TODO**: `Set2List` won't return `ListItems` in order, causing tests to fail.
 
 ```k
     syntax Phase ::= ".Phase"
@@ -1139,7 +1140,11 @@ Collecting Coverage Data
 
     syntax JSON ::= #makeCoverageReport ( Map, Map ) [function]
  // -----------------------------------------------------------
-    rule #makeCoverageReport (COVERAGE, PGMS) => {"coverages": [#serializeCoverage(keys_list(COVERAGE),COVERAGE)], "programs": [#serializePrograms(keys_list(PGMS),PGMS)] }
+    rule #makeCoverageReport (COVERAGE, PGMS) => {
+                                                  "coverages": [#coveragePercentages(keys_list(PGMS),COVERAGE,PGMS)],
+                                                  "coveredOpcodes": [#serializeCoverage(keys_list(COVERAGE),COVERAGE)],
+                                                  "programs": [#serializePrograms(keys_list(PGMS),PGMS)] 
+                                                 }
 
     syntax JSONList ::= #serializeCoverage ( List, Map ) [function]
  // ---------------------------------------------------------------
@@ -1153,13 +1158,22 @@ Collecting Coverage Data
 
     syntax String ::= Phase2String ( Phase ) [function]
  // ----------------------------------------------------
-    rule Phase2String(CONSTRUCTOR) => "CONSTRUCTOR"
-    rule Phase2String(RUNTIME)     => "RUNTIME"
+    rule Phase2String (CONSTRUCTOR) => "CONSTRUCTOR"
+    rule Phase2String (RUNTIME)     => "RUNTIME"
 
     syntax JSONList ::= List2JSONList ( List ) [function]
  // -----------------------------------------------------
     rule List2JSONList (.List)                           => .JSONList
     rule List2JSONList (ListItem(I:Int) L)               => I, List2JSONList(L)
     rule List2JSONList (ListItem({I:Int | _:OpCode }) L) => I, List2JSONList(L)
+
+    syntax JSONList ::= #coveragePercentages ( List, Map, Map) [function]
+ // ---------------------------------------------------------------------
+    rule #coveragePercentages (.List, _, _) => .JSONList
+    rule #coveragePercentages ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map, KEY |-> Y:List PGMS:Map) => { Int2String(CODEHASH):{ Phase2String(EPHASE): #computePercentage(size(X),size(Y)) }}, #coveragePercentages(KEYS,COVERAGE,PGMS)
+
+    syntax Int ::= #computePercentage ( Int, Int ) [function]
+ // ---------------------------------------------------------
+    rule #computePercentage (EXECUTED, TOTAL) => EXECUTED /Int TOTAL *Int 100
 endmodule
 ```
