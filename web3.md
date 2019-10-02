@@ -315,6 +315,8 @@ WEB3 JSON RPC
          <method> "eth_call" </method>
     rule <k> #runRPCCall => #eth_estimateGas ... </k>
          <method> "eth_estimateGas" </method>
+    rule <k> #runRPCCall => #firefly_getCoverageData ... </k>
+         <method> "firefly_getCoverageData" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -1126,5 +1128,33 @@ Collecting Coverage Data
       requires notBool PCOUNT in PCS
       [priority(25)]
 
+    syntax KItem ::= "#firefly_getCoverageData"
+ // -------------------------------------------
+    rule <k> #firefly_getCoverageData => #sendResponse ("result": #makeCoverageReport(COVERAGE, PGMS)) ... </k>
+         <opcodeCoverage> COVERAGE </opcodeCoverage>
+         <opcodeLists>    PGMS     </opcodeLists>
+
+    syntax JSON ::= #makeCoverageReport ( Map, Map ) [function]
+ // -----------------------------------------------------------
+    rule #makeCoverageReport (COVERAGE, PGMS) => {"coverageMap": [#serializeCoverage(keys_list(COVERAGE),COVERAGE)]}                 //, "programs": #serializePrograms(keys_list(PGMS),PGMS)}
+
+    syntax JSONList ::= #serializeCoverage ( List, Map ) [function]
+ // ---------------------------------------------------------------
+    rule #serializeCoverage (.List, _ ) => .JSONList
+    rule #serializeCoverage ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map ) => { CODEHASH:{ Phase2String(EPHASE): [List2JSONList(Set2List(X))] }}, #serializeCoverage(KEYS, COVERAGE)
+
+    syntax JSONList ::= #serializePrograms ( List, Map ) [function]
+ // ---------------------------------------------------------------
+    rule #serializePrograms (.List, _ ) => .JSONList
+
+    syntax String ::= Phase2String ( Phase ) [function]
+ // ----------------------------------------------------
+    rule Phase2String(CONSTRUCTOR) => "CONSTRUCTOR"
+    rule Phase2String(RUNTIME)     => "RUNTIME"
+
+    syntax JSONList ::= List2JSONList ( List ) [function]
+ // -----------------------------------------------------
+    rule List2JSONList (.List) => .JSONList
+    rule List2JSONList (ListItem(I:Int) L) => I, List2JSONList(L)
 endmodule
 ```
