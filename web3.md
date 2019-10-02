@@ -16,6 +16,7 @@ module WEB3
         <kevm/>
         <execPhase> .Phase </execPhase>
         <opcodeCoverage> .Map </opcodeCoverage>
+        <opcodeLists> .Map </opcodeLists>
         <blockchain>
           <chainID> $CHAINID:Int </chainID>
           <blockList> .List </blockList>
@@ -1068,6 +1069,8 @@ Collecting Coverage Data
 
 - `<execPhase>` cell is used to differentiate between the generated code used for contract deployment and the bytecode of the contract.
 - `<opcodeCoverage>` cell is a map which stores the program counters which were hit during the execution of a program. The key, named `CoverageIdentifier`, contains the hash of the bytecode which is executed, and the phase of the execution.
+- `<opcodeLists>` cell is a map similar to `<opcodeCoverage>` which stores instead a list containing all the `OpcodeItem`s of the executed bytecode for each contract.
+- `OpcodeItem` is a tuple which contains the Program Counter and the Opcode name.
 
 ```k
     syntax Phase ::= ".Phase"
@@ -1087,17 +1090,39 @@ Collecting Coverage Data
       [priority(25)]
 
     rule <k> #initVM ... </k>
-         <opcodeCoverage> OC => OC [ {keccak(CODE) | EPHASE} <- .Set ] </opcodeCoverage>
+         <opcodeCoverage> OC => OC [ {keccak(PGM) | EPHASE} <- .Set ] </opcodeCoverage>
          <execPhase> EPHASE </execPhase>
-         <program> CODE </program>
-      requires notBool {keccak(CODE) | EPHASE} in_keys(OC)
+         <program> PGM </program>
+      requires notBool {keccak(PGM) | EPHASE} in_keys(OC)
       [priority(25)]
+
+
+    rule <k> #initVM ... </k>
+         <opcodeLists> OL => OL [ {keccak(PGM) | EPHASE} <- #getOpcodeList(PGM,SCHED) ] </opcodeLists>
+         <execPhase> EPHASE </execPhase>
+         <schedule> SCHED </schedule>
+         <program> PGM </program>
+      requires notBool {keccak(PGM) | EPHASE} in_keys(OL)
+      [priority(25)]
+
+    syntax OpcodeItem ::= "{" Int "|" OpCode "}"
+
+    syntax List ::= #getOpcodeList( ByteArray, Schedule ) [function]
+ // ----------------------------------------------------------------
+    rule #getOpcodeList(PGM , SCHED) => #parseByteCode(0, #sizeByteArray(PGM), PGM, SCHED)
+
+    syntax List ::= #parseByteCode ( Int, Int, ByteArray, Schedule ) [function]
+ // ---------------------------------------------------------------------------
+    rule #parseByteCode(PCOUNT, SIZE, _, _) => .List
+      requires PCOUNT >=Int SIZE
+    rule #parseByteCode(PCOUNT, SIZE, PGM, SCHED) => ListItem({ PCOUNT | #dasmOpCode(PGM [ PCOUNT ], SCHED) } ) #parseByteCode(PCOUNT +Int #widthOp(#dasmOpCode(PGM [ PCOUNT ], SCHED)), SIZE, PGM, SCHED)
+      requires PCOUNT <Int SIZE
 
     rule <k> #execute ... </k>
          <pc> PCOUNT </pc>
          <execPhase> EPHASE </execPhase>
-         <program> CODE </program>
-         <opcodeCoverage> ... { keccak(CODE) | EPHASE } |-> (PCS (.Set => SetItem(PCOUNT))) ... </opcodeCoverage>
+         <program> PGM </program>
+         <opcodeCoverage> ... { keccak(PGM) | EPHASE } |-> (PCS (.Set => SetItem(PCOUNT))) ... </opcodeCoverage>
       requires notBool PCOUNT in PCS
       [priority(25)]
 
