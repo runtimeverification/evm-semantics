@@ -18,7 +18,7 @@ npx kevm-ganache-cli --gasLimit 0xfffffffffff --port "$kevm_vm_port"            
     --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501209,1000000000000000000000000 \
     &
 
-tmp_testing_dir="$(mktemp --directory tests/firefly-node.XXXXXX)"
+tmp_testing_dir="$(mktemp -d tests/firefly-node.XXXXXX)"
 trap "rm -rf $tmp_testing_dir" INT TERM EXIT
 cd "$tmp_testing_dir"
 
