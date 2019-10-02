@@ -341,6 +341,8 @@ pipeline {
                 dir("kevm-${env.KEVM_RELEASE_ID}") {
                   checkout scm
                   sh '''
+                    brew install npm
+                    npm install -g npx
                     make test-interactive-firefly
                   '''
                 }
