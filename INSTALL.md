@@ -4,8 +4,8 @@ Installing Release Builds
 These instructions explain how to download, install, and build the KEVM packages.
 Current supported systems are:
 
--   Arch Linux
 -   Ubuntu Bionic (18.04)
+-   Debian Buster
 
 Downloading Packages
 --------------------
@@ -22,14 +22,6 @@ Install the package with (`X.Y.Z` is version number, `ID` is platform identifier
 
 ```sh
 sudo apt install ./kevm_X.Y.Z_amd64_ID.deb
-```
-
-### Arch
-
-Install the package with (`X.Y.Z-V` is version number):
-
-```sh
-sudo pacman -U ./kevm-git-X.Y.Z-V-x86_64.pkg.tar.xz
 ```
 
 Building Packages
