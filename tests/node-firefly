@@ -2,7 +2,7 @@
 
 set -xeuo pipefail
 
-open_zeppelin_commit="18473d0"
+open_zeppelin_commit="b8c8308"
 kevm_vm_port="8545"
 
 npx kevm-ganache-cli --gasLimit 0xfffffffffff --port "$kevm_vm_port"                                       \
@@ -16,9 +16,6 @@ npx kevm-ganache-cli --gasLimit 0xfffffffffff --port "$kevm_vm_port"            
     --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501207,1000000000000000000000000 \
     --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501208,1000000000000000000000000 \
     --account=0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501209,1000000000000000000000000 \
-    --account=0x956b91cb2344d7863ea89e6945b753ca32f6d74bb97a59e59e04903ded14ad00,1000000000000000000000000 \
-    --account=0x956b91cb2344d7863ea89e6945b753ca32f6d74bb97a59e59e04903ded14ad01,1000000000000000000000000 \
-    --account=0x956b91cb2344d7863ea89e6945b753ca32f6d74bb97a59e59e04903ded14ad02,1000000000000000000000000 \
     &
 
 tmp_testing_dir="$(mktemp -d tests/firefly-node.XXXXXX)"
@@ -35,9 +32,5 @@ npm install
 while ! netcat -z localhost "$kevm_vm_port"; do
     sleep 1
 done
-
-npx oz-gsn deploy-relay-hub \
-    --ethereumNodeURL "http://localhost:$kevm_vm_port" \
-    --from "0xbb49ad04422f9fa6a217f3ed82261b942f6981f7"
 
 node_modules/.bin/truffle test
