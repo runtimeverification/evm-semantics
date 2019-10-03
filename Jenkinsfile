@@ -384,7 +384,7 @@ pipeline {
                         --attach "bionic/kevm_${KEVM_RELEASE_ID}_amd64_bionic.deb#Ubuntu Bionic (18.04) Package"                     \
                         --attach "buster/kevm_${KEVM_RELEASE_ID}_amd64_buster.deb#Debian Buster (10) Package"                        \
                         --file "release.md" "${release_tag}"
-                        // --attach "arch/kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package" \
+                        # --attach "arch/kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package" \
                   '''
                 }
               }
