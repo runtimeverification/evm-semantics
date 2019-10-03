@@ -342,6 +342,7 @@ pipeline {
                   checkout scm
                   sh '''
                     brew install node@10
+                    export PATH="/usr/local/opt/node@10/bin:$PATH"
                     npm install -g npx
                     make test-interactive-firefly
                   '''
