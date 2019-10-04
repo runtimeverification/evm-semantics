@@ -341,7 +341,7 @@ pipeline {
                 dir("kevm-${env.KEVM_RELEASE_ID}") {
                   checkout scm
                   sh '''
-                    brew install node@10
+                    brew install node@10 netcat
                     export PATH="/usr/local/opt/node@10/bin:$PATH"
                     npm install -g npx
                     make test-interactive-firefly
