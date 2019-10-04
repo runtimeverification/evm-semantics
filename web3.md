@@ -14,6 +14,8 @@ module WEB3
     configuration
       <kevm-client>
         <kevm/>
+        <execPhase> .Phase </execPhase>
+        <opcodeCoverage> .Map </opcodeCoverage>
         <blockchain>
           <chainID> $CHAINID:Int </chainID>
           <blockList> .List </blockList>
@@ -1058,5 +1060,45 @@ NOGAS Mode
     rule <k> #validateTx TXID => loadCallState TXID ~> #executeTx TXID ~> #makeTxReceipt TXID ... </k>
          <mode> NOGAS </mode>
      [priority(25)]
+```
+
+Collecting Coverage Data
+------------------------
+
+- `<execPhase>` cell is used to differentiate between the generated code used for contract deployment and the bytecode of the contract.
+- `<opcodeCoverage>` cell is a map which stores the program counters which were hit during the execution of a program. The key, named `CoverageIdentifier`, contains the hash of the bytecode which is executed, and the phase of the execution.
+
+```k
+    syntax Phase ::= ".Phase"
+                   | "CONSTRUCTOR"
+                   | "RUNTIME"
+
+    syntax CoverageIdentifier ::= "{" Int "|" Phase "}"
+
+    rule <k> #mkCall _ _ _ _ _ _ _ ... </k>
+         <execPhase> ( EPHASE => RUNTIME ) </execPhase>
+      requires EPHASE =/=K RUNTIME
+      [priority(25)]
+
+    rule <k> #mkCreate _ _ _ _ ... </k>
+         <execPhase> ( EPHASE => CONSTRUCTOR ) </execPhase>
+      requires EPHASE =/=K CONSTRUCTOR
+      [priority(25)]
+
+    rule <k> #initVM ... </k>
+         <opcodeCoverage> OC => OC [ {keccak(CODE) | EPHASE} <- .Set ] </opcodeCoverage>
+         <execPhase> EPHASE </execPhase>
+         <program> CODE </program>
+      requires notBool {keccak(CODE) | EPHASE} in_keys(OC)
+      [priority(25)]
+
+    rule <k> #execute ... </k>
+         <pc> PCOUNT </pc>
+         <execPhase> EPHASE </execPhase>
+         <program> CODE </program>
+         <opcodeCoverage> ... { keccak(CODE) | EPHASE } |-> (PCS (.Set => SetItem(PCOUNT))) ... </opcodeCoverage>
+      requires notBool PCOUNT in PCS
+      [priority(25)]
+
 endmodule
 ```

@@ -1,0 +1,19 @@
+[{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "firefly_addAccount",
+  "params": [
+    {
+      "key": "0x2b8ba85ff7f2c7fa62cddb20ae40ef2553b9fdbff086f60d1647ecaab15af867"
+    }
+  ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "eth_getBlockByNumber",
+  "params": [
+    "pending",
+    false
+  ]
+}]

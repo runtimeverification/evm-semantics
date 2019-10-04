@@ -855,7 +855,6 @@ We need to interperet a `ByteArray` as a `String` again so that we can call `Kec
     syntax String ::= #unparseData          ( Int, Int  ) [function]
                     | #unparseDataByteArray ( ByteArray ) [function]
  // ----------------------------------------------------------------
-    rule #unparseData(    _,      0 ) => "0x"
     rule #unparseData( DATA, LENGTH ) => #unparseDataByteArray(#padToWidth(LENGTH,#asByteStack(DATA)))
 
     rule #unparseDataByteArray( DATA ) => replaceFirst(Base2String(#asInteger(#asByteStack(1) ++ DATA), 16), "1", "0x")
