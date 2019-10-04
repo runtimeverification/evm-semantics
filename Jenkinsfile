@@ -308,51 +308,51 @@ pipeline {
                 }
               }
             }
-            stage('Build Arch Package') {
-              agent {
-                dockerfile {
-                  dir "kevm-${env.KEVM_RELEASE_ID}/package"
-                  filename 'Dockerfile.arch'
-                  additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                  reuseNode true
-                }
-              }
-              steps {
-                dir("kevm-${env.KEVM_RELEASE_ID}") {
-                  checkout scm
-                  unstash 'arch-kframework'
-                  sh '''
-                    sudo pacman -Syu --noconfirm
-                    sudo pacman --noconfirm -U kframework-git.pkg.tar.xz
-                    cd package
-                    makepkg --noconfirm --syncdeps
-                  '''
-                }
-                stash name: 'arch-kevm', includes: "kevm-${env.KEVM_RELEASE_ID}/package/kevm-git-${env.KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz"
-              }
-            }
-            stage('Test Arch Package') {
-              options { timeout(time: 15, unit: 'MINUTES') }
-              agent {
-                dockerfile {
-                  dir "kevm-${env.KEVM_RELEASE_ID}/package"
-                  filename 'Dockerfile.arch'
-                  additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                  reuseNode true
-                }
-              }
-              steps {
-                dir("kevm-${env.KEVM_RELEASE_ID}") {
-                  unstash 'arch-kevm'
-                  sh '''
-                    sudo pacman -Syu --noconfirm
-                    sudo pacman --noconfirm -U package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz
-                    export PATH=$PATH:$(pwd)/.build/defn/vm
-                    make test-interactive-firefly
-                  '''
-                }
-              }
-            }
+            // stage('Build Arch Package') {
+            //   agent {
+            //     dockerfile {
+            //       dir "kevm-${env.KEVM_RELEASE_ID}/package"
+            //       filename 'Dockerfile.arch'
+            //       additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+            //       reuseNode true
+            //     }
+            //   }
+            //   steps {
+            //     dir("kevm-${env.KEVM_RELEASE_ID}") {
+            //       checkout scm
+            //       unstash 'arch-kframework'
+            //       sh '''
+            //         sudo pacman -Syu --noconfirm
+            //         sudo pacman --noconfirm -U kframework-git.pkg.tar.xz
+            //         cd package
+            //         makepkg --noconfirm --syncdeps
+            //       '''
+            //     }
+            //     stash name: 'arch-kevm', includes: "kevm-${env.KEVM_RELEASE_ID}/package/kevm-git-${env.KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz"
+            //   }
+            // }
+            // stage('Test Arch Package') {
+            //   options { timeout(time: 15, unit: 'MINUTES') }
+            //   agent {
+            //     dockerfile {
+            //       dir "kevm-${env.KEVM_RELEASE_ID}/package"
+            //       filename 'Dockerfile.arch'
+            //       additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+            //       reuseNode true
+            //     }
+            //   }
+            //   steps {
+            //     dir("kevm-${env.KEVM_RELEASE_ID}") {
+            //       unstash 'arch-kevm'
+            //       sh '''
+            //         sudo pacman -Syu --noconfirm
+            //         sudo pacman --noconfirm -U package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz
+            //         export PATH=$PATH:$(pwd)/.build/defn/vm
+            //         make test-interactive-firefly
+            //       '''
+            //     }
+            //   }
+            // }
             stage('Upload Release') {
               agent {
                 dockerfile {
@@ -371,9 +371,9 @@ pipeline {
                   dir("buster") {
                     unstash 'buster-kevm'
                   }
-                  dir("arch") {
-                    unstash 'arch-kevm'
-                  }
+                  // dir("arch") {
+                  //   unstash 'arch-kevm'
+                  // }
                   sh '''
                     release_tag="v${KEVM_RELEASE_ID}-$(git rev-parse --short HEAD)"
                     make release.md KEVM_RELEASE_TAG=${release_tag}
@@ -381,10 +381,10 @@ pipeline {
                     mv buster/kevm_${KEVM_RELEASE_ID}_amd64.deb buster/kevm_${KEVM_RELEASE_ID}_amd64_buster.deb
                     hub release create                                                                                               \
                         --attach "kevm-${KEVM_RELEASE_ID}-src.tar.gz#Source tar.gz"                                                  \
-                        --attach "bionic/kevm_${KEVM_RELEASE_ID}_amd64_bionic.deb#Ubuntu Bionic (18.04) Package"                            \
-                        --attach "buster/kevm_${KEVM_RELEASE_ID}_amd64_buster.deb#Debian Buster (10) Package"                               \
-                        --attach "arch/kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package" \
+                        --attach "bionic/kevm_${KEVM_RELEASE_ID}_amd64_bionic.deb#Ubuntu Bionic (18.04) Package"                     \
+                        --attach "buster/kevm_${KEVM_RELEASE_ID}_amd64_buster.deb#Debian Buster (10) Package"                        \
                         --file "release.md" "${release_tag}"
+                        # --attach "arch/kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package" \
                   '''
                 }
               }
