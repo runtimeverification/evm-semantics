@@ -245,6 +245,7 @@ WEB3 JSON RPC
          <callid> CALLID </callid>
          <batch> [ _ ] </batch>
          <web3response> ... .List => ListItem({ "jsonrpc": "2.0", "id": CALLID, J }) </web3response>
+      requires CALLID =/=K undef
 
     rule <k> #sendResponse(_) ~> _ => #loadFromBatch </k>
          <callid> undef </callid>
