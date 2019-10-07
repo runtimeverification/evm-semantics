@@ -15,7 +15,7 @@ pipeline {
         }
       }
     }
-/*    stage('Build and Test') {
+    stage('Build and Test') {
       when {
         changeRequest()
         beforeAgent true
@@ -158,7 +158,7 @@ pipeline {
           }
         }
       }
-    }*/
+    }
     stage('Release') {
       agent { label 'docker' }
       options { skipDefaultCheckout() }
@@ -238,11 +238,11 @@ pipeline {
           }
         }
         stage('Deploy Release') {
-/*          when {
+          when {
             not { changeRequest() }
             branch 'master'
             beforeAgent true
-          }*/
+          }
           stages {
             stage('Build Source Tarball') {
               agent {
@@ -399,7 +399,7 @@ pipeline {
             //     }
             //   }
             // }
-            /*stage('Upload Release') {
+            stage('Upload Release') {
               agent {
                 dockerfile {
                   dir "kevm-${env.KEVM_RELEASE_ID}/package"
@@ -438,7 +438,7 @@ pipeline {
                   '''
                 }
               }
-            }*/
+            }
           }
         }
       }
