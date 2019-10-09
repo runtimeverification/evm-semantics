@@ -8,6 +8,8 @@ set(KOMPILED_DIR $ENV{node_dir}/$ENV{MAIN_DEFN_FILE}-kompiled)
 set(KOMPILE_USE_MAIN "library")
 set(TARGET_NAME "kevm-vm")
 
+link_directories(AFTER SYSTEM $ENV{LIBRARY_PATH})
+
 add_executable(kevm-vm
 	$ENV{PLUGIN_SUBMODULE}/vm-c/init.cpp
 	$ENV{PLUGIN_SUBMODULE}/vm-c/main.cpp
