@@ -39,7 +39,7 @@ export LUA_PATH
 
 .PHONY: all clean clean-submodules distclean install uninstall                                                                              \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff                                     \
-        build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                                               \
+        build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3 build-merkle                                  \
         defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                                                \
         split-tests                                                                                                                         \
         test test-all test-conformance test-rest-conformance test-all-conformance                                                           \
@@ -159,6 +159,7 @@ java_dir    := $(DEFN_DIR)/java
 haskell_dir := $(DEFN_DIR)/haskell
 export node_dir    := $(CURDIR)/$(DEFN_DIR)/node
 export web3_dir    := $(CURDIR)/$(DEFN_DIR)/web3
+export merkle_dir  := $(CURDIR)/$(DEFN_DIR)/merkle
 
 ocaml_files   := $(patsubst %, $(ocaml_dir)/%, $(ALL_K_FILES))
 llvm_files    := $(patsubst %, $(llvm_dir)/%, $(ALL_K_FILES))
@@ -166,6 +167,7 @@ java_files    := $(patsubst %, $(java_dir)/%, $(ALL_K_FILES))
 haskell_files := $(patsubst %, $(haskell_dir)/%, $(ALL_K_FILES))
 node_files    := $(patsubst %, $(node_dir)/%, $(ALL_K_FILES))
 web3_files    := $(patsubst %, $(web3_dir)/%, $(ALL_K_FILES))
+merkle_files  := $(patsubst %, $(merkle_dir)/%, $(ALL_K_FILES))
 defn_files    := $(ocaml_files) $(llvm_file) $(java_files) $(haskell_files) $(node_files) $(web3_files)
 
 ocaml_kompiled   := $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
@@ -174,6 +176,7 @@ node_kompiled    := $(DEFN_DIR)/vm/kevm-vm
 web3_kompiled    := $(web3_dir)/build/kevm-client
 haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
+merkle_kompiled  := $(merkle_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 # Tangle definition from *.md files
 
@@ -188,6 +191,7 @@ java-defn:    $(java_files)
 haskell-defn: $(haskell_files)
 node-defn:    $(node_files)
 web3-defn:    $(web3_files)
+merkle-defn:  $(merkle_files)
 
 $(ocaml_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(ocaml_dir)
@@ -213,6 +217,10 @@ $(web3_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(web3_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
+$(merkle_dir)/%.k: %.md $(TANGLER)
+	@mkdir -p $(merkle_dir)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
+
 # Kompiling
 
 KOMPILE_OPTS      :=
@@ -226,6 +234,7 @@ build-node:    $(node_kompiled)
 build-web3:    $(web3_kompiled)
 build-haskell: $(haskell_kompiled)
 build-llvm:    $(llvm_kompiled)
+build-merkle:  $(merkle_kompiled)
 
 # Java Backend
 
@@ -344,6 +353,22 @@ $(llvm_kompiled): $(llvm_files) $(libff_out)
 	                 -ccopt -L$(LIBRARY_PATH) \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS))
 
+$(merkle_kompiled): MAIN_DEFN_FILE=data
+$(merkle_kompiled): MAIN_MODULE=EVM-DATA
+$(merkle_kompiled): SYNTAX_MODULE=EVM-DATA
+
+.PHONY: $(merkle_kompiled)
+$(merkle_kompiled): $(merkle_files)
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
+	                 --syntax-module $(SYNTAX_MODULE) $(merkle_dir)/$(MAIN_DEFN_FILE).k \
+	                 --directory $(merkle_dir) -I $(merkle_dir) \
+	                 --hook-namespaces KRYPTO \
+	                 $(KOMPILE_OPTS) \
+	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
+	                 -ccopt -g -ccopt -std=c++14 -ccopt -O2 \
+	                 -ccopt -L$(LIBRARY_PATH) \
+	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS))
+
 # Installing
 # ----------
 
@@ -411,6 +436,11 @@ tests/%.run-web3: tests/%.in.json
 	$(CHECK) tests/$*.expected.json tests/$*.out.json
 	rm -rf tests/$*.out.json
 
+tests/%.run-merkle: tests/%.in
+	tests/merkle/runtest.sh $< tests/$*.out
+	$(CHECK) tests/$*.expected tests/$*.out
+	rm -rf tests/$*.out
+
 tests/%.parse: tests/%
 	$(TEST) kast --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
 	$(CHECK) $@-expected $@-out
@@ -468,6 +498,10 @@ web3_tests=$(wildcard tests/web3/*.in.json) \
            $(wildcard tests/web3/no-shutdown/*.in.json)
 
 test-web3: $(web3_tests:.in.json=.run-web3)
+
+merkle_tests=$(wildcard tests/merkle/*.in)
+
+test-merkle: $(merkle_tests:.in=.run-merkle)
 
 # Proof Tests
 
