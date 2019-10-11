@@ -914,6 +914,48 @@ Encoding
     rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR requires lengthString(STR) <Int 56
     rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires lengthString(STR) >=Int 56
     rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
+
+    syntax String ::= #rlpEncodeMerkleTree ( MerkleTree ) [function]
+ // ----------------------------------------------------------------
+    rule #rlpEncodeMerkleTree ( .MerkleTree ) => "\x80"
+
+    rule #rlpEncodeMerkleTree ( MerkleLeaf ( PATH, VALUE ) )
+      => #rlpEncodeLength(         #rlpEncodeString( Bytes2String( PATH ) )
+                           +String #rlpEncodeString( VALUE )
+                         , 192
+                         )
+
+    rule #rlpEncodeMerkleTree ( MerkleExtension ( PATH, HASH ) )
+      => #rlpEncodeLength(         #rlpEncodeString( Bytes2String( PATH ) )
+                           +String H( #rlpEncodeMerkleTree( HASH ) )
+                         , 192
+                         )
+
+    rule #rlpEncodeMerkleTree ( MerkleBranch (  0 |-> P0:MerkleTree  1 |-> P1:MerkleTree  2 |-> P2:MerkleTree  3 |-> P3:MerkleTree
+                                                4 |-> P4:MerkleTree  5 |-> P5:MerkleTree  6 |-> P6:MerkleTree  7 |-> P7:MerkleTree
+                                                8 |-> P8:MerkleTree  9 |-> P9:MerkleTree 10 |-> PA:MerkleTree 11 |-> PB:MerkleTree
+                                               12 |-> PC:MerkleTree 13 |-> PD:MerkleTree 14 |-> PE:MerkleTree 15 |-> PF:MerkleTree
+                                             , VALUE
+                                             )
+                        )
+      => #rlpEncodeLength(         H( #rlpEncodeMerkleTree( P0 ) ) +String H( #rlpEncodeMerkleTree( P1 ) )
+                           +String H( #rlpEncodeMerkleTree( P2 ) ) +String H( #rlpEncodeMerkleTree( P3 ) )
+                           +String H( #rlpEncodeMerkleTree( P4 ) ) +String H( #rlpEncodeMerkleTree( P5 ) )
+                           +String H( #rlpEncodeMerkleTree( P6 ) ) +String H( #rlpEncodeMerkleTree( P7 ) )
+                           +String H( #rlpEncodeMerkleTree( P8 ) ) +String H( #rlpEncodeMerkleTree( P9 ) )
+                           +String H( #rlpEncodeMerkleTree( PA ) ) +String H( #rlpEncodeMerkleTree( PB ) )
+                           +String H( #rlpEncodeMerkleTree( PC ) ) +String H( #rlpEncodeMerkleTree( PD ) )
+                           +String H( #rlpEncodeMerkleTree( PE ) ) +String H( #rlpEncodeMerkleTree( PF ) )
+                           +String #rlpEncodeString( VALUE )
+                         , 192
+                         )
+
+    syntax String ::= H ( String ) [function,klabel(MerkleRLPAux)]
+ // --------------------------------------------------------------
+    rule H ( X ) => #rlpEncodeString( Hex2Raw( Keccak256( X ) ) )
+      requires lengthString( X ) >=Int 32
+
+    rule H ( X ) => X [owise]
 ```
 
 Decoding
@@ -964,6 +1006,8 @@ Merkle Patricia Tree
 - https://github.com/ethereum/wiki/wiki/Patricia-Tree
 
 ```k
+    syntax KItem ::= Int | MerkleTree // For testing purposes
+
     syntax MerkleTree ::= MerkleBranch    ( Map, String )
                         | MerkleExtension ( Bytes, MerkleTree )
                         | MerkleLeaf      ( Bytes, String )
