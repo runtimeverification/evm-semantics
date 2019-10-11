@@ -515,6 +515,10 @@ The local memory of execution is a byte-array (instead of a word-array).
  // --------------------------------------------------
     rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned)
 
+    syntax String ::= #asString ( ByteArray ) [function]
+ // ----------------------------------------------------
+    rule #asString(WS) => Bytes2String(WS)
+
     syntax Account ::= #asAccount ( ByteArray ) [function]
  // ------------------------------------------------------
     rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
@@ -559,6 +563,12 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #asInteger( .WordStack     ) => 0
     rule #asInteger( W : .WordStack ) => W
     rule #asInteger( W0 : W1 : WS   ) => #asInteger(((W0 *Int 256) +Int W1) : WS)
+
+    syntax String ::= #asString ( ByteArray ) [function]
+ // ----------------------------------------------------
+    rule #asString( .WordStack     ) => ""
+    rule #asString( W : .WordStack ) => chrChar( W )
+    rule #asString( W0 : WS        ) => chrChar( W0 ) +String #asString( WS )
 
     syntax Account ::= #asAccount ( ByteArray ) [function]
  // ------------------------------------------------------
@@ -914,6 +924,48 @@ Encoding
     rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR requires lengthString(STR) <Int 56
     rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires lengthString(STR) >=Int 56
     rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
+
+    syntax String ::= #rlpEncodeMerkleTree ( MerkleTree ) [function]
+ // ----------------------------------------------------------------
+    rule #rlpEncodeMerkleTree ( .MerkleTree ) => "\x80"
+
+    rule #rlpEncodeMerkleTree ( MerkleLeaf ( PATH, VALUE ) )
+      => #rlpEncodeLength(         #rlpEncodeString( #asString( #HPEncode( PATH, 1 ) ) )
+                           +String #rlpEncodeString( VALUE )
+                         , 192
+                         )
+
+    rule #rlpEncodeMerkleTree ( MerkleExtension ( PATH, TREE ) )
+      => #rlpEncodeLength(         #rlpEncodeString( #asString( #HPEncode( PATH, 0 ) ) )
+                           +String #rlpMerkleH( #rlpEncodeMerkleTree( TREE ) )
+                         , 192
+                         )
+
+    rule #rlpEncodeMerkleTree ( MerkleBranch (  0 |->  P0:MerkleTree  1 |->  P1:MerkleTree  2 |->  P2:MerkleTree  3 |->  P3:MerkleTree
+                                                4 |->  P4:MerkleTree  5 |->  P5:MerkleTree  6 |->  P6:MerkleTree  7 |->  P7:MerkleTree
+                                                8 |->  P8:MerkleTree  9 |->  P9:MerkleTree 10 |-> P10:MerkleTree 11 |-> P11:MerkleTree
+                                               12 |-> P12:MerkleTree 13 |-> P13:MerkleTree 14 |-> P14:MerkleTree 15 |-> P15:MerkleTree
+                                             , VALUE
+                                             )
+                        )
+      => #rlpEncodeLength(         #rlpMerkleH( #rlpEncodeMerkleTree(  P0 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P1 ) )
+                           +String #rlpMerkleH( #rlpEncodeMerkleTree(  P2 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P3 ) )
+                           +String #rlpMerkleH( #rlpEncodeMerkleTree(  P4 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P5 ) )
+                           +String #rlpMerkleH( #rlpEncodeMerkleTree(  P6 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P7 ) )
+                           +String #rlpMerkleH( #rlpEncodeMerkleTree(  P8 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P9 ) )
+                           +String #rlpMerkleH( #rlpEncodeMerkleTree( P10 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree( P11 ) )
+                           +String #rlpMerkleH( #rlpEncodeMerkleTree( P12 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree( P13 ) )
+                           +String #rlpMerkleH( #rlpEncodeMerkleTree( P14 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree( P15 ) )
+                           +String #rlpEncodeString( VALUE )
+                         , 192
+                         )
+
+    syntax String ::= #rlpMerkleH ( String ) [function,klabel(MerkleRLPAux)]
+ // ------------------------------------------------------------------------
+    rule #rlpMerkleH ( X ) => #rlpEncodeString( Hex2Raw( Keccak256( X ) ) )
+      requires lengthString( X ) >=Int 32
+
+    rule #rlpMerkleH ( X ) => X [owise]
 ```
 
 Decoding
@@ -964,6 +1016,8 @@ Merkle Patricia Tree
 - https://github.com/ethereum/wiki/wiki/Patricia-Tree
 
 ```k
+    syntax KItem ::= Int | MerkleTree // For testing purposes
+
     syntax MerkleTree ::= MerkleBranch    ( Map, String )
                         | MerkleExtension ( ByteArray, MerkleTree )
                         | MerkleLeaf      ( ByteArray, String )
@@ -977,6 +1031,32 @@ Merkle Patricia Tree
                         12 |-> .MerkleTree 13 |-> .MerkleTree 14 |-> .MerkleTree 15 |-> .MerkleTree
                       , ""
                       )
+
+```
+
+Merkle Tree Aux Functions
+-------------------------
+
+```k
+    syntax ByteArray ::= #byteify   ( ByteArray ) [function]
+ // --------------------------------------------------------
+    rule #byteify ( B ) =>    #asByteStack ( B[0] *Int 16 +Int B[1] )
+                           ++ #byteify ( B[2 .. #sizeByteArray(B) -Int 2] )
+      requires #sizeByteArray(B) >Int 0
+
+    rule #byteify ( _ ) => .ByteArray [owise]
+
+    syntax ByteArray ::= #HPEncode ( ByteArray, Int ) [function]
+ // ------------------------------------------------------------
+    rule #HPEncode ( X, T ) => #asByteStack ( ( f(T) +Int 1 ) *Int 16 +Int X[0] ) ++ #byteify( X[1 .. #sizeByteArray(X) -Int 1] )
+      requires #sizeByteArray(X) %Int 2 =/=Int 0
+
+    rule #HPEncode ( X, T ) => #asByteStack ( f(T) *Int 16 )[0 .. 1] ++ #byteify( X ) [owise]
+
+    syntax Int ::= f ( Int ) [function,klabel(HPEncodeAux)]
+ // -------------------------------------------------------
+    rule f ( X ) => 0 requires X ==Int 0
+    rule f ( _ ) => 2 [owise]
 
 endmodule
 ```
