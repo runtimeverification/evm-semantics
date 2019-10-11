@@ -955,5 +955,28 @@ Decoding
     rule #decodeLengthPrefixLength(#str,  STR, START, B0) => #decodeLengthPrefixLength(#str,  START, B0 -Int 128 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 128 -Int 56 +Int 1)))))
     rule #decodeLengthPrefixLength(#list, STR, START, B0) => #decodeLengthPrefixLength(#list, START, B0 -Int 192 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 192 -Int 56 +Int 1)))))
     rule #decodeLengthPrefixLength(TYPE, START, LL, L) => TYPE(L, START +Int 1 +Int LL)
+```
+
+Merkle Patricia Tree
+====================
+
+- Appendix C and D from the Ethereum Yellow Paper
+- https://github.com/ethereum/wiki/wiki/Patricia-Tree
+
+```k
+    syntax MerkleTree ::= MerkleBranch    ( Map, String )
+                        | MerkleExtension ( ByteArray, MerkleTree )
+                        | MerkleLeaf      ( ByteArray, String )
+                        | ".MerkleTree"
+                        | ".MerkleBranch"            [function]
+ // -----------------------------------------------------------
+    rule .MerkleBranch
+      => MerkleBranch (  0 |-> .MerkleTree  1 |-> .MerkleTree  2 |-> .MerkleTree  3 |-> .MerkleTree
+                         4 |-> .MerkleTree  5 |-> .MerkleTree  6 |-> .MerkleTree  7 |-> .MerkleTree
+                         8 |-> .MerkleTree  9 |-> .MerkleTree 10 |-> .MerkleTree 11 |-> .MerkleTree
+                        12 |-> .MerkleTree 13 |-> .MerkleTree 14 |-> .MerkleTree 15 |-> .MerkleTree
+                      , ""
+                      )
+
 endmodule
 ```
