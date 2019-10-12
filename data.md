@@ -1028,6 +1028,30 @@ Merkle Patricia Tree
     rule MerkleUpdate ( TREE, S:String, VALUE ) => MerkleUpdate ( TREE, #nibbleize ( S ), VALUE )
 
     rule MerkleUpdate ( .MerkleTree, PATH:Bytes, VALUE ) => MerkleLeaf ( #HPEncode ( PATH, 1 ), VALUE )
+
+    rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, _ ), PATH:Bytes, VALUE )
+      => MerkleLeaf( LEAFPATH, VALUE )
+      requires Bytes2Int( LEAFPATH, BE, Unsigned ) ==Int Bytes2Int( #HPEncode( PATH, 1 ), BE, Unsigned )
+
+    rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH:Bytes, VALUE )
+      => MerkleUpdate ( MerkleUpdate ( .MerkleBranch, LEAFPATH, LEAFVALUE ), PATH, VALUE )
+      requires lengthBytes( #getPath( LEAFPATH ) ) >Int 0
+       andBool lengthBytes( PATH ) >Int 0
+       andBool #getPath( LEAFPATH )[0] =/=Int PATH[0]
+
+    rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH:Bytes, VALUE )
+      => #merkleExtensionBuilder( .Bytes, #getPath ( LEAFPATH ), LEAFVALUE, PATH, VALUE ) [owise]
+
+    rule MerkleUpdate ( MerkleBranch( M, _ ), PATH:Bytes, VALUE )
+      => MerkleBranch( M, VALUE )
+      requires lengthBytes( PATH ) ==Int 0
+
+    rule MerkleUpdate ( MerkleBranch( M, BRANCHVALUE ), PATH:Bytes, VALUE )
+      => #fun( NIBBLE
+            => #fun( NIBBLE |-> TREE _
+                  => MerkleBranch( M[NIBBLE <- MerkleUpdate( TREE, substrBytes( PATH, 1, lengthBytes(PATH) ), VALUE )], BRANCHVALUE )
+                   )(M)
+             )(PATH[0]) [owise]
 ```
 
 Merkle Tree Aux Functions
@@ -1064,6 +1088,31 @@ Merkle Tree Aux Functions
  // -------------------------------------------------------
     rule f ( X ) => 0 requires X ==Int 0
     rule f ( _ ) => 2 [owise]
+
+    syntax Bytes ::= #getPath ( Bytes ) [function]
+ // ---------------------------------------------
+    rule #getPath ( B ) => String2Bytes ( chrChar ( B[0] %Int 16 ) ) +Bytes #nibbleize ( substrBytes( B, 1, lengthBytes(B) ) )
+      requires lengthBytes(B) >Int 0
+       andBool ( B[0] /Int 16 ) %Int 2 =/=Int 0
+
+    rule #getPath ( B ) => #nibbleize ( substrBytes( B , 1, lengthBytes(B) ) ) [owise]
+
+    syntax MerkleTree ::= #merkleExtensionBuilder( Bytes, Bytes, String, Bytes, String ) [function]
+ // -----------------------------------------------------------------------------------------------
+    rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
+      => MerkleExtension( #HPEncode( PATH, 0 ), MerkleUpdate( MerkleUpdate( .MerkleBranch, .Bytes, V1 ), P2, V2 ) )
+      requires lengthBytes(P1) ==Int 0
+
+    rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
+      => MerkleExtension( #HPEncode( PATH, 0 ), MerkleUpdate( MerkleUpdate( .MerkleBranch, .Bytes, V2 ), P1, V1 ) )
+      requires lengthBytes(P2) ==Int 0
+
+    rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
+      => #merkleExtensionBuilder( PATH +Bytes Int2Bytes( P1[0], BE, Unsigned )
+                                , substrBytes( P1, 1, lengthBytes(P1) ), V1
+                                , substrBytes( P2, 1, lengthBytes(P2) ), V2
+                                )
+      requires P1[0] ==Int P2[0] [owise]
 
 endmodule
 ```
