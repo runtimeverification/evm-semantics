@@ -1022,5 +1022,48 @@ Merkle Patricia Tree
                       , ""
                       )
 
+    syntax MerkleTree ::= MerkleUpdate ( MerkleTree, String, String ) [function]
+                        | MerkleUpdate ( MerkleTree,  Bytes, String ) [function,klabel(MerkleUpdateAux)]
+ // ----------------------------------------------------------------------------------------------------
+    rule MerkleUpdate ( TREE, S:String, VALUE ) => MerkleUpdate ( TREE, #nibbleize ( S ), VALUE )
+
+    rule MerkleUpdate ( .MerkleTree, PATH:Bytes, VALUE ) => MerkleLeaf ( #HPEncode ( PATH, 1 ), VALUE )
+```
+
+Merkle Tree Aux Functions
+-------------------------
+
+```k
+    syntax Bytes ::= #nibbleize ( String ) [function]
+                   | #nibbleize (  Bytes ) [function]
+                   | #byteify   (  Bytes ) [function]
+ // -------------------------------------------------
+    rule #nibbleize ( S:String ) => #nibbleize ( String2Bytes ( S ) )
+
+    rule #nibbleize ( B:Bytes ) =>        Int2Bytes ( B[0] /Int 16, BE, Unsigned )
+                                   +Bytes Int2Bytes ( B[0] %Int 16, BE, Unsigned )
+                                   +Bytes #nibbleize ( substrBytes( B, 1, lengthBytes(B) ) )
+      requires lengthBytes( B ) >Int 0
+
+    rule #nibbleize ( _:Bytes ) => .Bytes [owise]
+
+    rule #byteify ( B ) =>        Int2Bytes ( B[0] *Int 16 +Int B[1], BE, Unsigned )
+                           +Bytes #byteify ( substrBytes( B, 2, lengthBytes(B) ) )
+      requires lengthBytes(B) >Int 0
+
+    rule #byteify ( _ ) => .Bytes [owise]
+
+    syntax Bytes ::= #HPEncode ( Bytes, Int ) [function]
+ // ----------------------------------------------------
+    rule #HPEncode ( X, T ) => Int2Bytes ( ( f(T) +Int 1 ) *Int 16 +Int X[0], BE, Unsigned ) +Bytes #byteify( substrBytes( X, 1, lengthBytes(X) ) )
+      requires lengthBytes(X) %Int 2 =/=Int 0
+
+    rule #HPEncode ( X, T ) => String2Bytes ( chrChar ( f(T) *Int 16 ) ) +Bytes #byteify( X ) [owise]
+
+    syntax Int ::= f ( Int ) [function,klabel(HPEncodeAux)]
+ // -------------------------------------------------------
+    rule f ( X ) => 0 requires X ==Int 0
+    rule f ( _ ) => 2 [owise]
+
 endmodule
 ```

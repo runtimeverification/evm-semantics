@@ -1,0 +1,1 @@
+#HPEncode( #nibbleize( "\xde\xad\xbe\xef" ), 1 )
