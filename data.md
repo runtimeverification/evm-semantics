@@ -1052,6 +1052,19 @@ Merkle Patricia Tree
     rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
       => #merkleExtensionBuilder( .ByteArray, LEAFPATH, LEAFVALUE, PATH, VALUE ) [owise]
 
+    rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
+      => MerkleExtension ( EXTPATH, MerkleUpdate ( EXTTREE, .ByteArray, VALUE ) )
+      requires #asInteger( EXTPATH ) ==Int #asInteger( PATH )
+
+    rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
+      => #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, PATH, VALUE ), EXTPATH, EXTTREE )
+      requires #sizeByteArray( EXTPATH ) >Int 0
+       andBool #sizeByteArray( PATH ) >Int 0
+       andBool EXTPATH[0] =/=Int PATH[0]
+
+    rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
+      => #merkleExtensionSplitter( .ByteArray, EXTPATH, EXTTREE, PATH, VALUE ) [owise]
+
     rule MerkleUpdate ( MerkleBranch( M, _ ), PATH, VALUE )
       => MerkleBranch( M, VALUE )
       requires #sizeByteArray( PATH ) ==Int 0
@@ -1115,6 +1128,33 @@ Merkle Tree Aux Functions
       => MerkleExtension( PATH, MerkleUpdate( MerkleUpdate( .MerkleBranch, P1, V1 ), P2, V2 ) )
       requires #sizeByteArray(P1) ==Int 0
         orBool #sizeByteArray(P2) ==Int 0
+
+    syntax MerkleTree ::= #merkleExtensionBrancher ( MerkleTree, ByteArray, MerkleTree )                   [function]
+                        | #merkleExtensionSplitter ( ByteArray, ByteArray, MerkleTree, ByteArray, String ) [function]
+ // -----------------------------------------------------------------------------------------------------------------
+    rule #merkleExtensionBrancher( MerkleBranch(M, VALUE), PATH, EXTTREE )
+      => MerkleBranch( M[PATH[0] <- MerkleExtension( PATH[1 .. #sizeByteArray(PATH) -Int 1], EXTTREE )], VALUE )
+
+    rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
+      => #merkleExtensionSplitter( PATH ++ ( #asByteStack( P1[0] )[0 .. 1] )
+                                 , P1[1 .. #sizeByteArray(P1) -Int 1], TREE
+                                 , P2[1 .. #sizeByteArray(P2) -Int 1], VALUE
+                                 )
+      [owise]
+
+    rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
+      => MerkleExtension( PATH, #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, P2, VALUE ), P1, TREE ) )
+      requires #sizeByteArray(P1) >Int 0
+       andBool #sizeByteArray(P2) >Int 0
+       andBool P1[0] =/=Int P2[0]
+
+    rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
+      => MerkleExtension( PATH, MerkleUpdate( TREE, P2, VALUE ) )
+      requires #sizeByteArray(P1) ==Int 0
+
+    rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
+      => MerkleExtension( PATH, #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, P2, VALUE ), P1, TREE ) )
+      requires #sizeByteArray(P2) ==Int 0
 
 endmodule
 ```
