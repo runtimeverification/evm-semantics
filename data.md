@@ -1114,5 +1114,14 @@ Merkle Tree Aux Functions
                                 )
       requires P1[0] ==Int P2[0] [owise]
 
+    syntax MerkleTree ::= #merkleExtensionBrancher ( MerkleTree, Bytes, MerkleTree ) [function]
+ // -------------------------------------------------------------------------------------------
+    rule #merkleExtensionBrancher( MerkleBranch(M, VALUE), PATH, EXTTREE )
+      => #fun( NIBBLE
+            => #fun( NIBBLE |-> BRANCHTREE _:Map
+                  => MerkleBranch( M[NIBBLE <- MerkleExtension( #HPEncode( substrBytes( PATH, 1, lengthBytes(PATH) ), 0 ), EXTTREE )], VALUE )
+                   )(M)
+             )(PATH[0])
+
 endmodule
 ```
