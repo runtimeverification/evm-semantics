@@ -6,8 +6,8 @@ DEFN_DIR    := $(BUILD_DIR)/defn
 BUILD_LOCAL := $(CURDIR)/$(BUILD_DIR)/local
 
 LIBRARY_PATH       := $(BUILD_LOCAL)/lib
-C_INCLUDE_PATH     := $(BUILD_LOCAL)/include
-CPLUS_INCLUDE_PATH := $(BUILD_LOCAL)/include
+C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
+CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
 PKG_CONFIG_PATH    := $(LIBRARY_PATH)/pkgconfig
 
 export LIBRARY_PATH
