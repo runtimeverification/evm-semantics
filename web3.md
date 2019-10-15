@@ -315,6 +315,8 @@ WEB3 JSON RPC
          <method> "eth_call" </method>
     rule <k> #runRPCCall => #eth_estimateGas ... </k>
          <method> "eth_estimateGas" </method>
+    rule <k> #runRPCCall => #eth_accounts ... </k>
+         <method> "eth_accounts" </method> 
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -333,6 +335,17 @@ WEB3 JSON RPC
  // -------------------------------
     rule <k> #net_version => #sendResponse( "result" : Int2String( CHAINID ) ) ... </k>
          <chainID> CHAINID </chainID>
+
+    syntax KItem ::= "#eth_accounts"
+ // --------------------------------
+    rule <k> #eth_accounts => #sendResponse( "result" : [List2JSONList(Set2List(AS))] ) ...</k>
+         <activeAccounts> AS </activeAccounts>
+    
+    syntax JSONList ::= List2JSONList ( List ) [function]
+ // -----------------------------------------------------
+    rule List2JSONList (.List)                           => .JSONList
+    rule List2JSONList (ListItem(I:Int) L)               => I, List2JSONList(L)
+    rule List2JSONList (ListItem({I:Int | _:OpCode }) L) => I, List2JSONList(L)
 
     syntax KItem ::= "#web3_clientVersion"
  // --------------------------------------
