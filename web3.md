@@ -1149,23 +1149,23 @@ Collecting Coverage Data
     syntax JSONList ::= #serializeCoverage ( List, Map ) [function]
  // ---------------------------------------------------------------
     rule #serializeCoverage (.List, _ ) => .JSONList
-    rule #serializeCoverage ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [List2JSONList(Set2List(X))] }}, #serializeCoverage(KEYS, COVERAGE)
+    rule #serializeCoverage ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [CoverageIDList2JSONList(Set2List(X))] }}, #serializeCoverage(KEYS, COVERAGE)
 
     syntax JSONList ::= #serializePrograms ( List, Map ) [function]
  // ---------------------------------------------------------------
     rule #serializePrograms (.List, _ ) => .JSONList
-    rule #serializePrograms ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:List PGMS:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [List2JSONList(X)] }}, #serializePrograms(KEYS, PGMS)
+    rule #serializePrograms ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:List PGMS:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [CoverageIDList2JSONList(X)] }}, #serializePrograms(KEYS, PGMS)
 
     syntax String ::= Phase2String ( Phase ) [function]
  // ----------------------------------------------------
     rule Phase2String (CONSTRUCTOR) => "CONSTRUCTOR"
     rule Phase2String (RUNTIME)     => "RUNTIME"
 
-    syntax JSONList ::= List2JSONList ( List ) [function]
+    syntax JSONList ::= CoverageIDList2JSONList ( List ) [function]
  // -----------------------------------------------------
-    rule List2JSONList (.List)                           => .JSONList
-    rule List2JSONList (ListItem(I:Int) L)               => I, List2JSONList(L)
-    rule List2JSONList (ListItem({I:Int | _:OpCode }) L) => I, List2JSONList(L)
+    rule CoverageIDList2JSONList (.List)                           => .JSONList
+    rule CoverageIDList2JSONList (ListItem(I:Int) L)               => I, CoverageIDList2JSONList(L)
+    rule CoverageIDList2JSONList (ListItem({I:Int | _:OpCode }) L) => I, CoverageIDList2JSONList(L)
 
     syntax JSONList ::= #coveragePercentages ( List, Map, Map) [function]
  // ---------------------------------------------------------------------
