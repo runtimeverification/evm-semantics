@@ -1162,7 +1162,7 @@ Collecting Coverage Data
     rule Phase2String (RUNTIME)     => "RUNTIME"
 
     syntax JSONList ::= CoverageIDList2JSONList ( List ) [function]
- // -----------------------------------------------------
+ // ---------------------------------------------------------------
     rule CoverageIDList2JSONList (.List)                           => .JSONList
     rule CoverageIDList2JSONList (ListItem(I:Int) L)               => I, CoverageIDList2JSONList(L)
     rule CoverageIDList2JSONList (ListItem({I:Int | _:OpCode }) L) => I, CoverageIDList2JSONList(L)
