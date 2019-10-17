@@ -1,7 +1,7 @@
 requires "abstract-semantics.k"
 requires "verification.k"
 
-module FN-EXECUTE-SIG1-INVALID-SPEC
+module ECRECOVERLOOP02-SIG1-INVALID-SPEC
   imports ETHEREUM-SIMULATION
   imports ABSTRACT-SEMANTICS
   imports VERIFICATION

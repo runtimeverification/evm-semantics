@@ -1,7 +1,7 @@
 requires "abstract-semantics.k"
 requires "verification.k"
 
-module FN-EXECUTE-OVERFLOW-SPEC
+module OVERFLOW00-OVERFLOW-SPEC
   imports ETHEREUM-SIMULATION
   imports ABSTRACT-SEMANTICS
   imports VERIFICATION

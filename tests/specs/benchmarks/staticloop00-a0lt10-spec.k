@@ -1,7 +1,7 @@
 requires "abstract-semantics.k"
 requires "verification.k"
 
-module FN-EXECUTE-A0LT10-SPEC
+module STATICLOOP00-A0LT10-SPEC
   imports ETHEREUM-SIMULATION
   imports ABSTRACT-SEMANTICS
   imports VERIFICATION
