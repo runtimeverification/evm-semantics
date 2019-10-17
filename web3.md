@@ -1174,6 +1174,6 @@ Collecting Coverage Data
 
     syntax Int ::= #computePercentage ( Int, Int ) [function]
  // ---------------------------------------------------------
-    rule #computePercentage (EXECUTED, TOTAL) => EXECUTED /Int TOTAL *Int 100
+    rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL
 endmodule
 ```
