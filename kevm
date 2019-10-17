@@ -195,20 +195,22 @@ if [[ "$run_command" == 'help' ]]; then
                $0 prove      [--backend (java|haskell)]                 <spec> <K arg>* -m <def_module>
                $0 search     [--backend (java|haskell)]                 <pgm>  <pattern> <K arg>*
                $0 web3       [--debug|--dump]                           <port>
+               $0 web3       [--debug|--dump]                           <port>
                $0 web3-send                                             <port> <web3 method> <web3 params>
                $0 klab-run                                              <pgm>  <K arg>*
                $0 klab-prove                                            <spec> <K arg>* -m <def_module>
                $0 klab-view                                             <spec>
 
-           $0 run       : Run a single EVM program
-           $0 interpret : Run JSON EVM programs without K Frontend (external parser)
-           $0 kast      : Parse an EVM program and output it in a supported format
-           $0 prove     : Run an EVM K proof
-           $0 search    : Search for a K pattern in an EVM program execution
-           $0 web3      : Run version of semantics which understand Web3 RPC (**UNDER CONSTRUCTION**)
-           $0 web3-send : Send message to running Web3 instance of KEVM (**UNDER CONSTRUCTION**)
+           $0 run        : Run a single EVM program
+           $0 interpret  : Run JSON EVM programs without K Frontend (external parser)
+           $0 kast       : Parse an EVM program and output it in a supported format
+           $0 prove      : Run an EVM K proof
+           $0 search     : Search for a K pattern in an EVM program execution
+           $0 web3       : Run version of semantics which understand Web3 RPC (**UNDER CONSTRUCTION**)
+           $0 web3-client: Run version of semantics which understand Web3 RPC and is able to communicate with Truffle Test Framework (**UNDER CONSTRUCTION**)
+           $0 web3-send  : Send message to running Web3 instance of KEVM (**UNDER CONSTRUCTION**)
            $0 klab-(run|prove) : Run program or prove spec and dump StateLogs which KLab can read
-           $0 klab-view : View the statelog associated with a given program or spec
+           $0 klab-view  : View the statelog associated with a given program or spec
 
            Note: <pgm> is a path to a file containing an EVM program/test.
                  <spec> is a K specification to be proved.
