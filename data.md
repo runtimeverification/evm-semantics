@@ -1038,6 +1038,13 @@ Merkle Patricia Tree
     rule MerkleUpdate ( TREE, S:String, VALUE ) => MerkleUpdate ( TREE, #nibbleize ( #parseByteStackRaw( S ) ), VALUE )
 
     rule MerkleUpdate ( .MerkleTree, PATH:ByteArray, VALUE ) => MerkleLeaf ( PATH, VALUE )
+
+    rule MerkleUpdate ( MerkleBranch( M, _ ), PATH, VALUE )
+      => MerkleBranch( M, VALUE )
+      requires #sizeByteArray( PATH ) ==Int 0
+
+    rule MerkleUpdate ( MerkleBranch( M, BRANCHVALUE ), PATH, VALUE )
+      => #merkleBrancher ( M, BRANCHVALUE, PATH[0], PATH[1 .. #sizeByteArray(PATH) -Int 1], VALUE ) [owise]
 ```
 
 Merkle Tree Aux Functions
@@ -1070,6 +1077,11 @@ Merkle Tree Aux Functions
  // -------------------------------------------------------
     rule f ( X ) => 0 requires X ==Int 0
     rule f ( _ ) => 2 [owise]
+
+    syntax MerkleTree ::= #merkleBrancher ( Map, String, Int, ByteArray, String ) [function]
+ // ----------------------------------------------------------------------------------------
+    rule #merkleBrancher ( X |-> TREE M, BRANCHVALUE, X, PATH, VALUE )
+      => MerkleBranch( M[X <- MerkleUpdate( TREE, PATH, VALUE )], BRANCHVALUE )
 
 endmodule
 ```
