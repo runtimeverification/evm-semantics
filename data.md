@@ -1039,6 +1039,19 @@ Merkle Patricia Tree
 
     rule MerkleUpdate ( .MerkleTree, PATH:ByteArray, VALUE ) => MerkleLeaf ( PATH, VALUE )
 
+    rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, _ ), PATH, VALUE )
+      => MerkleLeaf( LEAFPATH, VALUE )
+      requires #asInteger( LEAFPATH ) ==Int #asInteger( PATH )
+
+    rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
+      => MerkleUpdate ( MerkleUpdate ( .MerkleBranch, LEAFPATH, LEAFVALUE ), PATH, VALUE )
+      requires #sizeByteArray( LEAFPATH ) >Int 0
+       andBool #sizeByteArray( PATH ) >Int 0
+       andBool LEAFPATH[0] =/=Int PATH[0]
+
+    rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
+      => #merkleExtensionBuilder( .ByteArray, LEAFPATH, LEAFVALUE, PATH, VALUE ) [owise]
+
     rule MerkleUpdate ( MerkleBranch( M, _ ), PATH, VALUE )
       => MerkleBranch( M, VALUE )
       requires #sizeByteArray( PATH ) ==Int 0
@@ -1082,6 +1095,26 @@ Merkle Tree Aux Functions
  // ----------------------------------------------------------------------------------------
     rule #merkleBrancher ( X |-> TREE M, BRANCHVALUE, X, PATH, VALUE )
       => MerkleBranch( M[X <- MerkleUpdate( TREE, PATH, VALUE )], BRANCHVALUE )
+
+    syntax MerkleTree ::= #merkleExtensionBuilder( ByteArray, ByteArray, String, ByteArray, String ) [function]
+ // -----------------------------------------------------------------------------------------------------------
+    rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
+      => #merkleExtensionBuilder( PATH ++ ( #asByteStack( P1[0] )[0 .. 1] )
+                                , P1[1 .. #sizeByteArray(P1) -Int 1], V1
+                                , P2[1 .. #sizeByteArray(P2) -Int 1], V2
+                                )
+      [owise]
+
+    rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
+      => MerkleExtension( PATH, MerkleUpdate( MerkleUpdate( .MerkleBranch, P1, V1 ), P2, V2 ) )
+      requires #sizeByteArray(P1) >Int 0
+       andBool #sizeByteArray(P2) >Int 0
+       andBool P1[0] =/=Int P2[0]
+
+    rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
+      => MerkleExtension( PATH, MerkleUpdate( MerkleUpdate( .MerkleBranch, P1, V1 ), P2, V2 ) )
+      requires #sizeByteArray(P1) ==Int 0
+        orBool #sizeByteArray(P2) ==Int 0
 
 endmodule
 ```
