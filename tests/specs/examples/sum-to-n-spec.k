@@ -1,16 +1,21 @@
 requires "asm.k"
 requires "edsl.k"
-requires "../lemmas.k"
 
 module VERIFICATION
     imports EDSL
-    imports LEMMAS
     imports EVM-ASSEMBLY
 
     rule #sizeWordStack ( WS , N:Int )
       => N +Int #sizeWordStack ( WS , 0 )
-      requires N =/=K 0
-      [lemma]
+      requires N =/=K 0 [simplification]
+
+ // lemma only required by java backend
+ // -----------------------------------
+    rule bool2Word(A) ==K 0 => notBool(A)
+
+    rule chop(I) => I requires #rangeUInt(256, I) [simplification]
+
+    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
 
     syntax ByteArray ::= "sumToN" [function]
  // ----------------------------------------
@@ -35,14 +40,12 @@ module SUM-TO-N-SPEC
          <callStack> .List </callStack>
          <memoryUsed> 0   </memoryUsed>
          <localMem> .Map </localMem>
-         <callGas> _ => _ </callGas>
+         <callGas> _ </callGas>
          <program> sumToN </program>
          <jumpDests> #computeValidJumpDests(sumToN) </jumpDests>
-
          <pc>        0  => 21                                </pc>
          <wordStack> N : WS => 0 : N *Int (N +Int 1) /Int 2 : WS </wordStack>
          <gas>       G  => G -Int (52 *Int N +Int 27)        </gas>
-
       requires N >=Int 0
        andBool N <=Int 340282366920938463463374607431768211455
        andBool #sizeWordStack(WS) <Int 1021
@@ -54,16 +57,13 @@ module SUM-TO-N-SPEC
          <callStack> .List </callStack>
          <memoryUsed> 0   </memoryUsed>
          <localMem> .Map </localMem>
-         <callGas> _ => _ </callGas>
+         <callGas> _ </callGas>
          <program> sumToN </program>
          <jumpDests> #computeValidJumpDests(sumToN) </jumpDests>
-
          <pc>  3 => 21                         </pc>
          <gas> G => G -Int (52 *Int I +Int 21) </gas>
-
          <wordStack> I : S                               : WS
                   => 0 : S +Int I *Int (I +Int 1) /Int 2 : WS </wordStack>
-
       requires I >=Int 0
        andBool S >=Int 0
        andBool S +Int I *Int (I +Int 1) /Int 2 <Int pow256
