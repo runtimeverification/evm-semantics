@@ -1032,14 +1032,27 @@ Merkle Patricia Tree
                       , ""
                       )
 
+    syntax MerkleTree ::= MerkleUpdate ( MerkleTree,     String, String ) [function]
+                        | MerkleUpdate ( MerkleTree,  ByteArray, String ) [function,klabel(MerkleUpdateAux)]
+ // --------------------------------------------------------------------------------------------------------
+    rule MerkleUpdate ( TREE, S:String, VALUE ) => MerkleUpdate ( TREE, #nibbleize ( #parseByteStackRaw( S ) ), VALUE )
+
+    rule MerkleUpdate ( .MerkleTree, PATH:ByteArray, VALUE ) => MerkleLeaf ( PATH, VALUE )
 ```
 
 Merkle Tree Aux Functions
 -------------------------
 
 ```k
-    syntax ByteArray ::= #byteify   ( ByteArray ) [function]
+    syntax ByteArray ::= #nibbleize ( ByteArray ) [function]
+                       | #byteify   ( ByteArray ) [function]
  // --------------------------------------------------------
+    rule #nibbleize ( B ) =>    #asByteStack ( ( B [ 0 ] /Int 16 ) *Int 256 +Int ( B [ 0 ] %Int 16 ) )[0 .. 2]
+                             ++ #nibbleize ( B[1 .. #sizeByteArray(B) -Int 1] )
+      requires #sizeByteArray( B ) >Int 0
+
+    rule #nibbleize ( _ ) => .ByteArray [owise]
+
     rule #byteify ( B ) =>    #asByteStack ( B[0] *Int 16 +Int B[1] )
                            ++ #byteify ( B[2 .. #sizeByteArray(B) -Int 2] )
       requires #sizeByteArray(B) >Int 0
