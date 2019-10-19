@@ -315,6 +315,8 @@ WEB3 JSON RPC
          <method> "eth_call" </method>
     rule <k> #runRPCCall => #eth_estimateGas ... </k>
          <method> "eth_estimateGas" </method>
+    rule <k> #runRPCCall => #firefly_getCoverageData ... </k>
+         <method> "firefly_getCoverageData" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -1072,6 +1074,10 @@ Collecting Coverage Data
 - `<opcodeLists>` cell is a map similar to `<opcodeCoverage>` which stores instead a list containing all the `OpcodeItem`s of the executed bytecode for each contract.
 - `OpcodeItem` is a tuple which contains the Program Counter and the Opcode name.
 
+**TODO**: instead of having both `#serializeCoverage` and `#serializePrograms` we could keep only the first rule as `#serializeCoverageMap` if `<opcodeLists>` would store `Sets` instead of `Lists`.
+**TODO**: compute coverage percentages in `Float` instead of `Int`
+**TODO**: `Set2List` won't return `ListItems` in order, causing tests to fail.
+
 ```k
     syntax Phase ::= ".Phase"
                    | "CONSTRUCTOR"
@@ -1126,5 +1132,52 @@ Collecting Coverage Data
       requires notBool PCOUNT in PCS
       [priority(25)]
 
+    syntax KItem ::= "#firefly_getCoverageData"
+ // -------------------------------------------
+    rule <k> #firefly_getCoverageData => #sendResponse ("result": #makeCoverageReport(COVERAGE, PGMS)) ... </k>
+         <opcodeCoverage> COVERAGE </opcodeCoverage>
+         <opcodeLists>    PGMS     </opcodeLists>
+
+    syntax JSON ::= #makeCoverageReport ( Map, Map ) [function]
+ // -----------------------------------------------------------
+    rule #makeCoverageReport (COVERAGE, PGMS) => {
+                                                  "coverages": [#coveragePercentages(keys_list(PGMS),COVERAGE,PGMS)],
+                                                  "coveredOpcodes": [#serializeCoverage(keys_list(COVERAGE),COVERAGE)],
+                                                  "programs": [#serializePrograms(keys_list(PGMS),PGMS)] 
+                                                 }
+
+    syntax JSONList ::= #serializeCoverage ( List, Map ) [function]
+ // ---------------------------------------------------------------
+    rule #serializeCoverage (.List, _ ) => .JSONList
+    rule #serializeCoverage ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [IntList2JSONList(Set2List(X))] }}, #serializeCoverage(KEYS, COVERAGE)
+
+    syntax JSONList ::= #serializePrograms ( List, Map ) [function]
+ // ---------------------------------------------------------------
+    rule #serializePrograms (.List, _ ) => .JSONList
+    rule #serializePrograms ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:List PGMS:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [CoverageIDList2JSONList(X)] }}, #serializePrograms(KEYS, PGMS)
+
+    syntax String ::= Phase2String ( Phase ) [function]
+ // ----------------------------------------------------
+    rule Phase2String (CONSTRUCTOR) => "CONSTRUCTOR"
+    rule Phase2String (RUNTIME)     => "RUNTIME"
+
+    syntax JSONList ::= CoverageIDList2JSONList ( List ) [function]
+ // ---------------------------------------------------------------
+    rule CoverageIDList2JSONList (.List)                           => .JSONList
+    rule CoverageIDList2JSONList (ListItem({I:Int | _:OpCode }) L) => I, CoverageIDList2JSONList(L)
+
+    syntax JSONList ::= IntList2JSONList ( List ) [function]
+ // --------------------------------------------------------
+    rule IntList2JSONList (.List)             => .JSONList
+    rule IntList2JSONList (ListItem(I:Int) L) => I, IntList2JSONList(L)
+
+    syntax JSONList ::= #coveragePercentages ( List, Map, Map) [function]
+ // ---------------------------------------------------------------------
+    rule #coveragePercentages (.List, _, _) => .JSONList
+    rule #coveragePercentages ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map, KEY |-> Y:List PGMS:Map) => { Int2String(CODEHASH):{ Phase2String(EPHASE): #computePercentage(size(X),size(Y)) }}, #coveragePercentages(KEYS,COVERAGE,PGMS)
+
+    syntax Int ::= #computePercentage ( Int, Int ) [function]
+ // ---------------------------------------------------------
+    rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL
 endmodule
 ```
