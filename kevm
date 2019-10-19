@@ -58,12 +58,17 @@ run_kast() {
 run_prove() {
     export K_OPTS=-Xmx8G
 
-    # If there's an evm.smt2 in the same dir as $run_file, use it for --smt-prelude
-    run_dir="$(dirname "$run_file")"
-    smt_file="$run_dir/evm.smt2"
-    args=()
-    [[ -z "$smt_file" ]] || args=(--smt-prelude "$smt_file")
-    kprove --directory "$backend_dir" "${args[@]-}" "$run_file" "$@"
+    # Automatically detect the smt file in the same dir as $run_file
+    run_dir=$(dirname $run_file)
+    smt_file=$(ls ${run_dir}/*.smt2 2>/dev/null | xargs || true)
+    if [ -z "$smt_file" ]; then
+      kprove --directory "$backend_dir" "$run_file" "$@"
+    elif [ -f "$smt_file" ]; then
+      # echo "SMT file:" $smt_file
+      kprove --directory "$backend_dir" --smt-prelude "$smt_file" "$run_file" "$@"
+    else
+      fatal "More than one SMT file found: '$smt_file'"
+    fi
 }
 
 run_search() {
