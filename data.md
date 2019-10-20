@@ -502,8 +502,8 @@ The local memory of execution is a byte-array (instead of a word-array).
 -   `#padToWidth(N, WS)` and `#padRightToWidth` make sure that a `WordStack` is the correct size.
 
 ```{.k .concrete}
-    syntax ByteArray ::= Bytes
-                       | ".ByteArray" [function]
+    syntax ByteArray = Bytes
+    syntax ByteArray ::= ".ByteArray" [function]
  // --------------------------------------------
     rule .ByteArray => .Bytes
 
@@ -543,8 +543,8 @@ The local memory of execution is a byte-array (instead of a word-array).
 ```
 
 ```{.k .symbolic}
-    syntax ByteArray ::= WordStack
-                       | ".ByteArray" [function]
+    syntax ByteArray = WordStack
+    syntax ByteArray ::= ".ByteArray" [function]
  // --------------------------------------------
     rule .ByteArray => .WordStack
 
@@ -575,7 +575,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax ByteArray ::= ByteArray "++" ByteArray [function, memo, right, klabel(_++_WS), smtlib(_plusWS_)]
  // -------------------------------------------------------------------------------------------------------
     rule .WordStack ++ WS' => WS'
-    rule (W : WS)   ++ WS' => W : {WS ++ WS'}:>WordStack
+    rule (W : WS)   ++ WS' => W : (WS ++ WS')
 
     syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional, memo]
  // --------------------------------------------------------------------------------
@@ -788,7 +788,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
  // -------------------------------------------------------------
     rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
     rule #parseHexBytes("") => .ByteArray
-    rule #parseHexBytes(S)  => Int2Bytes(1, #parseHexWord(substrString(S, 0, 2)), BE) +Bytes {#parseHexBytes(substrString(S, 2, lengthString(S)))}:>Bytes requires lengthString(S) >=Int 2
+    rule #parseHexBytes(S)  => Int2Bytes(1, #parseHexWord(substrString(S, 0, 2)), BE) +Bytes #parseHexBytes(substrString(S, 2, lengthString(S))) requires lengthString(S) >=Int 2
 
     rule #parseByteStackRaw(S) => String2Bytes(S)
 ```
@@ -800,9 +800,9 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
  // -------------------------------------------------------------
     rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
     rule #parseHexBytes("") => .WordStack
-    rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : {#parseHexBytes(substrString(S, 2, lengthString(S)))}:>WordStack requires lengthString(S) >=Int 2
+    rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytes(substrString(S, 2, lengthString(S))) requires lengthString(S) >=Int 2
 
-    rule #parseByteStackRaw(S) => ordChar(substrString(S, 0, 1)) : {#parseByteStackRaw(substrString(S, 1, lengthString(S)))}:>WordStack requires lengthString(S) >=Int 1
+    rule #parseByteStackRaw(S) => ordChar(substrString(S, 0, 1)) : #parseByteStackRaw(substrString(S, 1, lengthString(S))) requires lengthString(S) >=Int 1
     rule #parseByteStackRaw("") => .WordStack
 ```
 
