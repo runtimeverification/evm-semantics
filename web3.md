@@ -30,6 +30,7 @@ module WEB3
             <logSet>          .List      </logSet>
             <bloomFilter>     .ByteArray </bloomFilter>
             <txStatus>        0          </txStatus>
+            <txID>            0          </txID>
           </txReceipt>
         </txReceipts>
         <filters>
@@ -323,6 +324,8 @@ WEB3 JSON RPC
          <method> "firefly_getTxRoot" </method>
     rule <k> #runRPCCall => #firefly_getReceiptsRoot ... </k>
          <method> "firefly_getReceiptsRoot" </method>
+    rule <k> #runRPCCall => #eth_getTransactionReceipt ... </k>
+         <method> "eth_getTransactionReceipt" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -719,6 +722,7 @@ Transaction Receipts
                <logSet> LOGS </logSet>
                <bloomFilter> #bloomFilter(LOGS) </bloomFilter>
                <txStatus> bool2Word(STATUSCODE ==K EVMC_SUCCESS) </txStatus>
+               <txID> TXID </txID>
              </txReceipt>
            )
            ...
@@ -726,6 +730,47 @@ Transaction Receipts
          <statusCode> STATUSCODE </statusCode>
          <gasUsed> CGAS </gasUsed>
          <log> LOGS </log>
+
+    syntax KItem ::= "#eth_getTransactionReceipt"
+ // ---------------------------------------------
+    rule <k> #eth_getTransactionReceipt => #sendResponse( "result": {
+                                                                     "transactionHash": TXHASH,
+                                                                     "transactionIndex": #unparseQuantity(1),
+                                                                     "blockHash": #unparseQuantity(1),
+                                                                     "blockNumber": #unparseQuantity(BNUMBER),
+                                                                     "from": #unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS))),
+                                                                     "to": #unparseQuantity(TT),
+                                                                     "cumulativeGasUsed": #unparseQuantity(CGAS),
+                                                                     "gasUsed": #unparseQuantity(CGAS),
+                                                                     "contractAddress": null,
+                                                                     "logs": #unparseQuantity(0),
+                                                                     "logsBloom": #unparseDataByteArray(BLOOM),
+                                                                     "status": #unparseQuantity(TXSTATUS)
+                                                                     }) ... </k>
+         <params> [TXHASH:String, .JSONList] </params>
+         <txReceipt>
+           <txHash> TXHASH </txHash>
+           <txID> TXID </txID>
+           <txCumulativeGas> CGAS </txCumulativeGas>
+           <logSet> LOGS </logSet>
+           <bloomFilter> BLOOM </bloomFilter>
+           <txStatus> TXSTATUS </txStatus>
+           ...
+         </txReceipt>
+         <number> BNUMBER </number>
+         <message>
+           <msgID>      TXID </msgID>
+           <txNonce>    TN   </txNonce>
+           <txGasPrice> TP   </txGasPrice>
+           <txGasLimit> TG   </txGasLimit>
+           <to>         TT   </to>
+           <value>      TV   </value>
+           <sigV>       TW   </sigV>
+           <sigR>       TR   </sigR>
+           <sigS>       TS   </sigS>
+           <data>       DATA </data>
+         </message>
+
 ```
 
 - loadCallState: web3.md specific rules
