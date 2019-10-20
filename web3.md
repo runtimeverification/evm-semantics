@@ -1149,7 +1149,7 @@ Collecting Coverage Data
     syntax JSONList ::= #serializeCoverage ( List, Map ) [function]
  // ---------------------------------------------------------------
     rule #serializeCoverage (.List, _ ) => .JSONList
-    rule #serializeCoverage ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [IntList2JSONList(Set2List(X))] }}, #serializeCoverage(KEYS, COVERAGE)
+    rule #serializeCoverage ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [IntList2JSONList(qsort(Set2List(X)))] }}, #serializeCoverage(KEYS, COVERAGE)
 
     syntax JSONList ::= #serializePrograms ( List, Map ) [function]
  // ---------------------------------------------------------------
@@ -1170,6 +1170,23 @@ Collecting Coverage Data
  // --------------------------------------------------------
     rule IntList2JSONList (.List)             => .JSONList
     rule IntList2JSONList (ListItem(I:Int) L) => I, IntList2JSONList(L)
+
+    syntax List ::= getIntElementsSmallerThan ( Int, List, List ) [function]
+ // ---------------------------------------------------------------
+    rule getIntElementsSmallerThan (_, .List,               RESULTS) => RESULTS
+    rule getIntElementsSmallerThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsSmallerThan (X, L, ListItem(I) RESULTS) requires I  <Int X
+    rule getIntElementsSmallerThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsSmallerThan (X, L, RESULTS)             requires I >=Int X
+
+    syntax List ::= getIntElementsGreaterThan ( Int, List, List ) [function]
+ // ---------------------------------------------------------------
+    rule getIntElementsGreaterThan (_, .List ,              RESULTS) => RESULTS
+    rule getIntElementsGreaterThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsGreaterThan (X, L, ListItem(I) RESULTS) requires I  >Int X
+    rule getIntElementsGreaterThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsGreaterThan (X, L, RESULTS)             requires I <=Int X
+
+    syntax List ::= qsort ( List ) [function]
+ // -----------------------------------------
+    rule qsort ( .List )           => .List
+    rule qsort (ListItem(I:Int) L) => qsort(getIntElementsSmallerThan(I, L, .List)) ListItem(I) qsort(getIntElementsGreaterThan(I, L, .List))
 
     syntax JSONList ::= #coveragePercentages ( List, Map, Map) [function]
  // ---------------------------------------------------------------------
