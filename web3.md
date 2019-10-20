@@ -1172,13 +1172,13 @@ Collecting Coverage Data
     rule IntList2JSONList (ListItem(I:Int) L) => I, IntList2JSONList(L)
 
     syntax List ::= getIntElementsSmallerThan ( Int, List, List ) [function]
- // ---------------------------------------------------------------
+ // ------------------------------------------------------------------------
     rule getIntElementsSmallerThan (_, .List,               RESULTS) => RESULTS
     rule getIntElementsSmallerThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsSmallerThan (X, L, ListItem(I) RESULTS) requires I  <Int X
     rule getIntElementsSmallerThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsSmallerThan (X, L, RESULTS)             requires I >=Int X
 
     syntax List ::= getIntElementsGreaterThan ( Int, List, List ) [function]
- // ---------------------------------------------------------------
+ // ------------------------------------------------------------------------
     rule getIntElementsGreaterThan (_, .List ,              RESULTS) => RESULTS
     rule getIntElementsGreaterThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsGreaterThan (X, L, ListItem(I) RESULTS) requires I  >Int X
     rule getIntElementsGreaterThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsGreaterThan (X, L, RESULTS)             requires I <=Int X
