@@ -31,6 +31,7 @@ module WEB3
             <bloomFilter>     .ByteArray </bloomFilter>
             <txStatus>        0          </txStatus>
             <txID>            0          </txID>
+            <sender>          .Account   </sender>
           </txReceipt>
         </txReceipts>
         <filters>
@@ -723,41 +724,11 @@ Transaction Receipts
                <bloomFilter> #bloomFilter(LOGS) </bloomFilter>
                <txStatus> bool2Word(STATUSCODE ==K EVMC_SUCCESS) </txStatus>
                <txID> TXID </txID>
+               <sender> #parseHexWord(#unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS)))) </sender>
              </txReceipt>
            )
            ...
          </txReceipts>
-         <statusCode> STATUSCODE </statusCode>
-         <gasUsed> CGAS </gasUsed>
-         <log> LOGS </log>
-
-    syntax KItem ::= "#eth_getTransactionReceipt"
- // ---------------------------------------------
-    rule <k> #eth_getTransactionReceipt => #sendResponse( "result": {
-                                                                     "transactionHash": TXHASH,
-                                                                     "transactionIndex": #unparseQuantity(1),
-                                                                     "blockHash": #unparseQuantity(1),
-                                                                     "blockNumber": #unparseQuantity(BNUMBER),
-                                                                     "from": #unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS))),
-                                                                     "to": #unparseQuantity(TT),
-                                                                     "cumulativeGasUsed": #unparseQuantity(CGAS),
-                                                                     "gasUsed": #unparseQuantity(CGAS),
-                                                                     "contractAddress": null,
-                                                                     "logs": #unparseQuantity(0),
-                                                                     "logsBloom": #unparseDataByteArray(BLOOM),
-                                                                     "status": #unparseQuantity(TXSTATUS)
-                                                                     }) ... </k>
-         <params> [TXHASH:String, .JSONList] </params>
-         <txReceipt>
-           <txHash> TXHASH </txHash>
-           <txID> TXID </txID>
-           <txCumulativeGas> CGAS </txCumulativeGas>
-           <logSet> LOGS </logSet>
-           <bloomFilter> BLOOM </bloomFilter>
-           <txStatus> TXSTATUS </txStatus>
-           ...
-         </txReceipt>
-         <number> BNUMBER </number>
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
@@ -770,6 +741,48 @@ Transaction Receipts
            <sigS>       TS   </sigS>
            <data>       DATA </data>
          </message>
+         <statusCode> STATUSCODE </statusCode>
+         <gasUsed> CGAS </gasUsed>
+         <log> LOGS </log>
+
+    syntax KItem ::= "#eth_getTransactionReceipt"
+ // ---------------------------------------------
+    rule <k> #eth_getTransactionReceipt => #sendResponse( "result": {
+                                                                     "transactionHash": TXHASH,
+                                                                     "transactionIndex": #unparseQuantity(TN),
+                                                                     "blockHash": #unparseQuantity(1),
+                                                                     "blockNumber": #unparseQuantity(BNUMBER),
+                                                                     "from": #unparseQuantity(TXFROM),
+                                                                     "to": #unparseQuantity(TT),
+                                                                     "cumulativeGasUsed": #unparseQuantity(CGAS),
+                                                                     "gasUsed": #unparseQuantity(CGAS),
+                                                                     "contractAddress": #if TT =/=K .Account #then null #else #newAddr(TXFROM, NONCE -Int 1) #fi,
+                                                                     "logs": #unparseQuantity(0),
+                                                                     "logsBloom": #unparseDataByteArray(BLOOM),
+                                                                     "status": #unparseQuantity(TXSTATUS)
+                                                                     }) ... </k>
+         <params> [TXHASH:String, .JSONList] </params>
+         <txReceipt>
+           <txHash>          TXHASH </txHash>
+           <txID>            TXID </txID>
+           <txCumulativeGas> CGAS </txCumulativeGas>
+           <logSet>          LOGS </logSet>
+           <bloomFilter>     BLOOM </bloomFilter>
+           <txStatus>        TXSTATUS </txStatus>
+           <sender>          TXFROM </sender>
+         </txReceipt>
+         <number> BNUMBER </number>
+         <message>
+           <msgID>      TXID </msgID>
+           <txNonce>    TN   </txNonce>
+           <to>         TT   </to>
+           ...
+         </message>
+         <account>
+           <acctID> TXFROM </acctID>
+           <nonce>  NONCE  </nonce>
+           ...
+         </account>
 
 ```
 
