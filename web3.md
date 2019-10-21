@@ -340,14 +340,8 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#eth_accounts"
  // --------------------------------
-    rule <k> #eth_accounts => #sendResponse( "result" : [List2JSONList(Set2List(AS))] ) ...</k>
+    rule <k> #eth_accounts => #sendResponse( "result" : [IntList2JSONList(qsort(Set2List(AS)))] ) ...</k>
          <activeAccounts> AS </activeAccounts>
-    
-    syntax JSONList ::= List2JSONList ( List ) [function]
- // -----------------------------------------------------
-    rule List2JSONList (.List)                           => .JSONList
-    rule List2JSONList (ListItem(I:Int) L)               => I, List2JSONList(L)
-    rule List2JSONList (ListItem({I:Int | _:OpCode }) L) => I, List2JSONList(L)
 
     syntax KItem ::= "#web3_clientVersion"
  // --------------------------------------
