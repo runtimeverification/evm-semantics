@@ -753,13 +753,16 @@ Transaction Receipts
                                                                      "blockHash": #unparseQuantity(1),
                                                                      "blockNumber": #unparseQuantity(BNUMBER),
                                                                      "from": #unparseQuantity(TXFROM),
-                                                                     "to": #unparseQuantity(TT),
+                                                                     "to": #if TT ==K .Account #then null #else #unparseQuantity(TT) #fi,
                                                                      "cumulativeGasUsed": #unparseQuantity(CGAS),
                                                                      "gasUsed": #unparseQuantity(CGAS),
-                                                                     "contractAddress": #if TT =/=K .Account #then null #else #newAddr(TXFROM, NONCE -Int 1) #fi,
+                                                                     "contractAddress": #if TT =/=K .Account #then null #else #unparseQuantity(#newAddr(TXFROM, NONCE -Int 1)) #fi,
                                                                      "logs": #unparseQuantity(0),
                                                                      "logsBloom": #unparseDataByteArray(BLOOM),
-                                                                     "status": #unparseQuantity(TXSTATUS)
+                                                                     "status": #unparseQuantity(TXSTATUS),
+                                                                     "v": #unparseQuantity(TW),
+                                                                     "r": #unparseDataByteArray(TR),
+                                                                     "s": #unparseDataByteArray(TS)
                                                                      }) ... </k>
          <params> [TXHASH:String, .JSONList] </params>
          <txReceipt>
@@ -776,6 +779,9 @@ Transaction Receipts
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
            <to>         TT   </to>
+           <sigV>       TW   </sigV>
+           <sigR>       TR   </sigR>
+           <sigS>       TS   </sigS>
            ...
          </message>
          <account>
