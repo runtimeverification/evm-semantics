@@ -7,7 +7,7 @@ module VERIFICATION
     syntax    KItem ::= runMerkle ( StepSort )
                       | doneMerkle( StepSort )
  // ------------------------------------------
-    rule runMerkle( T ) => doneMerkle( T ) [trusted]
+    rule runMerkle( T ) => doneMerkle( T )
 
 endmodule
 

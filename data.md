@@ -1094,15 +1094,15 @@ Merkle Tree Aux Functions
 
     syntax ByteArray ::= #HPEncode ( ByteArray, Int ) [function]
  // ------------------------------------------------------------
-    rule #HPEncode ( X, T ) => #asByteStack ( ( f(T) +Int 1 ) *Int 16 +Int X[0] ) ++ #byteify( X[1 .. #sizeByteArray(X) -Int 1] )
+    rule #HPEncode ( X, T ) => #asByteStack ( ( HPEncodeAux(T) +Int 1 ) *Int 16 +Int X[0] ) ++ #byteify( X[1 .. #sizeByteArray(X) -Int 1] )
       requires #sizeByteArray(X) %Int 2 =/=Int 0
 
-    rule #HPEncode ( X, T ) => #asByteStack ( f(T) *Int 16 )[0 .. 1] ++ #byteify( X ) [owise]
+    rule #HPEncode ( X, T ) => #asByteStack ( HPEncodeAux(T) *Int 16 )[0 .. 1] ++ #byteify( X ) [owise]
 
-    syntax Int ::= f ( Int ) [function,klabel(HPEncodeAux)]
- // -------------------------------------------------------
-    rule f ( X ) => 0 requires X ==Int 0
-    rule f ( _ ) => 2 [owise]
+    syntax Int ::= HPEncodeAux ( Int ) [function]
+ // ---------------------------------------------
+    rule HPEncodeAux ( X ) => 0 requires X ==Int 0
+    rule HPEncodeAux ( _ ) => 2 [owise]
 
     syntax MerkleTree ::= #merkleBrancher ( Map, String, Int, ByteArray, String ) [function]
  // ----------------------------------------------------------------------------------------
