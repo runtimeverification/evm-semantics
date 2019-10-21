@@ -753,10 +753,10 @@ Transaction Receipts
                                                                      "blockHash": #unparseQuantity(1),
                                                                      "blockNumber": #unparseQuantity(BNUMBER),
                                                                      "from": #unparseQuantity(TXFROM),
-                                                                     "to": #if TT ==K .Account #then null #else #unparseQuantity(TT) #fi,
+                                                                     "to": null,
                                                                      "cumulativeGasUsed": #unparseQuantity(CGAS),
                                                                      "gasUsed": #unparseQuantity(CGAS),
-                                                                     "contractAddress": #if TT =/=K .Account #then null #else #unparseQuantity(#newAddr(TXFROM, NONCE -Int 1)) #fi,
+                                                                     "contractAddress": #unparseQuantity(#newAddr(TXFROM, NONCE -Int 1)),
                                                                      "logs": #unparseQuantity(0),
                                                                      "logsBloom": #unparseDataByteArray(BLOOM),
                                                                      "status": #unparseQuantity(TXSTATUS),
@@ -776,12 +776,12 @@ Transaction Receipts
          </txReceipt>
          <number> BNUMBER </number>
          <message>
-           <msgID>      TXID </msgID>
-           <txNonce>    TN   </txNonce>
-           <to>         TT   </to>
-           <sigV>       TW   </sigV>
-           <sigR>       TR   </sigR>
-           <sigS>       TS   </sigS>
+           <msgID>      TXID     </msgID>
+           <txNonce>    TN       </txNonce>
+           <to>         .Account </to>
+           <sigV>       TW       </sigV>
+           <sigR>       TR       </sigR>
+           <sigS>       TS       </sigS>
            ...
          </message>
          <account>
@@ -790,6 +790,49 @@ Transaction Receipts
            ...
          </account>
 
+    rule <k> #eth_getTransactionReceipt => #sendResponse( "result": {
+                                                                     "transactionHash": TXHASH,
+                                                                     "transactionIndex": #unparseQuantity(TN),
+                                                                     "blockHash": #unparseQuantity(1),
+                                                                     "blockNumber": #unparseQuantity(BNUMBER),
+                                                                     "from": #unparseQuantity(TXFROM),
+                                                                     "to": #unparseQuantity(TT),
+                                                                     "cumulativeGasUsed": #unparseQuantity(CGAS),
+                                                                     "gasUsed": #unparseQuantity(CGAS),
+                                                                     "contractAddress": null,
+                                                                     "logs": #unparseQuantity(0),
+                                                                     "logsBloom": #unparseDataByteArray(BLOOM),
+                                                                     "status": #unparseQuantity(TXSTATUS),
+                                                                     "v": #unparseQuantity(TW),
+                                                                     "r": #unparseDataByteArray(TR),
+                                                                     "s": #unparseDataByteArray(TS)
+                                                                     }) ... </k>
+         <params> [TXHASH:String, .JSONList] </params>
+         <txReceipt>
+           <txHash>          TXHASH </txHash>
+           <txID>            TXID </txID>
+           <txCumulativeGas> CGAS </txCumulativeGas>
+           <logSet>          LOGS </logSet>
+           <bloomFilter>     BLOOM </bloomFilter>
+           <txStatus>        TXSTATUS </txStatus>
+           <sender>          TXFROM </sender>
+         </txReceipt>
+         <number> BNUMBER </number>
+         <message>
+           <msgID>      TXID     </msgID>
+           <txNonce>    TN       </txNonce>
+           <to>         TT       </to>
+           <sigV>       TW       </sigV>
+           <sigR>       TR       </sigR>
+           <sigS>       TS       </sigS>
+           ...
+         </message>
+         <account>
+           <acctID> TXFROM </acctID>
+           <nonce>  NONCE  </nonce>
+           ...
+         </account>
+           requires TT =/=K .Account
 ```
 
 - loadCallState: web3.md specific rules
