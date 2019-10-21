@@ -352,13 +352,13 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#eth_accounts"
  // --------------------------------
-    rule <k> #eth_accounts => #sendResponse( "result" : [ #acctsToJArray( ACCTS ) ] ) ... </k>
+    rule <k> #eth_accounts => #sendResponse( "result" : [ #acctsToJArray( qsort(Set2List(ACCTS)) ) ] ) ... </k>
          <activeAccounts> ACCTS </activeAccounts>
 
-    syntax JSONList ::= #acctsToJArray ( Set ) [function]
- // -----------------------------------------------------
-    rule #acctsToJArray( .Set                      ) => .JSONList
-    rule #acctsToJArray( SetItem( ACCT ) ACCTS:Set ) => #unparseData( ACCT, 20 ), #acctsToJArray( ACCTS )
+    syntax JSONList ::= #acctsToJArray ( List ) [function]
+ // ------------------------------------------------------
+    rule #acctsToJArray( .List                       ) => .JSONList
+    rule #acctsToJArray( ListItem( ACCT ) ACCTS:List ) => #unparseData( ACCT, 20 ), #acctsToJArray( ACCTS )
 
     syntax KItem ::= "#eth_getBalance"
  // ----------------------------------
