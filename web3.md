@@ -753,10 +753,10 @@ Transaction Receipts
                                                                      "blockHash": #unparseQuantity(1),
                                                                      "blockNumber": #unparseQuantity(BNUMBER),
                                                                      "from": #unparseQuantity(TXFROM),
-                                                                     "to": null,
+                                                                     "to": #unparseAccount(TT),
                                                                      "cumulativeGasUsed": #unparseQuantity(CGAS),
                                                                      "gasUsed": #unparseQuantity(CGAS),
-                                                                     "contractAddress": #unparseQuantity(#newAddr(TXFROM, NONCE -Int 1)),
+                                                                     "contractAddress": #if TT ==K .Account #then #unparseQuantity(#newAddr(TXFROM, NONCE -Int 1)) #else null #fi,
                                                                      "logs": #unparseQuantity(0),
                                                                      "logsBloom": #unparseDataByteArray(BLOOM),
                                                                      "status": #unparseQuantity(TXSTATUS),
@@ -779,7 +779,7 @@ Transaction Receipts
          <message>
            <msgID>      TXID     </msgID>
            <txNonce>    TN       </txNonce>
-           <to>         .Account </to>
+           <to>         TT:Account </to>
            <sigV>       TW       </sigV>
            <sigR>       TR       </sigR>
            <sigS>       TS       </sigS>
@@ -790,51 +790,6 @@ Transaction Receipts
            <nonce>  NONCE  </nonce>
            ...
          </account>
-
-    rule <k> #eth_getTransactionReceipt => #sendResponse( "result": {
-                                                                     "transactionHash": TXHASH,
-                                                                     "transactionIndex": #unparseQuantity(getIndexOf(TXID, TXLIST)),
-                                                                     "blockHash": #unparseQuantity(1),
-                                                                     "blockNumber": #unparseQuantity(BNUMBER),
-                                                                     "from": #unparseQuantity(TXFROM),
-                                                                     "to": #unparseQuantity(TT),
-                                                                     "cumulativeGasUsed": #unparseQuantity(CGAS),
-                                                                     "gasUsed": #unparseQuantity(CGAS),
-                                                                     "contractAddress": null,
-                                                                     "logs": #unparseQuantity(0),
-                                                                     "logsBloom": #unparseDataByteArray(BLOOM),
-                                                                     "status": #unparseQuantity(TXSTATUS),
-                                                                     "v": #unparseQuantity(TW),
-                                                                     "r": #unparseDataByteArray(TR),
-                                                                     "s": #unparseDataByteArray(TS)
-                                                                     }) ... </k>
-         <params> [TXHASH:String, .JSONList] </params>
-         <txReceipt>
-           <txHash>          TXHASH </txHash>
-           <txID>            TXID </txID>
-           <txCumulativeGas> CGAS </txCumulativeGas>
-           <logSet>          LOGS </logSet>
-           <bloomFilter>     BLOOM </bloomFilter>
-           <txStatus>        TXSTATUS </txStatus>
-           <sender>          TXFROM </sender>
-         </txReceipt>
-         <number>  BNUMBER </number>
-         <txOrder> TXLIST  </txOrder>
-         <message>
-           <msgID>      TXID     </msgID>
-           <txNonce>    TN       </txNonce>
-           <to>         TT       </to>
-           <sigV>       TW       </sigV>
-           <sigR>       TR       </sigR>
-           <sigS>       TS       </sigS>
-           ...
-         </message>
-         <account>
-           <acctID> TXFROM </acctID>
-           <nonce>  NONCE  </nonce>
-           ...
-         </account>
-           requires TT =/=K .Account
 
     syntax Int ::= getIndexOf ( Int, List ) [function]
  // --------------------------------------------------
@@ -845,6 +800,11 @@ Transaction Receipts
     rule getIndexOfAux (X:Int, .List,         _:Int) => -1
     rule getIndexOfAux (X:Int, ListItem(X) L, INDEX) => INDEX
     rule getIndexOfAux (X:Int, ListItem(I) L, INDEX) => getIndexOfAux(X, L, INDEX +Int 1) requires X =/=Int I
+
+    syntax JSON ::= #unparseAccount ( Account ) [function]
+ // ------------------------------------------------------
+    rule #unparseAccount (.Account) => null
+    rule #unparseAccount (ACCT:Int) => #unparseQuantity(ACCT)
 ```
 
 - loadCallState: web3.md specific rules
