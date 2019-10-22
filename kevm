@@ -57,7 +57,20 @@ run_kast() {
 
 run_prove() {
     export K_OPTS=-Xmx8G
-    kprove --directory "$backend_dir" "$run_file" "$@"
+
+    # If --smt-prelude is not set and evm.smt2 is present in $run_dir, use it.
+    smt_prelude_set=
+    for i in "$@" ; do [[ $i == "--smt-prelude" ]] && smt_prelude_set=true && break ; done
+    run_dir="$(dirname "$run_file")"
+    smt_file="$run_dir/evm.smt2"
+    smt_args=()
+    if [[ -z $smt_prelude_set ]] && [[ -f "$smt_file" ]]; then
+      smt_args=(--smt-prelude "$smt_file")
+    fi
+    if $debug; then
+        set -x
+    fi
+    kprove --directory "$backend_dir" "${smt_args[@]-}" "$run_file" "$@"
 }
 
 run_search() {
