@@ -440,10 +440,10 @@ pipeline {
                     mv bionic/kevm_${KEVM_RELEASE_ID}_amd64.deb bionic/kevm_${KEVM_RELEASE_ID}_amd64_bionic.deb
                     mv buster/kevm_${KEVM_RELEASE_ID}_amd64.deb buster/kevm_${KEVM_RELEASE_ID}_amd64_buster.deb
                     hub release create                                                                                               \
-                        --attach "kevm-${KEVM_RELEASE_ID}-src.tar.gz#Source tar.gz"                                                  \
-                        --attach "bionic/kevm_${KEVM_RELEASE_ID}_amd64_bionic.deb#Ubuntu Bionic (18.04) Package"                     \
-                        --attach "buster/kevm_${KEVM_RELEASE_ID}_amd64_buster.deb#Debian Buster (10) Package"                        \
-                        --attach mojave/kevm-5.0.0.mojave.bottle*.tar.gz"#Mac OS X Homebrew Bottle"                                  \
+                        --attach kevm-${KEVM_RELEASE_ID}-src.tar.gz"#Source tar.gz"                                                  \
+                        --attach bionic/kevm_${KEVM_RELEASE_ID}_amd64_bionic.deb"#Ubuntu Bionic (18.04) Package"                     \
+                        --attach buster/kevm_${KEVM_RELEASE_ID}_amd64_buster.deb"#Debian Buster (10) Package"                        \
+                        --attach mojave/kevm--${KEVM_RELEASE_ID}.mojave.bottle*.tar.gz"#Mac OS X Homebrew Bottle"                    \
                         --file "release.md" "${release_tag}"
                         # --attach "arch/kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package" \
                   '''
