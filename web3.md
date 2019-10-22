@@ -749,7 +749,7 @@ Transaction Receipts
  // ---------------------------------------------
     rule <k> #eth_getTransactionReceipt => #sendResponse( "result": {
                                                                      "transactionHash": TXHASH,
-                                                                     "transactionIndex": #unparseQuantity(TN),
+                                                                     "transactionIndex": #unparseQuantity(getIndexOf(TXID, TXLIST)),
                                                                      "blockHash": #unparseQuantity(1),
                                                                      "blockNumber": #unparseQuantity(BNUMBER),
                                                                      "from": #unparseQuantity(TXFROM),
@@ -774,7 +774,8 @@ Transaction Receipts
            <txStatus>        TXSTATUS </txStatus>
            <sender>          TXFROM </sender>
          </txReceipt>
-         <number> BNUMBER </number>
+         <number>  BNUMBER </number>
+         <txOrder> TXLIST  </txOrder>
          <message>
            <msgID>      TXID     </msgID>
            <txNonce>    TN       </txNonce>
@@ -792,7 +793,7 @@ Transaction Receipts
 
     rule <k> #eth_getTransactionReceipt => #sendResponse( "result": {
                                                                      "transactionHash": TXHASH,
-                                                                     "transactionIndex": #unparseQuantity(TN),
+                                                                     "transactionIndex": #unparseQuantity(getIndexOf(TXID, TXLIST)),
                                                                      "blockHash": #unparseQuantity(1),
                                                                      "blockNumber": #unparseQuantity(BNUMBER),
                                                                      "from": #unparseQuantity(TXFROM),
@@ -817,7 +818,8 @@ Transaction Receipts
            <txStatus>        TXSTATUS </txStatus>
            <sender>          TXFROM </sender>
          </txReceipt>
-         <number> BNUMBER </number>
+         <number>  BNUMBER </number>
+         <txOrder> TXLIST  </txOrder>
          <message>
            <msgID>      TXID     </msgID>
            <txNonce>    TN       </txNonce>
@@ -833,6 +835,16 @@ Transaction Receipts
            ...
          </account>
            requires TT =/=K .Account
+
+    syntax Int ::= getIndexOf ( Int, List ) [function]
+ // --------------------------------------------------
+    rule getIndexOf(X:Int, L) => getIndexOfAux(X:Int, L, 0)
+
+    syntax Int ::= getIndexOfAux (Int, List, Int) [function]
+ // --------------------------------------------------------
+    rule getIndexOfAux (X:Int, .List,         _:Int) => -1
+    rule getIndexOfAux (X:Int, ListItem(X) L, INDEX) => INDEX
+    rule getIndexOfAux (X:Int, ListItem(I) L, INDEX) => getIndexOfAux(X, L, INDEX +Int 1) requires X =/=Int I
 ```
 
 - loadCallState: web3.md specific rules
