@@ -757,7 +757,7 @@ Transaction Receipts
                                                                      "cumulativeGasUsed": #unparseQuantity(CGAS),
                                                                      "gasUsed": #unparseQuantity(CGAS),
                                                                      "contractAddress": #if TT ==K .Account #then #unparseQuantity(#newAddr(TXFROM, NONCE -Int 1)) #else null #fi,
-                                                                     "logs": #unparseQuantity(0),
+                                                                     "logs": [#serializeLogs(LOGS)],
                                                                      "logsBloom": #unparseDataByteArray(BLOOM),
                                                                      "status": #unparseQuantity(TXSTATUS),
                                                                      "v": #unparseQuantity(TW),
@@ -790,6 +790,7 @@ Transaction Receipts
            <nonce>  NONCE  </nonce>
            ...
          </account>
+         <log> LOGS </log>
 
     syntax Int ::= getIndexOf ( Int, List ) [function]
  // --------------------------------------------------
@@ -805,6 +806,10 @@ Transaction Receipts
  // ------------------------------------------------------
     rule #unparseAccount (.Account) => null
     rule #unparseAccount (ACCT:Int) => #unparseQuantity(ACCT)
+
+    syntax JSONList ::= #serializeLogs ( List ) [function]
+ // ------------------------------------------------------
+    rule #serializeLogs (.List)  => .JSONList
 ```
 
 - loadCallState: web3.md specific rules
