@@ -416,6 +416,8 @@ tests/%.parse: tests/%
 	$(CHECK) $@-expected $@-out
 	rm -rf $@-out
 
+tests/specs/functional/%.prove: TEST_SYMBOLIC_BACKEND=haskell
+
 tests/%.prove: tests/%
 	$(TEST) prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE)
 
