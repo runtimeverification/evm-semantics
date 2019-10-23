@@ -751,13 +751,13 @@ Transaction Receipts
                                                                      "transactionHash": TXHASH,
                                                                      "transactionIndex": #unparseQuantity(getIndexOf(TXID, TXLIST)),
                                                                      "blockHash": #unparseQuantity(1),
-                                                                     "blockNumber": #unparseQuantity(BNUMBER),
+                                                                     "blockNumber": #unparseQuantity(BN),
                                                                      "from": #unparseQuantity(TXFROM),
                                                                      "to": #unparseAccount(TT),
                                                                      "cumulativeGasUsed": #unparseQuantity(CGAS),
                                                                      "gasUsed": #unparseQuantity(CGAS),
                                                                      "contractAddress": #if TT ==K .Account #then #unparseQuantity(#newAddr(TXFROM, NONCE -Int 1)) #else null #fi,
-                                                                     "logs": [#serializeLogs(LOGS)],
+                                                                     "logs": [#serializeLogs(LOGS, 0, TXID, TXHASH, BN, 1)],
                                                                      "logsBloom": #unparseDataByteArray(BLOOM),
                                                                      "status": #unparseQuantity(TXSTATUS),
                                                                      "v": #unparseQuantity(TW),
@@ -774,8 +774,8 @@ Transaction Receipts
            <txStatus>        TXSTATUS </txStatus>
            <sender>          TXFROM </sender>
          </txReceipt>
-         <number>  BNUMBER </number>
-         <txOrder> TXLIST  </txOrder>
+         <number>  BN     </number>
+         <txOrder> TXLIST </txOrder>
          <message>
            <msgID>      TXID     </msgID>
            <txNonce>    TN       </txNonce>
@@ -807,9 +807,29 @@ Transaction Receipts
     rule #unparseAccount (.Account) => null
     rule #unparseAccount (ACCT:Int) => #unparseQuantity(ACCT)
 
-    syntax JSONList ::= #serializeLogs ( List ) [function]
- // ------------------------------------------------------
-    rule #serializeLogs (.List)  => .JSONList
+    syntax JSONList ::= #unparseIntList ( List ) [function]
+ // -------------------------------------------------------
+    rule #unparseIntList (L) => #unparseIntListAux( L, .JSONList)
+
+    syntax JSONList ::= #unparseIntListAux ( List, JSONList ) [function]
+ // --------------------------------------------------------------------
+    rule #unparseIntListAux(.List, RESULT) => RESULT
+    rule #unparseIntListAux(L ListItem(I), RESULT) => #unparseIntListAux(L, (#unparseQuantity(I), RESULT))
+
+    syntax JSONList ::= #serializeLogs ( List, Int, Int, String, Int, Int ) [function]
+ // ----------------------------------------------------------------------------------
+    rule #serializeLogs (.List, _, _, _, _, _)  => .JSONList
+    rule #serializeLogs (ListItem({ ACCT | TOPICS:List | DATA }) L, LI, TI, TH, BH, BN) => {
+                                                                         "logIndex": #unparseQuantity(LI),
+                                                                         "transactionIndex": #unparseQuantity(TI),
+                                                                         "transactionHash": TH,
+                                                                         "blockHash": #unparseQuantity(BH),
+                                                                         "blockNumber": #unparseQuantity(BN),
+                                                                         "address": #unparseQuantity(ACCT),
+                                                                         "data": #unparseDataByteArray(DATA),
+                                                                         "topics": [#unparseIntList(TOPICS)],
+                                                                         "type" : "mined"
+                                                                                           }, #serializeLogs(L, LI +Int 1, TI, TH, BH, BN)
 ```
 
 - loadCallState: web3.md specific rules
