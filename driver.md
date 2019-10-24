@@ -7,12 +7,14 @@ Actual execution of the EVM is defined in [the EVM file](../evm).
 ```k
 requires "evm.k"
 requires "asm.k"
+requires "edsl.k"
 requires "state-loader.k"
 
 module ETHEREUM-SIMULATION
     imports EVM
     imports EVM-ASSEMBLY
     imports STATE-LOADER
+    imports EDSL
 ```
 
 An Ethereum simulation is a list of Ethereum commands.
@@ -274,6 +276,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> loadCallState { "caller" : (ACCTFROM:Int), REST => REST } ... </k> <caller> _ => ACCTFROM </caller>
     rule <k> loadCallState { "origin" : (ORIG:Int), REST => REST }     ... </k> <origin> _ => ORIG     </origin>
     rule <k> loadCallState { "address" : (ACCTTO:Int), REST => REST }  ... </k> <id>     _ => ACCTTO   </id>
+    rule <k> loadCallState { "callData" : (CALLDATA:ByteArray), REST => REST} ... </k> <callData> _ => CALLDATA </callData>
 
     rule <k> loadCallState { "code" : (CODE:OpCodes), REST => REST} ... </k>
          <program> _ => #asmOpCodes(CODE) </program>

@@ -821,7 +821,8 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
  // --------------------------------------------
     rule #parseMap( { .JSONList                   } ) => .Map
     rule #parseMap( { _   : (VALUE:String) , REST } ) => #parseMap({ REST })                                                requires #parseHexWord(VALUE) ==K 0
-    rule #parseMap( { KEY : (VALUE:String) , REST } ) => #parseMap({ REST }) [ #parseHexWord(KEY) <- #parseHexWord(VALUE) ] requires #parseHexWord(VALUE) =/=K 0
+    rule #parseMap( { KEY:String : (VALUE:String) , REST } ) => #parseMap({ REST }) [ #parseHexWord(KEY) <- #parseHexWord(VALUE) ] requires #parseHexWord(VALUE) =/=K 0
+    rule #parseMap( { KEY:Int : (VALUE:String) , REST } ) => #parseMap({ REST }) [ KEY <- #parseHexWord(VALUE) ] requires #parseHexWord(VALUE) =/=K 0
 
     syntax Int ::= #parseAddr ( String ) [function]
  // -----------------------------------------------

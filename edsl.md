@@ -9,7 +9,7 @@ The notations are inspired by the production compilers of the smart contract lan
 ```k
 requires "evm.k"
 
-module EDSL         [symbolic]
+module EDSL
     imports EVM
 ```
 
@@ -86,7 +86,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     syntax ByteArray ::= #encodeArgs    ( TypedArgs )                               [function]
     syntax ByteArray ::= #encodeArgsAux ( TypedArgs , Int , ByteArray , ByteArray ) [function]
  // ------------------------------------------------------------------------------------------
-    rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .WordStack, .WordStack)
+    rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .Bytes, .Bytes)
 
     rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS ++ TAILS
 
@@ -137,7 +137,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
  // ---------------------------------------------------------
-    rule #sizeOfDynamicType(#bytes( WS )) => 32 +Int #ceil32(#sizeWordStack(WS))
+    rule #sizeOfDynamicType(#bytes( WS )) => 32 +Int #ceil32(#sizeByteArray(WS))
 
     rule #sizeOfDynamicType(#array(T, N, _)) => 32 *Int (1 +Int N)
       requires #isStaticType(T)
@@ -155,30 +155,25 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     syntax ByteArray ::= #enc ( TypedArg ) [function]
  // -------------------------------------------------
     // static Type
-    rule #enc(#uint160( DATA )) => #buf(32, #getValue(#uint160( DATA )))
-    rule #enc(#address( DATA )) => #buf(32, #getValue(#address( DATA )))
-    rule #enc(#uint256( DATA )) => #buf(32, #getValue(#uint256( DATA )))
-    rule #enc( #uint48( DATA )) => #buf(32, #getValue( #uint48( DATA )))
-    rule #enc( #uint16( DATA )) => #buf(32, #getValue( #uint16( DATA )))    
-    rule #enc(  #uint8( DATA )) => #buf(32, #getValue(  #uint8( DATA )))
-    rule #enc( #int256( DATA )) => #buf(32, #getValue( #int256( DATA )))
-    rule #enc( #int128( DATA )) => #buf(32, #getValue( #int128( DATA )))
-    rule #enc(#bytes32( DATA )) => #buf(32, #getValue(#bytes32( DATA )))
-    rule #enc(   #bool( DATA )) => #buf(32, #getValue(   #bool( DATA )))
+    rule #enc(#uint160( DATA )) => Int2Bytes(32, DATA , BE)
+    rule #enc(#address( DATA )) => Int2Bytes(32, DATA , BE)
+    rule #enc(#uint256( DATA )) => Int2Bytes(32, DATA , BE)
+    rule #enc( #uint48( DATA )) => Int2Bytes(32, DATA , BE)
+    rule #enc( #uint16( DATA )) => Int2Bytes(32, DATA , BE)
+    rule #enc(  #uint8( DATA )) => Int2Bytes(32, DATA , BE)
+    rule #enc( #int256( DATA )) => Int2Bytes(32, DATA , BE)
+    rule #enc( #int128( DATA )) => Int2Bytes(32, DATA , BE)
+    rule #enc(#bytes32( DATA )) => Int2Bytes(32, DATA , BE)
+    rule #enc(   #bool( DATA )) => Int2Bytes(32, DATA , BE)
 
     // dynamic Type
-    rule #enc(        #bytes(WS)) => #encBytes(#sizeWordStack(WS), WS)
+    rule #enc(        #bytes(WS)) => #encBytes(#sizeByteArray(WS), WS)
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) ++ #encodeArgs(DATA)
     rule #enc(      #string(STR)) => #enc(#bytes(#parseByteStackRaw(STR)))
 
-    syntax ByteArray ::= #encBytes ( Int , WordStack ) [function]
+    syntax ByteArray ::= #encBytes ( Int , ByteArray ) [function]
  // -------------------------------------------------------------
-    rule #encBytes(N, WS) => #enc(#uint256(N)) ++ WS ++ #buf(#ceil32(N) -Int N, 0)
-
-    //Byte array buffer. Lemmas defined in evm-data-symbolic.k
-    // SIZE, DATA // left zero padding
-    syntax ByteArray ::= #buf ( Int , Int ) [function, smtlib(buf)]
- // ---------------------------------------------------------------
+    rule #encBytes(N, WS) => #enc(#uint256(N)) ++ padRightBytes(WS, #ceil32(N), 0)
 
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
@@ -215,115 +210,13 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     syntax Int ::= #ceil32 ( Int ) [function, smtlib(ceil32), smt-prelude]
  // -----------------------------------------
     rule #ceil32(N) => ((N +Int 31) /Int 32) *Int 32 [concrete]
-```
 
-### ABI Event Logs
-
-EVM logs are special data structures in the blockchain, being searchable by off-chain clients.
-Events are high-level wrappers of the EVM logs provided in the high-level languages.
-Contracts can declare and generate the events, which will be compiled down to the EVM bytecode using the EVM log instructions.
-The encoding scheme of the events in the EVM logs is defined in the Ethereum contract application binary interface (ABI) specification, leveraging the ABI call data encoding scheme.
-
-The eDSL provides `#abiEventLog`, a notation to specify the EVM logs in the high-level events, defined below.
-It specifies the contract account address, the event name, and the event arguments.
-For example, the following notation represents an EVM log data that encodes the `Transfer` event generated by the `transfer` function, where `ACCT_ID` is the account address, and `CALLER_ID`, `TO_ID`, and `VALUE` are the event arguments.
-Each argument is tagged with its ABI type (`#address` or `#uint256`), and the `indexed` attribute (`#indexed`) if any, according to the event declaration in the contract.
-
-```
-  #abiEventLog(ACCT_ID, "Transfer", #indexed(#address(CALLER_ID)), #indexed(#address(TO_ID)), #uint256(VALUE))
-```
-
-The above notation denotes (i.e., is translated to) the following EVM log data structure:
-
-```
-  { ACCT_ID                                                                                                                                                                                                                                                  | |`
-  | 100389287136786176327247604509743168900146139575972864366142685224231313322991
-  : CALLER_ID                                                                                                                                                                                                                                                |/|
-  : TO_ID                                                                                                                                                                                                                                                    | |
-  : .WordStack                                                                                                                                                                                                                                               | |
-  | #asByteStackInWidth(VALUE, 32)                                                                                                                                                                                                                           | |
-  }
-```
-
-where `100389287136786176327247604509743168900146139575972864366142685224231313322991` is the hash value of the event signature, `keccak256("Transfer(address,address,unit256)")`.
-
-```k
-    syntax EventArg ::= TypedArg
-                      | #indexed ( TypedArg )
- // -----------------------------------------
-
-    syntax EventArgs ::= List{EventArg, ","} [klabel(eventArgs)]
- // ------------------------------------------------------------
-
-    syntax SubstateLogEntry ::= #abiEventLog ( Int , String , EventArgs ) [function]
- // --------------------------------------------------------------------------------
-    rule #abiEventLog(ACCT_ID, EVENT_NAME, EVENT_ARGS)
-      => { ACCT_ID | #getEventTopics(EVENT_NAME, EVENT_ARGS) | #getEventData(EVENT_ARGS) }
-
-    syntax List ::= #getEventTopics ( String , EventArgs ) [function]
- // -----------------------------------------------------------------
-    rule #getEventTopics(ENAME, EARGS)
-      => ListItem(#parseHexWord(Keccak256(#generateSignature(ENAME, #getTypedArgs(EARGS)))))
-         #getIndexedArgs(EARGS)
-
-    syntax TypedArgs ::= #getTypedArgs ( EventArgs ) [function]
- // -----------------------------------------------------------
-    rule #getTypedArgs(#indexed(E), ES) => E, #getTypedArgs(ES)
-    rule #getTypedArgs(E:TypedArg,  ES) => E, #getTypedArgs(ES)
-    rule #getTypedArgs(.EventArgs)      => .TypedArgs
-
-    syntax List ::= #getIndexedArgs ( EventArgs ) [function]
- // --------------------------------------------------------
-    rule #getIndexedArgs(#indexed(E), ES) => ListItem(#getValue(E)) #getIndexedArgs(ES)
-    rule #getIndexedArgs(_:TypedArg,  ES) =>                        #getIndexedArgs(ES)
-    rule #getIndexedArgs(.EventArgs)      => .List
-
-    syntax ByteArray ::= #getEventData ( EventArgs ) [function]
- // -----------------------------------------------------------
-    rule #getEventData(#indexed(_), ES) =>            #getEventData(ES)
-    rule #getEventData(E:TypedArg,  ES) => #enc(E) ++ #getEventData(ES)
-    rule #getEventData(.EventArgs)      => .WordStack
-
-```
-
-### Hashed Location for Storage
-
-The storage accommodates permanent data such as the `balances` map.
-A map is laid out in the storage where the map entries are scattered over the entire storage space using the (256-bit) hash of each key to determine the location.
-The detailed mechanism of calculating the location varies by compilers.
-In Vyper, for example, `map[key1][key2]` is stored at the location:
-
-```
-  hash(hash(idx(map)) + key1) + key2
-```
-
-where `idx(map)` is the position index of `map` in the program, and `+` is the addition modulo `2**256`, while in Solidity, it is stored at:
-
-```
-  hash(key2 ++ hash(key1 ++ idx(map)))
-```
-
-where `++` is byte-array concatenation.
-
-The eDSL provides `#hashedLocation` that allows to uniformly specify the locations in a form parameterized by the underlying compilers.
-For example, the location of `map[key1][key2]` can be specified as follows, where `{COMPILER}` is a place-holder to be replaced by the name of the compiler.
-Note that the keys are separated by the white spaces instead of commas.
-
-```
-  #hashedLocation({COMPILER}, idx(map), key1 key2)
-```
-
-This notation makes the specification independent of the underlying compilers, enabling it to be reused for differently compiled programs.
-Specifically, `#hashedLocation` is defined as follows, capturing the storage layout schemes of Solidity and Vyper.
-
-```k
-    syntax IntList ::= List{Int, ""}                             [klabel(intList)]
+    syntax IntList ::= List{Int, ""}                      [klabel(intList)]
     syntax Int     ::= #hashedLocation( String , Int , IntList ) [function]
  // -----------------------------------------------------------------------
     rule #hashedLocation(LANG, BASE, .IntList) => BASE
 
-    rule #hashedLocation("Vyper",    BASE, OFFSET OFFSETS) => #hashedLocation("Vyper",    keccakIntList(BASE) +Word OFFSET, OFFSETS)
-    rule #hashedLocation("Solidity", BASE, OFFSET OFFSETS) => #hashedLocation("Solidity", keccakIntList(OFFSET BASE),       OFFSETS)
+    rule #hashedLocation("Solidity", BASE, OFFSET OFFSETS) => #hashedLocation("Solidity", keccakIntList(OFFSET BASE), OFFSETS)
 
     syntax Int ::= keccakIntList( IntList ) [function]
  // --------------------------------------------------
@@ -331,34 +224,9 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
 
     syntax ByteArray ::= intList2ByteStack( IntList ) [function]
  // ------------------------------------------------------------
-    rule intList2ByteStack(.IntList) => .WordStack
-    rule intList2ByteStack(V VS)     => #padToWidth(32, #asByteStack(V)) ++ intList2ByteStack(VS)
+    rule intList2ByteStack(.IntList) => .ByteArray
+    rule intList2ByteStack(V VS)     => Int2Bytes(32, V, BE) ++ intList2ByteStack(VS)
       requires 0 <=Int V andBool V <Int pow256
-
-    syntax IntList ::= byteStack2IntList ( WordStack )       [function]
-                     | byteStack2IntList ( WordStack , Int ) [function]
-
-    syntax Int ::=     bytesInNextInt ( WordStack , Int )    [function] //how many bytes will go into next Int.
- // -----------------------------------------------------------------------------------------------------------
-    rule byteStack2IntList ( WS ) => byteStack2IntList ( WS , #sizeWordStack(WS) /Int 32 )
-
-    // #sizeWordStack(WS) is not necessarily a multiple of 32.
-    rule byteStack2IntList ( WS , N )
-         => #asWord ( WS [ 0 .. bytesInNextInt(WS, N) ] ) byteStack2IntList ( #drop(bytesInNextInt(WS, N), WS) , N -Int 1 )
-         requires N >Int 0
-
-    rule byteStack2IntList ( WS , 0 ) => .IntList
-
-    rule bytesInNextInt(WS, N) => #sizeWordStack(WS) -Int 32 *Int (N -Int 1)
-```
-
-Solidity stores values of type `bytes` and `string` in one slot if they are short enough. If the data is at most 31 bytes long, it is stored in the higher-order bytes (left aligned) and the lowest-order byte stores `2 * length`.
-
-```k
-    syntax Int ::= #packBytes ( WordStack )    [function]
- // ----------------------------------------------------
-    rule #packBytes( WS ) => #asInteger(#padRightToWidth(31, WS) ++ #asByteStack(2 *Int #sizeWordStack(WS)))
-    requires #sizeWordStack(WS) <=Int 31
 
 endmodule
 ```
