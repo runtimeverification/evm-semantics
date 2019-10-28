@@ -1073,6 +1073,19 @@ Merkle Patricia Tree
       => #merkleBrancher ( M, BRANCHVALUE, PATH[0], PATH[1 .. #sizeByteArray(PATH) -Int 1], VALUE ) [owise]
 ```
 
+- `MerkleUpdateMap` Takes a mapping of `ByteArray |-> String` and generates a trie
+
+```k
+    syntax MerkleTree ::= MerkleUpdateMap( MerkleTree, Map ) [function]
+ // -------------------------------------------------------------------
+    rule MerkleUpdateMap( TREE, KEY |-> VALUE M ) => MerkleUpdateMap( MerkleUpdate( TREE, #nibbleize(KEY), VALUE ) , M )
+      requires M =/=K .Map
+
+    rule MerkleUpdateMap( TREE, KEY |-> VALUE ) => MerkleUpdate( TREE, #nibbleize(KEY), VALUE )
+
+    rule MerkleUpdateMap( TREE, .Map ) => TREE
+```
+
 Merkle Tree Aux Functions
 -------------------------
 
