@@ -1073,6 +1073,16 @@ Merkle Patricia Tree
       => #merkleBrancher ( M, BRANCHVALUE, PATH[0], PATH[1 .. #sizeByteArray(PATH) -Int 1], VALUE ) [owise]
 ```
 
+- `MerkleUpdateMap` Takes a mapping of `ByteArray |-> String` and generates a trie
+
+```k
+    syntax MerkleTree ::= MerkleUpdateMap( MerkleTree, Map ) [function]
+ // -------------------------------------------------------------------
+    rule MerkleUpdateMap( TREE, KEY |-> VALUE M ) => MerkleUpdateMap( MerkleUpdate( TREE, #nibbleize(KEY), VALUE ) , M )
+
+    rule MerkleUpdateMap( TREE, .Map ) => TREE
+```
+
 Merkle Tree Aux Functions
 -------------------------
 
@@ -1080,13 +1090,14 @@ Merkle Tree Aux Functions
     syntax ByteArray ::= #nibbleize ( ByteArray ) [function]
                        | #byteify   ( ByteArray ) [function]
  // --------------------------------------------------------
-    rule #nibbleize ( B ) =>    #asByteStack ( ( B [ 0 ] /Int 16 ) *Int 256 +Int ( B [ 0 ] %Int 16 ) )[0 .. 2]
-                             ++ #nibbleize ( B[1 .. #sizeByteArray(B) -Int 1] )
+    rule #nibbleize ( B ) => (    #asByteStack ( ( B [ 0 ] /Int 16 ) *Int 256 )[0 .. 1]
+                               ++ ( #asByteStack ( B [ 0 ] %Int 16 )[0 .. 1] )
+                             ) ++ #nibbleize ( B[1 .. #sizeByteArray(B) -Int 1] )
       requires #sizeByteArray( B ) >Int 0
 
     rule #nibbleize ( _ ) => .ByteArray [owise]
 
-    rule #byteify ( B ) =>    #asByteStack ( B[0] *Int 16 +Int B[1] )
+    rule #byteify ( B ) =>    #asByteStack ( B[0] *Int 16 +Int B[1] )[0 .. 1]
                            ++ #byteify ( B[2 .. #sizeByteArray(B) -Int 2] )
       requires #sizeByteArray(B) >Int 0
 
