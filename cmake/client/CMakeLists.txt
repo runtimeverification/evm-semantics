@@ -12,6 +12,7 @@ add_executable(kevm-client
 	$ENV{PLUGIN_SUBMODULE}/vm-c/init.cpp
 	$ENV{PLUGIN_SUBMODULE}/client-c/main.cpp
 	$ENV{PLUGIN_SUBMODULE}/client-c/json.cpp
+	$ENV{PLUGIN_SUBMODULE}/client-c/HttpHandler.cpp
 	$ENV{PLUGIN_SUBMODULE}/plugin-c/crypto.cpp)
 
 if(UNIX AND NOT APPLE)
@@ -21,6 +22,8 @@ endif()
 target_include_directories(kevm-client
 	PUBLIC $ENV{PLUGIN_SUBMODULE}/plugin-c
 	PUBLIC $ENV{PLUGIN_SUBMODULE}/vm-c
+	PUBLIC $ENV{PLUGIN_SUBMODULE}/deps/proxygen/proxygen/_build/deps/include
+	PUBLIC $ENV{PLUGIN_SUBMODULE}/deps/proxygen/proxygen/_build/include
 	PUBLIC ${CMAKE_SOURCE_DIR}/..)
 target_compile_options(kevm-client
 	PUBLIC $ENV{LLVM_KOMPILE_OPTS}
