@@ -145,11 +145,11 @@ ocaml-deps:
 # Building
 # --------
 
-MAIN_MODULE    := ETHEREUM-SIMULATION
+MAIN_MODULE    := KEVM-LTL
 SYNTAX_MODULE  := $(MAIN_MODULE)
-export MAIN_DEFN_FILE := driver
+export MAIN_DEFN_FILE := kevm-ltl
 
-k_files       := driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k web3.k asm.k state-loader.k
+k_files       := driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k web3.k asm.k state-loader.k kevm-ltl.k
 EXTRA_K_FILES += $(MAIN_DEFN_FILE).k
 ALL_K_FILES   := $(k_files) $(EXTRA_K_FILES)
 
