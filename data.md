@@ -1079,9 +1079,6 @@ Merkle Patricia Tree
     syntax MerkleTree ::= MerkleUpdateMap( MerkleTree, Map ) [function]
  // -------------------------------------------------------------------
     rule MerkleUpdateMap( TREE, KEY |-> VALUE M ) => MerkleUpdateMap( MerkleUpdate( TREE, #nibbleize(KEY), VALUE ) , M )
-      requires M =/=K .Map
-
-    rule MerkleUpdateMap( TREE, KEY |-> VALUE ) => MerkleUpdate( TREE, #nibbleize(KEY), VALUE )
 
     rule MerkleUpdateMap( TREE, .Map ) => TREE
 ```
