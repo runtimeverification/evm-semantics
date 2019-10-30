@@ -320,10 +320,15 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
     syntax IntList ::= List{Int, ""}                             [klabel(intList)]
     syntax Int     ::= #hashedLocation( String , Int , IntList ) [function]
  // -----------------------------------------------------------------------
-    rule #hashedLocation(LANG, BASE, .IntList) => BASE
+    rule #hashedLocation(LANG, BASE, .IntList) => keccakIntList(BASE)
 
-    rule #hashedLocation("Vyper",    BASE, OFFSET OFFSETS) => #hashedLocation("Vyper",    keccakIntList(BASE) +Word OFFSET, OFFSETS)
-    rule #hashedLocation("Solidity", BASE, OFFSET OFFSETS) => #hashedLocation("Solidity", keccakIntList(OFFSET BASE),       OFFSETS)
+    rule #hashedLocation("Vyper",    BASE, OFFSET .IntList) => keccakIntList(BASE) +Word OFFSET
+    rule #hashedLocation("Vyper",    BASE, OFFSET OFFSETS ) => #hashedLocation("Vyper",    keccakIntList(BASE) +Word OFFSET, OFFSETS)
+      requires OFFSETS =/=K .IntList
+
+    rule #hashedLocation("Solidity", BASE, OFFSET .IntList)  => keccakIntList(OFFSET BASE)
+    rule #hashedLocation("Solidity", BASE, OFFSET OFFSETS )  => #hashedLocation("Solidity", keccakIntList(OFFSET BASE),       OFFSETS)
+      requires OFFSETS =/=K .IntList
 
     syntax Int ::= keccakIntList( IntList ) [function]
  // --------------------------------------------------

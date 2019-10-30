@@ -21,7 +21,7 @@ module STORAGEROOT-SPEC
          </k>
 
     rule <k> runMerkle( Keccak256( #rlpEncodeMerkleTree( #storageRoot(
-              #hashedLocation( "Solidity", keccakIntList(0), .IntList )                         |-> 1234
+              #hashedLocation( "Solidity", 0, .IntList )                                        |-> 1234
               #hashedLocation( "Solidity", 1, 325916061853536256927665635852894456676216705688) |-> 5678
                                                                      )
                                                        )
