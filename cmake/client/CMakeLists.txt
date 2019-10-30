@@ -27,8 +27,12 @@ target_include_directories(kevm-client
 	PUBLIC ${CMAKE_SOURCE_DIR}/..)
 target_compile_options(kevm-client
 	PUBLIC $ENV{LLVM_KOMPILE_OPTS}
-	PUBLIC -Wall -Werror)
+	PUBLIC -Wall -Werror -Wno-unknown-warning-option)
 target_link_libraries(kevm-client
-	ff gmp ${LINK_PROCPS} cryptopp secp256k1)
+	ff gmp ${LINK_PROCPS} cryptopp secp256k1
+	$ENV{PLUGIN_SUBMODULE}/deps/proxygen/proxygen/_build/deps/lib/libfolly.a
+	$ENV{PLUGIN_SUBMODULE}/deps/proxygen/proxygen/_build/proxygen/lib/libproxygen.a
+	$ENV{PLUGIN_SUBMODULE}/deps/proxygen/proxygen/_build/proxygen/httpserver/libproxygenhttpserver.a
+)
 
 include(LLVMKompile)
