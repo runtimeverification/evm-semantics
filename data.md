@@ -1171,8 +1171,7 @@ Merkle Tree Aux Functions
 Tree Root Helper Functions
 --------------------------
 
-Storage Root
-------------
+### Storage Root
 
 ```k
     syntax Map ::= #intMap2StorageMap( Map ) [function]
