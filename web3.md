@@ -1196,5 +1196,41 @@ Collecting Coverage Data
     syntax Int ::= #computePercentage ( Int, Int ) [function]
  // ---------------------------------------------------------
     rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL
+```
+
+Helper Funcs
+------------
+
+```k
+    syntax AccountData ::= #getAcctData( Account ) [function]
+ // ---------------------------------------------------------
+    rule [[ #getAcctData( ACCT ) => AcctData(NONCE, BAL, STORAGE, CODE) ]]
+         <account>
+           <acctID>  ACCT    </acctID>
+           <nonce>   NONCE   </nonce>
+           <balance> BAL     </balance>
+           <storage> STORAGE </storage>
+           <code>    CODE    </code>
+           ...
+         </account>
+```
+
+State Root
+----------
+
+```k
+    syntax MerkleTree ::= "#stateRoot" [function]
+ // ---------------------------------------------
+    rule #stateRoot => MerkleUpdateMap( .MerkleTree, #precompiledContracts #activeAccounts )
+
+    syntax Map ::= "#activeAccounts"   [function]
+                 | #accountsMap( Set ) [function]
+ // ---------------------------------------------
+    rule [[ #activeAccounts => #accountsMap( ACCTS ) ]]
+         <activeAccounts> ACCTS </activeAccounts>
+
+    rule #accountsMap( .Set ) => .Map
+    rule #accountsMap( SetItem( ACCT:Int ) S ) => #parseByteStack( #unparseData( ACCT, 20 ) ) |-> #rlpEncodeFullAccount( #getAcctData( ACCT ) ) #accountsMap( S )
+
 endmodule
 ```
