@@ -1166,6 +1166,22 @@ Merkle Tree Aux Functions
     rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
       => MerkleExtension( PATH, #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, P2, VALUE ), P1, TREE ) )
       requires #sizeByteArray(P2) ==Int 0
+```
+
+Tree Root Helper Functions
+--------------------------
+
+### Storage Root
+
+```k
+    syntax Map ::= #intMap2StorageMap( Map ) [function]
+ // ---------------------------------------------------
+    rule #intMap2StorageMap( .Map          ) => .Map
+    rule #intMap2StorageMap( KEY |-> VAL M ) => #padToWidth( 32, #asByteStack( KEY ) ) |-> #rlpEncodeWord( VAL ) #intMap2StorageMap(M)
+
+    syntax MerkleTree ::= #storageRoot( Map ) [function]
+ // ----------------------------------------------------
+    rule #storageRoot( STORAGE ) => MerkleUpdateMap( .MerkleTree, #intMap2StorageMap( STORAGE ) )
 
 endmodule
 ```
