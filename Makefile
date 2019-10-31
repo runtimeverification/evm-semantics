@@ -47,7 +47,7 @@ export LUA_PATH
         test-web3                                                                                                                           \
         test-prove test-klab-prove test-parse test-failure                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly \
-        media media-pdf sphinx metropolis-theme proxygen
+        media media-pdf sphinx metropolis-theme
 .SECONDARY:
 
 all: build split-tests
@@ -107,12 +107,6 @@ $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) $(LIBFF_CMAKE_FLAGS) \
 	    && make -s -j4 \
 	    && make install
-
-proxygen:
-	git submodule update --init --recursive -- $(DEPS_DIR)/proxygen
-	cd $(DEPS_DIR)/proxygen \
-	    && proxygen/build.sh \
-	    && proxygen/install.sh
 
 # K Dependencies
 # --------------
