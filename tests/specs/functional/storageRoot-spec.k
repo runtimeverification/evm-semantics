@@ -20,13 +20,28 @@ module STORAGEROOT-SPEC
           => doneMerkle( .MerkleTree )
          </k>
 
+    // uint                                     pos0;
+    // mapping (uint => uint)                   pos1;
+    // uint                                     pos2;
+    // mapping (uint => mapping (uint => uint)) pos3;
+    //
+    // pos0       = 1234;
+    // pos1[0]    = 0;
+    // pos1[1]    = 1;
+    // pos2       = 100;
+    // pos3[0][0] = 42;
+    // pos3[2][1] = 2019;
     rule <k> runMerkle( Keccak256( #rlpEncodeMerkleTree( #storageRoot(
-              #hashedLocation( "Vyper", 0, 0 )                                                  |-> 1234
-              #hashedLocation( "Solidity", 1, 325916061853536256927665635852894456676216705688) |-> 5678
+              #hashedLocation( "Solidity", 0, .IntList ) |-> 1234
+              #hashedLocation( "Solidity", 1, 0 )        |-> 0
+              #hashedLocation( "Solidity", 1, 1 )        |-> 1
+              #hashedLocation( "Solidity", 2, .IntList ) |-> 100
+              #hashedLocation( "Solidity", 3, 0 0 )      |-> 42
+              #hashedLocation( "Solidity", 3, 2 1 )      |-> 2019
                                                                      )
                                                        )
                                  )
                       )
-          => doneMerkle( "9a92147e80919ad37d3f96943fd8f613be1381ce140251216ea566b080ac81f0" )
+          => doneMerkle( "6786e17b1f185ba3b51ec15f28526a1d47d74052ca98c1b8edf7cdc6243eebba" )
          </k>
 endmodule
