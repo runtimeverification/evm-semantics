@@ -30,10 +30,13 @@ target_compile_options(kevm-client
 	PUBLIC -Wall -Werror -Wno-unknown-warning-option)
 target_link_libraries(kevm-client
 	ff gmp ${LINK_PROCPS} cryptopp secp256k1 glog gflags double-conversion boost_system boost_thread boost_regex pthread iberty
-	boost_filesystem boost_context boost_program_options ssl crypto
+	boost_filesystem boost_context boost_program_options ssl crypto event z sodium
 	$ENV{PLUGIN_SUBMODULE}/deps/proxygen/proxygen/_build/deps/lib/libfolly.a
 	$ENV{PLUGIN_SUBMODULE}/deps/proxygen/proxygen/_build/proxygen/lib/libproxygen.a
 	$ENV{PLUGIN_SUBMODULE}/deps/proxygen/proxygen/_build/proxygen/httpserver/libproxygenhttpserver.a
+	$ENV{PLUGIN_SUBMODULE}/deps/proxygen/proxygen/_build/deps/lib/libwangle.a
+	$ENV{PLUGIN_SUBMODULE}/deps/proxygen/proxygen/_build/deps/lib/libfizz.a
+
 )
 
 include(LLVMKompile)
