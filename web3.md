@@ -317,6 +317,8 @@ WEB3 JSON RPC
          <method> "eth_estimateGas" </method>
     rule <k> #runRPCCall => #firefly_getCoverageData ... </k>
          <method> "firefly_getCoverageData" </method>
+    rule <k> #runRPCCall => #firefly_getStateRoot ... </k>
+         <method> "firefly_getStateRoot" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -1231,6 +1233,10 @@ State Root
 
     rule #accountsMap( .Set ) => .Map
     rule #accountsMap( SetItem( ACCT:Int ) S ) => #parseByteStack( #unparseData( ACCT, 20 ) ) |-> #rlpEncodeFullAccount( #getAcctData( ACCT ) ) #accountsMap( S )
+
+    syntax KItem ::= "#firefly_getStateRoot"
+ // ----------------------------------------
+    rule <k> #firefly_getStateRoot => #sendResponse("result": { "stateRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) } ) ... </k>
 
 endmodule
 ```

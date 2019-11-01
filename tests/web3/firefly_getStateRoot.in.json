@@ -1,0 +1,15 @@
+[{
+    "jsonrpc":"2.0",
+    "id":1,
+    "method":"firefly_addAccount",
+    "params":[{
+        "key":"0xcdeac0dd5ec7c04072af48f2a4451e102a80ca5bb441a7b4d72c176cea61866e",
+        "balance":"0x56bc75e2d63100000"
+    }]
+},
+{
+    "jsonrpc":"2.0",
+    "id":2,
+    "method":"firefly_getStateRoot",
+    "params":[]
+}]
