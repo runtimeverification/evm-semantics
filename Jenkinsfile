@@ -59,13 +59,6 @@ pipeline {
                 '''
               }
             }
-            stage('Conformance (Web3)') {
-              steps {
-                sh '''
-                  make test-web3
-                '''
-              }
-            }
           }
         }
         stage('Proofs') {

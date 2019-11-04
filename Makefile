@@ -37,16 +37,16 @@ LUA_PATH                := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean clean-submodules distclean install uninstall                                                                              \
-        deps all-deps llvm-deps haskell-deps repo-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff                                     \
-        build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                                               \
-        defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                                                \
-        split-tests                                                                                                                         \
-        test test-all test-conformance test-rest-conformance test-all-conformance                                                           \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                       \
-        test-web3                                                                                                                           \
-        test-prove test-klab-prove test-parse test-failure                                                                                  \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly \
+.PHONY: all clean clean-submodules distclean install uninstall                                                     \
+        deps all-deps llvm-deps haskell-deps repo-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff            \
+        build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                      \
+        defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                       \
+        split-tests                                                                                                \
+        test test-all test-conformance test-rest-conformance test-all-conformance                                  \
+        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                              \
+        test-web3                                                                                                  \
+        test-prove test-klab-prove test-parse test-failure                                                         \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search \
         media media-pdf sphinx metropolis-theme
 .SECONDARY:
 
