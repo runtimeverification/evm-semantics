@@ -1045,7 +1045,9 @@ Transaction Receipts
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
     rule <k> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #sendResponse ("result": #unparseQuantity( GUSED -Int INITGUSED )) ... </k>
+         <statusCode> STATUSCODE </statusCode>
          <gasUsed> GUSED </gasUsed>
+      requires STATUSCODE =/=K EVMC_OUT_OF_GAS
 
     rule <k> #eth_estimateGas_finalize _ => #popNetworkState ~> #sendResponse ( "error": {"code": -32000, "message":"base fee exceeds gas limit"}) ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
