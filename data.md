@@ -1182,6 +1182,44 @@ Tree Root Helper Functions
     syntax MerkleTree ::= #storageRoot( Map ) [function]
  // ----------------------------------------------------
     rule #storageRoot( STORAGE ) => MerkleUpdateMap( .MerkleTree, #intMap2StorageMap( STORAGE ) )
+```
+
+### State Root
+
+```k
+    syntax Map ::= "#precompiledContracts" [function]
+ // -------------------------------------------------
+    rule #precompiledContracts
+      => #parseByteStackRaw( Hex2Raw( #unparseData( 1, 20 ) ) ) |-> #emptyContractRLP
+         #parseByteStackRaw( Hex2Raw( #unparseData( 2, 20 ) ) ) |-> #emptyContractRLP
+         #parseByteStackRaw( Hex2Raw( #unparseData( 3, 20 ) ) ) |-> #emptyContractRLP
+         #parseByteStackRaw( Hex2Raw( #unparseData( 4, 20 ) ) ) |-> #emptyContractRLP
+         #parseByteStackRaw( Hex2Raw( #unparseData( 5, 20 ) ) ) |-> #emptyContractRLP
+         #parseByteStackRaw( Hex2Raw( #unparseData( 6, 20 ) ) ) |-> #emptyContractRLP
+         #parseByteStackRaw( Hex2Raw( #unparseData( 7, 20 ) ) ) |-> #emptyContractRLP
+         #parseByteStackRaw( Hex2Raw( #unparseData( 8, 20 ) ) ) |-> #emptyContractRLP
+
+    syntax String ::= "#emptyContractRLP" [function]
+ // ------------------------------------------------
+    rule #emptyContractRLP => #rlpEncodeLength(         #rlpEncodeWord(0)
+                                                +String #rlpEncodeWord(0)
+                                                +String #rlpEncodeString( Hex2Raw( Keccak256("\x80") ) )
+                                                +String #rlpEncodeString( Hex2Raw( Keccak256("") ) )
+                                              , 192
+                                              )
+
+    syntax AccountData ::= AcctData ( nonce: Int, balance: Int, store: Map, code: ByteArray )
+ // -----------------------------------------------------------------------------------------
+
+    syntax String      ::= #rlpEncodeFullAccount( AccountData ) [function]
+ // ----------------------------------------------------------------------
+    rule  #rlpEncodeFullAccount( AcctData( NONCE, BAL, STORAGE, CODE ) )
+         => #rlpEncodeLength(         #rlpEncodeWord(NONCE)
+                              +String #rlpEncodeWord(BAL)
+                              +String #rlpEncodeString( Hex2Raw( Keccak256( #rlpEncodeMerkleTree( #storageRoot( STORAGE ) ) ) ) )
+                              +String #rlpEncodeString( Hex2Raw( Keccak256( #asString( CODE ) ) ) )
+                            , 192
+                            )
 
 endmodule
 ```

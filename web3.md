@@ -317,6 +317,8 @@ WEB3 JSON RPC
          <method> "eth_estimateGas" </method>
     rule <k> #runRPCCall => #firefly_getCoverageData ... </k>
          <method> "firefly_getCoverageData" </method>
+    rule <k> #runRPCCall => #firefly_getStateRoot ... </k>
+         <method> "firefly_getStateRoot" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -1198,5 +1200,45 @@ Collecting Coverage Data
     syntax Int ::= #computePercentage ( Int, Int ) [function]
  // ---------------------------------------------------------
     rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL
+```
+
+Helper Funcs
+------------
+
+```k
+    syntax AccountData ::= #getAcctData( Account ) [function]
+ // ---------------------------------------------------------
+    rule [[ #getAcctData( ACCT ) => AcctData(NONCE, BAL, STORAGE, CODE) ]]
+         <account>
+           <acctID>  ACCT    </acctID>
+           <nonce>   NONCE   </nonce>
+           <balance> BAL     </balance>
+           <storage> STORAGE </storage>
+           <code>    CODE    </code>
+           ...
+         </account>
+```
+
+State Root
+----------
+
+```k
+    syntax MerkleTree ::= "#stateRoot" [function]
+ // ---------------------------------------------
+    rule #stateRoot => MerkleUpdateMap( .MerkleTree, #precompiledContracts #activeAccounts )
+
+    syntax Map ::= "#activeAccounts"   [function]
+                 | #accountsMap( Set ) [function]
+ // ---------------------------------------------
+    rule [[ #activeAccounts => #accountsMap( ACCTS ) ]]
+         <activeAccounts> ACCTS </activeAccounts>
+
+    rule #accountsMap( .Set ) => .Map
+    rule #accountsMap( SetItem( ACCT:Int ) S ) => #parseByteStack( #unparseData( ACCT, 20 ) ) |-> #rlpEncodeFullAccount( #getAcctData( ACCT ) ) #accountsMap( S )
+
+    syntax KItem ::= "#firefly_getStateRoot"
+ // ----------------------------------------
+    rule <k> #firefly_getStateRoot => #sendResponse("result": { "stateRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) } ) ... </k>
+
 endmodule
 ```
