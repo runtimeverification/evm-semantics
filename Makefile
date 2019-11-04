@@ -39,12 +39,11 @@ export LUA_PATH
 
 .PHONY: all clean clean-submodules distclean install uninstall                                                     \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff            \
-        build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                      \
-        defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                       \
+        build build-all build-ocaml build-java build-node build-haskell build-llvm                                 \
+        defn java-defn ocaml-defn node-defn haskell-defn llvm-defn                                                 \
         split-tests                                                                                                \
         test test-all test-conformance test-rest-conformance test-all-conformance                                  \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                              \
-        test-web3                                                                                                  \
         test-prove test-klab-prove test-parse test-failure                                                         \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search \
         media media-pdf sphinx metropolis-theme
@@ -149,7 +148,7 @@ MAIN_MODULE    := ETHEREUM-SIMULATION
 SYNTAX_MODULE  := $(MAIN_MODULE)
 export MAIN_DEFN_FILE := driver
 
-k_files       := driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k web3.k asm.k state-loader.k
+k_files       := driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k asm.k state-loader.k
 EXTRA_K_FILES += $(MAIN_DEFN_FILE).k
 ALL_K_FILES   := $(k_files) $(EXTRA_K_FILES)
 
@@ -157,21 +156,19 @@ ocaml_dir   := $(DEFN_DIR)/ocaml
 llvm_dir    := $(DEFN_DIR)/llvm
 java_dir    := $(DEFN_DIR)/java
 haskell_dir := $(DEFN_DIR)/haskell
-export node_dir    := $(CURDIR)/$(DEFN_DIR)/node
-export web3_dir    := $(CURDIR)/$(DEFN_DIR)/web3
+node_dir    := $(CURDIR)/$(DEFN_DIR)/node
+export node_dir
 
 ocaml_files   := $(patsubst %, $(ocaml_dir)/%, $(ALL_K_FILES))
 llvm_files    := $(patsubst %, $(llvm_dir)/%, $(ALL_K_FILES))
 java_files    := $(patsubst %, $(java_dir)/%, $(ALL_K_FILES))
 haskell_files := $(patsubst %, $(haskell_dir)/%, $(ALL_K_FILES))
 node_files    := $(patsubst %, $(node_dir)/%, $(ALL_K_FILES))
-web3_files    := $(patsubst %, $(web3_dir)/%, $(ALL_K_FILES))
-defn_files    := $(ocaml_files) $(llvm_file) $(java_files) $(haskell_files) $(node_files) $(web3_files)
+defn_files    := $(ocaml_files) $(llvm_file) $(java_files) $(haskell_files) $(node_files)
 
 ocaml_kompiled   := $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
 node_kompiled    := $(DEFN_DIR)/vm/kevm-vm
-web3_kompiled    := $(web3_dir)/build/kevm-client
 haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
@@ -187,7 +184,6 @@ llvm-defn:    $(llvm_files)
 java-defn:    $(java_files)
 haskell-defn: $(haskell_files)
 node-defn:    $(node_files)
-web3-defn:    $(web3_files)
 
 $(ocaml_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(ocaml_dir)
@@ -209,21 +205,16 @@ $(node_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(node_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
 
-$(web3_dir)/%.k: %.md $(TANGLER)
-	@mkdir -p $(web3_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
-
 # Kompiling
 
 KOMPILE_OPTS      :=
 LLVM_KOMPILE_OPTS :=
 
-build: build-llvm build-haskell build-java build-web3 build-node
+build: build-llvm build-haskell build-java build-node
 build-all: build build-ocaml
 build-ocaml:   $(ocaml_kompiled)
 build-java:    $(java_kompiled)
 build-node:    $(node_kompiled)
-build-web3:    $(web3_kompiled)
 build-haskell: $(haskell_kompiled)
 build-llvm:    $(llvm_kompiled)
 
@@ -316,21 +307,6 @@ $(node_kompiled): $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(node_
 	@mkdir -p $(DEFN_DIR)/vm
 	cd $(DEFN_DIR)/vm && cmake $(CURDIR)/cmake/node -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
-# Web3 Backend
-
-$(web3_dir)/web3-kompiled/definition.kore: $(web3_files)
-	$(K_BIN)/kompile --debug --main-module WEB3 --backend llvm \
-	                 --syntax-module WEB3 $(web3_dir)/web3.k \
-	                 --directory $(web3_dir) -I $(web3_dir) \
-	                 --hook-namespaces "KRYPTO JSON" \
-	                 --no-llvm-kompile \
-	                 $(KOMPILE_OPTS)
-
-.PHONY: $(web3_kompiled)
-$(web3_kompiled): $(web3_dir)/web3-kompiled/definition.kore $(libff_out)
-	@mkdir -p $(web3_dir)/build
-	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
-
 # LLVM Backend
 
 $(llvm_kompiled): $(llvm_files) $(libff_out)
@@ -404,13 +380,6 @@ tests/%.run-expected: tests/% tests/%.expected
 	    || $(CHECK) tests/$*.expected tests/$*.$(TEST_CONCRETE_BACKEND)-out
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
-tests/web3/no-shutdown/%: KEVM_WEB3_ARGS=
-
-tests/%.run-web3: tests/%.in.json
-	tests/web3/runtest.sh $< tests/$*.out.json $(KEVM_WEB3_ARGS)
-	$(CHECK) tests/$*.expected.json tests/$*.out.json
-	rm -rf tests/$*.out.json
-
 tests/%.parse: tests/%
 	$(TEST) kast --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
 	$(CHECK) $@-expected $@-out
@@ -466,11 +435,6 @@ rest_bchain_tests    = $(filter-out $(passing_bchain_tests), $(bchain_tests))
 test-all-bchain: $(all_bchain_tests:=.run)
 test-rest-bchain: $(rest_bchain_tests:=.run)
 test-bchain: $(passing_bchain_tests:=.run)
-
-web3_tests=$(wildcard tests/web3/*.in.json) \
-           $(wildcard tests/web3/no-shutdown/*.in.json)
-
-test-web3: $(web3_tests:.in.json=.run-web3)
 
 # Proof Tests
 
