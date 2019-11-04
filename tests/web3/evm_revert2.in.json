@@ -1,7 +1,0 @@
-{"jsonrpc":"2.0", "method":"evm_snapshot", "params":[], "id":1}
-{"jsonrpc":"2.0", "method":"evm_snapshot", "params":[], "id":2}
-{"jsonrpc":"2.0", "method":"evm_snapshot", "params":[], "id":3}
-{"jsonrpc":"2.0", "method":"evm_revert", "params":["0x1"], "id":4}
-{"jsonrpc":"2.0", "method":"evm_snapshot", "params":[], "id":5}
-
-

@@ -1,6 +1,0 @@
-{
-   "jsonrpc": "2.0",
-   "id": 2,
-   "method": "eth_sendRawTransaction",
-   "params": ["0xf867808609184e72a0008276c09404ec3d8612162d2a8b6845824118a323820777718201008025a074c385d50ad43bb9616fad2f3056a1a4336a78c19cf03dc65cf6d683db475498a0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"]
-}

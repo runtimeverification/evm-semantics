@@ -1,1 +1,0 @@
-[{"jsonrpc":"2.0","id":1,"result":true},{"jsonrpc":"2.0","id":2,"error":{"code":-32027,"message":"Method 'eth_call' has invalid arguments"}}]
