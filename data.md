@@ -501,7 +501,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 -   `#sizeByteArray` calculates the size of a `ByteArray`.
 -   `#padToWidth(N, WS)` and `#padRightToWidth` make sure that a `WordStack` is the correct size.
 
-```{.k .concrete}
+```{.k .bytes}
     syntax ByteArray = Bytes
     syntax ByteArray ::= ".ByteArray" [function]
  // --------------------------------------------
@@ -546,7 +546,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #padToWidth(N, WS) => padLeftBytes(WS, N, 0)
 ```
 
-```{.k .symbolic}
+```{.k .nobytes}
     syntax ByteArray = WordStack
     syntax ByteArray ::= ".ByteArray" [function]
  // --------------------------------------------
