@@ -1242,6 +1242,25 @@ State Root
     syntax KItem ::= "#firefly_getStateRoot"
  // ----------------------------------------
     rule <k> #firefly_getStateRoot => #sendResponse("result": { "stateRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) } ) ... </k>
+```
+
+Transactions Root
+-----------------
+
+```k
+    syntax MerkleTree ::= "#transactionsRoot" [function]
+ // ----------------------------------------------------
+    rule #transactionsRoot => MerkleUpdateMap( .MerkleTree, #transactionsMap )
+
+    syntax Map ::= "#transactionsMap"         [function]
+                 | #transactionsMapAux( Int ) [function]
+ // ----------------------------------------------------
+    rule #transactionsMap => #transactionsMapAux( 0 )
+
+    rule #transactionsMapAux( _ )    => .Map [owise]
+    rule [[ #transactionsMapAux( I ) => #parseByteStackRaw( #rlpEncodeWord( I ) )[0 .. 1] |-> #rlpEncodeTransaction( { TXLIST[ I ] }:>Int ) #transactionsMapAux( I +Int 1 ) ]]
+         <txOrder> TXLIST </txOrder>
+      requires size(TXLIST) >Int I
 
 endmodule
 ```
