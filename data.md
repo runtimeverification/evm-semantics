@@ -1090,7 +1090,7 @@ Merkle Tree Aux Functions
     syntax ByteArray ::= #nibbleize ( ByteArray ) [function]
                        | #byteify   ( ByteArray ) [function]
  // --------------------------------------------------------
-    rule #nibbleize ( B ) => (    #asByteStack ( ( B [ 0 ] /Int 16 ) *Int 256 )[0 .. 1]
+    rule #nibbleize ( B ) => (      #asByteStack ( B [ 0 ] /Int 16 )[0 .. 1]
                                ++ ( #asByteStack ( B [ 0 ] %Int 16 )[0 .. 1] )
                              ) ++ #nibbleize ( B[1 .. #sizeByteArray(B) -Int 1] )
       requires #sizeByteArray( B ) >Int 0
