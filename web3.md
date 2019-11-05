@@ -590,32 +590,7 @@ eth_sendTransaction
     syntax String ::= #hashSignedTx   ( Int ) [function]
                     | #hashUnsignedTx ( Int ) [function]
  // ----------------------------------------------------
-    rule [[ #hashSignedTx( TXID )
-         => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
-                                         +String #rlpEncodeWord( GPRICE )
-                                         +String #rlpEncodeWord( GLIMIT )
-                                         +String #rlpEncodeAccount( ACCTTO )
-                                         +String #rlpEncodeWord( VALUE )
-                                         +String #rlpEncodeString( #unparseByteStack( DATA ) )
-                                         +String #rlpEncodeWord( V )
-                                         +String #rlpEncodeString( #unparseByteStack( R ) )
-                                         +String #rlpEncodeString( #unparseByteStack( S ) )
-                                       , 192
-                                       )
-                     )
-         ]]
-         <message>
-           <msgID> TXID </msgID>
-           <txNonce>    TXNONCE </txNonce>
-           <txGasPrice> GPRICE  </txGasPrice>
-           <txGasLimit> GLIMIT  </txGasLimit>
-           <to>         ACCTTO  </to>
-           <value>      VALUE   </value>
-           <data>       DATA    </data>
-           <sigR>       R       </sigR>
-           <sigS>       S       </sigS>
-           <sigV>       V       </sigV>
-         </message>
+    rule #hashSignedTx( TXID ) => Keccak256( #rlpEncodeTransaction( TXID ) )
 
     rule [[ #hashUnsignedTx( TXID )
          => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
@@ -1217,6 +1192,34 @@ Helper Funcs
            <code>    CODE    </code>
            ...
          </account>
+
+    syntax String ::= #rlpEncodeTransaction( Int ) [function]
+ // ---------------------------------------------------------
+    rule [[ #rlpEncodeTransaction( TXID )
+         => #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
+                              +String #rlpEncodeWord( GPRICE )
+                              +String #rlpEncodeWord( GLIMIT )
+                              +String #rlpEncodeAccount( ACCTTO )
+                              +String #rlpEncodeWord( VALUE )
+                              +String #rlpEncodeString( #unparseByteStack( DATA ) )
+                              +String #rlpEncodeWord( V )
+                              +String #rlpEncodeString( #unparseByteStack( R ) )
+                              +String #rlpEncodeString( #unparseByteStack( S ) )
+                            , 192
+                            )
+         ]]
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce>    TXNONCE </txNonce>
+           <txGasPrice> GPRICE  </txGasPrice>
+           <txGasLimit> GLIMIT  </txGasLimit>
+           <to>         ACCTTO  </to>
+           <value>      VALUE   </value>
+           <data>       DATA    </data>
+           <sigR>       R       </sigR>
+           <sigS>       S       </sigS>
+           <sigV>       V       </sigV>
+         </message>
 ```
 
 State Root
