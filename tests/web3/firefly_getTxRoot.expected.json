@@ -1,0 +1,1 @@
+[{"jsonrpc":"2.0","id":1,"result":true},{"jsonrpc":"2.0","id":2,"result":true},{"jsonrpc":"2.0","id":3,"result":"0x2c11d46cf3df0566ee4b6c49c8dcc1197ec796dbbf267b4d03eacd5ada85f469"},{"jsonrpc":"2.0","id":4,"result":{"transactionsRoot":"0xaa980c3fa58e18367f9db477bc59fabd392c6f78cd2f8f8880c3401c786bfc07"}}]
