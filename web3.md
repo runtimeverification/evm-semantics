@@ -319,6 +319,8 @@ WEB3 JSON RPC
          <method> "firefly_getCoverageData" </method>
     rule <k> #runRPCCall => #firefly_getStateRoot ... </k>
          <method> "firefly_getStateRoot" </method>
+    rule <k> #runRPCCall => #firefly_getTxRoot ... </k>
+         <method> "firefly_getTxRoot" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -1261,6 +1263,10 @@ Transactions Root
     rule [[ #transactionsMapAux( I ) => #parseByteStackRaw( #rlpEncodeWord( I ) )[0 .. 1] |-> #rlpEncodeTransaction( { TXLIST[ I ] }:>Int ) #transactionsMapAux( I +Int 1 ) ]]
          <txOrder> TXLIST </txOrder>
       requires size(TXLIST) >Int I
+
+    syntax KItem ::= "#firefly_getTxRoot"
+ // -------------------------------------
+    rule <k> #firefly_getTxRoot => #sendResponse("result": { "transactionsRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) } ) ... </k>
 
 endmodule
 ```
