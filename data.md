@@ -17,7 +17,7 @@ module EVM-DATA
     imports COLLECTIONS
 ```
 
-```{.k .concrete}
+```{.k .concrete .bytes}
     imports BYTES
 ```
 
@@ -503,7 +503,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 
 ```{.k .bytes}
     syntax ByteArray = Bytes
-    syntax ByteArray ::= ".ByteArray" [function]
+    syntax ByteArray ::= ".ByteArray" [function, functional]
  // --------------------------------------------
     rule .ByteArray => .Bytes
 
@@ -705,7 +705,7 @@ We are using the polymorphic `Map` sort for these word maps.
 -   `WM [ N := WS ]` assigns a contiguous chunk of $WM$ to $WS$ starting at position $W$.
 -   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
 
-```{.k .concrete}
+```{.k .bytes}
     syntax Map ::= Map "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
  // -------------------------------------------------------------------------------
     rule WM[ N := WS ] => WM [ N := WS, 0, #sizeByteArray(WS) ]
@@ -723,7 +723,7 @@ We are using the polymorphic `Map` sort for these word maps.
     rule #range(WM, I,     J, WIDTH, WS) => #range(WM, I +Int 1, J +Int 1, WIDTH, WS [ J <- {WM[I] orDefault 0}:>Int ]) [owise]
 ```
 
-```{.k .symbolic}
+```{.k .nobytes}
     syntax Map ::= Map "[" Int ":=" ByteArray "]" [function, functional]
  // --------------------------------------------------------------------
     rule WM[ N := .WordStack ] => WM
@@ -791,7 +791,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
     rule #parseWord(S)  => String2Int(S) [owise]
 ```
 
-```{.k .concrete}
+```{.k .bytes}
     syntax ByteArray ::= #parseHexBytes     ( String ) [function]
                        | #parseByteStack    ( String ) [function]
                        | #parseByteStackRaw ( String ) [function]
@@ -803,7 +803,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
     rule #parseByteStackRaw(S) => String2Bytes(S)
 ```
 
-```{.k .symbolic}
+```{.k .nobytes}
     syntax ByteArray ::= #parseHexBytes     ( String ) [function]
                        | #parseByteStack    ( String ) [function]
                        | #parseByteStackRaw ( String ) [function]
@@ -836,13 +836,13 @@ We need to interperet a `ByteArray` as a `String` again so that we can call `Kec
 -   `#unparseByteStack` turns a stack of bytes (as a `ByteArray`) into a `String`.
 -   `#padByte` ensures that the `String` interperetation of a `Int` is wide enough.
 
-```{.k .concrete}
+```{.k .bytes}
     syntax String ::= #unparseByteStack ( ByteArray ) [function, klabel(unparseByteStack), symbol]
  // ----------------------------------------------------------------------------------------------
     rule #unparseByteStack(WS) => Bytes2String(WS)
 ```
 
-```{.k .symbolic}
+```{.k .nobytes}
     syntax String ::= #unparseByteStack ( ByteArray )                [function, klabel(unparseByteStack), symbol]
                     | #unparseByteStack ( ByteArray , StringBuffer ) [function, klabel(#unparseByteStackAux)]
  // ---------------------------------------------------------------------------------------------------------
