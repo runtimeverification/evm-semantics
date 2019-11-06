@@ -1,0 +1,28 @@
+[{
+    "jsonrpc":"2.0",
+    "id":1,
+    "method":"firefly_addAccount",
+    "params":[{
+        "key":"0xcdeac0dd5ec7c04072af48f2a4451e102a80ca5bb441a7b4d72c176cea61866e",
+        "balance":"0x56bc75e2d63100000"
+    }]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "eth_sendTransaction",
+  "params": [
+    {
+      "from": "0x911392821a6B8a3e0bD8078fC7403E04C3ad2416",
+      "gasPrice": "0x4a817c800",
+      "gas":"0x100000",
+      "data": "0x6080604052348015600f57600080fd5b5060868061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80636d4ce63c14602d575b600080fd5b6033604c565b6040805163ffffffff9092168252519081900360200190f35b602a9056fea265627a7a72315820c0bd34730815aaf15c03933af0d41b94653dfda48fd932e0bcd9c83bc61cd5fa64736f6c634300050b0032"
+    }
+  ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "firefly_getTxRoot",
+  "params": []
+}]

@@ -319,6 +319,8 @@ WEB3 JSON RPC
          <method> "firefly_getCoverageData" </method>
     rule <k> #runRPCCall => #firefly_getStateRoot ... </k>
          <method> "firefly_getStateRoot" </method>
+    rule <k> #runRPCCall => #firefly_getTxRoot ... </k>
+         <method> "firefly_getTxRoot" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -590,32 +592,7 @@ eth_sendTransaction
     syntax String ::= #hashSignedTx   ( Int ) [function]
                     | #hashUnsignedTx ( Int ) [function]
  // ----------------------------------------------------
-    rule [[ #hashSignedTx( TXID )
-         => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
-                                         +String #rlpEncodeWord( GPRICE )
-                                         +String #rlpEncodeWord( GLIMIT )
-                                         +String #rlpEncodeAccount( ACCTTO )
-                                         +String #rlpEncodeWord( VALUE )
-                                         +String #rlpEncodeString( #unparseByteStack( DATA ) )
-                                         +String #rlpEncodeWord( V )
-                                         +String #rlpEncodeString( #unparseByteStack( R ) )
-                                         +String #rlpEncodeString( #unparseByteStack( S ) )
-                                       , 192
-                                       )
-                     )
-         ]]
-         <message>
-           <msgID> TXID </msgID>
-           <txNonce>    TXNONCE </txNonce>
-           <txGasPrice> GPRICE  </txGasPrice>
-           <txGasLimit> GLIMIT  </txGasLimit>
-           <to>         ACCTTO  </to>
-           <value>      VALUE   </value>
-           <data>       DATA    </data>
-           <sigR>       R       </sigR>
-           <sigS>       S       </sigS>
-           <sigV>       V       </sigV>
-         </message>
+    rule #hashSignedTx( TXID ) => Keccak256( #rlpEncodeTransaction( TXID ) )
 
     rule [[ #hashUnsignedTx( TXID )
          => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
@@ -1217,6 +1194,34 @@ Helper Funcs
            <code>    CODE    </code>
            ...
          </account>
+
+    syntax String ::= #rlpEncodeTransaction( Int ) [function]
+ // ---------------------------------------------------------
+    rule [[ #rlpEncodeTransaction( TXID )
+         => #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
+                              +String #rlpEncodeWord( GPRICE )
+                              +String #rlpEncodeWord( GLIMIT )
+                              +String #rlpEncodeAccount( ACCTTO )
+                              +String #rlpEncodeWord( VALUE )
+                              +String #rlpEncodeString( #unparseByteStack( DATA ) )
+                              +String #rlpEncodeWord( V )
+                              +String #rlpEncodeString( #unparseByteStack( R ) )
+                              +String #rlpEncodeString( #unparseByteStack( S ) )
+                            , 192
+                            )
+         ]]
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce>    TXNONCE </txNonce>
+           <txGasPrice> GPRICE  </txGasPrice>
+           <txGasLimit> GLIMIT  </txGasLimit>
+           <to>         ACCTTO  </to>
+           <value>      VALUE   </value>
+           <data>       DATA    </data>
+           <sigR>       R       </sigR>
+           <sigS>       S       </sigS>
+           <sigV>       V       </sigV>
+         </message>
 ```
 
 State Root
@@ -1239,6 +1244,29 @@ State Root
     syntax KItem ::= "#firefly_getStateRoot"
  // ----------------------------------------
     rule <k> #firefly_getStateRoot => #sendResponse("result": { "stateRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) } ) ... </k>
+```
+
+Transactions Root
+-----------------
+
+```k
+    syntax MerkleTree ::= "#transactionsRoot" [function]
+ // ----------------------------------------------------
+    rule #transactionsRoot => MerkleUpdateMap( .MerkleTree, #transactionsMap )
+
+    syntax Map ::= "#transactionsMap"         [function]
+                 | #transactionsMapAux( Int ) [function]
+ // ----------------------------------------------------
+    rule #transactionsMap => #transactionsMapAux( 0 )
+
+    rule #transactionsMapAux( _ )    => .Map [owise]
+    rule [[ #transactionsMapAux( I ) => #parseByteStackRaw( #rlpEncodeWord( I ) )[0 .. 1] |-> #rlpEncodeTransaction( { TXLIST[ I ] }:>Int ) #transactionsMapAux( I +Int 1 ) ]]
+         <txOrder> TXLIST </txOrder>
+      requires size(TXLIST) >Int I
+
+    syntax KItem ::= "#firefly_getTxRoot"
+ // -------------------------------------
+    rule <k> #firefly_getTxRoot => #sendResponse("result": { "transactionsRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) } ) ... </k>
 
 endmodule
 ```
