@@ -85,12 +85,12 @@ run_web3() {
     web3_port="$1" ; shift
     run_file='-'
     if $debug; then
-        gdb --args ${defn_dir}/web3/build/kevm-client -p "$web3_port" "$@"
+        gdb --args ${defn_dir}/web3/build/kevm-client --port "$web3_port" "$@"
     elif $dump; then
-      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client -p "$web3_port" "$@" 3>&2 2>&1 1>&3 \
+      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client --port "$web3_port" "$@" 3>&2 2>&1 1>&3 \
           | "$0" kast --backend web3 - pretty --input kore --sort GeneratedTopCell
     else
-      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client -p "$web3_port" "$@" 2>/dev/null
+      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client --port "$web3_port" "$@" 2>/dev/null
     fi
 }
 
@@ -105,8 +105,7 @@ run_web3_send() {
     }
     web3_params="$(join_args "$@")"
 
-    echo '{"jsonrpc": "2.0", "id": 1, "method": "'"$web3_method"'", "params": ['"$web3_params"']}' \
-        | netcat 127.0.0.1 "$web3_port" -q 0
+    curl -X POST --data '{"jsonrpc": "2.0", "id": 1, "method": "'"$web3_method"'", "params": ['"$web3_params"']}' 127.0.0.1:"$web3_port"
 }
 
 run_web3_ganache() {
@@ -117,16 +116,16 @@ run_web3_ganache() {
     $0 web3 "$web3_port" "$@" &
     while ! netcat -z 127.0.0.1 "$web3_port"; do sleep 0.1; done
     notif 'Generating accounts'
-    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0xdc7e9a7c64933ab893160b79d099c254d274e1c40c6df6d5239e1a623e3d6de1", "balance":"0x56BC75E2D63100000"'}
-    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0x6e2687f9732d970c6b1d5baa3dff26c4af36257552bc17df737afbc00ca70de2", "balance":"0x56BC75E2D63100000"'}
-    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0xd34d8e873da77217abaef9424a7d87fce351b603920c7f5288d7701c5f148860", "balance":"0x56BC75E2D63100000"'}
-    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0x976b5ec9253759d4a2746c37597841beba57527123dc3db2165b637adce58bcb", "balance":"0x56BC75E2D63100000"'}
-    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0x23dff7ac7981167eb5386e51c3d6d2e3ca9dc219315749b2058d0a2d1e21625e", "balance":"0x56BC75E2D63100000"'}
-    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0xe040e4bf96d8c9d3a8d1ffb22b30ed4b0a79a25342d656c5a8e2784b0fab752f", "balance":"0x56BC75E2D63100000"'}
-    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0x13abddd7d94165fc46bed2cad6b0b14cd0267a85f70ad5c26cce82c609e0bf87", "balance":"0x56BC75E2D63100000"'}
-    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0x0e29f7d6984bb47d60db479212ca56af516705b07d8753b474bd7f0db8bc1921", "balance":"0x56BC75E2D63100000"'}
-    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0xea7fe1480e9ab71c261c5e1e727f36482f84dbdb07dbf8c8e9f767dcecf87568", "balance":"0x56BC75E2D63100000"'}
-    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0x5f9addbbf41ae2e3d6cb7b07ffabf2c5ff6edc3a38c9dd64a9afd23df02ad7ee", "balance":"0x56BC75E2D63100000"'}
+    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0xdc7e9a7c64933ab893160b79d099c254d274e1c40c6df6d5239e1a623e3d6de1", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
+    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0x6e2687f9732d970c6b1d5baa3dff26c4af36257552bc17df737afbc00ca70de2", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
+    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0xd34d8e873da77217abaef9424a7d87fce351b603920c7f5288d7701c5f148860", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
+    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0x976b5ec9253759d4a2746c37597841beba57527123dc3db2165b637adce58bcb", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
+    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0x23dff7ac7981167eb5386e51c3d6d2e3ca9dc219315749b2058d0a2d1e21625e", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
+    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0xe040e4bf96d8c9d3a8d1ffb22b30ed4b0a79a25342d656c5a8e2784b0fab752f", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
+    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0x13abddd7d94165fc46bed2cad6b0b14cd0267a85f70ad5c26cce82c609e0bf87", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
+    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0x0e29f7d6984bb47d60db479212ca56af516705b07d8753b474bd7f0db8bc1921", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
+    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0xea7fe1480e9ab71c261c5e1e727f36482f84dbdb07dbf8c8e9f767dcecf87568", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
+    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0x5f9addbbf41ae2e3d6cb7b07ffabf2c5ff6edc3a38c9dd64a9afd23df02ad7ee", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
 }
 
 run_klab() {
