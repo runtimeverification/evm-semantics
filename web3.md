@@ -1222,6 +1222,51 @@ Helper Funcs
            <sigS>       S       </sigS>
            <sigV>       V       </sigV>
          </message>
+
+    syntax String ::= #rlpEncodeReceipt( Int )       [function]
+                    | #rlpEncodeReceiptAux( String ) [function]
+ // -----------------------------------------------------------
+    rule #rlpEncodeReceipt( I ) => #rlpEncodeReceiptAux( "0x" +String #hashSignedTx( I ) )
+    rule [[ #rlpEncodeReceiptAux( TXHASH ) =>
+            #rlpEncodeLength(         #rlpEncodeWord( STATUS )
+                              +String #rlpEncodeWord( CGAS )
+                              +String #rlpEncodeString( #asString( BLOOM ) )
+                              +String #rlpEncodeLogs( LOGS )
+                            , 192
+                            )
+         ]]
+         <txReceipt>
+           <txHash> TXHASH </txHash>
+           <txCumulativeGas> CGAS   </txCumulativeGas>
+           <logSet>          LOGS   </logSet>
+           <bloomFilter>     BLOOM  </bloomFilter>
+           <txStatus>        STATUS </txStatus>
+         </txReceipt>
+
+    syntax String ::= #rlpEncodeLogs   ( List ) [function]
+                    | #rlpEncodeLogsAux( List ) [function]
+ // ------------------------------------------------------
+    rule #rlpEncodeLogs( .List ) => "\xc0"
+    rule #rlpEncodeLogs( LOGS )  => #rlpEncodeLength( #rlpEncodeLogsAux( LOGS ), 192 )
+      requires LOGS =/=K .List
+
+    rule #rlpEncodeLogsAux( .List ) => ""
+    rule #rlpEncodeLogsAux( ListItem({ ACCT | TOPICS | DATA }) LOGS )
+      => #rlpEncodeLength(         #rlpEncodeBytes( ACCT, 20 )
+                           +String #rlpEncodeTopics( TOPICS )
+                           +String #rlpEncodeString( #asString( DATA ) )
+                         , 192 )
+         +String #rlpEncodeLogsAux( LOGS )
+
+    syntax String ::= #rlpEncodeTopics   ( List ) [function]
+                    | #rlpEncodeTopicsAux( List ) [function]
+ // --------------------------------------------------------
+    rule #rlpEncodeTopics( .List )  => "\xc0"
+    rule #rlpEncodeTopics( TOPICS ) => #rlpEncodeLength( #rlpEncodeTopicsAux( TOPICS ), 192 )
+      requires TOPICS =/=K .List
+
+    rule #rlpEncodeTopicsAux( .List ) => ""
+    rule #rlpEncodeTopicsAux( ListItem( X:Int ) TOPICS ) => #rlpEncodeWord( X ) +String #rlpEncodeTopicsAux( TOPICS )
 ```
 
 State Root
