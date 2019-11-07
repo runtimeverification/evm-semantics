@@ -321,6 +321,8 @@ WEB3 JSON RPC
          <method> "firefly_getStateRoot" </method>
     rule <k> #runRPCCall => #firefly_getTxRoot ... </k>
          <method> "firefly_getTxRoot" </method>
+    rule <k> #runRPCCall => #firefly_getReceiptsRoot ... </k>
+         <method> "firefly_getReceiptsRoot" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -1222,6 +1224,51 @@ Helper Funcs
            <sigS>       S       </sigS>
            <sigV>       V       </sigV>
          </message>
+
+    syntax String ::= #rlpEncodeReceipt( Int )       [function]
+                    | #rlpEncodeReceiptAux( String ) [function]
+ // -----------------------------------------------------------
+    rule #rlpEncodeReceipt( I ) => #rlpEncodeReceiptAux( "0x" +String #hashSignedTx( I ) )
+    rule [[ #rlpEncodeReceiptAux( TXHASH ) =>
+            #rlpEncodeLength(         #rlpEncodeWord( STATUS )
+                              +String #rlpEncodeWord( CGAS )
+                              +String #rlpEncodeString( #asString( BLOOM ) )
+                              +String #rlpEncodeLogs( LOGS )
+                            , 192
+                            )
+         ]]
+         <txReceipt>
+           <txHash> TXHASH </txHash>
+           <txCumulativeGas> CGAS   </txCumulativeGas>
+           <logSet>          LOGS   </logSet>
+           <bloomFilter>     BLOOM  </bloomFilter>
+           <txStatus>        STATUS </txStatus>
+         </txReceipt>
+
+    syntax String ::= #rlpEncodeLogs   ( List ) [function]
+                    | #rlpEncodeLogsAux( List ) [function]
+ // ------------------------------------------------------
+    rule #rlpEncodeLogs( .List ) => "\xc0"
+    rule #rlpEncodeLogs( LOGS )  => #rlpEncodeLength( #rlpEncodeLogsAux( LOGS ), 192 )
+      requires LOGS =/=K .List
+
+    rule #rlpEncodeLogsAux( .List ) => ""
+    rule #rlpEncodeLogsAux( ListItem({ ACCT | TOPICS | DATA }) LOGS )
+      => #rlpEncodeLength(         #rlpEncodeBytes( ACCT, 20 )
+                           +String #rlpEncodeTopics( TOPICS )
+                           +String #rlpEncodeString( #asString( DATA ) )
+                         , 192 )
+         +String #rlpEncodeLogsAux( LOGS )
+
+    syntax String ::= #rlpEncodeTopics   ( List ) [function]
+                    | #rlpEncodeTopicsAux( List ) [function]
+ // --------------------------------------------------------
+    rule #rlpEncodeTopics( .List )  => "\xc0"
+    rule #rlpEncodeTopics( TOPICS ) => #rlpEncodeLength( #rlpEncodeTopicsAux( TOPICS ), 192 )
+      requires TOPICS =/=K .List
+
+    rule #rlpEncodeTopicsAux( .List ) => ""
+    rule #rlpEncodeTopicsAux( ListItem( X:Int ) TOPICS ) => #rlpEncodeWord( X ) +String #rlpEncodeTopicsAux( TOPICS )
 ```
 
 State Root
@@ -1267,6 +1314,29 @@ Transactions Root
     syntax KItem ::= "#firefly_getTxRoot"
  // -------------------------------------
     rule <k> #firefly_getTxRoot => #sendResponse("result": { "transactionsRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) } ) ... </k>
+```
+
+Receipts Root
+-------------
+
+```k
+    syntax MerkleTree ::= "#receiptsRoot" [function]
+ // ------------------------------------------------
+    rule #receiptsRoot => MerkleUpdateMap( .MerkleTree, #receiptsMap )
+
+    syntax Map ::= "#receiptsMap"         [function]
+                 | #receiptsMapAux( Int ) [function]
+ // ------------------------------------------------
+    rule #receiptsMap => #receiptsMapAux( 0 )
+
+    rule    #receiptsMapAux( _ ) => .Map [owise]
+    rule [[ #receiptsMapAux( I ) => #parseByteStackRaw( #rlpEncodeWord( I ) )[0 .. 1] |-> #rlpEncodeReceipt( { TXLIST[ I ] }:>Int ) #receiptsMapAux( I +Int 1 ) ]]
+         <txOrder> TXLIST </txOrder>
+      requires size(TXLIST) >Int I
+
+    syntax KItem ::= "#firefly_getReceiptsRoot"
+ // -------------------------------------------
+    rule <k> #firefly_getReceiptsRoot => #sendResponse("result": { "receiptsRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) } ) ... </k>
 
 endmodule
 ```
