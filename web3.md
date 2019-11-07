@@ -321,6 +321,8 @@ WEB3 JSON RPC
          <method> "firefly_getStateRoot" </method>
     rule <k> #runRPCCall => #firefly_getTxRoot ... </k>
          <method> "firefly_getTxRoot" </method>
+    rule <k> #runRPCCall => #firefly_getReceiptsRoot ... </k>
+         <method> "firefly_getReceiptsRoot" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -1331,6 +1333,10 @@ Receipts Root
     rule [[ #receiptsMapAux( I ) => #parseByteStackRaw( #rlpEncodeWord( I ) )[0 .. 1] |-> #rlpEncodeReceipt( { TXLIST[ I ] }:>Int ) #receiptsMapAux( I +Int 1 ) ]]
          <txOrder> TXLIST </txOrder>
       requires size(TXLIST) >Int I
+
+    syntax KItem ::= "#firefly_getReceiptsRoot"
+ // -------------------------------------------
+    rule <k> #firefly_getReceiptsRoot => #sendResponse("result": { "receiptsRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) } ) ... </k>
 
 endmodule
 ```
