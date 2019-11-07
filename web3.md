@@ -1312,6 +1312,25 @@ Transactions Root
     syntax KItem ::= "#firefly_getTxRoot"
  // -------------------------------------
     rule <k> #firefly_getTxRoot => #sendResponse("result": { "transactionsRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) } ) ... </k>
+```
+
+Receipts Root
+-------------
+
+```k
+    syntax MerkleTree ::= "#receiptsRoot" [function]
+ // ------------------------------------------------
+    rule #receiptsRoot => MerkleUpdateMap( .MerkleTree, #receiptsMap )
+
+    syntax Map ::= "#receiptsMap"         [function]
+                 | #receiptsMapAux( Int ) [function]
+ // ------------------------------------------------
+    rule #receiptsMap => #receiptsMapAux( 0 )
+
+    rule    #receiptsMapAux( _ ) => .Map [owise]
+    rule [[ #receiptsMapAux( I ) => #parseByteStackRaw( #rlpEncodeWord( I ) )[0 .. 1] |-> #rlpEncodeReceipt( { TXLIST[ I ] }:>Int ) #receiptsMapAux( I +Int 1 ) ]]
+         <txOrder> TXLIST </txOrder>
+      requires size(TXLIST) >Int I
 
 endmodule
 ```
