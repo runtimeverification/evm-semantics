@@ -1,0 +1,1 @@
+[{"jsonrpc":"2.0","id":1,"result":true},{"jsonrpc":"2.0","id":2,"result":true},{"jsonrpc":"2.0","id":3,"result":"0xdb1def0efd9cf3bdceae1f04a32e92e0a84e921ef3a9cb22ea4a58f7836cd6fc"},{"jsonrpc":"2.0","id":4,"result":{"receiptsRoot":"0x86a171c58aac4ccaded4964d3c32649cd968d42b7fbf11cb10087e4bb65c5a6f"}}]
