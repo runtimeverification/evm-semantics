@@ -317,6 +317,12 @@ WEB3 JSON RPC
          <method> "eth_estimateGas" </method>
     rule <k> #runRPCCall => #firefly_getCoverageData ... </k>
          <method> "firefly_getCoverageData" </method>
+    rule <k> #runRPCCall => #firefly_getStateRoot ... </k>
+         <method> "firefly_getStateRoot" </method>
+    rule <k> #runRPCCall => #firefly_getTxRoot ... </k>
+         <method> "firefly_getTxRoot" </method>
+    rule <k> #runRPCCall => #firefly_getReceiptsRoot ... </k>
+         <method> "firefly_getReceiptsRoot" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -588,32 +594,7 @@ eth_sendTransaction
     syntax String ::= #hashSignedTx   ( Int ) [function]
                     | #hashUnsignedTx ( Int ) [function]
  // ----------------------------------------------------
-    rule [[ #hashSignedTx( TXID )
-         => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
-                                         +String #rlpEncodeWord( GPRICE )
-                                         +String #rlpEncodeWord( GLIMIT )
-                                         +String #rlpEncodeAccount( ACCTTO )
-                                         +String #rlpEncodeWord( VALUE )
-                                         +String #rlpEncodeString( #unparseByteStack( DATA ) )
-                                         +String #rlpEncodeWord( V )
-                                         +String #rlpEncodeString( #unparseByteStack( R ) )
-                                         +String #rlpEncodeString( #unparseByteStack( S ) )
-                                       , 192
-                                       )
-                     )
-         ]]
-         <message>
-           <msgID> TXID </msgID>
-           <txNonce>    TXNONCE </txNonce>
-           <txGasPrice> GPRICE  </txGasPrice>
-           <txGasLimit> GLIMIT  </txGasLimit>
-           <to>         ACCTTO  </to>
-           <value>      VALUE   </value>
-           <data>       DATA    </data>
-           <sigR>       R       </sigR>
-           <sigS>       S       </sigS>
-           <sigV>       V       </sigV>
-         </message>
+    rule #hashSignedTx( TXID ) => Keccak256( #rlpEncodeTransaction( TXID ) )
 
     rule [[ #hashUnsignedTx( TXID )
          => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
@@ -1043,7 +1024,9 @@ Transaction Receipts
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
     rule <k> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #sendResponse ("result": #unparseQuantity( GUSED -Int INITGUSED )) ... </k>
+         <statusCode> STATUSCODE </statusCode>
          <gasUsed> GUSED </gasUsed>
+      requires STATUSCODE =/=K EVMC_OUT_OF_GAS
 
     rule <k> #eth_estimateGas_finalize _ => #popNetworkState ~> #sendResponse ( "error": {"code": -32000, "message":"base fee exceeds gas limit"}) ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
@@ -1196,5 +1179,164 @@ Collecting Coverage Data
     syntax Int ::= #computePercentage ( Int, Int ) [function]
  // ---------------------------------------------------------
     rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL
+```
+
+Helper Funcs
+------------
+
+```k
+    syntax AccountData ::= #getAcctData( Account ) [function]
+ // ---------------------------------------------------------
+    rule [[ #getAcctData( ACCT ) => AcctData(NONCE, BAL, STORAGE, CODE) ]]
+         <account>
+           <acctID>  ACCT    </acctID>
+           <nonce>   NONCE   </nonce>
+           <balance> BAL     </balance>
+           <storage> STORAGE </storage>
+           <code>    CODE    </code>
+           ...
+         </account>
+
+    syntax String ::= #rlpEncodeTransaction( Int ) [function]
+ // ---------------------------------------------------------
+    rule [[ #rlpEncodeTransaction( TXID )
+         => #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
+                              +String #rlpEncodeWord( GPRICE )
+                              +String #rlpEncodeWord( GLIMIT )
+                              +String #rlpEncodeAccount( ACCTTO )
+                              +String #rlpEncodeWord( VALUE )
+                              +String #rlpEncodeString( #unparseByteStack( DATA ) )
+                              +String #rlpEncodeWord( V )
+                              +String #rlpEncodeString( #unparseByteStack( R ) )
+                              +String #rlpEncodeString( #unparseByteStack( S ) )
+                            , 192
+                            )
+         ]]
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce>    TXNONCE </txNonce>
+           <txGasPrice> GPRICE  </txGasPrice>
+           <txGasLimit> GLIMIT  </txGasLimit>
+           <to>         ACCTTO  </to>
+           <value>      VALUE   </value>
+           <data>       DATA    </data>
+           <sigR>       R       </sigR>
+           <sigS>       S       </sigS>
+           <sigV>       V       </sigV>
+         </message>
+
+    syntax String ::= #rlpEncodeReceipt( Int )       [function]
+                    | #rlpEncodeReceiptAux( String ) [function]
+ // -----------------------------------------------------------
+    rule #rlpEncodeReceipt( I ) => #rlpEncodeReceiptAux( "0x" +String #hashSignedTx( I ) )
+    rule [[ #rlpEncodeReceiptAux( TXHASH ) =>
+            #rlpEncodeLength(         #rlpEncodeWord( STATUS )
+                              +String #rlpEncodeWord( CGAS )
+                              +String #rlpEncodeString( #asString( BLOOM ) )
+                              +String #rlpEncodeLogs( LOGS )
+                            , 192
+                            )
+         ]]
+         <txReceipt>
+           <txHash> TXHASH </txHash>
+           <txCumulativeGas> CGAS   </txCumulativeGas>
+           <logSet>          LOGS   </logSet>
+           <bloomFilter>     BLOOM  </bloomFilter>
+           <txStatus>        STATUS </txStatus>
+         </txReceipt>
+
+    syntax String ::= #rlpEncodeLogs   ( List ) [function]
+                    | #rlpEncodeLogsAux( List ) [function]
+ // ------------------------------------------------------
+    rule #rlpEncodeLogs( .List ) => "\xc0"
+    rule #rlpEncodeLogs( LOGS )  => #rlpEncodeLength( #rlpEncodeLogsAux( LOGS ), 192 )
+      requires LOGS =/=K .List
+
+    rule #rlpEncodeLogsAux( .List ) => ""
+    rule #rlpEncodeLogsAux( ListItem({ ACCT | TOPICS | DATA }) LOGS )
+      => #rlpEncodeLength(         #rlpEncodeBytes( ACCT, 20 )
+                           +String #rlpEncodeTopics( TOPICS )
+                           +String #rlpEncodeString( #asString( DATA ) )
+                         , 192 )
+         +String #rlpEncodeLogsAux( LOGS )
+
+    syntax String ::= #rlpEncodeTopics   ( List ) [function]
+                    | #rlpEncodeTopicsAux( List ) [function]
+ // --------------------------------------------------------
+    rule #rlpEncodeTopics( .List )  => "\xc0"
+    rule #rlpEncodeTopics( TOPICS ) => #rlpEncodeLength( #rlpEncodeTopicsAux( TOPICS ), 192 )
+      requires TOPICS =/=K .List
+
+    rule #rlpEncodeTopicsAux( .List ) => ""
+    rule #rlpEncodeTopicsAux( ListItem( X:Int ) TOPICS ) => #rlpEncodeWord( X ) +String #rlpEncodeTopicsAux( TOPICS )
+```
+
+State Root
+----------
+
+```k
+    syntax MerkleTree ::= "#stateRoot" [function]
+ // ---------------------------------------------
+    rule #stateRoot => MerkleUpdateMap( .MerkleTree, #precompiledContracts #activeAccounts )
+
+    syntax Map ::= "#activeAccounts"   [function]
+                 | #accountsMap( Set ) [function]
+ // ---------------------------------------------
+    rule [[ #activeAccounts => #accountsMap( ACCTS ) ]]
+         <activeAccounts> ACCTS </activeAccounts>
+
+    rule #accountsMap( .Set ) => .Map
+    rule #accountsMap( SetItem( ACCT:Int ) S ) => #parseByteStack( #unparseData( ACCT, 20 ) ) |-> #rlpEncodeFullAccount( #getAcctData( ACCT ) ) #accountsMap( S )
+
+    syntax KItem ::= "#firefly_getStateRoot"
+ // ----------------------------------------
+    rule <k> #firefly_getStateRoot => #sendResponse("result": { "stateRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) } ) ... </k>
+```
+
+Transactions Root
+-----------------
+
+```k
+    syntax MerkleTree ::= "#transactionsRoot" [function]
+ // ----------------------------------------------------
+    rule #transactionsRoot => MerkleUpdateMap( .MerkleTree, #transactionsMap )
+
+    syntax Map ::= "#transactionsMap"         [function]
+                 | #transactionsMapAux( Int ) [function]
+ // ----------------------------------------------------
+    rule #transactionsMap => #transactionsMapAux( 0 )
+
+    rule #transactionsMapAux( _ )    => .Map [owise]
+    rule [[ #transactionsMapAux( I ) => #parseByteStackRaw( #rlpEncodeWord( I ) )[0 .. 1] |-> #rlpEncodeTransaction( { TXLIST[ I ] }:>Int ) #transactionsMapAux( I +Int 1 ) ]]
+         <txOrder> TXLIST </txOrder>
+      requires size(TXLIST) >Int I
+
+    syntax KItem ::= "#firefly_getTxRoot"
+ // -------------------------------------
+    rule <k> #firefly_getTxRoot => #sendResponse("result": { "transactionsRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) } ) ... </k>
+```
+
+Receipts Root
+-------------
+
+```k
+    syntax MerkleTree ::= "#receiptsRoot" [function]
+ // ------------------------------------------------
+    rule #receiptsRoot => MerkleUpdateMap( .MerkleTree, #receiptsMap )
+
+    syntax Map ::= "#receiptsMap"         [function]
+                 | #receiptsMapAux( Int ) [function]
+ // ------------------------------------------------
+    rule #receiptsMap => #receiptsMapAux( 0 )
+
+    rule    #receiptsMapAux( _ ) => .Map [owise]
+    rule [[ #receiptsMapAux( I ) => #parseByteStackRaw( #rlpEncodeWord( I ) )[0 .. 1] |-> #rlpEncodeReceipt( { TXLIST[ I ] }:>Int ) #receiptsMapAux( I +Int 1 ) ]]
+         <txOrder> TXLIST </txOrder>
+      requires size(TXLIST) >Int I
+
+    syntax KItem ::= "#firefly_getReceiptsRoot"
+ // -------------------------------------------
+    rule <k> #firefly_getReceiptsRoot => #sendResponse("result": { "receiptsRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) } ) ... </k>
+
 endmodule
 ```

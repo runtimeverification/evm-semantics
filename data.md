@@ -1073,6 +1073,16 @@ Merkle Patricia Tree
       => #merkleBrancher ( M, BRANCHVALUE, PATH[0], PATH[1 .. #sizeByteArray(PATH) -Int 1], VALUE ) [owise]
 ```
 
+- `MerkleUpdateMap` Takes a mapping of `ByteArray |-> String` and generates a trie
+
+```k
+    syntax MerkleTree ::= MerkleUpdateMap( MerkleTree, Map ) [function]
+ // -------------------------------------------------------------------
+    rule MerkleUpdateMap( TREE, KEY |-> VALUE M ) => MerkleUpdateMap( MerkleUpdate( TREE, #nibbleize(KEY), VALUE ) , M )
+
+    rule MerkleUpdateMap( TREE, .Map ) => TREE
+```
+
 Merkle Tree Aux Functions
 -------------------------
 
@@ -1080,13 +1090,14 @@ Merkle Tree Aux Functions
     syntax ByteArray ::= #nibbleize ( ByteArray ) [function]
                        | #byteify   ( ByteArray ) [function]
  // --------------------------------------------------------
-    rule #nibbleize ( B ) =>    #asByteStack ( ( B [ 0 ] /Int 16 ) *Int 256 +Int ( B [ 0 ] %Int 16 ) )[0 .. 2]
-                             ++ #nibbleize ( B[1 .. #sizeByteArray(B) -Int 1] )
+    rule #nibbleize ( B ) => (      #asByteStack ( B [ 0 ] /Int 16 )[0 .. 1]
+                               ++ ( #asByteStack ( B [ 0 ] %Int 16 )[0 .. 1] )
+                             ) ++ #nibbleize ( B[1 .. #sizeByteArray(B) -Int 1] )
       requires #sizeByteArray( B ) >Int 0
 
     rule #nibbleize ( _ ) => .ByteArray [owise]
 
-    rule #byteify ( B ) =>    #asByteStack ( B[0] *Int 16 +Int B[1] )
+    rule #byteify ( B ) =>    #asByteStack ( B[0] *Int 16 +Int B[1] )[0 .. 1]
                            ++ #byteify ( B[2 .. #sizeByteArray(B) -Int 2] )
       requires #sizeByteArray(B) >Int 0
 
@@ -1155,6 +1166,60 @@ Merkle Tree Aux Functions
     rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
       => MerkleExtension( PATH, #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, P2, VALUE ), P1, TREE ) )
       requires #sizeByteArray(P2) ==Int 0
+```
+
+Tree Root Helper Functions
+--------------------------
+
+### Storage Root
+
+```k
+    syntax Map ::= #intMap2StorageMap( Map ) [function]
+ // ---------------------------------------------------
+    rule #intMap2StorageMap( .Map          ) => .Map
+    rule #intMap2StorageMap( KEY |-> VAL M ) => #padToWidth( 32, #asByteStack( KEY ) ) |-> #rlpEncodeWord( VAL ) #intMap2StorageMap(M)
+
+    syntax MerkleTree ::= #storageRoot( Map ) [function]
+ // ----------------------------------------------------
+    rule #storageRoot( STORAGE ) => MerkleUpdateMap( .MerkleTree, #intMap2StorageMap( STORAGE ) )
+```
+
+### State Root
+
+```k
+    syntax Map ::= "#precompiledContracts" [function]
+ // -------------------------------------------------
+    rule #precompiledContracts
+      => #parseByteStackRaw( Hex2Raw( #unparseData( 1, 20 ) ) ) |-> #emptyContractRLP
+         #parseByteStackRaw( Hex2Raw( #unparseData( 2, 20 ) ) ) |-> #emptyContractRLP
+         #parseByteStackRaw( Hex2Raw( #unparseData( 3, 20 ) ) ) |-> #emptyContractRLP
+         #parseByteStackRaw( Hex2Raw( #unparseData( 4, 20 ) ) ) |-> #emptyContractRLP
+         #parseByteStackRaw( Hex2Raw( #unparseData( 5, 20 ) ) ) |-> #emptyContractRLP
+         #parseByteStackRaw( Hex2Raw( #unparseData( 6, 20 ) ) ) |-> #emptyContractRLP
+         #parseByteStackRaw( Hex2Raw( #unparseData( 7, 20 ) ) ) |-> #emptyContractRLP
+         #parseByteStackRaw( Hex2Raw( #unparseData( 8, 20 ) ) ) |-> #emptyContractRLP
+
+    syntax String ::= "#emptyContractRLP" [function]
+ // ------------------------------------------------
+    rule #emptyContractRLP => #rlpEncodeLength(         #rlpEncodeWord(0)
+                                                +String #rlpEncodeWord(0)
+                                                +String #rlpEncodeString( Hex2Raw( Keccak256("\x80") ) )
+                                                +String #rlpEncodeString( Hex2Raw( Keccak256("") ) )
+                                              , 192
+                                              )
+
+    syntax AccountData ::= AcctData ( nonce: Int, balance: Int, store: Map, code: ByteArray )
+ // -----------------------------------------------------------------------------------------
+
+    syntax String      ::= #rlpEncodeFullAccount( AccountData ) [function]
+ // ----------------------------------------------------------------------
+    rule  #rlpEncodeFullAccount( AcctData( NONCE, BAL, STORAGE, CODE ) )
+         => #rlpEncodeLength(         #rlpEncodeWord(NONCE)
+                              +String #rlpEncodeWord(BAL)
+                              +String #rlpEncodeString( Hex2Raw( Keccak256( #rlpEncodeMerkleTree( #storageRoot( STORAGE ) ) ) ) )
+                              +String #rlpEncodeString( Hex2Raw( Keccak256( #asString( CODE ) ) ) )
+                            , 192
+                            )
 
 endmodule
 ```
