@@ -104,6 +104,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <mixHash>          0          </mixHash>          // I_Hm
               <blockNonce>       0          </blockNonce>       // I_Hn
 
+              <beneficiaryAccounts> .Map </beneficiaryAccounts>
               <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
             </block>
 
@@ -118,7 +119,6 @@ In the comments next to each cell, we've marked which component of the YellowPap
             // ---------------
 
             <activeAccounts> .Set </activeAccounts>
-            <beneficiaryAccounts> .Map </beneficiaryAccounts>
             <accounts>
               <account multiplicity="*" type="Map">
                 <acctID>      0                      </acctID>
@@ -266,7 +266,7 @@ Control Flow
 
 OpCode Execution
 ----------------
-
+ 
 ### Execution Macros
 
 -   `#execute` loads the next opcode (or halts with `EVMC_SUCCESS` if there is no next opcode).
