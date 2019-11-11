@@ -73,8 +73,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "flush"
  // ----------------------------------
-    rule <mode> EXECMODE </mode> <statusCode> EVMC_SUCCESS            </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS)          ... </k>
-    rule <mode> EXECMODE </mode> <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS) ~> #halt ... </k>
+    rule <mode> EXECMODE </mode> <statusCode> EVMC_SUCCESS            </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS) ~> #rewardBeneficiaries          ... </k>
+    rule <mode> EXECMODE </mode> <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS) ~> #rewardBeneficiaries ~> #halt ... </k>
 ```
 
 -   `startTx` computes the sender of the transaction, and places loadTx on the `k` cell.
@@ -109,7 +109,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> loadTx(ACCTFROM)
           => #loadAccount #newAddr(ACCTFROM, NONCE)
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
-          ~> #finishTx ~> #finalizeTx(false) ~> startTx
+          ~> #finishTx ~> #finalizeTx(false) ~> #rewardBeneficiaries ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -140,7 +140,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           => #loadAccount ACCTTO
           ~> #lookupCode  ACCTTO
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
-          ~> #finishTx ~> #finalizeTx(false) ~> startTx
+          ~> #finishTx ~> #finalizeTx(false) ~> #rewardBeneficiaries ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
