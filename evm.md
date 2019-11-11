@@ -775,6 +775,7 @@ These are just used by the other operators for shuffling local execution state a
 
 ```k
     syntax InternalOp ::= "#rewardBeneficiaries"
+                        | "#rewardBeneficiaries" "(" List ")"
                         | "#newBeneficiaryAccount" Int
                         | "#addBeneficiaryValue"   Int Int
  // ------------------------------------------------------
@@ -796,17 +797,18 @@ These are just used by the other operators for shuffling local execution state a
     rule <k> #addBeneficiaryValue ACCT VALUE => . ... </k>
          <beneficiaryAccounts> BACCTS ACCT |-> ORIG => BACCTS [ ACCT <- ORIG +Int VALUE ] </beneficiaryAccounts>
       requires ACCT in_keys(BACCTS)
+    
+    rule <k> #rewardBeneficiaries => #rewardBeneficiaries( keys_list(RBS) ) ... </k>
+         <beneficiaryAccounts> RBS </beneficiaryAccounts>
 
-    rule <k> #rewardBeneficiaries ... </k>
-         <beneficiaryAccounts> BACCTS ACCT |-> VALUE => BACCTS </beneficiaryAccounts>
-         <accounts>
-           <acctID> ACCT </acctID>
+    rule <k> #rewardBeneficiaries(.List) => . ... </k>
+    rule <k> #rewardBeneficiaries(ListItem(ACCT) => .List ...) ... </k>
+         <beneficiaryAccounts> ... ACCT |-> VALUE ... </beneficiaryAccounts>
+         <account>
+           <acctID>  ACCT </acctID>
            <balance> MINBAL => MINBAL +Int VALUE </balance>
            ...
-         </accounts>
-    
-    rule <k> #rewardBeneficiaries => . ... </k>
-         <beneficiaryAccounts> .Map </beneficiaryAccounts>
+         </account>
 ```
 
 The following operations help with loading account information from an external running client.
