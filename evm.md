@@ -118,6 +118,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
             // ---------------
 
             <activeAccounts> .Set </activeAccounts>
+            <beneficiaryAccounts> .Map </beneficiaryAccounts>
             <accounts>
               <account multiplicity="*" type="Map">
                 <acctID>      0                      </acctID>
@@ -565,7 +566,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <selfDestruct> .Set </selfDestruct>
          <activeAccounts> ACCTS </activeAccounts>
 
-    rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
+    rule <k> (.K => #newBeneficiaryAccount MINER) ~> #finalizeTx(_)... </k>
          <coinbase> MINER </coinbase>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool MINER in ACCTS
@@ -581,7 +582,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          </message>
       requires REFUND =/=Int 0
 
-    rule <k> #finalizeTx(false => true) ... </k>
+    rule <k> #finalizeTx(false) => #addBeneficiaryValue MINER (GLIMIT -Int GAVAIL) *Int GPRICE ~> #finalizeTx(true) ... </k>
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
          <gas> GAVAIL </gas>
@@ -594,7 +595,6 @@ After executing a transaction, it's necessary to have the effect of the substate
          </account>
          <account>
            <acctID> MINER </acctID>
-           <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int GPRICE </balance>
            ...
          </account>
          <txPending> ListItem(TXID:Int) => .List ... </txPending>
@@ -769,6 +769,44 @@ These are just used by the other operators for shuffling local execution state a
            ...
          </accounts>
       requires notBool ACCT in ACCTS
+```
+
+-   `#newBeneficiaryAccount_` allows creating a new account with the given address. The account will also be stored in `<beneficiaryAccounts>`.
+
+```k
+    syntax InternalOp ::= "#rewardBeneficiaries"
+                        | "#newBeneficiaryAccount" Int
+                        | "#addBeneficiaryValue"   Int Int
+ // ------------------------------------------------------
+    rule <k> #newBeneficiaryAccount ACCT => . ... </k>
+         <activeAccounts> AACCTS </activeAccounts>
+         <beneficiaryAccounts> BACCTS => BACCTS [ ACCT <- 0 ] </beneficiaryAccounts>
+         <accounts>
+           ( .Bag
+          => <account>
+               <acctID>  ACCT       </acctID>
+               ...
+             </account>
+           )
+           ...
+         </accounts>
+      requires notBool ACCT in AACCTS
+       andBool notBool ACCT in_keys(BACCTS)
+
+    rule <k> #addBeneficiaryValue ACCT VALUE => . ... </k>
+         <beneficiaryAccounts> BACCTS ACCT |-> ORIG => BACCTS [ ACCT <- ORIG +Int VALUE ] </beneficiaryAccounts>
+      requires ACCT in_keys(BACCTS)
+
+    rule <k> #rewardBeneficiaries ... </k>
+         <beneficiaryAccounts> BACCTS ACCT |-> VALUE => BACCTS </beneficiaryAccounts>
+         <accounts>
+           <acctID> ACCT </acctID>
+           <balance> MINBAL => MINBAL +Int VALUE </balance>
+           ...
+         </accounts>
+    
+    rule <k> #rewardBeneficiaries => . ... </k>
+         <beneficiaryAccounts> .Map </beneficiaryAccounts>
 ```
 
 The following operations help with loading account information from an external running client.
