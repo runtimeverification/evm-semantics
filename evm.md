@@ -802,7 +802,7 @@ These are just used by the other operators for shuffling local execution state a
          <beneficiaryAccounts> RBS </beneficiaryAccounts>
 
     rule <k> #rewardBeneficiaries(.List) => . ... </k>
-    rule <k> #rewardBeneficiaries(ListItem(ACCT) => .List ...) ... </k>
+    rule <k> #rewardBeneficiaries(ListItem(ACCT) RBS) => #rewardBeneficiaries(RBS) ... </k>
          <beneficiaryAccounts> ... ACCT |-> VALUE ... </beneficiaryAccounts>
          <account>
            <acctID>  ACCT </acctID>
