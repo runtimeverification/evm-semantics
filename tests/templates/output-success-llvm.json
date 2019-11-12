@@ -138,6 +138,9 @@
         <blockNonce>
           0
         </blockNonce>
+        <beneficiaryAccounts>
+          .Map
+        </beneficiaryAccounts>
         <ommerBlockHeaders>
           [ .JSONList ]
         </ommerBlockHeaders>
