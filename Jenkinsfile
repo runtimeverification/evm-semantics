@@ -250,7 +250,6 @@ pipeline {
         }
         stage('Deploy Release') {
           when {
-            not { changeRequest() }
             branch 'master'
             beforeAgent true
           }
@@ -448,6 +447,11 @@ pipeline {
                         # --attach "arch/kevm-${KEVM_RELEASE_ID}/package/kevm-git-${KEVM_RELEASE_ID}-1-x86_64.pkg.tar.xz#Arch Package" \
                   '''
                 }
+              }
+            }
+            stage('Update Firefly Dependencies') {
+              steps {
+                build job: 'rv-devops/master', parameters: [string(name: 'PR_REVIEWER', value: 'ehildenb'), booleanParam(name: 'UPDATE_DEPS_FIREFLY', value: true)], propagate: false, wait: false
               }
             }
           }
