@@ -322,7 +322,7 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
  // -----------------------------------------------------------------------
     rule #hashedLocation(LANG, BASE, .IntList) => BASE
 
-    rule #hashedLocation("Vyper",    BASE, OFFSET OFFSETS) => #hashedLocation("Vyper",    keccakIntList(BASE) +Word OFFSET, OFFSETS)
+    rule #hashedLocation("Vyper",    BASE, OFFSET OFFSETS) => #hashedLocation("Vyper",    keccakIntList(BASE OFFSET), OFFSETS)
     rule #hashedLocation("Solidity", BASE, OFFSET OFFSETS) => #hashedLocation("Solidity", keccakIntList(OFFSET BASE),       OFFSETS)
 
     syntax Int ::= keccakIntList( IntList ) [function]
