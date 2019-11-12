@@ -748,11 +748,11 @@ These are just used by the other operators for shuffling local execution state a
 
     rule <k> #newAccount ACCT => . ... </k>
          <account>
-           <acctID>      ACCT       </acctID>
-           <code>        WS         </code>
-           <nonce>       0          </nonce>
-           <storage>     _ => .Map  </storage>
-           <origStorage> _ => .Map  </origStorage>
+           <acctID>      ACCT      </acctID>
+           <code>        WS        </code>
+           <nonce>       0         </nonce>
+           <storage>     _ => .Map </storage>
+           <origStorage> _ => .Map </origStorage>
            ...
          </account>
       requires #sizeByteArray(WS) ==Int 0
@@ -762,7 +762,7 @@ These are just used by the other operators for shuffling local execution state a
          <accounts>
            ( .Bag
           => <account>
-               <acctID>  ACCT       </acctID>
+               <acctID> ACCT </acctID>
                ...
              </account>
            )
