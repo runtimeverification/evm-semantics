@@ -70,7 +70,7 @@ module CREATE-SUMMARY-SPEC
                  <callValue> _ </callValue>
 
                  <wordStack>
-                   VALUE : MEMSTART : MEMWIDTH : WS => #newAddr(ACCT_ID, NONCE) : WS
+                   VALUE : #memStart : #memWidth : WS => #newAddr(ACCT_ID, NONCE) : WS
                  </wordStack>
                  <localMem> #mapWithCode </localMem>
                  <pc>
@@ -115,7 +115,7 @@ module CREATE-SUMMARY-SPEC
            </ethereum>
            ...
          </kevm>
-      requires G -Int (Cmem(PETERSBURG, #memoryUsageUpdate(MU, MEMSTART, MEMWIDTH)) -Int Cmem(PETERSBURG, MU)) -Int 32000 >Int 0
+      requires G -Int (Cmem(PETERSBURG, #memoryUsageUpdate(MU, #memStart, #memWidth)) -Int Cmem(PETERSBURG, MU)) -Int 32000 >Int 0
        andBool 0 <=Int CALL_DEPTH andBool CALL_DEPTH <Int 1023
        andBool #rangeUInt(256, VALUE)
        andBool BAL >=Int VALUE
@@ -138,7 +138,7 @@ module CREATE-SUMMARY-SPEC
                <touchedAccounts> _ </touchedAccounts>
                
                <callState>
-                 <program> #range(#mapWithCode, START, WIDTH) </program>
+                 <program> #range(#mapWithCode, #memStart, #memWidth) </program>
                  <jumpDests> _ </jumpDests>
 
                  <id> ACCT_ID </id>
@@ -149,6 +149,7 @@ module CREATE-SUMMARY-SPEC
                  <wordStack> .WordStack => _ </wordStack>
                  <localMem> .Map => _ </localMem>
                  <pc> 0 => _ </pc>
+                 // simplified gas cost
                  <gas> G => 0 </gas>
                  <memoryUsed> MU => _ </memoryUsed>
                  <callGas> _ => _ </callGas>
