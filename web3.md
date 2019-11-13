@@ -550,7 +550,7 @@ eth_sendTransaction
 
     rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_sendTransaction' requires exactly 1 argument."} ) ... </k> [owise]
 
-    rule <k> #eth_sendTransaction_load J => mkTX !ID:Int ~> #loadNonce #parseHexWord( #getString("from",J) ) !ID ~> loadTransaction !ID J ~> signTX !ID #parseHexWord( #getString("from",J) ) ~> #prepareTx !ID ~> #eth_sendTransaction_final !ID ... </k>
+    rule <k> #eth_sendTransaction_load J => mkTX !ID:Int ~> #loadNonce #parseHexWord( #getString("from",J) ) !ID ~> loadTransaction !ID J ~> signTX !ID #parseHexWord( #getString("from",J) ) ~> #prepareTx !ID #parseHexWord( #getString("from",J) ) ~> #eth_sendTransaction_final !ID ... </k>
 
     rule <k> #eth_sendTransaction_final TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
         <statusCode> EVMC_SUCCESS </statusCode>
@@ -795,13 +795,14 @@ Transaction Receipts
 **TODO**: execute all pending transactions
 
 ```k
-    syntax KItem ::= "#prepareTx" Int
- // ---------------------------------
-    rule <k> #prepareTx TXID:Int
+    syntax KItem ::= "#prepareTx" Int Account
+ // -----------------------------------------
+    rule <k> #prepareTx TXID:Int ACCTFROM
           => #clearLogs
           ~> #validateTx TXID
          ...
          </k>
+         <origin> _ => ACCTFROM </origin>
 
     syntax KItem ::= "#validateTx" Int
  // ----------------------------------
@@ -983,7 +984,7 @@ Transaction Receipts
           ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
           ~> loadTransaction !ID J
           ~> signTX !ID #parseHexWord(#getString("from", J))
-          ~> #prepareTx !ID
+          ~> #prepareTx !ID #parseHexWord(#getString("from", J))
           ~> #eth_call_finalize
          ...
          </k>
@@ -1014,7 +1015,7 @@ Transaction Receipts
           ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
           ~> loadTransaction !ID J
           ~> signTX !ID #parseHexWord(#getString("from", J))
-          ~> #prepareTx !ID
+          ~> #prepareTx !ID #parseHexWord(#getString("from", J))
           ~> #eth_estimateGas_finalize GUSED
          ...
          </k>
