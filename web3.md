@@ -829,16 +829,6 @@ Transaction Receipts
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) >=Int 0
 
-    syntax KItem ::= "#updateAcctCode" Int
- // --------------------------------------
-    rule <k> #updateAcctCode ADDR:Int => . ... </k>
-         <output> CODE </output>
-         <account>
-           <acctID> ADDR </acctID>
-           <code> (_ => CODE) </code>
-           ...
-         </account>
-
     syntax KItem ::= "#executeTx" Int
  // ---------------------------------
     rule <k> #executeTx TXID:Int
