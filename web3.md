@@ -849,7 +849,7 @@ Transaction Receipts
          </k>
          <origin> ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
-         <txPending> ... ListItem(TXID:Int) </txPending>
+         <txPending> ListItem(TXID:Int) ... </txPending>
          <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID     </msgID>
@@ -875,7 +875,7 @@ Transaction Receipts
          ...
          </k>
          <origin> ACCTFROM </origin>
-         <txPending> ... ListItem(TXID) </txPending>
+         <txPending> ListItem(TXID) ... </txPending>
          <callDepth> _ => -1 </callDepth>
          <coinbase> MINER </coinbase>
          <message>
