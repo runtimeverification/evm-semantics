@@ -843,9 +843,8 @@ Transaction Receipts
  // ---------------------------------
     rule <k> #executeTx TXID:Int
           => #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
-          ~> #catchHaltTx
+          ~> #catchHaltTx #newAddr(ACCTFROM, NONCE)
           ~> #finalizeTx(false)
-          ~> #updateAcctCode #newAddr(ACCTFROM, NONCE)
          ...
          </k>
          <origin> ACCTFROM </origin>
@@ -871,7 +870,7 @@ Transaction Receipts
 
     rule <k> #executeTx TXID:Int
           => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
-          ~> #catchHaltTx
+          ~> #catchHaltTx .Account
           ~> #finalizeTx(false)
          ...
          </k>
@@ -897,9 +896,21 @@ Transaction Receipts
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
 
-    syntax KItem ::= "#catchHaltTx"
- // -------------------------------
-    rule <k> #halt ~> #catchHaltTx => . ... </k>
+    syntax KItem ::= "#catchHaltTx" Account
+ // ---------------------------------------
+    rule <statusCode> _:ExceptionalStatusCode </statusCode>
+         <k> #halt ~> #catchHaltTx _ => #popCallStack ~> #popWorldState ... </k>
+
+    rule <statusCode> EVMC_REVERT </statusCode>
+         <k> #halt ~> #catchHaltTx _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k>
+         <gas> GAVAIL </gas>
+
+    rule <statusCode> EVMC_SUCCESS </statusCode>
+         <k> #halt ~> #catchHaltTx .Account => . ... </k>
+
+    rule <statusCode> EVMC_SUCCESS </statusCode>
+         <k> #halt ~> #catchHaltTx ACCT => #mkCodeDeposit ACCT ... </k>
+      requires ACCT =/=K .Account
 
     syntax KItem ::= "#clearLogs"
  // -----------------------------
