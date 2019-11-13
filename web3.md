@@ -555,11 +555,17 @@ eth_sendTransaction
     rule <k> #eth_sendTransaction_final TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
         <statusCode> EVMC_SUCCESS </statusCode>
 
+    rule <k> #eth_sendTransaction_final TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+        <statusCode> EVMC_REVERT </statusCode>
+
     rule <k> #eth_sendTransaction_final TXID => #sendResponse( "error": {"code": -32000, "message": "base fee exceeds gas limit"} ) ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
 
     rule <k> #eth_sendTransaction_final TXID => #sendResponse( "error": {"code": -32000, "message":"sender doesn't have enough funds to send tx."} ) ... </k>
          <statusCode> EVMC_BALANCE_UNDERFLOW </statusCode>
+
+    rule <k> #eth_sendTransaction_final TXID => #sendResponse( "error": { "code": -32000, "message": "VM exception: " +String StatusCode2String( SC ) } ) ... </k>
+        <statusCode> SC:ExceptionalStatusCode </statusCode> [owise]
 
     rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG)), _                 } ... </k>
     rule <k> loadTransaction _ { "gasPrice" : (TP:String => #parseHexWord(TP)), _                 } ... </k>
