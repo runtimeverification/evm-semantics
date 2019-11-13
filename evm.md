@@ -781,6 +781,7 @@ These are just used by the other operators for shuffling local execution state a
  // ------------------------------------------------------
     rule <k> #newBeneficiaryAccount ACCT => . ... </k>
          <beneficiaryAccounts> BACCTS => BACCTS [ ACCT <- 0 ] </beneficiaryAccounts>
+         <activeAccounts> AACCT </activeAccounts>
          <accounts>
            ( .Bag
           => <account>
@@ -790,7 +791,14 @@ These are just used by the other operators for shuffling local execution state a
            )
            ...
          </accounts>
-      requires notBool ACCT in_keys(BACCTS)
+      requires notBool ACCT in AACCT
+       andBool notBool ACCT in_keys(BACCTS)
+
+    rule <k> #newBeneficiaryAccount ACCT => . ... </k>
+         <beneficiaryAccounts> BACCTS => BACCTS [ ACCT <- 0 ] </beneficiaryAccounts>
+         <activeAccounts> AACCT </activeAccounts>
+      requires ACCT in AACCT
+       andBool notBool ACCT in_keys(BACCTS)
 
     rule <k> #addBeneficiaryValue ACCT VALUE => . ... </k>
          <beneficiaryAccounts> ... ACCT |-> (ORIG => (ORIG +Int VALUE)) ... </beneficiaryAccounts>
@@ -806,6 +814,7 @@ These are just used by the other operators for shuffling local execution state a
            <balance> MINBAL => MINBAL +Int VALUE </balance>
            ...
          </account>
+
 ```
 
 The following operations help with loading account information from an external running client.
