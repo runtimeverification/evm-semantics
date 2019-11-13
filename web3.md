@@ -854,7 +854,7 @@ Transaction Receipts
          </message>
          <account>
            <acctID> ACCTFROM </acctID>
-           <balance> BAL => BAL -Int 2 *Int (GLIMIT *Int GPRICE) </balance>
+           <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
            <nonce> NONCE </nonce>
            ...
          </account>
