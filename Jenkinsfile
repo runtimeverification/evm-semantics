@@ -253,6 +253,13 @@ pipeline {
             branch 'master'
             beforeAgent true
           }
+          post {
+            failure {
+              slackSend color: '#cb2431'                                 \
+                      , channel: '#kevm'                                 \
+                      , message: "KEVM Release Failed: ${env.BUILD_URL}"
+            }
+          }
           stages {
             stage('Build Source Tarball') {
               agent {
@@ -455,13 +462,6 @@ pipeline {
               }
             }
           }
-        }
-      }
-      post {
-        failure {
-          slackSend color: '#cb2431'                                 \
-                  , channel: '#kevm'                                 \
-                  , message: "KEVM Release Failed: ${env.BUILD_URL}"
         }
       }
     }
