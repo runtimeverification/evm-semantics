@@ -568,7 +568,6 @@ After executing a transaction, it's necessary to have the effect of the substate
 
     rule <k> (.K => #newBeneficiaryAccount MINER) ~> #finalizeTx(_)... </k>
          <coinbase> MINER </coinbase>
-         <activeAccounts> ACCTS </activeAccounts>
          <beneficiaryAccounts> BACCTS </beneficiaryAccounts>
       requires notBool MINER in_keys(BACCTS)
 
@@ -781,7 +780,6 @@ These are just used by the other operators for shuffling local execution state a
                         | "#addBeneficiaryValue"   Int Int
  // ------------------------------------------------------
     rule <k> #newBeneficiaryAccount ACCT => . ... </k>
-         <activeAccounts> AACCTS </activeAccounts>
          <beneficiaryAccounts> BACCTS => BACCTS [ ACCT <- 0 ] </beneficiaryAccounts>
          <accounts>
            ( .Bag
@@ -792,8 +790,7 @@ These are just used by the other operators for shuffling local execution state a
            )
            ...
          </accounts>
-      requires notBool ACCT in AACCTS
-       andBool notBool ACCT in_keys(BACCTS)
+      requires notBool ACCT in_keys(BACCTS)
 
     rule <k> #addBeneficiaryValue ACCT VALUE => . ... </k>
          <beneficiaryAccounts> ... ACCT |-> (ORIG => (ORIG +Int VALUE)) ... </beneficiaryAccounts>
