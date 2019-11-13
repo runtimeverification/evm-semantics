@@ -818,7 +818,7 @@ Transaction Receipts
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
 
-    rule <k> #validateTx TXID => loadCallState TXID ~> #executeTx TXID ~> #makeTxReceipt TXID ... </k>
+    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ... </k>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
          <message>
@@ -838,6 +838,7 @@ Transaction Receipts
           ~> #finalizeTx(false)
          ...
          </k>
+         <gasPrice> _ => GPRICE </gasPrice>
          <origin> ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -866,6 +867,7 @@ Transaction Receipts
          ...
          </k>
          <origin> ACCTFROM </origin>
+         <gasPrice> _ => GPRICE </gasPrice>
          <txPending> ListItem(TXID) ... </txPending>
          <callDepth> _ => -1 </callDepth>
          <coinbase> MINER </coinbase>
@@ -1052,7 +1054,7 @@ NOGAS Mode
          <mode> NOGAS </mode>
      [priority(25)]
 
-    rule <k> #validateTx TXID => loadCallState TXID ~> #executeTx TXID ~> #makeTxReceipt TXID ... </k>
+    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ... </k>
          <mode> NOGAS </mode>
      [priority(25)]
 ```
