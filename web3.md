@@ -30,6 +30,8 @@ module WEB3
             <logSet>          .List      </logSet>
             <bloomFilter>     .ByteArray </bloomFilter>
             <txStatus>        0          </txStatus>
+            <txID>            0          </txID>
+            <sender>          .Account   </sender>
           </txReceipt>
         </txReceipts>
         <filters>
@@ -323,6 +325,8 @@ WEB3 JSON RPC
          <method> "firefly_getTxRoot" </method>
     rule <k> #runRPCCall => #firefly_getReceiptsRoot ... </k>
          <method> "firefly_getReceiptsRoot" </method>
+    rule <k> #runRPCCall => #eth_getTransactionReceipt ... </k>
+         <method> "eth_getTransactionReceipt" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -725,13 +729,115 @@ Transaction Receipts
                <logSet> LOGS </logSet>
                <bloomFilter> #bloomFilter(LOGS) </bloomFilter>
                <txStatus> bool2Word(STATUSCODE ==K EVMC_SUCCESS) </txStatus>
+               <txID> TXID </txID>
+               <sender> #parseHexWord(#unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS)))) </sender>
              </txReceipt>
            )
            ...
          </txReceipts>
+         <message>
+           <msgID>      TXID </msgID>
+           <txNonce>    TN   </txNonce>
+           <txGasPrice> TP   </txGasPrice>
+           <txGasLimit> TG   </txGasLimit>
+           <to>         TT   </to>
+           <value>      TV   </value>
+           <sigV>       TW   </sigV>
+           <sigR>       TR   </sigR>
+           <sigS>       TS   </sigS>
+           <data>       DATA </data>
+         </message>
          <statusCode> STATUSCODE </statusCode>
          <gasUsed> CGAS </gasUsed>
          <log> LOGS </log>
+
+    syntax KItem ::= "#eth_getTransactionReceipt"
+ // ---------------------------------------------
+    rule <k> #eth_getTransactionReceipt => #sendResponse( "result": {
+                                                                     "transactionHash": TXHASH,
+                                                                     "transactionIndex": #unparseQuantity(getIndexOf(TXID, TXLIST)),
+                                                                     "blockHash": #unparseQuantity(1),
+                                                                     "blockNumber": #unparseQuantity(BN),
+                                                                     "from": #unparseQuantity(TXFROM),
+                                                                     "to": #unparseAccount(TT),
+                                                                     "gasUsed": #unparseQuantity(CGAS),
+                                                                     "cumulativeGasUsed": #unparseQuantity(CGAS),
+                                                                     "contractAddress": #if TT ==K .Account #then #unparseQuantity(#newAddr(TXFROM, NONCE -Int 1)) #else null #fi,
+                                                                     "logs": [#serializeLogs(LOGS, 0, TXID, TXHASH, BN, 1)],
+                                                                     "status": #unparseQuantity(TXSTATUS),
+                                                                     "logsBloom": #unparseDataByteArray(BLOOM),
+                                                                     "v": #unparseQuantity(TW),
+                                                                     "r": #unparseDataByteArray(TR),
+                                                                     "s": #unparseDataByteArray(TS)
+                                                                     }) ... </k>
+         <params> [TXHASH:String, .JSONList] </params>
+         <txReceipt>
+           <txHash>          TXHASH </txHash>
+           <txID>            TXID </txID>
+           <txCumulativeGas> CGAS </txCumulativeGas>
+           <logSet>          LOGS </logSet>
+           <bloomFilter>     BLOOM </bloomFilter>
+           <txStatus>        TXSTATUS </txStatus>
+           <sender>          TXFROM </sender>
+         </txReceipt>
+         <number>  BN     </number>
+         <txOrder> TXLIST </txOrder>
+         <message>
+           <msgID>      TXID     </msgID>
+           <txNonce>    TN       </txNonce>
+           <to>         TT:Account </to>
+           <sigV>       TW       </sigV>
+           <sigR>       TR       </sigR>
+           <sigS>       TS       </sigS>
+           ...
+         </message>
+         <account>
+           <acctID> TXFROM </acctID>
+           <nonce>  NONCE  </nonce>
+           ...
+         </account>
+         <log> LOGS </log>
+
+    rule <k> #eth_getTransactionReceipt => #sendResponse( "result": null ) ... </k> [owise]
+
+    syntax Int ::= getIndexOf ( Int, List ) [function]
+ // --------------------------------------------------
+    rule getIndexOf(X:Int, L) => getIndexOfAux(X:Int, L, 0)
+
+    syntax Int ::= getIndexOfAux (Int, List, Int) [function]
+ // --------------------------------------------------------
+    rule getIndexOfAux (X:Int, .List,         _:Int) => -1
+    rule getIndexOfAux (X:Int, ListItem(X) L, INDEX) => INDEX
+    rule getIndexOfAux (X:Int, ListItem(I) L, INDEX) => getIndexOfAux(X, L, INDEX +Int 1) requires X =/=Int I
+
+    syntax JSON ::= #unparseAccount ( Account ) [function]
+ // ------------------------------------------------------
+    rule #unparseAccount (.Account) => null
+    rule #unparseAccount (ACCT:Int) => #unparseQuantity(ACCT)
+
+    syntax JSONList ::= #unparseIntList ( List ) [function]
+ // -------------------------------------------------------
+    rule #unparseIntList (L) => #unparseIntListAux( L, .JSONList)
+
+    syntax JSONList ::= #unparseIntListAux ( List, JSONList ) [function]
+ // --------------------------------------------------------------------
+    rule #unparseIntListAux(.List, RESULT) => RESULT
+    rule #unparseIntListAux(L ListItem(I), RESULT) => #unparseIntListAux(L, (#unparseQuantity(I), RESULT))
+
+    syntax JSONList ::= #serializeLogs ( List, Int, Int, String, Int, Int ) [function]
+ // ----------------------------------------------------------------------------------
+    rule #serializeLogs (.List, _, _, _, _, _)  => .JSONList
+    rule #serializeLogs (ListItem({ ACCT | TOPICS:List | DATA }) L, LI, TI, TH, BH, BN) => {
+                                                                         "logIndex": #unparseQuantity(LI),
+                                                                         "transactionIndex": #unparseQuantity(TI),
+                                                                         "transactionHash": TH,
+                                                                         "blockHash": #unparseQuantity(BH),
+                                                                         "blockNumber": #unparseQuantity(BN),
+                                                                         "address": #unparseQuantity(ACCT),
+                                                                         "data": #unparseDataByteArray(DATA),
+                                                                         "topics": [#unparseIntList(TOPICS)],
+                                                                         "type" : "mined"
+                                                                                           }, #serializeLogs(L, LI +Int 1, TI, TH, BH, BN)
 ```
 
 - loadCallState: web3.md specific rules
@@ -1253,6 +1359,7 @@ Helper Funcs
            <logSet>          LOGS   </logSet>
            <bloomFilter>     BLOOM  </bloomFilter>
            <txStatus>        STATUS </txStatus>
+           ...
          </txReceipt>
 
     syntax String ::= #rlpEncodeLogs   ( List ) [function]
