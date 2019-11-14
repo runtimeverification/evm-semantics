@@ -1,9 +1,6 @@
-requires "abstract-semantics-direct-gas.k"
 requires "verification.k"
 
 module FORWARDTOHOTWALLET-SUCCESS-1-SPEC
-  imports ETHEREUM-SIMULATION
-  imports ABSTRACT-SEMANTICS-DIRECT-GAS
   imports VERIFICATION
 
   // forwardToHotWallet-success-1

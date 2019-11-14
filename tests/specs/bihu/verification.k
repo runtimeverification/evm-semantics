@@ -1,12 +1,14 @@
-requires "evm-direct-gas.k"
-requires "evm-data-map-concrete.k"
+requires "abstract-semantics-direct-gas.k"
 requires "edsl.k"
+requires "../evm-data-map-concrete.k"
+requires "evm-direct-gas.k"
 requires "../lemmas.k"
 
 module VERIFICATION
-    imports EVM-DIRECT-GAS
-    imports EVM-DATA-MAP-CONCRETE
+    imports ABSTRACT-SEMANTICS-DIRECT-GAS
     imports EDSL
+    imports EVM-DATA-MAP-CONCRETE
+    imports EVM-DIRECT-GAS
     imports LEMMAS
 
     rule #sizeWordStack ( WS , N:Int )
