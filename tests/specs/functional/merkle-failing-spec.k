@@ -11,7 +11,7 @@ module VERIFICATION
 
 endmodule
 
-module MERKLE-SPEC
+module MERKLE-FAILING-SPEC
     imports VERIFICATION
 
     // Concrete Test
