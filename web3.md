@@ -554,16 +554,22 @@ eth_sendTransaction
 
     rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_sendTransaction' requires exactly 1 argument."} ) ... </k> [owise]
 
-    rule <k> #eth_sendTransaction_load J => mkTX !ID:Int ~> #loadNonce #parseHexWord( #getString("from",J) ) !ID ~> loadTransaction !ID J ~> signTX !ID #parseHexWord( #getString("from",J) ) ~> #prepareTx !ID ~> #eth_sendTransaction_final !ID ... </k>
+    rule <k> #eth_sendTransaction_load J => mkTX !ID:Int ~> #loadNonce #parseHexWord( #getString("from",J) ) !ID ~> loadTransaction !ID J ~> signTX !ID #parseHexWord( #getString("from",J) ) ~> #prepareTx !ID #parseHexWord( #getString("from",J) ) ~> #eth_sendTransaction_final !ID ... </k>
 
     rule <k> #eth_sendTransaction_final TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
         <statusCode> EVMC_SUCCESS </statusCode>
+
+    rule <k> #eth_sendTransaction_final TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+        <statusCode> EVMC_REVERT </statusCode>
 
     rule <k> #eth_sendTransaction_final TXID => #sendResponse( "error": {"code": -32000, "message": "base fee exceeds gas limit"} ) ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
 
     rule <k> #eth_sendTransaction_final TXID => #sendResponse( "error": {"code": -32000, "message":"sender doesn't have enough funds to send tx."} ) ... </k>
          <statusCode> EVMC_BALANCE_UNDERFLOW </statusCode>
+
+    rule <k> #eth_sendTransaction_final TXID => #sendResponse( "error": { "code": -32000, "message": "VM exception: " +String StatusCode2String( SC ) } ) ... </k>
+        <statusCode> SC:ExceptionalStatusCode </statusCode> [owise]
 
     rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG)), _                 } ... </k>
     rule <k> loadTransaction _ { "gasPrice" : (TP:String => #parseHexWord(TP)), _                 } ... </k>
@@ -895,13 +901,14 @@ Transaction Receipts
 **TODO**: execute all pending transactions
 
 ```k
-    syntax KItem ::= "#prepareTx" Int
- // ---------------------------------
-    rule <k> #prepareTx TXID:Int
+    syntax KItem ::= "#prepareTx" Int Account
+ // -----------------------------------------
+    rule <k> #prepareTx TXID:Int ACCTFROM
           => #clearLogs
           ~> #validateTx TXID
          ...
          </k>
+         <origin> _ => ACCTFROM </origin>
 
     syntax KItem ::= "#validateTx" Int
  // ----------------------------------
@@ -917,7 +924,7 @@ Transaction Receipts
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
 
-    rule <k> #validateTx TXID => loadCallState TXID ~> #executeTx TXID ~> #makeTxReceipt TXID ... </k>
+    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ... </k>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
          <message>
@@ -929,28 +936,18 @@ Transaction Receipts
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) >=Int 0
 
-    syntax KItem ::= "#updateAcctCode" Int
- // --------------------------------------
-    rule <k> #updateAcctCode ADDR:Int => . ... </k>
-         <output> CODE </output>
-         <account>
-           <acctID> ADDR </acctID>
-           <code> (_ => CODE) </code>
-           ...
-         </account>
-
     syntax KItem ::= "#executeTx" Int
  // ---------------------------------
     rule <k> #executeTx TXID:Int
           => #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
-          ~> #catchHaltTx
+          ~> #catchHaltTx #newAddr(ACCTFROM, NONCE)
           ~> #finalizeTx(false)
-          ~> #updateAcctCode #newAddr(ACCTFROM, NONCE)
          ...
          </k>
+         <gasPrice> _ => GPRICE </gasPrice>
          <origin> ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
-         <txPending> ... ListItem(TXID:Int) </txPending>
+         <txPending> ListItem(TXID:Int) ... </txPending>
          <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID     </msgID>
@@ -971,12 +968,13 @@ Transaction Receipts
 
     rule <k> #executeTx TXID:Int
           => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
-          ~> #catchHaltTx
+          ~> #catchHaltTx .Account
           ~> #finalizeTx(false)
          ...
          </k>
          <origin> ACCTFROM </origin>
-         <txPending> ... ListItem(TXID) </txPending>
+         <gasPrice> _ => GPRICE </gasPrice>
+         <txPending> ListItem(TXID) ... </txPending>
          <callDepth> _ => -1 </callDepth>
          <coinbase> MINER </coinbase>
          <message>
@@ -997,9 +995,21 @@ Transaction Receipts
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
 
-    syntax KItem ::= "#catchHaltTx"
- // -------------------------------
-    rule <k> #halt ~> #catchHaltTx => . ... </k>
+    syntax KItem ::= "#catchHaltTx" Account
+ // ---------------------------------------
+    rule <statusCode> _:ExceptionalStatusCode </statusCode>
+         <k> #halt ~> #catchHaltTx _ => #popCallStack ~> #popWorldState ... </k>
+
+    rule <statusCode> EVMC_REVERT </statusCode>
+         <k> #halt ~> #catchHaltTx _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k>
+         <gas> GAVAIL </gas>
+
+    rule <statusCode> EVMC_SUCCESS </statusCode>
+         <k> #halt ~> #catchHaltTx .Account => . ... </k>
+
+    rule <statusCode> EVMC_SUCCESS </statusCode>
+         <k> #halt ~> #catchHaltTx ACCT => #mkCodeDeposit ACCT ... </k>
+      requires ACCT =/=K .Account
 
     syntax KItem ::= "#clearLogs"
  // -----------------------------
@@ -1082,7 +1092,7 @@ Transaction Receipts
           ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
           ~> loadTransaction !ID J
           ~> signTX !ID #parseHexWord(#getString("from", J))
-          ~> #prepareTx !ID
+          ~> #prepareTx !ID #parseHexWord(#getString("from", J))
           ~> #eth_call_finalize
          ...
          </k>
@@ -1113,7 +1123,7 @@ Transaction Receipts
           ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
           ~> loadTransaction !ID J
           ~> signTX !ID #parseHexWord(#getString("from", J))
-          ~> #prepareTx !ID
+          ~> #prepareTx !ID #parseHexWord(#getString("from", J))
           ~> #eth_estimateGas_finalize GUSED
          ...
          </k>
@@ -1150,7 +1160,7 @@ NOGAS Mode
          <mode> NOGAS </mode>
      [priority(25)]
 
-    rule <k> #validateTx TXID => loadCallState TXID ~> #executeTx TXID ~> #makeTxReceipt TXID ... </k>
+    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ... </k>
          <mode> NOGAS </mode>
      [priority(25)]
 ```
