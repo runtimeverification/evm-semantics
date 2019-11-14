@@ -716,9 +716,24 @@ eth_sendRawTransaction
 Retrieving Blocks
 -----------------
 
+**TODO**
+- We don't have anything to compute the block hash yet
+- The <transactionsRoot>, <stateRoot>, and <receiptsRoot> cells aren't updated on any changes yet
+- <logsBloom> defaults to .ByteArray, but maybe it should be 256 zero bytes? It also doesn't get updated.
+- Ganache's gasLimit defaults to 6721975 (0x6691b7), but we default it at 0.
+- We need something to compute a list for the "transactions", something that takes the TXOUT
+  variable from <params> would be a good idea
+- The #getBlockByNumber above should be used when an integer is passed in
+
 ```k
     syntax KItem ::= "#eth_getBlockByNumber"
  // ----------------------------------------
+    rule <k> #eth_getBlockByNumber => #eth_getBlockByNumber_finalize { <network> NETWORK </network> | <block> BLOCK </block> } ... </k>
+         <params> [ V:String, TXOUT:Bool, .JSONList ] </params>
+         <network> NETWORK </network>
+         <block> BLOCK </block>
+      requires V ==String "pending" orBool V ==String "latest"
+
     rule <k> #eth_getBlockByNumber => #sendResponse ( "error": { "code":-32000, "message":"Incorrect number of arguments. Method 'eth_getBlockByNumber' requires exactly 2 arguments." } ) ... </k>
          <params> [ VALUE, .JSONList ] </params>
       requires notBool isJSONList( VALUE )
@@ -728,6 +743,54 @@ Retrieving Blocks
       requires notBool isJSONList( VALUE ) andBool notBool isJSONList( VALUE2 )
 
     rule <k> #eth_getBlockByNumber => #sendResponse ( "result": null ) ... </k> [owise]
+
+    syntax KItem ::= "#eth_getBlockByNumber_finalize" BlockchainItem
+ // ----------------------------------------------------------------
+    rule <k> #eth_getBlockByNumber_finalize { _ |
+         <block>
+           <previousHash>      PARENTHASH  </previousHash>
+           <ommersHash>        OMMERSHASH  </ommersHash>
+           <coinbase>          MINER       </coinbase>
+           <stateRoot>         STATEROOT   </stateRoot>
+           <transactionsRoot>  TXROOT      </transactionsRoot>
+           <receiptsRoot>      RCPTROOT    </receiptsRoot>
+           <logsBloom>         LOGSBLOOM   </logsBloom>
+           <difficulty>        DFFCLTY     </difficulty>
+           <number>            NUM         </number>
+           <gasLimit>          GLIMIT      </gasLimit>
+           <gasUsed>           GUSED       </gasUsed>
+           <timestamp>         TIME        </timestamp>
+           <extraData>         DATA        </extraData>
+           <mixHash>           MIXHASH     </mixHash>
+           <blockNonce>        NONCE       </blockNonce>
+           ...
+         </block> }
+          => #sendResponse ( "result":
+             {
+               "number": #unparseQuantity( NUM ),
+               "hash": "0",
+               "parentHash": #unparseData( PARENTHASH, 32 ),
+               "mixHash": #unparseData( MIXHASH, 32 ),
+               "nonce": #unparseData( NONCE, 8 ),
+               "sha3Uncles": #unparseData( OMMERSHASH, 32 ),
+               "logsBloom": #unparseDataByteArray( LOGSBLOOM ),
+               "transactionsRoot": "0x" +String Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ),
+               "stateRoot": "0x" +String Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ),
+               "receiptsRoot": "0x" +String Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ),
+               "miner": #unparseData( MINER, 20 ),
+               "difficulty": #unparseQuantity( DFFCLTY ),
+               "totalDifficulty": #unparseQuantity( DFFCLTY ),
+               "extraData": #unparseDataByteArray( DATA ),
+               "size": "0x3e8", // Ganache always returns 1000
+               "gasLimit": #unparseQuantity( GLIMIT ),
+               "gasUsed": #unparseQuantity( GUSED ),
+               "timestamp": #unparseQuantity( TIME ),
+               "transactions": [ .JSONList ],
+               "uncles": [ .JSONList ]
+             }
+                           )
+          ...
+         </k>
 ```
 
 Transaction Receipts
