@@ -325,6 +325,10 @@ WEB3 JSON RPC
          <method> "firefly_getTxRoot" </method>
     rule <k> #runRPCCall => #firefly_getReceiptsRoot ... </k>
          <method> "firefly_getReceiptsRoot" </method>
+    rule <k> #runRPCCall => #firefly_getTime ... </k>
+         <method> "firefly_getTime" </method>
+    rule <k> #runRPCCall => #firefly_setTime ... </k>
+         <method> "firefly_setTime" </method>
     rule <k> #runRPCCall => #eth_getTransactionReceipt ... </k>
          <method> "eth_getTransactionReceipt" </method>
 
@@ -1454,6 +1458,24 @@ Receipts Root
     syntax KItem ::= "#firefly_getReceiptsRoot"
  // -------------------------------------------
     rule <k> #firefly_getReceiptsRoot => #sendResponse("result": { "receiptsRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) } ) ... </k>
+```
+
+Timestamp Calls
+---------------
+
+```k
+    syntax KItem ::= "#firefly_getTime"
+ // -----------------------------------
+    rule <k> #firefly_getTime => #sendResponse( "result": #unparseQuantity( TIME ) ) ... </k>
+         <timestamp> TIME </timestamp>
+
+    syntax KItem ::= "#firefly_setTime"
+ // -----------------------------------
+    rule <k> #firefly_setTime => #sendResponse( "result": true ) ... </k>
+         <params> [ TIME:String, .JSONList ] </params>
+         <timestamp> _ => #parseHexWord( TIME ) </timestamp>
+
+    rule <k> #firefly_setTime => #sendResponse( "result": false ) ... </k> [owise]
 
 endmodule
 ```
