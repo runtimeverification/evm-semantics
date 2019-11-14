@@ -331,6 +331,8 @@ WEB3 JSON RPC
          <method> "firefly_setTime" </method>
     rule <k> #runRPCCall => #eth_getTransactionReceipt ... </k>
          <method> "eth_getTransactionReceipt" </method>
+    rule <k> #runRPCCall => #eth_getBlockByNumber ... </k>
+         <method> "eth_getBlockByNumber" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -709,6 +711,15 @@ eth_sendRawTransaction
     rule <k> #eth_sendRawTransactionVerify _ => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
 
     rule <k> #eth_sendRawTransactionSend TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+```
+
+Retrieving Blocks
+-----------------
+
+```k
+    syntax KItem ::= "#eth_getBlockByNumber"
+ // ----------------------------------------
+    rule <k> #eth_getBlockByNumber => #sendResponse ( "result": null ) ... </k> [owise]
 ```
 
 Transaction Receipts
