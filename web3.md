@@ -754,12 +754,12 @@ Transaction Receipts
                                                                      "blockNumber": #unparseQuantity(BN),
                                                                      "from": #unparseQuantity(TXFROM),
                                                                      "to": #unparseAccount(TT),
-                                                                     "cumulativeGasUsed": #unparseQuantity(CGAS),
                                                                      "gasUsed": #unparseQuantity(CGAS),
+                                                                     "cumulativeGasUsed": #unparseQuantity(CGAS),
                                                                      "contractAddress": #if TT ==K .Account #then #unparseQuantity(#newAddr(TXFROM, NONCE -Int 1)) #else null #fi,
                                                                      "logs": [#serializeLogs(LOGS, 0, TXID, TXHASH, BN, 1)],
-                                                                     "logsBloom": #unparseDataByteArray(BLOOM),
                                                                      "status": #unparseQuantity(TXSTATUS),
+                                                                     "logsBloom": #unparseDataByteArray(BLOOM),
                                                                      "v": #unparseQuantity(TW),
                                                                      "r": #unparseDataByteArray(TR),
                                                                      "s": #unparseDataByteArray(TS)
@@ -791,6 +791,8 @@ Transaction Receipts
            ...
          </account>
          <log> LOGS </log>
+
+    rule <k> #eth_getTransactionReceipt => #sendResponse( "result": null ) ... </k> [owise]
 
     syntax Int ::= getIndexOf ( Int, List ) [function]
  // --------------------------------------------------
