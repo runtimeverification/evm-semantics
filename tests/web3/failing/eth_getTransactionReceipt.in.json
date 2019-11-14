@@ -1,0 +1,34 @@
+[
+    {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "firefly_addAccount",
+        "params": [
+            {
+                "key": "0x1d4dd6ba0e38ac98c50432d402530088e8752dcad56035977aa14e2a466ecd28",
+                "balance": "0x56BC75E2D63100000"
+            }
+        ]
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "eth_sendTransaction",
+        "params": [
+            {
+                "from": "0x79a59cF0083eFdF696befda81655104787f938d0",
+                "gasPrice": "0x1",
+                "gas": "0x76c0f",
+                "data":"0x62FFFFFF60005260206000F3"
+            }
+        ]
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "method": "eth_getTransactionReceipt",
+        "params": [
+            "0x48b3bce222588aff4329c7c7aebaa39ffb66045254c1ca16b9b1a5482463682b"
+        ]
+    }
+]
