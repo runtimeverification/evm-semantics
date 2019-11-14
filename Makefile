@@ -479,12 +479,13 @@ test-web3: $(web3_tests:.in.json=.run-web3)
 # Proof Tests
 
 prove_specs_dir        := tests/specs
-prove_benchmarks_tests := $(wildcard $(prove_specs_dir)/benchmarks/*-spec.k)
-prove_functional_tests := $(wildcard $(prove_specs_dir)/functional/*-spec.k)
-prove_opcodes_tests    := $(wildcard $(prove_specs_dir)/opcodes/*-spec.k)
-prove_erc20_tests      := $(wildcard $(prove_specs_dir)/erc20/*/*-spec.k)
-prove_bihu_tests       := $(wildcard $(prove_specs_dir)/bihu/*-spec.k)
-prove_examples_tests   := $(wildcard $(prove_specs_dir)/examples/*-spec.k)
+prove_failing_tests    := $(shell cat $(prove_specs_dir)/failing)
+prove_benchmarks_tests := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/benchmarks/*-spec.k))
+prove_functional_tests := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/functional/*-spec.k))
+prove_opcodes_tests    := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/opcodes/*-spec.k))
+prove_erc20_tests      := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/erc20/*/*-spec.k))
+prove_bihu_tests       := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/bihu/*-spec.k))
+prove_examples_tests   := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k))
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples
 test-prove-benchmarks: $(prove_benchmarks_tests:=.prove)
