@@ -191,12 +191,12 @@ pipeline {
                     commit_short=$(cd deps/k && git rev-parse --short HEAD)
                     K_RELEASE="https://github.com/kframework/k/releases/download/nightly-$commit_short"
                     curl --fail --location "${K_RELEASE}/kframework_5.0.0_amd64_bionic.deb"    --output kframework-bionic.deb
-                    #curl --fail --location "${K_RELEASE}/kframework-5.0.0-1-x86_64.pkg.tar.xz" --output kframework-git.pkg.tar.xz
+                    curl --fail --location "${K_RELEASE}/kframework-5.0.0-1-x86_64.pkg.tar.xz" --output kframework-git.pkg.tar.xz
                     curl --fail --location "${K_RELEASE}/kframework_5.0.0_amd64_buster.deb"    --output kframework-buster.deb
                   '''
                   stash name: 'bionic-kframework', includes: 'kframework-bionic.deb'
                   stash name: 'buster-kframework', includes: 'kframework-buster.deb'
-                  //stash name: 'arch-kframework',   includes: 'kframework-git.pkg.tar.xz'
+                  stash name: 'arch-kframework',   includes: 'kframework-git.pkg.tar.xz'
                 }
               }
             }
