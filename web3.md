@@ -1347,6 +1347,7 @@ Helper Funcs
            <logSet>          LOGS   </logSet>
            <bloomFilter>     BLOOM  </bloomFilter>
            <txStatus>        STATUS </txStatus>
+           ...
          </txReceipt>
 
     syntax String ::= #rlpEncodeLogs   ( List ) [function]
