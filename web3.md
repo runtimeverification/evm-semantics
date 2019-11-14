@@ -719,6 +719,14 @@ Retrieving Blocks
 ```k
     syntax KItem ::= "#eth_getBlockByNumber"
  // ----------------------------------------
+    rule <k> #eth_getBlockByNumber => #sendResponse ( "error": { "code":-32000, "message":"Incorrect number of arguments. Method 'eth_getBlockByNumber' requires exactly 2 arguments." } ) ... </k>
+         <params> [ VALUE, .JSONList ] </params>
+      requires notBool isJSONList( VALUE )
+
+    rule <k> #eth_getBlockByNumber => #sendResponse ( "error": { "code":-32000, "message":"Incorrect number of arguments. Method 'eth_getBlockByNumber' requires exactly 2 arguments." } ) ... </k>
+         <params> [ VALUE, VALUE2, _, .JSONList ] </params>
+      requires notBool isJSONList( VALUE ) andBool notBool isJSONList( VALUE2 )
+
     rule <k> #eth_getBlockByNumber => #sendResponse ( "result": null ) ... </k> [owise]
 ```
 
