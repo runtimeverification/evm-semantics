@@ -713,7 +713,9 @@ Retrieving Blocks
 - The <transactionsRoot>, <stateRoot>, and <receiptsRoot> cells aren't updated on any changes yet
 - <logsBloom> defaults to .ByteArray, but maybe it should be 256 zero bytes? It also doesn't get updated.
 - Ganache's gasLimit defaults to 6721975 (0x6691b7), but we default it at 0.
-
+- After each txExecution which is not `eth_call`:
+   - use `#setBlockchainItem` 
+   - clear <txPending> and <txOrder>
 ```k
     syntax KItem ::= "#eth_getBlockByNumber"
  // ----------------------------------------
