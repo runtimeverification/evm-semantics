@@ -283,6 +283,45 @@ pipeline {
                 stash name: 'src-kevm', includes: "kevm-${env.KEVM_RELEASE_ID}-src.tar.gz"
               }
             }
+            stage('Deploy Jello Paper') {
+              agent { dockerfile { reuseNode true } }
+              stages {
+                stage('Initialize Git/SSH') {
+                  steps {
+                    sshagent(['2b3d8d6b-0855-4b59-864a-6b3ddf9c9d1a']) {
+                      sh '''
+                        git config --global user.email "admin@runtimeverification.com"
+                        git config --global user.name  "RV Jenkins"
+                        mkdir -p ~/.ssh
+                        echo 'host github.com'                       > ~/.ssh/config
+                        echo '    hostname github.com'              >> ~/.ssh/config
+                        echo '    user git'                         >> ~/.ssh/config
+                        echo '    identityagent SSH_AUTH_SOCK'      >> ~/.ssh/config
+                        echo '    stricthostkeychecking accept-new' >> ~/.ssh/config
+                        chmod go-rwx -R ~/.ssh
+                        ssh github.com || true
+                      '''
+                    }
+                  }
+                }
+                stage('Push GitHub Pages') {
+                  steps {
+                    sshagent(['2b3d8d6b-0855-4b59-864a-6b3ddf9c9d1a']) {
+                      sh '''
+                        git remote set-url origin 'ssh://github.com/runtimeverification/mkr-mcd-spec'
+                        git checkout -B 'gh-pages'
+                        rm -rf .build .gitignore .gitmodules cmake deps Dockerfile Jenkinsfile kast-json.py kevm kore-json.py LICENSE Makefile media package
+                        git add ./
+                        git commit -m 'gh-pages: remove unrelated content'
+                        git fetch origin gh-pages
+                        git merge --strategy ours FETCH_HEAD
+                        git push origin gh-pages
+                      '''
+                    }
+                  }
+                }
+              }
+            }
             stage('Build Debian Buster Package') {
               agent {
                 dockerfile {
