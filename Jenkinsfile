@@ -189,14 +189,14 @@ pipeline {
                   checkout scm
                   sh '''
                     commit_short=$(cd deps/k && git rev-parse --short HEAD)
-                    K_RELEASE="https://github.com/kframework/k/releases/download/nightly-$commit_short"
+                    K_RELEASE="https://github.com/kframework/k/releases/download/v5.0.0-$commit_short"
                     curl --fail --location "${K_RELEASE}/kframework_5.0.0_amd64_bionic.deb"    --output kframework-bionic.deb
-                    curl --fail --location "${K_RELEASE}/kframework-5.0.0-1-x86_64.pkg.tar.xz" --output kframework-git.pkg.tar.xz
                     curl --fail --location "${K_RELEASE}/kframework_5.0.0_amd64_buster.deb"    --output kframework-buster.deb
+                    # curl --fail --location "${K_RELEASE}/kframework-5.0.0-1-x86_64.pkg.tar.xz" --output kframework-git.pkg.tar.xz
                   '''
                   stash name: 'bionic-kframework', includes: 'kframework-bionic.deb'
                   stash name: 'buster-kframework', includes: 'kframework-buster.deb'
-                  stash name: 'arch-kframework',   includes: 'kframework-git.pkg.tar.xz'
+                  // stash name: 'arch-kframework',   includes: 'kframework-git.pkg.tar.xz'
                 }
               }
             }
@@ -250,9 +250,15 @@ pipeline {
         }
         stage('Deploy Release') {
           when {
-            not { changeRequest() }
             branch 'master'
             beforeAgent true
+          }
+          post {
+            failure {
+              slackSend color: '#cb2431'                                 \
+                      , channel: '#kevm'                                 \
+                      , message: "KEVM Release Failed: ${env.BUILD_URL}"
+            }
           }
           stages {
             stage('Build Source Tarball') {
@@ -450,14 +456,12 @@ pipeline {
                 }
               }
             }
+            stage('Update Firefly Dependencies') {
+              steps {
+                build job: 'rv-devops/master', parameters: [string(name: 'PR_REVIEWER', value: 'ehildenb'), booleanParam(name: 'UPDATE_DEPS_FIREFLY', value: true)], propagate: false, wait: false
+              }
+            }
           }
-        }
-      }
-      post {
-        failure {
-          slackSend color: '#cb2431'                                 \
-                  , channel: '#kevm'                                 \
-                  , message: "KEVM Release Failed: ${env.BUILD_URL}"
         }
       }
     }
