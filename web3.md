@@ -1039,6 +1039,7 @@ Transaction Receipts
           => #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #catchHaltTx #newAddr(ACCTFROM, NONCE)
           ~> #finalizeTx(false)
+          ~> #saveState
          ...
          </k>
          <gasPrice> _ => GPRICE </gasPrice>
@@ -1067,6 +1068,7 @@ Transaction Receipts
           => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #catchHaltTx .Account
           ~> #finalizeTx(false)
+          ~> #saveState
          ...
          </k>
          <origin> ACCTFROM </origin>
@@ -1091,6 +1093,18 @@ Transaction Receipts
          </account>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
+
+    syntax KItem ::= "#saveState"
+                   | "#cleanTxLists"
+ // --------------------------------
+    rule <k> #saveState => #pushBlockchainState ~> #cleanTxLists ... </k>
+         <mode> EXECMODE </mode>
+      requires EXECMODE =/=K NOGAS
+
+    rule <k> #cleanTxLists => . ... </k>
+         <txPending> _ => .List </txPending>
+         <txOrder>   _ => .List </txOrder>
+         <number> BN => BN+Int 1 </number>
 
     syntax KItem ::= "#catchHaltTx" Account
  // ---------------------------------------
