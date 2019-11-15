@@ -96,15 +96,19 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List ) [function]
  // ---------------------------------------------------------------------------------
-    rule #getBlockByNumber("earliest",    BLOCKLIST) => #getBlockByNumber(0, BLOCKLIST)
-    rule #getBlockByNumber("latest",      BLOCKLIST) => #getBlockByNumber(size(BLOCKLIST) -Int 1, BLOCKLIST)
+    rule #getBlockByNumber( ( _ => "pending" ) , .List) [owise]
+
+    rule #getBlockByNumber("earliest", _ ListItem( BLOCK )) => BLOCK
+
+    rule #getBlockByNumber("latest", ListItem( BLOCK ) _) => BLOCK
+
     rule [[ #getBlockByNumber("pending",  BLOCKLIST) => {<network> NETWORK </network> | <block> BLOCK </block>} ]]
          <network> NETWORK </network>
          <block>   BLOCK   </block>
+
     rule #getBlockByNumber(BLOCKNUM:Int,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCKCHAINITEM) REST ) => BLOCKCHAINITEM
     rule #getBlockByNumber(BLOCKNUM':Int, ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }                   ) REST ) => #getBlockByNumber(BLOCKNUM', REST)
       requires BLOCKNUM =/=Int BLOCKNUM'
-    rule #getBlockByNumber(_, .List) => .BlockchainItem
 
     syntax AccountItem ::= AccountCell | ".AccountItem"
  // ---------------------------------------------------
