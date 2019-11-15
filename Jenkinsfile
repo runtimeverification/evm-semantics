@@ -189,7 +189,7 @@ pipeline {
                   checkout scm
                   sh '''
                     commit_short=$(cd deps/k && git rev-parse --short HEAD)
-                    K_RELEASE="https://github.com/kframework/k/releases/download/nightly-$commit_short"
+                    K_RELEASE="https://github.com/kframework/k/releases/download/v5.0.0-$commit_short"
                     curl --fail --location "${K_RELEASE}/kframework_5.0.0_amd64_bionic.deb"    --output kframework-bionic.deb
                     curl --fail --location "${K_RELEASE}/kframework_5.0.0_amd64_buster.deb"    --output kframework-buster.deb
                     # curl --fail --location "${K_RELEASE}/kframework-5.0.0-1-x86_64.pkg.tar.xz" --output kframework-git.pkg.tar.xz
