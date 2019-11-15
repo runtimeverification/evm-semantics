@@ -458,7 +458,12 @@ pipeline {
             }
             stage('Update Firefly Dependencies') {
               steps {
-                build job: 'rv-devops/master', parameters: [string(name: 'PR_REVIEWER', value: 'ehildenb'), booleanParam(name: 'UPDATE_DEPS_FIREFLY', value: true)], propagate: false, wait: false
+                build job: 'rv-devops/master', propagate: false, wait: false                                     \
+                    , parameters: [ booleanParam(name: 'UPDATE_DEPS_SUBMODULE', value: true)                     \
+                                  , string(name: 'PR_REVIEWER', value: 'ehildenb')                               \
+                                  , string(name: 'UPDATE_DEPS_REPOSITORY', value: 'runtimeverification/firefly') \
+                                  , string(name: 'UPDATE_DEPS_SUBMODULE_DIR', value: 'deps/evm-semantics')       \
+                                  ]
               }
             }
           }
