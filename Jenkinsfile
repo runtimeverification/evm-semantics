@@ -308,7 +308,7 @@ pipeline {
                   steps {
                     sshagent(['2b3d8d6b-0855-4b59-864a-6b3ddf9c9d1a']) {
                       sh '''
-                        git remote set-url origin 'ssh://github.com/runtimeverification/mkr-mcd-spec'
+                        git remote set-url origin 'ssh://github.com/kframework/evm-semantics'
                         git checkout -B 'gh-pages'
                         rm -rf .build .gitignore .gitmodules cmake deps Dockerfile Jenkinsfile kast-json.py kevm kore-json.py LICENSE Makefile media package
                         git add ./
