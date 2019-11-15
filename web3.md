@@ -713,19 +713,13 @@ Retrieving Blocks
 - The <transactionsRoot>, <stateRoot>, and <receiptsRoot> cells aren't updated on any changes yet
 - <logsBloom> defaults to .ByteArray, but maybe it should be 256 zero bytes? It also doesn't get updated.
 - Ganache's gasLimit defaults to 6721975 (0x6691b7), but we default it at 0.
-- We need something to compute a list for the "transactions", something that takes the TXOUT
-  variable from <params> would be a good idea
-- The #getBlockByNumber above should be used when an integer is passed in
 
 ```k
     syntax KItem ::= "#eth_getBlockByNumber"
  // ----------------------------------------
-    rule <k> #eth_getBlockByNumber => #eth_getBlockByNumber_finalize { <network> NETWORK </network> | <block> BLOCK </block> } ... </k>
-         <params> [ V:String, TXOUT:Bool, .JSONList ] </params>
-         <network> NETWORK </network>
-         <block> BLOCK </block>
-      requires V ==String "pending" orBool V ==String "latest"
-
+    rule <k> #eth_getBlockByNumber => #eth_getBlockByNumber_finalize( #getBlockByNumber( #parseBlockIdentifier(TAG), BLOCKLIST)) ... </k>
+         <params> [ TAG:String, TXOUT:Bool, .JSONList ] </params>
+         <blockList> BLOCKLIST </blockList>
     rule <k> #eth_getBlockByNumber => #sendResponse ( "error": { "code":-32000, "message":"Incorrect number of arguments. Method 'eth_getBlockByNumber' requires exactly 2 arguments." } ) ... </k>
          <params> [ VALUE, .JSONList ] </params>
       requires notBool isJSONList( VALUE )
@@ -734,11 +728,9 @@ Retrieving Blocks
          <params> [ VALUE, VALUE2, _, .JSONList ] </params>
       requires notBool isJSONList( VALUE ) andBool notBool isJSONList( VALUE2 )
 
-    rule <k> #eth_getBlockByNumber => #sendResponse ( "result": null ) ... </k> [owise]
-
-    syntax KItem ::= "#eth_getBlockByNumber_finalize" BlockchainItem
- // ----------------------------------------------------------------
-    rule <k> #eth_getBlockByNumber_finalize { _ |
+    syntax KItem ::= "#eth_getBlockByNumber_finalize" "(" BlockchainItem ")"
+ // ------------------------------------------------------------------------
+    rule <k> #eth_getBlockByNumber_finalize ({ _ |
          <block>
            <previousHash>      PARENTHASH  </previousHash>
            <ommersHash>        OMMERSHASH  </ommersHash>
@@ -756,7 +748,7 @@ Retrieving Blocks
            <mixHash>           MIXHASH     </mixHash>
            <blockNonce>        NONCE       </blockNonce>
            ...
-         </block> }
+         </block> } #as BLOCKITEM)
           => #sendResponse ( "result":
              {
                "number": #unparseQuantity( NUM ),
@@ -777,12 +769,37 @@ Retrieving Blocks
                "gasLimit": #unparseQuantity( GLIMIT ),
                "gasUsed": #unparseQuantity( GUSED ),
                "timestamp": #unparseQuantity( TIME ),
-               "transactions": [ .JSONList ],
+               "transactions": [ #getTransactionList( BLOCKITEM ) ],
                "uncles": [ .JSONList ]
              }
                            )
           ...
          </k>
+
+    rule <k> #eth_getBlockByNumber_finalize ( .BlockchainItem )=> #sendResponse ( "result": null ) ... </k>
+
+    syntax JSONList ::= "#getTransactionList" "(" BlockchainItem ")" [function]
+                      | #getTransactionHashList ( List, JSONList ) [function]
+ // ---------------------------------------------------------------------------
+    rule [[ #getTransactionList (
+       { 
+          <network>
+            <txOrder> TXIDLIST </txOrder>
+            ...
+          </network> | _ 
+       }) => #getTransactionHashList (TXIDLIST, .JSONList) ]]
+         <params> [ _ , false, .JSONList ] </params>
+
+rule #getTransactionHashList ( .List, RESULT ) => RESULT
+rule [[ 
+   #getTransactionHashList (ListItem(TXID) TXIDLIST, RESULT)
+    => #getTransactionHashList(TXIDLIST, (TXHASH, RESULT))
+     ]]
+     <txReceipt>
+       <txID>   TXID   </txID>
+       <txHash> TXHASH </txHash>
+       ...
+     </txReceipt>
 ```
 
 Transaction Receipts
