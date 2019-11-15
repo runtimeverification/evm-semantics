@@ -1,1 +1,25 @@
-[{"jsonrpc":"2.0","id":1,"result":true},{"jsonrpc":"2.0","id":2,"error":{"code":-32000,"message":"VM exception: EVMC_INVALID_INSTRUCTION"}},{"jsonrpc":"2.0","id":3,"result":"0x56bb92832cff60000"},{"jsonrpc":"2.0","id":4,"result":"0x"}]
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": true
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "error": {
+      "code": -32000,
+      "message": "VM exception: EVMC_INVALID_INSTRUCTION"
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "result": "0x56bb92832cff60000"
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 4,
+    "result": "0x"
+  }
+]
