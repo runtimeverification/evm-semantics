@@ -764,9 +764,9 @@ Retrieving Blocks
                "nonce": #unparseData( NONCE, 8 ),
                "sha3Uncles": #unparseData( OMMERSHASH, 32 ),
                "logsBloom": #unparseDataByteArray( LOGSBLOOM ),
-               "transactionsRoot": "0x" +String Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ),
-               "stateRoot": "0x" +String Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ),
-               "receiptsRoot": "0x" +String Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ),
+               "transactionsRoot": #unparseData( TXROOT, 32),
+               "stateRoot": #unparseData( STATEROOT, 32),
+               "receiptsRoot": #unparseData( RCPTROOT, 32),
                "miner": #unparseData( MINER, 20 ),
                "difficulty": #unparseQuantity( DFFCLTY ),
                "totalDifficulty": #unparseQuantity( DFFCLTY ),
@@ -1025,7 +1025,7 @@ Transaction Receipts
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
 
-    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ... </k>
+    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #updateBlockchain ... </k>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
          <message>
@@ -1043,7 +1043,6 @@ Transaction Receipts
           => #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #catchHaltTx #newAddr(ACCTFROM, NONCE)
           ~> #finalizeTx(false)
-          ~> #saveState
          ...
          </k>
          <gasPrice> _ => GPRICE </gasPrice>
@@ -1072,7 +1071,6 @@ Transaction Receipts
           => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #catchHaltTx .Account
           ~> #finalizeTx(false)
-          ~> #saveState
          ...
          </k>
          <origin> ACCTFROM </origin>
@@ -1098,17 +1096,29 @@ Transaction Receipts
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
 
-    syntax KItem ::= "#saveState"
-                   | "#cleanTxLists"
- // --------------------------------
-    rule <k> #saveState => #pushBlockchainState ~> #cleanTxLists ... </k>
+    syntax KItem ::= "#updateBlockchain"
+ // ------------------------------------
+    rule <k> #updateBlockchain => #saveState ... </k>
+         <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
+         <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
+         <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
          <mode> EXECMODE </mode>
       requires EXECMODE =/=K NOGAS
+
+    rule <k> #updateBlockchain => . ... </k> [owise]
+
+    syntax KItem ::= "#saveState"
+                   | "#incrementBlockNumber"
+                   | "#cleanTxLists"
+ // ----------------------------------------
+    rule <k> #saveState => #incrementBlockNumber ~> #pushBlockchainState ~> #cleanTxLists ... </k>
+
+    rule <k> #incrementBlockNumber => . ... </k>
+         <number> BN => BN +Int 1 </number>
 
     rule <k> #cleanTxLists => . ... </k>
          <txPending> _ => .List </txPending>
          <txOrder>   _ => .List </txOrder>
-         <number> BN => BN+Int 1 </number>
 
     syntax KItem ::= "#catchHaltTx" Account
  // ---------------------------------------
