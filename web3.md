@@ -713,13 +713,15 @@ Retrieving Blocks
 -----------------
 
 **TODO**
-- We don't have anything to compute the block hash yet
-- The <transactionsRoot>, <stateRoot>, and <receiptsRoot> cells aren't updated on any changes yet
 - <logsBloom> defaults to .ByteArray, but maybe it should be 256 zero bytes? It also doesn't get updated.
 - Ganache's gasLimit defaults to 6721975 (0x6691b7), but we default it at 0.
 - After each txExecution which is not `eth_call`:
    - use `#setBlockchainItem` 
    - clear <txPending> and <txOrder>
+- Some initialization still needs to be done, like the trie roots and the 0 block in <blockList>
+   - I foresee issues with firefly_addAccount and personal_importRawKey if we want those accounts
+     in the stateRoot of the initial block
+
 ```k
     syntax KItem ::= "#eth_getBlockByNumber"
  // ----------------------------------------
@@ -787,25 +789,18 @@ Retrieving Blocks
     syntax JSONList ::= "#getTransactionList" "(" BlockchainItem ")" [function]
                       | #getTransactionHashList ( List, JSONList ) [function]
  // ---------------------------------------------------------------------------
-    rule [[ #getTransactionList (
-       { 
-          <network>
-            <txOrder> TXIDLIST </txOrder>
-            ...
-          </network> | _ 
-       }) => #getTransactionHashList (TXIDLIST, .JSONList) ]]
+    rule [[ #getTransactionList ( { <network> <txOrder> TXIDLIST </txOrder> ... </network> | _ } )
+         => #getTransactionHashList (TXIDLIST, .JSONList)
+         ]]
          <params> [ _ , false, .JSONList ] </params>
 
-rule #getTransactionHashList ( .List, RESULT ) => RESULT
-rule [[ 
-   #getTransactionHashList (ListItem(TXID) TXIDLIST, RESULT)
-    => #getTransactionHashList(TXIDLIST, (TXHASH, RESULT))
-     ]]
-     <txReceipt>
-       <txID>   TXID   </txID>
-       <txHash> TXHASH </txHash>
-       ...
-     </txReceipt>
+    rule #getTransactionHashList ( .List, RESULT ) => RESULT
+    rule [[ #getTransactionHashList ( ( ListItem(TXID) => .List ) TXIDLIST, ( RESULT => TXHASH, RESULT ) ) ]]
+         <txReceipt>
+           <txID>   TXID   </txID>
+           <txHash> TXHASH </txHash>
+           ...
+         </txReceipt>
 ```
 
 Transaction Receipts
