@@ -48,7 +48,7 @@ export LUA_PATH
         test-prove test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-klab-prove \
         test-parse test-failure                                                                                                                        \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly            \
-        media media-pdf sphinx metropolis-theme
+        media media-pdf metropolis-theme
 .SECONDARY:
 
 all: build split-tests
@@ -538,7 +538,7 @@ test-interactive-firefly:
 # Media
 # -----
 
-media: sphinx media-pdf
+media: media-pdf
 
 ### Media generated PDFs
 
@@ -559,26 +559,3 @@ $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
 	git submodule update --init -- $(dir $@)
 	cd $(dir $@) && $(MAKE)
 
-# Sphinx HTML Documentation
-
-# You can set these variables from the command line.
-SPHINXOPTS     =
-SPHINXBUILD    = sphinx-build
-PAPER          =
-SPHINXBUILDDIR = $(BUILD_DIR)/sphinx-docs
-
-# Internal variables.
-PAPEROPT_a4     = -D latex_paper_size=a4
-PAPEROPT_letter = -D latex_paper_size=letter
-ALLSPHINXOPTS   = -d ../$(SPHINXBUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
-# the i18n builder cannot share the environment and doctrees with the others
-I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
-
-sphinx:
-	@mkdir -p $(SPHINXBUILDDIR)
-	cp -r media/sphinx-docs/* $(SPHINXBUILDDIR)/
-	cp -r *.md $(SPHINXBUILDDIR)/
-	cd $(SPHINXBUILDDIR) \
-	    && sed -i 's/{.k[ a-zA-Z.-]*}/k/g' *.md \
-	    && $(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) html \
-	    && $(SPHINXBUILD) -b text $(ALLSPHINXOPTS) html/text

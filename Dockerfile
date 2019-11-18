@@ -33,9 +33,6 @@ RUN    apt-get update           \
             pkg-config          \
             protobuf-compiler   \
             python3             \
-            python-pygments     \
-            python-recommonmark \
-            python-sphinx       \
             rapidjson-dev       \
             time                \
             zlib1g-dev
