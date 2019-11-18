@@ -1,1 +1,13 @@
-{"jsonrpc":"2.0","id":1,"result":"28346"}{"jsonrpc":"2.0","id":1,"error":{"code":-32800,"message":"Firefly client not started with `--shutdownable`!"}}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": "28346"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "code": -32800,
+    "message": "Firefly client not started with `--shutdownable`!"
+  }
+}

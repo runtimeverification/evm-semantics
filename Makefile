@@ -44,11 +44,11 @@ export LUA_PATH
         split-tests                                                                                                                                    \
         test test-all test-conformance test-rest-conformance test-all-conformance                                                                      \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                                  \
-        test-web3                                                                                                                                      \
+        test-web3 update-web3                                                                                                                          \
         test-prove test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-klab-prove \
         test-parse test-failure                                                                                                                        \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly            \
-        media media-pdf sphinx metropolis-theme
+        media media-pdf metropolis-theme
 .SECONDARY:
 
 all: build split-tests
@@ -368,8 +368,9 @@ release.md: INSTALL.md
 TEST_CONCRETE_BACKEND := llvm
 TEST_SYMBOLIC_BACKEND := java
 
-TEST  := ./kevm
-CHECK := git --no-pager diff --no-index --ignore-all-space
+TEST   := ./kevm
+CHECK  := git --no-pager diff --no-index --ignore-all-space
+UPDATE := cp
 
 KEVM_MODE     := NORMAL
 KEVM_SCHEDULE := PETERSBURG
@@ -413,6 +414,11 @@ tests/web3/no-shutdown/%: KEVM_WEB3_ARGS=
 tests/%.run-web3: tests/%.in.json
 	tests/web3/runtest.sh $< tests/$*.out.json $(KEVM_WEB3_ARGS)
 	$(CHECK) tests/$*.expected.json tests/$*.out.json
+	rm -rf tests/$*.out.json
+
+tests/%.update-web3: tests/%.in.json
+	tests/web3/runtest.sh $< tests/$*.out.json $(KEVM_WEB3_ARGS)
+	$(UPDATE) tests/$*.out.json tests/$*.expected.json
 	rm -rf tests/$*.out.json
 
 tests/%.parse: tests/%
@@ -475,6 +481,7 @@ web3_tests=$(wildcard tests/web3/*.in.json) \
            $(wildcard tests/web3/no-shutdown/*.in.json)
 
 test-web3: $(web3_tests:.in.json=.run-web3)
+update-web3: $(web3_tests:.in.json=.update-web3)
 
 # Proof Tests
 
@@ -531,7 +538,7 @@ test-interactive-firefly:
 # Media
 # -----
 
-media: sphinx media-pdf
+media: media-pdf
 
 ### Media generated PDFs
 
@@ -552,26 +559,3 @@ $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
 	git submodule update --init -- $(dir $@)
 	cd $(dir $@) && $(MAKE)
 
-# Sphinx HTML Documentation
-
-# You can set these variables from the command line.
-SPHINXOPTS     =
-SPHINXBUILD    = sphinx-build
-PAPER          =
-SPHINXBUILDDIR = $(BUILD_DIR)/sphinx-docs
-
-# Internal variables.
-PAPEROPT_a4     = -D latex_paper_size=a4
-PAPEROPT_letter = -D latex_paper_size=letter
-ALLSPHINXOPTS   = -d ../$(SPHINXBUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
-# the i18n builder cannot share the environment and doctrees with the others
-I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
-
-sphinx:
-	@mkdir -p $(SPHINXBUILDDIR)
-	cp -r media/sphinx-docs/* $(SPHINXBUILDDIR)/
-	cp -r *.md $(SPHINXBUILDDIR)/
-	cd $(SPHINXBUILDDIR) \
-	    && sed -i 's/{.k[ a-zA-Z.-]*}/k/g' *.md \
-	    && $(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) html \
-	    && $(SPHINXBUILD) -b text $(ALLSPHINXOPTS) html/text
