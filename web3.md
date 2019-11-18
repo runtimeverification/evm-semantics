@@ -1020,7 +1020,7 @@ Transaction Receipts
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
 
-    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #updateBlockchain ... </k>
+    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #finalizeBlock ~> #updateBlockchain ... </k>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
          <message>
@@ -1093,7 +1093,7 @@ Transaction Receipts
 
     syntax KItem ::= "#updateBlockchain"
  // ------------------------------------
-    rule <k> #updateBlockchain => #saveState ... </k>
+    rule <k> #updateBlockchain => #saveState ~> #startBlock ~> #cleanTxLists ~> #clearGas ... </k>
          <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
          <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
          <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
@@ -1105,8 +1105,9 @@ Transaction Receipts
     syntax KItem ::= "#saveState"
                    | "#incrementBlockNumber"
                    | "#cleanTxLists"
+                   | "#clearGas"
  // ----------------------------------------
-    rule <k> #saveState => #incrementBlockNumber ~> #pushBlockchainState ~> #cleanTxLists ... </k>
+    rule <k> #saveState => #incrementBlockNumber ~> #pushBlockchainState ... </k>
 
     rule <k> #incrementBlockNumber => . ... </k>
          <number> BN => BN +Int 1 </number>
@@ -1114,6 +1115,9 @@ Transaction Receipts
     rule <k> #cleanTxLists => . ... </k>
          <txPending> _ => .List </txPending>
          <txOrder>   _ => .List </txOrder>
+
+    rule <k> #clearGas => . ... </k>
+         <gas> _ => 0 </gas>
 
     syntax KItem ::= "#catchHaltTx" Account
  // ---------------------------------------
