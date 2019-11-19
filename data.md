@@ -1041,7 +1041,7 @@ Merkle Patricia Tree
 
     rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, _ ), PATH, VALUE )
       => MerkleLeaf( LEAFPATH, VALUE )
-      requires #asInteger( LEAFPATH ) ==Int #asInteger( PATH )
+      requires #asString( LEAFPATH ) ==String #asString( PATH )
 
     rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
       => MerkleUpdate ( MerkleUpdate ( .MerkleBranch, LEAFPATH, LEAFVALUE ), PATH, VALUE )
@@ -1054,7 +1054,7 @@ Merkle Patricia Tree
 
     rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => MerkleExtension ( EXTPATH, MerkleUpdate ( EXTTREE, .ByteArray, VALUE ) )
-      requires #asInteger( EXTPATH ) ==Int #asInteger( PATH )
+      requires #asString( EXTPATH ) ==String #asString( PATH )
 
     rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, PATH, VALUE ), EXTPATH, EXTTREE )
