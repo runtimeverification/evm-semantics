@@ -331,6 +331,8 @@ WEB3 JSON RPC
          <method> "eth_getTransactionReceipt" </method>
     rule <k> #runRPCCall => #eth_getBlockByNumber ... </k>
          <method> "eth_getBlockByNumber" </method>
+    rule <k> #runRPCCall => #firefly_genesisBlock ... </k>
+         <method> "firefly_genesisBlock" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -1651,6 +1653,18 @@ Timestamp Calls
          <timestamp> _ => #parseHexWord( TIME ) </timestamp>
 
     rule <k> #firefly_setTime => #sendResponse( "result": false ) ... </k> [owise]
+```
+Mining Genesis Block
+--------------------
+
+```k
+    syntax KItem ::= "#firefly_genesisBlock"
+ // ----------------------------------------
+    rule <k> #firefly_genesisBlock => #pushBlockchainState ~> #sendResponse ("result": true) ... </k>
+         <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
+         <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
+         <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
+
 
 endmodule
 ```
