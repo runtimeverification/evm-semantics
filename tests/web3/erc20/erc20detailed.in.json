@@ -111,6 +111,12 @@
     },
     {
         "jsonrpc": "2.0",
+        "id": 0,
+        "method": "firefly_genesisBlock",
+        "params": []
+    },
+    {
+        "jsonrpc": "2.0",
         "id": 1,
         "method": "eth_blockNumber",
         "params": []
