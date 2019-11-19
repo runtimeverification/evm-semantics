@@ -1020,7 +1020,7 @@ Transaction Receipts
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
 
-    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #finalizeBlock ~> #updateBlockchain ... </k>
+    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #updateBlockchain ... </k>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
          <message>
@@ -1093,14 +1093,16 @@ Transaction Receipts
 
     syntax KItem ::= "#updateBlockchain"
  // ------------------------------------
-    rule <k> #updateBlockchain => #saveState ~> #startBlock ~> #cleanTxLists ~> #clearGas ... </k>
+    rule <statusCode> STATUSCODE </statusCode>
+         <k> #updateBlockchain => #finalizeBlock ~> #saveState ~> #startBlock ~> #cleanTxLists ~> #clearGas ... </k>
          <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
          <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
          <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
          <mode> EXECMODE </mode>
       requires EXECMODE =/=K NOGAS
+       andBool ( STATUSCODE ==K EVMC_SUCCESS orBool STATUSCODE ==K EVMC_REVERT )
 
-    rule <k> #updateBlockchain => . ... </k> [owise]
+    rule <k> #updateBlockchain => #startBlock ~> #cleanTxLists ~> #clearGas  ... </k> [owise]
 
     syntax KItem ::= "#saveState"
                    | "#incrementBlockNumber"
