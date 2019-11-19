@@ -1257,8 +1257,6 @@ Transaction Receipts
          </k>
          <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
          <gasUsed>  GUSED  </gasUsed>
-         <gasLimit> GLIMIT </gasLimit>
-         <gas> ( _ => GLIMIT) </gas>
       requires isString(#getJSON("from", J) )
 
     rule <k> #eth_estimateGas => #sendResponse( "error": {"code": -32028, "message":"Method 'eth_estimateGas' has invalid arguments"} ) ...  </k>
@@ -1267,13 +1265,17 @@ Transaction Receipts
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
-    rule <k> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #sendResponse ("result": #unparseQuantity( GUSED -Int INITGUSED )) ... </k>
+    rule <k> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #sendResponse ("result": #unparseQuantity( #getGasUsed( #getBlockByNumber( "latest", BLOCKLIST ) ) -Int INITGUSED )) ... </k>
          <statusCode> STATUSCODE </statusCode>
-         <gasUsed> GUSED </gasUsed>
+         <blockList> BLOCKLIST </blockList>
       requires STATUSCODE =/=K EVMC_OUT_OF_GAS
 
     rule <k> #eth_estimateGas_finalize _ => #popNetworkState ~> #sendResponse ( "error": {"code": -32000, "message":"base fee exceeds gas limit"}) ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
+
+    syntax Int ::= #getGasUsed( BlockchainItem ) [function]
+ // -------------------------------------------------------
+    rule #getGasUsed( { _ | <block> <gasUsed> GUSED </gasUsed> ... </block> } ) => GUSED
 ```
 
 NOGAS Mode
