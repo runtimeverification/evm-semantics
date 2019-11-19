@@ -1599,7 +1599,12 @@ Transactions Root
 
     syntax KItem ::= "#firefly_getTxRoot"
  // -------------------------------------
-    rule <k> #firefly_getTxRoot => #sendResponse("result": { "transactionsRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) } ) ... </k>
+    rule <k> #firefly_getTxRoot => #sendResponse("result": { "transactionsRoot" : #getTxRoot( #getBlockByNumber( "latest", BLOCKLIST ) ) } ) ... </k>
+         <blockList> BLOCKLIST </blockList>
+
+    syntax String ::= #getTxRoot( BlockchainItem ) [function]
+ // ---------------------------------------------------------
+    rule #getTxRoot( { _ | <block> <transactionsRoot> TXROOT </transactionsRoot> ... </block> } ) => #unparseData( TXROOT, 32 )
 ```
 
 Receipts Root
@@ -1622,7 +1627,12 @@ Receipts Root
 
     syntax KItem ::= "#firefly_getReceiptsRoot"
  // -------------------------------------------
-    rule <k> #firefly_getReceiptsRoot => #sendResponse("result": { "receiptsRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) } ) ... </k>
+    rule <k> #firefly_getReceiptsRoot => #sendResponse("result": { "receiptsRoot" : #getReceiptRoot( #getBlockByNumber( "latest", BLOCKLIST ) ) } ) ... </k>
+         <blockList> BLOCKLIST </blockList>
+
+    syntax String ::= #getReceiptRoot( BlockchainItem ) [function]
+ // --------------------------------------------------------------
+    rule #getReceiptRoot( { _ | <block> <receiptsRoot> RCPTROOT </receiptsRoot> ... </block> } ) => #unparseData( RCPTROOT, 32 )
 ```
 
 Timestamp Calls
