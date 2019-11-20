@@ -454,7 +454,7 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#evm_snapshot"
  // --------------------------------
-    rule <k> #evm_snapshot => #pushNetworkState ~> #sendResponse( "result" : #unparseQuantity( size ( SNAPSHOTS ))) ... </k>
+    rule <k> #evm_snapshot => #pushNetworkState ~> #sendResponse( "result" : #unparseQuantity( size ( SNAPSHOTS ) +Int 1 )) ... </k>
          <snapshots> SNAPSHOTS </snapshots>
 
     syntax KItem ::= "#pushNetworkState"
