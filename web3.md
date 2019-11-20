@@ -94,12 +94,20 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     rule <k> #setBlockchainState(.BlockchainItem) => #sendResponse("error": {"code": -37600, "message": "Unable to find block by number"}) ... </k>
 
-    syntax BlockchainItem ::= #getBlockByNumber ( Int , List ) [function]
- // ---------------------------------------------------------------------
-    rule #getBlockByNumber(BLOCKNUM,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCKCHAINITEM) REST ) => BLOCKCHAINITEM
-    rule #getBlockByNumber(BLOCKNUM', ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }                   ) REST ) => #getBlockByNumber(BLOCKNUM', REST)
+    syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List ) [function]
+ // ---------------------------------------------------------------------------------
+    rule #getBlockByNumber( ( _:String => "pending" ) , .List) [owise]
+    rule #getBlockByNumber( _:Int, .List) => .BlockchainItem
+    rule #getBlockByNumber("earliest", _ ListItem( BLOCK )) => BLOCK
+    rule #getBlockByNumber("latest", ListItem( BLOCK ) _) => BLOCK
+
+    rule [[ #getBlockByNumber("pending",  BLOCKLIST) => {<network> NETWORK </network> | <block> BLOCK </block>} ]]
+         <network> NETWORK </network>
+         <block>   BLOCK   </block>
+
+    rule #getBlockByNumber(BLOCKNUM:Int,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCKCHAINITEM) REST ) => BLOCKCHAINITEM
+    rule #getBlockByNumber(BLOCKNUM':Int, ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }                   ) REST ) => #getBlockByNumber(BLOCKNUM', REST)
       requires BLOCKNUM =/=Int BLOCKNUM'
-    rule #getBlockByNumber(_, .List) => .BlockchainItem
 
     syntax AccountItem ::= AccountCell | ".AccountItem"
  // ---------------------------------------------------
@@ -123,21 +131,8 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     syntax KItem ::= #getAccountAtBlock ( BlockIdentifier , Int )
  // -------------------------------------------------------------
-    rule <k> #getAccountAtBlock(BLOCKNUM:Int , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(BLOCKNUM, BLOCKLIST), ACCTID) ... </k>
+    rule <k> #getAccountAtBlock(BLOCKNUM , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(BLOCKNUM, BLOCKLIST), ACCTID) ... </k>
          <blockList> BLOCKLIST </blockList>
-
-    rule <k> #getAccountAtBlock(TAG , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(0, BLOCKLIST), ACCTID) ... </k>
-         <blockList> BLOCKLIST </blockList>
-      requires TAG ==String "earliest"
-
-    rule <k> #getAccountAtBlock(TAG , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(size(BLOCKLIST) -Int 1, BLOCKLIST), ACCTID) ... </k>
-         <blockList> BLOCKLIST </blockList>
-      requires TAG ==String "latest"
-
-    rule <k> #getAccountAtBlock(TAG , ACCTID) => #getAccountFromBlockchainItem({<network> NETWORK </network> | <block> BLOCK </block>}, ACCTID) ... </k>
-         <network> NETWORK </network>
-         <block>   BLOCK   </block>
-      requires TAG ==String "pending"
 
 ```
 
@@ -331,6 +326,8 @@ WEB3 JSON RPC
          <method> "firefly_setTime" </method>
     rule <k> #runRPCCall => #eth_getTransactionReceipt ... </k>
          <method> "eth_getTransactionReceipt" </method>
+    rule <k> #runRPCCall => #eth_getBlockByNumber ... </k>
+         <method> "eth_getBlockByNumber" </method>
     rule <k> #runRPCCall => #firefly_genesisBlock ... </k>
          <method> "firefly_genesisBlock" </method>
 
@@ -713,6 +710,100 @@ eth_sendRawTransaction
     rule <k> #eth_sendRawTransactionSend TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
 ```
 
+Retrieving Blocks
+-----------------
+
+**TODO**
+- <logsBloom> defaults to .ByteArray, but maybe it should be 256 zero bytes? It also doesn't get updated.
+- Ganache's gasLimit defaults to 6721975 (0x6691b7), but we default it at 0.
+- After each txExecution which is not `eth_call`:
+   - use `#setBlockchainItem` 
+   - clear <txPending> and <txOrder>
+- Some initialization still needs to be done, like the trie roots and the 0 block in <blockList>
+   - I foresee issues with firefly_addAccount and personal_importRawKey if we want those accounts
+     in the stateRoot of the initial block
+
+```k
+    syntax KItem ::= "#eth_getBlockByNumber"
+ // ----------------------------------------
+    rule <k> #eth_getBlockByNumber => #eth_getBlockByNumber_finalize( #getBlockByNumber( #parseBlockIdentifier(TAG), BLOCKLIST)) ... </k>
+         <params> [ TAG:String, TXOUT:Bool, .JSONList ] </params>
+         <blockList> BLOCKLIST </blockList>
+    rule <k> #eth_getBlockByNumber => #sendResponse ( "error": { "code":-32000, "message":"Incorrect number of arguments. Method 'eth_getBlockByNumber' requires exactly 2 arguments." } ) ... </k>
+         <params> [ VALUE, .JSONList ] </params>
+      requires notBool isJSONList( VALUE )
+
+    rule <k> #eth_getBlockByNumber => #sendResponse ( "error": { "code":-32000, "message":"Incorrect number of arguments. Method 'eth_getBlockByNumber' requires exactly 2 arguments." } ) ... </k>
+         <params> [ VALUE, VALUE2, _, .JSONList ] </params>
+      requires notBool isJSONList( VALUE ) andBool notBool isJSONList( VALUE2 )
+
+    syntax KItem ::= "#eth_getBlockByNumber_finalize" "(" BlockchainItem ")"
+ // ------------------------------------------------------------------------
+    rule <k> #eth_getBlockByNumber_finalize ({ _ |
+         <block>
+           <previousHash>      PARENTHASH  </previousHash>
+           <ommersHash>        OMMERSHASH  </ommersHash>
+           <coinbase>          MINER       </coinbase>
+           <stateRoot>         STATEROOT   </stateRoot>
+           <transactionsRoot>  TXROOT      </transactionsRoot>
+           <receiptsRoot>      RCPTROOT    </receiptsRoot>
+           <logsBloom>         LOGSBLOOM   </logsBloom> //#bloomFilter(<log> LOGS </>)
+           <difficulty>        DFFCLTY     </difficulty>
+           <number>            NUM         </number>
+           <gasLimit>          GLIMIT      </gasLimit>
+           <gasUsed>           GUSED       </gasUsed>
+           <timestamp>         TIME        </timestamp>
+           <extraData>         DATA        </extraData>
+           <mixHash>           MIXHASH     </mixHash>
+           <blockNonce>        NONCE       </blockNonce>
+           ...
+         </block> } #as BLOCKITEM)
+          => #sendResponse ( "result":
+             {
+               "number": #unparseQuantity( NUM ),
+               "hash": "0x" +String Keccak256( #rlpEncodeBlock( BLOCKITEM ) ),
+               "parentHash": #unparseData( PARENTHASH, 32 ),
+               "mixHash": #unparseData( MIXHASH, 32 ),
+               "nonce": #unparseData( NONCE, 8 ),
+               "sha3Uncles": #unparseData( OMMERSHASH, 32 ),
+               "logsBloom": #unparseDataByteArray( LOGSBLOOM ),
+               "transactionsRoot": #unparseData( TXROOT, 32),
+               "stateRoot": #unparseData( STATEROOT, 32),
+               "receiptsRoot": #unparseData( RCPTROOT, 32),
+               "miner": #unparseData( MINER, 20 ),
+               "difficulty": #unparseQuantity( DFFCLTY ),
+               "totalDifficulty": #unparseQuantity( DFFCLTY ),
+               "extraData": #unparseDataByteArray( DATA ),
+               "size": "0x3e8", // Ganache always returns 1000
+               "gasLimit": #unparseQuantity( GLIMIT ),
+               "gasUsed": #unparseQuantity( GUSED ),
+               "timestamp": #unparseQuantity( TIME ),
+               "transactions": [ #getTransactionList( BLOCKITEM ) ],
+               "uncles": [ .JSONList ]
+             }
+                           )
+          ...
+         </k>
+
+    rule <k> #eth_getBlockByNumber_finalize ( .BlockchainItem )=> #sendResponse ( "result": null ) ... </k>
+
+    syntax JSONList ::= "#getTransactionList" "(" BlockchainItem ")" [function]
+                      | #getTransactionHashList ( List, JSONList ) [function]
+ // ---------------------------------------------------------------------------
+    rule [[ #getTransactionList ( { <network> <txOrder> TXIDLIST </txOrder> ... </network> | _ } )
+         => #getTransactionHashList (TXIDLIST, .JSONList)
+         ]]
+         <params> [ _ , false, .JSONList ] </params>
+
+    rule #getTransactionHashList ( .List, RESULT ) => RESULT
+    rule [[ #getTransactionHashList ( ( ListItem(TXID) => .List ) TXIDLIST, ( RESULT => TXHASH, RESULT ) ) ]]
+         <txReceipt>
+           <txID>   TXID   </txID>
+           <txHash> TXHASH </txHash>
+           ...
+         </txReceipt>
+```
+
 Transaction Receipts
 --------------------
 
@@ -930,7 +1021,7 @@ Transaction Receipts
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
 
-    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ... </k>
+    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #updateBlockchain ... </k>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
          <message>
@@ -1000,6 +1091,36 @@ Transaction Receipts
          </account>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
+
+    syntax KItem ::= "#updateBlockchain"
+ // ------------------------------------
+    rule <statusCode> STATUSCODE </statusCode>
+         <k> #updateBlockchain => #finalizeBlock ~> #saveState ~> #startBlock ~> #cleanTxLists ~> #clearGas ... </k>
+         <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
+         <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
+         <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
+         <mode> EXECMODE </mode>
+      requires EXECMODE =/=K NOGAS
+       andBool ( STATUSCODE ==K EVMC_SUCCESS orBool STATUSCODE ==K EVMC_REVERT )
+
+    rule <k> #updateBlockchain => #startBlock ~> #cleanTxLists ~> #clearGas  ... </k> [owise]
+
+    syntax KItem ::= "#saveState"
+                   | "#incrementBlockNumber"
+                   | "#cleanTxLists"
+                   | "#clearGas"
+ // ----------------------------------------
+    rule <k> #saveState => #incrementBlockNumber ~> #pushBlockchainState ... </k>
+
+    rule <k> #incrementBlockNumber => . ... </k>
+         <number> BN => BN +Int 1 </number>
+
+    rule <k> #cleanTxLists => . ... </k>
+         <txPending> _ => .List </txPending>
+         <txOrder>   _ => .List </txOrder>
+
+    rule <k> #clearGas => . ... </k>
+         <gas> _ => 0 </gas>
 
     syntax KItem ::= "#catchHaltTx" Account
  // ---------------------------------------
@@ -1135,8 +1256,6 @@ Transaction Receipts
          </k>
          <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
          <gasUsed>  GUSED  </gasUsed>
-         <gasLimit> GLIMIT </gasLimit>
-         <gas> ( _ => GLIMIT) </gas>
       requires isString(#getJSON("from", J) )
 
     rule <k> #eth_estimateGas => #sendResponse( "error": {"code": -32028, "message":"Method 'eth_estimateGas' has invalid arguments"} ) ...  </k>
@@ -1145,13 +1264,17 @@ Transaction Receipts
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
-    rule <k> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #sendResponse ("result": #unparseQuantity( GUSED -Int INITGUSED )) ... </k>
+    rule <k> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #sendResponse ("result": #unparseQuantity( #getGasUsed( #getBlockByNumber( "latest", BLOCKLIST ) ) -Int INITGUSED )) ... </k>
          <statusCode> STATUSCODE </statusCode>
-         <gasUsed> GUSED </gasUsed>
+         <blockList> BLOCKLIST </blockList>
       requires STATUSCODE =/=K EVMC_OUT_OF_GAS
 
     rule <k> #eth_estimateGas_finalize _ => #popNetworkState ~> #sendResponse ( "error": {"code": -32000, "message":"base fee exceeds gas limit"}) ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
+
+    syntax Int ::= #getGasUsed( BlockchainItem ) [function]
+ // -------------------------------------------------------
+    rule #getGasUsed( { _ | <block> <gasUsed> GUSED </gasUsed> ... </block> } ) => GUSED
 ```
 
 NOGAS Mode
@@ -1319,6 +1442,45 @@ Helper Funcs
            ...
          </account>
 
+    syntax String ::= #rlpEncodeBlock( BlockchainItem ) [function]
+ // --------------------------------------------------------------
+    rule #rlpEncodeBlock( { _ |
+         <block>
+           <previousHash>      PARENTHASH  </previousHash>
+           <ommersHash>        OMMERSHASH  </ommersHash>
+           <coinbase>          MINER       </coinbase>
+           <stateRoot>         STATEROOT   </stateRoot>
+           <transactionsRoot>  TXROOT      </transactionsRoot>
+           <receiptsRoot>      RCPTROOT    </receiptsRoot>
+           <logsBloom>         LOGSBLOOM   </logsBloom>
+           <difficulty>        DFFCLTY     </difficulty>
+           <number>            NUM         </number>
+           <gasLimit>          GLIMIT      </gasLimit>
+           <gasUsed>           GUSED       </gasUsed>
+           <timestamp>         TIME        </timestamp>
+           <extraData>         DATA        </extraData>
+           <mixHash>           MIXHASH     </mixHash>
+           <blockNonce>        NONCE       </blockNonce>
+           ...
+         </block> } )
+         => #rlpEncodeLength(         #rlpEncodeBytes( PARENTHASH, 32 )
+                              +String #rlpEncodeBytes( OMMERSHASH, 32 )
+                              +String #rlpEncodeBytes( MINER, 20 )
+                              +String #rlpEncodeBytes( STATEROOT, 32 )
+                              +String #rlpEncodeBytes( TXROOT, 32 )
+                              +String #rlpEncodeBytes( RCPTROOT, 32 )
+                              +String #rlpEncodeBytes( #asInteger( LOGSBLOOM ), 256 )
+                              +String #rlpEncodeWord ( DFFCLTY )
+                              +String #rlpEncodeWord ( NUM )
+                              +String #rlpEncodeWord ( GLIMIT )
+                              +String #rlpEncodeWord ( GUSED )
+                              +String #rlpEncodeWord ( TIME )
+                              +String #rlpEncodeBytes( #asInteger( DATA ), #sizeByteArray( DATA ) )
+                              +String #rlpEncodeBytes( MIXHASH, 32 )
+                              +String #rlpEncodeBytes( NONCE, 8 )
+                            , 192
+                            )
+
     syntax String ::= #rlpEncodeTransaction( Int ) [function]
  // ---------------------------------------------------------
     rule [[ #rlpEncodeTransaction( TXID )
@@ -1436,7 +1598,12 @@ Transactions Root
 
     syntax KItem ::= "#firefly_getTxRoot"
  // -------------------------------------
-    rule <k> #firefly_getTxRoot => #sendResponse("result": { "transactionsRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) } ) ... </k>
+    rule <k> #firefly_getTxRoot => #sendResponse("result": { "transactionsRoot" : #getTxRoot( #getBlockByNumber( "latest", BLOCKLIST ) ) } ) ... </k>
+         <blockList> BLOCKLIST </blockList>
+
+    syntax String ::= #getTxRoot( BlockchainItem ) [function]
+ // ---------------------------------------------------------
+    rule #getTxRoot( { _ | <block> <transactionsRoot> TXROOT </transactionsRoot> ... </block> } ) => #unparseData( TXROOT, 32 )
 ```
 
 Receipts Root
@@ -1459,7 +1626,12 @@ Receipts Root
 
     syntax KItem ::= "#firefly_getReceiptsRoot"
  // -------------------------------------------
-    rule <k> #firefly_getReceiptsRoot => #sendResponse("result": { "receiptsRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) } ) ... </k>
+    rule <k> #firefly_getReceiptsRoot => #sendResponse("result": { "receiptsRoot" : #getReceiptRoot( #getBlockByNumber( "latest", BLOCKLIST ) ) } ) ... </k>
+         <blockList> BLOCKLIST </blockList>
+
+    syntax String ::= #getReceiptRoot( BlockchainItem ) [function]
+ // --------------------------------------------------------------
+    rule #getReceiptRoot( { _ | <block> <receiptsRoot> RCPTROOT </receiptsRoot> ... </block> } ) => #unparseData( RCPTROOT, 32 )
 ```
 
 Timestamp Calls
