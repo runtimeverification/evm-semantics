@@ -1,5 +1,12 @@
 pipeline {
   agent none
+  environment {
+    GITHUB_TOKEN = credentials('rv-jenkins')
+    VERSION      = '1.0.0'
+    K_VERSION    = '5.0.0'
+    K_ROOT_URL   = 'https://github.com/kframework/k/releases/download'
+    PACKAGE      = 'kevm'
+  }
   options {
     ansiColor('xterm')
   }
@@ -173,12 +180,6 @@ pipeline {
     stage('Release') {
       agent { label 'docker' }
       options { skipDefaultCheckout() }
-      environment {
-        GITHUB_TOKEN = credentials('rv-jenkins')
-        VERSION      = '1.0.0'
-        K_VERSION    = '5.0.0'
-        K_ROOT_URL   = 'https://github.com/kframework/k/releases/download'
-      }
       stages {
         stage('Test Release') {
           stages {
