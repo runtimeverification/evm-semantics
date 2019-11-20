@@ -6,6 +6,7 @@ pipeline {
     K_VERSION    = '5.0.0'
     K_ROOT_URL   = 'https://github.com/kframework/k/releases/download'
     PACKAGE      = 'kevm'
+    ROOT_URL     = 'https://github.com/kframework/evm-semantics/releases/download'
   }
   options {
     ansiColor('xterm')
