@@ -1,0 +1,57 @@
+[
+    {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": true
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": true
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "result": true
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "result": true
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "result": true
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "result": true
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 7,
+        "result": true
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 8,
+        "result": true
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 9,
+        "result": true
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 10,
+        "result": true
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 11,
+        "result": true
+    }
+]
