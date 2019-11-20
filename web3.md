@@ -1021,7 +1021,7 @@ Transaction Receipts
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
 
-    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #updateBlockchain ... </k>
+    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #finishTx ... </k>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
          <message>
@@ -1092,35 +1092,15 @@ Transaction Receipts
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
 
-    syntax KItem ::= "#updateBlockchain"
- // ------------------------------------
+    syntax KItem ::= "#finishTx"
+ // ----------------------------
     rule <statusCode> STATUSCODE </statusCode>
-         <k> #updateBlockchain => #finalizeBlock ~> #saveState ~> #startBlock ~> #cleanTxLists ~> #clearGas ... </k>
-         <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
-         <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
-         <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
+         <k> #finishTx => #mineBlock ... </k>
          <mode> EXECMODE </mode>
       requires EXECMODE =/=K NOGAS
        andBool ( STATUSCODE ==K EVMC_SUCCESS orBool STATUSCODE ==K EVMC_REVERT )
 
-    rule <k> #updateBlockchain => #startBlock ~> #cleanTxLists ~> #clearGas  ... </k> [owise]
-
-    syntax KItem ::= "#saveState"
-                   | "#incrementBlockNumber"
-                   | "#cleanTxLists"
-                   | "#clearGas"
- // ----------------------------------------
-    rule <k> #saveState => #incrementBlockNumber ~> #pushBlockchainState ... </k>
-
-    rule <k> #incrementBlockNumber => . ... </k>
-         <number> BN => BN +Int 1 </number>
-
-    rule <k> #cleanTxLists => . ... </k>
-         <txPending> _ => .List </txPending>
-         <txOrder>   _ => .List </txOrder>
-
-    rule <k> #clearGas => . ... </k>
-         <gas> _ => 0 </gas>
+    rule <k> #finishTx => #clearGas ... </k> [owise]
 
     syntax KItem ::= "#catchHaltTx" Account
  // ---------------------------------------
@@ -1651,8 +1631,9 @@ Timestamp Calls
 
     rule <k> #firefly_setTime => #sendResponse( "result": false ) ... </k> [owise]
 ```
-Mining Genesis Block
---------------------
+
+Mining
+------
 
 ```k
     syntax KItem ::= "#firefly_genesisBlock"
@@ -1662,6 +1643,29 @@ Mining Genesis Block
          <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
          <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
 
+    syntax KItem ::= "#mineBlock"
+ // -----------------------------
+    rule <k> #mineBlock => #finalizeBlock ~> #saveState ~> #startBlock ~> #cleanTxLists ~> #clearGas ... </k>
+         <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
+         <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
+         <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
+
+    syntax KItem ::= "#saveState"
+                   | "#incrementBlockNumber"
+                   | "#cleanTxLists"
+                   | "#clearGas"
+ // ----------------------------------------
+    rule <k> #saveState => #incrementBlockNumber ~> #pushBlockchainState ... </k>
+
+    rule <k> #incrementBlockNumber => . ... </k>
+         <number> BN => BN +Int 1 </number>
+
+    rule <k> #cleanTxLists => . ... </k>
+         <txPending> _ => .List </txPending>
+         <txOrder>   _ => .List </txOrder>
+
+    rule <k> #clearGas => . ... </k>
+         <gas> _ => 0 </gas>
 
 endmodule
 ```
