@@ -330,6 +330,8 @@ WEB3 JSON RPC
          <method> "eth_getBlockByNumber" </method>
     rule <k> #runRPCCall => #firefly_genesisBlock ... </k>
          <method> "firefly_genesisBlock" </method>
+    rule <k> #runRPCCall => #evm_mine ... </k>
+         <method> "evm_mine" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -1636,6 +1638,17 @@ Mining
 ------
 
 ```k
+    syntax KItem ::= "#evm_mine"
+ // ----------------------------
+    rule <k> #evm_mine => #mineBlock ~> #sendResponse( "result": "0x0" ) ... </k> [owise]
+
+    rule <k> #evm_mine => #mineBlock ~> #sendResponse( "result": "0x0" ) ... </k>
+         <params> [ TIME:String, .JSONList ] </params>
+         <timestamp> _ => #parseWord( TIME ) </timestamp>
+
+    rule <k> #evm_mine => #mineBlock ~> #sendResponse( "error": "Incorrect number of arguments. Method 'evm_mine' requires between 0 and 1 arguments." ) ... </k>
+         <params> [ _, _, _:JSONList ] </params>
+
     syntax KItem ::= "#firefly_genesisBlock"
  // ----------------------------------------
     rule <k> #firefly_genesisBlock => #pushBlockchainState ~> #sendResponse ("result": true) ... </k>
