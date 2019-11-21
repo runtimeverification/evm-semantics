@@ -787,7 +787,7 @@ Retrieving Blocks
           => #sendResponse ( "result":
              {
                "number": #unparseQuantity( NUM ),
-               "hash": "0x" +String Keccak256( #rlpEncodeBlock( BLOCKITEM ) ),
+             //  "hash": "0x" +String Keccak256( #rlpEncodeBlock( BLOCKITEM ) ),
                "parentHash": #unparseData( PARENTHASH, 32 ),
                "mixHash": #unparseData( MIXHASH, 32 ),
                "nonce": #unparseData( NONCE, 8 ),
@@ -1685,7 +1685,7 @@ Mining
     rule <k> #mineBlock => #finalizeBlock ~> #saveState ~> #startBlock ~> #cleanTxLists ~> #clearGas ... </k>
          <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
          <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
-         <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
+         // <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
 
     syntax KItem ::= "#saveState"
                    | "#incrementBlockNumber"
