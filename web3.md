@@ -735,7 +735,7 @@ Retrieving Blocks
 - <logsBloom> defaults to .ByteArray, but maybe it should be 256 zero bytes? It also doesn't get updated.
 - Ganache's gasLimit defaults to 6721975 (0x6691b7), but we default it at 0.
 - After each txExecution which is not `eth_call`:
-   - use `#setBlockchainItem` 
+   - use `#setBlockchainItem`
    - clear <txPending> and <txOrder>
 - Some initialization still needs to be done, like the trie roots and the 0 block in <blockList>
    - I foresee issues with firefly_addAccount and personal_importRawKey if we want those accounts
@@ -1369,7 +1369,7 @@ Collecting Coverage Data
     rule #makeCoverageReport (COVERAGE, PGMS) => {
                                                   "coverages": [#coveragePercentages(keys_list(PGMS),COVERAGE,PGMS)],
                                                   "coveredOpcodes": [#serializeCoverage(keys_list(COVERAGE),COVERAGE)],
-                                                  "programs": [#serializePrograms(keys_list(PGMS),PGMS)] 
+                                                  "programs": [#serializePrograms(keys_list(PGMS),PGMS)]
                                                  }
 
     syntax JSONList ::= #serializeCoverage ( List, Map ) [function]
