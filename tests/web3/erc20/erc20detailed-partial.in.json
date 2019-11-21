@@ -117,6 +117,12 @@
 {
   "jsonrpc": "2.0",
   "id": 0,
+  "method": "firefly_setGasLimit",
+  "params": [ "0x6691b7" ]
+}
+{
+  "jsonrpc": "2.0",
+  "id": 0,
   "method": "firefly_genesisBlock",
   "params": []
 }
