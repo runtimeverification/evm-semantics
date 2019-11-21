@@ -1665,7 +1665,7 @@ Mining
          <params> [ TIME:String, .JSONList ] </params>
          <timestamp> _ => #parseWord( TIME ) </timestamp>
 
-    rule <k> #evm_mine => #mineBlock ~> #sendResponse( "error": "Incorrect number of arguments. Method 'evm_mine' requires between 0 and 1 arguments." ) ... </k>
+    rule <k> #evm_mine => #sendResponse( "error": "Incorrect number of arguments. Method 'evm_mine' requires between 0 and 1 arguments." ) ... </k>
          <params> [ _, _, _:JSONList ] </params>
 
     syntax KItem ::= "#firefly_genesisBlock"
