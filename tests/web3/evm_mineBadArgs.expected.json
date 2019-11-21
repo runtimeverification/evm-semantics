@@ -1,0 +1,7 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": "Incorrect number of arguments. Method 'evm_mine' requires between 0 and 1 arguments."
+  }
+]
