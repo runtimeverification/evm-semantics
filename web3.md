@@ -332,6 +332,8 @@ WEB3 JSON RPC
          <method> "firefly_genesisBlock" </method>
     rule <k> #runRPCCall => #evm_mine ... </k>
          <method> "evm_mine" </method>
+    rule <k> #runRPCCall => #firefly_setGasLimit ... </k>
+         <method> "firefly_setGasLimit" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -1632,6 +1634,23 @@ Timestamp Calls
          <timestamp> _ => #parseHexWord( TIME ) </timestamp>
 
     rule <k> #firefly_setTime => #sendResponse( "result": false ) ... </k> [owise]
+```
+
+Gas Limit Call
+--------------
+
+```k
+    syntax KItem ::= "#firefly_setGasLimit"
+ // ---------------------------------------
+    rule <k> #firefly_setGasLimit => #sendResponse( "result": true ) ... </k>
+         <params> [ GLIMIT:String, .JSONList ] </params>
+         <gasLimit> _ => #parseWord( GLIMIT ) </gasLimit>
+
+    rule <k> #firefly_setGasLimit => #sendResponse( "result": true ) ... </k>
+         <params> [ GLIMIT:Int, .JSONList ] </params>
+         <gasLimit> _ => GLIMIT </gasLimit>
+
+    rule <k> #firefly_setGasLimit => #sendResponse( "error": { "code": -32000, "message": "firefly_setGasLimit requires exactly 1 argument" } ) ... </k> [owise]
 ```
 
 Mining
