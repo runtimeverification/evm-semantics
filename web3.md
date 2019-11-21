@@ -1672,6 +1672,7 @@ Mining
  // ----------------------------------------
     rule <k> #firefly_genesisBlock => #pushBlockchainState ~> #sendResponse ("result": true) ... </k>
          <logsBloom> _ => #padToWidth( 256, .ByteArray ) </logsBloom>
+         <ommersHash> _ => 13478047122767188135818125966132228187941283477090363246179690878162135454535 </ommersHash>
          <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
          <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
          <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
