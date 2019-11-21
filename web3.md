@@ -237,8 +237,9 @@ WEB3 JSON RPC
     rule isProperJson(_:String) => true
 
     rule isProperJson(_:JSONKey : J) => isProperJson(J)
-    rule isProperJson([ JS ])        => isProperJsonList(JS)
-    rule isProperJson({ JS })        => isProperJsonList(JS)
+
+    rule isProperJson([ JS ]) => isProperJsonList(JS)
+    rule isProperJson({ JS }) => isProperJsonList(JS)
 
     rule isProperJsonList(.JSONList) => true
     rule isProperJsonList(J, JS)     => isProperJson(J) andBool isProperJsonList(JS)
