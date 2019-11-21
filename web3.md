@@ -1652,6 +1652,7 @@ Mining
     syntax KItem ::= "#firefly_genesisBlock"
  // ----------------------------------------
     rule <k> #firefly_genesisBlock => #pushBlockchainState ~> #sendResponse ("result": true) ... </k>
+         <logsBloom> _ => #padToWidth( 256, .ByteArray ) </logsBloom>
          <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
          <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
          <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
