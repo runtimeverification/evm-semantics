@@ -140,8 +140,8 @@ WEB3 JSON RPC
 -------------
 
 ```k
-    syntax JSON ::= "null" | "undef" | ByteArray | Account
- // ------------------------------------------------------
+    syntax JSON ::= "null" | "undef"
+ // --------------------------------
 
     syntax JSON ::= #getJSON ( JSONKey , JSON ) [function]
  // ------------------------------------------------------
@@ -227,13 +227,29 @@ WEB3 JSON RPC
     rule List2JSON(L ListItem(J), JS) => List2JSON(L, (J, JS))
     rule List2JSON(.List        , JS) => [ JS ]
 
+    syntax Bool ::= isProperJson     ( JSON     ) [function]
+                  | isProperJsonList ( JSONList ) [function]
+ // --------------------------------------------------------
+    rule isProperJson(_) => false [owise]
+
+    rule isProperJson(_:Int)    => true
+    rule isProperJson(_:Bool)   => true
+    rule isProperJson(_:String) => true
+
+    rule isProperJson(_:JSONKey : J) => isProperJson(J)
+    rule isProperJson([ JS ])        => isProperJsonList(JS)
+    rule isProperJson({ JS })        => isProperJsonList(JS)
+
+    rule isProperJsonList(.JSONList) => true
+    rule isProperJsonList(J, JS)     => isProperJson(J) andBool isProperJsonList(JS)
+
     syntax KItem ::= #sendResponse( JSON )
  // --------------------------------------
     rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", "id": CALLID, J }, SOCK) ~> getRequest() </k>
          <callid> CALLID </callid>
          <web3clientsocket> SOCK </web3clientsocket>
          <batch> undef </batch>
-      requires CALLID =/=K undef
+      requires isProperJson(CALLID) andBool isProperJson(J)
 
     rule <k> #sendResponse(_) ~> _ => getRequest() </k>
          <callid> undef </callid>
@@ -243,7 +259,7 @@ WEB3 JSON RPC
          <callid> CALLID </callid>
          <batch> [ _ ] </batch>
          <web3response> ... .List => ListItem({ "jsonrpc": "2.0", "id": CALLID, J }) </web3response>
-      requires CALLID =/=K undef
+      requires isProperJson(CALLID) andBool isProperJson(J)
 
     rule <k> #sendResponse(_) ~> _ => #loadFromBatch </k>
          <callid> undef </callid>
