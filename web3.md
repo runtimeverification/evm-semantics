@@ -935,7 +935,7 @@ Transaction Receipts
 
     syntax JSON ::= #unparseAccount ( Account ) [function]
  // ------------------------------------------------------
-    rule #unparseAccount (.Account) => null
+    rule #unparseAccount (.Account) => ""
     rule #unparseAccount (ACCT:Int) => #unparseQuantity(ACCT)
 
     syntax JSONList ::= #unparseIntList ( List ) [function]
