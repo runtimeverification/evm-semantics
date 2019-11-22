@@ -227,8 +227,8 @@ WEB3 JSON RPC
     rule List2JSON(L ListItem(J), JS) => List2JSON(L, (J, JS))
     rule List2JSON(.List        , JS) => [ JS ]
 
-    syntax KItem ::= #sendResponse( JSON )
- // --------------------------------------
+    syntax KItem ::= #sendResponse ( JSON )
+ // ---------------------------------------
     rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", "id": CALLID, J }, SOCK) ~> getRequest() </k>
          <callid> CALLID </callid>
          <web3clientsocket> SOCK </web3clientsocket>
@@ -248,6 +248,16 @@ WEB3 JSON RPC
     rule <k> #sendResponse(_) ~> _ => #loadFromBatch </k>
          <callid> undef </callid>
          <batch> [ _ ] </batch>
+
+    syntax KItem ::= #rpcResponseSuccess       ( JSON                )
+                   | #rpcResponseError         ( Int , String        )
+                   | #rpcResponseError         ( Int , String , JSON )
+                   | #rpcResponseUnimplemented ( String              )
+ // ------------------------------------------------------------------
+    rule <k> #rpcResponseSuccess(J)             => #sendResponse( "result" : J )                                                ... </k> requires isProperJson(J)
+    rule <k> #rpcResponseError(CODE, MSG)       => #sendResponse( "error" : { "code": CODE , "message": MSG } )                 ... </k>
+    rule <k> #rpcResponseError(CODE, MSG, DATA) => #sendResponse( "error" : { "code": CODE , "message": MSG , "data" : DATA } ) ... </k> requires isProperJson(DATA)
+    rule <k> #rpcResponseUnimplemented(RPCCALL) => #sendResponse( "unimplemented" : RPCCALL )                                   ... </k>
 
     syntax Bool ::= isProperJson     ( JSON     ) [function]
                   | isProperJsonList ( JSONList ) [function]
@@ -369,26 +379,26 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#net_version"
  // -------------------------------
-    rule <k> #net_version => #sendResponse( "result" : Int2String( CHAINID ) ) ... </k>
+    rule <k> #net_version => #rpcResponseSuccess(Int2String( CHAINID )) ... </k>
          <chainID> CHAINID </chainID>
 
     syntax KItem ::= "#web3_clientVersion"
  // --------------------------------------
-    rule <k> #web3_clientVersion => #sendResponse( "result" : "Firefly RPC/v0.0.1/kevm" ) ... </k>
+    rule <k> #web3_clientVersion => #rpcResponseSuccess("Firefly RPC/v0.0.1/kevm") ... </k>
 
     syntax KItem ::= "#eth_gasPrice"
  // --------------------------------
-    rule <k> #eth_gasPrice => #sendResponse( "result" : #unparseQuantity( PRICE ) ) ... </k>
+    rule <k> #eth_gasPrice => #rpcResponseSuccess(#unparseQuantity( PRICE )) ... </k>
          <gasPrice> PRICE </gasPrice>
 
     syntax KItem ::= "#eth_blockNumber"
  // -----------------------------------
-    rule <k> #eth_blockNumber => #sendResponse( "result" : #unparseQuantity( BLOCKNUM ) ) ... </k>
+    rule <k> #eth_blockNumber => #rpcResponseSuccess(#unparseQuantity( BLOCKNUM )) ... </k>
          <number> BLOCKNUM </number>
 
     syntax KItem ::= "#eth_accounts"
  // --------------------------------
-    rule <k> #eth_accounts => #sendResponse( "result" : [ #acctsToJArray( qsort(Set2List(ACCTS)) ) ] ) ... </k>
+    rule <k> #eth_accounts => #rpcResponseSuccess([ #acctsToJArray( qsort(Set2List(ACCTS)) ) ]) ... </k>
          <activeAccounts> ACCTS </activeAccounts>
 
     syntax JSONList ::= #acctsToJArray ( List ) [function]
@@ -404,9 +414,9 @@ WEB3 JSON RPC
     rule <k> #eth_getBalance => #getAccountAtBlock(#parseBlockIdentifier(TAG), DATA) ~> #eth_getBalance ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
 
-    rule <k> <account> ... <balance> ACCTBALANCE </balance> ... </account> ~> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( ACCTBALANCE )) ... </k>
+    rule <k> <account> ... <balance> ACCTBALANCE </balance> ... </account> ~> #eth_getBalance => #rpcResponseSuccess(#unparseQuantity( ACCTBALANCE )) ... </k>
 
-    rule <k> .AccountItem ~> #eth_getBalance => #sendResponse( "result" : #unparseQuantity( 0 )) ... </k>
+    rule <k> .AccountItem ~> #eth_getBalance => #rpcResponseSuccess(#unparseQuantity( 0 )) ... </k>
 
     rule <k> #eth_getBalance => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getBalance' requires exactly 2 arguments."} ) ... </k> [owise]
 
@@ -418,10 +428,10 @@ WEB3 JSON RPC
     rule <k> #eth_getStorageAt => #getAccountAtBlock(#parseBlockIdentifier(TAG), DATA) ~> #eth_getStorageAt ... </k>
          <params> [ DATA, QUANTITY, TAG, .JSONList ] </params>
 
-    rule <k> <account> ... <storage> STORAGE </storage> ... </account> ~> #eth_getStorageAt => #sendResponse( "result" : #unparseQuantity( #lookup (STORAGE, QUANTITY))) ... </k>
+    rule <k> <account> ... <storage> STORAGE </storage> ... </account> ~> #eth_getStorageAt => #rpcResponseSuccess(#unparseQuantity( #lookup (STORAGE, QUANTITY) )) ... </k>
          <params> [ DATA, QUANTITY, TAG, .JSONList ] </params>
 
-    rule <k> .AccountItem ~> #eth_getStorageAt => #sendResponse( "result" : #unparseQuantity( 0 )) ... </k>
+    rule <k> .AccountItem ~> #eth_getStorageAt => #rpcResponseSuccess(#unparseQuantity( 0 )) ... </k>
 
     rule <k> #eth_getStorageAt => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getStorageAt' requires exactly 3 arguments."} ) ... </k> [owise]
 
@@ -433,9 +443,9 @@ WEB3 JSON RPC
     rule <k> #eth_getCode => #getAccountAtBlock(#parseBlockIdentifier(TAG), DATA) ~> #eth_getCode ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
 
-     rule <k> <account> ... <code> CODE </code> ... </account> ~> #eth_getCode =>  #sendResponse( "result" : #unparseDataByteArray( CODE )) ... </k>
+     rule <k> <account> ... <code> CODE </code> ... </account> ~> #eth_getCode =>  #rpcResponseSuccess(#unparseDataByteArray( CODE )) ... </k>
 
-     rule <k> .AccountItem ~> #eth_getCode => #sendResponse( "result" : #unparseDataByteArray( .ByteArray )) ... </k>
+     rule <k> .AccountItem ~> #eth_getCode => #rpcResponseSuccess(#unparseDataByteArray( .ByteArray )) ... </k>
 
     rule <k> #eth_getCode => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getCode' requires exactly 2 arguments."} ) ... </k> [owise]
 
@@ -447,9 +457,9 @@ WEB3 JSON RPC
     rule <k> #eth_getTransactionCount => #getAccountAtBlock(#parseBlockIdentifier(TAG), DATA) ~> #eth_getTransactionCount ... </k>
          <params> [ DATA, TAG, .JSONList ] </params>
 
-    rule <k> <account> ... <nonce> NONCE </nonce> ... </account> ~> #eth_getTransactionCount => #sendResponse( "result" : #unparseQuantity( NONCE )) ... </k>
+    rule <k> <account> ... <nonce> NONCE </nonce> ... </account> ~> #eth_getTransactionCount => #rpcResponseSuccess(#unparseQuantity( NONCE )) ... </k>
 
-    rule <k> .AccountItem ~> #eth_getTransactionCount => #sendResponse ("result" : #unparseQuantity( 0 )) ... </k>
+    rule <k> .AccountItem ~> #eth_getTransactionCount => #rpcResponseSuccess(#unparseQuantity( 0 )) ... </k>
 
     rule <k> #eth_getTransactionCount => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getTransactionCount' requires exactly 2 arguments."} ) ... </k> [owise]
 
@@ -466,7 +476,7 @@ WEB3 JSON RPC
 
     syntax KItem ::= #signMessage ( String , String )
  // -------------------------------------------------
-    rule <k> #signMessage(KEY, MHASH) => #sendResponse( "result" : "0x" +String ECDSASign( MHASH, KEY ) ) ... </k>
+    rule <k> #signMessage(KEY, MHASH) => #rpcResponseSuccess("0x" +String ECDSASign( MHASH, KEY )) ... </k>
 
     syntax String ::= #hashMessage ( String ) [function]
  // ----------------------------------------------------
@@ -477,7 +487,7 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#evm_snapshot"
  // --------------------------------
-    rule <k> #evm_snapshot => #pushNetworkState ~> #sendResponse( "result" : #unparseQuantity( size ( SNAPSHOTS ) +Int 1 )) ... </k>
+    rule <k> #evm_snapshot => #pushNetworkState ~> #rpcResponseSuccess(#unparseQuantity( size ( SNAPSHOTS ) +Int 1 )) ... </k>
          <snapshots> SNAPSHOTS </snapshots>
 
     syntax KItem ::= "#pushNetworkState"
@@ -500,7 +510,7 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#evm_revert"
  // ------------------------------
-    rule <k> #evm_revert => #popNetworkState ~> #sendResponse( "result" : true ) ... </k>
+    rule <k> #evm_revert => #popNetworkState ~> #rpcResponseSuccess(true) ... </k>
          <params>    [ DATA:Int, .JSONList ] </params>
          <snapshots> SNAPSHOTS </snapshots>
       requires DATA ==Int ( size(SNAPSHOTS) -Int 1 )
@@ -516,17 +526,17 @@ WEB3 JSON RPC
     rule <k> #evm_revert => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'evm_revert' requires exactly 1 arguments. Request specified 0 arguments: [null]."} )  ... </k>
          <params> [ .JSONList ] </params>
 
-     rule <k> #evm_revert => #sendResponse ( "result" : false ) ... </k> [owise]
+     rule <k> #evm_revert => #rpcResponseSuccess(false) ... </k> [owise]
 
     syntax KItem ::= "#evm_increaseTime"
  // ------------------------------------
-    rule <k> #evm_increaseTime => #sendResponse( "result" : Int2String(TS +Int DATA ) ) ... </k>
+    rule <k> #evm_increaseTime => #rpcResponseSuccess(Int2String(TS +Int DATA)) ... </k>
          <params> [ DATA:Int, .JSONList ] </params>
          <timestamp> ( TS:Int => ( TS +Int DATA ) ) </timestamp>
 
     syntax KItem ::= "#eth_newBlockFilter"
  // --------------------------------------
-    rule <k> #eth_newBlockFilter => #sendResponse ( "result": #unparseQuantity( FILTID )) ... </k>
+    rule <k> #eth_newBlockFilter => #rpcResponseSuccess(#unparseQuantity( FILTID )) ... </k>
          <filters>
            ( .Bag
           => <filter>
@@ -545,7 +555,7 @@ WEB3 JSON RPC
     rule <k> #eth_uninstallFilter ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), .JSONList ] </params>
 
-    rule <k> #eth_uninstallFilter => #sendResponse ( "result": true ) ... </k>
+    rule <k> #eth_uninstallFilter => #rpcResponseSuccess(true) ... </k>
          <params> [ FILTID, .JSONList ] </params>
          <filters>
            ( <filter>
@@ -557,7 +567,7 @@ WEB3 JSON RPC
            ...
          </filters>
 
-    rule <k> #eth_uninstallFilter => #sendResponse ( "result": false ) ... </k> [owise]
+    rule <k> #eth_uninstallFilter => #rpcResponseSuccess(false) ... </k> [owise]
 ```
 
 eth_sendTransaction
@@ -582,10 +592,10 @@ eth_sendTransaction
 
     rule <k> #eth_sendTransaction_load J => mkTX !ID:Int ~> #loadNonce #parseHexWord( #getString("from",J) ) !ID ~> loadTransaction !ID J ~> signTX !ID #parseHexWord( #getString("from",J) ) ~> #prepareTx !ID #parseHexWord( #getString("from",J) ) ~> #eth_sendTransaction_final !ID ... </k>
 
-    rule <k> #eth_sendTransaction_final TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+    rule <k> #eth_sendTransaction_final TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
         <statusCode> EVMC_SUCCESS </statusCode>
 
-    rule <k> #eth_sendTransaction_final TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+    rule <k> #eth_sendTransaction_final TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
         <statusCode> EVMC_REVERT </statusCode>
 
     rule <k> #eth_sendTransaction_final TXID => #sendResponse( "error": {"code": -32000, "message": "base fee exceeds gas limit"} ) ... </k>
@@ -730,7 +740,7 @@ eth_sendRawTransaction
 
     rule <k> #eth_sendRawTransactionVerify _ => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
 
-    rule <k> #eth_sendRawTransactionSend TXID => #sendResponse( "result": "0x" +String #hashSignedTx( TXID ) ) ... </k>
+    rule <k> #eth_sendRawTransactionSend TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
 ```
 
 Retrieving Blocks
@@ -740,7 +750,7 @@ Retrieving Blocks
 - <logsBloom> defaults to .ByteArray, but maybe it should be 256 zero bytes? It also doesn't get updated.
 - Ganache's gasLimit defaults to 6721975 (0x6691b7), but we default it at 0.
 - After each txExecution which is not `eth_call`:
-   - use `#setBlockchainItem` 
+   - use `#setBlockchainItem`
    - clear <txPending> and <txOrder>
 - Some initialization still needs to be done, like the trie roots and the 0 block in <blockList>
    - I foresee issues with firefly_addAccount and personal_importRawKey if we want those accounts
@@ -781,34 +791,32 @@ Retrieving Blocks
            <blockNonce>        NONCE       </blockNonce>
            ...
          </block> } #as BLOCKITEM)
-          => #sendResponse ( "result":
-             {
-               "number": #unparseQuantity( NUM ),
-               "hash": "0x" +String Keccak256( #rlpEncodeBlock( BLOCKITEM ) ),
-               "parentHash": #unparseData( PARENTHASH, 32 ),
-               "mixHash": #unparseData( MIXHASH, 32 ),
-               "nonce": #unparseData( NONCE, 8 ),
-               "sha3Uncles": #unparseData( OMMERSHASH, 32 ),
-               "logsBloom": #unparseDataByteArray( LOGSBLOOM ),
-               "transactionsRoot": #unparseData( TXROOT, 32),
-               "stateRoot": #unparseData( STATEROOT, 32),
-               "receiptsRoot": #unparseData( RCPTROOT, 32),
-               "miner": #unparseData( MINER, 20 ),
-               "difficulty": #unparseQuantity( DFFCLTY ),
-               "totalDifficulty": #unparseQuantity( DFFCLTY ),
-               "extraData": #unparseDataByteArray( DATA ),
-               "size": "0x3e8", // Ganache always returns 1000
-               "gasLimit": #unparseQuantity( GLIMIT ),
-               "gasUsed": #unparseQuantity( GUSED ),
-               "timestamp": #unparseQuantity( TIME ),
-               "transactions": [ #getTransactionList( BLOCKITEM ) ],
-               "uncles": [ .JSONList ]
-             }
-                           )
+          => #rpcResponseSuccess( { "number": #unparseQuantity( NUM )
+                                  , "hash": "0x" +String Keccak256( #rlpEncodeBlock( BLOCKITEM ) )
+                                  , "parentHash": #unparseData( PARENTHASH, 32 )
+                                  , "mixHash": #unparseData( MIXHASH, 32 )
+                                  , "nonce": #unparseData( NONCE, 8 )
+                                  , "sha3Uncles": #unparseData( OMMERSHASH, 32 )
+                                  , "logsBloom": #unparseDataByteArray( LOGSBLOOM )
+                                  , "transactionsRoot": #unparseData( TXROOT, 32)
+                                  , "stateRoot": #unparseData( STATEROOT, 32)
+                                  , "receiptsRoot": #unparseData( RCPTROOT, 32)
+                                  , "miner": #unparseData( MINER, 20 )
+                                  , "difficulty": #unparseQuantity( DFFCLTY )
+                                  , "totalDifficulty": #unparseQuantity( DFFCLTY )
+                                  , "extraData": #unparseDataByteArray( DATA )
+                                  , "size": "0x3e8"                                  // Ganache always returns 1000
+                                  , "gasLimit": #unparseQuantity( GLIMIT )
+                                  , "gasUsed": #unparseQuantity( GUSED )
+                                  , "timestamp": #unparseQuantity( TIME )
+                                  , "transactions": [ #getTransactionList( BLOCKITEM ) ]
+                                  , "uncles": [ .JSONList ]
+                                  }
+                                )
           ...
          </k>
 
-    rule <k> #eth_getBlockByNumber_finalize ( .BlockchainItem )=> #sendResponse ( "result": null ) ... </k>
+    rule <k> #eth_getBlockByNumber_finalize ( .BlockchainItem )=> #rpcResponseSuccess(null) ... </k>
 
     syntax JSONList ::= "#getTransactionList" "(" BlockchainItem ")" [function]
                       | #getTransactionHashList ( List, JSONList ) [function]
@@ -873,23 +881,26 @@ Transaction Receipts
 
     syntax KItem ::= "#eth_getTransactionReceipt"
  // ---------------------------------------------
-    rule <k> #eth_getTransactionReceipt => #sendResponse( "result": {
-                                                                     "transactionHash": TXHASH,
-                                                                     "transactionIndex": #unparseQuantity(getIndexOf(TXID, TXLIST)),
-                                                                     "blockHash": #unparseQuantity(1),
-                                                                     "blockNumber": #unparseQuantity(BN),
-                                                                     "from": #unparseQuantity(TXFROM),
-                                                                     "to": #unparseAccount(TT),
-                                                                     "gasUsed": #unparseQuantity(CGAS),
-                                                                     "cumulativeGasUsed": #unparseQuantity(CGAS),
-                                                                     "contractAddress": #if TT ==K .Account #then #unparseQuantity(#newAddr(TXFROM, NONCE -Int 1)) #else null #fi,
-                                                                     "logs": [#serializeLogs(LOGS, 0, TXID, TXHASH, BN, 1)],
-                                                                     "status": #unparseQuantity(TXSTATUS),
-                                                                     "logsBloom": #unparseDataByteArray(BLOOM),
-                                                                     "v": #unparseQuantity(TW),
-                                                                     "r": #unparseDataByteArray(TR),
-                                                                     "s": #unparseDataByteArray(TS)
-                                                                     }) ... </k>
+    rule <k> #eth_getTransactionReceipt
+          => #rpcResponseSuccess( { "transactionHash": TXHASH
+                                  , "transactionIndex": #unparseQuantity(getIndexOf(TXID, TXLIST))
+                                  , "blockHash": #unparseQuantity(1)
+                                  , "blockNumber": #unparseQuantity(BN)
+                                  , "from": #unparseQuantity(TXFROM)
+                                  , "to": #unparseAccount(TT)
+                                  , "gasUsed": #unparseQuantity(CGAS)
+                                  , "cumulativeGasUsed": #unparseQuantity(CGAS)
+                                  , "contractAddress": #if TT ==K .Account #then #unparseQuantity(#newAddr(TXFROM, NONCE -Int 1)) #else null #fi
+                                  , "logs": [#serializeLogs(LOGS, 0, TXID, TXHASH, BN, 1)]
+                                  , "status": #unparseQuantity(TXSTATUS)
+                                  , "logsBloom": #unparseDataByteArray(BLOOM)
+                                  , "v": #unparseQuantity(TW)
+                                  , "r": #unparseDataByteArray(TR)
+                                  , "s": #unparseDataByteArray(TS)
+                                  }
+                                )
+         ...
+         </k>
          <params> [TXHASH:String, .JSONList] </params>
          <txReceipt>
            <txHash>          TXHASH </txHash>
@@ -918,7 +929,7 @@ Transaction Receipts
          </account>
          <log> LOGS </log>
 
-    rule <k> #eth_getTransactionReceipt => #sendResponse( "result": null ) ... </k> [owise]
+    rule <k> #eth_getTransactionReceipt => #rpcResponseSuccess(null) ... </k> [owise]
 
     syntax Int ::= getIndexOf ( Int, List ) [function]
  // --------------------------------------------------
@@ -1154,7 +1165,7 @@ Transaction Receipts
 ```k
     syntax KItem ::= "#personal_importRawKey"
  // -----------------------------------------
-    rule <k> #personal_importRawKey => #acctFromPrivateKey PRIKEY ~> #sendResponse( "result": #unparseData( #addrFromPrivateKey( PRIKEY ), 20 ) ) ... </k>
+    rule <k> #personal_importRawKey => #acctFromPrivateKey PRIKEY ~> #rpcResponseSuccess(#unparseData( #addrFromPrivateKey( PRIKEY ), 20 )) ... </k>
          <params> [ PRIKEY:String, PASSPHRASE:String, .JSONList ] </params>
       requires lengthString( PRIKEY ) ==Int 66
 
@@ -1179,22 +1190,22 @@ Transaction Receipts
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString(#getJSON("key", J))
 
-    rule <k> #firefly_addAccountByAddress ACCT_ADDR => #newAccount ACCT_ADDR ~> loadAccount ACCT_ADDR J ~> #sendResponse( "result": true ) ... </k>
+    rule <k> #firefly_addAccountByAddress ACCT_ADDR => #newAccount ACCT_ADDR ~> loadAccount ACCT_ADDR J ~> #rpcResponseSuccess(true) ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT_ADDR in ACCTS
 
-    rule <k> #firefly_addAccountByAddress ACCT_ADDR => #sendResponse( "result": false ) ... </k>
+    rule <k> #firefly_addAccountByAddress ACCT_ADDR => #rpcResponseSuccess(false) ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
          <activeAccounts> ACCTS </activeAccounts>
       requires ACCT_ADDR in ACCTS
 
-    rule <k> #firefly_addAccountByKey ACCT_KEY => #acctFromPrivateKey ACCT_KEY ~> loadAccount #addrFromPrivateKey(ACCT_KEY) J ~> #sendResponse( "result": true ) ... </k>
+    rule <k> #firefly_addAccountByKey ACCT_KEY => #acctFromPrivateKey ACCT_KEY ~> loadAccount #addrFromPrivateKey(ACCT_KEY) J ~> #rpcResponseSuccess(true) ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool #addrFromPrivateKey(ACCT_KEY) in ACCTS
 
-    rule <k> #firefly_addAccountByKey ACCT_KEY => #sendResponse( "result": false ) ... </k>
+    rule <k> #firefly_addAccountByKey ACCT_KEY => #rpcResponseSuccess(false) ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
           <activeAccounts> ACCTS </activeAccounts>
       requires #addrFromPrivateKey(ACCT_KEY) in ACCTS
@@ -1236,7 +1247,7 @@ Transaction Receipts
 
     syntax KItem ::= "#eth_call_finalize"
  // -------------------------------------
-    rule <k> #eth_call_finalize => #setMode NORMAL ~> #popNetworkState ~> #sendResponse ("result": #unparseDataByteArray( OUTPUT )) ... </k>
+    rule <k> #eth_call_finalize => #setMode NORMAL ~> #popNetworkState ~> #rpcResponseSuccess(#unparseDataByteArray( OUTPUT )) ... </k>
          <output> OUTPUT </output>
 ```
 
@@ -1267,7 +1278,7 @@ Transaction Receipts
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
-    rule <k> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #sendResponse ("result": #unparseQuantity( #getGasUsed( #getBlockByNumber( "latest", BLOCKLIST ) ) -Int INITGUSED )) ... </k>
+    rule <k> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber( "latest", BLOCKLIST ) ) -Int INITGUSED )) ... </k>
          <statusCode> STATUSCODE </statusCode>
          <blockList> BLOCKLIST </blockList>
       requires STATUSCODE =/=K EVMC_OUT_OF_GAS
@@ -1365,7 +1376,7 @@ Collecting Coverage Data
 
     syntax KItem ::= "#firefly_getCoverageData"
  // -------------------------------------------
-    rule <k> #firefly_getCoverageData => #sendResponse ("result": #makeCoverageReport(COVERAGE, PGMS)) ... </k>
+    rule <k> #firefly_getCoverageData => #rpcResponseSuccess(#makeCoverageReport(COVERAGE, PGMS)) ... </k>
          <opcodeCoverage> COVERAGE </opcodeCoverage>
          <opcodeLists>    PGMS     </opcodeLists>
 
@@ -1374,7 +1385,7 @@ Collecting Coverage Data
     rule #makeCoverageReport (COVERAGE, PGMS) => {
                                                   "coverages": [#coveragePercentages(keys_list(PGMS),COVERAGE,PGMS)],
                                                   "coveredOpcodes": [#serializeCoverage(keys_list(COVERAGE),COVERAGE)],
-                                                  "programs": [#serializePrograms(keys_list(PGMS),PGMS)] 
+                                                  "programs": [#serializePrograms(keys_list(PGMS),PGMS)]
                                                  }
 
     syntax JSONList ::= #serializeCoverage ( List, Map ) [function]
@@ -1578,7 +1589,7 @@ State Root
 
     syntax KItem ::= "#firefly_getStateRoot"
  // ----------------------------------------
-    rule <k> #firefly_getStateRoot => #sendResponse("result": { "stateRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) } ) ... </k>
+    rule <k> #firefly_getStateRoot => #rpcResponseSuccess({ "stateRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) }) ... </k>
 ```
 
 Transactions Root
@@ -1601,7 +1612,7 @@ Transactions Root
 
     syntax KItem ::= "#firefly_getTxRoot"
  // -------------------------------------
-    rule <k> #firefly_getTxRoot => #sendResponse("result": { "transactionsRoot" : #getTxRoot( #getBlockByNumber( "latest", BLOCKLIST ) ) } ) ... </k>
+    rule <k> #firefly_getTxRoot => #rpcResponseSuccess({ "transactionsRoot" : #getTxRoot( #getBlockByNumber( "latest", BLOCKLIST ) ) }) ... </k>
          <blockList> BLOCKLIST </blockList>
 
     syntax String ::= #getTxRoot( BlockchainItem ) [function]
@@ -1629,7 +1640,7 @@ Receipts Root
 
     syntax KItem ::= "#firefly_getReceiptsRoot"
  // -------------------------------------------
-    rule <k> #firefly_getReceiptsRoot => #sendResponse("result": { "receiptsRoot" : #getReceiptRoot( #getBlockByNumber( "latest", BLOCKLIST ) ) } ) ... </k>
+    rule <k> #firefly_getReceiptsRoot => #rpcResponseSuccess({ "receiptsRoot" : #getReceiptRoot( #getBlockByNumber( "latest", BLOCKLIST ) ) }) ... </k>
          <blockList> BLOCKLIST </blockList>
 
     syntax String ::= #getReceiptRoot( BlockchainItem ) [function]
@@ -1643,16 +1654,16 @@ Timestamp Calls
 ```k
     syntax KItem ::= "#firefly_getTime"
  // -----------------------------------
-    rule <k> #firefly_getTime => #sendResponse( "result": #unparseQuantity( TIME ) ) ... </k>
+    rule <k> #firefly_getTime => #rpcResponseSuccess(#unparseQuantity( TIME )) ... </k>
          <timestamp> TIME </timestamp>
 
     syntax KItem ::= "#firefly_setTime"
  // -----------------------------------
-    rule <k> #firefly_setTime => #sendResponse( "result": true ) ... </k>
+    rule <k> #firefly_setTime => #rpcResponseSuccess(true) ... </k>
          <params> [ TIME:String, .JSONList ] </params>
          <timestamp> _ => #parseHexWord( TIME ) </timestamp>
 
-    rule <k> #firefly_setTime => #sendResponse( "result": false ) ... </k> [owise]
+    rule <k> #firefly_setTime => #rpcResponseSuccess(false) ... </k> [owise]
 ```
 
 Gas Limit Call
@@ -1661,11 +1672,11 @@ Gas Limit Call
 ```k
     syntax KItem ::= "#firefly_setGasLimit"
  // ---------------------------------------
-    rule <k> #firefly_setGasLimit => #sendResponse( "result": true ) ... </k>
+    rule <k> #firefly_setGasLimit => #rpcResponseSuccess(true) ... </k>
          <params> [ GLIMIT:String, .JSONList ] </params>
          <gasLimit> _ => #parseWord( GLIMIT ) </gasLimit>
 
-    rule <k> #firefly_setGasLimit => #sendResponse( "result": true ) ... </k>
+    rule <k> #firefly_setGasLimit => #rpcResponseSuccess(true) ... </k>
          <params> [ GLIMIT:Int, .JSONList ] </params>
          <gasLimit> _ => GLIMIT </gasLimit>
 
@@ -1678,9 +1689,9 @@ Mining
 ```k
     syntax KItem ::= "#evm_mine"
  // ----------------------------
-    rule <k> #evm_mine => #mineBlock ~> #sendResponse( "result": "0x0" ) ... </k> [owise]
+    rule <k> #evm_mine => #mineBlock ~> #rpcResponseSuccess("0x0") ... </k> [owise]
 
-    rule <k> #evm_mine => #mineBlock ~> #sendResponse( "result": "0x0" ) ... </k>
+    rule <k> #evm_mine => #mineBlock ~> #rpcResponseSuccess("0x0") ... </k>
          <params> [ TIME:String, .JSONList ] </params>
          <timestamp> _ => #parseWord( TIME ) </timestamp>
 
@@ -1689,7 +1700,7 @@ Mining
 
     syntax KItem ::= "#firefly_genesisBlock"
  // ----------------------------------------
-    rule <k> #firefly_genesisBlock => #updateTrieRoots ~> #pushBlockchainState ~> #getParentHash ~> #sendResponse ("result": true) ... </k>
+    rule <k> #firefly_genesisBlock => #updateTrieRoots ~> #pushBlockchainState ~> #getParentHash ~> #rpcResponseSuccess(true) ... </k>
          <logsBloom> _ => #padToWidth( 256, .ByteArray ) </logsBloom>
          <ommersHash> _ => 13478047122767188135818125966132228187941283477090363246179690878162135454535 </ommersHash>
 
