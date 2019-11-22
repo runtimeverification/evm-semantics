@@ -249,6 +249,25 @@ WEB3 JSON RPC
          <callid> undef </callid>
          <batch> [ _ ] </batch>
 
+    syntax Bool ::= isProperJson     ( JSON     ) [function]
+                  | isProperJsonList ( JSONList ) [function]
+ // --------------------------------------------------------
+    rule isProperJson(_) => false [owise]
+
+    rule isProperJson(null) => true
+
+    rule isProperJson(_:Int)    => true
+    rule isProperJson(_:Bool)   => true
+    rule isProperJson(_:String) => true
+
+    rule isProperJson(_:JSONKey : J) => isProperJson(J)
+
+    rule isProperJson([ JS ]) => isProperJsonList(JS)
+    rule isProperJson({ JS }) => isProperJsonList(JS)
+
+    rule isProperJsonList(.JSONList) => true
+    rule isProperJsonList(J, JS)     => isProperJson(J) andBool isProperJsonList(JS)
+
     syntax KItem ::= "#checkRPCCall"
  // --------------------------------
     rule <k> #checkRPCCall => . ...</k>
