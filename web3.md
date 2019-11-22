@@ -1,19 +1,64 @@
 Web3 RPC JSON Handler
-====================
+=====================
 
 ```k
 requires "evm.k"
 requires "state-loader.k"
+```
 
-module WEB3
-    imports EVM
-    imports EVM-DATA
+```k
+module JSON-RPC
     imports K-IO
+    imports LIST
+    imports JSON
+
+    configuration
+      <json-rpc>
+        <web3socket> $SOCK:Int </web3socket>
+        <web3clientsocket> 0:IOInt </web3clientsocket>
+        <web3request>
+          <jsonrpc> "":JSON </jsonrpc>
+          <callid> 0:JSON </callid>
+          <method> "":JSON </method>
+          <params> [ .JSONList ] </params>
+          <batch> undef </batch>
+        </web3request>
+        <web3response> .List </web3response>
+      </json-rpc>
+
+    syntax JSON ::= "undef"
+ // -----------------------
+
+    syntax Bool ::= isProperJson     ( JSON     ) [function]
+                  | isProperJsonList ( JSONList ) [function]
+ // --------------------------------------------------------
+    rule isProperJson(_) => false [owise]
+
+    rule isProperJson(null) => true
+
+    rule isProperJson(_:Int)    => true
+    rule isProperJson(_:Bool)   => true
+    rule isProperJson(_:String) => true
+
+    rule isProperJson(_:JSONKey : J) => isProperJson(J)
+
+    rule isProperJson([ JS ]) => isProperJsonList(JS)
+    rule isProperJson({ JS }) => isProperJsonList(JS)
+
+    rule isProperJsonList(.JSONList) => true
+    rule isProperJsonList(J, JS)     => isProperJson(J) andBool isProperJsonList(JS)
+endmodule
+```
+
+```k
+module WEB3
     imports STATE-LOADER
+    imports JSON-RPC
 
     configuration
       <kevm-client>
         <kevm/>
+        <json-rpc/>
         <execPhase> .Phase </execPhase>
         <opcodeCoverage> .Map </opcodeCoverage>
         <opcodeLists> .Map </opcodeLists>
@@ -45,19 +90,8 @@ module WEB3
           </filter>
         </filters>
         <snapshots> .List </snapshots>
-        <web3socket> $SOCK:Int </web3socket>
         <web3shutdownable> $SHUTDOWNABLE:Bool </web3shutdownable>
-        <web3clientsocket> 0:IOInt </web3clientsocket>
-        <web3request>
-          <jsonrpc> "":JSON </jsonrpc>
-          <callid> 0:JSON </callid>
-          <method> "":JSON </method>
-          <params> [ .JSONList ] </params>
-          <batch> undef </batch>
-        </web3request>
-        <web3response> .List </web3response>
       </kevm-client>
-
 ```
 
 The Blockchain State
@@ -141,9 +175,6 @@ WEB3 JSON RPC
 -------------
 
 ```k
-    syntax JSON ::= "null" | "undef"
- // --------------------------------
-
     syntax JSON ::= #getJSON ( JSONKey , JSON ) [function]
  // ------------------------------------------------------
     rule #getJSON( KEY, { KEY : J, _ } )     => J
@@ -259,25 +290,6 @@ WEB3 JSON RPC
     rule <k> #rpcResponseError(CODE, MSG)       => #sendResponse( "error" : { "code": CODE , "message": MSG } )                 ... </k>
     rule <k> #rpcResponseError(CODE, MSG, DATA) => #sendResponse( "error" : { "code": CODE , "message": MSG , "data" : DATA } ) ... </k> requires isProperJson(DATA)
     rule <k> #rpcResponseUnimplemented(RPCCALL) => #sendResponse( "unimplemented" : RPCCALL )                                   ... </k>
-
-    syntax Bool ::= isProperJson     ( JSON     ) [function]
-                  | isProperJsonList ( JSONList ) [function]
- // --------------------------------------------------------
-    rule isProperJson(_) => false [owise]
-
-    rule isProperJson(null) => true
-
-    rule isProperJson(_:Int)    => true
-    rule isProperJson(_:Bool)   => true
-    rule isProperJson(_:String) => true
-
-    rule isProperJson(_:JSONKey : J) => isProperJson(J)
-
-    rule isProperJson([ JS ]) => isProperJsonList(JS)
-    rule isProperJson({ JS }) => isProperJsonList(JS)
-
-    rule isProperJsonList(.JSONList) => true
-    rule isProperJsonList(J, JS)     => isProperJson(J) andBool isProperJsonList(JS)
 
     syntax KItem ::= "#checkRPCCall"
  // --------------------------------
