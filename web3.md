@@ -140,8 +140,8 @@ WEB3 JSON RPC
 -------------
 
 ```k
-    syntax JSON ::= "null" | "undef" | ByteArray | Account
- // ------------------------------------------------------
+    syntax JSON ::= "null" | "undef"
+ // --------------------------------
 
     syntax JSON ::= #getJSON ( JSONKey , JSON ) [function]
  // ------------------------------------------------------
