@@ -349,6 +349,8 @@ WEB3 JSON RPC
          <method> "firefly_genesisBlock" </method>
     rule <k> #runRPCCall => #evm_mine ... </k>
          <method> "evm_mine" </method>
+    rule <k> #runRPCCall => #firefly_setGasLimit ... </k>
+         <method> "firefly_setGasLimit" </method>
 
     rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
 
@@ -1659,6 +1661,23 @@ Timestamp Calls
     rule <k> #firefly_setTime => #sendResponse( "result": false ) ... </k> [owise]
 ```
 
+Gas Limit Call
+--------------
+
+```k
+    syntax KItem ::= "#firefly_setGasLimit"
+ // ---------------------------------------
+    rule <k> #firefly_setGasLimit => #sendResponse( "result": true ) ... </k>
+         <params> [ GLIMIT:String, .JSONList ] </params>
+         <gasLimit> _ => #parseWord( GLIMIT ) </gasLimit>
+
+    rule <k> #firefly_setGasLimit => #sendResponse( "result": true ) ... </k>
+         <params> [ GLIMIT:Int, .JSONList ] </params>
+         <gasLimit> _ => GLIMIT </gasLimit>
+
+    rule <k> #firefly_setGasLimit => #sendResponse( "error": { "code": -32000, "message": "firefly_setGasLimit requires exactly 1 argument" } ) ... </k> [owise]
+```
+
 Mining
 ------
 
@@ -1671,19 +1690,21 @@ Mining
          <params> [ TIME:String, .JSONList ] </params>
          <timestamp> _ => #parseWord( TIME ) </timestamp>
 
-    rule <k> #evm_mine => #mineBlock ~> #sendResponse( "error": "Incorrect number of arguments. Method 'evm_mine' requires between 0 and 1 arguments." ) ... </k>
+    rule <k> #evm_mine => #sendResponse( "error": "Incorrect number of arguments. Method 'evm_mine' requires between 0 and 1 arguments." ) ... </k>
          <params> [ _, _, _:JSONList ] </params>
 
     syntax KItem ::= "#firefly_genesisBlock"
  // ----------------------------------------
-    rule <k> #firefly_genesisBlock => #pushBlockchainState ~> #sendResponse ("result": true) ... </k>
+    rule <k> #firefly_genesisBlock => #pushBlockchainState ~> #getParentHash ~> #sendResponse ("result": true) ... </k>
+         <logsBloom> _ => #padToWidth( 256, .ByteArray ) </logsBloom>
+         <ommersHash> _ => 13478047122767188135818125966132228187941283477090363246179690878162135454535 </ommersHash>
          <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
          <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
          <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
 
     syntax KItem ::= "#mineBlock"
  // -----------------------------
-    rule <k> #mineBlock => #finalizeBlock ~> #saveState ~> #startBlock ~> #cleanTxLists ~> #clearGas ... </k>
+    rule <k> #mineBlock => #finalizeBlock ~> #saveState ~> #startBlock ~> #cleanTxLists ~> #clearGas ~> #getParentHash ... </k>
          <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
          <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
          // <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
@@ -1692,6 +1713,7 @@ Mining
                    | "#incrementBlockNumber"
                    | "#cleanTxLists"
                    | "#clearGas"
+                   | "#getParentHash"
  // ----------------------------------------
     rule <k> #saveState => #incrementBlockNumber ~> #pushBlockchainState ... </k>
 
@@ -1704,6 +1726,10 @@ Mining
 
     rule <k> #clearGas => . ... </k>
          <gas> _ => 0 </gas>
+
+    rule <k> #getParentHash => . ... </k>
+         <blockList> BLOCKLIST </blockList>
+         <previousHash> _ => #parseHexWord( Keccak256( #rlpEncodeBlock( #getBlockByNumber( "latest", BLOCKLIST ) ) ) ) </previousHash>
 
 endmodule
 ```
