@@ -92,7 +92,7 @@ The `blockList` cell stores a list of previous blocks and network states.
          <network> _ => NETWORK </network>
          <block>   _ => BLOCK   </block>
 
-    rule <k> #setBlockchainState(.BlockchainItem) => #sendResponse("error": {"code": -37600, "message": "Unable to find block by number"}) ... </k>
+    rule <k> #setBlockchainState(.BlockchainItem) => #rpcResponseError(-37600, "Unable to find block by number.") ... </k>
 
     syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List ) [function]
  // ---------------------------------------------------------------------------------
@@ -198,10 +198,10 @@ WEB3 JSON RPC
          <batch> _ => J </batch>
          <web3response> _ => .List </web3response>
 
-    rule <k> #loadRPCCall(_:String #Or null #Or _:Int #Or [ .JSONList ]) => #sendResponse("error": {"code": -32600, "message": "Invalid Request"}) ... </k>
+    rule <k> #loadRPCCall(_:String #Or null #Or _:Int #Or [ .JSONList ]) => #rpcResponseError(-32600,  "Invalid Request") ... </k>
          <callid> _ => null </callid>
 
-    rule <k> #loadRPCCall(undef) => #sendResponse("error": {"code": -32700, "message": "Parse error"}) ... </k>
+    rule <k> #loadRPCCall(undef) => #rpcResponseError(-32700,  "Parse error") ... </k>
          <callid> _ => null </callid>
 
     syntax KItem ::= "#loadFromBatch"
@@ -286,13 +286,13 @@ WEB3 JSON RPC
          <params> undef #Or [ _ ] #Or { _ } </params>
          <callid> _:String #Or null #Or _:Int #Or undef </callid>
 
-    rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
+    rule <k> #checkRPCCall => #rpcResponseError(-32600, "Invalid Request") ... </k>
          <callid> undef #Or [ _ ] #Or { _ } => null </callid> [owise]
 
-    rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
+    rule <k> #checkRPCCall => #rpcResponseError(-32600, "Invalid Request") ... </k>
          <callid> _:Int </callid> [owise]
 
-    rule <k> #checkRPCCall => #sendResponse( "error": {"code": -32600, "message": "Invalid Request"} ) ... </k>
+    rule <k> #checkRPCCall => #rpcResponseError(-32600, "Invalid Request") ... </k>
          <callid> _:String </callid> [owise]
 
     syntax KItem ::= "#runRPCCall"
@@ -364,7 +364,7 @@ WEB3 JSON RPC
     rule <k> #runRPCCall => #firefly_setGasLimit ... </k>
          <method> "firefly_setGasLimit" </method>
 
-    rule <k> #runRPCCall => #sendResponse( "error": {"code": -32601, "message": "Method not found"} ) ... </k> [owise]
+    rule <k> #runRPCCall => #rpcResponseError(-32601, "Method not found") ... </k> [owise]
 
     syntax KItem ::= "#firefly_shutdown"
  // ------------------------------------
@@ -374,7 +374,7 @@ WEB3 JSON RPC
          <web3clientsocket> SOCK </web3clientsocket>
          <exit-code> _ => 0 </exit-code>
 
-    rule <k> #firefly_shutdown => #sendResponse( "error": {"code": -32800, "message": "Firefly client not started with `--shutdownable`!"} ) ... </k>
+    rule <k> #firefly_shutdown => #rpcResponseError(-32800, "Firefly client not started with `--shutdownable`!") ... </k>
          <web3shutdownable> false </web3shutdownable>
 
     syntax KItem ::= "#net_version"
@@ -418,7 +418,7 @@ WEB3 JSON RPC
 
     rule <k> .AccountItem ~> #eth_getBalance => #rpcResponseSuccess(#unparseQuantity( 0 )) ... </k>
 
-    rule <k> #eth_getBalance => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getBalance' requires exactly 2 arguments."} ) ... </k> [owise]
+    rule <k> #eth_getBalance => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_getBalance' requires exactly 2 arguments.") ... </k> [owise]
 
     syntax KItem ::= "#eth_getStorageAt"
  // ------------------------------------
@@ -433,7 +433,7 @@ WEB3 JSON RPC
 
     rule <k> .AccountItem ~> #eth_getStorageAt => #rpcResponseSuccess(#unparseQuantity( 0 )) ... </k>
 
-    rule <k> #eth_getStorageAt => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getStorageAt' requires exactly 3 arguments."} ) ... </k> [owise]
+    rule <k> #eth_getStorageAt => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_getStorageAt' requires exactly 3 arguments.") ... </k> [owise]
 
     syntax KItem ::= "#eth_getCode"
  // -------------------------------
@@ -447,7 +447,7 @@ WEB3 JSON RPC
 
      rule <k> .AccountItem ~> #eth_getCode => #rpcResponseSuccess(#unparseDataByteArray( .ByteArray )) ... </k>
 
-    rule <k> #eth_getCode => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getCode' requires exactly 2 arguments."} ) ... </k> [owise]
+    rule <k> #eth_getCode => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_getCode' requires exactly 2 arguments.") ... </k> [owise]
 
     syntax KItem ::= "#eth_getTransactionCount"
  // -------------------------------------------
@@ -461,7 +461,7 @@ WEB3 JSON RPC
 
     rule <k> .AccountItem ~> #eth_getTransactionCount => #rpcResponseSuccess(#unparseQuantity( 0 )) ... </k>
 
-    rule <k> #eth_getTransactionCount => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_getTransactionCount' requires exactly 2 arguments."} ) ... </k> [owise]
+    rule <k> #eth_getTransactionCount => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_getTransactionCount' requires exactly 2 arguments.") ... </k> [owise]
 
     syntax KItem ::= "#eth_sign"
  // ----------------------------
@@ -469,7 +469,7 @@ WEB3 JSON RPC
          <params> [ ACCTADDR, MESSAGE, .JSONList ] </params>
          <accountKeys>... #parseHexWord(ACCTADDR) |-> KEY ...</accountKeys>
 
-    rule <k> #eth_sign => #sendResponse( "error": {"code": 3, "message": "Execution error", "data": [{ "code": 100, "message": "Account key doesn't exist, account locked!" }]} ) ... </k>
+    rule <k> #eth_sign => #rpcResponseError(3, "Execution error", [{ "code": 100, "message": "Account key doesn't exist, account locked!" }]) ... </k>
          <params> [ ACCTADDR, _ ] </params>
          <accountKeys> KEYMAP </accountKeys>
       requires notBool #parseHexWord(ACCTADDR) in_keys(KEYMAP)
@@ -523,7 +523,7 @@ WEB3 JSON RPC
          <snapshots> ( SNAPSHOTS => range(SNAPSHOTS, 0, DATA ) ) </snapshots>
       requires size(SNAPSHOTS) >Int (DATA +Int 1)
 
-    rule <k> #evm_revert => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'evm_revert' requires exactly 1 arguments. Request specified 0 arguments: [null]."} )  ... </k>
+    rule <k> #evm_revert => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'evm_revert' requires exactly 1 arguments. Request specified 0 arguments: [null].")  ... </k>
          <params> [ .JSONList ] </params>
 
      rule <k> #evm_revert => #rpcResponseSuccess(false) ... </k> [owise]
@@ -584,11 +584,11 @@ eth_sendTransaction
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires isString( #getJSON("from",J) )
 
-    rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "from not found; is required"} ) ... </k>
+    rule <k> #eth_sendTransaction => #rpcResponseError(-32000, "\"from\" field not found; is required") ... </k>
          <params> [ ({ _ } #as J), .JSONList ] </params>
       requires notBool isString( #getJSON("from",J) )
 
-    rule <k> #eth_sendTransaction => #sendResponse( "error": {"code": -32000, "message": "Incorrect number of arguments. Method 'eth_sendTransaction' requires exactly 1 argument."} ) ... </k> [owise]
+    rule <k> #eth_sendTransaction => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_sendTransaction' requires exactly 1 argument.") ... </k> [owise]
 
     rule <k> #eth_sendTransaction_load J => mkTX !ID:Int ~> #loadNonce #parseHexWord( #getString("from",J) ) !ID ~> loadTransaction !ID J ~> signTX !ID #parseHexWord( #getString("from",J) ) ~> #prepareTx !ID #parseHexWord( #getString("from",J) ) ~> #eth_sendTransaction_final !ID ... </k>
 
@@ -598,13 +598,13 @@ eth_sendTransaction
     rule <k> #eth_sendTransaction_final TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
         <statusCode> EVMC_REVERT </statusCode>
 
-    rule <k> #eth_sendTransaction_final TXID => #sendResponse( "error": {"code": -32000, "message": "base fee exceeds gas limit"} ) ... </k>
+    rule <k> #eth_sendTransaction_final TXID => #rpcResponseError(-32000, "base fee exceeds gas limit") ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
 
-    rule <k> #eth_sendTransaction_final TXID => #sendResponse( "error": {"code": -32000, "message":"sender doesn't have enough funds to send tx."} ) ... </k>
+    rule <k> #eth_sendTransaction_final TXID => #rpcResponseError(-32000, "sender doesn't have enough funds to send tx.") ... </k>
          <statusCode> EVMC_BALANCE_UNDERFLOW </statusCode>
 
-    rule <k> #eth_sendTransaction_final TXID => #sendResponse( "error": { "code": -32000, "message": "VM exception: " +String StatusCode2String( SC ) } ) ... </k>
+    rule <k> #eth_sendTransaction_final TXID => #rpcResponseError(-32000, "VM exception: " +String StatusCode2String( SC )) ... </k>
         <statusCode> SC:ExceptionalStatusCode </statusCode> [owise]
 
     rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG)), _                 } ... </k>
@@ -709,10 +709,10 @@ eth_sendRawTransaction
     rule <k> #eth_sendRawTransaction => #eth_sendRawTransactionLoad ... </k>
          <params> [ RAWTX:String, .JSONList ] => #rlpDecode( Hex2Raw( RAWTX ) ) </params>
 
-    rule <k> #eth_sendRawTransaction => #sendResponse("error": { "code": -32000, "message":"\"value\" argument must not be a number" } ) ... </k>
+    rule <k> #eth_sendRawTransaction => #rpcResponseError(-32000, "\"value\" argument must not be a number") ... </k>
          <params> [ _:Int, .JSONList ] </params>
 
-    rule <k> #eth_sendRawTransaction => #sendResponse("error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
+    rule <k> #eth_sendRawTransaction => #rpcResponseError(-32000, "Invalid Signature") ... </k> [owise]
 
     rule <k> #eth_sendRawTransactionLoad
           => mkTX !ID:Int
@@ -726,7 +726,7 @@ eth_sendRawTransaction
          </k>
          <params> [ TN, TP, TG, TT, TV, TI, TW, TR, TS, .JSONList ] </params>
 
-    rule <k> #eth_sendRawTransactionLoad => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
+    rule <k> #eth_sendRawTransactionLoad => #rpcResponseError(-32000, "Invalid Signature") ... </k> [owise]
 
     rule <k> #eth_sendRawTransactionVerify TXID => #eth_sendRawTransactionSend TXID ... </k>
          <message>
@@ -738,7 +738,7 @@ eth_sendRawTransaction
          </message>
       requires ECDSARecover( Hex2Raw( #hashUnsignedTx( TXID ) ), V, #unparseByteStack(R), #unparseByteStack(S) ) =/=String ""
 
-    rule <k> #eth_sendRawTransactionVerify _ => #sendResponse( "error": { "code": -32000, "message":"Invalid Signature" } ) ... </k> [owise]
+    rule <k> #eth_sendRawTransactionVerify _ => #rpcResponseError(-32000, "Invalid Signature") ... </k> [owise]
 
     rule <k> #eth_sendRawTransactionSend TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
 ```
@@ -762,11 +762,11 @@ Retrieving Blocks
     rule <k> #eth_getBlockByNumber => #eth_getBlockByNumber_finalize( #getBlockByNumber( #parseBlockIdentifier(TAG), BLOCKLIST)) ... </k>
          <params> [ TAG:String, TXOUT:Bool, .JSONList ] </params>
          <blockList> BLOCKLIST </blockList>
-    rule <k> #eth_getBlockByNumber => #sendResponse ( "error": { "code":-32000, "message":"Incorrect number of arguments. Method 'eth_getBlockByNumber' requires exactly 2 arguments." } ) ... </k>
+    rule <k> #eth_getBlockByNumber => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_getBlockByNumber' requires exactly 2 arguments.") ... </k>
          <params> [ VALUE, .JSONList ] </params>
       requires notBool isJSONList( VALUE )
 
-    rule <k> #eth_getBlockByNumber => #sendResponse ( "error": { "code":-32000, "message":"Incorrect number of arguments. Method 'eth_getBlockByNumber' requires exactly 2 arguments." } ) ... </k>
+    rule <k> #eth_getBlockByNumber => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_getBlockByNumber' requires exactly 2 arguments.") ... </k>
          <params> [ VALUE, VALUE2, _, .JSONList ] </params>
       requires notBool isJSONList( VALUE ) andBool notBool isJSONList( VALUE2 )
 
@@ -1169,11 +1169,11 @@ Transaction Receipts
          <params> [ PRIKEY:String, PASSPHRASE:String, .JSONList ] </params>
       requires lengthString( PRIKEY ) ==Int 66
 
-    rule <k> #personal_importRawKey => #sendResponse( "error": {"code": -32000, "message":"Private key length is invalid. Must be 32 bytes."} ) ... </k>
+    rule <k> #personal_importRawKey => #rpcResponseError(-32000, "Private key length is invalid. Must be 32 bytes.") ... </k>
          <params> [ PRIKEY:String, _:String, .JSONList ] </params>
       requires lengthString( PRIKEY ) =/=Int 66
 
-    rule <k> #personal_importRawKey => #sendResponse( "error": {"code": -32000, "message":"Method 'personal_importRawKey' requires exactly 2 parameters"} ) ... </k> [owise]
+    rule <k> #personal_importRawKey => #rpcResponseError(-32000, "Method 'personal_importRawKey' requires exactly 2 parameters") ... </k> [owise]
 
     syntax KItem ::= "#acctFromPrivateKey" String
  // ---------------------------------------------
@@ -1210,7 +1210,7 @@ Transaction Receipts
           <activeAccounts> ACCTS </activeAccounts>
       requires #addrFromPrivateKey(ACCT_KEY) in ACCTS
 
-    rule <k> #firefly_addAccount => #sendResponse( "error": {"code": -32025, "message":"Method 'firefly_addAccount' has invalid arguments"} ) ... </k> [owise]
+    rule <k> #firefly_addAccount => #rpcResponseError(-32025, "Method 'firefly_addAccount' has invalid arguments") ... </k> [owise]
 
     rule <k> loadAccount _ { "balance" : ((VAL:String)         => #parseHexWord(VAL)),     _ } ... </k>
     rule <k> loadAccount _ { "nonce"   : ((VAL:String)         => #parseHexWord(VAL)),     _ } ... </k>
@@ -1241,7 +1241,7 @@ Transaction Receipts
       requires isString( #getJSON("to", J) )
         andBool isString(#getJSON("from",J) )
 
-    rule <k> #eth_call => #sendResponse( "error": {"code": -32027, "message":"Method 'eth_call' has invalid arguments"} ) ...  </k>
+    rule <k> #eth_call => #rpcResponseError(-32027, "Method 'eth_call' has invalid arguments") ...  </k>
          <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
       requires notBool isString( #getJSON("from", J) )
 
@@ -1272,7 +1272,7 @@ Transaction Receipts
          <gasUsed>  GUSED  </gasUsed>
       requires isString(#getJSON("from", J) )
 
-    rule <k> #eth_estimateGas => #sendResponse( "error": {"code": -32028, "message":"Method 'eth_estimateGas' has invalid arguments"} ) ...  </k>
+    rule <k> #eth_estimateGas => #rpcResponseError(-32028, "Method 'eth_estimateGas' has invalid arguments") ...  </k>
          <params> [ ({ _ } #as J), TAG, .JSONList ] </params>
       requires notBool isString( #getJSON("from", J) )
 
@@ -1283,7 +1283,7 @@ Transaction Receipts
          <blockList> BLOCKLIST </blockList>
       requires STATUSCODE =/=K EVMC_OUT_OF_GAS
 
-    rule <k> #eth_estimateGas_finalize _ => #popNetworkState ~> #sendResponse ( "error": {"code": -32000, "message":"base fee exceeds gas limit"}) ... </k>
+    rule <k> #eth_estimateGas_finalize _ => #popNetworkState ~> #rpcResponseError(-32000 , "base fee exceeds gas limit") ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
 
     syntax Int ::= #getGasUsed( BlockchainItem ) [function]
@@ -1680,7 +1680,7 @@ Gas Limit Call
          <params> [ GLIMIT:Int, .JSONList ] </params>
          <gasLimit> _ => GLIMIT </gasLimit>
 
-    rule <k> #firefly_setGasLimit => #sendResponse( "error": { "code": -32000, "message": "firefly_setGasLimit requires exactly 1 argument" } ) ... </k> [owise]
+    rule <k> #firefly_setGasLimit => #rpcResponseError(-32000, "firefly_setGasLimit requires exactly 1 argument") ... </k> [owise]
 ```
 
 Mining
@@ -1695,8 +1695,8 @@ Mining
          <params> [ TIME:String, .JSONList ] </params>
          <timestamp> _ => #parseWord( TIME ) </timestamp>
 
-    rule <k> #evm_mine => #sendResponse( "error": "Incorrect number of arguments. Method 'evm_mine' requires between 0 and 1 arguments." ) ... </k>
-         <params> [ _, _, _:JSONList ] </params>
+    rule <k> #evm_mine => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'evm_mine' requires between 0 and 1 arguments.") ... </k>
+         <params> [ _ , _ , _:JSONList ] </params>
 
     syntax KItem ::= "#firefly_genesisBlock"
  // ----------------------------------------
