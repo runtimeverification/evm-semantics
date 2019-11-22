@@ -1,8 +1,6 @@
 requires "asm.k"
-requires "edsl.k"
 
 module VERIFICATION
-    imports EDSL
     imports EVM-ASSEMBLY
 
     rule #sizeWordStack ( WS , N:Int )
