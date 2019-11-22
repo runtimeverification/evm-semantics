@@ -1374,7 +1374,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 ```{.k .bytes}
     rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
     rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, ListItem(I) RESULT) requires I <Int #sizeByteArray(PGM) andBool PGM [ I ] ==Int 91
-    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) [owise]
+    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires I <Int #sizeByteArray(PGM) andBool notBool PGM [ I ] ==Int 91
 ```
 
 ```k
