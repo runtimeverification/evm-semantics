@@ -14,24 +14,24 @@ def escape(data):
 
 def print_kast(data):
   if isinstance(data, list):
-    sys.stdout.write('`[_]_EVM-DATA`(')
+    sys.stdout.write('`[_]_JSON`(')
     for elem in data:
-      sys.stdout.write('`_,__EVM-DATA`(')
+      sys.stdout.write('`_,__JSON`(')
       print_kast(elem)
       sys.stdout.write(',')
-    sys.stdout.write('`.List{"_,__EVM-DATA"}`(.KList)')
+    sys.stdout.write('`.List{"_,__JSON"}`(.KList)')
     for elem in data:
       sys.stdout.write(')')
     sys.stdout.write(')')
   elif isinstance(data, OrderedDict):
-    sys.stdout.write('`{_}_EVM-DATA`(')
+    sys.stdout.write('`{_}_JSON`(')
     for key, value in data.items():
-      sys.stdout.write('`_,__EVM-DATA`(`_:__EVM-DATA`(')
+      sys.stdout.write('`_,__JSON`(`_:__JSON`(')
       print_kast(key)
       sys.stdout.write(',')
       print_kast(value)
       sys.stdout.write('),')
-    sys.stdout.write('`.List{"_,__EVM-DATA"}`(.KList)')
+    sys.stdout.write('`.List{"_,__JSON"}`(.KList)')
     for key in data:
       sys.stdout.write(')')
     sys.stdout.write(')')
