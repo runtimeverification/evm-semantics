@@ -55,6 +55,16 @@
 }
 {
   "jsonrpc": "2.0",
+  "id": 0,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
   "id": 1,
   "result": "0x0"
 }
@@ -161,6 +171,11 @@
     "transactions": [],
     "uncles": []
   }
+}
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": "1574066889"
 }
 {
   "jsonrpc": "2.0",
