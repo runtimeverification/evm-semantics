@@ -40,23 +40,23 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax JSON ::= ByteArray | OpCodes | Map | Call | SubstateLogEntry | Account
  // -----------------------------------------------------------------------------
 
-    syntax JSONList ::= #sortJSONList ( JSONList )            [function]
-                      | #sortJSONList ( JSONList , JSONList ) [function, klabel(#sortJSONListAux)]
- // ----------------------------------------------------------------------------------------------
-    rule #sortJSONList(JS) => #sortJSONList(JS, .JSONList)
-    rule #sortJSONList(.JSONList, LS)            => LS
-    rule #sortJSONList(((KEY : VAL) , REST), LS) => #insertJSONKey((KEY : VAL), #sortJSONList(REST, LS))
+    syntax JSONs ::= #sortJSONs ( JSONs )         [function]
+                   | #sortJSONs ( JSONs , JSONs ) [function, klabel(#sortJSONsAux)]
+ // -------------------------------------------------------------------------------
+    rule #sortJSONs(JS) => #sortJSONs(JS, .JSONs)
+    rule #sortJSONs(.JSONs, LS)               => LS
+    rule #sortJSONs(((KEY : VAL) , REST), LS) => #insertJSONKey((KEY : VAL), #sortJSONs(REST, LS))
 
-    syntax JSONList ::= #insertJSONKey ( JSON , JSONList ) [function]
- // -----------------------------------------------------------------
-    rule #insertJSONKey( JS , .JSONList ) => JS , .JSONList
+    syntax JSONs ::= #insertJSONKey ( JSON , JSONs ) [function]
+ // -----------------------------------------------------------
+    rule #insertJSONKey( JS , .JSONs ) => JS , .JSONs
     rule #insertJSONKey( (KEY : VAL) , ((KEY' : VAL') , REST) ) => (KEY : VAL)   , (KEY' : VAL')              , REST  requires KEY <String KEY'
     rule #insertJSONKey( (KEY : VAL) , ((KEY' : VAL') , REST) ) => (KEY' : VAL') , #insertJSONKey((KEY : VAL) , REST) requires KEY >=String KEY'
 
-    syntax Bool ::= #isSorted ( JSONList ) [function]
- // -------------------------------------------------
-    rule #isSorted( .JSONList ) => true
-    rule #isSorted( KEY : _ )   => true
+    syntax Bool ::= #isSorted ( JSONs ) [function]
+ // ----------------------------------------------
+    rule #isSorted( .JSONs  ) => true
+    rule #isSorted( KEY : _ ) => true
     rule #isSorted( (KEY : _) , (KEY' : VAL) , REST ) => KEY <=String KEY' andThenBool #isSorted((KEY' : VAL) , REST)
 ```
 
@@ -227,9 +227,9 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```k
     syntax EthereumCommand ::= "run" JSON
  // -------------------------------------
-    rule <k> run { .JSONList } => . ... </k>
-    rule <k> run { TESTID : { TEST:JSONList } , TESTS }
-          => run ( TESTID : { #sortJSONList(TEST) } )
+    rule <k> run { .JSONs } => . ... </k>
+    rule <k> run { TESTID : { TEST:JSONs } , TESTS }
+          => run ( TESTID : { #sortJSONs(TEST) } )
           ~> #if #hasPost?( { TEST } ) #then .K #else exception #fi
           ~> clear
           ~> run { TESTS }
@@ -238,7 +238,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 
     syntax Bool ::= "#hasPost?" "(" JSON ")" [function]
  // ---------------------------------------------------
-    rule #hasPost? ({ .JSONList }) => false
+    rule #hasPost? ({ .JSONs }) => false
     rule #hasPost? ({ (KEY:String) : _ , REST }) => (KEY in #postKeys) orBool #hasPost? ({ REST })
 ```
 
@@ -252,8 +252,8 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } ... </k>
       requires KEY in #loadKeys
 
-    rule <k> run TESTID : { "blocks" : [ { KEY : VAL , REST1 => REST1 }, .JSONList ] , ( REST2 => KEY : VAL , REST2 ) } ... </k>
-    rule <k> run TESTID : { "blocks" : [ { .JSONList }, .JSONList ] , REST } => run TESTID : { REST }                   ... </k>
+    rule <k> run TESTID : { "blocks" : [ { KEY : VAL , REST1 => REST1 }, .JSONs ] , ( REST2 => KEY : VAL , REST2 ) } ... </k>
+    rule <k> run TESTID : { "blocks" : [ { .JSONs }, .JSONs ] , REST } => run TESTID : { REST }                      ... </k>
 ```
 
 -   `#execKeys` are all the JSON nodes which should be considered for execution (between loading and checking).
@@ -319,10 +319,10 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```{.k .standalone}
     rule <k> load "account" : { ACCTID : ACCT } => loadAccount ACCTID ACCT ... </k>
 
-    rule <k> loadAccount _ { "balance" : ((VAL:String)         => #parseWord(VAL)),        _ } ... </k>
-    rule <k> loadAccount _ { "nonce"   : ((VAL:String)         => #parseWord(VAL)),        _ } ... </k>
-    rule <k> loadAccount _ { "code"    : ((CODE:String)        => #parseByteStack(CODE)),  _ } ... </k>
-    rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })), _ } ... </k>
+    rule <k> loadAccount _ { "balance" : ((VAL:String)      => #parseWord(VAL)),        _ } ... </k>
+    rule <k> loadAccount _ { "nonce"   : ((VAL:String)      => #parseWord(VAL)),        _ } ... </k>
+    rule <k> loadAccount _ { "code"    : ((CODE:String)     => #parseByteStack(CODE)),  _ } ... </k>
+    rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONs } => #parseMap({ STORAGE })), _ } ... </k>
 
     rule <k> loadTransaction _ { "gasLimit" : (TG:String => #asWord(#parseByteStackRaw(TG))), _      } ... </k>
     rule <k> loadTransaction _ { "gasPrice" : (TP:String => #asWord(#parseByteStackRaw(TP))), _      } ... </k>
@@ -344,27 +344,27 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
  // ---------------------------------------
     rule <k> #halt ~> check J:JSON => check J ~> #halt ... </k>
 
-    rule <k> check DATA : { .JSONList } => . ... </k> requires DATA =/=String "transactions"
-    rule <k> check DATA : [ .JSONList ] => . ... </k> requires DATA =/=String "ommerHeaders"
+    rule <k> check DATA : { .JSONs } => . ... </k> requires DATA =/=String "transactions"
+    rule <k> check DATA : [ .JSONs ] => . ... </k> requires DATA =/=String "ommerHeaders"
 
     rule <k> check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST } ... </k>
-      requires REST =/=K .JSONList andBool notBool DATA in (SetItem("callcreates") SetItem("transactions"))
+      requires REST =/=K .JSONs andBool notBool DATA in (SetItem("callcreates") SetItem("transactions"))
 
     rule <k> check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ] ... </k>
       requires DATA =/=String "transactions"
 
-    rule <k> check (KEY:String) : { JS:JSONList => #sortJSONList(JS) } ... </k>
+    rule <k> check (KEY:String) : { JS:JSONs => #sortJSONs(JS) } ... </k>
       requires KEY in (SetItem("callcreates")) andBool notBool #isSorted(JS)
 
     rule <k> check TESTID : { "post" : POST } => check "account" : POST ~> failure TESTID ... </k>
     rule <k> check "account" : { ACCTID:Int : { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } ... </k>
-      requires REST =/=K .JSONList
+      requires REST =/=K .JSONs
 
     rule <k> check "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }                                ... </k>
-    rule <k> check "account" : { (ACCT:Int) : { "balance" : ((VAL:String)         => #parseWord(VAL)) } }        ... </k>
-    rule <k> check "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)         => #parseWord(VAL)) } }        ... </k>
-    rule <k> check "account" : { (ACCT:Int) : { "code"    : ((CODE:String)        => #parseByteStack(CODE)) } }  ... </k>
-    rule <k> check "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONList } => #parseMap({ STORAGE })) } } ... </k>
+    rule <k> check "account" : { (ACCT:Int) : { "balance" : ((VAL:String)      => #parseWord(VAL)) } }        ... </k>
+    rule <k> check "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)      => #parseWord(VAL)) } }        ... </k>
+    rule <k> check "account" : { (ACCT:Int) : { "code"    : ((CODE:String)     => #parseByteStack(CODE)) } }  ... </k>
+    rule <k> check "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONs } => #parseMap({ STORAGE })) } } ... </k>
 
     rule <mode> EXECMODE </mode>
          <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
@@ -431,7 +431,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule check TESTID : { "blockHeader" : BLOCKHEADER } => check "blockHeader" : BLOCKHEADER ~> failure TESTID
  // ----------------------------------------------------------------------------------------------------------
     rule <k> check "blockHeader" : { KEY : VALUE , REST } => check "blockHeader" : { KEY : VALUE } ~> check "blockHeader" : { REST } ... </k>
-      requires REST =/=K .JSONList
+      requires REST =/=K .JSONs
 
     rule <k> check "blockHeader" : { KEY : (VALUE:String => #parseByteStack(VALUE)) } ... </k>
 
@@ -479,7 +479,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule check TESTID : { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ~> failure TESTID
  // ------------------------------------------------------------------------------------------------------------------------
     rule <k> check "genesisBlockHeader" : { KEY : VALUE , REST } => check "genesisBlockHeader" : { KEY : VALUE } ~> check "genesisBlockHeader" : { REST } ... </k>
-      requires REST =/=K .JSONList
+      requires REST =/=K .JSONs
 
     rule <k> check "genesisBlockHeader" : { KEY : VALUE } => .K ... </k> requires KEY =/=String "hash"
 
@@ -489,8 +489,8 @@ Here we check the other post-conditions associated with an EVM test.
 
     rule <k> check TESTID : { "transactions" : TRANSACTIONS } => check "transactions" : TRANSACTIONS ~> failure TESTID ... </k>
  // ---------------------------------------------------------------------------------------------------------------------------
-    rule <k> check "transactions" : [ .JSONList ] => . ... </k> <txOrder> .List                    </txOrder>
-    rule <k> check "transactions" : { .JSONList } => . ... </k> <txOrder> ListItem(_) => .List ... </txOrder>
+    rule <k> check "transactions" : [ .JSONs ] => . ... </k> <txOrder> .List                    </txOrder>
+    rule <k> check "transactions" : { .JSONs } => . ... </k> <txOrder> ListItem(_) => .List ... </txOrder>
 
     rule <k> check "transactions" : [ TRANSACTION , REST ] => check "transactions" : TRANSACTION   ~> check "transactions" : [ REST ] ... </k>
     rule <k> check "transactions" : { KEY : VALUE , REST } => check "transactions" : (KEY : VALUE) ~> check "transactions" : { REST } ... </k>
@@ -516,7 +516,7 @@ TODO: case with nonzero ommers.
 ```k
     rule <k> check TESTID : { "uncleHeaders" : OMMERS } => check "ommerHeaders" : OMMERS ~> failure TESTID ... </k>
  // ---------------------------------------------------------------------------------------------------------------
-    rule <k> check "ommerHeaders" : [ .JSONList ] => . ... </k> <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
+    rule <k> check "ommerHeaders" : [ .JSONs ] => . ... </k> <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
 ```
 
 ```k
