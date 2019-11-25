@@ -16,14 +16,14 @@ module JSON
     imports STRING
     imports BOOL
 
-    syntax JSONs   ::= List{JSON,","}
+    syntax JSONs   ::= List{JSON,","}       [klable(JSONs)      , symbol]
     syntax JSONKey ::= String
-    syntax JSON    ::= "null"
+    syntax JSON    ::= "null"               [klabel(JSONnull)   , symbol]
                      | String | Int | Bool
-                     | JSONKey ":" JSON
-                     | "{" JSONs "}"
-                     | "[" JSONs "]"
- // --------------------------------
+                     | JSONKey ":" JSON     [klabel(JSONEntry)  , symbol]
+                     | "{" JSONs "}"        [klabel(JSONObject) , symbol]
+                     | "[" JSONs "]"        [klabel(JSONList)   , symbol]
+ // ---------------------------------------------------------------------
 endmodule
 ```
 
