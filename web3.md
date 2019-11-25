@@ -32,6 +32,7 @@ module WEB3
             <txStatus>        0          </txStatus>
             <txID>            0          </txID>
             <sender>          .Account   </sender>
+            <txBlockNumber>   0          </txBlockNumber>
           </txReceipt>
         </txReceipts>
         <filters>
@@ -859,6 +860,7 @@ Transaction Receipts
                <txStatus> bool2Word(STATUSCODE ==K EVMC_SUCCESS) </txStatus>
                <txID> TXID </txID>
                <sender> #parseHexWord(#unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS)))) </sender>
+               <txBlockNumber> BN </txBlockNumber>
              </txReceipt>
            )
            ...
@@ -878,6 +880,7 @@ Transaction Receipts
          <statusCode> STATUSCODE </statusCode>
          <gasUsed> CGAS </gasUsed>
          <log> LOGS </log>
+         <number> BN </number>
 
     syntax KItem ::= "#eth_getTransactionReceipt"
  // ---------------------------------------------
@@ -910,6 +913,7 @@ Transaction Receipts
            <bloomFilter>     BLOOM </bloomFilter>
            <txStatus>        TXSTATUS </txStatus>
            <sender>          TXFROM </sender>
+           ...
          </txReceipt>
          <number>  BN     </number>
          <txOrder> TXLIST </txOrder>
