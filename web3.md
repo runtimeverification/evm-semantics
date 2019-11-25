@@ -860,7 +860,7 @@ Transaction Receipts
                <txStatus> bool2Word(STATUSCODE ==K EVMC_SUCCESS) </txStatus>
                <txID> TXID </txID>
                <sender> #parseHexWord(#unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS)))) </sender>
-               <txBlockNumber> BN </txBlockNumber>
+               <txBlockNumber> BN +Int 1 </txBlockNumber>
              </txReceipt>
            )
            ...
@@ -883,8 +883,36 @@ Transaction Receipts
          <number> BN </number>
 
     syntax KItem ::= "#eth_getTransactionReceipt"
- // ---------------------------------------------
-    rule <k> #eth_getTransactionReceipt
+                   | "#eth_getTransactionReceipt_final" "(" BlockchainItem ")"
+ // --------------------------------------------------------------------------
+    rule <k> #eth_getTransactionReceipt => #eth_getTransactionReceipt_final(#getBlockByNumber (BN, BLOCKLIST)) ... </k>
+         <params> [TXHASH:String, .JSONList] </params>
+         <txReceipt>
+           <txHash>          TXHASH </txHash>
+           <txBlockNumber>   BN     </txBlockNumber>
+           ...
+         </txReceipt>
+         <blockList> BLOCKLIST </blockList>
+
+    rule <k> #eth_getTransactionReceipt_final ({
+             <network>
+               <txOrder> TXLIST </txOrder>
+               <message>
+                 <msgID>      TXID     </msgID>
+                 <txNonce>    TN       </txNonce>
+                 <to>         TT:Account </to>
+                 <sigV>       TW       </sigV>
+                 <sigR>       TR       </sigR>
+                 <sigS>       TS       </sigS>
+                 ...
+               </message>
+               <account>
+                 <acctID> TXFROM </acctID>
+                 <nonce>  NONCE  </nonce>
+                 ...
+               </account>
+               ...
+             </network> | _ })
           => #rpcResponseSuccess( { "transactionHash": TXHASH
                                   , "transactionIndex": #unparseQuantity(getIndexOf(TXID, TXLIST))
                                   , "blockHash": #unparseQuantity(1)
@@ -913,25 +941,8 @@ Transaction Receipts
            <bloomFilter>     BLOOM </bloomFilter>
            <txStatus>        TXSTATUS </txStatus>
            <sender>          TXFROM </sender>
-           ...
+           <txBlockNumber>   BN     </txBlockNumber>
          </txReceipt>
-         <number>  BN     </number>
-         <txOrder> TXLIST </txOrder>
-         <message>
-           <msgID>      TXID     </msgID>
-           <txNonce>    TN       </txNonce>
-           <to>         TT:Account </to>
-           <sigV>       TW       </sigV>
-           <sigR>       TR       </sigR>
-           <sigS>       TS       </sigS>
-           ...
-         </message>
-         <account>
-           <acctID> TXFROM </acctID>
-           <nonce>  NONCE  </nonce>
-           ...
-         </account>
-         <log> LOGS </log>
 
     rule <k> #eth_getTransactionReceipt => #rpcResponseSuccess(null) ... </k> [owise]
 
