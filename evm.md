@@ -104,7 +104,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <mixHash>          0          </mixHash>          // I_Hm
               <blockNonce>       0          </blockNonce>       // I_Hn
 
-              <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
+              <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
             </block>
 
           </evm>
@@ -658,8 +658,8 @@ After executing a transaction, it's necessary to have the effect of the substate
          <log> _ => .List </log>
          <logsBloom> _ => #padToWidth(256, .ByteArray) </logsBloom>
 
-    syntax EthereumCommand ::= "#finalizeBlock" | #rewardOmmers ( JSONList )
- // ------------------------------------------------------------------------
+    syntax EthereumCommand ::= "#finalizeBlock" | #rewardOmmers ( JSONs )
+ // ---------------------------------------------------------------------
     rule <k> #finalizeBlock => #rewardOmmers(OMMERS) ... </k>
          <schedule> SCHED </schedule>
          <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
@@ -677,7 +677,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool MINER in ACCTS
 
-    rule <k> #rewardOmmers(.JSONList) => . ... </k>
+    rule <k> #rewardOmmers(.JSONs) => . ... </k>
     rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
          <schedule> SCHED </schedule>
          <coinbase> MINER </coinbase>

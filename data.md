@@ -16,19 +16,14 @@ module JSON
     imports STRING
     imports BOOL
 
-    syntax JSONs    ::= List{JSON,","} [klabel(JSONs), symbol]
-                      | ".JSONList"
-    syntax JSONList = JSONs
- // -----------------------
-    rule .JSONList => .JSONs [macro]
-
-    syntax JSONKey  ::= String
-    syntax JSON     ::= "null"              [klabel(JSONnull)   , symbol]
-                      | String | Int | Bool
-                      | JSONKey ":" JSON    [klabel(JSONEntry)  , symbol]
-                      | "{" JSONList "}"    [klabel(JSONObject) , symbol]
-                      | "[" JSONList "]"    [klabel(JSONList)   , symbol]
- // ---------------------------------------------------------------------
+    syntax JSONs   ::= List{JSON,","}      [klabel(JSONs)      , symbol]
+    syntax JSONKey ::= String
+    syntax JSON    ::= "null"              [klabel(JSONnull)   , symbol]
+                     | String | Int | Bool
+                     | JSONKey ":" JSON    [klabel(JSONEntry)  , symbol]
+                     | "{" JSONs "}"       [klabel(JSONObject) , symbol]
+                     | "[" JSONs "]"       [klabel(JSONList)   , symbol]
+ // --------------------------------------------------------------------
 endmodule
 ```
 
@@ -840,7 +835,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
 ```k
     syntax Map ::= #parseMap ( JSON ) [function]
  // --------------------------------------------
-    rule #parseMap( { .JSONList                   } ) => .Map
+    rule #parseMap( { .JSONs                      } ) => .Map
     rule #parseMap( { _   : (VALUE:String) , REST } ) => #parseMap({ REST })                                                requires #parseHexWord(VALUE) ==K 0
     rule #parseMap( { KEY : (VALUE:String) , REST } ) => #parseMap({ REST }) [ #parseHexWord(KEY) <- #parseHexWord(VALUE) ] requires #parseHexWord(VALUE) =/=K 0
 
@@ -993,7 +988,7 @@ Decoding
 --------
 
 -   `#rlpDecode` RLP decodes a single `String` into a `JSON`.
--   `#rlpDecodeList` RLP decodes a single `String` into a `JSONList`, interpereting the string as the RLP encoding of a list.
+-   `#rlpDecodeList` RLP decodes a single `String` into a `JSONs`, interpereting the string as the RLP encoding of a list.
 
 ```k
     syntax JSON ::= #rlpDecode(String)               [function]
@@ -1003,11 +998,11 @@ Decoding
     rule #rlpDecode(STR, #str(LEN, POS))  => substrString(STR, POS, POS +Int LEN)
     rule #rlpDecode(STR, #list(LEN, POS)) => [#rlpDecodeList(STR, POS)]
 
-    syntax JSONList ::= #rlpDecodeList(String, Int)               [function]
-                      | #rlpDecodeList(String, Int, LengthPrefix) [function, klabel(#rlpDecodeListAux)]
- // ---------------------------------------------------------------------------------------------------
+    syntax JSONs ::= #rlpDecodeList(String, Int)               [function]
+                   | #rlpDecodeList(String, Int, LengthPrefix) [function, klabel(#rlpDecodeListAux)]
+ // ------------------------------------------------------------------------------------------------
     rule #rlpDecodeList(STR, POS) => #rlpDecodeList(STR, POS, #decodeLengthPrefix(STR, POS)) requires POS <Int lengthString(STR)
-    rule #rlpDecodeList(STR, POS) => .JSONList [owise]
+    rule #rlpDecodeList(STR, POS) => .JSONs [owise]
     rule #rlpDecodeList(STR, POS, _:LengthPrefixType(L, P)) => #rlpDecode(substrString(STR, POS, L +Int P)) , #rlpDecodeList(STR, L +Int P)
 
     syntax LengthPrefixType ::= "#str" | "#list"
