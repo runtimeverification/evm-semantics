@@ -17,7 +17,7 @@ module JSON
     imports BOOL
 
     syntax JSONList ::= List{JSON,","}
-    syntax JSONKey  ::= String | Int
+    syntax JSONKey  ::= String
     syntax JSON     ::= "null"
                       | String | Int | Bool
                       | JSONKey ":" JSON
@@ -42,6 +42,13 @@ module EVM-DATA
 
 ```{.k .concrete}
     imports BYTES
+```
+
+**TODO**: Adding `Int` to `JSONKey` is a hack to make certain parts of semantics easier.
+
+```k
+    syntax JSONKey ::= Int
+ // ----------------------
 ```
 
 Utilities
