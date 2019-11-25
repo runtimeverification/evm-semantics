@@ -14,24 +14,24 @@ def escape(data):
 
 def print_kast(data):
   if isinstance(data, list):
-    sys.stdout.write('`[_]_JSON`(')
+    sys.stdout.write('`JSONList`(')
     for elem in data:
-      sys.stdout.write('`_,__JSON`(')
+      sys.stdout.write('`JSONs`(')
       print_kast(elem)
       sys.stdout.write(',')
-    sys.stdout.write('`.List{"_,__JSON"}`(.KList)')
+    sys.stdout.write('`.List{"JSONs"}`(.KList)')
     for elem in data:
       sys.stdout.write(')')
     sys.stdout.write(')')
   elif isinstance(data, OrderedDict):
-    sys.stdout.write('`{_}_JSON`(')
+    sys.stdout.write('`JSONObject`(')
     for key, value in data.items():
-      sys.stdout.write('`_,__JSON`(`_:__JSON`(')
+      sys.stdout.write('`JSONs`(`JSONEntry`(')
       print_kast(key)
       sys.stdout.write(',')
       print_kast(value)
       sys.stdout.write('),')
-    sys.stdout.write('`.List{"_,__JSON"}`(.KList)')
+    sys.stdout.write('`.List{"JSONs"}`(.KList)')
     for key in data:
       sys.stdout.write(')')
     sys.stdout.write(')')
