@@ -16,7 +16,7 @@ module JSON
     imports STRING
     imports BOOL
 
-    syntax JSONs   ::= List{JSON,","}       [klable(JSONs)      , symbol]
+    syntax JSONs   ::= List{JSON,","}       [klabel(JSONs)      , symbol]
     syntax JSONKey ::= String
     syntax JSON    ::= "null"               [klabel(JSONnull)   , symbol]
                      | String | Int | Bool
