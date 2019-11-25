@@ -421,13 +421,6 @@ A cons-list is used for the EVM wordstack.
  // ---------------------------------------------------------------------
     rule #drop(N, WS)         => WS                  requires notBool N >Int 0
     rule #drop(N, .WordStack) => .WordStack
-```
-
-```{.k .concrete}
-    rule #drop(N, (W : WS))   => #drop(N -Int 1, WS) requires N >Int 0
-```
-
-```{.k .symbolic}
     rule #drop(N, (W : WS))   => #drop(1, #drop(N -Int 1, (W : WS))) requires N >Int 1
     rule #drop(1, (_ : WS))   => WS
 ```
