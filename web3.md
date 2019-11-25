@@ -54,7 +54,7 @@ module WEB3
           <jsonrpc> "":JSON </jsonrpc>
           <callid> 0:JSON </callid>
           <method> "":JSON </method>
-          <params> [ .JSONList ] </params>
+          <params> [ .JSONs ] </params>
           <batch> undef </batch>
         </web3request>
         <web3response> .List </web3response>
@@ -262,9 +262,9 @@ WEB3 JSON RPC
     rule <k> #rpcResponseError(CODE, MSG, DATA) => #sendResponse( "error" : { "code": CODE , "message": MSG , "data" : DATA } ) ... </k> requires isProperJson(DATA)
     rule <k> #rpcResponseUnimplemented(RPCCALL) => #sendResponse( "unimplemented" : RPCCALL )                                   ... </k>
 
-    syntax Bool ::= isProperJson     ( JSON     ) [function]
-                  | isProperJsonList ( JSONList ) [function]
- // --------------------------------------------------------
+    syntax Bool ::= isProperJson     ( JSON  ) [function]
+                  | isProperJsonList ( JSONs ) [function]
+ // -----------------------------------------------------
     rule isProperJson(_) => false [owise]
 
     rule isProperJson(null) => true
@@ -278,8 +278,8 @@ WEB3 JSON RPC
     rule isProperJson([ JS ]) => isProperJsonList(JS)
     rule isProperJson({ JS }) => isProperJsonList(JS)
 
-    rule isProperJsonList(.JSONList) => true
-    rule isProperJsonList(J, JS)     => isProperJson(J) andBool isProperJsonList(JS)
+    rule isProperJsonList(.JSONs) => true
+    rule isProperJsonList(J, JS)  => isProperJson(J) andBool isProperJsonList(JS)
 
     syntax KItem ::= "#checkRPCCall"
  // --------------------------------
@@ -888,7 +888,7 @@ Transaction Receipts
                    | "#eth_getTransactionReceipt_final" "(" BlockchainItem ")"
  // --------------------------------------------------------------------------
     rule <k> #eth_getTransactionReceipt => #eth_getTransactionReceipt_final(#getBlockByNumber (BN, BLOCKLIST)) ... </k>
-         <params> [TXHASH:String, .JSONList] </params>
+         <params> [TXHASH:String, .JSONs] </params>
          <txReceipt>
            <txHash>          TXHASH </txHash>
            <txBlockNumber>   BN     </txBlockNumber>
