@@ -9,7 +9,7 @@
     "id": 59,
     "error": {
       "code": -32000,
-      "message": "from not found; is required"
+      "message": "\"from\" field not found; is required"
     }
   }
 ]
