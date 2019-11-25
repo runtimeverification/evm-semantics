@@ -421,7 +421,8 @@ A cons-list is used for the EVM wordstack.
  // ---------------------------------------------------------------------
     rule #drop(N, WS)         => WS                  requires notBool N >Int 0
     rule #drop(N, .WordStack) => .WordStack
-    rule #drop(N, (W : WS))   => #drop(N -Int 1, WS) requires N >Int 0
+    rule #drop(N, (W : WS))   => #drop(1, #drop(N -Int 1, (W : WS))) requires N >Int 1
+    rule #drop(1, (_ : WS))   => WS
 ```
 
 ### Element Access
@@ -432,8 +433,8 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax Int ::= WordStack "[" Int "]" [function]
  // -----------------------------------------------
-    rule (W0 : WS)   [N] => W0           requires N ==Int 0
-    rule (W0 : WS)   [N] => WS[N -Int 1] requires N >Int 0
+    rule (W : _) [ N ] => W                  requires N ==Int 0
+    rule WS      [ N ] => #drop(N, WS) [ 0 ] requires N >Int 0
 
     syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function]
  // --------------------------------------------------------------
