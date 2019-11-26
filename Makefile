@@ -44,7 +44,7 @@ export LUA_PATH
         split-tests                                                                                                                                    \
         test test-all test-conformance test-rest-conformance test-all-conformance                                                                      \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                                  \
-        test-web3 update-web3                                                                                                                          \
+        test-web3                                                                                                                                      \
         test-prove test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-klab-prove \
         test-parse test-failure                                                                                                                        \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly            \
@@ -368,9 +368,8 @@ release.md: INSTALL.md
 TEST_CONCRETE_BACKEND := llvm
 TEST_SYMBOLIC_BACKEND := java
 
-TEST   := ./kevm
-CHECK  := git --no-pager diff --no-index --ignore-all-space -R
-UPDATE := cp
+TEST  := ./kevm
+CHECK := git --no-pager diff --no-index --ignore-all-space -R
 
 KEVM_MODE     := NORMAL
 KEVM_SCHEDULE := PETERSBURG
@@ -414,11 +413,6 @@ tests/web3/no-shutdown/%: KEVM_WEB3_ARGS=
 tests/%.run-web3: tests/%.in.json
 	tests/web3/runtest.sh $< tests/$*.out.json $(KEVM_WEB3_ARGS)
 	$(CHECK) tests/$*.out.json tests/$*.expected.json
-	rm -rf tests/$*.out.json
-
-tests/%.update-web3: tests/%.in.json
-	tests/web3/runtest.sh $< tests/$*.out.json $(KEVM_WEB3_ARGS)
-	$(UPDATE) tests/$*.out.json tests/$*.expected.json
 	rm -rf tests/$*.out.json
 
 tests/%.parse: tests/%
@@ -481,7 +475,6 @@ web3_tests=$(wildcard tests/web3/*.in.json) \
            $(wildcard tests/web3/no-shutdown/*.in.json)
 
 test-web3: $(web3_tests:.in.json=.run-web3)
-update-web3: $(web3_tests:.in.json=.update-web3)
 
 # Proof Tests
 
