@@ -1274,7 +1274,11 @@ Transaction Receipts
 
     syntax KItem ::= "#eth_call_finalize"
  // -------------------------------------
-    rule <k> #eth_call_finalize => #setMode NORMAL ~> #popNetworkState ~> #rpcResponseSuccess(#unparseDataByteArray( OUTPUT )) ... </k>
+    rule <k> #eth_call_finalize
+          => #setMode NORMAL
+          ~> #popNetworkState
+          ~> #clearGas
+          ~> #rpcResponseSuccess(#unparseDataByteArray( OUTPUT )) ... </k>
          <output> OUTPUT </output>
 ```
 
