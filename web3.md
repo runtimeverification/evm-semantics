@@ -898,7 +898,7 @@ Transaction Receipts
                    | "#eth_getTransactionReceipt_final" "(" BlockchainItem ")"
  // --------------------------------------------------------------------------
     rule <k> #eth_getTransactionReceipt => #eth_getTransactionReceipt_final(#getBlockByNumber (BN, BLOCKLIST)) ... </k>
-         <params> [TXHASH:String, .JSONs] </params>
+         <params> [TXHASH:String, .JSONList] </params>
          <txReceipt>
            <txHash>          TXHASH </txHash>
            <txBlockNumber>   BN     </txBlockNumber>
