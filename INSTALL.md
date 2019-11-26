@@ -6,6 +6,7 @@ Current supported systems are:
 
 -   Ubuntu Bionic (18.04)
 -   Debian Buster
+-   Mac OS X Mojave
 
 Downloading Packages
 --------------------
@@ -22,6 +23,15 @@ Install the package with (`X.Y.Z` is version number, `ID` is platform identifier
 
 ```sh
 sudo apt install ./kevm_X.Y.Z_amd64_ID.deb
+```
+
+### Mac OS X Mojave
+
+Tap the `kframework/k` bottle then install the downloaded `kevm` bottle:
+
+```sh
+brew tap kframework/k "file:///$(pwd)"
+brew install "kevm--X.Y.Z.mojave.bottle.tar.gz" -v
 ```
 
 Building Packages
