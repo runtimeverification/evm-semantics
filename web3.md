@@ -1266,7 +1266,9 @@ Transaction Receipts
           => #setMode NORMAL
           ~> #popNetworkState
           ~> #clearGas
-          ~> #rpcResponseSuccess(#unparseDataByteArray( OUTPUT )) ... </k>
+          ~> #rpcResponseSuccess(#unparseDataByteArray( OUTPUT ))
+         ...
+        </k>
          <output> OUTPUT </output>
 ```
 
