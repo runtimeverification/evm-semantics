@@ -369,7 +369,7 @@ TEST_CONCRETE_BACKEND := llvm
 TEST_SYMBOLIC_BACKEND := java
 
 TEST   := ./kevm
-CHECK  := git --no-pager diff --no-index --ignore-all-space
+CHECK  := git --no-pager diff --no-index --ignore-all-space -R
 UPDATE := cp
 
 KEVM_MODE     := NORMAL
@@ -396,24 +396,24 @@ tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE=DEFAULT
 
 tests/%.run: tests/%
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) interpret --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
-	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
+	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-interactive: tests/%
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) run --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
-	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
+	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-expected: tests/% tests/%.expected
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) run --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
-	    || $(CHECK) tests/$*.expected tests/$*.$(TEST_CONCRETE_BACKEND)-out
+	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/web3/no-shutdown/%: KEVM_WEB3_ARGS=
 
 tests/%.run-web3: tests/%.in.json
 	tests/web3/runtest.sh $< tests/$*.out.json $(KEVM_WEB3_ARGS)
-	$(CHECK) tests/$*.expected.json tests/$*.out.json
+	$(CHECK) tests/$*.out.json tests/$*.expected.json
 	rm -rf tests/$*.out.json
 
 tests/%.update-web3: tests/%.in.json
@@ -423,7 +423,7 @@ tests/%.update-web3: tests/%.in.json
 
 tests/%.parse: tests/%
 	$(TEST) kast --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
-	$(CHECK) $@-expected $@-out
+	$(CHECK) $@-out $@-expected
 	rm -rf $@-out
 
 tests/specs/functional/%.prove: TEST_SYMBOLIC_BACKEND=haskell
@@ -434,7 +434,7 @@ tests/%.prove: tests/%
 
 tests/%.search: tests/%
 	$(TEST) search --backend $(TEST_SYMBOLIC_BACKEND) $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" > $@-out
-	$(CHECK) $@-expected $@-out
+	$(CHECK) $@-out $@-expected
 	rm -rf $@-out
 
 tests/%.klab-prove: tests/%
