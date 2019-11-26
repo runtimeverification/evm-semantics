@@ -777,11 +777,11 @@ Retrieving Blocks
          <blockList> BLOCKLIST </blockList>
     rule <k> #eth_getBlockByNumber => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_getBlockByNumber' requires exactly 2 arguments.") ... </k>
          <params> [ VALUE, .JSONList ] </params>
-      requires notBool isJSONList( VALUE )
+      requires notBool isJSONs( VALUE )
 
     rule <k> #eth_getBlockByNumber => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_getBlockByNumber' requires exactly 2 arguments.") ... </k>
          <params> [ VALUE, VALUE2, _, .JSONList ] </params>
-      requires notBool isJSONList( VALUE ) andBool notBool isJSONList( VALUE2 )
+      requires notBool isJSONs( VALUE ) andBool notBool isJSONs( VALUE2 )
 
     syntax KItem ::= "#eth_getBlockByNumber_finalize" "(" BlockchainItem ")"
  // ------------------------------------------------------------------------

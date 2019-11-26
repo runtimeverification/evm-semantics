@@ -18,8 +18,8 @@ module JSON
 
     syntax JSONs    ::= List{JSON,","} [klabel(JSONs), symbol]
                       | ".JSONList"
-    syntax JSONList ::= JSONs
- // -------------------------
+    syntax JSONList = JSONs
+ // -----------------------
     rule .JSONList => .JSONs [macro]
 
     syntax JSONKey  ::= String
