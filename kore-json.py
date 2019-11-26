@@ -16,22 +16,22 @@ def print_kast(data, sort="SortJSON"):
   if isinstance(data, list):
     sys.stdout.write("LblJSONList{}(")
     for elem in data:
-      sys.stdout.write("Lbl'UndsCommUndsUnds'JSON'Unds'JSONs'Unds'JSON'Unds'JSONs{}(")
+      sys.stdout.write("LblJSONs{}(")
       print_kast(elem)
       sys.stdout.write(',')
-    sys.stdout.write("Lbl'Stop'List'LBraQuotUndsCommUndsUnds'JSON'Unds'JSONs'Unds'JSON'Unds'JSONs'QuotRBraUnds'JSONs{}()")
+    sys.stdout.write("Lbl'Stop'List'LBraQuot'JSONs'QuotRBraUnds'JSONs{}()")
     for elem in data:
       sys.stdout.write(')')
     sys.stdout.write(')')
   elif isinstance(data, OrderedDict):
     sys.stdout.write("LblJSONObject{}(")
     for key, value in data.items():
-      sys.stdout.write("Lbl'UndsCommUndsUnds'JSON'Unds'JSONs'Unds'JSON'Unds'JSONs{}(LblJSONEntry{}(")
+      sys.stdout.write("LblJSONs{}(LblJSONEntry{}(")
       print_kast(key, "SortJSONKey")
       sys.stdout.write(',')
       print_kast(value)
       sys.stdout.write('),')
-    sys.stdout.write("Lbl'Stop'List'LBraQuotUndsCommUndsUnds'JSON'Unds'JSONs'Unds'JSON'Unds'JSONs'QuotRBraUnds'JSONs{}()")
+    sys.stdout.write("Lbl'Stop'List'LBraQuot'JSONs'QuotRBraUnds'JSONs{}()")
     for key in data:
       sys.stdout.write(')')
     sys.stdout.write(')')
