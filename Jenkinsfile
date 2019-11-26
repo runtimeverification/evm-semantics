@@ -130,10 +130,10 @@ pipeline {
                 '''
               }
             }
-            stage('OCaml kast') {
+            stage('LLVM Kast') {
               steps {
                 sh '''
-                  make test-parse TEST_CONCRETE_BACKEND=ocaml
+                  make test-parse TEST_CONCRETE_BACKEND=llvm
                 '''
               }
             }
