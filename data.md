@@ -413,9 +413,9 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax WordStack ::= #take ( Int , WordStack ) [function, functional]
  // ---------------------------------------------------------------------
-    rule #take(N, WS)         => .WordStack                      requires notBool N >Int 0
-    rule #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
-    rule #take(N, (W : WS))   => W : #take(N -Int 1, WS)         requires N >Int 0
+    rule [take.base]:      #take(N, WS)         => .WordStack                      requires notBool N >Int 0
+    rule [take.zero-pad]:  #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
+    rule [take.recursive]: #take(N, (W : WS))   => W : #take(N -Int 1, WS)         requires N >Int 0
 
     syntax WordStack ::= #drop ( Int , WordStack ) [function, functional]
  // ---------------------------------------------------------------------
