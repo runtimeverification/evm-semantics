@@ -29,6 +29,9 @@ module JSON-RPC
     syntax JSON ::= "undef" [klabel(JSON-RPCundef), symbol]
  // -------------------------------------------------------
 
+    syntax IOJSON ::= #putResponseError ( JSON ) [klabel(JSON-RPC_putResponseError), symbol]
+ // ----------------------------------------------------------------------------------------
+
     syntax Bool ::= isProperJson     ( JSON  ) [function]
                   | isProperJsonList ( JSONs ) [function]
  // -----------------------------------------------------
