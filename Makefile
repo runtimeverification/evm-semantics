@@ -262,7 +262,7 @@ endif
 
 $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
 	eval $$(opam config env) \
-	    && $(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) \
+	    && $(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend ocaml \
 	                        --syntax-module $(SYNTAX_MODULE) $(ocaml_dir)/$(MAIN_DEFN_FILE).k \
 	                        --hook-namespaces "KRYPTO" --gen-ml-only -O3 --non-strict \
 	                        --directory $(ocaml_dir) -I $(ocaml_dir) $(KOMPILE_OPTS) \
