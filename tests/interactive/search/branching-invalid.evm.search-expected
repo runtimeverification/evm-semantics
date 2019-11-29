@@ -199,7 +199,7 @@
         0
       </blockNonce>
       <ommerBlockHeaders>
-        [ .JSONList ]
+        [ .JSONs ]
       </ommerBlockHeaders>
     </block>
   }
