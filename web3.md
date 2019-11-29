@@ -239,12 +239,12 @@ WEB3 JSON RPC
     rule <k> #loadRPCCall(undef) => #rpcResponseError(-32700,  "Parse error") ... </k>
          <callid> _ => null </callid>
 
-    syntax KItem ::= "#loadFromBatch"
+    syntax KItem ::= "#loadFromBatch" | "#debugmee"
  // ---------------------------------
     rule <k> #loadFromBatch ~> _ => #loadRPCCall(J) </k>
          <batch> [ J , JS => JS ] </batch>
 
-    rule <k> #loadFromBatch ~> _ => #putResponse(List2JSON(RESPONSE), SOCK) ~> getRequest() </k>
+    rule <k> #loadFromBatch ~> _ => #debugmee ~> #putResponse(List2JSON(RESPONSE), SOCK) ~> getRequest() </k>
          <batch> [ .JSONs ] </batch>
          <web3clientsocket> SOCK </web3clientsocket>
          <web3response> RESPONSE </web3response>
@@ -274,10 +274,11 @@ WEB3 JSON RPC
          <callid> undef </callid>
          <batch> undef </batch>
 
-    rule <k> #sendResponse(J) ~> _ => #loadFromBatch </k>
+    rule [sendR2]: <k> #sendResponse(J) ~> _ => #loadFromBatch </k>
          <callid> CALLID </callid>
          <batch> [ _ ] </batch>
          <web3response> ... .List => ListItem({ "jsonrpc": "2.0", "id": CALLID, J }) </web3response>
+         <depth> I </depth>
       requires CALLID =/=K undef
 
     rule <k> #sendResponse(_) ~> _ => #loadFromBatch </k>
@@ -289,7 +290,7 @@ WEB3 JSON RPC
                    | #rpcResponseError         ( Int , String , JSON )
                    | #rpcResponseUnimplemented ( String              )
  // ------------------------------------------------------------------
-    rule <k> #rpcResponseSuccess(J)             => #sendResponse( "result" : J )                                                ... </k> requires isProperJson(J)
+    rule <k> #rpcResponseSuccess(J)             => #sendResponse( "result" : J )                                                ... </k> <depth> I </depth> requires isProperJson(J)
     rule <k> #rpcResponseError(CODE, MSG)       => #sendResponse( "error" : { "code": CODE , "message": MSG } )                 ... </k>
     rule <k> #rpcResponseError(CODE, MSG, DATA) => #sendResponse( "error" : { "code": CODE , "message": MSG , "data" : DATA } ) ... </k> requires isProperJson(DATA)
     rule <k> #rpcResponseUnimplemented(RPCCALL) => #sendResponse( "unimplemented" : RPCCALL )                                   ... </k>
@@ -598,10 +599,12 @@ eth_sendTransaction
  // -------------------------------------------------
     rule <k> #eth_sendTransaction => #eth_sendTransaction_load J ... </k>
          <params> [ ({ _ } #as J), .JSONs ] </params>
+         <depth> I => I+Int 1 </depth>
       requires isString( #getJSON("from",J) )
 
     rule <k> #eth_sendTransaction => #rpcResponseError(-32000, "\"from\" field not found; is required") ... </k>
          <params> [ ({ _ } #as J), .JSONs ] </params>
+         <depth> I => I+Int 1 </depth>
       requires notBool isString( #getJSON("from",J) )
 
     rule <k> #eth_sendTransaction => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_sendTransaction' requires exactly 1 argument.") ... </k> [owise]
@@ -610,15 +613,19 @@ eth_sendTransaction
 
     rule <k> #eth_sendTransaction_final TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
         <statusCode> EVMC_SUCCESS </statusCode>
+        <depth> I => I+Int 1 </depth>
 
     rule <k> #eth_sendTransaction_final TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
         <statusCode> EVMC_REVERT </statusCode>
+        <depth> I => I+Int 1 </depth>
 
     rule <k> #eth_sendTransaction_final TXID => #rpcResponseError(-32000, "base fee exceeds gas limit") ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
+         <depth> I => I+Int 1 </depth>
 
     rule <k> #eth_sendTransaction_final TXID => #rpcResponseError(-32000, "sender doesn't have enough funds to send tx.") ... </k>
          <statusCode> EVMC_BALANCE_UNDERFLOW </statusCode>
+         <depth> I => I+Int 1 </depth>
 
     rule <k> #eth_sendTransaction_final TXID => #rpcResponseError(-32000, "VM exception: " +String StatusCode2String( SC )) ... </k>
         <statusCode> SC:ExceptionalStatusCode </statusCode> [owise]
@@ -1494,7 +1501,7 @@ Helper Funcs
 
     syntax String ::= #rlpEncodeBlock( BlockchainItem ) [function]
  // --------------------------------------------------------------
-    rule #rlpEncodeBlock( { _ |
+    rule [rlp]: #rlpEncodeBlock( { _ |
          <block>
            <previousHash>      PARENTHASH  </previousHash>
            <ommersHash>        OMMERSHASH  </ommersHash>
@@ -1763,9 +1770,10 @@ Mining
     rule <k> #clearGas => . ... </k>
          <gas> _ => 0 </gas>
 
-    rule <k> #getParentHash => . ... </k>
+    rule [test]: <k> #getParentHash => . ... </k>
          <blockList> BLOCKLIST </blockList>
          <previousHash> _ => #parseHexWord( Keccak256( #rlpEncodeBlock( #getBlockByNumber( "latest", BLOCKLIST ) ) ) ) </previousHash>
+         <depth> I </depth>
 
     rule <k> #updateTrieRoots => . ... </k>
          <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
