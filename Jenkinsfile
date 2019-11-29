@@ -130,10 +130,10 @@ pipeline {
                 '''
               }
             }
-            stage('OCaml kast') {
+            stage('LLVM Kast') {
               steps {
                 sh '''
-                  make test-parse TEST_CONCRETE_BACKEND=ocaml
+                  make test-parse TEST_CONCRETE_BACKEND=llvm
                 '''
               }
             }
@@ -364,49 +364,49 @@ pipeline {
                 }
               }
             }
-            // stage('Build Homebrew Bottle') {
-            //   agent {
-            //     label 'anka'
-            //   }
-            //   steps {
-            //     unstash 'src-kevm'
-            //     dir('homebrew-k') {
-            //       git url: 'git@github.com:kframework/homebrew-k.git'
-            //       sh '''
-            //         ${WORKSPACE}/deps/k/src/main/scripts/brew-build-bottle
-            //       '''
-            //       stash name: "mojave-kevm", includes: "kevm--${env.VERSION}.mojave.bottle*.tar.gz"
-            //     }
-            //   }
-            // }
-            // stage('Test Homebrew Bottle') {
-            //   agent {
-            //     label 'anka'
-            //   }
-            //   steps {
-            //     dir('homebrew-k') {
-            //       git url: 'git@github.com:kframework/homebrew-k.git', branch: 'brew-release-kevm'
-            //       unstash "mojave-kevm"
-            //       sh '''
-            //         ${WORKSPACE}/deps/k/src/main/scripts/brew-install-bottle
-            //       '''
-            //     }
-            //     dir("kevm-${env.VERSION}") {
-            //       checkout scm
-            //       sh '''
-            //         brew install node@10 netcat
-            //         export PATH="/usr/local/opt/node@10/bin:$PATH"
-            //         npm install -g npx
-            //         make test-interactive-firefly
-            //       '''
-            //     }
-            //     dir('homebrew-k') {
-            //       sh '''
-            //         ${WORKSPACE}/deps/k/src/main/scripts/brew-update-to-final
-            //       '''
-            //     }
-            //   }
-            // }
+            stage('Build Homebrew Bottle') {
+              agent {
+                label 'anka'
+              }
+              steps {
+                unstash 'src-kevm'
+                dir('homebrew-k') {
+                  git url: 'git@github.com:kframework/homebrew-k.git'
+                  sh '''
+                    ${WORKSPACE}/deps/k/src/main/scripts/brew-build-bottle
+                  '''
+                  stash name: "mojave-kevm", includes: "kevm--${env.VERSION}.mojave.bottle*.tar.gz"
+                }
+              }
+            }
+            stage('Test Homebrew Bottle') {
+              agent {
+                label 'anka'
+              }
+              steps {
+                dir('homebrew-k') {
+                  git url: 'git@github.com:kframework/homebrew-k.git', branch: 'brew-release-kevm'
+                  unstash "mojave-kevm"
+                  sh '''
+                    ${WORKSPACE}/deps/k/src/main/scripts/brew-install-bottle
+                  '''
+                }
+                dir("kevm-${env.VERSION}") {
+                  checkout scm
+                  sh '''
+                    brew install node@10 netcat
+                    export PATH="/usr/local/opt/node@10/bin:$PATH"
+                    npm install -g npx
+                    make test-interactive-firefly
+                  '''
+                }
+                dir('homebrew-k') {
+                  sh '''
+                    ${WORKSPACE}/deps/k/src/main/scripts/brew-update-to-final
+                  '''
+                }
+              }
+            }
             // stage('Build Arch Package') {
             //   agent {
             //     dockerfile {
@@ -470,9 +470,9 @@ pipeline {
                   dir("buster") {
                     unstash 'buster-kevm'
                   }
-                  // dir("mojave") {
-                  //   unstash 'mojave-kevm'
-                  // }
+                  dir("mojave") {
+                    unstash 'mojave-kevm'
+                  }
                   // dir("arch") {
                   //   unstash 'arch-kevm'
                   // }
@@ -481,13 +481,16 @@ pipeline {
                     make release.md KEVM_RELEASE_TAG=${release_tag}
                     mv bionic/kevm_${VERSION}_amd64.deb bionic/kevm_${VERSION}_amd64_bionic.deb
                     mv buster/kevm_${VERSION}_amd64.deb buster/kevm_${VERSION}_amd64_buster.deb
-                    hub release create                                                                    \
-                        --attach kevm-${VERSION}-src.tar.gz"#Source tar.gz"                               \
-                        --attach bionic/kevm_${VERSION}_amd64_bionic.deb"#Ubuntu Bionic (18.04) Package"  \
-                        --attach buster/kevm_${VERSION}_amd64_buster.deb"#Debian Buster (10) Package"     \
+                    LOCAL_BOTTLE_NAME=$(echo mojave/kevm--${VERSION}.mojave.bottle*.tar.gz)
+                    BOTTLE_NAME=$(echo $LOCAL_BOTTLE_NAME | sed 's!kevm--!kevm-!')
+                    mv $LOCAL_BOTTLE_NAME $BOTTLE_NAME
+                    hub release create                                                                   \
+                        --attach kevm-${VERSION}-src.tar.gz"#Source tar.gz"                              \
+                        --attach bionic/kevm_${VERSION}_amd64_bionic.deb"#Ubuntu Bionic (18.04) Package" \
+                        --attach buster/kevm_${VERSION}_amd64_buster.deb"#Debian Buster (10) Package"    \
+                        --attach $BOTTLE_NAME"#Mac OS X Homebrew Bottle"                                 \
                         --file "release.md" "${release_tag}"
-                   #      --attach arch/kevm-git-${VERSION}-1-x86_64.pkg.tar.xz"#Arch Package"              \
-                   #      --attach mojave/kevm--${VERSION}.mojave.bottle*.tar.gz"#Mac OS X Homebrew Bottle" \
+                   #      --attach arch/kevm-git-${VERSION}-1-x86_64.pkg.tar.xz"#Arch Package"             \
                   '''
                 }
               }

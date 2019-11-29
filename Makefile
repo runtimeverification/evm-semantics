@@ -44,7 +44,7 @@ export LUA_PATH
         split-tests                                                                                                                                    \
         test test-all test-conformance test-rest-conformance test-all-conformance                                                                      \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                                  \
-        test-web3 update-web3                                                                                                                          \
+        test-web3                                                                                                                                      \
         test-prove test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-klab-prove \
         test-parse test-failure                                                                                                                        \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly            \
@@ -262,7 +262,7 @@ endif
 
 $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
 	eval $$(opam config env) \
-	    && $(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) \
+	    && $(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend ocaml \
 	                        --syntax-module $(SYNTAX_MODULE) $(ocaml_dir)/$(MAIN_DEFN_FILE).k \
 	                        --hook-namespaces "KRYPTO" --gen-ml-only -O3 --non-strict \
 	                        --directory $(ocaml_dir) -I $(ocaml_dir) $(KOMPILE_OPTS) \
@@ -368,9 +368,8 @@ release.md: INSTALL.md
 TEST_CONCRETE_BACKEND := llvm
 TEST_SYMBOLIC_BACKEND := java
 
-TEST   := ./kevm
-CHECK  := git --no-pager diff --no-index --ignore-all-space
-UPDATE := cp
+TEST  := ./kevm
+CHECK := git --no-pager diff --no-index --ignore-all-space -R
 
 KEVM_MODE     := NORMAL
 KEVM_SCHEDULE := PETERSBURG
@@ -396,34 +395,29 @@ tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE=DEFAULT
 
 tests/%.run: tests/%
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) interpret --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
-	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
+	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-interactive: tests/%
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) run --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
-	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
+	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-expected: tests/% tests/%.expected
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) run --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
-	    || $(CHECK) tests/$*.expected tests/$*.$(TEST_CONCRETE_BACKEND)-out
+	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/web3/no-shutdown/%: KEVM_WEB3_ARGS=
 
 tests/%.run-web3: tests/%.in.json
 	tests/web3/runtest.sh $< tests/$*.out.json $(KEVM_WEB3_ARGS)
-	$(CHECK) tests/$*.expected.json tests/$*.out.json
-	rm -rf tests/$*.out.json
-
-tests/%.update-web3: tests/%.in.json
-	tests/web3/runtest.sh $< tests/$*.out.json $(KEVM_WEB3_ARGS)
-	$(UPDATE) tests/$*.out.json tests/$*.expected.json
+	$(CHECK) tests/$*.out.json tests/$*.expected.json
 	rm -rf tests/$*.out.json
 
 tests/%.parse: tests/%
 	$(TEST) kast --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
-	$(CHECK) $@-expected $@-out
+	$(CHECK) $@-out $@-expected
 	rm -rf $@-out
 
 tests/specs/functional/%.prove: TEST_SYMBOLIC_BACKEND=haskell
@@ -434,7 +428,7 @@ tests/%.prove: tests/%
 
 tests/%.search: tests/%
 	$(TEST) search --backend $(TEST_SYMBOLIC_BACKEND) $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" > $@-out
-	$(CHECK) $@-expected $@-out
+	$(CHECK) $@-out $@-expected
 	rm -rf $@-out
 
 tests/%.klab-prove: tests/%
@@ -481,7 +475,6 @@ web3_tests=$(wildcard tests/web3/*.in.json) \
            $(wildcard tests/web3/no-shutdown/*.in.json)
 
 test-web3: $(web3_tests:.in.json=.run-web3)
-update-web3: $(web3_tests:.in.json=.update-web3)
 
 # Proof Tests
 
