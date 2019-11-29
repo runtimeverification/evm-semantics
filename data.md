@@ -1,24 +1,8 @@
 EVM Words
 =========
 
-### Module `EVM-DATA`
-
-EVM uses bounded 256 bit integer words, and sometimes also bytes (8 bit words).
-Here we provide the arithmetic of these words, as well as some data-structures over them.
-Both are implemented using K's `Int`.
-
 ```k
 requires "krypto.k"
-
-module EVM-DATA
-    imports KRYPTO
-    imports STRING-BUFFER
-    imports MAP-SYMBOLIC
-    imports COLLECTIONS
-```
-
-```{.k .concrete}
-    imports BYTES
 ```
 
 ### JSON Formatting
@@ -27,13 +11,49 @@ The JSON format is used extensively for communication in the Ethereum circles.
 Writing a JSON-ish parser in K takes 6 lines.
 
 ```k
-    syntax JSONList ::= List{JSON,","}
-    syntax JSONKey  ::= String | Int
-    syntax JSON     ::= String | Int | Bool
-                      | JSONKey ":" JSON
-                      | "{" JSONList "}"
-                      | "[" JSONList "]"
- // ------------------------------------
+module JSON
+    imports INT
+    imports STRING
+    imports BOOL
+
+    syntax JSONs    ::= List{JSON,","} [klabel(JSONs), symbol]
+                      | ".JSONList"
+    syntax JSONList = JSONs
+ // -----------------------
+    rule .JSONList => .JSONs [macro]
+
+    syntax JSONKey  ::= String
+    syntax JSON     ::= "null"              [klabel(JSONnull)   , symbol]
+                      | String | Int | Bool
+                      | JSONKey ":" JSON    [klabel(JSONEntry)  , symbol]
+                      | "{" JSONList "}"    [klabel(JSONObject) , symbol]
+                      | "[" JSONList "]"    [klabel(JSONList)   , symbol]
+ // ---------------------------------------------------------------------
+endmodule
+```
+
+EVM uses bounded 256 bit integer words, and sometimes also bytes (8 bit words).
+Here we provide the arithmetic of these words, as well as some data-structures over them.
+Both are implemented using K's `Int`.
+
+```k
+module EVM-DATA
+    imports KRYPTO
+    imports STRING-BUFFER
+    imports MAP-SYMBOLIC
+    imports COLLECTIONS
+    imports JSON
+```
+
+```{.k .concrete}
+    imports BYTES
+```
+
+**TODO**: Adding `Int` to `JSONKey` is a hack to make certain parts of semantics easier.
+
+```k
+    syntax JSONKey ::= Int
+ // ----------------------
 ```
 
 Utilities
