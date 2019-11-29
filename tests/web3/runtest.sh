@@ -7,7 +7,7 @@ output_file="$1" ; shift
 
 # Start Firefly
 PORT=$(tests/web3/get_port.py)
-./kevm web3 --dump "$PORT" "$@" &
+./kevm web3 "$PORT" "$@" &
 kevm_client_pid="$!"
 while ! netcat -z 127.0.0.1 "$PORT"; do sleep 0.1; done
 

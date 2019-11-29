@@ -87,8 +87,7 @@ run_web3() {
     if $debug; then
         gdb --args ${defn_dir}/web3/build/kevm-client -p "$web3_port" "$@"
     elif $dump; then
-      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client -p "$web3_port" "$@" 3>&2 2>&1 1>&3 \
-          | "$0" kast --backend web3 - pretty --input kore --sort GeneratedTopCell
+      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client -p "$web3_port" "$@" 3>&2 2>&1 1>&3 
     else
       exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client -p "$web3_port" "$@" 2>/dev/null
     fi

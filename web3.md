@@ -72,7 +72,7 @@ module WEB3
         <accountKeys> .Map </accountKeys>
         <nextFilterSlot> 0 </nextFilterSlot>
         <txReceipts>
-          <txReceipt multiplicity ="*" type="Map">
+          <txReceipt multiplicity ="*" type="Set">
             <txHash>          "":String  </txHash>
             <txCumulativeGas> 0          </txCumulativeGas>
             <logSet>          .List      </logSet>
@@ -611,9 +611,14 @@ eth_sendTransaction
 
     rule <k> #eth_sendTransaction_load J => mkTX !ID:Int ~> #loadNonce #parseHexWord( #getString("from",J) ) !ID ~> loadTransaction !ID J ~> signTX !ID #parseHexWord( #getString("from",J) ) ~> #prepareTx !ID #parseHexWord( #getString("from",J) ) ~> #eth_sendTransaction_final !ID ... </k>
 
-    rule <k> #eth_sendTransaction_final TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
+    rule <k> #eth_sendTransaction_final TXID => #rpcResponseSuccess(TXHASH) ... </k>
         <statusCode> EVMC_SUCCESS </statusCode>
         <depth> I => I+Int 1 </depth>
+        <txReceipt>
+          <txHash> TXHASH </txHash>
+          <txID> TXID </txID>
+          ...
+        </txReceipt>
 
     rule <k> #eth_sendTransaction_final TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
         <statusCode> EVMC_REVERT </statusCode>
