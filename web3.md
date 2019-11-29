@@ -215,6 +215,9 @@ WEB3 JSON RPC
     syntax K ::= #putResponse(JSON, Int) [function, hook(JSON.write)]
  // -----------------------------------------------------------------
 
+    syntax IOJSON ::= #putResponseError ( JSON ) [klabel(JSON-RPC_putResponseError), symbol]
+ // ----------------------------------------------------------------------------------------
+
     syntax KItem ::= #loadRPCCall(IOJSON)
  // -------------------------------------
     rule <k> #loadRPCCall({ _ } #as J) => #checkRPCCall ~> #runRPCCall ... </k>
