@@ -983,7 +983,7 @@ Transaction Receipts
     syntax JSONList ::= #unparseIntListAux ( List, JSONList ) [function]
  // --------------------------------------------------------------------
     rule #unparseIntListAux(.List, RESULT) => RESULT
-    rule #unparseIntListAux(L ListItem(I), RESULT) => #unparseIntListAux(L, (#unparseQuantity(I), RESULT))
+    rule #unparseIntListAux(L ListItem(I), RESULT) => #unparseIntListAux(L, (#unparseDataByteArray(#padToWidth(32,#asByteStack(I))), RESULT))
 
     syntax JSONList ::= #serializeLogs ( List, Int, Int, String, Int, Int ) [function]
  // ----------------------------------------------------------------------------------
