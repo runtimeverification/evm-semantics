@@ -471,8 +471,9 @@ test-all-bchain: $(all_bchain_tests:=.run)
 test-rest-bchain: $(rest_bchain_tests:=.run)
 test-bchain: $(passing_bchain_tests:=.run)
 
-web3_tests=$(wildcard tests/web3/*.in.json) \
-           $(wildcard tests/web3/no-shutdown/*.in.json)
+all_web3_tests     = $(wildcard tests/web3/*.in.json) $(wildcard tests/web3/*/*.in.json)
+failing_web3_tests = $(shell cat tests/failing.web3)
+web3_tests         = $(filter-out $(failing_web3_tests), $(all_web3_tests))
 
 test-web3: $(web3_tests:.in.json=.run-web3)
 
