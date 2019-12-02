@@ -313,14 +313,12 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#runRPCCall"
  // ------------------------------
-    rule <k> #runRPCCall => #firefly_shutdown ... </k>
-         <method> "firefly_shutdown" </method>
-    rule <k> #runRPCCall => #firefly_addAccount ... </k>
-         <method> "firefly_addAccount" </method>
     rule <k> #runRPCCall => #net_version ... </k>
          <method> "net_version" </method>
+
     rule <k> #runRPCCall => #web3_clientVersion ... </k>
          <method> "web3_clientVersion" </method>
+
     rule <k> #runRPCCall => #eth_gasPrice ... </k>
          <method> "eth_gasPrice" </method>
     rule <k> #runRPCCall => #eth_blockNumber ... </k>
@@ -337,12 +335,6 @@ WEB3 JSON RPC
          <method> "eth_getTransactionCount" </method>
     rule <k> #runRPCCall => #eth_sign ... </k>
          <method> "eth_sign" </method>
-    rule <k> #runRPCCall => #evm_snapshot ... </k>
-         <method> "evm_snapshot" </method>
-    rule <k> #runRPCCall => #evm_revert ... </k>
-         <method> "evm_revert" </method>
-    rule <k> #runRPCCall => #evm_increaseTime ... </k>
-         <method> "evm_increaseTime" </method>
     rule <k> #runRPCCall => #eth_newBlockFilter ... </k>
          <method> "eth_newBlockFilter" </method>
     rule <k> #runRPCCall => #eth_uninstallFilter ... </k>
@@ -357,6 +349,24 @@ WEB3 JSON RPC
          <method> "eth_call" </method>
     rule <k> #runRPCCall => #eth_estimateGas ... </k>
          <method> "eth_estimateGas" </method>
+    rule <k> #runRPCCall => #eth_getTransactionReceipt ... </k>
+         <method> "eth_getTransactionReceipt" </method>
+    rule <k> #runRPCCall => #eth_getBlockByNumber ... </k>
+         <method> "eth_getBlockByNumber" </method>
+
+    rule <k> #runRPCCall => #evm_snapshot ... </k>
+         <method> "evm_snapshot" </method>
+    rule <k> #runRPCCall => #evm_revert ... </k>
+         <method> "evm_revert" </method>
+    rule <k> #runRPCCall => #evm_increaseTime ... </k>
+         <method> "evm_increaseTime" </method>
+    rule <k> #runRPCCall => #evm_mine ... </k>
+         <method> "evm_mine" </method>
+
+    rule <k> #runRPCCall => #firefly_shutdown ... </k>
+         <method> "firefly_shutdown" </method>
+    rule <k> #runRPCCall => #firefly_addAccount ... </k>
+         <method> "firefly_addAccount" </method>
     rule <k> #runRPCCall => #firefly_getCoverageData ... </k>
          <method> "firefly_getCoverageData" </method>
     rule <k> #runRPCCall => #firefly_getStateRoot ... </k>
@@ -369,14 +379,8 @@ WEB3 JSON RPC
          <method> "firefly_getTime" </method>
     rule <k> #runRPCCall => #firefly_setTime ... </k>
          <method> "firefly_setTime" </method>
-    rule <k> #runRPCCall => #eth_getTransactionReceipt ... </k>
-         <method> "eth_getTransactionReceipt" </method>
-    rule <k> #runRPCCall => #eth_getBlockByNumber ... </k>
-         <method> "eth_getBlockByNumber" </method>
     rule <k> #runRPCCall => #firefly_genesisBlock ... </k>
          <method> "firefly_genesisBlock" </method>
-    rule <k> #runRPCCall => #evm_mine ... </k>
-         <method> "evm_mine" </method>
     rule <k> #runRPCCall => #firefly_setGasLimit ... </k>
          <method> "firefly_setGasLimit" </method>
 
@@ -1268,8 +1272,8 @@ Transaction Receipts
          ...
          </k>
          <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
-      requires isString( #getJSON("to", J) )
-        andBool isString(#getJSON("from",J) )
+      requires isString( #getJSON("to"   , J) )
+       andBool isString( #getJSON("from" , J) )
 
     rule <k> #eth_call => #rpcResponseError(-32027, "Method 'eth_call' has invalid arguments") ...  </k>
          <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
