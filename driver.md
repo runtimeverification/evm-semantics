@@ -294,7 +294,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```k
     syntax Set ::= "#postKeys" [function] | "#allPostKeys" [function] | "#checkKeys" [function]
  // -------------------------------------------------------------------------------------------
-    rule #postKeys    => ( SetItem("post") SetItem("postState") )
+    rule #postKeys    => ( SetItem("post") SetItem("postState") SetItem("postStateHash") )
     rule #allPostKeys => ( #postKeys SetItem("expect") SetItem("export") SetItem("expet") )
     rule #checkKeys   => ( #allPostKeys SetItem("logs") SetItem("out") SetItem("gas")
                            SetItem("blockHeader") SetItem("transactions") SetItem("uncleHeaders") SetItem("genesisBlockHeader")
