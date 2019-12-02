@@ -42,7 +42,7 @@ export LUA_PATH
         build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                                                          \
         defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                                                           \
         split-tests                                                                                                                                    \
-        test test-all test-conformance test-rest-conformance test-all-conformance                                                                      \
+        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance                       \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                                  \
         test-web3 test-all-web3 test-failing-web3                                                                                                      \
         test-prove test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-klab-prove \
@@ -451,6 +451,8 @@ failing_conformance_tests = $(shell cat tests/failing.$(TEST_CONCRETE_BACKEND))
 
 test-all-conformance: test-all-vm test-all-bchain
 test-rest-conformance: test-rest-vm test-rest-bchain
+test-slow-conformance: $(slow_conformance_tests:=.run)
+test-failing-conformance: $(failing_conformance_tests:=.run)
 test-conformance: test-vm test-bchain
 
 all_vm_tests     = $(wildcard tests/ethereum-tests/VMTests/*/*.json)
