@@ -52,23 +52,23 @@ module STATE-LOADER
     syntax EthereumCommand ::= "clearBLOCK"
  // ---------------------------------------
     rule <k> clearBLOCK => . ... </k>
-         <previousHash>      _ => 0             </previousHash>
-         <ommersHash>        _ => 0             </ommersHash>
-         <coinbase>          _ => 0             </coinbase>
-         <stateRoot>         _ => 0             </stateRoot>
-         <transactionsRoot>  _ => 0             </transactionsRoot>
-         <receiptsRoot>      _ => 0             </receiptsRoot>
-         <logsBloom>         _ => .ByteArray    </logsBloom>
-         <difficulty>        _ => 0             </difficulty>
-         <number>            _ => 0             </number>
-         <gasLimit>          _ => 0             </gasLimit>
-         <gasUsed>           _ => 0             </gasUsed>
-         <timestamp>         _ => 0             </timestamp>
-         <extraData>         _ => .ByteArray    </extraData>
-         <mixHash>           _ => 0             </mixHash>
-         <blockNonce>        _ => 0             </blockNonce>
-         <ommerBlockHeaders> _ => [ .JSONList ] </ommerBlockHeaders>
-         <blockhashes>       _ => .List         </blockhashes>
+         <previousHash>      _ => 0          </previousHash>
+         <ommersHash>        _ => 0          </ommersHash>
+         <coinbase>          _ => 0          </coinbase>
+         <stateRoot>         _ => 0          </stateRoot>
+         <transactionsRoot>  _ => 0          </transactionsRoot>
+         <receiptsRoot>      _ => 0          </receiptsRoot>
+         <logsBloom>         _ => .ByteArray </logsBloom>
+         <difficulty>        _ => 0          </difficulty>
+         <number>            _ => 0          </number>
+         <gasLimit>          _ => 0          </gasLimit>
+         <gasUsed>           _ => 0          </gasUsed>
+         <timestamp>         _ => 0          </timestamp>
+         <extraData>         _ => .ByteArray </extraData>
+         <mixHash>           _ => 0          </mixHash>
+         <blockNonce>        _ => 0          </blockNonce>
+         <ommerBlockHeaders> _ => [ .JSONs ] </ommerBlockHeaders>
+         <blockhashes>       _ => .List      </blockhashes>
 
     syntax EthereumCommand ::= "clearNETWORK"
  // -----------------------------------------
@@ -95,11 +95,11 @@ module STATE-LOADER
 ```{.k}
     syntax EthereumCommand ::= "load" JSON
  // --------------------------------------
-    rule <k> load DATA : { .JSONList }          => .                                                   ... </k>
+    rule <k> load DATA : { .JSONs }             => .                                                   ... </k>
     rule <k> load DATA : { KEY : VALUE , REST } => load DATA : { KEY : VALUE } ~> load DATA : { REST } ... </k>
-      requires REST =/=K .JSONList andBool DATA =/=String "transaction"
+      requires REST =/=K .JSONs andBool DATA =/=String "transaction"
 
-    rule <k> load DATA : [ .JSONList ]       => .                                            ... </k>
+    rule <k> load DATA : [ .JSONs ]          => .                                            ... </k>
     rule <k> load DATA : [ { TEST } , REST ] => load DATA : { TEST } ~> load DATA : [ REST ] ... </k>
 ```
 
@@ -110,7 +110,7 @@ Here we perform pre-proccesing on account data which allows "pretty" specificati
 
     syntax EthereumCommand ::= "loadAccount" Int JSON
  // -------------------------------------------------
-    rule <k> loadAccount _ { .JSONList } => . ... </k>
+    rule <k> loadAccount _ { .JSONs } => . ... </k>
 
     rule <k> loadAccount ACCT { "balance" : (BAL:Int), REST => REST } ... </k>
          <account> <acctID> ACCT </acctID> <balance> _ => BAL </balance> ... </account>
@@ -153,7 +153,7 @@ Here we load the environmental information.
     rule <k> loadCallState { "value" : VALUE:Int, REST => REST }     ... </k> <callValue> _ => VALUE  </callValue>
     rule <k> loadCallState { "data" : DATA:ByteArray, REST => REST } ... </k> <callData>  _ => DATA   </callData>
 
-    rule <k> loadCallState { .JSONList } => . ... </k>
+    rule <k> loadCallState { .JSONs } => . ... </k>
 ```
 
 The `"network"` key allows setting the fee schedule inside the test.
@@ -179,7 +179,7 @@ The `"rlp"` key loads the block information.
     rule <k> load "rlp"        : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL)))) ... </k>
     rule <k> load "genesisRLP" : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL)))) ... </k>
  // ---------------------------------------------------------------------------------------------------------
-    rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONList ] , BT , BU , .JSONList ]
+    rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONs ] , BT , BU , .JSONs ]
           => load "transaction" : BT
          ...
          </k>
@@ -200,7 +200,7 @@ The `"rlp"` key loads the block information.
          <blockNonce>        _ => #asWord(#parseByteStackRaw(HN)) </blockNonce>
          <ommerBlockHeaders> _ => BU                              </ommerBlockHeaders>
 
-    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONList ], _, _, .JSONList ] => .K ... </k>
+    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONs ], _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhashes>
 
     syntax EthereumCommand ::= "mkTX" Int
@@ -225,7 +225,7 @@ The `"rlp"` key loads the block information.
           ~> loadTransaction !ID { "data"  : TI   ,   "gasLimit" : TG   ,   "gasPrice" : TP
                                  , "nonce" : TN   ,   "r"        : TR   ,   "s"        : TS
                                  , "to"    : TT   ,   "v"        : TW   ,   "value"    : TV
-                                 , .JSONList
+                                 , .JSONs
                                  }
           ~> load "transaction" : [ REST ]
           ...
@@ -233,7 +233,7 @@ The `"rlp"` key loads the block information.
 
     syntax EthereumCommand ::= "loadTransaction" Int JSON
  // -----------------------------------------------------
-    rule <k> loadTransaction _ { .JSONList } => . ... </k>
+    rule <k> loadTransaction _ { .JSONs } => . ... </k>
 
     rule <k> loadTransaction TXID { GLIMIT : TG:Int, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <txGasLimit> _ => TG </txGasLimit> ... </message>
