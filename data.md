@@ -716,8 +716,11 @@ We are using the polymorphic `Map` sort for these word maps.
     rule WM [ N := WS, I, J ] => (WM[N <- WS[I]])[ N +Int 1 := WS, I +Int 1, J ] [owise]
 
     syntax ByteArray ::= #range ( Map , Int , Int )                   [function]
+                       | #range ( Map , Int , Int , Int , ByteArray ) [function, klabel(#rangeAux)]
  // -----------------------------------------------------------------------------------------------
-    rule #range(WM, START, WIDTH) => substrBytes(padLeftBytes(.Bytes, WIDTH, 0), START, START +Int WIDTH)
+    rule #range(WM, START, WIDTH) => #range(WM, START, 0, WIDTH, padLeftBytes(.Bytes, WIDTH, 0))
+    rule #range(WM, I, WIDTH, WIDTH, WS) => WS
+    rule #range(WM, I,     J, WIDTH, WS) => #range(WM, I +Int 1, J +Int 1, WIDTH, WS [ J <- {WM[I] orDefault 0}:>Int ]) [owise]
 ```
 
 ```{.k .nobytes}
