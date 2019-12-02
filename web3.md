@@ -986,7 +986,7 @@ Transaction Receipts
     rule #unparseIntListAux(L ListItem(I), RESULT) => #unparseIntListAux(L, (#unparseDataByteArray(#padToWidth(32,#asByteStack(I))), RESULT))
 
     syntax JSONs ::= #serializeLogs ( List, Int, Int, String, String, Int ) [function]
- // -------------------------------------------------------------------------------
+ // ----------------------------------------------------------------------------------
     rule #serializeLogs (.List, _, _, _, _, _)  => .JSONs
     rule #serializeLogs (ListItem({ ACCT | TOPICS:List | DATA }) L, LI, TI, TH, BH, BN) => {
                                                                          "logIndex": #unparseQuantity(LI),
