@@ -1,4 +1,1 @@
-tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stAttackTest/ContractCreationSpam_d0g0v0.json
-tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stCreate2/Create2Recursive_d0g0v0.json
-tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stCreate2/Create2Recursive_d0g1v0.json
-tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRecursiveCreate/recursiveCreateReturnValue_d0g0v0.json
+
