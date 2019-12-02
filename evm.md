@@ -1690,6 +1690,7 @@ Precompiled Contracts
     rule #precompiledAccounts(BYZANTIUM)         => #precompiledAccounts(SPURIOUS_DRAGON) SetItem(5) SetItem(6) SetItem(7) SetItem(8)
     rule #precompiledAccounts(CONSTANTINOPLE)    => #precompiledAccounts(BYZANTIUM)
     rule #precompiledAccounts(PETERSBURG)        => #precompiledAccounts(CONSTANTINOPLE)
+    rule #precompiledAccounts(ISTANBUL)          => #precompiledAccounts(PETERSBURG)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -2429,6 +2430,16 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasdirtysstore << PETERSBURG >> => false
     rule SCHEDFLAG       << PETERSBURG >> => SCHEDFLAG << CONSTANTINOPLE >>
       requires notBool ( SCHEDFLAG ==K Ghasdirtysstore )
+```
+
+### Istanbul Schedule
+
+```k
+    syntax Schedule ::= "ISTANBUL" [klabel(ISTANBUL_EVM), symbol]
+ // -------------------------------------------------------------
+    rule SCHEDCONST < ISTANBUL > => SCHEDCONST < PETERSBURG >
+
+    rule SCHEDFLAG << ISTANBUL >> => SCHEDFLAG << PETERSBURG >>
 ```
 
 EVM Program Representations
