@@ -44,7 +44,7 @@ export LUA_PATH
         split-tests                                                                                                                                    \
         test test-all test-conformance test-rest-conformance test-all-conformance                                                                      \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                                  \
-        test-web3                                                                                                                                      \
+        test-web3 test-all-web3 test-failing-web3                                                                                                      \
         test-prove test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-klab-prove \
         test-parse test-failure                                                                                                                        \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly            \
@@ -473,9 +473,11 @@ test-bchain: $(passing_bchain_tests:=.run)
 
 all_web3_tests     = $(wildcard tests/web3/*.in.json) $(wildcard tests/web3/*/*.in.json)
 failing_web3_tests = $(shell cat tests/failing.web3)
-web3_tests         = $(filter-out $(failing_web3_tests), $(all_web3_tests))
+passing_web3_tests = $(filter-out $(failing_web3_tests), $(all_web3_tests))
 
-test-web3: $(web3_tests:.in.json=.run-web3)
+test-all-web3: $(all_web3_tests:.in.json=.run-web3)
+test-failing-web3: $(failing_web3_tests:.in.json=.run-web3)
+test-web3: $(passing_web3_tests:.in.json=.run-web3)
 
 # Proof Tests
 
