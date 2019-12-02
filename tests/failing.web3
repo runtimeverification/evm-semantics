@@ -4,10 +4,10 @@ tests/web3/erc20/erc20detailed.in.json
 tests/web3/erc20/erc20detailed-partial.in.json
 tests/web3/erc20/tokentimelock.in.json
 tests/web3/erc20/tokentimelock-partial.in.json
-tests/web3/failing/eth_getBlockByNumber1Tx.in.json
-tests/web3/failing/eth_getBlockByNumberNoTx.in.json
-tests/web3/failing/eth_getTransactionReceipt.in.json
-tests/web3/failing/getBlock_multipleAccounts.in.json
-tests/web3/failing/getBlock_multipleTransactions.in.json
-tests/web3/failing/getBlock_singleAccount.in.json
-tests/web3/failing/getBlock_singleTransaction.in.json
+tests/web3/eth_getBlockByNumber1Tx-2.in.json
+tests/web3/eth_getBlockByNumberNoTx-2.in.json
+tests/web3/eth_getTransactionReceipt.in.json
+tests/web3/getBlock_multipleAccounts.in.json
+tests/web3/getBlock_multipleTransactions.in.json
+tests/web3/getBlock_singleAccount.in.json
+tests/web3/getBlock_singleTransaction.in.json
