@@ -613,8 +613,22 @@ eth_sendTransaction
     rule <k> #eth_sendTransaction_final TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
         <statusCode> EVMC_SUCCESS </statusCode>
 
-    rule <k> #eth_sendTransaction_final TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
+    rule <k> #eth_sendTransaction_final TXID => #rpcResponseRevert("0x" +String #hashSignedTx( TXID ),
+               { "message": "VM Exception while processing transaction: revert",
+                 "code": -32000,
+                 "data": {
+                     "0x" +String #hashSignedTx( TXID ): {
+                     "error": "revert",
+                     "program_counter": PCOUNT +Int 1,
+                     "return": #unparseDataByteArray( RD )
+                   }
+                 }
+               } )
+          ...
+         </k>
         <statusCode> EVMC_REVERT </statusCode>
+        <output> RD </output>
+        <pc> PCOUNT </pc>
 
     rule <k> #eth_sendTransaction_final TXID => #rpcResponseError(-32000, "base fee exceeds gas limit") ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
