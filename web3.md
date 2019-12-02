@@ -927,17 +927,17 @@ Transaction Receipts
                  ...
                </account>
                ...
-             </network> | _ })
+             </network> | _ } #as BLOCKITEM )
           => #rpcResponseSuccess( { "transactionHash": TXHASH
                                   , "transactionIndex": #unparseQuantity(getIndexOf(TXID, TXLIST))
-                                  , "blockHash": #unparseQuantity(1)
+                                  , "blockHash": "0x" +String Keccak256(#rlpEncodeBlock(BLOCKITEM))
                                   , "blockNumber": #unparseQuantity(BN)
                                   , "from": #unparseQuantity(TXFROM)
                                   , "to": #unparseAccount(TT)
                                   , "gasUsed": #unparseQuantity(CGAS)
                                   , "cumulativeGasUsed": #unparseQuantity(CGAS)
                                   , "contractAddress": #if TT ==K .Account #then #unparseQuantity(#newAddr(TXFROM, NONCE -Int 1)) #else null #fi
-                                  , "logs": [#serializeLogs(LOGS, 0, TXID, TXHASH, BN, 1)]
+                                  , "logs": [#serializeLogs(LOGS, 0, TXID, TXHASH, "0x" +String Keccak256(#rlpEncodeBlock(BLOCKITEM)), BN)]
                                   , "status": #unparseQuantity(TXSTATUS)
                                   , "logsBloom": #unparseDataByteArray(BLOOM)
                                   , "v": #unparseQuantity(TW)
@@ -985,14 +985,14 @@ Transaction Receipts
     rule #unparseIntListAux(.List, RESULT) => RESULT
     rule #unparseIntListAux(L ListItem(I), RESULT) => #unparseIntListAux(L, (#unparseDataByteArray(#padToWidth(32,#asByteStack(I))), RESULT))
 
-    syntax JSONs ::= #serializeLogs ( List, Int, Int, String, Int, Int ) [function]
- // -------------------------------------------------------------------------------
+    syntax JSONs ::= #serializeLogs ( List, Int, Int, String, String, Int ) [function]
+ // ----------------------------------------------------------------------------------
     rule #serializeLogs (.List, _, _, _, _, _)  => .JSONs
     rule #serializeLogs (ListItem({ ACCT | TOPICS:List | DATA }) L, LI, TI, TH, BH, BN) => {
                                                                          "logIndex": #unparseQuantity(LI),
                                                                          "transactionIndex": #unparseQuantity(TI),
                                                                          "transactionHash": TH,
-                                                                         "blockHash": #unparseQuantity(BH),
+                                                                         "blockHash": BH,
                                                                          "blockNumber": #unparseQuantity(BN),
                                                                          "address": #unparseQuantity(ACCT),
                                                                          "data": #unparseDataByteArray(DATA),
