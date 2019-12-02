@@ -262,8 +262,8 @@ WEB3 JSON RPC
     rule List2JSON(L ListItem(J), JS) => List2JSON(L, (J, JS))
     rule List2JSON(.List        , JS) => [ JS ]
 
-    syntax KItem ::= #sendResponse ( JSON )
- // ---------------------------------------
+    syntax KItem ::= #sendResponse ( JSONs )
+ // ----------------------------------------
     rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", "id": CALLID, J }, SOCK) ~> getRequest() </k>
          <callid> CALLID </callid>
          <web3clientsocket> SOCK </web3clientsocket>
@@ -285,11 +285,13 @@ WEB3 JSON RPC
          <batch> [ _ ] </batch>
 
     syntax KItem ::= #rpcResponseSuccess       ( JSON                )
+                   | #rpcResponseRevert        ( JSON , JSON         )
                    | #rpcResponseError         ( Int , String        )
                    | #rpcResponseError         ( Int , String , JSON )
                    | #rpcResponseUnimplemented ( String              )
  // ------------------------------------------------------------------
     rule <k> #rpcResponseSuccess(J)             => #sendResponse( "result" : J )                                                ... </k> requires isProperJson(J)
+    rule <k> #rpcResponseRevert(RES, ERR)       => #sendResponse( ( "result" : RES, "error": ERR ) )                            ... </k> requires isProperJson(RES) andBool isProperJson(ERR)
     rule <k> #rpcResponseError(CODE, MSG)       => #sendResponse( "error" : { "code": CODE , "message": MSG } )                 ... </k>
     rule <k> #rpcResponseError(CODE, MSG, DATA) => #sendResponse( "error" : { "code": CODE , "message": MSG , "data" : DATA } ) ... </k> requires isProperJson(DATA)
     rule <k> #rpcResponseUnimplemented(RPCCALL) => #sendResponse( "unimplemented" : RPCCALL )                                   ... </k>
