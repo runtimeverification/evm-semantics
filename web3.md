@@ -1625,7 +1625,7 @@ Helper Funcs
       requires TOPICS =/=K .List
 
     rule #rlpEncodeTopicsAux( .List ) => ""
-    rule #rlpEncodeTopicsAux( ListItem( X:Int ) TOPICS ) => #rlpEncodeWord( X ) +String #rlpEncodeTopicsAux( TOPICS )
+    rule #rlpEncodeTopicsAux( ListItem( X:Int ) TOPICS ) => #rlpEncodeBytes( X, 32 ) +String #rlpEncodeTopicsAux( TOPICS )
 ```
 
 State Root
