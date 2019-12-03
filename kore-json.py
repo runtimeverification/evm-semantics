@@ -56,6 +56,6 @@ sys.stdout.write("))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem
 print_klabel(sys.argv[2])
 sys.stdout.write("()))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$MODE\")),inj{SortMode{}, SortKItem{}}( ")
 print_klabel(sys.argv[3])
-sys.stdout.write("()))))")
+sys.stdout.write("()))))\n")
 sys.stdout.write("\n")
 sys.stdout.flush()
