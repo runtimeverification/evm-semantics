@@ -62,6 +62,7 @@ module WEB3
         <execPhase> .Phase </execPhase>
         <opcodeCoverage> .Map </opcodeCoverage>
         <opcodeLists> .Map </opcodeLists>
+        <errorPC> 0 </errorPC>
         <blockchain>
           <chainID> $CHAINID:Int </chainID>
           <blockList> .List </blockList>
@@ -628,7 +629,7 @@ eth_sendTransaction
          </k>
         <statusCode> EVMC_REVERT </statusCode>
         <output> RD </output>
-        <pc> PCOUNT </pc>
+        <errorPC> PCOUNT </errorPC>
 
     rule <k> #eth_sendTransaction_final TXID => #rpcResponseError(-32000, "base fee exceeds gas limit") ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
@@ -1189,7 +1190,9 @@ Transaction Receipts
 
     rule <statusCode> EVMC_REVERT </statusCode>
          <k> #halt ~> #catchHaltTx _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k>
+         <pc> PCOUNT </pc>
          <gas> GAVAIL </gas>
+         <errorPC> _ => PCOUNT </errorPC>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
          <k> #halt ~> #catchHaltTx .Account => . ... </k>
