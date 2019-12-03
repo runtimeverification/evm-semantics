@@ -104,7 +104,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <mixHash>          0          </mixHash>          // I_Hm
               <blockNonce>       0          </blockNonce>       // I_Hn
 
-              <ommerBlockHeaders> [ .JSONList ] </ommerBlockHeaders>
+              <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
             </block>
 
           </evm>
@@ -658,8 +658,8 @@ After executing a transaction, it's necessary to have the effect of the substate
          <log> _ => .List </log>
          <logsBloom> _ => #padToWidth(256, .ByteArray) </logsBloom>
 
-    syntax EthereumCommand ::= "#finalizeBlock" | #rewardOmmers ( JSONList )
- // ------------------------------------------------------------------------
+    syntax EthereumCommand ::= "#finalizeBlock" | #rewardOmmers ( JSONs )
+ // ---------------------------------------------------------------------
     rule <k> #finalizeBlock => #rewardOmmers(OMMERS) ... </k>
          <schedule> SCHED </schedule>
          <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
@@ -677,7 +677,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool MINER in ACCTS
 
-    rule <k> #rewardOmmers(.JSONList) => . ... </k>
+    rule <k> #rewardOmmers(.JSONs) => . ... </k>
     rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
          <schedule> SCHED </schedule>
          <coinbase> MINER </coinbase>
@@ -736,8 +736,18 @@ These are just used by the other operators for shuffling local execution state a
 
 ```k
     syntax InternalOp ::= "#newAccount" Int
- // ---------------------------------------
-    rule <k> #newAccount ACCT => #end EVMC_ACCOUNT_ALREADY_EXISTS ... </k>
+                        | "#newExistingAccount" Int
+                        | "#newFreshAccount" Int
+ // --------------------------------------------
+    rule <k> #newAccount ACCT => #newExistingAccount ACCT ... </k>
+         <activeAccounts> ACCTS:Set </activeAccounts>
+      requires ACCT in ACCTS
+
+    rule <k> #newAccount ACCT => #newFreshAccount ACCT ... </k>
+         <activeAccounts> ACCTS:Set </activeAccounts>
+      requires notBool ACCT in ACCTS
+
+    rule <k> #newExistingAccount ACCT => #end EVMC_ACCOUNT_ALREADY_EXISTS ... </k>
          <account>
            <acctID> ACCT  </acctID>
            <code>   CODE  </code>
@@ -746,29 +756,28 @@ These are just used by the other operators for shuffling local execution state a
          </account>
       requires CODE =/=K .ByteArray orBool NONCE =/=Int 0
 
-    rule <k> #newAccount ACCT => . ... </k>
+    rule <k> #newExistingAccount ACCT => . ... </k>
          <account>
-           <acctID>      ACCT       </acctID>
-           <code>        WS         </code>
-           <nonce>       0          </nonce>
-           <storage>     _ => .Map  </storage>
-           <origStorage> _ => .Map  </origStorage>
+           <acctID>      ACCT      </acctID>
+           <code>        WS        </code>
+           <nonce>       0         </nonce>
+           <storage>     _ => .Map </storage>
+           <origStorage> _ => .Map </origStorage>
            ...
          </account>
       requires #sizeByteArray(WS) ==Int 0
 
-    rule <k> #newAccount ACCT => . ... </k>
-         <activeAccounts> ACCTS (.Set => SetItem(ACCT)) </activeAccounts>
+    rule <k> #newFreshAccount ACCT => . ... </k>
+         <activeAccounts> ACCTS:Set (.Set => SetItem(ACCT)) </activeAccounts>
          <accounts>
            ( .Bag
           => <account>
-               <acctID>  ACCT       </acctID>
+               <acctID> ACCT </acctID>
                ...
              </account>
            )
            ...
          </accounts>
-      requires notBool ACCT in ACCTS
 ```
 
 The following operations help with loading account information from an external running client.

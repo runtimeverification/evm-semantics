@@ -1,24 +1,8 @@
 EVM Words
 =========
 
-### Module `EVM-DATA`
-
-EVM uses bounded 256 bit integer words, and sometimes also bytes (8 bit words).
-Here we provide the arithmetic of these words, as well as some data-structures over them.
-Both are implemented using K's `Int`.
-
 ```k
 requires "krypto.k"
-
-module EVM-DATA
-    imports KRYPTO
-    imports STRING-BUFFER
-    imports MAP-SYMBOLIC
-    imports COLLECTIONS
-```
-
-```{.k .concrete}
-    imports BYTES
 ```
 
 ### JSON Formatting
@@ -27,13 +11,44 @@ The JSON format is used extensively for communication in the Ethereum circles.
 Writing a JSON-ish parser in K takes 6 lines.
 
 ```k
-    syntax JSONList ::= List{JSON,","}
-    syntax JSONKey  ::= String | Int
-    syntax JSON     ::= String | Int | Bool
-                      | JSONKey ":" JSON
-                      | "{" JSONList "}"
-                      | "[" JSONList "]"
- // ------------------------------------
+module JSON
+    imports INT
+    imports STRING
+    imports BOOL
+
+    syntax JSONs   ::= List{JSON,","}      [klabel(JSONs)      , symbol]
+    syntax JSONKey ::= String
+    syntax JSON    ::= "null"              [klabel(JSONnull)   , symbol]
+                     | String | Int | Bool
+                     | JSONKey ":" JSON    [klabel(JSONEntry)  , symbol]
+                     | "{" JSONs "}"       [klabel(JSONObject) , symbol]
+                     | "[" JSONs "]"       [klabel(JSONList)   , symbol]
+ // --------------------------------------------------------------------
+endmodule
+```
+
+EVM uses bounded 256 bit integer words, and sometimes also bytes (8 bit words).
+Here we provide the arithmetic of these words, as well as some data-structures over them.
+Both are implemented using K's `Int`.
+
+```k
+module EVM-DATA
+    imports KRYPTO
+    imports STRING-BUFFER
+    imports MAP-SYMBOLIC
+    imports COLLECTIONS
+    imports JSON
+```
+
+```{.k .concrete}
+    imports BYTES
+```
+
+**TODO**: Adding `Int` to `JSONKey` is a hack to make certain parts of semantics easier.
+
+```k
+    syntax JSONKey ::= Int
+ // ----------------------
 ```
 
 Utilities
@@ -413,15 +428,16 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax WordStack ::= #take ( Int , WordStack ) [function, functional]
  // ---------------------------------------------------------------------
-    rule #take(N, WS)         => .WordStack                      requires notBool N >Int 0
-    rule #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
-    rule #take(N, (W : WS))   => W : #take(N -Int 1, WS)         requires N >Int 0
+    rule [take.base]:      #take(N, WS)         => .WordStack                      requires notBool N >Int 0
+    rule [take.zero-pad]:  #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
+    rule [take.recursive]: #take(N, (W : WS))   => W : #take(N -Int 1, WS)         requires N >Int 0
 
     syntax WordStack ::= #drop ( Int , WordStack ) [function, functional]
  // ---------------------------------------------------------------------
     rule #drop(N, WS)         => WS                  requires notBool N >Int 0
     rule #drop(N, .WordStack) => .WordStack
-    rule #drop(N, (W : WS))   => #drop(N -Int 1, WS) requires N >Int 0
+    rule #drop(N, (W : WS))   => #drop(1, #drop(N -Int 1, (W : WS))) requires N >Int 1
+    rule #drop(1, (_ : WS))   => WS
 ```
 
 ### Element Access
@@ -432,8 +448,8 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax Int ::= WordStack "[" Int "]" [function]
  // -----------------------------------------------
-    rule (W0 : WS)   [N] => W0           requires N ==Int 0
-    rule (W0 : WS)   [N] => WS[N -Int 1] requires N >Int 0
+    rule (W : _) [ N ] => W                  requires N ==Int 0
+    rule WS      [ N ] => #drop(N, WS) [ 0 ] requires N >Int 0
 
     syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function]
  // --------------------------------------------------------------
@@ -621,8 +637,8 @@ Addresses
     syntax Int ::= #newAddr ( Int , Int ) [function]
                  | #newAddr ( Int , Int , ByteArray ) [function, klabel(#newAddrCreate2)]
  // -------------------------------------------------------------------------------------
-    rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeWord(NONCE), 192))))
-    rule #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#padToWidth(20, #asByteStack(ACCT))) +String #unparseByteStack(#padToWidth(32, #asByteStack(SALT))) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE)))))))
+    rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeWord(NONCE), 192)))) [concrete]
+    rule #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#padToWidth(20, #asByteStack(ACCT))) +String #unparseByteStack(#padToWidth(32, #asByteStack(SALT))) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE))))))) [concrete]
 
     syntax Account ::= #sender ( Int , Int , Int , Account , Int , String , Int , ByteArray , ByteArray ) [function]
                      | #sender ( String , Int , String , String )                                         [function, klabel(#senderAux)]
@@ -773,7 +789,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
 -   `#parseHexWord` interprets a string as a single hex-encoded `Word`.
 -   `#parseHexBytes` interprets a string as a hex-encoded stack of bytes.
 -   `#parseByteStack` interprets a string as a hex-encoded stack of bytes, but makes sure to remove the leading "0x".
--   `#parseByteStackRaw` inteprets a string as a stack of bytes.
+-   `#parseByteStackRaw` casts a string as a stack of bytes, ignoring any encoding.
 -   `#parseWordStack` interprets a JSON list as a stack of `Word`.
 -   `#parseMap` interprets a JSON key/value object as a map from `Word` to `Word`.
 -   `#parseAddr` interprets a string as a 160 bit hex-endcoded address.
@@ -819,7 +835,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
 ```k
     syntax Map ::= #parseMap ( JSON ) [function]
  // --------------------------------------------
-    rule #parseMap( { .JSONList                   } ) => .Map
+    rule #parseMap( { .JSONs                      } ) => .Map
     rule #parseMap( { _   : (VALUE:String) , REST } ) => #parseMap({ REST })                                                requires #parseHexWord(VALUE) ==K 0
     rule #parseMap( { KEY : (VALUE:String) , REST } ) => #parseMap({ REST }) [ #parseHexWord(KEY) <- #parseHexWord(VALUE) ] requires #parseHexWord(VALUE) =/=K 0
 
@@ -972,7 +988,7 @@ Decoding
 --------
 
 -   `#rlpDecode` RLP decodes a single `String` into a `JSON`.
--   `#rlpDecodeList` RLP decodes a single `String` into a `JSONList`, interpereting the string as the RLP encoding of a list.
+-   `#rlpDecodeList` RLP decodes a single `String` into a `JSONs`, interpereting the string as the RLP encoding of a list.
 
 ```k
     syntax JSON ::= #rlpDecode(String)               [function]
@@ -982,11 +998,11 @@ Decoding
     rule #rlpDecode(STR, #str(LEN, POS))  => substrString(STR, POS, POS +Int LEN)
     rule #rlpDecode(STR, #list(LEN, POS)) => [#rlpDecodeList(STR, POS)]
 
-    syntax JSONList ::= #rlpDecodeList(String, Int)               [function]
-                      | #rlpDecodeList(String, Int, LengthPrefix) [function, klabel(#rlpDecodeListAux)]
- // ---------------------------------------------------------------------------------------------------
+    syntax JSONs ::= #rlpDecodeList(String, Int)               [function]
+                   | #rlpDecodeList(String, Int, LengthPrefix) [function, klabel(#rlpDecodeListAux)]
+ // ------------------------------------------------------------------------------------------------
     rule #rlpDecodeList(STR, POS) => #rlpDecodeList(STR, POS, #decodeLengthPrefix(STR, POS)) requires POS <Int lengthString(STR)
-    rule #rlpDecodeList(STR, POS) => .JSONList [owise]
+    rule #rlpDecodeList(STR, POS) => .JSONs [owise]
     rule #rlpDecodeList(STR, POS, _:LengthPrefixType(L, P)) => #rlpDecode(substrString(STR, POS, L +Int P)) , #rlpDecodeList(STR, L +Int P)
 
     syntax LengthPrefixType ::= "#str" | "#list"
@@ -1041,7 +1057,7 @@ Merkle Patricia Tree
 
     rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, _ ), PATH, VALUE )
       => MerkleLeaf( LEAFPATH, VALUE )
-      requires #asInteger( LEAFPATH ) ==Int #asInteger( PATH )
+      requires #asString( LEAFPATH ) ==String #asString( PATH )
 
     rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
       => MerkleUpdate ( MerkleUpdate ( .MerkleBranch, LEAFPATH, LEAFVALUE ), PATH, VALUE )
@@ -1054,7 +1070,7 @@ Merkle Patricia Tree
 
     rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => MerkleExtension ( EXTPATH, MerkleUpdate ( EXTTREE, .ByteArray, VALUE ) )
-      requires #asInteger( EXTPATH ) ==Int #asInteger( PATH )
+      requires #asString( EXTPATH ) ==String #asString( PATH )
 
     rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, PATH, VALUE ), EXTPATH, EXTTREE )

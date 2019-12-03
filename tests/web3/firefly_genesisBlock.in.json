@@ -1,0 +1,118 @@
+[
+    {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "firefly_addAccount",
+        "params": [
+            {
+                "key": "0xb4e62b6f07e7aa723a191bcf498c52f7b7ce7d8ff4371ddff996f24d8cc9abf5",
+                "balance": "0x56bc75e2d63100000"
+            }
+        ]
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "firefly_addAccount",
+        "params": [
+            {
+                "key": "0x59714dff1193960382fb7ebc93163efa76024fa3345d642725449b23f3b9bcf7",
+                "balance": "0x56bc75e2d63100000"
+            }
+        ]
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "method": "firefly_addAccount",
+        "params": [
+            {
+                "key": "0xfc6877e78c1b839d31551ae67e7a85bcfb635b085c28b3eec5407596429c5c46",
+                "balance": "0x56bc75e2d63100000"
+            }
+        ]
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "method": "firefly_addAccount",
+        "params": [
+            {
+                "key": "0x086d9b03508a63ccae6e45dd41788c691c631a825579777000408f057b1a863c",
+                "balance": "0x56bc75e2d63100000"
+            }
+        ]
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "method": "firefly_addAccount",
+        "params": [
+            {
+                "key": "0x207bb3a0d68a4514b3f338148405568169c1b13a4db1f623c2471df1431afdf1",
+                "balance": "0x56bc75e2d63100000"
+            }
+        ]
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "method": "firefly_addAccount",
+        "params": [
+            {
+                "key": "0x7fcb214f13396372160512140bbcc18976678c3db5b5d4957762f89a78d7f20c",
+                "balance": "0x56bc75e2d63100000"
+            }
+        ]
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 7,
+        "method": "firefly_addAccount",
+        "params": [
+            {
+                "key": "0x3ad02866251011633b6b6404d50fbd7a6ca88b4e67e6a098959709db931c3690",
+                "balance": "0x56bc75e2d63100000"
+            }
+        ]
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 8,
+        "method": "firefly_addAccount",
+        "params": [
+            {
+                "key": "0x88be0b179c407fb81ed82c3d5dbcf7295145c62c572af49712218eb8b8fe7b30",
+                "balance": "0x56bc75e2d63100000"
+            }
+        ]
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 9,
+        "method": "firefly_addAccount",
+        "params": [
+            {
+                "key": "0x2a71c84f3192bdc216f495591b5de99c75a6e99b6133d3450334b3d6e8e201ec",
+                "balance": "0x56bc75e2d63100000"
+            }
+        ]
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 10,
+        "method": "firefly_addAccount",
+        "params": [
+            {
+                "key": "0x52192eece761e1680f576bb69b4919f6e8100d071b8c029665f6d3d3719a8e48",
+                "balance": "0x56bc75e2d63100000"
+            }
+        ]
+    },
+    {
+        "jsonrpc": "2.0",
+        "id": 11,
+        "method": "firefly_genesisBlock",
+        "params": []
+    }
+]

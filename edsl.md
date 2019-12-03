@@ -258,7 +258,7 @@ where `1003892871367861763272476045097431689001461395759728643661426852242313133
     syntax SubstateLogEntry ::= #abiEventLog ( Int , String , EventArgs ) [function]
  // --------------------------------------------------------------------------------
     rule #abiEventLog(ACCT_ID, EVENT_NAME, EVENT_ARGS)
-      => { ACCT_ID | #getEventTopics(EVENT_NAME, EVENT_ARGS) | #getEventData(EVENT_ARGS) }
+      => { ACCT_ID | #getEventTopics(EVENT_NAME, EVENT_ARGS) | #encodeArgs(#getNonIndexedArgs(EVENT_ARGS)) }
 
     syntax List ::= #getEventTopics ( String , EventArgs ) [function]
  // -----------------------------------------------------------------
@@ -278,12 +278,11 @@ where `1003892871367861763272476045097431689001461395759728643661426852242313133
     rule #getIndexedArgs(_:TypedArg,  ES) =>                        #getIndexedArgs(ES)
     rule #getIndexedArgs(.EventArgs)      => .List
 
-    syntax ByteArray ::= #getEventData ( EventArgs ) [function]
- // -----------------------------------------------------------
-    rule #getEventData(#indexed(_), ES) =>            #getEventData(ES)
-    rule #getEventData(E:TypedArg,  ES) => #enc(E) ++ #getEventData(ES)
-    rule #getEventData(.EventArgs)      => .WordStack
-
+    syntax TypedArgs ::= #getNonIndexedArgs ( EventArgs ) [function]
+ // ----------------------------------------------------------------
+    rule #getNonIndexedArgs(#indexed(E), ES) =>    #getNonIndexedArgs(ES)
+    rule #getNonIndexedArgs(E:TypedArg,  ES) => E, #getNonIndexedArgs(ES)
+    rule #getNonIndexedArgs(.EventArgs)      => .TypedArgs
 ```
 
 ### Hashed Location for Storage
@@ -322,7 +321,7 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
  // -----------------------------------------------------------------------
     rule #hashedLocation(LANG, BASE, .IntList) => BASE
 
-    rule #hashedLocation("Vyper",    BASE, OFFSET OFFSETS) => #hashedLocation("Vyper",    keccakIntList(BASE) +Word OFFSET, OFFSETS)
+    rule #hashedLocation("Vyper",    BASE, OFFSET OFFSETS) => #hashedLocation("Vyper",    keccakIntList(BASE OFFSET), OFFSETS)
     rule #hashedLocation("Solidity", BASE, OFFSET OFFSETS) => #hashedLocation("Solidity", keccakIntList(OFFSET BASE),       OFFSETS)
 
     syntax Int ::= keccakIntList( IntList ) [function]

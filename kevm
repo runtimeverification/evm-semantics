@@ -116,16 +116,18 @@ run_web3_ganache() {
     $0 web3 "$web3_port" "$@" &
     while ! netcat -z 127.0.0.1 "$web3_port"; do sleep 0.1; done
     notif 'Generating accounts'
-    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0xdc7e9a7c64933ab893160b79d099c254d274e1c40c6df6d5239e1a623e3d6de1", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
-    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0x6e2687f9732d970c6b1d5baa3dff26c4af36257552bc17df737afbc00ca70de2", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
-    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0xd34d8e873da77217abaef9424a7d87fce351b603920c7f5288d7701c5f148860", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
-    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0x976b5ec9253759d4a2746c37597841beba57527123dc3db2165b637adce58bcb", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
-    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0x23dff7ac7981167eb5386e51c3d6d2e3ca9dc219315749b2058d0a2d1e21625e", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
-    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0xe040e4bf96d8c9d3a8d1ffb22b30ed4b0a79a25342d656c5a8e2784b0fab752f", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
-    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0x13abddd7d94165fc46bed2cad6b0b14cd0267a85f70ad5c26cce82c609e0bf87", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
-    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0x0e29f7d6984bb47d60db479212ca56af516705b07d8753b474bd7f0db8bc1921", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
-    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0xea7fe1480e9ab71c261c5e1e727f36482f84dbdb07dbf8c8e9f767dcecf87568", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
-    curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"firefly_addAccount","params":[{"key":"0x5f9addbbf41ae2e3d6cb7b07ffabf2c5ff6edc3a38c9dd64a9afd23df02ad7ee", "balance":"0x56BC75E2D63100000"}]}' 127.0.0.1:"$web3_port"
+    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0xdc7e9a7c64933ab893160b79d099c254d274e1c40c6df6d5239e1a623e3d6de1", "balance":"0x56BC75E2D63100000"'}
+    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0x6e2687f9732d970c6b1d5baa3dff26c4af36257552bc17df737afbc00ca70de2", "balance":"0x56BC75E2D63100000"'}
+    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0xd34d8e873da77217abaef9424a7d87fce351b603920c7f5288d7701c5f148860", "balance":"0x56BC75E2D63100000"'}
+    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0x976b5ec9253759d4a2746c37597841beba57527123dc3db2165b637adce58bcb", "balance":"0x56BC75E2D63100000"'}
+    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0x23dff7ac7981167eb5386e51c3d6d2e3ca9dc219315749b2058d0a2d1e21625e", "balance":"0x56BC75E2D63100000"'}
+    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0xe040e4bf96d8c9d3a8d1ffb22b30ed4b0a79a25342d656c5a8e2784b0fab752f", "balance":"0x56BC75E2D63100000"'}
+    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0x13abddd7d94165fc46bed2cad6b0b14cd0267a85f70ad5c26cce82c609e0bf87", "balance":"0x56BC75E2D63100000"'}
+    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0x0e29f7d6984bb47d60db479212ca56af516705b07d8753b474bd7f0db8bc1921", "balance":"0x56BC75E2D63100000"'}
+    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0xea7fe1480e9ab71c261c5e1e727f36482f84dbdb07dbf8c8e9f767dcecf87568", "balance":"0x56BC75E2D63100000"'}
+    $0 web3-send "$web3_port" firefly_addAccount {'"key":"0x5f9addbbf41ae2e3d6cb7b07ffabf2c5ff6edc3a38c9dd64a9afd23df02ad7ee", "balance":"0x56BC75E2D63100000"'}
+    $0 web3-send "$web3_port" firefly_genesisBlock
+
 }
 
 run_klab() {
@@ -158,38 +160,44 @@ view_klab() {
 # Dev Commands
 
 run_interpret() {
-    local interpreter kast output output_kast exit_status
+    local interpreter kast output output_text output_format exit_status
 
     interpreter="$backend_dir/driver-kompiled/interpreter"
     kast="$(mktemp)"
     output="$(mktemp)"
-    output_kast="$(mktemp)"
-    trap "rm -rf $kast $output $output_kast" INT TERM EXIT
+    output_text="$(mktemp)"
+    trap "rm -rf $kast $output $output_text" INT TERM EXIT
     exit_status=0
     debugger=
+    output_format='kore'
     case "$backend" in
         ocaml)  run_kast kast > "$kast"
+                output_format='kast'
                 if $debug; then debugger=ocamldebug; fi
                 $debugger "$interpreter" "$backend_dir/driver-kompiled/realdef.cma" -c PGM "$kast" textfile \
                              -c SCHEDULE "$cSCHEDULE" text -c MODE "$cMODE" text --initializer 'initKevmCell' \
                              --output-file "$output" "$@" \
                     || exit_status="$?"
+                if [[ "$exit_status" != '0' ]]; then
+                    k-bin-to-text "$output" "$output_text"
+                    cat "$output_text"
+                    exit "$exit_status"
+                fi
                 ;;
 
         llvm)   run_kast kore > "$kast"
                 if $debug; then debugger="gdb --args"; fi
-                $debugger "$interpreter" "$kast" -1 "$output" "$@" \
+                $debugger "$interpreter" "$kast" -1 "$output_text" "$@" \
                     || exit_status="$?"
+                if [[ "$exit_status" != '0' ]]; then
+                    cat "$output_text" | "$0" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
+                    exit "$exit_status"
+                fi
                 ;;
 
         *)      fatal "Bad backend for interpreter: '$backend'"
                 ;;
     esac
-    if [[ "$exit_status" != '0' ]]; then
-        k-bin-to-text "$output" "$output_kast"
-        cat "$output_kast" | "$0" kast --backend "$backend" - pretty --input kast --sort GeneratedTopCell
-        exit "$exit_status"
-    fi
 }
 
 # Main
@@ -197,7 +205,7 @@ run_interpret() {
 
 run_command="$1" ; shift
 
-if [[ "$run_command" == 'help' ]]; then
+if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
     echo "
         usage: $0 run          [--backend (ocaml|java|llvm|haskell)]      <pgm>  <K arg>*
                $0 interpret    [--backend (ocaml|llvm)] [--debug]         <pgm>  <interpreter arg>*
@@ -211,6 +219,8 @@ if [[ "$run_command" == 'help' ]]; then
                $0 klab-prove                                              <spec> <K arg>* -m <def_module>
                $0 klab-view                                               <spec>
 
+               $0 [help|--help|version|--version]
+
            $0 run       : Run a single EVM program
            $0 interpret : Run JSON EVM programs without K Frontend (external parser)
            $0 kast      : Parse an EVM program and output it in a supported format
@@ -221,6 +231,9 @@ if [[ "$run_command" == 'help' ]]; then
            $0 web3-ganache     : Run version of semantics which understand Web3 RPC and is able to communicate with Truffle Test Framework (**UNDER CONSTRUCTION**)
            $0 klab-(run|prove) : Run program or prove spec and dump StateLogs which KLab can read
            $0 klab-view : View the statelog associated with a given program or spec
+
+           $0 help    : Display this help message.
+           $0 version : Display the versions of KEVM, K, Kore, and Z3 in use.
 
            Note: <pgm> is a path to a file containing an EVM program/test.
                  <spec> is a K specification to be proved.
@@ -233,6 +246,18 @@ if [[ "$run_command" == 'help' ]]; then
 
            klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
     "
+    exit 0
+fi
+
+if [[ "$run_command" == 'version' ]] || [[ "$run_command" == '--version' ]]; then
+    notif "KEVM Version"
+    git rev-parse --short HEAD
+    notif "K Version"
+    kompile --version
+    notif "Kore Version"
+    kore-exec --version
+    notif "Z3 Version"
+    z3 --version
     exit 0
 fi
 
@@ -263,7 +288,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 backend_dir="$defn_dir/$backend"
-[[ ! "$backend" == "ocaml" ]] || eval $(opam config env)
+[[ ! "$backend" == "ocaml" ]] || eval $(${OPAM:-opam} config env)
 
 # get the run file
 if [[ ! "$run_command" =~ web3* ]]; then

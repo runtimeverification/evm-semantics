@@ -37,17 +37,20 @@ LUA_PATH                := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean clean-submodules distclean install uninstall                                                                              \
-        deps all-deps llvm-deps haskell-deps repo-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff                                     \
-        build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                                               \
-        defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                                                \
-        split-tests                                                                                                                         \
-        test test-all test-conformance test-rest-conformance test-all-conformance                                                           \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                       \
-        test-web3                                                                                                                           \
-        test-prove test-klab-prove test-parse test-failure                                                                                  \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly \
-        media media-pdf sphinx metropolis-theme
+OPAM ?= opam
+
+.PHONY: all clean clean-submodules distclean install uninstall                                                                                         \
+        deps all-deps llvm-deps haskell-deps repo-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff                                                \
+        build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                                                          \
+        defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                                                           \
+        split-tests                                                                                                                                    \
+        test test-all test-conformance test-rest-conformance test-all-conformance                                                                      \
+        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                                  \
+        test-web3 test-all-web3 test-failing-web3                                                                                                      \
+        test-prove test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-klab-prove \
+        test-parse test-failure                                                                                                                        \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly            \
+        media media-pdf metropolis-theme
 .SECONDARY:
 
 all: build split-tests
@@ -146,8 +149,8 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 	touch $(PLUGIN_SUBMODULE)/make.timestamp
 
 ocaml-deps:
-	eval $$(opam config env) \
-	    opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128 ocaml-protoc rlp yojson hex ocp-ocamlres
+	eval $$($(OPAM) config env) \
+	    $(OPAM) install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128 ocaml-protoc rlp yojson hex ocp-ocamlres
 
 # Building
 # --------
@@ -267,8 +270,8 @@ else
 endif
 
 $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
-	eval $$(opam config env) \
-	    && $(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) \
+	eval $$($(OPAM) config env) \
+	    && $(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend ocaml \
 	                        --syntax-module $(SYNTAX_MODULE) $(ocaml_dir)/$(MAIN_DEFN_FILE).k \
 	                        --hook-namespaces "KRYPTO" --gen-ml-only -O3 --non-strict \
 	                        --directory $(ocaml_dir) -I $(ocaml_dir) $(KOMPILE_OPTS) \
@@ -278,7 +281,7 @@ $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
 $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT)
 	@mkdir -p $(dir $@)
 	cp $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli $(dir $@)
-	eval $$(opam config env) \
+	eval $$($(OPAM) config env) \
 	    && ocp-ocamlres -format ocaml $(PLUGIN_SUBMODULE)/plugin/proto/VERSION -o $(dir $@)/apiVersion.ml \
 	    && ocaml-protoc $(PLUGIN_SUBMODULE)/plugin/proto/*.proto -ml_out $(dir $@) \
 	    && cd $(dir $@) \
@@ -290,7 +293,7 @@ $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT): $(wildcard $
 	        && ocamlfind install ethereum-semantics-plugin-ocaml $(PLUGIN_SUBMODULE)/plugin/META semantics.* *.cmi *.$(EXT)
 
 $(ocaml_kompiled): $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT)
-	eval $$(opam config env) \
+	eval $$($(OPAM) config env) \
 	    && cd $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled \
 	        && ocamllex lexer.mll \
 	        && ocamlyacc parser.mly \
@@ -371,16 +374,19 @@ release.md: INSTALL.md
 # Tests
 # -----
 
-TEST_CONCRETE_BACKEND:=llvm
-TEST_SYMBOLIC_BACKEND:=java
-TEST:=./kevm
-KPROVE_MODULE:=VERIFICATION
-CHECK:=git --no-pager diff --no-index --ignore-all-space
+TEST_CONCRETE_BACKEND := llvm
+TEST_SYMBOLIC_BACKEND := java
 
-KEVM_MODE:=NORMAL
-KEVM_SCHEDULE:=PETERSBURG
+TEST  := ./kevm
+CHECK := git --no-pager diff --no-index --ignore-all-space -R
 
-KEVM_WEB3_ARGS:=--shutdownable
+KEVM_MODE     := NORMAL
+KEVM_SCHEDULE := PETERSBURG
+
+KEVM_WEB3_ARGS := --shutdownable
+
+KPROVE_MODULE  := VERIFICATION
+KPROVE_OPTIONS :=
 
 test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
@@ -398,44 +404,44 @@ tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE=DEFAULT
 
 tests/%.run: tests/%
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) interpret --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
-	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
+	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-interactive: tests/%
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) run --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
-	    || $(CHECK) tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json tests/$*.$(TEST_CONCRETE_BACKEND)-out
+	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-expected: tests/% tests/%.expected
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) $(TEST) run --backend $(TEST_CONCRETE_BACKEND) $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out \
-	    || $(CHECK) tests/$*.expected tests/$*.$(TEST_CONCRETE_BACKEND)-out
+	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/web3/no-shutdown/%: KEVM_WEB3_ARGS=
 
 tests/%.run-web3: tests/%.in.json
 	tests/web3/runtest.sh $< tests/$*.out.json $(KEVM_WEB3_ARGS)
-	$(CHECK) tests/$*.expected.json tests/$*.out.json
+	$(CHECK) tests/$*.out.json tests/$*.expected.json
 	rm -rf tests/$*.out.json
 
 tests/%.parse: tests/%
 	$(TEST) kast --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
-	$(CHECK) $@-expected $@-out
+	$(CHECK) $@-out $@-expected
 	rm -rf $@-out
 
 tests/specs/functional/%.prove: TEST_SYMBOLIC_BACKEND=haskell
 tests/specs/functional/storageRoot-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
 
 tests/%.prove: tests/%
-	$(TEST) prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE)
+	$(TEST) prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE) $(KPROVE_OPTIONS)
 
 tests/%.search: tests/%
 	$(TEST) search --backend $(TEST_SYMBOLIC_BACKEND) $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" > $@-out
-	$(CHECK) $@-expected $@-out
+	$(CHECK) $@-out $@-expected
 	rm -rf $@-out
 
 tests/%.klab-prove: tests/%
-	$(TEST) klab-prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE)
+	$(TEST) klab-prove --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE) $(KPROVE_OPTIONS)
 
 # Smoke Tests
 
@@ -443,7 +449,7 @@ smoke_tests_run=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
                 tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json \
                 tests/interactive/sumTo10.evm
 
-smoke_tests_prove=tests/specs/ds-token-erc20/transfer-failure-1-a-spec.k
+smoke_tests_prove=tests/specs/erc20/ds/transfer-failure-1-a-spec.k
 
 # Conformance Tests
 
@@ -474,17 +480,33 @@ test-all-bchain: $(all_bchain_tests:=.run)
 test-rest-bchain: $(rest_bchain_tests:=.run)
 test-bchain: $(passing_bchain_tests:=.run)
 
-web3_tests=$(wildcard tests/web3/*.in.json) \
-           $(wildcard tests/web3/no-shutdown/*.in.json)
+all_web3_tests     = $(wildcard tests/web3/*.in.json) $(wildcard tests/web3/*/*.in.json)
+failing_web3_tests = $(shell cat tests/failing.web3)
+passing_web3_tests = $(filter-out $(failing_web3_tests), $(all_web3_tests))
 
-test-web3: $(web3_tests:.in.json=.run-web3)
+test-all-web3: $(all_web3_tests:.in.json=.run-web3)
+test-failing-web3: $(failing_web3_tests:.in.json=.run-web3)
+test-web3: $(passing_web3_tests:.in.json=.run-web3)
 
 # Proof Tests
 
-prove_specs_dir:=tests/specs
-prove_tests=$(wildcard $(prove_specs_dir)/*/*-spec.k)
+prove_specs_dir        := tests/specs
+prove_failing_tests    := $(shell cat $(prove_specs_dir)/failing)
+prove_benchmarks_tests := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/benchmarks/*-spec.k))
+prove_functional_tests := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/functional/*-spec.k))
+prove_opcodes_tests    := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/opcodes/*-spec.k))
+prove_erc20_tests      := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/erc20/*/*-spec.k))
+prove_bihu_tests       := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/bihu/*-spec.k))
+prove_examples_tests   := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k))
 
-test-prove: $(prove_tests:=.prove)
+test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples
+test-prove-benchmarks: $(prove_benchmarks_tests:=.prove)
+test-prove-functional: $(prove_functional_tests:=.prove)
+test-prove-opcodes:    $(prove_opcodes_tests:=.prove)
+test-prove-erc20:      $(prove_erc20_tests:=.prove)
+test-prove-bihu:       $(prove_bihu_tests:=.prove)
+test-prove-examples:   $(prove_examples_tests:=.prove)
+
 test-klab-prove: $(smoke_tests_prove:=.klab-prove)
 
 # Parse Tests
@@ -521,7 +543,7 @@ test-interactive-firefly:
 # Media
 # -----
 
-media: sphinx media-pdf
+media: media-pdf
 
 ### Media generated PDFs
 
@@ -542,26 +564,3 @@ $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
 	git submodule update --init -- $(dir $@)
 	cd $(dir $@) && $(MAKE)
 
-# Sphinx HTML Documentation
-
-# You can set these variables from the command line.
-SPHINXOPTS     =
-SPHINXBUILD    = sphinx-build
-PAPER          =
-SPHINXBUILDDIR = $(BUILD_DIR)/sphinx-docs
-
-# Internal variables.
-PAPEROPT_a4     = -D latex_paper_size=a4
-PAPEROPT_letter = -D latex_paper_size=letter
-ALLSPHINXOPTS   = -d ../$(SPHINXBUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
-# the i18n builder cannot share the environment and doctrees with the others
-I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
-
-sphinx:
-	@mkdir -p $(SPHINXBUILDDIR)
-	cp -r media/sphinx-docs/* $(SPHINXBUILDDIR)/
-	cp -r *.md $(SPHINXBUILDDIR)/
-	cd $(SPHINXBUILDDIR) \
-	    && sed -i 's/{.k[ a-zA-Z.-]*}/k/g' *.md \
-	    && $(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) html \
-	    && $(SPHINXBUILD) -b text $(ALLSPHINXOPTS) html/text

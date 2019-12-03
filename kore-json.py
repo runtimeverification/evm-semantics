@@ -14,24 +14,24 @@ def escape(data):
 
 def print_kast(data, sort="SortJSON"):
   if isinstance(data, list):
-    sys.stdout.write("Lbl'LSqBUndsRSqBUnds'EVM-DATA'Unds'JSON'Unds'JSONList{}(")
+    sys.stdout.write("LblJSONList{}(")
     for elem in data:
-      sys.stdout.write("Lbl'UndsCommUndsUnds'EVM-DATA'Unds'JSONList'Unds'JSON'Unds'JSONList{}(")
+      sys.stdout.write("LblJSONs{}(")
       print_kast(elem)
       sys.stdout.write(',')
-    sys.stdout.write("Lbl'Stop'List'LBraQuotUndsCommUndsUnds'EVM-DATA'Unds'JSONList'Unds'JSON'Unds'JSONList'QuotRBraUnds'JSONList{}()")
+    sys.stdout.write("Lbl'Stop'List'LBraQuot'JSONs'QuotRBraUnds'JSONs{}()")
     for elem in data:
       sys.stdout.write(')')
     sys.stdout.write(')')
   elif isinstance(data, OrderedDict):
-    sys.stdout.write("Lbl'LBraUndsRBraUnds'EVM-DATA'Unds'JSON'Unds'JSONList{}(")
+    sys.stdout.write("LblJSONObject{}(")
     for key, value in data.items():
-      sys.stdout.write("Lbl'UndsCommUndsUnds'EVM-DATA'Unds'JSONList'Unds'JSON'Unds'JSONList{}(Lbl'UndsColnUndsUnds'EVM-DATA'Unds'JSON'Unds'JSONKey'Unds'JSON{}(")
+      sys.stdout.write("LblJSONs{}(LblJSONEntry{}(")
       print_kast(key, "SortJSONKey")
       sys.stdout.write(',')
       print_kast(value)
       sys.stdout.write('),')
-    sys.stdout.write("Lbl'Stop'List'LBraQuotUndsCommUndsUnds'EVM-DATA'Unds'JSONList'Unds'JSON'Unds'JSONList'QuotRBraUnds'JSONList{}()")
+    sys.stdout.write("Lbl'Stop'List'LBraQuot'JSONs'QuotRBraUnds'JSONs{}()")
     for key in data:
       sys.stdout.write(')')
     sys.stdout.write(')')
@@ -50,13 +50,11 @@ def print_kast(data, sort="SortJSON"):
 def print_klabel(s):
   print("Lbl" + s.replace("_", "'Unds'").replace("`", "").replace("(.KList)", "{}"), end=' ')
 
-print("[initial-configuration{}(LblinitGeneratedTopCell{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Stop'Map{}(),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$PGM\")),inj{SortJSON{}, SortKItem{}}(", end=' ')
+print("LblinitGeneratedTopCell{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Stop'Map{}(),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$PGM\")),inj{SortJSON{}, SortKItem{}}(", end=' ')
 print_kast(data)
 print("))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$SCHEDULE\")),inj{SortSchedule{}, SortKItem{}}(", end=' ')
 print_klabel(sys.argv[2])
 print("()))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$MODE\")),inj{SortMode{}, SortKItem{}}(", end=' ')
 print_klabel(sys.argv[3])
-print("())))))]")
+print("()))))")
 print()
-print("module TMP")
-print("endmodule []")
