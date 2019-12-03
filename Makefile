@@ -37,6 +37,8 @@ LUA_PATH                := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
+OPAM ?= opam
+
 .PHONY: all clean clean-submodules distclean install uninstall                                                                                         \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff                                                \
         build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                                                          \
@@ -140,8 +142,8 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 	touch $(PLUGIN_SUBMODULE)/make.timestamp
 
 ocaml-deps:
-	eval $$(opam config env) \
-	    opam install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128 ocaml-protoc rlp yojson hex ocp-ocamlres
+	eval $$($(OPAM) config env) \
+	    $(OPAM) install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128 ocaml-protoc rlp yojson hex ocp-ocamlres
 
 # Building
 # --------
@@ -261,7 +263,7 @@ else
 endif
 
 $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
-	eval $$(opam config env) \
+	eval $$($(OPAM) config env) \
 	    && $(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend ocaml \
 	                        --syntax-module $(SYNTAX_MODULE) $(ocaml_dir)/$(MAIN_DEFN_FILE).k \
 	                        --hook-namespaces "KRYPTO" --gen-ml-only -O3 --non-strict \
@@ -272,7 +274,7 @@ $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
 $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT)
 	@mkdir -p $(dir $@)
 	cp $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli $(dir $@)
-	eval $$(opam config env) \
+	eval $$($(OPAM) config env) \
 	    && ocp-ocamlres -format ocaml $(PLUGIN_SUBMODULE)/plugin/proto/VERSION -o $(dir $@)/apiVersion.ml \
 	    && ocaml-protoc $(PLUGIN_SUBMODULE)/plugin/proto/*.proto -ml_out $(dir $@) \
 	    && cd $(dir $@) \
@@ -284,7 +286,7 @@ $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT): $(wildcard $
 	        && ocamlfind install ethereum-semantics-plugin-ocaml $(PLUGIN_SUBMODULE)/plugin/META semantics.* *.cmi *.$(EXT)
 
 $(ocaml_kompiled): $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT)
-	eval $$(opam config env) \
+	eval $$($(OPAM) config env) \
 	    && cd $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled \
 	        && ocamllex lexer.mll \
 	        && ocamlyacc parser.mly \

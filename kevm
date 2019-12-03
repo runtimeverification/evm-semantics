@@ -289,7 +289,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 backend_dir="$defn_dir/$backend"
-[[ ! "$backend" == "ocaml" ]] || eval $(opam config env)
+[[ ! "$backend" == "ocaml" ]] || eval $(${OPAM:-opam} config env)
 
 # get the run file
 if [[ ! "$run_command" =~ web3* ]]; then
