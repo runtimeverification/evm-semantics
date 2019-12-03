@@ -453,19 +453,19 @@ test-all-conformance: test-all-vm test-all-bchain
 test-rest-conformance: test-rest-vm test-rest-bchain
 test-conformance: test-vm test-bchain
 
-vm_tests         = $(wildcard tests/ethereum-tests/VMTests/*/*.json)
-quick_vm_tests   = $(filter-out $(slow_conformance_tests), $(vm_tests))
+all_vm_tests     = $(wildcard tests/ethereum-tests/VMTests/*/*.json)
+quick_vm_tests   = $(filter-out $(slow_conformance_tests), $(all_vm_tests))
 passing_vm_tests = $(filter-out $(failing_conformance_tests), $(quick_vm_tests))
-rest_vm_tests    = $(filter-out $(passing_vm_tests), $(vm_tests))
+rest_vm_tests    = $(filter-out $(passing_vm_tests), $(all_vm_tests))
 
-test-all-vm: $(vm_tests:=.run)
+test-all-vm: $(all_vm_tests:=.run)
 test-rest-vm: $(rest_vm_tests:=.run)
 test-vm: $(passing_vm_tests:=.run)
 
-bchain_tests         = $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/*/*.json)
-quick_bchain_tests   = $(filter-out $(slow_conformance_tests), $(bchain_tests))
+all_bchain_tests     = $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/*/*.json)
+quick_bchain_tests   = $(filter-out $(slow_conformance_tests), $(all_bchain_tests))
 passing_bchain_tests = $(filter-out $(failing_conformance_tests), $(quick_bchain_tests))
-rest_bchain_tests    = $(filter-out $(passing_bchain_tests), $(bchain_tests))
+rest_bchain_tests    = $(filter-out $(passing_bchain_tests), $(all_bchain_tests))
 
 test-all-bchain: $(all_bchain_tests:=.run)
 test-rest-bchain: $(rest_bchain_tests:=.run)
