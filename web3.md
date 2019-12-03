@@ -1188,8 +1188,7 @@ Transaction Receipts
          <k> #halt ~> #catchHaltTx _ => #popCallStack ~> #popWorldState ... </k>
 
     rule <statusCode> EVMC_REVERT </statusCode>
-         <k> #halt ~> #catchHaltTx _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> #setPC PCOUNT ... </k>
-         <pc> PCOUNT </pc>
+         <k> #halt ~> #catchHaltTx _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k>
          <gas> GAVAIL </gas>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
@@ -1198,11 +1197,6 @@ Transaction Receipts
     rule <statusCode> EVMC_SUCCESS </statusCode>
          <k> #halt ~> #catchHaltTx ACCT => #mkCodeDeposit ACCT ... </k>
       requires ACCT =/=K .Account
-
-    syntax KItem ::= "#setPC" Int
- // -----------------------------
-    rule <k> #setPC PCOUNT => . ... </k>
-         <pc> _ => PCOUNT </pc>
 
     syntax KItem ::= "#clearLogs"
  // -----------------------------
