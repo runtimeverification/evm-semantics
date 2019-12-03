@@ -1,0 +1,10 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "code": -32000,
+      "message": "Incorrect number of arguments. Method 'eth_getBlockByNumber' requires exactly 2 arguments."
+    }
+  }
+]

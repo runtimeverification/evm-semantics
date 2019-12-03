@@ -1,0 +1,37 @@
+[{
+    "jsonrpc":"2.0",
+    "id":1,
+    "method":"firefly_addAccount",
+    "params":[{
+        "key":"0xcdeac0dd5ec7c04072af48f2a4451e102a80ca5bb441a7b4d72c176cea61866e",
+        "balance":"0x56bc75e2d63100000"
+    }]
+},
+{
+    "jsonrpc":"2.0",
+    "id":2,
+    "method":"firefly_addAccount",
+    "params":[{
+        "address":"0x116fe73b49c56e5e78f307e360a95760242d5fc1",
+        "code":"0x60806040523480156100115760006000fd5b50600436106100305760003560e01c80636d4ce63c1461003657610030565b60006000fd5b61003e610060565b604051808263ffffffff1663ffffffff16815260200191505060405180910390f35b60007f82cce92e3ae3d5367097cf20110c99ac1345c871cec5df94c0438746d353480c3033602a604051808473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001828152602001935050505060405180910390a1602a905061010b565b9056fea265627a7a723158205e68d0e49a57e24f791b1fb1ead9612a2759953757912fceda99b775f7f8b8e364736f6c634300050b0032"
+    }]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "eth_sendTransaction",
+  "params": [
+    {
+      "from": "0x911392821a6B8a3e0bD8078fC7403E04C3ad2416",
+      "to": "0x116fe73b49c56e5e78f307e360a95760242d5fc1",
+      "data": "0x6d4ce63c",
+      "gasPrice": "0x4a817c800"
+    }
+  ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "firefly_getReceiptsRoot",
+  "params": []
+}]
