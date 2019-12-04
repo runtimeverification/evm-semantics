@@ -11,7 +11,7 @@
 },
 {
   "jsonrpc": "2.0",
-  "id": 2,
+  "id": 1,
   "method": "firefly_addAccount",
   "params": [
     {
@@ -19,6 +19,30 @@
       "balance": "0x8ac7230489e80000"
     }
   ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "firefly_setGasLimit",
+  "params": [ "0x6691b7" ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "firefly_setTime",
+  "params": [ "0x5de80984" ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "firefly_genesisBlock",
+  "params": [ ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "evm_increaseTime",
+  "params": [ 68 ]
 },
 {
   "jsonrpc": "2.0",
