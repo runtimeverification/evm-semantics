@@ -1915,7 +1915,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     rule <k> #gasExec(SCHED, SSTORE _ _ ) => #end EVMC_OUT_OF_GAS ... </k>
          <gas> GAVAIL </gas>
-     requires GAVAIL <=Int 2300
+     requires GAVAIL <=Int Gcallstipend <ISTANBUL>
       andBool SCHED ==K ISTANBUL
 
     rule <k> #gasExec(SCHED, EXP W0 0)  => Gexp < SCHED > ... </k>
@@ -2467,7 +2467,9 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDCONST ==K Gtxdatanonzero
                        )
 
-    rule SCHEDFLAG << ISTANBUL >> => SCHEDFLAG << PETERSBURG >>
+    rule Ghasdirtysstore << ISTANBUL >> => false
+    rule SCHEDFLAG       << ISTANBUL >> => SCHEDFLAG << PETERSBURG >>
+      requires notBool ( SCHEDFLAP ==K Ghasdirtysstore )
 ```
 
 EVM Program Representations
