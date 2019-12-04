@@ -814,7 +814,11 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
  // -------------------------------------------------------------
     rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
     rule #parseHexBytes("") => .ByteArray
-    rule #parseHexBytes(S)  => Int2Bytes(1, #parseHexWord(substrString(S, 0, 2)), BE) +Bytes #parseHexBytes(substrString(S, 2, lengthString(S))) requires lengthString(S) >=Int 2
+    rule #parseHexBytes(S)  => #parseHexBytes("0" +String S)
+      requires notBool lengthString(S) modInt 2 ==Int 0
+    rule #parseHexBytes(S)  => Int2Bytes(1, #parseHexWord(substrString(S, 0, 2)), BE) +Bytes #parseHexBytes(substrString(S, 2, lengthString(S)))
+      requires lengthString(S) modInt 2 ==Int 0
+       andBool lengthString(S) >Int 0
 
     rule #parseByteStackRaw(S) => String2Bytes(S)
 ```
@@ -826,7 +830,11 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
  // -------------------------------------------------------------
     rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
     rule #parseHexBytes("") => .WordStack
-    rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytes(substrString(S, 2, lengthString(S))) requires lengthString(S) >=Int 2
+    rule #parseHexBytes(S)  => #parseHexBytes("0" +String S)
+      requires notBool lengthString(S) modInt 2 ==Int 0
+    rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytes(substrString(S, 2, lengthString(S)))
+      requires lengthString(S) modInt 2 ==Int 0
+       andBool lengthString(S) >Int 0
 
     rule #parseByteStackRaw(S) => ordChar(substrString(S, 0, 1)) : #parseByteStackRaw(substrString(S, 1, lengthString(S))) requires lengthString(S) >=Int 1
     rule #parseByteStackRaw("") => .WordStack
