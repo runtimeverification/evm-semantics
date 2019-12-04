@@ -290,7 +290,7 @@ WEB3 JSON RPC
                    | #rpcResponseError            ( Int , String        )
                    | #rpcResponseError            ( Int , String , JSON )
                    | #rpcResponseUnimplemented    ( String              )
- // ------------------------------------------------------------------
+ // ---------------------------------------------------------------------
     rule <k> #rpcResponseSuccess(J)             => #sendResponse( "result" : J )                                                ... </k> requires isProperJson(J)
     rule <k> #rpcResponseSuccessException(RES, ERR)       => #sendResponse( ( "result" : RES, "error": ERR ) )                            ... </k> requires isProperJson(RES) andBool isProperJson(ERR)
     rule <k> #rpcResponseError(CODE, MSG)       => #sendResponse( "error" : { "code": CODE , "message": MSG } )                 ... </k>
