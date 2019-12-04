@@ -294,17 +294,14 @@
   "id": 16,
   "result": "0xa38c6b1f00c5f8044560efda83a32e3a621303a47fc8a9cc099446752f81dcb1",
   "error": {
-    "message": "VM Exception while processing transaction: revert TokenTimelock: release time is before current time",
+    "message": "VM Exception while processing transaction: revert",
     "code": -32000,
     "data": {
       "0xa38c6b1f00c5f8044560efda83a32e3a621303a47fc8a9cc099446752f81dcb1": {
         "error": "revert",
         "program_counter": 176,
-        "return": "0x08c379a000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000032546f6b656e54696d656c6f636b3a2072656c656173652074696d65206973206265666f72652063757272656e742074696d650000000000000000000000000000",
-        "reason": "TokenTimelock: release time is before current time"
-      },
-      "stack": "o: VM Exception while processing transaction: revert TokenTimelock: release time is before current time\n    at Function.o.fromResults (/home/anvacaru/.npm/_npx/27697/lib/node_modules/ganache-cli/build/ganache-core.node.cli.js:10:89727)\n    at /home/anvacaru/.npm/_npx/27697/lib/node_modules/ganache-cli/build/ganache-core.node.cli.js:25:121953\n    at /home/anvacaru/.npm/_npx/27697/lib/node_modules/ganache-cli/build/ganache-core.node.cli.js:25:98498\n    at p (/home/anvacaru/.npm/_npx/27697/lib/node_modules/ganache-cli/build/ganache-core.node.cli.js:25:98156)\n    at /home/anvacaru/.npm/_npx/27697/lib/node_modules/ganache-cli/build/ganache-core.node.cli.js:25:98209\n    at t.default (/home/anvacaru/.npm/_npx/27697/lib/node_modules/ganache-cli/build/ganache-core.node.cli.js:37:544097)\n    at /home/anvacaru/.npm/_npx/27697/lib/node_modules/ganache-cli/build/ganache-core.node.cli.js:25:99122\n    at t.n.emit (/home/anvacaru/.npm/_npx/27697/lib/node_modules/ganache-cli/build/ganache-core.node.cli.js:61:16355)\n    at /home/anvacaru/.npm/_npx/27697/lib/node_modules/ganache-cli/build/ganache-core.node.cli.js:61:654328\n    at /home/anvacaru/.npm/_npx/27697/lib/node_modules/ganache-cli/build/ganache-core.node.cli.js:61:654351\n    at /home/anvacaru/.npm/_npx/27697/lib/node_modules/ganache-cli/build/ganache-core.node.cli.js:37:1093446\n    at /home/anvacaru/.npm/_npx/27697/lib/node_modules/ganache-cli/build/ganache-core.node.cli.js:2:19209\n    at i (/home/anvacaru/.npm/_npx/27697/lib/node_modules/ganache-cli/build/ganache-core.node.cli.js:2:34308)\n    at /home/anvacaru/.npm/_npx/27697/lib/node_modules/ganache-cli/build/ganache-core.node.cli.js:2:14717\n    at processTicksAndRejections (internal/process/task_queues.js:75:11)",
-      "name": "o"
+        "return": "0x08c379a000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000032546f6b656e54696d656c6f636b3a2072656c656173652074696d65206973206265666f72652063757272656e742074696d650000000000000000000000000000"
+      }
     }
   }
 }

@@ -7,7 +7,18 @@
   {
     "jsonrpc": "2.0",
     "id": 2,
-    "result": "0xc8c25fe1b459a774dae215728fe982bd04dfbe103d40f7ff01749b71dd8eec38"
+    "result": "0xc8c25fe1b459a774dae215728fe982bd04dfbe103d40f7ff01749b71dd8eec38",
+    "error": {
+      "message": "VM Exception while processing transaction: revert",
+      "code": -32000,
+      "data": {
+        "0xc8c25fe1b459a774dae215728fe982bd04dfbe103d40f7ff01749b71dd8eec38": {
+          "error": "revert",
+          "program_counter": 26,
+          "return": "0x"
+        }
+      }
+    }
   },
   {
     "jsonrpc": "2.0",
