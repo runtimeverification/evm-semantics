@@ -1922,6 +1922,11 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          </account>
          <refund> R => R +Int Rsstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) </refund>
          <schedule> SCHED </schedule>
+     requires SCHED =/=K ISTANBUL
+
+    rule <k> #gasExec(SCHED, SSTORE _ _ ) => #end EVMC_OUT_OF_GAS ... </k>
+         <gas> GAVAIL </gas>
+     requires GAVAIL <=Int 2300
 
     rule <k> #gasExec(SCHED, EXP W0 0)  => Gexp < SCHED > ... </k>
     rule <k> #gasExec(SCHED, EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=Int 0
