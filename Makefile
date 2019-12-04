@@ -467,7 +467,8 @@ test-all-vm: $(all_vm_tests:=.run)
 test-rest-vm: $(rest_vm_tests:=.run)
 test-vm: $(passing_vm_tests:=.run)
 
-all_bchain_tests     = $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/*/*.json)
+all_bchain_tests     = $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)                            \
+                       $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/*/*.json)
 quick_bchain_tests   = $(filter-out $(slow_conformance_tests), $(all_bchain_tests))
 passing_bchain_tests = $(filter-out $(failing_conformance_tests), $(quick_bchain_tests))
 rest_bchain_tests    = $(filter-out $(passing_bchain_tests), $(all_bchain_tests))
