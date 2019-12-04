@@ -4,4 +4,3 @@ tests/web3/erc20/erc20detailed.in.json
 tests/web3/erc20/tokentimelock.in.json
 tests/web3/erc20/tokentimelock-partial.in.json
 tests/web3/eth_getTransactionReceipt.in.json
-tests/web3/getBlock_multipleAccounts.in.json
