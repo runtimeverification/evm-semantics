@@ -6,4 +6,3 @@ tests/web3/erc20/tokentimelock-partial.in.json
 tests/web3/eth_getTransactionReceipt.in.json
 tests/web3/getBlock_multipleAccounts.in.json
 tests/web3/getBlock_multipleTransactions.in.json
-tests/web3/getBlock_singleAccount.in.json
