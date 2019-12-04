@@ -270,28 +270,14 @@ unparse=true
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 [[ ! "$run_command" =~ web3*   ]] || backend='llvm'
 while [[ $# -gt 0 ]]; do
-  arg="$1"
-  case $arg in
-    --backend)
-    backend="$2"
-    shift 2
-    ;;
-    --debug)
-    debug=true
-    shift
-    ;;
-    --dump)
-    dump=true
-    shift
-    ;;
-    --no-unparse)
-    unparse=false
-    shift
-    ;;
-    *)
-    break
-    ;;
-  esac
+    arg="$1"
+    case $arg in
+        --backend)    backend="$2"  ; shift 2 ;;
+        --debug)      debug=true    ; shift   ;;
+        --dump)       dump=true     ; shift   ;;
+        --no-unparse) unparse=false ; shift   ;;
+        *)            break                   ;;
+    esac
 done
 backend_dir="$defn_dir/$backend"
 [[ ! "$backend" == "ocaml" ]] || eval $(${OPAM:-opam} config env)
