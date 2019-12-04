@@ -44,7 +44,7 @@ OPAM ?= opam
         build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                                                          \
         defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                                                           \
         split-tests                                                                                                                                    \
-        test test-all test-conformance test-rest-conformance test-all-conformance                                                                      \
+        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance                       \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                                  \
         test-web3 test-all-web3 test-failing-web3                                                                                                      \
         test-prove test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-klab-prove \
@@ -453,21 +453,23 @@ failing_conformance_tests = $(shell cat tests/failing.$(TEST_CONCRETE_BACKEND))
 
 test-all-conformance: test-all-vm test-all-bchain
 test-rest-conformance: test-rest-vm test-rest-bchain
+test-slow-conformance: $(slow_conformance_tests:=.run)
+test-failing-conformance: $(failing_conformance_tests:=.run)
 test-conformance: test-vm test-bchain
 
-vm_tests         = $(wildcard tests/ethereum-tests/VMTests/*/*.json)
-quick_vm_tests   = $(filter-out $(slow_conformance_tests), $(vm_tests))
+all_vm_tests     = $(wildcard tests/ethereum-tests/VMTests/*/*.json)
+quick_vm_tests   = $(filter-out $(slow_conformance_tests), $(all_vm_tests))
 passing_vm_tests = $(filter-out $(failing_conformance_tests), $(quick_vm_tests))
-rest_vm_tests    = $(filter-out $(passing_vm_tests), $(vm_tests))
+rest_vm_tests    = $(filter-out $(passing_vm_tests), $(all_vm_tests))
 
-test-all-vm: $(vm_tests:=.run)
+test-all-vm: $(all_vm_tests:=.run)
 test-rest-vm: $(rest_vm_tests:=.run)
 test-vm: $(passing_vm_tests:=.run)
 
-bchain_tests         = $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/*/*.json)
-quick_bchain_tests   = $(filter-out $(slow_conformance_tests), $(bchain_tests))
+all_bchain_tests     = $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/*/*.json)
+quick_bchain_tests   = $(filter-out $(slow_conformance_tests), $(all_bchain_tests))
 passing_bchain_tests = $(filter-out $(failing_conformance_tests), $(quick_bchain_tests))
-rest_bchain_tests    = $(filter-out $(passing_bchain_tests), $(bchain_tests))
+rest_bchain_tests    = $(filter-out $(passing_bchain_tests), $(all_bchain_tests))
 
 test-all-bchain: $(all_bchain_tests:=.run)
 test-rest-bchain: $(rest_bchain_tests:=.run)

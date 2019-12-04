@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import json
 import sys
@@ -48,13 +48,14 @@ def print_kast(data, sort="SortJSON"):
     raise AssertionError
 
 def print_klabel(s):
-  print("Lbl" + s.replace("_", "'Unds'").replace("`", "").replace("(.KList)", "{}"), end=' ')
+  sys.stdout.write("Lbl" + s.replace("_", "'Unds'").replace("`", "").replace("(.KList)", "{}") + " ")
 
-print("LblinitGeneratedTopCell{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Stop'Map{}(),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$PGM\")),inj{SortJSON{}, SortKItem{}}(", end=' ')
+sys.stdout.write("LblinitGeneratedTopCell{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Stop'Map{}(),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$PGM\")),inj{SortJSON{}, SortKItem{}}( ")
 print_kast(data)
-print("))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$SCHEDULE\")),inj{SortSchedule{}, SortKItem{}}(", end=' ')
+sys.stdout.write("))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$SCHEDULE\")),inj{SortSchedule{}, SortKItem{}}( ")
 print_klabel(sys.argv[2])
-print("()))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$MODE\")),inj{SortMode{}, SortKItem{}}(", end=' ')
+sys.stdout.write("()))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$MODE\")),inj{SortMode{}, SortKItem{}}( ")
 print_klabel(sys.argv[3])
-print("()))))")
-print()
+sys.stdout.write("()))))\n")
+sys.stdout.write("\n")
+sys.stdout.flush()
