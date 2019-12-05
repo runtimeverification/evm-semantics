@@ -1,8 +1,5 @@
-requires "evm-direct-gas.k"
-
 module ABSTRACT-SEMANTICS-DIRECT-GAS
   imports EVM
-  imports EVM-DIRECT-GAS
 
   // to avoid unnecessary case analyses
   rule <k> LT W0 W1 => bool2Word(W0  <Int W1) ~> #push ... </k> [trusted]

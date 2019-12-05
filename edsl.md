@@ -214,7 +214,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax Int ::= #ceil32 ( Int ) [function, smtlib(ceil32), smt-prelude]
  // -----------------------------------------
-    rule #ceil32(N) => ((N +Int 31) /Int 32) *Int 32 [concrete]
+    rule [#ceil32]: #ceil32(N) => ((N +Int 31) /Int 32) *Int 32
 ```
 
 ### ABI Event Logs
@@ -326,7 +326,7 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
 
     syntax Int ::= keccakIntList( IntList ) [function]
  // --------------------------------------------------
-    rule keccakIntList(VS) => keccak(intList2ByteStack(VS)) [concrete]
+    rule [keccakIntList]: keccakIntList(VS) => keccak(intList2ByteStack(VS))
 
     syntax ByteArray ::= intList2ByteStack( IntList ) [function]
  // ------------------------------------------------------------

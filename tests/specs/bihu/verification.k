@@ -1,15 +1,14 @@
 requires "abstract-semantics-direct-gas.k"
 requires "edsl.k"
-requires "../evm-data-map-concrete.k"
-requires "evm-direct-gas.k"
 requires "../lemmas.k"
 
 module VERIFICATION
     imports ABSTRACT-SEMANTICS-DIRECT-GAS
     imports EDSL
-    imports EVM-DATA-MAP-CONCRETE
-    imports EVM-DIRECT-GAS
     imports LEMMAS
+
+    //semantics of #buf
+    rule #buf(LEN, BYTES) => #padToWidth(LEN, #asByteStack( BYTES ))
 
     rule #sizeWordStack ( WS , N:Int )
       => N +Int #sizeWordStack ( WS , 0 )

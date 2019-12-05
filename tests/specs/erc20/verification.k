@@ -1,13 +1,14 @@
 requires "abstract-semantics-segmented-gas.k"
 requires "edsl.k"
-requires "../evm-data-map-concrete.k"
 requires "evm-symbolic.k"
 
 module VERIFICATION
     imports ABSTRACT-SEMANTICS-SEGMENTED-GAS
     imports EDSL
-    imports EVM-DATA-MAP-CONCRETE
     imports EVM-SYMBOLIC
+
+    //semantics of #buf
+    rule #buf(LEN, BYTES) => #padToWidth(LEN, #asByteStack( BYTES ))
 
     rule #sizeWordStack ( WS , N:Int )
       => N +Int #sizeWordStack ( WS , 0 )
