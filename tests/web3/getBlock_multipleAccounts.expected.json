@@ -11,6 +11,16 @@
   },
   {
     "jsonrpc": "2.0",
+    "id": 1,
+    "result": true
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": true
+  },
+  {
+    "jsonrpc": "2.0",
     "id": 3,
     "result": {
       "number": "0x0",

@@ -198,19 +198,19 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 ```k
     syntax Int ::= #signed ( Int ) [function]
  // -----------------------------------------
-    rule #signed(DATA) => DATA
-      requires 0 <=Int DATA andBool DATA <=Int maxSInt256 [concrete]
+    rule [#signed.positive]: #signed(DATA) => DATA
+      requires 0 <=Int DATA andBool DATA <=Int maxSInt256
 
-    rule #signed(DATA) => DATA -Int pow256
-      requires maxSInt256 <Int DATA andBool DATA <=Int maxUInt256 [concrete]
+    rule [#signed.negative]: #signed(DATA) => DATA -Int pow256
+      requires maxSInt256 <Int DATA andBool DATA <=Int maxUInt256
 
     syntax Int ::= #unsigned ( Int ) [function]
  // -------------------------------------------
-    rule #unsigned(DATA) => DATA
-      requires 0 <=Int DATA andBool DATA <=Int maxSInt256 [concrete]
+    rule [#unsigned.positive]: #unsigned(DATA) => DATA
+      requires 0 <=Int DATA andBool DATA <=Int maxSInt256
 
-    rule #unsigned(DATA) => pow256 +Int DATA
-      requires minSInt256 <=Int DATA andBool DATA <Int 0 [concrete]
+    rule [#unsigned.negative]: #unsigned(DATA) => pow256 +Int DATA
+      requires minSInt256 <=Int DATA andBool DATA <Int 0
 ```
 
 ### Empty Account
@@ -280,8 +280,8 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
  // -----------------------------------------------------------
     rule W0 ^Word W1 => powmod(W0, W1, pow256)
 
-    rule powmod(W0, W1, W2) => W0 ^%Int W1 W2  requires W2 =/=Int 0 [concrete]
-    rule powmod(W0, W1, W2) => 0               requires W2  ==Int 0 [concrete]
+    rule [powmod.nonzero]: powmod(W0, W1, W2) => W0 ^%Int W1 W2  requires W2 =/=Int 0
+    rule [powmod.zero]:    powmod(W0, W1, W2) => 0               requires W2  ==Int 0
 ```
 
 `/sWord` and `%sWord` give the signed interperetations of `/Word` and `%Word`.
@@ -323,10 +323,10 @@ The `<op>Word` comparisons similarly lift K operators to EVM ones:
 ```k
     syntax Int ::= Int "s<Word" Int [function, functional]
  // ------------------------------------------------------
-    rule W0 s<Word W1 => W0 <Word W1           requires sgn(W0) ==K 1  andBool sgn(W1) ==K 1    [concrete]
-    rule W0 s<Word W1 => bool2Word(false)      requires sgn(W0) ==K 1  andBool sgn(W1) ==K -1   [concrete]
-    rule W0 s<Word W1 => bool2Word(true)       requires sgn(W0) ==K -1 andBool sgn(W1) ==K 1    [concrete]
-    rule W0 s<Word W1 => abs(W1) <Word abs(W0) requires sgn(W0) ==K -1 andBool sgn(W1) ==K -1   [concrete]
+    rule [s<Word.pp]: W0 s<Word W1 => W0 <Word W1           requires sgn(W0) ==K 1  andBool sgn(W1) ==K 1
+    rule [s<Word.pn]: W0 s<Word W1 => bool2Word(false)      requires sgn(W0) ==K 1  andBool sgn(W1) ==K -1
+    rule [s<Word.np]: W0 s<Word W1 => bool2Word(true)       requires sgn(W0) ==K -1 andBool sgn(W1) ==K 1
+    rule [s<Word.nn]: W0 s<Word W1 => abs(W1) <Word abs(W0) requires sgn(W0) ==K -1 andBool sgn(W1) ==K -1
 ```
 
 ### Bitwise Operators
@@ -388,9 +388,9 @@ Bitwise logical operators are lifted from the integer versions.
 ```k
     syntax Int ::= signextend( Int , Int ) [function, functional]
  // -------------------------------------------------------------
-    rule signextend(N, W) => W requires N >=Int 32 orBool N <Int 0    [concrete]
-    rule signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))   [concrete]
-    rule signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))   [concrete]
+    rule [signextend.invalid]:  signextend(N, W) => W requires N >=Int 32 orBool N <Int 0
+    rule [signextend.negative]: signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
+    rule [signextend.positive]: signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
 ```
 
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
@@ -398,7 +398,7 @@ Bitwise logical operators are lifted from the integer versions.
 ```k
     syntax Int ::= keccak ( ByteArray ) [function, smtlib(smt_keccak)]
  // ------------------------------------------------------------------
-    rule keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS))) [concrete]
+    rule [keccak]: keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS)))
 ```
 
 Data-Structures over `Word`
@@ -428,9 +428,9 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax WordStack ::= #take ( Int , WordStack ) [function, functional]
  // ---------------------------------------------------------------------
-    rule [take.base]:      #take(N, WS)         => .WordStack                      requires notBool N >Int 0
-    rule [take.zero-pad]:  #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
-    rule [take.recursive]: #take(N, (W : WS))   => W : #take(N -Int 1, WS)         requires N >Int 0
+    rule [#take.base]:      #take(N, WS)         => .WordStack                      requires notBool N >Int 0
+    rule [#take.zero-pad]:  #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
+    rule [#take.recursive]: #take(N, (W : WS))   => W : #take(N -Int 1, WS)         requires N >Int 0
 
     syntax WordStack ::= #drop ( Int , WordStack ) [function, functional]
  // ---------------------------------------------------------------------
@@ -570,9 +570,9 @@ The local memory of execution is a byte-array (instead of a word-array).
 
     syntax Int ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
  // ---------------------------------------------------------------------------
-    rule #asWord( .WordStack     ) => 0                                    // [concrete]
-    rule #asWord( W : .WordStack ) => W                                    // [concrete]
-    rule #asWord( W0 : W1 : WS   ) => #asWord(((W0 *Word 256) +Word W1) : WS) [concrete]
+    rule [#asWord.base-empty]:  #asWord( .WordStack     ) => 0
+    rule [#asWord.base-single]: #asWord( W : .WordStack ) => W
+    rule [#asWord.recursive]:   #asWord( W0 : W1 : WS   ) => #asWord(((W0 *Word 256) +Word W1) : WS)
 
     syntax Int ::= #asInteger ( ByteArray ) [function]
  // --------------------------------------------------
@@ -594,9 +594,9 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax ByteArray ::= #asByteStack ( Int )             [function, functional]
                        | #asByteStack ( Int , ByteArray ) [function, klabel(#asByteStackAux), smtlib(asByteStack)]
  // --------------------------------------------------------------------------------------------------------------
-    rule #asByteStack( W ) => #asByteStack( W , .WordStack )                                        [concrete]
-    rule #asByteStack( 0 , WS ) => WS                                                            // [concrete]
-    rule #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W modInt 256 : WS ) requires W =/=K 0 [concrete]
+    rule [#asByteStack]:              #asByteStack( W ) => #asByteStack( W , .WordStack )
+    rule [#asByteStackAux.base]:      #asByteStack( 0 , WS ) => WS
+    rule [#asByteStackAux.recursive]: #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W modInt 256 : WS ) requires W =/=K 0
 
     syntax ByteArray ::= ByteArray "++" ByteArray [function, memo, right, klabel(_++_WS), smtlib(_plusWS_)]
  // -------------------------------------------------------------------------------------------------------
@@ -614,8 +614,8 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, functional, memo]
                        | #padRightToWidth ( Int , ByteArray ) [function, memo]
  // --------------------------------------------------------------------------------------
-    rule #padToWidth(N, WS)      => #replicateAux(N -Int #sizeByteArray(WS), 0, WS) [concrete]
-    rule #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0)  [concrete]
+    rule [#padToWidth]:      #padToWidth(N, WS)      => #replicateAux(N -Int #sizeByteArray(WS), 0, WS)
+    rule [#padRightToWidth]: #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0)
 ```
 
 Addresses
@@ -637,8 +637,8 @@ Addresses
     syntax Int ::= #newAddr ( Int , Int ) [function]
                  | #newAddr ( Int , Int , ByteArray ) [function, klabel(#newAddrCreate2)]
  // -------------------------------------------------------------------------------------
-    rule #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeWord(NONCE), 192)))) [concrete]
-    rule #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#padToWidth(20, #asByteStack(ACCT))) +String #unparseByteStack(#padToWidth(32, #asByteStack(SALT))) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE))))))) [concrete]
+    rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeWord(NONCE), 192))))
+    rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#padToWidth(20, #asByteStack(ACCT))) +String #unparseByteStack(#padToWidth(32, #asByteStack(SALT))) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE)))))))
 
     syntax Account ::= #sender ( Int , Int , Int , Account , Int , String , Int , ByteArray , ByteArray ) [function]
                      | #sender ( String , Int , String , String )                                         [function, klabel(#senderAux)]
@@ -742,16 +742,16 @@ We are using the polymorphic `Map` sort for these word maps.
 ```{.k .symbolic}
     syntax Map ::= Map "[" Int ":=" ByteArray "]" [function, functional]
  // --------------------------------------------------------------------
-    rule WM[ N := .WordStack ] => WM
-    rule WM[ N := W : WS     ] => (WM[N <- W])[N +Int 1 := WS] [concrete]
+    rule [mapWriteBytes.base]:      WM[ N := .WordStack ] => WM
+    rule [mapWriteBytes.recursive]: WM[ N := W : WS     ] => (WM[N <- W])[N +Int 1 := WS]
 
     syntax ByteArray ::= #range ( Map , Int , Int )             [function, functional]
     syntax ByteArray ::= #range ( Map , Int , Int , ByteArray ) [function, functional, klabel(#rangeAux)]
  // -----------------------------------------------------------------------------------------------------
-    rule #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack) [concrete]
-    rule #range(WM,           END, WIDTH, WS) => WS                                           requires notBool WIDTH >Int 0
-    rule #range(WM,           END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, 0 : WS) requires (WIDTH >Int 0) andBool notBool END in_keys(WM)
-    rule #range(END |-> W WM, END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, W : WS) requires (WIDTH >Int 0)
+    rule [#range]:         #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack)
+    rule [#rangeAux.base]: #range(WM,           END, WIDTH, WS) => WS                                           requires notBool WIDTH >Int 0
+    rule [#rangeAux.none]: #range(WM,           END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, 0 : WS) requires (WIDTH >Int 0) andBool notBool END in_keys(WM)
+    rule [#rangeAux.some]: #range(END |-> W WM, END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, W : WS) requires (WIDTH >Int 0)
 ```
 
 -   `#removeZeros` removes any entries in a map with zero values.
@@ -771,8 +771,8 @@ We are using the polymorphic `Map` sort for these word maps.
 ```k
     syntax Int ::= #lookup ( Map , Int ) [function]
  // -----------------------------------------------
-    rule #lookup( (KEY |-> VAL) M, KEY ) => VAL                               [concrete]
-    rule #lookup(               M, KEY ) => 0 requires notBool KEY in_keys(M) [concrete]
+    rule [#lookup.some]: #lookup( (KEY |-> VAL) M, KEY ) => VAL
+    rule [#lookup.none]: #lookup(               M, KEY ) => 0 requires notBool KEY in_keys(M)
 ```
 
 Parsing/Unparsing

@@ -20,6 +20,18 @@
 },
 {
   "jsonrpc": "2.0",
+  "id": 1,
+  "method": "firefly_setGasLimit",
+  "params": [ "0x6691b7" ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "firefly_genesisBlock",
+  "params": [ ]
+},
+{
+  "jsonrpc": "2.0",
   "id": 3,
   "method": "eth_getBlockByNumber",
   "params": [

@@ -22,6 +22,30 @@
 },
 {
   "jsonrpc": "2.0",
+  "id": 2,
+  "method": "firefly_setGasLimit",
+  "params": [ "0x6691b7" ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "firefly_setTime",
+  "params": [ "0x5de80d75" ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "firefly_genesisBlock",
+  "params": [ ]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "evm_increaseTime",
+  "params": [ 78 ]
+},
+{
+  "jsonrpc": "2.0",
   "id": 3,
   "method": "eth_sendTransaction",
   "params": [{
@@ -29,6 +53,12 @@
     "to": "0xde5f12af6e6856ea35c4a4b5e5a1c1baaeeeef01",
     "value": "0x1"
   }]
+},
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "evm_increaseTime",
+  "params": [ 2 ]
 },
 {
   "jsonrpc": "2.0",
