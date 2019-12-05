@@ -12,6 +12,11 @@ with open(filename) as data_file:
 def escape(data):
   return data.encode('unicode_escape')
 
+def print_int(data):
+  sys.stdout.write("\dv{SortInt{}}(\"")
+  sys.stdout.write(data)
+  sys.stdout.write("\")")
+
 def print_kast(data, sort="SortJSON"):
   if isinstance(data, list):
     sys.stdout.write("LblJSONList{}(")
@@ -40,9 +45,9 @@ def print_kast(data, sort="SortJSON"):
     sys.stdout.write(json.dumps(data))
     sys.stdout.write('))')
   elif isinstance(data, long) or isinstance(data, int):
-    sys.stdout.write("inj{SortInt{}, " + sort + '{}}(\dv{SortInt{}}("'),
-    sys.stdout.write(str(data))
-    sys.stdout.write('"))')
+    sys.stdout.write("inj{SortInt{}, " + sort + "{}}(")
+    print_int(data)
+    sys.stdout.write(')')
   else:
     sys.stdout.write(type(data))
     raise AssertionError
