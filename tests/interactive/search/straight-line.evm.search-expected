@@ -10,6 +10,9 @@
     DotVar2
   #Equals
     <network>
+      <chainID>
+        0
+      </chainID>
       <activeAccounts>
         .Set
       </activeAccounts>
