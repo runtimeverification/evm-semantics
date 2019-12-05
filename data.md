@@ -808,17 +808,22 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
 ```
 
 ```{.k .bytes}
+    syntax String ::= #alignHexString ( String ) [function]
+ // -------------------------------------------------------
+    rule #alignHexString(S) => S             requires         lengthString(S) modInt 2 ==Int 0
+    rule #alignHexString(S) => "0" +String S requires notBool lengthString(S) modInt 2 ==Int 0
+
     syntax ByteArray ::= #parseHexBytes     ( String ) [function]
-                       | #parseByteStack    ( String ) [function]
+                       | #parseHexBytesAux  ( String ) [function]
+                       | #parseByteStack    ( String ) [function, memo]
                        | #parseByteStackRaw ( String ) [function]
- // -------------------------------------------------------------
+ // -------------------------------------------------------------------
     rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
-    rule #parseHexBytes("") => .ByteArray
-    rule #parseHexBytes(S)  => #parseHexBytes("0" +String S)
-      requires notBool lengthString(S) modInt 2 ==Int 0
-    rule #parseHexBytes(S)  => Int2Bytes(1, #parseHexWord(substrString(S, 0, 2)), BE) +Bytes #parseHexBytes(substrString(S, 2, lengthString(S)))
-      requires lengthString(S) modInt 2 ==Int 0
-       andBool lengthString(S) >Int 0
+
+    rule #parseHexBytes(S)  => #parseHexBytesAux(#alignHexString(S))
+    rule #parseHexBytesAux("") => .ByteArray
+    rule #parseHexBytesAux(S)  => Int2Bytes(1, String2Base(substrString(S, 0, 2), 16), BE) +Bytes #parseHexBytesAux(substrString(S, 2, lengthString(S)))
+      requires lengthString(S) >=Int 2
 
     rule #parseByteStackRaw(S) => String2Bytes(S)
 ```
