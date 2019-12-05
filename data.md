@@ -520,7 +520,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 ```{.k .bytes}
     syntax ByteArray = Bytes
     syntax ByteArray ::= ".ByteArray" [function, functional]
- // --------------------------------------------
+ // --------------------------------------------------------
     rule .ByteArray => .Bytes
 
     syntax Int ::= #asWord ( ByteArray ) [function, smtlib(asWord)]
@@ -788,6 +788,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
 
 -   `#parseHexWord` interprets a string as a single hex-encoded `Word`.
 -   `#parseHexBytes` interprets a string as a hex-encoded stack of bytes.
+-   `#alignHexString` makes sure that the length of a (hex)string is even.
 -   `#parseByteStack` interprets a string as a hex-encoded stack of bytes, but makes sure to remove the leading "0x".
 -   `#parseByteStackRaw` casts a string as a stack of bytes, ignoring any encoding.
 -   `#parseWordStack` interprets a JSON list as a stack of `Word`.
@@ -805,14 +806,14 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
     rule #parseWord("") => 0
     rule #parseWord(S)  => #parseHexWord(S) requires lengthString(S) >=Int 2 andBool substrString(S, 0, 2) ==String "0x"
     rule #parseWord(S)  => String2Int(S) [owise]
-```
 
-```{.k .bytes}
     syntax String ::= #alignHexString ( String ) [function, functional]
  // -------------------------------------------------------------------
     rule #alignHexString(S) => S             requires         lengthString(S) modInt 2 ==Int 0
     rule #alignHexString(S) => "0" +String S requires notBool lengthString(S) modInt 2 ==Int 0
+```
 
+```{.k .bytes}
     syntax ByteArray ::= #parseHexBytes     ( String ) [function]
                        | #parseHexBytesAux  ( String ) [function]
                        | #parseByteStack    ( String ) [function, memo]
@@ -830,16 +831,16 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
 
 ```{.k .nobytes}
     syntax ByteArray ::= #parseHexBytes     ( String ) [function]
+                       | #parseHexBytesAux  ( String ) [function]
                        | #parseByteStack    ( String ) [function]
                        | #parseByteStackRaw ( String ) [function]
  // -------------------------------------------------------------
     rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
-    rule #parseHexBytes("") => .WordStack
-    rule #parseHexBytes(S)  => #parseHexBytes("0" +String S)
-      requires notBool lengthString(S) modInt 2 ==Int 0
-    rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytes(substrString(S, 2, lengthString(S)))
-      requires lengthString(S) modInt 2 ==Int 0
-       andBool lengthString(S) >Int 0
+
+    rule #parseHexBytes(S)  => #parseHexBytesAux(#alignHexString(S))
+    rule #parseHexBytesAux("") => .WordStack
+    rule #parseHexBytesAux(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytesAux(substrString(S, 2, lengthString(S)))
+       andBool lengthString(S) >Int 2
 
     rule #parseByteStackRaw(S) => ordChar(substrString(S, 0, 1)) : #parseByteStackRaw(substrString(S, 1, lengthString(S))) requires lengthString(S) >=Int 1
     rule #parseByteStackRaw("") => .WordStack
