@@ -171,6 +171,7 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule #asScheduleString("Byzantium")         => BYZANTIUM
     rule #asScheduleString("Constantinople")    => CONSTANTINOPLE
     rule #asScheduleString("ConstantinopleFix") => PETERSBURG
+    rule #asScheduleString("Istanbul")          => ISTANBUL
 ```
 
 The `"rlp"` key loads the block information.
@@ -212,8 +213,8 @@ The `"rlp"` key loads the block information.
             ( .Bag
            => <message>
                 <msgID> TXID:Int   </msgID>
-                <txGasPrice> 1     </txGasPrice>
-                <txGasLimit> 90000 </txGasLimit>
+                <txGasPrice> 20000000000 </txGasPrice>
+                <txGasLimit> 90000       </txGasLimit>
                 ...
               </message>
             )

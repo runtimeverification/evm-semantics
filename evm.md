@@ -1690,6 +1690,7 @@ Precompiled Contracts
     rule #precompiledAccounts(BYZANTIUM)         => #precompiledAccounts(SPURIOUS_DRAGON) SetItem(5) SetItem(6) SetItem(7) SetItem(8)
     rule #precompiledAccounts(CONSTANTINOPLE)    => #precompiledAccounts(BYZANTIUM)
     rule #precompiledAccounts(PETERSBURG)        => #precompiledAccounts(CONSTANTINOPLE)
+    rule #precompiledAccounts(ISTANBUL)          => #precompiledAccounts(PETERSBURG)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -1886,8 +1887,8 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function, functional]
  // ----------------------------------------------------------------------------
-    rule #memoryUsageUpdate(MU, START, WIDTH) => MU                                       requires notBool WIDTH >Int 0
-    rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH  >Int 0 [concrete]
+    rule [#memoryUsageUpdate.none]: #memoryUsageUpdate(MU, START, WIDTH) => MU                                       requires notBool WIDTH >Int 0
+    rule [#memoryUsageUpdate.some]: #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH  >Int 0
 ```
 
 Execution Gas
@@ -2103,17 +2104,21 @@ There are several helpers for calculating gas (most of them also specified in th
                  | Cxfer   ( Schedule , Int )             [function]
                  | Cmem    ( Schedule , Int )             [function, functional, memo]
  // ----------------------------------------------------------------------------------
-    rule Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
-      => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi  [concrete]
+    rule [Cgascap]:
+         Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
+      => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
 
-    rule Csstore(SCHED, NEW, CURR, ORIG)
+    rule [Csstore.new]:
+         Csstore(SCHED, NEW, CURR, ORIG)
       => #if CURR ==Int NEW orBool ORIG =/=Int CURR #then Gsload < SCHED > #else #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi #fi
-      requires Ghasdirtysstore << SCHED >>  [concrete]
-    rule Csstore(SCHED, NEW, CURR, ORIG)
+      requires Ghasdirtysstore << SCHED >>
+    rule [Csstore.old]:
+         Csstore(SCHED, NEW, CURR, ORIG)
       => #if CURR ==Int 0 andBool NEW =/=Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
-      requires notBool Ghasdirtysstore << SCHED >>  [concrete]
+      requires notBool Ghasdirtysstore << SCHED >>
 
-    rule Rsstore(SCHED, NEW, CURR, ORIG)
+    rule [Rsstore.new]:
+         Rsstore(SCHED, NEW, CURR, ORIG)
       => #if CURR =/=Int NEW andBool ORIG ==Int CURR andBool NEW ==Int 0 #then
              Rsstoreclear < SCHED >
          #else
@@ -2129,23 +2134,24 @@ There are several helpers for calculating gas (most of them also specified in th
              #fi
          #fi
       requires Ghasdirtysstore << SCHED >>
-      [concrete]
 
-    rule Rsstore(SCHED, NEW, CURR, ORIG)
+    rule [Rsstore.old]:
+         Rsstore(SCHED, NEW, CURR, ORIG)
       => #if CURR =/=Int 0 andBool NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi
       requires notBool Ghasdirtysstore << SCHED >>
-      [concrete]
 
-    rule Cextra(SCHED, ISEMPTY, VALUE)
-      => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)  [concrete]
+    rule [Cextra]:
+         Cextra(SCHED, ISEMPTY, VALUE)
+      => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)
 
-    rule Cnew(SCHED, ISEMPTY:Bool, VALUE)
+    rule [Cnew]:
+         Cnew(SCHED, ISEMPTY:Bool, VALUE)
       => #if ISEMPTY andBool (VALUE =/=Int 0 orBool Gzerovaluenewaccountgas << SCHED >>) #then Gnewaccount < SCHED > #else 0 #fi
 
-    rule Cxfer(SCHED, 0) => 0
-    rule Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=Int 0
+    rule [Cxfer.none]: Cxfer(SCHED, 0) => 0
+    rule [Cxfer.some]: Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=Int 0
 
-    rule Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)  [concrete]
+    rule [Cmem]: Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
 
     syntax BExp    ::= Bool
     syntax KResult ::= Bool
@@ -2429,6 +2435,16 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasdirtysstore << PETERSBURG >> => false
     rule SCHEDFLAG       << PETERSBURG >> => SCHEDFLAG << CONSTANTINOPLE >>
       requires notBool ( SCHEDFLAG ==K Ghasdirtysstore )
+```
+
+### Istanbul Schedule
+
+```k
+    syntax Schedule ::= "ISTANBUL" [klabel(ISTANBUL_EVM), symbol]
+ // -------------------------------------------------------------
+    rule SCHEDCONST < ISTANBUL > => SCHEDCONST < PETERSBURG >
+
+    rule SCHEDFLAG << ISTANBUL >> => SCHEDFLAG << PETERSBURG >>
 ```
 
 EVM Program Representations

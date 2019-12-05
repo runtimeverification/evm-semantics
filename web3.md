@@ -62,6 +62,7 @@ module WEB3
         <execPhase> .Phase </execPhase>
         <opcodeCoverage> .Map </opcodeCoverage>
         <opcodeLists> .Map </opcodeLists>
+        <errorPC> 0 </errorPC>
         <blockchain>
           <chainID> $CHAINID:Int </chainID>
           <blockList> .List </blockList>
@@ -262,8 +263,8 @@ WEB3 JSON RPC
     rule List2JSON(L ListItem(J), JS) => List2JSON(L, (J, JS))
     rule List2JSON(.List        , JS) => [ JS ]
 
-    syntax KItem ::= #sendResponse ( JSON )
- // ---------------------------------------
+    syntax KItem ::= #sendResponse ( JSONs )
+ // ----------------------------------------
     rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", "id": CALLID, J }, SOCK) ~> getRequest() </k>
          <callid> CALLID </callid>
          <web3clientsocket> SOCK </web3clientsocket>
@@ -284,15 +285,17 @@ WEB3 JSON RPC
          <callid> undef </callid>
          <batch> [ _ ] </batch>
 
-    syntax KItem ::= #rpcResponseSuccess       ( JSON                )
-                   | #rpcResponseError         ( Int , String        )
-                   | #rpcResponseError         ( Int , String , JSON )
-                   | #rpcResponseUnimplemented ( String              )
- // ------------------------------------------------------------------
-    rule <k> #rpcResponseSuccess(J)             => #sendResponse( "result" : J )                                                ... </k> requires isProperJson(J)
-    rule <k> #rpcResponseError(CODE, MSG)       => #sendResponse( "error" : { "code": CODE , "message": MSG } )                 ... </k>
-    rule <k> #rpcResponseError(CODE, MSG, DATA) => #sendResponse( "error" : { "code": CODE , "message": MSG , "data" : DATA } ) ... </k> requires isProperJson(DATA)
-    rule <k> #rpcResponseUnimplemented(RPCCALL) => #sendResponse( "unimplemented" : RPCCALL )                                   ... </k>
+    syntax KItem ::= #rpcResponseSuccess          ( JSON                )
+                   | #rpcResponseSuccessException ( JSON , JSON         )
+                   | #rpcResponseError            ( Int , String        )
+                   | #rpcResponseError            ( Int , String , JSON )
+                   | #rpcResponseUnimplemented    ( String              )
+ // ---------------------------------------------------------------------
+    rule <k> #rpcResponseSuccess(J)                 => #sendResponse( "result" : J )                                                ... </k> requires isProperJson(J)
+    rule <k> #rpcResponseSuccessException(RES, ERR) => #sendResponse( ( "result" : RES, "error": ERR ) )                            ... </k> requires isProperJson(RES) andBool isProperJson(ERR)
+    rule <k> #rpcResponseError(CODE, MSG)           => #sendResponse( "error" : { "code": CODE , "message": MSG } )                 ... </k>
+    rule <k> #rpcResponseError(CODE, MSG, DATA)     => #sendResponse( "error" : { "code": CODE , "message": MSG , "data" : DATA } ) ... </k> requires isProperJson(DATA)
+    rule <k> #rpcResponseUnimplemented(RPCCALL)     => #sendResponse( "unimplemented" : RPCCALL )                                   ... </k>
 
     syntax KItem ::= "#checkRPCCall"
  // --------------------------------
@@ -590,8 +593,22 @@ eth_sendTransaction
     rule <k> #eth_sendTransaction_final TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
         <statusCode> EVMC_SUCCESS </statusCode>
 
-    rule <k> #eth_sendTransaction_final TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
+    rule <k> #eth_sendTransaction_final TXID => #rpcResponseSuccessException("0x" +String #hashSignedTx( TXID ),
+               { "message": "VM Exception while processing transaction: revert",
+                 "code": -32000,
+                 "data": {
+                     "0x" +String #hashSignedTx( TXID ): {
+                     "error": "revert",
+                     "program_counter": PCOUNT +Int 1,
+                     "return": #unparseDataByteArray( RD )
+                   }
+                 }
+               } )
+          ...
+         </k>
         <statusCode> EVMC_REVERT </statusCode>
+        <output> RD </output>
+        <errorPC> PCOUNT </errorPC>
 
     rule <k> #eth_sendTransaction_final TXID => #rpcResponseError(-32000, "base fee exceeds gas limit") ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
@@ -1152,7 +1169,9 @@ Transaction Receipts
 
     rule <statusCode> EVMC_REVERT </statusCode>
          <k> #halt ~> #catchHaltTx _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k>
+         <pc> PCOUNT </pc>
          <gas> GAVAIL </gas>
+         <errorPC> _ => PCOUNT </errorPC>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
          <k> #halt ~> #catchHaltTx .Account => . ... </k>
@@ -1715,13 +1734,13 @@ Mining
 
     syntax KItem ::= "#firefly_genesisBlock"
  // ----------------------------------------
-    rule <k> #firefly_genesisBlock => #updateTrieRoots ~> #pushBlockchainState ~> #getParentHash ~> #rpcResponseSuccess(true) ... </k>
+    rule <k> #firefly_genesisBlock => #updateTrieRoots ~> #pushBlockchainState ~> #rpcResponseSuccess(true) ... </k>
          <logsBloom> _ => #padToWidth( 256, .ByteArray ) </logsBloom>
          <ommersHash> _ => 13478047122767188135818125966132228187941283477090363246179690878162135454535 </ommersHash>
 
     syntax KItem ::= "#mineBlock"
  // -----------------------------
-    rule <k> #mineBlock => #finalizeBlock ~> #updateTrieRoots ~> #saveState ~> #startBlock ~> #cleanTxLists ~> #clearGas ~> #getParentHash ... </k>
+    rule <k> #mineBlock => #finalizeBlock ~> #getParentHash ~> #updateTrieRoots ~> #saveState ~> #startBlock ~> #cleanTxLists ~> #clearGas ... </k>
 
     syntax KItem ::= "#saveState"
                    | "#incrementBlockNumber"
