@@ -22,7 +22,12 @@ def print_string(data):
   sys.stdout.write(json.dumps(data))
   sys.stdout.write(")")
 
-def print_kast(data, sort="SortJSON"):
+def print_sort_injection(s1, s2, data, printer):
+  sys.stdout.write("inj{Sort" + s1 + "{}, " + "Sort" + s2 + "{}}(")
+  printer(data)
+  sys.stdout.write(")")
+
+def print_kast(data, sort="JSON"):
   if isinstance(data, list):
     sys.stdout.write("LblJSONList{}(")
     for elem in data:
@@ -37,7 +42,7 @@ def print_kast(data, sort="SortJSON"):
     sys.stdout.write("LblJSONObject{}(")
     for key, value in data.items():
       sys.stdout.write("LblJSONs{}(LblJSONEntry{}(")
-      print_kast(key, "SortJSONKey")
+      print_kast(key, sort = "JSONKey")
       sys.stdout.write(',')
       print_kast(value)
       sys.stdout.write('),')
@@ -46,13 +51,9 @@ def print_kast(data, sort="SortJSON"):
       sys.stdout.write(')')
     sys.stdout.write(')')
   elif isinstance(data, str) or isinstance(data, unicode):
-    sys.stdout.write("inj{SortString{}, " + sort + "{}}(")
-    print_string(data)
-    sys.stdout.write(')')
+    print_sort_injection("String", sort, data, print_string)
   elif isinstance(data, long) or isinstance(data, int):
-    sys.stdout.write("inj{SortInt{}, " + sort + "{}}(")
-    print_int(data)
-    sys.stdout.write(')')
+    print_sort_injection("Int", sort, data, print_int)
   else:
     sys.stdout.write(type(data))
     raise AssertionError
