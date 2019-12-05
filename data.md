@@ -840,7 +840,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
     rule #parseHexBytes(S)  => #parseHexBytesAux(#alignHexString(S))
     rule #parseHexBytesAux("") => .WordStack
     rule #parseHexBytesAux(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytesAux(substrString(S, 2, lengthString(S)))
-       requires lengthString(S) >Int 2
+       requires lengthString(S) >=Int 2
 
     rule #parseByteStackRaw(S) => ordChar(substrString(S, 0, 1)) : #parseByteStackRaw(substrString(S, 1, lengthString(S))) requires lengthString(S) >=Int 1
     rule #parseByteStackRaw("") => .WordStack
