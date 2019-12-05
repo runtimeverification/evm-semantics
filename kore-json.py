@@ -22,6 +22,9 @@ def print_string(data):
   sys.stdout.write(json.dumps(data))
   sys.stdout.write(")")
 
+def print_k_config_var(data):
+  sys.stdout.write("\dv{SortKConfigVar{}}(\"$" + data + "\")")
+
 def print_sort_injection(s1, s2, data, printer):
   sys.stdout.write("inj{Sort" + s1 + "{}, " + "Sort" + s2 + "{}}(")
   printer(data)
@@ -61,11 +64,17 @@ def print_kast(data, sort="JSON"):
 def print_klabel(s):
   sys.stdout.write("Lbl" + s.replace("_", "'Unds'").replace("`", "").replace("(.KList)", "{}") + " ")
 
-sys.stdout.write("LblinitGeneratedTopCell{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Stop'Map{}(),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$PGM\")),inj{SortJSON{}, SortKItem{}}( ")
+sys.stdout.write("LblinitGeneratedTopCell{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Stop'Map{}(),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(")
+print_k_config_var("PGM")
+sys.stdout.write("),inj{SortJSON{}, SortKItem{}}( ")
 print_kast(data)
-sys.stdout.write("))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$SCHEDULE\")),inj{SortSchedule{}, SortKItem{}}( ")
+sys.stdout.write("))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(")
+print_k_config_var("SCHEDULE")
+sys.stdout.write("),inj{SortSchedule{}, SortKItem{}}( ")
 print_klabel(sys.argv[2])
-sys.stdout.write("()))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(\dv{SortKConfigVar{}}(\"$MODE\")),inj{SortMode{}, SortKItem{}}( ")
+sys.stdout.write("()))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(")
+print_k_config_var("MODE")
+sys.stdout.write("),inj{SortMode{}, SortKItem{}}( ")
 print_klabel(sys.argv[3])
 sys.stdout.write("()))))\n")
 sys.stdout.write("\n")
