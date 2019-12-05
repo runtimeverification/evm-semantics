@@ -17,6 +17,11 @@ def print_int(data):
   sys.stdout.write(data)
   sys.stdout.write("\")")
 
+def print_string(data):
+  sys.stdout.write("\dv{SortString{}}(")
+  sys.stdout.write(json.dumps(data))
+  sys.stdout.write(")")
+
 def print_kast(data, sort="SortJSON"):
   if isinstance(data, list):
     sys.stdout.write("LblJSONList{}(")
@@ -41,9 +46,9 @@ def print_kast(data, sort="SortJSON"):
       sys.stdout.write(')')
     sys.stdout.write(')')
   elif isinstance(data, str) or isinstance(data, unicode):
-    sys.stdout.write("inj{SortString{}, " + sort + "{}}(\dv{SortString{}}("),
-    sys.stdout.write(json.dumps(data))
-    sys.stdout.write('))')
+    sys.stdout.write("inj{SortString{}, " + sort + "{}}(")
+    print_string(data)
+    sys.stdout.write(')')
   elif isinstance(data, long) or isinstance(data, int):
     sys.stdout.write("inj{SortInt{}, " + sort + "{}}(")
     print_int(data)
