@@ -1,3 +1,5 @@
 tests/web3/erc20/erc20capped.in.json
 tests/web3/erc20/erc20detailed.in.json
 tests/web3/erc20/tokentimelock.in.json
+tests/web3/erc20/erc20capped-partial.in.json
+tests/web3/erc20/tokentimelock-partial.in.json
