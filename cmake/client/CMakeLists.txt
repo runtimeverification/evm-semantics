@@ -13,7 +13,8 @@ add_executable(kevm-client
 	$ENV{PLUGIN_SUBMODULE}/client-c/main.cpp
 	$ENV{PLUGIN_SUBMODULE}/client-c/json.cpp
 	$ENV{PLUGIN_SUBMODULE}/client-c/HttpHandler.cpp
-	$ENV{PLUGIN_SUBMODULE}/plugin-c/crypto.cpp)
+	$ENV{PLUGIN_SUBMODULE}/plugin-c/crypto.cpp
+	$ENV{PLUGIN_SUBMODULE}/plugin-c/blake2.cpp)
 
 if(UNIX AND NOT APPLE)
 	set(LINK_PROCPS procps)

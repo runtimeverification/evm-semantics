@@ -27,6 +27,7 @@ In all functions above, input `String` is interpreted as byte array, e.g. it is 
                     | RipEmd160 ( String )                            [function, hook(KRYPTO.ripemd160)]
                     | ECDSASign ( String, String )                    [function, hook(KRYPTO.ecdsaSign)]
                     | ECDSAPubKey ( String )                          [function, hook(KRYPTO.ecdsaPubKey)]
+                    | Blake2Compress ( String )                       [function, hook(KRYPTO.blake2compress)]
  // ------------------------------------------------------------------------------------------------------
 ```
 
