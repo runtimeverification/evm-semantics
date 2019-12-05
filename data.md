@@ -808,8 +808,8 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
 ```
 
 ```{.k .bytes}
-    syntax String ::= #alignHexString ( String ) [function]
- // -------------------------------------------------------
+    syntax String ::= #alignHexString ( String ) [function, functional]
+ // -------------------------------------------------------------------
     rule #alignHexString(S) => S             requires         lengthString(S) modInt 2 ==Int 0
     rule #alignHexString(S) => "0" +String S requires notBool lengthString(S) modInt 2 ==Int 0
 
