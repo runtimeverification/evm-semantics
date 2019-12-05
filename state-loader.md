@@ -213,8 +213,8 @@ The `"rlp"` key loads the block information.
             ( .Bag
            => <message>
                 <msgID> TXID:Int   </msgID>
-                <txGasPrice> 1     </txGasPrice>
-                <txGasLimit> 90000 </txGasLimit>
+                <txGasPrice> 20000000000 </txGasPrice>
+                <txGasLimit> 90000       </txGasLimit>
                 ...
               </message>
             )

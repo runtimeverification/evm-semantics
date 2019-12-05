@@ -1734,13 +1734,13 @@ Mining
 
     syntax KItem ::= "#firefly_genesisBlock"
  // ----------------------------------------
-    rule <k> #firefly_genesisBlock => #updateTrieRoots ~> #pushBlockchainState ~> #getParentHash ~> #rpcResponseSuccess(true) ... </k>
+    rule <k> #firefly_genesisBlock => #updateTrieRoots ~> #pushBlockchainState ~> #rpcResponseSuccess(true) ... </k>
          <logsBloom> _ => #padToWidth( 256, .ByteArray ) </logsBloom>
          <ommersHash> _ => 13478047122767188135818125966132228187941283477090363246179690878162135454535 </ommersHash>
 
     syntax KItem ::= "#mineBlock"
  // -----------------------------
-    rule <k> #mineBlock => #finalizeBlock ~> #updateTrieRoots ~> #saveState ~> #startBlock ~> #cleanTxLists ~> #clearGas ~> #getParentHash ... </k>
+    rule <k> #mineBlock => #finalizeBlock ~> #getParentHash ~> #updateTrieRoots ~> #saveState ~> #startBlock ~> #cleanTxLists ~> #clearGas ... </k>
 
     syntax KItem ::= "#saveState"
                    | "#incrementBlockNumber"
