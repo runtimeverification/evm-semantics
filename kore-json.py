@@ -62,7 +62,7 @@ def print_kast(data, sort="JSON"):
     raise AssertionError
 
 def print_klabel(s):
-  sys.stdout.write("Lbl" + s.replace("_", "'Unds'").replace("`", "").replace("(.KList)", "{}") + " ")
+  sys.stdout.write("Lbl" + s.replace("_", "'Unds'").replace("`", "").replace("(.KList)", "{}") + "()")
 
 sys.stdout.write("LblinitGeneratedTopCell{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Stop'Map{}(),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(")
 print_k_config_var("PGM")
@@ -72,10 +72,10 @@ sys.stdout.write("))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem
 print_k_config_var("SCHEDULE")
 sys.stdout.write("),inj{SortSchedule{}, SortKItem{}}( ")
 print_klabel(sys.argv[2])
-sys.stdout.write("()))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(")
+sys.stdout.write("))),Lbl'UndsPipe'-'-GT-Unds'{}(inj{SortKConfigVar{}, SortKItem{}}(")
 print_k_config_var("MODE")
 sys.stdout.write("),inj{SortMode{}, SortKItem{}}( ")
 print_klabel(sys.argv[3])
-sys.stdout.write("()))))\n")
+sys.stdout.write("))))\n")
 sys.stdout.write("\n")
 sys.stdout.flush()
