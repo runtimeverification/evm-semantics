@@ -233,17 +233,18 @@ run_command="$1" ; shift
 
 if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
     echo "
-        usage: $0 run          [--backend (ocaml|java|llvm|haskell)]                        <pgm>  <K arg>*
-               $0 interpret    [--backend (ocaml|llvm|haskell|java)] [--debug|--no-unparse] <pgm>  <interpreter arg>*
-               $0 kast         [--backend (ocaml|java|llvm|haskell|web3)]                   <pgm>  <output format> <K arg>*
-               $0 prove        [--backend (java|haskell)]                                   <spec> <K arg>* -m <def_module>
-               $0 search       [--backend (java|haskell)]                                   <pgm>  <pattern> <K arg>*
-               $0 web3         [--debug|--dump]                                             <port>
-               $0 web3-ganache [--debug|--dump]                                             <port>
-               $0 web3-send                                                                 <port> <web3 method> <web3 params>
-               $0 klab-run                                                                  <pgm>  <K arg>*
-               $0 klab-prove                                                                <spec> <K arg>* -m <def_module>
-               $0 klab-view                                                                 <spec>
+        usage: $0 run          [--backend (ocaml|java|llvm|haskell)]           <pgm>  <K arg>*
+               $0 interpret    [--backend (ocaml|llvm)] [--debug|--no-unparse] <pgm>  <interpreter arg>*
+               $0 interpret    [--backend (haskell|java)] [--no-unparse]       <pgm>
+               $0 kast         [--backend (ocaml|java|llvm|haskell|web3)]      <pgm>  <output format> <K arg>*
+               $0 prove        [--backend (java|haskell)]                      <spec> <K arg>* -m <def_module>
+               $0 search       [--backend (java|haskell)]                      <pgm>  <pattern> <K arg>*
+               $0 web3         [--debug|--dump]                                <port>
+               $0 web3-ganache [--debug|--dump]                                <port>
+               $0 web3-send                                                    <port> <web3 method> <web3 params>
+               $0 klab-run                                                     <pgm>  <K arg>*
+               $0 klab-prove                                                   <spec> <K arg>* -m <def_module>
+               $0 klab-view                                                    <spec>
 
                $0 [help|--help|version|--version]
 
