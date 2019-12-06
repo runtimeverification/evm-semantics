@@ -115,8 +115,8 @@ $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 proxygen:
 	git submodule update --init --recursive -- deps/proxygen
 	cd deps/proxygen/proxygen \
-	  && ./build.sh -m \
-	  && ./install.sh 
+	  && ./build.sh --no-jemalloc --no-install-dependencies \
+	  && ./install.sh
 
 # K Dependencies
 # --------------
