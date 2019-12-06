@@ -1,3 +1,13 @@
+tests/ethereum-tests/VMTests/vmIOandFlowOperations/BlockNumberDynamicJump0_foreverOutOfGas.json
+tests/ethereum-tests/VMTests/vmIOandFlowOperations/DynamicJump0_foreverOutOfGas.json
+tests/ethereum-tests/VMTests/vmIOandFlowOperations/JDfromStorageDynamicJump0_foreverOutOfGas.json
+tests/ethereum-tests/VMTests/vmIOandFlowOperations/jump0_foreverOutOfGas.json
+tests/ethereum-tests/VMTests/vmIOandFlowOperations/loop_stacklimit_1020.json
+tests/ethereum-tests/VMTests/vmIOandFlowOperations/loop_stacklimit_1021.json
+tests/ethereum-tests/VMTests/vmPerformance/ackermann31.json
+tests/ethereum-tests/VMTests/vmPerformance/ackermann32.json
+tests/ethereum-tests/VMTests/vmPerformance/ackermann33.json
+tests/ethereum-tests/VMTests/vmPerformance/fibonacci10.json
 tests/ethereum-tests/VMTests/vmPerformance/fibonacci16.json
 tests/ethereum-tests/VMTests/vmPerformance/loop-add-10M.json
 tests/ethereum-tests/VMTests/vmPerformance/loop-divadd-10M.json
@@ -11,3 +21,4 @@ tests/ethereum-tests/VMTests/vmPerformance/loop-exp-8b-100k.json
 tests/ethereum-tests/VMTests/vmPerformance/loop-exp-nop-1M.json
 tests/ethereum-tests/VMTests/vmPerformance/loop-mul.json
 tests/ethereum-tests/VMTests/vmPerformance/loop-mulmod-2M.json
+tests/ethereum-tests/VMTests/vmPerformance/manyFunctions100.json
