@@ -13,8 +13,7 @@ while ! netcat -z 127.0.0.1 "$PORT"; do sleep 0.1; done
 
 # Feed input in, store output in supplied file
 #[TODO]
-curl -i -X POST 127.0.0.1:"$PORT" \
-  --data-binary "$input_file" | jq . > "$output_file"
+curl -i -X POST 127.0.0.1:"$PORT" --data @"$input_file" | jq . > "$output_file"
 
 ./kevm web3-send "$PORT" 'firefly_shutdown'
 echo
