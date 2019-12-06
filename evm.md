@@ -1914,6 +1914,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
  // ----------------------------------------------------
     rule <k> #gasExec(SCHED, SSTORE INDEX NEW) => Csstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) ... </k>
          <id> ACCT </id>
+         <gas> GAVAIL </gas>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
@@ -1921,13 +1922,13 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
            ...
          </account>
          <refund> R => R +Int Rsstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) </refund>
-         <schedule> SCHED </schedule>
-     requires SCHED =/=K ISTANBUL
+     requires notBool Ghassstorestipend << SCHED >>
+       orBool notBool GAVAIL <=Int Gcallstipend < SCHED >
 
     rule <k> #gasExec(SCHED, SSTORE _ _ ) => #end EVMC_OUT_OF_GAS ... </k>
          <gas> GAVAIL </gas>
-     requires GAVAIL <=Int Gcallstipend <ISTANBUL>
-      andBool SCHED ==K ISTANBUL
+     requires Ghassstorestipend << SCHED >>
+      andBool GAVAIL <=Int Gcallstipend <ISTANBUL>
 
     rule <k> #gasExec(SCHED, EXP W0 0)  => Gexp < SCHED > ... </k>
     rule <k> #gasExec(SCHED, EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=Int 0
@@ -2263,7 +2264,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
- // ------------------------------------------------------------------------------------------------------------------
+                          | "Gsstorestipend"
+ // ----------------------------------------
 ```
 
 ### Schedule Constants
@@ -2274,14 +2276,14 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     syntax Int ::= ScheduleConst "<" Schedule ">" [function, functional]
  // --------------------------------------------------------------------
 
-    syntax ScheduleConst ::= "Gzero"        | "Gbase"          | "Gverylow"      | "Glow"          | "Gmid"        | "Ghigh"
-                           | "Gextcodesize" | "Gextcodecopy"   | "Gbalance"      | "Gsload"        | "Gjumpdest"   | "Gsstoreset"
-                           | "Gsstorereset" | "Rsstoreclear"   | "Rselfdestruct" | "Gselfdestruct" | "Gcreate"     | "Gcodedeposit"  | "Gcall"
-                           | "Gcallvalue"   | "Gcallstipend"   | "Gnewaccount"   | "Gexp"          | "Gexpbyte"    | "Gmemory"       | "Gtxcreate"
-                           | "Gtxdatazero"  | "Gtxdatanonzero" | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
-                           | "Gsha3word"    | "Gcopy"          | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
-                           | "Gecadd"       | "Gecmul"         | "Gecpairconst"  | "Gecpaircoeff"
- // ---------------------------------------------------------------------------------------------
+    syntax ScheduleConst ::= "Gzero"        | "Gbase"          | "Gverylow"      | "Glow"          | "Gmid"           | "Ghigh"
+                           | "Gextcodesize" | "Gextcodecopy"   | "Gbalance"      | "Gsload"        | "Gjumpdest"      | "Gsstoreset"
+                           | "Gsstorereset" | "Rsstoreclear"   | "Rselfdestruct" | "Gselfdestruct" | "Gcreate"        | "Gcodedeposit"  | "Gcall"
+                           | "Gcallvalue"   | "Gcallstipend"   | "Gnewaccount"   | "Gexp"          | "Gexpbyte"       | "Gmemory"       | "Gtxcreate"
+                           | "Gtxdatazero"  | "Gtxdatanonzero" | "Gtransaction"  | "Glog"          | "Glogdata"       | "Glogtopic"     | "Gsha3"
+                           | "Gsha3word"    | "Gcopy"          | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize"    | "Rb"            | "Gquaddivisor"
+                           | "Gecadd"       | "Gecmul"         | "Gecpairconst"  | "Gecpaircoeff"  | "Gsstorestipend"
+ // -----------------------------------------------------------------------------------------------------------------
 ```
 
 ### Default Schedule
@@ -2353,6 +2355,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasstaticcall          << DEFAULT >> => false
     rule Ghasshift               << DEFAULT >> => false
     rule Ghasdirtysstore         << DEFAULT >> => false
+    rule Ghassstorestipend       << DEFAULT >> => false
     rule Ghascreate2             << DEFAULT >> => false
     rule Ghasextcodehash         << DEFAULT >> => false
     rule Ghasselfbalance         << DEFAULT >> => false
@@ -2485,11 +2488,13 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDCONST ==K Gbalance
                        )
 
-    rule Ghasselfbalance << ISTANBUL >> => true
-    rule Ghasdirtysstore << ISTANBUL >> => false
-    rule SCHEDFLAG       << ISTANBUL >> => SCHEDFLAG << PETERSBURG >>
+    rule Ghasselfbalance   << ISTANBUL >> => true
+    rule Ghasdirtysstore   << ISTANBUL >> => true
+    rule Ghassstorestipend << ISTANBUL >> => true
+    rule SCHEDFLAG         << ISTANBUL >> => SCHEDFLAG << PETERSBURG >>
       requires notBool ( SCHEDFLAG ==K Ghasselfbalance
                   orBool SCHEDFLAG ==K Ghasdirtysstore
+                  orBool SCHEDFLAG ==K Ghassstorestipend
                        )
 ```
 
