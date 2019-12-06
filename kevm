@@ -213,7 +213,7 @@ run_interpret() {
                  ;;
 
         haskell) run_kast kore > "$kast"
-                 kore-exec "$backend_dir/driver-kompiled/definition.kore" --pattern "$kast" --module ETHEREUM-SIMULATION --output "$output" \
+                 kore-exec "$backend_dir/driver-kompiled/definition.kore" --pattern "$kast" --module ETHEREUM-SIMULATION --smt none --output "$output" \
                      || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "$0" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
