@@ -29,3 +29,4 @@
 [submodule "deps/proxygen"]
 	path = deps/proxygen
 	url = https://github.com/facebook/proxygen.git
+	ignore = untracked
