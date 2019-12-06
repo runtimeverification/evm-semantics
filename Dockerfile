@@ -59,7 +59,6 @@ RUN    apt-get update                \
             wget                     \
             zlib1g-dev
 
-
 ADD deps/k/haskell-backend/src/main/native/haskell-backend/scripts/install-stack.sh /.install-stack/
 RUN /.install-stack/install-stack.sh
 

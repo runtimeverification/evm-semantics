@@ -337,7 +337,7 @@ $(web3_dir)/web3-kompiled/definition.kore: $(web3_files)
 	                 $(KOMPILE_OPTS)
 
 .PHONY: $(web3_kompiled)
-$(web3_kompiled): $(web3_dir)/web3-kompiled/definition.kore $(libff_out)
+$(web3_kompiled): $(web3_dir)/web3-kompiled/definition.kore $(libff_out) proxygen
 	@mkdir -p $(web3_dir)/build
 	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
