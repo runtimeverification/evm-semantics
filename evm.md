@@ -1374,16 +1374,16 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
 ```
 
-```{.k .symbolic}
+```{.k .nobytes}
     rule #computeValidJumpDests(.WordStack, _, RESULT) => List2Set(RESULT)
     rule #computeValidJumpDests(91 : WS, I, RESULT) => #computeValidJumpDests(WS, I +Int 1, ListItem(I) RESULT)
     rule #computeValidJumpDests(W : WS, I, RESULT) => #computeValidJumpDests(#drop(#widthOpCode(W), W : WS), I +Int #widthOpCode(W), RESULT) requires W =/=Int 91
 ```
 
-```{.k .concrete}
+```{.k .bytes}
     rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
     rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, ListItem(I) RESULT) requires I <Int #sizeByteArray(PGM) andBool PGM [ I ] ==Int 91
-    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) [owise]
+    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires I <Int #sizeByteArray(PGM) andBool notBool PGM [ I ] ==Int 91
 ```
 
 ```k
@@ -2180,7 +2180,7 @@ There are several helpers for calculating gas (most of them also specified in th
     rule #allBut64th(N) => N -Int (N /Int 64)
 ```
 
-```{.k .symbolic}
+```{.k .nobytes}
     syntax Int ::= G0 ( Schedule , ByteArray , Bool ) [function]
  // ------------------------------------------------------------
     rule G0(SCHED, .WordStack, true)  => Gtxcreate    < SCHED >
@@ -2190,7 +2190,7 @@ There are several helpers for calculating gas (most of them also specified in th
     rule G0(SCHED, N : REST, ISCREATE) => Gtxdatanonzero < SCHED > +Int G0(SCHED, REST, ISCREATE) requires N =/=Int 0
 ```
 
-```{.k .concrete}
+```{.k .bytes}
     syntax Int ::= G0 ( Schedule , ByteArray , Bool )      [function]
                  | G0 ( Schedule , ByteArray , Int , Int ) [function, klabel(G0data)]
                  | G0 ( Schedule , Bool )                  [function, klabel(G0base)]

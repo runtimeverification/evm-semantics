@@ -32,7 +32,7 @@
     _0
   #Equals
     <output>
-      .WordStack
+      b""
     </output>
   }
 #And
@@ -65,7 +65,7 @@
   #Equals
     <callState>
       <program>
-        96 : 3 : 96 : 4 : 1 : 96 : 8 : 20 : 96 : 12 : 87 : 254 : 91 : 0 : .WordStack
+        b"6003600401600814600c57fe5b00"
       </program>
       <jumpDests>
         SetItem ( 12 )
@@ -77,7 +77,7 @@
         .Account
       </caller>
       <callData>
-        .WordStack
+        b""
       </callData>
       <callValue>
         0
@@ -172,7 +172,7 @@
         0
       </receiptsRoot>
       <logsBloom>
-        .WordStack
+        b""
       </logsBloom>
       <difficulty>
         0
@@ -190,7 +190,7 @@
         0
       </timestamp>
       <extraData>
-        .WordStack
+        b""
       </extraData>
       <mixHash>
         0

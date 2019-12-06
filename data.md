@@ -40,7 +40,7 @@ module EVM-DATA
     imports JSON
 ```
 
-```{.k .concrete}
+```{.k .concrete .bytes}
     imports BYTES
 ```
 
@@ -517,10 +517,10 @@ The local memory of execution is a byte-array (instead of a word-array).
 -   `#sizeByteArray` calculates the size of a `ByteArray`.
 -   `#padToWidth(N, WS)` and `#padRightToWidth` make sure that a `WordStack` is the correct size.
 
-```{.k .concrete}
+```{.k .bytes}
     syntax ByteArray = Bytes
-    syntax ByteArray ::= ".ByteArray" [function]
- // --------------------------------------------
+    syntax ByteArray ::= ".ByteArray" [function, functional]
+ // --------------------------------------------------------
     rule .ByteArray => .Bytes
 
     syntax Int ::= #asWord ( ByteArray ) [function, smtlib(asWord)]
@@ -562,7 +562,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #padToWidth(N, WS) => padLeftBytes(WS, N, 0)
 ```
 
-```{.k .symbolic}
+```{.k .nobytes}
     syntax ByteArray = WordStack
     syntax ByteArray ::= ".ByteArray" [function]
  // --------------------------------------------
@@ -721,7 +721,7 @@ We are using the polymorphic `Map` sort for these word maps.
 -   `WM [ N := WS ]` assigns a contiguous chunk of $WM$ to $WS$ starting at position $W$.
 -   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
 
-```{.k .concrete}
+```{.k .bytes}
     syntax Map ::= Map "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
  // -------------------------------------------------------------------------------
     rule WM[ N := WS ] => WM [ N := WS, 0, #sizeByteArray(WS) ]
@@ -739,7 +739,7 @@ We are using the polymorphic `Map` sort for these word maps.
     rule #range(WM, I,     J, WIDTH, WS) => #range(WM, I +Int 1, J +Int 1, WIDTH, WS [ J <- {WM[I] orDefault 0}:>Int ]) [owise]
 ```
 
-```{.k .symbolic}
+```{.k .nobytes}
     syntax Map ::= Map "[" Int ":=" ByteArray "]" [function, functional]
  // --------------------------------------------------------------------
     rule [mapWriteBytes.base]:      WM[ N := .WordStack ] => WM
@@ -788,6 +788,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
 
 -   `#parseHexWord` interprets a string as a single hex-encoded `Word`.
 -   `#parseHexBytes` interprets a string as a hex-encoded stack of bytes.
+-   `#alignHexString` makes sure that the length of a (hex)string is even.
 -   `#parseByteStack` interprets a string as a hex-encoded stack of bytes, but makes sure to remove the leading "0x".
 -   `#parseByteStackRaw` casts a string as a stack of bytes, ignoring any encoding.
 -   `#parseWordStack` interprets a JSON list as a stack of `Word`.
@@ -805,36 +806,41 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
     rule #parseWord("") => 0
     rule #parseWord(S)  => #parseHexWord(S) requires lengthString(S) >=Int 2 andBool substrString(S, 0, 2) ==String "0x"
     rule #parseWord(S)  => String2Int(S) [owise]
+
+    syntax String ::= #alignHexString ( String ) [function, functional]
+ // -------------------------------------------------------------------
+    rule #alignHexString(S) => S             requires         lengthString(S) modInt 2 ==Int 0
+    rule #alignHexString(S) => "0" +String S requires notBool lengthString(S) modInt 2 ==Int 0
 ```
 
-```{.k .concrete}
+```{.k .bytes}
     syntax ByteArray ::= #parseHexBytes     ( String ) [function]
-                       | #parseByteStack    ( String ) [function]
+                       | #parseHexBytesAux  ( String ) [function]
+                       | #parseByteStack    ( String ) [function, memo]
                        | #parseByteStackRaw ( String ) [function]
- // -------------------------------------------------------------
+ // -------------------------------------------------------------------
     rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
-    rule #parseHexBytes("") => .ByteArray
-    rule #parseHexBytes(S)  => #parseHexBytes("0" +String S)
-      requires notBool lengthString(S) modInt 2 ==Int 0
-    rule #parseHexBytes(S)  => Int2Bytes(1, #parseHexWord(substrString(S, 0, 2)), BE) +Bytes #parseHexBytes(substrString(S, 2, lengthString(S)))
-      requires lengthString(S) modInt 2 ==Int 0
-       andBool lengthString(S) >Int 0
+
+    rule #parseHexBytes(S)  => #parseHexBytesAux(#alignHexString(S))
+    rule #parseHexBytesAux("") => .ByteArray
+    rule #parseHexBytesAux(S)  => Int2Bytes(1, String2Base(substrString(S, 0, 2), 16), BE) +Bytes #parseHexBytesAux(substrString(S, 2, lengthString(S)))
+      requires lengthString(S) >=Int 2
 
     rule #parseByteStackRaw(S) => String2Bytes(S)
 ```
 
-```{.k .symbolic}
+```{.k .nobytes}
     syntax ByteArray ::= #parseHexBytes     ( String ) [function]
+                       | #parseHexBytesAux  ( String ) [function]
                        | #parseByteStack    ( String ) [function]
                        | #parseByteStackRaw ( String ) [function]
  // -------------------------------------------------------------
     rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
-    rule #parseHexBytes("") => .WordStack
-    rule #parseHexBytes(S)  => #parseHexBytes("0" +String S)
-      requires notBool lengthString(S) modInt 2 ==Int 0
-    rule #parseHexBytes(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytes(substrString(S, 2, lengthString(S)))
-      requires lengthString(S) modInt 2 ==Int 0
-       andBool lengthString(S) >Int 0
+
+    rule #parseHexBytes(S)  => #parseHexBytesAux(#alignHexString(S))
+    rule #parseHexBytesAux("") => .WordStack
+    rule #parseHexBytesAux(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytesAux(substrString(S, 2, lengthString(S)))
+       requires lengthString(S) >=Int 2
 
     rule #parseByteStackRaw(S) => ordChar(substrString(S, 0, 1)) : #parseByteStackRaw(substrString(S, 1, lengthString(S))) requires lengthString(S) >=Int 1
     rule #parseByteStackRaw("") => .WordStack
@@ -860,13 +866,13 @@ We need to interperet a `ByteArray` as a `String` again so that we can call `Kec
 -   `#unparseByteStack` turns a stack of bytes (as a `ByteArray`) into a `String`.
 -   `#padByte` ensures that the `String` interperetation of a `Int` is wide enough.
 
-```{.k .concrete}
+```{.k .bytes}
     syntax String ::= #unparseByteStack ( ByteArray ) [function, klabel(unparseByteStack), symbol]
  // ----------------------------------------------------------------------------------------------
     rule #unparseByteStack(WS) => Bytes2String(WS)
 ```
 
-```{.k .symbolic}
+```{.k .nobytes}
     syntax String ::= #unparseByteStack ( ByteArray )                [function, klabel(unparseByteStack), symbol]
                     | #unparseByteStack ( ByteArray , StringBuffer ) [function, klabel(#unparseByteStackAux)]
  // ---------------------------------------------------------------------------------------------------------

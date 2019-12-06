@@ -14,31 +14,31 @@ endmodule
 module MERKLE-SPEC
     imports VERIFICATION
 
-    rule <k> runMerkle ( MerkleUpdate( .MerkleTree, .WordStack, VALUE ) )
-          => doneMerkle( MerkleLeaf( .WordStack, VALUE ) ) </k>
+    rule <k> runMerkle ( MerkleUpdate( .MerkleTree, .ByteArray, VALUE ) )
+          => doneMerkle( MerkleLeaf( .ByteArray, VALUE ) ) </k>
 
     // Update on MerkleLeaf
-    rule <k> runMerkle ( MerkleUpdate( MerkleLeaf( 6 : 7 : .WordStack, _ ), 6 : 7 : .WordStack, V ) )
-          => doneMerkle( MerkleLeaf ( 6 : 7 : .WordStack, V ) ) </k>
+    rule <k> runMerkle ( MerkleUpdate( MerkleLeaf( #parseByteStack("0x0607"), _ ), #parseByteStack("0x0607"), V ) )
+          => doneMerkle( MerkleLeaf ( #parseByteStack("0x0607"), V ) ) </k>
 
-    rule <k> runMerkle ( MerkleUpdate( MerkleLeaf( 6 : 7 : .WordStack, _ ), 6 : 8 : .WordStack, _ ) )
-          => doneMerkle( MerkleExtension( 6 : .WordStack, _ ) ) </k>
+    rule <k> runMerkle ( MerkleUpdate( MerkleLeaf( #parseByteStack("0x0607"), _ ), #parseByteStack("0x0608"), _ ) )
+          => doneMerkle( MerkleExtension( #parseByteStack("0x06"), _ ) ) </k>
 
-    rule <k> runMerkle ( MerkleUpdate( MerkleLeaf( 5 : .WordStack, _ ), 6 : .WordStack, _ ) )
+    rule <k> runMerkle ( MerkleUpdate( MerkleLeaf( #parseByteStack("0x05"), _ ), #parseByteStack("0x06"), _ ) )
           => doneMerkle( MerkleBranch( _, _ ) ) </k>
 
     // Update on MerkleExtension
-    rule <k> runMerkle ( MerkleUpdate( MerkleExtension( 6 : .WordStack, .MerkleTree ), 6 : .WordStack, V ) )
-          => doneMerkle( MerkleExtension( 6 : .WordStack, MerkleLeaf( .WordStack, V ) ) ) </k>
+    rule <k> runMerkle ( MerkleUpdate( MerkleExtension( #parseByteStack("0x06"), .MerkleTree ), #parseByteStack("0x06"), V ) )
+          => doneMerkle( MerkleExtension( #parseByteStack("0x06"), MerkleLeaf( .ByteArray, V ) ) ) </k>
 
-    rule <k> runMerkle ( MerkleUpdate( MerkleExtension( 7 : .WordStack, _ ), 6 : .WordStack, _ ) )
+    rule <k> runMerkle ( MerkleUpdate( MerkleExtension( #parseByteStack("0x07"), _ ), #parseByteStack("0x06"), _ ) )
           => doneMerkle( MerkleBranch( _, _ ) ) </k>
 
-    rule <k> runMerkle ( MerkleUpdate( MerkleExtension( 7 : 8 : .WordStack, _ ), 7 : 9 : .WordStack, _ ) )
-          => doneMerkle( MerkleExtension( 7 : .WordStack, MerkleBranch( _, _ ) ) ) </k>
+    rule <k> runMerkle ( MerkleUpdate( MerkleExtension( #parseByteStack("0x0708"), _ ), #parseByteStack("0x0709"), _ ) )
+          => doneMerkle( MerkleExtension( #parseByteStack("0x07"), MerkleBranch( _, _ ) ) ) </k>
 
     // Update on MerkleBranch
-    rule <k> runMerkle ( MerkleUpdate( MerkleBranch( M, _ ), .WordStack, V ) )
+    rule <k> runMerkle ( MerkleUpdate( MerkleBranch( M, _ ), .ByteArray, V ) )
           => doneMerkle( MerkleBranch( M, V ) ) </k>
 
     rule <k> runMerkle ( .MerkleBranch )

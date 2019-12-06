@@ -180,9 +180,10 @@ llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 # Tangle definition from *.md files
 
-concrete_tangle := .k:not(.node):not(.symbolic),.standalone,.concrete
-symbolic_tangle := .k:not(.node):not(.concrete),.standalone,.symbolic
-node_tangle     := .k:not(.standalone):not(.symbolic),.node,.concrete
+concrete_tangle := .k:not(.node):not(.symbolic):not(.nobytes),.standalone,.concrete,.bytes
+java_tangle     := .k:not(.node):not(.concrete):not(.bytes),.standalone,.symbolic,.nobytes
+haskell_tangle  := .k:not(.node):not(.concrete):not(.nobytes),.standalone,.symbolic,.bytes
+node_tangle     := .k:not(.standalone):not(.symbolic):not(.nobytes),.node,.concrete,.bytes
 
 defn: $(defn_files)
 ocaml-defn:   $(ocaml_files)
@@ -202,11 +203,11 @@ $(llvm_dir)/%.k: %.md $(TANGLER)
 
 $(java_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(java_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(java_tangle)" $< > $@
 
 $(haskell_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(haskell_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(symbolic_tangle)" $< > $@
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(haskell_tangle)" $< > $@
 
 $(node_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(node_dir)
