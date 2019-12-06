@@ -72,10 +72,10 @@ make libsecp256k1
 On ArchLinux:
 
 ```sh
-sudo pacman -S                                              \
-    base base-devel boost clang cmake crypto++ curl git gmp \
-    gperf gflags jdk-openjdk jemalloc libsecp256k1 lld llvm \
-    maven mpfr opam python stack yaml-cpp z3 zlib
+sudo pacman -S                                               \
+    base base-devel boost clang cmake crypto++ curl git gmp  \
+    gperf gflags jdk-openjdk jemalloc libsecp256k1 libsodium \
+    lld llvm maven mpfr opam python stack yaml-cpp z3 zlib
 ```
 
 In addition, you'll need the `glog-git` AUR package: <https://aur.archlinux.org/packages/glog-git/>.
