@@ -88,12 +88,12 @@ run_web3() {
     web3_port="$1" ; shift
     run_file='-'
     if $debug; then
-        gdb --args ${defn_dir}/web3/build/kevm-client -p "$web3_port" "$@"
+        gdb --args ${defn_dir}/web3/build/kevm-client --port "$web3_port" "$@"
     elif $dump; then
-      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client -p "$web3_port" "$@" 3>&2 2>&1 1>&3 \
+      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client --port "$web3_port" "$@" 3>&2 2>&1 1>&3 \
           | "$0" kast --backend web3 - pretty --input kore --sort GeneratedTopCell
     else
-      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client -p "$web3_port" "$@" 2>/dev/null
+      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client --port "$web3_port" "$@" 2>/dev/null
     fi
 }
 
@@ -108,8 +108,7 @@ run_web3_send() {
     }
     web3_params="$(join_args "$@")"
 
-    echo '{"jsonrpc": "2.0", "id": 1, "method": "'"$web3_method"'", "params": ['"$web3_params"']}' \
-        | netcat 127.0.0.1 "$web3_port" -q 0
+    curl -X POST --data '{"jsonrpc": "2.0", "id": 1, "method": "'"$web3_method"'", "params": ['"$web3_params"']}' 127.0.0.1:"$web3_port"
 }
 
 run_web3_ganache() {

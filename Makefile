@@ -111,6 +111,13 @@ $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 	    && make -s -j4 \
 	    && make install
 
+.PHONY: proxygen
+proxygen:
+	git submodule update --init --recursive -- deps/proxygen
+	cd deps/proxygen/proxygen \
+	  && ./build.sh -m \
+	  && ./install.sh 
+
 # K Dependencies
 # --------------
 

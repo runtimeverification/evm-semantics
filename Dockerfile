@@ -1,41 +1,64 @@
 FROM runtimeverificationinc/ubuntu:bionic
 
-RUN    apt-get update           \
-    && apt-get upgrade --yes    \
-    && apt-get install --yes    \
-            autoconf            \
-            bison               \
-            clang-8             \
-            cmake               \
-            curl                \
-            flex                \
-            gcc                 \
-            jq                  \
-            libboost-test-dev   \
-            libcrypto++-dev     \
-            libffi-dev          \
-            libjemalloc-dev     \
-            libmpfr-dev         \
-            libprocps-dev       \
-            libprotobuf-dev     \
-            libsecp256k1-dev    \
-            libssl-dev          \
-            libtool             \
-            libyaml-dev         \
-            lld-8               \
-            llvm-8-tools        \
-            make                \
-            maven               \
-            netcat-openbsd      \
-            opam                \
-            openjdk-11-jdk      \
-            pandoc              \
-            pkg-config          \
-            protobuf-compiler   \
-            python3             \
-            rapidjson-dev       \
-            time                \
+RUN    apt-get update                \
+    && apt-get upgrade --yes         \
+    && apt-get install --yes         \
+            autoconf                 \
+            binutils-dev             \
+            bison                    \
+            clang-8                  \
+            cmake                    \
+            curl                     \
+            flex                     \
+            g++                      \
+            gcc                      \
+            gperf                    \
+            jq                       \
+            libboost-all-dev         \
+            libcap-dev               \
+            libcrypto++-dev          \
+            libdouble-conversion-dev \
+            libevent-dev             \
+            libffi-dev               \
+            libgflags-dev            \
+            libgoogle-glog-dev       \
+            libiberty-dev            \
+            libjemalloc-dev          \
+            libkrb5-dev              \
+            liblz4-dev               \
+            liblzma-dev              \
+            libmpfr-dev              \
+            libnuma-dev              \
+            libprocps-dev            \
+            libprotobuf-dev          \
+            libsasl2-dev             \
+            libsecp256k1-dev         \
+            libsnappy-dev            \
+            libsodium-dev            \
+            libssl-dev               \
+            libtool                  \
+            libyaml-dev              \
+            libzstd-dev              \
+            lld-8                    \
+            llvm-8-tools             \
+            make                     \
+            maven                    \
+            netcat-openbsd           \
+            opam                     \
+            openjdk-11-jdk           \
+            pandoc                   \
+            pkg-config               \
+            protobuf-compiler        \
+            python3                  \
+            python-pygments          \
+            python-recommonmark      \
+            python-sphinx            \
+            rapidjson-dev            \
+            time                     \
+            unzip                    \
+            wget                     \
             zlib1g-dev
+
 
 ADD deps/k/haskell-backend/src/main/native/haskell-backend/scripts/install-stack.sh /.install-stack/
 RUN /.install-stack/install-stack.sh
