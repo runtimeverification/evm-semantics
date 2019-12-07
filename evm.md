@@ -2127,7 +2127,7 @@ There are several helpers for calculating gas (most of them also specified in th
        andBool ORIG ==Int CURR
        andBool NEW ==Int 0
 
-    rule [Rsstore.new221]: Rsstore(SCHED, NEW, CURR, ORIG) => #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi -Int Gsload < SCHED >
+    rule [Rsstore.new221]: Rsstore(SCHED, NEW, CURR, ORIG) => Gsstorereset < SCHED > -Int Gsload < SCHED >
       requires Ghasdirtysstore << SCHED >>
        andBool CURR =/=Int NEW
        andBool ORIG ==Int CURR
@@ -2141,41 +2141,21 @@ There are several helpers for calculating gas (most of them also specified in th
        andBool NEW =/=Int 0
        andBool ORIG =/=Int NEW
 
-    rule [Rsstore.new311]:
-         Rsstore(SCHED, NEW, CURR, ORIG)
-      => #if ORIG =/=Int 0 #then
-             #if CURR ==Int 0 #then 0 -Int Rsstoreclear < SCHED > #else Rsstoreclear < SCHED > #fi
-         #else
-             0
-         #fi +Int
-         #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi -Int Gsload < SCHED >
+    rule [Rsstore.new311]: Rsstore(SCHED, NEW, CURR, ORIG) => Gsstoreset < SCHED > -Int Gsload < SCHED >
       requires Ghasdirtysstore << SCHED >>
        andBool CURR =/=Int NEW
        andBool ORIG =/=Int CURR
        andBool NEW ==Int 0
        andBool ORIG ==Int NEW
 
-    rule [Rsstore.new312]:
-         Rsstore(SCHED, NEW, CURR, ORIG)
-      => #if ORIG =/=Int 0 #then
-             #if CURR ==Int 0 #then 0 -Int Rsstoreclear < SCHED > #else Rsstoreclear < SCHED > #fi
-         #else
-             0
-         #fi
+    rule [Rsstore.new312]: Rsstore(SCHED, NEW, CURR, ORIG) => #if CURR ==Int 0 #then 0 -Int Rsstoreclear < SCHED > #else Rsstoreclear < SCHED > #fi
       requires Ghasdirtysstore << SCHED >>
        andBool CURR =/=Int NEW
        andBool ORIG =/=Int CURR
        andBool NEW ==Int 0
        andBool ORIG =/=Int NEW
 
-    rule [Rsstore.new321]:
-         Rsstore(SCHED, NEW, CURR, ORIG)
-      => #if ORIG =/=Int 0 #then
-             #if CURR ==Int 0 #then 0 -Int Rsstoreclear < SCHED > #else 0 #fi
-         #else
-             0
-         #fi +Int
-         #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi -Int Gsload < SCHED >
+    rule [Rsstore.new321]: Rsstore(SCHED, NEW, CURR, ORIG) => #if CURR ==Int 0 #then 0 -Int Rsstoreclear < SCHED > #else 0 #fi +Int Gsstorereset < SCHED > -Int Gsload < SCHED >
       requires Ghasdirtysstore << SCHED >>
        andBool CURR =/=Int NEW
        andBool ORIG =/=Int CURR
