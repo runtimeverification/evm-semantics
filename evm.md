@@ -2117,15 +2117,19 @@ There are several helpers for calculating gas (most of them also specified in th
       => #if CURR ==Int 0 andBool NEW =/=Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
       requires notBool Ghasdirtysstore << SCHED >>
 
-    rule [Rsstore.new]:
+    rule [Rsstore.new1]: Rsstore(SCHED, NEW, CURR, ORIG) => 0
+      requires Ghasdirtysstore << SCHED >>
+       andBool CURR ==Int NEW
+
+    rule [Rsstore.new2]:
          Rsstore(SCHED, NEW, CURR, ORIG)
-      => #if CURR ==Int NEW orBool ORIG =/=Int CURR orBool NEW =/=Int 0 #then
-             #if CURR =/=Int NEW andBool ORIG =/=Int CURR andBool ORIG =/=Int 0 #then
+      => #if ORIG =/=Int CURR orBool NEW =/=Int 0 #then
+             #if ORIG =/=Int CURR andBool ORIG =/=Int 0 #then
                  #if CURR ==Int 0 #then 0 -Int Rsstoreclear < SCHED > #else #if NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi #fi
              #else
                  0
              #fi +Int
-             #if CURR =/=Int NEW andBool ORIG ==Int NEW #then
+             #if ORIG ==Int NEW #then
                  #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi -Int Gsload < SCHED >
              #else
                  0
@@ -2134,6 +2138,7 @@ There are several helpers for calculating gas (most of them also specified in th
              Rsstoreclear < SCHED >
          #fi
       requires Ghasdirtysstore << SCHED >>
+       andBool CURR =/=Int NEW
 
     rule [Rsstore.old]:
          Rsstore(SCHED, NEW, CURR, ORIG)
