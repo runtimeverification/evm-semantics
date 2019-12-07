@@ -1374,16 +1374,16 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
 ```
 
-```{.k .symbolic}
+```{.k .nobytes}
     rule #computeValidJumpDests(.WordStack, _, RESULT) => List2Set(RESULT)
     rule #computeValidJumpDests(91 : WS, I, RESULT) => #computeValidJumpDests(WS, I +Int 1, ListItem(I) RESULT)
     rule #computeValidJumpDests(W : WS, I, RESULT) => #computeValidJumpDests(#drop(#widthOpCode(W), W : WS), I +Int #widthOpCode(W), RESULT) requires W =/=Int 91
 ```
 
-```{.k .concrete}
+```{.k .bytes}
     rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
     rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, ListItem(I) RESULT) requires I <Int #sizeByteArray(PGM) andBool PGM [ I ] ==Int 91
-    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) [owise]
+    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires I <Int #sizeByteArray(PGM) andBool notBool PGM [ I ] ==Int 91
 ```
 
 ```k
@@ -2061,9 +2061,9 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          <schedule> SCHED </schedule>
          <callData> DATA </callData>
 
-    rule <k> #gasExec(_, ECADD)     => 500   ... </k>
-    rule <k> #gasExec(_, ECMUL)     => 40000 ... </k>
-    rule <k> #gasExec(_, ECPAIRING) => 100000 +Int (#sizeByteArray(DATA) /Int 192) *Int 80000 ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(SCHED, ECADD)     => Gecadd < SCHED>  ... </k>
+    rule <k> #gasExec(SCHED, ECMUL)     => Gecmul < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, ECPAIRING) => Gecpairconst < SCHED > +Int (#sizeByteArray(DATA) /Int 192) *Int Gecpaircoeff < SCHED > ... </k> <callData> DATA </callData>
 
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
@@ -2180,7 +2180,7 @@ There are several helpers for calculating gas (most of them also specified in th
     rule #allBut64th(N) => N -Int (N /Int 64)
 ```
 
-```{.k .symbolic}
+```{.k .nobytes}
     syntax Int ::= G0 ( Schedule , ByteArray , Bool ) [function]
  // ------------------------------------------------------------
     rule G0(SCHED, .WordStack, true)  => Gtxcreate    < SCHED >
@@ -2190,7 +2190,7 @@ There are several helpers for calculating gas (most of them also specified in th
     rule G0(SCHED, N : REST, ISCREATE) => Gtxdatanonzero < SCHED > +Int G0(SCHED, REST, ISCREATE) requires N =/=Int 0
 ```
 
-```{.k .concrete}
+```{.k .bytes}
     syntax Int ::= G0 ( Schedule , ByteArray , Bool )      [function]
                  | G0 ( Schedule , ByteArray , Int , Int ) [function, klabel(G0data)]
                  | G0 ( Schedule , Bool )                  [function, klabel(G0base)]
@@ -2261,7 +2261,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gcallvalue"   | "Gcallstipend"   | "Gnewaccount"   | "Gexp"          | "Gexpbyte"    | "Gmemory"       | "Gtxcreate"
                            | "Gtxdatazero"  | "Gtxdatanonzero" | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
                            | "Gsha3word"    | "Gcopy"          | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
- // -------------------------------------------------------------------------------------------------------------------------------------------------
+                           | "Gecadd"       | "Gecmul"         | "Gecpairconst"  | "Gecpaircoeff"
+ // ---------------------------------------------------------------------------------------------
 ```
 
 ### Default Schedule
@@ -2315,6 +2316,11 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gblockhash   < DEFAULT > => 20
     rule Gextcodesize < DEFAULT > => 20
     rule Gextcodecopy < DEFAULT > => 20
+
+    rule Gecadd       < DEFAULT > => 500
+    rule Gecmul       < DEFAULT > => 40000
+    rule Gecpairconst < DEFAULT > => 100000
+    rule Gecpaircoeff < DEFAULT > => 80000
 
     rule maxCodeSize < DEFAULT > => 2 ^Int 32 -Int 1
     rule Rb          < DEFAULT > => 5 *Int (10 ^Int 18)
@@ -2442,7 +2448,18 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "ISTANBUL" [klabel(ISTANBUL_EVM), symbol]
  // -------------------------------------------------------------
-    rule SCHEDCONST < ISTANBUL > => SCHEDCONST < PETERSBURG >
+    rule Gecadd         < ISTANBUL > => 150
+    rule Gecmul         < ISTANBUL > => 6000
+    rule Gecpairconst   < ISTANBUL > => 45000
+    rule Gecpaircoeff   < ISTANBUL > => 34000
+    rule Gtxdatanonzero < ISTANBUL > => 16
+    rule SCHEDCONST     < ISTANBUL > => SCHEDCONST < PETERSBURG >
+      requires notBool ( SCHEDCONST ==K Gecadd
+                  orBool SCHEDCONST ==K Gecmul
+                  orBool SCHEDCONST ==K Gecpairconst
+                  orBool SCHEDCONST ==K Gecpaircoeff
+                  orBool SCHEDCONST ==K Gtxdatanonzero
+                       )
 
     rule SCHEDFLAG << ISTANBUL >> => SCHEDFLAG << PETERSBURG >>
 ```
