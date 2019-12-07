@@ -2261,11 +2261,11 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
     syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function, functional]
  // ----------------------------------------------------------------------
 
-    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
-                          | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
-                          | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
-                          | "Gsstorestipend"
- // ----------------------------------------
+    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth"  | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
+                          | "Ghasrevert"              | "Ghasreturndata"    | "Ghasstaticcall"      | "Ghasshift"
+                          | "Ghasdirtysstore"         | "Ghascreate2"       | "Ghasextcodehash"     | "Ghasselfbalance"
+                          | "Gsstorestipend"          | "Ghassstorestipend"
+ // -----------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -2276,14 +2276,14 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     syntax Int ::= ScheduleConst "<" Schedule ">" [function, functional]
  // --------------------------------------------------------------------
 
-    syntax ScheduleConst ::= "Gzero"        | "Gbase"          | "Gverylow"      | "Glow"          | "Gmid"           | "Ghigh"
-                           | "Gextcodesize" | "Gextcodecopy"   | "Gbalance"      | "Gsload"        | "Gjumpdest"      | "Gsstoreset"
-                           | "Gsstorereset" | "Rsstoreclear"   | "Rselfdestruct" | "Gselfdestruct" | "Gcreate"        | "Gcodedeposit"  | "Gcall"
-                           | "Gcallvalue"   | "Gcallstipend"   | "Gnewaccount"   | "Gexp"          | "Gexpbyte"       | "Gmemory"       | "Gtxcreate"
-                           | "Gtxdatazero"  | "Gtxdatanonzero" | "Gtransaction"  | "Glog"          | "Glogdata"       | "Glogtopic"     | "Gsha3"
-                           | "Gsha3word"    | "Gcopy"          | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize"    | "Rb"            | "Gquaddivisor"
-                           | "Gecadd"       | "Gecmul"         | "Gecpairconst"  | "Gecpaircoeff"  | "Gsstorestipend"
- // -----------------------------------------------------------------------------------------------------------------
+    syntax ScheduleConst ::= "Gzero"        | "Gbase"          | "Gverylow"      | "Glow"          | "Gmid"        | "Ghigh"
+                           | "Gextcodesize" | "Gextcodecopy"   | "Gbalance"      | "Gsload"        | "Gjumpdest"   | "Gsstoreset"
+                           | "Gsstorereset" | "Rsstoreclear"   | "Rselfdestruct" | "Gselfdestruct" | "Gcreate"     | "Gcodedeposit"  | "Gcall"
+                           | "Gcallvalue"   | "Gcallstipend"   | "Gnewaccount"   | "Gexp"          | "Gexpbyte"    | "Gmemory"       | "Gtxcreate"
+                           | "Gtxdatazero"  | "Gtxdatanonzero" | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
+                           | "Gsha3word"    | "Gcopy"          | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
+                           | "Gecadd"       | "Gecmul"         | "Gecpairconst"  | "Gecpaircoeff"
+ // ---------------------------------------------------------------------------------------------
 ```
 
 ### Default Schedule
