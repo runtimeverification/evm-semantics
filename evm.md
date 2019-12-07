@@ -1911,13 +1911,13 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
            ...
          </account>
          <refund> R => R +Int Rsstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) </refund>
-     requires notBool Ghassstorestipend << SCHED >>
-       orBool notBool GAVAIL <=Int Gcallstipend < SCHED >
+      requires notBool Ghassstorestipend << SCHED >>
+        orBool notBool GAVAIL <=Int Gcallstipend < SCHED >
 
     rule <k> #gasExec(SCHED, SSTORE _ _ ) => #end EVMC_OUT_OF_GAS ... </k>
          <gas> GAVAIL </gas>
-     requires Ghassstorestipend << SCHED >>
-      andBool GAVAIL <=Int Gcallstipend <ISTANBUL>
+      requires Ghassstorestipend << SCHED >>
+       andBool GAVAIL <=Int Gcallstipend <ISTANBUL>
 
     rule <k> #gasExec(SCHED, EXP W0 0)  => Gexp < SCHED > ... </k>
     rule <k> #gasExec(SCHED, EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=Int 0
