@@ -2136,9 +2136,7 @@ There are several helpers for calculating gas (most of them also specified in th
       requires Ghasdirtysstore << SCHED >>
        andBool CURR =/=Int NEW
        andBool CURR =/=Int ORIG
-       andBool (        ( NEW =/=Int 0 andBool CURR ==Int 0 )
-                 orBool ORIG ==Int NEW
-               )
+       andBool ( ORIG ==Int NEW orBool ( NEW =/=Int 0 andBool CURR ==Int 0 ) )
 
     rule [Rsstore.old]:
          Rsstore(SCHED, NEW, CURR, ORIG)
