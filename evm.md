@@ -2120,14 +2120,15 @@ There are several helpers for calculating gas (most of them also specified in th
     rule [Rsstore.new1]: Rsstore(SCHED, NEW, CURR, ORIG) => 0
       requires Ghasdirtysstore << SCHED >>
        andBool ( ( CURR ==Int NEW )
-          orBool ( ORIG ==Int CURR
-           andBool NEW =/=Int 0
-           andBool ORIG =/=Int NEW
-                 )
-          orBool ( ORIG =/=Int CURR
-           andBool NEW =/=Int 0
-           andBool ORIG =/=Int NEW
-           andBool CURR =/=Int 0
+          orBool ( ( ORIG ==Int CURR
+             andBool NEW =/=Int 0
+             andBool ORIG =/=Int NEW
+                   )
+            orBool ( ORIG =/=Int CURR
+             andBool NEW =/=Int 0
+             andBool ORIG =/=Int NEW
+             andBool CURR =/=Int 0
+                   )
                  )
                )
 
