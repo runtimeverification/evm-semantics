@@ -2155,25 +2155,37 @@ There are several helpers for calculating gas (most of them also specified in th
        andBool NEW ==Int 0
        andBool ORIG =/=Int NEW
 
-    rule [Rsstore.new321]: Rsstore(SCHED, NEW, CURR, ORIG) => #if CURR ==Int 0 #then 0 -Int Rsstoreclear < SCHED > #else 0 #fi +Int Gsstorereset < SCHED > -Int Gsload < SCHED >
+    rule [Rsstore.new3211]: Rsstore(SCHED, NEW, CURR, ORIG) => 0 -Int Rsstoreclear < SCHED > +Int Gsstorereset < SCHED > -Int Gsload < SCHED >
       requires Ghasdirtysstore << SCHED >>
        andBool CURR =/=Int NEW
        andBool ORIG =/=Int CURR
        andBool NEW =/=Int 0
        andBool ORIG ==Int NEW
+       andBool CURR ==Int 0
 
-    rule [Rsstore.new322]:
-         Rsstore(SCHED, NEW, CURR, ORIG)
-      => #if ORIG =/=Int 0 #then
-             #if CURR ==Int 0 #then 0 -Int Rsstoreclear < SCHED > #else 0 #fi
-         #else
-             0
-         #fi
+    rule [Rsstore.new3212]: Rsstore(SCHED, NEW, CURR, ORIG) => Gsstorereset < SCHED > -Int Gsload < SCHED >
+      requires Ghasdirtysstore << SCHED >>
+       andBool CURR =/=Int NEW
+       andBool ORIG =/=Int CURR
+       andBool NEW =/=Int 0
+       andBool ORIG ==Int NEW
+       andBool CURR =/=Int 0
+
+    rule [Rsstore.new3221]: Rsstore(SCHED, NEW, CURR, ORIG) => #if ORIG =/=Int 0 #then 0 -Int Rsstoreclear < SCHED > #else 0 #fi
       requires Ghasdirtysstore << SCHED >>
        andBool CURR =/=Int NEW
        andBool ORIG =/=Int CURR
        andBool NEW =/=Int 0
        andBool ORIG =/=Int NEW
+       andBool CURR ==Int 0
+
+    rule [Rsstore.new3222]: Rsstore(SCHED, NEW, CURR, ORIG) => 0
+      requires Ghasdirtysstore << SCHED >>
+       andBool CURR =/=Int NEW
+       andBool ORIG =/=Int CURR
+       andBool NEW =/=Int 0
+       andBool ORIG =/=Int NEW
+       andBool CURR =/=Int 0
 
     rule [Rsstore.old]:
          Rsstore(SCHED, NEW, CURR, ORIG)
