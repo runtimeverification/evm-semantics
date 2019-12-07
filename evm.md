@@ -2167,6 +2167,38 @@ There are several helpers for calculating gas (most of them also specified in th
       => #if CURR ==Int 0 orBool NEW =/=Int 0 #then 0 #else Rsstoreclear < SCHED > #fi
       requires notBool Ghasdirtysstore << SCHED >>
 
+    syntax Int ::= Rsstoreadd    ( Schedule , Int , Int , Int ) [function]
+ // ----------------------------------------------------------------------
+    rule Rsstoreadd(SCHED, NEW, CURR, ORIG) => 0
+      requires Ghasdirtysstore << SCHED >>
+       andBool CURR =/=Int NEW
+       andBool CURR =/=Int ORIG
+       andBool ORIG =/=Int NEW
+       andBool NEW =/=Int 0
+       andBool CURR ==Int 0
+
+    rule Rsstoreadd(SCHED, NEW, CURR, ORIG) => Gsstoreset < SCHED >
+      requires Ghasdirtysstore << SCHED >>
+       andBool ORIG ==Int NEW
+       andBool CURR =/=Int NEW
+       andBool CURR =/=Int ORIG
+       andBool NEW ==Int 0
+
+    rule Rsstoreadd(SCHED, NEW, CURR, ORIG) => Gsstorereset < SCHED >
+      requires ( Ghasdirtysstore << SCHED >>
+                 andBool ORIG ==Int NEW
+                 andBool CURR =/=Int NEW
+                 andBool NEW =/=Int 0
+                 andBool ( CURR ==Int ORIG orBool CURR =/=Int 0 )
+               )
+        orBool ( Ghasdirtysstore << SCHED >>
+                 andBool ORIG ==Int NEW
+                 andBool CURR =/=Int NEW
+                 andBool CURR =/=Int ORIG
+                 andBool CURR ==Int 0
+                 andBool NEW =/=Int 0
+               )
+
     rule [Cextra]:
          Cextra(SCHED, ISEMPTY, VALUE)
       => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)
