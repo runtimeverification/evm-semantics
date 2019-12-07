@@ -2171,7 +2171,7 @@ There are several helpers for calculating gas (most of them also specified in th
        andBool ORIG ==Int NEW
        andBool CURR =/=Int 0
 
-    rule [Rsstore.new3221]: Rsstore(SCHED, NEW, CURR, ORIG) => #if ORIG =/=Int 0 #then 0 -Int Rsstoreclear < SCHED > #else 0 #fi
+    rule [Rsstore.new3221]: Rsstore(SCHED, NEW, CURR, ORIG) => 0 -Int Rsstoreclear < SCHED >
       requires Ghasdirtysstore << SCHED >>
        andBool CURR =/=Int NEW
        andBool ORIG =/=Int CURR
