@@ -2183,18 +2183,12 @@ There are several helpers for calculating gas (most of them also specified in th
        andBool NEW ==Int 0
 
     rule Rsstoreadd(SCHED, NEW, CURR, ORIG) => Gsstorereset < SCHED >
-      requires ( Ghasdirtysstore << SCHED >>
-                 andBool ORIG ==Int NEW
-                 andBool CURR =/=Int NEW
-                 andBool NEW =/=Int 0
-                 andBool ( CURR ==Int ORIG orBool CURR =/=Int 0 )
-               )
-        orBool ( Ghasdirtysstore << SCHED >>
-                 andBool ORIG ==Int NEW
-                 andBool CURR =/=Int NEW
-                 andBool CURR =/=Int ORIG
-                 andBool CURR ==Int 0
-                 andBool NEW =/=Int 0
+      requires Ghasdirtysstore << SCHED >>
+       andBool ORIG ==Int NEW
+       andBool CURR =/=Int NEW
+       andBool NEW =/=Int 0
+       andBool (        ( CURR ==Int ORIG orBool CURR =/=Int 0 )
+                 orBool ( CURR =/=Int ORIG andBool CURR ==Int 0 )
                )
 
     rule [Cextra]:
