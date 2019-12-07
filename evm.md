@@ -2233,15 +2233,16 @@ There are several helpers for calculating gas (most of them also specified in th
     rule #adjustedExpLength(N) => 1 +Int #adjustedExpLength(N /Int 2) requires N >Int 1
 ```
 
-Fee Schedule from C++ Implementation
-------------------------------------
+Fee Schedule
+------------
 
+The `Schedule` determines the constants/modes of operation for each hard fork.
+There are `ScheduleFlag`s and `ScheduleConstant`s.
 
-### From the C++ Implementation
+-   A `ScheduleFlag` is a boolean value determining whether a certain feature is turned on.
+-   A `ScheduleConst` is an `Int` parameter which is used during EVM execution.
 
-The [C++ Implementation of EVM](https://github.com/ethereum/cpp-ethereum) specifies several different "profiles" for how the VM works.
-Here we provide each protocol from the C++ implementation, as the YellowPaper does not contain all the different profiles.
-Specify which profile by passing in the argument `-cSCHEDULE=<FEE_SCHEDULE>` when calling `krun` (the available `<FEE_SCHEDULE>` are supplied here).
+### Schedule Flags
 
 A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `ScheduleFlag` to a `Schedule` yields whether the flag is set or not.
 
