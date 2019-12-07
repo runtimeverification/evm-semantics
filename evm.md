@@ -2112,9 +2112,15 @@ There are several helpers for calculating gas (most of them also specified in th
       requires Ghasdirtysstore << SCHED >>
        andBool ( CURR ==Int NEW orBool CURR =/=Int ORIG )
 
-    rule [Csstore.new2]: Csstore(SCHED, NEW, CURR, ORIG) => #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
+    rule [Csstore.new21]: Csstore(SCHED, NEW, CURR, ORIG) => Gsstoreset < SCHED >
       requires Ghasdirtysstore << SCHED >>
        andBool notBool ( CURR ==Int NEW orBool CURR =/=Int ORIG )
+       andBool ORIG ==Int 0
+
+    rule [Csstore.new22]: Csstore(SCHED, NEW, CURR, ORIG) => Gsstorereset < SCHED >
+      requires Ghasdirtysstore << SCHED >>
+       andBool notBool ( CURR ==Int NEW orBool CURR =/=Int ORIG )
+       andBool ORIG =/=Int 0
 
     rule [Csstore.old1]: Csstore(SCHED, NEW, CURR, ORIG) => Gsstoreset < SCHED >
       requires notBool Ghasdirtysstore << SCHED >>
