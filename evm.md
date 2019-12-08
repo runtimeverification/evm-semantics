@@ -2122,14 +2122,6 @@ There are several helpers for calculating gas (most of them also specified in th
        andBool notBool ( CURR ==Int NEW orBool CURR =/=Int ORIG )
        andBool ORIG =/=Int 0
 
-    rule [Csstore.old1]: Csstore(SCHED, NEW, CURR, ORIG) => Gsstoreset < SCHED >
-      requires notBool Ghasdirtysstore << SCHED >>
-       andBool ( CURR ==Int 0 andBool NEW =/=Int 0 )
-
-    rule [Csstore.old2]: Csstore(SCHED, NEW, CURR, ORIG) => Gsstorereset < SCHED >
-      requires notBool Ghasdirtysstore << SCHED >>
-       andBool notBool ( CURR ==Int 0 andBool NEW =/=Int 0 )
-
     rule [Rsstore.new11]: Rsstore(SCHED, NEW, CURR, ORIG) => Rsstoreadd(SCHED, NEW, CURR, ORIG) -Int Rsstorededuct(SCHED, NEW, CURR, ORIG)
       requires Ghasdirtysstore << SCHED >>
        andBool CURR ==Int NEW
@@ -2154,6 +2146,14 @@ There are several helpers for calculating gas (most of them also specified in th
                           )
                    orBool ( CURR =/=Int ORIG andBool ( ORIG ==Int NEW orBool ( NEW =/=Int 0 andBool CURR ==Int 0 ) ) )
                )
+
+    rule [Csstore.old1]: Csstore(SCHED, NEW, CURR, ORIG) => Gsstoreset < SCHED >
+      requires notBool Ghasdirtysstore << SCHED >>
+       andBool ( CURR ==Int 0 andBool NEW =/=Int 0 )
+
+    rule [Csstore.old2]: Csstore(SCHED, NEW, CURR, ORIG) => Gsstorereset < SCHED >
+      requires notBool Ghasdirtysstore << SCHED >>
+       andBool notBool ( CURR ==Int 0 andBool NEW =/=Int 0 )
 
     rule [Rsstore.old1]: Rsstore(SCHED, NEW, CURR, ORIG) => 0
       requires notBool Ghasdirtysstore << SCHED >>
