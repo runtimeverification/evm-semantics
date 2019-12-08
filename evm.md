@@ -2167,25 +2167,22 @@ There are several helpers for calculating gas (most of them also specified in th
                  | Rsstorededuct ( Schedule , Int , Int , Int ) [function]
  // ----------------------------------------------------------------------
     rule Rsstoreadd(SCHED, NEW, CURR, ORIG) => 0
-      requires (         Ghasdirtysstore << SCHED >>
-                 andBool CURR ==Int NEW
-               )
-        orBool (         Ghasdirtysstore << SCHED >>
-                 andBool CURR =/=Int NEW
-                 andBool CURR =/=Int ORIG
-                 andBool ORIG =/=Int NEW
-                 andBool NEW =/=Int 0
-                 andBool CURR ==Int 0
-               )
-        orBool (         Ghasdirtysstore << SCHED >>
-                 andBool NEW =/=Int 0
-                 andBool ORIG =/=Int NEW
-                 andBool CURR ==Int ORIG
-               )
-        orBool (         Ghasdirtysstore << SCHED >>
-                 andBool NEW =/=Int 0
-                 andBool ORIG =/=Int NEW
-                 andBool CURR =/=Int 0
+      requires Ghasdirtysstore << SCHED >>
+       andBool (        CURR ==Int NEW
+                 orBool (         CURR =/=Int NEW
+                          andBool CURR =/=Int ORIG
+                          andBool ORIG =/=Int NEW
+                          andBool NEW =/=Int 0
+                          andBool CURR ==Int 0
+                        )
+                 orBool (         NEW =/=Int 0
+                          andBool ORIG =/=Int NEW
+                          andBool CURR ==Int ORIG
+                        )
+                 orBool (         NEW =/=Int 0
+                          andBool ORIG =/=Int NEW
+                          andBool CURR =/=Int 0
+                        )
                )
 
     rule Rsstoreadd(SCHED, NEW, CURR, ORIG) => Gsstoreset < SCHED >
