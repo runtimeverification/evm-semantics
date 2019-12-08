@@ -2176,10 +2176,12 @@ There are several helpers for calculating gas (most of them also specified in th
                           andBool CURR ==Int 0
                         )
                  orBool (         NEW =/=Int 0
+                          andBool CURR =/=Int NEW
                           andBool ORIG =/=Int NEW
                           andBool CURR ==Int ORIG
                         )
                  orBool (         NEW =/=Int 0
+                          andBool CURR =/=Int NEW
                           andBool ORIG =/=Int NEW
                           andBool CURR =/=Int 0
                         )
