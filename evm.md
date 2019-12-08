@@ -2211,16 +2211,10 @@ There are several helpers for calculating gas (most of them also specified in th
        andBool NEW =/=Int 0
 
     rule Rsstorededuct(SCHED, NEW, CURR, ORIG) => Gsload < SCHED >
-      requires (         Ghasdirtysstore << SCHED >>
-                 andBool CURR =/=Int NEW
-                 andBool ORIG ==Int NEW
-                 andBool CURR =/=Int 0
-               )
-        orBool (         Ghasdirtysstore << SCHED >>
-                 andBool CURR =/=Int NEW
-                 andBool ORIG ==Int NEW
-                 andBool NEW ==Int 0
-               )
+      requires Ghasdirtysstore << SCHED >>
+       andBool CURR =/=Int NEW
+       andBool ORIG ==Int NEW
+       andBool ( CURR =/=Int 0 orBool NEW ==Int 0 )
 
     rule Rsstorededuct(SCHED, NEW, CURR, ORIG) => Rsstoreclear < SCHED > +Int Gsload < SCHED >
       requires Ghasdirtysstore << SCHED >>
