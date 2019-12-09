@@ -7,9 +7,10 @@ output_file="$1" ; shift
 
 # Start Firefly
 PORT=$(tests/web3/get_port.py)
-./kevm web3 "$PORT" "$@" &
+KPORT=$(tests/web3/get_port.py)
+./kevm web3 "$PORT" --kport "$KPORT" "$@" &
 kevm_client_pid="$!"
-while ! netcat -z 127.0.0.1 "$PORT"; do sleep 0.1; done
+while (! netcat -z 127.0.0.1 "$PORT") || (! netcat -z 127.0.0.1 "$KPORT"); do sleep 0.1; done
 
 # Feed input in, store output in supplied file
 curl -s -X POST 127.0.0.1:"$PORT" --data @"$input_file" | jq . > "$output_file"
