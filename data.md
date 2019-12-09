@@ -1123,27 +1123,30 @@ Merkle Tree Aux Functions
     rule #nibbleize ( B ) => (      #asByteStack ( B [ 0 ] /Int 16 )[0 .. 1]
                                ++ ( #asByteStack ( B [ 0 ] %Int 16 )[0 .. 1] )
                              ) ++ #nibbleize ( B[1 .. #sizeByteArray(B) -Int 1] )
-      requires #sizeByteArray( B ) >Int 0
+      requires #sizeByteArray(B) >Int 0
 
-    rule #nibbleize ( _ ) => .ByteArray [owise]
+    rule #nibbleize ( B ) => .ByteArray
+      requires notBool #sizeByteArray(B) >Int 0
 
     rule #byteify ( B ) =>    #asByteStack ( B[0] *Int 16 +Int B[1] )[0 .. 1]
                            ++ #byteify ( B[2 .. #sizeByteArray(B) -Int 2] )
       requires #sizeByteArray(B) >Int 0
 
-    rule #byteify ( _ ) => .ByteArray [owise]
+    rule #byteify ( B ) => .ByteArray
+      requires notBool #sizeByteArray(B) >Int 0
 
     syntax ByteArray ::= #HPEncode ( ByteArray, Int ) [function]
  // ------------------------------------------------------------
     rule #HPEncode ( X, T ) => #asByteStack ( ( HPEncodeAux(T) +Int 1 ) *Int 16 +Int X[0] ) ++ #byteify( X[1 .. #sizeByteArray(X) -Int 1] )
       requires #sizeByteArray(X) %Int 2 =/=Int 0
 
-    rule #HPEncode ( X, T ) => #asByteStack ( HPEncodeAux(T) *Int 16 )[0 .. 1] ++ #byteify( X ) [owise]
+    rule #HPEncode ( X, T ) => #asByteStack ( HPEncodeAux(T) *Int 16 )[0 .. 1] ++ #byteify( X )
+      requires notBool #sizeByteArray(X) %Int 2 =/=Int 0
 
     syntax Int ::= HPEncodeAux ( Int ) [function]
  // ---------------------------------------------
-    rule HPEncodeAux ( X ) => 0 requires X ==Int 0
-    rule HPEncodeAux ( _ ) => 2 [owise]
+    rule HPEncodeAux ( X ) => 0 requires         X ==Int 0
+    rule HPEncodeAux ( X ) => 2 requires notBool X ==Int 0
 
     syntax MerkleTree ::= #merkleBrancher ( Map, String, Int, ByteArray, String ) [function]
  // ----------------------------------------------------------------------------------------
