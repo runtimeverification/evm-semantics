@@ -3,10 +3,6 @@ requires "asm.k"
 module VERIFICATION
     imports EVM-ASSEMBLY
 
-    rule #sizeWordStack ( WS , N:Int )
-      => N +Int #sizeWordStack ( WS , 0 )
-      requires N =/=K 0 [simplification]
-
  // lemma only required by java backend
  // -----------------------------------
     rule bool2Word(A) ==K 0 => notBool(A)
