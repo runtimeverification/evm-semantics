@@ -271,8 +271,9 @@ WEB3 JSON RPC
          <batch> undef </batch>
       requires CALLID =/=K undef
 
-    rule <k> #sendResponse(_) ~> _ => getRequest() </k>
+    rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", J }, SOCK) ~> getRequest() </k>
          <callid> undef </callid>
+         <web3clientsocket> SOCK </web3clientsocket>
          <batch> undef </batch>
 
     rule <k> #sendResponse(J) ~> _ => #loadFromBatch </k>
@@ -281,9 +282,11 @@ WEB3 JSON RPC
          <web3response> ... .List => ListItem({ "jsonrpc": "2.0", "id": CALLID, J }) </web3response>
       requires CALLID =/=K undef
 
-    rule <k> #sendResponse(_) ~> _ => #loadFromBatch </k>
+    rule <k> #sendResponse(J) ~> _ => #loadFromBatch </k>
          <callid> undef </callid>
          <batch> [ _ ] </batch>
+         <web3response> ... .List => ListItem({ "jsonrpc": "2.0", J }) </web3response>
+
 
     syntax KItem ::= #rpcResponseSuccess          ( JSON                )
                    | #rpcResponseSuccessException ( JSON , JSON         )
