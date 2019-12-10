@@ -567,10 +567,9 @@ eth_sendTransaction
 
 ```k
     syntax KItem ::= "#eth_sendTransaction"
-                   | "#eth_sendTransaction_load" JSON
-                   | "#eth_sendTransaction_final" Int
- // -------------------------------------------------
-    rule <k> #eth_sendTransaction => #eth_sendTransaction_load J ... </k>
+                   | "#eth_sendTransaction_final"
+ // ---------------------------------------------
+    rule <k> #eth_sendTransaction => #loadTx J ~> #eth_sendTransaction_final ... </k>
          <params> [ ({ _ } #as J), .JSONs ] </params>
       requires isString( #getJSON("from",J) )
 
@@ -580,20 +579,10 @@ eth_sendTransaction
 
     rule <k> #eth_sendTransaction => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_sendTransaction' requires exactly 1 argument.") ... </k> [owise]
 
-    rule <k> #eth_sendTransaction_load J
-          => mkTX !ID:Int
-          ~> #loadNonce #parseHexWord( #getString("from",J) ) !ID
-          ~> loadTransaction !ID J
-          ~> signTX !ID #parseHexWord( #getString("from",J) )
-          ~> #prepareTx !ID #parseHexWord( #getString("from",J) )
-          ~> #eth_sendTransaction_final !ID
-         ...
-         </k>
-
-    rule <k> #eth_sendTransaction_final TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
+    rule <k> TXID:Int ~> #eth_sendTransaction_final => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
         <statusCode> EVMC_SUCCESS </statusCode>
 
-    rule <k> #eth_sendTransaction_final TXID => #rpcResponseSuccessException("0x" +String #hashSignedTx( TXID ),
+    rule <k> TXID:Int ~> #eth_sendTransaction_final => #rpcResponseSuccessException("0x" +String #hashSignedTx( TXID ),
                { "message": "VM Exception while processing transaction: revert",
                  "code": -32000,
                  "data": {
@@ -610,13 +599,13 @@ eth_sendTransaction
         <output> RD </output>
         <errorPC> PCOUNT </errorPC>
 
-    rule <k> #eth_sendTransaction_final TXID => #rpcResponseError(-32000, "base fee exceeds gas limit") ... </k>
+    rule <k> TXID:Int ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "base fee exceeds gas limit") ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
 
-    rule <k> #eth_sendTransaction_final TXID => #rpcResponseError(-32000, "sender doesn't have enough funds to send tx.") ... </k>
+    rule <k> TXID:Int ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "sender doesn't have enough funds to send tx.") ... </k>
          <statusCode> EVMC_BALANCE_UNDERFLOW </statusCode>
 
-    rule <k> #eth_sendTransaction_final TXID => #rpcResponseError(-32000, "VM exception: " +String StatusCode2String( SC )) ... </k>
+    rule <k> TXID:Int ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "VM exception: " +String StatusCode2String( SC )) ... </k>
         <statusCode> SC:ExceptionalStatusCode </statusCode> [owise]
 
     rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG)), _                 } ... </k>
@@ -1052,12 +1041,27 @@ Transaction Receipts
     rule #ecrecAddr(N:Int)    => #padToWidth(20, #asByteStack(N))
 ```
 
+Transaction Execution
+---------------------
+
 - `#executeTx` takes a transaction, loads it into the current state and executes it.
 **TODO**: treat the account creation case
 **TODO**: record the logs after `finalizeTX`
 **TODO**: execute all pending transactions
 
 ```k
+    syntax KItem ::= "#loadTx" JSON
+ // -------------------------------
+    rule <k> #loadTx J
+          => mkTX !ID:Int
+          ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
+          ~> loadTransaction !ID J
+          ~> signTX !ID #parseHexWord(#getString("from", J))
+          ~> #prepareTx !ID #parseHexWord(#getString("from", J))
+          ~> !ID
+          ...
+         </k>
+
     syntax KItem ::= "#prepareTx" Int Account
  // -----------------------------------------
     rule <k> #prepareTx TXID:Int ACCTFROM
@@ -1257,11 +1261,7 @@ Transaction Receipts
     rule <k> #eth_call
           => #pushNetworkState
           ~> #setMode NOGAS
-          ~> mkTX !ID:Int
-          ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
-          ~> loadTransaction !ID J
-          ~> signTX !ID #parseHexWord(#getString("from", J))
-          ~> #prepareTx !ID #parseHexWord(#getString("from", J))
+          ~> #loadTx J
           ~> #eth_call_finalize
          ...
          </k>
@@ -1275,13 +1275,14 @@ Transaction Receipts
 
     syntax KItem ::= "#eth_call_finalize"
  // -------------------------------------
-    rule <k> #eth_call_finalize
+    rule <statusCode> EVMC_SUCCESS </statusCode>
+         <k> _:Int ~> #eth_call_finalize
           => #setMode NORMAL
           ~> #popNetworkState
           ~> #clearGas
           ~> #rpcResponseSuccess(#unparseDataByteArray( OUTPUT ))
          ...
-        </k>
+         </k>
          <output> OUTPUT </output>
 ```
 
@@ -1294,11 +1295,7 @@ Transaction Receipts
  // -----------------------------------
     rule <k> #eth_estimateGas
           => #pushNetworkState
-          ~> mkTX !ID:Int
-          ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
-          ~> loadTransaction !ID J
-          ~> signTX !ID #parseHexWord(#getString("from", J))
-          ~> #prepareTx !ID #parseHexWord(#getString("from", J))
+          ~> #loadTx J
           ~> #eth_estimateGas_finalize GUSED
          ...
          </k>
@@ -1312,12 +1309,12 @@ Transaction Receipts
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
-    rule <k> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber( "latest", BLOCKLIST ) ) -Int INITGUSED )) ... </k>
+    rule <k> _:Int ~> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber( "latest", BLOCKLIST ) ) -Int INITGUSED )) ... </k>
          <statusCode> STATUSCODE </statusCode>
          <blockList> BLOCKLIST </blockList>
       requires STATUSCODE =/=K EVMC_OUT_OF_GAS
 
-    rule <k> #eth_estimateGas_finalize _ => #popNetworkState ~> #rpcResponseError(-32000 , "base fee exceeds gas limit") ... </k>
+    rule <k> _:Int ~> #eth_estimateGas_finalize _ => #popNetworkState ~> #rpcResponseError(-32000 , "base fee exceeds gas limit") ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
 
     syntax Int ::= #getGasUsed( BlockchainItem ) [function]
@@ -1337,7 +1334,7 @@ NOGAS Mode
          <mode> NOGAS </mode>
      [priority(25)]
 
-    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ... </k>
+    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #finishTx ... </k>
          <mode> NOGAS </mode>
      [priority(25)]
 ```
