@@ -1266,8 +1266,7 @@ Transaction Execution
          ...
          </k>
          <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
-      requires isString( #getJSON("to"   , J) )
-       andBool isString( #getJSON("from" , J) )
+      requires isString( #getJSON("from" , J) )
 
     rule <k> #eth_call => #rpcResponseError(-32027, "Method 'eth_call' has invalid arguments") ...  </k>
          <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
@@ -1284,6 +1283,28 @@ Transaction Execution
          ...
          </k>
          <output> OUTPUT </output>
+
+    rule <statusCode> EVMC_REVERT </statusCode>
+         <k> TXID:Int ~> #eth_call_finalize
+          => #setMode NORMAL
+          ~> #popNetworkState
+          ~> #clearGas
+          ~> #sendResponse( "error" :
+               { "message": "VM Exception while processing transaction: revert",
+                 "code": -32000,
+                 "data": {
+                     "0x" +String #hashSignedTx( TXID ): {
+                     "error": "revert",
+                     "program_counter": PCOUNT +Int 1,
+                     "return": #unparseDataByteArray( RD )
+                   }
+                 }
+               } )
+
+         ...
+        </k>
+         <errorPC> PCOUNT </errorPC>
+         <output> RD </output>
 ```
 
 - `#eth_estimateGas`
