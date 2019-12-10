@@ -86,14 +86,15 @@ run_search() {
 run_web3() {
     local web3_port
     web3_port="$1" ; shift
+    kevm_port="$1" ; shift
     run_file='-'
     if $debug; then
-        gdb --args ${defn_dir}/web3/build/kevm-client --port "$web3_port" "$@"
+        gdb --args ${defn_dir}/web3/build/kevm-client --port "$web3_port" --kport "$kevm_port" "$@"
     elif $dump; then
-      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client --port "$web3_port" "$@" 3>&2 2>&1 1>&3 \
+      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client --port "$web3_port" --kport "$kevm_port" "$@" 3>&2 2>&1 1>&3 \
           | "$0" kast --backend web3 - pretty --input kore --sort GeneratedTopCell
     else
-      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client --port "$web3_port" "$@" 2>/dev/null
+      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client --port "$web3_port" --kport "$kevm_port" "$@" 2>/dev/null
     fi
 }
 
@@ -114,9 +115,10 @@ run_web3_send() {
 run_web3_ganache() {
     local web3_port
     web3_port="$1" ; shift
+    kevm_port="$1" ; shift
 
     notif 'Launching web3 client'
-    $0 web3 "$web3_port" "$@" &
+    $0 web3 "$web3_port" "$kevm_port" "$@" &
     while ! netcat -z 127.0.0.1 "$web3_port"; do sleep 0.1; done
     notif 'Generating accounts'
     $0 web3-send "$web3_port" firefly_addAccount {'"key":"0xdc7e9a7c64933ab893160b79d099c254d274e1c40c6df6d5239e1a623e3d6de1", "balance":"0x56BC75E2D63100000"'}
@@ -238,9 +240,9 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                $0 kast         [--backend (ocaml|java|llvm|haskell|web3)]      <pgm>  <output format> <K arg>*
                $0 prove        [--backend (java|haskell)]                      <spec> <K arg>* -m <def_module>
                $0 search       [--backend (java|haskell)]                      <pgm>  <pattern> <K arg>*
-               $0 web3         [--debug|--dump]                                <port>
-               $0 web3-ganache [--debug|--dump]                                <port>
-               $0 web3-send                                                    <port> <web3 method> <web3 params>
+               $0 web3         [--debug|--dump]                                <HTTP port> <K port>
+               $0 web3-ganache [--debug|--dump]                                <HTTP port> <K port>
+               $0 web3-send                                                    <HTTP port> <web3 method> <web3 params>
                $0 klab-run                                                     <pgm>  <K arg>*
                $0 klab-prove                                                   <spec> <K arg>* -m <def_module>
                $0 klab-view                                                    <spec>
