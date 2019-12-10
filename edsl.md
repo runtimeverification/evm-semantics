@@ -315,7 +315,7 @@ This notation makes the specification independent of the underlying compilers, e
 For dynamically sized arrays in Solidity, and both statically and dynamically sized arrays in Vyper, the length of the array is stored at:
 
 ```
-   hash(slot(array))
+  hash(slot(array))
 ```
 
 and the element at index `i` is stored at:
@@ -334,9 +334,9 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
  // -----------------------------------------------------------------------
     rule #hashedLocation(LANG, BASE, .IntList) => BASE
 
-    rule #hashedLocation("Vyper",    BASE, OFFSET OFFSETS) => #hashedLocation("Vyper",    keccakIntList(BASE OFFSET), OFFSETS)
+    rule #hashedLocation("Vyper",    BASE, OFFSET OFFSETS) => #hashedLocation("Vyper",    keccakIntList(BASE OFFSET),       OFFSETS)
     rule #hashedLocation("Solidity", BASE, OFFSET OFFSETS) => #hashedLocation("Solidity", keccakIntList(OFFSET BASE),       OFFSETS)
-    rule #hashedLocation("Array", BASE, OFFSET OFFSETS) => #hashedLocation("Array", keccakIntList(BASE) +Word OFFSET, OFFSETS)
+    rule #hashedLocation("Array",    BASE, OFFSET OFFSETS) => #hashedLocation("Array",    keccakIntList(BASE) +Word OFFSET, OFFSETS)
 
     syntax Int ::= keccakIntList( IntList ) [function]
  // --------------------------------------------------
