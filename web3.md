@@ -674,16 +674,10 @@ eth_sendTransaction
  // --------------------------------------------------------
     rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( Hex2Raw( #hashUnsignedTx( TXID ) ), #unparseByteStack( #padToWidth( 32, #asByteStack( KEY ) ) ) ) ... </k>
          <accountKeys> ... ACCTFROM |-> KEY ... </accountKeys>
-         <message>
-           <msgID>      TXID    </msgID>
-           <txNonce>    TXNONCE </txNonce>
-           <txGasPrice> GPRICE  </txGasPrice>
-           <txGasLimit> GLIMIT  </txGasLimit>
-           <to>         ACCTTO  </to>
-           <value>      VALUE   </value>
-           <data>       DATA    </data>
-           ...
-         </message>
+         <mode> NORMAL </mode>
+
+    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( Hex2Raw( #hashUnsignedTx( TXID ) ), #unparseByteStack( ( #padToWidth( 20, #asByteStack( ACCTFROM ) ) ++ #padToWidth( 20, #asByteStack( ACCTFROM ) ) )[0 .. 32] ) ) ... </k>
+         <mode> NOGAS </mode>
 
     rule <k> signTX TXID SIG:String => . ... </k>
          <message>
