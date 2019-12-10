@@ -287,12 +287,14 @@ WEB3 JSON RPC
 
     syntax KItem ::= #rpcResponseSuccess          ( JSON                )
                    | #rpcResponseSuccessException ( JSON , JSON         )
+                   | #rpcResponseError            ( JSON                )
                    | #rpcResponseError            ( Int , String        )
                    | #rpcResponseError            ( Int , String , JSON )
                    | #rpcResponseUnimplemented    ( String              )
  // ---------------------------------------------------------------------
     rule <k> #rpcResponseSuccess(J)                 => #sendResponse( "result" : J )                                                ... </k> requires isProperJson(J)
     rule <k> #rpcResponseSuccessException(RES, ERR) => #sendResponse( ( "result" : RES, "error": ERR ) )                            ... </k> requires isProperJson(RES) andBool isProperJson(ERR)
+    rule <k> #rpcResponseError(ERR)                 => #sendResponse( "error" : ERR )                                               ... </k>
     rule <k> #rpcResponseError(CODE, MSG)           => #sendResponse( "error" : { "code": CODE , "message": MSG } )                 ... </k>
     rule <k> #rpcResponseError(CODE, MSG, DATA)     => #sendResponse( "error" : { "code": CODE , "message": MSG , "data" : DATA } ) ... </k> requires isProperJson(DATA)
     rule <k> #rpcResponseUnimplemented(RPCCALL)     => #sendResponse( "unimplemented" : RPCCALL )                                   ... </k>
@@ -1283,7 +1285,7 @@ Transaction Execution
           => #setMode NORMAL
           ~> #popNetworkState
           ~> #clearGas
-          ~> #sendResponse( "error" :
+          ~> #rpcResponseError(
                { "message": "VM Exception while processing transaction: revert",
                  "code": -32000,
                  "data": {
