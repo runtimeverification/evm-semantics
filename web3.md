@@ -287,7 +287,6 @@ WEB3 JSON RPC
          <batch> [ _ ] </batch>
          <web3response> ... .List => ListItem({ "jsonrpc": "2.0", J }) </web3response>
 
-
     syntax KItem ::= #rpcResponseSuccess          ( JSON                )
                    | #rpcResponseSuccessException ( JSON , JSON         )
                    | #rpcResponseError            ( Int , String        )
