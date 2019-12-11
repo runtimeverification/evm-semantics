@@ -107,14 +107,12 @@ run_web3_send() {
         curl -s -X POST 127.0.0.1:$web3_port --data @$web3_file
     else
         web3_method="$1" ; shift
-
         join_args() {
             local IFS=','
             echo "$*"
         }
         web3_params="$(join_args "$@")"
-
-        curl -X POST --data '{"jsonrpc": "2.0", "id": 1, "method": "'"$web3_method"'", "params": ['"$web3_params"']}' 127.0.0.1:"$web3_port"
+        curl -s -X POST --data '{"jsonrpc": "2.0", "id": 1, "method": "'"$web3_method"'", "params": ['"$web3_params"']}' 127.0.0.1:"$web3_port"
     fi
 }
 
