@@ -2302,7 +2302,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gtxdatazero"  | "Gtxdatanonzero" | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
                            | "Gsha3word"    | "Gcopy"          | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
                            | "Gecadd"       | "Gecmul"         | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"
- // ------------------------------------------------------------------------------------------------------------
+ // ----------------------------------------------------------------------------------------------------------
 ```
 
 ### Default Schedule
