@@ -99,7 +99,7 @@ run_web3() {
 }
 
 run_web3_send() {
-    local web3_port web3_method web3_params
+    local web3_port web3_method web3_params web3_file
     web3_port="$1" ; shift
 
     if [[ -f "$1" ]]; then
