@@ -975,7 +975,7 @@ Transaction Receipts
                                                                          "transactionHash": TH,
                                                                          "blockHash": BH,
                                                                          "blockNumber": #unparseQuantity(BN),
-                                                                         "address": #unparseQuantity(ACCT),
+                                                                         "address": #unparseData(ACCT, 20),
                                                                          "data": #unparseDataByteArray(DATA),
                                                                          "topics": [#unparseIntList(TOPICS)],
                                                                          "type" : "mined"
