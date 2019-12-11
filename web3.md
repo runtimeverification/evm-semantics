@@ -291,7 +291,7 @@ WEB3 JSON RPC
                    | #rpcResponseError            ( Int , String        )
                    | #rpcResponseError            ( Int , String , JSON )
                    | "#rpcResponseUnimplemented"
- // ---------------------------------------------------------------------
+ // --------------------------------------------
     rule <k> #rpcResponseSuccess(J)                 => #sendResponse( "result" : J )                                                ... </k> requires isProperJson(J)
     rule <k> #rpcResponseSuccessException(RES, ERR) => #sendResponse( ( "result" : RES, "error": ERR ) )                            ... </k> requires isProperJson(RES) andBool isProperJson(ERR)
     rule <k> #rpcResponseError(ERR)                 => #sendResponse( "error" : ERR )                                               ... </k>
@@ -1854,8 +1854,7 @@ Unimplemented Methods
                    | "#personal_listAccounts"
                    | "#web3_sha3"
                    | "#shh_version"
- // -----------------------------------------------------------
-
+ // -------------------------------
     rule <k> #eth_coinbase                            => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getBlockByHash                      => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getBlockTransactionCountByHash      => #rpcResponseUnimplemented ... </k>
