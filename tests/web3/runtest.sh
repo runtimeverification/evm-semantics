@@ -9,10 +9,10 @@ output_file="$1" ; shift
 PORT=$(tests/web3/get_port.py)
 ./kevm web3 "$PORT" "$@" &
 kevm_client_pid="$!"
-while ! netcat -z 127.0.0.1 "$PORT"; do sleep 0.1; done
+while (! netcat -z 127.0.0.1 "$PORT") ; do sleep 0.1; done
 
 # Feed input in, store output in supplied file
-cat "$input_file" | netcat 127.0.0.1 "$PORT" -q 0 | jq . > "$output_file"
+curl -s -X POST 127.0.0.1:"$PORT" --data @"$input_file" | jq . > "$output_file"
 
 ./kevm web3-send "$PORT" 'firefly_shutdown'
 echo
