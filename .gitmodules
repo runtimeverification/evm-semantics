@@ -26,3 +26,7 @@
 	path = deps/libff
 	url = https://github.com/scipr-lab/libff
 	ignore = untracked
+[submodule "deps/proxygen"]
+	path = deps/proxygen
+	url = https://github.com/facebook/proxygen.git
+	ignore = untracked
