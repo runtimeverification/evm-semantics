@@ -290,14 +290,14 @@ WEB3 JSON RPC
                    | #rpcResponseError            ( JSON                )
                    | #rpcResponseError            ( Int , String        )
                    | #rpcResponseError            ( Int , String , JSON )
-                   | #rpcResponseUnimplemented    ( String              )
+                   | "#rpcResponseUnimplemented"
  // ---------------------------------------------------------------------
     rule <k> #rpcResponseSuccess(J)                 => #sendResponse( "result" : J )                                                ... </k> requires isProperJson(J)
     rule <k> #rpcResponseSuccessException(RES, ERR) => #sendResponse( ( "result" : RES, "error": ERR ) )                            ... </k> requires isProperJson(RES) andBool isProperJson(ERR)
     rule <k> #rpcResponseError(ERR)                 => #sendResponse( "error" : ERR )                                               ... </k>
     rule <k> #rpcResponseError(CODE, MSG)           => #sendResponse( "error" : { "code": CODE , "message": MSG } )                 ... </k>
     rule <k> #rpcResponseError(CODE, MSG, DATA)     => #sendResponse( "error" : { "code": CODE , "message": MSG , "data" : DATA } ) ... </k> requires isProperJson(DATA)
-    rule <k> #rpcResponseUnimplemented(RPCCALL)     => #sendResponse( "unimplemented" : RPCCALL )                                   ... </k>
+    rule <k> #rpcResponseUnimplemented              => #sendResponse( "unimplemented" : RPCCALL )                                   ... </k> <method> RPCCALL </method>
 
     syntax KItem ::= "#checkRPCCall"
  // --------------------------------
@@ -318,43 +318,76 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#runRPCCall"
  // ------------------------------
-    rule <k> #runRPCCall => #net_version               ... </k> <method> "net_version"               </method>
+    rule <k> #runRPCCall => #net_version                             ... </k> <method> "net_version"                             </method>
+    rule <k> #runRPCCall => #shh_version                             ... </k> <method> "shh_version"                             </method>
 
-    rule <k> #runRPCCall => #web3_clientVersion        ... </k> <method> "web3_clientVersion"        </method>
+    rule <k> #runRPCCall => #web3_clientVersion                      ... </k> <method> "web3_clientVersion"                      </method>
+    rule <k> #runRPCCall => #web3_sha3                               ... </k> <method> "web3_sha3"                               </method>
 
-    rule <k> #runRPCCall => #eth_gasPrice              ... </k> <method> "eth_gasPrice"              </method>
-    rule <k> #runRPCCall => #eth_blockNumber           ... </k> <method> "eth_blockNumber"           </method>
-    rule <k> #runRPCCall => #eth_accounts              ... </k> <method> "eth_accounts"              </method>
-    rule <k> #runRPCCall => #eth_getBalance            ... </k> <method> "eth_getBalance"            </method>
-    rule <k> #runRPCCall => #eth_getStorageAt          ... </k> <method> "eth_getStorageAt"          </method>
-    rule <k> #runRPCCall => #eth_getCode               ... </k> <method> "eth_getCode"               </method>
-    rule <k> #runRPCCall => #eth_getTransactionCount   ... </k> <method> "eth_getTransactionCount"   </method>
-    rule <k> #runRPCCall => #eth_sign                  ... </k> <method> "eth_sign"                  </method>
-    rule <k> #runRPCCall => #eth_newBlockFilter        ... </k> <method> "eth_newBlockFilter"        </method>
-    rule <k> #runRPCCall => #eth_uninstallFilter       ... </k> <method> "eth_uninstallFilter"       </method>
-    rule <k> #runRPCCall => #eth_sendTransaction       ... </k> <method> "eth_sendTransaction"       </method>
-    rule <k> #runRPCCall => #eth_sendRawTransaction    ... </k> <method> "eth_sendRawTransaction"    </method>
-    rule <k> #runRPCCall => #personal_importRawKey     ... </k> <method> "personal_importRawKey"     </method>
-    rule <k> #runRPCCall => #eth_call                  ... </k> <method> "eth_call"                  </method>
-    rule <k> #runRPCCall => #eth_estimateGas           ... </k> <method> "eth_estimateGas"           </method>
-    rule <k> #runRPCCall => #eth_getTransactionReceipt ... </k> <method> "eth_getTransactionReceipt" </method>
-    rule <k> #runRPCCall => #eth_getBlockByNumber      ... </k> <method> "eth_getBlockByNumber"      </method>
+    rule <k> #runRPCCall => #eth_gasPrice                            ... </k> <method> "eth_gasPrice"                            </method>
+    rule <k> #runRPCCall => #eth_blockNumber                         ... </k> <method> "eth_blockNumber"                         </method>
+    rule <k> #runRPCCall => #eth_accounts                            ... </k> <method> "eth_accounts"                            </method>
+    rule <k> #runRPCCall => #eth_getBalance                          ... </k> <method> "eth_getBalance"                          </method>
+    rule <k> #runRPCCall => #eth_getStorageAt                        ... </k> <method> "eth_getStorageAt"                        </method>
+    rule <k> #runRPCCall => #eth_getCode                             ... </k> <method> "eth_getCode"                             </method>
+    rule <k> #runRPCCall => #eth_getTransactionCount                 ... </k> <method> "eth_getTransactionCount"                 </method>
+    rule <k> #runRPCCall => #eth_sign                                ... </k> <method> "eth_sign"                                </method>
+    rule <k> #runRPCCall => #eth_newBlockFilter                      ... </k> <method> "eth_newBlockFilter"                      </method>
+    rule <k> #runRPCCall => #eth_uninstallFilter                     ... </k> <method> "eth_uninstallFilter"                     </method>
+    rule <k> #runRPCCall => #eth_sendTransaction                     ... </k> <method> "eth_sendTransaction"                     </method>
+    rule <k> #runRPCCall => #eth_sendRawTransaction                  ... </k> <method> "eth_sendRawTransaction"                  </method>
+    rule <k> #runRPCCall => #eth_call                                ... </k> <method> "eth_call"                                </method>
+    rule <k> #runRPCCall => #eth_estimateGas                         ... </k> <method> "eth_estimateGas"                         </method>
+    rule <k> #runRPCCall => #eth_getTransactionReceipt               ... </k> <method> "eth_getTransactionReceipt"               </method>
+    rule <k> #runRPCCall => #eth_getBlockByNumber                    ... </k> <method> "eth_getBlockByNumber"                    </method>
+    rule <k> #runRPCCall => #eth_coinbase                            ... </k> <method> "eth_coinbase"                            </method>
+    rule <k> #runRPCCall => #eth_getBlockByHash                      ... </k> <method> "eth_getBlockByHash"                      </method>
+    rule <k> #runRPCCall => #eth_getBlockTransactionCountByHash      ... </k> <method> "eth_getBlockTransactionCountByHash"      </method>
+    rule <k> #runRPCCall => #eth_getBlockTransactionCountByNumber    ... </k> <method> "eth_getBlockTransactionCountByNumber"    </method>
+    rule <k> #runRPCCall => #eth_getCompilers                        ... </k> <method> "eth_getCompilers"                        </method>
+    rule <k> #runRPCCall => #eth_getFilterChanges                    ... </k> <method> "eth_getFilterChanges"                    </method>
+    rule <k> #runRPCCall => #eth_getFilterLogs                       ... </k> <method> "eth_getFilterLogs"                       </method>
+    rule <k> #runRPCCall => #eth_getLogs                             ... </k> <method> "eth_getLogs"                             </method>
+    rule <k> #runRPCCall => #eth_getTransactionByHash                ... </k> <method> "eth_getTransactionByHash"                </method>
+    rule <k> #runRPCCall => #eth_getTransactionByBlockHashAndIndex   ... </k> <method> "eth_getTransactionByBlockHashAndIndex"   </method>
+    rule <k> #runRPCCall => #eth_getTransactionByBlockNumberAndIndex ... </k> <method> "eth_getTransactionByBlockNumberAndIndex" </method>
+    rule <k> #runRPCCall => #eth_hashrate                            ... </k> <method> "eth_hashrate"                            </method>
+    rule <k> #runRPCCall => #eth_newFilter                           ... </k> <method> "eth_newFilter"                           </method>
+    rule <k> #runRPCCall => #eth_protocolVersion                     ... </k> <method> "eth_protocolVersion"                     </method>
+    rule <k> #runRPCCall => #eth_signTypedData                       ... </k> <method> "eth_signTypedData"                       </method>
+    rule <k> #runRPCCall => #eth_subscribe                           ... </k> <method> "eth_subscribe"                           </method>
+    rule <k> #runRPCCall => #eth_unsubscribe                         ... </k> <method> "eth_unsubscribe"                         </method>
+    rule <k> #runRPCCall => #net_peerCount                           ... </k> <method> "net_peerCount"                           </method>
+    rule <k> #runRPCCall => #net_listening                           ... </k> <method> "net_listening"                           </method>
+    rule <k> #runRPCCall => #eth_syncing                             ... </k> <method> "eth_syncing"                             </method>
+    rule <k> #runRPCCall => #bzz_hive                                ... </k> <method> "bzz_hive"                                </method>
+    rule <k> #runRPCCall => #bzz_info                                ... </k> <method> "bzz_info"                                </method>
 
-    rule <k> #runRPCCall => #evm_snapshot              ... </k> <method> "evm_snapshot"              </method>
-    rule <k> #runRPCCall => #evm_revert                ... </k> <method> "evm_revert"                </method>
-    rule <k> #runRPCCall => #evm_increaseTime          ... </k> <method> "evm_increaseTime"          </method>
-    rule <k> #runRPCCall => #evm_mine                  ... </k> <method> "evm_mine"                  </method>
+    rule <k> #runRPCCall => #evm_snapshot                            ... </k> <method> "evm_snapshot"                            </method>
+    rule <k> #runRPCCall => #evm_revert                              ... </k> <method> "evm_revert"                              </method>
+    rule <k> #runRPCCall => #evm_increaseTime                        ... </k> <method> "evm_increaseTime"                        </method>
+    rule <k> #runRPCCall => #evm_mine                                ... </k> <method> "evm_mine"                                </method>
 
-    rule <k> #runRPCCall => #firefly_shutdown          ... </k> <method> "firefly_shutdown"          </method>
-    rule <k> #runRPCCall => #firefly_addAccount        ... </k> <method> "firefly_addAccount"        </method>
-    rule <k> #runRPCCall => #firefly_getCoverageData   ... </k> <method> "firefly_getCoverageData"   </method>
-    rule <k> #runRPCCall => #firefly_getStateRoot      ... </k> <method> "firefly_getStateRoot"      </method>
-    rule <k> #runRPCCall => #firefly_getTxRoot         ... </k> <method> "firefly_getTxRoot"         </method>
-    rule <k> #runRPCCall => #firefly_getReceiptsRoot   ... </k> <method> "firefly_getReceiptsRoot"   </method>
-    rule <k> #runRPCCall => #firefly_getTime           ... </k> <method> "firefly_getTime"           </method>
-    rule <k> #runRPCCall => #firefly_setTime           ... </k> <method> "firefly_setTime"           </method>
-    rule <k> #runRPCCall => #firefly_genesisBlock      ... </k> <method> "firefly_genesisBlock"      </method>
-    rule <k> #runRPCCall => #firefly_setGasLimit       ... </k> <method> "firefly_setGasLimit"       </method>
+    rule <k> #runRPCCall => #firefly_shutdown                        ... </k> <method> "firefly_shutdown"                        </method>
+    rule <k> #runRPCCall => #firefly_addAccount                      ... </k> <method> "firefly_addAccount"                      </method>
+    rule <k> #runRPCCall => #firefly_getCoverageData                 ... </k> <method> "firefly_getCoverageData"                 </method>
+    rule <k> #runRPCCall => #firefly_getStateRoot                    ... </k> <method> "firefly_getStateRoot"                    </method>
+    rule <k> #runRPCCall => #firefly_getTxRoot                       ... </k> <method> "firefly_getTxRoot"                       </method>
+    rule <k> #runRPCCall => #firefly_getReceiptsRoot                 ... </k> <method> "firefly_getReceiptsRoot"                 </method>
+    rule <k> #runRPCCall => #firefly_getTime                         ... </k> <method> "firefly_getTime"                         </method>
+    rule <k> #runRPCCall => #firefly_setTime                         ... </k> <method> "firefly_setTime"                         </method>
+    rule <k> #runRPCCall => #firefly_genesisBlock                    ... </k> <method> "firefly_genesisBlock"                    </method>
+    rule <k> #runRPCCall => #firefly_setGasLimit                     ... </k> <method> "firefly_setGasLimit"                     </method>
+
+    rule <k> #runRPCCall => #debug_traceTransaction                  ... </k> <method> "debug_traceTransaction"                  </method>
+    rule <k> #runRPCCall => #miner_start                             ... </k> <method> "miner_start"                             </method>
+    rule <k> #runRPCCall => #miner_stop                              ... </k> <method> "miner_stop"                              </method>
+    rule <k> #runRPCCall => #personal_importRawKey                   ... </k> <method> "personal_importRawKey"                   </method>
+    rule <k> #runRPCCall => #personal_sendTransaction                ... </k> <method> "personal_sendTransaction"                </method>
+    rule <k> #runRPCCall => #personal_unlockAccount                  ... </k> <method> "personal_unlockAccount"                  </method>
+    rule <k> #runRPCCall => #personal_newAccount                     ... </k> <method> "personal_newAccount"                     </method>
+    rule <k> #runRPCCall => #personal_lockAccount                    ... </k> <method> "personal_lockAccount"                    </method>
+    rule <k> #runRPCCall => #personal_listAccounts                   ... </k> <method> "personal_listAccounts"                   </method>
 
     rule <k> #runRPCCall => #rpcResponseError(-32601, "Method not found") ... </k> [owise]
 
@@ -1783,6 +1816,78 @@ Mining
          <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
          <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
          <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
+```
+
+Unimplemented Methods
+---------------------
+
+```k
+    syntax KItem ::= "#eth_coinbase"
+                   | "#eth_getBlockByHash"
+                   | "#eth_getBlockTransactionCountByHash"
+                   | "#eth_getBlockTransactionCountByNumber"
+                   | "#eth_getCompilers"
+                   | "#eth_getFilterChanges"
+                   | "#eth_getFilterLogs"
+                   | "#eth_getLogs"
+                   | "#eth_getTransactionByHash"
+                   | "#eth_getTransactionByBlockHashAndIndex"
+                   | "#eth_getTransactionByBlockNumberAndIndex"
+                   | "#eth_hashrate"
+                   | "#eth_newFilter"
+                   | "#eth_protocolVersion"
+                   | "#eth_signTypedData"
+                   | "#eth_subscribe"
+                   | "#eth_unsubscribe"
+                   | "#net_peerCount"
+                   | "#net_listening"
+                   | "#eth_syncing"
+                   | "#bzz_hive"
+                   | "#bzz_info"
+                   | "#debug_traceTransaction"
+                   | "#miner_start"
+                   | "#miner_stop"
+                   | "#personal_sendTransaction"
+                   | "#personal_unlockAccount"
+                   | "#personal_newAccount"
+                   | "#personal_lockAccount"
+                   | "#personal_listAccounts"
+                   | "#web3_sha3"
+                   | "#shh_version"
+ // -----------------------------------------------------------
+
+    rule <k> #eth_coinbase                            => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_getBlockByHash                      => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_getBlockTransactionCountByHash      => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_getBlockTransactionCountByNumber    => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_getCompilers                        => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_getFilterChanges                    => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_getFilterLogs                       => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_getLogs                             => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_getTransactionByHash                => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_getTransactionByBlockHashAndIndex   => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_getTransactionByBlockNumberAndIndex => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_hashrate                            => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_newFilter                           => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_protocolVersion                     => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_signTypedData                       => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_subscribe                           => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_unsubscribe                         => #rpcResponseUnimplemented ... </k>
+    rule <k> #net_peerCount                           => #rpcResponseUnimplemented ... </k>
+    rule <k> #net_listening                           => #rpcResponseUnimplemented ... </k>
+    rule <k> #eth_syncing                             => #rpcResponseUnimplemented ... </k>
+    rule <k> #bzz_hive                                => #rpcResponseUnimplemented ... </k>
+    rule <k> #bzz_info                                => #rpcResponseUnimplemented ... </k>
+    rule <k> #debug_traceTransaction                  => #rpcResponseUnimplemented ... </k>
+    rule <k> #miner_start                             => #rpcResponseUnimplemented ... </k>
+    rule <k> #miner_stop                              => #rpcResponseUnimplemented ... </k>
+    rule <k> #personal_sendTransaction                => #rpcResponseUnimplemented ... </k>
+    rule <k> #personal_unlockAccount                  => #rpcResponseUnimplemented ... </k>
+    rule <k> #personal_newAccount                     => #rpcResponseUnimplemented ... </k>
+    rule <k> #personal_lockAccount                    => #rpcResponseUnimplemented ... </k>
+    rule <k> #personal_listAccounts                   => #rpcResponseUnimplemented ... </k>
+    rule <k> #web3_sha3                               => #rpcResponseUnimplemented ... </k>
+    rule <k> #shh_version                             => #rpcResponseUnimplemented ... </k>
 
 endmodule
 ```
