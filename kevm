@@ -101,15 +101,21 @@ run_web3() {
 run_web3_send() {
     local web3_port web3_method web3_params
     web3_port="$1"   ; shift
-    web3_method="$1" ; shift
 
-    join_args() {
-        local IFS=','
-        echo "$*"
-    }
-    web3_params="$(join_args "$@")"
+    if [[ -f "$1" ]]; then
+        web3_file="$1" ; shift
+        curl -s -X POST 127.0.0.1:$web3_port --data @$web3_file
+    else
+        web3_method="$1" ; shift
 
-    curl -X POST --data '{"jsonrpc": "2.0", "id": 1, "method": "'"$web3_method"'", "params": ['"$web3_params"']}' 127.0.0.1:"$web3_port"
+        join_args() {
+            local IFS=','
+            echo "$*"
+        }
+        web3_params="$(join_args "$@")"
+
+        curl -X POST --data '{"jsonrpc": "2.0", "id": 1, "method": "'"$web3_method"'", "params": ['"$web3_params"']}' 127.0.0.1:"$web3_port"
+    fi
 }
 
 run_web3_ganache() {
@@ -241,7 +247,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                $0 search       [--backend (java|haskell)]                      <pgm>  <pattern> <K arg>*
                $0 web3         [--debug|--dump]                                <port>
                $0 web3-ganache [--debug|--dump]                                <port>
-               $0 web3-send                                                    <port> <web3 method> <web3 params>
+               $0 web3-send                                                    <port> [<web3_method> <web3_params>|<web3_file>]
                $0 klab-run                                                     <pgm>  <K arg>*
                $0 klab-prove                                                   <spec> <K arg>* -m <def_module>
                $0 klab-view                                                    <spec>
@@ -270,6 +276,9 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                  <pattern> is the configuration pattern to search for.
                  <port> is the port to listen on for Web3 JSON RPC requests.
                  <def_module> is the module to take as axioms when doing verification.
+                 <web3_method> is the specific web3 method to call.
+                 <web3_params> is an optional list of parameters to pass to the <web3_method>.
+                 <web3_file> specifies a JSON file to feed as input into the web3 server.
 
            klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
     "
