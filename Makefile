@@ -285,6 +285,7 @@ $(llvm_kompiled): $(llvm_files) $(libff_out)
 	                 --hook-namespaces KRYPTO \
 	                 $(KOMPILE_OPTS) \
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
+	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp \
 	                 -ccopt -g -ccopt -std=c++14 -ccopt -O2 \
 	                 -ccopt -L$(LIBRARY_PATH) \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS))
