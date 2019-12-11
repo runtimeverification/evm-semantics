@@ -14,6 +14,7 @@ add_executable(kevm-vm
 	$ENV{PLUGIN_SUBMODULE}/vm-c/init.cpp
 	$ENV{PLUGIN_SUBMODULE}/vm-c/main.cpp
 	$ENV{PLUGIN_SUBMODULE}/vm-c/vm.cpp
+	$ENV{PLUGIN_SUBMODULE}/plugin-c/blake2.cpp
 	$ENV{PLUGIN_SUBMODULE}/plugin-c/blockchain.cpp
 	$ENV{PLUGIN_SUBMODULE}/plugin-c/crypto.cpp
 	$ENV{PLUGIN_SUBMODULE}/plugin-c/world.cpp
