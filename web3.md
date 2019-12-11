@@ -932,7 +932,7 @@ Transaction Receipts
                                   , "to": #unparseAccount(TT)
                                   , "gasUsed": #unparseQuantity(CGAS)
                                   , "cumulativeGasUsed": #unparseQuantity(CGAS)
-                                  , "contractAddress": #if TT ==K .Account #then #unparseQuantity(#newAddr(TXFROM, NONCE -Int 1)) #else null #fi
+                                  , "contractAddress": #if TT ==K .Account #then #unparseData(#newAddr(TXFROM, NONCE -Int 1), 20) #else null #fi
                                   , "logs": [#serializeLogs(LOGS, 0, TXID, TXHASH, "0x" +String Keccak256(#rlpEncodeBlock(BLOCKITEM)), BN)]
                                   , "status": #unparseQuantity(TXSTATUS)
                                   , "logsBloom": #unparseDataByteArray(BLOOM)
