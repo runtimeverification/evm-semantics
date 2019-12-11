@@ -998,12 +998,19 @@ These operators make queries about the current execution state.
     rule <k> NUMBER     => NUMB ~> #push ... </k> <number> NUMB </number>
     rule <k> DIFFICULTY => DIFF ~> #push ... </k> <difficulty> DIFF </difficulty>
 
-    syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE"
- // --------------------------------------------------------------------
-    rule <k> ADDRESS   => ACCT ~> #push ... </k> <id> ACCT </id>
-    rule <k> ORIGIN    => ORG  ~> #push ... </k> <origin> ORG </origin>
-    rule <k> CALLER    => CL   ~> #push ... </k> <caller> CL </caller>
-    rule <k> CALLVALUE => CV   ~> #push ... </k> <callValue> CV </callValue>
+    syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE" | "SELFBALANCE"
+ // ------------------------------------------------------------------------------------
+    rule <k> ADDRESS     => ACCT ~> #push ... </k> <id> ACCT </id>
+    rule <k> ORIGIN      => ORG  ~> #push ... </k> <origin> ORG </origin>
+    rule <k> CALLER      => CL   ~> #push ... </k> <caller> CL </caller>
+    rule <k> CALLVALUE   => CV   ~> #push ... </k> <callValue> CV </callValue>
+    rule <k> SELFBALANCE => BAL  ~> #push ... </k>
+         <id> ACCT </id>
+         <account>
+            <acctID> ACCT </acctID>
+            <balance> BAL </balance>
+            ...
+         </account>
 
     syntax NullStackOp ::= "MSIZE" | "CODESIZE"
  // -------------------------------------------
@@ -2042,6 +2049,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, MOD _ _)        => Glow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, SMOD _ _)       => Glow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, SIGNEXTEND _ _) => Glow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, SELFBALANCE)    => Glow < SCHED > ... </k>
 
     // Wmid
     rule <k> #gasExec(SCHED, ADDMOD _ _ _) => Gmid < SCHED > ... </k>
@@ -2232,15 +2240,16 @@ There are several helpers for calculating gas (most of them also specified in th
     rule #adjustedExpLength(N) => 1 +Int #adjustedExpLength(N /Int 2) requires N >Int 1
 ```
 
-Fee Schedule from C++ Implementation
-------------------------------------
+Fee Schedule
+------------
 
+The `Schedule` determines the constants/modes of operation for each hard fork.
+There are `ScheduleFlag`s and `ScheduleConstant`s.
 
-### From the C++ Implementation
+-   A `ScheduleFlag` is a boolean value determining whether a certain feature is turned on.
+-   A `ScheduleConst` is an `Int` parameter which is used during EVM execution.
 
-The [C++ Implementation of EVM](https://github.com/ethereum/cpp-ethereum) specifies several different "profiles" for how the VM works.
-Here we provide each protocol from the C++ implementation, as the YellowPaper does not contain all the different profiles.
-Specify which profile by passing in the argument `-cSCHEDULE=<FEE_SCHEDULE>` when calling `krun` (the available `<FEE_SCHEDULE>` are supplied here).
+### Schedule Flags
 
 A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `ScheduleFlag` to a `Schedule` yields whether the flag is set or not.
 
@@ -2251,7 +2260,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghassstorestipend"
- // --------------------------------------------------------------------------------------------------------------------
+                          | "Ghasselfbalance"
+ // -----------------------------------------
 ```
 
 ### Schedule Constants
@@ -2344,6 +2354,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghassstorestipend       << DEFAULT >> => false
     rule Ghascreate2             << DEFAULT >> => false
     rule Ghasextcodehash         << DEFAULT >> => false
+    rule Ghasselfbalance         << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -2461,19 +2472,25 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gecpairconst   < ISTANBUL > => 45000
     rule Gecpaircoeff   < ISTANBUL > => 34000
     rule Gtxdatanonzero < ISTANBUL > => 16
+    rule Gsload         < ISTANBUL > => 800
+    rule Gbalance       < ISTANBUL > => 700
     rule SCHEDCONST     < ISTANBUL > => SCHEDCONST < PETERSBURG >
       requires notBool ( SCHEDCONST ==K Gecadd
                   orBool SCHEDCONST ==K Gecmul
                   orBool SCHEDCONST ==K Gecpairconst
                   orBool SCHEDCONST ==K Gecpaircoeff
                   orBool SCHEDCONST ==K Gtxdatanonzero
+                  orBool SCHEDCONST ==K Gsload
+                  orBool SCHEDCONST ==K Gbalance
                        )
 
     rule Ghasdirtysstore   << ISTANBUL >> => true
     rule Ghassstorestipend << ISTANBUL >> => true
+    rule Ghasselfbalance   << ISTANBUL >> => true
     rule SCHEDFLAG         << ISTANBUL >> => SCHEDFLAG << PETERSBURG >>
       requires notBool ( SCHEDFLAG ==K Ghasdirtysstore
                   orBool SCHEDFLAG ==K Ghassstorestipend
+                  orBool SCHEDFLAG ==K Ghasselfbalance
                        )
 ```
 
@@ -2541,15 +2558,16 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  58,     _ ) => GASPRICE
     rule #dasmOpCode(  59,     _ ) => EXTCODESIZE
     rule #dasmOpCode(  60,     _ ) => EXTCODECOPY
-    rule #dasmOpCode(  61, SCHED ) => RETURNDATASIZE requires Ghasreturndata << SCHED >>
-    rule #dasmOpCode(  62, SCHED ) => RETURNDATACOPY requires Ghasreturndata << SCHED >>
-    rule #dasmOpCode(  63, SCHED ) => EXTCODEHASH requires Ghasextcodehash << SCHED >>
+    rule #dasmOpCode(  61, SCHED ) => RETURNDATASIZE requires Ghasreturndata  << SCHED >>
+    rule #dasmOpCode(  62, SCHED ) => RETURNDATACOPY requires Ghasreturndata  << SCHED >>
+    rule #dasmOpCode(  63, SCHED ) => EXTCODEHASH    requires Ghasextcodehash << SCHED >>
     rule #dasmOpCode(  64,     _ ) => BLOCKHASH
     rule #dasmOpCode(  65,     _ ) => COINBASE
     rule #dasmOpCode(  66,     _ ) => TIMESTAMP
     rule #dasmOpCode(  67,     _ ) => NUMBER
     rule #dasmOpCode(  68,     _ ) => DIFFICULTY
     rule #dasmOpCode(  69,     _ ) => GASLIMIT
+    rule #dasmOpCode(  71, SCHED ) => SELFBALANCE requires Ghasselfbalance << SCHED >>
     rule #dasmOpCode(  80,     _ ) => POP
     rule #dasmOpCode(  81,     _ ) => MLOAD
     rule #dasmOpCode(  82,     _ ) => MSTORE
