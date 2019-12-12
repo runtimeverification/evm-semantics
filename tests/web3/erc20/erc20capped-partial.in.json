@@ -267,3 +267,71 @@
     }
   ]
 }
+{
+  "jsonrpc": "2.0",
+  "id": 16,
+  "method": "eth_getTransactionReceipt",
+  "params": [
+    "0x1f67206881a62c71931c4e5b768f28094bdf5d44d047d5659cb783e026eb3ca9"
+  ]
+}
+{
+  "jsonrpc": "2.0",
+  "id": 17,
+  "method": "eth_getCode",
+  "params": [
+    "0x754e0b6f4240cc86b37db58fafd8f7bc05a98c49",
+    "latest"
+  ]
+}
+{
+  "jsonrpc": "2.0",
+  "id": 18,
+  "method": "net_version",
+  "params": []
+}
+{
+  "jsonrpc": "2.0",
+  "id": 19,
+  "method": "eth_getBlockByNumber",
+  "params": [
+    "latest",
+    false
+  ]
+}
+{
+  "jsonrpc": "2.0",
+  "id": 20,
+  "method": "eth_call",
+  "params": [
+    {
+      "from": "0x2ea064f7db7f235f1d48471ec944e2730ae1b9ba",
+      "gas": "0x6691b7",
+      "gasPrice": "0x4a817c800",
+      "to": "0x754e0b6f4240cc86b37db58fafd8f7bc05a98c49",
+      "data": "0x355274ea"
+    },
+    "latest"
+  ]
+}
+{
+  "jsonrpc": "2.0",
+  "id": 21,
+  "method": "eth_blockNumber",
+  "params": []
+}
+{
+  "jsonrpc": "2.0",
+  "id": 22,
+  "method": "net_version",
+  "params": []
+}
+{
+  "jsonrpc": "2.0",
+  "id": 23,
+  "method": "eth_getBlockByNumber",
+  "params": [
+    "latest",
+    false
+  ]
+}
