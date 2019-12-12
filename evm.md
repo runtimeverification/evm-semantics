@@ -1368,7 +1368,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <wordStack>    _ => .WordStack </wordStack>
          <localMem>     _ => .Map       </localMem>
 
-    syntax Set ::= #computeValidJumpDests(ByteArray)           [function]
+    syntax Set ::= #computeValidJumpDests(ByteArray)            [function]
                  | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
  // ---------------------------------------------------------------------------------------------------------
     rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
@@ -1381,9 +1381,13 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 ```
 
 ```{.k .bytes}
+    syntax Set ::= #computeValidJumpDestsWithinBound(ByteArray, Int, List) [function]
+ // ---------------------------------------------------------------------------------
     rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
-    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, ListItem(I) RESULT) requires I <Int #sizeByteArray(PGM) andBool PGM [ I ] ==Int 91
-    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires I <Int #sizeByteArray(PGM) andBool notBool PGM [ I ] ==Int 91
+    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int #sizeByteArray(PGM)
+
+    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, ListItem(I) RESULT) requires PGM [ I ] ==Int 91
+    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
 ```
 
 ```k
