@@ -101,7 +101,7 @@ module LEMMAS
 
     // for Solidity
     rule #asWord(WS) /Int D => #asWord(#take(#sizeWordStack(WS) -Int log256Int(D), WS))
-      requires D modInt 256 ==Int 0 andBool D >=Int 0
+      requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
        andBool #sizeWordStack(WS) >=Int log256Int(D)
        andBool #noOverflow(WS)
 
