@@ -942,8 +942,8 @@ Encoding
     rule #rlpEncodeWordStack(.WordStack) => ""
     rule #rlpEncodeWordStack(W : WS)     => #rlpEncodeWord(W) +String #rlpEncodeWordStack(WS)
 
-    rule #rlpEncodeString(STR) => STR                        requires lengthString(STR) ==Int 1 andBool ordChar(STR) <Int 128
-    rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) [owise]
+    rule #rlpEncodeString(STR) => STR                        requires           lengthString(STR) ==Int 1 andBool ordChar(STR) <Int 128
+    rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) requires notBool ( lengthString(STR) ==Int 1 andBool ordChar(STR) <Int 128 )
 
     rule #rlpEncodeAccount(.Account) => "\x80"
     rule #rlpEncodeAccount(ACCT)     => #rlpEncodeBytes(ACCT, 20) requires ACCT =/=K .Account
@@ -951,8 +951,8 @@ Encoding
     syntax String ::= #rlpEncodeLength ( String , Int )          [function]
                     | #rlpEncodeLength ( String , Int , String ) [function, klabel(#rlpEncodeLengthAux)]
  // ----------------------------------------------------------------------------------------------------
-    rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR requires lengthString(STR) <Int 56
-    rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires lengthString(STR) >=Int 56
+    rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR                                requires           lengthString(STR) <Int 56
+    rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires notBool ( lengthString(STR) <Int 56 )
     rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
 
     syntax String ::= #rlpEncodeMerkleTree ( MerkleTree ) [function]
@@ -977,7 +977,7 @@ Encoding
                                                12 |-> P12:MerkleTree 13 |-> P13:MerkleTree 14 |-> P14:MerkleTree 15 |-> P15:MerkleTree
                                              , VALUE
                                              )
-                        )
+                              )
       => #rlpEncodeLength(         #rlpMerkleH( #rlpEncodeMerkleTree(  P0 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P1 ) )
                            +String #rlpMerkleH( #rlpEncodeMerkleTree(  P2 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P3 ) )
                            +String #rlpMerkleH( #rlpEncodeMerkleTree(  P4 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P5 ) )
@@ -993,9 +993,10 @@ Encoding
     syntax String ::= #rlpMerkleH ( String ) [function,klabel(MerkleRLPAux)]
  // ------------------------------------------------------------------------
     rule #rlpMerkleH ( X ) => #rlpEncodeString( Hex2Raw( Keccak256( X ) ) )
-      requires lengthString( X ) >=Int 32
+      requires lengthString(X) >=Int 32
 
-    rule #rlpMerkleH ( X ) => X [owise]
+    rule #rlpMerkleH ( X ) => X
+      requires notBool lengthString(X) >=Int 32
 ```
 
 Decoding
