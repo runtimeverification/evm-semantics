@@ -12,9 +12,9 @@ kevm_client_pid="$!"
 while (! netcat -z 127.0.0.1 "$PORT") ; do sleep 0.1; done
 
 # Feed input in, store output in supplied file
-curl -s -X POST 127.0.0.1:"$PORT" --data @"$input_file" | jq . > "$output_file"
-
+./kevm web3-send "$PORT" "$input_file" | jq . > "$output_file"
 ./kevm web3-send "$PORT" 'firefly_shutdown'
+
 echo
 timeout 8 tail --pid="$kevm_client_pid" -f /dev/null || true
 pkill -P "$kevm_client_pid" kevm-client              || true
