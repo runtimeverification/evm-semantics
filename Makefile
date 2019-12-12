@@ -175,7 +175,7 @@ java_files    := $(patsubst %, $(java_dir)/%, $(ALL_K_FILES))
 haskell_files := $(patsubst %, $(haskell_dir)/%, $(ALL_K_FILES))
 node_files    := $(patsubst %, $(node_dir)/%, $(ALL_K_FILES))
 web3_files    := $(patsubst %, $(web3_dir)/%, $(ALL_K_FILES))
-defn_files    := $(ocaml_files) $(llvm_file) $(java_files) $(haskell_files) $(node_files) $(web3_files)
+defn_files    := $(ocaml_files) $(llvm_files) $(java_files) $(haskell_files) $(node_files) $(web3_files)
 
 ocaml_kompiled   := $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
