@@ -1107,11 +1107,14 @@ Merkle Patricia Tree
 - `MerkleUpdateMap` Takes a mapping of `ByteArray |-> String` and generates a trie
 
 ```k
-    syntax MerkleTree ::= MerkleUpdateMap( MerkleTree, Map ) [function]
- // -------------------------------------------------------------------
-    rule MerkleUpdateMap( TREE, KEY |-> VALUE M ) => MerkleUpdateMap( MerkleUpdate( TREE, #nibbleize(KEY), VALUE ) , M )
+    syntax MerkleTree ::= MerkleUpdateMap    ( MerkleTree , Map        ) [function]
+                        | MerkleUpdateMapAux ( MerkleTree , Map , List ) [function]
+ // -------------------------------------------------------------------------------
+    rule MerkleUpdateMap(TREE, MMAP) => MerkleUpdateMapAux(TREE, MMAP, keys_list(MMAP))
 
-    rule MerkleUpdateMap( TREE, .Map ) => TREE
+    rule MerkleUpdateMapAux(TREE, _, .List ) => TREE
+    rule MerkleUpdateMapAux(TREE                                                    , MMAP, ListItem(KEY) REST)
+      => MerkleUpdateMapAux(MerkleUpdate(TREE, #nibbleize(KEY), {MMAP[KEY]}:>String), MMAP,               REST)
 ```
 
 Merkle Tree Aux Functions
