@@ -946,7 +946,7 @@ Transaction Receipts
                                   , "transactionIndex": #unparseQuantity(getIndexOf(TXID, TXLIST))
                                   , "blockHash": "0x" +String Keccak256(#rlpEncodeBlock(BLOCKITEM))
                                   , "blockNumber": #unparseQuantity(BN)
-                                  , "from": #unparseQuantity(TXFROM)
+                                  , "from": #unparseAccount(TXFROM)
                                   , "to": #unparseAccount(TT)
                                   , "gasUsed": #unparseQuantity(CGAS)
                                   , "cumulativeGasUsed": #unparseQuantity(CGAS)
@@ -988,7 +988,7 @@ Transaction Receipts
     syntax JSON ::= #unparseAccount ( Account ) [function]
  // ------------------------------------------------------
     rule #unparseAccount (.Account) => null
-    rule #unparseAccount (ACCT:Int) => #unparseQuantity(ACCT)
+    rule #unparseAccount (ACCT:Int) => #unparseData(ACCT, 20)
 
     syntax JSONs ::= #unparseIntList ( List ) [function]
  // ----------------------------------------------------
