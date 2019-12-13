@@ -44,7 +44,6 @@ RUN    apt-get update                \
             make                     \
             maven                    \
             netcat-openbsd           \
-            opam                     \
             openjdk-11-jdk           \
             pandoc                   \
             pkg-config               \
@@ -77,11 +76,6 @@ RUN npm install -g npx
 
 USER user:user
 
-ADD deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-common /home/user/.tmp-opam/bin/
-ADD deps/k/k-distribution/src/main/scripts/lib/opam  /home/user/.tmp-opam/lib/opam/
-RUN    cd /home/user \
-    && ./.tmp-opam/bin/k-configure-opam-dev
-
 ENV LC_ALL=C.UTF-8
 ADD --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/stack.yaml /home/user/.tmp-haskell/
 ADD --chown=user:user deps/k/haskell-backend/src/main/native/haskell-backend/kore/package.yaml /home/user/.tmp-haskell/kore/
@@ -93,7 +87,6 @@ ADD deps/k/ktree/pom.xml /home/user/.tmp-maven/ktree/
 ADD deps/k/llvm-backend/pom.xml /home/user/.tmp-maven/llvm-backend/
 ADD deps/k/llvm-backend/src/main/native/llvm-backend/matching/pom.xml /home/user/.tmp-maven/llvm-backend/src/main/native/llvm-backend/matching/
 ADD deps/k/haskell-backend/pom.xml /home/user/.tmp-maven/haskell-backend/
-ADD deps/k/ocaml-backend/pom.xml /home/user/.tmp-maven/ocaml-backend/
 ADD deps/k/kernel/pom.xml /home/user/.tmp-maven/kernel/
 ADD deps/k/java-backend/pom.xml /home/user/.tmp-maven/java-backend/
 ADD deps/k/k-distribution/pom.xml /home/user/.tmp-maven/k-distribution/
