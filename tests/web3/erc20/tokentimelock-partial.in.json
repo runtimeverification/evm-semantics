@@ -112,13 +112,17 @@
   "jsonrpc": "2.0",
   "id": 0,
   "method": "firefly_setTime",
-  "params": ["0x5dd2554f"]
+  "params": [
+    "0x5dd2554f"
+  ]
 }
 {
   "jsonrpc": "2.0",
   "id": 0,
   "method": "firefly_setGasLimit",
-  "params": ["0x6691b7"]
+  "params": [
+    "0x6691b7"
+  ]
 }
 {
   "jsonrpc": "2.0",
@@ -198,7 +202,9 @@
   "jsonrpc": "2.0",
   "id": 0,
   "method": "evm_increaseTime",
-  "params": [1402]
+  "params": [
+    1402
+  ]
 }
 {
   "jsonrpc": "2.0",
