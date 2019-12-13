@@ -45,7 +45,7 @@ pipeline {
         stage('Build') {
           steps {
             sh '''
-              make build-all -j4
+              make build -j4
             '''
           }
         }

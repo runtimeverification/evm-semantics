@@ -39,7 +39,7 @@ export LUA_PATH
 
 .PHONY: all clean clean-submodules distclean install uninstall                                                                                         \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff proxygen                                                  \
-        build build-all build-java build-node build-haskell build-llvm build-web3                                                                      \
+        build build-java build-node build-haskell build-llvm build-web3                                                                                \
         defn java-defn node-defn web3-defn haskell-defn llvm-defn                                                                                      \
         split-tests                                                                                                                                    \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance                       \
@@ -216,7 +216,6 @@ KOMPILE_OPTS      :=
 LLVM_KOMPILE_OPTS :=
 
 build: build-llvm build-haskell build-java build-web3 build-node
-build-all: build
 build-java:    $(java_kompiled)
 build-node:    $(node_kompiled)
 build-web3:    $(web3_kompiled)

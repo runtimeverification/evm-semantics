@@ -37,13 +37,10 @@ pretty_diff() {
 
 run_krun() {
     export K_OPTS=-Xss500m
-    case "$backend" in
-        *)     args=()            ;;
-    esac
     krun --directory "$backend_dir"                    \
         -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' \
         -cMODE="$cMODE"         -pMODE='printf %s'     \
-        "$run_file" "${args[@]-}" "$@"
+        "$run_file" "$@"
 }
 
 run_kast() {
@@ -219,10 +216,10 @@ run_command="$1" ; shift
 
 if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
     echo "
-        usage: $0 run          [--backend (java|llvm|haskell)]           <pgm>  <K arg>*
+        usage: $0 run          [--backend (llvm|java|haskell)]           <pgm>  <K arg>*
                $0 interpret    [--backend (llvm)] [--debug|--no-unparse] <pgm>  <interpreter arg>*
-               $0 interpret    [--backend (haskell|java)] [--no-unparse] <pgm>
-               $0 kast         [--backend (java|llvm|haskell|web3)]      <pgm>  <output format> <K arg>*
+               $0 interpret    [--backend (java|haskell)] [--no-unparse] <pgm>
+               $0 kast         [--backend (llvm|java|haskell|web3)]      <pgm>  <output format> <K arg>*
                $0 prove        [--backend (java|haskell)]                <spec> <K arg>* -m <def_module>
                $0 search       [--backend (java|haskell)]                <pgm>  <pattern> <K arg>*
                $0 web3         [--debug|--dump]                          <port>
