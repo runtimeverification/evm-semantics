@@ -1,6 +1,7 @@
 tests/web3/erc20/erc20capped.in.json
 tests/web3/erc20/tokentimelock.in.json
 tests/web3/erc20/erc20.in.json
+tests/web3/erc20/erc20-partial.in.json
 tests/web3/erc20/erc20burnable.in.json
 tests/web3/erc20/erc20mintable.in.json
 tests/web3/erc20/erc20pausable.in.json
