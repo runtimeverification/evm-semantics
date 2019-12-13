@@ -38,7 +38,7 @@ pipeline {
         stage('Dependencies') {
           steps {
             sh '''
-              make deps ocaml-deps split-tests -j3
+              make deps split-tests -j3
             '''
           }
         }
@@ -53,13 +53,6 @@ pipeline {
           failFast true
           options { timeout(time: 20, unit: 'MINUTES') }
           parallel {
-            stage('Conformance (OCaml)') {
-              steps {
-                sh '''
-                  make test-conformance -j8 TEST_CONCRETE_BACKEND=ocaml
-                '''
-              }
-            }
             stage('Conformance (LLVM)') {
               steps {
                 sh '''
@@ -102,13 +95,6 @@ pipeline {
           failFast true
           options { timeout(time: 35, unit: 'MINUTES') }
           parallel {
-            stage('OCaml krun') {
-              steps {
-                sh '''
-                  make test-interactive-run TEST_CONCRETE_BACKEND=ocaml
-                '''
-              }
-            }
             stage('LLVM krun') {
               steps {
                 sh '''
@@ -140,7 +126,6 @@ pipeline {
             stage('Failing tests') {
               steps {
                 sh '''
-                  make test-failure TEST_CONCRETE_BACKEND=ocaml
                   make test-failure TEST_CONCRETE_BACKEND=llvm
                 '''
               }
