@@ -40,7 +40,7 @@ export LUA_PATH
 OPAM ?= opam
 
 .PHONY: all clean clean-submodules distclean install uninstall                                                                                         \
-        deps all-deps llvm-deps haskell-deps repo-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff                                                \
+        deps all-deps llvm-deps haskell-deps repo-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff proxygen                                       \
         build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                                                          \
         defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                                                           \
         split-tests                                                                                                                                    \
@@ -72,11 +72,13 @@ clean-submodules: distclean
 # Non-K Dependencies
 # ------------------
 
-libsecp256k1_out:=$(LIBRARY_PATH)/pkgconfig/libsecp256k1.pc
-libff_out:=$(LIBRARY_PATH)/libff.a
+libsecp256k1_out := $(LIBRARY_PATH)/pkgconfig/libsecp256k1.pc
+libff_out        := $(LIBRARY_PATH)/libff.a
+proxygen_out     := $(DEPS_DIR)/proxygen/proxygen/_build/proxygen/lib/libproxygen.a
 
 libsecp256k1: $(libsecp256k1_out)
-libff: $(libff_out)
+libff:        $(libff_out)
+proxygen:     $(proxygen_out)
 
 $(DEPS_DIR)/secp256k1/autogen.sh:
 	git submodule update --init --recursive -- $(DEPS_DIR)/secp256k1
@@ -110,6 +112,11 @@ $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) $(LIBFF_CMAKE_FLAGS) \
 	    && make -s -j4 \
 	    && make install
+
+$(proxygen_out):
+	git submodule update --init --recursive -- deps/proxygen
+	cd deps/proxygen/proxygen        && ./build.sh --no-jemalloc --no-install-dependencies
+	cd deps/proxygen/proxygen/_build && make install
 
 # K Dependencies
 # --------------
@@ -169,7 +176,7 @@ java_files    := $(patsubst %, $(java_dir)/%, $(ALL_K_FILES))
 haskell_files := $(patsubst %, $(haskell_dir)/%, $(ALL_K_FILES))
 node_files    := $(patsubst %, $(node_dir)/%, $(ALL_K_FILES))
 web3_files    := $(patsubst %, $(web3_dir)/%, $(ALL_K_FILES))
-defn_files    := $(ocaml_files) $(llvm_file) $(java_files) $(haskell_files) $(node_files) $(web3_files)
+defn_files    := $(ocaml_files) $(llvm_files) $(java_files) $(haskell_files) $(node_files) $(web3_files)
 
 ocaml_kompiled   := $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
@@ -331,7 +338,7 @@ $(web3_dir)/web3-kompiled/definition.kore: $(web3_files)
 	                 $(KOMPILE_OPTS)
 
 .PHONY: $(web3_kompiled)
-$(web3_kompiled): $(web3_dir)/web3-kompiled/definition.kore $(libff_out)
+$(web3_kompiled): $(web3_dir)/web3-kompiled/definition.kore $(libff_out) $(proxygen_out)
 	@mkdir -p $(web3_dir)/build
 	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
