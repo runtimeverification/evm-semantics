@@ -1,0 +1,148 @@
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": true
+}
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": true
+}
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": true
+}
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": true
+}
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": true
+}
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": true
+}
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": true
+}
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": true
+}
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": true
+}
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": true
+}
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": true
+}
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": true
+}
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": true
+}
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "0x0"
+}
+{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": "0x0"
+}
+{
+    "jsonrpc": "2.0",
+    "id": 3,
+    "result": "28346"
+}
+{
+    "jsonrpc": "2.0",
+    "id": 4,
+    "result": "28346"
+}
+{
+    "jsonrpc": "2.0",
+    "id": 5,
+    "result": [
+        "0x00fb03328c6d390886ef9501ddcd81f3b78ef229",
+        "0x090406020cd8564ca6b94667afe64e60dcba3440",
+        "0x356d8f99f90dfddeeb7c9e5f1b3a9eb2a7422283",
+        "0x8cc8e16ff6f882018172488627f5b09bc7d6c521",
+        "0xad65202816ce0ee501e5a30ded3d428f3d50ccde",
+        "0xc9775a0faf4e80bc28dd92fa53d2c0d006510d81",
+        "0xd7324294d4b6403195f77464e4a83738666db4c3",
+        "0xe86b1097cbcd96489b9e7b154a911c6629ab3bfa",
+        "0xf8b374e1118839b06aed94b3fe6c5a5405fb626b",
+        "0xf8e608241687490655b0a27ca10c6fec2bd166a2"
+    ]
+}
+{
+    "jsonrpc": "2.0",
+    "id": 6,
+    "result": [
+        "0x00fb03328c6d390886ef9501ddcd81f3b78ef229",
+        "0x090406020cd8564ca6b94667afe64e60dcba3440",
+        "0x356d8f99f90dfddeeb7c9e5f1b3a9eb2a7422283",
+        "0x8cc8e16ff6f882018172488627f5b09bc7d6c521",
+        "0xad65202816ce0ee501e5a30ded3d428f3d50ccde",
+        "0xc9775a0faf4e80bc28dd92fa53d2c0d006510d81",
+        "0xd7324294d4b6403195f77464e4a83738666db4c3",
+        "0xe86b1097cbcd96489b9e7b154a911c6629ab3bfa",
+        "0xf8b374e1118839b06aed94b3fe6c5a5405fb626b",
+        "0xf8e608241687490655b0a27ca10c6fec2bd166a2"
+    ]
+}
+{
+    "jsonrpc": "2.0",
+    "id": 7,
+    "result": [
+        "0x00fb03328c6d390886ef9501ddcd81f3b78ef229",
+        "0x090406020cd8564ca6b94667afe64e60dcba3440",
+        "0x356d8f99f90dfddeeb7c9e5f1b3a9eb2a7422283",
+        "0x8cc8e16ff6f882018172488627f5b09bc7d6c521",
+        "0xad65202816ce0ee501e5a30ded3d428f3d50ccde",
+        "0xc9775a0faf4e80bc28dd92fa53d2c0d006510d81",
+        "0xd7324294d4b6403195f77464e4a83738666db4c3",
+        "0xe86b1097cbcd96489b9e7b154a911c6629ab3bfa",
+        "0xf8b374e1118839b06aed94b3fe6c5a5405fb626b",
+        "0xf8e608241687490655b0a27ca10c6fec2bd166a2"
+    ]
+}
+{
+    "jsonrpc": "2.0",
+    "id": 1576140061205,
+    "result": "0x1"
+}
+{
+    "jsonrpc": "2.0",
+    "id": 8,
+    "result": "0x0"
+}
+{
+    "jsonrpc": "2.0",
+    "id": 9,
+    "result": "28346"
+}
