@@ -788,26 +788,3 @@
     }
   ]
 }
-{
-  "jsonrpc": "2.0",
-  "id": 69,
-  "method": "eth_getTransactionReceipt",
-  "params": [
-    "0x4b354a2299914cad93a67aae45cda563ec2d4ae4308c8677e485da81bf5ea396"
-  ]
-}
-{
-  "jsonrpc": "2.0",
-  "id": 70,
-  "method": "net_version",
-  "params": []
-}
-{
-  "jsonrpc": "2.0",
-  "id": 71,
-  "method": "eth_getBlockByNumber",
-  "params": [
-    "latest",
-    false
-  ]
-}

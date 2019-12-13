@@ -1043,8 +1043,3 @@
     "uncles": []
   }
 }
-{
-  "jsonrpc": "2.0",
-  "id": 62,
-  "result": "0xd7748de677121b322cbdd2a61bbdb6acbde1443277cb994462f1d199d5fe755e"
-}
