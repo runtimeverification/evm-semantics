@@ -951,7 +951,7 @@ Transaction Receipts
                                   , "gasUsed": #unparseQuantity(CGAS)
                                   , "cumulativeGasUsed": #unparseQuantity(CGAS)
                                   , "contractAddress": #if TT ==K .Account #then #unparseData(#newAddr(TXFROM, NONCE -Int 1), 20) #else null #fi
-                                  , "logs": [#serializeLogs(LOGS, 0, TXID, TXHASH, "0x" +String Keccak256(#rlpEncodeBlock(BLOCKITEM)), BN)]
+                                  , "logs": [#serializeLogs(LOGS, 0, getIndexOf(TXID, TXLIST), TXHASH, "0x" +String Keccak256(#rlpEncodeBlock(BLOCKITEM)), BN)]
                                   , "status": #unparseQuantity(TXSTATUS)
                                   , "logsBloom": #unparseDataByteArray(BLOOM)
                                   , "v": #unparseQuantity(TW)
@@ -1008,7 +1008,7 @@ Transaction Receipts
                                                                          "transactionHash": TH,
                                                                          "blockHash": BH,
                                                                          "blockNumber": #unparseQuantity(BN),
-                                                                         "address": #unparseQuantity(ACCT),
+                                                                         "address": #unparseData(ACCT, 20),
                                                                          "data": #unparseDataByteArray(DATA),
                                                                          "topics": [#unparseIntList(TOPICS)],
                                                                          "type" : "mined"
