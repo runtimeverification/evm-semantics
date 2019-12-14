@@ -36,7 +36,7 @@ Installing/Building
 
 ### K Backends
 
-There are four backends of K available: LLVM (default) and OCaml for concrete execution and Java (default) and Haskell for symbolic execution.
+There are three backends of K available: LLVM (default) for concrete execution and Java (default) and Haskell for symbolic execution.
 This repository generates the build-products for each backend in `.build/defn/`.
 
 ### System Dependencies
@@ -48,8 +48,6 @@ The following are needed for building/running KEVM:
 -   GNU [Bison](https://www.gnu.org/software/bison/), [Flex](https://github.com/westes/flex), and [Autoconf](http://www.gnu.org/software/autoconf/).
 -   GNU [libmpfr](http://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
 -   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
--   [Opam](https://opam.ocaml.org/doc/Install.html), **important**: Ubuntu users prior to 15.04 **must** build from source, as the Ubuntu install for 14.10 and prior is broken.
-    `opam repository` also requires `rsync`.
 
 On Ubuntu >= 18.04 (for example):
 
@@ -59,8 +57,8 @@ sudo apt install                                                       \
             libboost-test-dev libgmp-dev libjemalloc-dev libmpfr-dev   \
             libprocps-dev libprotobuf-dev libsecp256k1-dev libtool     \
             libyaml-dev libz3-dev lld-8 llvm-8 llvm-8-tools make maven \
-            opam openjdk-11-jdk pandoc pkg-config protobuf-compiler    \
-            z3 zlib1g-dev
+            openjdk-11-jdk pandoc pkg-config protobuf-compiler z3      \
+            zlib1g-dev
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
@@ -75,7 +73,7 @@ On ArchLinux:
 sudo pacman -S                                               \
     base base-devel boost clang cmake crypto++ curl git gmp  \
     gperf gflags jdk-openjdk jemalloc libsecp256k1 libsodium \
-    lld llvm maven mpfr opam python stack yaml-cpp z3 zlib
+    lld llvm maven mpfr python stack yaml-cpp z3 zlib
 ```
 
 In addition, you'll need the `glog-git` AUR package: <https://aur.archlinux.org/packages/glog-git/>.
@@ -85,7 +83,7 @@ On OSX, using [Homebrew](https://brew.sh/), after installing the command line to
 ```sh
 brew tap caskroom/cask
 brew cask install adoptopenjdk12
-brew install automake libtool gmp mpfr pkg-config pandoc maven opam z3 libffi
+brew install automake libtool gmp mpfr pkg-config pandoc maven z3 libffi
 make libsecp256k1
 ```
 
@@ -138,28 +136,6 @@ You can also build specific backends as so:
 make build-haskell
 make build-llvm RELEASE=1
 make build-java
-```
-
-#### OPTIONAL: OCaml Backend
-
-If you wish to build the OCaml backend, you will need to take some additional steps.
-
-First, make sure you have our custom OCaml compiler installed (should only need to do this once):
-
-```sh
-./deps/k/k-distribution/src/main/scripts/bin/k-configure-opam-dev
-```
-
-Next you need to install the specific OCaml packages we requires:
-
-```sh
-make ocaml-deps
-```
-
-And next you can build the OCaml backend:
-
-```sh
-make build-ocaml
 ```
 
 ### Installing

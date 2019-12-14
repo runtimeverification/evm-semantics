@@ -37,14 +37,10 @@ pretty_diff() {
 
 run_krun() {
     export K_OPTS=-Xss500m
-    case "$backend" in
-        ocaml) args=(--interpret) ;;
-        *)     args=()            ;;
-    esac
     krun --directory "$backend_dir"                    \
         -cSCHEDULE="$cSCHEDULE" -pSCHEDULE='printf %s' \
         -cMODE="$cMODE"         -pMODE='printf %s'     \
-        "$run_file" "${args[@]-}" "$@"
+        "$run_file" "$@"
 }
 
 run_kast() {
@@ -178,23 +174,6 @@ run_interpret() {
     debugger=
     output_format='kore'
     case "$backend" in
-        ocaml)   run_kast kast > "$kast"
-                 output_format='kast'
-                 if $debug; then debugger=ocamldebug; fi
-                 $debugger "$interpreter" "$backend_dir/driver-kompiled/realdef.cma" \
-                     -c PGM      "$kast"      textfile                               \
-                     -c SCHEDULE "$cSCHEDULE" text                                   \
-                     -c MODE     "$cMODE"     text                                   \
-                     --initializer 'initKevmCell'                                    \
-                     --output-file "$output" "$@"                                    \
-                     || exit_status="$?"
-                 if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
-                     k-bin-to-text "$output" "$output_text"
-                     cat "$output_text"
-                 fi
-                 exit "$exit_status"
-                 ;;
-
         java)    run_kast kast > "$kast"
                  output_format='kast'
                  run_file="$kast"
@@ -236,18 +215,18 @@ run_command="$1" ; shift
 
 if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
     echo "
-        usage: $0 run          [--backend (ocaml|java|llvm|haskell)]           <pgm>  <K arg>*
-               $0 interpret    [--backend (ocaml|llvm)] [--debug|--no-unparse] <pgm>  <interpreter arg>*
-               $0 interpret    [--backend (haskell|java)] [--no-unparse]       <pgm>
-               $0 kast         [--backend (ocaml|java|llvm|haskell|web3)]      <pgm>  <output format> <K arg>*
-               $0 prove        [--backend (java|haskell)]                      <spec> <K arg>* -m <def_module>
-               $0 search       [--backend (java|haskell)]                      <pgm>  <pattern> <K arg>*
-               $0 web3         [--debug|--dump]                                <port>
-               $0 web3-ganache [--debug|--dump]                                <port>
-               $0 web3-send                                                    <port> [<web3_method> <web3_params>|<web3_file>]
-               $0 klab-run                                                     <pgm>  <K arg>*
-               $0 klab-prove                                                   <spec> <K arg>* -m <def_module>
-               $0 klab-view                                                    <spec>
+        usage: $0 run          [--backend (llvm|java|haskell)]           <pgm>  <K arg>*
+               $0 interpret    [--backend (llvm)] [--debug|--no-unparse] <pgm>  <interpreter arg>*
+               $0 interpret    [--backend (java|haskell)] [--no-unparse] <pgm>
+               $0 kast         [--backend (llvm|java|haskell|web3)]      <pgm>  <output format> <K arg>*
+               $0 prove        [--backend (java|haskell)]                <spec> <K arg>* -m <def_module>
+               $0 search       [--backend (java|haskell)]                <pgm>  <pattern> <K arg>*
+               $0 web3         [--debug|--dump]                          <port>
+               $0 web3-ganache [--debug|--dump]                          <port>
+               $0 web3-send                                              <port> [<web3_method> <web3_params>|<web3_file>]
+               $0 klab-run                                               <pgm>  <K arg>*
+               $0 klab-prove                                             <spec> <K arg>* -m <def_module>
+               $0 klab-view                                              <spec>
 
                $0 [help|--help|version|--version]
 
@@ -312,7 +291,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 backend_dir="$defn_dir/$backend"
-[[ ! "$backend" == "ocaml" ]] || eval $(${OPAM:-opam} config env)
 
 # get the run file
 if [[ ! "$run_command" =~ web3* ]]; then
@@ -333,15 +311,15 @@ cCHAINID="#token(\"${CHAINID:-28346}\",\"Int\")"
 case "$run_command-$backend" in
 
     # Running
-    run-@(ocaml|java|llvm|haskell)       ) run_krun                        "$@" ;;
-    kast-@(ocaml|java|llvm|haskell|web3) ) run_kast                        "$@" ;;
-    interpret-@(ocaml|llvm|haskell|java) ) run_interpret                   "$@" ;;
-    prove-@(java|haskell)                ) run_prove                       "$@" ;;
-    search-@(java|haskell)               ) run_search                      "$@" ;;
-    web3-@(llvm)                         ) run_web3                        "$@" ;;
-    web3-send-@(llvm)                    ) run_web3_send                   "$@" ;;
-    web3-ganache-@(llvm)                 ) run_web3_ganache                "$@" ;;
-    klab-@(run|prove)-java               ) run_klab "${run_command#klab-}" "$@" ;;
-    klab-view-java                       ) view_klab                       "$@" ;;
+    run-@(java|llvm|haskell)       ) run_krun                        "$@" ;;
+    kast-@(java|llvm|haskell|web3) ) run_kast                        "$@" ;;
+    interpret-@(llvm|haskell|java) ) run_interpret                   "$@" ;;
+    prove-@(java|haskell)          ) run_prove                       "$@" ;;
+    search-@(java|haskell)         ) run_search                      "$@" ;;
+    web3-@(llvm)                   ) run_web3                        "$@" ;;
+    web3-send-@(llvm)              ) run_web3_send                   "$@" ;;
+    web3-ganache-@(llvm)           ) run_web3_ganache                "$@" ;;
+    klab-@(run|prove)-java         ) run_klab "${run_command#klab-}" "$@" ;;
+    klab-view-java                 ) view_klab                       "$@" ;;
     *) $0 help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
