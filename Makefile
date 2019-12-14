@@ -37,12 +37,10 @@ LUA_PATH                := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-OPAM ?= opam
-
 .PHONY: all clean clean-submodules distclean install uninstall                                                                                         \
-        deps all-deps llvm-deps haskell-deps repo-deps k-deps ocaml-deps plugin-deps libsecp256k1 libff proxygen                                       \
-        build build-all build-ocaml build-java build-node build-haskell build-llvm build-web3                                                          \
-        defn java-defn ocaml-defn node-defn web3-defn haskell-defn llvm-defn                                                                           \
+        deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff proxygen                                                  \
+        build build-java build-node build-haskell build-llvm build-web3                                                                                \
+        defn java-defn node-defn web3-defn haskell-defn llvm-defn                                                                                      \
         split-tests                                                                                                                                    \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance                       \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                                  \
@@ -148,10 +146,6 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 	git submodule update --init --recursive -- $(PLUGIN_SUBMODULE)
 	touch $(PLUGIN_SUBMODULE)/make.timestamp
 
-ocaml-deps:
-	eval $$($(OPAM) config env) \
-	    $(OPAM) install --yes mlgmp zarith uuidm cryptokit secp256k1.0.3.2 bn128 ocaml-protoc rlp yojson hex ocp-ocamlres
-
 # Building
 # --------
 
@@ -163,22 +157,19 @@ k_files       := driver.k data.k network.k evm.k krypto.k edsl.k evm-node.k web3
 EXTRA_K_FILES += $(MAIN_DEFN_FILE).k
 ALL_K_FILES   := $(k_files) $(EXTRA_K_FILES)
 
-ocaml_dir   := $(DEFN_DIR)/ocaml
 llvm_dir    := $(DEFN_DIR)/llvm
 java_dir    := $(DEFN_DIR)/java
 haskell_dir := $(DEFN_DIR)/haskell
 export node_dir    := $(CURDIR)/$(DEFN_DIR)/node
 export web3_dir    := $(CURDIR)/$(DEFN_DIR)/web3
 
-ocaml_files   := $(patsubst %, $(ocaml_dir)/%, $(ALL_K_FILES))
 llvm_files    := $(patsubst %, $(llvm_dir)/%, $(ALL_K_FILES))
 java_files    := $(patsubst %, $(java_dir)/%, $(ALL_K_FILES))
 haskell_files := $(patsubst %, $(haskell_dir)/%, $(ALL_K_FILES))
 node_files    := $(patsubst %, $(node_dir)/%, $(ALL_K_FILES))
 web3_files    := $(patsubst %, $(web3_dir)/%, $(ALL_K_FILES))
-defn_files    := $(ocaml_files) $(llvm_files) $(java_files) $(haskell_files) $(node_files) $(web3_files)
+defn_files    := $(llvm_files) $(java_files) $(haskell_files) $(node_files) $(web3_files)
 
-ocaml_kompiled   := $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
 node_kompiled    := $(DEFN_DIR)/vm/kevm-vm
 web3_kompiled    := $(web3_dir)/build/kevm-client
@@ -193,16 +184,11 @@ haskell_tangle  := .k:not(.node):not(.concrete):not(.nobytes),.standalone,.symbo
 node_tangle     := .k:not(.standalone):not(.symbolic):not(.nobytes),.node,.concrete,.bytes
 
 defn: $(defn_files)
-ocaml-defn:   $(ocaml_files)
 llvm-defn:    $(llvm_files)
 java-defn:    $(java_files)
 haskell-defn: $(haskell_files)
 node-defn:    $(node_files)
 web3-defn:    $(web3_files)
-
-$(ocaml_dir)/%.k: %.md $(TANGLER)
-	@mkdir -p $(ocaml_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
 $(llvm_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(llvm_dir)
@@ -230,8 +216,6 @@ KOMPILE_OPTS      :=
 LLVM_KOMPILE_OPTS :=
 
 build: build-llvm build-haskell build-java build-web3 build-node
-build-all: build build-ocaml
-build-ocaml:   $(ocaml_kompiled)
 build-java:    $(java_kompiled)
 build-node:    $(node_kompiled)
 build-web3:    $(web3_kompiled)
@@ -253,56 +237,6 @@ $(haskell_kompiled): $(haskell_files)
 	                 --syntax-module $(SYNTAX_MODULE) $(haskell_dir)/$(MAIN_DEFN_FILE).k \
 	                 --directory $(haskell_dir) -I $(haskell_dir) \
 	                 $(KOMPILE_OPTS)
-
-# OCAML Backend
-
-ifeq ($(BYTE),yes)
-  EXT=cmo
-  LIBEXT=cma
-  DLLEXT=cma
-  OCAMLC=c
-  LIBFLAG=-a
-else
-  EXT=cmx
-  LIBEXT=cmxa
-  DLLEXT=cmxs
-  OCAMLC=opt -O3
-  LIBFLAG=-shared
-endif
-
-$(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT): $(ocaml_files)
-	eval $$($(OPAM) config env) \
-	    && $(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend ocaml \
-	                        --syntax-module $(SYNTAX_MODULE) $(ocaml_dir)/$(MAIN_DEFN_FILE).k \
-	                        --hook-namespaces "KRYPTO" --gen-ml-only -O3 --non-strict \
-	                        --directory $(ocaml_dir) -I $(ocaml_dir) $(KOMPILE_OPTS) \
-	    && cd $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled \
-	    && ocamlfind $(OCAMLC) -c -g constants.ml -package gmp -package zarith -safe-string
-
-$(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT): $(wildcard $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli) $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/constants.$(EXT)
-	@mkdir -p $(dir $@)
-	cp $(PLUGIN_SUBMODULE)/plugin/*.ml $(PLUGIN_SUBMODULE)/plugin/*.mli $(dir $@)
-	eval $$($(OPAM) config env) \
-	    && ocp-ocamlres -format ocaml $(PLUGIN_SUBMODULE)/plugin/proto/VERSION -o $(dir $@)/apiVersion.ml \
-	    && ocaml-protoc $(PLUGIN_SUBMODULE)/plugin/proto/*.proto -ml_out $(dir $@) \
-	    && cd $(dir $@) \
-	        && ocamlfind $(OCAMLC) -c -g -I $(CURDIR)/$(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled \
-	                               KRYPTO.ml \
-	                               -package cryptokit -package hex -package secp256k1 -package bn128 -package ocaml-protoc -safe-string -thread \
-	        && ocamlfind $(OCAMLC) -a -o semantics.$(LIBEXT) KRYPTO.$(EXT) -thread \
-	        && ocamlfind remove ethereum-semantics-plugin-ocaml \
-	        && ocamlfind install ethereum-semantics-plugin-ocaml $(PLUGIN_SUBMODULE)/plugin/META semantics.* *.cmi *.$(EXT)
-
-$(ocaml_kompiled): $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/semantics.$(LIBEXT)
-	eval $$($(OPAM) config env) \
-	    && cd $(ocaml_dir)/$(MAIN_DEFN_FILE)-kompiled \
-	        && ocamllex lexer.mll \
-	        && ocamlyacc parser.mly \
-	        && ocamlfind $(OCAMLC) -c -g -package gmp -package zarith -package uuidm -safe-string prelude.ml plugin.ml parser.mli parser.ml lexer.ml hooks.ml run.ml -thread \
-	        && ocamlfind $(OCAMLC) -c -g -w -11-26 -package gmp -package zarith -package uuidm -package ethereum-semantics-plugin-ocaml -safe-string realdef.ml -match-context-rows 2 \
-	        && ocamlfind $(OCAMLC) $(LIBFLAG) -o realdef.$(DLLEXT) realdef.$(EXT) \
-	        && ocamlfind $(OCAMLC) -g -o interpreter constants.$(EXT) prelude.$(EXT) plugin.$(EXT) parser.$(EXT) lexer.$(EXT) hooks.$(EXT) run.$(EXT) interpreter.ml \
-	                               -package gmp -package hex -package dynlink -package zarith -package str -package uuidm -package unix -package ethereum-semantics-plugin-ocaml -linkpkg -linkall -thread -safe-string
 
 # Node Backend
 
