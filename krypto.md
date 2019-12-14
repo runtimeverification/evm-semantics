@@ -28,7 +28,7 @@ In all functions above, input `String` is interpreted as byte array, e.g. it is 
                     | ECDSASign ( String, String )                    [function, hook(KRYPTO.ecdsaSign)]
                     | ECDSAPubKey ( String )                          [function, hook(KRYPTO.ecdsaPubKey)]
                     | Blake2Compress ( String )                       [function, hook(KRYPTO.blake2compress)]
- // ------------------------------------------------------------------------------------------------------
+ // ---------------------------------------------------------------------------------------------------------
 ```
 
 The BN128 elliptic curve is defined over 2-dimensional points over the fields of zero- and first-degree polynomials modulo a large prime. (x, y) is a point on G1, whereas (x1 x x2, y1 x y2) is a point on G2, in which x1 and y1 are zero-degree coefficients and x2 and y2 are first-degree coefficients. In each case, (0, 0) is used to represent the point at infinity.
