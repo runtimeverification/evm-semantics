@@ -946,7 +946,7 @@ Transaction Receipts
                                   , "transactionIndex": #unparseQuantity(getIndexOf(TXID, TXLIST))
                                   , "blockHash": "0x" +String Keccak256(#rlpEncodeBlock(BLOCKITEM))
                                   , "blockNumber": #unparseQuantity(BN)
-                                  , "from": #unparseQuantity(TXFROM)
+                                  , "from": #unparseAccount(TXFROM)
                                   , "to": #unparseAccount(TT)
                                   , "gasUsed": #unparseQuantity(CGAS)
                                   , "cumulativeGasUsed": #unparseQuantity(CGAS)
@@ -988,7 +988,7 @@ Transaction Receipts
     syntax JSON ::= #unparseAccount ( Account ) [function]
  // ------------------------------------------------------
     rule #unparseAccount (.Account) => null
-    rule #unparseAccount (ACCT:Int) => #unparseQuantity(ACCT)
+    rule #unparseAccount (ACCT:Int) => #unparseData(ACCT, 20)
 
     syntax JSONs ::= #unparseIntList ( List ) [function]
  // ----------------------------------------------------
@@ -1795,7 +1795,10 @@ Mining
                    | "#clearGas"
                    | "#getParentHash"
                    | "#updateTrieRoots"
- // ----------------------------------------
+                   | "#updateStateRoot"
+                   | "#updateTransactionsRoot"
+                   | "#updateReceiptsRoot"
+ // --------------------------------------
     rule <k> #saveState => #incrementBlockNumber ~> #pushBlockchainState ... </k>
 
     rule <k> #incrementBlockNumber => . ... </k>
@@ -1812,9 +1815,12 @@ Mining
          <blockList> BLOCKLIST </blockList>
          <previousHash> _ => #parseHexWord( Keccak256( #rlpEncodeBlock( #getBlockByNumber( "latest", BLOCKLIST ) ) ) ) </previousHash>
 
-    rule <k> #updateTrieRoots => . ... </k>
+    rule <k> #updateTrieRoots => #updateStateRoot ~> #updateTransactionsRoot ~> #updateReceiptsRoot ... </k>
+    rule <k> #updateStateRoot => . ... </k>
          <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
+    rule <k> #updateTransactionsRoot => . ... </k>
          <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
+    rule <k> #updateReceiptsRoot => . ... </k>
          <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
 ```
 

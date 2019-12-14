@@ -942,8 +942,8 @@ Encoding
     rule #rlpEncodeWordStack(.WordStack) => ""
     rule #rlpEncodeWordStack(W : WS)     => #rlpEncodeWord(W) +String #rlpEncodeWordStack(WS)
 
-    rule #rlpEncodeString(STR) => STR                        requires lengthString(STR) ==Int 1 andBool ordChar(STR) <Int 128
-    rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) [owise]
+    rule #rlpEncodeString(STR) => STR                        requires           lengthString(STR) ==Int 1 andBool ordChar(STR) <Int 128
+    rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) requires notBool ( lengthString(STR) ==Int 1 andBool ordChar(STR) <Int 128 )
 
     rule #rlpEncodeAccount(.Account) => "\x80"
     rule #rlpEncodeAccount(ACCT)     => #rlpEncodeBytes(ACCT, 20) requires ACCT =/=K .Account
@@ -951,8 +951,8 @@ Encoding
     syntax String ::= #rlpEncodeLength ( String , Int )          [function]
                     | #rlpEncodeLength ( String , Int , String ) [function, klabel(#rlpEncodeLengthAux)]
  // ----------------------------------------------------------------------------------------------------
-    rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR requires lengthString(STR) <Int 56
-    rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires lengthString(STR) >=Int 56
+    rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR                                requires           lengthString(STR) <Int 56
+    rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires notBool ( lengthString(STR) <Int 56 )
     rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
 
     syntax String ::= #rlpEncodeMerkleTree ( MerkleTree ) [function]
@@ -977,7 +977,7 @@ Encoding
                                                12 |-> P12:MerkleTree 13 |-> P13:MerkleTree 14 |-> P14:MerkleTree 15 |-> P15:MerkleTree
                                              , VALUE
                                              )
-                        )
+                              )
       => #rlpEncodeLength(         #rlpMerkleH( #rlpEncodeMerkleTree(  P0 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P1 ) )
                            +String #rlpMerkleH( #rlpEncodeMerkleTree(  P2 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P3 ) )
                            +String #rlpMerkleH( #rlpEncodeMerkleTree(  P4 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P5 ) )
@@ -993,9 +993,10 @@ Encoding
     syntax String ::= #rlpMerkleH ( String ) [function,klabel(MerkleRLPAux)]
  // ------------------------------------------------------------------------
     rule #rlpMerkleH ( X ) => #rlpEncodeString( Hex2Raw( Keccak256( X ) ) )
-      requires lengthString( X ) >=Int 32
+      requires lengthString(X) >=Int 32
 
-    rule #rlpMerkleH ( X ) => X [owise]
+    rule #rlpMerkleH ( X ) => X
+      requires notBool lengthString(X) >=Int 32
 ```
 
 Decoding
@@ -1106,11 +1107,14 @@ Merkle Patricia Tree
 - `MerkleUpdateMap` Takes a mapping of `ByteArray |-> String` and generates a trie
 
 ```k
-    syntax MerkleTree ::= MerkleUpdateMap( MerkleTree, Map ) [function]
- // -------------------------------------------------------------------
-    rule MerkleUpdateMap( TREE, KEY |-> VALUE M ) => MerkleUpdateMap( MerkleUpdate( TREE, #nibbleize(KEY), VALUE ) , M )
+    syntax MerkleTree ::= MerkleUpdateMap    ( MerkleTree , Map        ) [function]
+                        | MerkleUpdateMapAux ( MerkleTree , Map , List ) [function]
+ // -------------------------------------------------------------------------------
+    rule MerkleUpdateMap(TREE, MMAP) => MerkleUpdateMapAux(TREE, MMAP, keys_list(MMAP))
 
-    rule MerkleUpdateMap( TREE, .Map ) => TREE
+    rule MerkleUpdateMapAux(TREE, _, .List ) => TREE
+    rule MerkleUpdateMapAux(TREE                                                    , MMAP, ListItem(KEY) REST)
+      => MerkleUpdateMapAux(MerkleUpdate(TREE, #nibbleize(KEY), {MMAP[KEY]}:>String), MMAP,               REST)
 ```
 
 Merkle Tree Aux Functions
@@ -1123,27 +1127,30 @@ Merkle Tree Aux Functions
     rule #nibbleize ( B ) => (      #asByteStack ( B [ 0 ] /Int 16 )[0 .. 1]
                                ++ ( #asByteStack ( B [ 0 ] %Int 16 )[0 .. 1] )
                              ) ++ #nibbleize ( B[1 .. #sizeByteArray(B) -Int 1] )
-      requires #sizeByteArray( B ) >Int 0
+      requires #sizeByteArray(B) >Int 0
 
-    rule #nibbleize ( _ ) => .ByteArray [owise]
+    rule #nibbleize ( B ) => .ByteArray
+      requires notBool #sizeByteArray(B) >Int 0
 
     rule #byteify ( B ) =>    #asByteStack ( B[0] *Int 16 +Int B[1] )[0 .. 1]
                            ++ #byteify ( B[2 .. #sizeByteArray(B) -Int 2] )
       requires #sizeByteArray(B) >Int 0
 
-    rule #byteify ( _ ) => .ByteArray [owise]
+    rule #byteify ( B ) => .ByteArray
+      requires notBool #sizeByteArray(B) >Int 0
 
     syntax ByteArray ::= #HPEncode ( ByteArray, Int ) [function]
  // ------------------------------------------------------------
     rule #HPEncode ( X, T ) => #asByteStack ( ( HPEncodeAux(T) +Int 1 ) *Int 16 +Int X[0] ) ++ #byteify( X[1 .. #sizeByteArray(X) -Int 1] )
       requires #sizeByteArray(X) %Int 2 =/=Int 0
 
-    rule #HPEncode ( X, T ) => #asByteStack ( HPEncodeAux(T) *Int 16 )[0 .. 1] ++ #byteify( X ) [owise]
+    rule #HPEncode ( X, T ) => #asByteStack ( HPEncodeAux(T) *Int 16 )[0 .. 1] ++ #byteify( X )
+      requires notBool #sizeByteArray(X) %Int 2 =/=Int 0
 
     syntax Int ::= HPEncodeAux ( Int ) [function]
  // ---------------------------------------------
-    rule HPEncodeAux ( X ) => 0 requires X ==Int 0
-    rule HPEncodeAux ( _ ) => 2 [owise]
+    rule HPEncodeAux ( X ) => 0 requires         X ==Int 0
+    rule HPEncodeAux ( X ) => 2 requires notBool X ==Int 0
 
     syntax MerkleTree ::= #merkleBrancher ( Map, String, Int, ByteArray, String ) [function]
  // ----------------------------------------------------------------------------------------
