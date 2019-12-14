@@ -1795,7 +1795,10 @@ Mining
                    | "#clearGas"
                    | "#getParentHash"
                    | "#updateTrieRoots"
- // ----------------------------------------
+                   | "#updateStateRoot"
+                   | "#updateTransactionsRoot"
+                   | "#updateReceiptsRoot"
+ // --------------------------------------
     rule <k> #saveState => #incrementBlockNumber ~> #pushBlockchainState ... </k>
 
     rule <k> #incrementBlockNumber => . ... </k>
@@ -1812,9 +1815,12 @@ Mining
          <blockList> BLOCKLIST </blockList>
          <previousHash> _ => #parseHexWord( Keccak256( #rlpEncodeBlock( #getBlockByNumber( "latest", BLOCKLIST ) ) ) ) </previousHash>
 
-    rule <k> #updateTrieRoots => . ... </k>
+    rule <k> #updateTrieRoots => #updateStateRoot ~> #updateTransactionsRoot ~> #updateReceiptsRoot ... </k>
+    rule <k> #updateStateRoot => . ... </k>
          <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
+    rule <k> #updateTransactionsRoot => . ... </k>
          <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
+    rule <k> #updateReceiptsRoot => . ... </k>
          <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
 ```
 
