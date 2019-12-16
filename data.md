@@ -98,18 +98,6 @@ module EVM-DATA
 
 ```
 
--   `#removeZeros` removes any entries in a map with zero values.
-
-```k
-    syntax Map ::= #removeZeros ( Map ) [function]
-                 | #removeZeros ( List , Map ) [function, klabel(#removeZerosAux)]
- // ------------------------------------------------------------------------------
-    rule #removeZeros( M )                                   => #removeZeros(Set2List(keys(M)), M)
-    rule #removeZeros( .List, .Map )                         => .Map
-    rule #removeZeros( ListItem(KEY) L, KEY |-> 0 REST )     => #removeZeros(L, REST)
-    rule #removeZeros( ListItem(KEY) L, KEY |-> VALUE REST ) => KEY |-> VALUE #removeZeros(L, REST) requires VALUE =/=K 0
-```
-
 -   `#lookup` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 ```k
