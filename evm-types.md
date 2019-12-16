@@ -603,6 +603,9 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule [#padRightToWidth]: #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0)
 ```
 
+Accounts
+--------
+
 ### Empty Account
 
 -   `.Account` represents the case when an account ID is referenced in the yellowpaper, but
