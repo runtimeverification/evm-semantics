@@ -4,28 +4,7 @@ EVM Words
 ```k
 requires "krypto.k"
 requires "evm-types.k"
-```
-
-### JSON Formatting
-
-The JSON format is used extensively for communication in the Ethereum circles.
-Writing a JSON-ish parser in K takes 6 lines.
-
-```k
-module JSON
-    imports INT
-    imports STRING
-    imports BOOL
-
-    syntax JSONs   ::= List{JSON,","}      [klabel(JSONs)      , symbol]
-    syntax JSONKey ::= String
-    syntax JSON    ::= "null"              [klabel(JSONnull)   , symbol]
-                     | String | Int | Bool
-                     | JSONKey ":" JSON    [klabel(JSONEntry)  , symbol]
-                     | "{" JSONs "}"       [klabel(JSONObject) , symbol]
-                     | "[" JSONs "]"       [klabel(JSONList)   , symbol]
- // --------------------------------------------------------------------
-endmodule
+requires "json.k"
 ```
 
 ```k
@@ -40,13 +19,6 @@ module EVM-DATA
 
 ```{.k .concrete .bytes}
     imports BYTES
-```
-
-**TODO**: Adding `Int` to `JSONKey` is a hack to make certain parts of semantics easier.
-
-```k
-    syntax JSONKey ::= Int
- // ----------------------
 ```
 
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
