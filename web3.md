@@ -640,14 +640,6 @@ eth_sendTransaction
          </account>
 ```
 
-- `#hashSignedTx` Takes transaction data. Returns the hash of the rlp-encoded transaction with R S and V.
-
-```k
-    syntax String ::= #hashSignedTx ( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
- // ------------------------------------------------------------------------------------------------------------------------
-    rule #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS) => Keccak256( #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) )
-```
-
 -   signTX TXID ACCTFROM: Signs the transaction with TXID using ACCTFROM's private key
 
 ```k

@@ -93,11 +93,16 @@ Address/Hash Helpers
 
 ```
 
+- `#hashSignedTx` Takes transaction data. Returns the hash of the rlp-encoded transaction with R S and V.
 - `#hashUnsignedTx` Returns the hash of the rlp-encoded transaction without R S or V.
 
 ```k
-    syntax String ::= #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray ) [function]
- // --------------------------------------------------------------------------------------------
+    syntax String ::= #hashSignedTx   ( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
+                    | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray )                               [function]
+ // --------------------------------------------------------------------------------------------------------------------------
+    rule #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
+         => Keccak256( #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) )
+
     rule #hashUnsignedTx(TN, TP, TG, TT, TV, TD)
          => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
                                          +String #rlpEncodeWord(TP)
