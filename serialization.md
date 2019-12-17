@@ -138,7 +138,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
 
     rule #parseHexBytes(S)  => #parseHexBytesAux(#alignHexString(S))
     rule #parseHexBytesAux("") => .ByteArray
-    rule #parseHexBytesAux(S)  => Int2Bytes(1, String2Base(substrString(S, 0, 2), 16), BE) +Bytes #parseHexBytesAux(substrString(S, 2, lengthString(S)))
+    rule #parseHexBytesAux(S)  => Int2Bytes(lengthString(S) /Int 2, String2Base(S, 16), BE)
       requires lengthString(S) >=Int 2
 
     rule #parseByteStackRaw(S) => String2Bytes(S)
