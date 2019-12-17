@@ -1670,15 +1670,28 @@ Transactions Root
  // ----------------------------------------------------
     rule #transactionsRoot => MerkleUpdateMap( .MerkleTree, #transactionsMap )
 
-    syntax Map ::= "#transactionsMap"         [function]
-                 | #transactionsMapAux( Int ) [function]
- // ----------------------------------------------------
-    rule #transactionsMap => #transactionsMapAux( 0 )
-
-    rule #transactionsMapAux( _ )    => .Map [owise]
-    rule [[ #transactionsMapAux( I ) => #parseByteStackRaw( #rlpEncodeWord( I ) )[0 .. 1] |-> #rlpEncodeTransaction( { TXLIST[ I ] }:>Int ) #transactionsMapAux( I +Int 1 ) ]]
+    syntax Map ::= "#transactionsMap"               [function]
+                 | #transactionsMapAux( Int, List ) [function]
+ // ----------------------------------------------------------
+    rule [[ #transactionsMap => #transactionsMapAux( 0, TXLIST ) ]]
          <txOrder> TXLIST </txOrder>
-      requires size(TXLIST) >Int I
+
+    rule #transactionsMapAux( _, .List )    => .Map [owise]
+    rule [[ #transactionsMapAux( I, ListItem(TXID:Int) REST )
+         => #parseByteStackRaw( #rlpEncodeWord( I ) )[0 .. 1] |-> #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) #transactionsMapAux( I +Int 1, REST )
+         ]]
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce>    TN </txNonce>
+           <txGasPrice> TP </txGasPrice>
+           <txGasLimit> TG </txGasLimit>
+           <to>         TT </to>
+           <value>      TV </value>
+           <sigV>       TW </sigV>
+           <sigR>       TR </sigR>
+           <sigS>       TS </sigS>
+           <data>       TD </data>
+         </message>
 
     syntax KItem ::= "#firefly_getTxRoot"
  // -------------------------------------
