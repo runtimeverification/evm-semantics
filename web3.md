@@ -745,7 +745,19 @@ eth_sendRawTransaction
 
     rule <k> #eth_sendRawTransactionVerify _ => #rpcResponseError(-32000, "Invalid Signature") ... </k> [owise]
 
-    rule <k> #eth_sendRawTransactionSend TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
+    rule <k> #eth_sendRawTransactionSend TXID => #rpcResponseSuccess("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce>    TN </txNonce>
+           <txGasPrice> TP </txGasPrice>
+           <txGasLimit> TG </txGasLimit>
+           <to>         TT </to>
+           <value>      TV </value>
+           <data>       TD </data>
+           <sigV>       TW </sigV>
+           <sigR>       TR </sigR>
+           <sigS>       TS </sigS>
+         </message>
 ```
 
 Retrieving Blocks
