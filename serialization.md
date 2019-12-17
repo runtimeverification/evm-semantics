@@ -287,6 +287,21 @@ Encoding
     rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires notBool ( lengthString(STR) <Int 56 )
     rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
 
+    syntax String ::= #rlpEncodeTransaction( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
+ // -------------------------------------------------------------------------------------------------------------------------------
+    rule #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS)
+         => #rlpEncodeLength(         #rlpEncodeWord(TN)
+                              +String #rlpEncodeWord(TP)
+                              +String #rlpEncodeWord(TG)
+                              +String #rlpEncodeAccount(TT)
+                              +String #rlpEncodeWord(TV)
+                              +String #rlpEncodeString(#unparseByteStack(TD))
+                              +String #rlpEncodeWord(TW)
+                              +String #rlpEncodeString(#unparseByteStack(#asByteStack(#asWord(TR))))
+                              +String #rlpEncodeString(#unparseByteStack(#asByteStack(#asWord(TS))))
+                            , 192
+                            )
+
     syntax String ::= #rlpEncodeMerkleTree ( MerkleTree ) [function]
  // ----------------------------------------------------------------
     rule #rlpEncodeMerkleTree ( .MerkleTree ) => "\x80"
