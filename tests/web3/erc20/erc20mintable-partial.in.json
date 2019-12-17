@@ -200,6 +200,14 @@
 }
 {
   "jsonrpc": "2.0",
+  "id": 0,
+  "method": "evm_increaseTime",
+  "params": [
+    41
+  ]
+}
+{
+  "jsonrpc": "2.0",
   "id": 11,
   "method": "eth_sendTransaction",
   "params": [
@@ -241,6 +249,14 @@
   "params": [
     "latest",
     false
+  ]
+}
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "evm_increaseTime",
+  "params": [
+    1
   ]
 }
 {
