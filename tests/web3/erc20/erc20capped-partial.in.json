@@ -772,7 +772,9 @@
   "jsonrpc": "2.0",
   "id": 0,
   "method": "evm_increaseTime",
-  "params": [ 1 ]
+  "params": [
+    1
+  ]
 }
 {
   "jsonrpc": "2.0",
