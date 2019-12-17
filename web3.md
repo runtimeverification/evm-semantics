@@ -676,12 +676,32 @@ eth_sendTransaction
     syntax KItem ::= "signTX" Int Int
                    | "signTX" Int String [klabel(signTXAux)]
  // --------------------------------------------------------
-    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( Hex2Raw( #hashUnsignedTx( TXID ) ), #unparseByteStack( #padToWidth( 32, #asByteStack( KEY ) ) ) ) ... </k>
+    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( Hex2Raw( #hashUnsignedTx(TN, TP, TG, TT, TV, TD) ), #unparseByteStack( #padToWidth( 32, #asByteStack( KEY ) ) ) ) ... </k>
          <accountKeys> ... ACCTFROM |-> KEY ... </accountKeys>
          <mode> NORMAL </mode>
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce>    TN </txNonce>
+           <txGasPrice> TP </txGasPrice>
+           <txGasLimit> TG </txGasLimit>
+           <to>         TT </to>
+           <value>      TV </value>
+           <data>       TD </data>
+           ...
+         </message>
 
-    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( Hex2Raw( #hashUnsignedTx( TXID ) ), #unparseByteStack( ( #padToWidth( 20, #asByteStack( ACCTFROM ) ) ++ #padToWidth( 20, #asByteStack( ACCTFROM ) ) )[0 .. 32] ) ) ... </k>
+    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( Hex2Raw( #hashUnsignedTx(TN, TP, TG, TT, TV, TD) ), #unparseByteStack( ( #padToWidth( 20, #asByteStack( ACCTFROM ) ) ++ #padToWidth( 20, #asByteStack( ACCTFROM ) ) )[0 .. 32] ) ) ... </k>
          <mode> NOGAS </mode>
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce>    TN </txNonce>
+           <txGasPrice> TP </txGasPrice>
+           <txGasLimit> TG </txGasLimit>
+           <to>         TT </to>
+           <value>      TV </value>
+           <data>       TD </data>
+           ...
+         </message>
 
     rule <k> signTX TXID SIG:String => . ... </k>
          <message>
@@ -730,12 +750,17 @@ eth_sendRawTransaction
     rule <k> #eth_sendRawTransactionVerify TXID => #eth_sendRawTransactionSend TXID ... </k>
          <message>
            <msgID> TXID </msgID>
-           <sigV> V </sigV>
-           <sigR> R </sigR>
-           <sigS> S </sigS>
-           ...
+           <txNonce>    TN </txNonce>
+           <txGasPrice> TP </txGasPrice>
+           <txGasLimit> TG </txGasLimit>
+           <to>         TT </to>
+           <value>      TV </value>
+           <data>       TD </data>
+           <sigV>       TW </sigV>
+           <sigR>       TR </sigR>
+           <sigS>       TS </sigS>
          </message>
-      requires ECDSARecover( Hex2Raw( #hashUnsignedTx( TXID ) ), V, #unparseByteStack(R), #unparseByteStack(S) ) =/=String ""
+      requires ECDSARecover( Hex2Raw( #hashUnsignedTx(TN, TP, TG, TT, TV, TD) ), TW, #unparseByteStack(TR), #unparseByteStack(TS) ) =/=String ""
 
     rule <k> #eth_sendRawTransactionVerify _ => #rpcResponseError(-32000, "Invalid Signature") ... </k> [owise]
 
