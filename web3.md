@@ -1620,7 +1620,20 @@ Helper Funcs
     syntax String ::= #rlpEncodeReceipt( Int )       [function]
                     | #rlpEncodeReceiptAux( String ) [function]
  // -----------------------------------------------------------
-    rule #rlpEncodeReceipt( I ) => #rlpEncodeReceiptAux( "0x" +String #hashSignedTx( I ) )
+    rule [[ #rlpEncodeReceipt( TXID ) => #rlpEncodeReceiptAux("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ]]
+         <message>
+           <msgID>      TXID </msgID>
+           <txNonce>    TN   </txNonce>
+           <txGasPrice> TP   </txGasPrice>
+           <txGasLimit> TG   </txGasLimit>
+           <to>         TT   </to>
+           <value>      TV   </value>
+           <sigV>       TW   </sigV>
+           <sigR>       TR   </sigR>
+           <sigS>       TS   </sigS>
+           <data>       TD   </data>
+         </message>
+
     rule [[ #rlpEncodeReceiptAux( TXHASH ) =>
             #rlpEncodeLength(         #rlpEncodeWord( STATUS )
                               +String #rlpEncodeWord( CGAS )
