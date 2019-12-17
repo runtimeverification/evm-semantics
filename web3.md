@@ -630,8 +630,11 @@ eth_sendTransaction
 
 ```k
     syntax String ::= #hashSignedTx ( Int ) [function]
- // --------------------------------------------------
+                    | #hashSignedTx ( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
+ // ------------------------------------------------------------------------------------------------------------------------
     rule #hashSignedTx( TXID ) => Keccak256( #rlpEncodeTransaction( TXID ) )
+
+    rule #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS) => Keccak256( #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) )
 ```
 
 -   signTX TXID ACCTFROM: Signs the transaction with TXID using ACCTFROM's private key
@@ -1535,7 +1538,8 @@ Helper Funcs
                             )
 
     syntax String ::= #rlpEncodeTransaction( Int ) [function]
- // ---------------------------------------------------------
+                    | #rlpEncodeTransaction( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
+ // -------------------------------------------------------------------------------------------------------------------------------
     rule [[ #rlpEncodeTransaction( TXID )
          => #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
                               +String #rlpEncodeWord( GPRICE )
@@ -1561,6 +1565,19 @@ Helper Funcs
            <sigS>       S       </sigS>
            <sigV>       V       </sigV>
          </message>
+
+    rule #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS)
+         => #rlpEncodeLength(         #rlpEncodeWord(TN)
+                              +String #rlpEncodeWord(TP)
+                              +String #rlpEncodeWord(TG)
+                              +String #rlpEncodeAccount(TT)
+                              +String #rlpEncodeWord(TV)
+                              +String #rlpEncodeString(#unparseByteStack(TD))
+                              +String #rlpEncodeWord(TW)
+                              +String #rlpEncodeString(#unparseByteStack(#asByteStack(#asWord(TR))))
+                              +String #rlpEncodeString(#unparseByteStack(#asByteStack(#asWord(TS))))
+                            , 192
+                            )
 
     syntax String ::= #rlpEncodeReceipt( Int )       [function]
                     | #rlpEncodeReceiptAux( String ) [function]
