@@ -631,32 +631,9 @@ eth_sendTransaction
 
 ```k
     syntax String ::= #hashSignedTx   ( Int ) [function]
-                    | #hashUnsignedTx ( Int ) [function]
                     | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray ) [function]
  // --------------------------------------------------------------------------------------------
     rule #hashSignedTx( TXID ) => Keccak256( #rlpEncodeTransaction( TXID ) )
-
-    rule [[ #hashUnsignedTx( TXID )
-         => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
-                                         +String #rlpEncodeWord( GPRICE )
-                                         +String #rlpEncodeWord( GLIMIT )
-                                         +String #rlpEncodeAccount( ACCTTO )
-                                         +String #rlpEncodeWord( VALUE )
-                                         +String #rlpEncodeString( #unparseByteStack( DATA ) )
-                                       , 192
-                                       )
-                     )
-         ]]
-         <message>
-           <msgID>      TXID    </msgID>
-           <txNonce>    TXNONCE </txNonce>
-           <txGasPrice> GPRICE  </txGasPrice>
-           <txGasLimit> GLIMIT  </txGasLimit>
-           <to>         ACCTTO  </to>
-           <value>      VALUE   </value>
-           <data>       DATA    </data>
-           ...
-         </message>
 
     rule #hashUnsignedTx(TN, TP, TG, TT, TV, TD)
          => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
