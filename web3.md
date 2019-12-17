@@ -869,13 +869,13 @@ Transaction Receipts
          <txReceipts>
            ( .Bag
           => <txReceipt>
-               <txHash> "0x" +String #hashSignedTx (TXID) </txHash>
+               <txHash> "0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS) </txHash>
                <txCumulativeGas> CGAS </txCumulativeGas>
                <logSet> LOGS </logSet>
                <bloomFilter> #bloomFilter(LOGS) </bloomFilter>
                <txStatus> bool2Word(STATUSCODE ==K EVMC_SUCCESS) </txStatus>
                <txID> TXID </txID>
-               <sender> #parseHexWord(#unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS)))) </sender>
+               <sender> #parseHexWord(#unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(TD), TW , TR, TS)))) </sender>
                <txBlockNumber> BN +Int 1 </txBlockNumber>
              </txReceipt>
            )
@@ -891,7 +891,7 @@ Transaction Receipts
            <sigV>       TW   </sigV>
            <sigR>       TR   </sigR>
            <sigS>       TS   </sigS>
-           <data>       DATA </data>
+           <data>       TD   </data>
          </message>
          <statusCode> STATUSCODE </statusCode>
          <gasUsed> CGAS </gasUsed>
