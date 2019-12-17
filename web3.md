@@ -1309,7 +1309,7 @@ Transaction Execution
                { "message": "VM Exception while processing transaction: revert",
                  "code": -32000,
                  "data": {
-                     "0x" +String #hashSignedTx( TXID ): {
+                     "0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS): {
                      "error": "revert",
                      "program_counter": PCOUNT +Int 1,
                      "return": #unparseDataByteArray( RD )
@@ -1321,6 +1321,18 @@ Transaction Execution
          </k>
          <errorPC> PCOUNT </errorPC>
          <output> RD </output>
+         <message>
+           <msgID>      TXID </msgID>
+           <txNonce>    TN   </txNonce>
+           <txGasPrice> TP   </txGasPrice>
+           <txGasLimit> TG   </txGasLimit>
+           <to>         TT   </to>
+           <value>      TV   </value>
+           <sigV>       TW   </sigV>
+           <sigR>       TR   </sigR>
+           <sigS>       TS   </sigS>
+           <data>       TD   </data>
+         </message>
 ```
 
 - `#eth_estimateGas`
