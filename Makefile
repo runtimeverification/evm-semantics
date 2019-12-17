@@ -128,7 +128,7 @@ plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 ifneq ($(RELEASE),)
 K_BUILD_TYPE         := Release
 SEMANTICS_BUILD_TYPE := Release
-KOMPILE_OPTS         += --iterated
+KOMPILE_OPTS         += -O3
 else
 K_BUILD_TYPE         := FastBuild
 SEMANTICS_BUILD_TYPE := Debug
@@ -212,9 +212,6 @@ $(web3_dir)/%.k: %.md $(TANGLER)
 
 # Kompiling
 
-KOMPILE_OPTS      :=
-LLVM_KOMPILE_OPTS :=
-
 build: build-llvm build-haskell build-java build-web3 build-node
 build-java:    $(java_kompiled)
 build-node:    $(node_kompiled)
@@ -286,7 +283,7 @@ $(llvm_kompiled): $(llvm_files) $(libff_out)
 	                 $(KOMPILE_OPTS) \
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp \
-	                 -ccopt -g -ccopt -std=c++14 -ccopt -O2 \
+	                 -ccopt -g -ccopt -std=c++14 \
 	                 -ccopt -L$(LIBRARY_PATH) \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS))
 
