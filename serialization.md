@@ -93,6 +93,23 @@ Address/Hash Helpers
 
 ```
 
+- `#hashUnsignedTx` Returns the hash of the rlp-encoded transaction without R S or V.
+
+```k
+    syntax String ::= #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray ) [function]
+ // --------------------------------------------------------------------------------------------
+    rule #hashUnsignedTx(TN, TP, TG, TT, TV, TD)
+         => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
+                                         +String #rlpEncodeWord(TP)
+                                         +String #rlpEncodeWord(TG)
+                                         +String #rlpEncodeAccount(TT)
+                                         +String #rlpEncodeWord(TV)
+                                         +String #rlpEncodeString(#unparseByteStack(TD))
+                                       , 192
+                                       )
+                     )
+```
+
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
 Here we provide some standard parser/unparser functions for that format.
 

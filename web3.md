@@ -627,24 +627,11 @@ eth_sendTransaction
 ```
 
 - `#hashSignedTx` Takes a transaction ID. Returns the hash of the rlp-encoded transaction with R S and V.
-- `#hashUnsignedTx` Returns the hash of the rlp-encoded transaction without R S or V.
 
 ```k
-    syntax String ::= #hashSignedTx   ( Int ) [function]
-                    | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray ) [function]
- // --------------------------------------------------------------------------------------------
+    syntax String ::= #hashSignedTx ( Int ) [function]
+ // --------------------------------------------------
     rule #hashSignedTx( TXID ) => Keccak256( #rlpEncodeTransaction( TXID ) )
-
-    rule #hashUnsignedTx(TN, TP, TG, TT, TV, TD)
-         => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
-                                         +String #rlpEncodeWord(TP)
-                                         +String #rlpEncodeWord(TG)
-                                         +String #rlpEncodeAccount(TT)
-                                         +String #rlpEncodeWord(TV)
-                                         +String #rlpEncodeString(#unparseByteStack(TD))
-                                       , 192
-                                       )
-                     )
 ```
 
 -   signTX TXID ACCTFROM: Signs the transaction with TXID using ACCTFROM's private key
