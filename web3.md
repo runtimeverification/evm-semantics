@@ -632,7 +632,8 @@ eth_sendTransaction
 ```k
     syntax String ::= #hashSignedTx   ( Int ) [function]
                     | #hashUnsignedTx ( Int ) [function]
- // ----------------------------------------------------
+                    | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray ) [function]
+ // --------------------------------------------------------------------------------------------
     rule #hashSignedTx( TXID ) => Keccak256( #rlpEncodeTransaction( TXID ) )
 
     rule [[ #hashUnsignedTx( TXID )
@@ -656,6 +657,17 @@ eth_sendTransaction
            <data>       DATA    </data>
            ...
          </message>
+
+    rule #hashUnsignedTx(TN, TP, TG, TT, TV, TD)
+         => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
+                                         +String #rlpEncodeWord(TP)
+                                         +String #rlpEncodeWord(TG)
+                                         +String #rlpEncodeAccount(TT)
+                                         +String #rlpEncodeWord(TV)
+                                         +String #rlpEncodeString(#unparseByteStack(TD))
+                                       , 192
+                                       )
+                     )
 ```
 
 -   signTX TXID ACCTFROM: Signs the transaction with TXID using ACCTFROM's private key
