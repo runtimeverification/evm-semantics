@@ -640,14 +640,11 @@ eth_sendTransaction
          </account>
 ```
 
-- `#hashSignedTx` Takes a transaction ID. Returns the hash of the rlp-encoded transaction with R S and V.
+- `#hashSignedTx` Takes transaction data. Returns the hash of the rlp-encoded transaction with R S and V.
 
 ```k
-    syntax String ::= #hashSignedTx ( Int ) [function]
-                    | #hashSignedTx ( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
+    syntax String ::= #hashSignedTx ( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
  // ------------------------------------------------------------------------------------------------------------------------
-    rule #hashSignedTx( TXID ) => Keccak256( #rlpEncodeTransaction( TXID ) )
-
     rule #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS) => Keccak256( #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) )
 ```
 
@@ -1575,35 +1572,8 @@ Helper Funcs
                             , 192
                             )
 
-    syntax String ::= #rlpEncodeTransaction( Int ) [function]
-                    | #rlpEncodeTransaction( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
+    syntax String ::= #rlpEncodeTransaction( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
  // -------------------------------------------------------------------------------------------------------------------------------
-    rule [[ #rlpEncodeTransaction( TXID )
-         => #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
-                              +String #rlpEncodeWord( GPRICE )
-                              +String #rlpEncodeWord( GLIMIT )
-                              +String #rlpEncodeAccount( ACCTTO )
-                              +String #rlpEncodeWord( VALUE )
-                              +String #rlpEncodeString( #unparseByteStack( DATA ) )
-                              +String #rlpEncodeWord( V )
-                              +String #rlpEncodeString( #unparseByteStack( #asByteStack( #asWord( R ) ) ) )
-                              +String #rlpEncodeString( #unparseByteStack( #asByteStack( #asWord( S ) ) ) )
-                            , 192
-                            )
-         ]]
-         <message>
-           <msgID> TXID </msgID>
-           <txNonce>    TXNONCE </txNonce>
-           <txGasPrice> GPRICE  </txGasPrice>
-           <txGasLimit> GLIMIT  </txGasLimit>
-           <to>         ACCTTO  </to>
-           <value>      VALUE   </value>
-           <data>       DATA    </data>
-           <sigR>       R       </sigR>
-           <sigS>       S       </sigS>
-           <sigV>       V       </sigV>
-         </message>
-
     rule #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS)
          => #rlpEncodeLength(         #rlpEncodeWord(TN)
                               +String #rlpEncodeWord(TP)
