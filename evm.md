@@ -62,7 +62,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
               // \mu_*
               <wordStack>   .WordStack </wordStack>           // \mu_s
-              <localMem>    .Map       </localMem>            // \mu_m
+              <localMem>    .Memory    </localMem>            // \mu_m
               <pc>          0          </pc>                  // \mu_pc
               <gas>         0          </gas>                 // \mu_g
               <memoryUsed>  0          </memoryUsed>          // \mu_i
@@ -927,7 +927,7 @@ These operations are getters/setters of the local execution memory.
          <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
 
     rule <k> MSTORE8 INDEX VALUE => . ... </k>
-         <localMem> LM => LM [ INDEX <- (VALUE modInt 256) ] </localMem>
+         <localMem> LM => LM [ INDEX := (VALUE modInt 256) ] </localMem>
 ```
 
 ### Expressions
@@ -1389,7 +1389,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <memoryUsed>   _ => 0          </memoryUsed>
          <output>       _ => .ByteArray </output>
          <wordStack>    _ => .WordStack </wordStack>
-         <localMem>     _ => .Map       </localMem>
+         <localMem>     _ => .Memory    </localMem>
 
     syntax Set ::= #computeValidJumpDests(ByteArray)            [function]
                  | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]

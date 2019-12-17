@@ -445,18 +445,37 @@ A cons-list is used for the EVM wordstack.
     rule WordStack2List(W : WS) => ListItem(W) WordStack2List(WS)
 ```
 
-Word Map
---------
+Local Memory
+------------
 
-Most of EVM data is held in finite maps.
-We are using the polymorphic `Map` sort for these word maps.
+Most of EVM data is held in local memory.
 
 -   `WM [ N := WS ]` assigns a contiguous chunk of $WM$ to $WS$ starting at position $W$.
 -   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
 
-```{.k .bytes}
-    syntax Map ::= Map "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
+```{.k .membytes}
+    syntax Memory = Bytes
+    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
+ // -------------------------------------------------------------------------------------
+    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS')
+
+    syntax ByteArray ::= #range ( Memory , Int , Int )                   [function]
  // -------------------------------------------------------------------------------
+    rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ]
+
+    syntax Memory ::= ".Memory" [function]
+ // --------------------------------------
+    rule .Memory => .Bytes
+
+    syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
+ // --------------------------------------------------------
+    rule WM [ IDX := VAL ] => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ]
+```
+
+```{.k .memmap}
+    syntax Memory = Map
+    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
+ // -------------------------------------------------------------------------------------
     rule WM[ N := WS ] => WM [ N := WS, 0, #sizeByteArray(WS) ]
 
     syntax Map ::= Map "[" Int ":=" ByteArray "," Int "," Int "]" [function]
@@ -464,27 +483,44 @@ We are using the polymorphic `Map` sort for these word maps.
     rule WM [ N := WS, I, I ] => WM
     rule WM [ N := WS, I, J ] => (WM[N <- WS[I]])[ N +Int 1 := WS, I +Int 1, J ] [owise]
 
-    syntax ByteArray ::= #range ( Map , Int , Int )                   [function]
-                       | #range ( Map , Int , Int , Int , ByteArray ) [function, klabel(#rangeAux)]
- // -----------------------------------------------------------------------------------------------
+    syntax ByteArray ::= #range ( Memory , Int , Int )                   [function]
+                       | #range ( Memory , Int , Int , Int , ByteArray ) [function, klabel(#rangeAux)]
+ // --------------------------------------------------------------------------------------------------
     rule #range(WM, START, WIDTH) => #range(WM, START, 0, WIDTH, padLeftBytes(.Bytes, WIDTH, 0))
     rule #range(WM, I, WIDTH, WIDTH, WS) => WS
     rule #range(WM, I,     J, WIDTH, WS) => #range(WM, I +Int 1, J +Int 1, WIDTH, WS [ J <- {WM[I] orDefault 0}:>Int ]) [owise]
+
+    syntax Memory ::= ".Memory" [function]
+ // --------------------------------------
+    rule .Memory => .Map
+
+    syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
+ // --------------------------------------------------------
+    rule WM [ IDX := VAL:Int ] => WM [ IDX <- VAL ]
 ```
 
 ```{.k .nobytes}
-    syntax Map ::= Map "[" Int ":=" ByteArray "]" [function, functional]
- // --------------------------------------------------------------------
+    syntax Memory = Map
+    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, functional]
+ // --------------------------------------------------------------------------
     rule [mapWriteBytes.base]:      WM[ N := .WordStack ] => WM
     rule [mapWriteBytes.recursive]: WM[ N := W : WS     ] => (WM[N <- W])[N +Int 1 := WS]
 
-    syntax ByteArray ::= #range ( Map , Int , Int )             [function, functional]
-    syntax ByteArray ::= #range ( Map , Int , Int , ByteArray ) [function, functional, klabel(#rangeAux)]
- // -----------------------------------------------------------------------------------------------------
+    syntax ByteArray ::= #range ( Memory , Int , Int )             [function, functional]
+    syntax ByteArray ::= #range ( Memory , Int , Int , ByteArray ) [function, functional, klabel(#rangeAux)]
+ // --------------------------------------------------------------------------------------------------------
     rule [#range]:         #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack)
     rule [#rangeAux.base]: #range(WM,           END, WIDTH, WS) => WS                                           requires notBool WIDTH >Int 0
     rule [#rangeAux.none]: #range(WM,           END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, 0 : WS) requires (WIDTH >Int 0) andBool notBool END in_keys(WM)
     rule [#rangeAux.some]: #range(END |-> W WM, END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, W : WS) requires (WIDTH >Int 0)
+
+    syntax Memory ::= ".Memory" [function]
+ // --------------------------------------
+    rule .Memory => .Map
+
+    syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
+ // --------------------------------------------------------
+    rule WM [ IDX := VAL:Int ] => WM [ IDX <- VAL ]
 ```
 
 Byte Arrays
