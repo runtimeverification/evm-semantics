@@ -178,10 +178,10 @@ llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 # Tangle definition from *.md files
 
-concrete_tangle := .k:not(.node):not(.symbolic):not(.nobytes),.standalone,.concrete,.bytes
-java_tangle     := .k:not(.node):not(.concrete):not(.bytes),.standalone,.symbolic,.nobytes
-haskell_tangle  := .k:not(.node):not(.concrete):not(.nobytes),.standalone,.symbolic,.bytes
-node_tangle     := .k:not(.standalone):not(.symbolic):not(.nobytes),.node,.concrete,.bytes
+concrete_tangle := .k:not(.node):not(.symbolic):not(.nobytes):not(.memmap),.standalone,.concrete,.bytes,.membytes
+java_tangle     := .k:not(.node):not(.concrete):not(.bytes):not(.memmap):not(.membytes),.standalone,.symbolic,.nobytes
+haskell_tangle  := .k:not(.node):not(.concrete):not(.nobytes):not(.membytes),.standalone,.symbolic,.bytes,.memmap
+node_tangle     := .k:not(.standalone):not(.symbolic):not(.nobytes):not(.memmap),.node,.concrete,.bytes,.membytes
 
 defn: $(defn_files)
 llvm-defn:    $(llvm_files)
