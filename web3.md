@@ -912,8 +912,8 @@ Transaction Receipts
                                   , "status": #unparseQuantity(TXSTATUS)
                                   , "logsBloom": #unparseDataByteArray(BLOOM)
                                   , "v": #unparseQuantity(TW)
-                                  , "r": #unparseDataByteArray(TR)
-                                  , "s": #unparseDataByteArray(TS)
+                                  , "r": #unparseQuantity( #asWord(TR) )
+                                  , "s": #unparseQuantity( #asWord(TS) )
                                   }
                                 )
          ...
@@ -1543,8 +1543,8 @@ Helper Funcs
                               +String #rlpEncodeWord( VALUE )
                               +String #rlpEncodeString( #unparseByteStack( DATA ) )
                               +String #rlpEncodeWord( V )
-                              +String #rlpEncodeString( #unparseByteStack( R ) )
-                              +String #rlpEncodeString( #unparseByteStack( S ) )
+                              +String #rlpEncodeString( #unparseByteStack( #asByteStack( #asWord( R ) ) ) )
+                              +String #rlpEncodeString( #unparseByteStack( #asByteStack( #asWord( S ) ) ) )
                             , 192
                             )
          ]]
