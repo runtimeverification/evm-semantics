@@ -817,30 +817,34 @@ Retrieving Blocks
                                   , "gasLimit": #unparseQuantity( GLIMIT )
                                   , "gasUsed": #unparseQuantity( GUSED )
                                   , "timestamp": #unparseQuantity( TIME )
-                                  , "transactions": [ #getTransactionList( BLOCKITEM ) ]
+                                  , "transactions": [ #getTransactionList( BLOCKITEM, <txReceipts> TXRECEIPTS </txReceipts>, FULLTX ) ]
                                   , "uncles": [ .JSONs ]
                                   }
                                 )
           ...
          </k>
+         <params> [ _, FULLTX:Bool, .JSONs ] </params>
+         <txReceipts> TXRECEIPTS </txReceipts>
 
     rule <k> #eth_getBlockByNumber_finalize ( .BlockchainItem )=> #rpcResponseSuccess(null) ... </k>
 
-    syntax JSONs ::= "#getTransactionList" "(" BlockchainItem ")" [function]
-                   | #getTransactionHashList ( List, JSONs )      [function]
- // ------------------------------------------------------------------------
-    rule [[ #getTransactionList ( { <network> <txOrder> TXIDLIST </txOrder> ... </network> | _ } )
-         => #getTransactionHashList (TXIDLIST, .JSONs)
-         ]]
-         <params> [ _ , false, .JSONs ] </params>
+    syntax JSONs ::= #getTransactionList ( BlockchainItem , TxReceiptsCell , Bool ) [function]
+                   | #getTransactionHashList ( List, TxReceiptsCell , JSONs )       [function]
+ // ------------------------------------------------------------------------------------------
+    rule #getTransactionList ( { <network> <txOrder> TXIDLIST </txOrder> ... </network> | _ } , <txReceipts> TXRECEIPTS </txReceipts>, false )
+      => #getTransactionHashList (TXIDLIST, <txReceipts> TXRECEIPTS </txReceipts>, .JSONs)
 
-    rule #getTransactionHashList ( .List, RESULT ) => RESULT
-    rule [[ #getTransactionHashList ( ( ListItem(TXID) => .List ) TXIDLIST, ( RESULT => TXHASH, RESULT ) ) ]]
-         <txReceipt>
-           <txID>   TXID   </txID>
-           <txHash> TXHASH </txHash>
-           ...
-         </txReceipt>
+    rule #getTransactionHashList ( .List, _, RESULT ) => RESULT
+    rule #getTransactionHashList ( ( ListItem(TXID) => .List ) TXIDLIST
+                                 , <txReceipts>
+                                     <txReceipt>
+                                       <txID>   TXID   </txID>
+                                       <txHash> TXHASH </txHash>
+                                       ...
+                                     </txReceipt>
+                                     ...
+                                   </txReceipts>
+                                 , ( RESULT => TXHASH, RESULT ) )
 ```
 
 Transaction Receipts
