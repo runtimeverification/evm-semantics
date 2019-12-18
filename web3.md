@@ -87,8 +87,7 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     rule <k> #setBlockchainState(.BlockchainItem) => #rpcResponseError(-37600, "Unable to find block by number.") ... </k>
 
-    syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List ) [function]
-                            | #getBlockByNumber ( BlockIdentifier , List , BlockchainItem ) [function]
+    syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List , BlockchainItem ) [function]
  // --------------------------------------------------------------------------------------------------
     rule #getBlockByNumber( _:String   , _                     , BLOCKCHAINITEM ) => BLOCKCHAINITEM [owise]
     rule #getBlockByNumber( _:Int      , .List                 , _              ) => .BlockchainItem
@@ -97,19 +96,6 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     rule #getBlockByNumber(BLOCKNUM:Int ,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCKCHAINITEM) REST, _ ) => BLOCKCHAINITEM
     rule #getBlockByNumber(BLOCKNUM':Int, (ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }                   ) => .List) _, _ )
-      requires BLOCKNUM =/=Int BLOCKNUM'
-
-    rule #getBlockByNumber( ( _:String => "pending" ) , .List) [owise]
-    rule #getBlockByNumber( _:Int, .List) => .BlockchainItem
-    rule #getBlockByNumber("earliest", _ ListItem( BLOCK )) => BLOCK
-    rule #getBlockByNumber("latest", ListItem( BLOCK ) _) => BLOCK
-
-    rule [[ #getBlockByNumber("pending",  BLOCKLIST) => {<network> NETWORK </network> | <block> BLOCK </block>} ]]
-         <network> NETWORK </network>
-         <block>   BLOCK   </block>
-
-    rule #getBlockByNumber(BLOCKNUM:Int,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCKCHAINITEM) REST ) => BLOCKCHAINITEM
-    rule #getBlockByNumber(BLOCKNUM':Int, ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }                   ) REST ) => #getBlockByNumber(BLOCKNUM', REST)
       requires BLOCKNUM =/=Int BLOCKNUM'
 
     syntax AccountItem ::= AccountCell | ".AccountItem"
