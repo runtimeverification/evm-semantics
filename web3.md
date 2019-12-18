@@ -1804,6 +1804,7 @@ Mining
                    | "#cleanTxLists"
                    | "#clearGas"
                    | "#getParentHash"
+                   | "#setParentHash" BlockchainItem
                    | "#updateTrieRoots"
                    | "#updateStateRoot"
                    | "#updateTransactionsRoot"
@@ -1821,9 +1822,13 @@ Mining
     rule <k> #clearGas => . ... </k>
          <gas> _ => 0 </gas>
 
-    rule <k> #getParentHash => . ... </k>
+    rule <k> #getParentHash => #setParentHash #getBlockByNumber( "latest", BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>} ) ... </k>
          <blockList> BLOCKLIST </blockList>
-         <previousHash> _ => #parseHexWord( Keccak256( #rlpEncodeBlock( #getBlockByNumber( "latest", BLOCKLIST ) ) ) ) </previousHash>
+         <network>   NETWORK   </network>
+         <block>     BLOCK     </block>
+
+    rule <k> #setParentHash BCI => . ... </k>
+         <previousHash> _ => #parseHexWord( Keccak256( #rlpEncodeBlock( BCI ) ) ) </previousHash>
 
     rule <k> #updateTrieRoots => #updateStateRoot ~> #updateTransactionsRoot ~> #updateReceiptsRoot ... </k>
     rule <k> #updateStateRoot => . ... </k>
