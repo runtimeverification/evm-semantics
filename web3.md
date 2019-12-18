@@ -4,50 +4,7 @@ Web3 RPC JSON Handler
 ```k
 requires "evm.k"
 requires "state-loader.k"
-```
-
-```k
-module JSON-RPC
-    imports K-IO
-    imports LIST
-    imports JSON
-
-    configuration
-      <json-rpc>
-        <web3socket> $SOCK:Int </web3socket>
-        <web3clientsocket> 0:IOInt </web3clientsocket>
-        <web3request>
-          <jsonrpc> "":JSON </jsonrpc>
-          <callid> 0:JSON </callid>
-          <method> "":JSON </method>
-          <params> [ .JSONs ] </params>
-          <batch> undef </batch>
-        </web3request>
-        <web3response> .List </web3response>
-      </json-rpc>
-
-    syntax JSON ::= "undef" [klabel(JSON-RPCundef), symbol]
- // -------------------------------------------------------
-
-    syntax Bool ::= isProperJson     ( JSON  ) [function]
-                  | isProperJsonList ( JSONs ) [function]
- // -----------------------------------------------------
-    rule isProperJson(_) => false [owise]
-
-    rule isProperJson(null) => true
-
-    rule isProperJson(_:Int)    => true
-    rule isProperJson(_:Bool)   => true
-    rule isProperJson(_:String) => true
-
-    rule isProperJson(_:JSONKey : J) => isProperJson(J)
-
-    rule isProperJson([ JS ]) => isProperJsonList(JS)
-    rule isProperJson({ JS }) => isProperJsonList(JS)
-
-    rule isProperJsonList(.JSONs) => true
-    rule isProperJsonList(J, JS)  => isProperJson(J) andBool isProperJsonList(JS)
-endmodule
+requires "json.k"
 ```
 
 ```k
@@ -955,8 +912,8 @@ Transaction Receipts
                                   , "status": #unparseQuantity(TXSTATUS)
                                   , "logsBloom": #unparseDataByteArray(BLOOM)
                                   , "v": #unparseQuantity(TW)
-                                  , "r": #unparseDataByteArray(TR)
-                                  , "s": #unparseDataByteArray(TS)
+                                  , "r": #unparseQuantity( #asWord(TR) )
+                                  , "s": #unparseQuantity( #asWord(TS) )
                                   }
                                 )
          ...
@@ -1586,8 +1543,8 @@ Helper Funcs
                               +String #rlpEncodeWord( VALUE )
                               +String #rlpEncodeString( #unparseByteStack( DATA ) )
                               +String #rlpEncodeWord( V )
-                              +String #rlpEncodeString( #unparseByteStack( R ) )
-                              +String #rlpEncodeString( #unparseByteStack( S ) )
+                              +String #rlpEncodeString( #unparseByteStack( #asByteStack( #asWord( R ) ) ) )
+                              +String #rlpEncodeString( #unparseByteStack( #asByteStack( #asWord( S ) ) ) )
                             , 192
                             )
          ]]
