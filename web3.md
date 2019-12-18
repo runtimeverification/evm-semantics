@@ -76,7 +76,7 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     syntax KItem ::= #getBlockchainState ( Int )
  // --------------------------------------------
-    rule <k> #getBlockchainState(BLOCKNUM) => #setBlockchainState(#getBlockByNumber(BLOCKNUM, BLOCKLIST)) ... </k>
+    rule <k> #getBlockchainState(BLOCKNUM) => #setBlockchainState(#getBlockByNumber(BLOCKNUM, BLOCKLIST, .BlockchainItem)) ... </k>
          <blockList> BLOCKLIST </blockList>
 
     syntax KItem ::= #setBlockchainState ( BlockchainItem )
@@ -134,8 +134,11 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     syntax KItem ::= #getAccountAtBlock ( BlockIdentifier , Int )
  // -------------------------------------------------------------
-    rule <k> #getAccountAtBlock(BLOCKNUM , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(BLOCKNUM, BLOCKLIST), ACCTID) ... </k>
+    rule <k> #getAccountAtBlock(BLOCKNUM , ACCTID)
+          => #getAccountFromBlockchainItem(#getBlockByNumber(BLOCKNUM, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}), ACCTID) ... </k>
          <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK   </network>
+         <block>     BLOCK     </block>
 
 ```
 
@@ -775,9 +778,12 @@ Retrieving Blocks
 ```k
     syntax KItem ::= "#eth_getBlockByNumber"
  // ----------------------------------------
-    rule <k> #eth_getBlockByNumber => #eth_getBlockByNumber_finalize( #getBlockByNumber( #parseBlockIdentifier(TAG), BLOCKLIST)) ... </k>
+    rule <k> #eth_getBlockByNumber => #eth_getBlockByNumber_finalize( #getBlockByNumber(#parseBlockIdentifier(TAG), BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>})) ... </k>
          <params> [ TAG:String, TXOUT:Bool, .JSONs ] </params>
          <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK   </network>
+         <block>     BLOCK     </block>
+
     rule <k> #eth_getBlockByNumber => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_getBlockByNumber' requires exactly 2 arguments.") ... </k>
          <params> [ VALUE, .JSONs ] </params>
       requires notBool isJSONs( VALUE )
@@ -900,7 +906,7 @@ Transaction Receipts
     syntax KItem ::= "#eth_getTransactionReceipt"
                    | "#eth_getTransactionReceipt_final" "(" BlockchainItem ")"
  // --------------------------------------------------------------------------
-    rule <k> #eth_getTransactionReceipt => #eth_getTransactionReceipt_final(#getBlockByNumber (BN, BLOCKLIST)) ... </k>
+    rule <k> #eth_getTransactionReceipt => #eth_getTransactionReceipt_final(#getBlockByNumber (BN, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>})) ... </k>
          <params> [TXHASH:String, .JSONs] </params>
          <txReceipt>
            <txHash>          TXHASH </txHash>
@@ -908,6 +914,8 @@ Transaction Receipts
            ...
          </txReceipt>
          <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK </network>
+         <block>     BLOCK   </block>
 
     rule <k> #eth_getTransactionReceipt_final ({
              <network>
@@ -1357,9 +1365,11 @@ Transaction Execution
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
-    rule <k> _:Int ~> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber( "latest", BLOCKLIST ) ) -Int INITGUSED )) ... </k>
+    rule <k> _:Int ~> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber("latest", BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) -Int INITGUSED )) ... </k>
          <statusCode> STATUSCODE </statusCode>
          <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK   </network>
+         <block>     BLOCK     </block>
       requires STATUSCODE =/=K EVMC_OUT_OF_GAS
 
     rule <k> _:Int ~> #eth_estimateGas_finalize _ => #popNetworkState ~> #rpcResponseError(-32000 , "base fee exceeds gas limit") ... </k>
@@ -1689,8 +1699,10 @@ Transactions Root
 
     syntax KItem ::= "#firefly_getTxRoot"
  // -------------------------------------
-    rule <k> #firefly_getTxRoot => #rpcResponseSuccess({ "transactionsRoot" : #getTxRoot( #getBlockByNumber( "latest", BLOCKLIST ) ) }) ... </k>
+    rule <k> #firefly_getTxRoot => #rpcResponseSuccess({ "transactionsRoot" : #getTxRoot( #getBlockByNumber("latest", BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) }) ... </k>
          <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK </network>
+         <block>     BLOCK   </block>
 
     syntax String ::= #getTxRoot( BlockchainItem ) [function]
  // ---------------------------------------------------------
@@ -1717,8 +1729,10 @@ Receipts Root
 
     syntax KItem ::= "#firefly_getReceiptsRoot"
  // -------------------------------------------
-    rule <k> #firefly_getReceiptsRoot => #rpcResponseSuccess({ "receiptsRoot" : #getReceiptRoot( #getBlockByNumber( "latest", BLOCKLIST ) ) }) ... </k>
+    rule <k> #firefly_getReceiptsRoot => #rpcResponseSuccess({ "receiptsRoot" : #getReceiptRoot( #getBlockByNumber("latest", BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) }) ... </k>
          <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK   </network>
+         <block>     BLOCK     </block>
 
     syntax String ::= #getReceiptRoot( BlockchainItem ) [function]
  // --------------------------------------------------------------
