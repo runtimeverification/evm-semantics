@@ -317,6 +317,39 @@ Encoding
                                     , 192
                                     )
 
+    syntax String ::= #rlpEncodeReceipt  ( Int , Int , ByteArray , List ) [function]
+                    | #rlpEncodeLogs     ( List )                         [function]
+                    | #rlpEncodeLogsAux  ( List )                         [function]
+                    | #rlpEncodeTopics   ( List )                         [function]
+                    | #rlpEncodeTopicsAux( List )                         [function]
+ // --------------------------------------------------------------------------------
+    rule [rlpReceipt]: #rlpEncodeReceipt(RS, RG, RB, RL)
+                    => #rlpEncodeLength(         #rlpEncodeWord(RS)
+                                         +String #rlpEncodeWord(RG)
+                                         +String #rlpEncodeString(#unparseByteStack(RB))
+                                         +String #rlpEncodeLogs(RL)
+                                       , 192
+                                       )
+
+    rule #rlpEncodeLogs( .List ) => "\xc0"
+    rule #rlpEncodeLogs( LOGS )  => #rlpEncodeLength( #rlpEncodeLogsAux( LOGS ), 192 )
+      requires LOGS =/=K .List
+
+    rule #rlpEncodeLogsAux( .List ) => ""
+    rule #rlpEncodeLogsAux( ListItem({ ACCT | TOPICS | DATA }) LOGS )
+      => #rlpEncodeLength(         #rlpEncodeBytes( ACCT, 20 )
+                           +String #rlpEncodeTopics( TOPICS )
+                           +String #rlpEncodeString( #asString( DATA ) )
+                         , 192 )
+         +String #rlpEncodeLogsAux( LOGS )
+
+    rule #rlpEncodeTopics( .List )  => "\xc0"
+    rule #rlpEncodeTopics( TOPICS ) => #rlpEncodeLength( #rlpEncodeTopicsAux( TOPICS ), 192 )
+      requires TOPICS =/=K .List
+
+    rule #rlpEncodeTopicsAux( .List ) => ""
+    rule #rlpEncodeTopicsAux( ListItem( X:Int ) TOPICS ) => #rlpEncodeBytes( X, 32 ) +String #rlpEncodeTopicsAux( TOPICS )
+
     syntax String ::= #rlpEncodeMerkleTree ( MerkleTree ) [function]
  // ----------------------------------------------------------------
     rule #rlpEncodeMerkleTree ( .MerkleTree ) => "\x80"

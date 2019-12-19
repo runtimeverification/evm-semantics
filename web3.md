@@ -1595,31 +1595,6 @@ Helper Funcs
            <txStatus>        STATUS </txStatus>
            ...
          </txReceipt>
-
-    syntax String ::= #rlpEncodeLogs   ( List ) [function]
-                    | #rlpEncodeLogsAux( List ) [function]
- // ------------------------------------------------------
-    rule #rlpEncodeLogs( .List ) => "\xc0"
-    rule #rlpEncodeLogs( LOGS )  => #rlpEncodeLength( #rlpEncodeLogsAux( LOGS ), 192 )
-      requires LOGS =/=K .List
-
-    rule #rlpEncodeLogsAux( .List ) => ""
-    rule #rlpEncodeLogsAux( ListItem({ ACCT | TOPICS | DATA }) LOGS )
-      => #rlpEncodeLength(         #rlpEncodeBytes( ACCT, 20 )
-                           +String #rlpEncodeTopics( TOPICS )
-                           +String #rlpEncodeString( #asString( DATA ) )
-                         , 192 )
-         +String #rlpEncodeLogsAux( LOGS )
-
-    syntax String ::= #rlpEncodeTopics   ( List ) [function]
-                    | #rlpEncodeTopicsAux( List ) [function]
- // --------------------------------------------------------
-    rule #rlpEncodeTopics( .List )  => "\xc0"
-    rule #rlpEncodeTopics( TOPICS ) => #rlpEncodeLength( #rlpEncodeTopicsAux( TOPICS ), 192 )
-      requires TOPICS =/=K .List
-
-    rule #rlpEncodeTopicsAux( .List ) => ""
-    rule #rlpEncodeTopicsAux( ListItem( X:Int ) TOPICS ) => #rlpEncodeBytes( X, 32 ) +String #rlpEncodeTopicsAux( TOPICS )
 ```
 
 State Root
