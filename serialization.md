@@ -307,6 +307,16 @@ Encoding
                                   , 192
                                   )
 
+    syntax String ::= #rlpEncodeFullAccount( Int, Int, Map, ByteArray ) [function]
+ // ------------------------------------------------------------------------------
+    rule [rlpAcct]: #rlpEncodeFullAccount( NONCE, BAL, STORAGE, CODE )
+                 => #rlpEncodeLength(         #rlpEncodeWord(NONCE)
+                                      +String #rlpEncodeWord(BAL)
+                                      +String #rlpEncodeString( Hex2Raw( Keccak256( #rlpEncodeMerkleTree( #storageRoot( STORAGE ) ) ) ) )
+                                      +String #rlpEncodeString( Hex2Raw( Keccak256( #unparseByteStack( CODE ) ) ) )
+                                    , 192
+                                    )
+
     syntax String ::= #rlpEncodeMerkleTree ( MerkleTree ) [function]
  // ----------------------------------------------------------------
     rule #rlpEncodeMerkleTree ( .MerkleTree ) => "\x80"
