@@ -508,7 +508,9 @@ The local memory of execution is a byte-array (instead of a word-array).
  // --------------------------------------------------------
     rule .ByteArray => .Bytes
 
-    syntax Int ::= #asWord ( ByteArray ) [function, smtlib(asWord)]
+    //Custom sort required for verification, to avoid matching on KLabel
+    syntax AsWordInt ::= #asWord ( ByteArray ) [function, smtlib(asWord)]
+    syntax Int ::= AsWordInt
  // ---------------------------------------------------------------
     rule #asWord(WS) => chop(Bytes2Int(WS, BE, Unsigned))
 
