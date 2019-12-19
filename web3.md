@@ -1834,7 +1834,9 @@ Mining
          <network> NETWORK </network>
 
     rule <k> #updateReceiptsRoot => . ... </k>
-         <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
+         <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot( TXLIST, <txReceipts> TXRECEIPTS </txReceipts> ) ) ) ) </receiptsRoot>
+         <txOrder> TXLIST </txOrder>
+         <txReceipts> TXRECEIPTS </txReceipts>
 ```
 
 Unimplemented Methods
