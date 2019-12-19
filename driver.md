@@ -8,11 +8,13 @@ Actual execution of the EVM is defined in [the EVM file](../evm).
 requires "evm.k"
 requires "asm.k"
 requires "state-loader.k"
+requires "edsl2.k"
 
 module ETHEREUM-SIMULATION
     imports EVM
     imports EVM-ASSEMBLY
     imports STATE-LOADER
+    imports EDSL2
 ```
 
 An Ethereum simulation is a list of Ethereum commands.

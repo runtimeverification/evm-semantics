@@ -99,6 +99,7 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     rule #rangeUInt    (  16 ,      X ) => #range ( minUInt16       <= X <= maxUInt16       ) [macro]
     rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <= maxUInt48       ) [macro]
     rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <= maxUInt128      ) [macro]
+    rule #rangeUInt    ( 160 ,      X ) => #range ( minUInt160      <= X <= maxUInt160      ) [macro]
     rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <= maxUInt256      ) [macro]
     rule #rangeSFixed  ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 ) [macro]
     rule #rangeUFixed  ( 128 , 10 , X ) => #range ( minUFixed128x10 <= X <= maxUFixed128x10 ) [macro]
@@ -455,21 +456,26 @@ We are using the polymorphic `Map` sort for these word maps.
 -   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
 
 ```{.k .bytes}
-    syntax Map ::= Map "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
- // -------------------------------------------------------------------------------
-    rule WM[ N := WS ] => WM [ N := WS, 0, #sizeByteArray(WS) ]
+    syntax Map ::= Map "[" Int ":=" ByteArray "]" [function, functional, klabel(mapWriteBytes)]
+ // -------------------------------------------------------------------------------------------
+    rule WM[ N := WS ] => storeRange(WM, N, #sizeByteArray(WS), WS)
 
-    syntax Map ::= Map "[" Int ":=" ByteArray "," Int "," Int "]" [function]
- // ------------------------------------------------------------------------
-    rule WM [ N := WS, I, I ] => WM
-    rule WM [ N := WS, I, J ] => (WM[N <- WS[I]])[ N +Int 1 := WS, I +Int 1, J ] [owise]
+    // storeRange(M, START, WIDTH, DATA)
+    // storeRange(M, START, WIDTH, INDEX, DATA)
+    syntax Map ::= storeRange    ( Map , Int , Int , ByteArray )     [function, functional, smtlib(storeRange)]
+    syntax Map ::= storeRangeAux ( Map , Int , Int , Int, ByteArray) [function, functional]
+ // -----------------------------------------------------------------------------------------------------------
+    rule storeRange(WM, N, SIZE, WS) => storeRangeAux(WM, N, SIZE, 0, WS) [concrete]
+    rule storeRangeAux(WM, N, SIZE, SIZE, WS) => WM [concrete]
+    rule storeRangeAux(WM, N, SIZE, INDEX, WS) => storeRangeAux(WM[N <- WS[INDEX]], N +Int 1, SIZE, INDEX +Int 1, WS)
+      requires INDEX <Int SIZE [concrete]
 
-    syntax ByteArray ::= #range ( Map , Int , Int )                   [function]
-                       | #range ( Map , Int , Int , Int , ByteArray ) [function, klabel(#rangeAux)]
- // -----------------------------------------------------------------------------------------------
-    rule #range(WM, START, WIDTH) => #range(WM, START, 0, WIDTH, padLeftBytes(.Bytes, WIDTH, 0))
-    rule #range(WM, I, WIDTH, WIDTH, WS) => WS
-    rule #range(WM, I,     J, WIDTH, WS) => #range(WM, I +Int 1, J +Int 1, WIDTH, WS [ J <- {WM[I] orDefault 0}:>Int ]) [owise]
+    syntax ByteArray ::= #range ( Map , Int , Int )                   [function, functional]
+                       | #range ( Map , Int , Int , Int , ByteArray ) [function, functional, klabel(#rangeAux)]
+ // -----------------------------------------------------------------------------------------------------------
+    rule #range(WM, START, WIDTH) => #range(WM, START, 0, WIDTH, padLeftBytes(.Bytes, WIDTH, 0)) [concrete]
+    rule #range(WM, I, WIDTH, WIDTH, WS) => WS [concrete]
+    rule #range(WM, I,     J, WIDTH, WS) => #range(WM, I +Int 1, J +Int 1, WIDTH, WS [ J <- {WM[I] orDefault 0}:>Int ]) [owise, concrete]
 ```
 
 ```{.k .nobytes}
@@ -508,9 +514,9 @@ The local memory of execution is a byte-array (instead of a word-array).
  // --------------------------------------------------------
     rule .ByteArray => .Bytes
 
-    syntax Int ::= #asWord ( ByteArray ) [function, smtlib(asWord)]
- // ---------------------------------------------------------------
-    rule #asWord(WS) => chop(Bytes2Int(WS, BE, Unsigned))
+    syntax Int ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
+ // ---------------------------------------------------------------------------
+    rule #asWord(WS) => chop(Bytes2Int(WS, BE, Unsigned)) [concrete]
 
     syntax Int ::= #asInteger ( ByteArray ) [function]
  // --------------------------------------------------
@@ -527,7 +533,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 
     syntax ByteArray ::= #asByteStack ( Int ) [function]
  // ----------------------------------------------------
-    rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned)
+    rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete]
 
     syntax ByteArray ::= ByteArray "++" ByteArray [function, right, klabel(_++_WS), smtlib(_plusWS_)]
  // -------------------------------------------------------------------------------------------------
@@ -535,8 +541,8 @@ The local memory of execution is a byte-array (instead of a word-array).
 
     syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function]
  // --------------------------------------------------------------
-    rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires START <Int #sizeByteArray(WS)
-    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0)                                              [owise]
+    rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires START <Int #sizeByteArray(WS) [concrete]
+    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0)                                              [owise, concrete]
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional]
  // ------------------------------------------------------------------
@@ -544,7 +550,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 
     syntax ByteArray ::= #padToWidth ( Int , ByteArray ) [function]
  // ---------------------------------------------------------------
-    rule #padToWidth(N, WS) => padLeftBytes(WS, N, 0)
+    rule #padToWidth(N, WS) => padLeftBytes(WS, N, 0) [concrete]
 ```
 
 ```{.k .nobytes}
@@ -631,10 +637,22 @@ Addresses
 -   `#lookup` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 ```k
-    syntax Int ::= #lookup ( Map , Int ) [function]
- // -----------------------------------------------
-    rule [#lookup.some]: #lookup( (KEY |-> VAL) M, KEY ) => VAL
-    rule [#lookup.none]: #lookup(               M, KEY ) => 0 requires notBool KEY in_keys(M)
+    syntax Int ::= #lookup ( Map , Int ) [function, functional]
+ // -----------------------------------------------------------
+    rule [#lookup.some]: #lookup( (KEY |-> VAL) M, KEY ) => VAL [concrete]
+    rule [#lookup.none]: #lookup(               M, KEY ) => 0 requires notBool KEY in_keys(M) [concrete]
+
+    syntax Bool ::= #isIntegerMap  ( Map )  [function, functional]
+                  | #isIntegerList ( List ) [function, functional]
+ // --------------------------------------------------------------
+    rule #isIntegerMap(M) => #isIntegerList(values(M)) [concrete]
+
+    rule #isIntegerList(.List) => true
+    rule #isIntegerList(ListItem(H) T) => #isIntegerList(T) requires isInt(H)          [concrete]
+    rule #isIntegerList(ListItem(H) T) => false             requires notBool isInt(H)  [concrete]
+
+    // rule #Ceil(#lookup(@M, @KEY)) => {#isIntegerMap(@M) #Equals true} #And #Ceil(@M) #And #Ceil(@KEY) [anywhere]
+
 ```
 
 ```k
