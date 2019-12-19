@@ -1661,8 +1661,35 @@ Transactions Root
 
 ```k
     syntax MerkleTree ::= "#transactionsRoot" [function]
- // ----------------------------------------------------
+    syntax MerkleTree ::= #transactionsRoot( NetworkCell )                            [function]
+                        | #transactionsRootAux( MerkleTree, Int, List, MessagesCell ) [function]
+ // --------------------------------------------------------------------------------------------
     rule #transactionsRoot => MerkleUpdateMap( .MerkleTree, #transactionsMap )
+
+    rule #transactionsRoot( <network> <txOrder> TXLIST </txOrder> <messages> MESSAGES </messages> ... </network> )
+      => #transactionsRootAux( .MerkleTree, 0, TXLIST, <messages> MESSAGES </messages> )
+
+    rule #transactionsRootAux( ( TREE => MerkleUpdate( TREE, #rlpEncodeWord(I), #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) ) )
+                             , ( I => I +Int 1 )
+                             , ( ListItem( TXID ) => .List ) TXLIST
+                             , <messages>
+                                 <message>
+                                   <msgID> TXID </msgID>
+                                   <txNonce>    TN </txNonce>
+                                   <txGasPrice> TP </txGasPrice>
+                                   <txGasLimit> TG </txGasLimit>
+                                   <to>         TT </to>
+                                   <value>      TV </value>
+                                   <sigV>       TW </sigV>
+                                   <sigR>       TR </sigR>
+                                   <sigS>       TS </sigS>
+                                   <data>       TD </data>
+                                 </message>
+                                 ...
+                               </messages>
+                             )
+
+    rule #transactionsRootAux( TREE, _, .List, _ ) => TREE
 
     syntax Map ::= "#transactionsMap"               [function]
                  | #transactionsMapAux( Int, List ) [function]
@@ -1823,8 +1850,11 @@ Mining
     rule <k> #updateTrieRoots => #updateStateRoot ~> #updateTransactionsRoot ~> #updateReceiptsRoot ... </k>
     rule <k> #updateStateRoot => . ... </k>
          <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
+
     rule <k> #updateTransactionsRoot => . ... </k>
-         <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
+         <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot(<network> NETWORK </network>) ) ) ) </transactionsRoot>
+         <network> NETWORK </network>
+
     rule <k> #updateReceiptsRoot => . ... </k>
          <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
 ```
