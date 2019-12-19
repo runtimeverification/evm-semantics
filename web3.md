@@ -1523,18 +1523,6 @@ Helper Funcs
 ------------
 
 ```k
-    syntax AccountData ::= #getAcctData( Account ) [function]
- // ---------------------------------------------------------
-    rule [[ #getAcctData( ACCT ) => AcctData(NONCE, BAL, STORAGE, CODE) ]]
-         <account>
-           <acctID>  ACCT    </acctID>
-           <nonce>   NONCE   </nonce>
-           <balance> BAL     </balance>
-           <storage> STORAGE </storage>
-           <code>    CODE    </code>
-           ...
-         </account>
-
     syntax String ::= #rlpEncodeBlock( BlockchainItem ) [function]
  // --------------------------------------------------------------
     rule #rlpEncodeBlock( { _ |
@@ -1638,12 +1626,9 @@ State Root
 ----------
 
 ```k
-    syntax MerkleTree ::= "#stateRoot" [function]
     syntax MerkleTree ::= #stateRoot   ( NetworkCell )                   [function]
                         | #stateRootAux( MerkleTree, Set, AccountsCell ) [function]
  // -------------------------------------------------------------------------------
-    rule #stateRoot => MerkleUpdateMap( .MerkleTree, #precompiledContracts #activeAccounts )
-
     rule #stateRoot( <network>
                        <activeAccounts> ACCTS </activeAccounts>
                        <accounts> ACCTSCELL </accounts>
@@ -1668,15 +1653,6 @@ State Root
                       )
 
     rule #stateRootAux( TREE, .Set, _ ) => TREE
-
-    syntax Map ::= "#activeAccounts"   [function]
-                 | #accountsMap( Set ) [function]
- // ---------------------------------------------
-    rule [[ #activeAccounts => #accountsMap( ACCTS ) ]]
-         <activeAccounts> ACCTS </activeAccounts>
-
-    rule #accountsMap( .Set ) => .Map
-    rule #accountsMap( SetItem( ACCT:Int ) S ) => #parseByteStack( #unparseData( ACCT, 20 ) ) |-> #rlpEncodeFullAccount( #getAcctData( ACCT ) ) #accountsMap( S )
 
     syntax KItem ::= "#firefly_getStateRoot"
  // ----------------------------------------

@@ -607,18 +607,5 @@ Tree Root Helper Functions
                                               , 192
                                               )
 
-    syntax AccountData ::= AcctData ( nonce: Int, balance: Int, store: Map, code: ByteArray )
- // -----------------------------------------------------------------------------------------
-
-    syntax String      ::= #rlpEncodeFullAccount( AccountData ) [function]
- // ----------------------------------------------------------------------
-    rule  #rlpEncodeFullAccount( AcctData( NONCE, BAL, STORAGE, CODE ) )
-         => #rlpEncodeLength(         #rlpEncodeWord(NONCE)
-                              +String #rlpEncodeWord(BAL)
-                              +String #rlpEncodeString( Hex2Raw( Keccak256( #rlpEncodeMerkleTree( #storageRoot( STORAGE ) ) ) ) )
-                              +String #rlpEncodeString( Hex2Raw( Keccak256( #asString( CODE ) ) ) )
-                            , 192
-                            )
-
 endmodule
 ```
