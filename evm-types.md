@@ -516,10 +516,6 @@ The local memory of execution is a byte-array (instead of a word-array).
  // --------------------------------------------------
     rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned)
 
-    syntax String ::= #asString ( ByteArray ) [function]
- // ----------------------------------------------------
-    rule #asString(WS) => Bytes2String(WS)
-
     syntax Account ::= #asAccount ( ByteArray ) [function]
  // ------------------------------------------------------
     rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
@@ -564,12 +560,6 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #asInteger( .WordStack     ) => 0
     rule #asInteger( W : .WordStack ) => W
     rule #asInteger( W0 : W1 : WS   ) => #asInteger(((W0 *Int 256) +Int W1) : WS)
-
-    syntax String ::= #asString ( ByteArray ) [function]
- // ----------------------------------------------------
-    rule #asString( .WordStack     ) => ""
-    rule #asString( W : .WordStack ) => chrChar( W )
-    rule #asString( W0 : WS        ) => chrChar( W0 ) +String #asString( WS )
 
     syntax Account ::= #asAccount ( ByteArray ) [function]
  // ------------------------------------------------------

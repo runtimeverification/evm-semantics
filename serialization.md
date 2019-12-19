@@ -349,13 +349,13 @@ Encoding
     rule #rlpEncodeMerkleTree ( .MerkleTree ) => "\x80"
 
     rule #rlpEncodeMerkleTree ( MerkleLeaf ( PATH, VALUE ) )
-      => #rlpEncodeLength(         #rlpEncodeString( #asString( #HPEncode( PATH, 1 ) ) )
+      => #rlpEncodeLength(         #rlpEncodeString( #unparseByteStack( #HPEncode( PATH, 1 ) ) )
                            +String #rlpEncodeString( VALUE )
                          , 192
                          )
 
     rule #rlpEncodeMerkleTree ( MerkleExtension ( PATH, TREE ) )
-      => #rlpEncodeLength(         #rlpEncodeString( #asString( #HPEncode( PATH, 0 ) ) )
+      => #rlpEncodeLength(         #rlpEncodeString( #unparseByteStack( #HPEncode( PATH, 0 ) ) )
                            +String #rlpMerkleH( #rlpEncodeMerkleTree( TREE ) )
                          , 192
                          )
@@ -461,7 +461,7 @@ Merkle Patricia Tree
 
     rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, _ ), PATH, VALUE )
       => MerkleLeaf( LEAFPATH, VALUE )
-      requires #asString( LEAFPATH ) ==String #asString( PATH )
+      requires #unparseByteStack( LEAFPATH ) ==String #unparseByteStack( PATH )
 
     rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
       => MerkleUpdate ( MerkleUpdate ( .MerkleBranch, LEAFPATH, LEAFVALUE ), PATH, VALUE )
@@ -474,7 +474,7 @@ Merkle Patricia Tree
 
     rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => MerkleExtension ( EXTPATH, MerkleUpdate ( EXTTREE, .ByteArray, VALUE ) )
-      requires #asString( EXTPATH ) ==String #asString( PATH )
+      requires #unparseByteStack( EXTPATH ) ==String #unparseByteStack( PATH )
 
     rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, PATH, VALUE ), EXTPATH, EXTTREE )
