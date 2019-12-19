@@ -637,6 +637,16 @@ Addresses
     rule [#lookup.none]: #lookup(               M, KEY ) => 0 requires notBool KEY in_keys(M)
 ```
 
+### Substate Log
+
+During execution of a transaction some things are recorded in the substate log (Section 6.1 in YellowPaper).
+This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
+
+```k
+    syntax SubstateLogEntry ::= "{" Int "|" List "|" ByteArray "}" [klabel(logEntry)]
+ // ---------------------------------------------------------------------------------
+```
+
 ```k
 endmodule
 ```
