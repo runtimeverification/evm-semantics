@@ -1639,8 +1639,35 @@ State Root
 
 ```k
     syntax MerkleTree ::= "#stateRoot" [function]
- // ---------------------------------------------
+    syntax MerkleTree ::= #stateRoot   ( NetworkCell )                   [function]
+                        | #stateRootAux( MerkleTree, Set, AccountsCell ) [function]
+ // -------------------------------------------------------------------------------
     rule #stateRoot => MerkleUpdateMap( .MerkleTree, #precompiledContracts #activeAccounts )
+
+    rule #stateRoot( <network>
+                       <activeAccounts> ACCTS </activeAccounts>
+                       <accounts> ACCTSCELL </accounts>
+                       ...
+                     </network>
+                   )
+      => #stateRootAux( MerkleUpdateMap( .MerkleTree, #precompiledContracts ), ACCTS, <accounts> ACCTSCELL </accounts> )
+
+    rule #stateRootAux( (TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), #rlpEncodeFullAccount(NONCE, BAL, STORAGE, CODE) ))
+                      , (SetItem(ACCT) => .Set) ACCTS
+                      , <accounts>
+                          <account>
+                            <acctID>  ACCT    </acctID>
+                            <nonce>   NONCE   </nonce>
+                            <balance> BAL     </balance>
+                            <storage> STORAGE </storage>
+                            <code>    CODE    </code>
+                            ...
+                          </account>
+                          ...
+                        </accounts>
+                      )
+
+    rule #stateRootAux( TREE, .Set, _ ) => TREE
 
     syntax Map ::= "#activeAccounts"   [function]
                  | #accountsMap( Set ) [function]
