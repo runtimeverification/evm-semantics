@@ -67,7 +67,7 @@ pipeline {
                 '''
               }
             }
-            stage('Conformance (Web3)') {
+            stage('Conformance (Truffle)') {
               steps {
                 sh '''
                   ./tests/truffle.test.sh
