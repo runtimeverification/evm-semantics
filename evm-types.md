@@ -512,7 +512,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax AsWordInt ::= #asWord ( ByteArray ) [function, smtlib(asWord)]
     syntax Int ::= AsWordInt
  // ---------------------------------------------------------------
-    rule { #asWord(WS) }:>Int => chop(Bytes2Int(WS, BE, Unsigned))
+    rule #asWord(WS) => { chop(Bytes2Int(WS, BE, Unsigned)) }:>AsWordInt
 
     syntax Int ::= #asInteger ( ByteArray ) [function]
  // --------------------------------------------------
@@ -559,9 +559,9 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax AsWordInt ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
     syntax Int ::= AsWordInt
  // ---------------------------------------------------------------------------
-    rule [#asWord.base-empty]:  { #asWord( .WordStack     ) }:>Int => 0
-    rule [#asWord.base-single]: { #asWord( W : .WordStack ) }:>Int => W
-    rule [#asWord.recursive]:     #asWord( W0 : W1 : WS   )        => #asWord(((W0 *Word 256) +Word W1) : WS)
+    rule [#asWord.base-empty]:  #asWord( .WordStack     ) => { 0 }:>AsWordInt
+    rule [#asWord.base-single]: #asWord( W : .WordStack ) => { W }:>AsWordInt
+    rule [#asWord.recursive]:   #asWord( W0 : W1 : WS   ) => #asWord(((W0 *Word 256) +Word W1) : WS)
 
     syntax Int ::= #asInteger ( ByteArray ) [function]
  // --------------------------------------------------
