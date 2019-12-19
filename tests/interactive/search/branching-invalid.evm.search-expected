@@ -208,7 +208,7 @@
     _10
   #Equals
     <k>
-      #halt ~> .EthereumSimulation
+      #halt
     </k>
   }
 #And

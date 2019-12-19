@@ -1,13 +1,17 @@
-[{
-  "jsonrpc": "2.0",
-  "method": "net_version",
-  "params": []
-},{
-  "jsonrpc": "2.0",
-  "method": "net_version",
-  "params": []
-},{
-  "jsonrpc": "2.0",
-  "method": "net_version",
-  "params": []
-}]
+[
+  {
+    "jsonrpc": "2.0",
+    "method": "net_version",
+    "params": []
+  },
+  {
+    "jsonrpc": "2.0",
+    "method": "net_version",
+    "params": []
+  },
+  {
+    "jsonrpc": "2.0",
+    "method": "net_version",
+    "params": []
+  }
+]
