@@ -1561,40 +1561,6 @@ Helper Funcs
                               +String #rlpEncodeBytes( NONCE, 8 )
                             , 192
                             )
-
-    syntax String ::= #rlpEncodeReceipt( Int )       [function]
-                    | #rlpEncodeReceiptAux( String ) [function]
- // -----------------------------------------------------------
-    rule [[ #rlpEncodeReceipt( TXID ) => #rlpEncodeReceiptAux("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ]]
-         <message>
-           <msgID>      TXID </msgID>
-           <txNonce>    TN   </txNonce>
-           <txGasPrice> TP   </txGasPrice>
-           <txGasLimit> TG   </txGasLimit>
-           <to>         TT   </to>
-           <value>      TV   </value>
-           <sigV>       TW   </sigV>
-           <sigR>       TR   </sigR>
-           <sigS>       TS   </sigS>
-           <data>       TD   </data>
-         </message>
-
-    rule [[ #rlpEncodeReceiptAux( TXHASH ) =>
-            #rlpEncodeLength(         #rlpEncodeWord( STATUS )
-                              +String #rlpEncodeWord( CGAS )
-                              +String #rlpEncodeString( #asString( BLOOM ) )
-                              +String #rlpEncodeLogs( LOGS )
-                            , 192
-                            )
-         ]]
-         <txReceipt>
-           <txHash> TXHASH </txHash>
-           <txCumulativeGas> CGAS   </txCumulativeGas>
-           <logSet>          LOGS   </logSet>
-           <bloomFilter>     BLOOM  </bloomFilter>
-           <txStatus>        STATUS </txStatus>
-           ...
-         </txReceipt>
 ```
 
 State Root
@@ -1683,11 +1649,9 @@ Receipts Root
 -------------
 
 ```k
-    syntax MerkleTree ::= "#receiptsRoot" [function]
     syntax MerkleTree ::= #receiptsRoot( List, TxReceiptsCell )                     [function]
                         | #receiptsRootAux( MerkleTree, Int, List, TxReceiptsCell ) [function]
  // ------------------------------------------------------------------------------------------
-    rule #receiptsRoot => MerkleUpdateMap( .MerkleTree, #receiptsMap )
 
     rule #receiptsRoot( TXLIST, <txReceipts> TXRECEIPTS </txReceipts> )
       => #receiptsRootAux( .MerkleTree, 0, TXLIST, <txReceipts> TXRECEIPTS </txReceipts> )
@@ -1709,16 +1673,6 @@ Receipts Root
                          )
 
     rule #receiptsRootAux( TREE, _, .List, _ ) => TREE
-
-    syntax Map ::= "#receiptsMap"         [function]
-                 | #receiptsMapAux( Int ) [function]
- // ------------------------------------------------
-    rule #receiptsMap => #receiptsMapAux( 0 )
-
-    rule    #receiptsMapAux( _ ) => .Map [owise]
-    rule [[ #receiptsMapAux( I ) => #parseByteStackRaw( #rlpEncodeWord( I ) )[0 .. 1] |-> #rlpEncodeReceipt( { TXLIST[ I ] }:>Int ) #receiptsMapAux( I +Int 1 ) ]]
-         <txOrder> TXLIST </txOrder>
-      requires size(TXLIST) >Int I
 
     syntax KItem ::= "#firefly_getReceiptsRoot"
  // -------------------------------------------
