@@ -93,6 +93,28 @@ Address/Hash Helpers
 
 ```
 
+- `#hashSignedTx` Takes transaction data. Returns the hash of the rlp-encoded transaction with R S and V.
+- `#hashUnsignedTx` Returns the hash of the rlp-encoded transaction without R S or V.
+
+```k
+    syntax String ::= #hashSignedTx   ( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
+                    | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray )                               [function]
+ // --------------------------------------------------------------------------------------------------------------------------
+    rule [hashTx]: #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
+                => Keccak256( #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) )
+
+    rule [hashFakeTx]: #hashUnsignedTx(TN, TP, TG, TT, TV, TD)
+                    => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
+                                                    +String #rlpEncodeWord(TP)
+                                                    +String #rlpEncodeWord(TG)
+                                                    +String #rlpEncodeAccount(TT)
+                                                    +String #rlpEncodeWord(TV)
+                                                    +String #rlpEncodeString(#unparseByteStack(TD))
+                                                  , 192
+                                                  )
+                                )
+```
+
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
 Here we provide some standard parser/unparser functions for that format.
 
@@ -269,6 +291,21 @@ Encoding
     rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR                                requires           lengthString(STR) <Int 56
     rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires notBool ( lengthString(STR) <Int 56 )
     rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
+
+    syntax String ::= #rlpEncodeTransaction( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
+ // -------------------------------------------------------------------------------------------------------------------------------
+    rule [rlpTx]: #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS)
+               => #rlpEncodeLength(         #rlpEncodeWord(TN)
+                                    +String #rlpEncodeWord(TP)
+                                    +String #rlpEncodeWord(TG)
+                                    +String #rlpEncodeAccount(TT)
+                                    +String #rlpEncodeWord(TV)
+                                    +String #rlpEncodeString(#unparseByteStack(TD))
+                                    +String #rlpEncodeWord(TW)
+                                    +String #rlpEncodeString(#unparseByteStack(#asByteStack(#asWord(TR))))
+                                    +String #rlpEncodeString(#unparseByteStack(#asByteStack(#asWord(TS))))
+                                  , 192
+                                  )
 
     syntax String ::= #rlpEncodeMerkleTree ( MerkleTree ) [function]
  // ----------------------------------------------------------------
