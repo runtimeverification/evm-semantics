@@ -555,7 +555,9 @@ The local memory of execution is a byte-array (instead of a word-array).
  // --------------------------------------------
     rule .ByteArray => .WordStack
 
-    syntax Int ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
+    //Custom sort required for verification, to avoid matching on KLabel
+    syntax AsWordInt ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
+    syntax Int ::= AsWordInt
  // ---------------------------------------------------------------------------
     rule [#asWord.base-empty]:  #asWord( .WordStack     ) => 0
     rule [#asWord.base-single]: #asWord( W : .WordStack ) => W
