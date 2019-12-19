@@ -67,6 +67,13 @@ pipeline {
                 '''
               }
             }
+            stage('Conformance (Web3)') {
+              steps {
+                sh '''
+                  ./tests/truffle.test.sh
+                '''
+              }
+            }
           }
         }
         stage('Proofs') {
