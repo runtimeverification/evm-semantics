@@ -1781,6 +1781,34 @@ Mining
          <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
 ```
 
+Retrieving logs
+---------------
+
+```k
+    syntax KItem ::= "#eth_getLogs"
+                   | "#loadGetLogs" JSON
+ // ------------------------------------
+    rule <k> #eth_getLogs => #loadGetLogs J ... </k>
+         <params> [{ _ } #as J, .JSONs] </params>
+
+    rule <k> #loadGetLogs { "address": (ADDR:String) => #parseHexWord(ADDR), _ } ... </k>
+    rule <k> #loadGetLogs { "topics": (J:JSONs) => #parseIntList(J), _ } ... </k>
+    rule <k> #loadGetLogs { "fromBlock": _, REST => REST } ... </k>     requires isString( #getJSON("blockHash", J) )
+    rule <k> #loadGetLogs { "toBlock": _,   REST => REST } ... </k>     requires isString( #getJSON("blockHash", J) )
+    rule <k> #loadGetLogs { "fromBlock": (BN:String) => #parseBlockIdentifier(BN), _ } ... </k>
+    rule <k> #loadGetLogs { "toBlock":   (BN:String) => #parseBlockIdentifier(BN), _ } ... </k>
+
+    syntax List ::= #parseIntList ( JSONs ) [function]
+ // --------------------------------------------------
+    rule #parseIntList (J) => #parseIntListAux( J, .List)
+
+    syntax List ::= #parseIntListAux ( JSONs, List ) [function]
+ // -----------------------------------------------------------
+    rule #parseIntListAux([ .JSONs ], RESULT) => RESULT
+    rule #parseIntListAux([JITEM, J], RESULT) => #parseIntListAux(J, ListItem(#parseHexWord(JItem)) RESULT)
+
+```
+
 Unimplemented Methods
 ---------------------
 
@@ -1792,7 +1820,6 @@ Unimplemented Methods
                    | "#eth_getCompilers"
                    | "#eth_getFilterChanges"
                    | "#eth_getFilterLogs"
-                   | "#eth_getLogs"
                    | "#eth_getTransactionByHash"
                    | "#eth_getTransactionByBlockHashAndIndex"
                    | "#eth_getTransactionByBlockNumberAndIndex"
@@ -1825,7 +1852,6 @@ Unimplemented Methods
     rule <k> #eth_getCompilers                        => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getFilterChanges                    => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getFilterLogs                       => #rpcResponseUnimplemented ... </k>
-    rule <k> #eth_getLogs                             => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getTransactionByHash                => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getTransactionByBlockHashAndIndex   => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getTransactionByBlockNumberAndIndex => #rpcResponseUnimplemented ... </k>
