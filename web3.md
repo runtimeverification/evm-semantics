@@ -1684,8 +1684,31 @@ Receipts Root
 
 ```k
     syntax MerkleTree ::= "#receiptsRoot" [function]
- // ------------------------------------------------
+    syntax MerkleTree ::= #receiptsRoot( List, TxReceiptsCell )                     [function]
+                        | #receiptsRootAux( MerkleTree, Int, List, TxReceiptsCell ) [function]
+ // ------------------------------------------------------------------------------------------
     rule #receiptsRoot => MerkleUpdateMap( .MerkleTree, #receiptsMap )
+
+    rule #receiptsRoot( TXLIST, <txReceipts> TXRECEIPTS </txReceipts> )
+      => #receiptsRootAux( .MerkleTree, 0, TXLIST, <txReceipts> TXRECEIPTS </txReceipts> )
+
+    rule #receiptsRootAux( ( TREE => MerkleUpdate( TREE, #rlpEncodeWord(I), #rlpEncodeReceipt(TS, TG, TB, TL) ) )
+                         , ( I => I +Int 1 )
+                         , ( ListItem(TXID) => .List ) _
+                         , <txReceipts>
+                             <txReceipt>
+                               <txID> TXID </txID>
+                               <txStatus>        TS </txStatus>
+                               <txCumulativeGas> TG </txCumulativeGas>
+                               <bloomFilter>     TB </bloomFilter>
+                               <logSet>          TL </logSet>
+                               ...
+                             </txReceipt>
+                             ...
+                           </txReceipts>
+                         )
+
+    rule #receiptsRootAux( TREE, _, .List, _ ) => TREE
 
     syntax Map ::= "#receiptsMap"         [function]
                  | #receiptsMapAux( Int ) [function]
