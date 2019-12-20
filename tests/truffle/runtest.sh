@@ -12,7 +12,7 @@ kevm_client_pid="$!"
 while (! netcat -z 127.0.0.1 "$PORT") ; do sleep 0.1; done
 
 pushd "$test_dir"
-truffle test
+npx run truffle test
 popd
 
 # close test-runner
