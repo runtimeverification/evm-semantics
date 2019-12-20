@@ -4,7 +4,7 @@ set -euo pipefail
 
 test_dir="$1" ; shift
 # launch test-runner
-PORT=$(cat "$test_dir"truffle-config.js | grep port: | tr -d -c 0-9 || echo "8545" )
+PORT=$(cat "$test_dir"truffle-config.js | grep 'port:' | cut -d ':' -f '2' | cut -d ',' -f '1' || echo "8545" )
 echo "$PORT"
 
 ./kevm web3-ganache "$PORT" --shutdownable &
