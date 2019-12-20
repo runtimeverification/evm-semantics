@@ -89,13 +89,14 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List , BlockchainItem ) [function]
  // --------------------------------------------------------------------------------------------------
-    rule #getBlockByNumber( _:String   , _                     , BLOCKCHAINITEM ) => BLOCKCHAINITEM [owise]
-    rule #getBlockByNumber( _:Int      , .List                 , _              ) => .BlockchainItem
-    rule #getBlockByNumber( "earliest" , _ ListItem( BLOCK )   , _              ) => BLOCK
-    rule #getBlockByNumber( "latest"   ,   ListItem( BLOCK ) _ , _              ) => BLOCK
+    rule #getBlockByNumber( _:Int      , .List                 , _     ) => .BlockchainItem
+    rule #getBlockByNumber( "earliest" , _ ListItem( BLOCK )   , _     ) => BLOCK
+    rule #getBlockByNumber( "latest"   ,   ListItem( BLOCK ) _ , _     ) => BLOCK
+    rule #getBlockByNumber( "pending"  , _                     , BLOCK ) => BLOCK
+    rule #getBlockByNumber( _:String   , .List                 , BLOCK ) => BLOCK
 
-    rule #getBlockByNumber(BLOCKNUM:Int ,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCKCHAINITEM) REST, _ ) => BLOCKCHAINITEM
-    rule #getBlockByNumber(BLOCKNUM':Int, (ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }                   ) => .List) _, _ )
+    rule #getBlockByNumber(BLOCKNUM:Int ,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCK)           REST, _ ) => BLOCK
+    rule #getBlockByNumber(BLOCKNUM':Int, (ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }          ) => .List)    _, _ )
       requires BLOCKNUM =/=Int BLOCKNUM'
 
     syntax AccountItem ::= AccountCell | ".AccountItem"
