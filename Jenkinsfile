@@ -63,7 +63,7 @@ pipeline {
             stage('Conformance (Web3)') {
               steps {
                 sh '''
-                  make test-web3
+                  make test-web3 -j8
                 '''
               }
             }
