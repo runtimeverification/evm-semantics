@@ -1,1 +1,2 @@
 tests/specs/functional/merkle-failing-spec.k
+tests/specs/symtest/bectoken-test-batchtransfer-spec.k
