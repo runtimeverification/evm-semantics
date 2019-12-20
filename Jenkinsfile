@@ -70,7 +70,7 @@ pipeline {
             stage('Conformance (Truffle)') {
               steps {
                 sh '''
-                  ./tests/truffle.test.sh
+                  make test-truffle
                 '''
               }
             }
