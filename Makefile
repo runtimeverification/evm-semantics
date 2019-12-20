@@ -451,7 +451,8 @@ test-all-truffle: $(all_truffle_tests:=.run-truffle)
 test-failing-truffle: $(failing_truffle_tests:=.run-truffle)
 test-truffle: $(passing_truffle_tests:=.run-truffle)
 
-tests/truffle/openzeppelin-contracts/truffle-config.js:
+tests/truffle/openzeppelin-contracts/truffle-config.js: tests/truffle/openzeppelin-contracts/DOCUMENTATION.md
+tests/truffle/openzeppelin-contracts/DOCUMENTATION.md:
 	cd tests/truffle && git clone 'https://github.com/openzeppelin/openzeppelin-contracts.git'
 
 # Proof Tests
