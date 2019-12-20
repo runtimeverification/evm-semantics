@@ -3,16 +3,18 @@
 set -euo pipefail
 
 test_dir="$1" ; shift
-
 # launch test-runner
-PORT=8485
+PORT=$(cat "$test_dir"truffle-config.js | grep port: | tr -d -c 0-9 || echo "8545" )
+echo "$PORT"
+
 ./kevm web3-ganache "$PORT" --shutdownable &
 kevm_client_pid="$!"
 
 while (! netcat -z 127.0.0.1 "$PORT") ; do sleep 0.1; done
 
 pushd "$test_dir"
-npx run truffle test
+npm install || true
+node_modules/.bin/truffle test
 popd
 
 # close test-runner
