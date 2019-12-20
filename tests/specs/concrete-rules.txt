@@ -16,8 +16,8 @@ EVM-TYPES.#asByteStack
 EVM-TYPES.#asByteStackAux.recursive
 EVM-TYPES.#padToWidth
 EVM-TYPES.#padRightToWidth
-EVM.#lookup.some
-EVM.#lookup.none
+EVM-TYPES.#lookup.some
+EVM-TYPES.#lookup.none
 EVM.#memoryUsageUpdate.some
 EVM.Cgascap
 EVM.Csstore.new
