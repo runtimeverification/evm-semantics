@@ -1783,25 +1783,26 @@ Retrieving logs
 
 ```k
     syntax KItem ::= "#eth_getLogs"
-                   | "#loadGetLogs" JSON
- // ------------------------------------
+                   | "#loadGetLogs" JSONs
+ // -------------------------------------
     rule <k> #eth_getLogs => #loadGetLogs J ... </k>
          <params> [{ _ } #as J, .JSONs] </params>
 
     rule <k> #loadGetLogs { "address"  : ((ADDR:String) => #parseHexWord(ADDR))      , _ } ... </k>
     rule <k> #loadGetLogs { "fromBlock": ((BN:String)   => #parseBlockIdentifier(BN)), _ } ... </k>
     rule <k> #loadGetLogs { "toBlock"  : ((BN:String)   => #parseBlockIdentifier(BN)), _ } ... </k>
+    rule <k> #loadGetLogs { "topics"   : ((J:JSONs)     => [#parseJSONList(J)])      , _ } ... </k>
     rule <k> #loadGetLogs { "fromBlock": _, REST => REST } ... </k>     requires isString( #getJSON("blockHash", REST) )
     rule <k> #loadGetLogs { "toBlock"  : _, REST => REST } ... </k>     requires isString( #getJSON("blockHash", REST) )
 
-    syntax List ::= #parseIntList ( JSONs ) [function]
- // --------------------------------------------------
-    rule #parseIntList (J) => #parseIntListAux( J, .List)
+    syntax JSONs ::= #parseJSONList ( JSONs ) [function]
+ // ----------------------------------------------------
+    rule #parseJSONList (J) => #parsJSONListAux( J, .JSONs)
 
-    syntax List ::= #parseIntListAux ( JSONs, List ) [function]
- // -----------------------------------------------------------
-    rule #parseIntListAux([ .JSONs ], RESULT) => RESULT
-    rule #parseIntListAux([JITEM, J], RESULT) => #parseIntListAux(J, ListItem(#parseHexWord(JITEM)) RESULT)
+    syntax JSONs ::= #parseJSONListAux ( JSONs, JSONs ) [function]
+ // --------------------------------------------------------------
+    rule #parseJSONListAux([ .JSONs ], RESULT) => RESULT
+    rule #parseJSONListAux([JITEM, J], RESULT) => #parseJSONListAux(J, (#parseHexWord(JITEM), RESULT))
 
 ```
 
