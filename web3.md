@@ -110,9 +110,6 @@ The `blockList` cell stores a list of previous blocks and network states.
     rule #getAccountFromBlockchainItem ( { <network> <accounts> (<account> <acctID> ACCT </acctID> ACCOUNTDATA </account>) ... </accounts>  ... </network> | _ } , ACCT ) => <account> <acctID> ACCT </acctID> ACCOUNTDATA </account>
     rule #getAccountFromBlockchainItem(_, _) => .AccountItem [owise]
 
-    syntax BlockIdentifier ::= Int | String
- // ---------------------------------------
-
     syntax BlockIdentifier ::= #parseBlockIdentifier ( String ) [function]
  // ----------------------------------------------------------------------
     rule #parseBlockIdentifier(TAG) => TAG
@@ -1791,12 +1788,11 @@ Retrieving logs
     rule <k> #eth_getLogs => #loadGetLogs J ... </k>
          <params> [{ _ } #as J, .JSONs] </params>
 
-    rule <k> #loadGetLogs { "address": (ADDR:String) => #parseHexWord(ADDR), _ } ... </k>
-    rule <k> #loadGetLogs { "topics": (J:JSONs) => #parseIntList(J), _ } ... </k>
-    rule <k> #loadGetLogs { "fromBlock": _, REST => REST } ... </k>     requires isString( #getJSON("blockHash", J) )
-    rule <k> #loadGetLogs { "toBlock": _,   REST => REST } ... </k>     requires isString( #getJSON("blockHash", J) )
-    rule <k> #loadGetLogs { "fromBlock": (BN:String) => #parseBlockIdentifier(BN), _ } ... </k>
-    rule <k> #loadGetLogs { "toBlock":   (BN:String) => #parseBlockIdentifier(BN), _ } ... </k>
+    rule <k> #loadGetLogs { "address"  : ((ADDR:String) => #parseHexWord(ADDR))      , _ } ... </k>
+    rule <k> #loadGetLogs { "fromBlock": ((BN:String)   => #parseBlockIdentifier(BN)), _ } ... </k>
+    rule <k> #loadGetLogs { "toBlock"  : ((BN:String)   => #parseBlockIdentifier(BN)), _ } ... </k>
+    rule <k> #loadGetLogs { "fromBlock": _, REST => REST } ... </k>     requires isString( #getJSON("blockHash", REST) )
+    rule <k> #loadGetLogs { "toBlock"  : _, REST => REST } ... </k>     requires isString( #getJSON("blockHash", REST) )
 
     syntax List ::= #parseIntList ( JSONs ) [function]
  // --------------------------------------------------
@@ -1805,7 +1801,7 @@ Retrieving logs
     syntax List ::= #parseIntListAux ( JSONs, List ) [function]
  // -----------------------------------------------------------
     rule #parseIntListAux([ .JSONs ], RESULT) => RESULT
-    rule #parseIntListAux([JITEM, J], RESULT) => #parseIntListAux(J, ListItem(#parseHexWord(JItem)) RESULT)
+    rule #parseIntListAux([JITEM, J], RESULT) => #parseIntListAux(J, ListItem(#parseHexWord(JITEM)) RESULT)
 
 ```
 
