@@ -9,8 +9,11 @@ module STATE-LOADER
     imports EVM
     imports EVM-ASSEMBLY
 
-    syntax JSON ::= ByteArray | OpCodes | Map | Call | SubstateLogEntry | Account
- // -----------------------------------------------------------------------------
+    syntax BlockIdentifier ::= Int | String
+ // ---------------------------------------
+
+    syntax JSON ::= ByteArray | OpCodes | Map | Call | SubstateLogEntry | Account | BlockIdentifier
+ // -----------------------------------------------------------------------------------------------
 
 ```
 
