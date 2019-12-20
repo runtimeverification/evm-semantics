@@ -44,7 +44,7 @@ export LUA_PATH
         split-tests                                                                                                                                    \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance                       \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                                  \
-        test-web3 test-all-web3 test-failing-web3 test-truffle test-all-truffle test-failing-truffle                                                                                                      \
+        test-web3 test-all-web3 test-failing-web3 test-truffle test-all-truffle test-failing-truffle                                                   \
         test-prove test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-klab-prove \
         test-parse test-failure                                                                                                                        \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly            \
