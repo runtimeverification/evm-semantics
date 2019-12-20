@@ -117,7 +117,10 @@ The `blockList` cell stores a list of previous blocks and network states.
         orBool TAG ==String "latest"
         orBool TAG ==String "pending"
 
-    rule #parseBlockIdentifier(BLOCKNUM) => #parseHexWord(BLOCKNUM) [owise]
+    rule #parseBlockIdentifier(TAG) => #parseWord(TAG)
+      requires TAG =/=String "earliest"
+       andBool TAG =/=String "latest"
+       andBool TAG =/=String "pending"
 
     syntax KItem ::= #getAccountAtBlock ( BlockIdentifier , Int )
  // -------------------------------------------------------------
