@@ -367,6 +367,9 @@ tests/%.run-web3: tests/%.in.json
 	$(CHECK) tests/$*.out.json tests/$*.expected.json
 	rm -rf tests/$*.out.json
 
+tests/%.run-truffle: tests/%
+	tests/truffle/runtest.sh $(dir $@)
+
 tests/%.parse: tests/%
 	$(TEST) kast $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
 	$(CHECK) $@-out $@-expected
@@ -430,6 +433,8 @@ test-all-bchain: $(all_bchain_tests:=.run)
 test-rest-bchain: $(rest_bchain_tests:=.run)
 test-bchain: $(passing_bchain_tests:=.run)
 
+# Web3/Truffle Tests
+
 all_web3_tests     = $(wildcard tests/web3/*.in.json) $(wildcard tests/web3/*/*.in.json)
 failing_web3_tests = $(shell cat tests/failing.web3)
 passing_web3_tests = $(filter-out $(failing_web3_tests), $(all_web3_tests))
@@ -437,6 +442,17 @@ passing_web3_tests = $(filter-out $(failing_web3_tests), $(all_web3_tests))
 test-all-web3: $(all_web3_tests:.in.json=.run-web3)
 test-failing-web3: $(failing_web3_tests:.in.json=.run-web3)
 test-web3: $(passing_web3_tests:.in.json=.run-web3)
+
+all_truffle_tests     = $(wildcard tests/truffle/*/truffle-config.js) tests/truffle/openzeppelin-contracts/truffle-config.js
+failing_truffle_tests = $(shell cat tests/failing.truffle)
+passing_truffle_tests = $(filter-out $(failing_truffle_tests), $(all_truffle_tests))
+
+test-all-truffle: $(all_truffle_tests:=.run-truffle)
+test-failing-truffle: $(failing_truffle_tests:=.run-truffle)
+test-truffle: $(passing_truffle_tests:=.run-truffle)
+
+tests/truffle/openzeppelin-contracts/truffle-config.js:
+	cd tests/truffle && git clone 'https://github.com/openzeppelin/openzeppelin-contracts.git'
 
 # Proof Tests
 
