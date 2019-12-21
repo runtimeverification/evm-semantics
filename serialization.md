@@ -433,7 +433,11 @@ Merkle Patricia Tree
        andBool LEAFPATH[0] =/=Int PATH[0]
 
     rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
-      => #merkleExtensionBuilder( .ByteArray, LEAFPATH, LEAFVALUE, PATH, VALUE ) [owise]
+      => #merkleExtensionBuilder( .ByteArray, LEAFPATH, LEAFVALUE, PATH, VALUE )
+      requires #unparseByteStack( LEAFPATH ) =/=String #unparseByteStack( PATH )
+       andBool #sizeByteArray( LEAFPATH ) >Int 0
+       andBool #sizeByteArray( PATH )     >Int 0
+       andBool LEAFPATH[0] ==Int PATH[0]
 
     rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => MerkleExtension ( EXTPATH, MerkleUpdate ( EXTTREE, .ByteArray, VALUE ) )
