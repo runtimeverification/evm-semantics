@@ -459,7 +459,8 @@ Merkle Patricia Tree
       requires #sizeByteArray( PATH ) ==Int 0
 
     rule MerkleUpdate ( MerkleBranch( M, BRANCHVALUE ), PATH, VALUE )
-      => #merkleBrancher ( M, BRANCHVALUE, PATH[0], PATH[1 .. #sizeByteArray(PATH) -Int 1], VALUE ) [owise]
+      => #merkleBrancher ( M, BRANCHVALUE, PATH[0], PATH[1 .. #sizeByteArray(PATH) -Int 1], VALUE )
+      requires #sizeByteArray( PATH ) >Int 0
 ```
 
 - `MerkleUpdateMap` Takes a mapping of `ByteArray |-> String` and generates a trie
