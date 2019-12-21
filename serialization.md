@@ -445,12 +445,14 @@ Merkle Patricia Tree
 
     rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, PATH, VALUE ), EXTPATH, EXTTREE )
-      requires #sizeByteArray( EXTPATH ) >Int 0
-       andBool #sizeByteArray( PATH ) >Int 0
+      requires #sizeByteArray( PATH ) >Int 0
        andBool EXTPATH[0] =/=Int PATH[0]
 
     rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
-      => #merkleExtensionSplitter( .ByteArray, EXTPATH, EXTTREE, PATH, VALUE ) [owise]
+      => #merkleExtensionSplitter( .ByteArray, EXTPATH, EXTTREE, PATH, VALUE )
+      requires #unparseByteStack( EXTPATH ) =/=String #unparseByteStack( PATH )
+       andBool #sizeByteArray( PATH ) >Int 0
+       andBool EXTPATH[0] ==Int PATH[0]
 
     rule MerkleUpdate ( MerkleBranch( M, _ ), PATH, VALUE )
       => MerkleBranch( M, VALUE )
