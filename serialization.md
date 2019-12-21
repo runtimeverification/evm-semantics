@@ -535,9 +535,8 @@ Merkle Tree Aux Functions
        andBool   #sizeByteArray(P2) >Int 0
        andBool   P1[0] =/=Int P2[0] )
 
-    syntax MerkleTree ::= #merkleExtensionBrancher ( MerkleTree, ByteArray, MerkleTree )                   [function]
-                        | #merkleExtensionSplitter ( ByteArray, ByteArray, MerkleTree, ByteArray, String ) [function]
- // -----------------------------------------------------------------------------------------------------------------
+    syntax MerkleTree ::= #merkleExtensionBrancher ( MerkleTree, ByteArray, MerkleTree ) [function]
+ // -----------------------------------------------------------------------------------------------
     rule #merkleExtensionBrancher( MerkleBranch(M, VALUE), PATH, EXTTREE )
       => MerkleBranch( M[PATH[0] <- MerkleExtension( PATH[1 .. #sizeByteArray(PATH) -Int 1], EXTTREE )], VALUE )
       requires #sizeByteArray(PATH) >Int 1
@@ -546,6 +545,8 @@ Merkle Tree Aux Functions
       => MerkleBranch( M[PATH[0] <- EXTTREE], VALUE )
       requires #sizeByteArray(PATH) ==Int 1
 
+    syntax MerkleTree ::= #merkleExtensionSplitter ( ByteArray, ByteArray, MerkleTree, ByteArray, String ) [function]
+ // -----------------------------------------------------------------------------------------------------------------
     rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
       => #merkleExtensionSplitter( PATH ++ ( #asByteStack( P1[0] )[0 .. 1] )
                                  , P1[1 .. #sizeByteArray(P1) -Int 1], TREE
