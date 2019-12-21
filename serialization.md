@@ -577,10 +577,20 @@ Tree Root Helper Functions
 ### Storage Root
 
 ```k
-    syntax Map ::= #intMap2StorageMap( Map ) [function]
- // ---------------------------------------------------
-    rule #intMap2StorageMap( .Map          ) => .Map
-    rule #intMap2StorageMap( KEY |-> VAL M ) => #padToWidth( 32, #asByteStack( KEY ) ) |-> #rlpEncodeWord( VAL ) #intMap2StorageMap(M)
+    syntax Map ::= #intMap2StorageMap( Map )               [function]
+                 | #intMap2StorageMapAux( Map, Map, List ) [function]
+ // -----------------------------------------------------------------
+    rule #intMap2StorageMap( M ) => #intMap2StorageMapAux( .Map, M, keys_list(M) )
+
+    rule #intMap2StorageMapAux( SMAP, _, .List ) => SMAP
+    rule #intMap2StorageMapAux( SMAP, IMAP, ListItem(K) REST )
+      => #intMap2StorageMapAux( #padToWidth( 32, #asByteStack(K) ) |-> #rlpEncodeWord({IMAP[K]}:>Int) SMAP, IMAP, REST )
+      requires {IMAP[K]}:>Int =/=Int 0
+
+    rule #intMap2StorageMapAux( SMAP, IMAP, ListItem(K) REST )
+      => #intMap2StorageMapAux( SMAP, IMAP, REST )
+      requires {IMAP[K]}:>Int ==Int 0
+
 
     syntax MerkleTree ::= #storageRoot( Map ) [function]
  // ----------------------------------------------------
