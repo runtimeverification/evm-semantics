@@ -459,7 +459,7 @@ Merkle Patricia Tree
       requires #sizeByteArray( PATH ) ==Int 0
 
     rule MerkleUpdate ( MerkleBranch( M, BRANCHVALUE ), PATH, VALUE )
-      => #merkleBrancher ( M, BRANCHVALUE, PATH[0], PATH[1 .. #sizeByteArray(PATH) -Int 1], VALUE )
+      => #merkleUpdateBranch ( M, BRANCHVALUE, PATH[0], PATH[1 .. #sizeByteArray(PATH) -Int 1], VALUE )
       requires #sizeByteArray( PATH ) >Int 0
 ```
 
@@ -511,9 +511,9 @@ Merkle Tree Aux Functions
     rule HPEncodeAux ( X ) => 0 requires         X ==Int 0
     rule HPEncodeAux ( X ) => 2 requires notBool X ==Int 0
 
-    syntax MerkleTree ::= #merkleBrancher ( Map, String, Int, ByteArray, String ) [function]
- // ----------------------------------------------------------------------------------------
-    rule #merkleBrancher ( X |-> TREE M, BRANCHVALUE, X, PATH, VALUE )
+    syntax MerkleTree ::= #merkleUpdateBranch ( Map, String, Int, ByteArray, String ) [function]
+ // --------------------------------------------------------------------------------------------
+    rule #merkleUpdateBranch ( X |-> TREE M, BRANCHVALUE, X, PATH, VALUE )
       => MerkleBranch( M[X <- MerkleUpdate( TREE, PATH, VALUE )], BRANCHVALUE )
 
     syntax MerkleTree ::= #merkleExtensionBuilder( ByteArray, ByteArray, String, ByteArray, String ) [function]
