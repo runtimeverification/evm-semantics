@@ -523,18 +523,17 @@ Merkle Tree Aux Functions
                                 , P1[1 .. #sizeByteArray(P1) -Int 1], V1
                                 , P2[1 .. #sizeByteArray(P2) -Int 1], V2
                                 )
-      [owise]
-
-    rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
-      => MerkleExtension( PATH, MerkleUpdate( MerkleUpdate( .MerkleBranch, P1, V1 ), P2, V2 ) )
       requires #sizeByteArray(P1) >Int 0
        andBool #sizeByteArray(P2) >Int 0
-       andBool P1[0] =/=Int P2[0]
+       andBool P1[0] ==Int P2[0]
 
     rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
       => MerkleExtension( PATH, MerkleUpdate( MerkleUpdate( .MerkleBranch, P1, V1 ), P2, V2 ) )
       requires #sizeByteArray(P1) ==Int 0
         orBool #sizeByteArray(P2) ==Int 0
+        orBool ( #sizeByteArray(P1) >Int 0
+       andBool   #sizeByteArray(P2) >Int 0
+       andBool   P1[0] =/=Int P2[0] )
 
     syntax MerkleTree ::= #merkleExtensionBrancher ( MerkleTree, ByteArray, MerkleTree )                   [function]
                         | #merkleExtensionSplitter ( ByteArray, ByteArray, MerkleTree, ByteArray, String ) [function]
