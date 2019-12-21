@@ -551,7 +551,9 @@ Merkle Tree Aux Functions
                                  , P1[1 .. #sizeByteArray(P1) -Int 1], TREE
                                  , P2[1 .. #sizeByteArray(P2) -Int 1], VALUE
                                  )
-      [owise]
+      requires #sizeByteArray(P1) >Int 0
+       andBool #sizeByteArray(P2) >Int 0
+       andBool P1[0] ==Int P2[0]
 
     rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
       => MerkleExtension( PATH, #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, P2, VALUE ), P1, TREE ) )
