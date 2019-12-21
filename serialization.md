@@ -323,10 +323,10 @@ Encoding
                          , 192
                          )
 
-    rule #rlpEncodeMerkleTree ( MerkleBranch (  0 |->  P0:MerkleTree  1 |->  P1:MerkleTree  2 |->  P2:MerkleTree  3 |->  P3:MerkleTree
-                                                4 |->  P4:MerkleTree  5 |->  P5:MerkleTree  6 |->  P6:MerkleTree  7 |->  P7:MerkleTree
-                                                8 |->  P8:MerkleTree  9 |->  P9:MerkleTree 10 |-> P10:MerkleTree 11 |-> P11:MerkleTree
-                                               12 |-> P12:MerkleTree 13 |-> P13:MerkleTree 14 |-> P14:MerkleTree 15 |-> P15:MerkleTree
+    rule #rlpEncodeMerkleTree ( MerkleBranch ( ListItem( P0) ListItem( P1) ListItem( P2) ListItem( P3)
+                                               ListItem( P4) ListItem( P5) ListItem( P6) ListItem( P7)
+                                               ListItem( P8) ListItem( P9) ListItem(P10) ListItem(P11)
+                                               ListItem(P12) ListItem(P13) ListItem(P14) ListItem(P15) .List
                                              , VALUE
                                              )
                               )
@@ -401,17 +401,17 @@ Merkle Patricia Tree
 ```k
     syntax KItem ::= Int | MerkleTree // For testing purposes
 
-    syntax MerkleTree ::= MerkleBranch    ( Map, String )
+    syntax MerkleTree ::= MerkleBranch    ( List, String )
                         | MerkleExtension ( ByteArray, MerkleTree )
                         | MerkleLeaf      ( ByteArray, String )
                         | ".MerkleTree"
                         | ".MerkleBranch"            [function]
  // -----------------------------------------------------------
     rule .MerkleBranch
-      => MerkleBranch (  0 |-> .MerkleTree  1 |-> .MerkleTree  2 |-> .MerkleTree  3 |-> .MerkleTree
-                         4 |-> .MerkleTree  5 |-> .MerkleTree  6 |-> .MerkleTree  7 |-> .MerkleTree
-                         8 |-> .MerkleTree  9 |-> .MerkleTree 10 |-> .MerkleTree 11 |-> .MerkleTree
-                        12 |-> .MerkleTree 13 |-> .MerkleTree 14 |-> .MerkleTree 15 |-> .MerkleTree
+      => MerkleBranch ( ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree)
+                        ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree)
+                        ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree)
+                        ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree) .List
                       , ""
                       )
 
@@ -511,10 +511,10 @@ Merkle Tree Aux Functions
     rule HPEncodeAux ( X ) => 0 requires         X ==Int 0
     rule HPEncodeAux ( X ) => 2 requires notBool X ==Int 0
 
-    syntax MerkleTree ::= #merkleUpdateBranch ( Map, String, Int, ByteArray, String ) [function]
- // --------------------------------------------------------------------------------------------
-    rule #merkleUpdateBranch ( X |-> TREE M, BRANCHVALUE, X, PATH, VALUE )
-      => MerkleBranch( M[X <- MerkleUpdate( TREE, PATH, VALUE )], BRANCHVALUE )
+    syntax MerkleTree ::= #merkleUpdateBranch ( List, String, Int, ByteArray, String ) [function]
+ // ---------------------------------------------------------------------------------------------
+    rule #merkleUpdateBranch ( M, BRANCHVALUE, X, PATH, VALUE )
+      => MerkleBranch( M[X <- MerkleUpdate( {M[X]}:>MerkleTree, PATH, VALUE )], BRANCHVALUE )
 
     syntax MerkleTree ::= #merkleExtensionBuilder( ByteArray, ByteArray, String, ByteArray, String ) [function]
  // -----------------------------------------------------------------------------------------------------------
