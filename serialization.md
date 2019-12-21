@@ -534,6 +534,11 @@ Merkle Tree Aux Functions
  // -----------------------------------------------------------------------------------------------------------------
     rule #merkleExtensionBrancher( MerkleBranch(M, VALUE), PATH, EXTTREE )
       => MerkleBranch( M[PATH[0] <- MerkleExtension( PATH[1 .. #sizeByteArray(PATH) -Int 1], EXTTREE )], VALUE )
+      requires #sizeByteArray(PATH) >Int 1
+
+    rule #merkleExtensionBrancher( MerkleBranch(M, VALUE), PATH, EXTTREE )
+      => MerkleBranch( M[PATH[0] <- EXTTREE], VALUE )
+      requires #sizeByteArray(PATH) ==Int 1
 
     rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
       => #merkleExtensionSplitter( PATH ++ ( #asByteStack( P1[0] )[0 .. 1] )
