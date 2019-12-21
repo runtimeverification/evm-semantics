@@ -42,10 +42,10 @@ module MERKLE-SPEC
           => doneMerkle( MerkleBranch( M, V ) ) </k>
 
     rule <k> runMerkle ( .MerkleBranch )
-          => doneMerkle( MerkleBranch (  0 |-> .MerkleTree  1 |-> .MerkleTree  2 |-> .MerkleTree  3 |-> .MerkleTree
-                                         4 |-> .MerkleTree  5 |-> .MerkleTree  6 |-> .MerkleTree  7 |-> .MerkleTree
-                                         8 |-> .MerkleTree  9 |-> .MerkleTree 10 |-> .MerkleTree 11 |-> .MerkleTree
-                                        12 |-> .MerkleTree 13 |-> .MerkleTree 14 |-> .MerkleTree 15 |-> .MerkleTree
+          => doneMerkle( MerkleBranch ( ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree)
+                                        ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree)
+                                        ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree)
+                                        ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree) ListItem(.MerkleTree) .List
                                       , ""
                                       )
                        )
