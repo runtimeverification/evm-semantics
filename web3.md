@@ -113,9 +113,11 @@ The `blockList` cell stores a list of previous blocks and network states.
     syntax BlockIdentifier ::= #parseBlockIdentifier ( String ) [function]
  // ----------------------------------------------------------------------
     rule #parseBlockIdentifier(TAG) => TAG
-      requires TAG ==String "earliest"
-        orBool TAG ==String "latest"
-        orBool TAG ==String "pending"
+      requires TAG ==String "pending"
+
+    rule #parseBlockIdentifier("earliest")  => 0
+    rule [[ #parseBlockIdentifier("latest") => size(BLOCKLIST) -Int 1 ]]
+         <blockList> BLOCKLIST </blockList>
 
     rule #parseBlockIdentifier(BLOCKNUM) => #parseHexWord(BLOCKNUM) [owise]
 
@@ -1782,27 +1784,29 @@ Retrieving logs
 ---------------
 
 ```k
+
+    syntax List ::= #getLogListBetween ( BlockIdentifier, BlockIdentifier ) [function]
+                  | #getLogListBetweenAux ( BlockIdentifier, BlockIdentifier, List ) [function]
+ // ---------------------------------------------------------------------------------------------
+    rule #getLogListBetween(START, END) => #getLogListBetweenAux(START, END, .List)
+    rule [[ #getLogListBetweenAux(START:Int, "pending", RESULT) => #getLogListBetweenAux(START, #parseBlockIdentifier("latest"), (RESULT ListItem(LOGS))) ]]
+       <log> LOGS </log>
+
+    rule [[ #getLogListBetweenAux(START:Int, END:Int, RESULT) => #getLogListBetweenAux(START +Int 1, END, (RESULT ListItem(LOGS))) ]]
+       <txReceipt>
+         <txBlockNumber> START </txBlockNumber>
+         <logSet> LOGS </logSet>
+         ...
+       </txReceipt>
+
+    rule [[ #getLogListBetweenAux("pending", _, RESULT) => (RESULT ListItem(LOGS)) ]]
+         <log> LOGS </log>
+    rule #getLogListBetweenAux(START:Int, END:Int, RESULT) => RESULT
+       requires START >Int END
+
     syntax KItem ::= "#eth_getLogs"
-                   | "#loadGetLogs" JSONs
- // -------------------------------------
-    rule <k> #eth_getLogs => #loadGetLogs J ... </k>
-         <params> [{ _ } #as J, .JSONs] </params>
-
-    rule <k> #loadGetLogs { "address"  : ((ADDR:String) => #parseHexWord(ADDR))      , _ } ... </k>
-    rule <k> #loadGetLogs { "fromBlock": ((BN:String)   => #parseBlockIdentifier(BN)), _ } ... </k>
-    rule <k> #loadGetLogs { "toBlock"  : ((BN:String)   => #parseBlockIdentifier(BN)), _ } ... </k>
-    rule <k> #loadGetLogs { "topics"   : ((J:JSONs)     => [#parseJSONList(J)])      , _ } ... </k>
-    rule <k> #loadGetLogs { "fromBlock": _, REST => REST } ... </k>     requires isString( #getJSON("blockHash", REST) )
-    rule <k> #loadGetLogs { "toBlock"  : _, REST => REST } ... </k>     requires isString( #getJSON("blockHash", REST) )
-
-    syntax JSONs ::= #parseJSONList ( JSONs ) [function]
- // ----------------------------------------------------
-    rule #parseJSONList (J) => #parsJSONListAux( J, .JSONs)
-
-    syntax JSONs ::= #parseJSONListAux ( JSONs, JSONs ) [function]
- // --------------------------------------------------------------
-    rule #parseJSONListAux([ .JSONs ], RESULT) => RESULT
-    rule #parseJSONListAux([JITEM, J], RESULT) => #parseJSONListAux(J, (#parseHexWord(JITEM), RESULT))
+ // -------------------------------
+    rule <k> #eth_getLogs => #rpcResponseUnimplemented ... </k>
 
 ```
 
