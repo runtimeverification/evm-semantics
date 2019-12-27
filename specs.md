@@ -54,6 +54,8 @@ Possible sorts are [Ids, KResult]
     /*rule assumeEq V1:KResult V2:KResult => .
       ensures V1 ==K V2*/
 
+    syntax EthereumCommand ::= "assertEq" Exp Exp [strict]
+
     //Copied from driver.md
     syntax EthereumCommand ::= "failure" String
  // -------------------------------------------------------
