@@ -62,5 +62,16 @@ Possible sorts are [Ids, KResult]
     rule <k>          failure _ => . ... </k>
     rule <k> #halt ~> failure _ => . ... </k>
 
+    //Shortcut for #mkCall and required setup
+    syntax EthereumCommand ::= "#mkCallShortcut" Id Int Int ByteArray Id
+    rule <k> #mkCallShortcut V_CONF_BACKUP CALLER_ID ACCT_ID ARGS V_SAVEOUT_ID
+          => restoreEthereum V_CONF_BACKUP
+          ~> #mkCall CALLER_ID ACCT_ID ACCT_ID PARSEDCODE 0 ARGS false
+          ~> failure "failure"
+          ~> saveOutput V_SAVEOUT_ID
+        ...</k>
+        <acctID> ACCT_ID </acctID>
+        <code> PARSEDCODE </code>
+
 endmodule
 ```
