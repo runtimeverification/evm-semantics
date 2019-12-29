@@ -49,7 +49,10 @@ Possible sorts are [Ids, KResult]
     rule R1:KResult ==S R2:KResult => R1 ==K R2
 
     syntax EthereumCommand ::= "#assert" Exp [strict]
-    syntax EthereumCommand ::= "#assume" Exp [strict]
+      rule #assert R:Bool => .
+        requires R
+
+syntax EthereumCommand ::= "#assume" Exp [strict]
 
     //Copied from driver.md
     syntax EthereumCommand ::= "failure" String
