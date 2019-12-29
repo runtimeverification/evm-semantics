@@ -49,8 +49,12 @@ Possible sorts are [Ids, KResult]
     rule R1:KResult ==S R2:KResult => R1 ==K R2
 
     syntax EthereumCommand ::= "#assert" Exp [strict]
-      rule #assert R:Bool => .
-        requires R
+                             | "#assertFailure" Exp
+    rule #assert R:Bool => .
+      requires R
+
+    rule #assert R:Bool => #assertFailure R
+      requires notBool R
 
 syntax EthereumCommand ::= "#assume" Exp [strict]
 
