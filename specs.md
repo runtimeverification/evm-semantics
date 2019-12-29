@@ -41,20 +41,15 @@ Possible sorts are [Ids, KResult]
     syntax KResult ::= ByteArray
 
     syntax Exp ::= "getVar" Id
+                  | Exp "==S" Exp [seqstrict] 
                   | KResult
     rule <k> getVar X => VARS[X] ...</k>
          <commandVars> VARS </commandVars>
 
-    syntax EthereumCommand ::= "assertEq" Exp Exp [strict]
-    rule assertEq V1:KResult V2:KResult => .
-      requires V1 ==K V2
+    rule R1:KResult ==S R2:KResult => R1 ==K R2
 
-    syntax EthereumCommand ::= "assumeEq" Exp Exp [strict]
-    //ensures doesn't seem to have effect. Making this rule spec rule.
-    /*rule assumeEq V1:KResult V2:KResult => .
-      ensures V1 ==K V2*/
-
-    syntax EthereumCommand ::= "assertEq" Exp Exp [strict]
+    syntax EthereumCommand ::= "#assert" Exp [strict]
+    syntax EthereumCommand ::= "#assume" Exp [strict]
 
     //Copied from driver.md
     syntax EthereumCommand ::= "failure" String
@@ -72,6 +67,9 @@ Possible sorts are [Ids, KResult]
         ...</k>
         <acctID> ACCT_ID </acctID>
         <code> PARSEDCODE </code>
+
+    syntax Exp ::= #sizeWordStackExp ( Exp ) [strict]
+    rule #sizeWordStackExp(WS:WordStack) => #sizeWordStack(WS)
 
 endmodule
 ```
