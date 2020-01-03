@@ -570,14 +570,28 @@ eth_sendTransaction
 
     rule <k> #eth_sendTransaction => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_sendTransaction' requires exactly 1 argument.") ... </k> [owise]
 
-    rule <k> TXID:Int ~> #eth_sendTransaction_final => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
-        <statusCode> EVMC_SUCCESS </statusCode>
+    rule <k> (TXID:Int => "0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ~> #eth_sendTransaction_final ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce>    TN </txNonce>
+           <txGasPrice> TP </txGasPrice>
+           <txGasLimit> TG </txGasLimit>
+           <to>         TT </to>
+           <value>      TV </value>
+           <sigV>       TW </sigV>
+           <sigR>       TR </sigR>
+           <sigS>       TS </sigS>
+           <data>       TD </data>
+         </message>
 
-    rule <k> TXID:Int ~> #eth_sendTransaction_final => #rpcResponseSuccessException("0x" +String #hashSignedTx( TXID ),
+    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccess(TXHASH) ... </k>
+         <statusCode> EVMC_SUCCESS </statusCode>
+
+    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccessException(TXHASH,
                { "message": "VM Exception while processing transaction: revert",
                  "code": -32000,
                  "data": {
-                     "0x" +String #hashSignedTx( TXID ): {
+                     TXHASH: {
                      "error": "revert",
                      "program_counter": PCOUNT +Int 1,
                      "return": #unparseDataByteArray( RD )
@@ -586,18 +600,18 @@ eth_sendTransaction
                } )
           ...
          </k>
-        <statusCode> EVMC_REVERT </statusCode>
-        <output> RD </output>
-        <errorPC> PCOUNT </errorPC>
+         <statusCode> EVMC_REVERT </statusCode>
+         <output> RD </output>
+         <errorPC> PCOUNT </errorPC>
 
-    rule <k> TXID:Int ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "base fee exceeds gas limit") ... </k>
+    rule <k> _:String ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "base fee exceeds gas limit") ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
 
-    rule <k> TXID:Int ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "sender doesn't have enough funds to send tx.") ... </k>
+    rule <k> _:String ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "sender doesn't have enough funds to send tx.") ... </k>
          <statusCode> EVMC_BALANCE_UNDERFLOW </statusCode>
 
-    rule <k> TXID:Int ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "VM exception: " +String StatusCode2String( SC )) ... </k>
-        <statusCode> SC:ExceptionalStatusCode </statusCode> [owise]
+    rule <k> _:String ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "VM exception: " +String StatusCode2String( SC )) ... </k>
+         <statusCode> SC:ExceptionalStatusCode </statusCode> [owise]
 
     rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG)), _                 } ... </k>
     rule <k> loadTransaction _ { "gasPrice" : (TP:String => #parseHexWord(TP)), _                 } ... </k>
@@ -625,50 +639,38 @@ eth_sendTransaction
          </account>
 ```
 
-- `#hashSignedTx` Takes a transaction ID. Returns the hash of the rlp-encoded transaction with R S and V.
-- `#hashUnsignedTx` Returns the hash of the rlp-encoded transaction without R S or V.
-
-```k
-    syntax String ::= #hashSignedTx   ( Int ) [function]
-                    | #hashUnsignedTx ( Int ) [function]
- // ----------------------------------------------------
-    rule #hashSignedTx( TXID ) => Keccak256( #rlpEncodeTransaction( TXID ) )
-
-    rule [[ #hashUnsignedTx( TXID )
-         => Keccak256( #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
-                                         +String #rlpEncodeWord( GPRICE )
-                                         +String #rlpEncodeWord( GLIMIT )
-                                         +String #rlpEncodeAccount( ACCTTO )
-                                         +String #rlpEncodeWord( VALUE )
-                                         +String #rlpEncodeString( #unparseByteStack( DATA ) )
-                                       , 192
-                                       )
-                     )
-         ]]
-         <message>
-           <msgID>      TXID    </msgID>
-           <txNonce>    TXNONCE </txNonce>
-           <txGasPrice> GPRICE  </txGasPrice>
-           <txGasLimit> GLIMIT  </txGasLimit>
-           <to>         ACCTTO  </to>
-           <value>      VALUE   </value>
-           <data>       DATA    </data>
-           ...
-         </message>
-```
-
 -   signTX TXID ACCTFROM: Signs the transaction with TXID using ACCTFROM's private key
 
 ```k
     syntax KItem ::= "signTX" Int Int
                    | "signTX" Int String [klabel(signTXAux)]
  // --------------------------------------------------------
-    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( Hex2Raw( #hashUnsignedTx( TXID ) ), #unparseByteStack( #padToWidth( 32, #asByteStack( KEY ) ) ) ) ... </k>
+    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( Hex2Raw( #hashUnsignedTx(TN, TP, TG, TT, TV, TD) ), #unparseByteStack( #padToWidth( 32, #asByteStack( KEY ) ) ) ) ... </k>
          <accountKeys> ... ACCTFROM |-> KEY ... </accountKeys>
          <mode> NORMAL </mode>
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce>    TN </txNonce>
+           <txGasPrice> TP </txGasPrice>
+           <txGasLimit> TG </txGasLimit>
+           <to>         TT </to>
+           <value>      TV </value>
+           <data>       TD </data>
+           ...
+         </message>
 
-    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( Hex2Raw( #hashUnsignedTx( TXID ) ), #unparseByteStack( ( #padToWidth( 20, #asByteStack( ACCTFROM ) ) ++ #padToWidth( 20, #asByteStack( ACCTFROM ) ) )[0 .. 32] ) ) ... </k>
+    rule <k> signTX TXID ACCTFROM:Int => signTX TXID ECDSASign( Hex2Raw( #hashUnsignedTx(TN, TP, TG, TT, TV, TD) ), #unparseByteStack( ( #padToWidth( 20, #asByteStack( ACCTFROM ) ) ++ #padToWidth( 20, #asByteStack( ACCTFROM ) ) )[0 .. 32] ) ) ... </k>
          <mode> NOGAS </mode>
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce>    TN </txNonce>
+           <txGasPrice> TP </txGasPrice>
+           <txGasLimit> TG </txGasLimit>
+           <to>         TT </to>
+           <value>      TV </value>
+           <data>       TD </data>
+           ...
+         </message>
 
     rule <k> signTX TXID SIG:String => . ... </k>
          <message>
@@ -717,16 +719,33 @@ eth_sendRawTransaction
     rule <k> #eth_sendRawTransactionVerify TXID => #eth_sendRawTransactionSend TXID ... </k>
          <message>
            <msgID> TXID </msgID>
-           <sigV> V </sigV>
-           <sigR> R </sigR>
-           <sigS> S </sigS>
-           ...
+           <txNonce>    TN </txNonce>
+           <txGasPrice> TP </txGasPrice>
+           <txGasLimit> TG </txGasLimit>
+           <to>         TT </to>
+           <value>      TV </value>
+           <data>       TD </data>
+           <sigV>       TW </sigV>
+           <sigR>       TR </sigR>
+           <sigS>       TS </sigS>
          </message>
-      requires ECDSARecover( Hex2Raw( #hashUnsignedTx( TXID ) ), V, #unparseByteStack(R), #unparseByteStack(S) ) =/=String ""
+      requires ECDSARecover( Hex2Raw( #hashUnsignedTx(TN, TP, TG, TT, TV, TD) ), TW, #unparseByteStack(TR), #unparseByteStack(TS) ) =/=String ""
 
     rule <k> #eth_sendRawTransactionVerify _ => #rpcResponseError(-32000, "Invalid Signature") ... </k> [owise]
 
-    rule <k> #eth_sendRawTransactionSend TXID => #rpcResponseSuccess("0x" +String #hashSignedTx( TXID )) ... </k>
+    rule <k> #eth_sendRawTransactionSend TXID => #rpcResponseSuccess("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ... </k>
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce>    TN </txNonce>
+           <txGasPrice> TP </txGasPrice>
+           <txGasLimit> TG </txGasLimit>
+           <to>         TT </to>
+           <value>      TV </value>
+           <data>       TD </data>
+           <sigV>       TW </sigV>
+           <sigR>       TR </sigR>
+           <sigS>       TS </sigS>
+         </message>
 ```
 
 Retrieving Blocks
@@ -838,13 +857,13 @@ Transaction Receipts
          <txReceipts>
            ( .Bag
           => <txReceipt>
-               <txHash> "0x" +String #hashSignedTx (TXID) </txHash>
+               <txHash> "0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS) </txHash>
                <txCumulativeGas> CGAS </txCumulativeGas>
                <logSet> LOGS </logSet>
                <bloomFilter> #bloomFilter(LOGS) </bloomFilter>
                <txStatus> bool2Word(STATUSCODE ==K EVMC_SUCCESS) </txStatus>
                <txID> TXID </txID>
-               <sender> #parseHexWord(#unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS)))) </sender>
+               <sender> #parseHexWord(#unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(TD), TW , TR, TS)))) </sender>
                <txBlockNumber> BN +Int 1 </txBlockNumber>
              </txReceipt>
            )
@@ -860,7 +879,7 @@ Transaction Receipts
            <sigV>       TW   </sigV>
            <sigR>       TR   </sigR>
            <sigS>       TS   </sigS>
-           <data>       DATA </data>
+           <data>       TD   </data>
          </message>
          <statusCode> STATUSCODE </statusCode>
          <gasUsed> CGAS </gasUsed>
@@ -1278,7 +1297,7 @@ Transaction Execution
                { "message": "VM Exception while processing transaction: revert",
                  "code": -32000,
                  "data": {
-                     "0x" +String #hashSignedTx( TXID ): {
+                     "0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS): {
                      "error": "revert",
                      "program_counter": PCOUNT +Int 1,
                      "return": #unparseDataByteArray( RD )
@@ -1290,6 +1309,18 @@ Transaction Execution
          </k>
          <errorPC> PCOUNT </errorPC>
          <output> RD </output>
+         <message>
+           <msgID>      TXID </msgID>
+           <txNonce>    TN   </txNonce>
+           <txGasPrice> TP   </txGasPrice>
+           <txGasLimit> TG   </txGasLimit>
+           <to>         TT   </to>
+           <value>      TV   </value>
+           <sigV>       TW   </sigV>
+           <sigR>       TR   </sigR>
+           <sigS>       TS   </sigS>
+           <data>       TD   </data>
+         </message>
 ```
 
 - `#eth_estimateGas`
@@ -1532,38 +1563,23 @@ Helper Funcs
                             , 192
                             )
 
-    syntax String ::= #rlpEncodeTransaction( Int ) [function]
- // ---------------------------------------------------------
-    rule [[ #rlpEncodeTransaction( TXID )
-         => #rlpEncodeLength(         #rlpEncodeWord( TXNONCE )
-                              +String #rlpEncodeWord( GPRICE )
-                              +String #rlpEncodeWord( GLIMIT )
-                              +String #rlpEncodeAccount( ACCTTO )
-                              +String #rlpEncodeWord( VALUE )
-                              +String #rlpEncodeString( #unparseByteStack( DATA ) )
-                              +String #rlpEncodeWord( V )
-                              +String #rlpEncodeString( #unparseByteStack( #asByteStack( #asWord( R ) ) ) )
-                              +String #rlpEncodeString( #unparseByteStack( #asByteStack( #asWord( S ) ) ) )
-                            , 192
-                            )
-         ]]
-         <message>
-           <msgID> TXID </msgID>
-           <txNonce>    TXNONCE </txNonce>
-           <txGasPrice> GPRICE  </txGasPrice>
-           <txGasLimit> GLIMIT  </txGasLimit>
-           <to>         ACCTTO  </to>
-           <value>      VALUE   </value>
-           <data>       DATA    </data>
-           <sigR>       R       </sigR>
-           <sigS>       S       </sigS>
-           <sigV>       V       </sigV>
-         </message>
-
     syntax String ::= #rlpEncodeReceipt( Int )       [function]
                     | #rlpEncodeReceiptAux( String ) [function]
  // -----------------------------------------------------------
-    rule #rlpEncodeReceipt( I ) => #rlpEncodeReceiptAux( "0x" +String #hashSignedTx( I ) )
+    rule [[ #rlpEncodeReceipt( TXID ) => #rlpEncodeReceiptAux("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ]]
+         <message>
+           <msgID>      TXID </msgID>
+           <txNonce>    TN   </txNonce>
+           <txGasPrice> TP   </txGasPrice>
+           <txGasLimit> TG   </txGasLimit>
+           <to>         TT   </to>
+           <value>      TV   </value>
+           <sigV>       TW   </sigV>
+           <sigR>       TR   </sigR>
+           <sigS>       TS   </sigS>
+           <data>       TD   </data>
+         </message>
+
     rule [[ #rlpEncodeReceiptAux( TXHASH ) =>
             #rlpEncodeLength(         #rlpEncodeWord( STATUS )
                               +String #rlpEncodeWord( CGAS )
@@ -1637,15 +1653,28 @@ Transactions Root
  // ----------------------------------------------------
     rule #transactionsRoot => MerkleUpdateMap( .MerkleTree, #transactionsMap )
 
-    syntax Map ::= "#transactionsMap"         [function]
-                 | #transactionsMapAux( Int ) [function]
- // ----------------------------------------------------
-    rule #transactionsMap => #transactionsMapAux( 0 )
-
-    rule #transactionsMapAux( _ )    => .Map [owise]
-    rule [[ #transactionsMapAux( I ) => #parseByteStackRaw( #rlpEncodeWord( I ) )[0 .. 1] |-> #rlpEncodeTransaction( { TXLIST[ I ] }:>Int ) #transactionsMapAux( I +Int 1 ) ]]
+    syntax Map ::= "#transactionsMap"               [function]
+                 | #transactionsMapAux( Int, List ) [function]
+ // ----------------------------------------------------------
+    rule [[ #transactionsMap => #transactionsMapAux( 0, TXLIST ) ]]
          <txOrder> TXLIST </txOrder>
-      requires size(TXLIST) >Int I
+
+    rule #transactionsMapAux( _, .List )    => .Map [owise]
+    rule [[ #transactionsMapAux( I, ListItem(TXID:Int) REST )
+         => #parseByteStackRaw( #rlpEncodeWord( I ) )[0 .. 1] |-> #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) #transactionsMapAux( I +Int 1, REST )
+         ]]
+         <message>
+           <msgID> TXID </msgID>
+           <txNonce>    TN </txNonce>
+           <txGasPrice> TP </txGasPrice>
+           <txGasLimit> TG </txGasLimit>
+           <to>         TT </to>
+           <value>      TV </value>
+           <sigV>       TW </sigV>
+           <sigR>       TR </sigR>
+           <sigS>       TS </sigS>
+           <data>       TD </data>
+         </message>
 
     syntax KItem ::= "#firefly_getTxRoot"
  // -------------------------------------

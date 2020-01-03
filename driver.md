@@ -22,9 +22,9 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
     syntax EthereumSimulation ::= ".EthereumSimulation"
                                 | EthereumCommand EthereumSimulation
  // ----------------------------------------------------------------
-    rule <k> .EthereumSimulation                                 => .                   ... </k>
-    rule <k> ETC                          ETS:EthereumSimulation => ETC          ~> ETS ... </k>
-    rule <k> ETC1:EthereumCommand ~> ETC2 ETS:EthereumSimulation => ETC1 ~> ETC2 ~> ETS ... </k>
+    rule <k> .EthereumSimulation                        => .          ... </k>
+    rule <k> ETC                 .EthereumSimulation    => ETC        ... </k>
+    rule <k> ETC                 ETS:EthereumSimulation => ETC ~> ETS ... </k> requires ETS =/=K .EthereumSimulation
 
     rule <k> #halt ~> ETC ETS:EthereumSimulation => #halt ~> ETC ~> ETS ... </k>
 

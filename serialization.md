@@ -93,6 +93,28 @@ Address/Hash Helpers
 
 ```
 
+- `#hashSignedTx` Takes transaction data. Returns the hash of the rlp-encoded transaction with R S and V.
+- `#hashUnsignedTx` Returns the hash of the rlp-encoded transaction without R S or V.
+
+```k
+    syntax String ::= #hashSignedTx   ( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
+                    | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray )                               [function]
+ // --------------------------------------------------------------------------------------------------------------------------
+    rule [hashTx]: #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
+                => Keccak256( #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) )
+
+    rule [hashFakeTx]: #hashUnsignedTx(TN, TP, TG, TT, TV, TD)
+                    => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
+                                                    +String #rlpEncodeWord(TP)
+                                                    +String #rlpEncodeWord(TG)
+                                                    +String #rlpEncodeAccount(TT)
+                                                    +String #rlpEncodeWord(TV)
+                                                    +String #rlpEncodeString(#unparseByteStack(TD))
+                                                  , 192
+                                                  )
+                                )
+```
+
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
 Here we provide some standard parser/unparser functions for that format.
 
@@ -270,6 +292,21 @@ Encoding
     rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires notBool ( lengthString(STR) <Int 56 )
     rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
 
+    syntax String ::= #rlpEncodeTransaction( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
+ // -------------------------------------------------------------------------------------------------------------------------------
+    rule [rlpTx]: #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS)
+               => #rlpEncodeLength(         #rlpEncodeWord(TN)
+                                    +String #rlpEncodeWord(TP)
+                                    +String #rlpEncodeWord(TG)
+                                    +String #rlpEncodeAccount(TT)
+                                    +String #rlpEncodeWord(TV)
+                                    +String #rlpEncodeString(#unparseByteStack(TD))
+                                    +String #rlpEncodeWord(TW)
+                                    +String #rlpEncodeString(#unparseByteStack(#asByteStack(#asWord(TR))))
+                                    +String #rlpEncodeString(#unparseByteStack(#asByteStack(#asWord(TS))))
+                                  , 192
+                                  )
+
     syntax String ::= #rlpEncodeMerkleTree ( MerkleTree ) [function]
  // ----------------------------------------------------------------
     rule #rlpEncodeMerkleTree ( .MerkleTree ) => "\x80"
@@ -396,7 +433,11 @@ Merkle Patricia Tree
        andBool LEAFPATH[0] =/=Int PATH[0]
 
     rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
-      => #merkleExtensionBuilder( .ByteArray, LEAFPATH, LEAFVALUE, PATH, VALUE ) [owise]
+      => #merkleExtensionBuilder( .ByteArray, LEAFPATH, LEAFVALUE, PATH, VALUE )
+      requires #unparseByteStack( LEAFPATH ) =/=String #unparseByteStack( PATH )
+       andBool #sizeByteArray( LEAFPATH ) >Int 0
+       andBool #sizeByteArray( PATH )     >Int 0
+       andBool LEAFPATH[0] ==Int PATH[0]
 
     rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => MerkleExtension ( EXTPATH, MerkleUpdate ( EXTTREE, .ByteArray, VALUE ) )
@@ -404,19 +445,22 @@ Merkle Patricia Tree
 
     rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, PATH, VALUE ), EXTPATH, EXTTREE )
-      requires #sizeByteArray( EXTPATH ) >Int 0
-       andBool #sizeByteArray( PATH ) >Int 0
+      requires #sizeByteArray( PATH ) >Int 0
        andBool EXTPATH[0] =/=Int PATH[0]
 
     rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
-      => #merkleExtensionSplitter( .ByteArray, EXTPATH, EXTTREE, PATH, VALUE ) [owise]
+      => #merkleExtensionSplitter( .ByteArray, EXTPATH, EXTTREE, PATH, VALUE )
+      requires #unparseByteStack( EXTPATH ) =/=String #unparseByteStack( PATH )
+       andBool #sizeByteArray( PATH ) >Int 0
+       andBool EXTPATH[0] ==Int PATH[0]
 
     rule MerkleUpdate ( MerkleBranch( M, _ ), PATH, VALUE )
       => MerkleBranch( M, VALUE )
       requires #sizeByteArray( PATH ) ==Int 0
 
     rule MerkleUpdate ( MerkleBranch( M, BRANCHVALUE ), PATH, VALUE )
-      => #merkleBrancher ( M, BRANCHVALUE, PATH[0], PATH[1 .. #sizeByteArray(PATH) -Int 1], VALUE ) [owise]
+      => #merkleUpdateBranch ( M, BRANCHVALUE, PATH[0], PATH[1 .. #sizeByteArray(PATH) -Int 1], VALUE )
+      requires #sizeByteArray( PATH ) >Int 0
 ```
 
 - `MerkleUpdateMap` Takes a mapping of `ByteArray |-> String` and generates a trie
@@ -467,9 +511,9 @@ Merkle Tree Aux Functions
     rule HPEncodeAux ( X ) => 0 requires         X ==Int 0
     rule HPEncodeAux ( X ) => 2 requires notBool X ==Int 0
 
-    syntax MerkleTree ::= #merkleBrancher ( Map, String, Int, ByteArray, String ) [function]
- // ----------------------------------------------------------------------------------------
-    rule #merkleBrancher ( X |-> TREE M, BRANCHVALUE, X, PATH, VALUE )
+    syntax MerkleTree ::= #merkleUpdateBranch ( Map, String, Int, ByteArray, String ) [function]
+ // --------------------------------------------------------------------------------------------
+    rule #merkleUpdateBranch ( X |-> TREE M, BRANCHVALUE, X, PATH, VALUE )
       => MerkleBranch( M[X <- MerkleUpdate( TREE, PATH, VALUE )], BRANCHVALUE )
 
     syntax MerkleTree ::= #merkleExtensionBuilder( ByteArray, ByteArray, String, ByteArray, String ) [function]
@@ -479,31 +523,38 @@ Merkle Tree Aux Functions
                                 , P1[1 .. #sizeByteArray(P1) -Int 1], V1
                                 , P2[1 .. #sizeByteArray(P2) -Int 1], V2
                                 )
-      [owise]
-
-    rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
-      => MerkleExtension( PATH, MerkleUpdate( MerkleUpdate( .MerkleBranch, P1, V1 ), P2, V2 ) )
       requires #sizeByteArray(P1) >Int 0
        andBool #sizeByteArray(P2) >Int 0
-       andBool P1[0] =/=Int P2[0]
+       andBool P1[0] ==Int P2[0]
 
     rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
       => MerkleExtension( PATH, MerkleUpdate( MerkleUpdate( .MerkleBranch, P1, V1 ), P2, V2 ) )
       requires #sizeByteArray(P1) ==Int 0
         orBool #sizeByteArray(P2) ==Int 0
+        orBool ( #sizeByteArray(P1) >Int 0
+       andBool   #sizeByteArray(P2) >Int 0
+       andBool   P1[0] =/=Int P2[0] )
 
-    syntax MerkleTree ::= #merkleExtensionBrancher ( MerkleTree, ByteArray, MerkleTree )                   [function]
-                        | #merkleExtensionSplitter ( ByteArray, ByteArray, MerkleTree, ByteArray, String ) [function]
- // -----------------------------------------------------------------------------------------------------------------
+    syntax MerkleTree ::= #merkleExtensionBrancher ( MerkleTree, ByteArray, MerkleTree ) [function]
+ // -----------------------------------------------------------------------------------------------
     rule #merkleExtensionBrancher( MerkleBranch(M, VALUE), PATH, EXTTREE )
       => MerkleBranch( M[PATH[0] <- MerkleExtension( PATH[1 .. #sizeByteArray(PATH) -Int 1], EXTTREE )], VALUE )
+      requires #sizeByteArray(PATH) >Int 1
 
+    rule #merkleExtensionBrancher( MerkleBranch(M, VALUE), PATH, EXTTREE )
+      => MerkleBranch( M[PATH[0] <- EXTTREE], VALUE )
+      requires #sizeByteArray(PATH) ==Int 1
+
+    syntax MerkleTree ::= #merkleExtensionSplitter ( ByteArray, ByteArray, MerkleTree, ByteArray, String ) [function]
+ // -----------------------------------------------------------------------------------------------------------------
     rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
       => #merkleExtensionSplitter( PATH ++ ( #asByteStack( P1[0] )[0 .. 1] )
                                  , P1[1 .. #sizeByteArray(P1) -Int 1], TREE
                                  , P2[1 .. #sizeByteArray(P2) -Int 1], VALUE
                                  )
-      [owise]
+      requires #sizeByteArray(P1) >Int 0
+       andBool #sizeByteArray(P2) >Int 0
+       andBool P1[0] ==Int P2[0]
 
     rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
       => MerkleExtension( PATH, #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, P2, VALUE ), P1, TREE ) )
@@ -526,10 +577,20 @@ Tree Root Helper Functions
 ### Storage Root
 
 ```k
-    syntax Map ::= #intMap2StorageMap( Map ) [function]
- // ---------------------------------------------------
-    rule #intMap2StorageMap( .Map          ) => .Map
-    rule #intMap2StorageMap( KEY |-> VAL M ) => #padToWidth( 32, #asByteStack( KEY ) ) |-> #rlpEncodeWord( VAL ) #intMap2StorageMap(M)
+    syntax Map ::= #intMap2StorageMap( Map )               [function]
+                 | #intMap2StorageMapAux( Map, Map, List ) [function]
+ // -----------------------------------------------------------------
+    rule #intMap2StorageMap( M ) => #intMap2StorageMapAux( .Map, M, keys_list(M) )
+
+    rule #intMap2StorageMapAux( SMAP, _, .List ) => SMAP
+    rule #intMap2StorageMapAux( SMAP, IMAP, ListItem(K) REST )
+      => #intMap2StorageMapAux( #padToWidth( 32, #asByteStack(K) ) |-> #rlpEncodeWord({IMAP[K]}:>Int) SMAP, IMAP, REST )
+      requires {IMAP[K]}:>Int =/=Int 0
+
+    rule #intMap2StorageMapAux( SMAP, IMAP, ListItem(K) REST )
+      => #intMap2StorageMapAux( SMAP, IMAP, REST )
+      requires {IMAP[K]}:>Int ==Int 0
+
 
     syntax MerkleTree ::= #storageRoot( Map ) [function]
  // ----------------------------------------------------

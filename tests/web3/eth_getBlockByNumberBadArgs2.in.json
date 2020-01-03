@@ -1,6 +1,12 @@
-[{
-    "jsonrpc":"2.0",
-    "id":1,
-    "method":"eth_getBlockByNumber",
-    "params": ["pending","hello","world"]
-}]
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_getBlockByNumber",
+    "params": [
+      "pending",
+      "hello",
+      "world"
+    ]
+  }
+]
