@@ -317,27 +317,30 @@ Encoding
                                     , 192
                                     )
 
-    syntax String ::= #rlpEncodeReceipt  ( Int , Int , ByteArray , List ) [function]
-                    | #rlpEncodeLogs     ( List, String )                 [function]
-                    | #rlpEncodeTopics   ( List, String )                 [function]
- // --------------------------------------------------------------------------------
+    syntax String ::= #rlpEncodeReceipt ( Int , Int , ByteArray , List ) [function]
+                    | #rlpEncodeLogs    ( List )                         [function]
+                    | #rlpEncodeLogsAux ( List, String )                 [function]
+                    | #rlpEncodeTopics  ( List, String )                 [function]
+ // -------------------------------------------------------------------------------
     rule [rlpReceipt]: #rlpEncodeReceipt(RS, RG, RB, RL)
                     => #rlpEncodeLength(         #rlpEncodeWord(RS)
                                          +String #rlpEncodeWord(RG)
                                          +String #rlpEncodeString(#unparseByteStack(RB))
-                                         +String #rlpEncodeLogs(RL,"")
+                                         +String #rlpEncodeLogs(RL)
                                        , 192
                                        )
 
-    rule #rlpEncodeLogs( .List, OUT ) => #rlpEncodeLength(OUT,192)
-    rule #rlpEncodeLogs( ( ListItem({ ACCT | TOPICS | DATA }) => .List ) _
-                       , ( OUT => OUT +String #rlpEncodeLength(         #rlpEncodeBytes(ACCT,20)
-                                                                +String #rlpEncodeTopics(TOPICS,"")
-                                                                +String #rlpEncodeString(#unparseByteStack(DATA))
-                                                              , 192
-                                                              )
-                         )
-                       )
+    rule #rlpEncodeLogs( LOGS ) => #rlpEncodeLogsAux( LOGS, "" )
+
+    rule #rlpEncodeLogsAux( .List, OUT ) => #rlpEncodeLength(OUT,192)
+    rule #rlpEncodeLogsAux( ( ListItem({ ACCT | TOPICS | DATA }) => .List ) _
+                          , ( OUT => OUT +String #rlpEncodeLength(         #rlpEncodeBytes(ACCT,20)
+                                                                   +String #rlpEncodeTopics(TOPICS,"")
+                                                                   +String #rlpEncodeString(#unparseByteStack(DATA))
+                                                                 , 192
+                                                                 )
+                            )
+                          )
 
     rule #rlpEncodeTopics( .List, OUT ) => #rlpEncodeLength(OUT,192)
     rule #rlpEncodeTopics( ( ListItem( X:Int ) => .List ) _
