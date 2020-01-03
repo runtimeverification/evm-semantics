@@ -6,3 +6,4 @@
 /media/*.pdf
 /tests/web3/*.out.json
 /tests/web3/*/*.out.json
+/tests/truffle/*/build
