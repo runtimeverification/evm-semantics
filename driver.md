@@ -22,9 +22,9 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
     syntax EthereumSimulation ::= ".EthereumSimulation"
                                 | EthereumCommand EthereumSimulation
  // ----------------------------------------------------------------
-    rule <k> .EthereumSimulation                                 => .                   ... </k>
-    rule <k> ETC                          ETS:EthereumSimulation => ETC          ~> ETS ... </k>
-    rule <k> ETC1:EthereumCommand ~> ETC2 ETS:EthereumSimulation => ETC1 ~> ETC2 ~> ETS ... </k>
+    rule <k> .EthereumSimulation                        => .          ... </k>
+    rule <k> ETC                 .EthereumSimulation    => ETC        ... </k>
+    rule <k> ETC                 ETS:EthereumSimulation => ETC ~> ETS ... </k> requires ETS =/=K .EthereumSimulation
 
     rule <k> #halt ~> ETC ETS:EthereumSimulation => #halt ~> ETC ~> ETS ... </k>
 
@@ -399,6 +399,18 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
            <code> CODE </code>
            ...
          </account>
+```
+
+-   `#removeZeros` removes any entries in a map with zero values.
+
+```k
+    syntax Map ::= #removeZeros ( Map ) [function]
+                 | #removeZeros ( List , Map ) [function, klabel(#removeZerosAux)]
+ // ------------------------------------------------------------------------------
+    rule #removeZeros( M )                                   => #removeZeros(Set2List(keys(M)), M)
+    rule #removeZeros( .List, .Map )                         => .Map
+    rule #removeZeros( ListItem(KEY) L, KEY |-> 0 REST )     => #removeZeros(L, REST)
+    rule #removeZeros( ListItem(KEY) L, KEY |-> VALUE REST ) => KEY |-> VALUE #removeZeros(L, REST) requires VALUE =/=K 0
 ```
 
 Here we check the other post-conditions associated with an EVM test.

@@ -709,6 +709,22 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule #bloomFilter(ListItem(WS:ByteArray) L, B) => #bloomFilter(L, B |Int M3:2048(WS))
 ```
 
+- `M3:2048` computes the 2048-bit hash of a log entry in which exactly 3 bits are set. This is used to compute the Bloom filter of a log entry.
+
+```k
+    syntax Int ::= "M3:2048" "(" ByteArray ")" [function]
+ // -----------------------------------------------------
+    rule M3:2048(WS) => setBloomFilterBits(#parseByteStack(Keccak256(#unparseByteStack(WS))))
+
+    syntax Int ::= setBloomFilterBits(ByteArray) [function]
+ // -------------------------------------------------------
+    rule setBloomFilterBits(HASH) => (1 <<Int getBloomFilterBit(HASH, 0)) |Int (1 <<Int getBloomFilterBit(HASH, 2)) |Int (1 <<Int getBloomFilterBit(HASH, 4))
+
+    syntax Int ::= getBloomFilterBit(ByteArray, Int) [function]
+ // -----------------------------------------------------------
+    rule getBloomFilterBit(X, I) => #asInteger(X [ I .. 2 ]) %Int 2048
+```
+
 EVM Programs
 ============
 
@@ -2280,11 +2296,11 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
     syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function, functional]
  // ----------------------------------------------------------------------
 
-    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth"  | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
-                          | "Ghasrevert"              | "Ghasreturndata"    | "Ghasstaticcall"      | "Ghasshift"
-                          | "Ghasdirtysstore"         | "Ghascreate2"       | "Ghasextcodehash"     | "Ghasselfbalance"
-                          | "Gsstorestipend"          | "Ghassstorestipend"
- // -----------------------------------------------------------------------
+    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
+                          | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
+                          | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
+                          | "Ghassstorestipend"
+ // -------------------------------------------
 ```
 
 ### Schedule Constants

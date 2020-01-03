@@ -104,6 +104,6 @@ module STORAGEROOT-SPEC
                                                        )
                                  )
                       )
-          => doneMerkle( "6786e17b1f185ba3b51ec15f28526a1d47d74052ca98c1b8edf7cdc6243eebba" )
+          => doneMerkle( "1a40e309e184fb6483112c37def9ed52e5ee36aa4b570a234a962b3a8f186610" )
          </k>
 endmodule
