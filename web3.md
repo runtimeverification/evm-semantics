@@ -1848,9 +1848,13 @@ Retrieving logs
        requires START >Int END
 
     syntax KItem ::= "#eth_getLogs"
- // -------------------------------
-    rule <k> #eth_getLogs => #rpcResponseUnimplemented ... </k>
+                   | "#eth_getLogsAux" "(" List ")"
+ // -----------------------------------------------
+    rule <k> #eth_getLogs => .JSONs ~> #eth_getLogsAux (#getLogDataBetween(#parseBlockIdentifier("earliest"), #parseBlockIdentifier("latest"))) ... </k>
 
+    rule <k> RESULT ~> eth_getLogsAux(ListItem({LOGS|TXID|TXHASH|BN|BH}) LIST) => RESULT, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)] ~> eth_getLogsAux(LIST) ... </k>
+
+    rule <k> RESULT ~> eth_getLogsAux(.List) => #rpcResponseSuccess(RESULT) ... <k>
 ```
 
 Unimplemented Methods
