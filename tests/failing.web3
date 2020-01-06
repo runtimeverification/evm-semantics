@@ -10,3 +10,4 @@ tests/web3/erc20/erc20pausable-partial.in.json
 tests/web3/erc20/erc20safe.in.json
 tests/web3/erc20/tokentimelock.in.json
 tests/web3/net_version_notification.in.json
+tests/web3/eth_getLogs.in.json
