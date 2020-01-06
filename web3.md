@@ -1733,13 +1733,24 @@ Mining
 
     syntax KItem ::= "#mineBlock"
  // -----------------------------
-    rule <k> #mineBlock => #finalizeBlock ~> #getParentHash ~> #updateTrieRoots ~> #saveState ~> #startBlock ~> #cleanTxLists ~> #clearGas ... </k>
+    rule <k> #mineBlock
+          => #finalizeBlock
+          ~> #setParentHash #getBlockByNumber( "latest", BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>} )
+          ~> #updateTrieRoots
+          ~> #saveState
+          ~> #startBlock
+          ~> #cleanTxLists
+          ~> #clearGas
+          ...
+         </k>
+         <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK   </network>
+         <block>     BLOCK     </block>
 
     syntax KItem ::= "#saveState"
                    | "#incrementBlockNumber"
                    | "#cleanTxLists"
                    | "#clearGas"
-                   | "#getParentHash"
                    | "#setParentHash" BlockchainItem
                    | "#updateTrieRoots"
                    | "#updateStateRoot"
@@ -1757,11 +1768,6 @@ Mining
 
     rule <k> #clearGas => . ... </k>
          <gas> _ => 0 </gas>
-
-    rule <k> #getParentHash => #setParentHash #getBlockByNumber( "latest", BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>} ) ... </k>
-         <blockList> BLOCKLIST </blockList>
-         <network>   NETWORK   </network>
-         <block>     BLOCK     </block>
 
     rule <k> #setParentHash BCI => . ... </k>
          <previousHash> _ => #parseHexWord( Keccak256( #rlpEncodeBlock( BCI ) ) ) </previousHash>
