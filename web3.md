@@ -1852,9 +1852,9 @@ Retrieving logs
  // -----------------------------------------------
     rule <k> #eth_getLogs => .JSONs ~> #eth_getLogsAux (#getLogDataBetween(#parseBlockIdentifier("earliest"), #parseBlockIdentifier("latest"))) ... </k>
 
-    rule <k> RESULT ~> eth_getLogsAux(ListItem({LOGS|TXID|TXHASH|BN|BH}) LIST) => RESULT, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)] ~> eth_getLogsAux(LIST) ... </k>
+    rule <k> RESULT ~> #eth_getLogsAux(ListItem({LOGS|TXID|TXHASH|BN|BH}) LIST) => RESULT, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)] ~> #eth_getLogsAux(LIST) ... </k>
 
-    rule <k> RESULT ~> eth_getLogsAux(.List) => #rpcResponseSuccess(RESULT) ... <k>
+    rule <k> RESULT ~> #eth_getLogsAux(.List) => #rpcResponseSuccess(RESULT) ... <k>
 ```
 
 Unimplemented Methods
