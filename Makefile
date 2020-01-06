@@ -128,7 +128,7 @@ plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 ifneq ($(RELEASE),)
 K_BUILD_TYPE         := Release
 SEMANTICS_BUILD_TYPE := Release
-KOMPILE_OPTS         += --iterated
+KOMPILE_OPTS         += -O3
 else
 K_BUILD_TYPE         := FastBuild
 SEMANTICS_BUILD_TYPE := Debug
@@ -178,10 +178,10 @@ llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 # Tangle definition from *.md files
 
-concrete_tangle := .k:not(.node):not(.symbolic):not(.nobytes),.standalone,.concrete,.bytes
-java_tangle     := .k:not(.node):not(.concrete):not(.bytes),.standalone,.symbolic,.nobytes
-haskell_tangle  := .k:not(.node):not(.concrete):not(.nobytes),.standalone,.symbolic,.bytes
-node_tangle     := .k:not(.standalone):not(.symbolic):not(.nobytes),.node,.concrete,.bytes
+concrete_tangle := .k:not(.node):not(.symbolic):not(.nobytes):not(.memmap),.standalone,.concrete,.bytes,.membytes
+java_tangle     := .k:not(.node):not(.concrete):not(.bytes):not(.memmap):not(.membytes),.standalone,.symbolic,.nobytes
+haskell_tangle  := .k:not(.node):not(.concrete):not(.nobytes):not(.membytes),.standalone,.symbolic,.bytes,.memmap
+node_tangle     := .k:not(.standalone):not(.symbolic):not(.nobytes):not(.memmap),.node,.concrete,.bytes,.membytes
 
 defn: $(defn_files)
 llvm-defn:    $(llvm_files)
@@ -211,9 +211,6 @@ $(web3_dir)/%.k: %.md $(TANGLER)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
 # Kompiling
-
-KOMPILE_OPTS      :=
-LLVM_KOMPILE_OPTS :=
 
 build: build-llvm build-haskell build-java build-web3 build-node
 build-java:    $(java_kompiled)
@@ -286,7 +283,7 @@ $(llvm_kompiled): $(llvm_files) $(libff_out)
 	                 $(KOMPILE_OPTS) \
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
 	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp \
-	                 -ccopt -g -ccopt -std=c++14 -ccopt -O2 \
+	                 -ccopt -g -ccopt -std=c++14 \
 	                 -ccopt -L$(LIBRARY_PATH) \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS))
 
