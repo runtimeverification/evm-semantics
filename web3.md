@@ -1812,25 +1812,39 @@ Mining
 Retrieving logs
 ---------------
 
+ - `LogData` contains:
+    - a List of log elements like `{ ACCT | TOPICS:List | DATA }`
+    - Transaction Index (Int)
+    - Transaction Hash (String)
+    - Block Number (Int)
+    - Block Hash (String)
+
+[TODO]:
+ - remove hardcoded BlockHash and retrieve the correct value
+ - add rules for the cases in which `START == 'pending'` or `END == 'pending'`
+
 ```k
 
-    syntax List ::= #getLogListBetween ( BlockIdentifier, BlockIdentifier ) [function]
-                  | #getLogListBetweenAux ( BlockIdentifier, BlockIdentifier, List ) [function]
- // ---------------------------------------------------------------------------------------------
-    rule #getLogListBetween(START, END) => #getLogListBetweenAux(START, END, .List)
-    rule [[ #getLogListBetweenAux(START:Int, "pending", RESULT) => #getLogListBetweenAux(START, #parseBlockIdentifier("latest"), (RESULT ListItem(LOGS))) ]]
-       <log> LOGS </log>
+    syntax LogData ::= "{" List "|" Int "|" String "|" Int "|" String "}"
+ // ---------------------------------------------------------------------
+    
+    syntax List ::= #getLogDataBetween ( BlockIdentifier, BlockIdentifier ) [function]
+                  | #getLogDataBetweenAux ( BlockIdentifier, BlockIdentifier, List ) [function]
+ // --------------------------------------------------------------------------------------------
+    rule #getLogDataBetween(START, END) => #getLogDataBetweenAux(START, END, .List)
 
-    rule [[ #getLogListBetweenAux(START:Int, END:Int, RESULT) => #getLogListBetweenAux(START +Int 1, END, (RESULT ListItem(LOGS))) ]]
+    rule [[ #getLogDataBetweenAux(START:Int, END:Int, RESULT) => #getLogDataBetweenAux(START +Int 1, END, (RESULT ListItem({LOGS|getIndexOf(TXID, TXLIST)|TXHASH|START|"0x0"}))) ]]
        <txReceipt>
-         <txBlockNumber> START </txBlockNumber>
-         <logSet> LOGS </logSet>
+         <txBlockNumber>   START </txBlockNumber>
+         <txHash>          TXHASH </txHash>
+         <txID>            TXID </txID>
+         <logSet>          LOGS </logSet>
          ...
        </txReceipt>
+       <txOrder> TXLIST </txOrder>
 
-    rule [[ #getLogListBetweenAux("pending", _, RESULT) => (RESULT ListItem(LOGS)) ]]
-         <log> LOGS </log>
-    rule #getLogListBetweenAux(START:Int, END:Int, RESULT) => RESULT
+
+    rule #getLogDataBetweenAux(START:Int, END:Int, RESULT) => RESULT
        requires START >Int END
 
     syntax KItem ::= "#eth_getLogs"
