@@ -58,8 +58,6 @@ The Blockchain State
 A `BlockchainItem` contains the information of a block and its network state.
 The `blockList` cell stores a list of previous blocks and network states.
 -   `#pushBlockchainState` saves a copy of the block state and network state as a `BlockchainItem` in the `blockList` cell.
--   `#getBlockchainState(Int)` restores a blockchain state for a given block number.
--   `#setBlockchainState(BlockchainItem)` helper rule for `#getBlockchainState(Int)`.
 -   `#getBlockByNumber(Int)` retrieves a specific `BlockchainItem` from the `blockList` cell.
 
 ```k
@@ -73,19 +71,6 @@ The `blockList` cell stores a list of previous blocks and network states.
          <blockList> (.List => ListItem({ <network> NETWORK </network> | <block> BLOCK </block> })) ... </blockList>
          <network> NETWORK </network>
          <block>   BLOCK   </block>
-
-    syntax KItem ::= #getBlockchainState ( Int )
- // --------------------------------------------
-    rule <k> #getBlockchainState(BLOCKNUM) => #setBlockchainState(#getBlockByNumber(BLOCKNUM, BLOCKLIST, .BlockchainItem)) ... </k>
-         <blockList> BLOCKLIST </blockList>
-
-    syntax KItem ::= #setBlockchainState ( BlockchainItem )
- // -------------------------------------------------------
-    rule <k> #setBlockchainState({ <network> NETWORK </network> | <block> BLOCK </block> }) => . ... </k>
-         <network> _ => NETWORK </network>
-         <block>   _ => BLOCK   </block>
-
-    rule <k> #setBlockchainState(.BlockchainItem) => #rpcResponseError(-37600, "Unable to find block by number.") ... </k>
 
     syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List , BlockchainItem ) [function]
  // --------------------------------------------------------------------------------------------------
