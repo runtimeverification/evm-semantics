@@ -161,7 +161,6 @@ pipeline {
             stage('Firefly') {
               steps {
                 sh '''
-                  export PATH=$PATH:$(pwd)/.build/defn/vm
                   make test-interactive-firefly
                 '''
               }
