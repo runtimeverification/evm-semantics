@@ -33,4 +33,6 @@ while ! netcat -z localhost "$kevm_vm_port"; do
     sleep 1
 done
 
-node_modules/.bin/truffle test
+for test in $(find ./test -name '*.test.js'); do
+    node_modules/.bin/truffle test $test
+done
