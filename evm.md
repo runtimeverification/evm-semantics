@@ -62,7 +62,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
               // \mu_*
               <wordStack>   .WordStack </wordStack>           // \mu_s
-              <localMem>    .Map       </localMem>            // \mu_m
+              <localMem>    .Memory    </localMem>            // \mu_m
               <pc>          0          </pc>                  // \mu_pc
               <gas>         0          </gas>                 // \mu_g
               <memoryUsed>  0          </memoryUsed>          // \mu_i
@@ -322,8 +322,8 @@ The `#next [_]` operator initiates execution by:
     rule <k> #next [ OP ] => #end EVMC_STATIC_MODE_VIOLATION ... </k>
          <wordStack> WS </wordStack>
          <static> STATIC:Bool </static>
-      requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
-       andBool STATIC andBool #changesState(OP, WS)
+      requires STATIC andBool #changesState(OP, WS)
+       andBool notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
 ```
 
 ### Exceptional Checks
@@ -927,7 +927,7 @@ These operations are getters/setters of the local execution memory.
          <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
 
     rule <k> MSTORE8 INDEX VALUE => . ... </k>
-         <localMem> LM => LM [ INDEX <- (VALUE modInt 256) ] </localMem>
+         <localMem> LM => LM [ INDEX := (VALUE modInt 256) ] </localMem>
 ```
 
 ### Expressions
@@ -1389,7 +1389,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <memoryUsed>   _ => 0          </memoryUsed>
          <output>       _ => .ByteArray </output>
          <wordStack>    _ => .WordStack </wordStack>
-         <localMem>     _ => .Map       </localMem>
+         <localMem>     _ => .Memory    </localMem>
 
     syntax Set ::= #computeValidJumpDests(ByteArray)            [function]
                  | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
@@ -1409,7 +1409,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
     rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int #sizeByteArray(PGM)
 
-    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, ListItem(I) RESULT) requires PGM [ I ] ==Int 91
+    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT ListItem(I)) requires PGM [ I ] ==Int 91
     rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
 ```
 
