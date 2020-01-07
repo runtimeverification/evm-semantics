@@ -1331,18 +1331,21 @@ Transaction Execution
 ```k
     syntax KItem ::= "#eth_estimateGas"
  // -----------------------------------
+    rule <k> #eth_estimateGas ... </k>
+         <params> [ { _ }, (.JSONs => "pending", .JSONs) ] </params>
+
     rule <k> #eth_estimateGas
           => #pushNetworkState
           ~> #loadTx J
           ~> #eth_estimateGas_finalize GUSED
          ...
          </k>
-         <params> [ ({ _ } #as J), .JSONs ] </params>
+         <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
          <gasUsed>  GUSED  </gasUsed>
       requires isString(#getJSON("from", J) )
 
     rule <k> #eth_estimateGas => #rpcResponseError(-32028, "Method 'eth_estimateGas' has invalid arguments") ...  </k>
-         <params> [ ({ _ } #as J), .JSONs ] </params>
+         <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
       requires notBool isString( #getJSON("from", J) )
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
