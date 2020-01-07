@@ -22,6 +22,9 @@ Possible sorts are [Ids, KResult]
     syntax EthereumCommand ::= "var" Ids
     rule var IDs => . //Required only to distinguish EVM-PROOFS vars from spec rule vars.
 */
+    //Dummy command at the beginning of <k> to ensure execution doesn't start with a spec rule 
+    syntax EthereumCommand ::= "#dummy"
+    rule #dummy => .
 
     syntax EthereumCommand ::= "saveOutput" Id
     rule <k> saveOutput X => . ...</k>
@@ -37,16 +40,6 @@ Possible sorts are [Ids, KResult]
     rule <k> restoreEthereum X => . ...</k>
          (<ethereum> _ </ethereum> => <ethereum> ETH </ethereum>)
          <commandVars>... X |-> ETH ...</commandVars>
-
-    syntax KResult ::= ByteArray
-
-    syntax Exp ::= "getVar" Id
-                  | Exp "==S" Exp [seqstrict] 
-                  | KResult
-    rule <k> getVar X => VARS[X] ...</k>
-         <commandVars> VARS </commandVars>
-
-    rule R1:KResult ==S R2:KResult => R1 ==K R2
 
     syntax EthereumCommand ::= "#assert" Exp [strict]
                              | "#assertFailure" Exp
@@ -78,5 +71,44 @@ syntax EthereumCommand ::= "#assume" Exp [strict]
     syntax Exp ::= #sizeWordStackExp ( Exp ) [strict]
     rule #sizeWordStackExp(WS:WordStack) => #sizeWordStack(WS)
 
+// Specifications expression language
+// ======================================================================
+
+    syntax KResult ::= ByteArray | StatusCode | List | Map
+
+    syntax Exp ::= "getVar" Id
+                  | Exp "==S" Exp [seqstrict]
+                  | Exp "=/=S" Exp [seqstrict] 
+                  | KResult
+    rule <k> getVar X => VARS[X] ...</k>
+         <commandVars> VARS </commandVars>
+
+    rule R1:KResult ==S  R2:KResult => R1 ==K  R2
+    rule R1:KResult =/=S R2:KResult => R1 =/=K R2
+
+    // Boolean expressions
+    syntax Exp ::= Exp "&&S" Exp [seqstrict, left]
+                 > Exp "||S" Exp [seqstrict, left]
+
+    rule R1:Bool &&S R2:Bool => R1 andBool R2
+    rule R1:Bool ||S R2:Bool => R1 orBool R2
+
+    syntax Exp ::= "#getStatusCode"
+                 | "#getOutput"
+                 | "#getLog"
+                 | #getStorage ( Int )
+  
+    rule <k> #getStatusCode => SC ...</k>
+         <statusCode> SC </statusCode>
+
+    rule <k> #getOutput => OUT ...</k>
+         <output> OUT </output>
+
+    rule <k> #getLog => L ...</k>
+         <log> L </log>
+
+    rule <k> #getStorage(ACCT_ID) => S ...</k>
+         <acctID> ACCT_ID </acctID>
+         <storage> S </storage>
 endmodule
 ```
