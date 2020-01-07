@@ -33,10 +33,6 @@ while ! netcat -z localhost "$kevm_vm_port"; do
     sleep 1
 done
 
-for erc20 in ./test/token/ERC20/ERC20*.test.js; do
-    node_modules/.bin/truffle test $erc20
-    rm $erc20
+for test in $(find ./test -name '*.test.js'); do
+    node_modules/.bin/truffle test $test
 done
-
-node_modules/.bin/truffle test
-echo "$tmp_testing_dir"
