@@ -12,8 +12,8 @@ module STATE-LOADER
     syntax BlockIdentifier ::= Int | String
  // ---------------------------------------
 
-    syntax JSON ::= ByteArray | OpCodes | Map | Call | SubstateLogEntry | Account | BlockIdentifier
- // -----------------------------------------------------------------------------------------------
+    syntax JSON ::= ByteArray | OpCodes | Map | Call | SubstateLogEntry | Account
+ // -----------------------------------------------------------------------------
 
 ```
 
