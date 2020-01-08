@@ -1830,10 +1830,11 @@ Retrieving logs
 
     syntax KItem ::= "#eth_getLogs"
                    | "#eth_getLogsAux" "(" Int "," Int ")"
- // ---------------------------------------------------
+                   | #serializeResults (List)
+ // -----------------------------------------
     rule <k> #eth_getLogs => #eth_getLogsAux(0,1) ~> .List ... </k>
 
-    rule <k> #eth_getLogsAux(START, END) ~> RESULT => #eth_getLogsAux(START +Int 1, END) ~> RESULT ListItem(LOGS) ... </k>
+    rule <k> #eth_getLogsAux(START, END) ~> RESULT => #eth_getLogsAux(START +Int 1, END) ~> RESULT ListItem({LOGS|TXID|TXHASH|START|"0x0"}) ... </k>
          <txReceipt>
            <txBlockNumber>   START </txBlockNumber>
            <txHash>          TXHASH </txHash>
@@ -1842,7 +1843,7 @@ Retrieving logs
            ...
          </txReceipt>
          <txOrder> TXLIST </txOrder>
-         requires START <=Int END
+     requires START <=Int END
 
     rule <k> #eth_getLogsAux(START => START +Int 1, END) ... </k>
          <txReceipt>
@@ -1851,12 +1852,12 @@ Retrieving logs
          </txReceipt>
      requires START =/=Int BN
 
-    rule <k> #eth_getLogsAux(START, END) => . ...</k>
+    rule <k> #eth_getLogsAux(START, END) ~> LIST:List => #serializeResults(LIST) ~> [.JSONs] ...</k>
      requires START >Int END
 
-   // rule <k> RESULT ~> #eth_getLogsAux(ListItem({LOGS|TXID|TXHASH|BN|BH}) LIST) => RESULT, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)] ~> #eth_getLogsAux(LIST) ... </k>
+    rule <k> #serializeResults(ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List) ~> RESULT => #serializeResults(LIST) ~> RESULT, #serializeLogs(LOGS,0,TXID,TXHASH,BH,BN) ... </k>
 
-   // rule <k> RESULT ~> #eth_getLogsAux(.List) => #rpcResponseSuccess(RESULT) ... </k>
+    rule <k> #serializeResults(.List) ~> RESULT:JSON => #rpcResponseSuccess(RESULT) ... </k>
 ```
 
 Unimplemented Methods
