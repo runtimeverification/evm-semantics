@@ -119,7 +119,7 @@ The `blockList` cell stores a list of previous blocks and network states.
     rule [[ #parseBlockIdentifier("latest") => size(BLOCKLIST) -Int 1 ]]
          <blockList> BLOCKLIST </blockList>
 
-    rule #parseBlockIdentifier(BLOCKNUM) => #parseHexWord(BLOCKNUM) [owise]
+    rule #parseBlockIdentifier(BLOCKNUM) => #parseHexWord(BLOCKNUM) requires substrString(BLOCKNUM,0,1) ==String "0x" [owise]
 
     syntax KItem ::= #getAccountAtBlock ( BlockIdentifier , Int )
  // -------------------------------------------------------------
@@ -1828,33 +1828,34 @@ Retrieving logs
     syntax LogData ::= "{" List "|" Int "|" String "|" Int "|" String "}"
  // ---------------------------------------------------------------------
     
-    syntax List ::= #getLogDataBetween ( BlockIdentifier, BlockIdentifier ) [function]
-                  | #getLogDataBetweenAux ( BlockIdentifier, BlockIdentifier, List ) [function]
+    syntax List ::= #getLogDataBetween ( Int, Int ) [function]
+                  | #getLogDataBetweenAux ( Int, Int, List ) [function]
  // --------------------------------------------------------------------------------------------
     rule #getLogDataBetween(START, END) => #getLogDataBetweenAux(START, END, .List)
 
-    rule [[ #getLogDataBetweenAux(START:Int, END:Int, RESULT) => #getLogDataBetweenAux(START +Int 1, END, (RESULT ListItem({LOGS|getIndexOf(TXID, TXLIST)|TXHASH|START|"0x0"}))) ]]
-       <txReceipt>
-         <txBlockNumber>   START </txBlockNumber>
-         <txHash>          TXHASH </txHash>
-         <txID>            TXID </txID>
-         <logSet>          LOGS </logSet>
-         ...
-       </txReceipt>
-       <txOrder> TXLIST </txOrder>
+//    rule [[ #getLogDataBetweenAux(START:Int, END:Int, RESULT) => #getLogDataBetweenAux(START +Int 1, END, (RESULT ListItem({LOGS|getIndexOf(TXID, TXLIST)|TXHASH|START|"0x0"}))) ]]
+//       <txReceipt>
+//         <txBlockNumber>   START </txBlockNumber>
+//         <txHash>          TXHASH </txHash>
+//         <txID>            TXID </txID>
+//         <logSet>          LOGS </logSet>
+//         ...
+//       </txReceipt>
+//       <txOrder> TXLIST </txOrder>
+//       requires START <=Int END
 
 
     rule #getLogDataBetweenAux(START:Int, END:Int, RESULT) => RESULT
-       requires START >Int END
+//       requires START >Int END
 
     syntax KItem ::= "#eth_getLogs"
                    | "#eth_getLogsAux" "(" List ")"
  // -----------------------------------------------
-   rule <k> #eth_getLogs => .JSONs ~> #eth_getLogsAux (#getLogDataBetween(#parseBlockIdentifier("earliest"), #parseBlockIdentifier("latest"))) ... </k>
+   rule <k> #eth_getLogs => .JSONs ~> #eth_getLogsAux (#getLogDataBetween(0, 1)) ... </k>
 
-   rule <k> RESULT ~> #eth_getLogsAux(ListItem({LOGS|TXID|TXHASH|BN|BH}) LIST) => RESULT, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)] ~> #eth_getLogsAux(LIST) ... </k>
+   // rule <k> RESULT ~> #eth_getLogsAux(ListItem({LOGS|TXID|TXHASH|BN|BH}) LIST) => RESULT, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)] ~> #eth_getLogsAux(LIST) ... </k>
 
-   rule <k> RESULT ~> #eth_getLogsAux(.List) => #rpcResponseSuccess(RESULT) ... </k>
+   // rule <k> RESULT ~> #eth_getLogsAux(.List) => #rpcResponseSuccess(RESULT) ... </k>
 ```
 
 Unimplemented Methods
