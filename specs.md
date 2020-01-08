@@ -99,11 +99,13 @@ syntax EthereumCommand ::= "#assume" Exp [strict]
     syntax KResult ::= ByteArray | StatusCode | List | Map
 
     syntax Exp ::= Exp "==S"  Exp  [seqstrict]
-                 | Exp "=/=S" Exp  [seqstrict] 
+                 | Exp "=/=S" Exp  [seqstrict]
+                 | Exp "+List" Exp [seqstrict]
                  | KResult
 
     rule R1:KResult ==S  R2:KResult => R1 ==K  R2
     rule R1:KResult =/=S R2:KResult => R1 =/=K R2
+    rule L1:List +List L2:List => L1 L2
 
     // Boolean expressions
     syntax Exp ::= Exp "&&S" Exp [seqstrict, left]
