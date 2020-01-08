@@ -89,12 +89,10 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List ) [function]
  // ---------------------------------------------------------------------------------
-    rule #getBlockByNumber( ( _:String => "pending" ) , .List) [owise]
     rule #getBlockByNumber( _:Int, .List) => .BlockchainItem
-    rule #getBlockByNumber("earliest", _ ListItem( BLOCK )) => BLOCK
-    rule #getBlockByNumber("latest", ListItem( BLOCK ) _) => BLOCK
+    rule #getBlockByNumber( LATEST, ListItem( BLOCK ) _) => BLOCK
 
-    rule [[ #getBlockByNumber("pending",  BLOCKLIST) => {<network> NETWORK </network> | <block> BLOCK </block>} ]]
+    rule [[ #getBlockByNumber( PENDING ,  BLOCKLIST) => {<network> NETWORK </network> | <block> BLOCK </block>} ]]
          <network> NETWORK </network>
          <block>   BLOCK   </block>
 
@@ -1335,7 +1333,7 @@ Transaction Execution
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
-    rule <k> _:Int ~> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber( "latest", BLOCKLIST ) ) -Int INITGUSED )) ... </k>
+    rule <k> _:Int ~> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber( LATEST, BLOCKLIST ) ) -Int INITGUSED )) ... </k>
          <statusCode> STATUSCODE </statusCode>
          <blockList> BLOCKLIST </blockList>
       requires STATUSCODE =/=K EVMC_OUT_OF_GAS
@@ -1667,7 +1665,7 @@ Transactions Root
 
     syntax KItem ::= "#firefly_getTxRoot"
  // -------------------------------------
-    rule <k> #firefly_getTxRoot => #rpcResponseSuccess({ "transactionsRoot" : #getTxRoot( #getBlockByNumber( "latest", BLOCKLIST ) ) }) ... </k>
+    rule <k> #firefly_getTxRoot => #rpcResponseSuccess({ "transactionsRoot" : #getTxRoot( #getBlockByNumber( LATEST, BLOCKLIST ) ) }) ... </k>
          <blockList> BLOCKLIST </blockList>
 
     syntax String ::= #getTxRoot( BlockchainItem ) [function]
@@ -1695,7 +1693,7 @@ Receipts Root
 
     syntax KItem ::= "#firefly_getReceiptsRoot"
  // -------------------------------------------
-    rule <k> #firefly_getReceiptsRoot => #rpcResponseSuccess({ "receiptsRoot" : #getReceiptRoot( #getBlockByNumber( "latest", BLOCKLIST ) ) }) ... </k>
+    rule <k> #firefly_getReceiptsRoot => #rpcResponseSuccess({ "receiptsRoot" : #getReceiptRoot( #getBlockByNumber( LATEST, BLOCKLIST ) ) }) ... </k>
          <blockList> BLOCKLIST </blockList>
 
     syntax String ::= #getReceiptRoot( BlockchainItem ) [function]
@@ -1787,7 +1785,7 @@ Mining
 
     rule <k> #getParentHash => . ... </k>
          <blockList> BLOCKLIST </blockList>
-         <previousHash> _ => #parseHexWord( Keccak256( #rlpEncodeBlock( #getBlockByNumber( "latest", BLOCKLIST ) ) ) ) </previousHash>
+         <previousHash> _ => #parseHexWord( Keccak256( #rlpEncodeBlock( #getBlockByNumber( LATEST, BLOCKLIST ) ) ) ) </previousHash>
 
     rule <k> #updateTrieRoots => #updateStateRoot ~> #updateTransactionsRoot ~> #updateReceiptsRoot ... </k>
     rule <k> #updateStateRoot => . ... </k>
@@ -1818,12 +1816,12 @@ Retrieving logs
  // ---------------------------------------------------------------------
 
     syntax KItem ::= "#eth_getLogs"
-                   | "#eth_getLogsAux" "(" Int "," Int ")"
+                   | "#eth_getLogsAux" "(" Int "," Int "," List ")"
                    | #serializeResults (List, JSONs)
  // ------------------------------------------------
-    rule <k> #eth_getLogs => #eth_getLogsAux(0,1) ~> .List ... </k>
+    rule <k> #eth_getLogs => #eth_getLogsAux(0,1, .List) ... </k>
 
-    rule <k> #eth_getLogsAux(START, END) ~> RESULT => #eth_getLogsAux(START +Int 1, END) ~> RESULT ListItem({LOGS|TXID|TXHASH|START|"0x0"}) ... </k>
+    rule <k> #eth_getLogsAux(START => START +Int 1, END, RESULT => RESULT ListItem({LOGS|TXID|TXHASH|START|"0x0"}) ) ... </k>
          <txReceipt>
            <txBlockNumber>   START </txBlockNumber>
            <txHash>          TXHASH </txHash>
@@ -1832,17 +1830,13 @@ Retrieving logs
            ...
          </txReceipt>
          <txOrder> TXLIST </txOrder>
-     requires START <=Int END
+      requires START <=Int END
 
-    rule <k> #eth_getLogsAux(START => START +Int 1, END) ... </k>
-         <txReceipt>
-           <txBlockNumber> BN </txBlockNumber>
-           ...
-         </txReceipt>
-     requires START =/=Int BN
+    rule <k> #eth_getLogsAux(START => START +Int 1, END, RESULT) ... </k>
+      requires START <=Int END [owise]
 
-    rule <k> #eth_getLogsAux(START, END) ~> LIST:List => #serializeResults(LIST, .JSONs) ...</k>
-     requires START >Int END
+    rule <k> #eth_getLogsAux(START, END, LIST) => #serializeResults(LIST, .JSONs) ... </k>
+      requires START >Int END
 
     rule <k> #serializeResults(ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List, RESULTS:JSONs) => #serializeResults(LIST, (RESULTS, #serializeLogs(LOGS,0,TXID,TXHASH,BH,BN))) ... </k>
 
