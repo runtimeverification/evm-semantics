@@ -22,24 +22,9 @@ Possible sorts are [Ids, KResult]
     syntax EthereumCommand ::= "var" Ids
     rule var IDs => . //Required only to distinguish EVM-PROOFS vars from spec rule vars.
 */
-    //Dummy command at the beginning of <k> to ensure execution doesn't start with a spec rule 
-    syntax EthereumCommand ::= "#dummy"
-    rule #dummy => .
 
-    syntax EthereumCommand ::= "saveOutput" Id
-    rule <k> saveOutput X => . ...</k>
-         <output> OUT </output>
-         <commandVars> VARS => VARS[X <- OUT] </commandVars>
-
-    syntax EthereumCommand ::= "saveEthereum" Id
-    rule <k> saveEthereum X => . ...</k>
-         <ethereum> ETH </ethereum>
-         <commandVars> VARS => VARS[X <- ETH] </commandVars>
-
-    syntax EthereumCommand ::= "restoreEthereum" Id
-    rule <k> restoreEthereum X => . ...</k>
-         (<ethereum> _ </ethereum> => <ethereum> ETH </ethereum>)
-         <commandVars>... X |-> ETH ...</commandVars>
+// Core specification scripting language
+// ======================================================================
 
     syntax EthereumCommand ::= "#assert" Exp [strict]
                              | "#assertFailure" Exp
@@ -51,25 +36,62 @@ Possible sorts are [Ids, KResult]
 
 syntax EthereumCommand ::= "#assume" Exp [strict]
 
-    //Copied from driver.md
-    syntax EthereumCommand ::= "failure" String
+    //Adapted from driver.md `failure`
+    syntax EthereumCommand ::= "#takeHalt" String
  // -------------------------------------------------------
-    rule <k>          failure _ => . ... </k>
-    rule <k> #halt ~> failure _ => . ... </k>
+    rule <k>          #takeHalt _ => . ... </k>
+    rule <k> #halt ~> #takeHalt _ => . ... </k>
 
     //Shortcut for #mkCall and required setup
     syntax EthereumCommand ::= "#mkCallShortcut" Id Int Int ByteArray Id
     rule <k> #mkCallShortcut V_CONF_BACKUP CALLER_ID ACCT_ID ARGS V_SAVEOUT_ID
-          => restoreEthereum V_CONF_BACKUP
+          => #restoreEthereum V_CONF_BACKUP
           ~> #mkCall CALLER_ID ACCT_ID ACCT_ID PARSEDCODE 0 ARGS false
-          ~> failure "failure"
-          ~> saveOutput V_SAVEOUT_ID
+          ~> #takeHalt "failure"
+          ~> #saveOutput V_SAVEOUT_ID
         ...</k>
         <acctID> ACCT_ID </acctID>
         <code> PARSEDCODE </code>
 
-    syntax Exp ::= #sizeWordStackExp ( Exp ) [strict]
-    rule #sizeWordStackExp(WS:WordStack) => #sizeWordStack(WS)
+    //Dummy command at the beginning of <k> to ensure execution doesn't start with a spec rule 
+    syntax EthereumCommand ::= "#dummy"
+    rule #dummy => .
+
+
+// Configuration access commands
+// ======================================================================
+
+    syntax EthereumCommand ::= "#saveEthereum" Id
+    rule <k> #saveEthereum X => . ...</k>
+         <ethereum> ETH </ethereum>
+         <commandVars> VARS => VARS[X <- ETH] </commandVars>
+
+    syntax EthereumCommand ::= "#restoreEthereum" Id
+    rule <k> #restoreEthereum X => . ...</k>
+         (<ethereum> _ </ethereum> => <ethereum> ETH </ethereum>)
+         <commandVars>... X |-> ETH ...</commandVars>
+
+    syntax EthereumCommand ::= "#saveOutput" Id
+    rule <k> #saveOutput X => . ...</k>
+         <output> OUT </output>
+         <commandVars> VARS => VARS[X <- OUT] </commandVars>
+
+    syntax EthereumCommand ::= "#saveStorage" Int Id
+    rule <k> #saveStorage ACCT_ID X => . ...</k>
+         <acctID> ACCT_ID </acctID>
+         <storage> S </storage>
+         <commandVars> VARS => VARS[X <- S] </commandVars>
+
+    syntax EthereumCommand ::= "#saveLog" Id
+    rule <k> #saveLog X => . ...</k>
+         <log> L </log>
+         <commandVars> VARS => VARS[X <- L] </commandVars>
+
+    syntax EthereumCommand ::= "#saveRefund" Id
+    rule <k> #saveRefund X => . ...</k>
+         <refund> R </refund>
+         <commandVars> VARS => VARS[X <- R] </commandVars>
+
 
 // Specifications expression language
 // ======================================================================
@@ -96,7 +118,8 @@ syntax EthereumCommand ::= "#assume" Exp [strict]
                  | "#getRefund"
                  | #getStorage ( Int )
                  | #var( Id )
-  
+                 | #sizeWordStackExp ( Exp ) [strict]
+
     rule <k> #getStatusCode => SC ...</k>
          <statusCode> SC </statusCode>
 
@@ -115,6 +138,8 @@ syntax EthereumCommand ::= "#assume" Exp [strict]
 
     rule <k> #var(X) => VARS[X] ...</k>
          <commandVars> VARS </commandVars>
+
+    rule #sizeWordStackExp(WS:WordStack) => #sizeWordStack(WS)
 
 endmodule
 ```
