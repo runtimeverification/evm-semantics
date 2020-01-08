@@ -76,12 +76,9 @@ syntax EthereumCommand ::= "#assume" Exp [strict]
 
     syntax KResult ::= ByteArray | StatusCode | List | Map
 
-    syntax Exp ::= "getVar" Id
-                  | Exp "==S"  Exp  [seqstrict]
-                  | Exp "=/=S" Exp  [seqstrict] 
-                  | KResult
-    rule <k> getVar X => VARS[X] ...</k>
-         <commandVars> VARS </commandVars>
+    syntax Exp ::= Exp "==S"  Exp  [seqstrict]
+                 | Exp "=/=S" Exp  [seqstrict] 
+                 | KResult
 
     rule R1:KResult ==S  R2:KResult => R1 ==K  R2
     rule R1:KResult =/=S R2:KResult => R1 =/=K R2
@@ -98,6 +95,7 @@ syntax EthereumCommand ::= "#assume" Exp [strict]
                  | "#getLog"
                  | "#getRefund"
                  | #getStorage ( Int )
+                 | #var( Id )
   
     rule <k> #getStatusCode => SC ...</k>
          <statusCode> SC </statusCode>
@@ -114,5 +112,9 @@ syntax EthereumCommand ::= "#assume" Exp [strict]
     rule <k> #getStorage(ACCT_ID) => S ...</k>
          <acctID> ACCT_ID </acctID>
          <storage> S </storage>
+
+    rule <k> #var(X) => VARS[X] ...</k>
+         <commandVars> VARS </commandVars>
+
 endmodule
 ```
