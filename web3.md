@@ -335,6 +335,7 @@ WEB3 JSON RPC
     rule <k> #runRPCCall => #firefly_setTime                         ... </k> <method> "firefly_setTime"                         </method>
     rule <k> #runRPCCall => #firefly_genesisBlock                    ... </k> <method> "firefly_genesisBlock"                    </method>
     rule <k> #runRPCCall => #firefly_setGasLimit                     ... </k> <method> "firefly_setGasLimit"                     </method>
+    rule <k> #runRPCCall => #firefly_blake2compress                  ... </k> <method> "firefly_blake2compress"                  </method>
 
     rule <k> #runRPCCall => #debug_traceTransaction                  ... </k> <method> "debug_traceTransaction"                  </method>
     rule <k> #runRPCCall => #miner_start                             ... </k> <method> "miner_start"                             </method>
@@ -1813,6 +1814,16 @@ Mining
          <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
 ```
 
+Blake2 Compression Function
+---------------------------
+
+```k
+    syntax KItem ::= "#firefly_blake2compress"
+ // ------------------------------------------
+    rule <k> #firefly_blake2compress => #rpcResponseSuccess( Blake2Compress( Hex2Raw( DATA ) ) ) ... </k>
+         <params> [ DATA:String, .JSONs ] </params>
+```
+
 Unimplemented Methods
 ---------------------
 
@@ -1882,6 +1893,8 @@ Unimplemented Methods
     rule <k> #personal_listAccounts                   => #rpcResponseUnimplemented ... </k>
     rule <k> #web3_sha3                               => #rpcResponseUnimplemented ... </k>
     rule <k> #shh_version                             => #rpcResponseUnimplemented ... </k>
+```
 
+```k
 endmodule
 ```
