@@ -62,7 +62,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
               // \mu_*
               <wordStack>   .WordStack </wordStack>           // \mu_s
-              <localMem>    .Map       </localMem>            // \mu_m
+              <localMem>    .Memory    </localMem>            // \mu_m
               <pc>          0          </pc>                  // \mu_pc
               <gas>         0          </gas>                 // \mu_g
               <memoryUsed>  0          </memoryUsed>          // \mu_i
@@ -322,8 +322,8 @@ The `#next [_]` operator initiates execution by:
     rule <k> #next [ OP ] => #end EVMC_STATIC_MODE_VIOLATION ... </k>
          <wordStack> WS </wordStack>
          <static> STATIC:Bool </static>
-      requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
-       andBool STATIC andBool #changesState(OP, WS)
+      requires STATIC andBool #changesState(OP, WS)
+       andBool notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
 ```
 
 ### Exceptional Checks
@@ -927,7 +927,7 @@ These operations are getters/setters of the local execution memory.
          <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
 
     rule <k> MSTORE8 INDEX VALUE => . ... </k>
-         <localMem> LM => LM [ INDEX <- (VALUE modInt 256) ] </localMem>
+         <localMem> LM => LM [ INDEX := (VALUE modInt 256) ] </localMem>
 ```
 
 ### Expressions
@@ -1389,7 +1389,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <memoryUsed>   _ => 0          </memoryUsed>
          <output>       _ => .ByteArray </output>
          <wordStack>    _ => .WordStack </wordStack>
-         <localMem>     _ => .Map       </localMem>
+         <localMem>     _ => .Memory    </localMem>
 
     syntax Set ::= #computeValidJumpDests(ByteArray)            [function]
                  | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
@@ -1409,7 +1409,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
     rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int #sizeByteArray(PGM)
 
-    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, ListItem(I) RESULT) requires PGM [ I ] ==Int 91
+    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT ListItem(I)) requires PGM [ I ] ==Int 91
     rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
 ```
 
@@ -1692,7 +1692,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 Precompiled Contracts
 ---------------------
 
--   `#precompiled` is a placeholder for the 8 pre-compiled contracts at addresses 1 through 8.
+-   `#precompiled` is a placeholder for the 9 pre-compiled contracts at addresses 1 through 9.
 
 ```k
     syntax NullStackOp   ::= PrecompiledOp
@@ -1706,6 +1706,7 @@ Precompiled Contracts
     rule #precompiled(6) => ECADD
     rule #precompiled(7) => ECMUL
     rule #precompiled(8) => ECPAIRING
+    rule #precompiled(9) => BLAKE2F
 
     syntax Set ::= #precompiledAccounts ( Schedule ) [function]
  // -----------------------------------------------------------
@@ -1717,7 +1718,7 @@ Precompiled Contracts
     rule #precompiledAccounts(BYZANTIUM)         => #precompiledAccounts(SPURIOUS_DRAGON) SetItem(5) SetItem(6) SetItem(7) SetItem(8)
     rule #precompiledAccounts(CONSTANTINOPLE)    => #precompiledAccounts(BYZANTIUM)
     rule #precompiledAccounts(PETERSBURG)        => #precompiledAccounts(CONSTANTINOPLE)
-    rule #precompiledAccounts(ISTANBUL)          => #precompiledAccounts(PETERSBURG)
+    rule #precompiledAccounts(ISTANBUL)          => #precompiledAccounts(PETERSBURG) SetItem(9)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -1822,6 +1823,23 @@ Precompiled Contracts
       requires isValidPoint(AK) andBool isValidPoint(BK)
     rule <k> #checkPoint ~> #ecpairing(ListItem(AK::G1Point) _, ListItem(BK::G2Point) _, _, _, _) => #end EVMC_PRECOMPILE_FAILURE ... </k>
       requires notBool isValidPoint(AK) orBool notBool isValidPoint(BK)
+
+    syntax PrecompiledOp ::= "BLAKE2F"
+ // ----------------------------------
+    rule <k> BLAKE2F => #end EVMC_SUCCESS ... </k>
+         <output> _ => #parseByteStack( Blake2Compress( #asString( DATA ) ) ) </output>
+         <callData> DATA </callData>
+      requires #sizeByteArray( DATA ) ==Int 213
+       andBool DATA[212] <=Int 1
+
+    rule <k> BLAKE2F => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> DATA </callData>
+      requires #sizeByteArray( DATA ) ==Int 213
+       andBool DATA[212] >Int 1
+
+    rule <k> BLAKE2F => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> DATA </callData>
+      requires #sizeByteArray( DATA ) =/=Int 213
 ```
 
 
@@ -1850,12 +1868,13 @@ Overall Gas
     rule <k> #memory [ OP ] => #memory(OP, MU) ~> #deductMemory ... </k>
          <memoryUsed> MU </memoryUsed>
 
-    syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas"
+    syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas" | "#deductMemoryGas"
                         | "#memory" "[" OpCode "]" | "#deductMemory"
  // ----------------------------------------------------------------
-    rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
+    rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductMemoryGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
+    rule <k> G:Int ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
     rule <k> G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
     rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
 ```
@@ -2099,6 +2118,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, ECADD)     => Gecadd < SCHED>  ... </k>
     rule <k> #gasExec(SCHED, ECMUL)     => Gecmul < SCHED > ... </k>
     rule <k> #gasExec(SCHED, ECPAIRING) => Gecpairconst < SCHED > +Int (#sizeByteArray(DATA) /Int 192) *Int Gecpaircoeff < SCHED > ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(SCHED, BLAKE2F)   => Gfround < SCHED > *Int #asWord( DATA[0 .. 4] ) ... </k> <callData> DATA </callData>
 
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
@@ -2298,8 +2318,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gcallvalue"   | "Gcallstipend"   | "Gnewaccount"   | "Gexp"          | "Gexpbyte"    | "Gmemory"       | "Gtxcreate"
                            | "Gtxdatazero"  | "Gtxdatanonzero" | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
                            | "Gsha3word"    | "Gcopy"          | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
-                           | "Gecadd"       | "Gecmul"         | "Gecpairconst"  | "Gecpaircoeff"
- // ---------------------------------------------------------------------------------------------
+                           | "Gecadd"       | "Gecmul"         | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"
+ // ----------------------------------------------------------------------------------------------------------
 ```
 
 ### Default Schedule
@@ -2358,6 +2378,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gecmul       < DEFAULT > => 40000
     rule Gecpairconst < DEFAULT > => 100000
     rule Gecpaircoeff < DEFAULT > => 80000
+    rule Gfround      < DEFAULT > => 1
 
     rule maxCodeSize < DEFAULT > => 2 ^Int 32 -Int 1
     rule Rb          < DEFAULT > => 5 *Int (10 ^Int 18)

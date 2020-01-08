@@ -26,7 +26,6 @@ RUN    apt-get update         \
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN apt-get install --yes nodejs
-RUN npm install -g npx
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
