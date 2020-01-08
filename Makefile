@@ -505,7 +505,7 @@ test-interactive-help:
 
 # Notice that `npm install` comes after `npx kevm-ganache-cli` to allow time for it to start up.
 test-interactive-firefly:
-	./tests/node-firefly
+	export PATH=$(PATH):$(CURDIR)/.build/defn/vm && ./tests/node-firefly
 
 # Media
 # -----
