@@ -448,7 +448,7 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#eth_sign"
  // ----------------------------
-    rule <k> #eth_sign => #signMessage(KEY, #hashMessage(#unparseByteStack(#parseByteStack(MESSAGE)))) ... </k>
+    rule <k> #eth_sign => #signMessage(#unparseByteStack(#asByteStack(KEY)), #hashMessage(Hex2Raw(MESSAGE))) ... </k>
          <params> [ ACCTADDR, MESSAGE, .JSONs ] </params>
          <accountKeys>... #parseHexWord(ACCTADDR) |-> KEY ...</accountKeys>
 
@@ -1264,6 +1264,9 @@ Transaction Execution
 ```k
     syntax KItem ::= "#eth_call"
  // ----------------------------
+    rule <k> #eth_call ... </k>
+         <params> [ { _ }, (.JSONs => "pending", .JSONs) ] </params>
+
     rule <k> #eth_call
           => #pushNetworkState
           ~> #setMode NOGAS
