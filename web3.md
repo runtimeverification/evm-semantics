@@ -1816,12 +1816,12 @@ Retrieving logs
  // ---------------------------------------------------------------------
 
     syntax KItem ::= "#eth_getLogs"
-                   | "#eth_getLogsAux" "(" Int "," Int "," List ")"
-                   | #serializeResults (List, JSONs)
- // ------------------------------------------------
-    rule <k> #eth_getLogs => #eth_getLogsAux(0,1, .List) ... </k>
+                   | #getLogs ( Int , Int , List )
+                   | #serializeResults ( List , JSONs )
+ // ---------------------------------------------------
+    rule <k> #eth_getLogs => #getLogs(0, 1, .List) ... </k>
 
-    rule <k> #eth_getLogsAux(START => START +Int 1, END, RESULT => RESULT ListItem({LOGS|TXID|TXHASH|START|"0x0"}) ) ... </k>
+    rule <k> #getLogs(START => START +Int 1, END, RESULT => RESULT ListItem({LOGS|TXID|TXHASH|START|"0x0"}) ) ... </k>
          <txReceipt>
            <txBlockNumber>   START </txBlockNumber>
            <txHash>          TXHASH </txHash>
@@ -1832,15 +1832,11 @@ Retrieving logs
          <txOrder> TXLIST </txOrder>
       requires START <=Int END
 
-    rule <k> #eth_getLogsAux(START => START +Int 1, END, RESULT) ... </k>
-      requires START <=Int END [owise]
-
-    rule <k> #eth_getLogsAux(START, END, LIST) => #serializeResults(LIST, .JSONs) ... </k>
-      requires START >Int END
-
-    rule <k> #serializeResults(ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List, RESULTS:JSONs) => #serializeResults(LIST, (RESULTS, #serializeLogs(LOGS,0,TXID,TXHASH,BH,BN))) ... </k>
+    rule <k> #getLogs(START => START +Int 1, END, RESULT) ... </k>                      requires START <=Int END [owise]
+    rule <k> #getLogs(START, END, RESULT) => #serializeResults(RESULT, .JSONs) ... </k> requires START  >Int END
 
     rule <k> #serializeResults(.List, RESULTS:JSONs) => #rpcResponseSuccess([RESULTS]) ... </k>
+    rule <k> #serializeResults(ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List, RESULTS:JSONs) => #serializeResults(LIST, (RESULTS, #serializeLogs(LOGS,0,TXID,TXHASH,BH,BN))) ... </k>
 ```
 
 Unimplemented Methods
