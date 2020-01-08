@@ -1827,31 +1827,32 @@ Retrieving logs
 
     syntax LogData ::= "{" List "|" Int "|" String "|" Int "|" String "}"
  // ---------------------------------------------------------------------
-    
-    syntax List ::= #getLogDataBetween ( Int, Int ) [function]
-                  | #getLogDataBetweenAux ( Int, Int, List ) [function]
- // --------------------------------------------------------------------------------------------
-    rule #getLogDataBetween(START, END) => #getLogDataBetweenAux(START, END, .List)
-
-//    rule [[ #getLogDataBetweenAux(START:Int, END:Int, RESULT) => #getLogDataBetweenAux(START +Int 1, END, (RESULT ListItem({LOGS|getIndexOf(TXID, TXLIST)|TXHASH|START|"0x0"}))) ]]
-//       <txReceipt>
-//         <txBlockNumber>   START </txBlockNumber>
-//         <txHash>          TXHASH </txHash>
-//         <txID>            TXID </txID>
-//         <logSet>          LOGS </logSet>
-//         ...
-//       </txReceipt>
-//       <txOrder> TXLIST </txOrder>
-//       requires START <=Int END
-
-
-    rule #getLogDataBetweenAux(START:Int, END:Int, RESULT) => RESULT
-//       requires START >Int END
 
     syntax KItem ::= "#eth_getLogs"
-                   | "#eth_getLogsAux" "(" List ")"
- // -----------------------------------------------
-   rule <k> #eth_getLogs => .JSONs ~> #eth_getLogsAux (#getLogDataBetween(0, 1)) ... </k>
+                   | "#eth_getLogsAux" "(" Int "," Int ")"
+ // ---------------------------------------------------
+    rule <k> #eth_getLogs => #eth_getLogsAux(0,1) ~> .List ... </k>
+
+    rule <k> #eth_getLogsAux(START, END) ~> RESULT => #eth_getLogsAux(START +Int 1, END) ~> RESULT ListItem(LOGS) ... </k>
+         <txReceipt>
+           <txBlockNumber>   START </txBlockNumber>
+           <txHash>          TXHASH </txHash>
+           <txID>            TXID </txID>
+           <logSet>          LOGS </logSet>
+           ...
+         </txReceipt>
+         <txOrder> TXLIST </txOrder>
+         requires START <=Int END
+
+    rule <k> #eth_getLogsAux(START => START +Int 1, END) ... </k>
+         <txReceipt>
+           <txBlockNumber> BN </txBlockNumber>
+           ...
+         </txReceipt>
+     requires START =/=Int BN
+
+    rule <k> #eth_getLogsAux(START, END) => . ...</k>
+     requires START >Int END
 
    // rule <k> RESULT ~> #eth_getLogsAux(ListItem({LOGS|TXID|TXHASH|BN|BH}) LIST) => RESULT, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)] ~> #eth_getLogsAux(LIST) ... </k>
 
