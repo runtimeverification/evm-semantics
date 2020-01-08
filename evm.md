@@ -1868,12 +1868,13 @@ Overall Gas
     rule <k> #memory [ OP ] => #memory(OP, MU) ~> #deductMemory ... </k>
          <memoryUsed> MU </memoryUsed>
 
-    syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas"
+    syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas" | "#deductMemoryGas"
                         | "#memory" "[" OpCode "]" | "#deductMemory"
  // ----------------------------------------------------------------
-    rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
+    rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductMemoryGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
+    rule <k> G:Int ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
     rule <k> G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
     rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
 ```
