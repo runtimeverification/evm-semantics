@@ -22,7 +22,7 @@ DEPS_DIR         := deps
 K_SUBMODULE      := $(abspath $(DEPS_DIR)/k)
 export PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
 
-K_RELEASE := $(K_SUBMODULE)/k-distribution/target/release/k
+K_RELEASE ?= $(K_SUBMODULE)/k-distribution/target/release/k
 K_BIN     := $(K_RELEASE)/bin
 K_LIB     := $(K_RELEASE)/lib
 export K_RELEASE
