@@ -17,9 +17,12 @@ module VERIFICATION
       requires #range(0 <= START < lengthBytes(BUF1))
        andBool lengthBytes(BUF1) <Int START +Int WIDTH [simplification]
 
-    rule (BUF1 +Bytes BUF2)[START .. WIDTH] => (BUF1[START .. WIDTH])
+    rule (BUF1 +Bytes BUF2)[START .. WIDTH] => BUF1[START .. WIDTH]
       requires #range(0 <= START < lengthBytes(BUF1))
        andBool START +Int WIDTH <=Int lengthBytes(BUF1) [simplification]
+
+    rule (BUF1 +Bytes BUF2)[START .. WIDTH] => BUF2[START -Int lengthBytes(BUF1) .. WIDTH]
+      requires lengthBytes(BUF1) <=Int START [simplification]
 
     rule #buf(SIZE, DATA)[START .. WIDTH] => #bufSeg(#buf(SIZE, DATA), START, WIDTH)
        requires #range(0 <= START < SIZE)
@@ -35,6 +38,22 @@ module VERIFICATION
     rule #asWord(BUF) /Int D => #asWord(BUF[0 .. #sizeByteArray(BUF) -Int log256Int(D)])
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
        andBool #sizeByteArray(BUF) >=Int log256Int(D) [simplification]
+
+    rule #asWord(#buf(SIZE, DATA)) => DATA requires SIZE <=Int 32 andBool #range(0 <= DATA < (2 ^Int (SIZE *Int 8))) [simplification]
+
+
+    // Following two rules will cause the haskell backend to print "Failed to decide predicate" warning when MASK is matched by a variable.
+    // 0xffff...f &Int N = N
+    // rule MASK &Int N => N  requires MASK ==Int (2 ^Int (log2Int(MASK) +Int 1)) -Int 1 // MASK = 0xffff...f
+    //                        andBool 0 <=Int N andBool N <=Int MASK
+
+    // N &Int 0xffff...f = N
+    // rule N &Int MASK => N  requires MASK ==Int (2 ^Int (log2Int(MASK) +Int 1)) -Int 1 // MASK = 0xffff...f
+    //                        andBool 0 <=Int N andBool N <=Int MASK
+
+    rule #asWord(WS) &Int maxUInt256 => #asWord(WS) [simplification]
+
+    rule maxUInt256 &Int #asWord(WS) => #asWord(WS) [simplification]
 
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
       requires #rangeUInt(256, V) [simplification]

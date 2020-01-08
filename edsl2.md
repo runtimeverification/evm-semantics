@@ -277,7 +277,7 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
 
     syntax Int ::= keccakIntList( IntList ) [function]
  // --------------------------------------------------
-    rule [keccakIntList]: keccakIntList(VS) => keccak(intList2ByteArray(VS))
+    rule [keccakIntList]: keccakIntList(VS) => keccak(intList2ByteArray(VS)) [concrete]
 
     syntax ByteArray ::= intList2ByteArray( IntList ) [function]
  // ------------------------------------------------------------
