@@ -1692,7 +1692,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 Precompiled Contracts
 ---------------------
 
--   `#precompiled` is a placeholder for the 8 pre-compiled contracts at addresses 1 through 8.
+-   `#precompiled` is a placeholder for the 9 pre-compiled contracts at addresses 1 through 9.
 
 ```k
     syntax NullStackOp   ::= PrecompiledOp
@@ -1706,6 +1706,7 @@ Precompiled Contracts
     rule #precompiled(6) => ECADD
     rule #precompiled(7) => ECMUL
     rule #precompiled(8) => ECPAIRING
+    rule #precompiled(9) => BLAKE2F
 
     syntax Set ::= #precompiledAccounts ( Schedule ) [function]
  // -----------------------------------------------------------
@@ -1717,7 +1718,7 @@ Precompiled Contracts
     rule #precompiledAccounts(BYZANTIUM)         => #precompiledAccounts(SPURIOUS_DRAGON) SetItem(5) SetItem(6) SetItem(7) SetItem(8)
     rule #precompiledAccounts(CONSTANTINOPLE)    => #precompiledAccounts(BYZANTIUM)
     rule #precompiledAccounts(PETERSBURG)        => #precompiledAccounts(CONSTANTINOPLE)
-    rule #precompiledAccounts(ISTANBUL)          => #precompiledAccounts(PETERSBURG)
+    rule #precompiledAccounts(ISTANBUL)          => #precompiledAccounts(PETERSBURG) SetItem(9)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -1822,6 +1823,23 @@ Precompiled Contracts
       requires isValidPoint(AK) andBool isValidPoint(BK)
     rule <k> #checkPoint ~> #ecpairing(ListItem(AK::G1Point) _, ListItem(BK::G2Point) _, _, _, _) => #end EVMC_PRECOMPILE_FAILURE ... </k>
       requires notBool isValidPoint(AK) orBool notBool isValidPoint(BK)
+
+    syntax PrecompiledOp ::= "BLAKE2F"
+ // ----------------------------------
+    rule <k> BLAKE2F => #end EVMC_SUCCESS ... </k>
+         <output> _ => #parseByteStack( Blake2Compress( #asString( DATA ) ) ) </output>
+         <callData> DATA </callData>
+      requires #sizeByteArray( DATA ) ==Int 213
+       andBool DATA[212] <=Int 1
+
+    rule <k> BLAKE2F => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> DATA </callData>
+      requires #sizeByteArray( DATA ) ==Int 213
+       andBool DATA[212] >Int 1
+
+    rule <k> BLAKE2F => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> DATA </callData>
+      requires #sizeByteArray( DATA ) =/=Int 213
 ```
 
 
@@ -2100,6 +2118,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, ECADD)     => Gecadd < SCHED>  ... </k>
     rule <k> #gasExec(SCHED, ECMUL)     => Gecmul < SCHED > ... </k>
     rule <k> #gasExec(SCHED, ECPAIRING) => Gecpairconst < SCHED > +Int (#sizeByteArray(DATA) /Int 192) *Int Gecpaircoeff < SCHED > ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(SCHED, BLAKE2F)   => Gfround < SCHED > *Int #asWord( DATA[0 .. 4] ) ... </k> <callData> DATA </callData>
 
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
@@ -2299,8 +2318,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gcallvalue"   | "Gcallstipend"   | "Gnewaccount"   | "Gexp"          | "Gexpbyte"    | "Gmemory"       | "Gtxcreate"
                            | "Gtxdatazero"  | "Gtxdatanonzero" | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
                            | "Gsha3word"    | "Gcopy"          | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
-                           | "Gecadd"       | "Gecmul"         | "Gecpairconst"  | "Gecpaircoeff"
- // ---------------------------------------------------------------------------------------------
+                           | "Gecadd"       | "Gecmul"         | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"
+ // ----------------------------------------------------------------------------------------------------------
 ```
 
 ### Default Schedule
@@ -2359,6 +2378,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gecmul       < DEFAULT > => 40000
     rule Gecpairconst < DEFAULT > => 100000
     rule Gecpaircoeff < DEFAULT > => 80000
+    rule Gfround      < DEFAULT > => 1
 
     rule maxCodeSize < DEFAULT > => 2 ^Int 32 -Int 1
     rule Rb          < DEFAULT > => 5 *Int (10 ^Int 18)
