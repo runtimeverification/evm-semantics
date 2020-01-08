@@ -1817,7 +1817,7 @@ Precompiled Contracts
     syntax PrecompiledOp ::= "BLAKE2F"
  // ----------------------------------
     rule <k> BLAKE2F => #end EVMC_SUCCESS ... </k>
-         <output> _ => #parseByteStack( Blake2Compress( #asString( DATA ) ) ) </output>
+         <output> _ => #parseByteStack( Blake2Compress( #unparseByteStack( DATA ) ) ) </output>
          <callData> DATA </callData>
       requires #sizeByteArray( DATA ) ==Int 213
        andBool DATA[212] <=Int 1
