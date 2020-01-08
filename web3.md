@@ -110,17 +110,6 @@ The `blockList` cell stores a list of previous blocks and network states.
     rule #getAccountFromBlockchainItem ( { <network> <accounts> (<account> <acctID> ACCT </acctID> ACCOUNTDATA </account>) ... </accounts>  ... </network> | _ } , ACCT ) => <account> <acctID> ACCT </acctID> ACCOUNTDATA </account>
     rule #getAccountFromBlockchainItem(_, _) => .AccountItem [owise]
 
-    syntax BlockIdentifier ::= #parseBlockIdentifier ( String ) [function]
- // ----------------------------------------------------------------------
-    rule #parseBlockIdentifier(TAG) => TAG
-      requires TAG ==String "pending"
-
-    rule #parseBlockIdentifier("earliest")  => 0
-    rule [[ #parseBlockIdentifier("latest") => size(BLOCKLIST) -Int 1 ]]
-         <blockList> BLOCKLIST </blockList>
-
-    rule #parseBlockIdentifier(BLOCKNUM) => #parseHexWord(BLOCKNUM) requires substrString(BLOCKNUM,0,1) ==String "0x" [owise]
-
     syntax KItem ::= #getAccountAtBlock ( BlockIdentifier , Int )
  // -------------------------------------------------------------
     rule <k> #getAccountAtBlock(BLOCKNUM , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(BLOCKNUM, BLOCKLIST), ACCTID) ... </k>
@@ -1830,8 +1819,8 @@ Retrieving logs
 
     syntax KItem ::= "#eth_getLogs"
                    | "#eth_getLogsAux" "(" Int "," Int ")"
-                   | #serializeResults (List)
- // -----------------------------------------
+                   | #serializeResults (List, JSONs)
+ // ------------------------------------------------
     rule <k> #eth_getLogs => #eth_getLogsAux(0,1) ~> .List ... </k>
 
     rule <k> #eth_getLogsAux(START, END) ~> RESULT => #eth_getLogsAux(START +Int 1, END) ~> RESULT ListItem({LOGS|TXID|TXHASH|START|"0x0"}) ... </k>
@@ -1852,12 +1841,12 @@ Retrieving logs
          </txReceipt>
      requires START =/=Int BN
 
-    rule <k> #eth_getLogsAux(START, END) ~> LIST:List => #serializeResults(LIST) ~> [.JSONs] ...</k>
+    rule <k> #eth_getLogsAux(START, END) ~> LIST:List => #serializeResults(LIST, .JSONs) ...</k>
      requires START >Int END
 
-    rule <k> #serializeResults(ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List) ~> RESULT => #serializeResults(LIST) ~> RESULT, #serializeLogs(LOGS,0,TXID,TXHASH,BH,BN) ... </k>
+    rule <k> #serializeResults(ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List, RESULTS:JSONs) => #serializeResults(LIST, (RESULTS, #serializeLogs(LOGS,0,TXID,TXHASH,BH,BN))) ... </k>
 
-    rule <k> #serializeResults(.List) ~> RESULT:JSON => #rpcResponseSuccess(RESULT) ... </k>
+    rule <k> #serializeResults(.List, RESULTS:JSONs) => #rpcResponseSuccess([RESULTS]) ... </k>
 ```
 
 Unimplemented Methods
