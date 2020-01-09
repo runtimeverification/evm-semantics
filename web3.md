@@ -584,7 +584,8 @@ eth_sendTransaction
                      TXHASH: {
                      "error": "revert",
                      "program_counter": PCOUNT +Int 1,
-                     "return": #unparseDataByteArray( RD )
+                     "return": #unparseDataByteArray( RD ),
+                     "reason": Bytes2String(RD)
                    }
                  }
                } )
