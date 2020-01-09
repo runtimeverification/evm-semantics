@@ -1,9 +1,0 @@
-/.build/*
-/pkg
-/src
-/package/pkg
-/package/src
-/media/*.pdf
-/tests/web3/*.out.json
-/tests/web3/*/*.out.json
-/tests/truffle/*/build
