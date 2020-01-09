@@ -425,16 +425,6 @@ Here we check the other post-conditions associated with an EVM test.
  // -------------------------------------------------------------------------------------------
     rule <k> check "logs" : HASH:String => . ... </k> <log> SL </log> requires #parseHexBytes(Keccak256(#rlpEncodeLogs(SL))) ==K #parseByteStack(HASH)
 
-    syntax String ::= #rlpEncodeLogs(List)        [function]
-                    | #rlpEncodeLogsAux(List)     [function]
-                    | #rlpEncodeTopics(List)      [function]
- // --------------------------------------------------------
-    rule #rlpEncodeLogs(SL) => #rlpEncodeLength(#rlpEncodeLogsAux(SL), 192)
-    rule #rlpEncodeLogsAux(ListItem({ ACCT | TOPICS | DATA }) SL) => #rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeLength(#rlpEncodeTopics(TOPICS), 192) +String #rlpEncodeString(#unparseByteStack(DATA)), 192) +String #rlpEncodeLogsAux(SL)
-    rule #rlpEncodeLogsAux(.List) => ""
-    rule #rlpEncodeTopics(ListItem(TOPIC) TOPICS) => #rlpEncodeBytes(TOPIC, 32) +String #rlpEncodeTopics(TOPICS)
-    rule #rlpEncodeTopics(.List) => ""
-
     rule <k> check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID ... </k>
  // -------------------------------------------------------------------------------------------
     rule <k> check "gas" : ((GLEFT:String) => #parseWord(GLEFT)) ... </k>
