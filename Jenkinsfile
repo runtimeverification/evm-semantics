@@ -60,6 +60,13 @@ pipeline {
                 '''
               }
             }
+            stage('VM (Haskell)') {
+              steps {
+                sh '''
+                  make test-vm -j8 TEST_CONCRETE_BACKEND=haskell
+                '''
+              }
+            }
             stage('Conformance (Web3)') {
               steps {
                 sh '''
