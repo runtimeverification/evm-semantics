@@ -1833,6 +1833,10 @@ Retrieving logs
       requires #getJSON("fromBlock", { PARAMS }) =/=K undef
        andBool #getJSON("toBlock"  , { PARAMS }) =/=K undef
 
+    rule <k> #getLogs(LATEST => size(BLOCKLIST) -Int 1, _:BlockIdentifier, _:List) ... </k>
+         <blockList> BLOCKLIST </blockList>
+    rule <k> #getLogs(_:BlockIdentifier, LATEST => size(BLOCKLIST) -Int 1, _:List) ... </k>
+         <blockList> BLOCKLIST </blockList>
     rule <k> #getLogs(START => START +Int 1, END, RESULT => RESULT ListItem({LOGS|TXID|TXHASH|START|"0x0"}) ) ... </k>
          <txReceipt>
            <txBlockNumber>   START </txBlockNumber>
