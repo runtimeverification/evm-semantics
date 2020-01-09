@@ -1817,9 +1817,9 @@ Retrieving logs
  // ---------------------------------------------------------------------
 
     syntax KItem ::= "#eth_getLogs"
-                   | #getLogs       ( BlockIdentifier , BlockIdentifier , List )
-                   | #serializeLogs ( List , JSONs )
- // ------------------------------------------------
+                   | #getLogs ( BlockIdentifier , BlockIdentifier , List )
+                   | #serializeEthGetLogs ( List , JSONs )
+ // ------------------------------------------------------
     rule <k> #eth_getLogs ... </k>
          <params> [ { PARAMS => "fromBlock": "latest", PARAMS } , .JSONs ] </params>
       requires #getJSON("fromBlock", PARAMS) ==K undef
@@ -1844,11 +1844,11 @@ Retrieving logs
          <txOrder> TXLIST </txOrder>
       requires START <=Int END
 
-    rule <k> #getLogs(START => START +Int 1, END, RESULT) ... </k>                      requires START <=Int END [owise]
-    rule <k> #getLogs(START, END, RESULT) => #serializeLogs(RESULT, .JSONs) ... </k> requires START  >Int END
+    rule <k> #getLogs(START => START +Int 1, END, RESULT) ... </k>                         requires START <=Int END [owise]
+    rule <k> #getLogs(START, END, RESULT) => #serializeEthGetLogs(RESULT, .JSONs) ... </k> requires START  >Int END
 
-    rule <k> #serializeLogs(.List, RESULTS:JSONs) => #rpcResponseSuccess([RESULTS]) ... </k>
-    rule <k> #serializeLogs(ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List, RESULTS:JSONs) => #serializeLogs(LIST, (RESULTS, #serializeLogs(LOGS,0,TXID,TXHASH,BH,BN))) ... </k>
+    rule <k> #serializeEthGetLogs(.List, RESULTS:JSONs) => #rpcResponseSuccess([RESULTS]) ... </k>
+    rule <k> #serializeEthGetLogs(ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List, RESULTS:JSONs) => #serializeEthGetLogs(LIST, (RESULTS, #serializeLogs(LOGS,0,TXID,TXHASH,BH,BN))) ... </k>
 ```
 
 Blake2 Compression Function
