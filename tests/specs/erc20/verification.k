@@ -51,9 +51,9 @@ module VERIFICATION
     // rule N &Int MASK => N  requires MASK ==Int (2 ^Int (log2Int(MASK) +Int 1)) -Int 1 // MASK = 0xffff...f
     //                        andBool 0 <=Int N andBool N <=Int MASK
 
-    rule #asWord(WS) &Int maxUInt256 => #asWord(WS) [simplification]
+    rule maxUInt160 &Int N => N requires #rangeUInt(160, N) [simplification]
 
-    rule maxUInt256 &Int #asWord(WS) => #asWord(WS) [simplification]
+    rule N &Int maxUInt160 => N requires #rangeUInt(160, N) [simplification]
 
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
       requires #rangeUInt(256, V) [simplification]

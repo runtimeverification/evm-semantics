@@ -21,9 +21,9 @@ Address/Hash Helpers
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 ```k
-    syntax Int ::= keccak ( ByteArray ) [function, smtlib(smt_keccak)]
- // ------------------------------------------------------------------
-    rule [keccak]: keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS)))
+    syntax Int ::= keccak ( ByteArray ) [function, functional, smtlib(smt_keccak)]
+ // ------------------------------------------------------------------------------
+    rule [keccak]: keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS))) [concrete]
 ```
 
 -   `#newAddr` computes the address of a new account given the address and nonce of the creating account.
