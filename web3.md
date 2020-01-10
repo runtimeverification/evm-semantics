@@ -577,17 +577,7 @@ eth_sendTransaction
     rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccess(TXHASH) ... </k>
          <statusCode> EVMC_SUCCESS </statusCode>
 
-    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccessException(TXHASH,
-               { "message": "VM Exception while processing transaction: revert",
-                 "code": -32000,
-                 "data": {
-                     TXHASH: {
-                     "error": "revert",
-                     "program_counter": PCOUNT +Int 1,
-                     "return": #unparseDataByteArray( RD )
-                   }
-                 }
-               } )
+    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccessException(TXHASH, #generateException(TXHASH, PCOUNT, RD))
           ...
          </k>
          <statusCode> EVMC_REVERT </statusCode>
@@ -627,6 +617,35 @@ eth_sendTransaction
            <nonce> NONCE </nonce>
            ...
          </account>
+
+    syntax JSON ::= #generateException( String, Int, Bytes ) [function]
+ // -------------------------------------------------------------------
+    rule #generateException(TXHASH, PCOUNT, RD) => { "message": "VM Exception while processing transaction: revert",
+                                                      "code": -32000,
+                                                      "data": {
+                                                          TXHASH: {
+                                                          "error": "revert",
+                                                          "program_counter": PCOUNT +Int 1,
+                                                          "return": #unparseDataByteArray( RD ),
+                                                          "reason": Bytes2String(substrBytes(RD,
+                                                                                             36 +Int #asInteger(substrBytes(RD,5,36)),
+                                                                                             36 +Int #asInteger(substrBytes(RD,5,36)) +Int #asInteger(substrBytes(RD,37,68))))
+                                                        }
+                                                      }
+                                                    }
+      requires lengthBytes(RD) >Int 68
+    rule #generateException(TXHASH, PCOUNT, RD) => { "message": "VM Exception while processing transaction: revert",
+                                                      "code": -32000,
+                                                      "data": {
+                                                          TXHASH: {
+                                                          "error": "revert",
+                                                          "program_counter": PCOUNT +Int 1,
+                                                          "return": #unparseDataByteArray( RD )
+                                                        }
+                                                      }
+                                                    }
+      requires notBool lengthBytes(RD) >Int 68
+
 ```
 
 -   signTX TXID ACCTFROM: Signs the transaction with TXID using ACCTFROM's private key
@@ -1295,18 +1314,8 @@ Transaction Execution
           => #setMode NORMAL
           ~> #popNetworkState
           ~> #clearGas
-          ~> #rpcResponseError(
-               { "message": "VM Exception while processing transaction: revert",
-                 "code": -32000,
-                 "data": {
-                     "0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS): {
-                     "error": "revert",
-                     "program_counter": PCOUNT +Int 1,
-                     "return": #unparseDataByteArray( RD )
-                   }
-                 }
-               } )
-
+          ~> #rpcResponseError(#generateException("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS),
+                               PCOUNT, RD))
          ...
          </k>
          <errorPC> PCOUNT </errorPC>
