@@ -58,7 +58,7 @@ The Blockchain State
 A `BlockchainItem` contains the information of a block and its network state.
 The `blockList` cell stores a list of previous blocks and network states.
 -   `#pushBlockchainState` saves a copy of the block state and network state as a `BlockchainItem` in the `blockList` cell.
--   `#getBlockByNumber(Int)` retrieves a specific `BlockchainItem` from the `blockList` cell.
+-   `#getBlockByNumber(BlockIdentifier, List, Block)` retrieves a specific `BlockchainItem` from the `blockList` cell.
 
 ```k
     syntax BlockchainItem ::= ".BlockchainItem"
@@ -74,9 +74,10 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List , BlockchainItem ) [function]
  // --------------------------------------------------------------------------------------------------
-    rule #getBlockByNumber( _:Int      , .List                 , _     ) => .BlockchainItem
-    rule #getBlockByNumber( LATEST     ,   ListItem( BLOCK ) _ , _     ) => BLOCK
-    rule #getBlockByNumber( PENDING    , _                     , BLOCK ) => BLOCK
+    rule #getBlockByNumber( _:BlockIdentifier, .List                 , _     ) => .BlockchainItem
+    rule #getBlockByNumber( LATEST           ,   ListItem( BLOCK ) _ , _     ) => BLOCK
+    rule #getBlockByNumber( PENDING          , _                     , BLOCK ) => BLOCK
+    rule #getBlockByNumber( EARLIEST         , _ ListItem( BLOCK )   , _     ) => BLOCK
 
     rule #getBlockByNumber(BLOCKNUM:Int ,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCK)           REST, _ ) => BLOCK
     rule #getBlockByNumber(BLOCKNUM':Int, (ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }          ) => .List)    _, _ )

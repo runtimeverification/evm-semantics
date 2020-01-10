@@ -271,13 +271,14 @@ The `"rlp"` key loads the block information.
     syntax BlockIdentifier ::= Int
                              | "LATEST"
                              | "PENDING"
- // ------------------------------------
+                             | "EARLIEST"
+ // -------------------------------------
 
     syntax BlockIdentifier ::= #parseBlockIdentifier ( String ) [function]
  // ----------------------------------------------------------------------
     rule #parseBlockIdentifier("pending")  => PENDING
     rule #parseBlockIdentifier("latest")   => LATEST
-    rule #parseBlockIdentifier("earliest") => 0
+    rule #parseBlockIdentifier("earliest") => EARLIEST
     rule #parseBlockIdentifier(BLOCKNUM)   => #parseHexWord(BLOCKNUM) requires substrString(BLOCKNUM,0,2) ==String "0x"
 ```
 ```{.k}
