@@ -632,7 +632,8 @@ eth_sendTransaction
                                                                                              36 +Int #asInteger(substrBytes(RD,5,36)) +Int #asInteger(substrBytes(RD,37,68))))
                                                         }
                                                       }
-                                                    } requires lengthBytes(RD) >Int 68
+                                                    }
+      requires lengthBytes(RD) >Int 68
     rule #generateException(TXHASH, PCOUNT, RD) => { "message": "VM Exception while processing transaction: revert",
                                                       "code": -32000,
                                                       "data": {
@@ -642,7 +643,8 @@ eth_sendTransaction
                                                           "return": #unparseDataByteArray( RD )
                                                         }
                                                       }
-                                                    } [owise]
+                                                    }
+      requires notBool lengthBytes(RD) >Int 68
 
 ```
 
