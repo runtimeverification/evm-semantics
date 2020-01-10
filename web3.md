@@ -585,7 +585,10 @@ eth_sendTransaction
                      "error": "revert",
                      "program_counter": PCOUNT +Int 1,
                      "return": #unparseDataByteArray( RD ),
-                     "reason": Bytes2String(RD)
+                     "reason": Bytes2String(substrBytes(RD,
+                                                        36 +Int #asInteger(substrBytes(RD,5,36)),
+                                                        36 +Int #asInteger(substrBytes(RD,5,36)) +Int #asInteger(substrBytes(RD,37,68))))
+
                    }
                  }
                } )
