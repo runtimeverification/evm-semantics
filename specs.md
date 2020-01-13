@@ -14,15 +14,6 @@ module EVM-SPECS
         <commandVars> .Map </commandVars>
       </kevm-specs>
 
-/*org.kframework.utils.errorsystem.KEMException: [Error] Critical: Cannot compute least sort of term:
-  _;;__EVM-PROOFS( OR (R_K0:Id,{366}) OR (R_HOLE:Id,{80}),,  OR (R_K1:Ids,{80}) OR (R_HOLE:Ids,{366})).
-Possible sorts are [Ids, KResult]
-.All terms must have a unique least sort; consider assigning unique KLabels to overloaded productions.*/
-    /*syntax Ids ::= List{Id,";;"}     [strict, cons("Ids1ListSyn"), hybrid]
-    syntax EthereumCommand ::= "var" Ids
-    rule var IDs => . //Required only to distinguish EVM-PROOFS vars from spec rule vars.
-*/
-
 // Core specification scripting language
 // ======================================================================
 
