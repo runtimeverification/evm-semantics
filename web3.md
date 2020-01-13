@@ -1465,13 +1465,13 @@ Collecting Coverage Data
 
     syntax JSONs ::= #makeCoverageReport ( List, Map, Map ) [function]
  // ------------------------------------------------------------------
-    rule #makeCoverageReport (.List, _, _) => .JSONs
+    rule #makeCoverageReport (.List                                         , _       , _   ) => .JSONs
     rule #makeCoverageReport ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), COVERAGE, PGMS) => {
-                                                  "hash": Int2String(CODEHASH),
-                                                  "programName": Phase2String(EPHASE),
-                                                  "program": [#serializePrograms(KEY, PGMS)],
-                                                  "coveredOpCodes": [#serializeCoverage(KEY, COVERAGE)]
-                                                 }, #makeCoverageReport(KEYS, COVERAGE, PGMS)
+                                                                                                  "hash": Int2String(CODEHASH),
+                                                                                                  "programName": Phase2String(EPHASE),
+                                                                                                  "program": [#serializePrograms(KEY, PGMS)],
+                                                                                                  "coveredOpCodes": [#serializeCoverage(KEY, COVERAGE)]
+                                                                                                 }, #makeCoverageReport(KEYS, COVERAGE, PGMS)
 
     syntax JSONs ::= #serializeCoverage ( CoverageIdentifier, Map ) [function]
  // --------------------------------------------------------------------------
