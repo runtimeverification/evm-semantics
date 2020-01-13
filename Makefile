@@ -37,7 +37,7 @@ LUA_PATH                := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean clean-submodules distclean install uninstall                                                                                         \
+.PHONY: all clean clean-submodules distclean                                                                                                           \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff proxygen                                                  \
         build build-java build-node build-haskell build-llvm build-web3                                                                                \
         defn java-defn node-defn web3-defn haskell-defn llvm-defn                                                                                      \
@@ -291,13 +291,6 @@ $(llvm_kompiled): $(llvm_files) $(libff_out)
 # ----------
 
 KEVM_RELEASE_TAG?=
-
-install: $(INSTALL_DIR)/$(notdir $(node_kompiled))
-$(INSTALL_DIR)/$(notdir $(node_kompiled)): $(node_kompiled)
-	cd $(DEFN_DIR)/vm && $(MAKE) install
-
-uninstall:
-	rm $(INSTALL_DIR)/$(notdir $(node_kompiled))
 
 release.md: INSTALL.md
 	echo "KEVM Release $(KEVM_RELEASE_TAG)"  > $@
