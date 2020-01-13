@@ -47,7 +47,7 @@ export LUA_PATH
         test-web3 test-all-web3 test-failing-web3 test-truffle test-all-truffle test-failing-truffle                                                   \
         test-prove test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-klab-prove \
         test-parse test-failure                                                                                                                        \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly            \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                                     \
         media media-pdf metropolis-theme
 .SECONDARY:
 
@@ -502,10 +502,6 @@ test-interactive-search: $(search_tests:=.search)
 
 test-interactive-help:
 	$(TEST) help
-
-# Notice that `npm install` comes after `npx kevm-ganache-cli` to allow time for it to start up.
-test-interactive-firefly:
-	export PATH=$(PATH):$(CURDIR)/.build/defn/vm && ./tests/node-firefly
 
 # Media
 # -----
