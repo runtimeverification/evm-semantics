@@ -1514,15 +1514,6 @@ Collecting Coverage Data
  // -----------------------------------------
     rule qsort ( .List )           => .List
     rule qsort (ListItem(I:Int) L) => qsort(getIntElementsSmallerThan(I, L, .List)) ListItem(I) qsort(getIntElementsGreaterThan(I, L, .List))
-
-    syntax JSONs ::= #coveragePercentages ( List, Map, Map) [function]
- // ------------------------------------------------------------------
-    rule #coveragePercentages (.List, _, _) => .JSONs
-    rule #coveragePercentages ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map, KEY |-> Y:List PGMS:Map) => { Int2String(CODEHASH):{ Phase2String(EPHASE): #computePercentage(size(X),size(Y)) }}, #coveragePercentages(KEYS,COVERAGE,PGMS)
-
-    syntax Int ::= #computePercentage ( Int, Int ) [function]
- // ---------------------------------------------------------
-    rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL
 ```
 
 Helper Funcs
