@@ -1402,7 +1402,6 @@ Collecting Coverage Data
 
 **TODO**: instead of having both `#serializeCoverage` and `#serializePrograms` we could keep only the first rule as `#serializeCoverageMap` if `<opcodeLists>` would store `Sets` instead of `Lists`.
 **TODO**: compute coverage percentages in `Float` instead of `Int`
-**TODO**: `Set2List` won't return `ListItems` in order, causing tests to fail.
 
 ```k
     syntax Phase ::= ".Phase"
@@ -1460,27 +1459,29 @@ Collecting Coverage Data
 
     syntax KItem ::= "#firefly_getCoverageData"
  // -------------------------------------------
-    rule <k> #firefly_getCoverageData => #rpcResponseSuccess(#makeCoverageReport(COVERAGE, PGMS)) ... </k>
+    rule <k> #firefly_getCoverageData => #rpcResponseSuccess([#makeCoverageReport(keys_list(PGMS),COVERAGE, PGMS)]) ... </k>
          <opcodeCoverage> COVERAGE </opcodeCoverage>
          <opcodeLists>    PGMS     </opcodeLists>
 
-    syntax JSON ::= #makeCoverageReport ( Map, Map ) [function]
- // -----------------------------------------------------------
-    rule #makeCoverageReport (COVERAGE, PGMS) => {
-                                                  "coverages": [#coveragePercentages(keys_list(PGMS),COVERAGE,PGMS)],
-                                                  "coveredOpcodes": [#serializeCoverage(keys_list(COVERAGE),COVERAGE)],
-                                                  "programs": [#serializePrograms(keys_list(PGMS),PGMS)]
-                                                 }
+    syntax JSONs ::= #makeCoverageReport ( List, Map, Map ) [function]
+ // ------------------------------------------------------------------
+    rule #makeCoverageReport (.List, _, _) => .JSONs
+    rule #makeCoverageReport ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), COVERAGE, PGMS) => {
+                                                  "hash": Int2String(CODEHASH),
+                                                  "programName": Phase2String(EPHASE),
+                                                  "program": [#serializePrograms(KEY, PGMS)],
+                                                  "coveredOpCodes": [#serializeCoverage(KEY, COVERAGE)]
+                                                 }, #makeCoverageReport(KEYS, COVERAGE, PGMS)
 
-    syntax JSONs ::= #serializeCoverage ( List, Map ) [function]
- // ------------------------------------------------------------
-    rule #serializeCoverage (.List, _ ) => .JSONs
-    rule #serializeCoverage ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [IntList2JSONs(qsort(Set2List(X)))] }}, #serializeCoverage(KEYS, COVERAGE)
+    syntax JSONs ::= #serializeCoverage ( CoverageIdentifier, Map ) [function]
+ // --------------------------------------------------------------------------
+    rule #serializeCoverage (KEY, COVERAGE ) => .JSONs requires notBool KEY in_keys(COVERAGE)
+    rule #serializeCoverage (KEY, KEY |-> X:Set COVERAGE:Map ) => IntList2JSONs(qsort(Set2List(X)))
 
-    syntax JSONs ::= #serializePrograms ( List, Map ) [function]
- // ------------------------------------------------------------
-    rule #serializePrograms (.List, _ ) => .JSONs
-    rule #serializePrograms ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:List PGMS:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [CoverageIDList2JSONs(X)] }}, #serializePrograms(KEYS, PGMS)
+    syntax JSONs ::= #serializePrograms ( CoverageIdentifier, Map ) [function]
+ // --------------------------------------------------------------------------
+    rule #serializePrograms (KEY, PGMS) => .JSONs requires notBool KEY in_keys(PGMS)
+    rule #serializePrograms (KEY, KEY |-> X:List PGMS:Map ) => CoverageIDList2JSONs(X)
 
     syntax String ::= Phase2String ( Phase ) [function]
  // ----------------------------------------------------
