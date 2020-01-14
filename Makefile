@@ -173,7 +173,7 @@ llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 concrete_tangle := .k:not(.node):not(.symbolic):not(.nobytes):not(.memmap),.standalone,.concrete,.bytes,.membytes
 java_tangle     := .k:not(.node):not(.concrete):not(.bytes):not(.memmap):not(.membytes),.standalone,.symbolic,.nobytes
-haskell_tangle  := .k:not(.node):not(.concrete):not(.nobytes):not(.membytes),.standalone,.symbolic,.bytes,.memmap
+haskell_tangle  := .k:not(.node):not(.concrete):not(.nobytes):not(.memmap),.standalone,.symbolic,.bytes,.membytes
 node_tangle     := .k:not(.standalone):not(.symbolic):not(.nobytes):not(.memmap),.node,.concrete,.bytes,.membytes
 
 defn: $(defn_files)
