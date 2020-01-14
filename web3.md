@@ -1853,11 +1853,11 @@ Retrieving logs
          <txOrder> TXLIST </txOrder>
       requires START <=Int END
 
-    rule <k> #getLogs(START => START +Int 1, END, RESULT) ... </k>                         requires START <=Int END [owise]
-    rule <k> #getLogs(START, END, RESULT) => #serializeEthGetLogs(RESULT, .JSONs) ... </k> requires START  >Int END
+    rule <k> #getLogs(START => START +Int 1, END, RESULT) ... </k>                           requires START <=Int END [owise]
+    rule <k> #getLogs(START, END, RESULT) => #serializeEthGetLogs(RESULT, [.JSONs]) ... </k> requires START  >Int END
 
     rule <k> #serializeEthGetLogs(.List, RESULTS:JSONs) => #rpcResponseSuccess([RESULTS]) ... </k>
-    rule <k> #serializeEthGetLogs(ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List, RESULTS:JSONs) => #serializeEthGetLogs(LIST, (RESULTS, #serializeLogs(LOGS,0,TXID,TXHASH,BH,BN))) ... </k>
+    rule <k> #serializeEthGetLogs((ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List), RESULTS) => #serializeEthGetLogs(LIST, (RESULTS, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)])) ... </k>
 ```
 
 Blake2 Compression Function
