@@ -145,7 +145,7 @@
     </evm>
     <network>
       <chainID>
-      0
+      1
       </chainID>
       <activeAccounts>
         .Set
