@@ -1802,8 +1802,8 @@ Retrieving logs
 
 [TODO]:
  - remove hardcoded BlockHash and retrieve the correct value
-```k
 
+```k
     syntax LogData ::= "{" List "|" Int "|" String "|" Int "|" String "}"
  // ---------------------------------------------------------------------
 
@@ -1842,10 +1842,10 @@ Retrieving logs
 
     rule <k> #getLogs(START => START +Int 1, END, RESULT => RESULT ListItem({LOGS|TXID|TXHASH|START|"0x0"}) ) ... </k>
          <txReceipt>
-           <txBlockNumber>   START </txBlockNumber>
-           <txHash>          TXHASH </txHash>
-           <txID>            TXID </txID>
-           <logSet>          LOGS </logSet>
+           <txBlockNumber> START  </txBlockNumber>
+           <txHash>        TXHASH </txHash>
+           <txID>          TXID   </txID>
+           <logSet>        LOGS   </logSet>
            ...
          </txReceipt>
          <txOrder> TXLIST </txOrder>
@@ -1858,12 +1858,12 @@ Retrieving logs
     rule <k> #serializeEthGetLogs((ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List), RESULTS) => #serializeEthGetLogs(LIST, (RESULTS, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)])) ... </k>
 
     syntax JSONs ::= #flatten ( JSONs ) [function]
- // ---------------------------------------------
+ // ----------------------------------------------
     rule #flatten(.JSONs      ) => .JSONs
     rule #flatten([.JSONs], JL) => #flatten(JL)
-    rule #flatten([J,JS]  , JL) => J, #flatten([JS],JL)
-
+    rule #flatten([J,JS]  , JL) => J, #flatten([JS], JL)
 ```
+
 Blake2 Compression Function
 ---------------------------
 
