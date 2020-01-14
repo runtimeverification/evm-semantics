@@ -1406,7 +1406,7 @@ Collecting Coverage Data
       [priority(25)]
 
     rule <k> #initVM ... </k>
-         <opcodeCoverage> OC => OC [ {keccak(PGM) | EPHASE} <- .Set ] </opcodeCoverage>
+         <opcodeCoverage> OC => OC [ {keccak(PGM) | EPHASE} <- .Map ] </opcodeCoverage>
          <execPhase> EPHASE </execPhase>
          <program> PGM </program>
       requires notBool {keccak(PGM) | EPHASE} in_keys(OC)
@@ -1438,8 +1438,15 @@ Collecting Coverage Data
          <pc> PCOUNT </pc>
          <execPhase> EPHASE </execPhase>
          <program> PGM </program>
-         <opcodeCoverage> ... { keccak(PGM) | EPHASE } |-> (PCS (.Set => SetItem(PCOUNT))) ... </opcodeCoverage>
-      requires notBool PCOUNT in PCS
+         <opcodeCoverage> ... { keccak(PGM) | EPHASE } |-> (PCS => PCS (PCOUNT |-> 1) ) ... </opcodeCoverage>
+      requires notBool PCOUNT in_keys(PCS)
+      [priority(25)]
+
+    rule <k> #execute ... </k>
+         <pc> PCOUNT </pc>
+         <execPhase> EPHASE </execPhase>
+         <program> PGM </program>
+         <opcodeCoverage> ... { keccak(PGM) | EPHASE } |-> ((PCS (PCOUNT |-> HC)) => ((PCOUNT |-> (HC +Int 1)) PCS)) ... </opcodeCoverage>
       [priority(25)]
 
     syntax KItem ::= "#firefly_getCoverageData"
@@ -1461,7 +1468,7 @@ Collecting Coverage Data
     syntax JSONs ::= #serializeCoverage ( CoverageIdentifier, Map ) [function]
  // --------------------------------------------------------------------------
     rule #serializeCoverage (KEY, COVERAGE ) => .JSONs requires notBool KEY in_keys(COVERAGE)
-    rule #serializeCoverage (KEY, KEY |-> X:Set COVERAGE:Map ) => IntList2JSONs(qsort(Set2List(X)))
+    rule #serializeCoverage (KEY, KEY |-> X:Map COVERAGE:Map ) => IntMap2JSONs(qsort(keys_list(X)), X)
 
     syntax JSONs ::= #serializePrograms ( CoverageIdentifier, Map ) [function]
  // --------------------------------------------------------------------------
@@ -1469,7 +1476,7 @@ Collecting Coverage Data
     rule #serializePrograms (KEY, KEY |-> X:List PGMS:Map ) => CoverageIDList2JSONs(X)
 
     syntax String ::= Phase2String ( Phase ) [function]
- // ----------------------------------------------------
+ // ---------------------------------------------------
     rule Phase2String (CONSTRUCTOR) => "CONSTRUCTOR"
     rule Phase2String (RUNTIME)     => "RUNTIME"
 
@@ -1478,10 +1485,10 @@ Collecting Coverage Data
     rule CoverageIDList2JSONs (.List)                           => .JSONs
     rule CoverageIDList2JSONs (ListItem({I:Int | _:OpCode }) L) => I, CoverageIDList2JSONs(L)
 
-    syntax JSONs ::= IntList2JSONs ( List ) [function]
- // --------------------------------------------------
-    rule IntList2JSONs (.List)             => .JSONs
-    rule IntList2JSONs (ListItem(I:Int) L) => I, IntList2JSONs(L)
+    syntax JSONs ::= IntMap2JSONs ( List, Map ) [function]
+ // ------------------------------------------------------
+    rule IntMap2JSONs (.List            ,  _           ) => .JSONs
+    rule IntMap2JSONs (ListItem(K:Int) L, ((K |-> V) M)) => {Int2String(K) : V}, IntMap2JSONs(L, M)
 
     syntax List ::= getIntElementsSmallerThan ( Int, List, List ) [function]
  // ------------------------------------------------------------------------
