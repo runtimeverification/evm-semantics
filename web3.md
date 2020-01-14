@@ -57,7 +57,7 @@ The Blockchain State
 A `BlockchainItem` contains the information of a block and its network state.
 The `blockList` cell stores a list of previous blocks and network states.
 -   `#pushBlockchainState` saves a copy of the block state and network state as a `BlockchainItem` in the `blockList` cell.
--   `#getBlockByNumber(Int)` retrieves a specific `BlockchainItem` from the `blockList` cell.
+-   `#getBlockByNumber(BlockIdentifier, List, Block)` retrieves a specific `BlockchainItem` from the `blockList` cell.
 
 ```k
     syntax BlockchainItem ::= ".BlockchainItem"
@@ -73,11 +73,11 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List , BlockchainItem ) [function]
  // --------------------------------------------------------------------------------------------------
-    rule #getBlockByNumber( _:Int      , .List                 , _     ) => .BlockchainItem
-    rule #getBlockByNumber( "earliest" , _ ListItem( BLOCK )   , _     ) => BLOCK
-    rule #getBlockByNumber( "latest"   ,   ListItem( BLOCK ) _ , _     ) => BLOCK
-    rule #getBlockByNumber( "pending"  , _                     , BLOCK ) => BLOCK
-    rule #getBlockByNumber( _:String   , .List                 , BLOCK ) => BLOCK
+    rule #getBlockByNumber( BLOCKID          , .List                 , BLOCK ) => .BlockchainItem requires BLOCKID =/=K LATEST andBool BLOCKID =/=K PENDING
+    rule #getBlockByNumber( LATEST           , .List                 , BLOCK ) => BLOCK
+    rule #getBlockByNumber( LATEST           ,   ListItem( BLOCK ) _ , _     ) => BLOCK
+    rule #getBlockByNumber( PENDING          , _                     , BLOCK ) => BLOCK
+    rule #getBlockByNumber( EARLIEST         , _ ListItem( BLOCK )   , _     ) => BLOCK
 
     rule #getBlockByNumber(BLOCKNUM:Int ,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCK)           REST, _ ) => BLOCK
     rule #getBlockByNumber(BLOCKNUM':Int, (ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }          ) => .List)    _, _ )
@@ -90,21 +90,6 @@ The `blockList` cell stores a list of previous blocks and network states.
  // ---------------------------------------------------------------------------------------
     rule #getAccountFromBlockchainItem ( { <network> <accounts> (<account> <acctID> ACCT </acctID> ACCOUNTDATA </account>) ... </accounts>  ... </network> | _ } , ACCT ) => <account> <acctID> ACCT </acctID> ACCOUNTDATA </account>
     rule #getAccountFromBlockchainItem(_, _) => .AccountItem [owise]
-
-    syntax BlockIdentifier ::= Int | String
- // ---------------------------------------
-
-    syntax BlockIdentifier ::= #parseBlockIdentifier ( String ) [function]
- // ----------------------------------------------------------------------
-    rule #parseBlockIdentifier(TAG) => TAG
-      requires TAG ==String "earliest"
-        orBool TAG ==String "latest"
-        orBool TAG ==String "pending"
-
-    rule #parseBlockIdentifier(TAG) => #parseWord(TAG)
-      requires TAG =/=String "earliest"
-       andBool TAG =/=String "latest"
-       andBool TAG =/=String "pending"
 
     syntax KItem ::= #getAccountAtBlock ( BlockIdentifier , Int )
  // -------------------------------------------------------------
@@ -1359,7 +1344,7 @@ Transaction Execution
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
-    rule <k> _:Int ~> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber("latest", BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) -Int INITGUSED )) ... </k>
+    rule <k> _:Int ~> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber(LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) -Int INITGUSED )) ... </k>
          <statusCode> STATUSCODE </statusCode>
          <blockList> BLOCKLIST </blockList>
          <network>   NETWORK   </network>
@@ -1631,7 +1616,7 @@ Transactions Root
 
     syntax KItem ::= "#firefly_getTxRoot"
  // -------------------------------------
-    rule <k> #firefly_getTxRoot => #rpcResponseSuccess({ "transactionsRoot" : #getTxRoot( #getBlockByNumber("latest", BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) }) ... </k>
+    rule <k> #firefly_getTxRoot => #rpcResponseSuccess({ "transactionsRoot" : #getTxRoot( #getBlockByNumber(LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) }) ... </k>
          <blockList> BLOCKLIST </blockList>
          <network>   NETWORK </network>
          <block>     BLOCK   </block>
@@ -1672,7 +1657,7 @@ Receipts Root
 
     syntax KItem ::= "#firefly_getReceiptsRoot"
  // -------------------------------------------
-    rule <k> #firefly_getReceiptsRoot => #rpcResponseSuccess({ "receiptsRoot" : #getReceiptRoot( #getBlockByNumber("latest", BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) }) ... </k>
+    rule <k> #firefly_getReceiptsRoot => #rpcResponseSuccess({ "receiptsRoot" : #getReceiptRoot( #getBlockByNumber(LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) }) ... </k>
          <blockList> BLOCKLIST </blockList>
          <network>   NETWORK   </network>
          <block>     BLOCK     </block>
@@ -1742,7 +1727,7 @@ Mining
  // -----------------------------
     rule <k> #mineBlock
           => #finalizeBlock
-          ~> #setParentHash #getBlockByNumber( "latest", BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>} )
+          ~> #setParentHash #getBlockByNumber( LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>} )
           ~> #updateTrieRoots
           ~> #saveState
           ~> #startBlock
