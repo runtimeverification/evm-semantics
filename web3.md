@@ -1454,6 +1454,7 @@ Collecting Coverage Data
     rule #makeCoverageReport ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), COVERAGE, PGMS) => {
                                                                                                   "hash": Int2String(CODEHASH),
                                                                                                   "programName": Phase2String(EPHASE),
+                                                                                                  "coverage": #computePercentage(size({COVERAGE[KEY]}:>Set), size({PGMS[KEY]}:>List)),
                                                                                                   "program": [#serializePrograms(KEY, PGMS)],
                                                                                                   "coveredOpCodes": [#serializeCoverage(KEY, COVERAGE)]
                                                                                                  }, #makeCoverageReport(KEYS, COVERAGE, PGMS)
@@ -1499,6 +1500,10 @@ Collecting Coverage Data
  // -----------------------------------------
     rule qsort ( .List )           => .List
     rule qsort (ListItem(I:Int) L) => qsort(getIntElementsSmallerThan(I, L, .List)) ListItem(I) qsort(getIntElementsGreaterThan(I, L, .List))
+
+    syntax Int ::= #computePercentage ( Int, Int ) [function]
+ // ---------------------------------------------------------
+    rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL
 ```
 
 Helper Funcs
