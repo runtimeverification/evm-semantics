@@ -1454,7 +1454,7 @@ Collecting Coverage Data
     rule #makeCoverageReport ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), COVERAGE, PGMS) => {
                                                                                                   "hash": Int2String(CODEHASH),
                                                                                                   "programName": Phase2String(EPHASE),
-                                                                                                  "coverage": #computePercentage(size(COVERAGE[KEY]), size(PGMS[KEY])),
+                                                                                                  "coverage": #computePercentage(size({COVERAGE[KEY]}:>Set), size({PGMS[KEY]}:>List)),
                                                                                                   "program": [#serializePrograms(KEY, PGMS)],
                                                                                                   "coveredOpCodes": [#serializeCoverage(KEY, COVERAGE)]
                                                                                                  }, #makeCoverageReport(KEYS, COVERAGE, PGMS)
