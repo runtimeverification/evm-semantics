@@ -1856,8 +1856,16 @@ Retrieving logs
     rule <k> #getLogs(START => START +Int 1, END, RESULT) ... </k>                           requires START <=Int END [owise]
     rule <k> #getLogs(START, END, RESULT) => #serializeEthGetLogs(RESULT, [.JSONs]) ... </k> requires START  >Int END
 
-    rule <k> #serializeEthGetLogs(.List, RESULTS:JSONs) => #rpcResponseSuccess([RESULTS]) ... </k>
+    rule <k> #serializeEthGetLogs(.List, RESULTS:JSONs) => #debugme ~> #rpcResponseSuccess([#flatten([RESULTS])]) ... </k>
     rule <k> #serializeEthGetLogs((ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List), RESULTS) => #serializeEthGetLogs(LIST, (RESULTS, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)])) ... </k>
+
+    syntax JSONs ::= #flatten ( JSONs ) [function]
+ // ---------------------------------------------
+    rule #flatten(.JSONs)       => .JSONs
+    rule #flatten([.JSONs], JL) => #flatten(JL)
+    rule #flatten([J,JS]  , JL) => J ,#flatten(JS,JL)
+
+    syntax KItem ::= "#debugme"
 ```
 
 Blake2 Compression Function
