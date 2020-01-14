@@ -1802,8 +1802,6 @@ Retrieving logs
 
 [TODO]:
  - remove hardcoded BlockHash and retrieve the correct value
- - add rules for the cases in which `START == 'pending'` or `END == 'pending'`
-
 ```k
 
     syntax LogData ::= "{" List "|" Int "|" String "|" Int "|" String "}"
@@ -1856,14 +1854,14 @@ Retrieving logs
     rule <k> #getLogs(START => START +Int 1, END, RESULT) ... </k>                           requires START <=Int END [owise]
     rule <k> #getLogs(START, END, RESULT) => #serializeEthGetLogs(RESULT, [.JSONs]) ... </k> requires START  >Int END
 
-    rule <k> #serializeEthGetLogs(.List, RESULTS:JSONs) => #rpcResponseSuccess([#flatten([RESULTS])]) ... </k>
+    rule <k> #serializeEthGetLogs(.List, RESULTS:JSONs) => #rpcResponseSuccess([#flatten(RESULTS)]) ... </k>
     rule <k> #serializeEthGetLogs((ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List), RESULTS) => #serializeEthGetLogs(LIST, (RESULTS, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)])) ... </k>
 
     syntax JSONs ::= #flatten ( JSONs ) [function]
  // ---------------------------------------------
-    rule #flatten(.JSONs)       => .JSONs
+    rule #flatten(.JSONs      ) => .JSONs
     rule #flatten([.JSONs], JL) => #flatten(JL)
-    rule #flatten([J,JS]  , JL) => J ,#flatten(JS,JL)
+    rule #flatten([J,JS]  , JL) => J, #flatten([JS],JL)
 
 ```
 Blake2 Compression Function
