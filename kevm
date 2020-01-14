@@ -47,7 +47,7 @@ run_krun() {
 run_kast() {
     local output_mode
 
-    output_mode="${1:-kast}" ; shift
+    output_mode="${1:-kore}" ; shift
 
     case "$run_file-$output_mode" in
         *.json-@(kast|kore)) "$kevm_dir/$output_mode-json.py" "$run_file" "$cSCHEDULE" "$cMODE" "$cCHAINID" ;;
