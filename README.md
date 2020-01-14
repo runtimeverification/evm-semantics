@@ -138,16 +138,6 @@ make build-llvm RELEASE=1
 make build-java
 ```
 
-### Installing
-
-To install the `kevm-vm` binary for use in Firefly and other full-nodes, do:
-
-```sh
-make install RELEASE=1
-```
-
-You can set `DESTDIR` and `INSTALL_PREFIX` to change where the installation goes.
-
 Example Usage
 -------------
 
