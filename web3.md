@@ -1851,7 +1851,7 @@ Retrieving logs
          <txOrder> TXLIST </txOrder>
       requires START <=Int END
 
-    rule <k> #getLogs(START => START +Int 1, END, RESULT) ... </k>                           requires START <=Int END [owise]
+    rule <k> #getLogs(START => START +Int 1, END, RESULT) ... </k>                           [owise]
     rule <k> #getLogs(START, END, RESULT) => #serializeEthGetLogs(RESULT, [.JSONs]) ... </k> requires START  >Int END
 
     rule <k> #serializeEthGetLogs(.List, RESULTS:JSONs) => #rpcResponseSuccess([#flatten(RESULTS)]) ... </k>
