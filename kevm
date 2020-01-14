@@ -308,7 +308,7 @@ fi
 
 cMODE="\`${MODE:-NORMAL}\`(.KList)"
 cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
-cCHAINID="${CHAINID:-0}"
+cCHAINID="${CHAINID:-1}"
 
 case "$run_command-$backend" in
 

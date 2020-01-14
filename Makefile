@@ -309,7 +309,7 @@ CHECK        := git --no-pager diff --no-index --ignore-all-space -R
 
 KEVM_MODE     := NORMAL
 KEVM_SCHEDULE := PETERSBURG
-KEVM_CHAINID  := 0
+KEVM_CHAINID  := 1
 
 KEVM_WEB3_ARGS := --shutdownable
 
