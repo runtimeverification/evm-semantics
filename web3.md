@@ -74,10 +74,11 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List , BlockchainItem ) [function]
  // --------------------------------------------------------------------------------------------------
-    rule #getBlockByNumber( BLOCKID          , .List                 , BLOCK ) => .BlockchainItem requires BLOCKID =/=K LATEST andBool BLOCKID =/=K PENDING
+    rule #getBlockByNumber( BLOCKID          , .List                 , _     ) => .BlockchainItem requires BLOCKID =/=K LATEST andBool BLOCKID =/=K PENDING andBool BLOCKID =/=K EARLIEST
     rule #getBlockByNumber( LATEST           , .List                 , BLOCK ) => BLOCK
     rule #getBlockByNumber( LATEST           ,   ListItem( BLOCK ) _ , _     ) => BLOCK
     rule #getBlockByNumber( PENDING          , _                     , BLOCK ) => BLOCK
+    rule #getBlockByNumber( EARLIEST         , .List                 , BLOCK ) => BLOCK
     rule #getBlockByNumber( EARLIEST         , _ ListItem( BLOCK )   , _     ) => BLOCK
 
     rule #getBlockByNumber(BLOCKNUM:Int ,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCK)           REST, _ ) => BLOCK
@@ -100,6 +101,14 @@ The `blockList` cell stores a list of previous blocks and network states.
          <network>   NETWORK   </network>
          <block>     BLOCK     </block>
 
+    syntax Int ::= #getNumberFromBlockchainItem (BlockchainItem) [function]
+ // -----------------------------------------------------------------------
+    rule #getNumberFromBlockchainItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }) => BLOCKNUM
+
+    syntax Int ::= #getNumberAtBlock ( BlockIdentifier , List , BlockchainItem ) [function]
+ // ---------------------------------------------------------------------------------------
+    rule #getNumberAtBlock (X:Int     , _        , _     ) => X
+    rule #getNumberAtBlock (BLOCKID   , BLOCKLIST, BLOCK ) => #getNumberFromBlockchainItem(#getBlockByNumber(BLOCKID, BLOCKLIST, BLOCK))
 ```
 
 WEB3 JSON RPC
@@ -1817,10 +1826,22 @@ Retrieving logs
       requires #getJSON("fromBlock", { PARAMS }) =/=K undef
        andBool #getJSON("toBlock"  , { PARAMS }) =/=K undef
 
-    rule <k> #getLogs(LATEST => size(BLOCKLIST) -Int 1, _:BlockIdentifier, _:List) ... </k>
+    rule <k> #getLogs(BLOCKID => #getNumberAtBlock(BLOCKID, BLOCKLIST,{<network> NETWORK </network> | <block> BLOCK </block>}), _, _) ... </k>
+         <block>     BLOCK     </block>
+         <network>   NETWORK   </network>
          <blockList> BLOCKLIST </blockList>
-    rule <k> #getLogs(_:BlockIdentifier, LATEST => size(BLOCKLIST) -Int 1, _:List) ... </k>
+      requires BLOCKID ==K LATEST
+        orBool BLOCKID ==K EARLIEST
+        orBool BLOCKID ==K PENDING
+
+    rule <k> #getLogs(_ , BLOCKID => #getNumberAtBlock(BLOCKID, BLOCKLIST,{<network> NETWORK </network> | <block> BLOCK </block>}), _) ... </k>
+         <block>     BLOCK     </block>
+         <network>   NETWORK   </network>
          <blockList> BLOCKLIST </blockList>
+      requires BLOCKID ==K LATEST
+        orBool BLOCKID ==K EARLIEST
+        orBool BLOCKID ==K PENDING
+
     rule <k> #getLogs(START => START +Int 1, END, RESULT => RESULT ListItem({LOGS|TXID|TXHASH|START|"0x0"}) ) ... </k>
          <txReceipt>
            <txBlockNumber>   START </txBlockNumber>
