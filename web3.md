@@ -58,7 +58,7 @@ The Blockchain State
 A `BlockchainItem` contains the information of a block and its network state.
 The `blockList` cell stores a list of previous blocks and network states.
 -   `#pushBlockchainState` saves a copy of the block state and network state as a `BlockchainItem` in the `blockList` cell.
--   `#getBlockByNumber(Int)` retrieves a specific `BlockchainItem` from the `blockList` cell.
+-   `#getBlockByNumber(BlockIdentifier, List, Block)` retrieves a specific `BlockchainItem` from the `blockList` cell.
 
 ```k
     syntax BlockchainItem ::= ".BlockchainItem"
@@ -74,11 +74,11 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List , BlockchainItem ) [function]
  // --------------------------------------------------------------------------------------------------
-    rule #getBlockByNumber( _:Int      , .List                 , _     ) => .BlockchainItem
-    rule #getBlockByNumber( "earliest" , _ ListItem( BLOCK )   , _     ) => BLOCK
-    rule #getBlockByNumber( "latest"   ,   ListItem( BLOCK ) _ , _     ) => BLOCK
-    rule #getBlockByNumber( "pending"  , _                     , BLOCK ) => BLOCK
-    rule #getBlockByNumber( _:String   , .List                 , BLOCK ) => BLOCK
+    rule #getBlockByNumber( BLOCKID          , .List                 , BLOCK ) => .BlockchainItem requires BLOCKID =/=K LATEST andBool BLOCKID =/=K PENDING
+    rule #getBlockByNumber( LATEST           , .List                 , BLOCK ) => BLOCK
+    rule #getBlockByNumber( LATEST           ,   ListItem( BLOCK ) _ , _     ) => BLOCK
+    rule #getBlockByNumber( PENDING          , _                     , BLOCK ) => BLOCK
+    rule #getBlockByNumber( EARLIEST         , _ ListItem( BLOCK )   , _     ) => BLOCK
 
     rule #getBlockByNumber(BLOCKNUM:Int ,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCK)           REST, _ ) => BLOCK
     rule #getBlockByNumber(BLOCKNUM':Int, (ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }          ) => .List)    _, _ )
@@ -91,21 +91,6 @@ The `blockList` cell stores a list of previous blocks and network states.
  // ---------------------------------------------------------------------------------------
     rule #getAccountFromBlockchainItem ( { <network> <accounts> (<account> <acctID> ACCT </acctID> ACCOUNTDATA </account>) ... </accounts>  ... </network> | _ } , ACCT ) => <account> <acctID> ACCT </acctID> ACCOUNTDATA </account>
     rule #getAccountFromBlockchainItem(_, _) => .AccountItem [owise]
-
-    syntax BlockIdentifier ::= Int | String
- // ---------------------------------------
-
-    syntax BlockIdentifier ::= #parseBlockIdentifier ( String ) [function]
- // ----------------------------------------------------------------------
-    rule #parseBlockIdentifier(TAG) => TAG
-      requires TAG ==String "earliest"
-        orBool TAG ==String "latest"
-        orBool TAG ==String "pending"
-
-    rule #parseBlockIdentifier(TAG) => #parseWord(TAG)
-      requires TAG =/=String "earliest"
-       andBool TAG =/=String "latest"
-       andBool TAG =/=String "pending"
 
     syntax KItem ::= #getAccountAtBlock ( BlockIdentifier , Int )
  // -------------------------------------------------------------
@@ -1360,7 +1345,7 @@ Transaction Execution
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
-    rule <k> _:Int ~> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber("latest", BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) -Int INITGUSED )) ... </k>
+    rule <k> _:Int ~> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber(LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) -Int INITGUSED )) ... </k>
          <statusCode> STATUSCODE </statusCode>
          <blockList> BLOCKLIST </blockList>
          <network>   NETWORK   </network>
@@ -1402,7 +1387,6 @@ Collecting Coverage Data
 
 **TODO**: instead of having both `#serializeCoverage` and `#serializePrograms` we could keep only the first rule as `#serializeCoverageMap` if `<opcodeLists>` would store `Sets` instead of `Lists`.
 **TODO**: compute coverage percentages in `Float` instead of `Int`
-**TODO**: `Set2List` won't return `ListItems` in order, causing tests to fail.
 
 ```k
     syntax Phase ::= ".Phase"
@@ -1460,27 +1444,29 @@ Collecting Coverage Data
 
     syntax KItem ::= "#firefly_getCoverageData"
  // -------------------------------------------
-    rule <k> #firefly_getCoverageData => #rpcResponseSuccess(#makeCoverageReport(COVERAGE, PGMS)) ... </k>
+    rule <k> #firefly_getCoverageData => #rpcResponseSuccess([#makeCoverageReport(keys_list(PGMS),COVERAGE, PGMS)]) ... </k>
          <opcodeCoverage> COVERAGE </opcodeCoverage>
          <opcodeLists>    PGMS     </opcodeLists>
 
-    syntax JSON ::= #makeCoverageReport ( Map, Map ) [function]
- // -----------------------------------------------------------
-    rule #makeCoverageReport (COVERAGE, PGMS) => {
-                                                  "coverages": [#coveragePercentages(keys_list(PGMS),COVERAGE,PGMS)],
-                                                  "coveredOpcodes": [#serializeCoverage(keys_list(COVERAGE),COVERAGE)],
-                                                  "programs": [#serializePrograms(keys_list(PGMS),PGMS)]
-                                                 }
+    syntax JSONs ::= #makeCoverageReport ( List, Map, Map ) [function]
+ // ------------------------------------------------------------------
+    rule #makeCoverageReport (.List                                         , _       , _   ) => .JSONs
+    rule #makeCoverageReport ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), COVERAGE, PGMS) => {
+                                                                                                  "hash": Int2String(CODEHASH),
+                                                                                                  "programName": Phase2String(EPHASE),
+                                                                                                  "program": [#serializePrograms(KEY, PGMS)],
+                                                                                                  "coveredOpCodes": [#serializeCoverage(KEY, COVERAGE)]
+                                                                                                 }, #makeCoverageReport(KEYS, COVERAGE, PGMS)
 
-    syntax JSONs ::= #serializeCoverage ( List, Map ) [function]
- // ------------------------------------------------------------
-    rule #serializeCoverage (.List, _ ) => .JSONs
-    rule #serializeCoverage ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [IntList2JSONs(qsort(Set2List(X)))] }}, #serializeCoverage(KEYS, COVERAGE)
+    syntax JSONs ::= #serializeCoverage ( CoverageIdentifier, Map ) [function]
+ // --------------------------------------------------------------------------
+    rule #serializeCoverage (KEY, COVERAGE ) => .JSONs requires notBool KEY in_keys(COVERAGE)
+    rule #serializeCoverage (KEY, KEY |-> X:Set COVERAGE:Map ) => IntList2JSONs(qsort(Set2List(X)))
 
-    syntax JSONs ::= #serializePrograms ( List, Map ) [function]
- // ------------------------------------------------------------
-    rule #serializePrograms (.List, _ ) => .JSONs
-    rule #serializePrograms ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:List PGMS:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [CoverageIDList2JSONs(X)] }}, #serializePrograms(KEYS, PGMS)
+    syntax JSONs ::= #serializePrograms ( CoverageIdentifier, Map ) [function]
+ // --------------------------------------------------------------------------
+    rule #serializePrograms (KEY, PGMS) => .JSONs requires notBool KEY in_keys(PGMS)
+    rule #serializePrograms (KEY, KEY |-> X:List PGMS:Map ) => CoverageIDList2JSONs(X)
 
     syntax String ::= Phase2String ( Phase ) [function]
  // ----------------------------------------------------
@@ -1513,15 +1499,6 @@ Collecting Coverage Data
  // -----------------------------------------
     rule qsort ( .List )           => .List
     rule qsort (ListItem(I:Int) L) => qsort(getIntElementsSmallerThan(I, L, .List)) ListItem(I) qsort(getIntElementsGreaterThan(I, L, .List))
-
-    syntax JSONs ::= #coveragePercentages ( List, Map, Map) [function]
- // ------------------------------------------------------------------
-    rule #coveragePercentages (.List, _, _) => .JSONs
-    rule #coveragePercentages ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map, KEY |-> Y:List PGMS:Map) => { Int2String(CODEHASH):{ Phase2String(EPHASE): #computePercentage(size(X),size(Y)) }}, #coveragePercentages(KEYS,COVERAGE,PGMS)
-
-    syntax Int ::= #computePercentage ( Int, Int ) [function]
- // ---------------------------------------------------------
-    rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL
 ```
 
 Helper Funcs
@@ -1640,7 +1617,7 @@ Transactions Root
 
     syntax KItem ::= "#firefly_getTxRoot"
  // -------------------------------------
-    rule <k> #firefly_getTxRoot => #rpcResponseSuccess({ "transactionsRoot" : #getTxRoot( #getBlockByNumber("latest", BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) }) ... </k>
+    rule <k> #firefly_getTxRoot => #rpcResponseSuccess({ "transactionsRoot" : #getTxRoot( #getBlockByNumber(LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) }) ... </k>
          <blockList> BLOCKLIST </blockList>
          <network>   NETWORK </network>
          <block>     BLOCK   </block>
@@ -1681,7 +1658,7 @@ Receipts Root
 
     syntax KItem ::= "#firefly_getReceiptsRoot"
  // -------------------------------------------
-    rule <k> #firefly_getReceiptsRoot => #rpcResponseSuccess({ "receiptsRoot" : #getReceiptRoot( #getBlockByNumber("latest", BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) }) ... </k>
+    rule <k> #firefly_getReceiptsRoot => #rpcResponseSuccess({ "receiptsRoot" : #getReceiptRoot( #getBlockByNumber(LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) }) ... </k>
          <blockList> BLOCKLIST </blockList>
          <network>   NETWORK   </network>
          <block>     BLOCK     </block>
@@ -1751,7 +1728,7 @@ Mining
  // -----------------------------
     rule <k> #mineBlock
           => #finalizeBlock
-          ~> #setParentHash #getBlockByNumber( "latest", BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>} )
+          ~> #setParentHash #getBlockByNumber( LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>} )
           ~> #updateTrieRoots
           ~> #saveState
           ~> #startBlock
