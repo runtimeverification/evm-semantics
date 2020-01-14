@@ -9,18 +9,6 @@ module STATE-LOADER
     imports EVM
     imports EVM-ASSEMBLY
 
-    syntax BlockIdentifier ::= Int
-                             | "PENDING"
-                             | "LATEST"
- // -----------------------------------
-
-    syntax BlockIdentifier ::= #parseBlockIdentifier ( String ) [function]
- // ----------------------------------------------------------------------
-    rule #parseBlockIdentifier("pending")  => PENDING
-    rule #parseBlockIdentifier("latest")   => LATEST
-    rule #parseBlockIdentifier("earliest") => 0
-    rule #parseBlockIdentifier(BLOCKNUM)   => #parseHexWord(BLOCKNUM) requires substrString(BLOCKNUM,0,2) ==String "0x"
-
     syntax JSON ::= ByteArray | OpCodes | Map | Call | SubstateLogEntry | Account
  // -----------------------------------------------------------------------------
 
