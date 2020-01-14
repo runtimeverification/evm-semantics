@@ -529,16 +529,6 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
     rule #widthOp(OP)      => 1        requires notBool isPushOp(OP)
 ```
 
-### Substate Log
-
-During execution of a transaction some things are recorded in the substate log (Section 6.1 in YellowPaper).
-This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
-
-```k
-    syntax SubstateLogEntry ::= "{" Int "|" List "|" ByteArray "}" [klabel(logEntry)]
- // ---------------------------------------------------------------------------------
-```
-
 After executing a transaction, it's necessary to have the effect of the substate log recorded.
 
 -   `#finalizeStorage` updates the origStorage cell with the new values of storage.
@@ -1827,7 +1817,7 @@ Precompiled Contracts
     syntax PrecompiledOp ::= "BLAKE2F"
  // ----------------------------------
     rule <k> BLAKE2F => #end EVMC_SUCCESS ... </k>
-         <output> _ => #parseByteStack( Blake2Compress( #asString( DATA ) ) ) </output>
+         <output> _ => #parseByteStack( Blake2Compress( #unparseByteStack( DATA ) ) ) </output>
          <callData> DATA </callData>
       requires #sizeByteArray( DATA ) ==Int 213
        andBool DATA[212] <=Int 1

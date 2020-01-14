@@ -58,9 +58,7 @@ The Blockchain State
 A `BlockchainItem` contains the information of a block and its network state.
 The `blockList` cell stores a list of previous blocks and network states.
 -   `#pushBlockchainState` saves a copy of the block state and network state as a `BlockchainItem` in the `blockList` cell.
--   `#getBlockchainState(Int)` restores a blockchain state for a given block number.
--   `#setBlockchainState(BlockchainItem)` helper rule for `#getBlockchainState(Int)`.
--   `#getBlockByNumber(Int)` retrieves a specific `BlockchainItem` from the `blockList` cell.
+-   `#getBlockByNumber(BlockIdentifier, List, Block)` retrieves a specific `BlockchainItem` from the `blockList` cell.
 
 ```k
     syntax BlockchainItem ::= ".BlockchainItem"
@@ -74,30 +72,16 @@ The `blockList` cell stores a list of previous blocks and network states.
          <network> NETWORK </network>
          <block>   BLOCK   </block>
 
-    syntax KItem ::= #getBlockchainState ( Int )
- // --------------------------------------------
-    rule <k> #getBlockchainState(BLOCKNUM) => #setBlockchainState(#getBlockByNumber(BLOCKNUM, BLOCKLIST)) ... </k>
-         <blockList> BLOCKLIST </blockList>
+    syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List , BlockchainItem ) [function]
+ // --------------------------------------------------------------------------------------------------
+    rule #getBlockByNumber( BLOCKID          , .List                 , BLOCK ) => .BlockchainItem requires BLOCKID =/=K LATEST andBool BLOCKID =/=K PENDING
+    rule #getBlockByNumber( LATEST           , .List                 , BLOCK ) => BLOCK
+    rule #getBlockByNumber( LATEST           ,   ListItem( BLOCK ) _ , _     ) => BLOCK
+    rule #getBlockByNumber( PENDING          , _                     , BLOCK ) => BLOCK
+    rule #getBlockByNumber( EARLIEST         , _ ListItem( BLOCK )   , _     ) => BLOCK
 
-    syntax KItem ::= #setBlockchainState ( BlockchainItem )
- // -------------------------------------------------------
-    rule <k> #setBlockchainState({ <network> NETWORK </network> | <block> BLOCK </block> }) => . ... </k>
-         <network> _ => NETWORK </network>
-         <block>   _ => BLOCK   </block>
-
-    rule <k> #setBlockchainState(.BlockchainItem) => #rpcResponseError(-37600, "Unable to find block by number.") ... </k>
-
-    syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List ) [function]
- // ---------------------------------------------------------------------------------
-    rule #getBlockByNumber( _:Int, .List) => .BlockchainItem
-    rule #getBlockByNumber( LATEST, ListItem( BLOCK ) _) => BLOCK
-
-    rule [[ #getBlockByNumber( PENDING ,  BLOCKLIST) => {<network> NETWORK </network> | <block> BLOCK </block>} ]]
-         <network> NETWORK </network>
-         <block>   BLOCK   </block>
-
-    rule #getBlockByNumber(BLOCKNUM:Int,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCKCHAINITEM) REST ) => BLOCKCHAINITEM
-    rule #getBlockByNumber(BLOCKNUM':Int, ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }                   ) REST ) => #getBlockByNumber(BLOCKNUM', REST)
+    rule #getBlockByNumber(BLOCKNUM:Int ,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCK)           REST, _ ) => BLOCK
+    rule #getBlockByNumber(BLOCKNUM':Int, (ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }          ) => .List)    _, _ )
       requires BLOCKNUM =/=Int BLOCKNUM'
 
     syntax AccountItem ::= AccountCell | ".AccountItem"
@@ -110,8 +94,11 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     syntax KItem ::= #getAccountAtBlock ( BlockIdentifier , Int )
  // -------------------------------------------------------------
-    rule <k> #getAccountAtBlock(BLOCKNUM , ACCTID) => #getAccountFromBlockchainItem(#getBlockByNumber(BLOCKNUM, BLOCKLIST), ACCTID) ... </k>
+    rule <k> #getAccountAtBlock(BLOCKNUM , ACCTID)
+          => #getAccountFromBlockchainItem(#getBlockByNumber(BLOCKNUM, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}), ACCTID) ... </k>
          <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK   </network>
+         <block>     BLOCK     </block>
 
 ```
 
@@ -434,7 +421,7 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#eth_sign"
  // ----------------------------
-    rule <k> #eth_sign => #signMessage(KEY, #hashMessage(#unparseByteStack(#parseByteStack(MESSAGE)))) ... </k>
+    rule <k> #eth_sign => #signMessage(#unparseByteStack(#asByteStack(KEY)), #hashMessage(Hex2Raw(MESSAGE))) ... </k>
          <params> [ ACCTADDR, MESSAGE, .JSONs ] </params>
          <accountKeys>... #parseHexWord(ACCTADDR) |-> KEY ...</accountKeys>
 
@@ -575,17 +562,7 @@ eth_sendTransaction
     rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccess(TXHASH) ... </k>
          <statusCode> EVMC_SUCCESS </statusCode>
 
-    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccessException(TXHASH,
-               { "message": "VM Exception while processing transaction: revert",
-                 "code": -32000,
-                 "data": {
-                     TXHASH: {
-                     "error": "revert",
-                     "program_counter": PCOUNT +Int 1,
-                     "return": #unparseDataByteArray( RD )
-                   }
-                 }
-               } )
+    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccessException(TXHASH, #generateException(TXHASH, PCOUNT, RD))
           ...
          </k>
          <statusCode> EVMC_REVERT </statusCode>
@@ -625,6 +602,35 @@ eth_sendTransaction
            <nonce> NONCE </nonce>
            ...
          </account>
+
+    syntax JSON ::= #generateException( String, Int, Bytes ) [function]
+ // -------------------------------------------------------------------
+    rule #generateException(TXHASH, PCOUNT, RD) => { "message": "VM Exception while processing transaction: revert",
+                                                      "code": -32000,
+                                                      "data": {
+                                                          TXHASH: {
+                                                          "error": "revert",
+                                                          "program_counter": PCOUNT +Int 1,
+                                                          "return": #unparseDataByteArray( RD ),
+                                                          "reason": Bytes2String(substrBytes(RD,
+                                                                                             36 +Int #asInteger(substrBytes(RD,5,36)),
+                                                                                             36 +Int #asInteger(substrBytes(RD,5,36)) +Int #asInteger(substrBytes(RD,37,68))))
+                                                        }
+                                                      }
+                                                    }
+      requires lengthBytes(RD) >Int 68
+    rule #generateException(TXHASH, PCOUNT, RD) => { "message": "VM Exception while processing transaction: revert",
+                                                      "code": -32000,
+                                                      "data": {
+                                                          TXHASH: {
+                                                          "error": "revert",
+                                                          "program_counter": PCOUNT +Int 1,
+                                                          "return": #unparseDataByteArray( RD )
+                                                        }
+                                                      }
+                                                    }
+      requires notBool lengthBytes(RD) >Int 68
+
 ```
 
 -   signTX TXID ACCTFROM: Signs the transaction with TXID using ACCTFROM's private key
@@ -752,9 +758,12 @@ Retrieving Blocks
 ```k
     syntax KItem ::= "#eth_getBlockByNumber"
  // ----------------------------------------
-    rule <k> #eth_getBlockByNumber => #eth_getBlockByNumber_finalize( #getBlockByNumber( #parseBlockIdentifier(TAG), BLOCKLIST)) ... </k>
+    rule <k> #eth_getBlockByNumber => #eth_getBlockByNumber_finalize( #getBlockByNumber(#parseBlockIdentifier(TAG), BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>})) ... </k>
          <params> [ TAG:String, TXOUT:Bool, .JSONs ] </params>
          <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK   </network>
+         <block>     BLOCK     </block>
+
     rule <k> #eth_getBlockByNumber => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_getBlockByNumber' requires exactly 2 arguments.") ... </k>
          <params> [ VALUE, .JSONs ] </params>
       requires notBool isJSONs( VALUE )
@@ -802,30 +811,34 @@ Retrieving Blocks
                                   , "gasLimit": #unparseQuantity( GLIMIT )
                                   , "gasUsed": #unparseQuantity( GUSED )
                                   , "timestamp": #unparseQuantity( TIME )
-                                  , "transactions": [ #getTransactionList( BLOCKITEM ) ]
+                                  , "transactions": [ #getTransactionList( BLOCKITEM, <txReceipts> TXRECEIPTS </txReceipts>, FULLTX ) ]
                                   , "uncles": [ .JSONs ]
                                   }
                                 )
           ...
          </k>
+         <params> [ _, FULLTX:Bool, .JSONs ] </params>
+         <txReceipts> TXRECEIPTS </txReceipts>
 
     rule <k> #eth_getBlockByNumber_finalize ( .BlockchainItem )=> #rpcResponseSuccess(null) ... </k>
 
-    syntax JSONs ::= "#getTransactionList" "(" BlockchainItem ")" [function]
-                   | #getTransactionHashList ( List, JSONs )      [function]
- // ------------------------------------------------------------------------
-    rule [[ #getTransactionList ( { <network> <txOrder> TXIDLIST </txOrder> ... </network> | _ } )
-         => #getTransactionHashList (TXIDLIST, .JSONs)
-         ]]
-         <params> [ _ , false, .JSONs ] </params>
+    syntax JSONs ::= #getTransactionList ( BlockchainItem , TxReceiptsCell , Bool ) [function]
+                   | #getTransactionHashList ( List, TxReceiptsCell , JSONs )       [function]
+ // ------------------------------------------------------------------------------------------
+    rule #getTransactionList ( { <network> <txOrder> TXIDLIST </txOrder> ... </network> | _ } , <txReceipts> TXRECEIPTS </txReceipts>, false )
+      => #getTransactionHashList (TXIDLIST, <txReceipts> TXRECEIPTS </txReceipts>, .JSONs)
 
-    rule #getTransactionHashList ( .List, RESULT ) => RESULT
-    rule [[ #getTransactionHashList ( ( ListItem(TXID) => .List ) TXIDLIST, ( RESULT => TXHASH, RESULT ) ) ]]
-         <txReceipt>
-           <txID>   TXID   </txID>
-           <txHash> TXHASH </txHash>
-           ...
-         </txReceipt>
+    rule #getTransactionHashList ( .List, _, RESULT ) => RESULT
+    rule #getTransactionHashList ( ( ListItem(TXID) => .List ) TXIDLIST
+                                 , <txReceipts>
+                                     <txReceipt>
+                                       <txID>   TXID   </txID>
+                                       <txHash> TXHASH </txHash>
+                                       ...
+                                     </txReceipt>
+                                     ...
+                                   </txReceipts>
+                                 , ( RESULT => TXHASH, RESULT ) )
 ```
 
 Transaction Receipts
@@ -877,7 +890,7 @@ Transaction Receipts
     syntax KItem ::= "#eth_getTransactionReceipt"
                    | "#eth_getTransactionReceipt_final" "(" BlockchainItem ")"
  // --------------------------------------------------------------------------
-    rule <k> #eth_getTransactionReceipt => #eth_getTransactionReceipt_final(#getBlockByNumber (BN, BLOCKLIST)) ... </k>
+    rule <k> #eth_getTransactionReceipt => #eth_getTransactionReceipt_final(#getBlockByNumber (BN, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>})) ... </k>
          <params> [TXHASH:String, .JSONs] </params>
          <txReceipt>
            <txHash>          TXHASH </txHash>
@@ -885,6 +898,8 @@ Transaction Receipts
            ...
          </txReceipt>
          <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK </network>
+         <block>     BLOCK   </block>
 
     rule <k> #eth_getTransactionReceipt_final ({
              <network>
@@ -1250,6 +1265,9 @@ Transaction Execution
 ```k
     syntax KItem ::= "#eth_call"
  // ----------------------------
+    rule <k> #eth_call ... </k>
+         <params> [ { _ }, (.JSONs => "pending", .JSONs) ] </params>
+
     rule <k> #eth_call
           => #pushNetworkState
           ~> #setMode NOGAS
@@ -1281,18 +1299,8 @@ Transaction Execution
           => #setMode NORMAL
           ~> #popNetworkState
           ~> #clearGas
-          ~> #rpcResponseError(
-               { "message": "VM Exception while processing transaction: revert",
-                 "code": -32000,
-                 "data": {
-                     "0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS): {
-                     "error": "revert",
-                     "program_counter": PCOUNT +Int 1,
-                     "return": #unparseDataByteArray( RD )
-                   }
-                 }
-               } )
-
+          ~> #rpcResponseError(#generateException("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS),
+                               PCOUNT, RD))
          ...
          </k>
          <errorPC> PCOUNT </errorPC>
@@ -1318,6 +1326,9 @@ Transaction Execution
 ```k
     syntax KItem ::= "#eth_estimateGas"
  // -----------------------------------
+    rule <k> #eth_estimateGas ... </k>
+         <params> [ { _ }, (.JSONs => "pending", .JSONs) ] </params>
+
     rule <k> #eth_estimateGas
           => #pushNetworkState
           ~> #loadTx J
@@ -1334,9 +1345,11 @@ Transaction Execution
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
-    rule <k> _:Int ~> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber( LATEST, BLOCKLIST ) ) -Int INITGUSED )) ... </k>
+    rule <k> _:Int ~> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber(LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) -Int INITGUSED )) ... </k>
          <statusCode> STATUSCODE </statusCode>
          <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK   </network>
+         <block>     BLOCK     </block>
       requires STATUSCODE =/=K EVMC_OUT_OF_GAS
 
     rule <k> _:Int ~> #eth_estimateGas_finalize _ => #popNetworkState ~> #rpcResponseError(-32000 , "base fee exceeds gas limit") ... </k>
@@ -1374,7 +1387,6 @@ Collecting Coverage Data
 
 **TODO**: instead of having both `#serializeCoverage` and `#serializePrograms` we could keep only the first rule as `#serializeCoverageMap` if `<opcodeLists>` would store `Sets` instead of `Lists`.
 **TODO**: compute coverage percentages in `Float` instead of `Int`
-**TODO**: `Set2List` won't return `ListItems` in order, causing tests to fail.
 
 ```k
     syntax Phase ::= ".Phase"
@@ -1432,27 +1444,29 @@ Collecting Coverage Data
 
     syntax KItem ::= "#firefly_getCoverageData"
  // -------------------------------------------
-    rule <k> #firefly_getCoverageData => #rpcResponseSuccess(#makeCoverageReport(COVERAGE, PGMS)) ... </k>
+    rule <k> #firefly_getCoverageData => #rpcResponseSuccess([#makeCoverageReport(keys_list(PGMS),COVERAGE, PGMS)]) ... </k>
          <opcodeCoverage> COVERAGE </opcodeCoverage>
          <opcodeLists>    PGMS     </opcodeLists>
 
-    syntax JSON ::= #makeCoverageReport ( Map, Map ) [function]
- // -----------------------------------------------------------
-    rule #makeCoverageReport (COVERAGE, PGMS) => {
-                                                  "coverages": [#coveragePercentages(keys_list(PGMS),COVERAGE,PGMS)],
-                                                  "coveredOpcodes": [#serializeCoverage(keys_list(COVERAGE),COVERAGE)],
-                                                  "programs": [#serializePrograms(keys_list(PGMS),PGMS)]
-                                                 }
+    syntax JSONs ::= #makeCoverageReport ( List, Map, Map ) [function]
+ // ------------------------------------------------------------------
+    rule #makeCoverageReport (.List                                         , _       , _   ) => .JSONs
+    rule #makeCoverageReport ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), COVERAGE, PGMS) => {
+                                                                                                  "hash": Int2String(CODEHASH),
+                                                                                                  "programName": Phase2String(EPHASE),
+                                                                                                  "program": [#serializePrograms(KEY, PGMS)],
+                                                                                                  "coveredOpCodes": [#serializeCoverage(KEY, COVERAGE)]
+                                                                                                 }, #makeCoverageReport(KEYS, COVERAGE, PGMS)
 
-    syntax JSONs ::= #serializeCoverage ( List, Map ) [function]
- // ------------------------------------------------------------
-    rule #serializeCoverage (.List, _ ) => .JSONs
-    rule #serializeCoverage ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [IntList2JSONs(qsort(Set2List(X)))] }}, #serializeCoverage(KEYS, COVERAGE)
+    syntax JSONs ::= #serializeCoverage ( CoverageIdentifier, Map ) [function]
+ // --------------------------------------------------------------------------
+    rule #serializeCoverage (KEY, COVERAGE ) => .JSONs requires notBool KEY in_keys(COVERAGE)
+    rule #serializeCoverage (KEY, KEY |-> X:Set COVERAGE:Map ) => IntList2JSONs(qsort(Set2List(X)))
 
-    syntax JSONs ::= #serializePrograms ( List, Map ) [function]
- // ------------------------------------------------------------
-    rule #serializePrograms (.List, _ ) => .JSONs
-    rule #serializePrograms ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:List PGMS:Map ) => { Int2String(CODEHASH):{ Phase2String(EPHASE): [CoverageIDList2JSONs(X)] }}, #serializePrograms(KEYS, PGMS)
+    syntax JSONs ::= #serializePrograms ( CoverageIdentifier, Map ) [function]
+ // --------------------------------------------------------------------------
+    rule #serializePrograms (KEY, PGMS) => .JSONs requires notBool KEY in_keys(PGMS)
+    rule #serializePrograms (KEY, KEY |-> X:List PGMS:Map ) => CoverageIDList2JSONs(X)
 
     syntax String ::= Phase2String ( Phase ) [function]
  // ----------------------------------------------------
@@ -1485,33 +1499,12 @@ Collecting Coverage Data
  // -----------------------------------------
     rule qsort ( .List )           => .List
     rule qsort (ListItem(I:Int) L) => qsort(getIntElementsSmallerThan(I, L, .List)) ListItem(I) qsort(getIntElementsGreaterThan(I, L, .List))
-
-    syntax JSONs ::= #coveragePercentages ( List, Map, Map) [function]
- // ------------------------------------------------------------------
-    rule #coveragePercentages (.List, _, _) => .JSONs
-    rule #coveragePercentages ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), KEY |-> X:Set COVERAGE:Map, KEY |-> Y:List PGMS:Map) => { Int2String(CODEHASH):{ Phase2String(EPHASE): #computePercentage(size(X),size(Y)) }}, #coveragePercentages(KEYS,COVERAGE,PGMS)
-
-    syntax Int ::= #computePercentage ( Int, Int ) [function]
- // ---------------------------------------------------------
-    rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL
 ```
 
 Helper Funcs
 ------------
 
 ```k
-    syntax AccountData ::= #getAcctData( Account ) [function]
- // ---------------------------------------------------------
-    rule [[ #getAcctData( ACCT ) => AcctData(NONCE, BAL, STORAGE, CODE) ]]
-         <account>
-           <acctID>  ACCT    </acctID>
-           <nonce>   NONCE   </nonce>
-           <balance> BAL     </balance>
-           <storage> STORAGE </storage>
-           <code>    CODE    </code>
-           ...
-         </account>
-
     syntax String ::= #rlpEncodeBlock( BlockchainItem ) [function]
  // --------------------------------------------------------------
     rule #rlpEncodeBlock( { _ |
@@ -1550,124 +1543,84 @@ Helper Funcs
                               +String #rlpEncodeBytes( NONCE, 8 )
                             , 192
                             )
-
-    syntax String ::= #rlpEncodeReceipt( Int )       [function]
-                    | #rlpEncodeReceiptAux( String ) [function]
- // -----------------------------------------------------------
-    rule [[ #rlpEncodeReceipt( TXID ) => #rlpEncodeReceiptAux("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ]]
-         <message>
-           <msgID>      TXID </msgID>
-           <txNonce>    TN   </txNonce>
-           <txGasPrice> TP   </txGasPrice>
-           <txGasLimit> TG   </txGasLimit>
-           <to>         TT   </to>
-           <value>      TV   </value>
-           <sigV>       TW   </sigV>
-           <sigR>       TR   </sigR>
-           <sigS>       TS   </sigS>
-           <data>       TD   </data>
-         </message>
-
-    rule [[ #rlpEncodeReceiptAux( TXHASH ) =>
-            #rlpEncodeLength(         #rlpEncodeWord( STATUS )
-                              +String #rlpEncodeWord( CGAS )
-                              +String #rlpEncodeString( #asString( BLOOM ) )
-                              +String #rlpEncodeLogs( LOGS )
-                            , 192
-                            )
-         ]]
-         <txReceipt>
-           <txHash> TXHASH </txHash>
-           <txCumulativeGas> CGAS   </txCumulativeGas>
-           <logSet>          LOGS   </logSet>
-           <bloomFilter>     BLOOM  </bloomFilter>
-           <txStatus>        STATUS </txStatus>
-           ...
-         </txReceipt>
-
-    syntax String ::= #rlpEncodeLogs   ( List ) [function]
-                    | #rlpEncodeLogsAux( List ) [function]
- // ------------------------------------------------------
-    rule #rlpEncodeLogs( .List ) => "\xc0"
-    rule #rlpEncodeLogs( LOGS )  => #rlpEncodeLength( #rlpEncodeLogsAux( LOGS ), 192 )
-      requires LOGS =/=K .List
-
-    rule #rlpEncodeLogsAux( .List ) => ""
-    rule #rlpEncodeLogsAux( ListItem({ ACCT | TOPICS | DATA }) LOGS )
-      => #rlpEncodeLength(         #rlpEncodeBytes( ACCT, 20 )
-                           +String #rlpEncodeTopics( TOPICS )
-                           +String #rlpEncodeString( #asString( DATA ) )
-                         , 192 )
-         +String #rlpEncodeLogsAux( LOGS )
-
-    syntax String ::= #rlpEncodeTopics   ( List ) [function]
-                    | #rlpEncodeTopicsAux( List ) [function]
- // --------------------------------------------------------
-    rule #rlpEncodeTopics( .List )  => "\xc0"
-    rule #rlpEncodeTopics( TOPICS ) => #rlpEncodeLength( #rlpEncodeTopicsAux( TOPICS ), 192 )
-      requires TOPICS =/=K .List
-
-    rule #rlpEncodeTopicsAux( .List ) => ""
-    rule #rlpEncodeTopicsAux( ListItem( X:Int ) TOPICS ) => #rlpEncodeBytes( X, 32 ) +String #rlpEncodeTopicsAux( TOPICS )
 ```
 
 State Root
 ----------
 
 ```k
-    syntax MerkleTree ::= "#stateRoot" [function]
- // ---------------------------------------------
-    rule #stateRoot => MerkleUpdateMap( .MerkleTree, #precompiledContracts #activeAccounts )
+    syntax MerkleTree ::= #stateRoot   ( NetworkCell )                   [function]
+                        | #stateRootAux( MerkleTree, Set, AccountsCell ) [function]
+ // -------------------------------------------------------------------------------
+    rule #stateRoot( <network>
+                       <activeAccounts> ACCTS </activeAccounts>
+                       <accounts> ACCTSCELL </accounts>
+                       ...
+                     </network>
+                   )
+      => #stateRootAux( MerkleUpdateMap( .MerkleTree, #precompiledContracts ), ACCTS, <accounts> ACCTSCELL </accounts> )
 
-    syntax Map ::= "#activeAccounts"   [function]
-                 | #accountsMap( Set ) [function]
- // ---------------------------------------------
-    rule [[ #activeAccounts => #accountsMap( ACCTS ) ]]
-         <activeAccounts> ACCTS </activeAccounts>
+    rule #stateRootAux( (TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), #rlpEncodeFullAccount(NONCE, BAL, STORAGE, CODE) ))
+                      , (SetItem(ACCT) => .Set) ACCTS
+                      , <accounts>
+                          <account>
+                            <acctID>  ACCT    </acctID>
+                            <nonce>   NONCE   </nonce>
+                            <balance> BAL     </balance>
+                            <storage> STORAGE </storage>
+                            <code>    CODE    </code>
+                            ...
+                          </account>
+                          ...
+                        </accounts>
+                      )
 
-    rule #accountsMap( .Set ) => .Map
-    rule #accountsMap( SetItem( ACCT:Int ) S ) => #parseByteStack( #unparseData( ACCT, 20 ) ) |-> #rlpEncodeFullAccount( #getAcctData( ACCT ) ) #accountsMap( S )
+    rule #stateRootAux( TREE, .Set, _ ) => TREE
 
     syntax KItem ::= "#firefly_getStateRoot"
  // ----------------------------------------
-    rule <k> #firefly_getStateRoot => #rpcResponseSuccess({ "stateRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) }) ... </k>
+    rule <k> #firefly_getStateRoot => #rpcResponseSuccess({ "stateRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #stateRoot( <network> NETWORK </network> ) ) ) }) ... </k>
+         <network> NETWORK </network>
 ```
 
 Transactions Root
 -----------------
 
 ```k
-    syntax MerkleTree ::= "#transactionsRoot" [function]
- // ----------------------------------------------------
-    rule #transactionsRoot => MerkleUpdateMap( .MerkleTree, #transactionsMap )
+    syntax MerkleTree ::= #transactionsRoot( NetworkCell )                            [function]
+                        | #transactionsRootAux( MerkleTree, Int, List, MessagesCell ) [function]
+ // --------------------------------------------------------------------------------------------
+    rule #transactionsRoot( <network> <txOrder> TXLIST </txOrder> <messages> MESSAGES </messages> ... </network> )
+      => #transactionsRootAux( .MerkleTree, 0, TXLIST, <messages> MESSAGES </messages> )
 
-    syntax Map ::= "#transactionsMap"               [function]
-                 | #transactionsMapAux( Int, List ) [function]
- // ----------------------------------------------------------
-    rule [[ #transactionsMap => #transactionsMapAux( 0, TXLIST ) ]]
-         <txOrder> TXLIST </txOrder>
+    rule #transactionsRootAux( ( TREE => MerkleUpdate( TREE, #rlpEncodeWord(I), #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) ) )
+                             , ( I => I +Int 1 )
+                             , ( ListItem( TXID ) => .List ) TXLIST
+                             , <messages>
+                                 <message>
+                                   <msgID> TXID </msgID>
+                                   <txNonce>    TN </txNonce>
+                                   <txGasPrice> TP </txGasPrice>
+                                   <txGasLimit> TG </txGasLimit>
+                                   <to>         TT </to>
+                                   <value>      TV </value>
+                                   <sigV>       TW </sigV>
+                                   <sigR>       TR </sigR>
+                                   <sigS>       TS </sigS>
+                                   <data>       TD </data>
+                                 </message>
+                                 ...
+                               </messages>
+                             )
 
-    rule #transactionsMapAux( _, .List )    => .Map [owise]
-    rule [[ #transactionsMapAux( I, ListItem(TXID:Int) REST )
-         => #parseByteStackRaw( #rlpEncodeWord( I ) )[0 .. 1] |-> #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) #transactionsMapAux( I +Int 1, REST )
-         ]]
-         <message>
-           <msgID> TXID </msgID>
-           <txNonce>    TN </txNonce>
-           <txGasPrice> TP </txGasPrice>
-           <txGasLimit> TG </txGasLimit>
-           <to>         TT </to>
-           <value>      TV </value>
-           <sigV>       TW </sigV>
-           <sigR>       TR </sigR>
-           <sigS>       TS </sigS>
-           <data>       TD </data>
-         </message>
+    rule #transactionsRootAux( TREE, _, .List, _ ) => TREE
 
     syntax KItem ::= "#firefly_getTxRoot"
  // -------------------------------------
-    rule <k> #firefly_getTxRoot => #rpcResponseSuccess({ "transactionsRoot" : #getTxRoot( #getBlockByNumber( LATEST, BLOCKLIST ) ) }) ... </k>
+    rule <k> #firefly_getTxRoot => #rpcResponseSuccess({ "transactionsRoot" : #getTxRoot( #getBlockByNumber(LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) }) ... </k>
          <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK </network>
+         <block>     BLOCK   </block>
 
     syntax String ::= #getTxRoot( BlockchainItem ) [function]
  // ---------------------------------------------------------
@@ -1678,24 +1631,37 @@ Receipts Root
 -------------
 
 ```k
-    syntax MerkleTree ::= "#receiptsRoot" [function]
- // ------------------------------------------------
-    rule #receiptsRoot => MerkleUpdateMap( .MerkleTree, #receiptsMap )
+    syntax MerkleTree ::= #receiptsRoot( List, TxReceiptsCell )                     [function]
+                        | #receiptsRootAux( MerkleTree, Int, List, TxReceiptsCell ) [function]
+ // ------------------------------------------------------------------------------------------
 
-    syntax Map ::= "#receiptsMap"         [function]
-                 | #receiptsMapAux( Int ) [function]
- // ------------------------------------------------
-    rule #receiptsMap => #receiptsMapAux( 0 )
+    rule #receiptsRoot( TXLIST, <txReceipts> TXRECEIPTS </txReceipts> )
+      => #receiptsRootAux( .MerkleTree, 0, TXLIST, <txReceipts> TXRECEIPTS </txReceipts> )
 
-    rule    #receiptsMapAux( _ ) => .Map [owise]
-    rule [[ #receiptsMapAux( I ) => #parseByteStackRaw( #rlpEncodeWord( I ) )[0 .. 1] |-> #rlpEncodeReceipt( { TXLIST[ I ] }:>Int ) #receiptsMapAux( I +Int 1 ) ]]
-         <txOrder> TXLIST </txOrder>
-      requires size(TXLIST) >Int I
+    rule #receiptsRootAux( ( TREE => MerkleUpdate( TREE, #rlpEncodeWord(I), #rlpEncodeReceipt(TS, TG, TB, TL) ) )
+                         , ( I => I +Int 1 )
+                         , ( ListItem(TXID) => .List ) _
+                         , <txReceipts>
+                             <txReceipt>
+                               <txID> TXID </txID>
+                               <txStatus>        TS </txStatus>
+                               <txCumulativeGas> TG </txCumulativeGas>
+                               <bloomFilter>     TB </bloomFilter>
+                               <logSet>          TL </logSet>
+                               ...
+                             </txReceipt>
+                             ...
+                           </txReceipts>
+                         )
+
+    rule #receiptsRootAux( TREE, _, .List, _ ) => TREE
 
     syntax KItem ::= "#firefly_getReceiptsRoot"
  // -------------------------------------------
-    rule <k> #firefly_getReceiptsRoot => #rpcResponseSuccess({ "receiptsRoot" : #getReceiptRoot( #getBlockByNumber( LATEST, BLOCKLIST ) ) }) ... </k>
+    rule <k> #firefly_getReceiptsRoot => #rpcResponseSuccess({ "receiptsRoot" : #getReceiptRoot( #getBlockByNumber(LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) }) ... </k>
          <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK   </network>
+         <block>     BLOCK     </block>
 
     syntax String ::= #getReceiptRoot( BlockchainItem ) [function]
  // --------------------------------------------------------------
@@ -1760,13 +1726,25 @@ Mining
 
     syntax KItem ::= "#mineBlock"
  // -----------------------------
-    rule <k> #mineBlock => #finalizeBlock ~> #getParentHash ~> #updateTrieRoots ~> #saveState ~> #startBlock ~> #cleanTxLists ~> #clearGas ... </k>
+    rule <k> #mineBlock
+          => #finalizeBlock
+          ~> #setParentHash #getBlockByNumber( LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>} )
+          ~> #updateTrieRoots
+          ~> #saveState
+          ~> #startBlock
+          ~> #cleanTxLists
+          ~> #clearGas
+          ...
+         </k>
+         <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK   </network>
+         <block>     BLOCK     </block>
 
     syntax KItem ::= "#saveState"
                    | "#incrementBlockNumber"
                    | "#cleanTxLists"
                    | "#clearGas"
-                   | "#getParentHash"
+                   | "#setParentHash" BlockchainItem
                    | "#updateTrieRoots"
                    | "#updateStateRoot"
                    | "#updateTransactionsRoot"
@@ -1784,17 +1762,23 @@ Mining
     rule <k> #clearGas => . ... </k>
          <gas> _ => 0 </gas>
 
-    rule <k> #getParentHash => . ... </k>
-         <blockList> BLOCKLIST </blockList>
-         <previousHash> _ => #parseHexWord( Keccak256( #rlpEncodeBlock( #getBlockByNumber( LATEST, BLOCKLIST ) ) ) ) </previousHash>
+    rule <k> #setParentHash BCI => . ... </k>
+         <previousHash> _ => #parseHexWord( Keccak256( #rlpEncodeBlock( BCI ) ) ) </previousHash>
 
     rule <k> #updateTrieRoots => #updateStateRoot ~> #updateTransactionsRoot ~> #updateReceiptsRoot ... </k>
+
     rule <k> #updateStateRoot => . ... </k>
-         <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot ) ) ) </stateRoot>
+         <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot( <network> NETWORK </network> ) ) ) ) </stateRoot>
+         <network> NETWORK </network>
+
     rule <k> #updateTransactionsRoot => . ... </k>
-         <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot ) ) ) </transactionsRoot>
+         <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot(<network> NETWORK </network>) ) ) ) </transactionsRoot>
+         <network> NETWORK </network>
+
     rule <k> #updateReceiptsRoot => . ... </k>
-         <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot ) ) ) </receiptsRoot>
+         <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot( TXLIST, <txReceipts> TXRECEIPTS </txReceipts> ) ) ) ) </receiptsRoot>
+         <txOrder> TXLIST </txOrder>
+         <txReceipts> TXRECEIPTS </txReceipts>
 ```
 
 Retrieving logs

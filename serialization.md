@@ -307,18 +307,58 @@ Encoding
                                   , 192
                                   )
 
+    syntax String ::= #rlpEncodeFullAccount( Int, Int, Map, ByteArray ) [function]
+ // ------------------------------------------------------------------------------
+    rule [rlpAcct]: #rlpEncodeFullAccount( NONCE, BAL, STORAGE, CODE )
+                 => #rlpEncodeLength(         #rlpEncodeWord(NONCE)
+                                      +String #rlpEncodeWord(BAL)
+                                      +String #rlpEncodeString( Hex2Raw( Keccak256( #rlpEncodeMerkleTree( #storageRoot( STORAGE ) ) ) ) )
+                                      +String #rlpEncodeString( Hex2Raw( Keccak256( #unparseByteStack( CODE ) ) ) )
+                                    , 192
+                                    )
+
+    syntax String ::= #rlpEncodeReceipt ( Int , Int , ByteArray , List ) [function]
+                    | #rlpEncodeLogs    ( List )                         [function]
+                    | #rlpEncodeLogsAux ( List, String )                 [function]
+                    | #rlpEncodeTopics  ( List, String )                 [function]
+ // -------------------------------------------------------------------------------
+    rule [rlpReceipt]: #rlpEncodeReceipt(RS, RG, RB, RL)
+                    => #rlpEncodeLength(         #rlpEncodeWord(RS)
+                                         +String #rlpEncodeWord(RG)
+                                         +String #rlpEncodeString(#unparseByteStack(RB))
+                                         +String #rlpEncodeLogs(RL)
+                                       , 192
+                                       )
+
+    rule #rlpEncodeLogs( LOGS ) => #rlpEncodeLogsAux( LOGS, "" )
+
+    rule #rlpEncodeLogsAux( .List, OUT ) => #rlpEncodeLength(OUT,192)
+    rule #rlpEncodeLogsAux( ( ListItem({ ACCT | TOPICS | DATA }) => .List ) _
+                          , ( OUT => OUT +String #rlpEncodeLength(         #rlpEncodeBytes(ACCT,20)
+                                                                   +String #rlpEncodeTopics(TOPICS,"")
+                                                                   +String #rlpEncodeString(#unparseByteStack(DATA))
+                                                                 , 192
+                                                                 )
+                            )
+                          )
+
+    rule #rlpEncodeTopics( .List, OUT ) => #rlpEncodeLength(OUT,192)
+    rule #rlpEncodeTopics( ( ListItem( X:Int ) => .List ) _
+                         , ( OUT => OUT +String #rlpEncodeBytes(X,32) )
+                         )
+
     syntax String ::= #rlpEncodeMerkleTree ( MerkleTree ) [function]
  // ----------------------------------------------------------------
     rule #rlpEncodeMerkleTree ( .MerkleTree ) => "\x80"
 
     rule #rlpEncodeMerkleTree ( MerkleLeaf ( PATH, VALUE ) )
-      => #rlpEncodeLength(         #rlpEncodeString( #asString( #HPEncode( PATH, 1 ) ) )
+      => #rlpEncodeLength(         #rlpEncodeString( #unparseByteStack( #HPEncode( PATH, 1 ) ) )
                            +String #rlpEncodeString( VALUE )
                          , 192
                          )
 
     rule #rlpEncodeMerkleTree ( MerkleExtension ( PATH, TREE ) )
-      => #rlpEncodeLength(         #rlpEncodeString( #asString( #HPEncode( PATH, 0 ) ) )
+      => #rlpEncodeLength(         #rlpEncodeString( #unparseByteStack( #HPEncode( PATH, 0 ) ) )
                            +String #rlpMerkleH( #rlpEncodeMerkleTree( TREE ) )
                          , 192
                          )
@@ -424,7 +464,7 @@ Merkle Patricia Tree
 
     rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, _ ), PATH, VALUE )
       => MerkleLeaf( LEAFPATH, VALUE )
-      requires #asString( LEAFPATH ) ==String #asString( PATH )
+      requires #unparseByteStack( LEAFPATH ) ==String #unparseByteStack( PATH )
 
     rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
       => MerkleUpdate ( MerkleUpdate ( .MerkleBranch, LEAFPATH, LEAFVALUE ), PATH, VALUE )
@@ -441,7 +481,7 @@ Merkle Patricia Tree
 
     rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => MerkleExtension ( EXTPATH, MerkleUpdate ( EXTTREE, .ByteArray, VALUE ) )
-      requires #asString( EXTPATH ) ==String #asString( PATH )
+      requires #unparseByteStack( EXTPATH ) ==String #unparseByteStack( PATH )
 
     rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, PATH, VALUE ), EXTPATH, EXTTREE )
@@ -620,19 +660,6 @@ Tree Root Helper Functions
                                                 +String #rlpEncodeString( Hex2Raw( Keccak256("") ) )
                                               , 192
                                               )
-
-    syntax AccountData ::= AcctData ( nonce: Int, balance: Int, store: Map, code: ByteArray )
- // -----------------------------------------------------------------------------------------
-
-    syntax String      ::= #rlpEncodeFullAccount( AccountData ) [function]
- // ----------------------------------------------------------------------
-    rule  #rlpEncodeFullAccount( AcctData( NONCE, BAL, STORAGE, CODE ) )
-         => #rlpEncodeLength(         #rlpEncodeWord(NONCE)
-                              +String #rlpEncodeWord(BAL)
-                              +String #rlpEncodeString( Hex2Raw( Keccak256( #rlpEncodeMerkleTree( #storageRoot( STORAGE ) ) ) ) )
-                              +String #rlpEncodeString( Hex2Raw( Keccak256( #asString( CODE ) ) ) )
-                            , 192
-                            )
 
 endmodule
 ```

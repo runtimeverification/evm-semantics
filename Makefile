@@ -37,8 +37,8 @@ LUA_PATH                := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean clean-submodules distclean install uninstall                                                                                         \
-        deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff proxygen                                                  \
+.PHONY: all clean clean-submodules distclean                                                                                                           \
+        deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                                           \
         build build-java build-node build-haskell build-llvm build-web3                                                                                \
         defn java-defn node-defn web3-defn haskell-defn llvm-defn                                                                                      \
         split-tests                                                                                                                                    \
@@ -47,7 +47,7 @@ export LUA_PATH
         test-web3 test-all-web3 test-failing-web3 test-truffle test-all-truffle test-failing-truffle                                                   \
         test-prove test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-klab-prove \
         test-parse test-failure                                                                                                                        \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search test-interactive-firefly            \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                                     \
         media media-pdf metropolis-theme
 .SECONDARY:
 
@@ -72,11 +72,9 @@ clean-submodules: distclean
 
 libsecp256k1_out := $(LIBRARY_PATH)/pkgconfig/libsecp256k1.pc
 libff_out        := $(LIBRARY_PATH)/libff.a
-proxygen_out     := $(DEPS_DIR)/proxygen/proxygen/_build/proxygen/lib/libproxygen.a
 
 libsecp256k1: $(libsecp256k1_out)
 libff:        $(libff_out)
-proxygen:     $(proxygen_out)
 
 $(DEPS_DIR)/secp256k1/autogen.sh:
 	git submodule update --init --recursive -- $(DEPS_DIR)/secp256k1
@@ -110,11 +108,6 @@ $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) $(LIBFF_CMAKE_FLAGS) \
 	    && make -s -j4 \
 	    && make install
-
-$(proxygen_out):
-	git submodule update --init --recursive -- deps/proxygen
-	cd deps/proxygen/proxygen        && ./build.sh --no-jemalloc --no-install-dependencies
-	cd deps/proxygen/proxygen/_build && make install
 
 # K Dependencies
 # --------------
@@ -269,7 +262,7 @@ $(web3_dir)/web3-kompiled/definition.kore: $(web3_files)
 	                 $(KOMPILE_OPTS)
 
 .PHONY: $(web3_kompiled)
-$(web3_kompiled): $(web3_dir)/web3-kompiled/definition.kore $(libff_out) $(proxygen_out)
+$(web3_kompiled): $(web3_dir)/web3-kompiled/definition.kore $(libff_out)
 	@mkdir -p $(web3_dir)/build
 	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
@@ -291,13 +284,6 @@ $(llvm_kompiled): $(llvm_files) $(libff_out)
 # ----------
 
 KEVM_RELEASE_TAG?=
-
-install: $(INSTALL_DIR)/$(notdir $(node_kompiled))
-$(INSTALL_DIR)/$(notdir $(node_kompiled)): $(node_kompiled)
-	cd $(DEFN_DIR)/vm && $(MAKE) install
-
-uninstall:
-	rm $(INSTALL_DIR)/$(notdir $(node_kompiled))
 
 release.md: INSTALL.md
 	echo "KEVM Release $(KEVM_RELEASE_TAG)"  > $@
@@ -502,10 +488,6 @@ test-interactive-search: $(search_tests:=.search)
 
 test-interactive-help:
 	$(TEST) help
-
-# Notice that `npm install` comes after `npx kevm-ganache-cli` to allow time for it to start up.
-test-interactive-firefly:
-	export PATH=$(PATH):$(CURDIR)/.build/defn/vm && ./tests/node-firefly
 
 # Media
 # -----
