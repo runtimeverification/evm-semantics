@@ -71,6 +71,8 @@ module COLLECTTOKEN-SPEC
       </evm>
 
       <network>
+        <chainID> _ </chainID>
+
         <activeAccounts> SetItem(ACCT_ID) _:Set </activeAccounts>
 
         <accounts>
@@ -181,6 +183,8 @@ ensures VALUE ==Int @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int BAL
       </evm>
 
       <network>
+        <chainID> _ </chainID>
+
         <activeAccounts> SetItem(ACCT_ID) _:Set </activeAccounts>
 
         <accounts>
@@ -281,6 +285,8 @@ andBool GASCAP >=Int ((293 *Int (YEARCOUNT -Int INDEX)) +Int 26)
       </evm>
 
       <network>
+        <chainID> _ </chainID>
+
         <activeAccounts> SetItem(ACCT_ID) _:Set </activeAccounts>
 
         <accounts>
