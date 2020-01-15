@@ -184,19 +184,7 @@ This repository can build two pieces of documentation for you, the [Jello Paper]
 
 ### System Dependencies
 
-If you also want to build the [Jello Paper], you'll additionally need:
-
--   [Sphinx Documentation Generation] tool, and
--   The [K Editor Support] Python `pygments` package.
-
-```sh
-sudo apt install python-pygments python-sphinx python-recommonmark
-git clone 'https://github.com/kframework/k-editor-support'
-cd k-editor-support/pygments
-easy_install --user .
-```
-
-For the [2017 Devcon3] presentation, you'll need `pdflatex`, commonly provided with `texlive-full`.
+For the presentations in the `media` directory, you'll need `pdflatex`, commonly provided with `texlive-full`.
 
 ```sh
 sudo apt install texlive-full
@@ -204,11 +192,11 @@ sudo apt install texlive-full
 
 ### Building
 
-The Makefile supplies targets for building:
+To build all the PDFs (presentations and reports) available in the `media/` directory, use:
 
--   All media in this list: `make media`
--   [Jello Paper] documentation: `make sphinx`
--   [2017 Devcon3] presentation: `make 2017-devcon3`
+```sh
+make media
+```
 
 Resources
 =========
