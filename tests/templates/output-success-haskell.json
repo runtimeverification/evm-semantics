@@ -144,6 +144,9 @@
       </block>
     </evm>
     <network>
+      <chainID>
+      1
+      </chainID>
       <activeAccounts>
         .Set
       </activeAccounts>

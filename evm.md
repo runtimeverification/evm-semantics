@@ -114,6 +114,10 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
           <network>
 
+            // Chain identifier
+            // ----------------
+            <chainID> $CHAINID:Int </chainID>
+
             // Accounts Record
             // ---------------
 
@@ -1004,12 +1008,13 @@ These operators make queries about the current execution state.
     rule <k> NUMBER     => NUMB ~> #push ... </k> <number> NUMB </number>
     rule <k> DIFFICULTY => DIFF ~> #push ... </k> <difficulty> DIFF </difficulty>
 
-    syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE" | "SELFBALANCE"
- // ------------------------------------------------------------------------------------
+    syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE" | "CHAINID" | "SELFBALANCE"
+ // ------------------------------------------------------------------------------------------------
     rule <k> ADDRESS     => ACCT ~> #push ... </k> <id> ACCT </id>
     rule <k> ORIGIN      => ORG  ~> #push ... </k> <origin> ORG </origin>
     rule <k> CALLER      => CL   ~> #push ... </k> <caller> CL </caller>
     rule <k> CALLVALUE   => CV   ~> #push ... </k> <callValue> CV </callValue>
+    rule <k> CHAINID     => CID  ~> #push ... </k> <chainID> CID </chainID>
     rule <k> SELFBALANCE => BAL  ~> #push ... </k>
          <id> ACCT </id>
          <account>
@@ -2045,6 +2050,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, PC)             => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, MSIZE)          => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, GAS)            => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, CHAINID)        => Gbase < SCHED > ... </k>
 
     // Wverylow
     rule <k> #gasExec(SCHED, ADD _ _)        => Gverylow < SCHED > ... </k>
@@ -2290,8 +2296,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
-                          | "Ghassstorestipend"
- // -------------------------------------------
+                          | "Ghassstorestipend"       | "Ghaschainid"
+ // -----------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -2386,6 +2392,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghascreate2             << DEFAULT >> => false
     rule Ghasextcodehash         << DEFAULT >> => false
     rule Ghasselfbalance         << DEFAULT >> => false
+    rule Ghaschainid             << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -2518,10 +2525,12 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasselfbalance   << ISTANBUL >> => true
     rule Ghasdirtysstore   << ISTANBUL >> => true
     rule Ghassstorestipend << ISTANBUL >> => true
+    rule Ghaschainid       << ISTANBUL >> => true
     rule SCHEDFLAG         << ISTANBUL >> => SCHEDFLAG << PETERSBURG >>
       requires notBool ( SCHEDFLAG ==K Ghasselfbalance
                   orBool SCHEDFLAG ==K Ghasdirtysstore
                   orBool SCHEDFLAG ==K Ghassstorestipend
+                  orBool SCHEDFLAG ==K Ghaschainid
                        )
 ```
 
@@ -2598,6 +2607,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  67,     _ ) => NUMBER
     rule #dasmOpCode(  68,     _ ) => DIFFICULTY
     rule #dasmOpCode(  69,     _ ) => GASLIMIT
+    rule #dasmOpCode(  70, SCHED ) => CHAINID     requires Ghaschainid     << SCHED >>
     rule #dasmOpCode(  71, SCHED ) => SELFBALANCE requires Ghasselfbalance << SCHED >>
     rule #dasmOpCode(  80,     _ ) => POP
     rule #dasmOpCode(  81,     _ ) => MLOAD

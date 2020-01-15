@@ -1,6 +1,3 @@
-tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBadOpcode/badOpcodes.json
-tests/ethereum-tests/BlockchainTests/GeneralStateTests/stChainId/chainIdGasCost.json
-tests/ethereum-tests/BlockchainTests/GeneralStateTests/stChainId/chainId.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/Create2Recursive.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000Byzantium.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000.json
