@@ -117,7 +117,7 @@ module CREATE-SPEC
                  <callValue> _ </callValue>
 
                  <wordStack> .WordStack => _ </wordStack>
-                 <localMem> .Map => _ </localMem>
+                 <localMem> .Memory => _ </localMem>
                  <pc> 0 => _ </pc>
                  // simplified gas cost
                  <gas> G => 0 </gas>
