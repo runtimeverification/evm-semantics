@@ -307,7 +307,7 @@ if [[ ! "$run_command" =~ web3* ]]; then
 fi
 
 cMODE="\`${MODE:-NORMAL}\`(.KList)"
-cSCHEDULE="\`${SCHEDULE:-BYZANTIUM}_EVM\`(.KList)"
+cSCHEDULE="\`${SCHEDULE:-ISTANBUL}_EVM\`(.KList)"
 cCHAINID="${CHAINID:-1}"
 
 case "$run_command-$backend" in
