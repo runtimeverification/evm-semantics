@@ -7,3 +7,5 @@
 /tests/web3/*.out.json
 /tests/web3/*/*.out.json
 /tests/truffle/*/build
+/tests/truffle/*/node_modules
+/tests/truffle/*/package-lock.json
