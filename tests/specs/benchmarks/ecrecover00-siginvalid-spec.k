@@ -11,7 +11,7 @@ module ECRECOVER00-SIGINVALID-SPEC
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
-    <schedule> BYZANTIUM </schedule>
+    <schedule> ISTANBUL </schedule>
     <ethereum>
       <evm>
         <output> _ => _ </output>
