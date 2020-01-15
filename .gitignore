@@ -9,3 +9,4 @@
 /tests/truffle/*/build
 /tests/truffle/*/node_modules
 /tests/truffle/*/package-lock.json
+/tests/openzeppelin-contracts
