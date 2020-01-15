@@ -77,6 +77,8 @@ pipeline {
             stage('Conformance (Truffle)') {
               steps {
                 sh '''
+                  make tests/openzeppelin-contracts/truffle-config.js
+                  make test-openzep
                   make test-truffle
                 '''
               }
