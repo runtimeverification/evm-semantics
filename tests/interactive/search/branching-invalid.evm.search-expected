@@ -89,7 +89,7 @@
         .WordStack
       </wordStack>
       <localMem>
-        .Map
+        b""
       </localMem>
       <pc>
         11
