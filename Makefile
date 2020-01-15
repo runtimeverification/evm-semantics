@@ -354,6 +354,9 @@ tests/%.run-web3: tests/%.in.json
 tests/%.run-truffle: tests/%
 	tests/truffle/runtest.sh $(dir $@)
 
+%.run-openzep:
+	tests/run-openzep.sh $*
+
 tests/%.parse: tests/%
 	$(TEST) kast $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
 	$(CHECK) $@-out $@-expected
