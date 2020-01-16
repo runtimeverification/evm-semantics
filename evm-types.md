@@ -375,12 +375,21 @@ A cons-list is used for the EVM wordstack.
     rule [#take.zero-pad]:  #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
     rule [#take.recursive]: #take(N, (W : WS))   => W : #take(N -Int 1, WS)         requires N >Int 0
 
-    syntax WordStack ::= #drop ( Int , WordStack ) [function, functional]
- // ---------------------------------------------------------------------
-    rule #drop(N, WS)         => WS                  requires notBool N >Int 0
-    rule #drop(N, .WordStack) => .WordStack
-    rule #drop(N, (W : WS))   => #drop(1, #drop(N -Int 1, (W : WS))) requires N >Int 1
-    rule #drop(1, (_ : WS))   => WS
+    syntax WordStack ::= #drop ( Int , WordStack ) [klabel(dropWordStack), function, functional]
+ // --------------------------------------------------------------------------------------------
+    rule #drop(N, WS:WordStack) => WS                                  requires notBool N >Int 0
+    rule #drop(N, .WordStack)   => .WordStack                          requires         N >Int 0
+    rule #drop(N, (W : WS))     => #drop(1, #drop(N -Int 1, (W : WS))) requires         N >Int 1
+    rule #drop(1, (_ : WS))     => WS
+```
+
+```{.k .bytes}
+    syntax Bytes ::= #drop ( Int , Bytes ) [klabel(dropBytes), function, functional]
+ // --------------------------------------------------------------------------------
+    rule #drop(N, BS:Bytes) => BS                                  requires notBool N >Int 0
+    rule #drop(N, .Bytes)   => .Bytes                              requires         N >Int 0
+    rule #drop(N, BS)       => .Bytes                              requires lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
+    rule #drop(N, BS)       => substrBytes(BS, N, lengthBytes(BS)) requires lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
 ```
 
 ### Element Access
