@@ -37,17 +37,19 @@ LUA_PATH                := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean clean-submodules distclean                                                                                                           \
-        deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                                           \
-        build build-java build-node build-haskell build-llvm build-web3                                                                                \
-        defn java-defn node-defn web3-defn haskell-defn llvm-defn                                                                                      \
-        split-tests                                                                                                                                    \
-        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance                       \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                                  \
-        test-web3 test-all-web3 test-failing-web3 test-truffle test-all-truffle test-failing-truffle                                                   \
-        test-prove test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-klab-prove \
-        test-parse test-failure                                                                                                                        \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                                     \
+.PHONY: all clean clean-submodules distclean                                                                                     \
+        deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
+        build build-java build-node build-haskell build-llvm build-web3                                                          \
+        defn java-defn node-defn web3-defn haskell-defn llvm-defn                                                                \
+        split-tests                                                                                                              \
+        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
+        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
+        test-web3 test-all-web3 test-failing-web3 test-truffle test-all-truffle test-failing-truffle                             \
+        test-prove test-failing-prove                                                                                            \
+        test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
+        test-klab-prove                                                                                                          \
+        test-parse test-failure                                                                                                  \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         media media-pdf metropolis-theme
 .SECONDARY:
 
@@ -301,7 +303,7 @@ TEST_OPTIONS :=
 CHECK        := git --no-pager diff --no-index --ignore-all-space -R
 
 KEVM_MODE     := NORMAL
-KEVM_SCHEDULE := PETERSBURG
+KEVM_SCHEDULE := ISTANBUL
 KEVM_CHAINID  := 1
 
 KEVM_WEB3_ARGS := --shutdownable
@@ -445,7 +447,7 @@ tests/truffle/openzeppelin-contracts/DOCUMENTATION.md:
 # Proof Tests
 
 prove_specs_dir        := tests/specs
-prove_failing_tests    := $(shell cat $(prove_specs_dir)/failing)
+prove_failing_tests    := $(shell cat tests/failing.prove)
 prove_benchmarks_tests := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/benchmarks/*-spec.k))
 prove_functional_tests := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/functional/*-spec.k))
 prove_opcodes_tests    := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/opcodes/*-spec.k))
@@ -460,6 +462,8 @@ test-prove-opcodes:    $(prove_opcodes_tests:=.prove)
 test-prove-erc20:      $(prove_erc20_tests:=.prove)
 test-prove-bihu:       $(prove_bihu_tests:=.prove)
 test-prove-examples:   $(prove_examples_tests:=.prove)
+
+test-failing-prove: $(prove_failing_tests:=.prove)
 
 test-klab-prove: $(smoke_tests_prove:=.klab-prove)
 
