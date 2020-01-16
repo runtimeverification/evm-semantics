@@ -1383,9 +1383,8 @@ Collecting Coverage Data
 - `<execPhase>` cell is used to differentiate between the generated code used for contract deployment and the bytecode of the contract.
 - `<opcodeCoverage>` cell is a map which stores the program counters which were hit during the execution of a program. The key, named `CoverageIdentifier`, contains the hash of the bytecode which is executed, and the phase of the execution.
 - `<opcodeLists>` cell is a map similar to `<opcodeCoverage>` which stores instead a list containing all the `OpcodeItem`s of the executed bytecode for each contract.
-- `OpcodeItem` is a tuple which contains the Program Counter and the Opcode name.
+- `OpcodeItem` is a tuple which contains the Program Counter, the Opcode name, and the opcode's argument.
 
-**TODO**: instead of having both `#serializeCoverage` and `#serializePrograms` we could keep only the first rule as `#serializeCoverageMap` if `<opcodeLists>` would store `Sets` instead of `Lists`.
 **TODO**: compute coverage percentages in `Float` instead of `Int`
 
 ```k
@@ -1421,7 +1420,7 @@ Collecting Coverage Data
       requires notBool {keccak(PGM) | EPHASE} in_keys(OL)
       [priority(25)]
 
-    syntax OpcodeItem ::= "{" Int "|" OpCode "}"
+    syntax OpcodeItem ::= "{" Int "|" OpCode "|" String "}"
 
     syntax List ::= #parseByteCode( ByteArray, Schedule ) [function]
  // ----------------------------------------------------------------
@@ -1431,7 +1430,7 @@ Collecting Coverage Data
  // ------------------------------------------------------------------------------------
     rule #parseByteCodeAux(PCOUNT, SIZE, _, _, OPLIST) => OPLIST
       requires PCOUNT >=Int SIZE
-    rule #parseByteCodeAux(PCOUNT, SIZE, PGM, SCHED, OPLIST) => #parseByteCodeAux(PCOUNT +Int #widthOp(#dasmOpCode(PGM [ PCOUNT ], SCHED)), SIZE, PGM, SCHED, OPLIST ListItem({ PCOUNT | #dasmOpCode(PGM [ PCOUNT ], SCHED) } ) )
+    rule #parseByteCodeAux(PCOUNT, SIZE, PGM, SCHED, OPLIST) => #parseByteCodeAux(PCOUNT +Int #widthOp(#dasmOpCode(PGM [ PCOUNT ], SCHED)), SIZE, PGM, SCHED, OPLIST ListItem({ PCOUNT | #dasmOpCode(PGM [ PCOUNT ], SCHED) | #unparseDataByteArray(substrBytes(PGM, PCOUNT +Int 1, PCOUNT +Int #widthOp(#dasmOpCode(PGM [ PCOUNT ], SCHED))))} ) )
       requires PCOUNT <Int SIZE
 
     rule <k> #execute ... </k>
@@ -1476,12 +1475,13 @@ Collecting Coverage Data
 
     syntax JSONs ::= #serializePrograms ( List, Map ) [function]
  // ------------------------------------------------------------
-    rule #serializePrograms (.List                                      , _       ) => .JSONs
-    rule #serializePrograms (ListItem({PCOUNT:Int | OPC:OpCode}) PROGRAM, COVERAGE) => {
-                                                                                        "programCounter": PCOUNT,
-                                                                                        "hitCount": {COVERAGE[PCOUNT] orDefault 0}:>Int,
-                                                                                        "opcode": #opcode2String(OPC)
-                                                                                       }, #serializePrograms(PROGRAM, COVERAGE)
+    rule #serializePrograms (.List                                                 , _       ) => .JSONs
+    rule #serializePrograms (ListItem({PCOUNT:Int | OPC:OpCode | V:String}) PROGRAM, COVERAGE) => {
+                                                                                                   "programCounter": PCOUNT,
+                                                                                                   "hitCount": {COVERAGE[PCOUNT] orDefault 0}:>Int,
+                                                                                                   "opcode": #opcode2String(OPC),
+                                                                                                   "argument": #if V =/=String "0x" #then V #else null #fi
+                                                                                                  }, #serializePrograms(PROGRAM, COVERAGE)
 
     syntax String ::= Phase2String ( Phase ) [function]
  // ---------------------------------------------------

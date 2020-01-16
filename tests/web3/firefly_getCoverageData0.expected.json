@@ -25,27 +25,39 @@
         "program": [
           {
             "programCounter": 0,
-            "hitCount": 1
+            "hitCount": 1,
+            "opcode": "PUSH(3)",
+            "argument": "0xffffff"
           },
           {
             "programCounter": 4,
-            "hitCount": 1
+            "hitCount": 1,
+            "opcode": "PUSH(1)",
+            "argument": "0x00"
           },
           {
             "programCounter": 6,
-            "hitCount": 1
+            "hitCount": 1,
+            "opcode": "MSTORE",
+            "argument": null
           },
           {
             "programCounter": 7,
-            "hitCount": 1
+            "hitCount": 1,
+            "opcode": "PUSH(1)",
+            "argument": "0x20"
           },
           {
             "programCounter": 9,
-            "hitCount": 1
+            "hitCount": 1,
+            "opcode": "PUSH(1)",
+            "argument": "0x00"
           },
           {
             "programCounter": 11,
-            "hitCount": 1
+            "hitCount": 1,
+            "opcode": "RETURN",
+            "argument": null
           }
         ],
         "coveredOpCodes": [
