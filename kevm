@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -meuo pipefail
 shopt -s extglob
 
 kevm_dir="${KEVM_DIR:-.}"
@@ -119,7 +119,6 @@ run_web3_ganache() {
 
     notif 'Launching web3 client'
     $0 web3 "${args[@]}" "$web3_port" "$@" &
-    web3_pid=$!
     while ! netcat -z 127.0.0.1 "$web3_port" ; do sleep 0.1; done
     notif 'Generating accounts'
     $0 web3-send "$web3_port" firefly_addAccount '{"key":"0xdc7e9a7c64933ab893160b79d099c254d274e1c40c6df6d5239e1a623e3d6de1", "balance":"0x56BC75E2D63100000"}'
@@ -133,7 +132,7 @@ run_web3_ganache() {
     $0 web3-send "$web3_port" firefly_addAccount '{"key":"0xea7fe1480e9ab71c261c5e1e727f36482f84dbdb07dbf8c8e9f767dcecf87568", "balance":"0x56BC75E2D63100000"}'
     $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x5f9addbbf41ae2e3d6cb7b07ffabf2c5ff6edc3a38c9dd64a9afd23df02ad7ee", "balance":"0x56BC75E2D63100000"}'
     $0 web3-send "$web3_port" firefly_genesisBlock
-    tail --pid "$web3_pid" -f /dev/null || true
+    fg %
 
 }
 
