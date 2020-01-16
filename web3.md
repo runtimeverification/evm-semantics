@@ -1799,13 +1799,10 @@ Retrieving logs
 
  - `LogData` contains:
     - a List of log elements like `{ ACCT | TOPICS:List | DATA }`
-    - Transaction Index (Int)
+    - Transaction Index (Int) inside the block in which it has been mined
     - Transaction Hash (String)
     - Block Number (Int)
     - Block Hash (String)
-
-[TODO]:
- - remove hardcoded BlockHash and retrieve the correct value
 
 ```k
     syntax LogData ::= "{" List "|" Int "|" String "|" Int "|" String "}"
