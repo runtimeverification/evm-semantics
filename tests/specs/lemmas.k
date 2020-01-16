@@ -57,21 +57,21 @@ module LEMMAS
 
     // for Vyper
     rule #padToWidth(N, #asByteStack(#asWord(WS))) => WS
-      requires #noOverflow(WS) andBool N ==Int #sizeWordStack(WS)
+      requires #noOverflow(WS) andBool N ==Int #sizeByteArray(WS)
 
     // for Solidity
-    rule #asWord(WS) /Int D => #asWord(#take(#sizeWordStack(WS) -Int log256Int(D), WS))
+    rule #asWord(WS) /Int D => #asWord(#take(#sizeByteArray(WS) -Int log256Int(D), WS))
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
-       andBool #sizeWordStack(WS) >=Int log256Int(D)
+       andBool #sizeByteArray(WS) >=Int log256Int(D)
        andBool #noOverflow(WS)
 
-    syntax Bool ::= #noOverflow    ( WordStack ) [function]
-                  | #noOverflowAux ( WordStack ) [function]
+    syntax Bool ::= #noOverflow    ( ByteArray ) [function]
+                  | #noOverflowAux ( ByteArray ) [function]
  // -------------------------------------------------------
-    rule #noOverflow(WS) => #sizeWordStack(WS) <=Int 32 andBool #noOverflowAux(WS)
+    rule #noOverflow(WS) => #sizeByteArray(WS) <=Int 32 andBool #noOverflowAux(WS)
 
-    rule #noOverflowAux(W : WS)     => 0 <=Int W andBool W <Int 256 andBool #noOverflowAux(WS)
-    rule #noOverflowAux(.WordStack) => true
+    rule #noOverflowAux(BA        ) => 0 <=Int BA[0] andBool BA[0] <Int 256 andBool #noOverflowAux(#drop(1,BA)) requires #sizeByteArray(BA) >Int 0
+    rule #noOverflowAux(.ByteArray) => true
 
     // TODO: drop hash1 and keccakIntList once new vyper hashed location scheme is captured in edsl.md
 
@@ -94,7 +94,7 @@ module LEMMAS
     // for terms came from bytecode not via #hashedLocation
     rule keccak(WS) => keccakIntList(byteStack2IntList(WS))
       requires ( notBool #isConcrete(WS) )
-       andBool ( #sizeWordStack(WS) ==Int 32 orBool #sizeWordStack(WS) ==Int 64 )
+       andBool ( #sizeByteArray(WS) ==Int 32 orBool #sizeByteArray(WS) ==Int 64 )
 
     rule N +Int 0 => N
 
