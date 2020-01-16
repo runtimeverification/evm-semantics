@@ -9,7 +9,7 @@ module FORWARDTOHOTWALLET-FAILURE-2-SPEC
     <k> #execute => #halt </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
-    <schedule> BYZANTIUM </schedule>
+    <schedule> ISTANBUL </schedule>
 
     <ethereum>
       <evm>
