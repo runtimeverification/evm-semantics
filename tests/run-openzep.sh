@@ -7,6 +7,8 @@ test_file="$1" ; shift
 # launch test-runner
 PORT=8545
 
+while (netcat -z 127.0.0.1 "$PORT") ; do sleep 0.1; done
+
 ./kevm web3-ganache "$PORT" --shutdownable &
 kevm_client_pid="$!"
 
