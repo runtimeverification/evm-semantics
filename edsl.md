@@ -179,6 +179,12 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     // SIZE, DATA // left zero padding
     syntax ByteArray ::= #buf ( Int , Int ) [function, smtlib(buf)]
  // ---------------------------------------------------------------
+    rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA))
+      requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8))) [concrete]
+
+    syntax ByteArray ::= #bufSeg ( ByteArray , Int , Int ) [function, smtlib(bufSeg)] // BUFFER, START, WIDTH
+    syntax Int       ::= #bufElm ( ByteArray , Int )       [function]                 // BUFFER, INDEX
+ // --------------------------------------------------------------------------------------------------
 
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
