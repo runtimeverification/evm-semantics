@@ -23,12 +23,30 @@
         "programName": "RUNTIME",
         "coverage": 100,
         "program": [
-          0,
-          4,
-          6,
-          7,
-          9,
-          11
+          {
+            "programCounter": 0,
+            "hitCount": 1
+          },
+          {
+            "programCounter": 4,
+            "hitCount": 1
+          },
+          {
+            "programCounter": 6,
+            "hitCount": 1
+          },
+          {
+            "programCounter": 7,
+            "hitCount": 1
+          },
+          {
+            "programCounter": 9,
+            "hitCount": 1
+          },
+          {
+            "programCounter": 11,
+            "hitCount": 1
+          }
         ],
         "coveredOpCodes": [
           0,

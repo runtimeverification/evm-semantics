@@ -20,6 +20,7 @@ module WEB3
         <opcodeCoverage> .Map </opcodeCoverage>
         <opcodeLists> .Map </opcodeLists>
         <errorPC> 0 </errorPC>
+        <previousPC> 0 </previousPC>
         <blockchain>
           <blockList> .List </blockList>
         </blockchain>
@@ -1438,6 +1439,7 @@ Collecting Coverage Data
          <execPhase> EPHASE </execPhase>
          <program> PGM </program>
          <opcodeCoverage> ... { keccak(PGM) | EPHASE } |-> (PCS => PCS (PCOUNT |-> 1) ) ... </opcodeCoverage>
+         <previousPC> _ => PCOUNT </previousPC>
       requires notBool PCOUNT in_keys(PCS)
       [priority(25)]
 
@@ -1446,6 +1448,8 @@ Collecting Coverage Data
          <execPhase> EPHASE </execPhase>
          <program> PGM </program>
          <opcodeCoverage> ... { keccak(PGM) | EPHASE } |-> ((PCS (PCOUNT |-> HC)) => ((PCOUNT |-> (HC +Int 1)) PCS)) ... </opcodeCoverage>
+         <previousPC> PREV => PCOUNT </previousPC>
+      requires PCOUNT =/=Int PREV
       [priority(25)]
 
     syntax KItem ::= "#firefly_getCoverageData"
@@ -1460,20 +1464,23 @@ Collecting Coverage Data
     rule #makeCoverageReport ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), COVERAGE, PGMS) => {
                                                                                                   "hash": Int2String(CODEHASH),
                                                                                                   "programName": Phase2String(EPHASE),
-                                                                                                  "coverage": #computePercentage(size({COVERAGE[KEY]}:>Set), size({PGMS[KEY]}:>List)),
-                                                                                                  "program": [#serializePrograms(KEY, PGMS)],
+                                                                                                  "coverage": #computePercentage(size({COVERAGE[KEY]}:>Map), size({PGMS[KEY]}:>List)),
+                                                                                                  "program": [#serializePrograms({PGMS[KEY]}:>List, {COVERAGE[KEY]}:>Map)],
                                                                                                   "coveredOpCodes": [#serializeCoverage(KEY, COVERAGE)]
                                                                                                  }, #makeCoverageReport(KEYS, COVERAGE, PGMS)
 
     syntax JSONs ::= #serializeCoverage ( CoverageIdentifier, Map ) [function]
  // --------------------------------------------------------------------------
     rule #serializeCoverage (KEY, COVERAGE ) => .JSONs requires notBool KEY in_keys(COVERAGE)
-    rule #serializeCoverage (KEY, KEY |-> X:Map COVERAGE:Map ) => IntMap2JSONs(qsort(keys_list(X)), X)
+    rule #serializeCoverage (KEY, KEY |-> X:Map COVERAGE:Map ) => IntList2JSONs(qsort(keys_list(X)))
 
-    syntax JSONs ::= #serializePrograms ( CoverageIdentifier, Map ) [function]
- // --------------------------------------------------------------------------
-    rule #serializePrograms (KEY, PGMS) => .JSONs requires notBool KEY in_keys(PGMS)
-    rule #serializePrograms (KEY, KEY |-> X:List PGMS:Map ) => CoverageIDList2JSONs(X)
+    syntax JSONs ::= #serializePrograms ( List, Map ) [function]
+ // ------------------------------------------------------------
+    rule #serializePrograms (.List                                    , _       ) => .JSONs
+    rule #serializePrograms (ListItem({PCOUNT:Int | _:OpCode}) PROGRAM, COVERAGE) => {
+                                                                                 "programCounter": PCOUNT,
+                                                                                 "hitCount": {COVERAGE[PCOUNT]}:>Int
+                                                                                 }, #serializePrograms(PROGRAM, COVERAGE)
 
     syntax String ::= Phase2String ( Phase ) [function]
  // ---------------------------------------------------
@@ -1485,10 +1492,10 @@ Collecting Coverage Data
     rule CoverageIDList2JSONs (.List)                           => .JSONs
     rule CoverageIDList2JSONs (ListItem({I:Int | _:OpCode }) L) => I, CoverageIDList2JSONs(L)
 
-    syntax JSONs ::= IntMap2JSONs ( List, Map ) [function]
- // ------------------------------------------------------
-    rule IntMap2JSONs (.List            ,  _           ) => .JSONs
-    rule IntMap2JSONs (ListItem(K:Int) L, ((K |-> V) M)) => {Int2String(K) : V}, IntMap2JSONs(L, M)
+    syntax JSONs ::= IntList2JSONs ( List ) [function]
+ // --------------------------------------------------
+    rule IntList2JSONs (.List)             => .JSONs
+    rule IntList2JSONs (ListItem(I:Int) L) => I, IntList2JSONs(L)
 
     syntax List ::= getIntElementsSmallerThan ( Int, List, List ) [function]
  // ------------------------------------------------------------------------
