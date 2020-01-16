@@ -19,9 +19,9 @@
     "id": 3,
     "result": [
       {
-        "hash": "93758614234106549757282766802448384239213770766359592192750614820519184033004",
+        "hash": "55508846109561758998798256621821116748999280590017488967314784253617912767273",
         "programName": "RUNTIME",
-        "coverage": 100,
+        "coverage": 85,
         "program": [
           {
             "programCounter": 0,
@@ -46,6 +46,10 @@
           {
             "programCounter": 11,
             "hitCount": 1
+          },
+          {
+            "programCounter": 12,
+            "hitCount": 0
           }
         ],
         "coveredOpCodes": [
