@@ -1479,7 +1479,7 @@ Collecting Coverage Data
     rule #serializePrograms (.List                                    , _       ) => .JSONs
     rule #serializePrograms (ListItem({PCOUNT:Int | _:OpCode}) PROGRAM, COVERAGE) => {
                                                                                  "programCounter": PCOUNT,
-                                                                                 "hitCount": {COVERAGE[PCOUNT]}:>Int
+                                                                                 "hitCount": {COVERAGE[PCOUNT] orDefault 0}:>Int
                                                                                  }, #serializePrograms(PROGRAM, COVERAGE)
 
     syntax String ::= Phase2String ( Phase ) [function]
