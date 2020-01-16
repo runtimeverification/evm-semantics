@@ -1861,7 +1861,7 @@ Retrieving logs
     rule <k> #getLogs(START, END, RESULT) => #serializeEthGetLogs(RESULT, [.JSONs]) ... </k> requires START  >Int END
 
     rule <k> #serializeEthGetLogs(.List, RESULTS:JSONs) => #rpcResponseSuccess([#flatten(RESULTS)]) ... </k>
-    rule <k> #serializeEthGetLogs((ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List), RESULTS) => #serializeEthGetLogs(LIST, (RESULTS, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)])) ... </k>
+    rule <k> #serializeEthGetLogs((ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List), RESULTS) => #serializeEthGetLogs(LIST, [#flatten(RESULTS, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)])]) ... </k>
 
     syntax JSONs ::= #flatten ( JSONs ) [function]
  // ----------------------------------------------
