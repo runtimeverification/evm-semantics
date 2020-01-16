@@ -346,12 +346,12 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
 
     syntax Int ::= keccakIntList( IntList ) [function]
  // --------------------------------------------------
-    rule [keccakIntList]: keccakIntList(VS) => keccak(intList2ByteStack(VS))
+    rule [keccakIntList]: keccakIntList(VS) => keccak(intList2ByteArray(VS))
 
-    syntax ByteArray ::= intList2ByteStack( IntList ) [function]
+    syntax ByteArray ::= intList2ByteArray( IntList ) [function]
  // ------------------------------------------------------------
-    rule intList2ByteStack(.IntList) => .ByteArray
-    rule intList2ByteStack(V VS)     => #padToWidth(32, #asByteStack(V)) ++ intList2ByteStack(VS)
+    rule intList2ByteArray(.IntList) => .ByteArray
+    rule intList2ByteArray(V VS)     => #buf(32, V) ++ intList2ByteArray(VS)
       requires 0 <=Int V andBool V <Int pow256
 
     syntax IntList ::= byteStack2IntList ( ByteArray )       [function]
