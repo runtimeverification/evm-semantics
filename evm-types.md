@@ -386,17 +386,17 @@ A cons-list is used for the EVM wordstack.
 ```{.k .bytes}
     syntax Bytes ::= #take ( Int , Bytes ) [klabel(takeBytes), function, functional]
  // --------------------------------------------------------------------------------
-    rule #take(N, WS)     => .Bytes                                          requires notBool N >Int 0
-    rule #take(N, .Bytes) => #padRightToWidth(N, .Bytes)                     requires         N >Int 0
-    rule #take(N, BA)     => BA +Bytes #take(N -Int lengthBytes(BA), .Bytes) requires lengthBytes(BA) >Int 0 andBool notBool N >Int lengthBytes(BA)
-    rule #take(N, BA)     => BA [ 0 .. N ]                                   requires lengthBytes(BA) >Int 0 andBool         N >Int lengthBytes(BA)
+    rule #take(N, BS:Bytes) => .Bytes                                          requires                                        notBool N >Int 0
+    rule #take(N, BS:Bytes) => #padRightToWidth(N, .Bytes)                     requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
+    rule #take(N, BS:Bytes) => BS +Bytes #take(N -Int lengthBytes(BS), .Bytes) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
+    rule #take(N, BS:Bytes) => BS [ 0 .. N ]                                   requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
 
     syntax Bytes ::= #drop ( Int , Bytes ) [klabel(dropBytes), function, functional]
  // --------------------------------------------------------------------------------
-    rule #drop(N, BS:Bytes) => BS                                  requires notBool N >Int 0
-    rule #drop(N, .Bytes)   => .Bytes                              requires         N >Int 0
-    rule #drop(N, BS)       => .Bytes                              requires lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
-    rule #drop(N, BS)       => substrBytes(BS, N, lengthBytes(BS)) requires lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
+    rule #drop(N, BS:Bytes) => BS                                  requires                                        notBool N >Int 0
+    rule #drop(N, BS:Bytes) => .Bytes                              requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
+    rule #drop(N, BS:Bytes) => .Bytes                              requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
+    rule #drop(N, BS:Bytes) => substrBytes(BS, N, lengthBytes(BS)) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
 ```
 
 ### Element Access
