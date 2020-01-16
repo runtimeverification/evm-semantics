@@ -86,7 +86,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     syntax ByteArray ::= #encodeArgs    ( TypedArgs )                               [function]
     syntax ByteArray ::= #encodeArgsAux ( TypedArgs , Int , ByteArray , ByteArray ) [function]
  // ------------------------------------------------------------------------------------------
-    rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .WordStack, .WordStack)
+    rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .ByteArray, .ByteArray)
 
     rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS ++ TAILS
 
@@ -137,7 +137,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
  // ---------------------------------------------------------
-    rule #sizeOfDynamicType(#bytes( WS )) => 32 +Int #ceil32(#sizeWordStack(WS))
+    rule #sizeOfDynamicType(#bytes( WS )) => 32 +Int #ceil32(#sizeByteArray(WS))
 
     rule #sizeOfDynamicType(#array(T, N, _)) => 32 *Int (1 +Int N)
       requires #isStaticType(T)
@@ -159,7 +159,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #enc(#address( DATA )) => #buf(32, #getValue(#address( DATA )))
     rule #enc(#uint256( DATA )) => #buf(32, #getValue(#uint256( DATA )))
     rule #enc( #uint48( DATA )) => #buf(32, #getValue( #uint48( DATA )))
-    rule #enc( #uint16( DATA )) => #buf(32, #getValue( #uint16( DATA )))    
+    rule #enc( #uint16( DATA )) => #buf(32, #getValue( #uint16( DATA )))
     rule #enc(  #uint8( DATA )) => #buf(32, #getValue(  #uint8( DATA )))
     rule #enc( #int256( DATA )) => #buf(32, #getValue( #int256( DATA )))
     rule #enc( #int128( DATA )) => #buf(32, #getValue( #int128( DATA )))
@@ -167,11 +167,11 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #enc(   #bool( DATA )) => #buf(32, #getValue(   #bool( DATA )))
 
     // dynamic Type
-    rule #enc(        #bytes(WS)) => #encBytes(#sizeWordStack(WS), WS)
+    rule #enc(        #bytes(WS)) => #encBytes(#sizeByteArray(WS), WS)
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) ++ #encodeArgs(DATA)
     rule #enc(      #string(STR)) => #enc(#bytes(#parseByteStackRaw(STR)))
 
-    syntax ByteArray ::= #encBytes ( Int , WordStack ) [function]
+    syntax ByteArray ::= #encBytes ( Int , ByteArray ) [function]
  // -------------------------------------------------------------
     rule #encBytes(N, WS) => #enc(#uint256(N)) ++ WS ++ #buf(#ceil32(N) -Int N, 0)
 
@@ -324,7 +324,7 @@ and the element at index `i` is stored at:
   hash(slot(array)) + i
 ```
 
-More information about how storage locations are defined in Solidity can be found [here](https://solidity.readthedocs.io/en/v0.5.11/miscellaneous.html#layout-of-state-variables-in-storage). 
+More information about how storage locations are defined in Solidity can be found [here](https://solidity.readthedocs.io/en/v0.5.11/miscellaneous.html#layout-of-state-variables-in-storage).
 
 Specifically, `#hashedLocation` is defined as follows, capturing the storage layout schemes of Solidity and Vyper.
 
@@ -344,16 +344,14 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
 
     syntax ByteArray ::= intList2ByteStack( IntList ) [function]
  // ------------------------------------------------------------
-    rule intList2ByteStack(.IntList) => .WordStack
+    rule intList2ByteStack(.IntList) => .ByteArray
     rule intList2ByteStack(V VS)     => #padToWidth(32, #asByteStack(V)) ++ intList2ByteStack(VS)
       requires 0 <=Int V andBool V <Int pow256
 
-    syntax IntList ::= byteStack2IntList ( WordStack )       [function]
-                     | byteStack2IntList ( WordStack , Int ) [function]
-
-    syntax Int ::=     bytesInNextInt ( WordStack , Int )    [function] //how many bytes will go into next Int.
- // -----------------------------------------------------------------------------------------------------------
-    rule byteStack2IntList ( WS ) => byteStack2IntList ( WS , #sizeWordStack(WS) /Int 32 )
+    syntax IntList ::= byteStack2IntList ( ByteArray )       [function]
+                     | byteStack2IntList ( ByteArray , Int ) [function]
+ // -------------------------------------------------------------------
+    rule byteStack2IntList ( WS ) => byteStack2IntList ( WS , #sizeByteArray(WS) /Int 32 )
 
     // #sizeWordStack(WS) is not necessarily a multiple of 32.
     rule byteStack2IntList ( WS , N )
@@ -362,16 +360,21 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
 
     rule byteStack2IntList ( WS , 0 ) => .IntList
 
-    rule bytesInNextInt(WS, N) => #sizeWordStack(WS) -Int 32 *Int (N -Int 1)
+    syntax Int ::= bytesInNextInt ( ByteArray , Int ) [function]
+ // ------------------------------------------------------------
+    rule bytesInNextInt(WS, N) => #sizeByteArray(WS) -Int 32 *Int (N -Int 1)
 ```
 
-Solidity stores values of type `bytes` and `string` in one slot if they are short enough. If the data is at most 31 bytes long, it is stored in the higher-order bytes (left aligned) and the lowest-order byte stores `2 * length`.
+Solidity stores values of type `bytes` and `string` in one slot if they are short enough.
+If the data is at most 31 bytes long, it is stored in the higher-order bytes (left aligned) and the lowest-order byte stores `2 * length`.
 
 ```k
-    syntax Int ::= #packBytes ( WordStack )    [function]
- // ----------------------------------------------------
-    rule #packBytes( WS ) => #asInteger(#padRightToWidth(31, WS) ++ #asByteStack(2 *Int #sizeWordStack(WS)))
-    requires #sizeWordStack(WS) <=Int 31
+    syntax Int ::= #packBytes ( ByteArray ) [function]
+ // --------------------------------------------------
+    rule #packBytes( WS ) => #asInteger(#padRightToWidth(31, WS) ++ #asByteStack(2 *Int #sizeByteArray(WS)))
+      requires #sizeByteArray(WS) <=Int 31
+```
 
+```k
 endmodule
 ```
