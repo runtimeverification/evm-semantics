@@ -1857,8 +1857,8 @@ Retrieving logs
     rule <k> #getLogs(START => START +Int 1, END, RESULT) ... </k>                           [owise]
     rule <k> #getLogs(START, END, RESULT) => #serializeEthGetLogs(RESULT, [.JSONs]) ... </k> requires START  >Int END
 
-    rule <k> #serializeEthGetLogs(.List, RESULTS:JSONs) => #rpcResponseSuccess([#flattenJSONs(RESULTS)]) ... </k>
-    rule <k> #serializeEthGetLogs((ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List), RESULTS) => #serializeEthGetLogs(LIST, [#flattenJSONs(RESULTS, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)])]) ... </k>
+    rule <k> #serializeEthGetLogs(.List, RESULTS:JSONs) => #rpcResponseSuccess([flattenJSONs(RESULTS)]) ... </k>
+    rule <k> #serializeEthGetLogs((ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List), RESULTS) => #serializeEthGetLogs(LIST, [flattenJSONs(RESULTS, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)])]) ... </k>
 
     syntax Int ::= #getTxPositionInBlock( Int, BlockchainItem ) [function]
  // ----------------------------------------------------------------------
