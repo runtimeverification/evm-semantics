@@ -21,7 +21,6 @@ module WEB3
         <opcodeLists> .Map </opcodeLists>
         <errorPC> 0 </errorPC>
         <blockchain>
-          <chainID> $CHAINID:Int </chainID>
           <blockList> .List </blockList>
         </blockchain>
         <accountKeys> .Map </accountKeys>
@@ -335,8 +334,8 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#net_version"
  // -------------------------------
-    rule <k> #net_version => #rpcResponseSuccess(Int2String( CHAINID )) ... </k>
-         <chainID> CHAINID </chainID>
+    rule <k> #net_version => #rpcResponseSuccess(Int2String( CID )) ... </k>
+         <chainID> CID </chainID>
 
     syntax KItem ::= "#web3_clientVersion"
  // --------------------------------------
@@ -354,8 +353,8 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#eth_accounts"
  // --------------------------------
-    rule <k> #eth_accounts => #rpcResponseSuccess([ #acctsToJArray( qsort(Set2List(ACCTS)) ) ]) ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
+    rule <k> #eth_accounts => #rpcResponseSuccess([ #acctsToJArray( qsort(Set2List(keys(ACCTS))) ) ]) ... </k>
+         <accountKeys> ACCTS </accountKeys>
 
     syntax JSONs ::= #acctsToJArray ( List ) [function]
  // ---------------------------------------------------
@@ -1461,6 +1460,7 @@ Collecting Coverage Data
     rule #makeCoverageReport ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), COVERAGE, PGMS) => {
                                                                                                   "hash": Int2String(CODEHASH),
                                                                                                   "programName": Phase2String(EPHASE),
+                                                                                                  "coverage": #computePercentage(size({COVERAGE[KEY]}:>Set), size({PGMS[KEY]}:>List)),
                                                                                                   "program": [#serializePrograms(KEY, PGMS)],
                                                                                                   "coveredOpCodes": [#serializeCoverage(KEY, COVERAGE)]
                                                                                                  }, #makeCoverageReport(KEYS, COVERAGE, PGMS)
@@ -1506,6 +1506,10 @@ Collecting Coverage Data
  // -----------------------------------------
     rule qsort ( .List )           => .List
     rule qsort (ListItem(I:Int) L) => qsort(getIntElementsSmallerThan(I, L, .List)) ListItem(I) qsort(getIntElementsGreaterThan(I, L, .List))
+
+    syntax Int ::= #computePercentage ( Int, Int ) [function]
+ // ---------------------------------------------------------
+    rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL
 ```
 
 Helper Funcs

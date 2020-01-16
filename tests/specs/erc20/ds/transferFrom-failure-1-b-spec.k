@@ -71,6 +71,8 @@ module TRANSFERFROM-FAILURE-1-B-SPEC
       </evm>
 
       <network>
+        <chainID> _ </chainID>
+
         <activeAccounts> SetItem(ACCT_ID) _:Set </activeAccounts>
 
         <accounts>

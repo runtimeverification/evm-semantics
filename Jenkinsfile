@@ -51,7 +51,7 @@ pipeline {
         }
         stage('Test Execution') {
           failFast true
-          options { timeout(time: 20, unit: 'MINUTES') }
+          options { timeout(time: 30, unit: 'MINUTES') }
           parallel {
             stage('Conformance (LLVM)') {
               steps {
