@@ -551,7 +551,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax ByteArray = Bytes
     syntax ByteArray ::= ".ByteArray" [function, functional]
  // --------------------------------------------------------
-    rule .ByteArray => .Bytes
+    rule .ByteArray => .Bytes [macro]
 
     syntax Int ::= #asWord ( ByteArray ) [function, smtlib(asWord)]
  // ---------------------------------------------------------------
@@ -592,7 +592,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax ByteArray = WordStack
     syntax ByteArray ::= ".ByteArray" [function]
  // --------------------------------------------
-    rule .ByteArray => .WordStack
+    rule .ByteArray => .WordStack [macro]
 
     syntax Int ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
  // ---------------------------------------------------------------------------
