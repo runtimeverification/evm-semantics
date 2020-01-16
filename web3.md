@@ -353,8 +353,8 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#eth_accounts"
  // --------------------------------
-    rule <k> #eth_accounts => #rpcResponseSuccess([ #acctsToJArray( qsort(Set2List(ACCTS)) ) ]) ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
+    rule <k> #eth_accounts => #rpcResponseSuccess([ #acctsToJArray( qsort(Set2List(keys(ACCTS))) ) ]) ... </k>
+         <accountKeys> ACCTS </accountKeys>
 
     syntax JSONs ::= #acctsToJArray ( List ) [function]
  // ---------------------------------------------------
