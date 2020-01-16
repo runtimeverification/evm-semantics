@@ -1447,9 +1447,10 @@ Collecting Coverage Data
          <pc> PCOUNT </pc>
          <execPhase> EPHASE </execPhase>
          <program> PGM </program>
-         <opcodeCoverage> ... { keccak(PGM) | EPHASE } |-> ((PCS (PCOUNT |-> HC)) => ((PCOUNT |-> (HC +Int 1)) PCS)) ... </opcodeCoverage>
+         <opcodeCoverage> ... { keccak(PGM) | EPHASE } |-> (PCS => PCS[PCOUNT <- {PCS[PCOUNT]}:>Int +Int 1]) ... </opcodeCoverage>
          <previousPC> PREV => PCOUNT </previousPC>
       requires PCOUNT =/=Int PREV
+       andBool PCOUNT in_keys(PCS)
       [priority(25)]
 
     syntax KItem ::= "#firefly_getCoverageData"
