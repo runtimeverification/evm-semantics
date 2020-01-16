@@ -137,7 +137,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
  // ---------------------------------------------------------
-    rule #sizeOfDynamicType(#bytes( WS )) => 32 +Int #ceil32(#sizeByteArray(WS))
+    rule #sizeOfDynamicType(#bytes(BS)) => 32 +Int #ceil32(#sizeByteArray(BS))
 
     rule #sizeOfDynamicType(#array(T, N, _)) => 32 *Int (1 +Int N)
       requires #isStaticType(T)
@@ -167,13 +167,13 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #enc(   #bool( DATA )) => #buf(32, #getValue(   #bool( DATA )))
 
     // dynamic Type
-    rule #enc(        #bytes(WS)) => #encBytes(#sizeByteArray(WS), WS)
+    rule #enc(        #bytes(BS)) => #encBytes(#sizeByteArray(BS), BS)
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) ++ #encodeArgs(DATA)
     rule #enc(      #string(STR)) => #enc(#bytes(#parseByteStackRaw(STR)))
 
     syntax ByteArray ::= #encBytes ( Int , ByteArray ) [function]
  // -------------------------------------------------------------
-    rule #encBytes(N, WS) => #enc(#uint256(N)) ++ WS ++ #buf(#ceil32(N) -Int N, 0)
+    rule #encBytes(N, BS) => #enc(#uint256(N)) ++ BS ++ #buf(#ceil32(N) -Int N, 0)
 
     //Byte array buffer. Lemmas defined in evm-data-symbolic.k
     // SIZE, DATA // left zero padding
