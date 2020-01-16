@@ -369,8 +369,8 @@ A cons-list is used for the EVM wordstack.
 -   `#drop(N , WS)` removes the first $N$ elements of a `WordStack`.
 
 ```k
-    syntax WordStack ::= #take ( Int , WordStack ) [function, functional]
- // ---------------------------------------------------------------------
+    syntax WordStack ::= #take ( Int , WordStack ) [klabel(takeWordStack), function, functional]
+ // --------------------------------------------------------------------------------------------
     rule [#take.base]:      #take(N, WS)         => .WordStack                      requires notBool N >Int 0
     rule [#take.zero-pad]:  #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
     rule [#take.recursive]: #take(N, (W : WS))   => W : #take(N -Int 1, WS)         requires N >Int 0
@@ -384,6 +384,13 @@ A cons-list is used for the EVM wordstack.
 ```
 
 ```{.k .bytes}
+    syntax Bytes ::= #take ( Int , Bytes ) [klabel(takeBytes), function, functional]
+ // --------------------------------------------------------------------------------
+    rule #take(N, WS)     => .Bytes                                          requires notBool N >Int 0
+    rule #take(N, .Bytes) => #padRightToWidth(N, .Bytes)                     requires         N >Int 0
+    rule #take(N, BA)     => BA +Bytes #take(N -Int lengthBytes(BA), .Bytes) requires lengthBytes(BA) >Int 0 andBool notBool N >Int lengthBytes(BA)
+    rule #take(N, BA)     => BA [ 0 .. N ]                                   requires lengthBytes(BA) >Int 0 andBool         N >Int lengthBytes(BA)
+
     syntax Bytes ::= #drop ( Int , Bytes ) [klabel(dropBytes), function, functional]
  // --------------------------------------------------------------------------------
     rule #drop(N, BS:Bytes) => BS                                  requires notBool N >Int 0
