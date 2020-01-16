@@ -391,13 +391,13 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax Int ::= WordStack "[" Int "]" [function]
  // -----------------------------------------------
-    rule (W : _) [ N ] => W                  requires N ==Int 0
-    rule WS      [ N ] => #drop(N, WS) [ 0 ] requires N >Int 0
+    rule (W : _)      [ N ] => W                  requires N ==Int 0
+    rule WS:WordStack [ N ] => #drop(N, WS) [ 0 ] requires N  >Int 0
 
     syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function]
  // --------------------------------------------------------------
-    rule (W0 : WS)  [ N := W ] => W  : WS                             requires N ==Int 0
-    rule (W0 : WS)  [ N := W ] => W0 : (WS [ N -Int 1 := W ])         requires N >Int 0
+    rule (W0 : WS) [ N := W ] => W  : WS                     requires N ==Int 0
+    rule (W0 : WS) [ N := W ] => W0 : (WS [ N -Int 1 := W ]) requires N  >Int 0
 ```
 
 -   Definedness conditions for `WS [ N ]` and `WS [ N := W ]`
