@@ -95,10 +95,6 @@ module LEMMAS
     rule #padToWidth(N, #asByteStack(#asWord(WS))) => WS
       requires #noOverflow(WS) andBool N ==Int #sizeWordStack(WS)
 
-    // storing a symbolic boolean value in memory
-    rule #padToWidth(32, #asByteStack(bool2Word(E)))
-      => #asByteStackInWidthAux(0, 30, 32, nthbyteof(bool2Word(E), 31, 32) : .WordStack)
-
     // for Solidity
     rule #asWord(WS) /Int D => #asWord(#take(#sizeWordStack(WS) -Int log256Int(D), WS))
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
