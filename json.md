@@ -72,5 +72,11 @@ module JSON-RPC
 
     rule isProperJsonList(.JSONs) => true
     rule isProperJsonList(J, JS)  => isProperJson(J) andBool isProperJsonList(JS)
+
+    syntax JSONs ::= flattenJSONs ( JSONs ) [function]
+ // --------------------------------------------------
+    rule flattenJSONs(.JSONs      ) => .JSONs
+    rule flattenJSONs([.JSONs], JL) => flattenJSONs(JL)
+    rule flattenJSONs([J,JS]  , JL) => J, flattenJSONs([JS], JL)
 endmodule
 ```

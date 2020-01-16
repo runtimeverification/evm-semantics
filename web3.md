@@ -73,10 +73,11 @@ The `blockList` cell stores a list of previous blocks and network states.
 
     syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List , BlockchainItem ) [function]
  // --------------------------------------------------------------------------------------------------
-    rule #getBlockByNumber( BLOCKID          , .List                 , BLOCK ) => .BlockchainItem requires BLOCKID =/=K LATEST andBool BLOCKID =/=K PENDING
+    rule #getBlockByNumber( _:Int            , .List                 , _     ) => .BlockchainItem
     rule #getBlockByNumber( LATEST           , .List                 , BLOCK ) => BLOCK
     rule #getBlockByNumber( LATEST           ,   ListItem( BLOCK ) _ , _     ) => BLOCK
     rule #getBlockByNumber( PENDING          , _                     , BLOCK ) => BLOCK
+    rule #getBlockByNumber( EARLIEST         , .List                 , BLOCK ) => BLOCK
     rule #getBlockByNumber( EARLIEST         , _ ListItem( BLOCK )   , _     ) => BLOCK
 
     rule #getBlockByNumber(BLOCKNUM:Int ,  ListItem({ _ | <block> <number> BLOCKNUM </number> ... </block> } #as BLOCK)           REST, _ ) => BLOCK
@@ -99,6 +100,14 @@ The `blockList` cell stores a list of previous blocks and network states.
          <network>   NETWORK   </network>
          <block>     BLOCK     </block>
 
+    syntax Int ::= #getNumberFromBlockchainItem (BlockchainItem) [function]
+ // -----------------------------------------------------------------------
+    rule #getNumberFromBlockchainItem({ _ | <block> <number> BLOCKNUM </number> ... </block> }) => BLOCKNUM
+
+    syntax Int ::= #getNumberAtBlock ( BlockIdentifier , List , BlockchainItem ) [function]
+ // ---------------------------------------------------------------------------------------
+    rule #getNumberAtBlock (X:Int     , _        , _     ) => X
+    rule #getNumberAtBlock (BLOCKID   , BLOCKLIST, BLOCK ) => #getNumberFromBlockchainItem(#getBlockByNumber(BLOCKID, BLOCKLIST, BLOCK))
 ```
 
 WEB3 JSON RPC
@@ -1785,6 +1794,77 @@ Mining
          <txReceipts> TXRECEIPTS </txReceipts>
 ```
 
+Retrieving logs
+---------------
+
+ - `LogData` contains:
+    - a List of log elements like `{ ACCT | TOPICS:List | DATA }`
+    - Transaction Index (Int) inside the block in which it has been mined
+    - Transaction Hash (String)
+    - Block Number (Int)
+    - Block Hash (String)
+
+```k
+    syntax LogData ::= "{" List "|" Int "|" String "|" Int "|" String "}"
+ // ---------------------------------------------------------------------
+
+    syntax KItem ::= "#eth_getLogs"
+                   | #getLogs ( BlockIdentifier , BlockIdentifier , List )
+                   | #serializeEthGetLogs ( List , JSONs )
+ // ------------------------------------------------------
+    rule <k> #eth_getLogs ... </k>
+         <params> [ { PARAMS => "fromBlock": "latest", PARAMS } , .JSONs ] </params>
+      requires #getJSON("fromBlock", { PARAMS }) ==K undef
+
+    rule <k> #eth_getLogs ... </k>
+         <params> [ { PARAMS => "toBlock": "latest", PARAMS } , .JSONs ] </params>
+      requires #getJSON("toBlock", { PARAMS }) ==K undef
+
+    rule <k> #eth_getLogs => #getLogs(#parseBlockIdentifier(#getString("fromBlock", { PARAMS })), #parseBlockIdentifier(#getString("toBlock", { PARAMS })), .List) ... </k>
+         <params> [ { PARAMS } , .JSONs ] </params>
+      requires #getJSON("fromBlock", { PARAMS }) =/=K undef
+       andBool #getJSON("toBlock"  , { PARAMS }) =/=K undef
+
+    rule <k> #getLogs(BLOCKID => #getNumberAtBlock(BLOCKID, BLOCKLIST,{<network> NETWORK </network> | <block> BLOCK </block>}), _, _) ... </k>
+         <block>     BLOCK     </block>
+         <network>   NETWORK   </network>
+         <blockList> BLOCKLIST </blockList>
+      requires BLOCKID ==K LATEST
+        orBool BLOCKID ==K EARLIEST
+        orBool BLOCKID ==K PENDING
+
+    rule <k> #getLogs(_ , BLOCKID => #getNumberAtBlock(BLOCKID, BLOCKLIST,{<network> NETWORK </network> | <block> BLOCK </block>}), _) ... </k>
+         <block>     BLOCK     </block>
+         <network>   NETWORK   </network>
+         <blockList> BLOCKLIST </blockList>
+      requires BLOCKID ==K LATEST
+        orBool BLOCKID ==K EARLIEST
+        orBool BLOCKID ==K PENDING
+
+    rule <k> #getLogs(START => START +Int 1, END, RESULT => RESULT ListItem({LOGS|#getTxPositionInBlock(TXID,#getBlockByNumber(START,BLOCKLIST,{<network> NETWORK </network>|<block> BLOCK </block>}))|TXHASH|START|"0x0"}) ) ... </k>
+         <txReceipt>
+           <txBlockNumber> START  </txBlockNumber>
+           <txHash>        TXHASH </txHash>
+           <txID>          TXID   </txID>
+           <logSet>        LOGS   </logSet>
+           ...
+         </txReceipt>
+         <block>     BLOCK     </block>
+         <network>   NETWORK   </network>
+         <blockList> BLOCKLIST </blockList>
+      requires START <=Int END
+
+    rule <k> #getLogs(START => START +Int 1, END, RESULT) ... </k>                           [owise]
+    rule <k> #getLogs(START, END, RESULT) => #serializeEthGetLogs(RESULT, [.JSONs]) ... </k> requires START  >Int END
+
+    rule <k> #serializeEthGetLogs(.List, RESULTS:JSONs) => #rpcResponseSuccess([flattenJSONs(RESULTS)]) ... </k>
+    rule <k> #serializeEthGetLogs((ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List), RESULTS) => #serializeEthGetLogs(LIST, [flattenJSONs(RESULTS, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)])]) ... </k>
+
+    syntax Int ::= #getTxPositionInBlock( Int, BlockchainItem ) [function]
+ // ----------------------------------------------------------------------
+    rule #getTxPositionInBlock(TXID, {<network> <txOrder> TXLIST </txOrder> ...</network>|_}) => getIndexOf(TXID, TXLIST)
+```
+
 Blake2 Compression Function
 ---------------------------
 
@@ -1806,7 +1886,6 @@ Unimplemented Methods
                    | "#eth_getCompilers"
                    | "#eth_getFilterChanges"
                    | "#eth_getFilterLogs"
-                   | "#eth_getLogs"
                    | "#eth_getTransactionByHash"
                    | "#eth_getTransactionByBlockHashAndIndex"
                    | "#eth_getTransactionByBlockNumberAndIndex"
@@ -1839,7 +1918,6 @@ Unimplemented Methods
     rule <k> #eth_getCompilers                        => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getFilterChanges                    => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getFilterLogs                       => #rpcResponseUnimplemented ... </k>
-    rule <k> #eth_getLogs                             => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getTransactionByHash                => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getTransactionByBlockHashAndIndex   => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getTransactionByBlockNumberAndIndex => #rpcResponseUnimplemented ... </k>
