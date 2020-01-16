@@ -1844,7 +1844,7 @@ Retrieving logs
         orBool BLOCKID ==K EARLIEST
         orBool BLOCKID ==K PENDING
 
-    rule <k> #getLogs(START => START +Int 1, END, RESULT => RESULT ListItem({LOGS|TXID|TXHASH|START|"0x0"}) ) ... </k>
+    rule <k> #getLogs(START => START +Int 1, END, RESULT => RESULT ListItem({LOGS|#getTxPositionInBlock(TXID,#getBlockByNumber(START,BLOCKLIST,{<network> NETWORK </network>|<block> BLOCK </block>}))|TXHASH|START|"0x0"}) ) ... </k>
          <txReceipt>
            <txBlockNumber> START  </txBlockNumber>
            <txHash>        TXHASH </txHash>
@@ -1852,7 +1852,9 @@ Retrieving logs
            <logSet>        LOGS   </logSet>
            ...
          </txReceipt>
-         <txOrder> TXLIST </txOrder>
+         <block>     BLOCK     </block>
+         <network>   NETWORK   </network>
+         <blockList> BLOCKLIST </blockList>
       requires START <=Int END
 
     rule <k> #getLogs(START => START +Int 1, END, RESULT) ... </k>                           [owise]
@@ -1866,6 +1868,10 @@ Retrieving logs
     rule #flatten(.JSONs      ) => .JSONs
     rule #flatten([.JSONs], JL) => #flatten(JL)
     rule #flatten([J,JS]  , JL) => J, #flatten([JS], JL)
+
+    syntax Int ::= #getTxPositionInBlock( Int, BlockchainItem ) [function]
+ // ----------------------------------------------------------------------
+    rule #getTxPositionInBlock(TXID, {<network> <txOrder> TXLIST </txOrder> ...</network>|_}) => getIndexOf(TXID, TXLIST)
 ```
 
 Blake2 Compression Function
