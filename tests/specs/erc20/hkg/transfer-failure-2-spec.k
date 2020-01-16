@@ -13,7 +13,7 @@ module TRANSFER-FAILURE-2-SPEC
 
     <ethereum>
       <evm>
-        <output> _ => #asByteStackInWidth(0, 32) </output>
+        <output> _ => #buf(32, 0) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>

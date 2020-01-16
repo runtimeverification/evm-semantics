@@ -13,7 +13,7 @@ module TOTALSUPPLY-SPEC
 
     <ethereum>
       <evm>
-        <output> _ => #asByteStackInWidth(TOTAL, 32) </output>
+        <output> _ => #buf(32, TOTAL) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>

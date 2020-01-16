@@ -13,7 +13,7 @@ module COLLECTTOKEN-SPEC
 
     <ethereum>
       <evm>
-        <output> _ => #asByteStackInWidth(1, 32) </output>
+        <output> _ => #buf(32, 1) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <callStack> _ => _ </callStack>
         <interimStates> _ </interimStates>

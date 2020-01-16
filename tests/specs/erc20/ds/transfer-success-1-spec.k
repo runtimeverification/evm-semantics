@@ -13,7 +13,7 @@ module TRANSFER-SUCCESS-1-SPEC
 
     <ethereum>
       <evm>
-        <output> _ => #asByteStackInWidth(1, 32) </output>
+        <output> _ => #buf(32, 1) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
