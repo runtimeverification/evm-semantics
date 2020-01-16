@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -meuo pipefail
+set -euo pipefail
 shopt -s extglob
 
 kevm_dir="${KEVM_DIR:-.}"
@@ -132,7 +132,6 @@ run_web3_ganache() {
     $0 web3-send "$web3_port" firefly_addAccount '{"key":"0xea7fe1480e9ab71c261c5e1e727f36482f84dbdb07dbf8c8e9f767dcecf87568", "balance":"0x56BC75E2D63100000"}'
     $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x5f9addbbf41ae2e3d6cb7b07ffabf2c5ff6edc3a38c9dd64a9afd23df02ad7ee", "balance":"0x56BC75E2D63100000"}'
     $0 web3-send "$web3_port" firefly_genesisBlock
-    fg %
 
 }
 
