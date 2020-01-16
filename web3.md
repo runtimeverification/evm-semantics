@@ -1476,11 +1476,11 @@ Collecting Coverage Data
 
     syntax JSONs ::= #serializePrograms ( List, Map ) [function]
  // ------------------------------------------------------------
-    rule #serializePrograms (.List                                     , _       ) => .JSONs
-    rule #serializePrograms (ListItem({PCOUNT:Int | OP:OpCode}) PROGRAM, COVERAGE) => {
-                                                                                       "programCounter": PCOUNT,
-                                                                                       "hitCount": {COVERAGE[PCOUNT] orDefault 0}:>Int
-                                                                                      }, #serializePrograms(PROGRAM, COVERAGE)
+    rule #serializePrograms (.List                                    , _       ) => .JSONs
+    rule #serializePrograms (ListItem({PCOUNT:Int | _:OpCode}) PROGRAM, COVERAGE) => {
+                                                                                      "programCounter": PCOUNT,
+                                                                                      "hitCount": {COVERAGE[PCOUNT] orDefault 0}:>Int
+                                                                                     }, #serializePrograms(PROGRAM, COVERAGE)
 
     syntax String ::= Phase2String ( Phase ) [function]
  // ---------------------------------------------------
