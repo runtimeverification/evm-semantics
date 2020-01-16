@@ -189,34 +189,34 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
     rule #getValue(#uint160( DATA )) => DATA
-      requires minUInt160 <=Int DATA andBool DATA <=Int maxUInt160
+      requires #rangeUInt(160, DATA)
 
     rule #getValue(#address( DATA )) => DATA
-      requires minUInt160 <=Int DATA andBool DATA <=Int maxUInt160
+      requires #rangeAddress(DATA)
 
     rule #getValue(#uint256( DATA )) => DATA
-      requires minUInt256 <=Int DATA andBool DATA <=Int maxUInt256
+      requires #rangeUInt(256, DATA)
 
     rule #getValue(  #uint48( DATA )) => DATA
-      requires minUInt48 <=Int DATA andBool DATA <=Int maxUInt48
+      requires #rangeUInt(48, DATA)
 
     rule #getValue(  #uint16( DATA )) => DATA
-      requires minUInt16 <=Int DATA andBool DATA <=Int maxUInt16
+      requires #rangeUInt(16, DATA)
 
     rule #getValue(  #uint8( DATA )) => DATA
-      requires minUInt8 <=Int DATA andBool DATA <=Int maxUInt8
+      requires #rangeUInt(8, DATA)
 
     rule #getValue( #int256( DATA )) => #unsigned(DATA)
-      requires minSInt256 <=Int DATA andBool DATA <=Int maxSInt256
+      requires #rangeSInt(256, DATA)
 
     rule #getValue( #int128( DATA )) => #unsigned(DATA)
-      requires minSInt128 <=Int DATA andBool DATA <=Int maxSInt128
+      requires #rangeSInt(128, DATA)
 
     rule #getValue(#bytes32( DATA )) => DATA
-      requires minUInt256 <=Int DATA andBool DATA <=Int maxUInt256
+      requires #rangeUInt(256, DATA)
 
     rule #getValue(   #bool( DATA )) => DATA
-      requires 0 <=Int DATA andBool DATA <=Int 1
+      requires #range(0 <= DATA <= 1)
 
     syntax Int ::= #ceil32 ( Int ) [function, smtlib(ceil32), smt-prelude]
  // -----------------------------------------
