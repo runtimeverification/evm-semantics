@@ -21,17 +21,17 @@ Core specification language
 ```k
     syntax EthereumCommand ::= "#assert" Exp [strict]
                              | "#assertFailure" Exp
-    rule <k> #assert R:Bool => . ...</k>
+    rule <k> #assert R:Bool => . ... </k>
       requires R
 
-    rule <k> #assert R:Bool => #assertFailure R ...</k>
+    rule <k> #assert R:Bool => #assertFailure R ... </k>
       requires notBool R
 
     syntax EthereumCommand ::= "#assume" Exp [strict]
 
     //Adapted from driver.md `failure`
     syntax EthereumCommand ::= "#takeHalt" String
- // -------------------------------------------------------
+ // ---------------------------------------------
     rule <k>          #takeHalt _ => . ... </k>
     rule <k> #halt ~> #takeHalt _ => . ... </k>
 
@@ -42,13 +42,14 @@ Core specification language
           ~> #mkCall CALLER_ID ACCT_ID ACCT_ID PARSEDCODE 0 ARGS false
           ~> #takeHalt "failure"
           ~> #saveOutput V_SAVEOUT_ID
-        ...</k>
+         ...
+         </k>
         <acctID> ACCT_ID </acctID>
         <code> PARSEDCODE </code>
 
     //Dummy command at the beginning of <k> to ensure execution doesn't start with a spec rule 
     syntax EthereumCommand ::= "#dummy"
-    rule <k> #dummy => . ...</k>
+    rule <k> #dummy => . ... </k>
 ```
 
 Configuration access commands
@@ -56,33 +57,33 @@ Configuration access commands
 
 ```k
     syntax EthereumCommand ::= "#saveEthereum" Id
-    rule <k> #saveEthereum X => . ...</k>
+    rule <k> #saveEthereum X => . ... </k>
          <ethereum> ETH </ethereum>
          <commandVars> VARS => VARS[X <- ETH] </commandVars>
 
     syntax EthereumCommand ::= "#restoreEthereum" Id
-    rule <k> #restoreEthereum X => . ...</k>
+    rule <k> #restoreEthereum X => . ... </k>
          (<ethereum> _ </ethereum> => <ethereum> ETH </ethereum>)
          <commandVars>... X |-> ETH ...</commandVars>
 
     syntax EthereumCommand ::= "#saveOutput" Id
-    rule <k> #saveOutput X => . ...</k>
+    rule <k> #saveOutput X => . ... </k>
          <output> OUT </output>
          <commandVars> VARS => VARS[X <- OUT] </commandVars>
 
     syntax EthereumCommand ::= "#saveStorage" Int Id
-    rule <k> #saveStorage ACCT_ID X => . ...</k>
+    rule <k> #saveStorage ACCT_ID X => . ... </k>
          <acctID> ACCT_ID </acctID>
          <storage> S </storage>
          <commandVars> VARS => VARS[X <- S] </commandVars>
 
     syntax EthereumCommand ::= "#saveLog" Id
-    rule <k> #saveLog X => . ...</k>
+    rule <k> #saveLog X => . ... </k>
          <log> L </log>
          <commandVars> VARS => VARS[X <- L] </commandVars>
 
     syntax EthereumCommand ::= "#saveRefund" Id
-    rule <k> #saveRefund X => . ...</k>
+    rule <k> #saveRefund X => . ... </k>
          <refund> R </refund>
          <commandVars> VARS => VARS[X <- R] </commandVars>
 ```
@@ -106,8 +107,8 @@ Specification expression language
     syntax Exp ::= Exp "&&S" Exp [seqstrict, left]
                  > Exp "||S" Exp [seqstrict, left]
 
-    rule <k> R1:Bool &&S R2:Bool => R1 andBool R2 ...</k>
-    rule <k> R1:Bool ||S R2:Bool => R1 orBool R2  ...</k>
+    rule <k> R1:Bool &&S R2:Bool => R1 andBool R2 ... </k>
+    rule <k> R1:Bool ||S R2:Bool => R1 orBool R2  ... </k>
 
     // Configuration access and other helpers
     syntax Exp ::= "#getStatusCode"
@@ -118,26 +119,26 @@ Specification expression language
                  | #var( Id )
                  | #sizeWordStackExp ( Exp ) [strict]
 
-    rule <k> #getStatusCode => SC ...</k>
+    rule <k> #getStatusCode => SC ... </k>
          <statusCode> SC </statusCode>
 
-    rule <k> #getOutput => OUT ...</k>
+    rule <k> #getOutput => OUT ... </k>
          <output> OUT </output>
 
-    rule <k> #getLog => L ...</k>
+    rule <k> #getLog => L ... </k>
          <log> L </log>
 
-    rule <k> #getRefund => R ...</k>
+    rule <k> #getRefund => R ... </k>
          <refund> R </refund>
 
-    rule <k> #getStorage(ACCT_ID) => S ...</k>
+    rule <k> #getStorage(ACCT_ID) => S ... </k>
          <acctID> ACCT_ID </acctID>
          <storage> S </storage>
 
-    rule <k> #var(X) => VARS[X] ...</k>
+    rule <k> #var(X) => VARS[X] ... </k>
          <commandVars> VARS </commandVars>
 
-    rule <k> #sizeWordStackExp(WS:WordStack) => #sizeWordStack(WS) ...</k>
+    rule <k> #sizeWordStackExp(WS:WordStack) => #sizeWordStack(WS) ... </k>
 
 endmodule
 ```
