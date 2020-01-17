@@ -74,17 +74,52 @@ module LEMMAS
 
     rule nthbyteof(N, 0, 1) => N
 
+    rule #sizeWordStack(WS, N) <Int N => false
 
+    rule #take(N, BUF ++ .WordStack) => #take(N, BUF)
+    rule #take(N, #buf(M, BUF) ++ _) => #take(N, #buf(M, BUF)) requires N <=Int M
+    rule #take(N, #buf(N, BUF))      => #buf(N, BUF)
 
+    rule #drop(N, #drop(M, BUF))     => #drop(N +Int M, BUF)
+    rule #drop(N, BUF ++ .WordStack) => #drop(N, BUF)
+    rule #drop(N, #buf(M, _) ++ BUF) => #drop(N -Int M, BUF) requires N >=Int M
 
+    rule #asWord(#buf(N, BUF)) => BUF
 
+    rule #asWord(W0 : W1 : W2 : W3 : #take(28, BUF)) /Int 26959946667150639794667015087019630673637144422540572481103610249216 => #asWord(W0 : W1 : W2 : W3 : .WordStack)
 
+    rule M [ N := #buf(K, BUF) ] [ L <- V ] => M [ L <- V ] [ N := #buf(K, BUF) ] requires L >=Int N +Int K
+    rule M [ N := #buf(K, BUF) ] [ N := #buf(K, BUF') ] => M [ N := #buf(K, BUF') ]
 
+    rule #buf(W, BUF) [ L .. K ] => .ByteArray requires L  >Int W
+    rule #buf(W, BUF) [ L .. K ] => .ByteArray requires K <=Int 0
+    rule #buf(W, BUF) [ 0 .. W ] => #buf(W, BUF)
 
+    rule #range(M, N, K) => .ByteArray requires notBool K >Int 0
 
+    rule #range(M [ N := #padToWidth(W, BUF) ], L, K) => #range(M, L, K)
+      requires L +Int K <=Int N
+        orBool N +Int W  <Int L
 
+    rule #range(M [ N := #padToWidth(W, BUF) ], N, W) => BUF
 
+    rule #range(M [ N := #buf(W, BUF) ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := #buf(W, BUF) ], N, K -Int minInt(K, N -Int L))
+      requires K >Int 0
+       andBool L <Int N
 
+    rule #range(M [ N := #buf(W, BUF) ], L, K) => #buf(W, BUF) [ L -Int N .. minInt(K, W -Int (L -Int N)) ] ++ #range(M, N +Int W, K -Int minInt(K, W -Int (L -Int N)))
+      requires K  >Int 0
+       andBool L >=Int N
+       andBool L  <Int N +Int W
+
+    rule #range(M [ N := #buf(W, BUF) ], L, K) => #range(M, L, K)
+      requires K  >Int 0
+       andBool L >=Int N +Int W
+
+    rule WS ++ .WordStack => WS
+
+    rule keccak(#buf(32, BUF) ++ (W : WS)) => hash2(BUF, #asWord(W : WS)) requires #sizeWordStack(W : WS) ==Int 32
+    rule keccak(#buf(32, BUF) ++ #buf(32, BUF')) => hash2(BUF, BUF')
 
     syntax Bool ::= #isRegularWordStack ( WordStack ) [function]
  // -------------------------------------------------------

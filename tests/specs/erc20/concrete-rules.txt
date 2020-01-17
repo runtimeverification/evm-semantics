@@ -15,6 +15,7 @@ EVM-TYPES.#padRightToWidth
 EVM-TYPES.#padToWidth
 EVM-TYPES.powmod.nonzero
 EVM-TYPES.powmod.zero
+EVM-TYPES.#range
 EVM-TYPES.#signed.negative
 EVM-TYPES.#signed.positive
 EVM-TYPES.signextend.invalid
