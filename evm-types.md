@@ -605,7 +605,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax ByteArray ::= #asByteStack ( Int )             [function, functional]
                        | #asByteStack ( Int , ByteArray ) [function, klabel(#asByteStackAux), smtlib(asByteStack)]
  // --------------------------------------------------------------------------------------------------------------
-    rule [#asByteStack]:              #asByteStack( W ) => #asByteStack( W , .WordStack )
+    rule [#asByteStack]:              #asByteStack( W )      => #asByteStack( W , .WordStack )
     rule [#asByteStackAux.base]:      #asByteStack( 0 , WS ) => WS
     rule [#asByteStackAux.recursive]: #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W modInt 256 : WS ) requires W =/=K 0
 
