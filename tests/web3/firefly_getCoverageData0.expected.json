@@ -24,28 +24,48 @@
         "coverage": 75,
         "program": [
           {
-            "programCounter": 0
+            "programCounter": 0,
+            "arguments": [
+              []
+            ]
           },
           {
-            "programCounter": 4
+            "programCounter": 4,
+            "arguments": [
+              []
+            ]
           },
           {
-            "programCounter": 6
+            "programCounter": 6,
+            "arguments": [
+              []
+            ]
           },
           {
-            "programCounter": 7
+            "programCounter": 7,
+            "arguments": [
+              []
+            ]
           },
           {
-            "programCounter": 9
+            "programCounter": 9,
+            "arguments": [
+              []
+            ]
           },
           {
-            "programCounter": 11
+            "programCounter": 11,
+            "arguments": [
+              []
+            ]
           },
           {
-            "programCounter": 12
+            "programCounter": 12,
+            "arguments": []
           },
           {
-            "programCounter": 13
+            "programCounter": 13,
+            "arguments": []
           }
         ],
         "coveredOpCodes": [
