@@ -1377,7 +1377,11 @@ NOGAS Mode
 ```k
     syntax Mode ::= "NOGAS"
  // -----------------------
-    rule <k> #gas [ OP , AOP ] => . ... </k>
+    rule <k> #gas [ OP ] => . ... </k>
+         <mode> NOGAS </mode>
+     [priority(25)]
+
+    rule <k> #memory [ OP ] => . ... </k>
          <mode> NOGAS </mode>
      [priority(25)]
 
@@ -1427,7 +1431,7 @@ Collecting Coverage Data
          <opcodeLists>    OL => OL [PGMID <- #parseByteCode(PGM,SCHED)] </opcodeLists>
          <schedule>       SCHED                                         </schedule>
          <program>        PGM                                           </program>
-         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier  </programID>
+         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier   </programID>
       requires notBool PGMID in_keys(OL)
        andBool notBool PGMID in_keys(OC)
     rule <k> #initCoverage => . ... </k> [owise]
@@ -1445,7 +1449,7 @@ Collecting Coverage Data
     rule #parseByteCodeAux(PCOUNT, SIZE, PGM, SCHED, OPLIST) => #parseByteCodeAux(PCOUNT +Int #widthOp(#dasmOpCode(PGM [ PCOUNT ], SCHED)), SIZE, PGM, SCHED, OPLIST ListItem({ PCOUNT | #dasmOpCode(PGM [ PCOUNT ], SCHED) } ) )
       requires PCOUNT <Int SIZE
 
-    rule <k> #execute ... </k>
+    rule <k> #gas [ _ , _] ... </k>
          <pc>             PCOUNT                                            </pc>
          <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier       </programID>
          <opcodeCoverage> ... PGMID |-> (PCS (.Set => SetItem(PCOUNT))) ... </opcodeCoverage>
