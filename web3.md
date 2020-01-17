@@ -20,7 +20,7 @@ module WEB3
         <opcodeCoverage> .Map </opcodeCoverage>
         <opcodeLists> .Map </opcodeLists>
         <errorPC> 0 </errorPC>
-        <web3-init> .K </web3-init>
+        <programID> .K </programID>
         <blockchain>
           <blockList> .List </blockList>
         </blockchain>
@@ -1390,11 +1390,10 @@ Collecting Coverage Data
 ------------------------
 
 - `<execPhase>` cell is used to differentiate between the generated code used for contract deployment and the bytecode of the contract.
-- `<opcodeCoverage>` cell is a map which stores the program counters which were hit during the execution of a program. The key, named `CoverageIdentifier`, contains the hash of the bytecode which is executed, and the phase of the execution.
+- `<opcodeCoverage>` cell is a map which stores the program counters which were hit during the execution of a program. The key, named `ProgramIdentifier`, contains the hash of the bytecode which is executed, and the phase of the execution.
 - `<opcodeLists>` cell is a map similar to `<opcodeCoverage>` which stores instead a list containing all the `OpcodeItem`s of the executed bytecode for each contract.
 - `OpcodeItem` is a tuple which contains the Program Counter and the Opcode name.
 
-**TODO**: instead of having both `#serializeCoverage` and `#serializePrograms` we could keep only the first rule as `#serializeCoverageMap` if `<opcodeLists>` would store `Sets` instead of `Lists`.
 **TODO**: compute coverage percentages in `Float` instead of `Int`
 
 ```k
@@ -1402,7 +1401,7 @@ Collecting Coverage Data
                    | "CONSTRUCTOR"
                    | "RUNTIME"
 
-    syntax CoverageIdentifier ::= "{" Int "|" Phase "}"
+    syntax ProgramIdentifier ::= "{" Int "|" Phase "}"
 
     rule <k> #mkCall _ _ _ _ _ _ _ ... </k>
          <execPhase> ( EPHASE => RUNTIME ) </execPhase>
@@ -1414,26 +1413,24 @@ Collecting Coverage Data
       requires EPHASE =/=K CONSTRUCTOR
       [priority(25)]
 
-    rule <k> #initVM ~> (.K => #cleanInit)... </k>
-         <execPhase> EPHASE                       </execPhase>
-         <program>   PGM                          </program>
-         <web3-init> .K => {keccak(PGM) | EPHASE} </web3-init>
+    rule <k> #initVM ~> (.K => #initCoverage) ... </k>
+         <execPhase> EPHASE                         </execPhase>
+         <program>   PGM                            </program>
+         <programID> PREV => {keccak(PGM) | EPHASE} </programID>
+      requires PREV =/=K {keccak(PGM) | EPHASE}
       [priority(25)]
 
-    rule <k> #initVM ... </k>
-         <opcodeCoverage> OC => OC [PGMID <- .Set ]                      </opcodeCoverage>
-         <opcodeLists>    OL => OL [PGMID <- #parseByteCode(PGM,SCHED) ] </opcodeLists>
-         <schedule>       SCHED                                          </schedule>
-         <program>        PGM                                            </program>
-         <web3-init>      ({HASH|EPHASE} #as PGMID):CoverageIdentifier   </web3-init>
+    syntax KItem ::= "#initCoverage"
+ // -------------------------------
+    rule <k> #initCoverage => . ... </k>
+         <opcodeCoverage> OC => OC [PGMID <- .Set]                      </opcodeCoverage>
+         <opcodeLists>    OL => OL [PGMID <- #parseByteCode(PGM,SCHED)] </opcodeLists>
+         <schedule>       SCHED                                         </schedule>
+         <program>        PGM                                           </program>
+         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier  </programID>
       requires notBool PGMID in_keys(OL)
        andBool notBool PGMID in_keys(OC)
-      [priority(25)]
-
-    syntax KItem ::= "#cleanInit"
- // -----------------------------
-    rule <k> #cleanInit => .K ... </k>
-         <web3-init> _ => .K </web3-init>
+    rule <k> #initCoverage => . ... </k> [owise]
 
     syntax OpcodeItem ::= "{" Int "|" OpCode "}"
 
@@ -1449,10 +1446,9 @@ Collecting Coverage Data
       requires PCOUNT <Int SIZE
 
     rule <k> #execute ... </k>
-         <pc> PCOUNT </pc>
-         <execPhase> EPHASE </execPhase>
-         <program> PGM </program>
-         <opcodeCoverage> ... { keccak(PGM) | EPHASE } |-> (PCS (.Set => SetItem(PCOUNT))) ... </opcodeCoverage>
+         <pc>             PCOUNT                                            </pc>
+         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier       </programID>
+         <opcodeCoverage> ... PGMID |-> (PCS (.Set => SetItem(PCOUNT))) ... </opcodeCoverage>
       requires notBool PCOUNT in PCS
       [priority(25)]
 
@@ -1473,7 +1469,7 @@ Collecting Coverage Data
                                                                                                   "coveredOpCodes": [#serializeCoverage(KEY, COVERAGE)]
                                                                                                  }, #makeCoverageReport(KEYS, COVERAGE, PGMS)
 
-    syntax JSONs ::= #serializeCoverage ( CoverageIdentifier, Map ) [function]
+    syntax JSONs ::= #serializeCoverage ( ProgramIdentifier, Map ) [function]
  // --------------------------------------------------------------------------
     rule #serializeCoverage (KEY, COVERAGE ) => .JSONs requires notBool KEY in_keys(COVERAGE)
     rule #serializeCoverage (KEY, KEY |-> X:Set COVERAGE:Map ) => IntList2JSONs(qsort(Set2List(X)))
@@ -1482,8 +1478,8 @@ Collecting Coverage Data
  // ------------------------------------------------------------
     rule #serializePrograms (.List                                    ) => .JSONs
     rule #serializePrograms (ListItem({PCOUNT:Int | _:OpCode}) PROGRAM) => {
-                                                                                      "programCounter": PCOUNT
-                                                                                     }, #serializePrograms(PROGRAM)
+                                                                            "programCounter": PCOUNT
+                                                                           }, #serializePrograms(PROGRAM)
 
     syntax String ::= Phase2String ( Phase ) [function]
  // ---------------------------------------------------
