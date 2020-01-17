@@ -1,7 +1,3 @@
-
-
-
-
 requires "evm.k"
 requires "edsl.k"
 
@@ -100,15 +96,6 @@ module LEMMAS
       requires ( notBool #isConcrete(WS) )
        andBool ( #sizeWordStack(WS) ==Int 32 orBool #sizeWordStack(WS) ==Int 64 )
 
-
-
-
-
-
-
-
-
-
     rule N +Int 0 => N
 
     rule N -Int 0 => N
@@ -127,12 +114,6 @@ module LEMMAS
     rule 0 &Int N => 0
     rule N &Int 0 => 0
     rule N &Int N => N
-
-
-
-
-
-
 
     //orienting symbolic term to be first, converting -Int to +Int for concrete values.
     rule I +Int B => B          +Int I when #isConcrete(I) andBool notBool #isConcrete(B)
@@ -159,8 +140,6 @@ module LEMMAS
     rule N &Int MASK => N  requires MASK ==Int (2 ^Int (log2Int(MASK) +Int 1)) -Int 1 // MASK = 0xffff...f
                             andBool 0 <=Int N andBool N <=Int MASK
 
-
-
     // for gas calculation
     rule A -Int (#if C #then B1 #else B2 #fi) => #if C #then (A -Int B1) #else (A -Int B2) #fi
 
@@ -169,25 +148,11 @@ module LEMMAS
 
     rule (#if C #then B1 #else B2 #fi) +Int A => #if C #then (B1 +Int A) #else (B2 +Int A) #fi
 
-
-
-
-
-
-
-
     rule X >Int Y => Y <Int X
     rule X >=Int Y => Y <=Int X
 
     rule notBool (X <Int Y) => Y <=Int X
     rule notBool (X <=Int Y) => Y <Int X
-
-
-
-
-
-
-
 
     rule bool2Word(A) |Int bool2Word(B) => bool2Word(A  orBool B)
     rule bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B)
@@ -226,62 +191,15 @@ module LEMMAS
     rule 0 <=Int keccakIntList(_)             => true
     rule         keccakIntList(_) <Int pow256 => true
 
-
-
-
-
-
-
-
-
-
-
-
     rule X <=Int maxUInt256 => X <Int pow256
     rule X <=Int maxUInt160 => X <Int pow160
     rule X <=Int 255        => X <Int 256
 
-
-
-
-
-
-
-
-
-
-    /*rule X <Int pow256 => true
-      requires X <Int 256
-
-    rule X <Int pow256 => true
-      requires X <Int pow160
-
-    rule 0 <=Int X => true
-      requires 0 <Int X*/
-
-
-
-
-
     rule chop(I) => I requires 0 <=Int I andBool I <Int pow256
-
-
-
-
-
-
 
     syntax Bool ::= #notKLabel ( K , String ) [function]
     rule #notKLabel(T, L) => #getKLabelString(T) =/=String L orBool #isVariable(T)
 
-
-
-
-
-
-
     rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
 
 endmodule
-
-
