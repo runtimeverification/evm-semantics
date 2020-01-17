@@ -80,10 +80,9 @@ module LEMMAS
     rule #sizeWordStack(BUF1 ++ BUF2, M) => M +Int #sizeWordStack(BUF1) +Int #sizeWordStack(BUF2)
     rule #sizeWordStack(#drop(N, BUF))   => maxInt(#sizeWordStack(BUF) -Int N, 0)
 
-    rule #take(N, BUF)          => BUF                                                  requires N ==Int #sizeWordStack(BUF)
-    rule #take(N, BUF)          => BUF ++ #take(N -Int #sizeWordStack(BUF), .WordStack) requires N  >Int #sizeWordStack(BUF)
-    rule #take(N, BUF1 ++ BUF2) => #take(N, BUF1)                                       requires N <=Int #sizeWordStack(BUF1)
-    rule #take(N, BUF1 ++ BUF2) => BUF1 ++ #take(N -Int #sizeWordStack(BUF1), BUF2)     requires N  >Int #sizeWordStack(BUF1)
+    rule #take(N, BUF)          => BUF                                              requires N ==Int #sizeWordStack(BUF)
+    rule #take(N, BUF1 ++ BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeWordStack(BUF1)
+    rule #take(N, BUF1 ++ BUF2) => BUF1 ++ #take(N -Int #sizeWordStack(BUF1), BUF2) requires N  >Int #sizeWordStack(BUF1)
 
     rule #drop(N, BUF)           => .WordStack                               requires #sizeWordStack(BUF) <=Int N
     rule #drop(N, #drop(M, BUF)) => #drop(N +Int M, BUF)
