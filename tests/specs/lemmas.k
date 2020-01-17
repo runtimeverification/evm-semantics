@@ -78,10 +78,12 @@ module LEMMAS
 
     rule #sizeWordStack(#buf(N, _)  , M) => M +Int N
     rule #sizeWordStack(BUF1 ++ BUF2, M) => M +Int #sizeWordStack(BUF1) +Int #sizeWordStack(BUF2)
+    rule #sizeWordStack(#drop(N, BUF))   => maxInt(#sizeWordStack(BUF) -Int 1, 0)
 
     rule #take(N, #buf(N, BUF)) => #buf(N, BUF)
     rule #take(N, BUF1 ++ BUF2) => #take(N, BUF1) requires N <=Int #sizeWordStack(BUF1)
 
+    rule #drop(N, BUF)           => .WordStack requires #sizeWordStack(BUF) <=Int N
     rule #drop(N, #drop(M, BUF)) => #drop(N +Int M, BUF)
     rule #drop(N, BUF1 ++ BUF2)  => #drop(N -Int #sizeWordStack(BUF1), BUF2) requires N >=Int #sizeWordStack(BUF1)
 
@@ -91,6 +93,9 @@ module LEMMAS
 
     rule M [ N := #buf(K, BUF) ] [ L <- V ] => M [ L <- V ] [ N := #buf(K, BUF) ] requires L >=Int N +Int K
     rule M [ N := #buf(K, BUF) ] [ N := #buf(K, BUF') ] => M [ N := #buf(K, BUF') ]
+
+    rule M [ N := BUF ] [ N <- V ] => M [ N <- V ] [ N +Int 1 := #drop(1, BUF) ]
+    rule M [ N := BUF ] => M requires #sizeWordStack(BUF) <=Int 0
 
     rule #buf(W, BUF) [ L .. K ] => .ByteArray requires L  >Int W
     rule #buf(W, BUF) [ L .. K ] => .ByteArray requires K <=Int 0
