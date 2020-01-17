@@ -9,7 +9,7 @@ module COLLECTTOKEN-SPEC
     <k> #execute => #halt </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
-    <schedule> BYZANTIUM </schedule>
+    <schedule> ISTANBUL </schedule>
 
     <ethereum>
       <evm>
@@ -30,7 +30,7 @@ module COLLECTTOKEN-SPEC
 
           <callValue> 0 </callValue>
           <wordStack> .WordStack => _ </wordStack>
-          <localMem> .Map => _ </localMem>
+          <localMem> .Memory => _ </localMem>
           <pc> 0 => _ </pc>
           <gas> GASCAP => _ </gas>
           <memoryUsed> 0 => _ </memoryUsed>
@@ -121,7 +121,7 @@ ensures VALUE ==Int @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int BAL
     <k> #execute => #execute </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
-    <schedule> BYZANTIUM </schedule>
+    <schedule> ISTANBUL </schedule>
 
     <ethereum>
       <evm>
@@ -224,7 +224,7 @@ andBool GASCAP >=Int ((293 *Int (YEARCOUNT -Int INDEX)) +Int 26)
     <k> #execute => #execute </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
-    <schedule> BYZANTIUM </schedule>
+    <schedule> ISTANBUL </schedule>
 
     <ethereum>
       <evm>

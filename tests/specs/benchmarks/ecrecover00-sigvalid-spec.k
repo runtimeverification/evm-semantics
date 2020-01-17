@@ -11,7 +11,7 @@ module ECRECOVER00-SIGVALID-SPEC
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
-    <schedule> BYZANTIUM </schedule>
+    <schedule> ISTANBUL </schedule>
     <ethereum>
       <evm>
         <output> _ => #encodeArgs(#address(RECOVERED)) </output>
@@ -27,7 +27,7 @@ module ECRECOVER00-SIGVALID-SPEC
           <callData> #abiCallData("execute", #bytes32(HASH), #uint8(SIGV), #bytes32(SIGR), #bytes32(SIGS)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
           <wordStack> .WordStack => _ </wordStack>
-          <localMem> .Map => _ </localMem>
+          <localMem> .Memory => _ </localMem>
           <pc> 0 => _ </pc>
           <gas> #gas(INITGAS, 0, 0) => _ </gas>
           <memoryUsed> 0 => _ </memoryUsed>

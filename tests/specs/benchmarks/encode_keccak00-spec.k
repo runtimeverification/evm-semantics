@@ -11,7 +11,7 @@ module ENCODE_KECCAK00-SPEC
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
-    <schedule> BYZANTIUM </schedule>
+    <schedule> ISTANBUL </schedule>
     <ethereum>
       <evm>
         <output> _ => #encodeArgs(#bytes32(keccak(#encodeArgs(#bytes32(A0), #bytes32(A1))))) </output>
@@ -27,7 +27,7 @@ module ENCODE_KECCAK00-SPEC
           <callData> #abiCallData("execute", #bytes32(A0), #bytes32(A1)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
           <wordStack> .WordStack => _ </wordStack>
-          <localMem> .Map => _ </localMem>
+          <localMem> .Memory => _ </localMem>
           <pc> 0 => _ </pc>
           <gas> #gas(INITGAS, 0, 0) => _ </gas>
           <memoryUsed> 0 => _ </memoryUsed>
