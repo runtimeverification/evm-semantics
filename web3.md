@@ -1490,14 +1490,8 @@ Collecting Coverage Data
                                                                                                   "hash": Int2String(CODEHASH),
                                                                                                   "programName": Phase2String(EPHASE),
                                                                                                   "coverage": #computePercentage(size({COVERAGE[KEY]}:>Map), size({PGMS[KEY]}:>List)),
-                                                                                                  "program": [#serializePrograms({PGMS[KEY]}:>List, {COVERAGE[KEY]}:>Map)],
-                                                                                                  "coveredOpCodes": [#serializeCoverage(KEY, COVERAGE)]
+                                                                                                  "program": [#serializePrograms({PGMS[KEY]}:>List, {COVERAGE[KEY]}:>Map)]
                                                                                                  }, #makeCoverageReport(KEYS, COVERAGE, PGMS)
-
-    syntax JSONs ::= #serializeCoverage ( ProgramIdentifier, Map ) [function]
- // -------------------------------------------------------------------------
-    rule #serializeCoverage (KEY, COVERAGE ) => .JSONs requires notBool KEY in_keys(COVERAGE)
-    rule #serializeCoverage (KEY, KEY |-> X:Map COVERAGE:Map ) => IntList2JSONs(qsort(keys_list(X)))
 
     syntax JSONs ::= #serializePrograms ( List, Map) [function]
  // -----------------------------------------------------------
@@ -1512,11 +1506,6 @@ Collecting Coverage Data
  // ---------------------------------------------------
     rule Phase2String (CONSTRUCTOR) => "CONSTRUCTOR"
     rule Phase2String (RUNTIME    ) => "RUNTIME"
-
-    syntax JSONs ::= IntList2JSONs ( List ) [function]
- // --------------------------------------------------
-    rule IntList2JSONs (.List            ) => .JSONs
-    rule IntList2JSONs (ListItem(I:Int) L) => I, IntList2JSONs(L)
 
     syntax JSONs ::= ArgList2JSONs ( List ) [function]
  // --------------------------------------------------
