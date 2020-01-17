@@ -465,7 +465,7 @@ Most of EVM data is held in local memory.
 
     syntax Memory ::= ".Memory" [function]
  // --------------------------------------
-    rule .Memory => .Bytes
+    rule .Memory => .Bytes [macro]
 
     syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
  // --------------------------------------------------------
@@ -492,7 +492,7 @@ Most of EVM data is held in local memory.
 
     syntax Memory ::= ".Memory" [function]
  // --------------------------------------
-    rule .Memory => .Map
+    rule .Memory => .Map [macro]
 
     syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
  // --------------------------------------------------------
@@ -516,7 +516,7 @@ Most of EVM data is held in local memory.
 
     syntax Memory ::= ".Memory" [function]
  // --------------------------------------
-    rule .Memory => .Map
+    rule .Memory => .Map [macro]
 
     syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
  // --------------------------------------------------------

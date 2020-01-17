@@ -30,7 +30,7 @@ module ECRECOVERLOOP00-SIG0-INVALID-SPEC
 #bytes32(SIGS0), #bytes32(SIGS1)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
           <wordStack> .WordStack => _ </wordStack>
-          <localMem> .Map => _ </localMem>
+          <localMem> .Memory => _ </localMem>
           <pc> 0 => _ </pc>
           <gas> #gas(INITGAS, 0, 0) => _ </gas>
           <memoryUsed> 0 => _ </memoryUsed>
