@@ -25,46 +25,54 @@
         "program": [
           {
             "programCounter": 0,
+            "opcode": "PUSH(3) 0xffffff",
             "arguments": [
               []
             ]
           },
           {
             "programCounter": 4,
+            "opcode": "PUSH(1) 0x00",
             "arguments": [
               []
             ]
           },
           {
             "programCounter": 6,
+            "opcode": "MSTORE",
             "arguments": [
               []
             ]
           },
           {
             "programCounter": 7,
+            "opcode": "PUSH(1) 0x20",
             "arguments": [
               []
             ]
           },
           {
             "programCounter": 9,
+            "opcode": "PUSH(1) 0x00",
             "arguments": [
               []
             ]
           },
           {
             "programCounter": 11,
+            "opcode": "RETURN",
             "arguments": [
               []
             ]
           },
           {
             "programCounter": 12,
+            "opcode": "RETURN",
             "arguments": []
           },
           {
             "programCounter": 13,
+            "opcode": "RETURN",
             "arguments": []
           }
         ],

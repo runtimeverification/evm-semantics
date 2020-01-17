@@ -1437,7 +1437,7 @@ Collecting Coverage Data
        andBool notBool PGMID in_keys(OC)
     rule <k> #initCoverage => . ... </k> [owise]
 
-    syntax OpcodeItem ::= "{" Int "|" OpCode "}"
+    syntax OpcodeItem ::= "{" Int "|" OpCode "|" String "}"
 
     syntax List ::= #parseByteCode( ByteArray, Schedule ) [function]
  // ----------------------------------------------------------------
@@ -1447,22 +1447,22 @@ Collecting Coverage Data
  // ------------------------------------------------------------------------------------
     rule #parseByteCodeAux(PCOUNT, SIZE, _, _, OPLIST) => OPLIST
       requires PCOUNT >=Int SIZE
-    rule #parseByteCodeAux(PCOUNT, SIZE, PGM, SCHED, OPLIST) => #parseByteCodeAux(PCOUNT +Int #widthOp(#dasmOpCode(PGM [ PCOUNT ], SCHED)), SIZE, PGM, SCHED, OPLIST ListItem({ PCOUNT | #dasmOpCode(PGM [ PCOUNT ], SCHED) } ) )
+    rule #parseByteCodeAux(PCOUNT, SIZE, PGM, SCHED, OPLIST) => #parseByteCodeAux(PCOUNT +Int #widthOp(#dasmOpCode(PGM [ PCOUNT ], SCHED)), SIZE, PGM, SCHED, OPLIST ListItem({PCOUNT | #dasmOpCode(PGM [ PCOUNT ], SCHED) | #unparseDataByteArray(substrBytes(PGM, PCOUNT +Int 1, PCOUNT +Int #widthOp(#dasmOpCode(PGM [ PCOUNT ], SCHED))))}))
       requires PCOUNT <Int SIZE
 
     rule <k> #gas [ _ , _] ... </k>
-         <pc>             PCOUNT                                            </pc>
-         <previousPC>     _ => PCOUNT                                    </previousPC>
-         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier       </programID>
-         <opcodeCoverage> ... PGMID |-> (PCS => PCS (PCOUNT |-> ListItem(.List))) ...   </opcodeCoverage>
+         <pc>             PCOUNT                                                      </pc>
+         <previousPC>     _ => PCOUNT                                                 </previousPC>
+         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                 </programID>
+         <opcodeCoverage> ... PGMID |-> (PCS => PCS (PCOUNT |-> ListItem(.List))) ... </opcodeCoverage>
       requires notBool PCOUNT in_keys(PCS)
       [priority(25)]
 
     rule <k> #gas [ _ , _] ... </k>
-         <pc>             PCOUNT                                            </pc>
-         <previousPC>     PREV => PCOUNT                                    </previousPC>
-         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier       </programID>
-         <opcodeCoverage> ... PGMID |-> (PCS => PCS[PCOUNT <-({PCS[PCOUNT]}:>List ListItem(.List))]) ...   </opcodeCoverage>
+         <pc>             PCOUNT                                                                          </pc>
+         <previousPC>     PREV => PCOUNT                                                                  </previousPC>
+         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                                     </programID>
+         <opcodeCoverage> ... PGMID |-> (PCS => PCS[PCOUNT <- ({PCS[PCOUNT]}:>List ListItem(.List))]) ... </opcodeCoverage>
       requires PREV =/=Int PCOUNT
        andBool PCOUNT in_keys(PCS)
       [priority(25)]
@@ -1485,17 +1485,18 @@ Collecting Coverage Data
                                                                                                  }, #makeCoverageReport(KEYS, COVERAGE, PGMS)
 
     syntax JSONs ::= #serializeCoverage ( ProgramIdentifier, Map ) [function]
- // --------------------------------------------------------------------------
+ // -------------------------------------------------------------------------
     rule #serializeCoverage (KEY, COVERAGE ) => .JSONs requires notBool KEY in_keys(COVERAGE)
     rule #serializeCoverage (KEY, KEY |-> X:Map COVERAGE:Map ) => IntList2JSONs(qsort(keys_list(X)))
 
     syntax JSONs ::= #serializePrograms ( List, Map) [function]
  // -----------------------------------------------------------
     rule #serializePrograms (.List                                    , _       ) => .JSONs
-    rule #serializePrograms (ListItem({PCOUNT:Int | _:OpCode}) PROGRAM, COVERAGE) => {
-                                                                                      "programCounter": PCOUNT,
-                                                                                      "arguments": [ArgList2JSONs({COVERAGE[PCOUNT] orDefault .List}:>List)]
-                                                                                     }, #serializePrograms(PROGRAM, COVERAGE)
+    rule #serializePrograms (ListItem({PCOUNT:Int | OP:OpCode | SA:String}) PROGRAM, COVERAGE) => {
+                                                                                                   "programCounter": PCOUNT,
+                                                                                                   "opcode": #opcodeName(OP, SA),
+                                                                                                   "arguments": [ArgList2JSONs({COVERAGE[PCOUNT] orDefault .List}:>List)]
+                                                                                                  }, #serializePrograms(PROGRAM, COVERAGE)
 
     syntax String ::= Phase2String ( Phase ) [function]
  // ---------------------------------------------------
@@ -1532,6 +1533,11 @@ Collecting Coverage Data
     syntax Int ::= #computePercentage ( Int, Int ) [function]
  // ---------------------------------------------------------
     rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL
+
+    syntax String ::= #opcodeName ( OpCode, String ) [function]
+ // -----------------------------------------------------------
+    rule #opcodeName (OP, "0x"     ) => #opcode2String(OP)
+    rule #opcodeName (OP, SA:String) => #opcode2String(OP) +String " " +String SA requires SA =/=String "0x"
 ```
 
 Helper Funcs
@@ -1962,6 +1968,91 @@ Unimplemented Methods
     rule <k> #personal_listAccounts                   => #rpcResponseUnimplemented ... </k>
     rule <k> #web3_sha3                               => #rpcResponseUnimplemented ... </k>
     rule <k> #shh_version                             => #rpcResponseUnimplemented ... </k>
+```
+
+Opcode to String
+----------------
+```k
+    syntax String ::= #opcode2String ( OpCode ) [function]
+ // ------------------------------------------------------
+    rule #opcode2String (STOP          ) => "STOP"
+    rule #opcode2String (ADD           ) => "ADD"
+    rule #opcode2String (MUL           ) => "MUL"
+    rule #opcode2String (SUB           ) => "SUB"
+    rule #opcode2String (DIV           ) => "DIV"
+    rule #opcode2String (SDIV          ) => "SDIV"
+    rule #opcode2String (MOD           ) => "MOD"
+    rule #opcode2String (SMOD          ) => "SMOD"
+    rule #opcode2String (ADDMOD        ) => "ADDMOD"
+    rule #opcode2String (MULMOD        ) => "MULMOD"
+    rule #opcode2String (EXP           ) => "EXP"
+    rule #opcode2String (SIGNEXTEND    ) => "SIGNEXTEND"
+    rule #opcode2String (LT            ) => "LT"
+    rule #opcode2String (GT            ) => "GT"
+    rule #opcode2String (SLT           ) => "SLT"
+    rule #opcode2String (SGT           ) => "SGT"
+    rule #opcode2String (EQ            ) => "EQ"
+    rule #opcode2String (ISZERO        ) => "ISZERO"
+    rule #opcode2String (AND           ) => "AND"
+    rule #opcode2String (EVMOR         ) => "EVMOR"
+    rule #opcode2String (XOR           ) => "XOR"
+    rule #opcode2String (NOT           ) => "NOT"
+    rule #opcode2String (BYTE          ) => "BYTE"
+    rule #opcode2String (SHL           ) => "SHL"
+    rule #opcode2String (SHR           ) => "SHR"
+    rule #opcode2String (SAR           ) => "SAR"
+    rule #opcode2String (SHA3          ) => "SHA3"
+    rule #opcode2String (ADDRESS       ) => "ADDRESS"
+    rule #opcode2String (BALANCE       ) => "BALANCE"
+    rule #opcode2String (ORIGIN        ) => "ORIGIN"
+    rule #opcode2String (CALLER        ) => "CALLER"
+    rule #opcode2String (CALLVALUE     ) => "CALLVALUE"
+    rule #opcode2String (CALLDATALOAD  ) => "CALLDATALOAD"
+    rule #opcode2String (CALLDATASIZE  ) => "CALLDATASIZE"
+    rule #opcode2String (CALLDATACOPY  ) => "CALLDATACOPY"
+    rule #opcode2String (CODESIZE      ) => "CODESIZE"
+    rule #opcode2String (CODECOPY      ) => "CODECOPY"
+    rule #opcode2String (GASPRICE      ) => "GASPRICE"
+    rule #opcode2String (EXTCODESIZE   ) => "EXTCODESIZE"
+    rule #opcode2String (EXTCODECOPY   ) => "EXTCODECOPY"
+    rule #opcode2String (RETURNDATASIZE) => "RETURNDATASIZE"
+    rule #opcode2String (RETURNDATACOPY) => "RETURNDATACOPY"
+    rule #opcode2String (EXTCODEHASH   ) => "EXTCODEHASH"
+    rule #opcode2String (BLOCKHASH     ) => "BLOCKHASH"
+    rule #opcode2String (COINBASE      ) => "COINBASE"
+    rule #opcode2String (TIMESTAMP     ) => "TIMESTAMP"
+    rule #opcode2String (NUMBER        ) => "NUMBER"
+    rule #opcode2String (DIFFICULTY    ) => "DIFFICULTY"
+    rule #opcode2String (GASLIMIT      ) => "GASLIMIT"
+    rule #opcode2String (CHAINID       ) => "CHAINID"
+    rule #opcode2String (SELFBALANCE   ) => "SELFBALANCE"
+    rule #opcode2String (POP           ) => "POP"
+    rule #opcode2String (MLOAD         ) => "MLOAD"
+    rule #opcode2String (MSTORE        ) => "MSTORE"
+    rule #opcode2String (MSTORE8       ) => "MSTORE8"
+    rule #opcode2String (SLOAD         ) => "SLOAD"
+    rule #opcode2String (SSTORE        ) => "SSTORE"
+    rule #opcode2String (JUMP          ) => "JUMP"
+    rule #opcode2String (JUMPI         ) => "JUMPI"
+    rule #opcode2String (PC            ) => "PC"
+    rule #opcode2String (MSIZE         ) => "MSIZE"
+    rule #opcode2String (GAS           ) => "GAS"
+    rule #opcode2String (JUMPDEST      ) => "JUMPDEST"
+    rule #opcode2String (PUSH(W)       ) => "PUSH(" +String Int2String(W) +String ")"
+    rule #opcode2String (DUP(W)        ) => "DUP(" +String Int2String(W) +String ")"
+    rule #opcode2String (SWAP(W)       ) => "SWAP(" +String Int2String(W) +String ")"
+    rule #opcode2String (LOG(W)        ) => "LOG(" +String Int2String(W) +String ")"
+    rule #opcode2String (CREATE        ) => "CREATE"
+    rule #opcode2String (CALL          ) => "CALL"
+    rule #opcode2String (CALLCODE      ) => "CALLCODE"
+    rule #opcode2String (RETURN        ) => "RETURN"
+    rule #opcode2String (DELEGATECALL  ) => "DELEGATECALL"
+    rule #opcode2String (CREATE2       ) => "CREATE2"
+    rule #opcode2String (STATICCALL    ) => "STATICCALL"
+    rule #opcode2String (REVERT        ) => "REVERT"
+    rule #opcode2String (INVALID       ) => "INVALID"
+    rule #opcode2String (SELFDESTRUCT  ) => "SELFDESTRUCT"
+    rule #opcode2String (UNDEFINED(W)  ) => "UNDEFINED(" +String Int2String(W) +String ")"
 ```
 
 ```k
