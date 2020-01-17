@@ -20,7 +20,7 @@ module WEB3
         <opcodeCoverage> .Map </opcodeCoverage>
         <opcodeLists> .Map </opcodeLists>
         <errorPC> 0 </errorPC>
-        <previousPC> 0 </previousPC>
+        <web3-init> .K </web3-init>
         <blockchain>
           <blockList> .List </blockList>
         </blockchain>
@@ -1414,21 +1414,26 @@ Collecting Coverage Data
       requires EPHASE =/=K CONSTRUCTOR
       [priority(25)]
 
-    rule <k> #initVM ... </k>
-         <opcodeCoverage> OC => OC [ {keccak(PGM) | EPHASE} <- .Map ] </opcodeCoverage>
-         <execPhase> EPHASE </execPhase>
-         <program> PGM </program>
-      requires notBool {keccak(PGM) | EPHASE} in_keys(OC)
+    rule <k> #initVM ~> (.K => #cleanInit)... </k>
+         <execPhase> EPHASE                       </execPhase>
+         <program>   PGM                          </program>
+         <web3-init> .K => {keccak(PGM) | EPHASE} </web3-init>
       [priority(25)]
 
-
     rule <k> #initVM ... </k>
-         <opcodeLists> OL => OL [ {keccak(PGM) | EPHASE} <- #parseByteCode(PGM,SCHED) ] </opcodeLists>
-         <execPhase> EPHASE </execPhase>
-         <schedule> SCHED </schedule>
-         <program> PGM </program>
-      requires notBool {keccak(PGM) | EPHASE} in_keys(OL)
+         <opcodeCoverage> OC => OC [PGMID <- .Set ]                      </opcodeCoverage>
+         <opcodeLists>    OL => OL [PGMID <- #parseByteCode(PGM,SCHED) ] </opcodeLists>
+         <schedule>       SCHED                                          </schedule>
+         <program>        PGM                                            </program>
+         <web3-init>      ({HASH|EPHASE} #as PGMID):CoverageIdentifier   </web3-init>
+      requires notBool PGMID in_keys(OL)
+       andBool notBool PGMID in_keys(OC)
       [priority(25)]
+
+    syntax KItem ::= "#cleanInit"
+ // -----------------------------
+    rule <k> #cleanInit => .K ... </k>
+         <web3-init> _ => .K </web3-init>
 
     syntax OpcodeItem ::= "{" Int "|" OpCode "}"
 
@@ -1447,19 +1452,8 @@ Collecting Coverage Data
          <pc> PCOUNT </pc>
          <execPhase> EPHASE </execPhase>
          <program> PGM </program>
-         <opcodeCoverage> ... { keccak(PGM) | EPHASE } |-> (PCS => PCS (PCOUNT |-> 1) ) ... </opcodeCoverage>
-         <previousPC> _ => PCOUNT </previousPC>
-      requires notBool PCOUNT in_keys(PCS)
-      [priority(25)]
-
-    rule <k> #execute ... </k>
-         <pc> PCOUNT </pc>
-         <execPhase> EPHASE </execPhase>
-         <program> PGM </program>
-         <opcodeCoverage> ... { keccak(PGM) | EPHASE } |-> (PCS => PCS[PCOUNT <- {PCS[PCOUNT]}:>Int +Int 1]) ... </opcodeCoverage>
-         <previousPC> PREV => PCOUNT </previousPC>
-      requires PCOUNT =/=Int PREV
-       andBool PCOUNT in_keys(PCS)
+         <opcodeCoverage> ... { keccak(PGM) | EPHASE } |-> (PCS (.Set => SetItem(PCOUNT))) ... </opcodeCoverage>
+      requires notBool PCOUNT in PCS
       [priority(25)]
 
     syntax KItem ::= "#firefly_getCoverageData"
@@ -1474,23 +1468,22 @@ Collecting Coverage Data
     rule #makeCoverageReport ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), COVERAGE, PGMS) => {
                                                                                                   "hash": Int2String(CODEHASH),
                                                                                                   "programName": Phase2String(EPHASE),
-                                                                                                  "coverage": #computePercentage(size({COVERAGE[KEY]}:>Map), size({PGMS[KEY]}:>List)),
-                                                                                                  "program": [#serializePrograms({PGMS[KEY]}:>List, {COVERAGE[KEY]}:>Map)],
+                                                                                                  "coverage": #computePercentage(size({COVERAGE[KEY]}:>Set), size({PGMS[KEY]}:>List)),
+                                                                                                  "program": [#serializePrograms({PGMS[KEY]}:>List)],
                                                                                                   "coveredOpCodes": [#serializeCoverage(KEY, COVERAGE)]
                                                                                                  }, #makeCoverageReport(KEYS, COVERAGE, PGMS)
 
     syntax JSONs ::= #serializeCoverage ( CoverageIdentifier, Map ) [function]
  // --------------------------------------------------------------------------
     rule #serializeCoverage (KEY, COVERAGE ) => .JSONs requires notBool KEY in_keys(COVERAGE)
-    rule #serializeCoverage (KEY, KEY |-> X:Map COVERAGE:Map ) => IntList2JSONs(qsort(keys_list(X)))
+    rule #serializeCoverage (KEY, KEY |-> X:Set COVERAGE:Map ) => IntList2JSONs(qsort(Set2List(X)))
 
-    syntax JSONs ::= #serializePrograms ( List, Map ) [function]
+    syntax JSONs ::= #serializePrograms ( List ) [function]
  // ------------------------------------------------------------
-    rule #serializePrograms (.List                                    , _       ) => .JSONs
-    rule #serializePrograms (ListItem({PCOUNT:Int | _:OpCode}) PROGRAM, COVERAGE) => {
-                                                                                      "programCounter": PCOUNT,
-                                                                                      "hitCount": {COVERAGE[PCOUNT] orDefault 0}:>Int
-                                                                                     }, #serializePrograms(PROGRAM, COVERAGE)
+    rule #serializePrograms (.List                                    ) => .JSONs
+    rule #serializePrograms (ListItem({PCOUNT:Int | _:OpCode}) PROGRAM) => {
+                                                                                      "programCounter": PCOUNT
+                                                                                     }, #serializePrograms(PROGRAM)
 
     syntax String ::= Phase2String ( Phase ) [function]
  // ---------------------------------------------------
