@@ -1,0 +1,104 @@
+[
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 2,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 3,
+      "result": "0x0000000000000000000000000000000000000000000000000000000000ffffff"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 4,
+      "result": "0x0000000000000000000000000000000000000000000000000000000000ffffff"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 5,
+      "result": "0x0000000000000000000000000000000000000000000000000000000000ffffff"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 6,
+      "result": [
+        {
+          "hash": "76152901908933884519486378529878351746282709573894459094694306309932793751169",
+          "programName": "RUNTIME",
+          "coverage": 75,
+          "program": [
+            {
+              "programCounter": 0,
+              "arguments": [
+                [],
+                [],
+                []
+              ]
+            },
+            {
+              "programCounter": 4,
+              "arguments": [
+                [],
+                [],
+                []
+              ]
+            },
+            {
+              "programCounter": 6,
+              "arguments": [
+                [],
+                [],
+                []
+              ]
+            },
+            {
+              "programCounter": 7,
+              "arguments": [
+                [],
+                [],
+                []
+              ]
+            },
+            {
+              "programCounter": 9,
+              "arguments": [
+                [],
+                [],
+                []
+              ]
+            },
+            {
+              "programCounter": 11,
+              "arguments": [
+                [],
+                [],
+                []
+              ]
+            },
+            {
+              "programCounter": 12,
+              "arguments": []
+            },
+            {
+              "programCounter": 13,
+              "arguments": []
+            }
+          ],
+          "coveredOpCodes": [
+            0,
+            4,
+            6,
+            7,
+            9,
+            11
+          ]
+        }
+      ]
+    }
+  ]
