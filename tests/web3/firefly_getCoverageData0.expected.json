@@ -41,7 +41,10 @@
             "programCounter": 6,
             "opcode": "MSTORE",
             "arguments": [
-              []
+              [
+                "0x0",
+                "0xffffff"
+              ]
             ]
           },
           {
@@ -62,7 +65,10 @@
             "programCounter": 11,
             "opcode": "RETURN",
             "arguments": [
-              []
+              [
+                "0x0",
+                "0x20"
+              ]
             ]
           },
           {

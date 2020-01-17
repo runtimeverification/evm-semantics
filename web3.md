@@ -1450,22 +1450,32 @@ Collecting Coverage Data
     rule #parseByteCodeAux(PCOUNT, SIZE, PGM, SCHED, OPLIST) => #parseByteCodeAux(PCOUNT +Int #widthOp(#dasmOpCode(PGM [ PCOUNT ], SCHED)), SIZE, PGM, SCHED, OPLIST ListItem({PCOUNT | #dasmOpCode(PGM [ PCOUNT ], SCHED) | #unparseDataByteArray(substrBytes(PGM, PCOUNT +Int 1, PCOUNT +Int #widthOp(#dasmOpCode(PGM [ PCOUNT ], SCHED))))}))
       requires PCOUNT <Int SIZE
 
-    rule <k> #gas [ _ , _] ... </k>
-         <pc>             PCOUNT                                                      </pc>
-         <previousPC>     _ => PCOUNT                                                 </previousPC>
-         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                 </programID>
-         <opcodeCoverage> ... PGMID |-> (PCS => PCS (PCOUNT |-> ListItem(.List))) ... </opcodeCoverage>
+    rule <k> #gas [ OP , AOP ] ... </k>
+         <pc>             PCOUNT                                                                </pc>
+         <previousPC>     _ => PCOUNT                                                           </previousPC>
+         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                           </programID>
+         <opcodeCoverage> ... PGMID |-> (PCS => PCS (PCOUNT |-> ListItem(#getWSArgs(OP,AOP)))) ... </opcodeCoverage>
       requires notBool PCOUNT in_keys(PCS)
       [priority(25)]
 
-    rule <k> #gas [ _ , _] ... </k>
-         <pc>             PCOUNT                                                                          </pc>
-         <previousPC>     PREV => PCOUNT                                                                  </previousPC>
-         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                                     </programID>
-         <opcodeCoverage> ... PGMID |-> (PCS => PCS[PCOUNT <- ({PCS[PCOUNT]}:>List ListItem(.List))]) ... </opcodeCoverage>
+    rule <k> #gas [ OP , AOP ] ... </k>
+         <pc>             PCOUNT                                                                                    </pc>
+         <previousPC>     PREV => PCOUNT                                                                            </previousPC>
+         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                                               </programID>
+         <opcodeCoverage> ... PGMID |-> (PCS => PCS[PCOUNT <- ({PCS[PCOUNT]}:>List ListItem(#getWSArgs(OP,AOP)))]) ... </opcodeCoverage>
       requires PREV =/=Int PCOUNT
        andBool PCOUNT in_keys(PCS)
       [priority(25)]
+
+    syntax List ::= #getWSArgs ( OpCode, OpCode ) [function]
+ // --------------------------------------------------------
+    rule #getWSArgs (QOP:CallOp     , CO  W0 W1 W2 W3 W4 W5 W6) => ListItem(W0) ListItem(W1) ListItem(W2) ListItem(W3) ListItem(W4) ListItem(W5) ListItem(W6)
+    rule #getWSArgs (CSO:CallSixOp  , CSO W0 W1 W2 W3 W4 W5   ) => ListItem(W0) ListItem(W1) ListItem(W2) ListItem(W3) ListItem(W4) ListItem(W5)
+    rule #getWSArgs (QOP:QuadStackOp, QOP W0 W1 W2 W3         ) => ListItem(W0) ListItem(W1) ListItem(W2) ListItem(W3)
+    rule #getWSArgs (TOP:TernStackOp, TOP W0 W1 W2            ) => ListItem(W0) ListItem(W1) ListItem(W2)
+    rule #getWSArgs (BOP:BinStackOp , BOP W0 W1               ) => ListItem(W0) ListItem(W1)
+    rule #getWSArgs (UOP:UnStackOp  , UOP W0                  ) => ListItem(W0)
+    rule #getWSArgs (OP             , OP                      ) => .List [owise]
 
     syntax KItem ::= "#firefly_getCoverageData"
  // -------------------------------------------
@@ -1501,17 +1511,23 @@ Collecting Coverage Data
     syntax String ::= Phase2String ( Phase ) [function]
  // ---------------------------------------------------
     rule Phase2String (CONSTRUCTOR) => "CONSTRUCTOR"
-    rule Phase2String (RUNTIME)     => "RUNTIME"
+    rule Phase2String (RUNTIME    ) => "RUNTIME"
 
     syntax JSONs ::= IntList2JSONs ( List ) [function]
  // --------------------------------------------------
-    rule IntList2JSONs (.List)             => .JSONs
+    rule IntList2JSONs (.List            ) => .JSONs
     rule IntList2JSONs (ListItem(I:Int) L) => I, IntList2JSONs(L)
 
-    syntax JSONs ::= ArgList2JSONs( List) [function]
- // ------------------------------------------------
-    rule ArgList2JSONs (.List)             => .JSONs
-    rule ArgList2JSONs (ListItem(.List) L) => [.JSONs], ArgList2JSONs(L)
+    syntax JSONs ::= ArgList2JSONs ( List ) [function]
+ // --------------------------------------------------
+    rule ArgList2JSONs (.List              ) => .JSONs
+    rule ArgList2JSONs (ListItem(.List)  L ) => [.JSONs], ArgList2JSONs(L)
+    rule ArgList2JSONs (ListItem(L:List) LS) => [ArgList2JSONsAux(L)], ArgList2JSONs(LS)
+
+    syntax JSONs ::= ArgList2JSONsAux ( List ) [function]
+ // -----------------------------------------------------
+    rule ArgList2JSONsAux (.List            ) => .JSONs
+    rule ArgList2JSONsAux (ListItem(I:Int) L) => #unparseQuantity(I), ArgList2JSONsAux(L)
 
     syntax List ::= getIntElementsSmallerThan ( Int, List, List ) [function]
  // ------------------------------------------------------------------------
