@@ -20,7 +20,7 @@ module WEB3
         <opcodeCoverage> .Map </opcodeCoverage>
         <opcodeLists> .Map </opcodeLists>
         <errorPC> 0 </errorPC>
-        <previousPC> 0 </previousPC>
+        <previousPC> -1 </previousPC>
         <programID> .K </programID>
         <blockchain>
           <blockList> .List </blockList>
@@ -1451,21 +1451,25 @@ Collecting Coverage Data
       requires PCOUNT <Int SIZE
 
     rule <k> #gas [ OP , AOP ] ... </k>
-         <pc>             PCOUNT                                                                </pc>
-         <previousPC>     _ => PCOUNT                                                           </previousPC>
-         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                           </programID>
-         <opcodeCoverage> ... PGMID |-> (PCS => PCS (PCOUNT |-> ListItem(#getWSArgs(OP,AOP)))) ... </opcodeCoverage>
-      requires notBool PCOUNT in_keys(PCS)
+         <pc>             PCOUNT                                                                                                       </pc>
+         <previousPC>     PREV => PCOUNT                                                                                               </previousPC>
+         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                                                                  </programID>
+         <opcodeCoverage> ... PGMID |-> (PCS => PCS[PCOUNT <- ({PCS[PCOUNT] orDefault .List}:>List ListItem(#getWSArgs(OP,AOP)))]) ... </opcodeCoverage>
+      requires PREV =/=Int PCOUNT
       [priority(25)]
 
-    rule <k> #gas [ OP , AOP ] ... </k>
-         <pc>             PCOUNT                                                                                    </pc>
-         <previousPC>     PREV => PCOUNT                                                                            </previousPC>
-         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                                               </programID>
-         <opcodeCoverage> ... PGMID |-> (PCS => PCS[PCOUNT <- ({PCS[PCOUNT]}:>List ListItem(#getWSArgs(OP,AOP)))]) ... </opcodeCoverage>
+    rule <k> INVALID      ... </k>
+         <pc>             PCOUNT                                                                                                                </pc>
+         <previousPC>     PREV => PCOUNT                                                                                                        </previousPC>
+         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                                                                           </programID>
+         <opcodeCoverage> ... PGMID |-> (PCS => PCS[PCOUNT <- ({PCS[PCOUNT] orDefault .List}:>List ListItem(#getWSArgs(INVALID,INVALID)))]) ... </opcodeCoverage>
       requires PREV =/=Int PCOUNT
-       andBool PCOUNT in_keys(PCS)
-      [priority(25)]
+
+    rule <k> UNDEFINED(N) ... </k>
+         <pc>             PCOUNT                                                                                                                          </pc>
+         <previousPC>     PREV => PCOUNT                                                                                                                  </previousPC>
+         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                                                                                     </programID>
+         <opcodeCoverage> ... PGMID |-> (PCS => PCS[PCOUNT <- ({PCS[PCOUNT] orDefault .List}:>List ListItem(#getWSArgs(UNDEFINED(N),UNDEFINED(N))))]) ... </opcodeCoverage>
 
     syntax List ::= #getWSArgs ( OpCode, OpCode ) [function]
  // --------------------------------------------------------
@@ -1475,7 +1479,8 @@ Collecting Coverage Data
     rule #getWSArgs (TOP:TernStackOp, TOP W0 W1 W2            ) => ListItem(W0) ListItem(W1) ListItem(W2)
     rule #getWSArgs (BOP:BinStackOp , BOP W0 W1               ) => ListItem(W0) ListItem(W1)
     rule #getWSArgs (UOP:UnStackOp  , UOP W0                  ) => ListItem(W0)
-    rule #getWSArgs (OP             , OP                      ) => .List [owise]
+    rule #getWSArgs (OP :StackOp    , OP  WS                  ) => WordStack2List (WS)
+    rule #getWSArgs (OP             , _                       ) => .List [owise]
 
     syntax KItem ::= "#firefly_getCoverageData"
  // -------------------------------------------
