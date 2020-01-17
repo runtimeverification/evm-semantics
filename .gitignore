@@ -4,6 +4,10 @@
 /package/pkg
 /package/src
 /media/*.pdf
+/tests/specs/**/*.prove.out
 /tests/web3/*.out.json
 /tests/web3/*/*.out.json
 /tests/truffle/*/build
+/tests/truffle/*/node_modules
+/tests/truffle/*/package-lock.json
+/tests/openzeppelin-contracts

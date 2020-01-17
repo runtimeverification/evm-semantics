@@ -9,7 +9,7 @@ module TRANSFERFROM-FAILURE-2-C-SPEC
     <k> #execute => #halt </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
-    <schedule> CONSTANTINOPLE </schedule>
+    <schedule> ISTANBUL </schedule>
 
     <ethereum>
       <evm>

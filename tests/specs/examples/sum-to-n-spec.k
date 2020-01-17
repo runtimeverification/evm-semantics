@@ -34,7 +34,7 @@ module SUM-TO-N-SPEC
 
     rule <k> #execute ... </k>
          <mode> NORMAL </mode>
-         <schedule> DEFAULT </schedule>
+         <schedule> ISTANBUL </schedule>
          <callStack> .List </callStack>
          <memoryUsed> 0   </memoryUsed>
          <localMem> .Memory </localMem>
@@ -51,7 +51,7 @@ module SUM-TO-N-SPEC
 
     rule <k> #execute ... </k>
          <mode> NORMAL </mode>
-         <schedule> DEFAULT </schedule>
+         <schedule> ISTANBUL </schedule>
          <callStack> .List </callStack>
          <memoryUsed> 0   </memoryUsed>
          <localMem> .Memory </localMem>
