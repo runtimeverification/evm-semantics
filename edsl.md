@@ -241,7 +241,7 @@ The above notation denotes (i.e., is translated to) the following EVM log data s
   : CALLER_ID                                                                                                                                                                                                                                                |/|
   : TO_ID                                                                                                                                                                                                                                                    | |
   : .WordStack                                                                                                                                                                                                                                               | |
-  | #asByteStackInWidth(VALUE, 32)                                                                                                                                                                                                                           | |
+  | #buf(32, VALUE)                                                                                                                                                                                                                           | |
   }
 ```
 

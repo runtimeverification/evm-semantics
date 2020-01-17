@@ -77,18 +77,6 @@ module LEMMAS
     rule #noOverflowAux(W : WS)     => 0 <=Int W andBool W <Int 256 andBool #noOverflowAux(WS)
     rule #noOverflowAux(.WordStack) => true
 
-    syntax WordStack ::= #asByteStackInWidth    ( Int, Int )                 [function]
-                       | #asByteStackInWidthAux ( Int, Int, Int, WordStack ) [function]
- // -----------------------------------------------------------------------------------
-    rule #asByteStackInWidth(X, N) => #asByteStackInWidthAux(X, N -Int 1, N, .WordStack)
-      requires #rangeBytes(N, X)
-
-    rule #asByteStackInWidthAux(X, -1, N, WS) => WS
-
-
-
-
-
     // TODO: drop hash1 and keccakIntList once new vyper hashed location scheme is captured in edsl.md
 
     syntax Int ::= hash1(Int)      [function, smtlib(smt_hash1)]
