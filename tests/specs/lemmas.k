@@ -74,15 +74,16 @@ module LEMMAS
 
     rule nthbyteof(N, 0, 1) => N
 
-    rule #sizeWordStack(WS, N) <Int N => false
+    rule WS ++ .WordStack => WS
 
-    rule #take(N, BUF ++ .WordStack) => #take(N, BUF)
-    rule #take(N, #buf(M, BUF) ++ _) => #take(N, #buf(M, BUF)) requires N <=Int M
-    rule #take(N, #buf(N, BUF))      => #buf(N, BUF)
+    rule #sizeWordStack(#buf(N, _)  , M) => M +Int N
+    rule #sizeWordStack(BUF1 ++ BUF2, M) => M +Int #sizeWordStack(BUF1) +Int #sizeWordStack(BUF2)
 
-    rule #drop(N, #drop(M, BUF))     => #drop(N +Int M, BUF)
-    rule #drop(N, BUF ++ .WordStack) => #drop(N, BUF)
-    rule #drop(N, #buf(M, _) ++ BUF) => #drop(N -Int M, BUF) requires N >=Int M
+    rule #take(N, #buf(N, BUF)) => #buf(N, BUF)
+    rule #take(N, BUF1 ++ BUF2) => #take(N, BUF1) requires N <=Int #sizeWordStack(BUF1)
+
+    rule #drop(N, #drop(M, BUF)) => #drop(N +Int M, BUF)
+    rule #drop(N, BUF1 ++ BUF2)  => #drop(N -Int #sizeWordStack(BUF1), BUF2) requires N >=Int #sizeWordStack(BUF1)
 
     rule #asWord(#buf(N, BUF)) => BUF
 
@@ -116,10 +117,7 @@ module LEMMAS
       requires K  >Int 0
        andBool L >=Int N +Int W
 
-    rule WS ++ .WordStack => WS
-
-    rule keccak(#buf(32, BUF) ++ (W : WS)) => hash2(BUF, #asWord(W : WS)) requires #sizeWordStack(W : WS) ==Int 32
-    rule keccak(#buf(32, BUF) ++ #buf(32, BUF')) => hash2(BUF, BUF')
+    rule keccak(BUF1 ++ BUF2) => hash2(#asWord(BUF1), #asWord(BUF2)) requires #sizeWordStack(BUF1) ==Int 32 andBool #sizeWordStack(BUF2) ==Int 32
 
     syntax Bool ::= #isRegularWordStack ( WordStack ) [function]
  // -------------------------------------------------------
