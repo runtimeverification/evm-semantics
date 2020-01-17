@@ -27,7 +27,7 @@ module ADDRESS00-SPEC
           <callData> #abiCallData("execute", #address(A0)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
           <wordStack> .WordStack => _ </wordStack>
-          <localMem> .Map => _ </localMem>
+          <localMem> .Memory => _ </localMem>
           <pc> 0 => _ </pc>
           <gas> #gas(INITGAS, 0, 0) => _ </gas>
           <memoryUsed> 0 => _ </memoryUsed>
