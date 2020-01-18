@@ -1864,7 +1864,18 @@ Retrieving logs
         orBool BLOCKID ==K EARLIEST
         orBool BLOCKID ==K PENDING
 
-    rule <k> #getLogs(START => START +Int 1, END, RESULT => RESULT ListItem({LOGS|#getTxPositionInBlock(TXID,#getBlockByNumber(START,BLOCKLIST,{<network> NETWORK </network>|<block> BLOCK </block>}))|TXHASH|START|"0x0"}) ) ... </k>
+    rule <k> #getLogs( START => START +Int 1
+                     , END
+                     , RESULT => RESULT ListItem( { LOGS
+                                                  | #getTxPositionInBlock(TXID,#getBlockByNumber(START,BLOCKLIST,{<network> NETWORK </network>|<block> BLOCK </block>}))
+                                                  | TXHASH
+                                                  | START
+                                                  | #unparseData( #blockchainItemHash( #getBlockByNumber(START,BLOCKLIST,{<network> NETWORK </network>|<block> BLOCK </block>}) ), 32 )
+                                                  }
+                                                )
+                     )
+          ...
+         </k>
          <txReceipt>
            <txBlockNumber> START  </txBlockNumber>
            <txHash>        TXHASH </txHash>
