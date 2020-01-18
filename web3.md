@@ -1556,6 +1556,29 @@ Helper Funcs
                               +String #rlpEncodeBytes( NONCE, 8 )
                             , 192
                             )
+
+    syntax Int ::= #blockchainItemHash( BlockchainItem ) [function]
+ // ---------------------------------------------------------------
+    rule #blockchainItemHash( { _ |
+         <block>
+           <previousHash>      HP </previousHash>
+           <ommersHash>        HO </ommersHash>
+           <coinbase>          HC </coinbase>
+           <stateRoot>         HR </stateRoot>
+           <transactionsRoot>  HT </transactionsRoot>
+           <receiptsRoot>      HE </receiptsRoot>
+           <logsBloom>         HB </logsBloom>
+           <difficulty>        HD </difficulty>
+           <number>            HI </number>
+           <gasLimit>          HL </gasLimit>
+           <gasUsed>           HG </gasUsed>
+           <timestamp>         HS </timestamp>
+           <extraData>         HX </extraData>
+           <mixHash>           HM </mixHash>
+           <blockNonce>        HN </blockNonce>
+           ...
+         </block> } )
+      => #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
 ```
 
 State Root
