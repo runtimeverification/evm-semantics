@@ -366,6 +366,7 @@ tests/%.parse: tests/%
 
 tests/specs/functional/%.prove: TEST_SYMBOLIC_BACKEND=haskell
 tests/specs/functional/storageRoot-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
+tests/specs/functional/lemmas-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
 
 tests/%.prove: tests/%
 	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE) $(KPROVE_OPTIONS) \
