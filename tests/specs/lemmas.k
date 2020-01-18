@@ -93,12 +93,7 @@ module LEMMAS
 
     rule #asWord(W0 : W1 : W2 : W3 : #take(28, BUF)) /Int 26959946667150639794667015087019630673637144422540572481103610249216 => #asWord(W0 : W1 : W2 : W3 : .WordStack)
 
-    rule M [ N := BUF ] => M requires #sizeWordStack(BUF) <=Int 0
-
-    rule M [ N := BUF:WordStack ] [ L <- V ]    => M [ L <- V ] [ N := BUF ]                  requires L  <Int N
-    rule M [ N := BUF           ] [ L <- V ]    => M [ L <- V ] [ N := BUF ]                  requires L >=Int N +Int #sizeWordStack(BUF)
-    rule M [ N := BUF           ] [ N <- V ]    => M [ N <- V ] [ N +Int 1 := #drop(1, BUF) ]
-    rule M [ N := BUF           ] [ N := BUF' ] => M [ N := BUF' ]                            requires #sizeWordStack(BUF) ==Int #sizeWordStack(BUF')
+    rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeWordStack(BUF) ==Int #sizeWordStack(BUF')
 
     rule #buf(W, BUF) [ L .. K ] => .ByteArray requires L  >Int W
     rule #buf(W, BUF) [ L .. K ] => .ByteArray requires K <=Int 0
