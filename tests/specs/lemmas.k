@@ -95,9 +95,9 @@ module LEMMAS
 
     rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeWordStack(BUF) ==Int #sizeWordStack(BUF')
 
-    rule #buf(W, BUF) [ L .. K ] => .ByteArray requires L  >Int W
-    rule #buf(W, BUF) [ L .. K ] => .ByteArray requires K <=Int 0
-    rule #buf(W, BUF) [ 0 .. W ] => #buf(W, BUF)
+    rule BUF:WordStack [ L .. W ] => .ByteArray requires W <=Int 0
+    rule BUF           [ 0 .. W ] => BUF        requires W ==Int #sizeWordStack(BUF)
+    rule BUF           [ L .. W ] => .ByteArray requires L  >Int #sizeWordStack(BUF)
 
     rule #range(M, N, K) => .ByteArray requires notBool K >Int 0
 
