@@ -1518,45 +1518,6 @@ Helper Funcs
 ------------
 
 ```k
-    syntax String ::= #rlpEncodeBlock( BlockchainItem ) [function]
- // --------------------------------------------------------------
-    rule #rlpEncodeBlock( { _ |
-         <block>
-           <previousHash>      PARENTHASH  </previousHash>
-           <ommersHash>        OMMERSHASH  </ommersHash>
-           <coinbase>          MINER       </coinbase>
-           <stateRoot>         STATEROOT   </stateRoot>
-           <transactionsRoot>  TXROOT      </transactionsRoot>
-           <receiptsRoot>      RCPTROOT    </receiptsRoot>
-           <logsBloom>         LOGSBLOOM   </logsBloom>
-           <difficulty>        DFFCLTY     </difficulty>
-           <number>            NUM         </number>
-           <gasLimit>          GLIMIT      </gasLimit>
-           <gasUsed>           GUSED       </gasUsed>
-           <timestamp>         TIME        </timestamp>
-           <extraData>         DATA        </extraData>
-           <mixHash>           MIXHASH     </mixHash>
-           <blockNonce>        NONCE       </blockNonce>
-           ...
-         </block> } )
-         => #rlpEncodeLength(         #rlpEncodeBytes( PARENTHASH, 32 )
-                              +String #rlpEncodeBytes( OMMERSHASH, 32 )
-                              +String #rlpEncodeBytes( MINER, 20 )
-                              +String #rlpEncodeBytes( STATEROOT, 32 )
-                              +String #rlpEncodeBytes( TXROOT, 32 )
-                              +String #rlpEncodeBytes( RCPTROOT, 32 )
-                              +String #rlpEncodeBytes( #asInteger( LOGSBLOOM ), 256 )
-                              +String #rlpEncodeWord ( DFFCLTY )
-                              +String #rlpEncodeWord ( NUM )
-                              +String #rlpEncodeWord ( GLIMIT )
-                              +String #rlpEncodeWord ( GUSED )
-                              +String #rlpEncodeWord ( TIME )
-                              +String #rlpEncodeBytes( #asInteger( DATA ), #sizeByteArray( DATA ) )
-                              +String #rlpEncodeBytes( MIXHASH, 32 )
-                              +String #rlpEncodeBytes( NONCE, 8 )
-                            , 192
-                            )
-
     syntax Int ::= #blockchainItemHash( BlockchainItem ) [function]
  // ---------------------------------------------------------------
     rule #blockchainItemHash( { _ |
