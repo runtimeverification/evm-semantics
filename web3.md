@@ -802,7 +802,7 @@ Retrieving Blocks
            ...
          </block> } #as BLOCKITEM)
           => #rpcResponseSuccess( { "number": #unparseQuantity( NUM )
-                                  , "hash": "0x" +String Keccak256( #rlpEncodeBlock( BLOCKITEM ) )
+                                  , "hash": #unparseData( #blockchainItemHash( BLOCKITEM ), 32 )
                                   , "parentHash": #unparseData( PARENTHASH, 32 )
                                   , "mixHash": #unparseData( MIXHASH, 32 )
                                   , "nonce": #unparseData( NONCE, 8 )
@@ -930,14 +930,14 @@ Transaction Receipts
              </network> | _ } #as BLOCKITEM )
           => #rpcResponseSuccess( { "transactionHash": TXHASH
                                   , "transactionIndex": #unparseQuantity(getIndexOf(TXID, TXLIST))
-                                  , "blockHash": "0x" +String Keccak256(#rlpEncodeBlock(BLOCKITEM))
+                                  , "blockHash": #unparseData( #blockchainItemHash( BLOCKITEM ), 32 )
                                   , "blockNumber": #unparseQuantity(BN)
                                   , "from": #unparseAccount(TXFROM)
                                   , "to": #unparseAccount(TT)
                                   , "gasUsed": #unparseQuantity(CGAS)
                                   , "cumulativeGasUsed": #unparseQuantity(CGAS)
                                   , "contractAddress": #if TT ==K .Account #then #unparseData(#newAddr(TXFROM, NONCE -Int 1), 20) #else null #fi
-                                  , "logs": [#serializeLogs(LOGS, 0, getIndexOf(TXID, TXLIST), TXHASH, "0x" +String Keccak256(#rlpEncodeBlock(BLOCKITEM)), BN)]
+                                  , "logs": [#serializeLogs(LOGS, 0, getIndexOf(TXID, TXLIST), TXHASH, #unparseData( #blockchainItemHash( BLOCKITEM ), 32 ), BN)]
                                   , "status": #unparseQuantity(TXSTATUS)
                                   , "logsBloom": #unparseDataByteArray(BLOOM)
                                   , "v": #unparseQuantity(TW)
@@ -1799,7 +1799,7 @@ Mining
          <gas> _ => 0 </gas>
 
     rule <k> #setParentHash BCI => . ... </k>
-         <previousHash> _ => #parseHexWord( Keccak256( #rlpEncodeBlock( BCI ) ) ) </previousHash>
+         <previousHash> _ => #blockchainItemHash( BCI ) </previousHash>
 
     rule <k> #updateTrieRoots => #updateStateRoot ~> #updateTransactionsRoot ~> #updateReceiptsRoot ... </k>
 
