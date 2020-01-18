@@ -101,12 +101,6 @@ module LEMMAS
 
     rule #range(M, N, K) => .ByteArray requires notBool K >Int 0
 
-    rule #range(M [ N := #padToWidth(W, BUF) ], L, K) => #range(M, L, K)
-      requires L +Int K <=Int N
-        orBool N +Int W  <Int L
-
-    rule #range(M [ N := #padToWidth(W, BUF) ], N, W) => BUF
-
     rule #range(M [ N := BUF:WordStack ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))
       requires K >Int 0
        andBool L <Int N
