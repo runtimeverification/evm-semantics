@@ -365,22 +365,28 @@ A cons-list is used for the EVM wordstack.
  // --------------------------------------------------------------------
 ```
 
+```{.k .bytes}
+    syntax Bytes ::= Int ":" Bytes [function]
+ // -----------------------------------------
+    rule I : BS => Int2Bytes(I, BE, Unsigned) +Bytes BS requires I <Int 256
+```
+
 -   `#take(N , WS)` keeps the first $N$ elements of a `WordStack` (passing with zeros as needed).
 -   `#drop(N , WS)` removes the first $N$ elements of a `WordStack`.
 
 ```k
     syntax WordStack ::= #take ( Int , WordStack ) [klabel(takeWordStack), function, functional]
  // --------------------------------------------------------------------------------------------
-    rule [#take.base]:      #take(N, WS)         => .WordStack                      requires notBool N >Int 0
-    rule [#take.zero-pad]:  #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
-    rule [#take.recursive]: #take(N, (W : WS))   => W : #take(N -Int 1, WS)         requires N >Int 0
+    rule [#take.base]:      #take(N, WS)                 => .WordStack                      requires notBool N >Int 0
+    rule [#take.zero-pad]:  #take(N, .WordStack)         => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
+    rule [#take.recursive]: #take(N, (W : WS):WordStack) => W : #take(N -Int 1, WS)         requires N >Int 0
 
     syntax WordStack ::= #drop ( Int , WordStack ) [klabel(dropWordStack), function, functional]
  // --------------------------------------------------------------------------------------------
-    rule #drop(N, WS:WordStack) => WS                                  requires notBool N >Int 0
-    rule #drop(N, .WordStack)   => .WordStack                          requires         N >Int 0
-    rule #drop(N, (W : WS))     => #drop(1, #drop(N -Int 1, (W : WS))) requires         N >Int 1
-    rule #drop(1, (_ : WS))     => WS
+    rule #drop(N, WS:WordStack)       => WS                                  requires notBool N >Int 0
+    rule #drop(N, .WordStack)         => .WordStack                          requires         N >Int 0
+    rule #drop(N, (W : WS):WordStack) => #drop(1, #drop(N -Int 1, (W : WS))) requires         N >Int 1
+    rule #drop(1, (_ : WS):WordStack) => WS
 ```
 
 ```{.k .bytes}
@@ -407,13 +413,13 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax Int ::= WordStack "[" Int "]" [function]
  // -----------------------------------------------
-    rule (W : _)      [ N ] => W                  requires N ==Int 0
-    rule WS:WordStack [ N ] => #drop(N, WS) [ 0 ] requires N  >Int 0
+    rule (W : _):WordStack [ N ] => W                  requires N ==Int 0
+    rule WS:WordStack      [ N ] => #drop(N, WS) [ 0 ] requires N  >Int 0
 
     syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function]
  // --------------------------------------------------------------
-    rule (W0 : WS) [ N := W ] => W  : WS                     requires N ==Int 0
-    rule (W0 : WS) [ N := W ] => W0 : (WS [ N -Int 1 := W ]) requires N  >Int 0
+    rule (W0 : WS):WordStack [ N := W ] => W  : WS                     requires N ==Int 0
+    rule (W0 : WS):WordStack [ N := W ] => W0 : (WS [ N -Int 1 := W ]) requires N  >Int 0
 ```
 
 -   Definedness conditions for `WS [ N ]` and `WS [ N := W ]`
