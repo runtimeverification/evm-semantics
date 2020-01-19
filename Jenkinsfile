@@ -91,7 +91,7 @@ pipeline {
             timeout(time: 80, unit: 'MINUTES')
           }
           parallel {
-            stage('Java') {
+            stage('Java + Haskell') {
               steps {
                 sh '''
                   make test-prove -j6
