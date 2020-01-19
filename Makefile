@@ -365,6 +365,8 @@ tests/%.parse: tests/%
 	rm -rf $@-out
 
 tests/specs/functional/%.prove: TEST_SYMBOLIC_BACKEND=haskell
+tests/specs/examples/%.prove:   TEST_SYMBOLIC_BACKEND=haskell
+
 tests/specs/functional/storageRoot-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
 
 tests/%.prove: tests/%
