@@ -1,2 +1,3 @@
 tests/ethereum-tests/VMTests/vmSystemOperations/suicide0.json
 tests/ethereum-tests/VMTests/vmSystemOperations/suicideSendEtherToMe.json
+tests/specs/functional/merkle-failing-spec.k

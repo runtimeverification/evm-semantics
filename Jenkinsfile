@@ -98,10 +98,10 @@ pipeline {
                 '''
               }
             }
-            stage('Haskell') {
+            stage('Haskell (dry-run)') {
               steps {
                 sh '''
-                  make tests/specs/examples/sum-to-n-spec.k.prove TEST_SYMBOLIC_BACKEND=haskell
+                  make test-prove -j2 KPROVE_OPTIONS='--dry-run' TEST_SYMBOLIC_BACKEND='haskell'
                 '''
               }
             }

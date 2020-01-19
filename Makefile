@@ -462,7 +462,7 @@ tests/openzeppelin-contracts/DOCUMENTATION.md:
 # Proof Tests
 
 prove_specs_dir        := tests/specs
-prove_failing_tests    := $(shell cat tests/failing.prove)
+prove_failing_tests    := $(shell cat tests/failing.$(TEST_SYMBOLIC_BACKEND))
 prove_benchmarks_tests := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/benchmarks/*-spec.k))
 prove_functional_tests := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/functional/*-spec.k))
 prove_opcodes_tests    := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/opcodes/*-spec.k))

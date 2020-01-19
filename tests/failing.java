@@ -5,3 +5,4 @@ tests/ethereum-tests/VMTests/vmEnvironmentalInfo/calldatacopy_DataIndexTooHigh_r
 tests/ethereum-tests/VMTests/vmEnvironmentalInfo/calldataload_BigOffset.json
 tests/ethereum-tests/VMTests/vmEnvironmentalInfo/calldataloadSizeTooHigh.json
 tests/ethereum-tests/VMTests/vmEnvironmentalInfo/codecopy_DataIndexTooHigh.json
+tests/specs/functional/merkle-failing-spec.k
