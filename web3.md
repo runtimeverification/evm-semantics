@@ -1092,6 +1092,7 @@ Transaction Execution
  // ----------------------------------
     rule <k> #validateTx TXID => . ... </k>
          <statusCode> ( _ => EVMC_OUT_OF_GAS) </statusCode>
+         <mode> NORMAL </mode>
          <schedule> SCHED </schedule>
          <message>
            <msgID>      TXID   </msgID>
@@ -1113,6 +1114,9 @@ Transaction Execution
            ...
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) >=Int 0
+
+    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #finishTx ... </k>
+         <mode> NOGAS </mode>
 
     syntax KItem ::= "#executeTx" Int
  // ---------------------------------
@@ -1376,8 +1380,8 @@ NOGAS Mode
 - Used for `eth_call` RPC messages
 
 ```k
-    syntax Mode ::= "NOGAS"
- // -----------------------
+    syntax Mode ::= "NOGAS" [klabel(NOGAS), symbol]
+ // -----------------------------------------------
     rule <k> #gas [ OP ] => . ... </k>
          <mode> NOGAS </mode>
      [priority(25)]
@@ -1386,9 +1390,9 @@ NOGAS Mode
          <mode> NOGAS </mode>
      [priority(25)]
 
-    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #finishTx ... </k>
-         <mode> NOGAS </mode>
-     [priority(25)]
+//    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #finishTx ... </k>
+//         <mode> NOGAS </mode>
+//     [priority(25)]
 ```
 
 Collecting Coverage Data
