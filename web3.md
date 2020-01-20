@@ -1463,18 +1463,12 @@ Collecting Coverage Data
       requires PREV =/=Int PCOUNT
       [priority(25)]
 
-    rule <k> INVALID      ... </k>
-         <pc>             PCOUNT                                                                                                                </pc>
-         <previousPC>     PREV => PCOUNT                                                                                                        </previousPC>
-         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                                                                           </programID>
-         <opcodeCoverage> ... PGMID |-> (PCS => PCS[PCOUNT <- ({PCS[PCOUNT] orDefault .List}:>List ListItem(#getWSArgs(INVALID,INVALID)))]) ... </opcodeCoverage>
+    rule <k> IOP:InvalidOp      ... </k>
+         <pc>             PCOUNT                                                                                                        </pc>
+         <previousPC>     PREV => PCOUNT                                                                                                </previousPC>
+         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                                                                   </programID>
+         <opcodeCoverage> ... PGMID |-> (PCS => PCS[PCOUNT <- ({PCS[PCOUNT] orDefault .List}:>List ListItem(#getWSArgs(IOP,IOP)))]) ... </opcodeCoverage>
       requires PREV =/=Int PCOUNT
-
-    rule <k> UNDEFINED(N) ... </k>
-         <pc>             PCOUNT                                                                                                                          </pc>
-         <previousPC>     PREV => PCOUNT                                                                                                                  </previousPC>
-         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                                                                                     </programID>
-         <opcodeCoverage> ... PGMID |-> (PCS => PCS[PCOUNT <- ({PCS[PCOUNT] orDefault .List}:>List ListItem(#getWSArgs(UNDEFINED(N),UNDEFINED(N))))]) ... </opcodeCoverage>
 
     syntax List ::= #getWSArgs ( OpCode, OpCode ) [function]
  // --------------------------------------------------------
