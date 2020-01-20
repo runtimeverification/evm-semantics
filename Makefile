@@ -357,7 +357,7 @@ tests/%.run-truffle: tests/%
 	tests/truffle/runtest.sh $(dir $@)
 
 %.run-openzep:
-	timeout 1800 tests/run-openzep.sh $*
+	tests/run-openzep.sh $*
 
 tests/%.parse: tests/%
 	$(TEST) kast $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
