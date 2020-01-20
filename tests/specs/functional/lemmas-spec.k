@@ -41,10 +41,15 @@ module LEMMAS-SPEC
     // Range starting at same point as buffer write
     rule <k> runLemma ( #range(M [ 32 := BUF:WordStack ]            , 32 , 7) ) => doneLemma( BUF [ 0 .. 7 ]                               ) ... </k> requires #sizeWordStack(BUF) >=Int 7
     rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : .WordStack) ] , 32 , 7) ) => doneLemma( (0 : 1 : 2 : .WordStack) ++ #range(M, 35, 4) ) ... </k>
+    rule <k> runLemma ( #range(M [ 32 := #buf(2, BUF) ]             , 32 , 1) ) => doneLemma( (#buf(2, DATA) [ 0 .. 1 ])                   ) ... </k>
+    rule <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ]             , 32 , 1) ) => doneLemma( #buf(1, DATA)                                ) ... </k>
+    rule <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ]             , 32 , 2) ) => doneLemma( #buf(1, DATA) ++ #range(M, 33, 1)            ) ... </k>
 
     // Range starting in the middle of the buffer write
-    rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : 3 : 4 : .WordStack) ] , 35 , 2) ) => doneLemma( (3 : 4 : .WordStack)                     ) ... </k>
-    rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : 3 : 4 : .WordStack) ] , 35 , 8) ) => doneLemma( (3 : 4 : .WordStack) ++ #range(M, 37, 6) ) ... </k>
+    rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : 3 : 4 : .WordStack) ] , 35 , 2) ) => doneLemma( (3 : 4 : .WordStack)                      ) ... </k>
+    rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : 3 : 4 : .WordStack) ] , 35 , 8) ) => doneLemma( (3 : 4 : .WordStack) ++ #range(M, 37, 6)  ) ... </k>
+    rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : .WordStack)         ] , 33 , 1) ) => doneLemma( (1 : .WordStack)                          ) ... </k>
+    rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : .WordStack)         ] , 33 , 2) ) => doneLemma( (1 : 2 : .WordStack)                      ) ... </k>
+    rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : .WordStack)         ] , 33 , 3) ) => doneLemma( (1 : 2 :  .WordStack) ++ #range(M, 35, 1) ) ... </k>
 
 endmodule
-
