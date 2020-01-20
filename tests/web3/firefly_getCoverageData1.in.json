@@ -35,7 +35,31 @@
   },
   {
     "jsonrpc": "2.0",
-    "id": 3,
+    "id": 4,
+    "method": "eth_call",
+    "params": [
+      {
+        "from": "0xee70809B448816B3D2D40C1DB8B44aACf50BAD3a",
+        "to": "0xdf1db454e4dc226da2b0f8d471976180555355e2"
+      },
+      "latest"
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 5,
+    "method": "eth_call",
+    "params": [
+      {
+        "from": "0xee70809B448816B3D2D40C1DB8B44aACf50BAD3a",
+        "to": "0xdf1db454e4dc226da2b0f8d471976180555355e2"
+      },
+      "latest"
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 6,
     "method": "firefly_getCoverageData",
     "params": []
   }
