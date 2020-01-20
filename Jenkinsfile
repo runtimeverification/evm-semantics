@@ -75,9 +75,6 @@ pipeline {
               }
             }
             stage('Conformance (Truffle)') {
-              options {
-                timeout(time: 30, unit: 'MINUTES')
-              }
               steps {
                 sh '''
                   make tests/openzeppelin-contracts/truffle-config.js
