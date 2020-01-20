@@ -91,17 +91,17 @@ pipeline {
             timeout(time: 80, unit: 'MINUTES')
           }
           parallel {
-            stage('Java') {
+            stage('Java + Haskell') {
               steps {
                 sh '''
                   make test-prove -j6
                 '''
               }
             }
-            stage('Haskell') {
+            stage('Haskell (dry-run)') {
               steps {
                 sh '''
-                  make tests/specs/examples/sum-to-n-spec.k.prove TEST_SYMBOLIC_BACKEND=haskell
+                  make test-prove -j2 KPROVE_OPTIONS='--dry-run' TEST_SYMBOLIC_BACKEND='haskell'
                 '''
               }
             }
