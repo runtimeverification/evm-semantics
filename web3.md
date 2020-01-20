@@ -1447,8 +1447,13 @@ Collecting Coverage Data
  // ------------------------------------------------------------------------------------
     rule #parseByteCodeAux(PCOUNT, SIZE, _, _, OPLIST) => OPLIST
       requires PCOUNT >=Int SIZE
-    rule #parseByteCodeAux(PCOUNT, SIZE, PGM, SCHED, OPLIST) => #parseByteCodeAux(PCOUNT +Int #widthOp(#dasmOpCode(PGM [ PCOUNT ], SCHED)), SIZE, PGM, SCHED, OPLIST ListItem({PCOUNT | #dasmOpCode(PGM [ PCOUNT ], SCHED) | #unparseDataByteArray(substrBytes(PGM, PCOUNT +Int 1, PCOUNT +Int #widthOp(#dasmOpCode(PGM [ PCOUNT ], SCHED))))}))
+    rule #parseByteCodeAux(PCOUNT, SIZE, PGM, SCHED, OPLIST) => #parseByteCodeAux(PCOUNT +Int #widthOpCode(PGM [ PCOUNT ]), SIZE, PGM, SCHED, OPLIST ListItem({PCOUNT | #dasmOpCode(PGM [ PCOUNT ], SCHED) | #getStaticArgs(PGM,PCOUNT)}))
       requires PCOUNT <Int SIZE
+
+    syntax String ::= #getStaticArgs ( ByteArray, Int ) [function]
+ // --------------------------------------------------------------
+    rule #getStaticArgs (PGM, PCOUNT) => "0x" requires PCOUNT +Int #widthOpCode(PGM [ PCOUNT ]) >=Int #sizeByteArray(PGM)
+    rule #getStaticArgs (PGM, PCOUNT) => #unparseDataByteArray(substrBytes(PGM, PCOUNT +Int 1, PCOUNT +Int #widthOpCode(PGM [ PCOUNT ]))) requires PCOUNT +Int #widthOpCode(PGM [ PCOUNT ]) <Int #sizeByteArray(PGM)
 
     rule <k> #gas [ OP , AOP ] ... </k>
          <pc>             PCOUNT                                                                                                       </pc>
