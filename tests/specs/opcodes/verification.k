@@ -8,7 +8,7 @@ module VERIFICATION
     syntax Int ::= "#memStart" [function]
                  | "#memWidth" [function]
 
-    syntax Map ::= "#mapWithCode" [function]
+    syntax Memory ::= "#mapWithCode" [function]
 
     rule I -Int 0 => I
 

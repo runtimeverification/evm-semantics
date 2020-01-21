@@ -22,7 +22,7 @@ module CREATE-SPEC
            <schedule> PETERSBURG </schedule>
            <ethereum>
              <evm>
-               <output> _ => .WordStack </output>
+               <output> _ => .ByteArray </output>
                <statusCode> _ => EVMC_SUCCESS </statusCode>
                <callStack> _ </callStack>
                <interimStates> _ </interimStates>
