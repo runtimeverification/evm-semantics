@@ -19,9 +19,9 @@ module LEMMAS-SPEC
  // Buffer write simplifications
  // ----------------------------
 
-    rule <k> runLemma  ( M [ L := .ByteArray ] [ N := WS:ByteArray ]                             ) => doneLemma ( M [ N := WS ]                        ) ... </k>
-    rule <k> runLemma  ( M [ L := WS:ByteArray ] [ N := .ByteArray ]                             ) => doneLemma ( M [ L := WS ]                        ) ... </k>
-    rule <k> runLemma  ( M [ 32 := (0 : 1 : 2 : .ByteArray) ] [ 32 := (3 : 4 : 5 : .ByteArray) ] ) => doneLemma ( M [ 32 := (3 : 4 : 5 : .ByteArray) ] ) ... </k>
+    rule <k> runLemma ( M [ L := .ByteArray ] [ N := WS:ByteArray ]                             ) => doneLemma ( M [ N := WS ]                        ) ... </k>
+    rule <k> runLemma ( M [ L := WS:ByteArray ] [ N := .ByteArray ]                             ) => doneLemma ( M [ L := WS ]                        ) ... </k>
+    rule <k> runLemma ( M [ 32 := (0 : 1 : 2 : .ByteArray) ] [ 32 := (3 : 4 : 5 : .ByteArray) ] ) => doneLemma ( M [ 32 := (3 : 4 : 5 : .ByteArray) ] ) ... </k>
 
  // #range selection operation
  // --------------------------
