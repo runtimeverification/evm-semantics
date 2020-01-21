@@ -1389,6 +1389,10 @@ NOGAS Mode
     rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #finishTx ... </k>
          <mode> NOGAS </mode>
      [priority(25)]
+
+    rule <k> #transferFunds _ _ _ => . ... </k>
+         <mode> NOGAS </mode>
+     [priority(25)]
 ```
 
 Collecting Coverage Data
