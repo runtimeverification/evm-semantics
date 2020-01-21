@@ -1,7 +1,3 @@
-
-
-
-
 requires "evm.k"
 requires "edsl.k"
 
@@ -10,81 +6,49 @@ module LEMMAS
     imports EDSL
     imports K-REFLECTION
 
-
-
-
-
-
-
-
-
-
-
-
-
-    syntax Int ::= nthbyteof ( Int , Int , Int ) [function, smtlib(smt_nthbyteof), proj]
- // ------------------------------------------------------------------------------------
-    rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
-    rule nthbyteof(V, I, N) =>           V modInt 256             when N ==Int (I +Int 1) [concrete]
-
-
-
-
-
-
-
-
-
-    rule #asWord( nthbyteof(V,  0, 32)
-                : nthbyteof(V,  1, 32)
-                : nthbyteof(V,  2, 32)
-                : nthbyteof(V,  3, 32)
-                : nthbyteof(V,  4, 32)
-                : nthbyteof(V,  5, 32)
-                : nthbyteof(V,  6, 32)
-                : nthbyteof(V,  7, 32)
-                : nthbyteof(V,  8, 32)
-                : nthbyteof(V,  9, 32)
-                : nthbyteof(V, 10, 32)
-                : nthbyteof(V, 11, 32)
-                : nthbyteof(V, 12, 32)
-                : nthbyteof(V, 13, 32)
-                : nthbyteof(V, 14, 32)
-                : nthbyteof(V, 15, 32)
-                : nthbyteof(V, 16, 32)
-                : nthbyteof(V, 17, 32)
-                : nthbyteof(V, 18, 32)
-                : nthbyteof(V, 19, 32)
-                : nthbyteof(V, 20, 32)
-                : nthbyteof(V, 21, 32)
-                : nthbyteof(V, 22, 32)
-                : nthbyteof(V, 23, 32)
-                : nthbyteof(V, 24, 32)
-                : nthbyteof(V, 25, 32)
-                : nthbyteof(V, 26, 32)
-                : nthbyteof(V, 27, 32)
-                : nthbyteof(V, 28, 32)
-                : nthbyteof(V, 29, 32)
-                : nthbyteof(V, 30, 32)
-                : nthbyteof(V, 31, 32)
-                : .WordStack ) => V
-      requires 0 <=Int V andBool V <Int pow256
-
     rule #asWord( 0 : W1 : WS  =>  W1 : WS )
 
-    rule nthbyteof(N, 0, 1) => N
+    rule WS ++ .WordStack => WS
 
+    rule #sizeWordStack(#buf(N, _)  , M) => M +Int N
+    rule #sizeWordStack(BUF1 ++ BUF2, M) => M +Int #sizeWordStack(BUF1) +Int #sizeWordStack(BUF2)
+    rule #sizeWordStack(#drop(N, BUF))   => maxInt(#sizeWordStack(BUF) -Int N, 0)
 
+    rule #take(N, BUF)          => BUF                                              requires N ==Int #sizeWordStack(BUF)
+    rule #take(N, BUF1 ++ BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeWordStack(BUF1)
+    rule #take(N, BUF1 ++ BUF2) => BUF1 ++ #take(N -Int #sizeWordStack(BUF1), BUF2) requires N  >Int #sizeWordStack(BUF1)
 
+    rule #drop(N, BUF)           => .WordStack                               requires #sizeWordStack(BUF) <=Int N
+    rule #drop(N, #drop(M, BUF)) => #drop(N +Int M, BUF)
+    rule #drop(N, BUF1 ++ BUF2)  => #drop(N -Int #sizeWordStack(BUF1), BUF2) requires N >=Int #sizeWordStack(BUF1)
+    rule #drop(N, BUF1 ++ BUF2)  => #drop(N, BUF1) ++ BUF2                   requires N <Int #sizeWordStack(BUF1)
 
+    rule #asWord(#buf(N, BUF)) => BUF
 
+    rule #asWord(W0 : W1 : W2 : W3 : #take(28, BUF)) /Int 26959946667150639794667015087019630673637144422540572481103610249216 => #asWord(W0 : W1 : W2 : W3 : .WordStack)
 
+    rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeWordStack(BUF) ==Int #sizeWordStack(BUF')
 
+    rule BUF:WordStack [ L .. W ] => .ByteArray requires W <=Int 0
+    rule BUF           [ 0 .. W ] => BUF        requires W ==Int #sizeWordStack(BUF)
+    rule BUF           [ L .. W ] => .ByteArray requires L  >Int #sizeWordStack(BUF)
 
+    rule #range(M, N, K) => .ByteArray requires notBool K >Int 0
 
+    rule #range(M [ N := BUF:WordStack ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))
+      requires K >Int 0
+       andBool L <Int N
 
+    rule #range(M [ N := BUF ], L, K) => BUF [ L -Int N .. minInt(K, #sizeWordStack(BUF) -Int (L -Int N)) ] ++ #range(M, N +Int #sizeWordStack(BUF), K -Int minInt(K, #sizeWordStack(BUF) -Int (L -Int N)))
+      requires K  >Int 0
+       andBool L >=Int N
+       andBool L  <Int N +Int #sizeWordStack(BUF)
 
+    rule #range(M [ N := BUF ], L, K) => #range(M, L, K)
+      requires K  >Int 0
+       andBool L >=Int N +Int #sizeWordStack(BUF)
 
+    rule keccak(BUF1 ++ BUF2) => hash2(#asWord(BUF1), #asWord(BUF2)) requires #sizeWordStack(BUF1) ==Int 32 andBool #sizeWordStack(BUF2) ==Int 32
 
     syntax Bool ::= #isRegularWordStack ( WordStack ) [function]
  // -------------------------------------------------------
@@ -94,10 +58,6 @@ module LEMMAS
     // for Vyper
     rule #padToWidth(N, #asByteStack(#asWord(WS))) => WS
       requires #noOverflow(WS) andBool N ==Int #sizeWordStack(WS)
-
-    // storing a symbolic boolean value in memory
-    rule #padToWidth(32, #asByteStack(bool2Word(E)))
-      => #asByteStackInWidthAux(0, 30, 32, nthbyteof(bool2Word(E), 31, 32) : .WordStack)
 
     // for Solidity
     rule #asWord(WS) /Int D => #asWord(#take(#sizeWordStack(WS) -Int log256Int(D), WS))
@@ -112,19 +72,6 @@ module LEMMAS
 
     rule #noOverflowAux(W : WS)     => 0 <=Int W andBool W <Int 256 andBool #noOverflowAux(WS)
     rule #noOverflowAux(.WordStack) => true
-
-    syntax WordStack ::= #asByteStackInWidth    ( Int, Int )                 [function]
-                       | #asByteStackInWidthAux ( Int, Int, Int, WordStack ) [function]
- // -----------------------------------------------------------------------------------
-    rule #asByteStackInWidth(X, N) => #asByteStackInWidthAux(X, N -Int 1, N, .WordStack)
-      requires #rangeBytes(N, X)
-
-    rule #asByteStackInWidthAux(X, I => I -Int 1, N, WS => nthbyteof(X, I, N) : WS) when I >=Int 0
-    rule #asByteStackInWidthAux(X,            -1, N, WS) => WS
-
-
-
-
 
     // TODO: drop hash1 and keccakIntList once new vyper hashed location scheme is captured in edsl.md
 
@@ -149,15 +96,6 @@ module LEMMAS
       requires ( notBool #isConcrete(WS) )
        andBool ( #sizeWordStack(WS) ==Int 32 orBool #sizeWordStack(WS) ==Int 64 )
 
-
-
-
-
-
-
-
-
-
     rule N +Int 0 => N
 
     rule N -Int 0 => N
@@ -176,12 +114,6 @@ module LEMMAS
     rule 0 &Int N => 0
     rule N &Int 0 => 0
     rule N &Int N => N
-
-
-
-
-
-
 
     //orienting symbolic term to be first, converting -Int to +Int for concrete values.
     rule I +Int B => B          +Int I when #isConcrete(I) andBool notBool #isConcrete(B)
@@ -208,8 +140,6 @@ module LEMMAS
     rule N &Int MASK => N  requires MASK ==Int (2 ^Int (log2Int(MASK) +Int 1)) -Int 1 // MASK = 0xffff...f
                             andBool 0 <=Int N andBool N <=Int MASK
 
-
-
     // for gas calculation
     rule A -Int (#if C #then B1 #else B2 #fi) => #if C #then (A -Int B1) #else (A -Int B2) #fi
 
@@ -218,25 +148,11 @@ module LEMMAS
 
     rule (#if C #then B1 #else B2 #fi) +Int A => #if C #then (B1 +Int A) #else (B2 +Int A) #fi
 
-
-
-
-
-
-
-
     rule X >Int Y => Y <Int X
     rule X >=Int Y => Y <=Int X
 
     rule notBool (X <Int Y) => Y <=Int X
     rule notBool (X <=Int Y) => Y <Int X
-
-
-
-
-
-
-
 
     rule bool2Word(A) |Int bool2Word(B) => bool2Word(A  orBool B)
     rule bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B)
@@ -254,36 +170,8 @@ module LEMMAS
 
     rule chop(bool2Word(B)) => bool2Word(B)
 
-    rule #asWord(0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0
-                   : 0 : 0 : 0 : 0 : 0 : 0 : 0 : 0 : nthbyteof(bool2Word( E ), I, N) : .WordStack)
-         => bool2Word( E )
-
-
-
-
-
     rule 0 <=Int X &Int Y             => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <=Int Y andBool Y <Int pow256
     rule         X &Int Y <Int pow256 => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <=Int Y andBool Y <Int pow256
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    rule 0 <=Int nthbyteof(V, I, N)             => true
-    rule         nthbyteof(V, I, N) <Int 256    => true
-    rule         nthbyteof(V, I, N) <Int pow256 => true
 
     rule 0 <=Int #asWord(WS)          => true
     rule #asWord(WS) <Int pow256      => true
@@ -303,62 +191,15 @@ module LEMMAS
     rule 0 <=Int keccakIntList(_)             => true
     rule         keccakIntList(_) <Int pow256 => true
 
-
-
-
-
-
-
-
-
-
-
-
     rule X <=Int maxUInt256 => X <Int pow256
     rule X <=Int maxUInt160 => X <Int pow160
     rule X <=Int 255        => X <Int 256
 
-
-
-
-
-
-
-
-
-
-    /*rule X <Int pow256 => true
-      requires X <Int 256
-
-    rule X <Int pow256 => true
-      requires X <Int pow160
-
-    rule 0 <=Int X => true
-      requires 0 <Int X*/
-
-
-
-
-
     rule chop(I) => I requires 0 <=Int I andBool I <Int pow256
-
-
-
-
-
-
 
     syntax Bool ::= #notKLabel ( K , String ) [function]
     rule #notKLabel(T, L) => #getKLabelString(T) =/=String L orBool #isVariable(T)
 
-
-
-
-
-
-
     rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
 
 endmodule
-
-

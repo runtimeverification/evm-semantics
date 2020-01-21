@@ -13,7 +13,7 @@ module BALANCEOF-SPEC
 
     <ethereum>
       <evm>
-        <output> _ => #asByteStackInWidth(BAL, 32) </output>
+        <output> _ => #buf(32, BAL) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
