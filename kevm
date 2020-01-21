@@ -121,16 +121,20 @@ run_web3_ganache() {
     $0 web3 "${args[@]}" "$web3_port" "$@" &
     while ! netcat -z 127.0.0.1 "$web3_port" ; do sleep 0.1; done
     notif 'Generating accounts'
-    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0xdc7e9a7c64933ab893160b79d099c254d274e1c40c6df6d5239e1a623e3d6de1", "balance":"0x56BC75E2D63100000"}'
-    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x6e2687f9732d970c6b1d5baa3dff26c4af36257552bc17df737afbc00ca70de2", "balance":"0x56BC75E2D63100000"}'
-    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0xd34d8e873da77217abaef9424a7d87fce351b603920c7f5288d7701c5f148860", "balance":"0x56BC75E2D63100000"}'
-    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x976b5ec9253759d4a2746c37597841beba57527123dc3db2165b637adce58bcb", "balance":"0x56BC75E2D63100000"}'
-    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x23dff7ac7981167eb5386e51c3d6d2e3ca9dc219315749b2058d0a2d1e21625e", "balance":"0x56BC75E2D63100000"}'
-    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0xe040e4bf96d8c9d3a8d1ffb22b30ed4b0a79a25342d656c5a8e2784b0fab752f", "balance":"0x56BC75E2D63100000"}'
-    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x13abddd7d94165fc46bed2cad6b0b14cd0267a85f70ad5c26cce82c609e0bf87", "balance":"0x56BC75E2D63100000"}'
-    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x0e29f7d6984bb47d60db479212ca56af516705b07d8753b474bd7f0db8bc1921", "balance":"0x56BC75E2D63100000"}'
-    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0xea7fe1480e9ab71c261c5e1e727f36482f84dbdb07dbf8c8e9f767dcecf87568", "balance":"0x56BC75E2D63100000"}'
-    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x5f9addbbf41ae2e3d6cb7b07ffabf2c5ff6edc3a38c9dd64a9afd23df02ad7ee", "balance":"0x56BC75E2D63100000"}'
+    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501200", "balance":"0xD3C21BCECCEDA1000000"}'
+    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201", "balance":"0xD3C21BCECCEDA1000000"}'
+    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501202", "balance":"0xD3C21BCECCEDA1000000"}'
+    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501203", "balance":"0xD3C21BCECCEDA1000000"}'
+    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501204", "balance":"0xD3C21BCECCEDA1000000"}'
+    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501205", "balance":"0xD3C21BCECCEDA1000000"}'
+    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501206", "balance":"0xD3C21BCECCEDA1000000"}'
+    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501207", "balance":"0xD3C21BCECCEDA1000000"}'
+    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501208", "balance":"0xD3C21BCECCEDA1000000"}'
+    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501209", "balance":"0xD3C21BCECCEDA1000000"}'
+
+    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x956b91cb2344d7863ea89e6945b753ca32f6d74bb97a59e59e04903ded14ad00", "balance":"0xD3C21BCECCEDA1000000"}'
+    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x956b91cb2344d7863ea89e6945b753ca32f6d74bb97a59e59e04903ded14ad01", "balance":"0xD3C21BCECCEDA1000000"}'
+    $0 web3-send "$web3_port" firefly_addAccount '{"key":"0x956b91cb2344d7863ea89e6945b753ca32f6d74bb97a59e59e04903ded14ad02", "balance":"0xD3C21BCECCEDA1000000"}'
     $0 web3-send "$web3_port" firefly_genesisBlock
 
 }
