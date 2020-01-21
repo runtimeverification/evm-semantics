@@ -181,7 +181,7 @@ module VERIFICATION
 
     rule #asWord(#buf(32, DATA)) => DATA  requires #rangeUInt(256, DATA)
 
-    rule #padToWidth(32, #asByteStack(V)) => #buf(32, V) // #asByteStackInWidth(V, 32)
+    rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
       requires 0 <=Int V andBool V <Int pow256 andBool #notKLabel(V, "#asWord")
 
     rule #buf(32, #asWord(WS)) => WS  requires #sizeWordStack(WS) ==Int 32
