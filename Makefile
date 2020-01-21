@@ -368,6 +368,7 @@ tests/specs/functional/%.prove: TEST_SYMBOLIC_BACKEND=haskell
 tests/specs/examples/%.prove:   TEST_SYMBOLIC_BACKEND=haskell
 
 tests/specs/functional/storageRoot-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
+tests/specs/functional/lemmas-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
 
 tests/%.prove: tests/%
 	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE) $(KPROVE_OPTIONS) \
@@ -442,12 +443,15 @@ test-all-truffle: $(all_truffle_tests:=.run-truffle)
 test-failing-truffle: $(failing_truffle_tests:=.run-truffle)
 test-truffle: $(passing_truffle_tests:=.run-truffle)
 
+slow_openzep_tests    = $(shell cat tests/slow.openzep)
 all_openzep_tests     = $(shell cd tests/openzeppelin-contracts && find ./test -name *.test.js)
+quick_openzep_tests   = $(filter-out $(slow_openzep_tests), $(all_openzep_tests))
 failing_openzep_tests = $(shell cat tests/failing.openzep)
-passing_openzep_tests = $(filter-out $(failing_openzep_tests), $(all_openzep_tests))
+passing_openzep_tests = $(filter-out $(failing_openzep_tests), $(quick_openzep_tests))
 
 test-all-openzep: $(all_openzep_tests:=.run-openzep)
 test-failing-openzep: $(failing_openzep_tests:=.run-openzep)
+test-slow-openzep: $(slow_openzep_tests:=.run-openzep)
 test-openzep: $(passing_openzep_tests:=.run-openzep)
 
 tests/openzeppelin-contracts/truffle-config.js: tests/openzeppelin-contracts/DOCUMENTATION.md

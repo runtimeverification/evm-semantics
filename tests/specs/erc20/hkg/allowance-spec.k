@@ -13,7 +13,7 @@ module ALLOWANCE-SPEC
 
     <ethereum>
       <evm>
-        <output> _ => #asByteStackInWidth(ALLOWANCE, 32) </output>
+        <output> _ => #buf(32, ALLOWANCE) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
