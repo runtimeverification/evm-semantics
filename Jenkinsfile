@@ -38,14 +38,14 @@ pipeline {
         stage('Dependencies') {
           steps {
             sh '''
-              make deps split-tests -j3
+              make deps split-tests -j3 RELEASE=1
             '''
           }
         }
         stage('Build') {
           steps {
             sh '''
-              make build -j4
+              make build -j4 RELEASE=1
             '''
           }
         }
