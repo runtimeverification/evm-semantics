@@ -6,49 +6,49 @@ module LEMMAS
     imports EDSL
     imports K-REFLECTION
 
-    rule #asWord( 0 : W1 : WS  =>  W1 : WS )
+    rule #asWord( BUF => #drop(1, BUF) ) requires BUF [ 0 ] ==Int 0
 
-    rule WS ++ .WordStack => WS
+    rule WS ++ .ByteArray => WS
 
-    rule #sizeWordStack(#buf(N, _)  , M) => M +Int N
-    rule #sizeWordStack(BUF1 ++ BUF2, M) => M +Int #sizeWordStack(BUF1) +Int #sizeWordStack(BUF2)
-    rule #sizeWordStack(#drop(N, BUF))   => maxInt(#sizeWordStack(BUF) -Int N, 0)
+    rule #sizeByteArray(W : WS)        => 1 +Int #sizeByteArray(WS)
+    rule #sizeByteArray(#buf(N, _)  )  => N
+    rule #sizeByteArray(BUF1 ++ BUF2)  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)
+    rule #sizeByteArray(#drop(N, BUF)) => maxInt(#sizeByteArray(BUF) -Int N, 0)
 
-    rule #take(N, BUF)          => BUF                                              requires N ==Int #sizeWordStack(BUF)
-    rule #take(N, BUF1 ++ BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeWordStack(BUF1)
-    rule #take(N, BUF1 ++ BUF2) => BUF1 ++ #take(N -Int #sizeWordStack(BUF1), BUF2) requires N  >Int #sizeWordStack(BUF1)
+    rule #take(N, BUF)          => BUF                                              requires N ==Int #sizeByteArray(BUF)
+    rule #take(N, BUF1 ++ BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeByteArray(BUF1)
+    rule #take(N, BUF1 ++ BUF2) => BUF1 ++ #take(N -Int #sizeByteArray(BUF1), BUF2) requires N  >Int #sizeByteArray(BUF1)
 
-    rule #drop(N, BUF)           => .WordStack                               requires #sizeWordStack(BUF) <=Int N
-    rule #drop(N, #drop(M, BUF)) => #drop(N +Int M, BUF)
-    rule #drop(N, BUF1 ++ BUF2)  => #drop(N -Int #sizeWordStack(BUF1), BUF2) requires N >=Int #sizeWordStack(BUF1)
-    rule #drop(N, BUF1 ++ BUF2)  => #drop(N, BUF1) ++ BUF2                   requires N <Int #sizeWordStack(BUF1)
+    rule #drop(N, BUF)          => .ByteArray                               requires N >=Int #sizeByteArray(BUF)
+    rule #drop(N, BUF1 ++ BUF2) => #drop(N -Int #sizeByteArray(BUF1), BUF2) requires N >=Int #sizeByteArray(BUF1)
+    rule #drop(N, BUF1 ++ BUF2) => #drop(N, BUF1) ++ BUF2                   requires N  <Int #sizeByteArray(BUF1)
 
     rule #asWord(#buf(N, BUF)) => BUF
 
-    rule #asWord(W0 : W1 : W2 : W3 : #take(28, BUF)) /Int 26959946667150639794667015087019630673637144422540572481103610249216 => #asWord(W0 : W1 : W2 : W3 : .WordStack)
+    rule #asWord(BUF) /Int 26959946667150639794667015087019630673637144422540572481103610249216 => #asWord(#take(4, BUF))
 
-    rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeWordStack(BUF) ==Int #sizeWordStack(BUF')
+    rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeByteArray(BUF) ==Int #sizeByteArray(BUF')
 
-    rule BUF:WordStack [ L .. W ] => .ByteArray requires W <=Int 0
-    rule BUF           [ 0 .. W ] => BUF        requires W ==Int #sizeWordStack(BUF)
-    rule BUF           [ L .. W ] => .ByteArray requires L  >Int #sizeWordStack(BUF)
+    rule BUF [ L .. W ] => .ByteArray requires W <=Int 0
+    rule BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)
+    rule BUF [ L .. W ] => .ByteArray requires L  >Int #sizeByteArray(BUF)
 
     rule #range(M, N, K) => .ByteArray requires notBool K >Int 0
 
-    rule #range(M [ N := BUF:WordStack ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))
+    rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))
       requires K >Int 0
        andBool L <Int N
 
-    rule #range(M [ N := BUF ], L, K) => BUF [ L -Int N .. minInt(K, #sizeWordStack(BUF) -Int (L -Int N)) ] ++ #range(M, N +Int #sizeWordStack(BUF), K -Int minInt(K, #sizeWordStack(BUF) -Int (L -Int N)))
+    rule #range(M [ N := BUF ], L, K) => BUF [ L -Int N .. minInt(K, #sizeByteArray(BUF) -Int (L -Int N)) ] ++ #range(M, N +Int #sizeByteArray(BUF), K -Int minInt(K, #sizeByteArray(BUF) -Int (L -Int N)))
       requires K  >Int 0
        andBool L >=Int N
-       andBool L  <Int N +Int #sizeWordStack(BUF)
+       andBool L  <Int N +Int #sizeByteArray(BUF)
 
     rule #range(M [ N := BUF ], L, K) => #range(M, L, K)
       requires K  >Int 0
-       andBool L >=Int N +Int #sizeWordStack(BUF)
+       andBool L >=Int N +Int #sizeByteArray(BUF)
 
-    rule keccak(BUF1 ++ BUF2) => hash2(#asWord(BUF1), #asWord(BUF2)) requires #sizeWordStack(BUF1) ==Int 32 andBool #sizeWordStack(BUF2) ==Int 32
+    rule keccak(BUF1 ++ BUF2) => hash2(#asWord(BUF1), #asWord(BUF2)) requires #sizeByteArray(BUF1) ==Int 32 andBool #sizeByteArray(BUF2) ==Int 32
 
     syntax Bool ::= #isRegularWordStack ( WordStack ) [function]
  // -------------------------------------------------------
@@ -57,21 +57,21 @@ module LEMMAS
 
     // for Vyper
     rule #padToWidth(N, #asByteStack(#asWord(WS))) => WS
-      requires #noOverflow(WS) andBool N ==Int #sizeWordStack(WS)
+      requires #noOverflow(WS) andBool N ==Int #sizeByteArray(WS)
 
     // for Solidity
-    rule #asWord(WS) /Int D => #asWord(#take(#sizeWordStack(WS) -Int log256Int(D), WS))
+    rule #asWord(WS) /Int D => #asWord(#take(#sizeByteArray(WS) -Int log256Int(D), WS))
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
-       andBool #sizeWordStack(WS) >=Int log256Int(D)
+       andBool #sizeByteArray(WS) >=Int log256Int(D)
        andBool #noOverflow(WS)
 
-    syntax Bool ::= #noOverflow    ( WordStack ) [function]
-                  | #noOverflowAux ( WordStack ) [function]
+    syntax Bool ::= #noOverflow    ( ByteArray ) [function]
+                  | #noOverflowAux ( ByteArray ) [function]
  // -------------------------------------------------------
-    rule #noOverflow(WS) => #sizeWordStack(WS) <=Int 32 andBool #noOverflowAux(WS)
+    rule #noOverflow(WS) => #sizeByteArray(WS) <=Int 32 andBool #noOverflowAux(WS)
 
-    rule #noOverflowAux(W : WS)     => 0 <=Int W andBool W <Int 256 andBool #noOverflowAux(WS)
-    rule #noOverflowAux(.WordStack) => true
+    rule #noOverflowAux(BA        ) => 0 <=Int BA[0] andBool BA[0] <Int 256 andBool #noOverflowAux(#drop(1,BA)) requires #sizeByteArray(BA) >Int 0
+    rule #noOverflowAux(.ByteArray) => true
 
     // TODO: drop hash1 and keccakIntList once new vyper hashed location scheme is captured in edsl.md
 
@@ -94,7 +94,7 @@ module LEMMAS
     // for terms came from bytecode not via #hashedLocation
     rule keccak(WS) => keccakIntList(byteStack2IntList(WS))
       requires ( notBool #isConcrete(WS) )
-       andBool ( #sizeWordStack(WS) ==Int 32 orBool #sizeWordStack(WS) ==Int 64 )
+       andBool ( #sizeByteArray(WS) ==Int 32 orBool #sizeByteArray(WS) ==Int 64 )
 
     rule N +Int 0 => N
 
