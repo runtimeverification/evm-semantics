@@ -804,7 +804,7 @@ Retrieving Blocks
            ...
          </block> } #as BLOCKITEM)
           => #rpcResponseSuccess( { "number": #unparseQuantity( NUM )
-                                  , "hash": "0x" +String Keccak256( #rlpEncodeBlock( BLOCKITEM ) )
+                                  , "hash": #unparseData( #blockchainItemHash( BLOCKITEM ), 32 )
                                   , "parentHash": #unparseData( PARENTHASH, 32 )
                                   , "mixHash": #unparseData( MIXHASH, 32 )
                                   , "nonce": #unparseData( NONCE, 8 )
@@ -932,14 +932,14 @@ Transaction Receipts
              </network> | _ } #as BLOCKITEM )
           => #rpcResponseSuccess( { "transactionHash": TXHASH
                                   , "transactionIndex": #unparseQuantity(getIndexOf(TXID, TXLIST))
-                                  , "blockHash": "0x" +String Keccak256(#rlpEncodeBlock(BLOCKITEM))
+                                  , "blockHash": #unparseData( #blockchainItemHash( BLOCKITEM ), 32 )
                                   , "blockNumber": #unparseQuantity(BN)
                                   , "from": #unparseAccount(TXFROM)
                                   , "to": #unparseAccount(TT)
                                   , "gasUsed": #unparseQuantity(CGAS)
                                   , "cumulativeGasUsed": #unparseQuantity(CGAS)
                                   , "contractAddress": #if TT ==K .Account #then #unparseData(#newAddr(TXFROM, NONCE -Int 1), 20) #else null #fi
-                                  , "logs": [#serializeLogs(LOGS, 0, getIndexOf(TXID, TXLIST), TXHASH, "0x" +String Keccak256(#rlpEncodeBlock(BLOCKITEM)), BN)]
+                                  , "logs": [#serializeLogs(LOGS, 0, getIndexOf(TXID, TXLIST), TXHASH, #unparseData( #blockchainItemHash( BLOCKITEM ), 32 ), BN)]
                                   , "status": #unparseQuantity(TXSTATUS)
                                   , "logsBloom": #unparseDataByteArray(BLOOM)
                                   , "v": #unparseQuantity(TW)
@@ -1553,44 +1553,28 @@ Helper Funcs
 ------------
 
 ```k
-    syntax String ::= #rlpEncodeBlock( BlockchainItem ) [function]
- // --------------------------------------------------------------
-    rule #rlpEncodeBlock( { _ |
+    syntax Int ::= #blockchainItemHash( BlockchainItem ) [function]
+ // ---------------------------------------------------------------
+    rule #blockchainItemHash( { _ |
          <block>
-           <previousHash>      PARENTHASH  </previousHash>
-           <ommersHash>        OMMERSHASH  </ommersHash>
-           <coinbase>          MINER       </coinbase>
-           <stateRoot>         STATEROOT   </stateRoot>
-           <transactionsRoot>  TXROOT      </transactionsRoot>
-           <receiptsRoot>      RCPTROOT    </receiptsRoot>
-           <logsBloom>         LOGSBLOOM   </logsBloom>
-           <difficulty>        DFFCLTY     </difficulty>
-           <number>            NUM         </number>
-           <gasLimit>          GLIMIT      </gasLimit>
-           <gasUsed>           GUSED       </gasUsed>
-           <timestamp>         TIME        </timestamp>
-           <extraData>         DATA        </extraData>
-           <mixHash>           MIXHASH     </mixHash>
-           <blockNonce>        NONCE       </blockNonce>
+           <previousHash>      HP </previousHash>
+           <ommersHash>        HO </ommersHash>
+           <coinbase>          HC </coinbase>
+           <stateRoot>         HR </stateRoot>
+           <transactionsRoot>  HT </transactionsRoot>
+           <receiptsRoot>      HE </receiptsRoot>
+           <logsBloom>         HB </logsBloom>
+           <difficulty>        HD </difficulty>
+           <number>            HI </number>
+           <gasLimit>          HL </gasLimit>
+           <gasUsed>           HG </gasUsed>
+           <timestamp>         HS </timestamp>
+           <extraData>         HX </extraData>
+           <mixHash>           HM </mixHash>
+           <blockNonce>        HN </blockNonce>
            ...
          </block> } )
-         => #rlpEncodeLength(         #rlpEncodeBytes( PARENTHASH, 32 )
-                              +String #rlpEncodeBytes( OMMERSHASH, 32 )
-                              +String #rlpEncodeBytes( MINER, 20 )
-                              +String #rlpEncodeBytes( STATEROOT, 32 )
-                              +String #rlpEncodeBytes( TXROOT, 32 )
-                              +String #rlpEncodeBytes( RCPTROOT, 32 )
-                              +String #rlpEncodeBytes( #asInteger( LOGSBLOOM ), 256 )
-                              +String #rlpEncodeWord ( DFFCLTY )
-                              +String #rlpEncodeWord ( NUM )
-                              +String #rlpEncodeWord ( GLIMIT )
-                              +String #rlpEncodeWord ( GUSED )
-                              +String #rlpEncodeWord ( TIME )
-                              +String #rlpEncodeBytes( #asInteger( DATA ), #sizeByteArray( DATA ) )
-                              +String #rlpEncodeBytes( MIXHASH, 32 )
-                              +String #rlpEncodeBytes( NONCE, 8 )
-                            , 192
-                            )
+      => #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
 ```
 
 State Root
@@ -1811,7 +1795,7 @@ Mining
          <gas> _ => 0 </gas>
 
     rule <k> #setParentHash BCI => . ... </k>
-         <previousHash> _ => #parseHexWord( Keccak256( #rlpEncodeBlock( BCI ) ) ) </previousHash>
+         <previousHash> _ => #blockchainItemHash( BCI ) </previousHash>
 
     rule <k> #updateTrieRoots => #updateStateRoot ~> #updateTransactionsRoot ~> #updateReceiptsRoot ... </k>
 
@@ -1876,7 +1860,18 @@ Retrieving logs
         orBool BLOCKID ==K EARLIEST
         orBool BLOCKID ==K PENDING
 
-    rule <k> #getLogs(START => START +Int 1, END, RESULT => RESULT ListItem({LOGS|#getTxPositionInBlock(TXID,#getBlockByNumber(START,BLOCKLIST,{<network> NETWORK </network>|<block> BLOCK </block>}))|TXHASH|START|"0x0"}) ) ... </k>
+    rule <k> #getLogs( START => START +Int 1
+                     , END
+                     , RESULT => RESULT ListItem( { LOGS
+                                                  | #getTxPositionInBlock(TXID,#getBlockByNumber(START,BLOCKLIST,{<network> NETWORK </network>|<block> BLOCK </block>}))
+                                                  | TXHASH
+                                                  | START
+                                                  | #unparseData( #blockchainItemHash( #getBlockByNumber(START,BLOCKLIST,{<network> NETWORK </network>|<block> BLOCK </block>}) ), 32 )
+                                                  }
+                                                )
+                     )
+          ...
+         </k>
          <txReceipt>
            <txBlockNumber> START  </txBlockNumber>
            <txHash>        TXHASH </txHash>
