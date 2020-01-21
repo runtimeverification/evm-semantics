@@ -7,7 +7,6 @@
 ./test/crowdsale/IncreasingPriceCrowdsale.test.js
 ./test/crowdsale/PostDeliveryCrowdsale.test.js
 ./test/crowdsale/RefundablePostDeliveryCrowdsale.test.js
-./test/crowdsale/FinalizableCrowdsale.test.js
 ./test/crowdsale/Crowdsale.test.js
 ./test/crowdsale/CappedCrowdsale.test.js
 ./test/crowdsale/WhitelistCrowdsale.test.js
