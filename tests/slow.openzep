@@ -1,0 +1,5 @@
+./test/token/ERC721/ERC721Pausable.test.js
+./test/token/ERC721/ERC721Full.test.js
+./test/token/ERC721/ERC721.test.js
+./test/token/ERC721/ERC721Burnable.test.js
+./test/token/ERC721/ERC721Mintable.test.js
