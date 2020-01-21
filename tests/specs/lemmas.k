@@ -13,7 +13,7 @@ module LEMMAS
     rule #sizeByteArray(W : WS)        => 1 +Int #sizeByteArray(WS)
     rule #sizeByteArray(#buf(N, _)  )  => N
     rule #sizeByteArray(BUF1 ++ BUF2)  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)
-    rule #sizeWordStack(#drop(N, BUF)) => maxInt(#sizeWordStack(BUF) -Int N, 0)
+    rule #sizeByteArray(#drop(N, BUF)) => maxInt(#sizeByteArray(BUF) -Int N, 0)
 
     rule #take(N, BUF)          => BUF                                              requires N ==Int #sizeByteArray(BUF)
     rule #take(N, BUF1 ++ BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeByteArray(BUF1)
