@@ -50,6 +50,7 @@ module WEB3
         </filters>
         <snapshots> .List </snapshots>
         <web3shutdownable> $SHUTDOWNABLE:Bool </web3shutdownable>
+        <web3notifications> $NOTIFICATIONS:Bool </web3notifications>
       </kevm-client>
 ```
 
@@ -206,14 +207,21 @@ WEB3 JSON RPC
     syntax KItem ::= #sendResponse ( JSONs )
  // ----------------------------------------
     rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", "id": CALLID, J }, SOCK) ~> getRequest() </k>
-         <callid> CALLID </callid>
-         <web3clientsocket> SOCK </web3clientsocket>
-         <batch> undef </batch>
+         <callid>            CALLID </callid>
+         <web3clientsocket>  SOCK   </web3clientsocket>
+         <batch>             undef  </batch>
       requires CALLID =/=K undef
 
+    rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", J }, SOCK) ~> getRequest() </k>
+         <callid>            undef </callid>
+         <web3clientsocket>  SOCK  </web3clientsocket>
+         <batch>             undef </batch>
+         <web3notifications> true  </web3notifications>
+
     rule <k> #sendResponse(_) ~> _ => getRequest() </k>
-         <callid> undef </callid>
-         <batch> undef </batch>
+         <callid>            undef </callid>
+         <batch>             undef </batch>
+         <web3notifications> false </web3notifications>
 
     rule <k> #sendResponse(J) ~> _ => #loadFromBatch </k>
          <callid> CALLID </callid>
@@ -221,9 +229,16 @@ WEB3 JSON RPC
          <web3response> ... .List => ListItem({ "jsonrpc": "2.0", "id": CALLID, J }) </web3response>
       requires CALLID =/=K undef
 
+    rule <k> #sendResponse(J) ~> _ => #loadFromBatch </k>
+         <callid> undef </callid>
+         <batch> [ _ ] </batch>
+         <web3response> ... .List => ListItem({ "jsonrpc": "2.0", J }) </web3response>
+         <web3notifications> true </web3notifications>
+
     rule <k> #sendResponse(_) ~> _ => #loadFromBatch </k>
          <callid> undef </callid>
          <batch> [ _ ] </batch>
+         <web3notifications> false </web3notifications>
 
     syntax KItem ::= #rpcResponseSuccess          ( JSON                )
                    | #rpcResponseSuccessException ( JSON , JSON         )
