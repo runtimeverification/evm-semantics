@@ -224,20 +224,20 @@ WEB3 JSON RPC
          <web3notifications> false </web3notifications>
 
     rule <k> #sendResponse(J) ~> _ => #loadFromBatch </k>
-         <callid> CALLID </callid>
-         <batch> [ _ ] </batch>
+         <callid>           CALLID                                                   </callid>
+         <batch>            [ _ ]                                                    </batch>
          <web3response> ... .List => ListItem({ "jsonrpc": "2.0", "id": CALLID, J }) </web3response>
       requires CALLID =/=K undef
 
     rule <k> #sendResponse(J) ~> _ => #loadFromBatch </k>
-         <callid> undef </callid>
-         <batch> [ _ ] </batch>
+         <callid>           undef                                      </callid>
+         <batch>            [ _ ]                                      </batch>
          <web3response> ... .List => ListItem({ "jsonrpc": "2.0", J }) </web3response>
-         <web3notifications> true </web3notifications>
+         <web3notifications> true                                      </web3notifications>
 
     rule <k> #sendResponse(_) ~> _ => #loadFromBatch </k>
-         <callid> undef </callid>
-         <batch> [ _ ] </batch>
+         <callid>            undef </callid>
+         <batch>             [ _ ] </batch>
          <web3notifications> false </web3notifications>
 
     syntax KItem ::= #rpcResponseSuccess          ( JSON                )
