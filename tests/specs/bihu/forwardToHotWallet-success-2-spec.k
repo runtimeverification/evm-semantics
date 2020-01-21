@@ -13,7 +13,7 @@ module FORWARDTOHOTWALLET-SUCCESS-2-SPEC
 
     <ethereum>
       <evm>
-        <output> _ => #asByteStackInWidth(RET_VAL, 32) </output>
+        <output> _ => #buf(32, RET_VAL) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <callStack> _ => _ </callStack>
         <interimStates> _ </interimStates>

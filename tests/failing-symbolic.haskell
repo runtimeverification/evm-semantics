@@ -76,6 +76,7 @@ tests/specs/erc20/hobby/transferFrom-success-1-spec.k
 tests/specs/erc20/hobby/transferFrom-success-2-spec.k
 tests/specs/erc20/hobby/transfer-success-1-spec.k
 tests/specs/erc20/hobby/transfer-success-2-spec.k
+tests/specs/functional/lemmas-spec.k
 tests/specs/functional/merkle-failing-spec.k
 tests/specs/functional/storageRoot-spec.k
 tests/specs/opcodes/create-spec.k
