@@ -1,0 +1,33 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": true
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": true
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "result": "0x105007d27050ced689b365040bf102b0e40783c4c9366fd61faa9e555b8fd920"
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 4,
+    "error": {
+      "message": "VM Exception while processing transaction: revert",
+      "code": -32000,
+      "data": {
+        "0xda98dca8c2080bb61048a6dfa4722c86ea5d738e9f4609436f0a56623f2ed3df": {
+          "error": "revert",
+          "program_counter": 1000,
+          "return": "0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002a43726f776473616c653a2062656e656669636961727920697320746865207a65726f206164647265737300000000000000000000000000000000000000000000",
+          "reason": "Crowdsale: beneficiary is the zero address"
+        }
+      }
+    }
+  }
+]

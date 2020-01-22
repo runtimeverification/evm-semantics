@@ -365,22 +365,44 @@ A cons-list is used for the EVM wordstack.
  // --------------------------------------------------------------------
 ```
 
+```{.k .bytes}
+    syntax Bytes ::= Int ":" Bytes [function]
+ // -----------------------------------------
+    rule I : BS => Int2Bytes(I, BE, Unsigned) +Bytes BS requires I <Int 256
+```
+
 -   `#take(N , WS)` keeps the first $N$ elements of a `WordStack` (passing with zeros as needed).
 -   `#drop(N , WS)` removes the first $N$ elements of a `WordStack`.
 
 ```k
-    syntax WordStack ::= #take ( Int , WordStack ) [function, functional]
- // ---------------------------------------------------------------------
-    rule [#take.base]:      #take(N, WS)         => .WordStack                      requires notBool N >Int 0
-    rule [#take.zero-pad]:  #take(N, .WordStack) => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
-    rule [#take.recursive]: #take(N, (W : WS))   => W : #take(N -Int 1, WS)         requires N >Int 0
+    syntax WordStack ::= #take ( Int , WordStack ) [klabel(takeWordStack), function, functional]
+ // --------------------------------------------------------------------------------------------
+    rule [#take.base]:      #take(N, WS)                 => .WordStack                      requires notBool N >Int 0
+    rule [#take.zero-pad]:  #take(N, .WordStack)         => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
+    rule [#take.recursive]: #take(N, (W : WS):WordStack) => W : #take(N -Int 1, WS)         requires N >Int 0
 
-    syntax WordStack ::= #drop ( Int , WordStack ) [function, functional]
- // ---------------------------------------------------------------------
-    rule #drop(N, WS)         => WS                  requires notBool N >Int 0
-    rule #drop(N, .WordStack) => .WordStack
-    rule #drop(N, (W : WS))   => #drop(1, #drop(N -Int 1, (W : WS))) requires N >Int 1
-    rule #drop(1, (_ : WS))   => WS
+    syntax WordStack ::= #drop ( Int , WordStack ) [klabel(dropWordStack), function, functional]
+ // --------------------------------------------------------------------------------------------
+    rule #drop(N, WS:WordStack)       => WS                                  requires notBool N >Int 0
+    rule #drop(N, .WordStack)         => .WordStack                          requires         N >Int 0
+    rule #drop(N, (W : WS):WordStack) => #drop(1, #drop(N -Int 1, (W : WS))) requires         N >Int 1
+    rule #drop(1, (_ : WS):WordStack) => WS
+```
+
+```{.k .bytes}
+    syntax Bytes ::= #take ( Int , Bytes ) [klabel(takeBytes), function, functional]
+ // --------------------------------------------------------------------------------
+    rule #take(N, BS:Bytes) => .Bytes                                          requires                                        notBool N >Int 0
+    rule #take(N, BS:Bytes) => #padRightToWidth(N, .Bytes)                     requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
+    rule #take(N, BS:Bytes) => BS +Bytes #take(N -Int lengthBytes(BS), .Bytes) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
+    rule #take(N, BS:Bytes) => BS [ 0 .. N ]                                   requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
+
+    syntax Bytes ::= #drop ( Int , Bytes ) [klabel(dropBytes), function, functional]
+ // --------------------------------------------------------------------------------
+    rule #drop(N, BS:Bytes) => BS                                  requires                                        notBool N >Int 0
+    rule #drop(N, BS:Bytes) => .Bytes                              requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
+    rule #drop(N, BS:Bytes) => .Bytes                              requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
+    rule #drop(N, BS:Bytes) => substrBytes(BS, N, lengthBytes(BS)) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
 ```
 
 ### Element Access
@@ -391,13 +413,13 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax Int ::= WordStack "[" Int "]" [function]
  // -----------------------------------------------
-    rule (W : _) [ N ] => W                  requires N ==Int 0
-    rule WS      [ N ] => #drop(N, WS) [ 0 ] requires N >Int 0
+    rule (W : _):WordStack [ N ] => W                  requires N ==Int 0
+    rule WS:WordStack      [ N ] => #drop(N, WS) [ 0 ] requires N  >Int 0
 
     syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function]
  // --------------------------------------------------------------
-    rule (W0 : WS)  [ N := W ] => W  : WS                             requires N ==Int 0
-    rule (W0 : WS)  [ N := W ] => W0 : (WS [ N -Int 1 := W ])         requires N >Int 0
+    rule (W0 : WS):WordStack [ N := W ] => W  : WS                     requires N ==Int 0
+    rule (W0 : WS):WordStack [ N := W ] => W0 : (WS [ N -Int 1 := W ]) requires N  >Int 0
 ```
 
 -   Definedness conditions for `WS [ N ]` and `WS [ N := W ]`
@@ -542,7 +564,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax ByteArray = Bytes
     syntax ByteArray ::= ".ByteArray" [function, functional]
  // --------------------------------------------------------
-    rule .ByteArray => .Bytes
+    rule .ByteArray => .Bytes [macro]
 
     syntax Int ::= #asWord ( ByteArray ) [function, smtlib(asWord)]
  // ---------------------------------------------------------------
@@ -574,16 +596,18 @@ The local memory of execution is a byte-array (instead of a word-array).
  // ------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => lengthBytes(WS)
 
-    syntax ByteArray ::= #padToWidth ( Int , ByteArray ) [function]
- // ---------------------------------------------------------------
-    rule #padToWidth(N, WS) => padLeftBytes(WS, N, 0)
+    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function]
+                       | #padRightToWidth ( Int , ByteArray ) [function]
+ // --------------------------------------------------------------------
+    rule #padToWidth(N, BS)      => padLeftBytes(BS, N, 0)
+    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0)
 ```
 
 ```{.k .nobytes}
     syntax ByteArray = WordStack
     syntax ByteArray ::= ".ByteArray" [function]
  // --------------------------------------------
-    rule .ByteArray => .WordStack
+    rule .ByteArray => .WordStack [macro]
 
     syntax Int ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
  // ---------------------------------------------------------------------------
@@ -620,7 +644,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, memo]
  // ------------------------------------------------------------------------
-    rule #sizeByteArray ( WS ) => #sizeWordStack(WS)
+    rule #sizeByteArray ( WS ) => #sizeWordStack(WS) [concrete]
 
     syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, functional, memo]
                        | #padRightToWidth ( Int , ByteArray ) [function, memo]
