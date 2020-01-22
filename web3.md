@@ -1289,7 +1289,6 @@ Transaction Execution
 ```
 
 - `#eth_call`
- **TODO**: add logic for the case in which "from" field is not present
 
 ```k
     syntax KItem ::= "#eth_call"
@@ -1309,10 +1308,22 @@ Transaction Execution
       requires isString( #getJSON("from" , J) )
        andBool isString( #getJSON("to", J) )
 
+    rule <k> #eth_call
+          => #pushNetworkState
+          ~> #setMode NOGAS
+          ~> #loadTx {keys_list(ACCTS)[0]}:>Int J
+          ~> #eth_call_finalize EXECMODE
+         ...
+         </k>
+         <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
+         <mode> EXECMODE </mode>
+         <accountKeys> ACCTS </accountKeys>
+      requires notBool isString( #getJSON("from" , J) )
+       andBool isString( #getJSON("to", J) )
+
     rule <k> #eth_call => #rpcResponseError(-32027, "Method 'eth_call' has invalid arguments") ...  </k>
          <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
-      requires notBool isString( #getJSON("from", J) )
-        orBool notBool isString( #getJSON("to", J) )
+      requires notBool isString( #getJSON("to", J) )
 
     syntax KItem ::= "#eth_call_finalize" Mode
  // ------------------------------------------
