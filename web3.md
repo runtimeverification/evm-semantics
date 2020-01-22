@@ -1378,9 +1378,18 @@ Transaction Execution
          <gasUsed>  GUSED  </gasUsed>
       requires isString(#getJSON("from", J) )
 
-    rule <k> #eth_estimateGas => #rpcResponseError(-32028, "Method 'eth_estimateGas' has invalid arguments") ...  </k>
+    rule <k> #eth_estimateGas
+          => #pushNetworkState
+          ~> #loadTx {keys_list(ACCTS)[0]}:>Int J
+          ~> #eth_estimateGas_finalize GUSED
+         ...
+         </k>
          <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
-      requires notBool isString( #getJSON("from", J) )
+         <gasUsed>  GUSED  </gasUsed>
+         <accountKeys> ACCTS </accountKeys>
+      requires notBool isString(#getJSON("from", J) )
+
+    rule <k> #eth_estimateGas => #rpcResponseError(-32028, "Method 'eth_estimateGas' has invalid arguments") ...  </k> [owise]
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
