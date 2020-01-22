@@ -560,7 +560,7 @@ eth_sendTransaction
     syntax KItem ::= "#eth_sendTransaction"
                    | "#eth_sendTransaction_final"
  // ---------------------------------------------
-    rule <k> #eth_sendTransaction => #loadTx J ~> #eth_sendTransaction_final ... </k>
+    rule <k> #eth_sendTransaction => #loadTx #parseHexWord( #getString("from",J) ) J ~> #eth_sendTransaction_final ... </k>
          <params> [ ({ _ } #as J), .JSONs ] </params>
       requires isString( #getJSON("from",J) )
 
@@ -1086,14 +1086,14 @@ Transaction Execution
 **TODO**: execute all pending transactions
 
 ```k
-    syntax KItem ::= "#loadTx" JSON
- // -------------------------------
-    rule <k> #loadTx J
+    syntax KItem ::= "#loadTx" Account JSON
+ // ---------------------------------------
+    rule <k> #loadTx ACCTFROM J
           => mkTX !ID:Int
-          ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
+          ~> #loadNonce ACCTFROM !ID
           ~> loadTransaction !ID J
-          ~> signTX !ID #parseHexWord(#getString("from", J))
-          ~> #prepareTx !ID #parseHexWord(#getString("from", J))
+          ~> signTX !ID ACCTFROM
+          ~> #prepareTx !ID ACCTFROM
           ~> !ID
           ...
          </k>
@@ -1300,17 +1300,19 @@ Transaction Execution
     rule <k> #eth_call
           => #pushNetworkState
           ~> #setMode NOGAS
-          ~> #loadTx J
+          ~> #loadTx #parseHexWord( #getString("from", J) ) J
           ~> #eth_call_finalize EXECMODE
          ...
          </k>
          <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
          <mode> EXECMODE </mode>
       requires isString( #getJSON("from" , J) )
+       andBool isString( #getJSON("to", J) )
 
     rule <k> #eth_call => #rpcResponseError(-32027, "Method 'eth_call' has invalid arguments") ...  </k>
          <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
       requires notBool isString( #getJSON("from", J) )
+        orBool notBool isString( #getJSON("to", J) )
 
     syntax KItem ::= "#eth_call_finalize" Mode
  // ------------------------------------------
@@ -1361,7 +1363,7 @@ Transaction Execution
 
     rule <k> #eth_estimateGas
           => #pushNetworkState
-          ~> #loadTx J
+          ~> #loadTx #parseHexWord( #getString("from", J) ) J
           ~> #eth_estimateGas_finalize GUSED
          ...
          </k>
