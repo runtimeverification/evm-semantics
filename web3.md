@@ -1306,7 +1306,6 @@ Transaction Execution
          <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
          <mode> EXECMODE </mode>
       requires isString( #getJSON("from" , J) )
-       andBool isString( #getJSON("to", J) )
 
     rule <k> #eth_call
           => #pushNetworkState
@@ -1319,11 +1318,8 @@ Transaction Execution
          <mode> EXECMODE </mode>
          <accountKeys> ACCTS </accountKeys>
       requires notBool isString( #getJSON("from" , J) )
-       andBool isString( #getJSON("to", J) )
 
-    rule <k> #eth_call => #rpcResponseError(-32027, "Method 'eth_call' has invalid arguments") ...  </k>
-         <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
-      requires notBool isString( #getJSON("to", J) )
+    rule <k> #eth_call => #rpcResponseError(-32027, "Method 'eth_call' has invalid arguments") ...  </k> [owise]
 
     syntax KItem ::= "#eth_call_finalize" Mode
  // ------------------------------------------
