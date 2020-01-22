@@ -7,9 +7,11 @@
   {
     "jsonrpc": "2.0",
     "id": 2,
-    "error": {
-      "code": -32027,
-      "message": "Method 'eth_call' has invalid arguments"
-    }
+    "result": true
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "result": "0x000000000000000000000000000000000000000000000000000000000000002a"
   }
 ]
