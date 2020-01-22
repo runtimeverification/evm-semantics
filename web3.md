@@ -1282,21 +1282,22 @@ Transaction Execution
           => #pushNetworkState
           ~> #setMode NOGAS
           ~> #loadTx J
-          ~> #eth_call_finalize
+          ~> #eth_call_finalize EXECMODE
          ...
          </k>
          <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
+         <mode> EXECMODE </mode>
       requires isString( #getJSON("from" , J) )
 
     rule <k> #eth_call => #rpcResponseError(-32027, "Method 'eth_call' has invalid arguments") ...  </k>
          <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
       requires notBool isString( #getJSON("from", J) )
 
-    syntax KItem ::= "#eth_call_finalize"
- // -------------------------------------
+    syntax KItem ::= "#eth_call_finalize" Mode
+ // ------------------------------------------
     rule <statusCode> EVMC_SUCCESS </statusCode>
-         <k> _:Int ~> #eth_call_finalize
-          => #setMode NORMAL
+         <k> _:Int ~> #eth_call_finalize EXECMODE
+          => #setMode EXECMODE
           ~> #popNetworkState
           ~> #clearGas
           ~> #rpcResponseSuccess(#unparseDataByteArray( OUTPUT ))
@@ -1305,8 +1306,8 @@ Transaction Execution
          <output> OUTPUT </output>
 
     rule <statusCode> EVMC_REVERT </statusCode>
-         <k> TXID:Int ~> #eth_call_finalize
-          => #setMode NORMAL
+         <k> TXID:Int ~> #eth_call_finalize EXECMODE
+          => #setMode EXECMODE
           ~> #popNetworkState
           ~> #clearGas
           ~> #rpcResponseError(#generateException("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS),
@@ -1387,6 +1388,10 @@ NOGAS Mode
      [priority(25)]
 
     rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #finishTx ... </k>
+         <mode> NOGAS </mode>
+     [priority(25)]
+
+    rule <k> #transferFunds _ _ _ => . ... </k>
          <mode> NOGAS </mode>
      [priority(25)]
 ```
