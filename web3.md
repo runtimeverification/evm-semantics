@@ -720,7 +720,8 @@ eth_sendRawTransaction
 
     rule <k> #eth_sendRawTransactionLoad => #rpcResponseError(-32000, "Invalid Signature") ... </k> [owise]
 
-    rule <k> #eth_sendRawTransactionVerify TXID => #eth_sendRawTransactionSend TXID ... </k>
+    rule <k> #eth_sendRawTransactionVerify TXID => #prepareTx TXID #sender(TN, TP, TG, TT, TV, #unparseByteStack(TD), TW, TR, TS)
+                                                ~> #eth_sendRawTransactionSend TXID ... </k>
          <message>
            <msgID> TXID </msgID>
            <txNonce>    TN </txNonce>
