@@ -1,0 +1,10 @@
+{
+    "jsonrpc": "2.0",
+    "method": "evm_snapshot",
+    "params": [],
+    "id": 1
+}
+{
+    "jsonrpc": "2.0",
+    "method": "evm_mine"
+}
