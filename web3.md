@@ -608,7 +608,8 @@ eth_sendTransaction
     rule <k> loadTransaction _ { "nonce"    : (TN:String => #parseHexWord(TN)), _                 } ... </k>
     rule <k> loadTransaction _ { "v"        : (TW:String => #parseHexWord(TW)), _                 } ... </k>
     rule <k> loadTransaction _ { "value"    : (TV:String => #parseHexWord(TV)), _                 } ... </k>
-    rule <k> loadTransaction _ { "to"       : (TT:String => #parseHexWord(TT)), _                 } ... </k>
+    rule <k> loadTransaction _ { "to"       : (TT:String => #parseHexWord(TT)), _                 } ... </k> requires TT =/=String ""
+    rule <k> loadTransaction _ { "to"       : ""                              , REST => REST      } ... </k>
     rule <k> loadTransaction _ { "data"     : (TI:String => #parseByteStack(TI)), _               } ... </k>
     rule <k> loadTransaction _ { "r"        : (TR:String => #padToWidth(32, #parseByteStack(TR))), _ } ... </k>
     rule <k> loadTransaction _ { "s"        : (TS:String => #padToWidth(32, #parseByteStack(TS))), _ } ... </k>
@@ -723,9 +724,9 @@ eth_sendRawTransaction
 
     rule <k> #eth_sendRawTransactionLoad
           => mkTX !ID:Int
-          ~> loadTransaction !ID { "data"  : Raw2Hex(TI) , "gas"      : Raw2Hex(TG) , "gasPrice" : Raw2Hex(TP)
-                                 , "nonce" : Raw2Hex(TN) , "r"        : Raw2Hex(TR) , "s"        : Raw2Hex(TS)
-                                 , "to"    : Raw2Hex(TT) , "v"        : Raw2Hex(TW) , "value"    : Raw2Hex(TV)
+          ~> loadTransaction !ID { "data"  : Raw2Hex(TI)     , "gas"      : Raw2Hex(TG) , "gasPrice" : Raw2Hex(TP)
+                                 , "nonce" : Raw2Hex(TN)     , "r"        : Raw2Hex(TR) , "s"        : Raw2Hex(TS)
+                                 , "to"    : Raw2Hex'(TT)    , "v"        : Raw2Hex(TW) , "value"    : Raw2Hex(TV)
                                  , .JSONs
                                  }
           ~> #eth_sendRawTransactionVerify !ID
@@ -769,6 +770,11 @@ eth_sendRawTransaction
            <sigR>       TR </sigR>
            <sigS>       TS </sigS>
          </message>
+
+    syntax String ::= "Raw2Hex'" "(" String ")" [function]
+ // ------------------------------------------------------
+    rule Raw2Hex' ("" ) => ""
+    rule Raw2Hex' (TT ) => Raw2Hex(TT) requires TT =/=String ""
 ```
 
 Retrieving Blocks
