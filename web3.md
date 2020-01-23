@@ -560,7 +560,7 @@ eth_sendTransaction
     syntax KItem ::= "#eth_sendTransaction"
                    | "#eth_sendTransaction_final"
  // ---------------------------------------------
-    rule <k> #eth_sendTransaction => #loadTx J ~> #eth_sendTransaction_final ... </k>
+    rule <k> #eth_sendTransaction => #loadTx #parseHexWord( #getString("from",J) ) J ~> #eth_sendTransaction_final ... </k>
          <params> [ ({ _ } #as J), .JSONs ] </params>
       requires isString( #getJSON("from",J) )
 
@@ -1086,14 +1086,14 @@ Transaction Execution
 **TODO**: execute all pending transactions
 
 ```k
-    syntax KItem ::= "#loadTx" JSON
- // -------------------------------
-    rule <k> #loadTx J
+    syntax KItem ::= "#loadTx" Account JSON
+ // ---------------------------------------
+    rule <k> #loadTx ACCTFROM J
           => mkTX !ID:Int
-          ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
+          ~> #loadNonce ACCTFROM !ID
           ~> loadTransaction !ID J
-          ~> signTX !ID #parseHexWord(#getString("from", J))
-          ~> #prepareTx !ID #parseHexWord(#getString("from", J))
+          ~> signTX !ID ACCTFROM
+          ~> #prepareTx !ID ACCTFROM
           ~> !ID
           ...
          </k>
@@ -1289,7 +1289,6 @@ Transaction Execution
 ```
 
 - `#eth_call`
- **TODO**: add logic for the case in which "from" field is not present
 
 ```k
     syntax KItem ::= "#eth_call"
@@ -1297,10 +1296,15 @@ Transaction Execution
     rule <k> #eth_call ... </k>
          <params> [ { _ }, (.JSONs => "pending", .JSONs) ] </params>
 
+    rule <k> #eth_call ... </k>
+         <params> [ ({ ARGS => "from": #unparseData({keys_list(ACCTS)[0]}:>Int, 20), ARGS }), TAG, .JSONs ] </params>
+         <accountKeys> ACCTS </accountKeys>
+      requires notBool isString( #getJSON("from" , { ARGS }) )
+
     rule <k> #eth_call
           => #pushNetworkState
           ~> #setMode NOGAS
-          ~> #loadTx J
+          ~> #loadTx #parseHexWord( #getString("from", J) ) J
           ~> #eth_call_finalize EXECMODE
          ...
          </k>
@@ -1308,9 +1312,7 @@ Transaction Execution
          <mode> EXECMODE </mode>
       requires isString( #getJSON("from" , J) )
 
-    rule <k> #eth_call => #rpcResponseError(-32027, "Method 'eth_call' has invalid arguments") ...  </k>
-         <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
-      requires notBool isString( #getJSON("from", J) )
+    rule <k> #eth_call => #rpcResponseError(-32027, "Method 'eth_call' has invalid arguments") ...  </k> [owise]
 
     syntax KItem ::= "#eth_call_finalize" Mode
  // ------------------------------------------
@@ -1359,9 +1361,15 @@ Transaction Execution
     rule <k> #eth_estimateGas ... </k>
          <params> [ { _ }, (.JSONs => "pending", .JSONs) ] </params>
 
+    rule <k> #eth_estimateGas ... </k>
+         <params> [ ({ ARGS => "from": #unparseData({keys_list(ACCTS)[0]}:>Int, 20), ARGS }), TAG, .JSONs ] </params>
+         <gasUsed>  GUSED  </gasUsed>
+         <accountKeys> ACCTS </accountKeys>
+      requires notBool isString( #getJSON("from" , { ARGS }) )
+
     rule <k> #eth_estimateGas
           => #pushNetworkState
-          ~> #loadTx J
+          ~> #loadTx #parseHexWord( #getString("from", J) ) J
           ~> #eth_estimateGas_finalize GUSED
          ...
          </k>
@@ -1369,9 +1377,7 @@ Transaction Execution
          <gasUsed>  GUSED  </gasUsed>
       requires isString(#getJSON("from", J) )
 
-    rule <k> #eth_estimateGas => #rpcResponseError(-32028, "Method 'eth_estimateGas' has invalid arguments") ...  </k>
-         <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
-      requires notBool isString( #getJSON("from", J) )
+    rule <k> #eth_estimateGas => #rpcResponseError(-32028, "Method 'eth_estimateGas' has invalid arguments") ...  </k> [owise]
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
