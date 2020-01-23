@@ -371,8 +371,8 @@ tests/specs/functional/storageRoot-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
 tests/specs/functional/lemmas-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
 
 tests/%.prove: tests/%
-	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE) $(KPROVE_OPTIONS) \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',') > $@.out ||                                               \
+	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTIONS) \
+	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',') > $@.out ||                                  \
 	    $(CHECK) $@.out $@.expected
 	rm -rf $@.out
 
@@ -382,7 +382,7 @@ tests/%.search: tests/%
 	rm -rf $@-out
 
 tests/%.klab-prove: tests/%
-	$(TEST) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE) $(KPROVE_OPTIONS) \
+	$(TEST) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTIONS) \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 # Smoke Tests
