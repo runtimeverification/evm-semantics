@@ -1296,6 +1296,11 @@ Transaction Execution
     rule <k> #eth_call ... </k>
          <params> [ { _ }, (.JSONs => "pending", .JSONs) ] </params>
 
+    rule <k> #eth_call ... </k>
+         <params> [ ({ ARGS => "from": #unparseData({keys_list(ACCTS)[0]}:>Int, 20), ARGS }), TAG, .JSONs ] </params>
+         <accountKeys> ACCTS </accountKeys>
+      requires notBool isString( #getJSON("from" , { ARGS }) )
+
     rule <k> #eth_call
           => #pushNetworkState
           ~> #setMode NOGAS
@@ -1306,18 +1311,6 @@ Transaction Execution
          <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
          <mode> EXECMODE </mode>
       requires isString( #getJSON("from" , J) )
-
-    rule <k> #eth_call
-          => #pushNetworkState
-          ~> #setMode NOGAS
-          ~> #loadTx {keys_list(ACCTS)[0]}:>Int J
-          ~> #eth_call_finalize EXECMODE
-         ...
-         </k>
-         <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
-         <mode> EXECMODE </mode>
-         <accountKeys> ACCTS </accountKeys>
-      requires notBool isString( #getJSON("from" , J) )
 
     rule <k> #eth_call => #rpcResponseError(-32027, "Method 'eth_call' has invalid arguments") ...  </k> [owise]
 
@@ -1368,6 +1361,12 @@ Transaction Execution
     rule <k> #eth_estimateGas ... </k>
          <params> [ { _ }, (.JSONs => "pending", .JSONs) ] </params>
 
+    rule <k> #eth_estimateGas ... </k>
+         <params> [ ({ ARGS => "from": #unparseData({keys_list(ACCTS)[0]}:>Int, 20), ARGS }), TAG, .JSONs ] </params>
+         <gasUsed>  GUSED  </gasUsed>
+         <accountKeys> ACCTS </accountKeys>
+      requires notBool isString( #getJSON("from" , { ARGS }) )
+
     rule <k> #eth_estimateGas
           => #pushNetworkState
           ~> #loadTx #parseHexWord( #getString("from", J) ) J
@@ -1377,17 +1376,6 @@ Transaction Execution
          <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
          <gasUsed>  GUSED  </gasUsed>
       requires isString(#getJSON("from", J) )
-
-    rule <k> #eth_estimateGas
-          => #pushNetworkState
-          ~> #loadTx {keys_list(ACCTS)[0]}:>Int J
-          ~> #eth_estimateGas_finalize GUSED
-         ...
-         </k>
-         <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
-         <gasUsed>  GUSED  </gasUsed>
-         <accountKeys> ACCTS </accountKeys>
-      requires notBool isString(#getJSON("from", J) )
 
     rule <k> #eth_estimateGas => #rpcResponseError(-32028, "Method 'eth_estimateGas' has invalid arguments") ...  </k> [owise]
 
