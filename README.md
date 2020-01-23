@@ -154,7 +154,7 @@ To run proofs, you can similarly use `./kevm`.
 For example, to prove one of the specifications:
 
 ```sh
-./kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k -m VERIFICATION
+./kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION
 ```
 
 Running Tests
