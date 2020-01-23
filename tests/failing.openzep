@@ -1,4 +1,3 @@
-./test/token/ERC777/ERC777.test.js
 ./test/token/ERC20/TokenTimelock.test.js
 ./test/crowdsale/RefundableCrowdsale.test.js
 ./test/crowdsale/IncreasingPriceCrowdsale.test.js
@@ -6,6 +5,5 @@
 ./test/crowdsale/RefundablePostDeliveryCrowdsale.test.js
 ./test/crowdsale/FinalizableCrowdsale.test.js
 ./test/crowdsale/TimedCrowdsale.test.js
-./test/introspection/ERC1820Implementer.test.js
 ./test/drafts/TokenVesting.test.js
 ./test/examples/SampleCrowdsale.test.js
