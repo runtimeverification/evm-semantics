@@ -359,6 +359,9 @@ tests/%.run-truffle: tests/%
 %.run-openzep:
 	tests/run-openzep.sh $*
 
+%.run-synthetix:
+	tests/run-synthetix.sh $*
+
 tests/%.parse: tests/%
 	$(TEST) kast $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
 	$(CHECK) $@-out $@-expected
@@ -463,6 +466,24 @@ tests/openzeppelin-contracts/DOCUMENTATION.md:
 	    && npm install                                                            \
 	    && node_modules/.bin/truffle compile
 
+slow_synthetix_tests    = $(shell cat tests/slow.synthetix)
+all_synthetix_tests     = $(shell cd tests/synthetix && find ./test/contracts -name '*.js')
+quick_synthetix_tests   = $(filter-out $(slow_openzep_tests), $(all_synthetix_tests))
+failing_synthetix_tests = $(shell cat tests/failing.synthetix)
+passing_synthetix_tests = $(filter-out $(failing_synthetix_tests), $(quick_synthetix_tests))
+
+test-all-synthetix: $(all_synthetix_tests:=.run-synthetix)
+test-failing-synthetix: $(failing_synthetix_tests:=.run-synthetix)
+test-slow-synthetix: $(slow_synthetix_tests:=.run-synthetix)
+test-synthetix: $(passing_synthetix_tests:=.run-synthetix)
+
+tests/syntethix/truffle.js:
+	cd tests                                                        \
+	    && git clone 'https://github.com/Synthetixio/synthetix.git' \
+	    && cd synthetix                                             \
+	    && git checkout 8cb31959c4880347bf8ba728fb6c08e78b14a8fc    \
+	    && npm install                                              \
+	    && node_modules/.bin/truffle compile
 # Proof Tests
 
 prove_specs_dir        := tests/specs
