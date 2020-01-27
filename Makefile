@@ -481,9 +481,9 @@ tests/syntethix/truffle.js:
 	cd tests                                                        \
 	    && git clone 'https://github.com/Synthetixio/synthetix.git' \
 	    && cd synthetix                                             \
-		&& git checkout 8cb31959c4880347bf8ba728fb6c08e78b14a8fc    \
-		&& npm install                                              \
-		&& node_modules/.bin/truffle compile
+	    && git checkout 8cb31959c4880347bf8ba728fb6c08e78b14a8fc    \
+	    && npm install                                              \
+	    && node_modules/.bin/truffle compile
 # Proof Tests
 
 prove_specs_dir        := tests/specs
