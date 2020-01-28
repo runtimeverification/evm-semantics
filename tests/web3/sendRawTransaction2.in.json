@@ -1,27 +1,27 @@
 {
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "firefly_addAccount",
-    "params": [
-        {
-            "key": "0x9124656f1ea41d84d8c6a3207a1ada096f413f133a89b95f661a7d61769e7afa",
-            "balance": "0x56bc75e2d63100000"
-        }
-    ]
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "firefly_addAccount",
+  "params": [
+    {
+      "key": "0x9124656f1ea41d84d8c6a3207a1ada096f413f133a89b95f661a7d61769e7afa",
+      "balance": "0x56bc75e2d63100000"
+    }
+  ]
 }
 {
-    "jsonrpc": "2.0",
-    "id": 2,
-    "method": "eth_sendRawTransaction",
-    "params": [
-        "f86280820100836691b794b596a41ebe34affcc8e68f1e732fd85fd5ce85d610801ca0c0d90eee2df1db9dfbc24810a9d06ee2fe3119bd9d410b5db3eafff394179fa5a03313e39428144fa6db09d8e62cbe5a8581c4985ab90dcd9f4ce5d01bac2d34fb"
-    ]
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "eth_sendRawTransaction",
+  "params": [
+    "f86280820100836691b794b596a41ebe34affcc8e68f1e732fd85fd5ce85d610801ca0c0d90eee2df1db9dfbc24810a9d06ee2fe3119bd9d410b5db3eafff394179fa5a03313e39428144fa6db09d8e62cbe5a8581c4985ab90dcd9f4ce5d01bac2d34fb"
+  ]
 }
 {
-    "jsonrpc": "2.0",
-    "id": 3,
-    "method": "eth_getTransactionReceipt",
-    "params": [
-      "0xd9550d635cd2dad8167ddaad05a40c2c431152db1bd63e696d92930ae80e2c1c"
-    ]
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "eth_getTransactionReceipt",
+  "params": [
+    "0xd9550d635cd2dad8167ddaad05a40c2c431152db1bd63e696d92930ae80e2c1c"
+  ]
 }
