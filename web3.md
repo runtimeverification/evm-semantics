@@ -1780,7 +1780,7 @@ Mining
  // ----------------------------
     rule <k> #evm_mine => #mineBlock ~> #updateTimestamp ~> #rpcResponseSuccess("0x0") ... </k> [owise]
 
-    rule <k> #evm_mine => #mineBlock ~> #updateTimestamp~> #rpcResponseSuccess("0x0") ... </k>
+    rule <k> #evm_mine => #mineBlock ~> #updateTimestamp ~> #rpcResponseSuccess("0x0") ... </k>
          <params>    [ TIME:String, .JSONs ] </params>
          <timestamp> _ => #parseWord( TIME ) </timestamp>
 
