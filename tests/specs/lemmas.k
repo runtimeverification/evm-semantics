@@ -4,7 +4,6 @@ requires "edsl.k"
 module LEMMAS
     imports EVM
     imports EDSL
-    imports K-REFLECTION
 
     rule #asWord( BUF => #drop(1, BUF) ) requires BUF [ 0 ] ==Int 0  [simplification]
 
@@ -98,8 +97,7 @@ module LEMMAS
 
     // for terms came from bytecode not via #hashedLocation
     rule keccak(WS) => keccakIntList(byteStack2IntList(WS))
-      requires ( notBool #isConcrete(WS) )
-       andBool ( #sizeByteArray(WS) ==Int 32 orBool #sizeByteArray(WS) ==Int 64 )
+      requires ( #sizeByteArray(WS) ==Int 32 orBool #sizeByteArray(WS) ==Int 64 )
       [simplification]
 
     rule N +Int 0 => N  [simplification]
@@ -121,23 +119,6 @@ module LEMMAS
     rule N &Int 0 => 0  [simplification]
     rule N &Int N => N  [simplification]
 
-    //orienting symbolic term to be first, converting -Int to +Int for concrete values.
-    rule I +Int B => B          +Int I when #isConcrete(I) andBool notBool #isConcrete(B)  [simplification]
-    rule A -Int I => A +Int (0 -Int I) when notBool #isConcrete(A) andBool #isConcrete(I)  [simplification]
-
-    rule (A +Int I2) +Int I3 => A +Int (I2 +Int I3) when notBool #isConcrete(A) andBool #isConcrete(I2) andBool #isConcrete(I3)  [simplification]
-
-    rule I1 +Int (B +Int I3) => B +Int (I1 +Int I3) when #isConcrete(I1) andBool notBool #isConcrete(B) andBool #isConcrete(I3)  [simplification]
-    rule I1 -Int (B +Int I3) => (I1 -Int I3) -Int B when #isConcrete(I1) andBool notBool #isConcrete(B) andBool #isConcrete(I3)  [simplification]
-    rule (I1 -Int B) +Int I3 => (I1 +Int I3) -Int B when #isConcrete(I1) andBool notBool #isConcrete(B) andBool #isConcrete(I3)  [simplification]
-
-    rule I1 +Int (I2 +Int C) => (I1 +Int I2) +Int C when #isConcrete(I1) andBool #isConcrete(I2) andBool notBool #isConcrete(C)  [simplification]
-    rule I1 +Int (I2 -Int C) => (I1 +Int I2) -Int C when #isConcrete(I1) andBool #isConcrete(I2) andBool notBool #isConcrete(C)  [simplification]
-    rule I1 -Int (I2 +Int C) => (I1 -Int I2) -Int C when #isConcrete(I1) andBool #isConcrete(I2) andBool notBool #isConcrete(C)  [simplification]
-    rule I1 -Int (I2 -Int C) => (I1 -Int I2) +Int C when #isConcrete(I1) andBool #isConcrete(I2) andBool notBool #isConcrete(C)  [simplification]
-
-    rule I1 &Int (I2 &Int C) => (I1 &Int I2) &Int C when #isConcrete(I1) andBool #isConcrete(I2) andBool notBool #isConcrete(C)  [simplification]
-
     // 0xffff...f &Int N = N
     rule MASK &Int N => N  requires MASK ==Int (2 ^Int (log2Int(MASK) +Int 1)) -Int 1 // MASK = 0xffff...f
                             andBool 0 <=Int N andBool N <=Int MASK
@@ -150,10 +131,6 @@ module LEMMAS
 
     // for gas calculation
     rule A -Int (#if C #then B1 #else B2 #fi) => #if C #then (A -Int B1) #else (A -Int B2) #fi  [simplification]
-
-    rule (#if C #then B1 #else B2 #fi) -Int A => #if C #then (B1 -Int A) #else (B2 -Int A) #fi
-        when notBool #isConcrete(A) andBool #notKLabel(A, "#if_#then_#else_#fi_K-EQUAL")
-      [simplification]
 
     rule (#if C #then B1 #else B2 #fi) +Int A => #if C #then (B1 +Int A) #else (B2 +Int A) #fi  [simplification]
 
@@ -205,9 +182,6 @@ module LEMMAS
     rule X <=Int 255        => X <Int 256     [simplification]
 
     rule chop(I) => I requires 0 <=Int I andBool I <Int pow256  [simplification]
-
-    syntax Bool ::= #notKLabel ( K , String ) [function]
-    rule #notKLabel(T, L) => #getKLabelString(T) =/=String L orBool #isVariable(T)
 
     rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
 
