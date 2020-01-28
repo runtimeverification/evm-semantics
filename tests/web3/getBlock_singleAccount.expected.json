@@ -19,7 +19,7 @@
     "id": 2,
     "result": {
       "number": "0x0",
-      "hash": "0xa17211c37bf046f6f3c87a78488fb90804295bd657227e8711a02aa644cdba71",
+      "hash": "0xe998e5aaa06cabb50fec8e836a6f76d0b32cf0f1ba7909f2a03fed2986323061",
       "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
       "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
       "nonce": "0x0000000000000000",
@@ -35,7 +35,7 @@
       "size": "0x3e8",
       "gasLimit": "0x6691b7",
       "gasUsed": "0x0",
-      "timestamp": "0x5e2ed0c6",
+      "timestamp": "0x0",
       "transactions": [],
       "uncles": []
     }
