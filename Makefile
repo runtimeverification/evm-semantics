@@ -121,7 +121,7 @@ tangle-deps: $(TANGLER)
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 
 ifneq ($(RELEASE),)
-K_BUILD_TYPE         := Release
+K_BUILD_TYPE         := FastBuild
 SEMANTICS_BUILD_TYPE := Release
 KOMPILE_OPTS         += -O3
 else
@@ -359,6 +359,9 @@ tests/%.run-truffle: tests/%
 %.run-openzep:
 	tests/run-openzep.sh $*
 
+%.run-synthetix:
+	tests/run-synthetix.sh $*
+
 tests/%.parse: tests/%
 	$(TEST) kast $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
 	$(CHECK) $@-out $@-expected
@@ -371,8 +374,8 @@ tests/specs/functional/storageRoot-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
 tests/specs/functional/lemmas-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
 
 tests/%.prove: tests/%
-	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE) $(KPROVE_OPTIONS) \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',') > $@.out ||                                               \
+	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTIONS) \
+	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',') > $@.out ||                                  \
 	    $(CHECK) $@.out $@.expected
 	rm -rf $@.out
 
@@ -382,7 +385,7 @@ tests/%.search: tests/%
 	rm -rf $@-out
 
 tests/%.klab-prove: tests/%
-	$(TEST) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< --format-failures --def-module $(KPROVE_MODULE) $(KPROVE_OPTIONS) \
+	$(TEST) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTIONS) \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 # Smoke Tests
@@ -463,6 +466,24 @@ tests/openzeppelin-contracts/DOCUMENTATION.md:
 	    && npm install                                                            \
 	    && node_modules/.bin/truffle compile
 
+slow_synthetix_tests    = $(shell cat tests/slow.synthetix)
+all_synthetix_tests     = $(shell cd tests/synthetix && find ./test/contracts -name '*.js')
+quick_synthetix_tests   = $(filter-out $(slow_openzep_tests), $(all_synthetix_tests))
+failing_synthetix_tests = $(shell cat tests/failing.synthetix)
+passing_synthetix_tests = $(filter-out $(failing_synthetix_tests), $(quick_synthetix_tests))
+
+test-all-synthetix: $(all_synthetix_tests:=.run-synthetix)
+test-failing-synthetix: $(failing_synthetix_tests:=.run-synthetix)
+test-slow-synthetix: $(slow_synthetix_tests:=.run-synthetix)
+test-synthetix: $(passing_synthetix_tests:=.run-synthetix)
+
+tests/syntethix/truffle.js:
+	cd tests                                                        \
+	    && git clone 'https://github.com/Synthetixio/synthetix.git' \
+	    && cd synthetix                                             \
+	    && git checkout 8cb31959c4880347bf8ba728fb6c08e78b14a8fc    \
+	    && npm install                                              \
+	    && node_modules/.bin/truffle compile
 # Proof Tests
 
 prove_specs_dir        := tests/specs

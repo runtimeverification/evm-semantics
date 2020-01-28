@@ -51,7 +51,7 @@ pipeline {
         }
         stage('Test Execution') {
           failFast true
-          options { timeout(time: 30, unit: 'MINUTES') }
+          options { timeout(time: 60, unit: 'MINUTES') }
           parallel {
             stage('Conformance (LLVM)') {
               steps {
@@ -78,8 +78,10 @@ pipeline {
               steps {
                 sh '''
                   make tests/openzeppelin-contracts/truffle-config.js
+                  make tests/syntethix/truffle.js
                   make test-truffle
                   make test-openzep
+                  make test-synthetix
                 '''
               }
             }

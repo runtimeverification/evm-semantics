@@ -56,7 +56,9 @@ run_kast() {
 }
 
 run_prove() {
-    export K_OPTS=-Xmx8G
+    local def_module smt_prelude_set run_dir smt_file smt_args
+
+    def_module="$1" ; shift
 
     # If --smt-prelude is not set and evm.smt2 is present in $run_dir, use it.
     smt_prelude_set=
@@ -70,7 +72,9 @@ run_prove() {
     if $debug; then
         set -x
     fi
-    kprove --directory "$backend_dir" "${smt_args[@]-}" "$run_file" "$@"
+
+    export K_OPTS=-Xmx8G
+    kprove --directory "$backend_dir" "${smt_args[@]-}" "$run_file" --def-module "$def_module" "$@"
 }
 
 run_search() {
@@ -136,12 +140,14 @@ run_web3_ganache() {
 }
 
 run_klab() {
-    local run_mode klab_log
+    local run_mode klab_log def_module
 
     run_mode="$1" ; shift
     klab_log="$(basename "${run_file%-spec.k}")"
 
-    "$0" "$run_mode" --backend java "$run_file" \
+    def_module="$1" ; shift
+
+    "$0" "$run_mode" --backend java "$run_file" "$def_module" \
         --state-log --state-log-path "$KLAB_OUT/data" --state-log-id "$klab_log" \
         --state-log-events OPEN,EXECINIT,SEARCHINIT,REACHINIT,REACHTARGET,REACHPROVED,NODE,RULE,SRULE,RULEATTEMPT,IMPLICATION,Z3QUERY,Z3RESULT,CLOSE \
         --output-flatten "_Map_ #And" \
@@ -220,13 +226,13 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                $0 interpret    [--backend (llvm)] [--debug|--no-unparse] <pgm>  <interpreter arg>*
                $0 interpret    [--backend (java|haskell)] [--no-unparse] <pgm>
                $0 kast         [--backend (llvm|java|haskell|web3)]      <pgm>  <output format> <K arg>*
-               $0 prove        [--backend (java|haskell)]                <spec> <K arg>* -m <def_module>
+               $0 prove        [--backend (java|haskell)]                <spec> <def_module> <K arg>*
                $0 search       [--backend (java|haskell)]                <pgm>  <pattern> <K arg>*
                $0 web3         [--debug|--dump]                          <port>
                $0 web3-ganache [--debug|--dump]                          <port>
                $0 web3-send                                              <port> [<web3_method> <web3_params>|<web3_file>]
                $0 klab-run                                               <pgm>  <K arg>*
-               $0 klab-prove                                             <spec> <K arg>* -m <def_module>
+               $0 klab-prove                                             <spec> <def_module> <K arg>*
                $0 klab-view                                              <spec>
 
                $0 [help|--help|version|--version]

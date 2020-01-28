@@ -561,7 +561,7 @@ eth_sendTransaction
     syntax KItem ::= "#eth_sendTransaction"
                    | "#eth_sendTransaction_final"
  // ---------------------------------------------
-    rule <k> #eth_sendTransaction => #loadTx J ~> #eth_sendTransaction_final ... </k>
+    rule <k> #eth_sendTransaction => #loadTx #parseHexWord( #getString("from",J) ) J ~> #eth_sendTransaction_final ... </k>
          <params> [ ({ _ } #as J), .JSONs ] </params>
       requires isString( #getJSON("from",J) )
 
@@ -609,7 +609,8 @@ eth_sendTransaction
     rule <k> loadTransaction _ { "nonce"    : (TN:String => #parseHexWord(TN)), _                 } ... </k>
     rule <k> loadTransaction _ { "v"        : (TW:String => #parseHexWord(TW)), _                 } ... </k>
     rule <k> loadTransaction _ { "value"    : (TV:String => #parseHexWord(TV)), _                 } ... </k>
-    rule <k> loadTransaction _ { "to"       : (TT:String => #parseHexWord(TT)), _                 } ... </k>
+    rule <k> loadTransaction _ { "to"       : (TT:String => #parseHexWord(TT)), _                 } ... </k> requires TT =/=String ""
+    rule <k> loadTransaction _ { "to"       : ""                              , REST => REST      } ... </k>
     rule <k> loadTransaction _ { "data"     : (TI:String => #parseByteStack(TI)), _               } ... </k>
     rule <k> loadTransaction _ { "r"        : (TR:String => #padToWidth(32, #parseByteStack(TR))), _ } ... </k>
     rule <k> loadTransaction _ { "s"        : (TS:String => #padToWidth(32, #parseByteStack(TS))), _ } ... </k>
@@ -724,9 +725,9 @@ eth_sendRawTransaction
 
     rule <k> #eth_sendRawTransactionLoad
           => mkTX !ID:Int
-          ~> loadTransaction !ID { "data"  : Raw2Hex(TI) , "gas"      : Raw2Hex(TG) , "gasPrice" : Raw2Hex(TP)
-                                 , "nonce" : Raw2Hex(TN) , "r"        : Raw2Hex(TR) , "s"        : Raw2Hex(TS)
-                                 , "to"    : Raw2Hex(TT) , "v"        : Raw2Hex(TW) , "value"    : Raw2Hex(TV)
+          ~> loadTransaction !ID { "data"  : Raw2Hex(TI)  , "gas"      : Raw2Hex(TG) , "gasPrice" : Raw2Hex(TP)
+                                 , "nonce" : Raw2Hex(TN)  , "r"        : Raw2Hex(TR) , "s"        : Raw2Hex(TS)
+                                 , "to"    : Raw2Hex'(TT) , "v"        : Raw2Hex(TW) , "value"    : Raw2Hex(TV)
                                  , .JSONs
                                  }
           ~> #eth_sendRawTransactionVerify !ID
@@ -770,6 +771,11 @@ eth_sendRawTransaction
            <sigR>       TR </sigR>
            <sigS>       TS </sigS>
          </message>
+
+    syntax String ::= "Raw2Hex'" "(" String ")" [function]
+ // ------------------------------------------------------
+    rule Raw2Hex' ("" ) => ""
+    rule Raw2Hex' (TT ) => Raw2Hex(TT) requires TT =/=String ""
 ```
 
 Retrieving Blocks
@@ -1087,14 +1093,14 @@ Transaction Execution
 **TODO**: execute all pending transactions
 
 ```k
-    syntax KItem ::= "#loadTx" JSON
- // -------------------------------
-    rule <k> #loadTx J
+    syntax KItem ::= "#loadTx" Account JSON
+ // ---------------------------------------
+    rule <k> #loadTx ACCTFROM J
           => mkTX !ID:Int
-          ~> #loadNonce #parseHexWord(#getString("from", J)) !ID
+          ~> #loadNonce ACCTFROM !ID
           ~> loadTransaction !ID J
-          ~> signTX !ID #parseHexWord(#getString("from", J))
-          ~> #prepareTx !ID #parseHexWord(#getString("from", J))
+          ~> signTX !ID ACCTFROM
+          ~> #prepareTx !ID ACCTFROM
           ~> !ID
           ...
          </k>
@@ -1290,7 +1296,6 @@ Transaction Execution
 ```
 
 - `#eth_call`
- **TODO**: add logic for the case in which "from" field is not present
 
 ```k
     syntax KItem ::= "#eth_call"
@@ -1298,10 +1303,15 @@ Transaction Execution
     rule <k> #eth_call ... </k>
          <params> [ { _ }, (.JSONs => "pending", .JSONs) ] </params>
 
+    rule <k> #eth_call ... </k>
+         <params> [ ({ ARGS => "from": #unparseData({keys_list(ACCTS)[0]}:>Int, 20), ARGS }), TAG, .JSONs ] </params>
+         <accountKeys> ACCTS </accountKeys>
+      requires notBool isString( #getJSON("from" , { ARGS }) )
+
     rule <k> #eth_call
           => #pushNetworkState
           ~> #setMode NOGAS
-          ~> #loadTx J
+          ~> #loadTx #parseHexWord( #getString("from", J) ) J
           ~> #eth_call_finalize EXECMODE
          ...
          </k>
@@ -1309,9 +1319,7 @@ Transaction Execution
          <mode> EXECMODE </mode>
       requires isString( #getJSON("from" , J) )
 
-    rule <k> #eth_call => #rpcResponseError(-32027, "Method 'eth_call' has invalid arguments") ...  </k>
-         <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
-      requires notBool isString( #getJSON("from", J) )
+    rule <k> #eth_call => #rpcResponseError(-32027, "Method 'eth_call' has invalid arguments") ...  </k> [owise]
 
     syntax KItem ::= "#eth_call_finalize" Mode
  // ------------------------------------------
@@ -1360,9 +1368,15 @@ Transaction Execution
     rule <k> #eth_estimateGas ... </k>
          <params> [ { _ }, (.JSONs => "pending", .JSONs) ] </params>
 
+    rule <k> #eth_estimateGas ... </k>
+         <params> [ ({ ARGS => "from": #unparseData({keys_list(ACCTS)[0]}:>Int, 20), ARGS }), TAG, .JSONs ] </params>
+         <gasUsed>  GUSED  </gasUsed>
+         <accountKeys> ACCTS </accountKeys>
+      requires notBool isString( #getJSON("from" , { ARGS }) )
+
     rule <k> #eth_estimateGas
           => #pushNetworkState
-          ~> #loadTx J
+          ~> #loadTx #parseHexWord( #getString("from", J) ) J
           ~> #eth_estimateGas_finalize GUSED
          ...
          </k>
@@ -1370,9 +1384,7 @@ Transaction Execution
          <gasUsed>  GUSED  </gasUsed>
       requires isString(#getJSON("from", J) )
 
-    rule <k> #eth_estimateGas => #rpcResponseError(-32028, "Method 'eth_estimateGas' has invalid arguments") ...  </k>
-         <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
-      requires notBool isString( #getJSON("from", J) )
+    rule <k> #eth_estimateGas => #rpcResponseError(-32028, "Method 'eth_estimateGas' has invalid arguments") ...  </k> [owise]
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
