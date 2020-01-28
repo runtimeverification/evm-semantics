@@ -121,7 +121,7 @@ tangle-deps: $(TANGLER)
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 
 ifneq ($(RELEASE),)
-K_BUILD_TYPE         := Release
+K_BUILD_TYPE         := FastBuild
 SEMANTICS_BUILD_TYPE := Release
 KOMPILE_OPTS         += -O3
 else
