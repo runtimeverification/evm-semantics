@@ -478,11 +478,13 @@ test-slow-synthetix: $(slow_synthetix_tests:=.run-synthetix)
 test-synthetix: $(passing_synthetix_tests:=.run-synthetix)
 
 tests/syntethix/truffle.js:
-	cd tests                                                        \
-	    && git clone 'https://github.com/Synthetixio/synthetix.git' \
-	    && cd synthetix                                             \
-	    && git checkout 8cb31959c4880347bf8ba728fb6c08e78b14a8fc    \
-	    && npm install                                              \
+	cd tests                                                                                                      \
+	    && git clone 'https://github.com/Synthetixio/synthetix.git'                                               \
+	    && cd synthetix                                                                                           \
+	    && git checkout 8cb31959c4880347bf8ba728fb6c08e78b14a8fc                                                  \
+	    && echo "module.exports={networks:{development:{host:'localhost',port:8545,network_id:'*',gas:8000000}}," \
+	            "compilers:{solc:{version:'0.4.25',settings:{optimizer:{enabled:true,runs:200}}}}};" > truffle.js \
+	    && npm install                                                                                            \
 	    && node_modules/.bin/truffle compile
 # Proof Tests
 
