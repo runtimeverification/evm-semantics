@@ -1778,9 +1778,9 @@ Mining
 ```k
     syntax KItem ::= "#evm_mine"
  // ----------------------------
-    rule <k> #evm_mine => #mineBlock ~> #updateTimestamp ~> #rpcResponseSuccess("0x0") ... </k> [owise]
+    rule <k> #evm_mine => #mineBlock ~> #rpcResponseSuccess("0x0") ... </k> [owise]
 
-    rule <k> #evm_mine => #mineBlock ~> #updateTimestamp ~> #rpcResponseSuccess("0x0") ... </k>
+    rule <k> #evm_mine => #mineBlock ~> #rpcResponseSuccess("0x0") ... </k>
          <params>    [ TIME:String, .JSONs ] </params>
          <timestamp> _ => #parseWord( TIME ) </timestamp>
 
@@ -1810,6 +1810,7 @@ Mining
           ~> #startBlock
           ~> #cleanTxLists
           ~> #clearGas
+          ~> #updateTimestamp
           ...
          </k>
          <blockList> BLOCKLIST </blockList>
