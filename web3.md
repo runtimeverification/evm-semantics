@@ -1026,6 +1026,67 @@ Transaction Receipts
                                                                          "topics": [#unparseIntList(TOPICS)],
                                                                          "type" : "mined"
                                                                                            }, #serializeLogs(L, LI +Int 1, TI, TH, BH, BN)
+
+    syntax KItem ::= "#eth_getTransactionByHash"
+ // -------------------------------------------
+    rule <k> #eth_getTransactionByHash => #eth_getTransactionByHash_final(#getBlockByNumber (BN, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>})) ... </k>
+         <params> [ TXHASH:String, .JSONs ] </params>
+         <txReceipt>
+           <txHash> TXHASH </txHash>
+           <txBlockNumber> BN </txBlockNumber>
+           ...
+         </txReceipt>
+         <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK   </network>
+         <block>     BLOCK     </block>
+
+    rule <k> #eth_getTransactionByHash => #rpcResponseSuccess( null ) ... </k> [owise]
+
+    syntax KItem ::= "#eth_getTransactionByHash_final" "(" BlockchainItem ")"
+ // -------------------------------------------------------------------------
+    rule <k> #eth_getTransactionByHash_final ({
+             <network>
+               <txOrder> TXLIST </txOrder>
+               <message>
+                 <msgID>      TXID     </msgID>
+                 <txNonce>    TN       </txNonce>
+                 <txGasPrice> TP       </txGasPrice>
+                 <txGasLimit> TG       </txGasLimit>
+                 <to>         TT:Account </to>
+                 <value>      TV       </value>
+                 <sigV>       TW       </sigV>
+                 <sigR>       TR       </sigR>
+                 <sigS>       TS       </sigS>
+                 <data>       TD       </data>
+               </message>
+               ...
+             </network> | _ } #as BLOCKITEM )
+          => #rpcResponseSuccess( { "hash": TXHASH
+                                  , "nonce": #unparseQuantity(TN)
+                                  , "blockHash": #unparseData(#blockchainItemHash(BLOCKITEM),32)
+                                  , "blockNumber": #unparseQuantity(BN)
+                                  , "transactionIndex": #unparseQuantity(getIndexOf(TXID,TXLIST))
+                                  , "from": #unparseData(TXFROM,20)
+                                  , "to": #unparseAccount(TT)
+                                  , "value": #unparseQuantity(TV)
+                                  , "gas": #unparseQuantity(TG)
+                                  , "gasPrice": #unparseQuantity(TP)
+                                  , "input": #unparseDataByteArray(TD)
+                                  , "v": #unparseQuantity(TW)
+                                  , "r": #unparseQuantity(#asWord(TR))
+                                  , "s": #unparseQuantity(#asWord(TS))
+                                  }
+                                )
+          ...
+         </k>
+         <params> [ TXHASH:String, .JSONs ] </params>
+         <txReceipt>
+           <txHash> TXHASH </txHash>
+           <txID> TXID </txID>
+           <sender> TXFROM </sender>
+           <txBlockNumber> BN </txBlockNumber>
+           ...
+         </txReceipt>
 ```
 
 - loadCallState: web3.md specific rules
@@ -1952,7 +2013,6 @@ Unimplemented Methods
                    | "#eth_getCompilers"
                    | "#eth_getFilterChanges"
                    | "#eth_getFilterLogs"
-                   | "#eth_getTransactionByHash"
                    | "#eth_getTransactionByBlockHashAndIndex"
                    | "#eth_getTransactionByBlockNumberAndIndex"
                    | "#eth_hashrate"
@@ -1984,7 +2044,6 @@ Unimplemented Methods
     rule <k> #eth_getCompilers                        => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getFilterChanges                    => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getFilterLogs                       => #rpcResponseUnimplemented ... </k>
-    rule <k> #eth_getTransactionByHash                => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getTransactionByBlockHashAndIndex   => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_getTransactionByBlockNumberAndIndex => #rpcResponseUnimplemented ... </k>
     rule <k> #eth_hashrate                            => #rpcResponseUnimplemented ... </k>
