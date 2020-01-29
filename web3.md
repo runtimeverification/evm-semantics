@@ -1527,7 +1527,7 @@ Collecting Coverage Data
  // ------------------------------------------------------------------
     rule #makeCoverageReport (.List                                         , _       , _   ) => .JSONs
     rule #makeCoverageReport ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), COVERAGE, PGMS) => {
-                                                                                                  "hash": Int2String(CODEHASH),
+                                                                                                  "hash": #unparseQuantity(CODEHASH),
                                                                                                   "programName": Phase2String(EPHASE),
                                                                                                   "coverage": #computePercentage(size({COVERAGE[KEY]}:>Map), size({PGMS[KEY]}:>List)),
                                                                                                   "program": [#serializePrograms({PGMS[KEY]}:>List, {COVERAGE[KEY]}:>Map)]
