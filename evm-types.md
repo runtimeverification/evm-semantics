@@ -368,7 +368,7 @@ A cons-list is used for the EVM wordstack.
 ```{.k .bytes}
     syntax Bytes ::= Int ":" Bytes [function]
  // -----------------------------------------
-    rule I : BS => Int2Bytes(I, BE, Unsigned) +Bytes BS requires I <Int 256
+    rule I : BS => Int2Bytes(1, I, BE) +Bytes BS requires I <Int 256
 ```
 
 -   `#take(N , WS)` keeps the first $N$ elements of a `WordStack` (passing with zeros as needed).
