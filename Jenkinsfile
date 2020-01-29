@@ -88,8 +88,6 @@ pipeline {
             stage('Conformance (Truffle)') {
               steps {
                 sh '''
-                  make tests/openzeppelin-contracts/truffle-config.js
-                  make tests/syntethix/truffle.js
                   make test-truffle
                   make test-openzep test-synthetix -j2
                 '''
