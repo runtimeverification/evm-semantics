@@ -1790,7 +1790,14 @@ Mining
     syntax KItem ::= "#firefly_genesisBlock"
  // ----------------------------------------
     rule <k> #firefly_genesisBlock => #updateTimestamp ~> #updateTrieRoots ~> #pushBlockchainState ~> #rpcResponseSuccess(true) ... </k>
-         <logsBloom> _ => #padToWidth( 256, .ByteArray ) </logsBloom>
+         <params>    [ .JSONs ]                                                                          </params>
+         <logsBloom>  _ => #padToWidth( 256, .ByteArray )                                                </logsBloom>
+         <ommersHash> _ => 13478047122767188135818125966132228187941283477090363246179690878162135454535 </ommersHash>
+
+    rule <k> #firefly_genesisBlock => #updateTrieRoots ~> #pushBlockchainState ~> #rpcResponseSuccess(true) ... </k>
+         <params>     [ TIME:String, .JSONs ]                                                            </params>
+         <timestamp>  _ => #parseWord( TIME )                                                            </timestamp>
+         <logsBloom>  _ => #padToWidth( 256, .ByteArray )                                                </logsBloom>
          <ommersHash> _ => 13478047122767188135818125966132228187941283477090363246179690878162135454535 </ommersHash>
 
     syntax KItem ::= "#mineBlock"
