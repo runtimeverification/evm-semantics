@@ -1202,7 +1202,7 @@ Transaction Execution
     syntax KItem ::= "#finishTx"
  // ----------------------------
     rule <statusCode> STATUSCODE </statusCode>
-         <k> #finishTx => #mineBlock ... </k>
+         <k> #finishTx => #mineBlock ~> #updateTimestamp ... </k>
          <mode> EXECMODE </mode>
       requires EXECMODE =/=K NOGAS
        andBool ( STATUSCODE ==K EVMC_SUCCESS orBool STATUSCODE ==K EVMC_REVERT )
@@ -1810,7 +1810,6 @@ Mining
           ~> #startBlock
           ~> #cleanTxLists
           ~> #clearGas
-          ~> #updateTimestamp
           ...
          </k>
          <blockList> BLOCKLIST </blockList>
