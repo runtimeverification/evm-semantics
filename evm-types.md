@@ -483,7 +483,7 @@ Most of EVM data is held in local memory.
 
     syntax ByteArray ::= #range ( Memory , Int , Int ) [function]
  // -------------------------------------------------------------
-    rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ]
+    rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ] [concrete]
 
     syntax Memory ::= ".Memory" [function]
  // --------------------------------------
