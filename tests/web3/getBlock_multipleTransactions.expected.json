@@ -22,11 +22,6 @@
   {
     "jsonrpc": "2.0",
     "id": 2,
-    "result": true
-  },
-  {
-    "jsonrpc": "2.0",
-    "id": 2,
     "result": "1575488963"
   },
   {
@@ -37,7 +32,7 @@
   {
     "jsonrpc": "2.0",
     "id": 2,
-    "result": "1575488965"
+    "result": true
   },
   {
     "jsonrpc": "2.0",
