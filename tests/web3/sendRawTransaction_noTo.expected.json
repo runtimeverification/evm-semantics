@@ -31,6 +31,11 @@
 }
 {
   "jsonrpc": "2.0",
+  "id": 0,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
   "id": 4,
   "result": "0xfefb2da535e927b85fe68eb81cb2e4a5827c905f78381a01ef2322aa9b0aee8e"
 }

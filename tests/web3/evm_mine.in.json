@@ -13,14 +13,6 @@
   {
     "jsonrpc": "2.0",
     "id": 2,
-    "method": "firefly_setTime",
-    "params": [
-      "0x5460"
-    ]
-  },
-  {
-    "jsonrpc": "2.0",
-    "id": 2,
     "method": "firefly_setGasLimit",
     "params": [
       "0x6691b7"
@@ -30,7 +22,7 @@
     "jsonrpc": "2.0",
     "id": 3,
     "method": "firefly_genesisBlock",
-    "params": []
+    "params": ["0x5460"]
   },
   {
     "jsonrpc": "2.0",

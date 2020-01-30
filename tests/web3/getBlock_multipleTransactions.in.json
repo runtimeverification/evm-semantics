@@ -32,16 +32,8 @@
   {
     "jsonrpc": "2.0",
     "id": 2,
-    "method": "firefly_setTime",
-    "params": [
-      "0x5de80d75"
-    ]
-  },
-  {
-    "jsonrpc": "2.0",
-    "id": 2,
     "method": "firefly_genesisBlock",
-    "params": []
+    "params": ["0x5de80d75"]
   },
   {
     "jsonrpc": "2.0",
@@ -66,9 +58,9 @@
   {
     "jsonrpc": "2.0",
     "id": 2,
-    "method": "evm_increaseTime",
+    "method": "firefly_setTime",
     "params": [
-      2
+      "0x5de80dc5"
     ]
   },
   {
