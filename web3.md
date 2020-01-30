@@ -1503,7 +1503,7 @@ Collecting Coverage Data
                    | "CONSTRUCTOR"
                    | "RUNTIME"
 
-    syntax ProgramIdentifier ::= "{" Int "|" Phase "}"
+    syntax ProgramIdentifier ::= "{" String "|" Phase "}"
 
     rule <k> #mkCall _ _ _ _ _ _ _ ... </k>
          <execPhase> ( EPHASE => RUNTIME ) </execPhase>
@@ -1518,8 +1518,8 @@ Collecting Coverage Data
     rule <k> #initVM ~> (.K => #initCoverage) ... </k>
          <execPhase> EPHASE                         </execPhase>
          <program>   PGM                            </program>
-         <programID> PREV => {keccak(PGM) | EPHASE} </programID>
-      requires PREV =/=K {keccak(PGM) | EPHASE}
+         <programID> PREV => {#unparseDataByteArray(PGM) | EPHASE} </programID>
+      requires PREV =/=K {#unparseDataByteArray(PGM) | EPHASE}
       [priority(25)]
 
     syntax KItem ::= "#initCoverage"
@@ -1588,7 +1588,7 @@ Collecting Coverage Data
  // ------------------------------------------------------------------
     rule #makeCoverageReport (.List                                         , _       , _   ) => .JSONs
     rule #makeCoverageReport ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), COVERAGE, PGMS) => {
-                                                                                                  "hash": #unparseQuantity(CODEHASH),
+                                                                                                  "bytecode": CODEHASH,
                                                                                                   "programName": Phase2String(EPHASE),
                                                                                                   "coverage": #computePercentage(size({COVERAGE[KEY]}:>Map), size({PGMS[KEY]}:>List)),
                                                                                                   "program": [#serializePrograms({PGMS[KEY]}:>List, {COVERAGE[KEY]}:>Map)]
