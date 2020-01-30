@@ -316,7 +316,7 @@ test: test-conformance test-prove test-interactive test-parse
 
 split-tests: tests/ethereum-tests/make.timestamp            \
              tests/openzeppelin-contracts/truffle-config.js \
-             tests/syntethix/truffle.js
+             tests/synthetix/truffle.js
 
 tests/%/make.timestamp:
 	git submodule update --init -- tests/$*
@@ -479,7 +479,7 @@ test-failing-synthetix: $(failing_synthetix_tests:=.run-synthetix)
 test-slow-synthetix: $(slow_synthetix_tests:=.run-synthetix)
 test-synthetix: $(passing_synthetix_tests:=.run-synthetix)
 
-tests/syntethix/truffle.js:
+tests/synthetix/truffle.js:
 	cd tests                                                                                                      \
 	    && git clone 'https://github.com/Synthetixio/synthetix.git'                                               \
 	    && cd synthetix                                                                                           \
