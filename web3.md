@@ -1587,8 +1587,8 @@ Collecting Coverage Data
     syntax JSONs ::= #makeCoverageReport ( List, Map, Map ) [function]
  // ------------------------------------------------------------------
     rule #makeCoverageReport (.List                                         , _       , _   ) => .JSONs
-    rule #makeCoverageReport ((ListItem({ CODEHASH | EPHASE } #as KEY) KEYS), COVERAGE, PGMS) => {
-                                                                                                  "bytecode": CODEHASH,
+    rule #makeCoverageReport ((ListItem({ BYTECODE | EPHASE } #as KEY) KEYS), COVERAGE, PGMS) => {
+                                                                                                  "bytecode": BYTECODE,
                                                                                                   "programName": Phase2String(EPHASE),
                                                                                                   "coverage": #computePercentage(size({COVERAGE[KEY]}:>Map), size({PGMS[KEY]}:>List)),
                                                                                                   "program": [#serializePrograms({PGMS[KEY]}:>List, {COVERAGE[KEY]}:>Map)]
