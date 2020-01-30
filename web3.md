@@ -11,6 +11,7 @@ requires "json.k"
 module WEB3
     imports STATE-LOADER
     imports JSON-RPC
+    imports K-IO
 
     configuration
       <kevm-client>
@@ -1262,7 +1263,7 @@ Transaction Execution
     syntax KItem ::= "#finishTx"
  // ----------------------------
     rule <statusCode> STATUSCODE </statusCode>
-         <k> #finishTx => #mineBlock ... </k>
+         <k> #finishTx => #mineBlock ~> #updateTimestamp ... </k>
          <mode> EXECMODE </mode>
       requires EXECMODE =/=K NOGAS
        andBool ( STATUSCODE ==K EVMC_SUCCESS orBool STATUSCODE ==K EVMC_REVERT )
@@ -1841,7 +1842,7 @@ Mining
     rule <k> #evm_mine => #mineBlock ~> #rpcResponseSuccess("0x0") ... </k> [owise]
 
     rule <k> #evm_mine => #mineBlock ~> #rpcResponseSuccess("0x0") ... </k>
-         <params> [ TIME:String, .JSONs ] </params>
+         <params>    [ TIME:String, .JSONs ] </params>
          <timestamp> _ => #parseWord( TIME ) </timestamp>
 
     rule <k> #evm_mine => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'evm_mine' requires between 0 and 1 arguments.") ... </k>
@@ -1849,8 +1850,13 @@ Mining
 
     syntax KItem ::= "#firefly_genesisBlock"
  // ----------------------------------------
+    rule <k> #firefly_genesisBlock ... </k>
+         <params> [ .JSONs => #unparseQuantity(#time()), .JSONs ] </params>
+
     rule <k> #firefly_genesisBlock => #updateTrieRoots ~> #pushBlockchainState ~> #rpcResponseSuccess(true) ... </k>
-         <logsBloom> _ => #padToWidth( 256, .ByteArray ) </logsBloom>
+         <params>     [ TIME:String, .JSONs ]                                                            </params>
+         <timestamp>  _ => #parseWord( TIME )                                                            </timestamp>
+         <logsBloom>  _ => #padToWidth( 256, .ByteArray )                                                </logsBloom>
          <ommersHash> _ => 13478047122767188135818125966132228187941283477090363246179690878162135454535 </ommersHash>
 
     syntax KItem ::= "#mineBlock"
@@ -1908,6 +1914,11 @@ Mining
          <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot( TXLIST, <txReceipts> TXRECEIPTS </txReceipts> ) ) ) ) </receiptsRoot>
          <txOrder> TXLIST </txOrder>
          <txReceipts> TXRECEIPTS </txReceipts>
+
+    syntax KItem ::= "#updateTimestamp"
+ // -----------------------------------
+    rule <k> #updateTimestamp => . ... </k>
+         <timestamp> PREV => #if PREV <=Int #time() #then #time() #else PREV #fi </timestamp>
 ```
 
 Retrieving logs
