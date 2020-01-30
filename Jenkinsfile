@@ -89,7 +89,8 @@ pipeline {
               steps {
                 sh '''
                   make test-truffle
-                  make test-openzep test-synthetix -j2
+                  make test-openzep
+                  make test-synthetix
                 '''
               }
             }
