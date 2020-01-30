@@ -594,7 +594,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional]
  // ------------------------------------------------------------------
-    rule #sizeByteArray ( WS ) => lengthBytes(WS)
+    rule #sizeByteArray ( WS ) => lengthBytes(WS) [concrete]
 
     syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function]
                        | #padRightToWidth ( Int , ByteArray ) [function]
