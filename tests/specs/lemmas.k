@@ -13,6 +13,7 @@ module LEMMAS
     rule #sizeByteArray(#buf(N, _)  )  => N                                               [simplification]
     rule #sizeByteArray(BUF1 ++ BUF2)  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
     rule #sizeByteArray(#drop(N, BUF)) => maxInt(#sizeByteArray(BUF) -Int N, 0)           [simplification]
+    rule #sizeByteArray(M [ N := BUF ]) => maxInt(#sizeByteArray(M), #sizeByteArray(BUF) +Int N)           [simplification]
 
     rule #take(N, BUF)          => BUF                                              requires N ==Int #sizeByteArray(BUF)   [simplification]
     rule #take(N, BUF1 ++ BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeByteArray(BUF1)  [simplification]
@@ -27,6 +28,7 @@ module LEMMAS
     rule #asWord(BUF) /Int 26959946667150639794667015087019630673637144422540572481103610249216 => #asWord(#take(4, BUF))  [simplification]
 
     rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeByteArray(BUF) ==Int #sizeByteArray(BUF')  [simplification]
+    rule M [ N := .ByteArray ] => M requires #sizeByteArray(M) >=Int N  [simplification]
 
     rule BUF [ L .. W ] => .ByteArray requires W <=Int 0                    [simplification]
     rule BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
@@ -183,6 +185,10 @@ module LEMMAS
 
     rule chop(I) => I requires 0 <=Int I andBool I <Int pow256  [simplification]
 
+    rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
+
     rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
+
+    rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma]
 
 endmodule
