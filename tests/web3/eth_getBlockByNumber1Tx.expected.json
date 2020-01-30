@@ -16,11 +16,6 @@
   },
   {
     "jsonrpc": "2.0",
-    "id": 2,
-    "result": true
-  },
-  {
-    "jsonrpc": "2.0",
     "id": 3,
     "result": "0x0e0e58533e93a19bc4a0b0656e186d9ba1062ce2661b8bc3d120d3a2a54a6783"
   },

@@ -32,6 +32,7 @@ pipeline {
         dockerfile {
           additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
           args '-m 60g'
+          label 'docker && !smol'
         }
       }
       stages {
@@ -62,7 +63,7 @@ pipeline {
         }
         stage('Test Execution') {
           failFast true
-          options { timeout(time: 30, unit: 'MINUTES') }
+          options { timeout(time: 40, unit: 'MINUTES') }
           parallel {
             stage('Conformance (LLVM)') {
               steps {
