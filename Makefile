@@ -314,7 +314,9 @@ KPROVE_OPTIONS :=
 test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
 
-split-tests: tests/ethereum-tests/make.timestamp
+split-tests: tests/ethereum-tests/make.timestamp            \
+             tests/openzeppelin-contracts/truffle-config.js \
+             tests/syntethix/truffle.js
 
 tests/%/make.timestamp:
 	git submodule update --init -- tests/$*
@@ -482,10 +484,11 @@ tests/syntethix/truffle.js:
 	    && git clone 'https://github.com/Synthetixio/synthetix.git'                                               \
 	    && cd synthetix                                                                                           \
 	    && git checkout 8cb31959c4880347bf8ba728fb6c08e78b14a8fc                                                  \
-	    && echo "module.exports={networks:{development:{host:'localhost',port:8545,network_id:'*',gas:8000000}}," \
+	    && echo "module.exports={networks:{development:{host:'localhost',port:8546,network_id:'*',gas:8000000}}," \
 	            "compilers:{solc:{version:'0.4.25',settings:{optimizer:{enabled:true,runs:200}}}}};" > truffle.js \
 	    && npm install                                                                                            \
 	    && node_modules/.bin/truffle compile
+
 # Proof Tests
 
 prove_specs_dir        := tests/specs
