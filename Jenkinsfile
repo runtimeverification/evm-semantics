@@ -36,10 +36,21 @@ pipeline {
       }
       stages {
         stage('Dependencies') {
-          steps {
-            sh '''
-              make deps split-tests -j3
-            '''
+          parallel {
+            stage('K') {
+              steps {
+                sh '''
+                  make deps
+                '''
+              }
+            }
+            stage('Tests') {
+              steps {
+                sh '''
+                  make split-tests -j3
+                '''
+              }
+            }
           }
         }
         stage('Build') {
@@ -77,8 +88,6 @@ pipeline {
             stage('Conformance (Truffle)') {
               steps {
                 sh '''
-                  make tests/openzeppelin-contracts/truffle-config.js
-                  make tests/syntethix/truffle.js
                   make test-truffle
                   make test-openzep
                   make test-synthetix
