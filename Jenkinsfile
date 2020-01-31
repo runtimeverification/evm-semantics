@@ -91,7 +91,7 @@ pipeline {
                 sh '''
                   make test-truffle
                   make test-openzep
-                  make test-synthetix
+                  make test-synthetix-batch
                 '''
               }
             }

@@ -3,7 +3,7 @@
 set -euo pipefail
 
 test_dir="tests/synthetix/"
-test_file="$1" ; shift
+test_file="$@" ; shift
 # launch test-runner
 PORT=8546
 
@@ -25,7 +25,6 @@ while (! netcat -z 127.0.0.1 "$PORT") ; do sleep 0.1; done
 ./kevm web3-send "$PORT" firefly_addAccount '{"key":"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501208", "balance":"0x56BC75E2D63100000"}'
 ./kevm web3-send "$PORT" firefly_addAccount '{"key":"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501209", "balance":"0x56BC75E2D63100000"}'
 ./kevm web3-send "$PORT" firefly_setGasLimit '"0x7A1200"'
-./kevm web3-send "$PORT" evm_increaseTime '1579773024'
 ./kevm web3-send "$PORT" firefly_genesisBlock
 
 pushd "$test_dir"
