@@ -494,21 +494,21 @@ WEB3 JSON RPC
  // ------------------------------
     rule <k> #evm_revert => #popNetworkState ~> #rpcResponseSuccess(true) ... </k>
          <params>    [ DATA:Int, .JSONs ] </params>
-         <snapshots> SNAPSHOTS </snapshots>
-      requires DATA ==Int ( size(SNAPSHOTS) -Int 1 )
+         <snapshots> SNAPSHOTS            </snapshots>
+      requires DATA ==Int size(SNAPSHOTS)
 
     rule <k> #evm_revert ... </k>
          <params> [ (DATA => #parseHexWord(DATA)), .JSONs ] </params>
 
     rule <k> #evm_revert ... </k>
-         <params> ( [ DATA:Int, .JSONs ] ) </params>
+         <params>    ( [ DATA:Int, .JSONs ] )                    </params>
          <snapshots> ( SNAPSHOTS => range(SNAPSHOTS, 0, DATA ) ) </snapshots>
-      requires size(SNAPSHOTS) >Int (DATA +Int 1)
+      requires size(SNAPSHOTS) >Int DATA
 
     rule <k> #evm_revert => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'evm_revert' requires exactly 1 arguments. Request specified 0 arguments: [null].")  ... </k>
          <params> [ .JSONs ] </params>
 
-     rule <k> #evm_revert => #rpcResponseSuccess(false) ... </k> [owise]
+    rule <k> #evm_revert => #rpcResponseSuccess(false) ... </k> [owise]
 
     syntax KItem ::= "#evm_increaseTime"
  // ------------------------------------
