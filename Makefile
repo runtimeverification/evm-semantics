@@ -1,7 +1,7 @@
 # Settings
 # --------
 
-BUILD_DIR   := .build
+BUILD_DIR   ?= .build
 DEFN_DIR    := $(BUILD_DIR)/defn
 BUILD_LOCAL := $(CURDIR)/$(BUILD_DIR)/local
 
@@ -18,9 +18,10 @@ export PKG_CONFIG_PATH
 INSTALL_PREFIX := /usr/local
 INSTALL_DIR    ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
 
-DEPS_DIR         := deps
+DEPS_DIR         ?= deps
 K_SUBMODULE      := $(abspath $(DEPS_DIR)/k)
-export PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
+PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
+export PLUGIN_SUBMODULE
 
 K_RELEASE ?= $(K_SUBMODULE)/k-distribution/target/release/k
 K_BIN     := $(K_RELEASE)/bin
@@ -155,8 +156,10 @@ ALL_K_FILES   := $(k_files) $(EXTRA_K_FILES)
 llvm_dir    := $(DEFN_DIR)/llvm
 java_dir    := $(DEFN_DIR)/java
 haskell_dir := $(DEFN_DIR)/haskell
-export node_dir    := $(CURDIR)/$(DEFN_DIR)/node
-export web3_dir    := $(CURDIR)/$(DEFN_DIR)/web3
+node_dir    := $(CURDIR)/$(DEFN_DIR)/node
+web3_dir    := $(CURDIR)/$(DEFN_DIR)/web3
+export node_dir
+export web3_dir
 
 llvm_files    := $(patsubst %, $(llvm_dir)/%, $(ALL_K_FILES))
 java_files    := $(patsubst %, $(java_dir)/%, $(ALL_K_FILES))
