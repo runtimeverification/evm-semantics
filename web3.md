@@ -630,7 +630,7 @@ eth_sendTransaction
            ...
          </account>
 
-    rule <k> #loadNonce _ _ => 0 ... </k> [owise]
+    rule <k> #loadNonce _ _ => . ... </k> [owise]
 
     syntax JSON ::= #generateException( String, Int, Bytes, EndStatusCode ) [function]
  // ----------------------------------------------------------------------------------
