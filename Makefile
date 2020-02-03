@@ -156,8 +156,8 @@ ALL_K_FILES   := $(k_files) $(EXTRA_K_FILES)
 llvm_dir    := $(DEFN_DIR)/llvm
 java_dir    := $(DEFN_DIR)/java
 haskell_dir := $(DEFN_DIR)/haskell
-node_dir    := $(CURDIR)/$(DEFN_DIR)/node
-web3_dir    := $(CURDIR)/$(DEFN_DIR)/web3
+node_dir    := $(abspath $(DEFN_DIR)/node)
+web3_dir    ?= $(abspath $(DEFN_DIR)/web3)
 export node_dir
 export web3_dir
 
