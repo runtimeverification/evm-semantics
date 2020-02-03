@@ -3,7 +3,7 @@
 
 BUILD_DIR   ?= .build
 DEFN_DIR    := $(BUILD_DIR)/defn
-BUILD_LOCAL := $(CURDIR)/$(BUILD_DIR)/local
+BUILD_LOCAL := $(abspath $(BUILD_DIR)/local)
 
 LIBRARY_PATH       := $(BUILD_LOCAL)/lib
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
