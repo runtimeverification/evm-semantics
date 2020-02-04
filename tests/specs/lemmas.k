@@ -191,6 +191,8 @@ module LEMMAS
 
     rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
 
+    rule 0 <=Int #sizeByteArray ( _ ) => true [smt-lemma]
+
     rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma]
 
 endmodule

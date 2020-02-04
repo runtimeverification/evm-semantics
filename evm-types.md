@@ -592,7 +592,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires START <Int #sizeByteArray(WS)
     rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0)                                              [owise]
 
-    syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional]
+    syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, klabel(sizeWordStackAux), smtlib(sizeByteArray)]
  // ------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => lengthBytes(WS) [concrete]
 
