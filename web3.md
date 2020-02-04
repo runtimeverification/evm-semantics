@@ -1643,7 +1643,8 @@ Collecting Coverage Data
 
     syntax Int ::= #computePercentage ( Int, Int ) [function]
  // ---------------------------------------------------------
-    rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL
+    rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL requires TOTAL =/=Int 0
+    rule #computePercentage (EXECUTED, 0)     => 0
 
     syntax String ::= #opcodeName ( OpCode, String ) [function]
  // -----------------------------------------------------------
