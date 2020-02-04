@@ -588,7 +588,7 @@ eth_sendTransaction
     rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccess(TXHASH) ... </k>
          <statusCode> EVMC_SUCCESS </statusCode>
 
-    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccessException(TXHASH, #generateException(TXHASH, PCOUNT, RD))
+    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccessException(TXHASH, #generateException(TXHASH, PCOUNT, RD, EVMC_REVERT))
           ...
          </k>
          <statusCode> EVMC_REVERT </statusCode>
@@ -631,13 +631,15 @@ eth_sendTransaction
            ...
          </account>
 
-    syntax JSON ::= #generateException( String, Int, Bytes ) [function]
- // -------------------------------------------------------------------
-    rule #generateException(TXHASH, PCOUNT, RD) => { "message": "VM Exception while processing transaction: revert",
+    rule <k> #loadNonce _ _ => . ... </k> [owise]
+
+    syntax JSON ::= #generateException( String, Int, Bytes, EndStatusCode ) [function]
+ // ----------------------------------------------------------------------------------
+    rule #generateException(TXHASH, PCOUNT, RD, SC) => { "message": "VM Exception while processing transaction: " +String StatusCode2TruffleString(SC),
                                                       "code": -32000,
                                                       "data": {
                                                           TXHASH: {
-                                                          "error": "revert",
+                                                          "error": StatusCode2TruffleString(SC),
                                                           "program_counter": PCOUNT +Int 1,
                                                           "return": #unparseDataByteArray( RD ),
                                                           "reason": Bytes2String(substrBytes(RD,
@@ -647,11 +649,11 @@ eth_sendTransaction
                                                       }
                                                     }
       requires lengthBytes(RD) >Int 68
-    rule #generateException(TXHASH, PCOUNT, RD) => { "message": "VM Exception while processing transaction: revert",
+    rule #generateException(TXHASH, PCOUNT, RD, SC) => { "message": "VM Exception while processing transaction: " +String StatusCode2TruffleString(SC),
                                                       "code": -32000,
                                                       "data": {
                                                           TXHASH: {
-                                                          "error": "revert",
+                                                          "error": StatusCode2TruffleString(SC),
                                                           "program_counter": PCOUNT +Int 1,
                                                           "return": #unparseDataByteArray( RD )
                                                         }
@@ -1395,17 +1397,17 @@ Transaction Execution
          </k>
          <output> OUTPUT </output>
 
-    rule <statusCode> EVMC_REVERT </statusCode>
+    rule <statusCode> SC:EndStatusCode </statusCode>
          <k> TXID:Int ~> #eth_call_finalize EXECMODE
           => #setMode EXECMODE
           ~> #popNetworkState
           ~> #clearGas
           ~> #rpcResponseError(#generateException("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS),
-                               PCOUNT, RD))
-         ...
+                               PCOUNT, RD, SC))
+          ...
          </k>
          <errorPC> PCOUNT </errorPC>
-         <output> RD </output>
+         <output>  RD     </output>
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
@@ -1418,6 +1420,7 @@ Transaction Execution
            <sigS>       TS   </sigS>
            <data>       TD   </data>
          </message>
+      requires SC =/=K EVMC_SUCCESS
 ```
 
 - `#eth_estimateGas`
@@ -2165,6 +2168,17 @@ Opcode to String
     rule #opcode2String (INVALID       ) => "INVALID"
     rule #opcode2String (SELFDESTRUCT  ) => "SELFDESTRUCT"
     rule #opcode2String (UNDEFINED(W)  ) => "UNDEFINED(" +String Int2String(W) +String ")"
+```
+
+Status Codes to Strings for Truffle
+-----------------------------------
+
+```k
+    syntax String ::= StatusCode2TruffleString ( StatusCode ) [function]
+ // --------------------------------------------------------------------
+    rule StatusCode2TruffleString( EVMC_REVERT              ) => "revert"
+    rule StatusCode2TruffleString( EVMC_INVALID_INSTRUCTION ) => "invalid opcode"
+    rule StatusCode2TruffleString( SC                       ) => StatusCode2String(SC) [owise]
 ```
 
 ```k
