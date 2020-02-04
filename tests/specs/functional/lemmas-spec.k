@@ -3,7 +3,7 @@ requires "../lemmas.k"
 module VERIFICATION
     imports LEMMAS
 
-    syntax StepSort ::= Map | ByteArray | Bool
+    syntax StepSort ::= Map | ByteArray
  // -----------------------------------
 
     syntax KItem ::= runLemma ( StepSort )
