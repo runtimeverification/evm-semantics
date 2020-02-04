@@ -615,6 +615,7 @@ eth_sendTransaction
     rule <k> loadTransaction _ { "r"        : (TR:String => #padToWidth(32, #parseByteStack(TR))), _ } ... </k>
     rule <k> loadTransaction _ { "s"        : (TS:String => #padToWidth(32, #parseByteStack(TS))), _ } ... </k>
     rule <k> loadTransaction _ { ("from"    : _, REST => REST) } ... </k>
+    rule <k> loadTransaction _ { (("amount" : TV) => "value": TV), REST                  } ... </k>
 
     syntax KItem ::= "#loadNonce" Int Int
  // -------------------------------------
@@ -1642,7 +1643,8 @@ Collecting Coverage Data
 
     syntax Int ::= #computePercentage ( Int, Int ) [function]
  // ---------------------------------------------------------
-    rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL
+    rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL requires TOTAL =/=Int 0
+    rule #computePercentage (EXECUTED, 0)     => 0
 
     syntax String ::= #opcodeName ( OpCode, String ) [function]
  // -----------------------------------------------------------
