@@ -479,7 +479,7 @@ Most of EVM data is held in local memory.
     syntax Memory = Bytes
     syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
  // -------------------------------------------------------------------------------------
-    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS')
+    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS')  [concrete]
 
     syntax ByteArray ::= #range ( Memory , Int , Int ) [function]
  // -------------------------------------------------------------
@@ -594,7 +594,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional]
  // ------------------------------------------------------------------
-    rule #sizeByteArray ( WS ) => lengthBytes(WS)
+    rule #sizeByteArray ( WS ) => lengthBytes(WS) [concrete]
 
     syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function]
                        | #padRightToWidth ( Int , ByteArray ) [function]
