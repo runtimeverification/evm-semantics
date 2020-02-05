@@ -1,27 +1,27 @@
 [
-    {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "result": true
-    },
-    {
-        "jsonrpc": "2.0",
-        "id": 2,
-        "result": true
-    },
-    {
-        "jsonrpc": "2.0",
-        "id": 3,
-        "error": {
-            "message": "VM Exception while processing transaction: EVMC_UNDEFINED_INSTRUCTION",
-            "code": -32000,
-            "data": {
-                "0x5daefe6da6e340448ea5c8ff3926de2aa48e4423476a438f1533a18b4347c25f": {
-                    "error": "EVMC_UNDEFINED_INSTRUCTION",
-                    "program_counter": 1,
-                    "return": "0x"
-                }
-            }
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": true
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": true
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "error": {
+      "message": "VM Exception while processing transaction: EVMC_UNDEFINED_INSTRUCTION",
+      "code": -32000,
+      "data": {
+        "0x5daefe6da6e340448ea5c8ff3926de2aa48e4423476a438f1533a18b4347c25f": {
+          "error": "EVMC_UNDEFINED_INSTRUCTION",
+          "program_counter": 1,
+          "return": "0x"
         }
+      }
     }
+  }
 ]
