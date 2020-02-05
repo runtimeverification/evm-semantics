@@ -17,9 +17,16 @@ module WEB3
       <kevm-client>
         <kevm/>
         <json-rpc/>
-        <execPhase> .Phase </execPhase>
-        <opcodeCoverage> .Map </opcodeCoverage>
-        <opcodeLists> .Map </opcodeLists>
+        <coverage>
+          <coverageRecorded> true </coverageRecorded>
+          <bytecodeCoverages>
+            <bytecodeList> .List </bytecodeList>
+            <bytecodeCoverage multiplicity="*" type="Map">
+              <bytecode> .ByteArray </bytecode>
+              <coverageData> .Map </coverageData>
+            </bytecodeCoverage>
+          </bytecodeCoverages>
+        </coverage>
         <errorPC> 0 </errorPC>
         <previousPC> -1 </previousPC>
         <programID> .K </programID>
@@ -1504,73 +1511,94 @@ Collecting Coverage Data
 **TODO**: compute coverage percentages in `Float` instead of `Int`
 
 ```k
-    syntax Phase ::= ".Phase"
-                   | "CONSTRUCTOR"
-                   | "RUNTIME"
-
-    syntax ProgramIdentifier ::= "{" String "|" Phase "}"
-
-    rule <k> #mkCall _ _ _ _ _ _ _ ... </k>
-         <execPhase> ( EPHASE => RUNTIME ) </execPhase>
-      requires EPHASE =/=K RUNTIME
+    rule <k> #execute ... </k>
+         <coverageRecorded> true => false </coverageRecorded>
+         <program> BYTECODE </program>
+         <bytecodeCoverage> <bytecode> BYTECODE </bytecode> ... </bytecodeCoverage>
       [priority(25)]
 
-    rule <k> #mkCreate _ _ _ _ ... </k>
-         <execPhase> ( EPHASE => CONSTRUCTOR ) </execPhase>
-      requires EPHASE =/=K CONSTRUCTOR
+    rule <k> #execute ... </k>
+         <schedule> SCHED </schedule>
+         <coverageRecorded> true </coverageRecorded>
+         <program> BYTECODE </program>
+         <bytecodeList> ... (.List => ListItem(BYTECODE)) </bytecodeList>
+         <bytecodeCoverages>
+           ...
+           ( .Bag
+          => <bytecodeCoverage>
+               <bytecode> BYTECODE </bytecode>
+               <coverageData> #emptyCoverageMap(BYTECODE, SCHED, 0, .Map) </coverageData>
+             </bytecodeCoverage>
+           )
+           ...
+         </bytecodeCoverages>
+      [priority(26)]
+
+    rule <k> (#gas [ _ , _ ] #Or _:InvalidOp) #as OP ... </k>
+         <pc> PCOUNT </pc>
+         <program> BYTECODE </program>
+         <coverageRecorded> false => true </coverageRecorded>
+         <bytecodeCoverage>
+           <bytecode> BYTECODE </bytecode>
+           <coverageData> ... PCOUNT |-> { _:OpCode | _:String | (_:List (.List => ListItem(OP))) } ... </coverageData>
+         </bytecodeCoverage>
       [priority(25)]
 
-    rule <k> #initVM ~> (.K => #initCoverage) ... </k>
-         <execPhase> EPHASE                         </execPhase>
-         <program>   PGM                            </program>
-         <programID> PREV => {#unparseDataByteArray(PGM) | EPHASE} </programID>
-      requires PREV =/=K {#unparseDataByteArray(PGM) | EPHASE}
-      [priority(25)]
+    syntax OpcodeItem ::= "{" OpCode "|" String "|" List "}"
+ // --------------------------------------------------------
 
-    syntax KItem ::= "#initCoverage"
- // -------------------------------
-    rule <k> #initCoverage => . ... </k>
-         <opcodeCoverage> OC => OC [PGMID <- .Map]                      </opcodeCoverage>
-         <opcodeLists>    OL => OL [PGMID <- #parseByteCode(PGM,SCHED)] </opcodeLists>
-         <schedule>       SCHED                                         </schedule>
-         <program>        PGM                                           </program>
-         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier   </programID>
-      requires notBool PGMID in_keys(OL)
-       andBool notBool PGMID in_keys(OC)
-    rule <k> #initCoverage => . ... </k> [owise]
+    syntax Map ::= #emptyCoverageMap ( ByteArray , Schedule , Int , Map ) [function]
+ // --------------------------------------------------------------------------------
+    rule #emptyCoverageMap(PGM, SCHED, PCOUNT, M) => M requires notBool PCOUNT <Int #sizeByteArray(PGM)
+    rule #emptyCoverageMap(PGM, SCHED, PCOUNT, M)
+      => #emptyCoverageMap(PGM, SCHED, PCOUNT +Int #widthOpCode(PGM[PCOUNT]), M [ PCOUNT <- { #dasmOpCode(PGM[PCOUNT], SCHED) | #getStaticArgs(PGM, PCOUNT) | .List } ])
+      requires PCOUNT <Int #sizeByteArray(PGM)
 
-    syntax OpcodeItem ::= "{" Int "|" OpCode "|" String "}"
+    syntax KItem ::= "#firefly_getCoverageData"
+ // -------------------------------------------
+    rule <k> #firefly_getCoverageData => #makeCoverageReports(BYTECODES, [ .JSONs ]) ... </k>
+         <bytecodeList> BYTECODES </bytecodeList>
 
-    syntax List ::= #parseByteCode( ByteArray, Schedule ) [function]
- // ----------------------------------------------------------------
-    rule #parseByteCode(PGM , SCHED) => #parseByteCodeAux(0, #sizeByteArray(PGM), PGM, SCHED, .List)
+    syntax KItem ::= #makeCoverageReports ( List , JSON )
+ // -----------------------------------------------------
+    rule <k> #makeCoverageReports(.List, REPORT) => #rpcResponseSuccess(REPORT) ... </k>
 
-    syntax List ::= #parseByteCodeAux ( Int, Int, ByteArray, Schedule, List ) [function]
- // ------------------------------------------------------------------------------------
-    rule #parseByteCodeAux(PCOUNT, SIZE, _, _, OPLIST) => OPLIST
-      requires PCOUNT >=Int SIZE
-    rule #parseByteCodeAux(PCOUNT, SIZE, PGM, SCHED, OPLIST) => #parseByteCodeAux(PCOUNT +Int #widthOpCode(PGM [ PCOUNT ]), SIZE, PGM, SCHED, OPLIST ListItem({PCOUNT | #dasmOpCode(PGM [ PCOUNT ], SCHED) | #getStaticArgs(PGM,PCOUNT)}))
-      requires PCOUNT <Int SIZE
+    rule <k> #makeCoverageReports(((ListItem(BYTECODE) => .List) _), [ _ , (.JSONs => { "bytecode": BYTECODE , #makeCoverageReport(keys_list(COVERAGE_DATA), COVERAGE_DATA, 0, 0, { .JSONs }) }) ]) ... </k>
+         <bytecodeCoverage>
+           <bytecode> BYTECODE </bytecode>
+           <coverageData> COVERAGE_DATA </coverageData>
+         </bytecodeCoverage>
+
+    syntax JSONs ::= #makeCoverageReport ( List , Map , Int , Int , JSON ) [function]
+ // ---------------------------------------------------------------------------------
+    rule #makeCoverageReport(.List, _, COVERED, TOTAL, ARGUMENTS) => "coverage": #computePercentage(COVERED, TOTAL), "program": ARGUMENTS, .JSONs
+
+    rule #makeCoverageReport( ((ListItem(PCOUNT) => .List) _:List)
+                            , COVERAGE_DATA
+                            , (COVERED => #updateCovered({COVERAGE_DATA[PCOUNT]}:>OpcodeItem, COVERED))
+                            , (TOTAL => TOTAL +Int 1)
+                            , { _ , (.JSONs => #makeOpcodeCoverage(PCOUNT, {COVERAGE_DATA[PCOUNT]}:>OpcodeItem), .JSONs) }
+                            )
+
+    syntax Int ::= #updateCovered ( OpcodeItem , Int ) [function]
+ // --------------------------------------------------------------
+    rule #updateCovered({ _ | _ | .List              } , COVERED) => COVERED
+    rule #updateCovered({ _ | _ | ListItem(_) _:List } , COVERED) => COVERED +Int 1
+
+    syntax JSON ::= #makeOpcodeCoverage ( Int , OpcodeItem ) [function]
+ // -------------------------------------------------------------------
+    rule #makeOpcodeCoverage(PCOUNT, { OPCODE | STATIC_ARGS | ARG_LIST } ) => { "programCounter": PCOUNT, "opcode" : #opcodeName(OPCODE, STATIC_ARGS), "arguments": #makeArgumentList(ARG_LIST, [ .JSONs ]) , .JSONs }
+
+    syntax JSON ::= #makeArgumentList ( List , JSON ) [function]
+ // ------------------------------------------------------------
+    rule #makeArgumentList(.List, JSON_ARG_LIST) => JSON_ARG_LIST
+    rule #makeArgumentList(((ListItem(#gas[OP, AOP]) => .List) _:List), [ _ , (.JSONs => ArgList2JSONs(#getWSArgs(OP, AOP))) ])
+    rule #makeArgumentList(((ListItem(IOP:InvalidOp) => .List) _:List), [ _ , (.JSONs => [ .JSONs ]) ])
 
     syntax String ::= #getStaticArgs ( ByteArray, Int ) [function]
  // --------------------------------------------------------------
     rule #getStaticArgs (PGM, PCOUNT) => "0x" requires PCOUNT +Int #widthOpCode(PGM [ PCOUNT ]) >=Int #sizeByteArray(PGM)
     rule #getStaticArgs (PGM, PCOUNT) => #unparseDataByteArray(substrBytes(PGM, PCOUNT +Int 1, PCOUNT +Int #widthOpCode(PGM [ PCOUNT ]))) requires PCOUNT +Int #widthOpCode(PGM [ PCOUNT ]) <Int #sizeByteArray(PGM)
-
-    rule <k> #gas [ OP , AOP ] ... </k>
-         <pc>             PCOUNT                                                                                                       </pc>
-         <previousPC>     PREV => PCOUNT                                                                                               </previousPC>
-         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                                                                  </programID>
-         <opcodeCoverage> ... PGMID |-> (PCS => PCS[PCOUNT <- ({PCS[PCOUNT] orDefault .List}:>List ListItem(#getWSArgs(OP,AOP)))]) ... </opcodeCoverage>
-      requires PREV =/=Int PCOUNT
-      [priority(25)]
-
-    rule <k> IOP:InvalidOp      ... </k>
-         <pc>             PCOUNT                                                                                                        </pc>
-         <previousPC>     PREV => PCOUNT                                                                                                </previousPC>
-         <programID>      ({HASH|EPHASE} #as PGMID):ProgramIdentifier                                                                   </programID>
-         <opcodeCoverage> ... PGMID |-> (PCS => PCS[PCOUNT <- ({PCS[PCOUNT] orDefault .List}:>List ListItem(#getWSArgs(IOP,IOP)))]) ... </opcodeCoverage>
-      requires PREV =/=Int PCOUNT
 
     syntax List ::= #getWSArgs ( OpCode, OpCode ) [function]
  // --------------------------------------------------------
@@ -1583,46 +1611,20 @@ Collecting Coverage Data
     rule #getWSArgs (OP :StackOp    , OP  WS                  ) => WordStack2List (WS)
     rule #getWSArgs (OP             , _                       ) => .List [owise]
 
-    syntax KItem ::= "#firefly_getCoverageData"
- // -------------------------------------------
-    rule <k> #firefly_getCoverageData => #rpcResponseSuccess([#makeCoverageReport(keys_list(PGMS),COVERAGE, PGMS)]) ... </k>
-         <opcodeCoverage> COVERAGE </opcodeCoverage>
-         <opcodeLists>    PGMS     </opcodeLists>
+    syntax Int ::= #computePercentage ( Int, Int ) [function]
+ // ---------------------------------------------------------
+    rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL requires TOTAL =/=Int 0
+    rule #computePercentage (EXECUTED, 0)     => 0
 
-    syntax JSONs ::= #makeCoverageReport ( List, Map, Map ) [function]
- // ------------------------------------------------------------------
-    rule #makeCoverageReport (.List                                         , _       , _   ) => .JSONs
-    rule #makeCoverageReport ((ListItem({ BYTECODE | EPHASE } #as KEY) KEYS), COVERAGE, PGMS) => {
-                                                                                                  "bytecode": BYTECODE,
-                                                                                                  "programName": Phase2String(EPHASE),
-                                                                                                  "coverage": #computePercentage(size({COVERAGE[KEY]}:>Map), size({PGMS[KEY]}:>List)),
-                                                                                                  "program": [#serializePrograms({PGMS[KEY]}:>List, {COVERAGE[KEY]}:>Map)]
-                                                                                                 }, #makeCoverageReport(KEYS, COVERAGE, PGMS)
-
-    syntax JSONs ::= #serializePrograms ( List, Map) [function]
+    syntax String ::= #opcodeName ( OpCode, String ) [function]
  // -----------------------------------------------------------
-    rule #serializePrograms (.List                                    , _       ) => .JSONs
-    rule #serializePrograms (ListItem({PCOUNT:Int | OP:OpCode | SA:String}) PROGRAM, COVERAGE) => {
-                                                                                                   "programCounter": PCOUNT,
-                                                                                                   "opcode": #opcodeName(OP, SA),
-                                                                                                   "arguments": [ArgList2JSONs({COVERAGE[PCOUNT] orDefault .List}:>List)]
-                                                                                                  }, #serializePrograms(PROGRAM, COVERAGE)
-
-    syntax String ::= Phase2String ( Phase ) [function]
- // ---------------------------------------------------
-    rule Phase2String (CONSTRUCTOR) => "CONSTRUCTOR"
-    rule Phase2String (RUNTIME    ) => "RUNTIME"
+    rule #opcodeName (OP, "0x"     ) => #opcode2String(OP)
+    rule #opcodeName (OP, SA:String) => #opcode2String(OP) +String " " +String SA requires SA =/=String "0x"
 
     syntax JSONs ::= ArgList2JSONs ( List ) [function]
  // --------------------------------------------------
-    rule ArgList2JSONs (.List              ) => .JSONs
-    rule ArgList2JSONs (ListItem(.List)  L ) => [.JSONs], ArgList2JSONs(L)
-    rule ArgList2JSONs (ListItem(L:List) LS) => [ArgList2JSONsAux(L)], ArgList2JSONs(LS)
-
-    syntax JSONs ::= ArgList2JSONsAux ( List ) [function]
- // -----------------------------------------------------
-    rule ArgList2JSONsAux (.List            ) => .JSONs
-    rule ArgList2JSONsAux (ListItem(I:Int) L) => #unparseQuantity(I), ArgList2JSONsAux(L)
+    rule ArgList2JSONs (.List            ) => .JSONs
+    rule ArgList2JSONs (ListItem(I:Int) L) => #unparseQuantity(I), ArgList2JSONs(L)
 
     syntax List ::= getIntElementsSmallerThan ( Int, List, List ) [function]
  // ------------------------------------------------------------------------
@@ -1640,16 +1642,6 @@ Collecting Coverage Data
  // -----------------------------------------
     rule qsort ( .List )           => .List
     rule qsort (ListItem(I:Int) L) => qsort(getIntElementsSmallerThan(I, L, .List)) ListItem(I) qsort(getIntElementsGreaterThan(I, L, .List))
-
-    syntax Int ::= #computePercentage ( Int, Int ) [function]
- // ---------------------------------------------------------
-    rule #computePercentage (EXECUTED, TOTAL) => (100 *Int EXECUTED) /Int TOTAL requires TOTAL =/=Int 0
-    rule #computePercentage (EXECUTED, 0)     => 0
-
-    syntax String ::= #opcodeName ( OpCode, String ) [function]
- // -----------------------------------------------------------
-    rule #opcodeName (OP, "0x"     ) => #opcode2String(OP)
-    rule #opcodeName (OP, SA:String) => #opcode2String(OP) +String " " +String SA requires SA =/=String "0x"
 ```
 
 Helper Funcs
