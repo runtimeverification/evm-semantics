@@ -1616,7 +1616,6 @@ Collecting Coverage Data
     syntax JSONs ::= ArgList2JSONs ( List ) [function]
  // --------------------------------------------------
     rule ArgList2JSONs (.List              ) => .JSONs
-    rule ArgList2JSONs (ListItem(.List)  L ) => [.JSONs], ArgList2JSONs(L)
     rule ArgList2JSONs (ListItem(L:List) LS) => [ArgList2JSONsAux(L)], ArgList2JSONs(LS)
 
     syntax JSONs ::= ArgList2JSONsAux ( List ) [function]
