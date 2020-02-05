@@ -1594,10 +1594,10 @@ Collecting Coverage Data
     rule #makeArgumentList(.List, JSON_ARG_LIST) => JSON_ARG_LIST
     rule #makeArgumentList(((ListItem(OP) => .List) _:List), [ _ , (.JSONs => #computeArgList(OP)) ])
 
-    syntax JSONs ::= #computeArgList ( Opcode ) [function]
+    syntax JSONs ::= #computeArgList ( OpCode ) [function]
  // ------------------------------------------------------
-    rule #computeArgList(IOP:InvalidOp) => [ .JSONs                             ]
-    rule #computeArgList(#gas[OP, AOP]) => [ ArgList2JSONs(#getWSArgs(OP, AOP)) ]
+    rule #computeArgList(IOP:InvalidOp) => .JSONs
+    rule #computeArgList(#gas[OP, AOP]) => ArgList2JSONs(#getWSArgs(OP, AOP))
 
     syntax String ::= #getStaticArgs ( ByteArray, Int ) [function]
  // --------------------------------------------------------------
