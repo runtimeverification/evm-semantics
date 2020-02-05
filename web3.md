@@ -19,8 +19,8 @@ module WEB3
         <json-rpc/>
         <coverage>
           <coverageRecorded> true </coverageRecorded>
+          <bytecodeList> .List </bytecodeList>
           <bytecodeCoverages>
-            <bytecodeList> .List </bytecodeList>
             <bytecodeCoverage multiplicity="*" type="Map">
               <bytecode> .ByteArray </bytecode>
               <coverageData> .Map </coverageData>
