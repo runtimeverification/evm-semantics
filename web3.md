@@ -118,7 +118,7 @@ The `blockList` cell stores a list of previous blocks and network states.
     syntax Int ::= #getNumberAtBlock ( BlockIdentifier , List , BlockchainItem ) [function]
  // ---------------------------------------------------------------------------------------
     rule #getNumberAtBlock (X:Int     , _        , _     ) => X
-    rule #getNumberAtBlock (BLOCKID   , BLOCKLIST, BLOCK ) => #getNumberFromBlockchainItem(#getBlockByNumber(BLOCKID, BLOCKLIST, BLOCK))
+    rule #getNumberAtBlock (BLOCKID   , BLOCKLIST, BLOCK ) => #getNumberFromBlockchainItem(#getBlockByNumber(BLOCKID, BLOCKLIST, BLOCK)) [owise]
 ```
 
 WEB3 JSON RPC
@@ -1563,7 +1563,10 @@ Collecting Coverage Data
  // -----------------------------------------------------
     rule <k> #makeCoverageReports(.List, REPORT) => #rpcResponseSuccess(REPORT) ... </k>
 
-    rule <k> #makeCoverageReports(((ListItem(BYTECODE) => .List) _), [ _ , (.JSONs => { "bytecode": BYTECODE , #makeCoverageReport(keys_list(COVERAGE_DATA), COVERAGE_DATA, 0, 0, { .JSONs }) }) ]) ... </k>
+    rule <k> #makeCoverageReports(ListItem(BYTECODE) REST, [ DONE ])
+          => #makeCoverageReports(REST, [ { "bytecode": #unparseDataByteArray(BYTECODE) , #makeCoverageReport(keys_list(COVERAGE_DATA), COVERAGE_DATA, 0, 0, { .JSONs }) } , DONE ])
+         ...
+         </k>
          <bytecodeCoverage>
            <bytecode> BYTECODE </bytecode>
            <coverageData> COVERAGE_DATA </coverageData>
@@ -1571,13 +1574,14 @@ Collecting Coverage Data
 
     syntax JSONs ::= #makeCoverageReport ( List , Map , Int , Int , JSON ) [function]
  // ---------------------------------------------------------------------------------
-    rule #makeCoverageReport(.List, _, COVERED, TOTAL, ARGUMENTS) => "coverage": #computePercentage(COVERED, TOTAL), "program": ARGUMENTS, .JSONs
+    rule #makeCoverageReport(.List, _, COVERED, TOTAL, { OPCODE_COVERAGE }) => "coverage": #computePercentage(COVERED, TOTAL), "program": { reverseJSONs(OPCODE_COVERAGE) }, .JSONs
 
-    rule #makeCoverageReport( ((ListItem(PCOUNT) => .List) _:List)
+    rule #makeCoverageReport( ListItem(PCOUNT) PCOUNTS , COVERAGE_DATA , COVERED , TOTAL , { OPCODE_COVERAGE } )
+      => #makeCoverageReport( PCOUNTS
                             , COVERAGE_DATA
-                            , (COVERED => #updateCovered({COVERAGE_DATA[PCOUNT]}:>OpcodeItem, COVERED))
-                            , (TOTAL => TOTAL +Int 1)
-                            , { _ , (.JSONs => #makeOpcodeCoverage(PCOUNT, {COVERAGE_DATA[PCOUNT]}:>OpcodeItem), .JSONs) }
+                            , #updateCovered({COVERAGE_DATA[PCOUNT]}:>OpcodeItem, COVERED)
+                            , TOTAL +Int 1
+                            , { #makeOpcodeCoverage(PCOUNT, {COVERAGE_DATA[PCOUNT]}:>OpcodeItem) , OPCODE_COVERAGE }
                             )
 
     syntax Int ::= #updateCovered ( OpcodeItem , Int ) [function]
@@ -1587,17 +1591,17 @@ Collecting Coverage Data
 
     syntax JSON ::= #makeOpcodeCoverage ( Int , OpcodeItem ) [function]
  // -------------------------------------------------------------------
-    rule #makeOpcodeCoverage(PCOUNT, { OPCODE | STATIC_ARGS | ARG_LIST } ) => { "programCounter": PCOUNT, "opcode" : #opcodeName(OPCODE, STATIC_ARGS), "arguments": #makeArgumentList(ARG_LIST, [ .JSONs ]) , .JSONs }
+    rule #makeOpcodeCoverage(PCOUNT, { OPCODE | STATIC_ARGS | ARG_LIST } ) => { "programCounter": PCOUNT, "opcode" : #opcodeName(OPCODE, STATIC_ARGS), "arguments": [ #makeArgumentList(ARG_LIST, .JSONs) ] , .JSONs }
 
-    syntax JSON ::= #makeArgumentList ( List , JSON ) [function]
- // ------------------------------------------------------------
-    rule #makeArgumentList(.List, JSON_ARG_LIST) => JSON_ARG_LIST
-    rule #makeArgumentList(((ListItem(OP) => .List) _:List), [ _ , (.JSONs => #computeArgList(OP)) ])
+    syntax JSONs ::= #makeArgumentList ( List , JSONs ) [function]
+ // --------------------------------------------------------------
+    rule #makeArgumentList(.List, JSON_ARGS) => reverseJSONs(JSON_ARGS)
+    rule #makeArgumentList(ListItem(OP) REST:List, JSON_ARGS) => #makeArgumentList(REST, (#computeArgList(OP) , JSON_ARGS))
 
-    syntax JSONs ::= #computeArgList ( OpCode ) [function]
- // ------------------------------------------------------
-    rule #computeArgList(IOP:InvalidOp) => .JSONs
-    rule #computeArgList(#gas[OP, AOP]) => ArgList2JSONs(#getWSArgs(OP, AOP))
+    syntax JSON ::= #computeArgList ( OpCode ) [function]
+ // -----------------------------------------------------
+    rule #computeArgList(IOP:InvalidOp) => [ .JSONs                             ]
+    rule #computeArgList(#gas[OP, AOP]) => [ ArgList2JSONs(#getWSArgs(OP, AOP)) ]
 
     syntax String ::= #getStaticArgs ( ByteArray, Int ) [function]
  // --------------------------------------------------------------
