@@ -39,7 +39,7 @@ LUA_PATH                := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean clean-submodules distclean                                                                                                            \
+.PHONY: all clean distclean                                                                                                                             \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                                            \
         build build-java build-node build-haskell build-llvm build-web3                                                                                 \
         defn java-defn node-defn web3-defn haskell-defn llvm-defn                                                                                       \
@@ -58,18 +58,10 @@ export LUA_PATH
 all: build split-tests
 
 clean:
-	rm -rf $(DEFN_DIR)
-	git clean -dfx -- tests/specs
-
-distclean: clean
 	rm -rf $(BUILD_DIR)
 
-clean-submodules: distclean
-	rm -rf $(DEPS_DIR)/k/make.timestamp $(DEPS_DIR)/metropolis/*.sty \
-	       tests/ethereum-tests/make.timestamp $(DEPS_DIR)/plugin/make.timestamp  \
-	       $(DEPS_DIR)/libff/build
-	cd $(DEPS_DIR)/k         && mvn clean --quiet
-	cd $(DEPS_DIR)/secp256k1 && $(MAKE) distclean || true
+distclean: clean
+	git clean -dffx -- tests/
 
 # Non-K Dependencies
 # ------------------
