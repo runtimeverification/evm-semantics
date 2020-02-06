@@ -4,7 +4,7 @@ list(APPEND CMAKE_MODULE_PATH "$ENV{K_RELEASE}/cmake")
 include(LLVMKompilePrelude)
 project (KevmClient CXX)
 
-set(KOMPILED_DIR $ENV{web3_dir}/web3-kompiled)
+set(KOMPILED_DIR $ENV{web3_dir}/$ENV{MAIN_DEFN_FILE}-kompiled)
 set(KOMPILE_USE_MAIN "library")
 set(TARGET_NAME "kevm-client")
 
