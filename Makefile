@@ -237,16 +237,16 @@ $(haskell_kompiled): $(haskell_files)
 
 # Node Backend
 
-$(node_kompiled): MAIN_DEFN_FILE=evm-node
-$(node_kompiled): MAIN_MODULE=EVM-NODE
-$(node_kompiled): SYNTAX_MODULE=EVM-NODE
+$(node_kompiled): MAIN_DEFN_FILE = evm-node
+$(node_kompiled): MAIN_MODULE    = EVM-NODE
+$(node_kompiled): SYNTAX_MODULE  = $(MAIN_MODULE)
 
 $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore: $(node_files)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
 	                 --syntax-module $(SYNTAX_MODULE) $(node_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(node_dir) -I $(node_dir) -I $(node_dir) \
-	                 --hook-namespaces "KRYPTO BLOCKCHAIN" \
-	                 --no-llvm-kompile \
+	                 --directory $(node_dir) -I $(node_dir) -I $(node_dir)            \
+	                 --hook-namespaces "KRYPTO BLOCKCHAIN"                            \
+	                 --no-llvm-kompile                                                \
 	                 $(KOMPILE_OPTS)
 
 $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
