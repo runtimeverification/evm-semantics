@@ -111,7 +111,7 @@ The `blockList` cell stores a list of previous blocks and network states.
     syntax Int ::= #getNumberAtBlock ( BlockIdentifier , List , BlockchainItem ) [function]
  // ---------------------------------------------------------------------------------------
     rule #getNumberAtBlock (X:Int     , _        , _     ) => X
-    rule #getNumberAtBlock (BLOCKID   , BLOCKLIST, BLOCK ) => #getNumberFromBlockchainItem(#getBlockByNumber(BLOCKID, BLOCKLIST, BLOCK))
+    rule #getNumberAtBlock (BLOCKID   , BLOCKLIST, BLOCK ) => #getNumberFromBlockchainItem(#getBlockByNumber(BLOCKID, BLOCKLIST, BLOCK)) [owise]
 ```
 
 WEB3 JSON RPC
@@ -1616,7 +1616,6 @@ Collecting Coverage Data
     syntax JSONs ::= ArgList2JSONs ( List ) [function]
  // --------------------------------------------------
     rule ArgList2JSONs (.List              ) => .JSONs
-    rule ArgList2JSONs (ListItem(.List)  L ) => [.JSONs], ArgList2JSONs(L)
     rule ArgList2JSONs (ListItem(L:List) LS) => [ArgList2JSONsAux(L)], ArgList2JSONs(LS)
 
     syntax JSONs ::= ArgList2JSONsAux ( List ) [function]
