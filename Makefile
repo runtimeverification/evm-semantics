@@ -147,7 +147,7 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 # --------
 
 MAIN_MODULE    ?= ETHEREUM-SIMULATION
-SYNTAX_MODULE  ?= $(MAIN_MODULE)
+SYNTAX_MODULE  := $(MAIN_MODULE)
 MAIN_DEFN_FILE ?= driver
 export MAIN_DEFN_FILE
 
@@ -260,16 +260,16 @@ $(node_kompiled): $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(node_
 
 # Web3 Backend
 
-$(web3_dir)/web3-kompiled/definition.kore: MAIN_DEFN_FILE     = web3
-$(web3_dir)/web3-kompiled/definition.kore: MAIN_MODULE        = WEB3
-$(web3_dir)/web3-kompiled/definition.kore: MAIN_SYNTAX_MODULE = WEB3
+$(web3_dir)/web3-kompiled/definition.kore: MAIN_DEFN_FILE = web3
+$(web3_dir)/web3-kompiled/definition.kore: MAIN_MODULE    = WEB3
+$(web3_dir)/web3-kompiled/definition.kore: SYNTAX_MODULE  = $(MAIN_MODULE)
 
 $(web3_dir)/web3-kompiled/definition.kore: $(web3_files)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm                   \
-	                 --syntax-module $(MAIN_SYNTAX_MODULE) $(web3_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(web3_dir) -I $(web3_dir)                                \
-	                 --hook-namespaces "KRYPTO JSON"                                       \
-	                 --no-llvm-kompile                                                     \
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
+	                 --syntax-module $(SYNTAX_MODULE) $(web3_dir)/$(MAIN_DEFN_FILE).k \
+	                 --directory $(web3_dir) -I $(web3_dir)                           \
+	                 --hook-namespaces "KRYPTO JSON"                                  \
+	                 --no-llvm-kompile                                                \
 	                 $(KOMPILE_OPTS)
 
 .PHONY: $(web3_kompiled)
