@@ -41,7 +41,7 @@ pipeline {
             stage('K') {
               steps {
                 sh '''
-                  make deps
+                  make deps RELEASE=true
                 '''
               }
             }
