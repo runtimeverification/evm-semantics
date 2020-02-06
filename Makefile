@@ -1,8 +1,8 @@
 # Settings
 # --------
 
-BUILD_DIR   ?= .build
-SUBDEFN_DIR ?= .
+BUILD_DIR   := .build
+SUBDEFN_DIR := .
 DEFN_DIR    := $(BUILD_DIR)/defn/$(SUBDEFN_DIR)
 BUILD_LOCAL := $(abspath $(BUILD_DIR)/local)
 
@@ -19,7 +19,7 @@ export PKG_CONFIG_PATH
 INSTALL_PREFIX := /usr/local
 INSTALL_DIR    ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
 
-DEPS_DIR         ?= deps
+DEPS_DIR         := deps
 K_SUBMODULE      := $(abspath $(DEPS_DIR)/k)
 PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
 export PLUGIN_SUBMODULE
@@ -100,8 +100,8 @@ else
   LINK_PROCPS=
 endif
 
-LIBFF_CC ?=clang-8
-LIBFF_CXX?=clang++-8
+LIBFF_CC  := clang-8
+LIBFF_CXX := clang++-8
 
 $(DEPS_DIR)/libff/CMakeLists.txt:
 	git submodule update --init --recursive -- $(DEPS_DIR)/libff
@@ -152,9 +152,9 @@ build-node: SYNTAX_MODULE  = EVM-NODE
 build-web3: MAIN_DEFN_FILE = web3
 build-web3: MAIN_MODULE    = WEB3
 build-web3: SYNTAX_MODULE  = WEB3
-MAIN_MODULE    ?= ETHEREUM-SIMULATION
+MAIN_MODULE    := ETHEREUM-SIMULATION
 SYNTAX_MODULE  := $(MAIN_MODULE)
-MAIN_DEFN_FILE ?= driver
+MAIN_DEFN_FILE := driver
 export MAIN_DEFN_FILE
 
 k_files       := driver.k data.k network.k evm.k evm-types.k json.k krypto.k edsl.k evm-node.k web3.k asm.k state-loader.k serialization.k
@@ -293,7 +293,7 @@ $(llvm_kompiled): $(llvm_files) $(libff_out)
 # Installing
 # ----------
 
-KEVM_RELEASE_TAG?=
+KEVM_RELEASE_TAG ?=
 
 release.md: INSTALL.md
 	echo "KEVM Release $(KEVM_RELEASE_TAG)"  > $@
