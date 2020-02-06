@@ -18,7 +18,6 @@ module WEB3
         <kevm/>
         <json-rpc/>
         <errorPC> 0 </errorPC>
-        <programID> .K </programID>
         <blockchain>
           <blockList> .List </blockList>
         </blockchain>
