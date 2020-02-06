@@ -86,15 +86,6 @@ pipeline {
                 '''
               }
             }
-            stage('Conformance (Truffle)') {
-              steps {
-                sh '''
-                  make test-truffle
-                  make test-openzep
-                  make test-synthetix
-                '''
-              }
-            }
           }
         }
         stage('Proofs') {
