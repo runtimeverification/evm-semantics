@@ -1,10 +1,11 @@
 # Settings
 # --------
 
-BUILD_DIR   := .build
-SUBDEFN_DIR := .
-DEFN_DIR    := $(BUILD_DIR)/defn/$(SUBDEFN_DIR)
-BUILD_LOCAL := $(abspath $(BUILD_DIR)/local)
+BUILD_DIR     := .build
+SUBDEFN_DIR   := .
+DEFN_BASE_DIR := $(BUILD_DIR)/defn
+DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
+BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 
 LIBRARY_PATH       := $(BUILD_LOCAL)/lib
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
@@ -58,9 +59,10 @@ export LUA_PATH
 all: build split-tests
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(DEFN_DIR)
 
-distclean: clean
+distclean:
+	rm -rf $(BUILD_DIR)
 	git clean -dffx -- tests/
 
 # Non-K Dependencies
