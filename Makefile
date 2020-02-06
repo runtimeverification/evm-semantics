@@ -146,7 +146,7 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 # Building
 # --------
 
-build-node: MAIN_DEFN_FILE = node
+build-node: MAIN_DEFN_FILE = evm-node
 build-node: MAIN_MODULE    = EVM-NODE
 build-node: SYNTAX_MODULE  = EVM-NODE
 build-web3: MAIN_DEFN_FILE = web3
