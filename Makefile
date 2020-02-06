@@ -246,7 +246,7 @@ $(haskell_kompiled): $(haskell_files)
 
 # Node Backend
 
-$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore: $(node_files)
+$(node_kore): $(node_files)
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
 	                 --syntax-module $(SYNTAX_MODULE) $(node_dir)/$(MAIN_DEFN_FILE).k \
 	                 --directory $(node_dir) -I $(node_dir) -I $(node_dir)            \
@@ -258,7 +258,7 @@ $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUBMODUL
 	@mkdir -p $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin
 	protoc --cpp_out=$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 
-$(node_kompiled): $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
+$(node_kompiled): $(node_kore) $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
 	@mkdir -p $(DEFN_DIR)/vm
 	cd $(DEFN_DIR)/vm && cmake $(CURDIR)/cmake/node -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
