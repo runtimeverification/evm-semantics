@@ -59,7 +59,7 @@ export LUA_PATH
 all: build split-tests
 
 clean:
-	rm -rf $(DEFN_DIR)
+	rm -rf $(DEFN_BASE_DIR)
 
 distclean:
 	rm -rf $(BUILD_DIR)
