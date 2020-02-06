@@ -182,6 +182,9 @@ web3_kompiled    := $(web3_dir)/build/kevm-client
 haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
+node_kore := $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+web3_kore := $(web3_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+
 # Tangle definition from *.md files
 
 concrete_tangle := .k:not(.node):not(.symbolic):not(.nobytes):not(.memmap),.standalone,.concrete,.bytes,.membytes
@@ -255,14 +258,13 @@ $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUBMODUL
 	@mkdir -p $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin
 	protoc --cpp_out=$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 
-.PHONY: $(node_kompiled)
 $(node_kompiled): $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
 	@mkdir -p $(DEFN_DIR)/vm
 	cd $(DEFN_DIR)/vm && cmake $(CURDIR)/cmake/node -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
 # Web3 Backend
 
-$(web3_dir)/web3-kompiled/definition.kore: $(web3_files)
+$(web3_kore): $(web3_files)
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
 	                 --syntax-module $(SYNTAX_MODULE) $(web3_dir)/$(MAIN_DEFN_FILE).k \
 	                 --directory $(web3_dir) -I $(web3_dir)                           \
@@ -270,8 +272,7 @@ $(web3_dir)/web3-kompiled/definition.kore: $(web3_files)
 	                 --no-llvm-kompile                                                \
 	                 $(KOMPILE_OPTS)
 
-.PHONY: $(web3_kompiled)
-$(web3_kompiled): $(web3_dir)/web3-kompiled/definition.kore $(libff_out)
+$(web3_kompiled): $(web3_kore) $(libff_out)
 	@mkdir -p $(web3_dir)/build
 	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
