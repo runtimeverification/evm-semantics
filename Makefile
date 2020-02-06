@@ -146,6 +146,12 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 # Building
 # --------
 
+build-node: MAIN_DEFN_FILE = node
+build-node: MAIN_MODULE    = EVM-NODE
+build-node: SYNTAX_MODULE  = EVM-NODE
+build-web3: MAIN_DEFN_FILE = web3
+build-web3: MAIN_MODULE    = WEB3
+build-web3: SYNTAX_MODULE  = WEB3
 MAIN_MODULE    ?= ETHEREUM-SIMULATION
 SYNTAX_MODULE  := $(MAIN_MODULE)
 MAIN_DEFN_FILE ?= driver
@@ -222,24 +228,20 @@ build-llvm:    $(llvm_kompiled)
 # Java Backend
 
 $(java_kompiled): $(java_files)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend java \
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend java              \
 	                 --syntax-module $(SYNTAX_MODULE) $(java_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(java_dir) -I $(java_dir) \
+	                 --directory $(java_dir) -I $(java_dir)                           \
 	                 $(KOMPILE_OPTS)
 
 # Haskell Backend
 
 $(haskell_kompiled): $(haskell_files)
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend haskell --hook-namespaces KRYPTO \
-	                 --syntax-module $(SYNTAX_MODULE) $(haskell_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(haskell_dir) -I $(haskell_dir) \
+	                 --syntax-module $(SYNTAX_MODULE) $(haskell_dir)/$(MAIN_DEFN_FILE).k             \
+	                 --directory $(haskell_dir) -I $(haskell_dir)                                    \
 	                 $(KOMPILE_OPTS)
 
 # Node Backend
-
-$(node_kompiled): MAIN_DEFN_FILE = evm-node
-$(node_kompiled): MAIN_MODULE    = EVM-NODE
-$(node_kompiled): SYNTAX_MODULE  = $(MAIN_MODULE)
 
 $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore: $(node_files)
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
@@ -260,10 +262,6 @@ $(node_kompiled): $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(node_
 
 # Web3 Backend
 
-$(web3_dir)/web3-kompiled/definition.kore: MAIN_DEFN_FILE = web3
-$(web3_dir)/web3-kompiled/definition.kore: MAIN_MODULE    = WEB3
-$(web3_dir)/web3-kompiled/definition.kore: SYNTAX_MODULE  = $(MAIN_MODULE)
-
 $(web3_dir)/web3-kompiled/definition.kore: $(web3_files)
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
 	                 --syntax-module $(SYNTAX_MODULE) $(web3_dir)/$(MAIN_DEFN_FILE).k \
@@ -280,15 +278,15 @@ $(web3_kompiled): $(web3_dir)/web3-kompiled/definition.kore $(libff_out)
 # LLVM Backend
 
 $(llvm_kompiled): $(llvm_files) $(libff_out)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
-	                 --syntax-module $(SYNTAX_MODULE) $(llvm_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(llvm_dir) -I $(llvm_dir) -I $(llvm_dir) \
-	                 --hook-namespaces KRYPTO \
-	                 $(KOMPILE_OPTS) \
-	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
-	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp \
-	                 -ccopt -g -ccopt -std=c++14 \
-	                 -ccopt -L$(LIBRARY_PATH) \
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm                                  \
+	                 --syntax-module $(SYNTAX_MODULE) $(llvm_dir)/$(MAIN_DEFN_FILE).k                     \
+	                 --directory $(llvm_dir) -I $(llvm_dir) -I $(llvm_dir)                                \
+	                 --hook-namespaces KRYPTO                                                             \
+	                 $(KOMPILE_OPTS)                                                                      \
+	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp                                       \
+	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp                                       \
+	                 -ccopt -g -ccopt -std=c++14                                                          \
+	                 -ccopt -L$(LIBRARY_PATH)                                                             \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS))
 
 # Installing
