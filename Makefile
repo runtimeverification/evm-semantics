@@ -355,15 +355,6 @@ tests/%.run-web3: tests/%.in.json
 	$(CHECK) tests/$*.out.json tests/$*.expected.json
 	rm -rf tests/$*.out.json
 
-tests/%.run-truffle: tests/%
-	tests/truffle/runtest.sh $(dir $@)
-
-%.run-openzep:
-	tests/run-openzep.sh $*
-
-%.run-synthetix:
-	tests/run-synthetix.sh $*
-
 tests/%.parse: tests/%
 	$(TEST) kast $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
 	$(CHECK) $@-out $@-expected
