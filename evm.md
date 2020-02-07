@@ -1387,8 +1387,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <localMem>     _ => .Memory    </localMem>
 
     syntax Set ::= #computeValidJumpDests(ByteArray)            [function]
-                 | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
- // ---------------------------------------------------------------------------------------------------------
+                 | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux), memo]
+ // ---------------------------------------------------------------------------------------------------------------
     rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
 ```
 
