@@ -593,7 +593,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0)                                              [owise]
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, klabel(sizeWordStackAux), smtlib(sizeByteArray)]
- // ------------------------------------------------------------------
+ // -------------------------------------------------------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => lengthBytes(WS) [concrete]
 
     syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function]
