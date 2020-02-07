@@ -1,10 +1,11 @@
 # Settings
 # --------
 
-BUILD_DIR   ?= .build
-SUBDEFN_DIR ?= .
-DEFN_DIR    := $(BUILD_DIR)/defn/$(SUBDEFN_DIR)
-BUILD_LOCAL := $(abspath $(BUILD_DIR)/local)
+BUILD_DIR     := .build
+SUBDEFN_DIR   := .
+DEFN_BASE_DIR := $(BUILD_DIR)/defn
+DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
+BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 
 LIBRARY_PATH       := $(BUILD_LOCAL)/lib
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
@@ -19,7 +20,7 @@ export PKG_CONFIG_PATH
 INSTALL_PREFIX := /usr/local
 INSTALL_DIR    ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
 
-DEPS_DIR         ?= deps
+DEPS_DIR         := deps
 K_SUBMODULE      := $(abspath $(DEPS_DIR)/k)
 PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
 export PLUGIN_SUBMODULE
@@ -39,7 +40,7 @@ LUA_PATH                := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean clean-submodules distclean                                                                                     \
+.PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
         build build-java build-node build-haskell build-llvm build-web3                                                          \
         defn java-defn node-defn web3-defn haskell-defn llvm-defn                                                                \
@@ -58,18 +59,11 @@ export LUA_PATH
 all: build split-tests
 
 clean:
-	rm -rf $(DEFN_DIR)
-	git clean -dfx -- tests/specs
+	rm -rf $(DEFN_BASE_DIR)
 
-distclean: clean
+distclean:
 	rm -rf $(BUILD_DIR)
-
-clean-submodules: distclean
-	rm -rf $(DEPS_DIR)/k/make.timestamp $(DEPS_DIR)/metropolis/*.sty \
-	       tests/ethereum-tests/make.timestamp $(DEPS_DIR)/plugin/make.timestamp  \
-	       $(DEPS_DIR)/libff/build
-	cd $(DEPS_DIR)/k         && mvn clean --quiet
-	cd $(DEPS_DIR)/secp256k1 && $(MAKE) distclean || true
+	git clean -dffx -- tests/
 
 # Non-K Dependencies
 # ------------------
@@ -100,8 +94,8 @@ else
   LINK_PROCPS=
 endif
 
-LIBFF_CC ?=clang-8
-LIBFF_CXX?=clang++-8
+LIBFF_CC  := clang-8
+LIBFF_CXX := clang++-8
 
 $(DEPS_DIR)/libff/CMakeLists.txt:
 	git submodule update --init --recursive -- $(DEPS_DIR)/libff
@@ -146,9 +140,16 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 # Building
 # --------
 
+build-node: MAIN_DEFN_FILE = evm-node
+build-node: MAIN_MODULE    = EVM-NODE
+build-node: SYNTAX_MODULE  = EVM-NODE
+build-web3: MAIN_DEFN_FILE = web3
+build-web3: MAIN_MODULE    = WEB3
+build-web3: SYNTAX_MODULE  = WEB3
 MAIN_MODULE    := ETHEREUM-SIMULATION
 SYNTAX_MODULE  := $(MAIN_MODULE)
-export MAIN_DEFN_FILE := driver
+MAIN_DEFN_FILE := driver
+export MAIN_DEFN_FILE
 
 k_files       := driver.k data.k network.k evm.k evm-types.k json.k krypto.k edsl.k evm-node.k web3.k asm.k state-loader.k serialization.k
 EXTRA_K_FILES += $(MAIN_DEFN_FILE).k
@@ -174,6 +175,9 @@ node_kompiled    := $(DEFN_DIR)/vm/kevm-vm
 web3_kompiled    := $(web3_dir)/build/kevm-client
 haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
+
+node_kore := $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+web3_kore := $(web3_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 
 # Tangle definition from *.md files
 
@@ -221,75 +225,69 @@ build-llvm:    $(llvm_kompiled)
 # Java Backend
 
 $(java_kompiled): $(java_files)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend java \
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend java              \
 	                 --syntax-module $(SYNTAX_MODULE) $(java_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(java_dir) -I $(java_dir) \
+	                 --directory $(java_dir) -I $(java_dir)                           \
 	                 $(KOMPILE_OPTS)
 
 # Haskell Backend
 
 $(haskell_kompiled): $(haskell_files)
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend haskell --hook-namespaces KRYPTO \
-	                 --syntax-module $(SYNTAX_MODULE) $(haskell_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(haskell_dir) -I $(haskell_dir) \
+	                 --syntax-module $(SYNTAX_MODULE) $(haskell_dir)/$(MAIN_DEFN_FILE).k             \
+	                 --directory $(haskell_dir) -I $(haskell_dir)                                    \
 	                 $(KOMPILE_OPTS)
 
 # Node Backend
 
-$(node_kompiled): MAIN_DEFN_FILE=evm-node
-$(node_kompiled): MAIN_MODULE=EVM-NODE
-$(node_kompiled): SYNTAX_MODULE=EVM-NODE
-
-$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore: $(node_files)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
+$(node_kore): $(node_files)
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
 	                 --syntax-module $(SYNTAX_MODULE) $(node_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(node_dir) -I $(node_dir) -I $(node_dir) \
-	                 --hook-namespaces "KRYPTO BLOCKCHAIN" \
-	                 --no-llvm-kompile \
+	                 --directory $(node_dir) -I $(node_dir) -I $(node_dir)            \
+	                 --hook-namespaces "KRYPTO BLOCKCHAIN"                            \
+	                 --no-llvm-kompile                                                \
 	                 $(KOMPILE_OPTS)
 
 $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 	@mkdir -p $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin
 	protoc --cpp_out=$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 
-.PHONY: $(node_kompiled)
-$(node_kompiled): $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
+$(node_kompiled): $(node_kore) $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
 	@mkdir -p $(DEFN_DIR)/vm
 	cd $(DEFN_DIR)/vm && cmake $(CURDIR)/cmake/node -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
 # Web3 Backend
 
-$(web3_dir)/web3-kompiled/definition.kore: $(web3_files)
-	$(K_BIN)/kompile --debug --main-module WEB3 --backend llvm \
-	                 --syntax-module WEB3 $(web3_dir)/web3.k \
-	                 --directory $(web3_dir) -I $(web3_dir) \
-	                 --hook-namespaces "KRYPTO JSON" \
-	                 --no-llvm-kompile \
+$(web3_kore): $(web3_files)
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
+	                 --syntax-module $(SYNTAX_MODULE) $(web3_dir)/$(MAIN_DEFN_FILE).k \
+	                 --directory $(web3_dir) -I $(web3_dir)                           \
+	                 --hook-namespaces "KRYPTO JSON"                                  \
+	                 --no-llvm-kompile                                                \
 	                 $(KOMPILE_OPTS)
 
-.PHONY: $(web3_kompiled)
-$(web3_kompiled): $(web3_dir)/web3-kompiled/definition.kore $(libff_out)
+$(web3_kompiled): $(web3_kore) $(libff_out)
 	@mkdir -p $(web3_dir)/build
 	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
 # LLVM Backend
 
 $(llvm_kompiled): $(llvm_files) $(libff_out)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm \
-	                 --syntax-module $(SYNTAX_MODULE) $(llvm_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(llvm_dir) -I $(llvm_dir) -I $(llvm_dir) \
-	                 --hook-namespaces KRYPTO \
-	                 $(KOMPILE_OPTS) \
-	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
-	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp \
-	                 -ccopt -g -ccopt -std=c++14 \
-	                 -ccopt -L$(LIBRARY_PATH) \
+	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm                                  \
+	                 --syntax-module $(SYNTAX_MODULE) $(llvm_dir)/$(MAIN_DEFN_FILE).k                     \
+	                 --directory $(llvm_dir) -I $(llvm_dir) -I $(llvm_dir)                                \
+	                 --hook-namespaces KRYPTO                                                             \
+	                 $(KOMPILE_OPTS)                                                                      \
+	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp                                       \
+	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp                                       \
+	                 -ccopt -g -ccopt -std=c++14                                                          \
+	                 -ccopt -L$(LIBRARY_PATH)                                                             \
 	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS))
 
 # Installing
 # ----------
 
-KEVM_RELEASE_TAG?=
+KEVM_RELEASE_TAG ?=
 
 release.md: INSTALL.md
 	echo "KEVM Release $(KEVM_RELEASE_TAG)"  > $@

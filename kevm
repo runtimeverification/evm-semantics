@@ -30,6 +30,18 @@ pretty_diff() {
     git --no-pager diff --no-index --ignore-all-space "$@"
 }
 
+get_port() {
+    python3 -c """
+import socket
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind(('', 0))
+addr = s.getsockname()
+print(str(addr[1]))
+s.close()
+"""
+}
+
 # Runners
 # -------
 
@@ -87,7 +99,7 @@ run_search() {
 run_web3() {
     local web3_port
     web3_port="$1" ; shift
-    kevm_port=$(tests/web3/get_port.py)
+    kevm_port=$(get_port)
     run_file='-'
     if $debug; then
         gdb --args ${defn_dir}/web3/build/kevm-client --port "$web3_port" --kport "$kevm_port" "$@"
