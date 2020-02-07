@@ -117,7 +117,7 @@ Specification expression language
                  | "#getRefund"
                  | #getStorage ( Int )
                  | #var( Id )
-                 | #sizeWordStackExp ( Exp ) [strict]
+                 | #sizeByteArrayExp ( Exp ) [strict]
 
     rule <k> #getStatusCode => SC ... </k>
          <statusCode> SC </statusCode>
@@ -138,7 +138,7 @@ Specification expression language
     rule <k> #var(X) => VARS[X] ... </k>
          <commandVars> VARS </commandVars>
 
-    rule <k> #sizeWordStackExp(WS:WordStack) => #sizeWordStack(WS) ... </k>
+    rule <k> #sizeByteArrayExp(WS:ByteArray) => #sizeByteArray(WS) ... </k>
 
 endmodule
 ```
