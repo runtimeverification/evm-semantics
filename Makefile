@@ -318,9 +318,7 @@ KPROVE_OPTIONS :=
 test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
 
-split-tests: tests/ethereum-tests/make.timestamp            \
-             tests/openzeppelin-contracts/truffle-config.js \
-             tests/synthetix/truffle.js
+split-tests: tests/ethereum-tests/make.timestamp
 
 tests/%/make.timestamp:
 	git submodule update --init -- tests/$*
