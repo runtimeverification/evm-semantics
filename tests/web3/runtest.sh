@@ -5,8 +5,20 @@ set -euo pipefail
 input_file="$1"  ; shift
 output_file="$1" ; shift
 
+get_port() {
+    python3 -c """
+import socket
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind(('', 0))
+addr = s.getsockname()
+print(str(addr[1]))
+s.close()
+"""
+}
+
 # Start Firefly
-PORT=$(tests/web3/get_port.py)
+PORT=$(get_port)
 ./kevm web3 "$PORT" "$@" &
 kevm_client_pid="$!"
 while (! netcat -z 127.0.0.1 "$PORT") ; do sleep 0.1; done
