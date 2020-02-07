@@ -12,7 +12,10 @@ module VERIFICATION
 
     //Rules for #padToWidth with non-regular symbolic arguments.
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
-      requires 0 <=Int V andBool V <Int pow256 andBool #notKLabel(V, "#asWord")
+      requires 0 <=Int V andBool V <Int pow256
+
+    rule #buf(N, #asWord(WS)) => WS
+      requires #noOverflow(WS) andBool N ==Int #sizeByteArray(WS)
 
     rule N -Int N => 0
 

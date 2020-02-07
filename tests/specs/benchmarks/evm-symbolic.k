@@ -44,9 +44,6 @@ module EVM-SYMBOLIC     [symbolic]
   rule #gas ( StartGas , NonMemory , Memory ) => StartGas -Int NonMemory -Int Memory
  */
 
-    syntax Int ::= #symCmem ( Int )  [function]
- // -------------------------------------------
-
  // callSuccess? caputures various cases where a call may fail including out of gas, insufficient balance and etc.
     syntax Int ::= #callGas ( Schedule , Int , Int , Int , Bool )  [function]  // schedule, gasCap, accountTo, value, callSuccess?
  // ------------------------------------------------------------------------------------------------------------------------------

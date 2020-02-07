@@ -15,23 +15,14 @@ module ABSTRACT-SEMANTICS-SEGMENTED-GAS
   // ########################
 
   // accumulate the gas cost and never run out of gas
+  rule <k> MEM' ~> #deductMemoryGas => . ... </k>
+       <gas> #gas(INITGAS, NONMEM, MEM) => #gas(INITGAS, NONMEM, MEM +Int MEM') </gas>
+       <callGas> _ => #gas(INITGAS, NONMEM, MEM) </callGas>
+    [trusted, matching(#gas)]
+
+  //Will run only if rule above doesn't match
   rule <k> G ~> #deductGas => . ... </k>
        <gas> #gas(INITGAS, NONMEM, MEM) => #gas(INITGAS, NONMEM +Int G, MEM) </gas>
        <callGas> _ => #gas(INITGAS, NONMEM, MEM) </callGas>
-    requires #notKLabel(G, "#symCmem")
     [trusted, matching(#gas)]
-
-  rule <k> #symCmem(MEM') ~> #deductGas => . ... </k>
-       <gas> #gas(INITGAS, NONMEM, MEM) => #gas(INITGAS, NONMEM, MEM +Int MEM') </gas>
-       <callGas> _ => #gas(INITGAS, NONMEM, MEM) </callGas>
-    [trusted, matching(#symCmem,#gas)]
-
-  rule <k> G ~> #deductGas ... </k>
-       <gas> INITGAS => #gas(INITGAS, 0, 0) </gas>
-    requires #notKLabel(INITGAS, "#gas")
-    [trusted]
-
-  rule <k> MU':Int ~> #deductMemory => #symCmem(Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductGas ... </k>
-       <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
-    [trusted]
 endmodule
