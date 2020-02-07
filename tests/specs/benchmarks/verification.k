@@ -184,9 +184,6 @@ module VERIFICATION
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
       requires 0 <=Int V andBool V <Int pow256
 
-    rule #buf(N, #asWord(WS)) => WS
-      requires #noOverflow(WS) andBool N ==Int #sizeWordStack(WS)
-
     rule #buf(32, #asWord(WS)) => WS  requires #sizeWordStack(WS) ==Int 32
     rule #buf(32, #asWord(#bufSeg(BUF, START, WIDTH))) => #bufSeg(BUF, START +Int WIDTH -Int 32, 32)  requires WIDTH >=Int 32
 

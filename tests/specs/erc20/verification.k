@@ -14,9 +14,6 @@ module VERIFICATION
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
       requires 0 <=Int V andBool V <Int pow256
 
-    rule #buf(N, #asWord(WS)) => WS
-      requires #noOverflow(WS) andBool N ==Int #sizeByteArray(WS)
-
     rule chop ( W0:Int +Int W1:Int ) -Word W1:Int => chop ( W0 )
       requires #rangeUInt(256, W0) andBool #rangeUInt(256, W1)
 endmodule

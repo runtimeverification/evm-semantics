@@ -65,6 +65,10 @@ module LEMMAS
        andBool #noOverflow(WS)
       [simplification]
 
+    rule #buf(N, #asWord(WS)) => WS
+      requires #noOverflow(WS) andBool N ==Int #sizeByteArray(WS)
+      [simplification]
+
     syntax Bool ::= #noOverflow    ( ByteArray ) [function]
                   | #noOverflowAux ( ByteArray ) [function]
  // -------------------------------------------------------

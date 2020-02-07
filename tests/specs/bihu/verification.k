@@ -14,9 +14,6 @@ module VERIFICATION
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
       requires 0 <=Int V andBool V <Int pow256
 
-    rule #buf(N, #asWord(WS)) => WS
-      requires #noOverflow(WS) andBool N ==Int #sizeByteArray(WS)
-
     rule N -Int N => 0
 
     rule (I1 *Int I2) /Int I3 <=Int I4 => true requires  0  <=Int I1 andBool 0  <=Int I2 andBool 0 <Int I3
