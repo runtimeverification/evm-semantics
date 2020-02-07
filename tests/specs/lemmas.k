@@ -58,16 +58,15 @@ module LEMMAS
     rule #isRegularWordStack(N : WS => WS)
     rule #isRegularWordStack(.WordStack) => true
 
-    // for Vyper
-    rule #padToWidth(N, #asByteStack(#asWord(WS))) => WS
-      requires #noOverflow(WS) andBool N ==Int #sizeByteArray(WS)
-      [simplification]
-
     // for Solidity
     rule #asWord(WS) /Int D => #asWord(#take(#sizeByteArray(WS) -Int log256Int(D), WS))
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
        andBool #sizeByteArray(WS) >=Int log256Int(D)
        andBool #noOverflow(WS)
+      [simplification]
+
+    rule #buf(N, #asWord(WS)) => WS
+      requires #noOverflow(WS) andBool N ==Int #sizeByteArray(WS)
       [simplification]
 
     syntax Bool ::= #noOverflow    ( ByteArray ) [function]
@@ -151,10 +150,6 @@ module LEMMAS
     // for gas calculation
     rule A -Int (#if C #then B1 #else B2 #fi) => #if C #then (A -Int B1) #else (A -Int B2) #fi  [simplification]
 
-    rule (#if C #then B1 #else B2 #fi) -Int A => #if C #then (B1 -Int A) #else (B2 -Int A) #fi
-        when notBool #isConcrete(A) andBool #notKLabel(A, "#if_#then_#else_#fi_K-EQUAL")
-      [simplification]
-
     rule (#if C #then B1 #else B2 #fi) +Int A => #if C #then (B1 +Int A) #else (B2 +Int A) #fi  [simplification]
 
     rule X >Int Y => Y <Int X    [simplification]
@@ -205,9 +200,6 @@ module LEMMAS
     rule X <=Int 255        => X <Int 256     [simplification]
 
     rule chop(I) => I requires 0 <=Int I andBool I <Int pow256  [simplification]
-
-    syntax Bool ::= #notKLabel ( K , String ) [function]
-    rule #notKLabel(T, L) => #getKLabelString(T) =/=String L orBool #isVariable(T)
 
     rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
 
