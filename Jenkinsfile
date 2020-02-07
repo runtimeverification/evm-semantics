@@ -63,7 +63,7 @@ pipeline {
         }
         stage('Test Execution') {
           failFast true
-          options { timeout(time: 50, unit: 'MINUTES') }
+          options { timeout(time: 20, unit: 'MINUTES') }
           parallel {
             stage('Conformance (LLVM)') {
               steps {
@@ -83,15 +83,6 @@ pipeline {
               steps {
                 sh '''
                   make test-web3 -j8
-                '''
-              }
-            }
-            stage('Conformance (Truffle)') {
-              steps {
-                sh '''
-                  make test-truffle
-                  make test-openzep
-                  make test-synthetix
                 '''
               }
             }

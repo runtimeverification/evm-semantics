@@ -40,19 +40,19 @@ LUA_PATH                := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
 
-.PHONY: all clean distclean                                                                                                                             \
-        deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                                            \
-        build build-java build-node build-haskell build-llvm build-web3                                                                                 \
-        defn java-defn node-defn web3-defn haskell-defn llvm-defn                                                                                       \
-        split-tests                                                                                                                                     \
-        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance                        \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                                   \
-        test-web3 test-all-web3 test-failing-web3 test-truffle test-all-truffle test-failing-truffle test-openzep test-all-openzep test-failing-openzep \
-        test-prove test-failing-prove                                                                                                                   \
-        test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples                             \
-        test-klab-prove                                                                                                                                 \
-        test-parse test-failure                                                                                                                         \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                                      \
+.PHONY: all clean distclean                                                                                                      \
+        deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
+        build build-java build-node build-haskell build-llvm build-web3                                                          \
+        defn java-defn node-defn web3-defn haskell-defn llvm-defn                                                                \
+        split-tests                                                                                                              \
+        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
+        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
+        test-web3 test-all-web3 test-failing-web3                                                                                \
+        test-prove test-failing-prove                                                                                            \
+        test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
+        test-klab-prove                                                                                                          \
+        test-parse test-failure                                                                                                  \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         media media-pdf metropolis-theme
 .SECONDARY:
 
@@ -316,9 +316,7 @@ KPROVE_OPTIONS :=
 test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
 
-split-tests: tests/ethereum-tests/make.timestamp            \
-             tests/openzeppelin-contracts/truffle-config.js \
-             tests/synthetix/truffle.js
+split-tests: tests/ethereum-tests/make.timestamp
 
 tests/%/make.timestamp:
 	git submodule update --init -- tests/$*
@@ -432,7 +430,7 @@ test-all-bchain: $(all_bchain_tests:=.run)
 test-rest-bchain: $(rest_bchain_tests:=.run)
 test-bchain: $(passing_bchain_tests:=.run)
 
-# Web3/Truffle Tests
+# Web3 Tests
 
 all_web3_tests     = $(wildcard tests/web3/*.in.json) $(wildcard tests/web3/*/*.in.json)
 failing_web3_tests = $(shell cat tests/failing.web3)
@@ -441,55 +439,6 @@ passing_web3_tests = $(filter-out $(failing_web3_tests), $(all_web3_tests))
 test-all-web3: $(all_web3_tests:.in.json=.run-web3)
 test-failing-web3: $(failing_web3_tests:.in.json=.run-web3)
 test-web3: $(passing_web3_tests:.in.json=.run-web3)
-
-all_truffle_tests     = $(wildcard tests/truffle/*/truffle-config.js)
-failing_truffle_tests = $(shell cat tests/failing.truffle)
-passing_truffle_tests = $(filter-out $(failing_truffle_tests), $(all_truffle_tests))
-
-test-all-truffle: $(all_truffle_tests:=.run-truffle)
-test-failing-truffle: $(failing_truffle_tests:=.run-truffle)
-test-truffle: $(passing_truffle_tests:=.run-truffle)
-
-slow_openzep_tests    = $(shell cat tests/slow.openzep)
-all_openzep_tests     = $(shell cd tests/openzeppelin-contracts && find ./test -name *.test.js)
-quick_openzep_tests   = $(filter-out $(slow_openzep_tests), $(all_openzep_tests))
-failing_openzep_tests = $(shell cat tests/failing.openzep)
-passing_openzep_tests = $(filter-out $(failing_openzep_tests), $(quick_openzep_tests))
-
-test-all-openzep: $(all_openzep_tests:=.run-openzep)
-test-failing-openzep: $(failing_openzep_tests:=.run-openzep)
-test-slow-openzep: $(slow_openzep_tests:=.run-openzep)
-test-openzep: $(passing_openzep_tests:=.run-openzep)
-
-tests/openzeppelin-contracts/truffle-config.js: tests/openzeppelin-contracts/DOCUMENTATION.md
-tests/openzeppelin-contracts/DOCUMENTATION.md:
-	cd tests                                                                      \
-	    && git clone 'https://github.com/openzeppelin/openzeppelin-contracts.git' \
-	    && cd openzeppelin-contracts                                              \
-	    && git checkout b8c8308d77beaa733104d1d66ec5f2962df81711                  \
-	    && npm install                                                            \
-	    && node_modules/.bin/truffle compile
-
-slow_synthetix_tests    = $(shell cat tests/slow.synthetix)
-all_synthetix_tests     = $(shell cd tests/synthetix && find ./test/contracts -name '*.js')
-quick_synthetix_tests   = $(filter-out $(slow_openzep_tests), $(all_synthetix_tests))
-failing_synthetix_tests = $(shell cat tests/failing.synthetix)
-passing_synthetix_tests = $(filter-out $(failing_synthetix_tests), $(quick_synthetix_tests))
-
-test-all-synthetix: $(all_synthetix_tests:=.run-synthetix)
-test-failing-synthetix: $(failing_synthetix_tests:=.run-synthetix)
-test-slow-synthetix: $(slow_synthetix_tests:=.run-synthetix)
-test-synthetix: $(passing_synthetix_tests:=.run-synthetix)
-
-tests/synthetix/truffle.js:
-	cd tests                                                                                                      \
-	    && git clone 'https://github.com/Synthetixio/synthetix.git'                                               \
-	    && cd synthetix                                                                                           \
-	    && git checkout 8cb31959c4880347bf8ba728fb6c08e78b14a8fc                                                  \
-	    && echo "module.exports={networks:{development:{host:'localhost',port:8546,network_id:'*',gas:8000000}}," \
-	            "compilers:{solc:{version:'0.4.25',settings:{optimizer:{enabled:true,runs:200}}}}};" > truffle.js \
-	    && npm install                                                                                            \
-	    && node_modules/.bin/truffle compile
 
 # Proof Tests
 
