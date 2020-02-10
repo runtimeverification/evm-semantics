@@ -1387,7 +1387,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <localMem>     _ => .Memory    </localMem>
 
     syntax Set ::= #computeValidJumpDests(ByteArray)            [function]
-                 | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
+                 | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux), memo]
  // ---------------------------------------------------------------------------------------------------------
     rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
 ```
@@ -1399,7 +1399,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 ```
 
 ```{.k .bytes}
-    syntax Set ::= #computeValidJumpDestsWithinBound(ByteArray, Int, List) [function]
+    syntax Set ::= #computeValidJumpDestsWithinBound(ByteArray, Int, List) [function, memo]
  // ---------------------------------------------------------------------------------
     rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
     rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int #sizeByteArray(PGM)
