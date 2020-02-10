@@ -64,7 +64,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <wordStack>   .WordStack </wordStack>           // \mu_s
               <localMem>    .Memory    </localMem>            // \mu_m
               <pc>          0          </pc>                  // \mu_pc
-              <gas>         0          </gas>                 // \mu_g
+              <gas>    #gas(0, 0, 0)   </gas>                 // \mu_g
               <memoryUsed>  0          </memoryUsed>          // \mu_i
               <callGas>     0          </callGas>
 
@@ -1843,17 +1843,24 @@ Ethereum Gas Calculation
 
 Overall Gas
 -----------
-
+-   `#gas(AvailGas, ExecGas, MemoryGas)` represents the remaining gas, which is calculated by `AvailGas - ExecGas - MemoryGas`.
 -   `#gas` calculates how much gas this operation costs, and takes into account the memory consumed.
 -   `#deductGas` is used to check that there won't be a gas underflow (throwing `EVMC_OUT_OF_GAS` if so), and deducts the gas if not.
 -   `#deductMemory` checks that access to memory stay within sensible bounds (and deducts the correct amount of gas for it), throwing `EVMC_INVALID_MEMORY_ACCESS` if bad access happens.
+-   `#resolveGas` updates the remaining gas by substracting `ExecGas` and `MemoryGas` from `AvailGas`.
 
 ```k
+
+    syntax Gas      ::= #gas ( AvailGas , Int , Int )
+    syntax AvailGas ::= "InfGas" | Int  // Providing InfGas prevents programs from EVMC_OUT_OF_GAS
+ // ----------------------------------
+
     syntax InternalOp ::= "#gas" "[" OpCode "," OpCode "]"
- // ---------------------------------------------------------------------------
+ // ------------------------------------------------------
     rule <k> #gas [ OP , AOP ]
           => #if #usesMemory(OP) #then #memory [ AOP ] #else .K #fi
           ~> #gas [ AOP ]
+          ~> #resolveGas
          ...
         </k>
 
@@ -1863,15 +1870,27 @@ Overall Gas
     rule <k> #memory [ OP ] => #memory(OP, MU) ~> #deductMemory ... </k>
          <memoryUsed> MU </memoryUsed>
 
-    syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas" | "#deductMemoryGas"
+    syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas" | "#deductMemoryGas" | "#resolveGas"
                         | "#memory" "[" OpCode "]" | "#deductMemory"
  // ----------------------------------------------------------------
     rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductMemoryGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
-    rule <k> G:Int ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
-    rule <k> G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
-    rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+    rule <k> G:Int ~> #deductMemoryGas => .  ... </k>
+         <gas> #gas(_, _, MEMGAS => MEMGAS +Int G) </gas>
+    rule <k> G:Int ~> #deductGas => . ... </k>
+         <gas> #gas(_, EXECGAS => EXECGAS +Int G, _) </gas>
+
+    rule <k> #resolveGas => . ... </k>
+         <gas> #gas(G:Int , EXECGAS, MEMGAS) => #gas(G -Int EXECGAS -Int MEMGAS, 0, 0) </gas>
+       requires G >=Int (EXECGAS +Int MEMGAS)
+
+    rule <k> #resolveGas => #end EVMC_OUT_OF_GAS ... </k>
+         <gas> #gas(G:Int , EXECGAS, MEMGAS) </gas>
+       requires notBool (G >=Int (EXECGAS +Int MEMGAS))
+
+    rule <k> #resolveGas => . ... </k>  // For Verification
+         <gas> #gas(InfGas, EXECGAS, MEMGAS) </gas>
 ```
 
 Memory Consumption
