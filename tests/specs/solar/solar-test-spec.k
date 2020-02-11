@@ -1,33 +1,35 @@
-requires "../erc20/abstract-semantics-segmented-gas.k"
+requires "verification.k"
+requires "evm-imp-specs.k"
 
-module SOLAR_TEST-SPEC
-  imports ABSTRACT-SEMANTICS-SEGMENTED-GAS
+module SOLAR-TEST-SPEC
+  imports VERIFICATION
+  imports EVM-IMP-SPECS
 
   rule
-    <k> #saveEthereum V_CONF_BEFORE
-     ~> #saveOutput   V_OUT_BEFORE
-     ~> #saveStorage  V_STORAGE_BEFORE
-     ~> #saveLog      V_LOG_BEFORE
+    <k> #saveEthereum         V_CONF_BEFORE
+     ~> #saveOutput           V_OUT_BEFORE
+     ~> #saveStorage  ACCT_ID V_STORAGE_BEFORE
+     ~> #saveLog              V_LOG_BEFORE
      ~> #mkCallShortcut V_CONF_BEFORE CALLER_ID ACCT_ID
                         #abiCallData("add", #uint256(VALUE))       V_ADD_OUT
      ~> #assert #getStatusCode ==S  EVMC_SUCCESS
-     ~> #assert #getStorage(ACCT_ID) ==S STORAGE except
-                (SetItem(#hashedLocation("Solidity", 0, .IntList)) .Set)
-     ~> #assert #getLog ==S #var(V_LOG_BEFORE) +List ListItem(#abiEventLog(ACCT_ID, "TestEvent", #uint256(OLD_S), #uint256(SUM)))
+     ~> #assert #getStorage(ACCT_ID) =/=S #var(V_STORAGE_BEFORE)
+     ~> #assert #getLog ==S (#var(V_LOG_BEFORE) +List ListItem(#abiEventLog(ACCT_ID, "TestEvent", #uint256(OLD_S), #uint256(SUM))))
      ~> #assert #getOutput ==S #var(V_ADD_OUT)
      ~> #assert #sizeByteArrayExp( #buf(33, SUM) ) ==S 33
-     ~> #assert true ||S false ==S true
-     ~> #assert true ||S false =/=S false
-     ~> #assert true &&S false ==S false
-=> . </k>
+     ~> #assert (true ||S false)  ==S true
+     ~> #assert (true ||S false) =/=S false
+     ~> #assert (true &&S false)  ==S false
+     ~> #restoreEthereum V_CONF_BEFORE //TODO test that current config == what was saved initially.
+     => . </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> CONSTANTINOPLE </schedule>
 
     <ethereum>
       <evm>
-        <output> _ => #buf(32, 1) </output>
-        <statusCode> _ => EVMC_SUCCESS </statusCode>
+        <output> _ => _ </output>
+        <statusCode> _ => _ </statusCode>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => _ </touchedAccounts>
@@ -55,7 +57,7 @@ module SOLAR_TEST-SPEC
 
         <substate>
           <selfDestruct> _ </selfDestruct>
-          <log> _:List ( .List => ListItem(#abiEventLog(ACCT_ID, "TestEvent", #uint256(OLD_S), #uint256(SUM))) ) </log>
+          <log> _:List => _ </log>
           <refund> _ => _ </refund>
         </substate>
 
@@ -91,9 +93,9 @@ module SOLAR_TEST-SPEC
           <account>
             <acctID> ACCT_ID </acctID>
             <balance> _ </balance>
-            <code> #parseByteStack("0x6080604052348015600f57600080fd5b506004361060285760003560e01c80631003e2d214602d575b600080fd5b605660048036036020811015604157600080fd5b8101908080359060200190929190505050606c565b6040518082815260200191505060405180910390f35b60008082600054019050806000819055507ff3ca124a697ba07e8c5e80bebcfcc48991fc16a63170e8a9206e30508960d00360005482604051808381526020018281526020019250505060405180910390a18091505091905056fea265627a7a723058201bfecd025ed14b7982678b378b8f1594bbd3f25de8aab9f4adc196a990ed623264736f6c634300050a0032") </code>
-            <storage> STORAGE => _ </storage>
-            <origStorage> STORAGE </origStorage>
+            <code> #parseByteStack("0x6080604052348015600f57600080fd5b506004361060285760003560e01c80631003e2d214602d575b600080fd5b605660048036036020811015604157600080fd5b8101908080359060200190929190505050606c565b6040518082815260200191505060405180910390f35b6000806000549050600083600054019050806000819055507ff3ca124a697ba07e8c5e80bebcfcc48991fc16a63170e8a9206e30508960d0038282604051808381526020018281526020019250505060405180910390a1809250505091905056fea265627a7a72305820ed1e920507073a2945660ee1bec248841bfcaf34bbdce4b5eeb69be1a7dfb6d264736f6c634300050a0032") </code>
+            <storage>     #hashedLocation("Solidity", 0, .IntList) |-> (OLD_S => _) _:Map </storage>
+            <origStorage> #hashedLocation("Solidity", 0, .IntList) |-> (OLD_S => _) _:Map </origStorage>
             <nonce> _ </nonce>
           </account>
           ...
@@ -112,9 +114,12 @@ module SOLAR_TEST-SPEC
      andBool notBool (ACCT_ID in #precompiledAccounts(CONSTANTINOPLE))
      andBool #rangeUInt(256, OLD_S)
      andBool #rangeUInt(256, VALUE)
-     andBool OLD_S ==Int select(STORAGE, #hashedLocation("Solidity", 0, .IntList))
      andBool SUM   ==Int OLD_S +Int VALUE
      andBool #rangeUInt(256, SUM)
-    ensures true
+     andBool V_CONF_BEFORE            ==K String2Id("V_CONF_BEFORE")
+     andBool V_OUT_BEFORE             ==K String2Id("V_OUT_BEFORE")
+     andBool V_STORAGE_BEFORE         ==K String2Id("V_STORAGE_BEFORE")
+     andBool V_LOG_BEFORE             ==K String2Id("V_LOG_BEFORE")
+     andBool V_ADD_OUT                ==K String2Id("V_ADD_OUT")
 
 endmodule

@@ -9,9 +9,10 @@ contract SolarTest {
         public
         returns (uint)
     {
+        uint oldS = s;
         uint sum = s + value;
         s = sum;
-        emit TestEvent(s, sum);
+        emit TestEvent(oldS, sum);
         return sum;
     }
 }
