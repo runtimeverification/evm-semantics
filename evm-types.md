@@ -583,9 +583,9 @@ The local memory of execution is a byte-array (instead of a word-array).
  // ----------------------------------------------------
     rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned)
 
-    syntax ByteArray ::= ByteArray "++" ByteArray [function, right, klabel(_++_WS), smtlib(_plusWS_)]
+    syntax ByteArray ::= ByteArray "++" ByteArray [function, functional, right, klabel(_++_WS), smtlib(_plusWS_)]
  // -------------------------------------------------------------------------------------------------
-    rule WS ++ WS' => WS +Bytes WS'
+    rule WS ++ WS' => WS +Bytes WS' [concrete]
 
     syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function]
  // --------------------------------------------------------------

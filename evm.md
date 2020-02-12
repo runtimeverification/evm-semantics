@@ -1386,8 +1386,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <wordStack>    _ => .WordStack </wordStack>
          <localMem>     _ => .Memory    </localMem>
 
-    syntax Set ::= #computeValidJumpDests(ByteArray)            [function]
-                 | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux), memo]
+    syntax Set ::= #computeValidJumpDests(ByteArray)            [function, memo]
+                 | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
  // ---------------------------------------------------------------------------------------------------------
     rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
 ```
@@ -1399,7 +1399,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 ```
 
 ```{.k .bytes}
-    syntax Set ::= #computeValidJumpDestsWithinBound(ByteArray, Int, List) [function, memo]
+    syntax Set ::= #computeValidJumpDestsWithinBound(ByteArray, Int, List) [function]
  // ---------------------------------------------------------------------------------
     rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
     rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int #sizeByteArray(PGM)
