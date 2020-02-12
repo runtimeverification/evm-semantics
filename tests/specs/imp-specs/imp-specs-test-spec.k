@@ -1,9 +1,9 @@
-requires "solar-abstract-semantics.k"
+requires "imp-specs-abstract-semantics.k"
 requires "evm-imp-specs.k"
 requires "verification.k"
 
-module SOLAR-TEST-SPEC
-  imports SOLAR-ABSTRACT-SEMANTICS
+module IMP-SPECS-TEST-SPEC
+  imports IMP-SPECS-ABSTRACT-SEMANTICS
   imports EVM-IMP-SPECS
   imports VERIFICATION
 

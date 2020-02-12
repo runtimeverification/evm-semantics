@@ -1,6 +1,6 @@
 pragma solidity 0.5.0;
 
-contract SolarTest {
+contract ImpSpecsTest {
     event TestEvent(uint _oldVal, uint _newVal);
 
     uint private s;

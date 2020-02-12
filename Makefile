@@ -50,7 +50,7 @@ export LUA_PATH
         test-web3 test-all-web3 test-failing-web3  \
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
-        test-prove-solar test-klab-prove                                                                                         \
+        test-prove-imp-specs test-klab-prove                                                                                     \
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         media media-pdf metropolis-theme
@@ -392,7 +392,7 @@ tests/%.prove: tests/%
 	    $(CHECK) $@.out $@.expected
 	rm -rf $@.out
 
-tests/specs/solar/%.prove: tests/specs/solar/%
+tests/specs/imp-specs/%.prove: tests/specs/imp-specs/%
 	$(TEST) prove $(TEST_OPTIONS) --backend-dir $(specs_dir) \
 		--backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTIONS) \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',') > $@.out ||                                  \
@@ -468,17 +468,17 @@ prove_opcodes_tests    := $(filter-out $(prove_failing_tests), $(wildcard $(prov
 prove_erc20_tests      := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/erc20/*/*-spec.k))
 prove_bihu_tests       := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/bihu/*-spec.k))
 prove_examples_tests   := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k))
-prove_solar_tests      := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/solar/*-spec.k))
+prove_imp_specs_tests  := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/imp-specs/*-spec.k))
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples \
-			test-prove-solar
+			test-prove-imp-specs
 test-prove-benchmarks: $(prove_benchmarks_tests:=.prove)
 test-prove-functional: $(prove_functional_tests:=.prove)
 test-prove-opcodes:    $(prove_opcodes_tests:=.prove)
 test-prove-erc20:      $(prove_erc20_tests:=.prove)
 test-prove-bihu:       $(prove_bihu_tests:=.prove)
 test-prove-examples:   $(prove_examples_tests:=.prove)
-test-prove-solar:      $(prove_solar_tests:=.prove)
+test-prove-imp-specs:  $(prove_imp_specs_tests:=.prove)
 
 test-failing-prove: $(prove_failing_tests:=.prove)
 
