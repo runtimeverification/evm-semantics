@@ -10,10 +10,10 @@ module LEMMAS
 
     rule WS ++ .ByteArray => WS  [simplification]
 
-    rule #sizeByteArray(W : WS)         => 1 +Int #sizeByteArray(WS)                              [simplification]
-    rule #sizeByteArray(#buf(N, _)  )   => N                                                      [simplification]
-    rule #sizeByteArray(BUF1 ++ BUF2)   => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)         [simplification]
-    rule #sizeByteArray(#drop(N, BUF))  => maxInt(#sizeByteArray(BUF) -Int N, 0)                  [simplification]
+    rule #sizeByteArray(W : WS)        => 1 +Int #sizeByteArray(WS)                       [simplification]
+    rule #sizeByteArray(#buf(N, _)  )  => N                                               [simplification]
+    rule #sizeByteArray(BUF1 ++ BUF2)  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
+    rule #sizeByteArray(#drop(N, BUF)) => maxInt(#sizeByteArray(BUF) -Int N, 0)           [simplification]
 
     rule #take(N, BUF)          => BUF                                              requires N ==Int #sizeByteArray(BUF)   [simplification]
     rule #take(N, BUF1 ++ BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeByteArray(BUF1)  [simplification]
