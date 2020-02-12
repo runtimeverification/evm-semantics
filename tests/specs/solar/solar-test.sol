@@ -1,4 +1,4 @@
-pragma solidity 0.5.10;
+pragma solidity 0.5.0;
 
 contract SolarTest {
     event TestEvent(uint _oldVal, uint _newVal);
