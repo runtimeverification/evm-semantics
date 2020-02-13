@@ -29,9 +29,11 @@ module LEMMAS
     rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeByteArray(BUF) ==Int #sizeByteArray(BUF')  [simplification]
     rule M [ N := .ByteArray ] => M requires #sizeByteArray(M) >=Int N  [simplification]
 
-    rule BUF [ L .. W ] => .ByteArray requires W <=Int 0                    [simplification]
-    rule BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
-    rule BUF [ L .. W ] => .ByteArray requires L  >Int #sizeByteArray(BUF)  [simplification]
+    rule BUF [ L .. W ]           => .ByteArray                              requires W <=Int 0                            [simplification]
+    rule BUF [ 0 .. W ]           => BUF                                     requires W ==Int #sizeByteArray(BUF)          [simplification]
+    rule BUF [ L .. W ]           => .ByteArray                              requires L  >Int #sizeByteArray(BUF)          [simplification]
+    rule (BUF ++ BUF') [ L .. W ] => BUF' [L -Int #sizeByteArray(BUF) .. W]  requires L >=Int #sizeByteArray(BUF)          [simplification]
+    rule (BUF ++ BUF') [ L .. W ] => BUF [L .. W]                            requires L +Int W <=Int #sizeByteArray(BUF')  [simplification]
 
     rule #range(M, N, K) => .ByteArray requires notBool K >Int 0  [simplification]
 
