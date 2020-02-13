@@ -183,6 +183,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
       requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
       [concrete]
 
+    syntax ByteArray ::= #bufSeg ( ByteArray , Int , Int ) [function, smtlib(bufSeg)] // BUFFER, START, WIDTH
+    syntax Int       ::= #bufElm ( ByteArray , Int )       [function] // BUFFER, INDEX
+
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
     rule #getValue(#uint160( DATA )) => DATA

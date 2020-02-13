@@ -5,9 +5,10 @@ module LEMMAS
     imports EVM
     imports EDSL
 
-    rule #asWord( BUF => #drop(1, BUF) ) requires BUF [ 0 ] ==Int 0  [simplification]
+    //rule #asWord( BUF => #drop(1, BUF) ) requires BUF [ 0 ] ==Int 0  [simplification]
 
     rule WS ++ .ByteArray => WS  [simplification]
+    rule .ByteArray ++ WS => WS  [simplification]
 
     rule #sizeByteArray(W : WS)        => 1 +Int #sizeByteArray(WS)                       [simplification]
     rule #sizeByteArray(#buf(N, _)  )  => N                                               [simplification]
@@ -24,8 +25,6 @@ module LEMMAS
     rule #drop(N, BUF1 ++ BUF2) => #drop(N, BUF1) ++ BUF2                   requires N  <Int #sizeByteArray(BUF1)  [simplification]
 
     rule #asWord(#buf(N, BUF)) => BUF  [simplification]
-
-    rule #asWord(BUF) /Int 26959946667150639794667015087019630673637144422540572481103610249216 => #asWord(#take(4, BUF))  [simplification]
 
     rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeByteArray(BUF) ==Int #sizeByteArray(BUF')  [simplification]
     rule M [ N := .ByteArray ] => M requires #sizeByteArray(M) >=Int N  [simplification]
@@ -52,7 +51,7 @@ module LEMMAS
        andBool L >=Int N +Int #sizeByteArray(BUF)
       [simplification]
 
-    rule keccak(BUF1 ++ BUF2) => hash2(#asWord(BUF1), #asWord(BUF2)) requires #sizeByteArray(BUF1) ==Int 32 andBool #sizeByteArray(BUF2) ==Int 32  [simplification]
+    //rule keccak(BUF1 ++ BUF2) => hash2(#asWord(BUF1), #asWord(BUF2)) requires #sizeByteArray(BUF1) ==Int 32 andBool #sizeByteArray(BUF2) ==Int 32  [simplification]
 
     syntax Bool ::= #isRegularWordStack ( WordStack ) [function]
  // -------------------------------------------------------
@@ -60,10 +59,9 @@ module LEMMAS
     rule #isRegularWordStack(.WordStack) => true
 
     // for Solidity
-    rule #asWord(WS) /Int D => #asWord(#take(#sizeByteArray(WS) -Int log256Int(D), WS))
+    rule #asWord(WS) /Int D => #asWord(WS[0 .. #sizeByteArray(WS) -Int log256Int(D)])
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
        andBool #sizeByteArray(WS) >=Int log256Int(D)
-       andBool #noOverflow(WS)
       [simplification]
 
     rule #buf(N, #asWord(WS)) => WS
@@ -93,13 +91,13 @@ module LEMMAS
        andBool 0 <=Int V2 andBool V2 <Int pow256
       [concrete]
 
-    rule keccakIntList(V:Int .IntList) => hash1(V)               [simplification]
-    rule keccakIntList(V1:Int V2:Int .IntList) => hash2(V1, V2)  [simplification]
+    //rule keccakIntList(V:Int .IntList) => hash1(V)               [simplification]
+    //rule keccakIntList(V1:Int V2:Int .IntList) => hash2(V1, V2)  [simplification]
 
     // for terms came from bytecode not via #hashedLocation
-    rule keccak(WS) => keccakIntList(byteStack2IntList(WS))
-      requires ( #sizeByteArray(WS) ==Int 32 orBool #sizeByteArray(WS) ==Int 64 )
-      [simplification]
+    // rule keccak(WS) => keccakIntList(byteStack2IntList(WS))
+    //  requires ( #sizeByteArray(WS) ==Int 32 orBool #sizeByteArray(WS) ==Int 64 )
+    //  [simplification]
 
     rule N +Int 0 => N  [simplification]
 
