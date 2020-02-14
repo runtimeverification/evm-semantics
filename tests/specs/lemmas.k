@@ -184,7 +184,10 @@ module LEMMAS
 
     rule chop(I) => I requires 0 <=Int I andBool I <Int pow256  [simplification]
 
-    rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
+    rule N <=Int maxInt(P, Q) => true requires N <=Int P  orBool N <=Int Q  [simplification]
+    rule N >=Int maxInt(P, Q) => true requires N >=Int P andBool N >=Int Q  [simplification]
+
+    rule N >=Int #sizeByteArray(#asByteStack(P)) => true requires 1 <<Int (N <<Int 3) >=Int P andBool N >Int 0 [simplification]  // Do I need N >Int 0?
 
     rule minInt(P, Q) => P requires P <=Int Q [simplification]
 
