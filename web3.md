@@ -522,8 +522,11 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#evm_increaseTime"
  // ------------------------------------
+    rule <k> #evm_increaseTime ... </k>
+         <params> [ (null => 0), .JSONs ] </params>
+
     rule <k> #evm_increaseTime => #rpcResponseSuccess(Int2String(TS +Int DATA)) ... </k>
-         <params> [ DATA:Int, .JSONs ] </params>
+         <params>    [ DATA:Int, .JSONs ]           </params>
          <timestamp> ( TS:Int => ( TS +Int DATA ) ) </timestamp>
 
     syntax KItem ::= "#eth_newBlockFilter"
