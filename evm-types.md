@@ -572,7 +572,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 
     syntax Int ::= #asInteger ( ByteArray ) [function]
  // --------------------------------------------------
-    rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned)
+    rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned) [concrete]
 
     syntax Account ::= #asAccount ( ByteArray ) [function]
  // ------------------------------------------------------
@@ -581,7 +581,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 
     syntax ByteArray ::= #asByteStack ( Int ) [function]
  // ----------------------------------------------------
-    rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned)
+    rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete]
 
     syntax ByteArray ::= ByteArray "++" ByteArray [function, functional, right, klabel(_++_WS), smtlib(_plusWS_)]
  // -------------------------------------------------------------------------------------------------
@@ -590,7 +590,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function]
  // --------------------------------------------------------------
     rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires START <Int #sizeByteArray(WS) [concrete]
-    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0)                                              [owise, concrete]
+    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0)                                                                                     [owise, concrete]
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, klabel(sizeWordStackAux), smtlib(sizeByteArray)]
  // ------------------------------------------------------------------
@@ -599,8 +599,8 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function]
                        | #padRightToWidth ( Int , ByteArray ) [function]
  // --------------------------------------------------------------------
-    rule #padToWidth(N, BS)      => padLeftBytes(BS, N, 0)
-    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0)
+    rule #padToWidth(N, BS)      => padLeftBytes(BS, N, 0)  [concrete]
+    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) [concrete]
 ```
 
 ```{.k .nobytes}
