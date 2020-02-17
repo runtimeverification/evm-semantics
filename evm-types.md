@@ -434,11 +434,9 @@ A cons-list is used for the EVM wordstack.
 
 ```k
     syntax Int ::= #sizeWordStack ( WordStack )       [function, functional, smtlib(sizeWordStack)]
-                 | #sizeWordStack ( WordStack , Int ) [function, functional, klabel(sizeWordStackAux), smtlib(sizeWordStackAux)]
  // ----------------------------------------------------------------------------------------------------------------------------
-    rule #sizeWordStack ( WS ) => #sizeWordStack(WS, 0)
-    rule #sizeWordStack ( .WordStack, SIZE ) => SIZE
-    rule #sizeWordStack ( W : WS, SIZE )     => #sizeWordStack(WS, SIZE +Int 1)
+    rule #sizeWordStack ( .WordStack ) => 0
+    rule #sizeWordStack ( W : WS )     => #sizeWordStack(WS) +Int 1
 
     syntax Bool ::= Int "in" WordStack [function]
  // ---------------------------------------------
