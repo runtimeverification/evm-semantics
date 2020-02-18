@@ -183,13 +183,17 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
       requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
       [concrete]
 
-    syntax Int ::= #getValue ( TypedArg ) [function]
- // ------------------------------------------------
+    syntax ByteArray ::= #bufSeg ( ByteArray , Int , Int ) [function, smtlib(bufSeg)] // BUFFER, START, WIDTH
+    syntax Int       ::= #bufElm ( ByteArray , Int )       [function] // BUFFER, INDEX
+
+    // remove functional attribute later
+    syntax Int ::= #getValue ( TypedArg ) [function, functional]
+ // ------------------------------------------------------------
     rule #getValue(#uint160( DATA )) => DATA
       requires #rangeUInt(160, DATA)
 
+    // cheat!
     rule #getValue(#address( DATA )) => DATA
-      requires #rangeAddress(DATA)
 
     rule #getValue(#uint256( DATA )) => DATA
       requires #rangeUInt(256, DATA)
@@ -345,11 +349,11 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
  // --------------------------------------------------
     rule [keccakIntList]: keccakIntList(VS) => keccak(intList2ByteArray(VS))
 
+    // cheat!
     syntax ByteArray ::= intList2ByteArray( IntList ) [function]
  // ------------------------------------------------------------
     rule intList2ByteArray(.IntList) => .ByteArray
     rule intList2ByteArray(V VS)     => #buf(32, V) ++ intList2ByteArray(VS)
-      requires 0 <=Int V andBool V <Int pow256
 
     syntax IntList ::= byteStack2IntList ( ByteArray )       [function]
                      | byteStack2IntList ( ByteArray , Int ) [function]
