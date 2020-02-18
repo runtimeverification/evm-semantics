@@ -195,6 +195,25 @@ module LEMMAS
     rule maxInt(P, Q) <=Int N => true requires N >=Int P andBool N >=Int Q  [simplification]
     rule maxInt(P, Q)  <Int N => true requires N  >Int P andBool N  >Int Q  [simplification]
 
+    rule N -Int maxInt(P, Q) => minInt(N -Int P, N -Int Q)  [simplification]
+    rule N +Int maxInt(P, Q) => maxInt(N +Int P, N +Int Q)  [simplification]
+    rule maxInt(P, Q) -Int N => maxInt(P -Int N, Q -Int N)  [simplification]
+    rule maxInt(P, Q) +Int N => maxInt(P +Int N, Q +Int N)  [simplification]
+
+    rule N <=Int minInt(P, Q) => true requires N <=Int P andBool N <=Int Q  [simplification]
+    rule N  <Int minInt(P, Q) => true requires N  <Int P andBool N  <Int Q  [simplification]
+    rule N >=Int minInt(P, Q) => true requires N >=Int P  orBool N >=Int Q  [simplification]
+    rule N  >Int minInt(P, Q) => true requires N  >Int P  orBool N  >Int Q  [simplification]
+    rule minInt(P, Q) >=Int N => true requires N <=Int P andBool N <=Int Q  [simplification]
+    rule minInt(P, Q)  >Int N => true requires N  <Int P andBool N  <Int Q  [simplification]
+    rule minInt(P, Q) <=Int N => true requires N >=Int P  orBool N >=Int Q  [simplification]
+    rule minInt(P, Q)  <Int N => true requires N  >Int P  orBool N  >Int Q  [simplification]
+
+    rule N -Int minInt(P, Q) => maxInt(N -Int P, N -Int Q)  [simplification]
+    rule N +Int minInt(P, Q) => minInt(N +Int P, N +Int Q)  [simplification]
+    rule minInt(P, Q) -Int N => minInt(P -Int N, Q -Int N)  [simplification]
+    rule minInt(P, Q) +Int N => minInt(P +Int N, Q +Int N)  [simplification]
+
     rule N >=Int #sizeByteArray(#asByteStack(P)) => true  requires 1 <<Int (N <<Int 3)  >Int P andBool N >Int 0 [simplification]  // Do I need N >Int 0?
     rule N  <Int #sizeByteArray(#asByteStack(P)) => true  requires 1 <<Int (N <<Int 3) <=Int P                  [simplification]
     rule N  <Int #sizeByteArray(#asByteStack(P)) => false requires 1 <<Int (N <<Int 3)  >Int P andBool N >Int 0 [simplification]  // Do I need N >Int 0?
