@@ -15,6 +15,7 @@ module LEMMAS
     rule #sizeByteArray(BUF1 ++ BUF2)  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
     rule #sizeByteArray(#drop(N, BUF)) => maxInt(#sizeByteArray(BUF) -Int N, 0)           [simplification]
     rule #sizeByteArray(M [ N := BUF ]) => maxInt(#sizeByteArray(M), #sizeByteArray(BUF) +Int N)           [simplification]
+    rule #sizeByteArray(#padToWidth(N, BUF)) => maxInt(N, #sizeByteArray(BUF))  [simplification]
 
     rule #take(N, BUF)          => BUF                                              requires N ==Int #sizeByteArray(BUF)   [simplification]
     rule #take(N, BUF1 ++ BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeByteArray(BUF1)  [simplification]
@@ -102,6 +103,7 @@ module LEMMAS
     //  [simplification]
 
     rule N +Int 0 => N  [simplification]
+    rule 0 +Int N => N  [simplification]
 
     rule N -Int 0 => N  [simplification]
 
@@ -185,9 +187,17 @@ module LEMMAS
     rule chop(I) => I requires 0 <=Int I andBool I <Int pow256  [simplification]
 
     rule N <=Int maxInt(P, Q) => true requires N <=Int P  orBool N <=Int Q  [simplification]
+    rule N  <Int maxInt(P, Q) => true requires N  <Int P  orBool N  <Int Q  [simplification]
     rule N >=Int maxInt(P, Q) => true requires N >=Int P andBool N >=Int Q  [simplification]
+    rule N  >Int maxInt(P, Q) => true requires N  >Int P andBool N  >Int Q  [simplification]
+    rule maxInt(P, Q) >=Int N => true requires N <=Int P  orBool N <=Int Q  [simplification]
+    rule maxInt(P, Q)  >Int N => true requires N  <Int P  orBool N  <Int Q  [simplification]
+    rule maxInt(P, Q) <=Int N => true requires N >=Int P andBool N >=Int Q  [simplification]
+    rule maxInt(P, Q)  <Int N => true requires N  >Int P andBool N  >Int Q  [simplification]
 
-    rule N >=Int #sizeByteArray(#asByteStack(P)) => true requires 1 <<Int (N <<Int 3) >=Int P andBool N >Int 0 [simplification]  // Do I need N >Int 0?
+    rule N >=Int #sizeByteArray(#asByteStack(P)) => true  requires 1 <<Int (N <<Int 3)  >Int P andBool N >Int 0 [simplification]  // Do I need N >Int 0?
+    rule N  <Int #sizeByteArray(#asByteStack(P)) => true  requires 1 <<Int (N <<Int 3) <=Int P                  [simplification]
+    rule N  <Int #sizeByteArray(#asByteStack(P)) => false requires 1 <<Int (N <<Int 3)  >Int P andBool N >Int 0 [simplification]  // Do I need N >Int 0?
 
     rule minInt(P, Q) => P requires P <=Int Q [simplification]
 
