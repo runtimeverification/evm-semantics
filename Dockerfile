@@ -11,6 +11,7 @@ RUN    apt-get update                \
             flex                     \
             gcc                      \
             jq                       \
+            libboost-all-dev         \
             libboost-test-dev        \
             libcrypto++-dev          \
             libffi-dev               \
