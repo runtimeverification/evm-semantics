@@ -22,13 +22,13 @@ endif()
 target_include_directories(kevm-client
 	PUBLIC $ENV{PLUGIN_SUBMODULE}/plugin-c
 	PUBLIC $ENV{PLUGIN_SUBMODULE}/vm-c
-	PUBLIC $ENV{PLUGIN_SUBMODULE}/deps/cpp-httplib
+	PUBLIC $ENV{PLUGIN_SUBMODULE}/deps/websocketpp
 	PUBLIC ${CMAKE_SOURCE_DIR}/..)
 target_compile_options(kevm-client
 	PUBLIC $ENV{LLVM_KOMPILE_OPTS}
 	PUBLIC -Wall -Werror -Wno-unknown-warning-option)
 target_link_libraries(kevm-client
-	ff gmp ${LINK_PROCPS} cryptopp secp256k1 gflags
+	ff gmp ${LINK_PROCPS} cryptopp secp256k1 gflags boost_system
 )
 
 include(LLVMKompile)
