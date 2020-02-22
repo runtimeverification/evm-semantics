@@ -42,12 +42,12 @@ export LUA_PATH
 
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
-        build build-java build-node build-haskell build-llvm build-web3                                                          \
-        defn java-defn node-defn web3-defn haskell-defn llvm-defn                                                                \
-        split-tests                                                                                                              \
-        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
-        test-web3 test-all-web3 test-failing-web3                                                                                \
+        build build-java build-specs build-node build-haskell build-llvm build-web3                                                                     \
+        defn java-defn specs-defn node-defn web3-defn haskell-defn llvm-defn                                                                            \
+        split-tests                                                                                                                                     \
+        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance                        \
+        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                                   \
+        test-web3 test-all-web3 test-failing-web3  \
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
         test-klab-prove                                                                                                          \
@@ -150,13 +150,16 @@ MAIN_MODULE    := ETHEREUM-SIMULATION
 SYNTAX_MODULE  := $(MAIN_MODULE)
 MAIN_DEFN_FILE := driver
 export MAIN_DEFN_FILE
+SPECS_DEFN_FILE := specs
+export SPECS_DEFN_FILE
 
-k_files       := driver.k data.k network.k evm.k evm-types.k json.k krypto.k edsl.k evm-node.k web3.k asm.k state-loader.k serialization.k
+k_files       := driver.k data.k network.k evm.k evm-types.k json.k krypto.k edsl.k evm-node.k web3.k asm.k state-loader.k serialization.k specs.k
 EXTRA_K_FILES += $(MAIN_DEFN_FILE).k
 ALL_K_FILES   := $(k_files) $(EXTRA_K_FILES)
 
 llvm_dir    := $(DEFN_DIR)/llvm
 java_dir    := $(DEFN_DIR)/java
+specs_dir    := $(DEFN_DIR)/specs
 haskell_dir := $(DEFN_DIR)/haskell
 node_dir    := $(abspath $(DEFN_DIR)/node)
 web3_dir    := $(abspath $(DEFN_DIR)/web3)
@@ -165,12 +168,14 @@ export web3_dir
 
 llvm_files    := $(patsubst %, $(llvm_dir)/%, $(ALL_K_FILES))
 java_files    := $(patsubst %, $(java_dir)/%, $(ALL_K_FILES))
+specs_files   := $(patsubst %, $(specs_dir)/%, $(ALL_K_FILES))
 haskell_files := $(patsubst %, $(haskell_dir)/%, $(ALL_K_FILES))
 node_files    := $(patsubst %, $(node_dir)/%, $(ALL_K_FILES))
 web3_files    := $(patsubst %, $(web3_dir)/%, $(ALL_K_FILES))
-defn_files    := $(llvm_files) $(java_files) $(haskell_files) $(node_files) $(web3_files)
+defn_files    := $(llvm_files) $(java_files) $(specs_files) $(haskell_files) $(node_files) $(web3_files)
 
 java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
+specs_kompiled   := $(specs_dir)/$(SPECS_DEFN_FILE)-kompiled/timestamp
 node_kompiled    := $(DEFN_DIR)/vm/kevm-vm
 web3_kompiled    := $(web3_dir)/build/kevm-client
 haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
@@ -189,6 +194,7 @@ node_tangle     := .k:not(.standalone):not(.symbolic):not(.nobytes):not(.memmap)
 defn: $(defn_files)
 llvm-defn:    $(llvm_files)
 java-defn:    $(java_files)
+specs-defn:   $(specs_files)
 haskell-defn: $(haskell_files)
 node-defn:    $(node_files)
 web3-defn:    $(web3_files)
@@ -199,6 +205,10 @@ $(llvm_dir)/%.k: %.md $(TANGLER)
 
 $(java_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(java_dir)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(java_tangle)" $< > $@
+
+$(specs_dir)/%.k: %.md $(TANGLER)
+	@mkdir -p $(specs_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(java_tangle)" $< > $@
 
 $(haskell_dir)/%.k: %.md $(TANGLER)
@@ -215,8 +225,9 @@ $(web3_dir)/%.k: %.md $(TANGLER)
 
 # Kompiling
 
-build: build-llvm build-haskell build-java build-web3 build-node
+build: build-llvm build-haskell build-java build-specs build-web3 build-node
 build-java:    $(java_kompiled)
+build-specs:   $(specs_kompiled)
 build-node:    $(node_kompiled)
 build-web3:    $(web3_kompiled)
 build-haskell: $(haskell_kompiled)
@@ -228,6 +239,12 @@ $(java_kompiled): $(java_files)
 	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend java              \
 	                 --syntax-module $(SYNTAX_MODULE) $(java_dir)/$(MAIN_DEFN_FILE).k \
 	                 --directory $(java_dir) -I $(java_dir)                           \
+	                 $(KOMPILE_OPTS)
+
+$(specs_kompiled): $(specs_files)
+	$(K_BIN)/kompile --debug --main-module EVM-SPECS --backend java \
+	                 --syntax-module EVM-SPECS $(specs_dir)/$(SPECS_DEFN_FILE).k \
+	                 --directory $(specs_dir) -I $(specs_dir) \
 	                 $(KOMPILE_OPTS)
 
 # Haskell Backend
