@@ -1,10 +1,10 @@
-Statements for imperative proofs (SOLAR-style)
-====================
+Scripting language for imperative specifications (SOLAR-style)
+==============================================================
 
 ```k
 requires "evm.k"
 
-module EVM-SPECS
+module EVM-IMP-SPECS
     imports ID
     imports EVM
 
@@ -13,19 +13,21 @@ module EVM-SPECS
         <kevm/>
         <commandVars> .Map </commandVars>
       </kevm-specs>
+```
 
-// Core specification scripting language
-// ======================================================================
+Core specification language
+---------------------------
 
+```k
     syntax EthereumCommand ::= "#assert" Exp [strict]
                              | "#assertFailure" Exp
-    rule #assert R:Bool => .
+    rule <k> #assert R:Bool => . ...</k>
       requires R
 
-    rule #assert R:Bool => #assertFailure R
+    rule <k> #assert R:Bool => #assertFailure R ...</k>
       requires notBool R
 
-syntax EthereumCommand ::= "#assume" Exp [strict]
+    syntax EthereumCommand ::= "#assume" Exp [strict]
 
     //Adapted from driver.md `failure`
     syntax EthereumCommand ::= "#takeHalt" String
@@ -46,12 +48,13 @@ syntax EthereumCommand ::= "#assume" Exp [strict]
 
     //Dummy command at the beginning of <k> to ensure execution doesn't start with a spec rule 
     syntax EthereumCommand ::= "#dummy"
-    rule #dummy => .
+    rule <k> #dummy => . ...</k>
+```
 
+Configuration access commands
+-----------------------------
 
-// Configuration access commands
-// ======================================================================
-
+```k
     syntax EthereumCommand ::= "#saveEthereum" Id
     rule <k> #saveEthereum X => . ...</k>
          <ethereum> ETH </ethereum>
@@ -82,11 +85,12 @@ syntax EthereumCommand ::= "#assume" Exp [strict]
     rule <k> #saveRefund X => . ...</k>
          <refund> R </refund>
          <commandVars> VARS => VARS[X <- R] </commandVars>
+```
 
+Specification expression language
+---------------------------------
 
-// Specifications expression language
-// ======================================================================
-
+```k
     syntax KResult ::= ByteArray | StatusCode | List | Map
 
     syntax Exp ::= Exp "==S"  Exp  [seqstrict]
@@ -94,17 +98,18 @@ syntax EthereumCommand ::= "#assume" Exp [strict]
                  | Exp "+List" Exp [seqstrict]
                  | KResult
 
-    rule R1:KResult ==S  R2:KResult => R1 ==K  R2
-    rule R1:KResult =/=S R2:KResult => R1 =/=K R2
-    rule L1:List +List L2:List => L1 L2
+    rule <k> R1:KResult ==S  R2:KResult => R1 ==K  R2 ...</k>
+    rule <k> R1:KResult =/=S R2:KResult => R1 =/=K R2 ...</k>
+    rule <k> L1:List +List L2:List      => L1 L2      ...</k>
 
     // Boolean expressions
     syntax Exp ::= Exp "&&S" Exp [seqstrict, left]
                  > Exp "||S" Exp [seqstrict, left]
 
-    rule R1:Bool &&S R2:Bool => R1 andBool R2
-    rule R1:Bool ||S R2:Bool => R1 orBool R2
+    rule <k> R1:Bool &&S R2:Bool => R1 andBool R2 ...</k>
+    rule <k> R1:Bool ||S R2:Bool => R1 orBool R2  ...</k>
 
+    // Configuration access and other helpers
     syntax Exp ::= "#getStatusCode"
                  | "#getOutput"
                  | "#getLog"
@@ -132,7 +137,7 @@ syntax EthereumCommand ::= "#assume" Exp [strict]
     rule <k> #var(X) => VARS[X] ...</k>
          <commandVars> VARS </commandVars>
 
-    rule #sizeWordStackExp(WS:WordStack) => #sizeWordStack(WS)
+    rule <k> #sizeWordStackExp(WS:WordStack) => #sizeWordStack(WS) ...</k>
 
 endmodule
 ```
