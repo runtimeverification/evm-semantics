@@ -10,11 +10,11 @@ module LEMMAS
 
     rule WS ++ .ByteArray => WS  [simplification]
 
-    rule #sizeByteArray(W : WS)        => 1 +Int #sizeByteArray(WS)                       [simplification]
-    rule #sizeByteArray(#buf(N, _)  )  => N                                               [simplification]
-    rule #sizeByteArray(BUF1 ++ BUF2)  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
-    rule #sizeByteArray(#drop(N, BUF)) => maxInt(#sizeByteArray(BUF) -Int N, 0)           [simplification]
-    rule #sizeByteArray(#padToWidth(N, BUF)) => maxInt(N, #sizeByteArray(BUF))  [simplification]
+    rule #sizeByteArray(W : WS)              => 1 +Int #sizeByteArray(WS)                       [simplification]
+    rule #sizeByteArray(#buf(N, _)  )        => N                                               [simplification]
+    rule #sizeByteArray(BUF1 ++ BUF2)        => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
+    rule #sizeByteArray(#drop(N, BUF))       => maxInt(#sizeByteArray(BUF) -Int N, 0)           [simplification]
+    rule #sizeByteArray(#padToWidth(N, BUF)) => maxInt(N, #sizeByteArray(BUF))                  [simplification]
 
     rule #take(N, BUF)          => BUF                                              requires N ==Int #sizeByteArray(BUF)   [simplification]
     rule #take(N, BUF1 ++ BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeByteArray(BUF1)  [simplification]
@@ -30,11 +30,11 @@ module LEMMAS
 
     rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeByteArray(BUF) ==Int #sizeByteArray(BUF')  [simplification]
 
-    rule BUF [ L .. W ]           => .ByteArray                              requires W <=Int 0                            [simplification]
-    rule BUF [ 0 .. W ]           => BUF                                     requires W ==Int #sizeByteArray(BUF)          [simplification]
-    rule BUF [ L .. W ]           => .ByteArray                              requires L  >Int #sizeByteArray(BUF)          [simplification]
-    rule (BUF ++ BUF') [ L .. W ] => BUF' [L -Int #sizeByteArray(BUF) .. W]  requires L >=Int #sizeByteArray(BUF)          [simplification]
-    rule (BUF ++ BUF') [ L .. W ] => BUF [L .. W]                            requires L +Int W <=Int #sizeByteArray(BUF')  [simplification]
+    rule BUF [ L .. W ]           => .ByteArray                              requires W        <=Int 0                    [simplification]
+    rule BUF [ 0 .. W ]           => BUF                                     requires W        ==Int #sizeByteArray(BUF)  [simplification]
+    rule BUF [ L .. W ]           => .ByteArray                              requires L         >Int #sizeByteArray(BUF)  [simplification]
+    rule (BUF ++ BUF') [ L .. W ] => BUF' [L -Int #sizeByteArray(BUF) .. W]  requires L        >=Int #sizeByteArray(BUF)  [simplification]
+    rule (BUF ++ BUF') [ L .. W ] => BUF [L .. W]                            requires L +Int W <=Int #sizeByteArray(BUF)  [simplification]
 
     rule #range(M, N, K) => .ByteArray requires notBool K >Int 0  [simplification]
 
@@ -233,9 +233,9 @@ module LEMMAS
     rule minInt(P, Q) -Int N => minInt(P -Int N, Q -Int N)  [simplification]
     rule minInt(P, Q) +Int N => minInt(P +Int N, Q +Int N)  [simplification]
 
-    rule N >=Int #sizeByteArray(#asByteStack(P)) => true  requires 1 <<Int (N <<Int 3)  >Int P andBool N >Int 0 [simplification]  // Do I need N >Int 0?
-    rule N  <Int #sizeByteArray(#asByteStack(P)) => true  requires 1 <<Int (N <<Int 3) <=Int P                  [simplification]
-    rule N  <Int #sizeByteArray(#asByteStack(P)) => false requires 1 <<Int (N <<Int 3)  >Int P andBool N >Int 0 [simplification]  // Do I need N >Int 0?
+    rule N >=Int #sizeByteArray(#asByteStack(P)) => true  requires 1 <<Int (N *Int 8)  >Int P andBool N >Int 0 [simplification]  // Do I need N >Int 0?
+    rule N  <Int #sizeByteArray(#asByteStack(P)) => true  requires 1 <<Int (N *Int 8) <=Int P                  [simplification]
+    rule N  <Int #sizeByteArray(#asByteStack(P)) => false requires 1 <<Int (N *Int 8)  >Int P andBool N >Int 0 [simplification]  // Do I need N >Int 0?
 
     rule minInt(P, Q) => P requires P <=Int Q [simplification]
 
