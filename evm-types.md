@@ -566,41 +566,41 @@ The local memory of execution is a byte-array (instead of a word-array).
  // --------------------------------------------------------
     rule .ByteArray => .Bytes [macro]
 
-    syntax Int ::= #asWord ( ByteArray ) [function, smtlib(asWord)]
- // ---------------------------------------------------------------
-    rule #asWord(WS) => chop(Bytes2Int(WS, BE, Unsigned))
+    syntax Int ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
+ // ---------------------------------------------------------------------------
+    rule #asWord(WS) => chop(Bytes2Int(WS, BE, Unsigned)) [concrete]
 
-    syntax Int ::= #asInteger ( ByteArray ) [function]
- // --------------------------------------------------
-    rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned)
+    syntax Int ::= #asInteger ( ByteArray ) [function, functional]
+ // --------------------------------------------------------------
+    rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned) [concrete]
 
     syntax Account ::= #asAccount ( ByteArray ) [function]
  // ------------------------------------------------------
     rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
     rule #asAccount(BS) => #asWord(BS) [owise]
 
-    syntax ByteArray ::= #asByteStack ( Int ) [function]
- // ----------------------------------------------------
-    rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned)
+    syntax ByteArray ::= #asByteStack ( Int ) [function, functional]
+ // ----------------------------------------------------------------
+    rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete]
 
-    syntax ByteArray ::= ByteArray "++" ByteArray [function, right, klabel(_++_WS), smtlib(_plusWS_)]
- // -------------------------------------------------------------------------------------------------
-    rule WS ++ WS' => WS +Bytes WS'
+    syntax ByteArray ::= ByteArray "++" ByteArray [function, functional, right, klabel(_++_WS), smtlib(_plusWS_)]
+ // -------------------------------------------------------------------------------------------------------------
+    rule WS ++ WS' => WS +Bytes WS' [concrete]
 
     syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function]
  // --------------------------------------------------------------
-    rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires START <Int #sizeByteArray(WS)
-    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0)                                              [owise]
+    rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires START <Int #sizeByteArray(WS) [concrete]
+    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0)                                              [owise, conrete]
 
-    syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional]
- // ------------------------------------------------------------------
+    syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, klabel(sizeByteArray), smtlib(sizeByteArray)]
+ // ----------------------------------------------------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => lengthBytes(WS) [concrete]
 
     syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function]
                        | #padRightToWidth ( Int , ByteArray ) [function]
  // --------------------------------------------------------------------
-    rule #padToWidth(N, BS)      => padLeftBytes(BS, N, 0)
-    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0)
+    rule #padToWidth(N, BS)      => padLeftBytes(BS, N, 0)  [concrete]
+    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) [concrete]
 ```
 
 ```{.k .nobytes}
