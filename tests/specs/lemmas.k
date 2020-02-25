@@ -207,8 +207,6 @@ module LEMMAS-JAVA [symbolic, kast]
 
     rule chop(I) => I requires 0 <=Int I andBool I <Int pow256  [simplification]
 
-    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
-
 endmodule
 
 module LEMMAS-HASKELL [symbolic, kore]
