@@ -1,8 +1,15 @@
 requires "abstract-semantics-segmented-gas.k"
 requires "edsl.k"
 requires "evm-symbolic.k"
+requires "../lemmas.k"
 
 module VERIFICATION
+    imports VERIFICATION-JAVA
+    imports LEMMAS
+
+endmodule
+
+module VERIFICATION-JAVA [symbolic, kast]
     imports ABSTRACT-SEMANTICS-SEGMENTED-GAS
     imports EDSL
     imports EVM-SYMBOLIC
