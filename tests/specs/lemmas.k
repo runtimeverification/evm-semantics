@@ -271,4 +271,7 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule 0 <=Int keccak(V)                  => true  [simplification]
     rule         keccak(V) <=Int maxUInt256 => true  [simplification]
 
+    // Defineness axiom for #buf
+    rule #Ceil(#buf(@SIZE, @DATA)) => {(@SIZE >=Int 0) #Equals true} #And #Ceil(@SIZE) #And #Ceil(@DATA) [anywhere]
+
 endmodule
