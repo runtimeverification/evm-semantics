@@ -341,7 +341,7 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
     rule #hashedLocation("Solidity", BASE, OFFSET OFFSETS) => #hashedLocation("Solidity", keccakIntList(OFFSET BASE),       OFFSETS)
     rule #hashedLocation("Array",    BASE, OFFSET OFFSETS) => #hashedLocation("Array",    keccakIntList(BASE) +Word OFFSET, OFFSETS)
 
-    syntax Int ::= keccakIntList( IntList ) [function]
+    syntax Int ::= keccakIntList( IntList ) [function, functional]
  // --------------------------------------------------
     rule [keccakIntList]: keccakIntList(VS) => keccak(intList2ByteArray(VS))
 
@@ -349,7 +349,7 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
  // ------------------------------------------------------------
     rule intList2ByteArray(.IntList) => .ByteArray
     rule intList2ByteArray(V VS)     => #buf(32, V) ++ intList2ByteArray(VS)
-      requires 0 <=Int V andBool V <Int pow256
+      requires #rangeUInt(256, V)
 
     syntax IntList ::= byteStack2IntList ( ByteArray )       [function]
                      | byteStack2IntList ( ByteArray , Int ) [function]

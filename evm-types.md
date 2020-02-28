@@ -478,8 +478,8 @@ Most of EVM data is held in local memory.
 
 ```{.k .membytes}
     syntax Memory = Bytes
-    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
- // -------------------------------------------------------------------------------------
+    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, functional, klabel(mapWriteBytes)]
+ // -------------------------------------------------------------------------------------------------
     rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS')  [concrete]
 
     syntax ByteArray ::= #range ( Memory , Int , Int ) [function]
@@ -682,10 +682,10 @@ Addresses
 -   `#lookup` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 ```k
-    syntax Int ::= #lookup ( Map , Int ) [function]
- // -----------------------------------------------
-    rule [#lookup.some]: #lookup( (KEY |-> VAL) M, KEY ) => VAL
-    rule [#lookup.none]: #lookup(               M, KEY ) => 0 requires notBool KEY in_keys(M)
+    syntax Int ::= #lookup ( Map , Int ) [function, functional]
+ // -----------------------------------------------------------
+    rule [#lookup.some]: #lookup( (KEY |-> VAL) M, KEY ) => VAL                               [concrete]
+    rule [#lookup.none]: #lookup(               M, KEY ) => 0 requires notBool KEY in_keys(M) [concrete]
 ```
 
 ### Substate Log
