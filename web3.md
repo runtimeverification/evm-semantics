@@ -648,16 +648,14 @@ eth_sendTransaction
 
     syntax JSON ::= #generateException( String, Int, Bytes, EndStatusCode ) [function]
  // ----------------------------------------------------------------------------------
-    rule #generateException(TXHASH, PCOUNT, RD, SC) => { "message": "VM Exception while processing transaction: " +String StatusCode2TruffleString(SC),
+    rule #generateException(TXHASH, PCOUNT, RD, SC) => { "message": "VM Exception while processing transaction: " +String StatusCode2TruffleString(SC) +String " " +String #parseReason(RD),
                                                       "code": -32000,
                                                       "data": {
                                                           TXHASH: {
                                                           "error": StatusCode2TruffleString(SC),
                                                           "program_counter": PCOUNT +Int 1,
                                                           "return": #unparseDataByteArray( RD ),
-                                                          "reason": Bytes2String(substrBytes(RD,
-                                                                                             36 +Int #asInteger(substrBytes(RD,5,36)),
-                                                                                             36 +Int #asInteger(substrBytes(RD,5,36)) +Int #asInteger(substrBytes(RD,37,68))))
+                                                          "reason": #parseReason(RD)
                                                         }
                                                       }
                                                     }
@@ -674,6 +672,11 @@ eth_sendTransaction
                                                     }
       requires notBool lengthBytes(RD) >Int 68
 
+    syntax String ::= #parseReason ( Bytes ) [function]
+ // ---------------------------------------------------
+    rule #parseReason(RD) => Bytes2String(substrBytes(RD,
+                              36 +Int #asInteger(substrBytes(RD,5,36)),
+                              36 +Int #asInteger(substrBytes(RD,5,36)) +Int #asInteger(substrBytes(RD,37,68))))
 ```
 
 -   signTX TXID ACCTFROM: Signs the transaction with TXID using ACCTFROM's private key
