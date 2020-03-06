@@ -18,7 +18,7 @@
     "jsonrpc": "2.0",
     "id": 4,
     "error": {
-      "message": "VM Exception while processing transaction: revert",
+      "message": "VM Exception while processing transaction: revert Crowdsale: beneficiary is the zero address",
       "code": -32000,
       "data": {
         "0xda98dca8c2080bb61048a6dfa4722c86ea5d738e9f4609436f0a56623f2ed3df": {
