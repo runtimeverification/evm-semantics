@@ -1,7 +1,10 @@
-### JSON Formatting
+KJSON
+=====
 
-The JSON format is used extensively for communication in the Ethereum circles.
-Writing a JSON-ish parser in K takes 6 lines.
+This is a near-faithful implementation of the [ECMA-404 JSON Data Interchange Format](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+There are issues with how `JSONNumber` and `JSONString` are specified here, because we use K's `String` and `Int` sort directly, which are not quite correct.
+
+### JSON Syntax
 
 ```k
 module JSON
