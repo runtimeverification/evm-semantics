@@ -4,22 +4,76 @@ KJSON
 This is a near-faithful implementation of the [ECMA-404 JSON Data Interchange Format](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 There are issues with how `JSONNumber` and `JSONString` are specified here, because we use K's `String` and `Int` sort directly, which are not quite correct.
 
-### JSON Syntax
+JSON Specification
+------------------
 
 ```k
 module JSON
     imports INT
     imports STRING
     imports BOOL
+```
 
-    syntax JSONs   ::= List{JSON,","}      [klabel(JSONs)      , symbol]
-    syntax JSONKey ::= String
-    syntax JSON    ::= "null"              [klabel(JSONnull)   , symbol]
-                     | String | Int | Bool
-                     | JSONKey ":" JSON    [klabel(JSONEntry)  , symbol]
-                     | "{" JSONs "}"       [klabel(JSONObject) , symbol]
-                     | "[" JSONs "]"       [klabel(JSONList)   , symbol]
- // --------------------------------------------------------------------
+### JSON Base Types
+
+For now, we use K's `Bool`, `Int`, and `String` types directly for representing JSON base types, even though it's not quite correct.
+
+```k
+    syntax JSONBool   = Bool
+    syntax JSONNumber = Int
+    syntax JSONString = String
+ // --------------------------
+```
+
+### JSON Values
+
+A JSON Value is the top-level data-type exported by the standard.
+
+```k
+    syntax JSONValue ::= JSONObject
+                       | JSONArray
+                       | JSONNumber
+                       | JSONString
+                       | JSONBool
+                       | "null"     [klabel(JSONnull), symbol]
+ // ----------------------------------------------------------
+```
+
+### JSON Objects
+
+JSON Objects are used to implement key-value pairs.
+
+```k
+    syntax JSONObjectEntry  ::= JSONString ":" JSONValue   [klabel(JSONObjectEntry) , symbol]
+    syntax JSONObjectEntrys ::= List{JSONObjectEntry, ","} [klabel(JSONObjectEntrys), symbol]
+ // -----------------------------------------------------------------------------------------
+
+    syntax JSONObject ::= "{" JSONObjectEntrys "}" [klabel(JSONObject), symbol]
+ // ---------------------------------------------------------------------------
+```
+
+### JSON Arrays
+
+JSON Arrays are ordered groupings of JSON Values.
+
+```k
+    syntax JSONArrayEntrys ::= List{JSONValue, ","} [klabel(JSONArrayEntrys), symbol]
+ // ---------------------------------------------------------------------------------
+
+    syntax JSONArray ::= "[" JSONArrayEntrys "]" [klabel(JSONArray), symbol]
+ // ------------------------------------------------------------------------
+```
+
+```k
+endmodule
+```
+
+JSON Extensions and Functions
+-----------------------------
+
+```k
+module JSON-EXT
+    imports JSON
 ```
 
 -   `reverseJSONs` reverses a JSON list.
@@ -47,6 +101,9 @@ endmodule
 
 JSON-RPC
 --------
+
+Many servers export a JSON RPC endpoint to make communicating and controlling them easier.
+This is a simple implementation of a JSON RPC server that other definitions can import for that purpose.
 
 ```k
 module JSON-RPC
