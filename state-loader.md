@@ -1,7 +1,7 @@
 State Manager
 -------------
 
-```{.k}
+```k
 requires "evm.k"
 requires "asm.k"
 
@@ -19,7 +19,7 @@ module STATE-LOADER
 -   `clear` clears all the execution state of the machine.
 -   `clearX` clears the substate `X`, for `TX`, `BLOCK`, and `NETWORK`.
 
-```{.k}
+```k
     syntax EthereumCommand ::= "clear"
  // ----------------------------------
     rule <k> clear => clearTX ~> clearBLOCK ~> clearNETWORK ... </k>
@@ -84,7 +84,7 @@ module STATE-LOADER
 
 -   `mkAcct_` creates an account with the supplied ID (assuming it's already been chopped to 160 bits).
 
-```{.k}
+```k
     syntax EthereumCommand ::= "mkAcct" Int
  // ---------------------------------------
     rule <k> mkAcct ACCT => #newAccount ACCT ... </k>
@@ -92,7 +92,7 @@ module STATE-LOADER
 
 -   `load` loads an account or transaction into the world state.
 
-```{.k}
+```k
     syntax EthereumCommand ::= "load" JSON
  // --------------------------------------
     rule <k> load DATA : { .JSONs }             => .                                                   ... </k>
@@ -105,7 +105,7 @@ module STATE-LOADER
 
 Here we perform pre-proccesing on account data which allows "pretty" specification of input.
 
-```{.k}
+```k
     rule <k> load "pre" : { (ACCTID:String) : ACCT } => mkAcct #parseAddr(ACCTID) ~> loadAccount #parseAddr(ACCTID) ACCT ... </k>
 
     syntax EthereumCommand ::= "loadAccount" Int JSON
@@ -127,7 +127,7 @@ Here we perform pre-proccesing on account data which allows "pretty" specificati
 
 Here we load the environmental information.
 
-```{.k}
+```k
     rule <k> load "env" : { KEY : ((VAL:String) => #parseWord(VAL)) } ... </k>
       requires KEY in (SetItem("currentTimestamp") SetItem("currentGasLimit") SetItem("currentNumber") SetItem("currentDifficulty"))
     rule <k> load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) } ... </k>
@@ -158,7 +158,7 @@ Here we load the environmental information.
 
 The `"network"` key allows setting the fee schedule inside the test.
 
-```{.k}
+```k
     rule <k> load "network" : SCHEDSTRING => . ... </k>
          <schedule> _ => #asScheduleString(SCHEDSTRING) </schedule>
 
@@ -176,7 +176,7 @@ The `"network"` key allows setting the fee schedule inside the test.
 
 The `"rlp"` key loads the block information.
 
-```{.k}
+```k
     rule <k> load "rlp"        : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL)))) ... </k>
     rule <k> load "genesisRLP" : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL)))) ... </k>
  // ---------------------------------------------------------------------------------------------------------
@@ -267,7 +267,7 @@ The `"rlp"` key loads the block information.
 
 ### Block Identifiers
 
-```{.k}
+```k
     syntax BlockIdentifier ::= Int
                              | "LATEST"
                              | "PENDING"
@@ -281,6 +281,6 @@ The `"rlp"` key loads the block information.
     rule #parseBlockIdentifier("earliest") => EARLIEST
     rule #parseBlockIdentifier(BLOCKNUM)   => #parseHexWord(BLOCKNUM) requires substrString(BLOCKNUM,0,2) ==String "0x"
 ```
-```{.k}
+```k
 endmodule
 ```
