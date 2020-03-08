@@ -572,9 +572,9 @@ eth_sendTransaction
 
 ```k
     syntax KItem ::= "#eth_sendTransaction"
-                   | "#eth_sendTransaction_final"
- // ---------------------------------------------
-    rule <k> #eth_sendTransaction => #loadTx #parseHexWord( #getString("from",J) ) J ~> #eth_sendTransaction_final ... </k>
+                   | "#eth_sendTransaction_final" "(" String ")"
+ // ------------------------------------------------------------
+    rule <k> #eth_sendTransaction => #loadTx #parseHexWord( #getString("from",J) ) J ~> #eth_sendTransaction ... </k>
          <params> [ ({ _ } #as J), .JSONs ] </params>
       requires isString( #getJSON("from",J) )
 
@@ -584,7 +584,7 @@ eth_sendTransaction
 
     rule <k> #eth_sendTransaction => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_sendTransaction' requires exactly 1 argument.") ... </k> [owise]
 
-    rule <k> (TXID:Int => "0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ~> #eth_sendTransaction_final ... </k>
+    rule <k> TXID:Int => #eth_sendTransaction_final("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ... </k>
          <message>
            <msgID> TXID </msgID>
            <txNonce>    TN </txNonce>
@@ -598,23 +598,23 @@ eth_sendTransaction
            <data>       TD </data>
          </message>
 
-    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccess(TXHASH) ... </k>
+    rule <k> #eth_sendTransaction_final(TXHASH) => #rpcResponseSuccess(TXHASH) ... </k>
          <statusCode> EVMC_SUCCESS </statusCode>
 
-    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccessException(TXHASH, #generateException(TXHASH, PCOUNT, RD, EVMC_REVERT))
+    rule <k> #eth_sendTransaction_final(TXHASH) => #rpcResponseSuccessException(TXHASH, #generateException(TXHASH, PCOUNT, RD, EVMC_REVERT))
           ...
          </k>
          <statusCode> EVMC_REVERT </statusCode>
          <output> RD </output>
          <errorPC> PCOUNT </errorPC>
 
-    rule <k> _:String ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "base fee exceeds gas limit") ... </k>
+    rule <k> #eth_sendTransaction_final(_) => #rpcResponseError(-32000, "base fee exceeds gas limit") ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
 
-    rule <k> _:String ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "sender doesn't have enough funds to send tx.") ... </k>
+    rule <k> #eth_sendTransaction_final(_) => #rpcResponseError(-32000, "sender doesn't have enough funds to send tx.") ... </k>
          <statusCode> EVMC_BALANCE_UNDERFLOW </statusCode>
 
-    rule <k> _:String ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "VM exception: " +String StatusCode2String( SC )) ... </k>
+    rule <k> #eth_sendTransaction_final(_) => #rpcResponseError(-32000, "VM exception: " +String StatusCode2String( SC )) ... </k>
          <statusCode> SC:ExceptionalStatusCode </statusCode> [owise]
 
     rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG)), _                 } ... </k>
