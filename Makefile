@@ -42,12 +42,12 @@ export LUA_PATH
 
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
-        build build-java build-specs build-node build-haskell build-llvm build-web3                                                                     \
-        defn java-defn specs-defn node-defn web3-defn haskell-defn llvm-defn                                                                            \
-        split-tests                                                                                                                                     \
-        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance                        \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                                   \
-        test-web3 test-all-web3 test-failing-web3  \
+        build build-java build-specs build-node build-haskell build-llvm build-web3                                              \
+        defn java-defn specs-defn node-defn web3-defn haskell-defn llvm-defn                                                     \
+        split-tests                                                                                                              \
+        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
+        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
+        test-web3 test-all-web3 test-failing-web3                                                                                \
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
         test-prove-imp-specs test-klab-prove                                                                                     \
@@ -471,8 +471,7 @@ prove_bihu_tests       := $(filter-out $(prove_failing_tests), $(wildcard $(prov
 prove_examples_tests   := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k))
 prove_imp_specs_tests  := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/imp-specs/*-spec.k))
 
-test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples \
-			test-prove-imp-specs
+test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-imp-specs
 test-prove-benchmarks: $(prove_benchmarks_tests:=.prove)
 test-prove-functional: $(prove_functional_tests:=.prove)
 test-prove-opcodes:    $(prove_opcodes_tests:=.prove)
