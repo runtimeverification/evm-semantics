@@ -19,12 +19,26 @@ module JSON
  // --------------------------------------------------------------------
 ```
 
+-   `reverseJSONs` reverses a JSON list.
+
+```k
+    syntax JSONs ::= reverseJSONs    ( JSONs         ) [function]
+                   | reverseJSONsAux ( JSONs , JSONs ) [function]
+ // -------------------------------------------------------------
+    rule reverseJSONs(JS) => reverseJSONsAux(JS, .JSONs)
+
+    rule reverseJSONsAux(.JSONs, JS') => JS'
+    rule reverseJSONsAux((J, JS:JSONs), JS') => reverseJSONsAux(JS, (J, JS'))
+```
+
 **TODO**: Adding `Int` to `JSONKey` is a hack to make certain parts of semantics easier.
 
 ```k
     syntax JSONKey ::= Int
  // ----------------------
+```
 
+```k
 endmodule
 ```
 
