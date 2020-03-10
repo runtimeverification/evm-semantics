@@ -1,10 +1,11 @@
 KJSON
 =====
 
-This is a near-faithful implementation of the [ECMA-404 JSON Data Interchange Format](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+This is a non-faithful implementation of the [ECMA-404 JSON Data Interchange Format](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 There are issues with how `JSONNumber` and `JSONString` are specified here, because we use K's `String` and `Int` sort directly, which are not quite correct.
 
-### JSON Syntax
+JSON Syntax
+-----------
 
 ```k
 module JSON
@@ -20,6 +21,20 @@ module JSON
                      | "{" JSONs "}"       [klabel(JSONObject) , symbol]
                      | "[" JSONs "]"       [klabel(JSONList)   , symbol]
  // --------------------------------------------------------------------
+```
+
+```k
+endmodule
+```
+
+JSON Extensions
+---------------
+
+Some common functions and extensions of JSON are provided here.
+
+```k
+module JSON-EXT
+    imports JSON
 ```
 
 -   `+JSONs` appends two JSON lists.
@@ -84,7 +99,7 @@ JSON-RPC
 module JSON-RPC
     imports K-IO
     imports LIST
-    imports JSON
+    imports JSON-EXT
 
     configuration
       <json-rpc>
