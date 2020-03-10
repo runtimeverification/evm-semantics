@@ -16,7 +16,7 @@ module JSON
     syntax JSONs   ::= List{JSON,","}      [klabel(JSONs)      , symbol]
     syntax JSONKey ::= String
     syntax JSON    ::= "null"              [klabel(JSONnull)   , symbol]
-                     | String | Int | Bool
+                     | JSONKey | Bool
                      | JSONKey ":" JSON    [klabel(JSONEntry)  , symbol]
                      | "{" JSONs "}"       [klabel(JSONObject) , symbol]
                      | "[" JSONs "]"       [klabel(JSONList)   , symbol]
