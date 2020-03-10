@@ -22,13 +22,18 @@ endif()
 target_include_directories(kevm-client
 	PUBLIC $ENV{PLUGIN_SUBMODULE}/plugin-c
 	PUBLIC $ENV{PLUGIN_SUBMODULE}/vm-c
-	PUBLIC $ENV{PLUGIN_SUBMODULE}/deps/websocketpp
+	PUBLIC $ENV{PLUGIN_SUBMODULE}/deps/uwebsockets/src
+	PUBLIC $ENV{PLUGIN_SUBMODULE}/deps/uwebsockets/uSockets/src
 	PUBLIC ${CMAKE_SOURCE_DIR}/..)
 target_compile_options(kevm-client
 	PUBLIC $ENV{LLVM_KOMPILE_OPTS}
-	PUBLIC -Wall -Werror -Wno-unknown-warning-option)
+	PUBLIC -std=c++17 -Wall -Werror -Wno-unknown-warning-option)
+add_library(usockets STATIC IMPORTED)
+set_target_properties(usockets PROPERTIES
+	IMPORTED_LOCATION $ENV{PLUGIN_SUBMODULE}/deps/uwebsockets/uSockets/uSockets.a
+)
 target_link_libraries(kevm-client
-	ff gmp ${LINK_PROCPS} cryptopp secp256k1 gflags boost_system
+	ff gmp ${LINK_PROCPS} cryptopp secp256k1 gflags usockets z
 )
 
 include(LLVMKompile)

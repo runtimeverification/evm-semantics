@@ -41,7 +41,7 @@ export TANGLER
 export LUA_PATH
 
 .PHONY: all clean distclean                                                                                                      \
-        deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
+        deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff libusockets                         \
         build build-java build-node build-haskell build-llvm build-web3                                                          \
         defn java-defn node-defn web3-defn haskell-defn llvm-defn                                                                \
         split-tests                                                                                                              \
@@ -70,9 +70,11 @@ distclean:
 
 libsecp256k1_out := $(LIBRARY_PATH)/pkgconfig/libsecp256k1.pc
 libff_out        := $(LIBRARY_PATH)/libff.a
+libusockets_out  := $(PLUGIN_SUBMODULE)/deps/uwebsockets/uSockets/uSockets.a
 
 libsecp256k1: $(libsecp256k1_out)
 libff:        $(libff_out)
+libusockets:  $(libusockets_out)
 
 $(DEPS_DIR)/secp256k1/autogen.sh:
 	git submodule update --init --recursive -- $(DEPS_DIR)/secp256k1
@@ -107,6 +109,12 @@ $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 	    && make -s -j4 \
 	    && make install
 
+LIBUSOCKETS_CC := clang-8
+
+$(libusockets_out): $(PLUGIN_SUBMODULE)/make.timestamp
+	cd $(PLUGIN_SUBMODULE)/deps/uwebsockets/uSockets \
+	   && make CC=$(LIBUSOCKETS_CC)
+
 # K Dependencies
 # --------------
 
@@ -114,7 +122,7 @@ deps: repo-deps
 repo-deps: tangle-deps k-deps plugin-deps
 k-deps: $(K_SUBMODULE)/make.timestamp
 tangle-deps: $(TANGLER)
-plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
+plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp libusockets
 
 ifneq ($(RELEASE),)
 K_BUILD_TYPE         := FastBuild
@@ -266,7 +274,7 @@ $(web3_kore): $(web3_files)
 	                 --no-llvm-kompile                                                \
 	                 $(KOMPILE_OPTS)
 
-$(web3_kompiled): $(web3_kore) $(libff_out)
+$(web3_kompiled): $(web3_kore) $(libff_out) $(libusockets_out)
 	@mkdir -p $(web3_dir)/build
 	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
