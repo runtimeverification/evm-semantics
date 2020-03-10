@@ -34,6 +34,32 @@ module JSON
     rule reverseJSONsAux((J, JS:JSONs), JS') => reverseJSONsAux(JS, (J, JS'))
 ```
 
+-   `qsortJSONs` quick-sorts a list of key-value pairs.
+-   `sortedJSONs` is a predicate saying whether a given list of JSONs is sorted or not.
+
+```k
+    syntax JSONs ::= qsortJSONs ( JSONs )          [function]
+                   | #entriesLT ( String , JSONs ) [function]
+                   | #entriesGE ( String , JSONs ) [function]
+ // ---------------------------------------------------------
+    rule qsortJSONS(.JSONs)              => .JSONs
+    rule qsortJSONS((KEY : VALUE), REST) => qsortJSONs(#entriesLT(KEY, REST)) , KEY : VALUE , qsortJSONs(#entriesGT(KEY, REST))
+
+    rule #entriesLT(KEY, .JSONs)              => .JSONs
+    rule #entriesLT(KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesLT(KEY, REST) requires         KEY' <String KEY
+    rule #entriesLT(KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesLT(KEY, REST) requires notBool KEY' <String KEY
+
+    rule #entriesGE(KEY, .JSONs)              => .JSONs
+    rule #entriesGE(KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesGE(KEY, REST) requires         KEY' >=String KEY
+    rule #entriesGE(KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesGE(KEY, REST) requires notBool KEY' >=String KEY
+
+    syntax Bool ::= sortedJSONs ( JSONs ) [function]
+ // ------------------------------------------------
+    rule sortedJSONs( .JSONs  ) => true
+    rule sortedJSONs( KEY : _ ) => true
+    rule sortedJSONs( (KEY : _) , (KEY' : VAL) , REST ) => KEY <=String KEY' andThenBool sortedJSONs((KEY' : VAL) , REST)
+```
+
 **TODO**: Adding `Int` to `JSONKey` is a hack to make certain parts of semantics easier.
 
 ```k
