@@ -68,11 +68,11 @@ module JSON-EXT
 
     rule #entriesLT(KEY, .JSONs)              => .JSONs
     rule #entriesLT(KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesLT(KEY, REST) requires         KEY' <String KEY
-    rule #entriesLT(KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesLT(KEY, REST) requires notBool KEY' <String KEY
+    rule #entriesLT(KEY, (KEY': VALUE, REST)) =>               #entriesLT(KEY, REST) requires notBool KEY' <String KEY
 
     rule #entriesGE(KEY, .JSONs)              => .JSONs
     rule #entriesGE(KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesGE(KEY, REST) requires         KEY' >=String KEY
-    rule #entriesGE(KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesGE(KEY, REST) requires notBool KEY' >=String KEY
+    rule #entriesGE(KEY, (KEY': VALUE, REST)) =>               #entriesGE(KEY, REST) requires notBool KEY' >=String KEY
 
     syntax Bool ::= sortedJSONs ( JSONs ) [function]
  // ------------------------------------------------
