@@ -22,9 +22,15 @@ module JSON
  // --------------------------------------------------------------------
 ```
 
+-   `+JSONs` appends two JSON lists.
 -   `reverseJSONs` reverses a JSON list.
 
 ```k
+    syntax JSONs ::= JSONs "+JSONs" JSONs [function]
+ // ------------------------------------------------
+    rule .JSONs   +JSONs JS' => JS'
+    rule (J , JS) +JSONs JS' => J , (JS +JSONs JS')
+
     syntax JSONs ::= reverseJSONs    ( JSONs         ) [function]
                    | reverseJSONsAux ( JSONs , JSONs ) [function]
  // -------------------------------------------------------------
@@ -42,8 +48,8 @@ module JSON
                    | #entriesLT ( String , JSONs ) [function]
                    | #entriesGE ( String , JSONs ) [function]
  // ---------------------------------------------------------
-    rule qsortJSONS(.JSONs)              => .JSONs
-    rule qsortJSONS((KEY : VALUE), REST) => qsortJSONs(#entriesLT(KEY, REST)) , KEY : VALUE , qsortJSONs(#entriesGT(KEY, REST))
+    rule qsortJSONs(.JSONs)            => .JSONs
+    rule qsortJSONs(KEY : VALUE, REST) => qsortJSONs(#entriesLT(KEY, REST)) +JSONs (KEY : VALUE , qsortJSONs(#entriesGE(KEY, REST)))
 
     rule #entriesLT(KEY, .JSONs)              => .JSONs
     rule #entriesLT(KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesLT(KEY, REST) requires         KEY' <String KEY
