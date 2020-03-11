@@ -1,7 +1,11 @@
-### JSON Formatting
+KJSON
+=====
 
-The JSON format is used extensively for communication in the Ethereum circles.
-Writing a JSON-ish parser in K takes 6 lines.
+This is a non-faithful implementation of the [ECMA-404 JSON Data Interchange Format](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+There are issues with how `JSONNumber` and `JSONString` are specified here, because we use K's `String` and `Int` sort directly, which are not quite correct.
+
+JSON Syntax
+-----------
 
 ```k
 module JSON
@@ -12,16 +16,36 @@ module JSON
     syntax JSONs   ::= List{JSON,","}      [klabel(JSONs)      , symbol]
     syntax JSONKey ::= String
     syntax JSON    ::= "null"              [klabel(JSONnull)   , symbol]
-                     | String | Int | Bool
+                     | JSONKey | Bool
                      | JSONKey ":" JSON    [klabel(JSONEntry)  , symbol]
                      | "{" JSONs "}"       [klabel(JSONObject) , symbol]
                      | "[" JSONs "]"       [klabel(JSONList)   , symbol]
  // --------------------------------------------------------------------
 ```
 
+```k
+endmodule
+```
+
+JSON Extensions
+---------------
+
+Some common functions and extensions of JSON are provided here.
+
+```k
+module JSON-EXT
+    imports JSON
+```
+
+-   `+JSONs` appends two JSON lists.
 -   `reverseJSONs` reverses a JSON list.
 
 ```k
+    syntax JSONs ::= JSONs "+JSONs" JSONs [function]
+ // ------------------------------------------------
+    rule .JSONs   +JSONs JS' => JS'
+    rule (J , JS) +JSONs JS' => J , (JS +JSONs JS')
+
     syntax JSONs ::= reverseJSONs    ( JSONs         ) [function]
                    | reverseJSONsAux ( JSONs , JSONs ) [function]
  // -------------------------------------------------------------
@@ -29,6 +53,32 @@ module JSON
 
     rule reverseJSONsAux(.JSONs, JS') => JS'
     rule reverseJSONsAux((J, JS:JSONs), JS') => reverseJSONsAux(JS, (J, JS'))
+```
+
+-   `qsortJSONs` quick-sorts a list of key-value pairs.
+-   `sortedJSONs` is a predicate saying whether a given list of JSONs is sorted or not.
+
+```k
+    syntax JSONs ::= qsortJSONs ( JSONs )          [function]
+                   | #entriesLT ( String , JSONs ) [function]
+                   | #entriesGE ( String , JSONs ) [function]
+ // ---------------------------------------------------------
+    rule qsortJSONs(.JSONs)            => .JSONs
+    rule qsortJSONs(KEY : VALUE, REST) => qsortJSONs(#entriesLT(KEY, REST)) +JSONs (KEY : VALUE , qsortJSONs(#entriesGE(KEY, REST)))
+
+    rule #entriesLT(KEY, .JSONs)              => .JSONs
+    rule #entriesLT(KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesLT(KEY, REST) requires         KEY' <String KEY
+    rule #entriesLT(KEY, (KEY': VALUE, REST)) =>               #entriesLT(KEY, REST) requires notBool KEY' <String KEY
+
+    rule #entriesGE(KEY, .JSONs)              => .JSONs
+    rule #entriesGE(KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesGE(KEY, REST) requires         KEY' >=String KEY
+    rule #entriesGE(KEY, (KEY': VALUE, REST)) =>               #entriesGE(KEY, REST) requires notBool KEY' >=String KEY
+
+    syntax Bool ::= sortedJSONs ( JSONs ) [function]
+ // ------------------------------------------------
+    rule sortedJSONs( .JSONs  ) => true
+    rule sortedJSONs( KEY : _ ) => true
+    rule sortedJSONs( (KEY : _) , (KEY' : VAL) , REST ) => KEY <=String KEY' andThenBool sortedJSONs((KEY' : VAL) , REST)
 ```
 
 **TODO**: Adding `Int` to `JSONKey` is a hack to make certain parts of semantics easier.
@@ -49,7 +99,7 @@ JSON-RPC
 module JSON-RPC
     imports K-IO
     imports LIST
-    imports JSON
+    imports JSON-EXT
 
     configuration
       <json-rpc>

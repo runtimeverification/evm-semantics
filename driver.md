@@ -39,25 +39,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ```k
     syntax JSON ::= ByteArray | OpCodes | Map | Call | SubstateLogEntry | Account
  // -----------------------------------------------------------------------------
-
-    syntax JSONs ::= #sortJSONs ( JSONs )         [function]
-                   | #sortJSONs ( JSONs , JSONs ) [function, klabel(#sortJSONsAux)]
- // -------------------------------------------------------------------------------
-    rule #sortJSONs(JS) => #sortJSONs(JS, .JSONs)
-    rule #sortJSONs(.JSONs, LS)               => LS
-    rule #sortJSONs(((KEY : VAL) , REST), LS) => #insertJSONKey((KEY : VAL), #sortJSONs(REST, LS))
-
-    syntax JSONs ::= #insertJSONKey ( JSON , JSONs ) [function]
- // -----------------------------------------------------------
-    rule #insertJSONKey( JS , .JSONs ) => JS , .JSONs
-    rule #insertJSONKey( (KEY : VAL) , ((KEY' : VAL') , REST) ) => (KEY : VAL)   , (KEY' : VAL')              , REST  requires KEY <String KEY'
-    rule #insertJSONKey( (KEY : VAL) , ((KEY' : VAL') , REST) ) => (KEY' : VAL') , #insertJSONKey((KEY : VAL) , REST) requires KEY >=String KEY'
-
-    syntax Bool ::= #isSorted ( JSONs ) [function]
- // ----------------------------------------------
-    rule #isSorted( .JSONs  ) => true
-    rule #isSorted( KEY : _ ) => true
-    rule #isSorted( (KEY : _) , (KEY' : VAL) , REST ) => KEY <=String KEY' andThenBool #isSorted((KEY' : VAL) , REST)
 ```
 
 ### Driving Execution
@@ -229,7 +210,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
  // -------------------------------------
     rule <k> run { .JSONs } => . ... </k>
     rule <k> run { TESTID : { TEST:JSONs } , TESTS }
-          => run ( TESTID : { #sortJSONs(TEST) } )
+          => run ( TESTID : { qsortJSONs(TEST) } )
           ~> #if #hasPost?( { TEST } ) #then .K #else exception #fi
           ~> clear
           ~> run { TESTS }
@@ -353,8 +334,8 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ] ... </k>
       requires DATA =/=String "transactions"
 
-    rule <k> check (KEY:String) : { JS:JSONs => #sortJSONs(JS) } ... </k>
-      requires KEY in (SetItem("callcreates")) andBool notBool #isSorted(JS)
+    rule <k> check (KEY:String) : { JS:JSONs => qsortJSONs(JS) } ... </k>
+      requires KEY in (SetItem("callcreates")) andBool notBool sortedJSONs(JS)
 
     rule <k> check TESTID : { "post" : POST } => check "account" : POST ~> failure TESTID ... </k>
     rule <k> check "account" : { ACCTID:Int : { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } ... </k>
