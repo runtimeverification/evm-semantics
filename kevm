@@ -303,14 +303,15 @@ args=()
 while [[ $# -gt 0 ]]; do
     arg="$1"
     case $arg in
-        --backend)    args+=("$arg" "$2") ; backend="$2"  ; shift 2 ;;
-        --debug)      args+=("$arg")      ; debug=true    ; shift   ;;
-        --dump)       args+=("$arg")      ; dump=true     ; shift   ;;
-        --no-unparse) args+=("$arg")      ; unparse=false ; shift   ;;
-        *)            break                                         ;;
+        --backend)    args+=("$arg" "$2") ; backend="$2"      ; shift 2 ;;
+        --backend-dir)                      backend_dir="$2"  ; shift 2 ;;
+        --debug)      args+=("$arg")      ; debug=true        ; shift   ;;
+        --dump)       args+=("$arg")      ; dump=true         ; shift   ;;
+        --no-unparse) args+=("$arg")      ; unparse=false     ; shift   ;;
+        *)            break                                             ;;
     esac
 done
-backend_dir="$defn_dir/$backend"
+backend_dir="${backend_dir:-$defn_dir/$backend}"
 
 # get the run file
 if [[ ! "$run_command" =~ web3* ]]; then
