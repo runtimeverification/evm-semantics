@@ -16,7 +16,7 @@ module EVM-DATA
     imports STRING-BUFFER
     imports MAP-SYMBOLIC
     imports COLLECTIONS
-    imports JSON
+    imports JSON-EXT
 ```
 
 ```{.k .concrete .bytes}
