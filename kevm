@@ -9,7 +9,7 @@ defn_dir="${KEVM_DEFN_DIR:-$build_dir/defn}"
 lib_dir="$build_dir/local/lib"
 k_release_dir="${K_RELEASE:-$kevm_dir/deps/k/k-distribution/target/release/k}"
 
-export PATH="$k_release_dir/lib/native/linux:$k_release_dir/lib/native/linux64:$k_release_dir/bin/:$PATH"
+export PATH="${defn_dir}/web3/build:$k_release_dir/lib/native/linux:$k_release_dir/lib/native/linux64:$k_release_dir/bin/:$PATH"
 export LD_LIBRARY_PATH="$k_release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
 
 test_logs="$build_dir/logs"
@@ -102,12 +102,12 @@ run_web3() {
     kevm_port=$(get_port)
     run_file='-'
     if $debug; then
-        gdb --args ${defn_dir}/web3/build/kevm-client --port "$web3_port" --kport "$kevm_port" "$@"
+        gdb --args kevm-client --port "$web3_port" --kport "$kevm_port" "$@"
     elif $dump; then
-      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client --dump --port "$web3_port" --kport "$kevm_port" "$@" 3>&2 2>&1 1>&3 \
+      exec -a "$0 web3" kevm-client --dump --port "$web3_port" --kport "$kevm_port" "$@" 3>&2 2>&1 1>&3 \
           | "$0" kast --backend web3 - pretty --input kore --sort GeneratedTopCell
     else
-      exec -a "$0 web3" ${defn_dir}/web3/build/kevm-client --port "$web3_port" --kport "$kevm_port" "$@" 2>/dev/null
+      exec -a "$0 web3" kevm-client --port "$web3_port" --kport "$kevm_port" "$@" 2>/dev/null
     fi
 }
 
