@@ -1,0 +1,448 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 19,
+  "result": "0xa30662929d2566f47c3f4ba2084e5150da473a37726d915d114ff339441c5661"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 24,
+  "result": "0xd9bab71bce9f00275f1dd15ce2005f4a21378ec39fea705b42d656b460f6ba39"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 37,
+  "result": "0x66ca04e47b10e869bf741ef3a74b77df7bf89378299e368092b5c2215e005707"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 49,
+  "result": "0x2523864f2acc0f42f7827d34259ad89b1ba9843536be14c1ee67b4a952d94957"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 61,
+  "result": "0x43055145fec5e00a93d4dacddef144af8aa96cef5c73943523d7b4182f69ddba"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 73,
+  "result": "0x242bb3f523f5b81e53cfaedcf1de7a8861a59c0a54eb914cabbf500092ba6ab4"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 85,
+  "result": "0x2b174de4896b196029ad27613821673976c67bccdf62324f3ac9d792d57969f6"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 94,
+  "result": "0xb2369a32d3cc85a28bc0f0d44a034ab2887899053dfb3e2d81d56cf0fb9a4918"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 106,
+  "result": "0xc16e8c6f6bde282d0771f3b6d615892fbe93c9b77efc12c79966545a7e0cb787"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 118,
+  "result": "0x0b2c893ec1c66c0fbd38b200345c0ac336de76ffd9f233c584ada6c59779dccf"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 130,
+  "result": "0x59aee7a9306c37b637a3d4fec71cbecc9a07a29a322ef55bad2a0b6c1cfcfb92"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 135,
+  "result": "0x31889640d350da64a340d5b2a1ca9a26157cb04700cdf1415bb6de4f7f735ea6"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1584448466212,
+  "result": "0x1"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 141,
+  "result": "0xda22f3c70338026f2c61d617fb46b95b6bda14282d24a67403eafad48f985ac8"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 145,
+  "result": "0x2c768ea399434d592fa6f51206ae5dfc1c6b3bcad518dc81258cd7fc7d36a3a9"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 148,
+  "result": "0x50e395df95bbd0d139890fc76369c29056123bcaca2c28691fa549230770647e"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 152,
+  "result": "0x2ba7df547948a369794eb595675a4b3c5e314265e6ced8b27289ed936a827ad4",
+  "error": {
+    "message": "VM Exception while processing transaction: revert MAKE_LEAF",
+    "code": -32000,
+    "data": {
+      "0x2ba7df547948a369794eb595675a4b3c5e314265e6ced8b27289ed936a827ad4": {
+        "error": "revert",
+        "program_counter": 5182,
+        "return": "0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000094d414b455f4c4541460000000000000000000000000000000000000000000000",
+        "reason": "MAKE_LEAF"
+      },
+    }
+  }
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1584448466811,
+  "error": {
+    "message": "VM Exception while processing transaction: revert MAKE_LEAF",
+    "code": -32000,
+    "data": {
+      "0xf1ea9d3d1c0d868952bdca9c9ec5ae358f077d6a4aaf5ed5ea4d5a0b53c4c85f": {
+        "error": "revert",
+        "program_counter": 5182,
+        "return": "0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000094d414b455f4c4541460000000000000000000000000000000000000000000000",
+        "reason": "MAKE_LEAF"
+      },
+    }
+  }
+}
+{
+  "jsonrpc": "2.0",
+  "id": 156,
+  "result": "0x2a471349ae2527f22ad8106c4859adbfbab1924b90515bd19c62b6a1bdca6396",
+  "error": {
+    "message": "VM Exception while processing transaction: revert MAKE_STEP",
+    "code": -32000,
+    "data": {
+      "0x2a471349ae2527f22ad8106c4859adbfbab1924b90515bd19c62b6a1bdca6396": {
+        "error": "revert",
+        "program_counter": 5182,
+        "return": "0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000094d414b455f535445500000000000000000000000000000000000000000000000",
+        "reason": "MAKE_STEP"
+      },
+    }
+  }
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1584448466906,
+  "error": {
+    "message": "VM Exception while processing transaction: revert MAKE_STEP",
+    "code": -32000,
+    "data": {
+      "0xded7a6175f0cbfbe1e1e5df98b335142c20197eea2448fe3cc98c38c75f62c68": {
+        "error": "revert",
+        "program_counter": 5182,
+        "return": "0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000094d414b455f535445500000000000000000000000000000000000000000000000",
+        "reason": "MAKE_STEP"
+      },
+    }
+  }
+}
+{
+  "jsonrpc": "2.0",
+  "id": 160,
+  "result": "0x6bfc7f241ba051bfbe6eaa0b8e5b18d9fdf249ee8fe5c0c90b4d7738a518b576",
+  "error": {
+    "message": "VM Exception while processing transaction: revert INV_STAKER",
+    "code": -32000,
+    "data": {
+      "0x6bfc7f241ba051bfbe6eaa0b8e5b18d9fdf249ee8fe5c0c90b4d7738a518b576": {
+        "error": "revert",
+        "program_counter": 5182,
+        "return": "0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a494e565f5354414b455200000000000000000000000000000000000000000000",
+        "reason": "INV_STAKER"
+      },
+    }
+  }
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1584448466997,
+  "error": {
+    "message": "VM Exception while processing transaction: revert INV_STAKER",
+    "code": -32000,
+    "data": {
+      "0x7f9836e7d270f3f0eda5c37095f0864f91c4add7db0cdf6b85af96c1eae9e476": {
+        "error": "revert",
+        "program_counter": 5182,
+        "return": "0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a494e565f5354414b455200000000000000000000000000000000000000000000",
+        "reason": "INV_STAKER"
+      },
+    }
+  }
+}
+{
+  "jsonrpc": "2.0",
+  "id": 163,
+  "result": "0x5e394b48fb69e81e1d7ca2f8920a0fe1ea9a56b78e48396684d2b6b0c6388c6e",
+  "error": {
+    "message": "VM Exception while processing transaction: revert MAKE_TIME",
+    "code": -32000,
+    "data": {
+      "0x5e394b48fb69e81e1d7ca2f8920a0fe1ea9a56b78e48396684d2b6b0c6388c6e": {
+        "error": "revert",
+        "program_counter": 5182,
+        "return": "0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000094d414b455f54494d450000000000000000000000000000000000000000000000",
+        "reason": "MAKE_TIME"
+      },
+    }
+  }
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1584448467080,
+  "error": {
+    "message": "VM Exception while processing transaction: revert MAKE_TIME",
+    "code": -32000,
+    "data": {
+      "0xac247dbc979f83613f4db4b9eefdcef6a58e561190bd781943e2d9f1dededa8b": {
+        "error": "revert",
+        "program_counter": 5182,
+        "return": "0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000094d414b455f54494d450000000000000000000000000000000000000000000000",
+        "reason": "MAKE_TIME"
+      },
+    }
+  }
+}
+{
+  "jsonrpc": "2.0",
+  "id": 167,
+  "result": "0xe9653ab742bf93b8fa3a86d2cf5ec39e3172b17c0a6c6cc5cc53b954455b8eda",
+  "error": {
+    "message": "VM Exception while processing transaction: revert MAKE_MESSAGES",
+    "code": -32000,
+    "data": {
+      "0xe9653ab742bf93b8fa3a86d2cf5ec39e3172b17c0a6c6cc5cc53b954455b8eda": {
+        "error": "revert",
+        "program_counter": 5182,
+        "return": "0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000d4d414b455f4d4553534147455300000000000000000000000000000000000000",
+        "reason": "MAKE_MESSAGES"
+      },
+    }
+  }
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1584448467149,
+  "error": {
+    "message": "VM Exception while processing transaction: revert MAKE_MESSAGES",
+    "code": -32000,
+    "data": {
+      "0x14bf95378dd4427e4bde71e5b6936bc61aadabfc2380393d6fac3fa4e1109abe": {
+        "error": "revert",
+        "program_counter": 5182,
+        "return": "0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000d4d414b455f4d4553534147455300000000000000000000000000000000000000",
+        "reason": "MAKE_MESSAGES"
+      },
+    }
+  }
+}
+{
+  "jsonrpc": "2.0",
+  "id": 171,
+  "result": "0x4755423b14d10fc4c8f3956610169f5df4ee04840079ff7edbec05b725d104d2",
+  "error": {
+    "message": "VM Exception while processing transaction: revert MAKE_MESSAGE_CNT",
+    "code": -32000,
+    "data": {
+      "0x4755423b14d10fc4c8f3956610169f5df4ee04840079ff7edbec05b725d104d2": {
+        "error": "revert",
+        "program_counter": 5182,
+        "return": "0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000104d414b455f4d4553534147455f434e5400000000000000000000000000000000",
+        "reason": "MAKE_MESSAGE_CNT"
+      },
+    }
+  }
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1584448467209,
+  "error": {
+    "message": "VM Exception while processing transaction: revert MAKE_MESSAGE_CNT",
+    "code": -32000,
+    "data": {
+      "0x5830fc9cafc017624ac780622f323f9a0c2dec4dfb8219794d0f837f79715b8b": {
+        "error": "revert",
+        "program_counter": 5182,
+        "return": "0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000104d414b455f4d4553534147455f434e5400000000000000000000000000000000",
+        "reason": "MAKE_MESSAGE_CNT"
+      },
+    }
+  }
+}
+{
+  "jsonrpc": "2.0",
+  "id": 174,
+  "result": "0x95f3ad86a7d7ebc3065335299e53978635d3a605b3780118efdc992abc6cf137"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 178,
+  "result": "0x0000000000000000000000000000000000000000000000000000000000000001"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 181,
+  "result": "0xb12fd08f319f3f975ba86f906a2c967cc12b085e2efab66ca739e007f14376fa"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 184,
+  "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 186,
+  "result": "0x0000000000000000000000000000000000000000000000000000000000000001"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 188,
+  "result": "0x0000000000000000000000000000000000000000000000000000000000000001"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 190,
+  "result": "0x0000000000000000000000000000000000000000000000000000000000000001"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1584448467480,
+  "result": "0x0"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1584448467490,
+  "result": "0x0"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 1584448467509,
+  "result": "0x0"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 193,
+  "result": "0x00e395050c151dfc3423d2c7f88522d3c852d197ac7d9246bdd23e705a22b071"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 196,
+  "result": "0x07297feefa1dfd20791cde3a3514b0504da9e9c7fad1abf5874b4077020bd5d9"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 198,
+  "result": "0x0000000000000000000000000000000000000000000000000000000000000001"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 201,
+  "result": "0x0000000000000000000000000000000000000000000000000000000000000001"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 203,
+  "result": "0x5b55247ffc39b299f538b2d5357fdd0fd04294a308baacb3c4a87c27822c85b9"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 206,
+  "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+}
+{
+  "jsonrpc": "2.0",
+  "id": 210,
+  "result": "0xa8d6c96d8fa08f2aa2ce56cca78d7f51f2d2082a846852cd03cfa38dc680dedd"
+}
