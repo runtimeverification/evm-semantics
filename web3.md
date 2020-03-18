@@ -492,10 +492,10 @@ WEB3 JSON RPC
  // -----------------------------------
     rule <k> #popNetworkState => . ... </k>
          <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts>}) => .List ) </snapshots>
-         <network>    ( _ => NETWORK )   </network>
-         <block>      ( _ => BLOCK )     </block>
-         <blockList>  ( _ => BLOCKLIST ) </blockList>
-         <txReceipts> ( _ => RECEIPTS )  </txReceipts>
+         <network>    _ => NETWORK   </network>
+         <block>      _ => BLOCK     </block>
+         <blockList>  _ => BLOCKLIST </blockList>
+         <txReceipts> _ => RECEIPTS  </txReceipts>
 
     syntax KItem ::= "#evm_revert"
  // ------------------------------
