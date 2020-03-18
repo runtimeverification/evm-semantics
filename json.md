@@ -103,8 +103,8 @@ module JSON-RPC
 
     configuration
       <json-rpc>
-        <web3socket> $SOCK:Int </web3socket>
-        <web3clientsocket> 0:IOInt </web3clientsocket>
+        <web3input> $INPUT:Int </web3input>
+        <web3output> $OUTPUT:Int </web3output>
         <web3request>
           <jsonrpc> "":JSON </jsonrpc>
           <callid> 0:JSON </callid>
