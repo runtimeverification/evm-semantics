@@ -200,14 +200,14 @@ WEB3 JSON RPC
     syntax KItem ::= #sendResponse ( JSONs )
  // ----------------------------------------
     rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", "id": CALLID, J }, FD) ~> getRequest() </k>
-         <callid>            CALLID </callid>
-         <web3output> FD </web3output>
-         <batch>             undef  </batch>
+         <callid>     CALLID </callid>
+         <web3output> FD     </web3output>
+         <batch>      undef  </batch>
       requires CALLID =/=K undef
 
     rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", J }, FD) ~> getRequest() </k>
          <callid>            undef </callid>
-         <web3output> FD </web3output>
+         <web3output>        FD    </web3output>
          <batch>             undef </batch>
          <web3notifications> true  </web3notifications>
 
