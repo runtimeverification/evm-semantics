@@ -233,10 +233,10 @@ build-llvm:    $(llvm_kompiled)
 # Java Backend
 
 $(java_kompiled): $(java_files)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend java              \
-	                 --syntax-module $(SYNTAX_MODULE) $(java_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(java_dir) -I $(java_dir)                           \
-	                 $(KOMPILE_OPTS)
+	kompile --debug --main-module $(MAIN_MODULE) --backend java              \
+	        --syntax-module $(SYNTAX_MODULE) $(java_dir)/$(MAIN_DEFN_FILE).k \
+	        --directory $(java_dir) -I $(java_dir)                           \
+	        $(KOMPILE_OPTS)
 
 # Imperative Specs Backend
 
@@ -245,28 +245,28 @@ $(specs_kompiled): MAIN_MODULE=EVM-IMP-SPECS
 $(specs_kompiled): SYNTAX_MODULE=EVM-IMP-SPECS
 
 $(specs_kompiled): $(specs_files)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend java \
-	                 --syntax-module $(SYNTAX_MODULE) $(specs_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(specs_dir) -I $(specs_dir) \
-	                 $(KOMPILE_OPTS)
+	kompile --debug --main-module $(MAIN_MODULE) --backend java \
+	        --syntax-module $(SYNTAX_MODULE) $(specs_dir)/$(MAIN_DEFN_FILE).k \
+	        --directory $(specs_dir) -I $(specs_dir) \
+	        $(KOMPILE_OPTS)
 
 # Haskell Backend
 
 $(haskell_kompiled): $(haskell_files)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend haskell --hook-namespaces KRYPTO \
-	                 --syntax-module $(SYNTAX_MODULE) $(haskell_dir)/$(MAIN_DEFN_FILE).k             \
-	                 --directory $(haskell_dir) -I $(haskell_dir)                                    \
-	                 $(KOMPILE_OPTS)
+	kompile --debug --main-module $(MAIN_MODULE) --backend haskell --hook-namespaces KRYPTO \
+	        --syntax-module $(SYNTAX_MODULE) $(haskell_dir)/$(MAIN_DEFN_FILE).k             \
+	        --directory $(haskell_dir) -I $(haskell_dir)                                    \
+	        $(KOMPILE_OPTS)
 
 # Node Backend
 
 $(node_kore): $(node_files)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
-	                 --syntax-module $(SYNTAX_MODULE) $(node_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(node_dir) -I $(node_dir) -I $(node_dir)            \
-	                 --hook-namespaces "KRYPTO BLOCKCHAIN"                            \
-	                 --no-llvm-kompile                                                \
-	                 $(KOMPILE_OPTS)
+	kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
+	        --syntax-module $(SYNTAX_MODULE) $(node_dir)/$(MAIN_DEFN_FILE).k \
+	        --directory $(node_dir) -I $(node_dir) -I $(node_dir)            \
+	        --hook-namespaces "KRYPTO BLOCKCHAIN"                            \
+	        --no-llvm-kompile                                                \
+	        $(KOMPILE_OPTS)
 
 $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
 	@mkdir -p $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin
@@ -279,12 +279,12 @@ $(node_kompiled): $(node_kore) $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/pro
 # Web3 Backend
 
 $(web3_kore): $(web3_files)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
-	                 --syntax-module $(SYNTAX_MODULE) $(web3_dir)/$(MAIN_DEFN_FILE).k \
-	                 --directory $(web3_dir) -I $(web3_dir)                           \
-	                 --hook-namespaces "KRYPTO JSON"                                  \
-	                 --no-llvm-kompile                                                \
-	                 $(KOMPILE_OPTS)
+	kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
+	        --syntax-module $(SYNTAX_MODULE) $(web3_dir)/$(MAIN_DEFN_FILE).k \
+	        --directory $(web3_dir) -I $(web3_dir)                           \
+	        --hook-namespaces "KRYPTO JSON"                                  \
+	        --no-llvm-kompile                                                \
+	        $(KOMPILE_OPTS)
 
 $(web3_kompiled): $(web3_kore) $(libff_out)
 	@mkdir -p $(web3_dir)/build
@@ -293,16 +293,16 @@ $(web3_kompiled): $(web3_kore) $(libff_out)
 # LLVM Backend
 
 $(llvm_kompiled): $(llvm_files) $(libff_out)
-	$(K_BIN)/kompile --debug --main-module $(MAIN_MODULE) --backend llvm                                  \
-	                 --syntax-module $(SYNTAX_MODULE) $(llvm_dir)/$(MAIN_DEFN_FILE).k                     \
-	                 --directory $(llvm_dir) -I $(llvm_dir) -I $(llvm_dir)                                \
-	                 --hook-namespaces KRYPTO                                                             \
-	                 $(KOMPILE_OPTS)                                                                      \
-	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp                                       \
-	                 -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp                                       \
-	                 -ccopt -g -ccopt -std=c++14                                                          \
-	                 -ccopt -L$(LIBRARY_PATH)                                                             \
-	                 -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS))
+	kompile --debug --main-module $(MAIN_MODULE) --backend llvm                                  \
+	        --syntax-module $(SYNTAX_MODULE) $(llvm_dir)/$(MAIN_DEFN_FILE).k                     \
+	        --directory $(llvm_dir) -I $(llvm_dir) -I $(llvm_dir)                                \
+	        --hook-namespaces KRYPTO                                                             \
+	        $(KOMPILE_OPTS)                                                                      \
+	        -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp                                       \
+	        -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp                                       \
+	        -ccopt -g -ccopt -std=c++14                                                          \
+	        -ccopt -L$(LIBRARY_PATH)                                                             \
+	        -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS))
 
 # Installing
 # ----------
