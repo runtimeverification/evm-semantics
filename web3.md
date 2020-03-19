@@ -138,13 +138,11 @@ WEB3 JSON RPC
     syntax EthereumSimulation ::= accept() [symbol]
  // -----------------------------------------------
     rule <k> accept() => getRequest() ... </k>
-         <web3socket> SOCK </web3socket>
-         <web3clientsocket> _ => #accept(SOCK) </web3clientsocket>
 
     syntax KItem ::= getRequest()
  // -----------------------------
-    rule <k> getRequest() => #loadRPCCall(#getRequest(SOCK)) ... </k>
-         <web3clientsocket> SOCK </web3clientsocket>
+    rule <k> getRequest() => #loadRPCCall(#getRequest(FD)) ... </k>
+         <web3input> FD </web3input>
          <batch> _ => undef </batch>
 
     syntax IOJSON ::= #getRequest(Int) [function, hook(JSON.read)]
@@ -164,8 +162,7 @@ WEB3 JSON RPC
          <method>  _ => #getJSON("method" , J) </method>
          <params>  _ => #getJSON("params" , J) </params>
 
-    rule <k> #loadRPCCall(#EOF) => #shutdownWrite(SOCK) ~> #close(SOCK) ~> accept() ... </k>
-         <web3clientsocket> SOCK </web3clientsocket>
+    rule <k> #loadRPCCall(#EOF) => accept() ... </k>
 
     rule <k> #loadRPCCall([ _, _ ] #as J) => #loadFromBatch ... </k>
          <batch> _ => J </batch>
@@ -182,9 +179,9 @@ WEB3 JSON RPC
     rule <k> #loadFromBatch ~> _ => #loadRPCCall(J) </k>
          <batch> [ J , JS => JS ] </batch>
 
-    rule <k> #loadFromBatch ~> _ => #putResponse(List2JSON(RESPONSE), SOCK) ~> getRequest() </k>
+    rule <k> #loadFromBatch ~> _ => #putResponse(List2JSON(RESPONSE), FD) ~> getRequest() </k>
          <batch> [ .JSONs ] </batch>
-         <web3clientsocket> SOCK </web3clientsocket>
+         <web3output> FD </web3output>
          <web3response> RESPONSE </web3response>
       requires size(RESPONSE) >Int 0
 
@@ -202,15 +199,15 @@ WEB3 JSON RPC
 
     syntax KItem ::= #sendResponse ( JSONs )
  // ----------------------------------------
-    rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", "id": CALLID, J }, SOCK) ~> getRequest() </k>
-         <callid>            CALLID </callid>
-         <web3clientsocket>  SOCK   </web3clientsocket>
-         <batch>             undef  </batch>
+    rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", "id": CALLID, J }, FD) ~> getRequest() </k>
+         <callid>     CALLID </callid>
+         <web3output> FD     </web3output>
+         <batch>      undef  </batch>
       requires CALLID =/=K undef
 
-    rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", J }, SOCK) ~> getRequest() </k>
+    rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", J }, FD) ~> getRequest() </k>
          <callid>            undef </callid>
-         <web3clientsocket>  SOCK  </web3clientsocket>
+         <web3output>        FD    </web3output>
          <batch>             undef </batch>
          <web3notifications> true  </web3notifications>
 
@@ -344,10 +341,10 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#firefly_shutdown"
  // ------------------------------------
-    rule <k> #firefly_shutdown ~> _ => #putResponse({ "jsonrpc": "2.0" , "id": CALLID , "result": "Firefly client shutting down!" }, SOCK) </k>
+    rule <k> #firefly_shutdown ~> _ => #putResponse({ "jsonrpc": "2.0" , "id": CALLID , "result": "Firefly client shutting down!" }, FD) </k>
          <web3shutdownable> true </web3shutdownable>
          <callid> CALLID </callid>
-         <web3clientsocket> SOCK </web3clientsocket>
+         <web3output> FD </web3output>
          <exit-code> _ => 0 </exit-code>
 
     rule <k> #firefly_shutdown => #rpcResponseError(-32800, "Firefly client not started with `--shutdownable`!") ... </k>
@@ -495,10 +492,10 @@ WEB3 JSON RPC
  // -----------------------------------
     rule <k> #popNetworkState => . ... </k>
          <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts>}) => .List ) </snapshots>
-         <network>    ( _ => NETWORK )   </network>
-         <block>      ( _ => BLOCK )     </block>
-         <blockList>  ( _ => BLOCKLIST ) </blockList>
-         <txReceipts> ( _ => RECEIPTS )  </txReceipts>
+         <network>    _ => NETWORK   </network>
+         <block>      _ => BLOCK     </block>
+         <blockList>  _ => BLOCKLIST </blockList>
+         <txReceipts> _ => RECEIPTS  </txReceipts>
 
     syntax KItem ::= "#evm_revert"
  // ------------------------------
