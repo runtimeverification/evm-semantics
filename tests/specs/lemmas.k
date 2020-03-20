@@ -274,4 +274,7 @@ module LEMMAS-HASKELL [symbolic, kore]
     // Defineness axiom for #buf
     rule #Ceil(#buf(@SIZE, @DATA)) => {(@SIZE >=Int 0) #Equals true} #And #Ceil(@SIZE) #And #Ceil(@DATA) [anywhere]
 
+    rule bool2Word( B:Bool ) ==Int 1 => B         [simplification]
+    rule bool2Word( B:Bool ) ==Int 0 => notBool B [simplification]
+
 endmodule
