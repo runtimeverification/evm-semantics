@@ -30,18 +30,6 @@ pretty_diff() {
     git --no-pager diff --no-index --ignore-all-space "$@"
 }
 
-get_port() {
-    python3 -c """
-import socket
-
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind(('', 0))
-addr = s.getsockname()
-print(str(addr[1]))
-s.close()
-"""
-}
-
 # Runners
 # -------
 
@@ -99,15 +87,14 @@ run_search() {
 run_web3() {
     local web3_port
     web3_port="$1" ; shift
-    kevm_port=$(get_port)
     run_file='-'
     if $debug; then
-        gdb --args kevm-client --port "$web3_port" --kport "$kevm_port" "$@"
+        gdb --args kevm-client --port "$web3_port" "$@"
     elif $dump; then
-      exec -a "$0 web3" kevm-client --dump --port "$web3_port" --kport "$kevm_port" "$@" 3>&2 2>&1 1>&3 \
+      exec -a "$0 web3" kevm-client --dump --port "$web3_port" "$@" 3>&2 2>&1 1>&3 \
           | "$0" kast --backend web3 - pretty --input kore --sort GeneratedTopCell
     else
-      exec -a "$0 web3" kevm-client --port "$web3_port" --kport "$kevm_port" "$@" 2>/dev/null
+      exec -a "$0 web3" kevm-client --port "$web3_port" "$@" 2>/dev/null
     fi
 }
 
