@@ -1,7 +1,9 @@
 requires "asm.k"
+requires "../lemmas.k"
 
 module VERIFICATION
     imports EVM-ASSEMBLY
+    imports LEMMAS
 
     rule #sizeWordStack ( WS , N:Int )
       => N +Int #sizeWordStack ( WS , 0 )
