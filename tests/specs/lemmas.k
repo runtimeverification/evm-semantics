@@ -8,7 +8,14 @@ module LEMMAS
     rule WS ++ .ByteArray => WS  [simplification]
     rule .ByteArray ++ WS => WS  [simplification]
 
+    //Byte array store operations sorting. Slices with lower index first. Helps applying rule below.
+    rule MEM [ N := BUF:ByteArray ] [ M := BUF' ] => MEM [ M := BUF' ] [ N := BUF ]
+      requires N >Int M andBool N -Int M >=Int #sizeByteArray(BUF')                                               [simplification]
+
     rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeByteArray(BUF) ==Int #sizeByteArray(BUF')  [simplification]
+    //when BUF1 and BUF2 partially overlap and cannot be sorted by sorting rule.
+    rule MEM [ N := BUF1 ] [ M := BUF2:ByteArray ] [ N := BUF3 ] => MEM [ M := BUF2 ] [ N := BUF3 ]
+      requires #sizeByteArray(BUF1) ==Int #sizeByteArray(BUF3)                                                    [simplification]
 
     rule BUF [ L .. W ] => .ByteArray requires W <=Int 0                    [simplification]
     rule BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
@@ -19,6 +26,12 @@ module LEMMAS
     rule #sizeByteArray(#buf(SIZE, _)[START .. WIDTH]) => WIDTH
       requires #range(0 <= START < SIZE)
        andBool #range(0 < WIDTH <= SIZE -Int START)                                                       [simplification]
+
+    rule #sizeByteArray(#range(_,_, N)) => N                                                              [simplification]
+
+    //Todo custom ==K unification doesn't work in Haskell yet
+    //++ unification
+    rule #buf(N, A) ++ BUF1 ==K #buf(N, B) ++ BUF2 => #buf(N, A) ==K #buf(N, B) andBool BUF1 ==K BUF2     [simplification]
 
 endmodule
 
