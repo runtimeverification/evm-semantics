@@ -1809,7 +1809,7 @@ Retrieving logs
          <params> [ { PARAMS => "toBlock": "latest", PARAMS } , .JSONs ] </params>
       requires #getJSON("toBlock", { PARAMS }) ==K undef
 
-    rule <k> #eth_getLogs => #getLogs(#parseBlockIdentifier(#getString("fromBlock", { PARAMS })), #parseBlockIdentifier(#getString("toBlock", { PARAMS })), .List) ... </k>
+    rule <k> #eth_getLogs => #getLogs(#parseBlockIdentifier(#getJSON("fromBlock", { PARAMS })), #parseBlockIdentifier(#getJSON("toBlock", { PARAMS })), .List) ... </k>
          <params> [ { PARAMS } , .JSONs ] </params>
       requires #getJSON("fromBlock", { PARAMS }) =/=K undef
        andBool #getJSON("toBlock"  , { PARAMS }) =/=K undef
