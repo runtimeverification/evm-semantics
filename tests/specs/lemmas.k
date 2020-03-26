@@ -277,4 +277,29 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule bool2Word( B:Bool ) ==Int 1 => B         [simplification]
     rule bool2Word( B:Bool ) ==Int 0 => notBool B [simplification]
 
+    // Arithmetic simplification
+    
+    // Haskell only:
+    // rule (C -Int I2) -Int I3 => C -Int (I2 +Int I3) [concrete(I2, I3), symbolic(C), simplification]
+   
+    // Haskell + Java:
+    rule I +Int B => B +Int I [concrete(I), symbolic(B), priority(51), simplification]
+    rule A -Int I => A +Int (0 -Int I) [concrete(I), symbolic(A), simplification]
+    rule (A +Int I2) +Int I3 => A +Int (I2 +Int I3) [concrete(I2, I3), symbolic(A), simplification]
+    rule I1 +Int (B +Int I3) => B +Int (I1 +Int I3) [concrete(I1, I3), symbolic(B), simplification]
+    rule I1 -Int (B +Int I3) => (I1 -Int I3) -Int B [concrete(I1, I3), symbolic(B), simplification]
+    rule I1 +Int (I2 +Int C) => (I1 +Int I2) +Int C [concrete(I1, I2), symbolic(C), simplification]
+    rule I1 +Int (I2 -Int C) => (I1 +Int I2) -Int C [concrete(I1, I2), symbolic(C), simplification]
+
+    // Todo:
+    
+    // rule (I1 -Int B) +Int I3 => (I1 +Int I3) -Int B when #isConcrete(I1) andBool notBool #isConcrete(B) andBool #isConcrete(I3)  [simplification]
+
+    // rule I1 -Int (I2 +Int C) => (I1 -Int I2) -Int C when #isConcrete(I1) andBool #isConcrete(I2) andBool notBool #isConcrete(C)  [simplification]
+    // rule I1 -Int (I2 -Int C) => (I1 -Int I2) +Int C when #isConcrete(I1) andBool #isConcrete(I2) andBool notBool #isConcrete(C)  [simplification]
+
+    // rule I1 &Int (I2 &Int C) => (I1 &Int I2) &Int C when #isConcrete(I1) andBool #isConcrete(I2) andBool notBool #isConcrete(C)  [simplification]
+
+
+
 endmodule
