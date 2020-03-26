@@ -810,6 +810,9 @@ Retrieving Blocks
 ```k
     syntax KItem ::= "#eth_getBlockByNumber"
  // ----------------------------------------
+    rule <k> #eth_getBlockByNumber ... </k>
+         <params> [ (null => "0x0"), _:Bool, .JSONs ] </params>
+
     rule <k> #eth_getBlockByNumber => #eth_getBlockByNumber_finalize( #getBlockByNumber(#parseBlockIdentifier(TAG), BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>})) ... </k>
          <params> [ TAG:String, TXOUT:Bool, .JSONs ] </params>
          <blockList> BLOCKLIST </blockList>
