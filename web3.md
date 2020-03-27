@@ -138,13 +138,11 @@ WEB3 JSON RPC
     syntax EthereumSimulation ::= accept() [symbol]
  // -----------------------------------------------
     rule <k> accept() => getRequest() ... </k>
-         <web3socket> SOCK </web3socket>
-         <web3clientsocket> _ => #accept(SOCK) </web3clientsocket>
 
     syntax KItem ::= getRequest()
  // -----------------------------
-    rule <k> getRequest() => #loadRPCCall(#getRequest(SOCK)) ... </k>
-         <web3clientsocket> SOCK </web3clientsocket>
+    rule <k> getRequest() => #loadRPCCall(#getRequest(FD)) ... </k>
+         <web3input> FD </web3input>
          <batch> _ => undef </batch>
 
     syntax IOJSON ::= #getRequest(Int) [function, hook(JSON.read)]
@@ -164,8 +162,7 @@ WEB3 JSON RPC
          <method>  _ => #getJSON("method" , J) </method>
          <params>  _ => #getJSON("params" , J) </params>
 
-    rule <k> #loadRPCCall(#EOF) => #shutdownWrite(SOCK) ~> #close(SOCK) ~> accept() ... </k>
-         <web3clientsocket> SOCK </web3clientsocket>
+    rule <k> #loadRPCCall(#EOF) => accept() ... </k>
 
     rule <k> #loadRPCCall([ _, _ ] #as J) => #loadFromBatch ... </k>
          <batch> _ => J </batch>
@@ -182,9 +179,9 @@ WEB3 JSON RPC
     rule <k> #loadFromBatch ~> _ => #loadRPCCall(J) </k>
          <batch> [ J , JS => JS ] </batch>
 
-    rule <k> #loadFromBatch ~> _ => #putResponse(List2JSON(RESPONSE), SOCK) ~> getRequest() </k>
+    rule <k> #loadFromBatch ~> _ => #putResponse(List2JSON(RESPONSE), FD) ~> getRequest() </k>
          <batch> [ .JSONs ] </batch>
-         <web3clientsocket> SOCK </web3clientsocket>
+         <web3output> FD </web3output>
          <web3response> RESPONSE </web3response>
       requires size(RESPONSE) >Int 0
 
@@ -202,15 +199,15 @@ WEB3 JSON RPC
 
     syntax KItem ::= #sendResponse ( JSONs )
  // ----------------------------------------
-    rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", "id": CALLID, J }, SOCK) ~> getRequest() </k>
-         <callid>            CALLID </callid>
-         <web3clientsocket>  SOCK   </web3clientsocket>
-         <batch>             undef  </batch>
+    rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", "id": CALLID, J }, FD) ~> getRequest() </k>
+         <callid>     CALLID </callid>
+         <web3output> FD     </web3output>
+         <batch>      undef  </batch>
       requires CALLID =/=K undef
 
-    rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", J }, SOCK) ~> getRequest() </k>
+    rule <k> #sendResponse(J) ~> _ => #putResponse({ "jsonrpc": "2.0", J }, FD) ~> getRequest() </k>
          <callid>            undef </callid>
-         <web3clientsocket>  SOCK  </web3clientsocket>
+         <web3output>        FD    </web3output>
          <batch>             undef </batch>
          <web3notifications> true  </web3notifications>
 
@@ -344,10 +341,10 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#firefly_shutdown"
  // ------------------------------------
-    rule <k> #firefly_shutdown ~> _ => #putResponse({ "jsonrpc": "2.0" , "id": CALLID , "result": "Firefly client shutting down!" }, SOCK) </k>
+    rule <k> #firefly_shutdown ~> _ => #putResponse({ "jsonrpc": "2.0" , "id": CALLID , "result": "Firefly client shutting down!" }, FD) </k>
          <web3shutdownable> true </web3shutdownable>
          <callid> CALLID </callid>
-         <web3clientsocket> SOCK </web3clientsocket>
+         <web3output> FD </web3output>
          <exit-code> _ => 0 </exit-code>
 
     rule <k> #firefly_shutdown => #rpcResponseError(-32800, "Firefly client not started with `--shutdownable`!") ... </k>
@@ -495,10 +492,10 @@ WEB3 JSON RPC
  // -----------------------------------
     rule <k> #popNetworkState => . ... </k>
          <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts>}) => .List ) </snapshots>
-         <network>    ( _ => NETWORK )   </network>
-         <block>      ( _ => BLOCK )     </block>
-         <blockList>  ( _ => BLOCKLIST ) </blockList>
-         <txReceipts> ( _ => RECEIPTS )  </txReceipts>
+         <network>    _ => NETWORK   </network>
+         <block>      _ => BLOCK     </block>
+         <blockList>  _ => BLOCKLIST </blockList>
+         <txReceipts> _ => RECEIPTS  </txReceipts>
 
     syntax KItem ::= "#evm_revert"
  // ------------------------------
@@ -522,8 +519,11 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#evm_increaseTime"
  // ------------------------------------
+    rule <k> #evm_increaseTime ... </k>
+         <params> [ (null => 0), .JSONs ] </params>
+
     rule <k> #evm_increaseTime => #rpcResponseSuccess(Int2String(TS +Int DATA)) ... </k>
-         <params> [ DATA:Int, .JSONs ] </params>
+         <params>    [ DATA:Int, .JSONs ]           </params>
          <timestamp> ( TS:Int => ( TS +Int DATA ) ) </timestamp>
 
     syntax KItem ::= "#eth_newBlockFilter"
@@ -645,16 +645,14 @@ eth_sendTransaction
 
     syntax JSON ::= #generateException( String, Int, Bytes, EndStatusCode ) [function]
  // ----------------------------------------------------------------------------------
-    rule #generateException(TXHASH, PCOUNT, RD, SC) => { "message": "VM Exception while processing transaction: " +String StatusCode2TruffleString(SC),
+    rule #generateException(TXHASH, PCOUNT, RD, SC) => { "message": "VM Exception while processing transaction: " +String StatusCode2TruffleString(SC) +String " " +String #parseReason(RD),
                                                       "code": -32000,
                                                       "data": {
                                                           TXHASH: {
                                                           "error": StatusCode2TruffleString(SC),
                                                           "program_counter": PCOUNT +Int 1,
                                                           "return": #unparseDataByteArray( RD ),
-                                                          "reason": Bytes2String(substrBytes(RD,
-                                                                                             36 +Int #asInteger(substrBytes(RD,5,36)),
-                                                                                             36 +Int #asInteger(substrBytes(RD,5,36)) +Int #asInteger(substrBytes(RD,37,68))))
+                                                          "reason": #parseReason(RD)
                                                         }
                                                       }
                                                     }
@@ -671,6 +669,11 @@ eth_sendTransaction
                                                     }
       requires notBool lengthBytes(RD) >Int 68
 
+    syntax String ::= #parseReason ( Bytes ) [function]
+ // ---------------------------------------------------
+    rule #parseReason(RD) => Bytes2String(substrBytes(RD,
+                              36 +Int #asInteger(substrBytes(RD,5,36)),
+                              36 +Int #asInteger(substrBytes(RD,5,36)) +Int #asInteger(substrBytes(RD,37,68))))
 ```
 
 -   signTX TXID ACCTFROM: Signs the transaction with TXID using ACCTFROM's private key
@@ -807,6 +810,9 @@ Retrieving Blocks
 ```k
     syntax KItem ::= "#eth_getBlockByNumber"
  // ----------------------------------------
+    rule <k> #eth_getBlockByNumber ... </k>
+         <params> [ (null => "0x0"), _:Bool, .JSONs ] </params>
+
     rule <k> #eth_getBlockByNumber => #eth_getBlockByNumber_finalize( #getBlockByNumber(#parseBlockIdentifier(TAG), BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>})) ... </k>
          <params> [ TAG:String, TXOUT:Bool, .JSONs ] </params>
          <blockList> BLOCKLIST </blockList>
@@ -1803,7 +1809,7 @@ Retrieving logs
          <params> [ { PARAMS => "toBlock": "latest", PARAMS } , .JSONs ] </params>
       requires #getJSON("toBlock", { PARAMS }) ==K undef
 
-    rule <k> #eth_getLogs => #getLogs(#parseBlockIdentifier(#getString("fromBlock", { PARAMS })), #parseBlockIdentifier(#getString("toBlock", { PARAMS })), .List) ... </k>
+    rule <k> #eth_getLogs => #getLogs(#parseBlockIdentifier(#getJSON("fromBlock", { PARAMS })), #parseBlockIdentifier(#getJSON("toBlock", { PARAMS })), .List) ... </k>
          <params> [ { PARAMS } , .JSONs ] </params>
       requires #getJSON("fromBlock", { PARAMS }) =/=K undef
        andBool #getJSON("toBlock"  , { PARAMS }) =/=K undef

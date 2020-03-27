@@ -2,7 +2,6 @@ requires "edsl.k"
 
 module EVM-DATA-MAP-SYMBOLIC [symbolic]
     imports K-REFLECTION
-    imports EVM-DATA
     imports EDSL
 
     rule ( WS1 ++ WS2 ) ++ WS3 => WS1 ++ ( WS2 ++ WS3 )
