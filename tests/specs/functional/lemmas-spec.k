@@ -1,7 +1,7 @@
 requires "../lemmas.k"
 
 module VERIFICATION
-    imports LEMMAS-HASKELL
+    imports LEMMAS
 
     syntax StepSort ::= Map | ByteArray | Int
  // -----------------------------------
