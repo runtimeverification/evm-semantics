@@ -4,7 +4,7 @@ module VERIFICATION
     imports LEMMAS
 
     syntax StepSort ::= Map | ByteArray | Int
- // -----------------------------------
+ // -----------------------------------------
 
     syntax KItem ::= runLemma ( StepSort )
                    | doneLemma( StepSort )
