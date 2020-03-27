@@ -384,7 +384,6 @@ tests/specs/functional/%.prove: TEST_SYMBOLIC_BACKEND=haskell
 tests/specs/examples/%.prove:   TEST_SYMBOLIC_BACKEND=haskell
 
 tests/specs/functional/storageRoot-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
-tests/specs/functional/lemmas-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
 tests/specs/erc20/hkg/totalSupply-spec.k.prove: TEST_SYMBOLIC_BACKEND=haskell
 
 tests/%.prove: tests/%
