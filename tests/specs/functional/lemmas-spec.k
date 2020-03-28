@@ -40,15 +40,15 @@ module LEMMAS-SPEC
     rule <k> runLemma ( #range(M [ 32 := BUF:ByteArray ]            , 30 , 8) ) => doneLemma ( #range(M, 30, 2) ++ (BUF [ 0 .. 6 ])                             ) ... </k> requires #sizeByteArray(BUF) >=Int 6
     rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : .ByteArray) ] , 30 , 8) ) => doneLemma ( #range(M, 30, 2) ++ (0 : 1 : 2 : .ByteArray) ++ #range(M, 35, 3) ) ... </k>
     rule <k> runLemma ( #range(M [ 32 := #buf(2, BUF) ]             , 31 , 2) ) => doneLemma ( #range(M, 31, 1) ++ (#buf(2, BUF) [ 0 .. 1 ])                    ) ... </k>
-    // rule <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ]             , 31 , 2) ) => doneLemma ( #range(M, 31, 1) ++ #buf(1, BUF)                                 ) ... </k>
-    // rule <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ]             , 31 , 3) ) => doneLemma ( #range(M, 31, 1) ++ #buf(1, BUF) ++ #range(M, 33, 1)             ) ... </k>
+    rule <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ]             , 31 , 2) ) => doneLemma ( #range(M, 31, 1) ++ #buf(1, BUF)                                 ) ... </k>
+    rule <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ]             , 31 , 3) ) => doneLemma ( #range(M, 31, 1) ++ #buf(1, BUF) ++ #range(M, 33, 1)             ) ... </k>
 
     // Range starting at same point as buffer write
     rule <k> runLemma ( #range(M [ 32 := BUF:ByteArray ]            , 32 , 7) ) => doneLemma( BUF [ 0 .. 7 ]                               ) ... </k> requires #sizeByteArray(BUF) >=Int 7
     rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : .ByteArray) ] , 32 , 7) ) => doneLemma( (0 : 1 : 2 : .ByteArray) ++ #range(M, 35, 4) ) ... </k>
     rule <k> runLemma ( #range(M [ 32 := #buf(2, BUF) ]             , 32 , 1) ) => doneLemma( #buf(2, BUF) [ 0 .. 1 ]                      ) ... </k>
-    // rule <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ]             , 32 , 1) ) => doneLemma( #buf(1, BUF)                                 ) ... </k>
-    // rule <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ]             , 32 , 2) ) => doneLemma( #buf(1, BUF) ++ #range(M, 33, 1)             ) ... </k>
+    rule <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ]             , 32 , 1) ) => doneLemma( #buf(1, BUF)                                 ) ... </k>
+    rule <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ]             , 32 , 2) ) => doneLemma( #buf(1, BUF) ++ #range(M, 33, 1)             ) ... </k>
 
     // Range starting in the middle of the buffer write
     rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : 3 : 4 : .ByteArray) ] , 35 , 2) ) => doneLemma( (3 : 4 : .ByteArray)                      ) ... </k>
