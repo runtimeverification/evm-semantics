@@ -86,7 +86,7 @@ pipeline {
                               ]
           }
         }
-        stage('Deploy Jello Paper') {
+        stage('Jello Paper') {
           steps {
             sshagent(['2b3d8d6b-0855-4b59-864a-6b3ddf9c9d1a']) {
               dir("kevm-${env.VERSION}-jello-paper") {
