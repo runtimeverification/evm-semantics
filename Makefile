@@ -385,6 +385,7 @@ tests/specs/examples/%.prove:   TEST_SYMBOLIC_BACKEND=haskell
 
 tests/specs/functional/storageRoot-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
 tests/specs/functional/lemmas-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
+tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTIONS+=--haskell-backend-command "kore-exec --smt=none"
 tests/specs/erc20/hkg/totalSupply-spec.k.prove: TEST_SYMBOLIC_BACKEND=haskell
 
 tests/%.prove: tests/%
