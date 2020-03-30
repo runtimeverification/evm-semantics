@@ -3,7 +3,7 @@ requires "../lemmas.k"
 module VERIFICATION
     imports LEMMAS
 
-    syntax StepSort ::= Map | ByteArray | Int
+    syntax StepSort ::= Map | ByteArray
  // -----------------------------------
 
     syntax KItem ::= runLemma ( StepSort )
@@ -56,21 +56,5 @@ module LEMMAS-SPEC
     rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : .ByteArray)         ] , 33 , 1) ) => doneLemma( (1 : .ByteArray)                          ) ... </k>
     rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : .ByteArray)         ] , 33 , 2) ) => doneLemma( (1 : 2 : .ByteArray)                      ) ... </k>
     rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : .ByteArray)         ] , 33 , 3) ) => doneLemma( (1 : 2 :  .ByteArray) ++ #range(M, 35, 1) ) ... </k>
-
- // Arithmetic simplification
- // -------------------------
-
-    rule runLemma ( 5 +Int X ) => doneLemma ( X +Int 5 )
-    rule runLemma ( X -Int 5 ) => doneLemma ( X +Int (0 -Int 5) )
-    rule runLemma ( (X +Int 3) +Int 5 ) => doneLemma ( X +Int 8 )
-    rule runLemma ( 3 +Int (X +Int 5) ) => doneLemma ( X +Int 8 )
-    rule runLemma ( 5 -Int (X +Int 3) ) => doneLemma ( 2 -Int X )
-    rule runLemma ( 5 +Int (3 +Int X) ) => doneLemma ( 8 +Int X )
-    rule runLemma ( 5 +Int (3 -Int X) ) => doneLemma ( 8 -Int X )
-    rule runLemma ( (5 -Int X) +Int 3 ) => doneLemma ( 8 -Int X )
-    rule runLemma ( 5 -Int (3 +Int X) ) => doneLemma ( 2 -Int X )
-    rule runLemma ( 5 -Int (3 -Int X) ) => doneLemma ( 2 +Int X )
-    rule runLemma ( (X -Int 5) -Int 3 ) => doneLemma ( X -Int 8 )
-    rule runLemma ( 5 &Int (3 &Int X) ) => doneLemma ( 1 &Int X )
 
 endmodule
