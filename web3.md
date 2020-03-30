@@ -810,6 +810,9 @@ Retrieving Blocks
 ```k
     syntax KItem ::= "#eth_getBlockByNumber"
  // ----------------------------------------
+    rule <k> #eth_getBlockByNumber ... </k>
+         <params> [ (null => "0x0"), _:Bool, .JSONs ] </params>
+
     rule <k> #eth_getBlockByNumber => #eth_getBlockByNumber_finalize( #getBlockByNumber(#parseBlockIdentifier(TAG), BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>})) ... </k>
          <params> [ TAG:String, TXOUT:Bool, .JSONs ] </params>
          <blockList> BLOCKLIST </blockList>
@@ -1806,7 +1809,7 @@ Retrieving logs
          <params> [ { PARAMS => "toBlock": "latest", PARAMS } , .JSONs ] </params>
       requires #getJSON("toBlock", { PARAMS }) ==K undef
 
-    rule <k> #eth_getLogs => #getLogs(#parseBlockIdentifier(#getString("fromBlock", { PARAMS })), #parseBlockIdentifier(#getString("toBlock", { PARAMS })), .List) ... </k>
+    rule <k> #eth_getLogs => #getLogs(#parseBlockIdentifier(#getJSON("fromBlock", { PARAMS })), #parseBlockIdentifier(#getJSON("toBlock", { PARAMS })), .List) ... </k>
          <params> [ { PARAMS } , .JSONs ] </params>
       requires #getJSON("fromBlock", { PARAMS }) =/=K undef
        andBool #getJSON("toBlock"  , { PARAMS }) =/=K undef
