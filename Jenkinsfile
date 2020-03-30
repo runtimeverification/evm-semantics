@@ -15,7 +15,7 @@ pipeline {
       steps { script { currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}" } }
     }
     stage('Build and Test') {
-      when { branch 'master' }
+      when { changeRequest() }
       agent {
         dockerfile {
           additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
@@ -67,10 +67,10 @@ pipeline {
       }
     }
     stage('Deploy') {
+      when { branch 'master' }
       agent { dockerfile { reuseNode true } }
       stages {
         stage('Update Dependents') {
-          when { branch 'master' }
           steps {
             build job: 'rv-devops/master', propagate: false, wait: false                                     \
                 , parameters: [ booleanParam(name: 'UPDATE_DEPS_SUBMODULE', value: true)                     \
