@@ -90,7 +90,6 @@ pipeline {
           steps {
             sshagent(['2b3d8d6b-0855-4b59-864a-6b3ddf9c9d1a']) {
               dir("kevm-${env.VERSION}-jello-paper") {
-                checkout scm
                 sh '''
                   git config --global user.email "admin@runtimeverification.com"
                   git config --global user.name  "RV Jenkins"
@@ -102,8 +101,9 @@ pipeline {
                   echo '    stricthostkeychecking accept-new' >> ~/.ssh/config
                   chmod go-rwx -R ~/.ssh
                   ssh github.com || true
-                  git remote set-url origin 'ssh://github.com/kframework/evm-semantics'
-                  git checkout -B 'gh-pages'
+                  git clone 'ssh://github.com/kframework/evm-semantics.git'
+                  cd evm-semantics
+                  git checkout -B gh-pages origin/master
                   rm -rf .build .gitignore .gitmodules cmake deps Dockerfile Jenkinsfile kast-json.py kevm kore-json.py LICENSE Makefile media package
                   git add ./
                   git commit -m 'gh-pages: remove unrelated content'
