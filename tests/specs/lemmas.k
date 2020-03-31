@@ -222,6 +222,9 @@ module LEMMAS-HASKELL [symbolic, kore]
       requires #range(0 <= START < SIZE)
        andBool #range(0 < WIDTH <= SIZE -Int START)                                                       [simplification]
 
+    rule BUF [ L .. W ] => .ByteArray requires W <=Int 0                    [simplification]
+    rule BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
+
     rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])
       requires #range(0 <= START < #sizeByteArray(BUF1))
        andBool #sizeByteArray(BUF1) <Int START +Int WIDTH [simplification]
@@ -274,7 +277,29 @@ module LEMMAS-HASKELL [symbolic, kore]
     // Defineness axiom for #buf
     rule #Ceil(#buf(@SIZE, @DATA)) => {(@SIZE >=Int 0) #Equals true} #And #Ceil(@SIZE) #And #Ceil(@DATA) [anywhere]
 
+    rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
+    rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
+
+    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
+    rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma]
+    rule 0 <=Int lengthBytes ( _ )        => true [smt-lemma]
+
     rule bool2Word( B:Bool ) ==Int 1 => B         [simplification]
     rule bool2Word( B:Bool ) ==Int 0 => notBool B [simplification]
+
+    // Arithmetic simplification
+    rule I +Int B => B +Int I          [concrete(I), symbolic(B), priority(51), simplification]
+    rule A -Int I => A +Int (0 -Int I) [concrete(I), symbolic(A), priority(51), simplification]
+
+    rule (A +Int I2) +Int I3 => A +Int (I2 +Int I3) [concrete(I2, I3), symbolic(A), simplification]
+    rule I1 +Int (B +Int I3) => B +Int (I1 +Int I3) [concrete(I1, I3), symbolic(B), simplification]
+    rule I1 -Int (B +Int I3) => (I1 -Int I3) -Int B [concrete(I1, I3), symbolic(B), simplification]
+    rule I1 +Int (I2 +Int C) => (I1 +Int I2) +Int C [concrete(I1, I2), symbolic(C), simplification]
+    rule I1 +Int (I2 -Int C) => (I1 +Int I2) -Int C [concrete(I1, I2), symbolic(C), simplification]
+    rule (I1 -Int B) +Int I3 => (I1 +Int I3) -Int B [concrete(I1, I3), symbolic(B), simplification]
+    rule I1 -Int (I2 +Int C) => (I1 -Int I2) -Int C [concrete(I1, I2), symbolic(C), simplification]
+    rule I1 -Int (I2 -Int C) => (I1 -Int I2) +Int C [concrete(I1, I2), symbolic(C), simplification]
+    rule (C -Int I2) -Int I3 => C -Int (I2 +Int I3) [concrete(I2, I3), symbolic(C), simplification]
+    rule I1 &Int (I2 &Int C) => (I1 &Int I2) &Int C [concrete(I1, I2), symbolic(C), simplification]
 
 endmodule

@@ -643,8 +643,8 @@ The local memory of execution is a byte-array (instead of a word-array).
  // --------------------------------------------------------------------------------
     rule WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
 
-    syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, memo]
- // ------------------------------------------------------------------------
+    syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, smtlib(sizeByteArray), memo]
+ // -----------------------------------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => #sizeWordStack(WS) [concrete]
 
     syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, functional, memo]
