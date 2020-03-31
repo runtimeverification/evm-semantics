@@ -1,1 +1,6 @@
-
+tests/ethereum-tests/VMTests/vmLogTest/log0_emptyMem.json
+tests/ethereum-tests/VMTests/vmLogTest/log0_logMemsizeZero.json
+tests/ethereum-tests/VMTests/vmLogTest/log0_nonEmptyMem.json
+tests/ethereum-tests/VMTests/vmLogTest/log0_nonEmptyMem_logMemSize1.json
+tests/ethereum-tests/VMTests/vmLogTest/log0_nonEmptyMem_logMemSize1_logMemStart31.json
+tests/ethereum-tests/VMTests/vmLogTest/log_2logs.json
