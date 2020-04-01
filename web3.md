@@ -17,7 +17,6 @@ module WEB3
       <kevm-client>
         <kevm/>
         <json-rpc/>
-        <errorPC> 0 </errorPC>
         <blockchain>
           <blockList> .List </blockList>
         </blockchain>
@@ -602,7 +601,7 @@ eth_sendTransaction
          </k>
          <statusCode> EVMC_REVERT </statusCode>
          <output> RD </output>
-         <errorPC> PCOUNT </errorPC>
+         <endPC> PCOUNT </endPC>
 
     rule <k> _:String ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "base fee exceeds gas limit") ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
@@ -1430,7 +1429,7 @@ Transaction Execution
                                PCOUNT, RD, SC))
           ...
          </k>
-         <errorPC> PCOUNT </errorPC>
+         <endPC>   PCOUNT </endPC>
          <output>  RD     </output>
          <message>
            <msgID>      TXID </msgID>
