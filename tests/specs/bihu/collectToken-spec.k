@@ -128,6 +128,7 @@ ensures VALUE ==Int @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int BAL
       <evm>
         <output> _ </output>
         <statusCode> _ </statusCode>
+        <endPC> _ => ?_ </endPC>
         <callStack> _ => _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => _ </touchedAccounts>
@@ -231,6 +232,7 @@ andBool GASCAP >=Int ((293 *Int (YEARCOUNT -Int INDEX)) +Int 26)
       <evm>
         <output> _ </output>
         <statusCode> _ </statusCode>
+        <endPC> _ => ?_ </endPC>
         <callStack> _ => _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => _ </touchedAccounts>
