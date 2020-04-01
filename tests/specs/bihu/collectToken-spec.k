@@ -15,7 +15,7 @@ module COLLECTTOKEN-SPEC
       <evm>
         <output> _ => #buf(32, 1) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
-        <endPC> _ => _ </endPC>
+        <endPC> _ => ?_ </endPC>
         <callStack> _ => _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => _ </touchedAccounts>

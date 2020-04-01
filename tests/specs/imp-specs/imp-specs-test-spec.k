@@ -37,7 +37,7 @@ module IMP-SPECS-TEST-SPEC
       <evm>
         <output> _ => _ </output>
         <statusCode> _ => _ </statusCode>
-        <endPC> _ => _ </endPC>
+        <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => _ </touchedAccounts>
