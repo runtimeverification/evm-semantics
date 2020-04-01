@@ -1305,7 +1305,7 @@ Transaction Execution
       requires TT =/=K .Account
 
     syntax KItem ::= "#mineAndUpdate"
- // ----------------------------
+ // ---------------------------------
     rule <statusCode> STATUSCODE </statusCode>
          <k> #mineAndUpdate => #mineBlock ~> #updateTimestamp ... </k>
          <mode> EXECMODE </mode>
