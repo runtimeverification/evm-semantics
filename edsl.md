@@ -54,9 +54,11 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax ByteArray ::= #abiCallData ( String , TypedArgs ) [function]
  // -------------------------------------------------------------------
-    rule #abiCallData( FNAME , ARGS )
-      => #parseByteStack(substrString(Keccak256(#generateSignature(FNAME, ARGS)), 0, 8))
-      ++ #encodeArgs(ARGS)
+    rule #abiCallData( FNAME , ARGS ) => #signatureCallData(FNAME, ARGS) ++ #encodeArgs(ARGS)
+
+    syntax ByteArray ::= #signatureCallData  ( String, TypedArgs ) [function]
+ // -------------------------------------------------------------------
+    rule #signatureCallData( FNAME , ARGS ) => #parseByteStack(substrString(Keccak256(#generateSignature(FNAME, ARGS)), 0, 8))
 
     syntax String ::= #generateSignature     ( String, TypedArgs ) [function]
                     | #generateSignatureArgs ( TypedArgs )         [function]
