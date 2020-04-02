@@ -46,6 +46,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             <output>          .ByteArray  </output>           // H_RETURN
             <statusCode>      .StatusCode </statusCode>
+            <endPC>           0           </endPC>
             <callStack>       .List       </callStack>
             <interimStates>   .List       </interimStates>
             <touchedAccounts> .Set        </touchedAccounts>
@@ -256,12 +257,15 @@ Control Flow
 
 -   `#halt` indicates end of execution.
     It will consume anything related to the current computation behind it on the `<k>` cell.
--   `#end_` sets the `statusCode` then halts execution.
+-   `#end_` sets the `statusCode` and the program counter of the last executed opcode, then halts execution.
 
 ```k
     syntax KItem ::= "#halt" | "#end" StatusCode
  // --------------------------------------------
-    rule <k> #end SC => #halt ... </k> <statusCode> _ => SC </statusCode>
+    rule <k> #end SC => #halt ... </k>
+         <statusCode> _ => SC     </statusCode>
+         <endPC>      _ => PCOUNT </endPC>
+         <pc>         PCOUNT      </pc>
 
     rule <k> #halt ~> (_:Int    => .) ... </k>
     rule <k> #halt ~> (_:OpCode => .) ... </k>

@@ -19,6 +19,9 @@
       <statusCode>
         .StatusCode
       </statusCode>
+      <endPC>
+        0
+      </endPC>
       <callStack>
         .List
       </callStack>
