@@ -16,6 +16,7 @@ module ECRECOVERLOOP02-SIGS-VALID-SPEC
       <evm>
         <output> _ => .WordStack </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
+        <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => _ </touchedAccounts>
