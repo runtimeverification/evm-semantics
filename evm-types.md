@@ -686,7 +686,7 @@ Addresses
     syntax Int ::= #lookup ( Map , Int ) [function, functional]
  // -----------------------------------------------
     rule [#lookup.some]: #lookup( (KEY |-> {VAL}:>Int) M, KEY ) => VAL
-    rule [#lookup.none]: #lookup(               M, KEY ) => 0 requires notBool KEY in_keys(M)
+    rule [#lookup.none]: #lookup(                      M, KEY ) => 0 requires notBool KEY in_keys(M)
 ```
 
 ### Substate Log
