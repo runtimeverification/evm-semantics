@@ -483,9 +483,10 @@ Most of EVM data is held in local memory.
  // -------------------------------------------------------------------------------------
     rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS')  [concrete]
 
-    syntax ByteArray ::= #range ( Memory , Int , Int ) [function, functional]
+    syntax ByteArray ::= #range ( Memory , Int , Int ) [function]
  // -------------------------------------------------------------
     rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ] [concrete]
+    rule #Ceil( #range(LM, START, WIDTH) ) => {((0 <=Int START) andBool (0 <=Int WIDTH)) #Equals true}  [anywhere]
 
     syntax Memory ::= ".Memory" [function]
  // --------------------------------------
