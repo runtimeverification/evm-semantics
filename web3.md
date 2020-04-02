@@ -20,8 +20,10 @@ module WEB3
         <blockchain>
           <blockList> .List </blockList>
         </blockchain>
-        <accountKeys> .Map </accountKeys>
-        <nextFilterSlot> 0 </nextFilterSlot>
+        <defaultGasPrice> 20000000000 </defaultGasPrice>
+        <defaultGasLimit> 90000       </defaultGasLimit>
+        <accountKeys>     .Map        </accountKeys>
+        <nextFilterSlot>  0           </nextFilterSlot>
         <txReceipts>
           <txReceipt multiplicity ="*" type="Map">
             <txHash>          "":String  </txHash>
@@ -44,7 +46,7 @@ module WEB3
           </filter>
         </filters>
         <snapshots> .List </snapshots>
-        <web3shutdownable> $SHUTDOWNABLE:Bool </web3shutdownable>
+        <web3shutdownable>  $SHUTDOWNABLE:Bool  </web3shutdownable>
         <web3notifications> $NOTIFICATIONS:Bool </web3notifications>
       </kevm-client>
 ```
@@ -625,6 +627,36 @@ eth_sendTransaction
     rule <k> loadTransaction _ { "s"        : (TS:String => #padToWidth(32, #parseByteStack(TS))), _ } ... </k>
     rule <k> loadTransaction _ { ("from"    : _, REST => REST) } ... </k>
     rule <k> loadTransaction _ { (("amount" : TV) => "value": TV), REST                  } ... </k>
+
+    syntax EthereumCommand ::= "mkTX" Int
+ // -------------------------------------
+    rule <k> mkTX TXID => . ... </k>
+         <txOrder>   ... (.List => ListItem(TXID)) </txOrder>
+         <txPending> ... (.List => ListItem(TXID)) </txPending>
+         <defaultGasPrice> GPRICE </defaultGasPrice>
+         <defaultGasLimit> GLIMIT </defaultGasLimit>
+         <messages>
+            ( .Bag
+           => <message>
+                <msgID>      TXID:Int </msgID>
+                <txGasPrice> GPRICE   </txGasPrice>
+                <txGasLimit> GLIMIT   </txGasLimit>
+                ...
+              </message>
+            )
+          ...
+          </messages>
+
+    rule <k> load "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST ]
+          => mkTX !ID:Int
+          ~> loadTransaction !ID { "data"  : TI   ,   "gasLimit" : TG   ,   "gasPrice" : TP
+                                 , "nonce" : TN   ,   "r"        : TR   ,   "s"        : TS
+                                 , "to"    : TT   ,   "v"        : TW   ,   "value"    : TV
+                                 , .JSONs
+                                 }
+          ~> load "transaction" : [ REST ]
+          ...
+          </k>
 
     syntax KItem ::= "#loadNonce" Int Int
  // -------------------------------------
@@ -1693,12 +1725,14 @@ Gas Limit Call
     syntax KItem ::= "#firefly_setGasLimit"
  // ---------------------------------------
     rule <k> #firefly_setGasLimit => #rpcResponseSuccess(true) ... </k>
-         <params>   [ GLIMIT:String, .JSONs ] </params>
-         <gasLimit> _ => #parseWord( GLIMIT ) </gasLimit>
+         <params>          [ GLIMIT:String, .JSONs ] </params>
+         <gasLimit>        _ => #parseWord( GLIMIT ) </gasLimit>
+         <defaultGasLimit> _ => #parseWord( GLIMIT ) </defaultGasLimit>
 
     rule <k> #firefly_setGasLimit => #rpcResponseSuccess(true) ... </k>
-         <params>   [ GLIMIT:Int, .JSONs ] </params>
-         <gasLimit> _ => GLIMIT            </gasLimit>
+         <params>          [ GLIMIT:Int, .JSONs ] </params>
+         <gasLimit>        _ => GLIMIT            </gasLimit>
+         <defaultGasLimit> _ => GLIMIT            </defaultGasLimit>
 
     rule <k> #firefly_setGasLimit => #rpcResponseError(-32000, "firefly_setGasLimit requires exactly 1 argument") ... </k> [owise]
 ```
@@ -1710,12 +1744,14 @@ Gas Price Call
     syntax KItem ::= "#firefly_setGasPrice"
  // ---------------------------------------
     rule <k> #firefly_setGasPrice => #rpcResponseSuccess(true) ... </k>
-         <params>   [ GPRICE:String, .JSONs ] </params>
-         <gasPrice> _ => #parseWord( GPRICE ) </gasPrice>
+         <params>          [ GPRICE:String, .JSONs ] </params>
+         <gasPrice>        _ => #parseWord( GPRICE ) </gasPrice>
+         <defaultGasPrice> _ => #parseWord( GPRICE ) </defaultGasPrice>
 
     rule <k> #firefly_setGasPrice => #rpcResponseSuccess(true) ... </k>
-         <params>   [ GPRICE:Int, .JSONs ] </params>
-         <gasPrice> _ => GPRICE            </gasPrice>
+         <params>          [ GPRICE:Int, .JSONs ] </params>
+         <gasPrice>        _ => GPRICE            </gasPrice>
+         <defaultGasPrice> _ => GPRICE            </defaultGasPrice>
 
     rule <k> #firefly_setGasPrice => #rpcResponseError(-32000, "firefly_setGasPrice requires exactly 1 argument") ... </k> [owise]
 ```
