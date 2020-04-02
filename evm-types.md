@@ -423,11 +423,12 @@ A cons-list is used for the EVM wordstack.
     rule (W0 : WS):WordStack [ N := W ] => W0 : (WS [ N -Int 1 := W ]) requires N  >Int 0
 ```
 
--   Definedness conditions for `WS [ N ]` and `WS [ N := W ]`
+-   Definedness conditions for `WS [ N ]`, `WS [ N := W ]`, `BA [ N .. W ]`.
 
 ```{.k .symbolic}
     rule #Ceil(WS[N])        => {((0 <=Int N) andBool (N <Int #sizeWordStack(WS))) #Equals true}  [anywhere]
     rule #Ceil(WS[ N := W ]) => {((0 <=Int N) andBool (N <Int #sizeWordStack(WS))) #Equals true}  [anywhere]
+    rule #Ceil(BA[ N .. W ]) => {((0 <=Int N) andBool (0 <=Int W))                 #Equals true}  [anywhere]
 ```
 
 -   `#sizeWordStack` calculates the size of a `WordStack`.
@@ -482,7 +483,7 @@ Most of EVM data is held in local memory.
  // -------------------------------------------------------------------------------------------------
     rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS')  [concrete]
 
-    syntax ByteArray ::= #range ( Memory , Int , Int ) [function]
+    syntax ByteArray ::= #range ( Memory , Int , Int ) [function, functional]
  // -------------------------------------------------------------
     rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ] [concrete]
 
@@ -597,8 +598,8 @@ The local memory of execution is a byte-array (instead of a word-array).
  // ----------------------------------------------------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => lengthBytes(WS) [concrete]
 
-    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function]
-                       | #padRightToWidth ( Int , ByteArray ) [function]
+    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, functional]
+                       | #padRightToWidth ( Int , ByteArray ) [function, functional]
  // --------------------------------------------------------------------
     rule #padToWidth(N, BS)      => padLeftBytes(BS, N, 0)  [concrete]
     rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) [concrete]
