@@ -324,6 +324,7 @@ WEB3 JSON RPC
     rule <k> #runRPCCall => #firefly_setTime                         ... </k> <method> "firefly_setTime"                         </method>
     rule <k> #runRPCCall => #firefly_genesisBlock                    ... </k> <method> "firefly_genesisBlock"                    </method>
     rule <k> #runRPCCall => #firefly_setGasLimit                     ... </k> <method> "firefly_setGasLimit"                     </method>
+    rule <k> #runRPCCall => #firefly_setGasPrice                     ... </k> <method> "firefly_setGasPrice"                     </method>
     rule <k> #runRPCCall => #firefly_blake2compress                  ... </k> <method> "firefly_blake2compress"                  </method>
 
     rule <k> #runRPCCall => #miner_start                             ... </k> <method> "miner_start"                             </method>
@@ -1692,16 +1693,32 @@ Gas Limit Call
     syntax KItem ::= "#firefly_setGasLimit"
  // ---------------------------------------
     rule <k> #firefly_setGasLimit => #rpcResponseSuccess(true) ... </k>
-         <params> [ GLIMIT:String, .JSONs ] </params>
+         <params>   [ GLIMIT:String, .JSONs ] </params>
          <gasLimit> _ => #parseWord( GLIMIT ) </gasLimit>
 
     rule <k> #firefly_setGasLimit => #rpcResponseSuccess(true) ... </k>
-         <params> [ GLIMIT:Int, .JSONs ] </params>
-         <gasLimit> _ => GLIMIT </gasLimit>
+         <params>   [ GLIMIT:Int, .JSONs ] </params>
+         <gasLimit> _ => GLIMIT            </gasLimit>
 
     rule <k> #firefly_setGasLimit => #rpcResponseError(-32000, "firefly_setGasLimit requires exactly 1 argument") ... </k> [owise]
 ```
 
+Gas Price Call
+--------------
+
+```k
+    syntax KItem ::= "#firefly_setGasPrice"
+ // ---------------------------------------
+    rule <k> #firefly_setGasPrice => #rpcResponseSuccess(true) ... </k>
+         <params>   [ GPRICE:String, .JSONs ] </params>
+         <gasPrice> _ => #parseWord( GPRICE ) </gasPrice>
+
+    rule <k> #firefly_setGasPrice => #rpcResponseSuccess(true) ... </k>
+         <params>   [ GPRICE:Int, .JSONs ] </params>
+         <gasPrice> _ => GPRICE            </gasPrice>
+
+    rule <k> #firefly_setGasPrice => #rpcResponseError(-32000, "firefly_setGasPrice requires exactly 1 argument") ... </k> [owise]
+```
 Mining
 ------
 
