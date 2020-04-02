@@ -599,11 +599,13 @@ The local memory of execution is a byte-array (instead of a word-array).
  // ----------------------------------------------------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => lengthBytes(WS) [concrete]
 
-    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, functional]
-                       | #padRightToWidth ( Int , ByteArray ) [function, functional]
+    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function]
+                       | #padRightToWidth ( Int , ByteArray ) [function]
  // --------------------------------------------------------------------
     rule #padToWidth(N, BS)      => padLeftBytes(BS, N, 0)  [concrete]
     rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) [concrete]
+    rule #Ceil(#padToWidth(N, _))      => {(0 <=Int N) #Equals true}  [anywhere]
+    rule #Ceil(#padRightToWidth(N, _)) => {(0 <=Int N) #Equals true}  [anywhere]
 ```
 
 ```{.k .nobytes}
