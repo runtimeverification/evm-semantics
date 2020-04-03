@@ -1713,10 +1713,8 @@ Gas Limit Call
 ```k
     syntax KItem ::= "#firefly_setGasLimit"
  // ---------------------------------------
-    rule <k> #firefly_setGasLimit => #rpcResponseSuccess(true) ... </k>
-         <params>          [ GLIMIT:String, .JSONs ] </params>
-         <gasLimit>        _ => #parseWord( GLIMIT ) </gasLimit>
-         <defaultGasLimit> _ => #parseWord( GLIMIT ) </defaultGasLimit>
+    rule <k> #firefly_setGasLimit ... </k>
+         <params> [ GLIMIT:String => #parseWord( GLIMIT ), .JSONs ] </params>
 
     rule <k> #firefly_setGasLimit => #rpcResponseSuccess(true) ... </k>
          <params>          [ GLIMIT:Int, .JSONs ] </params>
@@ -1732,10 +1730,8 @@ Gas Price Call
 ```k
     syntax KItem ::= "#firefly_setGasPrice"
  // ---------------------------------------
-    rule <k> #firefly_setGasPrice => #rpcResponseSuccess(true) ... </k>
-         <params>          [ GPRICE:String, .JSONs ] </params>
-         <gasPrice>        _ => #parseWord( GPRICE ) </gasPrice>
-         <defaultGasPrice> _ => #parseWord( GPRICE ) </defaultGasPrice>
+    rule <k> #firefly_setGasPrice ... </k>
+         <params> [ GPRICE:String => #parseWord( GPRICE ), .JSONs ] </params>
 
     rule <k> #firefly_setGasPrice => #rpcResponseSuccess(true) ... </k>
          <params>          [ GPRICE:Int, .JSONs ] </params>
