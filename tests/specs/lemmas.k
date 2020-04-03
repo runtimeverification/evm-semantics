@@ -13,13 +13,9 @@ module LEMMAS
       requires N >Int M andBool N -Int M >=Int #sizeByteArray(BUF')                                               [simplification]
 
     rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeByteArray(BUF) ==Int #sizeByteArray(BUF')  [simplification]
-    //when BUF1 and BUF2 partially overlap and cannot be sorted by sorting rule.
-    rule MEM [ N := BUF1 ] [ M := BUF2:ByteArray ] [ N := BUF3 ] => MEM [ M := BUF2 ] [ N := BUF3 ]
-      requires #sizeByteArray(BUF1) ==Int #sizeByteArray(BUF3)                                                    [simplification]
 
     rule BUF [ L .. W ] => .ByteArray requires W <=Int 0                    [simplification]
     rule BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
-    rule BUF [ L .. W ] => .ByteArray requires L  >Int #sizeByteArray(BUF)  [simplification]
 
     rule #sizeByteArray(BUF1 ++ BUF2)                  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
     rule #sizeByteArray(#buf(SIZE, _))                 => SIZE                                            [simplification]
@@ -39,6 +35,8 @@ module LEMMAS-JAVA [symbolic, kast]
     imports EVM
     imports EDSL
     imports K-REFLECTION
+
+    rule BUF [ L .. W ] => .ByteArray requires L >=Int #sizeByteArray(BUF)  [simplification]
 
     rule #asWord( BUF => #drop(1, BUF) ) requires BUF [ 0 ] ==Int 0  [simplification]
 
@@ -230,6 +228,8 @@ endmodule
 module LEMMAS-HASKELL [symbolic, kore]
     imports EVM
     imports EDSL
+
+    rule BUF [ L .. W ] => padRightBytes(.Bytes, W, 0) requires L >=Int #sizeByteArray(BUF)  [simplification]
 
     rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])
       requires #range(0 <= START < #sizeByteArray(BUF1))
