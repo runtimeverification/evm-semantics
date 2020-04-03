@@ -628,9 +628,9 @@ eth_sendTransaction
     rule <k> loadTransaction _ { ("from"    : _, REST => REST) } ... </k>
     rule <k> loadTransaction _ { (("amount" : TV) => "value": TV), REST                  } ... </k>
 
-    syntax EthereumCommand ::= "mkTX" Int
- // -------------------------------------
-    rule <k> mkTX TXID => . ... </k>
+    syntax EthereumCommand ::= "makeTX" Int
+ // ---------------------------------------
+    rule <k> makeTX TXID => . ... </k>
          <txOrder>   ... (.List => ListItem(TXID)) </txOrder>
          <txPending> ... (.List => ListItem(TXID)) </txPending>
          <defaultGasPrice> GPRICE </defaultGasPrice>
@@ -646,17 +646,6 @@ eth_sendTransaction
             )
           ...
           </messages>
-
-    rule <k> load "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST ]
-          => mkTX !ID:Int
-          ~> loadTransaction !ID { "data"  : TI   ,   "gasLimit" : TG   ,   "gasPrice" : TP
-                                 , "nonce" : TN   ,   "r"        : TR   ,   "s"        : TS
-                                 , "to"    : TT   ,   "v"        : TW   ,   "value"    : TV
-                                 , .JSONs
-                                 }
-          ~> load "transaction" : [ REST ]
-          ...
-          </k>
 
     syntax KItem ::= "#loadNonce" Int Int
  // -------------------------------------
@@ -771,7 +760,7 @@ eth_sendRawTransaction
     rule <k> #eth_sendRawTransaction => #rpcResponseError(-32000, "Invalid Signature") ... </k> [owise]
 
     rule <k> #eth_sendRawTransactionLoad
-          => mkTX !ID:Int
+          => makeTX !ID:Int
           ~> loadTransaction !ID { "data"  : Raw2Hex(TI)  , "gas"      : Raw2Hex(TG) , "gasPrice" : Raw2Hex(TP)
                                  , "nonce" : Raw2Hex(TN)  , "r"        : Raw2Hex(TR) , "s"        : Raw2Hex(TS)
                                  , "to"    : Raw2Hex'(TT) , "v"        : Raw2Hex(TW) , "value"    : Raw2Hex(TV)
@@ -1207,7 +1196,7 @@ Transaction Execution
     syntax KItem ::= "#loadTx" Account JSON
  // ---------------------------------------
     rule <k> #loadTx ACCTFROM J
-          => mkTX !ID:Int
+          => makeTX !ID:Int
           ~> #loadNonce ACCTFROM !ID
           ~> loadTransaction !ID J
           ~> signTX !ID ACCTFROM

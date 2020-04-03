@@ -204,6 +204,34 @@ The `"rlp"` key loads the block information.
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONs ], _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhashes>
 
+    syntax EthereumCommand ::= "mkTX" Int
+ // -------------------------------------
+    rule <k> mkTX TXID => . ... </k>
+         <txOrder>   ... (.List => ListItem(TXID)) </txOrder>
+         <txPending> ... (.List => ListItem(TXID)) </txPending>
+         <messages>
+            ( .Bag
+           => <message>
+                <msgID>      TXID:Int </msgID>
+                <txGasPrice> 20000000000   </txGasPrice>
+                <txGasLimit> 90000         </txGasLimit>
+                ...
+              </message>
+            )
+          ...
+          </messages>
+
+    rule <k> load "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST ]
+          => mkTX !ID:Int
+          ~> loadTransaction !ID { "data"  : TI   ,   "gasLimit" : TG   ,   "gasPrice" : TP
+                                 , "nonce" : TN   ,   "r"        : TR   ,   "s"        : TS
+                                 , "to"    : TT   ,   "v"        : TW   ,   "value"    : TV
+                                 , .JSONs
+                                 }
+          ~> load "transaction" : [ REST ]
+          ...
+          </k>
+
     syntax EthereumCommand ::= "loadTransaction" Int JSON
  // -----------------------------------------------------
     rule <k> loadTransaction _ { .JSONs } => . ... </k>
