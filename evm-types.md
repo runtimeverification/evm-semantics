@@ -426,9 +426,15 @@ A cons-list is used for the EVM wordstack.
 -   Definedness conditions for `WS [ N ]`, `WS [ N := W ]`, `BA [ N .. W ]`.
 
 ```{.k .symbolic}
-    rule #Ceil(WS[N])        => {((0 <=Int N) andBool (N <Int #sizeWordStack(WS))) #Equals true}  [anywhere]
-    rule #Ceil(WS[ N := W ]) => {((0 <=Int N) andBool (N <Int #sizeWordStack(WS))) #Equals true}  [anywhere]
-    rule #Ceil(BA[ N .. W ]) => {((0 <=Int N) andBool (0 <=Int W))                 #Equals true}  [anywhere]
+    rule #Ceil(WS[N])        => {((0 <=Int N) andBool (N <Int #sizeWordStack(WS)))            #Equals true}  [anywhere]
+    rule #Ceil(WS[ N := W ]) => {((0 <=Int N) andBool (N <Int #sizeWordStack(WS)))            #Equals true}  [anywhere]
+    rule #Ceil(BA[ N .. W ]) => {((0 <=Int N) andBool (0 <=Int W))                            #Equals true}  [anywhere]
+    rule #Ceil(BA[ N := _:ByteArray ]) => {(0 <=Int N)                                        #Equals true}  [anywhere]
+    rule #Ceil( #range(LM, START, WIDTH) ) => {((0 <=Int START) andBool (0 <=Int WIDTH))      #Equals true}  [anywhere]
+    rule #Ceil(#padToWidth(N, _))      => {(0 <=Int N)                                        #Equals true}  [anywhere]
+    rule #Ceil(#padRightToWidth(N, _)) => {(0 <=Int N)                                        #Equals true}  [anywhere]
+    rule #Ceil(#lookup( _ |-> VAL M, KEY )) => {(#Ceil(#lookup( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
+    rule #Ceil(#lookup( .Map, _ ))          => true                                                          [anywhere]
 ```
 
 -   `#sizeWordStack` calculates the size of a `WordStack`.
@@ -482,12 +488,10 @@ Most of EVM data is held in local memory.
     syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
  // -------------------------------------------------------------------------------------
     rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS')  [concrete]
-    rule #Ceil(WS[ START := _:ByteArray ]) => {(0 <=Int START) #Equals true}                                      [anywhere]
 
     syntax ByteArray ::= #range ( Memory , Int , Int ) [function]
  // -------------------------------------------------------------
     rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ] [concrete]
-    rule #Ceil( #range(LM, START, WIDTH) ) => {((0 <=Int START) andBool (0 <=Int WIDTH)) #Equals true}  [anywhere]
 
     syntax Memory ::= ".Memory" [function]
  // --------------------------------------
@@ -605,8 +609,6 @@ The local memory of execution is a byte-array (instead of a word-array).
  // --------------------------------------------------------------------
     rule #padToWidth(N, BS)      => padLeftBytes(BS, N, 0)  [concrete]
     rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) [concrete]
-    rule #Ceil(#padToWidth(N, _))      => {(0 <=Int N) #Equals true}  [anywhere]
-    rule #Ceil(#padRightToWidth(N, _)) => {(0 <=Int N) #Equals true}  [anywhere]
 ```
 
 ```{.k .nobytes}
@@ -691,8 +693,6 @@ Addresses
  // -----------------------------------------------
     rule [#lookup.some]: #lookup( (KEY |-> VAL:Int) M, KEY ) => VAL
     rule [#lookup.none]: #lookup(                   M, KEY ) => 0 requires notBool KEY in_keys(M)
-    rule #Ceil(#lookup( _ |-> VAL M, KEY )) => {(#Ceil(#lookup( M, KEY )) andBool isInt(VAL)) #Equals true} [anywhere]
-    rule #Ceil(#lookup( .Map, _ ))          => true                                                         [anywhere]
 ```
 
 ### Substate Log
