@@ -20,8 +20,10 @@ module WEB3
         <blockchain>
           <blockList> .List </blockList>
         </blockchain>
-        <accountKeys> .Map </accountKeys>
-        <nextFilterSlot> 0 </nextFilterSlot>
+        <defaultGasPrice> 20000000000 </defaultGasPrice>
+        <defaultGasLimit> 90000       </defaultGasLimit>
+        <accountKeys>     .Map        </accountKeys>
+        <nextFilterSlot>  0           </nextFilterSlot>
         <txReceipts>
           <txReceipt multiplicity ="*" type="Map">
             <txHash>          "":String  </txHash>
@@ -44,7 +46,7 @@ module WEB3
           </filter>
         </filters>
         <snapshots> .List </snapshots>
-        <web3shutdownable> $SHUTDOWNABLE:Bool </web3shutdownable>
+        <web3shutdownable>  $SHUTDOWNABLE:Bool  </web3shutdownable>
         <web3notifications> $NOTIFICATIONS:Bool </web3notifications>
       </kevm-client>
 ```
@@ -324,6 +326,7 @@ WEB3 JSON RPC
     rule <k> #runRPCCall => #firefly_setTime                         ... </k> <method> "firefly_setTime"                         </method>
     rule <k> #runRPCCall => #firefly_genesisBlock                    ... </k> <method> "firefly_genesisBlock"                    </method>
     rule <k> #runRPCCall => #firefly_setGasLimit                     ... </k> <method> "firefly_setGasLimit"                     </method>
+    rule <k> #runRPCCall => #firefly_setGasPrice                     ... </k> <method> "firefly_setGasPrice"                     </method>
     rule <k> #runRPCCall => #firefly_blake2compress                  ... </k> <method> "firefly_blake2compress"                  </method>
 
     rule <k> #runRPCCall => #miner_start                             ... </k> <method> "miner_start"                             </method>
@@ -625,6 +628,25 @@ eth_sendTransaction
     rule <k> loadTransaction _ { ("from"    : _, REST => REST) } ... </k>
     rule <k> loadTransaction _ { (("amount" : TV) => "value": TV), REST                  } ... </k>
 
+    syntax EthereumCommand ::= "makeTX" Int
+ // ---------------------------------------
+    rule <k> makeTX TXID => . ... </k>
+         <txOrder>   ... (.List => ListItem(TXID)) </txOrder>
+         <txPending> ... (.List => ListItem(TXID)) </txPending>
+         <defaultGasPrice> GPRICE </defaultGasPrice>
+         <defaultGasLimit> GLIMIT </defaultGasLimit>
+         <messages>
+            ( .Bag
+           => <message>
+                <msgID>      TXID:Int </msgID>
+                <txGasPrice> GPRICE   </txGasPrice>
+                <txGasLimit> GLIMIT   </txGasLimit>
+                ...
+              </message>
+            )
+          ...
+          </messages>
+
     syntax KItem ::= "#loadNonce" Int Int
  // -------------------------------------
     rule <k> #loadNonce ACCT TXID => . ... </k>
@@ -738,7 +760,7 @@ eth_sendRawTransaction
     rule <k> #eth_sendRawTransaction => #rpcResponseError(-32000, "Invalid Signature") ... </k> [owise]
 
     rule <k> #eth_sendRawTransactionLoad
-          => mkTX !ID:Int
+          => makeTX !ID:Int
           ~> loadTransaction !ID { "data"  : Raw2Hex(TI)  , "gas"      : Raw2Hex(TG) , "gasPrice" : Raw2Hex(TP)
                                  , "nonce" : Raw2Hex(TN)  , "r"        : Raw2Hex(TR) , "s"        : Raw2Hex(TS)
                                  , "to"    : Raw2Hex'(TT) , "v"        : Raw2Hex(TW) , "value"    : Raw2Hex(TV)
@@ -1174,7 +1196,7 @@ Transaction Execution
     syntax KItem ::= "#loadTx" Account JSON
  // ---------------------------------------
     rule <k> #loadTx ACCTFROM J
-          => mkTX !ID:Int
+          => makeTX !ID:Int
           ~> #loadNonce ACCTFROM !ID
           ~> loadTransaction !ID J
           ~> signTX !ID ACCTFROM
@@ -1691,17 +1713,33 @@ Gas Limit Call
 ```k
     syntax KItem ::= "#firefly_setGasLimit"
  // ---------------------------------------
-    rule <k> #firefly_setGasLimit => #rpcResponseSuccess(true) ... </k>
-         <params> [ GLIMIT:String, .JSONs ] </params>
-         <gasLimit> _ => #parseWord( GLIMIT ) </gasLimit>
+    rule <k> #firefly_setGasLimit ... </k>
+         <params> [ GLIMIT:String => #parseWord( GLIMIT ), .JSONs ] </params>
 
     rule <k> #firefly_setGasLimit => #rpcResponseSuccess(true) ... </k>
-         <params> [ GLIMIT:Int, .JSONs ] </params>
-         <gasLimit> _ => GLIMIT </gasLimit>
+         <params>          [ GLIMIT:Int, .JSONs ] </params>
+         <gasLimit>        _ => GLIMIT            </gasLimit>
+         <defaultGasLimit> _ => GLIMIT            </defaultGasLimit>
 
     rule <k> #firefly_setGasLimit => #rpcResponseError(-32000, "firefly_setGasLimit requires exactly 1 argument") ... </k> [owise]
 ```
 
+Gas Price Call
+--------------
+
+```k
+    syntax KItem ::= "#firefly_setGasPrice"
+ // ---------------------------------------
+    rule <k> #firefly_setGasPrice ... </k>
+         <params> [ GPRICE:String => #parseWord( GPRICE ), .JSONs ] </params>
+
+    rule <k> #firefly_setGasPrice => #rpcResponseSuccess(true) ... </k>
+         <params>          [ GPRICE:Int, .JSONs ] </params>
+         <gasPrice>        _ => GPRICE            </gasPrice>
+         <defaultGasPrice> _ => GPRICE            </defaultGasPrice>
+
+    rule <k> #firefly_setGasPrice => #rpcResponseError(-32000, "firefly_setGasPrice requires exactly 1 argument") ... </k> [owise]
+```
 Mining
 ------
 
