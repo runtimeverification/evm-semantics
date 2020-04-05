@@ -229,8 +229,6 @@ module LEMMAS-HASKELL [symbolic, kore]
     imports EVM
     imports EDSL
 
-    rule BUF [ L .. W ] => padRightBytes(.Bytes, W, 0) requires L >=Int #sizeByteArray(BUF)  [simplification]
-
     rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])
       requires #range(0 <= START < #sizeByteArray(BUF1))
        andBool #sizeByteArray(BUF1) <Int START +Int WIDTH [simplification]

@@ -490,7 +490,6 @@ Most of EVM data is held in local memory.
     syntax ByteArray ::= #range ( Memory , Int , Int ) [function, functional]
  // -------------------------------------------------------------------------
     rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ] [concrete]
-    rule #Ceil( #range(LM, START, WIDTH) ) => {((0 <=Int START) andBool (0 <=Int WIDTH)) #Equals true}  [anywhere]
 
     syntax Memory ::= ".Memory" [function]
  // --------------------------------------
@@ -610,8 +609,6 @@ The local memory of execution is a byte-array (instead of a word-array).
  // --------------------------------------------------------------------
     rule #padToWidth(N, BS)      => padLeftBytes(BS, N, 0)  [concrete]
     rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) [concrete]
-    rule #Ceil(#padToWidth(N, _))      => {(0 <=Int N) #Equals true}  [anywhere]
-    rule #Ceil(#padRightToWidth(N, _)) => {(0 <=Int N) #Equals true}  [anywhere]
 ```
 
 ```{.k .nobytes}
