@@ -1,0 +1,43 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": true
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "0x6691b7"
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": true
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "0x30d40"
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "error": {
+      "code": -32000,
+      "message": "firefly_setGasPrice requires exactly 1 argument"
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "0x30d40"
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "error": {
+      "code": -32000,
+      "message": "firefly_setGasPrice requires exactly 1 argument"
+    }
+  }
+]
