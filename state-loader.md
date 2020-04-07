@@ -212,9 +212,9 @@ The `"rlp"` key loads the block information.
          <messages>
             ( .Bag
            => <message>
-                <msgID> TXID:Int   </msgID>
-                <txGasPrice> 20000000000 </txGasPrice>
-                <txGasLimit> 90000       </txGasLimit>
+                <msgID>      TXID:Int </msgID>
+                <txGasPrice> 20000000000   </txGasPrice>
+                <txGasLimit> 90000         </txGasLimit>
                 ...
               </message>
             )
@@ -274,12 +274,13 @@ The `"rlp"` key loads the block information.
                              | "EARLIEST"
  // -------------------------------------
 
-    syntax BlockIdentifier ::= #parseBlockIdentifier ( String ) [function]
- // ----------------------------------------------------------------------
-    rule #parseBlockIdentifier("pending")  => PENDING
-    rule #parseBlockIdentifier("latest")   => LATEST
-    rule #parseBlockIdentifier("earliest") => EARLIEST
-    rule #parseBlockIdentifier(BLOCKNUM)   => #parseHexWord(BLOCKNUM) requires substrString(BLOCKNUM,0,2) ==String "0x"
+    syntax BlockIdentifier ::= #parseBlockIdentifier ( JSON ) [function]
+ // --------------------------------------------------------------------
+    rule #parseBlockIdentifier(BLOCKNUM:Int) => BLOCKNUM
+    rule #parseBlockIdentifier("pending")    => PENDING
+    rule #parseBlockIdentifier("latest")     => LATEST
+    rule #parseBlockIdentifier("earliest")   => EARLIEST
+    rule #parseBlockIdentifier(BLOCKNUM)     => #parseWord(BLOCKNUM) [owise]
 ```
 ```k
 endmodule

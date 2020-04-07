@@ -1,0 +1,51 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "firefly_setGasPrice",
+    "params": [
+      "0x6691b7"
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_gasPrice",
+    "params": []
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "firefly_setGasPrice",
+    "params": [
+      200000
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_gasPrice",
+    "params": []
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "firefly_setGasPrice",
+    "params": [
+      "0x6691b7",
+      "Hello"
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_gasPrice",
+    "params": []
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "firefly_setGasPrice",
+    "params": []
+  }
+]

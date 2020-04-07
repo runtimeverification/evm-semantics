@@ -16,6 +16,7 @@ module ECRECOVERLOOP02-SIG0-INVALID-SPEC
       <evm>
         <output> _ => .WordStack </output>
         <statusCode> _ => EVMC_REVERT </statusCode>
+        <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => _ </touchedAccounts>
