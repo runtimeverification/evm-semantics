@@ -69,6 +69,7 @@ The `blockList` cell stores a list of previous blocks and network states.
     rule <k> #pushBlockchainState => . ... </k>
          <blockList> (.List => ListItem({ <network> NETWORK </network> | <block> BLOCK </block> })) ... </blockList>
          <network> NETWORK </network>
+         <blockhashes> (.List => ListItem(#blockchainItemHash({ <network> NETWORK </network> | <block> BLOCK </block> }))) _ </blockhashes>
          <block>   BLOCK   </block>
 
     syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List , BlockchainItem ) [function]
