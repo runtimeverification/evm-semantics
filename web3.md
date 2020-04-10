@@ -494,10 +494,19 @@ WEB3 JSON RPC
  // -----------------------------------
     rule <k> #popNetworkState => . ... </k>
          <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts>}) => .List ) </snapshots>
-         <network>    _ => NETWORK   </network>
-         <block>      _ => BLOCK     </block>
-         <blockList>  _ => BLOCKLIST </blockList>
-         <txReceipts> _ => RECEIPTS  </txReceipts>
+         <network>     _ => NETWORK                        </network>
+         <blockhashes> _ => #getBlockhashlist( BLOCKLIST ) </blockhashes>
+         <block>       _ => BLOCK                          </block>
+         <blockList>   _ => BLOCKLIST                      </blockList>
+         <txReceipts>  _ => RECEIPTS                       </txReceipts>
+
+    syntax List ::= #getBlockhashlist( List )            [function]
+                  | #getBlockhashlistFromParents( List ) [function]
+ // ---------------------------------------------------------------
+    rule #getBlockhashlist( .List ) => .List
+    rule #getBlockhashlist( (ListItem( BLOCK ) REST) #as BLOCKLIST ) => ListItem(#blockchainItemHash(BLOCK)) #getBlockhashlistFromParents(BLOCKLIST)
+    rule #getBlockhashlistFromParents( .List ) => .List
+    rule #getBlockhashlistFromParents( ListItem( { _ | <block> <previousHash> HP </previousHash> ... </block> } ) REST ) => ListItem(HP) #getBlockhashlistFromParents(REST)
 
     syntax KItem ::= "#evm_revert"
  // ------------------------------
