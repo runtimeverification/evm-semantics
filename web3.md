@@ -368,7 +368,7 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#eth_blockNumber"
  // -----------------------------------
-    rule <k> #eth_blockNumber => #rpcResponseSuccess(#unparseQuantity( BLOCKNUM )) ... </k>
+    rule <k> #eth_blockNumber => #rpcResponseSuccess(#unparseQuantity( BLOCKNUM -Int 1 )) ... </k>
          <number> BLOCKNUM </number>
 
     syntax KItem ::= "#eth_accounts"
@@ -1770,7 +1770,7 @@ Mining
     rule <k> #firefly_genesisBlock ... </k>
          <params> [ .JSONs => #unparseQuantity(#time()), .JSONs ] </params>
 
-    rule <k> #firefly_genesisBlock => #updateTrieRoots ~> #pushBlockchainState ~> #rpcResponseSuccess(true) ... </k>
+    rule <k> #firefly_genesisBlock => #updateTrieRoots ~> #pushBlockchainState ~> #incrementBlockNumber ~> #rpcResponseSuccess(true) ... </k>
          <params>     [ TIME:String, .JSONs ]                                                            </params>
          <timestamp>  _ => #parseWord( TIME )                                                            </timestamp>
          <logsBloom>  _ => #padToWidth( 256, .ByteArray )                                                </logsBloom>
@@ -1802,7 +1802,7 @@ Mining
                    | "#updateTransactionsRoot"
                    | "#updateReceiptsRoot"
  // --------------------------------------
-    rule <k> #saveState => #incrementBlockNumber ~> #pushBlockchainState ... </k>
+    rule <k> #saveState => #pushBlockchainState ~> #incrementBlockNumber ... </k>
 
     rule <k> #incrementBlockNumber => . ... </k>
          <number> BN => BN +Int 1 </number>
