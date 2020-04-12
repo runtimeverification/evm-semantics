@@ -77,7 +77,7 @@ The `blockList` cell stores a list of previous blocks and network states.
     rule #getBlockByNumber( _:Int            , .List                 , _     ) => .BlockchainItem
     rule #getBlockByNumber( LATEST           , .List                 , BLOCK ) => BLOCK
     rule #getBlockByNumber( LATEST           ,   ListItem( BLOCK ) _ , _     ) => BLOCK
-    rule #getBlockByNumber( PENDING          , _                     , BLOCK ) => BLOCK
+    rule #getBlockByNumber( PENDING => LATEST, _                     , _     )
     rule #getBlockByNumber( EARLIEST         , .List                 , BLOCK ) => BLOCK
     rule #getBlockByNumber( EARLIEST         , _ ListItem( BLOCK )   , _     ) => BLOCK
 
