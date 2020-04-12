@@ -937,6 +937,14 @@ Transaction Receipts
     -   the status code of the transaction.
 
 ```k
+    syntax KItem ::= "#makeTxReceipts"
+                   | "#makeTxReceiptsAux" List
+ // ------------------------------------------
+    rule <k> #makeTxReceipts => #makeTxReceiptsAux TXLIST ... </k>
+         <txOrder> TXLIST </txOrder>
+    rule <k> #makeTxReceiptsAux .List => . ... </k>
+    rule <k> #makeTxReceiptsAux (ListItem(TXID) TXLIST) => #makeTxReceipt TXID ~> #makeTxReceiptsAux TXLIST ... </k>
+
     syntax KItem ::= "#makeTxReceipt" Int
  // -------------------------------------
     rule <k> #makeTxReceipt TXID => . ... </k>
@@ -950,7 +958,7 @@ Transaction Receipts
                <txStatus> bool2Word(STATUSCODE ==K EVMC_SUCCESS) </txStatus>
                <txID> TXID </txID>
                <sender> #parseHexWord(#unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(TD), TW , TR, TS)))) </sender>
-               <txBlockNumber> BN +Int 1 </txBlockNumber>
+               <txBlockNumber> BN </txBlockNumber>
              </txReceipt>
            )
            ...
@@ -1238,7 +1246,7 @@ Transaction Execution
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
 
-    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #mineAndUpdate ... </k>
+    rule <k> #validateTx TXID => #executeTx TXID ~> #mineAndUpdate ... </k>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
          <message>
@@ -1539,7 +1547,7 @@ NOGAS Mode
          <mode> NOGAS </mode>
      [priority(25)]
 
-    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #mineAndUpdate ... </k>
+    rule <k> #validateTx TXID => #executeTx TXID ~> #mineAndUpdate ... </k>
          <mode> NOGAS </mode>
      [priority(25)]
 
@@ -1781,6 +1789,7 @@ Mining
     rule <k> #mineBlock
           => #finalizeBlock
           ~> #setParentHash #getBlockByNumber( LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>} )
+          ~> #makeTxReceipts
           ~> #updateTrieRoots
           ~> #saveState
           ~> #startBlock
