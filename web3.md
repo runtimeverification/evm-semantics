@@ -327,6 +327,7 @@ WEB3 JSON RPC
     rule <k> #runRPCCall => #firefly_genesisBlock                    ... </k> <method> "firefly_genesisBlock"                    </method>
     rule <k> #runRPCCall => #firefly_setGasLimit                     ... </k> <method> "firefly_setGasLimit"                     </method>
     rule <k> #runRPCCall => #firefly_setGasPrice                     ... </k> <method> "firefly_setGasPrice"                     </method>
+    rule <k> #runRPCCall => #firefly_setNetworkId                    ... </k> <method> "firefly_setNetworkId"                    </method>
     rule <k> #runRPCCall => #firefly_blake2compress                  ... </k> <method> "firefly_blake2compress"                  </method>
 
     rule <k> #runRPCCall => #miner_start                             ... </k> <method> "miner_start"                             </method>
@@ -1740,6 +1741,23 @@ Gas Price Call
 
     rule <k> #firefly_setGasPrice => #rpcResponseError(-32000, "firefly_setGasPrice requires exactly 1 argument") ... </k> [owise]
 ```
+
+Network Id
+----------
+
+```k
+    syntax KItem ::= "#firefly_setNetworkId"
+ // ----------------------------------------
+    rule <k> #firefly_setNetworkId ... </k>
+         <params> [ VALUE:String => #parseWord( VALUE ), .JSONs ] </params>
+
+    rule <k> #firefly_setNetworkId => #rpcResponseSuccess(true) ... </k>
+         <params>          [ VALUE:Int, .JSONs ] </params>
+         <chainID>        _ => VALUE            </chainID>
+
+    rule <k> #firefly_setNetworkId => #rpcResponseError(-32000, "firefly_setNetworkId requires exactly 1 argument") ... </k> [owise]
+```
+
 Mining
 ------
 

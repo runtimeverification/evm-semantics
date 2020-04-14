@@ -1,0 +1,22 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "net_version",
+    "params": []
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "firefly_setNetworkId",
+    "params": [
+      6721975
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "net_version",
+    "params": []
+  }
+]
