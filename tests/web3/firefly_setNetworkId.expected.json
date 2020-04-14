@@ -1,0 +1,17 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "28346"
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": true
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "result": "6721975"
+  }
+]

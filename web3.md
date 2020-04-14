@@ -69,6 +69,7 @@ The `blockList` cell stores a list of previous blocks and network states.
     rule <k> #pushBlockchainState => . ... </k>
          <blockList> (.List => ListItem({ <network> NETWORK </network> | <block> BLOCK </block> })) ... </blockList>
          <network> NETWORK </network>
+         <blockhashes> (.List => ListItem(#blockchainItemHash({ <network> NETWORK </network> | <block> BLOCK </block> }))) ... </blockhashes>
          <block>   BLOCK   </block>
 
     syntax BlockchainItem ::= #getBlockByNumber ( BlockIdentifier , List , BlockchainItem ) [function]
@@ -76,7 +77,7 @@ The `blockList` cell stores a list of previous blocks and network states.
     rule #getBlockByNumber( _:Int            , .List                 , _     ) => .BlockchainItem
     rule #getBlockByNumber( LATEST           , .List                 , BLOCK ) => BLOCK
     rule #getBlockByNumber( LATEST           ,   ListItem( BLOCK ) _ , _     ) => BLOCK
-    rule #getBlockByNumber( PENDING          , _                     , BLOCK ) => BLOCK
+    rule #getBlockByNumber( PENDING => LATEST, _                     , _     )
     rule #getBlockByNumber( EARLIEST         , .List                 , BLOCK ) => BLOCK
     rule #getBlockByNumber( EARLIEST         , _ ListItem( BLOCK )   , _     ) => BLOCK
 
@@ -327,6 +328,7 @@ WEB3 JSON RPC
     rule <k> #runRPCCall => #firefly_genesisBlock                    ... </k> <method> "firefly_genesisBlock"                    </method>
     rule <k> #runRPCCall => #firefly_setGasLimit                     ... </k> <method> "firefly_setGasLimit"                     </method>
     rule <k> #runRPCCall => #firefly_setGasPrice                     ... </k> <method> "firefly_setGasPrice"                     </method>
+    rule <k> #runRPCCall => #firefly_setNetworkId                    ... </k> <method> "firefly_setNetworkId"                    </method>
     rule <k> #runRPCCall => #firefly_blake2compress                  ... </k> <method> "firefly_blake2compress"                  </method>
 
     rule <k> #runRPCCall => #miner_start                             ... </k> <method> "miner_start"                             </method>
@@ -367,7 +369,7 @@ WEB3 JSON RPC
 
     syntax KItem ::= "#eth_blockNumber"
  // -----------------------------------
-    rule <k> #eth_blockNumber => #rpcResponseSuccess(#unparseQuantity( BLOCKNUM )) ... </k>
+    rule <k> #eth_blockNumber => #rpcResponseSuccess(#unparseQuantity( BLOCKNUM -Int 1 )) ... </k>
          <number> BLOCKNUM </number>
 
     syntax KItem ::= "#eth_accounts"
@@ -493,10 +495,19 @@ WEB3 JSON RPC
  // -----------------------------------
     rule <k> #popNetworkState => . ... </k>
          <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts>}) => .List ) </snapshots>
-         <network>    _ => NETWORK   </network>
-         <block>      _ => BLOCK     </block>
-         <blockList>  _ => BLOCKLIST </blockList>
-         <txReceipts> _ => RECEIPTS  </txReceipts>
+         <network>     _ => NETWORK                        </network>
+         <blockhashes> _ => #getBlockhashlist( BLOCKLIST ) </blockhashes>
+         <block>       _ => BLOCK                          </block>
+         <blockList>   _ => BLOCKLIST                      </blockList>
+         <txReceipts>  _ => RECEIPTS                       </txReceipts>
+
+    syntax List ::= #getBlockhashlist( List )            [function]
+                  | #getBlockhashlistFromParents( List ) [function]
+ // ---------------------------------------------------------------
+    rule #getBlockhashlist( .List ) => .List
+    rule #getBlockhashlist( (ListItem( BLOCK ) REST) #as BLOCKLIST ) => ListItem(#blockchainItemHash(BLOCK)) #getBlockhashlistFromParents(BLOCKLIST)
+    rule #getBlockhashlistFromParents( .List ) => .List
+    rule #getBlockhashlistFromParents( ListItem( { _ | <block> <previousHash> HP </previousHash> ... </block> } ) REST ) => ListItem(HP) #getBlockhashlistFromParents(REST)
 
     syntax KItem ::= "#evm_revert"
  // ------------------------------
@@ -927,6 +938,14 @@ Transaction Receipts
     -   the status code of the transaction.
 
 ```k
+    syntax KItem ::= "#makeTxReceipts"
+                   | "#makeTxReceiptsAux" List
+ // ------------------------------------------
+    rule <k> #makeTxReceipts => #makeTxReceiptsAux TXLIST ... </k>
+         <txOrder> TXLIST </txOrder>
+    rule <k> #makeTxReceiptsAux .List => . ... </k>
+    rule <k> #makeTxReceiptsAux (ListItem(TXID) TXLIST) => #makeTxReceipt TXID ~> #makeTxReceiptsAux TXLIST ... </k>
+
     syntax KItem ::= "#makeTxReceipt" Int
  // -------------------------------------
     rule <k> #makeTxReceipt TXID => . ... </k>
@@ -940,7 +959,7 @@ Transaction Receipts
                <txStatus> bool2Word(STATUSCODE ==K EVMC_SUCCESS) </txStatus>
                <txID> TXID </txID>
                <sender> #parseHexWord(#unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(TD), TW , TR, TS)))) </sender>
-               <txBlockNumber> BN +Int 1 </txBlockNumber>
+               <txBlockNumber> BN </txBlockNumber>
              </txReceipt>
            )
            ...
@@ -1228,7 +1247,7 @@ Transaction Execution
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
 
-    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #mineAndUpdate ... </k>
+    rule <k> #validateTx TXID => #executeTx TXID ~> #mineAndUpdate ... </k>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
          <message>
@@ -1529,7 +1548,7 @@ NOGAS Mode
          <mode> NOGAS </mode>
      [priority(25)]
 
-    rule <k> #validateTx TXID => #executeTx TXID ~> #makeTxReceipt TXID ~> #mineAndUpdate ... </k>
+    rule <k> #validateTx TXID => #executeTx TXID ~> #mineAndUpdate ... </k>
          <mode> NOGAS </mode>
      [priority(25)]
 
@@ -1740,6 +1759,23 @@ Gas Price Call
 
     rule <k> #firefly_setGasPrice => #rpcResponseError(-32000, "firefly_setGasPrice requires exactly 1 argument") ... </k> [owise]
 ```
+
+Network Id
+----------
+
+```k
+    syntax KItem ::= "#firefly_setNetworkId"
+ // ----------------------------------------
+    rule <k> #firefly_setNetworkId ... </k>
+         <params> [ VALUE:String => #parseWord( VALUE ), .JSONs ] </params>
+
+    rule <k> #firefly_setNetworkId => #rpcResponseSuccess(true) ... </k>
+         <params>          [ VALUE:Int, .JSONs ] </params>
+         <chainID>        _ => VALUE            </chainID>
+
+    rule <k> #firefly_setNetworkId => #rpcResponseError(-32000, "firefly_setNetworkId requires exactly 1 argument") ... </k> [owise]
+```
+
 Mining
 ------
 
@@ -1760,7 +1796,7 @@ Mining
     rule <k> #firefly_genesisBlock ... </k>
          <params> [ .JSONs => #unparseQuantity(#time()), .JSONs ] </params>
 
-    rule <k> #firefly_genesisBlock => #updateTrieRoots ~> #pushBlockchainState ~> #rpcResponseSuccess(true) ... </k>
+    rule <k> #firefly_genesisBlock => #updateTrieRoots ~> #pushBlockchainState ~> #incrementBlockNumber ~> #rpcResponseSuccess(true) ... </k>
          <params>     [ TIME:String, .JSONs ]                                                            </params>
          <timestamp>  _ => #parseWord( TIME )                                                            </timestamp>
          <logsBloom>  _ => #padToWidth( 256, .ByteArray )                                                </logsBloom>
@@ -1771,6 +1807,7 @@ Mining
     rule <k> #mineBlock
           => #finalizeBlock
           ~> #setParentHash #getBlockByNumber( LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>} )
+          ~> #makeTxReceipts
           ~> #updateTrieRoots
           ~> #saveState
           ~> #startBlock
@@ -1792,7 +1829,7 @@ Mining
                    | "#updateTransactionsRoot"
                    | "#updateReceiptsRoot"
  // --------------------------------------
-    rule <k> #saveState => #incrementBlockNumber ~> #pushBlockchainState ... </k>
+    rule <k> #saveState => #pushBlockchainState ~> #incrementBlockNumber ... </k>
 
     rule <k> #incrementBlockNumber => . ... </k>
          <number> BN => BN +Int 1 </number>
