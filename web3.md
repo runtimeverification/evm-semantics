@@ -21,7 +21,7 @@ module WEB3
           <blockList> .List </blockList>
         </blockchain>
         <defaultGasPrice> 20000000000 </defaultGasPrice>
-        <defaultGasLimit> 6721975     </defaultGasLimit>
+        <defaultGasLimit> 90000       </defaultGasLimit>
         <accountKeys>     .Map        </accountKeys>
         <nextFilterSlot>  0           </nextFilterSlot>
         <txReceipts>
