@@ -184,7 +184,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA))
       requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
       [concrete]
-    rule #Ceil(#buf(SIZE, DATA)) => {(0 <=Int SIZE) andBool #range(0 <= DATA < (2 ^Int (SIZE *Int 8))) #Equals true}  [anywhere]
+    //todo prohibitive performance drop for ERC20 verifier when full rule is used.
+    //rule #Ceil(#buf(SIZE, DATA)) => {(0 <=Int SIZE) andBool #range(0 <= DATA < (2 ^Int (SIZE *Int 8))) #Equals true}  [anywhere]
+    rule #Ceil(#buf(SIZE, DATA)) => {(0 <=Int SIZE) #Equals true}  [anywhere]
 
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
