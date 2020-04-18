@@ -428,7 +428,7 @@ A cons-list is used for the EVM wordstack.
 
 -   Definedness conditions for `WS [ N ]` and `WS [ N := W ]`
 
-```{.k .symbolic}
+```{.k .symbolic-bytes}
     rule #Ceil(#padToWidth(N, BS))          => #Ceil(padLeftBytes(BS, N, 0))                                 [anywhere]
     rule #Ceil(#padRightToWidth(N, BS))     => #Ceil(padRightBytes(BS, N, 0))                                [anywhere]
     rule #Ceil(#lookup( _ |-> VAL M, KEY )) => {(#Ceil(#lookup( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]

@@ -175,9 +175,9 @@ web3_kore := $(web3_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 
 # Tangle definition from *.md files
 
-concrete_tangle := .k:not(.symbolic):not(.nobytes):not(.memmap),.concrete,.bytes,.membytes
-java_tangle     := .k:not(.concrete):not(.bytes):not(.memmap):not(.membytes),.symbolic,.nobytes
-haskell_tangle  := .k:not(.concrete):not(.nobytes):not(.memmap),.symbolic,.bytes,.membytes
+concrete_tangle := .k:not(.symbolic):not(.nobytes):not(.memmap):not(.symbolic-bytes),.concrete,.bytes,.membytes
+java_tangle     := .k:not(.concrete):not(.bytes):not(.memmap):not(.membytes):not(.symbolic-bytes),.symbolic,.nobytes
+haskell_tangle  := .k:not(.concrete):not(.nobytes):not(.memmap),.symbolic,.bytes,.membytes,.symbolic-bytes
 
 defn: $(defn_files)
 llvm-defn:    $(llvm_files)
