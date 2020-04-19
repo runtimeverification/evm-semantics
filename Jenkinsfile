@@ -27,11 +27,11 @@ pipeline {
         stage('Dependencies') {
           parallel {
             stage('K')     { steps { sh 'make deps RELEASE=true' } }
-            stage('Tests') { steps { sh 'make split-tests -j3'   } }
+            //stage('Tests') { steps { sh 'make split-tests -j3'   } }
           }
         }
         stage('Build') { steps { sh 'make build -j4' } }
-        stage('Test Execution') {
+        /*stage('Test Execution') {
           failFast true
           options { timeout(time: 20, unit: 'MINUTES') }
           parallel {
@@ -39,7 +39,7 @@ pipeline {
             stage('VM (Haskell)')       { steps { sh 'make test-vm -j8 TEST_CONCRETE_BACKEND=haskell'       } }
             stage('Conformance (Web3)') { steps { sh 'make test-web3 -j8'                                   } }
           }
-        }
+        }*/
         stage('Proofs') {
           options {
             lock("proofs-${env.NODE_NAME}")
@@ -47,10 +47,10 @@ pipeline {
           }
           parallel {
             stage('Java + Haskell')    { steps { sh 'make test-prove -j6'                                                        } }
-            stage('Haskell (dry-run)') { steps { sh 'make test-prove -j2 KPROVE_OPTIONS=--dry-run TEST_SYMBOLIC_BACKEND=haskell' } }
+            //stage('Haskell (dry-run)') { steps { sh 'make test-prove -j2 KPROVE_OPTIONS=--dry-run TEST_SYMBOLIC_BACKEND=haskell' } }
           }
         }
-        stage('Test Interactive') {
+        /*stage('Test Interactive') {
           failFast true
           options { timeout(time: 35, unit: 'MINUTES') }
           parallel {
@@ -63,7 +63,7 @@ pipeline {
             stage('Haskell Search') { steps { sh 'make test-interactive-search TEST_SYMBOLIC_BACKEND=haskell -j4' } }
             stage('KEVM help')      { steps { sh './kevm help'                                                    } }
           }
-        }
+        }*/
       }
     }
     stage('Deploy') {
