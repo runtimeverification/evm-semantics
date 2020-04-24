@@ -99,6 +99,7 @@ Address/Hash Helpers
 ```k
     syntax String ::= #hashSignedTx   ( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
                     | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray )                               [function]
+                    | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray, Int )                          [function]
  // --------------------------------------------------------------------------------------------------------------------------
     rule [hashTx]: #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
                 => Keccak256( #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) )
@@ -113,6 +114,20 @@ Address/Hash Helpers
                                                   , 192
                                                   )
                                 )
+
+    rule [hashFakeTx2]: #hashUnsignedTx(TN, TP, TG, TT, TV, TD, CID)
+                     => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
+                                                     +String #rlpEncodeWord(TP)
+                                                     +String #rlpEncodeWord(TG)
+                                                     +String #rlpEncodeAccount(TT)
+                                                     +String #rlpEncodeWord(TV)
+                                                     +String #rlpEncodeString(#unparseByteStack(TD))
+                                                     +String #rlpEncodeWord(CID)
+                                                     +String #rlpEncodeString("")
+                                                     +String #rlpEncodeString("")
+                                                   , 192
+                                                   )
+                                 )
 ```
 
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
