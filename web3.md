@@ -802,27 +802,7 @@ eth_sendRawTransaction
            <sigR>       TR </sigR>
            <sigS>       TS </sigS>
          </message>
-      requires (TW ==Int 27 orBool TW ==Int 28) andBool ECDSARecover( Hex2Raw( #hashUnsignedTx(TN, TP, TG, TT, TV, TD) ), TW, #unparseByteStack(TR), #unparseByteStack(TS) ) =/=String ""
-
-    rule <k> #eth_sendRawTransactionVerify TXID
-          => #prepareTx TXID #sender(TN, TP, TG, TT, TV, #unparseByteStack(TD), TW, TR, TS, CID)
-          ~> #eth_sendRawTransactionSend TXID
-         ...
-         </k>
-         <chainID> CID </chainID>
-         <message>
-           <msgID> TXID </msgID>
-           <txNonce>    TN </txNonce>
-           <txGasPrice> TP </txGasPrice>
-           <txGasLimit> TG </txGasLimit>
-           <to>         TT </to>
-           <value>      TV </value>
-           <data>       TD </data>
-           <sigV>       TW </sigV>
-           <sigR>       TR </sigR>
-           <sigS>       TS </sigS>
-         </message>
-      requires (TW ==Int CID *Int 2 +Int 35 orBool TW ==Int CID *Int 2 +Int 36) andBool ECDSARecover( Hex2Raw( #hashUnsignedTx(TN, TP, TG, TT, TV, TD, CID) ), 28 -Int (TW %Int 2), #unparseByteStack(TR), #unparseByteStack(TS) ) =/=String ""
+      requires #sender(TN, TP, TG, TT, TV, #unparseByteStack(TD), TW, TR, TS, CID) =/=K .Account
 
     rule <k> #eth_sendRawTransactionVerify TXID => #rpcResponseError(-32000, "Invalid Signature") ... </k>
          <txOrder> ListItem(TXID) => .List ... </txOrder>
