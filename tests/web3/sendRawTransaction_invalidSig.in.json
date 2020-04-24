@@ -1,8 +1,30 @@
 {
   "jsonrpc": "2.0",
+  "id": 0,
+  "method": "firefly_addAccount",
+  "params": [
+    {
+      "key": "0xe3253ad0f5eb36a2aad0e1ac1357d9e4d2369e253ebffbe51cc0058300aa51e0",
+      "balance": "0x56bc75e2d63100000"
+    }
+  ]
+}
+{
+  "jsonrpc": "2.0",
   "id": 2,
   "method": "eth_sendRawTransaction",
   "params": [
     "0xf867808609184e72a0008276c09404ec3d8612162d2a8b6845824118a323820777718201008025a074c385d50ad43bb9616fad2f3056a1a4336a78c19cf03dc65cf6d683db475498a0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+  ]
+}
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "eth_sendTransaction",
+  "params": [
+    {
+      "from":"0xa6c4440af8b62f7ef0a19ff1ed28bc5fa986aa65",
+      "value":"0x1"
+    }
   ]
 }
