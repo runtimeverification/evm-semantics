@@ -38,11 +38,15 @@ Address/Hash Helpers
     rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#padToWidth(20, #asByteStack(ACCT))) +String #unparseByteStack(#padToWidth(32, #asByteStack(SALT))) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE)))))))
 
     syntax Account ::= #sender ( Int , Int , Int , Account , Int , String , Int , ByteArray , ByteArray ) [function]
+                     | #sender ( Int , Int , Int , Account , Int , String , Int , ByteArray , ByteArray, Int ) [function]
                      | #sender ( String , Int , String , String )                                         [function, klabel(#senderAux)]
                      | #sender ( String )                                                                 [function, klabel(#senderAux2)]
  // -------------------------------------------------------------------------------------------------------------------------------------
     rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS)
       => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWordStack(TN : TP : TG : .WordStack) +String #rlpEncodeAccount(TT) +String #rlpEncodeWord(TV) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
+
+    rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS, CID)
+      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TN, TP, TG, TT, TV, DATA, CID)), 28 -Int (TW %Int 2), #unparseByteStack(TR), #unparseByteStack(TS))
 
     rule #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
 
