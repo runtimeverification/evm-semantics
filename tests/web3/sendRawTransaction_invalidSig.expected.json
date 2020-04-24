@@ -1,8 +1,18 @@
 {
   "jsonrpc": "2.0",
+  "id": 0,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
   "id": 2,
   "error": {
     "code": -32000,
     "message": "Invalid Signature"
   }
+}
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": "0x4e210195f80330b6a33f7c1af4d655bd2b31a6610c64af2e2a801283f6a74567"
 }
