@@ -16,6 +16,7 @@ module STORAGEVAR02-NOOVERFLOW-SPEC
       <evm>
         <output> _ => #encodeArgs(#uint256(N1)) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
+        <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => _ </touchedAccounts>

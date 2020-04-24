@@ -12,7 +12,7 @@ module SERIALIZATION
     imports KRYPTO
     imports EVM-TYPES
     imports STRING-BUFFER
-    imports JSON
+    imports JSON-EXT
 ```
 
 Address/Hash Helpers

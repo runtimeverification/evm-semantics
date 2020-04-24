@@ -18,7 +18,7 @@
       "data": {
         "0x5daefe6da6e340448ea5c8ff3926de2aa48e4423476a438f1533a18b4347c25f": {
           "error": "EVMC_UNDEFINED_INSTRUCTION",
-          "program_counter": 1,
+          "program_counter": 12,
           "return": "0x"
         }
       }

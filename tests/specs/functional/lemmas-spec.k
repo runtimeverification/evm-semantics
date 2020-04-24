@@ -19,9 +19,9 @@ module LEMMAS-SPEC
  // Buffer write simplifications
  // ----------------------------
 
-    rule <k> runLemma ( M [ L := .ByteArray ] [ N := WS:ByteArray ]                             ) => doneLemma ( M [ N := WS ]                        ) ... </k> requires L <=Int N
-    rule <k> runLemma ( M [ L := WS:ByteArray ] [ N := .ByteArray ]                             ) => doneLemma ( M [ L := WS ]                        ) ... </k> requires N <=Int L
-    rule <k> runLemma ( M [ 32 := (0 : 1 : 2 : .ByteArray) ] [ 32 := (3 : 4 : 5 : .ByteArray) ] ) => doneLemma ( M [ 32 := (3 : 4 : 5 : .ByteArray) ] ) ... </k>
+    // rule <k> runLemma ( M [ L := .ByteArray ] [ N := WS:ByteArray ]                             ) => doneLemma ( M [ N := WS ]                        ) ... </k> requires L <=Int N
+    // rule <k> runLemma ( M [ L := WS:ByteArray ] [ N := .ByteArray ]                             ) => doneLemma ( M [ L := WS ]                        ) ... </k> requires N <=Int L
+    // rule <k> runLemma ( M [ 32 := (0 : 1 : 2 : .ByteArray) ] [ 32 := (3 : 4 : 5 : .ByteArray) ] ) => doneLemma ( M [ 32 := (3 : 4 : 5 : .ByteArray) ] ) ... </k>
 
  // #range selection operation
  // --------------------------
@@ -32,7 +32,7 @@ module LEMMAS-SPEC
 
     // Range outside of previous buffer write
     rule <k> runLemma ( #range(M [ 32 := BUF:ByteArray ], 20, 4) ) => doneLemma ( #range(M, 20, 4) ) ... </k>
-    rule <k> runLemma ( #range(M [ 32 := BUF:ByteArray ], 48, 4) ) => doneLemma ( #range(M, 48, 4) ) ... </k> requires #sizeByteArray(BUF) <=Int 12
+    // rule <k> runLemma ( #range(M [ 32 := BUF:ByteArray ], 48, 4) ) => doneLemma ( #range(M, 48, 4) ) ... </k> requires #sizeByteArray(BUF) <=Int 12
     rule <k> runLemma ( #range(M [ 32 := BUF:ByteArray ], 31, 1) ) => doneLemma ( #range(M, 31, 1) ) ... </k>
     rule <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ], 33, 1) )  => doneLemma ( #range(M, 33, 1) ) ... </k>
 

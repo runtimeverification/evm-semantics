@@ -2,6 +2,12 @@ requires "evm.k"
 requires "edsl.k"
 
 module LEMMAS
+    imports LEMMAS-JAVA
+    imports LEMMAS-HASKELL
+
+endmodule
+
+module LEMMAS-JAVA [symbolic, kast]
     imports EVM
     imports EDSL
     imports K-REFLECTION
@@ -201,6 +207,99 @@ module LEMMAS
 
     rule chop(I) => I requires 0 <=Int I andBool I <Int pow256  [simplification]
 
+endmodule
+
+module LEMMAS-HASKELL [symbolic, kore]
+    imports EVM
+    imports EDSL
+
+    rule WS ++ .ByteArray => WS  [simplification]
+    rule .ByteArray ++ WS => WS  [simplification]
+
+    rule #sizeByteArray(BUF1 ++ BUF2)                  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
+    rule #sizeByteArray(#buf(SIZE, _))                 => SIZE                                            [simplification]
+    rule #sizeByteArray(#buf(SIZE, _)[START .. WIDTH]) => WIDTH
+      requires #range(0 <= START < SIZE)
+       andBool #range(0 < WIDTH <= SIZE -Int START)                                                       [simplification]
+
+    rule BUF [ L .. W ] => .ByteArray requires W <=Int 0                    [simplification]
+    rule BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
+
+    rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])
+      requires #range(0 <= START < #sizeByteArray(BUF1))
+       andBool #sizeByteArray(BUF1) <Int START +Int WIDTH [simplification]
+
+    rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. WIDTH])
+      requires #range(0 <= START < #sizeByteArray(BUF1))
+       andBool START +Int WIDTH <=Int #sizeByteArray(BUF1) [simplification]
+
+    rule (BUF1 ++ BUF2)[START .. WIDTH] => BUF2 [START -Int #sizeByteArray(BUF1) .. WIDTH]
+      requires START >=Int #sizeByteArray(BUF1) [simplification]
+
+    rule #asWord(BUF) /Int D => #asWord(BUF[0 .. #sizeByteArray(BUF) -Int log256Int(D)])
+      requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
+       andBool #sizeByteArray(BUF) >=Int log256Int(D) [simplification]
+
+    rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
+      requires #rangeUInt(256, V) [simplification]
+
+    rule #asWord(#buf(N, BUF)) => BUF
+      requires #range(0 < N <= 32)
+       andBool #range(0 <= BUF < 2 ^Int (N *Int 8)) [simplification]
+
+    rule N &Int maxUInt160 => N
+      requires #rangeUInt(160, N) [simplification]
+
+    rule maxUInt160 &Int N => N
+      requires #rangeUInt(160, N) [simplification]
+
+    rule #range(M, N, K) => .ByteArray requires notBool K >Int 0  [simplification]
+
+    rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))
+      requires K >Int 0
+       andBool L <Int N
+      [simplification]
+
+    rule #range(M [ N := BUF ], L, K) => BUF [ L -Int N .. minInt(K, #sizeByteArray(BUF) -Int (L -Int N)) ] ++ #range(M, N +Int #sizeByteArray(BUF), K -Int minInt(K, #sizeByteArray(BUF) -Int (L -Int N)))
+      requires K  >Int 0
+       andBool L >=Int N
+       andBool L  <Int N +Int #sizeByteArray(BUF)
+      [simplification]
+
+    rule #range(M [ N := BUF ], L, K) => #range(M, L, K)
+      requires K  >Int 0
+       andBool L >=Int N +Int #sizeByteArray(BUF)
+      [simplification]
+
+    rule 0 <=Int keccak(V)                  => true  [simplification]
+    rule         keccak(V) <=Int maxUInt256 => true  [simplification]
+
+    // Defineness axiom for #buf
+    rule #Ceil(#buf(@SIZE, @DATA)) => {(@SIZE >=Int 0) #Equals true} #And #Ceil(@SIZE) #And #Ceil(@DATA) [anywhere]
+
+    rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
+    rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
+
     rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
+    rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma]
+    rule 0 <=Int lengthBytes ( _ )        => true [smt-lemma]
+
+    rule bool2Word( B:Bool ) ==Int 1 => B         [simplification]
+    rule bool2Word( B:Bool ) ==Int 0 => notBool B [simplification]
+
+    // Arithmetic simplification
+    rule I +Int B => B +Int I          [concrete(I), symbolic(B), priority(51), simplification]
+    rule A -Int I => A +Int (0 -Int I) [concrete(I), symbolic(A), priority(51), simplification]
+
+    rule (A +Int I2) +Int I3 => A +Int (I2 +Int I3) [concrete(I2, I3), symbolic(A), simplification]
+    rule I1 +Int (B +Int I3) => B +Int (I1 +Int I3) [concrete(I1, I3), symbolic(B), simplification]
+    rule I1 -Int (B +Int I3) => (I1 -Int I3) -Int B [concrete(I1, I3), symbolic(B), simplification]
+    rule I1 +Int (I2 +Int C) => (I1 +Int I2) +Int C [concrete(I1, I2), symbolic(C), simplification]
+    rule I1 +Int (I2 -Int C) => (I1 +Int I2) -Int C [concrete(I1, I2), symbolic(C), simplification]
+    rule (I1 -Int B) +Int I3 => (I1 +Int I3) -Int B [concrete(I1, I3), symbolic(B), simplification]
+    rule I1 -Int (I2 +Int C) => (I1 -Int I2) -Int C [concrete(I1, I2), symbolic(C), simplification]
+    rule I1 -Int (I2 -Int C) => (I1 -Int I2) +Int C [concrete(I1, I2), symbolic(C), simplification]
+    rule (C -Int I2) -Int I3 => C -Int (I2 +Int I3) [concrete(I2, I3), symbolic(C), simplification]
+    rule I1 &Int (I2 &Int C) => (I1 &Int I2) &Int C [concrete(I1, I2), symbolic(C), simplification]
 
 endmodule
