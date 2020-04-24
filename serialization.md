@@ -46,7 +46,14 @@ Address/Hash Helpers
       => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWordStack(TN : TP : TG : .WordStack) +String #rlpEncodeAccount(TT) +String #rlpEncodeWord(TV) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
 
     rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS, CID)
-      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TN, TP, TG, TT, TV, DATA, CID)), 28 -Int (TW %Int 2), #unparseByteStack(TR), #unparseByteStack(TS))
+      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TN, TP, TG, TT, TV, #parseByteStackRaw(DATA)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
+      requires TW ==Int 27 orBool TW ==Int 28
+
+    rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS, CID)
+      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TN, TP, TG, TT, TV, #parseByteStackRaw(DATA), CID))), 28 -Int (TW %Int 2), #unparseByteStack(TR), #unparseByteStack(TS))
+      requires TW ==Int CID *Int 2 +Int 35 orBool TW ==Int CID *Int 2 +Int 36
+
+    rule #sender(_, _, _, _, _, _, _, _, _, _) => .Account [owise]
 
     rule #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
 
