@@ -590,10 +590,8 @@ The local memory of execution is a byte-array (instead of a word-array).
 
     syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional]
  // --------------------------------------------------------------------------
-    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0)
-      [concrete, owise]
-    rule WS [ START .. WIDTH ] => .ByteArray
-      requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
+    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0) [concrete, owise]
+    rule WS [ START .. WIDTH ] => .ByteArray                      requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
     rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH)
       requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int #sizeByteArray(WS) [concrete]
 
