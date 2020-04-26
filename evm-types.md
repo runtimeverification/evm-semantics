@@ -482,8 +482,8 @@ Most of EVM data is held in local memory.
  // -------------------------------------------------------------------------------------
     rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS')  [concrete]
 
-    syntax ByteArray ::= #range ( Memory , Int , Int ) [function]
- // -------------------------------------------------------------
+    syntax ByteArray ::= #range ( Memory , Int , Int ) [function, functional]
+ // -------------------------------------------------------------------------
     rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ] [concrete]
 
     syntax Memory ::= ".Memory" [function]
@@ -588,10 +588,12 @@ The local memory of execution is a byte-array (instead of a word-array).
  // -------------------------------------------------------------------------------------------------------------
     rule WS ++ WS' => WS +Bytes WS' [concrete]
 
-    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function]
- // --------------------------------------------------------------
-    rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires START <Int #sizeByteArray(WS) [concrete]
-    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0)                                              [owise, concrete]
+    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional]
+ // --------------------------------------------------------------------------
+    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0) [concrete, owise]
+    rule WS [ START .. WIDTH ] => .ByteArray                      requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
+    rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH)
+      requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int #sizeByteArray(WS) [concrete]
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, klabel(sizeByteArray), smtlib(sizeByteArray)]
  // ----------------------------------------------------------------------------------------------------------------
