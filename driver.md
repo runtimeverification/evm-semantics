@@ -70,7 +70,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> startTx => #finalizeBlock ... </k>
          <txPending> .List </txPending>
 
-    rule <k> startTx => loadTx(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW, TR, TS)) ... </k>
+    rule <k> startTx => loadTx(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW, TR, TS, CID)) ... </k>
+         <chainID> CID </chainID>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
            <msgID>      TXID </msgID>

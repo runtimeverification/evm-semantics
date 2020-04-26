@@ -785,10 +785,11 @@ eth_sendRawTransaction
     rule <k> #eth_sendRawTransactionLoad => #rpcResponseError(-32000, "Invalid Signature") ... </k> [owise]
 
     rule <k> #eth_sendRawTransactionVerify TXID
-          => #prepareTx TXID #sender(TN, TP, TG, TT, TV, #unparseByteStack(TD), TW, TR, TS)
+          => #prepareTx TXID #sender(TN, TP, TG, TT, TV, #unparseByteStack(TD), TW, TR, TS, CID)
           ~> #eth_sendRawTransactionSend TXID
          ...
          </k>
+         <chainID> CID </chainID>
          <message>
            <msgID> TXID </msgID>
            <txNonce>    TN </txNonce>
@@ -801,7 +802,7 @@ eth_sendRawTransaction
            <sigR>       TR </sigR>
            <sigS>       TS </sigS>
          </message>
-      requires ECDSARecover( Hex2Raw( #hashUnsignedTx(TN, TP, TG, TT, TV, TD) ), TW, #unparseByteStack(TR), #unparseByteStack(TS) ) =/=String ""
+      requires #sender(TN, TP, TG, TT, TV, #unparseByteStack(TD), TW, TR, TS, CID) =/=K .Account
 
     rule <k> #eth_sendRawTransactionVerify TXID => #rpcResponseError(-32000, "Invalid Signature") ... </k>
          <txOrder> ListItem(TXID) => .List ... </txOrder>
@@ -952,6 +953,7 @@ Transaction Receipts
     syntax KItem ::= "#makeTxReceipt" Int
  // -------------------------------------
     rule <k> #makeTxReceipt TXID => . ... </k>
+         <chainID> CID </chainID>
          <txReceipts>
            ( .Bag
           => <txReceipt>
@@ -961,7 +963,7 @@ Transaction Receipts
                <bloomFilter> #bloomFilter(LOGS) </bloomFilter>
                <txStatus> bool2Word(STATUSCODE ==K EVMC_SUCCESS) </txStatus>
                <txID> TXID </txID>
-               <sender> #parseHexWord(#unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(TD), TW , TR, TS)))) </sender>
+               <sender> #parseHexWord(#unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(TD), TW , TR, TS, CID)))) </sender>
                <txBlockNumber> BN </txBlockNumber>
              </txReceipt>
            )
@@ -1178,7 +1180,7 @@ Transaction Receipts
 
     rule <k> loadCallState TXID:Int
           => loadCallState {
-               "from":     #unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS))),
+               "from":     #unparseDataByteArray(#ecrecAddr(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW , TR, TS, CID))),
                "to":       TT,
                "gas":      TG,
                "gasPrice": TP,
@@ -1187,6 +1189,7 @@ Transaction Receipts
              }
          ...
          </k>
+         <chainID> CID </chainID>
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
