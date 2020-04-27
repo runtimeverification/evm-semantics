@@ -626,18 +626,18 @@ eth_sendTransaction
     rule <k> _:String ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "VM exception: " +String StatusCode2String( SC )) ... </k>
          <statusCode> SC:ExceptionalStatusCode </statusCode> [owise]
 
-    rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG)), _                 } ... </k>
-    rule <k> loadTransaction _ { "gasPrice" : (TP:String => #parseHexWord(TP)), _                 } ... </k>
-    rule <k> loadTransaction _ { "nonce"    : (TN:String => #parseHexWord(TN)), _                 } ... </k>
-    rule <k> loadTransaction _ { "v"        : (TW:String => #parseHexWord(TW)), _                 } ... </k>
-    rule <k> loadTransaction _ { "value"    : (TV:String => #parseHexWord(TV)), _                 } ... </k>
-    rule <k> loadTransaction _ { "to"       : (TT:String => #parseHexWord(TT)), _                 } ... </k> requires TT =/=String ""
-    rule <k> loadTransaction _ { "to"       : ""                              , REST => REST      } ... </k>
-    rule <k> loadTransaction _ { "data"     : (TI:String => #parseByteStack(TI)), _               } ... </k>
+    rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG)), _                    } ... </k>
+    rule <k> loadTransaction _ { "gasPrice" : (TP:String => #parseHexWord(TP)), _                    } ... </k>
+    rule <k> loadTransaction _ { "nonce"    : (TN:String => #parseHexWord(TN)), _                    } ... </k>
+    rule <k> loadTransaction _ { "v"        : (TW:String => #parseHexWord(TW)), _                    } ... </k>
+    rule <k> loadTransaction _ { "value"    : (TV:String => #parseHexWord(TV)), _                    } ... </k>
+    rule <k> loadTransaction _ { "to"       : (TT:String => #parseHexWord(TT)), _                    } ... </k> requires TT =/=String ""
+    rule <k> loadTransaction _ { "to"       : ""                              , REST => REST         } ... </k>
+    rule <k> loadTransaction _ { "data"     : (TI:String => #parseByteStack(TI)), _                  } ... </k>
     rule <k> loadTransaction _ { "r"        : (TR:String => #padToWidth(32, #parseByteStack(TR))), _ } ... </k>
     rule <k> loadTransaction _ { "s"        : (TS:String => #padToWidth(32, #parseByteStack(TS))), _ } ... </k>
-    rule <k> loadTransaction _ { ("from"    : _, REST => REST) } ... </k>
-    rule <k> loadTransaction _ { (("amount" : TV) => "value": TV), REST                  } ... </k>
+    rule <k> loadTransaction _ { ("from"    : _, REST => REST)                                       } ... </k>
+    rule <k> loadTransaction _ { (("amount" : TV) => "value": TV)             , REST                 } ... </k>
     rule <k> loadTransaction _ { _          : _                               , REST => REST         } ... </k> [owise]
 
     syntax EthereumCommand ::= "makeTX" Int
