@@ -37,12 +37,19 @@ Address/Hash Helpers
     rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeWord(NONCE), 192))))
     rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#padToWidth(20, #asByteStack(ACCT))) +String #unparseByteStack(#padToWidth(32, #asByteStack(SALT))) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE)))))))
 
-    syntax Account ::= #sender ( Int , Int , Int , Account , Int , String , Int , ByteArray , ByteArray ) [function]
-                     | #sender ( String , Int , String , String )                                         [function, klabel(#senderAux)]
-                     | #sender ( String )                                                                 [function, klabel(#senderAux2)]
- // -------------------------------------------------------------------------------------------------------------------------------------
-    rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS)
-      => #sender(#unparseByteStack(#parseHexBytes(Keccak256(#rlpEncodeLength(#rlpEncodeWordStack(TN : TP : TG : .WordStack) +String #rlpEncodeAccount(TT) +String #rlpEncodeWord(TV) +String #rlpEncodeString(DATA), 192)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
+    syntax Account ::= #sender ( Int , Int , Int , Account , Int , String , Int , ByteArray , ByteArray, Int ) [function]
+                     | #sender ( String , Int , String , String )                                              [function, klabel(#senderAux)]
+                     | #sender ( String )                                                                      [function, klabel(#senderAux2)]
+ // ------------------------------------------------------------------------------------------------------------------------------------------
+    rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS, CID)
+      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TN, TP, TG, TT, TV, #parseByteStackRaw(DATA)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
+      requires TW ==Int 27 orBool TW ==Int 28
+
+    rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS, CID)
+      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TN, TP, TG, TT, TV, #parseByteStackRaw(DATA), CID))), 28 -Int (TW %Int 2), #unparseByteStack(TR), #unparseByteStack(TS))
+      requires TW ==Int CID *Int 2 +Int 35 orBool TW ==Int CID *Int 2 +Int 36
+
+    rule #sender(_, _, _, _, _, _, _, _, _, _) => .Account [owise]
 
     rule #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
 
@@ -99,6 +106,7 @@ Address/Hash Helpers
 ```k
     syntax String ::= #hashSignedTx   ( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
                     | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray )                               [function]
+                    | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray, Int )                          [function]
  // --------------------------------------------------------------------------------------------------------------------------
     rule [hashTx]: #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
                 => Keccak256( #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) )
@@ -113,6 +121,20 @@ Address/Hash Helpers
                                                   , 192
                                                   )
                                 )
+
+    rule [hashFakeTx2]: #hashUnsignedTx(TN, TP, TG, TT, TV, TD, CID)
+                     => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
+                                                     +String #rlpEncodeWord(TP)
+                                                     +String #rlpEncodeWord(TG)
+                                                     +String #rlpEncodeAccount(TT)
+                                                     +String #rlpEncodeWord(TV)
+                                                     +String #rlpEncodeString(#unparseByteStack(TD))
+                                                     +String #rlpEncodeWord(CID)
+                                                     +String #rlpEncodeString("")
+                                                     +String #rlpEncodeString("")
+                                                   , 192
+                                                   )
+                                 )
 ```
 
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
