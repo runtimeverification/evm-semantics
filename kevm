@@ -87,12 +87,12 @@ run_search() {
 run_web3() {
     run_file='-'
     if $debug; then
-        gdb --args kevm-client --port "$kevm_port" --ip "$kevm_host" "$@"
+        gdb --args kevm-client --port "$kevm_port" --host "$kevm_host" "$@"
     elif $dump; then
-      exec -a "$0 web3" kevm-client --dump --port "$kevm_port" --ip "$kevm_host" "$@" 3>&2 2>&1 1>&3 \
+      exec -a "$0 web3" kevm-client --dump --port "$kevm_port" --host "$kevm_host" "$@" 3>&2 2>&1 1>&3 \
           | "$0" kast --backend web3 - pretty --input kore --sort GeneratedTopCell
     else
-      exec -a "$0 web3" kevm-client --port "$kevm_port" --ip "$kevm_host" "$@" 2>/dev/null
+      exec -a "$0 web3" kevm-client --port "$kevm_port" --host "$kevm_host" "$@" 2>/dev/null
     fi
 }
 
