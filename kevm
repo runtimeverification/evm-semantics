@@ -87,12 +87,12 @@ run_search() {
 run_web3() {
     run_file='-'
     if $debug; then
-        gdb --args kevm-client --port "$kevm_port" "$@"
+        gdb --args kevm-client --port "$kevm_port" --ip "$kevm_host" "$@"
     elif $dump; then
-      exec -a "$0 web3" kevm-client --dump --port "$kevm_port" "$@" 3>&2 2>&1 1>&3 \
+      exec -a "$0 web3" kevm-client --dump --port "$kevm_port" --ip "$kevm_host" "$@" 3>&2 2>&1 1>&3 \
           | "$0" kast --backend web3 - pretty --input kore --sort GeneratedTopCell
     else
-      exec -a "$0 web3" kevm-client --port "$kevm_port" "$@" 2>/dev/null
+      exec -a "$0 web3" kevm-client --port "$kevm_port" --ip "$kevm_host" "$@" 2>/dev/null
     fi
 }
 
@@ -201,7 +201,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                $0 kast         [--backend (llvm|java|haskell|web3)]      <pgm>  <output format> <K arg>*
                $0 prove        [--backend (java|haskell)]                <spec> <def_module> <K arg>*
                $0 search       [--backend (java|haskell)]                <pgm>  <pattern> <K arg>*
-               $0 web3         [--debug|--dump]                          [--port <port>]
+               $0 web3         [--debug|--dump]                          [--port <port>] [--host <host>]
                $0 web3-send                                              [--port <port>] [--host <host>] [<web3_method> <web3_params>|<web3_file>]
                $0 klab-run                                               <pgm>  <K arg>*
                $0 klab-prove                                             <spec> <def_module> <K arg>*
