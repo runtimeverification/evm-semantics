@@ -14,7 +14,7 @@ module LEMMAS
 
     rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeByteArray(BUF) ==Int #sizeByteArray(BUF')  [simplification]
 
-    rule BUF [ L .. W ] => .ByteArray requires W <=Int 0                    [simplification]
+    rule BUF [ L .. W ] => .ByteArray requires W ==Int 0                    [simplification]
     rule BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
 
     rule #sizeByteArray(BUF1 ++ BUF2)                  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
