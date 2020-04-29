@@ -23,7 +23,8 @@ module LEMMAS
       requires #range(0 <= START < SIZE)
        andBool #range(0 < WIDTH <= SIZE -Int START)                                                       [simplification]
 
-    rule #sizeByteArray(#range(_,_, N)) => N                                                              [simplification]
+    rule #sizeByteArray(#range(_, START, WIDTH)) => WIDTH
+      requires WIDTH >=Int 0 andBool START >=Int 0                                                        [simplification]
 
     //Todo custom ==K unification doesn't work in Haskell yet
     //++ unification
