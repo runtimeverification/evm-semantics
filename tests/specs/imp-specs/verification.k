@@ -2,12 +2,14 @@ requires "../erc20/abstract-semantics-segmented-gas.k"
 requires "edsl.k"
 requires "../erc20/evm-symbolic.k"
 requires "evm-imp-specs.k"
+requires "../lemmas.k"
 
 module VERIFICATION
     imports ABSTRACT-SEMANTICS-SEGMENTED-GAS
     imports EDSL
     imports EVM-SYMBOLIC
     imports EVM-IMP-SPECS
+    imports LEMMAS
 
     //semantics of #buf
     rule #buf(LEN, BYTES) => #padToWidth(LEN, #asByteStack( BYTES )) [concrete]
