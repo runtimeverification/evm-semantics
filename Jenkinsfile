@@ -24,8 +24,7 @@ pipeline {
         }
       }
       stages {
-        stage('K Dependencies') { steps { sh 'make deps  RELEASE=true'     } }
-        stage('Build')          { steps { sh 'make build RELEASE=true -j6' } }
+        stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
         stage('Test Execution') {
           failFast true
           options { timeout(time: 20, unit: 'MINUTES') }
