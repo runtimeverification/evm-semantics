@@ -20,7 +20,6 @@ pipeline {
       steps { script { currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}" } }
     }
     stage('Build and Test') {
-      when { changeRequest() }
       stages {
         stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
         stage('Test Execution') {
