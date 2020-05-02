@@ -7,6 +7,7 @@ pipeline {
     K_ROOT_URL   = 'https://github.com/kframework/k/releases/download'
     PACKAGE      = 'kevm'
     ROOT_URL     = 'https://github.com/kframework/evm-semantics/releases/download'
+    K_COMMIT     = """${sh(returnStdout: true, script: 'cd deps/k ; git rev-parse --short=7 HEAD;').trim()}"""
   }
   options { ansiColor('xterm') }
   stages {
@@ -18,9 +19,8 @@ pipeline {
       when { changeRequest() }
       agent {
         dockerfile {
-          additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-          args '-m 60g'
           label 'docker && !smol'
+          additionalBuildArgs '--build-arg K_COMMIT="${env.K_COMMIT}" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
         }
       }
       stages {
@@ -63,7 +63,12 @@ pipeline {
     }
     stage('Deploy') {
       when { branch 'master' }
-      agent { dockerfile { reuseNode true } }
+      agent {
+        dockerfile {
+          reuseNode true
+          additionalBuildArgs '--build-arg K_COMMIT="${env.K_COMMIT}" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+        }
+      }
       stages {
         stage('Update Dependents') {
           steps {
