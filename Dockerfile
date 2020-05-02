@@ -20,9 +20,6 @@ RUN    sudo apt-get update           \
                  python-sphinx       \
                  rapidjson-dev
 
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
-RUN sudo apt-get install --yes nodejs
-
 RUN    git config --global user.email 'admin@runtimeverification.com' \
     && git config --global user.name  'RV Jenkins'                    \
     && mkdir -p ~/.ssh                                                \
