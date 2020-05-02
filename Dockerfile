@@ -5,6 +5,7 @@ RUN    apt-get update           \
     && apt-get upgrade --yes    \
     && apt-get install --yes    \
             cmake               \
+            jq                  \
             libboost-test-dev   \
             libcrypto++-dev     \
             libgflags-dev       \
