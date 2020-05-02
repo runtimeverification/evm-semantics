@@ -1,4 +1,10 @@
 pipeline {
+  agent {
+    dockerfile {
+      label 'docker && !smol'
+      additionalBuildArgs '--build-arg K_COMMIT="$(cd deps/k && git rev-parse --short=7 HEAD)" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+    }
+  }
   environment {
     GITHUB_TOKEN = credentials('rv-jenkins')
     VERSION      = '1.0.0'
@@ -6,13 +12,6 @@ pipeline {
     K_ROOT_URL   = 'https://github.com/kframework/k/releases/download'
     PACKAGE      = 'kevm'
     ROOT_URL     = 'https://github.com/kframework/evm-semantics/releases/download'
-    K_COMMIT     = """${sh(returnStdout: true, script: 'cd deps/k ; git rev-parse --short=7 HEAD;').trim()}"""
-  }
-  agent {
-    dockerfile {
-      label 'docker && !smol'
-      additionalBuildArgs '--build-arg K_COMMIT="${env.K_COMMIT}" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-    }
   }
   options { ansiColor('xterm') }
   stages {
