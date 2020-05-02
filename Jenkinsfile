@@ -81,16 +81,6 @@ pipeline {
             sshagent(['2b3d8d6b-0855-4b59-864a-6b3ddf9c9d1a']) {
               dir("kevm-${env.VERSION}-jello-paper") {
                 sh '''
-                  git config --global user.email 'admin@runtimeverification.com'
-                  git config --global user.name  'RV Jenkins'
-                  mkdir -p ~/.ssh
-                  echo 'host github.com'                       > ~/.ssh/config
-                  echo '    hostname github.com'              >> ~/.ssh/config
-                  echo '    user git'                         >> ~/.ssh/config
-                  echo '    identityagent SSH_AUTH_SOCK'      >> ~/.ssh/config
-                  echo '    stricthostkeychecking accept-new' >> ~/.ssh/config
-                  chmod go-rwx -R ~/.ssh
-                  ssh github.com || true
                   git clone 'ssh://github.com/kframework/evm-semantics.git'
                   cd evm-semantics
                   git checkout -B gh-pages origin/master

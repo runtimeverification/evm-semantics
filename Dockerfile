@@ -22,3 +22,13 @@ RUN    sudo apt-get update           \
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN sudo apt-get install --yes nodejs
+
+RUN    git config --global user.email 'admin@runtimeverification.com' \
+    && git config --global user.name  'RV Jenkins'                    \
+    && mkdir -p ~/.ssh                                                \
+    && echo 'host github.com'                       > ~/.ssh/config   \
+    && echo '    hostname github.com'              >> ~/.ssh/config   \
+    && echo '    user git'                         >> ~/.ssh/config   \
+    && echo '    identityagent SSH_AUTH_SOCK'      >> ~/.ssh/config   \
+    && echo '    stricthostkeychecking accept-new' >> ~/.ssh/config   \
+    && chmod go-rwx -R ~/.ssh
