@@ -22,8 +22,3 @@ RUN    sudo apt-get update           \
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN sudo apt-get install --yes nodejs
-
-USER user:user
-
-ENV LD_LIBRARY_PATH=/usr/local/lib
-ENV PATH=/home/user/.local/bin:$PATH
