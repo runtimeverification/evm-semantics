@@ -22,7 +22,7 @@ module WEB3
         </blockchain>
         <defaultGasPrice> 20000000000 </defaultGasPrice>
         <defaultGasLimit> 90000       </defaultGasLimit>
-        <lastTime>        #time()     </lastTime> // Need to be updated with #time() every time <timestamp> is updated
+        <timeDiff>        0           </timeDiff> // Gets added to #time() when updating <timestamp>
         <accountKeys>     .Map        </accountKeys>
         <nextFilterSlot>  0           </nextFilterSlot>
         <txReceipts>
@@ -475,8 +475,8 @@ WEB3 JSON RPC
  // ----------------------------------------------------
     rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
 
-    syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "|" TxReceiptsCell "}"
- // ----------------------------------------------------------------------------------------------
+    syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "|" TxReceiptsCell "|" Int "}"
+ // ------------------------------------------------------------------------------------------------------
 
     syntax KItem ::= "#evm_snapshot"
  // --------------------------------
@@ -486,20 +486,22 @@ WEB3 JSON RPC
     syntax KItem ::= "#pushNetworkState"
  // ------------------------------------
     rule <k> #pushNetworkState => . ... </k>
-         <snapshots> ... (.List => ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts>})) </snapshots>
+         <snapshots> ... (.List => ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts> | TIMEDIFF })) </snapshots>
          <network>    NETWORK   </network>
          <block>      BLOCK     </block>
          <blockList>  BLOCKLIST </blockList>
+         <timeDiff>   TIMEDIFF  </timeDiff>
          <txReceipts> RECEIPTS  </txReceipts>
 
     syntax KItem ::= "#popNetworkState"
  // -----------------------------------
     rule <k> #popNetworkState => . ... </k>
-         <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts>}) => .List ) </snapshots>
+         <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts> | TIMEDIFF }) => .List ) </snapshots>
          <network>     _ => NETWORK                        </network>
          <blockhashes> _ => #getBlockhashlist( BLOCKLIST ) </blockhashes>
          <block>       _ => BLOCK                          </block>
          <blockList>   _ => BLOCKLIST                      </blockList>
+         <timeDiff>    _ => TIMEDIFF                       </timeDiff>
          <txReceipts>  _ => RECEIPTS                       </txReceipts>
 
     syntax List ::= #getBlockhashlist( List )            [function]
@@ -515,7 +517,6 @@ WEB3 JSON RPC
     rule <k> #evm_revert => #popNetworkState ~> #rpcResponseSuccess(true) ... </k>
          <params>       [ DATA:Int, .JSONs ] </params>
          <snapshots>    SNAPSHOTS            </snapshots>
-         <lastTime>     _ => #time()         </lastTime>
       requires DATA ==Int size(SNAPSHOTS)
 
     rule <k> #evm_revert ... </k>
@@ -536,10 +537,9 @@ WEB3 JSON RPC
     rule <k> #evm_increaseTime ... </k>
          <params> [ (null => 0), .JSONs ] </params>
 
-    rule <k> #evm_increaseTime => #rpcResponseSuccess(Int2String(TS +Int DATA)) ... </k>
-         <params>       [ DATA:Int, .JSONs ]           </params>
-         <timestamp>    ( TS:Int => ( TS +Int DATA ) ) </timestamp>
-         <lastTime>     _ => #time()                   </lastTime>
+    rule <k> #evm_increaseTime => #rpcResponseSuccess(Int2String(TIMEDIFF +Int DATA)) ... </k>
+         <params>   [ DATA:Int, .JSONs ]           </params>
+         <timeDiff> TIMEDIFF => TIMEDIFF +Int DATA </timeDiff>
 
     syntax KItem ::= "#eth_newBlockFilter"
  // --------------------------------------
@@ -1730,9 +1730,8 @@ Timestamp Calls
     syntax KItem ::= "#firefly_setTime"
  // -----------------------------------
     rule <k> #firefly_setTime => #rpcResponseSuccess(true) ... </k>
-         <params>       [ TIME:String, .JSONs ]    </params>
-         <timestamp>    _ => #parseHexWord( TIME ) </timestamp>
-         <lastTime>     _ => #time()               </lastTime>
+         <params> [ TIME:String, .JSONs ] </params>
+         <timeDiff> _ => #parseHexWord( TIME ) -Int #time() </timeDiff>
 
     rule <k> #firefly_setTime => #rpcResponseSuccess(false) ... </k> [owise]
 ```
@@ -1793,12 +1792,12 @@ Mining
 ```k
     syntax KItem ::= "#evm_mine"
  // ----------------------------
-    rule <k> #evm_mine => #updateTimestamp ~> #mineBlock ~> #rpcResponseSuccess("0x0") ... </k> [owise]
+    rule <k> #evm_mine => #mineBlock ~> #rpcResponseSuccess("0x0") ... </k> [owise]
 
     rule <k> #evm_mine => #mineBlock ~> #rpcResponseSuccess("0x0") ... </k>
-         <params>       [ TIME:String, .JSONs ] </params>
-         <timestamp>    _ => #parseWord( TIME ) </timestamp>
-         <lastTime>     _ => #time()            </lastTime>
+         <params>    [ TIME:String, .JSONs ]              </params>
+         <timestamp> _ => #parseWord( TIME )              </timestamp>
+         <timeDiff>  _ => #parseWord( TIME ) -Int #time() </timeDiff>
 
     rule <k> #evm_mine => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'evm_mine' requires between 0 and 1 arguments.") ... </k>
          <params> [ _ , _ , _:JSONs ] </params>
@@ -1809,11 +1808,11 @@ Mining
          <params> [ .JSONs => #unparseQuantity(#time()), .JSONs ] </params>
 
     rule <k> #firefly_genesisBlock => #updateTrieRoots ~> #pushBlockchainState ~> #incrementBlockNumber ~> #rpcResponseSuccess(true) ... </k>
-         <params>       [ TIME:String, .JSONs ]                                                            </params>
-         <timestamp>    _ => #parseWord( TIME )                                                            </timestamp>
-         <logsBloom>    _ => #padToWidth( 256, .ByteArray )                                                </logsBloom>
-         <ommersHash>   _ => 13478047122767188135818125966132228187941283477090363246179690878162135454535 </ommersHash>
-         <lastTime>     _ => #time()                                                                       </lastTime>
+         <params>     [ TIME:String, .JSONs ]                                                            </params>
+         <timestamp>  _ => #parseWord( TIME )                                                            </timestamp>
+         <logsBloom>  _ => #padToWidth( 256, .ByteArray )                                                </logsBloom>
+         <ommersHash> _ => 13478047122767188135818125966132228187941283477090363246179690878162135454535 </ommersHash>
+         <timeDiff>   _ => #parseWord( TIME ) -Int #time()                                               </timeDiff>
 
     syntax KItem ::= "#mineBlock"
  // -----------------------------
@@ -1875,8 +1874,8 @@ Mining
     syntax KItem ::= "#updateTimestamp"
  // -----------------------------------
     rule <k> #updateTimestamp => . ... </k>
-         <timestamp> PREV => PREV +Int #time() -Int LASTTIME </timestamp>
-         <lastTime> LASTTIME => #time() </lastTime>
+         <timestamp> _ => #time() +Int TIMEDIFF </timestamp>
+         <timeDiff> TIMEDIFF </timeDiff>
 ```
 
 Retrieving logs
