@@ -30,7 +30,6 @@ The following files constitute the KEVM semantics:
 These additional files extend the semantics to make the repository more useful:
 
 -   [edsl.md](edsl.md) defines high-level notations of [eDSL], a domain-specific language for EVM specifications, for formal verification of EVM bytecode using [K Reachability Logic Prover].
--   [evm-node.md](evm-node.md) is the protobuf interface that an external Ethereum client can connect to for using KEVM as the execution engine.
 -   [state-loader.md](state-loader.md) provides common functionality between driver and web3 for EVM initialization and setup.
 -   [driver.md](driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
 -   [web3.md](web3.md) is a web3 rpc server.
@@ -56,13 +55,12 @@ The following are needed for building/running KEVM:
 On Ubuntu >= 18.04 (for example):
 
 ```sh
-sudo apt install                                                       \
-            autoconf bison clang++-8 clang-8 cmake curl flex gcc git   \
-            libboost-test-dev libgmp-dev libjemalloc-dev libmpfr-dev   \
-            libprocps-dev libprotobuf-dev libsecp256k1-dev libtool     \
-            libyaml-dev libz3-dev lld-8 llvm-8 llvm-8-tools make maven \
-            openjdk-11-jdk pandoc pkg-config protobuf-compiler z3      \
-            zlib1g-dev
+sudo apt install                                                         \
+            autoconf bison clang++-8 clang-8 cmake curl flex gcc git     \
+            libboost-test-dev libgmp-dev libjemalloc-dev libmpfr-dev     \
+            libprocps-dev libsecp256k1-dev libtool libyaml-dev libz3-dev 
+            lld-8 llvm-8 llvm-8-tools make maven openjdk-11-jdk pandoc   \
+            pkg-config z3 zlib1g-dev
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
