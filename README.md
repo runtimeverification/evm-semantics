@@ -55,13 +55,12 @@ The following are needed for building/running KEVM:
 On Ubuntu >= 18.04 (for example):
 
 ```sh
-sudo apt install                                                       \
-            autoconf bison clang++-8 clang-8 cmake curl flex gcc git   \
-            libboost-test-dev libgmp-dev libjemalloc-dev libmpfr-dev   \
-            libprocps-dev libprotobuf-dev libsecp256k1-dev libtool     \
-            libyaml-dev libz3-dev lld-8 llvm-8 llvm-8-tools make maven \
-            openjdk-11-jdk pandoc pkg-config protobuf-compiler z3      \
-            zlib1g-dev
+sudo apt install                                                         \
+            autoconf bison clang++-8 clang-8 cmake curl flex gcc git     \
+            libboost-test-dev libgmp-dev libjemalloc-dev libmpfr-dev     \
+            libprocps-dev libsecp256k1-dev libtool libyaml-dev libz3-dev 
+            lld-8 llvm-8 llvm-8-tools make maven openjdk-11-jdk pandoc   \
+            pkg-config z3 zlib1g-dev
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
