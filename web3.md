@@ -1257,7 +1257,7 @@ Transaction Execution
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
 
-    rule <k> #validateTx TXID => #executeTx TXID ~> #mineAndUpdate ... </k>
+    rule <k> #validateTx TXID => #updateTimestamp ~> #executeTx TXID ~> #mineAndUpdate ... </k>
          <schedule> SCHED </schedule>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
          <message>
@@ -1358,7 +1358,7 @@ Transaction Execution
     syntax KItem ::= "#mineAndUpdate"
  // ---------------------------------
     rule <statusCode> STATUSCODE </statusCode>
-         <k> #mineAndUpdate => #mineBlock ~> #updateTimestamp ... </k>
+         <k> #mineAndUpdate => #mineBlock ... </k>
          <mode> EXECMODE </mode>
       requires EXECMODE =/=K NOGAS
        andBool ( STATUSCODE ==K EVMC_SUCCESS orBool STATUSCODE ==K EVMC_REVERT )
@@ -1558,7 +1558,7 @@ NOGAS Mode
          <mode> NOGAS </mode>
      [priority(25)]
 
-    rule <k> #validateTx TXID => #executeTx TXID ~> #mineAndUpdate ... </k>
+    rule <k> #validateTx TXID => #updateTimestamp ~> #executeTx TXID ~> #mineAndUpdate ... </k>
          <mode> NOGAS </mode>
      [priority(25)]
 
