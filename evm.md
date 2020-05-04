@@ -480,7 +480,15 @@ We make sure the given arguments (to be interpreted as addresses) are with 160 b
          <wordStack> W0 : (W1 => #addr(W1)) : WS </wordStack>
       requires isCallOp(OP) orBool isCallSixOp(OP)
 
-    rule <k> #addr [ OP:OpCode ] => . ... </k> [owise]
+    rule <k> #addr [ OP:OpCode ] => . ... </k>
+      requires notBool ( OP ==K BALANCE
+                  orBool OP ==K SELFDESTRUCT
+                  orBool OP ==K EXTCODEHASH
+                  orBool OP ==K EXTCODESIZE
+                  orBool OP ==K EXTCODECOPY
+                  orBool isCallOp(OP)
+                  orBool isCallSixOp(OP)
+                       )
 ```
 
 ### Program Counter
