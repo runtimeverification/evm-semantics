@@ -22,7 +22,7 @@ module WEB3
         </blockchain>
         <defaultGasPrice> 20000000000 </defaultGasPrice>
         <defaultGasLimit> 90000       </defaultGasLimit>
-        <lastMineTime>    0           </lastMineTime>
+        <lastTime>        #time()     </lastTime> // Need to be updated with #time() every time <timestamp> is updated
         <accountKeys>     .Map        </accountKeys>
         <nextFilterSlot>  0           </nextFilterSlot>
         <txReceipts>
@@ -515,7 +515,7 @@ WEB3 JSON RPC
     rule <k> #evm_revert => #popNetworkState ~> #rpcResponseSuccess(true) ... </k>
          <params>       [ DATA:Int, .JSONs ] </params>
          <snapshots>    SNAPSHOTS            </snapshots>
-         <lastMineTime> _ => #time()         </lastMineTime>
+         <lastTime>     _ => #time()         </lastTime>
       requires DATA ==Int size(SNAPSHOTS)
 
     rule <k> #evm_revert ... </k>
@@ -539,7 +539,7 @@ WEB3 JSON RPC
     rule <k> #evm_increaseTime => #rpcResponseSuccess(Int2String(TS +Int DATA)) ... </k>
          <params>       [ DATA:Int, .JSONs ]           </params>
          <timestamp>    ( TS:Int => ( TS +Int DATA ) ) </timestamp>
-         <lastMineTime> _ => #time()                   </lastMineTime>
+         <lastTime>     _ => #time()                   </lastTime>
 
     syntax KItem ::= "#eth_newBlockFilter"
  // --------------------------------------
@@ -1732,7 +1732,7 @@ Timestamp Calls
     rule <k> #firefly_setTime => #rpcResponseSuccess(true) ... </k>
          <params>       [ TIME:String, .JSONs ]    </params>
          <timestamp>    _ => #parseHexWord( TIME ) </timestamp>
-         <lastMineTime> _ => #time()               </lastMineTime>
+         <lastTime>     _ => #time()               </lastTime>
 
     rule <k> #firefly_setTime => #rpcResponseSuccess(false) ... </k> [owise]
 ```
@@ -1798,7 +1798,7 @@ Mining
     rule <k> #evm_mine => #mineBlock ~> #rpcResponseSuccess("0x0") ... </k>
          <params>       [ TIME:String, .JSONs ] </params>
          <timestamp>    _ => #parseWord( TIME ) </timestamp>
-         <lastMineTime> _ => #time()            </lastMineTime>
+         <lastTime>     _ => #time()            </lastTime>
 
     rule <k> #evm_mine => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'evm_mine' requires between 0 and 1 arguments.") ... </k>
          <params> [ _ , _ , _:JSONs ] </params>
@@ -1813,7 +1813,7 @@ Mining
          <timestamp>    _ => #parseWord( TIME )                                                            </timestamp>
          <logsBloom>    _ => #padToWidth( 256, .ByteArray )                                                </logsBloom>
          <ommersHash>   _ => 13478047122767188135818125966132228187941283477090363246179690878162135454535 </ommersHash>
-         <lastMineTime> _ => #time()                                                                       </lastMineTime>
+         <lastTime>     _ => #time()                                                                       </lastTime>
 
     syntax KItem ::= "#mineBlock"
  // -----------------------------
@@ -1876,7 +1876,7 @@ Mining
  // -----------------------------------
     rule <k> #updateTimestamp => . ... </k>
          <timestamp> PREV => PREV +Int #time() -Int LASTTIME </timestamp>
-         <lastMineTime> LASTTIME => #time() </lastMineTime>
+         <lastTime> LASTTIME => #time() </lastTime>
 ```
 
 Retrieving logs
