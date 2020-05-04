@@ -15,13 +15,11 @@ RUN    apt-get update         \
             libcrypto++-dev   \
             libjemalloc-dev   \
             libprocps-dev     \
-            libprotobuf-dev   \
             libsecp256k1-dev  \
             libssl-dev        \
             netcat-openbsd    \
             pandoc            \
             pkg-config        \
-            protobuf-compiler \
             sudo
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -

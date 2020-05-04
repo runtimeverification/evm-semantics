@@ -301,7 +301,7 @@ If the program-counter points to an actual opcode, it's loaded into the `#next [
 The `#next [_]` operator initiates execution by:
 
 1.  checking if there will be a stack over/underflow, or a static mode violation,
-2.  loading any additional state needed (when executing in full-node mode),
+2.  calculate any address conversions needed for items on the wordstack,
 3.  executing the opcode (which includes any gas deduction needed), and
 4.  adjusting the program counter.
 
@@ -309,7 +309,7 @@ The `#next [_]` operator initiates execution by:
     syntax InternalOp ::= "#next" "[" OpCode "]"
  // --------------------------------------------
     rule <k> #next [ OP ]
-          => #load [ OP ]
+          => #addr [ OP ]
           ~> #exec [ OP ]
           ~> #pc   [ OP ]
          ...
@@ -424,7 +424,6 @@ The `#next [_]` operator initiates execution by:
 ```
 
 Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
-Some of them require an argument to be interpereted as an address (modulo 160 bits), so the `#addr?` function performs that check.
 
 ```k
     syntax KItem  ::= OpCode
@@ -461,61 +460,35 @@ The `CallOp` opcodes all interperet their second argument as an address.
     rule <k> #exec [ CO:CallOp     ] => #gas [ CO  , CO  W0 W1 W2 W3 W4 W5 W6 ] ~> CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
 ```
 
-### Helpers
+### Address Conversion
 
--   `#addr` decides if the given argument should be interpreted as an address (given the opcode).
+Some opcodes require accessing elements of the state at different addresses.
+We make sure the given arguments (to be interpreted as addresses) are with 160 bits ahead of time.
 
 ```k
-    syntax InternalOp ::= "#load" "[" OpCode "]"
+    syntax InternalOp ::= "#addr" "[" OpCode "]"
  // --------------------------------------------
-    rule <k> #load [ OP:OpCode ] => #loadAccount #addr(W0) ... </k>
+    rule <k> #addr [ OP:OpCode ] => . ... </k>
          <wordStack> (W0 => #addr(W0)) : WS </wordStack>
-      requires #addr?(OP)
+      requires OP ==K BALANCE
+        orBool OP ==K SELFDESTRUCT
+        orBool OP ==K EXTCODEHASH
+        orBool OP ==K EXTCODESIZE
+        orBool OP ==K EXTCODECOPY
 
-    rule <k> #load [ OP:OpCode ] => #loadAccount #addr(W0) ~> #lookupCode #addr(W0) ... </k>
-         <wordStack> (W0 => #addr(W0)) : WS </wordStack>
-      requires #code?(OP)
-
-    rule <k> #load [ OP:OpCode ] => #loadAccount #addr(W1) ~> #lookupCode #addr(W1) ... </k>
+    rule <k> #addr [ OP:OpCode ] => . ... </k>
          <wordStack> W0 : (W1 => #addr(W1)) : WS </wordStack>
       requires isCallOp(OP) orBool isCallSixOp(OP)
 
-    rule <k> #load [ CREATE ] => #loadAccount #newAddr(ACCT, NONCE) ... </k>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <nonce> NONCE </nonce>
-           ...
-         </account>
-
-    rule <k> #load [ OP:OpCode ] => #lookupStorage ACCT W0 ... </k>
-         <id> ACCT </id>
-         <wordStack> W0 : WS </wordStack>
-      requires OP ==K SSTORE orBool OP ==K SLOAD
-
-    rule <k> #load [ OP:OpCode ] => . ... </k>
-      requires notBool (
-        OP ==K CREATE   orBool
-        OP ==K SLOAD    orBool
-        OP ==K SSTORE   orBool
-        isCallOp   (OP) orBool
-        isCallSixOp(OP) orBool
-        #addr?(OP)      orBool
-        #code?(OP)
-      )
-
-    syntax Bool ::= "#addr?" "(" OpCode ")" [function]
- // --------------------------------------------------
-    rule #addr?(BALANCE)      => true
-    rule #addr?(SELFDESTRUCT) => true
-    rule #addr?(EXTCODEHASH)  => true
-    rule #addr?(OP)           => false requires (OP =/=K BALANCE) andBool (OP =/=K SELFDESTRUCT) andBool (OP =/=K EXTCODEHASH)
-
-    syntax Bool ::= "#code?" "(" OpCode ")" [function]
- // --------------------------------------------------
-    rule #code?(EXTCODESIZE)  => true
-    rule #code?(EXTCODECOPY)  => true
-    rule #code?(OP)           => false requires (OP =/=K EXTCODESIZE) andBool (OP =/=K EXTCODECOPY)
+    rule <k> #addr [ OP:OpCode ] => . ... </k>
+      requires notBool ( OP ==K BALANCE
+                  orBool OP ==K SELFDESTRUCT
+                  orBool OP ==K EXTCODEHASH
+                  orBool OP ==K EXTCODESIZE
+                  orBool OP ==K EXTCODECOPY
+                  orBool isCallOp(OP)
+                  orBool isCallSixOp(OP)
+                       )
 ```
 
 ### Program Counter
@@ -648,7 +621,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 -   `#finalizeBlock` is used to signal that block finalization procedures should take place (after transactions have executed).
 -   `#rewardOmmers(_)` pays out the reward to uncle blocks so that blocks are orphaned less often in Ethereum.
 
-```{.k .standalone}
+```k
     syntax EthereumCommand ::= "#startBlock"
  // ----------------------------------------
     rule <k> #startBlock => . ... </k>
@@ -792,40 +765,6 @@ These are just used by the other operators for shuffling local execution state a
            )
            ...
          </accounts>
-```
-
-The following operations help with loading account information from an external running client.
-This minimizes the amount of information which must be stored in the configuration.
-
--   `#loadAccount` queries for account data from the running client.
--   `#lookupCode` loads the code of an account into the `<code>` cell.
--   `#lookupStorage` loads the value of the specified storage key into the `<storage>` cell.
-
-```k
-    syntax InternalOp ::= "#loadAccount"   Int
-                        | "#lookupCode"    Int
-                        | "#lookupStorage" Int Int
- // ----------------------------------------------
-```
-
-In `standalone` mode, the semantics assumes that all relevant account data is already loaded into memory.
-
-```{.k .standalone}
-    rule <k> #loadAccount   _   => . ... </k>
-    rule <k> #lookupCode    _   => . ... </k>
-    rule <k> #lookupStorage _ _ => . ... </k>
-```
-
-In `node` mode, the semantics are given in terms of an external call to a running client.
-
-```{.k .node}
-    rule <k> #lookupStorage ACCT INDEX => . ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> STORAGE:Map </storage>
-           ...
-         </account>
-      requires INDEX in_keys(STORAGE)
 ```
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
@@ -1045,7 +984,7 @@ These operators make queries about the current execution state.
 When running as a `node`, the blockhash will be retrieved from the running client.
 Otherwise, it is calculated here using the "shortcut" formula used for running tests.
 
-```{.k .standalone}
+```k
     rule <k> BLOCKHASH N => #blockhash(HASHES, N, HI -Int 1, 0) ~> #push ... </k>
          <number>      HI     </number>
          <blockhashes> HASHES </blockhashes>
@@ -1636,15 +1575,12 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```
 
 `CREATE2` will attempt to `#create` the account, but with the new scheme for choosing the account address.
-Note that we cannot execute #loadAccount during the #load phase earlier because gas will not yet
-have been paid, and it may be to expensive to compute the hash of the init code.
 
 ```k
     syntax QuadStackOp ::= "CREATE2"
  // --------------------------------
     rule <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
-          => #loadAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
-          ~> #checkCall ACCT VALUE
+          => #checkCall ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
          ...
