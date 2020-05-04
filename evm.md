@@ -470,11 +470,11 @@ The `CallOp` opcodes all interperet their second argument as an address.
  // --------------------------------------------
     rule <k> #load [ OP:OpCode ] => . ... </k>
          <wordStack> (W0 => #addr(W0)) : WS </wordStack>
-      requires #addr?(OP)
-
-    rule <k> #load [ OP:OpCode ] => . ... </k>
-         <wordStack> (W0 => #addr(W0)) : WS </wordStack>
-      requires #code?(OP)
+      requires OP ==K BALANCE
+        orBool OP ==K SELFDESTRUCT
+        orBool OP ==K EXTCODEHASH
+        orBool OP ==K EXTCODESIZE
+        orBool OP ==K EXTCODECOPY
 
     rule <k> #load [ OP:OpCode ] => . ... </k>
          <wordStack> W0 : (W1 => #addr(W1)) : WS </wordStack>
@@ -494,19 +494,6 @@ The `CallOp` opcodes all interperet their second argument as an address.
       requires OP ==K SSTORE orBool OP ==K SLOAD
 
     rule <k> #load [ OP:OpCode ] => . ... </k> [owise]
-
-    syntax Bool ::= "#addr?" "(" OpCode ")" [function]
- // --------------------------------------------------
-    rule #addr?(BALANCE)      => true
-    rule #addr?(SELFDESTRUCT) => true
-    rule #addr?(EXTCODEHASH)  => true
-    rule #addr?(OP)           => false requires (OP =/=K BALANCE) andBool (OP =/=K SELFDESTRUCT) andBool (OP =/=K EXTCODEHASH)
-
-    syntax Bool ::= "#code?" "(" OpCode ")" [function]
- // --------------------------------------------------
-    rule #code?(EXTCODESIZE)  => true
-    rule #code?(EXTCODECOPY)  => true
-    rule #code?(OP)           => false requires (OP =/=K EXTCODESIZE) andBool (OP =/=K EXTCODECOPY)
 ```
 
 ### Program Counter
