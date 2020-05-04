@@ -480,19 +480,6 @@ The `CallOp` opcodes all interperet their second argument as an address.
          <wordStack> W0 : (W1 => #addr(W1)) : WS </wordStack>
       requires isCallOp(OP) orBool isCallSixOp(OP)
 
-    rule <k> #load [ CREATE ] => . ... </k>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <nonce> NONCE </nonce>
-           ...
-         </account>
-
-    rule <k> #load [ OP:OpCode ] => . ... </k>
-         <id> ACCT </id>
-         <wordStack> W0 : WS </wordStack>
-      requires OP ==K SSTORE orBool OP ==K SLOAD
-
     rule <k> #load [ OP:OpCode ] => . ... </k> [owise]
 ```
 
