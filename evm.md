@@ -493,16 +493,7 @@ The `CallOp` opcodes all interperet their second argument as an address.
          <wordStack> W0 : WS </wordStack>
       requires OP ==K SSTORE orBool OP ==K SLOAD
 
-    rule <k> #load [ OP:OpCode ] => . ... </k>
-      requires notBool (
-        OP ==K CREATE   orBool
-        OP ==K SLOAD    orBool
-        OP ==K SSTORE   orBool
-        isCallOp   (OP) orBool
-        isCallSixOp(OP) orBool
-        #addr?(OP)      orBool
-        #code?(OP)
-      )
+    rule <k> #load [ OP:OpCode ] => . ... </k> [owise]
 
     syntax Bool ::= "#addr?" "(" OpCode ")" [function]
  // --------------------------------------------------
