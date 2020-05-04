@@ -301,7 +301,7 @@ If the program-counter points to an actual opcode, it's loaded into the `#next [
 The `#next [_]` operator initiates execution by:
 
 1.  checking if there will be a stack over/underflow, or a static mode violation,
-2.  loading any additional state needed (when executing in full-node mode),
+2.  calculate any address conversions needed for items on the wordstack,
 3.  executing the opcode (which includes any gas deduction needed), and
 4.  adjusting the program counter.
 
@@ -309,7 +309,7 @@ The `#next [_]` operator initiates execution by:
     syntax InternalOp ::= "#next" "[" OpCode "]"
  // --------------------------------------------
     rule <k> #next [ OP ]
-          => #load [ OP ]
+          => #addr [ OP ]
           ~> #exec [ OP ]
           ~> #pc   [ OP ]
          ...
@@ -424,7 +424,6 @@ The `#next [_]` operator initiates execution by:
 ```
 
 Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
-Some of them require an argument to be interpereted as an address (modulo 160 bits), so the `#addr?` function performs that check.
 
 ```k
     syntax KItem  ::= OpCode
@@ -461,14 +460,15 @@ The `CallOp` opcodes all interperet their second argument as an address.
     rule <k> #exec [ CO:CallOp     ] => #gas [ CO  , CO  W0 W1 W2 W3 W4 W5 W6 ] ~> CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
 ```
 
-### Helpers
+### Address Conversion
 
--   `#addr` decides if the given argument should be interpreted as an address (given the opcode).
+Some opcodes require accessing elements of the state at different addresses.
+We make sure the given arguments (to be interpreted as addresses) are with 160 bits ahead of time.
 
 ```k
-    syntax InternalOp ::= "#load" "[" OpCode "]"
+    syntax InternalOp ::= "#addr" "[" OpCode "]"
  // --------------------------------------------
-    rule <k> #load [ OP:OpCode ] => . ... </k>
+    rule <k> #addr [ OP:OpCode ] => . ... </k>
          <wordStack> (W0 => #addr(W0)) : WS </wordStack>
       requires OP ==K BALANCE
         orBool OP ==K SELFDESTRUCT
@@ -476,11 +476,11 @@ The `CallOp` opcodes all interperet their second argument as an address.
         orBool OP ==K EXTCODESIZE
         orBool OP ==K EXTCODECOPY
 
-    rule <k> #load [ OP:OpCode ] => . ... </k>
+    rule <k> #addr [ OP:OpCode ] => . ... </k>
          <wordStack> W0 : (W1 => #addr(W1)) : WS </wordStack>
       requires isCallOp(OP) orBool isCallSixOp(OP)
 
-    rule <k> #load [ OP:OpCode ] => . ... </k> [owise]
+    rule <k> #addr [ OP:OpCode ] => . ... </k> [owise]
 ```
 
 ### Program Counter
