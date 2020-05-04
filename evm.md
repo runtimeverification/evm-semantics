@@ -468,19 +468,19 @@ The `CallOp` opcodes all interperet their second argument as an address.
 ```k
     syntax InternalOp ::= "#load" "[" OpCode "]"
  // --------------------------------------------
-    rule <k> #load [ OP:OpCode ] => #loadAccount #addr(W0) ... </k>
+    rule <k> #load [ OP:OpCode ] => . ... </k>
          <wordStack> (W0 => #addr(W0)) : WS </wordStack>
       requires #addr?(OP)
 
-    rule <k> #load [ OP:OpCode ] => #loadAccount #addr(W0) ~> #lookupCode #addr(W0) ... </k>
+    rule <k> #load [ OP:OpCode ] => . ... </k>
          <wordStack> (W0 => #addr(W0)) : WS </wordStack>
       requires #code?(OP)
 
-    rule <k> #load [ OP:OpCode ] => #loadAccount #addr(W1) ~> #lookupCode #addr(W1) ... </k>
+    rule <k> #load [ OP:OpCode ] => . ... </k>
          <wordStack> W0 : (W1 => #addr(W1)) : WS </wordStack>
       requires isCallOp(OP) orBool isCallSixOp(OP)
 
-    rule <k> #load [ CREATE ] => #loadAccount #newAddr(ACCT, NONCE) ... </k>
+    rule <k> #load [ CREATE ] => . ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -488,7 +488,7 @@ The `CallOp` opcodes all interperet their second argument as an address.
            ...
          </account>
 
-    rule <k> #load [ OP:OpCode ] => #lookupStorage ACCT W0 ... </k>
+    rule <k> #load [ OP:OpCode ] => . ... </k>
          <id> ACCT </id>
          <wordStack> W0 : WS </wordStack>
       requires OP ==K SSTORE orBool OP ==K SLOAD
@@ -792,28 +792,6 @@ These are just used by the other operators for shuffling local execution state a
            )
            ...
          </accounts>
-```
-
-The following operations help with loading account information from an external running client.
-This minimizes the amount of information which must be stored in the configuration.
-
--   `#loadAccount` queries for account data from the running client.
--   `#lookupCode` loads the code of an account into the `<code>` cell.
--   `#lookupStorage` loads the value of the specified storage key into the `<storage>` cell.
-
-```k
-    syntax InternalOp ::= "#loadAccount"   Int
-                        | "#lookupCode"    Int
-                        | "#lookupStorage" Int Int
- // ----------------------------------------------
-```
-
-In `standalone` mode, the semantics assumes that all relevant account data is already loaded into memory.
-
-```k
-    rule <k> #loadAccount   _   => . ... </k>
-    rule <k> #lookupCode    _   => . ... </k>
-    rule <k> #lookupStorage _ _ => . ... </k>
 ```
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
@@ -1624,15 +1602,12 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```
 
 `CREATE2` will attempt to `#create` the account, but with the new scheme for choosing the account address.
-Note that we cannot execute #loadAccount during the #load phase earlier because gas will not yet
-have been paid, and it may be to expensive to compute the hash of the init code.
 
 ```k
     syntax QuadStackOp ::= "CREATE2"
  // --------------------------------
     rule <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
-          => #loadAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
-          ~> #checkCall ACCT VALUE
+          => #checkCall ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
          ...

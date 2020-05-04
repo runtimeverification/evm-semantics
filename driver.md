@@ -89,8 +89,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= loadTx ( Account )
  // ---------------------------------------------
     rule <k> loadTx(ACCTFROM)
-          => #loadAccount #newAddr(ACCTFROM, NONCE)
-          ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
+          => #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
@@ -119,9 +118,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
 
     rule <k> loadTx(ACCTFROM)
-          => #loadAccount ACCTTO
-          ~> #lookupCode  ACCTTO
-          ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
+          => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
