@@ -648,7 +648,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 -   `#finalizeBlock` is used to signal that block finalization procedures should take place (after transactions have executed).
 -   `#rewardOmmers(_)` pays out the reward to uncle blocks so that blocks are orphaned less often in Ethereum.
 
-```{.k .standalone}
+```k
     syntax EthereumCommand ::= "#startBlock"
  // ----------------------------------------
     rule <k> #startBlock => . ... </k>
@@ -810,22 +810,10 @@ This minimizes the amount of information which must be stored in the configurati
 
 In `standalone` mode, the semantics assumes that all relevant account data is already loaded into memory.
 
-```{.k .standalone}
+```k
     rule <k> #loadAccount   _   => . ... </k>
     rule <k> #lookupCode    _   => . ... </k>
     rule <k> #lookupStorage _ _ => . ... </k>
-```
-
-In `node` mode, the semantics are given in terms of an external call to a running client.
-
-```{.k .node}
-    rule <k> #lookupStorage ACCT INDEX => . ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> STORAGE:Map </storage>
-           ...
-         </account>
-      requires INDEX in_keys(STORAGE)
 ```
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
@@ -1045,7 +1033,7 @@ These operators make queries about the current execution state.
 When running as a `node`, the blockhash will be retrieved from the running client.
 Otherwise, it is calculated here using the "shortcut" formula used for running tests.
 
-```{.k .standalone}
+```k
     rule <k> BLOCKHASH N => #blockhash(HASHES, N, HI -Int 1, 0) ~> #push ... </k>
          <number>      HI     </number>
          <blockhashes> HASHES </blockhashes>

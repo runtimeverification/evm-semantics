@@ -302,7 +302,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 
 -   `driver.md` specific handling of state-loader commands
 
-```{.k .standalone}
+```k
     rule <k> load "account" : { ACCTID : ACCT } => loadAccount ACCTID ACCT ... </k>
 
     rule <k> loadAccount _ { "balance" : ((VAL:String)      => #parseWord(VAL)),        _ } ... </k>
