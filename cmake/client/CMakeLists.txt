@@ -9,7 +9,7 @@ set(KOMPILE_USE_MAIN "library")
 set(TARGET_NAME "kevm-client")
 
 add_executable(kevm-client
-	$ENV{PLUGIN_SUBMODULE}/vm-c/init.cpp
+	$ENV{PLUGIN_SUBMODULE}/client-c/init.cpp
 	$ENV{PLUGIN_SUBMODULE}/client-c/main.cpp
 	$ENV{PLUGIN_SUBMODULE}/client-c/json.cpp
 	$ENV{PLUGIN_SUBMODULE}/plugin-c/crypto.cpp
@@ -21,7 +21,6 @@ endif()
 
 target_include_directories(kevm-client
 	PUBLIC $ENV{PLUGIN_SUBMODULE}/plugin-c
-	PUBLIC $ENV{PLUGIN_SUBMODULE}/vm-c
 	PUBLIC $ENV{PLUGIN_SUBMODULE}/deps/cpp-httplib
 	PUBLIC ${CMAKE_SOURCE_DIR}/..)
 target_compile_options(kevm-client
