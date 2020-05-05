@@ -18,7 +18,6 @@ RUN    apt-get update                \
             libjemalloc-dev          \
             libmpfr-dev              \
             libprocps-dev            \
-            libprotobuf-dev          \
             libsecp256k1-dev         \
             libssl-dev               \
             libtool                  \
@@ -31,7 +30,6 @@ RUN    apt-get update                \
             openjdk-11-jdk           \
             pandoc                   \
             pkg-config               \
-            protobuf-compiler        \
             python3                  \
             python-pygments          \
             python-recommonmark      \
