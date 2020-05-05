@@ -412,23 +412,23 @@ A cons-list is used for the EVM wordstack.
 -   `WS [ N := W ]` sets element $N$ of $WS$ to $W$ (padding with zeros as needed).
 
 ```k
-    syntax Int ::= WordStack "[" Int "]" [function]
+    syntax Int ::= WordStack "[" Int "]" [function, functional]
  // -----------------------------------------------
     rule (W : _):WordStack [ N ] => W                  requires N ==Int 0
     rule WS:WordStack      [ N ] => #drop(N, WS) [ 0 ] requires N  >Int 0
+    rule WS                [ N ] => 0                  requires N  <Int 0
 
-    syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function]
+    syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function, functional]
  // --------------------------------------------------------------
     rule (W0 : WS):WordStack [ N := W ] => W  : WS                     requires N ==Int 0
     rule (W0 : WS):WordStack [ N := W ] => W0 : (WS [ N -Int 1 := W ]) requires N  >Int 0
+    rule        WS:WordStack [ N := W ] => .WordStack                  requires N  <Int 0
+    rule .WordStack          [ N := W ] => #take(N, .WordStack) ++ W
 ```
 
 -   Definedness conditions for `WS [ N ]` and `WS [ N := W ]`
 
 ```{.k .symbolic-bytes}
-    rule #Ceil(WS[N])        => {((0 <=Int N) andBool (N <Int #sizeWordStack(WS)))            #Equals true}  [anywhere]
-    rule #Ceil(WS[ N := W ]) => {((0 <=Int N) andBool (N <Int #sizeWordStack(WS)))            #Equals true}  [anywhere]
-    rule #Ceil(BA[ N := _:ByteArray ]) => {(0 <=Int N)                                        #Equals true}  [anywhere]
     rule #Ceil(#padToWidth(N, BS))          => #Ceil(padLeftBytes(BS, N, 0))                                 [anywhere]
     rule #Ceil(#padRightToWidth(N, BS))     => #Ceil(padRightBytes(BS, N, 0))                                [anywhere]
     rule #Ceil(#lookup( _ |-> VAL M, KEY )) => {(#Ceil(#lookup( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
@@ -483,9 +483,10 @@ Most of EVM data is held in local memory.
 
 ```{.k .membytes}
     syntax Memory = Bytes
-    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
+    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, functional, klabel(mapWriteBytes)]
  // -------------------------------------------------------------------------------------
-    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS')  [concrete]
+    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS') requires START >=Int 0  [concrete]
+    rule WS [ START := WS' ] => .Memory                                                                          requires START  <Int 0  [concrete]
 
     syntax ByteArray ::= #range ( Memory , Int , Int ) [function, functional]
  // -------------------------------------------------------------------------
