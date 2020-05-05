@@ -58,7 +58,10 @@ pipeline {
       }
     }
     stage('Deploy') {
-      when { branch 'master' }
+      when {
+        branch 'master'
+        beforeAgent true
+      }
       stages {
         stage('Update Dependents') {
           steps {
