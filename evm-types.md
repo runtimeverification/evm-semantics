@@ -413,13 +413,13 @@ A cons-list is used for the EVM wordstack.
 
 ```k
     syntax Int ::= WordStack "[" Int "]" [function, functional]
- // -----------------------------------------------
+ // -----------------------------------------------------------
     rule (W : _):WordStack [ N ] => W                  requires N ==Int 0
     rule WS:WordStack      [ N ] => #drop(N, WS) [ 0 ] requires N  >Int 0
     rule WS                [ N ] => 0                  requires N  <Int 0
 
     syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function, functional]
- // --------------------------------------------------------------
+ // --------------------------------------------------------------------------
     rule (W0 : WS):WordStack [ N := W ] => W  : WS                     requires N ==Int 0
     rule (W0 : WS):WordStack [ N := W ] => W0 : (WS [ N -Int 1 := W ]) requires N  >Int 0
     rule        WS:WordStack [ N := W ] => .WordStack                  requires N  <Int 0
@@ -484,7 +484,7 @@ Most of EVM data is held in local memory.
 ```{.k .membytes}
     syntax Memory = Bytes
     syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, functional, klabel(mapWriteBytes)]
- // -------------------------------------------------------------------------------------
+ // -------------------------------------------------------------------------------------------------
     rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS') requires START >=Int 0  [concrete]
     rule WS [ START := WS' ] => .Memory                                                                          requires START  <Int 0  [concrete]
 
