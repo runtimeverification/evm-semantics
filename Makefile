@@ -42,8 +42,8 @@ export LUA_PATH
 
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
-        build build-java build-specs build-node build-haskell build-llvm build-web3                                              \
-        defn java-defn specs-defn node-defn web3-defn haskell-defn llvm-defn                                                     \
+        build build-java build-specs build-haskell build-llvm build-web3                                                         \
+        defn java-defn specs-defn web3-defn haskell-defn llvm-defn                                                               \
         split-tests                                                                                                              \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
@@ -140,9 +140,6 @@ $(PLUGIN_SUBMODULE)/make.timestamp:
 # Building
 # --------
 
-build-node: MAIN_DEFN_FILE = evm-node
-build-node: MAIN_MODULE    = EVM-NODE
-build-node: SYNTAX_MODULE  = EVM-NODE
 build-web3: MAIN_DEFN_FILE = web3
 build-web3: MAIN_MODULE    = WEB3
 build-web3: SYNTAX_MODULE  = WEB3
@@ -150,7 +147,7 @@ MAIN_MODULE    := ETHEREUM-SIMULATION
 SYNTAX_MODULE  := $(MAIN_MODULE)
 export MAIN_DEFN_FILE := driver
 
-k_files       := driver.k data.k network.k evm.k evm-types.k json.k krypto.k edsl.k evm-node.k web3.k asm.k state-loader.k serialization.k evm-imp-specs.k
+k_files       := driver.k data.k network.k evm.k evm-types.k json.k krypto.k edsl.k web3.k asm.k state-loader.k serialization.k evm-imp-specs.k
 EXTRA_K_FILES += $(MAIN_DEFN_FILE).k
 ALL_K_FILES   := $(k_files) $(EXTRA_K_FILES)
 
@@ -158,42 +155,35 @@ llvm_dir    := $(DEFN_DIR)/llvm
 java_dir    := $(DEFN_DIR)/java
 specs_dir   := $(DEFN_DIR)/specs
 haskell_dir := $(DEFN_DIR)/haskell
-node_dir    := $(abspath $(DEFN_DIR)/node)
 web3_dir    := $(abspath $(DEFN_DIR)/web3)
-export node_dir
 export web3_dir
 
 llvm_files    := $(patsubst %, $(llvm_dir)/%, $(ALL_K_FILES))
 java_files    := $(patsubst %, $(java_dir)/%, $(ALL_K_FILES))
 specs_files   := $(patsubst %, $(specs_dir)/%, $(ALL_K_FILES))
 haskell_files := $(patsubst %, $(haskell_dir)/%, $(ALL_K_FILES))
-node_files    := $(patsubst %, $(node_dir)/%, $(ALL_K_FILES))
 web3_files    := $(patsubst %, $(web3_dir)/%, $(ALL_K_FILES))
-defn_files    := $(llvm_files) $(java_files) $(specs_files) $(haskell_files) $(node_files) $(web3_files)
+defn_files    := $(llvm_files) $(java_files) $(specs_files) $(haskell_files) $(web3_files)
 
 java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
 specs_kompiled   := $(specs_dir)/specs-kompiled/timestamp
-node_kompiled    := $(DEFN_DIR)/vm/kevm-vm
 web3_kompiled    := $(web3_dir)/build/kevm-client
 haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
-node_kore := $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 web3_kore := $(web3_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 
 # Tangle definition from *.md files
 
-concrete_tangle := .k:not(.node):not(.symbolic):not(.nobytes):not(.memmap),.standalone,.concrete,.bytes,.membytes
-java_tangle     := .k:not(.node):not(.concrete):not(.bytes):not(.memmap):not(.membytes),.standalone,.symbolic,.nobytes
-haskell_tangle  := .k:not(.node):not(.concrete):not(.nobytes):not(.memmap),.standalone,.symbolic,.bytes,.membytes
-node_tangle     := .k:not(.standalone):not(.symbolic):not(.nobytes):not(.memmap),.node,.concrete,.bytes,.membytes
+concrete_tangle := .k:not(.symbolic):not(.nobytes):not(.memmap),.concrete,.bytes,.membytes
+java_tangle     := .k:not(.concrete):not(.bytes):not(.memmap):not(.membytes),.symbolic,.nobytes
+haskell_tangle  := .k:not(.concrete):not(.nobytes):not(.memmap),.symbolic,.bytes,.membytes
 
 defn: $(defn_files)
 llvm-defn:    $(llvm_files)
 java-defn:    $(java_files)
 specs-defn:   $(specs_files)
 haskell-defn: $(haskell_files)
-node-defn:    $(node_files)
 web3-defn:    $(web3_files)
 
 $(llvm_dir)/%.k: %.md $(TANGLER)
@@ -212,20 +202,15 @@ $(haskell_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(haskell_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(haskell_tangle)" $< > $@
 
-$(node_dir)/%.k: %.md $(TANGLER)
-	@mkdir -p $(node_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(node_tangle)" $< > $@
-
 $(web3_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(web3_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
 # Kompiling
 
-build: build-llvm build-haskell build-java build-specs build-web3 build-node
+build: build-llvm build-haskell build-java build-specs build-web3
 build-java:    $(java_kompiled)
 build-specs:   $(specs_kompiled)
-build-node:    $(node_kompiled)
 build-web3:    $(web3_kompiled)
 build-haskell: $(haskell_kompiled)
 build-llvm:    $(llvm_kompiled)
@@ -257,24 +242,6 @@ $(haskell_kompiled): $(haskell_files)
 	        --syntax-module $(SYNTAX_MODULE) $(haskell_dir)/$(MAIN_DEFN_FILE).k             \
 	        --directory $(haskell_dir) -I $(haskell_dir)                                    \
 	        $(KOMPILE_OPTS)
-
-# Node Backend
-
-$(node_kore): $(node_files)
-	kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
-	        --syntax-module $(SYNTAX_MODULE) $(node_dir)/$(MAIN_DEFN_FILE).k \
-	        --directory $(node_dir) -I $(node_dir) -I $(node_dir)            \
-	        --hook-namespaces "KRYPTO BLOCKCHAIN"                            \
-	        --no-llvm-kompile                                                \
-	        $(KOMPILE_OPTS)
-
-$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc: $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
-	@mkdir -p $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin
-	protoc --cpp_out=$(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin -I $(PLUGIN_SUBMODULE)/plugin $(PLUGIN_SUBMODULE)/plugin/proto/msg.proto
-
-$(node_kompiled): $(node_kore) $(node_dir)/$(MAIN_DEFN_FILE)-kompiled/plugin/proto/msg.pb.cc $(libff_out)
-	@mkdir -p $(DEFN_DIR)/vm
-	cd $(DEFN_DIR)/vm && cmake $(CURDIR)/cmake/node -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
 
 # Web3 Backend
 
