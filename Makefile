@@ -183,10 +183,10 @@ web3_kore := $(web3_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 
 # Tangle definition from *.md files
 
-concrete_tangle := .k:not(.node):not(.symbolic):not(.nobytes):not(.memmap):not(.symbolic-bytes),.standalone,.concrete,.bytes,.membytes
-java_tangle     := .k:not(.node):not(.concrete):not(.bytes):not(.memmap):not(.membytes):not(.symbolic-bytes),.standalone,.symbolic,.nobytes
-haskell_tangle  := .k:not(.node):not(.concrete):not(.nobytes):not(.memmap),.standalone,.symbolic,.bytes,.membytes,.symbolic-bytes
-node_tangle     := .k:not(.standalone):not(.symbolic):not(.nobytes):not(.memmap):not(.symbolic-bytes),.node,.concrete,.bytes,.membytes
+concrete_tangle := .k:not(.node):not(.symbolic):not(.nobytes):not(.memmap),.standalone,.concrete,.bytes,.membytes
+java_tangle     := .k:not(.node):not(.concrete):not(.bytes):not(.memmap):not(.membytes),.standalone,.symbolic,.nobytes
+haskell_tangle  := .k:not(.node):not(.concrete):not(.nobytes):not(.memmap),.standalone,.symbolic,.bytes,.membytes
+node_tangle     := .k:not(.standalone):not(.symbolic):not(.nobytes):not(.memmap),.node,.concrete,.bytes,.membytes
 
 defn: $(defn_files)
 llvm-defn:    $(llvm_files)
