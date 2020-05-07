@@ -52,15 +52,17 @@ The following are needed for building/running KEVM:
 -   GNU [libmpfr](http://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
 -   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
 
+For the exact dependencies check the Dockerfile, but they should look something like this.
 On Ubuntu >= 18.04 (for example):
 
 ```sh
-sudo apt install                                                         \
-            autoconf bison clang++-8 clang-8 cmake curl flex gcc git     \
-            libboost-test-dev libgmp-dev libjemalloc-dev libmpfr-dev     \
-            libprocps-dev libsecp256k1-dev libtool libyaml-dev libz3-dev 
-            lld-8 llvm-8 llvm-8-tools make maven openjdk-11-jdk pandoc   \
-            pkg-config z3 zlib1g-dev
+sudo apt-get install --yes                                                       \
+            autoconf bison clang-8 cmake curl flex gcc jq libboost-test-dev      \
+            libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev \
+            libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev        \
+            lld-8 llvm-8-tools make maven netcat-openbsd openjdk-11-jdk          \
+            pandoc pkg-config python3 python-pygments python-recommonmark        \
+            python-sphinx rapidjson-dev time zlib1g-dev
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
