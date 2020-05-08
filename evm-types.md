@@ -426,11 +426,9 @@ A cons-list is used for the EVM wordstack.
     rule .WordStack          [ N := W ] => (0 : .WordStack) [ N := W ]
 ```
 
--   Definedness conditions for `WS [ N ]` and `WS [ N := W ]`
+-   Definedness conditions for `WS [ N ]`:
 
 ```{.k .symbolic-bytes}
-    rule #Ceil(#padToWidth(N, BS))          => #Ceil(padLeftBytes(BS, N, 0))                                 [anywhere]
-    rule #Ceil(#padRightToWidth(N, BS))     => #Ceil(padRightBytes(BS, N, 0))                                [anywhere]
     rule #Ceil(#lookup( _ |-> VAL M, KEY )) => {(#Ceil(#lookup( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
     rule #Ceil(#lookup( .Map, _ ))          => true                                                          [anywhere]
 ```
@@ -605,11 +603,13 @@ The local memory of execution is a byte-array (instead of a word-array).
  // ----------------------------------------------------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => lengthBytes(WS) [concrete]
 
-    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function]
-                       | #padRightToWidth ( Int , ByteArray ) [function]
- // --------------------------------------------------------------------
-    rule #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires N >=Int 0  [concrete]
-    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires N >=Int 0  [concrete]
+    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, functional]
+                       | #padRightToWidth ( Int , ByteArray ) [function, functional]
+ // --------------------------------------------------------------------------------
+    rule #padToWidth(N, BS)      =>               BS        requires notBool (N >=Int 0)
+    rule #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0  [concrete]
+    rule #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
+    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0  [concrete]
 ```
 
 ```{.k .nobytes}
