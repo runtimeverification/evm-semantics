@@ -16,11 +16,6 @@
   },
   {
     "jsonrpc": "2.0",
-    "id": 1,
-    "result": "1575490155"
-  },
-  {
-    "jsonrpc": "2.0",
     "id": 2,
     "result": "0x48b3bce222588aff4329c7c7aebaa39ffb66045254c1ca16b9b1a5482463682b"
   },
@@ -30,7 +25,7 @@
     "result": {
       "transactionHash": "0x48b3bce222588aff4329c7c7aebaa39ffb66045254c1ca16b9b1a5482463682b",
       "transactionIndex": "0x0",
-      "blockHash": "0x90720f724fda87554c42728507a107e829a016eff2989826ee4cced5001ade00",
+      "blockHash": "0x1c666528813a99142d352d495f002bb2d5b9af4917a404a32a7986cffff6d12e",
       "blockNumber": "0x1",
       "from": "0x79a59cf0083efdf696befda81655104787f938d0",
       "to": null,

@@ -1,0 +1,10 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": true
+}
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": "-1588697621"
+}
