@@ -37,14 +37,6 @@
   },
   {
     "jsonrpc": "2.0",
-    "id": 2,
-    "method": "evm_increaseTime",
-    "params": [
-      68
-    ]
-  },
-  {
-    "jsonrpc": "2.0",
     "id": 3,
     "method": "eth_sendTransaction",
     "params": [
