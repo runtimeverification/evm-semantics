@@ -2497,7 +2497,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
 
 ```k
     syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [function, memo]
- // -----------------------------------------------------------
+ // -----------------------------------------------------------------
     rule #dasmOpCode(   0,     _ ) => STOP
     rule #dasmOpCode(   1,     _ ) => ADD
     rule #dasmOpCode(   2,     _ ) => MUL
