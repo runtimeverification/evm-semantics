@@ -422,7 +422,7 @@ A cons-list is used for the EVM wordstack.
  // --------------------------------------------------------------------------
     rule (W0 : WS):WordStack [ N := W ] => W  : WS                     requires N ==Int 0
     rule (W0 : WS):WordStack [ N := W ] => W0 : (WS [ N -Int 1 := W ]) requires N  >Int 0
-    rule        WS:WordStack [ N := W ] => .WordStack                  requires N  <Int 0
+    rule        WS:WordStack [ N := W ] => WS                          requires N  <Int 0
     rule .WordStack          [ N := W ] => (0 : .WordStack) [ N := W ]
 ```
 
