@@ -30,7 +30,7 @@ pipeline {
             stage('Tests') { steps { sh 'make split-tests -j3'   } }
           }
         }
-        stage('Build') { steps { sh 'make build -j4' } }
+        stage('Build') { steps { sh 'make CC=clang-8 CXX=clang++-8 libcryptopp -j4 && make CC=clang-8 CXX=clang++-8 build -j4' } }
         stage('Test Execution') {
           failFast true
           options { timeout(time: 20, unit: 'MINUTES') }

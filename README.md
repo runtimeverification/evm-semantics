@@ -65,10 +65,16 @@ sudo apt-get install --yes                                                      
             python-sphinx rapidjson-dev time zlib1g-dev
 ```
 
-On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
+On Ubuntu < 18.04, skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
 
 ```sh
 make libsecp256k1
+```
+
+On most Ubuntu/Debian distributions, skip `libcrypto++-dev` and build it from source (via our `Makefile`):
+
+```sh
+make libcryptopp
 ```
 
 On ArchLinux:
@@ -80,7 +86,7 @@ sudo pacman -S                                               \
     mpfr python stack yaml-cpp z3 zlib
 ```
 
-In addition, you'll need the `glog-git` AUR package: <https://aur.archlinux.org/packages/glog-git/>.
+In addition, you will need the [`glog-git` AUR package](https://aur.archlinux.org/packages/glog-git/).
 
 On OSX, using [Homebrew](https://brew.sh/), after installing the command line tools package:
 
@@ -188,7 +194,7 @@ This repository can build two pieces of documentation for you, the [Jello Paper]
 
 ### System Dependencies
 
-For the presentations in the `media` directory, you'll need `pdflatex`, commonly provided with `texlive-full`.
+For the presentations in the `media` directory, you will need `pdflatex`, commonly provided with `texlive-full`.
 
 ```sh
 sudo apt install texlive-full

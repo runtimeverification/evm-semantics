@@ -70,42 +70,27 @@ distclean:
 
 libsecp256k1_out := $(LIBRARY_PATH)/pkgconfig/libsecp256k1.pc
 libff_out        := $(LIBRARY_PATH)/libff.a
+libcryptopp_out  := $(LIBRARY_PATH)/libcryptopp.a
 
 libsecp256k1: $(libsecp256k1_out)
-libff:        $(libff_out)
-
-$(DEPS_DIR)/secp256k1/autogen.sh:
-	git submodule update --init --recursive -- $(DEPS_DIR)/secp256k1
-
-$(libsecp256k1_out): $(DEPS_DIR)/secp256k1/autogen.sh
-	cd $(DEPS_DIR)/secp256k1/ \
-	    && ./autogen.sh \
-	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
-	    && $(MAKE) \
-	    && $(MAKE) install
+$(libsecp256k1_out): $(PLUGIN_SUBMODULE)/make.timestamp
+	cd deps/plugin && $(MAKE) CC=$(CC) CXX=$(CXX) PREFIX=$(BUILD_LOCAL) -- libsecp256k1
 
 UNAME_S := $(shell uname -s)
 
 ifeq ($(UNAME_S),Linux)
-  LIBFF_CMAKE_FLAGS=
   LINK_PROCPS=-lprocps
 else
-  LIBFF_CMAKE_FLAGS=-DWITH_PROCPS=OFF
   LINK_PROCPS=
 endif
 
-LIBFF_CC  := clang-8
-LIBFF_CXX := clang++-8
+$(libff_out): $(PLUGIN_SUBMODULE)/make.timestamp
+	cd deps/plugin && $(MAKE) CC=$(CC) CXX=$(CXX) PREFIX=$(BUILD_LOCAL) \
+	    LIBFF_CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=Release $(LIBFF_CMAKE_FLAGS)" -- libff
 
-$(DEPS_DIR)/libff/CMakeLists.txt:
-	git submodule update --init --recursive -- $(DEPS_DIR)/libff
-
-$(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
-	@mkdir -p $(DEPS_DIR)/libff/build
-	cd $(DEPS_DIR)/libff/build \
-	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) $(LIBFF_CMAKE_FLAGS) \
-	    && make -s -j4 \
-	    && make install
+libcryptopp: $(libcryptopp_out)
+$(libcryptopp_out): $(PLUGIN_SUBMODULE)/make.timestamp
+	cd deps/plugin && $(MAKE) CC=$(CC) CXX=$(CXX) PREFIX=$(BUILD_LOCAL) -- libcryptopp
 
 # K Dependencies
 # --------------
