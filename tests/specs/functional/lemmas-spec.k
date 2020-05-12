@@ -32,7 +32,7 @@ module LEMMAS-SPEC
 
     // Range outside of previous buffer write
     rule <k> runLemma ( #range(M [ 32 := BUF:ByteArray ], 20, 4) ) => doneLemma ( #range(M, 20, 4) ) ... </k>
-    // rule <k> runLemma ( #range(M [ 32 := BUF:ByteArray ], 48, 4) ) => doneLemma ( #range(M, 48, 4) ) ... </k> requires #sizeByteArray(BUF) <=Int 12
+    rule <k> runLemma ( #range(M [ 32 := BUF:ByteArray ], 48, 4) ) => doneLemma ( #range(M, 48, 4) ) ... </k> requires #sizeByteArray(BUF) <=Int 12
     rule <k> runLemma ( #range(M [ 32 := BUF:ByteArray ], 31, 1) ) => doneLemma ( #range(M, 31, 1) ) ... </k>
     rule <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ], 33, 1) )  => doneLemma ( #range(M, 33, 1) ) ... </k>
 

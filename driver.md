@@ -70,7 +70,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> startTx => #finalizeBlock ... </k>
          <txPending> .List </txPending>
 
-    rule <k> startTx => loadTx(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW, TR, TS)) ... </k>
+    rule <k> startTx => loadTx(#sender(TN, TP, TG, TT, TV, #unparseByteStack(DATA), TW, TR, TS, CID)) ... </k>
+         <chainID> CID </chainID>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
            <msgID>      TXID </msgID>
@@ -88,8 +89,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= loadTx ( Account )
  // ---------------------------------------------
     rule <k> loadTx(ACCTFROM)
-          => #loadAccount #newAddr(ACCTFROM, NONCE)
-          ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
+          => #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
@@ -118,9 +118,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
 
     rule <k> loadTx(ACCTFROM)
-          => #loadAccount ACCTTO
-          ~> #lookupCode  ACCTTO
-          ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
+          => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
@@ -301,7 +299,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 
 -   `driver.md` specific handling of state-loader commands
 
-```{.k .standalone}
+```k
     rule <k> load "account" : { ACCTID : ACCT } => loadAccount ACCTID ACCT ... </k>
 
     rule <k> loadAccount _ { "balance" : ((VAL:String)      => #parseWord(VAL)),        _ } ... </k>

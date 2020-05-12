@@ -11,6 +11,14 @@
 }
 {
   "jsonrpc": "2.0",
+  "id": 1,
+  "method": "firefly_genesisBlock",
+  "params": [
+    "0x0"
+  ]
+}
+{
+  "jsonrpc": "2.0",
   "id": 2,
   "method": "eth_sendTransaction",
   "params": [

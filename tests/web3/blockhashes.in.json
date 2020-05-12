@@ -1,0 +1,93 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": 0,
+    "method": "firefly_addAccount",
+    "params": [
+      {
+        "key": "0x5fffe36d0218b8b8d45d4e70788096a5e0c289cf89c907f97d1cdecdccaa8b6b",
+        "code": "0x6000354060005260206000f3"
+      }
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 0,
+    "method": "firefly_genesisBlock",
+    "params": [
+      "0x0"
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 0,
+    "method": "evm_mine",
+    "params": []
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 0,
+    "method": "evm_mine",
+    "params": []
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 0,
+    "method": "eth_getBlockByNumber",
+    "params": [
+        "0x0",
+        false
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 0,
+    "method": "eth_call",
+    "params": [
+      {
+        "to": "0xee70809b448816b3d2d40c1db8b44aacf50bad3a",
+        "data": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 0,
+    "method": "eth_getBlockByNumber",
+    "params": [
+        "0x1",
+        false
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 0,
+    "method": "eth_call",
+    "params": [
+      {
+        "to": "0xee70809b448816b3d2d40c1db8b44aacf50bad3a",
+        "data": "0x0000000000000000000000000000000000000000000000000000000000000001"
+      }
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 0,
+    "method": "eth_getBlockByNumber",
+    "params": [
+        "0x2",
+        false
+    ]
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 0,
+    "method": "eth_call",
+    "params": [
+      {
+        "to": "0xee70809b448816b3d2d40c1db8b44aacf50bad3a",
+        "data": "0x0000000000000000000000000000000000000000000000000000000000000002"
+      }
+    ]
+  }
+]

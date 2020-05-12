@@ -1,0 +1,14 @@
+{
+  "jsonrpc": "2.0",
+  "method": "firefly_genesisBlock",
+  "params": ["0x0"],
+  "id": 1
+}
+{
+  "jsonrpc": "2.0",
+  "method": "evm_increaseTime",
+  "params": [
+    1
+  ],
+  "id": 2
+}

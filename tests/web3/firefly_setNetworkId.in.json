@@ -2,21 +2,21 @@
   {
     "jsonrpc": "2.0",
     "id": 1,
-    "method": "firefly_getTime",
+    "method": "net_version",
     "params": []
   },
   {
     "jsonrpc": "2.0",
-    "id": 2,
-    "method": "firefly_setTime",
+    "id": 1,
+    "method": "firefly_setNetworkId",
     "params": [
-      "0x5dcd855e"
+      6721975
     ]
   },
   {
     "jsonrpc": "2.0",
     "id": 3,
-    "method": "firefly_getTime",
+    "method": "net_version",
     "params": []
   }
 ]

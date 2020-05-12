@@ -412,22 +412,25 @@ A cons-list is used for the EVM wordstack.
 -   `WS [ N := W ]` sets element $N$ of $WS$ to $W$ (padding with zeros as needed).
 
 ```k
-    syntax Int ::= WordStack "[" Int "]" [function]
- // -----------------------------------------------
+    syntax Int ::= WordStack "[" Int "]" [function, functional]
+ // -----------------------------------------------------------
     rule (W : _):WordStack [ N ] => W                  requires N ==Int 0
     rule WS:WordStack      [ N ] => #drop(N, WS) [ 0 ] requires N  >Int 0
+    rule WS:WordStack      [ N ] => 0                  requires N  <Int 0
 
-    syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function]
- // --------------------------------------------------------------
+    syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function, functional]
+ // --------------------------------------------------------------------------
     rule (W0 : WS):WordStack [ N := W ] => W  : WS                     requires N ==Int 0
     rule (W0 : WS):WordStack [ N := W ] => W0 : (WS [ N -Int 1 := W ]) requires N  >Int 0
+    rule        WS:WordStack [ N := W ] => WS                          requires N  <Int 0
+    rule .WordStack          [ N := W ] => (0 : .WordStack) [ N := W ]
 ```
 
--   Definedness conditions for `WS [ N ]` and `WS [ N := W ]`
+-   Definedness conditions for `WS [ N ]`:
 
 ```{.k .symbolic}
-    rule #Ceil(WS[N])        => {((0 <=Int N) andBool (N <Int #sizeWordStack(WS))) #Equals true}  [anywhere]
-    rule #Ceil(WS[ N := W ]) => {((0 <=Int N) andBool (N <Int #sizeWordStack(WS))) #Equals true}  [anywhere]
+    rule #Ceil(#lookup( _ |-> VAL M, KEY )) => {(#Ceil(#lookup( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
+    rule #Ceil(#lookup( .Map, _ ))          => true                                                          [anywhere]
 ```
 
 -   `#sizeWordStack` calculates the size of a `WordStack`.
@@ -478,12 +481,13 @@ Most of EVM data is held in local memory.
 
 ```{.k .membytes}
     syntax Memory = Bytes
-    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
- // -------------------------------------------------------------------------------------
-    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS')  [concrete]
+    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, functional, klabel(mapWriteBytes)]
+ // -------------------------------------------------------------------------------------------------
+    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS') requires START >=Int 0  [concrete]
+    rule WS [ START := WS':ByteArray ] => .Memory                                                                requires START  <Int 0  [concrete]
 
-    syntax ByteArray ::= #range ( Memory , Int , Int ) [function]
- // -------------------------------------------------------------
+    syntax ByteArray ::= #range ( Memory , Int , Int ) [function, functional]
+ // -------------------------------------------------------------------------
     rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ] [concrete]
 
     syntax Memory ::= ".Memory" [function]
@@ -588,20 +592,24 @@ The local memory of execution is a byte-array (instead of a word-array).
  // -------------------------------------------------------------------------------------------------------------
     rule WS ++ WS' => WS +Bytes WS' [concrete]
 
-    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function]
- // --------------------------------------------------------------
-    rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires START <Int #sizeByteArray(WS) [concrete]
-    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0)                                              [owise, concrete]
+    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional]
+ // --------------------------------------------------------------------------
+    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0) [concrete, owise]
+    rule WS [ START .. WIDTH ] => .ByteArray                      requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
+    rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH)
+      requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int #sizeByteArray(WS) [concrete]
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, klabel(sizeByteArray), smtlib(sizeByteArray)]
  // ----------------------------------------------------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => lengthBytes(WS) [concrete]
 
-    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function]
-                       | #padRightToWidth ( Int , ByteArray ) [function]
- // --------------------------------------------------------------------
-    rule #padToWidth(N, BS)      => padLeftBytes(BS, N, 0)  [concrete]
-    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) [concrete]
+    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, functional]
+                       | #padRightToWidth ( Int , ByteArray ) [function, functional]
+ // --------------------------------------------------------------------------------
+    rule #padToWidth(N, BS)      =>               BS        requires notBool (N >=Int 0)
+    rule #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0  [concrete]
+    rule #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
+    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0  [concrete]
 ```
 
 ```{.k .nobytes}
@@ -684,8 +692,8 @@ Addresses
 ```k
     syntax Int ::= #lookup ( Map , Int ) [function]
  // -----------------------------------------------
-    rule [#lookup.some]: #lookup( (KEY |-> VAL) M, KEY ) => VAL
-    rule [#lookup.none]: #lookup(               M, KEY ) => 0 requires notBool KEY in_keys(M)
+    rule [#lookup.some]: #lookup( (KEY |-> VAL:Int) M, KEY ) => VAL
+    rule [#lookup.none]: #lookup(                   M, KEY ) => 0 requires notBool KEY in_keys(M)
 ```
 
 ### Substate Log

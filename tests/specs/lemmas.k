@@ -5,6 +5,31 @@ module LEMMAS
     imports LEMMAS-JAVA
     imports LEMMAS-HASKELL
 
+    rule WS ++ .ByteArray => WS  [simplification]
+    rule .ByteArray ++ WS => WS  [simplification]
+
+    //Byte array store operations sorting. Slices with lower index first. Helps applying rule below.
+    rule MEM [ N := BUF:ByteArray ] [ M := BUF' ] => MEM [ M := BUF' ] [ N := BUF ]
+      requires N >Int M andBool N -Int M >=Int #sizeByteArray(BUF')                                               [simplification]
+
+    rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeByteArray(BUF) ==Int #sizeByteArray(BUF')  [simplification]
+
+    rule BUF [ L .. W ] => .ByteArray requires W ==Int 0                    [simplification]
+    rule BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
+
+    rule #sizeByteArray(BUF1 ++ BUF2)                  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
+    rule #sizeByteArray(#buf(SIZE, _))                 => SIZE                                            [simplification]
+    rule #sizeByteArray(#buf(SIZE, _)[START .. WIDTH]) => WIDTH
+      requires #range(0 <= START < SIZE)
+       andBool #range(0 < WIDTH <= SIZE -Int START)                                                       [simplification]
+
+    rule #sizeByteArray(#range(_, START, WIDTH)) => WIDTH
+      requires WIDTH >=Int 0 andBool START >=Int 0                                                        [simplification]
+
+    //Todo custom ==K unification doesn't work in Haskell yet
+    //++ unification
+    rule #buf(N, A) ++ BUF1 ==K #buf(N, B) ++ BUF2 => #buf(N, A) ==K #buf(N, B) andBool BUF1 ==K BUF2     [simplification]
+
 endmodule
 
 module LEMMAS-JAVA [symbolic, kast]
@@ -12,13 +37,11 @@ module LEMMAS-JAVA [symbolic, kast]
     imports EDSL
     imports K-REFLECTION
 
+    rule BUF [ L .. W ] => .ByteArray requires L >=Int #sizeByteArray(BUF)  [simplification]
+
     rule #asWord( BUF => #drop(1, BUF) ) requires BUF [ 0 ] ==Int 0  [simplification]
 
-    rule WS ++ .ByteArray => WS  [simplification]
-
     rule #sizeByteArray(W : WS)        => 1 +Int #sizeByteArray(WS)                       [simplification]
-    rule #sizeByteArray(#buf(N, _)  )  => N                                               [simplification]
-    rule #sizeByteArray(BUF1 ++ BUF2)  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
     rule #sizeByteArray(#drop(N, BUF)) => maxInt(#sizeByteArray(BUF) -Int N, 0)           [simplification]
 
     rule #take(N, BUF)          => BUF                                              requires N ==Int #sizeByteArray(BUF)   [simplification]
@@ -32,12 +55,6 @@ module LEMMAS-JAVA [symbolic, kast]
     rule #asWord(#buf(N, BUF)) => BUF  [simplification]
 
     rule #asWord(BUF) /Int 26959946667150639794667015087019630673637144422540572481103610249216 => #asWord(#take(4, BUF))  [simplification]
-
-    rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeByteArray(BUF) ==Int #sizeByteArray(BUF')  [simplification]
-
-    rule BUF [ L .. W ] => .ByteArray requires W <=Int 0                    [simplification]
-    rule BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
-    rule BUF [ L .. W ] => .ByteArray requires L  >Int #sizeByteArray(BUF)  [simplification]
 
     rule #range(M, N, K) => .ByteArray requires notBool K >Int 0  [simplification]
 
@@ -212,18 +229,6 @@ endmodule
 module LEMMAS-HASKELL [symbolic, kore]
     imports EVM
     imports EDSL
-
-    rule WS ++ .ByteArray => WS  [simplification]
-    rule .ByteArray ++ WS => WS  [simplification]
-
-    rule #sizeByteArray(BUF1 ++ BUF2)                  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
-    rule #sizeByteArray(#buf(SIZE, _))                 => SIZE                                            [simplification]
-    rule #sizeByteArray(#buf(SIZE, _)[START .. WIDTH]) => WIDTH
-      requires #range(0 <= START < SIZE)
-       andBool #range(0 < WIDTH <= SIZE -Int START)                                                       [simplification]
-
-    rule BUF [ L .. W ] => .ByteArray requires W <=Int 0                    [simplification]
-    rule BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
 
     rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])
       requires #range(0 <= START < #sizeByteArray(BUF1))
