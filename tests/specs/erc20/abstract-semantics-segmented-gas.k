@@ -1,10 +1,8 @@
 requires "evm-symbolic.k"
-requires "../lemmas.k"
 
 module ABSTRACT-SEMANTICS-SEGMENTED-GAS
   imports EVM
   imports EVM-SYMBOLIC
-  imports LEMMAS
 
   // to avoid unnecessary case analyses
   rule <k> LT W0 W1 => bool2Word(W0  <Int W1) ~> #push ... </k> [trusted]
@@ -27,4 +25,5 @@ module ABSTRACT-SEMANTICS-SEGMENTED-GAS
        <gas> #gas(INITGAS, NONMEM, MEM) => #gas(INITGAS, NONMEM +Int G, MEM) </gas>
        <callGas> _ => #gas(INITGAS, NONMEM, MEM) </callGas>
     [trusted, matching(#gas)]
+
 endmodule

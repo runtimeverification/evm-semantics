@@ -54,9 +54,11 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax ByteArray ::= #abiCallData ( String , TypedArgs ) [function]
  // -------------------------------------------------------------------
-    rule #abiCallData( FNAME , ARGS )
-      => #parseByteStack(substrString(Keccak256(#generateSignature(FNAME, ARGS)), 0, 8))
-      ++ #encodeArgs(ARGS)
+    rule #abiCallData( FNAME , ARGS ) => #signatureCallData(FNAME, ARGS) ++ #encodeArgs(ARGS)
+
+    syntax ByteArray ::= #signatureCallData ( String, TypedArgs ) [function]
+ // ------------------------------------------------------------------------
+    rule #signatureCallData( FNAME , ARGS ) => #parseByteStack(substrString(Keccak256(#generateSignature(FNAME, ARGS)), 0, 8))
 
     syntax String ::= #generateSignature     ( String, TypedArgs ) [function]
                     | #generateSignatureArgs ( TypedArgs )         [function]
@@ -182,6 +184,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA))
       requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
       [concrete]
+
+    rule #Ceil(#buf(SIZE, DATA)) => {(0 <=Int SIZE) andBool #range(0 <= DATA < (2 ^Int (SIZE *Int 8))) #Equals true}  [anywhere]
 
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
