@@ -70,11 +70,10 @@ distclean:
 
 libsecp256k1_out := $(LIBRARY_PATH)/pkgconfig/libsecp256k1.pc
 libff_out        := $(LIBRARY_PATH)/libff.a
-libcryptopp_out  := $(LIBRARY_PATH)/libcryptopp.a
 
 libsecp256k1: $(libsecp256k1_out)
 $(libsecp256k1_out): $(PLUGIN_SUBMODULE)/make.timestamp
-	cd deps/plugin && $(MAKE) CC=$(CC) CXX=$(CXX) PREFIX=$(BUILD_LOCAL) -- libsecp256k1
+	cd deps/plugin && $(MAKE) PREFIX=$(BUILD_LOCAL) -- libsecp256k1
 
 UNAME_S := $(shell uname -s)
 
@@ -85,12 +84,8 @@ else
 endif
 
 $(libff_out): $(PLUGIN_SUBMODULE)/make.timestamp
-	cd deps/plugin && $(MAKE) CC=$(CC) CXX=$(CXX) PREFIX=$(BUILD_LOCAL) \
+	cd deps/plugin && $(MAKE) PREFIX=$(BUILD_LOCAL) \
 	    LIBFF_CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=Release $(LIBFF_CMAKE_FLAGS)" -- libff
-
-libcryptopp: $(libcryptopp_out)
-$(libcryptopp_out): $(PLUGIN_SUBMODULE)/make.timestamp
-	cd deps/plugin && $(MAKE) CC=$(CC) CXX=$(CXX) PREFIX=$(BUILD_LOCAL) -- libcryptopp
 
 # K Dependencies
 # --------------

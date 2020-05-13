@@ -12,6 +12,7 @@ RUN    apt-get update                \
             gcc                      \
             jq                       \
             libboost-test-dev        \
+            libcrypto++-dev          \
             libffi-dev               \
             libgflags-dev            \
             libjemalloc-dev          \

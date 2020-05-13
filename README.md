@@ -65,17 +65,7 @@ sudo apt-get install --yes                                                      
             python-sphinx rapidjson-dev time zlib1g-dev
 ```
 
-On Ubuntu < 18.04, skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
-
-```sh
-make libsecp256k1
-```
-
-On most Ubuntu/Debian distributions, skip `libcrypto++-dev` and build it from source (via our `Makefile`):
-
-```sh
-make libcryptopp
-```
+On Ubuntu < 18.04, skip `libsecp256k1-dev` and instead build it from source.
 
 On ArchLinux:
 
