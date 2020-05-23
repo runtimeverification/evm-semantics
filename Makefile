@@ -89,14 +89,11 @@ else
     LIBFF_CMAKE_FLAGS=-DWITH_PROCPS=OFF
 endif
 
-LIBFF_CC  := clang-8
-LIBFF_CXX := clang++-8
-
 $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 	@mkdir -p $(DEPS_DIR)/libff/build
-	cd $(DEPS_DIR)/libff/build \
-	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) $(LIBFF_CMAKE_FLAGS) \
-	    && make -s -j4 \
+	cd $(DEPS_DIR)/libff/build                                                                            \
+	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) $(LIBFF_CMAKE_FLAGS) \
+	    && make -s -j4                                                                                    \
 	    && make install
 
 # K Dependencies

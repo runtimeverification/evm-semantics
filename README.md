@@ -120,12 +120,6 @@ make RELEASE=1 deps
 ```
 If you are a developer, you probably should omit `RELEASE` from the above commands unless you are testing performance, as the build is somewhat slower.
 
-On Arch, instead do:
-
-```sh
-make LIBFF_CC=clang LIBFF_CXX=clang++ RELEASE=1 deps
-```
-
 ### Building
 
 Finally, you can install repository specific dependencies and build the semantics:
