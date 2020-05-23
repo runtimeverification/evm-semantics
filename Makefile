@@ -80,9 +80,6 @@ libff_out        := $(LOCAL_LIB)/libff.a
 libsecp256k1: $(libsecp256k1_out)
 libff:        $(libff_out)
 
-$(DEPS_DIR)/secp256k1/autogen.sh:
-	git submodule update --init --recursive -- $(DEPS_DIR)/secp256k1
-
 $(libsecp256k1_out): $(DEPS_DIR)/secp256k1/autogen.sh
 	cd $(DEPS_DIR)/secp256k1/                                             \
 	    && ./autogen.sh                                                   \
@@ -102,9 +99,6 @@ endif
 
 LIBFF_CC  := clang-8
 LIBFF_CXX := clang++-8
-
-$(DEPS_DIR)/libff/CMakeLists.txt:
-	git submodule update --init --recursive -- $(DEPS_DIR)/libff
 
 $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 	@mkdir -p $(DEPS_DIR)/libff/build
@@ -132,16 +126,8 @@ SEMANTICS_BUILD_TYPE := Debug
 endif
 
 $(K_SUBMODULE)/make.timestamp:
-	git submodule update --init --recursive -- $(K_SUBMODULE)
 	cd $(K_SUBMODULE) && mvn package -DskipTests -U -Dproject.build.type=${K_BUILD_TYPE}
 	touch $(K_SUBMODULE)/make.timestamp
-
-$(TANGLER):
-	git submodule update --init -- $(PANDOC_TANGLE_SUBMODULE)
-
-$(PLUGIN_SUBMODULE)/make.timestamp:
-	git submodule update --init --recursive -- $(PLUGIN_SUBMODULE)
-	touch $(PLUGIN_SUBMODULE)/make.timestamp
 
 # Building
 # --------
@@ -310,10 +296,6 @@ test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
 
 split-tests: tests/ethereum-tests/make.timestamp
-
-tests/%/make.timestamp:
-	git submodule update --init -- tests/$*
-	touch $@
 
 # Generic Test Harnesses
 
@@ -505,5 +487,4 @@ media-pdf: $(patsubst %, media/%.pdf, $(media_pdfs))
 metropolis-theme: $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty
 
 $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
-	git submodule update --init -- $(dir $@)
 	cd $(dir $@) && $(MAKE)
