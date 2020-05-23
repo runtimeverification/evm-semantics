@@ -1,6 +1,7 @@
 # Settings
 # --------
 
+DEPS_DIR      := deps
 BUILD_DIR     := .build
 SUBDEFN_DIR   := .
 DEFN_BASE_DIR := $(BUILD_DIR)/defn
@@ -8,18 +9,28 @@ DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
 BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 LOCAL_LIB     := $(BUILD_LOCAL)/lib
 
+K_SUBMODULE := $(DEPS_DIR)/k
+ifneq (,$(wildcard deps/k/k-distribution/target/release/k/bin/*))
+    K_RELEASE ?= $(K_SUBMODULE)/k-distribution/target/release/k
+else
+    K_RELEASE ?= $(dir $(shell which kompile))..
+endif
+K_BIN := $(K_RELEASE)/bin
+K_LIB := $(K_RELEASE)/lib
+export K_RELEASE
+
 LIBRARY_PATH       := $(LOCAL_LIB)
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
 PKG_CONFIG_PATH    := $(LOCAL_LIB)/pkgconfig
+PATH               := $(K_BIN):$(PATH)
 
 export LIBRARY_PATH
 export C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH
 export PKG_CONFIG_PATH
+export PATH
 
-DEPS_DIR         := deps
-K_SUBMODULE      := $(abspath $(DEPS_DIR)/k)
 PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
 export PLUGIN_SUBMODULE
 
@@ -27,9 +38,6 @@ K_RELEASE ?= $(K_SUBMODULE)/k-distribution/target/release/k
 K_BIN     := $(K_RELEASE)/bin
 K_LIB     := $(K_RELEASE)/lib
 export K_RELEASE
-
-PATH := $(K_BIN):$(PATH)
-export PATH
 
 # need relative path for `pandoc` on MacOS
 PANDOC_TANGLE_SUBMODULE := $(DEPS_DIR)/pandoc-tangle
