@@ -199,7 +199,7 @@ build-web3:    $(web3_kompiled)
 build-haskell: $(haskell_kompiled)
 build-llvm:    $(llvm_kompiled)
 
-# Java Backend
+# Java
 
 $(java_kompiled): $(java_files)
 	kompile --debug --main-module $(MAIN_MODULE) --backend java              \
@@ -207,7 +207,7 @@ $(java_kompiled): $(java_files)
 	        --directory $(java_dir) -I $(java_dir)                           \
 	        $(KOMPILE_OPTS)
 
-# Imperative Specs Backend
+# Imperative Specs
 
 $(specs_kompiled): MAIN_DEFN_FILE=evm-imp-specs
 $(specs_kompiled): MAIN_MODULE=EVM-IMP-SPECS
@@ -219,7 +219,7 @@ $(specs_kompiled): $(specs_files)
 	        --directory $(specs_dir) -I $(specs_dir) \
 	        $(KOMPILE_OPTS)
 
-# Haskell Backend
+# Haskell
 
 $(haskell_kompiled): $(haskell_files)
 	kompile --debug --main-module $(MAIN_MODULE) --backend haskell --hook-namespaces KRYPTO \
@@ -227,7 +227,7 @@ $(haskell_kompiled): $(haskell_files)
 	        --directory $(haskell_dir) -I $(haskell_dir)                                    \
 	        $(KOMPILE_OPTS)
 
-# Web3 Backend
+# Web3
 
 $(web3_kore): $(web3_files)
 	kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
@@ -241,7 +241,7 @@ $(web3_kompiled): $(web3_kore) $(libff_out)
 	@mkdir -p $(web3_dir)/build
 	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=$(SEMANTICS_BUILD_TYPE) && $(MAKE)
 
-# LLVM Backend
+# Standalone
 
 STANDALONE_KOMPILE_OPTS := $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
                            $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp \
