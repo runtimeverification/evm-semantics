@@ -255,7 +255,7 @@ endif
 $(llvm_kompiled): $(llvm_files) $(libff_out)
 	kompile --debug --main-module $(MAIN_MODULE) --backend llvm                                  \
 	        --syntax-module $(SYNTAX_MODULE) $(llvm_dir)/$(MAIN_DEFN_FILE).k                     \
-	        --directory $(llvm_dir) -I $(llvm_dir) -I $(llvm_dir)                                \
+	        --directory $(llvm_dir) -I $(llvm_dir)                                               \
 	        --hook-namespaces KRYPTO                                                             \
 	        $(KOMPILE_OPTS)                                                                      \
 	        $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
