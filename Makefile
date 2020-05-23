@@ -34,11 +34,6 @@ export PATH
 PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
 export PLUGIN_SUBMODULE
 
-K_RELEASE ?= $(K_SUBMODULE)/k-distribution/target/release/k
-K_BIN     := $(K_RELEASE)/bin
-K_LIB     := $(K_RELEASE)/lib
-export K_RELEASE
-
 # need relative path for `pandoc` on MacOS
 PANDOC_TANGLE_SUBMODULE := $(DEPS_DIR)/pandoc-tangle
 TANGLER                 := $(PANDOC_TANGLE_SUBMODULE)/tangle.lua
