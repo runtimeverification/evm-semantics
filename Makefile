@@ -6,11 +6,12 @@ SUBDEFN_DIR   := .
 DEFN_BASE_DIR := $(BUILD_DIR)/defn
 DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
 BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
+LOCAL_LIB     := $(BUILD_LOCAL)/lib
 
-LIBRARY_PATH       := $(BUILD_LOCAL)/lib
+LIBRARY_PATH       := $(LOCAL_LIB)
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
-PKG_CONFIG_PATH    := $(LIBRARY_PATH)/pkgconfig
+PKG_CONFIG_PATH    := $(LOCAL_LIB)/pkgconfig
 
 export LIBRARY_PATH
 export C_INCLUDE_PATH
@@ -68,8 +69,8 @@ distclean:
 # Non-K Dependencies
 # ------------------
 
-libsecp256k1_out := $(LIBRARY_PATH)/pkgconfig/libsecp256k1.pc
-libff_out        := $(LIBRARY_PATH)/libff.a
+libsecp256k1_out := $(LOCAL_LIB)/pkgconfig/libsecp256k1.pc
+libff_out        := $(LOCAL_LIB)/libff.a
 
 libsecp256k1: $(libsecp256k1_out)
 libff:        $(libff_out)
@@ -78,10 +79,10 @@ $(DEPS_DIR)/secp256k1/autogen.sh:
 	git submodule update --init --recursive -- $(DEPS_DIR)/secp256k1
 
 $(libsecp256k1_out): $(DEPS_DIR)/secp256k1/autogen.sh
-	cd $(DEPS_DIR)/secp256k1/ \
-	    && ./autogen.sh \
+	cd $(DEPS_DIR)/secp256k1/                                             \
+	    && ./autogen.sh                                                   \
 	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
-	    && $(MAKE) \
+	    && $(MAKE)                                                        \
 	    && $(MAKE) install
 
 UNAME_S := $(shell uname -s)
@@ -268,7 +269,7 @@ $(llvm_kompiled): $(llvm_files) $(libff_out)
 	        -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp                                       \
 	        -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp                                       \
 	        -ccopt -g -ccopt -std=c++14                                                          \
-	        -ccopt -L$(LIBRARY_PATH)                                                             \
+	        -ccopt -L$(LOCAL_LIB)                                                                \
 	        -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS))
 
 # Installing
