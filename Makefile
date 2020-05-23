@@ -111,16 +111,16 @@ tangle-deps: $(TANGLER)
 plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
 
 ifneq ($(RELEASE),)
-K_BUILD_TYPE         := FastBuild
-SEMANTICS_BUILD_TYPE := Release
-KOMPILE_OPTS         += -O3
+    K_BUILD_TYPE         := FastBuild
+    SEMANTICS_BUILD_TYPE := Release
+    KOMPILE_OPTS         += -O3
 else
-K_BUILD_TYPE         := FastBuild
-SEMANTICS_BUILD_TYPE := Debug
+    K_BUILD_TYPE         := FastBuild
+    SEMANTICS_BUILD_TYPE := Debug
 endif
 
 $(K_SUBMODULE)/make.timestamp:
-	cd $(K_SUBMODULE) && mvn package -DskipTests -U -Dproject.build.type=${K_BUILD_TYPE}
+	cd $(K_SUBMODULE) && mvn package -DskipTests -U -Dproject.build.type=$(K_BUILD_TYPE)
 	touch $(K_SUBMODULE)/make.timestamp
 
 # Building
