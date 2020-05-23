@@ -18,9 +18,6 @@ export C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH
 export PKG_CONFIG_PATH
 
-INSTALL_PREFIX := /usr/local
-INSTALL_DIR    ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
-
 DEPS_DIR         := deps
 K_SUBMODULE      := $(abspath $(DEPS_DIR)/k)
 PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
@@ -256,7 +253,7 @@ $(web3_kore): $(web3_files)
 
 $(web3_kompiled): $(web3_kore) $(libff_out)
 	@mkdir -p $(web3_dir)/build
-	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
+	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=$(SEMANTICS_BUILD_TYPE) && $(MAKE)
 
 # LLVM Backend
 
