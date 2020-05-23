@@ -84,11 +84,9 @@ $(libsecp256k1_out): $(DEPS_DIR)/secp256k1/autogen.sh
 UNAME_S := $(shell uname -s)
 
 ifeq ($(UNAME_S),Linux)
-  LIBFF_CMAKE_FLAGS=
-  LINK_PROCPS=-lprocps
+    LIBFF_CMAKE_FLAGS=
 else
-  LIBFF_CMAKE_FLAGS=-DWITH_PROCPS=OFF
-  LINK_PROCPS=
+    LIBFF_CMAKE_FLAGS=-DWITH_PROCPS=OFF
 endif
 
 LIBFF_CC  := clang-8
@@ -245,17 +243,22 @@ $(web3_kompiled): $(web3_kore) $(libff_out)
 
 # LLVM Backend
 
+STANDALONE_KOMPILE_OPTS := $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
+                           $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp \
+                           -g -std=c++14 -L$(LOCAL_LIB)            \
+                           -lff -lcryptopp -lsecp256k1
+
+ifeq ($(UNAME_S),Linux)
+    STANDALONE_KOMPILE_OPTS += -lprocps
+endif
+
 $(llvm_kompiled): $(llvm_files) $(libff_out)
 	kompile --debug --main-module $(MAIN_MODULE) --backend llvm                                  \
 	        --syntax-module $(SYNTAX_MODULE) $(llvm_dir)/$(MAIN_DEFN_FILE).k                     \
 	        --directory $(llvm_dir) -I $(llvm_dir) -I $(llvm_dir)                                \
 	        --hook-namespaces KRYPTO                                                             \
 	        $(KOMPILE_OPTS)                                                                      \
-	        -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp                                       \
-	        -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp                                       \
-	        -ccopt -g -ccopt -std=c++14                                                          \
-	        -ccopt -L$(LOCAL_LIB)                                                                \
-	        -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS))
+	        $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
 
 # Installing
 # ----------
