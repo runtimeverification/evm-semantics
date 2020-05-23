@@ -45,7 +45,6 @@ export LUA_PATH
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
         build build-java build-specs build-haskell build-llvm build-web3                                                         \
         defn java-defn specs-defn web3-defn haskell-defn llvm-defn                                                               \
-        split-tests                                                                                                              \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
         test-web3 test-all-web3 test-failing-web3                                                                                \
@@ -57,7 +56,7 @@ export LUA_PATH
         media media-pdf metropolis-theme
 .SECONDARY:
 
-all: build split-tests
+all: build
 
 clean:
 	rm -rf $(DEFN_BASE_DIR)
@@ -289,8 +288,6 @@ KPROVE_OPTIONS :=
 
 test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
-
-split-tests: tests/ethereum-tests/make.timestamp
 
 # Generic Test Harnesses
 
