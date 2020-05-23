@@ -24,13 +24,8 @@ pipeline {
         }
       }
       stages {
-        stage('Dependencies') {
-          parallel {
-            stage('K')     { steps { sh 'make deps RELEASE=true' } }
-            stage('Tests') { steps { sh 'make split-tests -j3'   } }
-          }
-        }
-        stage('Build') { steps { sh 'make build -j4' } }
+        stage('K Dependencies') { steps { sh 'make deps RELEASE=true' } }
+        stage('Build')          { steps { sh 'make build -j4'         } }
         stage('Test Execution') {
           failFast true
           options { timeout(time: 20, unit: 'MINUTES') }
