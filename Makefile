@@ -101,9 +101,9 @@ $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 
 deps: repo-deps
 repo-deps: tangle-deps k-deps plugin-deps
-k-deps: $(K_SUBMODULE)/make.timestamp
+k-deps: $(K_LIB)/java/kernel-1.0-SNAPSHOT.jar
 tangle-deps: $(TANGLER)
-plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
+plugin-deps: $(PLUGIN_SUBMODULE)/client-c/main.cpp
 
 ifneq ($(RELEASE),)
     K_BUILD_TYPE         := FastBuild
