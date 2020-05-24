@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.4)
 
 list(APPEND CMAKE_MODULE_PATH "$ENV{K_RELEASE}/cmake")
+list(APPEND CMAKE_MODULE_PATH "$ENV{K_RELEASE}/lib/cmake/kframework")
 include(LLVMKompilePrelude)
 project (KevmClient CXX)
 
@@ -22,6 +23,7 @@ endif()
 target_include_directories(kevm-client
 	PUBLIC $ENV{PLUGIN_SUBMODULE}/plugin-c
 	PUBLIC $ENV{PLUGIN_SUBMODULE}/deps/cpp-httplib
+	PUBLIC $ENV{K_RELEASE}/include/kllvm
 	PUBLIC ${CMAKE_SOURCE_DIR}/..)
 target_compile_options(kevm-client
 	PUBLIC $ENV{LLVM_KOMPILE_OPTS}
