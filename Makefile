@@ -121,12 +121,9 @@ $(K_SUBMODULE)/make.timestamp:
 # Building
 # --------
 
-build-web3: MAIN_DEFN_FILE = web3
-build-web3: MAIN_MODULE    = WEB3
-build-web3: SYNTAX_MODULE  = WEB3
 MAIN_MODULE    := ETHEREUM-SIMULATION
 SYNTAX_MODULE  := $(MAIN_MODULE)
-export MAIN_DEFN_FILE := driver
+MAIN_DEFN_FILE := driver
 
 k_files       := driver.k data.k network.k evm.k evm-types.k json.k krypto.k edsl.k web3.k asm.k state-loader.k serialization.k evm-imp-specs.k
 EXTRA_K_FILES += $(MAIN_DEFN_FILE).k
@@ -153,6 +150,12 @@ haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 web3_kore := $(web3_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+$(web3_kompiled): MAIN_DEFN_FILE := web3
+$(web3_kompiled): MAIN_MODULE    := WEB3
+$(web3_kompiled): SYNTAX_MODULE  := WEB3
+$(web3_kompiled): web3_kore      := $(web3_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+
+export MAIN_DEFN_FILE
 
 # Tangle definition from *.md files
 
