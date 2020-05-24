@@ -97,9 +97,11 @@ $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 # K Dependencies
 # --------------
 
+K_JAR := $(K_SUBMODULE)/k-distribution/target/release/k/lib/java/kernel-1.0-SNAPSHOT.jar
+
 deps: repo-deps
 repo-deps: tangle-deps k-deps plugin-deps
-k-deps: $(K_LIB)/java/kernel-1.0-SNAPSHOT.jar
+k-deps: $(K_JAR)
 tangle-deps: $(TANGLER)
 plugin-deps: $(PLUGIN_SUBMODULE)/client-c/main.cpp
 
@@ -112,9 +114,8 @@ else
     SEMANTICS_BUILD_TYPE := Debug
 endif
 
-$(K_SUBMODULE)/make.timestamp:
+$(K_JAR):
 	cd $(K_SUBMODULE) && mvn package -DskipTests -U -Dproject.build.type=$(K_BUILD_TYPE)
-	touch $(K_SUBMODULE)/make.timestamp
 
 # Building
 # --------
