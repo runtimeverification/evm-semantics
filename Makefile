@@ -242,10 +242,10 @@ $(web3_kompiled): $(web3_kore) $(libff_out)
 
 # Standalone
 
-STANDALONE_KOMPILE_OPTS := $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp \
-                           $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp \
-                           -g -std=c++14 -L$(LOCAL_LIB)            \
-                           -lff -lcryptopp -lsecp256k1
+STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_RELEASE)/include/kllvm \
+                           $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp     \
+                           $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp     \
+                           -g -std=c++14 -lff -lcryptopp -lsecp256k1
 
 ifeq ($(UNAME_S),Linux)
     STANDALONE_KOMPILE_OPTS += -lprocps
