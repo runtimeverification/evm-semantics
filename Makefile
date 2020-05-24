@@ -22,13 +22,11 @@ export K_RELEASE
 LIBRARY_PATH       := $(LOCAL_LIB)
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
-PKG_CONFIG_PATH    := $(LOCAL_LIB)/pkgconfig
 PATH               := $(K_BIN):$(PATH)
 
 export LIBRARY_PATH
 export C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH
-export PKG_CONFIG_PATH
 export PATH
 
 PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
