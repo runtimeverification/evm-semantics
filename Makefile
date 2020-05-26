@@ -16,7 +16,7 @@ else
     K_RELEASE ?= $(dir $(shell which kompile))..
 endif
 K_BIN := $(K_RELEASE)/bin
-K_LIB := $(K_RELEASE)/lib
+K_LIB := $(K_RELEASE)/lib/kframework
 export K_RELEASE
 
 LIBRARY_PATH       := $(LOCAL_LIB)
