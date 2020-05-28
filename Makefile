@@ -73,8 +73,8 @@ libsecp256k1: $(libsecp256k1_out)
 libff:        $(libff_out)
 
 $(libsecp256k1_out): $(PLUGIN_SUBMODULE)/deps/secp256k1/autogen.sh
-	cd $(PLUGIN_SUBMODULE)/deps/secp256k1 \
-	    && ./autogen.sh \
+	cd $(PLUGIN_SUBMODULE)/deps/secp256k1                                 \
+	    && ./autogen.sh                                                   \
 	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
 	    && $(MAKE)                                                        \
 	    && $(MAKE) install
@@ -89,9 +89,9 @@ endif
 
 $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	@mkdir -p $(PLUGIN_SUBMODULE)/deps/libff/build
-	cd $(PLUGIN_SUBMODULE)/deps/libff/build \
+	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                               \
 	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) $(LIBFF_CMAKE_FLAGS) \
-	    && make -s -j4 \
+	    && make -s -j4                                                                                    \
 	    && make install
 
 # K Dependencies
