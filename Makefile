@@ -1,37 +1,36 @@
 # Settings
 # --------
 
+DEPS_DIR      := deps
 BUILD_DIR     := .build
 SUBDEFN_DIR   := .
 DEFN_BASE_DIR := $(BUILD_DIR)/defn
 DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
 BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
+LOCAL_LIB     := $(BUILD_LOCAL)/lib
 
-LIBRARY_PATH       := $(BUILD_LOCAL)/lib
+K_SUBMODULE := $(DEPS_DIR)/k
+ifneq (,$(wildcard $(K_SUBMODULE)/k-distribution/target/release/k/bin/*))
+    K_RELEASE ?= $(abspath $(K_SUBMODULE)/k-distribution/target/release/k)
+else
+    K_RELEASE ?= $(dir $(shell which kompile))..
+endif
+K_BIN := $(K_RELEASE)/bin
+K_LIB := $(K_RELEASE)/lib/kframework
+export K_RELEASE
+
+LIBRARY_PATH       := $(LOCAL_LIB)
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
-PKG_CONFIG_PATH    := $(LIBRARY_PATH)/pkgconfig
+PATH               := $(K_BIN):$(PATH)
 
 export LIBRARY_PATH
 export C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH
-export PKG_CONFIG_PATH
+export PATH
 
-INSTALL_PREFIX := /usr/local
-INSTALL_DIR    ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
-
-DEPS_DIR         := deps
-K_SUBMODULE      := $(abspath $(DEPS_DIR)/k)
 PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
 export PLUGIN_SUBMODULE
-
-K_RELEASE ?= $(K_SUBMODULE)/k-distribution/target/release/k
-K_BIN     := $(K_RELEASE)/bin
-K_LIB     := $(K_RELEASE)/lib
-export K_RELEASE
-
-PATH := $(K_BIN):$(PATH)
-export PATH
 
 # need relative path for `pandoc` on MacOS
 PANDOC_TANGLE_SUBMODULE := $(DEPS_DIR)/pandoc-tangle
@@ -44,7 +43,6 @@ export LUA_PATH
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
         build build-java build-specs build-haskell build-llvm build-web3                                                         \
         defn java-defn specs-defn web3-defn haskell-defn llvm-defn                                                               \
-        split-tests                                                                                                              \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
         test-web3 test-all-web3 test-failing-web3                                                                                \
@@ -56,7 +54,7 @@ export LUA_PATH
         media media-pdf metropolis-theme
 .SECONDARY:
 
-all: build split-tests
+all: build
 
 clean:
 	rm -rf $(DEFN_BASE_DIR)
@@ -68,84 +66,63 @@ distclean:
 # Non-K Dependencies
 # ------------------
 
-libsecp256k1_out := $(LIBRARY_PATH)/pkgconfig/libsecp256k1.pc
-libff_out        := $(LIBRARY_PATH)/libff.a
+libsecp256k1_out := $(LOCAL_LIB)/pkgconfig/libsecp256k1.pc
+libff_out        := $(LOCAL_LIB)/libff.a
 
 libsecp256k1: $(libsecp256k1_out)
 libff:        $(libff_out)
 
-$(DEPS_DIR)/secp256k1/autogen.sh:
-	git submodule update --init --recursive -- $(DEPS_DIR)/secp256k1
-
 $(libsecp256k1_out): $(DEPS_DIR)/secp256k1/autogen.sh
-	cd $(DEPS_DIR)/secp256k1/ \
-	    && ./autogen.sh \
+	cd $(DEPS_DIR)/secp256k1/                                             \
+	    && ./autogen.sh                                                   \
 	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
-	    && $(MAKE) \
+	    && $(MAKE)                                                        \
 	    && $(MAKE) install
 
 UNAME_S := $(shell uname -s)
 
 ifeq ($(UNAME_S),Linux)
-  LIBFF_CMAKE_FLAGS=
-  LINK_PROCPS=-lprocps
+    LIBFF_CMAKE_FLAGS=
 else
-  LIBFF_CMAKE_FLAGS=-DWITH_PROCPS=OFF
-  LINK_PROCPS=
+    LIBFF_CMAKE_FLAGS=-DWITH_PROCPS=OFF
 endif
-
-LIBFF_CC  := clang-8
-LIBFF_CXX := clang++-8
-
-$(DEPS_DIR)/libff/CMakeLists.txt:
-	git submodule update --init --recursive -- $(DEPS_DIR)/libff
 
 $(libff_out): $(DEPS_DIR)/libff/CMakeLists.txt
 	@mkdir -p $(DEPS_DIR)/libff/build
-	cd $(DEPS_DIR)/libff/build \
-	    && CC=$(LIBFF_CC) CXX=$(LIBFF_CXX) cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) $(LIBFF_CMAKE_FLAGS) \
-	    && make -s -j4 \
+	cd $(DEPS_DIR)/libff/build                                                                            \
+	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) $(LIBFF_CMAKE_FLAGS) \
+	    && make -s -j4                                                                                    \
 	    && make install
 
 # K Dependencies
 # --------------
 
+K_JAR := $(K_SUBMODULE)/k-distribution/target/release/k/lib/java/kernel-1.0-SNAPSHOT.jar
+
 deps: repo-deps
 repo-deps: tangle-deps k-deps plugin-deps
-k-deps: $(K_SUBMODULE)/make.timestamp
+k-deps: $(K_JAR)
 tangle-deps: $(TANGLER)
-plugin-deps: $(PLUGIN_SUBMODULE)/make.timestamp
+plugin-deps: $(PLUGIN_SUBMODULE)/client-c/main.cpp
 
 ifneq ($(RELEASE),)
-K_BUILD_TYPE         := FastBuild
-SEMANTICS_BUILD_TYPE := Release
-KOMPILE_OPTS         += -O3
+    K_BUILD_TYPE         := FastBuild
+    SEMANTICS_BUILD_TYPE := Release
+    KOMPILE_OPTS         += -O3
 else
-K_BUILD_TYPE         := FastBuild
-SEMANTICS_BUILD_TYPE := Debug
+    K_BUILD_TYPE         := FastBuild
+    SEMANTICS_BUILD_TYPE := Debug
 endif
 
-$(K_SUBMODULE)/make.timestamp:
-	git submodule update --init --recursive -- $(K_SUBMODULE)
-	cd $(K_SUBMODULE) && mvn package -DskipTests -U -Dproject.build.type=${K_BUILD_TYPE}
-	touch $(K_SUBMODULE)/make.timestamp
-
-$(TANGLER):
-	git submodule update --init -- $(PANDOC_TANGLE_SUBMODULE)
-
-$(PLUGIN_SUBMODULE)/make.timestamp:
-	git submodule update --init --recursive -- $(PLUGIN_SUBMODULE)
-	touch $(PLUGIN_SUBMODULE)/make.timestamp
+$(K_JAR):
+	cd $(K_SUBMODULE) && mvn package -DskipTests -U -Dproject.build.type=$(K_BUILD_TYPE)
 
 # Building
 # --------
 
-build-web3: MAIN_DEFN_FILE = web3
-build-web3: MAIN_MODULE    = WEB3
-build-web3: SYNTAX_MODULE  = WEB3
 MAIN_MODULE    := ETHEREUM-SIMULATION
 SYNTAX_MODULE  := $(MAIN_MODULE)
-export MAIN_DEFN_FILE := driver
+MAIN_DEFN_FILE := driver
 
 k_files       := driver.k data.k network.k evm.k evm-types.k json.k krypto.k edsl.k web3.k asm.k state-loader.k serialization.k evm-imp-specs.k
 EXTRA_K_FILES += $(MAIN_DEFN_FILE).k
@@ -172,6 +149,12 @@ haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
 llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
 
 web3_kore := $(web3_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+$(web3_kompiled): MAIN_DEFN_FILE := web3
+$(web3_kompiled): MAIN_MODULE    := WEB3
+$(web3_kompiled): SYNTAX_MODULE  := WEB3
+$(web3_kompiled): web3_kore      := $(web3_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
+
+export MAIN_DEFN_FILE
 
 # Tangle definition from *.md files
 
@@ -215,7 +198,7 @@ build-web3:    $(web3_kompiled)
 build-haskell: $(haskell_kompiled)
 build-llvm:    $(llvm_kompiled)
 
-# Java Backend
+# Java
 
 $(java_kompiled): $(java_files)
 	kompile --debug --main-module $(MAIN_MODULE) --backend java              \
@@ -223,7 +206,7 @@ $(java_kompiled): $(java_files)
 	        --directory $(java_dir) -I $(java_dir)                           \
 	        $(KOMPILE_OPTS)
 
-# Imperative Specs Backend
+# Imperative Specs
 
 $(specs_kompiled): MAIN_DEFN_FILE=evm-imp-specs
 $(specs_kompiled): MAIN_MODULE=EVM-IMP-SPECS
@@ -235,7 +218,7 @@ $(specs_kompiled): $(specs_files)
 	        --directory $(specs_dir) -I $(specs_dir) \
 	        $(KOMPILE_OPTS)
 
-# Haskell Backend
+# Haskell
 
 $(haskell_kompiled): $(haskell_files)
 	kompile --debug --main-module $(MAIN_MODULE) --backend haskell --hook-namespaces KRYPTO \
@@ -243,7 +226,7 @@ $(haskell_kompiled): $(haskell_files)
 	        --directory $(haskell_dir) -I $(haskell_dir)                                    \
 	        $(KOMPILE_OPTS)
 
-# Web3 Backend
+# Web3
 
 $(web3_kore): $(web3_files)
 	kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
@@ -255,21 +238,26 @@ $(web3_kore): $(web3_files)
 
 $(web3_kompiled): $(web3_kore) $(libff_out)
 	@mkdir -p $(web3_dir)/build
-	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=${SEMANTICS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} && $(MAKE)
+	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=$(SEMANTICS_BUILD_TYPE) && $(MAKE)
 
-# LLVM Backend
+# Standalone
+
+STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_RELEASE)/include/kllvm \
+                           $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp     \
+                           $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp     \
+                           -g -std=c++14 -lff -lcryptopp -lsecp256k1
+
+ifeq ($(UNAME_S),Linux)
+    STANDALONE_KOMPILE_OPTS += -lprocps
+endif
 
 $(llvm_kompiled): $(llvm_files) $(libff_out)
 	kompile --debug --main-module $(MAIN_MODULE) --backend llvm                                  \
 	        --syntax-module $(SYNTAX_MODULE) $(llvm_dir)/$(MAIN_DEFN_FILE).k                     \
-	        --directory $(llvm_dir) -I $(llvm_dir) -I $(llvm_dir)                                \
+	        --directory $(llvm_dir) -I $(llvm_dir)                                               \
 	        --hook-namespaces KRYPTO                                                             \
 	        $(KOMPILE_OPTS)                                                                      \
-	        -ccopt $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp                                       \
-	        -ccopt $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp                                       \
-	        -ccopt -g -ccopt -std=c++14                                                          \
-	        -ccopt -L$(LIBRARY_PATH)                                                             \
-	        -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 $(addprefix -ccopt ,$(LINK_PROCPS))
+	        $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
 
 # Installing
 # ----------
@@ -302,12 +290,6 @@ KPROVE_OPTIONS :=
 
 test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
-
-split-tests: tests/ethereum-tests/make.timestamp
-
-tests/%/make.timestamp:
-	git submodule update --init -- tests/$*
-	touch $@
 
 # Generic Test Harnesses
 
@@ -499,5 +481,4 @@ media-pdf: $(patsubst %, media/%.pdf, $(media_pdfs))
 metropolis-theme: $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty
 
 $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
-	git submodule update --init -- $(dir $@)
 	cd $(dir $@) && $(MAKE)

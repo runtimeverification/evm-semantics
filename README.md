@@ -107,39 +107,21 @@ export PATH=$HOME/.local/bin:$PATH
 
 ### Build K Dependency
 
-Get the submodules:
+The `Makefile` and `kevm` will work with either a (i) globally installed K, or (ii) the submodule built K.
+If you want to use the submodule, follow these instructions, then get the submodules and build the repository dependencies:
 
 ```sh
-git submodule update --init --recursive
-```
-
-And finally build the repository specific dependencies:
-
-```sh
-make RELEASE=1 deps
-```
-If you are a developer, you probably should omit `RELEASE` from the above commands unless you are testing performance, as the build is somewhat slower.
-
-On Arch, instead do:
-
-```sh
-make LIBFF_CC=clang LIBFF_CXX=clang++ RELEASE=1 deps
+git submodule update --init --recursive -- deps/k
+make deps
 ```
 
 ### Building
 
-Finally, you can install repository specific dependencies and build the semantics:
+Finally, you can build the semantics (after getting the plugin and tangle submodule dependencies):
 
 ```sh
-make build RELEASE=1
-```
-
-You can also build specific backends as so:
-
-```sh
-make build-haskell
-make build-llvm RELEASE=1
-make build-java
+git submodule update --init --recursive -- deps/plugin deps/pandoc-tangle
+make build
 ```
 
 Example Usage

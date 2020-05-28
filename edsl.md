@@ -185,7 +185,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
       requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
       [concrete]
 
-    rule #Ceil(#buf(SIZE, DATA)) => {(0 <=Int SIZE) andBool #range(0 <= DATA < (2 ^Int (SIZE *Int 8))) #Equals true}  [anywhere]
+    rule #Ceil(#buf(SIZE, DATA)) => {(0 <=Int SIZE) andBool #rangeBytes(SIZE, DATA) #Equals true}  [anywhere, simplification]
 
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
