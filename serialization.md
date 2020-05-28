@@ -2,9 +2,9 @@ Parsing/Unparsing
 =================
 
 ```k
-requires "krypto.k"
-requires "evm-types.k"
-requires "json.k"
+requires "krypto.md"
+requires "evm-types.md"
+requires "json.md"
 ```
 
 ```k
