@@ -1,4 +1,4 @@
-requires "edsl.k"
+requires "edsl.md"
 
 module EVM-DATA-MAP-SYMBOLIC [symbolic]
     imports K-REFLECTION

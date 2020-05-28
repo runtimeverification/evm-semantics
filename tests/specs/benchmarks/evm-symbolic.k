@@ -1,4 +1,4 @@
-requires "edsl.k"
+requires "edsl.md"
 
 module EVM-SYMBOLIC     [symbolic]
     imports EVM

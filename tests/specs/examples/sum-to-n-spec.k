@@ -1,4 +1,4 @@
-requires "asm.k"
+requires "asm.md"
 requires "../lemmas.k"
 
 module VERIFICATION

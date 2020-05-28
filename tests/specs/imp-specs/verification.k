@@ -1,5 +1,5 @@
 requires "../erc20/abstract-semantics-segmented-gas.k"
-requires "edsl.k"
+requires "edsl.md"
 requires "../erc20/evm-symbolic.k"
 requires "evm-imp-specs.k"
 requires "../lemmas.k"
