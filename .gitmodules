@@ -7,10 +7,6 @@
 	path = deps/k
 	url = https://github.com/kframework/k
 	ignore = untracked
-[submodule "deps/secp256k1"]
-	path = deps/secp256k1
-	url = https://github.com/bitcoin-core/secp256k1
-	ignore = untracked
 [submodule "deps/pandoc-tangle"]
 	path = deps/pandoc-tangle
 	url = https://github.com/ehildenb/pandoc-tangle
@@ -22,7 +18,3 @@
 [submodule "deps/metropolis"]
 	path = deps/metropolis
 	url = https://github.com/matze/mtheme
-[submodule "deps/libff"]
-	path = deps/libff
-	url = https://github.com/scipr-lab/libff
-	ignore = untracked
