@@ -120,10 +120,6 @@ $(K_JAR):
 # Building
 # --------
 
-MAIN_MODULE    := ETHEREUM-SIMULATION
-SYNTAX_MODULE  := $(MAIN_MODULE)
-MAIN_DEFN_FILE := driver
-
 SOURCE_FILES       := asm           \
                       data          \
                       driver        \
@@ -140,12 +136,29 @@ SOURCE_FILES       := asm           \
 EXTRA_SOURCE_FILES :=
 ALL_FILES          := $(patsubst %, %.k, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
 
+llvm_main_module    := ETHEREUM-SIMULATION
+java_main_module    := ETHEREUM-SIMULATION
+specs_main_module   := EVM-IMP-SPECS
+haskell_main_module := ETHEREUM-SIMULATION
+web3_main_module    := WEB3
+
+llvm_syntax_module    := $(llvm_main_module)
+java_syntax_module    := $(java_main_module)
+specs_syntax_module   := $(specs_main_module)
+haskell_syntax_module := $(haskell_main_module)
+web3_syntax_module    := $(web3_main_module)
+
+llvm_main_file    := driver
+java_main_file    := driver
+specs_main_file   := evm-imp-specs
+haskell_main_file := driver
+web3_main_file    := web3
+
 llvm_dir    := $(DEFN_DIR)/llvm
 java_dir    := $(DEFN_DIR)/java
 specs_dir   := $(DEFN_DIR)/specs
 haskell_dir := $(DEFN_DIR)/haskell
 web3_dir    := $(abspath $(DEFN_DIR)/web3)
-export web3_dir
 
 llvm_files    := $(patsubst %, $(llvm_dir)/%, $(ALL_FILES))
 java_files    := $(patsubst %, $(java_dir)/%, $(ALL_FILES))
@@ -154,19 +167,13 @@ haskell_files := $(patsubst %, $(haskell_dir)/%, $(ALL_FILES))
 web3_files    := $(patsubst %, $(web3_dir)/%, $(ALL_FILES))
 defn_files    := $(llvm_files) $(java_files) $(specs_files) $(haskell_files) $(web3_files)
 
-java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
-specs_kompiled   := $(specs_dir)/specs-kompiled/timestamp
+java_kompiled    := $(java_dir)/$(java_main_file)-kompiled/timestamp
+specs_kompiled   := $(specs_dir)/$(specs_main_file)-kompiled/timestamp
 web3_kompiled    := $(web3_dir)/build/kevm-client
-haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
-llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
+haskell_kompiled := $(haskell_dir)/$(haskell_main_file)-kompiled/definition.kore
+llvm_kompiled    := $(llvm_dir)/$(llvm_main_file)-kompiled/interpreter
 
-web3_kore := $(web3_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
-$(web3_kompiled): MAIN_DEFN_FILE := web3
-$(web3_kompiled): MAIN_MODULE    := WEB3
-$(web3_kompiled): SYNTAX_MODULE  := WEB3
-$(web3_kompiled): web3_kore      := $(web3_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
-
-export MAIN_DEFN_FILE
+web3_kore := $(web3_dir)/$(web3_main_file)-kompiled/definition.kore
 
 # Tangle definition from *.md files
 
@@ -213,40 +220,39 @@ build-llvm:    $(llvm_kompiled)
 # Java
 
 $(java_kompiled): $(java_files)
-	kompile --debug --main-module $(MAIN_MODULE) --backend java              \
-	        --syntax-module $(SYNTAX_MODULE) $(java_dir)/$(MAIN_DEFN_FILE).k \
-	        --directory $(java_dir) -I $(java_dir)                           \
+	kompile --debug --main-module $(java_main_module) --backend java              \
+	        --syntax-module $(java_syntax_module) $(java_dir)/$(java_main_file).k \
+	        --directory $(java_dir) -I $(java_dir)                                \
 	        $(KOMPILE_OPTS)
 
 # Imperative Specs
 
-$(specs_kompiled): MAIN_DEFN_FILE=evm-imp-specs
-$(specs_kompiled): MAIN_MODULE=EVM-IMP-SPECS
-$(specs_kompiled): SYNTAX_MODULE=EVM-IMP-SPECS
-
 $(specs_kompiled): $(specs_files)
-	kompile --debug --main-module $(MAIN_MODULE) --backend java \
-	        --syntax-module $(SYNTAX_MODULE) $(specs_dir)/$(MAIN_DEFN_FILE).k \
-	        --directory $(specs_dir) -I $(specs_dir) \
+	kompile --debug --main-module $(specs_main_module) --backend java                \
+	        --syntax-module $(specs_syntax_module) $(specs_dir)/$(specs_main_file).k \
+	        --directory $(specs_dir) -I $(specs_dir)                                 \
 	        $(KOMPILE_OPTS)
 
 # Haskell
 
 $(haskell_kompiled): $(haskell_files)
-	kompile --debug --main-module $(MAIN_MODULE) --backend haskell --hook-namespaces KRYPTO \
-	        --syntax-module $(SYNTAX_MODULE) $(haskell_dir)/$(MAIN_DEFN_FILE).k             \
-	        --directory $(haskell_dir) -I $(haskell_dir)                                    \
+	kompile --debug --main-module $(haskell_main_module) --backend haskell --hook-namespaces KRYPTO \
+	        --syntax-module $(haskell_syntax_module) $(haskell_dir)/$(haskell_main_file).k          \
+	        --directory $(haskell_dir) -I $(haskell_dir)                                            \
 	        $(KOMPILE_OPTS)
 
 # Web3
 
 $(web3_kore): $(web3_files)
-	kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
-	        --syntax-module $(SYNTAX_MODULE) $(web3_dir)/$(MAIN_DEFN_FILE).k \
-	        --directory $(web3_dir) -I $(web3_dir)                           \
-	        --hook-namespaces "KRYPTO JSON"                                  \
-	        --no-llvm-kompile                                                \
+	kompile --debug --main-module $(web3_main_module) --backend llvm              \
+	        --syntax-module $(web3_syntax_module) $(web3_dir)/$(web3_main_file).k \
+	        --directory $(web3_dir) -I $(web3_dir)                                \
+	        --hook-namespaces "KRYPTO JSON"                                       \
+	        --no-llvm-kompile                                                     \
 	        $(KOMPILE_OPTS)
+
+export web3_main_file
+export web3_dir
 
 $(web3_kompiled): $(web3_kore) $(libff_out)
 	@mkdir -p $(web3_dir)/build
@@ -264,11 +270,11 @@ ifeq ($(UNAME_S),Linux)
 endif
 
 $(llvm_kompiled): $(llvm_files) $(libff_out)
-	kompile --debug --main-module $(MAIN_MODULE) --backend llvm                                  \
-	        --syntax-module $(SYNTAX_MODULE) $(llvm_dir)/$(MAIN_DEFN_FILE).k                     \
-	        --directory $(llvm_dir) -I $(llvm_dir)                                               \
-	        --hook-namespaces KRYPTO                                                             \
-	        $(KOMPILE_OPTS)                                                                      \
+	kompile --debug --main-module $(llvm_main_module) --backend llvm              \
+	        --syntax-module $(llvm_syntax_module) $(llvm_dir)/$(llvm_main_file).k \
+	        --directory $(llvm_dir) -I $(llvm_dir)                                \
+	        --hook-namespaces KRYPTO                                              \
+	        $(KOMPILE_OPTS)                                                       \
 	        $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
 
 # Installing
