@@ -160,9 +160,10 @@ $(java_dir)/%.k: %.md $(TANGLER)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(java_tangle)" $< > $@
 
 $(java_kompiled): $(java_files)
-	kompile --debug --main-module $(java_main_module) --backend java              \
-	        --syntax-module $(java_syntax_module) $(java_dir)/$(java_main_file).k \
-	        --directory $(java_dir) -I $(java_dir)                                \
+	kompile --debug --backend java                                                  \
+	        --directory $(java_dir) -I $(java_dir)                                  \
+	        --main-module $(java_main_module) --syntax-module $(java_syntax_module) \
+	        $(java_dir)/$(java_main_file).k                                         \
 	        $(KOMPILE_OPTS)
 
 # Imperative Specs
@@ -182,9 +183,10 @@ $(specs_dir)/%.k: %.md $(TANGLER)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(java_tangle)" $< > $@
 
 $(specs_kompiled): $(specs_files)
-	kompile --debug --main-module $(specs_main_module) --backend java                \
-	        --syntax-module $(specs_syntax_module) $(specs_dir)/$(specs_main_file).k \
-	        --directory $(specs_dir) -I $(specs_dir)                                 \
+	kompile --debug --backend java                                                    \
+	        --directory $(specs_dir) -I $(specs_dir)                                  \
+	        --main-module $(specs_main_module) --syntax-module $(specs_syntax_module) \
+	        $(specs_dir)/$(specs_main_file).k                                         \
 	        $(KOMPILE_OPTS)
 
 # Haskell
@@ -204,9 +206,11 @@ $(haskell_dir)/%.k: %.md $(TANGLER)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(haskell_tangle)" $< > $@
 
 $(haskell_kompiled): $(haskell_files)
-	kompile --debug --main-module $(haskell_main_module) --backend haskell --hook-namespaces KRYPTO \
-	        --syntax-module $(haskell_syntax_module) $(haskell_dir)/$(haskell_main_file).k          \
-	        --directory $(haskell_dir) -I $(haskell_dir)                                            \
+	kompile --debug --backend haskell                                                     \
+	        --directory $(haskell_dir) -I $(haskell_dir)                                  \
+	        --main-module $(haskell_main_module) --syntax-module $(haskell_syntax_module) \
+	        $(haskell_dir)/$(haskell_main_file).k                                         \
+	        --hook-namespaces KRYPTO                                                      \
 	        $(KOMPILE_OPTS)
 
 # Web3
@@ -229,11 +233,12 @@ $(web3_dir)/%.k: %.md $(TANGLER)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
 $(web3_kore): $(web3_files)
-	kompile --debug --main-module $(web3_main_module) --backend llvm              \
-	        --syntax-module $(web3_syntax_module) $(web3_dir)/$(web3_main_file).k \
-	        --directory $(web3_dir) -I $(web3_dir)                                \
-	        --hook-namespaces "KRYPTO JSON"                                       \
-	        --no-llvm-kompile                                                     \
+	kompile --debug --backend llvm                                                  \
+	        --directory $(web3_dir) -I $(web3_dir)                                  \
+	        --main-module $(web3_main_module) --syntax-module $(web3_syntax_module) \
+	        $(web3_dir)/$(web3_main_file).k                                         \
+	        --hook-namespaces "KRYPTO JSON"                                         \
+	        --no-llvm-kompile                                                       \
 	        $(KOMPILE_OPTS)
 
 $(web3_kompiled): $(web3_kore) $(libff_out)
@@ -265,11 +270,12 @@ ifeq ($(UNAME_S),Linux)
 endif
 
 $(llvm_kompiled): $(llvm_files) $(libff_out)
-	kompile --debug --main-module $(llvm_main_module) --backend llvm              \
-	        --syntax-module $(llvm_syntax_module) $(llvm_dir)/$(llvm_main_file).k \
-	        --directory $(llvm_dir) -I $(llvm_dir)                                \
-	        --hook-namespaces KRYPTO                                              \
-	        $(KOMPILE_OPTS)                                                       \
+	kompile --debug --backend llvm                                                  \
+	        --directory $(llvm_dir) -I $(llvm_dir)                                  \
+	        --main-module $(llvm_main_module) --syntax-module $(llvm_syntax_module) \
+	        $(llvm_dir)/$(llvm_main_file).k                                         \
+	        --hook-namespaces KRYPTO                                                \
+	        $(KOMPILE_OPTS)                                                         \
 	        $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
 
 # Installing
