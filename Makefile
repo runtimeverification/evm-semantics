@@ -136,44 +136,42 @@ SOURCE_FILES       := asm           \
 EXTRA_SOURCE_FILES :=
 ALL_FILES          := $(patsubst %, %.k, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
 
-llvm_main_module    := ETHEREUM-SIMULATION
-java_main_module    := ETHEREUM-SIMULATION
+llvm_dir           := $(DEFN_DIR)/llvm
+llvm_kompiled      := $(llvm_dir)/$(llvm_main_file)-kompiled/interpreter
+llvm_main_module   := ETHEREUM-SIMULATION
+llvm_syntax_module := $(llvm_main_module)
+llvm_main_file     := driver
+
+java_dir           := $(DEFN_DIR)/java
+java_kompiled      := $(java_dir)/$(java_main_file)-kompiled/timestamp
+java_files         := $(patsubst %, $(java_dir)/%, $(ALL_FILES))
+java_main_module   := ETHEREUM-SIMULATION
+java_syntax_module := $(java_main_module)
+java_main_file     := driver
+
+specs_dir           := $(DEFN_DIR)/specs
+specs_kompiled      := $(specs_dir)/$(specs_main_file)-kompiled/timestamp
+specs_files         := $(patsubst %, $(specs_dir)/%, $(ALL_FILES))
 specs_main_module   := EVM-IMP-SPECS
-haskell_main_module := ETHEREUM-SIMULATION
-web3_main_module    := WEB3
+specs_syntax_module := $(specs_main_module)
+specs_main_file     := evm-imp-specs
 
-llvm_syntax_module    := $(llvm_main_module)
-java_syntax_module    := $(java_main_module)
-specs_syntax_module   := $(specs_main_module)
-haskell_syntax_module := $(haskell_main_module)
-web3_syntax_module    := $(web3_main_module)
+haskell_dir            := $(DEFN_DIR)/haskell
+haskell_kompiled       := $(haskell_dir)/$(haskell_main_file)-kompiled/definition.kore
+haskell_files          := $(patsubst %, $(haskell_dir)/%, $(ALL_FILES))
+haskell_main_module    := ETHEREUM-SIMULATION
+haskell_syntax_module  := $(haskell_main_module)
+haskell_main_file      := driver
 
-llvm_main_file    := driver
-java_main_file    := driver
-specs_main_file   := evm-imp-specs
-haskell_main_file := driver
-web3_main_file    := web3
-
-llvm_dir    := $(DEFN_DIR)/llvm
-java_dir    := $(DEFN_DIR)/java
-specs_dir   := $(DEFN_DIR)/specs
-haskell_dir := $(DEFN_DIR)/haskell
-web3_dir    := $(abspath $(DEFN_DIR)/web3)
-
-llvm_files    := $(patsubst %, $(llvm_dir)/%, $(ALL_FILES))
-java_files    := $(patsubst %, $(java_dir)/%, $(ALL_FILES))
-specs_files   := $(patsubst %, $(specs_dir)/%, $(ALL_FILES))
-haskell_files := $(patsubst %, $(haskell_dir)/%, $(ALL_FILES))
-web3_files    := $(patsubst %, $(web3_dir)/%, $(ALL_FILES))
-defn_files    := $(llvm_files) $(java_files) $(specs_files) $(haskell_files) $(web3_files)
-
-java_kompiled    := $(java_dir)/$(java_main_file)-kompiled/timestamp
-specs_kompiled   := $(specs_dir)/$(specs_main_file)-kompiled/timestamp
-web3_kompiled    := $(web3_dir)/build/kevm-client
-haskell_kompiled := $(haskell_dir)/$(haskell_main_file)-kompiled/definition.kore
-llvm_kompiled    := $(llvm_dir)/$(llvm_main_file)-kompiled/interpreter
-
-web3_kore := $(web3_dir)/$(web3_main_file)-kompiled/definition.kore
+web3_dir           := $(abspath $(DEFN_DIR)/web3)
+web3_kompiled      := $(web3_dir)/build/kevm-client
+web3_files         := $(patsubst %, $(web3_dir)/%, $(ALL_FILES))
+web3_main_module   := WEB3
+web3_syntax_module := $(web3_main_module)
+web3_main_file     := web3
+web3_kore          := $(web3_dir)/$(web3_main_file)-kompiled/definition.kore
+export web3_main_file
+export web3_dir
 
 # Tangle definition from *.md files
 
@@ -181,7 +179,7 @@ concrete_tangle := .k:not(.symbolic):not(.nobytes):not(.memmap),.concrete,.bytes
 java_tangle     := .k:not(.concrete):not(.bytes):not(.memmap):not(.membytes),.symbolic,.nobytes
 haskell_tangle  := .k:not(.concrete):not(.nobytes):not(.memmap),.symbolic,.bytes,.membytes
 
-defn: $(defn_files)
+defn: llvm-defn java-defn specs-defn haskell-defn web3-defn
 llvm-defn:    $(llvm_files)
 java-defn:    $(java_files)
 specs-defn:   $(specs_files)
@@ -250,9 +248,6 @@ $(web3_kore): $(web3_files)
 	        --hook-namespaces "KRYPTO JSON"                                       \
 	        --no-llvm-kompile                                                     \
 	        $(KOMPILE_OPTS)
-
-export web3_main_file
-export web3_dir
 
 $(web3_kompiled): $(web3_kore) $(libff_out)
 	@mkdir -p $(web3_dir)/build
