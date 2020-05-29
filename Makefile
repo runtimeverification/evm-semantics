@@ -248,6 +248,7 @@ $(web3_kompiled): $(web3_kore) $(libff_out)
 # Standalone
 
 llvm_dir           := $(DEFN_DIR)/llvm
+llvm_files         := $(patsubst %, $(llvm_dir)/%, $(ALL_FILES))
 llvm_main_module   := ETHEREUM-SIMULATION
 llvm_syntax_module := $(llvm_main_module)
 llvm_main_file     := driver
