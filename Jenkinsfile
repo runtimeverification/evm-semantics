@@ -1,5 +1,10 @@
 pipeline {
-  agent none
+  agent {
+    dockerfile {
+      label 'docker && !smol'
+      additionalBuildArgs '--build-arg K_COMMIT="$(cd deps/k && git rev-parse --short=7 HEAD)" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+    }
+  }
   environment {
     GITHUB_TOKEN = credentials('rv-jenkins')
     VERSION      = '1.0.0'
@@ -10,22 +15,13 @@ pipeline {
   }
   options { ansiColor('xterm') }
   stages {
-    stage("Init title") {
+    stage('Init title') {
       when { changeRequest() }
       steps { script { currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}" } }
     }
     stage('Build and Test') {
-      when { changeRequest() }
-      agent {
-        dockerfile {
-          additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-          args '-m 60g'
-          label 'docker && !smol'
-        }
-      }
       stages {
-        stage('K Dependencies') { steps { sh 'make deps  RELEASE=true'     } }
-        stage('Build')          { steps { sh 'make build RELEASE=true -j6' } }
+        stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
         stage('Test Execution') {
           failFast true
           options { timeout(time: 20, unit: 'MINUTES') }
@@ -62,8 +58,10 @@ pipeline {
       }
     }
     stage('Deploy') {
-      when { branch 'master' }
-      agent { dockerfile { reuseNode true } }
+      when {
+        branch 'master'
+        beforeAgent true
+      }
       stages {
         stage('Update Dependents') {
           steps {
@@ -86,16 +84,6 @@ pipeline {
             sshagent(['2b3d8d6b-0855-4b59-864a-6b3ddf9c9d1a']) {
               dir("kevm-${env.VERSION}-jello-paper") {
                 sh '''
-                  git config --global user.email "admin@runtimeverification.com"
-                  git config --global user.name  "RV Jenkins"
-                  mkdir -p ~/.ssh
-                  echo 'host github.com'                       > ~/.ssh/config
-                  echo '    hostname github.com'              >> ~/.ssh/config
-                  echo '    user git'                         >> ~/.ssh/config
-                  echo '    identityagent SSH_AUTH_SOCK'      >> ~/.ssh/config
-                  echo '    stricthostkeychecking accept-new' >> ~/.ssh/config
-                  chmod go-rwx -R ~/.ssh
-                  ssh github.com || true
                   git clone 'ssh://github.com/kframework/evm-semantics.git'
                   cd evm-semantics
                   git checkout -B gh-pages origin/master
