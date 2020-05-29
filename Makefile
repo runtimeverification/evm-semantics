@@ -38,7 +38,6 @@ TANGLER                 := $(PANDOC_TANGLE_SUBMODULE)/tangle.lua
 LUA_PATH                := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
-defn-java defn-specs defn-haskell defn-web3 defn-llvm
 
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
