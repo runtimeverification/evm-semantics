@@ -42,7 +42,7 @@ export LUA_PATH
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
         build build-java build-specs build-haskell build-llvm build-web3                                                         \
-        defn java-defn specs-defn web3-defn haskell-defn llvm-defn                                                               \
+        defn defn-java defn-specs defn-web3 defn-haskell defn-llvm                                                               \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
         test-web3 test-all-web3 test-failing-web3                                                                                \
@@ -140,7 +140,7 @@ concrete_tangle := .k:not(.symbolic):not(.nobytes):not(.memmap),.concrete,.bytes
 java_tangle     := .k:not(.concrete):not(.bytes):not(.memmap):not(.membytes),.symbolic,.nobytes
 haskell_tangle  := .k:not(.concrete):not(.nobytes):not(.memmap),.symbolic,.bytes,.membytes
 
-defn: llvm-defn java-defn specs-defn haskell-defn web3-defn
+defn:  defn-llvm defn-java defn-specs defn-haskell defn-web3
 build: build-llvm build-haskell build-java build-specs build-web3
 
 # Java
@@ -152,7 +152,7 @@ java_syntax_module := $(java_main_module)
 java_main_file     := driver
 java_kompiled      := $(java_dir)/$(java_main_file)-kompiled/timestamp
 
-java-defn:  $(java_files)
+defn-java:  $(java_files)
 build-java: $(java_kompiled)
 
 $(java_dir)/%.k: %.md $(TANGLER)
@@ -174,7 +174,7 @@ specs_syntax_module := $(specs_main_module)
 specs_main_file     := evm-imp-specs
 specs_kompiled      := $(specs_dir)/$(specs_main_file)-kompiled/timestamp
 
-specs-defn:  $(specs_files)
+defn-specs:  $(specs_files)
 build-specs: $(specs_kompiled)
 
 $(specs_dir)/%.k: %.md $(TANGLER)
@@ -196,7 +196,7 @@ haskell_syntax_module  := $(haskell_main_module)
 haskell_main_file      := driver
 haskell_kompiled       := $(haskell_dir)/$(haskell_main_file)-kompiled/definition.kore
 
-haskell-defn:  $(haskell_files)
+defn-haskell:  $(haskell_files)
 build-haskell: $(haskell_kompiled)
 
 $(haskell_dir)/%.k: %.md $(TANGLER)
@@ -221,7 +221,7 @@ web3_kore          := $(web3_dir)/$(web3_main_file)-kompiled/definition.kore
 export web3_main_file
 export web3_dir
 
-web3-defn:  $(web3_files)
+defn-web3:  $(web3_files)
 build-web3: $(web3_kompiled)
 
 $(web3_dir)/%.k: %.md $(TANGLER)
@@ -253,7 +253,7 @@ STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_RELEASE)/include/kllvm \
                            $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp     \
                            -g -std=c++14 -lff -lcryptopp -lsecp256k1
 
-llvm-defn:  $(llvm_files)
+defn-llvm:  $(llvm_files)
 build-llvm: $(llvm_kompiled)
 
 $(llvm_dir)/%.k: %.md $(TANGLER)
