@@ -146,11 +146,11 @@ build: build-llvm build-haskell build-java build-specs build-web3
 # Java
 
 java_dir           := $(DEFN_DIR)/java
-java_kompiled      := $(java_dir)/$(java_main_file)-kompiled/timestamp
 java_files         := $(patsubst %, $(java_dir)/%, $(ALL_FILES))
 java_main_module   := ETHEREUM-SIMULATION
 java_syntax_module := $(java_main_module)
 java_main_file     := driver
+java_kompiled      := $(java_dir)/$(java_main_file)-kompiled/timestamp
 
 java-defn:  $(java_files)
 build-java: $(java_kompiled)
@@ -168,11 +168,11 @@ $(java_kompiled): $(java_files)
 # Imperative Specs
 
 specs_dir           := $(DEFN_DIR)/specs
-specs_kompiled      := $(specs_dir)/$(specs_main_file)-kompiled/timestamp
 specs_files         := $(patsubst %, $(specs_dir)/%, $(ALL_FILES))
 specs_main_module   := EVM-IMP-SPECS
 specs_syntax_module := $(specs_main_module)
 specs_main_file     := evm-imp-specs
+specs_kompiled      := $(specs_dir)/$(specs_main_file)-kompiled/timestamp
 
 specs-defn:  $(specs_files)
 build-specs: $(specs_kompiled)
@@ -190,11 +190,11 @@ $(specs_kompiled): $(specs_files)
 # Haskell
 
 haskell_dir            := $(DEFN_DIR)/haskell
-haskell_kompiled       := $(haskell_dir)/$(haskell_main_file)-kompiled/definition.kore
 haskell_files          := $(patsubst %, $(haskell_dir)/%, $(ALL_FILES))
 haskell_main_module    := ETHEREUM-SIMULATION
 haskell_syntax_module  := $(haskell_main_module)
 haskell_main_file      := driver
+haskell_kompiled       := $(haskell_dir)/$(haskell_main_file)-kompiled/definition.kore
 
 haskell-defn:  $(haskell_files)
 build-haskell: $(haskell_kompiled)
@@ -212,11 +212,11 @@ $(haskell_kompiled): $(haskell_files)
 # Web3
 
 web3_dir           := $(abspath $(DEFN_DIR)/web3)
-web3_kompiled      := $(web3_dir)/build/kevm-client
 web3_files         := $(patsubst %, $(web3_dir)/%, $(ALL_FILES))
 web3_main_module   := WEB3
 web3_syntax_module := $(web3_main_module)
 web3_main_file     := web3
+web3_kompiled      := $(web3_dir)/build/kevm-client
 web3_kore          := $(web3_dir)/$(web3_main_file)-kompiled/definition.kore
 export web3_main_file
 export web3_dir
@@ -243,10 +243,10 @@ $(web3_kompiled): $(web3_kore) $(libff_out)
 # Standalone
 
 llvm_dir           := $(DEFN_DIR)/llvm
-llvm_kompiled      := $(llvm_dir)/$(llvm_main_file)-kompiled/interpreter
 llvm_main_module   := ETHEREUM-SIMULATION
 llvm_syntax_module := $(llvm_main_module)
 llvm_main_file     := driver
+llvm_kompiled      := $(llvm_dir)/$(llvm_main_file)-kompiled/interpreter
 
 STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_RELEASE)/include/kllvm \
                            $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp     \
