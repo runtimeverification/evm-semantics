@@ -124,9 +124,21 @@ MAIN_MODULE    := ETHEREUM-SIMULATION
 SYNTAX_MODULE  := $(MAIN_MODULE)
 MAIN_DEFN_FILE := driver
 
-k_files       := driver.k data.k network.k evm.k evm-types.k json.k krypto.k edsl.k web3.k asm.k state-loader.k serialization.k evm-imp-specs.k
-EXTRA_K_FILES += $(MAIN_DEFN_FILE).k
-ALL_K_FILES   := $(k_files) $(EXTRA_K_FILES)
+SOURCE_FILES       := asm           \
+                      data          \
+                      driver        \
+                      edsl          \
+                      evm           \
+                      evm-imp-specs \
+                      evm-types     \
+                      json          \
+                      krypto        \
+                      network       \
+                      serialization \
+                      state-loader  \
+                      web3
+EXTRA_SOURCE_FILES :=
+ALL_FILES          := $(patsubst %, %.k, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
 
 llvm_dir    := $(DEFN_DIR)/llvm
 java_dir    := $(DEFN_DIR)/java
@@ -135,11 +147,11 @@ haskell_dir := $(DEFN_DIR)/haskell
 web3_dir    := $(abspath $(DEFN_DIR)/web3)
 export web3_dir
 
-llvm_files    := $(patsubst %, $(llvm_dir)/%, $(ALL_K_FILES))
-java_files    := $(patsubst %, $(java_dir)/%, $(ALL_K_FILES))
-specs_files   := $(patsubst %, $(specs_dir)/%, $(ALL_K_FILES))
-haskell_files := $(patsubst %, $(haskell_dir)/%, $(ALL_K_FILES))
-web3_files    := $(patsubst %, $(web3_dir)/%, $(ALL_K_FILES))
+llvm_files    := $(patsubst %, $(llvm_dir)/%, $(ALL_FILES))
+java_files    := $(patsubst %, $(java_dir)/%, $(ALL_FILES))
+specs_files   := $(patsubst %, $(specs_dir)/%, $(ALL_FILES))
+haskell_files := $(patsubst %, $(haskell_dir)/%, $(ALL_FILES))
+web3_files    := $(patsubst %, $(web3_dir)/%, $(ALL_FILES))
 defn_files    := $(llvm_files) $(java_files) $(specs_files) $(haskell_files) $(web3_files)
 
 java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
