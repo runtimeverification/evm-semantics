@@ -38,11 +38,12 @@ TANGLER                 := $(PANDOC_TANGLE_SUBMODULE)/tangle.lua
 LUA_PATH                := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
 export TANGLER
 export LUA_PATH
+defn-java defn-specs defn-haskell defn-web3 defn-llvm
 
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
-        build build-java build-specs build-haskell build-llvm build-web3                                                         \
-        defn defn-java defn-specs defn-web3 defn-haskell defn-llvm                                                               \
+        defn defn-java defn-specs defn-haskell defn-web3 defn-llvm                                                               \
+        build build-java build-specs build-haskell build-web3 build-llvm                                                         \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
         test-web3 test-all-web3 test-failing-web3                                                                                \
@@ -140,8 +141,8 @@ concrete_tangle := .k:not(.symbolic):not(.nobytes):not(.memmap),.concrete,.bytes
 java_tangle     := .k:not(.concrete):not(.bytes):not(.memmap):not(.membytes),.symbolic,.nobytes
 haskell_tangle  := .k:not(.concrete):not(.nobytes):not(.memmap),.symbolic,.bytes,.membytes
 
-defn:  defn-llvm defn-java defn-specs defn-haskell defn-web3
-build: build-llvm build-haskell build-java build-specs build-web3
+defn:  defn-java defn-specs defn-haskell defn-web3 defn-llvm
+build: build-java build-specs build-haskell build-web3 build-llvm
 
 # Java
 
