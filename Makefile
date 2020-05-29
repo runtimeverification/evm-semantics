@@ -41,8 +41,8 @@ export LUA_PATH
 
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
-        build build-java build-specs build-haskell build-llvm build-web3                                                         \
-        defn java-defn specs-defn web3-defn haskell-defn llvm-defn                                                               \
+        defn defn-java defn-specs defn-haskell defn-web3 defn-llvm                                                               \
+        build build-java build-specs build-haskell build-web3 build-llvm                                                         \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
         test-web3 test-all-web3 test-failing-web3                                                                                \
@@ -120,120 +120,125 @@ $(K_JAR):
 # Building
 # --------
 
-MAIN_MODULE    := ETHEREUM-SIMULATION
-SYNTAX_MODULE  := $(MAIN_MODULE)
-MAIN_DEFN_FILE := driver
-
-k_files       := driver.k data.k network.k evm.k evm-types.k json.k krypto.k edsl.k web3.k asm.k state-loader.k serialization.k evm-imp-specs.k
-EXTRA_K_FILES += $(MAIN_DEFN_FILE).k
-ALL_K_FILES   := $(k_files) $(EXTRA_K_FILES)
-
-llvm_dir    := $(DEFN_DIR)/llvm
-java_dir    := $(DEFN_DIR)/java
-specs_dir   := $(DEFN_DIR)/specs
-haskell_dir := $(DEFN_DIR)/haskell
-web3_dir    := $(abspath $(DEFN_DIR)/web3)
-export web3_dir
-
-llvm_files    := $(patsubst %, $(llvm_dir)/%, $(ALL_K_FILES))
-java_files    := $(patsubst %, $(java_dir)/%, $(ALL_K_FILES))
-specs_files   := $(patsubst %, $(specs_dir)/%, $(ALL_K_FILES))
-haskell_files := $(patsubst %, $(haskell_dir)/%, $(ALL_K_FILES))
-web3_files    := $(patsubst %, $(web3_dir)/%, $(ALL_K_FILES))
-defn_files    := $(llvm_files) $(java_files) $(specs_files) $(haskell_files) $(web3_files)
-
-java_kompiled    := $(java_dir)/$(MAIN_DEFN_FILE)-kompiled/timestamp
-specs_kompiled   := $(specs_dir)/specs-kompiled/timestamp
-web3_kompiled    := $(web3_dir)/build/kevm-client
-haskell_kompiled := $(haskell_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
-llvm_kompiled    := $(llvm_dir)/$(MAIN_DEFN_FILE)-kompiled/interpreter
-
-web3_kore := $(web3_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
-$(web3_kompiled): MAIN_DEFN_FILE := web3
-$(web3_kompiled): MAIN_MODULE    := WEB3
-$(web3_kompiled): SYNTAX_MODULE  := WEB3
-$(web3_kompiled): web3_kore      := $(web3_dir)/$(MAIN_DEFN_FILE)-kompiled/definition.kore
-
-export MAIN_DEFN_FILE
-
-# Tangle definition from *.md files
+SOURCE_FILES       := asm           \
+                      data          \
+                      driver        \
+                      edsl          \
+                      evm           \
+                      evm-imp-specs \
+                      evm-types     \
+                      json          \
+                      krypto        \
+                      network       \
+                      serialization \
+                      state-loader  \
+                      web3
+EXTRA_SOURCE_FILES :=
+ALL_FILES          := $(patsubst %, %.k, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
 
 concrete_tangle := .k:not(.symbolic):not(.nobytes):not(.memmap),.concrete,.bytes,.membytes
 java_tangle     := .k:not(.concrete):not(.bytes):not(.memmap):not(.membytes),.symbolic,.nobytes
 haskell_tangle  := .k:not(.concrete):not(.nobytes):not(.memmap),.symbolic,.bytes,.membytes
 
-defn: $(defn_files)
-llvm-defn:    $(llvm_files)
-java-defn:    $(java_files)
-specs-defn:   $(specs_files)
-haskell-defn: $(haskell_files)
-web3-defn:    $(web3_files)
+defn:  defn-java defn-specs defn-haskell defn-web3 defn-llvm
+build: build-java build-specs build-haskell build-web3 build-llvm
 
-$(llvm_dir)/%.k: %.md $(TANGLER)
-	@mkdir -p $(llvm_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
+# Java
+
+java_dir           := $(DEFN_DIR)/java
+java_files         := $(patsubst %, $(java_dir)/%, $(ALL_FILES))
+java_main_module   := ETHEREUM-SIMULATION
+java_syntax_module := $(java_main_module)
+java_main_file     := driver
+java_kompiled      := $(java_dir)/$(java_main_file)-kompiled/timestamp
+
+defn-java:  $(java_files)
+build-java: $(java_kompiled)
 
 $(java_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(java_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(java_tangle)" $< > $@
 
+$(java_kompiled): $(java_files)
+	kompile --debug --backend java                                                  \
+	        --directory $(java_dir) -I $(java_dir)                                  \
+	        --main-module $(java_main_module) --syntax-module $(java_syntax_module) \
+	        $(java_dir)/$(java_main_file).k                                         \
+	        $(KOMPILE_OPTS)
+
+# Imperative Specs
+
+specs_dir           := $(DEFN_DIR)/specs
+specs_files         := $(patsubst %, $(specs_dir)/%, $(ALL_FILES))
+specs_main_module   := EVM-IMP-SPECS
+specs_syntax_module := $(specs_main_module)
+specs_main_file     := evm-imp-specs
+specs_kompiled      := $(specs_dir)/$(specs_main_file)-kompiled/timestamp
+
+defn-specs:  $(specs_files)
+build-specs: $(specs_kompiled)
+
 $(specs_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(specs_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(java_tangle)" $< > $@
+
+$(specs_kompiled): $(specs_files)
+	kompile --debug --backend java                                                    \
+	        --directory $(specs_dir) -I $(specs_dir)                                  \
+	        --main-module $(specs_main_module) --syntax-module $(specs_syntax_module) \
+	        $(specs_dir)/$(specs_main_file).k                                         \
+	        $(KOMPILE_OPTS)
+
+# Haskell
+
+haskell_dir            := $(DEFN_DIR)/haskell
+haskell_files          := $(patsubst %, $(haskell_dir)/%, $(ALL_FILES))
+haskell_main_module    := ETHEREUM-SIMULATION
+haskell_syntax_module  := $(haskell_main_module)
+haskell_main_file      := driver
+haskell_kompiled       := $(haskell_dir)/$(haskell_main_file)-kompiled/definition.kore
+
+defn-haskell:  $(haskell_files)
+build-haskell: $(haskell_kompiled)
 
 $(haskell_dir)/%.k: %.md $(TANGLER)
 	@mkdir -p $(haskell_dir)
 	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(haskell_tangle)" $< > $@
 
-$(web3_dir)/%.k: %.md $(TANGLER)
-	@mkdir -p $(web3_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
-
-# Kompiling
-
-build: build-llvm build-haskell build-java build-specs build-web3
-build-java:    $(java_kompiled)
-build-specs:   $(specs_kompiled)
-build-web3:    $(web3_kompiled)
-build-haskell: $(haskell_kompiled)
-build-llvm:    $(llvm_kompiled)
-
-# Java
-
-$(java_kompiled): $(java_files)
-	kompile --debug --main-module $(MAIN_MODULE) --backend java              \
-	        --syntax-module $(SYNTAX_MODULE) $(java_dir)/$(MAIN_DEFN_FILE).k \
-	        --directory $(java_dir) -I $(java_dir)                           \
-	        $(KOMPILE_OPTS)
-
-# Imperative Specs
-
-$(specs_kompiled): MAIN_DEFN_FILE=evm-imp-specs
-$(specs_kompiled): MAIN_MODULE=EVM-IMP-SPECS
-$(specs_kompiled): SYNTAX_MODULE=EVM-IMP-SPECS
-
-$(specs_kompiled): $(specs_files)
-	kompile --debug --main-module $(MAIN_MODULE) --backend java \
-	        --syntax-module $(SYNTAX_MODULE) $(specs_dir)/$(MAIN_DEFN_FILE).k \
-	        --directory $(specs_dir) -I $(specs_dir) \
-	        $(KOMPILE_OPTS)
-
-# Haskell
-
 $(haskell_kompiled): $(haskell_files)
-	kompile --debug --main-module $(MAIN_MODULE) --backend haskell --hook-namespaces KRYPTO \
-	        --syntax-module $(SYNTAX_MODULE) $(haskell_dir)/$(MAIN_DEFN_FILE).k             \
-	        --directory $(haskell_dir) -I $(haskell_dir)                                    \
+	kompile --debug --backend haskell                                                     \
+	        --directory $(haskell_dir) -I $(haskell_dir)                                  \
+	        --main-module $(haskell_main_module) --syntax-module $(haskell_syntax_module) \
+	        $(haskell_dir)/$(haskell_main_file).k                                         \
+	        --hook-namespaces KRYPTO                                                      \
 	        $(KOMPILE_OPTS)
 
 # Web3
 
+web3_dir           := $(abspath $(DEFN_DIR)/web3)
+web3_files         := $(patsubst %, $(web3_dir)/%, $(ALL_FILES))
+web3_main_module   := WEB3
+web3_syntax_module := $(web3_main_module)
+web3_main_file     := web3
+web3_kompiled      := $(web3_dir)/build/kevm-client
+web3_kore          := $(web3_dir)/$(web3_main_file)-kompiled/definition.kore
+export web3_main_file
+export web3_dir
+
+defn-web3:  $(web3_files)
+build-web3: $(web3_kompiled)
+
+$(web3_dir)/%.k: %.md $(TANGLER)
+	@mkdir -p $(web3_dir)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
+
 $(web3_kore): $(web3_files)
-	kompile --debug --main-module $(MAIN_MODULE) --backend llvm              \
-	        --syntax-module $(SYNTAX_MODULE) $(web3_dir)/$(MAIN_DEFN_FILE).k \
-	        --directory $(web3_dir) -I $(web3_dir)                           \
-	        --hook-namespaces "KRYPTO JSON"                                  \
-	        --no-llvm-kompile                                                \
+	kompile --debug --backend llvm                                                  \
+	        --directory $(web3_dir) -I $(web3_dir)                                  \
+	        --main-module $(web3_main_module) --syntax-module $(web3_syntax_module) \
+	        $(web3_dir)/$(web3_main_file).k                                         \
+	        --hook-namespaces "KRYPTO JSON"                                         \
+	        --no-llvm-kompile                                                       \
 	        $(KOMPILE_OPTS)
 
 $(web3_kompiled): $(web3_kore) $(libff_out)
@@ -242,21 +247,36 @@ $(web3_kompiled): $(web3_kore) $(libff_out)
 
 # Standalone
 
+llvm_dir           := $(DEFN_DIR)/llvm
+llvm_files         := $(patsubst %, $(llvm_dir)/%, $(ALL_FILES))
+llvm_main_module   := ETHEREUM-SIMULATION
+llvm_syntax_module := $(llvm_main_module)
+llvm_main_file     := driver
+llvm_kompiled      := $(llvm_dir)/$(llvm_main_file)-kompiled/interpreter
+
 STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_RELEASE)/include/kllvm \
                            $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp     \
                            $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp     \
                            -g -std=c++14 -lff -lcryptopp -lsecp256k1
+
+defn-llvm:  $(llvm_files)
+build-llvm: $(llvm_kompiled)
+
+$(llvm_dir)/%.k: %.md $(TANGLER)
+	@mkdir -p $(llvm_dir)
+	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
 
 ifeq ($(UNAME_S),Linux)
     STANDALONE_KOMPILE_OPTS += -lprocps
 endif
 
 $(llvm_kompiled): $(llvm_files) $(libff_out)
-	kompile --debug --main-module $(MAIN_MODULE) --backend llvm                                  \
-	        --syntax-module $(SYNTAX_MODULE) $(llvm_dir)/$(MAIN_DEFN_FILE).k                     \
-	        --directory $(llvm_dir) -I $(llvm_dir)                                               \
-	        --hook-namespaces KRYPTO                                                             \
-	        $(KOMPILE_OPTS)                                                                      \
+	kompile --debug --backend llvm                                                  \
+	        --directory $(llvm_dir) -I $(llvm_dir)                                  \
+	        --main-module $(llvm_main_module) --syntax-module $(llvm_syntax_module) \
+	        $(llvm_dir)/$(llvm_main_file).k                                         \
+	        --hook-namespaces KRYPTO                                                \
+	        $(KOMPILE_OPTS)                                                         \
 	        $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
 
 # Installing
