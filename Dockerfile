@@ -14,7 +14,6 @@ RUN    apt-get update           \
             libsecp256k1-dev    \
             libssl-dev          \
             netcat-openbsd      \
-            pandoc              \
             pkg-config          \
             python3             \
             python-pygments     \
