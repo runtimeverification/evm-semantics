@@ -127,9 +127,9 @@ SOURCE_FILES       := asm           \
 EXTRA_SOURCE_FILES :=
 ALL_FILES          := $(patsubst %, %.md, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
 
-tangle_concrete := k & ( ( ! (symbolic | nobytes           ) ) | concrete | bytes | membytes )
-tangle_java     := k & ( ( ! (concrete | bytes   | membytes) ) | symbolic | nobytes          )
-tangle_haskell  := k & ( ( ! (concrete | nobytes           ) ) | symbolic | bytes | membytes )
+tangle_concrete := k & ( ( ! ( symbolic | nobytes ) ) | concrete | bytes   )
+tangle_java     := k & ( ( ! ( concrete | bytes   ) ) | symbolic | nobytes )
+tangle_haskell  := k & ( ( ! ( concrete | nobytes ) ) | symbolic | bytes   )
 
 build: build-java build-specs build-haskell build-web3 build-llvm
 
