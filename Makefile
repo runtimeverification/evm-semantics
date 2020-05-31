@@ -161,7 +161,7 @@ endif
 
 KOMPILE_STANDALONE := kompile --debug --backend llvm \
                       $(KOMPILE_OPTS)                \
-                      $(STANDALONE_KOMPILE_OPTS)
+                      $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
 
 WEB3_KOMPILE_OPTS += --no-llvm-kompile
 
