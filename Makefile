@@ -140,7 +140,7 @@ endif
 
 JAVA_KOMPILE_OPTS :=
 
-KOMPILE_JAVA := kompile --debug --backend java --md-selector "$(tangle_java) \
+KOMPILE_JAVA := kompile --debug --backend java --md-selector "$(tangle_java)" \
                 $(KOMPILE_OPTS) $(JAVA_KOMPILE_OPTS)
 
 HASKELL_KOMPILE_OPTS :=
