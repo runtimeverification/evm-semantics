@@ -1,3 +1,4 @@
+requires "domains.k"
 requires "evm.k"
 requires "edsl.k"
 
