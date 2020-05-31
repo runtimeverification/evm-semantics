@@ -108,6 +108,8 @@ $(K_JAR):
 # Building
 # --------
 
+build: build-java build-specs build-haskell build-web3 build-llvm
+
 SOURCE_FILES       := asm           \
                       data          \
                       driver        \
@@ -128,8 +130,6 @@ tangle_concrete := k & ( ( ! ( symbolic | nobytes ) ) | concrete | bytes   )
 tangle_java     := k & ( ( ! ( concrete | bytes   ) ) | symbolic | nobytes )
 tangle_haskell  := k & ( ( ! ( concrete | nobytes ) ) | symbolic | bytes   )
 
-build: build-java build-specs build-haskell build-web3 build-llvm
-
 HOOK_NAMESPACES = KRYPTO JSON
 
 KOMPILE_OPTS += --hook-namespaces "$(HOOK_NAMESPACES)"
@@ -140,15 +140,13 @@ endif
 
 JAVA_KOMPILE_OPTS :=
 
-KOMPILE_JAVA := kompile --debug --backend java \
-                $(KOMPILE_OPTS)                \
-                $(JAVA_KOMPILE_OPTS)
+KOMPILE_JAVA := kompile --debug --backend java --md-selector "$(tangle_java) \
+                $(KOMPILE_OPTS) $(JAVA_KOMPILE_OPTS)
 
 HASKELL_KOMPILE_OPTS :=
 
-KOMPILE_HASKELL := kompile --debug --backend haskell \
-                $(KOMPILE_OPTS)                      \
-                $(HASKELL_KOMPILE_OPTS)
+KOMPILE_HASKELL := kompile --debug --backend haskell --md-selector "$(tangle_haskell)" \
+                $(KOMPILE_OPTS) $(HASKELL_KOMPILE_OPTS)
 
 STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_RELEASE)/include/kllvm \
                            $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp     \
@@ -159,15 +157,14 @@ ifeq ($(UNAME_S),Linux)
     STANDALONE_KOMPILE_OPTS += -lprocps
 endif
 
-KOMPILE_STANDALONE := kompile --debug --backend llvm \
+KOMPILE_STANDALONE := kompile --debug --backend llvm --md-selector "$(tangle_concrete)" \
                       $(KOMPILE_OPTS)                \
                       $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
 
 WEB3_KOMPILE_OPTS += --no-llvm-kompile
 
-KOMPILE_WEB3 := kompile --debug --backend llvm \
-                $(KOMPILE_OPTS)                \
-                $(WEB3_KOMPILE_OPTS)
+KOMPILE_WEB3 := kompile --debug --backend llvm --md-selector "$(tangle_concrete)" \
+                $(KOMPILE_OPTS) $(WEB3_KOMPILE_OPTS)
 # Java
 
 java_dir           := $(DEFN_DIR)/java
@@ -180,9 +177,10 @@ java_kompiled      := $(java_dir)/$(java_main_file)-kompiled/timestamp
 build-java: $(java_kompiled)
 
 $(java_kompiled): $(ALL_FILES)
-	$(KOMPILE_JAVA) $(java_main_file).md --md-selector "$(tangle_java)"             \
-	        --directory $(java_dir) -I $(CURDIR)                                    \
-	        --main-module $(java_main_module) --syntax-module $(java_syntax_module)
+	$(KOMPILE_JAVA) $(java_main_file).md          \
+	        --directory $(java_dir) -I $(CURDIR)  \
+	        --main-module $(java_main_module)     \
+	        --syntax-module $(java_syntax_module)
 
 # Imperative Specs
 
@@ -196,9 +194,10 @@ specs_kompiled      := $(specs_dir)/$(specs_main_file)-kompiled/timestamp
 build-specs: $(specs_kompiled)
 
 $(specs_kompiled): $(ALL_FILES)
-	$(KOMPILE_JAVA) $(specs_main_file).md --md-selector "$(tangle_java)"              \
-	        --directory $(specs_dir) -I $(CURDIR)                                     \
-	        --main-module $(specs_main_module) --syntax-module $(specs_syntax_module)
+	$(KOMPILE_JAVA) $(specs_main_file).md          \
+	        --directory $(specs_dir) -I $(CURDIR)  \
+	        --main-module $(specs_main_module)     \
+	        --syntax-module $(specs_syntax_module)
 
 # Haskell
 
@@ -212,9 +211,10 @@ haskell_kompiled       := $(haskell_dir)/$(haskell_main_file)-kompiled/definitio
 build-haskell: $(haskell_kompiled)
 
 $(haskell_kompiled): $(ALL_FILES)
-	$(KOMPILE_HASKELL) $(haskell_main_file).md --md-selector "$(tangle_haskell)"          \
-	        --directory $(haskell_dir) -I $(CURDIR)                                       \
-	        --main-module $(haskell_main_module) --syntax-module $(haskell_syntax_module)
+	$(KOMPILE_HASKELL) $(haskell_main_file).md       \
+	        --directory $(haskell_dir) -I $(CURDIR)  \
+	        --main-module $(haskell_main_module)     \
+	        --syntax-module $(haskell_syntax_module)
 
 # Web3
 
@@ -237,9 +237,10 @@ endif
 build-web3: $(web3_kompiled)
 
 $(web3_kore): $(ALL_FILES)
-	$(KOMPILE_WEB3) $(web3_main_file).md --md-selector "$(tangle_concrete)"         \
-	        --directory $(web3_dir) -I $(CURDIR)                                    \
-	        --main-module $(web3_main_module) --syntax-module $(web3_syntax_module)
+	$(KOMPILE_WEB3) $(web3_main_file).md          \
+	        --directory $(web3_dir) -I $(CURDIR)  \
+	        --main-module $(web3_main_module)     \
+	        --syntax-module $(web3_syntax_module)
 
 $(web3_kompiled): $(web3_kore) $(libff_out)
 	@mkdir -p $(web3_dir)/build
@@ -257,9 +258,10 @@ llvm_kompiled      := $(llvm_dir)/$(llvm_main_file)-kompiled/interpreter
 build-llvm: $(llvm_kompiled)
 
 $(llvm_kompiled): $(ALL_FILES) $(libff_out)
-	$(KOMPILE_STANDALONE) $(llvm_main_file).md --md-selector "$(tangle_concrete)"   \
-	        --directory $(llvm_dir) -I $(CURDIR)                                    \
-	        --main-module $(llvm_main_module) --syntax-module $(llvm_syntax_module)
+	$(KOMPILE_STANDALONE) $(llvm_main_file).md    \
+	        --directory $(llvm_dir) -I $(CURDIR)  \
+	        --main-module $(llvm_main_module)     \
+	        --syntax-module $(llvm_syntax_module)
 
 # Installing
 # ----------
