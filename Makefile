@@ -1,6 +1,8 @@
 # Settings
 # --------
 
+UNAME_S := $(shell uname -s)
+
 DEPS_DIR      := deps
 BUILD_DIR     := .build
 SUBDEFN_DIR   := .
@@ -70,8 +72,6 @@ $(libsecp256k1_out): $(PLUGIN_SUBMODULE)/deps/secp256k1/autogen.sh
 	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
 	    && $(MAKE)                                                        \
 	    && $(MAKE) install
-
-UNAME_S := $(shell uname -s)
 
 ifeq ($(UNAME_S),Linux)
     LIBFF_CMAKE_FLAGS=
