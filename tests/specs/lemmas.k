@@ -1,3 +1,4 @@
+requires "domains.k"
 requires "evm.k"
 requires "edsl.k"
 
@@ -227,6 +228,7 @@ module LEMMAS-JAVA [symbolic, kast]
 endmodule
 
 module LEMMAS-HASKELL [symbolic, kore]
+    imports INT-SYMBOLIC
     imports EVM
     imports EDSL
 
@@ -291,20 +293,4 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule bool2Word( B:Bool ) ==Int 1 => B         [simplification]
     rule bool2Word( B:Bool ) ==Int 0 => notBool B [simplification]
-
-    // Arithmetic simplification
-    rule I +Int B => B +Int I          [concrete(I), symbolic(B), priority(51), simplification]
-    rule A -Int I => A +Int (0 -Int I) [concrete(I), symbolic(A), priority(51), simplification]
-
-    rule (A +Int I2) +Int I3 => A +Int (I2 +Int I3) [concrete(I2, I3), symbolic(A), simplification]
-    rule I1 +Int (B +Int I3) => B +Int (I1 +Int I3) [concrete(I1, I3), symbolic(B), simplification]
-    rule I1 -Int (B +Int I3) => (I1 -Int I3) -Int B [concrete(I1, I3), symbolic(B), simplification]
-    rule I1 +Int (I2 +Int C) => (I1 +Int I2) +Int C [concrete(I1, I2), symbolic(C), simplification]
-    rule I1 +Int (I2 -Int C) => (I1 +Int I2) -Int C [concrete(I1, I2), symbolic(C), simplification]
-    rule (I1 -Int B) +Int I3 => (I1 +Int I3) -Int B [concrete(I1, I3), symbolic(B), simplification]
-    rule I1 -Int (I2 +Int C) => (I1 -Int I2) -Int C [concrete(I1, I2), symbolic(C), simplification]
-    rule I1 -Int (I2 -Int C) => (I1 -Int I2) +Int C [concrete(I1, I2), symbolic(C), simplification]
-    rule (C -Int I2) -Int I3 => C -Int (I2 +Int I3) [concrete(I2, I3), symbolic(C), simplification]
-    rule I1 &Int (I2 &Int C) => (I1 &Int I2) &Int C [concrete(I1, I2), symbolic(C), simplification]
-
 endmodule
