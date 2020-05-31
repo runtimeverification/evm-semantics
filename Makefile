@@ -97,12 +97,9 @@ k-deps: $(K_JAR)
 plugin-deps: $(PLUGIN_SUBMODULE)/client-c/main.cpp
 
 ifneq ($(RELEASE),)
-    K_BUILD_TYPE         := FastBuild
-    SEMANTICS_BUILD_TYPE := Release
-    KOMPILE_OPTS         += -O3
+    K_BUILD_TYPE := FastBuild
 else
-    K_BUILD_TYPE         := FastBuild
-    SEMANTICS_BUILD_TYPE := Debug
+    K_BUILD_TYPE := Debug
 endif
 
 $(K_JAR):
@@ -133,6 +130,44 @@ tangle_haskell  := k & ( ( ! ( concrete | nobytes ) ) | symbolic | bytes   )
 
 build: build-java build-specs build-haskell build-web3 build-llvm
 
+HOOK_NAMESPACES = KRYPTO JSON
+
+KOMPILE_OPTS += --hook-namespaces "$(HOOK_NAMESPACES)"
+
+ifneq (,$(RELEASE))
+    KOMPILE_OPTS += -O3
+endif
+
+JAVA_KOMPILE_OPTS :=
+
+KOMPILE_JAVA := kompile --debug --backend java \
+                $(KOMPILE_OPTS)                \
+                $(JAVA_KOMPILE_OPTS)
+
+HASKELL_KOMPILE_OPTS :=
+
+KOMPILE_HASKELL := kompile --debug --backend haskell \
+                $(KOMPILE_OPTS)                      \
+                $(HASKELL_KOMPILE_OPTS)
+
+STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_RELEASE)/include/kllvm \
+                           $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp     \
+                           $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp     \
+                           -g -std=c++14 -lff -lcryptopp -lsecp256k1
+
+ifeq ($(UNAME_S),Linux)
+    STANDALONE_KOMPILE_OPTS += -lprocps
+endif
+
+KOMPILE_STANDALONE := kompile --debug --backend llvm \
+                      $(KOMPILE_OPTS)                \
+                      $(STANDALONE_KOMPILE_OPTS)
+
+WEB3_KOMPILE_OPTS += --no-llvm-kompile
+
+KOMPILE_WEB3 := kompile --debug --backend llvm \
+                $(KOMPILE_OPTS)                \
+                $(WEB3_KOMPILE_OPTS)
 # Java
 
 java_dir           := $(DEFN_DIR)/java
@@ -145,11 +180,9 @@ java_kompiled      := $(java_dir)/$(java_main_file)-kompiled/timestamp
 build-java: $(java_kompiled)
 
 $(java_kompiled): $(ALL_FILES)
-	kompile --debug --backend java $(java_main_file).md                             \
+	$(KOMPILE_JAVA) $(java_main_file).md --md-selector "$(tangle_java)"             \
 	        --directory $(java_dir) -I $(CURDIR)                                    \
-	        --main-module $(java_main_module) --syntax-module $(java_syntax_module) \
-	        --md-selector "$(tangle_java)"                                          \
-	        $(KOMPILE_OPTS)
+	        --main-module $(java_main_module) --syntax-module $(java_syntax_module)
 
 # Imperative Specs
 
@@ -163,11 +196,9 @@ specs_kompiled      := $(specs_dir)/$(specs_main_file)-kompiled/timestamp
 build-specs: $(specs_kompiled)
 
 $(specs_kompiled): $(ALL_FILES)
-	kompile --debug --backend java $(specs_main_file).md                              \
+	$(KOMPILE_JAVA) $(specs_main_file).md --md-selector "$(tangle_java)"              \
 	        --directory $(specs_dir) -I $(CURDIR)                                     \
-	        --main-module $(specs_main_module) --syntax-module $(specs_syntax_module) \
-	        --md-selector "$(tangle_java)"                                            \
-	        $(KOMPILE_OPTS)
+	        --main-module $(specs_main_module) --syntax-module $(specs_syntax_module)
 
 # Haskell
 
@@ -181,12 +212,9 @@ haskell_kompiled       := $(haskell_dir)/$(haskell_main_file)-kompiled/definitio
 build-haskell: $(haskell_kompiled)
 
 $(haskell_kompiled): $(ALL_FILES)
-	kompile --debug --backend haskell $(haskell_main_file).md                             \
+	$(KOMPILE_HASKELL) $(haskell_main_file).md --md-selector "$(tangle_haskell)"          \
 	        --directory $(haskell_dir) -I $(CURDIR)                                       \
-	        --main-module $(haskell_main_module) --syntax-module $(haskell_syntax_module) \
-	        --md-selector "$(tangle_haskell)"                                             \
-	        --hook-namespaces KRYPTO                                                      \
-	        $(KOMPILE_OPTS)
+	        --main-module $(haskell_main_module) --syntax-module $(haskell_syntax_module)
 
 # Web3
 
@@ -200,20 +228,22 @@ web3_kore          := $(web3_dir)/$(web3_main_file)-kompiled/definition.kore
 export web3_main_file
 export web3_dir
 
+ifeq (,$(RELEASE))
+    web3_build_type := Debug
+else
+    web3_build_type := Release
+endif
+
 build-web3: $(web3_kompiled)
 
 $(web3_kore): $(ALL_FILES)
-	kompile --debug --backend llvm $(web3_main_file).md                             \
+	$(KOMPILE_WEB3) $(web3_main_file).md --md-selector "$(tangle_concrete)"         \
 	        --directory $(web3_dir) -I $(CURDIR)                                    \
-	        --main-module $(web3_main_module) --syntax-module $(web3_syntax_module) \
-	        --md-selector "$(tangle_concrete)"                                      \
-	        --hook-namespaces "KRYPTO JSON"                                         \
-	        --no-llvm-kompile                                                       \
-	        $(KOMPILE_OPTS)
+	        --main-module $(web3_main_module) --syntax-module $(web3_syntax_module)
 
 $(web3_kompiled): $(web3_kore) $(libff_out)
 	@mkdir -p $(web3_dir)/build
-	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=$(SEMANTICS_BUILD_TYPE) && $(MAKE)
+	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=$(web3_build_type) && $(MAKE)
 
 # Standalone
 
@@ -224,25 +254,12 @@ llvm_syntax_module := $(llvm_main_module)
 llvm_main_file     := driver
 llvm_kompiled      := $(llvm_dir)/$(llvm_main_file)-kompiled/interpreter
 
-STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_RELEASE)/include/kllvm \
-                           $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp     \
-                           $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp     \
-                           -g -std=c++14 -lff -lcryptopp -lsecp256k1
-
 build-llvm: $(llvm_kompiled)
 
-ifeq ($(UNAME_S),Linux)
-    STANDALONE_KOMPILE_OPTS += -lprocps
-endif
-
 $(llvm_kompiled): $(ALL_FILES) $(libff_out)
-	kompile --debug --backend llvm $(llvm_main_file).md                             \
+	$(KOMPILE_STANDALONE) $(llvm_main_file).md --md-selector "$(tangle_concrete)"   \
 	        --directory $(llvm_dir) -I $(CURDIR)                                    \
-	        --main-module $(llvm_main_module) --syntax-module $(llvm_syntax_module) \
-	        --md-selector "$(tangle_concrete)"                                      \
-	        --hook-namespaces KRYPTO                                                \
-	        $(KOMPILE_OPTS)                                                         \
-	        $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
+	        --main-module $(llvm_main_module) --syntax-module $(llvm_syntax_module)
 
 # Installing
 # ----------
