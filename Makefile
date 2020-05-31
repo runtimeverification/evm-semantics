@@ -177,10 +177,10 @@ java_kompiled      := $(java_dir)/$(java_main_file)-kompiled/timestamp
 build-java: $(java_kompiled)
 
 $(java_kompiled): $(ALL_FILES)
-	$(KOMPILE_JAVA) $(java_main_file).md          \
-	        --directory $(java_dir) -I $(CURDIR)  \
-	        --main-module $(java_main_module)     \
-	        --syntax-module $(java_syntax_module)
+	$(KOMPILE_JAVA) $(java_main_file).md                  \
+	                --directory $(java_dir) -I $(CURDIR)  \
+	                --main-module $(java_main_module)     \
+	                --syntax-module $(java_syntax_module)
 
 # Imperative Specs
 
