@@ -104,6 +104,9 @@ repo-deps: tangle-deps k-deps plugin-deps
 k-deps: $(K_JAR)
 tangle-deps: $(TANGLER)
 plugin-deps: $(PLUGIN_SUBMODULE)/client-c/main.cpp
+# param for skipping certain K backends, e.g.
+# make BACKEND_SKIP="-Dhaskellbackend.skip -Dllvmbackend.skp" deps
+BACKEND_SKIP=
 
 ifneq ($(RELEASE),)
     K_BUILD_TYPE         := FastBuild
@@ -115,7 +118,7 @@ else
 endif
 
 $(K_JAR):
-	cd $(K_SUBMODULE) && mvn package -DskipTests -U -Dproject.build.type=$(K_BUILD_TYPE)
+	cd $(K_SUBMODULE) && mvn package -DskipTests -U -Dproject.build.type=$(K_BUILD_TYPE) $(BACKEND_SKIP)
 
 # Building
 # --------
