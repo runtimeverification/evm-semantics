@@ -429,8 +429,12 @@ A cons-list is used for the EVM wordstack.
 -   Definedness conditions for `WS [ N ]`:
 
 ```{.k .symbolic}
-    rule #Ceil(#lookup( _ |-> VAL M, KEY )) => {(#Ceil(#lookup( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
-    rule #Ceil(#lookup( .Map, _ ))          => true                                                          [anywhere]
+    rule #Ceil(#lookup( M, _ )) => { #isValidStorage(M) #Equals true } [anywhere, simplification]
+
+    syntax Bool ::= #isValidStorage( Map ) [function, functional]
+ // -------------------------------------------------------------
+    rule #isValidStorage( _ |-> VAL M ) => isInt(VAL) andBool #isValidStorage(M)
+    rule #isValidStorage( .Map )        => true
 ```
 
 -   `#sizeWordStack` calculates the size of a `WordStack`.
