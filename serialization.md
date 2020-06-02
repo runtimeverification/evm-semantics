@@ -512,6 +512,20 @@ Merkle Patricia Tree
     rule MerklePut ( MerkleBranch( M, BRANCHVALUE ), PATH, VALUE )
       => #merkleUpdateBranch ( M, BRANCHVALUE, PATH[0], PATH[1 .. #sizeByteArray(PATH) -Int 1], VALUE )
       requires #sizeByteArray( PATH ) >Int 0
+
+    syntax MerkleTree ::= MerkleCheck( MerkleTree ) [function]
+ // ----------------------------------------------------------
+    rule MerkleCheck( TREE ) => TREE [owise]
+
+    rule MerkleCheck( MerkleLeaf( _, "" ) => .MerkleTree )
+
+    rule MerkleCheck( MerkleBranch( .Map                   , V  ) => MerkleLeaf( .ByteArray, V )                   )
+    rule MerkleCheck( MerkleBranch( X |-> T                , "" ) => MerkleExtension( #asByteStack(X)[0 .. 1], T ) ) requires T =/=K .MerkleTree
+    rule MerkleCheck( MerkleBranch( M => #cleanBranchMap(M), _  )                                                  ) requires .MerkleTree in values(M)
+
+    rule MerkleCheck( MerkleExtension( _, .MerkleTree                                      ) => .MerkleTree               )
+    rule MerkleCheck( MerkleExtension( P1, MerkleLeaf( P2, V )                             ) => MerkleLeaf( P1 ++ P2, V ) )
+    rule MerkleCheck( MerkleExtension( P1 => P1 ++ P2, MerkleExtension( P2, TREE ) => TREE )                              )
 ```
 
 - `MerkleUpdateMap` Takes a mapping of `ByteArray |-> String` and generates a trie
@@ -561,6 +575,15 @@ Merkle Tree Aux Functions
  // ---------------------------------------------
     rule HPEncodeAux ( X ) => 0 requires         X ==Int 0
     rule HPEncodeAux ( X ) => 2 requires notBool X ==Int 0
+
+    syntax Map ::= #cleanBranchMap( Map )              [function]
+                 | #cleanBranchMapAux( Map, Set, Set ) [function]
+ // -------------------------------------------------------------
+    rule #cleanBranchMap( M ) => #cleanBranchMapAux( M, keys(M), .Set )
+
+    rule #cleanBranchMapAux(                   M,                      .Set,                      S ) => removeAll( M, S )
+    rule #cleanBranchMapAux( X |-> .MerkleTree _, (SetItem(X) => .Set) _   , (.Set => SetItem(X)) _ )
+    rule #cleanBranchMapAux(                   _, (SetItem(X) => .Set) _   ,                      _ ) [owise]
 
     syntax MerkleTree ::= #merkleUpdateBranch ( Map, String, Int, ByteArray, String ) [function]
  // --------------------------------------------------------------------------------------------
