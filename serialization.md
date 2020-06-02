@@ -573,7 +573,7 @@ Merkle Tree Aux Functions
     syntax MerkleTree ::= #merkleExtensionBuilder( ByteArray, ByteArray, String, ByteArray, String ) [function]
  // -----------------------------------------------------------------------------------------------------------
     rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
-      => #merkleExtensionBuilder( PATH ++ ( #asByteStack( P1[0] )[0 .. 1] )
+      => #merkleExtensionBuilder( PATH ++ (P1[0 .. 1])
                                 , P1[1 .. #sizeByteArray(P1) -Int 1], V1
                                 , P2[1 .. #sizeByteArray(P2) -Int 1], V2
                                 )
@@ -583,11 +583,9 @@ Merkle Tree Aux Functions
 
     rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
       => MerkleExtension( PATH, MerklePut( MerklePut( MerkleBranch( .Map, "" ), P1, V1 ), P2, V2 ) )
-      requires #sizeByteArray(P1) ==Int 0
-        orBool #sizeByteArray(P2) ==Int 0
-        orBool ( #sizeByteArray(P1) >Int 0
-       andBool   #sizeByteArray(P2) >Int 0
-       andBool   P1[0] =/=Int P2[0] )
+      requires notBool ( #sizeByteArray(P1) >Int 0
+               andBool   #sizeByteArray(P2) >Int 0
+               andBool   P1[0] ==Int P2[0] )
 
     syntax MerkleTree ::= #merkleExtensionBrancher ( MerkleTree, ByteArray, MerkleTree ) [function]
  // -----------------------------------------------------------------------------------------------
@@ -601,10 +599,9 @@ Merkle Tree Aux Functions
 
     syntax MerkleTree ::= #merkleExtensionSplitter ( ByteArray, ByteArray, MerkleTree, ByteArray, String ) [function]
  // -----------------------------------------------------------------------------------------------------------------
-    rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
-      => #merkleExtensionSplitter( PATH ++ ( #asByteStack( P1[0] )[0 .. 1] )
-                                 , P1[1 .. #sizeByteArray(P1) -Int 1], TREE
-                                 , P2[1 .. #sizeByteArray(P2) -Int 1], VALUE
+    rule #merkleExtensionSplitter( PATH => PATH ++ (P1[0 .. 1])
+                                 , P1   => P1[1 .. #sizeByteArray(P1) -Int 1], _
+                                 , P2   => P2[1 .. #sizeByteArray(P2) -Int 1], _
                                  )
       requires #sizeByteArray(P1) >Int 0
        andBool #sizeByteArray(P2) >Int 0
