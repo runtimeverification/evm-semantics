@@ -517,17 +517,17 @@ Merkle Patricia Tree
 
     rule MerkleDelete( .MerkleTree, _ ) => .MerkleTree
 
-    rule MerkleDelete( MerkleLeaf( LPATH, V )         , PATH ) => .MerkleTree         requires #unparseByteStack(LPATH)  ==String #unparseByteStack(PATH)
-    rule MerkleDelete( MerkleLeaf( LPATH, V ) #as TREE, PATH ) => MerkleCheck( TREE ) requires #unparseByteStack(LPATH) =/=String #unparseByteStack(PATH)
+    rule MerkleDelete( MerkleLeaf( LPATH, V ), PATH ) => .MerkleTree                           requires #unparseByteStack(LPATH)  ==String #unparseByteStack(PATH)
+    rule MerkleDelete( MerkleLeaf( LPATH, V ), PATH ) => MerkleCheck( MerkleLeaf( LPATH, V ) ) requires #unparseByteStack(LPATH) =/=String #unparseByteStack(PATH)
 
-    rule MerkleDelete( MerkleExtension( EXTPATH, _    ) #as TREE, PATH ) => TREE requires #prefixLen(EXTPATH, PATH) =/=Int #sizeByteArray(EXTPATH)
-    rule MerkleDelete( MerkleExtension( EXTPATH, TREE )         , PATH )
+    rule MerkleDelete( MerkleExtension( EXTPATH, TREE ), PATH ) => MerkleExtension( EXTPATH, TREE ) requires #prefixLen(EXTPATH, PATH) =/=Int #sizeByteArray(EXTPATH)
+    rule MerkleDelete( MerkleExtension( EXTPATH, TREE ), PATH )
       => MerkleCheck( MerkleExtension( EXTPATH, MerkleDelete( TREE, PATH[#sizeByteArray(EXTPATH) .. #sizeByteArray(PATH) -Int #sizeByteArray(EXTPATH)] ) ) )
       requires #prefixLen(EXTPATH, PATH) ==Int #sizeByteArray(EXTPATH)
 
-    rule MerkleDelete( MerkleBranch( M, V )         , PATH ) => MerkleCheck( MerkleBranch( M, "" ) ) requires #sizeByteArray(PATH) ==Int 0
-    rule MerkleDelete( MerkleBranch( M, _ ) #as TREE, PATH ) => TREE                                 requires #sizeByteArray(PATH) >Int 0 andBool notBool PATH[0] in_keys(M)
-    rule MerkleDelete( MerkleBranch( M, V )         , PATH )
+    rule MerkleDelete( MerkleBranch( M, V ), PATH ) => MerkleCheck( MerkleBranch( M, "" ) ) requires #sizeByteArray(PATH) ==Int 0
+    rule MerkleDelete( MerkleBranch( M, V ), PATH ) => MerkleBranch( M, V )                 requires #sizeByteArray(PATH) >Int 0 andBool notBool PATH[0] in_keys(M)
+    rule MerkleDelete( MerkleBranch( M, V ), PATH )
       => MerkleCheck( MerkleBranch( M[PATH[0] <- MerkleDelete( {M[PATH[0]]}:>MerkleTree, PATH[1 .. #sizeByteArray(PATH) -Int 1] )], V ) )
       requires #sizeByteArray(PATH) >Int 0 andBool PATH[0] in_keys(M)
 
