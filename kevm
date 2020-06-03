@@ -295,8 +295,6 @@ kevm_port="8545"
 kevm_host="127.0.0.1"
 
 case "$run_command-$backend" in
-
-    # Running
     run-@(java|llvm|haskell)       ) run_krun                        "$@" ;;
     kast-@(java|llvm|haskell|web3) ) run_kast                        "$@" ;;
     interpret-@(llvm|haskell|java) ) run_interpret                   "$@" ;;
