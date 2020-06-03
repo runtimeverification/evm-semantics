@@ -259,6 +259,8 @@ unparse=true
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 [[ ! "$run_command" =~ web3*   ]] || backend='llvm'
+kevm_port='8545'
+kevm_host='127.0.0.1'
 args=()
 while [[ $# -gt 0 ]]; do
     arg="$1"
@@ -291,8 +293,6 @@ fi
 cMODE="\`${MODE:-NORMAL}\`(.KList)"
 cSCHEDULE="\`${SCHEDULE:-ISTANBUL}_EVM\`(.KList)"
 cCHAINID="${CHAINID:-1}"
-kevm_port="8545"
-kevm_host="127.0.0.1"
 
 case "$run_command-$backend" in
     run-@(java|llvm|haskell)       ) run_krun                        "$@" ;;
