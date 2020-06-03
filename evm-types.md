@@ -583,6 +583,17 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0  [concrete]
     rule #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
     rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0  [concrete]
+
+    syntax Int ::= #prefixLen( ByteArray, ByteArray )         [function]
+                 | #prefixLenAux( ByteArray, ByteArray, Int ) [function]
+ // --------------------------------------------------------------------
+    rule #prefixLen( BS1, BS2 ) => #prefixLenAux( BS1, BS2, 0 )
+
+    rule #prefixLenAux( _, _, N ) => N [owise]
+    rule #prefixLenAux( BS1 => substrBytes(BS1, 1, lengthBytes(BS1)), BS2 => substrBytes(BS2, 1, lengthBytes(BS2)), N => N +Int 1 )
+      requires lengthBytes(BS1) >Int 0
+       andBool lengthBytes(BS2) >Int 0
+       andBool BS1[0] ==Int BS2[0]
 ```
 
 ```{.k .nobytes}
@@ -633,6 +644,17 @@ The local memory of execution is a byte-array (instead of a word-array).
  // --------------------------------------------------------------------------------------
     rule [#padToWidth]:      #padToWidth(N, WS)      => #replicateAux(N -Int #sizeByteArray(WS), 0, WS)
     rule [#padRightToWidth]: #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0)
+
+    syntax Int ::= #prefixLen( ByteArray, ByteArray )         [function]
+                 | #prefixLenAux( ByteArray, ByteArray, Int ) [function]
+ // --------------------------------------------------------------------
+    rule #prefixLen( WS1, WS2 ) => #prefixLenAux( WS1, WS2, 0 )
+
+    rule #prefixLenAux( .WordStack, _          , N ) => N
+    rule #prefixLenAux( _         , .WordStack , N ) => N
+    rule #prefixLenAux( W1 : _    , W2 : _     , N ) => N requires W1 =/=Int W2
+
+    rule #prefixLenAux( W : WS1 => WS1, W : WS2 => WS2, N => N +Int 1 )
 ```
 
 Accounts
