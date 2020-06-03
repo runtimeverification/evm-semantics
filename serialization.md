@@ -466,10 +466,12 @@ Merkle Patricia Tree
     syntax MerkleTree ::= MerkleUpdate ( MerkleTree,     String, String ) [function]
                         | MerkleUpdate ( MerkleTree,  ByteArray, String ) [function,klabel(MerkleUpdateAux)]
                         | MerklePut    ( MerkleTree,  ByteArray, String ) [function]
+                        | MerkleDelete ( MerkleTree,  ByteArray )         [function]
  // --------------------------------------------------------------------------------------------------------
     rule MerkleUpdate ( TREE, S:String, VALUE ) => MerkleUpdate ( TREE, #nibbleize ( #parseByteStackRaw( S ) ), VALUE )
 
-    rule MerkleUpdate ( TREE, PATH:ByteArray, VALUE ) => MerklePut ( TREE, PATH, VALUE )
+    rule MerkleUpdate ( TREE, PATH:ByteArray, VALUE ) => MerklePut ( TREE, PATH, VALUE ) requires VALUE =/=String ""
+    rule MerkleUpdate ( TREE, PATH:ByteArray, ""    ) => MerkleDelete ( TREE, PATH )
 
     rule MerklePut ( .MerkleTree, PATH:ByteArray, VALUE ) => MerkleLeaf ( PATH, VALUE )
 
@@ -512,6 +514,22 @@ Merkle Patricia Tree
     rule MerklePut ( MerkleBranch( M, BRANCHVALUE ), PATH, VALUE )
       => #merkleUpdateBranch ( M, BRANCHVALUE, PATH[0], PATH[1 .. #sizeByteArray(PATH) -Int 1], VALUE )
       requires #sizeByteArray( PATH ) >Int 0
+
+    rule MerkleDelete( .MerkleTree, _ ) => .MerkleTree
+
+    rule MerkleDelete( MerkleLeaf( LPATH, V )         , PATH ) => .MerkleTree         requires #unparseByteStack(LPATH)  ==String #unparseByteStack(PATH)
+    rule MerkleDelete( MerkleLeaf( LPATH, V ) #as TREE, PATH ) => MerkleCheck( TREE ) requires #unparseByteStack(LPATH) =/=String #unparseByteStack(PATH)
+
+    rule MerkleDelete( MerkleExtension( EXTPATH, _    ) #as TREE, PATH ) => TREE requires #prefixLen(EXTPATH, PATH) =/=Int #sizeByteArray(EXTPATH)
+    rule MerkleDelete( MerkleExtension( EXTPATH, TREE )         , PATH )
+      => MerkleCheck( MerkleExtension( EXTPATH, MerkleDelete( TREE, PATH[#sizeByteArray(EXTPATH) .. #sizeByteArray(PATH) -Int #sizeByteArray(EXTPATH)] ) ) )
+      requires #prefixLen(EXTPATH, PATH) ==Int #sizeByteArray(EXTPATH)
+
+    rule MerkleDelete( MerkleBranch( M, V )         , PATH ) => MerkleCheck( MerkleBranch( M, "" ) ) requires #sizeByteArray(PATH) ==Int 0
+    rule MerkleDelete( MerkleBranch( M, _ ) #as TREE, PATH ) => TREE                                 requires #sizeByteArray(PATH) >Int 0 andBool notBool PATH[0] in_keys(M)
+    rule MerkleDelete( MerkleBranch( M, V )         , PATH )
+      => MerkleCheck( MerkleBranch( M[PATH[0] <- MerkleDelete( {M[PATH[0]]}:>MerkleTree, PATH[1 .. #sizeByteArray(PATH) -Int 1] )], V ) )
+      requires #sizeByteArray(PATH) >Int 0 andBool PATH[0] in_keys(M)
 
     syntax MerkleTree ::= MerkleCheck( MerkleTree ) [function]
  // ----------------------------------------------------------
