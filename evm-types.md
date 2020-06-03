@@ -479,7 +479,7 @@ Most of EVM data is held in local memory.
 -   `WM [ N := WS ]` assigns a contiguous chunk of $WM$ to $WS$ starting at position $W$.
 -   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
 
-```{.k .membytes}
+```{.k .bytes}
     syntax Memory = Bytes
     syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, functional, klabel(mapWriteBytes)]
  // -------------------------------------------------------------------------------------------------
@@ -497,33 +497,6 @@ Most of EVM data is held in local memory.
     syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
  // --------------------------------------------------------
     rule WM [ IDX := VAL ] => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ]
-```
-
-```{.k .memmap}
-    syntax Memory = Map
-    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, klabel(mapWriteBytes)]
- // -------------------------------------------------------------------------------------
-    rule WM[ N := WS ] => WM [ N := WS, 0, #sizeByteArray(WS) ]
-
-    syntax Map ::= Map "[" Int ":=" ByteArray "," Int "," Int "]" [function]
- // ------------------------------------------------------------------------
-    rule WM [ N := WS, I, I ] => WM
-    rule WM [ N := WS, I, J ] => (WM[N <- WS[I]])[ N +Int 1 := WS, I +Int 1, J ] [owise]
-
-    syntax ByteArray ::= #range ( Memory , Int , Int )                   [function]
-                       | #range ( Memory , Int , Int , Int , ByteArray ) [function, klabel(#rangeAux)]
- // --------------------------------------------------------------------------------------------------
-    rule #range(WM, START, WIDTH) => #range(WM, START, 0, WIDTH, padLeftBytes(.Bytes, WIDTH, 0))
-    rule #range(WM, I, WIDTH, WIDTH, WS) => WS
-    rule #range(WM, I,     J, WIDTH, WS) => #range(WM, I +Int 1, J +Int 1, WIDTH, WS [ J <- {WM[I] orDefault 0}:>Int ]) [owise]
-
-    syntax Memory ::= ".Memory" [function]
- // --------------------------------------
-    rule .Memory => .Map [macro]
-
-    syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
- // --------------------------------------------------------
-    rule WM [ IDX := VAL:Int ] => WM [ IDX <- VAL ]
 ```
 
 ```{.k .nobytes}

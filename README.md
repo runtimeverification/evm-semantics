@@ -47,7 +47,6 @@ This repository generates the build-products for each backend in `.build/defn/`.
 The following are needed for building/running KEVM:
 
 -   [git](https://git-scm.com/)
--   [Pandoc >= 1.17](https://pandoc.org) is used to generate the `*.k` files from the `*.md` files.
 -   GNU [Bison](https://www.gnu.org/software/bison/), [Flex](https://github.com/westes/flex), and [Autoconf](http://www.gnu.org/software/autoconf/).
 -   GNU [libmpfr](http://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
 -   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
@@ -61,7 +60,7 @@ sudo apt-get install --yes                                                      
             libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev \
             libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev        \
             lld-8 llvm-8-tools make maven netcat-openbsd openjdk-11-jdk          \
-            pandoc pkg-config python3 python-pygments python-recommonmark        \
+            pkg-config python3 python-pygments python-recommonmark               \
             python-sphinx rapidjson-dev time zlib1g-dev
 ```
 
@@ -87,7 +86,7 @@ On OSX, using [Homebrew](https://brew.sh/), after installing the command line to
 ```sh
 brew tap caskroom/cask
 brew cask install adoptopenjdk12
-brew install automake libtool gmp mpfr pkg-config pandoc maven z3 libffi
+brew install automake libtool gmp mpfr pkg-config maven z3 libffi
 make libsecp256k1
 ```
 
@@ -117,10 +116,10 @@ make deps
 
 ### Building
 
-Finally, you can build the semantics (after getting the plugin and tangle submodule dependencies):
+Finally, you can build the semantics (after getting the plugin submodule dependency):
 
 ```sh
-git submodule update --init --recursive -- deps/plugin deps/pandoc-tangle
+git submodule update --init --recursive -- deps/plugin
 make build
 ```
 
@@ -170,10 +169,10 @@ This repository can build two pieces of documentation for you, the [Jello Paper]
 
 ### System Dependencies
 
-For the presentations in the `media` directory, you'll need `pdflatex`, commonly provided with `texlive-full`.
+For the presentations in the `media` directory, you'll need `pdflatex`, commonly provided with `texlive-full`, and `pandoc`.
 
 ```sh
-sudo apt install texlive-full
+sudo apt install texlive-full pandoc
 ```
 
 ### Building

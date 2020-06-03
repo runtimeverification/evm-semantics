@@ -2,10 +2,10 @@ EVM Words
 =========
 
 ```k
-requires "krypto.k"
-requires "evm-types.k"
-requires "json.k"
-requires "serialization.k"
+requires "krypto.md"
+requires "evm-types.md"
+requires "json.md"
+requires "serialization.md"
 ```
 
 ```k

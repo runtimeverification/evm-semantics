@@ -1,4 +1,4 @@
-requires "evm.k"
+requires "evm.md"
 
 module VERIFICATION
     imports EVM

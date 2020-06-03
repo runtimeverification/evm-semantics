@@ -8,8 +8,8 @@ Most of the opcodes are "local" to the execution state of the machine, but some 
 This file only defines the local execution operations, the file `driver.md` will define the interactions with the world state.
 
 ```k
-requires "data.k"
-requires "network.k"
+requires "data.md"
+requires "network.md"
 
 module EVM
     imports STRING
