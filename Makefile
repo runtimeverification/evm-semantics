@@ -168,7 +168,7 @@ KOMPILE_WEB3 := kompile --debug --backend llvm --md-selector "$(tangle_concrete)
 # Java
 
 java_dir           := $(DEFN_DIR)/java
-java_files         := $(patsubst %, $(java_dir)/%, $(ALL_FILES))
+java_files         := $(ALL_FILES)
 java_main_module   := ETHEREUM-SIMULATION
 java_syntax_module := $(java_main_module)
 java_main_file     := driver
@@ -176,7 +176,7 @@ java_kompiled      := $(java_dir)/$(java_main_file)-kompiled/timestamp
 
 build-java: $(java_kompiled)
 
-$(java_kompiled): $(ALL_FILES)
+$(java_kompiled): $(java_files)
 	$(KOMPILE_JAVA) $(java_main_file).md                  \
 	                --directory $(java_dir) -I $(CURDIR)  \
 	                --main-module $(java_main_module)     \
@@ -185,7 +185,7 @@ $(java_kompiled): $(ALL_FILES)
 # Imperative Specs
 
 specs_dir           := $(DEFN_DIR)/specs
-specs_files         := $(patsubst %, $(specs_dir)/%, $(ALL_FILES))
+specs_files         := $(ALL_FILES)
 specs_main_module   := EVM-IMP-SPECS
 specs_syntax_module := $(specs_main_module)
 specs_main_file     := evm-imp-specs
@@ -193,7 +193,7 @@ specs_kompiled      := $(specs_dir)/$(specs_main_file)-kompiled/timestamp
 
 build-specs: $(specs_kompiled)
 
-$(specs_kompiled): $(ALL_FILES)
+$(specs_kompiled): $(specs_files)
 	$(KOMPILE_JAVA) $(specs_main_file).md                  \
 	                --directory $(specs_dir) -I $(CURDIR)  \
 	                --main-module $(specs_main_module)     \
@@ -202,7 +202,7 @@ $(specs_kompiled): $(ALL_FILES)
 # Haskell
 
 haskell_dir            := $(DEFN_DIR)/haskell
-haskell_files          := $(patsubst %, $(haskell_dir)/%, $(ALL_FILES))
+haskell_files          := $(ALL_FILES)
 haskell_main_module    := ETHEREUM-SIMULATION
 haskell_syntax_module  := $(haskell_main_module)
 haskell_main_file      := driver
@@ -210,7 +210,7 @@ haskell_kompiled       := $(haskell_dir)/$(haskell_main_file)-kompiled/definitio
 
 build-haskell: $(haskell_kompiled)
 
-$(haskell_kompiled): $(ALL_FILES)
+$(haskell_kompiled): $(haskell_files)
 	$(KOMPILE_HASKELL) $(haskell_main_file).md                  \
 	                   --directory $(haskell_dir) -I $(CURDIR)  \
 	                   --main-module $(haskell_main_module)     \
@@ -219,7 +219,7 @@ $(haskell_kompiled): $(ALL_FILES)
 # Web3
 
 web3_dir           := $(abspath $(DEFN_DIR)/web3)
-web3_files         := $(patsubst %, $(web3_dir)/%, $(ALL_FILES))
+web3_files         := $(ALL_FILES)
 web3_main_module   := WEB3
 web3_syntax_module := $(web3_main_module)
 web3_main_file     := web3
@@ -236,7 +236,7 @@ endif
 
 build-web3: $(web3_kompiled)
 
-$(web3_kore): $(ALL_FILES)
+$(web3_kore): $(web3_files)
 	$(KOMPILE_WEB3) $(web3_main_file).md                  \
 	                --directory $(web3_dir) -I $(CURDIR)  \
 	                --main-module $(web3_main_module)     \
@@ -249,7 +249,7 @@ $(web3_kompiled): $(web3_kore) $(libff_out)
 # Standalone
 
 llvm_dir           := $(DEFN_DIR)/llvm
-llvm_files         := $(patsubst %, $(llvm_dir)/%, $(ALL_FILES))
+llvm_files         := $(ALL_FILES)
 llvm_main_module   := ETHEREUM-SIMULATION
 llvm_syntax_module := $(llvm_main_module)
 llvm_main_file     := driver
@@ -257,7 +257,7 @@ llvm_kompiled      := $(llvm_dir)/$(llvm_main_file)-kompiled/interpreter
 
 build-llvm: $(llvm_kompiled)
 
-$(llvm_kompiled): $(ALL_FILES) $(libff_out)
+$(llvm_kompiled): $(llvm_files) $(libff_out)
 	$(KOMPILE_STANDALONE) $(llvm_main_file).md                  \
 	                      --directory $(llvm_dir) -I $(CURDIR)  \
 	                      --main-module $(llvm_main_module)     \
