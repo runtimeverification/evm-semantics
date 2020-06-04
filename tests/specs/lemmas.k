@@ -31,6 +31,9 @@ module LEMMAS
     //++ unification
     rule #buf(N, A) ++ BUF1 ==K #buf(N, B) ++ BUF2 => #buf(N, A) ==K #buf(N, B) andBool BUF1 ==K BUF2     [simplification]
 
+    rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
+      requires #rangeUInt(256, V)                                                                         [simplification]
+
 endmodule
 
 module LEMMAS-JAVA [symbolic, kast]
@@ -246,9 +249,6 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule #asWord(BUF) /Int D => #asWord(BUF[0 .. #sizeByteArray(BUF) -Int log256Int(D)])
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
        andBool #sizeByteArray(BUF) >=Int log256Int(D) [simplification]
-
-    rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
-      requires #rangeUInt(256, V) [simplification]
 
     rule #asWord(#buf(N, BUF)) => BUF
       requires #range(0 < N <= 32)
