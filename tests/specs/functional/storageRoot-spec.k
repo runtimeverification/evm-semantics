@@ -11,6 +11,8 @@ module STORAGEROOT-SPEC
 
     rule <k> #storageRoot( .Map ) => .MerkleTree </k>
 
+    rule <k> #rlpEncodeString ( "" ) => "\x80" </k>
+
     rule <k> #rlpEncodeString ( "\x82\x04\xd2" ) => "\x83\x82\x04\xd2" </k>
 
     // uint pos0;
