@@ -1,6 +1,6 @@
 requires "domains.k"
-requires "evm.k"
-requires "edsl.k"
+requires "evm.md"
+requires "edsl.md"
 
 module LEMMAS
     imports LEMMAS-JAVA

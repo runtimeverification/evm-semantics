@@ -1,4 +1,4 @@
-requires "edsl.k"
+requires "edsl.md"
 
 module EDSL-STATIC-ARRAY
     imports EDSL

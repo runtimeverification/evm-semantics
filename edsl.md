@@ -7,7 +7,7 @@ The high-level notations are defined by translation to the corresponding EVM ter
 The notations are inspired by the production compilers of the smart contract languages like Solidity and Vyper, and their definition is derived by formalizing the corresponding translation made by the compilers.
 
 ```k
-requires "evm.k"
+requires "evm.md"
 
 module EDSL         [symbolic]
     imports EVM

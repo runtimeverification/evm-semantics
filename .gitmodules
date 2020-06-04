@@ -7,10 +7,6 @@
 	path = deps/k
 	url = https://github.com/kframework/k
 	ignore = untracked
-[submodule "deps/pandoc-tangle"]
-	path = deps/pandoc-tangle
-	url = https://github.com/ehildenb/pandoc-tangle
-	ignore = untracked
 [submodule "deps/plugin"]
 	path = deps/plugin
 	url = https://github.com/runtimeverification/blockchain-k-plugin
@@ -18,3 +14,4 @@
 [submodule "deps/metropolis"]
 	path = deps/metropolis
 	url = https://github.com/matze/mtheme
+	ignore = untracked
