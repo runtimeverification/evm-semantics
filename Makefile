@@ -336,9 +336,10 @@ tests/%.parse: tests/%
 tests/specs/functional/%.prove: TEST_SYMBOLIC_BACKEND=haskell
 tests/specs/examples/%.prove:   TEST_SYMBOLIC_BACKEND=haskell
 
-tests/specs/functional/storageRoot-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
-tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTIONS+=--haskell-backend-command "kore-exec --smt=none"
-tests/specs/erc20/hkg/totalSupply-spec.k.prove: TEST_SYMBOLIC_BACKEND=haskell
+tests/specs/functional/storageRoot-spec.k.prove: TEST_SYMBOLIC_BACKEND = java
+tests/specs/erc20/hkg/totalSupply-spec.k.prove:  TEST_SYMBOLIC_BACKEND = haskell
+
+tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTIONS += --haskell-backend-command "kore-exec --smt=none"
 
 tests/%.prove: tests/%
 	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTIONS) \
