@@ -302,8 +302,8 @@ Encoding
     rule #rlpEncodeWordStack(W : WS)     => #rlpEncodeWord(W) +String #rlpEncodeWordStack(WS)
 
     rule #rlpEncodeString(STR) => "\x80"                     requires lengthString(STR)  <Int 1
-    rule #rlpEncodeString(STR) => STR                        requires lengthString(STR) ==Int 1 andBool         ordChar(substrString(STR, 0, 1)) <Int 128
-    rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) requires lengthString(STR)  >Int 1  orBool notBool ordChar(substrString(STR, 0, 1)) <Int 128
+    rule #rlpEncodeString(STR) => STR                        requires lengthString(STR) ==Int 1 andBool ordChar(substrString(STR, 0, 1)) <Int 128
+    rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) [owise]
 
     rule #rlpEncodeAccount(.Account) => "\x80"
     rule #rlpEncodeAccount(ACCT)     => #rlpEncodeBytes(ACCT, 20) requires ACCT =/=K .Account
