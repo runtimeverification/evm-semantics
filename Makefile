@@ -342,16 +342,12 @@ tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-back
 
 tests/%.prove: tests/%
 	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',') > $@.out ||                               \
-	    $(CHECK) $@.out $@.expected
-	rm -rf $@.out
+	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 tests/specs/imp-specs/%.prove: tests/specs/imp-specs/%
-	$(TEST) prove $(TEST_OPTIONS) --backend-dir $(specs_dir) \
+	$(TEST) prove $(TEST_OPTIONS) --backend-dir $(specs_dir)                                    \
 		--backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',') > $@.out ||     \
-	    $(CHECK) $@.out $@.expected
-	rm -rf $@.out
+	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 tests/%.search: tests/%
 	$(TEST) search $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" > $@-out
