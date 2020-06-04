@@ -5,9 +5,9 @@ Ethereum is using the EVM to drive updates over the world state.
 Actual execution of the EVM is defined in [the EVM file](../evm).
 
 ```k
-requires "evm.k"
-requires "asm.k"
-requires "state-loader.k"
+requires "evm.md"
+requires "asm.md"
+requires "state-loader.md"
 
 module ETHEREUM-SIMULATION
     imports EVM

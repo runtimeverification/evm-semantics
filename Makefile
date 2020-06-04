@@ -1,6 +1,8 @@
 # Settings
 # --------
 
+UNAME_S := $(shell uname -s)
+
 DEPS_DIR      := deps
 BUILD_DIR     := .build
 SUBDEFN_DIR   := .
@@ -32,16 +34,8 @@ export PATH
 PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
 export PLUGIN_SUBMODULE
 
-# need relative path for `pandoc` on MacOS
-PANDOC_TANGLE_SUBMODULE := $(DEPS_DIR)/pandoc-tangle
-TANGLER                 := $(PANDOC_TANGLE_SUBMODULE)/tangle.lua
-LUA_PATH                := $(PANDOC_TANGLE_SUBMODULE)/?.lua;;
-export TANGLER
-export LUA_PATH
-
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
-        defn defn-java defn-specs defn-haskell defn-web3 defn-llvm                                                               \
         build build-java build-specs build-haskell build-web3 build-llvm                                                         \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
@@ -79,8 +73,6 @@ $(libsecp256k1_out): $(PLUGIN_SUBMODULE)/deps/secp256k1/autogen.sh
 	    && $(MAKE)                                                        \
 	    && $(MAKE) install
 
-UNAME_S := $(shell uname -s)
-
 ifeq ($(UNAME_S),Linux)
     LIBFF_CMAKE_FLAGS=
 else
@@ -100,18 +92,14 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 K_JAR := $(K_SUBMODULE)/k-distribution/target/release/k/lib/java/kernel-1.0-SNAPSHOT.jar
 
 deps: repo-deps
-repo-deps: tangle-deps k-deps plugin-deps
+repo-deps: k-deps plugin-deps
 k-deps: $(K_JAR)
-tangle-deps: $(TANGLER)
 plugin-deps: $(PLUGIN_SUBMODULE)/client-c/main.cpp
 
 ifneq ($(RELEASE),)
-    K_BUILD_TYPE         := FastBuild
-    SEMANTICS_BUILD_TYPE := Release
-    KOMPILE_OPTS         += -O3
+    K_BUILD_TYPE := FastBuild
 else
-    K_BUILD_TYPE         := FastBuild
-    SEMANTICS_BUILD_TYPE := Debug
+    K_BUILD_TYPE := Debug
 endif
 
 $(K_JAR):
@@ -119,6 +107,8 @@ $(K_JAR):
 
 # Building
 # --------
+
+build: build-java build-specs build-haskell build-web3 build-llvm
 
 SOURCE_FILES       := asm           \
                       data          \
@@ -134,15 +124,47 @@ SOURCE_FILES       := asm           \
                       state-loader  \
                       web3
 EXTRA_SOURCE_FILES :=
-ALL_FILES          := $(patsubst %, %.k, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
+ALL_FILES          := $(patsubst %, %.md, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
 
-concrete_tangle := .k:not(.symbolic):not(.nobytes):not(.memmap),.concrete,.bytes,.membytes
-java_tangle     := .k:not(.concrete):not(.bytes):not(.memmap):not(.membytes),.symbolic,.nobytes
-haskell_tangle  := .k:not(.concrete):not(.nobytes):not(.memmap),.symbolic,.bytes,.membytes
+tangle_concrete := k & ( ( ! ( symbolic | nobytes ) ) | concrete | bytes   )
+tangle_java     := k & ( ( ! ( concrete | bytes   ) ) | symbolic | nobytes )
+tangle_haskell  := k & ( ( ! ( concrete | nobytes ) ) | symbolic | bytes   )
 
-defn:  defn-java defn-specs defn-haskell defn-web3 defn-llvm
-build: build-java build-specs build-haskell build-web3 build-llvm
+HOOK_NAMESPACES = KRYPTO JSON
 
+KOMPILE_OPTS += --hook-namespaces "$(HOOK_NAMESPACES)"
+
+ifneq (,$(RELEASE))
+    KOMPILE_OPTS += -O3
+endif
+
+JAVA_KOMPILE_OPTS :=
+
+KOMPILE_JAVA := kompile --debug --backend java --md-selector "$(tangle_java)" \
+                $(KOMPILE_OPTS) $(JAVA_KOMPILE_OPTS)
+
+HASKELL_KOMPILE_OPTS :=
+
+KOMPILE_HASKELL := kompile --debug --backend haskell --md-selector "$(tangle_haskell)" \
+                   $(KOMPILE_OPTS) $(HASKELL_KOMPILE_OPTS)
+
+STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_RELEASE)/include/kllvm \
+                           $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp     \
+                           $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp     \
+                           -g -std=c++14 -lff -lcryptopp -lsecp256k1
+
+ifeq ($(UNAME_S),Linux)
+    STANDALONE_KOMPILE_OPTS += -lprocps
+endif
+
+KOMPILE_STANDALONE := kompile --debug --backend llvm --md-selector "$(tangle_concrete)" \
+                      $(KOMPILE_OPTS)                \
+                      $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
+
+WEB3_KOMPILE_OPTS += --no-llvm-kompile
+
+KOMPILE_WEB3 := kompile --debug --backend llvm --md-selector "$(tangle_concrete)" \
+                $(KOMPILE_OPTS) $(WEB3_KOMPILE_OPTS)
 # Java
 
 java_dir           := $(DEFN_DIR)/java
@@ -152,19 +174,13 @@ java_syntax_module := $(java_main_module)
 java_main_file     := driver
 java_kompiled      := $(java_dir)/$(java_main_file)-kompiled/timestamp
 
-defn-java:  $(java_files)
 build-java: $(java_kompiled)
 
-$(java_dir)/%.k: %.md $(TANGLER)
-	@mkdir -p $(java_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(java_tangle)" $< > $@
-
-$(java_kompiled): $(java_files)
-	kompile --debug --backend java                                                  \
-	        --directory $(java_dir) -I $(java_dir)                                  \
-	        --main-module $(java_main_module) --syntax-module $(java_syntax_module) \
-	        $(java_dir)/$(java_main_file).k                                         \
-	        $(KOMPILE_OPTS)
+$(java_kompiled): $(ALL_FILES)
+	$(KOMPILE_JAVA) $(java_main_file).md                  \
+	                --directory $(java_dir) -I $(CURDIR)  \
+	                --main-module $(java_main_module)     \
+	                --syntax-module $(java_syntax_module)
 
 # Imperative Specs
 
@@ -175,19 +191,13 @@ specs_syntax_module := $(specs_main_module)
 specs_main_file     := evm-imp-specs
 specs_kompiled      := $(specs_dir)/$(specs_main_file)-kompiled/timestamp
 
-defn-specs:  $(specs_files)
 build-specs: $(specs_kompiled)
 
-$(specs_dir)/%.k: %.md $(TANGLER)
-	@mkdir -p $(specs_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(java_tangle)" $< > $@
-
-$(specs_kompiled): $(specs_files)
-	kompile --debug --backend java                                                    \
-	        --directory $(specs_dir) -I $(specs_dir)                                  \
-	        --main-module $(specs_main_module) --syntax-module $(specs_syntax_module) \
-	        $(specs_dir)/$(specs_main_file).k                                         \
-	        $(KOMPILE_OPTS)
+$(specs_kompiled): $(ALL_FILES)
+	$(KOMPILE_JAVA) $(specs_main_file).md                  \
+	                --directory $(specs_dir) -I $(CURDIR)  \
+	                --main-module $(specs_main_module)     \
+	                --syntax-module $(specs_syntax_module)
 
 # Haskell
 
@@ -198,20 +208,13 @@ haskell_syntax_module  := $(haskell_main_module)
 haskell_main_file      := driver
 haskell_kompiled       := $(haskell_dir)/$(haskell_main_file)-kompiled/definition.kore
 
-defn-haskell:  $(haskell_files)
 build-haskell: $(haskell_kompiled)
 
-$(haskell_dir)/%.k: %.md $(TANGLER)
-	@mkdir -p $(haskell_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(haskell_tangle)" $< > $@
-
-$(haskell_kompiled): $(haskell_files)
-	kompile --debug --backend haskell                                                     \
-	        --directory $(haskell_dir) -I $(haskell_dir)                                  \
-	        --main-module $(haskell_main_module) --syntax-module $(haskell_syntax_module) \
-	        $(haskell_dir)/$(haskell_main_file).k                                         \
-	        --hook-namespaces KRYPTO                                                      \
-	        $(KOMPILE_OPTS)
+$(haskell_kompiled): $(ALL_FILES)
+	$(KOMPILE_HASKELL) $(haskell_main_file).md                  \
+	                   --directory $(haskell_dir) -I $(CURDIR)  \
+	                   --main-module $(haskell_main_module)     \
+	                   --syntax-module $(haskell_syntax_module)
 
 # Web3
 
@@ -225,25 +228,23 @@ web3_kore          := $(web3_dir)/$(web3_main_file)-kompiled/definition.kore
 export web3_main_file
 export web3_dir
 
-defn-web3:  $(web3_files)
+ifeq (,$(RELEASE))
+    web3_build_type := Debug
+else
+    web3_build_type := Release
+endif
+
 build-web3: $(web3_kompiled)
 
-$(web3_dir)/%.k: %.md $(TANGLER)
-	@mkdir -p $(web3_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
-
-$(web3_kore): $(web3_files)
-	kompile --debug --backend llvm                                                  \
-	        --directory $(web3_dir) -I $(web3_dir)                                  \
-	        --main-module $(web3_main_module) --syntax-module $(web3_syntax_module) \
-	        $(web3_dir)/$(web3_main_file).k                                         \
-	        --hook-namespaces "KRYPTO JSON"                                         \
-	        --no-llvm-kompile                                                       \
-	        $(KOMPILE_OPTS)
+$(web3_kore): $(ALL_FILES)
+	$(KOMPILE_WEB3) $(web3_main_file).md                  \
+	                --directory $(web3_dir) -I $(CURDIR)  \
+	                --main-module $(web3_main_module)     \
+	                --syntax-module $(web3_syntax_module)
 
 $(web3_kompiled): $(web3_kore) $(libff_out)
 	@mkdir -p $(web3_dir)/build
-	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=$(SEMANTICS_BUILD_TYPE) && $(MAKE)
+	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=$(web3_build_type) && $(MAKE)
 
 # Standalone
 
@@ -254,30 +255,13 @@ llvm_syntax_module := $(llvm_main_module)
 llvm_main_file     := driver
 llvm_kompiled      := $(llvm_dir)/$(llvm_main_file)-kompiled/interpreter
 
-STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_RELEASE)/include/kllvm \
-                           $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp     \
-                           $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp     \
-                           -g -std=c++14 -lff -lcryptopp -lsecp256k1
-
-defn-llvm:  $(llvm_files)
 build-llvm: $(llvm_kompiled)
 
-$(llvm_dir)/%.k: %.md $(TANGLER)
-	@mkdir -p $(llvm_dir)
-	pandoc --from markdown --to "$(TANGLER)" --metadata=code:"$(concrete_tangle)" $< > $@
-
-ifeq ($(UNAME_S),Linux)
-    STANDALONE_KOMPILE_OPTS += -lprocps
-endif
-
-$(llvm_kompiled): $(llvm_files) $(libff_out)
-	kompile --debug --backend llvm                                                  \
-	        --directory $(llvm_dir) -I $(llvm_dir)                                  \
-	        --main-module $(llvm_main_module) --syntax-module $(llvm_syntax_module) \
-	        $(llvm_dir)/$(llvm_main_file).k                                         \
-	        --hook-namespaces KRYPTO                                                \
-	        $(KOMPILE_OPTS)                                                         \
-	        $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
+$(llvm_kompiled): $(ALL_FILES) $(libff_out)
+	$(KOMPILE_STANDALONE) $(llvm_main_file).md                  \
+	                      --directory $(llvm_dir) -I $(CURDIR)  \
+	                      --main-module $(llvm_main_module)     \
+	                      --syntax-module $(llvm_syntax_module)
 
 # Installing
 # ----------

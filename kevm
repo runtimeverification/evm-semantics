@@ -259,18 +259,23 @@ unparse=true
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 [[ ! "$run_command" =~ web3*   ]] || backend='llvm'
+kevm_port='8545'
+kevm_host='127.0.0.1'
 args=()
 while [[ $# -gt 0 ]]; do
     arg="$1"
     case $arg in
-        --backend)    args+=("$arg" "$2") ; backend="$2"      ; shift 2 ;;
-        --backend-dir)                      backend_dir="$2"  ; shift 2 ;;
-        --debug)      args+=("$arg")      ; debug=true        ; shift   ;;
-        --dump)       args+=("$arg")      ; dump=true         ; shift   ;;
-        --no-unparse) args+=("$arg")      ; unparse=false     ; shift   ;;
-        *)            break                                             ;;
+        --debug)              debug=true        ; shift   ;;
+        --dump)               dump=true         ; shift   ;;
+        --no-unparse)         unparse=false     ; shift   ;;
+        --backend)            backend="$2"      ; shift 2 ;;
+        --backend-dir)        backend_dir="$2"  ; shift 2 ;;
+        -p|--port)            kevm_port="$2"    ; shift 2 ;;
+        -h|--host|--hostname) kevm_host="$2"    ; shift 2 ;;
+        *)                    args+=("$1")      ; shift   ;;
     esac
 done
+set -- "${args[@]}"
 backend_dir="${backend_dir:-$defn_dir/$backend}"
 
 # get the run file
@@ -288,24 +293,8 @@ fi
 cMODE="\`${MODE:-NORMAL}\`(.KList)"
 cSCHEDULE="\`${SCHEDULE:-ISTANBUL}_EVM\`(.KList)"
 cCHAINID="${CHAINID:-1}"
-kevm_port="8545"
-kevm_host="127.0.0.1"
-
-ARGS=()
-while [[ $# -gt 0 ]] ; do
-    key="$1"
-
-    case $key in
-        -p|--port)            kevm_port="$2" ; shift ; shift ;;
-        -h|--host|--hostname) kevm_host="$2" ; shift ; shift ;;
-        *)                    ARGS+=("$1")   ; shift         ;;
-    esac
-done
-set -- "${ARGS[@]}"
 
 case "$run_command-$backend" in
-
-    # Running
     run-@(java|llvm|haskell)       ) run_krun                        "$@" ;;
     kast-@(java|llvm|haskell|web3) ) run_kast                        "$@" ;;
     interpret-@(llvm|haskell|java) ) run_interpret                   "$@" ;;

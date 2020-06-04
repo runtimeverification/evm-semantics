@@ -1,5 +1,5 @@
 requires "imp-specs-abstract-semantics.k"
-requires "evm-imp-specs.k"
+requires "evm-imp-specs.md"
 requires "verification.k"
 
 module IMP-SPECS-TEST-SPEC
