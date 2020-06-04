@@ -301,8 +301,8 @@ Encoding
     rule #rlpEncodeWordStack(.WordStack) => ""
     rule #rlpEncodeWordStack(W : WS)     => #rlpEncodeWord(W) +String #rlpEncodeWordStack(WS)
 
-    rule #rlpEncodeString(STR) => STR                        requires           lengthString(STR) ==Int 1 andBool ordChar(STR) <Int 128
-    rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) requires notBool ( lengthString(STR) ==Int 1 andBool ordChar(STR) <Int 128 )
+    rule #rlpEncodeString(STR) => STR                        requires           lengthString(STR) ==Int 1 andBool ordChar(substrString(STR, 0, 1)) <Int 128
+    rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) requires notBool ( lengthString(STR) ==Int 1 andBool ordChar(substrString(STR, 0, 1)) <Int 128 )
 
     rule #rlpEncodeAccount(.Account) => "\x80"
     rule #rlpEncodeAccount(ACCT)     => #rlpEncodeBytes(ACCT, 20) requires ACCT =/=K .Account
