@@ -289,8 +289,8 @@ KEVM_CHAINID  := 1
 
 KEVM_WEB3_ARGS := --shutdownable --respond-to-notifications
 
-KPROVE_MODULE  := VERIFICATION
-KPROVE_OPTIONS :=
+KPROVE_MODULE := VERIFICATION
+KPROVE_OPTS   :=
 
 test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
@@ -339,18 +339,18 @@ tests/specs/examples/%.prove:   TEST_SYMBOLIC_BACKEND=haskell
 tests/specs/functional/storageRoot-spec.k.prove: TEST_SYMBOLIC_BACKEND = java
 tests/specs/erc20/hkg/totalSupply-spec.k.prove:  TEST_SYMBOLIC_BACKEND = haskell
 
-tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTIONS += --haskell-backend-command "kore-exec --smt=none"
+tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-backend-command "kore-exec --smt=none"
 
 tests/%.prove: tests/%
-	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTIONS) \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',') > $@.out ||                                  \
+	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
+	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',') > $@.out ||                               \
 	    $(CHECK) $@.out $@.expected
 	rm -rf $@.out
 
 tests/specs/imp-specs/%.prove: tests/specs/imp-specs/%
 	$(TEST) prove $(TEST_OPTIONS) --backend-dir $(specs_dir) \
-		--backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTIONS) \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',') > $@.out ||                                  \
+		--backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
+	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',') > $@.out ||     \
 	    $(CHECK) $@.out $@.expected
 	rm -rf $@.out
 
@@ -360,7 +360,7 @@ tests/%.search: tests/%
 	rm -rf $@-out
 
 tests/%.klab-prove: tests/%
-	$(TEST) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTIONS) \
+	$(TEST) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 # Smoke Tests
