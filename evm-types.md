@@ -584,9 +584,9 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
     rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0  [concrete]
 
-    syntax Int ::= #prefixLen( ByteArray, ByteArray )         [function]
-                 | #prefixLenAux( ByteArray, ByteArray, Int ) [function]
- // --------------------------------------------------------------------
+    syntax Int ::= #prefixLen    ( ByteArray, ByteArray )      [function]
+                 | #prefixLenAux ( ByteArray, ByteArray, Int ) [function]
+ // ---------------------------------------------------------------------
     rule #prefixLen( BS1, BS2 ) => #prefixLenAux( BS1, BS2, 0 )
 
     rule #prefixLenAux( _, _, N ) => N [owise]
@@ -645,9 +645,9 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule [#padToWidth]:      #padToWidth(N, WS)      => #replicateAux(N -Int #sizeByteArray(WS), 0, WS)
     rule [#padRightToWidth]: #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0)
 
-    syntax Int ::= #prefixLen( ByteArray, ByteArray )         [function]
-                 | #prefixLenAux( ByteArray, ByteArray, Int ) [function]
- // --------------------------------------------------------------------
+    syntax Int ::= #prefixLen    ( ByteArray, ByteArray )      [function]
+                 | #prefixLenAux ( ByteArray, ByteArray, Int ) [function]
+ // ---------------------------------------------------------------------
     rule #prefixLen( WS1, WS2 ) => #prefixLenAux( WS1, WS2, 0 )
 
     rule #prefixLenAux( .WordStack, _          , N ) => N

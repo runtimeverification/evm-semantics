@@ -458,17 +458,17 @@ Merkle Patricia Tree
 ```k
     syntax KItem ::= Int | MerkleTree // For testing purposes
 
-    syntax MerkleTree ::= MerkleBranch    ( Map, String )
+    syntax MerkleTree ::= ".MerkleTree"
+                        | MerkleBranch    ( Map, String )
                         | MerkleExtension ( ByteArray, MerkleTree )
                         | MerkleLeaf      ( ByteArray, String )
-                        | ".MerkleTree"
  // -----------------------------------------------------------
 
     syntax MerkleTree ::= MerkleUpdate ( MerkleTree,     String, String ) [function]
                         | MerkleUpdate ( MerkleTree,  ByteArray, String ) [function,klabel(MerkleUpdateAux)]
                         | MerklePut    ( MerkleTree,  ByteArray, String ) [function]
                         | MerkleDelete ( MerkleTree,  ByteArray )         [function]
- // --------------------------------------------------------------------------------------------------------
+ // --------------------------------------------------------------------------------
     rule MerkleUpdate ( TREE, S:String, VALUE ) => MerkleUpdate ( TREE, #nibbleize ( #parseByteStackRaw( S ) ), VALUE )
 
     rule MerkleUpdate ( TREE, PATH:ByteArray, VALUE ) => MerklePut ( TREE, PATH, VALUE ) requires VALUE =/=String ""
