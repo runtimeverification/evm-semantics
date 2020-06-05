@@ -11,13 +11,9 @@ build_dir="$kevm_dir/.build"
 defn_dir="${KEVM_DEFN_DIR:-$build_dir/defn}"
 lib_dir="$build_dir/local/lib"
 k_release_dir="${K_RELEASE:-$kevm_dir/deps/k/k-distribution/target/release/k}"
-if [[ ! -f "${k_release_dir}/bin/kompile" ]]; then
-    if which kompile &> /dev/null; then
-        k_release_dir="$(dirname $(which kompile))/.."
-    else
-        fatal "Cannot find K Installation!"
-    fi
-fi
+[[ -f "${k_release_dir}/bin/kompile" ]]               \
+    || ! which kompile &> /dev/null                   \
+    || k_release_dir="$(dirname $(which kompile))/.."
 
 export PATH="${defn_dir}/web3/build:$k_release_dir/lib/native/linux:$k_release_dir/lib/native/linux64:$k_release_dir/bin/:$PATH"
 export LD_LIBRARY_PATH="$k_release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
