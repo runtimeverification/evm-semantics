@@ -1851,6 +1851,7 @@ Mining
                    | "#updateTrieRoots"
                    | "#initStateTrie"
                    | "#updateStateTrie"
+                   | #updateStateTrie ( JSONs )
                    | "#updateStateRoot"
                    | "#updateTransactionsRoot"
                    | "#updateReceiptsRoot"
@@ -1877,16 +1878,18 @@ Mining
          <schedule> SCHED </schedule>
          <network> NETWORK </network>
 
-    rule <k> #updateStateTrie => . ... </k>
-         <touchedAccounts> .Set </touchedAccounts>
-         <selfDestruct> .Set </selfDestruct>
+    rule <k> #updateStateTrie => #updateStateTrie(OMMERS) ... </k>
+         <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
 
-    rule <k> #updateStateTrie ... </k>
-         <stateTrie> TREE => #putAccountsInTrie( TREE, ACCTS DESTRUCTSET, <accounts> ACCTSCELL </accounts> ) </stateTrie>
+    rule <k> #updateStateTrie( [ _ , _ , OMMER , _ , _ , _ , _ , _ , _ , _ ] , REST ) => #updateStateTrie( REST ) ... </k>
+         <touchedAccounts> (.Set => SetItem(OMMER)) _ </touchedAccounts>
+
+    rule <k> #updateStateTrie( .JSONs ) => . ... </k>
+         <stateTrie> TREE => #putAccountsInTrie( TREE, SetItem(MINER) ACCTS DESTRUCTSET, <accounts> ACCTSCELL </accounts> ) </stateTrie>
          <touchedAccounts> ACCTS => .Set </touchedAccounts>
          <selfDestruct> DESTRUCTSET => .Set </selfDestruct>
+         <coinbase> MINER </coinbase>
          <accounts> ACCTSCELL </accounts>
-      requires ACCTS =/=K .Set orBool DESTRUCTSET =/=K .Set
 
     rule <k> #updateStateRoot => . ... </k>
          <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( TREE ) ) ) </stateRoot>
