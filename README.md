@@ -114,6 +114,12 @@ git submodule update --init --recursive -- deps/k
 make deps
 ```
 
+If you don't need either the llvm or Haskell backend, there are flags to skip them:
+
+```sh
+make deps SKIP_LLVM=true SKIP_HASKELL=true
+```
+
 ### Building
 
 Finally, you can build the semantics (after getting the plugin submodule dependency):
