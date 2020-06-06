@@ -1,0 +1,8 @@
+alias kclaim x   = claim x  | kast -i kore -o pretty -d .build/defn/haskell /dev/stdin
+alias kaxiom x   = axiom x  | kast -i kore -o pretty -d .build/defn/haskell /dev/stdin
+alias konfig     = config   | kast -i kore -o pretty -d .build/defn/haskell /dev/stdin
+alias konfig-n x = config x | kast -i kore -o pretty -d .build/defn/haskell /dev/stdin
+alias ktry x     = try x    | kast -i kore -o pretty -d .build/defn/haskell /dev/stdin
+alias ktryf x    = tryf x   | kast -i kore -o pretty -d .build/defn/haskell /dev/stdin
+alias krule      = rule     | kast -i kore -o pretty -d .build/defn/haskell /dev/stdin
+alias krule-n x  = rule x   | kast -i kore -o pretty -d .build/defn/haskell /dev/stdin

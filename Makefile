@@ -96,6 +96,14 @@ repo-deps: k-deps plugin-deps
 k-deps: $(K_JAR)
 plugin-deps: $(PLUGIN_SUBMODULE)/client-c/main.cpp
 
+K_MVN_ARGS :=
+ifneq ($(SKIP_LLVM),)
+    K_MVN_ARGS += -Dllvm.backend.skip
+endif
+ifneq ($(SKIP_HASKELL),)
+    K_MVN_ARGS += -Dhaskell.backend.skip
+endif
+
 ifneq ($(RELEASE),)
     K_BUILD_TYPE := FastBuild
 else
@@ -103,7 +111,7 @@ else
 endif
 
 $(K_JAR):
-	cd $(K_SUBMODULE) && mvn package -DskipTests -U -Dproject.build.type=$(K_BUILD_TYPE)
+	cd $(K_SUBMODULE) && mvn package -DskipTests -U -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS)
 
 # Building
 # --------
@@ -289,8 +297,8 @@ KEVM_CHAINID  := 1
 
 KEVM_WEB3_ARGS := --shutdownable --respond-to-notifications
 
-KPROVE_MODULE  := VERIFICATION
-KPROVE_OPTIONS :=
+KPROVE_MODULE := VERIFICATION
+KPROVE_OPTS   :=
 
 test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
@@ -336,22 +344,18 @@ tests/%.parse: tests/%
 tests/specs/functional/%.prove: TEST_SYMBOLIC_BACKEND=haskell
 tests/specs/examples/%.prove:   TEST_SYMBOLIC_BACKEND=haskell
 
-tests/specs/functional/storageRoot-spec.k.prove: TEST_SYMBOLIC_BACKEND=java
-tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTIONS+=--haskell-backend-command "kore-exec --smt=none"
-tests/specs/erc20/hkg/totalSupply-spec.k.prove: TEST_SYMBOLIC_BACKEND=haskell
+tests/specs/erc20/hkg/totalSupply-spec.k.prove: TEST_SYMBOLIC_BACKEND = haskell
+
+tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-backend-command "kore-exec --smt=none"
 
 tests/%.prove: tests/%
-	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTIONS) \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',') > $@.out ||                                  \
-	    $(CHECK) $@.out $@.expected
-	rm -rf $@.out
+	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
+	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 tests/specs/imp-specs/%.prove: tests/specs/imp-specs/%
-	$(TEST) prove $(TEST_OPTIONS) --backend-dir $(specs_dir) \
-		--backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTIONS) \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',') > $@.out ||                                  \
-	    $(CHECK) $@.out $@.expected
-	rm -rf $@.out
+	$(TEST) prove $(TEST_OPTIONS) --backend-dir $(specs_dir)                                    \
+		--backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
+	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 tests/%.search: tests/%
 	$(TEST) search $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" > $@-out
@@ -359,7 +363,7 @@ tests/%.search: tests/%
 	rm -rf $@-out
 
 tests/%.klab-prove: tests/%
-	$(TEST) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTIONS) \
+	$(TEST) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 # Smoke Tests
