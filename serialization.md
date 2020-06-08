@@ -387,17 +387,21 @@ Encoding
                          )
 
     rule #rlpEncodeMerkleTree ( MerkleBranch ( M , VALUE ) )
-      => #rlpEncodeLength(         #rlpMerkleH( #rlpEncodeMerkleTree( {M[0]  orDefault .MerkleTree}:>MerkleTree ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree( {M[1]  orDefault .MerkleTree}:>MerkleTree ) )
-                           +String #rlpMerkleH( #rlpEncodeMerkleTree( {M[2]  orDefault .MerkleTree}:>MerkleTree ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree( {M[3]  orDefault .MerkleTree}:>MerkleTree ) )
-                           +String #rlpMerkleH( #rlpEncodeMerkleTree( {M[4]  orDefault .MerkleTree}:>MerkleTree ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree( {M[5]  orDefault .MerkleTree}:>MerkleTree ) )
-                           +String #rlpMerkleH( #rlpEncodeMerkleTree( {M[6]  orDefault .MerkleTree}:>MerkleTree ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree( {M[7]  orDefault .MerkleTree}:>MerkleTree ) )
-                           +String #rlpMerkleH( #rlpEncodeMerkleTree( {M[8]  orDefault .MerkleTree}:>MerkleTree ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree( {M[9]  orDefault .MerkleTree}:>MerkleTree ) )
-                           +String #rlpMerkleH( #rlpEncodeMerkleTree( {M[10] orDefault .MerkleTree}:>MerkleTree ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree( {M[11] orDefault .MerkleTree}:>MerkleTree ) )
-                           +String #rlpMerkleH( #rlpEncodeMerkleTree( {M[12] orDefault .MerkleTree}:>MerkleTree ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree( {M[13] orDefault .MerkleTree}:>MerkleTree ) )
-                           +String #rlpMerkleH( #rlpEncodeMerkleTree( {M[14] orDefault .MerkleTree}:>MerkleTree ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree( {M[15] orDefault .MerkleTree}:>MerkleTree ) )
+      => #rlpEncodeLength(         MerkleMapRLP(M, 0) +String MerkleMapRLP(M, 1)
+                           +String MerkleMapRLP(M, 2) +String MerkleMapRLP(M, 3)
+                           +String MerkleMapRLP(M, 4) +String MerkleMapRLP(M, 5)
+                           +String MerkleMapRLP(M, 6) +String MerkleMapRLP(M, 7)
+                           +String MerkleMapRLP(M, 8) +String MerkleMapRLP(M, 9)
+                           +String MerkleMapRLP(M,10) +String MerkleMapRLP(M,11)
+                           +String MerkleMapRLP(M,12) +String MerkleMapRLP(M,13)
+                           +String MerkleMapRLP(M,14) +String MerkleMapRLP(M,15)
                            +String #rlpEncodeString( VALUE )
                          , 192
                          )
+
+    syntax String ::= MerkleMapRLP( Map, Int ) [function]
+ // -----------------------------------------------------
+    rule MerkleMapRLP(M, I) => #rlpMerkleH( #rlpEncodeMerkleTree( { M[I] orDefault .MerkleTree }:>MerkleTree ) )
 
     syntax String ::= #rlpMerkleH ( String ) [function,klabel(MerkleRLPAux)]
  // ------------------------------------------------------------------------
