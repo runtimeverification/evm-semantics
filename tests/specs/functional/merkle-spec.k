@@ -91,5 +91,5 @@ module MERKLE-SPEC
           => doneMerkle( "40b4a841a5ed78d2beb33a3dbba6dd38f5b1566db97ae643e073ded3aa77dceb" ) </k>
 
     rule <k> runMerkle ( Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( MerkleUpdate( #initTree, "doge", "" ), "horse", "" ) ) ) )
-             => doneMerkle( "779db3986dd4f38416bfde49750ef7b13c6ecb3e2221620bcad9267e94604d36" ) </k>
+          => doneMerkle( "779db3986dd4f38416bfde49750ef7b13c6ecb3e2221620bcad9267e94604d36" ) </k>
 endmodule
