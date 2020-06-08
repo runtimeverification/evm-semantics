@@ -478,7 +478,7 @@ Merkle Patricia Tree
 
     rule MerklePut ( MerkleLeaf ( LEAFPATH, _ ), PATH, VALUE )
       => MerkleLeaf( LEAFPATH, VALUE )
-      requires #unparseByteStack( LEAFPATH ) ==String #unparseByteStack( PATH )
+      requires LEAFPATH ==K PATH
 
     rule MerklePut ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
       => MerklePut ( MerklePut ( MerkleBranch( .Map, "" ), LEAFPATH, LEAFVALUE ), PATH, VALUE )
@@ -495,7 +495,7 @@ Merkle Patricia Tree
 
     rule MerklePut ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => MerkleExtension ( EXTPATH, MerklePut ( EXTTREE, .ByteArray, VALUE ) )
-      requires #unparseByteStack( EXTPATH ) ==String #unparseByteStack( PATH )
+      requires EXTPATH ==K PATH
 
     rule MerklePut ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => #merkleExtensionBrancher( MerklePut( MerkleBranch( .Map, "" ), PATH, VALUE ), EXTPATH, EXTTREE )
@@ -518,8 +518,8 @@ Merkle Patricia Tree
 
     rule MerkleDelete( .MerkleTree, _ ) => .MerkleTree
 
-    rule MerkleDelete( MerkleLeaf( LPATH, V ), PATH ) => .MerkleTree                           requires #unparseByteStack(LPATH)  ==String #unparseByteStack(PATH)
-    rule MerkleDelete( MerkleLeaf( LPATH, V ), PATH ) => MerkleCheck( MerkleLeaf( LPATH, V ) ) requires #unparseByteStack(LPATH) =/=String #unparseByteStack(PATH)
+    rule MerkleDelete( MerkleLeaf( LPATH, V ), PATH ) => .MerkleTree                           requires LPATH ==K  PATH
+    rule MerkleDelete( MerkleLeaf( LPATH, V ), PATH ) => MerkleCheck( MerkleLeaf( LPATH, V ) ) requires LPATH =/=K PATH
 
     rule MerkleDelete( MerkleExtension( EXTPATH, TREE ), PATH ) => MerkleExtension( EXTPATH, TREE ) requires #prefixLen(EXTPATH, PATH) =/=Int #sizeByteArray(EXTPATH)
     rule MerkleDelete( MerkleExtension( EXTPATH, TREE ), PATH )
