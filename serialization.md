@@ -521,10 +521,10 @@ Merkle Patricia Tree
     rule MerkleDelete( MerkleLeaf( LPATH, V ), PATH ) => .MerkleTree                           requires LPATH ==K  PATH
     rule MerkleDelete( MerkleLeaf( LPATH, V ), PATH ) => MerkleCheck( MerkleLeaf( LPATH, V ) ) requires LPATH =/=K PATH
 
-    rule MerkleDelete( MerkleExtension( EXTPATH, TREE ), PATH ) => MerkleExtension( EXTPATH, TREE ) requires #prefixLen(EXTPATH, PATH) =/=Int #sizeByteArray(EXTPATH)
+    rule MerkleDelete( MerkleExtension( EXTPATH, TREE ), PATH ) => MerkleExtension( EXTPATH, TREE ) requires notBool (#sizeByteArray(EXTPATH) <=Int #sizeByteArray(PATH) andBool PATH[0 .. #sizeByteArray(EXTPATH)] ==K EXTPATH)
     rule MerkleDelete( MerkleExtension( EXTPATH, TREE ), PATH )
       => MerkleCheck( MerkleExtension( EXTPATH, MerkleDelete( TREE, PATH[#sizeByteArray(EXTPATH) .. #sizeByteArray(PATH) -Int #sizeByteArray(EXTPATH)] ) ) )
-      requires #prefixLen(EXTPATH, PATH) ==Int #sizeByteArray(EXTPATH)
+      requires #sizeByteArray(EXTPATH) <=Int #sizeByteArray(PATH) andBool PATH[0 .. #sizeByteArray(EXTPATH)] ==K EXTPATH
 
     rule MerkleDelete( MerkleBranch( M, V ), PATH ) => MerkleCheck( MerkleBranch( M, "" ) ) requires #sizeByteArray(PATH) ==Int 0
     rule MerkleDelete( MerkleBranch( M, V ), PATH ) => MerkleBranch( M, V )                 requires #sizeByteArray(PATH) >Int 0 andBool notBool PATH[0] in_keys(M)
