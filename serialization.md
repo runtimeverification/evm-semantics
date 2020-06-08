@@ -386,24 +386,22 @@ Encoding
                          , 192
                          )
 
-    rule #rlpEncodeMerkleTree ( MerkleBranch (  0 |->  P0:MerkleTree  1 |->  P1:MerkleTree  2 |->  P2:MerkleTree  3 |->  P3:MerkleTree
-                                                4 |->  P4:MerkleTree  5 |->  P5:MerkleTree  6 |->  P6:MerkleTree  7 |->  P7:MerkleTree
-                                                8 |->  P8:MerkleTree  9 |->  P9:MerkleTree 10 |-> P10:MerkleTree 11 |-> P11:MerkleTree
-                                               12 |-> P12:MerkleTree 13 |-> P13:MerkleTree 14 |-> P14:MerkleTree 15 |-> P15:MerkleTree
-                                             , VALUE
-                                             )
-                              )
-      => #rlpEncodeLength(         #rlpMerkleH( #rlpEncodeMerkleTree(  P0 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P1 ) )
-                           +String #rlpMerkleH( #rlpEncodeMerkleTree(  P2 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P3 ) )
-                           +String #rlpMerkleH( #rlpEncodeMerkleTree(  P4 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P5 ) )
-                           +String #rlpMerkleH( #rlpEncodeMerkleTree(  P6 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P7 ) )
-                           +String #rlpMerkleH( #rlpEncodeMerkleTree(  P8 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree(  P9 ) )
-                           +String #rlpMerkleH( #rlpEncodeMerkleTree( P10 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree( P11 ) )
-                           +String #rlpMerkleH( #rlpEncodeMerkleTree( P12 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree( P13 ) )
-                           +String #rlpMerkleH( #rlpEncodeMerkleTree( P14 ) ) +String #rlpMerkleH( #rlpEncodeMerkleTree( P15 ) )
+    rule #rlpEncodeMerkleTree ( MerkleBranch ( M , VALUE ) )
+      => #rlpEncodeLength(         MerkleMapRLP(M, 0) +String MerkleMapRLP(M, 1)
+                           +String MerkleMapRLP(M, 2) +String MerkleMapRLP(M, 3)
+                           +String MerkleMapRLP(M, 4) +String MerkleMapRLP(M, 5)
+                           +String MerkleMapRLP(M, 6) +String MerkleMapRLP(M, 7)
+                           +String MerkleMapRLP(M, 8) +String MerkleMapRLP(M, 9)
+                           +String MerkleMapRLP(M,10) +String MerkleMapRLP(M,11)
+                           +String MerkleMapRLP(M,12) +String MerkleMapRLP(M,13)
+                           +String MerkleMapRLP(M,14) +String MerkleMapRLP(M,15)
                            +String #rlpEncodeString( VALUE )
                          , 192
                          )
+
+    syntax String ::= MerkleMapRLP( Map, Int ) [function]
+ // -----------------------------------------------------
+    rule MerkleMapRLP(M, I) => #rlpMerkleH( #rlpEncodeMerkleTree( { M[I] orDefault .MerkleTree }:>MerkleTree ) )
 
     syntax String ::= #rlpMerkleH ( String ) [function,klabel(MerkleRLPAux)]
  // ------------------------------------------------------------------------
@@ -464,66 +462,93 @@ Merkle Patricia Tree
 ```k
     syntax KItem ::= Int | MerkleTree // For testing purposes
 
-    syntax MerkleTree ::= MerkleBranch    ( Map, String )
+    syntax MerkleTree ::= ".MerkleTree"
+                        | MerkleBranch    ( Map, String )
                         | MerkleExtension ( ByteArray, MerkleTree )
                         | MerkleLeaf      ( ByteArray, String )
-                        | ".MerkleTree"
-                        | ".MerkleBranch"            [function]
  // -----------------------------------------------------------
-    rule .MerkleBranch
-      => MerkleBranch (  0 |-> .MerkleTree  1 |-> .MerkleTree  2 |-> .MerkleTree  3 |-> .MerkleTree
-                         4 |-> .MerkleTree  5 |-> .MerkleTree  6 |-> .MerkleTree  7 |-> .MerkleTree
-                         8 |-> .MerkleTree  9 |-> .MerkleTree 10 |-> .MerkleTree 11 |-> .MerkleTree
-                        12 |-> .MerkleTree 13 |-> .MerkleTree 14 |-> .MerkleTree 15 |-> .MerkleTree
-                      , ""
-                      )
 
     syntax MerkleTree ::= MerkleUpdate ( MerkleTree,     String, String ) [function]
                         | MerkleUpdate ( MerkleTree,  ByteArray, String ) [function,klabel(MerkleUpdateAux)]
- // --------------------------------------------------------------------------------------------------------
+                        | MerklePut    ( MerkleTree,  ByteArray, String ) [function]
+                        | MerkleDelete ( MerkleTree,  ByteArray )         [function]
+ // --------------------------------------------------------------------------------
     rule MerkleUpdate ( TREE, S:String, VALUE ) => MerkleUpdate ( TREE, #nibbleize ( #parseByteStackRaw( S ) ), VALUE )
 
-    rule MerkleUpdate ( .MerkleTree, PATH:ByteArray, VALUE ) => MerkleLeaf ( PATH, VALUE )
+    rule MerkleUpdate ( TREE, PATH:ByteArray, VALUE ) => MerklePut ( TREE, PATH, VALUE ) requires VALUE =/=String ""
+    rule MerkleUpdate ( TREE, PATH:ByteArray, ""    ) => MerkleDelete ( TREE, PATH )
 
-    rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, _ ), PATH, VALUE )
+    rule MerklePut ( .MerkleTree, PATH:ByteArray, VALUE ) => MerkleLeaf ( PATH, VALUE )
+
+    rule MerklePut ( MerkleLeaf ( LEAFPATH, _ ), PATH, VALUE )
       => MerkleLeaf( LEAFPATH, VALUE )
-      requires #unparseByteStack( LEAFPATH ) ==String #unparseByteStack( PATH )
+      requires LEAFPATH ==K PATH
 
-    rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
-      => MerkleUpdate ( MerkleUpdate ( .MerkleBranch, LEAFPATH, LEAFVALUE ), PATH, VALUE )
+    rule MerklePut ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
+      => MerklePut ( MerklePut ( MerkleBranch( .Map, "" ), LEAFPATH, LEAFVALUE ), PATH, VALUE )
       requires #sizeByteArray( LEAFPATH ) >Int 0
        andBool #sizeByteArray( PATH ) >Int 0
        andBool LEAFPATH[0] =/=Int PATH[0]
 
-    rule MerkleUpdate ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
+    rule MerklePut ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
       => #merkleExtensionBuilder( .ByteArray, LEAFPATH, LEAFVALUE, PATH, VALUE )
       requires #unparseByteStack( LEAFPATH ) =/=String #unparseByteStack( PATH )
        andBool #sizeByteArray( LEAFPATH ) >Int 0
        andBool #sizeByteArray( PATH )     >Int 0
        andBool LEAFPATH[0] ==Int PATH[0]
 
-    rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
-      => MerkleExtension ( EXTPATH, MerkleUpdate ( EXTTREE, .ByteArray, VALUE ) )
-      requires #unparseByteStack( EXTPATH ) ==String #unparseByteStack( PATH )
+    rule MerklePut ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
+      => MerkleExtension ( EXTPATH, MerklePut ( EXTTREE, .ByteArray, VALUE ) )
+      requires EXTPATH ==K PATH
 
-    rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
-      => #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, PATH, VALUE ), EXTPATH, EXTTREE )
+    rule MerklePut ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
+      => #merkleExtensionBrancher( MerklePut( MerkleBranch( .Map, "" ), PATH, VALUE ), EXTPATH, EXTTREE )
       requires #sizeByteArray( PATH ) >Int 0
        andBool EXTPATH[0] =/=Int PATH[0]
 
-    rule MerkleUpdate ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
+    rule MerklePut ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => #merkleExtensionSplitter( .ByteArray, EXTPATH, EXTTREE, PATH, VALUE )
       requires #unparseByteStack( EXTPATH ) =/=String #unparseByteStack( PATH )
        andBool #sizeByteArray( PATH ) >Int 0
        andBool EXTPATH[0] ==Int PATH[0]
 
-    rule MerkleUpdate ( MerkleBranch( M, _ ), PATH, VALUE )
+    rule MerklePut ( MerkleBranch( M, _ ), PATH, VALUE )
       => MerkleBranch( M, VALUE )
       requires #sizeByteArray( PATH ) ==Int 0
 
-    rule MerkleUpdate ( MerkleBranch( M, BRANCHVALUE ), PATH, VALUE )
+    rule MerklePut ( MerkleBranch( M, BRANCHVALUE ), PATH, VALUE )
       => #merkleUpdateBranch ( M, BRANCHVALUE, PATH[0], PATH[1 .. #sizeByteArray(PATH) -Int 1], VALUE )
       requires #sizeByteArray( PATH ) >Int 0
+
+    rule MerkleDelete( .MerkleTree, _ ) => .MerkleTree
+
+    rule MerkleDelete( MerkleLeaf( LPATH, V ), PATH ) => .MerkleTree                           requires LPATH ==K  PATH
+    rule MerkleDelete( MerkleLeaf( LPATH, V ), PATH ) => MerkleCheck( MerkleLeaf( LPATH, V ) ) requires LPATH =/=K PATH
+
+    rule MerkleDelete( MerkleExtension( EXTPATH, TREE ), PATH ) => MerkleExtension( EXTPATH, TREE ) requires notBool (#sizeByteArray(EXTPATH) <=Int #sizeByteArray(PATH) andBool PATH[0 .. #sizeByteArray(EXTPATH)] ==K EXTPATH)
+    rule MerkleDelete( MerkleExtension( EXTPATH, TREE ), PATH )
+      => MerkleCheck( MerkleExtension( EXTPATH, MerkleDelete( TREE, PATH[#sizeByteArray(EXTPATH) .. #sizeByteArray(PATH) -Int #sizeByteArray(EXTPATH)] ) ) )
+      requires #sizeByteArray(EXTPATH) <=Int #sizeByteArray(PATH) andBool PATH[0 .. #sizeByteArray(EXTPATH)] ==K EXTPATH
+
+    rule MerkleDelete( MerkleBranch( M, V ), PATH ) => MerkleCheck( MerkleBranch( M, "" ) ) requires #sizeByteArray(PATH) ==Int 0
+    rule MerkleDelete( MerkleBranch( M, V ), PATH ) => MerkleBranch( M, V )                 requires #sizeByteArray(PATH) >Int 0 andBool notBool PATH[0] in_keys(M)
+    rule MerkleDelete( MerkleBranch( M, V ), PATH )
+      => MerkleCheck( MerkleBranch( M[PATH[0] <- MerkleDelete( {M[PATH[0]]}:>MerkleTree, PATH[1 .. #sizeByteArray(PATH) -Int 1] )], V ) )
+      requires #sizeByteArray(PATH) >Int 0 andBool PATH[0] in_keys(M)
+
+    syntax MerkleTree ::= MerkleCheck( MerkleTree ) [function]
+ // ----------------------------------------------------------
+    rule MerkleCheck( TREE ) => TREE [owise]
+
+    rule MerkleCheck( MerkleLeaf( _, "" ) => .MerkleTree )
+
+    rule MerkleCheck( MerkleBranch( .Map                   , V  ) => MerkleLeaf( .ByteArray, V )                   )
+    rule MerkleCheck( MerkleBranch( X |-> T                , "" ) => MerkleExtension( #asByteStack(X)[0 .. 1], T ) ) requires T =/=K .MerkleTree
+    rule MerkleCheck( MerkleBranch( M => #cleanBranchMap(M), _  )                                                  ) requires .MerkleTree in values(M)
+
+    rule MerkleCheck( MerkleExtension( _, .MerkleTree                                      ) => .MerkleTree               )
+    rule MerkleCheck( MerkleExtension( P1, MerkleLeaf( P2, V )                             ) => MerkleLeaf( P1 ++ P2, V ) )
+    rule MerkleCheck( MerkleExtension( P1 => P1 ++ P2, MerkleExtension( P2, TREE ) => TREE )                              )
 ```
 
 - `MerkleUpdateMap` Takes a mapping of `ByteArray |-> String` and generates a trie
@@ -574,15 +599,27 @@ Merkle Tree Aux Functions
     rule HPEncodeAux ( X ) => 0 requires         X ==Int 0
     rule HPEncodeAux ( X ) => 2 requires notBool X ==Int 0
 
+    syntax Map ::= #cleanBranchMap    ( Map )            [function]
+                 | #cleanBranchMapAux ( Map, List, Set ) [function]
+ // ---------------------------------------------------------------
+    rule #cleanBranchMap( M ) => #cleanBranchMapAux( M, keys_list(M), .Set )
+
+    rule #cleanBranchMapAux(                   M,                        .List,                      S ) => removeAll( M, S )
+    rule #cleanBranchMapAux( X |-> .MerkleTree _, (ListItem(X) => .List) _    , (.Set => SetItem(X)) _ )
+    rule #cleanBranchMapAux(                   _, (ListItem(X) => .List) _    ,                      _ ) [owise]
+
     syntax MerkleTree ::= #merkleUpdateBranch ( Map, String, Int, ByteArray, String ) [function]
  // --------------------------------------------------------------------------------------------
     rule #merkleUpdateBranch ( X |-> TREE M, BRANCHVALUE, X, PATH, VALUE )
-      => MerkleBranch( M[X <- MerkleUpdate( TREE, PATH, VALUE )], BRANCHVALUE )
+      => MerkleBranch( M[X <- MerklePut( TREE, PATH, VALUE )], BRANCHVALUE )
+
+    rule #merkleUpdateBranch ( M, BRANCHVALUE, X, PATH, VALUE )
+      => MerkleBranch( M[X <- MerkleLeaf( PATH, VALUE )], BRANCHVALUE ) [owise]
 
     syntax MerkleTree ::= #merkleExtensionBuilder( ByteArray, ByteArray, String, ByteArray, String ) [function]
  // -----------------------------------------------------------------------------------------------------------
     rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
-      => #merkleExtensionBuilder( PATH ++ ( #asByteStack( P1[0] )[0 .. 1] )
+      => #merkleExtensionBuilder( PATH ++ (P1[0 .. 1])
                                 , P1[1 .. #sizeByteArray(P1) -Int 1], V1
                                 , P2[1 .. #sizeByteArray(P2) -Int 1], V2
                                 )
@@ -591,12 +628,10 @@ Merkle Tree Aux Functions
        andBool P1[0] ==Int P2[0]
 
     rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
-      => MerkleExtension( PATH, MerkleUpdate( MerkleUpdate( .MerkleBranch, P1, V1 ), P2, V2 ) )
-      requires #sizeByteArray(P1) ==Int 0
-        orBool #sizeByteArray(P2) ==Int 0
-        orBool ( #sizeByteArray(P1) >Int 0
-       andBool   #sizeByteArray(P2) >Int 0
-       andBool   P1[0] =/=Int P2[0] )
+      => MerkleExtension( PATH, MerklePut( MerklePut( MerkleBranch( .Map, "" ), P1, V1 ), P2, V2 ) )
+      requires notBool ( #sizeByteArray(P1) >Int 0
+               andBool   #sizeByteArray(P2) >Int 0
+               andBool   P1[0] ==Int P2[0] )
 
     syntax MerkleTree ::= #merkleExtensionBrancher ( MerkleTree, ByteArray, MerkleTree ) [function]
  // -----------------------------------------------------------------------------------------------
@@ -610,27 +645,26 @@ Merkle Tree Aux Functions
 
     syntax MerkleTree ::= #merkleExtensionSplitter ( ByteArray, ByteArray, MerkleTree, ByteArray, String ) [function]
  // -----------------------------------------------------------------------------------------------------------------
-    rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
-      => #merkleExtensionSplitter( PATH ++ ( #asByteStack( P1[0] )[0 .. 1] )
-                                 , P1[1 .. #sizeByteArray(P1) -Int 1], TREE
-                                 , P2[1 .. #sizeByteArray(P2) -Int 1], VALUE
+    rule #merkleExtensionSplitter( PATH => PATH ++ (P1[0 .. 1])
+                                 , P1   => P1[1 .. #sizeByteArray(P1) -Int 1], _
+                                 , P2   => P2[1 .. #sizeByteArray(P2) -Int 1], _
                                  )
       requires #sizeByteArray(P1) >Int 0
        andBool #sizeByteArray(P2) >Int 0
        andBool P1[0] ==Int P2[0]
 
     rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
-      => MerkleExtension( PATH, #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, P2, VALUE ), P1, TREE ) )
+      => MerkleExtension( PATH, #merkleExtensionBrancher( MerklePut( MerkleBranch( .Map, "" ), P2, VALUE ), P1, TREE ) )
       requires #sizeByteArray(P1) >Int 0
        andBool #sizeByteArray(P2) >Int 0
        andBool P1[0] =/=Int P2[0]
 
     rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
-      => MerkleExtension( PATH, MerkleUpdate( TREE, P2, VALUE ) )
+      => MerkleExtension( PATH, MerklePut( TREE, P2, VALUE ) )
       requires #sizeByteArray(P1) ==Int 0
 
     rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
-      => MerkleExtension( PATH, #merkleExtensionBrancher( MerkleUpdate( .MerkleBranch, P2, VALUE ), P1, TREE ) )
+      => MerkleExtension( PATH, #merkleExtensionBrancher( MerklePut( MerkleBranch( .Map, "" ), P2, VALUE ), P1, TREE ) )
       requires #sizeByteArray(P2) ==Int 0
 ```
 
