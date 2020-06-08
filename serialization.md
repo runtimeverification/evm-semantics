@@ -595,14 +595,14 @@ Merkle Tree Aux Functions
     rule HPEncodeAux ( X ) => 0 requires         X ==Int 0
     rule HPEncodeAux ( X ) => 2 requires notBool X ==Int 0
 
-    syntax Map ::= #cleanBranchMap( Map )              [function]
-                 | #cleanBranchMapAux( Map, Set, Set ) [function]
- // -------------------------------------------------------------
-    rule #cleanBranchMap( M ) => #cleanBranchMapAux( M, keys(M), .Set )
+    syntax Map ::= #cleanBranchMap    ( Map )            [function]
+                 | #cleanBranchMapAux ( Map, List, Set ) [function]
+ // ---------------------------------------------------------------
+    rule #cleanBranchMap( M ) => #cleanBranchMapAux( M, keys_list(M), .Set )
 
-    rule #cleanBranchMapAux(                   M,                      .Set,                      S ) => removeAll( M, S )
-    rule #cleanBranchMapAux( X |-> .MerkleTree _, (SetItem(X) => .Set) _   , (.Set => SetItem(X)) _ )
-    rule #cleanBranchMapAux(                   _, (SetItem(X) => .Set) _   ,                      _ ) [owise]
+    rule #cleanBranchMapAux(                   M,                        .List,                      S ) => removeAll( M, S )
+    rule #cleanBranchMapAux( X |-> .MerkleTree _, (ListItem(X) => .List) _    , (.Set => SetItem(X)) _ )
+    rule #cleanBranchMapAux(                   _, (ListItem(X) => .List) _    ,                      _ ) [owise]
 
     syntax MerkleTree ::= #merkleUpdateBranch ( Map, String, Int, ByteArray, String ) [function]
  // --------------------------------------------------------------------------------------------
