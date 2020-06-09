@@ -1849,12 +1849,12 @@ Mining
                    | "#clearGas"
                    | "#setParentHash" BlockchainItem
                    | "#updateTrieRoots"
-                   | "#initStateTrie"
-                   | "#updateStateTrie"
-                   | #updateStateTrie ( JSONs )
                    | "#updateStateRoot"
                    | "#updateTransactionsRoot"
                    | "#updateReceiptsRoot"
+                   | "#initStateTrie"
+                   | "#updateStateTrie"
+                   | #updateStateTrie ( JSONs )
  // --------------------------------------
     rule <k> #saveState => #pushBlockchainState ~> #incrementBlockNumber ... </k>
 
@@ -1873,6 +1873,19 @@ Mining
 
     rule <k> #updateTrieRoots => #updateStateRoot ~> #updateTransactionsRoot ~> #updateReceiptsRoot ... </k>
 
+    rule <k> #updateStateRoot => . ... </k>
+         <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( TREE ) ) ) </stateRoot>
+         <stateTrie> TREE </stateTrie>
+
+    rule <k> #updateTransactionsRoot => . ... </k>
+         <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot(<network> NETWORK </network>) ) ) ) </transactionsRoot>
+         <network> NETWORK </network>
+
+    rule <k> #updateReceiptsRoot => . ... </k>
+         <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot( TXLIST, <txReceipts> TXRECEIPTS </txReceipts> ) ) ) ) </receiptsRoot>
+         <txOrder> TXLIST </txOrder>
+         <txReceipts> TXRECEIPTS </txReceipts>
+
     rule <k> #initStateTrie => . ... </k>
          <stateTrie> _ => #stateRoot( <network> NETWORK </network>, SCHED ) </stateTrie>
          <schedule> SCHED </schedule>
@@ -1890,19 +1903,6 @@ Mining
          <selfDestruct> DESTRUCTSET => .Set </selfDestruct>
          <coinbase> MINER </coinbase>
          <accounts> ACCTSCELL </accounts>
-
-    rule <k> #updateStateRoot => . ... </k>
-         <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( TREE ) ) ) </stateRoot>
-         <stateTrie> TREE </stateTrie>
-
-    rule <k> #updateTransactionsRoot => . ... </k>
-         <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot(<network> NETWORK </network>) ) ) ) </transactionsRoot>
-         <network> NETWORK </network>
-
-    rule <k> #updateReceiptsRoot => . ... </k>
-         <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot( TXLIST, <txReceipts> TXRECEIPTS </txReceipts> ) ) ) ) </receiptsRoot>
-         <txOrder> TXLIST </txOrder>
-         <txReceipts> TXRECEIPTS </txReceipts>
 
     syntax KItem ::= "#updateTimestamp"
  // -----------------------------------
