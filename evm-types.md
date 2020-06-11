@@ -509,10 +509,9 @@ Most of EVM data is held in local memory.
     syntax ByteArray ::= #range ( Memory , Int , Int )             [function, functional]
     syntax ByteArray ::= #range ( Memory , Int , Int , ByteArray ) [function, functional, klabel(#rangeAux)]
  // --------------------------------------------------------------------------------------------------------
-    rule [#range]:         #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack)
-    rule [#rangeAux.base]: #range(WM,           END, WIDTH, WS) => WS                                           requires notBool WIDTH >Int 0
-    rule [#rangeAux.none]: #range(WM,           END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, 0 : WS) requires (WIDTH >Int 0) andBool notBool END in_keys(WM)
-    rule [#rangeAux.some]: #range(END |-> W WM, END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, W : WS) requires (WIDTH >Int 0)
+    rule [#range]: #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack)
+    rule [#rangeAux.base]: #range(WM, END, WIDTH, WS) => WS requires notBool 0 <Int WIDTH
+    rule [#rangeAux.rec]:  #range(WM, END => END -Int 1, WIDTH => WIDTH -Int 1, WS => #lookup(WM, END) : WS) requires 0 <Int WIDTH
 
     syntax Memory ::= ".Memory" [function]
  // --------------------------------------
