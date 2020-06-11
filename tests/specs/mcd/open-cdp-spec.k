@@ -20,6 +20,9 @@ module VERIFICATION
 
   // step 730 - #unsigned(#sizeWordStack(CD, 0) +Int 64) <Int 64
   rule #unsigned(#sizeWordStack(WS, N) +Int M) => #sizeWordStack(WS, N) +Int M requires 0 <=Int M andBool #sizeWordStack(WS, N) +Int M <Int maxSInt256
+
+  // step 811 - #asWord(#padToWidth(32, #asByteStack(ABI_ilk)))
+  rule #asWord(#padToWidth(32, #asByteStack(VALUE))) => VALUE requires 0 <=Int VALUE andBool VALUE <Int pow256
 endmodule
 
 module OPEN-CDP-SPEC
