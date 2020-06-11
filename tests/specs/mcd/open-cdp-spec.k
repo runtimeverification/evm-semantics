@@ -17,6 +17,9 @@ module VERIFICATION
   // step 262 - #asWord(96 : 144 : 222 : 197 : takeWordStack(28, #padToWidth(32, #asByteStack(ABI_ilk)))) >>Int 224 <Int 2160673182
   rule #asWord(WS) >>Int M => #asWord(#take(#sizeWordStack(WS) -Int (M /Int 8), WS)) requires 0 <=Int M andBool M modInt 8 ==Int 0
   rule #sizeWordStack(#take(M, WS), N) => M +Int N requires 0 <=Int M
+
+  // step 730 - #unsigned(#sizeWordStack(CD, 0) +Int 64) <Int 64
+  rule #unsigned(#sizeWordStack(WS, N) +Int M) => #sizeWordStack(WS, N) +Int M requires 0 <=Int M andBool #sizeWordStack(WS, N) +Int M <Int maxSInt256
 endmodule
 
 module OPEN-CDP-SPEC
