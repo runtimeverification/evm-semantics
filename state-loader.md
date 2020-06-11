@@ -2,8 +2,8 @@ State Manager
 -------------
 
 ```k
-requires "evm.k"
-requires "asm.k"
+requires "evm.md"
+requires "asm.md"
 
 module STATE-LOADER
     imports EVM

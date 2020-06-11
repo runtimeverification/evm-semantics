@@ -24,7 +24,7 @@ pipeline {
         stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
         stage('Test Execution') {
           failFast true
-          options { timeout(time: 20, unit: 'MINUTES') }
+          options { timeout(time: 25, unit: 'MINUTES') }
           parallel {
             stage('Conformance (LLVM)') { steps { sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm' } }
             stage('VM (Haskell)')       { steps { sh 'make test-vm -j8 TEST_CONCRETE_BACKEND=haskell'       } }
@@ -37,8 +37,8 @@ pipeline {
             timeout(time: 55, unit: 'MINUTES')
           }
           parallel {
-            stage('Java + Haskell')    { steps { sh 'make test-prove -j6'                                                        } }
-            stage('Haskell (dry-run)') { steps { sh 'make test-prove -j2 KPROVE_OPTIONS=--dry-run TEST_SYMBOLIC_BACKEND=haskell' } }
+            stage('Java + Haskell')    { steps { sh 'make test-prove -j6'                                                     } }
+            stage('Haskell (dry-run)') { steps { sh 'make test-prove -j2 KPROVE_OPTS=--dry-run TEST_SYMBOLIC_BACKEND=haskell' } }
           }
         }
         stage('Test Interactive') {

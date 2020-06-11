@@ -1,5 +1,5 @@
 requires "abstract-semantics-segmented-gas.k"
-requires "edsl.k"
+requires "edsl.md"
 requires "evm-symbolic.k"
 requires "../lemmas.k"
 

@@ -8,8 +8,8 @@ Most of the opcodes are "local" to the execution state of the machine, but some 
 This file only defines the local execution operations, the file `driver.md` will define the interactions with the world state.
 
 ```k
-requires "data.k"
-requires "network.k"
+requires "data.md"
+requires "network.md"
 
 module EVM
     imports STRING
@@ -1898,7 +1898,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, SSTORE _ _ ) => #end EVMC_OUT_OF_GAS ... </k>
          <gas> GAVAIL </gas>
       requires Ghassstorestipend << SCHED >>
-       andBool GAVAIL <=Int Gcallstipend <ISTANBUL>
+       andBool GAVAIL <=Int Gcallstipend < SCHED >
 
     rule <k> #gasExec(SCHED, EXP W0 0)  => Gexp < SCHED > ... </k>
     rule <k> #gasExec(SCHED, EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=Int 0

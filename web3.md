@@ -2,9 +2,9 @@ Web3 RPC JSON Handler
 =====================
 
 ```k
-requires "evm.k"
-requires "state-loader.k"
-requires "json.k"
+requires "evm.md"
+requires "state-loader.md"
+requires "json.md"
 ```
 
 ```k

@@ -1,4 +1,4 @@
-requires "evm-imp-specs.k"
+requires "evm-imp-specs.md"
 
 module IMP-SPECS-ABSTRACT-SEMANTICS
   imports EVM-IMP-SPECS

@@ -1,5 +1,5 @@
 requires "abstract-semantics-direct-gas.k"
-requires "edsl.k"
+requires "edsl.md"
 requires "../lemmas.k"
 
 module VERIFICATION

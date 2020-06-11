@@ -11,13 +11,9 @@ build_dir="$kevm_dir/.build"
 defn_dir="${KEVM_DEFN_DIR:-$build_dir/defn}"
 lib_dir="$build_dir/local/lib"
 k_release_dir="${K_RELEASE:-$kevm_dir/deps/k/k-distribution/target/release/k}"
-if [[ ! -f "${k_release_dir}/bin/kompile" ]]; then
-    if which kompile &> /dev/null; then
-        k_release_dir="$(dirname $(which kompile))/.."
-    else
-        fatal "Cannot find K Installation!"
-    fi
-fi
+[[ -f "${k_release_dir}/bin/kompile" ]]               \
+    || ! which kompile &> /dev/null                   \
+    || k_release_dir="$(dirname $(which kompile))/.."
 
 export PATH="${defn_dir}/web3/build:$k_release_dir/lib/native/linux:$k_release_dir/lib/native/linux64:$k_release_dir/bin/:$PATH"
 export LD_LIBRARY_PATH="$k_release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
@@ -56,7 +52,7 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module smt_prelude_set run_dir smt_file smt_args
+    local def_module smt_prelude_set run_dir smt_file smt_args additional_proof_args
 
     def_module="$1" ; shift
 
@@ -73,8 +69,13 @@ run_prove() {
         set -x
     fi
 
+    additional_proof_args=()
+    if $repl; then
+        additional_proof_args+=(--haskell-backend-command "$k_release_dir/bin/kore-repl --repl-script $kevm_dir/kast.kscript")
+    fi
+
     export K_OPTS=-Xmx8G
-    kprove --directory "$backend_dir" "${smt_args[@]-}" "$run_file" --def-module "$def_module" "$@"
+    kprove --directory "$backend_dir" "${smt_args[@]-}" "$run_file" --def-module "$def_module" "${additional_proof_args[@]}" "$@"
 }
 
 run_search() {
@@ -256,22 +257,31 @@ backend="llvm"
 debug=false
 dump=false
 unparse=true
+repl=false
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 [[ ! "$run_command" =~ web3*   ]] || backend='llvm'
+kevm_port='8545'
+kevm_host='127.0.0.1'
 args=()
 while [[ $# -gt 0 ]]; do
     arg="$1"
     case $arg in
-        --backend)    args+=("$arg" "$2") ; backend="$2"      ; shift 2 ;;
-        --backend-dir)                      backend_dir="$2"  ; shift 2 ;;
-        --debug)      args+=("$arg")      ; debug=true        ; shift   ;;
-        --dump)       args+=("$arg")      ; dump=true         ; shift   ;;
-        --no-unparse) args+=("$arg")      ; unparse=false     ; shift   ;;
-        *)            break                                             ;;
+        --debug)              debug=true        ; shift   ;;
+        --dump)               dump=true         ; shift   ;;
+        --no-unparse)         unparse=false     ; shift   ;;
+        --repl)               repl=true         ; shift   ;;
+        --backend)            backend="$2"      ; shift 2 ;;
+        --backend-dir)        backend_dir="$2"  ; shift 2 ;;
+        -p|--port)            kevm_port="$2"    ; shift 2 ;;
+        -h|--host|--hostname) kevm_host="$2"    ; shift 2 ;;
+        *)                    args+=("$1")      ; shift   ;;
     esac
 done
+set -- "${args[@]}"
 backend_dir="${backend_dir:-$defn_dir/$backend}"
+
+! $repl || [[ "$backend" == haskell ]] || fatal "Option --repl only usable with --backend haskell!"
 
 # get the run file
 if [[ ! "$run_command" =~ web3* ]]; then
@@ -288,24 +298,8 @@ fi
 cMODE="\`${MODE:-NORMAL}\`(.KList)"
 cSCHEDULE="\`${SCHEDULE:-ISTANBUL}_EVM\`(.KList)"
 cCHAINID="${CHAINID:-1}"
-kevm_port="8545"
-kevm_host="127.0.0.1"
-
-ARGS=()
-while [[ $# -gt 0 ]] ; do
-    key="$1"
-
-    case $key in
-        -p|--port)            kevm_port="$2" ; shift ; shift ;;
-        -h|--host|--hostname) kevm_host="$2" ; shift ; shift ;;
-        *)                    ARGS+=("$1")   ; shift         ;;
-    esac
-done
-set -- "${ARGS[@]}"
 
 case "$run_command-$backend" in
-
-    # Running
     run-@(java|llvm|haskell)       ) run_krun                        "$@" ;;
     kast-@(java|llvm|haskell|web3) ) run_kast                        "$@" ;;
     interpret-@(llvm|haskell|java) ) run_interpret                   "$@" ;;

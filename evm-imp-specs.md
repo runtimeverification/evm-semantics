@@ -2,7 +2,7 @@ Scripting language for imperative specifications (SOLAR-style)
 ==============================================================
 
 ```k
-requires "evm.k"
+requires "evm.md"
 
 module EVM-IMP-SPECS
     imports ID

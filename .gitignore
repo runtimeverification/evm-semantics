@@ -1,9 +1,12 @@
 /.build/*
-/pkg
-/src
+.kompile*
+.kprove*
+.krun*
+/media/*.pdf
 /package/pkg
 /package/src
-/media/*.pdf
+/pkg
+/src
 /tests/specs/**/*.prove.out
-/tests/web3/*.out.json
 /tests/web3/*/*.out.json
+/tests/web3/*.out.json
