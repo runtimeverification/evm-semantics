@@ -114,13 +114,13 @@ run_klab() {
 
     def_module="$1" ; shift
 
-    "$0" "$run_mode" --backend java "$run_file" "$def_module" \
-        --state-log --state-log-path "$KLAB_OUT/data" --state-log-id "$klab_log" \
-        --state-log-events OPEN,EXECINIT,SEARCHINIT,REACHINIT,REACHTARGET,REACHPROVED,NODE,RULE,SRULE,RULEATTEMPT,IMPLICATION,Z3QUERY,Z3RESULT,CLOSE \
-        --output-flatten "_Map_ #And" \
-        --output-omit "<program> <code> <callGas> <touchedAccounts> <interimStates> <callStack> <callData>" \
-        --no-alpha-renaming --restore-original-names --no-sort-collections \
-        --output json \
+    "$0" "$run_mode" --backend java "$run_file" "$def_module"                                                                                                                                                                                                                                \
+        --state-log --state-log-path "$KLAB_OUT/data" --state-log-id "$klab_log"                                                                                                                                                                                                             \
+        --state-log-events OPEN,REACHINIT,REACHTARGET,REACHPROVED,RULE,SRULE,NODE,CLOSE                                                                                                                                                                                                      \
+        --output-flatten "_Map_ #And"                                                                                                                                                                                                                                                        \
+        --output-omit '<jumpDests> <program> <code> <previousGas> <touchedAccounts> <interimStates> <callStack> <callData> <block> <txOrder> <txPending> <messages> #mkCall________EVM #callWithCode_________EVM #create_____EVM #mkCreate_____EVM #newAddrCreate2 #finishCodeDeposit___EVM' \
+        --no-alpha-renaming --restore-original-names --no-sort-collections                                                                                                                                                                                                                   \
+        --output json                                                                                                                                                                                                                                                                        \
         "$@"
 }
 
