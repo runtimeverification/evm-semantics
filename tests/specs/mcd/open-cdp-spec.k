@@ -10,6 +10,9 @@ module VERIFICATION
   // step 132 - could not simplify #sizeWordStack(#padToWidth(32, _), _) or #sizeWordStack(_ ++ _, _)
   rule #sizeWordStack(WS1 ++ WS2, N) => #sizeWordStack(WS1) +Int #sizeWordStack(WS2) +Int N
   rule #sizeWordStack(#padToWidth(32, #asByteStack(I)), N) => N +Int 32 requires 0 <=Int I andBool I <Int pow256
+
+  // step 164 - sizeWordStack(_, _) + 68 <Int 4
+  rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
 endmodule
 
 module OPEN-CDP-SPEC
