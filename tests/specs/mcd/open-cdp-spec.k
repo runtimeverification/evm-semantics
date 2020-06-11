@@ -13,6 +13,10 @@ module VERIFICATION
 
   // step 164 - sizeWordStack(_, _) + 68 <Int 4
   rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
+
+  // step 262 - #asWord(96 : 144 : 222 : 197 : takeWordStack(28, #padToWidth(32, #asByteStack(ABI_ilk)))) >>Int 224 <Int 2160673182
+  rule #asWord(WS) >>Int M => #asWord(#take(#sizeWordStack(WS) -Int (M /Int 8), WS)) requires 0 <=Int M andBool M modInt 8 ==Int 0
+  rule #sizeWordStack(#take(M, WS), N) => M +Int N requires 0 <=Int M
 endmodule
 
 module OPEN-CDP-SPEC
