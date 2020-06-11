@@ -6,6 +6,10 @@ module VERIFICATION
   imports EVM
   imports RULES
   imports BIN_RUNTIME
+
+  // step 132 - could not simplify #sizeWordStack(#padToWidth(32, _), _) or #sizeWordStack(_ ++ _, _)
+  rule #sizeWordStack(WS1 ++ WS2, N) => #sizeWordStack(WS1) +Int #sizeWordStack(WS2) +Int N
+  rule #sizeWordStack(#padToWidth(32, #asByteStack(I)), N) => N +Int 32 requires 0 <=Int I andBool I <Int pow256
 endmodule
 
 module OPEN-CDP-SPEC
