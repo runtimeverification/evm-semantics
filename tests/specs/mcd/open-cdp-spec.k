@@ -270,6 +270,7 @@ andBool #rangeUInt(256, VChainId)
   andBool (#rangeUInt(256, Next)
   andBool (#rangeUInt(256, Urn_balance)
   andBool (#rangeUInt(256, Vat_balance)
+  andBool ((0 <=Int #sizeByteArray(CD))
   andBool ((#sizeByteArray(CD) <=Int 1250000000)
   andBool ((#notPrecompileAddress(Vat))
   andBool ((#notPrecompileAddress(Urn))
@@ -294,7 +295,7 @@ andBool #rangeUInt(256, VChainId)
   andBool (((#rangeUInt(256, Count +Int 1)))
   andBool ((VCallValue ==Int 0)
   andBool ((ABI_usr =/=Int 0)
-  andBool ((VCallDepth <Int 1023))))))))))))))))))))))))))))))))))))))))
+  andBool ((VCallDepth <Int 1023)))))))))))))))))))))))))))))))))))))))))
 
 // Vat_hope
 rule [Vat.hope.pass]:
@@ -481,11 +482,12 @@ andBool #rangeUInt(256, VCallValue)
 andBool #rangeUInt(256, VChainId)
 
   andBool (#rangeAddress(ABI_usr)
+  andBool (0 <=Int #sizeByteArray(CD)
   andBool (#sizeByteArray(CD) <=Int 1250000000
   andBool (2300 <Int ( VGas -Int ( (#if ( ( Junk_0 ==K 1 ) orBool (notBool ( Junk_1 ==K Junk_0 ) ) ) #then 0 #else 4200 #fi) +Int ( (#if ( ( Junk_1 ==K 0 ) andBool (notBool ( ( Junk_0 ==K 1 ) orBool (notBool ( Junk_1 ==K Junk_0 ) ) ) ) ) #then 15000 #else 0 #fi) +Int 5624 ) ) )
   andBool (#rangeUInt(256, Junk_0)
   andBool (#rangeUInt(256, Junk_1)
-  andBool ((VCallValue ==Int 0)))))))
+  andBool ((VCallValue ==Int 0))))))))
 [trusted]
 
 
