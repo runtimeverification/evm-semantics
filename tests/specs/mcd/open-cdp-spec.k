@@ -79,6 +79,9 @@ module VERIFICATION
   rule hash2(_, _) +Int I ==K 1 => false requires I =/=Int 0
   rule hash2(_, _)        ==K 0 => false
   rule hash2(_, _) +Int I ==K 0 => false requires I =/=Int 0
+
+  // step 2177 - DEST in DESTS
+  rule #computeValidJumpDests(#padToWidth(32, #asByteStack(ADDR)) => .WordStack, I => I +Int 32, RESULT) requires 0 <=Int ADDR andBool ADDR <Int pow256
 endmodule
 
 module OPEN-CDP-SPEC
