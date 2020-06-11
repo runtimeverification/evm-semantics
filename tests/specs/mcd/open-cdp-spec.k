@@ -60,6 +60,25 @@ module VERIFICATION
   rule #drop(N, WS ++ WS') => #drop(N, WS) ++ WS' requires N <=Int #sizeWordStack(WS)
   rule #sizeWordStack(#drop(N, WS), M) => M +Int #sizeWordStack(WS) -Int N requires N <=Int #sizeWordStack(WS)
   rule WS ++ WS' => WS' requires #sizeWordStack(WS) ==Int 0
+
+  // step 1406 - #lookup(_39 [ 0                      <- Vat   ]
+  //                         [ 1                      <- Cdpi  ]
+  //                         [ hash2(Cdpi + 1, 2)     <- 0     ]
+  //                         [ hash2(ABI_usr , 7)     <- Last  ]
+  //                         [ hash2(ABI_usr , 8)     <- Count ]
+  //                         [ hash2(Cdpi + 1, 4)     <- Own   ]
+  //                         [ hash2(Cdpi + 1, 5)     <- Ilk   ]
+  //                         [ hash2(ABI_usr , 6)     <- First ]
+  //                         [ hash2(Cdpi + 1, 3)     <- Prev  ]
+  //                         [ hash2(Last    , 3) + 1 <- Next  ]
+  //                    , 1
+  //                    )
+  rule #lookup(MAP [ KEY <- VALUE ], KEY') => #lookup(MAP, KEY') requires KEY =/=K KEY'
+  rule #lookup(MAP [ KEY <- VALUE ], KEY') => VALUE              requires KEY  ==K KEY'
+  rule hash2(_, _)        ==K 1 => false
+  rule hash2(_, _) +Int I ==K 1 => false requires I =/=Int 0
+  rule hash2(_, _)        ==K 0 => false
+  rule hash2(_, _) +Int I ==K 0 => false requires I =/=Int 0
 endmodule
 
 module OPEN-CDP-SPEC
@@ -155,14 +174,12 @@ rule [DssCdpManager.open.pass.rough]:
           <balance> Vat_balance </balance>
           <code> Vat_bin_runtime </code>
           <storage>
-           .Map
-          [#Vat.can[Urn][ACCT_ID] <- (0) => 1]
             _:Map
+          [#Vat.can[Urn][ACCT_ID] <- (0) => 1]
            </storage>
           <origStorage>
-           .Map
-          [#Vat.can[Urn][ACCT_ID] <- (Junk_0)]
             _:Map
+          [#Vat.can[Urn][ACCT_ID] <- (Junk_0)]
            </origStorage>
           <nonce> Nonce_Vat => ?_ </nonce>
         </account>
@@ -171,7 +188,7 @@ rule [DssCdpManager.open.pass.rough]:
           <balance> ACCT_ID_balance </balance>
           <code> DssCdpManager_bin_runtime </code>
           <storage>
-           .Map
+            _:Map
           [#DssCdpManager.vat <- (Vat) => Vat]
           [#DssCdpManager.cdpi <- (Cdpi) => Cdpi +Int 1]
           [#DssCdpManager.urns[Cdpi +Int 1] <- (0) => Urn]
@@ -182,10 +199,9 @@ rule [DssCdpManager.open.pass.rough]:
           [#DssCdpManager.first[ABI_usr] <- (First) => #if First ==Int 0 #then Cdpi +Int 1 #else First #fi]
           [#DssCdpManager.list[Cdpi +Int 1].prev <- (Prev) => #if Last =/=Int 0 #then Last #else Prev #fi]
           [#DssCdpManager.list[Last].next <- (Next) => #if Last =/=Int 0 #then Cdpi +Int 1 #else Next #fi]
-            _:Map
            </storage>
           <origStorage>
-           .Map
+            _:Map
           [#DssCdpManager.vat <- (Junk_1)]
           [#DssCdpManager.cdpi <- (Junk_2)]
           [#DssCdpManager.urns[Cdpi +Int 1] <- (Junk_3)]
@@ -196,7 +212,6 @@ rule [DssCdpManager.open.pass.rough]:
           [#DssCdpManager.first[ABI_usr] <- (Junk_8)]
           [#DssCdpManager.list[Cdpi +Int 1].prev <- (Junk_9)]
           [#DssCdpManager.list[Last].next <- (Junk_10)]
-            _:Map
            </origStorage>
           <nonce> Nonce_DssCdpManager => ?_ </nonce>
         </account>
@@ -414,14 +429,12 @@ rule [Vat.hope.pass]:
           <balance> ACCT_ID_balance </balance>
           <code> Vat_bin_runtime </code>
           <storage>
-           .Map
-          [#Vat.can[CALLER_ID][ABI_usr] <- (Junk_0) => 1]
             _:Map
+          [#Vat.can[CALLER_ID][ABI_usr] <- (Junk_0) => 1]
            </storage>
           <origStorage>
-           .Map
-          [#Vat.can[CALLER_ID][ABI_usr] <- (Junk_1)]
             _:Map
+          [#Vat.can[CALLER_ID][ABI_usr] <- (Junk_1)]
            </origStorage>
           <nonce> Nonce_Vat => ?_ </nonce>
         </account>
