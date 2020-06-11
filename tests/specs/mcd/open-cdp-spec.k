@@ -1,11 +1,15 @@
 requires "rules.k"
 requires "bin_runtime.k"
 
-module OPEN-CDP-SPEC
+module VERIFICATION
   imports ETHEREUM-SIMULATION
   imports EVM
   imports RULES
   imports BIN_RUNTIME
+endmodule
+
+module OPEN-CDP-SPEC
+  imports VERIFICATION
 
 // DssCdpManager_open
 rule [DssCdpManager.open.pass.rough]:
@@ -82,12 +86,12 @@ rule [DssCdpManager.open.pass.rough]:
           <acctID> Urn </acctID>
           <balance> Urn_balance </balance>
           <code> .WordStack => UrnHandler_bin_runtime </code>
-          <storage>         
+          <storage>
            .Map => (.Map
-          
+
           )
            </storage>
-          <origStorage>         
+          <origStorage>
            .Map
            </origStorage>
           <nonce> 0 => 1 </nonce>
@@ -96,12 +100,12 @@ rule [DssCdpManager.open.pass.rough]:
           <acctID> Vat </acctID>
           <balance> Vat_balance </balance>
           <code> Vat_bin_runtime </code>
-          <storage>         
-           .Map 
+          <storage>
+           .Map
           [#Vat.can[Urn][ACCT_ID] <- (0) => 1]
             _:Map
            </storage>
-          <origStorage>         
+          <origStorage>
            .Map
           [#Vat.can[Urn][ACCT_ID] <- (Junk_0)]
             _:Map
@@ -112,31 +116,31 @@ rule [DssCdpManager.open.pass.rough]:
           <acctID> ACCT_ID </acctID>
           <balance> ACCT_ID_balance </balance>
           <code> DssCdpManager_bin_runtime </code>
-          <storage>         
-           .Map 
-          [#DssCdpManager.vat <- (Vat) => Vat]        
-          [#DssCdpManager.cdpi <- (Cdpi) => Cdpi +Int 1]        
-          [#DssCdpManager.urns[Cdpi +Int 1] <- (0) => Urn]        
-          [#DssCdpManager.last[ABI_usr] <- (Last) => Cdpi +Int 1]        
-          [#DssCdpManager.count[ABI_usr] <- (Count) => Count +Int 1]        
-          [#DssCdpManager.owns[Cdpi +Int 1] <- (Own) => ABI_usr]        
-          [#DssCdpManager.ilks[Cdpi +Int 1] <- (Ilk) => ABI_ilk]        
-          [#DssCdpManager.first[ABI_usr] <- (First) => #if First ==Int 0 #then Cdpi +Int 1 #else First #fi]        
-          [#DssCdpManager.list[Cdpi +Int 1].prev <- (Prev) => #if Last =/=Int 0 #then Last #else Prev #fi]        
+          <storage>
+           .Map
+          [#DssCdpManager.vat <- (Vat) => Vat]
+          [#DssCdpManager.cdpi <- (Cdpi) => Cdpi +Int 1]
+          [#DssCdpManager.urns[Cdpi +Int 1] <- (0) => Urn]
+          [#DssCdpManager.last[ABI_usr] <- (Last) => Cdpi +Int 1]
+          [#DssCdpManager.count[ABI_usr] <- (Count) => Count +Int 1]
+          [#DssCdpManager.owns[Cdpi +Int 1] <- (Own) => ABI_usr]
+          [#DssCdpManager.ilks[Cdpi +Int 1] <- (Ilk) => ABI_ilk]
+          [#DssCdpManager.first[ABI_usr] <- (First) => #if First ==Int 0 #then Cdpi +Int 1 #else First #fi]
+          [#DssCdpManager.list[Cdpi +Int 1].prev <- (Prev) => #if Last =/=Int 0 #then Last #else Prev #fi]
           [#DssCdpManager.list[Last].next <- (Next) => #if Last =/=Int 0 #then Cdpi +Int 1 #else Next #fi]
             _:Map
            </storage>
-          <origStorage>         
+          <origStorage>
            .Map
-          [#DssCdpManager.vat <- (Junk_1)]        
-          [#DssCdpManager.cdpi <- (Junk_2)]        
-          [#DssCdpManager.urns[Cdpi +Int 1] <- (Junk_3)]        
-          [#DssCdpManager.last[ABI_usr] <- (Junk_4)]        
-          [#DssCdpManager.count[ABI_usr] <- (Junk_5)]        
-          [#DssCdpManager.owns[Cdpi +Int 1] <- (Junk_6)]        
-          [#DssCdpManager.ilks[Cdpi +Int 1] <- (Junk_7)]        
-          [#DssCdpManager.first[ABI_usr] <- (Junk_8)]        
-          [#DssCdpManager.list[Cdpi +Int 1].prev <- (Junk_9)]        
+          [#DssCdpManager.vat <- (Junk_1)]
+          [#DssCdpManager.cdpi <- (Junk_2)]
+          [#DssCdpManager.urns[Cdpi +Int 1] <- (Junk_3)]
+          [#DssCdpManager.last[ABI_usr] <- (Junk_4)]
+          [#DssCdpManager.count[ABI_usr] <- (Junk_5)]
+          [#DssCdpManager.owns[Cdpi +Int 1] <- (Junk_6)]
+          [#DssCdpManager.ilks[Cdpi +Int 1] <- (Junk_7)]
+          [#DssCdpManager.first[ABI_usr] <- (Junk_8)]
+          [#DssCdpManager.list[Cdpi +Int 1].prev <- (Junk_9)]
           [#DssCdpManager.list[Last].next <- (Junk_10)]
             _:Map
            </origStorage>
@@ -214,7 +218,7 @@ rule [DssCdpManager.open.pass.rough]:
           <origStorage> _ </origStorage>
           <nonce> _ </nonce>
         </account>
-       ... 
+       ...
       </accounts>
       <txOrder> _ </txOrder>
       <txPending> _ </txPending>
@@ -279,7 +283,7 @@ andBool #rangeUInt(256, VChainId)
   andBool (((#rangeUInt(256, Count +Int 1)))
   andBool ((VCallValue ==Int 0)
   andBool ((ABI_usr =/=Int 0)
-  andBool ((VCallDepth <Int 1023)))))))))))))))))))))))))))))))))))))))) 
+  andBool ((VCallDepth <Int 1023))))))))))))))))))))))))))))))))))))))))
 
 // Vat_hope
 rule [Vat.hope.pass]:
@@ -354,12 +358,12 @@ rule [Vat.hope.pass]:
           <acctID> ACCT_ID </acctID>
           <balance> ACCT_ID_balance </balance>
           <code> Vat_bin_runtime </code>
-          <storage>         
-           .Map 
+          <storage>
+           .Map
           [#Vat.can[CALLER_ID][ABI_usr] <- (Junk_0) => 1]
             _:Map
            </storage>
-          <origStorage>         
+          <origStorage>
            .Map
           [#Vat.can[CALLER_ID][ABI_usr] <- (Junk_1)]
             _:Map
@@ -438,7 +442,7 @@ rule [Vat.hope.pass]:
           <origStorage> _ </origStorage>
           <nonce> _ </nonce>
         </account>
-       ... 
+       ...
       </accounts>
       <txOrder> _ </txOrder>
       <txPending> _ </txPending>
@@ -470,7 +474,7 @@ andBool #rangeUInt(256, VChainId)
   andBool (2300 <Int ( VGas -Int ( (#if ( ( Junk_0 ==K 1 ) orBool (notBool ( Junk_1 ==K Junk_0 ) ) ) #then 0 #else 4200 #fi) +Int ( (#if ( ( Junk_1 ==K 0 ) andBool (notBool ( ( Junk_0 ==K 1 ) orBool (notBool ( Junk_1 ==K Junk_0 ) ) ) ) ) #then 15000 #else 0 #fi) +Int 5624 ) ) )
   andBool (#rangeUInt(256, Junk_0)
   andBool (#rangeUInt(256, Junk_1)
-  andBool ((VCallValue ==Int 0))))))) 
+  andBool ((VCallValue ==Int 0)))))))
 [trusted]
 
 
