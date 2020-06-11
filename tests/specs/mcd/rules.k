@@ -1,6 +1,5 @@
 requires "edsl.md"
-// requires "edsl.k"
-requires "../../tests/specs/lemmas.k"
+requires "../lemmas.k"
 
 module RULES
     imports EVM

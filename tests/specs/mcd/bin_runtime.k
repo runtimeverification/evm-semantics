@@ -1,5 +1,4 @@
 requires "data.md"
-//requires "data.k"
 
 module BIN_RUNTIME
     imports EVM-DATA
