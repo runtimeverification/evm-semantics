@@ -82,6 +82,10 @@ module VERIFICATION
 
   // step 2177 - DEST in DESTS
   rule #computeValidJumpDests(#padToWidth(32, #asByteStack(ADDR)) => .WordStack, I => I +Int 32, RESULT) requires 0 <=Int ADDR andBool ADDR <Int pow256
+
+  // step 3165 - #range(MAP [ N := #padToWidth(_, _) ] [ N' <- _ ], END, WIDTH, _)
+  rule #range(MAP [ N := BA:ByteArray ] => MAP, END, WIDTH, WS) requires END <Int N orBool N +Int WIDTH +Int #sizeWordStack(BA) -Int 1 <=Int END
+  rule #range(MAP [ N <- _            ] => MAP, END, WIDTH, WS) requires END <Int N orBool N +Int WIDTH                                <=Int END
 endmodule
 
 module OPEN-CDP-SPEC
