@@ -23,6 +23,43 @@ module VERIFICATION
 
   // step 811 - #asWord(#padToWidth(32, #asByteStack(ABI_ilk)))
   rule #asWord(#padToWidth(32, #asByteStack(VALUE))) => VALUE requires 0 <=Int VALUE andBool VALUE <Int pow256
+
+  // step 1188 - ((maxUInt160 & #asWord(takeWordStack(32,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1,
+  //                                                        dropWordStack(1, (
+  //                                                        dropWordStack(1, #padToWidth(32 , #asByteStack(ABI_ilk))) ++ (#padToWidth(32, #asByteStack(ABI_usr)) ++ CD)))))))))))))))))))))))))) )))))))))) ==K 0)
+  rule #drop(N, WS ++ WS') => #drop(N, WS) ++ WS' requires N <=Int #sizeWordStack(WS)
+  rule #sizeWordStack(#drop(N, WS), M) => M +Int #sizeWordStack(WS) -Int N requires N <=Int #sizeWordStack(WS)
+  rule WS ++ WS' => WS' requires #sizeWordStack(WS) ==Int 0
 endmodule
 
 module OPEN-CDP-SPEC
