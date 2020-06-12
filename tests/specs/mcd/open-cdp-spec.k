@@ -89,6 +89,9 @@ module VERIFICATION
 
   // step 3450 - #range(M [ N <- V ], N, W, WS)
   rule #range(MAP [ KEY <- VALUE ], KEY => KEY -Int 1, WIDTH => WIDTH -Int 1, WS => VALUE : WS) requires 0 <Int WIDTH
+
+  // step 4271 - #range(M [ N := V ], E, W, WS)
+  rule #range(MAP [ KEY := BUF ], END => END -Int #sizeWordStack(BUF), WIDTH => WIDTH -Int #sizeWordStack(BUF), WS => BUF ++ WS) requires KEY +Int WIDTH -Int 1 ==Int END andBool #sizeWordStack(BUF) <=Int WIDTH
 endmodule
 
 module OPEN-CDP-SPEC
