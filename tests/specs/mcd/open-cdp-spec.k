@@ -86,6 +86,9 @@ module VERIFICATION
   // step 3165 - #range(MAP [ N := #padToWidth(_, _) ] [ N' <- _ ], END, WIDTH, _)
   rule #range(MAP [ N := BA:ByteArray ] => MAP, END, WIDTH, WS) requires END <Int N orBool N +Int WIDTH +Int #sizeWordStack(BA) -Int 1 <=Int END
   rule #range(MAP [ N <- _            ] => MAP, END, WIDTH, WS) requires END <Int N orBool N +Int WIDTH                                <=Int END
+
+  // step 3450 - #range(M [ N <- V ], N, W, WS)
+  rule #range(MAP [ KEY <- VALUE ], KEY => KEY -Int 1, WIDTH => WIDTH -Int 1, WS => VALUE : WS) requires 0 <Int WIDTH
 endmodule
 
 module OPEN-CDP-SPEC
