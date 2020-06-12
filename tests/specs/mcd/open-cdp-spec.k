@@ -102,6 +102,11 @@ module VERIFICATION
 
   // step 4271 - #range(M [ N := V ], E, W, WS)
   rule #range(MAP [ KEY := BUF ], END => END -Int #sizeWordStack(BUF), WIDTH => WIDTH -Int #sizeWordStack(BUF), WS => BUF ++ WS) requires KEY +Int WIDTH -Int 1 ==Int END andBool #sizeWordStack(BUF) <=Int WIDTH
+
+  // step 5497 - #lookup(M [ hash2(_, _) <- _ ], hash2(_, _) )
+  rule hash2(_, V1)       =/=K hash2(_, V2) => true requires V1 =/=Int V2
+  rule 1                  =/=K hash2(_, _)  => true
+  rule hash2(_, _) +Int I =/=K hash2(_, _)  => true requires I =/=Int 0
 endmodule
 
 module OPEN-CDP-SPEC
