@@ -80,6 +80,9 @@ module VERIFICATION
   rule hash2(_, _)        ==K 0 => false
   rule hash2(_, _) +Int I ==K 0 => false requires I =/=Int 0
 
+  // step 1527 - Cdpi ==K (Cdpi +Int 1)
+  rule I ==K I +Int 1 => false
+
   // step 2177 - DEST in DESTS
   rule #computeValidJumpDests(#padToWidth(32, #asByteStack(ADDR)) => .WordStack, I => I +Int 32, RESULT) requires 0 <=Int ADDR andBool ADDR <Int pow256
 
