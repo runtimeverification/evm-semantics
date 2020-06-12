@@ -159,19 +159,6 @@ rule ACCTCODE in SetItem( 1 )
    rule #if C1 #then A #else B #fi => A
       requires A ==K B
 
-   // propagate stuff out of #ifs
-//    rule #if C #then X #else Y #fi => Y +Int #if C #then X -Int Y #else 0 #fi
-//      requires #isConcrete(X)
-//      andBool  #isConcrete(Y)
-//      andBool  X >Int Y
-//      andBool  Y =/=Int 0
-//
-//    rule #if C #then X #else Y #fi => X +Int #if C #then 0 #else Y -Int X #fi
-//      requires #isConcrete(X)
-//      andBool  #isConcrete(Y)
-//      andBool  Y >Int X
-//      andBool  X =/=Int 0
-
     rule #if C #then X +Int A #else X +Int B #fi => X +Int (#if C #then A #else B #fi)
 
     rule #if C #then (A +Int X) #else (B +Int X) #fi => ( #if C #then A #else B #fi ) +Int X
@@ -181,29 +168,6 @@ rule ACCTCODE in SetItem( 1 )
     rule #if C #then X -Int G #else Y -Int G #fi => (#if C #then X #else Y #fi) -Int G
 
     rule #if C #then ((P -Int X) -Int A) #else ((Q -Int X) -Int B) #fi => (#if C #then (P -Int A) #else (Q -Int B) #fi) -Int X
-
-    // NEW GAS LEMMAS
-    // join together concrete numbers
-//    rule (A -Int  B) -Int C  =>  A -Int (B +Int C)
-//    rule (A -Int  B) +Int C  =>  A -Int (B -Int C)
-//    rule (A +Int B) -Int C  => A +Int (B -Int C)
-//    rule (A +Int B) +Int  C => A +Int (B +Int C)
-
-    // deal with 0
-//    rule  A +Int (0 -Int  C) => A -Int C
-//      requires (notBool #isConcrete(C))
-//    rule  A -Int (0 -Int  C) => A +Int C
-//      requires (notBool #isConcrete(C))
-
-
-    // deal with negative concrete number
-//    rule A -Int B => A +Int (0 -Int B)
-//      requires #isConcrete(B)
-//      andBool B <Int 0
-
-//    rule A +Int B => A -Int (0 -Int B)
-//      requires #isConcrete(B)
-//      andBool B <Int 0
 
     // SORT
 
@@ -224,62 +188,6 @@ rule ACCTCODE in SetItem( 1 )
       requires (notBool #isVariable(A))
       andBool (notBool #isConcrete(A))
       andBool (A =/=K (?D /Int 64))
-
-    //    VAR
-//    rule  A -Int (B  +Int C) => (0 -Int (B -Int (A -Int C)))
-//      requires #isVariable(B)
-//      andBool (notBool #isVariable(A))
-//      andBool (A =/=K 0)
-//    rule  A -Int (B  -Int C) => (0 -Int (B -Int (A +Int C)))
-//      requires #isVariable(B)
-//      andBool (notBool #isVariable(A))
-//      andBool (A =/=K 0)
-//    rule  A +Int (B +Int  C) => B +Int (A +Int  C)
-//      requires #isVariable(B)
-//      andBool (notBool #isVariable(A))
-//      andBool (A =/=K 0)
-//    rule  A +Int (B -Int  C) => B +Int (A -Int  C)
-//      requires #isVariable(B)
-//      andBool (notBool #isVariable(A))
-//      andBool (A =/=K 0)
-
-    //    CONCRETE
-//    rule  A -Int (B  +Int C) => (0 -Int (B -Int (A -Int C)))
-//      requires #isConcrete(A)
-//      andBool A =/=Int 0
-//      andBool (notBool #isConcrete(B))
-//    rule  A -Int (B  -Int C) => (0 -Int (B -Int (A +Int C)))
-//      requires #isConcrete(A)
-//      andBool A =/=Int 0
-//      andBool (notBool #isConcrete(B))
-//    rule  A +Int (B +Int  C) => B +Int (A +Int  C)
-//      requires #isConcrete(A)
-//      andBool (notBool #isConcrete(B))
-//    rule  A +Int (B -Int  C) => B +Int (A -Int  C)
-//      requires #isConcrete(A)
-//      andBool (notBool #isConcrete(B))
-
-    // SOLVE
-    //    duplicates
-//    rule A -Int (A +Int B) => 0 -Int B
-//    rule A -Int (A -Int B) => B
-//    rule A -Int (B +Int (A +Int C)) => 0 -Int (B +Int C)
-//    rule A -Int (B +Int (A -Int C)) => 0 -Int (B -Int C)
-
-    //    concrete
-//    rule  A -Int (B  -Int C) => (A -Int  B) +Int C
-//      requires #isConcrete(A)
-//      andBool  #isConcrete(B)
-//    rule  A -Int (B  +Int C) => (A -Int  B) -Int C
-//      requires #isConcrete(A)
-//      andBool  #isConcrete(B)
-//    rule  A +Int (B -Int  C) => (A +Int  B) -Int C
-//      requires #isConcrete(A)
-//      andBool  #isConcrete(B)
-//    rule  A +Int (B +Int  C) => (A +Int  B) +Int C
-//      requires #isConcrete(A)
-//      andBool  #isConcrete(B)
-
 
 
     /// ---
@@ -355,14 +263,6 @@ rule #newAddr(A, B, C) ==K 0 => false
 rule #newAddr(A, B) ==K 0 => false
 rule 0 ==K #newAddr(A, B, C) => false
 rule 0 ==K #newAddr(A, B) => false
-
-// ABSTRACT SEMANTICS.k
-
-//  rule <k> LT W0 W1 => bool2Word(W0  <Int W1) ~> #push ... </k> [trusted]
-//  rule <k> GT W0 W1 => bool2Word(W0  >Int W1) ~> #push ... </k> [trusted]
-//  rule <k> EQ W0 W1 => bool2Word(W0 ==Int W1) ~> #push ... </k> [trusted]
-//  rule <k> ISZERO W => bool2Word(W  ==Int 0 ) ~> #push ... </k> [trusted]
-
 
 //RULES MUST USE ==K and not ==Int
 //Warning: assumes injective hashing
@@ -815,25 +715,12 @@ rule #asWord(#padToWidth(32, #asByteStack(#unsigned(X)))) => #unsigned(X)
 
 // rule #take(N, #padToWidth(N, WS) ++ WS' ) => #padToWidth(N, WS)
 
-// potentially useful
-// rule #padToWidth(N, WS) ++ WS' => #padToWidth(N + #sizeWordStack(WS'), WS ++ WS')
-// and the N, M versions
-
 rule #take(N, #padToWidth(N, WS) ) => #padToWidth(N, WS)
 rule notBool((Mask0_26 &Int (A +Int B)) <Int A) => A +Int B <=Int maxUInt48
   requires #rangeUInt(48, A)
   andBool #rangeUInt(48, B)
 rule #unsigned(X) ==K 0 => X ==Int 0
   requires #rangeSInt(256, X)
-
-// rule 0 <Int #unsigned(X) => 0 <Int X
-//   requires #rangeSInt(256, X)
-
-// usub
-// lemmas for necessity
-// rule A <=Int A -Word B => 0 <=Int A -Int B
-//   requires #rangeUInt(256, A)
-//   andBool #rangeUInt(256, B)
 
 // addui
 // lemmas for sufficiency
@@ -851,16 +738,6 @@ rule chop(A +Int #unsigned(B)) <=Int A => 0 <=Int A +Int B
   requires #rangeUInt(256, A)
   andBool #rangeSInt(256, B)
   andBool B <Int 0
-
-// rule (A +Int #unsigned(B) <=Int maxUInt256) => (A +Int B <=Int maxUInt256)
-//   requires #rangeUInt(256, A)
-//   andBool #rangeSInt(256, B)
-//   andBool B >=Int 0
-
-// rule A <=Int chop(A +Int #unsigned(B)) => A +Int B <Int 0
-//   requires #rangeUInt(256, A)
-//   andBool #rangeSInt(256, B)
-//   andBool B <Int 0
 
 // subui
 // lemmas for sufficiency
@@ -914,14 +791,6 @@ rule #sgnInterp(sgn(#unsigned(A *Int B)) *Int sgn(#unsigned(B)), A) => A
 // lemmas for necessity
 rule #signed(X) <Int 0 => notBool #rangeSInt(256, X)
    requires #rangeUInt(256, X)
-
-// rule #sgnInterp(sgn(chop(A *Int B)), abs(chop(A *Int B)) /Int B) ==K A => #rangeSInt(256, A *Int B)
-// requires #rangeUInt(256, A)
-// andBool  #rangeSInt(256, B)
-
-// rule #sgnInterp(sgn(chop(A *Int (pow256 +Int B))) *Int -1, chop(abs(chop(A *Int (pow256 +Int B))) /Int (pow256 -Int (pow256 +Int B)))) ==K A => #rangeSInt(256, A *Int B)
-// requires #rangeUInt(256, A)
-// andBool  #rangeSInt(256, B)
 
 rule (chop(A *Int B) /Int B ==K A) => #rangeUInt(256, A *Int B)
   requires #rangeUInt(256, A)
@@ -1066,12 +935,6 @@ rule X +Int (pow256 -Int #unsigned(Y)) => X -Int Y
 
 rule #unsigned(X) -Int (pow256 +Int X) => 0
   requires X <Int 0
-
-// Cat_bite_full_fail_rough lemma
-// rule #sgnInterp(sgn(chop(A *Int #unsigned(0 -Int B))) *Int -1, abs(chop(A *Int #unsigned(0 -Int B))) /Int B) ==K A => #rangeSInt(256, A *Int (0 -Int B))
-//   requires #rangeUInt(256, A)
-//   andBool 0 <Int B
-//   andBool #rangeSInt(256, 0 -Int B)
 
 // skim/bail Rate * Art <= pow255 (condition for grab)
 rule #signed(chop((A *Int #unsigned((0 -Int B))))) <=Int 0 => #rangeSInt(256, 0 -Int (A *Int B))
