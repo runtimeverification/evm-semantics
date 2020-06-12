@@ -107,6 +107,9 @@ module VERIFICATION
   rule hash2(_, V1)       =/=K hash2(_, V2) => true requires V1 =/=Int V2
   rule 1                  =/=K hash2(_, _)  => true
   rule hash2(_, _) +Int I =/=K hash2(_, _)  => true requires I =/=Int 0
+
+  // step 7091 - #lookup(M [ N <- _ ], hash2(_, _))
+  rule 24465873643947496235832446106509767096567058095563226156125564318740882468608 =/=K hash2(_, _) => true
 endmodule
 
 module OPEN-CDP-SPEC
