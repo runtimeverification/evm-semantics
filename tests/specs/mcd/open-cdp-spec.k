@@ -83,6 +83,13 @@ module VERIFICATION
   // step 2177 - DEST in DESTS
   rule #computeValidJumpDests(#padToWidth(32, #asByteStack(ADDR)) => .WordStack, I => I +Int 32, RESULT) requires 0 <=Int ADDR andBool ADDR <Int pow256
 
+  // step 2893 - M [ N <- K ] [ M := BUF ]
+  rule MAP:Memory [ N <- V           ] [ N' <- V' ] => MAP [ N' <- V' ] [ N <- V ] requires N'                          <Int N
+  rule MAP:Memory [ N <- V           ] [ N' := V' ] => MAP [ N' := V' ] [ N <- V ] requires N' +Int #sizeWordStack(V') <=Int N
+  rule MAP:Memory [ N := V:ByteArray ] [ N' <- V' ] => MAP [ N' <- V' ] [ N := V ] requires N'                          <Int N
+  rule MAP:Memory [ N := V:ByteArray ] [ N' := V' ] => MAP [ N' := V' ] [ N := V ] requires N' +Int #sizeWordStack(V') <=Int N
+  rule MAP:Memory [ N <- V           ] [ N' := V' ] => MAP [ N' := V' ]            requires N' <=Int N andBool N <Int N' +Int #sizeWordStack(V')
+
   // step 3165 - #range(MAP [ N := #padToWidth(_, _) ] [ N' <- _ ], END, WIDTH, _)
   rule #range(MAP [ N := BA:ByteArray ] => MAP, END, WIDTH, WS) requires END <Int N orBool N +Int WIDTH +Int #sizeWordStack(BA) -Int 1 <=Int END
   rule #range(MAP [ N <- _            ] => MAP, END, WIDTH, WS) requires END <Int N orBool N +Int WIDTH                                <=Int END
