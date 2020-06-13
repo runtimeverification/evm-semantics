@@ -122,6 +122,7 @@ run_web3_send() {
         web3_params="$(join_args "$@")"
         curl -s -X POST --data '{"jsonrpc": "2.0", "id": 1, "method": "'"$web3_method"'", "params": ['"$web3_params"']}' "$kevm_host":"$kevm_port"
     fi
+    echo
 }
 
 run_klab() {
