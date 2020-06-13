@@ -106,7 +106,13 @@ run_web3_send() {
     local web3_method web3_params web3_file
     if [[ -f "$1" ]]; then
         web3_file="$1" ; shift
-        curl -s -X POST $kevm_host:$kevm_port --data @$web3_file
+        # curl incurs a slowdown on a per-line basis
+        # so we compact the request before sending it over curl
+        # https://curl.haxx.se/mail/lib-2019-09/0045.html
+        tmp_curl_input="$(mktemp)"
+        trap "rm -rf $tmp_curl_input" INT TERM EXIT
+        cat "$web3_file" | tr --delete ' \n\t' > $tmp_curl_input
+        curl -s -X POST $kevm_host:$kevm_port --data @$tmp_curl_input
     else
         web3_method="$1" ; shift
         join_args() {
