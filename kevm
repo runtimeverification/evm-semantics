@@ -87,6 +87,11 @@ run_search() {
 
 run_web3() {
     run_file='-'
+
+    if netcat -z "$kevm_host" "$kevm_port"; then
+        fatal "Already a process listening on '$kevm_port:$kevm_host'!"
+    fi
+
     if $debug; then
         gdb --args kevm-client --port "$kevm_port" --host "$kevm_host" "$@"
     elif $dump; then
