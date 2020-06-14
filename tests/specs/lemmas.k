@@ -291,6 +291,11 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma]
     rule 0 <=Int lengthBytes ( _ )        => true [smt-lemma]
 
-    rule bool2Word( B:Bool ) ==Int 1 => B         [simplification]
-    rule bool2Word( B:Bool ) ==Int 0 => notBool B [simplification]
+    rule I ==Int bool2Word( B:Bool ) => bool2Word(B) ==Int I            [simplification, concrete(I)]
+    rule bool2Word( B:Bool ) ==Int I => B ==K word2Bool(I)              [simplification, concrete(I)]
+
+    rule BA:ByteArray ==K #buf( 32, DATA ) => #buf( 32, DATA ) ==K BA   [simplification, concrete(BA)]
+    rule #buf( 32, DATA ) ==K BA:ByteArray => DATA ==Int #asInteger(BA)
+      requires #sizeByteArray(BA) <=Int 32                              [simplification, concrete(BA)]
+
 endmodule
