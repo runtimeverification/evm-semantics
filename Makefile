@@ -143,7 +143,7 @@ HOOK_NAMESPACES = KRYPTO JSON
 KOMPILE_OPTS += --hook-namespaces "$(HOOK_NAMESPACES)"
 
 ifneq (,$(RELEASE))
-    KOMPILE_OPTS += -O3
+    KOMPILE_OPTS += -O2
 endif
 
 JAVA_KOMPILE_OPTS :=
