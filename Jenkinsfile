@@ -77,6 +77,12 @@ pipeline {
                               , string(name: 'UPDATE_DEPS_REPOSITORY', value: 'runtimeverification/erc20-verification') \
                               , string(name: 'UPDATE_DEPS_SUBMODULE_DIR', value: 'deps/evm-semantics')                  \
                               ]
+            build job: 'rv-devops/master', propagate: false, wait: false                                                           \
+                , parameters: [ booleanParam(name: 'UPDATE_DEPS_SUBMODULE', value: true)                                           \
+                              , string(name: 'PR_REVIEWER', value: 'daejunpark')                                                   \
+                              , string(name: 'UPDATE_DEPS_REPOSITORY', value: 'runtimeverification/deposit-contract-verification') \
+                              , string(name: 'UPDATE_DEPS_SUBMODULE_DIR', value: 'deps/evm-semantics')                             \
+                              ]
           }
         }
         stage('Jello Paper') {
