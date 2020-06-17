@@ -1298,7 +1298,7 @@ Transaction Execution
            <nonce> NONCE </nonce>
            ...
          </account>
-         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
+         <touchedAccounts> ... .Set => SetItem(MINER) ... </touchedAccounts>
 
     rule <k> #executeTx TXID:Int
           => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
@@ -1326,7 +1326,7 @@ Transaction Execution
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
-         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
+         <touchedAccounts> ... .Set => SetItem(MINER) ... </touchedAccounts>
       requires ACCTTO =/=K .Account
 
     syntax EthereumCommand ::= "#finishTx"
@@ -1895,13 +1895,11 @@ Mining
          <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
 
     rule <k> #updateStateTrie( [ _ , _ , OMMER , _ , _ , _ , _ , _ , _ , _ ] , REST ) => #updateStateTrie( REST ) ... </k>
-         <touchedAccounts> (.Set => SetItem(OMMER)) _ </touchedAccounts>
+         <touchedAccounts> ... .Set => SetItem(OMMER) ... </touchedAccounts>
 
     rule <k> #updateStateTrie( .JSONs ) => . ... </k>
-         <stateTrie> TREE => #putAccountsInTrie( TREE, Set2List(SetItem(MINER) ACCTS DESTRUCTSET), <accounts> ACCTSCELL </accounts> ) </stateTrie>
+         <stateTrie> TREE => #putAccountsInTrie( TREE, Set2List(ACCTS), <accounts> ACCTSCELL </accounts> ) </stateTrie>
          <touchedAccounts> ACCTS => .Set </touchedAccounts>
-         <selfDestruct> DESTRUCTSET => .Set </selfDestruct>
-         <coinbase> MINER </coinbase>
          <accounts> ACCTSCELL </accounts>
 
     syntax KItem ::= "#updateTimestamp"
