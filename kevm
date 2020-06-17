@@ -67,13 +67,11 @@ run_prove() {
     fi
 
     additional_proof_args=()
-    if $debug; then
-        set -x
-        additional_proof_args+=(--debug)
-    fi
-    ! $repl || additional_proof_args+=(--haskell-backend-command "$k_release_dir/bin/kore-repl --repl-script $kevm_dir/kast.kscript")
+    ! $debug || additional_proof_args+=(--debug)
+    ! $repl  || additional_proof_args+=(--haskell-backend-command "$k_release_dir/bin/kore-repl --repl-script $kevm_dir/kast.kscript")
 
     export K_OPTS=${K_OPTS:--Xmx8G}
+    ! $debug || set -x
     kprove --directory "$backend_dir" "${smt_args[@]-}" "$run_file" --def-module "$def_module" "${additional_proof_args[@]}" "$@"
 }
 
