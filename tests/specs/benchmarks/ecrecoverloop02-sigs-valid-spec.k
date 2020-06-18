@@ -11,7 +11,7 @@ module ECRECOVERLOOP02-SIGS-VALID-SPEC
     <schedule> ISTANBUL </schedule>
     <ethereum>
       <evm>
-        <output> _ => .WordStack </output>
+        <output> _ => .ByteArray </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
