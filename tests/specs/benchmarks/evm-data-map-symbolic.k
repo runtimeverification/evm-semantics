@@ -18,7 +18,7 @@ module EVM-DATA-MAP-SYMBOLIC [symbolic]
     rule #buf(SIZE, _)        => .ByteArray requires SIZE  ==Int 0
     rule #bufSeg(_, _, WIDTH) => .ByteArray requires WIDTH ==Int 0
 
-    rule #bufSeg(WS, START, WIDTH) => WS requires START ==Int 0 andBool WIDTH ==Int #sizeWordStack(WS)
+    rule #bufSeg(WS, START, WIDTH) => WS requires START ==Int 0 andBool WIDTH ==Int #sizeByteArray(WS)
 
     rule #bufSeg(#bufSeg(BUF, START0, WIDTH0), START, WIDTH)
       => #bufSeg(BUF, START0 +Int START, WIDTH)
