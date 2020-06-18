@@ -476,8 +476,8 @@ WEB3 JSON RPC
  // ----------------------------------------------------
     rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
 
-    syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "|" TxReceiptsCell "|" Int "}"
- // ------------------------------------------------------------------------------------------------------
+    syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "|" TxReceiptsCell "|" Int "|" MerkleTree "}"
+ // ---------------------------------------------------------------------------------------------------------------------
 
     syntax KItem ::= "#evm_snapshot"
  // --------------------------------
@@ -487,23 +487,25 @@ WEB3 JSON RPC
     syntax KItem ::= "#pushNetworkState"
  // ------------------------------------
     rule <k> #pushNetworkState => . ... </k>
-         <snapshots> ... (.List => ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts> | TIMEDIFF })) </snapshots>
+         <snapshots> ... (.List => ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts> | TIMEDIFF | TREE })) </snapshots>
          <network>    NETWORK   </network>
          <block>      BLOCK     </block>
          <blockList>  BLOCKLIST </blockList>
          <timeDiff>   TIMEDIFF  </timeDiff>
          <txReceipts> RECEIPTS  </txReceipts>
+         <stateTrie>  TREE      </stateTrie>
 
     syntax KItem ::= "#popNetworkState"
  // -----------------------------------
     rule <k> #popNetworkState => . ... </k>
-         <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts> | TIMEDIFF }) => .List ) </snapshots>
+         <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts> | TIMEDIFF | TREE }) => .List ) </snapshots>
          <network>     _ => NETWORK                        </network>
          <blockhashes> _ => #getBlockhashlist( BLOCKLIST ) </blockhashes>
          <block>       _ => BLOCK                          </block>
          <blockList>   _ => BLOCKLIST                      </blockList>
          <timeDiff>    _ => TIMEDIFF                       </timeDiff>
          <txReceipts>  _ => RECEIPTS                       </txReceipts>
+         <stateTrie>   _ => TREE                           </stateTrie>
 
     syntax List ::= #getBlockhashlist( List )            [function]
                   | #getBlockhashlistFromParents( List ) [function]
@@ -1898,9 +1900,10 @@ Mining
 
     rule <k> #updateStateTrie( .JSONs ) => . ... </k>
          <schedule> SCHED </schedule>
-         <stateTrie> TREE => #putAccountsInTrie( TREE, Set2List(ACCTS -Set #precompiledAccounts(SCHED)), <accounts> ACCTSCELL </accounts> ) </stateTrie>
+         <stateTrie> TREE => #putAccountsInTrie( TREE, Set2List(SetItem(MINER) (ACCTS -Set #precompiledAccounts(SCHED))), <accounts> ACCTSCELL </accounts> ) </stateTrie>
          <touchedAccounts> ACCTS => .Set </touchedAccounts>
          <accounts> ACCTSCELL </accounts>
+         <coinbase> MINER </coinbase>
 
     syntax KItem ::= "#updateTimestamp"
  // -----------------------------------
