@@ -48,10 +48,10 @@ module VERIFICATION
   // ########################
 
     // Merge
-    rule storeRange(storeRange(M, MS0, MW0, #bufSeg(BUF, BS0, BW0)), MS1, MW1, #bufSeg(BUF, BS1, BW1))
-        => storeRange(M, MS0, MW0 +Int MW1, #bufSeg(BUF, BS0, MW0 +Int MW1))
-      requires #isBuf(BUF) andBool MW0 ==Int BW0 andBool MW1 ==Int BW1
-       andBool MS1 ==Int MS0 +Int MW0 andBool BS1 ==Int BS0 +Int BW0
+//    rule storeRange(storeRange(M, MS0, MW0, #bufSeg(BUF, BS0, BW0)), MS1, MW1, #bufSeg(BUF, BS1, BW1))
+//        => storeRange(M, MS0, MW0 +Int MW1, #bufSeg(BUF, BS0, MW0 +Int MW1))
+//      requires #isBuf(BUF) andBool MW0 ==Int BW0 andBool MW1 ==Int BW1
+//       andBool MS1 ==Int MS0 +Int MW0 andBool BS1 ==Int BS0 +Int BW0
 
     // select/store key equality
 
@@ -64,51 +64,51 @@ module VERIFICATION
 //
 //    rule hash2(A1,B1) ==K hash2(A2,B2) => A1 ==Int A2 andBool B1 ==Int B2
 
-    rule store(M, K, select(M, K)) => M
+//    rule store(M, K, select(M, K)) => M
 
     syntax Bool ::= Map "==IMap" Map [function, smtlib(=)]
     syntax Bool ::= Map "==IMap" Map "except" Set [function]
  // --------------------------------------------------------
-    rule store(M1, K, _) ==IMap M2 except Ks
-      =>       M1        ==IMap M2 except Ks
-      requires K in Ks
+//    rule store(M1, K, _) ==IMap M2 except Ks
+//      =>       M1        ==IMap M2 except Ks
+//      requires K in Ks
 
-    rule M1 ==IMap store(M2, K, _) except Ks
-      => M1 ==IMap       M2        except Ks
-      requires K in Ks
+//    rule M1 ==IMap store(M2, K, _) except Ks
+//      => M1 ==IMap       M2        except Ks
+//      requires K in Ks
 
     rule M1 ==IMap M2 except _ => true
       requires M1 ==K M2  // structural equality
 
-    rule K1 in_keys(store(M, K2, _)) => true          requires K1  ==Int K2
-    rule K1 in_keys(store(M, K2, _)) => K1 in_keys(M) requires K1 =/=Int K2
+//    rule K1 in_keys(store(M, K2, _)) => true          requires K1  ==Int K2
+//    rule K1 in_keys(store(M, K2, _)) => K1 in_keys(M) requires K1 =/=Int K2
 
     //Reduces symbolic Maps where multiple entries share the same key
-    rule store(store(M, K0, V0), K1, V1) => store(M, K0, V1)
-      requires K0 ==Int K1
+//    rule store(store(M, K0, V0), K1, V1) => store(M, K0, V1)
+//      requires K0 ==Int K1
 
-    rule store(store(M, K0, V0), K1, V1) => store(store(M, K1, V1), K0, V0)
-      requires K0 =/=Int K1 andBool K1 in_keys(M)
+//    rule store(store(M, K0, V0), K1, V1) => store(store(M, K1, V1), K0, V0)
+//      requires K0 =/=Int K1 andBool K1 in_keys(M)
 
     // storeRange
 
-    rule storeRange(storeRange(M, K0, W0, V0), K1, W1, V1) => storeRange(M, K0, W0, V1)
-      requires range(K0, W0) ==Range range(K1, W1)
-
-    rule storeRange(storeRange(M, K0, W0, V0), K1, W1, V1) => storeRange(storeRange(M, K1, W1, V1), K0, W0, V0)
-      requires range(K0, W0) <>Range range(K1, W1)
-       andBool range(K1, W1) in_keys(M)
+//    rule storeRange(storeRange(M, K0, W0, V0), K1, W1, V1) => storeRange(M, K0, W0, V1)
+//      requires range(K0, W0) ==Range range(K1, W1)
+//
+//    rule storeRange(storeRange(M, K0, W0, V0), K1, W1, V1) => storeRange(storeRange(M, K1, W1, V1), K0, W0, V0)
+//      requires range(K0, W0) <>Range range(K1, W1)
+//       andBool range(K1, W1) in_keys(M)
 
     syntax Range ::= range(Int, Int)
 
-    rule range(K1, W1) in_keys(storeRange(M, K2, W2, _)) => true                     requires range(K1, W1) ==Range range(K2, W2)
-    rule range(K1, W1) in_keys(storeRange(M, K2, W2, _)) => range(K1, W1) in_keys(M) requires range(K1, W1) <>Range range(K2, W2)
+//    rule range(K1, W1) in_keys(storeRange(M, K2, W2, _)) => true                     requires range(K1, W1) ==Range range(K2, W2)
+//    rule range(K1, W1) in_keys(storeRange(M, K2, W2, _)) => range(K1, W1) in_keys(M) requires range(K1, W1) <>Range range(K2, W2)
 
-    syntax Bool ::= Range "==Range" Range [function]
-                  | Range "<>Range" Range [function]
-
-    rule range(K1, W1) ==Range range(K2, W2) => K1 ==Int K2 andBool W1 ==Int W2
-    rule range(K1, W1) <>Range range(K2, W2) => K1 +Int W1 <=Int K2 orBool K2 +Int W2 <=Int K1
+//    syntax Bool ::= Range "==Range" Range [function]
+//                  | Range "<>Range" Range [function]
+//
+//    rule range(K1, W1) ==Range range(K2, W2) => K1 ==Int K2 andBool W1 ==Int W2
+//    rule range(K1, W1) <>Range range(K2, W2) => K1 +Int W1 <=Int K2 orBool K2 +Int W2 <=Int K1
 
 
   // ########################
@@ -138,8 +138,8 @@ module VERIFICATION
 
     rule #bufSeg(BUF, N, WIDTH) => BUF requires WIDTH ==Int #sizeBuffer(BUF)
 
-    rule selectRange(storeRange(M, START1, WIDTH1, BUF), START2, WIDTH2) => BUF
-      requires START1 ==Int START2 andBool WIDTH1 ==Int WIDTH2
+//    rule selectRange(storeRange(M, START1, WIDTH1, BUF), START2, WIDTH2) => BUF
+//      requires START1 ==Int START2 andBool WIDTH1 ==Int WIDTH2
 
   // ########################
   // Range
@@ -332,11 +332,11 @@ rule #isValid(SIGS, I, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER, _) => false req
 
 // axiomatization of #isValid
 
-rule #isValid   (SIGS, I, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER, true)
-  => #isValidSig(SIGS, I, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER)
-     andBool #signer(SIGS, I, DATA_HASH) >Int #signer(SIGS, I -Int 1, DATA_HASH)
-//   andBool select(STORAGE, #hashedLocation({COMPILER}, {OWNERS}, #signer(SIGS, I, DATA_HASH))) =/=Int 0
-     andBool select(STORAGE, #hashedLocation("Solidity", 2,        #signer(SIGS, I, DATA_HASH))) =/=Int 0
+//rule #isValid   (SIGS, I, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER, true)
+//  => #isValidSig(SIGS, I, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER)
+//     andBool #signer(SIGS, I, DATA_HASH) >Int #signer(SIGS, I -Int 1, DATA_HASH)
+////   andBool select(STORAGE, #hashedLocation({COMPILER}, {OWNERS}, #signer(SIGS, I, DATA_HASH))) =/=Int 0
+//     andBool select(STORAGE, #hashedLocation("Solidity", 2,        #signer(SIGS, I, DATA_HASH))) =/=Int 0
 
 rule #signer(_, I, _) => 0 requires I <Int 0  // address lastOwner = address(0);
 
@@ -348,20 +348,20 @@ rule #isValidSig(SIGS, I, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER)
                        #bufSeg(SIGS, #sigS(SIGS,I) +Int 32, #asWord(#bufSeg(SIGS, #sigS(SIGS,I), 32)))) // contractSignature
   requires #sigV(SIGS, I) ==Int 0
 
-rule #isValidSig(SIGS, I, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER)
-  => MSG_SENDER ==Int #sigR(SIGS, I)
-//   orBool select(STORAGE, #hashedLocation({COMPILER}, {APPROVED_HASHES}, #sigR(SIGS, I) DATA_HASH)) =/=Int 0
-     orBool select(STORAGE, #hashedLocation("Solidity", 8,                 #sigR(SIGS, I) DATA_HASH)) =/=Int 0
-  requires #sigV(SIGS, I) ==Int 1
+//rule #isValidSig(SIGS, I, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER)
+//  => MSG_SENDER ==Int #sigR(SIGS, I)
+////   orBool select(STORAGE, #hashedLocation({COMPILER}, {APPROVED_HASHES}, #sigR(SIGS, I) DATA_HASH)) =/=Int 0
+//     orBool select(STORAGE, #hashedLocation("Solidity", 8,                 #sigR(SIGS, I) DATA_HASH)) =/=Int 0
+//  requires #sigV(SIGS, I) ==Int 1
 
 /* in case the above doesn't work
 rule #isValidSig(SIGS, I, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER) => true
   requires #sigV(SIGS, I) ==Int 1 andBool MSG_SENDER ==Int #sigR(SIGS, I)
 
-rule #isValidSig(SIGS, I, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER)
-//=> select(STORAGE, #hashedLocation({COMPILER}, {APPROVED_HASHES}, #sigR(SIGS, I) DATA_HASH)) =/=Int 0
-  => select(STORAGE, #hashedLocation("Solidity", 8,                 #sigR(SIGS, I) DATA_HASH)) =/=Int 0
-  requires #sigV(SIGS, I) ==Int 1 andBool MSG_SENDER =/=Int #sigR(SIGS, I)
+//rule #isValidSig(SIGS, I, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER)
+////=> select(STORAGE, #hashedLocation({COMPILER}, {APPROVED_HASHES}, #sigR(SIGS, I) DATA_HASH)) =/=Int 0
+//  => select(STORAGE, #hashedLocation("Solidity", 8,                 #sigR(SIGS, I) DATA_HASH)) =/=Int 0
+//  requires #sigV(SIGS, I) ==Int 1 andBool MSG_SENDER =/=Int #sigR(SIGS, I)
 */
 
 rule #isValidSig(SIGS, I, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER)

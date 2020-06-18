@@ -60,54 +60,54 @@ module EVM-DATA-MAP-SYMBOLIC [symbolic]
   // Symbolic Word Map
   // ########################
 
-    syntax Memory ::= store  ( Memory , Int , Int ) [function, smtlib(storeInt) ]
-    syntax Int    ::= select ( Memory , Int )       [function, smtlib(selectInt)]
- // -----------------------------------------------------------------------------
-    rule select(store(M, K0, V), K) => V            requires K0  ==Int K
-    rule select(store(M, K0, V), K) => select(M, K) requires K0 =/=Int K
-
-    syntax Memory    ::= storeRange  ( Memory , Int , Int , ByteArray ) [function, smtlib(storeRange) ]
-    syntax ByteArray ::= selectRange ( Memory , Int , Int )             [function, smtlib(selectRange)]
- // ---------------------------------------------------------------------------------------------------
-    rule select(storeRange(M, START, WIDTH, WS), K) => WS[K -Int START] requires          START <=Int K andBool K <Int START +Int WIDTH
-    rule select(storeRange(M, START, WIDTH, WS), K) => select(M, K)     requires notBool (START <=Int K andBool K <Int START +Int WIDTH)
-
-    rule selectRange(store(M, K0, V), START, WIDTH) => selectRange(M, START, WIDTH) requires ( K0 <Int START orBool START +Int WIDTH <=Int K0 ) // no overlap
-
-    // included: [START0..[START..END]..END0]
-    rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => WS [ START -Int START0 .. WIDTH ]
-      requires START0 <=Int START andBool START +Int WIDTH <=Int START0 +Int WIDTH0
-
-    // no overlap: [START..END]..[START0..END0]  or  [START0..END0]..[START..END]
-    rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => selectRange(M, START, WIDTH)
-      requires ( (START +Int WIDTH) <=Int START0 orBool (START0 +Int WIDTH0) <=Int START )
-
-    // left  margin: [START..(START0..END]..END0)  or  [START..(START0..END0)..END]
-    rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => selectRange(M, START, START0 -Int START)
-                                                                      ++ selectRange(storeRange(M, START0, WIDTH0, WS), START0, (START +Int WIDTH) -Int START0)
-      requires START <Int START0 andBool START0 <Int START +Int WIDTH
-       andBool WIDTH0 >=Int 1 // to avoid unnecessary split
-
-    // right margin: (START0..[START..END0)..END]  or  [START..(START0..END0)..END]
-    rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => selectRange(storeRange(M, START0, WIDTH0, WS), START, (START0 +Int WIDTH0) -Int START)
-                                                                      ++ selectRange(M, START0 +Int WIDTH0, (START +Int WIDTH) -Int (START0 +Int WIDTH0))
-      requires START <Int START0 +Int WIDTH0 andBool START0 +Int WIDTH0 <Int START +Int WIDTH
-       andBool WIDTH0 >=Int 1 // to avoid unnecessary split
-
-    rule storeRange(M, _, WIDTH, _) => M requires WIDTH ==Int 0
-
-    rule selectRange(M, _, WIDTH) => .ByteArray requires WIDTH ==Int 0
-
-    // lifting
-
-    rule #lookup(M, K:Int)         => select(M, K)   requires notBool (#isConcrete(M) andBool #isConcrete(K))
-    rule M:Map [ K:Int <- V:Int ]  => store(M, K, V) requires notBool (#isConcrete(M) andBool #isConcrete(K) andBool #isConcrete(V))
-
-    rule #range(M, START, WIDTH) => selectRange(M, START, WIDTH)                 requires notBool (#isConcrete(M) andBool #isConcrete(START) andBool #isConcrete(WIDTH))
-    rule M [ START := WS ]       => storeRange(M, START, #sizeByteArray(WS), WS) requires notBool (#isConcrete(M) andBool #isConcrete(START) andBool #isConcrete(WS))
-
-    // once it gets down to the concrete map, return to the corresponding function
-    // shouldn't have the infinite rule application
-    rule select(M, K)                 => #lookup(M, K)           [concrete]
-    rule selectRange(M, START, WIDTH) => #range(M, START, WIDTH) [concrete]
+//    syntax Memory ::= store  ( Memory , Int , Int ) [function, smtlib(storeInt) ]
+//    syntax Int    ::= select ( Memory , Int )       [function, smtlib(selectInt)]
+// // -----------------------------------------------------------------------------
+//    rule select(store(M, K0, V), K) => V            requires K0  ==Int K
+//    rule select(store(M, K0, V), K) => select(M, K) requires K0 =/=Int K
+//
+//    syntax Memory    ::= storeRange  ( Memory , Int , Int , ByteArray ) [function, smtlib(storeRange) ]
+//    syntax ByteArray ::= selectRange ( Memory , Int , Int )             [function, smtlib(selectRange)]
+// // ---------------------------------------------------------------------------------------------------
+//    rule select(storeRange(M, START, WIDTH, WS), K) => WS[K -Int START] requires          START <=Int K andBool K <Int START +Int WIDTH
+//    rule select(storeRange(M, START, WIDTH, WS), K) => select(M, K)     requires notBool (START <=Int K andBool K <Int START +Int WIDTH)
+//
+//    rule selectRange(store(M, K0, V), START, WIDTH) => selectRange(M, START, WIDTH) requires ( K0 <Int START orBool START +Int WIDTH <=Int K0 ) // no overlap
+//
+//    // included: [START0..[START..END]..END0]
+//    rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => WS [ START -Int START0 .. WIDTH ]
+//      requires START0 <=Int START andBool START +Int WIDTH <=Int START0 +Int WIDTH0
+//
+//    // no overlap: [START..END]..[START0..END0]  or  [START0..END0]..[START..END]
+//    rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => selectRange(M, START, WIDTH)
+//      requires ( (START +Int WIDTH) <=Int START0 orBool (START0 +Int WIDTH0) <=Int START )
+//
+//    // left  margin: [START..(START0..END]..END0)  or  [START..(START0..END0)..END]
+//    rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => selectRange(M, START, START0 -Int START)
+//                                                                      ++ selectRange(storeRange(M, START0, WIDTH0, WS), START0, (START +Int WIDTH) -Int START0)
+//      requires START <Int START0 andBool START0 <Int START +Int WIDTH
+//       andBool WIDTH0 >=Int 1 // to avoid unnecessary split
+//
+//    // right margin: (START0..[START..END0)..END]  or  [START..(START0..END0)..END]
+//    rule selectRange(storeRange(M, START0, WIDTH0, WS), START, WIDTH) => selectRange(storeRange(M, START0, WIDTH0, WS), START, (START0 +Int WIDTH0) -Int START)
+//                                                                      ++ selectRange(M, START0 +Int WIDTH0, (START +Int WIDTH) -Int (START0 +Int WIDTH0))
+//      requires START <Int START0 +Int WIDTH0 andBool START0 +Int WIDTH0 <Int START +Int WIDTH
+//       andBool WIDTH0 >=Int 1 // to avoid unnecessary split
+//
+//    rule storeRange(M, _, WIDTH, _) => M requires WIDTH ==Int 0
+//
+//    rule selectRange(M, _, WIDTH) => .ByteArray requires WIDTH ==Int 0
+//
+//    // lifting
+//
+//    rule #lookup(M, K:Int)         => select(M, K)   requires notBool (#isConcrete(M) andBool #isConcrete(K))
+//    rule M:Map [ K:Int <- V:Int ]  => store(M, K, V) requires notBool (#isConcrete(M) andBool #isConcrete(K) andBool #isConcrete(V))
+//
+//    rule #range(M, START, WIDTH) => selectRange(M, START, WIDTH)                 requires notBool (#isConcrete(M) andBool #isConcrete(START) andBool #isConcrete(WIDTH))
+//    rule M [ START := WS ]       => storeRange(M, START, #sizeByteArray(WS), WS) requires notBool (#isConcrete(M) andBool #isConcrete(START) andBool #isConcrete(WS))
+//
+//    // once it gets down to the concrete map, return to the corresponding function
+//    // shouldn't have the infinite rule application
+//    rule select(M, K)                 => #lookup(M, K)           [concrete]
+//    rule selectRange(M, START, WIDTH) => #range(M, START, WIDTH) [concrete]
 endmodule
