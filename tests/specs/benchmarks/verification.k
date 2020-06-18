@@ -26,7 +26,6 @@ module VERIFICATION
 
     // Lemmas implied by the above, but still required to match side conditions of #padToWidth rule in lemmas.md
     // General range conversion lemmas like below are not an option, dramatic performance decrease:
-    //    rule A < pow256 => true requires A < pow160
     rule 0 <=Int  #symEcrec(DATA)             => true
     rule          #symEcrec(DATA) <Int pow256 => true
 
@@ -301,12 +300,6 @@ rule #signer(SIGS, I, DATA_HASH) => #sigR(SIGS, I)                            re
 
 syntax ByteArray ::= #ecrecData ( ByteArray , Int , Int ) [function]
 rule #ecrecData(SIGS, I, DATA_HASH) => #encodeArgs(#bytes32(DATA_HASH), #uint8(#sigV(SIGS,I)), #bytes32(#sigR(SIGS,I)), #bytes32(#sigS(SIGS,I)))
-
-// definition of #sigR, #sigS, #sigV
-
-//rule #sigR(SIGS, I) => #asWord(#bufSeg(SIGS, 65 *Int I        , 32))
-//rule #sigS(SIGS, I) => #asWord(#bufSeg(SIGS, 65 *Int I +Int 32, 32))
-//rule #sigV(SIGS, I) =>         #bufElm(SIGS, 65 *Int I +Int 64)
 
   // ########################
   // Account Map
