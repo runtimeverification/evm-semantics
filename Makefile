@@ -341,11 +341,11 @@ tests/%.parse: tests/%
 	$(CHECK) $@-out $@-expected
 	rm -rf $@-out
 
-tests/specs/functional/%.prove: TEST_SYMBOLIC_BACKEND=haskell
-tests/specs/examples/%.prove:   TEST_SYMBOLIC_BACKEND=haskell
-
+tests/specs/functional/%.prove:                 TEST_SYMBOLIC_BACKEND = haskell
+tests/specs/examples/%.prove:                   TEST_SYMBOLIC_BACKEND = haskell
 tests/specs/erc20/hkg/totalSupply-spec.k.prove: TEST_SYMBOLIC_BACKEND = haskell
 
+tests/specs/benchmarks/%.prove:                    KPROVE_OPTS += --smt-prelude $(dir $@)/evm.smt2
 tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-backend-command "kore-exec --smt=none"
 
 tests/%.prove: tests/%

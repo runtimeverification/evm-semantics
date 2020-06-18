@@ -56,25 +56,12 @@ run_prove() {
 
     def_module="$1" ; shift
 
-    # If --smt-prelude is not set and evm.smt2 is present in $run_dir, use it.
-    smt_prelude_set=
-    for i in "$@" ; do [[ $i == "--smt-prelude" ]] && smt_prelude_set=true && break ; done
-    run_dir="$(dirname "$run_file")"
-    smt_file="$run_dir/evm.smt2"
-    smt_args=()
-    if [[ -z $smt_prelude_set ]] && [[ -f "$smt_file" ]]; then
-      smt_args=(--smt-prelude "$smt_file")
-    fi
-    if $debug; then
-        set -x
-    fi
-
     additional_proof_args=()
-    if $repl; then
-        additional_proof_args+=(--haskell-backend-command "$k_release_dir/bin/kore-repl --repl-script $kevm_dir/kast.kscript")
-    fi
+    ! $debug || additional_proof_args+=(--debug)
+    ! $repl  || additional_proof_args+=(--haskell-backend-command "$k_release_dir/bin/kore-repl --repl-script $kevm_dir/kast.kscript")
 
-    export K_OPTS=-Xmx8G
+    export K_OPTS=${K_OPTS:--Xmx8G}
+    ! $debug || set -x
     kprove --directory "$backend_dir" "${smt_args[@]-}" "$run_file" --def-module "$def_module" "${additional_proof_args[@]}" "$@"
 }
 
