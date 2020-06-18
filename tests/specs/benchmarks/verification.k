@@ -124,7 +124,7 @@ module VERIFICATION
     rule #bufSeg(BUF, S0, W0) ++ (#bufSeg(BUF, S1, W1) ++ WS) => #bufSeg(BUF, S0, W0 +Int W1) ++ WS
       requires S1 ==Int S0 +Int W0
 
-    rule WS ++ .WordStack => WS
+    rule WS ++ .ByteArray => WS
 
     rule #sizeWordStack(WS, N) <Int SIZE => #sizeWordStack(WS, 0) +Int N <Int SIZE  requires N =/=Int 0
     rule SIZELIMIT <Int #sizeWordStack(WS, N) +Int DELTA  => SIZELIMIT <Int (#sizeWordStack(WS, 0) +Int N) +Int DELTA  requires N =/=Int 0
@@ -132,7 +132,7 @@ module VERIFICATION
 
     rule #sizeWordStack(WS, N) <=Int SIZE => #sizeWordStack(WS, 0) +Int N <=Int SIZE requires N =/=Int 0
 
-    rule #sizeWordStack(selectRange(_, _, WIDTH), SIZE) => SIZE +Int WIDTH
+//    rule #sizeWordStack(selectRange(_, _, WIDTH), SIZE) => SIZE +Int WIDTH
 
     rule #take(#sizeWordStack(WS, 0), WS) => WS
 
@@ -180,22 +180,22 @@ module VERIFICATION
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
       requires 0 <=Int V andBool V <Int pow256
 
-    rule #buf(32, #asWord(WS)) => WS  requires #sizeWordStack(WS) ==Int 32
+    rule #buf(32, #asWord(WS)) => WS  requires #sizeByteArray(WS) ==Int 32
     rule #buf(32, #asWord(#bufSeg(BUF, START, WIDTH))) => #bufSeg(BUF, START +Int WIDTH -Int 32, 32)  requires WIDTH >=Int 32
 
     rule #asWord(#bufSeg(BUF, START, WIDTH)) &Int 255 => #asWord(#bufSeg(BUF, START +Int WIDTH -Int 1, 1))  requires WIDTH >=Int 1
     rule 255 &Int #asWord(#bufSeg(BUF, START, WIDTH)) => #asWord(#bufSeg(BUF, START +Int WIDTH -Int 1, 1))  requires WIDTH >=Int 1
 
-    rule #bufSeg(BUF, START, 1) => #bufElm(BUF, START) : .WordStack
-    rule #asWord(#bufElm(BUF, INDEX) : .WordStack) => #bufElm(BUF, INDEX)
+    rule #bufSeg(BUF, START, 1) => #bufElm(BUF, START) : .ByteArray
+    rule #asWord(#bufElm(BUF, INDEX) : .ByteArray) => #bufElm(BUF, INDEX)
 
     rule #buf(32, DATA) => #padToWidth(32, #asByteStack(DATA))  [concrete]
 
     rule #asWord(WS0 ++ #buf(MASKWIDTH0, 0)) |Int #asWord(#buf(MASKWIDHT1, 0) ++ WS1)
       => #asWord(WS0 ++ WS1)
-      requires #sizeWordStack(WS0) +Int MASKWIDTH0 ==Int 32
-       andBool #sizeWordStack(WS0) ==Int MASKWIDHT1
-       andBool MASKWIDTH0 ==Int #sizeWordStack(WS1)
+      requires #sizeByteArray(WS0) +Int MASKWIDTH0 ==Int 32
+       andBool #sizeByteArray(WS0) ==Int MASKWIDHT1
+       andBool MASKWIDTH0 ==Int #sizeByteArray(WS1)
 
     rule #asWord(WS) &Int maxUInt256 => #asWord(WS)
 
@@ -259,13 +259,13 @@ module VERIFICATION
     // 0xff..ff00..00 (16 1's followed by 240 0's)
     rule 115790322390251417039241401711187164934754157181743688420499462401711837020160 &Int #asWord(WS1 ++ WS2)
         => #asWord(WS1 ++ #buf(30, 0))
-      requires #sizeWordStack(WS1) ==Int 2
-       andBool #sizeWordStack(WS2) ==Int 30
+      requires #sizeByteArray(WS1) ==Int 2
+       andBool #sizeByteArray(WS2) ==Int 30
 
     rule #asWord(WS1 ++ WS2) &Int 115790322390251417039241401711187164934754157181743688420499462401711837020160
        => #asWord(WS1 ++ #buf(30, 0))
-     requires #sizeWordStack(WS1) ==Int 2
-      andBool #sizeWordStack(WS2) ==Int 30
+     requires #sizeByteArray(WS1) ==Int 2
+      andBool #sizeByteArray(WS2) ==Int 30
 
     // x &Int (NOT 31)
     rule X &Int 115792089237316195423570985008687907853269984665640564039457584007913129639904 => (X /Int 32) *Int 32  requires 0 <=Int X
