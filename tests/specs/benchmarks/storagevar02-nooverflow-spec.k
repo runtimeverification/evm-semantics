@@ -70,7 +70,7 @@ module STORAGEVAR02-NOOVERFLOW-SPEC
             <balance> CONTRACT_BAL </balance>
             <code> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806361461954146044575b600080fd5b348015604f57600080fd5b506056606c565b6040518082815260200191505060405180910390f35b600060016000540160008190555060005490509056fea165627a7a7230582084ad795d13123f60bc7fd2a18dba66eb8d320ddea8765847f2ae5982179470600029") </code>
             <storage>
-S0 => S1
+S [ #hashedLocation("Solidity", 0, .IntList) <- (N0 => N1) ]
             </storage>
             <origStorage>
 _
@@ -121,10 +121,9 @@ _
 
 andBool #rangeUInt(256, CONTRACT_BAL)
 andBool #rangeUInt(256, CALLEE_BAL)andBool #range(0 <= CD < 1024)
-andBool #rangeAddress(MSG_SENDER)andBool N0 ==Int select(S0, #hashedLocation("Solidity", 0, .IntList))andBool #range(0 <= N0 < 2 ^Int 256 -Int 1)
+andBool #rangeAddress(MSG_SENDER)
+andBool #range(0 <= N0 < 2 ^Int 256 -Int 1)
 andBool N1 ==Int N0 +Int 1
-    ensures true
-andBool N1 ==Int select(S1, #hashedLocation("Solidity", 0, .IntList))
 
 
 
