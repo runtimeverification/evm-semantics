@@ -15,8 +15,8 @@ module EVM-DATA-MAP-SYMBOLIC [symbolic]
 
     rule #asWord(#buf(SIZE, DATA)) => DATA requires SIZE <=Int 32
 
-    rule #buf(SIZE, _)        => .WordStack requires SIZE  ==Int 0
-    rule #bufSeg(_, _, WIDTH) => .WordStack requires WIDTH ==Int 0
+    rule #buf(SIZE, _)        => .ByteArray requires SIZE  ==Int 0
+    rule #bufSeg(_, _, WIDTH) => .ByteArray requires WIDTH ==Int 0
 
     rule #bufSeg(WS, START, WIDTH) => WS requires START ==Int 0 andBool WIDTH ==Int #sizeWordStack(WS)
 
@@ -27,28 +27,28 @@ module EVM-DATA-MAP-SYMBOLIC [symbolic]
     // Auxiliary function to make rules compatible with simplification `rule WS ++ .WordStack => WS`
     syntax ByteArray ::= #takeAux ( Int , ByteArray , ByteArray ) [function]
  // ------------------------------------------------------------------------
-    rule #take(N, BUF      ) => #takeAux(N, BUF, .WordStack)               requires #isBuf(BUF)
+    rule #take(N, BUF      ) => #takeAux(N, BUF, .ByteArray)               requires #isBuf(BUF)
     rule #take(N, BUF ++ WS) => #takeAux(N, BUF, WS)                       requires #isBuf(BUF)
     rule #takeAux(N, BUF, WS) => #bufSeg(BUF, 0, N)                        requires 0 <=Int N andBool N <=Int #sizeBuffer(BUF)
     rule #takeAux(N, BUF, WS) => BUF ++ #take(N -Int #sizeBuffer(BUF), WS) requires N >Int #sizeBuffer(BUF)
 
     syntax ByteArray ::= #dropAux ( Int , ByteArray , ByteArray ) [function]
  // ------------------------------------------------------------------------
-    rule #drop(N, BUF      ) => #dropAux(N, BUF, .WordStack)                    requires #isBuf(BUF)
+    rule #drop(N, BUF      ) => #dropAux(N, BUF, .ByteArray)                    requires #isBuf(BUF)
     rule #drop(N, BUF ++ WS) => #dropAux(N, BUF, WS)                            requires #isBuf(BUF)
     rule #dropAux(N, BUF, WS) => #bufSeg(BUF, N, #sizeBuffer(BUF) -Int N) ++ WS requires 0 <=Int N andBool N <=Int #sizeBuffer(BUF)
     rule #dropAux(N, BUF, WS) => #drop(N -Int #sizeBuffer(BUF), WS)             requires N >=Int #sizeBuffer(BUF)
 
     syntax Int ::= #getElmAux ( ByteArray , ByteArray , Int ) [function]
  // --------------------------------------------------------------------
-    rule (BUF      ) [ N ] => #getElmAux(BUF, .WordStack, N)      requires #isBuf(BUF)
+    rule (BUF      ) [ N ] => #getElmAux(BUF, .ByteArray, N)      requires #isBuf(BUF)
     rule (BUF ++ WS) [ N ] => #getElmAux(BUF, WS, N)              requires #isBuf(BUF)
     rule #getElmAux(BUF, WS, N) => #bufElm(BUF, N)                requires 0 <=Int N andBool N <Int #sizeBuffer(BUF)
     rule #getElmAux(BUF, WS, N) => WS [ N -Int #sizeBuffer(BUF) ] requires N >=Int #sizeBuffer(BUF)
 
 
-    rule #sizeWordStack ( BUF ++ WS, SIZE ) => #sizeWordStack(WS, SIZE +Int #sizeBuffer(BUF)) requires #isBuf(BUF)
-    rule #sizeWordStack ( BUF      , SIZE ) =>                    SIZE +Int #sizeBuffer(BUF)  requires #isBuf(BUF)
+//    rule #sizeWordStack ( BUF ++ WS, SIZE ) => #sizeWordStack(WS, SIZE +Int #sizeBuffer(BUF)) requires #isBuf(BUF)
+//    rule #sizeWordStack ( BUF      , SIZE ) =>                    SIZE +Int #sizeBuffer(BUF)  requires #isBuf(BUF)
 
     syntax Int ::= #sizeBuffer ( ByteArray ) [function]
  // ---------------------------------------------------
@@ -96,7 +96,7 @@ module EVM-DATA-MAP-SYMBOLIC [symbolic]
 
     rule storeRange(M, _, WIDTH, _) => M requires WIDTH ==Int 0
 
-    rule selectRange(M, _, WIDTH) => .WordStack requires WIDTH ==Int 0
+    rule selectRange(M, _, WIDTH) => .ByteArray requires WIDTH ==Int 0
 
     // lifting
 
@@ -104,7 +104,7 @@ module EVM-DATA-MAP-SYMBOLIC [symbolic]
     rule M:Map [ K:Int <- V:Int ]  => store(M, K, V) requires notBool (#isConcrete(M) andBool #isConcrete(K) andBool #isConcrete(V))
 
     rule #range(M, START, WIDTH) => selectRange(M, START, WIDTH)                 requires notBool (#isConcrete(M) andBool #isConcrete(START) andBool #isConcrete(WIDTH))
-    rule M [ START := WS ]       => storeRange(M, START, #sizeWordStack(WS), WS) requires notBool (#isConcrete(M) andBool #isConcrete(START) andBool #isConcrete(WS))
+    rule M [ START := WS ]       => storeRange(M, START, #sizeByteArray(WS), WS) requires notBool (#isConcrete(M) andBool #isConcrete(START) andBool #isConcrete(WS))
 
     // once it gets down to the concrete map, return to the corresponding function
     // shouldn't have the infinite rule application
