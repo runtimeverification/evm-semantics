@@ -55,14 +55,14 @@ module VERIFICATION
 
     // select/store key equality
 
-    rule hash2(A,B) ==K I => false
-      requires #isConcrete(I)
-       andBool I <Int 20 //random small-ish number bigger than any fixed storage location
-
-    rule I ==K hash2(A,B) => hash2(A,B) ==K I
-      requires #isConcrete(I)
-
-    rule hash2(A1,B1) ==K hash2(A2,B2) => A1 ==Int A2 andBool B1 ==Int B2
+//    rule hash2(A,B) ==K I => false
+//      requires #isConcrete(I)
+//       andBool I <Int 20 //random small-ish number bigger than any fixed storage location
+//
+//    rule I ==K hash2(A,B) => hash2(A,B) ==K I
+//      requires #isConcrete(I)
+//
+//    rule hash2(A1,B1) ==K hash2(A2,B2) => A1 ==Int A2 andBool B1 ==Int B2
 
     rule store(M, K, select(M, K)) => M
 
@@ -117,8 +117,8 @@ module VERIFICATION
   // Buffer Reasoning
   // ########################
 
-    rule #noOverflowAux(BUF) => true requires #isBuf(BUF)
-    rule #noOverflowAux(WS1 ++ WS2) => #noOverflowAux(WS1) andBool #noOverflowAux(WS2)
+//    rule #noOverflowAux(BUF) => true requires #isBuf(BUF)
+//    rule #noOverflowAux(WS1 ++ WS2) => #noOverflowAux(WS1) andBool #noOverflowAux(WS2)
 
     rule #bufSeg(BUF, S0, W0) ++ #bufSeg(BUF, S1, W1) => #bufSeg(BUF, S0, W0 +Int W1)
       requires S1 ==Int S0 +Int W0
