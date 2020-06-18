@@ -30,12 +30,10 @@ module LEMMAS
     //Todo custom ==K unification doesn't work in Haskell yet
     //++ unification
     rule #buf(N, A) ++ BUF1 ==K #buf(N, B) ++ BUF2 => #buf(N, A) ==K #buf(N, B) andBool BUF1 ==K BUF2     [simplification]
-
 endmodule
 
 module LEMMAS-JAVA [symbolic, kast]
-    imports EVM
-    imports EDSL
+    imports LEMMAS-COMMON
     imports K-REFLECTION
 
     rule BUF [ L .. W ] => .ByteArray requires L >=Int #sizeByteArray(BUF)  [simplification]
@@ -92,14 +90,6 @@ module LEMMAS-JAVA [symbolic, kast]
     rule #buf(N, #asWord(WS)) => WS
       requires #noOverflow(WS) andBool N ==Int #sizeByteArray(WS)
       [simplification]
-
-    syntax Bool ::= #noOverflow    ( ByteArray ) [function]
-                  | #noOverflowAux ( ByteArray ) [function]
- // -------------------------------------------------------
-    rule #noOverflow(WS) => #sizeByteArray(WS) <=Int 32 andBool #noOverflowAux(WS)
-
-    rule #noOverflowAux(BA        ) => 0 <=Int BA[0] andBool BA[0] <Int 256 andBool #noOverflowAux(#drop(1,BA)) requires #sizeByteArray(BA) >Int 0
-    rule #noOverflowAux(.ByteArray) => true
 
     // TODO: drop hash1 and keccakIntList once new vyper hashed location scheme is captured in edsl.md
 
@@ -229,8 +219,7 @@ endmodule
 
 module LEMMAS-HASKELL [symbolic, kore]
     imports INT-SYMBOLIC
-    imports EVM
-    imports EDSL
+    imports LEMMAS-COMMON
 
     rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])
       requires #range(0 <= START < #sizeByteArray(BUF1))
@@ -293,4 +282,17 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule bool2Word( B:Bool ) ==Int 1 => B         [simplification]
     rule bool2Word( B:Bool ) ==Int 0 => notBool B [simplification]
+endmodule
+
+module LEMMAS-COMMON
+    imports EVM
+    imports EDSL
+
+    syntax Bool ::= #noOverflow    ( ByteArray ) [function]
+                  | #noOverflowAux ( ByteArray ) [function]
+ // -------------------------------------------------------
+    rule #noOverflow(WS) => #sizeByteArray(WS) <=Int 32 andBool #noOverflowAux(WS)
+
+    rule #noOverflowAux(BA        ) => 0 <=Int BA[0] andBool BA[0] <Int 256 andBool #noOverflowAux(BA [ 1 .. #sizeByteArray(BA) ]) requires 0 <Int #sizeByteArray(BA)
+    rule #noOverflowAux(.ByteArray) => true
 endmodule
