@@ -426,17 +426,6 @@ A cons-list is used for the EVM wordstack.
     rule .WordStack          [ N := W ] => (0 : .WordStack) [ N := W ]
 ```
 
--   Definedness conditions for `WS [ N ]`:
-
-```{.k .symbolic}
-    rule #Ceil(#lookup( M, _ )) => { #isValidStorage(M) #Equals true } [anywhere, simplification]
-
-    syntax Bool ::= #isValidStorage( Map ) [function, functional]
- // -------------------------------------------------------------
-    rule #isValidStorage( _ |-> VAL M ) => isInt(VAL) andBool #isValidStorage(M)
-    rule #isValidStorage( .Map )        => true
-```
-
 -   `#sizeWordStack` calculates the size of a `WordStack`.
 -   `_in_` determines if a `Int` occurs in a `WordStack`.
 
@@ -667,10 +656,13 @@ Addresses
 -   `#lookup` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 ```k
-    syntax Int ::= #lookup ( Map , Int ) [function]
+    syntax Int ::= #lookup ( Map , Int ) [function, functional]
  // -----------------------------------------------
-    rule [#lookup.some]: #lookup( (KEY |-> VAL:Int) M, KEY ) => VAL
-    rule [#lookup.none]: #lookup(                   M, KEY ) => 0 requires notBool KEY in_keys(M)
+    rule [#lookup.some]:       #lookup( (KEY |-> VAL:Int) M, KEY ) => VAL requires #rangeUInt(256, VAL)
+    rule [#lookup.none]:       #lookup(                   M, KEY ) => 0   requires notBool KEY in_keys(M)
+    //Impossible cases, for completeness
+    rule [#lookup.notInt]:     #lookup( (KEY |-> VAL    ) M, KEY ) => 0   requires notBool isInt(VAL)
+    rule [#lookup.outOfRange]: #lookup( (KEY |-> VAL:Int) M, KEY ) => 0   requires notBool #rangeUInt(256, VAL)
 ```
 
 ### Substate Log
