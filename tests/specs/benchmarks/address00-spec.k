@@ -2,7 +2,6 @@ requires "abstract-semantics.k"
 requires "verification.k"
 
 module ADDRESS00-SPEC
-  imports ETHEREUM-SIMULATION
   imports ABSTRACT-SEMANTICS
   imports VERIFICATION
 

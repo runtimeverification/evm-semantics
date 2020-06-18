@@ -2,7 +2,6 @@ requires "abstract-semantics.k"
 requires "verification.k"
 
 module STORAGEVAR02-NOOVERFLOW-SPEC
-  imports ETHEREUM-SIMULATION
   imports ABSTRACT-SEMANTICS
   imports VERIFICATION
 
@@ -98,7 +97,7 @@ _
             // precompiled account for ECCREC
             <acctID> 1 </acctID>
             <balance> 0 </balance>
-            <code> .WordStack </code>
+            <code> .ByteArray </code>
             <storage> .Map </storage>
             <origStorage> .Map </origStorage>
             <nonce> 0 </nonce>
