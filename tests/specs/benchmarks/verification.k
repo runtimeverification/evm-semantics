@@ -80,17 +80,15 @@ module VERIFICATION
     rule M1 ==IMap M2 except _ => true
       requires M1 ==K M2  // structural equality
 
-    syntax Set ::= keys(Map) [function]
-
-    rule K1 in keys(store(M, K2, _)) => true          requires K1  ==Int K2
-    rule K1 in keys(store(M, K2, _)) => K1 in keys(M) requires K1 =/=Int K2
+    rule K1 in_keys(store(M, K2, _)) => true          requires K1  ==Int K2
+    rule K1 in_keys(store(M, K2, _)) => K1 in_keys(M) requires K1 =/=Int K2
 
     //Reduces symbolic Maps where multiple entries share the same key
     rule store(store(M, K0, V0), K1, V1) => store(M, K0, V1)
       requires K0 ==Int K1
 
     rule store(store(M, K0, V0), K1, V1) => store(store(M, K1, V1), K0, V0)
-      requires K0 =/=Int K1 andBool K1 in keys(M)
+      requires K0 =/=Int K1 andBool K1 in_keys(M)
 
     // storeRange
 
@@ -99,12 +97,12 @@ module VERIFICATION
 
     rule storeRange(storeRange(M, K0, W0, V0), K1, W1, V1) => storeRange(storeRange(M, K1, W1, V1), K0, W0, V0)
       requires range(K0, W0) <>Range range(K1, W1)
-       andBool range(K1, W1) in keys(M)
+       andBool range(K1, W1) in_keys(M)
 
     syntax Range ::= range(Int, Int)
 
-    rule range(K1, W1) in keys(storeRange(M, K2, W2, _)) => true                     requires range(K1, W1) ==Range range(K2, W2)
-    rule range(K1, W1) in keys(storeRange(M, K2, W2, _)) => range(K1, W1) in keys(M) requires range(K1, W1) <>Range range(K2, W2)
+    rule range(K1, W1) in_keys(storeRange(M, K2, W2, _)) => true                     requires range(K1, W1) ==Range range(K2, W2)
+    rule range(K1, W1) in_keys(storeRange(M, K2, W2, _)) => range(K1, W1) in_keys(M) requires range(K1, W1) <>Range range(K2, W2)
 
     syntax Bool ::= Range "==Range" Range [function]
                   | Range "<>Range" Range [function]
