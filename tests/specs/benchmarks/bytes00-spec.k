@@ -1,8 +1,6 @@
-requires "abstract-semantics.k"
 requires "verification.k"
 
 module BYTES00-SPEC
-  imports ABSTRACT-SEMANTICS
   imports VERIFICATION
 
   // fn-execute 

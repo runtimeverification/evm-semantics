@@ -1,8 +1,6 @@
-requires "abstract-semantics.k"
 requires "verification.k"
 
 module OVERFLOW00-OVERFLOW-SPEC
-  imports ABSTRACT-SEMANTICS
   imports VERIFICATION
 
   // fn-execute-overflow 

@@ -2,12 +2,14 @@ requires "evm-symbolic.k"
 requires "evm-data-map-symbolic.k"
 requires "edsl-static-array.k"
 requires "../lemmas.k"
+requires "abstract-semantics.k"
 
 module VERIFICATION
     imports EVM-SYMBOLIC
     imports EVM-DATA-MAP-SYMBOLIC
     imports EDSL-STATIC-ARRAY
     imports LEMMAS
+    imports ABSTRACT-SEMANTICS
 
     rule Rsstore(BYZANTIUM, NEW, CURR, ORIG) => 0 requires NEW =/=Int 0
 

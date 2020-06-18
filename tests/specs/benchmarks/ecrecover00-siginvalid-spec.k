@@ -1,8 +1,6 @@
-requires "abstract-semantics.k"
 requires "verification.k"
 
 module ECRECOVER00-SIGINVALID-SPEC
-  imports ABSTRACT-SEMANTICS
   imports VERIFICATION
 
   // fn-execute-siginvalid 

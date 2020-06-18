@@ -1,8 +1,6 @@
-requires "abstract-semantics.k"
 requires "verification.k"
 
 module ADDRESS00-SPEC
-  imports ABSTRACT-SEMANTICS
   imports VERIFICATION
 
   // fn-execute 
