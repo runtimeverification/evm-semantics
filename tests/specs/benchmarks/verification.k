@@ -1,15 +1,60 @@
 requires "evm-symbolic.k"
-requires "edsl-static-array.k"
 requires "../lemmas.k"
-requires "abstract-semantics.k"
 
 module VERIFICATION
+    imports K-REFLECTION
     imports EVM-SYMBOLIC
-    imports EDSL-STATIC-ARRAY
     imports LEMMAS
-    imports ABSTRACT-SEMANTICS
 
     rule Rsstore(BYZANTIUM, NEW, CURR, ORIG) => 0 requires NEW =/=Int 0
+
+  // ########################
+  // Rule Replacement
+  // ########################
+
+    rule <k> EXTCODESIZE ACCT => #extCodeSize(ACCT) ~> #push ... </k>  [trusted]
+
+    // to avoid unnecessary case analyses
+    rule <k> LT W0 W1 => bool2Word(W0  <Int W1) ~> #push ... </k> [trusted]
+    rule <k> GT W0 W1 => bool2Word(W0  >Int W1) ~> #push ... </k> [trusted]
+    rule <k> EQ W0 W1 => bool2Word(W0 ==Int W1) ~> #push ... </k> [trusted]
+    rule <k> ISZERO W => bool2Word(W  ==Int 0 ) ~> #push ... </k> [trusted]
+
+    // accumulate the gas cost and never run out of gas
+    rule <k> MEM' ~> #deductMemoryGas => . ... </k>
+         <gas> #gas(INITGAS, NONMEM, MEM) => #gas(INITGAS, NONMEM, MEM +Int MEM') </gas>
+         <callGas> _ => #gas(INITGAS, NONMEM, MEM) </callGas>
+      [trusted, matching(#gas)]
+
+    //Will run only if rule above doesn't match
+    rule <k> G ~> #deductGas => . ... </k>
+         <gas> #gas(INITGAS, NONMEM, MEM) => #gas(INITGAS, NONMEM +Int G, MEM) </gas>
+         <callGas> _ => #gas(INITGAS, NONMEM, MEM) </callGas>
+      [trusted, matching(#gas)]
+
+    rule <k> ECREC => #end EVMC_SUCCESS ... </k>
+         <callData> DATA </callData>
+         <output> _ => #ecrec(#symEcrec(DATA)) </output>
+      requires notBool #isConcrete(DATA) andBool #sizeByteArray(DATA) ==Int 128 andBool notBool #ecrecEmpty(DATA)
+      [trusted]
+
+    rule <k> ECREC => #end EVMC_SUCCESS ... </k>
+         <callData> DATA </callData>
+         <output> _ => #ecrec(.Account) </output>
+      requires notBool #isConcrete(DATA) andBool #sizeByteArray(DATA) ==Int 128 andBool #ecrecEmpty(DATA)
+      [trusted]
+
+  // ########################
+  // ABI Encoding
+  // ########################
+
+    syntax ByteArray ::= #abiCallData2 ( String , TypedArgs ) [function]
+
+    rule #abiCallData2( FSIG , ARGS )
+      => #parseByteStack(substrString(Keccak256(FSIG), 0, 8))
+      ++ #encodeArgs(ARGS)
+
+    rule chop(I) => 0 requires I ==Int pow256
 
   // ########################
   // Memory Usage
