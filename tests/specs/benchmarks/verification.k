@@ -1,12 +1,10 @@
 requires "evm-symbolic.k"
-requires "evm-data-map-symbolic.k"
 requires "edsl-static-array.k"
 requires "../lemmas.k"
 requires "abstract-semantics.k"
 
 module VERIFICATION
     imports EVM-SYMBOLIC
-    imports EVM-DATA-MAP-SYMBOLIC
     imports EDSL-STATIC-ARRAY
     imports LEMMAS
     imports ABSTRACT-SEMANTICS
@@ -49,6 +47,7 @@ module VERIFICATION
   // ########################
 
     rule WS ++ .ByteArray => WS
+    rule ( WS1 ++ WS2 ) ++ WS3 => WS1 ++ ( WS2 ++ WS3 )
 
     rule #sizeWordStack(WS, N) <Int SIZE => #sizeWordStack(WS, 0) +Int N <Int SIZE  requires N =/=Int 0
     rule SIZELIMIT <Int #sizeWordStack(WS, N) +Int DELTA  => SIZELIMIT <Int (#sizeWordStack(WS, 0) +Int N) +Int DELTA  requires N =/=Int 0
