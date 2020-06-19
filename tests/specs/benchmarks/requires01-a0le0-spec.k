@@ -1,9 +1,6 @@
-requires "abstract-semantics.k"
 requires "verification.k"
 
 module REQUIRES01-A0LE0-SPEC
-  imports ETHEREUM-SIMULATION
-  imports ABSTRACT-SEMANTICS
   imports VERIFICATION
 
   // fn-execute-a0le0 
@@ -98,7 +95,7 @@ _
             // precompiled account for ECCREC
             <acctID> 1 </acctID>
             <balance> 0 </balance>
-            <code> .WordStack </code>
+            <code> .ByteArray </code>
             <storage> .Map </storage>
             <origStorage> .Map </origStorage>
             <nonce> 0 </nonce>

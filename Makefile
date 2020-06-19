@@ -297,8 +297,13 @@ KEVM_CHAINID  := 1
 
 KEVM_WEB3_ARGS := --shutdownable --respond-to-notifications
 
-KPROVE_MODULE := VERIFICATION
-KPROVE_OPTS   :=
+KPROVE_MODULE  := VERIFICATION
+KPROVE_OPTS    :=
+KPROVE_DRY_RUN :=
+
+ifneq (,$(KPROVE_DRY_RUN))
+    KPROVE_OPTS += --dry-run
+endif
 
 test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
@@ -341,11 +346,11 @@ tests/%.parse: tests/%
 	$(CHECK) $@-out $@-expected
 	rm -rf $@-out
 
-tests/specs/functional/%.prove: TEST_SYMBOLIC_BACKEND=haskell
-tests/specs/examples/%.prove:   TEST_SYMBOLIC_BACKEND=haskell
-
+tests/specs/functional/%.prove:                 TEST_SYMBOLIC_BACKEND = haskell
+tests/specs/examples/%.prove:                   TEST_SYMBOLIC_BACKEND = haskell
 tests/specs/erc20/hkg/totalSupply-spec.k.prove: TEST_SYMBOLIC_BACKEND = haskell
 
+tests/specs/benchmarks/%-spec.k.prove:             KPROVE_OPTS += --smt-prelude $(dir $@)evm.smt2
 tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-backend-command "kore-exec --smt=none"
 
 tests/%.prove: tests/%
