@@ -55,8 +55,16 @@ module VERIFICATION
     // step 1527 - Cdpi ==K (Cdpi +Int 1)
     rule I ==K I +Int 1 => false
 
-    // step 2177 - DEST in DESTS
+    // step 2088 - 0 < #sizeByteArray(#padToWidth(32, #asByteStack(Vat)) + 292
+    rule #sizeByteArray(#padToWidth(32, #asByteStack(I))) => 32 requires 0 <=Int I andBool I <Int pow256
+
+    // step 2177 - DEST in #range(M [ 420 := #padToWidth(32, #asByteStack(_)) ], 420, 32)
+    rule #range(MAP [ N := BUF ], START, WIDTH) => BUF requires N ==Int START andBool #sizeWordStack(BUF) ==Int WIDTH
     rule #computeValidJumpDests(#padToWidth(32, #asByteStack(ADDR)) => .WordStack, I => I +Int 32, RESULT) requires 0 <=Int ADDR andBool ADDR <Int pow256
+
+    // step 2780 - MAP [ N := (W : WS) ]
+    rule MAP [ N := .ByteArray ] => MAP
+    rule MAP [ N := W : WS     ] => MAP [ N <- W ] [ N +Int 1 := WS ]
 
     // step 2893 - M [ N <- K ] [ M := BUF ]
     rule MAP:Memory [ N <- V           ] [ N' <- V' ] => MAP [ N' <- V' ] [ N <- V ] requires N'                          <Int N
@@ -64,6 +72,13 @@ module VERIFICATION
     rule MAP:Memory [ N := V:ByteArray ] [ N' <- V' ] => MAP [ N' <- V' ] [ N := V ] requires N'                          <Int N
     rule MAP:Memory [ N := V:ByteArray ] [ N' := V' ] => MAP [ N' := V' ] [ N := V ] requires N' +Int #sizeWordStack(V') <=Int N
     rule MAP:Memory [ N <- V           ] [ N' := V' ] => MAP [ N' := V' ]            requires N' <=Int N andBool N <Int N' +Int #sizeWordStack(V')
+
+    // step 2983 - #range(M [ 128 := _ ] [ 160 <- _ ] [ 161 <- _ ] [ 162 <- _ ] [ 163 <- _ ], 64, 32)
+    rule #range(MAP [ KEY <- _           ] => MAP, KEY', WIDTH) requires KEY' +Int WIDTH <=Int KEY
+    rule #range(MAP [ KEY := _:ByteArray ] => MAP, KEY', WIDTH) requires KEY' +Int WIDTH <=Int KEY
+
+    // step 3067 - (Vat mod pow160) in (SetItem(Vat) ...)
+    rule I modInt N => I requires 0 <=Int I andBool I <Int N
 
     // step 3165 - #range(MAP [ N := #padToWidth(_, _) ] [ N' <- _ ], END, WIDTH, _)
     rule #range(MAP [ N := BA:ByteArray ] => MAP, END, WIDTH, WS) requires END <Int N orBool N +Int WIDTH +Int #sizeWordStack(BA) -Int 1 <=Int END
