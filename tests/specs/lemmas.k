@@ -176,9 +176,6 @@ module LEMMAS-JAVA [symbolic, kast]
 
     rule (#if C #then B1 #else B2 #fi) +Int A => #if C #then (B1 +Int A) #else (B2 +Int A) #fi  [simplification]
 
-    rule X >Int Y => Y <Int X    [simplification]
-    rule X >=Int Y => Y <=Int X  [simplification]
-
     rule notBool (X <Int Y) => Y <=Int X  [simplification]
     rule notBool (X <=Int Y) => Y <Int X  [simplification]
 
