@@ -186,7 +186,7 @@ WEB3 JSON RPC
          <batch> [ .JSONs ] </batch>
          <web3output> FD </web3output>
          <web3response> RESPONSE </web3response>
-      requires size(RESPONSE) >Int 0
+      requires 0 <Int size(RESPONSE)
 
     rule <k> #loadFromBatch ~> _ => getRequest() </k>
          <batch> [ .JSONs ] </batch>
@@ -391,7 +391,7 @@ WEB3 JSON RPC
     rule getIntElementsSmallerThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsSmallerThan (X, L, RESULTS)             requires I >=Int X
 
     rule getIntElementsGreaterThan (_, .List ,              RESULTS) => RESULTS
-    rule getIntElementsGreaterThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsGreaterThan (X, L, ListItem(I) RESULTS) requires I  >Int X
+    rule getIntElementsGreaterThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsGreaterThan (X, L, ListItem(I) RESULTS) requires X  <Int I
     rule getIntElementsGreaterThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsGreaterThan (X, L, RESULTS)             requires I <=Int X
 
     syntax JSONs ::= #acctsToJArray ( List ) [function]
@@ -525,7 +525,7 @@ WEB3 JSON RPC
     rule <k> #evm_revert ... </k>
          <params>    ( [ DATA:Int, .JSONs ] )                    </params>
          <snapshots> ( SNAPSHOTS => range(SNAPSHOTS, 0, DATA ) ) </snapshots>
-      requires size(SNAPSHOTS) >Int DATA
+      requires DATA <Int size(SNAPSHOTS)
 
     rule <k> #evm_revert => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'evm_revert' requires exactly 1 arguments. Request specified 0 arguments: [null].")  ... </k>
          <params> [ .JSONs ] </params>
@@ -691,7 +691,7 @@ eth_sendTransaction
                                                         }
                                                       }
                                                     }
-      requires lengthBytes(RD) >Int 68
+      requires 68 <Int lengthBytes(RD)
     rule #generateException(TXHASH, PCOUNT, RD, SC) => { "message": "VM Exception while processing transaction: " +String StatusCode2TruffleString(SC),
                                                       "code": -32000,
                                                       "data": {
@@ -702,7 +702,7 @@ eth_sendTransaction
                                                         }
                                                       }
                                                     }
-      requires notBool lengthBytes(RD) >Int 68
+      requires notBool 68 <Int lengthBytes(RD)
 
     syntax String ::= #parseReason ( Bytes ) [function]
  // ---------------------------------------------------
@@ -1950,7 +1950,7 @@ Retrieving logs
       requires START <=Int END
 
     rule <k> #getLogs(START => START +Int 1, END, RESULT) ... </k>                           [owise]
-    rule <k> #getLogs(START, END, RESULT) => #serializeEthGetLogs(RESULT, [.JSONs]) ... </k> requires START  >Int END
+    rule <k> #getLogs(START, END, RESULT) => #serializeEthGetLogs(RESULT, [.JSONs]) ... </k> requires END <Int START
 
     rule <k> #serializeEthGetLogs(.List, RESULTS:JSONs) => #rpcResponseSuccess([flattenJSONs(RESULTS)]) ... </k>
     rule <k> #serializeEthGetLogs((ListItem({LOGS|TXID|TXHASH|BN|BH}:LogData) LIST:List), RESULTS) => #serializeEthGetLogs(LIST, [flattenJSONs(RESULTS, [#serializeLogs(LOGS,0,TXID,TXHASH,BH,BN)])]) ... </k>

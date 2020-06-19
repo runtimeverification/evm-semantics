@@ -293,7 +293,7 @@ Encoding
                     | #rlpEncodeAccount ( Account )     [function]
  // --------------------------------------------------------------
     rule #rlpEncodeWord(0) => "\x80"
-    rule #rlpEncodeWord(WORD) => chrChar(WORD) requires WORD >Int 0 andBool WORD <Int 128
+    rule #rlpEncodeWord(WORD) => chrChar(WORD) requires 0 <Int WORD andBool WORD <Int 128
     rule #rlpEncodeWord(WORD) => #rlpEncodeLength(#unparseByteStack(#asByteStack(WORD)), 128) requires WORD >=Int 128
 
     rule #rlpEncodeBytes(WORD, LEN) => #rlpEncodeString(#unparseByteStack(#padToWidth(LEN, #asByteStack(WORD))))
@@ -486,15 +486,15 @@ Merkle Patricia Tree
 
     rule MerklePut ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
       => MerklePut ( MerklePut ( MerkleBranch( .Map, "" ), LEAFPATH, LEAFVALUE ), PATH, VALUE )
-      requires #sizeByteArray( LEAFPATH ) >Int 0
-       andBool #sizeByteArray( PATH ) >Int 0
+      requires 0 <Int #sizeByteArray( LEAFPATH )
+       andBool 0 <Int #sizeByteArray( PATH )
        andBool LEAFPATH[0] =/=Int PATH[0]
 
     rule MerklePut ( MerkleLeaf ( LEAFPATH, LEAFVALUE ), PATH, VALUE )
       => #merkleExtensionBuilder( .ByteArray, LEAFPATH, LEAFVALUE, PATH, VALUE )
       requires #unparseByteStack( LEAFPATH ) =/=String #unparseByteStack( PATH )
-       andBool #sizeByteArray( LEAFPATH ) >Int 0
-       andBool #sizeByteArray( PATH )     >Int 0
+       andBool 0 <Int #sizeByteArray( LEAFPATH )
+       andBool 0 <Int #sizeByteArray( PATH )
        andBool LEAFPATH[0] ==Int PATH[0]
 
     rule MerklePut ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
@@ -503,13 +503,13 @@ Merkle Patricia Tree
 
     rule MerklePut ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => #merkleExtensionBrancher( MerklePut( MerkleBranch( .Map, "" ), PATH, VALUE ), EXTPATH, EXTTREE )
-      requires #sizeByteArray( PATH ) >Int 0
+      requires 0 <Int #sizeByteArray( PATH )
        andBool EXTPATH[0] =/=Int PATH[0]
 
     rule MerklePut ( MerkleExtension ( EXTPATH, EXTTREE ), PATH, VALUE )
       => #merkleExtensionSplitter( .ByteArray, EXTPATH, EXTTREE, PATH, VALUE )
       requires #unparseByteStack( EXTPATH ) =/=String #unparseByteStack( PATH )
-       andBool #sizeByteArray( PATH ) >Int 0
+       andBool 0 <Int #sizeByteArray( PATH )
        andBool EXTPATH[0] ==Int PATH[0]
 
     rule MerklePut ( MerkleBranch( M, _ ), PATH, VALUE )
@@ -518,7 +518,7 @@ Merkle Patricia Tree
 
     rule MerklePut ( MerkleBranch( M, BRANCHVALUE ), PATH, VALUE )
       => #merkleUpdateBranch ( M, BRANCHVALUE, PATH[0], PATH[1 .. #sizeByteArray(PATH) -Int 1], VALUE )
-      requires #sizeByteArray( PATH ) >Int 0
+      requires 0 <Int #sizeByteArray( PATH )
 
     rule MerkleDelete( .MerkleTree, _ ) => .MerkleTree
 
@@ -531,10 +531,10 @@ Merkle Patricia Tree
       requires #sizeByteArray(EXTPATH) <=Int #sizeByteArray(PATH) andBool PATH[0 .. #sizeByteArray(EXTPATH)] ==K EXTPATH
 
     rule MerkleDelete( MerkleBranch( M, V ), PATH ) => MerkleCheck( MerkleBranch( M, "" ) ) requires #sizeByteArray(PATH) ==Int 0
-    rule MerkleDelete( MerkleBranch( M, V ), PATH ) => MerkleBranch( M, V )                 requires #sizeByteArray(PATH) >Int 0 andBool notBool PATH[0] in_keys(M)
+    rule MerkleDelete( MerkleBranch( M, V ), PATH ) => MerkleBranch( M, V )                 requires 0 <Int #sizeByteArray(PATH) andBool notBool PATH[0] in_keys(M)
     rule MerkleDelete( MerkleBranch( M, V ), PATH )
       => MerkleCheck( MerkleBranch( M[PATH[0] <- MerkleDelete( {M[PATH[0]]}:>MerkleTree, PATH[1 .. #sizeByteArray(PATH) -Int 1] )], V ) )
-      requires #sizeByteArray(PATH) >Int 0 andBool PATH[0] in_keys(M)
+      requires 0 <Int #sizeByteArray(PATH) andBool PATH[0] in_keys(M)
 
     syntax MerkleTree ::= MerkleCheck( MerkleTree ) [function]
  // ----------------------------------------------------------
@@ -574,17 +574,17 @@ Merkle Tree Aux Functions
     rule #nibbleize ( B ) => (      #asByteStack ( B [ 0 ] /Int 16 )[0 .. 1]
                                ++ ( #asByteStack ( B [ 0 ] %Int 16 )[0 .. 1] )
                              ) ++ #nibbleize ( B[1 .. #sizeByteArray(B) -Int 1] )
-      requires #sizeByteArray(B) >Int 0
+      requires 0 <Int #sizeByteArray(B)
 
     rule #nibbleize ( B ) => .ByteArray
-      requires notBool #sizeByteArray(B) >Int 0
+      requires notBool 0 <Int #sizeByteArray(B)
 
     rule #byteify ( B ) =>    #asByteStack ( B[0] *Int 16 +Int B[1] )[0 .. 1]
                            ++ #byteify ( B[2 .. #sizeByteArray(B) -Int 2] )
-      requires #sizeByteArray(B) >Int 0
+      requires 0 <Int #sizeByteArray(B)
 
     rule #byteify ( B ) => .ByteArray
-      requires notBool #sizeByteArray(B) >Int 0
+      requires notBool 0 <Int #sizeByteArray(B)
 
     syntax ByteArray ::= #HPEncode ( ByteArray, Int ) [function]
  // ------------------------------------------------------------
@@ -623,21 +623,21 @@ Merkle Tree Aux Functions
                                 , P1[1 .. #sizeByteArray(P1) -Int 1], V1
                                 , P2[1 .. #sizeByteArray(P2) -Int 1], V2
                                 )
-      requires #sizeByteArray(P1) >Int 0
-       andBool #sizeByteArray(P2) >Int 0
+      requires 0 <Int #sizeByteArray(P1)
+       andBool 0 <Int #sizeByteArray(P2)
        andBool P1[0] ==Int P2[0]
 
     rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
       => MerkleExtension( PATH, MerklePut( MerklePut( MerkleBranch( .Map, "" ), P1, V1 ), P2, V2 ) )
-      requires notBool ( #sizeByteArray(P1) >Int 0
-               andBool   #sizeByteArray(P2) >Int 0
+      requires notBool ( 0 <Int #sizeByteArray(P1)
+               andBool   0 <Int #sizeByteArray(P2)
                andBool   P1[0] ==Int P2[0] )
 
     syntax MerkleTree ::= #merkleExtensionBrancher ( MerkleTree, ByteArray, MerkleTree ) [function]
  // -----------------------------------------------------------------------------------------------
     rule #merkleExtensionBrancher( MerkleBranch(M, VALUE), PATH, EXTTREE )
       => MerkleBranch( M[PATH[0] <- MerkleExtension( PATH[1 .. #sizeByteArray(PATH) -Int 1], EXTTREE )], VALUE )
-      requires #sizeByteArray(PATH) >Int 1
+      requires 1 <Int #sizeByteArray(PATH)
 
     rule #merkleExtensionBrancher( MerkleBranch(M, VALUE), PATH, EXTTREE )
       => MerkleBranch( M[PATH[0] <- EXTTREE], VALUE )
@@ -649,14 +649,14 @@ Merkle Tree Aux Functions
                                  , P1   => P1[1 .. #sizeByteArray(P1) -Int 1], _
                                  , P2   => P2[1 .. #sizeByteArray(P2) -Int 1], _
                                  )
-      requires #sizeByteArray(P1) >Int 0
-       andBool #sizeByteArray(P2) >Int 0
+      requires 0 <Int #sizeByteArray(P1)
+       andBool 0 <Int #sizeByteArray(P2)
        andBool P1[0] ==Int P2[0]
 
     rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
       => MerkleExtension( PATH, #merkleExtensionBrancher( MerklePut( MerkleBranch( .Map, "" ), P2, VALUE ), P1, TREE ) )
-      requires #sizeByteArray(P1) >Int 0
-       andBool #sizeByteArray(P2) >Int 0
+      requires 0 <Int #sizeByteArray(P1)
+       andBool 0 <Int #sizeByteArray(P2)
        andBool P1[0] =/=Int P2[0]
 
     rule #merkleExtensionSplitter( PATH, P1, TREE, P2, VALUE )
