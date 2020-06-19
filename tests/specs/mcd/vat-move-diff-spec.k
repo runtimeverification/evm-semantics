@@ -78,19 +78,17 @@ module VAT-MOVE-DIFF-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
               <storage>
-               .Map
-              [#Vat.can[ABI_src][CALLER_ID] <- (May) => May]
-              [#Vat.dai[ABI_src] <- (Dai_src) => Dai_src -Int ABI_rad]
-              [#Vat.dai[ABI_dst] <- (Dai_dst) => Dai_dst +Int ABI_rad]
                 _:Map
-               </storage>
+                [#Vat.can[ABI_src][CALLER_ID] <- (May) => May]
+                [#Vat.dai[ABI_src] <- (Dai_src) => Dai_src -Int ABI_rad]
+                [#Vat.dai[ABI_dst] <- (Dai_dst) => Dai_dst +Int ABI_rad]
+              </storage>
               <origStorage>
-               .Map
-              [#Vat.can[ABI_src][CALLER_ID] <- (Junk_0)]
-              [#Vat.dai[ABI_src] <- (Junk_1)]
-              [#Vat.dai[ABI_dst] <- (Junk_2)]
                 _:Map
-               </origStorage>
+                [#Vat.can[ABI_src][CALLER_ID] <- (Junk_0)]
+                [#Vat.dai[ABI_src] <- (Junk_1)]
+                [#Vat.dai[ABI_dst] <- (Junk_2)]
+              </origStorage>
               <nonce> Nonce_Vat => ?_ </nonce>
             </account>
             <account>
