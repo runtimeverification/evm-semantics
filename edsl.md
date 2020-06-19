@@ -363,7 +363,7 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
     // #sizeWordStack(WS) is not necessarily a multiple of 32.
     rule byteStack2IntList ( WS , N )
          => #asWord ( WS [ 0 .. bytesInNextInt(WS, N) ] ) byteStack2IntList ( #drop(bytesInNextInt(WS, N), WS) , N -Int 1 )
-         requires N >Int 0
+         requires 0 <Int N
 
     rule byteStack2IntList ( WS , 0 ) => .IntList
 

@@ -346,11 +346,11 @@ The `#next [_]` operator initiates execution by:
                   | #stackOverflow  ( WordStack , OpCode ) [function]
  // -----------------------------------------------------------------------------
     rule #stackUnderflow(WS        , OP:OpCode) => #stackUnderflow(WS, #stackNeeded(OP))
-    rule #stackUnderflow(WS        , N:Int    ) => false                         requires notBool (N >Int 0)
-    rule #stackUnderflow(W : WS    , N:Int    ) => #stackUnderflow(WS, N -Int 1) requires          N >Int 0
-    rule #stackUnderflow(.WordStack, N:Int    ) => true                          requires          N >Int 0
+    rule #stackUnderflow(WS        , N:Int    ) => false                         requires notBool (0 <Int N)
+    rule #stackUnderflow(W : WS    , N:Int    ) => #stackUnderflow(WS, N -Int 1) requires          0 <Int N
+    rule #stackUnderflow(.WordStack, N:Int    ) => true                          requires          0 <Int N
 
-    rule #stackOverflow (WS, OP) => #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
+    rule #stackOverflow (WS, OP) => 1024 <Int #sizeWordStack(WS) +Int #stackDelta(OP)
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
@@ -598,7 +598,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 
     rule <k> (. => #deleteAccounts(Set2List(ACCTS))) ~> #finalizeTx(true) ... </k>
          <selfDestruct> ACCTS => .Set </selfDestruct>
-      requires size(ACCTS) >Int 0
+      requires 0 <Int size(ACCTS)
 
     rule <k> #deleteAccounts(ListItem(ACCT) ACCTS) => #deleteAccounts(ACCTS) ... </k>
          <activeAccounts> ... (SetItem(ACCT) => .Set) </activeAccounts>
@@ -799,14 +799,14 @@ These are just used by the other operators for shuffling local execution state a
            <balance> ORIGFROM </balance>
            ...
          </account>
-      requires VALUE >Int ORIGFROM
+      requires ORIGFROM <Int VALUE
 
     rule <k> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
          <activeAccounts> ACCTS </activeAccounts>
          <schedule> SCHED </schedule>
       requires ACCTFROM =/=K ACCTTO
        andBool notBool ACCTTO in ACCTS
-       andBool (VALUE >Int 0 orBool notBool Gemptyisnonexistent << SCHED >>)
+       andBool (0 <Int VALUE orBool notBool Gemptyisnonexistent << SCHED >>)
 
     rule <k> #transferFunds ACCTFROM ACCTTO 0 => . ... </k>
          <activeAccounts> ACCTS </activeAccounts>
@@ -991,7 +991,7 @@ Otherwise, it is calculated here using the "shortcut" formula used for running t
 
     syntax Int ::= #blockhash ( List , Int , Int , Int ) [function]
  // ---------------------------------------------------------------
-    rule #blockhash(_, N, HI, _) => 0 requires N >Int HI
+    rule #blockhash(_, N, HI, _) => 0 requires HI <Int N
     rule #blockhash(_, _, _, 256) => 0
     rule #blockhash(ListItem(0) _, _, _, _) => 0
     rule #blockhash(ListItem(H) _, N, N, _) => H
@@ -1099,7 +1099,7 @@ These operators query about the current return data buffer.
 
     rule <k> RETURNDATACOPY MEMSTART DATASTART DATAWIDTH => #end EVMC_INVALID_MEMORY_ACCESS ... </k>
          <output> RD </output>
-      requires DATASTART +Int DATAWIDTH >Int #sizeByteArray(RD)
+      requires #sizeByteArray(RD) <Int DATASTART +Int DATAWIDTH
 ```
 
 ### Log Operations
@@ -1252,7 +1252,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
  // ----------------------------------------------------------------------------------
     rule <k> #checkCall ACCT VALUE
           => #refund GCALL ~> #pushCallStack ~> #pushWorldState
-          ~> #end #if VALUE >Int BAL #then EVMC_BALANCE_UNDERFLOW #else EVMC_CALL_DEPTH_EXCEEDED #fi
+          ~> #end #if BAL <Int VALUE #then EVMC_BALANCE_UNDERFLOW #else EVMC_CALL_DEPTH_EXCEEDED #fi
          ...
          </k>
          <callDepth> CD </callDepth>
@@ -1263,7 +1263,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
            ...
          </account>
          <callGas> GCALL </callGas>
-      requires VALUE >Int BAL orBool CD >=Int 1024
+      requires BAL <Int VALUE orBool 1024 <=Int CD
 
      rule <k> #checkCall ACCT VALUE => . ... </k>
          <callDepth> CD </callDepth>
@@ -1272,7 +1272,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
            <balance> BAL </balance>
            ...
          </account>
-      requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
+      requires notBool (BAL <Int VALUE orBool 1024 <=Int CD)
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO ACCTCODE CODE VALUE APPVALUE ARGS STATIC
@@ -1524,7 +1524,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule <k> #mkCodeDeposit ACCT => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
          <output> OUT => .ByteArray </output>
-      requires #sizeByteArray(OUT) >Int maxCodeSize < SCHED >
+      requires maxCodeSize < SCHED > <Int #sizeByteArray(OUT)
 
     rule <k> #finishCodeDeposit ACCT OUT
           => #popCallStack ~> #dropWorldState
@@ -1770,7 +1770,7 @@ Precompiled Contracts
     rule <k> BLAKE2F => #end EVMC_PRECOMPILE_FAILURE ... </k>
          <callData> DATA </callData>
       requires #sizeByteArray( DATA ) ==Int 213
-       andBool DATA[212] >Int 1
+       andBool 1 <Int (DATA[212])
 
     rule <k> BLAKE2F => #end EVMC_PRECOMPILE_FAILURE ... </k>
          <callData> DATA </callData>
@@ -1868,8 +1868,8 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function, functional]
  // ----------------------------------------------------------------------------
-    rule [#memoryUsageUpdate.none]: #memoryUsageUpdate(MU, START, WIDTH) => MU                                       requires notBool WIDTH >Int 0
-    rule [#memoryUsageUpdate.some]: #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH  >Int 0
+    rule [#memoryUsageUpdate.none]: #memoryUsageUpdate(MU, START, WIDTH) => MU                                       requires notBool 0 <Int WIDTH
+    rule [#memoryUsageUpdate.some]: #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires         0 <Int WIDTH
 ```
 
 Execution Gas
@@ -2202,9 +2202,9 @@ There are several helpers for calculating gas (most of them also specified in th
 
     syntax Int ::= #multComplexity(Int) [function]
  // ----------------------------------------------
-    rule #multComplexity(X) => X *Int X                                     requires X <=Int 64
-    rule #multComplexity(X) => X *Int X /Int 4 +Int 96 *Int X -Int 3072     requires X >Int 64 andBool X <=Int 1024
-    rule #multComplexity(X) => X *Int X /Int 16 +Int 480 *Int X -Int 199680 requires X >Int 1024
+    rule #multComplexity(X) => X *Int X                                     requires X   <=Int 64
+    rule #multComplexity(X) => X *Int X /Int 4 +Int 96 *Int X -Int 3072     requires 64   <Int X andBool X <=Int 1024
+    rule #multComplexity(X) => X *Int X /Int 16 +Int 480 *Int X -Int 199680 requires 1024 <Int X
 
     syntax Int ::= #adjustedExpLength(Int, Int, ByteArray) [function]
                  | #adjustedExpLength(Int)                 [function, klabel(#adjustedExpLengthAux)]
@@ -2213,7 +2213,7 @@ There are several helpers for calculating gas (most of them also specified in th
 
     rule #adjustedExpLength(0) => 0
     rule #adjustedExpLength(1) => 0
-    rule #adjustedExpLength(N) => 1 +Int #adjustedExpLength(N /Int 2) requires N >Int 1
+    rule #adjustedExpLength(N) => 1 +Int #adjustedExpLength(N /Int 2) requires 1 <Int N
 ```
 
 Fee Schedule
