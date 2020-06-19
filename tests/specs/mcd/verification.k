@@ -5,6 +5,11 @@ module VERIFICATION
   imports LEMMAS
   imports BIN_RUNTIME
 
+  syntax Bool ::= #notPrecompileAddress ( Int ) [function]
+ // ---------------------------------------
+  rule #notPrecompileAddress ( X ) => 0 ==Int X orBool (10 <=Int X andBool #rangeAddress(X))
+
+
   // step 132 - could not simplify #sizeWordStack(#padToWidth(32, _), _) or #sizeWordStack(_ ++ _, _)
   rule #sizeWordStack(WS1 ++ WS2, N) => #sizeWordStack(WS1) +Int #sizeWordStack(WS2) +Int N
   rule #sizeWordStack(#padToWidth(32, #asByteStack(I)), N) => N +Int 32 requires 0 <=Int I andBool I <Int pow256
