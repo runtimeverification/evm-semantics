@@ -80,9 +80,15 @@ module VERIFICATION
     // step 3067 - (Vat mod pow160) in (SetItem(Vat) ...)
     rule I modInt N => I requires 0 <=Int I andBool I <Int N
 
+    // step 3187 - Vat in SetItem(1) ... SetItem(9)
+    rule I in (SetItem(I') REST) => I in REST requires I =/=Int I'
+
     // step 3165 - #range(MAP [ N := #padToWidth(_, _) ] [ N' <- _ ], END, WIDTH, _)
     rule #range(MAP [ N := BA:ByteArray ] => MAP, END, WIDTH, WS) requires END <Int N orBool N +Int WIDTH +Int #sizeWordStack(BA) -Int 1 <=Int END
     rule #range(MAP [ N <- _            ] => MAP, END, WIDTH, WS) requires END <Int N orBool N +Int WIDTH                                <=Int END
+
+    // step 3377 - #range(MAP [ 160 <- _ ] [ 161 <- _ ] [ 162 <- _ ] [ 163 <- _ ], 160, 4)
+    rule #range(MAP [ KEY <- V ], KEY', WIDTH) => #range(MAP [ KEY <- V ], KEY', WIDTH -Int 1) ++ V : .ByteArray requires KEY ==Int KEY' +Int WIDTH -Int 1
 
     // step 3450 - #range(M [ N <- V ], N, W, WS)
     rule #range(MAP [ KEY <- VALUE ], KEY => KEY -Int 1, WIDTH => WIDTH -Int 1, WS => VALUE : WS) requires 0 <Int WIDTH
