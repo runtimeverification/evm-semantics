@@ -73,7 +73,7 @@ module LEMMAS-JAVA [symbolic, kast]
        andBool L >=Int N +Int #sizeByteArray(BUF)
       [simplification]
 
-    rule keccak(BUF1 ++ BUF2) => hash2(#asWord(BUF1), #asWord(BUF2)) requires #sizeByteArray(BUF1) ==Int 32 andBool #sizeByteArray(BUF2) ==Int 32  [simplification]
+//    rule keccak(BUF1 ++ BUF2) => hash2(#asWord(BUF1), #asWord(BUF2)) requires #sizeByteArray(BUF1) ==Int 32 andBool #sizeByteArray(BUF2) ==Int 32  [simplification]
 
     syntax Bool ::= #isRegularWordStack ( WordStack ) [function]
  // -------------------------------------------------------
@@ -81,33 +81,33 @@ module LEMMAS-JAVA [symbolic, kast]
     rule #isRegularWordStack(.WordStack) => true
 
     // for Solidity
-    rule #asWord(WS) /Int D => #asWord(#take(#sizeByteArray(WS) -Int log256Int(D), WS))
-      requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
-       andBool #sizeByteArray(WS) >=Int log256Int(D)
-       andBool #noOverflow(WS)
-      [simplification]
-
-    rule #buf(N, #asWord(WS)) => WS
-      requires #noOverflow(WS) andBool N ==Int #sizeByteArray(WS)
-      [simplification]
+//    rule #asWord(WS) /Int D => #asWord(#take(#sizeByteArray(WS) -Int log256Int(D), WS))
+//      requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
+//       andBool #sizeByteArray(WS) >=Int log256Int(D)
+//       andBool #noOverflow(WS)
+//      [simplification]
+//
+//    rule #buf(N, #asWord(WS)) => WS
+//      requires #noOverflow(WS) andBool N ==Int #sizeByteArray(WS)
+//      [simplification]
 
     // TODO: drop hash1 and keccakIntList once new vyper hashed location scheme is captured in edsl.md
 
-    syntax Int ::= hash1(Int)      [function, smtlib(smt_hash1)]
-                 | hash2(Int, Int) [function, smtlib(smt_hash2)]
-
-    rule hash1(V) => keccak(#padToWidth(32, #asByteStack(V)))
-      requires 0 <=Int V andBool V <Int pow256
-      [concrete]
-
-    rule hash2(V1, V2) => keccak(   #padToWidth(32, #asByteStack(V1))
-                                 ++ #padToWidth(32, #asByteStack(V2)))
-      requires 0 <=Int V1 andBool V1 <Int pow256
-       andBool 0 <=Int V2 andBool V2 <Int pow256
-      [concrete]
-
-    rule keccakIntList(V:Int .IntList) => hash1(V)               [simplification]
-    rule keccakIntList(V1:Int V2:Int .IntList) => hash2(V1, V2)  [simplification]
+//    syntax Int ::= hash1(Int)      [function, smtlib(smt_hash1)]
+//                 | hash2(Int, Int) [function, smtlib(smt_hash2)]
+//
+//    rule hash1(V) => keccak(#padToWidth(32, #asByteStack(V)))
+//      requires 0 <=Int V andBool V <Int pow256
+//      [concrete]
+//
+//    rule hash2(V1, V2) => keccak(   #padToWidth(32, #asByteStack(V1))
+//                                 ++ #padToWidth(32, #asByteStack(V2)))
+//      requires 0 <=Int V1 andBool V1 <Int pow256
+//       andBool 0 <=Int V2 andBool V2 <Int pow256
+//      [concrete]
+//
+//    rule keccakIntList(V:Int .IntList) => hash1(V)               [simplification]
+//    rule keccakIntList(V1:Int V2:Int .IntList) => hash2(V1, V2)  [simplification]
 
     // for terms came from bytecode not via #hashedLocation
     rule keccak(WS) => keccakIntList(byteStack2IntList(WS))
@@ -194,11 +194,11 @@ module LEMMAS-JAVA [symbolic, kast]
     rule 0 <=Int #asWord(WS)          => true  [simplification]
     rule #asWord(WS) <Int pow256      => true  [simplification]
 
-    rule 0 <=Int hash1(_)             => true  [simplification]
-    rule         hash1(_) <Int pow256 => true  [simplification]
-
-    rule 0 <=Int hash2(_,_)             => true  [simplification]
-    rule         hash2(_,_) <Int pow256 => true  [simplification]
+//    rule 0 <=Int hash1(_)             => true  [simplification]
+//    rule         hash1(_) <Int pow256 => true  [simplification]
+//
+//    rule 0 <=Int hash2(_,_)             => true  [simplification]
+//    rule         hash2(_,_) <Int pow256 => true  [simplification]
 
     rule 0 <=Int chop(V)             => true  [simplification]
     rule         chop(V) <Int pow256 => true  [simplification]
@@ -288,11 +288,11 @@ module LEMMAS-COMMON
     imports EVM
     imports EDSL
 
-    syntax Bool ::= #noOverflow    ( ByteArray ) [function]
-                  | #noOverflowAux ( ByteArray ) [function]
- // -------------------------------------------------------
-    rule #noOverflow(WS) => #sizeByteArray(WS) <=Int 32 andBool #noOverflowAux(WS)
-
-    rule #noOverflowAux(BA        ) => 0 <=Int BA[0] andBool BA[0] <Int 256 andBool #noOverflowAux(BA [ 1 .. #sizeByteArray(BA) ]) requires 0 <Int #sizeByteArray(BA)
-    rule #noOverflowAux(.ByteArray) => true
+//    syntax Bool ::= #noOverflow    ( ByteArray ) [function]
+//                  | #noOverflowAux ( ByteArray ) [function]
+// // -------------------------------------------------------
+//    rule #noOverflow(WS) => #sizeByteArray(WS) <=Int 32 andBool #noOverflowAux(WS)
+//
+//    rule #noOverflowAux(BA        ) => 0 <=Int BA[0] andBool BA[0] <Int 256 andBool #noOverflowAux(BA [ 1 .. #sizeByteArray(BA) ]) requires 0 <Int #sizeByteArray(BA)
+//    rule #noOverflowAux(.ByteArray) => true
 endmodule
