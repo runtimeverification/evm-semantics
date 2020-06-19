@@ -1,9 +1,6 @@
-requires "abstract-semantics.k"
 requires "verification.k"
 
 module ECRECOVERLOOP02-SIGS-VALID-SPEC
-  imports ETHEREUM-SIMULATION
-  imports ABSTRACT-SEMANTICS
   imports VERIFICATION
 
   // fn-execute-sigs-valid 
@@ -14,7 +11,7 @@ module ECRECOVERLOOP02-SIGS-VALID-SPEC
     <schedule> ISTANBUL </schedule>
     <ethereum>
       <evm>
-        <output> _ => .WordStack </output>
+        <output> _ => .ByteArray </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
@@ -102,7 +99,7 @@ _
             // precompiled account for ECCREC
             <acctID> 1 </acctID>
             <balance> 0 </balance>
-            <code> .WordStack </code>
+            <code> .ByteArray </code>
             <storage> .Map </storage>
             <origStorage> .Map </origStorage>
             <nonce> 0 </nonce>

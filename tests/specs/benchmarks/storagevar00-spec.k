@@ -1,9 +1,6 @@
-requires "abstract-semantics.k"
 requires "verification.k"
 
 module STORAGEVAR00-SPEC
-  imports ETHEREUM-SIMULATION
-  imports ABSTRACT-SEMANTICS
   imports VERIFICATION
 
   // fn-execute 
@@ -73,7 +70,7 @@ module STORAGEVAR00-SPEC
             <balance> CONTRACT_BAL </balance>
             <code> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806361461954146044575b600080fd5b348015604f57600080fd5b506056606c565b6040518082815260200191505060405180910390f35b6000805490509056fea165627a7a7230582042a42ab720fca3a1db0ba7ac19c662cf1a6fb8fdb252593eb42de55a510e09470029") </code>
             <storage>
-S
+S [ #hashedLocation("Solidity", 0, .IntList) <- N ]
             </storage>
             <origStorage>
 _
@@ -98,7 +95,7 @@ _
             // precompiled account for ECCREC
             <acctID> 1 </acctID>
             <balance> 0 </balance>
-            <code> .WordStack </code>
+            <code> .ByteArray </code>
             <storage> .Map </storage>
             <origStorage> .Map </origStorage>
             <nonce> 0 </nonce>
@@ -124,7 +121,7 @@ _
 
 andBool #rangeUInt(256, CONTRACT_BAL)
 andBool #rangeUInt(256, CALLEE_BAL)andBool #range(0 <= CD < 1024)
-andBool #rangeAddress(MSG_SENDER)andBool N ==Int select(S, #hashedLocation("Solidity", 0, .IntList))
+andBool #rangeAddress(MSG_SENDER)
 andBool #rangeUInt(256, N)
     ensures true
 
