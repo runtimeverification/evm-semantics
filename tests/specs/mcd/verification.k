@@ -1,10 +1,8 @@
-requires "rules.k"
+requires "../lemmas.k"
 requires "bin_runtime.k"
 
 module VERIFICATION
-  imports ETHEREUM-SIMULATION
-  imports EVM
-  imports RULES
+  imports LEMMAS
   imports BIN_RUNTIME
 
   // step 132 - could not simplify #sizeWordStack(#padToWidth(32, _), _) or #sizeWordStack(_ ++ _, _)
