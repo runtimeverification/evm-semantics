@@ -11,7 +11,7 @@ module LEMMAS
 
     //Byte array store operations sorting. Slices with lower index first. Helps applying rule below.
     rule MEM [ N := BUF:ByteArray ] [ M := BUF' ] => MEM [ M := BUF' ] [ N := BUF ]
-      requires N >Int M andBool N -Int M >=Int #sizeByteArray(BUF')                                               [simplification]
+      requires M <Int N andBool #sizeByteArray(BUF') <=Int N -Int M                                               [simplification]
 
     rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeByteArray(BUF) ==Int #sizeByteArray(BUF')  [simplification]
 
@@ -25,7 +25,7 @@ module LEMMAS
        andBool #range(0 < WIDTH <= SIZE -Int START)                                                       [simplification]
 
     rule #sizeByteArray(#range(_, START, WIDTH)) => WIDTH
-      requires WIDTH >=Int 0 andBool START >=Int 0                                                        [simplification]
+      requires 0 <=Int WIDTH andBool 0 <=Int START                                                        [simplification]
 
     //Todo custom ==K unification doesn't work in Haskell yet
     //++ unification
@@ -38,7 +38,7 @@ module LEMMAS-JAVA [symbolic, kast]
     imports EDSL
     imports K-REFLECTION
 
-    rule BUF [ L .. W ] => .ByteArray requires L >=Int #sizeByteArray(BUF)  [simplification]
+    rule BUF [ L .. W ] => .ByteArray requires #sizeByteArray(BUF) <=Int L  [simplification]
 
     rule #asWord( BUF => #drop(1, BUF) ) requires BUF [ 0 ] ==Int 0  [simplification]
 
@@ -47,32 +47,32 @@ module LEMMAS-JAVA [symbolic, kast]
 
     rule #take(N, BUF)          => BUF                                              requires N ==Int #sizeByteArray(BUF)   [simplification]
     rule #take(N, BUF1 ++ BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeByteArray(BUF1)  [simplification]
-    rule #take(N, BUF1 ++ BUF2) => BUF1 ++ #take(N -Int #sizeByteArray(BUF1), BUF2) requires N  >Int #sizeByteArray(BUF1)  [simplification]
+    rule #take(N, BUF1 ++ BUF2) => BUF1 ++ #take(N -Int #sizeByteArray(BUF1), BUF2) requires #sizeByteArray(BUF1) <Int N   [simplification]
 
-    rule #drop(N, BUF)          => .ByteArray                               requires N >=Int #sizeByteArray(BUF)   [simplification]
-    rule #drop(N, BUF1 ++ BUF2) => #drop(N -Int #sizeByteArray(BUF1), BUF2) requires N >=Int #sizeByteArray(BUF1)  [simplification]
-    rule #drop(N, BUF1 ++ BUF2) => #drop(N, BUF1) ++ BUF2                   requires N  <Int #sizeByteArray(BUF1)  [simplification]
+    rule #drop(N, BUF)          => .ByteArray                               requires #sizeByteArray(BUF)  <=Int N  [simplification]
+    rule #drop(N, BUF1 ++ BUF2) => #drop(N -Int #sizeByteArray(BUF1), BUF2) requires #sizeByteArray(BUF1) <=Int N  [simplification]
+    rule #drop(N, BUF1 ++ BUF2) => #drop(N, BUF1) ++ BUF2                   requires N <Int #sizeByteArray(BUF1)   [simplification]
 
     rule #asWord(#buf(N, BUF)) => BUF  [simplification]
 
     rule #asWord(BUF) /Int 26959946667150639794667015087019630673637144422540572481103610249216 => #asWord(#take(4, BUF))  [simplification]
 
-    rule #range(M, N, K) => .ByteArray requires notBool K >Int 0  [simplification]
+    rule #range(M, N, K) => .ByteArray requires notBool 0 <Int K  [simplification]
 
     rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))
-      requires K >Int 0
+      requires 0 <Int K
        andBool L <Int N
       [simplification]
 
     rule #range(M [ N := BUF ], L, K) => BUF [ L -Int N .. minInt(K, #sizeByteArray(BUF) -Int (L -Int N)) ] ++ #range(M, N +Int #sizeByteArray(BUF), K -Int minInt(K, #sizeByteArray(BUF) -Int (L -Int N)))
-      requires K  >Int 0
-       andBool L >=Int N
+      requires 0  <Int K
+       andBool N <=Int L
        andBool L  <Int N +Int #sizeByteArray(BUF)
       [simplification]
 
     rule #range(M [ N := BUF ], L, K) => #range(M, L, K)
-      requires K  >Int 0
-       andBool L >=Int N +Int #sizeByteArray(BUF)
+      requires 0  <Int K
+       andBool N +Int #sizeByteArray(BUF) <=Int L
       [simplification]
 
     rule keccak(BUF1 ++ BUF2) => hash2(#asWord(BUF1), #asWord(BUF2)) requires #sizeByteArray(BUF1) ==Int 32 andBool #sizeByteArray(BUF2) ==Int 32  [simplification]
@@ -84,8 +84,8 @@ module LEMMAS-JAVA [symbolic, kast]
 
     // for Solidity
     rule #asWord(WS) /Int D => #asWord(#take(#sizeByteArray(WS) -Int log256Int(D), WS))
-      requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
-       andBool #sizeByteArray(WS) >=Int log256Int(D)
+      requires D ==Int 256 ^Int log256Int(D) andBool 0 <=Int D
+       andBool log256Int(D) <=Int #sizeByteArray(WS)
        andBool #noOverflow(WS)
       [simplification]
 
@@ -98,7 +98,7 @@ module LEMMAS-JAVA [symbolic, kast]
  // -------------------------------------------------------
     rule #noOverflow(WS) => #sizeByteArray(WS) <=Int 32 andBool #noOverflowAux(WS)
 
-    rule #noOverflowAux(BA        ) => 0 <=Int BA[0] andBool BA[0] <Int 256 andBool #noOverflowAux(#drop(1,BA)) requires #sizeByteArray(BA) >Int 0
+    rule #noOverflowAux(BA        ) => 0 <=Int BA[0] andBool BA[0] <Int 256 andBool #noOverflowAux(#drop(1,BA)) requires 0 <Int #sizeByteArray(BA)
     rule #noOverflowAux(.ByteArray) => true
 
     // TODO: drop hash1 and keccakIntList once new vyper hashed location scheme is captured in edsl.md
@@ -241,11 +241,11 @@ module LEMMAS-HASKELL [symbolic, kore]
        andBool START +Int WIDTH <=Int #sizeByteArray(BUF1) [simplification]
 
     rule (BUF1 ++ BUF2)[START .. WIDTH] => BUF2 [START -Int #sizeByteArray(BUF1) .. WIDTH]
-      requires START >=Int #sizeByteArray(BUF1) [simplification]
+      requires #sizeByteArray(BUF1) <=Int START [simplification]
 
     rule #asWord(BUF) /Int D => #asWord(BUF[0 .. #sizeByteArray(BUF) -Int log256Int(D)])
-      requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
-       andBool #sizeByteArray(BUF) >=Int log256Int(D) [simplification]
+      requires D ==Int 256 ^Int log256Int(D) andBool 0 <=Int D
+       andBool log256Int(D) <=Int #sizeByteArray(BUF) [simplification]
 
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
       requires #rangeUInt(256, V) [simplification]
@@ -260,29 +260,29 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule maxUInt160 &Int N => N
       requires #rangeUInt(160, N) [simplification]
 
-    rule #range(M, N, K) => .ByteArray requires notBool K >Int 0  [simplification]
+    rule #range(M, N, K) => .ByteArray requires notBool 0 <Int K  [simplification]
 
     rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))
-      requires K >Int 0
+      requires 0 <Int K
        andBool L <Int N
       [simplification]
 
     rule #range(M [ N := BUF ], L, K) => BUF [ L -Int N .. minInt(K, #sizeByteArray(BUF) -Int (L -Int N)) ] ++ #range(M, N +Int #sizeByteArray(BUF), K -Int minInt(K, #sizeByteArray(BUF) -Int (L -Int N)))
-      requires K  >Int 0
-       andBool L >=Int N
+      requires 0  <Int K
+       andBool N <=Int L
        andBool L  <Int N +Int #sizeByteArray(BUF)
       [simplification]
 
     rule #range(M [ N := BUF ], L, K) => #range(M, L, K)
-      requires K  >Int 0
-       andBool L >=Int N +Int #sizeByteArray(BUF)
+      requires K <Int 0
+       andBool N +Int #sizeByteArray(BUF) <=Int L
       [simplification]
 
     rule 0 <=Int keccak(V)                  => true  [simplification]
     rule         keccak(V) <=Int maxUInt256 => true  [simplification]
 
     // Defineness axiom for #buf
-    rule #Ceil(#buf(@SIZE, @DATA)) => {(@SIZE >=Int 0) #Equals true} #And #Ceil(@SIZE) #And #Ceil(@DATA) [anywhere]
+    rule #Ceil(#buf(@SIZE, @DATA)) => {(0 <=Int @SIZE) #Equals true} #And #Ceil(@SIZE) #And #Ceil(@DATA) [anywhere]
 
     rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
     rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
