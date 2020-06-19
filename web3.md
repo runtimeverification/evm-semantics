@@ -388,7 +388,7 @@ WEB3 JSON RPC
  // ------------------------------------------------------------------------
     rule getIntElementsSmallerThan (_, .List,               RESULTS) => RESULTS
     rule getIntElementsSmallerThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsSmallerThan (X, L, ListItem(I) RESULTS) requires I  <Int X
-    rule getIntElementsSmallerThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsSmallerThan (X, L, RESULTS)             requires I >=Int X
+    rule getIntElementsSmallerThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsSmallerThan (X, L, RESULTS)             requires X <=Int I
 
     rule getIntElementsGreaterThan (_, .List ,              RESULTS) => RESULTS
     rule getIntElementsGreaterThan (X, (ListItem(I:Int) L), RESULTS) => getIntElementsGreaterThan (X, L, ListItem(I) RESULTS) requires X  <Int I
@@ -1267,7 +1267,7 @@ Transaction Execution
            <to>         ACCTTO </to>
            ...
          </message>
-      requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) >=Int 0
+      requires 0 <=Int ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) )
 
     syntax KItem ::= "#executeTx" Int
  // ---------------------------------

@@ -151,7 +151,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
     syntax Int ::= sgn ( Int ) [function, functional]
                  | abs ( Int ) [function, functional]
  // -------------------------------------------------
-    rule sgn(I) => -1 requires I >=Int pow255
+    rule sgn(I) => -1 requires pow255 <=Int I
     rule sgn(I) => 1  requires I <Int pow255
 
     rule abs(I) => 0 -Word I requires sgn(I) ==Int -1
@@ -302,7 +302,7 @@ Bitwise logical operators are lifted from the integer versions.
     rule W0 &Word   W1 => W0 &Int W1
     rule W0 xorWord W1 => W0 xorInt W1
     rule W0 <<Word  W1 => chop( W0 <<Int W1 ) requires W1 <Int 256
-    rule W0 <<Word  W1 => 0 requires W1 >=Int 256
+    rule W0 <<Word  W1 => 0 requires 256 <=Int W1
     rule W0 >>Word  W1 => W0 >>Int W1
     rule W0 >>sWord W1 => chop( (abs(W0) *Int sgn(W0)) >>Int W1 )
 ```
@@ -314,11 +314,11 @@ Bitwise logical operators are lifted from the integer versions.
     syntax Int ::= bit  ( Int , Int ) [function]
                  | byte ( Int , Int ) [function]
  // --------------------------------------------
-    rule bit (N, _) => 0 requires notBool (N >=Int 0 andBool N <Int 256)
-    rule byte(N, _) => 0 requires notBool (N >=Int 0 andBool N <Int  32)
+    rule bit (N, _) => 0 requires notBool (0 <=Int N andBool N <Int 256)
+    rule byte(N, _) => 0 requires notBool (0 <=Int N andBool N <Int  32)
 
-    rule bit (N, W) => bitRangeInt(W , (255 -Int N)        , 1) requires N >=Int 0 andBool N <Int 256
-    rule byte(N, W) => bitRangeInt(W , ( 31 -Int N) *Int 8 , 8) requires N >=Int 0 andBool N <Int  32
+    rule bit (N, W) => bitRangeInt(W , (255 -Int N)        , 1) requires 0 <=Int N andBool N <Int 256
+    rule byte(N, W) => bitRangeInt(W , ( 31 -Int N) *Int 8 , 8) requires 0 <=Int N andBool N <Int  32
 ```
 
 -   `#nBits` shifts in $N$ ones from the right.
@@ -332,8 +332,8 @@ Bitwise logical operators are lifted from the integer versions.
                  | Int "<<Byte" Int [function]
                  | Int ">>Byte" Int [function]
  // ------------------------------------------
-    rule #nBits(N)  => (1 <<Int N) -Int 1 requires N >=Int 0
-    rule #nBytes(N) => #nBits(N *Int 8)   requires N >=Int 0
+    rule #nBits(N)  => (1 <<Int N) -Int 1 requires 0 <=Int N
+    rule #nBytes(N) => #nBits(N *Int 8)   requires 0 <=Int N
     rule N <<Byte M => N <<Int (8 *Int M)
     rule N >>Byte M => N >>Int (8 *Int M)
 ```
@@ -343,9 +343,9 @@ Bitwise logical operators are lifted from the integer versions.
 ```k
     syntax Int ::= signextend( Int , Int ) [function, functional]
  // -------------------------------------------------------------
-    rule [signextend.invalid]:  signextend(N, W) => W requires N >=Int 32 orBool N <Int 0
-    rule [signextend.negative]: signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
-    rule [signextend.positive]: signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
+    rule [signextend.invalid]:  signextend(N, W) => W requires 32 <=Int N orBool N <Int 0
+    rule [signextend.negative]: signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool 0 <=Int N andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
+    rule [signextend.positive]: signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool 0 <=Int N andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
 ```
 
 
@@ -483,8 +483,8 @@ Most of EVM data is held in local memory.
     syntax Memory = Bytes
     syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, functional, klabel(mapWriteBytes)]
  // -------------------------------------------------------------------------------------------------
-    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS') requires START >=Int 0  [concrete]
-    rule WS [ START := WS':ByteArray ] => .Memory                                                                requires START  <Int 0  [concrete]
+    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS') requires 0     <=Int START [concrete]
+    rule WS [ START := WS':ByteArray ] => .Memory                                                                requires START  <Int 0     [concrete]
 
     syntax ByteArray ::= #range ( Memory , Int , Int ) [function, functional]
  // -------------------------------------------------------------------------
@@ -568,9 +568,9 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional]
  // --------------------------------------------------------------------------
     rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0) [concrete, owise]
-    rule WS [ START .. WIDTH ] => .ByteArray                      requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
+    rule WS [ START .. WIDTH ] => .ByteArray                      requires notBool (0 <=Int WIDTH andBool 0 <=Int START)
     rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH)
-      requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int #sizeByteArray(WS) [concrete]
+      requires 0 <=Int WIDTH andBool 0 <=Int START andBool START <Int #sizeByteArray(WS) [concrete]
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, klabel(sizeByteArray), smtlib(sizeByteArray)]
  // ----------------------------------------------------------------------------------------------------------------
@@ -579,10 +579,10 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, functional]
                        | #padRightToWidth ( Int , ByteArray ) [function, functional]
  // --------------------------------------------------------------------------------
-    rule #padToWidth(N, BS)      =>               BS        requires notBool (N >=Int 0)
-    rule #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0  [concrete]
-    rule #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
-    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0  [concrete]
+    rule #padToWidth(N, BS)      =>               BS        requires notBool 0 <=Int N
+    rule #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires         0 <=Int N [concrete]
+    rule #padRightToWidth(N, BS) =>               BS        requires notBool 0 <=Int N
+    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires         0 <=Int N [concrete]
 ```
 
 ```{.k .nobytes}

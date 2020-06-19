@@ -163,7 +163,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
     rule #parseHexWord(S)    => String2Base(replaceAll(S, "0x", ""), 16) requires (S =/=String "") andBool (S =/=String "0x")
 
     rule #parseWord("") => 0
-    rule #parseWord(S)  => #parseHexWord(S) requires lengthString(S) >=Int 2 andBool substrString(S, 0, 2) ==String "0x"
+    rule #parseWord(S)  => #parseHexWord(S) requires 2 <=Int lengthString(S) andBool substrString(S, 0, 2) ==String "0x"
     rule #parseWord(S)  => String2Int(S) [owise]
 
     syntax String ::= #alignHexString ( String ) [function, functional]
@@ -183,7 +183,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
     rule #parseHexBytes(S)  => #parseHexBytesAux(#alignHexString(S))
     rule #parseHexBytesAux("") => .ByteArray
     rule #parseHexBytesAux(S)  => Int2Bytes(lengthString(S) /Int 2, String2Base(S, 16), BE)
-      requires lengthString(S) >=Int 2
+      requires 2 <=Int lengthString(S)
 
     rule #parseByteStackRaw(S) => String2Bytes(S)
 ```
@@ -199,9 +199,9 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
     rule #parseHexBytes(S)  => #parseHexBytesAux(#alignHexString(S))
     rule #parseHexBytesAux("") => .WordStack
     rule #parseHexBytesAux(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytesAux(substrString(S, 2, lengthString(S)))
-       requires lengthString(S) >=Int 2
+       requires 2 <=Int lengthString(S)
 
-    rule #parseByteStackRaw(S) => ordChar(substrString(S, 0, 1)) : #parseByteStackRaw(substrString(S, 1, lengthString(S))) requires lengthString(S) >=Int 1
+    rule #parseByteStackRaw(S) => ordChar(substrString(S, 0, 1)) : #parseByteStackRaw(substrString(S, 1, lengthString(S))) requires 1 <=Int lengthString(S)
     rule #parseByteStackRaw("") => .WordStack
 ```
 
@@ -294,7 +294,7 @@ Encoding
  // --------------------------------------------------------------
     rule #rlpEncodeWord(0) => "\x80"
     rule #rlpEncodeWord(WORD) => chrChar(WORD) requires 0 <Int WORD andBool WORD <Int 128
-    rule #rlpEncodeWord(WORD) => #rlpEncodeLength(#unparseByteStack(#asByteStack(WORD)), 128) requires WORD >=Int 128
+    rule #rlpEncodeWord(WORD) => #rlpEncodeLength(#unparseByteStack(#asByteStack(WORD)), 128) requires 128 <=Int WORD
 
     rule #rlpEncodeBytes(WORD, LEN) => #rlpEncodeString(#unparseByteStack(#padToWidth(LEN, #asByteStack(WORD))))
 
@@ -406,10 +406,10 @@ Encoding
     syntax String ::= #rlpMerkleH ( String ) [function,klabel(MerkleRLPAux)]
  // ------------------------------------------------------------------------
     rule #rlpMerkleH ( X ) => #rlpEncodeString( Hex2Raw( Keccak256( X ) ) )
-      requires lengthString(X) >=Int 32
+      requires 32 <=Int lengthString(X)
 
     rule #rlpMerkleH ( X ) => X
-      requires notBool lengthString(X) >=Int 32
+      requires notBool 32 <=Int lengthString(X)
 ```
 
 Decoding
@@ -443,9 +443,9 @@ Decoding
     rule #decodeLengthPrefix(STR, START) => #decodeLengthPrefix(STR, START, ordChar(substrString(STR, START, START +Int 1)))
 
     rule #decodeLengthPrefix(STR, START, B0) => #str(1, START)                                   requires B0 <Int 128
-    rule #decodeLengthPrefix(STR, START, B0) => #str(B0 -Int 128, START +Int 1)                  requires B0 >=Int 128 andBool B0 <Int (128 +Int 56)
-    rule #decodeLengthPrefix(STR, START, B0) => #decodeLengthPrefixLength(#str, STR, START, B0)  requires B0 >=Int (128 +Int 56) andBool B0 <Int 192
-    rule #decodeLengthPrefix(STR, START, B0) => #list(B0 -Int 192, START +Int 1)                 requires B0 >=Int 192 andBool B0 <Int 192 +Int 56
+    rule #decodeLengthPrefix(STR, START, B0) => #str(B0 -Int 128, START +Int 1)                  requires 128         <=Int B0 andBool B0 <Int (128 +Int 56)
+    rule #decodeLengthPrefix(STR, START, B0) => #decodeLengthPrefixLength(#str, STR, START, B0)  requires 128 +Int 56 <=Int B0 andBool B0 <Int 192
+    rule #decodeLengthPrefix(STR, START, B0) => #list(B0 -Int 192, START +Int 1)                 requires 192         <=Int B0 andBool B0 <Int 192 +Int 56
     rule #decodeLengthPrefix(STR, START, B0) => #decodeLengthPrefixLength(#list, STR, START, B0) [owise]
 
     rule #decodeLengthPrefixLength(#str,  STR, START, B0) => #decodeLengthPrefixLength(#str,  START, B0 -Int 128 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 128 -Int 56 +Int 1)))))

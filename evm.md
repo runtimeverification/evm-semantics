@@ -292,7 +292,7 @@ OpCode Execution
          <pc> PCOUNT </pc>
          <program> PGM </program>
          <output> _ => .ByteArray </output>
-      requires PCOUNT >=Int #sizeByteArray(PGM)
+      requires #sizeByteArray(PGM) <=Int PCOUNT
 ```
 
 ### Single Step
@@ -1113,7 +1113,7 @@ These operators query about the current return data buffer.
          <wordStack> WS => #drop(N, WS) </wordStack>
          <localMem> LM </localMem>
          <log> ... (.List => ListItem({ ACCT | WordStack2List(#take(N, WS)) | #range(LM, MEMSTART, MEMWIDTH) })) </log>
-      requires #sizeWordStack(WS) >=Int N
+      requires N <=Int #sizeWordStack(WS)
 ```
 
 Ethereum Network OpCodes
@@ -1344,7 +1344,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 ```{.k .bytes}
     syntax Set ::= #computeValidJumpDestsWithinBound(ByteArray, Int, List) [function]
  // ---------------------------------------------------------------------------------
-    rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
+    rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires #sizeByteArray(PGM) <=Int I
     rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int #sizeByteArray(PGM)
 
     rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT ListItem(I)) requires PGM [ I ] ==Int 91
@@ -1354,7 +1354,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 ```k
     syntax Int ::= #widthOpCode(Int) [function]
  // -------------------------------------------
-    rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
+    rule #widthOpCode(W) => W -Int 94 requires 96 <=Int W andBool W <=Int 127
     rule #widthOpCode(_) => 1 [owise]
 
     syntax KItem ::= "#return" Int Int
@@ -1810,8 +1810,8 @@ Overall Gas
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
     rule <k> G:Int ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
-    rule <k> G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
-    rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+    rule <k> G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL  <Int G
+    rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires G      <=Int GAVAIL
 ```
 
 Memory Consumption
