@@ -9,7 +9,6 @@ module VERIFICATION
  // --------------------------------------------------------
     rule #notPrecompileAddress ( X ) => 0 ==Int X orBool (10 <=Int X andBool #rangeAddress(X))
 
-
     // step 132 - could not simplify #sizeWordStack(#padToWidth(32, _), _) or #sizeWordStack(_ ++ _, _)
     rule #sizeWordStack(WS1 ++ WS2, N) => #sizeWordStack(WS1) +Int #sizeWordStack(WS2) +Int N
     rule #sizeWordStack(#padToWidth(32, #asByteStack(I)), N) => N +Int 32 requires 0 <=Int I andBool I <Int pow256
@@ -18,10 +17,11 @@ module VERIFICATION
     rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
 
     // step 262 - #asWord(((96 : 144 : 222 : 197 : #padToWidth(32, #asByteStack(ABI_ilk))) ++ #padToWidth(32, #asByteStack(ABI_usr)) ++ CD) [ 0 .. 32 ]) >>Int 224 <Int 2160673182
-    rule (WS ++ WS') [ START .. WIDTH ] => WS [ START .. WIDTH ] requires START +Int WIDTH <=Int #sizeWordStack(WS)
+    rule #sizeWordStack(#take(WIDTH, _)       , N) => WIDTH +Int N
+    rule #sizeWordStack(WS [ START .. WIDTH ] , N) => WIDTH +Int N
+    rule (WS ++ WS') [ START .. WIDTH ] => WS [ START .. WIDTH ]           requires START +Int WIDTH <=Int #sizeWordStack(WS)
+    rule (W0 : WS)   [ 0     .. WIDTH ] => W0 : (WS [ 0 .. WIDTH -Int 1 ]) requires 0 <Int WIDTH
     rule #asWord(WS) >>Int M => #asWord(WS [ 0 .. #sizeWordStack(WS) -Int (M /Int 8) ]) requires 0 <=Int M andBool M modInt 8 ==Int 0
-    rule (W0 : WS) [ 0 .. WIDTH ] => W0 : (WS [ 0 .. WIDTH -Int 1 ]) requires 0 <Int WIDTH
-    rule #sizeWordStack(WS [ START .. WIDTH ], N) => WIDTH +Int N
 
     // step 730 - #unsigned(#sizeWordStack(CD, 0) +Int 64) <Int 64
     rule #unsigned(#sizeWordStack(WS, N) +Int M) => #sizeWordStack(WS, N) +Int M requires 0 <=Int M andBool #sizeWordStack(WS, N) +Int M <Int maxSInt256
