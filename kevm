@@ -52,7 +52,7 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module smt_prelude_set run_dir smt_file smt_args additional_proof_args
+    local def_module run_dir additional_proof_args
 
     def_module="$1" ; shift
 
@@ -62,7 +62,7 @@ run_prove() {
 
     export K_OPTS=${K_OPTS:--Xmx8G}
     ! $debug || set -x
-    kprove --directory "$backend_dir" "${smt_args[@]-}" "$run_file" --def-module "$def_module" "${additional_proof_args[@]}" "$@"
+    kprove --directory "$backend_dir" "$run_file" --def-module "$def_module" "${additional_proof_args[@]}" "$@"
 }
 
 run_search() {
