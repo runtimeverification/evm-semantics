@@ -1640,9 +1640,8 @@ State Root
 
     syntax KItem ::= "#firefly_getStateRoot"
  // ----------------------------------------
-    rule <k> #firefly_getStateRoot => #rpcResponseSuccess({ "stateRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #stateRoot( <network> NETWORK </network>, SCHED ) ) ) }) ... </k>
-         <schedule> SCHED </schedule>
-         <network> NETWORK </network>
+    rule <k> #firefly_getStateRoot => #rpcResponseSuccess({ "stateRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( TREE ) ) }) ... </k>
+         <stateTrie> TREE </stateTrie>
 ```
 
 Transactions Root
