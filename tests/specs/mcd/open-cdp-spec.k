@@ -244,8 +244,9 @@ module OPEN-CDP-SPEC
      andBool ((ABI_usr =/=Int 0)
      andBool ((VCallDepth <Int 1023)))))))))))))))))))))))))))))))))))))))))
 
-     andBool ((#lookup(Vat_Storage, #Vat.can[Urn][ACCT_ID]) ==Int 0)
-     andBool ((#lookup(Vat_OrigStorage, #Vat.can[Urn][ACCT_ID]) ==Int Junk_0)))
+     andBool (#lookup(Vat_Storage, #Vat.can[Urn][ACCT_ID]) ==Int 0)
+
+     andBool (#lookup(Vat_OrigStorage, #Vat.can[Urn][ACCT_ID]) ==Int Junk_0)
 
      andBool ((#lookup(ACCT_ID_Storage, #DssCdpManager.vat)                    ==Int Vat)
      andBool ((#lookup(ACCT_ID_Storage, #DssCdpManager.cdpi)                   ==Int Cdpi)
@@ -271,16 +272,16 @@ module OPEN-CDP-SPEC
 
      ensures (#lookup(?Vat_Storage, #Vat.can[Urn][ACCT_ID]) ==Int 1)
 
-     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.vat) ==Int Vat)
-     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.cdpi) ==Int Cdpi +Int 1)
-     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.urns[Cdpi +Int 1]) ==Int Urn)
-     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.last[ABI_usr]) ==Int Cdpi +Int 1)
-     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.count[ABI_usr]) ==Int Count +Int 1)
-     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.owns[Cdpi +Int 1]) ==Int ABI_usr)
-     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.ilks[Cdpi +Int 1]) ==Int ABI_ilk)
-     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.first[ABI_usr]) ==Int #if First ==Int 0 #then Cdpi +Int 1 #else First #fi)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.vat)                    ==Int Vat)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.cdpi)                   ==Int Cdpi +Int 1)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.urns[Cdpi +Int 1])      ==Int Urn)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.last[ABI_usr])          ==Int Cdpi +Int 1)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.count[ABI_usr])         ==Int Count +Int 1)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.owns[Cdpi +Int 1])      ==Int ABI_usr)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.ilks[Cdpi +Int 1])      ==Int ABI_ilk)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.first[ABI_usr])         ==Int #if First ==Int 0 #then Cdpi +Int 1 #else First #fi)
      andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.list[Cdpi +Int 1].prev) ==Int #if Last =/=Int 0 #then Last #else Prev #fi)
-     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.list[Last].next) ==Int #if Last =/=Int 0 #then Cdpi +Int 1 #else Next #fi)))))))))))
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.list[Last].next)        ==Int #if Last =/=Int 0 #then Cdpi +Int 1 #else Next #fi)))))))))))
 
     // Vat_hope
     rule [Vat.hope.pass]:
