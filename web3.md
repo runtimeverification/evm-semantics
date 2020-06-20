@@ -1615,6 +1615,8 @@ State Root
 
     syntax MerkleTree ::= #putAccountsInTrie( MerkleTree, List, AccountsCell ) [function]
  // -------------------------------------------------------------------------------------
+    rule #putAccountsInTrie( TREE, .List, _ ) => TREE
+
     rule #putAccountsInTrie( (TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), #rlpEncodeFullAccount(NONCE, BAL, STORAGE, CODE) ))
                            , (ListItem(ACCT) => .List) ACCTS
                            , <accounts>
@@ -1635,8 +1637,6 @@ State Root
                            , _
                            )
       [owise]
-
-    rule #putAccountsInTrie( TREE, .List, _ ) => TREE
 
     syntax KItem ::= "#firefly_getStateRoot"
  // ----------------------------------------
