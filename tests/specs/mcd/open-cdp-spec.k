@@ -92,46 +92,16 @@ module OPEN-CDP-SPEC
               <acctID> Vat </acctID>
               <balance> Vat_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage>
-                _:Map
-              [#Vat.can[Urn][ACCT_ID] <- (0) => 1]
-               </storage>
-              <origStorage>
-                _:Map
-              [#Vat.can[Urn][ACCT_ID] <- (Junk_0)]
-               </origStorage>
+              <storage> Vat_Storage => ?Vat_Storage </storage>
+              <origStorage> Vat_OrigStorage </origStorage>
               <nonce> Nonce_Vat => ?_ </nonce>
             </account>
             <account>
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> DssCdpManager_bin_runtime </code>
-              <storage>
-                _:Map
-              [#DssCdpManager.vat <- (Vat) => Vat]
-              [#DssCdpManager.cdpi <- (Cdpi) => Cdpi +Int 1]
-              [#DssCdpManager.urns[Cdpi +Int 1] <- (0) => Urn]
-              [#DssCdpManager.last[ABI_usr] <- (Last) => Cdpi +Int 1]
-              [#DssCdpManager.count[ABI_usr] <- (Count) => Count +Int 1]
-              [#DssCdpManager.owns[Cdpi +Int 1] <- (Own) => ABI_usr]
-              [#DssCdpManager.ilks[Cdpi +Int 1] <- (Ilk) => ABI_ilk]
-              [#DssCdpManager.first[ABI_usr] <- (First) => #if First ==Int 0 #then Cdpi +Int 1 #else First #fi]
-              [#DssCdpManager.list[Cdpi +Int 1].prev <- (Prev) => #if Last =/=Int 0 #then Last #else Prev #fi]
-              [#DssCdpManager.list[Last].next <- (Next) => #if Last =/=Int 0 #then Cdpi +Int 1 #else Next #fi]
-               </storage>
-              <origStorage>
-                _:Map
-              [#DssCdpManager.vat <- (Junk_1)]
-              [#DssCdpManager.cdpi <- (Junk_2)]
-              [#DssCdpManager.urns[Cdpi +Int 1] <- (Junk_3)]
-              [#DssCdpManager.last[ABI_usr] <- (Junk_4)]
-              [#DssCdpManager.count[ABI_usr] <- (Junk_5)]
-              [#DssCdpManager.owns[Cdpi +Int 1] <- (Junk_6)]
-              [#DssCdpManager.ilks[Cdpi +Int 1] <- (Junk_7)]
-              [#DssCdpManager.first[ABI_usr] <- (Junk_8)]
-              [#DssCdpManager.list[Cdpi +Int 1].prev <- (Junk_9)]
-              [#DssCdpManager.list[Last].next <- (Junk_10)]
-               </origStorage>
+              <storage> ACCT_ID_Storage => ?ACCT_ID_Storage </storage>
+              <origStorage> ACCT_ID_OrigStorage </origStorage>
               <nonce> Nonce_DssCdpManager => ?_ </nonce>
             </account>
             <account>
@@ -274,6 +244,44 @@ module OPEN-CDP-SPEC
      andBool ((ABI_usr =/=Int 0)
      andBool ((VCallDepth <Int 1023)))))))))))))))))))))))))))))))))))))))))
 
+     andBool ((#lookup(Vat_Storage, #Vat.can[Urn][ACCT_ID]) ==Int 0)
+     andBool ((#lookup(Vat_OrigStorage, #Vat.can[Urn][ACCT_ID]) ==Int Junk_0)))
+
+     andBool ((#lookup(ACCT_ID_Storage, #DssCdpManager.vat)                    ==Int Vat)
+     andBool ((#lookup(ACCT_ID_Storage, #DssCdpManager.cdpi)                   ==Int Cdpi)
+     andBool ((#lookup(ACCT_ID_Storage, #DssCdpManager.urns[Cdpi +Int 1])      ==Int 0)
+     andBool ((#lookup(ACCT_ID_Storage, #DssCdpManager.last[ABI_usr])          ==Int Last)
+     andBool ((#lookup(ACCT_ID_Storage, #DssCdpManager.count[ABI_usr])         ==Int Count)
+     andBool ((#lookup(ACCT_ID_Storage, #DssCdpManager.owns[Cdpi +Int 1])      ==Int Own)
+     andBool ((#lookup(ACCT_ID_Storage, #DssCdpManager.ilks[Cdpi +Int 1])      ==Int Ilk)
+     andBool ((#lookup(ACCT_ID_Storage, #DssCdpManager.first[ABI_usr])         ==Int First)
+     andBool ((#lookup(ACCT_ID_Storage, #DssCdpManager.list[Cdpi +Int 1].prev) ==Int Prev)
+     andBool ((#lookup(ACCT_ID_Storage, #DssCdpManager.list[Last].next)        ==Int Next)))))))))))
+
+     andBool ((#lookup(ACCT_ID_OrigStorage, #DssCdpManager.vat)                    ==Int Junk_1)
+     andBool ((#lookup(ACCT_ID_OrigStorage, #DssCdpManager.cdpi)                   ==Int Junk_2)
+     andBool ((#lookup(ACCT_ID_OrigStorage, #DssCdpManager.urns[Cdpi +Int 1])      ==Int Junk_3)
+     andBool ((#lookup(ACCT_ID_OrigStorage, #DssCdpManager.last[ABI_usr])          ==Int Junk_4)
+     andBool ((#lookup(ACCT_ID_OrigStorage, #DssCdpManager.count[ABI_usr])         ==Int Junk_5)
+     andBool ((#lookup(ACCT_ID_OrigStorage, #DssCdpManager.owns[Cdpi +Int 1])      ==Int Junk_6)
+     andBool ((#lookup(ACCT_ID_OrigStorage, #DssCdpManager.ilks[Cdpi +Int 1])      ==Int Junk_7)
+     andBool ((#lookup(ACCT_ID_OrigStorage, #DssCdpManager.first[ABI_usr])         ==Int Junk_8)
+     andBool ((#lookup(ACCT_ID_OrigStorage, #DssCdpManager.list[Cdpi +Int 1].prev) ==Int Junk_9)
+     andBool ((#lookup(ACCT_ID_OrigStorage, #DssCdpManager.list[Last].next)        ==Int Junk_10)))))))))))
+
+     ensures (#lookup(?Vat_Storage, #Vat.can[Urn][ACCT_ID]) ==Int 1)
+
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.vat) ==Int Vat)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.cdpi) ==Int Cdpi +Int 1)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.urns[Cdpi +Int 1]) ==Int Urn)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.last[ABI_usr]) ==Int Cdpi +Int 1)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.count[ABI_usr]) ==Int Count +Int 1)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.owns[Cdpi +Int 1]) ==Int ABI_usr)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.ilks[Cdpi +Int 1]) ==Int ABI_ilk)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.first[ABI_usr]) ==Int #if First ==Int 0 #then Cdpi +Int 1 #else First #fi)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.list[Cdpi +Int 1].prev) ==Int #if Last =/=Int 0 #then Last #else Prev #fi)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.list[Last].next) ==Int #if Last =/=Int 0 #then Cdpi +Int 1 #else Next #fi)))))))))))
+
     // Vat_hope
     rule [Vat.hope.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
@@ -347,14 +355,8 @@ module OPEN-CDP-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage>
-                _:Map
-              [#Vat.can[CALLER_ID][ABI_usr] <- (Junk_0) => 1]
-               </storage>
-              <origStorage>
-                _:Map
-              [#Vat.can[CALLER_ID][ABI_usr] <- (Junk_1)]
-               </origStorage>
+              <storage> ACCT_ID_Storage => ?ACCT_ID_Storage </storage>
+              <origStorage> ACCT_ID_OrigStorage </origStorage>
               <nonce> Nonce_Vat => ?_ </nonce>
             </account>
             <account>
@@ -463,6 +465,11 @@ module OPEN-CDP-SPEC
      andBool (#rangeUInt(256, Junk_0)
      andBool (#rangeUInt(256, Junk_1)
      andBool ((VCallValue ==Int 0))))))))
+
+     andBool (#lookup(ACCT_ID_Storage, #Vat.can[CALLER_ID][ABI_usr]) ==Int Junk_0)
+     andBool (#lookup(ACCT_ID_OrigStorage, #Vat.can[CALLER_ID][ABI_usr]) ==Int Junk_1)
+
+     ensures (#lookup(?ACCT_ID_Storage, #Vat.can[CALLER_ID][ABI_usr]) ==Int 1)
     [trusted]
 
 
