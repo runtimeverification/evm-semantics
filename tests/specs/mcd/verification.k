@@ -14,7 +14,8 @@ module VERIFICATION
     rule #sizeWordStack(#padToWidth(32, #asByteStack(I)), N) => N +Int 32 requires 0 <=Int I andBool I <Int pow256
 
     // step 164 - sizeWordStack(_, _) + 68 <Int 4
-    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
+    rule 0 <=Int #sizeWordStack(_, _) => true [smt-lemma]
+    rule 0 <=Int #sizeByteArray(_) => true [smt-lemma]
 
     // step 262 - #asWord(((96 : 144 : 222 : 197 : #padToWidth(32, #asByteStack(ABI_ilk))) ++ #padToWidth(32, #asByteStack(ABI_usr)) ++ CD) [ 0 .. 32 ]) >>Int 224 <Int 2160673182
     rule #sizeWordStack(#take(WIDTH, _)       , N) => WIDTH +Int N
@@ -52,6 +53,12 @@ module VERIFICATION
     rule hash2(_, _)        ==K 0 => false
     rule hash2(_, _) +Int I ==K 0 => false requires I =/=Int 0
 
+    // step 1621 - vat-move-diff
+    rule hash2(_, 5) ==K hash2(_, hash2(_, _)) => false
+
+    // step 2309 - vat-move-diff
+    rule hash2(V1, _) ==K hash2(V2, _) => false requires V1 =/=Int V2
+
     // step 1527 - Cdpi ==K (Cdpi +Int 1)
     rule I ==K I +Int 1 => false
 
@@ -68,8 +75,7 @@ module VERIFICATION
 
     // step 2893 - M [ N <- K ] [ M := BUF ]
     rule MAP:Memory [ N <- V           ] [ N' <- V' ] => MAP [ N' <- V' ] [ N <- V ] requires N'                          <Int N
-    rule MAP:Memory [ N <- V           ] [ N' := V' ] => MAP [ N' := V' ] [ N <- V ] requires N' +Int #sizeWordStack(V') <=Int N
-    rule MAP:Memory [ N := V:ByteArray ] [ N' <- V' ] => MAP [ N' <- V' ] [ N := V ] requires N'                          <Int N
+    rule MAP:Memory [ N := V:ByteArray ] [ N' <- V' ] => MAP [ N' <- V' ] [ N := V ] requires N'                          <Int N orBool N +Int #sizeWordStack(V) <=Int N'
     rule MAP:Memory [ N := V:ByteArray ] [ N' := V' ] => MAP [ N' := V' ] [ N := V ] requires N' +Int #sizeWordStack(V') <=Int N
     rule MAP:Memory [ N <- V           ] [ N' := V' ] => MAP [ N' := V' ]            requires N' <=Int N andBool N <Int N' +Int #sizeWordStack(V')
 
