@@ -656,7 +656,7 @@ Addresses
 -   `#lookup` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 ```k
-    syntax Int ::= #lookup ( Map , Int ) [function, functional]
+    syntax Int ::= #lookup ( Map , Int ) [function, functional, smtlib(lookup)]
  // -----------------------------------------------
     rule [#lookup.some]:       #lookup( (KEY |-> VAL:Int) M, KEY ) => VAL requires #rangeUInt(256, VAL)
     rule [#lookup.none]:       #lookup(                   M, KEY ) => 0   requires notBool KEY in_keys(M)
