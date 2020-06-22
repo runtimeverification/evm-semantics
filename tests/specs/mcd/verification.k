@@ -51,8 +51,8 @@ module VERIFICATION
     // rule hash2(_, _) +Int I ==K 1                     => false requires I =/=Int 0
     // rule hash2(_, _)        ==K 0                     => false
     // rule hash2(_, _) +Int I ==K 0                     => false requires I =/=Int 0
-    // rule hash2(_, 5)        ==K hash2(_, hash2(_, _)) => false
-    // rule hash2(V1, _)       ==K hash2(V2, _)          => false requires V1 =/=Int V2
+    rule hash2(_, 5)        ==K hash2(_, hash2(_, _)) => false                              // vat final implication
+    rule hash2(V1, _)       ==K hash2(V2, _)          => false requires V1 =/=Int V2        // vat step 2674
     // rule I                  ==K I +Int 1              => false
     // rule #newAddr(_, _)     ==K 0                     => false
     // rule hash2(_, V1)       ==K hash2(_, V2)          => false requires V1 =/=Int V2
