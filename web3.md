@@ -1609,13 +1609,12 @@ State Root
                      </network>
                    , SCHED
                    )
-      => #putAccountsInTrie( MerkleUpdateMap( .MerkleTree, #precompiledAccountsMap(#precompiledAccounts(SCHED)) ), Set2List(ACCTS), ACCTS, <accounts> ACCTSCELL </accounts> )
+      => #putAccountsInTrie( MerkleUpdateMap( .MerkleTree, #precompiledAccountsMap(#precompiledAccounts(SCHED)) ), Set2List(ACCTS), <accounts> ACCTSCELL </accounts> )
 
-    syntax MerkleTree ::= #putAccountsInTrie( MerkleTree, List, Set, AccountsCell ) [function]
- // ------------------------------------------------------------------------------------------
+    syntax MerkleTree ::= #putAccountsInTrie( MerkleTree, List, AccountsCell ) [function]
+ // -------------------------------------------------------------------------------------
     rule #putAccountsInTrie( (TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), #rlpEncodeFullAccount(NONCE, BAL, STORAGE, CODE) ))
                            , (ListItem(ACCT) => .List) ACCTS
-                           , ACTIVEACCTS
                            , <accounts>
                                <account>
                                  <acctID>  ACCT    </acctID>
@@ -1628,16 +1627,14 @@ State Root
                                ...
                              </accounts>
                            )
-      requires ACCT in ACTIVEACCTS
 
     rule #putAccountsInTrie( TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), "" )
                            , (ListItem(ACCT) => .List) ACCTS
                            , _
-                           , _
                            )
       [owise]
 
-    rule #putAccountsInTrie( TREE, .List, _, _ ) => TREE
+    rule #putAccountsInTrie( TREE, .List, _ ) => TREE
 
     syntax KItem ::= "#firefly_getStateRoot"
  // ----------------------------------------
@@ -1901,9 +1898,8 @@ Mining
 
     rule <k> #updateStateTrie( .JSONs ) => . ... </k>
          <schedule> SCHED </schedule>
-         <stateTrie> TREE => #putAccountsInTrie( TREE, Set2List(ACCTS), ACTIVEACCTS #precompiledAccounts(SCHED), <accounts> ACCTSCELL </accounts> ) </stateTrie>
+         <stateTrie> TREE => #putAccountsInTrie( TREE, Set2List(ACCTS -Set #precompiledAccounts(SCHED)), <accounts> ACCTSCELL </accounts> ) </stateTrie>
          <touchedAccounts> ACCTS => .Set </touchedAccounts>
-         <activeAccounts> ACTIVEACCTS </activeAccounts>
          <accounts> ACCTSCELL </accounts>
 
     syntax KItem ::= "#updateTimestamp"
