@@ -1284,7 +1284,6 @@ Transaction Execution
          <origin> ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
-         <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID     </msgID>
            <txGasPrice> GPRICE   </txGasPrice>
@@ -1300,7 +1299,6 @@ Transaction Execution
            <nonce> NONCE </nonce>
            ...
          </account>
-         <touchedAccounts> ... .Set => SetItem(MINER) ... </touchedAccounts>
 
     rule <k> #executeTx TXID:Int
           => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
@@ -1312,7 +1310,6 @@ Transaction Execution
          <gasPrice> _ => GPRICE </gasPrice>
          <txPending> ListItem(TXID) ... </txPending>
          <callDepth> _ => -1 </callDepth>
-         <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID   </msgID>
            <txGasPrice> GPRICE </txGasPrice>
@@ -1328,7 +1325,6 @@ Transaction Execution
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
-         <touchedAccounts> ... .Set => SetItem(MINER) ... </touchedAccounts>
       requires ACCTTO =/=K .Account
 
     syntax EthereumCommand ::= "#finishTx"
