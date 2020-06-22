@@ -3,9 +3,6 @@ requires "verification.k"
 module OPEN-CDP-SPEC
   imports VERIFICATION
 
-    // Disable gas calculation
-    rule <k> #gas [ _ , _ ] => . ... </k> [trusted]
-
     // DssCdpManager_open
     rule [DssCdpManager.open.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
@@ -273,18 +270,18 @@ module OPEN-CDP-SPEC
      andBool ((#lookup(ACCT_ID_OrigStorage, #DssCdpManager.list[Cdpi +Int 1].prev) ==Int Junk_9)
      andBool ((#lookup(ACCT_ID_OrigStorage, #DssCdpManager.list[Last].next)        ==Int Junk_10)))))))))))
 
-//     ensures (#lookup(?Vat_Storage, #Vat.can[Urn][ACCT_ID]) ==Int 1)
-//
-//     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.vat)                    ==Int Vat)
-//     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.cdpi)                   ==Int Cdpi +Int 1)
-//     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.urns[Cdpi +Int 1])      ==Int Urn)
-//     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.last[ABI_usr])          ==Int Cdpi +Int 1)
-//     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.count[ABI_usr])         ==Int Count +Int 1)
-//     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.owns[Cdpi +Int 1])      ==Int ABI_usr)
-//     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.ilks[Cdpi +Int 1])      ==Int ABI_ilk)
-//     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.first[ABI_usr])         ==Int #if First ==Int 0 #then Cdpi +Int 1 #else First #fi)
-//     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.list[Cdpi +Int 1].prev) ==Int #if Last =/=Int 0 #then Last #else Prev #fi)
-//     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.list[Last].next)        ==Int #if Last =/=Int 0 #then Cdpi +Int 1 #else Next #fi)))))))))))
+     ensures (#lookup(?Vat_Storage, #Vat.can[Urn][ACCT_ID]) ==Int 1)
+
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.vat)                    ==Int Vat)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.cdpi)                   ==Int Cdpi +Int 1)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.urns[Cdpi +Int 1])      ==Int Urn)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.last[ABI_usr])          ==Int Cdpi +Int 1)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.count[ABI_usr])         ==Int Count +Int 1)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.owns[Cdpi +Int 1])      ==Int ABI_usr)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.ilks[Cdpi +Int 1])      ==Int ABI_ilk)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.first[ABI_usr])         ==Int #if First ==Int 0 #then Cdpi +Int 1 #else First #fi)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.list[Cdpi +Int 1].prev) ==Int #if Last =/=Int 0 #then Last #else Prev #fi)
+     andBool ((#lookup(?ACCT_ID_Storage, #DssCdpManager.list[Last].next)        ==Int #if Last =/=Int 0 #then Cdpi +Int 1 #else Next #fi)))))))))))
 
     // Vat_hope
     rule [Vat.hope.pass]:
