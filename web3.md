@@ -1599,7 +1599,7 @@ State Root
 ----------
 
 ```k
-    syntax MerkleTree ::= #stateRoot   ( NetworkCell )                   [function]
+    syntax MerkleTree ::= #stateRoot   ( NetworkCell, Schedule )         [function]
                         | #stateRootAux( MerkleTree, Set, AccountsCell ) [function]
  // -------------------------------------------------------------------------------
     rule #stateRoot( <network>
@@ -1607,8 +1607,9 @@ State Root
                        <accounts> ACCTSCELL </accounts>
                        ...
                      </network>
+                   , SCHED
                    )
-      => #stateRootAux( MerkleUpdateMap( .MerkleTree, #precompiledContracts ), ACCTS, <accounts> ACCTSCELL </accounts> )
+      => #stateRootAux( MerkleUpdateMap( .MerkleTree, #precompiledAccountsMap(#precompiledAccounts(SCHED)) ), ACCTS, <accounts> ACCTSCELL </accounts> )
 
     rule #stateRootAux( (TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), #rlpEncodeFullAccount(NONCE, BAL, STORAGE, CODE) ))
                       , (SetItem(ACCT) => .Set) ACCTS
@@ -1629,7 +1630,8 @@ State Root
 
     syntax KItem ::= "#firefly_getStateRoot"
  // ----------------------------------------
-    rule <k> #firefly_getStateRoot => #rpcResponseSuccess({ "stateRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #stateRoot( <network> NETWORK </network> ) ) ) }) ... </k>
+    rule <k> #firefly_getStateRoot => #rpcResponseSuccess({ "stateRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #stateRoot( <network> NETWORK </network>, SCHED ) ) ) }) ... </k>
+         <schedule> SCHED </schedule>
          <network> NETWORK </network>
 ```
 
@@ -1859,7 +1861,8 @@ Mining
     rule <k> #updateTrieRoots => #updateStateRoot ~> #updateTransactionsRoot ~> #updateReceiptsRoot ... </k>
 
     rule <k> #updateStateRoot => . ... </k>
-         <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot( <network> NETWORK </network> ) ) ) ) </stateRoot>
+         <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot( <network> NETWORK </network>, SCHED ) ) ) ) </stateRoot>
+         <schedule> SCHED </schedule>
          <network> NETWORK </network>
 
     rule <k> #updateTransactionsRoot => . ... </k>
