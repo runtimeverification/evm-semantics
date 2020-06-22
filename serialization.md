@@ -703,7 +703,7 @@ Tree Root Helper Functions
     rule #precompiledAccountsMap( ACCTS ) => #precompiledAccountsMapAux( Set2List( ACCTS ), .Map )
 
     rule #precompiledAccountsMapAux( .List, M ) => M
-    rule #precompiledAccountsMapAux( (ListItem( ACCT ) => .List) _, (.Map => #parseByteStackRaw( Hex2Raw( #unparseData( ACCT, 20 ) ) ) |-> #emptyContractRLP) _ )
+    rule #precompiledAccountsMapAux( (ListItem( ACCT ) => .List) _, M => M[#parseByteStackRaw( Hex2Raw( #unparseData( ACCT, 20 ) ) ) <- #emptyContractRLP] )
 
     syntax String ::= "#emptyContractRLP" [function]
  // ------------------------------------------------
