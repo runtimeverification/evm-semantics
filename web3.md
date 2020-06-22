@@ -1855,7 +1855,7 @@ Mining
                    | "#initStateTrie"
                    | "#updateStateTrie"
                    | #updateStateTrie ( JSONs )
- // --------------------------------------
+ // -------------------------------------------
     rule <k> #saveState => #pushBlockchainState ~> #incrementBlockNumber ... </k>
 
     rule <k> #incrementBlockNumber => . ... </k>
