@@ -20,6 +20,7 @@ module WEB3
         <blockchain>
           <blockList> .List </blockList>
         </blockchain>
+        <stateTrie> .MerkleTree </stateTrie>
         <defaultGasPrice> 20000000000 </defaultGasPrice>
         <defaultGasLimit> 90000       </defaultGasLimit>
         <timeDiff>        0           </timeDiff> // Gets added to #time() when updating <timestamp>
@@ -1609,24 +1610,32 @@ State Root
                      </network>
                    , SCHED
                    )
-      => #stateRootAux( MerkleUpdateMap( .MerkleTree, #precompiledAccountsMap(#precompiledAccounts(SCHED)) ), ACCTS, <accounts> ACCTSCELL </accounts> )
+      => #putAccountsInTrie( MerkleUpdateMap( .MerkleTree, #precompiledAccountsMap(#precompiledAccounts(SCHED)) ), ACCTS, <accounts> ACCTSCELL </accounts> )
 
-    rule #stateRootAux( (TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), #rlpEncodeFullAccount(NONCE, BAL, STORAGE, CODE) ))
-                      , (SetItem(ACCT) => .Set) ACCTS
-                      , <accounts>
-                          <account>
-                            <acctID>  ACCT    </acctID>
-                            <nonce>   NONCE   </nonce>
-                            <balance> BAL     </balance>
-                            <storage> STORAGE </storage>
-                            <code>    CODE    </code>
-                            ...
-                          </account>
-                          ...
-                        </accounts>
-                      )
+    syntax MerkleTree ::= #putAccountsInTrie( MerkleTree, Set, AccountsCell ) [function]
+ // ------------------------------------------------------------------------------------
+    rule #putAccountsInTrie( (TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), #rlpEncodeFullAccount(NONCE, BAL, STORAGE, CODE) ))
+                           , (SetItem(ACCT) => .Set) ACCTS
+                           , <accounts>
+                               <account>
+                                 <acctID>  ACCT    </acctID>
+                                 <nonce>   NONCE   </nonce>
+                                 <balance> BAL     </balance>
+                                 <storage> STORAGE </storage>
+                                 <code>    CODE    </code>
+                                 ...
+                               </account>
+                               ...
+                             </accounts>
+                           )
 
-    rule #stateRootAux( TREE, .Set, _ ) => TREE
+    rule #putAccountsInTrie( TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), "" )
+                           , (SetItem(ACCT) => .Set) ACCTS
+                           , _
+                           )
+      [owise]
+
+    rule #putAccountsInTrie( TREE, .Set, _ ) => TREE
 
     syntax KItem ::= "#firefly_getStateRoot"
  // ----------------------------------------
@@ -1809,7 +1818,7 @@ Mining
     rule <k> #firefly_genesisBlock ... </k>
          <params> [ .JSONs => #unparseQuantity(#time()), .JSONs ] </params>
 
-    rule <k> #firefly_genesisBlock => #updateTrieRoots ~> #pushBlockchainState ~> #incrementBlockNumber ~> #rpcResponseSuccess(true) ... </k>
+    rule <k> #firefly_genesisBlock => #initStateTrie ~> #updateTrieRoots ~> #pushBlockchainState ~> #incrementBlockNumber ~> #rpcResponseSuccess(true) ... </k>
          <params>     [ TIME:String, .JSONs ]                                                            </params>
          <timestamp>  _ => #parseWord( TIME )                                                            </timestamp>
          <logsBloom>  _ => #padToWidth( 256, .ByteArray )                                                </logsBloom>
@@ -1822,6 +1831,7 @@ Mining
           => #finalizeBlock
           ~> #setParentHash #getBlockByNumber( LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>} )
           ~> #makeTxReceipts
+          ~> #updateStateTrie
           ~> #updateTrieRoots
           ~> #saveState
           ~> #startBlock
@@ -1839,6 +1849,8 @@ Mining
                    | "#clearGas"
                    | "#setParentHash" BlockchainItem
                    | "#updateTrieRoots"
+                   | "#initStateTrie"
+                   | "#updateStateTrie"
                    | "#updateStateRoot"
                    | "#updateTransactionsRoot"
                    | "#updateReceiptsRoot"
@@ -1860,10 +1872,25 @@ Mining
 
     rule <k> #updateTrieRoots => #updateStateRoot ~> #updateTransactionsRoot ~> #updateReceiptsRoot ... </k>
 
-    rule <k> #updateStateRoot => . ... </k>
-         <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot( <network> NETWORK </network>, SCHED ) ) ) ) </stateRoot>
+    rule <k> #initStateTrie => . ... </k>
+         <stateTrie> _ => #stateRoot( <network> NETWORK </network>, SCHED ) </stateTrie>
          <schedule> SCHED </schedule>
          <network> NETWORK </network>
+
+    rule <k> #updateStateTrie => . ... </k>
+         <touchedAccounts> .Set </touchedAccounts>
+         <selfDestruct> .Set </selfDestruct>
+
+    rule <k> #updateStateTrie ... </k>
+         <stateTrie> TREE => #putAccountsInTrie( TREE, ACCTS DESTRUCTSET, <accounts> ACCTSCELL </accounts> ) </stateTrie>
+         <touchedAccounts> ACCTS => .Set </touchedAccounts>
+         <selfDestruct> DESTRUCTSET => .Set </selfDestruct>
+         <accounts> ACCTSCELL </accounts>
+      requires ACCTS =/=K .Set orBool DESTRUCTSET =/=K .Set
+
+    rule <k> #updateStateRoot => . ... </k>
+         <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( TREE ) ) ) </stateRoot>
+         <stateTrie> TREE </stateTrie>
 
     rule <k> #updateTransactionsRoot => . ... </k>
          <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot(<network> NETWORK </network>) ) ) ) </transactionsRoot>
