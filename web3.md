@@ -1600,9 +1600,8 @@ State Root
 ----------
 
 ```k
-    syntax MerkleTree ::= #stateRoot   ( NetworkCell, Schedule )         [function]
-                        | #stateRootAux( MerkleTree, Set, AccountsCell ) [function]
- // -------------------------------------------------------------------------------
+    syntax MerkleTree ::= #stateRoot ( NetworkCell, Schedule ) [function]
+ // ---------------------------------------------------------------------
     rule #stateRoot( <network>
                        <activeAccounts> ACCTS </activeAccounts>
                        <accounts> ACCTSCELL </accounts>
@@ -1610,12 +1609,13 @@ State Root
                      </network>
                    , SCHED
                    )
-      => #putAccountsInTrie( MerkleUpdateMap( .MerkleTree, #precompiledAccountsMap(#precompiledAccounts(SCHED)) ), Set2List(ACCTS), <accounts> ACCTSCELL </accounts> )
+      => #putAccountsInTrie( MerkleUpdateMap( .MerkleTree, #precompiledAccountsMap(#precompiledAccounts(SCHED)) ), Set2List(ACCTS), ACCTS, <accounts> ACCTSCELL </accounts> )
 
-    syntax MerkleTree ::= #putAccountsInTrie( MerkleTree, List, AccountsCell ) [function]
- // -------------------------------------------------------------------------------------
+    syntax MerkleTree ::= #putAccountsInTrie( MerkleTree, List, Set, AccountsCell ) [function]
+ // ------------------------------------------------------------------------------------------
     rule #putAccountsInTrie( (TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), #rlpEncodeFullAccount(NONCE, BAL, STORAGE, CODE) ))
                            , (ListItem(ACCT) => .List) ACCTS
+                           , ACTIVEACCTS
                            , <accounts>
                                <account>
                                  <acctID>  ACCT    </acctID>
@@ -1628,14 +1628,16 @@ State Root
                                ...
                              </accounts>
                            )
+      requires ACCT in ACTIVEACCTS
 
     rule #putAccountsInTrie( TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), "" )
                            , (ListItem(ACCT) => .List) ACCTS
                            , _
+                           , _
                            )
       [owise]
 
-    rule #putAccountsInTrie( TREE, .List, _ ) => TREE
+    rule #putAccountsInTrie( TREE, .List, _, _ ) => TREE
 
     syntax KItem ::= "#firefly_getStateRoot"
  // ----------------------------------------
@@ -1898,8 +1900,10 @@ Mining
          <touchedAccounts> ... .Set => SetItem(OMMER) ... </touchedAccounts>
 
     rule <k> #updateStateTrie( .JSONs ) => . ... </k>
-         <stateTrie> TREE => #putAccountsInTrie( TREE, Set2List(ACCTS), <accounts> ACCTSCELL </accounts> ) </stateTrie>
+         <schedule> SCHED </schedule>
+         <stateTrie> TREE => #putAccountsInTrie( TREE, Set2List(ACCTS), ACTIVEACCTS #precompiledAccounts(SCHED), <accounts> ACCTSCELL </accounts> ) </stateTrie>
          <touchedAccounts> ACCTS => .Set </touchedAccounts>
+         <activeAccounts> ACTIVEACCTS </activeAccounts>
          <accounts> ACCTSCELL </accounts>
 
     syntax KItem ::= "#updateTimestamp"
