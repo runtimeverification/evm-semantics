@@ -1610,12 +1610,12 @@ State Root
                      </network>
                    , SCHED
                    )
-      => #putAccountsInTrie( MerkleUpdateMap( .MerkleTree, #precompiledAccountsMap(#precompiledAccounts(SCHED)) ), ACCTS, <accounts> ACCTSCELL </accounts> )
+      => #putAccountsInTrie( MerkleUpdateMap( .MerkleTree, #precompiledAccountsMap(#precompiledAccounts(SCHED)) ), Set2List(ACCTS), <accounts> ACCTSCELL </accounts> )
 
-    syntax MerkleTree ::= #putAccountsInTrie( MerkleTree, Set, AccountsCell ) [function]
- // ------------------------------------------------------------------------------------
+    syntax MerkleTree ::= #putAccountsInTrie( MerkleTree, List, AccountsCell ) [function]
+ // -------------------------------------------------------------------------------------
     rule #putAccountsInTrie( (TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), #rlpEncodeFullAccount(NONCE, BAL, STORAGE, CODE) ))
-                           , (SetItem(ACCT) => .Set) ACCTS
+                           , (ListItem(ACCT) => .List) ACCTS
                            , <accounts>
                                <account>
                                  <acctID>  ACCT    </acctID>
@@ -1630,12 +1630,12 @@ State Root
                            )
 
     rule #putAccountsInTrie( TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), "" )
-                           , (SetItem(ACCT) => .Set) ACCTS
+                           , (ListItem(ACCT) => .List) ACCTS
                            , _
                            )
       [owise]
 
-    rule #putAccountsInTrie( TREE, .Set, _ ) => TREE
+    rule #putAccountsInTrie( TREE, .List, _ ) => TREE
 
     syntax KItem ::= "#firefly_getStateRoot"
  // ----------------------------------------
@@ -1885,7 +1885,7 @@ Mining
          <touchedAccounts> (.Set => SetItem(OMMER)) _ </touchedAccounts>
 
     rule <k> #updateStateTrie( .JSONs ) => . ... </k>
-         <stateTrie> TREE => #putAccountsInTrie( TREE, SetItem(MINER) ACCTS DESTRUCTSET, <accounts> ACCTSCELL </accounts> ) </stateTrie>
+         <stateTrie> TREE => #putAccountsInTrie( TREE, Set2List(SetItem(MINER) ACCTS DESTRUCTSET), <accounts> ACCTSCELL </accounts> ) </stateTrie>
          <touchedAccounts> ACCTS => .Set </touchedAccounts>
          <selfDestruct> DESTRUCTSET => .Set </selfDestruct>
          <coinbase> MINER </coinbase>
