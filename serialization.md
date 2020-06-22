@@ -709,6 +709,14 @@ Tree Root Helper Functions
          #parseByteStackRaw( Hex2Raw( #unparseData( 7, 20 ) ) ) |-> #emptyContractRLP
          #parseByteStackRaw( Hex2Raw( #unparseData( 8, 20 ) ) ) |-> #emptyContractRLP
 
+    syntax Map ::= #precompiledAccountsMap   ( Set )       [function]
+                 | #precompiledAccountsMapAux( List, Map ) [function]
+ // -----------------------------------------------------------------
+    rule #precompiledAccountsMap( ACCTS ) => #precompiledAccountsMapAux( Set2List( ACCTS ), .Map )
+
+    rule #precompiledAccountsMapAux( .List, M ) => M
+    rule #precompiledAccountsMapAux( (ListItem( ACCT ) => .List) _, (.Map => #parseByteStackRaw( Hex2Raw( #unparseData( ACCT, 20 ) ) ) |-> #emptyContractRLP) _ )
+
     syntax String ::= "#emptyContractRLP" [function]
  // ------------------------------------------------
     rule #emptyContractRLP => #rlpEncodeLength(         #rlpEncodeWord(0)
