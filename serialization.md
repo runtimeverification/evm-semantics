@@ -697,17 +697,13 @@ Tree Root Helper Functions
 ### State Root
 
 ```k
-    syntax Map ::= "#precompiledContracts" [function]
- // -------------------------------------------------
-    rule #precompiledContracts
-      => #parseByteStackRaw( Hex2Raw( #unparseData( 1, 20 ) ) ) |-> #emptyContractRLP
-         #parseByteStackRaw( Hex2Raw( #unparseData( 2, 20 ) ) ) |-> #emptyContractRLP
-         #parseByteStackRaw( Hex2Raw( #unparseData( 3, 20 ) ) ) |-> #emptyContractRLP
-         #parseByteStackRaw( Hex2Raw( #unparseData( 4, 20 ) ) ) |-> #emptyContractRLP
-         #parseByteStackRaw( Hex2Raw( #unparseData( 5, 20 ) ) ) |-> #emptyContractRLP
-         #parseByteStackRaw( Hex2Raw( #unparseData( 6, 20 ) ) ) |-> #emptyContractRLP
-         #parseByteStackRaw( Hex2Raw( #unparseData( 7, 20 ) ) ) |-> #emptyContractRLP
-         #parseByteStackRaw( Hex2Raw( #unparseData( 8, 20 ) ) ) |-> #emptyContractRLP
+    syntax Map ::= #precompiledAccountsMap   ( Set )       [function]
+                 | #precompiledAccountsMapAux( List, Map ) [function]
+ // -----------------------------------------------------------------
+    rule #precompiledAccountsMap( ACCTS ) => #precompiledAccountsMapAux( Set2List( ACCTS ), .Map )
+
+    rule #precompiledAccountsMapAux( .List, M ) => M
+    rule #precompiledAccountsMapAux( (ListItem( ACCT ) => .List) _, M => M[#parseByteStackRaw( Hex2Raw( #unparseData( ACCT, 20 ) ) ) <- #emptyContractRLP] )
 
     syntax String ::= "#emptyContractRLP" [function]
  // ------------------------------------------------

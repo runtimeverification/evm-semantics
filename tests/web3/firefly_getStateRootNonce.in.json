@@ -13,6 +13,12 @@
   {
     "jsonrpc": "2.0",
     "id": 2,
+    "method": "firefly_genesisBlock",
+    "params": []
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
     "method": "firefly_getStateRoot",
     "params": []
   }
