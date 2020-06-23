@@ -23,6 +23,19 @@ module LEMMAS-SPEC
     // rule <k> runLemma ( M [ L := WS:ByteArray ] [ N := .ByteArray ]                             ) => doneLemma ( M [ L := WS ]                        ) ... </k> requires N <=Int L
     // rule <k> runLemma ( M [ 32 := (0 : 1 : 2 : .ByteArray) ] [ 32 := (3 : 4 : 5 : .ByteArray) ] ) => doneLemma ( M [ 32 := (3 : 4 : 5 : .ByteArray) ] ) ... </k>
 
+ // #lookup simplifications
+ // -----------------------
+
+    rule <k> runLemma ( #lookupMemory((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY)    ) => doneLemma ( 33  ) ... </k>
+    rule <k> runLemma ( #lookupMemory((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY')   ) => doneLemma ( 216 ) ... </k>
+    rule <k> runLemma ( #lookupMemory((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY'')  ) => doneLemma ( 5   ) ... </k>
+    rule <k> runLemma ( #lookupMemory((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY''') ) => doneLemma ( 0   ) ... </k>
+
+    rule <k> runLemma ( #lookupStorage((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY)    ) => doneLemma ( 33  ) ... </k>
+    rule <k> runLemma ( #lookupStorage((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY')   ) => doneLemma ( 728 ) ... </k>
+    rule <k> runLemma ( #lookupStorage((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY'')  ) => doneLemma ( 5   ) ... </k>
+    rule <k> runLemma ( #lookupStorage((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY''') ) => doneLemma ( 0   ) ... </k>
+
  // #range selection operation
  // --------------------------
 
