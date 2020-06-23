@@ -5,8 +5,8 @@ EVM.Cgascap
 EVM.Cmem
 EVM.Csstore.new
 EVM.Csstore.old
-EVM.#lookupStorage.none
-EVM.#lookupStorage.some
+EVM.#lookup.none
+EVM.#lookup.some
 EVM.#memoryUsageUpdate.some
 EVM.Rsstore.new
 EVM.Rsstore.old

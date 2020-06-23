@@ -1210,7 +1210,7 @@ These rules reach into the network state and load/store from account storage:
 ```k
     syntax UnStackOp ::= "SLOAD"
  // ----------------------------
-    rule <k> SLOAD INDEX => #lookupStorage(STORAGE, INDEX) ~> #push ... </k>
+    rule <k> SLOAD INDEX => #lookup(STORAGE, INDEX) ~> #push ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1882,7 +1882,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 ```k
     syntax InternalOp ::= #gasExec ( Schedule , OpCode )
  // ----------------------------------------------------
-    rule <k> #gasExec(SCHED, SSTORE INDEX NEW) => Csstore(SCHED, NEW, #lookupStorage(STORAGE, INDEX), #lookupStorage(ORIGSTORAGE, INDEX)) ... </k>
+    rule <k> #gasExec(SCHED, SSTORE INDEX NEW) => Csstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) ... </k>
          <id> ACCT </id>
          <gas> GAVAIL </gas>
          <account>
@@ -1891,7 +1891,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
            <origStorage> ORIGSTORAGE </origStorage>
            ...
          </account>
-         <refund> R => R +Int Rsstore(SCHED, NEW, #lookupStorage(STORAGE, INDEX), #lookupStorage(ORIGSTORAGE, INDEX)) </refund>
+         <refund> R => R +Int Rsstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) </refund>
       requires notBool Ghassstorestipend << SCHED >>
         orBool notBool GAVAIL <=Int Gcallstipend < SCHED >
 
