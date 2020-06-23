@@ -20,6 +20,7 @@ module WEB3
         <blockchain>
           <blockList> .List </blockList>
         </blockchain>
+        <stateTrie> .MerkleTree </stateTrie>
         <defaultGasPrice> 20000000000 </defaultGasPrice>
         <defaultGasLimit> 90000       </defaultGasLimit>
         <timeDiff>        0           </timeDiff> // Gets added to #time() when updating <timestamp>
@@ -475,8 +476,8 @@ WEB3 JSON RPC
  // ----------------------------------------------------
     rule #hashMessage( S ) => #unparseByteStack(#parseHexBytes(Keccak256("\x19Ethereum Signed Message:\n" +String Int2String(lengthString(S)) +String S)))
 
-    syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "|" TxReceiptsCell "|" Int "}"
- // ------------------------------------------------------------------------------------------------------
+    syntax SnapshotItem ::= "{" BlockListCell "|" NetworkCell "|" BlockCell "|" TxReceiptsCell "|" Int "|" MerkleTree "}"
+ // ---------------------------------------------------------------------------------------------------------------------
 
     syntax KItem ::= "#evm_snapshot"
  // --------------------------------
@@ -486,23 +487,25 @@ WEB3 JSON RPC
     syntax KItem ::= "#pushNetworkState"
  // ------------------------------------
     rule <k> #pushNetworkState => . ... </k>
-         <snapshots> ... (.List => ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts> | TIMEDIFF })) </snapshots>
+         <snapshots> ... (.List => ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts> | TIMEDIFF | TREE })) </snapshots>
          <network>    NETWORK   </network>
          <block>      BLOCK     </block>
          <blockList>  BLOCKLIST </blockList>
          <timeDiff>   TIMEDIFF  </timeDiff>
          <txReceipts> RECEIPTS  </txReceipts>
+         <stateTrie>  TREE      </stateTrie>
 
     syntax KItem ::= "#popNetworkState"
  // -----------------------------------
     rule <k> #popNetworkState => . ... </k>
-         <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts> | TIMEDIFF }) => .List ) </snapshots>
+         <snapshots> ... ( ListItem({ <blockList> BLOCKLIST </blockList> | <network> NETWORK </network> | <block> BLOCK </block> | <txReceipts> RECEIPTS </txReceipts> | TIMEDIFF | TREE }) => .List ) </snapshots>
          <network>     _ => NETWORK                        </network>
          <blockhashes> _ => #getBlockhashlist( BLOCKLIST ) </blockhashes>
          <block>       _ => BLOCK                          </block>
          <blockList>   _ => BLOCKLIST                      </blockList>
          <timeDiff>    _ => TIMEDIFF                       </timeDiff>
          <txReceipts>  _ => RECEIPTS                       </txReceipts>
+         <stateTrie>   _ => TREE                           </stateTrie>
 
     syntax List ::= #getBlockhashlist( List )            [function]
                   | #getBlockhashlistFromParents( List ) [function]
@@ -1281,7 +1284,6 @@ Transaction Execution
          <origin> ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
-         <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID     </msgID>
            <txGasPrice> GPRICE   </txGasPrice>
@@ -1297,7 +1299,6 @@ Transaction Execution
            <nonce> NONCE </nonce>
            ...
          </account>
-         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
 
     rule <k> #executeTx TXID:Int
           => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
@@ -1309,7 +1310,6 @@ Transaction Execution
          <gasPrice> _ => GPRICE </gasPrice>
          <txPending> ListItem(TXID) ... </txPending>
          <callDepth> _ => -1 </callDepth>
-         <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID   </msgID>
            <txGasPrice> GPRICE </txGasPrice>
@@ -1325,7 +1325,6 @@ Transaction Execution
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
-         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
 
     syntax EthereumCommand ::= "#finishTx"
@@ -1599,9 +1598,8 @@ State Root
 ----------
 
 ```k
-    syntax MerkleTree ::= #stateRoot   ( NetworkCell, Schedule )         [function]
-                        | #stateRootAux( MerkleTree, Set, AccountsCell ) [function]
- // -------------------------------------------------------------------------------
+    syntax MerkleTree ::= #stateRoot ( NetworkCell, Schedule ) [function]
+ // ---------------------------------------------------------------------
     rule #stateRoot( <network>
                        <activeAccounts> ACCTS </activeAccounts>
                        <accounts> ACCTSCELL </accounts>
@@ -1609,30 +1607,37 @@ State Root
                      </network>
                    , SCHED
                    )
-      => #stateRootAux( MerkleUpdateMap( .MerkleTree, #precompiledAccountsMap(#precompiledAccounts(SCHED)) ), ACCTS, <accounts> ACCTSCELL </accounts> )
+      => #putAccountsInTrie( MerkleUpdateMap( .MerkleTree, #precompiledAccountsMap(#precompiledAccounts(SCHED)) ), Set2List(ACCTS), <accounts> ACCTSCELL </accounts> )
 
-    rule #stateRootAux( (TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), #rlpEncodeFullAccount(NONCE, BAL, STORAGE, CODE) ))
-                      , (SetItem(ACCT) => .Set) ACCTS
-                      , <accounts>
-                          <account>
-                            <acctID>  ACCT    </acctID>
-                            <nonce>   NONCE   </nonce>
-                            <balance> BAL     </balance>
-                            <storage> STORAGE </storage>
-                            <code>    CODE    </code>
-                            ...
-                          </account>
-                          ...
-                        </accounts>
-                      )
+    syntax MerkleTree ::= #putAccountsInTrie( MerkleTree, List, AccountsCell ) [function]
+ // -------------------------------------------------------------------------------------
+    rule #putAccountsInTrie( TREE, .List, _ ) => TREE
 
-    rule #stateRootAux( TREE, .Set, _ ) => TREE
+    rule #putAccountsInTrie( (TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), #rlpEncodeFullAccount(NONCE, BAL, STORAGE, CODE) ))
+                           , (ListItem(ACCT) => .List) ACCTS
+                           , <accounts>
+                               <account>
+                                 <acctID>  ACCT    </acctID>
+                                 <nonce>   NONCE   </nonce>
+                                 <balance> BAL     </balance>
+                                 <storage> STORAGE </storage>
+                                 <code>    CODE    </code>
+                                 ...
+                               </account>
+                               ...
+                             </accounts>
+                           )
+
+    rule #putAccountsInTrie( TREE => MerkleUpdate( TREE, Hex2Raw( #unparseData(ACCT,20) ), "" )
+                           , (ListItem(ACCT) => .List) ACCTS
+                           , _
+                           )
+      [owise]
 
     syntax KItem ::= "#firefly_getStateRoot"
  // ----------------------------------------
-    rule <k> #firefly_getStateRoot => #rpcResponseSuccess({ "stateRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( #stateRoot( <network> NETWORK </network>, SCHED ) ) ) }) ... </k>
-         <schedule> SCHED </schedule>
-         <network> NETWORK </network>
+    rule <k> #firefly_getStateRoot => #rpcResponseSuccess({ "stateRoot" : "0x" +String Keccak256( #rlpEncodeMerkleTree( TREE ) ) }) ... </k>
+         <stateTrie> TREE </stateTrie>
 ```
 
 Transactions Root
@@ -1809,7 +1814,7 @@ Mining
     rule <k> #firefly_genesisBlock ... </k>
          <params> [ .JSONs => #unparseQuantity(#time()), .JSONs ] </params>
 
-    rule <k> #firefly_genesisBlock => #updateTrieRoots ~> #pushBlockchainState ~> #incrementBlockNumber ~> #rpcResponseSuccess(true) ... </k>
+    rule <k> #firefly_genesisBlock => #initStateTrie ~> #updateTrieRoots ~> #pushBlockchainState ~> #incrementBlockNumber ~> #rpcResponseSuccess(true) ... </k>
          <params>     [ TIME:String, .JSONs ]                                                            </params>
          <timestamp>  _ => #parseWord( TIME )                                                            </timestamp>
          <logsBloom>  _ => #padToWidth( 256, .ByteArray )                                                </logsBloom>
@@ -1822,6 +1827,7 @@ Mining
           => #finalizeBlock
           ~> #setParentHash #getBlockByNumber( LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>} )
           ~> #makeTxReceipts
+          ~> #updateStateTrie
           ~> #updateTrieRoots
           ~> #saveState
           ~> #startBlock
@@ -1842,7 +1848,10 @@ Mining
                    | "#updateStateRoot"
                    | "#updateTransactionsRoot"
                    | "#updateReceiptsRoot"
- // --------------------------------------
+                   | "#initStateTrie"
+                   | "#updateStateTrie"
+                   | #updateStateTrie ( JSONs )
+ // -------------------------------------------
     rule <k> #saveState => #pushBlockchainState ~> #incrementBlockNumber ... </k>
 
     rule <k> #incrementBlockNumber => . ... </k>
@@ -1861,9 +1870,8 @@ Mining
     rule <k> #updateTrieRoots => #updateStateRoot ~> #updateTransactionsRoot ~> #updateReceiptsRoot ... </k>
 
     rule <k> #updateStateRoot => . ... </k>
-         <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #stateRoot( <network> NETWORK </network>, SCHED ) ) ) ) </stateRoot>
-         <schedule> SCHED </schedule>
-         <network> NETWORK </network>
+         <stateRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( TREE ) ) ) </stateRoot>
+         <stateTrie> TREE </stateTrie>
 
     rule <k> #updateTransactionsRoot => . ... </k>
          <transactionsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #transactionsRoot(<network> NETWORK </network>) ) ) ) </transactionsRoot>
@@ -1873,6 +1881,24 @@ Mining
          <receiptsRoot> _ => #parseHexWord( Keccak256( #rlpEncodeMerkleTree( #receiptsRoot( TXLIST, <txReceipts> TXRECEIPTS </txReceipts> ) ) ) ) </receiptsRoot>
          <txOrder> TXLIST </txOrder>
          <txReceipts> TXRECEIPTS </txReceipts>
+
+    rule <k> #initStateTrie => . ... </k>
+         <stateTrie> _ => #stateRoot( <network> NETWORK </network>, SCHED ) </stateTrie>
+         <schedule> SCHED </schedule>
+         <network> NETWORK </network>
+
+    rule <k> #updateStateTrie => #updateStateTrie(OMMERS) ... </k>
+         <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
+
+    rule <k> #updateStateTrie( [ _ , _ , OMMER , _ , _ , _ , _ , _ , _ , _ ] , REST ) => #updateStateTrie( REST ) ... </k>
+         <touchedAccounts> ... .Set => SetItem(OMMER) ... </touchedAccounts>
+
+    rule <k> #updateStateTrie( .JSONs ) => . ... </k>
+         <schedule> SCHED </schedule>
+         <stateTrie> TREE => #putAccountsInTrie( TREE, Set2List(SetItem(MINER) (ACCTS -Set #precompiledAccounts(SCHED))), <accounts> ACCTSCELL </accounts> ) </stateTrie>
+         <touchedAccounts> ACCTS => .Set </touchedAccounts>
+         <accounts> ACCTSCELL </accounts>
+         <coinbase> MINER </coinbase>
 
     syntax KItem ::= "#updateTimestamp"
  // -----------------------------------

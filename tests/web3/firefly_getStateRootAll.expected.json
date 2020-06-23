@@ -7,6 +7,11 @@
   {
     "jsonrpc": "2.0",
     "id": 2,
+    "result": true
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
     "result": {
       "stateRoot": "0x1640c4ac64b82797b9200c681cdfa87f8585a975c709c7946404bbf0e9266164"
     }
