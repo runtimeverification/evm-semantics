@@ -426,13 +426,6 @@ A cons-list is used for the EVM wordstack.
     rule .WordStack          [ N := W ] => (0 : .WordStack) [ N := W ]
 ```
 
--   Definedness conditions for `WS [ N ]`:
-
-```{.k .symbolic}
-    rule #Ceil(#lookup( _ |-> VAL M, KEY )) => {(#Ceil(#lookup( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
-    rule #Ceil(#lookup( .Map, _ ))          => true                                                          [anywhere]
-```
-
 -   `#sizeWordStack` calculates the size of a `WordStack`.
 -   `_in_` determines if a `Int` occurs in a `WordStack`.
 
@@ -511,7 +504,7 @@ Most of EVM data is held in local memory.
  // --------------------------------------------------------------------------------------------------------
     rule [#range]: #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack)
     rule [#rangeAux.base]: #range(WM, END, WIDTH, WS) => WS requires notBool 0 <Int WIDTH
-    rule [#rangeAux.rec]:  #range(WM, END => END -Int 1, WIDTH => WIDTH -Int 1, WS => #lookup(WM, END) : WS) requires 0 <Int WIDTH
+    rule [#rangeAux.rec]:  #range(WM, END => END -Int 1, WIDTH => WIDTH -Int 1, WS => #lookupMemory(WM, END) : WS) requires 0 <Int WIDTH
 
     syntax Memory ::= ".Memory" [function]
  // --------------------------------------
@@ -659,13 +652,20 @@ Addresses
     rule #addr(W) => W %Word pow160
 ```
 
--   `#lookup` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
+-   `#lookup*` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
+    It also makes sure the returned value is in the correct bitwidth, adjusting it if not.
 
 ```k
-    syntax Int ::= #lookup ( Map , Int ) [function]
- // -----------------------------------------------
-    rule [#lookup.some]: #lookup( (KEY |-> VAL:Int) M, KEY ) => VAL
-    rule [#lookup.none]: #lookup(                   M, KEY ) => 0 requires notBool KEY in_keys(M)
+    syntax Int ::= #lookupStorage ( Map , Int ) [function, functional]
+                 | #lookupMemory  ( Map , Int ) [function, functional]
+ // ------------------------------------------------------------------
+    rule [#lookupStorage.some]:   #lookupStorage( (KEY |-> VAL:Int) M, KEY ) => VAL modInt pow256
+    rule [#lookupStorage.none]:   #lookupStorage(                   M, KEY ) => 0                 requires notBool KEY in_keys(M)
+    rule [#lookupStorage.notInt]: #lookupStorage( (KEY |-> VAL    ) M, KEY ) => 0                 requires notBool isInt(VAL)
+
+    rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) M, KEY ) => VAL modInt 256
+    rule [#lookupMemory.none]:   #lookupMemory(                   M, KEY ) => 0              requires notBool KEY in_keys(M)
+    rule [#lookupMemory.notInt]: #lookupMemory( (KEY |-> VAL    ) M, KEY ) => 0              requires notBool isInt(VAL)
 ```
 
 ### Substate Log
