@@ -3,8 +3,8 @@ requires "../lemmas.k"
 module VERIFICATION
     imports LEMMAS
 
-    syntax StepSort ::= Map | ByteArray | Int
- // -----------------------------------------
+    syntax StepSort ::= Map | ByteArray | Int | Bool
+ // -----------------------------------
 
     syntax KItem ::= runLemma ( StepSort )
                    | doneLemma( StepSort )
@@ -69,5 +69,17 @@ module LEMMAS-SPEC
     rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : .ByteArray)         ] , 33 , 1) ) => doneLemma( (1 : .ByteArray)                          ) ... </k>
     rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : .ByteArray)         ] , 33 , 2) ) => doneLemma( (1 : 2 : .ByteArray)                      ) ... </k>
     rule <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : .ByteArray)         ] , 33 , 3) ) => doneLemma( (1 : 2 :  .ByteArray) ++ #range(M, 35, 1) ) ... </k>
+
+    //bool2Word simplification
+    rule <k> runLemma ( bool2Word( B:Bool ) ==Int 1 ) => doneLemma( B ==K true ) ... </k>
+    rule <k> runLemma ( 1 ==Int bool2Word( B:Bool ) ) => doneLemma( B ==K true ) ... </k>
+
+    //#buf simplification
+    rule <k> runLemma ( #buf ( 32 , bool2Word ( B:Bool ) ) ==K String2Bytes("00000000000000000000000000000001") )
+             => doneLemma( B ==K true ) ... </k>
+    rule <k> runLemma ( #buf ( 32 , I:Int ) ==K String2Bytes("00000000000000000000000000000001") )
+             => doneLemma( I ==K 1 ) ... </k>
+    rule <k> runLemma ( String2Bytes("00000000000000000000000000000001") ==K #buf ( 32 , I:Int ))
+             => doneLemma( I ==K 1 ) ... </k>
 
 endmodule
