@@ -17,10 +17,6 @@ module VERIFICATION
     rule chop(hash2(V1, V2) +Int 1) => hash2(V1, V2) +Int 1
 
     // sizeWordStack/sizeByteArray
-    // rule #sizeWordStack(WS1 ++ WS2, N)                       => #sizeWordStack(WS1) +Int #sizeWordStack(WS2) +Int N
-    // rule #sizeWordStack(#padToWidth(32, #asByteStack(I)), N) => N +Int 32 requires 0 <=Int I andBool I <Int pow256
-    // rule #sizeWordStack(#take(WIDTH, _)       , N)           => WIDTH +Int N
-    // rule #sizeWordStack(WS [ START .. WIDTH ] , N)           => WIDTH +Int N
     rule #sizeByteArray(WS ++ WS')                        => #sizeByteArray(WS) +Int #sizeByteArray(WS')
     rule #sizeByteArray(#padToWidth(32, #asByteStack(I))) => 32 requires 0 <=Int I andBool I <Int pow256
     rule #sizeByteArray(WS [ START .. WIDTH ])            => WIDTH
@@ -29,6 +25,8 @@ module VERIFICATION
     rule 0 <=Int #sizeByteArray(_)    => true [smt-lemma]
 
     // ranged lookups in ByteArray
+    rule (WS ++ WS') [ 0 .. WIDTH ] => WS ++ (WS' [ 0 .. WIDTH -Int #sizeByteArray(WS) ]) requires #sizeByteArray(WS) <=Int WIDTH
+
     rule (WS ++ WS') [ START .. WIDTH ] => WS  [ START                         .. WIDTH ] requires START +Int WIDTH <=Int #sizeByteArray(WS)
     rule (WS ++ WS') [ START .. WIDTH ] => WS' [ START -Int #sizeByteArray(WS) .. WIDTH ] requires #sizeByteArray(WS) <=Int START
 
@@ -47,31 +45,19 @@ module VERIFICATION
     rule #lookup(MAP [ KEY <- VALUE ], KEY') => VALUE              requires KEY  ==K KEY'
 
     // key differences
-    // rule hash2(_, _)        ==K 1                     => false
-    // rule hash2(_, _) +Int I ==K 1                     => false requires I =/=Int 0
-    // rule hash2(_, _)        ==K 0                     => false
-    // rule hash2(_, _) +Int I ==K 0                     => false requires I =/=Int 0
+    rule hash2(_, _)        ==K 1                     => false                              // open-cdp step 4034
+    rule hash2(_, _) +Int I ==K 1                     => false requires I =/=Int 0          // open-cdp step 5456
     rule hash2(_, 5)        ==K hash2(_, hash2(_, _)) => false                              // vat final implication
     rule hash2(V1, _)       ==K hash2(V2, _)          => false requires V1 =/=Int V2        // vat step 2674
-    // rule I                  ==K I +Int 1              => false
-    // rule #newAddr(_, _)     ==K 0                     => false
-    // rule hash2(_, V1)       ==K hash2(_, V2)          => false requires V1 =/=Int V2
-    // rule 1                  ==K hash2(_, _)           => false
-    // rule hash2(_, _) +Int I ==K hash2(_, _)           => false requires I =/=Int 0
-    // rule hash2(_, _)        ==K hash2(_, _) +Int I    => false requires I =/=Int 0
-    // rule 1                  ==K hash2(_, _) +Int I    => false
-
-    rule 24465873643947496235832446106509767096567058095563226156125564318740882468608 ==K hash2(_, _) => false
+    rule #newAddr(_, _)     ==K 0                     => false                              // open-cdp step 3679
+    rule hash2(_, V1)       ==K hash2(_, V2)          => false requires V1 =/=Int V2        // open-cdp step 4584
+    rule 1                  ==K hash2(_, _)           => false                              // open-cdp step 4584
+    rule hash2(_, _) +Int I ==K hash2(_, _)           => false requires I =/=Int 0          // open-cdp step 5786
 
     // ranged lookups in Memory
     rule #range(MAP [ KEY <- _           ] => MAP, START, WIDTH)                       requires START +Int WIDTH <=Int KEY
     rule #range(MAP [ KEY := BUF         ]       , START, WIDTH) => BUF [ 0 .. WIDTH ] requires KEY ==Int START andBool WIDTH <=Int #sizeByteArray(BUF)
     rule #range(MAP [ KEY := _:ByteArray ] => MAP, START, WIDTH)                       requires START +Int WIDTH <=Int KEY
-    // rule #range(MAP [ KEY := BA:ByteArray ] => MAP, END, WIDTH, WS) requires END <Int KEY orBool KEY +Int WIDTH +Int #sizeWordStack(BA) -Int 1 <=Int END
-    // rule #range(MAP [ KEY <- _            ] => MAP, END, WIDTH, WS) requires END <Int KEY orBool KEY +Int WIDTH                                <=Int END
-    // rule #range(MAP [ KEY <- V ], START, WIDTH) => #range(MAP [ KEY <- V ], START, WIDTH -Int 1) ++ V : .ByteArray requires KEY ==Int START +Int WIDTH -Int 1
-    // rule #range(MAP [ KEY <- VALUE ], KEY => KEY -Int 1, WIDTH => WIDTH -Int 1, WS => VALUE : WS) requires 0 <Int WIDTH
-    // rule #range(MAP [ KEY := BUF ], END => END -Int #sizeWordStack(BUF), WIDTH => WIDTH -Int #sizeWordStack(BUF), WS => BUF ++ WS) requires KEY +Int WIDTH -Int 1 ==Int END andBool #sizeWordStack(BUF) <=Int WIDTH
 
     // #computeValidJumpDests
     rule #computeValidJumpDests(#padToWidth(32, #asByteStack(ADDR)) => .ByteArray, I => I +Int 32, RESULT) requires 0 <=Int ADDR andBool ADDR <Int pow256
