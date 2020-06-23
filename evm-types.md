@@ -426,13 +426,6 @@ A cons-list is used for the EVM wordstack.
     rule .WordStack          [ N := W ] => (0 : .WordStack) [ N := W ]
 ```
 
--   Definedness conditions for `WS [ N ]`:
-
-```{.k .symbolic}
-    rule #Ceil(#lookupStorage( _ |-> VAL M, KEY )) => {(#Ceil(#lookupStorage( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
-    rule #Ceil(#lookupStorage( .Map, _ ))          => true                                                                 [anywhere]
-```
-
 -   `#sizeWordStack` calculates the size of a `WordStack`.
 -   `_in_` determines if a `Int` occurs in a `WordStack`.
 
@@ -663,14 +656,16 @@ Addresses
     It also makes sure the returned value is in the correct bitwidth, adjusting it if not.
 
 ```k
-    syntax Int ::= #lookupStorage ( Map , Int ) [function]
-                 | #lookupMemory  ( Map , Int ) [function]
- // ------------------------------------------------------
-    rule [#lookupStorage.some]: #lookupStorage( (KEY |-> VAL:Int) M, KEY ) => VAL
-    rule [#lookupStorage.none]: #lookupStorage(                   M, KEY ) => 0 requires notBool KEY in_keys(M)
+    syntax Int ::= #lookupStorage ( Map , Int ) [function, functional]
+                 | #lookupMemory  ( Map , Int ) [function, functional]
+ // ------------------------------------------------------------------
+    rule [#lookupStorage.some]:   #lookupStorage( (KEY |-> VAL:Int) M, KEY ) => VAL modInt pow256
+    rule [#lookupStorage.none]:   #lookupStorage(                   M, KEY ) => 0                 requires notBool KEY in_keys(M)
+    rule [#lookupStorage.notInt]: #lookupStorage( (KEY |-> VAL    ) M, KEY ) => 0                 requires notBool isInt(VAL)
 
-    rule [#lookupMemory.some]: #lookupMemory( (KEY |-> VAL:Int) M, KEY ) => VAL
-    rule [#lookupMemory.none]: #lookupMemory(                   M, KEY ) => 0 requires notBool KEY in_keys(M)
+    rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) M, KEY ) => VAL modInt 256
+    rule [#lookupMemory.none]:   #lookupMemory(                   M, KEY ) => 0              requires notBool KEY in_keys(M)
+    rule [#lookupMemory.notInt]: #lookupMemory( (KEY |-> VAL    ) M, KEY ) => 0              requires notBool isInt(VAL)
 ```
 
 ### Substate Log
