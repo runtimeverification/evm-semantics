@@ -3,8 +3,8 @@ requires "../lemmas.k"
 module VERIFICATION
     imports LEMMAS
 
-    syntax StepSort ::= Map | ByteArray
- // -----------------------------------
+    syntax StepSort ::= Map | ByteArray | Int
+ // -----------------------------------------
 
     syntax KItem ::= runLemma ( StepSort )
                    | doneLemma( StepSort )
