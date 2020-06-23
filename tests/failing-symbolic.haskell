@@ -1,2 +1,3 @@
 tests/specs/erc20/ds/transferFrom-failure-1-c-spec.k
 tests/specs/mcd/open-cdp-spec.k
+tests/specs/mcd/vat-move-diff-spec.k
