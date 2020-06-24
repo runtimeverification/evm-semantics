@@ -1,10 +1,7 @@
 requires "../lemmas.k"
 
-module VERIFICATION
+module VERIFICATION-COMMON
     imports LEMMAS
-    imports VERIFICATION-JAVA
-
-    rule Rsstore(BYZANTIUM, NEW, CURR, ORIG) => 0 requires NEW =/=Int 0
 
   // ########################
   // Ecrecover
@@ -15,6 +12,25 @@ module VERIFICATION
 
     //Symbolic predicate representing whether output of #ecrec is empty. No implementation.
     syntax Bool ::= #ecrecEmpty( ByteArray ) [function]
+
+  // ########################
+  // Symbolic Gas
+  // ########################
+
+    syntax Int ::= #gas ( Int , Int , Int )  [function]  // startGas, nonMemory, memory
+ // -----------------------------------------------------------------------------------
+
+endmodule
+
+module VERIFICATION
+    imports VERIFICATION-COMMON
+    imports VERIFICATION-JAVA
+
+    rule Rsstore(BYZANTIUM, NEW, CURR, ORIG) => 0 requires NEW =/=Int 0
+
+  // ########################
+  // Ecrecover
+  // ########################
 
     // Range for #symEcrec
 
@@ -28,13 +44,6 @@ module VERIFICATION
     // General range conversion lemmas like below are not an option, dramatic performance decrease:
     rule 0 <=Int  #symEcrec(DATA)             => true
     rule          #symEcrec(DATA) <Int pow256 => true
-
-  // ########################
-  // Symbolic Gas
-  // ########################
-
-    syntax Int ::= #gas ( Int , Int , Int )  [function]  // startGas, nonMemory, memory
- // -----------------------------------------------------------------------------------
 
   // ########################
   // Symbolic Call
@@ -290,7 +299,7 @@ rule #ecrecData(SIGS, I, DATA_HASH) => #encodeArgs(#bytes32(DATA_HASH), #uint8(#
 endmodule
 
 module VERIFICATION-JAVA [symbolic, kast]
-    imports LEMMAS
+    imports VERIFICATION-COMMON
     imports K-REFLECTION
 
   // ########################
