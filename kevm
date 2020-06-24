@@ -56,9 +56,12 @@ run_prove() {
 
     def_module="$1" ; shift
 
+    repl_cmd="${repl_cmd:-$k_release_dir/bin/kore-repl}"
+    repl_script="${repl_script:-$kevm_dir/kast.kscript}"
+
     additional_proof_args=()
     ! $debug || additional_proof_args+=(--debug)
-    ! $repl  || additional_proof_args+=(--haskell-backend-command "$k_release_dir/bin/kore-repl --repl-script $kevm_dir/kast.kscript")
+    ! $repl  || additional_proof_args+=(--haskell-backend-command "$repl_cmd --repl-script $repl_script")
 
     export K_OPTS=${K_OPTS:--Xmx8G}
     ! $debug || set -x
