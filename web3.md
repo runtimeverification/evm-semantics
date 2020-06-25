@@ -21,11 +21,12 @@ module WEB3
           <blockList> .List </blockList>
         </blockchain>
         <stateTrie> .MerkleTree </stateTrie>
-        <defaultGasPrice> 20000000000 </defaultGasPrice>
-        <defaultGasLimit> 90000       </defaultGasLimit>
-        <timeDiff>        0           </timeDiff> // Gets added to #time() when updating <timestamp>
-        <accountKeys>     .Map        </accountKeys>
-        <nextFilterSlot>  0           </nextFilterSlot>
+        <defaultGasPrice> 20000000000      </defaultGasPrice>
+        <defaultGasLimit> 90000            </defaultGasLimit>
+        <timeDiff>        0                </timeDiff> // Gets added to #time() when updating <timestamp>
+        <timeFreeze>      $TIMEFREEZE:Bool </timeFreeze> // Determines how <timestamp> gets updated
+        <accountKeys>     .Map             </accountKeys>
+        <nextFilterSlot>  0                </nextFilterSlot>
         <txReceipts>
           <txReceipt multiplicity ="*" type="Map">
             <txHash>          "":String  </txHash>
@@ -541,8 +542,14 @@ WEB3 JSON RPC
          <params> [ (null => 0), .JSONs ] </params>
 
     rule <k> #evm_increaseTime => #rpcResponseSuccess(Int2String(TIMEDIFF +Int DATA)) ... </k>
-         <params>   [ DATA:Int, .JSONs ]           </params>
-         <timeDiff> TIMEDIFF => TIMEDIFF +Int DATA </timeDiff>
+         <params>     [ DATA:Int, .JSONs ]           </params>
+         <timeFreeze> false                          </timeFreeze>
+         <timeDiff>   TIMEDIFF => TIMEDIFF +Int DATA </timeDiff>
+
+    rule <k> #evm_increaseTime => #rpcResponseSuccess(Int2String(TIME +Int DATA)) ... </k>
+         <params>     [ DATA:Int, .JSONs ]   </params>
+         <timeFreeze> true                   </timeFreeze>
+         <timestamp>  TIME => TIME +Int DATA </timestamp>
 
     syntax KItem ::= "#eth_newBlockFilter"
  // --------------------------------------
@@ -1738,7 +1745,13 @@ Timestamp Calls
  // -----------------------------------
     rule <k> #firefly_setTime => #rpcResponseSuccess(true) ... </k>
          <params> [ TIME:String, .JSONs ] </params>
-         <timeDiff> _ => #parseHexWord( TIME ) -Int #time() </timeDiff>
+         <timeFreeze> false                                   </timeFreeze>
+         <timeDiff>   _ => #parseHexWord( TIME ) -Int #time() </timeDiff>
+
+    rule <k> #firefly_setTime => #rpcResponseSuccess(true) ... </k>
+         <params> [ TIME:String, .JSONs ] </params>
+         <timeFreeze> true                       </timeFreeze>
+         <timestamp>  _ => #parseHexWord( TIME ) </timestamp>
 
     rule <k> #firefly_setTime => #rpcResponseSuccess(false) ... </k> [owise]
 ```
@@ -1904,7 +1917,11 @@ Mining
  // -----------------------------------
     rule <k> #updateTimestamp => . ... </k>
          <timestamp> _ => #time() +Int TIMEDIFF </timestamp>
-         <timeDiff> TIMEDIFF </timeDiff>
+         <timeFreeze> false    </timeFreeze>
+         <timeDiff>   TIMEDIFF </timeDiff>
+
+    rule <k> #updateTimestamp => . ... </k>
+         <timeFreeze> true </timeFreeze>
 ```
 
 Retrieving logs
