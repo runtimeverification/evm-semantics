@@ -75,11 +75,11 @@ module LEMMAS-SPEC
     rule <k> runLemma ( 1 ==Int bool2Word( B:Bool ) ) => doneLemma( B ==K true ) ... </k>
 
     //#buf simplification
-    rule <k> runLemma ( #buf ( 32 , bool2Word ( B:Bool ) ) ==K String2Bytes("00000000000000000000000000000001") )
+    rule <k> runLemma ( #buf ( 32 , bool2Word ( B:Bool ) ) ==K #buf(32, 1) )
              => doneLemma( B ==K true ) ... </k>
-    rule <k> runLemma ( #buf ( 32 , I:Int ) ==K String2Bytes("00000000000000000000000000000001") )
+    rule <k> runLemma ( #buf ( 32 , I:Int ) ==K #buf(32, 1) )
              => doneLemma( I ==K 1 ) ... </k>
-    rule <k> runLemma ( String2Bytes("00000000000000000000000000000001") ==K #buf ( 32 , I:Int ))
+    rule <k> runLemma ( #buf(32, 1) ==K #buf ( 32 , I:Int ))
              => doneLemma( I ==K 1 ) ... </k>
 
 endmodule
