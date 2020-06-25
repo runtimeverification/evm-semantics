@@ -42,7 +42,7 @@ export PLUGIN_SUBMODULE
         test-web3 test-all-web3 test-failing-web3                                                                                \
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
-        test-prove-imp-specs test-klab-prove                                                                                     \
+        test-prove-imp-specs test-klab-prove test-haskell-dry-run                                                                \
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         media media-pdf metropolis-theme
@@ -304,11 +304,6 @@ KEVM_WEB3_ARGS := --shutdownable --respond-to-notifications --hardfork istanbul
 
 KPROVE_MODULE  := VERIFICATION
 KPROVE_OPTS    :=
-KPROVE_DRY_RUN :=
-
-ifneq (,$(KPROVE_DRY_RUN))
-    KPROVE_OPTS += --dry-run
-endif
 
 test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
@@ -351,15 +346,15 @@ tests/%.parse: tests/%
 	$(CHECK) $@-out $@-expected
 	rm -rf $@-out
 
-tests/specs/functional/%.prove:                 TEST_SYMBOLIC_BACKEND = haskell
-tests/specs/examples/%.prove:                   TEST_SYMBOLIC_BACKEND = haskell
-tests/specs/erc20/hkg/totalSupply-spec.k.prove: TEST_SYMBOLIC_BACKEND = haskell
-
 tests/specs/benchmarks/%-spec.k.prove:             KPROVE_OPTS += --smt-prelude $(dir $@)evm.smt2
 tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-backend-command "kore-exec --smt=none"
 
 tests/%.prove: tests/%
 	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
+	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
+
+tests/%.prove-dry-run: tests/%
+	$(TEST) prove $(TEST_OPTIONS) --backend haskell $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) --dry-run \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 tests/specs/imp-specs/%.prove: tests/specs/imp-specs/%
@@ -450,6 +445,11 @@ test-prove-imp-specs:  $(prove_imp_specs_tests:=.prove)
 test-failing-prove: $(prove_failing_tests:=.prove)
 
 test-klab-prove: $(smoke_tests_prove:=.klab-prove)
+
+haskell_dry_run_failing := $(shell cat tests/failing-symbolic.haskell-dry-run)
+haskell_dry_run         := $(filter-out $(haskell_dry_run_failing), $(wildcard $(prove_specs_dir)/*-spec.k) $(wildcard $(prove_specs_dir)/*/*-spec.k) $(wildcard $(prove_specs_dir)/*/*/*-spec.k))
+
+test-haskell-dry-run: $(haskell_dry_run:=.prove-dry-run)
 
 # Parse Tests
 
