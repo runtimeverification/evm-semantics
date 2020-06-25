@@ -641,8 +641,7 @@ Accounts
  // -----------------------------------
 ```
 
-Addresses
----------
+### Addresses
 
 -   `#addr` turns an Ethereum word into the corresponding Ethereum address (160 LSB).
 
@@ -652,8 +651,10 @@ Addresses
     rule #addr(W) => W %Word pow160
 ```
 
--   `#lookup*` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
-    It also makes sure the returned value is in the correct bitwidth, adjusting it if not.
+Storage/Memory Lookup
+---------------------
+
+`#lookup*` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 ```k
     syntax Int ::= #lookup        ( Map , Int ) [function, smtlib(lookup)]
@@ -667,14 +668,15 @@ Addresses
 ```
 
 ```{.k .symbolic}
-    rule #Ceil(#lookupMemory( _ |-> VAL M, KEY )) => {(#Ceil(#lookupMemory( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
-    rule #Ceil(#lookupMemory( .Map, _ ))          => true                                                                [anywhere]
-
     rule #Ceil(#lookup( _ |-> VAL M, KEY )) => {(#Ceil(#lookup( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
     rule #Ceil(#lookup( .Map, _ ))          => true                                                          [anywhere]
+
+    rule #Ceil(#lookupMemory( _ |-> VAL M, KEY )) => {(#Ceil(#lookupMemory( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
+    rule #Ceil(#lookupMemory( .Map, _ ))          => true                                                                [anywhere]
 ```
 
-### Substate Log
+Substate Log
+------------
 
 During execution of a transaction some things are recorded in the substate log (Section 6.1 in YellowPaper).
 This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
