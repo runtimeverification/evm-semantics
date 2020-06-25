@@ -656,16 +656,14 @@ Addresses
     It also makes sure the returned value is in the correct bitwidth, adjusting it if not.
 
 ```k
-    syntax Int ::= #lookup        ( Map , Int ) [function, functional, smtlib(lookup)]
-                 | #lookupMemory  ( Map , Int ) [function, functional, smtlib(lookupMemory)]
- // ----------------------------------------------------------------------------------------
-    rule [#lookup.some]:   #lookup( (KEY |-> VAL:Int) M, KEY ) => VAL modInt pow256
-    rule [#lookup.none]:   #lookup(                   M, KEY ) => 0                 requires notBool KEY in_keys(M)
-    rule [#lookup.notInt]: #lookup( (KEY |-> VAL    ) M, KEY ) => 0                 requires notBool isInt(VAL)
+    syntax Int ::= #lookup        ( Map , Int ) [function, smtlib(lookup)]
+                 | #lookupMemory  ( Map , Int ) [function, smtlib(lookupMemory)]
+ // ----------------------------------------------------------------------------
+    rule [#lookup.some]:   #lookup( (KEY |-> VAL:Int) M, KEY ) => VAL
+    rule [#lookup.none]:   #lookup(                   M, KEY ) => 0   requires notBool KEY in_keys(M)
 
-    rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) M, KEY ) => VAL modInt 256
-    rule [#lookupMemory.none]:   #lookupMemory(                   M, KEY ) => 0              requires notBool KEY in_keys(M)
-    rule [#lookupMemory.notInt]: #lookupMemory( (KEY |-> VAL    ) M, KEY ) => 0              requires notBool isInt(VAL)
+    rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) M, KEY ) => VAL
+    rule [#lookupMemory.none]:   #lookupMemory(                   M, KEY ) => 0   requires notBool KEY in_keys(M)
 ```
 
 ### Substate Log
