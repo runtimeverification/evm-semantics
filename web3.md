@@ -422,7 +422,7 @@ WEB3 JSON RPC
     rule <k> #eth_getStorageAt => #getAccountAtBlock(#parseBlockIdentifier(TAG), DATA) ~> #eth_getStorageAt ... </k>
          <params> [ DATA, QUANTITY, TAG, .JSONs ] </params>
 
-    rule <k> <account> ... <storage> STORAGE </storage> ... </account> ~> #eth_getStorageAt => #rpcResponseSuccess(#unparseQuantity( #lookup (STORAGE, QUANTITY) )) ... </k>
+    rule <k> <account> ... <storage> STORAGE </storage> ... </account> ~> #eth_getStorageAt => #rpcResponseSuccess(#unparseQuantity( #lookup(STORAGE, QUANTITY) )) ... </k>
          <params> [ DATA, QUANTITY, TAG, .JSONs ] </params>
 
     rule <k> .AccountItem ~> #eth_getStorageAt => #rpcResponseSuccess(#unparseQuantity( 0 )) ... </k>
