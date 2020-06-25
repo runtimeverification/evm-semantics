@@ -34,11 +34,12 @@ pipeline {
         stage('Proofs') {
           options {
             lock("proofs-${env.NODE_NAME}")
-            timeout(time: 55, unit: 'MINUTES')
+            timeout(time: 65, unit: 'MINUTES')
           }
           parallel {
-            stage('Java + Haskell')    { steps { sh 'make test-prove -j6'                                                   } }
-            stage('Haskell (dry-run)') { steps { sh 'make test-prove -j3 KPROVE_DRY_RUN=true TEST_SYMBOLIC_BACKEND=haskell' } }
+            stage('Java')              { steps { sh 'make test-prove -j5 TEST_SYMBOLIC_BACKEND=java'    } }
+            stage('Haskell')           { steps { sh 'make test-prove -j4 TEST_SYMBOLIC_BACKEND=haskell' } }
+            stage('Haskell (dry-run)') { steps { sh 'make test-haskell-dry-run -j3'                     } }
           }
         }
         stage('Test Interactive') {
