@@ -1,10 +1,7 @@
 requires "../lemmas.k"
 
-module VERIFICATION
-    imports K-REFLECTION
+module VERIFICATION-COMMON
     imports LEMMAS
-
-    rule Rsstore(BYZANTIUM, NEW, CURR, ORIG) => 0 requires NEW =/=Int 0
 
   // ########################
   // Ecrecover
@@ -15,6 +12,25 @@ module VERIFICATION
 
     //Symbolic predicate representing whether output of #ecrec is empty. No implementation.
     syntax Bool ::= #ecrecEmpty( ByteArray ) [function]
+
+  // ########################
+  // Symbolic Gas
+  // ########################
+
+    syntax Int ::= #gas ( Int , Int , Int )  [function]  // startGas, nonMemory, memory
+ // -----------------------------------------------------------------------------------
+
+endmodule
+
+module VERIFICATION
+    imports VERIFICATION-COMMON
+    imports VERIFICATION-JAVA
+
+    rule Rsstore(BYZANTIUM, NEW, CURR, ORIG) => 0 requires NEW =/=Int 0
+
+  // ########################
+  // Ecrecover
+  // ########################
 
     // Range for #symEcrec
 
@@ -30,13 +46,6 @@ module VERIFICATION
     rule          #symEcrec(DATA) <Int pow256 => true
 
   // ########################
-  // Symbolic Gas
-  // ########################
-
-    syntax Int ::= #gas ( Int , Int , Int )  [function]  // startGas, nonMemory, memory
- // -----------------------------------------------------------------------------------
-
-  // ########################
   // Symbolic Call
   // ########################
 
@@ -48,30 +57,6 @@ module VERIFICATION
   // ########################
 
     rule <k> EXTCODESIZE ACCT => #extCodeSize(ACCT) ~> #push ... </k>  [trusted]
-
-    // accumulate the gas cost and never run out of gas
-    rule <k> MEM' ~> #deductMemoryGas => . ... </k>
-         <gas> #gas(INITGAS, NONMEM, MEM) => #gas(INITGAS, NONMEM, MEM +Int MEM') </gas>
-         <callGas> _ => #gas(INITGAS, NONMEM, MEM) </callGas>
-      [trusted, matching(#gas)]
-
-    //Will run only if rule above doesn't match
-    rule <k> G ~> #deductGas => . ... </k>
-         <gas> #gas(INITGAS, NONMEM, MEM) => #gas(INITGAS, NONMEM +Int G, MEM) </gas>
-         <callGas> _ => #gas(INITGAS, NONMEM, MEM) </callGas>
-      [trusted, matching(#gas)]
-
-    rule <k> ECREC => #end EVMC_SUCCESS ... </k>
-         <callData> DATA </callData>
-         <output> _ => #ecrec(#symEcrec(DATA)) </output>
-      requires notBool #isConcrete(DATA) andBool #sizeByteArray(DATA) ==Int 128 andBool notBool #ecrecEmpty(DATA)
-      [trusted]
-
-    rule <k> ECREC => #end EVMC_SUCCESS ... </k>
-         <callData> DATA </callData>
-         <output> _ => #ecrec(.Account) </output>
-      requires notBool #isConcrete(DATA) andBool #sizeByteArray(DATA) ==Int 128 andBool #ecrecEmpty(DATA)
-      [trusted]
 
   // ########################
   // ABI Encoding
@@ -189,12 +174,6 @@ module VERIFICATION
     rule A -Int (A -Int I1) => I1
 
     rule (A +Int I1) -Int A => I1
-
-    rule ((A +Int I1) +Int B) +Int I2 => (A +Int B) +Int (I1 +Int I2)
-      requires notBool #isConcrete(A) andBool notBool #isConcrete(B) andBool #isConcrete(I1) andBool #isConcrete(I2)
-
-    rule (A +Int I1) +Int (B +Int I2) => (A +Int B) +Int (I1 +Int I2)
-      requires notBool #isConcrete(A) andBool notBool #isConcrete(B) andBool #isConcrete(I1) andBool #isConcrete(I2)
 
     rule (A +Int B) +Int (C -Int B) => A +Int C
 
@@ -316,5 +295,49 @@ rule #ecrecData(SIGS, I, DATA_HASH) => #encodeArgs(#bytes32(DATA_HASH), #uint8(#
     rule 0 <=Int #CALLEE_ID               => true
     rule         #CALLEE_ID   <Int pow160 => true
     rule         #CALLEE_ID   <Int pow256 => true
+
+endmodule
+
+module VERIFICATION-JAVA [symbolic, kast]
+    imports VERIFICATION-COMMON
+    imports K-REFLECTION
+
+  // ########################
+  // Rule Replacement
+  // ########################
+
+    // accumulate the gas cost and never run out of gas
+    rule <k> MEM' ~> #deductMemoryGas => . ... </k>
+         <gas> #gas(INITGAS, NONMEM, MEM) => #gas(INITGAS, NONMEM, MEM +Int MEM') </gas>
+         <callGas> _ => #gas(INITGAS, NONMEM, MEM) </callGas>
+      [trusted, matching(#gas)]
+
+    //Will run only if rule above doesn't match
+    rule <k> G ~> #deductGas => . ... </k>
+         <gas> #gas(INITGAS, NONMEM, MEM) => #gas(INITGAS, NONMEM +Int G, MEM) </gas>
+         <callGas> _ => #gas(INITGAS, NONMEM, MEM) </callGas>
+      [trusted, matching(#gas)]
+
+    rule <k> ECREC => #end EVMC_SUCCESS ... </k>
+         <callData> DATA </callData>
+         <output> _ => #ecrec(#symEcrec(DATA)) </output>
+      requires notBool #isConcrete(DATA) andBool #sizeByteArray(DATA) ==Int 128 andBool notBool #ecrecEmpty(DATA)
+      [trusted]
+
+    rule <k> ECREC => #end EVMC_SUCCESS ... </k>
+         <callData> DATA </callData>
+         <output> _ => #ecrec(.Account) </output>
+      requires notBool #isConcrete(DATA) andBool #sizeByteArray(DATA) ==Int 128 andBool #ecrecEmpty(DATA)
+      [trusted]
+
+  // ########################
+  // Arithmetic
+  // ########################
+
+    rule ((A +Int I1) +Int B) +Int I2 => (A +Int B) +Int (I1 +Int I2)
+      requires notBool #isConcrete(A) andBool notBool #isConcrete(B) andBool #isConcrete(I1) andBool #isConcrete(I2)
+
+    rule (A +Int I1) +Int (B +Int I2) => (A +Int B) +Int (I1 +Int I2)
+      requires notBool #isConcrete(A) andBool notBool #isConcrete(B) andBool #isConcrete(I1) andBool #isConcrete(I2)
 
 endmodule
