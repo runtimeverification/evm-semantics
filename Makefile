@@ -42,7 +42,7 @@ export PLUGIN_SUBMODULE
         test-web3 test-all-web3 test-failing-web3                                                                                \
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
-        test-prove-imp-specs test-klab-prove                                                                                     \
+        test-prove-imp-specs test-klab-prove test-haskell-dry-run                                                                \
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         media media-pdf metropolis-theme
@@ -179,13 +179,14 @@ java_dir           := $(DEFN_DIR)/java
 java_files         := $(ALL_FILES)
 java_main_module   := ETHEREUM-SIMULATION
 java_syntax_module := $(java_main_module)
-java_main_file     := driver
-java_kompiled      := $(java_dir)/$(java_main_file)-kompiled/timestamp
+java_main_file     := driver.md
+java_main_filename := $(basename $(notdir $(java_main_file)))
+java_kompiled      := $(java_dir)/$(java_main_filename)-kompiled/timestamp
 
 build-java: $(java_kompiled)
 
 $(java_kompiled): $(java_files)
-	$(KOMPILE_JAVA) $(java_main_file).md                  \
+	$(KOMPILE_JAVA) $(java_main_file)                     \
 	                --directory $(java_dir) -I $(CURDIR)  \
 	                --main-module $(java_main_module)     \
 	                --syntax-module $(java_syntax_module)
@@ -196,13 +197,14 @@ specs_dir           := $(DEFN_DIR)/specs
 specs_files         := $(ALL_FILES)
 specs_main_module   := EVM-IMP-SPECS
 specs_syntax_module := $(specs_main_module)
-specs_main_file     := evm-imp-specs
-specs_kompiled      := $(specs_dir)/$(specs_main_file)-kompiled/timestamp
+specs_main_file     := evm-imp-specs.md
+specs_main_filename := $(basename $(notdir $(specs_main_file)))
+specs_kompiled      := $(specs_dir)/$(specs_main_filename)-kompiled/timestamp
 
 build-specs: $(specs_kompiled)
 
 $(specs_kompiled): $(specs_files)
-	$(KOMPILE_JAVA) $(specs_main_file).md                  \
+	$(KOMPILE_JAVA) $(specs_main_file)                     \
 	                --directory $(specs_dir) -I $(CURDIR)  \
 	                --main-module $(specs_main_module)     \
 	                --syntax-module $(specs_syntax_module)
@@ -213,13 +215,14 @@ haskell_dir            := $(DEFN_DIR)/haskell
 haskell_files          := $(ALL_FILES)
 haskell_main_module    := ETHEREUM-SIMULATION
 haskell_syntax_module  := $(haskell_main_module)
-haskell_main_file      := driver
-haskell_kompiled       := $(haskell_dir)/$(haskell_main_file)-kompiled/definition.kore
+haskell_main_file      := driver.md
+haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
+haskell_kompiled       := $(haskell_dir)/$(haskell_main_filename)-kompiled/definition.kore
 
 build-haskell: $(haskell_kompiled)
 
 $(haskell_kompiled): $(haskell_files)
-	$(KOMPILE_HASKELL) $(haskell_main_file).md                  \
+	$(KOMPILE_HASKELL) $(haskell_main_file)                     \
 	                   --directory $(haskell_dir) -I $(CURDIR)  \
 	                   --main-module $(haskell_main_module)     \
 	                   --syntax-module $(haskell_syntax_module)
@@ -230,10 +233,11 @@ web3_dir           := $(abspath $(DEFN_DIR)/web3)
 web3_files         := $(ALL_FILES)
 web3_main_module   := WEB3
 web3_syntax_module := $(web3_main_module)
-web3_main_file     := web3
+web3_main_file     := web3.md
+web3_main_filename := $(basename $(notdir $(web3_main_file)))
 web3_kompiled      := $(web3_dir)/build/kevm-client
-web3_kore          := $(web3_dir)/$(web3_main_file)-kompiled/definition.kore
-export web3_main_file
+web3_kore          := $(web3_dir)/$(web3_main_filename)-kompiled/definition.kore
+export web3_main_filename
 export web3_dir
 
 ifeq (,$(RELEASE))
@@ -245,7 +249,7 @@ endif
 build-web3: $(web3_kompiled)
 
 $(web3_kore): $(web3_files)
-	$(KOMPILE_WEB3) $(web3_main_file).md                  \
+	$(KOMPILE_WEB3) $(web3_main_file)                     \
 	                --directory $(web3_dir) -I $(CURDIR)  \
 	                --main-module $(web3_main_module)     \
 	                --syntax-module $(web3_syntax_module)
@@ -260,13 +264,14 @@ llvm_dir           := $(DEFN_DIR)/llvm
 llvm_files         := $(ALL_FILES)
 llvm_main_module   := ETHEREUM-SIMULATION
 llvm_syntax_module := $(llvm_main_module)
-llvm_main_file     := driver
-llvm_kompiled      := $(llvm_dir)/$(llvm_main_file)-kompiled/interpreter
+llvm_main_file     := driver.md
+llvm_main_filename := $(basename $(notdir $(llvm_main_file)))
+llvm_kompiled      := $(llvm_dir)/$(llvm_main_filename)-kompiled/interpreter
 
 build-llvm: $(llvm_kompiled)
 
 $(llvm_kompiled): $(llvm_files) $(libff_out)
-	$(KOMPILE_STANDALONE) $(llvm_main_file).md                  \
+	$(KOMPILE_STANDALONE) $(llvm_main_file)                     \
 	                      --directory $(llvm_dir) -I $(CURDIR)  \
 	                      --main-module $(llvm_main_module)     \
 	                      --syntax-module $(llvm_syntax_module)
@@ -299,11 +304,6 @@ KEVM_WEB3_ARGS := --shutdownable --respond-to-notifications --hardfork istanbul
 
 KPROVE_MODULE  := VERIFICATION
 KPROVE_OPTS    :=
-KPROVE_DRY_RUN :=
-
-ifneq (,$(KPROVE_DRY_RUN))
-    KPROVE_OPTS += --dry-run
-endif
 
 test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
@@ -346,15 +346,15 @@ tests/%.parse: tests/%
 	$(CHECK) $@-out $@-expected
 	rm -rf $@-out
 
-tests/specs/functional/%.prove:                 TEST_SYMBOLIC_BACKEND = haskell
-tests/specs/examples/%.prove:                   TEST_SYMBOLIC_BACKEND = haskell
-tests/specs/erc20/hkg/totalSupply-spec.k.prove: TEST_SYMBOLIC_BACKEND = haskell
-
 tests/specs/benchmarks/%-spec.k.prove:             KPROVE_OPTS += --smt-prelude $(dir $@)evm.smt2
 tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-backend-command "kore-exec --smt=none"
 
 tests/%.prove: tests/%
 	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
+	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
+
+tests/%.prove-dry-run: tests/%
+	$(TEST) prove $(TEST_OPTIONS) --backend haskell $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) --dry-run \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 tests/specs/imp-specs/%.prove: tests/specs/imp-specs/%
@@ -445,6 +445,11 @@ test-prove-imp-specs:  $(prove_imp_specs_tests:=.prove)
 test-failing-prove: $(prove_failing_tests:=.prove)
 
 test-klab-prove: $(smoke_tests_prove:=.klab-prove)
+
+haskell_dry_run_failing := $(shell cat tests/failing-symbolic.haskell-dry-run)
+haskell_dry_run         := $(filter-out $(haskell_dry_run_failing), $(wildcard $(prove_specs_dir)/*-spec.k) $(wildcard $(prove_specs_dir)/*/*-spec.k) $(wildcard $(prove_specs_dir)/*/*/*-spec.k))
+
+test-haskell-dry-run: $(haskell_dry_run:=.prove-dry-run)
 
 # Parse Tests
 
