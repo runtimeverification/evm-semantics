@@ -52,12 +52,12 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module run_dir additional_proof_args
+    local def_module run_dir additional_proof_args repl_cmd repl_script
 
     def_module="$1" ; shift
 
-    repl_cmd="${repl_cmd:-$k_release_dir/bin/kore-repl}"
-    repl_script="${repl_script:-$kevm_dir/kast.kscript}"
+    repl_cmd="${REPL_CMD:-$k_release_dir/bin/kore-repl}"
+    repl_script="${REPL_SCRIPT:-$kevm_dir/kast.kscript}"
 
     additional_proof_args=()
     ! $debug || additional_proof_args+=(--debug)
