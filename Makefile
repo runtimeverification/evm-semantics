@@ -349,9 +349,8 @@ tests/%.prove: tests/%
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 tests/%.prove-dry-run: tests/%
-	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')                                           \
-	    --dry-run
+	$(TEST) prove $(TEST_OPTIONS) --backend haskell $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) --dry-run \
+	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 tests/specs/imp-specs/%.prove: tests/specs/imp-specs/%
 	$(TEST) prove $(TEST_OPTIONS) --backend-dir $(specs_dir)                                    \
