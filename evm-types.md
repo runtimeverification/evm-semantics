@@ -666,6 +666,14 @@ Addresses
     rule [#lookupMemory.none]:   #lookupMemory(                   M, KEY ) => 0   requires notBool KEY in_keys(M)
 ```
 
+```{.k .symbolic}
+    rule #Ceil(#lookupMemory( _ |-> VAL M, KEY )) => {(#Ceil(#lookupMemory( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
+    rule #Ceil(#lookupMemory( .Map, _ ))          => true                                                                [anywhere]
+
+    rule #Ceil(#lookup( _ |-> VAL M, KEY )) => {(#Ceil(#lookup( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
+    rule #Ceil(#lookup( .Map, _ ))          => true                                                          [anywhere]
+```
+
 ### Substate Log
 
 During execution of a transaction some things are recorded in the substate log (Section 6.1 in YellowPaper).
