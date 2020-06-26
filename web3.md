@@ -21,11 +21,12 @@ module WEB3
           <blockList> .List </blockList>
         </blockchain>
         <stateTrie> .MerkleTree </stateTrie>
-        <defaultGasPrice> 20000000000 </defaultGasPrice>
-        <defaultGasLimit> 90000       </defaultGasLimit>
-        <timeDiff>        0           </timeDiff> // Gets added to #time() when updating <timestamp>
-        <accountKeys>     .Map        </accountKeys>
-        <nextFilterSlot>  0           </nextFilterSlot>
+        <defaultGasPrice> 20000000000      </defaultGasPrice>
+        <defaultGasLimit> 90000            </defaultGasLimit>
+        <timeDiff>        0                </timeDiff> // Gets added to #time() when updating <timestamp>
+        <timeFreeze>      $TIMEFREEZE:Bool </timeFreeze> // Determines how <timestamp> gets updated
+        <accountKeys>     .Map             </accountKeys>
+        <nextFilterSlot>  0                </nextFilterSlot>
         <txReceipts>
           <txReceipt multiplicity ="*" type="Map">
             <txHash>          "":String  </txHash>
@@ -1738,7 +1739,8 @@ Timestamp Calls
  // -----------------------------------
     rule <k> #firefly_setTime => #rpcResponseSuccess(true) ... </k>
          <params> [ TIME:String, .JSONs ] </params>
-         <timeDiff> _ => #parseHexWord( TIME ) -Int #time() </timeDiff>
+         <timeFreeze> TIMEFREEZE </timeFreeze>
+         <timeDiff> _ => #parseHexWord( TIME ) -Int #time( TIMEFREEZE ) </timeDiff>
 
     rule <k> #firefly_setTime => #rpcResponseSuccess(false) ... </k> [owise]
 ```
@@ -1802,9 +1804,10 @@ Mining
     rule <k> #evm_mine => #updateTimestamp ~> #mineBlock ~> #rpcResponseSuccess("0x0") ... </k> [owise]
 
     rule <k> #evm_mine => #mineBlock ~> #rpcResponseSuccess("0x0") ... </k>
-         <params>    [ TIME:String, .JSONs ]              </params>
-         <timestamp> _ => #parseWord( TIME )              </timestamp>
-         <timeDiff>  _ => #parseWord( TIME ) -Int #time() </timeDiff>
+         <params>     [ TIME:String, .JSONs ]                          </params>
+         <timeFreeze> TIMEFREEZE                                       </timeFreeze>
+         <timeDiff>   _ => #parseWord( TIME ) -Int #time( TIMEFREEZE ) </timeDiff>
+         <timestamp>  _ => #parseWord( TIME )                          </timestamp>
 
     rule <k> #evm_mine => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'evm_mine' requires between 0 and 1 arguments.") ... </k>
          <params> [ _ , _ , _:JSONs ] </params>
@@ -1812,14 +1815,16 @@ Mining
     syntax KItem ::= "#firefly_genesisBlock"
  // ----------------------------------------
     rule <k> #firefly_genesisBlock ... </k>
-         <params> [ .JSONs => #unparseQuantity(#time()), .JSONs ] </params>
+         <params> [ .JSONs => #unparseQuantity(#time(TIMEFREEZE)), .JSONs ] </params>
+         <timeFreeze> TIMEFREEZE </timeFreeze>
 
     rule <k> #firefly_genesisBlock => #initStateTrie ~> #updateTrieRoots ~> #pushBlockchainState ~> #incrementBlockNumber ~> #rpcResponseSuccess(true) ... </k>
          <params>     [ TIME:String, .JSONs ]                                                            </params>
          <timestamp>  _ => #parseWord( TIME )                                                            </timestamp>
          <logsBloom>  _ => #padToWidth( 256, .ByteArray )                                                </logsBloom>
          <ommersHash> _ => 13478047122767188135818125966132228187941283477090363246179690878162135454535 </ommersHash>
-         <timeDiff>   _ => #parseWord( TIME ) -Int #time()                                               </timeDiff>
+         <timeDiff>   _ => #parseWord( TIME ) -Int #time( TIMEFREEZE )                                   </timeDiff>
+         <timeFreeze> TIMEFREEZE                                                                         </timeFreeze>
 
     syntax KItem ::= "#mineBlock"
  // -----------------------------
@@ -1903,8 +1908,14 @@ Mining
     syntax KItem ::= "#updateTimestamp"
  // -----------------------------------
     rule <k> #updateTimestamp => . ... </k>
-         <timestamp> _ => #time() +Int TIMEDIFF </timestamp>
-         <timeDiff> TIMEDIFF </timeDiff>
+         <timestamp> _ => #time(TIMEFREEZE) +Int TIMEDIFF </timestamp>
+         <timeFreeze> TIMEFREEZE </timeFreeze>
+         <timeDiff>   TIMEDIFF   </timeDiff>
+
+    syntax Int ::= #time( Bool ) [function]
+ // ---------------------------------------
+    rule #time(false) => #time()
+    rule #time(true)  => 0
 ```
 
 Retrieving logs
