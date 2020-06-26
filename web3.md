@@ -625,12 +625,18 @@ eth_sendTransaction
          <endPC> PCOUNT </endPC>
 
     rule <k> _:String ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "base fee exceeds gas limit") ... </k>
+         <txOrder> ListItem(_) => .List ... </txOrder>
+         <txPending> ListItem(_) => .List ... </txPending>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
 
     rule <k> _:String ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "sender doesn't have enough funds to send tx.") ... </k>
+         <txOrder> ListItem(_) => .List ... </txOrder>
+         <txPending> ListItem(_) => .List ... </txPending>
          <statusCode> EVMC_BALANCE_UNDERFLOW </statusCode>
 
     rule <k> _:String ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "VM exception: " +String StatusCode2String( SC )) ... </k>
+         <txOrder> ListItem(_) => .List ... </txOrder>
+         <txPending> ListItem(_) => .List ... </txPending>
          <statusCode> SC:ExceptionalStatusCode </statusCode> [owise]
 
     rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG)), _                    } ... </k>
