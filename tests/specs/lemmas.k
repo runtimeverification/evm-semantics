@@ -194,8 +194,6 @@ module LEMMAS-JAVA [symbolic, kast]
     rule bool2Word(B) |Int 1 => 1             [simplification]
     rule bool2Word(B) &Int 1 => bool2Word(B)  [simplification]
 
-    rule bool2Word(A)  ==K 0 => notBool(A)  [simplification]
-    rule bool2Word(A)  ==K 1 => A           [simplification]
     rule bool2Word(A) =/=K 0 => A           [simplification]
     rule bool2Word(A) =/=K 1 => notBool(A)  [simplification]
 
@@ -227,6 +225,14 @@ module LEMMAS-JAVA [symbolic, kast]
     rule X <=Int 255        => X <Int 256     [simplification]
 
     rule chop(I) => I requires 0 <=Int I andBool I <Int pow256  [simplification]
+
+    //Simplification of bool2Word() ==Int CONCRETE, #buf() ==K CONCRETE
+    rule I                   ==K bool2Word( B:Bool ) => bool2Word(B) ==Int I    requires #isConcrete(I)  [simplification]
+    rule bool2Word( B:Bool ) ==K I                   => B ==K word2Bool(I)      requires #isConcrete(I)  [simplification]
+
+    rule BA:ByteArray     ==K #buf( 32, DATA ) => #buf( 32, DATA ) ==K BA       requires #isConcrete(BA) [simplification]
+    rule #buf( 32, DATA ) ==K BA:ByteArray     => DATA ==Int #asInteger(BA)
+      requires #sizeByteArray(BA) <=Int 32                                      andBool  #isConcrete(BA) [simplification]
 
 endmodule
 
@@ -291,11 +297,12 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma]
     rule 0 <=Int lengthBytes ( _ )        => true [smt-lemma]
 
-    rule I ==Int bool2Word( B:Bool ) => bool2Word(B) ==Int I            [simplification, concrete(I)]
-    rule bool2Word( B:Bool ) ==Int I => B ==K word2Bool(I)              [simplification, concrete(I)]
+    //Simplification of bool2Word() ==Int CONCRETE, #buf() ==K CONCRETE
+    rule I                   ==Int bool2Word( B:Bool ) => bool2Word(B) ==Int I  [simplification, concrete(I)]
+    rule bool2Word( B:Bool ) ==Int I                   => B ==K word2Bool(I)    [simplification, concrete(I)]
 
-    rule BA:ByteArray ==K #buf( 32, DATA ) => #buf( 32, DATA ) ==K BA   [simplification, concrete(BA)]
-    rule #buf( 32, DATA ) ==K BA:ByteArray => DATA ==Int #asInteger(BA)
-      requires #sizeByteArray(BA) <=Int 32                              [simplification, concrete(BA)]
+    rule BA:ByteArray     ==K #buf( 32, DATA ) => #buf( 32, DATA ) ==K BA       [simplification, concrete(BA)]
+    rule #buf( 32, DATA ) ==K BA:ByteArray     => DATA ==Int #asInteger(BA)
+      requires #sizeByteArray(BA) <=Int 32                                      [simplification, concrete(BA)]
 
 endmodule
