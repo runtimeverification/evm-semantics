@@ -4,7 +4,7 @@ module VERIFICATION
     imports LEMMAS
 
     syntax StepSort ::= Map | ByteArray | Int | Bool
- // -----------------------------------
+ // ------------------------------------------------
 
     syntax KItem ::= runLemma ( StepSort )
                    | doneLemma( StepSort )
@@ -75,11 +75,8 @@ module LEMMAS-SPEC
     rule <k> runLemma ( 1 ==Int bool2Word( B:Bool ) ) => doneLemma( B ==K true ) ... </k>
 
     //#buf simplification
-    rule <k> runLemma ( #buf ( 32 , bool2Word ( B:Bool ) ) ==K #buf(32, 1) )
-             => doneLemma( B ==K true ) ... </k>
-    rule <k> runLemma ( #buf ( 32 , I:Int ) ==K #buf(32, 1) )
-             => doneLemma( I ==K 1 ) ... </k>
-    rule <k> runLemma ( #buf(32, 1) ==K #buf ( 32 , I:Int ))
-             => doneLemma( I ==K 1 ) ... </k>
+    rule <k> runLemma ( #buf( 32 , bool2Word ( B:Bool ) ) ==K #buf( 32 , 1 )     ) => doneLemma( B ==K true ) ... </k>
+    rule <k> runLemma ( #buf( 32 , I:Int )                ==K #buf( 32 , 1 )     ) => doneLemma( I ==K 1    ) ... </k>
+    rule <k> runLemma ( #buf( 32 , 1 )                    ==K #buf( 32 , I:Int ) ) => doneLemma( I ==K 1    ) ... </k>
 
 endmodule
