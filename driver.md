@@ -164,7 +164,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
          <k> #halt ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ... </k>
-         <id> ACCT </id>
          <gas> GAVAIL </gas>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
@@ -232,11 +231,11 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
  // -------------------------------------
     rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") )
 
-    rule <k> run TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } ... </k>
+    rule <k> run  TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } ... </k>
       requires KEY in #loadKeys
 
-    rule <k> run TESTID : { "blocks" : [ { KEY : VAL , REST1 => REST1 }, .JSONs ] , ( REST2 => KEY : VAL , REST2 ) } ... </k>
-    rule <k> run TESTID : { "blocks" : [ { .JSONs }, .JSONs ] , REST } => run TESTID : { REST }                      ... </k>
+    rule <k> run _TESTID : { "blocks" : [ { KEY : VAL , REST1 => REST1 }, .JSONs ] , ( REST2 => KEY : VAL , REST2 ) } ... </k>
+    rule <k> run  TESTID : { "blocks" : [ { .JSONs }, .JSONs ] , REST } => run TESTID : { REST }                      ... </k>
 ```
 
 -   `#execKeys` are all the JSON nodes which should be considered for execution (between loading and checking).
@@ -246,11 +245,11 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
  // -------------------------------------
     rule #execKeys => ( SetItem("exec") SetItem("lastblockhash") )
 
-    rule <k> run TESTID : { KEY : (VAL:JSON) , NEXT , REST } => run TESTID : { NEXT , KEY : VAL , REST } ... </k>
+    rule <k> run  TESTID : { KEY : (VAL:JSON) , NEXT , REST } => run TESTID : { NEXT , KEY : VAL , REST } ... </k>
       requires KEY in #execKeys
 
-    rule <k> run TESTID : { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
-    rule <k> run TESTID : { "lastblockhash" : (HASH:String) } => #startBlock ~> startTx    ... </k>
+    rule <k> run _TESTID : { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
+    rule <k> run _TESTID : { "lastblockhash" : (_:String) } => #startBlock ~> startTx    ... </k>
 
     rule <k> load "exec" : J => loadCallState J ... </k>
 
@@ -343,11 +342,11 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> check "account" : { ACCTID:Int : { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } ... </k>
       requires REST =/=K .JSONs
 
-    rule <k> check "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : ACCT }                                ... </k>
-    rule <k> check "account" : { (ACCT:Int) : { "balance" : ((VAL:String)      => #parseWord(VAL)) } }        ... </k>
-    rule <k> check "account" : { (ACCT:Int) : { "nonce"   : ((VAL:String)      => #parseWord(VAL)) } }        ... </k>
-    rule <k> check "account" : { (ACCT:Int) : { "code"    : ((CODE:String)     => #parseByteStack(CODE)) } }  ... </k>
-    rule <k> check "account" : { (ACCT:Int) : { "storage" : ({ STORAGE:JSONs } => #parseMap({ STORAGE })) } } ... </k>
+    rule <k> check "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : _ACCT }                             ... </k>
+    rule <k> check "account" : { (_ACCT:Int) : { "balance" : ((VAL:String)      => #parseWord(VAL)) } }        ... </k>
+    rule <k> check "account" : { (_ACCT:Int) : { "nonce"   : ((VAL:String)      => #parseWord(VAL)) } }        ... </k>
+    rule <k> check "account" : { (_ACCT:Int) : { "code"    : ((CODE:String)     => #parseByteStack(CODE)) } }  ... </k>
+    rule <k> check "account" : { (_ACCT:Int) : { "storage" : ({ STORAGE:JSONs } => #parseMap({ STORAGE })) } } ... </k>
 
     rule <mode> EXECMODE </mode>
          <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
@@ -359,9 +358,9 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
       requires EXECMODE =/=K VMTESTS
 
     rule <mode> VMTESTS </mode>
-         <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
+         <k> check "account" : { _ACCT : { "balance" : (_:Int) } } => . ... </k>
 
-    rule <k> check "account" : { ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
+    rule <k> check "account" : {  ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <nonce> NONCE </nonce>
@@ -418,9 +417,9 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "blockHeader" : { KEY : VALUE , REST } => check "blockHeader" : { KEY : VALUE } ~> check "blockHeader" : { REST } ... </k>
       requires REST =/=K .JSONs
 
-    rule <k> check "blockHeader" : { KEY : (VALUE:String => #parseByteStack(VALUE)) } ... </k>
+    rule <k> check "blockHeader" : { _KEY : (VALUE:String => #parseByteStack(VALUE)) } ... </k>
 
-    rule <k> check "blockHeader" : { KEY : (VALUE:ByteArray => #asWord(VALUE)) } ... </k>
+    rule <k> check "blockHeader" : {  KEY : (VALUE:ByteArray => #asWord(VALUE)) } ... </k>
       requires KEY in ( SetItem("coinbase") SetItem("difficulty") SetItem("gasLimit") SetItem("gasUsed")
                         SetItem("mixHash") SetItem("nonce") SetItem("number") SetItem("parentHash")
                         SetItem("receiptTrie") SetItem("stateRoot") SetItem("timestamp")
@@ -466,7 +465,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "genesisBlockHeader" : { KEY : VALUE , REST } => check "genesisBlockHeader" : { KEY : VALUE } ~> check "genesisBlockHeader" : { REST } ... </k>
       requires REST =/=K .JSONs
 
-    rule <k> check "genesisBlockHeader" : { KEY : VALUE } => .K ... </k> requires KEY =/=String "hash"
+    rule <k> check "genesisBlockHeader" : { KEY : _ } => .K ... </k> requires KEY =/=String "hash"
 
     rule <k> check "genesisBlockHeader" : { "hash": (HASH:String => #asWord(#parseByteStack(HASH))) } ... </k>
     rule <k> check "genesisBlockHeader" : { "hash": HASH } => . ... </k>
@@ -480,10 +479,10 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : [ TRANSACTION , REST ] => check "transactions" : TRANSACTION   ~> check "transactions" : [ REST ] ... </k>
     rule <k> check "transactions" : { KEY : VALUE , REST } => check "transactions" : (KEY : VALUE) ~> check "transactions" : { REST } ... </k>
 
-    rule <k> check "transactions" : (KEY  : (VALUE:String    => #parseByteStack(VALUE))) ... </k>
+    rule <k> check "transactions" : (_KEY : (VALUE:String    => #parseByteStack(VALUE))) ... </k>
     rule <k> check "transactions" : ("to" : (VALUE:ByteArray => #asAccount(VALUE)))      ... </k>
-    rule <k> check "transactions" : (KEY  : (VALUE:ByteArray => #padToWidth(32, VALUE))) ... </k> requires KEY in (SetItem("r") SetItem("s")) andBool #sizeByteArray(VALUE) <Int 32
-    rule <k> check "transactions" : (KEY  : (VALUE:ByteArray => #asWord(VALUE)))         ... </k> requires KEY in (SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce") SetItem("v") SetItem("value"))
+    rule <k> check "transactions" : ( KEY : (VALUE:ByteArray => #padToWidth(32, VALUE))) ... </k> requires KEY in (SetItem("r") SetItem("s")) andBool #sizeByteArray(VALUE) <Int 32
+    rule <k> check "transactions" : ( KEY : (VALUE:ByteArray => #asWord(VALUE)))         ... </k> requires KEY in (SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce") SetItem("v") SetItem("value"))
 
     rule <k> check "transactions" : ("data"     : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <data>       VALUE </data>       ... </message>
     rule <k> check "transactions" : ("gasLimit" : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasLimit> VALUE </txGasLimit> ... </message>

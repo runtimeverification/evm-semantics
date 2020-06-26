@@ -66,18 +66,18 @@ module JSON-EXT
     rule qsortJSONs(.JSONs)            => .JSONs
     rule qsortJSONs(KEY : VALUE, REST) => qsortJSONs(#entriesLT(KEY, REST)) +JSONs (KEY : VALUE , qsortJSONs(#entriesGE(KEY, REST)))
 
-    rule #entriesLT(KEY, .JSONs)              => .JSONs
-    rule #entriesLT(KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesLT(KEY, REST) requires         KEY' <String KEY
-    rule #entriesLT(KEY, (KEY': VALUE, REST)) =>               #entriesLT(KEY, REST) requires notBool KEY' <String KEY
+    rule #entriesLT(_KEY, .JSONs)              => .JSONs
+    rule #entriesLT( KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesLT(KEY, REST) requires         KEY' <String KEY
+    rule #entriesLT( KEY, (KEY':     _, REST)) =>               #entriesLT(KEY, REST) requires notBool KEY' <String KEY
 
-    rule #entriesGE(KEY, .JSONs)              => .JSONs
-    rule #entriesGE(KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesGE(KEY, REST) requires         KEY' >=String KEY
-    rule #entriesGE(KEY, (KEY': VALUE, REST)) =>               #entriesGE(KEY, REST) requires notBool KEY' >=String KEY
+    rule #entriesGE(_KEY, .JSONs)              => .JSONs
+    rule #entriesGE( KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesGE(KEY, REST) requires         KEY' >=String KEY
+    rule #entriesGE( KEY, (KEY':     _, REST)) =>               #entriesGE(KEY, REST) requires notBool KEY' >=String KEY
 
     syntax Bool ::= sortedJSONs ( JSONs ) [function]
  // ------------------------------------------------
-    rule sortedJSONs( .JSONs  ) => true
-    rule sortedJSONs( KEY : _ ) => true
+    rule sortedJSONs( .JSONs   ) => true
+    rule sortedJSONs( _KEY : _) => true
     rule sortedJSONs( (KEY : _) , (KEY' : VAL) , REST ) => KEY <=String KEY' andThenBool sortedJSONs((KEY' : VAL) , REST)
 ```
 

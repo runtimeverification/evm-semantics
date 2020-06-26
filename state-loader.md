@@ -95,12 +95,12 @@ module STATE-LOADER
 ```k
     syntax EthereumCommand ::= "load" JSON
  // --------------------------------------
-    rule <k> load DATA : { .JSONs }             => .                                                   ... </k>
-    rule <k> load DATA : { KEY : VALUE , REST } => load DATA : { KEY : VALUE } ~> load DATA : { REST } ... </k>
+    rule <k> load _DATA : { .JSONs }             => .                                                   ... </k>
+    rule <k> load  DATA : { KEY : VALUE , REST } => load DATA : { KEY : VALUE } ~> load DATA : { REST } ... </k>
       requires REST =/=K .JSONs andBool DATA =/=String "transaction"
 
-    rule <k> load DATA : [ .JSONs ]          => .                                            ... </k>
-    rule <k> load DATA : [ { TEST } , REST ] => load DATA : { TEST } ~> load DATA : [ REST ] ... </k>
+    rule <k> load _DATA : [ .JSONs ]          => .                                            ... </k>
+    rule <k> load  DATA : [ { TEST } , REST ] => load DATA : { TEST } ~> load DATA : [ REST ] ... </k>
 ```
 
 Here we perform pre-proccesing on account data which allows "pretty" specification of input.
@@ -142,7 +142,7 @@ Here we load the environmental information.
 
     syntax KItem ::= "loadCallState" JSON
  // -------------------------------------
-    rule <k> loadCallState { "data" : ( DATA:String => #parseByteStack( DATA ) ), REST } ... </k>
+    rule <k> loadCallState { "data" : ( DATA:String => #parseByteStack( DATA ) ), _REST } ... </k>
 
     rule <k> loadCallState { "code" : CODE:ByteArray, REST => REST } ... </k>
          <program> _ => CODE </program>
