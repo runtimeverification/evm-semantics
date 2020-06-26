@@ -23,7 +23,7 @@ mkdir -p "$test_logs"
 test_log="$test_logs/tests.log"
 
 KLAB_OUT="${KLAB_OUT:-$build_dir/klab}"
-KLAB_NODE_STACK_SIZE="${KLAB_NODE_STACK_SIZE:-30000}"
+KLAB_NODE_STACK_SIZE="${KLAB_NODE_STACK_SIZE:-300000}"
 export KLAB_OUT
 
 # Runners
@@ -63,7 +63,7 @@ run_prove() {
     ! $debug || additional_proof_args+=(--debug)
     ! $repl  || additional_proof_args+=(--haskell-backend-command "$repl_cmd --repl-script $repl_script")
 
-    export K_OPTS=${K_OPTS:--Xmx8G}
+    export K_OPTS=${K_OPTS:--Xmx16G}
     ! $debug || set -x
     kprove --directory "$backend_dir" "$run_file" --def-module "$def_module" "${additional_proof_args[@]}" "$@"
 }
@@ -110,20 +110,23 @@ run_web3_send() {
 }
 
 run_klab() {
-    local run_mode klab_log def_module
+    local run_mode klab_log def_module omit_cells omit_labels
 
     run_mode="$1" ; shift
     klab_log="$(basename "${run_file%-spec.k}")"
 
     def_module="$1" ; shift
 
-    "$0" "$run_mode" --backend java "$run_file" "$def_module" \
-        --state-log --state-log-path "$KLAB_OUT/data" --state-log-id "$klab_log" \
-        --state-log-events OPEN,EXECINIT,SEARCHINIT,REACHINIT,REACHTARGET,REACHPROVED,NODE,RULE,SRULE,RULEATTEMPT,IMPLICATION,Z3QUERY,Z3RESULT,CLOSE \
-        --output-flatten "_Map_ #And" \
-        --output-omit "<program> <code> <callGas> <touchedAccounts> <interimStates> <callStack> <callData>" \
-        --no-alpha-renaming --restore-original-names --no-sort-collections \
-        --output json \
+    omit_cells='<substate> <jumpDests> <program> <code> <callGas> <touchedAccounts> <interimStates> <callStack> <callData> <block> <txOrder> <txPending> <messages>'
+    omit_labels='#mkCall________EVM #callWithCode_________EVM #create_____EVM #mkCreate_____EVM #newAddrCreate2 #finishCodeDeposit___EVM'
+
+    "$0" "$run_mode" --backend java "$run_file" "$def_module"                           \
+        --state-log --state-log-path "$KLAB_OUT/data" --state-log-id "$klab_log"        \
+        --state-log-events OPEN,REACHINIT,REACHTARGET,REACHPROVED,RULE,SRULE,NODE,CLOSE \
+        --output-flatten "_Map_ #And"                                                   \
+        --output-omit "$omit_cells $omit_labels"                                        \
+        --no-alpha-renaming --restore-original-names --no-sort-collections              \
+        --output json                                                                   \
         "$@"
 }
 
@@ -134,7 +137,7 @@ view_klab() {
 
     # klab often runs out of stack space when running long-running KEVM programs
     # klab debug "$klab_log"
-    node --stack-size=$KLAB_NODE_STACK_SIZE $(dirname $(which klab))/../libexec/klab-debug "$klab_log"
+    node --max-old-space-size=4096 --stack-size=$KLAB_NODE_STACK_SIZE $(dirname $(which klab))/../libexec/klab-debug "$klab_log"
 }
 
 # Dev Commands

@@ -426,13 +426,6 @@ A cons-list is used for the EVM wordstack.
     rule .WordStack          [ N := W ] => (0 : .WordStack) [ N := W ]
 ```
 
--   Definedness conditions for `WS [ N ]`:
-
-```{.k .symbolic}
-    rule #Ceil(#lookup( _ |-> VAL M, KEY )) => {(#Ceil(#lookup( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
-    rule #Ceil(#lookup( .Map, _ ))          => true                                                          [anywhere]
-```
-
 -   `#sizeWordStack` calculates the size of a `WordStack`.
 -   `_in_` determines if a `Int` occurs in a `WordStack`.
 
@@ -509,10 +502,9 @@ Most of EVM data is held in local memory.
     syntax ByteArray ::= #range ( Memory , Int , Int )             [function, functional]
     syntax ByteArray ::= #range ( Memory , Int , Int , ByteArray ) [function, functional, klabel(#rangeAux)]
  // --------------------------------------------------------------------------------------------------------
-    rule [#range]:         #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack)
-    rule [#rangeAux.base]: #range(WM,           END, WIDTH, WS) => WS                                           requires notBool WIDTH >Int 0
-    rule [#rangeAux.none]: #range(WM,           END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, 0 : WS) requires (WIDTH >Int 0) andBool notBool END in_keys(WM)
-    rule [#rangeAux.some]: #range(END |-> W WM, END, WIDTH, WS) => #range(WM, END -Int 1, WIDTH -Int 1, W : WS) requires (WIDTH >Int 0)
+    rule [#range]: #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack)
+    rule [#rangeAux.base]: #range(WM, END, WIDTH, WS) => WS requires notBool 0 <Int WIDTH
+    rule [#rangeAux.rec]:  #range(WM, END => END -Int 1, WIDTH => WIDTH -Int 1, WS => #lookupMemory(WM, END) : WS) requires 0 <Int WIDTH
 
     syntax Memory ::= ".Memory" [function]
  // --------------------------------------
@@ -622,7 +614,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 
     syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional, memo]
  // --------------------------------------------------------------------------------
-    rule WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
+    rule [ByteArray.range]: WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, smtlib(sizeByteArray), memo]
  // -----------------------------------------------------------------------------------------------
@@ -649,8 +641,7 @@ Accounts
  // -----------------------------------
 ```
 
-Addresses
----------
+### Addresses
 
 -   `#addr` turns an Ethereum word into the corresponding Ethereum address (160 LSB).
 
@@ -660,16 +651,32 @@ Addresses
     rule #addr(W) => W %Word pow160
 ```
 
--   `#lookup` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
+Storage/Memory Lookup
+---------------------
+
+`#lookup*` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 ```k
-    syntax Int ::= #lookup ( Map , Int ) [function]
- // -----------------------------------------------
-    rule [#lookup.some]: #lookup( (KEY |-> VAL:Int) M, KEY ) => VAL
-    rule [#lookup.none]: #lookup(                   M, KEY ) => 0 requires notBool KEY in_keys(M)
+    syntax Int ::= #lookup        ( Map , Int ) [function, smtlib(lookup)]
+                 | #lookupMemory  ( Map , Int ) [function, smtlib(lookupMemory)]
+ // ----------------------------------------------------------------------------
+    rule [#lookup.some]:   #lookup( (KEY |-> VAL:Int) M, KEY ) => VAL
+    rule [#lookup.none]:   #lookup(                   M, KEY ) => 0   requires notBool KEY in_keys(M)
+
+    rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) M, KEY ) => VAL
+    rule [#lookupMemory.none]:   #lookupMemory(                   M, KEY ) => 0   requires notBool KEY in_keys(M)
 ```
 
-### Substate Log
+```{.k .symbolic}
+    rule #Ceil(#lookup( _ |-> VAL M, KEY )) => {(#Ceil(#lookup( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
+    rule #Ceil(#lookup( .Map, _ ))          => true                                                          [anywhere]
+
+    rule #Ceil(#lookupMemory( _ |-> VAL M, KEY )) => {(#Ceil(#lookupMemory( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
+    rule #Ceil(#lookupMemory( .Map, _ ))          => true                                                                [anywhere]
+```
+
+Substate Log
+------------
 
 During execution of a transaction some things are recorded in the substate log (Section 6.1 in YellowPaper).
 This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
