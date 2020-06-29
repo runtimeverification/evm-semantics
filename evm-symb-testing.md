@@ -53,21 +53,14 @@ module EVM-SYMB-TESTING
     rule <k> #assume B => . ...</k>
       ensures B
 
-    syntax EthereumCommand ::= "#runTestApprove"
-                             | "#runTestApproveAux"
+    syntax EthereumCommand ::= "#runSymbTest"
+                             | "#runSymbTestAux"
  // ------------------------------------------------------------
-    rule <k> #runTestApprove => #loadTesterBytecode ~> #runTestApproveAux ~> #successOrRevert ...</k>
-    rule <k> #runTestApproveAux => #mkCallShortcut TESTER_ACCT TESTER_ACCT #abiCallData("test_approve", .TypedArgs) ...</k>
+    rule <k> #runSymbTest => #loadTesterBytecode ~> #runSymbTestAux ~> #successOrRevert ...</k>
+    rule <k> #runSymbTestAux => #mkCall TESTER_ACCT TESTER_ACCT TESTER_ACCT PARSEDCODE 0 #abiCallData("symbTest", .TypedArgs) false ...</k>
+         <acctID> TESTER_ACCT </acctID>
+         <code> PARSEDCODE </code>
          <testerAcctId> TESTER_ACCT </testerAcctId>
-
-    //Shortcut for #mkCall and required setup
-    syntax EthereumCommand ::= "#mkCallShortcut" Int Int ByteArray
-    rule <k> #mkCallShortcut CALLER_ID ACCT_ID ARGS
-          => #mkCall CALLER_ID ACCT_ID ACCT_ID PARSEDCODE 0 ARGS false
-         ...
-         </k>
-        <acctID> ACCT_ID </acctID>
-        <code> PARSEDCODE </code>
 
     syntax EthereumCommand ::= "#successOrRevert"
  // ------------------------------------------------------------
@@ -84,7 +77,6 @@ module EVM-SYMB-TESTING
 
     //function new_ERC20_with_arbitrary_storage() external returns (ERC20)
     rule <k> CALL _ TESTER_ACCT 0 ARGSTART _ARGWIDTH RETSTART RETWIDTH
-          //=> #assume notBool ?ACCT in ActiveAccts //Intended version. Doesn't work even after this fix: https://github.com/kframework/kore/issues/1183
           => #assume notBool ?ACCT in ActiveAccts
           ~> #loadERC20Bytecode ?ACCT
           ~> 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #buf(32, ?ACCT)
@@ -122,23 +114,6 @@ module EVM-SYMB-TESTING
       [priority(40)]
 
     //function get_storage_at(address, uint256) external returns (uint256)
-    //This version doesn't work because <acctID> LHS cannot be matched.
-/*    rule <k> CALL _ TESTER_ACCT 0 ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #buf(32, #lookup(STORAGE, #asWord(#range(LM, ARGSTART +Int 36, 32))))
-         ...
-         </k>
-         <output> _ => #buf(32, #lookup(STORAGE, #asWord(#range(LM, ARGSTART +Int 36, 32)))) </output>
-         <localMem> LM </localMem>
-         <account>
-           <acctID> #asWord(#range(LM, ARGSTART +Int 4, 32)) </acctID>
-           <storage> STORAGE </storage>
-           ...
-         </account>
-         <testerAcctId> TESTER_ACCT </testerAcctId>
-      requires #range(LM, ARGSTART, 4) ==K #signatureCallData("get_storage_at", #address(?_), #uint256(?_), .TypedArgs)
-      [priority(40)]
-*/
-
     rule <k> CALL _ TESTER_ACCT 0 ARGSTART _ARGWIDTH RETSTART RETWIDTH
           => #getStorageAt(#asWord(#range(LM, ARGSTART +Int 4, 32)), #asWord(#range(LM, ARGSTART +Int 36, 32)), RETSTART, RETWIDTH)
          ...
@@ -197,6 +172,7 @@ module EVM-SYMB-TESTING
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          //todo symb-test workaround, Set operations limitations.
          //doesn't work as of 06/01/2020, function _Set_(?ACCT, ?ACCT) evaluates to bottom on step 5.
+         //See: https://github.com/kframework/k/issues/1134
          //<touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
          <schedule> SCHED </schedule>
       [priority(40)]
