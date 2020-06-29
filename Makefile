@@ -36,7 +36,7 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
-        build build-java build-specs build-haskell build-web3 build-llvm                                                         \
+        build build-java build-specs build-symb-test build-haskell build-web3 build-llvm                                         \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
         test-web3 test-all-web3 test-failing-web3                                                                                \
@@ -124,6 +124,7 @@ SOURCE_FILES       := asm           \
                       edsl          \
                       evm           \
                       evm-imp-specs \
+                      evm-symb-testing \
                       evm-types     \
                       json          \
                       krypto        \
@@ -208,6 +209,23 @@ $(specs_kompiled): $(specs_files)
 	                --directory $(specs_dir) -I $(CURDIR)  \
 	                --main-module $(specs_main_module)     \
 	                --syntax-module $(specs_syntax_module)
+
+# Symbolic Testing
+
+symb_test_dir          	:= $(DEFN_DIR)/symb-test
+symb_test_main_module   := EVM-SYMB-TESTING
+symb_test_syntax_module	:= $(symb_test_main_module)
+symb_test_main_file     := evm-symb-testing
+symb_test_kompiled      := $(symb_test_dir)/$(symb_test_main_file)-kompiled/definition.kore
+
+build-symb-test: $(symb_test_kompiled)
+
+$(symb_test_kompiled): $(ALL_FILES)
+	$(KOMPILE_HASKELL) $(symb_test_main_file).md        \
+	        --directory $(symb_test_dir) -I $(CURDIR)   \
+	        --main-module $(symb_test_main_module)      \
+	        --syntax-module $(symb_test_syntax_module)  \
+	        --hook-namespaces KRYPTO
 
 # Haskell
 
