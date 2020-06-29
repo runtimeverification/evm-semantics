@@ -1233,11 +1233,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
 -   The `callLog` is used to store the `CALL*`/`CREATE` operations so that we can compare them against the test-set.
 
-```k
-    syntax Call ::= "{" Int "|" Int "|" Int "|" WordStack "}" [unused]
- // ------------------------------------------------------------------
-```
-
 -   `#call_____` takes the calling account, the account to execute as, the account whose code should execute, the gas limit, the amount to transfer, the arguments, and the static flag.
 -   `#callWithCode______` takes the calling account, the accout to execute as, the code to execute (as a bytearray), the gas limit, the amount to transfer, the arguments, and the static flag.
 -   `#return__` is a placeholder for the calling program, specifying where to place the returned data in memory.

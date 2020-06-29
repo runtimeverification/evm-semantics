@@ -25,7 +25,7 @@ In all functions above, input `String` is interpreted as byte array, e.g. it is 
                     | ECDSARecover ( String , Int , String , String ) [function, hook(KRYPTO.ecdsaRecover)]
                     | Sha256 ( String )                               [function, hook(KRYPTO.sha256)]
                     | RipEmd160 ( String )                            [function, hook(KRYPTO.ripemd160)]
-                    | ECDSASign ( String, String )                    [function, hook(KRYPTO.ecdsaSign), unused] //used in web3
+                    | ECDSASign ( String, String )                    [function, hook(KRYPTO.ecdsaSign)]
                     | ECDSAPubKey ( String )                          [function, hook(KRYPTO.ecdsaPubKey)]
                     | Blake2Compress ( String )                       [function, hook(KRYPTO.blake2compress)]
  // ---------------------------------------------------------------------------------------------------------
