@@ -10,7 +10,7 @@ module STATE-LOADER
     imports EVM-ASSEMBLY
 
     syntax JSON ::= ByteArray | OpCodes | Map | SubstateLogEntry | Account
- // -----------------------------------------------------------------------------
+ // ----------------------------------------------------------------------
 
 ```
 

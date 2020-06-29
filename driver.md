@@ -38,7 +38,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
 ```k
     syntax JSON ::= ByteArray | OpCodes | Map | SubstateLogEntry | Account
- // -----------------------------------------------------------------------------
+ // ----------------------------------------------------------------------
 ```
 
 ### Driving Execution
