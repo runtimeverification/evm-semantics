@@ -600,6 +600,10 @@ eth_sendTransaction
 
     rule <k> #eth_sendTransaction => #rpcResponseError(-32000, "Incorrect number of arguments. Method 'eth_sendTransaction' requires exactly 1 argument.") ... </k> [owise]
 
+    rule <k> TXID:Int ~> #eth_sendTransaction_final ... </k>
+         <txPending> ListItem(TXID) => .List ... </txPending>
+         <txOrder>   ListItem(TXID) => .List ... </txOrder>
+
     rule <k> (TXID:Int => "0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ~> #eth_sendTransaction_final ... </k>
          <message>
            <msgID> TXID </msgID>
@@ -612,7 +616,7 @@ eth_sendTransaction
            <sigR>       TR </sigR>
            <sigS>       TS </sigS>
            <data>       TD </data>
-         </message>
+         </message> [owise]
 
     rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccess(TXHASH) ... </k>
          <statusCode> EVMC_SUCCESS </statusCode>
@@ -813,8 +817,8 @@ eth_sendRawTransaction
       requires #sender(TN, TP, TG, TT, TV, #unparseByteStack(TD), TW, TR, TS, CID) =/=K .Account
 
     rule <k> #eth_sendRawTransactionVerify TXID => #rpcResponseError(-32000, "Invalid Signature") ... </k>
-         <txOrder> ListItem(TXID) => .List ... </txOrder>
          <txPending> ListItem(TXID) => .List ... </txPending>
+         <txOrder>   ListItem(TXID) => .List ... </txOrder>
          <messages> ( <message> <msgID> TXID </msgID> ... </message> => .Bag ) ... </messages> [owise]
 
     rule <k> #eth_sendRawTransactionSend TXID => #rpcResponseSuccess("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ... </k>
