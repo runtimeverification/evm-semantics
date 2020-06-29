@@ -99,11 +99,11 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     rule #rangeUInt    (  16 ,      X ) => #range ( minUInt16       <= X <= maxUInt16       ) [macro]
     rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <= maxUInt48       ) [macro]
     rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <= maxUInt128      ) [macro]
-    rule #rangeUInt    ( 160 ,      X ) => #range ( minUInt160      <= X <= maxUInt160      ) [macro]
-    rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <= maxUInt256      ) [macro]
+    rule #rangeUInt    ( 160 ,      X ) => #range ( minUInt160      <= X <  pow160          ) [macro]
+    rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <  pow256          ) [macro]
     rule #rangeSFixed  ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 ) [macro]
     rule #rangeUFixed  ( 128 , 10 , X ) => #range ( minUFixed128x10 <= X <= maxUFixed128x10 ) [macro]
-    rule #rangeAddress (            X ) => #range ( minUInt160      <= X <= maxUInt160      ) [macro]
+    rule #rangeAddress (            X ) => #range ( minUInt160      <= X <  pow160          ) [macro]
     rule #rangeBytes   (   N ,      X ) => #range ( 0               <= X <= #nBytes(N)      ) [macro]
 
     syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")"
