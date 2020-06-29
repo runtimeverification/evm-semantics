@@ -300,7 +300,7 @@ KEVM_MODE     := NORMAL
 KEVM_SCHEDULE := ISTANBUL
 KEVM_CHAINID  := 1
 
-KEVM_WEB3_ARGS := --shutdownable --respond-to-notifications --hardfork istanbul
+KEVM_WEB3_ARGS := --shutdownable --respond-to-notifications --hardfork istanbul --timeFreeze
 
 KPROVE_MODULE  := VERIFICATION
 KPROVE_OPTS    :=
