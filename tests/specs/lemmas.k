@@ -31,6 +31,9 @@ module LEMMAS
     //++ unification
     rule #buf(N, A) ++ BUF1 ==K #buf(N, B) ++ BUF2 => #buf(N, A) ==K #buf(N, B) andBool BUF1 ==K BUF2     [simplification]
 
+    rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
+      requires #rangeUInt(256, V)                                                                         [simplification]
+
 endmodule
 
 module LEMMAS-JAVA [symbolic, kast]
@@ -191,8 +194,6 @@ module LEMMAS-JAVA [symbolic, kast]
     rule bool2Word(B) |Int 1 => 1             [simplification]
     rule bool2Word(B) &Int 1 => bool2Word(B)  [simplification]
 
-    rule bool2Word(A)  ==K 0 => notBool(A)  [simplification]
-    rule bool2Word(A)  ==K 1 => A           [simplification]
     rule bool2Word(A) =/=K 0 => A           [simplification]
     rule bool2Word(A) =/=K 1 => notBool(A)  [simplification]
 
@@ -225,6 +226,14 @@ module LEMMAS-JAVA [symbolic, kast]
 
     rule chop(I) => I requires 0 <=Int I andBool I <Int pow256  [simplification]
 
+    //Simplification of bool2Word() ==Int CONCRETE, #buf() ==K CONCRETE
+    rule I                   ==K bool2Word( B:Bool ) => bool2Word(B) ==Int I    requires #isConcrete(I)  [simplification]
+    rule bool2Word( B:Bool ) ==K I                   => B ==K word2Bool(I)      requires #isConcrete(I)  [simplification]
+
+    rule BA:ByteArray     ==K #buf( 32, DATA ) => #buf( 32, DATA ) ==K BA       requires #isConcrete(BA) [simplification]
+    rule #buf( 32, DATA ) ==K BA:ByteArray     => DATA ==Int #asInteger(BA)
+      requires #sizeByteArray(BA) <=Int 32                                      andBool  #isConcrete(BA) [simplification]
+
 endmodule
 
 module LEMMAS-HASKELL [symbolic, kore]
@@ -246,9 +255,6 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule #asWord(BUF) /Int D => #asWord(BUF[0 .. #sizeByteArray(BUF) -Int log256Int(D)])
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
        andBool #sizeByteArray(BUF) >=Int log256Int(D) [simplification]
-
-    rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
-      requires #rangeUInt(256, V) [simplification]
 
     rule #asWord(#buf(N, BUF)) => BUF
       requires #range(0 < N <= 32)
@@ -291,6 +297,12 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma]
     rule 0 <=Int lengthBytes ( _ )        => true [smt-lemma]
 
-    rule bool2Word( B:Bool ) ==Int 1 => B         [simplification]
-    rule bool2Word( B:Bool ) ==Int 0 => notBool B [simplification]
+    //Simplification of bool2Word() ==Int CONCRETE, #buf() ==K CONCRETE
+    rule I                   ==Int bool2Word( B:Bool ) => bool2Word(B) ==Int I  [simplification, concrete(I)]
+    rule bool2Word( B:Bool ) ==Int I                   => B ==K word2Bool(I)    [simplification, concrete(I)]
+
+    rule BA:ByteArray     ==K #buf( 32, DATA ) => #buf( 32, DATA ) ==K BA       [simplification, concrete(BA)]
+    rule #buf( 32, DATA ) ==K BA:ByteArray     => DATA ==Int #asInteger(BA)
+      requires #sizeByteArray(BA) <=Int 32                                      [simplification, concrete(BA)]
+
 endmodule
