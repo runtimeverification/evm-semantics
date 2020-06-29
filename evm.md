@@ -346,26 +346,26 @@ The `#next [_]` operator initiates execution by:
                   | #stackOverflow  ( WordStack , OpCode ) [function]
  // -----------------------------------------------------------------------------
     rule #stackUnderflow(WS        , OP:OpCode) => #stackUnderflow(WS, #stackNeeded(OP))
-    rule #stackUnderflow(WS        , N:Int    ) => false                         requires notBool (N >Int 0)
-    rule #stackUnderflow(W : WS    , N:Int    ) => #stackUnderflow(WS, N -Int 1) requires          N >Int 0
+    rule #stackUnderflow(_         , N:Int    ) => false                         requires notBool (N >Int 0)
+    rule #stackUnderflow(_ : WS    , N:Int    ) => #stackUnderflow(WS, N -Int 1) requires          N >Int 0
     rule #stackUnderflow(.WordStack, N:Int    ) => true                          requires          N >Int 0
 
     rule #stackOverflow (WS, OP) => #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
-    rule #stackNeeded(PUSH(_))         => 0
-    rule #stackNeeded(IOP:InvalidOp)   => 0
-    rule #stackNeeded(NOP:NullStackOp) => 0
-    rule #stackNeeded(UOP:UnStackOp)   => 1
-    rule #stackNeeded(BOP:BinStackOp)  => 2 requires notBool isLogOp(BOP)
-    rule #stackNeeded(TOP:TernStackOp) => 3
-    rule #stackNeeded(QOP:QuadStackOp) => 4
-    rule #stackNeeded(DUP(N))          => N
-    rule #stackNeeded(SWAP(N))         => N +Int 1
-    rule #stackNeeded(LOG(N))          => N +Int 2
-    rule #stackNeeded(CSOP:CallSixOp)  => 6
-    rule #stackNeeded(COP:CallOp)      => 7 requires notBool isCallSixOp(COP)
+    rule #stackNeeded(PUSH(_))          => 0
+    rule #stackNeeded(_IOP:InvalidOp)   => 0
+    rule #stackNeeded(_NOP:NullStackOp) => 0
+    rule #stackNeeded(_UOP:UnStackOp)   => 1
+    rule #stackNeeded(BOP:BinStackOp)   => 2 requires notBool isLogOp(BOP)
+    rule #stackNeeded(_TOP:TernStackOp) => 3
+    rule #stackNeeded(_QOP:QuadStackOp) => 4
+    rule #stackNeeded(DUP(N))           => N
+    rule #stackNeeded(SWAP(N))          => N +Int 1
+    rule #stackNeeded(LOG(N))           => N +Int 2
+    rule #stackNeeded(_CSOP:CallSixOp)  => 6
+    rule #stackNeeded(COP:CallOp)       => 7 requires notBool isCallSixOp(COP)
 
     syntax Int ::= #stackAdded ( OpCode ) [function]
  // ------------------------------------------------
@@ -388,8 +388,8 @@ The `#next [_]` operator initiates execution by:
     rule #stackAdded(LOG(_))         => 0
     rule #stackAdded(SWAP(N))        => N +Int 1
     rule #stackAdded(DUP(N))         => N +Int 1
-    rule #stackAdded(IOP:InvalidOp)  => 0
-    rule #stackAdded(OP)             => 1 [owise]
+    rule #stackAdded(_IOP:InvalidOp) => 0
+    rule #stackAdded(_OP)            => 1 [owise]
 
     syntax Int ::= #stackDelta ( OpCode ) [function]
  // ------------------------------------------------
@@ -469,7 +469,7 @@ We make sure the given arguments (to be interpreted as addresses) are with 160 b
     syntax InternalOp ::= "#addr" "[" OpCode "]"
  // --------------------------------------------
     rule <k> #addr [ OP:OpCode ] => . ... </k>
-         <wordStack> (W0 => #addr(W0)) : WS </wordStack>
+         <wordStack> (W0 => #addr(W0)) : _WS </wordStack>
       requires OP ==K BALANCE
         orBool OP ==K SELFDESTRUCT
         orBool OP ==K EXTCODEHASH
@@ -477,7 +477,7 @@ We make sure the given arguments (to be interpreted as addresses) are with 160 b
         orBool OP ==K EXTCODECOPY
 
     rule <k> #addr [ OP:OpCode ] => . ... </k>
-         <wordStack> W0 : (W1 => #addr(W1)) : WS </wordStack>
+         <wordStack> _W0 : (W1 => #addr(W1)) : _WS </wordStack>
       requires isCallOp(OP) orBool isCallSixOp(OP)
 
     rule <k> #addr [ OP:OpCode ] => . ... </k>
@@ -755,7 +755,7 @@ These are just used by the other operators for shuffling local execution state a
       requires #sizeByteArray(WS) ==Int 0
 
     rule <k> #newFreshAccount ACCT => . ... </k>
-         <activeAccounts> ACCTS:Set (.Set => SetItem(ACCT)) </activeAccounts>
+         <activeAccounts> ... (.Set => SetItem(ACCT)) ... </activeAccounts>
          <accounts>
            ( .Bag
           => <account>
@@ -793,7 +793,7 @@ These are just used by the other operators for shuffling local execution state a
          </account>
       requires ACCTFROM =/=K ACCTTO andBool VALUE <=Int ORIGFROM
 
-    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #end EVMC_BALANCE_UNDERFLOW ... </k>
+    rule <k> #transferFunds ACCTFROM _ACCTTO VALUE => #end EVMC_BALANCE_UNDERFLOW ... </k>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> ORIGFROM </balance>
@@ -834,7 +834,7 @@ Some operators don't calculate anything, they just push the stack around a bit.
 ```k
     syntax UnStackOp ::= "POP"
  // --------------------------
-    rule <k> POP W => . ... </k>
+    rule <k> POP _ => . ... </k>
 
     syntax StackOp ::= DUP ( Int ) | SWAP ( Int )
  // ---------------------------------------------
@@ -1014,21 +1014,19 @@ The `JUMP*` family of operations affect the current program counter.
  // ---------------------------
     rule <k> JUMP DEST => #endBasicBlock... </k>
          <pc> _ => DEST </pc>
-         <program> PGM </program>
          <jumpDests> DESTS </jumpDests>
       requires DEST in DESTS
 
     rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
-         <program> PGM </program>
          <jumpDests> DESTS </jumpDests>
       requires notBool DEST in DESTS
 
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
-    rule <k> JUMPI DEST I => . ... </k>
+    rule <k> JUMPI _DEST I => . ... </k>
       requires I ==Int 0
 
-    rule <k> JUMPI DEST I => JUMP DEST ... </k>
+    rule <k> JUMPI  DEST I => JUMP DEST ... </k>
       requires I =/=Int 0
 
     syntax InternalOp ::= "#endBasicBlock"
@@ -1097,7 +1095,7 @@ These operators query about the current return data buffer.
          <output> RD </output>
       requires DATASTART +Int DATAWIDTH <=Int #sizeByteArray(RD)
 
-    rule <k> RETURNDATACOPY MEMSTART DATASTART DATAWIDTH => #end EVMC_INVALID_MEMORY_ACCESS ... </k>
+    rule <k> RETURNDATACOPY _MEMSTART DATASTART DATAWIDTH => #end EVMC_INVALID_MEMORY_ACCESS ... </k>
          <output> RD </output>
       requires DATASTART +Int DATAWIDTH >Int #sizeByteArray(RD)
 ```
@@ -1198,7 +1196,7 @@ Should we pad zeros (for the copied "program")?
            ...
          </account>
 
-    rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </k>
+    rule <k> EXTCODECOPY ACCT _MEMSTART _PGMSTART _WIDTH => . ... </k>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT in ACCTS
 ```
@@ -1234,11 +1232,6 @@ These rules reach into the network state and load/store from account storage:
 The various `CALL*` (and other inter-contract control flow) operations will be desugared into these `InternalOp`s.
 
 -   The `callLog` is used to store the `CALL*`/`CREATE` operations so that we can compare them against the test-set.
-
-```k
-    syntax Call ::= "{" Int "|" Int "|" Int "|" WordStack "}"
- // ---------------------------------------------------------
-```
 
 -   `#call_____` takes the calling account, the account to execute as, the account whose code should execute, the gas limit, the amount to transfer, the arguments, and the static flag.
 -   `#callWithCode______` takes the calling account, the accout to execute as, the code to execute (as a bytearray), the gas limit, the amount to transfer, the arguments, and the static flag.
@@ -1403,37 +1396,34 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```k
     syntax CallOp ::= "CALL"
  // ------------------------
-    rule <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
+    rule <k> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
-         <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
-    rule <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
+    rule <k> CALLCODE _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTFROM ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
-         <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
 
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
-    rule <k> DELEGATECALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
+    rule <k> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
           ~> #call ACCTAPPFROM ACCTFROM ACCTTO 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
          </k>
-         <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <caller> ACCTAPPFROM </caller>
          <callValue> VALUE </callValue>
@@ -1441,13 +1431,12 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     syntax CallSixOp ::= "STATICCALL"
  // ---------------------------------
-    rule <k> STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
+    rule <k> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
           ~> #call ACCTFROM ACCTTO ACCTTO 0 0 #range(LM, ARGSTART, ARGWIDTH) true
           ~> #return RETSTART RETWIDTH
          ...
          </k>
-         <schedule> SCHED </schedule>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
 ```
@@ -1476,7 +1465,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          ...
          </k>
          <schedule> SCHED </schedule>
-         <id> ACCT => ACCTTO </id>
+         <id> _ => ACCTTO </id>
          <gas> _ => GCALL </gas>
          <callGas> GCALL => 0 </callGas>
          <program> _ => INITCODE </program>
@@ -1521,7 +1510,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <output> OUT => .ByteArray </output>
       requires #sizeByteArray(OUT) <=Int maxCodeSize < SCHED >
 
-    rule <k> #mkCodeDeposit ACCT => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
+    rule <k> #mkCodeDeposit _ACCT => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
          <output> OUT => .ByteArray </output>
       requires #sizeByteArray(OUT) >Int maxCodeSize < SCHED >
@@ -1564,7 +1553,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
          </k>
-         <schedule> SCHED </schedule>
          <id> ACCT </id>
          <localMem> LM </localMem>
          <account>
@@ -1586,7 +1574,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          ...
          </k>
          <id> ACCT </id>
-         <callGas> GCALL </callGas>
          <localMem> LM </localMem>
 ```
 
@@ -1597,7 +1584,6 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
     rule <k> SELFDESTRUCT ACCTTO => #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
-         <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> ... (.Set => SetItem(ACCT)) ... </selfDestruct>
          <account>
@@ -1610,14 +1596,11 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
       requires ACCT =/=Int ACCTTO
 
     rule <k> SELFDESTRUCT ACCT => #end EVMC_SUCCESS ... </k>
-         <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> ... (.Set => SetItem(ACCT)) ... </selfDestruct>
          <account>
            <acctID> ACCT </acctID>
-           <balance> BALFROM => 0 </balance>
-           <nonce> NONCE </nonce>
-           <code> CODE </code>
+           <balance> _ => 0 </balance>
            ...
          </account>
          <output> _ => .ByteArray </output>
@@ -1727,9 +1710,9 @@ Precompiled Contracts
 
     syntax InternalOp ::= #ecmul(G1Point, Int)
  // ------------------------------------------
-    rule <k> #ecmul(P, S) => #end EVMC_PRECOMPILE_FAILURE ... </k>
+    rule <k> #ecmul(P, _S) => #end EVMC_PRECOMPILE_FAILURE ... </k>
       requires notBool isValidPoint(P)
-    rule <k> #ecmul(P, S) => #end EVMC_SUCCESS ... </k> <output> _ => #point(BN128Mul(P, S)) </output>
+    rule <k> #ecmul(P,  S) => #end EVMC_SUCCESS ... </k> <output> _ => #point(BN128Mul(P, S)) </output>
       requires isValidPoint(P)
 
     syntax ByteArray ::= #point ( G1Point ) [function]
@@ -1809,9 +1792,9 @@ Overall Gas
     rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductMemoryGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
-    rule <k> G:Int ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
-    rule <k> G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
-    rule <k> G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+    rule <k> _G:Int ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
+    rule <k>  G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
+    rule <k>  G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
 ```
 
 Memory Consumption
@@ -1843,8 +1826,8 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
     rule #memory ( RETURN START WIDTH      , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
     rule #memory ( REVERT START WIDTH      , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
 
-    rule #memory ( COP:CallOp     _ _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
-    rule #memory ( CSOP:CallSixOp _ _   ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
+    rule #memory ( _COP:CallOp     _ _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
+    rule #memory ( _CSOP:CallSixOp _ _   ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
 
     rule #memory ( _ , MU ) => MU [owise]
 
@@ -1868,7 +1851,7 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function, functional]
  // ----------------------------------------------------------------------------
-    rule [#memoryUsageUpdate.none]: #memoryUsageUpdate(MU, START, WIDTH) => MU                                       requires notBool WIDTH >Int 0
+    rule [#memoryUsageUpdate.none]: #memoryUsageUpdate(MU,     _, WIDTH) => MU                                       requires notBool WIDTH >Int 0
     rule [#memoryUsageUpdate.some]: #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH  >Int 0
 ```
 
@@ -1900,8 +1883,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
       requires Ghassstorestipend << SCHED >>
        andBool GAVAIL <=Int Gcallstipend < SCHED >
 
-    rule <k> #gasExec(SCHED, EXP W0 0)  => Gexp < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, EXP W0 W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=Int 0
+    rule <k> #gasExec(SCHED, EXP _ 0)  => Gexp < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, EXP _ W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=Int 0
 
     rule <k> #gasExec(SCHED, CALLDATACOPY    _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
     rule <k> #gasExec(SCHED, RETURNDATACOPY  _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
@@ -2104,7 +2087,7 @@ There are several helpers for calculating gas (most of them also specified in th
       => #if CURR ==Int NEW orBool ORIG =/=Int CURR #then Gsload < SCHED > #else #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi #fi
       requires Ghasdirtysstore << SCHED >>
     rule [Csstore.old]:
-         Csstore(SCHED, NEW, CURR, ORIG)
+         Csstore(SCHED, NEW, CURR, _ORIG)
       => #if CURR ==Int 0 andBool NEW =/=Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
       requires notBool Ghasdirtysstore << SCHED >>
 
@@ -2127,7 +2110,7 @@ There are several helpers for calculating gas (most of them also specified in th
       requires Ghasdirtysstore << SCHED >>
 
     rule [Rsstore.old]:
-         Rsstore(SCHED, NEW, CURR, ORIG)
+         Rsstore(SCHED, NEW, CURR, _ORIG)
       => #if CURR =/=Int 0 andBool NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi
       requires notBool Ghasdirtysstore << SCHED >>
 
@@ -2139,8 +2122,8 @@ There are several helpers for calculating gas (most of them also specified in th
          Cnew(SCHED, ISEMPTY:Bool, VALUE)
       => #if ISEMPTY andBool (VALUE =/=Int 0 orBool Gzerovaluenewaccountgas << SCHED >>) #then Gnewaccount < SCHED > #else 0 #fi
 
-    rule [Cxfer.none]: Cxfer(SCHED, 0) => 0
-    rule [Cxfer.some]: Cxfer(SCHED, N) => Gcallvalue < SCHED > requires N =/=Int 0
+    rule [Cxfer.none]: Cxfer(_SCHED, 0) => 0
+    rule [Cxfer.some]: Cxfer( SCHED, N) => Gcallvalue < SCHED > requires N =/=Int 0
 
     rule [Cmem]: Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
 

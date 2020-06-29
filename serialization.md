@@ -41,7 +41,7 @@ Address/Hash Helpers
                      | #sender ( String , Int , String , String )                                              [function, klabel(#senderAux)]
                      | #sender ( String )                                                                      [function, klabel(#senderAux2)]
  // ------------------------------------------------------------------------------------------------------------------------------------------
-    rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS, CID)
+    rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS, _CID)
       => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TN, TP, TG, TT, TV, #parseByteStackRaw(DATA)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
       requires TW ==Int 27 orBool TW ==Int 28
 
@@ -423,14 +423,14 @@ Decoding
                   | #rlpDecode(String, LengthPrefix) [function, klabel(#rlpDecodeAux)]
  // ----------------------------------------------------------------------------------
     rule #rlpDecode(STR) => #rlpDecode(STR, #decodeLengthPrefix(STR, 0))
-    rule #rlpDecode(STR, #str(LEN, POS))  => substrString(STR, POS, POS +Int LEN)
-    rule #rlpDecode(STR, #list(LEN, POS)) => [#rlpDecodeList(STR, POS)]
+    rule #rlpDecode(STR,  #str( LEN, POS)) => substrString(STR, POS, POS +Int LEN)
+    rule #rlpDecode(STR, #list(_LEN, POS)) => [#rlpDecodeList(STR, POS)]
 
     syntax JSONs ::= #rlpDecodeList(String, Int)               [function]
                    | #rlpDecodeList(String, Int, LengthPrefix) [function, klabel(#rlpDecodeListAux)]
  // ------------------------------------------------------------------------------------------------
     rule #rlpDecodeList(STR, POS) => #rlpDecodeList(STR, POS, #decodeLengthPrefix(STR, POS)) requires POS <Int lengthString(STR)
-    rule #rlpDecodeList(STR, POS) => .JSONs [owise]
+    rule #rlpDecodeList(  _,   _) => .JSONs [owise]
     rule #rlpDecodeList(STR, POS, _:LengthPrefixType(L, P)) => #rlpDecode(substrString(STR, POS, L +Int P)) , #rlpDecodeList(STR, L +Int P)
 
     syntax LengthPrefixType ::= "#str" | "#list"
@@ -442,10 +442,10 @@ Decoding
  // --------------------------------------------------------------------------------------------------------------------------------------------
     rule #decodeLengthPrefix(STR, START) => #decodeLengthPrefix(STR, START, ordChar(substrString(STR, START, START +Int 1)))
 
-    rule #decodeLengthPrefix(STR, START, B0) => #str(1, START)                                   requires B0 <Int 128
-    rule #decodeLengthPrefix(STR, START, B0) => #str(B0 -Int 128, START +Int 1)                  requires B0 >=Int 128 andBool B0 <Int (128 +Int 56)
+    rule #decodeLengthPrefix(  _, START, B0) => #str(1, START)                                   requires B0 <Int 128
+    rule #decodeLengthPrefix(  _, START, B0) => #str(B0 -Int 128, START +Int 1)                  requires B0 >=Int 128 andBool B0 <Int (128 +Int 56)
     rule #decodeLengthPrefix(STR, START, B0) => #decodeLengthPrefixLength(#str, STR, START, B0)  requires B0 >=Int (128 +Int 56) andBool B0 <Int 192
-    rule #decodeLengthPrefix(STR, START, B0) => #list(B0 -Int 192, START +Int 1)                 requires B0 >=Int 192 andBool B0 <Int 192 +Int 56
+    rule #decodeLengthPrefix(  _, START, B0) => #list(B0 -Int 192, START +Int 1)                 requires B0 >=Int 192 andBool B0 <Int 192 +Int 56
     rule #decodeLengthPrefix(STR, START, B0) => #decodeLengthPrefixLength(#list, STR, START, B0) [owise]
 
     rule #decodeLengthPrefixLength(#str,  STR, START, B0) => #decodeLengthPrefixLength(#str,  START, B0 -Int 128 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 128 -Int 56 +Int 1)))))
@@ -522,17 +522,17 @@ Merkle Patricia Tree
 
     rule MerkleDelete( .MerkleTree, _ ) => .MerkleTree
 
-    rule MerkleDelete( MerkleLeaf( LPATH, V ), PATH ) => .MerkleTree                           requires LPATH ==K  PATH
-    rule MerkleDelete( MerkleLeaf( LPATH, V ), PATH ) => MerkleCheck( MerkleLeaf( LPATH, V ) ) requires LPATH =/=K PATH
+    rule MerkleDelete( MerkleLeaf( LPATH, _V ), PATH ) => .MerkleTree                           requires LPATH ==K  PATH
+    rule MerkleDelete( MerkleLeaf( LPATH,  V ), PATH ) => MerkleCheck( MerkleLeaf( LPATH, V ) ) requires LPATH =/=K PATH
 
     rule MerkleDelete( MerkleExtension( EXTPATH, TREE ), PATH ) => MerkleExtension( EXTPATH, TREE ) requires notBool (#sizeByteArray(EXTPATH) <=Int #sizeByteArray(PATH) andBool PATH[0 .. #sizeByteArray(EXTPATH)] ==K EXTPATH)
     rule MerkleDelete( MerkleExtension( EXTPATH, TREE ), PATH )
       => MerkleCheck( MerkleExtension( EXTPATH, MerkleDelete( TREE, PATH[#sizeByteArray(EXTPATH) .. #sizeByteArray(PATH) -Int #sizeByteArray(EXTPATH)] ) ) )
       requires #sizeByteArray(EXTPATH) <=Int #sizeByteArray(PATH) andBool PATH[0 .. #sizeByteArray(EXTPATH)] ==K EXTPATH
 
-    rule MerkleDelete( MerkleBranch( M, V ), PATH ) => MerkleCheck( MerkleBranch( M, "" ) ) requires #sizeByteArray(PATH) ==Int 0
-    rule MerkleDelete( MerkleBranch( M, V ), PATH ) => MerkleBranch( M, V )                 requires #sizeByteArray(PATH) >Int 0 andBool notBool PATH[0] in_keys(M)
-    rule MerkleDelete( MerkleBranch( M, V ), PATH )
+    rule MerkleDelete( MerkleBranch( M, _V ), PATH ) => MerkleCheck( MerkleBranch( M, "" ) ) requires #sizeByteArray(PATH) ==Int 0
+    rule MerkleDelete( MerkleBranch( M,  V ), PATH ) => MerkleBranch( M, V )                 requires #sizeByteArray(PATH) >Int 0 andBool notBool PATH[0] in_keys(M)
+    rule MerkleDelete( MerkleBranch( M,  V ), PATH )
       => MerkleCheck( MerkleBranch( M[PATH[0] <- MerkleDelete( {M[PATH[0]]}:>MerkleTree, PATH[1 .. #sizeByteArray(PATH) -Int 1] )], V ) )
       requires #sizeByteArray(PATH) >Int 0 andBool PATH[0] in_keys(M)
 
@@ -606,7 +606,7 @@ Merkle Tree Aux Functions
 
     rule #cleanBranchMapAux(                   M,                        .List,                      S ) => removeAll( M, S )
     rule #cleanBranchMapAux( X |-> .MerkleTree _, (ListItem(X) => .List) _    , (.Set => SetItem(X)) _ )
-    rule #cleanBranchMapAux(                   _, (ListItem(X) => .List) _    ,                      _ ) [owise]
+    rule #cleanBranchMapAux(                   _, (ListItem(_) => .List) _    ,                      _ ) [owise]
 
     syntax MerkleTree ::= #merkleUpdateBranch ( Map, String, Int, ByteArray, String ) [function]
  // --------------------------------------------------------------------------------------------
