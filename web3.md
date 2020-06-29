@@ -624,19 +624,13 @@ eth_sendTransaction
          <output> RD </output>
          <endPC> PCOUNT </endPC>
 
-    rule <k> _:String ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "base fee exceeds gas limit") ... </k>
-         <txOrder> ListItem(_) => .List ... </txOrder>
-         <txPending> ListItem(_) => .List ... </txPending>
+    rule <k> _:String ~> #eth_sendTransaction_final => #popTxLists ~> #rpcResponseError(-32000, "base fee exceeds gas limit") ... </k>
          <statusCode> EVMC_OUT_OF_GAS </statusCode>
 
-    rule <k> _:String ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "sender doesn't have enough funds to send tx.") ... </k>
-         <txOrder> ListItem(_) => .List ... </txOrder>
-         <txPending> ListItem(_) => .List ... </txPending>
+    rule <k> _:String ~> #eth_sendTransaction_final => #popTxLists ~> #rpcResponseError(-32000, "sender doesn't have enough funds to send tx.") ... </k>
          <statusCode> EVMC_BALANCE_UNDERFLOW </statusCode>
 
-    rule <k> _:String ~> #eth_sendTransaction_final => #rpcResponseError(-32000, "VM exception: " +String StatusCode2String( SC )) ... </k>
-         <txOrder> ListItem(_) => .List ... </txOrder>
-         <txPending> ListItem(_) => .List ... </txPending>
+    rule <k> _:String ~> #eth_sendTransaction_final => #popTxLists ~> #rpcResponseError(-32000, "VM exception: " +String StatusCode2String( SC )) ... </k>
          <statusCode> SC:ExceptionalStatusCode </statusCode> [owise]
 
     rule <k> loadTransaction _ { "gas"      : (TG:String => #parseHexWord(TG)), _                    } ... </k>
@@ -818,9 +812,7 @@ eth_sendRawTransaction
          </message>
       requires #sender(TN, TP, TG, TT, TV, #unparseByteStack(TD), TW, TR, TS, CID) =/=K .Account
 
-    rule <k> #eth_sendRawTransactionVerify TXID => #rpcResponseError(-32000, "Invalid Signature") ... </k>
-         <txOrder> ListItem(TXID) => .List ... </txOrder>
-         <txPending> ListItem(TXID) => .List ... </txPending>
+    rule <k> #eth_sendRawTransactionVerify TXID => #popTxLists ~> #rpcResponseError(-32000, "Invalid Signature") ... </k>
          <messages> ( <message> <msgID> TXID </msgID> ... </message> => .Bag ) ... </messages> [owise]
 
     rule <k> #eth_sendRawTransactionSend TXID => #rpcResponseSuccess("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ... </k>
@@ -1853,6 +1845,7 @@ Mining
     syntax KItem ::= "#saveState"
                    | "#incrementBlockNumber"
                    | "#cleanTxLists"
+                   | "#popTxLists"
                    | "#clearGas"
                    | "#setParentHash" BlockchainItem
                    | "#updateTrieRoots"
@@ -1871,6 +1864,10 @@ Mining
     rule <k> #cleanTxLists => . ... </k>
          <txPending> _ => .List </txPending>
          <txOrder>   _ => .List </txOrder>
+
+    rule <k> #popTxLists => . ... </k>
+         <txPending> ListItem(_) => .List ... </txPending>
+         <txOrder>   ListItem(_) => .List ... </txOrder>
 
     rule <k> #clearGas => . ... </k>
          <gas> _ => 0 </gas>
