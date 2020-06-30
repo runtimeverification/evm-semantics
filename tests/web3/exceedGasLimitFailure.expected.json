@@ -1,0 +1,208 @@
+[
+    {
+      "jsonrpc": "2.0",
+      "id": 0,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 0,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 0,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 0,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 0,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 0,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 0,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 0,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 0,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 0,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 0,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 0,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 0,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 0,
+      "result": true
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": "Firefly RPC/v0.0.1/kevm"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 5,
+      "result": "0xc81a9"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 7,
+      "result": "0x4a817c800"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 8,
+      "result": "0x2d7fd60e581388e56c9525430fd85e14d284a37b25bed10ce61f75f6f4f9a6ef"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 13,
+      "result": "0x70b69d4e0338f078e4871cce604ce5cec0a68e15bcbfafb4f93e0ed92883d85d"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 19,
+      "result": "0x2327c"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 20,
+      "result": "0x4a817c800"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 21,
+      "result": "0x737efda9b25044ee4c68e1da00cdae6b90603bbb7c7c38579613de312f41ef46"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 25,
+      "result": "0xa03a0f90cf21b5b09b76d422918b65306ced00819201395044a1463612316287"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 30,
+      "result": "0x2327c"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 31,
+      "result": "0x4a817c800"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 32,
+      "result": "0xa888359f417c477da888e3dff3ab4da9cc5d09031ef0a2b1d9bf99d3564fa783"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 36,
+      "result": "0x8f5cdf493b6af4ed77ad635d150645d724b7040cf258f3a2448a91e394f64ca7"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 41,
+      "result": "0xb7778d332b79b6b4ed98404712474bd4e49f84cd54cc956877b823157b276371"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 46,
+      "result": "0x0356e5d90475aae235d3e84df7de795659ce23153cf61b0ad6c42c4f7511c619"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 51,
+      "result": "0x4d0ba04c677f88acbb5a007843c690cd17af14c654f3a3585bffd64b38ed29e9"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 70,
+      "result": "0x72448e133d88d399ea35042e742dc2ed763e16e5feb628c7b082e039ad7f1f69"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 71,
+      "result": "0xf7e7254f2d0be6804dd45326e27ad90553778565d8586ef5e3ef1076e56c1aab"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 72,
+      "result": "0xc5ce14e78fb84775cfd4ac33750c01a3b34151ce9ad557f43bc89e181e6da24e"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 73,
+      "result": "0xf182449cc6a3254da69db67ef3554a69fa9ad6b78469dd803ecc653e73cdd160"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 74,
+      "result": "0xa1df03e3e3d1d7c9e1bf70f5d4acf51af00e147235754a9b0185bf48ee7d2f6c"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 75,
+      "result": "0xee1ec39b0cf51c1e4de42d5330c4c0f8d3a9d36885e0441f420c37232ea22298"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 76,
+      "result": "0x192e027268ad3cc02cca0636f9c07b1eff0a5cc4d7bf1ee9c44eea016006feba"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 77,
+      "result": "0xc67a31bfa99eb087dd6406b4a574b62452f4c7f3836c97cc9bf3a999ccf4fc3c"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 100,
+      "result": "0xb1cc"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 101,
+      "result": "0xb1cc"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 102,
+      "result": "0xb1cc"
+    }
+  ]
+  
