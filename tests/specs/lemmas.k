@@ -34,6 +34,9 @@ module LEMMAS
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
       requires #rangeUInt(256, V)                                                                         [simplification]
 
+    rule 0 <=Int keccak(V)                  => true  [simplification]
+    rule         keccak(V) <Int pow256      => true  [simplification]
+
 endmodule
 
 module LEMMAS-JAVA [symbolic, kast]
@@ -214,9 +217,6 @@ module LEMMAS-JAVA [symbolic, kast]
     rule 0 <=Int chop(V)             => true  [simplification]
     rule         chop(V) <Int pow256 => true  [simplification]
 
-    rule 0 <=Int keccak(V)             => true  [simplification]
-    rule         keccak(V) <Int pow256 => true  [simplification]
-
     rule 0 <=Int keccakIntList(_)             => true  [simplification]
     rule         keccakIntList(_) <Int pow256 => true  [simplification]
 
@@ -283,9 +283,6 @@ module LEMMAS-HASKELL [symbolic, kore]
       requires K  >Int 0
        andBool L >=Int N +Int #sizeByteArray(BUF)
       [simplification]
-
-    rule 0 <=Int keccak(V)                  => true  [simplification]
-    rule         keccak(V) <=Int maxUInt256 => true  [simplification]
 
     // Defineness axiom for #buf
     rule #Ceil(#buf(@SIZE, @DATA)) => {(@SIZE >=Int 0) #Equals true} #And #Ceil(@SIZE) #And #Ceil(@DATA) [anywhere]
