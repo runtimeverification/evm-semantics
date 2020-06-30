@@ -287,7 +287,7 @@ where `1003892871367861763272476045097431689001461395759728643661426852242313133
 
     syntax TypedArgs ::= #getNonIndexedArgs ( EventArgs ) [function]
  // ----------------------------------------------------------------
-    rule #getNonIndexedArgs(#indexed(E), ES) =>    #getNonIndexedArgs(ES)
+    rule #getNonIndexedArgs(#indexed(_), ES) =>    #getNonIndexedArgs(ES)
     rule #getNonIndexedArgs(E:TypedArg,  ES) => E, #getNonIndexedArgs(ES)
     rule #getNonIndexedArgs(.EventArgs)      => .TypedArgs
 ```
@@ -339,7 +339,7 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
     syntax IntList ::= List{Int, ""}                             [klabel(intList)]
     syntax Int     ::= #hashedLocation( String , Int , IntList ) [function]
  // -----------------------------------------------------------------------
-    rule #hashedLocation(LANG, BASE, .IntList) => BASE
+    rule #hashedLocation(_LANG, BASE, .IntList) => BASE
 
     rule #hashedLocation("Vyper",    BASE, OFFSET OFFSETS) => #hashedLocation("Vyper",    keccakIntList(BASE OFFSET),       OFFSETS)
     rule #hashedLocation("Solidity", BASE, OFFSET OFFSETS) => #hashedLocation("Solidity", keccakIntList(OFFSET BASE),       OFFSETS)
@@ -365,7 +365,7 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
          => #asWord ( WS [ 0 .. bytesInNextInt(WS, N) ] ) byteStack2IntList ( #drop(bytesInNextInt(WS, N), WS) , N -Int 1 )
          requires N >Int 0
 
-    rule byteStack2IntList ( WS , 0 ) => .IntList
+    rule byteStack2IntList ( _WS , 0 ) => .IntList
 
     syntax Int ::= bytesInNextInt ( ByteArray , Int ) [function]
  // ------------------------------------------------------------

@@ -15,8 +15,8 @@ module LEMMAS
 
     rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeByteArray(BUF) ==Int #sizeByteArray(BUF')  [simplification]
 
-    rule BUF [ L .. W ] => .ByteArray requires W ==Int 0                    [simplification]
-    rule BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
+    rule _BUF [ _ .. W ] => .ByteArray requires W ==Int 0                    [simplification]
+    rule  BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
 
     rule #sizeByteArray(BUF1 ++ BUF2)                  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
     rule #sizeByteArray(#buf(SIZE, _))                 => SIZE                                            [simplification]
@@ -34,8 +34,8 @@ module LEMMAS
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
       requires #rangeUInt(256, V)                                                                         [simplification]
 
-    rule 0 <=Int keccak(V)                  => true  [simplification]
-    rule         keccak(V) <Int pow256      => true  [simplification]
+    rule 0 <=Int keccak(_)                  => true  [simplification]
+    rule         keccak(_) <Int pow256      => true  [simplification]
 
 endmodule
 
@@ -245,7 +245,7 @@ module LEMMAS-HASKELL [symbolic, kore]
       requires #range(0 <= START < #sizeByteArray(BUF1))
        andBool #sizeByteArray(BUF1) <Int START +Int WIDTH [simplification]
 
-    rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. WIDTH])
+    rule (BUF1 ++_BUF2)[START .. WIDTH] => (BUF1[START .. WIDTH])
       requires #range(0 <= START < #sizeByteArray(BUF1))
        andBool START +Int WIDTH <=Int #sizeByteArray(BUF1) [simplification]
 
@@ -266,7 +266,7 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule maxUInt160 &Int N => N
       requires #rangeUInt(160, N) [simplification]
 
-    rule #range(M, N, K) => .ByteArray requires notBool K >Int 0  [simplification]
+    rule #range(_, _, K) => .ByteArray requires notBool K >Int 0  [simplification]
 
     rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))
       requires K >Int 0

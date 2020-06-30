@@ -2174,7 +2174,7 @@ There are several helpers for calculating gas (most of them also specified in th
     rule G0(SCHED, true)  => Gtxcreate    < SCHED >
     rule G0(SCHED, false) => Gtransaction < SCHED >
 
-    rule G0(SCHED, WS, I, I) => 0
+    rule G0(    _,  _, I, I) => 0
     rule G0(SCHED, WS, I, J) => #if WS[I] ==Int 0 #then Gtxdatazero < SCHED > #else Gtxdatanonzero < SCHED > #fi +Int G0(SCHED, WS, I +Int 1, J) [owise]
 ```
 
