@@ -657,22 +657,14 @@ Storage/Memory Lookup
 `#lookup*` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 ```k
-    syntax Int ::= #lookup        ( Map , Int ) [function, smtlib(lookup)]
-                 | #lookupMemory  ( Map , Int ) [function, smtlib(lookupMemory)]
+    syntax Int ::= #lookup        ( Map , Int ) [function, functional, smtlib(lookup)]
+                 | #lookupMemory  ( Map , Int ) [function, functional, smtlib(lookupMemory)]
  // ----------------------------------------------------------------------------
     rule [#lookup.some]:   #lookup( (KEY |-> VAL:Int) _M, KEY ) => VAL
     rule [#lookup.none]:   #lookup(                    M, KEY ) => 0   requires notBool KEY in_keys(M)
 
     rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) _M, KEY ) => VAL
     rule [#lookupMemory.none]:   #lookupMemory(                    M, KEY ) => 0   requires notBool KEY in_keys(M)
-```
-
-```{.k .symbolic}
-    rule #Ceil(#lookup( _ |-> VAL M, KEY )) => {(#Ceil(#lookup( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
-    rule #Ceil(#lookup( .Map, _ ))          => true                                                          [anywhere]
-
-    rule #Ceil(#lookupMemory( _ |-> VAL M, KEY )) => {(#Ceil(#lookupMemory( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
-    rule #Ceil(#lookupMemory( .Map, _ ))          => true                                                                [anywhere]
 ```
 
 Substate Log
