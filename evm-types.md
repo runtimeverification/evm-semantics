@@ -393,10 +393,10 @@ A cons-list is used for the EVM wordstack.
 ```{.k .bytes}
     syntax Bytes ::= #take ( Int , Bytes ) [klabel(takeBytes), function, functional]
  // --------------------------------------------------------------------------------
-    rule #take(N, BS:Bytes) => .Bytes                                          requires                                        notBool N >Int 0
-    rule #take(N, BS:Bytes) => #padRightToWidth(N, .Bytes)                     requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
-    rule #take(N, BS:Bytes) => BS +Bytes #take(N -Int lengthBytes(BS), .Bytes) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
-    rule #take(N, BS:Bytes) => BS [ 0 .. N ]                                   requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
+    rule #take(N, _BS:Bytes) => .Bytes                                          requires                                        notBool N >Int 0
+    rule #take(N,  BS:Bytes) => #padRightToWidth(N, .Bytes)                     requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
+    rule #take(N,  BS:Bytes) => BS +Bytes #take(N -Int lengthBytes(BS), .Bytes) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
+    rule #take(N,  BS:Bytes) => BS [ 0 .. N ]                                   requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
 
     syntax Bytes ::= #drop ( Int , Bytes ) [klabel(dropBytes), function, functional]
  // --------------------------------------------------------------------------------
@@ -477,7 +477,7 @@ Most of EVM data is held in local memory.
     syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, functional, klabel(mapWriteBytes)]
  // -------------------------------------------------------------------------------------------------
     rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS') requires START >=Int 0  [concrete]
-    rule WS [ START := WS':ByteArray ] => .Memory                                                                requires START  <Int 0  [concrete]
+    rule  _ [ START := _:ByteArray ] => .Memory                                                                requires START  <Int 0  [concrete]
 
     syntax ByteArray ::= #range ( Memory , Int , Int ) [function, functional]
  // -------------------------------------------------------------------------
@@ -559,10 +559,10 @@ The local memory of execution is a byte-array (instead of a word-array).
 
     syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional]
  // --------------------------------------------------------------------------
-    rule WS [ START .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0) [concrete, owise]
     rule WS [ START .. WIDTH ] => .ByteArray                      requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
     rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH)
       requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int #sizeByteArray(WS) [concrete]
+    rule  _ [ _     .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0)                        [concrete, owise]
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, klabel(sizeByteArray), smtlib(sizeByteArray)]
  // ----------------------------------------------------------------------------------------------------------------
