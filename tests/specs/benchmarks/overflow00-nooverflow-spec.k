@@ -122,9 +122,9 @@ _
 andBool #rangeUInt(256, CONTRACT_BAL)
 andBool #rangeUInt(256, CALLEE_BAL)andBool #range(0 <= CD < 1024)
 andBool #rangeAddress(MSG_SENDER)andBool #range(0 <= A0 < 2 ^Int 256 -Int 1)
+    ensures true
 andBool ?N ==Int A0 +Int 1
 andBool #rangeUInt(256, ?N)
-    ensures true
 
 
 
