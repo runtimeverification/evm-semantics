@@ -16,20 +16,20 @@ module STORAGEVAR00-SPEC
         <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
-        <touchedAccounts> _ => _ </touchedAccounts>
+        <touchedAccounts> _ => ?_ </touchedAccounts>
         <callState>
           <program> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806361461954146044575b600080fd5b348015604f57600080fd5b506056606c565b6040518082815260200191505060405180910390f35b6000805490509056fea165627a7a7230582042a42ab720fca3a1db0ba7ac19c662cf1a6fb8fdb252593eb42de55a510e09470029") </program>
           <jumpDests> #computeValidJumpDests(#parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806361461954146044575b600080fd5b348015604f57600080fd5b506056606c565b6040518082815260200191505060405180910390f35b6000805490509056fea165627a7a7230582042a42ab720fca3a1db0ba7ac19c662cf1a6fb8fdb252593eb42de55a510e09470029")) </jumpDests>
-          <id> #CONTRACT_ID </id> // this
+          <id> CONTRACT_ID </id> // this
           <caller> MSG_SENDER </caller> // msg.sender
           <callData> #abiCallData("execute", .TypedArgs) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
-          <wordStack> .WordStack => _ </wordStack>
-          <localMem> .Memory => _ </localMem>
-          <pc> 0 => _ </pc>
-          <gas> #gas(INITGAS, 0, 0) => _ </gas>
-          <memoryUsed> 0 => _ </memoryUsed>
-          <callGas> _ => _ </callGas>
+          <wordStack> .WordStack => ?_ </wordStack>
+          <localMem> .Memory => ?_ </localMem>
+          <pc> 0 => ?_ </pc>
+          <gas> 1000000000 => ?_ </gas>
+          <memoryUsed> 0 => ?_ </memoryUsed>
+          <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
           <callDepth> CD </callDepth>
         </callState>
@@ -63,10 +63,10 @@ module STORAGEVAR00-SPEC
       <network>
         <chainID> _ </chainID>
 
-        <activeAccounts> SetItem(#CONTRACT_ID) SetItem(#CALLEE_ID) SetItem(1) _:Set </activeAccounts>
+        <activeAccounts> SetItem(CONTRACT_ID) SetItem(CALLEE_ID) SetItem(1) _:Set </activeAccounts>
         <accounts>
           <account>
-            <acctID> #CONTRACT_ID </acctID>
+            <acctID> CONTRACT_ID </acctID>
             <balance> CONTRACT_BAL </balance>
             <code> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806361461954146044575b600080fd5b348015604f57600080fd5b506056606c565b6040518082815260200191505060405180910390f35b6000805490509056fea165627a7a7230582042a42ab720fca3a1db0ba7ac19c662cf1a6fb8fdb252593eb42de55a510e09470029") </code>
             <storage>
@@ -79,7 +79,7 @@ _
           </account>
 
           <account>
-            <acctID> #CALLEE_ID </acctID>
+            <acctID> CALLEE_ID </acctID>
             <balance> CALLEE_BAL </balance>
             <code> _ </code>
             <storage>
@@ -110,14 +110,14 @@ _
       </network>
     </ethereum>
     requires
-     #rangeAddress(#CONTRACT_ID)
-     andBool #rangeAddress(#CALLEE_ID)
+     #rangeAddress(CONTRACT_ID)
+     andBool #rangeAddress(CALLEE_ID)
      andBool #rangeUInt(256, NOW)
      andBool #rangeUInt(128, BLOCK_NUM) // Solidity
 
      // Account address normality
-     andBool #CONTRACT_ID  >Int 0 andBool (notBool #CONTRACT_ID  in #precompiledAccounts(BYZANTIUM))
-     andBool #CALLEE_ID  >Int 0 andBool (notBool #CALLEE_ID  in #precompiledAccounts(BYZANTIUM))
+     andBool CONTRACT_ID  >Int 0 andBool (notBool CONTRACT_ID  in #precompiledAccounts(BYZANTIUM))
+     andBool CALLEE_ID  >Int 0 andBool (notBool CALLEE_ID  in #precompiledAccounts(BYZANTIUM))
 
 andBool #rangeUInt(256, CONTRACT_BAL)
 andBool #rangeUInt(256, CALLEE_BAL)andBool #range(0 <= CD < 1024)
