@@ -21,12 +21,13 @@ module WEB3
           <blockList> .List </blockList>
         </blockchain>
         <stateTrie> .MerkleTree </stateTrie>
-        <defaultGasPrice> 20000000000      </defaultGasPrice>
-        <defaultGasLimit> 90000            </defaultGasLimit>
-        <timeDiff>        0                </timeDiff> // Gets added to #time() when updating <timestamp>
-        <timeFreeze>      $TIMEFREEZE:Bool </timeFreeze> // Determines how <timestamp> gets updated
-        <accountKeys>     .Map             </accountKeys>
-        <nextFilterSlot>  0                </nextFilterSlot>
+        <defaultGasPrice>    20000000000      </defaultGasPrice>
+        <defaultGasLimit>    90000            </defaultGasLimit>
+        <timeDiff>           0                </timeDiff> // Gets added to #time() when updating <timestamp>
+        <timeFreeze>         $TIMEFREEZE:Bool </timeFreeze> // Determines how <timestamp> gets updated
+        <unlimitedContracts> $NOCODEMAX:Bool  </unlimitedContracts>
+        <accountKeys>        .Map             </accountKeys>
+        <nextFilterSlot>     0                </nextFilterSlot>
         <txReceipts>
           <txReceipt multiplicity ="*" type="Map">
             <txHash>          "":String  </txHash>
@@ -2012,6 +2013,21 @@ Blake2 Compression Function
  // ------------------------------------------
     rule <k> #firefly_blake2compress => #rpcResponseSuccess( Blake2Compress( Hex2Raw( DATA ) ) ) ... </k>
          <params> [ DATA:String, .JSONs ] </params>
+```
+
+Global Modifiers and Initialization Parameters
+----------------------------------------------
+
+```k
+    rule <k> #mkCodeDeposit ACCT
+          => Gcodedeposit < SCHED > *Int #sizeByteArray(OUT) ~> #deductGas
+          ~> #finishCodeDeposit ACCT OUT
+         ...
+         </k>
+         <schedule> SCHED </schedule>
+         <output> OUT => .ByteArray </output>
+         <unlimitedContracts> true </unlimitedContracts>
+      [priority(25)]
 ```
 
 Unimplemented Methods
