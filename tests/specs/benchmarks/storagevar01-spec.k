@@ -5,7 +5,7 @@ module STORAGEVAR01-SPEC
 
   // fn-execute 
   rule
-    <k> (#execute => #halt) ~> ?_ </k>
+    <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> BYZANTIUM </schedule>
@@ -27,7 +27,7 @@ module STORAGEVAR01-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> 1000000000 => ?_ </gas>
+          <gas> #gas(INITGAS, 0, 0) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
