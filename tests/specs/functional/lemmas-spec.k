@@ -35,13 +35,14 @@ module LEMMAS-SPEC
     rule <k> runLemma ( #lookupMemory((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY')   ) => doneLemma ( 216 ) ... </k>
     rule <k> runLemma ( #lookupMemory((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY'')  ) => doneLemma ( 5   ) ... </k>
     rule <k> runLemma ( #lookupMemory((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY''') ) => doneLemma ( 0   ) ... </k>
-    rule <k> runLemma ( #lookupMemory((KEY |-> 33), KEY') ) => doneLemma ( 0 ) ... </k> requires notBool KEY' in_keys(KEY |-> 33)
+    //TODO Haskell limitation? https://github.com/kframework/kore/issues/1948
+    //rule <k> runLemma ( #lookupMemory((KEY |-> 33), KEY') ) => doneLemma ( 0 ) ... </k> requires notBool KEY' in_keys(KEY |-> 33)
 
     rule <k> runLemma ( #lookup((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY)    ) => doneLemma ( 33  ) ... </k>
     rule <k> runLemma ( #lookup((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY')   ) => doneLemma ( 728 ) ... </k>
     rule <k> runLemma ( #lookup((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY'')  ) => doneLemma ( 5   ) ... </k>
     rule <k> runLemma ( #lookup((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY''') ) => doneLemma ( 0   ) ... </k>
-    rule <k> runLemma ( #lookup((KEY |-> 33), KEY') ) => doneLemma ( 0 ) ... </k> requires notBool KEY' in_keys(KEY |-> 33)
+    //rule <k> runLemma ( #lookup((KEY |-> 33), KEY') ) => doneLemma ( 0 ) ... </k> requires notBool KEY' in_keys(KEY |-> 33)
 
     rule <k> runLemma ( #lookup( M:Map [ KEY <- 33 ] [ KEY' <- 728 ] [ KEY'' <- (pow256 +Int 5) ] [ KEY''' <- "hello" ] , KEY    ) ) => doneLemma ( 33  ) ... </k> requires KEY =/=Int KEY' andBool KEY =/=Int KEY'' andBool KEY =/=Int KEY''' andBool KEY' =/=Int KEY'' andBool KEY' =/=Int KEY''' andBool KEY'' =/=Int KEY'''
     rule <k> runLemma ( #lookup( M:Map [ KEY <- 33 ] [ KEY' <- 728 ] [ KEY'' <- (pow256 +Int 5) ] [ KEY''' <- "hello" ] , KEY'   ) ) => doneLemma ( 728 ) ... </k> requires KEY =/=Int KEY' andBool KEY =/=Int KEY'' andBool KEY =/=Int KEY''' andBool KEY' =/=Int KEY'' andBool KEY' =/=Int KEY''' andBool KEY'' =/=Int KEY'''
