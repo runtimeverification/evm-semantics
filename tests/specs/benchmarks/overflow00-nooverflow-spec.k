@@ -5,7 +5,7 @@ module OVERFLOW00-NOOVERFLOW-SPEC
 
   // fn-execute-nooverflow 
   rule
-    <k> (#execute => #halt) ~> ?_ </k>
+    <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
