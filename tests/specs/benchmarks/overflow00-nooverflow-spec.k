@@ -11,7 +11,6 @@ module OVERFLOW00-NOOVERFLOW-SPEC
     <schedule> ISTANBUL </schedule>
     <ethereum>
       <evm>
-        //<output> _ => #encodeArgs(#uint256(?N)) </output>
         <output> _ => #encodeArgs(#uint256(A0 +Int 1)) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <endPC> _ => ?_ </endPC>
@@ -123,7 +122,6 @@ _
 andBool #rangeUInt(256, CONTRACT_BAL)
 andBool #rangeUInt(256, CALLEE_BAL) andBool #range(0 <= CD < 1024)
 andBool #rangeAddress(MSG_SENDER) andBool #range(0 <= A0 < 2 ^Int 256 -Int 1)
-    //ensures ?N ==Int A0 +Int 1
     ensures true
 
 
