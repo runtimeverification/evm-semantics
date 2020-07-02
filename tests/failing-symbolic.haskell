@@ -10,8 +10,6 @@ tests/specs/benchmarks/ecrecoverloop02-sigs-valid-spec.k
 tests/specs/benchmarks/encode_keccak00-spec.k
 tests/specs/benchmarks/encodepacked_keccak01-spec.k
 tests/specs/benchmarks/keccak00-spec.k
-tests/specs/benchmarks/overflow00-nooverflow-spec.k
-tests/specs/benchmarks/overflow00-overflow-spec.k
 tests/specs/benchmarks/requires01-a0gt0-spec.k
 tests/specs/benchmarks/requires01-a0le0-spec.k
 tests/specs/benchmarks/staticarray00-spec.k
