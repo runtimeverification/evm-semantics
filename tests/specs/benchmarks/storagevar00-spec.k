@@ -69,10 +69,8 @@ module STORAGEVAR00-SPEC
             <acctID> CONTRACT_ID </acctID>
             <balance> CONTRACT_BAL </balance>
             <code> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806361461954146044575b600080fd5b348015604f57600080fd5b506056606c565b6040518082815260200191505060405180910390f35b6000805490509056fea165627a7a7230582042a42ab720fca3a1db0ba7ac19c662cf1a6fb8fdb252593eb42de55a510e09470029") </code>
-
             <storage>     #hashedLocation("Solidity", 0, .IntList) |-> N  _:Map </storage>
             <origStorage> #hashedLocation("Solidity", 0, .IntList) |-> N  _:Map </origStorage>
-
             <nonce> _ </nonce>
           </account>
 
