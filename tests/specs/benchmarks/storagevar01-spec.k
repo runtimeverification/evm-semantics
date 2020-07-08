@@ -8,10 +8,10 @@ module STORAGEVAR01-SPEC
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
-    <schedule> BYZANTIUM </schedule>
+    <schedule> ISTANBUL </schedule>
     <ethereum>
       <evm>
-        <output> _ => #encodeArgs(#uint256(N1)) </output>
+        <output> _ => #encodeArgs(#uint256(5)) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
@@ -27,7 +27,7 @@ module STORAGEVAR01-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> #gas(INITGAS, 0, 0) => ?_ </gas>
+          <gas> 1000000000 => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
@@ -69,12 +69,8 @@ module STORAGEVAR01-SPEC
             <acctID> CONTRACT_ID </acctID>
             <balance> CONTRACT_BAL </balance>
             <code> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806361461954146044575b600080fd5b348015604f57600080fd5b506056606c565b6040518082815260200191505060405180910390f35b6000600560008190555060005490509056fea165627a7a723058208e118da62d2a0da493acb1e41710779922db5b5cf40e1413cbe69a7d2933c9a50029") </code>
-            <storage>
-S [ #hashedLocation("Solidity", 0, .IntList) <- (N0 => N1) ]
-            </storage>
-            <origStorage>
-_
-            </origStorage>
+            <storage>     S [ #hashedLocation("Solidity", 0, .IntList) <- (N => 5) ] </storage>
+            <origStorage> S [ #hashedLocation("Solidity", 0, .IntList) <-  N       ] </origStorage>
             <nonce> _ </nonce>
           </account>
 
@@ -122,9 +118,9 @@ _
 andBool #rangeUInt(256, CONTRACT_BAL)
 andBool #rangeUInt(256, CALLEE_BAL)andBool #range(0 <= CD < 1024)
 andBool #rangeAddress(MSG_SENDER)
-andBool #rangeUInt(256, N0)
+andBool #rangeUInt(256, N)
     ensures true
-andBool N1 ==Int 5
+
 
 
 

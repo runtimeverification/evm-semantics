@@ -3,8 +3,6 @@ EDSL.keccakIntList
 EVM.Cextra
 EVM.Cgascap
 EVM.Cmem
-EVM.Csstore.new
-EVM.Csstore.old
 EVM.#memoryUsageUpdate.some
 EVM.Rsstore.new
 EVM.Rsstore.old
