@@ -2070,12 +2070,12 @@ There are several helpers for calculating gas (most of them also specified in th
     rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
           => Gselfdestruct < SCHED > +Int Cnew(SCHED, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>, BAL) ... </k>
 
-    syntax Int ::= Cgascap ( Schedule , Int , Int , Int ) [function]
-                 | Csstore ( Schedule , Int , Int , Int ) [function]
-                 | Rsstore ( Schedule , Int , Int , Int ) [function]
-                 | Cextra  ( Schedule , Bool , Int )      [function]
-                 | Cnew    ( Schedule , Bool , Int )      [function]
-                 | Cxfer   ( Schedule , Int )             [function]
+    syntax Int ::= Cgascap ( Schedule , Int , Int , Int ) [function, functional]
+                 | Csstore ( Schedule , Int , Int , Int ) [function, functional]
+                 | Rsstore ( Schedule , Int , Int , Int ) [function, functional]
+                 | Cextra  ( Schedule , Bool , Int )      [function, functional]
+                 | Cnew    ( Schedule , Bool , Int )      [function, functional]
+                 | Cxfer   ( Schedule , Int )             [function, functional]
                  | Cmem    ( Schedule , Int )             [function, functional, memo]
  // ----------------------------------------------------------------------------------
     rule [Cgascap]:
@@ -2149,8 +2149,8 @@ There are several helpers for calculating gas (most of them also specified in th
  // --------------------------------------------------------------------------------------------------
     rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .ByteArray andBool NONCE ==Int 0 andBool BAL ==Int 0
 
-    syntax Int ::= #allBut64th ( Int ) [function]
- // ---------------------------------------------
+    syntax Int ::= #allBut64th ( Int ) [function, functional]
+ // ---------------------------------------------------------
     rule #allBut64th(N) => N -Int (N /Int 64)
 ```
 
