@@ -22,7 +22,7 @@ pipeline {
     stage('Build and Test') {
       stages {
         stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
-        stage('Test Execution') {
+        /*stage('Test Execution') {
           failFast true
           options { timeout(time: 25, unit: 'MINUTES') }
           parallel {
@@ -30,19 +30,19 @@ pipeline {
             stage('VM (Haskell)')       { steps { sh 'make test-vm -j8 TEST_CONCRETE_BACKEND=haskell'       } }
             stage('Conformance (Web3)') { steps { sh 'make test-web3 -j8'                                   } }
           }
-        }
+        }*/
         stage('Proofs') {
           options {
             lock("proofs-${env.NODE_NAME}")
             timeout(time: 65, unit: 'MINUTES')
           }
           parallel {
-            stage('Java')              { steps { sh 'make test-prove -j5 TEST_SYMBOLIC_BACKEND=java'    } }
-            stage('Haskell')           { steps { sh 'make test-prove -j4 TEST_SYMBOLIC_BACKEND=haskell' } }
-            stage('Haskell (dry-run)') { steps { sh 'make test-haskell-dry-run -j3'                     } }
+            stage('Java')              { steps { sh 'make test-prove-erc20 -j5 TEST_SYMBOLIC_BACKEND=java'    } }
+            //stage('Haskell')           { steps { sh 'make test-prove -j4 TEST_SYMBOLIC_BACKEND=haskell' } }
+            //stage('Haskell (dry-run)') { steps { sh 'make test-haskell-dry-run -j3'                     } }
           }
         }
-        stage('Test Interactive') {
+        /*stage('Test Interactive') {
           failFast true
           options { timeout(time: 35, unit: 'MINUTES') }
           parallel {
@@ -55,9 +55,10 @@ pipeline {
             stage('Haskell Search') { steps { sh 'make test-interactive-search TEST_SYMBOLIC_BACKEND=haskell -j4' } }
             stage('KEVM help')      { steps { sh './kevm help'                                                    } }
           }
-        }
+        }*/
       }
     }
+    /*
     stage('Deploy') {
       when {
         branch 'master'
@@ -106,6 +107,6 @@ pipeline {
           }
         }
       }
-    }
+    }*/
   }
 }
