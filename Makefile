@@ -351,7 +351,7 @@ tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-back
 
 tests/%.prove: tests/%
 	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
+	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',') --log --debug-z3-queries
 
 tests/%.prove-dry-run: tests/%
 	$(TEST) prove $(TEST_OPTIONS) --backend haskell $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) --dry-run \
@@ -428,7 +428,7 @@ prove_failing_tests    := $(shell cat tests/failing-symbolic.$(TEST_SYMBOLIC_BAC
 prove_benchmarks_tests := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/benchmarks/*-spec.k))
 prove_functional_tests := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/functional/*-spec.k))
 prove_opcodes_tests    := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/opcodes/*-spec.k))
-prove_erc20_tests      := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/erc20/*/*-spec.k))
+prove_erc20_tests      := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/erc20/hkg/transfer-success-2-spec.k))
 prove_bihu_tests       := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/bihu/*-spec.k))
 prove_examples_tests   := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k))
 prove_imp_specs_tests  := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/imp-specs/*-spec.k))
