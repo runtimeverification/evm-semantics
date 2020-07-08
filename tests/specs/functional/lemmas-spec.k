@@ -23,6 +23,11 @@ module LEMMAS-SPEC
     // rule <k> runLemma ( M [ L := WS:ByteArray ] [ N := .ByteArray ]                             ) => doneLemma ( M [ L := WS ]                        ) ... </k> requires N <=Int L
     // rule <k> runLemma ( M [ 32 := (0 : 1 : 2 : .ByteArray) ] [ 32 := (3 : 4 : 5 : .ByteArray) ] ) => doneLemma ( M [ 32 := (3 : 4 : 5 : .ByteArray) ] ) ... </k>
 
+    // rule <k> runLemma ( M:Map [ I1 <- 1 ] [ I2 <- 2 ] ) => doneLemma ( M [ I1 <- 1 ] [ I2 <- 2 ] ) ... </k> requires I1  <Int I2
+    // rule <k> runLemma ( M:Map [ I1 <- 1 ] [ I2 <- 2 ] ) => doneLemma ( M [ I2 <- 2 ] [ I1 <- 1 ] ) ... </k> requires I1  >Int I2
+    // rule <k> runLemma ( M:Map [ I1 <- 1 ] [ I2 <- 2 ] ) => doneLemma ( M [ I1 <- 2 ]             ) ... </k> requires I1 ==Int I2
+    // rule <k> runLemma ( M:Map [ I1 <- 1 ] [ I2 <- 2 ] ) => doneLemma ( M [ I2 <- 2 ]             ) ... </k> requires I1 ==Int I2
+
  // #lookup simplifications
  // -----------------------
 
@@ -35,6 +40,11 @@ module LEMMAS-SPEC
     rule <k> runLemma ( #lookup((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY')   ) => doneLemma ( 728 ) ... </k>
     // rule <k> runLemma ( #lookup((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY'')  ) => doneLemma ( 5   ) ... </k>
     // rule <k> runLemma ( #lookup((KEY |-> 33) (KEY' |-> 728) (KEY'' |-> (pow256 +Int 5)) (KEY''' |-> "hello"), KEY''') ) => doneLemma ( 0   ) ... </k>
+
+    rule <k> runLemma ( #lookup( M:Map [ KEY <- 33 ] [ KEY' <- 728 ] [ KEY'' <- (pow256 +Int 5) ] [ KEY''' <- "hello" ] , KEY    ) ) => doneLemma ( 33  ) ... </k> requires KEY =/=Int KEY' andBool KEY =/=Int KEY'' andBool KEY =/=Int KEY''' andBool KEY' =/=Int KEY'' andBool KEY' =/=Int KEY''' andBool KEY'' =/=Int KEY'''
+    rule <k> runLemma ( #lookup( M:Map [ KEY <- 33 ] [ KEY' <- 728 ] [ KEY'' <- (pow256 +Int 5) ] [ KEY''' <- "hello" ] , KEY'   ) ) => doneLemma ( 728 ) ... </k> requires KEY =/=Int KEY' andBool KEY =/=Int KEY'' andBool KEY =/=Int KEY''' andBool KEY' =/=Int KEY'' andBool KEY' =/=Int KEY''' andBool KEY'' =/=Int KEY'''
+    // rule <k> runLemma ( #lookup( M:Map [ KEY <- 33 ] [ KEY' <- 728 ] [ KEY'' <- (pow256 +Int 5) ] [ KEY''' <- "hello" ] , KEY''  ) ) => doneLemma ( 5   ) ... </k> requires KEY =/=Int KEY' andBool KEY =/=Int KEY'' andBool KEY =/=Int KEY''' andBool KEY' =/=Int KEY'' andBool KEY' =/=Int KEY''' andBool KEY'' =/=Int KEY'''
+    // rule <k> runLemma ( #lookup( M:Map [ KEY <- 33 ] [ KEY' <- 728 ] [ KEY'' <- (pow256 +Int 5) ] [ KEY''' <- "hello" ] , KEY''' ) ) => doneLemma ( 0   ) ... </k> requires KEY =/=Int KEY' andBool KEY =/=Int KEY'' andBool KEY =/=Int KEY''' andBool KEY' =/=Int KEY'' andBool KEY' =/=Int KEY''' andBool KEY'' =/=Int KEY'''
 
  // #range selection operation
  // --------------------------
