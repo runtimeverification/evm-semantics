@@ -26,6 +26,9 @@ module VERIFICATION
     imports VERIFICATION-COMMON
     imports VERIFICATION-JAVA
 
+    rule ( M:Map [ K1 <- _  ] ) [ K2 <- V2 ] =>   M [ K1 <- V2 ]                requires K1 ==Int K2
+    rule ( M:Map [ K1 <- V1 ] ) [ K2 <- V2 ] => ( M [ K2 <- V2 ] ) [ K1 <- V1 ] requires K1  >Int K2
+
     rule Rsstore(BYZANTIUM, NEW, CURR, ORIG) => 0 requires NEW =/=Int 0
 
   // ########################

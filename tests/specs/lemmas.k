@@ -241,11 +241,8 @@ module LEMMAS-HASKELL [symbolic, kore]
     imports EVM
     imports EDSL
 
-    rule #lookup ( M:Map [ K1 <- V1 ] , K2 ) => V1                 requires K1 ==K  K2
-    rule #lookup ( M:Map [ K1 <- _  ] , K2 ) => #lookup ( M , K2 ) requires K1 =/=K K2
-
-    rule ( M:Map [ K1 <- _  ] ) [ K2 <- V2 ] =>   M [ K1 <- V2 ]                requires K1 ==K  K2
-    rule ( M:Map [ K1 <- V1 ] ) [ K2 <- V2 ] => ( M [ K2 <- V2 ] ) [ K1 <- V1 ] requires K1 =/=K K2
+    rule #lookup ( M:Map [ K1 <- V1:Int ] , K2 ) => V1                 requires K1 ==Int  K2 [simplification]
+    rule #lookup ( M:Map [ K1 <- _      ] , K2 ) => #lookup ( M , K2 ) requires K1 =/=Int K2 [simplification]
 
     rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])
       requires #range(0 <= START < #sizeByteArray(BUF1))
