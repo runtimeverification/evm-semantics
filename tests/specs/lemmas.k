@@ -6,6 +6,9 @@ module LEMMAS
     imports LEMMAS-JAVA
     imports LEMMAS-HASKELL
 
+    rule #lookup ( M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification]
+    rule #lookup ( M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
+
     rule WS ++ .ByteArray => WS  [simplification]
     rule .ByteArray ++ WS => WS  [simplification]
 
