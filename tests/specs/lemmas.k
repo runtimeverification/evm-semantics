@@ -236,9 +236,6 @@ module LEMMAS-JAVA [symbolic, kast]
     rule BA:ByteArray     ==K #buf( 32, DATA ) => #buf( 32, DATA ) ==K BA       requires #isConcrete(BA) [simplification]
     rule #buf( 32, DATA ) ==K BA:ByteArray     => DATA ==Int #asInteger(BA)
       requires #sizeByteArray(BA) <=Int 32                                      andBool  #isConcrete(BA) [simplification]
-      
-    //TODO temp: lemma from domains.k
-    rule X modInt N => X requires 0 <=Int X andBool X <Int N [simplification]
 
 endmodule
 
