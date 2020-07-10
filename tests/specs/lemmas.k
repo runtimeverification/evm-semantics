@@ -41,8 +41,8 @@ module LEMMAS
     rule         keccak(_) <Int pow256      => true  [simplification]
 
     //Inequality sign normalization
-    rule          X  >Int Y =>  Y  <Int X            [simplification]
-    rule          X >=Int Y =>  Y <=Int X            [simplification]
+    rule          X  >Int Y  => Y  <Int X            [simplification]
+    rule          X >=Int Y  => Y <=Int X            [simplification]
     rule notBool (X  <Int Y) => Y <=Int X            [simplification]
     rule notBool (X <=Int Y) => Y  <Int X            [simplification]
 
