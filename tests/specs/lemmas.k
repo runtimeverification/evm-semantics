@@ -40,6 +40,12 @@ module LEMMAS
     rule 0 <=Int keccak(_)                  => true  [simplification]
     rule         keccak(_) <Int pow256      => true  [simplification]
 
+    //Inequality sign normalization
+    rule          X  >Int Y  => Y  <Int X            [simplification]
+    rule          X >=Int Y  => Y <=Int X            [simplification]
+    rule notBool (X  <Int Y) => Y <=Int X            [simplification]
+    rule notBool (X <=Int Y) => Y  <Int X            [simplification]
+
 endmodule
 
 module LEMMAS-JAVA [symbolic, kast]
@@ -184,12 +190,6 @@ module LEMMAS-JAVA [symbolic, kast]
     rule A -Int (#if C #then B1 #else B2 #fi) => #if C #then (A -Int B1) #else (A -Int B2) #fi  [simplification]
 
     rule (#if C #then B1 #else B2 #fi) +Int A => #if C #then (B1 +Int A) #else (B2 +Int A) #fi  [simplification]
-
-    rule X >Int Y => Y <Int X    [simplification]
-    rule X >=Int Y => Y <=Int X  [simplification]
-
-    rule notBool (X <Int Y) => Y <=Int X  [simplification]
-    rule notBool (X <=Int Y) => Y <Int X  [simplification]
 
     rule bool2Word(A) |Int bool2Word(B) => bool2Word(A  orBool B)  [simplification]
     rule bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B)  [simplification]
