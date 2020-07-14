@@ -1520,11 +1520,16 @@ Transaction Execution
 
     rule <k> #eth_estimateGas
           => #pushNetworkState
-          ~> #loadTx #parseHexWord( #getString("from", J) ) J
+          ~> makeTX !ID:Int
+          ~> loadTransaction !ID J
+          ~> #clearLogs
+          ~> #validateTx !ID
+          ~> !ID
           ~> #eth_estimateGas_finalize GUSED
          ...
          </k>
          <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
+         <origin> _ => #parseHexWord( #getString("from", J) ) </origin>
          <gasUsed>  GUSED  </gasUsed>
       requires isString(#getJSON("from", J) )
 
