@@ -1256,28 +1256,44 @@ Transaction Execution
     syntax KItem ::= "#validateTx" Int
  // ----------------------------------
     rule <k> #validateTx TXID => . ... </k>
-         <statusCode> ( _ => EVMC_OUT_OF_GAS) </statusCode>
+         <statusCode> _ => #if BAL <Int GLIMIT *Int GPRICE #then EVMC_BALANCE_UNDERFLOW #else EVMC_OUT_OF_GAS #fi </statusCode>
          <schedule> SCHED </schedule>
+         <origin> ACCTFROM </origin>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
          <message>
            <msgID>      TXID   </msgID>
+           <txGasPrice> GPRICE </txGasPrice>
            <txGasLimit> GLIMIT </txGasLimit>
            <data>       DATA   </data>
            <to>         ACCTTO </to>
            ...
          </message>
-      requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
+      requires GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) <Int 0
+        orBool BAL <Int GLIMIT *Int GPRICE
 
     rule <k> #validateTx TXID => #updateTimestamp ~> #executeTx TXID ~> #mineAndUpdate ... </k>
          <schedule> SCHED </schedule>
+         <origin> ACCTFROM </origin>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
          <message>
            <msgID>      TXID   </msgID>
+           <txGasPrice> GPRICE </txGasPrice>
            <txGasLimit> GLIMIT </txGasLimit>
            <data>       DATA   </data>
            <to>         ACCTTO </to>
            ...
          </message>
-      requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) >=Int 0
+      requires GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) >=Int 0
+       andBool BAL >=Int GLIMIT *Int GPRICE
 
     syntax KItem ::= "#executeTx" Int
  // ---------------------------------
