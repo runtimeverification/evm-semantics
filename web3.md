@@ -1267,21 +1267,17 @@ Transaction Execution
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
 
-    rule <k> #validateTx TXID => #checkCall ACCTFROM (GLIMIT *Int GPRICE) ~> #updateTimestamp ~> #executeTx TXID ~> #mineAndUpdate ... </k>
+    rule <k> #validateTx TXID => #updateTimestamp ~> #executeTx TXID ~> #mineAndUpdate ... </k>
          <schedule> SCHED </schedule>
-         <origin> ACCTFROM </origin>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
          <message>
            <msgID>      TXID   </msgID>
-           <txGasPrice> GPRICE </txGasPrice>
            <txGasLimit> GLIMIT </txGasLimit>
            <data>       DATA   </data>
            <to>         ACCTTO </to>
            ...
          </message>
       requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) >=Int 0
-
-    rule <k> #halt ~> #updateTimestamp ~> #executeTx _ ~> #mineAndUpdate => . ... </k>
 
     syntax KItem ::= "#executeTx" Int
  // ---------------------------------
