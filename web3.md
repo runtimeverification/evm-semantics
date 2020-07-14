@@ -1535,6 +1535,52 @@ Transaction Execution
 
     rule <k> #eth_estimateGas => #rpcResponseError(-32028, "Method 'eth_estimateGas' has invalid arguments") ...  </k> [owise]
 
+    syntax KItem ::= "#searchGas"
+ // -----------------------------
+    rule <k> #searchGas
+          => #binSearchGas( Gtransaction < SCHED > -Int 1, #if BAL >Int GLIMIT *Int GPRICE #then GLIMIT #else BAL /Int GPRICE #fi )
+         ...
+         </k>
+         <schedule> SCHED </schedule>
+         <origin> ACCTFROM </origin>
+         <txPending> ... ListItem(TXID) </txPending>
+         <account>
+           <acctID>  ACCTFROM </acctID>
+           <balance> BAL      </balance>
+           ...
+         </account>
+         <message>
+           <msgID> TXID </msgID>
+           <txGasPrice> GPRICE </txGasPrice>
+           <txGasLimit> GLIMIT </txGasLimit>
+           ...
+         </message>
+
+    syntax KItem ::= #binSearchGas( Int, Int )
+ // ------------------------------------------
+    rule <k> #binSearchGas( LO, HI )
+          => #pushNetworkState
+          ~> #clearLogs
+          ~> #validateTx TXID
+          ~> #popNetworkState
+          ~> TXID
+          ~> #if LO +Int 1 <Int HI #then #binSearchGas( LO, HI ) #else #eth_estimateGas_finalize HI #fi
+         ...
+         </k>
+         <txPending> ... ListItem(TXID) </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <txGasLimit> _ => #if LO +Int 1 <Int HI #then (LO +Int HI) /Int 2 #else HI #fi </txGasLimit>
+           ...
+         </message>
+
+    rule <k> _:Int ~> #binSearchGas( LO, HI ) => #binSearchGas( LO, (LO +Int HI) /Int 2 ) ... </k>
+         <statusCode> STATUSCODE </statusCode>
+      requires STATUSCODE ==K EVMC_SUCCESS orBool STATUSCODE ==K EVMC_REVERT
+
+    rule <k> _:Int ~> #binSearchGas( LO, HI ) => #binSearchGas( (LO +Int HI) /Int 2, HI ) ... </k>
+         <statusCode> _:ExceptionalStatusCode </statusCode>
+
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
     rule <k> _:Int ~> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber(LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) -Int INITGUSED )) ... </k>
