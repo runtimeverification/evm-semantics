@@ -1514,104 +1514,33 @@ Transaction Execution
 
     rule <k> #eth_estimateGas ... </k>
          <params> [ ({ ARGS => "from": #unparseData({keys_list(ACCTS)[0]}:>Int, 20), ARGS }), TAG, .JSONs ] </params>
+         <gasUsed>  GUSED  </gasUsed>
          <accountKeys> ACCTS </accountKeys>
-      requires notBool isString(#getJSON("from" , { ARGS }))
+      requires notBool isString( #getJSON("from" , { ARGS }) )
 
     rule <k> #eth_estimateGas
           => #pushNetworkState
-          ~> makeTX !ID:Int
-          ~> loadTransaction !ID { ARGS }
-          ~> #binSearchSetup(#parseHexWord(#getString("from", { ARGS })))
+          ~> #loadTx #parseHexWord( #getString("from", J) ) J
+          ~> #eth_estimateGas_finalize GUSED
          ...
          </k>
-         <params> [ { ARGS }, TAG, .JSONs ] </params>
-      requires isString(#getJSON("from" , { ARGS }))
+         <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
+         <gasUsed>  GUSED  </gasUsed>
+      requires isString(#getJSON("from", J) )
 
     rule <k> #eth_estimateGas => #rpcResponseError(-32028, "Method 'eth_estimateGas' has invalid arguments") ...  </k> [owise]
 
-    syntax KItem ::= #binSearchSetup( Int )
-                   | #binSearchGas( Int, Int )
- // ------------------------------------------
-    rule <k> #binSearchSetup( ACCTFROM ) => #binSearchGas( Gtransaction < SCHED > -Int 1, (BAL -Int VALUE) /Int GPRICE ) ... </k>
-         <params> [ { J }, TAG, .JSONs ] </params>
-         <schedule> SCHED </schedule>
-         <account>
-           <acctID>  ACCTFROM </acctID>
-           <balance> BAL      </balance>
-           ...
-         </account>
-         <txPending> ... ListItem(TXID) </txPending>
-         <message>
-           <msgID>      TXID   </msgID>
-           <txGasPrice> GPRICE </txGasPrice>
-           <txGasLimit> GLIMIT </txGasLimit>
-           <value>      VALUE  </value>
-           ...
-         </message>
-      requires GLIMIT >Int (BAL -Int VALUE) /Int GPRICE
-
-    rule <k> #binSearchSetup(_) => #binSearchGas( Gtransaction < SCHED > -Int 1, GLIMIT ) ... </k>
-         <schedule> SCHED </schedule>
-         <txPending> ... ListItem(TXID) </txPending>
-         <message>
-           <msgID>      TXID   </msgID>
-           <txGasLimit> GLIMIT </txGasLimit>
-           ...
-         </message>
-      [owise]
-
-    rule <k> #binSearchGas( LO, HI )
-          => #pushNetworkState
-          ~> #prepareTx TXID #parseHexWord( #getString("from", { J }) )
-          ~> #binSearchGas( LO, HI )
-         ...
-         </k>
-         <params> [ { J }, TAG, .JSONs ] </params>
-         <txPending> ... ListItem(TXID) </txPending>
-         <message>
-           <msgID> TXID </msgID>
-           <txGasLimit> _ => (LO +Int HI) /Int 2 </txGasLimit>
-           ...
-         </message>
-      requires LO +Int 1 <Int HI
-
-    rule <k> #binSearchGas( LO, HI )
-          => #pushNetworkState
-          ~> #prepareTx TXID #parseHexWord( #getString("from", { J }) )
-          ~> #popNetworkState
-          ~> #eth_estimateGas_finalize HI
-         ...
-         </k>
-         <params> [ { J }, TAG, .JSONs ] </params>
-         <txPending> ... ListItem(TXID) </txPending>
-         <message>
-           <msgID>      TXID   </msgID>
-           <txGasLimit> _ => HI </txGasLimit>
-           ...
-         </message>
-      requires notBool LO +Int 1 <Int HI
-
-    rule <k> #binSearchGas( LO, HI ) => #popNetworkState ~> #binSearchGas( (LO +Int HI) /Int 2, HI ) ... </k>
-         <statusCode> _:ExceptionalStatusCode </statusCode>
-         <txPending> .List </txPending>
-
-    rule <k> #binSearchGas( LO, HI ) => #popNetworkState ~> #binSearchGas( LO, (LO +Int HI) /Int 2 ) ... </k>
-         <statusCode> STATUSCODE </statusCode>
-         <txPending>  .List      </txPending>
-      requires STATUSCODE ==K EVMC_SUCCESS orBool STATUSCODE ==K EVMC_REVERT
-
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
-    rule <k> #eth_estimateGas_finalize GUSED:Int
-          => #popNetworkState
-          ~> #rpcResponseSuccess(#unparseQuantity(GUSED))
-          ...
-         </k>
+    rule <k> _:Int ~> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber(LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) -Int INITGUSED )) ... </k>
          <statusCode> STATUSCODE </statusCode>
-      requires STATUSCODE ==K EVMC_SUCCESS orBool STATUSCODE ==K EVMC_REVERT
+         <blockList> BLOCKLIST </blockList>
+         <network>   NETWORK   </network>
+         <block>     BLOCK     </block>
+      requires STATUSCODE =/=K EVMC_OUT_OF_GAS
 
-    rule <k> #eth_estimateGas_finalize _ => #popNetworkState ~> #rpcResponseError(-32000 , "base fee exceeds gas limit") ... </k>
-         <statusCode> _:ExceptionalStatusCode </statusCode>
+    rule <k> _:Int ~> #eth_estimateGas_finalize _ => #popNetworkState ~> #rpcResponseError(-32000 , "base fee exceeds gas limit") ... </k>
+         <statusCode> EVMC_OUT_OF_GAS </statusCode>
 
     syntax Int ::= #getGasUsed( BlockchainItem ) [function]
  // -------------------------------------------------------
