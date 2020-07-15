@@ -1522,15 +1522,11 @@ Transaction Execution
           => #pushNetworkState
           ~> makeTX !ID:Int
           ~> loadTransaction !ID J
-          ~> #clearLogs
-          ~> #validateTx !ID
-          ~> !ID
-          ~> #eth_estimateGas_finalize GUSED
+          ~> #searchGas
          ...
          </k>
          <params> [ ({ _ } #as J), TAG, .JSONs ] </params>
          <origin> _ => #parseHexWord( #getString("from", J) ) </origin>
-         <gasUsed>  GUSED  </gasUsed>
       requires isString(#getJSON("from", J) )
 
     rule <k> #eth_estimateGas => #rpcResponseError(-32028, "Method 'eth_estimateGas' has invalid arguments") ...  </k> [owise]
@@ -1583,15 +1579,12 @@ Transaction Execution
 
     syntax KItem ::= "#eth_estimateGas_finalize" Int
  // ------------------------------------------------
-    rule <k> _:Int ~> #eth_estimateGas_finalize INITGUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity( #getGasUsed( #getBlockByNumber(LATEST, BLOCKLIST, {<network> NETWORK </network> | <block> BLOCK </block>}) ) -Int INITGUSED )) ... </k>
+    rule <k> _:Int ~> #eth_estimateGas_finalize GUSED:Int => #popNetworkState ~> #rpcResponseSuccess(#unparseQuantity(GUSED)) ... </k>
          <statusCode> STATUSCODE </statusCode>
-         <blockList> BLOCKLIST </blockList>
-         <network>   NETWORK   </network>
-         <block>     BLOCK     </block>
-      requires STATUSCODE =/=K EVMC_OUT_OF_GAS
+      requires STATUSCODE ==K EVMC_SUCCESS orBool STATUSCODE ==K EVMC_REVERT
 
     rule <k> _:Int ~> #eth_estimateGas_finalize _ => #popNetworkState ~> #rpcResponseError(-32000 , "base fee exceeds gas limit") ... </k>
-         <statusCode> EVMC_OUT_OF_GAS </statusCode>
+         <statusCode> _:ExceptionalStatusCode </statusCode>
 
     syntax Int ::= #getGasUsed( BlockchainItem ) [function]
  // -------------------------------------------------------
