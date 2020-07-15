@@ -649,7 +649,8 @@ eth_sendTransaction
     rule <k> loadTransaction _ { "r"        : (TR:String => #padToWidth(32, #parseByteStack(TR))), _ } ... </k>
     rule <k> loadTransaction _ { "s"        : (TS:String => #padToWidth(32, #parseByteStack(TS))), _ } ... </k>
     rule <k> loadTransaction _ { ("from"    : _, REST => REST)                                       } ... </k>
-    rule <k> loadTransaction _ { (("amount" : TV) => "value": TV)             , REST                 } ... </k>
+    rule <k> loadTransaction _ { (("amount"   : TV) => "value": TV)           , REST                 } ... </k>
+    rule <k> loadTransaction _ { (("gasLimit" : TG) => "gas"  : TG)           , REST                 } ... </k>
     rule <k> loadTransaction _ { _          : _                               , REST => REST         } ... </k> [owise]
 
     syntax EthereumCommand ::= "makeTX" Int
@@ -1255,28 +1256,44 @@ Transaction Execution
     syntax KItem ::= "#validateTx" Int
  // ----------------------------------
     rule <k> #validateTx TXID => . ... </k>
-         <statusCode> ( _ => EVMC_OUT_OF_GAS) </statusCode>
+         <statusCode> _ => #if BAL <Int GLIMIT *Int GPRICE #then EVMC_BALANCE_UNDERFLOW #else EVMC_OUT_OF_GAS #fi </statusCode>
          <schedule> SCHED </schedule>
+         <origin> ACCTFROM </origin>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
          <message>
            <msgID>      TXID   </msgID>
+           <txGasPrice> GPRICE </txGasPrice>
            <txGasLimit> GLIMIT </txGasLimit>
            <data>       DATA   </data>
            <to>         ACCTTO </to>
            ...
          </message>
-      requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) <Int 0
+      requires GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) <Int 0
+        orBool BAL <Int GLIMIT *Int GPRICE
 
     rule <k> #validateTx TXID => #updateTimestamp ~> #executeTx TXID ~> #mineAndUpdate ... </k>
          <schedule> SCHED </schedule>
+         <origin> ACCTFROM </origin>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
          <message>
            <msgID>      TXID   </msgID>
+           <txGasPrice> GPRICE </txGasPrice>
            <txGasLimit> GLIMIT </txGasLimit>
            <data>       DATA   </data>
            <to>         ACCTTO </to>
            ...
          </message>
-      requires ( GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) ) >=Int 0
+      requires GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) >=Int 0
+       andBool BAL >=Int GLIMIT *Int GPRICE
 
     syntax KItem ::= "#executeTx" Int
  // ---------------------------------
