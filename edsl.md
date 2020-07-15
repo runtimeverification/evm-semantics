@@ -137,8 +137,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #isStaticType(   #string( _ )) => false
     rule #isStaticType(#array(_, _, _)) => false
 
-    syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function, functional]
- // ---------------------------------------------------------------------
+    syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
+ // ---------------------------------------------------------
     rule #sizeOfDynamicType(#bytes(BS)) => 32 +Int #ceil32(#sizeByteArray(BS))
 
     rule #sizeOfDynamicType(#array(T, N, _)) => 32 *Int (1 +Int N)
@@ -147,14 +147,12 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #sizeOfDynamicType(#array(T, N, ELEMS)) => 32 *Int (1 +Int N +Int #sizeOfDynamicTypeAux(ELEMS))
       requires notBool #isStaticType(T)
 
-    rule #sizeOfDynamicType(_) => 0 [owise]
-
-    syntax Int ::= #sizeOfDynamicTypeAux ( TypedArgs ) [function, functional]
- // -------------------------------------------------------------------------
+    syntax Int ::= #sizeOfDynamicTypeAux ( TypedArgs ) [function]
+ // -------------------------------------------------------------
     rule #sizeOfDynamicTypeAux(TARG, TARGS) => #sizeOfDynamicType(TARG) +Int #sizeOfDynamicTypeAux(TARGS)
       requires notBool #isStaticType(TARG)
 
-    rule #sizeOfDynamicTypeAux(_) => 0 [owise]
+    rule #sizeOfDynamicTypeAux(.TypedArg) => 0
 
     syntax ByteArray ::= #enc ( TypedArg ) [function]
  // -------------------------------------------------
