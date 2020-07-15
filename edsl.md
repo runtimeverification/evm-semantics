@@ -60,9 +60,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
  // ------------------------------------------------------------------------
     rule #signatureCallData( FNAME , ARGS ) => #parseByteStack(substrString(Keccak256(#generateSignature(FNAME, ARGS)), 0, 8))
 
-    syntax String ::= #generateSignature     ( String, TypedArgs ) [function]
-                    | #generateSignatureArgs ( TypedArgs )         [function]
- // -------------------------------------------------------------------------
+    syntax String ::= #generateSignature     ( String, TypedArgs ) [function, functional]
+                    | #generateSignatureArgs ( TypedArgs )         [function, functional]
+ // -------------------------------------------------------------------------------------
     rule #generateSignature( FNAME , ARGS ) => FNAME +String "(" +String #generateSignatureArgs(ARGS) +String ")"
 
     rule #generateSignatureArgs(.TypedArgs)                            => ""
@@ -121,8 +121,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #lenOfHead(   #string( _ )) => 32
     rule #lenOfHead(#array(_, _, _)) => 32
 
-    syntax Bool ::= #isStaticType ( TypedArg ) [function]
- // -----------------------------------------------------
+    syntax Bool ::= #isStaticType ( TypedArg ) [function, functional]
+ // -----------------------------------------------------------------
     rule #isStaticType(  #uint160( _ )) => true
     rule #isStaticType(  #address( _ )) => true
     rule #isStaticType(  #uint256( _ )) => true
