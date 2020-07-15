@@ -1569,23 +1569,31 @@ Transaction Execution
            ...
          </message>
 
-    syntax KItem ::= #binSearchGas( Int, Int )
- // ------------------------------------------
-    rule <k> #binSearchGas( LO, HI )
+    syntax KItem ::= #runGas( Int, KItem )
+ // --------------------------------------
+    rule <k> #runGas( GAMOUNT, K )
           => #pushNetworkState
           ~> #clearLogs
           ~> #validateTx TXID
           ~> #popNetworkState
           ~> TXID
-          ~> #if LO +Int 1 <Int HI #then #binSearchGas( LO, HI ) #else #eth_estimateGas_finalize HI #fi
+          ~> K
          ...
          </k>
          <txPending> ... ListItem(TXID) </txPending>
          <message>
            <msgID> TXID </msgID>
-           <txGasLimit> _ => #if LO +Int 1 <Int HI #then (LO +Int HI) /Int 2 #else HI #fi </txGasLimit>
+           <txGasLimit> _ => GAMOUNT </txGasLimit>
            ...
          </message>
+
+    syntax KItem ::= #binSearchGas( Int, Int )
+ // ------------------------------------------
+    rule <k> #binSearchGas( LO, HI ) #as K => #runGas( (LO +Int HI) /Int 2, K ) ... </k>
+      requires LO +Int 1 <Int HI
+
+    rule <k> #binSearchGas( LO, HI ) => #runGas( HI, #eth_estimateGas_finalize HI ) ... </k>
+      requires LO +Int 1 >=Int HI
 
     rule <k> _:Int ~> #binSearchGas( LO, HI ) => #binSearchGas( LO, (LO +Int HI) /Int 2 ) ... </k>
          <statusCode> STATUSCODE </statusCode>
