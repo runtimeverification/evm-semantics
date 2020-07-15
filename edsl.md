@@ -69,8 +69,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #generateSignatureArgs(TARGA:TypedArg, .TypedArgs)            => #typeName(TARGA)
     rule #generateSignatureArgs(TARGA:TypedArg, TARGB:TypedArg, TARGS) => #typeName(TARGA) +String "," +String #generateSignatureArgs(TARGB, TARGS)
 
-    syntax String ::= #typeName ( TypedArg ) [function]
- // ---------------------------------------------------
+    syntax String ::= #typeName ( TypedArg ) [function, functional]
+ // ---------------------------------------------------------------
     rule #typeName(   #uint160( _ )) => "uint160"
     rule #typeName(   #address( _ )) => "address"
     rule #typeName(   #uint256( _ )) => "uint256"
@@ -100,13 +100,13 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
         => #encodeArgsAux(ARGS, OFFSET +Int #sizeOfDynamicType(ARG), HEADS ++ #enc(#uint256(OFFSET)), TAILS ++ #enc(ARG))
       requires notBool(#isStaticType(ARG))
 
-    syntax Int ::= #lenOfHeads ( TypedArgs ) [function]
- // ---------------------------------------------------
+    syntax Int ::= #lenOfHeads ( TypedArgs ) [function, functional]
+ // ---------------------------------------------------------------
     rule #lenOfHeads(.TypedArgs) => 0
     rule #lenOfHeads(ARG, ARGS)  => #lenOfHead(ARG) +Int #lenOfHeads(ARGS)
 
-    syntax Int ::= #lenOfHead ( TypedArg ) [function]
- // -------------------------------------------------
+    syntax Int ::= #lenOfHead ( TypedArg ) [function, functional]
+ // -------------------------------------------------------------
     rule #lenOfHead(  #uint160( _ )) => 32
     rule #lenOfHead(  #address( _ )) => 32
     rule #lenOfHead(  #uint256( _ )) => 32
@@ -137,8 +137,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #isStaticType(   #string( _ )) => false
     rule #isStaticType(#array(_, _, _)) => false
 
-    syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
- // ---------------------------------------------------------
+    syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function, functional]
+ // ---------------------------------------------------------------------
     rule #sizeOfDynamicType(#bytes(BS)) => 32 +Int #ceil32(#sizeByteArray(BS))
 
     rule #sizeOfDynamicType(#array(T, N, _)) => 32 *Int (1 +Int N)
@@ -147,12 +147,14 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #sizeOfDynamicType(#array(T, N, ELEMS)) => 32 *Int (1 +Int N +Int #sizeOfDynamicTypeAux(ELEMS))
       requires notBool #isStaticType(T)
 
-    syntax Int ::= #sizeOfDynamicTypeAux ( TypedArgs ) [function]
- // -------------------------------------------------------------
+    rule #sizeOfDynamicType(_) => 0 [owise]
+
+    syntax Int ::= #sizeOfDynamicTypeAux ( TypedArgs ) [function, functional]
+ // -------------------------------------------------------------------------
     rule #sizeOfDynamicTypeAux(TARG, TARGS) => #sizeOfDynamicType(TARG) +Int #sizeOfDynamicTypeAux(TARGS)
       requires notBool #isStaticType(TARG)
 
-    rule #sizeOfDynamicTypeAux(.TypedArgs) => 0
+    rule #sizeOfDynamicTypeAux(_) => 0 [owise]
 
     syntax ByteArray ::= #enc ( TypedArg ) [function]
  // -------------------------------------------------
@@ -219,8 +221,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #getValue(   #bool( DATA )) => DATA
       requires #range(0 <= DATA <= 1)
 
-    syntax Int ::= #ceil32 ( Int ) [function, smt-hook(ceil32), smt-prelude]
- // ------------------------------------------------------------------------
+    syntax Int ::= #ceil32 ( Int ) [function, functional, smt-hook(ceil32), smt-prelude]
+ // ------------------------------------------------------------------------------------
     rule [#ceil32]: #ceil32(N) => ((N +Int 31) /Int 32) *Int 32
 ```
 
