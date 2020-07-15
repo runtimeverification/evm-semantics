@@ -152,7 +152,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #sizeOfDynamicTypeAux(TARG, TARGS) => #sizeOfDynamicType(TARG) +Int #sizeOfDynamicTypeAux(TARGS)
       requires notBool #isStaticType(TARG)
 
-    rule #sizeOfDynamicTypeAux(.TypedArg) => 0
+    rule #sizeOfDynamicTypeAux(.TypedArgs) => 0
 
     syntax ByteArray ::= #enc ( TypedArg ) [function]
  // -------------------------------------------------
