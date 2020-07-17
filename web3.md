@@ -1247,8 +1247,7 @@ Transaction Execution
     syntax KItem ::= "#prepareTx" Int Account
  // -----------------------------------------
     rule <k> #prepareTx TXID:Int ACCTFROM
-          => #clearLogs
-          ~> #validateTx TXID
+          => #validateTx TXID
           ~> #updateTimestamp
           ~> #executeTx TXID
           ~> #mineAndUpdate
@@ -1390,11 +1389,6 @@ Transaction Execution
        andBool ( STATUSCODE ==K EVMC_SUCCESS orBool STATUSCODE ==K EVMC_REVERT )
 
     rule <k> #mineAndUpdate => #clearGas ... </k> [owise]
-
-    syntax KItem ::= "#clearLogs"
- // -----------------------------
-    rule <k> #clearLogs => . ... </k>
-         <log> _ => .List </log>
 ```
 
 - `#personal_importRawKey` Takes an unencrypted private key, encrypts it with a passphrase, stores it and returns the address of the key.
@@ -1577,7 +1571,6 @@ Transaction Execution
  // --------------------------------------
     rule <k> #runGas( GAMOUNT, K )
           => #pushNetworkState
-          ~> #clearLogs
           ~> #validateTx TXID
           ~> #updateTimestamp
           ~> #executeTx TXID
