@@ -1249,14 +1249,18 @@ Transaction Execution
     rule <k> #prepareTx TXID:Int ACCTFROM
           => #clearLogs
           ~> #validateTx TXID
+          ~> #updateTimestamp
+          ~> #executeTx TXID
+          ~> #mineAndUpdate
          ...
          </k>
          <origin> _ => ACCTFROM </origin>
 
+    rule <k> #halt ~> #updateTimestamp ~> #executeTx _ ~> #mineAndUpdate => . ... </k>
+
     syntax KItem ::= "#validateTx" Int
  // ----------------------------------
-    rule <k> #validateTx TXID => . ... </k>
-         <statusCode> _ => #if BAL <Int GLIMIT *Int GPRICE #then EVMC_BALANCE_UNDERFLOW #else EVMC_OUT_OF_GAS #fi </statusCode>
+    rule <k> #validateTx TXID => #end #if BAL <Int GLIMIT *Int GPRICE #then EVMC_BALANCE_UNDERFLOW #else EVMC_OUT_OF_GAS #fi ... </k>
          <schedule> SCHED </schedule>
          <origin> ACCTFROM </origin>
          <account>
@@ -1275,7 +1279,7 @@ Transaction Execution
       requires GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) <Int 0
         orBool BAL <Int GLIMIT *Int GPRICE
 
-    rule <k> #validateTx TXID => #updateTimestamp ~> #executeTx TXID ~> #mineAndUpdate ... </k>
+    rule <k> #validateTx TXID => . ... </k>
          <schedule> SCHED </schedule>
          <origin> ACCTFROM </origin>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
@@ -1575,6 +1579,9 @@ Transaction Execution
           => #pushNetworkState
           ~> #clearLogs
           ~> #validateTx TXID
+          ~> #updateTimestamp
+          ~> #executeTx TXID
+          ~> #mineAndUpdate
           ~> #popNetworkState
           ~> TXID
           ~> K
@@ -1632,7 +1639,7 @@ NOGAS Mode
          <mode> NOGAS </mode>
      [priority(25)]
 
-    rule <k> #validateTx TXID => #updateTimestamp ~> #executeTx TXID ~> #mineAndUpdate ... </k>
+    rule <k> #validateTx TXID => . ... </k>
          <mode> NOGAS </mode>
      [priority(25)]
 
