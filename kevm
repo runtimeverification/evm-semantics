@@ -60,8 +60,9 @@ run_prove() {
     repl_script="${REPL_SCRIPT:-$kevm_dir/kast.kscript}"
 
     additional_proof_args=()
-    ! $debug || additional_proof_args+=(--debug)
-    ! $repl  || additional_proof_args+=(--haskell-backend-command "$repl_cmd --repl-script $repl_script")
+    ! $debug      || additional_proof_args+=(--debug)
+    ! $repl       || additional_proof_args+=(--haskell-backend-command "$repl_cmd --repl-script $repl_script")
+    ! $bug_report || additional_proof_args+=(--haskell-backend-command "kore-exec --bug-report kevm-bug")
 
     export K_OPTS=${K_OPTS:--Xmx16G}
     ! $debug || set -x
@@ -257,6 +258,7 @@ debug=false
 dump=false
 unparse=true
 repl=false
+bug_report=false
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 [[ ! "$run_command" =~ web3*   ]] || backend='llvm'
@@ -270,6 +272,7 @@ while [[ $# -gt 0 ]]; do
         --dump)               dump=true         ; shift   ;;
         --no-unparse)         unparse=false     ; shift   ;;
         --repl)               repl=true         ; shift   ;;
+        --bug-report)         bug_report=true   ; shift   ;;
         --backend)            backend="$2"      ; shift 2 ;;
         --backend-dir)        backend_dir="$2"  ; shift 2 ;;
         -p|--port)            kevm_port="$2"    ; shift 2 ;;
