@@ -12,6 +12,10 @@ module LEMMAS
     rule 0 <=Int #lookup( _M:Map , _ )             => true                                       [simplification]
     rule         #lookup( _M:Map , _ ) <Int pow256 => true                                       [simplification, smt-lemma]
 
+    //Required for #Ceil(#buf)
+    rule 0 <=Int keccak( _ )             => true                                                 [simplification]
+    rule         keccak( _ ) <Int pow256 => true                                                 [simplification]
+
     rule WS ++ .ByteArray => WS  [simplification]
     rule .ByteArray ++ WS => WS  [simplification]
 
