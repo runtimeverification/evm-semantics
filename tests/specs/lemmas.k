@@ -254,7 +254,8 @@ module LEMMAS-HASKELL [symbolic, kore]
     //Simplification of double negation in term constraint
     //Simplifies { false #Equals B ==Bool false }, also `B ==Bool false ==Bool false`
     //see https://github.com/kframework/kore/issues/1944#issuecomment-657733745
-    rule  B ==Bool false => notBool B                                                                    [simplification]
+    rule B ==Bool false    => notBool B                                                                  [simplification]
+    rule notBool notBool B => B                                                                          [simplification]
 
     rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])
       requires #range(0 <= START < #sizeByteArray(BUF1))
