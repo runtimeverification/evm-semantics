@@ -619,10 +619,10 @@ eth_sendTransaction
            <data>       TD </data>
          </message> [owise]
 
-    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccess(TXHASH) ... </k>
+    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #mineAndUpdate ~> #rpcResponseSuccess(TXHASH) ... </k>
          <statusCode> EVMC_SUCCESS </statusCode>
 
-    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccessException(TXHASH, #generateException(TXHASH, PCOUNT, RD, EVMC_REVERT))
+    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #mineAndUpdate ~> #rpcResponseSuccessException(TXHASH, #generateException(TXHASH, PCOUNT, RD, EVMC_REVERT))
           ...
          </k>
          <statusCode> EVMC_REVERT </statusCode>
@@ -823,7 +823,7 @@ eth_sendRawTransaction
          <txOrder>   ListItem(TXID) => .List ... </txOrder>
          <messages> ( <message> <msgID> TXID </msgID> ... </message> => .Bag ) ... </messages> [owise]
 
-    rule <k> #eth_sendRawTransactionSend TXID => #rpcResponseSuccess("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ... </k>
+    rule <k> #eth_sendRawTransactionSend TXID => #mineAndUpdate ~> #rpcResponseSuccess("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ... </k>
          <message>
            <msgID> TXID </msgID>
            <txNonce>    TN </txNonce>
@@ -1250,12 +1250,11 @@ Transaction Execution
           => #validateTx TXID
           ~> #updateTimestamp
           ~> #executeTx TXID
-          ~> #mineAndUpdate
          ...
          </k>
          <origin> _ => ACCTFROM </origin>
 
-    rule <k> #halt ~> #updateTimestamp ~> #executeTx _ ~> #mineAndUpdate => . ... </k>
+    rule <k> #halt ~> #updateTimestamp ~> #executeTx _ => . ... </k>
 
     syntax KItem ::= "#validateTx" Int
  // ----------------------------------
@@ -1574,7 +1573,7 @@ Transaction Execution
           ~> #validateTx TXID
           ~> #updateTimestamp
           ~> #executeTx TXID
-          ~> #mineAndUpdate
+          ~> #clearGas
           ~> #popNetworkState
           ~> TXID
           ~> K
