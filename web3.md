@@ -1248,6 +1248,7 @@ Transaction Execution
  // -----------------------------------------
     rule <k> #prepareTx TXID:Int ACCTFROM
           => #clearLogs
+          ~> #setup_G0 TXID
           ~> #validateTx TXID
           ~> #updateTimestamp
           ~> #executeTx TXID
@@ -1257,10 +1258,23 @@ Transaction Execution
 
     rule <k> #halt ~> #updateTimestamp ~> #executeTx _ => . ... </k>
 
+    syntax KItem ::= "#setup_G0" Int
+ // --------------------------------
+    rule <k> #setup_G0 TXID => . ... </k>
+         <schedule> SCHED </schedule>
+         <callGas> _ => G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
+         <message>
+           <msgID> TXID   </msgID>
+           <data>  DATA   </data>
+           <to>    ACCTTO </to>
+           ...
+         </message>
+
     syntax KItem ::= "#validateTx" Int
  // ----------------------------------
     rule <k> #validateTx TXID => #end #if BAL <Int GLIMIT *Int GPRICE #then EVMC_BALANCE_UNDERFLOW #else EVMC_OUT_OF_GAS #fi ... </k>
          <schedule> SCHED </schedule>
+         <callGas> G0_INIT </callGas>
          <origin> ACCTFROM </origin>
          <account>
            <acctID> ACCTFROM </acctID>
@@ -1275,13 +1289,12 @@ Transaction Execution
            <to>         ACCTTO </to>
            ...
          </message>
-      requires GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) <Int 0
+      requires GLIMIT <Int G0_INIT
         orBool BAL <Int GLIMIT *Int GPRICE
 
     rule <k> #validateTx TXID => . ... </k>
-         <schedule> SCHED </schedule>
          <origin> ACCTFROM </origin>
-         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
+         <callGas> G0_INIT => GLIMIT -Int G0_INIT </callGas>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL </balance>
@@ -1291,11 +1304,9 @@ Transaction Execution
            <msgID>      TXID   </msgID>
            <txGasPrice> GPRICE </txGasPrice>
            <txGasLimit> GLIMIT </txGasLimit>
-           <data>       DATA   </data>
-           <to>         ACCTTO </to>
            ...
          </message>
-      requires GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) >=Int 0
+      requires GLIMIT >=Int G0_INIT
        andBool BAL >=Int GLIMIT *Int GPRICE
 
     syntax KItem ::= "#executeTx" Int
