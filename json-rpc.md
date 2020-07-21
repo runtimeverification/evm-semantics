@@ -13,6 +13,7 @@ Some common functions and extensions of JSON are provided here.
 ```k
 module JSON-EXT
     imports JSON
+    imports STRING
 ```
 
 -   `+JSONs` appends two JSON lists.
@@ -55,7 +56,7 @@ module JSON-EXT
     syntax Bool ::= sortedJSONs ( JSONs ) [function]
  // ------------------------------------------------
     rule sortedJSONs( .JSONs   ) => true
-    rule sortedJSONs( _KEY : _) => true
+    rule sortedJSONs( _KEY : _ ) => true
     rule sortedJSONs( (KEY : _) , (KEY' : VAL) , REST ) => KEY <=String KEY' andThenBool sortedJSONs((KEY' : VAL) , REST)
 ```
 
