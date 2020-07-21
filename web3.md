@@ -4,7 +4,7 @@ Web3 RPC JSON Handler
 ```k
 requires "evm.md"
 requires "state-loader.md"
-requires "json.md"
+requires "json-rpc.md"
 ```
 
 ```k
