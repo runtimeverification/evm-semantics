@@ -146,12 +146,12 @@ ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
 endif
 
-JAVA_KOMPILE_OPTS :=
+JAVA_KOMPILE_OPTS ?=
 
 KOMPILE_JAVA := kompile --debug --backend java --md-selector "$(tangle_java)" \
                 $(KOMPILE_OPTS) $(JAVA_KOMPILE_OPTS)
 
-HASKELL_KOMPILE_OPTS :=
+HASKELL_KOMPILE_OPTS ?=
 
 KOMPILE_HASKELL := kompile --debug --backend haskell --md-selector "$(tangle_haskell)" \
                    $(KOMPILE_OPTS) $(HASKELL_KOMPILE_OPTS)
@@ -303,7 +303,7 @@ KEVM_CHAINID  := 1
 KEVM_WEB3_ARGS := --shutdownable --respond-to-notifications --hardfork istanbul --timeFreeze
 
 KPROVE_MODULE  := VERIFICATION
-KPROVE_OPTS    :=
+KPROVE_OPTS    ?=
 
 test-all: test-all-conformance test-prove test-interactive test-parse
 test: test-conformance test-prove test-interactive test-parse
