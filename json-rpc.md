@@ -1,30 +1,8 @@
-KJSON
-=====
-
-This is a non-faithful implementation of the [ECMA-404 JSON Data Interchange Format](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
-There are issues with how `JSONNumber` and `JSONString` are specified here, because we use K's `String` and `Int` sort directly, which are not quite correct.
-
-JSON Syntax
------------
+JSON RPC
+========
 
 ```k
-module JSON
-    imports INT
-    imports STRING
-    imports BOOL
-
-    syntax JSONs   ::= List{JSON,","}      [klabel(JSONs)      , symbol]
-    syntax JSONKey ::= String
-    syntax JSON    ::= "null"              [klabel(JSONnull)   , symbol]
-                     | JSONKey | Bool
-                     | JSONKey ":" JSON    [klabel(JSONEntry)  , symbol]
-                     | "{" JSONs "}"       [klabel(JSONObject) , symbol]
-                     | "[" JSONs "]"       [klabel(JSONList)   , symbol]
- // --------------------------------------------------------------------
-```
-
-```k
-endmodule
+requires "json.md"
 ```
 
 JSON Extensions
