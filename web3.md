@@ -605,7 +605,7 @@ eth_sendTransaction
          <txPending> ListItem(TXID) => .List ... </txPending>
          <txOrder>   ListItem(TXID) => .List ... </txOrder>
 
-    rule <k> (TXID:Int => "0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ~> #eth_sendTransaction_final ... </k>
+    rule <k> (TXID:Int => "0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)):JSON ~> #eth_sendTransaction_final ... </k>
          <message>
            <msgID> TXID </msgID>
            <txNonce>    TN </txNonce>
