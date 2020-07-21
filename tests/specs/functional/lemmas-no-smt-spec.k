@@ -3,8 +3,8 @@ requires "../lemmas.k"
 module VERIFICATION
     imports LEMMAS-HASKELL
 
-    syntax StepSort ::= Int
- // -----------------------
+    syntax StepSort ::= Int | Bool
+ // ------------------------------
 
     syntax KItem ::= runLemma ( StepSort )
                    | doneLemma( StepSort )
@@ -31,5 +31,9 @@ module LEMMAS-NO-SMT-SPEC
     rule runLemma ( 5 -Int (3 -Int X) ) => doneLemma ( 2 +Int X )
     rule runLemma ( (X -Int 5) -Int 3 ) => doneLemma ( X -Int 8 )
     rule runLemma ( 5 &Int (3 &Int X) ) => doneLemma ( 1 &Int X )
+
+ // Boolean simplification
+ // ----------------------
+    rule runLemma ( B ==Bool false ==Bool false ) => doneLemma ( B )
 
 endmodule
