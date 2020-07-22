@@ -4,7 +4,7 @@ EVM Words
 ```k
 requires "krypto.md"
 requires "evm-types.md"
-requires "json.md"
+requires "json-rpc.md"
 requires "serialization.md"
 ```
 

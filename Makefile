@@ -125,7 +125,7 @@ SOURCE_FILES       := asm           \
                       evm           \
                       evm-imp-specs \
                       evm-types     \
-                      json          \
+                      json-rpc      \
                       krypto        \
                       network       \
                       serialization \
