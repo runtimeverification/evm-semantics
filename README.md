@@ -22,7 +22,7 @@ The following files constitute the KEVM semantics:
 
 -   [krypto.md](krypto.md) sets up some basic cryptographic primitives.
 -   [network.md](network.md) provides the status codes which are reported to an Ethereum client on execution exceptions.
--   [json.md](json.md) is an implementation of the JSON format in K.
+-   [json-rpc.md](json-rpc.md) is an implementation of JSON RPC in K.
 -   [evm-types.md](evm-types.md) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
 -   [serialization.md](serialization.md) provides helpers for parsing and unparsing data (hex strings, recursive-length prefix, merkle trees, etc.).
 -   [evm.md](evm.md) is the main KEVM semantics, containing the configuration and transition rules of EVM.
