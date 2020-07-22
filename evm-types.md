@@ -28,12 +28,16 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     syntax Int ::= "pow256" /* 2 ^Int 256 */
                  | "pow255" /* 2 ^Int 255 */
                  | "pow160" /* 2 ^Int 160 */
+                 | "pow128" /* 2 ^Int 128 */
+                 | "pow48"  /* 2 ^Int 48  */
                  | "pow16"  /* 2 ^Int 16  */
  // ----------------------------------------
     rule pow256 => 115792089237316195423570985008687907853269984665640564039457584007913129639936 [macro]
     rule pow255 => 57896044618658097711785492504343953926634992332820282019728792003956564819968  [macro]
-    rule pow160 => 1461501637330902918203684832716283019655932542976 [macro]
-    rule pow16  => 65536 [macro]
+    rule pow160 => 1461501637330902918203684832716283019655932542976                              [macro]
+    rule pow128 => 340282366920938463463374607431768211456                                        [macro]
+    rule pow48  => 281474976710656                                                                [macro]
+    rule pow16  => 65536                                                                          [macro]
 
     syntax Int ::= "minSInt128"
                  | "maxSInt128"
@@ -95,16 +99,16 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
  // -------------------------------------------
     rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      ) [macro]
     rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      ) [macro]
-    rule #rangeUInt    (   8 ,      X ) => #range ( minUInt8        <= X <= maxUInt8        ) [macro]
-    rule #rangeUInt    (  16 ,      X ) => #range ( minUInt16       <= X <= maxUInt16       ) [macro]
-    rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <= maxUInt48       ) [macro]
-    rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <= maxUInt128      ) [macro]
+    rule #rangeUInt    (   8 ,      X ) => #range ( minUInt8        <= X <  256             ) [macro]
+    rule #rangeUInt    (  16 ,      X ) => #range ( minUInt16       <= X <  pow16           ) [macro]
+    rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <  pow48           ) [macro]
+    rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <  pow128          ) [macro]
     rule #rangeUInt    ( 160 ,      X ) => #range ( minUInt160      <= X <  pow160          ) [macro]
     rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <  pow256          ) [macro]
     rule #rangeSFixed  ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 ) [macro]
     rule #rangeUFixed  ( 128 , 10 , X ) => #range ( minUFixed128x10 <= X <= maxUFixed128x10 ) [macro]
     rule #rangeAddress (            X ) => #range ( minUInt160      <= X <  pow160          ) [macro]
-    rule #rangeBytes   (   N ,      X ) => #range ( 0               <= X <= #nBytes(N)      ) [macro]
+    rule #rangeBytes   (   N ,      X ) => #range ( 0               <= X <  1 <<Byte N      ) [macro]
 
     syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")"
                   | "#range" "(" Int "<"  Int "<=" Int ")"
@@ -657,22 +661,18 @@ Storage/Memory Lookup
 `#lookup*` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 ```k
-    syntax Int ::= #lookup        ( Map , Int ) [function, smtlib(lookup)]
-                 | #lookupMemory  ( Map , Int ) [function, smtlib(lookupMemory)]
- // ----------------------------------------------------------------------------
-    rule [#lookup.some]:   #lookup( (KEY |-> VAL:Int) _M, KEY ) => VAL
-    rule [#lookup.none]:   #lookup(                    M, KEY ) => 0   requires notBool KEY in_keys(M)
+    syntax Int ::= #lookup        ( Map , Int ) [function, functional, smtlib(lookup)]
+                 | #lookupMemory  ( Map , Int ) [function, functional, smtlib(lookupMemory)]
+ // ----------------------------------------------------------------------------------------
+    rule [#lookup.some]:         #lookup(       (KEY |-> VAL:Int) _M, KEY ) => VAL modInt pow256
+    rule [#lookup.none]:         #lookup(                          M, KEY ) => 0                 requires notBool KEY in_keys(M)
+    //Impossible case, for completeness
+    rule [#lookup.notInt]:       #lookup(       (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
 
-    rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) _M, KEY ) => VAL
-    rule [#lookupMemory.none]:   #lookupMemory(                    M, KEY ) => 0   requires notBool KEY in_keys(M)
-```
-
-```{.k .symbolic}
-    rule #Ceil(#lookup( _ |-> VAL M, KEY )) => {(#Ceil(#lookup( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
-    rule #Ceil(#lookup( .Map, _ ))          => true                                                          [anywhere]
-
-    rule #Ceil(#lookupMemory( _ |-> VAL M, KEY )) => {(#Ceil(#lookupMemory( M, KEY )) andBool isInt(VAL)) #Equals true}  [anywhere]
-    rule #Ceil(#lookupMemory( .Map, _ ))          => true                                                                [anywhere]
+    rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) _M, KEY ) => VAL modInt 256
+    rule [#lookupMemory.none]:   #lookupMemory(                    M, KEY ) => 0                 requires notBool KEY in_keys(M)
+    //Impossible case, for completeness
+    rule [#lookupMemory.notInt]: #lookupMemory( (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
 ```
 
 Substate Log

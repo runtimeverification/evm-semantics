@@ -9,6 +9,13 @@ module LEMMAS
     rule #lookup ( M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification]
     rule #lookup ( M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
 
+    rule 0 <=Int #lookup( _M:Map , _ )             => true                                       [simplification]
+    rule         #lookup( _M:Map , _ ) <Int pow256 => true                                       [simplification, smt-lemma]
+
+    //Required for #Ceil(#buf)
+    rule 0 <=Int keccak( _ )             => true                                                 [simplification]
+    rule         keccak( _ ) <Int pow256 => true                                                 [simplification]
+
     rule WS ++ .ByteArray => WS  [simplification]
     rule .ByteArray ++ WS => WS  [simplification]
 
@@ -39,6 +46,12 @@ module LEMMAS
 
     rule 0 <=Int keccak(_)                  => true  [simplification]
     rule         keccak(_) <Int pow256      => true  [simplification]
+
+    //Inequality sign normalization
+    rule          X  >Int Y  => Y  <Int X            [simplification]
+    rule          X >=Int Y  => Y <=Int X            [simplification]
+    rule notBool (X  <Int Y) => Y <=Int X            [simplification]
+    rule notBool (X <=Int Y) => Y  <Int X            [simplification]
 
 endmodule
 
@@ -185,12 +198,6 @@ module LEMMAS-JAVA [symbolic, kast]
 
     rule (#if C #then B1 #else B2 #fi) +Int A => #if C #then (B1 +Int A) #else (B2 +Int A) #fi  [simplification]
 
-    rule X >Int Y => Y <Int X    [simplification]
-    rule X >=Int Y => Y <=Int X  [simplification]
-
-    rule notBool (X <Int Y) => Y <=Int X  [simplification]
-    rule notBool (X <=Int Y) => Y <Int X  [simplification]
-
     rule bool2Word(A) |Int bool2Word(B) => bool2Word(A  orBool B)  [simplification]
     rule bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B)  [simplification]
 
@@ -244,6 +251,12 @@ module LEMMAS-HASKELL [symbolic, kore]
     imports EVM
     imports EDSL
 
+    //Simplification of double negation in term constraint
+    //Simplifies { false #Equals B ==Bool false }, also `B ==Bool false ==Bool false`
+    //see https://github.com/kframework/kore/issues/1944#issuecomment-657733745
+    rule B ==Bool false    => notBool B                                                                  [simplification]
+    rule notBool notBool B => B                                                                          [simplification]
+
     rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])
       requires #range(0 <= START < #sizeByteArray(BUF1))
        andBool #sizeByteArray(BUF1) <Int START +Int WIDTH [simplification]
@@ -267,6 +280,9 @@ module LEMMAS-HASKELL [symbolic, kore]
       requires #rangeUInt(160, N) [simplification]
 
     rule maxUInt160 &Int N => N
+      requires #rangeUInt(160, N) [simplification]
+
+    rule N modInt pow160 => N
       requires #rangeUInt(160, N) [simplification]
 
     rule #range(_, _, K) => .ByteArray requires notBool K >Int 0  [simplification]
