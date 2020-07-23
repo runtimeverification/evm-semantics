@@ -53,6 +53,12 @@ module LEMMAS
     rule notBool (X  <Int Y) => Y <=Int X            [simplification]
     rule notBool (X <=Int Y) => Y  <Int X            [simplification]
 
+    // chop range & simplification
+    rule chop(I) => I requires #rangeUInt( 256 , I ) [simplification]
+    rule chop(bool2Word(B)) => bool2Word(B)          [simplification]
+    rule 0 <=Int chop(V)             => true         [simplification]
+    rule         chop(V) <Int pow256 => true         [simplification]
+
 endmodule
 
 module LEMMAS-JAVA [symbolic, kast]
@@ -210,8 +216,6 @@ module LEMMAS-JAVA [symbolic, kast]
     rule bool2Word(A) =/=K 0 => A           [simplification]
     rule bool2Word(A) =/=K 1 => notBool(A)  [simplification]
 
-    rule chop(bool2Word(B)) => bool2Word(B)  [simplification]
-
     rule 0 <=Int X &Int Y             => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <=Int Y andBool Y <Int pow256  [simplification]
     rule         X &Int Y <Int pow256 => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <=Int Y andBool Y <Int pow256  [simplification]
 
@@ -224,17 +228,12 @@ module LEMMAS-JAVA [symbolic, kast]
     rule 0 <=Int hash2(_,_)             => true  [simplification]
     rule         hash2(_,_) <Int pow256 => true  [simplification]
 
-    rule 0 <=Int chop(V)             => true  [simplification]
-    rule         chop(V) <Int pow256 => true  [simplification]
-
     rule 0 <=Int keccakIntList(_)             => true  [simplification]
     rule         keccakIntList(_) <Int pow256 => true  [simplification]
 
     rule X <=Int maxUInt256 => X <Int pow256  [simplification]
     rule X <=Int maxUInt160 => X <Int pow160  [simplification]
     rule X <=Int 255        => X <Int 256     [simplification]
-
-    rule chop(I) => I requires 0 <=Int I andBool I <Int pow256  [simplification]
 
     //Simplification of bool2Word() ==Int CONCRETE, #buf() ==K CONCRETE
     rule I                   ==K bool2Word( B:Bool ) => bool2Word(B) ==Int I    requires #isConcrete(I)  [simplification]
