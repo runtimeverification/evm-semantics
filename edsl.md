@@ -184,13 +184,17 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA))
       requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
       [concrete]
+```
 
+``` {.k .symbolic .ceil}
     rule #Ceil(#buf(@SIZE, @DATA))
       =>      {(0 <=Int @SIZE) andBool #rangeBytes(@SIZE, @DATA) #Equals true}
          #And #Ceil(@SIZE)
          #And #Ceil(@DATA)
       [anywhere, simplification]
+```
 
+```
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
     rule #getValue(#uint160( DATA )) => DATA
