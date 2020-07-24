@@ -194,7 +194,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
       [anywhere, simplification]
 ```
 
-```
+```k
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
     rule #getValue(#uint160( DATA )) => DATA
