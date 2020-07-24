@@ -302,9 +302,6 @@ module LEMMAS-HASKELL [symbolic, kore]
        andBool L >=Int N +Int #sizeByteArray(BUF)
       [simplification]
 
-    // Defineness axiom for #buf
-    rule #Ceil(#buf(@SIZE, @DATA)) => {(@SIZE >=Int 0) #Equals true} #And #Ceil(@SIZE) #And #Ceil(@DATA) [anywhere]
-
     rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
     rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
 
