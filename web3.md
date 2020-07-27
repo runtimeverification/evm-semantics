@@ -1264,9 +1264,9 @@ Transaction Execution
          <schedule> SCHED </schedule>
          <callGas> _ => G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
          <message>
-           <msgID>      TXID   </msgID>
-           <data>       DATA   </data>
-           <to>         ACCTTO </to>
+           <msgID> TXID   </msgID>
+           <data>  DATA   </data>
+           <to>    ACCTTO </to>
            ...
          </message>
 
