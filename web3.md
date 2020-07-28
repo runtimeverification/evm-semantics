@@ -1551,6 +1551,7 @@ Transaction Execution
           => #pushNetworkState
           ~> makeTX !ID:Int
           ~> loadTransaction !ID J
+          ~> #setup_G0 !ID
           ~> #searchGas
          ...
          </k>
@@ -1585,8 +1586,13 @@ Transaction Execution
  // --------------------------------------
     rule <k> #runGas( GAMOUNT, K )
           => #pushNetworkState
+          ~> #pushCallStack
           ~> #clearLogs
           ~> #validateTx TXID
+          ~> #updateTimestamp
+          ~> #executeTx TXID
+          ~> #clearGas
+          ~> #popCallStack
           ~> #popNetworkState
           ~> TXID
           ~> K
