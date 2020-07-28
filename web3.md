@@ -619,10 +619,10 @@ eth_sendTransaction
            <data>       TD </data>
          </message> [owise]
 
-    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccess(TXHASH) ... </k>
+    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #mineAndUpdate ~> #rpcResponseSuccess(TXHASH) ... </k>
          <statusCode> EVMC_SUCCESS </statusCode>
 
-    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #rpcResponseSuccessException(TXHASH, #generateException(TXHASH, PCOUNT, RD, EVMC_REVERT))
+    rule <k> TXHASH:String ~> #eth_sendTransaction_final => #mineAndUpdate ~> #rpcResponseSuccessException(TXHASH, #generateException(TXHASH, PCOUNT, RD, EVMC_REVERT))
           ...
          </k>
          <statusCode> EVMC_REVERT </statusCode>
@@ -823,7 +823,7 @@ eth_sendRawTransaction
          <txOrder>   ListItem(TXID) => .List ... </txOrder>
          <messages> ( <message> <msgID> TXID </msgID> ... </message> => .Bag ) ... </messages> [owise]
 
-    rule <k> #eth_sendRawTransactionSend TXID => #rpcResponseSuccess("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ... </k>
+    rule <k> #eth_sendRawTransactionSend TXID => #mineAndUpdate ~> #rpcResponseSuccess("0x" +String #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)) ... </k>
          <message>
            <msgID> TXID </msgID>
            <txNonce>    TN </txNonce>
@@ -1248,16 +1248,33 @@ Transaction Execution
  // -----------------------------------------
     rule <k> #prepareTx TXID:Int ACCTFROM
           => #clearLogs
+          ~> #setup_G0 TXID
           ~> #validateTx TXID
+          ~> #updateTimestamp
+          ~> #executeTx TXID
          ...
          </k>
          <origin> _ => ACCTFROM </origin>
 
+    rule <k> #halt ~> #updateTimestamp ~> #executeTx _ => . ... </k>
+
+    syntax KItem ::= "#setup_G0" Int
+ // --------------------------------
+    rule <k> #setup_G0 TXID => . ... </k>
+         <schedule> SCHED </schedule>
+         <callGas> _ => G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
+         <message>
+           <msgID> TXID   </msgID>
+           <data>  DATA   </data>
+           <to>    ACCTTO </to>
+           ...
+         </message>
+
     syntax KItem ::= "#validateTx" Int
  // ----------------------------------
-    rule <k> #validateTx TXID => . ... </k>
-         <statusCode> _ => #if BAL <Int GLIMIT *Int GPRICE #then EVMC_BALANCE_UNDERFLOW #else EVMC_OUT_OF_GAS #fi </statusCode>
+    rule <k> #validateTx TXID => #end #if BAL <Int GLIMIT *Int GPRICE #then EVMC_BALANCE_UNDERFLOW #else EVMC_OUT_OF_GAS #fi ... </k>
          <schedule> SCHED </schedule>
+         <callGas> G0_INIT </callGas>
          <origin> ACCTFROM </origin>
          <account>
            <acctID> ACCTFROM </acctID>
@@ -1272,13 +1289,12 @@ Transaction Execution
            <to>         ACCTTO </to>
            ...
          </message>
-      requires GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) <Int 0
+      requires GLIMIT <Int G0_INIT
         orBool BAL <Int GLIMIT *Int GPRICE
 
-    rule <k> #validateTx TXID => #updateTimestamp ~> #executeTx TXID ~> #mineAndUpdate ... </k>
-         <schedule> SCHED </schedule>
+    rule <k> #validateTx TXID => . ... </k>
          <origin> ACCTFROM </origin>
-         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account) ) </callGas>
+         <callGas> G0_INIT => GLIMIT -Int G0_INIT </callGas>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL </balance>
@@ -1288,11 +1304,9 @@ Transaction Execution
            <msgID>      TXID   </msgID>
            <txGasPrice> GPRICE </txGasPrice>
            <txGasLimit> GLIMIT </txGasLimit>
-           <data>       DATA   </data>
-           <to>         ACCTTO </to>
            ...
          </message>
-      requires GLIMIT -Int G0(SCHED, DATA, (ACCTTO ==K .Account)) >=Int 0
+      requires GLIMIT >=Int G0_INIT
        andBool BAL >=Int GLIMIT *Int GPRICE
 
     syntax KItem ::= "#executeTx" Int
@@ -1381,9 +1395,7 @@ Transaction Execution
  // ---------------------------------
     rule <statusCode> STATUSCODE </statusCode>
          <k> #mineAndUpdate => #mineBlock ... </k>
-         <mode> EXECMODE </mode>
-      requires EXECMODE =/=K NOGAS
-       andBool ( STATUSCODE ==K EVMC_SUCCESS orBool STATUSCODE ==K EVMC_REVERT )
+      requires ( STATUSCODE ==K EVMC_SUCCESS orBool STATUSCODE ==K EVMC_REVERT )
 
     rule <k> #mineAndUpdate => #clearGas ... </k> [owise]
 
@@ -1580,7 +1592,7 @@ NOGAS Mode
          <mode> NOGAS </mode>
      [priority(25)]
 
-    rule <k> #validateTx TXID => #updateTimestamp ~> #executeTx TXID ~> #mineAndUpdate ... </k>
+    rule <k> #validateTx TXID => . ... </k>
          <mode> NOGAS </mode>
      [priority(25)]
 
