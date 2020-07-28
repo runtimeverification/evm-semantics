@@ -92,4 +92,6 @@ module LEMMAS-SPEC
     rule <k> runLemma ( #buf( 32 , I:Int )                ==K #buf( 32 , 1 )     ) => doneLemma( I ==K 1    ) ... </k>
     rule <k> runLemma ( #buf( 32 , 1 )                    ==K #buf( 32 , I:Int ) ) => doneLemma( I ==K 1    ) ... </k>
 
+    rule <k> runLemma ( chop( #lookup(M, KEY) ) ) => doneLemma( #lookup(M, KEY) ) ... </k>
+
 endmodule
