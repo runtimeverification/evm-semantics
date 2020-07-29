@@ -14,7 +14,7 @@ module VAT-MOVE-DIFF-SPEC
           <output> .WordStack </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <endPC> _ => ?_ </endPC>
-          <callStack> VCallStack </callStack>
+          <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
@@ -34,7 +34,7 @@ module VAT-MOVE-DIFF-SPEC
             <callDepth> VCallDepth </callDepth>
           </callState>
           <substate>
-            <selfDestruct> VSelfDestruct </selfDestruct>
+            <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _ => ?_ </refund>
           </substate>
@@ -50,7 +50,7 @@ module VAT-MOVE-DIFF-SPEC
             <receiptsRoot> _ </receiptsRoot>
             <logsBloom> _ </logsBloom>
             <difficulty> _ </difficulty>
-            <number> BLOCK_NUMBER </number>
+            <number> _BLOCK_NUMBER </number>
             <gasLimit> _ </gasLimit>
             <gasUsed> _ </gasUsed>
             <timestamp> TIME </timestamp>
@@ -79,7 +79,7 @@ module VAT-MOVE-DIFF-SPEC
               <code> Vat_bin_runtime </code>
               <storage> STORAGE => ?STORAGE </storage>
               <origStorage> ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat => ?_ </nonce>
+              <nonce> _Nonce_Vat => ?_ </nonce>
             </account>
             <account>
               <acctID> 1 </acctID>
