@@ -115,7 +115,8 @@ module STORAGEVAR01-SPEC
      andBool CALLEE_ID   >Int 0 andBool (notBool CALLEE_ID   in #precompiledAccounts(BYZANTIUM))
 
      andBool #rangeUInt(256, CONTRACT_BAL)
-     andBool #rangeUInt(256, CALLEE_BAL)andBool #range(0 <= CD < 1024)
+     andBool #rangeUInt(256, CALLEE_BAL)
+     andBool #range(0 <= CD < 1024)
      andBool #rangeAddress(MSG_SENDER)
 
 endmodule
