@@ -1613,7 +1613,7 @@ Transaction Execution
     rule <k> #binSearchGas( LO, HI ) => #runGas( HI, #eth_estimateGas_finalize HI ) ... </k>
       requires LO +Int 1 >=Int HI
 
-    rule <k> _:Int ~> ( #binSearchGas( LO, HI ) => #eth_estimateGas_finalize (LO +Int HI) /Int 2 ) ... </k>
+    rule <k> _:Int ~> #binSearchGas( LO, HI ) => #binSearchGas( LO, (LO +Int HI) /Int 2 ) ... </k>
          <statusCode> STATUSCODE </statusCode>
       requires STATUSCODE ==K EVMC_SUCCESS orBool STATUSCODE ==K EVMC_REVERT
 
