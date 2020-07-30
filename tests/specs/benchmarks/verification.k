@@ -19,12 +19,12 @@ module VERIFICATION-COMMON
 
     syntax Int ::= #gas ( Int , Int , Int )  [function]  // startGas, nonMemory, memory
  // -----------------------------------------------------------------------------------
-
 endmodule
 
 module VERIFICATION
     imports VERIFICATION-COMMON
     imports VERIFICATION-JAVA
+    imports VERIFICATION-HASKELL
 
     rule M:Map [ K1 <- _  ] [ K2 <- V2 ] => M [ K1 <- V2 ]              requires K1 ==Int K2
     rule M:Map [ K1 <- V1 ] [ K2 <- V2 ] => M [ K2 <- V2 ] [ K1 <- V1 ] requires K2  <Int K1
@@ -298,6 +298,19 @@ rule #ecrecData(SIGS, I, DATA_HASH) => #encodeArgs(#bytes32(DATA_HASH), #uint8(#
 
 endmodule
 
+module VERIFICATION-HASKELL [symbolic, kore]
+    imports VERIFICATION-COMMON
+
+    syntax Int ::= "#infGas" [function, functional]
+ // -----------------------------------------------
+    rule #gas(_, _, _) => #infGas
+
+    rule #infGas  <Int _ => false
+    rule #infGas >=Int _ => true
+
+    rule #infGas -Int _ => #infGas
+endmodule
+
 module VERIFICATION-JAVA [symbolic, kast]
     imports VERIFICATION-COMMON
     imports K-REFLECTION
@@ -339,5 +352,4 @@ module VERIFICATION-JAVA [symbolic, kast]
 
     rule (A +Int I1) +Int (B +Int I2) => (A +Int B) +Int (I1 +Int I2)
       requires notBool #isConcrete(A) andBool notBool #isConcrete(B) andBool #isConcrete(I1) andBool #isConcrete(I2)
-
 endmodule
