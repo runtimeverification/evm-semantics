@@ -301,14 +301,18 @@ endmodule
 module VERIFICATION-HASKELL [symbolic, kore]
     imports VERIFICATION-COMMON
 
-    syntax Int ::= "#infGas" [function, functional]
- // -----------------------------------------------
-    rule #gas(_, _, _) => #infGas
+    syntax Int ::= #gas ( Int ) [function, functional]
+ // --------------------------------------------------
+    rule #gas(_, _, _) => #gas(0)
 
-    rule #infGas  <Int _ => false
-    rule #infGas >=Int _ => true
+    rule #gas(G) -Int G' => #gas(G +Int G') [simplification]
 
-    rule #infGas -Int _ => #infGas
+    rule #gas(_)  <Int I => false [concrete(I), simplification]
+    rule #gas(_) <=Int I => false [concrete(I), simplification]
+    rule #gas(_) >=Int I => true  [concrete(I), simplification]
+
+    rule #gas(_)  <Int Csstore(_, _, _, _) => false [simplification]
+    rule #gas(_) >=Int Csstore(_, _, _, _) => true  [simplification]
 endmodule
 
 module VERIFICATION-JAVA [symbolic, kast]
