@@ -69,12 +69,8 @@ module STORAGEVAR02-NOOVERFLOW-SPEC
             <acctID> CONTRACT_ID </acctID>
             <balance> CONTRACT_BAL </balance>
             <code> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806361461954146044575b600080fd5b348015604f57600080fd5b506056606c565b6040518082815260200191505060405180910390f35b600060016000540160008190555060005490509056fea165627a7a7230582084ad795d13123f60bc7fd2a18dba66eb8d320ddea8765847f2ae5982179470600029") </code>
-            <storage>
-S [ #hashedLocation("Solidity", 0, .IntList) <- (N0 => N0 +Int 1) ]
-            </storage>
-            <origStorage>
-_
-            </origStorage>
+            <storage> S => ?S </storage>
+            <origStorage> _OS => ?OS </origStorage>
             <nonce> _ </nonce>
           </account>
 
@@ -124,8 +120,9 @@ _
      andBool #rangeAddress(MSG_SENDER)
      andBool #range(0 <= N0        < pow256)
      andBool #range(0 <= N0 +Int 1 < pow256)
+     andBool #lookup(S, #hashedLocation("Solidity", 0, .IntList)) ==Int N0
 
-
+     ensures #lookup(?S, #hashedLocation("Solidity", 0, .IntList)) ==Int N0 +Int 1
 
 endmodule
 
