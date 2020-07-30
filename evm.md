@@ -1773,7 +1773,7 @@ Overall Gas
 
 ```k
     syntax InternalOp ::= "#gas" "[" OpCode "," OpCode "]"
- // ---------------------------------------------------------------------------
+ // ------------------------------------------------------
     rule <k> #gas [ OP , AOP ]
           => #if #usesMemory(OP) #then #memory [ AOP ] #else .K #fi
           ~> #gas [ AOP ]
