@@ -13,6 +13,7 @@ add_executable(kevm-client
 	$ENV{PLUGIN_SUBMODULE}/client-c/init.cpp
 	$ENV{PLUGIN_SUBMODULE}/client-c/main.cpp
 	$ENV{PLUGIN_SUBMODULE}/client-c/json.cpp
+	$ENV{PLUGIN_SUBMODULE}/plugin-c/plugin_util.cpp
 	$ENV{PLUGIN_SUBMODULE}/plugin-c/crypto.cpp
 	$ENV{PLUGIN_SUBMODULE}/plugin-c/blake2.cpp)
 
