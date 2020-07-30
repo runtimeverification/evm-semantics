@@ -8,7 +8,7 @@ module STORAGEVAR02-NOOVERFLOW-SPEC
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
-    <schedule> BYZANTIUM </schedule>
+    <schedule> ISTANBUL </schedule>
     <ethereum>
       <evm>
         <output> _ => #encodeArgs(#uint256(N0 +Int 1)) </output>
