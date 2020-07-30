@@ -301,8 +301,8 @@ endmodule
 module VERIFICATION-HASKELL [symbolic, kore]
     imports VERIFICATION-COMMON
 
-    syntax Int ::= #gas ( Int ) [function, functional]
- // --------------------------------------------------
+    syntax Int ::= #gas ( Int ) [function, functional, no-evaluators]
+ // -----------------------------------------------------------------
     rule #gas(_, _, _) => #gas(0)
 
     rule #gas(G) -Int G' => #gas(G +Int G') [simplification]
