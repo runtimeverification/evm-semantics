@@ -52,16 +52,12 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module run_dir additional_proof_args repl_cmd repl_script
+    local def_module run_dir additional_proof_args
 
     def_module="$1" ; shift
 
-    repl_cmd="${REPL_CMD:-$k_release_dir/bin/kore-repl}"
-    repl_script="${REPL_SCRIPT:-$kevm_dir/kast.kscript}"
-
     additional_proof_args=()
     ! $debug      || additional_proof_args+=(--debug)
-    ! $repl       || additional_proof_args+=(--haskell-backend-command "$repl_cmd --repl-script $repl_script")
     ! $bug_report || additional_proof_args+=(--haskell-backend-command "kore-exec --bug-report kevm-bug")
 
     export K_OPTS=${K_OPTS:--Xmx16G}
@@ -257,7 +253,6 @@ backend="llvm"
 debug=false
 dump=false
 unparse=true
-repl=false
 bug_report=false
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
@@ -271,7 +266,6 @@ while [[ $# -gt 0 ]]; do
         --debug)              debug=true        ; shift   ;;
         --dump)               dump=true         ; shift   ;;
         --no-unparse)         unparse=false     ; shift   ;;
-        --repl)               repl=true         ; shift   ;;
         --bug-report)         bug_report=true   ; shift   ;;
         --backend)            backend="$2"      ; shift 2 ;;
         --backend-dir)        backend_dir="$2"  ; shift 2 ;;
@@ -282,8 +276,6 @@ while [[ $# -gt 0 ]]; do
 done
 set -- "${args[@]}"
 backend_dir="${backend_dir:-$defn_dir/$backend}"
-
-! $repl || [[ "$backend" == haskell ]] || fatal "Option --repl only usable with --backend haskell!"
 
 # get the run file
 if [[ ! "$run_command" =~ web3* ]]; then
