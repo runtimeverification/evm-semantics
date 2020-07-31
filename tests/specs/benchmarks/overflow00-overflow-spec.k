@@ -40,7 +40,7 @@ module OVERFLOW00-OVERFLOW-SPEC
         </substate>
         <gasPrice> _ </gasPrice>
         <origin> _ </origin> // tx.origin
-        <blockhashes> BLOCK_HASHES </blockhashes> // block.blockhash
+        <blockhashes> _BLOCK_HASHES </blockhashes> // block.blockhash
         <block>
           <previousHash> _ </previousHash>
           <ommersHash> _ </ommersHash>

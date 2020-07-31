@@ -150,7 +150,7 @@ module VERIFICATION
 
     rule #asWord(#buf(32, DATA)) => DATA  requires #rangeUInt(256, DATA)
 
-    rule #range(M [ N := #buf(WIDTH, DATA) ], N, WIDTH) => #buf(WIDTH, DATA)
+    rule #range(_M [ N := #buf(WIDTH, DATA) ], N, WIDTH) => #buf(WIDTH, DATA)
 
     rule #asWord(WS) &Int maxUInt256 => #asWord(WS)
 
