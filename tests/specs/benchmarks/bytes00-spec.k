@@ -3,7 +3,7 @@ requires "verification.k"
 module BYTES00-SPEC
   imports VERIFICATION
 
-  // fn-execute 
+  // fn-execute
   rule
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
@@ -22,12 +22,12 @@ module BYTES00-SPEC
           <jumpDests> #computeValidJumpDests(#parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806309c5eabe146044575b600080fd5b348015604f57600080fd5b5060a8600480360381019080803590602001908201803590602001908080601f016020809104026020016040519081016040528093929190818152602001838380828437820191505050505050919291929050505060be565b6040518082815260200191505060405180910390f35b6000815190509190505600a165627a7a72305820443b6929f0411657e3b5f5371823da4795cb8ece704713e7934fea316a2af24a0029")) </jumpDests>
           <id> CONTRACT_ID </id> // this
           <caller> MSG_SENDER </caller> // msg.sender
-          <callData> #abiCallData("execute", #bytes(#buf(DATA_LEN,DATA))) </callData> // msg.data
+          <callData> #abiCallData("execute", #bytes(#buf(DATA_LEN, _DATA))) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> #gas(INITGAS, 0, 0) => ?_ </gas>
+          <gas> #gas(_INITGAS, 0, 0) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
@@ -40,7 +40,7 @@ module BYTES00-SPEC
         </substate>
         <gasPrice> _ </gasPrice>
         <origin> _ </origin> // tx.origin
-        <blockhashes> BLOCK_HASHES </blockhashes> // block.blockhash
+        <blockhashes> _BLOCK_HASHES </blockhashes> // block.blockhash
         <block>
           <previousHash> _ </previousHash>
           <ommersHash> _ </ommersHash>
@@ -109,23 +109,20 @@ _
         <messages> _ </messages>
       </network>
     </ethereum>
-    requires
-     #rangeAddress(CONTRACT_ID)
+    requires #rangeAddress(CONTRACT_ID)
      andBool #rangeAddress(CALLEE_ID)
      andBool #rangeUInt(256, NOW)
      andBool #rangeUInt(128, BLOCK_NUM) // Solidity
 
      // Account address normality
-     andBool CONTRACT_ID  >Int 0 andBool (notBool CONTRACT_ID  in #precompiledAccounts(BYZANTIUM))
-     andBool CALLEE_ID  >Int 0 andBool (notBool CALLEE_ID  in #precompiledAccounts(BYZANTIUM))
+     andBool CONTRACT_ID >Int 0 andBool (notBool CONTRACT_ID in #precompiledAccounts(BYZANTIUM))
+     andBool CALLEE_ID   >Int 0 andBool (notBool CALLEE_ID   in #precompiledAccounts(BYZANTIUM))
 
-andBool #rangeUInt(256, CONTRACT_BAL)
-andBool #rangeUInt(256, CALLEE_BAL)andBool #range(0 <= CD < 1024)
-andBool #rangeAddress(MSG_SENDER)andBool #range( 0 <= DATA_LEN < 2 ^Int 16)
-    ensures true
-
-
-
+     andBool #rangeUInt(256, CONTRACT_BAL)
+     andBool #rangeUInt(256, CALLEE_BAL)
+     andBool #range(0 <= CD < 1024)
+     andBool #rangeAddress(MSG_SENDER)
+     andBool #range(0 <= DATA_LEN < pow16)
 
 endmodule
 
