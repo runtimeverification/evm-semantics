@@ -104,28 +104,38 @@ stack upgrade
 export PATH=$HOME/.local/bin:$PATH
 ```
 
-### Build K Dependency
+### Build Dependencies
 
-The `Makefile` and `kevm` will work with either a (i) globally installed K, or (ii) the submodule built K.
-If you want to use the submodule, follow these instructions, then get the submodules and build the repository dependencies:
+#### K Framework
+
+The `Makefile` and `kevm` will work with either a (i) globally installed K, or (ii) a K submodule included in this repository.
+If you want to use the K submodule, follow these instructions get the submodule and build K:
 
 ```sh
 git submodule update --init --recursive -- deps/k
-make deps
+make k-deps
 ```
 
-If you don't need either the llvm or Haskell backend, there are flags to skip them:
+If you don't need either the LLVM or Haskell backend, there are flags to skip them:
 
 ```sh
-make deps SKIP_LLVM=true SKIP_HASKELL=true
+make k-deps SKIP_LLVM=true SKIP_HASKELL=true
+```
+
+#### Blockchain Plugin
+
+You also need to get the blockchain plugin submodule and install it.
+
+```sh
+git submodule update --init --recursive -- deps/plugin
+make plugin-deps
 ```
 
 ### Building
 
-Finally, you can build the semantics (after getting the plugin submodule dependency):
+Finally, you can build the semantics.
 
 ```sh
-git submodule update --init --recursive -- deps/plugin
 make build
 ```
 
