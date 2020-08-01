@@ -6,8 +6,8 @@ module LEMMAS
     imports LEMMAS-JAVA
     imports LEMMAS-HASKELL
 
-    rule #lookup ( M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification]
-    rule #lookup ( M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
+    rule #lookup ( _M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification]
+    rule #lookup (  M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
 
     rule 0 <=Int #lookup( _M:Map , _ )             => true                                       [simplification]
     rule         #lookup( _M:Map , _ ) <Int pow256 => true                                       [simplification, smt-lemma]
@@ -56,8 +56,8 @@ module LEMMAS
     // chop range & simplification
     rule chop(I) => I requires #rangeUInt( 256 , I ) [simplification]
     rule chop(bool2Word(B)) => bool2Word(B)          [simplification]
-    rule 0 <=Int chop(V)             => true         [simplification]
-    rule         chop(V) <Int pow256 => true         [simplification]
+    rule 0 <=Int chop(_V)             => true        [simplification]
+    rule         chop(_V) <Int pow256 => true        [simplification]
 
 endmodule
 
