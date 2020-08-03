@@ -156,9 +156,10 @@ HASKELL_KOMPILE_OPTS ?=
 KOMPILE_HASKELL := kompile --debug --backend haskell --md-selector "$(tangle_haskell)" \
                    $(KOMPILE_OPTS) $(HASKELL_KOMPILE_OPTS)
 
-STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_RELEASE)/include/kllvm \
-                           $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp     \
-                           $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp     \
+STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_RELEASE)/include/kllvm  \
+                           $(PLUGIN_SUBMODULE)/plugin-c/plugin_util.cpp \
+                           $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp      \
+                           $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp      \
                            -g -std=c++14 -lff -lcryptopp -lsecp256k1
 
 ifeq ($(UNAME_S),Linux)
