@@ -211,6 +211,10 @@ module VERIFICATION
 
     rule #ceil32(X) => X requires X modInt 32 ==Int 0
 
+    rule 0 <=Int #ceil32(X) -Int X => true requires 0 <=Int X [simplification]
+
+    rule 0 <Int 1 <<Int N => true requires 0 <=Int N [simplification]
+
     rule X <=Int #ceil32(X) => true
       requires X >=Int 0
 
@@ -307,12 +311,37 @@ module VERIFICATION-HASKELL [symbolic, kore]
 
     rule #gas(G) -Int G' => #gas(G +Int G') [simplification]
 
+    rule #gas(_)  <Int I => false requires I <=Int pow256 [simplification]
+    rule #gas(_) <=Int I => false requires I <=Int pow256 [simplification]
+    rule #gas(_) >=Int I => true  requires I <=Int pow256 [simplification]
+    rule I <=Int #gas(_) => true  requires I <=Int pow256 [simplification]
+
     rule #gas(_)  <Int _I => false [concrete(_I), simplification]
     rule #gas(_) <=Int _I => false [concrete(_I), simplification]
     rule #gas(_) >=Int _I => true  [concrete(_I), simplification]
+    rule _I <=Int #gas(_) => true  [concrete(_I), simplification]
 
-    rule #gas(_)  <Int Csstore(_, _, _, _) => false [simplification]
-    rule #gas(_) >=Int Csstore(_, _, _, _) => true  [simplification]
+    rule I +Int I' <=Int #gas(G) => true requires I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
+    rule I -Int I' <=Int #gas(G) => true requires I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
+    rule I *Int I' <=Int #gas(G) => true requires I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
+    rule I /Int I' <=Int #gas(G) => true requires I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
+
+    rule #gas(G) <Int I +Int I' => false requires notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
+    rule #gas(G) <Int I -Int I' => false requires notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
+    rule #gas(G) <Int I *Int I' => false requires notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
+    rule #gas(G) <Int I /Int I' => false requires notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
+
+    rule #gas(G) <=Int I +Int I' => false requires notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
+    rule #gas(G) <=Int I -Int I' => false requires notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
+    rule #gas(G) <=Int I *Int I' => false requires notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
+    rule #gas(G) <=Int I /Int I' => false requires notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
+
+    rule #gas(_) <Int Csstore(_, _, _, _) => false [simplification]
+    rule #gas(_) <Int Cmem(_, _)          => false [simplification]
+
+    rule #gas(_) >=Int Csstore(_, _, _, _) => true [simplification]
+
+    rule Cmem(_, _) <=Int #gas(_) => true [simplification]
 endmodule
 
 module VERIFICATION-JAVA [symbolic, kast]
