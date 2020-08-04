@@ -27,7 +27,7 @@ module REQUIRES01-A0GT0-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> #gas(INITGAS, 0, 0) => ?_ </gas>
+          <gas> #gas(_INITGAS, 0, 0) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
@@ -40,7 +40,7 @@ module REQUIRES01-A0GT0-SPEC
         </substate>
         <gasPrice> _ </gasPrice>
         <origin> _ </origin> // tx.origin
-        <blockhashes> BLOCK_HASHES </blockhashes> // block.blockhash
+        <blockhashes> _BLOCK_HASHES </blockhashes> // block.blockhash
         <block>
           <previousHash> _ </previousHash>
           <ommersHash> _ </ommersHash>
