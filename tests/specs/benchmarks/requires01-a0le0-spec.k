@@ -69,12 +69,8 @@ module REQUIRES01-A0LE0-SPEC
             <acctID> CONTRACT_ID </acctID>
             <balance> CONTRACT_BAL </balance>
             <code> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063fe0d94c1146044575b600080fd5b348015604f57600080fd5b50606c6004803603810190808035906020019092919050505060ae565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6000808211151560bd57600080fd5b600590509190505600a165627a7a72305820885b6ddc678a06d1bd68f28d6a516e4fb72fb2d325ac780ffc7605ac95a408390029") </code>
-            <storage>
-_
-            </storage>
-            <origStorage>
-_
-            </origStorage>
+            <storage> _S </storage>
+            <origStorage> _OS </origStorage>
             <nonce> _ </nonce>
           </account>
 
