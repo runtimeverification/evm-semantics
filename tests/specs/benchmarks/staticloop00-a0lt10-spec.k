@@ -3,7 +3,7 @@ requires "verification.k"
 module STATICLOOP00-A0LT10-SPEC
   imports VERIFICATION
 
-  // fn-execute-a0lt10 
+  // fn-execute-a0lt10
   rule
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
@@ -27,7 +27,7 @@ module STATICLOOP00-A0LT10-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> #gas(INITGAS, 0, 0) => ?_ </gas>
+          <gas> #gas(_INITGAS, 0, 0) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
@@ -40,7 +40,7 @@ module STATICLOOP00-A0LT10-SPEC
         </substate>
         <gasPrice> _ </gasPrice>
         <origin> _ </origin> // tx.origin
-        <blockhashes> BLOCK_HASHES </blockhashes> // block.blockhash
+        <blockhashes> _BLOCK_HASHES </blockhashes> // block.blockhash
         <block>
           <previousHash> _ </previousHash>
           <ommersHash> _ </ommersHash>
@@ -109,23 +109,20 @@ _
         <messages> _ </messages>
       </network>
     </ethereum>
-    requires
-     #rangeAddress(CONTRACT_ID)
+    requires #rangeAddress(CONTRACT_ID)
      andBool #rangeAddress(CALLEE_ID)
      andBool #rangeUInt(256, NOW)
      andBool #rangeUInt(128, BLOCK_NUM) // Solidity
 
      // Account address normality
-     andBool CONTRACT_ID  >Int 0 andBool (notBool CONTRACT_ID  in #precompiledAccounts(BYZANTIUM))
-     andBool CALLEE_ID  >Int 0 andBool (notBool CALLEE_ID  in #precompiledAccounts(BYZANTIUM))
+     andBool CONTRACT_ID >Int 0 andBool (notBool CONTRACT_ID in #precompiledAccounts(BYZANTIUM))
+     andBool CALLEE_ID   >Int 0 andBool (notBool CALLEE_ID   in #precompiledAccounts(BYZANTIUM))
 
-andBool #rangeUInt(256, CONTRACT_BAL)
-andBool #rangeUInt(256, CALLEE_BAL)andBool #range(0 <= CD < 1024)
-andBool #rangeAddress(MSG_SENDER)andBool #range(0 <= A0 < 10)
-    ensures true
-
-
-
+     andBool #rangeUInt(256, CONTRACT_BAL)
+     andBool #rangeUInt(256, CALLEE_BAL)
+     andBool #range(0 <= CD < 1024)
+     andBool #rangeAddress(MSG_SENDER)
+     andBool #range(0 <= A0 < 10)
 
 endmodule
 
