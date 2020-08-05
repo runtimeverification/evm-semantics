@@ -3,7 +3,7 @@ requires "verification.k"
 module REQUIRES01-A0LE0-SPEC
   imports VERIFICATION
 
-  // fn-execute-a0le0 
+  // fn-execute-a0le0
   rule
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
@@ -27,7 +27,7 @@ module REQUIRES01-A0LE0-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> #gas(INITGAS, 0, 0) => ?_ </gas>
+          <gas> #gas(_INITGAS, 0, 0) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
@@ -40,7 +40,7 @@ module REQUIRES01-A0LE0-SPEC
         </substate>
         <gasPrice> _ </gasPrice>
         <origin> _ </origin> // tx.origin
-        <blockhashes> BLOCK_HASHES </blockhashes> // block.blockhash
+        <blockhashes> _BLOCK_HASHES </blockhashes> // block.blockhash
         <block>
           <previousHash> _ </previousHash>
           <ommersHash> _ </ommersHash>
@@ -69,12 +69,8 @@ module REQUIRES01-A0LE0-SPEC
             <acctID> CONTRACT_ID </acctID>
             <balance> CONTRACT_BAL </balance>
             <code> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063fe0d94c1146044575b600080fd5b348015604f57600080fd5b50606c6004803603810190808035906020019092919050505060ae565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6000808211151560bd57600080fd5b600590509190505600a165627a7a72305820885b6ddc678a06d1bd68f28d6a516e4fb72fb2d325ac780ffc7605ac95a408390029") </code>
-            <storage>
-_
-            </storage>
-            <origStorage>
-_
-            </origStorage>
+            <storage> _S </storage>
+            <origStorage> _OS </origStorage>
             <nonce> _ </nonce>
           </account>
 
@@ -109,23 +105,20 @@ _
         <messages> _ </messages>
       </network>
     </ethereum>
-    requires
-     #rangeAddress(CONTRACT_ID)
+    requires #rangeAddress(CONTRACT_ID)
      andBool #rangeAddress(CALLEE_ID)
      andBool #rangeUInt(256, NOW)
      andBool #rangeUInt(128, BLOCK_NUM) // Solidity
 
      // Account address normality
-     andBool CONTRACT_ID  >Int 0 andBool (notBool CONTRACT_ID  in #precompiledAccounts(BYZANTIUM))
-     andBool CALLEE_ID  >Int 0 andBool (notBool CALLEE_ID  in #precompiledAccounts(BYZANTIUM))
+     andBool CONTRACT_ID >Int 0 andBool (notBool CONTRACT_ID in #precompiledAccounts(BYZANTIUM))
+     andBool CALLEE_ID   >Int 0 andBool (notBool CALLEE_ID   in #precompiledAccounts(BYZANTIUM))
 
-andBool #rangeUInt(256, CONTRACT_BAL)
-andBool #rangeUInt(256, CALLEE_BAL)andBool #range(0 <= CD < 1024)
-andBool #rangeAddress(MSG_SENDER)andBool #rangeUInt(256, A0)andBool A0 <=Int 0
-    ensures true
-
-
-
+     andBool #rangeUInt(256, CONTRACT_BAL)
+     andBool #rangeUInt(256, CALLEE_BAL)
+     andBool #range(0 <= CD < 1024)
+     andBool #rangeAddress(MSG_SENDER)
+     andBool #rangeUInt(256, A0)
+     andBool A0 <=Int 0
 
 endmodule
-
