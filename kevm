@@ -52,16 +52,13 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module run_dir additional_proof_args repl_cmd repl_script
+    local def_module run_dir additional_proof_args
 
     def_module="$1" ; shift
 
-    repl_cmd="${REPL_CMD:-$k_release_dir/bin/kore-repl}"
-    repl_script="${REPL_SCRIPT:-$kevm_dir/kast.kscript}"
-
     additional_proof_args=()
     ! $debug      || additional_proof_args+=(--debug)
-    ! $repl       || additional_proof_args+=(--haskell-backend-command "$repl_cmd --repl-script $repl_script")
+    ! $repl       || additional_proof_args+=(--debugger --debug-script kast.kscript)
     ! $bug_report || additional_proof_args+=(--haskell-backend-command "kore-exec --bug-report kevm-bug")
 
     export K_OPTS=${K_OPTS:--Xmx16G}

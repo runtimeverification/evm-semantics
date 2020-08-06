@@ -3,7 +3,7 @@ requires "verification.k"
 module ECRECOVER00-SIGINVALID-SPEC
   imports VERIFICATION
 
-  // fn-execute-siginvalid 
+  // fn-execute-siginvalid
   rule
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
@@ -27,7 +27,7 @@ module ECRECOVER00-SIGINVALID-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> #gas(INITGAS, 0, 0) => ?_ </gas>
+          <gas> #gas(_INITGAS, 0, 0) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
@@ -40,7 +40,7 @@ module ECRECOVER00-SIGINVALID-SPEC
         </substate>
         <gasPrice> _ </gasPrice>
         <origin> _ </origin> // tx.origin
-        <blockhashes> BLOCK_HASHES </blockhashes> // block.blockhash
+        <blockhashes> _BLOCK_HASHES </blockhashes> // block.blockhash
         <block>
           <previousHash> _ </previousHash>
           <ommersHash> _ </ommersHash>
@@ -109,27 +109,25 @@ _
         <messages> _ </messages>
       </network>
     </ethereum>
-    requires
-     #rangeAddress(CONTRACT_ID)
+    requires #rangeAddress(CONTRACT_ID)
      andBool #rangeAddress(CALLEE_ID)
      andBool #rangeUInt(256, NOW)
      andBool #rangeUInt(128, BLOCK_NUM) // Solidity
 
      // Account address normality
-     andBool CONTRACT_ID  >Int 0 andBool (notBool CONTRACT_ID  in #precompiledAccounts(BYZANTIUM))
-     andBool CALLEE_ID  >Int 0 andBool (notBool CALLEE_ID  in #precompiledAccounts(BYZANTIUM))
+     andBool CONTRACT_ID >Int 0 andBool (notBool CONTRACT_ID in #precompiledAccounts(BYZANTIUM))
+     andBool CALLEE_ID   >Int 0 andBool (notBool CALLEE_ID   in #precompiledAccounts(BYZANTIUM))
 
-andBool #rangeUInt(256, CONTRACT_BAL)
-andBool #rangeUInt(256, CALLEE_BAL)andBool #range(0 <= CD < 1024)
-andBool #rangeAddress(MSG_SENDER)andBool #rangeUInt(256, HASH)
-andBool #rangeUInt(8, SIGV)
-andBool #rangeBytes(32, SIGR)
-andBool #rangeBytes(32, SIGS)
-andBool ECREC_DATA ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV), #bytes32(SIGR), #bytes32(SIGS) )andBool #ecrecEmpty( ECREC_DATA )
-    ensures true
-
-
-
+     andBool #rangeUInt(256, CONTRACT_BAL)
+     andBool #rangeUInt(256, CALLEE_BAL)
+     andBool #range(0 <= CD < 1024)
+     andBool #rangeAddress(MSG_SENDER)
+     andBool #rangeUInt(256, HASH)
+     andBool #rangeUInt(8, SIGV)
+     andBool #rangeBytes(32, SIGR)
+     andBool #rangeBytes(32, SIGS)
+     andBool ECREC_DATA ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV), #bytes32(SIGR), #bytes32(SIGS) )
+     andBool #ecrecEmpty( ECREC_DATA )
 
 endmodule
 

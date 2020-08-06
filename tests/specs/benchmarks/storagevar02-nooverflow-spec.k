@@ -3,15 +3,15 @@ requires "verification.k"
 module STORAGEVAR02-NOOVERFLOW-SPEC
   imports VERIFICATION
 
-  // fn-execute-nooverflow 
+  // fn-execute-nooverflow
   rule
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
-    <schedule> BYZANTIUM </schedule>
+    <schedule> ISTANBUL </schedule>
     <ethereum>
       <evm>
-        <output> _ => #encodeArgs(#uint256(N1)) </output>
+        <output> _ => #encodeArgs(#uint256(N0 +Int 1)) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
@@ -69,12 +69,8 @@ module STORAGEVAR02-NOOVERFLOW-SPEC
             <acctID> CONTRACT_ID </acctID>
             <balance> CONTRACT_BAL </balance>
             <code> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806361461954146044575b600080fd5b348015604f57600080fd5b506056606c565b6040518082815260200191505060405180910390f35b600060016000540160008190555060005490509056fea165627a7a7230582084ad795d13123f60bc7fd2a18dba66eb8d320ddea8765847f2ae5982179470600029") </code>
-            <storage>
-S [ #hashedLocation("Solidity", 0, .IntList) <- (N0 => N1) ]
-            </storage>
-            <origStorage>
-_
-            </origStorage>
+            <storage> S => S [ #hashedLocation("Solidity", 0, .IntList) <- N0 +Int 1 ] </storage>
+            <origStorage> _OS => ?OS </origStorage>
             <nonce> _ </nonce>
           </account>
 
@@ -109,23 +105,22 @@ _
         <messages> _ </messages>
       </network>
     </ethereum>
-    requires
-     #rangeAddress(CONTRACT_ID)
+    requires #rangeAddress(CONTRACT_ID)
      andBool #rangeAddress(CALLEE_ID)
      andBool #rangeUInt(256, NOW)
      andBool #rangeUInt(128, BLOCK_NUM) // Solidity
 
      // Account address normality
-     andBool CONTRACT_ID  >Int 0 andBool (notBool CONTRACT_ID  in #precompiledAccounts(BYZANTIUM))
-     andBool CALLEE_ID  >Int 0 andBool (notBool CALLEE_ID  in #precompiledAccounts(BYZANTIUM))
+     andBool CONTRACT_ID >Int 0 andBool (notBool CONTRACT_ID in #precompiledAccounts(BYZANTIUM))
+     andBool CALLEE_ID   >Int 0 andBool (notBool CALLEE_ID   in #precompiledAccounts(BYZANTIUM))
 
-andBool #rangeUInt(256, CONTRACT_BAL)
-andBool #rangeUInt(256, CALLEE_BAL)andBool #range(0 <= CD < 1024)
-andBool #rangeAddress(MSG_SENDER)
-andBool #range(0 <= N0 < 2 ^Int 256 -Int 1)
-andBool N1 ==Int N0 +Int 1
-
-
+     andBool #rangeUInt(256, CONTRACT_BAL)
+     andBool #rangeUInt(256, CALLEE_BAL)
+     andBool #range(0 <= CD < 1024)
+     andBool #rangeAddress(MSG_SENDER)
+     andBool #range(0 <= N0        < pow256)
+     andBool #range(0 <= N0 +Int 1 < pow256)
+     andBool #lookup(S, #hashedLocation("Solidity", 0, .IntList)) ==Int N0
 
 endmodule
 
