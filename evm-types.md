@@ -627,7 +627,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, functional, memo]
                        | #padRightToWidth ( Int , ByteArray ) [function, memo]
  // --------------------------------------------------------------------------------------
-    rule [#padToWidth]:      #padToWidth(N, WS)      => #replicateAux(N -Int #sizeByteArray(WS), 0, WS)
+    rule [#padToWidth]:      #padToWidth(N, WS)      => #replicateAux(N -Int #sizeByteArray(WS), 0, WS) [concrete]
     rule [#padRightToWidth]: #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0)
 ```
 
