@@ -211,12 +211,9 @@ module VERIFICATION
 
     rule #ceil32(X) => X requires X modInt 32 ==Int 0
 
-    rule 0 <=Int #ceil32(X) -Int X => true requires 0 <=Int X [simplification]
-
     rule 0 <Int 1 <<Int N => true requires 0 <=Int N [simplification]
 
-    rule X <=Int #ceil32(X) => true
-      requires X >=Int 0
+    rule X <=Int #ceil32(X) => true requires X >=Int 0 [simplification]
 
   // ########################
   // Gnosis
