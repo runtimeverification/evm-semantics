@@ -305,6 +305,12 @@ endmodule
 module VERIFICATION-HASKELL [symbolic, kore]
     imports VERIFICATION-COMMON
 
+ //
+ // Infiniite Gas
+ // Here we use the construct `#gas` to count _up_ gas used instead of counting down.
+ // This allows (i) computing final gas used, and (ii) never stopping because of out-of-gas.
+ //
+
     syntax Int ::= #gas ( Int ) [function, functional, no-evaluators]
  // -----------------------------------------------------------------
     rule #gas(_, _, _) => #gas(0)
