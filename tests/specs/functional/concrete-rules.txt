@@ -1,2 +1,6 @@
+EVM-TYPES.#asByteStack
+EVM-TYPES.#asByteStackAux.recursive
 EVM-TYPES.mapWriteBytes.recursive
+EVM-TYPES.#padRightToWidth
+EVM-TYPES.#padToWidth
 EVM-TYPES.#range
