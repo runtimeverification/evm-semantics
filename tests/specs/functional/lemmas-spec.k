@@ -92,6 +92,11 @@ module LEMMAS-SPEC
     rule <k> runLemma ( #buf( 32 , I:Int )                ==K #buf( 32 , 1 )     ) => doneLemma( I ==K 1    ) ... </k>
     rule <k> runLemma ( #buf( 32 , 1 )                    ==K #buf( 32 , I:Int ) ) => doneLemma( I ==K 1    ) ... </k>
 
-    rule <k> runLemma ( chop( #lookup(M, KEY) ) ) => doneLemma( #lookup(M, KEY) ) ... </k>
+    //chop simplification
+    rule <k> runLemma ( chop( #lookup(M, KEY)   ) ) => doneLemma( #lookup(M, KEY) ) ... </k>
+    rule <k> runLemma ( chop( bool2Word(B:Bool) ) ) => doneLemma( bool2Word(B)    ) ... </k>
+
+    //#padToWidth simplification
+    rule <k> runLemma ( #padToWidth( 32 , #asByteStack( bool2Word ( B:Bool ) ) ) ) => doneLemma( #buf( 32 , bool2Word ( B ) ) ) ... </k>
 
 endmodule
