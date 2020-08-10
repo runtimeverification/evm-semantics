@@ -563,10 +563,10 @@ The local memory of execution is a byte-array (instead of a word-array).
 
     syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional]
  // --------------------------------------------------------------------------
-    rule  _ [ START .. WIDTH ] => .ByteArray                      requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
-    rule WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH)
-      requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int #sizeByteArray(WS) [concrete]
-    rule  _ [ _     .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0)                        [concrete, owise]
+    rule                 _ [ START .. WIDTH ] => .ByteArray                      requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
+    rule [bytesRange] : WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH)
+      requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int #sizeByteArray(WS)
+    rule                 _ [ _     .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0) [owise]
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, klabel(sizeByteArray), smtlib(sizeByteArray)]
  // ----------------------------------------------------------------------------------------------------------------
@@ -575,10 +575,10 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, functional]
                        | #padRightToWidth ( Int , ByteArray ) [function, functional]
  // --------------------------------------------------------------------------------
-    rule #padToWidth(N, BS)      =>               BS        requires notBool (N >=Int 0)
-    rule #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0  [concrete]
-    rule #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
-    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0  [concrete]
+    rule                        #padToWidth(N, BS)      =>               BS        requires notBool (N >=Int 0)
+    rule [padToWidthNonEmpty] : #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0
+    rule                        #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
+    rule                        #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0
 ```
 
 ```{.k .nobytes}
