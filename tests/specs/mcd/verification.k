@@ -1,9 +1,11 @@
 requires "../lemmas.k"
 requires "bin_runtime.k"
+requires "storage.k"
 
 module VERIFICATION
     imports LEMMAS
-    imports BIN_RUNTIME
+    imports DSS-BIN-RUNTIME
+    imports DSS-STORAGE
 
     syntax Bool ::= #notPrecompileAddress ( Int ) [function]
  // --------------------------------------------------------
