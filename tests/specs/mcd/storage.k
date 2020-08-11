@@ -3,9 +3,6 @@ requires "edsl.md"
 module DSS-STORAGE
     imports EDSL
 
- // # dss storage model
- // -------------------
-
  // ### Vat
  // -------
 
