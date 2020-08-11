@@ -11,7 +11,7 @@ module VAT-MOVE-DIFF-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .WordStack </output>
+          <output> .ByteArray </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
