@@ -2,10 +2,18 @@ requires "../lemmas.k"
 requires "bin_runtime.k"
 requires "storage.k"
 
+module HASKELL-HASH2 [symbolic, kore]
+    imports EDSL
+
+    syntax Int ::= hash2(Int, Int) [function]
+ // -----------------------------------------
+endmodule
+
 module VERIFICATION
     imports LEMMAS
     imports DSS-BIN-RUNTIME
     imports DSS-STORAGE
+    imports HASKELL-HASH2
 
     syntax Bool ::= #notPrecompileAddress ( Int ) [function]
  // --------------------------------------------------------
