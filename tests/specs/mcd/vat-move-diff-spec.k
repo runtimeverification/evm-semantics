@@ -77,7 +77,11 @@ module VAT-MOVE-DIFF-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> STORAGE => ?STORAGE </storage>
+              <storage> STORAGE
+                     => STORAGE
+                          [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ]
+                          [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ]
+              </storage>
               <origStorage> ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vat => ?_ </nonce>
             </account>
@@ -204,9 +208,5 @@ module VAT-MOVE-DIFF-SPEC
      andBool ((#lookup(ORIG_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int Junk_0)
      andBool ((#lookup(ORIG_STORAGE, #Vat.dai[ABI_src]           ) ==Int Junk_1)
      andBool ((#lookup(ORIG_STORAGE, #Vat.dai[ABI_dst]           ) ==Int Junk_2))))
-
-     ensures ((#lookup(?STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int May                 )
-     andBool ((#lookup(?STORAGE, #Vat.dai[ABI_src]           ) ==Int Dai_src -Int ABI_rad)
-     andBool ((#lookup(?STORAGE, #Vat.dai[ABI_dst]           ) ==Int Dai_dst +Int ABI_rad))))
 
 endmodule
