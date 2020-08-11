@@ -59,8 +59,8 @@ module LEMMAS
     rule         chop(_V) <Int pow256 => true        [simplification]
 
     // bool2Word range & simplification
-    rule 0 <=Int bool2Word(B)             => true    [simplification]
-    rule         bool2Word(B) <Int pow256 => true    [simplification]
+    rule 0 <=Int bool2Word(_B)             => true   [simplification]
+    rule         bool2Word(_B) <Int pow256 => true   [simplification]
 
 endmodule
 
