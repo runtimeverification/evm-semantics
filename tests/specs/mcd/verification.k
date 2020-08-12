@@ -27,9 +27,8 @@ module VERIFICATION
     rule chop(hash2(V1, V2) +Int 1) => hash2(V1, V2) +Int 1
 
     // sizeWordStack/sizeByteArray
-    rule #sizeByteArray(WS ++ WS')                        => #sizeByteArray(WS) +Int #sizeByteArray(WS')
-    rule #sizeByteArray(#padToWidth(32, #asByteStack(I))) => 32 requires 0 <=Int I andBool I <Int pow256
-    rule #sizeByteArray(_WS [ _START .. WIDTH ])          => WIDTH
+    rule #sizeByteArray(#padToWidth(32, #asByteStack(I))) => 32    requires 0 <=Int I andBool I <Int pow256
+    rule #sizeByteArray(_WS [ _START .. WIDTH ])          => WIDTH requires 0 <=Int WIDTH andBool 0 <=Int _START
 
     rule 0 <=Int #sizeWordStack(_, _) => true [smt-lemma]
     rule 0 <=Int #sizeByteArray(_)    => true [smt-lemma]
