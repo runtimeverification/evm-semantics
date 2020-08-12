@@ -29,12 +29,6 @@ module VERIFICATION
     // sizeWordStack/sizeByteArray
     rule #sizeByteArray(#padToWidth(32, #asByteStack(I))) => 32 requires 0 <=Int I andBool I <Int pow256
 
-    // ranged lookups in ByteArray
-    rule (WS ++ WS') [ 0 .. WIDTH ] => WS ++ (WS' [ 0 .. WIDTH -Int #sizeByteArray(WS) ]) requires #sizeByteArray(WS) <=Int WIDTH
-
-    rule (WS ++ _WS') [ START .. WIDTH ] => WS  [ START                         .. WIDTH ] requires START +Int WIDTH <=Int #sizeByteArray(WS)
-    rule (WS ++  WS') [ START .. WIDTH ] => WS' [ START -Int #sizeByteArray(WS) .. WIDTH ] requires #sizeByteArray(WS) <=Int START
-
     rule (W0 : WS) [ 0     .. WIDTH ] => W0 : (WS [ 0 .. WIDTH -Int 1 ]) requires 0 <Int WIDTH
     rule (_  : WS) [ START .. WIDTH ] => WS [ START -Int 1 .. WIDTH ]    requires 0 <Int START
 

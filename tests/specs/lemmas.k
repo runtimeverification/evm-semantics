@@ -31,6 +31,17 @@ module LEMMAS
     rule _BUF [ _ .. W ] => .ByteArray requires W ==Int 0                    [simplification]
     rule  BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
 
+    rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])
+      requires #range(0 <= START < #sizeByteArray(BUF1))
+       andBool #sizeByteArray(BUF1) <Int START +Int WIDTH [simplification]
+
+    rule (BUF1 ++_BUF2)[START .. WIDTH] => (BUF1[START .. WIDTH])
+      requires #range(0 <= START < #sizeByteArray(BUF1))
+       andBool START +Int WIDTH <=Int #sizeByteArray(BUF1) [simplification]
+
+    rule (BUF1 ++ BUF2)[START .. WIDTH] => BUF2 [START -Int #sizeByteArray(BUF1) .. WIDTH]
+      requires START >=Int #sizeByteArray(BUF1) [simplification]
+
     rule #sizeByteArray(BUF1 ++ BUF2)                  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
     rule #sizeByteArray(#buf(SIZE, _))                 => SIZE                                            [simplification]
     rule #sizeByteArray(#buf(SIZE, _)[START .. WIDTH]) => WIDTH
@@ -261,17 +272,6 @@ module LEMMAS-HASKELL [symbolic, kore]
     //see https://github.com/kframework/kore/issues/1944#issuecomment-657733745
     rule B ==Bool false    => notBool B                                                                  [simplification]
     rule notBool notBool B => B                                                                          [simplification]
-
-    rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])
-      requires #range(0 <= START < #sizeByteArray(BUF1))
-       andBool #sizeByteArray(BUF1) <Int START +Int WIDTH [simplification]
-
-    rule (BUF1 ++_BUF2)[START .. WIDTH] => (BUF1[START .. WIDTH])
-      requires #range(0 <= START < #sizeByteArray(BUF1))
-       andBool START +Int WIDTH <=Int #sizeByteArray(BUF1) [simplification]
-
-    rule (BUF1 ++ BUF2)[START .. WIDTH] => BUF2 [START -Int #sizeByteArray(BUF1) .. WIDTH]
-      requires START >=Int #sizeByteArray(BUF1) [simplification]
 
     rule #asWord(BUF) /Int D => #asWord(BUF[0 .. #sizeByteArray(BUF) -Int log256Int(D)])
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
