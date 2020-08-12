@@ -30,9 +30,6 @@ module VERIFICATION
     rule #sizeByteArray(#padToWidth(32, #asByteStack(I))) => 32    requires 0 <=Int I andBool I <Int pow256
     rule #sizeByteArray(_WS [ _START .. WIDTH ])          => WIDTH requires 0 <=Int WIDTH andBool 0 <=Int _START
 
-    rule 0 <=Int #sizeWordStack(_, _) => true [smt-lemma]
-    rule 0 <=Int #sizeByteArray(_)    => true [smt-lemma]
-
     // ranged lookups in ByteArray
     rule (WS ++ WS') [ 0 .. WIDTH ] => WS ++ (WS' [ 0 .. WIDTH -Int #sizeByteArray(WS) ]) requires #sizeByteArray(WS) <=Int WIDTH
 
