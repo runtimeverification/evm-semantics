@@ -27,8 +27,7 @@ module VERIFICATION
     rule chop(hash2(V1, V2) +Int 1) => hash2(V1, V2) +Int 1
 
     // sizeWordStack/sizeByteArray
-    rule #sizeByteArray(#padToWidth(32, #asByteStack(I))) => 32    requires 0 <=Int I andBool I <Int pow256
-    rule #sizeByteArray(_WS [ _START .. WIDTH ])          => WIDTH requires 0 <=Int WIDTH andBool 0 <=Int _START
+    rule #sizeByteArray(#padToWidth(32, #asByteStack(I))) => 32 requires 0 <=Int I andBool I <Int pow256
 
     // ranged lookups in ByteArray
     rule (WS ++ WS') [ 0 .. WIDTH ] => WS ++ (WS' [ 0 .. WIDTH -Int #sizeByteArray(WS) ]) requires #sizeByteArray(WS) <=Int WIDTH
@@ -46,10 +45,6 @@ module VERIFICATION
     // #unsigned
     rule #unsigned(#sizeWordStack(WS, N) +Int M) => #sizeWordStack(WS, N) +Int M requires 0 <=Int M andBool #sizeWordStack(WS, N) +Int M <Int maxSInt256
 
-    // #storage lookup
-    rule #lookup( MAP [ KEY <- _VALUE ], KEY') => #lookup(MAP, KEY') requires KEY =/=K KEY'
-    rule #lookup(_MAP [ KEY <-  VALUE ], KEY') => VALUE              requires KEY  ==K KEY'
-
     // key differences
     rule hash2(_, 5)  ==K hash2(_, hash2(_, _)) => false                              // vat final implication
     rule hash2(V1, _) ==K hash2(V2, _)          => false requires V1 =/=Int V2        // vat step 2674
@@ -66,8 +61,7 @@ module VERIFICATION
     rule MAP [ _N := .ByteArray ] => MAP
     rule MAP [  N := W : WS     ] => MAP [ N <- W ] [ N +Int 1 := WS ]
 
-    rule MAP:Memory [ N <- V           ] [ N' <- V' ] => MAP [ N' <- V' ] [ N <- V ] requires N'                          <Int N
-    rule MAP:Memory [ N := V:ByteArray ] [ N' <- V' ] => MAP [ N' <- V' ] [ N := V ] requires N'                          <Int N orBool N +Int #sizeByteArray(V) <=Int N'
-    rule MAP:Memory [ N := V:ByteArray ] [ N' := V' ] => MAP [ N' := V' ] [ N := V ] requires N' +Int #sizeByteArray(V') <=Int N
+    rule MAP:Memory [ N <- V           ] [ N' <- V' ] => MAP [ N' <- V' ] [ N <- V ] requires N' <Int N
+    rule MAP:Memory [ N := V:ByteArray ] [ N' <- V' ] => MAP [ N' <- V' ] [ N := V ] requires N' <Int N orBool N +Int #sizeByteArray(V) <=Int N'
     rule MAP:Memory [ N <- _V          ] [ N' := V' ] => MAP [ N' := V' ]            requires N' <=Int N andBool N <Int N' +Int #sizeByteArray(V')
 endmodule
