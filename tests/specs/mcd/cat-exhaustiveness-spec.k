@@ -11,10 +11,10 @@ rule [Cat..exhaustiveness]:
   <schedule> ISTANBUL </schedule>
   <ethereum>
     <evm>
-      <output> _ => VOutput </output>
+      <output> _ => ?_ </output>
       <statusCode> _ => EVMC_REVERT </statusCode>
       <endPC> _ => ?_ </endPC>
-      <callStack> VCallStack </callStack>
+      <callStack> _VCallStack </callStack>
       <interimStates> _ </interimStates>
       <touchedAccounts> _ => ?_ </touchedAccounts>
       <callState>
@@ -30,11 +30,11 @@ rule [Cat..exhaustiveness]:
         <gas> VGas => ?_ </gas>
         <memoryUsed> 0 => ?_ </memoryUsed>
         <callGas> _ => ?_ </callGas>
-        <static> VStatic </static>
+        <static> _VStatic </static>
         <callDepth> VCallDepth </callDepth>
       </callState>
       <substate>
-        <selfDestruct> VSelfDestruct </selfDestruct>
+        <selfDestruct> _VSelfDestruct </selfDestruct>
         <log> _ => ?_ </log>
         <refund> _ => ?_ </refund>
       </substate>
@@ -62,7 +62,7 @@ rule [Cat..exhaustiveness]:
     </evm>
     <network>
       <chainID> VChainId </chainID>
-      <activeAccounts> VActiveAccounts </activeAccounts>
+      <activeAccounts> _VActiveAccounts </activeAccounts>
       <accounts> _ </accounts>
       <txOrder> _ </txOrder>
       <txPending> _ </txPending>
