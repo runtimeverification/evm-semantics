@@ -55,9 +55,12 @@ module LEMMAS
 
     // chop range & simplification
     rule chop(I) => I requires #rangeUInt( 256 , I ) [simplification]
-    rule chop(bool2Word(B)) => bool2Word(B)          [simplification]
     rule 0 <=Int chop(_V)             => true        [simplification]
     rule         chop(_V) <Int pow256 => true        [simplification]
+
+    // bool2Word range & simplification
+    rule 0 <=Int bool2Word(B)             => true    [simplification]
+    rule         bool2Word(B) <Int pow256 => true    [simplification]
 
 endmodule
 

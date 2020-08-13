@@ -12,6 +12,7 @@ pipeline {
     K_ROOT_URL   = 'https://github.com/kframework/k/releases/download'
     PACKAGE      = 'kevm'
     ROOT_URL     = 'https://github.com/kframework/evm-semantics/releases/download'
+    LONG_REV     = """${sh(returnStdout: true, script: 'git rev-parse HEAD').trim()}"""
   }
   options { ansiColor('xterm') }
   stages {
@@ -66,23 +67,10 @@ pipeline {
       stages {
         stage('Update Dependents') {
           steps {
-            build job: 'rv-devops/master', propagate: false, wait: false                                     \
-                , parameters: [ booleanParam(name: 'UPDATE_DEPS_SUBMODULE', value: true)                     \
-                              , string(name: 'PR_REVIEWER', value: 'ehildenb')                               \
-                              , string(name: 'UPDATE_DEPS_REPOSITORY', value: 'runtimeverification/firefly') \
-                              , string(name: 'UPDATE_DEPS_SUBMODULE_DIR', value: 'deps/evm-semantics')       \
-                              ]
-            build job: 'rv-devops/master', propagate: false, wait: false                                                \
-                , parameters: [ booleanParam(name: 'UPDATE_DEPS_SUBMODULE', value: true)                                \
-                              , string(name: 'PR_REVIEWER', value: 'ehildenb')                                          \
-                              , string(name: 'UPDATE_DEPS_REPOSITORY', value: 'runtimeverification/erc20-verification') \
-                              , string(name: 'UPDATE_DEPS_SUBMODULE_DIR', value: 'deps/evm-semantics')                  \
-                              ]
-            build job: 'rv-devops/master', propagate: false, wait: false                                                           \
-                , parameters: [ booleanParam(name: 'UPDATE_DEPS_SUBMODULE', value: true)                                           \
-                              , string(name: 'PR_REVIEWER', value: 'daejunpark')                                                   \
-                              , string(name: 'UPDATE_DEPS_REPOSITORY', value: 'runtimeverification/deposit-contract-verification') \
-                              , string(name: 'UPDATE_DEPS_SUBMODULE_DIR', value: 'deps/evm-semantics')                             \
+            build job: 'rv-devops/master', propagate: false, wait: false                                         \
+                , parameters: [ booleanParam ( name: 'UPDATE_DEPS'         , value: true                       ) \
+                              , string       ( name: 'UPDATE_DEPS_REPO'    , value: 'kframework/evm-semantics' ) \
+                              , string       ( name: 'UPDATE_DEPS_VERSION' , value: "${env.LONG_REV}")           \
                               ]
           }
         }
