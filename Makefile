@@ -42,7 +42,7 @@ export PLUGIN_SUBMODULE
         test-web3 test-all-web3 test-failing-web3                                                                                \
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
-        test-prove-imp-specs test-klab-prove test-haskell-dry-run                                                                \
+        test-prove-imp-specs test-prove-mcd test-klab-prove test-haskell-dry-run                                                 \
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         media media-pdf metropolis-theme
@@ -433,8 +433,9 @@ prove_erc20_tests      := $(filter-out $(prove_failing_tests), $(wildcard $(prov
 prove_bihu_tests       := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/bihu/*-spec.k))
 prove_examples_tests   := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k))
 prove_imp_specs_tests  := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/imp-specs/*-spec.k))
+prove_mcd_tests        := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/mcd/*-spec.k))
 
-test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-imp-specs
+test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-imp-specs test-prove-mcd
 test-prove-benchmarks: $(prove_benchmarks_tests:=.prove)
 test-prove-functional: $(prove_functional_tests:=.prove)
 test-prove-opcodes:    $(prove_opcodes_tests:=.prove)
@@ -442,6 +443,7 @@ test-prove-erc20:      $(prove_erc20_tests:=.prove)
 test-prove-bihu:       $(prove_bihu_tests:=.prove)
 test-prove-examples:   $(prove_examples_tests:=.prove)
 test-prove-imp-specs:  $(prove_imp_specs_tests:=.prove)
+test-prove-mcd:        $(prove_mcd_tests:=.prove)
 
 test-failing-prove: $(prove_failing_tests:=.prove)
 
