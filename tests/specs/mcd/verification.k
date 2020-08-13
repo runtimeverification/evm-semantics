@@ -28,4 +28,10 @@ module VERIFICATION
 
     rule hash2(V1, _) ==K hash2(V2, _) => false requires V1 =/=Int V2
 
+    // ### cat-exhaustiveness
+
+    rule #sizeByteArray(_WS [ _START .. WIDTH ]) => WIDTH requires 0 <=Int _START andBool 0 <=Int WIDTH
+
+    rule WS [ START .. _WIDTH ] [ 0 .. WIDTH' ]  => WS [ START .. WIDTH' ] requires WIDTH' <=Int _WIDTH
+
 endmodule
