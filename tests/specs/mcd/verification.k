@@ -63,4 +63,9 @@ module VERIFICATION
 
     rule notAddrMask &Int ADDR => 0 requires #rangeAddress(ADDR)
 
+    // ### PERFORMANCE: dai-adduu-fail-rough
+    // 99s -> 48s
+
+    rule #sizeWordStack(WS, N) => #sizeWordStack(WS, 0) +Int N requires N =/=Int 0
+
 endmodule
