@@ -6,6 +6,9 @@ module LEMMAS
     imports LEMMAS-JAVA
     imports LEMMAS-HASKELL
 
+    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
+    rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma]
+
     rule #lookup ( _M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification]
     rule #lookup (  M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
 
@@ -27,6 +30,17 @@ module LEMMAS
 
     rule _BUF [ _ .. W ] => .ByteArray requires W ==Int 0                    [simplification]
     rule  BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
+
+    rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])
+      requires #range(0 <= START < #sizeByteArray(BUF1))
+       andBool #sizeByteArray(BUF1) <Int START +Int WIDTH [simplification]
+
+    rule (BUF1 ++_BUF2)[START .. WIDTH] => (BUF1[START .. WIDTH])
+      requires #range(0 <= START < #sizeByteArray(BUF1))
+       andBool START +Int WIDTH <=Int #sizeByteArray(BUF1) [simplification]
+
+    rule (BUF1 ++ BUF2)[START .. WIDTH] => BUF2 [START -Int #sizeByteArray(BUF1) .. WIDTH]
+      requires START >=Int #sizeByteArray(BUF1) [simplification]
 
     rule #sizeByteArray(BUF1 ++ BUF2)                  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
     rule #sizeByteArray(#buf(SIZE, _))                 => SIZE                                            [simplification]
@@ -59,8 +73,8 @@ module LEMMAS
     rule         chop(_V) <Int pow256 => true        [simplification]
 
     // bool2Word range & simplification
-    rule 0 <=Int bool2Word(B)             => true    [simplification]
-    rule         bool2Word(B) <Int pow256 => true    [simplification]
+    rule 0 <=Int bool2Word(_B)             => true   [simplification]
+    rule         bool2Word(_B) <Int pow256 => true   [simplification]
 
 endmodule
 
@@ -259,17 +273,6 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule B ==Bool false    => notBool B                                                                  [simplification]
     rule notBool notBool B => B                                                                          [simplification]
 
-    rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])
-      requires #range(0 <= START < #sizeByteArray(BUF1))
-       andBool #sizeByteArray(BUF1) <Int START +Int WIDTH [simplification]
-
-    rule (BUF1 ++_BUF2)[START .. WIDTH] => (BUF1[START .. WIDTH])
-      requires #range(0 <= START < #sizeByteArray(BUF1))
-       andBool START +Int WIDTH <=Int #sizeByteArray(BUF1) [simplification]
-
-    rule (BUF1 ++ BUF2)[START .. WIDTH] => BUF2 [START -Int #sizeByteArray(BUF1) .. WIDTH]
-      requires START >=Int #sizeByteArray(BUF1) [simplification]
-
     rule #asWord(BUF) /Int D => #asWord(BUF[0 .. #sizeByteArray(BUF) -Int log256Int(D)])
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
        andBool #sizeByteArray(BUF) >=Int log256Int(D) [simplification]
@@ -308,9 +311,7 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
     rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
 
-    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
-    rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma]
-    rule 0 <=Int lengthBytes ( _ )        => true [smt-lemma]
+    rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma]
 
     //Simplification of bool2Word() ==Int CONCRETE, #buf() ==K CONCRETE
     rule I                   ==Int bool2Word( B:Bool ) => bool2Word(B) ==Int I  [simplification, concrete(I)]
