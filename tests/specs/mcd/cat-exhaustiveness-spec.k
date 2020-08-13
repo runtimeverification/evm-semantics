@@ -12,7 +12,7 @@ rule [Cat..exhaustiveness]:
   <ethereum>
     <evm>
       <output> _ => VOutput </output>
-      <statusCode> _ => EVMC_REVERT_NETWORK </statusCode>
+      <statusCode> _ => EVMC_REVERT </statusCode>
       <endPC> _ => ?_ </endPC>
       <callStack> VCallStack </callStack>
       <interimStates> _ </interimStates>
