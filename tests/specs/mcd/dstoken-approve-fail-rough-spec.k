@@ -193,7 +193,7 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
      andBool (#rangeAddress(ABI_usr)
      andBool (#rangeUInt(256, ABI_wad)
      andBool (#rangeUInt(256, Allowed)
-     andBool (#rangeUInt(1, Stopped)
+     andBool (#rangeBool(Stopped)
      andBool (#rangeAddress(Owner)
      andBool (#sizeByteArray(CD) <=Int 1250000000
      andBool (#notPrecompileAddress(Owner)
