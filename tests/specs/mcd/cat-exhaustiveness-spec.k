@@ -25,7 +25,7 @@ module CAT-EXHAUSTIVENESS-SPEC
              <callData> VCallData </callData>
              <callValue> VCallValue </callValue>
              <wordStack> .WordStack => ?_ </wordStack>
-             <localMem> .Map => ?_ </localMem>
+             <localMem> .Memory => ?_ </localMem>
              <pc> 0 => ?_ </pc>
              <gas> VGas => ?_ </gas>
              <memoryUsed> 0 => ?_ </memoryUsed>
