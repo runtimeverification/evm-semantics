@@ -30,8 +30,8 @@ module VERIFICATION
 
     // ### cat-exhaustiveness
 
-    rule #sizeByteArray(_WS [ _START .. WIDTH ]) => WIDTH requires 0 <=Int _START andBool 0 <=Int WIDTH
+    rule #sizeByteArray(_WS [ START .. WIDTH ]) => WIDTH requires 0 <=Int START andBool 0 <=Int WIDTH
 
-    rule WS [ START .. _WIDTH ] [ 0 .. WIDTH' ]  => WS [ START .. WIDTH' ] requires WIDTH' <=Int _WIDTH
+    rule WS [ START .. WIDTH ] [ 0 .. WIDTH' ]  => WS [ START .. WIDTH' ] requires WIDTH' <=Int WIDTH
 
 endmodule
