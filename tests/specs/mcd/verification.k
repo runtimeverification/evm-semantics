@@ -109,4 +109,11 @@ module VERIFICATION
 
     rule M [ K <- V ] => M requires #lookup(M, K) ==Int V
 
+    // ### cat-ilks-pass
+
+    rule chop(hash2(I, I') +Int N) => hash2(I, I') +Int N requires N <Int 3
+
+    rule hash2(_, _) +Int N ==K hash2(_, _) +Int M => false requires N =/=Int M
+    rule hash2(_, _)        ==K hash2(_, _) +Int M => false requires 0 =/=Int M
+
 endmodule
