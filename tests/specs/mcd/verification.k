@@ -68,4 +68,11 @@ module VERIFICATION
 
     rule #sizeWordStack(WS, N) => #sizeWordStack(WS, 0) +Int N requires N =/=Int 0
 
+    // ### PERFORMANCE: vat-deny-diff-fail-rough
+    // 27.21m -> 3.16m
+
+    rule M:Memory [ K := (W : WS) ] => M [ K <- W ] [ K +Int 1 := WS ] requires 0 <=Int K
+    rule M:Memory [ K <- V ] [ K' <- V' ] => M [ K' <- V' ] [ K <- V ] requires K' <Int K
+    rule M:Memory [ K := BUF:ByteArray ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ] requires K' <Int K orBool K +Int #sizeByteArray(BUF) <=Int K'
+
 endmodule
