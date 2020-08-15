@@ -77,18 +77,8 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Cat_bin_runtime </code>
-              <storage>
-               .Map
-              [#Cat.wards[CALLER_ID] <- (May) => May]
-              [#Cat.vow <- (Vow) => ABI_data]
-                _:Map
-               </storage>
-              <origStorage>
-               .Map
-              [#Cat.wards[CALLER_ID] <- (Junk_0)]
-              [#Cat.vow <- (Junk_1)]
-                _:Map
-               </origStorage>
+              <storage> STORAGE => STORAGE [ #Cat.vow <- ABI_data ] </storage>
+              <origStorage> ORIGSTORAGE </origStorage>
               <nonce> Nonce_Cat => ?_ </nonce>
             </account>
             <account>
@@ -201,5 +191,11 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
      andBool ((May ==Int 1)
      andBool ((VCallValue ==Int 0)
      andBool ((ABI_what ==Int #string2Word("vow"))))))))))))))
+
+     andBool #lookup(STORAGE, #Cat.wards[CALLER_ID]) ==Int May
+     andBool #lookup(STORAGE, #Cat.vow)              ==Int Vow
+
+     andBool #lookup(ORIGSTORAGE, #Cat.wards[CALLER_ID]) ==Int Junk_0
+     andBool #lookup(ORIGSTORAGE, #Cat.vow)              ==Int Junk_1
 
 endmodule
