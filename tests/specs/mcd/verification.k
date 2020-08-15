@@ -39,6 +39,11 @@ module VERIFICATION
  // -------------------------------------------------
     rule #string2Word(S) => #asWord(#padRightToWidth(32, #parseByteStackRaw(S)))
 
+    // in binary: 100 1s followed by 160 0s
+    syntax Int ::= "notAddrMask"
+ // ----------------------------
+    rule notAddrMask => 115792089237316195423570985007226406215939081747436879206741300988257197096960 [macro]
+
     // ### vat-move-diff
 
     rule (W0 : WS) [ 0     .. WIDTH ] => W0 : (WS [ 0 .. WIDTH -Int 1 ]) requires 0 <Int WIDTH
@@ -53,5 +58,9 @@ module VERIFICATION
     rule #sizeByteArray(_WS [ START .. WIDTH ]) => WIDTH requires 0 <=Int START andBool 0 <=Int WIDTH
 
     rule WS [ START .. WIDTH ] [ 0 .. WIDTH' ]  => WS [ START .. WIDTH' ] requires WIDTH' <=Int WIDTH
+
+    // ### cat-file-addr-pass-rough
+
+    rule notAddrMask &Int ADDR => 0 requires #rangeAddress(ADDR)
 
 endmodule
