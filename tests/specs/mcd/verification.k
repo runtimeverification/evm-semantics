@@ -35,6 +35,10 @@ module VERIFICATION
     rule #WordPackAddrUInt8        (     X , Y ) => Y *Int pow160 +Int X                    requires #rangeAddress(X)  andBool #rangeUInt(8, Y)
     rule #WordPackAddrUInt48UInt48 ( A , X , Y ) => Y *Int pow208 +Int X *Int pow160 +Int A requires #rangeAddress(A)  andBool #rangeUInt(48, X) andBool #rangeUInt(48, Y)
 
+    syntax Int ::= #string2Word ( String ) [function]
+ // -------------------------------------------------
+    rule #string2Word(S) => #asWord(#padRightToWidth(32, #parseByteStackRaw(S)))
+
     // ### vat-move-diff
 
     rule (W0 : WS) [ 0     .. WIDTH ] => W0 : (WS [ 0 .. WIDTH -Int 1 ]) requires 0 <Int WIDTH
