@@ -76,6 +76,8 @@ module LEMMAS
     rule 0 <=Int bool2Word(_B)             => true   [simplification]
     rule         bool2Word(_B) <Int pow256 => true   [simplification]
 
+    rule N /Int 1 => N  [simplification]
+
 endmodule
 
 module LEMMAS-JAVA [symbolic, kast]
@@ -170,16 +172,10 @@ module LEMMAS-JAVA [symbolic, kast]
        andBool ( #sizeByteArray(WS) ==Int 32 orBool #sizeByteArray(WS) ==Int 64 )
       [simplification]
 
-    rule N +Int 0 => N  [simplification]
-
-    rule N -Int 0 => N  [simplification]
-
     rule 1 *Int N => N  [simplification]
     rule N *Int 1 => N  [simplification]
     rule 0 *Int _ => 0  [simplification]
     rule _ *Int 0 => 0  [simplification]
-
-    rule N /Int 1 => N  [simplification]
 
     rule 0 |Int N => N  [simplification]
     rule N |Int 0 => N  [simplification]
