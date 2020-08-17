@@ -1,4 +1,3 @@
-requires "domains.k"
 requires "evm.md"
 requires "edsl.md"
 
