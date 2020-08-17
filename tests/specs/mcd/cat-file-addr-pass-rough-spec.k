@@ -14,7 +14,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
           <output> .ByteArray </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <endPC> _ => ?_ </endPC>
-          <callStack> VCallStack </callStack>
+          <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
@@ -34,7 +34,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
             <callDepth> VCallDepth </callDepth>
           </callState>
           <substate>
-            <selfDestruct> VSelfDestruct </selfDestruct>
+            <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _ => ?_ </refund>
           </substate>
@@ -50,7 +50,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
             <receiptsRoot> _ </receiptsRoot>
             <logsBloom> _ </logsBloom>
             <difficulty> _ </difficulty>
-            <number> BLOCK_NUMBER </number>
+            <number> _BLOCK_NUMBER </number>
             <gasLimit> _ </gasLimit>
             <gasUsed> _ </gasUsed>
             <timestamp> TIME </timestamp>
@@ -79,7 +79,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
               <code> Cat_bin_runtime </code>
               <storage> STORAGE => STORAGE [ #Cat.vow <- ABI_data ] </storage>
               <origStorage> ORIGSTORAGE </origStorage>
-              <nonce> Nonce_Cat => ?_ </nonce>
+              <nonce> _Nonce_Cat => ?_ </nonce>
             </account>
             <account>
               <acctID> 1 </acctID>

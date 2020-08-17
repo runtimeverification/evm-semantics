@@ -14,7 +14,7 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
           <output> _ => ?_ </output>
           <statusCode> _ => ?FAILURE:EndStatusCode </statusCode>
           <endPC> _ => ?_ </endPC>
-          <callStack> VCallStack </callStack>
+          <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
@@ -34,7 +34,7 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
             <callDepth> VCallDepth => ?_ </callDepth>
           </callState>
           <substate>
-            <selfDestruct> VSelfDestruct </selfDestruct>
+            <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _ => ?_ </refund>
           </substate>
@@ -50,7 +50,7 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
             <receiptsRoot> _ </receiptsRoot>
             <logsBloom> _ </logsBloom>
             <difficulty> _ </difficulty>
-            <number> BLOCK_NUMBER </number>
+            <number> _BLOCK_NUMBER </number>
             <gasLimit> _ </gasLimit>
             <gasUsed> _ </gasUsed>
             <timestamp> TIME </timestamp>
@@ -89,7 +89,7 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
               [#DSToken.owner_stopped <- (Junk_1)]
                 _:Map
                </origStorage>
-              <nonce> Nonce_DSToken => ?_ </nonce>
+              <nonce> _Nonce_DSToken => ?_ </nonce>
             </account>
             <account>
               <acctID> 1 </acctID>
