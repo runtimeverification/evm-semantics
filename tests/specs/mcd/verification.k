@@ -50,6 +50,19 @@ module VERIFICATION
     rule #Ray => 1000000000000000000000000000                   [macro]
     rule #Rad => 1000000000000000000000000000000000000000000000 [macro]
 
+    syntax WordStack ::= #asByteStackInWidth    ( Int, Int )                 [function]
+                       | #asByteStackInWidthaux ( Int, Int, Int, WordStack ) [function]
+ // -----------------------------------------------------------------------------------
+    rule #asByteStackInWidth(X, N) => #asByteStackInWidthaux(X, N -Int 1, N, .WordStack)
+
+    rule #asByteStackInWidthaux(X, I, N, WS) => #asByteStackInWidthaux(X, I -Int 1, N, nthbyteof(X, I, N) : WS) when I >Int 0
+    rule #asByteStackInWidthaux(X, 0, N, WS) => nthbyteof(X, 0, N) : WS
+
+    syntax Int ::= nthbyteof ( Int , Int , Int ) [function, smtlib(smt_nthbyteof), proj]
+ // ------------------------------------------------------------------------------------
+    rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
+    rule nthbyteof(V, I, N) =>           V modInt 256             when N ==Int (I +Int 1) [concrete]
+
     // ### vat-move-diff
 
     rule (W0 : WS) [ 0     .. WIDTH ] => W0 : (WS [ 0 .. WIDTH -Int 1 ]) requires 0 <Int WIDTH
