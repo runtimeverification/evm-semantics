@@ -44,6 +44,12 @@ module VERIFICATION
  // ----------------------------
     rule notAddrMask => 115792089237316195423570985007226406215939081747436879206741300988257197096960 [macro]
 
+    syntax Int ::= "#Wad" | "#Ray" | "#Rad"
+ // ---------------------------------------
+    rule #Wad => 1000000000000000000                            [macro]
+    rule #Ray => 1000000000000000000000000000                   [macro]
+    rule #Rad => 1000000000000000000000000000000000000000000000 [macro]
+
     // ### vat-move-diff
 
     rule (W0 : WS) [ 0     .. WIDTH ] => W0 : (WS [ 0 .. WIDTH -Int 1 ]) requires 0 <Int WIDTH
