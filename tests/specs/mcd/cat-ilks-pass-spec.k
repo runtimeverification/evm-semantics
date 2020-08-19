@@ -14,7 +14,7 @@ module CAT-ILKS-PASS-SPEC
           <output> _ => #buf(32, Flip) ++ #buf(32, Chop) ++ #buf(32, Lump) </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <endPC> _ => ?_ </endPC>
-          <callStack> VCallStack </callStack>
+          <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
@@ -25,7 +25,7 @@ module CAT-ILKS-PASS-SPEC
             <callData> #abiCallData("ilks", #bytes32(ABI_ilk)) ++ CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Map => ?_ </localMem>
+            <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> VGas => VGas -Int (2977) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -34,7 +34,7 @@ module CAT-ILKS-PASS-SPEC
             <callDepth> VCallDepth </callDepth>
           </callState>
           <substate>
-            <selfDestruct> VSelfDestruct </selfDestruct>
+            <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _ => ?_ </refund>
           </substate>
@@ -50,7 +50,7 @@ module CAT-ILKS-PASS-SPEC
             <receiptsRoot> _ </receiptsRoot>
             <logsBloom> _ </logsBloom>
             <difficulty> _ </difficulty>
-            <number> BLOCK_NUMBER </number>
+            <number> _BLOCK_NUMBER </number>
             <gasLimit> _ </gasLimit>
             <gasUsed> _ </gasUsed>
             <timestamp> TIME </timestamp>
@@ -84,7 +84,7 @@ module CAT-ILKS-PASS-SPEC
             <account>
               <acctID> 1 </acctID>
               <balance> ECREC_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -92,7 +92,7 @@ module CAT-ILKS-PASS-SPEC
             <account>
               <acctID> 2 </acctID>
               <balance> SHA256_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -100,7 +100,7 @@ module CAT-ILKS-PASS-SPEC
             <account>
               <acctID> 3 </acctID>
               <balance> RIP160_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -108,7 +108,7 @@ module CAT-ILKS-PASS-SPEC
             <account>
               <acctID> 4 </acctID>
               <balance> ID_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -116,7 +116,7 @@ module CAT-ILKS-PASS-SPEC
             <account>
               <acctID> 5 </acctID>
               <balance> MODEXP_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -124,7 +124,7 @@ module CAT-ILKS-PASS-SPEC
             <account>
               <acctID> 6 </acctID>
               <balance> ECADD_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -132,7 +132,7 @@ module CAT-ILKS-PASS-SPEC
             <account>
               <acctID> 7 </acctID>
               <balance> ECMUL_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -140,7 +140,7 @@ module CAT-ILKS-PASS-SPEC
             <account>
               <acctID> 8 </acctID>
               <balance> ECPAIRING_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -148,7 +148,7 @@ module CAT-ILKS-PASS-SPEC
             <account>
               <acctID> 9 </acctID>
               <balance> BLAKE2_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
