@@ -14,7 +14,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
           <output> _ => ?_ </output>
           <statusCode> _ => ?FAILURE:EndStatusCode </statusCode>
           <endPC> _ => ?_ </endPC>
-          <callStack> VCallStack </callStack>
+          <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
@@ -25,7 +25,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
             <callData> #abiCallData("deny", #address(ABI_usr)) ++ CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Map => ?_ </localMem>
+            <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> VGas => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -34,7 +34,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
             <callDepth> VCallDepth => ?_ </callDepth>
           </callState>
           <substate>
-            <selfDestruct> VSelfDestruct </selfDestruct>
+            <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _ => ?_ </refund>
           </substate>
@@ -50,7 +50,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
             <receiptsRoot> _ </receiptsRoot>
             <logsBloom> _ </logsBloom>
             <difficulty> _ </difficulty>
-            <number> BLOCK_NUMBER </number>
+            <number> _BLOCK_NUMBER </number>
             <gasLimit> _ </gasLimit>
             <gasUsed> _ </gasUsed>
             <timestamp> TIME </timestamp>
@@ -91,12 +91,12 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
               [#Vat.live <- (Junk_3)]
                 _:Map
                </origStorage>
-              <nonce> Nonce_Vat => ?_ </nonce>
+              <nonce> _Nonce_Vat => ?_ </nonce>
             </account>
             <account>
               <acctID> 1 </acctID>
               <balance> ECREC_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -104,7 +104,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
             <account>
               <acctID> 2 </acctID>
               <balance> SHA256_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -112,7 +112,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
             <account>
               <acctID> 3 </acctID>
               <balance> RIP160_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -120,7 +120,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
             <account>
               <acctID> 4 </acctID>
               <balance> ID_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -128,7 +128,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
             <account>
               <acctID> 5 </acctID>
               <balance> MODEXP_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -136,7 +136,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
             <account>
               <acctID> 6 </acctID>
               <balance> ECADD_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -144,7 +144,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
             <account>
               <acctID> 7 </acctID>
               <balance> ECMUL_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -152,7 +152,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
             <account>
               <acctID> 8 </acctID>
               <balance> ECPAIRING_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -160,7 +160,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
             <account>
               <acctID> 9 </acctID>
               <balance> BLAKE2_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>

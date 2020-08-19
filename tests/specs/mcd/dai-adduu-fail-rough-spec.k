@@ -14,7 +14,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
           <output> _ => ?_ </output>
           <statusCode> _ => ?FAILURE:EndStatusCode </statusCode>
           <endPC> _ => ?_ </endPC>
-          <callStack> VCallStack </callStack>
+          <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
@@ -24,7 +24,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> ABI_y : ABI_x : JMPTO : WS  => ?_ </wordStack>
+            <wordStack> ABI_y : ABI_x : _JMPTO : WS  => ?_ </wordStack>
             <localMem> _ </localMem>
             <pc> 7825 => ?_ </pc>
             <gas> VGas => ?_ </gas>
@@ -34,7 +34,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <callDepth> VCallDepth => ?_ </callDepth>
           </callState>
           <substate>
-            <selfDestruct> VSelfDestruct </selfDestruct>
+            <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _ => ?_ </refund>
           </substate>
@@ -50,7 +50,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <receiptsRoot> _ </receiptsRoot>
             <logsBloom> _ </logsBloom>
             <difficulty> _ </difficulty>
-            <number> BLOCK_NUMBER </number>
+            <number> _BLOCK_NUMBER </number>
             <gasLimit> _ </gasLimit>
             <gasUsed> _ </gasUsed>
             <timestamp> TIME </timestamp>
@@ -87,12 +87,12 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
 
                 _:Map
                </origStorage>
-              <nonce> Nonce_Dai => ?_ </nonce>
+              <nonce> _Nonce_Dai => ?_ </nonce>
             </account>
             <account>
               <acctID> 1 </acctID>
               <balance> ECREC_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -100,7 +100,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <account>
               <acctID> 2 </acctID>
               <balance> SHA256_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -108,7 +108,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <account>
               <acctID> 3 </acctID>
               <balance> RIP160_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -116,7 +116,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <account>
               <acctID> 4 </acctID>
               <balance> ID_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -124,7 +124,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <account>
               <acctID> 5 </acctID>
               <balance> MODEXP_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -132,7 +132,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <account>
               <acctID> 6 </acctID>
               <balance> ECADD_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -140,7 +140,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <account>
               <acctID> 7 </acctID>
               <balance> ECMUL_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -148,7 +148,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <account>
               <acctID> 8 </acctID>
               <balance> ECPAIRING_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
@@ -156,7 +156,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <account>
               <acctID> 9 </acctID>
               <balance> BLAKE2_BAL </balance>
-              <code> .WordStack </code>
+              <code> .ByteArray </code>
               <storage> _:Map </storage>
               <origStorage> _ </origStorage>
               <nonce> _ </nonce>
