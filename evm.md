@@ -1330,8 +1330,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
 ```{.k .nobytes}
     rule #computeValidJumpDests(.WordStack, _, RESULT) => List2Set(RESULT)
-    rule #computeValidJumpDests(91 : WS, I, RESULT) => #computeValidJumpDests(WS, I +Int 1, ListItem(I) RESULT)
-    rule #computeValidJumpDests(W : WS, I, RESULT) => #computeValidJumpDests(#drop(#widthOpCode(W), W : WS), I +Int #widthOpCode(W), RESULT) requires W =/=Int 91
+    rule #computeValidJumpDests(91 : WS   , I, RESULT) => #computeValidJumpDests(WS                            , I +Int 1              , ListItem(I) RESULT)
+    rule #computeValidJumpDests( W : WS   , I, RESULT) => #computeValidJumpDests(#drop(#widthOpCode(W), W : WS), I +Int #widthOpCode(W),             RESULT) requires W =/=Int 91
 ```
 
 ```{.k .bytes}
