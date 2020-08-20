@@ -18,7 +18,7 @@ k_release_dir="${K_RELEASE:-$kevm_dir/deps/k/k-distribution/target/release/k}"
 export PATH="${defn_dir}/web3/build:$k_release_dir/lib/native/linux:$k_release_dir/lib/native/linux64:$k_release_dir/bin/:$PATH"
 export LD_LIBRARY_PATH="$k_release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
 
-export K_OPTS="${K_OPTS:--Xmx16G -Xss500m}"
+export K_OPTS="${K_OPTS:--Xmx16G -Xss128m}"
 
 KLAB_OUT="${KLAB_OUT:-$build_dir/klab}"
 KLAB_NODE_STACK_SIZE="${KLAB_NODE_STACK_SIZE:-300000}"
