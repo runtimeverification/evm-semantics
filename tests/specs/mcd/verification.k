@@ -3,7 +3,7 @@ requires "bin_runtime.k"
 requires "storage.k"
 
 module HASKELL-HASH2 [symbolic, kore]
-    imports EDSL
+    imports INT
 
     syntax Int ::= hash2(Int, Int) [function]
  // -----------------------------------------
