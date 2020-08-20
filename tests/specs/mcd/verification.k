@@ -9,7 +9,7 @@ module HASKELL-HASH2 [symbolic, kore]
  // -----------------------------------------
 endmodule
 
-module VERIFICATION
+module VERIFICATION-SYNTAX
     imports LEMMAS
     imports DSS-BIN-RUNTIME
     imports DSS-STORAGE
@@ -62,6 +62,11 @@ module VERIFICATION
  // ------------------------------------------------------------------------------------
     rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
     rule nthbyteof(V, I, N) =>           V modInt 256             when N ==Int (I +Int 1) [concrete]
+
+endmodule
+
+module VERIFICATION
+    imports VERIFICATION-SYNTAX
 
     // ### vat-move-diff
 
