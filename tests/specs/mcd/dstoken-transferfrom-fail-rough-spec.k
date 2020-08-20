@@ -209,7 +209,12 @@ module DSTOKEN-TRANSFERFROM-FAIL-ROUGH-SPEC
      andBool (#rangeUInt(256, Junk_1)
      andBool (#rangeUInt(256, Junk_2)
      andBool (#rangeUInt(256, Junk_3)))))))))))))))))
-     andBool notBool ( (((#rangeUInt(256, Gem_s:Int -Int ABI_wad:Int))) andBool (((#rangeUInt(256, Gem_d:Int +Int ABI_wad:Int))) andBool (((Allowance:Int ==Int maxUInt256 orBool ABI_src:Int ==Int CALLER_ID:Int) orBool (ABI_wad:Int <=Int Allowance:Int)) andBool ((VCallValue:Int ==Int 0) andBool ((Stopped:Int ==Int 0)))))) )
+     andBool notBool ( #rangeUInt(256, Gem_s:Int -Int ABI_wad:Int)
+               andBool #rangeUInt(256, Gem_d:Int +Int ABI_wad:Int)
+               andBool ((Allowance:Int ==Int maxUInt256 orBool ABI_src:Int ==Int CALLER_ID:Int) orBool (ABI_wad:Int <=Int Allowance:Int))
+               andBool VCallValue:Int ==Int 0
+               andBool Stopped:Int ==Int 0
+                     )
 
      ensures ?FAILURE =/=K EVMC_SUCCESS
 
