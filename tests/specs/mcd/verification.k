@@ -101,6 +101,6 @@ module VERIFICATION
 
     rule hash2(_, hash2(_, _)) ==K hash2(_, N) => false requires N <=Int 10
 
-    rule chop(N +Int M) <Int N => true requires notBool #rangeUInt(256, N +Int M)
+    rule chop(N +Int M) <Int N => true requires #rangeUInt(256, N) andBool #rangeUInt(256, M) andBool notBool #rangeUInt(256, N +Int M)
 
 endmodule
