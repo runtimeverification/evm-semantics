@@ -57,6 +57,7 @@ tests/specs/mcd/cat-file-addr-pass-rough-spec.k
 tests/specs/mcd/dai-adduu-fail-rough-spec.k
 tests/specs/mcd/dai-symbol-pass-spec.k
 tests/specs/mcd/dstoken-approve-fail-rough-spec.k
+tests/specs/mcd/dstoken-transferfrom-fail-rough-spec.k
 tests/specs/mcd/vat-deny-diff-fail-rough-spec.k
 tests/specs/mcd/vat-move-diff-spec.k
 tests/specs/opcodes/create-spec.k
