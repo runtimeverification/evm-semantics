@@ -97,4 +97,8 @@ module VERIFICATION
     rule M:Memory [ K <- V ] [ K' <- V' ]             => M [ K' <- V' ] [ K <- V ]       requires K' <Int K
     rule M:Memory [ K := BUF:ByteArray ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ]     requires K' <Int K orBool K +Int #sizeByteArray(BUF) <=Int K'
 
+    // ### dstoken-transferfrom-fail-rough
+
+    rule hash2(_, hash2(_, _)) ==K hash2(_, N) => false requires N <=Int 10
+
 endmodule
