@@ -84,26 +84,26 @@ module LEMMAS-JAVA [symbolic, kast]
     imports EDSL
     imports K-REFLECTION
 
-    rule BUF [ L .. W ] => .ByteArray requires L >=Int #sizeByteArray(BUF)  [simplification]
+    rule BUF [ L .. _W ] => .ByteArray requires L >=Int #sizeByteArray(BUF)  [simplification]
 
     rule #asWord( BUF => #drop(1, BUF) ) requires BUF [ 0 ] ==Int 0  [simplification]
 
-    rule #sizeByteArray(W : WS)        => 1 +Int #sizeByteArray(WS)                       [simplification]
+    rule #sizeByteArray(_W : WS)        => 1 +Int #sizeByteArray(WS)                      [simplification]
     rule #sizeByteArray(#drop(N, BUF)) => maxInt(#sizeByteArray(BUF) -Int N, 0)           [simplification]
 
-    rule #take(N, BUF)          => BUF                                              requires N ==Int #sizeByteArray(BUF)   [simplification]
-    rule #take(N, BUF1 ++ BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeByteArray(BUF1)  [simplification]
-    rule #take(N, BUF1 ++ BUF2) => BUF1 ++ #take(N -Int #sizeByteArray(BUF1), BUF2) requires N  >Int #sizeByteArray(BUF1)  [simplification]
+    rule #take(N, BUF)           => BUF                                              requires N ==Int #sizeByteArray(BUF)   [simplification]
+    rule #take(N, BUF1 ++ _BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeByteArray(BUF1)  [simplification]
+    rule #take(N, BUF1 ++  BUF2) => BUF1 ++ #take(N -Int #sizeByteArray(BUF1), BUF2) requires N  >Int #sizeByteArray(BUF1)  [simplification]
 
     rule #drop(N, BUF)          => .ByteArray                               requires N >=Int #sizeByteArray(BUF)   [simplification]
     rule #drop(N, BUF1 ++ BUF2) => #drop(N -Int #sizeByteArray(BUF1), BUF2) requires N >=Int #sizeByteArray(BUF1)  [simplification]
     rule #drop(N, BUF1 ++ BUF2) => #drop(N, BUF1) ++ BUF2                   requires N  <Int #sizeByteArray(BUF1)  [simplification]
 
-    rule #asWord(#buf(N, BUF)) => BUF  [simplification]
+    rule #asWord(#buf(_N, BUF)) => BUF  [simplification]
 
     rule #asWord(BUF) /Int 26959946667150639794667015087019630673637144422540572481103610249216 => #asWord(#take(4, BUF))  [simplification]
 
-    rule #range(M, N, K) => .ByteArray requires notBool K >Int 0  [simplification]
+    rule #range(_M, _N, K) => .ByteArray requires notBool K >Int 0  [simplification]
 
     rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))
       requires K >Int 0
@@ -125,7 +125,7 @@ module LEMMAS-JAVA [symbolic, kast]
 
     syntax Bool ::= #isRegularWordStack ( WordStack ) [function]
  // -------------------------------------------------------
-    rule #isRegularWordStack(N : WS => WS)
+    rule #isRegularWordStack(_N : WS => WS)
     rule #isRegularWordStack(.WordStack) => true
 
     // for Solidity
@@ -180,9 +180,9 @@ module LEMMAS-JAVA [symbolic, kast]
     rule N |Int 0 => N  [simplification]
     rule N |Int N => N  [simplification]
 
-    rule 0 &Int N => 0  [simplification]
-    rule N &Int 0 => 0  [simplification]
-    rule N &Int N => N  [simplification]
+    rule  0 &Int _N => 0  [simplification]
+    rule _N &Int  0 => 0  [simplification]
+    rule  N &Int  N => N  [simplification]
 
     //orienting symbolic term to be first, converting -Int to +Int for concrete values.
     rule I +Int B => B          +Int I when #isConcrete(I) andBool notBool #isConcrete(B)  [simplification]
@@ -219,11 +219,11 @@ module LEMMAS-JAVA [symbolic, kast]
     rule bool2Word(A) |Int bool2Word(B) => bool2Word(A  orBool B)  [simplification]
     rule bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B)  [simplification]
 
-    rule 1 |Int bool2Word(B) => 1             [simplification]
-    rule 1 &Int bool2Word(B) => bool2Word(B)  [simplification]
+    rule 1 |Int bool2Word(_B) => 1             [simplification]
+    rule 1 &Int bool2Word( B) => bool2Word(B)  [simplification]
 
-    rule bool2Word(B) |Int 1 => 1             [simplification]
-    rule bool2Word(B) &Int 1 => bool2Word(B)  [simplification]
+    rule bool2Word(_B) |Int 1 => 1             [simplification]
+    rule bool2Word( B) &Int 1 => bool2Word(B)  [simplification]
 
     rule bool2Word(A) =/=K 0 => A           [simplification]
     rule bool2Word(A) =/=K 1 => notBool(A)  [simplification]
@@ -231,8 +231,8 @@ module LEMMAS-JAVA [symbolic, kast]
     rule 0 <=Int X &Int Y             => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <=Int Y andBool Y <Int pow256  [simplification]
     rule         X &Int Y <Int pow256 => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <=Int Y andBool Y <Int pow256  [simplification]
 
-    rule 0 <=Int #asWord(WS)          => true  [simplification]
-    rule #asWord(WS) <Int pow256      => true  [simplification]
+    rule 0 <=Int #asWord(_WS)         => true  [simplification]
+    rule #asWord(_WS) <Int pow256     => true  [simplification]
 
     rule 0 <=Int hash1(_)             => true  [simplification]
     rule         hash1(_) <Int pow256 => true  [simplification]
