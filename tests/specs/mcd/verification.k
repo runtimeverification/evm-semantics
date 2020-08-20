@@ -3,13 +3,13 @@ requires "bin_runtime.k"
 requires "storage.k"
 
 module HASKELL-HASH2 [symbolic, kore]
-    imports EDSL
+    imports INT
 
     syntax Int ::= hash2(Int, Int) [function]
  // -----------------------------------------
 endmodule
 
-module VERIFICATION
+module VERIFICATION-SYNTAX
     imports LEMMAS
     imports DSS-BIN-RUNTIME
     imports DSS-STORAGE
@@ -49,6 +49,24 @@ module VERIFICATION
     rule #Wad => 1000000000000000000                            [macro]
     rule #Ray => 1000000000000000000000000000                   [macro]
     rule #Rad => 1000000000000000000000000000000000000000000000 [macro]
+
+    syntax ByteArray ::= #asByteStackInWidth    ( Int, Int )                 [function]
+                       | #asByteStackInWidthaux ( Int, Int, Int, ByteArray ) [function]
+ // -----------------------------------------------------------------------------------
+    rule #asByteStackInWidth(X, N) => #asByteStackInWidthaux(X, N -Int 1, N, .ByteArray)
+
+    rule #asByteStackInWidthaux(X, I, N, WS) => #asByteStackInWidthaux(X, I -Int 1, N, nthbyteof(X, I, N) : WS) when I >Int 0
+    rule #asByteStackInWidthaux(X, 0, N, WS) => nthbyteof(X, 0, N) : WS
+
+    syntax Int ::= nthbyteof ( Int , Int , Int ) [function, smtlib(smt_nthbyteof), proj]
+ // ------------------------------------------------------------------------------------
+    rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
+    rule nthbyteof(V, I, N) =>           V modInt 256             when N ==Int (I +Int 1) [concrete]
+
+endmodule
+
+module VERIFICATION
+    imports VERIFICATION-SYNTAX
 
     // ### vat-move-diff
 

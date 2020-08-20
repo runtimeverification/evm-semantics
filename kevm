@@ -18,9 +18,7 @@ k_release_dir="${K_RELEASE:-$kevm_dir/deps/k/k-distribution/target/release/k}"
 export PATH="${defn_dir}/web3/build:$k_release_dir/lib/native/linux:$k_release_dir/lib/native/linux64:$k_release_dir/bin/:$PATH"
 export LD_LIBRARY_PATH="$k_release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
 
-test_logs="$build_dir/logs"
-mkdir -p "$test_logs"
-test_log="$test_logs/tests.log"
+export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
 
 KLAB_OUT="${KLAB_OUT:-$build_dir/klab}"
 KLAB_NODE_STACK_SIZE="${KLAB_NODE_STACK_SIZE:-300000}"
@@ -32,7 +30,6 @@ export KLAB_OUT
 # User Commands
 
 run_krun() {
-    export K_OPTS=-Xss500m
     krun --directory "$backend_dir"                                      \
         -cSCHEDULE="$cSCHEDULE"                   -pSCHEDULE='printf %s' \
         -cMODE="$cMODE"                           -pMODE='printf %s'     \
@@ -61,7 +58,6 @@ run_prove() {
     ! $repl       || additional_proof_args+=(--debugger --debug-script kast.kscript)
     ! $bug_report || additional_proof_args+=(--haskell-backend-command "kore-exec --bug-report kevm-bug")
 
-    export K_OPTS=${K_OPTS:--Xmx16G}
     ! $debug || set -x
     kprove --directory "$backend_dir" "$run_file" --def-module "$def_module" "${additional_proof_args[@]}" "$@"
 }
@@ -69,7 +65,6 @@ run_prove() {
 run_search() {
     local search_pattern
     search_pattern="$1" ; shift
-    export K_OPTS=-Xmx8G
     run_krun --search --pattern "$search_pattern" "$@"
 }
 
