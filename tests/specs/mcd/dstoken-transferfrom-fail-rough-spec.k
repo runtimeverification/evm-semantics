@@ -77,22 +77,8 @@ module DSTOKEN-TRANSFERFROM-FAIL-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> DSToken_bin_runtime </code>
-              <storage>
-               .Map
-              [#DSToken.allowance[ABI_src][CALLER_ID] <- (Allowance) => ?_]
-              [#DSToken.balances[ABI_src] <- (Gem_s) => ?_]
-              [#DSToken.balances[ABI_dst] <- (Gem_d) => ?_]
-              [#DSToken.owner_stopped <- (#WordPackAddrUInt8(Owner, Stopped)) => ?_]
-                _:Map
-               </storage>
-              <origStorage>
-               .Map
-              [#DSToken.allowance[ABI_src][CALLER_ID] <- (Junk_0)]
-              [#DSToken.balances[ABI_src] <- (Junk_1)]
-              [#DSToken.balances[ABI_dst] <- (Junk_2)]
-              [#DSToken.owner_stopped <- (Junk_3)]
-                _:Map
-               </origStorage>
+              <storage> STORAGE => ?_STORAGE </storage>
+              <origStorage> ORIGSTORAGE </origStorage>
               <nonce> _Nonce_DSToken => ?_ </nonce>
             </account>
             <account>
@@ -215,6 +201,16 @@ module DSTOKEN-TRANSFERFROM-FAIL-ROUGH-SPEC
                andBool VCallValue:Int ==Int 0
                andBool Stopped:Int ==Int 0
                      )
+
+     andBool #lookup(STORAGE, #DSToken.allowance[ABI_src][CALLER_ID]) ==Int Allowance
+     andBool #lookup(STORAGE, #DSToken.balances[ABI_src]            ) ==Int Gem_s
+     andBool #lookup(STORAGE, #DSToken.balances[ABI_dst]            ) ==Int Gem_d
+     andBool #lookup(STORAGE, #DSToken.owner_stopped                ) ==Int #WordPackAddrUInt8(Owner, Stopped)
+
+     andBool #lookup(ORIGSTORAGE, #DSToken.allowance[ABI_src][CALLER_ID]) ==Int Junk_0
+     andBool #lookup(ORIGSTORAGE, #DSToken.balances[ABI_src]            ) ==Int Junk_1
+     andBool #lookup(ORIGSTORAGE, #DSToken.balances[ABI_dst]            ) ==Int Junk_2
+     andBool #lookup(ORIGSTORAGE, #DSToken.owner_stopped                ) ==Int Junk_3
 
      ensures ?FAILURE =/=K EVMC_SUCCESS
 
