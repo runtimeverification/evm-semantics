@@ -50,10 +50,10 @@ module VERIFICATION
     rule #Ray => 1000000000000000000000000000                   [macro]
     rule #Rad => 1000000000000000000000000000000000000000000000 [macro]
 
-    syntax WordStack ::= #asByteStackInWidth    ( Int, Int )                 [function]
-                       | #asByteStackInWidthaux ( Int, Int, Int, WordStack ) [function]
+    syntax ByteArray ::= #asByteStackInWidth    ( Int, Int )                 [function]
+                       | #asByteStackInWidthaux ( Int, Int, Int, ByteArray ) [function]
  // -----------------------------------------------------------------------------------
-    rule #asByteStackInWidth(X, N) => #asByteStackInWidthaux(X, N -Int 1, N, .WordStack)
+    rule #asByteStackInWidth(X, N) => #asByteStackInWidthaux(X, N -Int 1, N, .ByteArray)
 
     rule #asByteStackInWidthaux(X, I, N, WS) => #asByteStackInWidthaux(X, I -Int 1, N, nthbyteof(X, I, N) : WS) when I >Int 0
     rule #asByteStackInWidthaux(X, 0, N, WS) => nthbyteof(X, 0, N) : WS
