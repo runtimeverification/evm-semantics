@@ -77,21 +77,9 @@ module CAT-ILKS-PASS-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Cat_bin_runtime </code>
-              <storage>
-               .Map
-              [#Cat.ilks[ABI_ilk].flip <- (Flip) => Flip]
-              [#Cat.ilks[ABI_ilk].chop <- (Chop) => Chop]
-              [#Cat.ilks[ABI_ilk].lump <- (Lump) => Lump]
-                _:Map
-               </storage>
-              <origStorage>
-               .Map
-              [#Cat.ilks[ABI_ilk].flip <- (Junk_0)]
-              [#Cat.ilks[ABI_ilk].chop <- (Junk_1)]
-              [#Cat.ilks[ABI_ilk].lump <- (Junk_2)]
-                _:Map
-               </origStorage>
-              <nonce> Nonce_Cat => ?_ </nonce>
+              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE    </storage>
+              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <nonce> _Nonce_Cat => ?_ </nonce>
             </account>
             <account>
               <acctID> 1 </acctID>
@@ -203,5 +191,12 @@ module CAT-ILKS-PASS-SPEC
      andBool (#rangeUInt(256, Junk_1)
      andBool (#rangeUInt(256, Junk_2)
      andBool ((VCallValue ==Int 0))))))))))))
+
+     andBool #lookup(ACCT_ID_STORAGE, #Cat.ilks[ABI_ilk].flip) ==Int Flip
+     andBool #lookup(ACCT_ID_STORAGE, #Cat.ilks[ABI_ilk].chop) ==Int Chop
+     andBool #lookup(ACCT_ID_STORAGE, #Cat.ilks[ABI_ilk].lump) ==Int Lump
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Cat.ilks[ABI_ilk].flip) ==Int Junk_0
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Cat.ilks[ABI_ilk].chop) ==Int Junk_1
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Cat.ilks[ABI_ilk].lump) ==Int Junk_2
 
 endmodule
