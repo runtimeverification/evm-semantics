@@ -105,4 +105,8 @@ module VERIFICATION
 
     rule chop(N +Int M) <Int N => true requires #rangeUInt(256, N) andBool #rangeUInt(256, M) andBool notBool #rangeUInt(256, N +Int M)
 
+    // ### dsvalue-read-pass
+
+    rule M [ K <- V ] => M requires #lookup(M, K) ==Int V
+
 endmodule
