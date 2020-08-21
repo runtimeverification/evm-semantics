@@ -116,4 +116,6 @@ module VERIFICATION
     rule hash2(_, _) +Int N ==K hash2(_, _) +Int M => false requires N =/=Int M
     rule hash2(_, _)        ==K hash2(_, _) +Int M => false requires 0 =/=Int M
 
+    rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1:ByteArray ++ ( BA2:ByteArray ++ BA3:ByteArray )
+
 endmodule
