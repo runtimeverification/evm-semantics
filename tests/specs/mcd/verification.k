@@ -118,4 +118,9 @@ module VERIFICATION
 
     rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1 ++ ( BA2 ++ BA3 )
 
+    // ### flipper-ttl-pass/flipper-tau-pass
+
+    rule X ==Int #WordPackUInt48UInt48(Y, Z) => (maxUInt48 &Int X ==Int Y) andBool (maxUInt48 &Int (X /Int pow48) ==Int Z)
+      requires #rangeUInt(48, Y) andBool #rangeUInt(48, Z)
+
 endmodule
