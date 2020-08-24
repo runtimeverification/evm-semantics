@@ -209,4 +209,8 @@ module VAT-MOVE-DIFF-SPEC
      andBool ((#lookup(ORIG_STORAGE, #Vat.dai[ABI_src]           ) ==Int Junk_1)
      andBool ((#lookup(ORIG_STORAGE, #Vat.dai[ABI_dst]           ) ==Int Junk_2))))
 
+     andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_src]
+     andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_dst]
+     andBool #Vat.dai[ABI_src]            =/=Int #Vat.dai[ABI_dst]
+
 endmodule

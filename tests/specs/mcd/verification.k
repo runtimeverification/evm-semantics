@@ -75,8 +75,6 @@ module VERIFICATION
 
     rule #asWord(WS) >>Int M => #asWord(WS [ 0 .. #sizeByteArray(WS) -Int (M /Int 8) ]) requires 0 <=Int M andBool M modInt 8 ==Int 0
 
-    rule hash2(V1, _) ==K hash2(V2, _) => false requires V1 =/=Int V2
-
     // ### cat-exhaustiveness
 
     rule #sizeByteArray(_WS [ START .. WIDTH ]) => WIDTH requires 0 <=Int START andBool 0 <=Int WIDTH
