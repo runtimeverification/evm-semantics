@@ -6,623 +6,370 @@ module DSS-STORAGE
  // ### Vat
  // -------
 
-    syntax Int ::= "#Vat.wards" "[" Int "]" [function]
- // --------------------------------------------------
-    rule #Vat.wards[A] => #hashedLocation("Solidity", 0, A)
-
-    syntax Int ::= "#Vat.can" "[" Int "][" Int "]" [function]
- // ---------------------------------------------------------
-    rule #Vat.can[A][B] => #hashedLocation("Solidity", 1, A B)
-
-    syntax Int ::= "#Vat.ilks" "[" Int "].Art" [function]
- // -----------------------------------------------------
-    rule #Vat.ilks[Ilk].Art => #hashedLocation("Solidity", 2, Ilk) +Int 0
-
-    syntax Int ::= "#Vat.ilks" "[" Int "].rate" [function]
- // ------------------------------------------------------
-    rule #Vat.ilks[Ilk].rate => #hashedLocation("Solidity", 2, Ilk) +Int 1
-
-    syntax Int ::= "#Vat.ilks" "[" Int "].spot" [function]
- // ------------------------------------------------------
-    rule #Vat.ilks[Ilk].spot => #hashedLocation("Solidity", 2, Ilk) +Int 2
-
-    syntax Int ::= "#Vat.ilks" "[" Int "].line" [function]
- // ------------------------------------------------------
-    rule #Vat.ilks[Ilk].line => #hashedLocation("Solidity", 2, Ilk) +Int 3
-
-    syntax Int ::= "#Vat.ilks" "[" Int "].dust" [function]
- // ------------------------------------------------------
-    rule #Vat.ilks[Ilk].dust => #hashedLocation("Solidity", 2, Ilk) +Int 4
-
-    syntax Int ::= "#Vat.urns" "[" Int "][" Int "].ink" [function]
- // --------------------------------------------------------------
-    rule #Vat.urns[Ilk][Usr].ink => #hashedLocation("Solidity", 3, Ilk Usr)
-
-    syntax Int ::= "#Vat.urns" "[" Int "][" Int "].art" [function]
- // --------------------------------------------------------------
-    rule #Vat.urns[Ilk][Usr].art => #hashedLocation("Solidity", 3, Ilk Usr) +Int 1
-
-    syntax Int ::= "#Vat.gem" "[" Int "][" Int "]" [function]
- // ---------------------------------------------------------
-    rule #Vat.gem[Ilk][Usr] => #hashedLocation("Solidity", 4, Ilk Usr)
-
-    syntax Int ::= "#Vat.dai" "[" Int "]" [function]
- // ------------------------------------------------
-    rule #Vat.dai[A] => #hashedLocation("Solidity", 5, A)
-
-    syntax Int ::= "#Vat.sin" "[" Int "]" [function]
- // ------------------------------------------------
-    rule #Vat.sin[A] => #hashedLocation("Solidity", 6, A)
-
-    syntax Int ::= "#Vat.debt" [function]
- // -------------------------------------
-    rule #Vat.debt => 7
-
-    syntax Int ::= "#Vat.vice" [function]
- // -------------------------------------
-    rule #Vat.vice => 8
-
-    syntax Int ::= "#Vat.Line" [function]
- // -------------------------------------
-    rule #Vat.Line => 9
-
-    syntax Int ::= "#Vat.live" [function]
- // -------------------------------------
-    rule #Vat.live => 10
+    syntax Int ::= "#Vat.wards" "[" Int "]"
+                 | "#Vat.can" "[" Int "][" Int "]"
+                 | "#Vat.ilks" "[" Int "].Art"
+                 | "#Vat.ilks" "[" Int "].rate"
+                 | "#Vat.ilks" "[" Int "].spot"
+                 | "#Vat.ilks" "[" Int "].line"
+                 | "#Vat.ilks" "[" Int "].dust"
+                 | "#Vat.urns" "[" Int "][" Int "].ink"
+                 | "#Vat.urns" "[" Int "][" Int "].art"
+                 | "#Vat.gem" "[" Int "][" Int "]"
+                 | "#Vat.dai" "[" Int "]"
+                 | "#Vat.sin" "[" Int "]"
+                 | "#Vat.debt"
+                 | "#Vat.vice"
+                 | "#Vat.Line"
+                 | "#Vat.live"
+ // --------------------------
+    rule #Vat.wards[A]           => #hashedLocation("Solidity", 0, A)              [macro]
+    rule #Vat.can[A][B]          => #hashedLocation("Solidity", 1, A B)            [macro]
+    rule #Vat.ilks[Ilk].Art      => #hashedLocation("Solidity", 2, Ilk) +Int 0     [macro]
+    rule #Vat.ilks[Ilk].rate     => #hashedLocation("Solidity", 2, Ilk) +Int 1     [macro]
+    rule #Vat.ilks[Ilk].spot     => #hashedLocation("Solidity", 2, Ilk) +Int 2     [macro]
+    rule #Vat.ilks[Ilk].line     => #hashedLocation("Solidity", 2, Ilk) +Int 3     [macro]
+    rule #Vat.ilks[Ilk].dust     => #hashedLocation("Solidity", 2, Ilk) +Int 4     [macro]
+    rule #Vat.urns[Ilk][Usr].ink => #hashedLocation("Solidity", 3, Ilk Usr)        [macro]
+    rule #Vat.urns[Ilk][Usr].art => #hashedLocation("Solidity", 3, Ilk Usr) +Int 1 [macro]
+    rule #Vat.gem[Ilk][Usr]      => #hashedLocation("Solidity", 4, Ilk Usr)        [macro]
+    rule #Vat.dai[A]             => #hashedLocation("Solidity", 5, A)              [macro]
+    rule #Vat.sin[A]             => #hashedLocation("Solidity", 6, A)              [macro]
+    rule #Vat.debt               => 7                                              [macro]
+    rule #Vat.vice               => 8                                              [macro]
+    rule #Vat.Line               => 9                                              [macro]
+    rule #Vat.live               => 10                                             [macro]
 
  // ### Dai
  // -------
 
-    syntax Int ::= "#Dai.wards" "[" Int "]" [function]
- // --------------------------------------------------
-    rule #Dai.wards[A] => #hashedLocation("Solidity", 0, A)
-
-    syntax Int ::= "#Dai.totalSupply" [function]
- // --------------------------------------------
-    rule #Dai.totalSupply => 1
-
-    syntax Int ::= "#Dai.balanceOf" "[" Int "]" [function]
- // ------------------------------------------------------
-    rule #Dai.balanceOf[A] => #hashedLocation("Solidity", 2, A)
-
-    syntax Int ::= "#Dai.allowance" "[" Int "][" Int "]" [function]
- // ---------------------------------------------------------------
-    rule #Dai.allowance[A][B] => #hashedLocation("Solidity", 3, A B)
-
-    syntax Int ::= "#Dai.nonces" "[" Int "]" [function]
- // ---------------------------------------------------
-    rule #Dai.nonces[A] => #hashedLocation("Solidity", 4, A)
-
-    syntax Int ::= "#Dai.DOMAIN_SEPARATOR" [function]
- // -------------------------------------------------
-    rule #Dai.DOMAIN_SEPARATOR => 5
+    syntax Int ::= "#Dai.wards" "[" Int "]"
+                 | "#Dai.totalSupply"
+                 | "#Dai.balanceOf" "[" Int "]"
+                 | "#Dai.allowance" "[" Int "][" Int "]"
+                 | "#Dai.nonces" "[" Int "]"
+                 | "#Dai.DOMAIN_SEPARATOR"
+ // --------------------------------------
+    rule #Dai.wards[A]         => #hashedLocation("Solidity", 0, A)   [macro]
+    rule #Dai.totalSupply      => 1                                   [macro]
+    rule #Dai.balanceOf[A]     => #hashedLocation("Solidity", 2, A)   [macro]
+    rule #Dai.allowance[A][B]  => #hashedLocation("Solidity", 3, A B) [macro]
+    rule #Dai.nonces[A]        => #hashedLocation("Solidity", 4, A)   [macro]
+    rule #Dai.DOMAIN_SEPARATOR => 5                                   [macro]
 
  // ### Jug
  // -------
 
-    syntax Int ::= "#Jug.wards" "[" Int "]" [function]
- // --------------------------------------------------
-    rule #Jug.wards[A] => #hashedLocation("Solidity", 0, A)
-
-    syntax Int ::= "#Jug.ilks" "[" Int "].duty" [function]
- // ------------------------------------------------------
-    rule #Jug.ilks[Ilk].duty => #hashedLocation("Solidity", 1, Ilk) +Int 0
-
-    syntax Int ::= "#Jug.ilks" "[" Int "].rho" [function]
- // -----------------------------------------------------
-    rule #Jug.ilks[Ilk].rho => #hashedLocation("Solidity", 1, Ilk) +Int 1
-
-    syntax Int ::= "#Jug.vat" [function]
- // ------------------------------------
-    rule #Jug.vat => 2
-
-    syntax Int ::= "#Jug.vow" [function]
- // ------------------------------------
-    rule #Jug.vow => 3
-
-    syntax Int ::= "#Jug.base" [function]
- // -------------------------------------
-    rule #Jug.base => 4
+    syntax Int ::= "#Jug.wards" "[" Int "]"
+                 | "#Jug.ilks" "[" Int "].duty" [function]
+                 | "#Jug.ilks" "[" Int "].rho"
+                 | "#Jug.vat"
+                 | "#Jug.vow"
+                 | "#Jug.base"
+ // --------------------------
+    rule #Jug.wards[A]       => #hashedLocation("Solidity", 0, A)          [macro]
+    rule #Jug.ilks[Ilk].duty => #hashedLocation("Solidity", 1, Ilk) +Int 0 [macro]
+    rule #Jug.ilks[Ilk].rho  => #hashedLocation("Solidity", 1, Ilk) +Int 1 [macro]
+    rule #Jug.vat            => 2                                          [macro]
+    rule #Jug.vow            => 3                                          [macro]
+    rule #Jug.base           => 4                                          [macro]
 
  // ### Drip
  // --------
 
-    syntax Int ::= "#Drip.wards" "[" Int "]" [function]
- // ---------------------------------------------------
-    rule #Drip.wards[A] => #hashedLocation("Solidity", 0, A)
-
-    syntax Int ::= "#Drip.ilks" "[" Int "].tax" [function]
- // ------------------------------------------------------
-    rule #Drip.ilks[Ilk].tax => #hashedLocation("Solidity", 1, Ilk) +Int 0
-
-    syntax Int ::= "#Drip.ilks" "[" Int "].rho" [function]
- // ------------------------------------------------------
-    rule #Drip.ilks[Ilk].rho => #hashedLocation("Solidity", 1, Ilk) +Int 1
-
-    syntax Int ::= "#Drip.vat" [function]
- // -------------------------------------
-    rule #Drip.vat => 2
-
-    syntax Int ::= "#Drip.vow" [function]
- // -------------------------------------
-    rule #Drip.vow => 3
-
-    syntax Int ::= "#Drip.repo" [function]
- // --------------------------------------
-    rule #Drip.repo => 4
+    syntax Int ::= "#Drip.wards" "[" Int "]"
+                 | "#Drip.ilks" "[" Int "].tax"
+                 | "#Drip.ilks" "[" Int "].rho"
+                 | "#Drip.vat"
+                 | "#Drip.vow"
+                 | "#Drip.repo"
+ // ---------------------------
+    rule #Drip.wards[A]      => #hashedLocation("Solidity", 0, A)          [macro]
+    rule #Drip.ilks[Ilk].tax => #hashedLocation("Solidity", 1, Ilk) +Int 0 [macro]
+    rule #Drip.ilks[Ilk].rho => #hashedLocation("Solidity", 1, Ilk) +Int 1 [macro]
+    rule #Drip.vat           => 2                                          [macro]
+    rule #Drip.vow           => 3                                          [macro]
+    rule #Drip.repo          => 4                                          [macro]
 
  // ### Vow
  // -------
 
-    syntax Int ::= "#Vow.wards" "[" Int "]" [function]
- // --------------------------------------------------
-    rule #Vow.wards[A] => #hashedLocation("Solidity", 0, A)
-
-    syntax Int ::= "#Vow.vat" [function]
- // ------------------------------------
-    rule #Vow.vat => 1
-
-    syntax Int ::= "#Vow.flapper" [function]
- // ----------------------------------------
-    rule #Vow.flapper => 2
-
-    syntax Int ::= "#Vow.flopper" [function]
- // ----------------------------------------
-    rule #Vow.flopper => 3
-
-    syntax Int ::= "#Vow.sin" "[" Int "]" [function]
- // ------------------------------------------------
-    rule #Vow.sin[A] => #hashedLocation("Solidity", 4, A)
-
-    syntax Int ::= "#Vow.Sin" [function]
- // ------------------------------------
-    rule #Vow.Sin => 5
-
-    syntax Int ::= "#Vow.Ash" [function]
- // ------------------------------------
-    rule #Vow.Ash => 6
-
-    syntax Int ::= "#Vow.wait" [function]
- // -------------------------------------
-    rule #Vow.wait => 7
-
-    syntax Int ::= "#Vow.dump" [function]
- // -------------------------------------
-    rule #Vow.dump => 8
-
-    syntax Int ::= "#Vow.sump" [function]
- // -------------------------------------
-    rule #Vow.sump => 9
-
-    syntax Int ::= "#Vow.bump" [function]
- // -------------------------------------
-    rule #Vow.bump => 10
-
-    syntax Int ::= "#Vow.hump" [function]
- // -------------------------------------
-    rule #Vow.hump => 11
-
-    syntax Int ::= "#Vow.live" [function]
- // -------------------------------------
-    rule #Vow.live => 12
-
+    syntax Int ::= "#Vow.wards" "[" Int "]"
+                 | "#Vow.vat"
+                 | "#Vow.flapper"
+                 | "#Vow.flopper"
+                 | "#Vow.sin" "[" Int "]"
+                 | "#Vow.Sin"
+                 | "#Vow.Ash"
+                 | "#Vow.wait"
+                 | "#Vow.dump"
+                 | "#Vow.sump"
+                 | "#Vow.bump"
+                 | "#Vow.hump"
+                 | "#Vow.live"
+ // --------------------------
+    rule #Vow.wards[A] => #hashedLocation("Solidity", 0, A) [macro]
+    rule #Vow.vat      => 1                                 [macro]
+    rule #Vow.flapper  => 2                                 [macro]
+    rule #Vow.flopper  => 3                                 [macro]
+    rule #Vow.sin[A]   => #hashedLocation("Solidity", 4, A) [macro]
+    rule #Vow.Sin      => 5                                 [macro]
+    rule #Vow.Ash      => 6                                 [macro]
+    rule #Vow.wait     => 7                                 [macro]
+    rule #Vow.dump     => 8                                 [macro]
+    rule #Vow.sump     => 9                                 [macro]
+    rule #Vow.bump     => 10                                [macro]
+    rule #Vow.hump     => 11                                [macro]
+    rule #Vow.live     => 12                                [macro]
 
  // ### Cat
  // -------
 
-    syntax Int ::= "#Cat.wards" "[" Int "]" [function]
- // --------------------------------------------------
-    rule #Cat.wards[A] => #hashedLocation("Solidity", 0, A)
-
-    syntax Int ::= "#Cat.ilks" "[" Int "].flip" [function]
- // ------------------------------------------------------
-    rule #Cat.ilks[Ilk].flip => #hashedLocation("Solidity", 1, Ilk) +Int 0
-
-    syntax Int ::= "#Cat.ilks" "[" Int "].chop" [function]
- // ------------------------------------------------------
-    rule #Cat.ilks[Ilk].chop => #hashedLocation("Solidity", 1, Ilk) +Int 1
-
-    syntax Int ::= "#Cat.ilks" "[" Int "].lump" [function]
- // ------------------------------------------------------
-    rule #Cat.ilks[Ilk].lump => #hashedLocation("Solidity", 1, Ilk) +Int 2
-
-    syntax Int ::= "#Cat.live" [function]
- // -------------------------------------
-    rule #Cat.live => 2
-
-    syntax Int ::= "#Cat.vat" [function]
- // ------------------------------------
-    rule #Cat.vat => 3
-
-    syntax Int ::= "#Cat.vow" [function]
- // ------------------------------------
-    rule #Cat.vow => 4
+    syntax Int ::= "#Cat.wards" "[" Int "]"
+                 | "#Cat.ilks" "[" Int "].flip"
+                 | "#Cat.ilks" "[" Int "].chop"
+                 | "#Cat.ilks" "[" Int "].lump"
+                 | "#Cat.live"
+                 | "#Cat.vat"
+                 | "#Cat.vow"
+ // -------------------------
+    rule #Cat.wards[A]       => #hashedLocation("Solidity", 0, A)          [macro]
+    rule #Cat.ilks[Ilk].flip => #hashedLocation("Solidity", 1, Ilk) +Int 0 [macro]
+    rule #Cat.ilks[Ilk].chop => #hashedLocation("Solidity", 1, Ilk) +Int 1 [macro]
+    rule #Cat.ilks[Ilk].lump => #hashedLocation("Solidity", 1, Ilk) +Int 2 [macro]
+    rule #Cat.live           => 2                                          [macro]
+    rule #Cat.vat            => 3                                          [macro]
+    rule #Cat.vow            => 4                                          [macro]
 
  // ### GemJoin
  // -----------
 
-    syntax Int ::= "#GemJoin.wards" "[" Int "]"  [function]
- // -------------------------------------------------------
-    rule #GemJoin.wards[A] => #hashedLocation("Solidity", 0, A)
-
-    syntax Int ::= "#GemJoin.vat" [function]
- // ----------------------------------------
-    rule #GemJoin.vat => 1
-
-    syntax Int ::= "#GemJoin.ilk" [function]
- // ----------------------------------------
-    rule #GemJoin.ilk => 2
-
-    syntax Int ::= "#GemJoin.gem" [function]
- // ----------------------------------------
-    rule #GemJoin.gem => 3
-
-    syntax Int ::= "#GemJoin.dec" [function]
- // ----------------------------------------
-    rule #GemJoin.dec => 4
-
-    syntax Int ::= "#GemJoin.live" [function]
- // -----------------------------------------
-    rule #GemJoin.live => 5
+    syntax Int ::= "#GemJoin.wards" "[" Int "]"
+                 | "#GemJoin.vat"
+                 | "#GemJoin.ilk"
+                 | "#GemJoin.gem"
+                 | "#GemJoin.dec"
+                 | "#GemJoin.live"
+ // ------------------------------
+    rule #GemJoin.wards[A] => #hashedLocation("Solidity", 0, A) [macro]
+    rule #GemJoin.vat      => 1                                 [macro]
+    rule #GemJoin.ilk      => 2                                 [macro]
+    rule #GemJoin.gem      => 3                                 [macro]
+    rule #GemJoin.dec      => 4                                 [macro]
+    rule #GemJoin.live     => 5                                 [macro]
 
  // ### DaiJoin
  // -----------
 
-    syntax Int ::= "#DaiJoin.wards" "[" Int "]"  [function]
- // -------------------------------------------------------
-    rule #DaiJoin.wards[A] => #hashedLocation("Solidity", 0, A)
-
-    syntax Int ::= "#DaiJoin.vat" [function]
- // ----------------------------------------
-    rule #DaiJoin.vat => 1
-
-    syntax Int ::= "#DaiJoin.dai" [function]
- // ----------------------------------------
-    rule #DaiJoin.dai => 2
-
-    syntax Int ::= "#DaiJoin.live" [function]
- // -----------------------------------------
-    rule #DaiJoin.live => 3
+    syntax Int ::= "#DaiJoin.wards" "[" Int "]"
+                 | "#DaiJoin.vat"
+                 | "#DaiJoin.dai"
+                 | "#DaiJoin.live"
+ // ------------------------------
+    rule #DaiJoin.wards[A] => #hashedLocation("Solidity", 0, A) [macro]
+    rule #DaiJoin.vat      => 1                                 [macro]
+    rule #DaiJoin.dai      => 2                                 [macro]
+    rule #DaiJoin.live     => 3                                 [macro]
 
  // ### Flip
  // --------
 
-    syntax Int ::= "#Flipper.wards" "[" Int "]" [function]
- // ------------------------------------------------------
-    rule #Flipper.wards[A] => #hashedLocation("Solidity", 0, A)
-
-    syntax Int ::= "#Flipper.bids" "[" Int "].bid" [function]
- // ---------------------------------------------------------
-    rule #Flipper.bids[N].bid => #hashedLocation("Solidity", 1, N) +Int 0
-
-    syntax Int ::= "#Flipper.bids" "[" Int "].lot" [function]
- // ---------------------------------------------------------
-    rule #Flipper.bids[N].lot => #hashedLocation("Solidity", 1, N) +Int 1
-
-    syntax Int ::= "#Flipper.bids" "[" Int "].guy_tic_end" [function]
- // -----------------------------------------------------------------
-    rule #Flipper.bids[N].guy_tic_end => #hashedLocation("Solidity", 1, N) +Int 2
-
-    syntax Int ::= "#Flipper.bids" "[" Int "].usr" [function]
- // ---------------------------------------------------------
-    rule #Flipper.bids[N].usr => #hashedLocation("Solidity", 1, N) +Int 3
-
-    syntax Int ::= "#Flipper.bids" "[" Int "].gal" [function]
- // ---------------------------------------------------------
-    rule #Flipper.bids[N].gal => #hashedLocation("Solidity", 1, N) +Int 4
-
-    syntax Int ::= "#Flipper.bids" "[" Int "].tab" [function]
- // ---------------------------------------------------------
-    rule #Flipper.bids[N].tab => #hashedLocation("Solidity", 1, N) +Int 5
-
-    syntax Int ::= "#Flipper.vat" [function]
- // ----------------------------------------
-    rule #Flipper.vat => 2
-
-    syntax Int ::= "#Flipper.ilk" [function]
- // ----------------------------------------
-    rule #Flipper.ilk => 3
-
-    syntax Int ::= "#Flipper.beg" [function]
- // ----------------------------------------
-    rule #Flipper.beg => 4
-
-    syntax Int ::= "#Flipper.ttl_tau" [function]
- // --------------------------------------------
-    rule #Flipper.ttl_tau => 5
-
-    syntax Int ::= "#Flipper.kicks" [function]
- // ------------------------------------------
-    rule #Flipper.kicks => 6
-
+    syntax Int ::= "#Flipper.wards" "[" Int "]"
+                 | "#Flipper.bids" "[" Int "].bid"
+                 | "#Flipper.bids" "[" Int "].lot"
+                 | "#Flipper.bids" "[" Int "].guy_tic_end"
+                 | "#Flipper.bids" "[" Int "].usr"
+                 | "#Flipper.bids" "[" Int "].gal"
+                 | "#Flipper.bids" "[" Int "].tab"
+                 | "#Flipper.vat"
+                 | "#Flipper.ilk"
+                 | "#Flipper.beg"
+                 | "#Flipper.ttl_tau"
+                 | "#Flipper.kicks"
+ // -------------------------------
+    rule #Flipper.wards[A]            => #hashedLocation("Solidity", 0, A)        [macro]
+    rule #Flipper.bids[N].bid         => #hashedLocation("Solidity", 1, N) +Int 0 [macro]
+    rule #Flipper.bids[N].lot         => #hashedLocation("Solidity", 1, N) +Int 1 [macro]
+    rule #Flipper.bids[N].guy_tic_end => #hashedLocation("Solidity", 1, N) +Int 2 [macro]
+    rule #Flipper.bids[N].usr         => #hashedLocation("Solidity", 1, N) +Int 3 [macro]
+    rule #Flipper.bids[N].gal         => #hashedLocation("Solidity", 1, N) +Int 4 [macro]
+    rule #Flipper.bids[N].tab         => #hashedLocation("Solidity", 1, N) +Int 5 [macro]
+    rule #Flipper.vat                 => 2                                        [macro]
+    rule #Flipper.ilk                 => 3                                        [macro]
+    rule #Flipper.beg                 => 4                                        [macro]
+    rule #Flipper.ttl_tau             => 5                                        [macro]
+    rule #Flipper.kicks               => 6                                        [macro]
 
  // ### Flop
  // --------
 
-    syntax Int ::= "#Flopper.wards" "[" Int "]" [function]
- // ------------------------------------------------------
-    rule #Flopper.wards[A] => #hashedLocation("Solidity", 0, A)
-
-    syntax Int ::= "#Flopper.bids" "[" Int "].bid" [function]
- // ---------------------------------------------------------
-    rule #Flopper.bids[N].bid => #hashedLocation("Solidity", 1, N) +Int 0
-
-    syntax Int ::= "#Flopper.bids" "[" Int "].lot" [function]
- // ---------------------------------------------------------
-    rule #Flopper.bids[N].lot => #hashedLocation("Solidity", 1, N) +Int 1
-
-    syntax Int ::= "#Flopper.bids" "[" Int "].guy_tic_end" [function]
- // -----------------------------------------------------------------
-    rule #Flopper.bids[N].guy_tic_end => #hashedLocation("Solidity", 1, N) +Int 2
-
-    syntax Int ::= "#Flopper.vat" [function]
- // ----------------------------------------
-    rule #Flopper.vat => 2
-
-    syntax Int ::= "#Flopper.gem" [function]
- // ----------------------------------------
-    rule #Flopper.gem => 3
-
-    syntax Int ::= "#Flopper.beg" [function]
- // ----------------------------------------
-    rule #Flopper.beg => 4
-
-    syntax Int ::= "#Flopper.pad" [function]
- // ----------------------------------------
-    rule #Flopper.pad => 5
-
-    syntax Int ::= "#Flopper.ttl_tau" [function]
- // --------------------------------------------
-    rule #Flopper.ttl_tau => 6
-
-    syntax Int ::= "#Flopper.kicks" [function]
- // ------------------------------------------
-    rule #Flopper.kicks => 7
-
-    syntax Int ::= "#Flopper.live" [function]
- // -----------------------------------------
-    rule #Flopper.live => 8
-
-    syntax Int ::= "#Flopper.vow" [function]
- // ----------------------------------------
-    rule #Flopper.vow => 9
+    syntax Int ::= "#Flopper.wards" "[" Int "]"
+                 | "#Flopper.bids" "[" Int "].bid"
+                 | "#Flopper.bids" "[" Int "].lot"
+                 | "#Flopper.bids" "[" Int "].guy_tic_end"
+                 | "#Flopper.vat"
+                 | "#Flopper.gem"
+                 | "#Flopper.beg"
+                 | "#Flopper.pad"
+                 | "#Flopper.ttl_tau"
+                 | "#Flopper.kicks"
+                 | "#Flopper.live"
+                 | "#Flopper.vow"
+ // -----------------------------
+    rule #Flopper.wards[A]            => #hashedLocation("Solidity", 0, A)        [macro]
+    rule #Flopper.bids[N].bid         => #hashedLocation("Solidity", 1, N) +Int 0 [macro]
+    rule #Flopper.bids[N].lot         => #hashedLocation("Solidity", 1, N) +Int 1 [macro]
+    rule #Flopper.bids[N].guy_tic_end => #hashedLocation("Solidity", 1, N) +Int 2 [macro]
+    rule #Flopper.vat                 => 2                                        [macro]
+    rule #Flopper.gem                 => 3                                        [macro]
+    rule #Flopper.beg                 => 4                                        [macro]
+    rule #Flopper.pad                 => 5                                        [macro]
+    rule #Flopper.ttl_tau             => 6                                        [macro]
+    rule #Flopper.kicks               => 7                                        [macro]
+    rule #Flopper.live                => 8                                        [macro]
+    rule #Flopper.vow                 => 9                                        [macro]
 
  // ### Flap
  // --------
 
-    syntax Int ::= "#Flapper.wards" "[" Int "]" [function]
- // ------------------------------------------------------
-    rule #Flapper.wards[A] => #hashedLocation("Solidity", 0, A)
-
-    syntax Int ::= "#Flapper.bids" "[" Int "].bid" [function]
- // ---------------------------------------------------------
-    rule #Flapper.bids[N].bid => #hashedLocation("Solidity", 1, N) +Int 0
-
-    syntax Int ::= "#Flapper.bids" "[" Int "].lot" [function]
- // ---------------------------------------------------------
-    rule #Flapper.bids[N].lot => #hashedLocation("Solidity", 1, N) +Int 1
-
-    syntax Int ::= "#Flapper.bids" "[" Int "].guy_tic_end" [function]
- // -----------------------------------------------------------------
-    rule #Flapper.bids[N].guy_tic_end => #hashedLocation("Solidity", 1, N) +Int 2
-
-    syntax Int ::= "#Flapper.vat" [function]
- // ----------------------------------------
-    rule #Flapper.vat => 2
-
-    syntax Int ::= "#Flapper.gem" [function]
- // ----------------------------------------
-    rule #Flapper.gem => 3
-
-    syntax Int ::= "#Flapper.beg" [function]
- // ----------------------------------------
-    rule #Flapper.beg => 4
-
-    syntax Int ::= "#Flapper.ttl_tau" [function]
- // --------------------------------------------
-    rule #Flapper.ttl_tau => 5
-
-    syntax Int ::= "#Flapper.kicks" [function]
- // ------------------------------------------
-    rule #Flapper.kicks => 6
-
-    syntax Int ::= "#Flapper.live" [function]
- // -----------------------------------------
-    rule #Flapper.live => 7
+    syntax Int ::= "#Flapper.wards" "[" Int "]"
+                 | "#Flapper.bids" "[" Int "].bid"
+                 | "#Flapper.bids" "[" Int "].lot"
+                 | "#Flapper.bids" "[" Int "].guy_tic_end"
+                 | "#Flapper.vat"
+                 | "#Flapper.gem"
+                 | "#Flapper.beg"
+                 | "#Flapper.ttl_tau"
+                 | "#Flapper.kicks"
+                 | "#Flapper.live"
+ // ------------------------------
+    rule #Flapper.wards[A]            => #hashedLocation("Solidity", 0, A)        [macro]
+    rule #Flapper.bids[N].bid         => #hashedLocation("Solidity", 1, N) +Int 0 [macro]
+    rule #Flapper.bids[N].lot         => #hashedLocation("Solidity", 1, N) +Int 1 [macro]
+    rule #Flapper.bids[N].guy_tic_end => #hashedLocation("Solidity", 1, N) +Int 2 [macro]
+    rule #Flapper.vat                 => 2                                        [macro]
+    rule #Flapper.gem                 => 3                                        [macro]
+    rule #Flapper.beg                 => 4                                        [macro]
+    rule #Flapper.ttl_tau             => 5                                        [macro]
+    rule #Flapper.kicks               => 6                                        [macro]
+    rule #Flapper.live                => 7                                        [macro]
 
  // ### GemLike
  // -----------
 
-    syntax Int ::= "#Gem.balances" "[" Int "]" [function]
- // -----------------------------------------------------
-    rule #Gem.balances[A] => #hashedLocation("Solidity", 3, A)
-
-    syntax Int ::= "#Gem.stopped" [function]
- // ----------------------------------------
-    rule #Gem.stopped => 4
-
-    syntax Int ::= "#Gem.allowance" "[" Int "][" Int "]" [function]
- // ---------------------------------------------------------------
-    rule #Gem.allowance[A][B] => #hashedLocation("Solidity", 8, A B)
+    syntax Int ::= "#Gem.balances" "[" Int "]"
+                 | "#Gem.stopped"
+                 | "#Gem.allowance" "[" Int "][" Int "]"
+ // ----------------------------------------------------
+    rule #Gem.balances[A]     => #hashedLocation("Solidity", 3, A)   [macro]
+    rule #Gem.stopped         => 4                                   [macro]
+    rule #Gem.allowance[A][B] => #hashedLocation("Solidity", 8, A B) [macro]
 
  // ### End
  // -------
 
-    syntax Int ::= "#End.wards" "[" Int "]" [function]
- // --------------------------------------------------
-    rule #End.wards[A] => #hashedLocation("Solidity", 0, A)
-
-    syntax Int ::= "#End.vat" [function]
- // ------------------------------------
-    rule #End.vat => 1
-
-    syntax Int ::= "#End.cat" [function]
- // ------------------------------------
-    rule #End.cat => 2
-
-    syntax Int ::= "#End.vow" [function]
- // ------------------------------------
-    rule #End.vow => 3
-
-    syntax Int ::= "#End.pot" [function]
- // ------------------------------------
-    rule #End.pot => 4
-
-    syntax Int ::= "#End.spot" [function]
- // -------------------------------------
-    rule #End.spot => 5
-
-    syntax Int ::= "#End.live" [function]
- // -------------------------------------
-    rule #End.live => 6
-
-    syntax Int ::= "#End.when" [function]
- // -------------------------------------
-    rule #End.when => 7
-
-    syntax Int ::= "#End.wait" [function]
- // -------------------------------------
-    rule #End.wait => 8
-
-    syntax Int ::= "#End.debt" [function]
- // -------------------------------------
-    rule #End.debt => 9
-
-    syntax Int ::= "#End.tag" "[" Int "]" [function]
- // ------------------------------------------------
-    rule #End.tag[Ilk] => #hashedLocation("Solidity", 10, Ilk)
-
-    syntax Int ::= "#End.gap" "[" Int "]" [function]
- // ------------------------------------------------
-    rule #End.gap[Ilk] => #hashedLocation("Solidity", 11, Ilk)
-
-    syntax Int ::= "#End.Art" "[" Int "]" [function]
- // ------------------------------------------------
-    rule #End.Art[Ilk] => #hashedLocation("Solidity", 12, Ilk)
-
-    syntax Int ::= "#End.fix" "[" Int "]" [function]
- // ------------------------------------------------
-    rule #End.fix[Ilk] => #hashedLocation("Solidity", 13, Ilk)
-
-    syntax Int ::= "#End.bag" "[" Int "]" [function]
- // ------------------------------------------------
-    rule #End.bag[Usr] => #hashedLocation("Solidity", 14, Usr)
-
-    syntax Int ::= "#End.out" "[" Int "][" Int "]" [function]
- // ---------------------------------------------------------
-    rule #End.out[Ilk][Usr] => #hashedLocation("Solidity", 15, Ilk Usr)
+    syntax Int ::= "#End.wards" "[" Int "]"
+                 | "#End.vat"
+                 | "#End.cat"
+                 | "#End.vow"
+                 | "#End.pot"
+                 | "#End.spot"
+                 | "#End.live"
+                 | "#End.when"
+                 | "#End.wait"
+                 | "#End.debt"
+                 | "#End.tag" "[" Int "]"
+                 | "#End.gap" "[" Int "]"
+                 | "#End.Art" "[" Int "]"
+                 | "#End.fix" "[" Int "]"
+                 | "#End.bag" "[" Int "]"
+                 | "#End.out" "[" Int "][" Int "]"
+ // ----------------------------------------------
+    rule #End.wards[A]      => #hashedLocation("Solidity", 0, A)        [macro]
+    rule #End.vat           => 1                                        [macro]
+    rule #End.cat           => 2                                        [macro]
+    rule #End.vow           => 3                                        [macro]
+    rule #End.pot           => 4                                        [macro]
+    rule #End.spot          => 5                                        [macro]
+    rule #End.live          => 6                                        [macro]
+    rule #End.when          => 7                                        [macro]
+    rule #End.wait          => 8                                        [macro]
+    rule #End.debt          => 9                                        [macro]
+    rule #End.tag[Ilk]      => #hashedLocation("Solidity", 10, Ilk)     [macro]
+    rule #End.gap[Ilk]      => #hashedLocation("Solidity", 11, Ilk)     [macro]
+    rule #End.Art[Ilk]      => #hashedLocation("Solidity", 12, Ilk)     [macro]
+    rule #End.fix[Ilk]      => #hashedLocation("Solidity", 13, Ilk)     [macro]
+    rule #End.bag[Usr]      => #hashedLocation("Solidity", 14, Usr)     [macro]
+    rule #End.out[Ilk][Usr] => #hashedLocation("Solidity", 15, Ilk Usr) [macro]
 
  // ### Pot
  // -------
 
-    syntax Int ::= "#Pot.wards" "[" Int "]" [function]
- // --------------------------------------------------
-    rule #Pot.wards[A] => #hashedLocation("Solidity", 0, A)
-
-    syntax Int ::= "#Pot.pie" "[" Int "]" [function]
- // ------------------------------------------------
-    rule #Pot.pie[Usr] => #hashedLocation("Solidity", 1, Usr)
-
-    syntax Int ::= "#Pot.Pie" [function]
- // ------------------------------------
-    rule #Pot.Pie => 2
-
-    syntax Int ::= "#Pot.dsr" [function]
- // ------------------------------------
-    rule #Pot.dsr => 3
-
-    syntax Int ::= "#Pot.chi" [function]
- // ------------------------------------
-    rule #Pot.chi => 4
-
-    syntax Int ::= "#Pot.vat" [function]
- // ------------------------------------
-    rule #Pot.vat => 5
-
-    syntax Int ::= "#Pot.vow" [function]
- // ------------------------------------
-    rule #Pot.vow => 6
-
-    syntax Int ::= "#Pot.rho" [function]
- // ------------------------------------
-    rule #Pot.rho => 7
-
-    syntax Int ::= "#Pot.live" [function]
- // -------------------------------------
-    rule #Pot.live => 8
+    syntax Int ::= "#Pot.wards" "[" Int "]"
+                 | "#Pot.pie" "[" Int "]"
+                 | "#Pot.Pie"
+                 | "#Pot.dsr"
+                 | "#Pot.chi"
+                 | "#Pot.vat"
+                 | "#Pot.vow"
+                 | "#Pot.rho"
+                 | "#Pot.live"
+ // --------------------------
+    rule #Pot.wards[A] => #hashedLocation("Solidity", 0, A)   [macro]
+    rule #Pot.pie[Usr] => #hashedLocation("Solidity", 1, Usr) [macro]
+    rule #Pot.Pie      => 2                                   [macro]
+    rule #Pot.dsr      => 3                                   [macro]
+    rule #Pot.chi      => 4                                   [macro]
+    rule #Pot.vat      => 5                                   [macro]
+    rule #Pot.vow      => 6                                   [macro]
+    rule #Pot.rho      => 7                                   [macro]
+    rule #Pot.live     => 8                                   [macro]
 
  // ### DSToken
  // -----------
 
-    syntax Int ::= "#DSToken.supply" [function]
- // -------------------------------------------
-    rule #DSToken.supply => 0
-
-    syntax Int ::= "#DSToken.balances" "[" Int "]" [function]
- // ---------------------------------------------------------
-    rule #DSToken.balances[A] => #hashedLocation("Solidity", 1, A)
-
-    syntax Int ::= "#DSToken.allowance" "[" Int "][" Int "]" [function]
- // -------------------------------------------------------------------
-    rule #DSToken.allowance[A][B] => #hashedLocation("Solidity", 2, A B)
-
-    syntax Int ::= "#DSToken.authority" [function]
- // ----------------------------------------------
-    rule #DSToken.authority => 3
-
-    syntax Int ::= "#DSToken.owner_stopped" [function]
- // --------------------------------------------------
-    rule #DSToken.owner_stopped => 4
-
-    syntax Int ::= "#DSToken.symbol" [function]
- // -------------------------------------------
-    rule #DSToken.symbol => 5
-
-    syntax Int ::= "#DSToken.decimals" [function]
- // ---------------------------------------------
-    rule #DSToken.decimals => 6
+    syntax Int ::= "#DSToken.supply"
+                 | "#DSToken.balances" "[" Int "]"
+                 | "#DSToken.allowance" "[" Int "][" Int "]"
+                 | "#DSToken.authority"
+                 | "#DSToken.owner_stopped"
+                 | "#DSToken.symbol"
+                 | "#DSToken.decimals"
+ // ----------------------------------
+    rule #DSToken.supply          => 0                                   [macro]
+    rule #DSToken.balances[A]     => #hashedLocation("Solidity", 1, A)   [macro]
+    rule #DSToken.allowance[A][B] => #hashedLocation("Solidity", 2, A B) [macro]
+    rule #DSToken.authority       => 3                                   [macro]
+    rule #DSToken.owner_stopped   => 4                                   [macro]
+    rule #DSToken.symbol          => 5                                   [macro]
+    rule #DSToken.decimals        => 6                                   [macro]
 
  // ### DSValue
  // -----------
 
-    syntax Int ::= "#DSValue.authority" [function]
- // ----------------------------------------------
-    rule #DSValue.authority => 0
-
-    syntax Int ::= "#DSValue.owner_has" [function]
- // ----------------------------------------------
-    rule #DSValue.owner_has => 1
-
-    syntax Int ::= "#DSValue.val" [function]
- // ----------------------------------------
-    rule #DSValue.val => 2
-
+    syntax Int ::= "#DSValue.authority"
+                 | "#DSValue.owner_has"
+                 | "#DSValue.val"
+ // -----------------------------
+    rule #DSValue.authority => 0 [macro]
+    rule #DSValue.owner_has => 1 [macro]
+    rule #DSValue.val       => 2 [macro]
 
  // ### Spotter
  // -----------
 
-    syntax Int ::= "#Spotter.wards" "[" Int "]" [function]
- // ------------------------------------------------------
-    rule #Spotter.wards[A] => #hashedLocation("Solidity", 0, A)
-
-    syntax Int ::= "#Spotter.ilks" "[" Int "].pip" [function]
- // ---------------------------------------------------------
-    rule #Spotter.ilks[Ilk].pip => #hashedLocation("Solidity", 1, Ilk) +Int 0
-
-    syntax Int ::= "#Spotter.ilks" "[" Int "].mat" [function]
- // ---------------------------------------------------------
-    rule #Spotter.ilks[Ilk].mat => #hashedLocation("Solidity", 1, Ilk) +Int 1
-
-    syntax Int ::= "#Spotter.vat" [function]
- // ----------------------------------------
-    rule #Spotter.vat => 2
-
-    syntax Int ::= "#Spotter.par" [function]
- // ----------------------------------------
-    rule #Spotter.par => 3
-
-    syntax Int ::= "#Spotter.live" [function]
- // -----------------------------------------
-    rule #Spotter.live => 4
+    syntax Int ::= "#Spotter.wards" "[" Int "]"
+                 | "#Spotter.ilks" "[" Int "].pip"
+                 | "#Spotter.ilks" "[" Int "].mat"
+                 | "#Spotter.vat"
+                 | "#Spotter.par"
+                 | "#Spotter.live"
+ // ------------------------------
+    rule #Spotter.wards[A]      => #hashedLocation("Solidity", 0, A)          [macro]
+    rule #Spotter.ilks[Ilk].pip => #hashedLocation("Solidity", 1, Ilk) +Int 0 [macro]
+    rule #Spotter.ilks[Ilk].mat => #hashedLocation("Solidity", 1, Ilk) +Int 1 [macro]
+    rule #Spotter.vat           => 2                                          [macro]
+    rule #Spotter.par           => 3                                          [macro]
+    rule #Spotter.live          => 4                                          [macro]
 
 endmodule
