@@ -60,6 +60,8 @@ tests/specs/mcd/dai-symbol-pass-spec.k
 tests/specs/mcd/dstoken-approve-fail-rough-spec.k
 tests/specs/mcd/dstoken-transferfrom-fail-rough-spec.k
 tests/specs/mcd/dsvalue-read-pass-spec.k
+tests/specs/mcd/end-subuu-pass-spec.k
+tests/specs/mcd/flipper-tau-pass-spec.k
 tests/specs/mcd/vat-deny-diff-fail-rough-spec.k
 tests/specs/mcd/vat-move-diff-spec.k
 tests/specs/opcodes/create-spec.k
