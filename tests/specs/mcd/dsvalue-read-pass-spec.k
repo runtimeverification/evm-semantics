@@ -189,9 +189,13 @@ module DSVALUE-READ-PASS-SPEC
      andBool (#rangeUInt(256, Junk_1)
      andBool ((VCallValue ==Int 0)
      andBool ((Ok ==Int 1)))))))))))
-     andBool #lookup(ACCT_ID_STORAGE, 1) ==Int #WordPackAddrUInt8(Owner, Ok)
-     andBool #lookup(ACCT_ID_STORAGE, 2) ==Int Value
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, 1) ==Int Junk_0
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, 2) ==Int Junk_1
+
+     andBool #lookup(ACCT_ID_STORAGE, #DSValue.owner_has) ==Int #WordPackAddrUInt8(Owner, Ok)
+     andBool #lookup(ACCT_ID_STORAGE, #DSValue.val)       ==Int Value
+
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSValue.owner_has) ==Int Junk_0
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSValue.val)       ==Int Junk_1
+
+     andBool #DSValue.owner_has =/=Int #DSValue.val
 
 endmodule

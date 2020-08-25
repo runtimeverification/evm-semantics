@@ -195,8 +195,13 @@ module CAT-ILKS-PASS-SPEC
      andBool #lookup(ACCT_ID_STORAGE, #Cat.ilks[ABI_ilk].flip) ==Int Flip
      andBool #lookup(ACCT_ID_STORAGE, #Cat.ilks[ABI_ilk].chop) ==Int Chop
      andBool #lookup(ACCT_ID_STORAGE, #Cat.ilks[ABI_ilk].lump) ==Int Lump
+
      andBool #lookup(ACCT_ID_ORIG_STORAGE, #Cat.ilks[ABI_ilk].flip) ==Int Junk_0
      andBool #lookup(ACCT_ID_ORIG_STORAGE, #Cat.ilks[ABI_ilk].chop) ==Int Junk_1
      andBool #lookup(ACCT_ID_ORIG_STORAGE, #Cat.ilks[ABI_ilk].lump) ==Int Junk_2
+
+     andBool #Cat.ilks[ABI_ilk].flip =/=Int #Cat.ilks[ABI_ilk].chop
+     andBool #Cat.ilks[ABI_ilk].flip =/=Int #Cat.ilks[ABI_ilk].lump
+     andBool #Cat.ilks[ABI_ilk].chop =/=Int #Cat.ilks[ABI_ilk].lump
 
 endmodule

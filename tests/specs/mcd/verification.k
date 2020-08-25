@@ -99,8 +99,6 @@ module VERIFICATION
 
     // ### dstoken-transferfrom-fail-rough
 
-    rule hash2(_, hash2(_, _)) ==K hash2(_, N) => false requires N <=Int 10
-
     rule chop(N +Int M) <Int N => true requires #rangeUInt(256, N) andBool #rangeUInt(256, M) andBool notBool #rangeUInt(256, N +Int M)
 
     // ### dsvalue-read-pass
@@ -108,11 +106,6 @@ module VERIFICATION
     rule M [ K <- V ] => M requires #lookup(M, K) ==Int V
 
     // ### cat-ilks-pass
-
-    rule chop(hash2(I, I') +Int N) => hash2(I, I') +Int N requires N <Int 3
-
-    rule hash2(_, _) +Int N ==K hash2(_, _) +Int M => false requires N =/=Int M
-    rule hash2(_, _)        ==K hash2(_, _) +Int M => false requires 0 =/=Int M
 
     rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1 ++ ( BA2 ++ BA3 )
 

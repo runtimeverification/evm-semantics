@@ -212,6 +212,13 @@ module DSTOKEN-TRANSFERFROM-FAIL-ROUGH-SPEC
      andBool #lookup(ORIGSTORAGE, #DSToken.balances[ABI_dst]            ) ==Int Junk_2
      andBool #lookup(ORIGSTORAGE, #DSToken.owner_stopped                ) ==Int Junk_3
 
+     andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.balances[ABI_src]
+     andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.balances[ABI_dst]
+     andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.owner_stopped
+     andBool #DSToken.balances[ABI_src]             =/=Int #DSToken.balances[ABI_dst]
+     andBool #DSToken.balances[ABI_src]             =/=Int #DSToken.owner_stopped
+     andBool #DSToken.balances[ABI_dst]             =/=Int #DSToken.owner_stopped
+
      ensures ?FAILURE =/=K EVMC_SUCCESS
 
 endmodule
