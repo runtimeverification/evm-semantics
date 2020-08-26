@@ -107,7 +107,7 @@ module VERIFICATION
 
     // ### cat-ilks-pass
 
-    rule chop(hash2(I1, I2) +Int N) => hash2(I1, I2) +Int N requires N <Int 3
+    rule chop(hash2(I1, I2) +Int N) => hash2(I1, I2) +Int N requires 0 <=Int N andBool N <Int 3
 
     rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1 ++ ( BA2 ++ BA3 )
 
