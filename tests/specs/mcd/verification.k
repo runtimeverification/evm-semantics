@@ -97,4 +97,20 @@ module VERIFICATION
     rule M:Memory [ K <- V ] [ K' <- V' ]             => M [ K' <- V' ] [ K <- V ]       requires K' <Int K
     rule M:Memory [ K := BUF:ByteArray ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ]     requires K' <Int K orBool K +Int #sizeByteArray(BUF) <=Int K'
 
+    // ### dstoken-transferfrom-fail-rough
+
+    rule chop(N +Int M) <Int N => true requires #rangeUInt(256, N) andBool #rangeUInt(256, M) andBool notBool #rangeUInt(256, N +Int M)
+
+    // ### dsvalue-read-pass
+
+    rule M [ K <- V ] => M requires #lookup(M, K) ==Int V
+
+    // ### cat-ilks-pass
+
+    // This lemma is considered "safe enough" because `hash2` is a hash function over a large range and is very unlikely to overflow.
+    // Note that this case comes from a solidity struct being accessed (hence the integer offsets), so it's an assumption built into the Solidity compiler anyway.
+    rule chop(hash2(I1, I2) +Int N) => hash2(I1, I2) +Int N requires 0 <=Int N andBool N <Int 3
+
+    rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1 ++ ( BA2 ++ BA3 )
+
 endmodule
