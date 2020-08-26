@@ -198,4 +198,6 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
      andBool #lookup(ORIGSTORAGE, #Cat.wards[CALLER_ID]) ==Int Junk_0
      andBool #lookup(ORIGSTORAGE, #Cat.vow)              ==Int Junk_1
 
+     andBool #Cat.wards[CALLER_ID] =/=Int #Cat.vow
+
 endmodule

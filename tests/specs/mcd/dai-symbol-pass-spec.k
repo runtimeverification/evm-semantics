@@ -77,16 +77,8 @@ module DAI-SYMBOL-PASS-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Dai_bin_runtime </code>
-              <storage>
-               .Map
-
-                _:Map
-               </storage>
-              <origStorage>
-               .Map
-
-                _:Map
-               </origStorage>
+              <storage> STORAGE </storage>
+              <origStorage> ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Dai => ?_ </nonce>
             </account>
             <account>

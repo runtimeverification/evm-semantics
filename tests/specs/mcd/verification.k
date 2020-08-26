@@ -5,8 +5,8 @@ requires "storage.k"
 module HASKELL-HASH2 [symbolic, kore]
     imports INT
 
-    syntax Int ::= hash2(Int, Int) [function]
- // -----------------------------------------
+    syntax Int ::= hash2 ( Int , Int ) [function]
+ // ---------------------------------------------
 endmodule
 
 module VERIFICATION-SYNTAX
@@ -74,8 +74,6 @@ module VERIFICATION
     rule (_  : WS) [ START .. WIDTH ] => WS [ START -Int 1 .. WIDTH ]    requires 0 <Int START
 
     rule #asWord(WS) >>Int M => #asWord(WS [ 0 .. #sizeByteArray(WS) -Int (M /Int 8) ]) requires 0 <=Int M andBool M modInt 8 ==Int 0
-
-    rule hash2(V1, _) ==K hash2(V2, _) => false requires V1 =/=Int V2
 
     // ### cat-exhaustiveness
 
