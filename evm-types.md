@@ -155,7 +155,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
     syntax Int ::= sgn ( Int ) [function, functional]
                  | abs ( Int ) [function, functional]
  // -------------------------------------------------
-    rule sgn(I) => -1 requires I >=Int pow255
+    rule sgn(I) => -1 requires pow255 <=Int I
     rule sgn(I) => 1  requires I <Int pow255
 
     rule abs(I) => 0 -Word I requires sgn(I) ==Int -1
@@ -166,21 +166,14 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 - #unsigned : sInt256 -> uInt256  (i.e., [minSInt256..maxSInt256] -> [minUInt256..maxUInt256])
 
 ```k
-    syntax Int ::= #signed ( Int ) [function]
- // -----------------------------------------
-    rule [#signed.positive]: #signed(DATA) => DATA
-      requires 0 <=Int DATA andBool DATA <=Int maxSInt256
-
-    rule [#signed.negative]: #signed(DATA) => DATA -Int pow256
-      requires maxSInt256 <Int DATA andBool DATA <=Int maxUInt256
-
-    syntax Int ::= #unsigned ( Int ) [function]
+    syntax Int ::= #signed   ( Int ) [function]
+                 | #unsigned ( Int ) [function]
  // -------------------------------------------
-    rule [#unsigned.positive]: #unsigned(DATA) => DATA
-      requires 0 <=Int DATA andBool DATA <=Int maxSInt256
+    rule [#signed.positive]: #signed(DATA) => DATA             requires 0 <=Int DATA andBool DATA <=Int maxSInt256
+    rule [#signed.negative]: #signed(DATA) => DATA -Int pow256 requires maxSInt256 <Int DATA andBool DATA <=Int maxUInt256
 
-    rule [#unsigned.negative]: #unsigned(DATA) => pow256 +Int DATA
-      requires minSInt256 <=Int DATA andBool DATA <Int 0
+    rule [#unsigned.positive]: #unsigned(DATA) => DATA             requires 0 <=Int DATA andBool DATA <=Int maxSInt256
+    rule [#unsigned.negative]: #unsigned(DATA) => pow256 +Int DATA requires minSInt256 <=Int DATA andBool DATA <Int 0
 ```
 
 Word Operations
