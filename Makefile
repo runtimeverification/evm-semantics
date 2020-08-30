@@ -22,7 +22,7 @@ K_LIB := $(K_RELEASE)/lib/kframework
 export K_RELEASE
 
 LIBRARY_PATH       := $(LOCAL_LIB)
-K_INCLUDE_PATH     := $(BUILD_LOCAL)/include/k
+K_INCLUDE_PATH     := $(BUILD_LOCAL)/include/kframework/
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
 PATH               := $(K_BIN):$(PATH)
