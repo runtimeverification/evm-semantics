@@ -11,8 +11,6 @@ EVM-TYPES.powmod.nonzero
 EVM-TYPES.powmod.zero
 EVM-TYPES.#range
 EVM-TYPES.#rangeAux.rec
-EVM-TYPES.#signed.negative
-EVM-TYPES.#signed.positive
 EVM-TYPES.signextend.invalid
 EVM-TYPES.signextend.negative
 EVM-TYPES.signextend.positive
