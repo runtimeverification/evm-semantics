@@ -159,11 +159,11 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
  // -------------------------------------------------
     rule sgn(I) => -1 requires pow255 <=Int I andBool I <Int pow256
     rule sgn(I) =>  1 requires 0 <=Int I andBool I <Int pow255
-    rule sgn(_) =>  0 [owise]
+    rule sgn(I) =>  0 requires I <Int 0 orBool pow256 <=Int I
 
     rule abs(I) => 0 -Word I requires sgn(I) ==Int -1
     rule abs(I) => I         requires sgn(I) ==Int  1
-    rule abs(_) => 0         [owise]
+    rule abs(I) => 0         requires sgn(I) ==Int  0
 ```
 
 Word Operations
