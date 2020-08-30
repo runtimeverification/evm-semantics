@@ -194,15 +194,6 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
       [anywhere, simplification]
 ```
 
-- #unsigned : sInt256 -> uInt256  (i.e., [minSInt256..maxSInt256] -> [minUInt256..maxUInt256])
-
-```k
-    syntax Int ::= #unsigned ( Int ) [function]
- // -------------------------------------------
-    rule [#unsigned.positive]: #unsigned(DATA) => DATA             requires 0 <=Int DATA andBool DATA <=Int maxSInt256
-    rule [#unsigned.negative]: #unsigned(DATA) => pow256 +Int DATA requires minSInt256 <=Int DATA andBool DATA <Int 0
-```
-
 ```k
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
@@ -224,11 +215,17 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #getValue(  #uint8( DATA )) => DATA
       requires #rangeUInt(8, DATA)
 
-    rule #getValue( #int256( DATA )) => #unsigned(DATA)
-      requires #rangeSInt(256, DATA)
+    rule #getValue( #int256( DATA )) => DATA
+      requires #rangeSInt(256, DATA) andBool 0 <=Int DATA andBool DATA <=Int maxSInt256
 
-    rule #getValue( #int128( DATA )) => #unsigned(DATA)
-      requires #rangeSInt(128, DATA)
+    rule #getValue( #int256( DATA )) => DATA +Int pow256
+      requires #rangeSInt(256, DATA) andBool minSInt256 <=Int DATA andBool DATA <Int 0
+
+    rule #getValue( #int128( DATA )) => DATA
+      requires #rangeSInt(128, DATA) andBool 0 <=Int DATA andBool DATA <=Int maxSInt256
+
+    rule #getValue( #int128( DATA )) => DATA +Int pow256
+      requires #rangeSInt(128, DATA) andBool minSInt256 <=Int DATA andBool DATA <Int 0
 
     rule #getValue(#bytes32( DATA )) => DATA
       requires #rangeUInt(256, DATA)
