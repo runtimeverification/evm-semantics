@@ -231,7 +231,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
       requires #rangeUInt(256, DATA)
 
     rule #getValue(   #bool( DATA )) => DATA
-      requires #range(0 <= DATA <= 1)
+      requires #rangeBool(DATA)
 
     syntax Int ::= #ceil32 ( Int ) [function, functional, smt-hook(ceil32), smt-prelude]
  // ------------------------------------------------------------------------------------

@@ -90,13 +90,15 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
 -   Range of types
 
 ```k
-    syntax Bool ::= #rangeSInt    ( Int , Int )
+    syntax Bool ::= #rangeBool    ( Int )
+                  | #rangeSInt    ( Int , Int )
                   | #rangeUInt    ( Int , Int )
                   | #rangeSFixed  ( Int , Int , Int )
                   | #rangeUFixed  ( Int , Int , Int )
                   | #rangeAddress ( Int )
                   | #rangeBytes   ( Int , Int )
  // -------------------------------------------
+    rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1                         [macro]
     rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      ) [macro]
     rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      ) [macro]
     rule #rangeUInt    (   8 ,      X ) => #range ( minUInt8        <= X <  256             ) [macro]
