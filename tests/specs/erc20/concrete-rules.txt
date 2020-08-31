@@ -19,13 +19,9 @@ EVM-TYPES.padToWidthNonEmpty
 EVM-TYPES.powmod.nonzero
 EVM-TYPES.powmod.zero
 EVM-TYPES.#range
-EVM-TYPES.#signed.negative
-EVM-TYPES.#signed.positive
 EVM-TYPES.signextend.invalid
 EVM-TYPES.signextend.negative
 EVM-TYPES.signextend.positive
-EVM-TYPES.#unsigned.negative
-EVM-TYPES.#unsigned.positive
 SERIALIZATION.keccak
 SERIALIZATION.#newAddr
 SERIALIZATION.#newAddrCreate2
