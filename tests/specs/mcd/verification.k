@@ -69,6 +69,11 @@ module VERIFICATION-SYNTAX
     rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
     rule nthbyteof(V, I, N) =>           V modInt 256             when N ==Int (I +Int 1) [concrete]
 
+    syntax Int ::= #unsigned ( Int ) [function]
+ // -------------------------------------------
+    rule #unsigned(DATA) => DATA             requires 0 <=Int DATA andBool DATA <=Int maxSInt256
+    rule #unsigned(DATA) => pow256 +Int DATA requires minSInt256 <=Int DATA andBool DATA <Int 0
+
 endmodule
 
 module VERIFICATION
