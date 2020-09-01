@@ -69,8 +69,8 @@ module VERIFICATION-SYNTAX
     rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
     rule nthbyteof(V, I, N) =>           V modInt 256             when N ==Int (I +Int 1) [concrete]
 
-    syntax Int ::= #unsigned ( Int ) [function]
- // -------------------------------------------
+    syntax Int ::= #unsigned ( Int ) [function, smtlib(unsigned)]
+ // -------------------------------------------------------------
     rule #unsigned(DATA) => DATA             requires 0 <=Int DATA andBool DATA <=Int maxSInt256
     rule #unsigned(DATA) => pow256 +Int DATA requires minSInt256 <=Int DATA andBool DATA <Int 0
 
@@ -123,5 +123,25 @@ module VERIFICATION
     rule chop(hash2(I1, I2) +Int N) => hash2(I1, I2) +Int N requires 0 <=Int N andBool N <Int 3
 
     rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1 ++ ( BA2 ++ BA3 )
+
+    // ### vat-addui-fail-rough
+
+    rule #rangeUInt(256, #unsigned(X)) => true requires #rangeSInt(256, X) [smt-lemma]
+
+    // Proof (remembering that sgn(0) ==Int 1 and using the rules for _s<Word_ and _<Word_):
+    // X s<Word 0
+    //      case sgn(X) ==Int  1 : X <Word 0 => bool2Word(false) (because #rangeUInt(256, X))
+    //      case sgn(X) ==Int -1 : bool2Word(true)
+    // 0 s<Word X
+    //      case sgn(X) ==Int  1 : 0 <Word X
+    //      case sgn(X) ==Int -1 : bool2Word(false)
+    rule X s<Word 0 => bool2Word(sgn(X) ==Int -1)                  requires #rangeUInt(256, X)
+    rule 0 s<Word X => bool2Word(sgn(X) ==Int  1 andBool 0 <Int X) requires #rangeUInt(256, X)
+
+    rule sgn(#unsigned(X)) ==Int  1 => 0 <=Int X andBool X <=Int maxSInt256 requires #rangeSInt(256, X)
+    rule sgn(#unsigned(X)) ==Int -1 => minSInt256 <=Int X andBool X <Int 0  requires #rangeSInt(256, X)
+
+    // property of 2s complement
+    rule notBool (0 <=Int X +Int Y) => X <Int chop(X +Int #unsigned(Y)) requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) [smt-lemma]
 
 endmodule
