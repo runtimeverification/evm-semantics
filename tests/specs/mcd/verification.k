@@ -144,4 +144,8 @@ module VERIFICATION
     // property of 2s complement
     rule notBool (0 <=Int X +Int Y) => X <Int chop(X +Int #unsigned(Y)) requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) [smt-lemma]
 
+    // ### vat-mului-fail-rough
+
+    rule #unsigned(Y) ==K 0 => Y ==K 0 requires #rangeSInt(256, Y) [smt-lemma]
+
 endmodule
