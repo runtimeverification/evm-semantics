@@ -121,60 +121,50 @@ module VERIFICATION
 
     // ### vat-addui-fail-rough
 
-    // Proof (remembering that sgn(0) ==Int 1 and using the rules for _s<Word_ and _<Word_):
+    // Proof:
     // case sgn(X) ==Int  1
     //      X s<Word 0
     //   => X <Word 0           // sgn(X) ==Int 1 andBool sgn(0) ==Int 1
     //   => bool2Word(false)    // #rangeUInt(256, X)
     // case sgn(X) ==Int -1
     //      X s<Word 0
-    //   => bool2Word(true)     // sgn(X) ==Int -1
+    //   => bool2Word(true)     // sgn(X) ==Int -1 andBool sgn(0) ==Int 1
     rule X s<Word 0 => bool2Word(sgn(X) ==Int -1) requires #rangeUInt(256, X)
 
     rule sgn(chop(X)) ==Int -1 => X <Int 0 requires #rangeSInt(256, X)
 
     // ### vat-mului-fail-rough
 
-    // Proof:
-    // case 0 <=Int chop(Y)                             // chop(Y) ==Int Y
-    //      chop(X *Int chop(Y))
-    //   => chop(X *Int Y)                              // chop(Y) ==Int Y
-    // case chop(Y) <Int 0                              // chop(Y) ==Int Y +Int pow256
-    //      chop(X *Int chop(Y))
-    //   => chop(X *Int (Y +Int pow256))                // chop(Y) ==Int Y +Int pow256
-    //   => chop(X *Int Y +Int X *Int pow256)
-    //   => chop(X *Int Y +Int chop(X *Int pow256))
-    //   => chop(X *Int Y +Int 0)
-    //   => chop(X *Int Y)
-    rule chop(X *Int chop(Y)) => chop(X *Int Y) requires #rangeSInt(256, Y)
+    rule chop(X *Int chop(Y)) => chop(X *Int Y)
 
-    // Proof:
-    // case 0 <=Int chop(Y)                                     // chop(Y) ==Int Y
-    //      sgn(chop(X *Int Y)) *Int sgn(chop(Y))
-    //   => sgn(chop(X *Int Y)) *Int sgn(Y)                     // chop(Y) ==Int Y
-    //   => sgn(X *Int Y) *Int sgn(Y)                           // 0 <=Int X andBool 0 <=Int Y andBool #rangeSInt(256, X *Int Y)
-    //   => 1 *Int 1                                            // 0 <=Int X *Int Y andBool 0 <=Int Y
-    //   => 1
-    // case sgn(chop(Y)) ==Int -1                               // Y <Int 0 andBool chop(Y) ==Int Y +Int pow256
-    //      sgn(chop(X *Int Y)) *Int sgn(chop(Y))
-    //   => sgn(X *Int Y +Int pow256) *Int sgn(Y +Int pow256)   // 0 <=Int X andBool Y <Int 0 andBool #rangeSInt(256, X *Int Y) andBool chop(Y) ==Int Y +Int pow256
-    //   => -1 *Int -1                                          // X *Int Y <Int 0 andBool #rangeSInt(256, X *Int Y) andBool Y <Int andBool #rangeSInt(256, Y)
-    //   => 1
-    rule sgn(chop(X *Int Y)) *Int sgn(chop(Y)) => 1 requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y)
-
-    // Proof (assuming Y =/=Int 0):
-    // case sgn(chop(Y)) ==Int 1                                                        // 0 <=Int Y andBool chop(Y) ==Int Y
-    //      abs(chop(X *Int Y)) /Int abs(chop(Y))
-    //   => abs(X *Int Y) /Int abs(Y)                                                   // #rangeSInt(256, Y) andBool chop(Y) ==Int Y
-    //   => X *Int Y /Int Y                                                             // #rangeSInt(256, X *Int Y) andBool 0 <=Int X *Int Y andBool #rangeSInt(256, Y) andBool 0 <=Int Y
-    //   => X
-    // case sgn(chop(Y)) ==Int -1                                                       // Y <Int 0 andBool chop(Y) ==Int Y +Int pow256
-    //      abs(chop(X *Int Y)) /Int abs(chop(Y))
-    //   => abs(X *Int Y +Int pow256) /Int abs(Y +Int pow256)                           // #rangeSInt(256, X *Int Y) andBool chop(Y) ==Int Y +Int pow256
-    //   => (0 -Word (X *Int Y +Int pow256)) /Int (0 -Word (Y +Int pow256))             // #rangeSInt(256, X *Int Y) andBool X *Int Y <Int 0 andBool #rangeSInt(256, Y) andBool Y <Int 0
-    //   => (pow256 -Int (X *Int Y +Int pow256)) /Int (pow256 -Int (Y +Int pow256))     // 0 <Int (X *Int Y +Int pow256) andBool 0 <Int (Y +Int pow256)
-    //   => (X *Int Y) /Int Y
-    //   => X
-    rule abs(chop(X *Int Y)) /Int abs(chop(Y)) => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0
+    // Proof #rangUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0
+    //      chop(X *Int Y) /sWord chop(Y)
+    //   => #sgnInterp(sgn(chop(X *Int Y)) *Int sgn(chop(Y)), abs(chop(X *Int Y)) /Word abs(chop(Y)))
+    // Focus: sgn(chop(X *Int Y)) *Int sgn(chop(Y))
+    //      case 0 <=Int chop(Y)
+    //           sgn(chop(X *Int Y)) *Int sgn(chop(Y))
+    //        => sgn(chop(X *Int Y)) *Int sgn(Y)                     // chop(Y) ==Int Y
+    //        => sgn(X *Int Y) *Int sgn(Y)                           // 0 <=Int X andBool 0 <=Int Y
+    //        => 1 *Int 1                                            // 0 <=Int X *Int Y andBool 0 <=Int Y
+    //        => 1
+    //      case Y <Int 0
+    //           sgn(chop(X *Int Y)) *Int sgn(chop(Y))
+    //        => sgn(X *Int Y +Int pow256) *Int sgn(Y +Int pow256)   // chop(Y) ==Int Y +Int pow256
+    //        => -1 *Int -1                                          // X *Int Y <Int 0 andBool Y <Int 0
+    //        => 1
+    // Focus: abs(chop(X *Int Y)) /Word abs(chop(Y))
+    //      case 0 <=Int Y
+    //           abs(chop(X *Int Y)) /Int abs(chop(Y))
+    //        => abs(X *Int Y) /Int abs(Y)                                                   // 0 <=Int X andBool 0 <=Int Y andBool #rangeSigne andBool chop(Y) ==Int Y
+    //        => X *Int Y /Int Y                                                             // #rangeSInt(256, X *Int Y) andBool 0 <=Int X *Int Y andBool #rangeSInt(256, Y) andBool 0 <=Int Y
+    //        => X
+    //      case Y <Int 0
+    //           abs(chop(X *Int Y)) /Int abs(chop(Y))
+    //        => abs(X *Int Y +Int pow256) /Int abs(Y +Int pow256)                           // #rangeSInt(256, X *Int Y) andBool chop(Y) ==Int Y +Int pow256
+    //        => (0 -Word (X *Int Y +Int pow256)) /Int (0 -Word (Y +Int pow256))             // #rangeSInt(256, X *Int Y) andBool X *Int Y <Int 0 andBool #rangeSInt(256, Y) andBool Y <Int 0
+    //        => (pow256 -Int (X *Int Y +Int pow256)) /Int (pow256 -Int (Y +Int pow256))     // 0 <Int (X *Int Y +Int pow256) andBool 0 <Int (Y +Int pow256)
+    //        => (X *Int Y) /Int Y
+    //        => X
+    rule chop(X *Int Y) /sWord chop(Y) => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0
 
 endmodule
