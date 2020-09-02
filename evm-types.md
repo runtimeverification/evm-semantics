@@ -154,9 +154,9 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `abs` gives the twos-complement interperetation of the magnitude of a word.
 
 ```k
-    syntax Int ::= sgn ( Int ) [function, functional, smtlib(sgn)]
-                 | abs ( Int ) [function, functional, smtlib(abs)]
- // --------------------------------------------------------------
+    syntax Int ::= sgn ( Int ) [function, functional]
+                 | abs ( Int ) [function, functional]
+ // -------------------------------------------------
     rule sgn(I) => -1 requires pow255 <=Int I andBool I <Int pow256
     rule sgn(I) =>  1 requires 0 <=Int I andBool I <Int pow255
     rule sgn(I) =>  0 requires I <Int 0 orBool pow256 <=Int I
