@@ -27,7 +27,7 @@ module CREATE-SPEC
                <endPC> _ => ?_ </endPC>
                <callStack> _ </callStack>
                <interimStates> _ </interimStates>
-               <touchedAccounts> _ => _ </touchedAccounts>
+               <touchedAccounts> _ => ?_ </touchedAccounts>
                
                <callState>
                  <program> _ </program>
@@ -46,10 +46,10 @@ module CREATE-SPEC
                    PCOUNT => ( PCOUNT +Int 1 )
                  </pc>
                  <gas>
-                   G => _
+                   G => ?_
                  </gas>
-                 <memoryUsed> MU => _ </memoryUsed>
-                 <callGas> _ => _ </callGas>
+                 <memoryUsed> MU => ?_ </memoryUsed>
+                 <callGas> _ => ?_ </callGas>
 
                  <static> false </static>
                  <callDepth> CALL_DEPTH </callDepth>
@@ -118,13 +118,13 @@ module CREATE-SPEC
                  <callData> _ </callData>
                  <callValue> _ </callValue>
 
-                 <wordStack> .WordStack => _ </wordStack>
-                 <localMem> .Memory => _ </localMem>
-                 <pc> 0 => _ </pc>
+                 <wordStack> .WordStack => ?_ </wordStack>
+                 <localMem> .Memory => ?_ </localMem>
+                 <pc> 0 => ?_ </pc>
                  // simplified gas cost
                  <gas> G => 0 </gas>
-                 <memoryUsed> MU => _ </memoryUsed>
-                 <callGas> _ => _ </callGas>
+                 <memoryUsed> MU => ?_ </memoryUsed>
+                 <callGas> _ => ?_ </callGas>
 
                  <static> false </static>
                  <callDepth> CALL_DEPTH </callDepth>
