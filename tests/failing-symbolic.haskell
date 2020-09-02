@@ -10,8 +10,6 @@ tests/specs/benchmarks/ecrecoverloop02-sigs-valid-spec.k
 tests/specs/benchmarks/encode-keccak00-spec.k
 tests/specs/benchmarks/encodepacked-keccak01-spec.k
 tests/specs/benchmarks/keccak00-spec.k
-tests/specs/benchmarks/staticarray00-spec.k
-tests/specs/benchmarks/storagevar02-nooverflow-spec.k
 tests/specs/bihu/collectToken-spec.k
 tests/specs/bihu/forwardToHotWallet-failure-1-spec.k
 tests/specs/bihu/forwardToHotWallet-failure-2-spec.k
@@ -55,11 +53,9 @@ tests/specs/imp-specs/imp-specs-test-spec.k
 tests/specs/mcd/cat-exhaustiveness-spec.k
 tests/specs/mcd/cat-file-addr-pass-rough-spec.k
 tests/specs/mcd/cat-ilks-pass-spec.k
-tests/specs/mcd/dai-adduu-fail-rough-spec.k
 tests/specs/mcd/dai-symbol-pass-spec.k
 tests/specs/mcd/dstoken-approve-fail-rough-spec.k
 tests/specs/mcd/dstoken-transferfrom-fail-rough-spec.k
-tests/specs/mcd/dsvalue-read-pass-spec.k
 tests/specs/mcd/end-subuu-pass-spec.k
 tests/specs/mcd/flipper-tau-pass-spec.k
 tests/specs/mcd/vat-deny-diff-fail-rough-spec.k
