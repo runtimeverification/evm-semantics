@@ -154,7 +154,8 @@ module VERIFICATION
     //        => 1
     // Focus: abs(chop(X *Int Y)) /Word abs(chop(Y))
     //      case 0 <=Int Y
-    //           abs(chop(X *Int Y)) /Int abs(chop(Y))
+    //           abs(chop(X *Int Y)) /Word abs(chop(Y))
+    //        => abs(chop(X *Int Y)) /Int  abs(chop(Y))
     //        => abs(X *Int Y) /Int abs(Y)                                                   // 0 <=Int X andBool 0 <=Int Y andBool #rangeSigne andBool chop(Y) ==Int Y
     //        => X *Int Y /Int Y                                                             // #rangeSInt(256, X *Int Y) andBool 0 <=Int X *Int Y andBool #rangeSInt(256, Y) andBool 0 <=Int Y
     //        => X
