@@ -67,4 +67,5 @@ tests/specs/mcd/flipper-ttl-pass-spec.k
 tests/specs/mcd/vat-addui-fail-rough-spec.k
 tests/specs/mcd/vat-deny-diff-fail-rough-spec.k
 tests/specs/mcd/vat-move-diff-spec.k
+tests/specs/mcd/vat-mului-pass-spec.k
 tests/specs/opcodes/create-spec.k
