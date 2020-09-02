@@ -121,8 +121,6 @@ module VERIFICATION
 
     // ### vat-addui-fail-rough
 
-    rule #rangeUInt(256, chop(X)) => true requires #rangeSInt(256, X) [smt-lemma]
-
     // Proof (remembering that sgn(0) ==Int 1 and using the rules for _s<Word_ and _<Word_):
     // X s<Word 0
     //      case sgn(X) ==Int  1 : X <Word 0 => bool2Word(false) (because #rangeUInt(256, X))
@@ -130,19 +128,11 @@ module VERIFICATION
     // 0 s<Word X
     //      case sgn(X) ==Int  1 : 0 <Word X
     //      case sgn(X) ==Int -1 : bool2Word(false)
-    rule X s<Word 0 => bool2Word(sgn(X) ==Int -1)                  requires #rangeUInt(256, X)
-    rule 0 s<Word X => bool2Word(sgn(X) ==Int  1 andBool 0 <Int X) requires #rangeUInt(256, X)
+    rule X s<Word 0 => bool2Word(sgn(X) ==Int -1) requires #rangeUInt(256, X)
 
-    rule sgn(chop(X)) ==Int  1 => 0 <=Int X andBool X <=Int maxSInt256 requires #rangeSInt(256, X)
     rule sgn(chop(X)) ==Int -1 => minSInt256 <=Int X andBool X <Int 0  requires #rangeSInt(256, X)
 
-    // property of 2s complement
-    rule notBool (0 <=Int X +Int Y) => X <Int chop(X +Int chop(Y)) requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) [smt-lemma]
-
     // ### vat-mului-fail-rough
-
-    rule chop(Y) ==K 0 => Y ==K 0 requires #rangeSInt(256, Y) [smt-lemma]
-    rule  abs(Y) ==K 0 => Y ==K 0 requires #rangeUInt(256, Y) [smt-lemma]
 
     // Proof:
     // case sgn(chop(Y)) ==Int 1                      // chop(Y) ==Int Y andBool 0 <=Int Y
@@ -183,7 +173,5 @@ module VERIFICATION
     //   => (X *Int Y) /Int Y
     //   => X
     rule abs(chop(X *Int Y)) /Int abs(chop(Y)) => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0
-
-    rule chop(Y) ==K chop(Y) => true requires #rangeSInt(256, Y) [smt-lemma]
 
 endmodule
