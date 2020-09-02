@@ -122,12 +122,13 @@ module VERIFICATION
     // ### vat-addui-fail-rough
 
     // Proof (remembering that sgn(0) ==Int 1 and using the rules for _s<Word_ and _<Word_):
-    // X s<Word 0
-    //      case sgn(X) ==Int  1 : X <Word 0 => bool2Word(false) (because #rangeUInt(256, X))
-    //      case sgn(X) ==Int -1 : bool2Word(true)
-    // 0 s<Word X
-    //      case sgn(X) ==Int  1 : 0 <Word X
-    //      case sgn(X) ==Int -1 : bool2Word(false)
+    // case sgn(X) ==Int  1
+    //      X s<Word 0
+    //   => X <Word 0           // sgn(X) ==Int 1 andBool sgn(0) ==Int 1
+    //   => bool2Word(false)    // #rangeUInt(256, X)
+    // case sgn(X) ==Int -1
+    //      X s<Word 0
+    //   => bool2Word(true)     // sgn(X) ==Int -1
     rule X s<Word 0 => bool2Word(sgn(X) ==Int -1) requires #rangeUInt(256, X)
 
     rule sgn(chop(X)) ==Int -1 => minSInt256 <=Int X andBool X <Int 0  requires #rangeSInt(256, X)
