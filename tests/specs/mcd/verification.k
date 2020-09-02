@@ -69,11 +69,6 @@ module VERIFICATION-SYNTAX
     rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
     rule nthbyteof(V, I, N) =>           V modInt 256             when N ==Int (I +Int 1) [concrete]
 
-    syntax Int ::= #unsigned ( Int ) [function, smtlib(unsigned)]
- // -------------------------------------------------------------
-    rule #unsigned(DATA) => DATA             requires 0 <=Int DATA andBool DATA <=Int maxSInt256
-    rule #unsigned(DATA) => pow256 +Int DATA requires minSInt256 <=Int DATA andBool DATA <Int 0
-
 endmodule
 
 module VERIFICATION
@@ -126,7 +121,7 @@ module VERIFICATION
 
     // ### vat-addui-fail-rough
 
-    rule #rangeUInt(256, #unsigned(X)) => true requires #rangeSInt(256, X) [smt-lemma]
+    rule #rangeUInt(256, chop(X)) => true requires #rangeSInt(256, X) [smt-lemma]
 
     // Proof (remembering that sgn(0) ==Int 1 and using the rules for _s<Word_ and _<Word_):
     // X s<Word 0
@@ -138,57 +133,57 @@ module VERIFICATION
     rule X s<Word 0 => bool2Word(sgn(X) ==Int -1)                  requires #rangeUInt(256, X)
     rule 0 s<Word X => bool2Word(sgn(X) ==Int  1 andBool 0 <Int X) requires #rangeUInt(256, X)
 
-    rule sgn(#unsigned(X)) ==Int  1 => 0 <=Int X andBool X <=Int maxSInt256 requires #rangeSInt(256, X)
-    rule sgn(#unsigned(X)) ==Int -1 => minSInt256 <=Int X andBool X <Int 0  requires #rangeSInt(256, X)
+    rule sgn(chop(X)) ==Int  1 => 0 <=Int X andBool X <=Int maxSInt256 requires #rangeSInt(256, X)
+    rule sgn(chop(X)) ==Int -1 => minSInt256 <=Int X andBool X <Int 0  requires #rangeSInt(256, X)
 
     // property of 2s complement
-    rule notBool (0 <=Int X +Int Y) => X <Int chop(X +Int #unsigned(Y)) requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) [smt-lemma]
+    rule notBool (0 <=Int X +Int Y) => X <Int chop(X +Int chop(Y)) requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) [smt-lemma]
 
     // ### vat-mului-fail-rough
 
-    rule #unsigned(Y) ==K 0 => Y ==K 0 requires #rangeSInt(256, Y) [smt-lemma]
-    rule       abs(Y) ==K 0 => Y ==K 0 requires #rangeUInt(256, Y) [smt-lemma]
+    rule chop(Y) ==K 0 => Y ==K 0 requires #rangeSInt(256, Y) [smt-lemma]
+    rule  abs(Y) ==K 0 => Y ==K 0 requires #rangeUInt(256, Y) [smt-lemma]
 
     // Proof:
-    // case sgn(#unsigned(Y)) ==Int 1                   // #unsigned(Y) ==Int Y andBool 0 <=Int Y
-    //      chop(X *Int #unsigned(Y))
-    //   => chop(X *Int Y)                              // #unsigned(Y) ==Int Y
-    // case sgn(#unsigned(Y)) ==Int -1                  // #unsigned(Y) ==Int Y +Int pow256 andBool Y <Int 0
-    //      chop(X *Int #unsigned(Y))
-    //   => chop(X *Int (Y +Int pow256))                // #unsigned(Y) ==Int Y +Int pow256
+    // case sgn(chop(Y)) ==Int 1                      // chop(Y) ==Int Y andBool 0 <=Int Y
+    //      chop(X *Int chop(Y))
+    //   => chop(X *Int Y)                            // chop(Y) ==Int Y
+    // case sgn(chop(Y)) ==Int -1                     // chop(Y) ==Int Y +Int pow256 andBool Y <Int 0
+    //      chop(X *Int chop(Y))
+    //   => chop(X *Int (Y +Int pow256))              // chop(Y) ==Int Y +Int pow256
     //   => chop(X *Int Y +Int X *Int pow256)
     //   => chop((X *Int Y) +Int chop(X *Int pow256))
     //   => chop(X *Int Y)
-    rule chop(X *Int #unsigned(Y)) => chop(X *Int Y) requires #rangeSInt(256, Y)
+    rule chop(X *Int chop(Y)) => chop(X *Int Y) requires #rangeSInt(256, Y)
 
     // Proof:
-    // case sgn(#unsigned(Y)) ==Int 1                           // 0 <=Int Y andBool #unsigned(Y) ==Int Y
-    //      sgn(chop(X *Int Y)) *Int sgn(#unsigned(Y))
-    //   => sgn(X *Int Y) *Int sgn(Y)                           // 0 <=Int X andBool 0 <=Int Y andBool #rangeSInt(256, X *Int Y) andBool #unsigned(Y) ==Int Y
+    // case sgn(chop(Y)) ==Int 1                                // 0 <=Int Y andBool chop(Y) ==Int Y
+    //      sgn(chop(X *Int Y)) *Int sgn(chop(Y))
+    //   => sgn(X *Int Y) *Int sgn(Y)                           // 0 <=Int X andBool 0 <=Int Y andBool #rangeSInt(256, X *Int Y) andBool chop(Y) ==Int Y
     //   => 1 *Int 1                                            // 0 <=Int X *Int Y andBool #rangeSInt(256, X *Int Y)
     //   => 1
-    // case sgn(#unsigned(Y)) ==Int -1                          // Y <Int 0 andBool #unsigned(Y) ==Int Y +Int pow256
-    //      sgn(chop(X *Int Y)) *Int sgn(#unsigned(Y))
-    //   => sgn(X *Int Y +Int pow256) *Int sgn(Y +Int pow256)   // 0 <=Int X andBool Y <Int 0 andBool #rangeSInt(256, X *Int Y) andBool #unsigned(Y) ==Int Y +Int pow256
+    // case sgn(chop(Y)) ==Int -1                               // Y <Int 0 andBool chop(Y) ==Int Y +Int pow256
+    //      sgn(chop(X *Int Y)) *Int sgn(chop(Y))
+    //   => sgn(X *Int Y +Int pow256) *Int sgn(Y +Int pow256)   // 0 <=Int X andBool Y <Int 0 andBool #rangeSInt(256, X *Int Y) andBool chop(Y) ==Int Y +Int pow256
     //   => -1 *Int -1                                          // X *Int Y <Int 0 andBool #rangeSInt(256, X *Int Y) andBool Y <Int andBool #rangeSInt(256, Y)
     //   => 1
-    rule sgn(chop(X *Int Y)) *Int sgn(#unsigned(Y)) => 1 requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y)
+    rule sgn(chop(X *Int Y)) *Int sgn(chop(Y)) => 1 requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y)
 
     // Proof (assuming Y =/=Int 0):
-    // case sgn(#unsigned(Y)) ==Int 1                                                   // 0 <=Int Y andBool #unsigned(Y) ==Int Y
-    //      abs(chop(X *Int Y)) /Int abs(#unsigned(Y))
-    //      abs(X *Int Y) /Int abs(Y)                                                   // #rangeSInt(256, Y) andBool #unsigned(Y) ==Int Y
+    // case sgn(chop(Y)) ==Int 1                                                        // 0 <=Int Y andBool chop(Y) ==Int Y
+    //      abs(chop(X *Int Y)) /Int abs(chop(Y))
+    //      abs(X *Int Y) /Int abs(Y)                                                   // #rangeSInt(256, Y) andBool chop(Y) ==Int Y
     //      X *Int Y /Int Y                                                             // #rangeSInt(256, X *Int Y) andBool 0 <=Int X *Int Y andBool #rangeSInt(256, Y) andBool 0 <=Int Y
     //      X
-    // case sgn(#unsigned(Y)) ==Int -1                                                  // Y <Int 0 andBool #unsigned(Y) ==Int Y +Int pow256
-    //      abs(chop(X *Int Y)) /Int abs(#unsigned(Y))
-    //   => abs(X *Int Y +Int pow256) /Int abs(Y +Int pow256)                           // #rangeSInt(256, X *Int Y) andBool #unsigned(Y) ==Int Y +Int pow256
+    // case sgn(chop(Y)) ==Int -1                                                       // Y <Int 0 andBool chop(Y) ==Int Y +Int pow256
+    //      abs(chop(X *Int Y)) /Int abs(chop(Y))
+    //   => abs(X *Int Y +Int pow256) /Int abs(Y +Int pow256)                           // #rangeSInt(256, X *Int Y) andBool chop(Y) ==Int Y +Int pow256
     //   => (0 -Word (X *Int Y +Int pow256)) /Int (0 -Word (Y +Int pow256))             // #rangeSInt(256, X *Int Y) andBool X *Int Y <Int 0 andBool #rangeSInt(256, Y) andBool Y <Int 0
     //   => (pow256 -Int (X *Int Y +Int pow256)) /Int (pow256 -Int (Y +Int pow256))     // 0 <Int (X *Int Y +Int pow256) andBool 0 <Int (Y +Int pow256)
     //   => (X *Int Y) /Int Y
     //   => X
-    rule abs(chop(X *Int Y)) /Int abs(#unsigned(Y)) => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0
+    rule abs(chop(X *Int Y)) /Int abs(chop(Y)) => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0
 
-    rule #unsigned(Y) ==K chop(Y) => true requires #rangeSInt(256, Y) [smt-lemma]
+    rule chop(Y) ==K chop(Y) => true requires #rangeSInt(256, Y) [smt-lemma]
 
 endmodule

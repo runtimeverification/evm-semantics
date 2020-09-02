@@ -24,7 +24,7 @@ module VAT-ADDUI-FAIL-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> #unsigned(ABI_y) : ABI_x : JMPTO : WS  => ?_ </wordStack>
+            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  => ?_ </wordStack>
             <localMem> _ </localMem>
             <pc> 13112 => ?_ </pc>
             <gas> VGas => ?_ </gas>

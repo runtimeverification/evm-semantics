@@ -24,7 +24,7 @@ module VAT-MULUI-PASS-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> #unsigned(ABI_y) : ABI_x : JMPTO : WS  =>  JMPTO : #unsigned(ABI_x *Int ABI_y) : WS </wordStack>
+            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  =>  JMPTO : chop(ABI_x *Int ABI_y) : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13175 => 13233 </pc>
             <gas> VGas => VGas -Int ((#if ( ABI_y ==K 0 ) #then ( 96 ) #else ( 132 ) #fi)) </gas>
