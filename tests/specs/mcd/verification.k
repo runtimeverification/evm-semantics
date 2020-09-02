@@ -133,7 +133,7 @@ module VERIFICATION
 
     rule sgn(chop(X)) ==Int -1 => X <Int 0 requires #rangeSInt(256, X)
 
-    // ### vat-mului-fail-rough
+    // ### vat-mului-pass
 
     rule chop(X *Int chop(Y)) => chop(X *Int Y)
 
