@@ -1422,6 +1422,10 @@ Transaction Execution
 
     rule <k> #personal_importRawKey => #rpcResponseError(-32000, "Method 'personal_importRawKey' requires exactly 2 parameters") ... </k> [owise]
 
+    syntax KItem ::= "#personal_unlockAccount"
+ // ------------------------------------------
+    rule <k> #personal_unlockAccount => #rpcResponseSuccess(true) ... </k>
+
     syntax KItem ::= "#acctFromPrivateKey" String
  // ---------------------------------------------
     rule <k> #acctFromPrivateKey KEY => #newAccount #addrFromPrivateKey(KEY) ... </k>
@@ -2144,7 +2148,6 @@ Unimplemented Methods
                    | "#miner_start"
                    | "#miner_stop"
                    | "#personal_sendTransaction"
-                   | "#personal_unlockAccount"
                    | "#personal_newAccount"
                    | "#personal_lockAccount"
                    | "#personal_listAccounts"
@@ -2174,7 +2177,6 @@ Unimplemented Methods
     rule <k> #miner_start                             => #rpcResponseUnimplemented ... </k>
     rule <k> #miner_stop                              => #rpcResponseUnimplemented ... </k>
     rule <k> #personal_sendTransaction                => #rpcResponseUnimplemented ... </k>
-    rule <k> #personal_unlockAccount                  => #rpcResponseUnimplemented ... </k>
     rule <k> #personal_newAccount                     => #rpcResponseUnimplemented ... </k>
     rule <k> #personal_lockAccount                    => #rpcResponseUnimplemented ... </k>
     rule <k> #personal_listAccounts                   => #rpcResponseUnimplemented ... </k>
