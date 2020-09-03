@@ -129,6 +129,38 @@ module VERIFICATION
     // case sgn(X) ==Int -1
     //      X s<Word 0
     //   => bool2Word(true)     // sgn(X) ==Int -1 andBool sgn(0) ==Int 1
+    //
+    // Via Z3 4.8.7:
+    // ; 2^256
+    // (declare-const pow256 Int)
+    // (assert (= pow256 115792089237316195423570985008687907853269984665640564039457584007913129639936))
+    //
+    // ; 2^255
+    // (declare-const pow255 Int)
+    // (assert (= pow255 57896044618658097711785492504343953926634992332820282019728792003956564819968))
+    //
+    // ; sgn
+    // (declare-fun sgn (Int) Int)
+    // (assert (forall ((x Int)) (=> (and (>= x 0)      (< x pow255)) (= (sgn x)  1))))
+    // (assert (forall ((x Int)) (=> (and (>= x pow255) (< x pow256)) (= (sgn x) -1))))
+    //
+    // ; s<Word
+    // (declare-fun slt (Int Int) Bool)
+    // (assert (forall ((x Int) (y Int)) (=> (and (= (sgn x)  1) (= (sgn y)  1)) (= (slt x y) (< x y)))))
+    // (assert (forall ((x Int) (y Int)) (=> (and (= (sgn x)  1) (= (sgn y) -1)) (= (slt x y) false))))
+    // (assert (forall ((x Int) (y Int)) (=> (and (= (sgn x) -1) (= (sgn y)  1)) (= (slt x y) true))))
+    // (assert (forall ((x Int) (y Int)) (=> (and (= (sgn x) -1) (= (sgn y) -1)) (= (slt x y) (> x y)))))
+    //
+    // ;;;; proof
+    //
+    // ; uint256
+    // (declare-const x Int)
+    // (assert (and (>= x 0) (< x pow256)))
+    //
+    // (assert (not
+    //     (= (slt x 0) (= (sgn x) -1))
+    // ))
+    // (check-sat)
     rule X s<Word 0 => bool2Word(sgn(X) ==Int -1) requires #rangeUInt(256, X)
 
     rule sgn(chop(X)) ==Int -1 => X <Int 0 requires #rangeSInt(256, X)
@@ -166,6 +198,58 @@ module VERIFICATION
     //        => (pow256 -Int (X *Int Y +Int pow256)) /Int (pow256 -Int (Y +Int pow256))     // 0 <Int (X *Int Y +Int pow256) andBool 0 <Int (Y +Int pow256)
     //        => (X *Int Y) /Int Y
     //        => X
+    //
+    // Via Z3 ?.?.?:
+    // ; 2^64 and 2^32 instead of 2^256 for small model proof
+    // (declare-const pow256 Int)
+    // (assert (= pow256 64))
+    // (declare-const pow255 Int)
+    // (assert (= pow255 32))
+    //
+    // ; sgn
+    // (declare-fun sgn (Int) Int)
+    // (assert (forall ((x Int)) (=> (and (>= x 0)      (< x pow255)) (= (sgn x)  1))))
+    // (assert (forall ((x Int)) (=> (and (>= x pow255) (< x pow256)) (= (sgn x) -1))))
+    //
+    // ; s<Word
+    // (declare-fun slt (Int Int) Bool)
+    // (assert (forall ((x Int) (y Int)) (=> (and (= (sgn x)  1) (= (sgn y)  1)) (= (slt x y) (< x y)))))
+    // (assert (forall ((x Int) (y Int)) (=> (and (= (sgn x)  1) (= (sgn y) -1)) (= (slt x y) false))))
+    // (assert (forall ((x Int) (y Int)) (=> (and (= (sgn x) -1) (= (sgn y)  1)) (= (slt x y) true))))
+    // (assert (forall ((x Int) (y Int)) (=> (and (= (sgn x) -1) (= (sgn y) -1)) (= (slt x y) (> x y)))))
+    //
+    // ; chop
+    // (define-fun chop ((x Int)) Int (mod x pow256))
+    //
+    // ; /Word
+    // ;(define-fun zdiv ((x Int) (y Int)) Int (ite (= y 0) 0 (div x y)))
+    // (define-fun zdiv ((x Int) (y Int)) Int (div x y)) ; y is non-zero in the query below
+    //
+    // ; /sWord
+    // (declare-fun sdiv (Int Int) Int)
+    // (assert (forall ((x Int) (y Int)) (=> (> (* (sgn x) (sgn y)) 0) (= (sdiv x y)    (zdiv (abs x) (abs y)) ))))
+    // (assert (forall ((x Int) (y Int)) (=> (< (* (sgn x) (sgn y)) 0) (= (sdiv x y) (- (zdiv (abs x) (abs y)))))))
+    //
+    // ; uint256
+    // (define-fun uint256 ((x Int)) Bool (and (>= x 0) (< x pow256)))
+    //
+    // ; sint256
+    // (define-fun sint256 ((x Int)) Bool (and (>= x (- pow255)) (< x pow255)))
+    //
+    // ;;;; proof
+    //
+    // (declare-const x Int)
+    // (declare-const y Int)
+    //
+    // (assert (uint256 x))
+    // (assert (sint256 y))
+    // (assert (sint256 (* x y)))
+    // (assert (not (= y 0)))
+    //
+    // (assert (not
+    //     (= (sdiv (chop (* x y)) (chop y)) x)
+    // ))
+    // (check-sat)
     rule chop(X *Int Y) /sWord chop(Y) => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0
 
 endmodule
