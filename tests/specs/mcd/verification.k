@@ -386,4 +386,41 @@ module VERIFICATION
     // (pop)
     rule X -Word chop(Y) => chop(X -Int Y) [simplification]
 
+    // ### vat-mului-fail-rough
+
+    /*
+    #rangeUInt(256, X)
+    #rangeSInt(256, Y)
+    notBool (#rangeSInt(256, X) andBool #rangeSInt(256, X *Int Y))
+
+    maxSInt256 <Int X
+    notBool #rangeSInt(256, X *Int Y) implies Y =/=Int 0
+
+    case Y <Int 0       implies: X *Int Y <Int minSInt256 (sgn(chop(Y)) ==Int -1 andBool sgn(chop(X *Int Y)) ==Int 1)
+        sgnInterp(sgn(chop(X *Int Y)) *Int sgn(chop(Y)), abs(chop(X *Int Y)) /Word abs(chop(Y)))
+        sgnInterp(-1, chop(X *Int Y) /Word (0 -Word chop(Y)))
+        sgnInterp(-1, ((X *Int Y) +Int pow256) /Word (0 -Word (Y +Int pow256)))
+        sgnInterp(-1, ((X *Int Y) +Int pow256) /Word (pow256 -Int (Y +Int pow256)))
+        sgnInterp(-1, ((X *Int Y) +Int pow256) /Word -Y)
+        sgnInterp(-1, ((X *Int Y) +Int pow256) /Int  -Y)
+        0 -Word -((X *Int Y) /Int Y)
+        pow256 -Int ((X *Int Y) /Int Y)
+        pow256 -Int X
+
+    case 0 <Int Y       implies: maxSInt256 <Int X *Int Y (sgn(chop(Y)) ==Int 1 andBool sgn(chop(X *Int Y)) ==Int -1)
+        sgnInterp(sgn(chop(X *Int Y)) *Int sgn(chop(Y)), abs(chop(X *Int Y)) /Word abs(chop(Y)))
+        sgnInterp(-1, abs(chop(X *Int Y)) /Word abs(chop(Y)))
+        sgnInterp(-1, (0 -Word chop(X *Int Y)) /Word chop(Y))
+        sgnInterp(-1, (0 -Word chop(X *Int Y)) /Word Y)
+        sgnInterp(-1, (pow256 -Int chop(X *Int Y)) /Word Y)
+        sgnInterp(-1, (pow256 -Int (X *Int Y +Int pow256)) /Word Y)
+        sgnInterp(-1, (- (X *Int Y)) /Word Y)
+        sgnInterp(-1, (- (X *Int Y)) /Int  Y)
+        0 -Word -((X *Int Y) /Int Y)
+        pow256 -Int ((X *Int Y) /Int Y)
+        pow256 -Int X
+    */
+    rule sgn(X) ==K -1 => maxSInt256 <Int X requires #rangeUInt(256, X)                                                                                  [simplification]
+    rule chop(X *Int Y) /sWord chop(Y) => pow256 -Int X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool notBool #rangeSInt(256, X *Int Y) [simplification]
+
 endmodule
