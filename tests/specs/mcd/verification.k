@@ -268,4 +268,9 @@ module VERIFICATION
     rule (B ==K false) ==K false => B
     rule bool2Word((maxUInt8 &Int (ADDR_UINT8 /Int pow160) ==K 0) ==K false) => UINT8 requires ADDR_UINT8 ==Int #WordPackAddrUInt8(ADDR, UINT8) andBool #rangeAddress(ADDR) andBool #rangeBool(UINT8) [smt-lemma]
 
+    // ### flipper-addu48u48-fail-rough
+
+    rule maxUInt48 &Int (X +Int Y) => (X +Int Y) modInt maxUInt48 requires 0 <=Int X andBool 0 <=Int Y
+    rule (X +Int Y) modInt maxUInt48 <Int X => true requires #rangeUInt(48, X) andBool #rangeUInt(48, Y) andBool notBool #rangeUInt(48, X +Int Y)
+
 endmodule
