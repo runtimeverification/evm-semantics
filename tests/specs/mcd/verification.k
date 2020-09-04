@@ -252,4 +252,10 @@ module VERIFICATION
     // (check-sat)
     rule chop(X *Int Y) /sWord chop(Y) => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0
 
+    // ### vat-subui-fail-rough
+
+    rule 0 s<Word X => bool2Word(sgn(X) ==Int 1 andBool 0 <Int X) requires #rangeUInt(256, X)
+    rule sgn(chop(Y)) ==K 1 => 0 <=Int Y requires #rangeSInt(256, Y)
+    rule X <Int X -Word chop(Y) => X <Int X -Word Y requires 0 <=Int Y andBool Y <=Int maxSInt256
+
 endmodule
