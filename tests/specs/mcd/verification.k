@@ -199,12 +199,12 @@ module VERIFICATION
     //        => (X *Int Y) /Int Y
     //        => X
     //
-    // Via Z3 ?.?.?:
-    // ; 2^6 and 2^5 instead of 2^256 and 2^255 for small model proof
+    // Via Z3 4.7.1:
+    // ; 2^4 and 2^3 instead of 2^256 and 2^255 for small model proof
     // (declare-const pow256 Int)
-    // (assert (= pow256 64))
+    // (assert (= pow256 16))
     // (declare-const pow255 Int)
-    // (assert (= pow255 32))
+    // (assert (= pow255 8))
     //
     // ; sgn
     // (declare-fun sgn (Int) Int)
