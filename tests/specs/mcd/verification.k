@@ -200,7 +200,7 @@ module VERIFICATION
     //        => X
     //
     // Via Z3 ?.?.?:
-    // ; 2^64 and 2^32 instead of 2^256 for small model proof
+    // ; 2^6 and 2^5 instead of 2^256 and 2^255 for small model proof
     // (declare-const pow256 Int)
     // (assert (= pow256 64))
     // (declare-const pow255 Int)
