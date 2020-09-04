@@ -139,8 +139,8 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `word2Bool` interprets a `Int` as a `Bool`.
 
 ```k
-    syntax Int ::= bool2Word ( Bool ) [function, functional]
- // --------------------------------------------------------
+    syntax Int ::= bool2Word ( Bool ) [function, functional, smtlib(bool2Word)]
+ // ---------------------------------------------------------------------------
     rule bool2Word( B:Bool ) => 1 requires B
     rule bool2Word( B:Bool ) => 0 requires notBool B
 
