@@ -19,10 +19,6 @@ module VERIFICATION-SYNTAX
  // --------------------------------------------------------
     rule #notPrecompileAddress ( X ) => 0 ==Int X orBool (10 <=Int X andBool #rangeAddress(X))
 
-    syntax Bool ::= #rangeBool ( Int )
- // ----------------------------------
-    rule #rangeBool(X) => X ==Int 0 orBool X ==Int 1 [macro]
-
     syntax Int ::= "pow208"
  // -----------------------
     rule pow208 => 411376139330301510538742295639337626245683966408394965837152256 [macro]

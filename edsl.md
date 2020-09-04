@@ -207,17 +207,23 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #getValue(  #uint8( DATA )) => DATA
       requires #rangeUInt(8, DATA)
 
-    rule #getValue( #int256( DATA )) => #unsigned(DATA)
-      requires #rangeSInt(256, DATA)
+    rule #getValue( #int256( DATA )) => DATA
+      requires #rangeSInt(256, DATA) andBool 0 <=Int DATA
 
-    rule #getValue( #int128( DATA )) => #unsigned(DATA)
-      requires #rangeSInt(128, DATA)
+    rule #getValue( #int256( DATA )) => DATA +Int pow256
+      requires #rangeSInt(256, DATA) andBool DATA <Int 0
+
+    rule #getValue( #int128( DATA )) => DATA
+      requires #rangeSInt(128, DATA) andBool 0 <=Int DATA
+
+    rule #getValue( #int128( DATA )) => DATA +Int pow256
+      requires #rangeSInt(128, DATA) andBool DATA <Int 0
 
     rule #getValue(#bytes32( DATA )) => DATA
       requires #rangeUInt(256, DATA)
 
     rule #getValue(   #bool( DATA )) => DATA
-      requires #range(0 <= DATA <= 1)
+      requires #rangeBool(DATA)
 
     syntax Int ::= #ceil32 ( Int ) [function, functional, smt-hook(ceil32), smt-prelude]
  // ------------------------------------------------------------------------------------
