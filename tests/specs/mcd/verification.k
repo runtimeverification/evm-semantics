@@ -258,4 +258,9 @@ module VERIFICATION
     rule sgn(chop(Y)) ==K 1 => 0 <=Int Y requires #rangeSInt(256, Y)
     rule X <Int X -Word chop(Y) => X <Int X -Word Y requires 0 <=Int Y andBool Y <=Int maxSInt256
 
+    // ### vat-subui-pass-rough
+
+    rule 0 <Int chop(Y) => true requires #rangeSInt(256, Y)
+    rule X -Word chop(Y) => X -Int Y requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeUInt(256, X -Int Y)
+
 endmodule
