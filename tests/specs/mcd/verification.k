@@ -309,4 +309,9 @@ module VERIFICATION
     rule X -Word Y <=Int X => #rangeUInt(256, X -Int Y) requires #rangeUInt(256, X) andBool #rangeUInt(256, Y)
     rule 0 <=Int X +Int Y => true requires 0 <=Int X andBool 0 <=Int Y
 
+    // ### flipper-addu48u48-fail-rough
+
+    rule maxUInt48 &Int (X +Int Y) => (X +Int Y) modInt maxUInt48 requires 0 <=Int X andBool 0 <=Int Y
+    rule (X +Int Y) modInt maxUInt48 <Int X => true requires #rangeUInt(48, X) andBool #rangeUInt(48, Y) andBool notBool #rangeUInt(48, X +Int Y)
+
 endmodule
