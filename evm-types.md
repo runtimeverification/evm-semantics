@@ -232,8 +232,8 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
     syntax Int ::= Int "/sWord" Int [function]
                  | Int "%sWord" Int [function]
  // ------------------------------------------
-    rule W0 /sWord W1 => #sgnInterp(sgn(W0) *Int sgn(W1) , abs(W0) /Word abs(W1))
-    rule W0 %sWord W1 => #sgnInterp(sgn(W0)              , abs(W0) %Word abs(W1))
+    rule [divSWord]: W0 /sWord W1 => #sgnInterp(sgn(W0) *Int sgn(W1) , abs(W0) /Word abs(W1))
+    rule [modSWord]: W0 %sWord W1 => #sgnInterp(sgn(W0)              , abs(W0) %Word abs(W1))
 
     syntax Int ::= #sgnInterp ( Int , Int ) [function, functional]
  // --------------------------------------------------------------
