@@ -19,9 +19,10 @@ module VERIFICATION-SYNTAX
  // --------------------------------------------------------
     rule #notPrecompileAddress ( X ) => 0 ==Int X orBool (10 <=Int X andBool #rangeAddress(X))
 
-    syntax Int ::= "pow208"
- // -----------------------
-    rule pow208 => 411376139330301510538742295639337626245683966408394965837152256 [macro]
+    syntax Int ::= "pow208" | "pow256-pow48"
+ // ----------------------------------------
+    rule pow208       => 411376139330301510538742295639337626245683966408394965837152256                [macro]
+    rule pow256-pow48 => 115792089237316195423570985008687907853269984665640564039457583726438152929280 [macro]
 
     syntax Int ::= #WordPackUInt48UInt48     (       Int , Int ) [function, no-evaluators, smtlib(WordPackUInt48UInt48)]
                  | #WordPackAddrUInt48UInt48 ( Int , Int , Int ) [function, no-evaluators, smtlib(WordPackAddrUInt48UInt48)]
@@ -31,8 +32,8 @@ module VERIFICATION-SYNTAX
     // rule #WordPackAddrUInt48UInt48 (     ADDR , UINT48_1 , UINT48_2 ) => UINT48_2 *Int pow208 +Int UINT48_1 *Int pow160 +Int ADDR requires #rangeAddress(ADDR) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2)
     // rule #WordPackAddrUInt8        (     ADDR , UINT8               ) => UINT8 *Int pow160 +Int ADDR                              requires #rangeAddress(ADDR) andBool #rangeUInt(8, UINT_8)
 
-    rule maxUInt48 &Int  UINT48_UINT48             => UINT48_1 requires UINT48_UINT48 ==Int #WordPackUInt48UInt48(UINT48_1, UINT48_2) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2) [smt-lemma]
-    rule maxUInt48 &Int (UINT48_UINT48 /Int pow48) => UINT48_2 requires UINT48_UINT48 ==Int #WordPackUInt48UInt48(UINT48_1, UINT48_2) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2) [smt-lemma]
+    rule maxUInt48    &Int UINT48_UINT48 => UINT48_1 requires UINT48_UINT48 ==Int #WordPackUInt48UInt48(UINT48_1, UINT48_2) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2) [smt-lemma]
+    rule pow256-pow48 &Int UINT48_UINT48 => UINT48_2 requires UINT48_UINT48 ==Int #WordPackUInt48UInt48(UINT48_1, UINT48_2) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2) [smt-lemma]
 
     rule maxUInt160 &Int  ADDR_UINT48_UINT48              => ADDR     requires ADDR_UINT48_UINT48 ==Int #WordPackAddrUInt48UInt48(ADDR, UINT48_1, UINT48_2) andBool #rangeAddress(ADDR) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2) [smt-lemma]
     rule maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160) => UINT48_1 requires ADDR_UINT48_UINT48 ==Int #WordPackAddrUInt48UInt48(ADDR, UINT48_1, UINT48_2) andBool #rangeAddress(ADDR) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2) [smt-lemma]
