@@ -314,4 +314,10 @@ module VERIFICATION
     rule maxUInt48 &Int (X +Int Y) => (X +Int Y) modInt maxUInt48 requires 0 <=Int X andBool 0 <=Int Y
     rule (X +Int Y) modInt maxUInt48 <Int X => true requires #rangeUInt(48, X) andBool #rangeUInt(48, Y) andBool notBool #rangeUInt(48, X +Int Y)
 
+    // ### vat-subui-fail-rough
+
+    rule 0 s<Word X => bool2Word(sgn(X) ==Int 1 andBool 0 <Int X) requires #rangeUInt(256, X)
+    rule sgn(chop(Y)) ==K 1 => 0 <=Int Y requires #rangeSInt(256, Y)
+    rule X <Int X -Word chop(Y) => X <Int X -Word Y requires 0 <=Int Y andBool Y <=Int maxSInt256
+
 endmodule
