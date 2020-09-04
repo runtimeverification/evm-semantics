@@ -263,4 +263,9 @@ module VERIFICATION
     rule 0 <Int chop(Y) => true requires #rangeSInt(256, Y)
     rule X -Word chop(Y) => X -Int Y requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeUInt(256, X -Int Y)
 
+    // ### dsvalue-peek-pass-rough
+
+    rule (B ==K false) ==K false => B
+    rule bool2Word((maxUInt8 &Int (ADDR_UINT8 /Int pow160) ==K 0) ==K false) => UINT8 requires ADDR_UINT8 ==Int #WordPackAddrUInt8(ADDR, UINT8) andBool #rangeAddress(ADDR) andBool #rangeBool(UINT8) [smt-lemma]
+
 endmodule
