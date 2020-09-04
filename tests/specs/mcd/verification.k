@@ -32,8 +32,9 @@ module VERIFICATION-SYNTAX
     // rule #WordPackAddrUInt48UInt48 (     ADDR , UINT48_1 , UINT48_2 ) => UINT48_2 *Int pow208 +Int UINT48_1 *Int pow160 +Int ADDR requires #rangeAddress(ADDR) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2)
     // rule #WordPackAddrUInt8        (     ADDR , UINT8               ) => UINT8 *Int pow160 +Int ADDR                              requires #rangeAddress(ADDR) andBool #rangeUInt(8, UINT_8)
 
-    rule maxUInt48    &Int UINT48_UINT48 => UINT48_1 requires UINT48_UINT48 ==Int #WordPackUInt48UInt48(UINT48_1, UINT48_2) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2) [smt-lemma]
-    rule pow256-pow48 &Int UINT48_UINT48 => UINT48_2 requires UINT48_UINT48 ==Int #WordPackUInt48UInt48(UINT48_1, UINT48_2) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2) [smt-lemma]
+    rule maxUInt48    &Int  UINT48_UINT48             => UINT48_1 requires UINT48_UINT48 ==Int #WordPackUInt48UInt48(UINT48_1, UINT48_2) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2) [smt-lemma]
+    rule maxUInt48    &Int (UINT48_UINT48 /Int pow48) => UINT48_2 requires UINT48_UINT48 ==Int #WordPackUInt48UInt48(UINT48_1, UINT48_2) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2) [smt-lemma]
+    rule pow256-pow48 &Int  UINT48_UINT48             => UINT48_2 requires UINT48_UINT48 ==Int #WordPackUInt48UInt48(UINT48_1, UINT48_2) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2) [smt-lemma]
 
     rule maxUInt160 &Int  ADDR_UINT48_UINT48              => ADDR     requires ADDR_UINT48_UINT48 ==Int #WordPackAddrUInt48UInt48(ADDR, UINT48_1, UINT48_2) andBool #rangeAddress(ADDR) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2) [smt-lemma]
     rule maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160) => UINT48_1 requires ADDR_UINT48_UINT48 ==Int #WordPackAddrUInt48UInt48(ADDR, UINT48_1, UINT48_2) andBool #rangeAddress(ADDR) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2) [smt-lemma]
