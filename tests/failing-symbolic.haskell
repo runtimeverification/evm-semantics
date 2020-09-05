@@ -59,6 +59,7 @@ tests/specs/mcd/dstoken-transferfrom-fail-rough-spec.k
 tests/specs/mcd/dsvalue-peek-pass-rough-spec.k
 tests/specs/mcd/dsvalue-read-pass-spec.k
 tests/specs/mcd/end-subuu-pass-spec.k
+tests/specs/mcd/flapper-addu48u48-pass-rough-spec.k
 tests/specs/mcd/flipper-addu48u48-fail-rough-spec.k
 tests/specs/mcd/flipper-bids-pass-rough-spec.k
 tests/specs/mcd/flipper-tau-pass-spec.k
