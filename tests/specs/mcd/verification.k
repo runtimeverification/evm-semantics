@@ -275,4 +275,8 @@ module VERIFICATION
     rule maxUInt48 &Int (X +Int Y) => (X +Int Y) modInt maxUInt48 requires 0 <=Int X andBool 0 <=Int Y
     rule (X +Int Y) modInt maxUInt48 <Int X => true requires #rangeUInt(48, X) andBool #rangeUInt(48, Y) andBool notBool #rangeUInt(48, X +Int Y)
 
+    // ### flapper-addu48u48-pass-rough
+
+    rule X modInt maxUInt48 => X requires #rangeUInt(48, X)
+
 endmodule
