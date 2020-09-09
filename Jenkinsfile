@@ -25,7 +25,7 @@ pipeline {
         stage('Build') {
           steps { sh '''
                     make plugin-deps
-                    make build RELEASE=true -j6'
+                    make build RELEASE=true -j6
                   '''
           }
         }
