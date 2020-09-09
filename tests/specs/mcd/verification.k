@@ -24,13 +24,9 @@ module VERIFICATION-SYNTAX
     rule pow208 => 411376139330301510538742295639337626245683966408394965837152256 [macro]
 
     syntax Int ::= "maskWordPackUInt48UInt48_1" | "maskWordPackUInt48UInt48_2"
-                 | "maskWordPackAddrUInt8_1"    | "maskWordPackAddrUInt8_2"
- // -----------------------------------------------------------------------
+ // --------------------------------------------------------------------------
     rule maskWordPackUInt48UInt48_1 => 115792089237316195423570985008687907853269984665561335876943319951794562400255 [macro] // pow256 -Int pow96 +Int pow48 -Int 1
     rule maskWordPackUInt48UInt48_2 => 115792089237316195423570985008687907853269984665640564039457583726438152929280 [macro] // pow256 -Int pow48
-
-    rule maskWordPackAddrUInt8_1 => 255                                                                            [macro] // pow8
-    rule maskWordPackAddrUInt8_2 => 115792089237316195423570985008687907853269984665640564039457584007913129639680 [macro] // pow246 - pow8
 
     syntax Int ::= #WordPackUInt48UInt48     (       Int , Int ) [function, no-evaluators, smtlib(WordPackUInt48UInt48)]
                  | #WordPackAddrUInt48UInt48 ( Int , Int , Int ) [function, no-evaluators, smtlib(WordPackAddrUInt48UInt48)]
