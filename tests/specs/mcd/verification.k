@@ -24,17 +24,25 @@ module VERIFICATION-SYNTAX
     rule pow208 => 411376139330301510538742295639337626245683966408394965837152256 [macro]
 
     syntax Int ::= "maskWordPackUInt48UInt48_1" | "maskWordPackUInt48UInt48_2"
- // --------------------------------------------------------------------------
+                 | "maskWordPackAddrUInt8_1"    | "maskWordPackAddrUInt8_2"
+ // -----------------------------------------------------------------------
     rule maskWordPackUInt48UInt48_1 => 115792089237316195423570985008687907853269984665561335876943319951794562400255 [macro] // pow256 -Int pow96 +Int pow48 -Int 1
     rule maskWordPackUInt48UInt48_2 => 115792089237316195423570985008687907853269984665640564039457583726438152929280 [macro] // pow256 -Int pow48
+
+    rule maskWordPackAddrUInt8_1 => 255                                                                            [macro] // pow8
+    rule maskWordPackAddrUInt8_2 => 115792089237316195423570985008687907853269984665640564039457584007913129639680 [macro] // pow246 - pow8
 
     syntax Int ::= #WordPackUInt48UInt48     (       Int , Int ) [function, no-evaluators, smtlib(WordPackUInt48UInt48)]
                  | #WordPackAddrUInt48UInt48 ( Int , Int , Int ) [function, no-evaluators, smtlib(WordPackAddrUInt48UInt48)]
                  | #WordPackAddrUInt8        (       Int , Int ) [function, no-evaluators, smtlib(WordPackAddrUInt8)]
  // -----------------------------------------------------------------------------------------------------------------
+    rule ADDR_UINT48_UINT48 ==K #WordPackAddrUInt48UInt48(ADDR, UINT48_1, UINT48_2) => ADDR ==Int maxUInt160 &Int ADDR_UINT48_UINT48 andBool UINT48_1 ==Int maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) andBool UINT48_2 ==Int maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow208)
+
     rule UINT48_UINT48 ==K #WordPackUInt48UInt48(UINT48_1, UINT48_2) => UINT48_1 ==Int maxUInt48 &Int UINT48_UINT48 andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
     rule (UINT48_2 *Int pow48) |Int (maskWordPackUInt48UInt48_1 &Int UINT48_UINT48) => #WordPackUInt48UInt48(maxUInt48 &Int UINT48_UINT48, UINT48_2                                 ) requires #rangeUInt(48, UINT48_2)
     rule  UINT48_1             |Int (maskWordPackUInt48UInt48_2 &Int UINT48_UINT48) => #WordPackUInt48UInt48(UINT48_1                    , maxUInt48 &Int (UINT48_UINT48 /Int pow48)) requires #rangeUInt(48, UINT48_1)
+
+    rule ADDR_UINT8 ==K #WordPackAddrUInt8(ADDR, UINT8) => ADDR ==Int maxUInt160 &Int ADDR_UINT8 andBool UINT8 ==Int maxUInt8 &Int (ADDR_UINT8 /Int pow160)
 
     syntax Int ::= #string2Word ( String ) [function]
  // -------------------------------------------------
