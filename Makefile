@@ -96,8 +96,8 @@ deps: repo-deps
 repo-deps: k-deps plugin-deps
 k-deps: $(K_JAR)
 plugin-deps: $(PLUGIN_SUBMODULE)/client-c/main.cpp $(wildcard $(PLUGIN_SUBMODULE)/plugin/*)
-	cd deps/plugin
-	make PREFIX=$(K_INCLUDE_PATH) install
+	cd deps/plugin && \
+	    make PREFIX=$(K_INCLUDE_PATH) install
 
 K_MVN_ARGS :=
 ifneq ($(SKIP_LLVM),)
