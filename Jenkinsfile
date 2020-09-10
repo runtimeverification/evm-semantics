@@ -22,13 +22,8 @@ pipeline {
     }
     stage('Build and Test') {
       stages {
-        stage('Build') {
-          steps { sh '''
-                    make plugin-deps
-                    make build RELEASE=true -j6
-                  '''
-          }
-        }
+        stage('Deps')  { steps { sh 'make plugin-deps'            } }
+        stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
         stage('Test Execution') {
           failFast true
           options { timeout(time: 25, unit: 'MINUTES') }
