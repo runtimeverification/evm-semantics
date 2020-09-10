@@ -21,11 +21,12 @@ K_BIN := $(K_RELEASE)/bin
 K_LIB := $(K_RELEASE)/lib/kframework
 export K_RELEASE
 
-LIBRARY_PATH       := $(LOCAL_LIB)
-K_INCLUDE_PATH     += :$(BUILD_LOCAL)/include/kframework/
-C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
-CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
-PATH               := $(K_BIN):$(PATH)
+LIBRARY_PATH         := $(LOCAL_LIB)
+LOCAL_K_INCLUDE_PATH := $(BUILD_LOCAL)/include/kframework/
+K_INCLUDE_PATH       += :$(LOCAL_K_INCLUDE_PATH)
+C_INCLUDE_PATH       += :$(BUILD_LOCAL)/include
+CPLUS_INCLUDE_PATH   += :$(BUILD_LOCAL)/include
+PATH                 := $(K_BIN):$(PATH)
 
 export LIBRARY_PATH
 export C_INCLUDE_PATH
@@ -97,7 +98,7 @@ repo-deps: k-deps plugin-deps
 k-deps: $(K_JAR)
 plugin-deps:
 	cd deps/plugin && \
-	    make PREFIX=$(K_INCLUDE_PATH) install
+	    make PREFIX=$(LOCAL_K_INCLUDE_PATH) install
 
 K_MVN_ARGS :=
 ifneq ($(SKIP_LLVM),)
