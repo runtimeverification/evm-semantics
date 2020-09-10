@@ -95,7 +95,7 @@ K_JAR := $(K_SUBMODULE)/k-distribution/target/release/k/lib/java/kernel-1.0-SNAP
 deps: repo-deps
 repo-deps: k-deps plugin-deps
 k-deps: $(K_JAR)
-plugin-deps: $(PLUGIN_SUBMODULE)/client-c/main.cpp $(wildcard $(PLUGIN_SUBMODULE)/plugin/*)
+plugin-deps:
 	cd deps/plugin && \
 	    make PREFIX=$(K_INCLUDE_PATH) install
 
