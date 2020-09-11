@@ -32,13 +32,21 @@ module VERIFICATION-SYNTAX
                  | #WordPackAddrUInt48UInt48 ( Int , Int , Int ) [function, no-evaluators, smtlib(WordPackAddrUInt48UInt48)]
                  | #WordPackAddrUInt8        (       Int , Int ) [function, no-evaluators, smtlib(WordPackAddrUInt8)]
  // -----------------------------------------------------------------------------------------------------------------
-    rule ADDR_UINT48_UINT48 ==K #WordPackAddrUInt48UInt48(ADDR, UINT48_1, UINT48_2) => ADDR ==Int maxUInt160 &Int ADDR_UINT48_UINT48 andBool UINT48_1 ==Int maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) andBool UINT48_2 ==Int maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow208)
+    rule    ADDR_UINT48_UINT48 ==K #WordPackAddrUInt48UInt48(ADDR, UINT48_1, UINT48_2)
+         => ADDR     ==Int maxUInt160 &Int  ADDR_UINT48_UINT48
+    andBool UINT48_1 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160)
+    andBool UINT48_2 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208)
 
-    rule UINT48_UINT48 ==K #WordPackUInt48UInt48(UINT48_1, UINT48_2) => UINT48_1 ==Int maxUInt48 &Int UINT48_UINT48 andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
+    rule    UINT48_UINT48 ==K #WordPackUInt48UInt48(UINT48_1, UINT48_2)
+         => UINT48_1 ==Int maxUInt48 &Int  UINT48_UINT48
+    andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
+
+    rule    ADDR_UINT8 ==K #WordPackAddrUInt8(ADDR, UINT8)
+         => ADDR  ==Int maxUInt160 &Int  ADDR_UINT8
+    andBool UINT8 ==Int maxUInt8   &Int (ADDR_UINT8 /Int pow160)
+
     rule (UINT48_2 *Int pow48) |Int (maskWordPackUInt48UInt48_1 &Int UINT48_UINT48) => #WordPackUInt48UInt48(maxUInt48 &Int UINT48_UINT48, UINT48_2                                 ) requires #rangeUInt(48, UINT48_2)
     rule  UINT48_1             |Int (maskWordPackUInt48UInt48_2 &Int UINT48_UINT48) => #WordPackUInt48UInt48(UINT48_1                    , maxUInt48 &Int (UINT48_UINT48 /Int pow48)) requires #rangeUInt(48, UINT48_1)
-
-    rule ADDR_UINT8 ==K #WordPackAddrUInt8(ADDR, UINT8) => ADDR ==Int maxUInt160 &Int ADDR_UINT8 andBool UINT8 ==Int maxUInt8 &Int (ADDR_UINT8 /Int pow160)
 
     syntax Int ::= #string2Word ( String ) [function]
  // -------------------------------------------------
@@ -168,7 +176,7 @@ module VERIFICATION
 
     rule chop(X *Int chop(Y)) => chop(X *Int Y)
 
-    // Proof #rangUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0
+    // Proof #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0
     //      chop(X *Int Y) /sWord chop(Y)
     //   => #sgnInterp(sgn(chop(X *Int Y)) *Int sgn(chop(Y)), abs(chop(X *Int Y)) /Word abs(chop(Y)))
     // Focus: sgn(chop(X *Int Y)) *Int sgn(chop(Y))
