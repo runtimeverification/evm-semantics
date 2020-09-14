@@ -16,13 +16,6 @@ endmodule
 module LEMMAS-SPEC
     imports VERIFICATION
 
- // bool2Word simplification
- // ------------------------
-
-    rule <k> runLemma ( bool2Word( B:Bool ) ==Int 1 )        => doneLemma ( B ==K true ) ... </k>
-    rule <k> runLemma ( 1 ==Int bool2Word( B:Bool ) )        => doneLemma ( B ==K true ) ... </k>
-    rule <k> runLemma ( bool2Word((UINT8 ==K 0) ==K false) ) => doneLemma ( UINT8      ) ... </k> requires #rangeBool(UINT8)
-
  // Buffer write simplifications
  // ----------------------------
 
