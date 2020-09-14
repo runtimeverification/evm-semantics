@@ -28,4 +28,6 @@ module INFINITE-GAS-SPEC
     rule <k> runLemma(#gas(_) >=Int 11     ) => doneLemma(true)  ... </k>
     rule <k> runLemma(11      <=Int #gas(_)) => doneLemma(true)  ... </k>
 
+    rule <k> runLemma(#gas(_) <Int (Cmem(_, _) +Int Csstore(_, _, _, _))) => doneLemma(false) ... </k>
+
 endmodule
