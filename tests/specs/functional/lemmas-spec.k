@@ -16,6 +16,11 @@ endmodule
 module LEMMAS-SPEC
     imports VERIFICATION
 
+ // bool2Word
+ // ---------
+
+    rule <k> runLemma ( bool2Word((UINT8 ==K 0) ==K false) ) => doneLemma ( UINT8 ) ... </k> requires #rangeBool(UINT8)
+
  // Buffer write simplifications
  // ----------------------------
 
