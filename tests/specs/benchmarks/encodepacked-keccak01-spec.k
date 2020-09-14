@@ -1,6 +1,6 @@
 requires "verification.k"
 
-module ENCODEPACKED_KECCAK01-SPEC
+module ENCODEPACKED-KECCAK01-SPEC
   imports VERIFICATION
 
   // fn-execute

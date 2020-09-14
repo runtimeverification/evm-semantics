@@ -90,13 +90,15 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
 -   Range of types
 
 ```k
-    syntax Bool ::= #rangeSInt    ( Int , Int )
+    syntax Bool ::= #rangeBool    ( Int )
+                  | #rangeSInt    ( Int , Int )
                   | #rangeUInt    ( Int , Int )
                   | #rangeSFixed  ( Int , Int , Int )
                   | #rangeUFixed  ( Int , Int , Int )
                   | #rangeAddress ( Int )
                   | #rangeBytes   ( Int , Int )
  // -------------------------------------------
+    rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1                         [macro]
     rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      ) [macro]
     rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      ) [macro]
     rule #rangeUInt    (   8 ,      X ) => #range ( minUInt8        <= X <  256             ) [macro]
@@ -155,32 +157,13 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
     syntax Int ::= sgn ( Int ) [function, functional]
                  | abs ( Int ) [function, functional]
  // -------------------------------------------------
-    rule sgn(I) => -1 requires I >=Int pow255
-    rule sgn(I) => 1  requires I <Int pow255
+    rule sgn(I) => -1 requires pow255 <=Int I andBool I <Int pow256
+    rule sgn(I) =>  1 requires 0 <=Int I andBool I <Int pow255
+    rule sgn(I) =>  0 requires I <Int 0 orBool pow256 <=Int I
 
     rule abs(I) => 0 -Word I requires sgn(I) ==Int -1
-    rule abs(I) => I         requires sgn(I) ==Int 1
-```
-
--   #signed : uInt256 -> sInt256  (i.e., [minUInt256..maxUInt256] -> [minSInt256..maxSInt256])
-- #unsigned : sInt256 -> uInt256  (i.e., [minSInt256..maxSInt256] -> [minUInt256..maxUInt256])
-
-```k
-    syntax Int ::= #signed ( Int ) [function]
- // -----------------------------------------
-    rule [#signed.positive]: #signed(DATA) => DATA
-      requires 0 <=Int DATA andBool DATA <=Int maxSInt256
-
-    rule [#signed.negative]: #signed(DATA) => DATA -Int pow256
-      requires maxSInt256 <Int DATA andBool DATA <=Int maxUInt256
-
-    syntax Int ::= #unsigned ( Int ) [function]
- // -------------------------------------------
-    rule [#unsigned.positive]: #unsigned(DATA) => DATA
-      requires 0 <=Int DATA andBool DATA <=Int maxSInt256
-
-    rule [#unsigned.negative]: #unsigned(DATA) => pow256 +Int DATA
-      requires minSInt256 <=Int DATA andBool DATA <Int 0
+    rule abs(I) => I         requires sgn(I) ==Int  1
+    rule abs(I) => 0         requires sgn(I) ==Int  0
 ```
 
 Word Operations
@@ -249,8 +232,8 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
     syntax Int ::= Int "/sWord" Int [function]
                  | Int "%sWord" Int [function]
  // ------------------------------------------
-    rule W0 /sWord W1 => #sgnInterp(sgn(W0) *Int sgn(W1) , abs(W0) /Word abs(W1))
-    rule W0 %sWord W1 => #sgnInterp(sgn(W0)              , abs(W0) %Word abs(W1))
+    rule [divSWord]: W0 /sWord W1 => #sgnInterp(sgn(W0) *Int sgn(W1) , abs(W0) /Word abs(W1))
+    rule [modSWord]: W0 %sWord W1 => #sgnInterp(sgn(W0)              , abs(W0) %Word abs(W1))
 
     syntax Int ::= #sgnInterp ( Int , Int ) [function, functional]
  // --------------------------------------------------------------

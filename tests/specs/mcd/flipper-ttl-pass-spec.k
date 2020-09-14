@@ -1,36 +1,36 @@
 requires "verification.k"
 
-module CAT-FILE-ADDR-PASS-ROUGH-SPEC
-  imports VERIFICATION
+module FLIPPER-TTL-PASS-SPEC
+    imports VERIFICATION
 
-    // Cat_file-addr
-    rule [Cat.file-addr.pass.rough]:
+    // Flipper_ttl
+    rule [Flipper.ttl.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> _ => #buf(32, Ttl) </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
-            <program> Cat_bin_runtime </program>
-            <jumpDests> #computeValidJumpDests(Cat_bin_runtime) </jumpDests>
+            <program> Flipper_bin_runtime </program>
+            <jumpDests> #computeValidJumpDests(Flipper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("file", #bytes32(ABI_what), #address(ABI_data)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("ttl", .TypedArgs) ++ CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> VGas => ?_ </gas>
+            <gas> VGas => VGas -Int (1120) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
-            <static> false </static>
+            <static> _ </static>
             <callDepth> VCallDepth </callDepth>
           </callState>
           <substate>
@@ -76,10 +76,10 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
             <account>
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
-              <code> Cat_bin_runtime </code>
-              <storage> STORAGE => STORAGE [ #Cat.vow <- ABI_data ] </storage>
-              <origStorage> ORIGSTORAGE </origStorage>
-              <nonce> _Nonce_Cat => ?_ </nonce>
+              <code> Flipper_bin_runtime </code>
+              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
+              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <nonce> _Nonce_Flipper => ?_ </nonce>
             </account>
             <account>
               <acctID> 1 </acctID>
@@ -179,25 +179,15 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
      andBool VCallDepth <=Int 1024
      andBool #rangeUInt(256, VCallValue)
      andBool #rangeUInt(256, VChainId)
-     andBool (#rangeBytes(32, ABI_what)
-     andBool (#rangeAddress(ABI_data)
-     andBool (#rangeUInt(256, May)
-     andBool (#rangeAddress(Vow)
+
+     andBool (#rangeUInt(48, Ttl)
+     andBool (#rangeUInt(48, Tau)
      andBool (#sizeByteArray(CD) <=Int 1250000000
-     andBool (#notPrecompileAddress(Vow)
-     andBool (VGas >=Int 3000000
+     andBool (2300 <Int VGas -Int (1120)
      andBool (#rangeUInt(256, Junk_0)
-     andBool (#rangeUInt(256, Junk_1)
-     andBool ((May ==Int 1)
-     andBool ((VCallValue ==Int 0)
-     andBool ((ABI_what ==Int #string2Word("vow"))))))))))))))
+     andBool ((VCallValue ==Int 0)))))))
 
-     andBool #lookup(STORAGE, #Cat.wards[CALLER_ID]) ==Int May
-     andBool #lookup(STORAGE, #Cat.vow)              ==Int Vow
-
-     andBool #lookup(ORIGSTORAGE, #Cat.wards[CALLER_ID]) ==Int Junk_0
-     andBool #lookup(ORIGSTORAGE, #Cat.vow)              ==Int Junk_1
-
-     andBool #Cat.wards[CALLER_ID] =/=Int #Cat.vow
+     andBool #lookup(ACCT_ID_STORAGE, #Flipper.ttl_tau) ==Int #WordPackUInt48UInt48(Ttl, Tau)
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flipper.ttl_tau) ==Int Junk_0
 
 endmodule

@@ -1,28 +1,28 @@
 requires "verification.k"
 
-module CAT-FILE-ADDR-PASS-ROUGH-SPEC
-  imports VERIFICATION
+module DSTOKEN-BURN-SELF-FAIL-ROUGH-SPEC
+    imports VERIFICATION
 
-    // Cat_file-addr
-    rule [Cat.file-addr.pass.rough]:
+    // DSToken_burn-self
+    rule [DSToken.burn-self.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
-          <statusCode> _ => EVMC_SUCCESS </statusCode>
+          <output> _ => ?_ </output>
+          <statusCode> _ => ?FAILURE:EndStatusCode </statusCode>
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
-            <program> Cat_bin_runtime </program>
-            <jumpDests> #computeValidJumpDests(Cat_bin_runtime) </jumpDests>
+            <program> DSToken_bin_runtime </program>
+            <jumpDests> #computeValidJumpDests(DSToken_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("file", #bytes32(ABI_what), #address(ABI_data)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("burn", #address(ABI_src), #uint256(ABI_wad)) ++ CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
@@ -31,12 +31,12 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>
-            <callDepth> VCallDepth </callDepth>
+            <callDepth> VCallDepth => ?_ </callDepth>
           </callState>
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
-            <refund> _ => ?_ </refund>
+            <refund> _Vrefund => ?_ </refund>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -76,10 +76,10 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
             <account>
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
-              <code> Cat_bin_runtime </code>
-              <storage> STORAGE => STORAGE [ #Cat.vow <- ABI_data ] </storage>
-              <origStorage> ORIGSTORAGE </origStorage>
-              <nonce> _Nonce_Cat => ?_ </nonce>
+              <code> DSToken_bin_runtime </code>
+              <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
+              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <nonce> _Nonce_DSToken => ?_ </nonce>
             </account>
             <account>
               <acctID> 1 </acctID>
@@ -179,25 +179,41 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
      andBool VCallDepth <=Int 1024
      andBool #rangeUInt(256, VCallValue)
      andBool #rangeUInt(256, VChainId)
-     andBool (#rangeBytes(32, ABI_what)
-     andBool (#rangeAddress(ABI_data)
-     andBool (#rangeUInt(256, May)
-     andBool (#rangeAddress(Vow)
-     andBool (#sizeByteArray(CD) <=Int 1250000000
-     andBool (#notPrecompileAddress(Vow)
+
+     andBool (#rangeAddress(ABI_src)
+     andBool (#rangeUInt(256, ABI_wad)
+     andBool (#rangeUInt(256, Gem_s)
+     andBool (#rangeUInt(256, Supply)
+     andBool (#rangeUInt(256, Allowance)
+     andBool (#rangeBool(Stoppedd)
+     andBool (#rangeAddress(Owner)
+     andBool ((#sizeByteArray(CD) <=Int 1250000000)
+     andBool ((#notPrecompileAddress(Owner))
+     andBool ((CALLER_ID ==Int Owner)
+     andBool ((CALLER_ID =/=Int ACCT_ID)
+     andBool ((CALLER_ID ==Int ABI_src)
      andBool (VGas >=Int 3000000
      andBool (#rangeUInt(256, Junk_0)
      andBool (#rangeUInt(256, Junk_1)
-     andBool ((May ==Int 1)
-     andBool ((VCallValue ==Int 0)
-     andBool ((ABI_what ==Int #string2Word("vow"))))))))))))))
+     andBool (#rangeUInt(256, Junk_2)
+     andBool (#rangeUInt(256, Junk_3))))))))))))))))))
 
-     andBool #lookup(STORAGE, #Cat.wards[CALLER_ID]) ==Int May
-     andBool #lookup(STORAGE, #Cat.vow)              ==Int Vow
+     andBool #lookup(ACCT_ID_STORAGE, #DSToken.allowance[ABI_src][CALLER_ID]) ==Int Allowance
+     andBool #lookup(ACCT_ID_STORAGE, #DSToken.balances[ABI_src]) ==Int Gem_s
+     andBool #lookup(ACCT_ID_STORAGE, #DSToken.supply) ==Int Supply
+     andBool #lookup(ACCT_ID_STORAGE, #DSToken.owner_stopped) ==Int #WordPackAddrUInt8(Owner, Stoppedd)
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.allowance[ABI_src][CALLER_ID]) ==Int Junk_0
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.balances[ABI_src]) ==Int Junk_1
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.supply) ==Int Junk_2
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.owner_stopped) ==Int Junk_3
+     andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.balances[ABI_src]
+     andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.supply
+     andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.owner_stopped
+     andBool #DSToken.balances[ABI_src] =/=Int #DSToken.supply
+     andBool #DSToken.balances[ABI_src] =/=Int #DSToken.owner_stopped
+     andBool #DSToken.supply =/=Int #DSToken.owner_stopped
+     andBool notBool ( (((#rangeUInt(256, Gem_s:Int  -Int ABI_wad:Int))) andBool (((#rangeUInt(256, Supply:Int -Int ABI_wad:Int))) andBool ((VCallValue:Int ==Int 0) andBool ((Stoppedd:Int ==Int 0))))) )
 
-     andBool #lookup(ORIGSTORAGE, #Cat.wards[CALLER_ID]) ==Int Junk_0
-     andBool #lookup(ORIGSTORAGE, #Cat.vow)              ==Int Junk_1
-
-     andBool #Cat.wards[CALLER_ID] =/=Int #Cat.vow
+     ensures ?FAILURE =/=K EVMC_SUCCESS
 
 endmodule

@@ -1,36 +1,36 @@
 requires "verification.k"
 
-module CAT-FILE-ADDR-PASS-ROUGH-SPEC
+module END-SUBUU-PASS-SPEC
   imports VERIFICATION
 
-    // Cat_file-addr
-    rule [Cat.file-addr.pass.rough]:
-      <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
+    // End_subuu
+    rule [End.subuu.pass]:
+      <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
-          <statusCode> _ => EVMC_SUCCESS </statusCode>
+          <output> VOutput => VOutput </output>
+          <statusCode> _ => ?_ </statusCode>
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
-            <program> Cat_bin_runtime </program>
-            <jumpDests> #computeValidJumpDests(Cat_bin_runtime) </jumpDests>
+            <program> End_bin_runtime </program>
+            <jumpDests> #computeValidJumpDests(End_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("file", #bytes32(ABI_what), #address(ABI_data)) ++ CD => ?_ </callData>
+            <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
-            <pc> 0 => ?_ </pc>
-            <gas> VGas => ?_ </gas>
-            <memoryUsed> 0 => ?_ </memoryUsed>
+            <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x -Int ABI_y : WS </wordStack>
+            <localMem> _ </localMem>
+            <pc> 14664 => 14689 </pc>
+            <gas> VGas => VGas -Int (54) </gas>
+            <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
-            <static> false </static>
+            <static> _ </static>
             <callDepth> VCallDepth </callDepth>
           </callState>
           <substate>
@@ -76,10 +76,18 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
             <account>
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
-              <code> Cat_bin_runtime </code>
-              <storage> STORAGE => STORAGE [ #Cat.vow <- ABI_data ] </storage>
-              <origStorage> ORIGSTORAGE </origStorage>
-              <nonce> _Nonce_Cat => ?_ </nonce>
+              <code> End_bin_runtime </code>
+              <storage>
+               .Map
+
+                _:Map
+               </storage>
+              <origStorage>
+               .Map
+
+                _:Map
+               </origStorage>
+              <nonce> _Nonce_End => ?_ </nonce>
             </account>
             <account>
               <acctID> 1 </acctID>
@@ -179,25 +187,11 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
      andBool VCallDepth <=Int 1024
      andBool #rangeUInt(256, VCallValue)
      andBool #rangeUInt(256, VChainId)
-     andBool (#rangeBytes(32, ABI_what)
-     andBool (#rangeAddress(ABI_data)
-     andBool (#rangeUInt(256, May)
-     andBool (#rangeAddress(Vow)
-     andBool (#sizeByteArray(CD) <=Int 1250000000
-     andBool (#notPrecompileAddress(Vow)
-     andBool (VGas >=Int 3000000
-     andBool (#rangeUInt(256, Junk_0)
-     andBool (#rangeUInt(256, Junk_1)
-     andBool ((May ==Int 1)
-     andBool ((VCallValue ==Int 0)
-     andBool ((ABI_what ==Int #string2Word("vow"))))))))))))))
-
-     andBool #lookup(STORAGE, #Cat.wards[CALLER_ID]) ==Int May
-     andBool #lookup(STORAGE, #Cat.vow)              ==Int Vow
-
-     andBool #lookup(ORIGSTORAGE, #Cat.wards[CALLER_ID]) ==Int Junk_0
-     andBool #lookup(ORIGSTORAGE, #Cat.vow)              ==Int Junk_1
-
-     andBool #Cat.wards[CALLER_ID] =/=Int #Cat.vow
+     andBool (#rangeUInt(256, ABI_x)
+     andBool (#rangeUInt(256, ABI_y)
+     andBool ((#sizeWordStack(WS) <=Int 100)
+     andBool (#rangeUInt(256, VMemoryUsed)
+     andBool (2300 <Int VGas -Int (54)
+     andBool ((#rangeUInt(256, ABI_x -Int ABI_y))))))))
 
 endmodule

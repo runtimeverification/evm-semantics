@@ -77,20 +77,8 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage>
-               .Map
-              [#Vat.wards[CALLER_ID] <- (May) => ?_]
-              [#Vat.wards[ABI_usr] <- (Junk_0) => ?_]
-              [#Vat.live <- (Live) => ?_]
-                _:Map
-               </storage>
-              <origStorage>
-               .Map
-              [#Vat.wards[CALLER_ID] <- (Junk_1)]
-              [#Vat.wards[ABI_usr] <- (Junk_2)]
-              [#Vat.live <- (Junk_3)]
-                _:Map
-               </origStorage>
+              <storage> STORAGE => ?_STORAGE </storage>
+              <origStorage> ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vat => ?_ </nonce>
             </account>
             <account>
@@ -203,6 +191,18 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
     andBool (#rangeUInt(256, Junk_2)
     andBool (#rangeUInt(256, Junk_3)))))))))))
     andBool notBool ( ((May:Int ==Int 1) andBool ((Live:Int ==Int 1) andBool ((VCallValue:Int ==Int 0)))) )
+
+    andBool #lookup(STORAGE, #Vat.wards[CALLER_ID]) ==Int May
+    andBool #lookup(STORAGE, #Vat.wards[ABI_usr]  ) ==Int Junk_0
+    andBool #lookup(STORAGE, #Vat.live            ) ==Int Live
+
+    andBool #lookup(ORIG_STORAGE, #Vat.wards[CALLER_ID]) ==Int Junk_1
+    andBool #lookup(ORIG_STORAGE, #Vat.wards[ABI_usr]  ) ==Int Junk_2
+    andBool #lookup(ORIG_STORAGE, #Vat.live            ) ==Int Junk_3
+
+    andBool #Vat.wards[CALLER_ID] =/=Int #Vat.wards[ABI_usr]
+    andBool #Vat.wards[CALLER_ID] =/=Int #Vat.live
+    andBool #Vat.wards[ABI_usr] =/=Int #Vat.live
 
     ensures ?FAILURE =/=K EVMC_SUCCESS
 
