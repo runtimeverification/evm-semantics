@@ -98,7 +98,7 @@ repo-deps: k-deps plugin-deps
 k-deps: $(K_JAR)
 plugin-deps:
 	cd deps/plugin && \
-	    make INSTALL_PREFIX=$(LOCAL_K_INCLUDE_PATH) install
+	    make INSTALL_PREFIX=$(BUILD_LOCAL) install
 
 K_MVN_ARGS :=
 ifneq ($(SKIP_LLVM),)
