@@ -143,7 +143,7 @@ tangle_haskell  := k            & ( ( ! ( concrete | nobytes ) ) | symbolic | by
 
 HOOK_NAMESPACES = KRYPTO JSON
 
-KOMPILE_OPTS += --hook-namespaces "$(HOOK_NAMESPACES)" -I "$(LOCAL_K_INCLUDE_PATH)"
+KOMPILE_OPTS += --hook-namespaces "$(HOOK_NAMESPACES)" -I $(LOCAL_K_INCLUDE_PATH)
 
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
