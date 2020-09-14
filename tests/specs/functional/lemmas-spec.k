@@ -16,6 +16,12 @@ endmodule
 module LEMMAS-SPEC
     imports VERIFICATION
 
+ // bool2Word simplification
+ // ------------------------
+
+    rule <k> runLemma ( bool2Word( B:Bool ) ==Int 1 ) => doneLemma ( B ==K true ) ... </k>
+    rule <k> runLemma ( 1 ==Int bool2Word( B:Bool ) ) => doneLemma ( B ==K true ) ... </k>
+
  // Buffer write simplifications
  // ----------------------------
 
@@ -83,20 +89,22 @@ module LEMMAS-SPEC
     rule <k> runLemma ( #range(_M [ 32 := (0 : 1 : 2 : .ByteArray)         ] , 33 , 2) ) => doneLemma( (1 : 2 : .ByteArray)                      ) ... </k>
     rule <k> runLemma ( #range( M [ 32 := (0 : 1 : 2 : .ByteArray)         ] , 33 , 3) ) => doneLemma( (1 : 2 :  .ByteArray) ++ #range(M, 35, 1) ) ... </k>
 
-    //bool2Word simplification
-    rule <k> runLemma ( bool2Word( B:Bool ) ==Int 1 ) => doneLemma( B ==K true ) ... </k>
-    rule <k> runLemma ( 1 ==Int bool2Word( B:Bool ) ) => doneLemma( B ==K true ) ... </k>
+ // #buf simplification
+ // -------------------
 
-    //#buf simplification
     rule <k> runLemma ( #buf( 32 , bool2Word ( B:Bool ) ) ==K #buf( 32 , 1 )     ) => doneLemma( B ==K true ) ... </k>
     rule <k> runLemma ( #buf( 32 , I:Int )                ==K #buf( 32 , 1 )     ) => doneLemma( I ==K 1    ) ... </k>
     rule <k> runLemma ( #buf( 32 , 1 )                    ==K #buf( 32 , I:Int ) ) => doneLemma( I ==K 1    ) ... </k>
 
-    //chop simplification
+ // chop simplification
+ // -------------------
+
     rule <k> runLemma ( chop( #lookup(M, KEY)   ) ) => doneLemma( #lookup(M, KEY) ) ... </k>
     rule <k> runLemma ( chop( bool2Word(B:Bool) ) ) => doneLemma( bool2Word(B)    ) ... </k>
 
-    //#padToWidth simplification
+ // #padToWidth simplification
+ // --------------------------
+
     rule <k> runLemma ( #padToWidth( 32 , #asByteStack( bool2Word ( B:Bool ) ) ) ) => doneLemma( #buf( 32 , bool2Word ( B ) ) ) ... </k>
 
 endmodule
