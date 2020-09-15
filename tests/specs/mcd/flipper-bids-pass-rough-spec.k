@@ -1,33 +1,33 @@
 requires "verification.k"
 
-module CAT-ILKS-PASS-SPEC
-  imports VERIFICATION
+module FLIPPER-BIDS-PASS-ROUGH-SPEC
+    imports VERIFICATION
 
-    // Cat_ilks
-    rule [Cat.ilks.pass]:
+    // Flipper_bids
+    rule [Flipper.bids.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> _ => #buf(32, Flip) ++ #buf(32, Chop) ++ #buf(32, Lump) </output>
+          <output> _ => #buf(32, Bid) ++ #buf(32, Lot) ++ #buf(32, Guy) ++ #buf(32, Tic) ++ #buf(32, End) ++ #buf(32, Usr) ++ #buf(32, Gal) ++ #buf(32, Tab) </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
-            <program> Cat_bin_runtime </program>
-            <jumpDests> #computeValidJumpDests(Cat_bin_runtime) </jumpDests>
+            <program> Flipper_bin_runtime </program>
+            <jumpDests> #computeValidJumpDests(Flipper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("ilks", #bytes32(ABI_ilk)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("bids", #uint256(ABI_n)) ++ CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> VGas => VGas -Int (2977) </gas>
+            <gas> VGas => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -36,7 +36,7 @@ module CAT-ILKS-PASS-SPEC
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
-            <refund> _ => ?_ </refund>
+            <refund> _Vrefund => ?_ </refund>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -76,10 +76,10 @@ module CAT-ILKS-PASS-SPEC
             <account>
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
-              <code> Cat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE    </storage>
+              <code> Flipper_bin_runtime </code>
+              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Cat => ?_ </nonce>
+              <nonce> _Nonce_Flipper => ?_ </nonce>
             </account>
             <account>
               <acctID> 1 </acctID>
@@ -180,28 +180,54 @@ module CAT-ILKS-PASS-SPEC
      andBool #rangeUInt(256, VCallValue)
      andBool #rangeUInt(256, VChainId)
 
-     andBool (#rangeBytes(32, ABI_ilk)
-     andBool (#rangeUInt(256, Chop)
-     andBool (#rangeAddress(Flip)
-     andBool (#rangeUInt(256, Lump)
+     andBool (#rangeUInt(256, ABI_n)
+     andBool (#rangeUInt(256, Bid)
+     andBool (#rangeUInt(256, Lot)
+     andBool (#rangeAddress(Guy)
+     andBool (#rangeUInt(48, Tic)
+     andBool (#rangeUInt(48, End)
+     andBool (#rangeAddress(Usr)
+     andBool (#rangeAddress(Gal)
+     andBool (#rangeUInt(256, Tab)
      andBool (#sizeByteArray(CD) <=Int 1250000000
-     andBool (#notPrecompileAddress(Flip)
-     andBool (2300 <Int VGas -Int (2977)
+     andBool (#notPrecompileAddress(Guy)
+     andBool (#notPrecompileAddress(Usr)
+     andBool (#notPrecompileAddress(Gal)
+     andBool (VGas >=Int 3000000
      andBool (#rangeUInt(256, Junk_0)
      andBool (#rangeUInt(256, Junk_1)
      andBool (#rangeUInt(256, Junk_2)
-     andBool ((VCallValue ==Int 0))))))))))))
+     andBool (#rangeUInt(256, Junk_3)
+     andBool (#rangeUInt(256, Junk_4)
+     andBool (#rangeUInt(256, Junk_5)
+     andBool ((VCallValue ==Int 0))))))))))))))))))))))
 
-     andBool #lookup(ACCT_ID_STORAGE, #Cat.ilks[ABI_ilk].flip) ==Int Flip
-     andBool #lookup(ACCT_ID_STORAGE, #Cat.ilks[ABI_ilk].chop) ==Int Chop
-     andBool #lookup(ACCT_ID_STORAGE, #Cat.ilks[ABI_ilk].lump) ==Int Lump
-
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Cat.ilks[ABI_ilk].flip) ==Int Junk_0
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Cat.ilks[ABI_ilk].chop) ==Int Junk_1
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Cat.ilks[ABI_ilk].lump) ==Int Junk_2
-
-     andBool #Cat.ilks[ABI_ilk].flip =/=Int #Cat.ilks[ABI_ilk].chop
-     andBool #Cat.ilks[ABI_ilk].flip =/=Int #Cat.ilks[ABI_ilk].lump
-     andBool #Cat.ilks[ABI_ilk].chop =/=Int #Cat.ilks[ABI_ilk].lump
+     andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].bid) ==Int Bid
+     andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].lot) ==Int Lot
+     andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].guy_tic_end) ==Int #WordPackAddrUInt48UInt48(Guy, Tic, End)
+     andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].usr) ==Int Usr
+     andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].gal) ==Int Gal
+     andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].tab) ==Int Tab
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flipper.bids[ABI_n].bid) ==Int Junk_0
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flipper.bids[ABI_n].lot) ==Int Junk_1
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flipper.bids[ABI_n].guy_tic_end) ==Int Junk_2
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flipper.bids[ABI_n].usr) ==Int Junk_3
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flipper.bids[ABI_n].gal) ==Int Junk_4
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flipper.bids[ABI_n].tab) ==Int Junk_5
+     andBool #Flipper.bids[ABI_n].bid =/=Int #Flipper.bids[ABI_n].lot
+     andBool #Flipper.bids[ABI_n].bid =/=Int #Flipper.bids[ABI_n].guy_tic_end
+     andBool #Flipper.bids[ABI_n].bid =/=Int #Flipper.bids[ABI_n].usr
+     andBool #Flipper.bids[ABI_n].bid =/=Int #Flipper.bids[ABI_n].gal
+     andBool #Flipper.bids[ABI_n].bid =/=Int #Flipper.bids[ABI_n].tab
+     andBool #Flipper.bids[ABI_n].lot =/=Int #Flipper.bids[ABI_n].guy_tic_end
+     andBool #Flipper.bids[ABI_n].lot =/=Int #Flipper.bids[ABI_n].usr
+     andBool #Flipper.bids[ABI_n].lot =/=Int #Flipper.bids[ABI_n].gal
+     andBool #Flipper.bids[ABI_n].lot =/=Int #Flipper.bids[ABI_n].tab
+     andBool #Flipper.bids[ABI_n].guy_tic_end =/=Int #Flipper.bids[ABI_n].usr
+     andBool #Flipper.bids[ABI_n].guy_tic_end =/=Int #Flipper.bids[ABI_n].gal
+     andBool #Flipper.bids[ABI_n].guy_tic_end =/=Int #Flipper.bids[ABI_n].tab
+     andBool #Flipper.bids[ABI_n].usr =/=Int #Flipper.bids[ABI_n].gal
+     andBool #Flipper.bids[ABI_n].usr =/=Int #Flipper.bids[ABI_n].tab
+     andBool #Flipper.bids[ABI_n].gal =/=Int #Flipper.bids[ABI_n].tab
 
 endmodule
