@@ -21,10 +21,12 @@ K_BIN := $(K_RELEASE)/bin
 K_LIB := $(K_RELEASE)/lib/kframework
 export K_RELEASE
 
-LIBRARY_PATH       := $(LOCAL_LIB)
-C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
-CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
-PATH               := $(K_BIN):$(PATH)
+LIBRARY_PATH         := $(LOCAL_LIB)
+LOCAL_K_INCLUDE_PATH := $(BUILD_LOCAL)/include/kframework/
+K_INCLUDE_PATH       += :$(LOCAL_K_INCLUDE_PATH)
+C_INCLUDE_PATH       += :$(BUILD_LOCAL)/include
+CPLUS_INCLUDE_PATH   += :$(BUILD_LOCAL)/include
+PATH                 := $(K_BIN):$(PATH)
 
 export LIBRARY_PATH
 export C_INCLUDE_PATH
@@ -94,7 +96,9 @@ K_JAR := $(K_SUBMODULE)/k-distribution/target/release/k/lib/java/kernel-1.0-SNAP
 deps: repo-deps
 repo-deps: k-deps plugin-deps
 k-deps: $(K_JAR)
-plugin-deps: $(PLUGIN_SUBMODULE)/client-c/main.cpp
+plugin-deps:
+	cd deps/plugin && \
+	    make INSTALL_PREFIX=$(BUILD_LOCAL) install
 
 K_MVN_ARGS :=
 ifneq ($(SKIP_LLVM),)
@@ -126,7 +130,6 @@ SOURCE_FILES       := asm           \
                       evm-imp-specs \
                       evm-types     \
                       json-rpc      \
-                      krypto        \
                       network       \
                       serialization \
                       state-loader  \
@@ -140,7 +143,7 @@ tangle_haskell  := k            & ( ( ! ( concrete | nobytes ) ) | symbolic | by
 
 HOOK_NAMESPACES = KRYPTO JSON
 
-KOMPILE_OPTS += --hook-namespaces "$(HOOK_NAMESPACES)"
+KOMPILE_OPTS += --hook-namespaces "$(HOOK_NAMESPACES)" -I $(LOCAL_K_INCLUDE_PATH)
 
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
