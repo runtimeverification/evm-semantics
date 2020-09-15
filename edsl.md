@@ -189,35 +189,16 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 ```k
     syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
-    rule #getValue(#uint160( DATA )) => DATA
-      requires #rangeUInt(160, DATA)
-
-    rule #getValue(#address( DATA )) => DATA
-      requires #rangeAddress(DATA)
-
-    rule #getValue(#uint256( DATA )) => DATA
-      requires #rangeUInt(256, DATA)
-
-    rule #getValue(  #uint48( DATA )) => DATA
-      requires #rangeUInt(48, DATA)
-
-    rule #getValue(  #uint16( DATA )) => DATA
-      requires #rangeUInt(16, DATA)
-
-    rule #getValue(  #uint8( DATA )) => DATA
-      requires #rangeUInt(8, DATA)
-
-    rule #getValue( #int256( DATA )) => chop(DATA)
-      requires #rangeSInt(256, DATA)
-
-    rule #getValue( #int128( DATA )) => chop(DATA)
-      requires #rangeSInt(128, DATA)
-
-    rule #getValue(#bytes32( DATA )) => DATA
-      requires #rangeUInt(256, DATA)
-
-    rule #getValue(   #bool( DATA )) => DATA
-      requires #rangeBool(DATA)
+    rule #getValue(   #bool( X )) => X       requires #rangeBool(X)
+    rule #getValue(#address( X )) => X       requires #rangeAddress(X)
+    rule #getValue(  #uint8( X )) => X       requires #rangeUInt(8, X)
+    rule #getValue( #uint16( X )) => X       requires #rangeUInt(16, X)
+    rule #getValue( #uint48( X )) => X       requires #rangeUInt(48, X)
+    rule #getValue(#uint160( X )) => X       requires #rangeUInt(160, X)
+    rule #getValue(#uint256( X )) => X       requires #rangeUInt(256, X)
+    rule #getValue( #int128( X )) => chop(X) requires #rangeSInt(128, X)
+    rule #getValue( #int256( X )) => chop(X) requires #rangeSInt(256, X)
+    rule #getValue(#bytes32( X )) => X       requires #rangeUInt(256, X)
 
     syntax Int ::= #ceil32 ( Int ) [function, functional, smt-hook(ceil32), smt-prelude]
  // ------------------------------------------------------------------------------------
