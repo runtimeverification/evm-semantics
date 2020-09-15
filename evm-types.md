@@ -27,15 +27,21 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
 ```k
     syntax Int ::= "pow256" /* 2 ^Int 256 */
                  | "pow255" /* 2 ^Int 255 */
+                 | "pow208" /* 2 ^Int 208 */
+                 | "pow168" /* 2 ^Int 168 */
                  | "pow160" /* 2 ^Int 160 */
                  | "pow128" /* 2 ^Int 128 */
+                 | "pow96"  /* 2 ^Int 96  */
                  | "pow48"  /* 2 ^Int 48  */
                  | "pow16"  /* 2 ^Int 16  */
  // ----------------------------------------
     rule pow256 => 115792089237316195423570985008687907853269984665640564039457584007913129639936 [macro]
     rule pow255 => 57896044618658097711785492504343953926634992332820282019728792003956564819968  [macro]
+    rule pow208 => 411376139330301510538742295639337626245683966408394965837152256                [macro]
+    rule pow168 => 374144419156711147060143317175368453031918731001856                            [macro]
     rule pow160 => 1461501637330902918203684832716283019655932542976                              [macro]
     rule pow128 => 340282366920938463463374607431768211456                                        [macro]
+    rule pow96  => 79228162514264337593543950336                                                  [macro]
     rule pow48  => 281474976710656                                                                [macro]
     rule pow16  => 65536                                                                          [macro]
 
@@ -47,10 +53,16 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
                  | "maxUInt16"
                  | "minUInt48"
                  | "maxUInt48"
+                 | "minUInt96"
+                 | "maxUInt96"
                  | "minUInt128"
                  | "maxUInt128"
                  | "minUInt160"
                  | "maxUInt160"
+                 | "minUInt168"
+                 | "maxUInt168"
+                 | "minUInt208"
+                 | "maxUInt208"
                  | "minSInt256"
                  | "maxSInt256"
                  | "minUInt256"
@@ -73,12 +85,18 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     rule maxUInt16       =>  65535                                                                          [macro]  /*   2^16 -  1  */
     rule minUInt48       =>  0                                                                              [macro]
     rule maxUInt48       =>  281474976710655                                                                [macro]  /*   2^48 -  1  */
+    rule minUInt96       =>  0                                                                              [macro]
+    rule maxUInt96       =>  79228162514264337593543950335                                                  [macro]  /*   2^96 -  1  */
     rule minUInt128      =>  0                                                                              [macro]
     rule maxUInt128      =>  340282366920938463463374607431768211455                                        [macro]  /*   2^128 - 1  */
     rule minUFixed128x10 =>  0                                                                              [macro]
     rule maxUFixed128x10 =>  3402823669209384634633746074317682114550000000000                              [macro]  /* ( 2^128 - 1) * 10^10 */
     rule minUInt160      =>  0                                                                              [macro]
     rule maxUInt160      =>  1461501637330902918203684832716283019655932542975                              [macro]  /*   2^160 - 1  */
+    rule minUInt168      =>  0                                                                              [macro]
+    rule maxUInt168      =>  374144419156711147060143317175368453031918731001855                            [macro]  /*   2^168 - 1  */
+    rule minUInt208      =>  0                                                                              [macro]
+    rule maxUInt208      =>  411376139330301510538742295639337626245683966408394965837152255                [macro]  /*   2^208 - 1  */
     rule minUInt256      =>  0                                                                              [macro]
     rule maxUInt256      =>  115792089237316195423570985008687907853269984665640564039457584007913129639935 [macro]  /*   2^256 - 1  */
 
@@ -104,8 +122,11 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     rule #rangeUInt    (   8 ,      X ) => #range ( minUInt8        <= X <  256             ) [macro]
     rule #rangeUInt    (  16 ,      X ) => #range ( minUInt16       <= X <  pow16           ) [macro]
     rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <  pow48           ) [macro]
+    rule #rangeUInt    (  96 ,      X ) => #range ( minUInt96       <= X <  pow96           ) [macro]
     rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <  pow128          ) [macro]
     rule #rangeUInt    ( 160 ,      X ) => #range ( minUInt160      <= X <  pow160          ) [macro]
+    rule #rangeUInt    ( 168 ,      X ) => #range ( minUInt168      <= X <  pow168          ) [macro]
+    rule #rangeUInt    ( 208 ,      X ) => #range ( minUInt208      <= X <  pow208          ) [macro]
     rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <  pow256          ) [macro]
     rule #rangeSFixed  ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 ) [macro]
     rule #rangeUFixed  ( 128 , 10 , X ) => #range ( minUFixed128x10 <= X <= maxUFixed128x10 ) [macro]
