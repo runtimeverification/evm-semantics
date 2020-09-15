@@ -279,4 +279,8 @@ module VERIFICATION
     // (check-sat)
     rule chop(X *Int Y) /sWord chop(Y) => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0
 
+    // ### flopper-tick-pass-rough
+
+    rule chop(X *Int Y) => X *Int Y requires 0 <=Int X andBool 0 <=Int Y andBool X *Int Y <Int pow256
+
 endmodule
