@@ -300,4 +300,8 @@ module VERIFICATION
 
     rule I -Int I => 0
 
+    // ### vat-slip-pass-rough
+
+    rule chop(X +Int chop(Y)) => chop(X +Int Y)
+
 endmodule
