@@ -5,8 +5,8 @@ module LEMMAS
     imports LEMMAS-JAVA
     imports LEMMAS-HASKELL
 
-    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
-    rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma]
+    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma, simplification]
+    rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma, simplification]
 
     rule #lookup ( _M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification]
     rule #lookup (  M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
@@ -308,7 +308,7 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
     rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
 
-    rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma]
+    rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma, simplification]
 
     //Simplification of bool2Word() ==Int CONCRETE, #buf() ==K CONCRETE
     rule I                   ==Int bool2Word( B:Bool ) => bool2Word(B) ==Int I  [simplification, concrete(I)]
