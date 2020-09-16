@@ -82,4 +82,5 @@ tests/specs/mcd/vat-slip-pass-rough-spec.k
 tests/specs/mcd/vat-subui-fail-rough-spec.k
 tests/specs/mcd/vat-subui-pass-rough-spec.k
 tests/specs/mcd/vow-flog-fail-rough-spec.k
+tests/specs/mcd/vow-fess-fail-rough-spec.k
 tests/specs/opcodes/create-spec.k
