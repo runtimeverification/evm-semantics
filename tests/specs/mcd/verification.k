@@ -296,4 +296,17 @@ module VERIFICATION
 
     rule chop(X *Int Y) => X *Int Y requires 0 <=Int X andBool 0 <=Int Y andBool X *Int Y <Int pow256
 
+    // ### Gas Simplification
+
+    rule I -Int I => 0
+
+    // ### vat-slip-pass-rough
+
+    rule chop(X +Int chop(Y)) => chop(X +Int Y)
+
+    // ### vow-flog-fail-rough
+
+    rule X -Word Y <=Int X => #rangeUInt(256, X -Int Y) requires #rangeUInt(256, X) andBool #rangeUInt(256, Y)
+    rule 0 <=Int X +Int Y => true requires 0 <=Int X andBool 0 <=Int Y
+
 endmodule
