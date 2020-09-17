@@ -311,8 +311,7 @@ module VERIFICATION
 
     // ### flipper-addu48u48-fail-rough
 
-    rule maxUInt48 &Int (X +Int Y) => (X +Int Y) modInt maxUInt48 requires 0 <=Int X andBool 0 <=Int Y
-    rule (X +Int Y) modInt maxUInt48 <Int X => true requires #rangeUInt(48, X) andBool #rangeUInt(48, Y) andBool notBool #rangeUInt(48, X +Int Y)
+    rule maxUInt48 &Int (X +Int Y) <Int X => true requires #rangeUInt(48, X) andBool #rangeUInt(48, Y) andBool notBool (X +Int Y <Int pow48)
 
     // ### vat-subui-fail-rough
 
