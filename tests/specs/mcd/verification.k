@@ -315,7 +315,7 @@ module VERIFICATION
 
     // ### vat-subui-fail-rough
 
-    rule 0 s<Word X => bool2Word(sgn(X) ==Int 1) requires #rangeUInt(256, X)
+    rule 0 s<Word X => bool2Word(sgn(X) ==Int 1 andBool X =/=Int 0) requires #rangeUInt(256, X)
     rule sgn(chop(Y)) ==K 1 => 0 <=Int Y requires #rangeSInt(256, Y)
 
     // ### vat-subui-pass-rough
