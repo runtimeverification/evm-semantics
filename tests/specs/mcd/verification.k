@@ -321,6 +321,6 @@ module VERIFICATION
 
     // ### vat-subui-pass-rough
 
-    rule X -Word chop(Y) => X -Int Y requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeUInt(256, X -Int Y)
+    rule X -Word chop(Y) => chop(X -Int Y)
 
 endmodule
