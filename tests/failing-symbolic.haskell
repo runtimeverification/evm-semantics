@@ -59,6 +59,7 @@ tests/specs/mcd/dstoken-transferfrom-fail-rough-spec.k
 tests/specs/mcd/dsvalue-peek-pass-rough-spec.k
 tests/specs/mcd/dsvalue-read-pass-spec.k
 tests/specs/mcd/end-subuu-pass-spec.k
+tests/specs/mcd/flipper-addu48u48-fail-rough-spec.k
 tests/specs/mcd/flipper-bids-pass-rough-spec.k
 tests/specs/mcd/flipper-tau-pass-spec.k
 tests/specs/mcd/flipper-ttl-pass-spec.k
@@ -69,5 +70,7 @@ tests/specs/mcd/vat-deny-diff-fail-rough-spec.k
 tests/specs/mcd/vat-move-diff-spec.k
 tests/specs/mcd/vat-mului-pass-spec.k
 tests/specs/mcd/vat-slip-pass-rough-spec.k
+tests/specs/mcd/vat-subui-fail-rough-spec.k
+tests/specs/mcd/vat-subui-pass-rough-spec.k
 tests/specs/mcd/vow-flog-fail-rough-spec.k
 tests/specs/opcodes/create-spec.k

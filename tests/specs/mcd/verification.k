@@ -309,4 +309,78 @@ module VERIFICATION
     rule X -Word Y <=Int X => #rangeUInt(256, X -Int Y) requires #rangeUInt(256, X) andBool #rangeUInt(256, Y)
     rule 0 <=Int X +Int Y => true requires 0 <=Int X andBool 0 <=Int Y
 
+    // ### flipper-addu48u48-fail-rough
+
+    rule maxUInt48 &Int (X +Int Y) <Int X => true requires #rangeUInt(48, X) andBool #rangeUInt(48, Y) andBool notBool (X +Int Y <Int pow48)
+
+    // ### vat-subui-fail-rough
+
+    // ;(set-option :smt.mbqi true)
+    //
+    // ; 2^256
+    // (declare-const pow256 Int)
+    // (assert (= pow256 115792089237316195423570985008687907853269984665640564039457584007913129639936))
+    //
+    // ; 2^255
+    // (declare-const pow255 Int)
+    // (assert (= pow255 57896044618658097711785492504343953926634992332820282019728792003956564819968))
+    //
+    // ; sgn
+    // (declare-fun sgn (Int) Int)
+    // (assert (forall ((x Int)) (=> (and (>= x 0)      (< x pow255)) (= (sgn x)  1))))
+    // (assert (forall ((x Int)) (=> (and (>= x pow255) (< x pow256)) (= (sgn x) -1))))
+    //
+    // ; s<Word
+    // (declare-fun slt (Int Int) Bool)
+    // (assert (forall ((x Int) (y Int)) (=> (and (= (sgn x)  1) (= (sgn y)  1)) (= (slt x y) (< x y)))))
+    // (assert (forall ((x Int) (y Int)) (=> (and (= (sgn x)  1) (= (sgn y) -1)) (= (slt x y) false))))
+    // (assert (forall ((x Int) (y Int)) (=> (and (= (sgn x) -1) (= (sgn y)  1)) (= (slt x y) true))))
+    // (assert (forall ((x Int) (y Int)) (=> (and (= (sgn x) -1) (= (sgn y) -1)) (= (slt x y) (> x y)))))
+    //
+    // ; chop
+    // (define-fun chop ((x Int)) Int (mod x pow256))
+    // ;(simplify (chop -1))
+    //
+    // ; /Word
+    // (define-fun zdiv ((x Int) (y Int)) Int (ite (= y 0) 0 (div x y)))
+    //
+    // ; /sWord
+    // (declare-fun sdiv (Int Int) Int)
+    // (assert (forall ((x Int) (y Int)) (=> (> (* (sgn x) (sgn y)) 0) (= (sdiv x y)    (zdiv (abs x) (abs y)) ))))
+    // (assert (forall ((x Int) (y Int)) (=> (< (* (sgn x) (sgn y)) 0) (= (sdiv x y) (- (zdiv (abs x) (abs y)))))))
+    //
+    // ; uint256
+    // (define-fun uint256 ((x Int)) Bool (and (>= x 0) (< x pow256)))
+    //
+    // ; sint256
+    // (define-fun sint256 ((x Int)) Bool (and (>= x (- pow255)) (< x pow255)))
+    //
+    // ;;;;
+    //
+    // (declare-const x Int)
+    // (declare-const y Int)
+
+    // Via Z3 4.7.1:
+    // (push)
+    // (assert (not (=> (uint256 x) (= (slt 0 x) (and (= (sgn x) 1) (not (= x 0))) ) ) ))
+    // (check-sat)
+    // (pop)
+    rule 0 s<Word X => bool2Word(sgn(X) ==Int 1 andBool X =/=Int 0) requires #rangeUInt(256, X)
+
+    // Via Z3 4.7.1:
+    // (push)
+    // (assert (not (=> (sint256 y) (= (= (sgn (chop y)) 1) (<= 0 y) ) ) ))
+    // (check-sat)
+    // (pop)
+    rule sgn(chop(Y)) ==K 1 => 0 <=Int Y requires #rangeSInt(256, Y)
+
+    // ### vat-subui-pass-rough
+
+    // Via Z3 4.7.1:
+    // (push)
+    // (assert (not (=> true (= (chop (- x (chop y))) (chop (- x y)) ) ) ))
+    // (check-sat)
+    // (pop)
+    rule X -Word chop(Y) => chop(X -Int Y)
+
 endmodule
