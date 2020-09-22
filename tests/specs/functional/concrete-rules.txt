@@ -1,3 +1,4 @@
+EVM.Cmem
 EVM-TYPES.#asByteStack
 EVM-TYPES.#asByteStackAux.recursive
 EVM-TYPES.bytesRange

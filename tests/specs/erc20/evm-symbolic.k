@@ -18,16 +18,16 @@ module EVM-SYMBOLIC     [symbolic]
     // Range for #symEcrec
 
     //case 0 is never wrapped into #symEcrec(), corresponds to #ecrecEmpty(DATA) == true
-    rule 0 <Int   #symEcrec(_)             => true
+    rule 0 <Int   #symEcrec(_)             => true [simplification]
 
     //that's because the result in concrete semantics is trimmed to Address range.
-    rule          #symEcrec(_) <Int pow160 => true
+    rule          #symEcrec(_) <Int pow160 => true [simplification]
 
     // Lemmas implied by the above, but still required to match side conditions of #padToWidth rule in lemmas.md
     // General range conversion lemmas like below are not an option, dramatic performance decrease:
     //    rule A < pow256 => true requires A < pow160
-    rule 0 <=Int  #symEcrec(_)             => true
-    rule          #symEcrec(_) <Int pow256 => true
+    rule 0 <=Int  #symEcrec(_)             => true [simplification]
+    rule          #symEcrec(_) <Int pow256 => true [simplification]
 
   // ########################
   // Symbolic Gas

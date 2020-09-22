@@ -1,6 +1,7 @@
 requires "abstract-semantics-segmented-gas.k"
 requires "edsl.md"
 requires "evm-symbolic.k"
+requires "../infinite-gas.k"
 requires "../lemmas.k"
 
 module VERIFICATION
@@ -23,9 +24,6 @@ module VERIFICATION-JAVA [symbolic, kast]
 endmodule
 
 module VERIFICATION-HASKELL [symbolic, kore]
-
-    // only to pass the haskell dry-run tests
-    syntax Int ::= #gas ( Int , Int , Int )  [function]  // startGas, nonMemory, memory
-  //-----------------------------------------------------------------------------------
+    import INFINITE-GAS
 
 endmodule

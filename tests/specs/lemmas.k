@@ -5,8 +5,8 @@ module LEMMAS
     imports LEMMAS-JAVA
     imports LEMMAS-HASKELL
 
-    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
-    rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma]
+    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma, simplification]
+    rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma, simplification]
 
     rule #lookup ( _M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification]
     rule #lookup (  M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
@@ -74,6 +74,8 @@ module LEMMAS
     // bool2Word range & simplification
     rule 0 <=Int bool2Word(_B)             => true   [simplification]
     rule         bool2Word(_B) <Int pow256 => true   [simplification]
+
+    rule notBool notBool B => B [simplification]
 
     rule N /Int 1 => N  [simplification]
 
@@ -228,6 +230,12 @@ module LEMMAS-JAVA [symbolic, kast]
     rule bool2Word(A) =/=K 0 => A
     rule bool2Word(A) =/=K 1 => notBool(A)
 
+    rule notBool  (X ==K 0) => X ==K 1 requires #rangeBool(X)
+    rule notBool  (X ==K 1) => X ==K 0 requires #rangeBool(X)
+    rule bool2Word(X ==K 1) => X       requires #rangeBool(X)
+
+    rule B ==K false => notBool B
+
     rule 0 <=Int X &Int Y             => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <=Int Y andBool Y <Int pow256
     rule         X &Int Y <Int pow256 => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <=Int Y andBool Y <Int pow256
 
@@ -261,12 +269,6 @@ module LEMMAS-HASKELL [symbolic, kore]
     imports INT-SYMBOLIC
     imports EVM
     imports EDSL
-
-    //Simplification of double negation in term constraint
-    //Simplifies { false #Equals B ==Bool false }, also `B ==Bool false ==Bool false`
-    //see https://github.com/kframework/kore/issues/1944#issuecomment-657733745
-    rule B ==Bool false    => notBool B                                                                  [simplification]
-    rule notBool notBool B => B                                                                          [simplification]
 
     rule #asWord(BUF) /Int D => #asWord(BUF[0 .. #sizeByteArray(BUF) -Int log256Int(D)])
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
@@ -306,11 +308,17 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
     rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
 
-    rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma]
+    rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma, simplification]
 
     //Simplification of bool2Word() ==Int CONCRETE, #buf() ==K CONCRETE
     rule I                   ==Int bool2Word( B:Bool ) => bool2Word(B) ==Int I  [simplification, concrete(I)]
     rule bool2Word( B:Bool ) ==Int I                   => B ==K word2Bool(I)    [simplification, concrete(I)]
+
+    rule notBool  (X ==Int 0) => X ==Int 1 requires #rangeBool(X) [simplification]
+    rule notBool  (X ==Int 1) => X ==Int 0 requires #rangeBool(X) [simplification]
+    rule bool2Word(X ==Int 1) => X         requires #rangeBool(X) [simplification]
+
+    rule B ==Bool false => notBool B [simplification]
 
     rule BA:ByteArray     ==K #buf( 32, DATA ) => #buf( 32, DATA ) ==K BA       [simplification, concrete(BA)]
     rule #buf( 32, DATA ) ==K BA:ByteArray     => DATA ==Int #asInteger(BA)
