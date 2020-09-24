@@ -27,7 +27,7 @@ module FLOPPER-FILE-PASS-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> VGas => ?_ </gas>
+            <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>
@@ -189,14 +189,13 @@ module FLOPPER-FILE-PASS-ROUGH-SPEC
      andBool (#rangeUInt(48, Tau)
      andBool ((#sizeByteArray(CD) <=Int 1250000000)
      andBool (((ABI_what =/=Int #string2Word("ttl") andBool ABI_what =/=Int #string2Word("tau")) orBool #rangeUInt(48, ABI_data))
-     andBool (VGas >=Int 3000000
      andBool (#rangeUInt(256, Junk_0)
      andBool (#rangeUInt(256, Junk_1)
      andBool (#rangeUInt(256, Junk_2)
      andBool (#rangeUInt(256, Junk_3)
      andBool ((May ==Int 1)
      andBool ((VCallValue ==Int 0)
-     andBool (((ABI_what ==Int #string2Word("beg")) orBool (ABI_what ==Int #string2Word("pad")) orBool (ABI_what ==Int #string2Word("ttl")) orBool (ABI_what ==Int #string2Word("tau"))))))))))))))))))))
+     andBool (((ABI_what ==Int #string2Word("beg")) orBool (ABI_what ==Int #string2Word("pad")) orBool (ABI_what ==Int #string2Word("ttl")) orBool (ABI_what ==Int #string2Word("tau")))))))))))))))))))
 
      andBool #lookup(ACCT_ID_STORAGE, #Flopper.wards[CALLER_ID]) ==Int May
      andBool #lookup(ACCT_ID_STORAGE, #Flopper.beg) ==Int Beg
