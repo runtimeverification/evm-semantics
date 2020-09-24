@@ -9,7 +9,7 @@ The notations are inspired by the production compilers of the smart contract lan
 ```k
 requires "evm.md"
 
-module EDSL         [symbolic]
+module EDSL
     imports EVM
 ```
 
