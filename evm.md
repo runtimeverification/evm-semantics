@@ -2070,14 +2070,14 @@ There are several helpers for calculating gas (most of them also specified in th
     rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
           => Gselfdestruct < SCHED > +Int Cnew(SCHED, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>, BAL) ... </k>
 
-    syntax Int ::= Cgascap ( Schedule , Int , Int , Int ) [function, functional]
-                 | Csstore ( Schedule , Int , Int , Int ) [function, functional]
-                 | Rsstore ( Schedule , Int , Int , Int ) [function, functional]
-                 | Cextra  ( Schedule , Bool , Int )      [function, functional]
-                 | Cnew    ( Schedule , Bool , Int )      [function, functional]
-                 | Cxfer   ( Schedule , Int )             [function, functional]
-                 | Cmem    ( Schedule , Int )             [function, functional, memo]
- // ----------------------------------------------------------------------------------
+    syntax Int ::= Cgascap ( Schedule , Int , Int , Int ) [function, functional, smtlib(gas_Cgascap)   ]
+                 | Csstore ( Schedule , Int , Int , Int ) [function, functional, smtlib(gas_Csstore)   ]
+                 | Rsstore ( Schedule , Int , Int , Int ) [function, functional, smtlib(gas_Rsstore)   ]
+                 | Cextra  ( Schedule , Bool , Int )      [function, functional, smtlib(gas_Cextra)    ]
+                 | Cnew    ( Schedule , Bool , Int )      [function, functional, smtlib(gas_Cnew)      ]
+                 | Cxfer   ( Schedule , Int )             [function, functional, smtlib(gas_Cxfer)     ]
+                 | Cmem    ( Schedule , Int )             [function, functional, smtlib(gas_Cmem), memo]
+ // ----------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
@@ -2244,8 +2244,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Default Schedule
 
 ```k
-    syntax Schedule ::= "DEFAULT" [klabel(DEFAULT_EVM), symbol]
- // -----------------------------------------------------------
+    syntax Schedule ::= "DEFAULT" [klabel(DEFAULT_EVM), symbol, smtlib(schedule_DEFAULT)]
+ // -------------------------------------------------------------------------------------
     rule Gzero    < DEFAULT > => 0
     rule Gbase    < DEFAULT > => 2
     rule Gverylow < DEFAULT > => 3
@@ -2321,8 +2321,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Frontier Schedule
 
 ```k
-    syntax Schedule ::= "FRONTIER" [klabel(FRONTIER_EVM), symbol]
- // -------------------------------------------------------------
+    syntax Schedule ::= "FRONTIER" [klabel(FRONTIER_EVM), symbol, smtlib(schedule_FRONTIER)]
+ // ----------------------------------------------------------------------------------------
     rule Gtxcreate  < FRONTIER > => 21000
     rule SCHEDCONST < FRONTIER > => SCHEDCONST < DEFAULT > requires SCHEDCONST =/=K Gtxcreate
 
@@ -2332,8 +2332,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Homestead Schedule
 
 ```k
-    syntax Schedule ::= "HOMESTEAD" [klabel(HOMESTEAD_EVM), symbol]
- // ---------------------------------------------------------------
+    syntax Schedule ::= "HOMESTEAD" [klabel(HOMESTEAD_EVM), symbol, smtlib(schedule_HOMESTEAD)]
+ // -------------------------------------------------------------------------------------------
     rule SCHEDCONST < HOMESTEAD > => SCHEDCONST < DEFAULT >
 
     rule SCHEDFLAG << HOMESTEAD >> => SCHEDFLAG << DEFAULT >>
@@ -2342,8 +2342,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Tangerine Whistle Schedule
 
 ```k
-    syntax Schedule ::= "TANGERINE_WHISTLE" [klabel(TANGERINE_WHISTLE_EVM), symbol]
- // -------------------------------------------------------------------------------
+    syntax Schedule ::= "TANGERINE_WHISTLE" [klabel(TANGERINE_WHISTLE_EVM), symbol, smtlib(schedule_TANGERINE_WHISTLE)]
+ // -------------------------------------------------------------------------------------------------------------------
     rule Gbalance      < TANGERINE_WHISTLE > => 400
     rule Gsload        < TANGERINE_WHISTLE > => 200
     rule Gcall         < TANGERINE_WHISTLE > => 700
@@ -2365,8 +2365,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Spurious Dragon Schedule
 
 ```k
-    syntax Schedule ::= "SPURIOUS_DRAGON" [klabel(SPURIOUS_DRAGON_EVM), symbol]
- // ---------------------------------------------------------------------------
+    syntax Schedule ::= "SPURIOUS_DRAGON" [klabel(SPURIOUS_DRAGON_EVM), symbol, smtlib(schedule_SPURIOUS_DRAGON)]
+ // -------------------------------------------------------------------------------------------------------------
     rule Gexpbyte    < SPURIOUS_DRAGON > => 50
     rule maxCodeSize < SPURIOUS_DRAGON > => 24576
 
@@ -2381,8 +2381,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Byzantium Schedule
 
 ```k
-    syntax Schedule ::= "BYZANTIUM" [klabel(BYZANTIUM_EVM), symbol]
- // ---------------------------------------------------------------
+    syntax Schedule ::= "BYZANTIUM" [klabel(BYZANTIUM_EVM), symbol, smtlib(schedule_BYZANTIUM)]
+ // -------------------------------------------------------------------------------------------
     rule Rb         < BYZANTIUM > => 3 *Int eth
     rule SCHEDCONST < BYZANTIUM > => SCHEDCONST < SPURIOUS_DRAGON >
       requires notBool ( SCHEDCONST ==K Rb )
@@ -2397,8 +2397,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Constantinople Schedule
 
 ```k
-    syntax Schedule ::= "CONSTANTINOPLE" [klabel(CONSTANTINOPLE_EVM), symbol]
- // -------------------------------------------------------------------------
+    syntax Schedule ::= "CONSTANTINOPLE" [klabel(CONSTANTINOPLE_EVM), symbol, smtlib(schedule_CONSTANTINOPLE)]
+ // ----------------------------------------------------------------------------------------------------------
     rule Rb         < CONSTANTINOPLE > => 2 *Int eth
     rule SCHEDCONST < CONSTANTINOPLE > => SCHEDCONST < BYZANTIUM >
       requires notBool ( SCHEDCONST ==K Rb )
@@ -2414,8 +2414,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Petersburg Schedule
 
 ```k
-    syntax Schedule ::= "PETERSBURG" [klabel(PETERSBURG_EVM), symbol]
- // -----------------------------------------------------------------
+    syntax Schedule ::= "PETERSBURG" [klabel(PETERSBURG_EVM), symbol, smtlib(schedule_PETERSBURG)]
+ // ----------------------------------------------------------------------------------------------
     rule SCHEDCONST < PETERSBURG > => SCHEDCONST < CONSTANTINOPLE >
 
     rule Ghasdirtysstore << PETERSBURG >> => false
@@ -2426,8 +2426,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Istanbul Schedule
 
 ```k
-    syntax Schedule ::= "ISTANBUL" [klabel(ISTANBUL_EVM), symbol]
- // -------------------------------------------------------------
+    syntax Schedule ::= "ISTANBUL" [klabel(ISTANBUL_EVM), symbol, smtlib(schedule_ISTANBUL)]
+ // ----------------------------------------------------------------------------------------
     rule Gecadd         < ISTANBUL > => 150
     rule Gecmul         < ISTANBUL > => 6000
     rule Gecpairconst   < ISTANBUL > => 45000
