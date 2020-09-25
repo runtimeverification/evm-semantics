@@ -1,10 +1,10 @@
 requires "verification.k"
 
-module VAT-MOVE-DIFF-SPEC
-  imports VERIFICATION
+module FLOPPER-CAGE-PASS-SPEC
+    imports VERIFICATION
 
-    // Vat_move-diff
-    rule [Vat.move-diff.pass]:
+    // Flopper_cage
+    rule [Flopper.cage.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -18,16 +18,16 @@ module VAT-MOVE-DIFF-SPEC
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
-            <program> Vat_bin_runtime </program>
-            <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
+            <program> Flopper_bin_runtime </program>
+            <jumpDests> #computeValidJumpDests(Flopper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("move", #address(ABI_src), #address(ABI_dst), #uint256(ABI_rad)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("cage", .TypedArgs) ++ CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> VGas => ?_ </gas>
+            <gas> #gas(VGas) => #gas ( ( VGas +Int ( Csstore( ISTANBUL , 0 , Live , Junk_1 ) +Int ( Csstore( ISTANBUL , CALLER_ID , Vow , Junk_2 ) +Int 6351 ) ) ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>
@@ -36,7 +36,7 @@ module VAT-MOVE-DIFF-SPEC
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
-            <refund> _ => ?_ </refund>
+            <refund> _Vrefund => ?_ </refund>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -76,14 +76,10 @@ module VAT-MOVE-DIFF-SPEC
             <account>
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
-              <code> Vat_bin_runtime </code>
-              <storage> STORAGE
-                     => STORAGE
-                          [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ]
-                          [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ]
-              </storage>
-              <origStorage> ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Vat => ?_ </nonce>
+              <code> Flopper_bin_runtime </code>
+              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flopper.live <- 0 ] [ #Flopper.vow <- CALLER_ID ] </storage>
+              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <nonce> _Nonce_Flopper => ?_ </nonce>
             </account>
             <account>
               <acctID> 1 </acctID>
@@ -184,33 +180,25 @@ module VAT-MOVE-DIFF-SPEC
      andBool #rangeUInt(256, VCallValue)
      andBool #rangeUInt(256, VChainId)
 
-     andBool (#rangeAddress(ABI_src)
-     andBool (#rangeAddress(ABI_dst)
-     andBool (#rangeUInt(256, ABI_rad)
-     andBool (#rangeUInt(256, Dai_dst)
-     andBool (#rangeUInt(256, Dai_src)
-     andBool (#rangeUInt(256, May)
-     andBool ((#sizeByteArray(CD) <=Int 1250000000)
-     andBool ((ABI_src =/=Int ABI_dst)
-     andBool (2300 <Int ( VGas -Int ( (#if ( ( Dai_src ==K ( Dai_src -Int ABI_rad ) ) orBool (notBool ( Junk_1 ==K Dai_src ) ) ) #then 0 #else 4200 #fi) +Int ( (#if ( ( Dai_dst ==K ( Dai_dst +Int ABI_rad ) ) orBool (notBool ( Junk_2 ==K Dai_dst ) ) ) #then 0 #else 4200 #fi) +Int ( (#if ( ( Junk_2 ==K 0 ) andBool (notBool ( ( Dai_dst ==K ( Dai_dst +Int ABI_rad ) ) orBool (notBool ( Junk_2 ==K Dai_dst ) ) ) ) ) #then 15000 #else 0 #fi) +Int 9543 ) ) ) )
+     andBool (#rangeUInt(256, Ward)
+     andBool (#rangeUInt(256, Live)
+     andBool (#rangeAddress(Vow)
+     andBool (#sizeByteArray(CD) <=Int 1250000000
+     andBool (#notPrecompileAddress(Vow)
      andBool (#rangeUInt(256, Junk_0)
      andBool (#rangeUInt(256, Junk_1)
      andBool (#rangeUInt(256, Junk_2)
-     andBool ((((May ==Int 1 orBool ABI_src ==Int CALLER_ID)))
-     andBool (((VCallValue ==Int 0))
-     andBool ((#rangeUInt(256, Dai_src -Int ABI_rad))
-     andBool ((#rangeUInt(256, Dai_dst +Int ABI_rad))))))))))))))))))
+     andBool ((Ward ==Int 1)
+     andBool ((VCallValue ==Int 0)))))))))))
 
-     andBool ((#lookup(STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int May    )
-     andBool ((#lookup(STORAGE, #Vat.dai[ABI_src]           ) ==Int Dai_src)
-     andBool ((#lookup(STORAGE, #Vat.dai[ABI_dst]           ) ==Int Dai_dst))))
-
-     andBool ((#lookup(ORIG_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int Junk_0)
-     andBool ((#lookup(ORIG_STORAGE, #Vat.dai[ABI_src]           ) ==Int Junk_1)
-     andBool ((#lookup(ORIG_STORAGE, #Vat.dai[ABI_dst]           ) ==Int Junk_2))))
-
-     andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_src]
-     andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_dst]
-     andBool #Vat.dai[ABI_src]            =/=Int #Vat.dai[ABI_dst]
+     andBool #lookup(ACCT_ID_STORAGE, #Flopper.wards[CALLER_ID]) ==Int Ward
+     andBool #lookup(ACCT_ID_STORAGE, #Flopper.live) ==Int Live
+     andBool #lookup(ACCT_ID_STORAGE, #Flopper.vow) ==Int Vow
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.wards[CALLER_ID]) ==Int Junk_0
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.live) ==Int Junk_1
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.vow) ==Int Junk_2
+     andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.live
+     andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.vow
+     andBool #Flopper.live =/=Int #Flopper.vow
 
 endmodule

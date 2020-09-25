@@ -63,11 +63,12 @@ tests/specs/mcd/flipper-addu48u48-fail-rough-spec.k
 tests/specs/mcd/flipper-bids-pass-rough-spec.k
 tests/specs/mcd/flipper-tau-pass-spec.k
 tests/specs/mcd/flipper-ttl-pass-spec.k
+tests/specs/mcd/flopper-cage-pass-spec.k
 tests/specs/mcd/flopper-file-pass-rough-spec.k
 tests/specs/mcd/flopper-tick-pass-rough-spec.k
 tests/specs/mcd/vat-addui-fail-rough-spec.k
 tests/specs/mcd/vat-deny-diff-fail-rough-spec.k
-tests/specs/mcd/vat-move-diff-spec.k
+tests/specs/mcd/vat-move-diff-rough-spec.k
 tests/specs/mcd/vat-mului-pass-spec.k
 tests/specs/mcd/vat-slip-pass-rough-spec.k
 tests/specs/mcd/vat-subui-fail-rough-spec.k

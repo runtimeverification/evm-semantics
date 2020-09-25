@@ -27,7 +27,7 @@ module VAT-SLIP-PASS-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> VGas => ?_ </gas>
+            <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>
@@ -186,12 +186,11 @@ module VAT-SLIP-PASS-ROUGH-SPEC
      andBool (#rangeUInt(256, May)
      andBool (#rangeUInt(256, Gem)
      andBool (#sizeByteArray(CD) <=Int 1250000000
-     andBool (VGas >=Int 3000000
      andBool (#rangeUInt(256, Junk_0)
      andBool (#rangeUInt(256, Junk_1)
      andBool (((May ==Int 1))
      andBool (((VCallValue ==Int 0))
-     andBool ((#rangeUInt(256, Gem +Int ABI_wad))))))))))))))
+     andBool ((#rangeUInt(256, Gem +Int ABI_wad)))))))))))))
 
      andBool #lookup(ACCT_ID_STORAGE, #Vat.wards[CALLER_ID]) ==Int May
      andBool #lookup(ACCT_ID_STORAGE, #Vat.gem[ABI_ilk][ABI_usr]) ==Int Gem
@@ -223,7 +222,7 @@ module VAT-SLIP-PASS-ROUGH-SPEC
             <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x +Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13112 => 13174 </pc>
-            <gas> VGas => (#if ( ( 0 <=Int ABI_y ) andBool ( ABI_y <=Int 0 ) ) #then ( VGas +Int -114 ) #else ( VGas +Int -128 ) #fi) </gas>
+            <gas> #gas(VGas) => #gas ( ( VGas +Int #if 0 <=Int ABI_y #then #if chop( ABI_y ) <=Int 0 #then 114 #else 128 #fi #else 128 #fi ) ) </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -380,8 +379,8 @@ module VAT-SLIP-PASS-ROUGH-SPEC
      andBool (#rangeSInt(256, ABI_y)
      andBool ((#sizeWordStack(WS) <=Int 1015)
      andBool (#rangeUInt(256, VMemoryUsed)
-     andBool (2300 <Int (#if ( ( 0 <=Int ABI_y ) andBool ( ABI_y <=Int 0 ) ) #then ( VGas +Int -114 ) #else ( VGas +Int -128 ) #fi)
-     andBool ((#rangeUInt(256, ABI_x +Int ABI_y))))))))
+     andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
     [trusted]
+
 
 endmodule
