@@ -1,6 +1,7 @@
 requires "../lemmas.k"
 requires "bin_runtime.k"
 requires "storage.k"
+requires "../infinite-gas.k"
 
 module HASKELL-HASH2 [symbolic, kore]
     imports INT
@@ -113,6 +114,7 @@ endmodule
 
 module VERIFICATION
     imports VERIFICATION-SYNTAX
+    imports INFINITE-GAS
 
     // ### vat-move-diff
 

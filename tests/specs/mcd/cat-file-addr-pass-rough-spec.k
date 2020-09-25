@@ -1,7 +1,7 @@
 requires "verification.k"
 
 module CAT-FILE-ADDR-PASS-ROUGH-SPEC
-  imports VERIFICATION
+    imports VERIFICATION
 
     // Cat_file-addr
     rule [Cat.file-addr.pass.rough]:
@@ -27,7 +27,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> VGas => ?_ </gas>
+            <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>
@@ -36,7 +36,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
-            <refund> _ => ?_ </refund>
+            <refund> _Vrefund => ?_ </refund>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -77,8 +77,8 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Cat_bin_runtime </code>
-              <storage> STORAGE => STORAGE [ #Cat.vow <- ABI_data ] </storage>
-              <origStorage> ORIGSTORAGE </origStorage>
+              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Cat.vow <- ABI_data ] </storage>
+              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Cat => ?_ </nonce>
             </account>
             <account>
@@ -179,25 +179,23 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
      andBool VCallDepth <=Int 1024
      andBool #rangeUInt(256, VCallValue)
      andBool #rangeUInt(256, VChainId)
+
      andBool (#rangeBytes(32, ABI_what)
      andBool (#rangeAddress(ABI_data)
      andBool (#rangeUInt(256, May)
      andBool (#rangeAddress(Vow)
      andBool (#sizeByteArray(CD) <=Int 1250000000
      andBool (#notPrecompileAddress(Vow)
-     andBool (VGas >=Int 3000000
      andBool (#rangeUInt(256, Junk_0)
      andBool (#rangeUInt(256, Junk_1)
      andBool ((May ==Int 1)
      andBool ((VCallValue ==Int 0)
-     andBool ((ABI_what ==Int #string2Word("vow"))))))))))))))
+     andBool ((ABI_what ==Int #string2Word("vow")))))))))))))
 
-     andBool #lookup(STORAGE, #Cat.wards[CALLER_ID]) ==Int May
-     andBool #lookup(STORAGE, #Cat.vow)              ==Int Vow
-
-     andBool #lookup(ORIGSTORAGE, #Cat.wards[CALLER_ID]) ==Int Junk_0
-     andBool #lookup(ORIGSTORAGE, #Cat.vow)              ==Int Junk_1
-
+     andBool #lookup(ACCT_ID_STORAGE, #Cat.wards[CALLER_ID]) ==Int May
+     andBool #lookup(ACCT_ID_STORAGE, #Cat.vow) ==Int Vow
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Cat.wards[CALLER_ID]) ==Int Junk_0
+     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Cat.vow) ==Int Junk_1
      andBool #Cat.wards[CALLER_ID] =/=Int #Cat.vow
 
 endmodule

@@ -15,8 +15,8 @@ module INFINITE-GAS
  // This allows (i) computing final gas used, and (ii) never stopping because of out-of-gas.
  //
 
-    syntax Int ::= #gas ( Int ) [function, functional, no-evaluators]
- // -----------------------------------------------------------------
+    syntax Int ::= #gas ( Int ) [function, functional, no-evaluators, klabel(infGas), symbol, smtlib(infGas)]
+ // ---------------------------------------------------------------------------------------------------------
     rule #gas(_, _, _) => #gas(0)
 
     rule #gas(G) -Int G' => #gas(G +Int G') [simplification]
