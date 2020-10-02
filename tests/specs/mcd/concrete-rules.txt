@@ -1,6 +1,16 @@
 EDSL.#ceil32
 EDSL.keccakIntList
+EVM.Cextra
+EVM.Cgascap
+EVM.Cmem
+EVM.Cnew
+EVM.Csstore.new
+EVM.Csstore.old
+EVM.Cxfer.none
+EVM.Cxfer.some
 EVM.#memoryUsageUpdate.some
+EVM.Rsstore.new
+EVM.Rsstore.old
 EVM-TYPES.#asByteStack
 EVM-TYPES.#asByteStackAux.recursive
 EVM-TYPES.#asWord.recursive
