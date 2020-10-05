@@ -61,7 +61,7 @@ sudo apt-get install --yes                                                      
             libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev        \
             lld-8 llvm-8-tools make maven netcat-openbsd openjdk-11-jdk          \
             pkg-config python3 python-pygments python-recommonmark               \
-            python-sphinx rapidjson-dev time zlib1g-dev
+            python-sphinx rapidjson-dev time z3 zlib1g-dev
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
