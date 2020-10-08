@@ -6,7 +6,8 @@ shopt -s extglob
 notif() { echo "== $@" >&2 ; }
 fatal() { echo "[FATAL] $@" ; exit 1 ; }
 
-kevm_dir="${KEVM_DIR:-.}"
+# Works regardless of where script is called from
+kevm_dir="${KEVM_DIR:-$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )}"
 build_dir="$kevm_dir/.build"
 defn_dir="${KEVM_DEFN_DIR:-$build_dir/defn}"
 lib_dir="$build_dir/local/lib"
