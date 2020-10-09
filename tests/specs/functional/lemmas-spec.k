@@ -89,8 +89,8 @@ module LEMMAS-SPEC
     rule <k> runLemma ( #range( M [ 32 := (0 : 1 : 2 : .ByteArray)         ] , 33 , 3) ) => doneLemma( (1 : 2 :  .ByteArray) ++ #range(M, 35, 1) ) ... </k>
 
     // Range over expression with #newAddr
-    rule <k> runLemma ( #range (_M [ 1732 := #padToWidth ( 32 , #asByteStack ( maxUInt160 &Int #newAddr(?ACCT, 1) ) ) ] , 1732 , 32 ) )
-          => doneLemma( #buf(32, #newAddr(?ACCT, 1)) ) ... </k>
+    rule <k> runLemma ( #range (_M [ 1732 := #padToWidth ( 32 , #asByteStack ( maxUInt160 &Int #newAddr(ACCT, 1) ) ) ] , 1732 , 32 ) )
+          => doneLemma( #buf(32, #newAddr(ACCT, 1)) ) ... </k>
 
  // #buf simplification
  // -------------------
