@@ -77,6 +77,11 @@ module LEMMAS
 
     rule notBool notBool B => B [simplification]
 
+    // #newAddr range
+    rule 0 <=Int #newAddr(_,_)             => true   [simplification]
+    rule         #newAddr(_,_) <Int pow160 => true   [simplification]
+    rule         #newAddr(_,_) <Int pow256 => true   [simplification]
+
     rule N /Int 1 => N  [simplification]
 
 endmodule

@@ -105,5 +105,7 @@ module LEMMAS-SPEC
  // --------------------------
 
     rule <k> runLemma ( #padToWidth( 32 , #asByteStack( bool2Word ( B:Bool ) ) ) ) => doneLemma( #buf( 32 , bool2Word ( B ) ) ) ... </k>
+    rule <k> runLemma ( #padToWidth( 32 , #asByteStack( maxUInt160 &Int #newAddr(ACCT, 1) ) ) )
+          => doneLemma( #buf(32, #newAddr(ACCT, 1)) ) ... </k>
 
 endmodule
