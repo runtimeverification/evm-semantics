@@ -20,6 +20,7 @@ module INFINITE-GAS
     rule #gas(_, _, _) => #gas(0)
 
     rule #gas(G) -Int G' => #gas(G +Int G') [simplification]
+    rule #gas(G) +Int G' => #gas(G -Int G') [simplification]
 
     rule #gas(_)  <Int I => false requires I <=Int pow256 [simplification]
     rule #gas(_) <=Int I => false requires I <=Int pow256 [simplification]
