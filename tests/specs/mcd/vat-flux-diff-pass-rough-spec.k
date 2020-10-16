@@ -215,7 +215,6 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          ...
           <output> VOutput => VOutput </output>
           <statusCode> _ => ?_ </statusCode>
           <endPC> _ => ?_ </endPC>
