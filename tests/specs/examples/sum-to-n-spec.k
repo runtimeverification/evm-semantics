@@ -11,14 +11,14 @@ module VERIFICATION
 
  // lemma only required by java backend
  // -----------------------------------
-    rule bool2Word(A) ==K 0 => notBool(A)
+    rule bool2Word(A) ==K 0 => notBool(A) [simplification]
 
     rule chop(I) => I requires #rangeUInt(256, I) [simplification]
 
-    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma]
+    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [simplification, smt-lemma]
 
-    syntax ByteArray ::= "sumToN" [function]
- // ----------------------------------------
+    syntax ByteArray ::= "sumToN"
+ // -----------------------------
     rule sumToN
       => #asmOpCodes(PUSH(1, 0) ; SWAP(1)                   // s = 0 ; n = N
                     ; JUMPDEST                              // label:loop

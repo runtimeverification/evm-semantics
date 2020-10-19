@@ -43,16 +43,19 @@ module VERIFICATION-SYNTAX
     andBool UINT48_1 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160)
     andBool UINT48_2 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208)
     andBool #rangeUInt(256, ADDR_UINT48_UINT48)
+      [simplification]
 
     rule    UINT48_UINT48 ==K #WordPackUInt48UInt48(UINT48_1, UINT48_2)
          => UINT48_1 ==Int maxUInt48 &Int  UINT48_UINT48
     andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
     andBool #rangeUInt(96, UINT48_UINT48)
+      [simplification]
 
     rule    ADDR_UINT8 ==K #WordPackAddrUInt8(ADDR, UINT8)
          => ADDR  ==Int maxUInt160 &Int  ADDR_UINT8
     andBool UINT8 ==Int maxUInt8   &Int (ADDR_UINT8 /Int pow160)
     andBool #rangeUInt(168, ADDR_UINT8)
+      [simplification]
 
     //
     // When updating variables which originally contained `WordPack*`, the Solidity compiler will mask the original value everywhere _except_ where you're updating.
@@ -66,11 +69,11 @@ module VERIFICATION-SYNTAX
     rule maskWordPackUInt48UInt48_1 => 115792089237316195423570985008687907853269984665561335876943319951794562400255 [macro]
     rule maskWordPackUInt48UInt48_2 => 115792089237316195423570985008687907853269984665640564039457583726438152929280 [macro]
 
-    rule  UINT48_1             |Int (maskWordPackUInt48UInt48_2 &Int UINT48_UINT48) => #WordPackUInt48UInt48( UINT48_1 , (maskWordPackUInt48UInt48_2 &Int UINT48_UINT48) /Int pow48 ) requires #rangeUInt(96, UINT48_UINT48) andBool #rangeUInt(48, UINT48_1)
-    rule (UINT48_2 *Int pow48) |Int (maxUInt48                  &Int UINT48_UINT48) => #WordPackUInt48UInt48( maxUInt48 &Int UINT48_UINT48 , UINT48_2                               ) requires #rangeUInt(96, UINT48_UINT48) andBool #rangeUInt(48, UINT48_2)
+    rule  UINT48_1             |Int (maskWordPackUInt48UInt48_2 &Int UINT48_UINT48) => #WordPackUInt48UInt48( UINT48_1 , (maskWordPackUInt48UInt48_2 &Int UINT48_UINT48) /Int pow48 ) requires #rangeUInt(96, UINT48_UINT48) andBool #rangeUInt(48, UINT48_1) [simplification]
+    rule (UINT48_2 *Int pow48) |Int (maxUInt48                  &Int UINT48_UINT48) => #WordPackUInt48UInt48( maxUInt48 &Int UINT48_UINT48 , UINT48_2                               ) requires #rangeUInt(96, UINT48_UINT48) andBool #rangeUInt(48, UINT48_2) [simplification]
 
-    rule (maskWordPackUInt48UInt48_2 &Int UINT48_UINT48) /Int pow48 => maxUInt48 &Int (UINT48_UINT48 /Int pow48) requires #rangeUInt(96, UINT48_UINT48)
-    rule  maskWordPackUInt48UInt48_1 &Int UINT48_UINT48             => maxUInt48 &Int  UINT48_UINT48             requires #rangeUInt(96, UINT48_UINT48)
+    rule (maskWordPackUInt48UInt48_2 &Int UINT48_UINT48) /Int pow48 => maxUInt48 &Int (UINT48_UINT48 /Int pow48) requires #rangeUInt(96, UINT48_UINT48) [simplification]
+    rule  maskWordPackUInt48UInt48_1 &Int UINT48_UINT48             => maxUInt48 &Int  UINT48_UINT48             requires #rangeUInt(96, UINT48_UINT48) [simplification]
 
     //
     // **TODO**: Avoid splitting these lemmas in the 0 second-argument case.
@@ -79,8 +82,8 @@ module VERIFICATION-SYNTAX
     // So if we just have the one rule, then structural matching on the RHS cannot determine that `0` matches `maxUInt48 &Int #lookup(STORAGE, ADDR) /Int pow160)`.
     // This is a consequence of how the Java backend decides to treat substitutions in the side-condition.
     //
-    rule (UINT48_2 *Int pow208) |Int (maxUInt208 &Int ADDR_UINT48_UINT48) => #WordPackAddrUInt48UInt48(maxUInt160 &Int ADDR_UINT48_UINT48, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeUInt(48, UINT48_2) andBool maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) =/=Int 0
-    rule (UINT48_2 *Int pow208) |Int (maxUInt208 &Int ADDR_UINT48_UINT48) => #WordPackAddrUInt48UInt48(maxUInt160 &Int ADDR_UINT48_UINT48, 0                                              , UINT48_2) requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeUInt(48, UINT48_2) andBool maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160)  ==Int 0
+    rule (UINT48_2 *Int pow208) |Int (maxUInt208 &Int ADDR_UINT48_UINT48) => #WordPackAddrUInt48UInt48(maxUInt160 &Int ADDR_UINT48_UINT48, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeUInt(48, UINT48_2) andBool maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) =/=Int 0 [simplification]
+    rule (UINT48_2 *Int pow208) |Int (maxUInt208 &Int ADDR_UINT48_UINT48) => #WordPackAddrUInt48UInt48(maxUInt160 &Int ADDR_UINT48_UINT48, 0                                              , UINT48_2) requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeUInt(48, UINT48_2) andBool maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160)  ==Int 0 [simplification]
 
     syntax Int ::= #string2Word ( String ) [function]
  // -------------------------------------------------
@@ -121,45 +124,45 @@ module VERIFICATION
     rule (W0 : WS) [ 0     .. WIDTH ] => W0 : (WS [ 0 .. WIDTH -Int 1 ]) requires 0 <Int WIDTH [simplification]
     rule (_  : WS) [ START .. WIDTH ] => WS [ START -Int 1 .. WIDTH ]    requires 0 <Int START [simplification]
 
-    rule #asWord(WS) >>Int M => #asWord(WS [ 0 .. #sizeByteArray(WS) -Int (M /Int 8) ]) requires 0 <=Int M andBool M modInt 8 ==Int 0
+    rule #asWord(WS) >>Int M => #asWord(WS [ 0 .. #sizeByteArray(WS) -Int (M /Int 8) ]) requires 0 <=Int M andBool M modInt 8 ==Int 0 [simplification]
 
     // ### cat-exhaustiveness
 
-    rule #sizeByteArray(_WS [ START .. WIDTH ]) => WIDTH requires 0 <=Int START andBool 0 <=Int WIDTH
+    rule #sizeByteArray(_WS [ START .. WIDTH ]) => WIDTH requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
 
     rule WS [ START .. WIDTH ] [ 0 .. WIDTH' ]  => WS [ START .. WIDTH' ] requires WIDTH' <=Int WIDTH [simplification]
 
     // ### cat-file-addr-pass-rough
 
-    rule notAddrMask &Int ADDR => 0 requires #rangeAddress(ADDR)
+    rule notAddrMask &Int ADDR => 0 requires #rangeAddress(ADDR) [simplification]
 
     // ### PERFORMANCE: dai-adduu-fail-rough
     // 99s -> 48s
 
-    rule #sizeWordStack(WS, N) => #sizeWordStack(WS, 0) +Int N requires N =/=Int 0
+    rule #sizeWordStack(WS, N) => #sizeWordStack(WS, 0) +Int N requires N =/=Int 0 [simplification]
 
     // ### PERFORMANCE: vat-deny-diff-fail-rough
     // 27.21m -> 3.16m
 
-    rule M:Memory [ K := (W : WS) ]                   => M [ K <- W ] [ K +Int 1 := WS ] requires 0 <=Int K
-    rule M:Memory [ K <- V ] [ K' <- V' ]             => M [ K' <- V' ] [ K <- V ]       requires K' <Int K
-    rule M:Memory [ K := BUF:ByteArray ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ]     requires K' <Int K orBool K +Int #sizeByteArray(BUF) <=Int K'
+    rule M:Memory [ K := (W : WS) ]                   => M [ K <- W ] [ K +Int 1 := WS ] requires 0 <=Int K                                            [simplification]
+    rule M:Memory [ K <- V ] [ K' <- V' ]             => M [ K' <- V' ] [ K <- V ]       requires K' <Int K                                            [simplification]
+    rule M:Memory [ K := BUF:ByteArray ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ]     requires K' <Int K orBool K +Int #sizeByteArray(BUF) <=Int K' [simplification]
 
     // ### dstoken-transferfrom-fail-rough
 
-    rule chop(N +Int M) <Int N => true requires #rangeUInt(256, N) andBool #rangeUInt(256, M) andBool notBool #rangeUInt(256, N +Int M)
+    rule chop(N +Int M) <Int N => true requires #rangeUInt(256, N) andBool #rangeUInt(256, M) andBool notBool #rangeUInt(256, N +Int M) [simplification]
 
     // ### dsvalue-read-pass
 
-    rule M [ K <- V ] => M requires #lookup(M, K) ==Int V
+    rule M [ K <- V ] => M requires #lookup(M, K) ==Int V [simplification]
 
     // ### flipper-bids-pass-rough
 
     // This lemma is considered "safe enough" because `hash2` is a hash function over a large range and is very unlikely to overflow.
     // Note that this case comes from a solidity struct being accessed (hence the integer offsets), so it's an assumption built into the Solidity compiler anyway.
-    rule chop(hash2(I1, I2) +Int N) => hash2(I1, I2) +Int N requires 0 <=Int N andBool N <Int 6
+    rule chop(hash2(I1, I2) +Int N) => hash2(I1, I2) +Int N requires 0 <=Int N andBool N <Int 6 [simplification]
 
-    rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1 ++ ( BA2 ++ BA3 )
+    rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1 ++ ( BA2 ++ BA3 ) [simplification]
 
     // ### vat-addui-fail-rough
 
@@ -203,13 +206,13 @@ module VERIFICATION
     //     (= (slt x 0) (= (sgn x) -1))
     // ))
     // (check-sat)
-    rule X s<Word 0 => bool2Word(sgn(X) ==Int -1) requires #rangeUInt(256, X)
+    rule X s<Word 0 => bool2Word(sgn(X) ==Int -1) requires #rangeUInt(256, X) [simplification]
 
-    rule sgn(chop(X)) ==Int -1 => X <Int 0 requires #rangeSInt(256, X)
+    rule sgn(chop(X)) ==Int -1 => X <Int 0 requires #rangeSInt(256, X) [simplification]
 
     // ### vat-mului-pass
 
-    rule chop(X *Int chop(Y)) => chop(X *Int Y)
+    rule chop(X *Int chop(Y)) => chop(X *Int Y) [simplification]
 
     // Proof #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0
     //      chop(X *Int Y) /sWord chop(Y)
@@ -292,28 +295,28 @@ module VERIFICATION
     //     (= (sdiv (chop (* x y)) (chop y)) x)
     // ))
     // (check-sat)
-    rule chop(X *Int Y) /sWord chop(Y) => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0
+    rule chop(X *Int Y) /sWord chop(Y) => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0 [simplification]
 
     // ### flopper-tick-pass-rough
 
-    rule chop(X *Int Y) => X *Int Y requires 0 <=Int X andBool 0 <=Int Y andBool X *Int Y <Int pow256
+    rule chop(X *Int Y) => X *Int Y requires 0 <=Int X andBool 0 <=Int Y andBool X *Int Y <Int pow256 [simplification]
 
     // ### Gas Simplification
 
-    rule I -Int I => 0
+    rule I -Int I => 0 [simplification]
 
     // ### vat-slip-pass-rough
 
-    rule chop(X +Int chop(Y)) => chop(X +Int Y)
+    rule chop(X +Int chop(Y)) => chop(X +Int Y) [simplification]
 
     // ### vow-flog-fail-rough
 
-    rule X -Word Y <=Int X => #rangeUInt(256, X -Int Y) requires #rangeUInt(256, X) andBool #rangeUInt(256, Y)
-    rule 0 <=Int X +Int Y => true requires 0 <=Int X andBool 0 <=Int Y
+    rule X -Word Y <=Int X => #rangeUInt(256, X -Int Y) requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
+    rule 0 <=Int X +Int Y => true requires 0 <=Int X andBool 0 <=Int Y                                         [simplification]
 
     // ### flipper-addu48u48-fail-rough
 
-    rule maxUInt48 &Int (X +Int Y) <Int X => true requires #rangeUInt(48, X) andBool #rangeUInt(48, Y) andBool notBool (X +Int Y <Int pow48)
+    rule maxUInt48 &Int (X +Int Y) <Int X => true requires #rangeUInt(48, X) andBool #rangeUInt(48, Y) andBool notBool (X +Int Y <Int pow48) [simplification]
 
     // ### vat-subui-fail-rough
 
@@ -367,14 +370,14 @@ module VERIFICATION
     // (assert (not (=> (uint256 x) (= (slt 0 x) (and (= (sgn x) 1) (not (= x 0))) ) ) ))
     // (check-sat)
     // (pop)
-    rule 0 s<Word X => bool2Word(sgn(X) ==Int 1 andBool X =/=Int 0) requires #rangeUInt(256, X)
+    rule 0 s<Word X => bool2Word(sgn(X) ==Int 1 andBool X =/=Int 0) requires #rangeUInt(256, X) [simplification]
 
     // Via Z3 4.7.1:
     // (push)
     // (assert (not (=> (sint256 y) (= (= (sgn (chop y)) 1) (<= 0 y) ) ) ))
     // (check-sat)
     // (pop)
-    rule sgn(chop(Y)) ==K 1 => 0 <=Int Y requires #rangeSInt(256, Y)
+    rule sgn(chop(Y)) ==K 1 => 0 <=Int Y requires #rangeSInt(256, Y) [simplification]
 
     // ### vat-subui-pass-rough
 
@@ -383,6 +386,6 @@ module VERIFICATION
     // (assert (not (=> true (= (chop (- x (chop y))) (chop (- x y)) ) ) ))
     // (check-sat)
     // (pop)
-    rule X -Word chop(Y) => chop(X -Int Y)
+    rule X -Word chop(Y) => chop(X -Int Y) [simplification]
 
 endmodule

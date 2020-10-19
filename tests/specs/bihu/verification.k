@@ -8,7 +8,7 @@ module VERIFICATION
     imports LEMMAS
 
     //semantics of #buf
-    rule #buf(LEN, BYTES) => #padToWidth(LEN, #asByteStack( BYTES )) [concrete]
+    rule #buf(LEN, BYTES) => #padToWidth(LEN, #asByteStack( BYTES )) [simplification, concrete]
 
     //Rules for #padToWidth with non-regular symbolic arguments.
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
