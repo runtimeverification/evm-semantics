@@ -141,9 +141,9 @@ tangle_concrete := k & (! ceil) & ( ( ! ( symbolic | nobytes ) ) | concrete | by
 tangle_java     := k & (! ceil) & ( ( ! ( concrete | bytes   ) ) | symbolic | nobytes )
 tangle_haskell  := k            & ( ( ! ( concrete | nobytes ) ) | symbolic | bytes   )
 
-HOOK_NAMESPACES = KRYPTO JSON
-
-KOMPILE_OPTS += --hook-namespaces "$(HOOK_NAMESPACES)" -I $(LOCAL_K_INCLUDE_PATH)
+HOOK_NAMESPACES    = KRYPTO JSON
+EXTRA_KOMPILE_OPTS =
+KOMPILE_OPTS      += --hook-namespaces "$(HOOK_NAMESPACES)" -I $(LOCAL_K_INCLUDE_PATH) $(EXTRA_KOMPILE_OPTS)
 
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
