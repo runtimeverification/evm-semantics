@@ -398,7 +398,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 100)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(48, ABI_x +Int ABI_y)))))))
-    [trusted]
+    [trusted, matching(infGas)]
 
 
 endmodule
