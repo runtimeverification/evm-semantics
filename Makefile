@@ -262,6 +262,27 @@ $(web3_kompiled): $(web3_kore) $(libff_out)
 	@mkdir -p $(web3_dir)/build
 	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=$(web3_build_type) && $(MAKE)
 
+# Web3 Haskell
+
+web3_haskell_dir           := $(abspath $(DEFN_DIR)/web3-haskell)
+web3_haskell_files         := $(ALL_FILES)
+web3_haskell_main_module   := WEB3
+web3_haskell_syntax_module := $(web3_haskell_main_module)
+web3_haskell_main_file     := web3.md
+web3_haskell_main_filename := $(basename $(notdir $(web3_haskell_main_file)))
+web3_haskell_kore          := $(web3_haskell_kore)
+web3_haskell_kompiled      := $(web3_haskell_dir)/$(web3_haskell_main_filename)-kompiled/definition.kore
+export web3_haskell_main_filename
+export web3_dir
+
+build-web3-haskell: $(web3_haskell_kompiled)
+
+$(web3_haskell_kompiled): $(web3_files)
+	$(KOMPILE_HASKELL) $(web3_haskell_main_file)                  \
+	                --directory $(web3_haskell_dir) -I $(CURDIR)  \
+	                --main-module $(web3_haskell_main_module)     \
+	                --syntax-module $(web3_haskell_syntax_module)
+
 # Standalone
 
 llvm_dir           := $(DEFN_DIR)/llvm
