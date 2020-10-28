@@ -4,7 +4,7 @@ module STORAGEVAR00-SPEC
   imports VERIFICATION
 
   // fn-execute
-  rule
+  claim
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>

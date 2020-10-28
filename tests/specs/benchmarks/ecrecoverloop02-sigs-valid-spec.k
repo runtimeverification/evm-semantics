@@ -4,7 +4,7 @@ module ECRECOVERLOOP02-SIGS-VALID-SPEC
   imports VERIFICATION
 
   // fn-execute-sigs-valid
-  rule
+  claim
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>

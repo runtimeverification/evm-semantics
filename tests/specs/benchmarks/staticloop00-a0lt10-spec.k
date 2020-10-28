@@ -4,7 +4,7 @@ module STATICLOOP00-A0LT10-SPEC
   imports VERIFICATION
 
   // fn-execute-a0lt10
-  rule
+  claim
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>

@@ -4,7 +4,7 @@ module ECRECOVER00-SIGINVALID-SPEC
   imports VERIFICATION
 
   // fn-execute-siginvalid
-  rule
+  claim
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>

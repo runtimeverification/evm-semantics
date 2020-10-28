@@ -4,7 +4,7 @@ module OVERFLOW00-OVERFLOW-SPEC
   imports VERIFICATION
 
   // fn-execute-overflow
-  rule
+  claim
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>

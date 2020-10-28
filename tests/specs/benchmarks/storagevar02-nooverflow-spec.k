@@ -4,7 +4,7 @@ module STORAGEVAR02-NOOVERFLOW-SPEC
   imports VERIFICATION
 
   // fn-execute-nooverflow
-  rule
+  claim
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>

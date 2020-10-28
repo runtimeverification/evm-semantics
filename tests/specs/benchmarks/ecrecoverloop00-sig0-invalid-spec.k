@@ -4,7 +4,7 @@ module ECRECOVERLOOP00-SIG0-INVALID-SPEC
   imports VERIFICATION
 
   // fn-execute-sig0-invalid
-  rule
+  claim
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>

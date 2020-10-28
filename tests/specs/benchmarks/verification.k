@@ -60,7 +60,7 @@ module VERIFICATION
   // Rule Replacement
   // ########################
 
-    rule <k> EXTCODESIZE ACCT => #extCodeSize(ACCT) ~> #push ... </k>  [trusted]
+    claim <k> EXTCODESIZE ACCT => #extCodeSize(ACCT) ~> #push ... </k>  [trusted]
 
   // ########################
   // ABI Encoding
