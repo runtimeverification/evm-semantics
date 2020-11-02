@@ -57,8 +57,6 @@ tests/specs/erc20/hkg/transferFrom-success-1-spec.k
 tests/specs/erc20/hkg/transferFrom-success-2-spec.k
 tests/specs/erc20/hkg/transfer-success-1-spec.k
 tests/specs/erc20/hkg/transfer-success-2-spec.k
-tests/specs/functional/infinite-gas-spec.k
-tests/specs/functional/lemmas-no-smt-spec.k
 tests/specs/imp-specs/imp-specs-test-spec.k
 tests/specs/mcd/cat-exhaustiveness-spec.k
 tests/specs/mcd/cat-file-addr-pass-rough-spec.k
