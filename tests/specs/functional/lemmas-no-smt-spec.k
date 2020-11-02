@@ -36,7 +36,9 @@ module LEMMAS-NO-SMT-SPEC
  // ----------------------
 
     claim <k> runLemma ( (B ==Bool false) ==Bool false ) => doneLemma ( B )          ... </k>
-    claim <k> runLemma ( bool2Word( B:Bool ) ==Int 1 )   => doneLemma ( B ==K true ) ... </k>
-    claim <k> runLemma ( 1 ==Int bool2Word( B:Bool ) )   => doneLemma ( B ==K true ) ... </k>
+
+    // Awaiting Haskell backend updates
+    // claim <k> runLemma ( bool2Word( B:Bool ) ==Int 1 )   => doneLemma ( B ==K true ) ... </k>
+    // claim <k> runLemma ( 1 ==Int bool2Word( B:Bool ) )   => doneLemma ( B ==K true ) ... </k>
 
 endmodule
