@@ -4,7 +4,7 @@ module ECRECOVER00-SIGVALID-SPEC
   imports VERIFICATION
 
   // fn-execute-sigvalid
-  rule
+  claim
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>

@@ -1,3 +1,4 @@
+tests/specs/benchmarks/address00-spec.k
 tests/specs/benchmarks/bytes00-spec.k
 tests/specs/benchmarks/ecrecover00-siginvalid-spec.k
 tests/specs/benchmarks/ecrecover00-sigvalid-spec.k
@@ -10,6 +11,13 @@ tests/specs/benchmarks/ecrecoverloop02-sigs-valid-spec.k
 tests/specs/benchmarks/encode-keccak00-spec.k
 tests/specs/benchmarks/encodepacked-keccak01-spec.k
 tests/specs/benchmarks/keccak00-spec.k
+tests/specs/benchmarks/overflow00-nooverflow-spec.k
+tests/specs/benchmarks/requires01-a0gt0-spec.k
+tests/specs/benchmarks/requires01-a0le0-spec.k
+tests/specs/benchmarks/staticarray00-spec.k
+tests/specs/benchmarks/staticloop00-a0lt10-spec.k
+tests/specs/benchmarks/storagevar00-spec.k
+tests/specs/benchmarks/storagevar02-nooverflow-spec.k
 tests/specs/bihu/collectToken-spec.k
 tests/specs/bihu/forwardToHotWallet-failure-1-spec.k
 tests/specs/bihu/forwardToHotWallet-failure-2-spec.k
@@ -52,6 +60,7 @@ tests/specs/erc20/hkg/transfer-success-2-spec.k
 tests/specs/imp-specs/imp-specs-test-spec.k
 tests/specs/mcd/cat-exhaustiveness-spec.k
 tests/specs/mcd/cat-file-addr-pass-rough-spec.k
+tests/specs/mcd/dai-adduu-fail-rough-spec.k
 tests/specs/mcd/dai-symbol-pass-spec.k
 tests/specs/mcd/dstoken-approve-fail-rough-spec.k
 tests/specs/mcd/dstoken-burn-self-fail-rough-spec.k

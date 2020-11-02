@@ -4,7 +4,7 @@ module REQUIRES01-A0GT0-SPEC
   imports VERIFICATION
 
   // fn-execute-a0gt0
-  rule
+  claim
     <k> (#execute => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
