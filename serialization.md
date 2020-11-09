@@ -4,7 +4,7 @@ Parsing/Unparsing
 ```k
 requires "blockchain-k-plugin/krypto.md"
 requires "evm-types.md"
-requires "json-rpc.md"
+requires "json.md"
 ```
 
 ```k
@@ -12,7 +12,7 @@ module SERIALIZATION
     imports KRYPTO
     imports EVM-TYPES
     imports STRING-BUFFER
-    imports JSON-EXT
+    imports JSON
 ```
 
 Address/Hash Helpers

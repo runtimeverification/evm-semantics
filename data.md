@@ -4,7 +4,7 @@ EVM Words
 ```k
 requires "blockchain-k-plugin/krypto.md"
 requires "evm-types.md"
-requires "json-rpc.md"
+requires "json.md"
 requires "serialization.md"
 ```
 
@@ -16,7 +16,7 @@ module EVM-DATA
     imports STRING-BUFFER
     imports MAP-SYMBOLIC
     imports COLLECTIONS
-    imports JSON-EXT
+    imports JSON
 ```
 
 ```{.k .concrete .bytes}

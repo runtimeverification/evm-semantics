@@ -128,7 +128,6 @@ SOURCE_FILES       := asm           \
                       evm           \
                       evm-imp-specs \
                       evm-types     \
-                      json-rpc      \
                       network       \
                       serialization \
                       state-loader
