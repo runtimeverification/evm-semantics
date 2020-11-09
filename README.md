@@ -22,7 +22,6 @@ The following files constitute the KEVM semantics:
 
 -   [krypto.md](krypto.md) sets up some basic cryptographic primitives.
 -   [network.md](network.md) provides the status codes which are reported to an Ethereum client on execution exceptions.
--   [json-rpc.md](json-rpc.md) is an implementation of JSON RPC in K.
 -   [evm-types.md](evm-types.md) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
 -   [serialization.md](serialization.md) provides helpers for parsing and unparsing data (hex strings, recursive-length prefix, merkle trees, etc.).
 -   [evm.md](evm.md) is the main KEVM semantics, containing the configuration and transition rules of EVM.
@@ -30,9 +29,8 @@ The following files constitute the KEVM semantics:
 These additional files extend the semantics to make the repository more useful:
 
 -   [edsl.md](edsl.md) defines high-level notations of [eDSL], a domain-specific language for EVM specifications, for formal verification of EVM bytecode using [K Reachability Logic Prover].
--   [state-loader.md](state-loader.md) provides common functionality between driver and web3 for EVM initialization and setup.
+-   [state-loader.md](state-loader.md) provides functionality for EVM initialization and setup.
 -   [driver.md](driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
--   [web3.md](web3.md) is a web3 rpc server.
 
 Installing/Building
 -------------------
