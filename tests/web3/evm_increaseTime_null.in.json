@@ -1,8 +1,0 @@
-{
-    "jsonrpc":"2.0",
-    "id":1,
-    "method":"evm_increaseTime",
-    "params":[
-        null
-    ]
-}

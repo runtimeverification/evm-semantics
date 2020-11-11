@@ -8,5 +8,3 @@
 /pkg
 /src
 /tests/specs/**/*.prove.out
-/tests/web3/*/*.out.json
-/tests/web3/*.out.json
