@@ -1,6 +1,0 @@
-{
-  "jsonrpc": "2.0",
-  "id": 0,
-  "method": "web3_clientVersion",
-  "params": []
-}

@@ -38,10 +38,9 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
-        build build-java build-specs build-haskell build-web3 build-llvm                                                         \
+        build build-java build-specs build-haskell build-llvm                                                                    \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
-        test-web3 test-all-web3 test-failing-web3                                                                                \
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
         test-prove-imp-specs test-prove-mcd test-klab-prove test-haskell-dry-run                                                 \
@@ -120,7 +119,7 @@ $(K_JAR):
 # Building
 # --------
 
-build: build-java build-specs build-haskell build-web3 build-llvm
+build: build-java build-specs build-haskell build-llvm
 
 SOURCE_FILES       := asm           \
                       data          \
@@ -132,8 +131,7 @@ SOURCE_FILES       := asm           \
                       json-rpc      \
                       network       \
                       serialization \
-                      state-loader  \
-                      web3
+                      state-loader
 EXTRA_SOURCE_FILES :=
 ALL_FILES          := $(patsubst %, %.md, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
 
@@ -173,10 +171,6 @@ KOMPILE_STANDALONE := kompile --debug --backend llvm --md-selector "$(tangle_con
                       $(KOMPILE_OPTS)                \
                       $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
 
-WEB3_KOMPILE_OPTS += --no-llvm-kompile
-
-KOMPILE_WEB3 := kompile --debug --backend llvm --md-selector "$(tangle_concrete)" \
-                $(KOMPILE_OPTS) $(WEB3_KOMPILE_OPTS)
 # Java
 
 java_dir           := $(DEFN_DIR)/java
@@ -231,37 +225,6 @@ $(haskell_kompiled): $(haskell_files)
 	                   --main-module $(haskell_main_module)     \
 	                   --syntax-module $(haskell_syntax_module)
 
-# Web3
-
-web3_dir           := $(abspath $(DEFN_DIR)/web3)
-web3_files         := $(ALL_FILES)
-web3_main_module   := WEB3
-web3_syntax_module := $(web3_main_module)
-web3_main_file     := web3.md
-web3_main_filename := $(basename $(notdir $(web3_main_file)))
-web3_kompiled      := $(web3_dir)/build/kevm-client
-web3_kore          := $(web3_dir)/$(web3_main_filename)-kompiled/definition.kore
-export web3_main_filename
-export web3_dir
-
-ifeq (,$(RELEASE))
-    web3_build_type := Debug
-else
-    web3_build_type := Release
-endif
-
-build-web3: $(web3_kompiled)
-
-$(web3_kore): $(web3_files)
-	$(KOMPILE_WEB3) $(web3_main_file)                     \
-	                --directory $(web3_dir) -I $(CURDIR)  \
-	                --main-module $(web3_main_module)     \
-	                --syntax-module $(web3_syntax_module)
-
-$(web3_kompiled): $(web3_kore) $(libff_out)
-	@mkdir -p $(web3_dir)/build
-	cd $(web3_dir)/build && cmake $(CURDIR)/cmake/client -DCMAKE_BUILD_TYPE=$(web3_build_type) && $(MAKE)
-
 # Standalone
 
 llvm_dir           := $(DEFN_DIR)/llvm
@@ -304,8 +267,6 @@ KEVM_MODE     := NORMAL
 KEVM_SCHEDULE := ISTANBUL
 KEVM_CHAINID  := 1
 
-KEVM_WEB3_ARGS := --shutdownable --respond-to-notifications --hardfork istanbul --timeFreeze
-
 KPROVE_MODULE  := VERIFICATION
 KPROVE_OPTS    ?=
 
@@ -337,13 +298,6 @@ tests/%.run-expected: tests/% tests/%.expected
 	    $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                     \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
-
-tests/web3/no-shutdown/%: KEVM_WEB3_ARGS=
-
-tests/%.run-web3: tests/%.in.json
-	tests/web3/runtest.sh $< tests/$*.out.json $(KEVM_WEB3_ARGS)
-	$(CHECK) tests/$*.out.json tests/$*.expected.json
-	rm -rf tests/$*.out.json
 
 tests/%.parse: tests/%
 	$(TEST) kast $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
@@ -414,16 +368,6 @@ rest_bchain_tests    = $(filter-out $(passing_bchain_tests), $(all_bchain_tests)
 test-all-bchain: $(all_bchain_tests:=.run)
 test-rest-bchain: $(rest_bchain_tests:=.run)
 test-bchain: $(passing_bchain_tests:=.run)
-
-# Web3 Tests
-
-all_web3_tests     = $(wildcard tests/web3/*.in.json) $(wildcard tests/web3/*/*.in.json)
-failing_web3_tests = $(shell cat tests/failing.web3)
-passing_web3_tests = $(filter-out $(failing_web3_tests), $(all_web3_tests))
-
-test-all-web3: $(all_web3_tests:.in.json=.run-web3)
-test-failing-web3: $(failing_web3_tests:.in.json=.run-web3)
-test-web3: $(passing_web3_tests:.in.json=.run-web3)
 
 # Proof Tests
 
