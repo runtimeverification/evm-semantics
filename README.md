@@ -30,9 +30,8 @@ The following files constitute the KEVM semantics:
 These additional files extend the semantics to make the repository more useful:
 
 -   [edsl.md](edsl.md) defines high-level notations of [eDSL], a domain-specific language for EVM specifications, for formal verification of EVM bytecode using [K Reachability Logic Prover].
--   [state-loader.md](state-loader.md) provides common functionality between driver and web3 for EVM initialization and setup.
+-   [state-loader.md](state-loader.md) provides functionality for EVM initialization and setup.
 -   [driver.md](driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
--   [web3.md](web3.md) is a web3 rpc server.
 
 Installing/Building
 -------------------
