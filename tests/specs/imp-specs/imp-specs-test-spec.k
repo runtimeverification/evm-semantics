@@ -7,7 +7,7 @@ module IMP-SPECS-TEST-SPEC
   imports EVM-IMP-SPECS
   imports VERIFICATION
 
-  rule
+  claim
     <k> #saveEthereum         V_CONF_BEFORE
      ~> #saveOutput           V_OUT_BEFORE
      ~> #saveStorage  ACCT_ID V_STORAGE_BEFORE
