@@ -27,7 +27,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <wordStack> ABI_y : ABI_x : _JMPTO : WS  => ?_ </wordStack>
             <localMem> _ </localMem>
             <pc> 7825 => ?_ </pc>
-            <gas> VGas => ?_ </gas>
+            <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>

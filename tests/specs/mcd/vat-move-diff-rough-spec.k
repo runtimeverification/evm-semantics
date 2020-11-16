@@ -388,7 +388,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 100)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
-    [trusted]
+    [trusted, matching(infGas)]
 
 
     // Vat_subuu
@@ -573,7 +573,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 100)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
-    [trusted]
+    [trusted, matching(infGas)]
 
 
 endmodule

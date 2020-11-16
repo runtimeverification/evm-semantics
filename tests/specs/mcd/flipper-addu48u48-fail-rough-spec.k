@@ -27,7 +27,7 @@ module FLIPPER-ADDU48U48-FAIL-ROUGH-SPEC
             <wordStack> ABI_y : ABI_x : JMPTO : WS  => ?_ </wordStack>
             <localMem> _ </localMem>
             <pc> 11354 => ?_ </pc>
-            <gas> VGas => ?_ </gas>
+            <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>

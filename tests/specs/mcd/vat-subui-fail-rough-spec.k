@@ -27,7 +27,7 @@ module VAT-SUBUI-FAIL-ROUGH-SPEC
             <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  => ?_ </wordStack>
             <localMem> _ </localMem>
             <pc> 13304 => ?_ </pc>
-            <gas> VGas => ?_ </gas>
+            <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>

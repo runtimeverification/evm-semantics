@@ -27,7 +27,7 @@ module DAI-SYMBOL-PASS-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> VGas => VGas -Int (672) </gas>
+            <gas> #gas(VGas) => #gas(VGas +Int 672) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
