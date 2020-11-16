@@ -4,7 +4,7 @@ module DAI-SYMBOL-PASS-SPEC
   imports VERIFICATION
 
     // Dai_symbol
-    rule [Dai.symbol.pass]:
+    claim [Dai.symbol.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

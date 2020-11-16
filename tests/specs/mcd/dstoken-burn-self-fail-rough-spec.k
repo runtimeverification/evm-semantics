@@ -4,7 +4,7 @@ module DSTOKEN-BURN-SELF-FAIL-ROUGH-SPEC
     imports VERIFICATION
 
     // DSToken_burn-self
-    rule [DSToken.burn-self.fail.rough]:
+    claim [DSToken.burn-self.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

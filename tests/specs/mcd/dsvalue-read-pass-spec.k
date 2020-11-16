@@ -4,7 +4,7 @@ module DSVALUE-READ-PASS-SPEC
     imports VERIFICATION
 
     // DSValue_read
-    rule [DSValue.read.pass]:
+    claim [DSValue.read.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

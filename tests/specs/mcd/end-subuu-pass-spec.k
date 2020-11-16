@@ -4,7 +4,7 @@ module END-SUBUU-PASS-SPEC
   imports VERIFICATION
 
     // End_subuu
-    rule [End.subuu.pass]:
+    claim [End.subuu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

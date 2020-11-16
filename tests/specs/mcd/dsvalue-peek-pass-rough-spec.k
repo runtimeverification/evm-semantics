@@ -4,7 +4,7 @@ module DSVALUE-PEEK-PASS-ROUGH-SPEC
     imports VERIFICATION
 
     // DSValue_peek
-    rule [DSValue.peek.pass.rough]:
+    claim [DSValue.peek.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

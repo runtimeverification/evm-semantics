@@ -4,7 +4,7 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
     imports VERIFICATION
 
     // DSToken_approve
-    rule [DSToken.approve.fail.rough]:
+    claim [DSToken.approve.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

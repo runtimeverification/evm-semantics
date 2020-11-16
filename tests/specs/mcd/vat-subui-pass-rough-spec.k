@@ -4,7 +4,7 @@ module VAT-SUBUI-PASS-ROUGH-SPEC
     imports VERIFICATION
 
     // Vat_subui
-    rule [Vat.subui.pass.rough]:
+    claim [Vat.subui.pass.rough]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

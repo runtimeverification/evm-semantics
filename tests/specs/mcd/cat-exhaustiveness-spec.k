@@ -4,7 +4,7 @@ module CAT-EXHAUSTIVENESS-SPEC
   imports VERIFICATION
 
      // Cat__exhaustiveness
-     rule [Cat..exhaustiveness]:
+     claim [Cat..exhaustiveness]:
        <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
        <exit-code> 1 </exit-code>
        <mode> NORMAL </mode>

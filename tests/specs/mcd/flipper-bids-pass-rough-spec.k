@@ -4,7 +4,7 @@ module FLIPPER-BIDS-PASS-ROUGH-SPEC
     imports VERIFICATION
 
     // Flipper_bids
-    rule [Flipper.bids.pass.rough]:
+    claim [Flipper.bids.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

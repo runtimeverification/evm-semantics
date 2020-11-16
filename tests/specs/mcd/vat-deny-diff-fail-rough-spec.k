@@ -4,7 +4,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
   imports VERIFICATION
 
     // Vat_deny-diff
-    rule [Vat.deny-diff.fail.rough]:
+    claim [Vat.deny-diff.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

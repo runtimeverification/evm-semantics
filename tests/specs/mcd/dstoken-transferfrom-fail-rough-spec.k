@@ -4,7 +4,7 @@ module DSTOKEN-TRANSFERFROM-FAIL-ROUGH-SPEC
     imports VERIFICATION
 
     // DSToken_transferFrom
-    rule [DSToken.transferFrom.fail.rough]:
+    claim [DSToken.transferFrom.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

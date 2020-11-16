@@ -4,7 +4,7 @@ module FLOPPER-CAGE-PASS-SPEC
     imports VERIFICATION
 
     // Flopper_cage
-    rule [Flopper.cage.pass]:
+    claim [Flopper.cage.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

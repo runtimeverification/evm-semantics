@@ -4,7 +4,7 @@ module FLOPPER-FILE-PASS-ROUGH-SPEC
     imports VERIFICATION
 
     // Flopper_file
-    rule [Flopper.file.pass.rough]:
+    claim [Flopper.file.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

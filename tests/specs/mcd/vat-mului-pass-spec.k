@@ -4,7 +4,7 @@ module VAT-MULUI-PASS-SPEC
     imports VERIFICATION
 
     // Vat_mului
-    rule [Vat.mului.pass]:
+    claim [Vat.mului.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

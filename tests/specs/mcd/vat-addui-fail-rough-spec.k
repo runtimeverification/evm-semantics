@@ -4,7 +4,7 @@ module VAT-ADDUI-FAIL-ROUGH-SPEC
     imports VERIFICATION
 
     // Vat_addui
-    rule [Vat.addui.fail.rough]:
+    claim [Vat.addui.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

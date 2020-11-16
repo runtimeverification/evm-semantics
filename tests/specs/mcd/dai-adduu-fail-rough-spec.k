@@ -4,7 +4,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
     imports VERIFICATION
 
     // Dai_adduu
-    rule [Dai.adduu.fail.rough]:
+    claim [Dai.adduu.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

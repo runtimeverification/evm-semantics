@@ -4,7 +4,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
     imports VERIFICATION
 
     // Vat_move-diff
-    rule [Vat.move-diff.pass.rough]:
+    claim [Vat.move-diff.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -207,7 +207,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
      andBool #Vat.dai[ABI_src] =/=Int #Vat.dai[ABI_dst]
 
     // Vat_adduu
-    rule [Vat.adduu.pass]:
+    claim [Vat.adduu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -392,7 +392,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
 
 
     // Vat_subuu
-    rule [Vat.subuu.pass]:
+    claim [Vat.subuu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

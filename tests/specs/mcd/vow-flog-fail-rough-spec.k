@@ -4,7 +4,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
     imports VERIFICATION
 
     // Vow_flog
-    rule [Vow.flog.fail.rough]:
+    claim [Vow.flog.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -208,7 +208,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
     ensures ?FAILURE =/=K EVMC_SUCCESS
 
     // Vow_adduu
-    rule [Vow.adduu.pass]:
+    claim [Vow.adduu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -394,7 +394,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
 
 
     // Vow_subuu
-    rule [Vow.subuu.pass]:
+    claim [Vow.subuu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

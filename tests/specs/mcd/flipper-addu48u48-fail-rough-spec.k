@@ -4,7 +4,7 @@ module FLIPPER-ADDU48U48-FAIL-ROUGH-SPEC
     imports VERIFICATION
 
     // Flipper_addu48u48
-    rule [Flipper.addu48u48.fail.rough]:
+    claim [Flipper.addu48u48.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

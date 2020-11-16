@@ -4,7 +4,7 @@ module FLIPPER-TTL-PASS-SPEC
     imports VERIFICATION
 
     // Flipper_ttl
-    rule [Flipper.ttl.pass]:
+    claim [Flipper.ttl.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
