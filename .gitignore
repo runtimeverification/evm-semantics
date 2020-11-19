@@ -1,4 +1,5 @@
 /.build/*
+/kevm-bug_*.tar.gz
 .kompile*
 .kprove*
 .krun*
@@ -8,3 +9,4 @@
 /pkg
 /src
 /tests/specs/**/*.prove.out
+/transcript_*.smt2
