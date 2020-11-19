@@ -50,15 +50,17 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module run_dir additional_proof_args bug_report_name
+    local def_module run_dir additional_proof_args bug_report_name solver_transcript
 
     def_module="$1" ; shift
-    bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
+    bug_report_name="kevm-bug_$(basename "${run_file%-spec.k}")_$def_module"
+    solver_transcript="transcript_$(basename "${run_file%-spec.k}")_$def_module.smt2"
 
     additional_proof_args=()
     ! $debug      || additional_proof_args+=(--debug)
     ! $repl       || additional_proof_args+=(--debugger --debug-script kast.kscript)
     ! $bug_report || additional_proof_args+=(--haskell-backend-command "kore-exec --bug-report $bug_report_name")
+    ! $log_z3     || additional_proof_args+=(--haskell-backend-command "kore-exec --solver-transcript $solver_transcript")
 
     ! $debug || set -x
     kprove --directory "$backend_dir" "$run_file" --def-module "$def_module" "${additional_proof_args[@]}" "$@"
@@ -210,6 +212,7 @@ dump=false
 unparse=true
 repl=false
 bug_report=false
+log_z3=false
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 kevm_port='8545'
@@ -223,6 +226,7 @@ while [[ $# -gt 0 ]]; do
         --no-unparse)         unparse=false     ; shift   ;;
         --repl)               repl=true         ; shift   ;;
         --bug-report)         bug_report=true   ; shift   ;;
+        --log-z3)             log_z3=true       ; shift   ;;
         --backend)            backend="$2"      ; shift 2 ;;
         --backend-dir)        backend_dir="$2"  ; shift 2 ;;
         -p|--port)            kevm_port="$2"    ; shift 2 ;;
