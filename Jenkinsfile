@@ -43,6 +43,13 @@ pipeline {
             stage('Haskell (dry-run)') { steps { sh 'make test-haskell-dry-run -j3'                     } }
           }
         }
+        stage('Test Lemmas') {
+          options { timeout(time: 10, unit: 'MINUTES') }
+          stages {
+            stage('Generate Obligations')  { steps { sh 'make tests/specs/lemmas.k.gen-proofs'                     } }
+            stage('Discharge Obligations') { steps { sh 'make test-prove-lemmas -j6 TEST_SYMBOLIC_BACKEND=haskell' } }
+          }
+        }
         stage('Test Interactive') {
           failFast true
           options { timeout(time: 35, unit: 'MINUTES') }
