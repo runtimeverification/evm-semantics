@@ -175,9 +175,9 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `abs` gives the twos-complement interperetation of the magnitude of a word.
 
 ```k
-    syntax Int ::= sgn ( Int ) [function, functional]
-                 | abs ( Int ) [function, functional]
- // -------------------------------------------------
+    syntax Int ::= sgn ( Int ) [function, functional, smtlib(smt_sgn)]
+                 | abs ( Int ) [function, functional, smtlib(smt_abs)]
+ // ------------------------------------------------------------------
     rule sgn(I) => -1 requires pow255 <=Int I andBool I <Int pow256
     rule sgn(I) =>  1 requires 0 <=Int I andBool I <Int pow255
     rule sgn(I) =>  0 requires I <Int 0 orBool pow256 <=Int I
@@ -217,12 +217,12 @@ The corresponding `<op>Word` operations automatically perform the correct modulu
 Warning: operands are assumed to be within the range of a 256 bit EVM word. Unbound integers may not return the correct result.
 
 ```k
-    syntax Int ::= Int "+Word" Int [function, functional]
-                 | Int "*Word" Int [function, functional]
-                 | Int "-Word" Int [function, functional]
-                 | Int "/Word" Int [function, functional]
-                 | Int "%Word" Int [function, functional]
- // -----------------------------------------------------
+    syntax Int ::= Int "+Word" Int [function, functional, smtlib(word_add)]
+                 | Int "*Word" Int [function, functional, smtlib(word_mul)]
+                 | Int "-Word" Int [function, functional, smtlib(word_sub)]
+                 | Int "/Word" Int [function, functional, smtlib(word_div)]
+                 | Int "%Word" Int [function, functional, smtlib(word_mod)]
+ // -----------------------------------------------------------------------
     rule W0 +Word W1 => chop( W0 +Int W1 )
     rule W0 -Word W1 => W0 -Int W1 requires W0 >=Int W1
     rule W0 -Word W1 => chop( (W0 +Int pow256) -Int W1 ) requires W0 <Int W1
@@ -482,8 +482,8 @@ Most of EVM data is held in local memory.
 
 ```{.k .bytes}
     syntax Memory = Bytes
-    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, functional, klabel(mapWriteBytes)]
- // -------------------------------------------------------------------------------------------------
+    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, functional, klabel(mapWriteBytes), symbol]
+ // ---------------------------------------------------------------------------------------------------------
     rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS') requires START >=Int 0  [concrete]
     rule  _ [ START := _:ByteArray ] => .Memory                                                                  requires START  <Int 0  [concrete]
 
@@ -518,8 +518,8 @@ Most of EVM data is held in local memory.
  // --------------------------------------
     rule .Memory => .Map [macro]
 
-    syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
- // --------------------------------------------------------
+    syntax Memory ::= Memory "[" Int ":=" Int "]" [function, klabel(mapWriteBytes), symbol]
+ // --------------------------------------------------------------------------------------
     rule WM [ IDX := VAL:Int ] => WM [ IDX <- VAL ]
 ```
 
@@ -561,12 +561,12 @@ The local memory of execution is a byte-array (instead of a word-array).
  // ----------------------------------------------------------------
     rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete]
 
-    syntax ByteArray ::= ByteArray "++" ByteArray [function, functional, right, klabel(_++_WS), smtlib(_plusWS_)]
- // -------------------------------------------------------------------------------------------------------------
+    syntax ByteArray ::= ByteArray "++" ByteArray [function, functional, right, klabel(_++_WS), symbol, smtlib(_plusWS_)]
+ // ---------------------------------------------------------------------------------------------------------------------
     rule WS ++ WS' => WS +Bytes WS' [concrete]
 
-    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional]
- // --------------------------------------------------------------------------
+    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional, klabel(byteArraySlice), symbol]
+ // ----------------------------------------------------------------------------------------------------------
     rule                 _ [ START .. WIDTH ] => .ByteArray                      requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
     rule [bytesRange] : WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH)
       requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int #sizeByteArray(WS)
@@ -615,13 +615,13 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule [#asByteStackAux.base]:      #asByteStack( 0 , WS ) => WS
     rule [#asByteStackAux.recursive]: #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W modInt 256 : WS ) requires W =/=K 0
 
-    syntax ByteArray ::= ByteArray "++" ByteArray [function, memo, right, klabel(_++_WS), smtlib(_plusWS_)]
- // -------------------------------------------------------------------------------------------------------
+    syntax ByteArray ::= ByteArray "++" ByteArray [function, memo, right, klabel(_++_WS), symbol, smtlib(_plusWS_)]
+ // ---------------------------------------------------------------------------------------------------------------
     rule .WordStack ++ WS' => WS'
     rule (W : WS)   ++ WS' => W : (WS ++ WS')
 
-    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional, memo]
- // --------------------------------------------------------------------------------
+    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional, klabel(byteArraySlice), symbol, memo]
+ // ----------------------------------------------------------------------------------------------------------------
     rule [ByteArray.range]: WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, smtlib(sizeByteArray), memo]
