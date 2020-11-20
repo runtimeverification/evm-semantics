@@ -3,10 +3,12 @@
 from pyk import *
 import sys
 
-module_names = sys.argv[1].split(',')
-requires_names = [ KRequire(r) for r in sys.argv[2].split(',') ]
+input_defn = sys.argv[1]
+module_names = sys.argv[2].split(',')
+requires_names = sys.argv[3].split(',')
+output_dir = sys.argv[4]
 
-proving_definition = readKastTerm('.build/defn/haskell/driver-kompiled/def-module.json')
+proving_definition = readKastTerm(input_defn)
 symbolTable = buildSymbolTable(proving_definition)
 symbolTable['_++_WS']         = lambda ws0, ws1: '( ' + ws0 + ' ++ ' + ws1 + ' )'
 symbolTable['byteArraySlice'] = lambda ba, start, width: '( ' + ba + ' [ ' + start + ' .. ' + width + ' ] )'
@@ -48,26 +50,13 @@ other_sentences.append(KProduction([KTerminal('runLemma') , KTerminal('('), KNon
 other_sentences.append(KProduction([KTerminal('doneLemma'), KTerminal('('), KNonTerminal(KSort('K')), KTerminal(')')], KSort('KItem'), att = KAtt({ 'klabel': 'doneLemma', 'symbol': '' })))
 other_sentences.append(KRule(KApply('<k>', [KRewrite(KApply('runLemma', [KVariable('K')]), KApply('doneLemma', [KVariable('K')]))])))
 
-#def KNonTerminal(sort):
-#    return { "node": "KNonTerminal", "sort": sort }
-#
-#def isKNonTerminal(k):
-#    return k['node'] == 'KNonTerminal'
-#
-#def KTerminal(value):
-#    return { "node": "KTerminal", "value": value}
-#
-#def isKTerminal(k):
-#    return k['node'] == 'KTerminal'
-#def KProduction(productionItems, sort, att = None):
-#    return { "node": "KProduction", "productionItems": productionItems, "sort": sort, "att": att }
-
 modules = []
 main_module_name = 'MAIN-MODULE'
 main_module = KFlatModule(main_module_name, imports, other_sentences)
-modules.append(main_module)
+main_defn = KDefinition(main_module_name, [main_module], requires = [KRequire(n) for n in requires_names], att = proving_definition['att'])
+defns = { 'main-module.k': main_defn }
 for i in range(len(rules)):
-    defn_module_name = 'VERIFICATION-' + str(i)
+    defn_module_name = 'VERIFICATION'
     spec_module_name = 'CLAIM-' + str(i) + '-SPEC'
     rule = rules[i]
     other_rules = rules[0:i] + rules[i+1:len(rules)]
@@ -75,9 +64,9 @@ for i in range(len(rules)):
     defn_module = KFlatModule(defn_module_name, [main_module_name], other_lemmas)
     spec_rule_body = KApply('<k>', [KRewrite(KApply('runLemma', [rule['body']['lhs']]), KApply('doneLemma', [rule['body']['rhs']]))])
     spec_module = KFlatModule(spec_module_name, [defn_module_name], [cleanClaim(spec_rule_body, rule['requires'], rule['ensures'])])
-    modules.append(defn_module)
-    modules.append(spec_module)
+    spec_defn = KDefinition(defn_module_name, [defn_module, spec_module], requires = [KRequire('main-module.k')])
+    defns[spec_module_name.lower() + '.k'] = spec_defn
 
-spec_defn = KDefinition(main_module_name, modules, requires = requires_names, att = proving_definition['att'])
-
-print(prettyPrintKast(spec_defn, symbolTable))
+for defn in defns.keys():
+    with open(output_dir + defn, 'w') as out:
+        out.write(prettyPrintKast(defns[defn], symbolTable))

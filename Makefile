@@ -36,6 +36,9 @@ export PATH
 PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
 export PLUGIN_SUBMODULE
 
+PYTHONPATH = $(K_LIB)
+export PYTHONPATH
+
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
         build build-java build-specs build-haskell build-llvm                                                                    \
@@ -328,6 +331,16 @@ tests/%.search: tests/%
 tests/%.klab-prove: tests/%
 	$(TEST) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
+
+tests/specs/lemmas.k.gen-proofs: tests/specs/lemmas-lemmas/main-module.k
+
+tests/specs/lemmas-lemmas/main-module.k: tests/specs/lemmas-lemmas/lemmas.k.json
+	python3 pyk-prove-lemmas.py $< LEMMAS,LEMMAS-HASKELL evm.md,edsl.md $(dir $@)
+
+tests/specs/lemmas-lemmas/lemmas.k.json: tests/specs/lemmas.k
+	@mkdir -p $(dir $@)
+	$(TEST) prove --backend haskell tests/specs/functional/lemmas-spec.k VERIFICATION --emit-json --dry-run
+	mv .build/defn/haskell/driver-kompiled/def-module.json $@
 
 # Smoke Tests
 
