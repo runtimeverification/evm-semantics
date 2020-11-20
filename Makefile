@@ -342,7 +342,7 @@ tests/specs/lemmas-lemmas/lemmas.k.json: tests/specs/lemmas.k
 	$(TEST) prove --backend haskell tests/specs/functional/lemmas-spec.k VERIFICATION --emit-json --dry-run
 	mv .build/defn/haskell/driver-kompiled/def-module.json $@
 
-tests/specs/lemmas-lemmas/concrete-rules.txt
+tests/specs/lemmas-lemmas/concrete-rules.txt:
 	echo 'EVM.step' > $@
 
 # Smoke Tests
