@@ -44,7 +44,7 @@ export PYTHONPATH
         build build-java build-specs build-haskell build-llvm                                                                    \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
-        test-prove test-failing-prove                                                                                            \
+        test-prove test-failing-prove test-prove-lemmas                                                                          \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
         test-prove-imp-specs test-prove-mcd test-klab-prove test-haskell-dry-run                                                 \
         test-parse test-failure                                                                                                  \
@@ -340,6 +340,7 @@ tests/specs/lemmas-lemmas/main-module.k: tests/specs/lemmas-lemmas/lemmas.k.json
 tests/specs/lemmas-lemmas/lemmas.k.json: tests/specs/lemmas.k
 	@mkdir -p $(dir $@)
 	$(TEST) prove --backend haskell tests/specs/functional/lemmas-spec.k VERIFICATION --emit-json --dry-run
+	echo 'EVM.step' > tests/specs/lemmas-lemmas/concrete-rules.txt
 	mv .build/defn/haskell/driver-kompiled/def-module.json $@
 
 # Smoke Tests
@@ -394,6 +395,7 @@ prove_bihu_tests       := $(filter-out $(prove_failing_tests), $(wildcard $(prov
 prove_examples_tests   := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k))
 prove_imp_specs_tests  := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/imp-specs/*-spec.k))
 prove_mcd_tests        := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/mcd/*-spec.k))
+prove_lemmas_tests     := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/lemmas-lemmas/*-spec.k))
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-imp-specs test-prove-mcd
 test-prove-benchmarks: $(prove_benchmarks_tests:=.prove)
@@ -404,6 +406,7 @@ test-prove-bihu:       $(prove_bihu_tests:=.prove)
 test-prove-examples:   $(prove_examples_tests:=.prove)
 test-prove-imp-specs:  $(prove_imp_specs_tests:=.prove)
 test-prove-mcd:        $(prove_mcd_tests:=.prove)
+test-prove-lemmas:     $(prove_lemmas_tests:=.prove)
 
 test-failing-prove: $(prove_failing_tests:=.prove)
 
