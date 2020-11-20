@@ -8,5 +8,6 @@
 /package/src
 /pkg
 /src
+/tests/specs/lemmas-lemmas
 /tests/specs/**/*.prove.out
 /transcript_*.smt2
