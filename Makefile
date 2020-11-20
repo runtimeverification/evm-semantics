@@ -332,7 +332,7 @@ tests/%.klab-prove: tests/%
 	$(TEST) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
-tests/specs/lemmas.k.gen-proofs: tests/specs/lemmas-lemmas/main-module.k
+tests/specs/lemmas.k.gen-proofs: tests/specs/lemmas-lemmas/main-module.k tests/specs/lemmas-lemmas/concrete-rules.txt
 
 tests/specs/lemmas-lemmas/main-module.k: tests/specs/lemmas-lemmas/lemmas.k.json
 	python3 pyk-prove-lemmas.py $< LEMMAS,LEMMAS-HASKELL evm.md,edsl.md $(dir $@)
@@ -340,8 +340,10 @@ tests/specs/lemmas-lemmas/main-module.k: tests/specs/lemmas-lemmas/lemmas.k.json
 tests/specs/lemmas-lemmas/lemmas.k.json: tests/specs/lemmas.k
 	@mkdir -p $(dir $@)
 	$(TEST) prove --backend haskell tests/specs/functional/lemmas-spec.k VERIFICATION --emit-json --dry-run
-	echo 'EVM.step' > tests/specs/lemmas-lemmas/concrete-rules.txt
 	mv .build/defn/haskell/driver-kompiled/def-module.json $@
+
+tests/specs/lemmas-lemmas/concrete-rules.txt
+	echo 'EVM.step' > $@
 
 # Smoke Tests
 
