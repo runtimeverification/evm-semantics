@@ -57,6 +57,9 @@ module LEMMAS
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
       requires #rangeUInt(256, V)                                                                         [simplification]
 
+    rule #asWord(BUF1 ++ BUF2) >>Int LSHIFT => BUF1
+      requires #sizeByteArray(BUF2) *Int 8 ==Int LSHIFT                                                   [simplification]
+
     rule 0 <=Int keccak(_)                  => true  [simplification]
     rule         keccak(_) <Int pow256      => true  [simplification]
 
