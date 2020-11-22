@@ -41,4 +41,8 @@ module LEMMAS-NO-SMT-SPEC
     // claim <k> runLemma ( bool2Word( B:Bool ) ==Int 1 )   => doneLemma ( B ==K true ) ... </k>
     // claim <k> runLemma ( 1 ==Int bool2Word( B:Bool ) )   => doneLemma ( B ==K true ) ... </k>
 
+    //Required for ERC20 + solc5 + constructor call
+    claim <k> runLemma  ( bool2Word ( 160 ==Int #asWord ( b"000000a0" ++ ( #buf ( 32 , ?ACCT ) [ 0 .. 28 ] ) ) >>Int 224 ) )
+           => doneLemma ( true ) ... </k>
+
 endmodule
