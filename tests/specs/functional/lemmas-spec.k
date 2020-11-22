@@ -108,4 +108,8 @@ module LEMMAS-SPEC
     claim <k> runLemma ( #padToWidth( 32 , #asByteStack( maxUInt160 &Int #newAddr(ACCT, 1) ) ) )
            => doneLemma( #buf(32, #newAddr(ACCT, 1)) ) ... </k>
 
+    //Required for ERC20 + solc5 + constructor call
+    claim <k> runLemma ( bool2Word ( 160 ==Int #asWord ( Int2Bytes(4, 160, BE) ++ ( #buf ( 32 , _BUF ) [ 0 .. 28 ] ) ) >>Int 224 ) )
+           => doneLemma( true ) ... </k>
+
 endmodule
