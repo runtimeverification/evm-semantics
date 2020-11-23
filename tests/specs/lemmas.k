@@ -114,6 +114,8 @@ module LEMMAS-JAVA [symbolic, kast]
 
     rule #asWord(BUF) /Int 26959946667150639794667015087019630673637144422540572481103610249216 => #asWord(#take(4, BUF)) [simplification]
 
+    rule #asWord(BUF1 : BUF2) >>Int LSHIFT => BUF1                      requires #sizeByteArray(BUF2) *Int 8 ==Int LSHIFT [simplification]
+
     rule #range(_M, _N, K) => .ByteArray requires notBool K >Int 0 [simplification]
 
     rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))
