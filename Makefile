@@ -314,6 +314,12 @@ tests/%.prove: tests/%
 	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
+tests/%.prove-no-trivial: tests/%
+	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
+	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')                                           \
+	    > $@.out-no-trivial 2>&1
+	! grep WarnTrivialClaim $@.out-no-trivial > /dev/null 2>&2
+
 tests/%.prove-dry-run: tests/%
 	$(TEST) prove $(TEST_OPTIONS) --backend haskell $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) --dry-run \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
@@ -408,7 +414,7 @@ test-prove-bihu:       $(prove_bihu_tests:=.prove)
 test-prove-examples:   $(prove_examples_tests:=.prove)
 test-prove-imp-specs:  $(prove_imp_specs_tests:=.prove)
 test-prove-mcd:        $(prove_mcd_tests:=.prove)
-test-prove-lemmas:     $(prove_lemmas_tests:=.prove)
+test-prove-lemmas:     $(prove_lemmas_tests:=.prove-no-trivial)
 
 test-failing-prove: $(prove_failing_tests:=.prove)
 
