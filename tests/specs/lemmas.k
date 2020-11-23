@@ -57,8 +57,8 @@ module LEMMAS
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
       requires #rangeUInt(256, V)                                                                         [simplification]
 
-    rule #asWord(BUF1 ++ BUF2) >>Int RSHIFT => #asWord(BUF1)
-      requires #sizeByteArray(BUF2) *Int 8 ==Int RSHIFT                                                   [simplification]
+    rule #asWord(WS) >>Int M => #asWord(WS [ 0 .. #sizeByteArray(WS) -Int (M /Int 8) ])
+      requires 0 <=Int M andBool M modInt 8 ==Int 0                                                       [simplification]
 
     rule 0 <=Int keccak(_)                  => true  [simplification]
     rule         keccak(_) <Int pow256      => true  [simplification]
@@ -113,8 +113,6 @@ module LEMMAS-JAVA [symbolic, kast]
     rule #asWord(#buf(_N, BUF)) => BUF [simplification]
 
     rule #asWord(BUF) /Int 26959946667150639794667015087019630673637144422540572481103610249216 => #asWord(#take(4, BUF)) [simplification]
-
-    rule #asWord(BUF1 : BUF2) >>Int RSHIFT => BUF1                      requires #sizeByteArray(BUF2) *Int 8 ==Int RSHIFT [simplification]
 
     rule #range(_M, _N, K) => .ByteArray requires notBool K >Int 0 [simplification]
 
