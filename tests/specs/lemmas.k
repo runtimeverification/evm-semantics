@@ -5,80 +5,80 @@ module LEMMAS
     imports LEMMAS-JAVA
     imports LEMMAS-HASKELL
 
-    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma, simplification]
-    rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma, simplification]
+    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma, simplification, trusted]
+    rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma, simplification, trusted]
 
-    rule #lookup ( _M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification]
-    rule #lookup (  M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
+    rule #lookup ( _M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification, trusted]
+    rule #lookup (  M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification, trusted]
 
     rule 0 <=Int #lookup( _M:Map , _ )             => true                                       [simplification]
     rule         #lookup( _M:Map , _ ) <Int pow256 => true                                       [simplification, smt-lemma]
 
-    rule 0 <=Int keccak( _ )             => true                                                 [simplification]
-    rule         keccak( _ ) <Int pow256 => true                                                 [simplification]
+    rule 0 <=Int keccak( _ )             => true                                                 [simplification, trusted]
+    rule         keccak( _ ) <Int pow256 => true                                                 [simplification, trusted]
 
-    rule WS ++ .ByteArray => WS  [simplification]
-    rule .ByteArray ++ WS => WS  [simplification]
+    rule WS ++ .ByteArray => WS  [simplification, trusted]
+    rule .ByteArray ++ WS => WS  [simplification, trusted]
 
     //Byte array store operations sorting. Slices with lower index first. Helps applying rule below.
     rule MEM [ N := BUF:ByteArray ] [ M := BUF' ] => MEM [ M := BUF' ] [ N := BUF ]
-      requires N >Int M andBool N -Int M >=Int #sizeByteArray(BUF')                                               [simplification]
+      requires N >Int M andBool N -Int M >=Int #sizeByteArray(BUF')                                               [simplification, trusted]
 
-    rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeByteArray(BUF) ==Int #sizeByteArray(BUF')  [simplification]
+    rule M [ N := BUF ] [ N := BUF' ] => M [ N := BUF' ] requires #sizeByteArray(BUF) ==Int #sizeByteArray(BUF')  [simplification, trusted]
 
-    rule _BUF [ _ .. W ] => .ByteArray requires W ==Int 0                    [simplification]
-    rule  BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
+    rule _BUF [ _ .. W ] => .ByteArray requires W ==Int 0                    [simplification, trusted]
+    rule  BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification, trusted]
 
     rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])
       requires #range(0 <= START < #sizeByteArray(BUF1))
-       andBool #sizeByteArray(BUF1) <Int START +Int WIDTH [simplification]
+       andBool #sizeByteArray(BUF1) <Int START +Int WIDTH [simplification, trusted]
 
     rule (BUF1 ++_BUF2)[START .. WIDTH] => (BUF1[START .. WIDTH])
       requires #range(0 <= START < #sizeByteArray(BUF1))
-       andBool START +Int WIDTH <=Int #sizeByteArray(BUF1) [simplification]
+       andBool START +Int WIDTH <=Int #sizeByteArray(BUF1) [simplification, trusted]
 
     rule (BUF1 ++ BUF2)[START .. WIDTH] => BUF2 [START -Int #sizeByteArray(BUF1) .. WIDTH]
-      requires START >=Int #sizeByteArray(BUF1) [simplification]
+      requires START >=Int #sizeByteArray(BUF1) [simplification, trusted]
 
-    rule #sizeByteArray(BUF1 ++ BUF2)                  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
-    rule #sizeByteArray(#buf(SIZE, _))                 => SIZE                                            [simplification]
+    rule #sizeByteArray(BUF1 ++ BUF2)                  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification, trusted]
+    rule #sizeByteArray(#buf(SIZE, _))                 => SIZE                                            [simplification, trusted]
     rule #sizeByteArray(#buf(SIZE, _)[START .. WIDTH]) => WIDTH
       requires #range(0 <= START < SIZE)
-       andBool #range(0 < WIDTH <= SIZE -Int START)                                                       [simplification]
+       andBool #range(0 < WIDTH <= SIZE -Int START)                                                       [simplification, trusted]
 
     rule #sizeByteArray(#range(_, START, WIDTH)) => WIDTH
-      requires WIDTH >=Int 0 andBool START >=Int 0                                                        [simplification]
+      requires WIDTH >=Int 0 andBool START >=Int 0                                                        [simplification, trusted]
 
     //Todo custom ==K unification doesn't work in Haskell yet
     //++ unification
-    rule #buf(N, A) ++ BUF1 ==K #buf(N, B) ++ BUF2 => #buf(N, A) ==K #buf(N, B) andBool BUF1 ==K BUF2     [simplification]
+    rule #buf(N, A) ++ BUF1 ==K #buf(N, B) ++ BUF2 => #buf(N, A) ==K #buf(N, B) andBool BUF1 ==K BUF2     [simplification, trusted]
 
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
-      requires #rangeUInt(256, V)                                                                         [simplification]
+      requires #rangeUInt(256, V)                                                                         [simplification, trusted]
 
     //Inequality sign normalization
-    rule          X  >Int Y  => Y  <Int X            [simplification]
-    rule          X >=Int Y  => Y <=Int X            [simplification]
-    rule notBool (X  <Int Y) => Y <=Int X            [simplification]
-    rule notBool (X <=Int Y) => Y  <Int X            [simplification]
+    rule          X  >Int Y  => Y  <Int X            [simplification, trusted]
+    rule          X >=Int Y  => Y <=Int X            [simplification, trusted]
+    rule notBool (X  <Int Y) => Y <=Int X            [simplification, trusted]
+    rule notBool (X <=Int Y) => Y  <Int X            [simplification, trusted]
 
     // chop range & simplification
-    rule chop(I) => I requires #rangeUInt( 256 , I ) [simplification]
-    rule 0 <=Int chop(_V)             => true        [simplification]
-    rule         chop(_V) <Int pow256 => true        [simplification]
+    rule chop(I) => I requires #rangeUInt( 256 , I ) [simplification, trusted]
+    rule 0 <=Int chop(_V)             => true        [simplification, trusted]
+    rule         chop(_V) <Int pow256 => true        [simplification, trusted]
 
     // bool2Word range & simplification
-    rule 0 <=Int bool2Word(_B)             => true   [simplification]
-    rule         bool2Word(_B) <Int pow256 => true   [simplification]
+    rule 0 <=Int bool2Word(_B)             => true   [simplification, trusted]
+    rule         bool2Word(_B) <Int pow256 => true   [simplification, trusted]
 
-    rule notBool notBool B => B [simplification]
+    rule notBool notBool B => B [simplification, trusted]
 
     // #newAddr range
-    rule 0 <=Int #newAddr(_,_)             => true   [simplification]
-    rule         #newAddr(_,_) <Int pow160 => true   [simplification]
-    rule         #newAddr(_,_) <Int pow256 => true   [simplification]
+    rule 0 <=Int #newAddr(_,_)             => true   [simplification, trusted]
+    rule         #newAddr(_,_) <Int pow160 => true   [simplification, trusted]
+    rule         #newAddr(_,_) <Int pow256 => true   [simplification, trusted]
 
-    rule N /Int 1 => N  [simplification]
+    rule N /Int 1 => N  [simplification, trusted]
 
 endmodule
 
@@ -268,56 +268,56 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule #asWord(BUF) /Int D => #asWord(BUF[0 .. #sizeByteArray(BUF) -Int log256Int(D)])
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
-       andBool #sizeByteArray(BUF) >=Int log256Int(D) [simplification]
+       andBool #sizeByteArray(BUF) >=Int log256Int(D) [simplification, trusted]
 
     rule #asWord(#buf(N, BUF)) => BUF
       requires #range(0 < N <= 32)
-       andBool #range(0 <= BUF < 2 ^Int (N *Int 8)) [simplification]
+       andBool #range(0 <= BUF < 2 ^Int (N *Int 8)) [simplification, trusted]
 
     rule N &Int maxUInt160 => N
-      requires #rangeUInt(160, N) [simplification]
+      requires #rangeUInt(160, N) [simplification, trusted]
 
     rule maxUInt160 &Int N => N
-      requires #rangeUInt(160, N) [simplification]
+      requires #rangeUInt(160, N) [simplification, trusted]
 
     rule N modInt pow160 => N
-      requires #rangeUInt(160, N) [simplification]
+      requires #rangeUInt(160, N) [simplification, trusted]
 
-    rule #range(_, _, K) => .ByteArray requires notBool K >Int 0  [simplification]
+    rule #range(_, _, K) => .ByteArray requires notBool K >Int 0  [simplification, trusted]
 
     rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))
       requires K >Int 0
        andBool L <Int N
-      [simplification]
+      [simplification, trusted]
 
     rule #range(M [ N := BUF ], L, K) => BUF [ L -Int N .. minInt(K, #sizeByteArray(BUF) -Int (L -Int N)) ] ++ #range(M, N +Int #sizeByteArray(BUF), K -Int minInt(K, #sizeByteArray(BUF) -Int (L -Int N)))
       requires K  >Int 0
        andBool L >=Int N
        andBool L  <Int N +Int #sizeByteArray(BUF)
-      [simplification]
+      [simplification, trusted]
 
     rule #range(M [ N := BUF ], L, K) => #range(M, L, K)
       requires K  >Int 0
        andBool L >=Int N +Int #sizeByteArray(BUF)
-      [simplification]
+      [simplification, trusted]
 
-    rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
-    rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
+    rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification, trusted]
+    rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification, trusted]
 
-    rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma, simplification]
+    rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma, simplification, trusted]
 
     //Simplification of bool2Word() ==Int CONCRETE, #buf() ==K CONCRETE
-    rule I                   ==Int bool2Word( B:Bool ) => bool2Word(B) ==Int I  [simplification, concrete(I)]
-    rule bool2Word( B:Bool ) ==Int I                   => B ==K word2Bool(I)    [simplification, concrete(I)]
+    rule I                   ==Int bool2Word( B:Bool ) => bool2Word(B) ==Int I  [simplification, trusted, concrete(I)]
+    rule bool2Word( B:Bool ) ==Int I                   => B ==K word2Bool(I)    [simplification, trusted, concrete(I)]
 
-    rule notBool  (X ==Int 0) => X ==Int 1 requires #rangeBool(X) [simplification]
-    rule notBool  (X ==Int 1) => X ==Int 0 requires #rangeBool(X) [simplification]
-    rule bool2Word(X ==Int 1) => X         requires #rangeBool(X) [simplification]
+    rule notBool  (X ==Int 0) => X ==Int 1 requires #rangeBool(X) [simplification, trusted]
+    rule notBool  (X ==Int 1) => X ==Int 0 requires #rangeBool(X) [simplification, trusted]
+    rule bool2Word(X ==Int 1) => X         requires #rangeBool(X) [simplification, trusted]
 
-    rule B ==Bool false => notBool B [simplification]
+    rule B ==Bool false => notBool B [simplification, trusted]
 
-    rule BA:ByteArray     ==K #buf( 32, DATA ) => #buf( 32, DATA ) ==K BA       [simplification, concrete(BA)]
+    rule BA:ByteArray     ==K #buf( 32, DATA ) => #buf( 32, DATA ) ==K BA       [simplification, trusted, concrete(BA)]
     rule #buf( 32, DATA ) ==K BA:ByteArray     => DATA ==Int #asInteger(BA)
-      requires #sizeByteArray(BA) <=Int 32                                      [simplification, concrete(BA)]
+      requires #sizeByteArray(BA) <=Int 32                                      [simplification, trusted, concrete(BA)]
 
 endmodule
