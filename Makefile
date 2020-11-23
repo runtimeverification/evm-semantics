@@ -47,6 +47,7 @@ export PYTHONPATH
         test-prove test-failing-prove test-prove-lemmas                                                                          \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
         test-prove-imp-specs test-prove-mcd test-klab-prove test-haskell-dry-run                                                 \
+        gen-lemma-proofs                                                                                                         \
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         media media-pdf metropolis-theme
@@ -338,17 +339,28 @@ tests/%.klab-prove: tests/%
 	$(TEST) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
-tests/specs/lemmas.k.gen-proofs: tests/specs/lemmas-lemmas/main-module.k tests/specs/lemmas-lemmas/concrete-rules.txt
+PROVE_LEMMA_MODULES  = LEMMAS,LEMMAS_HASKELL
+PROVE_LEMMA_REQUIRES = evm.md,edsl.md
+PROVE_LEMMA_DUMMY    = functional/lemmas-spec.k
+tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_MODULES  = VERIFICATION-SYNTAX,VERIFICATION
+tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_REQUIRES = ../lemmas.k,bin_runtime.k,storage.k,../infinite-gas.k
+tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_DUMMY    = mcd/dai-adduu-fail-rough-spec.k
 
-tests/specs/lemmas-lemmas/main-module.k: tests/specs/lemmas-lemmas/lemmas.k.json
-	python3 pyk-prove-lemmas.py $< LEMMAS,LEMMAS-HASKELL evm.md,edsl.md $(dir $@)
+PROVE_LEMMA_FILES = lemmas mcd/verification
 
-tests/specs/lemmas-lemmas/lemmas.k.json: tests/specs/lemmas.k
+gen-lemma-proofs: $(patsubst %, tests/specs/%-lemmas/main-module.k,      $(PROVE_LEMMA_FILES)) \
+                  $(patsubst %, tests/specs/%-lemmas/concrete-rules.txt, $(PROVE_LEMMA_FILES))
+
+tests/specs/%-lemmas/main-module.k: tests/specs/%-lemmas/prove-definition.json
+	python3 pyk-prove-lemmas.py $< $(PROVE_LEMMA_MODULES) $(PROVE_LEMMA_REQUIRES) $(dir $@)
+
+tests/specs/%-lemmas/prove-definition.json: tests/specs/%.k
 	@mkdir -p $(dir $@)
-	$(TEST) prove --backend haskell tests/specs/functional/lemmas-spec.k VERIFICATION --emit-json --dry-run
-	mv .build/defn/haskell/driver-kompiled/def-module.json $@
+	$(TEST) prove --backend haskell tests/specs/$(PROVE_LEMMA_DUMMY) $(KPROVE_MODULE) --emit-json --dry-run
+	mv .build/defn/haskell/driver-kompiled/prove-definition.json $@
 
-tests/specs/lemmas-lemmas/concrete-rules.txt:
+tests/specs/%-lemmas/concrete-rules.txt:
+	@mkdir -p $(dir $@)
 	echo 'EVM.step' > $@
 
 # Smoke Tests
