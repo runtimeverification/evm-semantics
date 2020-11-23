@@ -42,7 +42,10 @@ rules = []
 for m in modules:
     for s in m['localSentences']:
         if isKRule(s):
-            rules.append(s)
+            if s['att'] is None or not 'trusted' in s['att']['att'].keys():
+                rules.append(s)
+            else:
+                other_sentences.append(cleanRule(s['body'], s['requires'], s['ensures'], att = KAtt({'smt-lemma': '', 'simplification': '', 'trusted': ''})))
         else:
             other_sentences.append(s)
 
