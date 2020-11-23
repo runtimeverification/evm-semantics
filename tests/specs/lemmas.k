@@ -14,7 +14,6 @@ module LEMMAS
     rule 0 <=Int #lookup( _M:Map , _ )             => true                                       [simplification]
     rule         #lookup( _M:Map , _ ) <Int pow256 => true                                       [simplification, smt-lemma]
 
-    //Required for #Ceil(#buf)
     rule 0 <=Int keccak( _ )             => true                                                 [simplification]
     rule         keccak( _ ) <Int pow256 => true                                                 [simplification]
 
@@ -56,9 +55,6 @@ module LEMMAS
 
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
       requires #rangeUInt(256, V)                                                                         [simplification]
-
-    rule 0 <=Int keccak(_)                  => true  [simplification]
-    rule         keccak(_) <Int pow256      => true  [simplification]
 
     //Inequality sign normalization
     rule          X  >Int Y  => Y  <Int X            [simplification]
