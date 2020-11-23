@@ -100,6 +100,7 @@ module LEMMAS-JAVA [symbolic, kast]
 
     rule #sizeByteArray(_W : WS)       => 1 +Int #sizeByteArray(WS)             [simplification]
     rule #sizeByteArray(#drop(N, BUF)) => maxInt(#sizeByteArray(BUF) -Int N, 0) [simplification]
+    rule #sizeByteArray(#take(N, _  )) => maxInt(N,                          0) [simplification]
 
     rule #take(N, BUF)           => BUF                                              requires N ==Int #sizeByteArray(BUF)  [simplification]
     rule #take(N, BUF1 ++ _BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeByteArray(BUF1) [simplification]

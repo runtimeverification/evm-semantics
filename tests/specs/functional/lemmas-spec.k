@@ -109,7 +109,7 @@ module LEMMAS-SPEC
            => doneLemma( #buf(32, #newAddr(ACCT, 1)) ) ... </k>
 
     //Required for ERC20 + solc5 + constructor call
-    claim <k> runLemma ( 160 ==Int #asWord ( Int2Bytes(4, 160, BE) ++ ( #buf ( 32 , _BUF ) [ 0 .. 28 ] ) ) >>Int 224 )
+    claim <k> runLemma ( 160 ==Int #asWord ( #buf( 4, 160 ) ++ ( #buf( 32 , _BUF ) [ 0 .. 28 ] ) ) >>Int 224 )
            => doneLemma( true ) ... </k>
 
 endmodule
