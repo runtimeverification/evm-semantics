@@ -339,9 +339,14 @@ tests/%.klab-prove: tests/%
 	$(TEST) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
-PROVE_LEMMA_MODULES  = LEMMAS,LEMMAS_HASKELL
-PROVE_LEMMA_REQUIRES = evm.md,edsl.md
-PROVE_LEMMA_DUMMY    = functional/lemmas-spec.k
+PROVE_LEMMA_MODULES  =
+PROVE_LEMMA_REQUIRES =
+PROVE_LEMMA_DUMMY    =
+
+tests/specs/lemmas-lemmas/% = LEMMAS,LEMMAS-HASKELL
+tests/specs/lemmas-lemmas/% = evm.md,edsl.md
+tests/specs/lemmas-lemmas/% = functional/lemmas-spec.k
+
 tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_MODULES  = VERIFICATION-SYNTAX,VERIFICATION
 tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_REQUIRES = ../lemmas.k,bin_runtime.k,storage.k,../infinite-gas.k
 tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_DUMMY    = mcd/dai-adduu-fail-rough-spec.k
@@ -415,7 +420,7 @@ prove_bihu_tests       := $(filter-out $(prove_failing_tests), $(wildcard $(prov
 prove_examples_tests   := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k))
 prove_imp_specs_tests  := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/imp-specs/*-spec.k))
 prove_mcd_tests        := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/mcd/*-spec.k))
-prove_lemmas_tests     := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/lemmas-lemmas/*-spec.k))
+prove_lemmas_tests     := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/lemmas-lemmas/*-spec.k) $(wildcard $(prove_specs_dir)/mcd/verification-lemmas/*-spec.k))
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-imp-specs test-prove-mcd
 test-prove-benchmarks: $(prove_benchmarks_tests:=.prove)
