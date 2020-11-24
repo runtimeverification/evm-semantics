@@ -339,17 +339,20 @@ tests/%.klab-prove: tests/%
 	$(TEST) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
-PROVE_LEMMA_MODULES  =
-PROVE_LEMMA_REQUIRES =
-PROVE_LEMMA_DUMMY    =
+PROVE_LEMMA_MODULES        =
+PROVE_LEMMA_MODULE_IMPORTS =
+PROVE_LEMMA_REQUIRES       =
+PROVE_LEMMA_DUMMY          =
 
-tests/specs/lemmas-lemmas/%: PROVE_LEMMA_MODULES  = LEMMAS,LEMMAS-HASKELL
-tests/specs/lemmas-lemmas/%: PROVE_LEMMA_REQUIRES = evm.md,edsl.md
-tests/specs/lemmas-lemmas/%: PROVE_LEMMA_DUMMY    = functional/lemmas-spec.k
+tests/specs/lemmas-lemmas/%: PROVE_LEMMA_MODULES        = LEMMAS,LEMMAS-HASKELL
+tests/specs/lemmas-lemmas/%: PROVE_LEMMA_MODULE_IMPORTS = INT-SYMBOLIC,EDSL,EVM
+tests/specs/lemmas-lemmas/%: PROVE_LEMMA_REQUIRES       = evm.md,edsl.md
+tests/specs/lemmas-lemmas/%: PROVE_LEMMA_DUMMY          = functional/lemmas-spec.k
 
-tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_MODULES  = VERIFICATION-SYNTAX,VERIFICATION
-tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_REQUIRES = ../../lemmas.k,../bin_runtime.k,../storage.k,../../infinite-gas.k
-tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_DUMMY    = mcd/dai-adduu-fail-rough-spec.k
+tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_MODULES        = VERIFICATION
+tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_MODULE_IMPORTS = LEMMAS,DSS-BIN-RUNTIME,DSS-STORAGE,HASH2,WORD-PACK,INFINITE-GAS
+tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_REQUIRES        = ../../lemmas.k,../bin_runtime.k,../storage.k,../../infinite-gas.k
+tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_DUMMY           = mcd/dai-adduu-fail-rough-spec.k
 
 PROVE_LEMMA_FILES = lemmas mcd/verification
 
@@ -357,7 +360,7 @@ gen-lemma-proofs: $(patsubst %, tests/specs/%-lemmas/main-module.k,      $(PROVE
                   $(patsubst %, tests/specs/%-lemmas/concrete-rules.txt, $(PROVE_LEMMA_FILES))
 
 tests/specs/%-lemmas/main-module.k: tests/specs/%-lemmas/prove-definition.json
-	python3 pyk-prove-lemmas.py $< $(PROVE_LEMMA_MODULES) $(PROVE_LEMMA_REQUIRES) $(dir $@)
+	python3 pyk-prove-lemmas.py $< $(PROVE_LEMMA_MODULES) $(PROVE_LEMMA_REQUIRES) $(PROVE_LEMMA_MODULE_IMPORTS) $(dir $@)
 
 tests/specs/%-lemmas/prove-definition.json: tests/specs/%.k
 	@mkdir -p $(dir $@)

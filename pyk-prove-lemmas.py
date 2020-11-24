@@ -6,6 +6,7 @@ import sys
 input_defn = sys.argv[1]
 module_names = sys.argv[2].split(',')
 requires_names = sys.argv[3].split(',')
+module_imports = sys.argv[4].split(',')
 output_dir = sys.argv[4]
 
 proving_definition = readKastTerm(input_defn)
@@ -17,14 +18,6 @@ symbolTable['runLemma']       = lambda k: 'runLemma(' + k + ')'
 symbolTable['doneLemma']      = lambda k: 'doneLemma(' + k + ')'
 
 modules = [ m for m in proving_definition['modules'] if m['name'] in module_names ]
-
-imports = []
-for m in proving_definition['modules']:
-    if m['name'] in module_names:
-        for i in m['imports']:
-            if not ('$' in i or i in module_names):
-                imports.append(i)
-imports = list(set(imports))
 
 def cleanRule(body, requires, ensures, att = None):
     subst = { '_' + str(i): KVariable('_') for i in range(10) }
@@ -57,7 +50,7 @@ other_sentences.append(KRule(KApply('<k>', [KRewrite(KApply('runLemma', [KVariab
 
 modules = []
 main_module_name = 'MAIN-MODULE'
-main_module = KFlatModule(main_module_name, imports, other_sentences)
+main_module = KFlatModule(main_module_name, module_imports, other_sentences)
 main_defn = KDefinition(main_module_name, [main_module], requires = [KRequire(n) for n in requires_names], att = proving_definition['att'])
 defns = { 'main-module.k': main_defn }
 for i in range(len(rules)):
