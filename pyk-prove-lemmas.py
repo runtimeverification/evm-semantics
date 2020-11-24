@@ -41,13 +41,15 @@ other_sentences = []
 rules = []
 for m in modules:
     for s in m['localSentences']:
-        if isKRule(s):
-            if s['att'] is None or not 'trusted' in s['att']['att'].keys():
-                rules.append(s)
+        if s['att'] is not None and 'org.kframework.attributes.Source' in s['att']['att']:
+            if isKRule(s):
+                if isKRewrite(s['body']):
+                    if s['att'] is None or not 'trusted' in s['att']['att'].keys():
+                        rules.append(s)
+                    else:
+                        other_sentences.append(cleanRule(s['body'], s['requires'], s['ensures'], att = KAtt({'smt-lemma': '', 'simplification': '', 'trusted': ''})))
             else:
-                other_sentences.append(cleanRule(s['body'], s['requires'], s['ensures'], att = KAtt({'smt-lemma': '', 'simplification': '', 'trusted': ''})))
-        else:
-            other_sentences.append(s)
+                other_sentences.append(s)
 
 other_sentences.append(KProduction([KTerminal('runLemma') , KTerminal('('), KNonTerminal(KSort('K')), KTerminal(')')], KSort('KItem'), att = KAtt({ 'klabel': 'runLemma' , 'symbol': '' })))
 other_sentences.append(KProduction([KTerminal('doneLemma'), KTerminal('('), KNonTerminal(KSort('K')), KTerminal(')')], KSort('KItem'), att = KAtt({ 'klabel': 'doneLemma', 'symbol': '' })))
