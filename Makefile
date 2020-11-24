@@ -343,12 +343,12 @@ PROVE_LEMMA_MODULES  =
 PROVE_LEMMA_REQUIRES =
 PROVE_LEMMA_DUMMY    =
 
-tests/specs/lemmas-lemmas/% = LEMMAS,LEMMAS-HASKELL
-tests/specs/lemmas-lemmas/% = evm.md,edsl.md
-tests/specs/lemmas-lemmas/% = functional/lemmas-spec.k
+tests/specs/lemmas-lemmas/%: PROVE_LEMMA_MODULES  = LEMMAS,LEMMAS-HASKELL
+tests/specs/lemmas-lemmas/%: PROVE_LEMMA_REQUIRES = evm.md,edsl.md
+tests/specs/lemmas-lemmas/%: PROVE_LEMMA_DUMMY    = functional/lemmas-spec.k
 
 tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_MODULES  = VERIFICATION-SYNTAX,VERIFICATION
-tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_REQUIRES = ../lemmas.k,bin_runtime.k,storage.k,../infinite-gas.k
+tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_REQUIRES = ../../lemmas.k,../bin_runtime.k,../storage.k,../../infinite-gas.k
 tests/specs/mcd/verification-lemmas/%: PROVE_LEMMA_DUMMY    = mcd/dai-adduu-fail-rough-spec.k
 
 PROVE_LEMMA_FILES = lemmas mcd/verification
