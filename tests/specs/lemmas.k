@@ -321,3 +321,11 @@ module LEMMAS-HASKELL [symbolic, kore]
       requires #sizeByteArray(BA) <=Int 32                                      [simplification, trusted, concrete(BA)]
 
 endmodule
+
+module HASKELL-HASH2 [symbolic, kore]
+    imports INT
+
+    syntax Int ::= hash2 ( Int , Int ) [function]
+ // ---------------------------------------------
+endmodule
+

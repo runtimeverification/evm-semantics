@@ -3,13 +3,6 @@ requires "bin_runtime.k"
 requires "storage.k"
 requires "../infinite-gas.k"
 
-module HASKELL-HASH2 [symbolic, kore]
-    imports INT
-
-    syntax Int ::= hash2 ( Int , Int ) [function]
- // ---------------------------------------------
-endmodule
-
 module VERIFICATION-SYNTAX
     imports LEMMAS
     imports DSS-BIN-RUNTIME
