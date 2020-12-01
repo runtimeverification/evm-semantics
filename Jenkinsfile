@@ -82,11 +82,18 @@ pipeline {
                   git clone 'ssh://github.com/kframework/evm-semantics.git'
                   cd evm-semantics
                   git checkout -B gh-pages origin/master
-                  rm -rf .build .gitignore .gitmodules cmake deps Dockerfile Jenkinsfile kast-json.py kevm kore-json.py LICENSE Makefile media package
+                  cd web
+                  npm install
+                  npm run build
+                  npm run build-sitemap
+                  cd -
+                  mv web/public_content ./
+                  rm -rf $(find . -maxdepth 1 -not -name public_content -a -not -name .git -a -not -path . -a -not -path .. -a -not -name CNAME)
+                  mv public_content/* ./
+                  rm -rf public_content
                   git add ./
-                  git commit -m 'gh-pages: remove unrelated content'
-                  git fetch origin gh-pages
-                  git merge --strategy ours FETCH_HEAD
+                  git commit -m 'gh-pages: Updated the website'
+                  git merge --strategy ours origin/gh-pages --allow-unrelated-histories
                   git push origin gh-pages
                 '''
               }
