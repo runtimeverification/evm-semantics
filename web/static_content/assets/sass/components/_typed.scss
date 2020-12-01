@@ -1,0 +1,55 @@
+/*------------------------------------
+typist
+------------------------------------*/
+
+@-webkit-keyframes blink {
+  0%
+  {
+    opacity: 1.0;
+  }
+  50%
+  {
+    opacity: .0;
+  }
+  100%
+  {
+    opacity: 1.0;
+  }
+}
+
+@keyframes blink {
+  0%
+  {
+    opacity: 1.0;
+  }
+  50%
+  {
+    opacity: .0;
+  }
+  100%
+  {
+    opacity: 1.0;
+  }
+}
+
+.typist-blink:after {
+  position: relative;
+  top: 10px;
+  display: inline-block;
+  height: 40px;
+  margin-right: 7px;
+  margin-left: 3px;
+  content: ' ';
+  animation: blink 1s step-start 0s infinite;
+  border-right: 2px solid;
+}
+
+.typist-blink > .selectedText {
+  display: none;
+}
+
+.typist-mark > .selectedText {
+  font-style: normal;
+  color: $white;
+  background-color: $dark;
+}

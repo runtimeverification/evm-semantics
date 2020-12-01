@@ -1,0 +1,62 @@
+/*------------------------------------
+countdown
+------------------------------------*/
+
+.count-block {
+  display: inline-block;
+  margin: 0 20px;
+  width: 150px;
+  height: 150px;
+  text-align: center;
+  h2 {
+    margin: 2.5rem 0 0 0;
+    font-weight: bold;
+  }
+  span {
+    font-size: 16px;
+  }
+}
+
+.count-solid-light {
+  .count-block {
+    margin-bottom: 20px;
+    background: $white;
+    border: 1px solid $canvas-color;
+  }
+}
+
+
+.count-solid-dark {
+  .count-block {
+    margin-bottom: 20px;
+    background: $dark;
+    h2, span{
+      color: $white;
+    }
+  }
+}
+
+
+.circle {
+  .count-block {
+    border-radius: 50%;
+  }
+}
+
+
+.round {
+  .count-block {
+    border-radius: 6px;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .count-block {
+    width: 100px;
+    height: 100px;
+    h2 {
+      margin: 1.5rem 0 0 0;
+    }
+  }
+}
+

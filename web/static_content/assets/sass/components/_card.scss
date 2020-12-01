@@ -1,0 +1,78 @@
+/*------------------------------------
+card
+------------------------------------*/
+
+.justify-content-between{
+  .card-arrow-icon {
+    position: relative;
+    width: 25px;
+    height: 25px;
+    line-height: 25px;
+    border: 1px solid #ddd;
+    text-align: center;
+    border-radius: 50%;
+    transition: all .3s;
+    &:after{
+      font-family: 'fontawesome';
+      font-size: 14px;
+      position: absolute;
+      top: -1px;
+      left: 9px;
+      content: '\f105';
+    }
+  }
+}
+
+.justify-content-between > a{
+  text-decoration: none;
+  &:hover + .card-arrow-icon{
+    background: $primary-color;
+    border-color: $primary-color;
+    color: $white;
+  }
+}
+
+.card-img-overlay{
+  top: auto;
+  left: auto;
+  right: auto;
+}
+//
+//.card-img-right {
+//  border-radius: 0 .375rem .375rem 0 !important;
+//}
+
+.box-hover,
+img.box-hover{
+  transition: top 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  top: 0;
+  position: relative;
+  &:hover{
+    top: -0.5rem;
+    box-shadow: 0 0.2rem .8rem rgba(36, 36, 36, 0.15);
+  }
+}
+
+
+@media (min-width: 768px) {
+  .card.flex-md-row .card-img {
+    border-radius: 0.375rem 0 0 0.375rem;
+    object-fit: cover;
+  }
+
+  .card.flex-md-row .card-img-right {
+    border-radius: 0 .375rem .375rem 0;
+    object-fit: cover;
+  }
+}
+
+@media (max-width: 991.98px){
+  .card.flex-column .card-img {
+    border-radius: 0.375rem 0.375rem 0 0;
+  }
+
+  .card.flex-md-row .card-img-right{
+    border-radius: 0 0 0.375rem 0.375rem;
+  }
+}

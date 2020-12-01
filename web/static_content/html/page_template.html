@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {{include/head.html}}
+  </head>
+
+  <body>
+    {{include/header.html}}
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+        {{include/sidebar.html}}
+        <main
+          class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview">{{$MARKDOWN_HTML}}</div>
+        </main>
+      </div>
+    </div>
+    {{include/footer.html}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="{{$ROOT}}/assets/js/index.js"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-QL0D8HRYFW");
+    </script>
+  </body>
+</html>

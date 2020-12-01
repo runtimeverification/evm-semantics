@@ -1,0 +1,200 @@
+.bg-primary {
+  background: $primary-color;
+}
+
+.bg-success {
+  background: $green-color;
+}
+
+.bg-warning {
+  background: $warning-color;
+}
+
+.bg-info {
+  background: $info-color;
+}
+
+.bg-danger {
+  background: $danger-color;
+}
+
+.text-primary{
+  color: $primary-color;
+}
+
+.text-purple {
+  color: $secondary-color;
+}
+
+.text-muted {
+  color: $gray-dark !important;
+}
+
+.rounded {
+  border-radius: 6px!important;
+}
+
+//card
+
+.card{
+  border-color: $border-color;
+  border-radius: 6px;
+}
+
+.card-img-top {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.card-footer{
+  background: transparent;
+  border-top: 1px solid rgba(0,0,0,.06);
+  padding: 1.1rem 1.25rem;
+}
+
+.bg-dark{
+  .card-footer{
+    border-top: 1px solid rgba(255,255,255,.06);
+  }
+}
+
+//alert
+
+.alert-secondary {
+  color: $dark;
+  background-color: #f4f5f7;
+  border-color: $border-color;
+}
+
+.alert-warning {
+  color: $warning-color;
+  background-color: #fef8ec;
+  border-color: $warning-color;
+}
+
+.alert-success {
+  color: $success-color;
+  background-color: #f3f8ed;
+  border-color: $success-color;
+}
+
+.alert-danger {
+  color: $danger-color;
+  background-color: #fdeced;
+  border-color: $danger-color;
+}
+
+.alert-primary {
+  color: $primary-color;
+  background-color: #eaf4ff;
+  border-color: $primary-color;
+}
+
+// alert solid
+
+.alert-solid-secondary {
+  color: $dark;
+  background-color: $border-color;
+  border-color: $border-color;
+}
+
+.alert-solid-warning {
+  color: $white;
+  background-color: $warning-color;
+  border-color: $warning-color;
+}
+
+.alert-solid-success {
+  color: $white;
+  background-color: $success-color;
+  border-color: $success-color;
+}
+
+.alert-solid-danger {
+  color: $white;
+  background-color: $danger-color;
+  border-color: $danger-color;
+}
+
+.alert-solid-primary {
+  color: $white;
+  background-color: $primary-color;
+  border-color: $primary-color;
+}
+
+// list group
+
+.list-group-item{
+  border-color: $border-color;
+  color: $gray-dark;
+  padding: 1.3rem 1.25rem;
+}
+
+// badge
+
+.badge{
+  position: relative;
+  bottom: 1px;
+}
+
+// modal
+
+.custom-modal {
+  .modal-body {
+    padding: 2.5rem;
+  }
+  .modal-content{
+    border: none;
+  }
+  .modal-header {
+    padding: 1rem;
+    .close {
+      padding: .5rem 1rem;
+    }
+  }
+}
+
+.modal-body{
+  padding: 1.8rem;
+}
+
+.modal-header, .modal-footer{
+  padding: 1rem 1.8rem;
+}
+
+.modal-image {
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+  position: relative;
+}
+
+.modal-image .close {
+  position: absolute;
+  top: 1.875rem;
+  right: 1.875rem;
+  background: $white;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  line-height: 50px;
+  opacity: 1;
+  text-shadow: none;
+  &:hover{
+    background: $primary-color;
+    color: $white;
+    opacity: 1;
+  }
+}
+
+
+@media (min-width: 576px){
+  .modal-dialog {
+    max-width: 600px;
+  }
+}
+
+@media (min-width: 992px){
+  .modal-lg, .modal-xl {
+    max-width: 800px;
+  }
+}
