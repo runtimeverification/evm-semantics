@@ -63,6 +63,9 @@ module LEMMAS
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
       requires #rangeUInt(256, V)                                                                         [simplification, trusted]
 
+    rule #asWord(WS) >>Int M => #asWord(WS [ 0 .. #sizeByteArray(WS) -Int (M /Int 8) ])
+      requires 0 <=Int M andBool M modInt 8 ==Int 0                                                       [simplification, trusted]
+
     //Inequality sign normalization
     rule          X  >Int Y  => Y  <Int X            [simplification, trusted]
     rule          X >=Int Y  => Y <=Int X            [simplification, trusted]
@@ -101,6 +104,7 @@ module LEMMAS-JAVA [symbolic, kast]
 
     rule #sizeByteArray(_W : WS)       => 1 +Int #sizeByteArray(WS)             [simplification]
     rule #sizeByteArray(#drop(N, BUF)) => maxInt(#sizeByteArray(BUF) -Int N, 0) [simplification]
+    rule #sizeByteArray(#take(N, _  )) => maxInt(N,                          0) [simplification]
 
     rule #take(N, BUF)           => BUF                                              requires N ==Int #sizeByteArray(BUF)  [simplification]
     rule #take(N, BUF1 ++ _BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeByteArray(BUF1) [simplification]
