@@ -65,6 +65,9 @@ module INFINITE-GAS-COMMON
     rule #gas(G) <=Int I *Int I' => false requires                     notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
     rule #gas(G) <=Int I /Int I' => false requires I' =/=Int 0 andBool notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
 
+    rule minInt(G, G') <Int G'' => false requires (notBool G <Int G'') andBool (notBool G' <Int G'') [simplification]
+    rule G <Int minInt(G', G'') => true  requires          G <Int G'   andBool          G  <Int G''  [simplification]
+
     rule #gas(_) <Int Csstore(_, _, _, _) => false [simplification]
     rule #gas(_) <Int Cmem(_, _)          => false [simplification]
 
