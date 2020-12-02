@@ -1,8 +1,31 @@
 requires "evm.md"
 
 module INFINITE-GAS
-    imports EVM
+    imports INFINITE-GAS-JAVA
+    imports INFINITE-GAS-HASKELL
+endmodule
 
+module INFINITE-GAS-HASKELL [kore]
+    imports INFINITE-GAS-COMMON
+
+    rule #gas(_)  <Int _I => false [concrete(_I), simplification]
+    rule #gas(_) <=Int _I => false [concrete(_I), simplification]
+    rule #gas(_) >=Int _I => true  [concrete(_I), simplification]
+    rule _I <=Int #gas(_) => true  [concrete(_I), simplification]
+endmodule
+
+module INFINITE-GAS-JAVA [kast]
+    imports INFINITE-GAS-COMMON
+    imports K-REFLECTION
+
+    rule #gas(_)  <Int I => false requires #isConcrete(I) [simplification]
+    rule #gas(_) <=Int I => false requires #isConcrete(I) [simplification]
+    rule #gas(_) >=Int I => true  requires #isConcrete(I) [simplification]
+    rule I <=Int #gas(_) => true  requires #isConcrete(I) [simplification]
+endmodule
+
+module INFINITE-GAS-COMMON
+    imports EVM
 
  // Symbolic Gas
 
@@ -26,11 +49,6 @@ module INFINITE-GAS
     rule #gas(_) <=Int I => false requires I <=Int pow256 [simplification]
     rule #gas(_) >=Int I => true  requires I <=Int pow256 [simplification]
     rule I <=Int #gas(_) => true  requires I <=Int pow256 [simplification]
-
-    rule #gas(_)  <Int _I => false [concrete(_I), simplification]
-    rule #gas(_) <=Int _I => false [concrete(_I), simplification]
-    rule #gas(_) >=Int _I => true  [concrete(_I), simplification]
-    rule _I <=Int #gas(_) => true  [concrete(_I), simplification]
 
     rule I +Int I' <=Int #gas(G) => true requires                     I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
     rule I -Int I' <=Int #gas(G) => true requires                     I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
