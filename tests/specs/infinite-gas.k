@@ -12,6 +12,10 @@ module INFINITE-GAS-HASKELL [kore]
     rule #gas(_) <=Int _I => false [concrete(_I), simplification]
     rule #gas(_) >=Int _I => true  [concrete(_I), simplification]
     rule _I <=Int #gas(_) => true  [concrete(_I), simplification]
+
+    rule I1 +Int I2  <Int I3         => I1          <Int I3 -Int I2 [concrete(I2, I3), simplification]
+    rule I1          <Int I2 +Int I3 => I1 -Int I3  <Int I2         [concrete(I1, I3), simplification]
+    rule I1         <=Int I2 +Int I3 => I1 -Int I3 <=Int I3         [concrete(I1, I3), simplification]
 endmodule
 
 module INFINITE-GAS-JAVA [kast]
@@ -22,6 +26,10 @@ module INFINITE-GAS-JAVA [kast]
     rule #gas(_) <=Int I => false requires #isConcrete(I) [simplification]
     rule #gas(_) >=Int I => true  requires #isConcrete(I) [simplification]
     rule I <=Int #gas(_) => true  requires #isConcrete(I) [simplification]
+
+    rule I1 +Int I2  <Int I3         => I1          <Int I3 -Int I2 requires #isConcrete(I2) andBool #isConcrete(I3) [simplification]
+    rule I1          <Int I2 +Int I3 => I1 -Int I3  <Int I2         requires #isConcrete(I1) andBool #isConcrete(I3) [simplification]
+    rule I1         <=Int I2 +Int I3 => I1 -Int I3 <=Int I3         requires #isConcrete(I1) andBool #isConcrete(I3) [simplification]
 endmodule
 
 module INFINITE-GAS-COMMON
@@ -65,8 +73,9 @@ module INFINITE-GAS-COMMON
     rule #gas(G) <=Int I *Int I' => false requires                     notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
     rule #gas(G) <=Int I /Int I' => false requires I' =/=Int 0 andBool notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
 
-    rule minInt(G, G') <Int G'' => false requires (notBool G <Int G'') andBool (notBool G' <Int G'') [simplification]
-    rule G <Int minInt(G', G'') => true  requires          G <Int G'   andBool          G  <Int G''  [simplification]
+    rule minInt(G, G') <Int G''  => false requires (notBool G  <Int G'') andBool (notBool G' <Int G'') [simplification]
+    rule G  <Int minInt(G', G'') => true  requires          G  <Int G'   andBool          G <=Int G''  [simplification]
+    rule G <=Int minInt(G', G'') => true  requires          G <=Int G'   andBool          G <=Int G''  [simplification]
 
     rule #gas(_) <Int Csstore(_, _, _, _) => false [simplification]
     rule #gas(_) <Int Cmem(_, _)          => false [simplification]
