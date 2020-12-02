@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta name="keywords" content="runtime, verification, rv, k" />
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | evm-semantics</title>
+
+<!-- <base href="/k/" /> -->
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/kframework/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../../">Homepage</a>
+      <a class="bd-toc-link" href="../../INSTALL">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h2 id="overview">Overview</h2>
+<ol>
+<li>\K{} Framework</li>
+<li>Ethereum Virtual Machine</li>
+<li>KEVM Uses</li>
+</ol>
+<h3 id="links">Links</h3>
+<ul>
+<li>KEVM Repository: <a href="https://github.com/kframework/evm-semantics" target="_blank" rel="noopener">https://github.com/kframework/evm-semantics</a></li>
+<li>K Repository: <a href="https://github.com/kframework/k" target="_blank" rel="noopener">https://github.com/kframework/k</a></li>
+<li>Runtime Verification: <a href="https://runtimeverification.com" target="_blank" rel="noopener">https://runtimeverification.com</a></li>
+<li>Verified smart contracts: <a href="https://github.com/runtimeverification/verified-smart-contracts" target="_blank" rel="noopener">https://github.com/runtimeverification/verified-smart-contracts</a></li>
+</ul>
+<h1 id="%5Ck%7B%7D-framework">\K{} Framework</h1>
+<h2 id="the-vision%3A-language-independence">The Vision: Language Independence</h2>
+<p>Separate development of PL software into two tasks:</p>
+<p>. . .</p>
+<h3 id="the-programming-language">The Programming Language</h3>
+<p>PL expert builds rigorous and formal spec of the language in a high-level human-readable semantic framework.</p>
+<p>. . .</p>
+<h3 id="the-tooling">The Tooling</h3>
+<p>Build each tool <em>once</em>, and apply it to every language, eg.:</p>
+<ul>
+<li>Parser</li>
+<li>Interpreter</li>
+<li>Debugger</li>
+<li>Compiler</li>
+<li>Model Checker</li>
+<li>Program Verifier</li>
+</ul>
+<h2 id="the-vision%3A-language-independence-1">The Vision: Language Independence</h2>
+<p><img src="media/images/k-overview.png" alt="K Tooling Overview"></p>
+<h2 id="current-semantics">Current Semantics</h2>
+<p>Many languages have full or partial \K{} semantics, this lists some notable ones (and their primary usage).</p>
+<ul>
+<li><a href="https://github.com/kframework/c-semantics" target="_blank" rel="noopener">C</a>: detecting undefined behavior</li>
+<li><a href="https://github.com/kframework/java-semantics" target="_blank" rel="noopener">Java</a>: detecting racy code</li>
+<li><a href="https://github.com/kframework/evm-semantics" target="_blank" rel="noopener">EVM</a>: verifying smart contracts</li>
+<li><a href="https://github.com/kframework/llvm-semantics" target="_blank" rel="noopener">LLVM</a>: compiler validation (to x86)</li>
+<li><a href="https://github.com/kframework/javascript-semantics" target="_blank" rel="noopener">JavaScript</a>: finding disagreements between JS engines</li>
+<li><a href="https://github.com/kframework/p4-semantics" target="_blank" rel="noopener">P4</a>: SDN data-layer verification</li>
+<li>many others ...</li>
+</ul>
+<h2 id="%5Ck%7B%7D-specifications%3A-syntax">\K{} Specifications: Syntax</h2>
+<p>Concrete syntax built using EBNF style:</p>
+<pre class="language-k"><code>    <span class="token keyword">syntax</span> Exp <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token keyword">Int</span> <span class="token operator">|</span> <span class="token keyword">Id</span> <span class="token operator">|</span> <span class="token string">&quot;(&quot;</span> Exp <span class="token string">&quot;)&quot;</span> <span class="token punctuation">[</span><span class="token class-name">bracket</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> Exp <span class="token string">&quot;*&quot;</span> Exp
+                 &gt; Exp <span class="token string">&quot;+&quot;</span> Exp <span class="token comment">// looser binding</span>
+
+    <span class="token keyword">syntax</span> Stmt <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token keyword">Id</span> <span class="token string">&quot;:=&quot;</span> Exp
+                  <span class="token operator">|</span> Stmt <span class="token string">&quot;;&quot;</span> Stmt
+                  <span class="token operator">|</span> <span class="token string">&quot;return&quot;</span> Exp
+</code></pre>
+<p>. . .</p>
+<p>This would allow correctly parsing programs like:</p>
+<pre class="language-text"><code>    a := 3 * 2;
+    b := 2 * a + 5;
+    return b
+</code></pre>
+<h2 id="%5Ck%7B%7D-specifications%3A-configuration">\K{} Specifications: Configuration</h2>
+<p>Tell \K{} about the structure of your execution state.
+For example, a simple imperative language might have:</p>
+<pre class="language-k"><code>    <span class="token keyword">configuration</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>     $PGM<span class="token punctuation">:</span>Program <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span>Map         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span>Map         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<p>. . .</p>
+<ul>
+<li><code>&lt;k&gt;</code> will contain the initial parsed program</li>
+<li><code>&lt;env&gt;</code> contains bindings of variable names to store locations</li>
+<li><code>&lt;store&gt;</code> contains bindings of store locations to integers</li>
+</ul>
+<h2 id="%5Ck%7B%7D-specifications%3A-transition-rules">\K{} Specifications: Transition Rules</h2>
+<p>Using the above grammar and configuration:</p>
+<p>. . .</p>
+<h3 id="variable-lookup">Variable lookup</h3>
+<pre class="language-k"><code>    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X<span class="token punctuation">:</span><span class="token keyword">Id</span> <span class="token operator">=&gt;</span> V <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; V  <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<p>. . .</p>
+<h3 id="variable-assignment">Variable assignment</h3>
+<pre class="language-k"><code>    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X <span class="token punctuation">:</span><span class="token operator">=</span> I<span class="token punctuation">:</span><span class="token keyword">Int</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX       <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token punctuation">(</span>V <span class="token operator">=&gt;</span> I<span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution">Example Execution</h2>
+<h3 id="program">Program</h3>
+<pre class="language-text"><code>    a := 3 * 2;
+    b := 2 * a + 5;
+    return b
+</code></pre>
+<h3 id="initial-configuration">Initial Configuration</h3>
+<pre class="language-k"><code>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>     a <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">3</span> <span class="token operator">*</span> <span class="token number">2</span> <span class="token punctuation">;</span> b <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> a <span class="token operator">+</span> <span class="token number">5</span> <span class="token punctuation">;</span> return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution-(cont.)">Example Execution (cont.)</h2>
+<h3 id="variable-assignment-1">Variable assignment</h3>
+<pre class="language-k"><code>    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X <span class="token punctuation">:</span><span class="token operator">=</span> I<span class="token punctuation">:</span><span class="token keyword">Int</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX       <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token punctuation">(</span>V <span class="token operator">=&gt;</span> I<span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="next-configuration">Next Configuration</h3>
+<pre class="language-k"><code>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>     a <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">6</span> <span class="token operator">~&gt;</span> b <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> a <span class="token operator">+</span> <span class="token number">5</span> <span class="token punctuation">;</span> return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution-(cont.)-1">Example Execution (cont.)</h2>
+<h3 id="variable-assignment-2">Variable assignment</h3>
+<pre class="language-k"><code>    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X <span class="token punctuation">:</span><span class="token operator">=</span> I<span class="token punctuation">:</span><span class="token keyword">Int</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX       <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token punctuation">(</span>V <span class="token operator">=&gt;</span> I<span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="next-configuration-1">Next Configuration</h3>
+<pre class="language-k"><code>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>               b <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> a <span class="token operator">+</span> <span class="token number">5</span> <span class="token punctuation">;</span> return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">6</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution-(cont.)-2">Example Execution (cont.)</h2>
+<h3 id="variable-lookup-1">Variable lookup</h3>
+<pre class="language-k"><code>    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X<span class="token punctuation">:</span><span class="token keyword">Id</span> <span class="token operator">=&gt;</span> V <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; V  <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="next-configuration-2">Next Configuration</h3>
+<pre class="language-k"><code>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>     a <span class="token operator">~&gt;</span> b <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> <span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">5</span> <span class="token punctuation">;</span> return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">6</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution-(cont.)-3">Example Execution (cont.)</h2>
+<h3 id="variable-lookup-2">Variable lookup</h3>
+<pre class="language-k"><code>    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X<span class="token punctuation">:</span><span class="token keyword">Id</span> <span class="token operator">=&gt;</span> V <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; V  <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="next-configuration-3">Next Configuration</h3>
+<pre class="language-k"><code>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>     <span class="token number">6</span> <span class="token operator">~&gt;</span> b <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> <span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">5</span> <span class="token punctuation">;</span> return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">6</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution-(cont.)-4">Example Execution (cont.)</h2>
+<h3 id="variable-lookup-3">Variable lookup</h3>
+<pre class="language-k"><code>    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X<span class="token punctuation">:</span><span class="token keyword">Id</span> <span class="token operator">=&gt;</span> V <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; V  <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="next-configuration-4">Next Configuration</h3>
+<pre class="language-k"><code>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>          b <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> <span class="token number">6</span> <span class="token operator">+</span> <span class="token number">5</span> <span class="token punctuation">;</span> return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">6</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution-(cont.)-5">Example Execution (cont.)</h2>
+<h3 id="variable-assignment-3">Variable assignment</h3>
+<pre class="language-k"><code>    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X <span class="token punctuation">:</span><span class="token operator">=</span> I<span class="token punctuation">:</span><span class="token keyword">Int</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX       <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token punctuation">(</span>V <span class="token operator">=&gt;</span> I<span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="next-configuration-5">Next Configuration</h3>
+<pre class="language-k"><code>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>     b <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">17</span> <span class="token operator">~&gt;</span> return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">6</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution-(cont.)-6">Example Execution (cont.)</h2>
+<h3 id="variable-assignment-4">Variable assignment</h3>
+<pre class="language-k"><code>    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X <span class="token punctuation">:</span><span class="token operator">=</span> I<span class="token punctuation">:</span><span class="token keyword">Int</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX       <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token punctuation">(</span>V <span class="token operator">=&gt;</span> I<span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="next-configuration-6">Next Configuration</h3>
+<pre class="language-k"><code>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>                return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">6</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">17</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h1 id="ethereum-virtual-machine">Ethereum Virtual Machine</h1>
+<h2 id="blockchain">Blockchain</h2>
+<ul>
+<li>Append-only ledger of user-submitted transactions.</li>
+<li>Mostly simple transfers of value.</li>
+<li>Miners select next block of transactions using consensus algorithm.[^notThisTalk]</li>
+<li>Ethereum adds:
+<ul>
+<li>New currency! (Ether)</li>
+<li>Accounts have an associated <em>storage</em> and <em>code</em> which only transactions by that account can read/modify (onchain).</li>
+<li>Transactions can have associated <em>programs</em> written in EVM (Ethereum Virtual Machine).[^smartContracts]</li>
+<li>Miners execute transaction code to calculate the new world state (new account balances, storage, code, etc...).</li>
+</ul>
+</li>
+</ul>
+<p>[^notThisTalk]: This talk is not about the consensus algorithms.
+[^smartContracts]: Cool kids call these programs <em>smart contracts</em>, or <em>contracts</em>.</p>
+<h2 id="evm-(ethereum-virtual-machine)">EVM (Ethereum Virtual Machine)</h2>
+<p>Is a stack-based bytecode over 256-bit words.</p>
+<p>Example program (sum 0 - 10):</p>
+<p>\footnotesize</p>
+<pre class="language-text"><code>  PUSH(1, 0)  ; PUSH(1, 0)  ; MSTORE
+; PUSH(1, 10) ; PUSH(1, 32) ; MSTORE
+; JUMPDEST
+; PUSH(1, 0) ; PUSH(1, 32) ; MLOAD ; GT
+; ISZERO ; PUSH(1, 43) ; JUMPI
+; PUSH(1, 32) ; MLOAD ; PUSH(1, 0)  ; MLOAD ; ADD ; PUSH(1, 0)  ; MSTORE
+; PUSH(1, 1)          ; PUSH(1, 32) ; MLOAD ; SUB ; PUSH(1, 32) ; MSTORE
+; PUSH(1, 10) ; JUMP
+; JUMPDEST
+; PUSH(1, 0) ; MLOAD ; PUSH(1, 0) ; SSTORE
+; .OpCodes
+</code></pre>
+<p>\normalsize</p>
+<h2 id="enforcing-termination-(gas)">Enforcing Termination (Gas)</h2>
+<ul>
+<li>User submitted transactions could have infinite loops (DoS attacks!).</li>
+<li>Solution:
+<ul>
+<li>Each opcode costs some <em>gas</em>, paid for in Ether.</li>
+<li>Spent gas awarded to miner, remaining refunded to account.</li>
+</ul>
+</li>
+</ul>
+<p>Notes:</p>
+<ul>
+<li>It&apos;s important to charge according to actual used compute resources.</li>
+<li>Tuning gas costs is an <em>ongoing</em> challenge.
+<ul>
+<li>New hardware available $\rightarrow$ new gas model.</li>
+</ul>
+</li>
+<li>Hardforks update the gas constants/rules.</li>
+</ul>
+<h2 id="intercontract-executions-(and-the-abi)">Intercontract Executions (and the ABI)</h2>
+<ul>
+<li>Contracts can call other contracts (re-entrancy!).</li>
+<li>Payload to other contract is a raw string of bytes called <code>callData</code>.</li>
+<li><em>External</em> to the EVM, the Ethereum ABI has been developed:</li>
+<li>Specifies:
+<ul>
+<li>Calling conventions (how to interpret <code>callData</code> correctly).</li>
+<li>Some high-level types (and their mapping to EVM words).</li>
+</ul>
+</li>
+</ul>
+<h2 id="evm-nuisances">EVM Nuisances</h2>
+<ul>
+<li>Unstructured controlflow: dynamically calculable jump destinations.</li>
+<li>256-bit words: useful for crypto, pain for hardware.</li>
+<li>8-bit word-array local memory: complicates symbolic reasoning.</li>
+<li>No built-in calling conventions: ABI is declared external to EVM.</li>
+<li><code>eval</code> capability: copying bytes as code and running is bad for analysis.</li>
+</ul>
+<h1 id="kevm%3A-status-and-current-uses">KEVM: Status and Current Uses</h1>
+<h2 id="correctness-and-performance">Correctness and Performance</h2>
+<ul>
+<li>Pass the VMTests and GeneralStateTests of the <a href="https://github.com/ethereum/tests" target="_blank" rel="noopener">Ethereum Test Suite</a>.</li>
+</ul>
+<p>. . .</p>
+<ul>
+<li>
+<p>Roughly an order of magnitude slower than cpp-ethereum (reference implementation in C++).</p>
+<p><strong>Test Set</strong> (no. tests)   <strong>KEVM</strong>  <strong>cpp-ethereum</strong></p>
+<hr>
+<p>VMAll (40683)                 99:41              4:42
+GSNormal (22705)              35:00              1:30</p>
+</li>
+</ul>
+<p>. . .</p>
+<ul>
+<li>
+<p>(Non-empty) lines of code comparison:</p>
+<p>KEVM: 2644</p>
+<p>cpp-ethereum: 4588</p>
+</li>
+</ul>
+<h2 id="assertion-violation-checker">Assertion Violation Checker</h2>
+<ul>
+<li>EVM has designated <code>INVALID</code> opcode, halts and discards gas.</li>
+<li>Has been used to specify &quot;assertion failure&quot; in HLLs.[^hlls]</li>
+<li>Symbolically execute and look for paths ending in <code>INVALID</code>.</li>
+</ul>
+<p>. . .</p>
+<ul>
+<li>Co-invariant checking - &quot;<code>INVALID</code> never happens&quot;.</li>
+<li>Very little tooling effort needed after building semantics.</li>
+<li>Similar techniques used to find undefined behaviour in C programs.</li>
+</ul>
+<p>[^hlls]: High-level languages (which compile to EVM).</p>
+<h2 id="reachibility-logic-prover-%5B%40stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta%5D">Reachibility Logic Prover [@stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta]</h2>
+<ul>
+<li>Takes operational semantics as input (no axiomatic semantics).[^inthiscaseK]</li>
+<li>Generalization of Hoare Logic:
+<ul>
+<li>Hoare triple: ${\textit{Pre}} \textit{Code} {\textit{Post}}$</li>
+<li>Reachability claim: $\widehat{\textit{Code}} \land \widehat{\textit{Pre}} \Rightarrow \epsilon \land \widehat{\textit{Post}}$</li>
+<li>&quot;Any instance of $\widehat{\textit{Code}}$ which satisfies $\widehat{Pre}$ either does not terminate or reaches an instance of $\epsilon$ (empty program) which satisfies $\widehat{Post}$&quot;.
+No need for end state in RL to be $\epsilon$ though.</li>
+</ul>
+</li>
+<li>See paper for example claims.</li>
+</ul>
+<p>. . .</p>
+<ul>
+<li>Reachability claims are fed to \K{} prover as normal \K{} rules.</li>
+<li>Functional correctness directly specifiable as set reachability claims.</li>
+<li>Correctness bugs often lead to security bugs.</li>
+</ul>
+<p>[^inthiscaseK]: In this case, we use \K{} to specify the operational semantics.</p>
+<h2 id="reachability-logic-inference-system-%5B%40stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta%5D">Reachability Logic Inference System [@stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta]</h2>
+<p><img src="media/images/proof-system.png" alt="RL Inference System"></p>
+<h2 id="case-study%3A-erc20">Case Study: ERC20</h2>
+<ul>
+<li>&quot;Hello world&quot; of Ethereum smart contracts.</li>
+<li>First full contract we verified.</li>
+<li>Key-value store of addresses to token balances.</li>
+<li>Simple methods for purchasing/transferring/selling tokens.</li>
+</ul>
+<p>. . .</p>
+<h3 id="erc20-uses">ERC20 Uses</h3>
+<ul>
+<li>Codify ownership distribution of a company (tokenizing equity).</li>
+<li>Tokenize pink-slips/deeds (eg. tokenizing houses, cars).</li>
+<li>Ponzi schemes.</li>
+</ul>
+<h2 id="case-study%3A-erc20---scaling-verification">Case Study: ERC20 - Scaling Verification</h2>
+<ul>
+<li>First ERC20 verification took several person-months.</li>
+</ul>
+<p>. . .</p>
+<ul>
+<li>Define state abstractions directly in \K{} itself.
+<ul>
+<li><code>nthbyteof</code> for storing symbolic word (256-bits) as 32 bytes (when written to <code>localMem</code>).</li>
+<li><code>#abiCallData</code> allows using actual function name/signature in call instead of packed bytes representation.</li>
+</ul>
+</li>
+</ul>
+<p>. . .</p>
+<ul>
+<li>Modular specifications
+<ul>
+<li>Re-use same specs for different implementations, only need delta.</li>
+<li>Have 5 verified implementations of ERC20, all different behaviors.[^verifiedSmartContracts]</li>
+</ul>
+</li>
+</ul>
+<p>. . .</p>
+<ul>
+<li>Now, can verify a (reasonable) ERC20 in about a day.</li>
+</ul>
+<p>[^verifiedSmartContracts]: See our audited ERC20s (and other contracts) at <a href="https://github.com/runtimeverification/verified-smart-contracts" target="_blank" rel="noopener">https://github.com/runtimeverification/verified-smart-contracts</a>.</p>
+<h2 id="tool-assisted-security-audits">Tool-Assisted Security Audits</h2>
+<ul>
+<li>
+<p>Runtime Verification, Inc. offers audits as a service, typical process:</p>
+<ol>
+<li>Specify high-level business logic in English, confirm with customer.[^usuallyNotDone]</li>
+<li>Refine to a mathematical definition, confirm with customer.</li>
+<li>Refine to a set of K Reachability Claims, confirm with customer.</li>
+<li>Fix bugs in contract and specification until the K prover is satisfied.</li>
+<li>Send all documents generated and list of issues found to customer.</li>
+</ol>
+</li>
+<li>
+<p>Independent groups also using KEVM to verify contract stack (eg. <a href="https://github.com/kframework/dapphub" target="_blank" rel="noopener">DappHub</a>).</p>
+</li>
+</ul>
+<p>[^usuallyNotDone]: Surprisingly, many smart contract developers don&apos;t have a high-level specification of their contracts.</p>
+<h1 id="thanks!">Thanks!</h1>
+<h2 id="conclusion">Conclusion</h2>
+<ul>
+<li>\K{} used to specify semantics of Ethereum Virtual Machine (EVM).</li>
+<li>Commercial verification efforts carried out with \K{} prover.</li>
+</ul>
+<h2 id="sponsors">Sponsors</h2>
+<p>The work presented in this paper was supported in part by
+the Boeing grant on &quot;Formal Analysis Tools for Cyber Security&quot; 2016-2017,
+the NSF grants CCF-1318191, CCF-1421575, CNS-1330599, CNS-1514163, and IIP-1660186,
+the NSF Graduate Fellowship under Grant No. DGE-1650441,
+an IOHK gift,
+and a grant from the Ethereum Foundation.</p>
+</body></html></div>
+        </main>
+      </div>
+    </div>
+<footer class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-2 mb-md-0 mb-4">
+        <span class="pr-md-5 pr-0 py-3">
+          <a href="https://runtimeverification.com" target="_blank">
+            <picture>
+              <source
+                srcset="../../assets/img/rv-logo-dark.png"
+                media="(prefers-color-scheme: dark)"
+              />
+              <img
+                class="pr-3 footer-logo"
+                src="../../assets/img/rv-logo.png"
+                alt="Runtime Verification Inc logo"
+              />
+            </picture>
+          </a>
+        </span>
+      </div>
+      <div class="col-md-6 mb-md-0 mb-4"></div>
+      <div class="col-md-4 text-md-right">
+        <p class="copyright">
+          &copy; 2020 Runtime Verification Inc. All right reserved.
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=UA-163311512-1"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "UA-163311512-1");
+</script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../../assets/js/index.js"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-QL0D8HRYFW");
+    </script>
+  </body>
+</html>
