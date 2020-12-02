@@ -1,7 +1,6 @@
 EDSL.#ceil32
 EDSL.keccakIntList
 EVM.Cextra
-EVM.Cgascap
 EVM.Cmem
 EVM.Cnew
 EVM.Csstore.new
