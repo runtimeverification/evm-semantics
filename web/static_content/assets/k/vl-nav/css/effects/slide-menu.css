@@ -1,0 +1,37 @@
+/*------------------------------------
+    slide effect
+------------------------------------*/
+
+.slide-effect ul, .slide-effect li > div {
+    display: block !important;
+    visibility: hidden;
+
+    filter: alpha(opacity=0);
+    opacity: 0;
+
+    -webkit-transform: translate3d(0, 50px, 0);
+    -o-transform: translateY(50px);
+    -ms-transform: translateY(50px);
+    transform: translateY(50px);
+
+    transition: opacity .2s ease-in, visibility 0s linear .2s, transform .2s linear ;
+    -webkit-transition: opacity .2s ease-in, visibility 0s linear .2s, -webkit-transform .2s linear;
+    -o-transition: opacity .2s ease-in, visibility 0s linear .2s, -o-transform .2s linear;
+    -ms-transition: opacity .2s ease-in, visibility 0s linear .2s, -ms-transform .2s linear;
+}
+
+.slide-effect li:hover > ul, .slide-effect li:hover > div {
+    visibility: visible;
+
+    transition-delay: 0s;
+    -webkit-transition-delay: 0s;
+    -o-transition-delay: 0s;
+
+    -webkit-transform: translate3d(0, 0, 0);
+    -o-transform: translateY(0);
+    -ms-transform: translateY(0);
+    transform: translateY(0);
+
+    opacity: 1;
+    filter: alpha(opacity=100);
+}

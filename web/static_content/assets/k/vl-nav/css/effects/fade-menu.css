@@ -1,0 +1,22 @@
+/*------------------------------------
+    fade effect
+------------------------------------*/
+
+.fade-effect ul, .fade-effect li > div {
+    display: block !important;
+    visibility: hidden;
+    opacity: 0;
+    filter: alpha(opacity=0);
+    transition: opacity .2s ease-in, visibility 0s linear .2s;
+    -webkit-transition: opacity .2s ease-in, visibility 0s linear .2s;
+    -o-transition: opacity .2s ease-in, visibility 0s linear .2s;
+}
+
+.fade-effect li:hover > ul, .fade-effect li:hover > div {
+    visibility: visible;
+    transition-delay: 0s;
+    -webkit-transition-delay: 0s;
+    -o-transition-delay: 0s;
+    opacity: 1;
+    filter: alpha(opacity=100);
+}

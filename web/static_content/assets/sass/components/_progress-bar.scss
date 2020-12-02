@@ -1,0 +1,80 @@
+/*------------------------------------
+progress bar
+------------------------------------*/
+
+.custom-progress {
+  position: relative;
+  height: 2px;
+  margin-top: 4rem;
+  border-radius: 0;
+  background: $gray-light;
+  box-shadow: none;
+  .progress-bar {
+    .skills-info {
+      font-size: 14px;
+      position: relative;
+      top: -20px;
+      color: $dark;
+      text-align: left;
+    }
+    span {
+      line-height: normal;
+      position: relative;
+      bottom: 0;
+      float: right;
+      color: $dark;
+    }
+  }
+}
+
+.custom-progress:first-child{
+  margin-top: 1.5rem;
+}
+
+.custom-progress.progress {
+  overflow: visible;
+}
+
+
+.custom-progress.dark-progress,
+.custom-progress-inside.dark-progress{
+  .progress-bar{
+    background: $dark;
+  }
+}
+
+.progress-light-txt {
+  .progress-bar {
+    .skills-info, span {
+      color: $white;
+    }
+  }
+}
+
+.custom-progress-inside {
+  height: 30px;
+  margin-top: 2rem;
+  background: $gray-light;
+  .progress-bar {
+    .skills-info {
+      font-size: 14px;
+      position: relative;
+      top: 0;
+      color: $white;
+      text-align: left;
+      padding: 0 1rem;
+
+    }
+    span {
+      line-height: normal;
+      position: relative;
+      bottom: 0;
+      float: right;
+      color: $white;
+    }
+  }
+}
+
+.custom-progress-inside:first-child {
+  margin-top: 0;
+}

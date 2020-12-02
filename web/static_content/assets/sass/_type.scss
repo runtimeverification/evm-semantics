@@ -1,0 +1,214 @@
+body{
+  font: {
+    family: $base-font;
+    size: $base-font-size;
+    weight: 400;
+  }
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -ms-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+
+a{
+  color: $primary-color;
+  text-decoration: none;
+  transition: all .3s;
+  &:hover{
+    color: $primary-color-dark;
+    text-decoration: none;
+  }
+}
+
+button, a, .btn {
+  outline: 0;
+  transition: all .3s;
+  &:focus{
+    box-shadow: none !important;
+    outline: none;
+    text-decoration: none;
+  }
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+h1, .h1,
+h2, .h2,
+h3, .h3,
+h4, .h4,
+h5, .h5,
+h6, .h6 {
+  font: {
+    weight: bold;
+    family: $base-font;
+  }
+  //color: $dark;
+  transition: all .3s;
+  a{
+    color: $dark;
+    &:hover{
+      color: $primary-color;
+      text-decoration: none;
+    }
+  }
+}
+
+
+h1, .h1{
+  font-size: 48px;
+}
+
+h2, .h2{
+  font-size: 36px;
+}
+
+h3, .h3{
+  font-size: 32px;
+}
+
+h4, .h4{
+  font-size: 28px;
+}
+
+h5, .h5{
+  font-size: 24px;
+}
+
+h6, .h6{
+  font-size: 18px;
+}
+
+.section-gap {
+  position: relative;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+@media (max-width: 991px) {
+  h1, .h1{
+    font-size: 36px;
+  }
+
+  h2, .h2{
+    font-size: 30px;
+  }
+
+  h3, .h3{
+    font-size: 24px;
+  }
+
+  h4, .h4{
+    font-size: 20px;
+  }
+
+  h5, .h5{
+    font-size: 18px;
+  }
+
+  h6, .h6{
+    font-size: 16px;
+  }
+
+  .app-header + .section-gap {
+    padding-top: 5rem;
+  }
+
+}
+
+@media (max-width: 767px) {
+  h1, .h1{
+    font-size: 32px;
+  }
+
+  h2, .h2{
+    font-size: 28px;
+  }
+
+  //h3, .h3{
+  //  font-size: 24px;
+  //}
+  //
+  //h4, .h4{
+  //  font-size: 20px;
+  //}
+  //
+  //h5, .h5{
+  //  font-size: 18px;
+  //}
+  //
+  //h6, .h6{
+  //  font-size: 16px;
+  //}
+
+  p, a{
+    font-size: 14px;
+  }
+
+}
+
+@media (max-width: 667px) {
+  h1, .h1{
+    font-size: 30px;
+    a{
+      font-size: 30px;
+    }
+  }
+
+  h2, .h2{
+    font-size: 26px;
+    a{
+      font-size: 26px;
+    }
+  }
+
+  h3, .h3{
+    font-size: 22px;
+    a{
+      font-size: 22px;
+    }
+  }
+
+  h4, .h4{
+    font-size: 18px;
+    a{
+      font-size: 18px;
+    }
+  }
+
+  h5, .h5{
+    font-size: 16px;
+    a{
+      font-size: 16px;
+    }
+  }
+
+  h6, .h6{
+    font-size: 14px;
+    a{
+      font-size: 14px;
+    }
+  }
+
+  p, a{
+    font-size: 14px;
+  }
+
+}
+
+@media (min-width: 769px) {
+  .section-gap {
+    padding-top: 7.5rem;
+    padding-bottom: 7.5rem;
+  }
+}
+
+

@@ -1,0 +1,44 @@
+/*------------------------------------
+blurb
+------------------------------------*/
+
+.blurb{
+  i{
+    font-size: 3rem;
+    display: inline-block;
+    margin-bottom: 2rem;
+  }
+  p{
+    color: $gray-dark;
+    padding-right: 2rem;
+  }
+}
+
+.blurb.text-right {
+  p{
+    padding-right: 0;
+    padding-left: 2rem;
+  }
+}
+
+.blurb-border {
+  border: 1px solid $border-color;
+  border-radius: 6px;
+  padding: 1.8rem;
+  background: $white;
+  p{
+    padding: 0;
+    margin-bottom: .5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .blurb{
+    i{
+      font-size: 2.5rem;
+    }
+  }
+  .blurb-border{
+    margin-bottom: 1.5rem;
+  }
+}

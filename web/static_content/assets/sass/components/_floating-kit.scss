@@ -1,0 +1,43 @@
+/*------------------------------------
+floating kit
+------------------------------------*/
+
+.floating-search-wrap {
+  position: fixed;
+  left: 3%;
+  top: 40%;
+  a{
+    text-decoration: none;
+    color: $dark;
+    display: block;
+    margin-bottom: 1.5rem;
+    &:hover{
+      color: $primary-color;
+    }
+  }
+}
+
+.floating-social-link {
+  position: fixed;
+  right: 0%;
+  top: 70%;
+  transform: translateX(30%) rotate(-90deg);
+  a{
+    margin-left: .5rem;
+    color: $dark;
+    text-decoration: none;
+    &:hover{
+      color: $primary-color;
+    }
+  }
+  span{
+    color: $gray;
+  }
+}
+
+
+@media (max-width: 1249px) {
+  .floating-search-wrap, .floating-social-link {
+    display: none;
+  }
+}

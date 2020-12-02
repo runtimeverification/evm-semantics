@@ -1,0 +1,57 @@
+{
+  "name": "evm-semantics",
+  "version": "1.0.0",
+  "description": "--- permalink: README.html copyright: Copyright (c) 2010-2020 Runtime Verification Team. All Rights Reserved. ---",
+  "main": "index.html",
+  "scripts": {
+    "build": "npm run build-css && npm run build-js && npm run build-html",
+    "build-css": "parcel build --no-source-maps --no-autoinstall --bundle-node-modules -d ./public_content/assets/css --public-url /assets/css ./static_content/assets/sass/index.scss",
+    "build-js": "parcel build --no-source-maps --no-autoinstall --bundle-node-modules -d ./public_content/assets/js --public-url /assets/js ./static_content/assets/js/index.js",
+    "build-html": "node build-html.js",
+    "build-sitemap": "node sitemap/build-sitemap.js https://jellopaper.org/",
+    "serve": "http-server public_content"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kframework/evm-semantics.git"
+  },
+  "author": "EVM Semantics | Runtime Verification",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "express": "^4.17.1",
+    "get-port": "^5.1.1",
+    "glob": "^7.1.6",
+    "http-server": "^0.12.3",
+    "markdown-it": "^11.0.0",
+    "markdown-it-anchor": "^6.0.0",
+    "parcel": "^1.12.4",
+    "sass": "^1.26.9",
+    "sitemap-generator": "^8.5.1",
+    "webfonts-generator": "^0.4.0"
+  },
+  "dependencies": {
+    "animate.css": "^3.7.2",
+    "ansi_up": "^4.0.4",
+    "bootstrap": "^4.3.1",
+    "bootstrap-select": "^1.13.9",
+    "clipboard": "2.0.4",
+    "imagesloaded": "3.1.8",
+    "isotope-layout": "2.2.0",
+    "jquery": "^3.5.1",
+    "jquery-countdown": "2.2.0",
+    "jquery-visible": "^1.2.0",
+    "jquery.animate-number": "0.0.11",
+    "magnific-popup": "1.0.0",
+    "owl.carousel": "2.3.4",
+    "popper.js": "^1.16.1",
+    "prismjs": "^1.21.0",
+    "toastr": "2.1.4",
+    "twitter-fetcher": "18.0.2",
+    "wow.js": "1.2.2"
+  },
+  "bugs": {
+    "url": "https://github.com/kframework/evm-semantics/issues"
+  },
+  "homepage": "https://github.com/kframework/evm-semantics/#readme"
+}

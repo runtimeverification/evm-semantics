@@ -1,0 +1,153 @@
+/*------------------------------------
+hero banner
+------------------------------------*/
+
+.hero-img {
+  background-repeat: no-repeat;
+  background-position: 50%;
+  background-size: cover;
+}
+
+.hero-img,
+.bg-overlay,
+.bg-overlay:before,
+.bg-theme-overlay,
+.bg-theme-overlay:before,
+.bg-navy-overlay,
+.bg-navy-overlay:before,
+.bg-gradient-overlay,
+.bg-gradient-overlay:before{
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+
+.bg-overlay:before {
+  content: '';
+  background-color: $dark;
+}
+
+.bg-theme-overlay:before{
+  content: '';
+  background: $primary-color;
+}
+
+.bg-navy-overlay:before {
+  content: '';
+  background: $navy-color;
+}
+
+.bg-gradient-overlay:before{
+  content: '';
+  background-image: linear-gradient(to right, $primary-color 0%, $secondary-color 100%);
+}
+
+[data-overlay="0"]::before {
+  opacity: 0;
+}
+
+[data-overlay="1"]::before {
+  opacity: .1;
+}
+
+[data-overlay="2"]::before {
+  opacity: .2;
+}
+
+[data-overlay="3"]::before {
+  opacity: .3;
+}
+
+[data-overlay="4"]::before {
+  opacity: .4;
+}
+
+[data-overlay="5"]::before {
+  opacity: .5;
+}
+
+[data-overlay="6"]::before {
+  opacity: .6;
+}
+
+[data-overlay="7"]::before {
+  opacity: .7;
+}
+
+[data-overlay="8"]::before {
+  opacity: .8;
+}
+
+[data-overlay="9"]::before {
+  opacity: .9;
+}
+
+@media (max-width: 768px) {
+  .section-top {
+    padding-top: 5rem;
+  }
+  .hero-avatar-bottom {
+    position: relative;
+    bottom: -3rem;
+  }
+
+  .scroll-down{
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    span{
+      display: block;
+      color: $primary-color;
+    }
+  }
+
+  .scroll-down-circle{
+    display: none;
+  }
+
+}
+@media (min-width: 769px) {
+  .section-full> .container > .row {
+    min-height: calc(100vh - 7.5rem * 2 - 5.8125rem)
+  }
+
+  .section-full .container > .row:before {
+    min-height: inherit;
+    content: ""
+  }
+
+  .section-top {
+    padding-top: 13.3125rem;
+  }
+
+  .scroll-down{
+    bottom: 50px;
+    left: 0;
+    right: 0;
+    span{
+      display: block;
+      color: $primary-color;
+    }
+  }
+
+  .scroll-down-circle{
+    background: $white;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+    position: absolute;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0.2rem 0.8rem rgba(36, 36, 36, .15);
+  }
+
+}
+
+
+
+

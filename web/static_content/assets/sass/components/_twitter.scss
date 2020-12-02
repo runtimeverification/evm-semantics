@@ -1,0 +1,97 @@
+/*------------------------------------
+twitter feed
+------------------------------------*/
+
+.twitter-feed-style {
+  background: $white;
+  border: 1px solid $canvas-color;
+  position: relative;
+  &:after{
+    content: "\f099";
+    font-family: 'FontAwesome';
+    font-size: 24px;
+    color: $gray-light;
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+  }
+  ul{
+    list-style: none;
+    padding: 0;
+    margin-bottom: 0;
+    li{
+      overflow: hidden;
+      padding: 2rem;
+      position: relative;
+    }
+  }
+  .user {
+    width: 18%;
+    float: left;
+    margin-bottom: 0.92857143em;
+    img {
+      border-radius: 50%;
+      max-width: 80%;
+      height: auto;
+    }
+
+    [data-scribe="component:author"] {
+      position: absolute;
+      top: 10%;
+      left: 18%;
+      margin-left: 1.3rem;
+      a{
+        text-decoration: none;
+      }
+      span{
+        display: block;
+      }
+      [data-scribe="element:name"] {
+        font-weight: bold;
+        color: $dark;
+      }
+      [data-scribe="element:screen_name"] {
+        font-size: 14px;
+        color: $gray-dark;
+      }
+    }
+  }
+
+  .tweet {
+    margin-top: 4rem;
+    margin-bottom: 0.46428571em;
+    color: $gray-dark;
+    word-break: break-all;
+    a{
+      margin: 0 3px;
+    }
+  }
+  .tweet,
+  .timePosted {
+    width: 82%;
+    float: right;
+  }
+  .timePosted{
+    margin-bottom: 0;
+    font-size: 14px;
+    a{
+      color: $gray-dark;
+    }
+  }
+  .interact {
+    display: none;
+  }
+}
+
+.twitter-feed-alt {
+  .user [data-scribe='component:author']{
+    display: none;
+  }
+  .tweet{
+    margin-top: 0;
+  }
+  &:after{
+    content: '';
+  }
+}
+

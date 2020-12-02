@@ -1,0 +1,124 @@
+/*------------------------------------
+steps
+------------------------------------*/
+
+.steps-solid,
+.steps-dashed,
+.steps-dashed-light {
+  background: $white;
+  border: 2px solid $canvas-color;
+  width: 150px;
+  height: 150px;
+  line-height: 150px;
+  text-align: center;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+
+  &:after {
+    content: "";
+    border-bottom: 1px dashed $gray;
+    position: absolute;
+    top: 50%;
+    right: -110%;
+    width: 100px;
+  }
+
+  i{
+    line-height: 150px;
+  }
+
+  .step-number{
+    line-height: normal;
+    position: absolute;
+    top: 10px;
+    right: 5px;
+    padding: 2px 10px;
+    color: $white;
+    border-radius: 30px;
+    background: $primary-color;
+    font-size: 12px;
+    font-weight: bold;
+    border: 3px solid $white;
+  }
+}
+
+.steps-solid.step-last,
+.steps-dashed.step-last,
+.steps-dashed-light.step-last{
+  &:after{
+    border-bottom: none;
+  }
+}
+
+.steps-dashed{
+  border: 2px dashed $gray;
+  background: transparent;
+}
+
+
+.steps-dashed-light{
+  border: 2px dashed $white;
+  background: transparent;
+  i{
+    color: $white;
+  }
+  &:after {
+    border-bottom: 2px dashed $white;
+  }
+}
+
+.steps-dashed-light + .steps-info{
+  color: $white;
+}
+
+.steps-info {
+  padding: 0 2rem;
+}
+
+@media (max-width: 1024px) {
+  .steps-solid,
+  .steps-dashed,
+  .steps-dashed-light{
+    &:after {
+      top: 50%;
+      right: -110%;
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: 991px) {
+  .steps-solid,
+  .steps-dashed,
+  .steps-dashed-light{
+    &:after {
+      right: -60%;
+      width: 55%;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .steps-solid,
+  .steps-dashed,
+  .steps-dashed-light{
+    width: 100px;
+    height: 100px;
+    line-height: 100px;
+    i{
+      line-height: 100px;
+    }
+    &:after {
+      border-bottom: none;
+    }
+    .step-number{
+      right: -15px;
+    }
+  }
+
+  .steps-info{
+    margin-bottom: 2rem;
+  }
+
+}

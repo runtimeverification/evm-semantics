@@ -1,0 +1,338 @@
+/*------------------------------------
+portfolio
+------------------------------------*/
+
+/* portfolio filter */
+.portfolio-filter {
+    list-style: none;
+    margin-bottom: 50px;
+    padding: 0 1rem;
+    li {
+        display: inline-block;
+        margin: 0 20px;
+        position: relative;
+        font-family: $secondary-font;
+        a {
+            color: $gray-dark;
+            text-transform: capitalize;
+            text-decoration: none;
+            font-size: 16px;
+            &:hover {
+                color: $dark;
+            }
+        }
+        &:after{
+            content: '/';
+            position: absolute;
+            right: -30px;
+            top: 0px;
+            color: $gray-dark;
+        }
+    }
+    li:last-child{
+        &:after{
+            content: ' ';
+        }
+    }
+    li.active {
+        a {
+            color: $dark;
+        }
+    }
+}
+
+
+/*portfolio-grid*/
+
+.portfolio-grid {
+    .portfolio-item {
+        float: left;
+        a {
+            text-decoration: none;
+            &:focus {
+                outline: none;
+            }
+        }
+        .portfolio-image {
+            display: block;
+            position: relative;
+            img {
+                display: block;
+                width: 100%;
+                height: auto;
+            }
+            .portfolio-hover-title {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                margin: 0;
+                transition: all .3s;
+                opacity: 0;
+                background-color: rgba(36, 36, 36, .9);
+                padding: 30px;
+                justify-content: center;
+                align-items: center;
+
+                .portfolio-content {
+                    position: absolute;
+                    bottom: 2rem;
+                    left: 2rem;
+                    //transform: translateY(-55%);
+                    width: 100%;
+                    text-align: left;
+                    transition: all .3s;
+                    h6 {
+                        color: $white;
+                        margin-bottom: .2rem;
+                        //font-weight: normal;
+                        font-size: 16px;
+                    }
+                    .portfolio-category {
+                        span {
+                            color: $gray;
+                            margin-right: 5px;
+                            font-family: $secondary-font;
+                            font-size: 14px;
+                        }
+                    }
+                }
+            }
+        }
+        &:hover {
+            .portfolio-hover-title {
+                opacity: 1;
+                .portfolio-content {
+                    //top: 50%;
+                }
+            }
+        }
+    }
+    .portfolio-title {
+        margin: 5% 0;
+        .portfolio-content {
+            h6{
+                color: $dark;
+                margin-bottom: .2rem;
+            }
+            span{
+                font-family: $secondary-font;
+                color: $gray-dark;
+            }
+        }
+    }
+}
+
+
+.portfolio-grid.grid-2 {
+    .portfolio-item {
+        width: 50%;
+        @media (max-width: 768px) {
+            width: 50%;
+        }
+        @media (max-width: 568px) {
+            width: 100%;
+        }
+    }
+}
+
+
+
+.portfolio-grid.grid-3 {
+    .portfolio-item {
+        width: 33.33%;
+        @media (max-width: 768px) {
+            width: 50%;
+        }
+        @media (max-width: 568px) {
+            width: 100%;
+        }
+    }
+}
+
+
+.portfolio-grid.grid-4 {
+    .portfolio-item {
+        width: 25%;
+        @media (max-width: 768px) {
+            width: 50%;
+        }
+        @media (max-width: 568px) {
+            width: 100%;
+        }
+        .portfolio-content{
+            h6{
+                font-size: 16px;
+            }
+            span{
+                font-size: 14px;
+            }
+        }
+    }
+}
+
+
+
+.portfolio-grid.grid-5 {
+    .portfolio-item {
+        width: 20%;
+        @media (max-width: 768px) {
+            width: 50%;
+        }
+        @media (max-width: 568px) {
+            width: 100%;
+        }
+        .portfolio-content{
+            h6{
+                font-size: 14px;
+            }
+            span{
+                font-size: 14px;
+            }
+        }
+    }
+}
+
+
+// gutter
+
+.portfolio-grid.grid-2.gutter {
+    margin-right: -2%;
+    .portfolio-item {
+        width: 48%;
+        margin-right: 2%;
+        margin-bottom: 2%;
+
+        @media (max-width: 768px) {
+            width: 48%;
+        }
+        @media (max-width: 568px) {
+            width: 98%;
+        }
+    }
+}
+
+
+.portfolio-grid.grid-3.gutter {
+    margin-right: -2%;
+    .portfolio-item {
+        width: 31.33%;
+        margin-right: 2%;
+        margin-bottom: 2%;
+
+        @media (max-width: 768px) {
+            width: 48%;
+        }
+        @media (max-width: 568px) {
+            width: 98%;
+        }
+    }
+}
+
+
+.portfolio-grid.grid-4.gutter {
+    margin-right: -2%;
+    .portfolio-item {
+        width: 23%;
+        margin-right: 2%;
+        margin-bottom: 2%;
+
+        @media (max-width: 768px) {
+            width: 48%;
+        }
+        @media (max-width: 568px) {
+            width: 98%;
+        }
+    }
+}
+
+
+.portfolio-grid.grid-5.gutter {
+    margin-right: -2%;
+    .portfolio-item {
+        width: 18%;
+        margin-right: 2%;
+        margin-bottom: 2%;
+
+        @media (max-width: 768px) {
+            width: 48%;
+        }
+        @media (max-width: 568px) {
+            width: 98%;
+        }
+    }
+}
+
+        
+.portfolio-masonry {
+    .portfolio-title {
+        padding-left: 3%;
+    }
+}
+        
+
+.portfolio-masonry.gutter {
+    .portfolio-title {
+        padding-left: 0;
+    }
+}
+
+.portfolio-grid.gutter,
+.portfolio-masonry.gutter {
+    .portfolio-item {
+        .portfolio-image {
+            .portfolio-hover-title{
+                border-radius: 6px;
+            }
+        }
+    }
+    img {
+        border-radius: 6px;
+    }
+}
+
+
+/*---------------------------------------
+ isotop style
+ --------------------------------------- */
+
+.isotope-item {
+    z-index: 2;
+}
+
+
+.isotope-hidden.isotope-item {
+    pointer-events: none;
+    z-index: 1;
+}
+
+
+/*Isotope CSS3 transitions */
+
+.isotope,
+.isotope .isotope-item {
+    transition-duration: 0.8s;
+}
+
+.isotope {
+    transition-property: height, width;
+}
+
+.isotope .isotope-item {
+    transition-property: transform, opacity;
+}
+
+/*disabling Isotope CSS3 transitions */
+
+.isotope.no-transition,
+.isotope.no-transition .isotope-item,
+.isotope .isotope-item.no-transition {
+    transition-duration: 0s;
+}
+
+/* disable CSS transitions for containers with infinite scrolling*/
+.isotope.infinite-scrolling {
+    transition: none;
+}
+
