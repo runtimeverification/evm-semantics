@@ -20,7 +20,6 @@ Repository Structure
 
 The following files constitute the KEVM semantics:
 
--   [krypto.md](krypto.md) sets up some basic cryptographic primitives.
 -   [network.md](network.md) provides the status codes which are reported to an Ethereum client on execution exceptions.
 -   [json-rpc.md](json-rpc.md) is an implementation of JSON RPC in K.
 -   [evm-types.md](evm-types.md) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
