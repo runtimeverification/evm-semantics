@@ -15,3 +15,6 @@
 	path = deps/metropolis
 	url = https://github.com/matze/mtheme
 	ignore = untracked
+[submodule "web/k-web-theme"]
+	path = web/k-web-theme
+	url = https://github.com/runtimeverification/k-web-theme

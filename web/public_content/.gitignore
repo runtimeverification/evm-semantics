@@ -1,5 +1,6 @@
 assets/css
 assets/js
+assets/sass
 *.html
 tutorial
 sitemap.xml
