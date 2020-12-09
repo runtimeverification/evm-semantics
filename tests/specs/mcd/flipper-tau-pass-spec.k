@@ -27,7 +27,7 @@ module FLIPPER-TAU-PASS-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> #gas(VGas) => #gas(VGas +Int 1169) </gas>
+            <gas> #gas(VGas) => #gas(VGas +Int -1169) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>

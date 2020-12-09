@@ -27,7 +27,7 @@ module END-SUBUU-PASS-SPEC
             <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x -Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 14664 => 14689 </pc>
-            <gas> #gas(VGas) => #gas(VGas +Int 54) </gas>
+            <gas> #gas(VGas) => #gas(VGas +Int -54) </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
