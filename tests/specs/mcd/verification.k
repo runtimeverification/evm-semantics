@@ -388,9 +388,8 @@ module VERIFICATION
 
     // ### Gas Simplification
 
-    rule I -Int I => 0                                                                                                                                                              [simplification]
-    rule (notBool (A andBool B)) andBool A => (notBool B) andBool A                                                                                                                 [simplification]
-    rule chop(Y) ==K 0 => Y ==Int 0 requires #rangeSInt(256, Y)                                                                                                                     [simplification]
-    rule ((I1 +Int I2) +Int I3) +Int I4 => (I1 +Int I3) +Int (I2 +Int I4) requires #isConcrete(I2) andBool #isConcrete(I4) andBool notBool (#isConcrete(I1) orBool #isConcrete(I3)) [simplification]
+    rule I -Int I => 0                                              [simplification]
+    rule (notBool (A andBool B)) andBool A => (notBool B) andBool A [simplification]
+    rule chop(Y) ==K 0 => Y ==Int 0 requires #rangeSInt(256, Y)     [simplification]
 
 endmodule
