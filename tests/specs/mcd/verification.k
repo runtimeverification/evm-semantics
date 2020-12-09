@@ -386,10 +386,4 @@ module VERIFICATION
 
     rule ADDR in (SetItem(I) REST) => ADDR in REST requires #notPrecompileAddress(ADDR) andBool notBool #notPrecompileAddress(I) [simplification]
 
-    // ### Gas Simplification
-
-    rule I -Int I => 0                                              [simplification]
-    rule (notBool (A andBool B)) andBool A => (notBool B) andBool A [simplification]
-    rule chop(Y) ==K 0 => Y ==Int 0 requires #rangeSInt(256, Y)     [simplification]
-
 endmodule
