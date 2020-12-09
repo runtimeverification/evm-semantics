@@ -50,13 +50,32 @@ module INFINITE-GAS-COMMON
  // ---------------------------------------------------------------------------------------------------------
     rule #gas(_, _, _) => #gas(0)
 
-    rule #gas(G) -Int G' => #gas(G +Int G') [simplification]
-    rule #gas(G) +Int G' => #gas(G -Int G') [simplification]
+    rule #gas(G) +Int G' => #gas(G +Int G') requires 0 <Int G' orBool 0 -Int G' <Int #gas(G)  [simplification]
+    rule G +Int #gas(G') => #gas(G +Int G') requires 0 <Int G  orBool 0 -Int G  <Int #gas(G') [simplification]
+
+    rule #gas(G) -Int G' => #gas(G -Int G') requires 0 <Int G' andBool G' <Int #gas(G) [simplification]
+
+    rule #gas(G) *Int G' => #gas(G *Int G') requires 0 <Int G' [simplification]
+    rule G *Int #gas(G') => #gas(G *Int G') requires 0 <Int G  [simplification]
+
+    rule #gas(G) /Int G' => #gas(G /Int G') requires 0 <Int G' andBool G' <Int #gas(G)  [simplification]
+    rule G /Int #gas(G') => 0               requires 0 <Int G  andBool G  <Int #gas(G') [simplification]
+
+    rule #gas(#gas(G)) => #gas(G) [simplification]
+
+    rule #gas(G) -Int #gas(G') => #gas(G -Int G') [simplification]
+
+    rule minInt(#gas(G), #gas(G')) => #gas(minInt(G, G')) [simplification]
+
+    rule #gas(_)  <Int #gas(_) => false [simplification]
+    rule #gas(_) <=Int #gas(_) => true  [simplification]
 
     rule #gas(_)  <Int I => false requires I <=Int pow256 [simplification]
     rule #gas(_) <=Int I => false requires I <=Int pow256 [simplification]
     rule #gas(_) >=Int I => true  requires I <=Int pow256 [simplification]
-    rule I <=Int #gas(_) => true  requires I <=Int pow256 [simplification]
+
+    rule I  <Int #gas(_) => true requires I <=Int pow256 [simplification]
+    rule I <=Int #gas(_) => true requires I <=Int pow256 [simplification]
 
     rule I +Int I' <=Int #gas(G) => true requires                     I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
     rule I -Int I' <=Int #gas(G) => true requires                     I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
@@ -73,14 +92,15 @@ module INFINITE-GAS-COMMON
     rule #gas(G) <=Int I *Int I' => false requires                     notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
     rule #gas(G) <=Int I /Int I' => false requires I' =/=Int 0 andBool notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
 
-    rule minInt(G, G') <Int G''  => false requires (notBool G  <Int G'') andBool (notBool G' <Int G'') [simplification]
-    rule G  <Int minInt(G', G'') => true  requires          G  <Int G'   andBool          G <=Int G''  [simplification]
-    rule G <=Int minInt(G', G'') => true  requires          G <=Int G'   andBool          G <=Int G''  [simplification]
+    rule minInt(G, G') <Int G''  => G <Int G'' orBool G' <Int G''  [simplification]
+    rule G  <Int minInt(G', G'') => G  <Int G' andBool G  <Int G'' [simplification]
+    rule G <=Int minInt(G', G'') => G <=Int G' andBool G <=Int G'' [simplification]
 
-    rule #gas(_) <Int Csstore(_, _, _, _) => false [simplification]
-    rule #gas(_) <Int Cmem(_, _)          => false [simplification]
+    rule 0 <Int Csstore(_, _, _, _)        => true  [simplification]
+    rule Csstore(_, _, _, _) <Int #gas(_)  => true  [simplification]
+    rule #gas(_)  <Int Csstore(_, _, _, _) => false [simplification]
+    rule #gas(_) >=Int Csstore(_, _, _, _) => true  [simplification]
 
-    rule #gas(_) >=Int Csstore(_, _, _, _) => true [simplification]
-
-    rule Cmem(_, _) <=Int #gas(_) => true [simplification]
+    rule #gas(_) <Int Cmem(_, _)  => false [simplification]
+    rule Cmem(_, _) <=Int #gas(_) => true  [simplification]
 endmodule
