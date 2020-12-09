@@ -50,4 +50,9 @@ module INFINITE-GAS-SPEC
 
     claim <k> runLemma((VGas +Int -3844) -Int ((VGas -Int ((VGas +Int -4544) /Int 64)) +Int -3844)) => doneLemma((VGas +Int -4544) /Int 64) ... </k>
 
+    claim <k> runLemma(#gas((((((VGas +Int -1148) -Int G1) +Int -866) -Int G2) +Int -4337)))
+           => doneLemma(#gas(((VGas -Int G1) -Int G2) +Int -6351))
+          ...
+          </k>
+
 endmodule
