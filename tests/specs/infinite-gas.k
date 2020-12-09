@@ -15,7 +15,7 @@ module INFINITE-GAS-HASKELL [kore]
 
     rule I1 +Int I2  <Int I3         => I1          <Int I3 -Int I2 [concrete(I2, I3), simplification]
     rule I1          <Int I2 +Int I3 => I1 -Int I3  <Int I2         [concrete(I1, I3), simplification]
-    rule I1         <=Int I2 +Int I3 => I1 -Int I3 <=Int I3         [concrete(I1, I3), simplification]
+    rule I1         <=Int I2 +Int I3 => I1 -Int I3 <=Int I2         [concrete(I1, I3), simplification]
 endmodule
 
 module INFINITE-GAS-JAVA [kast]
@@ -29,7 +29,7 @@ module INFINITE-GAS-JAVA [kast]
 
     rule I1 +Int I2  <Int I3         => I1          <Int I3 -Int I2 requires #isConcrete(I2) andBool #isConcrete(I3) [simplification]
     rule I1          <Int I2 +Int I3 => I1 -Int I3  <Int I2         requires #isConcrete(I1) andBool #isConcrete(I3) [simplification]
-    rule I1         <=Int I2 +Int I3 => I1 -Int I3 <=Int I3         requires #isConcrete(I1) andBool #isConcrete(I3) [simplification]
+    rule I1         <=Int I2 +Int I3 => I1 -Int I3 <=Int I2         requires #isConcrete(I1) andBool #isConcrete(I3) [simplification]
 endmodule
 
 module INFINITE-GAS-COMMON
