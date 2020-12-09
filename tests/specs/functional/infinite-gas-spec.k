@@ -46,4 +46,6 @@ module INFINITE-GAS-SPEC
     claim <k> runLemma(#gas(G) <Int #gas(G' +Int 700))  => doneLemma(false) ... </k>
     claim <k> runLemma(#gas(G' +Int 700) <=Int #gas(G)) => doneLemma(true)  ... </k>
 
+    claim <k> runLemma(#gas((((VGas +Int -1259) -Int Csstore(ISTANBUL, 1, 1, Junk_0)) +Int -4339))) => doneLemma(#gas((VGas -Int Csstore(ISTANBUL, 1, 1, Junk_0)) +Int -5598)) ... </k>
+
 endmodule
