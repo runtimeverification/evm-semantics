@@ -79,7 +79,8 @@ module INFINITE-GAS-COMMON
 
     rule #gas(G) -Int #gas(G') => #gas(G -Int G') [simplification]
 
-    rule minInt(#gas(G), #gas(G')) => #gas(minInt(G, G')) [simplification]
+    rule minInt(#gas(G), #gas(G'))              => #gas(minInt(G, G'))              [simplification]
+    rule #if B #then #gas(G) #else #gas(G') #fi => #gas(#if B #then G #else G' #fi) [simplification]
 
     rule #gas(_)  <Int #gas(_) => false [simplification]
     rule #gas(_) <=Int #gas(_) => true  [simplification]
