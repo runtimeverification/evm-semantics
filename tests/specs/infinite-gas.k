@@ -1,5 +1,11 @@
 requires "evm.md"
 
+ //
+ // Infinite Gas
+ // Here we use the construct `#gas` to represent positive infinity, while tracking the gas formula through execution.
+ // This allows (i) computing final gas used, and (ii) never stopping because of out-of-gas.
+ //
+
 module INFINITE-GAS
     imports INFINITE-GAS-JAVA
     imports INFINITE-GAS-HASKELL
@@ -53,12 +59,6 @@ module INFINITE-GAS-COMMON
 
     syntax Int ::= #gas ( Int , Int , Int )  [function]  // startGas, nonMemory, memory
  //-----------------------------------------------------------------------------------
-
- //
- // Infinite Gas
- // Here we use the construct `#gas` to count _up_ gas used instead of counting down.
- // This allows (i) computing final gas used, and (ii) never stopping because of out-of-gas.
- //
 
     syntax Int ::= #gas ( Int ) [function, functional, no-evaluators, klabel(infGas), symbol, smtlib(infGas)]
  // ---------------------------------------------------------------------------------------------------------
