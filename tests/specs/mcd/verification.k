@@ -77,15 +77,7 @@ module VERIFICATION-SYNTAX
 
     rule (ADDR |Int (notAddrMask &Int ADDR_UINT48_UINT48)) /Int pow160 => ADDR_UINT48_UINT48 /Int pow160 requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeAddress(ADDR) [simplification]
 
-    //
-    // **TODO**: Avoid splitting these lemmas in the 0 second-argument case.
-    // The proof which uses these lemmas (flopper-tick-pass-rough) ends up with side-conditions which look like this:
-    //  Tic ==K 0 andBool 0 ==K maxUInt48 &Int (#lookup(STORAGE, ADDR) /Int pow160)
-    // So if we just have the one rule, then structural matching on the RHS cannot determine that `0` matches `maxUInt48 &Int #lookup(STORAGE, ADDR) /Int pow160)`.
-    // This is a consequence of how the Java backend decides to treat substitutions in the side-condition.
-    //
-    rule (UINT48_2 *Int pow208) |Int (maxUInt208 &Int ADDR_UINT48_UINT48) => #WordPackAddrUInt48UInt48(maxUInt160 &Int ADDR_UINT48_UINT48, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeUInt(48, UINT48_2) andBool maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) =/=Int 0 [simplification]
-    rule (UINT48_2 *Int pow208) |Int (maxUInt208 &Int ADDR_UINT48_UINT48) => #WordPackAddrUInt48UInt48(maxUInt160 &Int ADDR_UINT48_UINT48, 0                                              , UINT48_2) requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeUInt(48, UINT48_2) andBool maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160)  ==Int 0 [simplification]
+    rule (UINT48_2 *Int pow208) |Int (maxUInt208 &Int ADDR_UINT48_UINT48) => #WordPackAddrUInt48UInt48(maxUInt160 &Int ADDR_UINT48_UINT48, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeUInt(48, UINT48_2) [simplification]
 
     syntax Int ::= #string2Word ( String ) [function]
  // -------------------------------------------------
@@ -297,10 +289,6 @@ module VERIFICATION
     // (check-sat)
     rule chop(X *Int Y) /sWord chop(Y) => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0 [simplification]
 
-    // ### flopper-tick-pass-rough
-
-    rule chop(X *Int Y) => X *Int Y requires 0 <=Int X andBool 0 <=Int Y andBool X *Int Y <Int pow256 [simplification]
-
     // ### vat-slip-pass-rough
 
     rule chop(X +Int chop(Y)) => chop(X +Int Y) [simplification]
@@ -397,5 +385,14 @@ module VERIFICATION
     rule X &Int Y <Int pow256 => true requires X <Int pow256 andBool Y <Int pow256 [simplification]
 
     rule (maxUInt160 &Int (X |Int Y)) => (maxUInt160 &Int X) |Int (maxUInt160 &Int Y) [simplification]
+
+    // ### flopper-tick-pass-rough
+
+    rule chop(X *Int Y) => X *Int Y requires 0 <=Int X andBool 0 <=Int Y andBool X *Int Y <Int pow256 [simplification]
+
+    // This proof ends up with side-conditions which look like this:
+    // Tic ==K 0 andBool 0 ==K maxUInt48 &Int (#lookup(STORAGE, ADDR) /Int pow160) andBool Tic ==K maxUInt48 &Int (#lookup(STORAGE, ADDR) /Int pow160)
+    // So we need this rule to do the structural simplification because the Java backend will not use this string of equalities to do the simplification directly.
+    rule #WordPackAddrUInt48UInt48(ADDR, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) => #WordPackAddrUInt48UInt48(ADDR, 0, UINT48_2) requires maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) ==Int 0 [simplification]
 
 endmodule
