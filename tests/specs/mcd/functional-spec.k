@@ -33,4 +33,13 @@ module FUNCTIONAL-SPEC
       requires GUY_TIC_END ==Int #WordPackAddrUInt48UInt48(GUY, TIC, END)
        andBool #rangeAddress(GAL)
 
+    claim <k> runLemma((((TIME +Int (maxUInt48 &Int (TTL_TAU /Int pow48))) *Int pow208) |Int (maxUInt208 &Int (GAL |Int (notAddrMask &Int GUY_TIC_END)))))
+           => doneLemma(#WordPackAddrUInt48UInt48(GAL, TIC, TIME +Int TAU))
+          ...
+          </k>
+      requires TTL_TAU     ==Int #WordPackUInt48UInt48(TTL, TAU)
+       andBool GUY_TIC_END ==Int #WordPackAddrUInt48UInt48(GUY, TIC, END)
+       andBool #rangeAddress(GAL)
+       andBool #rangeUInt(48, TIME +Int TAU)
+
 endmodule
