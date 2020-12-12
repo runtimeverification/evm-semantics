@@ -75,6 +75,8 @@ module VERIFICATION-SYNTAX
     rule (maskWordPackUInt48UInt48_2 &Int UINT48_UINT48) /Int pow48 => maxUInt48 &Int (UINT48_UINT48 /Int pow48) requires #rangeUInt(96, UINT48_UINT48) [simplification]
     rule  maskWordPackUInt48UInt48_1 &Int UINT48_UINT48             => maxUInt48 &Int  UINT48_UINT48             requires #rangeUInt(96, UINT48_UINT48) [simplification]
 
+    rule (ADDR |Int (notAddrMask &Int ADDR_UINT48_UINT48)) /Int pow160 => ADDR_UINT48_UINT48 /Int pow160 requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeAddress(ADDR) [simplification]
+
     //
     // **TODO**: Avoid splitting these lemmas in the 0 second-argument case.
     // The proof which uses these lemmas (flopper-tick-pass-rough) ends up with side-conditions which look like this:
@@ -90,8 +92,8 @@ module VERIFICATION-SYNTAX
     rule #string2Word(S) => #asWord(#padRightToWidth(32, #parseByteStackRaw(S)))
 
     // in binary: 100 1s followed by 160 0s
-    syntax Int ::= "notAddrMask"
- // ----------------------------
+    syntax Int ::= "notAddrMask" // 0xFFFFFFFFFFFFFFFFFFFFFFFF0000000000000000000000000000000000000000
+ // --------------------------------------------------------------------------------------------------
     rule notAddrMask => 115792089237316195423570985007226406215939081747436879206741300988257197096960 [macro]
 
     syntax Int ::= "#Wad" | "#Ray" | "#Rad"
@@ -385,5 +387,15 @@ module VERIFICATION
     // ### end-pack-pass-rough
 
     rule ADDR in (SetItem(I) REST) => ADDR in REST requires #notPrecompileAddress(ADDR) andBool notBool #notPrecompileAddress(I) [simplification]
+
+    // ### flopper-kick-pass-rough
+
+    rule 0 <=Int X |Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
+    rule 0 <=Int X &Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
+
+    rule X |Int Y <Int pow256 => true requires X <Int pow256 andBool Y <Int pow256 [simplification]
+    rule X &Int Y <Int pow256 => true requires X <Int pow256 andBool Y <Int pow256 [simplification]
+
+    rule (maxUInt160 &Int (X |Int Y)) => (maxUInt160 &Int X) |Int (maxUInt160 &Int Y) [simplification]
 
 endmodule
