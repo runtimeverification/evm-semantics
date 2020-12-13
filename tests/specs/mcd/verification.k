@@ -64,7 +64,7 @@ module VERIFICATION
 
     // ### cat-file-addr-pass-rough
 
-    rule notAddrMask &Int ADDR => 0 requires #rangeAddress(ADDR) [simplification]
+    rule maskWordPackAddrUInt48UInt48_1 &Int ADDR => 0 requires #rangeAddress(ADDR) [simplification]
 
     // ### PERFORMANCE: dai-adduu-fail-rough
     // 99s -> 48s

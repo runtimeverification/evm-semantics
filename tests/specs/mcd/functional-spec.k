@@ -17,7 +17,7 @@ module FUNCTIONAL-SPEC
 
     // WordPack
 
-    claim <k> runLemma((GAL |Int (notAddrMask &Int GUY_TIC_END)) modInt pow256) => doneLemma(GAL |Int (notAddrMask &Int GUY_TIC_END)) ... </k>
+    claim <k> runLemma((GAL |Int (maskWordPackAddrUInt48UInt48_1 &Int GUY_TIC_END)) modInt pow256) => doneLemma(GAL |Int (maskWordPackAddrUInt48UInt48_1 &Int GUY_TIC_END)) ... </k>
       requires #rangeUInt(256, GUY_TIC_END)
        andBool #rangeAddress(GAL)
 
@@ -25,24 +25,21 @@ module FUNCTIONAL-SPEC
       requires TTL_TAU ==Int #WordPackUInt48UInt48(TTL, TAU)
        andBool #rangeUInt(48, TIME +Int TAU)
 
-    claim <k> runLemma(maxUInt48 &Int ((GAL |Int (notAddrMask &Int GUY_TIC_END)) /Int pow160)) => doneLemma(TIC) ... </k>
+    claim <k> runLemma(maxUInt48 &Int ((GAL |Int (maskWordPackAddrUInt48UInt48_1 &Int GUY_TIC_END)) /Int pow160)) => doneLemma(TIC) ... </k>
       requires GUY_TIC_END ==Int #WordPackAddrUInt48UInt48(GUY, TIC, END)
        andBool #rangeAddress(GAL)
 
-    claim <k> runLemma(maxUInt160 &Int (GAL |Int (notAddrMask &Int GUY_TIC_END))) => doneLemma(GAL) ... </k>
+    claim <k> runLemma(maxUInt160 &Int (GAL |Int (maskWordPackAddrUInt48UInt48_1 &Int GUY_TIC_END))) => doneLemma(GAL) ... </k>
       requires GUY_TIC_END ==Int #WordPackAddrUInt48UInt48(GUY, TIC, END)
        andBool #rangeAddress(GAL)
 
-    claim <k> runLemma((((TIME +Int (maxUInt48 &Int (TTL_TAU /Int pow48))) *Int pow208) |Int (maxUInt208 &Int (GAL |Int (notAddrMask &Int GUY_TIC_END)))))
-           => doneLemma(#WordPackAddrUInt48UInt48(GAL, TIC, TIME +Int TAU))
-          ...
-          </k>
+    claim <k> runLemma((((TIME +Int (maxUInt48 &Int (TTL_TAU /Int pow48))) *Int pow208) |Int (maxUInt208 &Int (GAL |Int (maskWordPackAddrUInt48UInt48_1 &Int GUY_TIC_END))))) => doneLemma(#WordPackAddrUInt48UInt48(GAL, TIC, TIME +Int TAU)) ... </k>
       requires TTL_TAU     ==Int #WordPackUInt48UInt48(TTL, TAU)
        andBool GUY_TIC_END ==Int #WordPackAddrUInt48UInt48(GUY, TIC, END)
        andBool #rangeAddress(GAL)
        andBool #rangeUInt(48, TIME +Int TAU)
 
-    claim <k> runLemma((((TIME +Int (maxUInt48 &Int TTL_TAU)) *Int pow160) |Int (mask3 &Int GUY_TIC_END))) => doneLemma(#WordPackAddrUInt48UInt48(GUY, TIME +Int TTL, END)) ... </k>
+    claim <k> runLemma((((TIME +Int (maxUInt48 &Int TTL_TAU)) *Int pow160) |Int (maskWordPackAddrUInt48UInt48_2 &Int GUY_TIC_END))) => doneLemma(#WordPackAddrUInt48UInt48(GUY, TIME +Int TTL, END)) ... </k>
       requires TTL_TAU     ==Int #WordPackUInt48UInt48(TTL, TAU)
        andBool GUY_TIC_END ==Int #WordPackAddrUInt48UInt48(GUY, TIC, END)
        andBool #rangeUInt(48, TIME +Int TTL)
