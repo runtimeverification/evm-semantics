@@ -42,6 +42,11 @@ module FUNCTIONAL-SPEC
        andBool #rangeAddress(GAL)
        andBool #rangeUInt(48, TIME +Int TAU)
 
+    claim <k> runLemma((((TIME +Int (maxUInt48 &Int TTL_TAU)) *Int pow160) |Int (mask3 &Int GUY_TIC_END))) => doneLemma(#WordPackAddrUInt48UInt48(GUY, TIME +Int TTL, END)) ... </k>
+      requires TTL_TAU     ==Int #WordPackUInt48UInt48(TTL, TAU)
+       andBool GUY_TIC_END ==Int #WordPackAddrUInt48UInt48(GUY, TIC, END)
+       andBool #rangeUInt(48, TIME +Int TTL)
+
     // Memory operations
 
     claim <k> runLemma(#range(M:Memory [ 0 := #buf(4, X) ] [ 0 <- 10 ] [ 1 <- 11 ] [ 2 <- 12 ] [ 3 <- 13 ], 0, 4)) => doneLemma(10 : 11 : 12 : 13 : .ByteArray) ... </k>
