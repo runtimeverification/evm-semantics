@@ -64,7 +64,7 @@ module WORD-PACK
     rule maskWordPackAddrUInt48UInt48_2 => 115792089237315784047431654708638870748305248246218003188207458632603225030655 [macro]
     rule maskWordPackAddrUInt48UInt48_3 => 411376139330301510538742295639337626245683966408394965837152255                [macro]
 
-    rule (ADDR |Int (maskWordPackAddrUInt48UInt48_3 &Int ADDR_UINT48_UINT48)) /Int pow160 => ADDR_UINT48_UINT48 /Int pow160 requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeAddress(ADDR) [simplification]
+    rule (ADDR |Int (maskWordPackAddrUInt48UInt48_1 &Int ADDR_UINT48_UINT48)) /Int pow160 => ADDR_UINT48_UINT48 /Int pow160 requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeAddress(ADDR) [simplification]
 
     rule (UINT48_2 *Int pow208) |Int (maskWordPackAddrUInt48UInt48_3 &Int ADDR_UINT48_UINT48) => #WordPackAddrUInt48UInt48(maxUInt160 &Int ADDR_UINT48_UINT48, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeUInt(48, UINT48_2) [simplification]
     rule (UINT48_1 *Int pow160) |Int (maskWordPackAddrUInt48UInt48_2 &Int ADDR_UINT48_UINT48) => #WordPackAddrUInt48UInt48(maxUInt160 &Int ADDR_UINT48_UINT48, UINT48_1, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow208)) requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeUInt(48, UINT48_1) [simplification]
