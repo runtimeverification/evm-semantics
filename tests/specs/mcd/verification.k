@@ -136,9 +136,8 @@ module VERIFICATION
     // ### PERFORMANCE: vat-deny-diff-fail-rough
     // 27.21m -> 3.16m
 
-    rule M:Memory [ K := (W : WS) ]                   => M [ K <- W ] [ K +Int 1 := WS ] requires 0 <=Int K                                            [simplification]
-    rule M:Memory [ K <- V ] [ K' <- V' ]             => M [ K' <- V' ] [ K <- V ]       requires K' <Int K                                            [simplification]
-    rule M:Memory [ K := BUF:ByteArray ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ]     requires K' <Int K orBool K +Int #sizeByteArray(BUF) <=Int K' [simplification]
+    rule M:Memory [ K <- V ]             [ K' <- V' ] => M [ K' <- V' ] [ K <- V ]   requires K' <Int K                                            [simplification]
+    rule M:Memory [ K := BUF:ByteArray ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ] requires K' <Int K orBool K +Int #sizeByteArray(BUF) <=Int K' [simplification]
 
     // ### dstoken-transferfrom-fail-rough
 
@@ -394,5 +393,29 @@ module VERIFICATION
     // Tic ==K 0 andBool 0 ==K maxUInt48 &Int (#lookup(STORAGE, ADDR) /Int pow160) andBool Tic ==K maxUInt48 &Int (#lookup(STORAGE, ADDR) /Int pow160)
     // So we need this rule to do the structural simplification because the Java backend will not use this string of equalities to do the simplification directly.
     rule #WordPackAddrUInt48UInt48(ADDR, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) => #WordPackAddrUInt48UInt48(ADDR, 0, UINT48_2) requires maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) ==Int 0 [simplification]
+
+    // ### flapper-yank-pass-rough
+
+    rule #range(M:Memory [ K <- V ], START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)
+      requires #isConcrete(K) andBool #isConcrete(V)
+       andBool START <=Int K andBool K +Int 1 ==Int START +Int WIDTH
+       andBool 0 <Int WIDTH andBool 0 <=Int START
+       [simplification]
+
+    rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS') ], START, WIDTH)
+      requires #isConcrete(K) andBool #isConcrete(K') andBool #isConcrete(V) andBool #isConcrete(VS')
+       andBool START <=Int K andBool K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH
+       andBool 0 <Int WIDTH andBool 0 <=Int START
+       andBool K +Int 1 ==Int K'
+      [simplification]
+
+    rule M:Memory [ K := BUF:ByteArray ] [ K' := BUF':ByteArray ] => M [ K := (BUF [ 0 .. K' -Int K ]) ] [ K' := BUF' ]
+      requires K <Int K'
+       andBool K' <Int K +Int #sizeByteArray(BUF)
+       andBool K +Int #sizeByteArray(BUF) <Int K' +Int #sizeByteArray(BUF')
+      [simplification]
+
+    rule X <Int X -Int Y => false requires 0 <=Int Y [simplification]
+    rule X +Int Y <Int X => false requires 0 <=Int Y [simplification]
 
 endmodule
