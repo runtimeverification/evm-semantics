@@ -125,7 +125,7 @@ module INFINITE-GAS-COMMON
     rule #gas(_) <Int Cmem(_, _)  => false [simplification]
     rule Cmem(_, _) <=Int #gas(_) => true  [simplification]
 
-    rule 0 <Int #allBut64th(G)        => true requires 0 <Int G        [simplification]
-    rule #allBut64th(G) <Int #gas(G') => true requires G <Int #gas(G') [simplification]
+    rule 0 <Int #allBut64th(_)       => true [simplification]
+    rule #allBut64th(_) <Int #gas(_) => true [simplification]
 
 endmodule
