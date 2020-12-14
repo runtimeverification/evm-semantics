@@ -54,9 +54,10 @@ module INFINITE-GAS-COMMON
 
  // Generic rules
 
-    rule I -Int I => 0                                              [simplification]
-    rule I1 -Int (I1 -Int I2) => I2                                 [simplification]
-    rule (notBool (A andBool B)) andBool A => (notBool B) andBool A [simplification]
+    rule I -Int I => 0                                                                   [simplification]
+    rule I1 -Int (I1 -Int I2) => I2                                                      [simplification]
+    rule (notBool (A andBool B)) andBool A => (notBool B) andBool A                      [simplification]
+    rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification]
 
  // Symbolic Gas
 
@@ -84,6 +85,8 @@ module INFINITE-GAS-COMMON
 
     rule minInt(#gas(G), #gas(G'))              => #gas(minInt(G, G'))              [simplification]
     rule #if B #then #gas(G) #else #gas(G') #fi => #gas(#if B #then G #else G' #fi) [simplification]
+
+    rule #allBut64th(#gas(G)) => #gas(#allBut64th(G)) [simplification]
 
     rule #gas(_)  <Int #gas(_) => false [simplification]
     rule #gas(_) <=Int #gas(_) => true  [simplification]
@@ -121,4 +124,8 @@ module INFINITE-GAS-COMMON
 
     rule #gas(_) <Int Cmem(_, _)  => false [simplification]
     rule Cmem(_, _) <=Int #gas(_) => true  [simplification]
+
+    rule 0 <Int #allBut64th(G)        => true requires 0 <Int G        [simplification]
+    rule #allBut64th(G) <Int #gas(G') => true requires G <Int #gas(G') [simplification]
+
 endmodule
