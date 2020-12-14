@@ -41,6 +41,9 @@ module INFINITE-GAS-SPEC
     claim <k> runLemma(#gas(#gas(G1 -Int G2) +Int #allBut64th(G3))) => doneLemma(#gas((G1 -Int G2) +Int #allBut64th(G3))) ... </k> requires 0 <Int G3
     claim <k> runLemma(#gas(#gas(G1 -Int G2) -Int #allBut64th(G3))) => doneLemma(#gas((G1 -Int G2) -Int #allBut64th(G3))) ... </k> requires 0 <Int G3 andBool G3 <Int #gas(G1 -Int G2)
 
+    claim <k> runLemma(#gas(G) +Int (#allBut64th((VGas -Int Csstore(ISTANBUL, V1, V2, V3)) +Int -3232) +Int -3232)) => doneLemma(#gas(G +Int (#allBut64th((VGas -Int Csstore(ISTANBUL, V1, V2, V3)) +Int -3232) +Int -3232))) ... </k>
+    claim <k> runLemma(#gas(G) +Int ((#allBut64th(VGas -Int Csstore(ISTANBUL, V1, V2, V3)) -Int Csstore(ISTANBUL, V1', V2', V3')) +Int -3232)) => doneLemma(#gas(G +Int ((#allBut64th(VGas -Int Csstore(ISTANBUL, V1, V2, V3)) -Int Csstore(ISTANBUL, V1', V2', V3')) +Int -3232))) ... </k>
+
  // Infinite Gas comparisons
  // ------------------------
 
