@@ -4,7 +4,7 @@ module VAT-SUBUI-PASS-ROUGH-SPEC
     imports VERIFICATION
 
     // Vat_subui
-    rule [Vat.subui.pass.rough]:
+    claim [Vat.subui.pass.rough]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -27,7 +27,7 @@ module VAT-SUBUI-PASS-ROUGH-SPEC
             <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x -Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13304 => 13366 </pc>
-            <gas> VGas => ?_ </gas>
+            <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>

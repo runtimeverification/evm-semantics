@@ -4,7 +4,7 @@ module DSVALUE-READ-PASS-SPEC
     imports VERIFICATION
 
     // DSValue_read
-    rule [DSValue.read.pass]:
+    claim [DSValue.read.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -27,7 +27,7 @@ module DSVALUE-READ-PASS-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> VGas => VGas -Int (2043) </gas>
+            <gas> #gas(VGas) => #gas(VGas +Int -2043) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>

@@ -4,7 +4,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
   imports VERIFICATION
 
     // Vat_deny-diff
-    rule [Vat.deny-diff.fail.rough]:
+    claim [Vat.deny-diff.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -27,7 +27,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> VGas => ?_ </gas>
+            <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>

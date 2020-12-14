@@ -4,7 +4,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
     imports VERIFICATION
 
     // Cat_file-addr
-    rule [Cat.file-addr.pass.rough]:
+    claim [Cat.file-addr.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>

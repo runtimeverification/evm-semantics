@@ -4,7 +4,7 @@ module VAT-SLIP-PASS-ROUGH-SPEC
     imports VERIFICATION
 
     // Vat_slip
-    rule [Vat.slip.pass.rough]:
+    claim [Vat.slip.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -199,7 +199,7 @@ module VAT-SLIP-PASS-ROUGH-SPEC
      andBool #Vat.wards[CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_usr]
 
     // Vat_addui
-    rule [Vat.addui.pass]:
+    claim [Vat.addui.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -380,7 +380,7 @@ module VAT-SLIP-PASS-ROUGH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 1015)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
-    [trusted]
+    [trusted, matching(infGas)]
 
 
 endmodule

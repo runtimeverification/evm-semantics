@@ -4,7 +4,7 @@ module FLIPPER-TAU-PASS-SPEC
     imports VERIFICATION
 
     // Flipper_tau
-    rule [Flipper.tau.pass]:
+    claim [Flipper.tau.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -27,7 +27,7 @@ module FLIPPER-TAU-PASS-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> VGas => VGas -Int (1169) </gas>
+            <gas> #gas(VGas) => #gas(VGas +Int -1169) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>

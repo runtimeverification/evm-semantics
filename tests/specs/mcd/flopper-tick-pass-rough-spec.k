@@ -4,7 +4,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
     imports VERIFICATION
 
     // Flopper_tick
-    rule [Flopper.tick.pass.rough]:
+    claim [Flopper.tick.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -217,7 +217,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
      andBool #Flopper.bids[ABI_id].lot =/=Int #Flopper.bids[ABI_id].guy_tic_end
 
     // Flopper_addu48u48
-    rule [Flopper.addu48u48.pass]:
+    claim [Flopper.addu48u48.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -398,7 +398,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 100)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(48, ABI_x +Int ABI_y)))))))
-    [trusted]
+    [trusted, matching(infGas)]
 
 
 endmodule

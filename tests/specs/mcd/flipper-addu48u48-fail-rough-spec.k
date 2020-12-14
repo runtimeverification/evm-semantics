@@ -4,7 +4,7 @@ module FLIPPER-ADDU48U48-FAIL-ROUGH-SPEC
     imports VERIFICATION
 
     // Flipper_addu48u48
-    rule [Flipper.addu48u48.fail.rough]:
+    claim [Flipper.addu48u48.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -27,7 +27,7 @@ module FLIPPER-ADDU48U48-FAIL-ROUGH-SPEC
             <wordStack> ABI_y : ABI_x : JMPTO : WS  => ?_ </wordStack>
             <localMem> _ </localMem>
             <pc> 11354 => ?_ </pc>
-            <gas> VGas => ?_ </gas>
+            <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>

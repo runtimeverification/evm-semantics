@@ -4,7 +4,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
     imports VERIFICATION
 
     // Dai_adduu
-    rule [Dai.adduu.fail.rough]:
+    claim [Dai.adduu.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -27,7 +27,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <wordStack> ABI_y : ABI_x : _JMPTO : WS  => ?_ </wordStack>
             <localMem> _ </localMem>
             <pc> 7825 => ?_ </pc>
-            <gas> VGas => ?_ </gas>
+            <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>

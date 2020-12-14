@@ -4,7 +4,7 @@ module DAI-SYMBOL-PASS-SPEC
   imports VERIFICATION
 
     // Dai_symbol
-    rule [Dai.symbol.pass]:
+    claim [Dai.symbol.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -27,7 +27,7 @@ module DAI-SYMBOL-PASS-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> VGas => VGas -Int (672) </gas>
+            <gas> #gas(VGas) => #gas(VGas +Int -672) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>

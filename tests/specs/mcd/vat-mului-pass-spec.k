@@ -4,7 +4,7 @@ module VAT-MULUI-PASS-SPEC
     imports VERIFICATION
 
     // Vat_mului
-    rule [Vat.mului.pass]:
+    claim [Vat.mului.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -27,7 +27,7 @@ module VAT-MULUI-PASS-SPEC
             <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  =>  JMPTO : chop(ABI_x *Int ABI_y) : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13175 => 13233 </pc>
-            <gas> VGas => VGas -Int ((#if ( ABI_y ==K 0 ) #then ( 96 ) #else ( 132 ) #fi)) </gas>
+            <gas> #gas(VGas) => #gas(VGas -Int ((#if ( ABI_y ==K 0 ) #then ( 96 ) #else ( 132 ) #fi))) </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>

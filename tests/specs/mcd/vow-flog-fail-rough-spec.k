@@ -4,7 +4,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
     imports VERIFICATION
 
     // Vow_flog
-    rule [Vow.flog.fail.rough]:
+    claim [Vow.flog.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -27,7 +27,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> VGas => ?_ </gas>
+            <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>
@@ -208,7 +208,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
     ensures ?FAILURE =/=K EVMC_SUCCESS
 
     // Vow_adduu
-    rule [Vow.adduu.pass]:
+    claim [Vow.adduu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -231,7 +231,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x +Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 9777 => 9802 </pc>
-            <gas> VGas => ( VGas +Int -54 ) </gas>
+            <gas> #gas(VGas) => #gas( VGas +Int 54 ) </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -390,11 +390,11 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool (2300 <Int ( VGas +Int -54 )
      andBool ((#rangeUInt(256, ABI_x +Int ABI_y))))))))
-    [trusted]
+    [trusted, matching(infGas)]
 
 
     // Vow_subuu
-    rule [Vow.subuu.pass]:
+    claim [Vow.subuu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -417,7 +417,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x -Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 9803 => 9828 </pc>
-            <gas> VGas => ( VGas +Int -54 ) </gas>
+            <gas> #gas(VGas) => #gas( VGas +Int 54 ) </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -576,7 +576,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool (2300 <Int ( VGas +Int -54 )
      andBool ((#rangeUInt(256, ABI_x -Int ABI_y))))))))
-    [trusted]
+    [trusted, matching(infGas)]
 
 
 endmodule

@@ -4,7 +4,7 @@ module VAT-ADDUI-FAIL-ROUGH-SPEC
     imports VERIFICATION
 
     // Vat_addui
-    rule [Vat.addui.fail.rough]:
+    claim [Vat.addui.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -27,7 +27,7 @@ module VAT-ADDUI-FAIL-ROUGH-SPEC
             <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  => ?_ </wordStack>
             <localMem> _ </localMem>
             <pc> 13112 => ?_ </pc>
-            <gas> VGas => ?_ </gas>
+            <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
