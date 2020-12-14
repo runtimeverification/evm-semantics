@@ -65,6 +65,7 @@ tests/specs/mcd/dstoken-burn-self-fail-rough-spec.k
 tests/specs/mcd/dstoken-transferfrom-fail-rough-spec.k
 tests/specs/mcd/dsvalue-peek-pass-rough-spec.k
 tests/specs/mcd/dsvalue-read-pass-spec.k
+tests/specs/mcd/end-cash-pass-rough-spec.k
 tests/specs/mcd/end-pack-pass-rough-spec.k
 tests/specs/mcd/end-subuu-pass-spec.k
 tests/specs/mcd/flapper-yank-pass-rough-spec.k
