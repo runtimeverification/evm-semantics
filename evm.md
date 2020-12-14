@@ -2151,7 +2151,7 @@ There are several helpers for calculating gas (most of them also specified in th
 
     syntax Int ::= #allBut64th ( Int ) [function, functional]
  // ---------------------------------------------------------
-    rule #allBut64th(N) => N -Int (N /Int 64)
+    rule [allBut64th]: #allBut64th(N) => N -Int (N /Int 64)
 ```
 
 ```{.k .nobytes}
