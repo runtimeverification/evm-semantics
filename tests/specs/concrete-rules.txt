@@ -5,6 +5,7 @@ EVM.Cgascap
 EVM.Cmem
 EVM.Csstore.new
 EVM.Csstore.old
+EVM.allBut64th
 EVM.#memoryUsageUpdate.some
 EVM.Rsstore.new
 EVM.Rsstore.old

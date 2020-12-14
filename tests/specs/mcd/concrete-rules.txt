@@ -1,5 +1,6 @@
 EDSL.#ceil32
 EDSL.keccakIntList
+EVM.allBut64th
 EVM.Cextra
 EVM.Cmem
 EVM.Cnew
