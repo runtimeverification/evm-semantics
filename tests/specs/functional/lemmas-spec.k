@@ -21,6 +21,23 @@ module LEMMAS-SPEC
 
     claim <k> runLemma ( bool2Word((UINT8 ==K 0) ==K false) ) => doneLemma ( UINT8 ) ... </k> requires #rangeBool(UINT8)
 
+ // Arithmetic
+ // ----------
+
+    claim <k> runLemma((X +Int pow256) -Int chop(Y)) => doneLemma(X -Int Y) ... </k>
+      requires #rangeUInt(256, X)
+       andBool #rangeSInt(256, Y)
+       andBool Y <Int 0
+
+ // Arithmetic Comparisons
+ // ----------------------
+
+    claim <k> runLemma(#rangeUInt(256, #lookup(M, KX) -Int #lookup(M, KY))) => doneLemma(true) ... </k>
+      requires #rangeUInt(256, X) andBool X ==Int #lookup(M, KX)
+       andBool #rangeUInt(256, Y) andBool Y ==Int #lookup(M, KY)
+       andBool #rangeUInt(256, Z) andBool Z ==Int #lookup(M, KZ)
+       andBool #rangeUInt(256, (X -Int Y) -Int Z)
+
  // Buffer write simplifications
  // ----------------------------
 
