@@ -27,13 +27,14 @@ module INFINITE-GAS-HASKELL [kore]
     rule I1         <=Int I2 +Int I3 => I1 -Int I3 <=Int I2         [concrete(I1, I3), simplification]
 
     rule (I1 +Int I2) +Int I3 => (I1 +Int I3) +Int I2 [concrete(I2), symbolic(I3), simplification]
+    rule (I1 +Int I2) -Int I3 => (I1 -Int I3) +Int I2 [concrete(I2), symbolic(I3), simplification]
+    rule (I1 -Int I2) +Int I3 => (I1 +Int I3) -Int I2 [concrete(I2), symbolic(I3), simplification]
+    rule (I1 -Int I2) -Int I3 => (I1 -Int I3) -Int I2 [concrete(I2), symbolic(I3), simplification]
 
-    rule (I1 +Int I2) +Int I3 => (I1 +Int I3) +Int I2 [concrete(I2),     symbolic(I3), simplification]
-    rule (I1 -Int I2) +Int I3 => (I1 +Int I3) -Int I2 [concrete(I2),     symbolic(I3), simplification]
     rule (I1 +Int I2) +Int I3 => I1 +Int (I2 +Int I3) [concrete(I2, I3), symbolic(I1), simplification]
-    rule (I1 +Int I2) -Int I3 => (I1 -Int I3) +Int I2 [concrete(I2),     symbolic(I3), simplification]
-
-    rule (I1 +Int I2) -Int (I3 +Int I4) => (I1 -Int I3) +Int (I2 -Int I4) [concrete(I2, I4), symbolic(I1, I3), simplification]
+    rule (I1 +Int I2) -Int I3 => I1 +Int (I2 -Int I3) [concrete(I2, I3), symbolic(I1), simplification]
+    rule (I1 -Int I2) +Int I3 => I1 +Int (I3 -Int I2) [concrete(I2, I3), symbolic(I1), simplification]
+    rule (I1 -Int I2) -Int I3 => I1 -Int (I2 +Int I3) [concrete(I2, I3), symbolic(I1), simplification]
 endmodule
 
 module INFINITE-GAS-JAVA [kast]
@@ -49,12 +50,15 @@ module INFINITE-GAS-JAVA [kast]
     rule I1          <Int I2 +Int I3 => I1 -Int I3  <Int I2         requires #isConcrete(I1) andBool #isConcrete(I3) [simplification]
     rule I1         <=Int I2 +Int I3 => I1 -Int I3 <=Int I2         requires #isConcrete(I1) andBool #isConcrete(I3) [simplification]
 
-    rule (I1 +Int I2) +Int I3 => (I1 +Int I3) +Int I2 requires #isConcrete(I2)                         andBool notBool #isConcrete(I3) [simplification]
-    rule (I1 -Int I2) +Int I3 => (I1 +Int I3) -Int I2 requires #isConcrete(I2)                         andBool notBool #isConcrete(I3) [simplification]
-    rule (I1 +Int I2) +Int I3 => I1 +Int (I2 +Int I3) requires #isConcrete(I2) andBool #isConcrete(I3) andBool notBool #isConcrete(I1) [simplification]
-    rule (I1 +Int I2) -Int I3 => (I1 -Int I3) +Int I2 requires #isConcrete(I2)                         andBool notBool #isConcrete(I3) [simplification]
+    rule (I1 +Int I2) +Int I3 => (I1 +Int I3) +Int I2 requires #isConcrete(I2) andBool notBool #isConcrete(I3) [simplification]
+    rule (I1 +Int I2) -Int I3 => (I1 -Int I3) +Int I2 requires #isConcrete(I2) andBool notBool #isConcrete(I3) [simplification]
+    rule (I1 -Int I2) +Int I3 => (I1 +Int I3) -Int I2 requires #isConcrete(I2) andBool notBool #isConcrete(I3) [simplification]
+    rule (I1 -Int I2) -Int I3 => (I1 -Int I3) -Int I2 requires #isConcrete(I2) andBool notBool #isConcrete(I3) [simplification]
 
-    rule (I1 +Int I2) -Int (I3 +Int I4) => (I1 -Int I3) +Int (I2 -Int I4) requires #isConcrete(I2) andBool #isConcrete(I4) andBool notBool (#isConcrete(I1) orBool #isConcrete(I3)) [simplification]
+    rule (I1 +Int I2) +Int I3 => I1 +Int (I2 +Int I3) requires #isConcrete(I2) andBool #isConcrete(I3) andBool notBool #isConcrete(I1) [simplification]
+    rule (I1 +Int I2) -Int I3 => I1 +Int (I2 -Int I3) requires #isConcrete(I2) andBool #isConcrete(I3) andBool notBool #isConcrete(I1) [simplification]
+    rule (I1 -Int I2) +Int I3 => I1 +Int (I3 -Int I2) requires #isConcrete(I2) andBool #isConcrete(I3) andBool notBool #isConcrete(I1) [simplification]
+    rule (I1 -Int I2) -Int I3 => I1 -Int (I2 +Int I3) requires #isConcrete(I2) andBool #isConcrete(I3) andBool notBool #isConcrete(I1) [simplification]
 endmodule
 
 module INFINITE-GAS-COMMON
@@ -65,6 +69,7 @@ module INFINITE-GAS-COMMON
     rule I -Int I => 0                                                                   [simplification]
     rule I1 -Int (I1 -Int I2) => I2                                                      [simplification]
     rule (I1 -Int I2) +Int I2 => I1                                                      [simplification]
+    rule I1 -Int (I2 +Int I3) => (I1 -Int I2) -Int I3                                    [simplification]
     rule (notBool (A andBool B)) andBool A => (notBool B) andBool A                      [simplification]
     rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification]
 
