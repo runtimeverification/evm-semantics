@@ -4,6 +4,11 @@ requires "storage.k"
 requires "../infinite-gas.k"
 requires "word-pack.k"
 
+module VERIFICATION
+    imports VERIFICATION-HASKELL
+    imports VERIFICATION-JAVA
+endmodule
+
 module HASKELL-HASH2 [symbolic, kore]
     imports INT
 
@@ -46,7 +51,45 @@ module VERIFICATION-SYNTAX
 
 endmodule
 
-module VERIFICATION
+module VERIFICATION-HASKELL [symbolic, kore]
+    imports VERIFICATION-COMMON
+
+    // ### flapper-yank-pass-rough
+
+    rule #range(M:Memory [ K <- V ], START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)
+      requires START <=Int K andBool K +Int 1 ==Int START +Int WIDTH
+       andBool 0 <Int WIDTH andBool 0 <=Int START
+       [concrete(K, V), simplification]
+
+    rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS') ], START, WIDTH)
+      requires START <=Int K andBool K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH
+       andBool 0 <Int WIDTH andBool 0 <=Int START
+       andBool K +Int 1 ==Int K'
+      [concrete(K, K', V, VS'), simplification]
+
+endmodule
+
+module VERIFICATION-JAVA [symbolic, kast]
+    imports VERIFICATION-COMMON
+
+    // ### flapper-yank-pass-rough
+
+    rule #range(M:Memory [ K <- V ], START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)
+      requires #isConcrete(K) andBool #isConcrete(V)
+       andBool START <=Int K andBool K +Int 1 ==Int START +Int WIDTH
+       andBool 0 <Int WIDTH andBool 0 <=Int START
+       [simplification]
+
+    rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS') ], START, WIDTH)
+      requires #isConcrete(K) andBool #isConcrete(K') andBool #isConcrete(V) andBool #isConcrete(VS')
+       andBool START <=Int K andBool K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH
+       andBool 0 <Int WIDTH andBool 0 <=Int START
+       andBool K +Int 1 ==Int K'
+      [simplification]
+
+endmodule
+
+module VERIFICATION-COMMON
     imports VERIFICATION-SYNTAX
     imports INFINITE-GAS
     imports WORD-PACK
@@ -333,19 +376,6 @@ module VERIFICATION
     rule #WordPackAddrUInt48UInt48(ADDR, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) => #WordPackAddrUInt48UInt48(ADDR, 0, UINT48_2) requires maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) ==Int 0 [simplification]
 
     // ### flapper-yank-pass-rough
-
-    rule #range(M:Memory [ K <- V ], START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)
-      requires #isConcrete(K) andBool #isConcrete(V)
-       andBool START <=Int K andBool K +Int 1 ==Int START +Int WIDTH
-       andBool 0 <Int WIDTH andBool 0 <=Int START
-       [simplification]
-
-    rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS') ], START, WIDTH)
-      requires #isConcrete(K) andBool #isConcrete(K') andBool #isConcrete(V) andBool #isConcrete(VS')
-       andBool START <=Int K andBool K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH
-       andBool 0 <Int WIDTH andBool 0 <=Int START
-       andBool K +Int 1 ==Int K'
-      [simplification]
 
     rule M:Memory [ K := BUF:ByteArray ] [ K' := BUF':ByteArray ] => M [ K := (BUF [ 0 .. K' -Int K ]) ] [ K' := BUF' ]
       requires K <Int K'
