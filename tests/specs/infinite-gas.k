@@ -66,12 +66,16 @@ module INFINITE-GAS-COMMON
 
  // Generic rules
 
-    rule I -Int I => 0                                                                   [simplification]
-    rule I1 -Int (I1 -Int I2) => I2                                                      [simplification]
-    rule (I1 -Int I2) +Int I2 => I1                                                      [simplification]
-    rule I1 -Int (I2 +Int I3) => (I1 -Int I2) -Int I3                                    [simplification]
     rule (notBool (A andBool B)) andBool A => (notBool B) andBool A                      [simplification]
     rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification]
+
+    rule I -Int I => 0              [simplification]
+    rule (I1 -Int I2) +Int I2 => I1 [simplification]
+
+    rule I1 +Int (I2 +Int I3) => (I1 +Int I2) +Int I3 [simplification]
+    rule I1 +Int (I2 -Int I3) => (I1 +Int I2) -Int I3 [simplification]
+    rule I1 -Int (I2 +Int I3) => (I1 -Int I2) -Int I3 [simplification]
+    rule I1 -Int (I2 -Int I3) => (I1 -Int I2) +Int I3 [simplification]
 
  // Symbolic Gas
 
