@@ -386,4 +386,8 @@ module VERIFICATION
 
     rule ADDR in (SetItem(I) REST) => ADDR in REST requires #notPrecompileAddress(ADDR) andBool notBool #notPrecompileAddress(I) [simplification]
 
+    // ### vat-subui-pass
+
+    rule chop(X) ==K 0 => X ==Int 0 requires #rangeSInt(256, X) [simplification]
+
 endmodule
