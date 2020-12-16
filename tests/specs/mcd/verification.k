@@ -394,4 +394,17 @@ module VERIFICATION-COMMON
     rule X <Int X -Int Y => false requires 0 <=Int Y [simplification]
     rule X +Int Y <Int X => false requires 0 <=Int Y [simplification]
 
+    // ### vow-cage-surplus-pass-rough
+
+    rule ADDR in (SetItem(I) REST) => true         requires ADDR  ==Int I [simplification]
+    rule ADDR in (SetItem(I) REST) => ADDR in REST requires ADDR =/=Int I [simplification]
+
+    rule <acctID> ACCTID </acctID>  ==K <acctID> ACCTID' </acctID> => ACCTID  ==Int ACCTID' [simplification]
+    rule <acctID> ACCTID </acctID> =/=K <acctID> ACCTID' </acctID> => ACCTID =/=Int ACCTID' [simplification]
+
+    rule ((K |-> V) REST) [ K' <- undef ] => REST                             requires K  ==K K' [simplification]
+    rule ((K |-> V) REST) [ K' <- undef ] => (K |-> V) (REST [ K' <- undef ]) requires K =/=K K' [simplification]
+
+    rule M:Map [ K1 <- V1 ] [ K2 <- V2 ] [ K1 <- V1' ] => M [ K1 <- V1' ] [ K2 <- V2 ] requires K1 =/=Int K2 [simplification]
+
 endmodule
