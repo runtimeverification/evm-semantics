@@ -275,8 +275,10 @@ test: test-conformance test-prove test-interactive test-parse
 
 # Generic Test Harnesses
 
-tests/ethereum-tests/VMTests/%: KEVM_MODE=VMTESTS
-tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE=DEFAULT
+tests/ethereum-tests/VMTests/%: KEVM_MODE     = VMTESTS
+tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE = DEFAULT
+
+tests/specs/mcd/functional-spec.k%: KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
 
 tests/%.run: tests/%
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) CHAINID=$(KEVM_CHAINID)                                                \
