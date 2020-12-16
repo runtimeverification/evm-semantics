@@ -2,6 +2,12 @@ requires "../lemmas.k"
 requires "bin_runtime.k"
 requires "storage.k"
 requires "../infinite-gas.k"
+requires "word-pack.k"
+
+module VERIFICATION
+    imports VERIFICATION-HASKELL
+    imports VERIFICATION-JAVA
+endmodule
 
 module HASKELL-HASH2 [symbolic, kore]
     imports INT
@@ -20,79 +26,9 @@ module VERIFICATION-SYNTAX
  // --------------------------------------------------------
     rule #notPrecompileAddress ( X ) => 0 ==Int X orBool (10 <=Int X andBool #rangeAddress(X))
 
-    //
-    // The Solidity compiler sometimes packs together multiple arguments into one storage location, for optimized reads/writes.
-    // Because the packed variables are all smaller than a `uint256`, they can fit into one word.
-    // If you use the pattern `SOMETHING ==K #WordPack*(ARG1, ..., ARGN)` in your side-conditions, you're actually making several assertions about `SOMETHING` and `ARG1 ... ARGN`.
-    // First, you're asserting that each `ARGi` can be unpacked from the variable `SOMETHING` using the correct accessors.
-    // Second, you're asserting that `SOMETHING` contains no other values than the packed `ARGi` (so we add a range condition to `SOMETHING`).
-    // This allows us to turn the side-condition SOMETHING ==K #WordPack*(ARG1, ..., ARGN)` into the more useful side-conditions `ARG1 ==K access1(SOMETHING) andBool ... andBool ARGN ==K accessN(SOMETHING)`.
-    // The arguments are packed in reverse order, so that the highest bits are set by the last argument.
-    //
-
-    syntax Int ::= #WordPackUInt48UInt48     (       Int , Int ) [function, no-evaluators, smtlib(WordPackUInt48UInt48)]
-                 | #WordPackAddrUInt48UInt48 ( Int , Int , Int ) [function, no-evaluators, smtlib(WordPackAddrUInt48UInt48)]
-                 | #WordPackAddrUInt8        (       Int , Int ) [function, no-evaluators, smtlib(WordPackAddrUInt8)]
- // -----------------------------------------------------------------------------------------------------------------
-    // rule #WordPackUInt48UInt48     (            UINT48_1 , UINT48_2 ) => UINT48_2 *Int pow48 +Int UINT48_1                        requires #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2)
-    // rule #WordPackAddrUInt48UInt48 (     ADDR , UINT48_1 , UINT48_2 ) => UINT48_2 *Int pow208 +Int UINT48_1 *Int pow160 +Int ADDR requires #rangeAddress(ADDR) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2)
-    // rule #WordPackAddrUInt8        (     ADDR , UINT8               ) => UINT8 *Int pow160 +Int ADDR                              requires #rangeAddress(ADDR) andBool #rangeUInt(8, UINT_8)
-
-    rule    ADDR_UINT48_UINT48 ==K #WordPackAddrUInt48UInt48(ADDR, UINT48_1, UINT48_2)
-         => ADDR     ==Int maxUInt160 &Int  ADDR_UINT48_UINT48
-    andBool UINT48_1 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160)
-    andBool UINT48_2 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208)
-    andBool #rangeUInt(256, ADDR_UINT48_UINT48)
-      [simplification]
-
-    rule    UINT48_UINT48 ==K #WordPackUInt48UInt48(UINT48_1, UINT48_2)
-         => UINT48_1 ==Int maxUInt48 &Int  UINT48_UINT48
-    andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
-    andBool #rangeUInt(96, UINT48_UINT48)
-      [simplification]
-
-    rule    ADDR_UINT8 ==K #WordPackAddrUInt8(ADDR, UINT8)
-         => ADDR  ==Int maxUInt160 &Int  ADDR_UINT8
-    andBool UINT8 ==Int maxUInt8   &Int (ADDR_UINT8 /Int pow160)
-    andBool #rangeUInt(168, ADDR_UINT8)
-      [simplification]
-
-    //
-    // When updating variables which originally contained `WordPack*`, the Solidity compiler will mask the original value everywhere _except_ where you're updating.
-    // Then the update will be bitwise `|Int` with the masked value, and the new value written back.
-    // Here we provide the masks which are used by the Solidity compiler, and rules which fold these bitwise updates back up into semantic `#WordPack*` arguments for the purposes of matching the RHS of proofs.
-    //
-
-    syntax Int ::= "maskWordPackUInt48UInt48_1" // pow256 -Int pow96 +Int pow48 -Int 1 == 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000FFFFFFFFFFFF
-                 | "maskWordPackUInt48UInt48_2" // pow256 -Int pow48                   == 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000
- // --------------------------------------------------------------------------------------------------------------------------------------------------------
-    rule maskWordPackUInt48UInt48_1 => 115792089237316195423570985008687907853269984665561335876943319951794562400255 [macro]
-    rule maskWordPackUInt48UInt48_2 => 115792089237316195423570985008687907853269984665640564039457583726438152929280 [macro]
-
-    rule  UINT48_1             |Int (maskWordPackUInt48UInt48_2 &Int UINT48_UINT48) => #WordPackUInt48UInt48( UINT48_1 , (maskWordPackUInt48UInt48_2 &Int UINT48_UINT48) /Int pow48 ) requires #rangeUInt(96, UINT48_UINT48) andBool #rangeUInt(48, UINT48_1) [simplification]
-    rule (UINT48_2 *Int pow48) |Int (maxUInt48                  &Int UINT48_UINT48) => #WordPackUInt48UInt48( maxUInt48 &Int UINT48_UINT48 , UINT48_2                               ) requires #rangeUInt(96, UINT48_UINT48) andBool #rangeUInt(48, UINT48_2) [simplification]
-
-    rule (maskWordPackUInt48UInt48_2 &Int UINT48_UINT48) /Int pow48 => maxUInt48 &Int (UINT48_UINT48 /Int pow48) requires #rangeUInt(96, UINT48_UINT48) [simplification]
-    rule  maskWordPackUInt48UInt48_1 &Int UINT48_UINT48             => maxUInt48 &Int  UINT48_UINT48             requires #rangeUInt(96, UINT48_UINT48) [simplification]
-
-    //
-    // **TODO**: Avoid splitting these lemmas in the 0 second-argument case.
-    // The proof which uses these lemmas (flopper-tick-pass-rough) ends up with side-conditions which look like this:
-    //  Tic ==K 0 andBool 0 ==K maxUInt48 &Int (#lookup(STORAGE, ADDR) /Int pow160)
-    // So if we just have the one rule, then structural matching on the RHS cannot determine that `0` matches `maxUInt48 &Int #lookup(STORAGE, ADDR) /Int pow160)`.
-    // This is a consequence of how the Java backend decides to treat substitutions in the side-condition.
-    //
-    rule (UINT48_2 *Int pow208) |Int (maxUInt208 &Int ADDR_UINT48_UINT48) => #WordPackAddrUInt48UInt48(maxUInt160 &Int ADDR_UINT48_UINT48, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeUInt(48, UINT48_2) andBool maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) =/=Int 0 [simplification]
-    rule (UINT48_2 *Int pow208) |Int (maxUInt208 &Int ADDR_UINT48_UINT48) => #WordPackAddrUInt48UInt48(maxUInt160 &Int ADDR_UINT48_UINT48, 0                                              , UINT48_2) requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeUInt(48, UINT48_2) andBool maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160)  ==Int 0 [simplification]
-
     syntax Int ::= #string2Word ( String ) [function]
  // -------------------------------------------------
     rule #string2Word(S) => #asWord(#padRightToWidth(32, #parseByteStackRaw(S)))
-
-    // in binary: 100 1s followed by 160 0s
-    syntax Int ::= "notAddrMask"
- // ----------------------------
-    rule notAddrMask => 115792089237316195423570985007226406215939081747436879206741300988257197096960 [macro]
 
     syntax Int ::= "#Wad" | "#Ray" | "#Rad"
  // ---------------------------------------
@@ -115,9 +51,48 @@ module VERIFICATION-SYNTAX
 
 endmodule
 
-module VERIFICATION
+module VERIFICATION-HASKELL [symbolic, kore]
+    imports VERIFICATION-COMMON
+
+    // ### flapper-yank-pass-rough
+
+    rule #range(M:Memory [ K <- V ], START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)
+      requires START <=Int K andBool K +Int 1 ==Int START +Int WIDTH
+       andBool 0 <Int WIDTH andBool 0 <=Int START
+       [concrete(K, V), simplification]
+
+    rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS') ], START, WIDTH)
+      requires START <=Int K andBool K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH
+       andBool 0 <Int WIDTH andBool 0 <=Int START
+       andBool K +Int 1 ==Int K'
+      [concrete(K, K', V, VS'), simplification]
+
+endmodule
+
+module VERIFICATION-JAVA [symbolic, kast]
+    imports VERIFICATION-COMMON
+
+    // ### flapper-yank-pass-rough
+
+    rule #range(M:Memory [ K <- V ], START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)
+      requires #isConcrete(K) andBool #isConcrete(V)
+       andBool START <=Int K andBool K +Int 1 ==Int START +Int WIDTH
+       andBool 0 <Int WIDTH andBool 0 <=Int START
+       [simplification]
+
+    rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS') ], START, WIDTH)
+      requires #isConcrete(K) andBool #isConcrete(K') andBool #isConcrete(V) andBool #isConcrete(VS')
+       andBool START <=Int K andBool K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH
+       andBool 0 <Int WIDTH andBool 0 <=Int START
+       andBool K +Int 1 ==Int K'
+      [simplification]
+
+endmodule
+
+module VERIFICATION-COMMON
     imports VERIFICATION-SYNTAX
     imports INFINITE-GAS
+    imports WORD-PACK
 
     // ### vat-move-diff
 
@@ -132,7 +107,7 @@ module VERIFICATION
 
     // ### cat-file-addr-pass-rough
 
-    rule notAddrMask &Int ADDR => 0 requires #rangeAddress(ADDR) [simplification]
+    rule maskWordPackAddrUInt48UInt48_1 &Int ADDR => 0 requires #rangeAddress(ADDR) [simplification]
 
     // ### PERFORMANCE: dai-adduu-fail-rough
     // 99s -> 48s
@@ -142,9 +117,8 @@ module VERIFICATION
     // ### PERFORMANCE: vat-deny-diff-fail-rough
     // 27.21m -> 3.16m
 
-    rule M:Memory [ K := (W : WS) ]                   => M [ K <- W ] [ K +Int 1 := WS ] requires 0 <=Int K                                            [simplification]
-    rule M:Memory [ K <- V ] [ K' <- V' ]             => M [ K' <- V' ] [ K <- V ]       requires K' <Int K                                            [simplification]
-    rule M:Memory [ K := BUF:ByteArray ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ]     requires K' <Int K orBool K +Int #sizeByteArray(BUF) <=Int K' [simplification]
+    rule M:Memory [ K <- V ]             [ K' <- V' ] => M [ K' <- V' ] [ K <- V ]   requires K' <Int K                                            [simplification]
+    rule M:Memory [ K := BUF:ByteArray ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ] requires K' <Int K orBool K +Int #sizeByteArray(BUF) <=Int K' [simplification]
 
     // ### dstoken-transferfrom-fail-rough
 
@@ -295,10 +269,6 @@ module VERIFICATION
     // (check-sat)
     rule chop(X *Int Y) /sWord chop(Y) => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0 [simplification]
 
-    // ### flopper-tick-pass-rough
-
-    rule chop(X *Int Y) => X *Int Y requires 0 <=Int X andBool 0 <=Int Y andBool X *Int Y <Int pow256 [simplification]
-
     // ### vat-slip-pass-rough
 
     rule chop(X +Int chop(Y)) => chop(X +Int Y) [simplification]
@@ -389,5 +359,35 @@ module VERIFICATION
     // ### vat-subui-pass
 
     rule chop(X) ==K 0 => X ==Int 0 requires #rangeSInt(256, X) [simplification]
+
+    // ### flopper-kick-pass-rough
+
+    rule 0 <=Int X |Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
+    rule 0 <=Int X &Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
+
+    rule X |Int Y <Int pow256 => true requires X <Int pow256 andBool Y <Int pow256 [simplification]
+    rule X &Int Y <Int pow256 => true requires X <Int pow256 andBool Y <Int pow256 [simplification]
+
+    rule (maxUInt160 &Int (X |Int Y)) => (maxUInt160 &Int X) |Int (maxUInt160 &Int Y) [simplification]
+
+    // ### flopper-tick-pass-rough
+
+    rule chop(X *Int Y) => X *Int Y requires 0 <=Int X andBool 0 <=Int Y andBool X *Int Y <Int pow256 [simplification]
+
+    // This proof ends up with side-conditions which look like this:
+    // Tic ==K 0 andBool 0 ==K maxUInt48 &Int (#lookup(STORAGE, ADDR) /Int pow160) andBool Tic ==K maxUInt48 &Int (#lookup(STORAGE, ADDR) /Int pow160)
+    // So we need this rule to do the structural simplification because the Java backend will not use this string of equalities to do the simplification directly.
+    rule #WordPackAddrUInt48UInt48(ADDR, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) => #WordPackAddrUInt48UInt48(ADDR, 0, UINT48_2) requires maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) ==Int 0 [simplification]
+
+    // ### flapper-yank-pass-rough
+
+    rule M:Memory [ K := BUF:ByteArray ] [ K' := BUF':ByteArray ] => M [ K := (BUF [ 0 .. K' -Int K ]) ] [ K' := BUF' ]
+      requires K <Int K'
+       andBool K' <Int K +Int #sizeByteArray(BUF)
+       andBool K +Int #sizeByteArray(BUF) <Int K' +Int #sizeByteArray(BUF')
+      [simplification]
+
+    rule X <Int X -Int Y => false requires 0 <=Int Y [simplification]
+    rule X +Int Y <Int X => false requires 0 <=Int Y [simplification]
 
 endmodule

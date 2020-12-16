@@ -67,13 +67,17 @@ tests/specs/mcd/dsvalue-peek-pass-rough-spec.k
 tests/specs/mcd/dsvalue-read-pass-spec.k
 tests/specs/mcd/end-pack-pass-rough-spec.k
 tests/specs/mcd/end-subuu-pass-spec.k
+tests/specs/mcd/flapper-yank-pass-rough-spec.k
 tests/specs/mcd/flipper-addu48u48-fail-rough-spec.k
 tests/specs/mcd/flipper-bids-pass-rough-spec.k
 tests/specs/mcd/flipper-tau-pass-spec.k
 tests/specs/mcd/flipper-ttl-pass-spec.k
 tests/specs/mcd/flopper-cage-pass-spec.k
+tests/specs/mcd/flopper-dent-guy-same-pass-rough-spec.k
 tests/specs/mcd/flopper-file-pass-rough-spec.k
+tests/specs/mcd/flopper-kick-pass-rough-spec.k
 tests/specs/mcd/flopper-tick-pass-rough-spec.k
+tests/specs/mcd/functional-spec.k
 tests/specs/mcd/pot-join-pass-rough-spec.k
 tests/specs/mcd/vat-addui-fail-rough-spec.k
 tests/specs/mcd/vat-deny-diff-fail-rough-spec.k
