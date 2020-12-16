@@ -4,7 +4,7 @@ module COLLECTTOKEN-SPEC
   imports VERIFICATION
 
   // collectToken
-  rule
+  claim
     <kevm>
     <k> #execute => #halt </k>
     <exit-code> 1 </exit-code>
@@ -118,7 +118,7 @@ ensures ?VALUE ==Int @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int BA
 
 
   // loop
-  rule
+  claim
     <k> #execute => #execute </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
@@ -222,7 +222,7 @@ andBool GASCAP >=Int ((293 *Int (YEARCOUNT -Int INDEX)) +Int 26)
 
 
   // ds-math-mul
-  rule
+  claim
     <k> #execute => #execute </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
