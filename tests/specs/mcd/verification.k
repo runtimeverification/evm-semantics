@@ -356,6 +356,10 @@ module VERIFICATION-COMMON
 
     rule ADDR in (SetItem(I) REST) => ADDR in REST requires #notPrecompileAddress(ADDR) andBool notBool #notPrecompileAddress(I) [simplification]
 
+    // ### vat-subui-pass
+
+    rule chop(X) ==K 0 => X ==Int 0 requires #rangeSInt(256, X) [simplification]
+
     // ### flopper-kick-pass-rough
 
     rule 0 <=Int X |Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
