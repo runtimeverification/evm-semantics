@@ -146,7 +146,4 @@ module INFINITE-GAS-COMMON
     rule 0 <=Int #allBut64th(G)       => true                          [simplification]
     rule #allBut64th(G) <Int #gas(G') => true requires G <Int #gas(G') [simplification]
 
-    rule #gas(G1) +Int (G2 +Int G3) => (#gas(G1) +Int G2) +Int G3 [simplification]
-    rule #gas(G1) +Int (G2 -Int G3) => (#gas(G1) +Int G2) -Int G3 [simplification]
-
 endmodule
