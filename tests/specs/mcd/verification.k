@@ -419,4 +419,8 @@ module VERIFICATION-COMMON
        andBool K1 +Int #sizeByteArray(BUF11) <=Int K2 +Int #sizeByteArray(BUF2)
       [simplification]
 
+    // ### vat-frob-diff-zero-dart-pass-rough
+
+    rule chop(X) => X +Int pow256 requires #rangeSInt(256, X) andBool X <Int 0 [simplification]
+
 endmodule
