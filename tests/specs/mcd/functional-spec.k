@@ -54,4 +54,29 @@ module FUNCTIONAL-SPEC
     claim <k> runLemma(M:Memory [ 128 := (B1 : B2 : B3 : B4 : _     : .ByteArray) ] [ 132 := BA':ByteArray ]) => doneLemma(M [ 128 := (B1 : B2 : B3 : B4 : .ByteArray) ] [ 132 := BA' ]) ... </k> requires #sizeByteArray(BA') ==Int 32
     claim <k> runLemma(M:Memory [ 128 := (B1 : B2 : B3 : B4 : _ : _ : .ByteArray) ] [ 132 := BA':ByteArray ]) => doneLemma(M [ 128 := (B1 : B2 : B3 : B4 : .ByteArray) ] [ 132 := BA' ]) ... </k> requires #sizeByteArray(BA') ==Int 32
 
+    claim <k> runLemma( M:Memory [ 132 := #buf(32, B11) ] [ 128 := (#buf(32, B21) ++ #buf(32, B22)) ] ) => doneLemma( M [ 128 := (#buf(32, B21) ++ #buf(32, B22)) ] ) ... </k>
+      requires #rangeUInt(256, B11) andBool #rangeUInt(256, B21) andBool #rangeUInt(256, B22)
+
+    claim <k> runLemma( M:Memory [ 128 := (#buf(32, B31) ++ #buf(32, B32)) ] [ 128 := #buf(32, B41) ] ) => doneLemma( M [ 128 := #buf(32, B41) ] [ 160 := #buf(32, B32) ] ) ... </k>
+      requires #rangeUInt(256, B31) andBool #rangeUInt(256, B32) andBool #rangeUInt(256, B41)
+
+    claim <k> runLemma(M:Memory [ 128 := (217 : 99 : 141 : 54 : .ByteArray) ]
+                                [ 132 := #buf(32, B11) ]
+                                [ 128 := (#buf(32, B21) ++ #buf(32, B22) ++ #buf(32, B23) ++ #buf(32, B24) ++ #buf(32, B25)) ]
+                                [ 128 := (217 : 99 : 141 : 54 : .ByteArray) ]
+                                [ 132 := #buf(32, B11) ]
+                                [ 128 := (#buf(32, B31) ++ #buf(32, B32)) ]
+                                [ 128 := #buf(32, B41) ]
+                      )
+           => doneLemma(M [ 128 := #buf(32, B41) ]
+                          [ 160 := #buf(32, B32) ]
+                          [ 192 := (#buf(32, B23) ++ #buf(32, B24) ++ #buf(32, B25)) ]
+                       )
+          ...
+          </k>
+     requires #rangeUInt(256, B11)
+      andBool #rangeUInt(256, B21) andBool #rangeUInt(256, B22) andBool #rangeUInt(256, B23) andBool #rangeUInt(256, B24) andBool #rangeUInt(256, B25)
+      andBool #rangeUInt(256, B31) andBool #rangeUInt(256, B32)
+      andBool #rangeUInt(256, B41)
+
 endmodule

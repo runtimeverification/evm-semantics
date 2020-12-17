@@ -407,4 +407,16 @@ module VERIFICATION-COMMON
 
     rule M:Map [ K1 <- V1 ] [ K2 <- V2 ] [ K1 <- V1' ] => M [ K1 <- V1' ] [ K2 <- V2 ] requires K1 =/=Int K2 [simplification]
 
+    // end-cage-ilk-pass-rough
+
+    rule M:Memory [ K1 := BUF1 ] [ K2 := BUF2 ] => M [ K2 := BUF2 ]
+      requires K2 <=Int K1
+       andBool K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2)
+      [simplification]
+
+    rule M:Memory [ K1 := (BUF11 ++ BUF12) ] [ K2 := BUF2 ] => M [ K1 +Int #sizeByteArray(BUF11) := BUF12 ] [ K2 := BUF2 ]
+      requires K2 <=Int K1
+       andBool K1 +Int #sizeByteArray(BUF11) <=Int K2 +Int #sizeByteArray(BUF2)
+      [simplification]
+
 endmodule
