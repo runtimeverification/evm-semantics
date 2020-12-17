@@ -27,7 +27,10 @@ module VAT-MULUI-PASS-SPEC
             <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  =>  JMPTO : chop(ABI_x *Int ABI_y) : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13175 => 13233 </pc>
-            <gas> #gas(VGas) => #gas(VGas -Int ((#if ( ABI_y ==K 0 ) #then ( 96 ) #else ( 132 ) #fi))) </gas>
+            <gas> #gas(VGas) => #if ABI_y ==Int 0
+              #then   #gas ( ( VGas +Int -96 ) )
+              #else   #gas ( ( VGas +Int -132 ) )
+            #fi </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -160,32 +163,33 @@ module VAT-MULUI-PASS-SPEC
           <messages> _ </messages>
         </network>
       </ethereum>
-    requires #rangeAddress(ACCT_ID)
-     andBool ACCT_ID =/=Int 0
-     andBool #notPrecompileAddress(ACCT_ID)
-     andBool #rangeAddress(CALLER_ID)
-     andBool #rangeAddress(ORIGIN_ID)
-     andBool #rangeUInt(256, TIME)
-     andBool #rangeUInt(256, ACCT_ID_balance)
-     andBool #rangeUInt(256, ECREC_BAL)
-     andBool #rangeUInt(256, SHA256_BAL)
-     andBool #rangeUInt(256, RIP160_BAL)
-     andBool #rangeUInt(256, ID_BAL)
-     andBool #rangeUInt(256, MODEXP_BAL)
-     andBool #rangeUInt(256, ECADD_BAL)
-     andBool #rangeUInt(256, ECMUL_BAL)
-     andBool #rangeUInt(256, ECPAIRING_BAL)
-     andBool #rangeUInt(256, BLAKE2_BAL)
-     andBool VCallDepth <=Int 1024
-     andBool #rangeUInt(256, VCallValue)
-     andBool #rangeUInt(256, VChainId)
+      requires #rangeAddress(ACCT_ID)
+       andBool ACCT_ID =/=Int 0
+       andBool #notPrecompileAddress(ACCT_ID)
+       andBool #rangeAddress(CALLER_ID)
+       andBool #rangeAddress(ORIGIN_ID)
+       andBool #rangeUInt(256, TIME)
+       andBool #rangeUInt(256, ACCT_ID_balance)
+       andBool #rangeUInt(256, ECREC_BAL)
+       andBool #rangeUInt(256, SHA256_BAL)
+       andBool #rangeUInt(256, RIP160_BAL)
+       andBool #rangeUInt(256, ID_BAL)
+       andBool #rangeUInt(256, MODEXP_BAL)
+       andBool #rangeUInt(256, ECADD_BAL)
+       andBool #rangeUInt(256, ECMUL_BAL)
+       andBool #rangeUInt(256, ECPAIRING_BAL)
+       andBool #rangeUInt(256, BLAKE2_BAL)
+       andBool VCallDepth <=Int 1024
+       andBool #rangeUInt(256, VCallValue)
+       andBool #rangeUInt(256, VChainId)
 
-     andBool (#rangeUInt(256, ABI_x)
-     andBool (#rangeSInt(256, ABI_y)
-     andBool ((#sizeWordStack(WS) <=Int 1000)
-     andBool (#rangeUInt(256, VMemoryUsed)
-     andBool (2300 <Int VGas -Int ((#if ( ABI_y ==K 0 ) #then ( 96 ) #else ( 132 ) #fi))
-     andBool ((#rangeSInt(256, ABI_x))
-     andBool ((#rangeSInt(256, ABI_x *Int ABI_y)))))))))
+       andBool (#rangeUInt(256, ABI_x)
+       andBool (#rangeSInt(256, ABI_y)
+       andBool ((#sizeWordStack(WS) <=Int 1000)
+       andBool (#rangeUInt(256, VMemoryUsed)
+       andBool ((#rangeSInt(256, ABI_x))
+       andBool ((#rangeSInt(256, ABI_x *Int ABI_y))))))))
+
+
 
 endmodule

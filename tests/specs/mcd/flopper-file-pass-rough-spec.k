@@ -160,56 +160,56 @@ module FLOPPER-FILE-PASS-ROUGH-SPEC
           <messages> _ </messages>
         </network>
       </ethereum>
-    requires #rangeAddress(ACCT_ID)
-     andBool ACCT_ID =/=Int 0
-     andBool #notPrecompileAddress(ACCT_ID)
-     andBool #rangeAddress(CALLER_ID)
-     andBool #rangeAddress(ORIGIN_ID)
-     andBool #rangeUInt(256, TIME)
-     andBool #rangeUInt(256, ACCT_ID_balance)
-     andBool #rangeUInt(256, ECREC_BAL)
-     andBool #rangeUInt(256, SHA256_BAL)
-     andBool #rangeUInt(256, RIP160_BAL)
-     andBool #rangeUInt(256, ID_BAL)
-     andBool #rangeUInt(256, MODEXP_BAL)
-     andBool #rangeUInt(256, ECADD_BAL)
-     andBool #rangeUInt(256, ECMUL_BAL)
-     andBool #rangeUInt(256, ECPAIRING_BAL)
-     andBool #rangeUInt(256, BLAKE2_BAL)
-     andBool VCallDepth <=Int 1024
-     andBool #rangeUInt(256, VCallValue)
-     andBool #rangeUInt(256, VChainId)
+      requires #rangeAddress(ACCT_ID)
+       andBool ACCT_ID =/=Int 0
+       andBool #notPrecompileAddress(ACCT_ID)
+       andBool #rangeAddress(CALLER_ID)
+       andBool #rangeAddress(ORIGIN_ID)
+       andBool #rangeUInt(256, TIME)
+       andBool #rangeUInt(256, ACCT_ID_balance)
+       andBool #rangeUInt(256, ECREC_BAL)
+       andBool #rangeUInt(256, SHA256_BAL)
+       andBool #rangeUInt(256, RIP160_BAL)
+       andBool #rangeUInt(256, ID_BAL)
+       andBool #rangeUInt(256, MODEXP_BAL)
+       andBool #rangeUInt(256, ECADD_BAL)
+       andBool #rangeUInt(256, ECMUL_BAL)
+       andBool #rangeUInt(256, ECPAIRING_BAL)
+       andBool #rangeUInt(256, BLAKE2_BAL)
+       andBool VCallDepth <=Int 1024
+       andBool #rangeUInt(256, VCallValue)
+       andBool #rangeUInt(256, VChainId)
 
-     andBool (#rangeBytes(32, ABI_what)
-     andBool (#rangeUInt(256, ABI_data)
-     andBool (#rangeUInt(256, May)
-     andBool (#rangeUInt(256, Beg)
-     andBool (#rangeUInt(256, Pad)
-     andBool (#rangeUInt(48, Ttl)
-     andBool (#rangeUInt(48, Tau)
-     andBool ((#sizeByteArray(CD) <=Int 1250000000)
-     andBool (((ABI_what =/=Int #string2Word("ttl") andBool ABI_what =/=Int #string2Word("tau")) orBool #rangeUInt(48, ABI_data))
-     andBool (#rangeUInt(256, Junk_0)
-     andBool (#rangeUInt(256, Junk_1)
-     andBool (#rangeUInt(256, Junk_2)
-     andBool (#rangeUInt(256, Junk_3)
-     andBool ((May ==Int 1)
-     andBool ((VCallValue ==Int 0)
-     andBool (((ABI_what ==Int #string2Word("beg")) orBool (ABI_what ==Int #string2Word("pad")) orBool (ABI_what ==Int #string2Word("ttl")) orBool (ABI_what ==Int #string2Word("tau")))))))))))))))))))
+       andBool (#rangeBytes(32, ABI_what)
+       andBool (#rangeUInt(256, ABI_data)
+       andBool (#rangeUInt(256, May)
+       andBool (#rangeUInt(256, Beg)
+       andBool (#rangeUInt(256, Pad)
+       andBool (#rangeUInt(48, Ttl)
+       andBool (#rangeUInt(48, Tau)
+       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool (((ABI_what =/=Int #string2Word("ttl") andBool ABI_what =/=Int #string2Word("tau")) orBool #rangeUInt(48, ABI_data))
+       andBool (#rangeUInt(256, Junk_0)
+       andBool (#rangeUInt(256, Junk_1)
+       andBool (#rangeUInt(256, Junk_2)
+       andBool (#rangeUInt(256, Junk_3)
+       andBool ((May ==Int 1)
+       andBool ((VCallValue ==Int 0)
+       andBool (((ABI_what ==Int #string2Word("beg")) orBool (ABI_what ==Int #string2Word("pad")) orBool (ABI_what ==Int #string2Word("ttl")) orBool (ABI_what ==Int #string2Word("tau")))))))))))))))))))
 
-     andBool #lookup(ACCT_ID_STORAGE, #Flopper.wards[CALLER_ID]) ==Int May
-     andBool #lookup(ACCT_ID_STORAGE, #Flopper.beg) ==Int Beg
-     andBool #lookup(ACCT_ID_STORAGE, #Flopper.pad) ==Int Pad
-     andBool #lookup(ACCT_ID_STORAGE, #Flopper.ttl_tau) ==Int #WordPackUInt48UInt48(Ttl, Tau)
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.wards[CALLER_ID]) ==Int Junk_0
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.beg) ==Int Junk_1
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.pad) ==Int Junk_2
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.ttl_tau) ==Int Junk_3
-     andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.beg
-     andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.pad
-     andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.ttl_tau
-     andBool #Flopper.beg =/=Int #Flopper.pad
-     andBool #Flopper.beg =/=Int #Flopper.ttl_tau
-     andBool #Flopper.pad =/=Int #Flopper.ttl_tau
+       andBool #lookup(ACCT_ID_STORAGE, #Flopper.wards[CALLER_ID]) ==Int May
+       andBool #lookup(ACCT_ID_STORAGE, #Flopper.beg) ==Int Beg
+       andBool #lookup(ACCT_ID_STORAGE, #Flopper.pad) ==Int Pad
+       andBool #lookup(ACCT_ID_STORAGE, #Flopper.ttl_tau) ==Int #WordPackUInt48UInt48(Ttl, Tau)
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.wards[CALLER_ID]) ==Int Junk_0
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.beg) ==Int Junk_1
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.pad) ==Int Junk_2
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.ttl_tau) ==Int Junk_3
+       andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.beg
+       andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.pad
+       andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.ttl_tau
+       andBool #Flopper.beg =/=Int #Flopper.pad
+       andBool #Flopper.beg =/=Int #Flopper.ttl_tau
+       andBool #Flopper.pad =/=Int #Flopper.ttl_tau
 
 endmodule

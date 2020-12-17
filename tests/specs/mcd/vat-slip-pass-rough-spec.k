@@ -160,43 +160,43 @@ module VAT-SLIP-PASS-ROUGH-SPEC
           <messages> _ </messages>
         </network>
       </ethereum>
-    requires #rangeAddress(ACCT_ID)
-     andBool ACCT_ID =/=Int 0
-     andBool #notPrecompileAddress(ACCT_ID)
-     andBool #rangeAddress(CALLER_ID)
-     andBool #rangeAddress(ORIGIN_ID)
-     andBool #rangeUInt(256, TIME)
-     andBool #rangeUInt(256, ACCT_ID_balance)
-     andBool #rangeUInt(256, ECREC_BAL)
-     andBool #rangeUInt(256, SHA256_BAL)
-     andBool #rangeUInt(256, RIP160_BAL)
-     andBool #rangeUInt(256, ID_BAL)
-     andBool #rangeUInt(256, MODEXP_BAL)
-     andBool #rangeUInt(256, ECADD_BAL)
-     andBool #rangeUInt(256, ECMUL_BAL)
-     andBool #rangeUInt(256, ECPAIRING_BAL)
-     andBool #rangeUInt(256, BLAKE2_BAL)
-     andBool VCallDepth <=Int 1024
-     andBool #rangeUInt(256, VCallValue)
-     andBool #rangeUInt(256, VChainId)
+      requires #rangeAddress(ACCT_ID)
+       andBool ACCT_ID =/=Int 0
+       andBool #notPrecompileAddress(ACCT_ID)
+       andBool #rangeAddress(CALLER_ID)
+       andBool #rangeAddress(ORIGIN_ID)
+       andBool #rangeUInt(256, TIME)
+       andBool #rangeUInt(256, ACCT_ID_balance)
+       andBool #rangeUInt(256, ECREC_BAL)
+       andBool #rangeUInt(256, SHA256_BAL)
+       andBool #rangeUInt(256, RIP160_BAL)
+       andBool #rangeUInt(256, ID_BAL)
+       andBool #rangeUInt(256, MODEXP_BAL)
+       andBool #rangeUInt(256, ECADD_BAL)
+       andBool #rangeUInt(256, ECMUL_BAL)
+       andBool #rangeUInt(256, ECPAIRING_BAL)
+       andBool #rangeUInt(256, BLAKE2_BAL)
+       andBool VCallDepth <=Int 1024
+       andBool #rangeUInt(256, VCallValue)
+       andBool #rangeUInt(256, VChainId)
 
-     andBool (#rangeBytes(32, ABI_ilk)
-     andBool (#rangeAddress(ABI_usr)
-     andBool (#rangeSInt(256, ABI_wad)
-     andBool (#rangeUInt(256, May)
-     andBool (#rangeUInt(256, Gem)
-     andBool (#sizeByteArray(CD) <=Int 1250000000
-     andBool (#rangeUInt(256, Junk_0)
-     andBool (#rangeUInt(256, Junk_1)
-     andBool (((May ==Int 1))
-     andBool (((VCallValue ==Int 0))
-     andBool ((#rangeUInt(256, Gem +Int ABI_wad)))))))))))))
+       andBool (#rangeBytes(32, ABI_ilk)
+       andBool (#rangeAddress(ABI_usr)
+       andBool (#rangeSInt(256, ABI_wad)
+       andBool (#rangeUInt(256, May)
+       andBool (#rangeUInt(256, Gem)
+       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (#rangeUInt(256, Junk_0)
+       andBool (#rangeUInt(256, Junk_1)
+       andBool (((May ==Int 1))
+       andBool (((VCallValue ==Int 0))
+       andBool ((#rangeUInt(256, Gem +Int ABI_wad)))))))))))))
 
-     andBool #lookup(ACCT_ID_STORAGE, #Vat.wards[CALLER_ID]) ==Int May
-     andBool #lookup(ACCT_ID_STORAGE, #Vat.gem[ABI_ilk][ABI_usr]) ==Int Gem
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.wards[CALLER_ID]) ==Int Junk_0
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.gem[ABI_ilk][ABI_usr]) ==Int Junk_1
-     andBool #Vat.wards[CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_usr]
+       andBool #lookup(ACCT_ID_STORAGE, #Vat.wards[CALLER_ID]) ==Int May
+       andBool #lookup(ACCT_ID_STORAGE, #Vat.gem[ABI_ilk][ABI_usr]) ==Int Gem
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.wards[CALLER_ID]) ==Int Junk_0
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.gem[ABI_ilk][ABI_usr]) ==Int Junk_1
+       andBool #Vat.wards[CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_usr]
 
     // Vat_addui
     claim [Vat.addui.pass]:
@@ -222,7 +222,13 @@ module VAT-SLIP-PASS-ROUGH-SPEC
             <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x +Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13112 => 13174 </pc>
-            <gas> #gas(VGas) => #gas ( ( VGas +Int #if 0 <=Int ABI_y #then #if chop( ABI_y ) <=Int 0 #then 114 #else 128 #fi #else 128 #fi ) ) </gas>
+            <gas> #gas(VGas) => #if ( ABI_y <Int 0 andBool 0 <=Int ( ABI_x +Int ABI_y ) )
+              #then   #gas ( ( VGas +Int -128 ) )
+              #else   #if chop( ABI_y ) <=Int 0
+                #then   #gas ( ( VGas +Int -114 ) )
+                #else   #gas ( ( VGas +Int -128 ) )
+              #fi
+            #fi </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -355,31 +361,33 @@ module VAT-SLIP-PASS-ROUGH-SPEC
           <messages> _ </messages>
         </network>
       </ethereum>
-    requires #rangeAddress(ACCT_ID)
-     andBool ACCT_ID =/=Int 0
-     andBool #notPrecompileAddress(ACCT_ID)
-     andBool #rangeAddress(CALLER_ID)
-     andBool #rangeAddress(ORIGIN_ID)
-     andBool #rangeUInt(256, TIME)
-     andBool #rangeUInt(256, ACCT_ID_balance)
-     andBool #rangeUInt(256, ECREC_BAL)
-     andBool #rangeUInt(256, SHA256_BAL)
-     andBool #rangeUInt(256, RIP160_BAL)
-     andBool #rangeUInt(256, ID_BAL)
-     andBool #rangeUInt(256, MODEXP_BAL)
-     andBool #rangeUInt(256, ECADD_BAL)
-     andBool #rangeUInt(256, ECMUL_BAL)
-     andBool #rangeUInt(256, ECPAIRING_BAL)
-     andBool #rangeUInt(256, BLAKE2_BAL)
-     andBool VCallDepth <=Int 1024
-     andBool #rangeUInt(256, VCallValue)
-     andBool #rangeUInt(256, VChainId)
+      requires #rangeAddress(ACCT_ID)
+       andBool ACCT_ID =/=Int 0
+       andBool #notPrecompileAddress(ACCT_ID)
+       andBool #rangeAddress(CALLER_ID)
+       andBool #rangeAddress(ORIGIN_ID)
+       andBool #rangeUInt(256, TIME)
+       andBool #rangeUInt(256, ACCT_ID_balance)
+       andBool #rangeUInt(256, ECREC_BAL)
+       andBool #rangeUInt(256, SHA256_BAL)
+       andBool #rangeUInt(256, RIP160_BAL)
+       andBool #rangeUInt(256, ID_BAL)
+       andBool #rangeUInt(256, MODEXP_BAL)
+       andBool #rangeUInt(256, ECADD_BAL)
+       andBool #rangeUInt(256, ECMUL_BAL)
+       andBool #rangeUInt(256, ECPAIRING_BAL)
+       andBool #rangeUInt(256, BLAKE2_BAL)
+       andBool VCallDepth <=Int 1024
+       andBool #rangeUInt(256, VCallValue)
+       andBool #rangeUInt(256, VChainId)
 
-     andBool (#rangeUInt(256, ABI_x)
-     andBool (#rangeSInt(256, ABI_y)
-     andBool ((#sizeWordStack(WS) <=Int 1015)
-     andBool (#rangeUInt(256, VMemoryUsed)
-     andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
+       andBool (#rangeUInt(256, ABI_x)
+       andBool (#rangeSInt(256, ABI_y)
+       andBool ((#sizeWordStack(WS) <=Int 1015)
+       andBool (#rangeUInt(256, VMemoryUsed)
+       andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
+
+
     [trusted, matching(infGas)]
 
 

@@ -270,8 +270,8 @@ module END-PACK-PASS-ROUGH-SPEC
             <localMem> _ </localMem>
             <pc> 14690 => 14733 </pc>
             <gas> #gas(VGas) => #if ABI_y ==Int 0
-              #then   #gas ( ( VGas +Int 54 ) )
-              #else   #gas ( ( VGas +Int 106 ) )
+              #then   #gas ( ( VGas +Int -54 ) )
+              #else   #gas ( ( VGas +Int -106 ) )
             #fi </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
@@ -459,7 +459,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x +Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 14775 => 14800 </pc>
-            <gas> #gas(VGas) => #gas ( ( VGas +Int 54 ) ) </gas>
+            <gas> #gas(VGas) => #gas ( ( VGas +Int -54 ) ) </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -646,7 +646,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> #gas(VGas) => #gas ( ( VGas +Int ( Csstore( ISTANBUL , ( Dai_src -Int ABI_rad ) , Dai_src , Junk_1 ) +Int ( Csstore( ISTANBUL , ( Dai_dst +Int ABI_rad ) , Dai_dst , Junk_2 ) +Int 7943 ) ) ) ) </gas>
+            <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Dai_src -Int ABI_rad ) , Dai_src , Junk_1 ) ) -Int Csstore( ISTANBUL , ( Dai_dst +Int ABI_rad ) , Dai_dst , Junk_2 ) ) +Int -7943 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>
