@@ -415,4 +415,9 @@ module VERIFICATION-COMMON
 
     rule chop(X) => X +Int pow256 requires #rangeSInt(256, X) andBool X <Int 0 [simplification]
 
+    // ### vat-fork-diff-pass-rough
+
+    rule chop(X +Int pow256)  => chop(X)        [simplification]
+    rule chop(chop(X) *Int Y) => chop(X *Int Y) [simplification]
+
 endmodule
