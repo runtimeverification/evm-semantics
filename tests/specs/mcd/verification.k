@@ -186,7 +186,7 @@ module VERIFICATION-COMMON
     //      chop(X *Int Y) /sWord chop(Y)
     //   => #sgnInterp(sgn(chop(X *Int Y)) *Int sgn(chop(Y)), abs(chop(X *Int Y)) /Word abs(chop(Y)))
     // Focus: sgn(chop(X *Int Y)) *Int sgn(chop(Y))
-    //      case 0 <=Int chop(Y)
+    //      case 0 <=Int Y
     //           sgn(chop(X *Int Y)) *Int sgn(chop(Y))
     //        => sgn(chop(X *Int Y)) *Int sgn(Y)                     // chop(Y) ==Int Y
     //        => sgn(X *Int Y) *Int sgn(Y)                           // 0 <=Int X andBool 0 <=Int Y
@@ -399,7 +399,7 @@ module VERIFICATION-COMMON
 
     rule M:Map [ K1 <- V1 ] [ K2 <- V2 ] [ K1 <- V1' ] => M [ K1 <- V1' ] [ K2 <- V2 ] requires K1 =/=Int K2 [simplification]
 
-    // end-cage-ilk-pass-rough
+    // ### end-cage-ilk-pass-rough
 
     rule M:Memory [ K1 := BUF1 ] [ K2 := BUF2 ] => M [ K2 := BUF2 ]
       requires K2 <=Int K1
