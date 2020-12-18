@@ -420,4 +420,8 @@ module VERIFICATION-COMMON
     rule chop(X +Int pow256)  => chop(X)        [simplification]
     rule chop(chop(X) *Int Y) => chop(X *Int Y) [simplification]
 
+    // ### vow-cage-deficit-pass-rough
+
+    rule (I1 +Int I2) -Int I1 => I2 [simplification]
+
 endmodule
