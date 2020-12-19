@@ -424,4 +424,10 @@ module VERIFICATION-COMMON
 
     rule (I1 +Int I2) -Int I1 => I2 [simplification]
 
+    // ### flapper-tend-guy-diff-pass-rough
+
+    rule ((I1 -Int I2) -Int I3) +Int I2 => I1 -Int I3 [simplification]
+
+    rule M:Map [ K1 <- V1 ] [ K2 <- V2 ] [ K3 <- V3 ] [ K1 <- V4 ] => M [ K1 <- V4 ] [ K2 <- V2 ] [ K3 <- V3 ] requires K1 =/=Int K2 andBool K1 =/=Int K3 [simplification]
+
 endmodule
