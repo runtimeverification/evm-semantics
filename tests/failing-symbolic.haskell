@@ -68,6 +68,7 @@ tests/specs/mcd/dsvalue-read-pass-spec.k
 tests/specs/mcd/end-cash-pass-rough-spec.k
 tests/specs/mcd/end-pack-pass-rough-spec.k
 tests/specs/mcd/end-subuu-pass-spec.k
+tests/specs/mcd/flapper-tend-guy-diff-pass-rough-spec.k
 tests/specs/mcd/flapper-yank-pass-rough-spec.k
 tests/specs/mcd/flipper-addu48u48-fail-rough-spec.k
 tests/specs/mcd/flipper-bids-pass-rough-spec.k
