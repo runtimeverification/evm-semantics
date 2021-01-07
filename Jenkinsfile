@@ -82,6 +82,7 @@ pipeline {
                   git clone 'ssh://github.com/kframework/evm-semantics.git'
                   cd evm-semantics
                   git checkout -B gh-pages origin/master
+                  git submodule update --init --recursive -- ./web
                   cd web
                   npm install
                   npm run build
