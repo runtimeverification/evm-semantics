@@ -435,4 +435,13 @@ module VERIFICATION-COMMON
 
     rule chop(X *Int (Y +Int pow256)) => chop(X *Int Y) [simplification]
 
+    // ### vat-mului-fail-rough
+
+    rule notBool (sgn(X) ==K -1) => sgn(X) ==Int 1 requires #rangeUInt(256, X) [simplification]
+
+    rule minSInt256 <=Int X => true requires 0 <=Int X      [simplification]
+    rule X <=Int maxSInt256 => true requires sgn(X) ==Int 1 [simplification]
+
+    rule chop(X *Int Y) /sWord chop(Y) ==K X => false requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool notBool #rangeSInt(256, X *Int Y) [simplification]
+
 endmodule
