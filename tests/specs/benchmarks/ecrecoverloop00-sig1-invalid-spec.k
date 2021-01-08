@@ -132,9 +132,9 @@ _
      andBool #rangeBytes(32, SIGR1)
      andBool #rangeBytes(32, SIGS0)
      andBool #rangeBytes(32, SIGS1)
-     andBool ECREC_DATA0 ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV0), #bytes32(SIGR0), #bytes32(SIGS0) )
-     andBool ECREC_DATA1 ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV1), #bytes32(SIGR1), #bytes32(SIGS1) )
-     andBool #ecrecEmpty( ECREC_DATA1 )
+     andBool ?ECREC_DATA0 ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV0), #bytes32(SIGR0), #bytes32(SIGS0) )
+     andBool ?ECREC_DATA1 ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV1), #bytes32(SIGR1), #bytes32(SIGS1) )
+     andBool #ecrecEmpty( ?ECREC_DATA1 )
 
 endmodule
 

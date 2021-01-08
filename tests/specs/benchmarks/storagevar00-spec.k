@@ -11,7 +11,7 @@ module STORAGEVAR00-SPEC
     <schedule> ISTANBUL </schedule>
     <ethereum>
       <evm>
-        <output> _ => #encodeArgs(#uint256(N)) </output>
+        <output> _ => #encodeArgs(#uint256(?N)) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
@@ -114,8 +114,8 @@ module STORAGEVAR00-SPEC
      andBool #rangeUInt(256, CALLEE_BAL)
      andBool #range(0 <= CD < 1024)
      andBool #rangeAddress(MSG_SENDER)
-     andBool #rangeUInt(256, N)
-     andBool #lookup(S, #hashedLocation("Solidity", 0, .IntList)) ==Int N
+     andBool #rangeUInt(256, ?N)
+     andBool #lookup(S, #hashedLocation("Solidity", 0, .IntList)) ==Int ?N
 
 endmodule
 
