@@ -17,36 +17,62 @@ endmodule
 module INFINITE-GAS-HASKELL [kore]
     imports INFINITE-GAS-COMMON
 
-    rule #gas(_)  <Int _I => false [concrete(_I), simplification]
-    rule #gas(_) <=Int _I => false [concrete(_I), simplification]
-    rule #gas(_) >=Int _I => true  [concrete(_I), simplification]
-    rule _I <=Int #gas(_) => true  [concrete(_I), simplification]
+    rule #gas(_)  <Int _C => false [concrete(_C), simplification]
+    rule #gas(_) <=Int _C => false [concrete(_C), simplification]
+    rule #gas(_) >=Int _C => true  [concrete(_C), simplification]
+    rule _C <=Int #gas(_) => true  [concrete(_C), simplification]
 
-    rule I1 +Int I2  <Int I3         => I1          <Int I3 -Int I2 [concrete(I2, I3), simplification]
-    rule I1          <Int I2 +Int I3 => I1 -Int I3  <Int I2         [concrete(I1, I3), simplification]
-    rule I1         <=Int I2 +Int I3 => I1 -Int I3 <=Int I2         [concrete(I1, I3), simplification]
+    rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 [concrete(C2, C3), simplification]
+    rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         [concrete(C1, C3), simplification]
+    rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         [concrete(C1, C3), simplification]
 
-    rule ((I1 +Int I2) +Int I3) +Int I4 => (I1 +Int I3) +Int (I2 +Int I4) [concrete(I2, I4), symbolic(I1, I3), simplification]
-    rule ((I1 +Int I2) -Int I3) +Int I4 => (I1 -Int I3) +Int (I2 +Int I4) [concrete(I2, I4), symbolic(I1, I3), simplification]
-    rule (I1 +Int I2) -Int (I3 +Int I4) => (I1 -Int I3) +Int (I2 -Int I4) [concrete(I2, I4), symbolic(I1, I3), simplification]
+    rule C1 +Int S2 => S2 +Int C1 [concrete(C1), symbolic(S2), simplification]
+
+    rule S1 +Int (S2 +Int I3) => (S1 +Int S2) +Int I3 [symbolic(S1, S2), simplification]
+    rule S1 +Int (S2 -Int I3) => (S1 +Int S2) -Int I3 [symbolic(S1, S2), simplification]
+    rule S1 -Int (S2 +Int I3) => (S1 -Int S2) -Int I3 [symbolic(S1, S2), simplification]
+    rule S1 -Int (S2 -Int I3) => (S1 -Int S2) +Int I3 [symbolic(S1, S2), simplification]
+
+    rule (I1 +Int C2) +Int S3 => (I1 +Int S3) +Int C2 [concrete(C2), symbolic(S3), simplification]
+    rule (I1 +Int C2) -Int S3 => (I1 -Int S3) +Int C2 [concrete(C2), symbolic(S3), simplification]
+    rule (I1 -Int C2) +Int S3 => (I1 +Int S3) -Int C2 [concrete(C2), symbolic(S3), simplification]
+    rule (I1 -Int C2) -Int S3 => (I1 -Int S3) -Int C2 [concrete(C2), symbolic(S3), simplification]
+
+    rule (S1 +Int C2) +Int C3 => S1 +Int (C2 +Int C3) [concrete(C2, C3), symbolic(S1), simplification]
+    rule (S1 +Int C2) -Int C3 => S1 +Int (C2 -Int C3) [concrete(C2, C3), symbolic(S1), simplification]
+    rule (S1 -Int C2) +Int C3 => S1 +Int (C3 -Int C2) [concrete(C2, C3), symbolic(S1), simplification]
+    rule (S1 -Int C2) -Int C3 => S1 -Int (C2 +Int C3) [concrete(C2, C3), symbolic(S1), simplification]
 endmodule
 
 module INFINITE-GAS-JAVA [kast]
     imports INFINITE-GAS-COMMON
     imports K-REFLECTION
 
-    rule #gas(_)  <Int I => false requires #isConcrete(I) [simplification]
-    rule #gas(_) <=Int I => false requires #isConcrete(I) [simplification]
-    rule #gas(_) >=Int I => true  requires #isConcrete(I) [simplification]
-    rule I <=Int #gas(_) => true  requires #isConcrete(I) [simplification]
+    rule #gas(_)  <Int C => false requires #isConcrete(C) [simplification]
+    rule #gas(_) <=Int C => false requires #isConcrete(C) [simplification]
+    rule #gas(_) >=Int C => true  requires #isConcrete(C) [simplification]
+    rule C <=Int #gas(_) => true  requires #isConcrete(C) [simplification]
 
-    rule I1 +Int I2  <Int I3         => I1          <Int I3 -Int I2 requires #isConcrete(I2) andBool #isConcrete(I3) [simplification]
-    rule I1          <Int I2 +Int I3 => I1 -Int I3  <Int I2         requires #isConcrete(I1) andBool #isConcrete(I3) [simplification]
-    rule I1         <=Int I2 +Int I3 => I1 -Int I3 <=Int I2         requires #isConcrete(I1) andBool #isConcrete(I3) [simplification]
+    rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 requires #isConcrete(C2) andBool #isConcrete(C3) [simplification]
+    rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
+    rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
 
-    rule ((I1 +Int I2) +Int I3) +Int I4 => (I1 +Int I3) +Int (I2 +Int I4) requires #isConcrete(I2) andBool #isConcrete(I4) andBool notBool (#isConcrete(I1) orBool #isConcrete(I3)) [simplification]
-    rule ((I1 +Int I2) -Int I3) +Int I4 => (I1 -Int I3) +Int (I2 +Int I4) requires #isConcrete(I2) andBool #isConcrete(I4) andBool notBool (#isConcrete(I1) orBool #isConcrete(I3)) [simplification]
-    rule (I1 +Int I2) -Int (I3 +Int I4) => (I1 -Int I3) +Int (I2 -Int I4) requires #isConcrete(I2) andBool #isConcrete(I4) andBool notBool (#isConcrete(I1) orBool #isConcrete(I3)) [simplification]
+    rule C1 +Int S2 => S2 +Int C1 requires #isConcrete(C1) andBool notBool #isConcrete(S2) [simplification]
+
+    rule S1 +Int (S2 +Int I3) => (S1 +Int S2) +Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
+    rule S1 +Int (S2 -Int I3) => (S1 +Int S2) -Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
+    rule S1 -Int (S2 +Int I3) => (S1 -Int S2) -Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
+    rule S1 -Int (S2 -Int I3) => (S1 -Int S2) +Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
+
+    rule (I1 +Int C2) +Int S3 => (I1 +Int S3) +Int C2 requires #isConcrete(C2) andBool notBool #isConcrete(S3) [simplification]
+    rule (I1 +Int C2) -Int S3 => (I1 -Int S3) +Int C2 requires #isConcrete(C2) andBool notBool #isConcrete(S3) [simplification]
+    rule (I1 -Int C2) +Int S3 => (I1 +Int S3) -Int C2 requires #isConcrete(C2) andBool notBool #isConcrete(S3) [simplification]
+    rule (I1 -Int C2) -Int S3 => (I1 -Int S3) -Int C2 requires #isConcrete(C2) andBool notBool #isConcrete(S3) [simplification]
+
+    rule (S1 +Int C2) +Int C3 => S1 +Int (C2 +Int C3) requires #isConcrete(C2) andBool #isConcrete(C3) andBool notBool #isConcrete(S1) [simplification]
+    rule (S1 +Int C2) -Int C3 => S1 +Int (C2 -Int C3) requires #isConcrete(C2) andBool #isConcrete(C3) andBool notBool #isConcrete(S1) [simplification]
+    rule (S1 -Int C2) +Int C3 => S1 +Int (C3 -Int C2) requires #isConcrete(C2) andBool #isConcrete(C3) andBool notBool #isConcrete(S1) [simplification]
+    rule (S1 -Int C2) -Int C3 => S1 -Int (C2 +Int C3) requires #isConcrete(C2) andBool #isConcrete(C3) andBool notBool #isConcrete(S1) [simplification]
 endmodule
 
 module INFINITE-GAS-COMMON
@@ -54,9 +80,11 @@ module INFINITE-GAS-COMMON
 
  // Generic rules
 
-    rule I -Int I => 0                                              [simplification]
-    rule I1 -Int (I1 -Int I2) => I2                                 [simplification]
-    rule (notBool (A andBool B)) andBool A => (notBool B) andBool A [simplification]
+    rule (notBool (A andBool B)) andBool A => (notBool B) andBool A                      [simplification]
+    rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification]
+
+    rule I -Int I => 0              [simplification]
+    rule (I1 -Int I2) +Int I2 => I1 [simplification]
 
  // Symbolic Gas
 
@@ -67,16 +95,16 @@ module INFINITE-GAS-COMMON
  // ---------------------------------------------------------------------------------------------------------
     rule #gas(_, _, _) => #gas(0)
 
-    rule #gas(G) +Int G' => #gas(G +Int G') requires 0 <Int G' orBool 0 -Int G' <Int #gas(G)  [simplification]
-    rule G +Int #gas(G') => #gas(G +Int G') requires 0 <Int G  orBool 0 -Int G  <Int #gas(G') [simplification]
+    rule #gas(G) +Int G' => #gas(G +Int G') requires 0 <=Int G' orBool 0 -Int G' <Int #gas(G)  [simplification]
+    rule G +Int #gas(G') => #gas(G +Int G') requires 0 <=Int G  orBool 0 -Int G  <Int #gas(G') [simplification]
 
-    rule #gas(G) -Int G' => #gas(G -Int G') requires 0 <Int G' andBool G' <Int #gas(G) [simplification]
+    rule #gas(G) -Int G' => #gas(G -Int G') requires 0 <=Int G' andBool G' <Int #gas(G) [simplification]
 
-    rule #gas(G) *Int G' => #gas(G *Int G') requires 0 <Int G' [simplification]
-    rule G *Int #gas(G') => #gas(G *Int G') requires 0 <Int G  [simplification]
+    rule #gas(G) *Int G' => #gas(G *Int G') requires 0 <=Int G' [simplification]
+    rule G *Int #gas(G') => #gas(G *Int G') requires 0 <=Int G  [simplification]
 
-    rule #gas(G) /Int G' => #gas(G /Int G') requires 0 <Int G' andBool G' <Int #gas(G)  [simplification]
-    rule G /Int #gas(G') => 0               requires 0 <Int G  andBool G  <Int #gas(G') [simplification]
+    rule #gas(G) /Int G' => #gas(G /Int G') requires 0  <Int G' andBool G' <Int #gas(G)  [simplification]
+    rule G /Int #gas(G') => 0               requires 0 <=Int G  andBool G  <Int #gas(G') [simplification]
 
     rule #gas(#gas(G)) => #gas(G) [simplification]
 
@@ -84,6 +112,8 @@ module INFINITE-GAS-COMMON
 
     rule minInt(#gas(G), #gas(G'))              => #gas(minInt(G, G'))              [simplification]
     rule #if B #then #gas(G) #else #gas(G') #fi => #gas(#if B #then G #else G' #fi) [simplification]
+
+    rule #allBut64th(#gas(G)) => #gas(#allBut64th(G)) [simplification]
 
     rule #gas(_)  <Int #gas(_) => false [simplification]
     rule #gas(_) <=Int #gas(_) => true  [simplification]
@@ -114,11 +144,15 @@ module INFINITE-GAS-COMMON
     rule G  <Int minInt(G', G'') => G  <Int G' andBool G  <Int G'' [simplification]
     rule G <=Int minInt(G', G'') => G <=Int G' andBool G <=Int G'' [simplification]
 
-    rule 0 <Int Csstore(_, _, _, _)        => true  [simplification]
+    rule 0 <=Int Csstore(_, _, _, _)       => true  [simplification]
     rule Csstore(_, _, _, _) <Int #gas(_)  => true  [simplification]
     rule #gas(_)  <Int Csstore(_, _, _, _) => false [simplification]
     rule #gas(_) >=Int Csstore(_, _, _, _) => true  [simplification]
 
     rule #gas(_) <Int Cmem(_, _)  => false [simplification]
     rule Cmem(_, _) <=Int #gas(_) => true  [simplification]
+
+    rule 0 <=Int #allBut64th(G)       => true                          [simplification]
+    rule #allBut64th(G) <Int #gas(G') => true requires G <Int #gas(G') [simplification]
+
 endmodule
