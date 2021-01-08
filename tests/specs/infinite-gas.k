@@ -26,6 +26,13 @@ module INFINITE-GAS-HASKELL [kore]
     rule I1          <Int I2 +Int I3 => I1 -Int I3  <Int I2         [concrete(I1, I3), simplification]
     rule I1         <=Int I2 +Int I3 => I1 -Int I3 <=Int I2         [concrete(I1, I3), simplification]
 
+    rule I1 +Int I2 => I2 +Int I1 [concrete(I1), symbolic(I2), simplification]
+
+    rule I1 +Int (I2 +Int I3) => (I1 +Int I2) +Int I3 [symbolic(I1, I2), simplification]
+    rule I1 +Int (I2 -Int I3) => (I1 +Int I2) -Int I3 [symbolic(I1, I2), simplification]
+    rule I1 -Int (I2 +Int I3) => (I1 -Int I2) -Int I3 [symbolic(I1, I2), simplification]
+    rule I1 -Int (I2 -Int I3) => (I1 -Int I2) +Int I3 [symbolic(I1, I2), simplification]
+
     rule (I1 +Int I2) +Int I3 => (I1 +Int I3) +Int I2 [concrete(I2), symbolic(I3), simplification]
     rule (I1 +Int I2) -Int I3 => (I1 -Int I3) +Int I2 [concrete(I2), symbolic(I3), simplification]
     rule (I1 -Int I2) +Int I3 => (I1 +Int I3) -Int I2 [concrete(I2), symbolic(I3), simplification]
@@ -50,6 +57,13 @@ module INFINITE-GAS-JAVA [kast]
     rule I1          <Int I2 +Int I3 => I1 -Int I3  <Int I2         requires #isConcrete(I1) andBool #isConcrete(I3) [simplification]
     rule I1         <=Int I2 +Int I3 => I1 -Int I3 <=Int I2         requires #isConcrete(I1) andBool #isConcrete(I3) [simplification]
 
+    rule I1 +Int I2 => I2 +Int I1 requires #isConcrete(I1) andBool notBool #isConcrete(I2) [simplification]
+
+    rule I1 +Int (I2 +Int I3) => (I1 +Int I2) +Int I3 requires (notBool #isConcrete(I1)) andBool (notBool #isConcrete(I2)) [simplification]
+    rule I1 +Int (I2 -Int I3) => (I1 +Int I2) -Int I3 requires (notBool #isConcrete(I1)) andBool (notBool #isConcrete(I2)) [simplification]
+    rule I1 -Int (I2 +Int I3) => (I1 -Int I2) -Int I3 requires (notBool #isConcrete(I1)) andBool (notBool #isConcrete(I2)) [simplification]
+    rule I1 -Int (I2 -Int I3) => (I1 -Int I2) +Int I3 requires (notBool #isConcrete(I1)) andBool (notBool #isConcrete(I2)) [simplification]
+
     rule (I1 +Int I2) +Int I3 => (I1 +Int I3) +Int I2 requires #isConcrete(I2) andBool notBool #isConcrete(I3) [simplification]
     rule (I1 +Int I2) -Int I3 => (I1 -Int I3) +Int I2 requires #isConcrete(I2) andBool notBool #isConcrete(I3) [simplification]
     rule (I1 -Int I2) +Int I3 => (I1 +Int I3) -Int I2 requires #isConcrete(I2) andBool notBool #isConcrete(I3) [simplification]
@@ -71,11 +85,6 @@ module INFINITE-GAS-COMMON
 
     rule I -Int I => 0              [simplification]
     rule (I1 -Int I2) +Int I2 => I1 [simplification]
-
-    rule I1 +Int (I2 +Int I3) => (I1 +Int I2) +Int I3 [simplification]
-    rule I1 +Int (I2 -Int I3) => (I1 +Int I2) -Int I3 [simplification]
-    rule I1 -Int (I2 +Int I3) => (I1 -Int I2) -Int I3 [simplification]
-    rule I1 -Int (I2 -Int I3) => (I1 -Int I2) +Int I3 [simplification]
 
  // Symbolic Gas
 
