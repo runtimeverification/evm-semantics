@@ -15,6 +15,13 @@ endmodule
 module FUNCTIONAL-SPEC
     imports FUNCTIONAL-SPEC-SYNTAX
 
+    // Arithmetic
+
+    claim <k> runLemma((X +Int pow256) -Int chop(Y)) => doneLemma(X -Int Y) ... </k>
+      requires #rangeUInt(256, X)
+       andBool #rangeSInt(256, Y)
+       andBool Y <Int 0
+
     // WordPack
 
     claim <k> runLemma((GAL |Int (maskWordPackAddrUInt48UInt48_1 &Int GUY_TIC_END)) modInt pow256) => doneLemma(GAL |Int (maskWordPackAddrUInt48UInt48_1 &Int GUY_TIC_END)) ... </k>
