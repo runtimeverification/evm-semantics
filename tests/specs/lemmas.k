@@ -93,6 +93,7 @@ module LEMMAS-JAVA [symbolic, kast]
     imports EVM
     imports EDSL
     imports K-REFLECTION
+    imports HASH2
 
     rule BUF [ L .. _W ] => .ByteArray requires L >=Int #sizeByteArray(BUF) [simplification]
 
@@ -155,9 +156,8 @@ module LEMMAS-JAVA [symbolic, kast]
 
     // TODO: drop hash1 and keccakIntList once new vyper hashed location scheme is captured in edsl.md
 
-    syntax Int ::= hash1(Int)      [function, smtlib(smt_hash1)]
-                 | hash2(Int, Int) [function, smtlib(smt_hash2)]
- // ------------------------------------------------------------
+    syntax Int ::= hash1(Int) [function, smtlib(smt_hash1)]
+ // -------------------------------------------------------
     rule hash1(V) => keccak(#padToWidth(32, #asByteStack(V)))
       requires 0 <=Int V andBool V <Int pow256
       [concrete]
@@ -273,6 +273,7 @@ module LEMMAS-HASKELL [symbolic, kore]
     imports INT-SYMBOLIC
     imports EVM
     imports EDSL
+    imports HASH2
 
     rule #asWord(BUF) /Int D => #asWord(BUF[0 .. #sizeByteArray(BUF) -Int log256Int(D)])
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
@@ -328,4 +329,11 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule #buf( 32, DATA ) ==K BA:ByteArray     => DATA ==Int #asInteger(BA)
       requires #sizeByteArray(BA) <=Int 32                                      [simplification, concrete(BA)]
 
+endmodule
+
+module HASH2 [symbolic]
+    imports INT
+
+    syntax Int ::= hash2 ( Int , Int ) [function]
+ // ---------------------------------------------
 endmodule
