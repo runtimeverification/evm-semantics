@@ -1292,7 +1292,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </k>
 
     rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC:Bool
-          => #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
+          => #loadProgram BYTES
+          ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
          ...
          </k>
          <callDepth> CD => CD +Int 1 </callDepth>
@@ -1302,8 +1303,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <gas> _ => GCALL </gas>
          <callGas> GCALL => 0 </callGas>
          <caller> _ => ACCTFROM </caller>
-         <program> _ => BYTES </program>
-         <jumpDests> _ => #computeValidJumpDests(BYTES) </jumpDests>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
          <schedule> SCHED </schedule>
@@ -1321,6 +1320,12 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <output>       _ => .ByteArray </output>
          <wordStack>    _ => .WordStack </wordStack>
          <localMem>     _ => .Memory    </localMem>
+
+    syntax KItem ::= "#loadProgram" ByteArray
+ // -----------------------------------------
+    rule <k> #loadProgram BYTES => . ... </k>
+         <program> _ => BYTES </program>
+         <jumpDests> _ => #computeValidJumpDests(BYTES) </jumpDests>
 
     syntax Set ::= #computeValidJumpDests(ByteArray)            [function, memo]
                  | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
@@ -1461,15 +1466,14 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
 
     rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
-          => #initVM ~> #execute
+          => #loadProgram INITCODE
+          ~> #initVM ~> #execute
          ...
          </k>
          <schedule> SCHED </schedule>
          <id> _ => ACCTTO </id>
          <gas> _ => GCALL </gas>
          <callGas> GCALL => 0 </callGas>
-         <program> _ => INITCODE </program>
-         <jumpDests> _ => #computeValidJumpDests(INITCODE) </jumpDests>
          <caller> _ => ACCTFROM </caller>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => .ByteArray </callData>
