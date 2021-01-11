@@ -2153,9 +2153,10 @@ There are several helpers for calculating gas (most of them also specified in th
  // --------------------------------------------------------------------------------------------------
     rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .ByteArray andBool NONCE ==Int 0 andBool BAL ==Int 0
 
-    syntax Int ::= #allBut64th ( Int ) [function, functional]
- // ---------------------------------------------------------
-    rule #allBut64th(N) => N -Int (N /Int 64)
+    syntax Int ::= #allBut64th ( Int ) [function, functional, smtlib(gas_allBut64th)]
+ // ---------------------------------------------------------------------------------
+    rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
+    rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
 ```
 
 ```{.k .nobytes}
