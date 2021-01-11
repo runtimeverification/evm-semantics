@@ -49,6 +49,10 @@ module VERIFICATION-SYNTAX
     rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
     rule nthbyteof(V, I, N) =>           V modInt 256             when N ==Int (I +Int 1) [concrete]
 
+    syntax Int ::= #rmul ( Int , Int ) [function, smtlib(smt_rmul)]
+ // ---------------------------------------------------------------
+    rule #rmul(X, Y) => (X *Int Y) /Int #Ray
+
 endmodule
 
 module VERIFICATION-HASKELL [symbolic, kore]
@@ -389,5 +393,34 @@ module VERIFICATION-COMMON
 
     rule X <Int X -Int Y => false requires 0 <=Int Y [simplification]
     rule X +Int Y <Int X => false requires 0 <=Int Y [simplification]
+
+    // ### vow-cage-surplus-pass-rough
+
+    rule ADDR in (SetItem(I) REST) => true         requires ADDR  ==Int I [simplification]
+    rule ADDR in (SetItem(I) REST) => ADDR in REST requires ADDR =/=Int I [simplification]
+
+    rule <acctID> ACCTID </acctID>  ==K <acctID> ACCTID' </acctID> => ACCTID  ==Int ACCTID' [simplification]
+    rule <acctID> ACCTID </acctID> =/=K <acctID> ACCTID' </acctID> => ACCTID =/=Int ACCTID' [simplification]
+
+    rule ((K |-> V) REST) [ K' <- undef ] => REST                             requires K  ==K K' [simplification]
+    rule ((K |-> V) REST) [ K' <- undef ] => (K |-> V) (REST [ K' <- undef ]) requires K =/=K K' [simplification]
+
+    rule M:Map [ K1 <- V1 ] [ K2 <- V2 ] [ K1 <- V1' ] => M [ K1 <- V1' ] [ K2 <- V2 ] requires K1 =/=Int K2 [simplification]
+
+    // end-cage-ilk-pass-rough
+
+    rule M:Memory [ K1 := BUF1 ] [ K2 := BUF2 ] => M [ K2 := BUF2 ]
+      requires K2 <=Int K1
+       andBool K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2)
+      [simplification]
+
+    rule M:Memory [ K1 := (BUF11 ++ BUF12) ] [ K2 := BUF2 ] => M [ K1 +Int #sizeByteArray(BUF11) := BUF12 ] [ K2 := BUF2 ]
+      requires K2 <=Int K1
+       andBool K1 +Int #sizeByteArray(BUF11) <=Int K2 +Int #sizeByteArray(BUF2)
+      [simplification]
+
+    // ### vat-frob-diff-zero-dart-pass-rough
+
+    rule chop(X) => X +Int pow256 requires #rangeSInt(256, X) andBool X <Int 0 [simplification]
 
 endmodule
