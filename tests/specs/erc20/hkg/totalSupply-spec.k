@@ -4,7 +4,7 @@ module TOTALSUPPLY-SPEC
   imports VERIFICATION
 
   // totalSupply
-  rule
+  claim
     <kevm>
     <k> #execute => #halt </k>
     <exit-code> 1 </exit-code>
