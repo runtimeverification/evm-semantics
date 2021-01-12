@@ -29,7 +29,7 @@ module VAT-SUBUI-PASS-SPEC
             <pc> 13304 => 13366 </pc>
             <gas> #gas(VGas) => #if ( ABI_y =/=Int 0 andBool 0 <=Int ABI_y )
               #then   #gas ( ( VGas +Int -128 ) )
-              #else   #if ( 0 <=Int ABI_y andBool ( notBool ( 0 <=Int ABI_y andBool ABI_y ==Int 1 ) ) )
+              #else   #if 0 <=Int ABI_y
                 #then   #gas ( ( VGas +Int -114 ) )
                 #else   #gas ( ( VGas +Int -128 ) )
               #fi

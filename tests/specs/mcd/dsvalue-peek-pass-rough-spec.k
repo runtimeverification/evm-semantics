@@ -160,40 +160,39 @@ module DSVALUE-PEEK-PASS-ROUGH-SPEC
           <messages> _ </messages>
         </network>
       </ethereum>
-    requires #rangeAddress(ACCT_ID)
-     andBool ACCT_ID =/=Int 0
-     andBool #notPrecompileAddress(ACCT_ID)
-     andBool #rangeAddress(CALLER_ID)
-     andBool #rangeAddress(ORIGIN_ID)
-     andBool #rangeUInt(256, TIME)
-     andBool #rangeUInt(256, ACCT_ID_balance)
-     andBool #rangeUInt(256, ECREC_BAL)
-     andBool #rangeUInt(256, SHA256_BAL)
-     andBool #rangeUInt(256, RIP160_BAL)
-     andBool #rangeUInt(256, ID_BAL)
-     andBool #rangeUInt(256, MODEXP_BAL)
-     andBool #rangeUInt(256, ECADD_BAL)
-     andBool #rangeUInt(256, ECMUL_BAL)
-     andBool #rangeUInt(256, ECPAIRING_BAL)
-     andBool #rangeUInt(256, BLAKE2_BAL)
-     andBool VCallDepth <=Int 1024
-     andBool #rangeUInt(256, VCallValue)
-     andBool #rangeUInt(256, VChainId)
+      requires #rangeAddress(ACCT_ID)
+       andBool ACCT_ID =/=Int 0
+       andBool #notPrecompileAddress(ACCT_ID)
+       andBool #rangeAddress(CALLER_ID)
+       andBool #rangeAddress(ORIGIN_ID)
+       andBool #rangeUInt(256, TIME)
+       andBool #rangeUInt(256, ACCT_ID_balance)
+       andBool #rangeUInt(256, ECREC_BAL)
+       andBool #rangeUInt(256, SHA256_BAL)
+       andBool #rangeUInt(256, RIP160_BAL)
+       andBool #rangeUInt(256, ID_BAL)
+       andBool #rangeUInt(256, MODEXP_BAL)
+       andBool #rangeUInt(256, ECADD_BAL)
+       andBool #rangeUInt(256, ECMUL_BAL)
+       andBool #rangeUInt(256, ECPAIRING_BAL)
+       andBool #rangeUInt(256, BLAKE2_BAL)
+       andBool VCallDepth <=Int 1024
+       andBool #rangeUInt(256, VCallValue)
+       andBool #rangeUInt(256, VChainId)
 
-     andBool (#rangeAddress(Owner)
-     andBool (#rangeBytes(32, Value)
-     andBool (#rangeBool(Ok)
-     andBool (#sizeByteArray(CD) <=Int 1250000000
-     andBool (#notPrecompileAddress(Owner)
-     andBool (VGas >=Int 3000000
-     andBool (#rangeUInt(256, Junk_0)
-     andBool (#rangeUInt(256, Junk_1)
-     andBool ((VCallValue ==Int 0))))))))))
+       andBool (#rangeAddress(Owner)
+       andBool (#rangeBytes(32, Value)
+       andBool (#rangeBool(Ok)
+       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (#notPrecompileAddress(Owner)
+       andBool (#rangeUInt(256, Junk_0)
+       andBool (#rangeUInt(256, Junk_1)
+       andBool ((VCallValue ==Int 0)))))))))
 
-     andBool #lookup(ACCT_ID_STORAGE, #DSValue.owner_has) ==Int #WordPackAddrUInt8(Owner, Ok)
-     andBool #lookup(ACCT_ID_STORAGE, #DSValue.val) ==Int Value
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSValue.owner_has) ==Int Junk_0
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSValue.val) ==Int Junk_1
-     andBool #DSValue.owner_has =/=Int #DSValue.val
+       andBool #lookup(ACCT_ID_STORAGE, #DSValue.owner_has) ==Int #WordPackAddrUInt8(Owner, Ok)
+       andBool #lookup(ACCT_ID_STORAGE, #DSValue.val) ==Int Value
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSValue.owner_has) ==Int Junk_0
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSValue.val) ==Int Junk_1
+       andBool #DSValue.owner_has =/=Int #DSValue.val
 
 endmodule

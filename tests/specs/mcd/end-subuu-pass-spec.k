@@ -1,7 +1,7 @@
 requires "verification.k"
 
 module END-SUBUU-PASS-SPEC
-  imports VERIFICATION
+    imports VERIFICATION
 
     // End_subuu
     claim [End.subuu.pass]:
@@ -27,7 +27,7 @@ module END-SUBUU-PASS-SPEC
             <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x -Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 14664 => 14689 </pc>
-            <gas> #gas(VGas) => #gas(VGas +Int -54) </gas>
+            <gas> #gas(VGas) => #gas ( ( VGas +Int -54 ) ) </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -36,7 +36,7 @@ module END-SUBUU-PASS-SPEC
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
-            <refund> _ => ?_ </refund>
+            <refund> _Vrefund => ?_ </refund>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -77,16 +77,8 @@ module END-SUBUU-PASS-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> End_bin_runtime </code>
-              <storage>
-               .Map
-
-                _:Map
-               </storage>
-              <origStorage>
-               .Map
-
-                _:Map
-               </origStorage>
+              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
+              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_End => ?_ </nonce>
             </account>
             <account>
@@ -168,30 +160,32 @@ module END-SUBUU-PASS-SPEC
           <messages> _ </messages>
         </network>
       </ethereum>
-    requires #rangeAddress(ACCT_ID)
-     andBool ACCT_ID =/=Int 0
-     andBool #notPrecompileAddress(ACCT_ID)
-     andBool #rangeAddress(CALLER_ID)
-     andBool #rangeAddress(ORIGIN_ID)
-     andBool #rangeUInt(256, TIME)
-     andBool #rangeUInt(256, ACCT_ID_balance)
-     andBool #rangeUInt(256, ECREC_BAL)
-     andBool #rangeUInt(256, SHA256_BAL)
-     andBool #rangeUInt(256, RIP160_BAL)
-     andBool #rangeUInt(256, ID_BAL)
-     andBool #rangeUInt(256, MODEXP_BAL)
-     andBool #rangeUInt(256, ECADD_BAL)
-     andBool #rangeUInt(256, ECMUL_BAL)
-     andBool #rangeUInt(256, ECPAIRING_BAL)
-     andBool #rangeUInt(256, BLAKE2_BAL)
-     andBool VCallDepth <=Int 1024
-     andBool #rangeUInt(256, VCallValue)
-     andBool #rangeUInt(256, VChainId)
-     andBool (#rangeUInt(256, ABI_x)
-     andBool (#rangeUInt(256, ABI_y)
-     andBool ((#sizeWordStack(WS) <=Int 100)
-     andBool (#rangeUInt(256, VMemoryUsed)
-     andBool (2300 <Int VGas -Int (54)
-     andBool ((#rangeUInt(256, ABI_x -Int ABI_y))))))))
+      requires #rangeAddress(ACCT_ID)
+       andBool ACCT_ID =/=Int 0
+       andBool #notPrecompileAddress(ACCT_ID)
+       andBool #rangeAddress(CALLER_ID)
+       andBool #rangeAddress(ORIGIN_ID)
+       andBool #rangeUInt(256, TIME)
+       andBool #rangeUInt(256, ACCT_ID_balance)
+       andBool #rangeUInt(256, ECREC_BAL)
+       andBool #rangeUInt(256, SHA256_BAL)
+       andBool #rangeUInt(256, RIP160_BAL)
+       andBool #rangeUInt(256, ID_BAL)
+       andBool #rangeUInt(256, MODEXP_BAL)
+       andBool #rangeUInt(256, ECADD_BAL)
+       andBool #rangeUInt(256, ECMUL_BAL)
+       andBool #rangeUInt(256, ECPAIRING_BAL)
+       andBool #rangeUInt(256, BLAKE2_BAL)
+       andBool VCallDepth <=Int 1024
+       andBool #rangeUInt(256, VCallValue)
+       andBool #rangeUInt(256, VChainId)
+
+       andBool (#rangeUInt(256, ABI_x)
+       andBool (#rangeUInt(256, ABI_y)
+       andBool ((#sizeWordStack(WS) <=Int 100)
+       andBool (#rangeUInt(256, VMemoryUsed)
+       andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
+
+
 
 endmodule

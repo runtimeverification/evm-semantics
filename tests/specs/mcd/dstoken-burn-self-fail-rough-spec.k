@@ -160,60 +160,64 @@ module DSTOKEN-BURN-SELF-FAIL-ROUGH-SPEC
           <messages> _ </messages>
         </network>
       </ethereum>
-    requires #rangeAddress(ACCT_ID)
-     andBool ACCT_ID =/=Int 0
-     andBool #notPrecompileAddress(ACCT_ID)
-     andBool #rangeAddress(CALLER_ID)
-     andBool #rangeAddress(ORIGIN_ID)
-     andBool #rangeUInt(256, TIME)
-     andBool #rangeUInt(256, ACCT_ID_balance)
-     andBool #rangeUInt(256, ECREC_BAL)
-     andBool #rangeUInt(256, SHA256_BAL)
-     andBool #rangeUInt(256, RIP160_BAL)
-     andBool #rangeUInt(256, ID_BAL)
-     andBool #rangeUInt(256, MODEXP_BAL)
-     andBool #rangeUInt(256, ECADD_BAL)
-     andBool #rangeUInt(256, ECMUL_BAL)
-     andBool #rangeUInt(256, ECPAIRING_BAL)
-     andBool #rangeUInt(256, BLAKE2_BAL)
-     andBool VCallDepth <=Int 1024
-     andBool #rangeUInt(256, VCallValue)
-     andBool #rangeUInt(256, VChainId)
+      requires #rangeAddress(ACCT_ID)
+       andBool ACCT_ID =/=Int 0
+       andBool #notPrecompileAddress(ACCT_ID)
+       andBool #rangeAddress(CALLER_ID)
+       andBool #rangeAddress(ORIGIN_ID)
+       andBool #rangeUInt(256, TIME)
+       andBool #rangeUInt(256, ACCT_ID_balance)
+       andBool #rangeUInt(256, ECREC_BAL)
+       andBool #rangeUInt(256, SHA256_BAL)
+       andBool #rangeUInt(256, RIP160_BAL)
+       andBool #rangeUInt(256, ID_BAL)
+       andBool #rangeUInt(256, MODEXP_BAL)
+       andBool #rangeUInt(256, ECADD_BAL)
+       andBool #rangeUInt(256, ECMUL_BAL)
+       andBool #rangeUInt(256, ECPAIRING_BAL)
+       andBool #rangeUInt(256, BLAKE2_BAL)
+       andBool VCallDepth <=Int 1024
+       andBool #rangeUInt(256, VCallValue)
+       andBool #rangeUInt(256, VChainId)
 
-     andBool (#rangeAddress(ABI_src)
-     andBool (#rangeUInt(256, ABI_wad)
-     andBool (#rangeUInt(256, Gem_s)
-     andBool (#rangeUInt(256, Supply)
-     andBool (#rangeUInt(256, Allowance)
-     andBool (#rangeBool(Stoppedd)
-     andBool (#rangeAddress(Owner)
-     andBool ((#sizeByteArray(CD) <=Int 1250000000)
-     andBool ((#notPrecompileAddress(Owner))
-     andBool ((CALLER_ID ==Int Owner)
-     andBool ((CALLER_ID =/=Int ACCT_ID)
-     andBool ((CALLER_ID ==Int ABI_src)
-     andBool (VGas >=Int 3000000
-     andBool (#rangeUInt(256, Junk_0)
-     andBool (#rangeUInt(256, Junk_1)
-     andBool (#rangeUInt(256, Junk_2)
-     andBool (#rangeUInt(256, Junk_3))))))))))))))))))
+       andBool (#rangeAddress(ABI_src)
+       andBool (#rangeUInt(256, ABI_wad)
+       andBool (#rangeUInt(256, Gem_s)
+       andBool (#rangeUInt(256, Supply)
+       andBool (#rangeUInt(256, Allowance)
+       andBool (#rangeBool(Stoppedd)
+       andBool (#rangeAddress(Owner)
+       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((#notPrecompileAddress(Owner))
+       andBool ((CALLER_ID ==Int Owner)
+       andBool ((CALLER_ID =/=Int ACCT_ID)
+       andBool ((CALLER_ID ==Int ABI_src)
+       andBool (#rangeUInt(256, Junk_0)
+       andBool (#rangeUInt(256, Junk_1)
+       andBool (#rangeUInt(256, Junk_2)
+       andBool (#rangeUInt(256, Junk_3)))))))))))))))))
 
-     andBool #lookup(ACCT_ID_STORAGE, #DSToken.allowance[ABI_src][CALLER_ID]) ==Int Allowance
-     andBool #lookup(ACCT_ID_STORAGE, #DSToken.balances[ABI_src]) ==Int Gem_s
-     andBool #lookup(ACCT_ID_STORAGE, #DSToken.supply) ==Int Supply
-     andBool #lookup(ACCT_ID_STORAGE, #DSToken.owner_stopped) ==Int #WordPackAddrUInt8(Owner, Stoppedd)
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.allowance[ABI_src][CALLER_ID]) ==Int Junk_0
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.balances[ABI_src]) ==Int Junk_1
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.supply) ==Int Junk_2
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.owner_stopped) ==Int Junk_3
-     andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.balances[ABI_src]
-     andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.supply
-     andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.owner_stopped
-     andBool #DSToken.balances[ABI_src] =/=Int #DSToken.supply
-     andBool #DSToken.balances[ABI_src] =/=Int #DSToken.owner_stopped
-     andBool #DSToken.supply =/=Int #DSToken.owner_stopped
-     andBool notBool ( (((#rangeUInt(256, Gem_s:Int  -Int ABI_wad:Int))) andBool (((#rangeUInt(256, Supply:Int -Int ABI_wad:Int))) andBool ((VCallValue:Int ==Int 0) andBool ((Stoppedd:Int ==Int 0))))) )
-
-     ensures ?FAILURE =/=K EVMC_SUCCESS
+       andBool #lookup(ACCT_ID_STORAGE, #DSToken.allowance[ABI_src][CALLER_ID]) ==Int Allowance
+       andBool #lookup(ACCT_ID_STORAGE, #DSToken.balances[ABI_src]) ==Int Gem_s
+       andBool #lookup(ACCT_ID_STORAGE, #DSToken.supply) ==Int Supply
+       andBool #lookup(ACCT_ID_STORAGE, #DSToken.owner_stopped) ==Int #WordPackAddrUInt8(Owner, Stoppedd)
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.allowance[ABI_src][CALLER_ID]) ==Int Junk_0
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.balances[ABI_src]) ==Int Junk_1
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.supply) ==Int Junk_2
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.owner_stopped) ==Int Junk_3
+       andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.balances[ABI_src]
+       andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.supply
+       andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.owner_stopped
+       andBool #DSToken.balances[ABI_src] =/=Int #DSToken.supply
+       andBool #DSToken.balances[ABI_src] =/=Int #DSToken.owner_stopped
+       andBool #DSToken.supply =/=Int #DSToken.owner_stopped
+       andBool notBool (
+        (((#rangeUInt(256, Gem_s:Int  -Int ABI_wad:Int)))
+        andBool (((#rangeUInt(256, Supply:Int -Int ABI_wad:Int)))
+        andBool ((VCallValue:Int ==Int 0)
+        andBool ((Stoppedd:Int ==Int 0)))))
+      )
+       ensures
+    ?FAILURE =/=K EVMC_SUCCESS
 
 endmodule
