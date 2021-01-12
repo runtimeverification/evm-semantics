@@ -35,38 +35,38 @@ module IMP-SPECS-TEST-SPEC
 
     <ethereum>
       <evm>
-        <output> _ => _ </output>
-        <statusCode> _ => _ </statusCode>
+        <output> _ => ?_ </output>
+        <statusCode> _ => ?_ </statusCode>
         <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
-        <touchedAccounts> _ => _ </touchedAccounts>
+        <touchedAccounts> _ => ?_ </touchedAccounts>
 
         <callState>
-          <program> _ => _ </program>
-          <jumpDests> _ => _ </jumpDests>
+          <program> _ => ?_ </program>
+          <jumpDests> _ => ?_ </jumpDests>
 
-          <id> _ => _ </id> // contract owner
-          <caller> _ => _ </caller> // who called this contract; in the begining, origin // msg.sender
+          <id> _ => ?_ </id> // contract owner
+          <caller> _ => ?_ </caller> // who called this contract; in the begining, origin // msg.sender
 
-          <callData> _ => _ </callData>
+          <callData> _ => ?_ </callData>
 
           <callValue> 0 </callValue>
-          <wordStack> .WordStack => _ </wordStack>
-          <localMem> .Map => _ </localMem>
-          <pc> 0 => _ </pc>
-          <gas> _ => _ </gas>
-          <memoryUsed> 0 => _ </memoryUsed>
-          <callGas> #gas(INITGAS, 0, 0) => _ </callGas>
+          <wordStack> .WordStack => ?_ </wordStack>
+          <localMem> .Map => ?_ </localMem>
+          <pc> 0 => ?_ </pc>
+          <gas> _ => ?_ </gas>
+          <memoryUsed> 0 => ?_ </memoryUsed>
+          <callGas> #gas(INITGAS, 0, 0) => ?_ </callGas>
 
           <static> false </static> // NOTE: non-static call
-          <callDepth> CALL_DEPTH => _ </callDepth>
+          <callDepth> CALL_DEPTH => ?_ </callDepth>
         </callState>
 
         <substate>
           <selfDestruct> _ </selfDestruct>
-          <log> _:List => _ </log>
-          <refund> _ => _ </refund>
+          <log> _:List => ?_ </log>
+          <refund> _ => ?_ </refund>
         </substate>
 
         <gasPrice> _ </gasPrice>
@@ -102,8 +102,8 @@ module IMP-SPECS-TEST-SPEC
             <acctID> ACCT_ID </acctID>
             <balance> _ </balance>
             <code> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680631003e2d2146044575b600080fd5b348015604f57600080fd5b50607960048036036020811015606457600080fd5b8101908080359060200190929190505050608f565b6040518082815260200191505060405180910390f35b6000806000549050600083600054019050806000819055507ff3ca124a697ba07e8c5e80bebcfcc48991fc16a63170e8a9206e30508960d0038282604051808381526020018281526020019250505060405180910390a1809250505091905056fea165627a7a72305820e8d8d91789cd954b1fa9161f34d260c3ad3764cdb8b8e9117be8eec773574ec90029") </code>
-            <storage>     #hashedLocation("Solidity", 0, .IntList) |-> (OLD_S => _) .Map </storage>
-            <origStorage> #hashedLocation("Solidity", 0, .IntList) |-> (OLD_S => _) .Map </origStorage>
+            <storage>     #hashedLocation("Solidity", 0, .IntList) |-> (OLD_S => ?_) .Map </storage>
+            <origStorage> #hashedLocation("Solidity", 0, .IntList) |-> (OLD_S => ?_) .Map </origStorage>
             <nonce> _ </nonce>
           </account>
           ...
@@ -114,7 +114,7 @@ module IMP-SPECS-TEST-SPEC
         <messages> _ </messages>
       </network>
     </ethereum>
-    <commandVars> .Map  => _ </commandVars>
+    <commandVars> .Map  => ?_ </commandVars>
     requires #rangeAddress(ACCT_ID)
      andBool #rangeAddress(CALLER_ID)
      andBool #rangeAddress(ORIGIN_ID)

@@ -4,7 +4,7 @@ module FORWARDTOHOTWALLET-FAILURE-3-SPEC
   imports VERIFICATION
 
   // forwardToHotWallet-failure-3
-  rule
+  claim
     <kevm>
     <k> #execute => #halt </k>
     <exit-code> 1 </exit-code>

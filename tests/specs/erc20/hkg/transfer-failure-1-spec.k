@@ -4,7 +4,7 @@ module TRANSFER-FAILURE-1-SPEC
   imports VERIFICATION
 
   // transfer-failure-1
-  rule
+  claim
     <kevm>
     <k> #execute => #halt </k>
     <exit-code> 1 </exit-code>
