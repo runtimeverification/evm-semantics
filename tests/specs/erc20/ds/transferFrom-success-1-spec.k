@@ -4,7 +4,7 @@ module TRANSFERFROM-SUCCESS-1-SPEC
   imports VERIFICATION
 
   // transferFrom-success-1
-  rule
+  claim
     <kevm>
     <k> #execute => #halt </k>
     <exit-code> 1 </exit-code>

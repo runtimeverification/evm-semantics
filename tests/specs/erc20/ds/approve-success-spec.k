@@ -4,7 +4,7 @@ module APPROVE-SUCCESS-SPEC
   imports VERIFICATION
 
   // approve-success
-  rule
+  claim
     <kevm>
     <k> #execute => #halt </k>
     <exit-code> 1 </exit-code>

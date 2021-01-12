@@ -4,7 +4,7 @@ module TRANSFERFROM-FAILURE-2-B-SPEC
   imports VERIFICATION
 
   // transferFrom-failure-2-b
-  rule
+  claim
     <kevm>
     <k> #execute => #halt </k>
     <exit-code> 1 </exit-code>
