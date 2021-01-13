@@ -160,34 +160,36 @@ module FLIPPER-ADDU48U48-FAIL-ROUGH-SPEC
           <messages> _ </messages>
         </network>
       </ethereum>
-    requires #rangeAddress(ACCT_ID)
-     andBool ACCT_ID =/=Int 0
-     andBool #notPrecompileAddress(ACCT_ID)
-     andBool #rangeAddress(CALLER_ID)
-     andBool #rangeAddress(ORIGIN_ID)
-     andBool #rangeUInt(256, TIME)
-     andBool #rangeUInt(256, ACCT_ID_balance)
-     andBool #rangeUInt(256, ECREC_BAL)
-     andBool #rangeUInt(256, SHA256_BAL)
-     andBool #rangeUInt(256, RIP160_BAL)
-     andBool #rangeUInt(256, ID_BAL)
-     andBool #rangeUInt(256, MODEXP_BAL)
-     andBool #rangeUInt(256, ECADD_BAL)
-     andBool #rangeUInt(256, ECMUL_BAL)
-     andBool #rangeUInt(256, ECPAIRING_BAL)
-     andBool #rangeUInt(256, BLAKE2_BAL)
-     andBool VCallDepth <=Int 1024
-     andBool #rangeUInt(256, VCallValue)
-     andBool #rangeUInt(256, VChainId)
+      requires #rangeAddress(ACCT_ID)
+       andBool ACCT_ID =/=Int 0
+       andBool #notPrecompileAddress(ACCT_ID)
+       andBool #rangeAddress(CALLER_ID)
+       andBool #rangeAddress(ORIGIN_ID)
+       andBool #rangeUInt(256, TIME)
+       andBool #rangeUInt(256, ACCT_ID_balance)
+       andBool #rangeUInt(256, ECREC_BAL)
+       andBool #rangeUInt(256, SHA256_BAL)
+       andBool #rangeUInt(256, RIP160_BAL)
+       andBool #rangeUInt(256, ID_BAL)
+       andBool #rangeUInt(256, MODEXP_BAL)
+       andBool #rangeUInt(256, ECADD_BAL)
+       andBool #rangeUInt(256, ECMUL_BAL)
+       andBool #rangeUInt(256, ECPAIRING_BAL)
+       andBool #rangeUInt(256, BLAKE2_BAL)
+       andBool VCallDepth <=Int 1024
+       andBool #rangeUInt(256, VCallValue)
+       andBool #rangeUInt(256, VChainId)
 
-     andBool (#rangeUInt(48, ABI_x)
-     andBool (#rangeUInt(48, ABI_y)
-     andBool ((#sizeWordStack(WS) <=Int 100)
-     andBool (#rangeUInt(256, VMemoryUsed)
-     andBool (VGas >=Int 3000000)))))
+       andBool (#rangeUInt(48, ABI_x)
+       andBool (#rangeUInt(48, ABI_y)
+       andBool ((#sizeWordStack(WS) <=Int 100)
+       andBool (#rangeUInt(256, VMemoryUsed)))))
 
-     andBool notBool ( ((#rangeUInt(48, ABI_x:Int +Int ABI_y:Int))) )
 
-     ensures ?FAILURE =/=K EVMC_SUCCESS
+       andBool notBool (
+        ((#rangeUInt(48, ABI_x:Int +Int ABI_y:Int)))
+      )
+       ensures
+    ?FAILURE =/=K EVMC_SUCCESS
 
 endmodule

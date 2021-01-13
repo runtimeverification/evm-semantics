@@ -160,52 +160,52 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
           <messages> _ </messages>
         </network>
       </ethereum>
-    requires #rangeAddress(ACCT_ID)
-     andBool ACCT_ID =/=Int 0
-     andBool #notPrecompileAddress(ACCT_ID)
-     andBool #rangeAddress(CALLER_ID)
-     andBool #rangeAddress(ORIGIN_ID)
-     andBool #rangeUInt(256, TIME)
-     andBool #rangeUInt(256, ACCT_ID_balance)
-     andBool #rangeUInt(256, ECREC_BAL)
-     andBool #rangeUInt(256, SHA256_BAL)
-     andBool #rangeUInt(256, RIP160_BAL)
-     andBool #rangeUInt(256, ID_BAL)
-     andBool #rangeUInt(256, MODEXP_BAL)
-     andBool #rangeUInt(256, ECADD_BAL)
-     andBool #rangeUInt(256, ECMUL_BAL)
-     andBool #rangeUInt(256, ECPAIRING_BAL)
-     andBool #rangeUInt(256, BLAKE2_BAL)
-     andBool VCallDepth <=Int 1024
-     andBool #rangeUInt(256, VCallValue)
-     andBool #rangeUInt(256, VChainId)
+      requires #rangeAddress(ACCT_ID)
+       andBool ACCT_ID =/=Int 0
+       andBool #notPrecompileAddress(ACCT_ID)
+       andBool #rangeAddress(CALLER_ID)
+       andBool #rangeAddress(ORIGIN_ID)
+       andBool #rangeUInt(256, TIME)
+       andBool #rangeUInt(256, ACCT_ID_balance)
+       andBool #rangeUInt(256, ECREC_BAL)
+       andBool #rangeUInt(256, SHA256_BAL)
+       andBool #rangeUInt(256, RIP160_BAL)
+       andBool #rangeUInt(256, ID_BAL)
+       andBool #rangeUInt(256, MODEXP_BAL)
+       andBool #rangeUInt(256, ECADD_BAL)
+       andBool #rangeUInt(256, ECMUL_BAL)
+       andBool #rangeUInt(256, ECPAIRING_BAL)
+       andBool #rangeUInt(256, BLAKE2_BAL)
+       andBool VCallDepth <=Int 1024
+       andBool #rangeUInt(256, VCallValue)
+       andBool #rangeUInt(256, VChainId)
 
-     andBool (#rangeUInt(256, ABI_t)
-     andBool (#rangeUInt(256, Wait)
-     andBool (#rangeUInt(256, Sin_t)
-     andBool (#rangeUInt(256, Sin)
-     andBool (#sizeByteArray(CD) <=Int 1250000000
-     andBool (VGas >=Int 3000000
-     andBool (#rangeUInt(256, Junk_0)
-     andBool (#rangeUInt(256, Junk_1)
-     andBool (#rangeUInt(256, Junk_2))))))))))
+       andBool (#rangeUInt(256, ABI_t)
+       andBool (#rangeUInt(256, Wait)
+       andBool (#rangeUInt(256, Sin_t)
+       andBool (#rangeUInt(256, Sin)
+       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (#rangeUInt(256, Junk_0)
+       andBool (#rangeUInt(256, Junk_1)
+       andBool (#rangeUInt(256, Junk_2)))))))))
 
-     andBool #lookup(ACCT_ID_STORAGE, #Vow.wait) ==Int Wait
-     andBool #lookup(ACCT_ID_STORAGE, #Vow.Sin) ==Int Sin
-     andBool #lookup(ACCT_ID_STORAGE, #Vow.sin[ABI_t]) ==Int Sin_t
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vow.wait) ==Int Junk_0
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vow.Sin) ==Int Junk_1
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vow.sin[ABI_t]) ==Int Junk_2
-     andBool #Vow.wait =/=Int #Vow.Sin
-     andBool #Vow.wait =/=Int #Vow.sin[ABI_t]
-     andBool #Vow.Sin =/=Int #Vow.sin[ABI_t]
-     andBool notBool ( (((ABI_t:Int +Int Wait:Int <=Int TIME:Int))
-               andBool (((VCallValue:Int ==Int 0))
-               andBool ((#rangeUInt(256, ABI_t:Int   +Int Wait:Int))
-               andBool ((#rangeUInt(256, Sin:Int -Int Sin_t:Int))))))
-                     )
-
-    ensures ?FAILURE =/=K EVMC_SUCCESS
+       andBool #lookup(ACCT_ID_STORAGE, #Vow.wait) ==Int Wait
+       andBool #lookup(ACCT_ID_STORAGE, #Vow.Sin) ==Int Sin
+       andBool #lookup(ACCT_ID_STORAGE, #Vow.sin[ABI_t]) ==Int Sin_t
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vow.wait) ==Int Junk_0
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vow.Sin) ==Int Junk_1
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vow.sin[ABI_t]) ==Int Junk_2
+       andBool #Vow.wait =/=Int #Vow.Sin
+       andBool #Vow.wait =/=Int #Vow.sin[ABI_t]
+       andBool #Vow.Sin =/=Int #Vow.sin[ABI_t]
+       andBool notBool (
+        (((ABI_t:Int +Int Wait:Int <=Int TIME:Int))
+        andBool (((VCallValue:Int ==Int 0))
+        andBool ((#rangeUInt(256, ABI_t:Int   +Int Wait:Int))
+        andBool ((#rangeUInt(256, Sin:Int -Int Sin_t:Int))))))
+      )
+       ensures
+    ?FAILURE =/=K EVMC_SUCCESS
 
     // Vow_adduu
     claim [Vow.adduu.pass]:
@@ -231,7 +231,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x +Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 9777 => 9802 </pc>
-            <gas> #gas(VGas) => #gas( VGas +Int 54 ) </gas>
+            <gas> #gas(VGas) => #gas ( ( VGas +Int -54 ) ) </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -364,32 +364,33 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
           <messages> _ </messages>
         </network>
       </ethereum>
-    requires #rangeAddress(ACCT_ID)
-     andBool ACCT_ID =/=Int 0
-     andBool #notPrecompileAddress(ACCT_ID)
-     andBool #rangeAddress(CALLER_ID)
-     andBool #rangeAddress(ORIGIN_ID)
-     andBool #rangeUInt(256, TIME)
-     andBool #rangeUInt(256, ACCT_ID_balance)
-     andBool #rangeUInt(256, ECREC_BAL)
-     andBool #rangeUInt(256, SHA256_BAL)
-     andBool #rangeUInt(256, RIP160_BAL)
-     andBool #rangeUInt(256, ID_BAL)
-     andBool #rangeUInt(256, MODEXP_BAL)
-     andBool #rangeUInt(256, ECADD_BAL)
-     andBool #rangeUInt(256, ECMUL_BAL)
-     andBool #rangeUInt(256, ECPAIRING_BAL)
-     andBool #rangeUInt(256, BLAKE2_BAL)
-     andBool VCallDepth <=Int 1024
-     andBool #rangeUInt(256, VCallValue)
-     andBool #rangeUInt(256, VChainId)
+      requires #rangeAddress(ACCT_ID)
+       andBool ACCT_ID =/=Int 0
+       andBool #notPrecompileAddress(ACCT_ID)
+       andBool #rangeAddress(CALLER_ID)
+       andBool #rangeAddress(ORIGIN_ID)
+       andBool #rangeUInt(256, TIME)
+       andBool #rangeUInt(256, ACCT_ID_balance)
+       andBool #rangeUInt(256, ECREC_BAL)
+       andBool #rangeUInt(256, SHA256_BAL)
+       andBool #rangeUInt(256, RIP160_BAL)
+       andBool #rangeUInt(256, ID_BAL)
+       andBool #rangeUInt(256, MODEXP_BAL)
+       andBool #rangeUInt(256, ECADD_BAL)
+       andBool #rangeUInt(256, ECMUL_BAL)
+       andBool #rangeUInt(256, ECPAIRING_BAL)
+       andBool #rangeUInt(256, BLAKE2_BAL)
+       andBool VCallDepth <=Int 1024
+       andBool #rangeUInt(256, VCallValue)
+       andBool #rangeUInt(256, VChainId)
 
-     andBool (#rangeUInt(256, ABI_x)
-     andBool (#rangeUInt(256, ABI_y)
-     andBool ((#sizeWordStack(WS) <=Int 100)
-     andBool (#rangeUInt(256, VMemoryUsed)
-     andBool (2300 <Int ( VGas +Int -54 )
-     andBool ((#rangeUInt(256, ABI_x +Int ABI_y))))))))
+       andBool (#rangeUInt(256, ABI_x)
+       andBool (#rangeUInt(256, ABI_y)
+       andBool ((#sizeWordStack(WS) <=Int 100)
+       andBool (#rangeUInt(256, VMemoryUsed)
+       andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
+
+
     [trusted, matching(infGas)]
 
 
@@ -417,7 +418,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x -Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 9803 => 9828 </pc>
-            <gas> #gas(VGas) => #gas( VGas +Int 54 ) </gas>
+            <gas> #gas(VGas) => #gas ( ( VGas +Int -54 ) ) </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -550,32 +551,33 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
           <messages> _ </messages>
         </network>
       </ethereum>
-    requires #rangeAddress(ACCT_ID)
-     andBool ACCT_ID =/=Int 0
-     andBool #notPrecompileAddress(ACCT_ID)
-     andBool #rangeAddress(CALLER_ID)
-     andBool #rangeAddress(ORIGIN_ID)
-     andBool #rangeUInt(256, TIME)
-     andBool #rangeUInt(256, ACCT_ID_balance)
-     andBool #rangeUInt(256, ECREC_BAL)
-     andBool #rangeUInt(256, SHA256_BAL)
-     andBool #rangeUInt(256, RIP160_BAL)
-     andBool #rangeUInt(256, ID_BAL)
-     andBool #rangeUInt(256, MODEXP_BAL)
-     andBool #rangeUInt(256, ECADD_BAL)
-     andBool #rangeUInt(256, ECMUL_BAL)
-     andBool #rangeUInt(256, ECPAIRING_BAL)
-     andBool #rangeUInt(256, BLAKE2_BAL)
-     andBool VCallDepth <=Int 1024
-     andBool #rangeUInt(256, VCallValue)
-     andBool #rangeUInt(256, VChainId)
+      requires #rangeAddress(ACCT_ID)
+       andBool ACCT_ID =/=Int 0
+       andBool #notPrecompileAddress(ACCT_ID)
+       andBool #rangeAddress(CALLER_ID)
+       andBool #rangeAddress(ORIGIN_ID)
+       andBool #rangeUInt(256, TIME)
+       andBool #rangeUInt(256, ACCT_ID_balance)
+       andBool #rangeUInt(256, ECREC_BAL)
+       andBool #rangeUInt(256, SHA256_BAL)
+       andBool #rangeUInt(256, RIP160_BAL)
+       andBool #rangeUInt(256, ID_BAL)
+       andBool #rangeUInt(256, MODEXP_BAL)
+       andBool #rangeUInt(256, ECADD_BAL)
+       andBool #rangeUInt(256, ECMUL_BAL)
+       andBool #rangeUInt(256, ECPAIRING_BAL)
+       andBool #rangeUInt(256, BLAKE2_BAL)
+       andBool VCallDepth <=Int 1024
+       andBool #rangeUInt(256, VCallValue)
+       andBool #rangeUInt(256, VChainId)
 
-     andBool (#rangeUInt(256, ABI_x)
-     andBool (#rangeUInt(256, ABI_y)
-     andBool ((#sizeWordStack(WS) <=Int 100)
-     andBool (#rangeUInt(256, VMemoryUsed)
-     andBool (2300 <Int ( VGas +Int -54 )
-     andBool ((#rangeUInt(256, ABI_x -Int ABI_y))))))))
+       andBool (#rangeUInt(256, ABI_x)
+       andBool (#rangeUInt(256, ABI_y)
+       andBool ((#sizeWordStack(WS) <=Int 100)
+       andBool (#rangeUInt(256, VMemoryUsed)
+       andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
+
+
     [trusted, matching(infGas)]
 
 

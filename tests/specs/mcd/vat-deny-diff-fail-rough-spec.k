@@ -1,7 +1,7 @@
 requires "verification.k"
 
 module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
-  imports VERIFICATION
+    imports VERIFICATION
 
     // Vat_deny-diff
     claim [Vat.deny-diff.fail.rough]:
@@ -36,7 +36,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
-            <refund> _ => ?_ </refund>
+            <refund> _Vrefund => ?_ </refund>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -77,8 +77,8 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> STORAGE => ?_STORAGE </storage>
-              <origStorage> ORIG_STORAGE </origStorage>
+              <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
+              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vat => ?_ </nonce>
             </account>
             <account>
@@ -160,50 +160,51 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
           <messages> _ </messages>
         </network>
       </ethereum>
-    requires #rangeAddress(ACCT_ID)
-    andBool ACCT_ID =/=Int 0
-    andBool #notPrecompileAddress(ACCT_ID)
-    andBool #rangeAddress(CALLER_ID)
-    andBool #rangeAddress(ORIGIN_ID)
-    andBool #rangeUInt(256, TIME)
-    andBool #rangeUInt(256, ACCT_ID_balance)
-    andBool #rangeUInt(256, ECREC_BAL)
-    andBool #rangeUInt(256, SHA256_BAL)
-    andBool #rangeUInt(256, RIP160_BAL)
-    andBool #rangeUInt(256, ID_BAL)
-    andBool #rangeUInt(256, MODEXP_BAL)
-    andBool #rangeUInt(256, ECADD_BAL)
-    andBool #rangeUInt(256, ECMUL_BAL)
-    andBool #rangeUInt(256, ECPAIRING_BAL)
-    andBool #rangeUInt(256, BLAKE2_BAL)
-    andBool VCallDepth <=Int 1024
-    andBool #rangeUInt(256, VCallValue)
-    andBool #rangeUInt(256, VChainId)
+      requires #rangeAddress(ACCT_ID)
+       andBool ACCT_ID =/=Int 0
+       andBool #notPrecompileAddress(ACCT_ID)
+       andBool #rangeAddress(CALLER_ID)
+       andBool #rangeAddress(ORIGIN_ID)
+       andBool #rangeUInt(256, TIME)
+       andBool #rangeUInt(256, ACCT_ID_balance)
+       andBool #rangeUInt(256, ECREC_BAL)
+       andBool #rangeUInt(256, SHA256_BAL)
+       andBool #rangeUInt(256, RIP160_BAL)
+       andBool #rangeUInt(256, ID_BAL)
+       andBool #rangeUInt(256, MODEXP_BAL)
+       andBool #rangeUInt(256, ECADD_BAL)
+       andBool #rangeUInt(256, ECMUL_BAL)
+       andBool #rangeUInt(256, ECPAIRING_BAL)
+       andBool #rangeUInt(256, BLAKE2_BAL)
+       andBool VCallDepth <=Int 1024
+       andBool #rangeUInt(256, VCallValue)
+       andBool #rangeUInt(256, VChainId)
 
-    andBool (#rangeAddress(ABI_usr)
-    andBool (#rangeUInt(256, May)
-    andBool (#rangeUInt(256, Live)
-    andBool ((#sizeByteArray(CD) <=Int 1250000000)
-    andBool ((CALLER_ID =/=Int ABI_usr)
-    andBool (VGas >=Int 3000000
-    andBool (#rangeUInt(256, Junk_0)
-    andBool (#rangeUInt(256, Junk_1)
-    andBool (#rangeUInt(256, Junk_2)
-    andBool (#rangeUInt(256, Junk_3)))))))))))
-    andBool notBool ( ((May:Int ==Int 1) andBool ((Live:Int ==Int 1) andBool ((VCallValue:Int ==Int 0)))) )
+       andBool (#rangeAddress(ABI_usr)
+       andBool (#rangeUInt(256, May)
+       andBool (#rangeUInt(256, Live)
+       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((CALLER_ID =/=Int ABI_usr)
+       andBool (#rangeUInt(256, Junk_0)
+       andBool (#rangeUInt(256, Junk_1)
+       andBool (#rangeUInt(256, Junk_2)
+       andBool (#rangeUInt(256, Junk_3))))))))))
 
-    andBool #lookup(STORAGE, #Vat.wards[CALLER_ID]) ==Int May
-    andBool #lookup(STORAGE, #Vat.wards[ABI_usr]  ) ==Int Junk_0
-    andBool #lookup(STORAGE, #Vat.live            ) ==Int Live
-
-    andBool #lookup(ORIG_STORAGE, #Vat.wards[CALLER_ID]) ==Int Junk_1
-    andBool #lookup(ORIG_STORAGE, #Vat.wards[ABI_usr]  ) ==Int Junk_2
-    andBool #lookup(ORIG_STORAGE, #Vat.live            ) ==Int Junk_3
-
-    andBool #Vat.wards[CALLER_ID] =/=Int #Vat.wards[ABI_usr]
-    andBool #Vat.wards[CALLER_ID] =/=Int #Vat.live
-    andBool #Vat.wards[ABI_usr] =/=Int #Vat.live
-
-    ensures ?FAILURE =/=K EVMC_SUCCESS
+       andBool #lookup(ACCT_ID_STORAGE, #Vat.wards[CALLER_ID]) ==Int May
+       andBool #lookup(ACCT_ID_STORAGE, #Vat.wards[ABI_usr]) ==Int Junk_0
+       andBool #lookup(ACCT_ID_STORAGE, #Vat.live) ==Int Live
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.wards[CALLER_ID]) ==Int Junk_1
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.wards[ABI_usr]) ==Int Junk_2
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.live) ==Int Junk_3
+       andBool #Vat.wards[CALLER_ID] =/=Int #Vat.wards[ABI_usr]
+       andBool #Vat.wards[CALLER_ID] =/=Int #Vat.live
+       andBool #Vat.wards[ABI_usr] =/=Int #Vat.live
+       andBool notBool (
+        ((May:Int ==Int 1)
+        andBool ((Live:Int ==Int 1)
+        andBool ((VCallValue:Int ==Int 0))))
+      )
+       ensures
+    ?FAILURE =/=K EVMC_SUCCESS
 
 endmodule
