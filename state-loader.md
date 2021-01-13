@@ -144,7 +144,7 @@ Here we load the environmental information.
  // -------------------------------------
     rule <k> loadCallState { "data" : ( DATA:String => #parseByteStack( DATA ) ), _REST } ... </k>
 
-    rule <k> loadCallState { "code" : CODE:ByteArray, REST => REST } => #loadProgram CODE ~> loadCallState { REST } ... </k>
+    rule <k> loadCallState { "code" : CODE:ByteArray, REST } => #loadProgram CODE ~> loadCallState { REST } ... </k>
          <program> _ => CODE </program>
          <jumpDests> _ => #computeValidJumpDests(CODE) </jumpDests>
 
