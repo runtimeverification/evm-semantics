@@ -413,7 +413,8 @@ module VERIFICATION-COMMON
 
     // ### vat-frob-diff-zero-dart-pass-rough
 
-    rule chop(X) => X +Int pow256 requires #rangeSInt(256, X) andBool X <Int 0 [simplification]
+    rule chop( X -Int chop(Y))         => chop( X -Int Y)         [simplification]
+    rule chop((X -Int chop(Y)) *Int Z) => chop((X -Int Y) *Int Z) [simplification]
 
     // ### vat-fork-diff-pass-rough
 
@@ -429,5 +430,9 @@ module VERIFICATION-COMMON
     rule ((I1 -Int I2) -Int I3) +Int I2 => I1 -Int I3 [simplification]
 
     rule M:Map [ K1 <- V1 ] [ K2 <- V2 ] [ K3 <- V3 ] [ K1 <- V4 ] => M [ K1 <- V4 ] [ K2 <- V2 ] [ K3 <- V3 ] requires K1 =/=Int K2 andBool K1 =/=Int K3 [simplification]
+
+    // ### vat-fold-pass-rough
+
+    rule chop(X *Int (Y +Int pow256)) => chop(X *Int Y) [simplification]
 
 endmodule
