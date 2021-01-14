@@ -145,8 +145,6 @@ Here we load the environmental information.
     rule <k> loadCallState { "data" : ( DATA:String => #parseByteStack( DATA ) ), _REST } ... </k>
 
     rule <k> loadCallState { "code" : CODE:ByteArray, REST } => #loadProgram CODE ~> loadCallState { REST } ... </k>
-         <program> _ => CODE </program>
-         <jumpDests> _ => #computeValidJumpDests(CODE) </jumpDests>
 
     rule <k> loadCallState { "gas" : GLIMIT:Int, REST => REST }      ... </k> <gas>       _ => GLIMIT </gas>
     rule <k> loadCallState { "gasPrice" : GPRICE:Int, REST => REST } ... </k> <gasPrice>  _ => GPRICE </gasPrice>

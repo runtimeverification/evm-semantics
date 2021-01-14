@@ -258,8 +258,6 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> loadCallState { "address" : (ACCTTO:Int), REST => REST }  ... </k> <id>     _ => ACCTTO   </id>
 
     rule <k> loadCallState { "code" : (CODE:OpCodes), REST } => #loadProgram #asmOpCodes(CODE) ~> loadCallState { REST } ... </k>
-         <program> _ => #asmOpCodes(CODE) </program>
-         <jumpDests> _ => #computeValidJumpDests(#asmOpCodes(CODE)) </jumpDests>
 
     rule <k> loadCallState { KEY : ((VAL:String) => #parseWord(VAL)), _ } ... </k>
       requires KEY in (SetItem("gas") SetItem("gasPrice") SetItem("value"))
