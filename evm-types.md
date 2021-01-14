@@ -224,8 +224,7 @@ Warning: operands are assumed to be within the range of a 256 bit EVM word. Unbo
                  | Int "%Word" Int [function, functional]
  // -----------------------------------------------------
     rule W0 +Word W1 => chop( W0 +Int W1 )
-    rule W0 -Word W1 => W0 -Int W1 requires W0 >=Int W1
-    rule W0 -Word W1 => chop( (W0 +Int pow256) -Int W1 ) requires W0 <Int W1
+    rule W0 -Word W1 => chop( W0 -Int W1 )
     rule W0 *Word W1 => chop( W0 *Int W1 )
     rule  _ /Word W1 => 0            requires W1  ==Int 0
     rule W0 /Word W1 => W0 /Int W1   requires W1 =/=Int 0
@@ -253,14 +252,10 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
     syntax Int ::= Int "/sWord" Int [function]
                  | Int "%sWord" Int [function]
  // ------------------------------------------
-    rule [divSWord]: W0 /sWord W1 => #sgnInterp(sgn(W0) *Int sgn(W1) , abs(W0) /Word abs(W1))
-    rule [modSWord]: W0 %sWord W1 => #sgnInterp(sgn(W0)              , abs(W0) %Word abs(W1))
-
-    syntax Int ::= #sgnInterp ( Int , Int ) [function, functional]
- // --------------------------------------------------------------
-    rule #sgnInterp( W0 ,  _ ) => 0          requires W0 ==Int 0
-    rule #sgnInterp( W0 , W1 ) => W1         requires W0 >Int 0
-    rule #sgnInterp( W0 , W1 ) => 0 -Word W1 requires W0 <Int 0
+    rule [divSWord.same]: W0 /sWord W1 =>          abs(W0) /Word abs(W1)  requires sgn(W0) *Int sgn(W1) ==Int  1
+    rule [divSWord.diff]: W0 /sWord W1 => 0 -Word (abs(W0) /Word abs(W1)) requires sgn(W0) *Int sgn(W1) ==Int -1
+    rule [modSWord.pos]:  W0 %sWord W1 =>          abs(W0) %Word abs(W1)  requires sgn(W0) ==Int  1
+    rule [modSWord.neg]:  W0 %sWord W1 => 0 -Word (abs(W0) %Word abs(W1)) requires sgn(W0) ==Int -1
 ```
 
 ### Word Comparison

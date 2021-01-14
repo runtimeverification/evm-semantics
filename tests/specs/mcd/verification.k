@@ -186,7 +186,7 @@ module VERIFICATION-COMMON
     //      chop(X *Int Y) /sWord chop(Y)
     //   => #sgnInterp(sgn(chop(X *Int Y)) *Int sgn(chop(Y)), abs(chop(X *Int Y)) /Word abs(chop(Y)))
     // Focus: sgn(chop(X *Int Y)) *Int sgn(chop(Y))
-    //      case 0 <=Int chop(Y)
+    //      case 0 <=Int Y
     //           sgn(chop(X *Int Y)) *Int sgn(chop(Y))
     //        => sgn(chop(X *Int Y)) *Int sgn(Y)                     // chop(Y) ==Int Y
     //        => sgn(X *Int Y) *Int sgn(Y)                           // 0 <=Int X andBool 0 <=Int Y
@@ -399,7 +399,7 @@ module VERIFICATION-COMMON
 
     rule M:Map [ K1 <- V1 ] [ K2 <- V2 ] [ K1 <- V1' ] => M [ K1 <- V1' ] [ K2 <- V2 ] requires K1 =/=Int K2 [simplification]
 
-    // end-cage-ilk-pass-rough
+    // ### end-cage-ilk-pass-rough
 
     rule M:Memory [ K1 := BUF1 ] [ K2 := BUF2 ] => M [ K2 := BUF2 ]
       requires K2 <=Int K1
@@ -413,6 +413,26 @@ module VERIFICATION-COMMON
 
     // ### vat-frob-diff-zero-dart-pass-rough
 
-    rule chop(X) => X +Int pow256 requires #rangeSInt(256, X) andBool X <Int 0 [simplification]
+    rule chop( X -Int chop(Y))         => chop( X -Int Y)         [simplification]
+    rule chop((X -Int chop(Y)) *Int Z) => chop((X -Int Y) *Int Z) [simplification]
+
+    // ### vat-fork-diff-pass-rough
+
+    rule chop(X +Int pow256)  => chop(X)        [simplification]
+    rule chop(chop(X) *Int Y) => chop(X *Int Y) [simplification]
+
+    // ### vow-cage-deficit-pass-rough
+
+    rule (I1 +Int I2) -Int I1 => I2 [simplification]
+
+    // ### flapper-tend-guy-diff-pass-rough
+
+    rule ((I1 -Int I2) -Int I3) +Int I2 => I1 -Int I3 [simplification]
+
+    rule M:Map [ K1 <- V1 ] [ K2 <- V2 ] [ K3 <- V3 ] [ K1 <- V4 ] => M [ K1 <- V4 ] [ K2 <- V2 ] [ K3 <- V3 ] requires K1 =/=Int K2 andBool K1 =/=Int K3 [simplification]
+
+    // ### vat-fold-pass-rough
+
+    rule chop(X *Int (Y +Int pow256)) => chop(X *Int Y) [simplification]
 
 endmodule
