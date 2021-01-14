@@ -231,7 +231,7 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
             <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x -Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13060 => 13085 </pc>
-            <gas> #gas(VGas) => #gas ( ( VGas +Int 54 ) ) </gas>
+            <gas> #gas(VGas) => #gas ( ( VGas +Int -54 ) ) </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -418,7 +418,7 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
             <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x +Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13086 => 13111 </pc>
-            <gas> #gas(VGas) => #gas ( ( VGas +Int 54 ) ) </gas>
+            <gas> #gas(VGas) => #gas ( ( VGas +Int -54 ) ) </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -579,4 +579,6 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
 
 
     [trusted, matching(infGas)]
+
+
 endmodule

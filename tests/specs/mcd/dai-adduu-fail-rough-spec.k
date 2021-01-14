@@ -24,7 +24,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> ABI_y : ABI_x : _JMPTO : WS  => ?_ </wordStack>
+            <wordStack> ABI_y : ABI_x : JMPTO : WS  => ?_ </wordStack>
             <localMem> _ </localMem>
             <pc> 7825 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
@@ -36,7 +36,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
-            <refund> _ => ?_ </refund>
+            <refund> _Vrefund => ?_ </refund>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -77,8 +77,8 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Dai_bin_runtime </code>
-              <storage> STORAGE </storage>
-              <origStorage> ORIG_STORAGE </origStorage>
+              <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
+              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Dai => ?_ </nonce>
             </account>
             <account>
@@ -160,32 +160,36 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
           <messages> _ </messages>
         </network>
       </ethereum>
-    requires #rangeAddress(ACCT_ID)
-     andBool ACCT_ID =/=Int 0
-     andBool #notPrecompileAddress(ACCT_ID)
-     andBool #rangeAddress(CALLER_ID)
-     andBool #rangeAddress(ORIGIN_ID)
-     andBool #rangeUInt(256, TIME)
-     andBool #rangeUInt(256, ACCT_ID_balance)
-     andBool #rangeUInt(256, ECREC_BAL)
-     andBool #rangeUInt(256, SHA256_BAL)
-     andBool #rangeUInt(256, RIP160_BAL)
-     andBool #rangeUInt(256, ID_BAL)
-     andBool #rangeUInt(256, MODEXP_BAL)
-     andBool #rangeUInt(256, ECADD_BAL)
-     andBool #rangeUInt(256, ECMUL_BAL)
-     andBool #rangeUInt(256, ECPAIRING_BAL)
-     andBool #rangeUInt(256, BLAKE2_BAL)
-     andBool VCallDepth <=Int 1024
-     andBool #rangeUInt(256, VCallValue)
-     andBool #rangeUInt(256, VChainId)
-     andBool (#rangeUInt(256, ABI_x)
-     andBool (#rangeUInt(256, ABI_y)
-     andBool ((#sizeWordStack(WS) <=Int 100)
-     andBool (#rangeUInt(256, VMemoryUsed)
-     andBool (VGas >=Int 3000000)))))
-     andBool notBool ( ((#rangeUInt(256, ABI_x:Int +Int ABI_y:Int))) )
+      requires #rangeAddress(ACCT_ID)
+       andBool ACCT_ID =/=Int 0
+       andBool #notPrecompileAddress(ACCT_ID)
+       andBool #rangeAddress(CALLER_ID)
+       andBool #rangeAddress(ORIGIN_ID)
+       andBool #rangeUInt(256, TIME)
+       andBool #rangeUInt(256, ACCT_ID_balance)
+       andBool #rangeUInt(256, ECREC_BAL)
+       andBool #rangeUInt(256, SHA256_BAL)
+       andBool #rangeUInt(256, RIP160_BAL)
+       andBool #rangeUInt(256, ID_BAL)
+       andBool #rangeUInt(256, MODEXP_BAL)
+       andBool #rangeUInt(256, ECADD_BAL)
+       andBool #rangeUInt(256, ECMUL_BAL)
+       andBool #rangeUInt(256, ECPAIRING_BAL)
+       andBool #rangeUInt(256, BLAKE2_BAL)
+       andBool VCallDepth <=Int 1024
+       andBool #rangeUInt(256, VCallValue)
+       andBool #rangeUInt(256, VChainId)
 
-     ensures ?FAILURE =/=K EVMC_SUCCESS
+       andBool (#rangeUInt(256, ABI_x)
+       andBool (#rangeUInt(256, ABI_y)
+       andBool ((#sizeWordStack(WS) <=Int 100)
+       andBool (#rangeUInt(256, VMemoryUsed)))))
+
+
+       andBool notBool (
+        ((#rangeUInt(256, ABI_x:Int +Int ABI_y:Int)))
+      )
+       ensures
+    ?FAILURE =/=K EVMC_SUCCESS
 
 endmodule
