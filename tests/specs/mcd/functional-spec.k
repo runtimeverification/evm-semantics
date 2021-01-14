@@ -22,6 +22,11 @@ module FUNCTIONAL-SPEC
        andBool #rangeSInt(256, Y)
        andBool Y <Int 0
 
+    claim <k> runLemma(chop(Art_i *Int (ABI_rate +Int pow256))) => doneLemma(chop(Art_i *Int ABI_rate)) ... </k>
+      requires #rangeUInt(256, Art_i)
+       andBool Art_i <=Int maxSInt256
+       andBool #rangeSInt(256, Art_i *Int ABI_rate)
+
     // WordPack
 
     claim <k> runLemma((GAL |Int (maskWordPackAddrUInt48UInt48_1 &Int GUY_TIC_END)) modInt pow256) => doneLemma(GAL |Int (maskWordPackAddrUInt48UInt48_1 &Int GUY_TIC_END)) ... </k>
