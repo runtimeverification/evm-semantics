@@ -89,6 +89,7 @@ module CREATE-SPEC
       requires G -Int (Cmem(PETERSBURG, #memoryUsageUpdate(MU, #memStart, #memWidth)) -Int Cmem(PETERSBURG, MU)) -Int 32000 >Int 0
        andBool 0 <=Int CALL_DEPTH andBool CALL_DEPTH <Int 1023
        andBool #rangeUInt(256, VALUE)
+       andBool #rangeUInt(256, BAL)
        andBool BAL >=Int VALUE
        andBool notBool (#newAddr(ACCT_ID, NONCE) in (SetItem(ACCT_ID) ACCTS))
        andBool ACCT_ID =/=Int #newAddr(ACCT_ID, NONCE)
