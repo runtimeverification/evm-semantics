@@ -444,4 +444,8 @@ module VERIFICATION-COMMON
 
     rule chop(X *Int Y) /sWord chop(Y) ==K X => false requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool notBool #rangeSInt(256, X *Int Y) [simplification]
 
+    // vow-cage-balance-pass-rough
+
+    rule (X -Int Y) -Int Z => 0 requires Y +Int Z ==Int X [simplification]
+
 endmodule
