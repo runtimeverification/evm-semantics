@@ -96,6 +96,7 @@ tests/specs/mcd/vat-slip-pass-rough-spec.k
 tests/specs/mcd/vat-subui-fail-rough-spec.k
 tests/specs/mcd/vat-subui-pass-rough-spec.k
 tests/specs/mcd/vat-subui-pass-spec.k
+tests/specs/mcd/vow-cage-balance-pass-rough-spec.k
 tests/specs/mcd/vow-cage-deficit-pass-rough-spec.k
 tests/specs/mcd/vow-cage-surplus-pass-rough-spec.k
 tests/specs/mcd/vow-fess-fail-rough-spec.k
