@@ -82,9 +82,9 @@ In addition, you'll need the `glog-git` AUR package: <https://aur.archlinux.org/
 On OSX, using [Homebrew](https://brew.sh/), after installing the command line tools package:
 
 ```sh
-brew tap caskroom/cask
-brew cask install adoptopenjdk12
-brew install automake libtool gmp mpfr pkg-config maven z3 libffi
+brew tap homebrew/cask
+brew install --cask java
+brew install automake libtool gmp mpfr pkg-config maven z3 libffi openssl
 make libsecp256k1
 ```
 

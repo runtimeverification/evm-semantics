@@ -161,10 +161,15 @@ STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_RELEASE)/include/kllvm  \
                            $(PLUGIN_SUBMODULE)/plugin-c/plugin_util.cpp \
                            $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp      \
                            $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp      \
-                           -g -std=c++14 -lff -lcryptopp -lsecp256k1
+                           -g -std=c++14 -lff -lcryptopp -lsecp256k1    \
+                           -lssl -lcrypto
 
 ifeq ($(UNAME_S),Linux)
     STANDALONE_KOMPILE_OPTS += -lprocps
+endif
+ifeq ($(UNAME_S),Darwin)
+    OPENSSL_ROOT := $(shell brew --prefix openssl)
+    STANDALONE_KOMPILE_OPTS += -I/usr/local/include -L/usr/local/lib -I$(OPENSSL_ROOT)/include -L$(OPENSSL_ROOT)/lib
 endif
 
 KOMPILE_STANDALONE := kompile --debug --backend llvm --md-selector "$(tangle_concrete)" \
