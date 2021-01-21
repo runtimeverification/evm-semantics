@@ -38,12 +38,12 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
-        build build-java build-specs build-haskell build-llvm                                                                    \
+        build build-java build-haskell build-llvm                                                                                \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
-        test-prove-imp-specs test-prove-mcd test-klab-prove test-haskell-dry-run                                                 \
+        test-prove-mcd test-klab-prove test-haskell-dry-run                                                                      \
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         media media-pdf metropolis-theme
@@ -128,7 +128,6 @@ SOURCE_FILES       := abi              \
                       driver           \
                       edsl             \
                       evm              \
-                      evm-imp-specs    \
                       evm-types        \
                       hashed-locations \
                       json-rpc         \
@@ -196,24 +195,6 @@ $(java_kompiled): $(java_files)
 	                --directory $(java_dir) -I $(CURDIR)  \
 	                --main-module $(java_main_module)     \
 	                --syntax-module $(java_syntax_module)
-
-# Imperative Specs
-
-specs_dir           := $(DEFN_DIR)/specs
-specs_files         := $(ALL_FILES)
-specs_main_module   := EVM-IMP-SPECS
-specs_syntax_module := $(specs_main_module)
-specs_main_file     := evm-imp-specs.md
-specs_main_filename := $(basename $(notdir $(specs_main_file)))
-specs_kompiled      := $(specs_dir)/$(specs_main_filename)-kompiled/timestamp
-
-build-specs: $(specs_kompiled)
-
-$(specs_kompiled): $(specs_files)
-	$(KOMPILE_JAVA) $(specs_main_file)                     \
-	                --directory $(specs_dir) -I $(CURDIR)  \
-	                --main-module $(specs_main_module)     \
-	                --syntax-module $(specs_syntax_module)
 
 # Haskell
 
@@ -325,11 +306,6 @@ tests/%.prove-dry-run: tests/%
 	$(TEST) prove $(TEST_OPTIONS) --backend haskell $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) --dry-run \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
-tests/specs/imp-specs/%.prove: tests/specs/imp-specs/%
-	$(TEST) prove $(TEST_OPTIONS) --backend-dir $(specs_dir)                                    \
-		--backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
-
 tests/%.search: tests/%
 	$(TEST) search $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" > $@-out
 	$(CHECK) $@-out $@-expected
@@ -389,17 +365,15 @@ prove_opcodes_tests    := $(filter-out $(prove_failing_tests), $(wildcard $(prov
 prove_erc20_tests      := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/erc20/*/*-spec.k))
 prove_bihu_tests       := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/bihu/*-spec.k))
 prove_examples_tests   := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k))
-prove_imp_specs_tests  := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/imp-specs/*-spec.k))
 prove_mcd_tests        := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/mcd/*-spec.k))
 
-test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-imp-specs test-prove-mcd
+test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd
 test-prove-benchmarks: $(prove_benchmarks_tests:=.prove)
 test-prove-functional: $(prove_functional_tests:=.prove)
 test-prove-opcodes:    $(prove_opcodes_tests:=.prove)
 test-prove-erc20:      $(prove_erc20_tests:=.prove)
 test-prove-bihu:       $(prove_bihu_tests:=.prove)
 test-prove-examples:   $(prove_examples_tests:=.prove)
-test-prove-imp-specs:  $(prove_imp_specs_tests:=.prove)
 test-prove-mcd:        $(prove_mcd_tests:=.prove)
 
 test-failing-prove: $(prove_failing_tests:=.prove)
