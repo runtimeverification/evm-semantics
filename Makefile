@@ -240,19 +240,23 @@ $(KEVM_LIB)/$(llvm_kompiled): $(llvm_files) $(libff_out)
 
 install_bins := kevm
 
-install_libs := $(haskell_kompiled) \
-                $(llvm_kompiled)    \
-                $(java_kompiled)    \
-                kore-json.py        \
-                kast-json.py        \
-                release.md          \
-                version
+install_libs := $(haskell_kompiled)                      \
+                $(llvm_kompiled)                         \
+                $(java_kompiled)                         \
+                kore-json.py                             \
+                kast-json.py                             \
+                release.md                               \
+                version                                  \
+                $(patsubst %, src/%.md, $(SOURCE_FILES))
 
 build_bins := $(install_bins)
 
 build_libs := $(install_libs)
 
 $(KEVM_BIN)/$(KEVM_RUNNER): $(KEVM_RUNNER)
+	install -D $< $@
+
+$(KEVM_LIB)/src/%.md: %.md
 	install -D $< $@
 
 $(KEVM_LIB)/%.py: %.py
