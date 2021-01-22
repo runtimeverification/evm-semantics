@@ -23,10 +23,6 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
 
-KLAB_OUT="${KLAB_OUT:-$build_dir/klab}"
-KLAB_NODE_STACK_SIZE="${KLAB_NODE_STACK_SIZE:-300000}"
-export KLAB_OUT
-
 # Runners
 # -------
 
@@ -103,6 +99,7 @@ view_klab() {
 
     # klab often runs out of stack space when running long-running KEVM programs
     # klab debug "$klab_log"
+    KLAB_NODE_STACK_SIZE="${KLAB_NODE_STACK_SIZE:-300000}"
     node --max-old-space-size=4096 --stack-size=$KLAB_NODE_STACK_SIZE $(dirname $(which klab))/../libexec/klab-debug "$klab_log"
 }
 
