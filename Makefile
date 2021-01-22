@@ -11,6 +11,17 @@ DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
 BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 LOCAL_LIB     := $(BUILD_LOCAL)/lib
 
+KEVM_BIN    := $(BUILD_DIR)/bin
+KEVM_LIB    := $(BUILD_DIR)/lib/kevm
+KEVM_RUNNER := kevm
+
+KEVM_VERSION     ?= 0.2.0
+KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
+
+INSTALL_PREFIX := /usr/local
+INSTALL_BIN    ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
+INSTALL_LIB    ?= $(DESTDIR)$(INSTALL_PREFIX)/lib/kevm
+
 K_SUBMODULE := $(DEPS_DIR)/k
 ifneq (,$(wildcard $(K_SUBMODULE)/k-distribution/target/release/k/bin/*))
     K_RELEASE ?= $(abspath $(K_SUBMODULE)/k-distribution/target/release/k)
@@ -26,7 +37,7 @@ LOCAL_K_INCLUDE_PATH := $(BUILD_LOCAL)/include/kframework/
 K_INCLUDE_PATH       += :$(LOCAL_K_INCLUDE_PATH)
 C_INCLUDE_PATH       += :$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH   += :$(BUILD_LOCAL)/include
-PATH                 := $(K_BIN):$(PATH)
+PATH                 := $(KEVM_BIN):$(K_BIN):$(PATH)
 
 export LIBRARY_PATH
 export C_INCLUDE_PATH
@@ -52,7 +63,7 @@ export PLUGIN_SUBMODULE
 all: build
 
 clean:
-	rm -rf $(DEFN_BASE_DIR)
+	rm -rf $(KEVM_BIN) $(KEVM_LIB)
 
 distclean:
 	rm -rf $(BUILD_DIR)
@@ -119,8 +130,6 @@ $(K_JAR):
 # Building
 # --------
 
-build: build-java build-specs build-haskell build-llvm
-
 SOURCE_FILES       := abi              \
                       asm              \
                       buf              \
@@ -180,25 +189,23 @@ KOMPILE_STANDALONE := kompile --debug --backend llvm --md-selector "$(tangle_con
 
 # Java
 
-java_dir           := $(DEFN_DIR)/java
+java_dir           := java
 java_files         := $(ALL_FILES)
 java_main_module   := ETHEREUM-SIMULATION
 java_syntax_module := $(java_main_module)
 java_main_file     := driver.md
 java_main_filename := $(basename $(notdir $(java_main_file)))
-java_kompiled      := $(java_dir)/$(java_main_filename)-kompiled/timestamp
+java_kompiled      := $(java_dir)/$(java_main_filename)-kompiled/compiled.bin
 
-build-java: $(java_kompiled)
-
-$(java_kompiled): $(java_files)
-	$(KOMPILE_JAVA) $(java_main_file)                     \
-	                --directory $(java_dir) -I $(CURDIR)  \
-	                --main-module $(java_main_module)     \
+$(KEVM_LIB)/$(java_kompiled): $(java_files)
+	$(KOMPILE_JAVA) $(java_main_file)                                \
+	                --directory $(KEVM_LIB)/$(java_dir) -I $(CURDIR) \
+	                --main-module $(java_main_module)                \
 	                --syntax-module $(java_syntax_module)
 
 # Haskell
 
-haskell_dir            := $(DEFN_DIR)/haskell
+haskell_dir            := haskell
 haskell_files          := $(ALL_FILES)
 haskell_main_module    := ETHEREUM-SIMULATION
 haskell_syntax_module  := $(haskell_main_module)
@@ -206,17 +213,15 @@ haskell_main_file      := driver.md
 haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
 haskell_kompiled       := $(haskell_dir)/$(haskell_main_filename)-kompiled/definition.kore
 
-build-haskell: $(haskell_kompiled)
-
-$(haskell_kompiled): $(haskell_files)
-	$(KOMPILE_HASKELL) $(haskell_main_file)                     \
-	                   --directory $(haskell_dir) -I $(CURDIR)  \
-	                   --main-module $(haskell_main_module)     \
+$(KEVM_LIB)/$(haskell_kompiled): $(haskell_files)
+	$(KOMPILE_HASKELL) $(haskell_main_file)                                \
+	                   --directory $(KEVM_LIB)/$(haskell_dir) -I $(CURDIR) \
+	                   --main-module $(haskell_main_module)                \
 	                   --syntax-module $(haskell_syntax_module)
 
 # Standalone
 
-llvm_dir           := $(DEFN_DIR)/llvm
+llvm_dir           := llvm
 llvm_files         := $(ALL_FILES)
 llvm_main_module   := ETHEREUM-SIMULATION
 llvm_syntax_module := $(llvm_main_module)
@@ -224,23 +229,53 @@ llvm_main_file     := driver.md
 llvm_main_filename := $(basename $(notdir $(llvm_main_file)))
 llvm_kompiled      := $(llvm_dir)/$(llvm_main_filename)-kompiled/interpreter
 
-build-llvm: $(llvm_kompiled)
-
-$(llvm_kompiled): $(llvm_files) $(libff_out)
-	$(KOMPILE_STANDALONE) $(llvm_main_file)                     \
-	                      --directory $(llvm_dir) -I $(CURDIR)  \
-	                      --main-module $(llvm_main_module)     \
+$(KEVM_LIB)/$(llvm_kompiled): $(llvm_files) $(libff_out)
+	$(KOMPILE_STANDALONE) $(llvm_main_file)                                \
+	                      --directory $(KEVM_LIB)/$(llvm_dir) -I $(CURDIR) \
+	                      --main-module $(llvm_main_module)                \
 	                      --syntax-module $(llvm_syntax_module)
 
 # Installing
 # ----------
 
-KEVM_RELEASE_TAG ?=
+install_bins := kevm
 
-release.md: INSTALL.md
+install_libs := $(haskell_kompiled) \
+                $(llvm_kompiled)    \
+                $(java_kompiled)    \
+                release.md          \
+                version
+
+build_bins := $(install_bins)
+
+build_libs := $(install_libs)
+
+$(KEVM_BIN)/$(KEVM_RUNNER): $(KEVM_RUNNER)
+	install -D $< $@
+
+$(KEVM_LIB)/version:
+	@mkdir -p $(dir $@)
+	echo $(KEVM_VERSION) > $@
+
+$(KEVM_LIB)/release.md: INSTALL.md
+	@mkdir -p $(dir $@)
 	echo "KEVM Release $(KEVM_RELEASE_TAG)"  > $@
 	echo                                    >> $@
 	cat INSTALL.md                          >> $@
+
+build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
+
+build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_BIN)/$(KEVM_RUNNER)
+build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_BIN)/$(KEVM_RUNNER)
+build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_BIN)/$(KEVM_RUNNER)
+
+$(INSTALL_BIN)/%: $(KEVM_BIN)/%
+	install -D $< $@
+
+$(INSTALL_LIB)/%: $(KEVM_LIB)/%
+	install -D $< $@
+
+install: $(patsubst %, $(INSTALL_BIN)/%, $(install_bins)) $(patsubst %, $(INSTALL_LIB)/%, $(install_libs))
 
 # Tests
 # -----
