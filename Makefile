@@ -243,6 +243,8 @@ install_bins := kevm
 install_libs := $(haskell_kompiled) \
                 $(llvm_kompiled)    \
                 $(java_kompiled)    \
+                kore-json.py        \
+                kast-json.py        \
                 release.md          \
                 version
 
@@ -253,9 +255,12 @@ build_libs := $(install_libs)
 $(KEVM_BIN)/$(KEVM_RUNNER): $(KEVM_RUNNER)
 	install -D $< $@
 
+$(KEVM_LIB)/%.py: %.py
+	install -D $< $@
+
 $(KEVM_LIB)/version:
 	@mkdir -p $(dir $@)
-	echo $(KEVM_VERSION) > $@
+	echo $(KEVM_RELEASE_TAG) > $@
 
 $(KEVM_LIB)/release.md: INSTALL.md
 	@mkdir -p $(dir $@)
@@ -283,7 +288,6 @@ install: $(patsubst %, $(INSTALL_BIN)/%, $(install_bins)) $(patsubst %, $(INSTAL
 TEST_CONCRETE_BACKEND := llvm
 TEST_SYMBOLIC_BACKEND := java
 
-TEST         := ./kevm
 TEST_OPTIONS :=
 CHECK        := git --no-pager diff --no-index --ignore-all-space -R
 
@@ -306,27 +310,27 @@ tests/specs/mcd/functional-spec.k%: KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
 
 tests/%.run: tests/%
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) CHAINID=$(KEVM_CHAINID)                                                \
-	    $(TEST) interpret $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                           \
+	    $(KEVM_RUNNER) interpret $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                    \
 	    $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                     \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-interactive: tests/%
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) CHAINID=$(KEVM_CHAINID)                                                \
-	    $(TEST) run $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                                 \
+	    $(KEVM_RUNNER) run $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                          \
 	    $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                     \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-expected: tests/% tests/%.expected
 	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) CHAINID=$(KEVM_CHAINID)                                                \
-	    $(TEST) run $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                                 \
+	    $(KEVM_RUNNER) run $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                          \
 	    $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                     \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.parse: tests/%
-	$(TEST) kast $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
+	$(KEVM_RUNNER) kast $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
 	$(CHECK) $@-out $@-expected
 	rm -rf $@-out
 
@@ -334,20 +338,20 @@ tests/specs/benchmarks/%-spec.k.prove:             KPROVE_OPTS += --smt-prelude 
 tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-backend-command "kore-exec --smt=none"
 
 tests/%.prove: tests/%
-	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
+	$(KEVM_RUNNER) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 tests/%.prove-dry-run: tests/%
-	$(TEST) prove $(TEST_OPTIONS) --backend haskell $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) --dry-run \
+	$(KEVM_RUNNER) prove $(TEST_OPTIONS) --backend haskell $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) --dry-run \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 tests/%.search: tests/%
-	$(TEST) search $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" > $@-out
+	$(KEVM_RUNNER) search $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" > $@-out
 	$(CHECK) $@-out $@-expected
 	rm -rf $@-out
 
 tests/%.klab-prove: tests/%
-	$(TEST) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
+	$(KEVM_RUNNER) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 # Smoke Tests
@@ -445,7 +449,7 @@ search_tests:=$(wildcard tests/interactive/search/*.evm)
 test-interactive-search: $(search_tests:=.search)
 
 test-interactive-help:
-	$(TEST) help
+	$(KEVM_RUNNER) help
 
 # Media
 # -----

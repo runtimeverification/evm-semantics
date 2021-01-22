@@ -6,18 +6,20 @@ shopt -s extglob
 notif() { echo "== $@" >&2 ; }
 fatal() { echo "[FATAL] $@" ; exit 1 ; }
 
-# Works regardless of where script is called from
-kevm_dir="${KEVM_DIR:-$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )}"
-build_dir="$kevm_dir/.build"
-defn_dir="${KEVM_DEFN_DIR:-$build_dir/defn}"
-lib_dir="$build_dir/local/lib"
-k_release_dir="${K_RELEASE:-$kevm_dir/deps/k/k-distribution/target/release/k}"
-[[ -f "${k_release_dir}/bin/kompile" ]]               \
-    || ! which kompile &> /dev/null                   \
-    || k_release_dir="$(dirname $(which kompile))/.."
+check_k_install() {
+    which kore-exec &> /dev/null \
+        || fatal "Must have K installed! See https://github.com/kframework/k/releases."
+    which kast &> /dev/null \
+        || fatal "Must have K installed! See https://github.com/kframework/k/releases."
+    which krun &> /dev/null \
+        || fatal "Must have K installed! See https://github.com/kframework/k/releases."
+}
 
-export PATH="$k_release_dir/lib/native/linux:$k_release_dir/lib/native/linux64:$k_release_dir/bin/:$PATH"
-export LD_LIBRARY_PATH="$k_release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
+INSTALL_BIN="$(dirname $0)"
+INSTALL_LIB=${INSTALL_BIN}/../lib/kevm
+
+export PATH="$INSTALL_BIN:$INSTALL_LIB:$PATH"
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
 
@@ -32,6 +34,8 @@ export KLAB_OUT
 
 run_krun() {
     local cschedule cmode cchainid parser
+
+    check_k_install
 
     case "$backend" in
         java)
@@ -60,14 +64,16 @@ run_kast() {
     output_mode="${1:-kore}" ; shift
 
     case "$run_file-$output_mode" in
-        *.json-kast) "$kevm_dir/kast-json.py" "$run_file" "$cSCHEDULE_kast" "$cMODE_kast" "$cCHAINID_kast" ;;
-        *.json-kore) "$kevm_dir/kore-json.py" "$run_file" "$cSCHEDULE_kore" "$cMODE_kore" "$cCHAINID_kore" ;;
-        *)           kast --directory "$backend_dir" "$run_file" --output "$output_mode" "$@"              ;;
+        *.json-kast) "$kevm_dir/kast-json.py" "$run_file" "$cSCHEDULE_kast" "$cMODE_kast" "$cCHAINID_kast"      ;;
+        *.json-kore) "$kevm_dir/kore-json.py" "$run_file" "$cSCHEDULE_kore" "$cMODE_kore" "$cCHAINID_kore"      ;;
+        *)           check_k_install ; kast --directory "$backend_dir" "$run_file" --output "$output_mode" "$@" ;;
     esac
 }
 
 run_prove() {
     local def_module run_dir additional_proof_args bug_report_name
+
+    check_k_install
 
     def_module="$1" ; shift
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
@@ -211,13 +217,7 @@ fi
 
 if [[ "$run_command" == 'version' ]] || [[ "$run_command" == '--version' ]]; then
     notif "KEVM Version"
-    git rev-parse --short HEAD
-    notif "K Version"
-    kompile --version
-    notif "Kore Version"
-    kore-exec --version
-    notif "Z3 Version"
-    z3 --version
+    cat $INSTALL_LIB/version
     exit 0
 fi
 
@@ -248,7 +248,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 set -- "${args[@]}"
-backend_dir="${backend_dir:-$defn_dir/$backend}"
+backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
 ! $repl || [[ "$backend" == haskell ]] || fatal "Option --repl only usable with --backend haskell!"
 
