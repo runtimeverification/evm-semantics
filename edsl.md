@@ -179,10 +179,16 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     //Byte array buffer. Lemmas defined in evm-data-symbolic.k
     // SIZE, DATA // left zero padding
-    syntax ByteArray ::= #buf ( Int , Int ) [function, smtlib(buf)]
+    syntax ByteArray ::= #buf ( Int , Int ) [function]
  // ---------------------------------------------------------------
-    rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA))
+    rule #buf(SIZE, DATA) => #bufFunctional(SIZE, DATA)
       requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
+    rule #buf(_, _) => #Bottom
+      [owise]
+
+    syntax ByteArray ::= #bufFunctional ( Int , Int ) [functional, smtlib(buf)]
+    // Extends the domain of the original #buf by interpreting DATA modulo 2 ^Int (SIZE *Int 8).
+    rule #bufFunctional(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA %Int (2 ^Int (SIZE *Int 8))))
       [concrete]
 ```
 
