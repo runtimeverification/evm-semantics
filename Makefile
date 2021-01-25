@@ -36,8 +36,6 @@ endif
 K_BIN := $(K_RELEASE)/bin
 
 LIBRARY_PATH         := $(LOCAL_LIB)
-LOCAL_K_INCLUDE_PATH := $(BUILD_LOCAL)/include/kframework/
-K_INCLUDE_PATH       += :$(LOCAL_K_INCLUDE_PATH)
 C_INCLUDE_PATH       += :$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH   += :$(BUILD_LOCAL)/include
 PATH                 := $(KEVM_BIN):$(KEVM_K_BIN):$(PATH)
@@ -152,13 +150,18 @@ SOURCE_FILES       := abi              \
 EXTRA_SOURCE_FILES :=
 ALL_FILES          := $(patsubst %, %.md, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
 
+includes := $(patsubst %, $(KEVM_INCLUDE)/%, $(ALL_FILES) blockchain-k-plugin/krypto.md)
+
+$(KEVM_INCLUDE)/%.md: %.md
+	install -D $< $@
+
 tangle_concrete := k & (! ceil) & ( ( ! ( symbolic | nobytes ) ) | concrete | bytes   )
 tangle_java     := k & (! ceil) & ( ( ! ( concrete | bytes   ) ) | symbolic | nobytes )
 tangle_haskell  := k            & ( ( ! ( concrete | nobytes ) ) | symbolic | bytes   )
 
 HOOK_NAMESPACES    = KRYPTO JSON
 EXTRA_KOMPILE_OPTS =
-KOMPILE_OPTS      += --hook-namespaces "$(HOOK_NAMESPACES)" -I $(LOCAL_K_INCLUDE_PATH) $(EXTRA_KOMPILE_OPTS)
+KOMPILE_OPTS      += --hook-namespaces "$(HOOK_NAMESPACES)" -I $(KEVM_INCLUDE) $(EXTRA_KOMPILE_OPTS)
 
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
@@ -203,10 +206,10 @@ java_main_file     := driver.md
 java_main_filename := $(basename $(notdir $(java_main_file)))
 java_kompiled      := $(java_dir)/$(java_main_filename)-kompiled/compiled.bin
 
-$(KEVM_LIB)/$(java_kompiled): $(java_files)
-	$(KOMPILE_JAVA) $(java_main_file)                                \
-	                --directory $(KEVM_LIB)/$(java_dir) -I $(CURDIR) \
-	                --main-module $(java_main_module)                \
+$(KEVM_LIB)/$(java_kompiled): $(includes)
+	$(KOMPILE_JAVA) $(java_main_file)                     \
+	                --directory $(KEVM_LIB)/$(java_dir)   \
+	                --main-module $(java_main_module)     \
 	                --syntax-module $(java_syntax_module)
 
 # Haskell
@@ -219,10 +222,10 @@ haskell_main_file      := driver.md
 haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
 haskell_kompiled       := $(haskell_dir)/$(haskell_main_filename)-kompiled/definition.kore
 
-$(KEVM_LIB)/$(haskell_kompiled): $(haskell_files)
-	$(KOMPILE_HASKELL) $(haskell_main_file)                                \
-	                   --directory $(KEVM_LIB)/$(haskell_dir) -I $(CURDIR) \
-	                   --main-module $(haskell_main_module)                \
+$(KEVM_LIB)/$(haskell_kompiled): $(includes)
+	$(KOMPILE_HASKELL) $(haskell_main_file)                     \
+	                   --directory $(KEVM_LIB)/$(haskell_dir)   \
+	                   --main-module $(haskell_main_module)     \
 	                   --syntax-module $(haskell_syntax_module)
 
 # Standalone
@@ -235,10 +238,10 @@ llvm_main_file     := driver.md
 llvm_main_filename := $(basename $(notdir $(llvm_main_file)))
 llvm_kompiled      := $(llvm_dir)/$(llvm_main_filename)-kompiled/interpreter
 
-$(KEVM_LIB)/$(llvm_kompiled): $(llvm_files) $(libff_out)
-	$(KOMPILE_STANDALONE) $(llvm_main_file)                                \
-	                      --directory $(KEVM_LIB)/$(llvm_dir) -I $(CURDIR) \
-	                      --main-module $(llvm_main_module)                \
+$(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out)
+	$(KOMPILE_STANDALONE) $(llvm_main_file)                     \
+	                      --directory $(KEVM_LIB)/$(llvm_dir)   \
+	                      --main-module $(llvm_main_module)     \
 	                      --syntax-module $(llvm_syntax_module)
 
 # Installing
@@ -246,26 +249,20 @@ $(KEVM_LIB)/$(llvm_kompiled): $(llvm_files) $(libff_out)
 
 install_bins := kevm
 
-install_includes := $(patsubst %, %.md, $(SOURCE_FILES)) \
-                    blockchain-k-plugin/krypto.md
-
-install_libs := $(haskell_kompiled)                           \
-                $(llvm_kompiled)                              \
-                $(java_kompiled)                              \
-                kore-json.py                                  \
-                kast-json.py                                  \
-                release.md                                    \
-                version                                       \
-                $(patsubst %, include/%, $(install_includes))
+install_libs := $(haskell_kompiled)                     \
+                $(llvm_kompiled)                        \
+                $(java_kompiled)                        \
+                kore-json.py                            \
+                kast-json.py                            \
+                release.md                              \
+                version                                 \
+                $(patsubst %, include/%, $(includes))
 
 build_bins := $(install_bins)
 
 build_libs := $(install_libs)
 
 $(KEVM_BIN)/$(KEVM_RUNNER): $(KEVM_RUNNER)
-	install -D $< $@
-
-$(KEVM_INCLUDE)/%.md: %.md
 	install -D $< $@
 
 $(KEVM_LIB)/%.py: %.py
