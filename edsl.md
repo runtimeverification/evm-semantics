@@ -11,6 +11,8 @@ requires "evm.md"
 
 module EDSL
     imports EVM
+    imports BUFSTRICT-SYNTAX
+    imports BUFSTRICT-HASKELL
 ```
 
 ### ABI Call Data
@@ -180,12 +182,11 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     //Byte array buffer. Lemmas defined in evm-data-symbolic.k
     //Appears in this form only when when #buf is first created, as part of `#enc` logic.
     // SIZE, DATA // left zero padding
-    syntax ByteArray ::= #bufStrict ( Int , Int ) [function]
+    // Definition in module BUFSTRICT-SYNTAX
+    //syntax ByteArray ::= #bufStrict ( Int , Int ) [function]
  // ---------------------------------------------------------------
     rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA)
       requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
-    rule #bufStrict(_, _) => #Bottom
-      [owise]
 
     syntax ByteArray ::= #buf ( Int , Int ) [function, functional, smtlib(buf)]
     // Workaround to have #buf functional is to extend the domain of the original #buf by interpreting DATA modulo 2 ^Int (SIZE *Int 8).
@@ -372,5 +373,19 @@ If the data is at most 31 bytes long, it is stored in the higher-order bytes (le
 ```
 
 ```k
+endmodule
+
+module BUFSTRICT-SYNTAX
+    imports EVM
+
+    syntax ByteArray ::= #bufStrict ( Int , Int ) [function]
+
+endmodule
+
+module BUFSTRICT-HASKELL [symbolic, kore]
+    imports BUFSTRICT-SYNTAX
+
+    rule #bufStrict(_, _) => #Bottom              [owise]
+
 endmodule
 ```
