@@ -18,13 +18,16 @@ KEVM_RUNNER := kevm
 KEVM_VERSION     ?= 0.2.0
 KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
 
-INSTALL_PREFIX := /usr/local
+INSTALL_PREFIX := /usr
 INSTALL_BIN    ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
 INSTALL_LIB    ?= $(DESTDIR)$(INSTALL_PREFIX)/lib/kevm
 
+K_INSTALL := $(CURDIR)/$(KEVM_LIB)
+K_JAR     := $(INSTALL_LIB)/kframework/java/kernel-1.0-SNAPSHOT.jar
+
 K_SUBMODULE := $(DEPS_DIR)/k
-ifneq (,$(wildcard $(K_SUBMODULE)/k-distribution/target/release/k/bin/*))
-    K_RELEASE ?= $(abspath $(K_SUBMODULE)/k-distribution/target/release/k)
+ifneq (,$(wildcard $(K_JAR)))
+    K_RELEASE ?= $(abspath $(K_INSTALL))
 else
     K_RELEASE ?= $(dir $(shell which kompile))..
 endif
@@ -102,8 +105,6 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 # K Dependencies
 # --------------
 
-K_JAR := $(K_SUBMODULE)/k-distribution/target/release/k/lib/java/kernel-1.0-SNAPSHOT.jar
-
 deps: repo-deps plugin-deps
 repo-deps: k-deps plugin-deps
 
@@ -130,7 +131,9 @@ else
 endif
 
 $(K_JAR):
-	cd $(K_SUBMODULE) && mvn package -DskipTests -U -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS)
+	cd $(K_SUBMODULE)                                                                                                                                                             \
+	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=/kframework -Dllvm.backend.destdir=$(CURDIR)/$(KEVM_LIB) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
+	    && DESTDIR=$(CURDIR)/$(KEVM_LIB) PREFIX=/kframework package/package
 
 # Building
 # --------
