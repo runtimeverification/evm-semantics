@@ -22,7 +22,7 @@ module KECCAK00-SPEC
           <jumpDests> #computeValidJumpDests(#parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806309c5eabe146044575b600080fd5b348015604f57600080fd5b50607a6004803603810190808035906020019082018035906020019190919293919293905050506098565b60405180826000191660001916815260200191505060405180910390f35b600082826040518083838082843782019150509250505060405180910390209050929150505600a165627a7a72305820bc7bb160225c771a020b10383aac22cc86e16ac58b8b938b40d658bde052ff6a0029")) </jumpDests>
           <id> CONTRACT_ID </id> // this
           <caller> MSG_SENDER </caller> // msg.sender
-          <callData> #abiCallData("execute", #bytes(#buf(DATA_LEN,DATA))) </callData> // msg.data
+          <callData> #abiCallData("execute", #bytes(#bufStrict(DATA_LEN,DATA))) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>

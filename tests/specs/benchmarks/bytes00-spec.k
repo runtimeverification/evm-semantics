@@ -22,7 +22,7 @@ module BYTES00-SPEC
           <jumpDests> #computeValidJumpDests(#parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806309c5eabe146044575b600080fd5b348015604f57600080fd5b5060a8600480360381019080803590602001908201803590602001908080601f016020809104026020016040519081016040528093929190818152602001838380828437820191505050505050919291929050505060be565b6040518082815260200191505060405180910390f35b6000815190509190505600a165627a7a72305820443b6929f0411657e3b5f5371823da4795cb8ece704713e7934fea316a2af24a0029")) </jumpDests>
           <id> CONTRACT_ID </id> // this
           <caller> MSG_SENDER </caller> // msg.sender
-          <callData> #abiCallData("execute", #bytes(#buf(DATA_LEN, _DATA))) </callData> // msg.data
+          <callData> #abiCallData("execute", #bytes(#bufStrict(DATA_LEN, _DATA))) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>

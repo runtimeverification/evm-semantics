@@ -20,7 +20,7 @@ module IMP-SPECS-TEST-SPEC
      ~> #assume SUM:Int ==S OLD_S +Int VALUE
      ~> #assert #getLog ==S (#var(V_LOG_BEFORE) +List ListItem(#abiEventLog(ACCT_ID, "TestEvent", #uint256(OLD_S), #uint256(SUM))))
      ~> #assert #getOutput ==S #var(V_ADD_OUT)
-     ~> #assert #sizeByteArrayExp( #buf(33, SUM) ) ==S 33
+     ~> #assert #sizeByteArrayExp( #bufStrict(33, SUM) ) ==S 33
      ~> #assert (true ||S false)  ==S true
      ~> #assert (true ||S false) =/=S false
      ~> #assert (true &&S false)  ==S false

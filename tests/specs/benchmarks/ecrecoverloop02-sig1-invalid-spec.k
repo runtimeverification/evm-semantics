@@ -23,7 +23,7 @@ module ECRECOVERLOOP02-SIG1-INVALID-SPEC
           <id> CONTRACT_ID </id> // this
           <caller> MSG_SENDER </caller> // msg.sender
           <callData> #abiCallData2("execute(bytes32,bytes,uint8[2],bytes32[2],bytes32[2])",
-#bytes32(HASH), #bytes(#buf(DATA_LEN,DATA)),
+#bytes32(HASH), #bytes(#bufStrict(DATA_LEN,DATA)),
 #uint8(SIGV0), #uint8(SIGV1),
 #bytes32(SIGR0), #bytes32(SIGR1),
 #bytes32(SIGS0), #bytes32(SIGS1)) </callData> // msg.data
