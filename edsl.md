@@ -186,7 +186,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #buf(_, _) => #Bottom
       [owise]
 
-    syntax ByteArray ::= #bufFunctional ( Int , Int ) [functional, smtlib(buf)]
+    syntax ByteArray ::= #bufFunctional ( Int , Int ) [function, functional, smtlib(buf)]
     // Extends the domain of the original #buf by interpreting DATA modulo 2 ^Int (SIZE *Int 8).
     rule #bufFunctional(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA %Int (2 ^Int (SIZE *Int 8))))
       [concrete]
