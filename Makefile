@@ -134,25 +134,26 @@ $(K_JAR):
 # Building
 # --------
 
-SOURCE_FILES       := abi              \
-                      asm              \
-                      buf              \
-                      data             \
-                      driver           \
-                      edsl             \
-                      evm              \
-                      evm-types        \
-                      hashed-locations \
-                      json-rpc         \
-                      network          \
-                      serialization    \
-                      state-loader
+SOURCE_FILES       := abi                        \
+                      asm                        \
+                      buf                        \
+                      data                       \
+                      driver                     \
+                      edsl                       \
+                      evm                        \
+                      evm-types                  \
+                      hashed-locations           \
+                      json-rpc                   \
+                      network                    \
+                      serialization              \
+                      state-loader               \
+                      blockchain-k-plugin/krypto
 EXTRA_SOURCE_FILES :=
 ALL_FILES          := $(patsubst %, %.md, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
 
-includes := $(patsubst %, $(KEVM_INCLUDE)/%, $(ALL_FILES) blockchain-k-plugin/krypto.md)
+includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(ALL_FILES))
 
-$(KEVM_INCLUDE)/%.md: %.md
+$(KEVM_INCLUDE)/kframework/%.md: %.md
 	install -D $< $@
 
 tangle_concrete := k & (! ceil) & ( ( ! ( symbolic | nobytes ) ) | concrete | bytes   )
@@ -161,7 +162,7 @@ tangle_haskell  := k            & ( ( ! ( concrete | nobytes ) ) | symbolic | by
 
 HOOK_NAMESPACES    = KRYPTO JSON
 EXTRA_KOMPILE_OPTS =
-KOMPILE_OPTS      += --hook-namespaces "$(HOOK_NAMESPACES)" -I $(KEVM_INCLUDE) $(EXTRA_KOMPILE_OPTS)
+KOMPILE_OPTS      += --hook-namespaces "$(HOOK_NAMESPACES)" -I $(KEVM_INCLUDE)/kframework $(EXTRA_KOMPILE_OPTS)
 
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
@@ -199,7 +200,6 @@ KOMPILE_STANDALONE := kompile --debug --backend llvm --md-selector "$(tangle_con
 # Java
 
 java_dir           := java
-java_files         := $(ALL_FILES)
 java_main_module   := ETHEREUM-SIMULATION
 java_syntax_module := $(java_main_module)
 java_main_file     := driver.md
@@ -215,7 +215,6 @@ $(KEVM_LIB)/$(java_kompiled): $(includes)
 # Haskell
 
 haskell_dir            := haskell
-haskell_files          := $(ALL_FILES)
 haskell_main_module    := ETHEREUM-SIMULATION
 haskell_syntax_module  := $(haskell_main_module)
 haskell_main_file      := driver.md
@@ -231,7 +230,6 @@ $(KEVM_LIB)/$(haskell_kompiled): $(includes)
 # Standalone
 
 llvm_dir           := llvm
-llvm_files         := $(ALL_FILES)
 llvm_main_module   := ETHEREUM-SIMULATION
 llvm_syntax_module := $(llvm_main_module)
 llvm_main_file     := driver.md
@@ -249,14 +247,14 @@ $(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out)
 
 install_bins := kevm
 
-install_libs := $(haskell_kompiled)                     \
-                $(llvm_kompiled)                        \
-                $(java_kompiled)                        \
-                kore-json.py                            \
-                kast-json.py                            \
-                release.md                              \
-                version                                 \
-                $(patsubst %, include/%, $(includes))
+install_libs := $(haskell_kompiled)                               \
+                $(llvm_kompiled)                                  \
+                $(java_kompiled)                                  \
+                kore-json.py                                      \
+                kast-json.py                                      \
+                release.md                                        \
+                version                                           \
+                $(patsubst %, include/kframework/%, $(ALL_FILES))
 
 build_bins := $(install_bins)
 
