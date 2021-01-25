@@ -45,6 +45,7 @@ export CPLUS_INCLUDE_PATH
 export PATH
 
 PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
+PLUGIN_SOURCE    := $(LOCAL_K_INCLUDE_PATH)/blockchain-k-plugin/krypto.md
 export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
@@ -103,10 +104,14 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 
 K_JAR := $(K_SUBMODULE)/k-distribution/target/release/k/lib/java/kernel-1.0-SNAPSHOT.jar
 
-deps: repo-deps
+deps: repo-deps plugin-deps
 repo-deps: k-deps plugin-deps
+
 k-deps: $(K_JAR)
-plugin-deps:
+
+plugin-deps: $(PLUGIN_SOURCE)
+
+$(PLUGIN_SOURCE): $(PLUGIN_SUBMODULE)/plugin/krypto.md
 	cd deps/plugin && \
 	    make INSTALL_PREFIX=$(BUILD_LOCAL) install
 
