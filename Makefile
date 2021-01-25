@@ -11,9 +11,11 @@ DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
 BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 LOCAL_LIB     := $(BUILD_LOCAL)/lib
 
-KEVM_BIN    := $(BUILD_DIR)/bin
-KEVM_LIB    := $(BUILD_DIR)/lib/kevm
-KEVM_RUNNER := kevm
+KEVM_BIN     := $(BUILD_DIR)/bin
+KEVM_LIB     := $(BUILD_DIR)/lib/kevm
+KEVM_INCLUDE := $(KEVM_LIB)/include
+KEVM_K_BIN   := $(KEVM_LIB)/kframework/bin
+KEVM_RUNNER  := kevm
 
 KEVM_VERSION     ?= 0.2.0
 KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
@@ -22,8 +24,8 @@ INSTALL_PREFIX := /usr
 INSTALL_BIN    ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
 INSTALL_LIB    ?= $(DESTDIR)$(INSTALL_PREFIX)/lib/kevm
 
-K_INSTALL := $(CURDIR)/$(KEVM_LIB)
-K_JAR     := $(INSTALL_LIB)/kframework/java/kernel-1.0-SNAPSHOT.jar
+K_INSTALL := $(DESTDIR)$(INSTALL_PREFIX)/kframework
+K_JAR     := $(K_INSTALL)/lib/kframework/java/kernel-1.0-SNAPSHOT.jar
 
 K_SUBMODULE := $(DEPS_DIR)/k
 ifneq (,$(wildcard $(K_JAR)))
@@ -32,15 +34,13 @@ else
     K_RELEASE ?= $(dir $(shell which kompile))..
 endif
 K_BIN := $(K_RELEASE)/bin
-K_LIB := $(K_RELEASE)/lib/kframework
-export K_RELEASE
 
 LIBRARY_PATH         := $(LOCAL_LIB)
 LOCAL_K_INCLUDE_PATH := $(BUILD_LOCAL)/include/kframework/
 K_INCLUDE_PATH       += :$(LOCAL_K_INCLUDE_PATH)
 C_INCLUDE_PATH       += :$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH   += :$(BUILD_LOCAL)/include
-PATH                 := $(KEVM_BIN):$(K_BIN):$(PATH)
+PATH                 := $(KEVM_BIN):$(KEVM_K_BIN):$(PATH)
 
 export LIBRARY_PATH
 export C_INCLUDE_PATH
@@ -48,11 +48,11 @@ export CPLUS_INCLUDE_PATH
 export PATH
 
 PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
-PLUGIN_SOURCE    := $(LOCAL_K_INCLUDE_PATH)/blockchain-k-plugin/krypto.md
+PLUGIN_SOURCE    := $(KEVM_INCLUDE)/blockchain-k-plugin/krypto.md
 export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
-        deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
+        deps all-deps llvm-deps haskell-deps k-deps plugin-deps libsecp256k1 libff                                               \
         build build-java build-haskell build-llvm                                                                                \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
@@ -105,16 +105,14 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 # K Dependencies
 # --------------
 
-deps: repo-deps plugin-deps
-repo-deps: k-deps plugin-deps
+deps: k-deps plugin-deps
 
 k-deps: $(K_JAR)
 
 plugin-deps: $(PLUGIN_SOURCE)
 
 $(PLUGIN_SOURCE): $(PLUGIN_SUBMODULE)/plugin/krypto.md
-	cd deps/plugin && \
-	    make INSTALL_PREFIX=$(BUILD_LOCAL) install
+	cd deps/plugin && make INSTALL_PREFIX=$(CURDIR)/$(KEVM_LIB) install
 
 K_MVN_ARGS :=
 ifneq ($(SKIP_LLVM),)
@@ -248,14 +246,17 @@ $(KEVM_LIB)/$(llvm_kompiled): $(llvm_files) $(libff_out)
 
 install_bins := kevm
 
-install_libs := $(haskell_kompiled)                      \
-                $(llvm_kompiled)                         \
-                $(java_kompiled)                         \
-                kore-json.py                             \
-                kast-json.py                             \
-                release.md                               \
-                version                                  \
-                $(patsubst %, src/%.md, $(SOURCE_FILES))
+install_includes := $(patsubst %, %.md, $(SOURCE_FILES)) \
+                    blockchain-k-plugin/krypto.md
+
+install_libs := $(haskell_kompiled)                           \
+                $(llvm_kompiled)                              \
+                $(java_kompiled)                              \
+                kore-json.py                                  \
+                kast-json.py                                  \
+                release.md                                    \
+                version                                       \
+                $(patsubst %, include/%, $(install_includes))
 
 build_bins := $(install_bins)
 
@@ -264,7 +265,7 @@ build_libs := $(install_libs)
 $(KEVM_BIN)/$(KEVM_RUNNER): $(KEVM_RUNNER)
 	install -D $< $@
 
-$(KEVM_LIB)/src/%.md: %.md
+$(KEVM_INCLUDE)/%.md: %.md
 	install -D $< $@
 
 $(KEVM_LIB)/%.py: %.py
