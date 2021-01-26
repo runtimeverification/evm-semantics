@@ -156,7 +156,7 @@ tangle_haskell  := k            & ( ( ! ( concrete | nobytes ) ) | symbolic | by
 
 HOOK_NAMESPACES    = KRYPTO JSON
 EXTRA_KOMPILE_OPTS =
-KOMPILE_OPTS      += --hook-namespaces "$(HOOK_NAMESPACES)" -I $(KEVM_INCLUDE)/kframework $(EXTRA_KOMPILE_OPTS)
+KOMPILE_OPTS      += --hook-namespaces "$(HOOK_NAMESPACES)" -I $(KEVM_INCLUDE)/kframework -I $(INSTALL_INCLUDE)/kframework $(EXTRA_KOMPILE_OPTS)
 
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
