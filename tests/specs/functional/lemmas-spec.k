@@ -121,6 +121,6 @@ module LEMMAS-SPEC
     claim <k> runLemma ( 160 ==Int #asWord ( #buf( 4, 160 ) ++ ( #buf( 32 , _BUF ) [ 0 .. 28 ] ) ) >>Int 224 )
            => doneLemma( true ) ... </k>
 
-    claim <k> runLemma ( #bufStrict( #ceil32(LEN) -Int LEN, 0 ) => doneLemma( #buf( #ceil32(LEN) -Int LEN, 0 ) ) ... </k>
+    claim <k> runLemma ( #bufStrict( #ceil32(LEN) -Int LEN, 0 ) ) => doneLemma( #buf( #ceil32(LEN) -Int LEN, 0 ) ) ... </k>
 
 endmodule
