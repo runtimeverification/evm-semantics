@@ -134,6 +134,7 @@ _
      andBool #rangeBytes(32, SIGS0)
      andBool #rangeBytes(32, SIGS1)
      andBool #range(0 <= DATA_LEN < pow16)
+     andBool #range(0 <= DATA < (2 ^Int (DATA_LEN *Int 8)))
      andBool ECREC_DATA0 ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV0), #bytes32(SIGR0), #bytes32(SIGS0) )
      andBool ECREC_DATA1 ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV1), #bytes32(SIGR1), #bytes32(SIGS1) )
      andBool RECOVERED0 ==Int #symEcrec( ECREC_DATA0 )

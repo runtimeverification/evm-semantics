@@ -123,6 +123,7 @@ _
      andBool #range(0 <= CD < 1024)
      andBool #rangeAddress(MSG_SENDER)
      andBool #range(0 <= DATA_LEN < pow16)
+     andBool #range(0 <= DATA < (2 ^Int (DATA_LEN *Int 8)))
 
 endmodule
 
