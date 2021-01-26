@@ -312,22 +312,22 @@ tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE = DEFAULT
 tests/specs/mcd/functional-spec.k%: KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
 
 tests/%.run: tests/%
-	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) CHAINID=$(KEVM_CHAINID)                                                \
-	    $(KEVM_RUNNER) interpret $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                    \
+	$(KEVM_RUNNER) interpret $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                        \
+	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                     \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-interactive: tests/%
-	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) CHAINID=$(KEVM_CHAINID)                                                \
-	    $(KEVM_RUNNER) run $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                          \
+	$(KEVM_RUNNER) run $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                              \
+	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                     \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-expected: tests/% tests/%.expected
-	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) CHAINID=$(KEVM_CHAINID)                                                \
-	    $(KEVM_RUNNER) run $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                          \
+	$(KEVM_RUNNER) run $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                              \
+	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                     \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out

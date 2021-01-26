@@ -159,15 +159,15 @@ run_command="$1" ; shift
 
 if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
     echo "
-        usage: $0 run          [--backend (llvm|java|haskell)]           <pgm>  <K arg>*
-               $0 interpret    [--backend (llvm)] [--debug|--no-unparse] <pgm>  <interpreter arg>*
-               $0 interpret    [--backend (java|haskell)] [--no-unparse] <pgm>
-               $0 kast         [--backend (llvm|java|haskell)]           <pgm>  <output format> <K arg>*
-               $0 prove        [--backend (java|haskell)]                <spec> <def_module> <K arg>*
-               $0 search       [--backend (java|haskell)]                <pgm>  <pattern> <K arg>*
-               $0 klab-run                                               <pgm>  <K arg>*
-               $0 klab-prove                                             <spec> <def_module> <K arg>*
-               $0 klab-view                                              <spec>
+        usage: $0 run          [--backend (llvm|java|haskell)]           <KEVM_arg>* <pgm>  <K arg>*
+               $0 interpret    [--backend (llvm)] [--debug|--no-unparse] <KEVM_arg>* <pgm>  <interpreter arg>*
+               $0 interpret    [--backend (java|haskell)] [--no-unparse] <KEVM_arg>* <pgm>
+               $0 kast         [--backend (llvm|java|haskell)]           <KEVM_arg>* <pgm>  <output format> <K arg>*
+               $0 prove        [--backend (java|haskell)]                            <spec> <def_module> <K arg>*
+               $0 search       [--backend (java|haskell)]                            <pgm>  <pattern> <K arg>*
+               $0 klab-run                                                           <pgm>  <K arg>*
+               $0 klab-prove                                                         <spec> <def_module> <K arg>*
+               $0 klab-view                                                          <spec>
 
                $0 [help|--help|version|--version]
 
@@ -184,6 +184,9 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
 
            Note: <pgm> is a path to a file containing an EVM program/test.
                  <spec> is a K specification to be proved.
+                 <KEVM arg> is one of [--mode (NORMAL|VMTESTS)]
+                                      [--schedule (ISTANBUL|PETERSBURG|CONSTANTINOPLE|BYZANTIUM|SPURIOUS_DRAGON|TANGERINE_WHISTLE|HOMESTEAD|FRONTIER|DEFAULT)]
+                                      [--chainid NNN]
                  <K arg> is an argument you want to pass to K.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
                  <output format> is the format for Kast to output the term in.
@@ -207,6 +210,9 @@ dump=false
 unparse=true
 repl=false
 bug_report=false
+mode=NORMAL
+schedule=ISTANBUL
+chainid=1
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 kevm_port='8545'
@@ -222,6 +228,9 @@ while [[ $# -gt 0 ]]; do
         --bug-report)         bug_report=true           ; shift   ;;
         --backend)            backend="$2"              ; shift 2 ;;
         --backend-dir)        backend_dir="$2"          ; shift 2 ;;
+        --mode)               mode="$2"                 ; shift 2 ;;
+        --schedule)           schedule="$2"             ; shift 2 ;;
+        --chainid)            chainid="$2"              ; shift 2 ;;
         -p|--port)            kevm_port="$2"            ; shift 2 ;;
         -h|--host|--hostname) kevm_host="$2"            ; shift 2 ;;
         *)                    args+=("$1")              ; shift   ;;
@@ -242,9 +251,9 @@ if [[ "$run_file" == '-' ]]; then
 fi
 [[ -f "$run_file" ]] || fatal "File does not exist: $run_file"
 
-cMODE="\`${MODE:-NORMAL}\`(.KList)"
-cSCHEDULE="\`${SCHEDULE:-ISTANBUL}_EVM\`(.KList)"
-cCHAINID="${CHAINID:-1}"
+cMODE="\`${mode}\`(.KList)"
+cSCHEDULE="\`${schedule}_EVM\`(.KList)"
+cCHAINID="${chainid}"
 
 case "$run_command-$backend" in
     run-@(java|llvm|haskell)       ) run_krun                        "$@" ;;
