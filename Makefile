@@ -247,14 +247,13 @@ $(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out)
 
 install_bins := kevm
 
-install_libs := $(haskell_kompiled)                               \
-                $(llvm_kompiled)                                  \
-                $(java_kompiled)                                  \
-                kore-json.py                                      \
-                kast-json.py                                      \
-                release.md                                        \
-                version                                           \
-                $(patsubst %, include/kframework/%, $(ALL_FILES))
+install_libs := $(haskell_kompiled) \
+                $(llvm_kompiled)    \
+                $(java_kompiled)    \
+                kore-json.py        \
+                kast-json.py        \
+                release.md          \
+                version
 
 build_bins := $(install_bins)
 
@@ -282,13 +281,9 @@ build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_BIN)/$(KEVM_RUNNER)
 build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_BIN)/$(KEVM_RUNNER)
 build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_BIN)/$(KEVM_RUNNER)
 
-$(INSTALL_BIN)/%: $(KEVM_BIN)/%
-	install -D $< $@
-
-$(INSTALL_LIB)/%: $(KEVM_LIB)/%
-	install -D $< $@
-
-install: $(patsubst %, $(INSTALL_BIN)/%, $(install_bins)) $(patsubst %, $(INSTALL_LIB)/%, $(install_libs))
+install: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
+	install --directory -D $(KEVM_LIB) $(INSTALL_LIB)
+	install --directory -D $(KEVM_BIN) $(INSTALL_BIN)
 
 # Tests
 # -----
