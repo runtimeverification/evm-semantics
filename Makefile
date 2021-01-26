@@ -206,7 +206,7 @@ java_main_file     := driver.md
 java_main_filename := $(basename $(notdir $(java_main_file)))
 java_kompiled      := $(java_dir)/$(java_main_filename)-kompiled/compiled.bin
 
-$(KEVM_LIB)/$(java_kompiled): $(includes)
+$(KEVM_LIB)/$(java_kompiled): $(includes) $(K_JAR)
 	$(KOMPILE_JAVA) $(java_main_file)                     \
 	                --directory $(KEVM_LIB)/$(java_dir)   \
 	                --main-module $(java_main_module)     \
@@ -221,7 +221,7 @@ haskell_main_file      := driver.md
 haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
 haskell_kompiled       := $(haskell_dir)/$(haskell_main_filename)-kompiled/definition.kore
 
-$(KEVM_LIB)/$(haskell_kompiled): $(includes)
+$(KEVM_LIB)/$(haskell_kompiled): $(includes) $(K_JAR)
 	$(KOMPILE_HASKELL) $(haskell_main_file)                     \
 	                   --directory $(KEVM_LIB)/$(haskell_dir)   \
 	                   --main-module $(haskell_main_module)     \
@@ -236,7 +236,7 @@ llvm_main_file     := driver.md
 llvm_main_filename := $(basename $(notdir $(llvm_main_file)))
 llvm_kompiled      := $(llvm_dir)/$(llvm_main_filename)-kompiled/interpreter
 
-$(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out)
+$(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out) $(K_JAR)
 	$(KOMPILE_STANDALONE) $(llvm_main_file)                     \
 	                      --directory $(KEVM_LIB)/$(llvm_dir)   \
 	                      --main-module $(llvm_main_module)     \
