@@ -20,20 +20,14 @@ KEVM_RUNNER  := kevm
 KEVM_VERSION     ?= 0.2.0
 KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
 
-INSTALL_PREFIX := /usr
-INSTALL_BIN    ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
-INSTALL_LIB    ?= $(DESTDIR)$(INSTALL_PREFIX)/lib/kevm
-
-K_INSTALL := $(DESTDIR)$(INSTALL_PREFIX)/kframework
-K_JAR     := $(K_INSTALL)/lib/kframework/java/kernel-1.0-SNAPSHOT.jar
+INSTALL_PREFIX  := /usr
+INSTALL_BIN     ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
+INSTALL_LIB     ?= $(DESTDIR)$(INSTALL_PREFIX)/lib/kevm
+INSTALL_INCLUDE ?= $(INSTALL_LIB)/include
 
 K_SUBMODULE := $(DEPS_DIR)/k
-ifneq (,$(wildcard $(K_JAR)))
-    K_RELEASE ?= $(abspath $(K_INSTALL))
-else
-    K_RELEASE ?= $(dir $(shell which kompile))..
-endif
-K_BIN := $(K_RELEASE)/bin
+K_INSTALL   := $(DESTDIR)$(INSTALL_PREFIX)/kframework
+K_JAR       := $(K_INSTALL)/lib/kframework/java/kernel-1.0-SNAPSHOT.jar
 
 LIBRARY_PATH         := $(LOCAL_LIB)
 C_INCLUDE_PATH       += :$(BUILD_LOCAL)/include
@@ -178,7 +172,7 @@ HASKELL_KOMPILE_OPTS ?=
 KOMPILE_HASKELL := kompile --debug --backend haskell --md-selector "$(tangle_haskell)" \
                    $(KOMPILE_OPTS) $(HASKELL_KOMPILE_OPTS)
 
-STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_RELEASE)/include/kllvm  \
+STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_INSTALL)/include/kllvm  \
                            $(PLUGIN_SUBMODULE)/plugin-c/plugin_util.cpp \
                            $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp      \
                            $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp      \
