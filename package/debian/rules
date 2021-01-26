@@ -18,11 +18,11 @@
 
 override_dh_auto_build:
 	git submodule update --init --recursive
-	make RELEASE=true deps  -j8 DESTDIR="$(CURDIR)/debian/kevm" INSTALL_PREFIX="/usr"
-	make RELEASE=true build -j8 DESTDIR="$(CURDIR)/debian/kevm" INSTALL_PREFIX="/usr"
+	make RELEASE=true deps  -j8
+	make RELEASE=true build -j8
 
 override_dh_auto_install:
-	make RELEASE=true DESTDIR="$(CURDIR)/debian/kevm" INSTALL_PREFIX="/usr" install -j8
+	make DESTDIR="$(CURDIR)/debian/kevm" INSTALL_PREFIX="/usr" install -j8
 
 override_dh_auto_test:
 	true
