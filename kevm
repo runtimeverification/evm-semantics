@@ -24,6 +24,8 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
 
+export KLAB_OUT="${KLAB_OUT:-~/.klab}"
+
 # Runners
 # -------
 
