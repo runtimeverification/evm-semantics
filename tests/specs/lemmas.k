@@ -87,12 +87,6 @@ module LEMMAS
 
     rule N /Int 1 => N  [simplification]
 
-    //for #bufStrict simplification
-    rule 0 <Int 2 ^Int I           => true
-      requires 0 <=Int I                                                        [simplification]
-    rule 0 <=Int I *Int 8          => 0 <=Int I                                 [simplification]
-    rule 0 <=Int #ceil32(I) -Int I => true                                      [simplification]
-
 endmodule
 
 module LEMMAS-JAVA [symbolic, kast]
@@ -272,6 +266,12 @@ module LEMMAS-JAVA [symbolic, kast]
     rule BA:ByteArray     ==K #buf( 32, DATA ) => #buf( 32, DATA ) ==K BA       requires #isConcrete(BA) [simplification]
     rule #buf( 32, DATA ) ==K BA:ByteArray     => DATA ==Int #asInteger(BA)
       requires #sizeByteArray(BA) <=Int 32                                      andBool  #isConcrete(BA) [simplification]
+
+    //For #bufStrict simplification in benchmarks
+    rule 0 <Int 2 ^Int I           => true
+      requires 0 <=Int I                                                        [simplification]
+    rule 0 <=Int I *Int 8          => 0 <=Int I                                 [simplification]
+    rule 0 <=Int #ceil32(I) -Int I => true                                      [simplification]
 
 endmodule
 
