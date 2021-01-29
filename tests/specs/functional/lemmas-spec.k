@@ -14,6 +14,7 @@ module VERIFICATION
 endmodule
 
 module LEMMAS-SPEC
+    imports LEMMAS-JAVA-SPEC
     imports VERIFICATION
 
  // bool2Word
@@ -120,6 +121,11 @@ module LEMMAS-SPEC
     //Required for ERC20 + solc5 + constructor call
     claim <k> runLemma ( 160 ==Int #asWord ( #buf( 4, 160 ) ++ ( #buf( 32 , _BUF ) [ 0 .. 28 ] ) ) >>Int 224 )
            => doneLemma( true ) ... </k>
+
+endmodule
+
+module LEMMAS-JAVA-SPEC [symbolic, kast]
+    imports VERIFICATION
 
     claim <k> runLemma ( #bufStrict( #ceil32(LEN) -Int LEN, 0 ) ) => doneLemma( #buf( #ceil32(LEN) -Int LEN, 0 ) ) ... </k>
 
