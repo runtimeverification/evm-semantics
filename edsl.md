@@ -11,8 +11,7 @@ requires "evm.md"
 
 module EDSL
     imports EVM
-    imports BUFSTRICT-SYNTAX
-    imports BUFSTRICT-HASKELL
+    imports BUF
 ```
 
 ### ABI Call Data
@@ -178,21 +177,6 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     syntax ByteArray ::= #encBytes ( Int , ByteArray ) [function]
  // -------------------------------------------------------------
     rule #encBytes(N, BS) => #enc(#uint256(N)) ++ BS ++ #bufStrict(#ceil32(N) -Int N, 0)
-
-    //Byte array buffer. Lemmas defined in evm-data-symbolic.k
-    //Appears in this form only when when #buf is first created, as part of `#enc` logic.
-    // SIZE, DATA // left zero padding
-    // Definition in module BUFSTRICT-SYNTAX
-    //syntax ByteArray ::= #bufStrict ( Int , Int ) [function]
- // ---------------------------------------------------------------
-    rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA)
-      requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
-
-    syntax ByteArray ::= #buf ( Int , Int ) [function, functional, smtlib(buf)]
-    // Workaround to have #buf functional is to extend the domain of the original #buf by interpreting DATA modulo 2 ^Int (SIZE *Int 8).
-    // Terms #buf are always initially created from #bufStrict
-    rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA %Int (2 ^Int (SIZE *Int 8))))
-      [concrete]
 ```
 
 ```k
@@ -375,15 +359,47 @@ If the data is at most 31 bytes long, it is stored in the higher-order bytes (le
 ```k
 endmodule
 
-module BUFSTRICT-SYNTAX
+module BUF-SYNTAX
     imports EVM
+```
 
+Both `#bufStrict(SIZE, DATA)` and `#buf(SIZE, DATA)` represents a symbolic byte array of length `SIZE` bytes, left-padded with zeroes.
+Version `#bufStrict` is partial and only defined when `DATA` is in the range given by `SIZE`.
+It rewrites to `#buf` when data is in range, and is expected to immediately evaluate into `#buf` in all contexts.
+Version `#buf` is total and artificially defined `modulo 2 ^Int (SIZE *Int 8)`.
+This division is required to facilitate symbolic reasoning in Haskell backend, because Haskell has limitations
+when dealing with partial functions.
+
+**Usage:** All symbolic byte arrays must be originally created as `#bufStrict`.
+This ensures `#buf` is never present in out of range mode.
+For this, definition rule RHS should always use `#bufStrict` when array is first created, but may use `#buf` when array
+is just carried on from LHS without changes. Definition rule LHS should only use `#buf`.
+Claims should always use `#bufStrict` in LHS and `#buf` in RHS.
+
+```k
     syntax ByteArray ::= #bufStrict ( Int , Int ) [function]
+    syntax ByteArray ::= #buf ( Int , Int ) [function, functional, smtlib(buf)]
 
 endmodule
 
-module BUFSTRICT-HASKELL [symbolic, kore]
-    imports BUFSTRICT-SYNTAX
+module BUF
+    imports BUF-JAVA
+    imports BUF-HASKELL
+
+    rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA)
+      requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
+
+    rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA %Int (2 ^Int (SIZE *Int 8))))
+      [concrete]
+
+endmodule
+
+module BUF-JAVA [symbolic, kast]
+    imports BUF-SYNTAX
+endmodule
+
+module BUF-HASKELL [symbolic, kore]
+    imports BUF-SYNTAX
 
     rule #bufStrict(_, _) => #Bottom              [owise]
 
