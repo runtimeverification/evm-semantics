@@ -358,7 +358,12 @@ If the data is at most 31 bytes long, it is stored in the higher-order bytes (le
 
 ```k
 endmodule
+```
 
+Byte-Buffer Abstraction
+-----------------------
+
+```k
 module BUF-SYNTAX
     imports EVM
 ```
