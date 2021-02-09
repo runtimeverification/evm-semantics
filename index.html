@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta name="keywords" content="runtime, verification, rv, k" />
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="./assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | evm-semantics</title>
+
+<!-- <base href="/k/" /> -->
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="./assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="./assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="./index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/kframework/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="./downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="./">Homepage</a>
+      <a class="bd-toc-link" href="./INSTALL">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h1 id="kevm%3A-semantics-of-evm-in-k">KEVM: Semantics of EVM in K</h1>
+<p>In this repository we provide a model of the EVM in K.</p>
+<h2 id="documentation%2Fsupport">Documentation/Support</h2>
+<p>These may be useful for learning KEVM and K (newest to oldest):</p>
+<ul>
+<li><a href="https://jellopaper.org" target="_blank" rel="noopener">Jello Paper</a>, generated using <a href="http://sphinx-doc.org" target="_blank" rel="noopener">Sphinx Documentation Generation</a>.</li>
+<li><a href="https://www.youtube.com/watch?v=tIq_xECoicQNov" target="_blank" rel="noopener">20 minute tour of the semantics</a> at <a href="https://ethereumfoundation.org/devcon3/" target="_blank" rel="noopener">2017 Devcon3</a>.</li>
+<li><a href="http://hdl.handle.net/2142/97207" target="_blank" rel="noopener">KEVM 1.0 technical report</a>, especially sections 3 and 5.</li>
+<li><a href="http://fsl.cs.illinois.edu/index.php/KEVM:_A_Complete_Semantics_of_the_Ethereum_Virtual_Machine" target="_blank" rel="noopener">KEVM Paper at CSF&apos;18/FLoC</a>.</li>
+</ul>
+<p>To get support for KEVM, please join our <a href="https://riot.im/app/#/room/#k:matrix.org" target="_blank" rel="noopener">Riot Room</a>.</p>
+<h2 id="repository-structure">Repository Structure</h2>
+<p>The following files constitute the KEVM semantics:</p>
+<ul>
+<li><a href="network/">network.md</a> provides the status codes which are reported to an Ethereum client on execution exceptions.</li>
+<li><a href="json-rpc/">json-rpc.md</a> is an implementation of JSON RPC in K.</li>
+<li><a href="evm-types/">evm-types.md</a> provides the (functional) data of EVM (256 bit words, wordstacks, etc...).</li>
+<li><a href="serialization/">serialization.md</a> provides helpers for parsing and unparsing data (hex strings, recursive-length prefix, merkle trees, etc.).</li>
+<li><a href="evm/">evm.md</a> is the main KEVM semantics, containing the configuration and transition rules of EVM.</li>
+</ul>
+<p>These additional files extend the semantics to make the repository more useful:</p>
+<ul>
+<li><a href="edsl/">edsl.md</a> defines high-level notations of <a href="https://github.com/runtimeverification/verified-smart-contracts/blob/master/resources/edsl.md" target="_blank" rel="noopener">eDSL</a>, a domain-specific language for EVM specifications, for formal verification of EVM bytecode using <a href="http://fsl.cs.illinois.edu/FSL/papers/2016/stefanescu-park-yuwen-li-rosu-2016-oopsla/stefanescu-park-yuwen-li-rosu-2016-oopsla-public.pdf" target="_blank" rel="noopener">K Reachability Logic Prover</a>.</li>
+<li><a href="state-loader/">state-loader.md</a> provides functionality for EVM initialization and setup.</li>
+<li><a href="driver/">driver.md</a> is an execution harness for KEVM, providing a simple language for describing tests/programs.</li>
+</ul>
+<h2 id="installing%2Fbuilding">Installing/Building</h2>
+<h3 id="k-backends">K Backends</h3>
+<p>There are three backends of K available: LLVM (default) for concrete execution and Java (default) and Haskell for symbolic execution.
+This repository generates the build-products for each backend in <code>.build/defn/</code>.</p>
+<h3 id="system-dependencies">System Dependencies</h3>
+<p>The following are needed for building/running KEVM:</p>
+<ul>
+<li><a href="https://git-scm.com/" target="_blank" rel="noopener">git</a></li>
+<li>GNU <a href="https://www.gnu.org/software/bison/" target="_blank" rel="noopener">Bison</a>, <a href="https://github.com/westes/flex" target="_blank" rel="noopener">Flex</a>, and <a href="http://www.gnu.org/software/autoconf/" target="_blank" rel="noopener">Autoconf</a>.</li>
+<li>GNU <a href="http://www.mpfr.org/" target="_blank" rel="noopener">libmpfr</a> and <a href="https://www.gnu.org/software/libtool/" target="_blank" rel="noopener">libtool</a>.</li>
+<li>Java 8 JDK (eg. <a href="http://openjdk.java.net/" target="_blank" rel="noopener">OpenJDK</a>)</li>
+</ul>
+<p>For the exact dependencies check the Dockerfile, but they should look something like this.
+On Ubuntu &gt;= 18.04 (for example):</p>
+<pre class="language-text"><code>sudo apt-get install --yes                                                       \
+            autoconf bison clang-8 cmake curl flex gcc jq libboost-test-dev      \
+            libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev \
+            libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev        \
+            lld-8 llvm-8-tools make maven netcat-openbsd openjdk-11-jdk          \
+            pkg-config python3 python-pygments python-recommonmark               \
+            python-sphinx rapidjson-dev time z3 zlib1g-dev
+</code></pre>
+<p>On Ubuntu &lt; 18.04, you&apos;ll need to skip <code>libsecp256k1-dev</code> and instead build it from source (via our <code>Makefile</code>):</p>
+<pre class="language-text"><code>make libsecp256k1
+</code></pre>
+<p>On ArchLinux:</p>
+<pre class="language-text"><code>sudo pacman -S                                               \
+    base base-devel boost clang cmake crypto++ curl git gmp  \
+    gflags jdk-openjdk jemalloc libsecp256k1 lld llvm maven  \
+    mpfr python stack yaml-cpp z3 zlib
+</code></pre>
+<p>In addition, you&apos;ll need the <code>glog-git</code> AUR package: <a href="https://aur.archlinux.org/packages/glog-git/" target="_blank" rel="noopener">https://aur.archlinux.org/packages/glog-git/</a>.</p>
+<p>On OSX, using <a href="https://brew.sh/" target="_blank" rel="noopener">Homebrew</a>, after installing the command line tools package:</p>
+<pre class="language-text"><code>brew tap homebrew/cask
+brew install --cask java
+brew install automake libtool gmp mpfr pkg-config maven z3 libffi openssl
+make libsecp256k1
+</code></pre>
+<p>NOTE: a previous version of these instructions required the user to run <code>brew link flex --force</code>.
+After fetching this revision, you should first run <code>brew unlink flex</code>, as it is no longer necessary and will cause an error if you have the homebrew version of flex installed instead of the xcode command line tools version.</p>
+<ul>
+<li><a href="https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade" target="_blank" rel="noopener">Haskell Stack</a>.
+Note that the version of the <code>stack</code> tool provided by your package manager might not be recent enough.
+Please follow installation instructions from the Haskell Stack website linked above.</li>
+</ul>
+<p>To upgrade <code>stack</code> (if needed):</p>
+<pre class="language-text"><code>stack upgrade
+export PATH=$HOME/.local/bin:$PATH
+</code></pre>
+<h3 id="build-dependencies">Build Dependencies</h3>
+<h4 id="k-framework">K Framework</h4>
+<p>The <code>Makefile</code> and <code>kevm</code> will work with either a (i) globally installed K, or (ii) a K submodule included in this repository.
+If you want to use the K submodule, follow these instructions get the submodule and build K:</p>
+<pre class="language-text"><code>git submodule update --init --recursive -- deps/k
+make k-deps
+</code></pre>
+<p>If you don&apos;t need either the LLVM or Haskell backend, there are flags to skip them:</p>
+<pre class="language-text"><code>make k-deps SKIP_LLVM=true SKIP_HASKELL=true
+</code></pre>
+<h4 id="blockchain-plugin">Blockchain Plugin</h4>
+<p>You also need to get the blockchain plugin submodule and install it.</p>
+<pre class="language-text"><code>git submodule update --init --recursive -- deps/plugin
+make plugin-deps
+</code></pre>
+<h3 id="building">Building</h3>
+<p>Finally, you can build the semantics.</p>
+<pre class="language-text"><code>make build
+</code></pre>
+<h2 id="example-usage">Example Usage</h2>
+<p>After building the definition, you can run the definition using <code>./kevm</code>.
+Read the <code>./kevm</code> script for examples of the actual invocations of <code>krun</code> that <code>./kevm</code> makes.</p>
+<p>Run the file <code>tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json</code>:</p>
+<pre class="language-text"><code>./kevm run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
+</code></pre>
+<p>To run proofs, you can similarly use <code>./kevm</code>.
+For example, to prove one of the specifications:</p>
+<pre class="language-text"><code>./kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION
+</code></pre>
+<h2 id="running-tests">Running Tests</h2>
+<p>The tests are run using the supplied <code>Makefile</code>.
+First, run <code>make split-tests</code> to generate some of the tests from the markdown files.</p>
+<p>The following subsume all other tests:</p>
+<ul>
+<li><code>make test</code>: All of the quick tests.</li>
+<li><code>make test-all</code>: All of the quick and slow tests.</li>
+</ul>
+<p>These are the individual test-suites (all of these can be suffixed with <code>-all</code> to also run slow tests):</p>
+<ul>
+<li><code>make test-vm</code>: VMTests from the <a href="https://github.com/ethereum/tests" target="_blank" rel="noopener">Ethereum Test Set</a>.</li>
+<li><code>make test-bchain</code>: Subset of BlockchainTests from the <a href="https://github.com/ethereum/tests" target="_blank" rel="noopener">Ethereum Test Set</a>.</li>
+<li><code>make test-proof</code>: Proofs from the <a href="https://github.com/runtimeverification/verified-smart-contracts" target="_blank" rel="noopener">Verified Smart Contracts</a>.</li>
+<li><code>make test-interactive</code>: Tests of the <code>./kevm</code> command.</li>
+</ul>
+<p>When running tests with the <code>Makefile</code>, you can specify the <code>TEST_CONCRETE_BACKEND</code> (for concrete tests), or <code>TEST_SYMBOLIC_BACKEND</code> (for proofs).</p>
+<h2 id="media">Media</h2>
+<p>This repository can build two pieces of documentation for you, the <a href="https://jellopaper.org" target="_blank" rel="noopener">Jello Paper</a> and the <a href="https://ethereumfoundation.org/devcon3/" target="_blank" rel="noopener">2017 Devcon3</a> presentation.</p>
+<h3 id="system-dependencies-1">System Dependencies</h3>
+<p>For the presentations in the <code>media</code> directory, you&apos;ll need <code>pdflatex</code>, commonly provided with <code>texlive-full</code>, and <code>pandoc</code>.</p>
+<pre class="language-text"><code>sudo apt install texlive-full pandoc
+</code></pre>
+<h3 id="building-1">Building</h3>
+<p>To build all the PDFs (presentations and reports) available in the <code>media/</code> directory, use:</p>
+<pre class="language-text"><code>make media
+</code></pre>
+<h1 id="resources">Resources</h1>
+<ul>
+<li><a href="https://github.com/ethereum/yellowpaper" target="_blank" rel="noopener">EVM Yellowpaper</a>: Original specification of EVM.</li>
+<li><a href="https://github.com/pirapira/eth-isabelle" target="_blank" rel="noopener">LEM Semantics of EVM</a></li>
+</ul>
+<p>For more information about <a href="http://kframework.org" target="_blank" rel="noopener">The K Framework</a>, refer to these sources:</p>
+<ul>
+<li><a href="https://github.com/kframework/k/tree/master/k-distribution/tutorial" target="_blank" rel="noopener">The K Tutorial</a></li>
+<li><a href="http://fsl.cs.illinois.edu/index.php/Semantics-Based_Program_Verifiers_for_All_Languages" target="_blank" rel="noopener">Semantics-Based Program Verifiers for All Languages</a></li>
+<li><a href="http://fsl.cs.illinois.edu/index.php/Reachability_Logic_in_K" target="_blank" rel="noopener">Reachability Logic Resources</a></li>
+<li><a href="http://fsl.cs.illinois.edu/index.php/Matching_Logic" target="_blank" rel="noopener">Matching Logic Resources</a></li>
+<li><a href="http://dl.acm.org/citation.cfm?id=208700" target="_blank" rel="noopener">Logical Frameworks</a>: Discussion of logical frameworks.</li>
+</ul>
+</body></html></div>
+        </main>
+      </div>
+    </div>
+<footer class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-2 mb-md-0 mb-4">
+        <span class="pr-md-5 pr-0 py-3">
+          <a href="https://runtimeverification.com" target="_blank">
+            <picture>
+              <source
+                srcset="./assets/img/rv-logo-dark.png"
+                media="(prefers-color-scheme: dark)"
+              />
+              <img
+                class="pr-3 footer-logo"
+                src="./assets/img/rv-logo.png"
+                alt="Runtime Verification Inc logo"
+              />
+            </picture>
+          </a>
+        </span>
+      </div>
+      <div class="col-md-6 mb-md-0 mb-4"></div>
+      <div class="col-md-4 text-md-right">
+        <p class="copyright">
+          &copy; 2020 Runtime Verification Inc. All right reserved.
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="./assets/js/index.js"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-QL0D8HRYFW");
+    </script>
+  </body>
+</html>
