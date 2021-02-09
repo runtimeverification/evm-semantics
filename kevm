@@ -31,11 +31,11 @@ export KLAB_OUT
 # User Commands
 
 run_krun() {
-    krun --directory "$backend_dir"                                      \
-        -cSCHEDULE="$cSCHEDULE"                   -pSCHEDULE='printf %s' \
-        -cMODE="$cMODE"                           -pMODE='printf %s'     \
-        -cCHAINID="#token(\"$cCHAINID\",\"Int\")" -pCHAINID='printf %s'  \
-        "$run_file" "$@"
+    krun-legacy --directory "$backend_dir"                                       \
+                -cSCHEDULE="$cSCHEDULE"                   -pSCHEDULE='printf %s' \
+                -cMODE="$cMODE"                           -pMODE='printf %s'     \
+                -cCHAINID="#token(\"$cCHAINID\",\"Int\")" -pCHAINID='printf %s'  \
+                "$run_file" "$@"
 }
 
 run_kast() {
