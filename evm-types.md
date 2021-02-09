@@ -486,8 +486,8 @@ Most of EVM data is held in local memory.
  // -------------------------------------------------------------------------
     rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ] [concrete]
 
-    syntax Memory ::= ".Memory" [function]
- // --------------------------------------
+    syntax Memory ::= ".Memory"
+ // ---------------------------
     rule .Memory => .Bytes [macro]
 
     syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
@@ -509,8 +509,8 @@ Most of EVM data is held in local memory.
     rule [#rangeAux.base]: #range( _,  _END, WIDTH, WS) => WS requires notBool 0 <Int WIDTH
     rule [#rangeAux.rec]:  #range(WM,   END => END -Int 1, WIDTH => WIDTH -Int 1, WS => #lookupMemory(WM, END) : WS) requires 0 <Int WIDTH
 
-    syntax Memory ::= ".Memory" [function]
- // --------------------------------------
+    syntax Memory ::= ".Memory"
+ // ---------------------------
     rule .Memory => .Map [macro]
 
     syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
