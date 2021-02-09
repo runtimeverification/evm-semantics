@@ -5,14 +5,18 @@ requires "../infinite-gas.k"
 requires "word-pack.k"
 
 module VERIFICATION
-    imports VERIFICATION-HASKELL
-    imports VERIFICATION-JAVA
-endmodule
-
-module VERIFICATION-SYNTAX
-    imports LEMMAS
     imports DSS-BIN-RUNTIME
     imports DSS-STORAGE
+    imports LEMMAS-MCD
+endmodule
+
+module LEMMAS-MCD
+    imports LEMMAS-MCD-HASKELL
+    imports LEMMAS-MCD-JAVA
+endmodule
+
+module LEMMAS-MCD-SYNTAX
+    imports LEMMAS
 
     syntax Bool ::= #notPrecompileAddress ( Int ) [function]
  // --------------------------------------------------------
@@ -47,8 +51,8 @@ module VERIFICATION-SYNTAX
 
 endmodule
 
-module VERIFICATION-HASKELL [symbolic, kore]
-    imports VERIFICATION-COMMON
+module LEMMAS-MCD-HASKELL [symbolic, kore]
+    imports LEMMAS-MCD-COMMON
 
     // ### flapper-yank-pass-rough
 
@@ -65,8 +69,8 @@ module VERIFICATION-HASKELL [symbolic, kore]
 
 endmodule
 
-module VERIFICATION-JAVA [symbolic, kast]
-    imports VERIFICATION-COMMON
+module LEMMAS-MCD-JAVA [symbolic, kast]
+    imports LEMMAS-MCD-COMMON
 
     // ### flapper-yank-pass-rough
 
@@ -85,8 +89,8 @@ module VERIFICATION-JAVA [symbolic, kast]
 
 endmodule
 
-module VERIFICATION-COMMON
-    imports VERIFICATION-SYNTAX
+module LEMMAS-MCD-COMMON
+    imports LEMMAS-MCD-SYNTAX
     imports INFINITE-GAS
     imports WORD-PACK
 
