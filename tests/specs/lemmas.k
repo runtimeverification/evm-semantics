@@ -271,8 +271,8 @@ module LEMMAS-JAVA [symbolic, kast]
     rule 0 <Int 2 ^Int I           => true
       requires 0 <=Int I                                                        [simplification]
     rule 0 <=Int I *Int 8          => 0 <=Int I                                 [simplification]
-    rule 0 <=Int #ceil32(I) -Int I => true                                      [simplification]
-      requires 0 <=Int I
+    rule 0 <=Int #ceil32(I) -Int I => true
+      requires 0 <=Int I                                                        [simplification]
 
 endmodule
 
