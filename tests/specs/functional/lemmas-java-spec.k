@@ -17,5 +17,6 @@ module LEMMAS-JAVA-SPEC
     imports VERIFICATION
 
     claim <k> runLemma ( #bufStrict( #ceil32(LEN) -Int LEN, 0 ) ) => doneLemma( #buf( #ceil32(LEN) -Int LEN, 0 ) ) ... </k>
+      requires 0 <=Int LEN
 
 endmodule
