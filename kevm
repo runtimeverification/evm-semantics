@@ -31,10 +31,26 @@ export KLAB_OUT
 # User Commands
 
 run_krun() {
-    krun --directory "$backend_dir"                  \
-         -cSCHEDULE="$cSCHEDULE_kore" -pSCHEDULE=cat \
-         -cMODE="$cMODE_kore"         -pMODE=cat     \
-         -cCHAINID="$cCHAINID_kore"   -pCHAINID=cat  \
+    local cschedule cmode cchainid parser
+
+    case "$backend" in
+        java)
+            cschedule=$cSCHEDULE_kast
+            cmode=$cMODE_kast
+            cchainid=$cCHAINID_kast
+            parser='printf %s'
+            ;;
+        *)
+            cschedule=$cSCHEDULE_kore
+            cmode=$cMODE_kore
+            cchainid=$cCHAINID_kore
+            parser='cat'
+            ;;
+    esac
+    krun --directory "$backend_dir"                   \
+         -cSCHEDULE="$cschedule" -pSCHEDULE="$parser" \
+         -cMODE="$cmode"         -pMODE="$parser"     \
+         -cCHAINID="$cchainid"   -pCHAINID="$parser"  \
          "$run_file" "$@"
 }
 
