@@ -11,6 +11,7 @@ requires "evm.md"
 
 module EDSL
     imports EVM
+    imports BUF
 ```
 
 ### ABI Call Data
@@ -157,16 +158,16 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     syntax ByteArray ::= #enc ( TypedArg ) [function]
  // -------------------------------------------------
     // static Type
-    rule #enc(#uint160( DATA )) => #buf(32, #getValue(#uint160( DATA )))
-    rule #enc(#address( DATA )) => #buf(32, #getValue(#address( DATA )))
-    rule #enc(#uint256( DATA )) => #buf(32, #getValue(#uint256( DATA )))
-    rule #enc( #uint48( DATA )) => #buf(32, #getValue( #uint48( DATA )))
-    rule #enc( #uint16( DATA )) => #buf(32, #getValue( #uint16( DATA )))
-    rule #enc(  #uint8( DATA )) => #buf(32, #getValue(  #uint8( DATA )))
-    rule #enc( #int256( DATA )) => #buf(32, #getValue( #int256( DATA )))
-    rule #enc( #int128( DATA )) => #buf(32, #getValue( #int128( DATA )))
-    rule #enc(#bytes32( DATA )) => #buf(32, #getValue(#bytes32( DATA )))
-    rule #enc(   #bool( DATA )) => #buf(32, #getValue(   #bool( DATA )))
+    rule #enc(#uint160( DATA )) => #bufStrict(32, #getValue(#uint160( DATA )))
+    rule #enc(#address( DATA )) => #bufStrict(32, #getValue(#address( DATA )))
+    rule #enc(#uint256( DATA )) => #bufStrict(32, #getValue(#uint256( DATA )))
+    rule #enc( #uint48( DATA )) => #bufStrict(32, #getValue( #uint48( DATA )))
+    rule #enc( #uint16( DATA )) => #bufStrict(32, #getValue( #uint16( DATA )))
+    rule #enc(  #uint8( DATA )) => #bufStrict(32, #getValue(  #uint8( DATA )))
+    rule #enc( #int256( DATA )) => #bufStrict(32, #getValue( #int256( DATA )))
+    rule #enc( #int128( DATA )) => #bufStrict(32, #getValue( #int128( DATA )))
+    rule #enc(#bytes32( DATA )) => #bufStrict(32, #getValue(#bytes32( DATA )))
+    rule #enc(   #bool( DATA )) => #bufStrict(32, #getValue(   #bool( DATA )))
 
     // dynamic Type
     rule #enc(        #bytes(BS)) => #encBytes(#sizeByteArray(BS), BS)
@@ -175,15 +176,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax ByteArray ::= #encBytes ( Int , ByteArray ) [function]
  // -------------------------------------------------------------
-    rule #encBytes(N, BS) => #enc(#uint256(N)) ++ BS ++ #buf(#ceil32(N) -Int N, 0)
-
-    //Byte array buffer. Lemmas defined in evm-data-symbolic.k
-    // SIZE, DATA // left zero padding
-    syntax ByteArray ::= #buf ( Int , Int ) [function, smtlib(buf)]
- // ---------------------------------------------------------------
-    rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA))
-      requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
-      [concrete]
+    rule #encBytes(N, BS) => #enc(#uint256(N)) ++ BS ++ #bufStrict(#ceil32(N) -Int N, 0)
 ```
 
 ```k
@@ -229,7 +222,7 @@ The above notation denotes (i.e., is translated to) the following EVM log data s
   : CALLER_ID                                                                                                                                                                                                                                                |/|
   : TO_ID                                                                                                                                                                                                                                                    | |
   : .WordStack                                                                                                                                                                                                                                               | |
-  | #buf(32, VALUE)                                                                                                                                                                                                                           | |
+  | #bufStrict(32, VALUE)                                                                                                                                                                                                                           | |
   }
 ```
 
@@ -333,7 +326,7 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
     syntax ByteArray ::= intList2ByteArray( IntList ) [function]
  // ------------------------------------------------------------
     rule intList2ByteArray(.IntList) => .ByteArray
-    rule intList2ByteArray(V VS)     => #buf(32, V) ++ intList2ByteArray(VS)
+    rule intList2ByteArray(V VS)     => #bufStrict(32, V) ++ intList2ByteArray(VS)
       requires 0 <=Int V andBool V <Int pow256
 
     syntax IntList ::= byteStack2IntList ( ByteArray )       [function]
@@ -364,5 +357,56 @@ If the data is at most 31 bytes long, it is stored in the higher-order bytes (le
 ```
 
 ```k
+endmodule
+```
+
+Byte-Buffer Abstraction
+-----------------------
+
+```k
+module BUF-SYNTAX
+    imports EVM
+```
+
+Both `#bufStrict(SIZE, DATA)` and `#buf(SIZE, DATA)` represents a symbolic byte array of length `SIZE` bytes, left-padded with zeroes.
+Version `#bufStrict` is partial and only defined when `DATA` is in the range given by `SIZE`.
+It rewrites to `#buf` when data is in range, and is expected to immediately evaluate into `#buf` in all contexts.
+Version `#buf` is total and artificially defined `modulo 2 ^Int (SIZE *Int 8)`.
+This division is required to facilitate symbolic reasoning in Haskell backend, because Haskell has limitations
+when dealing with partial functions.
+
+**Usage:** All symbolic byte arrays must be originally created as `#bufStrict`.
+This ensures `#buf` is never present in out of range mode.
+For this, definition rule RHS should always use `#bufStrict` when array is first created, but may use `#buf` when array
+is just carried on from LHS without changes. Definition rule LHS should only use `#buf`.
+Claims should always use `#bufStrict` in LHS and `#buf` in RHS.
+
+```k
+    syntax ByteArray ::= #bufStrict ( Int , Int ) [function]
+    syntax ByteArray ::= #buf ( Int , Int ) [function, functional, smtlib(buf)]
+
+endmodule
+
+module BUF
+    imports BUF-JAVA
+    imports BUF-HASKELL
+
+    rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA)
+      requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
+
+    rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA %Int (2 ^Int (SIZE *Int 8))))
+      [concrete]
+
+endmodule
+
+module BUF-JAVA [symbolic, kast]
+    imports BUF-SYNTAX
+endmodule
+
+module BUF-HASKELL [symbolic, kore]
+    imports BUF-SYNTAX
+
+    rule #bufStrict(_, _) => #Bottom              [owise]
+
 endmodule
 ```
