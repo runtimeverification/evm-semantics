@@ -2168,17 +2168,17 @@ There are several helpers for calculating gas (most of them also specified in th
 ```
 
 ```{.k .bytes}
-    syntax Int ::= G0 ( Schedule , ByteArray , Bool )      [function]
-                 | G0 ( Schedule , ByteArray , Int , Int ) [function, klabel(G0data)]
-                 | G0 ( Schedule , Bool )                  [function, klabel(G0base)]
- // ---------------------------------------------------------------------------------
-    rule G0(SCHED, WS, B) => G0(SCHED, WS, 0, #sizeByteArray(WS)) +Int G0(SCHED, B)
+    syntax Int ::= G0 ( Schedule , ByteArray , Bool )           [function]
+                 | G0 ( Schedule , ByteArray , Int , Int, Int ) [function, klabel(G0data)]
+                 | G0 ( Schedule , Bool )                       [function, klabel(G0base)]
+ // --------------------------------------------------------------------------------------
+    rule G0(SCHED, WS, B) => G0(SCHED, WS, 0, #sizeByteArray(WS), 0) +Int G0(SCHED, B)
 
     rule G0(SCHED, true)  => Gtxcreate    < SCHED >
     rule G0(SCHED, false) => Gtransaction < SCHED >
 
-    rule G0(    _,  _, I, I) => 0
-    rule G0(SCHED, WS, I, J) => #if WS[I] ==Int 0 #then Gtxdatazero < SCHED > #else Gtxdatanonzero < SCHED > #fi +Int G0(SCHED, WS, I +Int 1, J) [owise]
+    rule G0(    _,  _, I, I, R) => R
+    rule G0(SCHED, WS, I, J, R) => G0(SCHED, WS, I +Int 1, J, R +Int #if WS[I] ==Int 0 #then Gtxdatazero < SCHED > #else Gtxdatanonzero < SCHED > #fi) [owise]
 ```
 
 ```k
