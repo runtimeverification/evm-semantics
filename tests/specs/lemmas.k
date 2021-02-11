@@ -267,6 +267,13 @@ module LEMMAS-JAVA [symbolic, kast]
     rule #buf( 32, DATA ) ==K BA:ByteArray     => DATA ==Int #asInteger(BA)
       requires #sizeByteArray(BA) <=Int 32                                      andBool  #isConcrete(BA) [simplification]
 
+    //For #bufStrict simplification in benchmarks
+    rule 0 <Int 2 ^Int I           => true
+      requires 0 <=Int I                                                        [simplification]
+    rule 0 <=Int I *Int 8          => 0 <=Int I                                 [simplification]
+    rule 0 <=Int #ceil32(I) -Int I => true
+      requires 0 <=Int I                                                        [simplification]
+
 endmodule
 
 module LEMMAS-HASKELL [symbolic, kore]

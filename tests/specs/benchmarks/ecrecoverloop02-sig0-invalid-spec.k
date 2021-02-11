@@ -23,7 +23,7 @@ module ECRECOVERLOOP02-SIG0-INVALID-SPEC
           <id> CONTRACT_ID </id> // this
           <caller> MSG_SENDER </caller> // msg.sender
           <callData> #abiCallData2("execute(bytes32,bytes,uint8[2],bytes32[2],bytes32[2])",
-#bytes32(HASH), #bytes(#buf(DATA_LEN,DATA)),
+#bytes32(HASH), #bytes(#bufStrict(DATA_LEN,DATA)),
 #uint8(SIGV0), #uint8(SIGV1),
 #bytes32(SIGR0), #bytes32(SIGR1),
 #bytes32(SIGS0), #bytes32(SIGS1)) </callData> // msg.data
@@ -134,6 +134,7 @@ _
      andBool #rangeBytes(32, SIGS0)
      andBool #rangeBytes(32, SIGS1)
      andBool #range(0 <= DATA_LEN < 2 ^Int 16)
+     andBool #range(0 <= DATA < (2 ^Int (DATA_LEN *Int 8)))
      andBool ECREC_DATA0 ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV0), #bytes32(SIGR0), #bytes32(SIGS0) )
      andBool ECREC_DATA1 ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV1), #bytes32(SIGR1), #bytes32(SIGS1) )
      andBool #ecrecEmpty( ECREC_DATA0 )
