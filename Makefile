@@ -121,16 +121,19 @@ $(K_JAR):
 
 build: build-java build-specs build-haskell build-llvm
 
-SOURCE_FILES       := asm           \
-                      data          \
-                      driver        \
-                      edsl          \
-                      evm           \
-                      evm-imp-specs \
-                      evm-types     \
-                      json-rpc      \
-                      network       \
-                      serialization \
+SOURCE_FILES       := abi              \
+                      asm              \
+                      buf              \
+                      data             \
+                      driver           \
+                      edsl             \
+                      evm              \
+                      evm-imp-specs    \
+                      evm-types        \
+                      hashed-locations \
+                      json-rpc         \
+                      network          \
+                      serialization    \
                       state-loader
 EXTRA_SOURCE_FILES :=
 ALL_FILES          := $(patsubst %, %.md, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
