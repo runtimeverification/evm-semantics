@@ -3,9 +3,11 @@ ABI Encoding
 
 ```k
 requires "evm.md"
+requires "buf.md"
 
 module EVM-ABI
     imports EVM
+    imports BUF-SYNTAX
 ```
 
 ### ABI Call Data
