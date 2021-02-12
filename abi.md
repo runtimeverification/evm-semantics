@@ -7,7 +7,7 @@ requires "buf.md"
 
 module EVM-ABI
     imports EVM
-    imports BUF-SYNTAX
+    imports BUF
 ```
 
 ### ABI Call Data

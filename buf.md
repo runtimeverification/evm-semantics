@@ -28,8 +28,7 @@ Claims should always use `#bufStrict` in LHS and `#buf` in RHS.
 endmodule
 
 module BUF
-    imports BUF-JAVA
-    imports BUF-HASKELL
+    imports BUF-KORE
 
     rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA)
       requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
@@ -39,11 +38,7 @@ module BUF
 
 endmodule
 
-module BUF-JAVA [symbolic, kast]
-    imports BUF-SYNTAX
-endmodule
-
-module BUF-HASKELL [symbolic, kore]
+module BUF-KORE [kore]
     imports BUF-SYNTAX
 
     rule #bufStrict(_, _) => #Bottom              [owise]
