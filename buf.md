@@ -29,6 +29,7 @@ endmodule
 
 module BUF
     imports BUF-SYNTAX
+    imports BUF-KORE
 
     rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA)
       requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
@@ -39,7 +40,7 @@ module BUF
 endmodule
 
 module BUF-KORE [kore, symbolic]
-    imports BUF
+    imports BUF-SYNTAX
 
     rule #bufStrict(_, _) => #Bottom              [owise]
 
