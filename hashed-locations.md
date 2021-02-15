@@ -3,9 +3,11 @@ Hashed Storage Locations
 
 ```k
 requires "evm.md"
+requires "buf.md"
 
 module HASHED-LOCATIONS
     imports EVM
+    imports BUF
 ```
 
 ### Hashed Location for Storage
