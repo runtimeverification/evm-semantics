@@ -1,5 +1,4 @@
-EDSL.#ceil32
-EDSL.keccakIntList
+EVM-ABI.#ceil32
 EVM.Cextra
 EVM.Cgascap
 EVM.Cmem
@@ -15,6 +14,7 @@ EVM-TYPES.powmod.zero
 EVM-TYPES.signextend.invalid
 EVM-TYPES.signextend.negative
 EVM-TYPES.signextend.positive
+HASHED-LOCATIONS.keccakIntList
 SERIALIZATION.keccak
 SERIALIZATION.#newAddr
 SERIALIZATION.#newAddrCreate2

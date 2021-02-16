@@ -28,7 +28,10 @@ The following files constitute the KEVM semantics:
 
 These additional files extend the semantics to make the repository more useful:
 
--   [edsl.md](edsl.md) defines high-level notations of [eDSL], a domain-specific language for EVM specifications, for formal verification of EVM bytecode using [K Reachability Logic Prover].
+-   [buf.md](buf.md) defines the `#buf` byte-buffer abstraction for use during symbolic execution.
+-   [abi.md](abi.md) defines the [Contract ABI Specification](https://docs.soliditylang.org/en/v0.8.1/abi-spec.html) for use in proofs and easy contract/function specification.
+-   [hashed-locations.md](hashed-locations.md) defines the `#hashedLocation` abstraction which makes it easier to specify Solidity-generate storage layouts.
+-   [edsl.md](edsl.md) combines the previous three abstractions for ease-of-use.
 -   [state-loader.md](state-loader.md) provides functionality for EVM initialization and setup.
 -   [driver.md](driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
 
