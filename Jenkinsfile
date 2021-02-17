@@ -2,12 +2,15 @@ pipeline {
   agent { label 'docker && !smol' }
   environment {
     GITHUB_TOKEN = credentials('rv-jenkins')
-    VERSION      = '1.0.0'
-    K_VERSION    = '5.0.0'
-    K_ROOT_URL   = 'https://github.com/kframework/k/releases/download'
-    PACKAGE      = 'kevm'
-    ROOT_URL     = 'https://github.com/kframework/evm-semantics/releases/download'
-    LONG_REV     = """${sh(returnStdout: true, script: 'git rev-parse HEAD').trim()}"""
+    VERSION          = '1.0.0'
+    K_VERSION        = '5.0.0'
+    K_ROOT_URL       = 'https://github.com/kframework/k/releases/download'
+    PACKAGE          = 'kevm'
+    ROOT_URL         = 'https://github.com/kframework/evm-semantics/releases/download'
+    LONG_REV         = """${sh(returnStdout: true, script: 'git rev-parse HEAD').trim()}"""
+    SHORT_REV        = """${sh(returnStdout: true, script: 'git rev-parse --short=7 HEAD').trim()}"""
+    KEVM_RELEASE_TAG = "v${env.VERSION}-${env.SHORT_REV}"
+
   }
   options { ansiColor('xterm') }
   stages {
@@ -127,6 +130,37 @@ pipeline {
         }
       }
       stages {
+        stage('GitHub Release') {
+          steps {
+            dir('bionic') { unstash 'bionic' }
+            sshagent(['2b3d8d6b-0855-4b59-864a-6b3ddf9c9d1a']) {
+              sh '''
+                git clone 'ssh://github.com/kframework/evm-semantics.git' kevm-release
+                cd kevm-release
+                git fetch --all
+
+                git tag -d "${KEVM_RELEASE_TAG}"         || true
+                git push -d origin "${KEVM_RELEASE_TAG}" || true
+                hub release delete "${KEVM_RELEASE_TAG}" || true
+
+                git tag "${KEVM_RELEASE_TAG}" "${LONG_REV}"
+                git push origin "${KEVM_RELEASE_TAG}"
+
+                COMMIT_DATE=$(date '+%Y%m%d%H%M' --date="$(git show --no-patch --format='%ci' ${KEVM_RELEASE_TAG})")
+
+                bionic_name=kevm_${VERSION}_amd64_bionic_${COMMIT_DATE}.deb
+                mv ../bionic/kevm_${VERSION}_amd64.deb ${bionic_name}
+
+                echo "KEVM Release ${KEVM_RELEASE_TAG}"  > release.md
+                echo ''                                 >> release.md
+                cat INSTALL.md                          >> release.md
+                hub release create                                          \
+                    --attach ${bionic_name}'#Ubuntu Bionic (18.04) Package' \
+                    --file release.md "${KEVM_RELEASE_TAG}"
+              '''
+            }
+          }
+        }
         stage('Update Dependents') {
           steps {
             build job: 'rv-devops/master', propagate: false, wait: false                                         \
