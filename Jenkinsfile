@@ -1,10 +1,5 @@
 pipeline {
-  agent {
-    dockerfile {
-      label 'docker && !smol'
-      additionalBuildArgs '--build-arg K_COMMIT="$(cd deps/k && git rev-parse --short=7 HEAD)" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-    }
-  }
+  agent { label 'docker && !smol' }
   environment {
     GITHUB_TOKEN = credentials('rv-jenkins')
     VERSION      = '1.0.0'
@@ -21,6 +16,12 @@ pipeline {
       steps { script { currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}" } }
     }
     stage('Build and Test') {
+      agent {
+        dockerfile {
+          additionalBuildArgs '--build-arg K_COMMIT="$(cd deps/k && git rev-parse --short=7 HEAD)" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+          reuseNode true
+        }
+      }
       stages {
         stage('Deps')  { steps { sh 'make plugin-deps'            } }
         stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
@@ -59,10 +60,71 @@ pipeline {
         }
       }
     }
+    stage('Package') {
+      when {
+        branch 'master'
+        beforeAgent true
+      }
+      stages {
+        stage('Build Ubuntu Bionic') {
+          agent {
+            dockerfile {
+              additionalBuildArgs '--build-arg K_COMMIT="$(cd deps/k && git rev-parse --short=7 HEAD)" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+              reuseNode true
+            }
+          }
+          steps {
+            dir('bionic-build') {
+              checkout scm
+              sh './package/debian/package bionic'
+            }
+            stash name: 'bionic', includes: "kevm-${env.VERSION}.tar.gz"
+          }
+        }
+        stage('Test Ubuntu Bionic') {
+          agent {
+            docker {
+              image 'ubuntu:bionic'
+              args '-u 0'
+              reuseNode true
+            }
+          }
+          options { skipDefaultCheckout() }
+          steps {
+            dir('test-bionic') {
+              unstash 'bionic'
+              checkout scm
+              sh '''
+                export DEBIAN_FRONTEND=noninteractive
+                apt-get update
+                apt-get upgrade --yes
+                apt-get install --yes ./kevm_${VERSION}_amd64.deb
+                cd evm-semantics
+                make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=llvm
+                make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=java
+                make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=haskell
+                make -j4 test-parse              TEST_CONCRETE_BACKEND=llvm
+                make -j4 test-failure            TEST_CONCRETE_BACKEND=llvm
+                make -j4 test-klab-prove         TEST_SYMBOLIC_BACKEND=java
+                make -j4 test-interactive-search TEST_SYMBOLIC_BACKEND=haskell
+                kevm help
+                kevm version
+              '''
+            }
+          }
+        }
+      }
+    }
     stage('Deploy') {
       when {
         branch 'master'
         beforeAgent true
+      }
+      agent {
+        dockerfile {
+          additionalBuildArgs '--build-arg K_COMMIT="$(cd deps/k && git rev-parse --short=7 HEAD)" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+          reuseNode true
+        }
       }
       stages {
         stage('Update Dependents') {
