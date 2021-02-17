@@ -35,6 +35,11 @@ RUN    apt-get update               \
     && apt-get upgrade --yes        \
     && apt-get install --yes nodejs
 
+RUN curl -L https://github.com/github/hub/releases/download/v2.14.0/hub-linux-amd64-2.14.0.tgz -o /home/user/hub.tgz
+RUN cd /home/user && tar xzf hub.tgz
+
+ENV PATH=/home/user/hub-linux-amd64-2.14.0/bin:$PATH
+
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 RUN groupadd -g $GROUP_ID user && useradd -m -u $USER_ID -s /bin/sh -g user user
