@@ -35,6 +35,7 @@ run_krun() {
         -cSCHEDULE="$cSCHEDULE"                   -pSCHEDULE='printf %s' \
         -cMODE="$cMODE"                           -pMODE='printf %s'     \
         -cCHAINID="#token(\"$cCHAINID\",\"Int\")" -pCHAINID='printf %s'  \
+        "$(! $debug || echo -n "--debug")"                               \
         "$run_file" "$@"
 }
 
