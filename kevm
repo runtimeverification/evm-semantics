@@ -45,8 +45,8 @@ run_kast() {
     output_mode="${1:-kore}" ; shift
 
     case "$run_file-$output_mode" in
-        *.json-@(kast|kore)) "$kevm_dir/$output_mode-json.py" "$run_file" "$cSCHEDULE" "$cMODE" "$cCHAINID" ;;
-        *)                   kast --directory "$backend_dir" "$run_file" --output "$output_mode" "$@"       ;;
+        *.json-@(kast|kore)) "$kevm_dir/$output_mode-json.py" "$run_file" "$cSCHEDULE" "$cMODE" "$cCHAINID"                              ;;
+        *)                   kast "$(! $debug || echo -n "--debug")" --directory "$backend_dir" "$run_file" --output "$output_mode" "$@" ;;
     esac
 }
 
@@ -62,7 +62,7 @@ run_prove() {
     ! $bug_report || additional_proof_args+=(--haskell-backend-command "kore-exec --bug-report $bug_report_name")
 
     ! $debug || set -x
-    kprove --directory "$backend_dir" "$run_file" --def-module "$def_module" "${additional_proof_args[@]}" "$@"
+    kprove "$(! $debug || echo -n "--debug")" --directory "$backend_dir" "$run_file" --def-module "$def_module" "${additional_proof_args[@]}" "$@"
 }
 
 run_search() {
