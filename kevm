@@ -35,7 +35,6 @@ run_krun() {
         -cSCHEDULE="$cSCHEDULE"                   -pSCHEDULE='printf %s' \
         -cMODE="$cMODE"                           -pMODE='printf %s'     \
         -cCHAINID="#token(\"$cCHAINID\",\"Int\")" -pCHAINID='printf %s'  \
-        "$(! $debug || echo -n "--debug")"                               \
         "$run_file" "$@"
 }
 
@@ -45,8 +44,8 @@ run_kast() {
     output_mode="${1:-kore}" ; shift
 
     case "$run_file-$output_mode" in
-        *.json-@(kast|kore)) "$kevm_dir/$output_mode-json.py" "$run_file" "$cSCHEDULE" "$cMODE" "$cCHAINID"                              ;;
-        *)                   kast "$(! $debug || echo -n "--debug")" --directory "$backend_dir" "$run_file" --output "$output_mode" "$@" ;;
+        *.json-@(kast|kore)) "$kevm_dir/$output_mode-json.py" "$run_file" "$cSCHEDULE" "$cMODE" "$cCHAINID" ;;
+        *)                   kast --directory "$backend_dir" "$run_file" --output "$output_mode" "$@"       ;;
     esac
 }
 
@@ -62,7 +61,7 @@ run_prove() {
     ! $bug_report || additional_proof_args+=(--haskell-backend-command "kore-exec --bug-report $bug_report_name")
 
     ! $debug || set -x
-    kprove "$(! $debug || echo -n "--debug")" --directory "$backend_dir" "$run_file" --def-module "$def_module" "${additional_proof_args[@]}" "$@"
+    kprove --directory "$backend_dir" "$run_file" --def-module "$def_module" "${additional_proof_args[@]}" "$@"
 }
 
 run_search() {
@@ -219,16 +218,16 @@ args=()
 while [[ $# -gt 0 ]]; do
     arg="$1"
     case $arg in
-        --debug)              debug=true        ; shift   ;;
-        --dump)               dump=true         ; shift   ;;
-        --no-unparse)         unparse=false     ; shift   ;;
-        --repl)               repl=true         ; shift   ;;
-        --bug-report)         bug_report=true   ; shift   ;;
-        --backend)            backend="$2"      ; shift 2 ;;
-        --backend-dir)        backend_dir="$2"  ; shift 2 ;;
-        -p|--port)            kevm_port="$2"    ; shift 2 ;;
-        -h|--host|--hostname) kevm_host="$2"    ; shift 2 ;;
-        *)                    args+=("$1")      ; shift   ;;
+        --debug)              debug=true ; args+=("$1") ; shift   ;;
+        --dump)               dump=true                 ; shift   ;;
+        --no-unparse)         unparse=false             ; shift   ;;
+        --repl)               repl=true                 ; shift   ;;
+        --bug-report)         bug_report=true           ; shift   ;;
+        --backend)            backend="$2"              ; shift 2 ;;
+        --backend-dir)        backend_dir="$2"          ; shift 2 ;;
+        -p|--port)            kevm_port="$2"            ; shift 2 ;;
+        -h|--host|--hostname) kevm_host="$2"            ; shift 2 ;;
+        *)                    args+=("$1")              ; shift   ;;
     esac
 done
 set -- "${args[@]}"
