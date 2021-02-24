@@ -53,7 +53,8 @@ export PLUGIN_SUBMODULE
         test-prove-mcd test-klab-prove test-haskell-dry-run                                                                      \
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
-        media media-pdf metropolis-theme
+        media media-pdf metropolis-theme                                                                                         \
+        install
 .SECONDARY:
 
 all: build
