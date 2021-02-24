@@ -54,7 +54,7 @@ export PLUGIN_SUBMODULE
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         media media-pdf metropolis-theme                                                                                         \
-        install
+        install uninstall
 .SECONDARY:
 
 all: build
@@ -287,6 +287,10 @@ $(INSTALL_BIN)/%: $(KEVM_BIN)/%
 
 $(INSTALL_LIB)/%: $(KEVM_LIB)/%
 	install -D $< $@
+
+uninstall:
+	rm -rf $(INSTALL_BIN)/kevm
+	rm -rf $(INSTALL_LIB)/kevm
 
 # Tests
 # -----
