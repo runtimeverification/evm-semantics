@@ -26,7 +26,7 @@ module LEMMAS-MCD-SYNTAX
  // -------------------------------------------------
     rule #string2Word(S) => #asWord(#padRightToWidth(32, #parseByteStackRaw(S)))
 
-    syntax Int ::= "#Wad" | "#Ray" | "#Rad"
+    syntax Int ::= "#Wad" [function] | "#Ray" [function] | "#Rad" [function]
  // ---------------------------------------
     rule #Wad => 1000000000000000000                            [macro]
     rule #Ray => 1000000000000000000000000000                   [macro]

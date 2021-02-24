@@ -6,22 +6,22 @@ module DSS-STORAGE
  // ### Vat
  // -------
 
-    syntax Int ::= "#Vat.wards" "[" Int "]"
-                 | "#Vat.can" "[" Int "][" Int "]"
-                 | "#Vat.ilks" "[" Int "].Art"
-                 | "#Vat.ilks" "[" Int "].rate"
-                 | "#Vat.ilks" "[" Int "].spot"
-                 | "#Vat.ilks" "[" Int "].line"
-                 | "#Vat.ilks" "[" Int "].dust"
-                 | "#Vat.urns" "[" Int "][" Int "].ink"
-                 | "#Vat.urns" "[" Int "][" Int "].art"
-                 | "#Vat.gem" "[" Int "][" Int "]"
-                 | "#Vat.dai" "[" Int "]"
-                 | "#Vat.sin" "[" Int "]"
-                 | "#Vat.debt"
-                 | "#Vat.vice"
-                 | "#Vat.Line"
-                 | "#Vat.live"
+    syntax Int ::= "#Vat.wards" "[" Int "]" [function]
+                 | "#Vat.can" "[" Int "][" Int "]" [function]
+                 | "#Vat.ilks" "[" Int "].Art" [function]
+                 | "#Vat.ilks" "[" Int "].rate" [function]
+                 | "#Vat.ilks" "[" Int "].spot" [function]
+                 | "#Vat.ilks" "[" Int "].line" [function]
+                 | "#Vat.ilks" "[" Int "].dust" [function]
+                 | "#Vat.urns" "[" Int "][" Int "].ink" [function]
+                 | "#Vat.urns" "[" Int "][" Int "].art" [function]
+                 | "#Vat.gem" "[" Int "][" Int "]" [function]
+                 | "#Vat.dai" "[" Int "]" [function]
+                 | "#Vat.sin" "[" Int "]" [function]
+                 | "#Vat.debt" [function]
+                 | "#Vat.vice" [function]
+                 | "#Vat.Line" [function]
+                 | "#Vat.live" [function]
  // --------------------------
     rule #Vat.wards[A]           => #hashedLocation("Solidity", 0, A)              [macro]
     rule #Vat.can[A][B]          => #hashedLocation("Solidity", 1, A B)            [macro]
@@ -43,12 +43,12 @@ module DSS-STORAGE
  // ### Dai
  // -------
 
-    syntax Int ::= "#Dai.wards" "[" Int "]"
-                 | "#Dai.totalSupply"
-                 | "#Dai.balanceOf" "[" Int "]"
-                 | "#Dai.allowance" "[" Int "][" Int "]"
-                 | "#Dai.nonces" "[" Int "]"
-                 | "#Dai.DOMAIN_SEPARATOR"
+    syntax Int ::= "#Dai.wards" "[" Int "]" [function]
+                 | "#Dai.totalSupply" [function]
+                 | "#Dai.balanceOf" "[" Int "]" [function]
+                 | "#Dai.allowance" "[" Int "][" Int "]" [function]
+                 | "#Dai.nonces" "[" Int "]" [function]
+                 | "#Dai.DOMAIN_SEPARATOR" [function]
  // --------------------------------------
     rule #Dai.wards[A]         => #hashedLocation("Solidity", 0, A)   [macro]
     rule #Dai.totalSupply      => 1                                   [macro]
@@ -60,12 +60,12 @@ module DSS-STORAGE
  // ### Jug
  // -------
 
-    syntax Int ::= "#Jug.wards" "[" Int "]"
+    syntax Int ::= "#Jug.wards" "[" Int "]" [function]
                  | "#Jug.ilks" "[" Int "].duty" [function]
-                 | "#Jug.ilks" "[" Int "].rho"
-                 | "#Jug.vat"
-                 | "#Jug.vow"
-                 | "#Jug.base"
+                 | "#Jug.ilks" "[" Int "].rho" [function]
+                 | "#Jug.vat" [function]
+                 | "#Jug.vow" [function]
+                 | "#Jug.base" [function]
  // --------------------------
     rule #Jug.wards[A]       => #hashedLocation("Solidity", 0, A)          [macro]
     rule #Jug.ilks[Ilk].duty => #hashedLocation("Solidity", 1, Ilk) +Int 0 [macro]
@@ -77,12 +77,12 @@ module DSS-STORAGE
  // ### Drip
  // --------
 
-    syntax Int ::= "#Drip.wards" "[" Int "]"
-                 | "#Drip.ilks" "[" Int "].tax"
-                 | "#Drip.ilks" "[" Int "].rho"
-                 | "#Drip.vat"
-                 | "#Drip.vow"
-                 | "#Drip.repo"
+    syntax Int ::= "#Drip.wards" "[" Int "]" [function]
+                 | "#Drip.ilks" "[" Int "].tax" [function]
+                 | "#Drip.ilks" "[" Int "].rho" [function]
+                 | "#Drip.vat" [function]
+                 | "#Drip.vow" [function]
+                 | "#Drip.repo" [function]
  // ---------------------------
     rule #Drip.wards[A]      => #hashedLocation("Solidity", 0, A)          [macro]
     rule #Drip.ilks[Ilk].tax => #hashedLocation("Solidity", 1, Ilk) +Int 0 [macro]
@@ -94,19 +94,19 @@ module DSS-STORAGE
  // ### Vow
  // -------
 
-    syntax Int ::= "#Vow.wards" "[" Int "]"
-                 | "#Vow.vat"
-                 | "#Vow.flapper"
-                 | "#Vow.flopper"
-                 | "#Vow.sin" "[" Int "]"
-                 | "#Vow.Sin"
-                 | "#Vow.Ash"
-                 | "#Vow.wait"
-                 | "#Vow.dump"
-                 | "#Vow.sump"
-                 | "#Vow.bump"
-                 | "#Vow.hump"
-                 | "#Vow.live"
+    syntax Int ::= "#Vow.wards" "[" Int "]" [function]
+                 | "#Vow.vat" [function]
+                 | "#Vow.flapper" [function]
+                 | "#Vow.flopper" [function]
+                 | "#Vow.sin" "[" Int "]" [function]
+                 | "#Vow.Sin" [function]
+                 | "#Vow.Ash" [function]
+                 | "#Vow.wait" [function]
+                 | "#Vow.dump" [function]
+                 | "#Vow.sump" [function]
+                 | "#Vow.bump" [function]
+                 | "#Vow.hump" [function]
+                 | "#Vow.live" [function]
  // --------------------------
     rule #Vow.wards[A] => #hashedLocation("Solidity", 0, A) [macro]
     rule #Vow.vat      => 1                                 [macro]
@@ -125,13 +125,13 @@ module DSS-STORAGE
  // ### Cat
  // -------
 
-    syntax Int ::= "#Cat.wards" "[" Int "]"
-                 | "#Cat.ilks" "[" Int "].flip"
-                 | "#Cat.ilks" "[" Int "].chop"
-                 | "#Cat.ilks" "[" Int "].lump"
-                 | "#Cat.live"
-                 | "#Cat.vat"
-                 | "#Cat.vow"
+    syntax Int ::= "#Cat.wards" "[" Int "]" [function]
+                 | "#Cat.ilks" "[" Int "].flip" [function]
+                 | "#Cat.ilks" "[" Int "].chop" [function]
+                 | "#Cat.ilks" "[" Int "].lump" [function]
+                 | "#Cat.live" [function]
+                 | "#Cat.vat" [function]
+                 | "#Cat.vow" [function]
  // -------------------------
     rule #Cat.wards[A]       => #hashedLocation("Solidity", 0, A)          [macro]
     rule #Cat.ilks[Ilk].flip => #hashedLocation("Solidity", 1, Ilk) +Int 0 [macro]
@@ -144,12 +144,12 @@ module DSS-STORAGE
  // ### GemJoin
  // -----------
 
-    syntax Int ::= "#GemJoin.wards" "[" Int "]"
-                 | "#GemJoin.vat"
-                 | "#GemJoin.ilk"
-                 | "#GemJoin.gem"
-                 | "#GemJoin.dec"
-                 | "#GemJoin.live"
+    syntax Int ::= "#GemJoin.wards" "[" Int "]" [function]
+                 | "#GemJoin.vat" [function]
+                 | "#GemJoin.ilk" [function]
+                 | "#GemJoin.gem" [function]
+                 | "#GemJoin.dec" [function]
+                 | "#GemJoin.live" [function]
  // ------------------------------
     rule #GemJoin.wards[A] => #hashedLocation("Solidity", 0, A) [macro]
     rule #GemJoin.vat      => 1                                 [macro]
@@ -161,10 +161,10 @@ module DSS-STORAGE
  // ### DaiJoin
  // -----------
 
-    syntax Int ::= "#DaiJoin.wards" "[" Int "]"
-                 | "#DaiJoin.vat"
-                 | "#DaiJoin.dai"
-                 | "#DaiJoin.live"
+    syntax Int ::= "#DaiJoin.wards" "[" Int "]" [function]
+                 | "#DaiJoin.vat" [function]
+                 | "#DaiJoin.dai" [function]
+                 | "#DaiJoin.live" [function]
  // ------------------------------
     rule #DaiJoin.wards[A] => #hashedLocation("Solidity", 0, A) [macro]
     rule #DaiJoin.vat      => 1                                 [macro]
@@ -174,18 +174,18 @@ module DSS-STORAGE
  // ### Flip
  // --------
 
-    syntax Int ::= "#Flipper.wards" "[" Int "]"
-                 | "#Flipper.bids" "[" Int "].bid"
-                 | "#Flipper.bids" "[" Int "].lot"
-                 | "#Flipper.bids" "[" Int "].guy_tic_end"
-                 | "#Flipper.bids" "[" Int "].usr"
-                 | "#Flipper.bids" "[" Int "].gal"
-                 | "#Flipper.bids" "[" Int "].tab"
-                 | "#Flipper.vat"
-                 | "#Flipper.ilk"
-                 | "#Flipper.beg"
-                 | "#Flipper.ttl_tau"
-                 | "#Flipper.kicks"
+    syntax Int ::= "#Flipper.wards" "[" Int "]" [function]
+                 | "#Flipper.bids" "[" Int "].bid" [function]
+                 | "#Flipper.bids" "[" Int "].lot" [function]
+                 | "#Flipper.bids" "[" Int "].guy_tic_end" [function]
+                 | "#Flipper.bids" "[" Int "].usr" [function]
+                 | "#Flipper.bids" "[" Int "].gal" [function]
+                 | "#Flipper.bids" "[" Int "].tab" [function]
+                 | "#Flipper.vat" [function]
+                 | "#Flipper.ilk" [function]
+                 | "#Flipper.beg" [function]
+                 | "#Flipper.ttl_tau" [function]
+                 | "#Flipper.kicks" [function]
  // -------------------------------
     rule #Flipper.wards[A]            => #hashedLocation("Solidity", 0, A)        [macro]
     rule #Flipper.bids[N].bid         => #hashedLocation("Solidity", 1, N) +Int 0 [macro]
@@ -203,18 +203,18 @@ module DSS-STORAGE
  // ### Flop
  // --------
 
-    syntax Int ::= "#Flopper.wards" "[" Int "]"
-                 | "#Flopper.bids" "[" Int "].bid"
-                 | "#Flopper.bids" "[" Int "].lot"
-                 | "#Flopper.bids" "[" Int "].guy_tic_end"
-                 | "#Flopper.vat"
-                 | "#Flopper.gem"
-                 | "#Flopper.beg"
-                 | "#Flopper.pad"
-                 | "#Flopper.ttl_tau"
-                 | "#Flopper.kicks"
-                 | "#Flopper.live"
-                 | "#Flopper.vow"
+    syntax Int ::= "#Flopper.wards" "[" Int "]" [function]
+                 | "#Flopper.bids" "[" Int "].bid" [function]
+                 | "#Flopper.bids" "[" Int "].lot" [function]
+                 | "#Flopper.bids" "[" Int "].guy_tic_end" [function]
+                 | "#Flopper.vat" [function]
+                 | "#Flopper.gem" [function]
+                 | "#Flopper.beg" [function]
+                 | "#Flopper.pad" [function]
+                 | "#Flopper.ttl_tau" [function]
+                 | "#Flopper.kicks" [function]
+                 | "#Flopper.live" [function]
+                 | "#Flopper.vow" [function]
  // -----------------------------
     rule #Flopper.wards[A]            => #hashedLocation("Solidity", 0, A)        [macro]
     rule #Flopper.bids[N].bid         => #hashedLocation("Solidity", 1, N) +Int 0 [macro]
@@ -232,16 +232,16 @@ module DSS-STORAGE
  // ### Flap
  // --------
 
-    syntax Int ::= "#Flapper.wards" "[" Int "]"
-                 | "#Flapper.bids" "[" Int "].bid"
-                 | "#Flapper.bids" "[" Int "].lot"
-                 | "#Flapper.bids" "[" Int "].guy_tic_end"
-                 | "#Flapper.vat"
-                 | "#Flapper.gem"
-                 | "#Flapper.beg"
-                 | "#Flapper.ttl_tau"
-                 | "#Flapper.kicks"
-                 | "#Flapper.live"
+    syntax Int ::= "#Flapper.wards" "[" Int "]" [function]
+                 | "#Flapper.bids" "[" Int "].bid" [function]
+                 | "#Flapper.bids" "[" Int "].lot" [function]
+                 | "#Flapper.bids" "[" Int "].guy_tic_end" [function]
+                 | "#Flapper.vat" [function]
+                 | "#Flapper.gem" [function]
+                 | "#Flapper.beg" [function]
+                 | "#Flapper.ttl_tau" [function]
+                 | "#Flapper.kicks" [function]
+                 | "#Flapper.live" [function]
  // ------------------------------
     rule #Flapper.wards[A]            => #hashedLocation("Solidity", 0, A)        [macro]
     rule #Flapper.bids[N].bid         => #hashedLocation("Solidity", 1, N) +Int 0 [macro]
@@ -257,9 +257,9 @@ module DSS-STORAGE
  // ### GemLike
  // -----------
 
-    syntax Int ::= "#Gem.balances" "[" Int "]"
-                 | "#Gem.stopped"
-                 | "#Gem.allowance" "[" Int "][" Int "]"
+    syntax Int ::= "#Gem.balances" "[" Int "]" [function]
+                 | "#Gem.stopped" [function]
+                 | "#Gem.allowance" "[" Int "][" Int "]" [function]
  // ----------------------------------------------------
     rule #Gem.balances[A]     => #hashedLocation("Solidity", 3, A)   [macro]
     rule #Gem.stopped         => 4                                   [macro]
@@ -268,22 +268,22 @@ module DSS-STORAGE
  // ### End
  // -------
 
-    syntax Int ::= "#End.wards" "[" Int "]"
-                 | "#End.vat"
-                 | "#End.cat"
-                 | "#End.vow"
-                 | "#End.pot"
-                 | "#End.spot"
-                 | "#End.live"
-                 | "#End.when"
-                 | "#End.wait"
-                 | "#End.debt"
-                 | "#End.tag" "[" Int "]"
-                 | "#End.gap" "[" Int "]"
-                 | "#End.Art" "[" Int "]"
-                 | "#End.fix" "[" Int "]"
-                 | "#End.bag" "[" Int "]"
-                 | "#End.out" "[" Int "][" Int "]"
+    syntax Int ::= "#End.wards" "[" Int "]" [function]
+                 | "#End.vat" [function]
+                 | "#End.cat" [function]
+                 | "#End.vow" [function]
+                 | "#End.pot" [function]
+                 | "#End.spot" [function]
+                 | "#End.live" [function]
+                 | "#End.when" [function]
+                 | "#End.wait" [function]
+                 | "#End.debt" [function]
+                 | "#End.tag" "[" Int "]" [function]
+                 | "#End.gap" "[" Int "]" [function]
+                 | "#End.Art" "[" Int "]" [function]
+                 | "#End.fix" "[" Int "]" [function]
+                 | "#End.bag" "[" Int "]" [function]
+                 | "#End.out" "[" Int "][" Int "]" [function]
  // ----------------------------------------------
     rule #End.wards[A]      => #hashedLocation("Solidity", 0, A)        [macro]
     rule #End.vat           => 1                                        [macro]
@@ -305,15 +305,15 @@ module DSS-STORAGE
  // ### Pot
  // -------
 
-    syntax Int ::= "#Pot.wards" "[" Int "]"
-                 | "#Pot.pie" "[" Int "]"
-                 | "#Pot.Pie"
-                 | "#Pot.dsr"
-                 | "#Pot.chi"
-                 | "#Pot.vat"
-                 | "#Pot.vow"
-                 | "#Pot.rho"
-                 | "#Pot.live"
+    syntax Int ::= "#Pot.wards" "[" Int "]" [function]
+                 | "#Pot.pie" "[" Int "]" [function]
+                 | "#Pot.Pie" [function]
+                 | "#Pot.dsr" [function]
+                 | "#Pot.chi" [function]
+                 | "#Pot.vat" [function]
+                 | "#Pot.vow" [function]
+                 | "#Pot.rho" [function]
+                 | "#Pot.live" [function]
  // --------------------------
     rule #Pot.wards[A] => #hashedLocation("Solidity", 0, A)   [macro]
     rule #Pot.pie[Usr] => #hashedLocation("Solidity", 1, Usr) [macro]
@@ -328,13 +328,13 @@ module DSS-STORAGE
  // ### DSToken
  // -----------
 
-    syntax Int ::= "#DSToken.supply"
-                 | "#DSToken.balances" "[" Int "]"
-                 | "#DSToken.allowance" "[" Int "][" Int "]"
-                 | "#DSToken.authority"
-                 | "#DSToken.owner_stopped"
-                 | "#DSToken.symbol"
-                 | "#DSToken.decimals"
+    syntax Int ::= "#DSToken.supply" [function]
+                 | "#DSToken.balances" "[" Int "]" [function]
+                 | "#DSToken.allowance" "[" Int "][" Int "]" [function]
+                 | "#DSToken.authority" [function]
+                 | "#DSToken.owner_stopped" [function]
+                 | "#DSToken.symbol" [function]
+                 | "#DSToken.decimals" [function]
  // ----------------------------------
     rule #DSToken.supply          => 0                                   [macro]
     rule #DSToken.balances[A]     => #hashedLocation("Solidity", 1, A)   [macro]
@@ -347,9 +347,9 @@ module DSS-STORAGE
  // ### DSValue
  // -----------
 
-    syntax Int ::= "#DSValue.authority"
-                 | "#DSValue.owner_has"
-                 | "#DSValue.val"
+    syntax Int ::= "#DSValue.authority" [function]
+                 | "#DSValue.owner_has" [function]
+                 | "#DSValue.val" [function]
  // -----------------------------
     rule #DSValue.authority => 0 [macro]
     rule #DSValue.owner_has => 1 [macro]
@@ -358,12 +358,12 @@ module DSS-STORAGE
  // ### Spotter
  // -----------
 
-    syntax Int ::= "#Spotter.wards" "[" Int "]"
-                 | "#Spotter.ilks" "[" Int "].pip"
-                 | "#Spotter.ilks" "[" Int "].mat"
-                 | "#Spotter.vat"
-                 | "#Spotter.par"
-                 | "#Spotter.live"
+    syntax Int ::= "#Spotter.wards" "[" Int "]" [function]
+                 | "#Spotter.ilks" "[" Int "].pip" [function]
+                 | "#Spotter.ilks" "[" Int "].mat" [function]
+                 | "#Spotter.vat" [function]
+                 | "#Spotter.par" [function]
+                 | "#Spotter.live" [function]
  // ------------------------------
     rule #Spotter.wards[A]      => #hashedLocation("Solidity", 0, A)          [macro]
     rule #Spotter.ilks[Ilk].pip => #hashedLocation("Solidity", 1, Ilk) +Int 0 [macro]
