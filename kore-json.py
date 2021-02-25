@@ -64,6 +64,9 @@ def print_kast(data, sort="JSON"):
 def print_klabel(s):
   sys.stdout.write("Lbl" + s.replace("_", "'Unds'").replace("`", "").replace("(.KList)", "{}") + "()")
 
+def print_direct(s):
+  sys.stdout.write(s)
+
 def print_config_map_entry(k, v, vsort, vprint):
   sys.stdout.write("Lbl'UndsPipe'-'-GT-Unds'{}(")
   print_sort_injection("KConfigVar", "KItem", k, print_k_config_var)
@@ -74,11 +77,11 @@ def print_config_map_entry(k, v, vsort, vprint):
 sys.stdout.write("LblinitGeneratedTopCell{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Stop'Map{}(),")
 print_config_map_entry("PGM", data, "JSON", print_kast)
 sys.stdout.write("),")
-print_config_map_entry("SCHEDULE", sys.argv[2], "Schedule", print_klabel)
+print_config_map_entry("SCHEDULE", sys.argv[2], "Schedule", print_direct)
 sys.stdout.write("),")
-print_config_map_entry("MODE", sys.argv[3], "Mode", print_klabel)
+print_config_map_entry("MODE", sys.argv[3], "Mode", print_direct)
 sys.stdout.write("),")
-print_config_map_entry("CHAINID", sys.argv[4], "Int", print_int)
+print_config_map_entry("CHAINID", sys.argv[4], "Int", print_direct)
 sys.stdout.write("))\n")
 sys.stdout.write("\n")
 sys.stdout.flush()
