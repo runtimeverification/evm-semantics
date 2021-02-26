@@ -14,13 +14,17 @@ RUN    apt-get update           \
             libprocps-dev       \
             libsecp256k1-dev    \
             libssl-dev          \
+            libyaml-dev         \
+            maven               \
             netcat-openbsd      \
+            openjdk-11-jdk      \
             pkg-config          \
             python3             \
             python-pygments     \
             python-recommonmark \
             python-sphinx       \
-            rapidjson-dev
+            rapidjson-dev       \
+            zlib1g-dev
 
 RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.7 \
     && cd z3                                                        \
