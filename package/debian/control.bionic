@@ -2,7 +2,7 @@ Source: kevm
 Section: devel
 Priority: optional
 Maintainer: Everett Hildenbrandt <everett.hildenbrandt@runtimeverification.com>
-Build-Depends: clang-8 , cmake , libcrypto++-dev , libjemalloc-dev , libprocps-dev , libsecp256k1-dev , libssl-dev , pkg-config
+Build-Depends: clang-8 , cmake , debhelper , flex , libboost-test-dev , libcrypto++-dev , libgmp-dev , libjemalloc-dev , libmpfr-dev , libprocps-dev , libsecp256k1-dev , libssl-dev , libyaml-dev , maven , openjdk-11-jdk , pkg-config , zlib1g-dev
 Standards-Version: 3.9.6
 Homepage: https://github.com/kframework/evm-semantics
 
