@@ -100,6 +100,7 @@ pipeline {
                 export DEBIAN_FRONTEND=noninteractive
                 apt-get update
                 apt-get upgrade --yes
+                apt-get install --yes make
                 apt-get install --yes ./kevm_${VERSION}_amd64.deb
                 which kevm
                 kevm help
