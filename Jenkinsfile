@@ -10,7 +10,6 @@ pipeline {
     LONG_REV         = """${sh(returnStdout: true, script: 'git rev-parse HEAD').trim()}"""
     SHORT_REV        = """${sh(returnStdout: true, script: 'git rev-parse --short=7 HEAD').trim()}"""
     KEVM_RELEASE_TAG = "v${env.VERSION}-${env.SHORT_REV}"
-
   }
   options { ansiColor('xterm') }
   stages {
