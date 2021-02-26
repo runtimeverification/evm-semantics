@@ -95,8 +95,8 @@ pipeline {
           options { skipDefaultCheckout() }
           steps {
             dir('bionic-test') {
-              unstash 'bionic'
               checkout scm
+              unstash 'bionic'
               sh '''
                 export DEBIAN_FRONTEND=noninteractive
                 apt-get update
