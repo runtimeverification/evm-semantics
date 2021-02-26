@@ -81,7 +81,7 @@ pipeline {
               checkout scm
               sh './package/debian/package bionic'
             }
-            stash name: 'bionic', includes: "kevm-${env.VERSION}.tar.gz"
+            stash name: 'bionic', includes: "kevm_${env.VERSION}_amd64.deb"
           }
         }
         stage('Test Ubuntu Bionic') {
