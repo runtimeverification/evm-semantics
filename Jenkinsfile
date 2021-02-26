@@ -94,7 +94,7 @@ pipeline {
           }
           options { skipDefaultCheckout() }
           steps {
-            dir('test-bionic') {
+            dir('bionic-test') {
               unstash 'bionic'
               checkout scm
               sh '''
@@ -102,7 +102,9 @@ pipeline {
                 apt-get update
                 apt-get upgrade --yes
                 apt-get install --yes ./kevm_${VERSION}_amd64.deb
-                cd evm-semantics
+                which kevm
+                kevm help
+                kevm version
                 make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=llvm
                 make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=java
                 make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=haskell
@@ -110,8 +112,6 @@ pipeline {
                 make -j4 test-failure            TEST_CONCRETE_BACKEND=llvm
                 make -j4 test-klab-prove         TEST_SYMBOLIC_BACKEND=java
                 make -j4 test-interactive-search TEST_SYMBOLIC_BACKEND=haskell
-                kevm help
-                kevm version
               '''
             }
           }
