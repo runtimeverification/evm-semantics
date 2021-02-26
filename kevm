@@ -63,8 +63,8 @@ run_kast() {
     output_mode="${1:-kore}" ; shift
 
     case "$run_file-$output_mode" in
-        *.json-kast) "$kevm_dir/kast-json.py" "$run_file" "$cSCHEDULE_kast" "$cMODE_kast" "$cCHAINID_kast"      ;;
-        *.json-kore) "$kevm_dir/kore-json.py" "$run_file" "$cSCHEDULE_kore" "$cMODE_kore" "$cCHAINID_kore"      ;;
+        *.json-kast) kast-json.py "$run_file" "$cSCHEDULE_kast" "$cMODE_kast" "$cCHAINID_kast"                  ;;
+        *.json-kore) kore-json.py "$run_file" "$cSCHEDULE_kore" "$cMODE_kore" "$cCHAINID_kore"                  ;;
         *)           check_k_install ; kast --directory "$backend_dir" "$run_file" --output "$output_mode" "$@" ;;
     esac
 }
