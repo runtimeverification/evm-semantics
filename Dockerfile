@@ -6,6 +6,7 @@ RUN    apt-get update           \
     && apt-get install --yes    \
             cmake               \
             curl                \
+            debhelper           \
             jq                  \
             libboost-test-dev   \
             libcrypto++-dev     \
