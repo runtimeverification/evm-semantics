@@ -3,10 +3,6 @@ pipeline {
   environment {
     GITHUB_TOKEN = credentials('rv-jenkins')
     VERSION          = '1.0.0'
-    K_VERSION        = '5.0.0'
-    K_ROOT_URL       = 'https://github.com/kframework/k/releases/download'
-    PACKAGE          = 'kevm'
-    ROOT_URL         = 'https://github.com/kframework/evm-semantics/releases/download'
     LONG_REV         = """${sh(returnStdout: true, script: 'git rev-parse HEAD').trim()}"""
     SHORT_REV        = """${sh(returnStdout: true, script: 'git rev-parse --short=7 HEAD').trim()}"""
     KEVM_RELEASE_TAG = "v${env.VERSION}-${env.SHORT_REV}"
