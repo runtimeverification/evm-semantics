@@ -93,6 +93,7 @@ pipeline {
               checkout scm
               unstash 'bionic'
               sh '''
+                export KLAB_OUT=$(pwd)
                 export DEBIAN_FRONTEND=noninteractive
                 apt-get update
                 apt-get upgrade --yes
