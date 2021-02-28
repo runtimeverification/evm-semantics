@@ -81,9 +81,9 @@ pipeline {
         }
         stage('Test Ubuntu Bionic') {
           agent {
-            docker {
-              image 'ubuntu:bionic'
-              args '-u 0'
+            dockerfile {
+              filename 'package/debian/Dockerfile.test'
+              additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) --build-arg BASE_IMAGE=ubuntu:bionic'
               reuseNode true
             }
           }
@@ -94,11 +94,9 @@ pipeline {
               unstash 'bionic'
               sh '''
                 export KLAB_OUT=$(pwd)
-                export DEBIAN_FRONTEND=noninteractive
-                apt-get update
-                apt-get upgrade --yes
-                apt-get install --yes git make
-                apt-get install --yes ./kevm_${VERSION}_amd64.deb
+                sudo apt-get update
+                sudo apt-get upgrade --yes
+                sudo apt-get install --yes ./kevm_${VERSION}_amd64.deb
                 which kevm
                 kevm help
                 kevm version
