@@ -11,8 +11,8 @@ DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
 BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 LOCAL_LIB     := $(BUILD_LOCAL)/lib
 
-KEVM_BIN     := $(BUILD_DIR)/bin
-KEVM_LIB     := $(BUILD_DIR)/lib/kevm
+KEVM_BIN     := $(BUILD_DIR)/usr/bin
+KEVM_LIB     := $(BUILD_DIR)/usr/lib/kevm
 KEVM_INCLUDE := $(KEVM_LIB)/include
 KEVM_K_BIN   := $(KEVM_LIB)/kframework/bin
 KEVM         := kevm
@@ -29,10 +29,10 @@ K_SUBMODULE := $(DEPS_DIR)/k
 K_INSTALL   := $(DESTDIR)$(INSTALL_PREFIX)/kframework
 K_JAR       := $(K_INSTALL)/lib/kframework/java/kernel-1.0-SNAPSHOT.jar
 
-LIBRARY_PATH         := $(LOCAL_LIB)
-C_INCLUDE_PATH       += :$(BUILD_LOCAL)/include
-CPLUS_INCLUDE_PATH   += :$(BUILD_LOCAL)/include
-PATH                 := $(KEVM_BIN):$(KEVM_K_BIN):$(PATH)
+LIBRARY_PATH       := $(LOCAL_LIB)
+C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
+CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
+PATH               := $(KEVM_BIN):$(KEVM_K_BIN):$(PATH)
 
 export LIBRARY_PATH
 export C_INCLUDE_PATH
@@ -122,9 +122,9 @@ else
 endif
 
 $(K_JAR):
-	cd $(K_SUBMODULE)                                                                                                                                                             \
-	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=/kframework -Dllvm.backend.destdir=$(CURDIR)/$(KEVM_LIB) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
-	    && DESTDIR=$(CURDIR)/$(KEVM_LIB) PREFIX=/kframework package/package
+	cd $(K_SUBMODULE)                                                                                                                                                                           \
+	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=/usr/lib/kevm/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
+	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=/usr/lib/kevm/kframework package/package
 
 # Building
 # --------
