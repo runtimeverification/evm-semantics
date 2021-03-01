@@ -31,11 +31,27 @@ export KLAB_OUT
 # User Commands
 
 run_krun() {
-    krun --directory "$backend_dir"                                      \
-        -cSCHEDULE="$cSCHEDULE"                   -pSCHEDULE='printf %s' \
-        -cMODE="$cMODE"                           -pMODE='printf %s'     \
-        -cCHAINID="#token(\"$cCHAINID\",\"Int\")" -pCHAINID='printf %s'  \
-        "$run_file" "$@"
+    local cschedule cmode cchainid parser
+
+    case "$backend" in
+        java)
+            cschedule=$cSCHEDULE_kast
+            cmode=$cMODE_kast
+            cchainid=$cCHAINID_kast
+            parser='printf %s'
+            ;;
+        *)
+            cschedule=$cSCHEDULE_kore
+            cmode=$cMODE_kore
+            cchainid=$cCHAINID_kore
+            parser='cat'
+            ;;
+    esac
+    krun --directory "$backend_dir"                   \
+         -cSCHEDULE="$cschedule" -pSCHEDULE="$parser" \
+         -cMODE="$cmode"         -pMODE="$parser"     \
+         -cCHAINID="$cchainid"   -pCHAINID="$parser"  \
+         "$run_file" "$@"
 }
 
 run_kast() {
@@ -44,8 +60,9 @@ run_kast() {
     output_mode="${1:-kore}" ; shift
 
     case "$run_file-$output_mode" in
-        *.json-@(kast|kore)) "$kevm_dir/$output_mode-json.py" "$run_file" "$cSCHEDULE" "$cMODE" "$cCHAINID" ;;
-        *)                   kast --directory "$backend_dir" "$run_file" --output "$output_mode" "$@"       ;;
+        *.json-kast) "$kevm_dir/kast-json.py" "$run_file" "$cSCHEDULE_kast" "$cMODE_kast" "$cCHAINID_kast" ;;
+        *.json-kore) "$kevm_dir/kore-json.py" "$run_file" "$cSCHEDULE_kore" "$cMODE_kore" "$cCHAINID_kore" ;;
+        *)           kast --directory "$backend_dir" "$run_file" --output "$output_mode" "$@"              ;;
     esac
 }
 
@@ -245,9 +262,13 @@ if [[ "$run_file" == '-' ]]; then
 fi
 [[ -f "$run_file" ]] || fatal "File does not exist: $run_file"
 
-cMODE="\`${MODE:-NORMAL}\`(.KList)"
-cSCHEDULE="\`${SCHEDULE:-ISTANBUL}_EVM\`(.KList)"
-cCHAINID="${CHAINID:-1}"
+cMODE_kore="Lbl${MODE:-NORMAL}{}()"
+cSCHEDULE_kore="Lbl${SCHEDULE:-ISTANBUL}'Unds'EVM{}()"
+cCHAINID_kore="\dv{SortInt{}}(\"${CHAINID:-1}\")"
+
+cMODE_kast="\`${MODE:-NORMAL}\`(.KList)"
+cSCHEDULE_kast="\`${SCHEDULE:-ISTANBUL}_EVM\`(.KList)"
+cCHAINID_kast="#token(\"${CHAINID:-1}\",\"Int\")"
 
 case "$run_command-$backend" in
     run-@(java|llvm|haskell)       ) run_krun                        "$@" ;;
