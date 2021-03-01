@@ -1,8 +1,8 @@
 pipeline {
   agent { label 'docker && !smol' }
   environment {
-    GITHUB_TOKEN = credentials('rv-jenkins')
-    VERSION          = '1.0.0'
+    GITHUB_TOKEN     = credentials('rv-jenkins')
+    VERSION          = '1.0.1'
     LONG_REV         = """${sh(returnStdout: true, script: 'git rev-parse HEAD').trim()}"""
     SHORT_REV        = """${sh(returnStdout: true, script: 'git rev-parse --short=7 HEAD').trim()}"""
     KEVM_RELEASE_TAG = "v${env.VERSION}-${env.SHORT_REV}"

@@ -17,7 +17,7 @@ KEVM_INCLUDE := $(KEVM_LIB)/include
 KEVM_K_BIN   := $(KEVM_LIB)/kframework/bin
 KEVM         := kevm
 
-KEVM_VERSION     ?= 0.2.0
+KEVM_VERSION     ?= 1.0.1
 KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
 
 INSTALL_PREFIX  := /usr
