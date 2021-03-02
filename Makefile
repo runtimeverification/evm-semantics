@@ -16,8 +16,8 @@ INSTALL_BIN     ?= $(INSTALL_PREFIX)/bin
 INSTALL_LIB     ?= $(INSTALL_PREFIX)/lib/kevm
 INSTALL_INCLUDE ?= $(INSTALL_LIB)/include
 
-KEVM_BIN     := $(BUILD_DIR)$(INSTALL_PREFIX)/bin
-KEVM_LIB     := $(BUILD_DIR)$(INSTALL_PREFIX)/lib/kevm
+KEVM_BIN     := $(BUILD_DIR)$(INSTALL_BIN)
+KEVM_LIB     := $(BUILD_DIR)$(INSTALL_LIB)
 KEVM_INCLUDE := $(KEVM_LIB)/include
 KEVM_K_BIN   := $(KEVM_LIB)/kframework/bin
 KEVM         := kevm
