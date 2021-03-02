@@ -26,8 +26,6 @@ INSTALL_LIB     ?= $(DESTDIR)$(INSTALL_PREFIX)/lib/kevm
 INSTALL_INCLUDE ?= $(INSTALL_LIB)/include
 
 K_SUBMODULE := $(DEPS_DIR)/k
-K_INSTALL   := $(DESTDIR)$(INSTALL_PREFIX)/kframework
-K_JAR       := $(K_INSTALL)/lib/kframework/java/kernel-1.0-SNAPSHOT.jar
 
 LIBRARY_PATH       := $(LOCAL_LIB)
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
@@ -100,7 +98,10 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 
 deps: k-deps plugin-deps
 
-k-deps: $(K_JAR)
+k-deps:
+	cd $(K_SUBMODULE)                                                                                                                                                                           \
+	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=/usr/lib/kevm/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
+	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=/usr/lib/kevm/kframework package/package
 
 plugin-deps: $(PLUGIN_SOURCE)
 
@@ -120,11 +121,6 @@ ifneq ($(RELEASE),)
 else
     K_BUILD_TYPE := Debug
 endif
-
-$(K_JAR):
-	cd $(K_SUBMODULE)                                                                                                                                                                           \
-	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=/usr/lib/kevm/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
-	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=/usr/lib/kevm/kframework package/package
 
 # Building
 # --------
@@ -173,7 +169,7 @@ HASKELL_KOMPILE_OPTS ?=
 KOMPILE_HASKELL := kompile --debug --backend haskell --md-selector "$(tangle_haskell)" \
                    $(KOMPILE_OPTS) $(HASKELL_KOMPILE_OPTS)
 
-STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_INSTALL)/include/kllvm  \
+STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB)                               \
                            $(PLUGIN_SUBMODULE)/plugin-c/plugin_util.cpp \
                            $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp      \
                            $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp      \
