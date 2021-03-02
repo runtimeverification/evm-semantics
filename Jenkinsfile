@@ -14,7 +14,6 @@ pipeline {
       steps { script { currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}" } }
     }
     stage('Build and Test') {
-      when { branch 'master' }
       agent {
         dockerfile {
           additionalBuildArgs '--build-arg K_COMMIT="$(cd deps/k && git rev-parse --short=7 HEAD)" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
@@ -60,10 +59,10 @@ pipeline {
       }
     }
     stage('Package') {
-      // when {
-      //   branch 'master'
-      //   beforeAgent true
-      // }
+      when {
+        branch 'master'
+        beforeAgent true
+      }
       stages {
         stage('Build Ubuntu Bionic') {
           agent {
