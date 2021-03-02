@@ -12,8 +12,8 @@ BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 LOCAL_LIB     := $(BUILD_LOCAL)/lib
 
 INSTALL_PREFIX  := /usr
-INSTALL_BIN     ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
-INSTALL_LIB     ?= $(DESTDIR)$(INSTALL_PREFIX)/lib/kevm
+INSTALL_BIN     ?= $(INSTALL_PREFIX)/bin
+INSTALL_LIB     ?= $(INSTALL_PREFIX)/lib/kevm
 INSTALL_INCLUDE ?= $(INSTALL_LIB)/include
 
 KEVM_BIN     := $(BUILD_DIR)$(INSTALL_PREFIX)/bin
@@ -99,9 +99,9 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 deps: k-deps plugin-deps
 
 k-deps:
-	cd $(K_SUBMODULE)                                                                                                                                                                           \
-	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=/usr/lib/kevm/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
-	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=/usr/lib/kevm/kframework package/package
+	cd $(K_SUBMODULE)                                                                                                                                                                            \
+	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=$(INSTALL_LIB)/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
+	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/kframework package/package
 
 plugin-deps: $(PLUGIN_SOURCE)
 
@@ -275,18 +275,18 @@ build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_BIN)/$(KEVM)
 all_bin_sources := $(shell find $(KEVM_BIN) -type f                                                                                                                    | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f -not -path "$(KEVM_LIB)/llvm/driver-kompiled/dt/*" -not -path "$(KEVM_LIB)/kframework/share/kframework/pl-tutorial/*" | sed 's|^$(KEVM_LIB)/||')
 
-install: $(patsubst %, $(INSTALL_BIN)/%, $(all_bin_sources)) \
-         $(patsubst %, $(INSTALL_LIB)/%, $(all_lib_sources))
+install: $(patsubst %, $(DESTDIR)$(INSTALL_BIN)/%, $(all_bin_sources)) \
+         $(patsubst %, $(DESTDIR)$(INSTALL_LIB)/%, $(all_lib_sources))
 
-$(INSTALL_BIN)/%: $(KEVM_BIN)/%
+$(DESTDIR)$(INSTALL_BIN)/%: $(KEVM_BIN)/%
 	install -D $< $@
 
-$(INSTALL_LIB)/%: $(KEVM_LIB)/%
+$(DESTDIR)$(INSTALL_LIB)/%: $(KEVM_LIB)/%
 	install -D $< $@
 
 uninstall:
-	rm -rf $(INSTALL_BIN)/kevm
-	rm -rf $(INSTALL_LIB)/kevm
+	rm -rf $(DESTDIR)$(INSTALL_BIN)/kevm
+	rm -rf $(DESTDIR)$(INSTALL_LIB)/kevm
 
 # Tests
 # -----
