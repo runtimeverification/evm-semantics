@@ -11,19 +11,19 @@ DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
 BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 LOCAL_LIB     := $(BUILD_LOCAL)/lib
 
-KEVM_BIN     := $(BUILD_DIR)/usr/bin
-KEVM_LIB     := $(BUILD_DIR)/usr/lib/kevm
+INSTALL_PREFIX  := /usr
+INSTALL_BIN     ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
+INSTALL_LIB     ?= $(DESTDIR)$(INSTALL_PREFIX)/lib/kevm
+INSTALL_INCLUDE ?= $(INSTALL_LIB)/include
+
+KEVM_BIN     := $(BUILD_DIR)$(INSTALL_PREFIX)/bin
+KEVM_LIB     := $(BUILD_DIR)$(INSTALL_PREFIX)/lib/kevm
 KEVM_INCLUDE := $(KEVM_LIB)/include
 KEVM_K_BIN   := $(KEVM_LIB)/kframework/bin
 KEVM         := kevm
 
 KEVM_VERSION     ?= 1.0.1
 KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
-
-INSTALL_PREFIX  := /usr
-INSTALL_BIN     ?= $(DESTDIR)$(INSTALL_PREFIX)/bin
-INSTALL_LIB     ?= $(DESTDIR)$(INSTALL_PREFIX)/lib/kevm
-INSTALL_INCLUDE ?= $(INSTALL_LIB)/include
 
 K_SUBMODULE := $(DEPS_DIR)/k
 
