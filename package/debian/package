@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -xeuo pipefail
+
+distro="${1:-bionic}"
+
+case "$distro" in
+    bionic) control_file=control.bionic             ;;
+    *)      echo "Unknown distro: $distro" ; exti 1 ;;
+esac
+
+rm -rf debian
+
+cp -r package/debian ./debian
+mv debian/$control_file debian/control
+dpkg-buildpackage --no-sign
