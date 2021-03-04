@@ -6,24 +6,25 @@ shopt -s extglob
 notif() { echo "== $@" >&2 ; }
 fatal() { echo "[FATAL] $@" ; exit 1 ; }
 
-# Works regardless of where script is called from
-kevm_dir="${KEVM_DIR:-$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )}"
-build_dir="$kevm_dir/.build"
-defn_dir="${KEVM_DEFN_DIR:-$build_dir/defn}"
-lib_dir="$build_dir/local/lib"
-k_release_dir="${K_RELEASE:-$kevm_dir/deps/k/k-distribution/target/release/k}"
-[[ -f "${k_release_dir}/bin/kompile" ]]               \
-    || ! which kompile &> /dev/null                   \
-    || k_release_dir="$(dirname $(which kompile))/.."
+check_k_install() {
+    which kore-exec &> /dev/null \
+        || fatal "Must have K installed! See https://github.com/kframework/k/releases."
+    which kast &> /dev/null \
+        || fatal "Must have K installed! See https://github.com/kframework/k/releases."
+    which krun &> /dev/null \
+        || fatal "Must have K installed! See https://github.com/kframework/k/releases."
+}
 
-export PATH="$k_release_dir/lib/native/linux:$k_release_dir/lib/native/linux64:$k_release_dir/bin/:$PATH"
-export LD_LIBRARY_PATH="$k_release_dir/lib/native/linux64:$lib_dir:${LD_LIBRARY_PATH:-}"
+INSTALL_BIN="$(dirname $0)"
+INSTALL_LIB=${INSTALL_BIN}/../lib/kevm
+INSTALL_K_BIN=${INSTALL_LIB}/kframework/bin
+
+export PATH="$INSTALL_BIN:$INSTALL_LIB:$INSTALL_K_BIN:$PATH"
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
 
-KLAB_OUT="${KLAB_OUT:-$build_dir/klab}"
-KLAB_NODE_STACK_SIZE="${KLAB_NODE_STACK_SIZE:-300000}"
-export KLAB_OUT
+export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 
 # Runners
 # -------
@@ -32,6 +33,8 @@ export KLAB_OUT
 
 run_krun() {
     local cschedule cmode cchainid parser
+
+    check_k_install
 
     case "$backend" in
         java)
@@ -60,14 +63,16 @@ run_kast() {
     output_mode="${1:-kore}" ; shift
 
     case "$run_file-$output_mode" in
-        *.json-kast) "$kevm_dir/kast-json.py" "$run_file" "$cSCHEDULE_kast" "$cMODE_kast" "$cCHAINID_kast" ;;
-        *.json-kore) "$kevm_dir/kore-json.py" "$run_file" "$cSCHEDULE_kore" "$cMODE_kore" "$cCHAINID_kore" ;;
-        *)           kast --directory "$backend_dir" "$run_file" --output "$output_mode" "$@"              ;;
+        *.json-kast) kast-json.py "$run_file" "$cSCHEDULE_kast" "$cMODE_kast" "$cCHAINID_kast"                  ;;
+        *.json-kore) kore-json.py "$run_file" "$cSCHEDULE_kore" "$cMODE_kore" "$cCHAINID_kore"                  ;;
+        *)           check_k_install ; kast --directory "$backend_dir" "$run_file" --output "$output_mode" "$@" ;;
     esac
 }
 
 run_prove() {
     local def_module run_dir additional_proof_args bug_report_name
+
+    check_k_install
 
     def_module="$1" ; shift
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
@@ -115,6 +120,7 @@ view_klab() {
 
     # klab often runs out of stack space when running long-running KEVM programs
     # klab debug "$klab_log"
+    KLAB_NODE_STACK_SIZE="${KLAB_NODE_STACK_SIZE:-300000}"
     node --max-old-space-size=4096 --stack-size=$KLAB_NODE_STACK_SIZE $(dirname $(which klab))/../libexec/klab-debug "$klab_log"
 }
 
@@ -173,15 +179,15 @@ run_command="$1" ; shift
 
 if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
     echo "
-        usage: $0 run          [--backend (llvm|java|haskell)]           <pgm>  <K arg>*
-               $0 interpret    [--backend (llvm)] [--debug|--no-unparse] <pgm>  <interpreter arg>*
-               $0 interpret    [--backend (java|haskell)] [--no-unparse] <pgm>
-               $0 kast         [--backend (llvm|java|haskell)]           <pgm>  <output format> <K arg>*
-               $0 prove        [--backend (java|haskell)]                <spec> <def_module> <K arg>*
-               $0 search       [--backend (java|haskell)]                <pgm>  <pattern> <K arg>*
-               $0 klab-run                                               <pgm>  <K arg>*
-               $0 klab-prove                                             <spec> <def_module> <K arg>*
-               $0 klab-view                                              <spec>
+        usage: $0 run          [--backend (llvm|java|haskell)]           <KEVM_arg>* <pgm>  <K arg>*
+               $0 interpret    [--backend (llvm)] [--debug|--no-unparse] <KEVM_arg>* <pgm>  <interpreter arg>*
+               $0 interpret    [--backend (java|haskell)] [--no-unparse] <KEVM_arg>* <pgm>
+               $0 kast         [--backend (llvm|java|haskell)]           <KEVM_arg>* <pgm>  <output format> <K arg>*
+               $0 prove        [--backend (java|haskell)]                            <spec> <def_module> <K arg>*
+               $0 search       [--backend (java|haskell)]                            <pgm>  <pattern> <K arg>*
+               $0 klab-run                                                           <pgm>  <K arg>*
+               $0 klab-prove                                                         <spec> <def_module> <K arg>*
+               $0 klab-view                                                          <spec>
 
                $0 [help|--help|version|--version]
 
@@ -198,6 +204,9 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
 
            Note: <pgm> is a path to a file containing an EVM program/test.
                  <spec> is a K specification to be proved.
+                 <KEVM arg> is one of [--mode (NORMAL|VMTESTS)]
+                                      [--schedule (ISTANBUL|PETERSBURG|CONSTANTINOPLE|BYZANTIUM|SPURIOUS_DRAGON|TANGERINE_WHISTLE|HOMESTEAD|FRONTIER|DEFAULT)]
+                                      [--chainid NNN]
                  <K arg> is an argument you want to pass to K.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
                  <output format> is the format for Kast to output the term in.
@@ -211,13 +220,7 @@ fi
 
 if [[ "$run_command" == 'version' ]] || [[ "$run_command" == '--version' ]]; then
     notif "KEVM Version"
-    git rev-parse --short HEAD
-    notif "K Version"
-    kompile --version
-    notif "Kore Version"
-    kore-exec --version
-    notif "Z3 Version"
-    z3 --version
+    cat $INSTALL_LIB/version
     exit 0
 fi
 
@@ -227,6 +230,9 @@ dump=false
 unparse=true
 repl=false
 bug_report=false
+mode=NORMAL
+schedule=ISTANBUL
+chainid=1
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 kevm_port='8545'
@@ -242,13 +248,16 @@ while [[ $# -gt 0 ]]; do
         --bug-report)         bug_report=true           ; shift   ;;
         --backend)            backend="$2"              ; shift 2 ;;
         --backend-dir)        backend_dir="$2"          ; shift 2 ;;
+        --mode)               mode="$2"                 ; shift 2 ;;
+        --schedule)           schedule="$2"             ; shift 2 ;;
+        --chainid)            chainid="$2"              ; shift 2 ;;
         -p|--port)            kevm_port="$2"            ; shift 2 ;;
         -h|--host|--hostname) kevm_host="$2"            ; shift 2 ;;
         *)                    args+=("$1")              ; shift   ;;
     esac
 done
 set -- "${args[@]}"
-backend_dir="${backend_dir:-$defn_dir/$backend}"
+backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
 ! $repl || [[ "$backend" == haskell ]] || fatal "Option --repl only usable with --backend haskell!"
 
@@ -262,13 +271,13 @@ if [[ "$run_file" == '-' ]]; then
 fi
 [[ -f "$run_file" ]] || fatal "File does not exist: $run_file"
 
-cMODE_kore="Lbl${MODE:-NORMAL}{}()"
-cSCHEDULE_kore="Lbl${SCHEDULE:-ISTANBUL}'Unds'EVM{}()"
-cCHAINID_kore="\dv{SortInt{}}(\"${CHAINID:-1}\")"
+cMODE_kore="Lbl${mode}{}()"
+cSCHEDULE_kore="Lbl${schedule}'Unds'EVM{}()"
+cCHAINID_kore="\dv{SortInt{}}(\"${chainid}\")"
 
-cMODE_kast="\`${MODE:-NORMAL}\`(.KList)"
-cSCHEDULE_kast="\`${SCHEDULE:-ISTANBUL}_EVM\`(.KList)"
-cCHAINID_kast="#token(\"${CHAINID:-1}\",\"Int\")"
+cMODE_kast="\`${mode}\`(.KList)"
+cSCHEDULE_kast="\`${schedule}_EVM\`(.KList)"
+cCHAINID_kast="#token(\"${chainid}\",\"Int\")"
 
 case "$run_command-$backend" in
     run-@(java|llvm|haskell)       ) run_krun                        "$@" ;;
