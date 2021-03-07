@@ -1,6 +1,6 @@
 {
   "name": "evm-semantics",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "--- permalink: README.html copyright: Copyright (c) 2010-2020 Runtime Verification Team. All Rights Reserved. ---",
   "main": "index.html",
   "scripts": {

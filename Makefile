@@ -11,22 +11,26 @@ DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
 BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 LOCAL_LIB     := $(BUILD_LOCAL)/lib
 
-K_SUBMODULE := $(DEPS_DIR)/k
-ifneq (,$(wildcard $(K_SUBMODULE)/k-distribution/target/release/k/bin/*))
-    K_RELEASE ?= $(abspath $(K_SUBMODULE)/k-distribution/target/release/k)
-else
-    K_RELEASE ?= $(dir $(shell which kompile))..
-endif
-K_BIN := $(K_RELEASE)/bin
-K_LIB := $(K_RELEASE)/lib/kframework
-export K_RELEASE
+INSTALL_PREFIX  := /usr
+INSTALL_BIN     ?= $(INSTALL_PREFIX)/bin
+INSTALL_LIB     ?= $(INSTALL_PREFIX)/lib/kevm
+INSTALL_INCLUDE ?= $(INSTALL_LIB)/include
 
-LIBRARY_PATH         := $(LOCAL_LIB)
-LOCAL_K_INCLUDE_PATH := $(BUILD_LOCAL)/include/kframework/
-K_INCLUDE_PATH       += :$(LOCAL_K_INCLUDE_PATH)
-C_INCLUDE_PATH       += :$(BUILD_LOCAL)/include
-CPLUS_INCLUDE_PATH   += :$(BUILD_LOCAL)/include
-PATH                 := $(K_BIN):$(PATH)
+KEVM_BIN     := $(BUILD_DIR)$(INSTALL_BIN)
+KEVM_LIB     := $(BUILD_DIR)$(INSTALL_LIB)
+KEVM_INCLUDE := $(KEVM_LIB)/include
+KEVM_K_BIN   := $(KEVM_LIB)/kframework/bin
+KEVM         := kevm
+
+KEVM_VERSION     ?= 1.0.1
+KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
+
+K_SUBMODULE := $(DEPS_DIR)/k
+
+LIBRARY_PATH       := $(LOCAL_LIB)
+C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
+CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
+PATH               := $(KEVM_BIN):$(KEVM_K_BIN):$(PATH)
 
 export LIBRARY_PATH
 export C_INCLUDE_PATH
@@ -34,25 +38,27 @@ export CPLUS_INCLUDE_PATH
 export PATH
 
 PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
+PLUGIN_SOURCE    := $(KEVM_INCLUDE)/kframework/blockchain-k-plugin/krypto.md
 export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
-        deps all-deps llvm-deps haskell-deps repo-deps k-deps plugin-deps libsecp256k1 libff                                     \
-        build build-java build-specs build-haskell build-llvm                                                                    \
+        deps all-deps llvm-deps haskell-deps k-deps plugin-deps libsecp256k1 libff                                               \
+        build build-java build-haskell build-llvm                                                                                \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
-        test-prove-imp-specs test-prove-mcd test-klab-prove test-haskell-dry-run                                                 \
+        test-prove-mcd test-klab-prove test-haskell-dry-run                                                                      \
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
-        media media-pdf metropolis-theme
+        media media-pdf metropolis-theme                                                                                         \
+        install uninstall
 .SECONDARY:
 
 all: build
 
 clean:
-	rm -rf $(DEFN_BASE_DIR)
+	rm -rf $(KEVM_BIN) $(KEVM_LIB)
 
 distclean:
 	rm -rf $(BUILD_DIR)
@@ -90,14 +96,17 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 # K Dependencies
 # --------------
 
-K_JAR := $(K_SUBMODULE)/k-distribution/target/release/k/lib/java/kernel-1.0-SNAPSHOT.jar
+deps: k-deps plugin-deps
 
-deps: repo-deps
-repo-deps: k-deps plugin-deps
-k-deps: $(K_JAR)
-plugin-deps:
-	cd deps/plugin && \
-	    make INSTALL_PREFIX=$(BUILD_LOCAL) install
+k-deps:
+	cd $(K_SUBMODULE)                                                                                                                                                                            \
+	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=$(INSTALL_LIB)/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
+	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/kframework package/package
+
+plugin-deps: $(PLUGIN_SOURCE)
+
+$(PLUGIN_SOURCE): $(PLUGIN_SUBMODULE)/plugin/krypto.md
+	cd deps/plugin && make INSTALL_PREFIX=$(CURDIR)/$(KEVM_LIB) install
 
 K_MVN_ARGS :=
 ifneq ($(SKIP_LLVM),)
@@ -113,30 +122,30 @@ else
     K_BUILD_TYPE := Debug
 endif
 
-$(K_JAR):
-	cd $(K_SUBMODULE) && mvn package -DskipTests -U -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS)
-
 # Building
 # --------
 
-build: build-java build-specs build-haskell build-llvm
-
-SOURCE_FILES       := abi              \
-                      asm              \
-                      buf              \
-                      data             \
-                      driver           \
-                      edsl             \
-                      evm              \
-                      evm-imp-specs    \
-                      evm-types        \
-                      hashed-locations \
-                      json-rpc         \
-                      network          \
-                      serialization    \
-                      state-loader
+SOURCE_FILES       := abi                        \
+                      asm                        \
+                      buf                        \
+                      data                       \
+                      driver                     \
+                      edsl                       \
+                      evm                        \
+                      evm-types                  \
+                      hashed-locations           \
+                      json-rpc                   \
+                      network                    \
+                      serialization              \
+                      state-loader               \
+                      blockchain-k-plugin/krypto
 EXTRA_SOURCE_FILES :=
 ALL_FILES          := $(patsubst %, %.md, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
+
+includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(ALL_FILES))
+
+$(KEVM_INCLUDE)/kframework/%.md: %.md
+	install -D $< $@
 
 tangle_concrete := k & (! ceil) & ( ( ! ( symbolic | nobytes ) ) | concrete | bytes   )
 tangle_java     := k & (! ceil) & ( ( ! ( concrete | bytes   ) ) | symbolic | nobytes )
@@ -144,7 +153,7 @@ tangle_haskell  := k            & ( ( ! ( concrete | nobytes ) ) | symbolic | by
 
 HOOK_NAMESPACES    = KRYPTO JSON
 EXTRA_KOMPILE_OPTS =
-KOMPILE_OPTS      += --hook-namespaces "$(HOOK_NAMESPACES)" -I $(LOCAL_K_INCLUDE_PATH) $(EXTRA_KOMPILE_OPTS)
+KOMPILE_OPTS      += --hook-namespaces "$(HOOK_NAMESPACES)" -I $(KEVM_INCLUDE)/kframework -I $(INSTALL_INCLUDE)/kframework $(EXTRA_KOMPILE_OPTS)
 
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
@@ -160,7 +169,7 @@ HASKELL_KOMPILE_OPTS ?=
 KOMPILE_HASKELL := kompile --debug --backend haskell --md-selector "$(tangle_haskell)" \
                    $(KOMPILE_OPTS) $(HASKELL_KOMPILE_OPTS)
 
-STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB) -I$(K_RELEASE)/include/kllvm  \
+STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB)                               \
                            $(PLUGIN_SUBMODULE)/plugin-c/plugin_util.cpp \
                            $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp      \
                            $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp      \
@@ -181,85 +190,103 @@ KOMPILE_STANDALONE := kompile --debug --backend llvm --md-selector "$(tangle_con
 
 # Java
 
-java_dir           := $(DEFN_DIR)/java
-java_files         := $(ALL_FILES)
+java_dir           := java
 java_main_module   := ETHEREUM-SIMULATION
 java_syntax_module := $(java_main_module)
 java_main_file     := driver.md
 java_main_filename := $(basename $(notdir $(java_main_file)))
-java_kompiled      := $(java_dir)/$(java_main_filename)-kompiled/timestamp
+java_kompiled      := $(java_dir)/$(java_main_filename)-kompiled/compiled.bin
 
-build-java: $(java_kompiled)
-
-$(java_kompiled): $(java_files)
+$(KEVM_LIB)/$(java_kompiled): $(includes)
 	$(KOMPILE_JAVA) $(java_main_file)                     \
-	                --directory $(java_dir) -I $(CURDIR)  \
+	                --directory $(KEVM_LIB)/$(java_dir)   \
 	                --main-module $(java_main_module)     \
 	                --syntax-module $(java_syntax_module)
 
-# Imperative Specs
-
-specs_dir           := $(DEFN_DIR)/specs
-specs_files         := $(ALL_FILES)
-specs_main_module   := EVM-IMP-SPECS
-specs_syntax_module := $(specs_main_module)
-specs_main_file     := evm-imp-specs.md
-specs_main_filename := $(basename $(notdir $(specs_main_file)))
-specs_kompiled      := $(specs_dir)/$(specs_main_filename)-kompiled/timestamp
-
-build-specs: $(specs_kompiled)
-
-$(specs_kompiled): $(specs_files)
-	$(KOMPILE_JAVA) $(specs_main_file)                     \
-	                --directory $(specs_dir) -I $(CURDIR)  \
-	                --main-module $(specs_main_module)     \
-	                --syntax-module $(specs_syntax_module)
-
 # Haskell
 
-haskell_dir            := $(DEFN_DIR)/haskell
-haskell_files          := $(ALL_FILES)
+haskell_dir            := haskell
 haskell_main_module    := ETHEREUM-SIMULATION
 haskell_syntax_module  := $(haskell_main_module)
 haskell_main_file      := driver.md
 haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
 haskell_kompiled       := $(haskell_dir)/$(haskell_main_filename)-kompiled/definition.kore
 
-build-haskell: $(haskell_kompiled)
-
-$(haskell_kompiled): $(haskell_files)
+$(KEVM_LIB)/$(haskell_kompiled): $(includes)
 	$(KOMPILE_HASKELL) $(haskell_main_file)                     \
-	                   --directory $(haskell_dir) -I $(CURDIR)  \
+	                   --directory $(KEVM_LIB)/$(haskell_dir)   \
 	                   --main-module $(haskell_main_module)     \
 	                   --syntax-module $(haskell_syntax_module)
 
 # Standalone
 
-llvm_dir           := $(DEFN_DIR)/llvm
-llvm_files         := $(ALL_FILES)
+llvm_dir           := llvm
 llvm_main_module   := ETHEREUM-SIMULATION
 llvm_syntax_module := $(llvm_main_module)
 llvm_main_file     := driver.md
 llvm_main_filename := $(basename $(notdir $(llvm_main_file)))
 llvm_kompiled      := $(llvm_dir)/$(llvm_main_filename)-kompiled/interpreter
 
-build-llvm: $(llvm_kompiled)
-
-$(llvm_kompiled): $(llvm_files) $(libff_out)
+$(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out)
 	$(KOMPILE_STANDALONE) $(llvm_main_file)                     \
-	                      --directory $(llvm_dir) -I $(CURDIR)  \
+	                      --directory $(KEVM_LIB)/$(llvm_dir)   \
 	                      --main-module $(llvm_main_module)     \
 	                      --syntax-module $(llvm_syntax_module)
 
 # Installing
 # ----------
 
-KEVM_RELEASE_TAG ?=
+install_bins := kevm
 
-release.md: INSTALL.md
+install_libs := $(haskell_kompiled) \
+                $(llvm_kompiled)    \
+                $(java_kompiled)    \
+                kore-json.py        \
+                kast-json.py        \
+                release.md          \
+                version
+
+build_bins := $(install_bins)
+
+build_libs := $(install_libs)
+
+$(KEVM_BIN)/$(KEVM): $(KEVM)
+	install -D $< $@
+
+$(KEVM_LIB)/%.py: %.py
+	install -D $< $@
+
+$(KEVM_LIB)/version:
+	@mkdir -p $(dir $@)
+	echo $(KEVM_RELEASE_TAG) > $@
+
+$(KEVM_LIB)/release.md: INSTALL.md
+	@mkdir -p $(dir $@)
 	echo "KEVM Release $(KEVM_RELEASE_TAG)"  > $@
 	echo                                    >> $@
 	cat INSTALL.md                          >> $@
+
+build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
+
+build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_BIN)/$(KEVM)
+build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_BIN)/$(KEVM)
+build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_BIN)/$(KEVM)
+
+all_bin_sources := $(shell find $(KEVM_BIN) -type f                                                                                                                    | sed 's|^$(KEVM_BIN)/||')
+all_lib_sources := $(shell find $(KEVM_LIB) -type f -not -path "$(KEVM_LIB)/llvm/driver-kompiled/dt/*" -not -path "$(KEVM_LIB)/kframework/share/kframework/pl-tutorial/*" | sed 's|^$(KEVM_LIB)/||')
+
+install: $(patsubst %, $(DESTDIR)$(INSTALL_BIN)/%, $(all_bin_sources)) \
+         $(patsubst %, $(DESTDIR)$(INSTALL_LIB)/%, $(all_lib_sources))
+
+$(DESTDIR)$(INSTALL_BIN)/%: $(KEVM_BIN)/%
+	install -D $< $@
+
+$(DESTDIR)$(INSTALL_LIB)/%: $(KEVM_LIB)/%
+	install -D $< $@
+
+uninstall:
+	rm -rf $(DESTDIR)$(INSTALL_BIN)/kevm
+	rm -rf $(DESTDIR)$(INSTALL_LIB)/kevm
 
 # Tests
 # -----
@@ -267,7 +294,6 @@ release.md: INSTALL.md
 TEST_CONCRETE_BACKEND := llvm
 TEST_SYMBOLIC_BACKEND := java
 
-TEST         := ./kevm
 TEST_OPTIONS :=
 CHECK        := git --no-pager diff --no-index --ignore-all-space -R
 
@@ -289,28 +315,28 @@ tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE = DEFAULT
 tests/specs/mcd/functional-spec.k%: KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
 
 tests/%.run: tests/%
-	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) CHAINID=$(KEVM_CHAINID)                                                \
-	    $(TEST) interpret $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                           \
+	$(KEVM) interpret $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                               \
+	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                     \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-interactive: tests/%
-	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) CHAINID=$(KEVM_CHAINID)                                                \
-	    $(TEST) run $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                                 \
+	$(KEVM) run $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                                     \
+	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                     \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-expected: tests/% tests/%.expected
-	MODE=$(KEVM_MODE) SCHEDULE=$(KEVM_SCHEDULE) CHAINID=$(KEVM_CHAINID)                                                \
-	    $(TEST) run $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                                 \
+	$(KEVM) run $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                                     \
+	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    $< > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                     \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.parse: tests/%
-	$(TEST) kast $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
+	$(KEVM) kast $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND) $< kast > $@-out
 	$(CHECK) $@-out $@-expected
 	rm -rf $@-out
 
@@ -318,25 +344,20 @@ tests/specs/benchmarks/%-spec.k.prove:             KPROVE_OPTS += --smt-prelude 
 tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-backend-command "kore-exec --smt=none"
 
 tests/%.prove: tests/%
-	$(TEST) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
+	$(KEVM) prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 tests/%.prove-dry-run: tests/%
-	$(TEST) prove $(TEST_OPTIONS) --backend haskell $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) --dry-run \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
-
-tests/specs/imp-specs/%.prove: tests/specs/imp-specs/%
-	$(TEST) prove $(TEST_OPTIONS) --backend-dir $(specs_dir)                                    \
-		--backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
+	$(KEVM) prove $(TEST_OPTIONS) --backend haskell $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) --dry-run \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 tests/%.search: tests/%
-	$(TEST) search $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" > $@-out
+	$(KEVM) search $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" > $@-out
 	$(CHECK) $@-out $@-expected
 	rm -rf $@-out
 
 tests/%.klab-prove: tests/%
-	$(TEST) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
+	$(KEVM) klab-prove $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $< $(KPROVE_MODULE) --format-failures $(KPROVE_OPTS) \
 	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
 
 # Smoke Tests
@@ -389,17 +410,15 @@ prove_opcodes_tests    := $(filter-out $(prove_failing_tests), $(wildcard $(prov
 prove_erc20_tests      := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/erc20/*/*-spec.k))
 prove_bihu_tests       := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/bihu/*-spec.k))
 prove_examples_tests   := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k))
-prove_imp_specs_tests  := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/imp-specs/*-spec.k))
 prove_mcd_tests        := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/mcd/*-spec.k))
 
-test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-imp-specs test-prove-mcd
+test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd
 test-prove-benchmarks: $(prove_benchmarks_tests:=.prove)
 test-prove-functional: $(prove_functional_tests:=.prove)
 test-prove-opcodes:    $(prove_opcodes_tests:=.prove)
 test-prove-erc20:      $(prove_erc20_tests:=.prove)
 test-prove-bihu:       $(prove_bihu_tests:=.prove)
 test-prove-examples:   $(prove_examples_tests:=.prove)
-test-prove-imp-specs:  $(prove_imp_specs_tests:=.prove)
 test-prove-mcd:        $(prove_mcd_tests:=.prove)
 
 test-failing-prove: $(prove_failing_tests:=.prove)
@@ -436,7 +455,7 @@ search_tests:=$(wildcard tests/interactive/search/*.evm)
 test-interactive-search: $(search_tests:=.search)
 
 test-interactive-help:
-	$(TEST) help
+	$(KEVM) help
 
 # Media
 # -----
