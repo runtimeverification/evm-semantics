@@ -52,7 +52,10 @@ The following are needed for building/running KEVM:
 -   GNU [libmpfr](http://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
 -   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
 
-For the exact dependencies check the Dockerfile, but they should look something like this.
+For the exact dependencies check the Dockerfile.
+
+#### Ubuntu
+
 On Ubuntu >= 18.04 (for example):
 
 ```sh
@@ -71,6 +74,8 @@ On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it f
 make libsecp256k1
 ```
 
+#### Arch Linux
+
 On ArchLinux:
 
 ```sh
@@ -82,6 +87,8 @@ sudo pacman -S                                               \
 
 In addition, you'll need the `glog-git` AUR package: <https://aur.archlinux.org/packages/glog-git/>.
 
+#### MacOS
+
 On OSX, using [Homebrew](https://brew.sh/), after installing the command line tools package:
 
 ```sh
@@ -91,8 +98,20 @@ brew install automake libtool gmp mpfr pkg-config maven z3 libffi openssl python
 make libsecp256k1
 ```
 
-NOTE: a previous version of these instructions required the user to run `brew link flex --force`.
+**NOTE**: a previous version of these instructions required the user to run `brew link flex --force`.
 After fetching this revision, you should first run `brew unlink flex`, as it is no longer necessary and will cause an error if you have the homebrew version of flex installed instead of the xcode command line tools version.
+
+**NOTE**: MacOS ships with Bash 3.2 by default.
+KEVM relies on features that were released after version 3.2 (but have been out for quite a while).
+You'll need to upgrade your bash version if you see an error like this when running proofs:
+
+```
+.build/usr/bin/kevm: line 86: additional_proof_args[@]: unbound variable
+```
+
+See how to upgrade here: <https://itnext.io/upgrading-bash-on-macos-7138bd1066ba?gi=6a921425acd3>.
+
+#### Haskell Stack (all platforms)
 
 -   [Haskell Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade).
     Note that the version of the `stack` tool provided by your package manager might not be recent enough.
