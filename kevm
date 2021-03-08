@@ -70,20 +70,20 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module run_dir additional_proof_args bug_report_name
+    local def_module run_dir proof_args bug_report_name
 
     check_k_install
 
     def_module="$1" ; shift
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
 
-    additional_proof_args=()
-    ! $debug      || additional_proof_args+=(--debug)
-    ! $repl       || additional_proof_args+=(--debugger --debug-script kast.kscript)
-    ! $bug_report || additional_proof_args+=(--haskell-backend-command "kore-exec --bug-report $bug_report_name")
+    proof_args=(--def-module "$def_module")
+    ! $debug      || proof_args+=(--debug)
+    ! $repl       || proof_args+=(--debugger --debug-script kast.kscript)
+    ! $bug_report || proof_args+=(--haskell-backend-command "kore-exec --bug-report $bug_report_name")
 
     ! $debug || set -x
-    kprove --directory "$backend_dir" "$run_file" --def-module "$def_module" "${additional_proof_args[@]}" "$@"
+    kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
 }
 
 run_search() {
@@ -256,7 +256,7 @@ while [[ $# -gt 0 ]]; do
         *)                    args+=("$1")              ; shift   ;;
     esac
 done
-set -- "${args[@]}"
+[[ "${#args[@]}" -le 0 ]] || set -- "${args[@]}"
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
 ! $repl || [[ "$backend" == haskell ]] || fatal "Option --repl only usable with --backend haskell!"
