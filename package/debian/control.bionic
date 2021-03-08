@@ -2,7 +2,7 @@ Source: kevm
 Section: devel
 Priority: optional
 Maintainer: Everett Hildenbrandt <everett.hildenbrandt@runtimeverification.com>
-Build-Depends: kframework, protobuf-compiler, clang-7, cmake, pkg-config, libjemalloc-dev, libssl-dev, libprocps-dev, libprotobuf-dev, libcrypto++-dev, libsecp256k1-dev
+Build-Depends: clang-8 , cmake , debhelper , flex , libboost-test-dev , libcrypto++-dev , libgmp-dev , libjemalloc-dev , libmpfr-dev , libprocps-dev , libsecp256k1-dev , libssl-dev , libyaml-dev , maven , openjdk-11-jdk , pkg-config , zlib1g-dev
 Standards-Version: 3.9.6
 Homepage: https://github.com/kframework/evm-semantics
 
@@ -10,7 +10,7 @@ Package: kevm
 Architecture: any
 Section: devel
 Priority: optional
-Depends: libjemalloc-dev, libprotobuf-dev, libcrypto++-dev, libsecp256k1-dev
+Depends: default-jre-headless , flex , libcrypto++6 , libjemalloc1 , libmpfr6 , libsecp256k1-0 , python3 , z3
 Description: K Semantics of EVM
  Implementation of Ethereum Virtual Machine (EVM) in K.
  kevm-vm executable communicates over protobuf to run EVM transactions.
