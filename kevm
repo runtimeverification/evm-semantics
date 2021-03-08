@@ -256,7 +256,7 @@ while [[ $# -gt 0 ]]; do
         *)                    args+=("$1")              ; shift   ;;
     esac
 done
-set -- "${args[@]}"
+[[ "${#args[@]}" -le 0 ]] || set -- "${args[@]}"
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
 ! $repl || [[ "$backend" == haskell ]] || fatal "Option --repl only usable with --backend haskell!"
