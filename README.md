@@ -101,16 +101,6 @@ make libsecp256k1
 **NOTE**: a previous version of these instructions required the user to run `brew link flex --force`.
 After fetching this revision, you should first run `brew unlink flex`, as it is no longer necessary and will cause an error if you have the homebrew version of flex installed instead of the xcode command line tools version.
 
-**NOTE**: MacOS ships with Bash 3.2 by default.
-KEVM relies on features that were released after version 3.2 (but have been out for quite a while).
-You'll need to upgrade your bash version if you see an error like this when running proofs:
-
-```
-.build/usr/bin/kevm: line 86: additional_proof_args[@]: unbound variable
-```
-
-See how to upgrade here: <https://itnext.io/upgrading-bash-on-macos-7138bd1066ba?gi=6a921425acd3>.
-
 #### Haskell Stack (all platforms)
 
 -   [Haskell Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade).
@@ -162,20 +152,26 @@ make build
 Example Usage
 -------------
 
-After building the definition, you can run the definition using `./kevm`.
-Read the `./kevm` script for examples of the actual invocations of `krun` that `./kevm` makes.
+After building, make sure you setup `PATH` correctly:
+
+```sh
+export PATH=$(pwd)/.build/usr/bin:$PATH
+```
+
+After building the definition, you can run the definition using the `kevm` runner.
+You can call `kevm help` to get a quick summary of how to use the script.
 
 Run the file `tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json`:
 
 ```sh
-./kevm run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
+kevm run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json --schedule DEFAULT --mode VMTESTS
 ```
 
-To run proofs, you can similarly use `./kevm`.
+To run proofs, you can similarly use `kevm`.
 For example, to prove one of the specifications:
 
 ```sh
-./kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION
+kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION
 ```
 
 Running Tests
@@ -194,7 +190,7 @@ These are the individual test-suites (all of these can be suffixed with `-all` t
 -   `make test-vm`: VMTests from the [Ethereum Test Set].
 -   `make test-bchain`: Subset of BlockchainTests from the [Ethereum Test Set].
 -   `make test-proof`: Proofs from the [Verified Smart Contracts].
--   `make test-interactive`: Tests of the `./kevm` command.
+-   `make test-interactive`: Tests of the `kevm` command.
 
 When running tests with the `Makefile`, you can specify the `TEST_CONCRETE_BACKEND` (for concrete tests), or `TEST_SYMBOLIC_BACKEND` (for proofs).
 
