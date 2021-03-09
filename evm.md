@@ -2460,6 +2460,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                        )
 ```
 
+### Berlin Schedule
+
+```k
+    syntax Schedule ::= "BERLIN" [klabel(BERLIN_EVM), symbol, smtlib(schedule_BERLIN)]
+ // ----------------------------------------------------------------------------------
+    rule SCHEDCONST  < BERLIN >  => SCHEDCONST < ISTANBUL >
+    rule SCHEDFLAG  << BERLIN >> => SCHEDFLAG << ISTANBUL >>
+```
+
 EVM Program Representations
 ===========================
 
