@@ -1639,6 +1639,7 @@ Precompiled Contracts
     rule #precompiledAccounts(CONSTANTINOPLE)    => #precompiledAccounts(BYZANTIUM)
     rule #precompiledAccounts(PETERSBURG)        => #precompiledAccounts(CONSTANTINOPLE)
     rule #precompiledAccounts(ISTANBUL)          => #precompiledAccounts(PETERSBURG) SetItem(9)
+    rule #precompiledAccounts(BERLIN)            => #precompiledAccounts(ISTANBUL)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
