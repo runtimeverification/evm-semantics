@@ -43,7 +43,7 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps k-deps plugin-deps libsecp256k1 libff                                               \
-        build build-java build-haskell build-llvm                                                                                \
+        build build-java build-haskell build-llvm build-lemmas                                                                   \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
         test-prove test-failing-prove                                                                                            \
@@ -144,7 +144,19 @@ ALL_FILES          := $(patsubst %, %.md, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
 
 includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(ALL_FILES))
 
+LEMMA_FILES := infinite-gas.k     \
+               lemmas.k           \
+               mcd/bin_runtime.k  \
+               mcd/storage.k      \
+               mcd/verification.k \
+               mcd/word-pack.k
+
+lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(LEMMA_FILES))
+
 $(KEVM_INCLUDE)/kframework/%.md: %.md
+	install -D $< $@
+
+$(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
 	install -D $< $@
 
 tangle_concrete := k & (! ceil) & ( ( ! ( symbolic | nobytes ) ) | concrete | bytes   )
@@ -152,8 +164,9 @@ tangle_java     := k & (! ceil) & ( ( ! ( concrete | bytes   ) ) | symbolic | no
 tangle_haskell  := k            & ( ( ! ( concrete | nobytes ) ) | symbolic | bytes   )
 
 HOOK_NAMESPACES    = KRYPTO JSON
+KOMPILE_INCLUDES   = $(KEVM_INCLUDE)/kframework $(INSTALL_INCLUDE)/kframework
 EXTRA_KOMPILE_OPTS =
-KOMPILE_OPTS      += --hook-namespaces "$(HOOK_NAMESPACES)" -I $(KEVM_INCLUDE)/kframework -I $(INSTALL_INCLUDE)/kframework $(EXTRA_KOMPILE_OPTS)
+KOMPILE_OPTS      += --emit-json --hook-namespaces "$(HOOK_NAMESPACES)" $(addprefix -I ,$(KOMPILE_INCLUDES)) $(EXTRA_KOMPILE_OPTS)
 
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
@@ -266,11 +279,12 @@ $(KEVM_LIB)/release.md: INSTALL.md
 	echo                                    >> $@
 	cat INSTALL.md                          >> $@
 
-build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
+build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs)) $(lemma_includes)
 
 build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_BIN)/$(KEVM)
 build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_BIN)/$(KEVM)
 build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_BIN)/$(KEVM)
+build-lemmas:  $(lemma_includes)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f                                                                                                                    | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f -not -path "$(KEVM_LIB)/llvm/driver-kompiled/dt/*" -not -path "$(KEVM_LIB)/kframework/share/kframework/pl-tutorial/*" | sed 's|^$(KEVM_LIB)/||')

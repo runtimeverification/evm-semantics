@@ -19,7 +19,7 @@ INSTALL_BIN="$(dirname $0)"
 INSTALL_LIB=${INSTALL_BIN}/../lib/kevm
 INSTALL_K_BIN=${INSTALL_LIB}/kframework/bin
 
-export PATH="$INSTALL_BIN:$INSTALL_LIB:$INSTALL_K_BIN:$PATH"
+export PATH="$INSTALL_K_BIN:$INSTALL_BIN:$INSTALL_LIB:$PATH"
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
