@@ -125,12 +125,13 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <activeAccounts> .Set </activeAccounts>
             <accounts>
               <account multiplicity="*" type="Map">
-                <acctID>      0                      </acctID>
-                <balance>     0                      </balance>
-                <code>        .ByteArray:AccountCode </code>
-                <storage>     .Map                   </storage>
-                <origStorage> .Map                   </origStorage>
-                <nonce>       0                      </nonce>
+                <acctID>         0                      </acctID>
+                <balance>        0                      </balance>
+                <code>           .ByteArray:AccountCode </code>
+                <storage>        .Map                   </storage>
+                <origStorage>    .Map                   </origStorage>
+                <nonce>          0                      </nonce>
+                <touchedStorage> .Set                   </touchedStorage>
               </account>
             </accounts>
 
@@ -521,9 +522,10 @@ After executing a transaction, it's necessary to have the effect of the substate
  // -----------------------------------------------
     rule <k> #finalizeStorage((ListItem(ACCT) => .List) _) ... </k>
          <account>
-           <acctID> ACCT </acctID>
-           <storage> STORAGE </storage>
-           <origStorage> _ => STORAGE </origStorage>
+           <acctID>         ACCT         </acctID>
+           <storage>        STORAGE      </storage>
+           <origStorage>    _ => STORAGE </origStorage>
+           <touchedStorage> _ => .Set    </touchedStorage>
            ...
          </account>
 
@@ -533,8 +535,9 @@ After executing a transaction, it's necessary to have the effect of the substate
                         | #deleteAccounts ( List )
  // ----------------------------------------------
     rule <k> #finalizeTx(true) => #finalizeStorage(Set2List(ACCTS)) ... </k>
-         <selfDestruct> .Set </selfDestruct>
-         <activeAccounts> ACCTS </activeAccounts>
+         <selfDestruct>    .Set      </selfDestruct>
+         <activeAccounts>  ACCTS     </activeAccounts>
+         <touchedAccounts> _ => .Set </touchedAccounts>
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
          <coinbase> MINER </coinbase>
@@ -1139,6 +1142,10 @@ For now, I assume that they instantiate an empty account and use the empty data.
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT in ACCTS
 
+    rule <k> BALANCE ACCT ... </k>
+         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+      [priority(25)]
+
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
     rule <k> EXTCODESIZE ACCT => #sizeByteArray(CODE) ~> #push ... </k>
@@ -1151,6 +1158,10 @@ For now, I assume that they instantiate an empty account and use the empty data.
     rule <k> EXTCODESIZE ACCT => 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT in ACCTS
+
+    rule <k> EXTCODESIZE ACCT ... </k>
+         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+      [priority(25)]
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
@@ -1180,6 +1191,10 @@ For now, I assume that they instantiate an empty account and use the empty data.
     rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT in ACCTS
+
+    rule <k> EXTCODEHASH ACCT ... </k>
+         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+      [priority(25)]
 ```
 
 TODO: What should happen in the case that the account doesn't exist with `EXTCODECOPY`?
@@ -1199,6 +1214,11 @@ Should we pad zeros (for the copied "program")?
     rule <k> EXTCODECOPY ACCT _MEMSTART _PGMSTART _WIDTH => . ... </k>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT in ACCTS
+
+    rule <k> EXTCODECOPY ACCT ... </k>
+         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+      requires notBool ACCT in ACCTS
+      [priority(25)]
 ```
 
 ### Account Storage Operations
@@ -1213,6 +1233,7 @@ These rules reach into the network state and load/store from account storage:
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
+           <touchedStorage> KEYS => KEYS SetItem(INDEX) </touchedStorage>
            ...
          </account>
 
@@ -1223,6 +1244,7 @@ These rules reach into the network state and load/store from account storage:
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
+           <touchedStorage> KEYS => KEYS SetItem(INDEX) </touchedStorage>
            ...
          </account>
 ```
@@ -1408,6 +1430,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
+         <touchedAccounts> ACCTS => ACCTS SetItem(ACCTTO) <touchedAccounts>
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
@@ -1419,6 +1442,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
+         <touchedAccounts> ACCTS => ACCTS SetItem(ACCTTO) <touchedAccounts>
 
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
@@ -1432,6 +1456,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <caller> ACCTAPPFROM </caller>
          <callValue> VALUE </callValue>
          <localMem> LM </localMem>
+         <touchedAccounts> ACCTS => ACCTS SetItem(ACCTTO) <touchedAccounts>
 
     syntax CallSixOp ::= "STATICCALL"
  // ---------------------------------
@@ -1443,6 +1468,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
          <id> ACCTFROM </id>
          <localMem> LM </localMem>
+         <touchedAccounts> ACCTS => ACCTS SetItem(ACCTTO) <touchedAccounts>
 ```
 
 ### Account Creation/Deletion
@@ -1562,6 +1588,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <nonce> NONCE </nonce>
            ...
          </account>
+         <touchedAccounts> ACCTS => ACCTS SetItem(#newAddr(ACCT, NONCE)) <touchedAccounts>
 ```
 
 `CREATE2` will attempt to `#create` the account, but with the new scheme for choosing the account address.
@@ -1577,6 +1604,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
          <id> ACCT </id>
          <localMem> LM </localMem>
+         <touchedAccounts> ACCTS => ACCTS SetItem(#newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))) <touchedAccounts>
 ```
 
 `SELFDESTRUCT` marks the current account for deletion and transfers funds out of the current account.
@@ -2470,8 +2498,10 @@ A `ScheduleConst` is a constant d"
 ```k
     syntax Schedule ::= "BERLIN" [klabel(BERLIN_EVM), symbol, smtlib(schedule_BERLIN)]
  // ----------------------------------------------------------------------------------
-    rule SCHEDCONST  < BERLIN >  => SCHEDCONST < ISTANBUL >
-    rule SCHEDFLAG  << BERLIN >> => SCHEDFLAG << ISTANBUL >>
+    rule Gsload       < BERLIN >  => 100
+    rule Gsstorereset < BERLIN >  => 5000 -Int Gcoldsload < BERLIN >
+    rule SCHEDCONS T  < BERLIN >  => SCHEDCONST < ISTANBUL >
+    rule SCHEDFLAG   << BERLIN >> => SCHEDFLAG << ISTANBUL >>
 ```
 
 EVM Program Representations
