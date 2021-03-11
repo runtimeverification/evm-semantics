@@ -52,7 +52,10 @@ The following are needed for building/running KEVM:
 -   GNU [libmpfr](http://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
 -   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
 
-For the exact dependencies check the Dockerfile, but they should look something like this.
+For the exact dependencies check the Dockerfile.
+
+#### Ubuntu
+
 On Ubuntu >= 18.04 (for example):
 
 ```sh
@@ -71,6 +74,8 @@ On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it f
 make libsecp256k1
 ```
 
+#### Arch Linux
+
 On ArchLinux:
 
 ```sh
@@ -82,6 +87,8 @@ sudo pacman -S                                               \
 
 In addition, you'll need the `glog-git` AUR package: <https://aur.archlinux.org/packages/glog-git/>.
 
+#### MacOS
+
 On OSX, using [Homebrew](https://brew.sh/), after installing the command line tools package:
 
 ```sh
@@ -91,8 +98,10 @@ brew install automake libtool gmp mpfr pkg-config maven z3 libffi openssl python
 make libsecp256k1
 ```
 
-NOTE: a previous version of these instructions required the user to run `brew link flex --force`.
+**NOTE**: a previous version of these instructions required the user to run `brew link flex --force`.
 After fetching this revision, you should first run `brew unlink flex`, as it is no longer necessary and will cause an error if you have the homebrew version of flex installed instead of the xcode command line tools version.
+
+#### Haskell Stack (all platforms)
 
 -   [Haskell Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade).
     Note that the version of the `stack` tool provided by your package manager might not be recent enough.
@@ -143,20 +152,26 @@ make build
 Example Usage
 -------------
 
-After building the definition, you can run the definition using `./kevm`.
-Read the `./kevm` script for examples of the actual invocations of `krun` that `./kevm` makes.
+After building, make sure you setup `PATH` correctly:
+
+```sh
+export PATH=$(pwd)/.build/usr/bin:$PATH
+```
+
+After building the definition, you can run the definition using the `kevm` runner.
+You can call `kevm help` to get a quick summary of how to use the script.
 
 Run the file `tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json`:
 
 ```sh
-./kevm run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json
+kevm run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json --schedule DEFAULT --mode VMTESTS
 ```
 
-To run proofs, you can similarly use `./kevm`.
+To run proofs, you can similarly use `kevm`.
 For example, to prove one of the specifications:
 
 ```sh
-./kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION
+kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION
 ```
 
 Running Tests
@@ -175,7 +190,7 @@ These are the individual test-suites (all of these can be suffixed with `-all` t
 -   `make test-vm`: VMTests from the [Ethereum Test Set].
 -   `make test-bchain`: Subset of BlockchainTests from the [Ethereum Test Set].
 -   `make test-proof`: Proofs from the [Verified Smart Contracts].
--   `make test-interactive`: Tests of the `./kevm` command.
+-   `make test-interactive`: Tests of the `kevm` command.
 
 When running tests with the `Makefile`, you can specify the `TEST_CONCRETE_BACKEND` (for concrete tests), or `TEST_SYMBOLIC_BACKEND` (for proofs).
 
