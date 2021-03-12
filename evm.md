@@ -2308,7 +2308,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
 
 ### Schedule Constants
 
-A `ScheduleConst` is a constant d"
+ A `ScheduleConst` is a constant determined by the fee schedule.
+
 ```k
     syntax Int ::= ScheduleConst "<" Schedule ">" [function, functional]
  // --------------------------------------------------------------------
