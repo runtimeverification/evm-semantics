@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     {{include/head.html}}
+    <link rel="canonical" href="{{$PAGE_URL}}" />
   </head>
 
   <body>
@@ -21,18 +22,6 @@
     {{include/footer.html}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
     <script src="{{$ROOT}}/assets/js/index.js"></script>
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-      gtag("config", "G-QL0D8HRYFW");
-    </script>
+    {{include/ga.html}}
   </body>
 </html>
