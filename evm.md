@@ -2062,12 +2062,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(_, SHA256) =>  60 +Int  12 *Int (#sizeByteArray(DATA) up/Int 32) ... </k> <callData> DATA </callData>
     rule <k> #gasExec(_, RIP160) => 600 +Int 120 *Int (#sizeByteArray(DATA) up/Int 32) ... </k> <callData> DATA </callData>
     rule <k> #gasExec(_, ID)     =>  15 +Int   3 *Int (#sizeByteArray(DATA) up/Int 32) ... </k> <callData> DATA </callData>
-    rule <k> #gasExec(_, MODEXP)
-          => #multComplexity(maxInt(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 64 .. 32 ]))) *Int maxInt(#adjustedExpLength(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), DATA), 1) /Int Gquaddivisor < SCHED >
-         ...
-         </k>
-         <schedule> SCHED </schedule>
-         <callData> DATA </callData>
+    rule <k> #gasExec(SCHED, MODEXP) => Cmodexp(SCHED, DATA)                           ... </k> <callData> DATA </callData>
 
     rule <k> #gasExec(SCHED, ECADD)     => Gecadd < SCHED>  ... </k>
     rule <k> #gasExec(SCHED, ECMUL)     => Gecmul < SCHED > ... </k>
@@ -2119,6 +2114,7 @@ There are several helpers for calculating gas (most of them also specified in th
                  | Cextcodecopy   ( Schedule , Int , Bool )             [function, functional, smtlib(gas_Cextcodecopy)  ]
                  | Cextcodehash   ( Schedule , Bool )                   [function, functional, smtlib(gas_Cextcodehash)  ]
                  | Cbalance       ( Schedule , Bool )                   [function, functional, smtlib(gas_Cbalance)      ]
+                 | Cmodexp        ( Schedule , ByteArray )              [function, functional, smtlib(gas_Cmodexp)       ]
  // ----------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
@@ -2202,6 +2198,15 @@ There are several helpers for calculating gas (most of them also specified in th
       => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32))
       requires notBool Ghasaccesslist << SCHED >>
 
+    rule [Cmodexp.old]:
+         Cmodexp(SCHED, DATA)
+      => #multComplexity(maxInt(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 64 .. 32 ]))) *Int maxInt(#adjustedExpLength(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), DATA), 1) /Int Gquaddivisor < SCHED >
+      requires SCHED =/=K BERLIN
+    rule [Cmodexp.new]:
+         Cmodexp(SCHED, DATA)
+      => #calculateGasCost(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 64 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #asWord(DATA [ 96 +Int #asWord(DATA [ 0 .. 32 ]) .. #asWord(DATA [ 32 .. 32 ])]))
+      requires SCHED ==K BERLIN
+
     syntax BExp    ::= Bool
     syntax KResult ::= Bool
     syntax BExp ::= #accountNonexistent ( Int )
@@ -2260,10 +2265,37 @@ There are several helpers for calculating gas (most of them also specified in th
     rule G*(GAVAIL, GLIMIT, REFUND) => GAVAIL +Int minInt((GLIMIT -Int GAVAIL)/Int 2, REFUND)
 
     syntax Int ::= #multComplexity(Int) [function]
- // ----------------------------------------------
+                 | #newMultComplexity(Int) [function]
+ // -------------------------------------------------
     rule #multComplexity(X) => X *Int X                                     requires X <=Int 64
     rule #multComplexity(X) => X *Int X /Int 4 +Int 96 *Int X -Int 3072     requires X >Int 64 andBool X <=Int 1024
     rule #multComplexity(X) => X *Int X /Int 16 +Int 480 *Int X -Int 199680 requires X >Int 1024
+
+    rule #newMultComplexity(X) => (X up/Int 8) ^Int 2
+
+    syntax Int ::= #calculateMultiplicationComplexity ( Int , Int )             [function]
+                 | #calculateIterationCount           ( Int , Int )             [function]
+                 | #calculateGasCost                  ( Int , Int , Int , Int ) [function]
+ // --------------------------------------------------------------------------------------
+    rule #calculateMultiplicationComplexity(BASELEN, MODLEN) => (maxInt(BASELEN, MODLEN) up/Int 8) ^Int 2
+
+    rule #calculateIterationCount(EXPLEN, EXPNT) => 1
+      requires EXPLEN <=Int 32 andBool EXPNT ==Int 0
+    rule #calculateIterationCount(EXPLEN, EXPNT) => maxInt(1, #bitLength(EXPNT) -Int 1)
+      requires EXPLEN <=Int 32 andBool notBool EXPNT ==Int 0
+    rule #calculateIterationCount(EXPLEN, EXPNT) => maxInt(1, ((8 *Int (EXPLEN -Int 32)) +Int (#bitLength(EXPNT &Int ((2 ^Int 256) -Int 1))) -Int 1 ))
+      requires EXPLEN >Int 32
+
+    rule #calculateGasCost(BASELEN, MODLEN, EXPLEN, EXPNT) => maxInt(200, #calculateMultiplicationComplexity(BASELEN, MODLEN) *Int #calculateIterationCount(EXPLEN, EXPNT) /Int 3)
+
+    syntax String ::= #toBinaryString ( Int , String ) [function]
+ // -------------------------------------------------------------
+    rule #toBinaryString(N, RESULT) => RESULT requires N ==Int 0
+    rule #toBinaryString(N, RESULT) => #toBinaryString(N /Int 2, Int2String(N %Int 2) +String RESULT) [owise]
+
+    syntax Int ::= #bitLength ( Int ) [function]
+ // --------------------------------------------
+    rule #bitLength(N) => lengthString(#toBinaryString(N, "":String))
 
     syntax Int ::= #adjustedExpLength(Int, Int, ByteArray) [function]
                  | #adjustedExpLength(Int)                 [function, klabel(#adjustedExpLengthAux)]
