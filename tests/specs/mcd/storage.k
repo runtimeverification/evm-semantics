@@ -61,7 +61,7 @@ module DSS-STORAGE
  // -------
 
     syntax Int ::= "#Jug.wards" "[" Int "]"
-                 | "#Jug.ilks" "[" Int "].duty" [function]
+                 | "#Jug.ilks" "[" Int "].duty"
                  | "#Jug.ilks" "[" Int "].rho"
                  | "#Jug.vat"
                  | "#Jug.vow"
