@@ -354,7 +354,6 @@ tests/%.parse: tests/%
 	$(CHECK) $@-out $@-expected
 	rm -rf $@-out
 
-tests/specs/benchmarks/%-spec.k.prove:             KPROVE_OPTS += --smt-prelude $(dir $@)evm.smt2
 tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-backend-command "kore-exec --smt=none"
 
 tests/%.prove: tests/%
