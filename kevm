@@ -77,7 +77,7 @@ run_prove() {
 
     proof_args=(--def-module "$def_module")
     ! $debug      || proof_args+=(--debug)
-    ! $debugger   || proof_args+=(--debugger --debug-script kast.kscript)
+    ! $debugger   || proof_args+=(--debugger)
     ! $bug_report || proof_args+=(--haskell-backend-command "kore-exec --bug-report $bug_report_name")
 
     ! $debug || set -x
