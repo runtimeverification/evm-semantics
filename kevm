@@ -257,7 +257,7 @@ done
 [[ "${#args[@]}" -le 0 ]] || set -- "${args[@]}"
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
-! $repl || [[ "$backend" == haskell ]] || fatal "Option --repl only usable with --backend haskell!"
+! $debugger || [[ "$backend" == haskell ]] || [[ "$backend" == llvm ]] || fatal "Option --debugger only usable with --backend [llvm|haskell]!"
 
 # get the run file
 run_file="$1" ; shift
