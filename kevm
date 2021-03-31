@@ -147,7 +147,7 @@ run_interpret() {
                  ;;
 
         llvm)    run_kast kore > "$kast"
-                 if $debugger; then cmpprefix="gdb --args"; fi
+                 if $debugger; then cmdprefix="gdb --args"; fi
                  $cmdprefix "$interpreter" "$kast" -1 "$output" "$@" \
                      || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
