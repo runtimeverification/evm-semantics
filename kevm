@@ -7,8 +7,6 @@ notif() { echo "== $@" >&2 ; }
 fatal() { echo "[FATAL] $@" ; exit 1 ; }
 
 check_k_install() {
-    which kore-exec &> /dev/null \
-        || fatal "Must have K installed! See https://github.com/kframework/k/releases."
     which kast &> /dev/null \
         || fatal "Must have K installed! See https://github.com/kframework/k/releases."
     which krun &> /dev/null \
