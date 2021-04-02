@@ -142,7 +142,7 @@ pipeline {
             BIONIC_BRANCH_TAG  = "ubuntu-bionic-${env.BRANCH_NAME}"
             FOCAL_VERSION_TAG  = "ubuntu-focal-${env.KEVM_RELEASE_TAG}"
             FOCAL_BRANCH_TAG   = "ubuntu-focal-${env.BRANCH_NAME}"
-            DOCKERHUB_REPO     = "runtimeverificationinc/kframework-k"
+            DOCKERHUB_REPO     = "runtimeverificationinc/kframework-evm-semantics"
           }
           stages {
             stage('Build Image') {
@@ -150,7 +150,7 @@ pipeline {
               steps {
                 dir('bionic') { unstash 'bionic' }
                 sh '''
-                    mv bionic/kframework_${VERSION}_amd64.deb kframework_amd64_bionic.deb
+                    mv bionic/kevm_${VERSION}_amd64.deb kevm_amd64_bionic.deb
                     docker login --username "${DOCKERHUB_TOKEN_USR}" --password "${DOCKERHUB_TOKEN_PSW}"
                     docker image build . --file package/docker/Dockerfile.ubuntu --tag "${DOCKERHUB_REPO}:${BIONIC_VERSION_TAG} --build-arg BASE_IMAGE=bionic"
                     docker image push "${DOCKERHUB_REPO}:${BIONIC_VERSION_TAG}"
@@ -159,7 +159,7 @@ pipeline {
                 '''
                 dir('focal') { unstash 'focal' }
                 sh '''
-                    mv focal/kframework_${VERSION}_amd64.deb kframework_amd64_focal.deb
+                    mv focal/kevm_${VERSION}_amd64.deb kevm_amd64_focal.deb
                     docker login --username "${DOCKERHUB_TOKEN_USR}" --password "${DOCKERHUB_TOKEN_PSW}"
                     docker image build . --file package/docker/Dockerfile.ubuntu-focal --tag "${DOCKERHUB_REPO}:${FOCAL_VERSION_TAG} --build-arg BASE_IMAGE=focal"
                     docker image push "${DOCKERHUB_REPO}:${FOCAL_VERSION_TAG}"
@@ -208,6 +208,7 @@ pipeline {
         stage('GitHub Release') {
           steps {
             dir('bionic') { unstash 'bionic' }
+            dir('focal')  { unstash 'focal'  }
             sshagent(['2b3d8d6b-0855-4b59-864a-6b3ddf9c9d1a']) {
               sh '''
                 git clone 'ssh://github.com/kframework/evm-semantics.git' kevm-release
