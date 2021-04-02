@@ -167,6 +167,61 @@ pipeline {
             }
           }
         }
+        stage('DockerHub') {
+          environment {
+            DOCKERHUB_TOKEN    = credentials('rvdockerhub')
+            BIONIC_VERSION_TAG = "ubuntu-bionic-${env.KEVM_RELEASE_TAG}"
+            BIONIC_BRANCH_TAG  = "ubuntu-bionic-${env.BRANCH_NAME}"
+            FOCAL_VERSION_TAG  = "ubuntu-focal-${env.KEVM_RELEASE_TAG}"
+            FOCAL_BRANCH_TAG   = "ubuntu-focal-${env.BRANCH_NAME}"
+            DOCKERHUB_REPO     = "runtimeverificationinc/kframework-k"
+          }
+          stages {
+            stage('Build Image') {
+              agent { label 'docker' }
+              steps {
+                dir('bionic') { unstash 'bionic' }
+                sh '''
+                    mv bionic/kframework_${VERSION}_amd64.deb kframework_amd64_bionic.deb
+                    docker login --username "${DOCKERHUB_TOKEN_USR}" --password "${DOCKERHUB_TOKEN_PSW}"
+                    docker image build . --file package/docker/Dockerfile.ubuntu --tag "${DOCKERHUB_REPO}:${BIONIC_VERSION_TAG} --build-arg BASE_IMAGE=bionic"
+                    docker image push "${DOCKERHUB_REPO}:${BIONIC_VERSION_TAG}"
+                    docker tag "${DOCKERHUB_REPO}:${BIONIC_VERSION_TAG}" "${DOCKERHUB_REPO}:${BIONIC_BRANCH_TAG}"
+                    docker push "${DOCKERHUB_REPO}:${BIONIC_BRANCH_TAG}"
+                '''
+                dir('focal') { unstash 'focal' }
+                sh '''
+                    mv focal/kframework_${VERSION}_amd64.deb kframework_amd64_focal.deb
+                    docker login --username "${DOCKERHUB_TOKEN_USR}" --password "${DOCKERHUB_TOKEN_PSW}"
+                    docker image build . --file package/docker/Dockerfile.ubuntu-focal --tag "${DOCKERHUB_REPO}:${FOCAL_VERSION_TAG} --build-arg BASE_IMAGE=focal"
+                    docker image push "${DOCKERHUB_REPO}:${FOCAL_VERSION_TAG}"
+                    docker tag "${DOCKERHUB_REPO}:${FOCAL_VERSION_TAG}" "${DOCKERHUB_REPO}:${FOCAL_BRANCH_TAG}"
+                    docker push "${DOCKERHUB_REPO}:${FOCAL_BRANCH_TAG}"
+                '''
+              }
+            }
+            stage('Test Bionic Image') {
+              agent {
+                docker {
+                  image "${DOCKERHUB_REPO}:${BIONIC_VERSION_TAG}"
+                  args '-u 0'
+                  reuseNode true
+                }
+              }
+              steps { sh 'which kevm ; kevm help ; kevm version ;' }
+            }
+            stage('Test Focal Image') {
+              agent {
+                docker {
+                  image "${DOCKERHUB_REPO}:${FOCAL_VERSION_TAG}"
+                  args '-u 0'
+                  reuseNode true
+                }
+              }
+              steps { sh 'which kevm ; kevm help ; kevm version ;' }
+            }
+          }
+        }
       }
     }
     stage('Deploy') {
