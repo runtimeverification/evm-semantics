@@ -221,16 +221,17 @@ pipeline {
                 git tag "${KEVM_RELEASE_TAG}" "${LONG_REV}"
                 git push origin "${KEVM_RELEASE_TAG}"
 
-                COMMIT_DATE=$(date '+%Y%m%d%H%M' --date="$(git show --no-patch --format='%ci' ${KEVM_RELEASE_TAG})")
-
-                bionic_name=kevm_${VERSION}_amd64_bionic_${COMMIT_DATE}.deb
+                bionic_name=kevm_${VERSION}_amd64_bionic.deb
+                focal_name=kevm_${VERSION}_amd64_focal.deb
                 mv ../bionic/kevm_${VERSION}_amd64.deb ${bionic_name}
+                mv ../focal/kevm_${VERSION}_amd64.deb  ${focal_name}
 
                 echo "KEVM Release ${KEVM_RELEASE_TAG}"  > release.md
                 echo ''                                 >> release.md
                 cat INSTALL.md                          >> release.md
                 hub release create                                          \
                     --attach ${bionic_name}'#Ubuntu Bionic (18.04) Package' \
+                    --attach ${focal_name}'#Ubuntu Focal (20.04) Package'   \
                     --file release.md "${KEVM_RELEASE_TAG}"
               '''
             }
