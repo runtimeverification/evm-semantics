@@ -138,9 +138,9 @@ pipeline {
         stage('DockerHub') {
           environment {
             DOCKERHUB_TOKEN    = credentials('rvdockerhub')
-            BIONIC_VERSION_TAG = "ubuntu-bionic-${env.KEVM_RELEASE_TAG}"
+            BIONIC_VERSION_TAG = "ubuntu-bionic-${env.SHORT_REV}"
             BIONIC_BRANCH_TAG  = "ubuntu-bionic-${env.BRANCH_NAME}"
-            FOCAL_VERSION_TAG  = "ubuntu-focal-${env.KEVM_RELEASE_TAG}"
+            FOCAL_VERSION_TAG  = "ubuntu-focal-${env.SHORT_REV}"
             FOCAL_BRANCH_TAG   = "ubuntu-focal-${env.BRANCH_NAME}"
             DOCKERHUB_REPO     = "runtimeverificationinc/kframework-evm-semantics"
           }
