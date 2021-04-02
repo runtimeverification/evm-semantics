@@ -152,7 +152,7 @@ pipeline {
                 sh '''
                     mv bionic/kevm_${VERSION}_amd64.deb kevm_amd64_bionic.deb
                     docker login --username "${DOCKERHUB_TOKEN_USR}" --password "${DOCKERHUB_TOKEN_PSW}"
-                    docker image build . --file package/docker/Dockerfile.ubuntu --tag "${DOCKERHUB_REPO}:${BIONIC_VERSION_TAG} --build-arg BASE_IMAGE=bionic"
+                    docker image build . --file package/docker/Dockerfile.ubuntu --tag "${DOCKERHUB_REPO}:${BIONIC_VERSION_TAG}" --build-arg BASE_IMAGE=bionic
                     docker image push "${DOCKERHUB_REPO}:${BIONIC_VERSION_TAG}"
                     docker tag "${DOCKERHUB_REPO}:${BIONIC_VERSION_TAG}" "${DOCKERHUB_REPO}:${BIONIC_BRANCH_TAG}"
                     docker push "${DOCKERHUB_REPO}:${BIONIC_BRANCH_TAG}"
@@ -161,7 +161,7 @@ pipeline {
                 sh '''
                     mv focal/kevm_${VERSION}_amd64.deb kevm_amd64_focal.deb
                     docker login --username "${DOCKERHUB_TOKEN_USR}" --password "${DOCKERHUB_TOKEN_PSW}"
-                    docker image build . --file package/docker/Dockerfile.ubuntu-focal --tag "${DOCKERHUB_REPO}:${FOCAL_VERSION_TAG} --build-arg BASE_IMAGE=focal"
+                    docker image build . --file package/docker/Dockerfile.ubuntu-focal --tag "${DOCKERHUB_REPO}:${FOCAL_VERSION_TAG}" --build-arg BASE_IMAGE=focal
                     docker image push "${DOCKERHUB_REPO}:${FOCAL_VERSION_TAG}"
                     docker tag "${DOCKERHUB_REPO}:${FOCAL_VERSION_TAG}" "${DOCKERHUB_REPO}:${FOCAL_BRANCH_TAG}"
                     docker push "${DOCKERHUB_REPO}:${FOCAL_BRANCH_TAG}"
