@@ -65,50 +65,54 @@ pipeline {
       }
       post { failure { slackSend color: '#cb2431' , channel: '#kevm' , message: "Packaging Phase Failed: ${env.BUILD_URL}" } }
       stages {
-        stage('Build Ubuntu Bionic') {
-          agent {
-            dockerfile {
-              additionalBuildArgs '--build-arg K_COMMIT="$(cd deps/k && git rev-parse --short=7 HEAD)" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-              reuseNode true
+        stage('Ubuntu Bionic') {
+          stages {
+            stage('Build Ubuntu Bionic') {
+              agent {
+                dockerfile {
+                  additionalBuildArgs '--build-arg K_COMMIT="$(cd deps/k && git rev-parse --short=7 HEAD)" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                  reuseNode true
+                }
+              }
+              steps {
+                dir('bionic-build') {
+                  checkout scm
+                  sh './package/debian/package bionic'
+                }
+                stash name: 'bionic', includes: "kevm_${env.VERSION}_amd64.deb"
+              }
             }
-          }
-          steps {
-            dir('bionic-build') {
-              checkout scm
-              sh './package/debian/package bionic'
-            }
-            stash name: 'bionic', includes: "kevm_${env.VERSION}_amd64.deb"
-          }
-        }
-        stage('Test Ubuntu Bionic') {
-          agent {
-            dockerfile {
-              filename 'package/debian/Dockerfile.test'
-              additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) --build-arg BASE_IMAGE=ubuntu:bionic'
-              reuseNode true
-            }
-          }
-          options { skipDefaultCheckout() }
-          steps {
-            dir('bionic-test') {
-              checkout scm
-              unstash 'bionic'
-              sh '''
-                export KLAB_OUT=$(pwd)
-                sudo apt-get update
-                sudo apt-get upgrade --yes
-                sudo apt-get install --yes ./kevm_${VERSION}_amd64.deb
-                which kevm
-                kevm help
-                kevm version
-                make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=llvm
-                make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=java
-                make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=haskell
-                make -j4 test-parse              TEST_CONCRETE_BACKEND=llvm
-                make -j4 test-failure            TEST_CONCRETE_BACKEND=llvm
-                make -j4 test-klab-prove         TEST_SYMBOLIC_BACKEND=java
-                make -j4 test-interactive-search TEST_SYMBOLIC_BACKEND=haskell
-              '''
+            stage('Test Ubuntu Bionic') {
+              agent {
+                dockerfile {
+                  filename 'package/debian/Dockerfile.test'
+                  additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) --build-arg BASE_IMAGE=ubuntu:bionic'
+                  reuseNode true
+                }
+              }
+              options { skipDefaultCheckout() }
+              steps {
+                dir('bionic-test') {
+                  checkout scm
+                  unstash 'bionic'
+                  sh '''
+                    export KLAB_OUT=$(pwd)
+                    sudo apt-get update
+                    sudo apt-get upgrade --yes
+                    sudo apt-get install --yes ./kevm_${VERSION}_amd64.deb
+                    which kevm
+                    kevm help
+                    kevm version
+                    make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=llvm
+                    make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=java
+                    make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=haskell
+                    make -j4 test-parse              TEST_CONCRETE_BACKEND=llvm
+                    make -j4 test-failure            TEST_CONCRETE_BACKEND=llvm
+                    make -j4 test-klab-prove         TEST_SYMBOLIC_BACKEND=java
+                    make -j4 test-interactive-search TEST_SYMBOLIC_BACKEND=haskell
+                  '''
+                }
+              }
             }
           }
         }
