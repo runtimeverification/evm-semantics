@@ -6,6 +6,7 @@ distro="${1:-bionic}"
 
 case "$distro" in
     bionic) control_file=control.bionic             ;;
+    focal)  control_file=control.focal              ;;
     *)      echo "Unknown distro: $distro" ; exti 1 ;;
 esac
 
