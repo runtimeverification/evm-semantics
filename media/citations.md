@@ -552,7 +552,7 @@ references:
   page: '397-434'
   volume: '79'
   issue: '6'
-  note: <http://kframework.org/>
+  note: <https://kframework.org/>
   DOI: 10.1016/j.jlap.2010.03.012
 
 - id: serbanuta-rosu-2010-wrla
@@ -939,7 +939,7 @@ references:
   issued:
   - year: '2006'
   title: The K framework
-  note: <http://kframework.org>
+  note: <https://kframework.org>
 
 - id: evm-repo
   type: no-type
