@@ -144,11 +144,13 @@ ALL_FILES          := $(patsubst %, %.md, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
 
 includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(ALL_FILES))
 
-LEMMA_FILES := infinite-gas.k     \
-               lemmas.k           \
-               mcd/bin_runtime.k  \
-               mcd/storage.k      \
-               mcd/verification.k \
+LEMMA_FILES := infinite-gas.k                           \
+               lemmas.k                                 \
+               erc20/abstract-semantics-segmented-gas.k \
+               erc20/evm-symbolic.k                     \
+               mcd/bin_runtime.k                        \
+               mcd/storage.k                            \
+               mcd/verification.k                       \
                mcd/word-pack.k
 
 lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(LEMMA_FILES))
