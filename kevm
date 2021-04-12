@@ -30,7 +30,10 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 # User Commands
 
 run_kompile() {
-   kompile --backend "$backend" "$run_file" -I ${INSTALL_LIB}/include/kframework "$@"
+   kompile --backend "$backend" "$run_file"    \
+        -I "${INSTALL_LIB}/include/kframework" \
+        --hook-namespaces "$hook_namespaces"   \
+        "$@"
 }
 
 run_krun() {
@@ -235,6 +238,7 @@ bug_report=false
 mode=NORMAL
 schedule=ISTANBUL
 chainid=1
+hook_namespaces="KRYPTO JSON"
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 kevm_port='8545'
@@ -253,6 +257,7 @@ while [[ $# -gt 0 ]]; do
         --mode)               mode="$2"                 ; shift 2 ;;
         --schedule)           schedule="$2"             ; shift 2 ;;
         --chainid)            chainid="$2"              ; shift 2 ;;
+        --hook-namespaces)    hook_namespaces="$2"      ; shift 2 ;;
         -p|--port)            kevm_port="$2"            ; shift 2 ;;
         -h|--host|--hostname) kevm_host="$2"            ; shift 2 ;;
         *)                    args+=("$1")              ; shift   ;;
