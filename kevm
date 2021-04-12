@@ -29,6 +29,10 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 
 # User Commands
 
+run_kompile() {
+   kompile --backend "$backend" "$run_file" -I ${INSTALL_LIB}/include/kframework "$@"
+}
+
 run_krun() {
     local cschedule cmode cchainid parser
 
@@ -278,6 +282,7 @@ cSCHEDULE_kast="\`${schedule}_EVM\`(.KList)"
 cCHAINID_kast="#token(\"${chainid}\",\"Int\")"
 
 case "$run_command-$backend" in
+    kompile-@(java|llvm|haskell)   ) run_kompile                     "$@" ;;
     run-@(java|llvm|haskell)       ) run_krun                        "$@" ;;
     kast-@(java|llvm|haskell)      ) run_kast                        "$@" ;;
     interpret-@(llvm|haskell|java) ) run_interpret                   "$@" ;;
