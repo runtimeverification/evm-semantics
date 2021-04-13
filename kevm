@@ -190,7 +190,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                $0 kast         [--backend (llvm|java|haskell)]           <KEVM_arg>* <pgm>  <output format> <K arg>*
                $0 prove        [--backend (java|haskell)]                            <spec> <def_module> <K arg>*
                $0 search       [--backend (java|haskell)]                            <pgm>  <pattern> <K arg>*
-               $0 kompile      [--backend (llvm|haskell)]                            <main> <K arg>*
+               $0 kompile      [--backend (java|llvm|haskell)]                       <main> <K arg>*
                $0 klab-run                                                           <pgm>  <K arg>*
                $0 klab-prove                                                         <spec> <def_module> <K arg>*
                $0 klab-view                                                          <spec>
