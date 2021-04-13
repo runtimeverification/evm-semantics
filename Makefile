@@ -161,9 +161,9 @@ $(KEVM_INCLUDE)/kframework/%.md: %.md
 $(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
 	install -D $< $@
 
-tangle_concrete := k & (! ceil) & ( ( ! ( symbolic | nobytes ) ) | concrete | bytes   )
-tangle_java     := k & (! ceil) & ( ( ! ( concrete | bytes   ) ) | symbolic | nobytes )
-tangle_haskell  := k            & ( ( ! ( concrete | nobytes ) ) | symbolic | bytes   )
+tangle_concrete := k & ( ( ! ( symbolic | nobytes ) ) | concrete | bytes   )
+tangle_java     := k & ( ( ! ( concrete | bytes   ) ) | symbolic | nobytes )
+tangle_haskell  := k & ( ( ! ( concrete | nobytes ) ) | symbolic | bytes   )
 
 HOOK_NAMESPACES    = KRYPTO JSON
 KOMPILE_INCLUDES   = $(KEVM_INCLUDE)/kframework $(INSTALL_INCLUDE)/kframework
