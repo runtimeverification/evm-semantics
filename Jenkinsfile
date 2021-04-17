@@ -6,6 +6,7 @@ pipeline {
     LONG_REV         = """${sh(returnStdout: true, script: 'git rev-parse HEAD').trim()}"""
     SHORT_REV        = """${sh(returnStdout: true, script: 'git rev-parse --short=7 HEAD').trim()}"""
     KEVM_RELEASE_TAG = "v${env.VERSION}-${env.SHORT_REV}"
+    K_VERSION        = """${sh(returnStdout: true, script: 'cd deps/k && git tag --points-at HEAD | cut --characters=2-').trim()}"""
   }
   options { ansiColor('xterm') }
   stages {
@@ -16,7 +17,7 @@ pipeline {
     stage('Build and Test') {
       agent {
         dockerfile {
-          additionalBuildArgs '--build-arg K_COMMIT="$(cd deps/k && git rev-parse --short=7 HEAD)" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+          additionalBuildArgs '--build-arg K_COMMIT="${K_VERSION}" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
           reuseNode true
         }
       }
@@ -70,7 +71,7 @@ pipeline {
             stage('Build Ubuntu Bionic') {
               agent {
                 dockerfile {
-                  additionalBuildArgs '--build-arg K_COMMIT="$(cd deps/k && git rev-parse --short=7 HEAD)" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                  additionalBuildArgs '--build-arg K_COMMIT="${K_VERSION}" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                   reuseNode true
                 }
               }
@@ -121,7 +122,7 @@ pipeline {
             stage('Build Ubuntu Focal') {
               agent {
                 dockerfile {
-                  additionalBuildArgs '--build-arg K_COMMIT="$(cd deps/k && git rev-parse --short=7 HEAD)" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                  additionalBuildArgs '--build-arg K_COMMIT="${K_VERSION}" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                   reuseNode true
                 }
               }
@@ -199,7 +200,7 @@ pipeline {
       }
       agent {
         dockerfile {
-          additionalBuildArgs '--build-arg K_COMMIT="$(cd deps/k && git rev-parse --short=7 HEAD)" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+          additionalBuildArgs '--build-arg K_COMMIT="${K_VERSION}" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
           reuseNode true
         }
       }
