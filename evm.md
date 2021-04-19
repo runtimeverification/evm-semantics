@@ -2192,7 +2192,10 @@ There are several helpers for calculating gas (most of them also specified in th
     rule [Cbalance.new]: Cbalance(SCHED, ISWARM)  => Caddraccess(SCHED, ISWARM) requires Ghasaccesslist << SCHED >>
     rule [Cbalance.old]: Cbalance(SCHED, _ISWARM) => Gbalance < SCHED >         requires notBool Ghasaccesslist << SCHED >>
 
-    rule [Cextcodecopy.new]: Cextcodecopy(SCHED, _WIDTH, ISWARM)  => Caddraccess(SCHED, ISWARM) requires Ghasaccesslist << SCHED >>
+    rule [Cextcodecopy.new]: 
+        Cextcodecopy(SCHED, WIDTH, ISWARM)
+      => Caddraccess(SCHED, ISWARM) +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32))
+    requires Ghasaccesslist << SCHED >>
     rule [Cextcodecopy.old]:
          Cextcodecopy(SCHED, WIDTH, _ISWARM)
       => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32))
