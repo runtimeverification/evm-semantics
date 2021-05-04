@@ -9,19 +9,19 @@ module VERIFICATION
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
 
-    syntax Step ::= String
- // ----------------------
+    syntax Step ::= String | MerkleTree
+ // -----------------------------------
 
 endmodule
 
 module STORAGEROOT-SPEC
     imports VERIFICATION
 
-    claim <k> #storageRoot( .Map ) => .MerkleTree </k>
+    claim <k> runLemma ( #storageRoot( .Map ) ) => doneLemma ( .MerkleTree ) </k>
 
-    claim <k> #rlpEncodeString ( "" ) => "\x80" </k>
+    claim <k> runLemma ( #rlpEncodeString ( "" ) ) => doneLemma ( "\x80" ) </k>
 
-    claim <k> #rlpEncodeString ( "\x82\x04\xd2" ) => "\x83\x82\x04\xd2" </k>
+    claim <k> runLemma ( #rlpEncodeString ( "\x82\x04\xd2" ) ) => doneLemma ( "\x83\x82\x04\xd2" ) </k>
 
     // uint pos0;
     //
