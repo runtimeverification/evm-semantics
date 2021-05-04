@@ -616,22 +616,30 @@ Merkle Tree Aux Functions
     rule #merkleUpdateBranch ( M, BRANCHVALUE, X, PATH, VALUE )
       => MerkleBranch( M[X <- MerkleLeaf( PATH, VALUE )], BRANCHVALUE ) [owise]
 
-    syntax MerkleTree ::= #merkleExtensionBuilder( ByteArray, ByteArray, String, ByteArray, String ) [function]
- // -----------------------------------------------------------------------------------------------------------
-    rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
-      => #merkleExtensionBuilder( PATH ++ (P1[0 .. 1])
-                                , P1[1 .. #sizeByteArray(P1) -Int 1], V1
-                                , P2[1 .. #sizeByteArray(P2) -Int 1], V2
-                                )
+    syntax MerkleTree ::= #merkleExtensionBuilder(    ByteArray , ByteArray , String , ByteArray , String ) [function]
+                        | #merkleExtensionBuilderAux( ByteArray , ByteArray , String , ByteArray , String ) [function]
+ // ------------------------------------------------------------------------------------------------------------------------
+    rule #merkleExtensionBuilder(PATH, P1, V1, P2, V2)
+      => #merkleExtensionBuilderAux(PATH, P1, V1, P2, V2)
       requires #sizeByteArray(P1) >Int 0
        andBool #sizeByteArray(P2) >Int 0
-       andBool P1[0] ==Int P2[0]
 
-    rule #merkleExtensionBuilder( PATH, P1, V1, P2, V2 )
+    rule #merkleExtensionBuilder(PATH, P1, V1, P2, V2)
       => MerkleExtension( PATH, MerklePut( MerklePut( MerkleBranch( .Map, "" ), P1, V1 ), P2, V2 ) )
       requires notBool ( #sizeByteArray(P1) >Int 0
-               andBool   #sizeByteArray(P2) >Int 0
-               andBool   P1[0] ==Int P2[0] )
+                 andBool #sizeByteArray(P2) >Int 0
+                       )
+
+    rule #merkleExtensionBuilderAux( PATH, P1, V1, P2, V2 )
+      => #merkleExtensionBuilderAux( PATH ++ (P1[0 .. 1])
+                                   , P1[1 .. #sizeByteArray(P1) -Int 1], V1
+                                   , P2[1 .. #sizeByteArray(P2) -Int 1], V2
+                                   )
+      requires P1[0] ==Int P2[0]
+
+    rule #merkleExtensionBuilderAux( PATH, P1, V1, P2, V2 )
+      => MerkleExtension( PATH, MerklePut( MerklePut( MerkleBranch( .Map, "" ), P1, V1 ), P2, V2 ) )
+      requires P1[0] =/=Int P2[0]
 
     syntax MerkleTree ::= #merkleExtensionBrancher ( MerkleTree, ByteArray, MerkleTree ) [function]
  // -----------------------------------------------------------------------------------------------
