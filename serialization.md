@@ -631,10 +631,10 @@ Merkle Tree Aux Functions
                        )
 
     rule #merkleExtensionBuilderAux( PATH, P1, V1, P2, V2 )
-      => #merkleExtensionBuilderAux( PATH ++ (P1[0 .. 1])
-                                   , P1[1 .. #sizeByteArray(P1) -Int 1], V1
-                                   , P2[1 .. #sizeByteArray(P2) -Int 1], V2
-                                   )
+      => #merkleExtensionBuilder( PATH ++ (P1[0 .. 1])
+                                , P1[1 .. #sizeByteArray(P1) -Int 1], V1
+                                , P2[1 .. #sizeByteArray(P2) -Int 1], V2
+                                )
       requires P1[0] ==Int P2[0]
 
     rule #merkleExtensionBuilderAux( PATH, P1, V1, P2, V2 )
