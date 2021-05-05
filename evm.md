@@ -179,14 +179,6 @@ Our semantics is modal, with the initial mode being set on the command line via 
  // ---------------------------------------------------
 ```
 
--   `#setMode_` sets the mode to the supplied one.
-
-```k
-    syntax InternalOp ::= "#setMode" Mode
- // -------------------------------------
-    rule <k> #setMode EXECMODE => . ... </k> <mode> _ => EXECMODE </mode>
-```
-
 State Stacks
 ------------
 
