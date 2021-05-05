@@ -626,9 +626,7 @@ Merkle Tree Aux Functions
 
     rule #merkleExtensionBuilder(PATH, P1, V1, P2, V2)
       => MerkleExtension( PATH, MerklePut( MerklePut( MerkleBranch( .Map, "" ), P1, V1 ), P2, V2 ) )
-      requires notBool ( #sizeByteArray(P1) >Int 0
-                 andBool #sizeByteArray(P2) >Int 0
-                       )
+      [owise]
 
     rule #merkleExtensionBuilderAux( PATH, P1, V1, P2, V2 )
       => #merkleExtensionBuilder( PATH ++ (P1[0 .. 1])
@@ -639,7 +637,7 @@ Merkle Tree Aux Functions
 
     rule #merkleExtensionBuilderAux( PATH, P1, V1, P2, V2 )
       => MerkleExtension( PATH, MerklePut( MerklePut( MerkleBranch( .Map, "" ), P1, V1 ), P2, V2 ) )
-      requires P1[0] =/=Int P2[0]
+      [owise]
 
     syntax MerkleTree ::= #merkleExtensionBrancher ( MerkleTree, ByteArray, MerkleTree ) [function]
  // -----------------------------------------------------------------------------------------------
