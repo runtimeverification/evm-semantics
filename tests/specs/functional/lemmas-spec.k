@@ -21,6 +21,11 @@ module LEMMAS-SPEC
 
     claim <k> runLemma ( bool2Word((UINT8 ==K 0) ==K false) ) => doneLemma ( UINT8 ) ... </k> requires #rangeBool(UINT8)
 
+ // Addresses
+ // ---------
+
+    claim <k> runLemma(#isPrecompiledAccount(#newAddr(TESTER_ACCT, 1), ISTANBUL)) => doneLemma(false) ... </k> requires #rangeAddress(TESTER_ACCT)
+
  // Arithmetic Comparisons
  // ----------------------
 

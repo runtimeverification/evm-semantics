@@ -87,6 +87,8 @@ module LEMMAS
 
     rule N /Int 1 => N  [simplification]
 
+    rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification]
+
 endmodule
 
 module LEMMAS-JAVA [symbolic, kast]
